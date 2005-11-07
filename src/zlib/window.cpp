@@ -3,6 +3,8 @@
     #include "..\..\extern\icecap4\include\icecap.h"
 #endif
 
+// This is a test comment, please delete!
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Handy painting function
