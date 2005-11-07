@@ -44,8 +44,12 @@ public:
     {
         // review: we could change this to O(1)
         int nCount = 0;
-
+// VSNet 2003 port: resolve error C2475
+#if _MSC_VER >= 1310
+        for (Slink_utl<T, ListEventSource>* link = first(); link != NULL; link = (link->next)())
+#else
         for (Slink_utl<T, ListEventSource>* link = first(); link != NULL; link = link->next)
+#endif
             nCount++;
 
         return nCount;
@@ -59,8 +63,12 @@ public:
     virtual int           GetIndex(ItemID pitem)
     {
         int nIndex = 0;
-
+// VSNet 2003 port: resolve error C2475
+#if _MSC_VER >= 1310
+        for (Link* link = first(); link != NULL; link = (link->next)())
+#else
         for (Link* link = first(); link != NULL; link = link->next)
+#endif
         {
             if ((ItemID)link == pitem)
                 return nIndex;

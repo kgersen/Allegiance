@@ -23,7 +23,7 @@ private:
 
     TRef<ButtonPane>    m_pbuttonPlayLan;
     TRef<ButtonPane>    m_pbuttonPlayInt;
-#ifdef USEAUTH
+#ifdef USEAZ
     TRef<ButtonPane>    m_pbuttonZoneClub;
 #endif
     //TRef<ButtonPane> m_pbuttonTraining;
@@ -46,7 +46,7 @@ private:
         hoverNone,
         hoverPlayLan,
         hoverPlayInt,
-#ifdef USEAUTH
+#ifdef USEAZ
         hoverZoneClub,
 #endif        
         hoverTrain,
@@ -515,7 +515,7 @@ public:
         pnsIntroScreen->AddMember("hoverNone",       new Number(hoverNone        ));
         pnsIntroScreen->AddMember("hoverPlayLan",    new Number(hoverPlayLan        ));
         pnsIntroScreen->AddMember("hoverPlayInt",    new Number(hoverPlayInt)    );
-#ifdef USEAUTH
+#ifdef USEAZ
         pnsIntroScreen->AddMember("hoverZoneClub",   new Number(hoverZoneClub    ));
 #endif
         pnsIntroScreen->AddMember("hoverZoneWeb",    new Number(hoverZoneWeb        ));
@@ -533,7 +533,7 @@ public:
         CastTo(m_ppane, pns->FindMember("screen"));
         CastTo(m_pbuttonPlayLan,    pns->FindMember("playLanButtonPane"));
         CastTo(m_pbuttonPlayInt,    pns->FindMember("playIntButtonPane"));
-#ifdef USEAUTH
+#ifdef USEAZ
         CastTo(m_pbuttonZoneClub,   pns->FindMember("zoneClubButtonPane" ));
 #endif
         //CastTo(m_pbuttonTraining,   pns->FindMember("trainButtonPane"));
@@ -552,7 +552,7 @@ public:
         AddEventTarget(OnButtonTraining,    m_pbuttonTrainingBig->GetEventSource());
         AddEventTarget(OnButtonExit,        m_pbuttonExit->GetEventSource());
         AddEventTarget(OnButtonHelp,        m_pbuttonHelp->GetEventSource());
-#ifdef USEAUTH
+#ifdef USEAZ
         AddEventTarget(OnButtonZoneClub,    m_pbuttonZoneClub->GetEventSource());
 #endif
         AddEventTarget(OnButtonInternet,    m_pbuttonPlayInt->GetEventSource());
@@ -565,7 +565,7 @@ public:
 
         AddEventTarget(OnHoverPlayLan,      m_pbuttonPlayLan->GetMouseEnterEventSource());
         AddEventTarget(OnHoverPlayInt,      m_pbuttonPlayInt->GetMouseEnterEventSource());
-#ifdef USEAUTH
+#ifdef USEAZ
         AddEventTarget(OnHoverZoneClub,     m_pbuttonZoneClub->GetMouseEnterEventSource());
 #endif
         //AddEventTarget(OnHoverTrain,        m_pbuttonTraining->GetMouseEnterEventSource());
@@ -580,7 +580,7 @@ public:
 
         AddEventTarget(OnHoverNone,     m_pbuttonPlayLan->GetMouseLeaveEventSource());
         AddEventTarget(OnHoverNone,     m_pbuttonPlayInt->GetMouseLeaveEventSource());
-#ifdef USEAUTH
+#ifdef USEAZ
         AddEventTarget(OnHoverNone,     m_pbuttonZoneClub->GetMouseLeaveEventSource());
 #endif
         //AddEventTarget(OnHoverNone,     m_pbuttonTraining->GetMouseLeaveEventSource());
@@ -1018,7 +1018,7 @@ public:
         return true;
     }
 
-#ifdef USEAUTH
+#ifdef USEAZ
     bool OnHoverZoneClub()
     {
         m_pnumberCurrentHover->SetValue(hoverZoneClub);

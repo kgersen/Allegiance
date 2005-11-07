@@ -288,7 +288,12 @@ void CAGCEventLogger::LogEvent(IAGCEvent* pEvent, bool bSynchronous)
         // Report the event to the NT Event log
         ReportEventW(m_shEventLog, wSeverity, 0, dwEventID, NULL,
           vecParamStrings.size(), 0,
-          (LPCWSTR*)(vecParamStrings.begin()), NULL);
+// VS.Net 2003 port
+#if _MSC_VER >= 1310
+		(LPCWSTR*)(&(*vecParamStrings.begin())), NULL);
+#else
+		(LPCWSTR*)(vecParamStrings.begin()), NULL);
+#endif
 
         // Free the replacement parameters BSTR's
         for (CAGCEventDef::XParamStrings::iterator it = vecParamStrings.begin();
@@ -505,7 +510,7 @@ HRESULT CAGCEventLogger::ReadStringValueFromRegistry(LPCTSTR pszValueName,
   LPTSTR pszValue = (LPTSTR)_alloca(cbData);
 
   // Attempt to read the specified value
-  lr = m_key.QueryValue(pszValue, pszValueName, &cbData);
+  lr = m_key.QueryStringValue(pszValueName, pszValue, &cbData);
 
   // Save the value string to the [out] parameter
   bstrOut = pszValue;
@@ -806,7 +811,7 @@ STDMETHODIMP CAGCEventLogger::put_NTEventLog(BSTR bstrComputer)
   if (keyWrite.m_hKey)
   {
     USES_CONVERSION;
-    long lr = keyWrite.SetValue(OLE2CT(bstrComputer), TEXT("NTEventLog"));
+    long lr = keyWrite.SetStringValue(TEXT("NTEventLog"), OLE2CT(bstrComputer));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -911,10 +916,9 @@ STDMETHODIMP CAGCEventLogger::put_DBEventLog(IAGCDBParams* pDBParams)
   if (keyWrite.m_hKey)
   {
     USES_CONVERSION;
-    long lr = keyWrite.SetValue(OLE2CT(bstrConnectionString),
-      TEXT("ConnectionString"));
+    long lr = keyWrite.SetStringValue(TEXT("ConnectionString"), OLE2CT(bstrConnectionString));
     assert(ERROR_SUCCESS == lr);
-    lr = keyWrite.SetValue(OLE2CT(bstrTableName), TEXT("TableName"));
+    lr = keyWrite.SetStringValue(TEXT("TableName"), OLE2CT(bstrTableName));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -1021,7 +1025,7 @@ STDMETHODIMP CAGCEventLogger::put_EnabledNTEvents(IAGCEventIDRanges* pEvents)
   {
     USES_CONVERSION;
     LPCTSTR pszValue = bstrEventRanges ? OLE2CT(bstrEventRanges) : TEXT("");
-    long lr = keyWrite.SetValue(pszValue, TEXT("EnabledNTEvents"));
+    long lr = keyWrite.SetStringValue(TEXT("EnabledNTEvents"), pszValue);
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -1076,7 +1080,7 @@ STDMETHODIMP CAGCEventLogger::put_EnabledDBEvents(IAGCEventIDRanges* pEvents)
   {
     USES_CONVERSION;
     LPCTSTR pszValue = bstrEventRanges ? OLE2CT(bstrEventRanges) : TEXT("");
-    long lr = keyWrite.SetValue(pszValue, TEXT("EnabledDBEvents"));
+    long lr = keyWrite.SetStringValue(TEXT("EnabledDBEvents"), pszValue);
     assert(ERROR_SUCCESS == lr);
   }
 

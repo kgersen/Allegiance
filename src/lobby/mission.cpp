@@ -70,7 +70,9 @@ void CFLMission::SetLobbyInfo(FMD_LS_LOBBYMISSIONINFO * plmi)
     m_plmi = (FMD_LS_LOBBYMISSIONINFO*) HeapAlloc(hHeap, 0, plmi->cbmsg);
     CopyMemory(m_plmi, plmi, plmi->cbmsg);
     if (!pServer->GetPaused() && // never advertize paused games
-        (g_pLobbyApp->EnforceCDKey() || m_plmi->nNumPlayers > 0 || m_plmi->fMSArena))
+        (g_pLobbyApp->EnforceCDKey() || m_plmi->nNumPlayers > 0 || m_plmi->fMSArena ||
+		(!g_pLobbyApp->IsFreeLobby() && strcmp(FM_VAR_REF(m_plmi,szIGCStaticFile),"zone_core"))  // -KGJV - advertise custom core game on FAZ
+		))
     { // don't advertize Allegiance Zone games until someone is actually in it unless it's admin created.
       FedMessaging & fmClients = g_pLobbyApp->GetFMClients();
       fmClients.ForwardMessage(fmClients.Everyone(), plmi, FM_GUARANTEED);

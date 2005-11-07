@@ -6,7 +6,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class KeyboardInputDelegate : IKeyboardInput {
+class KeyboardInputDelegate : public IKeyboardInput {
 private:
     IKeyboardInput* m_pkeyboardInput;
 

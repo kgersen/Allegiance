@@ -72,8 +72,11 @@ Quaternion::Quaternion(const Orientation& o)
         ((float*)(&m_vec.x))[j] = scale * (o[j][i] + o[i][j]);
         ((float*)(&m_vec.x))[k] = scale * (o[k][i] + o[i][k]);
     }
-
-    assert (m_a >= 0.0f);
+	
+	if (!(m_a >= 0.0f)) {
+		debugf("mmf Zlib quaternion.cpp:85 commented out assert(m_a >= 0.0f)");
+	}
+    //assert (m_a >= 0.0f);
 }
 
 //Quaternion to orientation

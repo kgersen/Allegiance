@@ -97,7 +97,10 @@ inline void swap(Type& x, Type& y)
 template<class ValueType>
 inline ValueType sign(ValueType x) { return x >= (ValueType)0 ? (ValueType)1 : (ValueType)-1; }
 
+// VS.Net 2003 port
+#if _MSC_VER < 1310
 inline float abs(float x)              { return x < 0 ? -x : x;        }
+#endif
 inline float mod(float x, float limit) 
 { 
     if (limit == 0) {
@@ -110,6 +113,8 @@ inline float mod(float x, float limit)
 #ifdef DREAMCAST
     #include "floatmathlib.h"
 #else
+// VS.Net 2003 port
+#if _MSC_VER < 1310
     inline float floor(float x)            { return floorf(x);             }
     inline float pow(float x, float y)     { return powf(x, y);            }
     inline float cos(float x)              { return cosf(x);               }
@@ -136,6 +141,7 @@ inline float mod(float x, float limit)
         ZAssert(x >= -1 && x <= 1);
         return asinf(x);
     }
+#endif
 #endif
 
 

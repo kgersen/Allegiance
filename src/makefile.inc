@@ -26,6 +26,9 @@ PCHINCLOCAL=$(SRCDIR)\*.h
 !ENDIF
 
 # Use DX6 by default, or define DX5, DX6, or DX7 to use dx5, dx6, or dx7
+!IFDEF DX9
+DXROOT=$(FEDEXT)\dx9
+!ELSE
 !IFDEF DX5
 DXROOT=$(FEDEXT)\dx
 !ELSE
@@ -37,6 +40,7 @@ DXROOT=$(FEDEXT)\dx7
 !ELSE
 # default to DX7
 DXROOT=$(FEDEXT)\dx7
+!ENDIF
 !ENDIF
 !ENDIF
 !ENDIF
@@ -69,7 +73,7 @@ SPLITSYMBOLSTOOL=$(FEDSRC)\tools\build\SplitSymbols
 MIDLINCLOCAL=
 !ENDIF
 MIDLINC =/I $(FEDEXT)\vc\inc
-MIDLARGS=$(MIDLINC) $(MIDLINCLOCAL)         \
+MIDLARGS=$(MIDLINC) $(MIDLINCLOCAL) /lcid LOCALE \
          /win32                             \
          /Oicf /no_def_idir /out $(DESTDIR) \
          /h       $(*B).h                   \
@@ -107,6 +111,24 @@ UNREGDLL=if exist $(MAINTARGFULLPATH) $(REGSVR) /u $(MAINTARGFULLPATH)
 COMPILE_DEV_REGKEY=/D_ALLEGIANCE_DEV_
 !else
 COMPILE_DEV_REGKEY=
+!endif
+
+
+#############################################################################
+# What auth methods to use
+
+!if defined (HTTP)
+COMPILEAUTH=/D_HTTP_
+!else
+COPMILEAUTH=
+!endif
+
+!if defined (USEAUTH)
+COMPILEAUTH=$(COMPILEAUTH) /D"USEAUTH"
+!endif
+
+!if defined (USEASGS)
+COMPILEAUTH=$(COMPILEAUTH) /D"USEASGS"
 !endif
 
 
@@ -177,7 +199,7 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "NDEBUG" /D "OPTIMIZED" /MT $(OPTIMIZATION
 RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" $(RARGSVERSION)
 LIBSFLAVOR=libcmt.lib libcpmt.lib libcimt.lib
 MFCLIBSFLAVOR=nafxcw.lib ctl3d32s.lib comctl32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /OPT:REF /OPT:ICF,4
+LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF stest
 
@@ -193,7 +215,7 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "_DEBUG" /D "DEBUG" /D "OPTIMIZED" /MT $(O
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D "OPTIMIZED" $(RARGSVERSION)
 LIBSFLAVOR=libcmtd.lib libcpmtd.lib libcimtd.lib
 MFCLIBSFLAVOR=nafxcwd.lib ctl3d32s.lib comctl32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:ICF,4
+LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF sdebug
 
@@ -223,11 +245,11 @@ LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib
 
 FLAVOR=Retail
 
-CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" /MD $(OPTIMIZATION_FLAGS) /GR-
+CARGSFLAVOR= $(COMPILE_DEV_REGKEY) $(USEAUTH) /D "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" /MD $(OPTIMIZATION_FLAGS) /GR-
 RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrt.lib msvcprt.lib
 MFCLIBSFLAVOR=mfc42.lib mfcs42.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no /OPT:REF /OPT:ICF,4
+LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF test
 
@@ -242,7 +264,7 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "_DEBUG" /D "DEBUG" /D "OPTIMIZED" /D"_AFX
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D "OPTIMIZED" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrtd.lib msvcprtd.lib
 MFCLIBSFLAVOR=mfc42d.lib mfcs42d.lib mfco42d.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:ICF,4
+LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF training
 
@@ -253,7 +275,7 @@ LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT
 #############################################################################
 FLAVOR=Debug
 
-CARGSFLAVOR = $(COMPILE_DEV_REGKEY) /D "_DEBUG_TRAINING" /D "_DEBUG" /D "DEBUG" /D"_AFXDLL" /MDd /Od /GR /GZ
+CARGSFLAVOR = $(COMPILE_DEV_REGKEY)  /D "_DEBUG_TRAINING" /D "_DEBUG" /D "DEBUG" /D"_AFXDLL" /MDd /Od /GR /GZ
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrtd.lib msvcprtd.lib
 MFCLIBSFLAVOR=mfc42d.lib mfcs42d.lib mfco42d.lib ctl3d32.lib
@@ -312,7 +334,7 @@ LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fix
 
 FLAVOR=Debug
 
-CARGSFLAVOR = $(COMPILE_DEV_REGKEY) /D "_DEBUG" /D "DEBUG" /D"_AFXDLL" /MDd /Od /GR /GZ
+CARGSFLAVOR = $(COMPILE_DEV_REGKEY) $(COMPILEAUTH) /D "_DEBUG" /D "DEBUG" /D"_AFXDLL" /MDd /Od /GR /GZ
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrtd.lib msvcprtd.lib
 MFCLIBSFLAVOR=mfc42d.lib mfcs42d.lib mfco42d.lib ctl3d32.lib
@@ -505,18 +527,12 @@ CARGSINC=  $(CARGSFLAVOR)
 CARGSINC=  $(CARGSFLAVOR) \
            $(BSCARG) \
            $(NOLOGO) /W3 /WX /Zi /c \
-           /Gi- /Gm- /GX- \
+           /Gi- /Gm- \
            /D "WIN32" /D "_WINDOWS" /D "STRICT" \
            /Fo$(DESTDIR)\ /FD /Fd$(PDB)
 !endif
-CARGS=$(CARGSLOCAL) $(CARGSINC)
+CARGS=$(CARGSLOCAL) $(CARGSINC) $(UNWINDCARG)
 
-!ifdef USERNAME
-!if "$(USERNAME)"=="a-markcu"
-USERNAME=markcu
-!endif
-CARGS=/D "$(USERNAME)" $(CARGS)
-!endif
 !ifdef DREAMCAST
 INCLUDESYS=$(FEDEXT)\dreamcast\inc
 INCLUDEINC=$(FEDEXT)\dreamcast\inc;$(FEDSRC)\Inc;
@@ -524,7 +540,7 @@ INCLUDE=$(INCLUDELOCAL);$(INCLUDEINC);
 !else
 INCLUDESYS=$(DXROOT)\include;$(FEDEXT)\vc\inc;$(FEDEXT)\vc\inc\sys;$(FEDEXT)\vc\atl\inc;
 INCLUDEINC=$(DXROOT)\include;$(FEDSRC)\Inc;$(FEDEXT)\vc\inc;$(FEDEXT)\vc\inc\sys;$(FEDEXT)\vc\atl\inc;$(FEDEXT)\icecap\include;$(FEDEXT)\Zone;$(FEDSRC)\Zone;$(FEDEXT)\icqapi;$(FEDSRC)\Guids
-INCLUDE=$(INCLUDELOCAL);$(INCLUDEINC);
+INCLUDE=$(INCLUDELOCAL);$(INCLUDEINC);$(FEDROOT)\FreeZoneAuth
 !endif
 
 #############################################################################

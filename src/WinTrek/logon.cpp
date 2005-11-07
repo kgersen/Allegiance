@@ -146,7 +146,8 @@ public:
 
     bool OnButtonSignUp()
     {
-        GetWindow()->ShowWebPage("http://www.zone.com/allegiance/minilaunch1.asp");
+		// KGJV - Alleg.net registration
+        GetWindow()->ShowWebPage("http://asgs.alleg.net/");
         return true;
     }
 
@@ -236,7 +237,7 @@ public:
             } 
             else if (ks.vk == VK_TAB) 
             {
-                if (m_pfocus == m_peditName 
+                if (m_pfocus == static_cast<EditPane*>(m_peditName)	// Resolve ambiguity - added by Dhauzmmer 8/14/04
                     && (LogonAllegianceZone == m_lt || LogonFreeZone == m_lt)) 
                 {
                     SetFocus(m_peditPassword);

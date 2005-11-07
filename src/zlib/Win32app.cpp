@@ -62,7 +62,12 @@ void retailf(const char* format, ...)
 
 extern bool g_bOutput = true;
 
+// mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
+#define SRVLOG
+#endif
+
+#ifdef SRVLOG // mmf changed this from _DEBUG
 
     void ZWarningImpl(bool bSucceeded, const char* psz, const char* pszFile, int line, const char* pszModule)
     {
@@ -188,7 +193,7 @@ extern bool g_bOutput = true;
             strcpy(p, months[t->tm_mon]);
             sprintf(p + 3, "%02d%02d%02d%02d.txt",
                     t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-
+			// mmf this is NOT where the logfile AllSrv.txt is generated
             g_logfile = 
                 CreateFile(
                     logFileName, 
@@ -323,11 +328,12 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     // clock time to shake things up a bit)
     srand(GetTickCount() + time(NULL));
 
+	// mmf why is this done?
     // shift the stack locals and the heap by a random amount.            
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-    __try {
+    __try { 
         do {
             #ifdef _DEBUG
                 InitializeDebugf();
@@ -353,9 +359,8 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
             #endif
 
         } while (false);
-    } __except (g_papp->OnException(_exception_code(), (ExceptionData*)_exception_info())){
-    }
-
+    }  __except (g_papp->OnException(_exception_code(), (ExceptionData*)_exception_info())){
+    }  
     delete pzSpacer;
 
     return 0;

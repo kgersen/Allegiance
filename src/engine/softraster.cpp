@@ -36,7 +36,12 @@ __forceinline float& AsFloat(int&   value) { return *(float *)(&value); }
 __forceinline int&   AsInt  (float& value) { return *(int   *)(&value); }
 __forceinline DWORD& AsDWORD(float& value) { return *(DWORD *)(&value); }
 
+// VS.Net 2003 port
+#if _MSC_VER >= 1310
+__forceinline void swap(float& x, float& y)
+#else
 __forceinline void swap<float>(float& x, float& y)
+#endif
 {
     DWORD temp(AsDWORD(x));
     AsDWORD(x) = AsDWORD(y);

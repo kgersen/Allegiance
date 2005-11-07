@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 class GameScreen :
-    public Screen, 
+    public Screen,
     public EventTargetContainer<GameScreen>,
     public TrekClientEventSink,
     public IItemEvent::Sink,
@@ -43,7 +43,7 @@ public:
     static BooleanFilterState m_sFilterLives;
     static BooleanFilterState m_sFilterScoresCount;
     static BooleanFilterState m_sFilterZone;
-        
+
     static BooleanFilterState m_sFilterConquest;
     static BooleanFilterState m_sFilterDeathmatch;
     static BooleanFilterState m_sFilterProsperity;
@@ -104,7 +104,7 @@ private:
         {
             MissionInfo* game = (MissionInfo*)pitemArg;
             char cbTemp[256];
-            
+
             if (bSelected) {
                 psurface->FillRect(
                     WinRect(56, 7, GetXSize() - 2, GetYSize() - 8),
@@ -114,6 +114,7 @@ private:
 
             TRef<IEngineFont> pfont = TrekResources::SmallFont();
             Color             color = Color::White();
+
 
             // draw the Zone Icon
             if (game->WasObjectModelCreated() && trekClient.GetIsZoneClub())
@@ -134,7 +135,7 @@ private:
                 else if (game->GetMissionParams().bSquadGame)
                     DrawIcon(psurface, m_viColumns[0] - 100, GetYSize()/2, "iconsquadherebmp");
             }
-            
+
             // draw the state icon
 
             TRef<Image> pimageState;
@@ -165,7 +166,7 @@ private:
             }
 
             WinPoint pntStateIcon(
-                ((m_viColumns[0]+54)/2 - (int)pimageState->GetBounds().GetRect().XSize()/2), 
+                ((m_viColumns[0]+54)/2 - (int)pimageState->GetBounds().GetRect().XSize()/2),
                 (GetYSize() - (int)pimageState->GetBounds().GetRect().YSize())/2
                 );
             psurface->BitBlt(pntStateIcon, pimageState->GetSurface());
@@ -174,21 +175,21 @@ private:
             // draw the mission name
             WinRect rectClipOld = psurface->GetClipRect();
             psurface->SetClipRect(WinRect(WinPoint(m_viColumns[0] + 4, 0), WinPoint(m_viColumns[1], GetYSize()))); // clip name to fit in column
-            
+
             if (game->Name()[0] != '\0')
                 psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 4, 6), CensorBadWords (game->Name()));
             else
                 psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 4, 6), "<unnamed>");
-            
+
             psurface->RestoreClipRect(rectClipOld);
-            
+
             // draw the mission time
             if (game->InProgress() || game->CountdownStarted())
             {
                 int nSecondsPlayed = (int)(Time::Now() - game->GetMissionParams().timeStart);
                 int nHours = nSecondsPlayed / (60 * 60);
                 int nMinutes = nSecondsPlayed / 60 - nHours * 60;
-                
+
                 if (nSecondsPlayed < 0 && game->CountdownStarted())
                     wsprintf(cbTemp, "-%d:%02d", -nHours, -nMinutes);
                 else if (nSecondsPlayed < -100 || nHours > 99)
@@ -197,9 +198,9 @@ private:
                     wsprintf(cbTemp, "0:00");
                 else
                     wsprintf(cbTemp, "%d:%02d", nHours, nMinutes);
-             
-                psurface->DrawString(pfont, color, 
-                    WinPoint(m_viColumns[2] - pfont->GetTextExtent(cbTemp).X() - 5, 6), 
+
+                psurface->DrawString(pfont, color,
+                    WinPoint(m_viColumns[2] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
                     cbTemp);
             }
 
@@ -212,29 +213,29 @@ private:
             // draw team info:
 
             wsprintf(cbTemp, "%d", game->NumSides());
-            psurface->DrawString(pfont, color, 
-                WinPoint(m_viColumns[4] - pfont->GetTextExtent(cbTemp).X() - 5, 6), 
+            psurface->DrawString(pfont, color,
+                WinPoint(m_viColumns[4] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
                 cbTemp);
 
             wsprintf(cbTemp, "%d", game->MinPlayersPerTeam());
-            psurface->DrawString(pfont, color, 
-                WinPoint(m_viColumns[5] - pfont->GetTextExtent(cbTemp).X() - 5, 6), 
+            psurface->DrawString(pfont, color,
+                WinPoint(m_viColumns[5] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
                 cbTemp);
 
             wsprintf(cbTemp, "%d", game->MaxPlayersPerTeam());
-            psurface->DrawString(pfont, color, 
-                WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 5, 6), 
+            psurface->DrawString(pfont, color,
+                WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
                 cbTemp);
 
             // draw slot info
             wsprintf(cbTemp, "%d/%d", game->NumPlayers(), game->MaxPlayers());
-            psurface->DrawString(pfont, color, 
-                WinPoint(m_viColumns[7] - pfont->GetTextExtent(cbTemp).X() - 3, 6), 
+            psurface->DrawString(pfont, color,
+                WinPoint(m_viColumns[7] - pfont->GetTextExtent(cbTemp).X() - 3, 6),
                 cbTemp);
 
             // find the game type...
             TRef<GameType> pGameType = GameType::FindType(game->GetMissionParams());
-            
+
             if (pGameType != NULL)
             {
                 // draw the game type's name
@@ -246,13 +247,13 @@ private:
                 if (game->GoalConquest())
                     DrawIcon(psurface, m_viColumns[7] + 3, GetYSize()/2, "iconconquestbmp");
                 if (game->GoalTerritory())
-                    DrawIcon(psurface, m_viColumns[7] + 19, GetYSize()/2, "iconterritorialbmp");  
+                    DrawIcon(psurface, m_viColumns[7] + 19, GetYSize()/2, "iconterritorialbmp");
                 if (game->GoalProsperity())
                     DrawIcon(psurface, m_viColumns[7] + 35, GetYSize()/2, "iconprosperitybmp");
                 if (game->GoalArtifacts())
-                    DrawIcon(psurface, m_viColumns[7] + 51, GetYSize()/2, "iconartifactsbmp");  
+                    DrawIcon(psurface, m_viColumns[7] + 51, GetYSize()/2, "iconartifactsbmp");
                 if (game->GoalFlags())
-                    DrawIcon(psurface, m_viColumns[7] + 67, GetYSize()/2, "iconflagsbmp");  
+                    DrawIcon(psurface, m_viColumns[7] + 67, GetYSize()/2, "iconflagsbmp");
                 if (game->GoalDeathMatch())
                     DrawIcon(psurface, m_viColumns[7] + 83, GetYSize()/2, "icondeathmatchbmp");
                 if (game->GoalCountdown())
@@ -266,13 +267,13 @@ private:
             if (game->LimitedLives())
                 DrawIcon(psurface, m_viColumns[7] + 115, GetYSize()/2 - 1, "iconlivesbmp");
          }
-                
+
         int DrawIcon(Surface* psurface, int nXLeft, int nYCenter, const char* iconName)
         {
             TRef<Image> pimage = GetModeler()->LoadImage(iconName, true);
 
             WinPoint pntIcon(
-                nXLeft, 
+                nXLeft,
                 nYCenter - (int)pimage->GetBounds().GetRect().YSize()/2
                 );
             psurface->BitBlt(pntIcon, pimage->GetSurface());
@@ -282,7 +283,7 @@ private:
     };
 
     friend class FilterDialogPopup;
-    class FilterDialogPopup : public IPopup, public EventTargetContainer<FilterDialogPopup> 
+    class FilterDialogPopup : public IPopup, public EventTargetContainer<FilterDialogPopup>
     {
     private:
         TRef<Pane> m_ppane;
@@ -293,7 +294,7 @@ private:
         TRef<ComboPane>  m_pcomboLives;
         TRef<ComboPane>  m_pcomboScoresCount;
         TRef<ComboPane>  m_pcomboZone;
-        
+
         TRef<ComboPane>  m_pcomboConquest;
         TRef<ComboPane>  m_pcomboDeathmatch;
         TRef<ComboPane>  m_pcomboProsperity;
@@ -303,13 +304,13 @@ private:
         TRef<ComboPane>  m_pcomboTerritorial;
 
         TRef<EditPane>   m_peditGameName;
-        
+
         GameScreen* m_pparent;
 
         TRef<IKeyboardInput> m_pkeyboardInputOldFocus;
 
     public:
-        
+
         FilterDialogPopup(TRef<INameSpace> pns, GameScreen* pparent)
         {
             m_pparent = pparent;
@@ -338,7 +339,7 @@ private:
             InitializeYesNoDontCare(m_pcomboLives);
             InitializeYesNoDontCare(m_pcomboScoresCount);
             InitializeYesNoDontCare(m_pcomboZone);
-        
+
             InitializeYesNoDontCare(m_pcomboConquest);
             InitializeYesNoDontCare(m_pcomboDeathmatch);
             InitializeYesNoDontCare(m_pcomboProsperity);
@@ -379,7 +380,7 @@ private:
             m_pcomboLives->SetSelection(m_pparent->m_sFilterLives);
             m_pcomboScoresCount->SetSelection(m_pparent->m_sFilterScoresCount);
             m_pcomboZone->SetSelection(m_pparent->m_sFilterZone);
-        
+
             m_pcomboConquest->SetSelection(m_pparent->m_sFilterConquest);
             m_pcomboDeathmatch->SetSelection(m_pparent->m_sFilterDeathmatch);
             m_pcomboProsperity->SetSelection(m_pparent->m_sFilterProsperity);
@@ -431,7 +432,7 @@ private:
             m_pparent->m_sFilterLives = BooleanFilterState(m_pcomboLives->GetSelection());
             m_pparent->m_sFilterScoresCount = BooleanFilterState(m_pcomboScoresCount->GetSelection());
             m_pparent->m_sFilterZone = BooleanFilterState(m_pcomboZone->GetSelection());
-        
+
             m_pparent->m_sFilterConquest = BooleanFilterState(m_pcomboConquest->GetSelection());
             m_pparent->m_sFilterDeathmatch = BooleanFilterState(m_pcomboDeathmatch->GetSelection());
             m_pparent->m_sFilterProsperity = BooleanFilterState(m_pcomboProsperity->GetSelection());
@@ -459,9 +460,9 @@ private:
         }
     };
 
-   
+
     friend class FindDialogPopup;
-    class FindDialogPopup : public IPopup, public EventTargetContainer<FindDialogPopup> 
+    class FindDialogPopup : public IPopup, public EventTargetContainer<FindDialogPopup>
     {
     private:
         TRef<Pane> m_ppane;
@@ -473,7 +474,7 @@ private:
         TRef<IKeyboardInput> m_pkeyboardInputOldFocus;
 
     public:
-        
+
         FindDialogPopup(TRef<INameSpace> pns, GameScreen* pparent)
         {
             m_pparent = pparent;
@@ -545,12 +546,12 @@ private:
             }
 
             GetWindow()->SetWaitCursor();
-            TRef<IMessageBox> pmsgBox = 
+            TRef<IMessageBox> pmsgBox =
                 CreateMessageBox("Asking server to find player....", NULL, false, false, 1.0f);
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
             BEGIN_PFM_CREATE(trekClient.m_fmLobby, pfmFindPlayer, C, FIND_PLAYER)
-                FM_VAR_PARM((const char*)m_peditPane->GetString(), CB_ZTS)  
+                FM_VAR_PARM((const char*)m_peditPane->GetString(), CB_ZTS)
             END_PFM_CREATE
             trekClient.SendLobbyMessages();
 
@@ -571,7 +572,7 @@ private:
             return true;
         }
     };
-    
+
 
     TRef<FilterDialogPopup> m_pfilterDialog;
     TRef<FindDialogPopup> m_pfindDialog;
@@ -615,7 +616,7 @@ public:
 
         m_pfilterDialog = new FilterDialogPopup(m_pns, this);
         m_pfindDialog = new FindDialogPopup(m_pns, this);
-        
+
         //
         // game lists
         //
@@ -627,8 +628,8 @@ public:
 
         AddEventTarget(OnButtonJoin, m_plistPaneGames->GetDoubleClickEventSource());
 
-        m_plistPaneGames->SetItemPainter(new GameItemPainter(m_viColumns, this));       
-        
+        m_plistPaneGames->SetItemPainter(new GameItemPainter(m_viColumns, this));
+
         static bool bStaticsInitialized = false;
 
         if (!bStaticsInitialized)
@@ -666,13 +667,13 @@ public:
         // update the join button
         OnSelectMission((MissionInfo*)m_plistPaneGames->GetSelection());
 
-        if (g_bQuickstart) 
+        if (g_bQuickstart)
             OnButtonNewGame();
 
         AddEventTarget(OnListChanged, trekClient.GetMissionList()->GetChangedEvent());
         AddEventTarget(OnRefreshTimer, GetWindow(), 5);
 
-        // if we are not connected, pop up a dialog box and let the screen 
+        // if we are not connected, pop up a dialog box and let the screen
         // draw itself while we are waiting.
         if (trekClient.m_fmLobby.IsConnected())
         {
@@ -681,7 +682,7 @@ public:
         else
         {
             GetWindow()->SetWaitCursor();
-            TRef<IMessageBox> pmsgBox = 
+            TRef<IMessageBox> pmsgBox =
                 CreateMessageBox("Connecting to lobby....", NULL, false, false);
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
@@ -714,7 +715,7 @@ public:
         if (FAILED(hr))
         {
             GetWindow()->screen(ScreenIDZoneClubScreen);
-            TRef<IMessageBox> pmsgBox = 
+            TRef<IMessageBox> pmsgBox =
                 CreateMessageBox("Failed to reconnect to the lobby.");
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
         }
@@ -732,7 +733,7 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    
+
     bool OnEvent(IItemEvent::Source *pevent, ItemID pitem)
     {
         if (pevent == m_peventGames) {
@@ -765,7 +766,7 @@ public:
 
 
         m_pbuttonJoin->SetEnabled(bEnableJoin);
-        
+
         if (IsZoneLobby())
             m_pbuttonDetails->SetHidden(!bShowDetails);
     }
@@ -773,7 +774,7 @@ public:
     void RefreshButtonBarGames()
     {
         // do radio-button behavior
-        for  (int i = 0; i < 9; i++) 
+        for  (int i = 0; i < 9; i++)
         {
             m_pbuttonbarGamesHeader->SetChecked(i, false);
             m_pbuttonbarGamesHeader->SetChecked2(i, false);
@@ -790,7 +791,7 @@ public:
         bool bReverse;
 
         // do radio-button behavior
-        for  (int i = 0; i < 9; i++) 
+        for  (int i = 0; i < 9; i++)
         {
             if (i != nColumn) {
                 m_pbuttonbarGamesHeader->SetChecked(i, false);
@@ -798,13 +799,13 @@ public:
             }
         }
 
-        if (m_pbuttonbarGamesHeader->GetChecked2(nColumn)) 
+        if (m_pbuttonbarGamesHeader->GetChecked2(nColumn))
         {
             m_pbuttonbarGamesHeader->SetChecked(nColumn,  true);
             m_pbuttonbarGamesHeader->SetChecked2(nColumn, false);
             bReverse = true;
-        } 
-        else 
+        }
+        else
         {
             m_pbuttonbarGamesHeader->SetChecked(nColumn,  false);
             m_pbuttonbarGamesHeader->SetChecked2(nColumn, true);
@@ -834,7 +835,7 @@ public:
         m_sFilterLives = DontCare;
         m_sFilterScoresCount = DontCare;
         m_sFilterZone = DontCare;
-        
+
         m_sFilterConquest = DontCare;
         m_sFilterDeathmatch = DontCare;
         m_sFilterProsperity = DontCare;
@@ -860,66 +861,66 @@ public:
         {
             MissionInfo* pgame = (MissionInfo*)pitem;
 
-            if (m_pparent->m_sFilterDevelopments != DontCare 
+            if (m_pparent->m_sFilterDevelopments != DontCare
                 && (m_pparent->m_sFilterDevelopments == Yes)
                     != pgame->AllowDevelopments())
                 return false;
 
-            if (m_pparent->m_sFilterLives != DontCare 
+            if (m_pparent->m_sFilterLives != DontCare
                 && (m_pparent->m_sFilterLives == Yes)
                     != pgame->LimitedLives())
                 return false;
 
-            if (m_pparent->m_sFilterScoresCount != DontCare 
+            if (m_pparent->m_sFilterScoresCount != DontCare
                 && (m_pparent->m_sFilterScoresCount == Yes)
                     != pgame->ScoresCount())
                 return false;
 
-            if (m_pparent->m_sFilterZone != DontCare 
+            if (m_pparent->m_sFilterZone != DontCare
                 && (m_pparent->m_sFilterZone == Yes)
                     != pgame->WasObjectModelCreated())
                 return false;
 
 
-            if (m_pparent->m_sFilterConquest != DontCare 
+            if (m_pparent->m_sFilterConquest != DontCare
                 && (m_pparent->m_sFilterConquest == Yes)
                     != pgame->GoalConquest())
                 return false;
-            
-            if (m_pparent->m_sFilterDeathmatch != DontCare 
+
+            if (m_pparent->m_sFilterDeathmatch != DontCare
                 && (m_pparent->m_sFilterDeathmatch == Yes)
                     != pgame->GoalDeathMatch())
                 return false;
-            
-            if (m_pparent->m_sFilterProsperity != DontCare 
+
+            if (m_pparent->m_sFilterProsperity != DontCare
                 && (m_pparent->m_sFilterProsperity == Yes)
                     != pgame->GoalProsperity())
                 return false;
-            
-            if (m_pparent->m_sFilterCountdown != DontCare 
+
+            if (m_pparent->m_sFilterCountdown != DontCare
                 && (m_pparent->m_sFilterCountdown == Yes)
                     != pgame->GoalCountdown())
                 return false;
 
-            if (m_pparent->m_sFilterArtifact != DontCare 
+            if (m_pparent->m_sFilterArtifact != DontCare
                 && (m_pparent->m_sFilterArtifact == Yes)
                     != pgame->GoalArtifacts())
                 return false;
 
-            if (m_pparent->m_sFilterFlags != DontCare 
+            if (m_pparent->m_sFilterFlags != DontCare
                 && (m_pparent->m_sFilterFlags == Yes)
                     != pgame->GoalFlags())
                 return false;
 
-            if (m_pparent->m_sFilterTerritorial != DontCare 
+            if (m_pparent->m_sFilterTerritorial != DontCare
                 && (m_pparent->m_sFilterTerritorial == Yes)
                     != pgame->GoalTerritory())
                 return false;
 
             if (!m_pparent->m_strGameNameSubstring.IsEmpty()
-                && (ZString(pgame->Name()).ToLower().Find(m_pparent->m_strGameNameSubstring.ToLower()) == -1)) 
+                && (ZString(pgame->Name()).ToLower().Find(m_pparent->m_strGameNameSubstring.ToLower()) == -1))
                 return false;
-            
+
             return true;
         }
     };
@@ -961,7 +962,7 @@ public:
         else if (pgame1->WasObjectModelCreated() != pgame2->WasObjectModelCreated())
             return pgame1->WasObjectModelCreated() && !pgame2->WasObjectModelCreated();
         else
-            return (pgame1->GetStage() == STAGE_STARTED) 
+            return (pgame1->GetStage() == STAGE_STARTED)
                 && (pgame2->GetStage() != STAGE_STARTED);
     }
 
@@ -1033,7 +1034,7 @@ public:
         TList<TRef<GameType> >::Iterator gameTypesIter(GameType::GetGameTypes());
 
         int nIndex = 0;
-        while (!gameTypesIter.End() 
+        while (!gameTypesIter.End()
             && !gameTypesIter.Value()->IsGameType(pgame->GetMissionParams()))
         {
             nIndex++;
@@ -1057,7 +1058,7 @@ public:
 
         ItemIDCompareFunction m_func;
 
-        ReverseCompare(ItemIDCompareFunction func) 
+        ReverseCompare(ItemIDCompareFunction func)
             : m_func(func) {};
 
         bool operator () (ItemID id1, ItemID id2)
@@ -1129,19 +1130,19 @@ public:
         m_plistPaneGames->SetList(plist);
     }
 
-    
+
     int GetCountInLobby(List* plist)
     {
         int count = plist->GetCount();
         int cPlayers = 0;
-        
-        
+
+
         for  (int i = 0; i < count; i++) {
 
             MissionInfo* game = (MissionInfo*)plist->GetItem(i);
 
             cPlayers = game->NumPlayers() + cPlayers;
-    
+
         }
 
         return cPlayers;
@@ -1197,7 +1198,7 @@ public:
     /*
     bool OnButtonDetails()
     {
-        TRef<IMessageBox> pmsgBox = 
+        TRef<IMessageBox> pmsgBox =
             CreateMessageBox("NYI - part of the create game sceen work.");
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
         return true;
@@ -1210,13 +1211,13 @@ public:
         return true;
     }
 
-    
+
     bool OnButtonFindPlayer()
     {
         GetWindow()->GetPopupContainer()->OpenPopup(m_pfindDialog, false);
         return true;
     }
-    
+
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -1254,7 +1255,7 @@ public:
 
         if (pMissionInfo == NULL)
         {
-            TRef<IMessageBox> pmsgBox = 
+            TRef<IMessageBox> pmsgBox =
                 CreateMessageBox("The player was not found.");
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
         }
@@ -1264,7 +1265,7 @@ public:
             m_plistPaneGames->SetSelection(pMissionInfo);
             m_plistPaneGames->ScrollToItem(pMissionInfo);
 
-            TRef<IMessageBox> pmsgBox = 
+            TRef<IMessageBox> pmsgBox =
                 CreateMessageBox("Player found!");
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
         }
@@ -1370,7 +1371,7 @@ public:
     {
         float fValues[2] = { pmission->GetMinRank(), pmission->GetMaxRank() };
         const char* vszNames[2] = { "SkillLevelMin", "SkillLevelMax" };
-        
+
         return FindStringValue(FindClosestValue(fValues, vszNames, 2), "SkillLevelNames");
     };
 
@@ -1378,8 +1379,8 @@ public:
     // (used for skill level)
     ZString FindStringValue(int index, const char* szTableName)
     {
-        IObjectList* plist; 
-        
+        IObjectList* plist;
+
         CastTo(plist, m_pns->FindMember(szTableName));
 
         plist->GetFirst();
@@ -1396,12 +1397,12 @@ public:
     // (used for skill level)
     int FindClosestValue(float fValue[], const char* szTableName[], int nLists)
     {
-        TVector<IObjectList*> plists; 
-        
+        TVector<IObjectList*> plists;
+
         {
             for (int nList = 0; nList < nLists; nList++)
             {
-                IObjectList* plist; 
+                IObjectList* plist;
                 CastTo(plist, m_pns->FindMember(szTableName[nList]));
                 plists.PushEnd(plist);
                 plists[nList]->GetFirst();
@@ -1438,7 +1439,7 @@ public:
     {
         // wait for a join message.
         GetWindow()->SetWaitCursor();
-        TRef<IMessageBox> pmsgBox = 
+        TRef<IMessageBox> pmsgBox =
             CreateMessageBox("Joining mission....", NULL, false, false);
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
     }
@@ -1499,21 +1500,21 @@ public:
         int i = 0;
         while (!strFileListRemaining.IsEmpty())
         {
-            int nIndex; 
+            int nIndex;
 
             // find and read in the first file name
-            for (nIndex = 0; nIndex < strFileListRemaining.GetLength() 
-                && strFileListRemaining[nIndex] != ' ' 
+            for (nIndex = 0; nIndex < strFileListRemaining.GetLength()
+                && strFileListRemaining[nIndex] != ' '
                 && strFileListRemaining[nIndex] != ','
                 && strFileListRemaining[nIndex] != '"';
-                ++nIndex) 
+                ++nIndex)
             {};
 
             ZString strFile = strFileListRemaining.Left(nIndex);
 
             // skip past any remaining white space or commas
-            for (; nIndex < strFileListRemaining.GetLength() 
-                && (strFileListRemaining[nIndex] == ' ' 
+            for (; nIndex < strFileListRemaining.GetLength()
+                && (strFileListRemaining[nIndex] == ' '
                   || strFileListRemaining[nIndex] == ','
                   || strFileListRemaining[nIndex] == '"');
                 ++nIndex)
@@ -1535,12 +1536,12 @@ public:
 
             // make sure we unload this so we can write to it.
             GetModeler()->UnloadNameSpace(strFile.LeftOf("."));
-            m_strWaitForFile = strFile; 
+            m_strWaitForFile = strFile;
 
             i++;
         }
-        vszFileList[i*2] = NULL;        
-        
+        vszFileList[i*2] = NULL;
+
         // start the download
 
         if (!m_pSession)
@@ -1560,7 +1561,7 @@ public:
         // Errors are essentially ignored
         debugf("Error while trying to get a Zone Events description file: %s", szErrorMessage);
 
-        TRef<IMessageBox> pmessagebox = 
+        TRef<IMessageBox> pmessagebox =
             CreateMessageBox("Failed to retrieve the event description.");
         GetWindow()->GetPopupContainer()->OpenPopup(pmessagebox);
 
@@ -1573,7 +1574,7 @@ public:
         ZFile file(szFileName);
 
         int n = file.GetLength(); // -1 means error
-        if (n != -1 && n != 0) 
+        if (n != -1 && n != 0)
         {
             char * pData = new char[n+1];
             memcpy(pData, file.GetPointer(), n);

@@ -10,8 +10,8 @@
   #include <statreg.cpp>
 #endif
 
-#include <atlimpl.cpp>
-#include <atlwin.cpp>
+//#include <atlimpl.cpp>
+//#include <atlwin.cpp>
 
 #include <TCAtl.cpp>
 #include <..\TCAtl\PropertyClass.cpp>

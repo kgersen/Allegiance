@@ -17,7 +17,7 @@ inline D3DVECTOR& ConvertVector(D3DVECTOR& vectDest, const Vector& vectSrc)
 };
 
 // A helper to assert that a given vector is (more or less) a unit vector.
-inline ZAssertIsUnitVector(const Vector& vect)
+inline void ZAssertIsUnitVector(const Vector& vect)
 {
 #ifdef _DEBUG
     float fLengthSquared = vect.LengthSquared();

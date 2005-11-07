@@ -27,5 +27,9 @@
 
 #endif // !defined(ALLSRV_STANDALONE)
 
-//#include "..\Inc\VerRes.rc"
+
+#include "..\Inc\VerRes.rc"
+
+#include FEDMSG
+
 

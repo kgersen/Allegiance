@@ -107,7 +107,7 @@ public:
         }
     };
 
-private:
+// KGJV // private:
     class Delegate : public Sink {
     private:
         Sink* m_psink;

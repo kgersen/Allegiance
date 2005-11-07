@@ -96,10 +96,19 @@ BOOL CShadowSwitcherDlg::OnInitDialog()
     if (  
            FAILED(hr) 
         || (!GetRegistrySetting("EXE Path", m_achExePath, sizeof(m_achExePath)))
-        || (!GetRegistrySetting( "ArtPath", m_achArtPath, sizeof(m_achArtPath)))
     ) {
         Error("Failure accessing Allegiance registry settings.");
     }
+
+	//fix trailing '\'
+	if (m_achExePath[strlen(m_achExePath)-1]=='\\')
+		m_achExePath[strlen(m_achExePath)-1] = 0;
+	// if Artpath not found, make it default
+	if (!GetRegistrySetting( "ArtPath", m_achArtPath, sizeof(m_achArtPath)))
+	{
+		strcpy(m_achArtPath,m_achExePath);
+		strcat(m_achArtPath,"\\Artwork");
+	}
 
     //
     // Make sure the art path is in a valid location relative to the exe
@@ -337,7 +346,8 @@ void CShadowSwitcherDlg::OnDelete()
     Update();
 }
 
-#define ShadowCfgString "http://Allegiance.zone.com/allegianceshadow.cfg"
+//#define ShadowCfgString "http://Allegiance.zone.com/allegianceshadow.cfg"
+#define ShadowCfgString "http://autoupdate.alleg.net/fazautoupdate/allegiance.cfg"
 
 void CShadowSwitcherDlg::OnShadow() 
 {
@@ -359,7 +369,7 @@ void CShadowSwitcherDlg::OnShadow()
     // 
 
     if (!MoveFile(m_achExePath, m_achRetailPath)) {
-        Error("Error renaming the retail directory");
+        Error("Error renaming the retail directory - make sure Allegiance or server isn't running");
     }
 
     if (!MoveFile(m_achShadowPath, m_achExePath)) {
@@ -437,10 +447,18 @@ void CShadowSwitcherDlg::Update()
 {
     bool bExists = GetRegistrySetting("CfgFile", m_achCfgFile, sizeof(m_achCfgFile));
 
+	// KGJV - change detection by using dirnames (AllegianceRetail/AllegianceShadow)
+	/*
     m_bShadow = 
            bExists 
         && (0 == strcmp(ShadowCfgString, m_achCfgFile));
-
+	*/
+	// test if RetailPath exists
+	m_bShadow=false;
+	if (GetFileAttributes(m_achRetailPath)!=INVALID_FILE_ATTRIBUTES)
+	{
+		m_bShadow=true;
+	}
     if (!bExists) {
         strcpy(m_achCfgFile, "None");
     }
@@ -448,18 +466,17 @@ void CShadowSwitcherDlg::Update()
     m_bInstalled = GetRegistrySetting("SaveCfgFile", m_achCfgSave, sizeof(m_achCfgSave));
     GetRegistrySetting("PID", m_achPID, sizeof(m_achPID));
 
-    if (m_bShadow) {
-        m_text.SetWindowText("You are currently using the Allegiance shadow servers.");
+	if (m_bShadow) {
+        m_text.SetWindowText("You are currently using the FAZ Beta.");
 
         m_btnShadow.EnableWindow(false);
         m_btnRetail.EnableWindow(true);
         m_btnDelete.EnableWindow(true);
     } else {
-        m_text.SetWindowText("You are currently using the Allegiance retail servers.");
+        m_text.SetWindowText("You are currently using the regular Allegiance.");
 
         m_btnShadow.EnableWindow(true);
         m_btnRetail.EnableWindow(false);
-
         m_btnDelete.EnableWindow(m_bInstalled);
     }
 }
@@ -507,14 +524,15 @@ void CShadowSwitcherDlg::SetRegistrySetting(char *pszValue, char *psz)
 
 bool CShadowSwitcherDlg::CheckArtPath()
 {
+	// KGJV - made it case-insensitive
     int length = strlen(m_achExePath);
     for (int index = 0; index < length; index++) {
-        if (m_achExePath[index] != m_achArtPath[index]) {
+        if (tolower(m_achExePath[index]) != tolower(m_achArtPath[index])) {
             return false;
         }
     }
 
-    if (0 != strcmp(m_achArtPath + length, "\\Artwork")) {
+    if (0 != stricmp(m_achArtPath + length, "\\Artwork")) {
         return false;
     }
 

@@ -50,7 +50,7 @@ STDMETHODIMP CAdminGames::Add(IAGCGameParameters* pGameParameters)
     if (plistMission->n())
       return Error(IDS_E_ONE_GAME_PER_SERVER, IID_IAdminGames);
 
-    // Standalone server only support a maximum of 32 players total
+    // Standalone server only support a maximum of c_cMaxPlayersPerGame players total
     if (pMissionParams->nTotalMaxPlayersPerGame > c_cMaxPlayersPerGame)
       pMissionParams->nTotalMaxPlayersPerGame = c_cMaxPlayersPerGame;
 

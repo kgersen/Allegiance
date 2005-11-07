@@ -330,7 +330,8 @@ public:
 
         m_peditPane->SetTextColor(Color::Black());
         m_peventSearchEdit = m_peditPane->GetChangeEvent();
-        m_peventSearchEdit->AddSink(m_psinkSearchEdit = new TEvent<ZString>>::Delegate(this));
+// syntax error ??
+        m_peventSearchEdit->AddSink(m_psinkSearchEdit = new TEvent<ZString>/*>*/::Delegate(this));
         m_pkeyboardInputOldFocus = GetWindow()->GetFocus();
         GetWindow()->SetFocus();
         GetWindow()->SetFocus(m_peditPane);

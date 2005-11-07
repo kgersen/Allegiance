@@ -2214,7 +2214,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             if (sideID != SIDE_TEAMLOBBY)
             {
                 AddPlayerToSide(pPlayerInfo, sideID);
-                pPlayerInfo->SetReady(bReady);
+                // pPlayerInfo->SetReady(bReady); Imago commented out so afk not reset
             }
 
             debugf("PlayerInfo for %s, ship=%d, side=%d\n", pPlayerInfo->CharacterName(),
@@ -2969,7 +2969,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             {
                 // review: since we are trying this silly away from keyboard thing,
                 // set everyone as ready (= not away from keyboard)
-                ppl->data().SetReady(true);
+				// Imago commented out the below line becasue of what the devs wrote on the above line =)
+                // ppl->data().SetReady(true); Imago commented out so afk not reset
                 ppl->data().Reset(true);
             }
 

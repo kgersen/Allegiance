@@ -16,5 +16,5 @@
 #define SZORIGFILENAME "Allegiance.exe"
 #define SZINTERNALNAME "ALLEGIANCE"
 
-//#include "..\..\Inc\VerRes.rc"
+#include "VerRes.rc"
 

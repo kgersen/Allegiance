@@ -740,10 +740,10 @@ public:
         lstrcpy(m_szName, strName);
         lstrcpy(m_szPW, strPassword);
         m_fRememberPW = fRememberPW;
-#ifdef USEAUTH        
-#else
-        trekClient.SaveCharacterName(strName);
-#endif        
+//#ifdef USEAUTH        
+//#else
+//        trekClient.SaveCharacterName(strName);
+//#endif        
         GetWindow()->SetWaitCursor();
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Connecting...", NULL, false);
         Point point(c_PopupX, c_PopupY);

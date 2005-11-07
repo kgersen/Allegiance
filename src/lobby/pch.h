@@ -32,11 +32,13 @@
 #include <zlib.h>
 #include <utility.h>
 
+
 #include <TCLib.h>
 #include <TCAtl.h>
 #include <..\TCAtl\ObjectMap.h>
 #include <..\TCAtl\UserAcct.h>
 #include <..\TCLib\TCThread.h>
+
 #ifdef USEAUTH
 #include "LobQueries.h" // and allegdb.h
 #endif

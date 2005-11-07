@@ -1,10 +1,10 @@
 /*-------------------------------------------------------------------------
- * fedsrv\FedSrv.CPP 
- * 
+ * fedsrv\FedSrv.CPP
+ *
  * The main module of the server. Handles all communication and game logic
- * 
- * Owner: 
- * 
+ *
+ * Owner:
+ *
  * Copyright 1986-1999 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
@@ -15,7 +15,12 @@
 #include <agc.h>
 #include <zreg.h>
 
+// mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
+#define SRVLOG
+#endif
+
+#ifdef SRVLOG // mmf changed this from _DEBUG
     #include "FedSrvApp.h"
 #endif
 
@@ -26,7 +31,7 @@ void DoDecrypt(int size, char* pdata)
     //Do a rolling XOR to demunge the data
     for (int i = 0; (i < size); i += 4)
     {
-        DWORD*  p = (DWORD*)(pdata + size);
+        DWORD*  p = (DWORD*)(pdata + i);
 
         encrypt = *p = *p ^ encrypt;
     }
@@ -38,7 +43,7 @@ static void DoEncrypt(int size, char* pdata)
     //Do a rolling XOR to munge the data
     for (int i = 0; (i < size); i += 4)
     {
-        DWORD*  p = (DWORD*)(pdata + size);
+        DWORD*  p = (DWORD*)(pdata + i);
 
         DWORD   old = *p;
 
@@ -76,7 +81,7 @@ Global g;
     BYTE * pin = in;
     BYTE* pout = pbBlob;
     long i;
-    
+
     int cbBlob = lstrlenA((char*)in) / 2;
     for (i = 0; i < cbBlob; i++, pin += 2, pout++)
     {
@@ -154,9 +159,11 @@ void UnloadRankInfo()
   delete [] g.vRankInfo;
   g.cRankInfo = 0;
 }
+#endif // !defined(ALLSRV_STANDALONE)
 
 void LoadStaticMapInfo()
 {
+#if !defined(ALLSRV_STANDALONE)
   SQL_GO(GetStaticMapCount);
   SQL_GETROW(GetStaticMapCount);
   g.cStaticMapInfo = GetStaticMapCount_Count;
@@ -175,13 +182,35 @@ void LoadStaticMapInfo()
       assert(GetStaticMaps_NumTeams > 1 && GetStaticMaps_NumTeams <= c_cSidesMax);
     }
   }
+#else
+// --KGJV; FZ/FAZ version: load maps list from a file (<artwork>\maps.txt)
+    char        mapfilename[MAX_PATH + 1];
+    HRESULT     hr = UTL::getFile("maps", ".txt", mapfilename, true, true);
+    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
+    if (file)
+    {
+		int nbmaps;
+		fscanf(file,"%d\n",&nbmaps);
+		g.cStaticMapInfo = nbmaps;
+		g.vStaticMapInfo = new StaticMapInfo[g.cStaticMapInfo];
+		for (int i=0;i<nbmaps;i++)
+		{
+			int nbteams;
+			fscanf(file,"%d,%[^,],%[^,\n]\n",&nbteams,g.vStaticMapInfo[i].cbFriendlyName,g.vStaticMapInfo[i].cbIGCFile);
+			g.vStaticMapInfo[i].nNumTeams = nbteams;
+		}
+		fclose(file);
+	}
+	else
+		g.cStaticMapInfo = 0;
+#endif
 }
 
 bool VerifyUserMap(const char* szMapFile, int nTeams)
 {
   for (int i = 0; i < g.cStaticMapInfo; i++)
   {
-    if (nTeams == g.vStaticMapInfo[i].nNumTeams 
+    if (nTeams == g.vStaticMapInfo[i].nNumTeams
         && 0 == strcmp(szMapFile, g.vStaticMapInfo[i].cbIGCFile))
       return true;
   }
@@ -195,7 +224,6 @@ void UnloadStaticMapInfo()
   g.cStaticMapInfo = 0;
 }
 
-#endif // !defined(ALLSRV_STANDALONE)
 
 /*-------------------------------------------------------------------------
  * AddNamedValue
@@ -240,7 +268,7 @@ void SetSessionDetails()
     char szPlayers[5];
     _itoa(pfsMission->GetCountOfPlayers(NULL, false), szPlayers, 10);
     AddNamedValue(&pNext, "PLR", szPlayers);
-    char szMaxPlayers[5];
+    char szMaxPlayers[6]; // bugfix/stack corruption
     _itoa(pfsMission->GetMissionDef()->misparms.nTotalMaxPlayersPerGame, szMaxPlayers, 10);
     AddNamedValue(&pNext, "LIM", szMaxPlayers);
   }
@@ -273,7 +301,7 @@ void UnloadDbCache()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Cleanup before exiting
- * 
+ *
  * Side Effects:
  *    Everything that was allocated is deallocated and no longer valid
  */
@@ -331,12 +359,12 @@ HRESULT pascal FedSrv_Terminate(void)
  * FetchGlobalAttributeSet
  *-------------------------------------------------------------------------
  * Purpose:
- *    Fetch attributes from database for specified global attribute 
- * 
+ *    Fetch attributes from database for specified global attribute
+ *
  * Parameters:
  *    gaid: global attribute to get
  *    gas:  out parameter of fetched settings
- * 
+ *
  * Side Effects:
  *    Inner Database query
  */
@@ -401,7 +429,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
     END_PFM_CREATE
     pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-    pfmDelPosReq->iSide      = NA; 
+    pfmDelPosReq->iSide      = NA;
     pfmDelPosReq->reason     = DPR_NoMission;
     g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
     return;
@@ -413,7 +441,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
     END_PFM_CREATE
     pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-    pfmDelPosReq->iSide      = NA; 
+    pfmDelPosReq->iSide      = NA;
     pfmDelPosReq->reason     = DPR_ServerPaused;
     g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
     return;
@@ -427,7 +455,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
       BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
       END_PFM_CREATE
       pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-      pfmDelPosReq->iSide      = NA; 
+      pfmDelPosReq->iSide      = NA;
       pfmDelPosReq->reason     = DPR_PrivateGame;
       g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
       return;
@@ -435,7 +463,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   }
 
   ImissionIGC * pMission = pfsMission->GetIGCMission();
-  
+
   #if defined(ALLSRV_STANDALONE)
   if (g.fm.GetHostApplicationGuid() == FEDSRV_STANDALONE_PRIVATE_GUID)
   {
@@ -454,7 +482,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
                   BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
                   END_PFM_CREATE
                   pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-                  pfmDelPosReq->iSide      = NA; 
+                  pfmDelPosReq->iSide      = NA;
                   pfmDelPosReq->reason     = DPR_DuplicateLogin;
                   g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
                   return;
@@ -465,7 +493,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   else
   #endif // defined(ALLSRV_STANDALONE)
   {
-#ifdef USEAUTH  
+#ifdef USEAUTH
   pfsMission->RemovePlayerByName(pfsPlayer->GetName(), QSR_DuplicateLocalLogon);
 #endif
   }
@@ -473,13 +501,13 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   const MissionParams*    pmp = pMission->GetMissionParams();
 
   // if this mission has a player limit, check that.
-  if (pmp->nTotalMaxPlayersPerGame != 0x7fff 
+  if (pmp->nTotalMaxPlayersPerGame != 0x7fff
       && pfsMission->GetCountOfPlayers(NULL, true) >= pmp->nTotalMaxPlayersPerGame)
   {
     BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
     END_PFM_CREATE
     pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-    pfmDelPosReq->iSide      = NA; 
+    pfmDelPosReq->iSide      = NA;
     pfmDelPosReq->reason     = DPR_GameFull;
     g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
     return;
@@ -488,17 +516,17 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   // make sure this client is invited to the game
   const char* szPassword = pmp->strGamePassword;
   if (szPassword[0] != '\0'
-      && Strcmp(szPassword, szPW) != 0) 
+      && Strcmp(szPassword, szPW) != 0)
   {
     BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
     END_PFM_CREATE
     pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-    pfmDelPosReq->iSide      = NA; 
+    pfmDelPosReq->iSide      = NA;
     pfmDelPosReq->reason     = DPR_BadPassword;
     g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
     return;
   }
-  
+
   if (!pfsPlayer->CanCheat())
   {
     // make sure the player meets the rank requirements for this mission
@@ -509,17 +537,17 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
       BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
       END_PFM_CREATE
       pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-      pfmDelPosReq->iSide      = NA; 
+      pfmDelPosReq->iSide      = NA;
       pfmDelPosReq->reason     = DPR_InvalidRank;
       g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
       return;
     }
   }
-  
+
   // check to see if the mission is running and whether joiners are allowed
   OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
 
-  SideID iSide;  
+  SideID iSide;
   unsigned char     bannedSideMask;
   if (popi)
   {
@@ -528,7 +556,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
       BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
       END_PFM_CREATE
       pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-      pfmDelPosReq->iSide      = NA; 
+      pfmDelPosReq->iSide      = NA;
       pfmDelPosReq->reason     = DPR_OutOfLives;
       g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
       return;
@@ -548,7 +576,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
       BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
       END_PFM_CREATE
       pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-      pfmDelPosReq->iSide      = NA; 
+      pfmDelPosReq->iSide      = NA;
       pfmDelPosReq->reason     = DPR_Banned;
       g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
       return;
@@ -573,7 +601,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
       BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
       END_PFM_CREATE
       pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-      pfmDelPosReq->iSide      = NA; 
+      pfmDelPosReq->iSide      = NA;
       pfmDelPosReq->reason     = pmp->bLockLobby ? DPR_LobbyLocked : DPR_NoJoiners;
       g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
       return;
@@ -639,10 +667,10 @@ void GotInvitationList(CQGetInvitationList * pquery)
  * GotCharSquads
  *-------------------------------------------------------------------------
   Purpose:
-      Callback from completion of CQCharSquads query. 
+      Callback from completion of CQCharSquads query.
 
   Side Effects:
-      Tell the players what squads they're in. 
+      Tell the players what squads they're in.
  */
 void GotCharSquads(CQCharSquads * pquery)
 {
@@ -672,19 +700,19 @@ void GotCharSquads(CQCharSquads * pquery)
   // tell them which squads they are on
   int nNumSquads = pfsPlayer->GetSquadMembershipList()->n();
 
-  SquadMembership* vsquadmembership = 
+  SquadMembership* vsquadmembership =
       (SquadMembership*)_alloca(sizeof(SquadMembership) * nNumSquads + 1);
 
   SquadMembershipLink* pSquadLink = pfsPlayer->GetSquadMembershipList()->first();
   for (int iSquad = 0; iSquad < nNumSquads; ++iSquad, pSquadLink = pSquadLink->next())
   {
-    vsquadmembership[iSquad] = *(pSquadLink->data());            
+    vsquadmembership[iSquad] = *(pSquadLink->data());
   }
 
   BEGIN_PFM_CREATE(g.fm, pfmSquadMemberships, LS, SQUAD_MEMBERSHIPS)
       FM_VAR_PARM(nNumSquads ? vsquadmembership : NULL, sizeof(SquadMembership) * nNumSquads)
   END_PFM_CREATE
-  pfmSquadMemberships->cSquadMemberships = nNumSquads;          
+  pfmSquadMemberships->cSquadMemberships = nNumSquads;
   g.fm.SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
 
   if (pqd->fJoin) // we waited for the squads because it's a squad game
@@ -710,7 +738,7 @@ void GotLogonDetails(CQLogonStats * pquery)
   bool fValid = pqd->fValid;
   bool fRetry = pqd->fRetry;
   // Some debugging stuff to monitor the amount of startup infowe send everyone
-  g.cMsgsToOthers = 
+  g.cMsgsToOthers =
   g.cBytesToOthers = 0;
   float flDTime;
   int cMsgsOdometer;
@@ -747,7 +775,7 @@ void GotLogonDetails(CQLogonStats * pquery)
     dataship.abmOrders = 0;
     dataship.baseObjectID = NA;
     lstrcpy(dataship.name, pqd->szReason);
-    TRef<IshipIGC> pship = (IshipIGC *) g.trekCore->CreateObject(g.timeNow, 
+    TRef<IshipIGC> pship = (IshipIGC *) g.trekCore->CreateObject(g.timeNow,
                           OT_ship, &dataship, sizeof(dataship));
 
     pfsPlayer = new CFSPlayer(pcnxn, pqd->characterID, pqd->szCDKey, pship, !! pqd->fCanCheat);
@@ -777,7 +805,7 @@ void GotLogonDetails(CQLogonStats * pquery)
   {
     if (NULL != g.pServerCounters)
       g.pServerCounters->cLoginsFailed++;
-  }    
+  }
 
   BEGIN_PFM_CREATE(g.fm, pfmLogonAck, S, LOGONACK)
     FM_VAR_PARM(pqd->szReason, CB_ZTS)
@@ -788,19 +816,22 @@ void GotLogonDetails(CQLogonStats * pquery)
   pfmLogonAck->cookie          = fValid ? pfsPlayer->GetCookie() : 0;
   pfmLogonAck->timeServer      = g.timeNow;
 
-#if !defined(ALLSRV_STANDALONE)
+
+  // -KGJV: changed for StaticMapInfo in all mode
   if (fValid)
   {
-    // send the rank info for this server
-    BEGIN_PFM_CREATE(g.fm, pfmRankInfo, S, RANK_INFO)
-      FM_VAR_PARM(g.vRankInfo, sizeof(RankInfo) * g.cRankInfo)
-    END_PFM_CREATE
-    pfmRankInfo->cRanks = g.cRankInfo;
 
     // send the static map info for the maps on this server
     BEGIN_PFM_CREATE(g.fm, pfmStaticMapInfo, S, STATIC_MAP_INFO)
       FM_VAR_PARM(g.vStaticMapInfo, sizeof(StaticMapInfo) * g.cStaticMapInfo)
     END_PFM_CREATE
+
+#if !defined(ALLSRV_STANDALONE)
+    // send the rank info for this server
+    BEGIN_PFM_CREATE(g.fm, pfmRankInfo, S, RANK_INFO)
+      FM_VAR_PARM(g.vRankInfo, sizeof(RankInfo) * g.cRankInfo)
+    END_PFM_CREATE
+    pfmRankInfo->cRanks = g.cRankInfo;
 
     // Get their squad memberships, but whether we need it b4 joining depends on whether it's a squad game
     CQCharSquads * pqueryCharSquads = new CQCharSquads(GotCharSquads);
@@ -816,8 +847,8 @@ void GotLogonDetails(CQLogonStats * pquery)
       lstrcpy(pqdSquads->szPassword, pqd->szPassword);
       g.sql.PostQuery(pqueryCharSquads);
     }
-  }
 #endif
+  }
 
   g.fm.SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
   g.fm.CheckOdometer(flDTime, cMsgsOdometer, cBytesOdometer);
@@ -836,7 +867,7 @@ void GotLogonDetails(CQLogonStats * pquery)
  * SetCharStats
  *-------------------------------------------------------------------------
   Purpose:
-      Upload character persisted stats 
+      Upload character persisted stats
 
   Parameters:
       PersistPlayerScoreObject
@@ -906,7 +937,7 @@ void SetCharStats(int                   characterID,
 
     CQCharStats * pquery = new CQCharStats(NULL); // don't need call-back notification
     CQCharStatsData * pdq = pquery->GetData();
-    
+
     pdq->CharacterID  = characterID;
     pdq->CivID        = civID;
     // All of these are for THIS GAME ONLY (except Rating, which is always overall)
@@ -951,7 +982,7 @@ void SetCharStats(int                   characterID,
       g.sql.PostQuery(pq);
     }
     */
-    
+
     g.sql.PostQuery(pquery);
 
   #endif // !defined(ALLSRV_STANDALONE)
@@ -971,17 +1002,17 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
   #if !defined(ALLSRV_STANDALONE)
     CQReportSquadGame * pquery = new CQReportSquadGame(NULL);
     CQReportSquadGameData * pqd = pquery->GetData();
-    
+
     pqd->squadIDWon = psideWon->GetSquadID();
 
-    // fill in the losers 
-    // Blech - have to unroll the loop because we need to fill in different 
+    // fill in the losers
+    // Blech - have to unroll the loop because we need to fill in different
     // variable names, and not just different indices
     SideLinkIGC* linkSide = psides->first();
 
     // loser 1
     {
-        while (linkSide 
+        while (linkSide
           && (linkSide->data() == psideWon || linkSide->data()->GetSquadID() == NA))
         {
           linkSide = linkSide->next();
@@ -998,7 +1029,7 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
 
     // loser 2
     {
-        while (linkSide 
+        while (linkSide
           && (linkSide->data() == psideWon || linkSide->data()->GetSquadID() == NA))
         {
           linkSide = linkSide->next();
@@ -1015,7 +1046,7 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
 
     // loser 3
     {
-        while (linkSide 
+        while (linkSide
           && (linkSide->data() == psideWon || linkSide->data()->GetSquadID() == NA))
         {
           linkSide = linkSide->next();
@@ -1032,7 +1063,7 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
 
     // loser 4
     {
-        while (linkSide 
+        while (linkSide
           && (linkSide->data() == psideWon || linkSide->data()->GetSquadID() == NA))
         {
           linkSide = linkSide->next();
@@ -1049,7 +1080,7 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
 
     // loser 5
     {
-        while (linkSide 
+        while (linkSide
           && (linkSide->data() == psideWon || linkSide->data()->GetSquadID() == NA))
         {
           linkSide = linkSide->next();
@@ -1080,7 +1111,7 @@ void GetInvitations(int nInvitationID, MissionID missionID)
 #if !defined(ALLSRV_STANDALONE)
     CQGetInvitationList * pquery = new CQGetInvitationList(GotInvitationList);
     CQGetInvitationListData * pdq = pquery->GetData();
-  
+
     pdq->listid = nInvitationID;
     pdq->missionID = missionID;
 
@@ -1096,10 +1127,10 @@ void GetInvitations(int nInvitationID, MissionID missionID)
  *     Loads everything from database that's (basically) static for duration
  *     Keeps both the igc data, and also snapshots of the messages so that they
  *         can be sent to clients without any processing
- * 
+ *
  * Returns:
  *     nothing (yet)
- * 
+ *
  * Side Effects:
  *     lots of memory allocated for cached tables. Freed on cleanup
  */
@@ -1114,16 +1145,16 @@ void LoadDbCache()
     g.trekCore->Initialize(Time::Now(), &g.siteFedSrv);
     g.trekCore->SetStaticCore(NULL);
 
-    // There's a number of database sizes that are greater than the message sizes, 
+    // There's a number of database sizes that are greater than the message sizes,
     // and I don't want to put casts all over the place, so...
     #pragma warning(disable : 4244)
 
     LoadTechBits();
-  
+
     // Load all ship types
     SQL_GO(ShipsCount);
-    SQL_GETROW(ShipsCount); 
-  
+    SQL_GETROW(ShipsCount);
+
     // to preserve DB ordering of ship types, get the ids in database order
     ShipID* vnShipIdList = (ShipID*)_alloca(g_cShipTypes * sizeof(ShipID));
     nCount = 0;
@@ -1134,7 +1165,7 @@ void LoadDbCache()
         ++nCount;
         assert(nCount <= g_cShipTypes);
     }
-  
+
     // Load all projectiles
     SQL_GO(Projectiles);
     while (SQL_SUCCEEDED(SQL_GETROW(Projectiles)))
@@ -1162,11 +1193,11 @@ void LoadDbCache()
       dpt.width = Projectiles_WidthOverHeight;
       dpt.ambientSound = Projectiles_AmbientSound;
 
-      IprojectileTypeIGC * pprojtype = (IprojectileTypeIGC *) 
+      IprojectileTypeIGC * pprojtype = (IprojectileTypeIGC *)
           g.trekCore->CreateObject(g.timeNow, OT_projectileType, &dpt, sizeof(dpt));
       pprojtype->Release();
     }
-  
+
     // Load weapons
     SQL_GO(Weapons);
     while (SQL_SUCCEEDED(SQL_GETROW(Weapons)))
@@ -1213,7 +1244,7 @@ void LoadDbCache()
       missile.blastPower          = Missiles_BlastPower;
       missile.blastRadius         = Missiles_BlastRadius;
       missile.bDirectional        = !!Missiles_IsDirectional;
-      missile.width               = Missiles_WidthOverHeight;    
+      missile.width               = Missiles_WidthOverHeight;
       missile.launchSound         = Missiles_LaunchSound;
       missile.ambientSound        = Missiles_FlightSound;
 
@@ -1264,7 +1295,7 @@ void LoadDbCache()
       dct.energyConsumption   = Cloaks_EnergyConsumption;
       dct.maxCloaking         = Cloaks_MaxCloaking;
       dct.onRate              = Cloaks_OnRate;
-      dct.offRate             = Cloaks_OffRate;    
+      dct.offRate             = Cloaks_OffRate;
       dct.engageSound         = Cloaks_EngageSound;
       dct.disengageSound      = Cloaks_DisengageSound;
 
@@ -1354,7 +1385,7 @@ void LoadDbCache()
       magazine.amount           = Magazine_Amount;
       magazine.launchCount      = Magazine_LaunchCount;
       magazine.successorPartID  = Magazine_SuccessorID;
-      SQLSTRCPY(magazine.inventoryLineMDL, Magazine_InventoryLineMDL);    
+      SQLSTRCPY(magazine.inventoryLineMDL, Magazine_InventoryLineMDL);
 
       IpartTypeIGC * pparttype = (IpartTypeIGC *) g.trekCore->CreateObject(
           g.timeNow, OT_partType, &magazine, sizeof(magazine));
@@ -1363,11 +1394,11 @@ void LoadDbCache()
 
       for (i = 0; i < nCount; i++)
     {
-      // Gotta get each ship as separate SQL_GO, because can't have nested SQL_GO's, and we get attachpoints for ship below  
+      // Gotta get each ship as separate SQL_GO, because can't have nested SQL_GO's, and we get attachpoints for ship below
       ShipTypes_ShipTypeID = vnShipIdList[i];
       SQL_GO(ShipTypes);
       if (SQL_SUCCEEDED(sqlret = SQL_GETROW(ShipTypes)))
-      { 
+      {
         // Not all ship types exist, but we check 'em all anyway
         // First find out how many attachment points this ship has
         AttachPointsCount_ShipTypeID = ShipTypes_ShipTypeID;
@@ -1448,7 +1479,7 @@ void LoadDbCache()
         pdht->ripcordCost                    = ShipTypes_ripcordCost;
 
         pdht->maxFuel = float(ShipTypes_MaxFuel);
-        pdht->maxAmmo = ShipTypes_MaxAmmo;  
+        pdht->maxAmmo = ShipTypes_MaxAmmo;
 
         // set all ships to the largest capacity necessary to hold anything, until we get the numbers from the database.
         pdht->pmEquipment[ET_ChaffLauncher] = ShipTypes_ChaffPartMask;
@@ -1554,7 +1585,7 @@ void LoadDbCache()
 
     for (i = 0; i < nCount; i++)
     {
-      // Gotta get each dev as separate SQL_GO, because can't have nested SQL_GO's, and we get other stuff below  
+      // Gotta get each dev as separate SQL_GO, because can't have nested SQL_GO's, and we get other stuff below
       Developments_ID = vnDevelopmentIdList[i];
       SQL_GO(Developments);
       if (SQL_SUCCEEDED(sqlret = SQL_GETROW(Developments)))
@@ -1583,8 +1614,8 @@ void LoadDbCache()
   /*
     // Load effects
     SQL_GO(EffectsCount);
-    SQL_GETROW(EffectsCount); 
-    g.pargEffect = (FMD_S_EFFECT *) 
+    SQL_GETROW(EffectsCount);
+    g.pargEffect = (FMD_S_EFFECT *)
         GlobalAllocPtr(GMEM_MOVEABLE | GMEM_ZEROINIT, g_cEffects * sizeof(g.pargEffect[0]));
     sqlret = SQL_GO(Effects);
     for(i = 0; SQL_SUCCEEDED(sqlret = SQL_GETROW(Effects)); i++)
@@ -1671,7 +1702,7 @@ void LoadDbCache()
       st.groupID            = Stations_GroupID;
 
       st.constructionDroneTypeID = Stations_ConstructionDroneTypeID;
-    
+
       st.constructorNeedRockSound = Stations_BuildLocationSound;
       st.constructorUnderAttackSound = Stations_ConstructorAttackedSound;
       st.constructorDestroyedSound = Stations_ConstructorDestroyedSound;
@@ -1708,7 +1739,7 @@ void LoadDbCache()
     SQL_GETROW(CivsCount);
     for (i = 0; i < g_cCivs; i++)
     {
-      // Gotta get each dev as separate SQL_GO, because can't have nested SQL_GO's, and we get other stuff below  
+      // Gotta get each dev as separate SQL_GO, because can't have nested SQL_GO's, and we get other stuff below
       Civs_ID = i;
       SQL_GO(Civs);
       if (SQL_SUCCEEDED(sqlret = SQL_GETROW(Civs)))
@@ -1783,7 +1814,7 @@ CFMGroup * GetGroupSectorFlying(IclusterIGC * pCluster)
  *-------------------------------------------------------------------------
  * Purpose:
  *    export an igc object to the client
- * 
+ *
  * Parameters:
  *    ppfmExport: If supplied, allocates the message there, to be freed by caller
  *
@@ -1819,16 +1850,16 @@ void ExportObj(IbaseIGC * pIGC, ObjectType ot, FMD_S_EXPORT ** ppfmExport)
  *-------------------------------------------------------------------------
  * Purpose:
  *    Tell someone about another player. In this case, the other "player" may be a drone
- * 
+ *
  * Parameters:
  *    pfsPlayer: player GETTING the info, NULL = everyone
  *    pfsShip:   "player" (human or drone) being identified
  */
 void SendPlayerInfo(CFSPlayer * pfsPlayer, CFSShip * pfsShip, CFSMission* pfsMission, bool bSend)
 {
-  const int cCivsMax = 8; // is this specified anywhere else?
+  const int cCivsMax = 20; // is this specified anywhere else? -- KGJV : 8 to 20, why 8 anyway ?
   int cCivs = 0;
-  PersistPlayerScoreObject rgperplrScore[cCivsMax];  
+  PersistPlayerScoreObject rgperplrScore[cCivsMax];
   if (pfsShip->IsPlayer()) // get the whole list
   {
     CFSPlayer * pfsPlayerSent = pfsShip->GetPlayer(); // the player being sent
@@ -1847,7 +1878,7 @@ void SendPlayerInfo(CFSPlayer * pfsPlayer, CFSShip * pfsShip, CFSMission* pfsMis
     cCivs = 1;
     rgperplrScore[0] = pfsShip->GetPlayerScoreObject()->GetPersist();
   }
-  
+
   BEGIN_PFM_CREATE(g.fm, pfmPlayerInfo, S, PLAYERINFO)
     FM_VAR_PARM(rgperplrScore, cCivs * sizeof(rgperplrScore[0]))
   END_PFM_CREATE
@@ -1905,9 +1936,9 @@ void SendPlayerInfo(CFSPlayer * pfsPlayer, CFSShip * pfsShip, CFSMission* pfsMis
       else
         prcp = pfsMission->GetGroupMission();
       g.fm.SendMessages(prcp, FM_GUARANTEED, FM_FLUSH);
-      debugf("Sending PlayerInfo for %s to %s(%u)\n", pfsShip->GetName(), 
+      debugf("Sending PlayerInfo for %s to %s(%u)\n", pfsShip->GetName(),
             prcp->GetName(), prcp->GetID());
-  }  
+  }
 }
 
 
@@ -1932,12 +1963,12 @@ void CheatSides(CFSShip * pfsShip, CFSMission * pfsMission)
     iSide = pside->GetObjectID();
     int cMembers = pside->GetShips()->n();;
     if (pfsShip)
-      SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff, 
-          "Side %d-%s has %d stations and %d ships:", iSide, 
-          g.rgMissions[g.missionID].rgszName[iSide], 
+      SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff,
+          "Side %d-%s has %d stations and %d ships:", iSide,
+          g.rgMissions[g.missionID].rgszName[iSide],
           g.trekCore->GetSide(iSide)->GetStations()->n(), cMembers);
-    debugf("Side %d-%s has %d stations and %d players:\n", iSide, 
-        g.rgMissions[g.missionID].rgszName[iSide], 
+    debugf("Side %d-%s has %d stations and %d players:\n", iSide,
+        g.rgMissions[g.missionID].rgszName[iSide],
         g.trekCore->GetSide(iSide)->GetStations()->n(), cMembers);
     ShipID * rgShipIDMembers = g.rgpargShipIDMembers[g.missionID][iSide];
 
@@ -1948,27 +1979,27 @@ void CheatSides(CFSShip * pfsShip, CFSMission * pfsMission)
       IshipIGC * pship = pfsshipT->GetIGCShip();
       IclusterIGC * pcluster = pfsshipT->GetCluster();
       IstationIGC * pstation = pfsshipT->GetStation();
-      if (!pstation) 
+      if (!pstation)
       {
         assert (pship);
         if (pcluster) // they're flying
         {
           Vector vPosition = pship->GetPosition();
           if (pfsShip)
-            SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff, 
-                "%s has %d HP, and is flying a %s at %d.%d.%d in sector %s", 
+            SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff,
+                "%s has %d HP, and is flying a %s at %d.%d.%d in sector %s",
                 pship->GetName(), (int) (100.0f * pship->GetFraction()),
-                pship->GetHullType()->GetName(), (int) vPosition.X(), 
+                pship->GetHullType()->GetName(), (int) vPosition.X(),
                 (int) vPosition.Y(), (int) vPosition.Z(), pcluster->GetName());
-          debugf("    %s has %d HP, and is flying a %s at %d.%d.%d in sector %s\n", 
-              pship->GetName(), (int) (100.0f * pship->GetFraction()), 
-              pship->GetHullType()->GetName(), (int) vPosition.X(), 
+          debugf("    %s has %d HP, and is flying a %s at %d.%d.%d in sector %s\n",
+              pship->GetName(), (int) (100.0f * pship->GetFraction()),
+              pship->GetHullType()->GetName(), (int) vPosition.X(),
               (int) vPosition.Y(), (int) vPosition.Z(), pcluster->GetName());
         }
         else // something weird--need to find out why this happens
         {
           if (pfsShip)
-            SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff, 
+            SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff,
                 "%s has never left team room", pfsshipT->GetName());
           debugf("    %s has never left team room\n", pfsshipT->GetName());
         }
@@ -1977,10 +2008,10 @@ void CheatSides(CFSShip * pfsShip, CFSMission * pfsMission)
       {
         assert (pcluster);
         if (pfsShip)
-          SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff, 
-              "  %s is docked at station %s in sector %s", 
+          SendChatMessage(NULL, CHAT_INDIVIDUAL, pfsShip, c_fCheatsOff,
+              "  %s is docked at station %s in sector %s",
               pfsshipT->GetName(), pstation->GetName(), pcluster->GetName());
-        debugf("  %s is docked at station %s in sector %s\n", 
+        debugf("  %s is docked at station %s in sector %s\n",
             pfsshipT->GetName(), pstation->GetName(), pcluster->GetName());
       }
     }
@@ -1993,7 +2024,7 @@ CFSDrone * CreateStockDrone(IdroneTypeIGC * pdronetype, IsideIGC* pSide, IbaseIG
     PilotType pt = pdronetype->GetPilotType();
     ImissionIGC*    pmission = pSide->GetMission();
     IshipIGC*   pship = CreateDrone(pmission,
-                                    -2, 
+                                    -2,
                                     pt,
                                     NULL,
                                     pdronetype->GetHullTypeID(),
@@ -2198,7 +2229,7 @@ bool    BoardShip(CFSShip* pfsShip, IshipIGC*  pshipBoard)
                             pfmMoney->sidTo = pfsShip->GetShipID();
                             pfmMoney->sidFrom = NA;
                             pfmMoney->dMoney = refund;
-                        
+
                             g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
                         }
                     }
@@ -2241,10 +2272,10 @@ bool    BoardShip(CFSShip* pfsShip, IshipIGC*  pshipBoard)
  *-------------------------------------------------------------------------
  * Purpose:
  *    handles cheat code to create drones
- * 
+ *
  * Parameters:
  *    ship issuing cheat, cheat string
- * 
+ *
  * Returns:
  *    whether cheat string could be successfully evaluated
  */
@@ -2273,21 +2304,21 @@ bool CheatCreateDrones(CFSShip * pfsShip, ZString & strCheat)
     IdroneTypeIGC * pdronetype = NULL;
     IsideIGC* psideDrone;
     int iNumDrones;
-    
+
     if (!lstrcmpi(strDroneType, "carrier"))
         ptPilotType = c_ptCarrier;
     else if (!lstrcmpi(strDroneType, "miner"))
         ptPilotType = c_ptMiner;
     else if (!lstrcmpi(strDroneType, "wingman"))
         ptPilotType = c_ptWingman;
-    else 
+    else
     {
         pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
                                          NA, "%s is not a valid drone type.  Aborting cheat code.", (PCC) strDroneType);
         fIsCheat = false;
     }
 
-    if (fIsCheat) 
+    if (fIsCheat)
     {
       // We have to look through the drone types and look for one of the correct type
       // If there's more than one, too bad, you get the first one we find
@@ -2312,7 +2343,7 @@ bool CheatCreateDrones(CFSShip * pfsShip, ZString & strCheat)
     {
       iNumDrones = strNumDrones.IsEmpty() ? 1 : atoi(strNumDrones);
 
-      if (!strDroneSide.IsEmpty()) 
+      if (!strDroneSide.IsEmpty())
       {
         psideDrone = pfsMission->GetIGCMission()->GetSide(atoi(strDroneSide));
         if (!psideDrone)
@@ -2329,11 +2360,11 @@ bool CheatCreateDrones(CFSShip * pfsShip, ZString & strCheat)
 
       {
         Vector p = Vector::GetZero();
-        
+
         if (!pfsShip->GetStation())      // only if I am undocked... otherwise make them aroun 0,0,0
           p = pfsShip->GetIGCShip()->GetSourceShip()->GetPosition();
 
-        for (int i=0; i < iNumDrones; i++) 
+        for (int i=0; i < iNumDrones; i++)
         {
           p.x += random(-200.0f, 200.0f);
           p.y += random(-200.0f, 200.0f);
@@ -2353,7 +2384,7 @@ bool CheatCreateDrones(CFSShip * pfsShip, ZString & strCheat)
 
 
 #ifdef MOVE_TO_FEDMESSAGING
-BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType, 
+BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType,
         LPCDPNAME lpName, DWORD dwFlags, LPVOID lpContext)
 {
   DataEnumPlayers * pdep = (DataEnumPlayers *) lpContext;
@@ -2362,7 +2393,7 @@ BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType,
   char szIndent[15];
   assert (pdep->indent < sizeof(szIndent));
   szIndent[pdep->indent] = '\0';
-  int i = pdep->indent; 
+  int i = pdep->indent;
   while (i--)
     szIndent[i] = ' ';
   if (DPPLAYERTYPE_GROUP == dwPlayerType)
@@ -2371,7 +2402,7 @@ BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType,
     DWORD dwSize = sizeof(rgchdpn);
     ZSucceeded(g.fm.GetDPlay()->GetGroupName(dpId, rgchdpn, &dwSize));
     if (pdep->pfsShip)
-      pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pdep->pfsShip->GetIGCShip()->GetObjectID(), 
+      pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pdep->pfsShip->GetIGCShip()->GetObjectID(),
                                        NA, "%s%s%s (%u): ",
                                        szIndent, pdpn->lpszShortNameA, pdpn->lpszLongNameA, dpId);
 
@@ -2393,7 +2424,7 @@ BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType,
       pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pdep->pfsShip->GetIGCShip()->GetObjectID(), NA, "%s%s", szIndent, pfsShip->GetName());
     debugf("%s, ", pfsShip->GetName());
   }
-  
+
   return TRUE;
 }
 
@@ -2402,9 +2433,9 @@ BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType,
  *-------------------------------------------------------------------------
  * Purpose:
  *    Cheat code to enumerate all our dpgroups. For debugging purposes only
- * 
+ *
  * Parameters:
- *    player requesting 
+ *    player requesting
  */
 void CheatDPGroups(CFSShip * pfsShip)
 {
@@ -2432,8 +2463,8 @@ void CheatDPGroups(CFSShip * pfsShip)
  *-------------------------------------------------------------------------
  * Purpose:
  *    The Joel P Dehlin cheat to create a friendly and enemy ship in front of you
- *    First find a wingman drone type. We have to look through the drone 
- *    types and look for one of the correct type. If there's more than one, 
+ *    First find a wingman drone type. We have to look through the drone
+ *    types and look for one of the correct type. If there's more than one,
  *    too bad, you get the first one we find.
  */
 void CheatJPD(CFSShip * pfsShip)
@@ -2441,7 +2472,7 @@ void CheatJPD(CFSShip * pfsShip)
   IclusterIGC*  pcluster = pfsShip->GetIGCShip()->GetCluster();
   if (!pcluster) // do nothing if you try this while docked.
     return;
-  
+
   IdroneTypeIGC * pdronetype = NULL;
   CFSMission * pfsMission = pfsShip->GetMission();
   const DroneTypeListIGC * pdronelist = pfsMission->GetIGCMission()->GetDroneTypes();
@@ -2459,12 +2490,12 @@ void CheatJPD(CFSShip * pfsShip)
                                      NA, "There are not any wingman type drones defined. Aborting cheat code.");
     return;
   }
-  
+
   IshipIGC * pship = pfsShip->GetIGCShip();
   const Orientation& o = pship->GetOrientation();
   const float flDistanceFromCenter = 200.0f;
   const float flDistanceFromShip = 600.0f;
-  Vector p = pship->GetPosition() - o.GetBackward() * flDistanceFromShip + 
+  Vector p = pship->GetPosition() - o.GetBackward() * flDistanceFromShip +
                                      o.GetRight()   * flDistanceFromCenter;
 
 
@@ -2480,8 +2511,8 @@ void CheatJPD(CFSShip * pfsShip)
   const SideListIGC * plistSide = pfsMission->GetIGCMission()->GetSides();
   IsideIGC * psideEnemy = NULL;
   IsideIGC * psideMe = pship->GetSide();
-  for (SideLinkIGC * plinkSide = plistSide->first(); 
-       plinkSide && NULL == psideEnemy; 
+  for (SideLinkIGC * plinkSide = plistSide->first();
+       plinkSide && NULL == psideEnemy;
        plinkSide = plinkSide->next())
   {
     IsideIGC * psideT = plinkSide->data();
@@ -2500,7 +2531,7 @@ void CheatJPD(CFSShip * pfsShip)
   }
   else
   {
-    pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(), 
+    pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
                                      NA, "Cannot create enemy ship because an enemy side does not exist.");
   }
 }
@@ -2518,7 +2549,7 @@ void LogTrapHack(AGCEventID idEvent, CFSPlayer* pfsPlayer,
     pszContext = pfsPlayer->GetIGCShip() ?
       pfsPlayer->GetIGCShip()->GetMission()->GetContextName() : NULL;
     pszSubject = pfsPlayer->GetName();
-    idSource = 
+    idSource =
       static_cast<USHORT>(CAdminUser::DetermineID(pfsPlayer))
         | static_cast<DWORD>(AGC_AdminUser << 16);
   }
@@ -2563,11 +2594,11 @@ void LogTrapHack(AGCEventID idEvent, CFSPlayer* pfsPlayer,
  *-------------------------------------------------------------------------
  * Purpose:
  *    Parse chat line, and do something
- * 
+ *
  * Parameters:
  *    pfsChip:      The ship sending the cheat
  *    szMessage:    The cheat
- * 
+ *
  * Returns:
  *    Whether message was indeed a cheat, and hence doesn't need to be sent as chat
  */
@@ -2578,7 +2609,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
   ZString strCheat(szMessage);
   ZString strToken = strCheat.GetToken();
   // debugf("!!! Cheat from %s: %s\n", pfsShip->GetName(), (PCC) strToken);
-  
+
   if (!lstrcmpi(strToken, "bootme"))
   {
     Sleep(1000); // give the client a chance to get some messages into the receive queue--if they're flying that is
@@ -2588,7 +2619,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
   {
     debugf("===> %s\n", (PCC) strCheat);
   }
-  else if (!lstrcmpi(strToken, "stations")) 
+  else if (!lstrcmpi(strToken, "stations"))
   {
     // show status on all stations
     pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
@@ -2598,8 +2629,8 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
     for (pstationLink = pstations->first(); pstationLink; pstationLink = pstationLink->next())
     {
       IstationIGC * pStation = pstationLink->data();
-      pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(), 
-                                       NA, "%d: %s%s, %d-%s, %d%%/%d%%HP, in %s", 
+      pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
+                                       NA, "%d: %s%s, %d-%s, %d%%/%d%%HP, in %s",
           pStation->GetObjectID(), pStation->GetName(), (pStation->GetStationType()->GetCapabilities() & c_sabmFlag) ? " (flag)" : "",
           pStation->GetSide()->GetObjectID(), pStation->GetSide()->GetName(),
           (int)(100.0f * pStation->GetFraction()), (int)(100.0f * pStation->GetShieldFraction()), pStation->GetCluster()->GetName());
@@ -2667,7 +2698,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
           pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
                                            NA, "Sorry, no tech found named %s.", (const char*)strTech);
         }
-      } 
+      }
     }
   }
   else if (!lstrcmpi(strToken, "IfYouWishUponAStar"))
@@ -2723,7 +2754,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
   else if (!lstrcmpi(strToken, "winwinwin"))
     pfsMission->GameOver(pfsShip->GetSide(), "By a cheat");
   else if (!lstrcmpi(strToken, "checkbank"))
-    pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(), 
+    pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
                                      NA, "You have %d in your bank account.", pfsShip->GetMoney());
 
 /*
@@ -2743,7 +2774,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
       if (pstation)
         pfsShip->CaptureStation(pstation);
       else
-        pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(), 
+        pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
                                          NA, "Cannot capture station %d because it does not exist.", stationID);
     }
   }
@@ -2766,14 +2797,14 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
     Time timeStart = Time::Now();
     while (Time::Now() - timeStart < 3.0) // let's send chat for thee seconds
     {
-      pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(), 
+      pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
                                        NA, "firing away: %05d", cChats);
       cChats++;
     }
     printf("%d chats sent in 3 seconds.\n", cChats);
-    pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(), 
+    pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsShip->GetIGCShip()->GetObjectID(),
                                      NA, "%d chats sent in 3 seconds.", cChats);
-                    
+
   }
 #if defined(ALLOW_TESTAGCEVENTS_CHEAT)
   else if (!lstrcmpi(strToken, "testagcevents"))
@@ -2830,24 +2861,24 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
 
 
 
-       
+
 /*-------------------------------------------------------------------------
  * HandleCOMChatEvents
  *-------------------------------------------------------------------------
  * Purpose:
  *    Generate an appropriate COM event.
- * 
+ *
  * Parameters:
  *    szMessage:    the main message text
  *    szDest:       descriping who or what is receiving the message
  *    shipidFrom:   who sent the message or NA for HQ
  *    pfsMission:   the mission that the message was generated in
- *    
+ *
  * Notes:
  *    This was broken off from ForwardChatMessage()
- * 
+ *
  */
-void HandleCOMChatEvents(const char *szMessage, const char *szDest, ShipID shipidFrom, 
+void HandleCOMChatEvents(const char *szMessage, const char *szDest, ShipID shipidFrom,
                          CFSMission * pfsMission, int iType, SoundID voiceOver, CommandID commandID)
 {
   const char * szSource = "Admin";   // source of the chat message
@@ -3065,7 +3096,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
     {
         case CHAT_EVERYONE:
         {
-            pszDest = pfsMission->GetMissionDef()->misparms.strGameName; 
+            pszDest = pfsMission->GetMissionDef()->misparms.strGameName;
             if (pcd->commandID == c_cidNone)
             {
                 g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfm, FM_GUARANTEED);
@@ -3181,7 +3212,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
             IsideIGC*   pside = pfsMission->GetIGCMission()->GetSide(pcd->oidRecipient);
             if (pside && ((pcd->commandID == c_cidNone) || (pfsSender == NULL) || (pside == pfsSender->GetSide())))
             {
-                g.fm.ForwardMessage(CFSSide::FromIGC(pside)->GetGroup(), 
+                g.fm.ForwardMessage(CFSSide::FromIGC(pside)->GetGroup(),
                                     pfm, FM_GUARANTEED);
             }
         }
@@ -3260,7 +3291,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
  *    sort function for qsort for sorting ships based on deviation of
  *    what the actual position is and the current calculated position
  *    based on interpolation of inputs
- * 
+ *
  * Parameters & Return:
  *    as defined by qsort. Both are actually IShipIGC*
  */
@@ -3367,7 +3398,7 @@ void SendShipUpdates(CFSMission * pfsMission)
 
         if ((pplayerList->n() > 0) && (pshiplist->n() > 0))
         {
-            //We will need to send out at least some ship updates ... 
+            //We will need to send out at least some ship updates ...
             //Given our bandwidth constraints & the population of the sector, figure out how many turret, heavy and light updates
             //we would be able to send assuming every ship is sending a ship/turret update every c_dsecUpdateClient
 
@@ -3398,7 +3429,7 @@ void SendShipUpdates(CFSMission * pfsMission)
                     CFSPlayer*      pfsPlayer = pfsShip->GetPlayer();
                     unsigned char   ucLastUpdate = pfsPlayer->GetLastUpdate();
 
-                    if (pship->GetParentShip() == NULL) 
+                    if (pship->GetParentShip() == NULL)
                     {
                         cShips++;
 
@@ -3521,9 +3552,9 @@ void SendShipUpdates(CFSMission * pfsMission)
                     //Adjust the deviation of the ships based on where they fall in the array
                     //A heavy update might get demoted to a light update (and a light to nothing)
                     //if a ship has a target (so that the target update can be sent as a heavy) ...
-                    //go and treat the last heavy update as a 
+                    //go and treat the last heavy update as a
                     int effectiveHeavy = (cHeavyUpdates < cShipUpdates) ? cHeavyUpdates - 1 : cHeavyUpdates;
-                    int effectiveLight = cHeavyUpdates + 
+                    int effectiveLight = cHeavyUpdates +
                                          (cHeavyUpdates + cLightUpdates < cShipUpdates)
                                          ? (cLightUpdates - 1)
                                          : cLightUpdates;
@@ -3578,7 +3609,7 @@ void SendShipUpdates(CFSMission * pfsMission)
 
                 static char bfrHeavy[sizeof(FMD_S_HEAVY_SHIPS_UPDATE) +
                                      CB_HSU_VARDATA(c_cShipsPerSectorMax) +
-                                     CB_ATU_VARDATA(c_cShipsPerSectorMax) + 
+                                     CB_ATU_VARDATA(c_cShipsPerSectorMax) +
                                      sizeof(FMD_S_LIGHT_SHIPS_UPDATE) +             //Add room for the lts ship updates to be appended to the end
                                      CB_LSU_VARDATA(c_cShipsPerSectorMax) +
                                      CB_ITU_VARDATA(c_cShipsPerSectorMax)];
@@ -3725,7 +3756,7 @@ void SendShipUpdates(CFSMission * pfsMission)
                         if (pshipTarget)
                         {
                             assert (cHeavyUpdates > 0);
-                            AddUpdate(g.timeNow, pfmHeavy->positionReference, 
+                            AddUpdate(g.timeNow, pfmHeavy->positionReference,
                                       pfsTarget, pHeavy++);
                         }
 
@@ -3759,7 +3790,7 @@ void SendShipUpdates(CFSMission * pfsMission)
 
                     pfmLight->cbmsg = sizeof(FMD_S_LIGHT_SHIPS_UPDATE) + pfmLight->cbrgInactiveTurretUpdates + pfmLight->cbrgLightShipUpdates;
                     pfmHeavy->cbmsg = sizeof(FMD_S_HEAVY_SHIPS_UPDATE) + pfmHeavy->cbrgActiveTurretUpdates + pfmHeavy->cbrgHeavyShipUpdates;
-    
+
                     //Send the heavy ship update whenever the player is flying since it has hitpoint information
                     if ((pfmHeavy->cbmsg != sizeof(FMD_S_HEAVY_SHIPS_UPDATE)) || (pshipPlayer->GetCluster() != NULL))
                     {
@@ -3875,7 +3906,7 @@ bool HandleChangedArtwork(FileChangeInfo* pfci, void* pData)
             FM_VAR_PARM(g.szFTPServer, CB_ZTS)
             FM_VAR_PARM(g.szFTPInitialDir, CB_ZTS)
             FM_VAR_PARM(g.szFTPAccount, CB_ZTS)
-            FM_VAR_PARM(g.szFTPPassword, CB_ZTS) 
+            FM_VAR_PARM(g.szFTPPassword, CB_ZTS)
         END_PFM_CREATE
 
         pfmServerInfo->ftLastArtUpdate = ftLastWriteTime;
@@ -3886,7 +3917,7 @@ bool HandleChangedArtwork(FileChangeInfo* pfci, void* pData)
         FM_VAR_PARM(pfci->szFileName, CB_ZTS)
     END_PFM_CREATE
     pfmArtUpdate->cFileSize = pfci->cFileSize;
-    
+
     return true; // return success
 }
 */
@@ -3910,7 +3941,7 @@ ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, DataTreasureIGC* pdt, c
 
     pdt->objectID = pship->GetMission()->GenerateNewTreasureID();
 
-    pdt->p0 = position; 
+    pdt->p0 = position;
 
     Vector direction = Vector::RandomDirection();
 
@@ -3948,7 +3979,7 @@ ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, DataTreasureIGC* pdt, c
     dt.lifespan = lifespan;
     dt.amount = amount;
     dt.createNow = false;
-    
+
     return CreateTreasure(now, pship, &dt, position, dv);
 }
 
@@ -3956,7 +3987,7 @@ ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, DataTreasureIGC* pdt, c
 ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, IpartIGC* p, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan = 600.0f)
 {
     assert (p);
-    
+
     short amount;
     switch (p->GetObjectType())
     {
@@ -4066,7 +4097,7 @@ int FedSrvSiteBase::OnMessageBox(FedMessaging * pthis, const char * strText, con
 int FedSrvSiteBase::OnMessageBox(const char * strText, const char * strCaption, UINT nType)
 {
   printf("%s:\n%s\n\n", strCaption, strText);
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_MessageBox, "", -1, -1, -1, 2,  
+  _AGCModule.TriggerEvent(NULL, AllsrvEventID_MessageBox, "", -1, -1, -1, 2,
       "Caption", VT_LPSTR, strCaption,
       "Message", VT_LPSTR, strText);
   return 0; // which is intentionally not actually a valid MessageBox return code, since we're not actually throwing up a message box
@@ -4083,9 +4114,9 @@ HRESULT FedSrvSiteBase::OnSysMessage(FedMessaging * pthis)
   return S_OK;
 }
 
-void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError) 
+void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
-  // don't make the event an error event, because this may or may not be fatal. 
+  // don't make the event an error event, because this may or may not be fatal.
   // But we certainly want to see them all in any case.
   _AGCModule.TriggerEvent(NULL, AllsrvEventID_DatabaseErrorSQL, "", -1, -1, -1, 5,
     "Message"      , VT_LPWSTR, perror->pwszMessage,
@@ -4096,7 +4127,7 @@ void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError
 }
 
 
-void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD dwHelpContext, 
+void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD dwHelpContext,
                                   BSTR bstrHelpFile,    BSTR bstrSource)
 {
   // Convert the GUID to a string for the event parameter
@@ -4113,7 +4144,7 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
 }
 
 
-HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn) 
+HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
   // we don't do anything until they login
 
@@ -4121,13 +4152,13 @@ HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cn
 }
 
 
-HRESULT FedSrvSiteBase::OnDestroyConnection(FedMessaging * pthis, CFMConnection & cnxn) 
+HRESULT FedSrvSiteBase::OnDestroyConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
   CFSPlayer * pfsPlayer = CFSPlayer::GetPlayerFromConnection(cnxn);
   if (pfsPlayer) // need to clean up after them if they didn't log off
   {
     PlaySound("AppGPFault", NULL, SND_ALIAS | SND_PURGE | SND_ASYNC);
-    _AGCModule.TriggerEvent(NULL, AllsrvEventID_PlayerDropped, "", -1, -1, -1, 2,  
+    _AGCModule.TriggerEvent(NULL, AllsrvEventID_PlayerDropped, "", -1, -1, -1, 2,
         "PlayerName", VT_LPSTR, pfsPlayer->GetName(),
         "ConxID", VT_I4, cnxn.GetID());
     if (NULL != g.pServerCounters)
@@ -4141,9 +4172,9 @@ HRESULT FedSrvSiteBase::OnDestroyConnection(FedMessaging * pthis, CFMConnection 
 }
 
 
-HRESULT FedSrvSiteBase::OnSessionLost(FedMessaging * pthis) 
+HRESULT FedSrvSiteBase::OnSessionLost(FedMessaging * pthis)
 {
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_SessionLost, "", -1, -1, -1, 1,  
+  _AGCModule.TriggerEvent(NULL, AllsrvEventID_SessionLost, "", -1, -1, -1, 1,
       "Time", VT_I4, Time::Now().clock());
   // todo: gracefully shut down
   return S_OK;
@@ -4169,7 +4200,7 @@ void FedSrvSiteBase::OnBadCRC(FedMessaging * pthis, CFMConnection & cnxn, BYTE *
   FEDMESSAGE * pfm = (FEDMESSAGE *) pMsg;
   wsprintf(buf, "HEY! We got a corrupt message!\nPlayer=%s(%d), "
          "cbmsg=%d, fmid=%d, total packet size=%d.\n"
-         "Copy the above line to crashplayers.txt on \\\\zoneagga01. Going to drop player now.\n", 
+         "Copy the above line to crashplayers.txt on \\\\zoneagga01. Going to drop player now.\n",
          cnxn.GetName(), cnxn.GetID(),
          cbMsg >= 2 ? pfm->cbmsg : 0, cbMsg >= 4 ? pfm->fmid : 0, cbMsg);
 
@@ -4183,7 +4214,7 @@ void FedSrvSiteBase::OnBadCRC(FedMessaging * pthis, CFMConnection & cnxn, BYTE *
  * FedSrvSiteBase.OnMessageSent
  *-------------------------------------------------------------------------
   Purpose:
-    callback to help us keep perfmon counters on data sent  
+    callback to help us keep perfmon counters on data sent
  */
 void FedSrvSiteBase::OnMessageSent(FedMessaging * pthis, CFMRecipient * precip, const void * pv, DWORD cb, FMGuaranteed fmg)
 {
@@ -4198,10 +4229,10 @@ void FedSrvSiteBase::OnMessageSent(FedMessaging * pthis, CFMRecipient * precip, 
     {
       CASTPFM(pfmOrderChange, CS, ORDER_CHANGE, pfm);
       debugf("FM_CS_ORDER_CHANGE: shipID=%d, objectID=%d, objectType=%d, commandID=%d, command=%d.\n",
-          pfmOrderChange->shipID, pfmOrderChange->objectID, pfmOrderChange->objectType, 
+          pfmOrderChange->shipID, pfmOrderChange->objectID, pfmOrderChange->objectType,
           pfmOrderChange->commandID, pfmOrderChange->command);
     }
-    
+
     g.pServerCounters->cPacketsOut          += cConnections;
     g.pServerCounters->cPacketsOutPerSecond += cConnections;
     g.pServerCounters->cBytesOut            += dwBytes;
@@ -4284,7 +4315,7 @@ static void DisplaceProbe(IclusterIGC* pcluster, Vector* position, float r)
  * Purpose:
  *    Process all incoming fedsrv messages. This is like the winproc
  *    of messaging. All handling of messages from clients is done here
- * 
+ *
  * Side Effects:
  *    Lots
  */
@@ -4299,7 +4330,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
   static CTempTimer ttPreHandler("in OnAppMessage (before we actually switch)", .01f);
   ttPreHandler.Start();
   timerOnAppMessage.Start();
-  
+
   if (NULL != g.pServerCounters)
   {
     g.pServerCounters->cPacketsIn++;
@@ -4329,22 +4360,22 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       pMission   = pfsMission->GetIGCMission();
   }
 
-  ttPreHandler.Stop("...for message type %s from %s", g_rgszMsgNames[pfm->fmid], 
+  ttPreHandler.Stop("...for message type %s from %s", g_rgszMsgNames[pfm->fmid],
                     pfsPlayer ? pfsPlayer->GetName() : "<unknown>");
 
   if (!pfsPlayer && (pfm->fmid != FM_C_LOGONREQ))
   {
-    _AGCModule.TriggerEvent(NULL, AllsrvEventID_MsgFromUnknownPlayer, "", -1, -1, -1, 2,  
+    _AGCModule.TriggerEvent(NULL, AllsrvEventID_MsgFromUnknownPlayer, "", -1, -1, -1, 2,
         "PlayerID", VT_I4, cnxnFrom.GetID(),
         "MsgName", VT_LPSTR, g_rgszMsgNames[pfm->fmid]);
   }
-  else 
+  else
   switch(pfm->fmid)
   {
     case FM_C_SHIP_UPDATE:
     {
         CASTPFM(pfmShipUpdate, C, SHIP_UPDATE, pfm);
-        // if the cookies don't match, either they're cheating, or they haven't processed 
+        // if the cookies don't match, either they're cheating, or they haven't processed
         // a message that needs processing before their updates become valid again
         if (pfsPlayer->GetCookie() == pfmShipUpdate->cookie)
         {
@@ -4424,7 +4455,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
             break;
           bForward = false;
         }
-        else 
+        else
         {
           //NYI hack to allow misison owner to boot people from the lobby
           if (pfmChat->cbMessage > 5 && pfsMission->GetOwner() == pfsPlayer)
@@ -4441,9 +4472,16 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                     // send them to the game lobby
                     debugf("#ban: %s banned by %s\n", pfsShip->GetName(), pfsPlayer->GetName());
-                    
+					// Tigereye, Fire AGCEvent informing of the ban
+					LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+					_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(), 
+						pfsShip->GetShipID(), -1, -1, 3, "GameID",   VT_I4,    pfsMission->GetMissionID(),
+						"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+						"zBooter", VT_LPSTR, pfsPlayer->GetName());	
+					// This is named zBooter so the parameter appears last in the alphabetical list
+					// Tigereye end
                     pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QSR_OwnerBooted);
-                    
+
                     pfmChat->cd.chatTarget = CHAT_EVERYONE;
                     pfmChat->cd.oidRecipient = NA;
                     break;
@@ -4467,6 +4505,19 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 bForward = false;
               }
           }
+		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
+		 // beta feature only
+#ifdef FAZBETA
+		  else
+		  {
+			  if (pfsMission->GetOwner() == pfsPlayer && (_strnicmp(FM_VAR_REF(pfmChat, Message), "#start", strlen("#start")) == 0))
+			  {
+			    CFSMission * pfsMission = pfsPlayer->GetMission();
+				if (STAGE_NOTSTARTED == pfsMission->GetStage() || STAGE_STARTING == pfsMission->GetStage())
+					pfsMission->StartCountdown(15);
+			  }
+		  }
+#endif
         }
       }
       pfmChat->cd.sidSender = pfsPlayer->GetIGCShip()->GetObjectID();
@@ -4480,7 +4531,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         {
             char * szName = pszMsg + 4;
             char * szColon = szName;
-            while (*szColon && (':' != *szColon)) // 
+            while (*szColon && (':' != *szColon)) //
               szColon++;
 
 
@@ -4681,7 +4732,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           else
           {
               dm.pTarget = pMission->GetModel(pfmFireMissile->targetType, pfmFireMissile->targetID);
-              if (dm.pTarget && 
+              if (dm.pTarget &&
                   ((dm.pTarget->GetCluster() != pcluster) ||
                    !pfsPlayer->GetIGCShip()->CanSee(dm.pTarget)))
                   dm.pTarget = NULL;
@@ -4797,8 +4848,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   IshipIGC* pshipNewLeader = PickNewLeader(pships, pshipLeader, cLeader);
                   if (pshipNewLeader)
                   {
-                      // if there is a human player still on their team with the given ship ID, 
-                      // make that new player the leader.  
+                      // if there is a human player still on their team with the given ship ID,
+                      // make that new player the leader.
                       CFSShip*  pfsNewLeader = (CFSShip*)(pshipNewLeader->GetPrivateData());
                       pfsMission->SetLeader(pfsNewLeader->GetPlayer());
                   }
@@ -4944,7 +4995,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                       assert (type == OT_probeType);
 
-                      DataProbeIGC dp; 
+                      DataProbeIGC dp;
                       dp.pside = pShip->GetSide();
                       dp.pship = pShip;
                       dp.probeID = pMission->GenerateNewProbeID();
@@ -4979,15 +5030,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       }
     }
     break;
-      
+
     case FM_CS_LOGOFF:
     {
       if (NULL != g.pServerCounters)
         g.pServerCounters->cLogoffs++;
 
-      debugf("Logoff: %s(%u), was on side=%d mission=%x.\n", 
-          pfsPlayer->GetName(), pfsPlayer->GetConnection()->GetID(), 
-          (pfsPlayer->GetSide() ? pfsPlayer->GetSide()->GetObjectID() : NA), 
+      debugf("Logoff: %s(%u), was on side=%d mission=%x.\n",
+          pfsPlayer->GetName(), pfsPlayer->GetConnection()->GetID(),
+          (pfsPlayer->GetSide() ? pfsPlayer->GetSide()->GetObjectID() : NA),
           (pfsPlayer->GetMission() ? pfsPlayer->GetMission()->GetCookie() : NA));
       g.fm.ForwardMessage(pfsPlayer->GetConnection(), pfm, FM_GUARANTEED);
       delete pfsPlayer; //need to delete here, instead of in OnDestroyConnection, so we can tell when we get there whether it was a dropped connection
@@ -5006,20 +5057,21 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       bool fRetry = false;
 
       // sanity check the message
-      TrapHackBootNoPlayer(NULL != FM_VAR_REF(pfmLogon, CharacterName) 
+      TrapHackBootNoPlayer(NULL != FM_VAR_REF(pfmLogon, CharacterName)
           && NULL != memchr(FM_VAR_REF(pfmLogon, CharacterName), 0, c_cbName));
-      TrapHackBootNoPlayer(NULL == FM_VAR_REF(pfmLogon, MissionPassword) 
+      TrapHackBootNoPlayer(NULL == FM_VAR_REF(pfmLogon, MissionPassword)
           || NULL != memchr(FM_VAR_REF(pfmLogon, MissionPassword), 0, c_cbGamePassword));
-      TrapHackBootNoPlayer(NULL != FM_VAR_REF(pfmLogon, CDKey) 
+      TrapHackBootNoPlayer(NULL != FM_VAR_REF(pfmLogon, CDKey)
           && NULL != memchr(FM_VAR_REF(pfmLogon, CDKey), 0, c_cbCDKey));
 
       if (pfmLogon->fedsrvVer == MSGVER)
       { // ok, they have the right version of the client
         // Now we need to look them up to make sure they logged in
-        
+
         bool fValid = false; // whether we have a valid character
         LPBYTE pZoneTicket = (LPBYTE) FM_VAR_REF(pfmLogon, ZoneTicket);
-        #if !defined(ALLSRV_STANDALONE)
+        //#if !defined(ALLSRV_STANDALONE)
+		#ifdef USEAUTH
           if (pZoneTicket) // it's all in the Zone Ticket
           {
             hr = g.pzas->DecryptTicket(pZoneTicket, pfmLogon->cbZoneTicket);
@@ -5067,8 +5119,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
           lstrcpy(pqd->szCharacterName, g.pzas->GetName());
           pqd->characterID = g.pzas->GetAccountID();
-          
-        #else // !defined(ALLSRV_STANDALONE)
+
+        #else // defined(USEAUTH) -- was !defined(ALLSRV_STANDALONE)
           if (0 < pfmLogon->cbCharacterName && pfmLogon->cbCharacterName <= c_cbName)
           {
             fValid = true;
@@ -5082,7 +5134,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
             szReason = "No player name found.";
             lstrcpy(pqd->szCharacterName, "<invalid>");
           }
-        #endif // !defined(ALLSRV_STANDALONE)
+        #endif // defined(USEAUTH) -- was !defined(ALLSRV_STANDALONE)
 
         lstrcpy(pqd->szReason, szReason);
         pqd->fRetry = fRetry;
@@ -5100,7 +5152,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         else // pquery->OnDataReady() below is the else of this
 #endif
           pquery->DataReady();
-        
+
       } // if correct messaging version
       else
       {
@@ -5204,7 +5256,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
     case FM_C_BUY_LOADOUT:
     {
-      if (!pfsMission 
+      if (!pfsMission
           || (pfsPlayer->GetIGCShip()->GetCluster() != NULL)
           || (pfsPlayer->GetIGCShip()->GetStation() == NULL)
           || pfsPlayer->GetIGCShip()->IsGhost())
@@ -5397,7 +5449,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
                 IclusterIGC*    pcluster = pfsPlayer->GetIGCShip()->GetCluster();
                 if (pcluster)
-                    g.fm.SendMessages(GetGroupSectorFlying(pcluster), FM_GUARANTEED, FM_FLUSH); //GetGroupRealSides(), 
+                    g.fm.SendMessages(GetGroupSectorFlying(pcluster), FM_GUARANTEED, FM_FLUSH); //GetGroupRealSides(),
                 else
                     g.fm.SendMessages(CFSSide::FromIGC(pfsPlayer->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 
@@ -5572,7 +5624,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   IpackIGC* ppack = (IpackIGC*)ppart;
                   PackType  packtype = ppack->GetPackType();
                   short     amount = ppack->GetAmount();
-              
+
                   if (prlNext->amountTransfered == NA)
                   {
                       ppack->Terminate();
@@ -5697,7 +5749,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
         END_PFM_CREATE
         pfmDelPosReq->shipID     = pfsPlayer->GetShipID();
-        pfmDelPosReq->iSide      = iSide; 
+        pfmDelPosReq->iSide      = iSide;
 
         pfmDelPosReq->reason = DPR_SideGone;
 
@@ -5719,7 +5771,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       TrapHackBoot(pfmPositionAck->iSide >= 0 && pfmPositionAck->iSide < c_cSidesMax);
       // better be on the same mission, on the same side, and be the team leader
-      // (but we can't trap hack it because they may have been booted or 
+      // (but we can't trap hack it because they may have been booted or
       // demoted against their will)
       if (pfmPositionAck->iSide != pside->GetObjectID()
           || pfmPositionAck->iSide == SIDE_TEAMLOBBY
@@ -5728,9 +5780,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       if (!pfssAck || pfssAck->GetMission() != pfsMission) // player already went away, so do nothing
         break;
-        
+
       CFSPlayer * pfspAck = pfssAck->GetPlayer();
-      
+
       if (pfmPositionAck->fAccepted)
       {
         // if they still want the position...
@@ -5765,21 +5817,35 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (!pfssAck) // player already went away, so do nothing
         break;
 
-      // the player must be the team leader or be booting themselves 
+      // the player must be the team leader or be booting themselves
       // (but the client might mistakenly think it's the team leader)
-      if ((pfsPlayer == pfssAck) || 
+      if ((pfsPlayer == pfssAck) ||
           ((pfsPlayer == pfsMission->GetLeader(sideID)) &&
            (pfssAck->GetSide() == pside)))
       {
         CFSPlayer * pfspAck = pfssAck->GetPlayer();
         bool bIsBoot = (pfsPlayer->GetShipID() != pfmQuitMission->shipID);
-          
+
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitMission->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
-          
+
         // send them to the game lobby
-        if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings)
-          pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason);
+		if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings) 
+		{
+		    // Tigereye,  Fire AGCEvent informing of the boot
+			 if (bIsBoot)
+			 {
+				LPCSTR pszContext = pfsMission->GetIGCMission() ? pfsMission->GetIGCMission()->GetContextName() : NULL;
+				_AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext,
+					pfssAck->GetName(), pfssAck->GetShipID(), pside->GetObjectID(), pfsPlayer->GetCharacterID(), 4,
+					"MissionID", VT_I4, pfsMission->GetMissionID(),
+					"Team"    , VT_I4   , pside->GetObjectID(),
+					"TeamName", VT_LPSTR, pside->GetName(),
+					"zBooter", VT_LPSTR, pfsPlayer->GetName());
+			 }
+			// Tigereye end
+			pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason);
+		}
       }
 
       break;
@@ -5804,15 +5870,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       TrapHackBoot(pfssAck->IsPlayer());
 
-      // the player must be the team leader or be booting themselves 
+      // the player must be the team leader or be booting themselves
       // (but the client might mistakenly think it's the team leader)
-      if ((pfsPlayer == pfssAck) || 
+      if ((pfsPlayer == pfssAck) ||
           ((pfsPlayer == pfsMission->GetLeader(sideID)) &&
            (pfssAck->GetSide() == pside)))
       {
         CFSPlayer * pfspAck = pfssAck->GetPlayer();
         bool bIsBoot = (pfsPlayer->GetShipID() != pfmQuitSide->shipID);
-      
+
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitSide->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
 
@@ -5822,7 +5888,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
           END_PFM_CREATE
           pfmDelPosReq->shipID    = pfsPlayer->GetShipID();
-          pfmDelPosReq->iSide     = sideID; 
+          pfmDelPosReq->iSide     = sideID;
           pfmDelPosReq->reason    = DPR_SidesLocked;
 
           g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
@@ -5909,7 +5975,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     {
       if ((!pfsMission) || (pfsMission->GetOwner() != pfsPlayer))
         break;
-    
+
       if (pfsMission->GetStage() != STAGE_NOTSTARTED)
         break;
 
@@ -5959,9 +6025,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
         g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfm, FM_GUARANTEED);
       }
-      
+
       break;
-    }      
+    }
 
     case FM_C_DOCKED:
     {
@@ -6031,7 +6097,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                             pfmMoney->sidTo = pfsPlayer->GetShipID();
                             pfmMoney->sidFrom = NA;
                             pfmMoney->dMoney = refund;
-                            
+
                             pfsPlayer->SetMoney(pfsPlayer->GetMoney() + refund);
 
                             g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
@@ -6044,7 +6110,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                             while (ppl = ppartsList->first())       //Intentional
                                 ppl->data()->Terminate();
                         }
- 
+
                         //Switch to a lifepod
                         IhullTypeIGC*   pht = pside->GetCivilization()->GetLifepod();
                         pfsPlayer->GetIGCShip()->SetBaseHullType(pht);
@@ -6097,7 +6163,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           pfmMoneyChange->dMoney = -mnySpent;
           pfmMoneyChange->sidTo = pfsPlayer->GetShipID();
           pfmMoneyChange->sidFrom = pfmMoneyChange->sidTo;
-          
+
           g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 
           if (pfsPlayer->GetMoney() < 0)
@@ -6171,7 +6237,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           }
           else
           {
-            debugf("%s tried to donate money to ship %d, which doesn't exist in mission.\n", 
+            debugf("%s tried to donate money to ship %d, which doesn't exist in mission.\n",
                 pfsPlayer->GetName(), pfmPlayerDonate->shipID);
 
             assert (pfmPlayerDonate->moneyGiven > 0);
@@ -6233,7 +6299,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (!pfsMission)
         break;
 
-      if (pfsMission->GetStage() == STAGE_NOTSTARTED 
+      if (pfsMission->GetStage() == STAGE_NOTSTARTED
             && !pfsMission->GetMissionDef()->misparms.bLockTeamSettings)
       {
         CASTPFM(pfmSetTeamInfo, CS, SET_TEAM_INFO, pfm);
@@ -6241,7 +6307,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         TrapHackBoot(pfmSetTeamInfo->sideID < c_cSidesMax);
         TrapHackBoot(NULL != memchr(pfmSetTeamInfo->SideName, 0, c_cbName));
         TrapHackBoot(pfsPlayer->GetIsMemberOfSquad(pfmSetTeamInfo->squadID));
-        
+
         // make sure we haven't run into any strange race conditions with team
         // leadership.
         if (pfmSetTeamInfo->sideID >= pfsMission->GetCountSides()
@@ -6251,7 +6317,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
         if (pfsMission->GetMissionDef()->misparms.bSquadGame)
         {
-          TrapHackBoot(pfsPlayer->GetCanLeadSquad(pfmSetTeamInfo->squadID) 
+          TrapHackBoot(pfsPlayer->GetCanLeadSquad(pfmSetTeamInfo->squadID)
             || pfsPlayer->GetSide()->GetSquadID() == pfmSetTeamInfo->squadID);
 
           if (pfmSetTeamInfo->squadID != NA)
@@ -6294,7 +6360,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       // tell everyone on the team about the change
       g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfm, FM_GUARANTEED);
-        
+
       // remove the request in question
       pfsMission->RemoveJoinRequest(pfsPlayer, pfsMission->GetIGCMission()->GetSide(SIDE_TEAMLOBBY));
     }
@@ -6343,9 +6409,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         #if defined(ALLSRV_STANDALONE)
           // for a stand alone server, don't let the client try to change the password
           // (we can't assert this due to a race condition)
-          strcpy(pfmMissionParams->missionparams.strGamePassword, 
+          strcpy(pfmMissionParams->missionparams.strGamePassword,
               pfsMission->GetMissionDef()->misparms.strGamePassword);
-          strcpy(pfmMissionParams->missionparams.strGameName, 
+          strcpy(pfmMissionParams->missionparams.strGameName,
               pfsMission->GetMissionDef()->misparms.strGameName);
         #endif // defined(ALLSRV_STANDALONE)
 
@@ -6378,7 +6444,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     {
       // the player better be the mission owner for this mission
       TrapHackBoot(pfsMission);
-      TrapHackBoot(pfsMission->GetOwner() == pfsPlayer); 
+      TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
 
       // if the mission has not started yet but is ready to start, start the mission
       if (pfsMission->GetStage() == STAGE_NOTSTARTED)
@@ -6409,13 +6475,13 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           TrapHackBoot(sid == pfmSetTeamLeader->sideID);
 
           CFSShip*    pfssNewLeader = CFSShip::GetShipFromID(pfmSetTeamLeader->shipID);
-          if (pfssNewLeader && pfssNewLeader->IsPlayer() 
+          if (pfssNewLeader && pfssNewLeader->IsPlayer()
               && pfssNewLeader->GetSide() == psidePlayer)
           {
               CFSPlayer * pfspNewLeader = pfssNewLeader->GetPlayer();
 
-              // if there is a human player still on their team with the given ship ID, 
-              // make that new player the leader.  
+              // if there is a human player still on their team with the given ship ID,
+              // make that new player the leader.
               if (pfspNewLeader->GetSide() == psidePlayer)
                   pfsMission->SetLeader(pfspNewLeader);
           }
@@ -6464,7 +6530,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
  * Purpose:
  *    Creates a mutex object, with a unique name, to indicate when the
  *    server is running.
- * 
+ *
  */
 HANDLE CreateUniqueMutex()
 {
@@ -6492,7 +6558,7 @@ HANDLE CreateUniqueMutex()
  *-------------------------------------------------------------------------
   Purpose:
       We create the mission before anyone is actually here (as directed by the lobby)
-      But for whatever reason, if the person who requested the mission never shows up, 
+      But for whatever reason, if the person who requested the mission never shows up,
       we want to make sure the missions gets killed, especially since we now don't
       show the mission on the lobby for others to join until the creator gets in.
 
@@ -6507,8 +6573,9 @@ void CheckForNoShows()
   for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
   {
     CFSMission * pfsMission = plinkMission->data();
-    
+
     if (!pfsMission->GetMissionDef()->misparms.bObjectModelCreated &&  // Let admin games break the rules
+		!strcmp(pfsMission->GetMissionDef()->misparms.szIGCStaticFile,IGC_ENCRYPT_CORE_FILENAME) && // KGJV: let custom core games break the rules too
         pfsMission->GetCountOfPlayers(NULL, true) == 0)
     {
       // nuke it if it's been around more than 15 seconds
@@ -6518,7 +6585,7 @@ void CheckForNoShows()
       ::GetSystemTime(&stNow);
       SystemTimeToFileTime(&stNow, &ftNow);
       SystemTimeToFileTime(pfsMission->GetStartTime(), &ftStart);
-      ULONGLONG ullStart; 
+      ULONGLONG ullStart;
       ULONGLONG ullNow;
       CopyMemory(&ullStart, &ftStart, sizeof(ullStart));
       CopyMemory(&ullNow,   &ftNow,   sizeof(ullNow));
@@ -6529,7 +6596,7 @@ void CheckForNoShows()
         delete pfsMission;
         break; // deleting 1 mission per check is plenty
       }
-      
+
     }
   }
 #endif
@@ -6586,20 +6653,20 @@ void ProcessNetworkMessages()
       DWORD cMsgs;
       DWORD cbMsgs;
       HRESULT hr = g.fm.GetConnectionSendQueue(&cnxn, &cMsgs, &cbMsgs);
-      const cMaxQ = 50;
+      const cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
       if ((cnxn.IncAbsentCount() > 6) || // give them a ridiculous 1 minute of no messages
-          FAILED(hr) || 
+          FAILED(hr) ||
           (cMsgs > cMaxQ)) // dead--nuke 'em
       {
         char szBuff[128];
         int cb = wsprintf(szBuff, "Nuking %s(%u) because ", cnxn.GetName(), cnxn.GetID());
-        
+
         if (FAILED(hr))
         {
-          wsprintf(szBuff + cb, "GetConnectionSendQueue returned 0x%08x.\n", hr); 
+          wsprintf(szBuff + cb, "GetConnectionSendQueue returned 0x%08x.\n", hr);
           debugf(szBuff);
         }
-        else 
+        else
         {
           DWORD dwHundredbpsG, dwmsLatencyG, dwHundredbpsU, dwmsLatencyU;
           hr = g.fm.GetLinkDetails(&cnxn, &dwHundredbpsG, &dwmsLatencyG, &dwHundredbpsU, &dwmsLatencyU);
@@ -6608,7 +6675,7 @@ void ProcessNetworkMessages()
 
           if (cMsgs > cMaxQ)
             wsprintf(szBuff + cb, "they had too many messages (%u) queued up to them.\n", cMsgs);
-          else 
+          else
             wsprintf(szBuff + cb, "they missed roll call, with messages (%u) queued up to them.\n", cMsgs);
 
           debugf(szBuff);
@@ -6623,15 +6690,15 @@ void ProcessNetworkMessages()
     timeRollCall = g.timeNow;
     timerClientRollCall.Stop();
     if (g.pServerCounters)
-      g.pServerCounters->timeNetworkMessages = 
-          timerReceiveMessages.LastInterval() + 
-          timerReceiveLobbyMessages.LastInterval() + 
+      g.pServerCounters->timeNetworkMessages =
+          timerReceiveMessages.LastInterval() +
+          timerReceiveLobbyMessages.LastInterval() +
           timerClientRollCall.LastInterval();
   }
   else if (g.pServerCounters)
     g.pServerCounters->timeNetworkMessages = timerReceiveMessages.LastInterval() + timerReceiveLobbyMessages.LastInterval();
 
-  
+
   bool bSupposedToConnectToLobby;
   bool bServerStartedByUI = false;
 
@@ -6640,7 +6707,7 @@ void ProcessNetworkMessages()
     // if started by command-line, then always try to connect to lobby
     // if not started by command-line (started by UI) then connect to lobby only for public games
 
-  bServerStartedByUI = _Module.WasCOMStarted();   
+  bServerStartedByUI = _Module.WasCOMStarted();
   bSupposedToConnectToLobby = !(FEDSRV_GUID != g.fm.GetHostApplicationGuid());  // public games
 #else
     bSupposedToConnectToLobby = !g.strLobbyServer.IsEmpty();
@@ -6666,7 +6733,7 @@ void ProcessNetworkMessages()
     {
       static Time timeLastTry = Time::Now();
       // retry once a minute. This will block for a few seconds, so we don't want to do it too often
-      if (g.timeNow.clock() - timeLastTry.clock() > 60000) 
+      if (g.timeNow.clock() - timeLastTry.clock() > 60000)
       {
         const ListFSMission * plistMission = CFSMission::GetMissions();
         bool fAnyRunning = false;
@@ -6679,7 +6746,7 @@ void ProcessNetworkMessages()
 
         if (!fAnyRunning)
             ConnectToLobby(NULL);
-        
+
         timeLastTry = g.timeNow;
       }
     }
@@ -6701,7 +6768,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
     plinkMissionNext = plinkMission->next();
 
     CFSMission * pfsMission = plinkMission->data();
-    if (pfsMission->GetStage() < STAGE_OVER && 
+    if (pfsMission->GetStage() < STAGE_OVER &&
         pfsMission->GetIGCMission() != g.trekCore) // trekCore is a mission, but not a real one
     {
       // if the game is an auto-restart game and needs to have the countdown started, do so
@@ -6719,12 +6786,12 @@ void UpdateMissions(Time timeStart, Time timePrevious)
             {
               pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
             }
-            else 
+            else
             {
               // Force all sides to ready to prevent an AFK from canceling the game
               for (SideID sideId = 0; sideId < pfsMission->GetMissionDef()->misparms.nTeams; sideId++)
                 pfsMission->SetForceReady(sideId, true);
-            
+
               if (pfsMission->FAllReady()) // a team was found to have less than the required players
                 pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
               else
@@ -6734,7 +6801,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
                 {
                   pfsMission->SetStage(STAGE_OVER);
                  // Send chat to let everyone know the game is canceled
-                  pfsMission->GetSite()->SendChat(NULL, CHAT_EVERYONE, NA, NA, 
+                  pfsMission->GetSite()->SendChat(NULL, CHAT_EVERYONE, NA, NA,
                       "Game canceled due to lack of players", c_cidNone, NA, NA, NULL, true);
                 }
               }
@@ -6748,10 +6815,10 @@ void UpdateMissions(Time timeStart, Time timePrevious)
                 && !pfsMission->FAllReady())
             {
               char szMessage[100];
-              sprintf(szMessage, 
-                "Warning: Game will be canceled if all teams are not ready in %d seconds.", 
-                int(2 * c_fMissionBriefingCountdown)); 
-              pfsMission->GetSite()->SendChat(NULL, CHAT_EVERYONE, NA, NA, 
+              sprintf(szMessage,
+                "Warning: Game will be canceled if all teams are not ready in %d seconds.",
+                int(2 * c_fMissionBriefingCountdown));
+              pfsMission->GetSite()->SendChat(NULL, CHAT_EVERYONE, NA, NA,
                 szMessage, c_cidNone, NA, NA, NULL, true);
             }
           }
@@ -6762,11 +6829,11 @@ void UpdateMissions(Time timeStart, Time timePrevious)
         }
       }
 
-      
+
       // if the countdown for a game has expired (and someone is in the game), start the game
-      if (pfsMission->GetStage() == STAGE_STARTING 
+      if (pfsMission->GetStage() == STAGE_STARTING
           && timeStart > pfsMission->GetMissionDef()->misparms.timeStart
-          && (pfsMission->HasPlayers(NULL, true) 
+          && (pfsMission->HasPlayers(NULL, true)
             || pfsMission->GetMissionDef()->misparms.bAllowEmptyTeams)
           )
       {
@@ -6857,7 +6924,7 @@ bool IsCFGFileValid(const char * szFileName)
     ZFile file(szFileName);
 
     int n = file.GetLength(); // -1 means error
-    if (n != -1 && n != 0) 
+    if (n != -1 && n != 0)
     {
         char* pData = new char[n+1];
         memcpy(pData, file.GetPointer(), n);
@@ -6877,12 +6944,12 @@ bool IsCFGFileValid(const char * szFileName)
          debugf("File %s error while trying to load downloaded config file.\n", szFileName);
          return false;
     }
-  
+
     return true;
 }
 
 
-IHTTPSession * BeginConfigDownload() 
+IHTTPSession * BeginConfigDownload()
 {
   // Get the version information of the current module
   ZVersionInfo vi;
@@ -6903,7 +6970,7 @@ IHTTPSession * BeginConfigDownload()
   }
 
 
-  if (ZString(szConfig).Find("http://") == -1) 
+  if (ZString(szConfig).Find("http://") == -1)
   {
     CopyFile(szConfig, ".\\temp.cfg", FALSE);    // copy to current folder
     debugf("Using local config file due to registry setting for ConfigFile because \"http://\" was missing from it. %s\n", szConfig);
@@ -6916,7 +6983,7 @@ IHTTPSession * BeginConfigDownload()
 
     const char * szFileList[] = { szConfig, "temp.cfg", NULL };
     pHTTPSession->InitiateDownload(szFileList, "."); // . means current path
-    return pHTTPSession; 
+    return pHTTPSession;
   }
 }
 
@@ -6944,12 +7011,12 @@ bool OnAutoUpdateEXEDownloadDone(const char * szFilelistCRC, int nFilelistCRC, i
     // Decide what will be launched after the update (AllSrv32 or UI), and how it will be launched (as service or EXE)
     //
     char * szLaunchPostUpdate;
-    
+
     if (_Module.WasCOMStarted())
     {
       szLaunchPostUpdate = "AllSrvUI32.exe";
     }
-    else 
+    else
     {
       szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv32" : "AllSrv32.exe";  // S: is short for "Start as Service"
     }
@@ -6960,10 +7027,10 @@ bool OnAutoUpdateEXEDownloadDone(const char * szFilelistCRC, int nFilelistCRC, i
     printf("Launching AutoUpdate.exe ... ");
     // Start the AutoUpdate utility
     int nErr;
-    if((nErr = (int)ShellExecute(0, 
-                         "Open", 
+    if((nErr = (int)ShellExecute(0,
+                         "Open",
                          szPath,
-                         szCommandLine, 
+                         szCommandLine,
                          NULL,
                          SW_SHOWNORMAL)
                          ) <= 32)
@@ -6998,11 +7065,11 @@ bool DownloadAutoUpdateEXE(const char * szFilelistCRC, int nFilelistCRC, int nFi
 
     if (nAutoUpdateCRC != FileCRC(szPath, NULL))
     {
-      // Start the download of AutoUpdate.exe file 
+      // Start the download of AutoUpdate.exe file
       IHTTPSession * pHTTPSession = CreateHTTPSession(NULL);
 
       const char * szFileList[] = { szAutoUpdateURL, "AutoUpdate.exe", NULL };
-      pHTTPSession->InitiateDownload(szFileList, szEXEPath); 
+      pHTTPSession->InitiateDownload(szFileList, szEXEPath);
 
       debugf("Downloading AutoUpdate.exe file...");
       printf("Downloading AutoUpdate.exe file ... ");
@@ -7058,7 +7125,21 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 
     char szFilelistCRC[50];
 
-    GetPrivateProfileString("AllSrvUI", "FilelistCRC", "0", 
+    
+#ifdef USEAUTH
+	// Extract auth server from code and update our auth subsystem to use it.
+	// We share the client's field for this.  Probably not the right thing to do,
+	// but it will help prevent mistakes as all clients/servers sharing a cfg will
+	// then automatically share an auth server.
+
+    char szAuthServer[128]; // Size borrowed from clintlib.cpp
+    GetPrivateProfileString("Allegiance", "ZAuth", "auth.zone.com",
+                            szAuthServer, sizeof(szAuthServer), szConfig);
+
+    g.strAuthServer = szAuthServer;
+#endif
+
+    GetPrivateProfileString("AllSrvUI", "FilelistCRC", "0",
                             szFilelistCRC, sizeof(szFilelistCRC), szConfig);
 
     _strupr(szFilelistCRC);
@@ -7081,7 +7162,7 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
     {
       char szStr[100];
 
-      GetPrivateProfileString("AllSrvUI", "FilelistSize", "0", 
+      GetPrivateProfileString("AllSrvUI", "FilelistSize", "0",
                               szStr, sizeof(szStr), szConfig);
 
       int nFilelistSize = atoi(szStr);
@@ -7092,7 +7173,7 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 
       char szSite[512];
 
-      GetPrivateProfileString("AllSrvUI", "Site", "", 
+      GetPrivateProfileString("AllSrvUI", "Site", "",
                               szSite, sizeof(szSite), szConfig);
 
       // If the site value is empty (or doesn't exist) just accept it
@@ -7101,7 +7182,7 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 
       char szDirectory[512];
 
-      GetPrivateProfileString("AllSrvUI", "Directory", "", 
+      GetPrivateProfileString("AllSrvUI", "Directory", "",
                               szDirectory, sizeof(szDirectory), szConfig);
 
       // If the directory value is empty (or doesn't exist) just accept it
@@ -7110,7 +7191,7 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 
       char szAutoUpdateURL[512];
 
-      GetPrivateProfileString("AllSrvUI", "AutoUpdateURL", "", 
+      GetPrivateProfileString("AllSrvUI", "AutoUpdateURL", "",
                               szAutoUpdateURL, sizeof(szAutoUpdateURL), szConfig);
 
       // If the URL value is empty (or doesn't exist) just accept it
@@ -7119,11 +7200,11 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 
       char szAutoUpdateCRC[30];
 
-      GetPrivateProfileString("AllSrvUI", "AutoUpdateCRC", "", 
+      GetPrivateProfileString("AllSrvUI", "AutoUpdateCRC", "",
                               szAutoUpdateCRC, sizeof(szAutoUpdateCRC), szConfig);
 
       _strupr(szAutoUpdateCRC);
- 
+
       int nAutoUpdateCRC = UTL::hextoi(szAutoUpdateCRC);
 
       // If the AutoUpdate values are empty (or don't exist) just accept them
@@ -7244,7 +7325,7 @@ void RestartPausedMissions()
 }
 
 
-HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not override */) 
+HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not override */)
 {
   // Disconnect from current lobby, if any
   DisconnectFromLobby();
@@ -7264,9 +7345,9 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
     "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
   HRESULT hr = g.fmLobby.JoinSession(
 #if defined(ALLSRV_STANDALONE)
-        FEDFREELOBBYSERVERS_GUID, 
+        FEDFREELOBBYSERVERS_GUID,
 #else
-        FEDLOBBYSERVERS_GUID, 
+        FEDLOBBYSERVERS_GUID,
 #endif
         PCC(g.strLobbyServer), PCC(g.strLocalAddress));
   if (FAILED(hr))
@@ -7274,7 +7355,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
     printf("failed.\n", PCC(g.strLobbyServer));
     return hr;
   }
-  
+
   printf("succeeded.\n", PCC(g.strLobbyServer));
 
   // Save the new LobbyServer value
@@ -7292,7 +7373,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 
   // Make sure the lobby knows whether we're paused before we do anything else
   AnnouncePause();
-  
+
   // ok, now let's re-advertize our games
   const ListFSMission * plistMission = CFSMission::GetMissions();
   for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
@@ -7311,11 +7392,15 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
   //
   if (SUCCEEDED(hr))
   {
-  #if defined(ALLSRV_STANDALONE)
+	// KGJV - StartDefaultGames even for AZ
+  // #if defined(ALLSRV_STANDALONE)
     // if we were started NOT from the COM object model, start any autostart games
-    if (!_Module.WasCOMStarted())
+  // KGJV - FZ servers starts default games only in service mode (ie not COMStarted).
+#if defined(ALLSRV_STANDALONE)
+  if (!_Module.WasCOMStarted())
+#endif
       StartDefaultGames();
-  #endif
+  // #endif
   }
 
   return hr;
@@ -7355,7 +7440,7 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
     #else
       dwWait = MsgWaitForMultipleObjects(nCount, pHandles, false, dwSleep, QS_ALLINPUT);
     #endif
-    
+
     if (WAIT_TIMEOUT == dwWait)
       break;
 
@@ -7382,7 +7467,7 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
             if (!g.fPaused)
               RestartPausedMissions();
             break;
-          
+
           case WM_QUIT:
             _Module.StopAllsrv();
             break;
@@ -7405,7 +7490,8 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
 }
 
 
-#if defined(ALLSRV_STANDALONE)
+// KGJV- StartDefaultGames even for AZ
+//#if defined(ALLSRV_STANDALONE)
 /*-------------------------------------------------------------------------
  * StartDefaultGames
  *-------------------------------------------------------------------------
@@ -7422,7 +7508,7 @@ void StartDefaultGames()
   MissionParams mp;
   mp.Reset();
 
-  // we access the registry here because these keys don't need to be saved as globals.  
+  // we access the registry here because these keys don't need to be saved as globals.
   HKEY hKey;
   DWORD dwType;
   DWORD dwValue;
@@ -7431,19 +7517,27 @@ void StartDefaultGames()
   {
     // get the max players per game to use.from the registry
     cbValue = sizeof(dwValue);
+	// MaxPlayersPerGame not used for AZ
+#if defined(ALLSRV_STANDALONE)
     if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxPlayersPerGame", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
       mp.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, (short)dwValue);
     else
       mp.nTotalMaxPlayersPerGame = c_cMaxPlayersPerGame;
+#endif
 
     // lock the games open, if requested.
     cbValue = sizeof(dwValue);
     if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LockOpen", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
       mp.bLockGameOpen = !!dwValue;
 
+#if defined(ALLSRV_STANDALONE)
     mp.nMinPlayersPerTeam = 1;
     mp.nMaxPlayersPerTeam = (char)(min(200, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
-    mp.bObjectModelCreated = true; // a little bit of a fib, but it makes it look normal
+
+	mp.bObjectModelCreated = true; // a little bit of a fib, but it makes it look normal
+#else
+	mp.bObjectModelCreated = false; // FAZ: default games are not zone games
+#endif
 
     HRESULT hr = S_OK;
     int iGame = 1;
@@ -7455,7 +7549,7 @@ void StartDefaultGames()
       // look for a registry key Game#
       wsprintf(cbValueName, "Game%d", iGame);
       hr = LoadRegString(hKey, cbValueName, strGameName);
-    
+
       if (SUCCEEDED(hr))
       {
         // copy the new name into the mission parameters
@@ -7463,9 +7557,25 @@ void StartDefaultGames()
         mp.strGameName[c_cbGameName - 1] = '\0';
         assert(!mp.Invalid());
 
-        printf("Starting game \"%s\"\n", mp.strGameName);
+		// -Imago
+       	// look for a core/map for Game#
+        ZString strCore;
+        wsprintf(cbValueName, "Core%d", iGame);
+		LoadRegString(hKey, cbValueName, strCore);
+		strncpy(mp.szIGCStaticFile, strCore, c_cbFileName);
 
-        // Create the new mission 
+		// -Imago
+       	// look for a core/map for Map#
+		// -KGJV : should we lock game settings when custom map specified. If so need 'GameParameters#' too ?
+		// removed map# for now
+		ZString strMap;
+		//wsprintf(cbValueName, "Map%d", iGame);
+		//LoadRegString(hKey, cbValueName, strMap);
+		//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
+
+		printf("Starting game \"%s\" with core: %s on map %s\n", mp.strGameName, mp.szIGCStaticFile, mp.szCustomMapFile);
+
+        // Create the new mission
         FedSrvSite * psiteFedSrv = new FedSrvSite();
         CFSMission * pfsMissionNew = new CFSMission(mp, NULL, psiteFedSrv, psiteFedSrv, NULL, NULL);
 
@@ -7485,7 +7595,7 @@ void StartDefaultGames()
     RegCloseKey(hKey);
   }
 }
-#endif
+//#endif
 
 
 /*-------------------------------------------------------------------------
@@ -7493,7 +7603,7 @@ void StartDefaultGames()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Receives messages for a mission, and does all periodic processing
- * 
+ *
  * Parameters:
  *    pThreadParameter: Unused
  */
@@ -7502,7 +7612,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   HANDLE rgeventHandles[2];
   ZVersionInfo vi;
   debugf("Running %s %s\n", (PCC) vi.GetInternalName(), (PCC) vi.GetProductVersionString());
-      
+
   debugf("Entering ReceiveThread\n");
   DWORD dwUpdateInterval = g.nUpdatesPerSecond <= 0 ? (1000 / 10) : (1000 / g.nUpdatesPerSecond); // milliseconds
   if (g.pServerCounters)
@@ -7545,7 +7655,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   g.trekCore = CreateMission(); // this isn't a *real* mission, just a gateway to static stuff
   g.trekCore->Initialize (Time::Now(), &g.siteFedSrv);
-
+  debugf("trekCore completed\n");
   // until the server loads the appropriate igc static file based on mission params
   // and only has one game per exe
   int   iStaticCoreVersion;
@@ -7555,7 +7665,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   iStaticCoreVersion = LoadIGCStaticCore (IGC_STATIC_CORE_FILENAME, g.trekCore, false);
 #endif // !defined(ALLSRV_STANDALONE)
   assert (iStaticCoreVersion != NA);
-
+  debugf("iStaticCoreVersion = %d\n",iStaticCoreVersion);
   //
   // This is the first place where we can might connect to a lobby
   //
@@ -7580,11 +7690,14 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   #if !defined(ALLSRV_STANDALONE)
     LoadRankInfo();
-    LoadStaticMapInfo();
   #endif
+  // -KGJV: changed for StaticMapInfo in all modes
+  debugf("calling LoadStaticMapInfo\n");
+    LoadStaticMapInfo();
+  debugf("LoadStaticMapInfo result: #maps=%d\n",g.cStaticMapInfo);
 
   CTimer timerReceiveIterations("between iterations in ReceiveThread loop", .25f);
-  
+
   printf("Ready for clients.\n");
 
   // loop waiting for player events. If the kill event is signaled
@@ -7652,15 +7765,16 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   // Disconnect any other external references to the CAdminServer instance
   CoDisconnectObject(spunkServer, 0);
-  
+
   // Release the CAdminServer instance
   spunkServer = NULL;
 
 
   #if !defined(ALLSRV_STANDALONE)
     UnloadRankInfo();
-    UnloadStaticMapInfo();
   #endif
+  // -KGJV: StaticMapInfo in all modes
+    UnloadStaticMapInfo();
 
   // destroy IGC stuff
   UnloadDbCache();
@@ -7722,7 +7836,12 @@ void LoadSettings()
         else
             g.nUpdatesPerSecond = 10;
 
+// mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
+#define SRVLOG
+#endif
+
+#ifdef SRVLOG // mmf changed this from _DEBUG
         dwValue=0;
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "nDebugMask", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
@@ -7760,13 +7879,13 @@ void LoadSettings()
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fWantInt3", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             g.fWantInt3 = !!dwValue;
         else g.fWantInt3 = true;
-        
+
         dwValue=0;
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fProtocol", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             g.fProtocol = !!dwValue;
         else g.fProtocol = true;
-        
+
         dwValue=0;
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fDoublePrecision", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
@@ -7805,7 +7924,7 @@ void LoadSettings()
  *-------------------------------------------------------------------------
  * Purpose:
  *    find out if a string starts with another string
- * 
+ *
  *  Parameters: string to search, and string to find
  */
  bool   StringStartsWith (char* src, char* find)
@@ -7822,7 +7941,7 @@ void LoadSettings()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Build IGC files from the database
- * 
+ *
  *  Parameters: none
  */
 void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = true)
@@ -7848,7 +7967,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
         exit (1);
     }
 
-    // There's a number of database sizes that are greater than the message sizes, 
+    // There's a number of database sizes that are greater than the message sizes,
     // and I don't want to put casts all over the place, so...
     #pragma warning(push)
     #pragma warning(disable : 4244)
@@ -7858,7 +7977,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
         // now loop over all of the map data...
         SQL_GO(MapsCount);
         SQL_GETROW(MapsCount);
-  
+
         MapDescription* pMaps = new MapDescription[g_cMapsCount];
         MapFileSite*    pSite = new MapFileSite;
 
@@ -7918,7 +8037,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
                 IObject* punk = pMission->CreateObject(g.timeNow, OT_cluster, &obj, sizeof(obj));
                 punk->Release();
             }
-      
+
             //-----------------------------------------------------------------
             // alephs
             //-----------------------------------------------------------------
@@ -7963,7 +8082,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
                 strcpy (alephMapIterator->second->name, pCluster->GetName ());
                 IObject* punk = pMission->CreateObject(g.timeNow, OT_warp, alephMapIterator->second, sizeof(DataWarpIGC));
                 punk->Release();
-          
+
                 printf ("    Creating Aleph from %s to %s...\n", pMission->GetCluster (alephMapIterator->second->clusterID)->GetName (), pCluster->GetName ());
                 alephMapIterator++;
             }
@@ -8057,7 +8176,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
                 obj.ttbmDevelopmentTechs.SetAll ();
                 obj.conquest = 0;
                 obj.territory = 0;
-                obj.nKills = obj.nDeaths = obj.nEjections = obj.nFlags = obj.nArtifacts 
+                obj.nKills = obj.nDeaths = obj.nEjections = obj.nFlags = obj.nArtifacts
                     = obj.nBaseKills = obj.nBaseCaptures = 0;
                 obj.squadID = NA;
 
@@ -8152,7 +8271,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
         bool                createNow;
     };
 
-        DEF_STMT(MineInstance, "SELECT " 
+        DEF_STMT(MineInstance, "SELECT "
             "MineID, "
             "MineTypeID, "
             "SideID, SectorID, "
@@ -8212,7 +8331,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
         bool                createNow;
     };
 
-        DEF_STMT(TreasureInstance, "SELECT " 
+        DEF_STMT(TreasureInstance, "SELECT "
             "Lifespan, "
             "TreasureID, "
             "LocationX, LocationY, LocationZ, "
@@ -8279,8 +8398,8 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
  *-------------------------------------------------------------------------
  * Purpose:
  *    Register AllSrv as an EXE or NT Service, and report any errors
- * 
- *  Paramters: 
+ *
+ *  Paramters:
  *    fReRegister:  are we registering after an autoupdate?
  *    fInstallAsService: TRUE if NT service, FALSE for EXE
  */
@@ -8300,7 +8419,7 @@ void RegisterAllSrv(BOOL fReRegister, BOOL fInstallAsService, int argc, char *ar
     sprintf(szBuf, "Unable to register server [0x%08x].  %s is not properly installed.\n", dwErrorCode, argv[0]);
     PrintSystemErrorMessage(szBuf, dwErrorCode);
   }
-  else 
+  else
   {
     // signal success in terms of adding COM related registry stuff
     printf("Registry Update Successful.\n");
@@ -8313,7 +8432,7 @@ void RegisterAllSrv(BOOL fReRegister, BOOL fInstallAsService, int argc, char *ar
  *-------------------------------------------------------------------------
  * Purpose:
  *    Unregister AllSrv as an EXE or NT Service, and report any errors
- * 
+ *
  */
 void UnregisterAllSrv(char *szServerName)
 {
@@ -8325,7 +8444,7 @@ void UnregisterAllSrv(char *szServerName)
     sprintf(szBuf, "Unable to remove server [0x%08x].  %s is not properly uninstalled.\n", dwErrorCode, szServerName);
     PrintSystemErrorMessage(szBuf, dwErrorCode);
   }
-  else 
+  else
   {
     // signal success in terms of removing COM related registry stuff
     printf("Registry Update Successful.\n");
@@ -8343,7 +8462,7 @@ void UnregisterAllSrv(char *szServerName)
 // (with the -install command line switch) de-installation (with the
 // -remove switch) and running as a non-service executable (with the
 // -debug switch).
-//                           
+//
 // This function parses the command line arguments and invokes the
 // selected mode of operation.  When running as an executable, blocking
 // keyboard input is used to prevent the program from exiting prematurely.
@@ -8359,7 +8478,7 @@ int __cdecl main(int argc, char *argv[])
       _controlfp(_PC_53, _MCW_PC);
 
     // seed the random number generator with the current time
-    // (GetTickCount may be semi-predictable on server startup, so we add the 
+    // (GetTickCount may be semi-predictable on server startup, so we add the
     // clock time to shake things up a bit)
     srand(GetTickCount() + time(NULL));
 
@@ -8398,8 +8517,8 @@ int __cdecl main(int argc, char *argv[])
     bool fShowUsage = false;
 
     g.hInst = GetModuleHandle(NULL);
-                                                           
-    if (argc < 1) 
+
+    if (argc < 1)
     {
       //printf ("Hell has frozen over.\n"); // this should never happen
       // Terminate AGC
@@ -8435,12 +8554,12 @@ int __cdecl main(int argc, char *argv[])
       _Module.TermAGC();
       return 0;
     }
-    #endif 
-    #endif 
+    #endif
+    #endif
 
     if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') && !_Module.WasCOMStarted())
     {
-      BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1); 
+      BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1);
 
       if (fInstallAsService || !lstrcmpi("RegServer",argv[1]+1))
       {
@@ -8483,7 +8602,7 @@ int __cdecl main(int argc, char *argv[])
       }
     #endif // !defined(ALLSRV_STANDALONE)
       else
-      { 
+      {
             // if unknown args
            fShowUsage = true;
       }
@@ -8519,7 +8638,7 @@ int __cdecl main(int argc, char *argv[])
       ZVersionInfo vi;
       printf("%s\n%s\n\n",
         (LPCSTR)vi.GetFileDescription(), (LPCSTR)vi.GetLegalCopyright());
-      
+
       if (!_Module.IsInstalled())
       {
         printf("\nThe server needs to be installed before running.\n\n", argv[0]);
@@ -8581,7 +8700,7 @@ HRESULT pascal FedSrv_Continue()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Saves instance handle and creates main window. Does lots of setup stuff
- * 
+ *
  * Side Effects:
  *    Lots
  */
@@ -8597,7 +8716,7 @@ HRESULT pascal FedSrv_Init()
   HMODULE hmod = GetModuleHandle(NULL);
   assert(hmod);
   char path_buffer[_MAX_PATH];
-  GetModuleFileName(hmod, path_buffer, sizeof(path_buffer)); 
+  GetModuleFileName(hmod, path_buffer, sizeof(path_buffer));
 
   char drive[_MAX_DRIVE];
   char dir[_MAX_DIR];
@@ -8625,19 +8744,21 @@ HRESULT pascal FedSrv_Init()
                       sizeof(SERVER_COUNTERS));
   memset(g.pServerCounters, 0x00, sizeof(SERVER_COUNTERS));
 
-  #if !defined(ALLSRV_STANDALONE)
+#if defined(USEAUTH)//!defined(ALLSRV_STANDALONE)
     g.pzas = CreateZoneAuthServer();
     if (!g.pzas)
     {
+#if !defined(ALLSRV_STANDALONE)
       _AGCModule.TriggerEvent(NULL, AllsrvEventID_ZoneAuthServer, "", -1, -1, -1, 0);
+#endif // !defined(ALLSRV_STANDALONE)
       return E_FAIL;
     }
-  #endif // !defined(ALLSRV_STANDALONE)
-  
+#endif // defined(USEAUTH), formerly !defined(ALLSRV_STANDALONE)
+
 
   // create event used by fm to signal a message has arrived
   // let's try NOT signaling on this event, since it may signal us too often
-  // g.hPlayerEvent = CreateEvent(NULL, FALSE, FALSE, NULL); 
+  // g.hPlayerEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
   // assert(g.hPlayerEvent);
 
   // create event used to signal that the receive thread should exit
@@ -8699,7 +8820,7 @@ class ThingSiteImpl : public ThingSite
                         }
                     }
                 }
-            
+
                 if (pcluster)
                     UpdateSideVisibility(pmodel, pcluster);
             }
@@ -8720,7 +8841,7 @@ class ThingSiteImpl : public ThingSite
                 //Ships are never predictable
                 assert (type != OT_ship);
 
-                if (pside->GetActiveF() && 
+                if (pside->GetActiveF() &&
                     ((pfsMission->GetStage() == STAGE_STARTED) ||
                      (pfsMission->GetStage() == STAGE_STARTING)))
                 {
@@ -8730,7 +8851,7 @@ class ThingSiteImpl : public ThingSite
                     // so we will use the secondary (smaller 1k) outbox so as to not interrupt the main message stream
                     g.fm.UseMainOutBox(false);
                     g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED);
-                    
+
                     //Tell everyone on the side about the newly visible static object
                     bSent = true;
                     ExportObj(pmodel, type, NULL);
@@ -8841,12 +8962,12 @@ class ThingSiteImpl : public ThingSite
                         {
                             if (!sv.fVisible())
                             {
-                                //See it 
+                                //See it
                                 sv.fVisible(true);
                                 ShowObject(pside, pmodel);
                             }
                         }
-                        else 
+                        else
                         {
                             //Not trivially seen ... loop over everything that could see it
                             sv.fVisible(false);
@@ -8859,7 +8980,7 @@ class ThingSiteImpl : public ThingSite
 
                                 if (s->InScannerRange(pmodel))
                                 {
-                                    //See it 
+                                    //See it
                                     sv.fVisible(true);
                                     bool    bSent = ShowObject(pside, pmodel);
 
@@ -8870,8 +8991,8 @@ class ThingSiteImpl : public ThingSite
                                     {
                                         // if it's a station, aleph, special asteroid or helium asteroid...
                                         ObjectType otModel = pmodel->GetObjectType();
-                                        if (otModel == OT_station || otModel == OT_warp || 
-                                            (otModel == OT_asteroid && 
+                                        if (otModel == OT_station || otModel == OT_warp ||
+                                            (otModel == OT_asteroid &&
                                              (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
                                         {
                                             ObjectType  otSpotter = s->GetObjectType();
@@ -9179,7 +9300,13 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
     pstationNew->Release();
 
     UpgradeDrones(pside);
-
+    // Tigereye, Fire AGCEvent when base is built
+	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
+	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
+		pside->GetName(), pside->GetObjectID(), -1, -1, 3,"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+		"TeamID"    , VT_I4   , pside->GetObjectID(),"TeamName", VT_LPSTR, pside->GetName(),
+		"StationName", VT_LPSTR, pstationNew->GetName());
+    // Tigereye end
     //Possibly the built themselves to a victory
     IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationBuild(pside);
     if (psideWin)
@@ -9190,7 +9317,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
     }
 }
 
-void FedSrvSiteBase::DroneTypeCompleted(IbucketIGC * pbucket, IstationIGC* pstation, IdroneTypeIGC * pdronetype, Time now) 
+void FedSrvSiteBase::DroneTypeCompleted(IbucketIGC * pbucket, IstationIGC* pstation, IdroneTypeIGC * pdronetype, Time now)
 {
   IsideIGC* pside = pstation->GetSide();
   if (pside->GetActiveF())
@@ -9226,7 +9353,7 @@ void FedSrvSiteBase::DroneTypeCompleted(IbucketIGC * pbucket, IstationIGC* pstat
   }
 }
 
-void FedSrvSiteBase::UpgradeShip(IshipIGC* pship, const IstationIGC*  pstation) 
+void FedSrvSiteBase::UpgradeShip(IshipIGC* pship, const IstationIGC*  pstation)
 {
     assert (pship->GetParentShip() == NULL);
     assert (pship->GetStation() == pstation);
@@ -9306,7 +9433,7 @@ void FedSrvSiteBase::TerminateModelEvent(ImodelIGC*  pmodel)
 {
 }
 
-void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIGC* pcredit, float amount, const Vector& p1, const Vector& p2) 
+void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIGC* pcredit, float amount, const Vector& p1, const Vector& p2)
 {
   ImissionIGC*          pmission = m_pfsMission->GetIGCMission();
   const MissionParams*  pmp = pmission->GetMissionParams();
@@ -9527,7 +9654,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
                                         IhullTypeIGC* phtParent = pshipParent->GetBaseHullType();
                                         assert (phtParent);
                                         float   divisor = 2.0f + float(phtParent->GetMaxWeapons() - phtParent->GetMaxFixedWeapons());
-                                
+
                                         CFSShip*  pfsParent = (CFSShip*)(pshipParent->GetPrivateData());
                                         pfsParent->GetPlayerScoreObject()->KillShip(pship,
                                                                                     l->data()->totalDamage() /
@@ -9692,7 +9819,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
         //so there is no place to send them to. Fortunately, this really is not a problem because
         //if the game ends then the clients are all going to be rather firmly reset anyhow
 
-        //there also might be more than two 
+        //there also might be more than two
         pship->SetCluster(NULL);
 
         if (pshipParent)
@@ -9761,7 +9888,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
 
                         switch (ship->GetPilotType())
                         {
-                            case c_ptCarrier:   
+                            case c_ptCarrier:
                                 underAttackSound = carrierUnderAttackSound;
                                 break;
 
@@ -9773,7 +9900,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                 break;
 
                             case c_ptBuilder:
-                                underAttackSound = 
+                                underAttackSound =
                                     ((IstationTypeIGC*)(IbaseIGC*)(ship->GetBaseData()))
                                         ->GetConstructorUnderAttackSound();
                                 break;
@@ -9784,7 +9911,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                 break;
                         }
                         SendChatf(ship, CHAT_TEAM, ship->GetSide()->GetObjectID(),
-                                  underAttackSound, "Under attack by %s in %s", 
+                                  underAttackSound, "Under attack by %s in %s",
                                   GetModelName(launcher), ship->GetCluster()->GetName());
                     }
                     else if (launcher->GetObjectType() == OT_ship)
@@ -9820,14 +9947,14 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
                     {
                         SendChatf(NULL, CHAT_TEAM, station->GetSide()->GetObjectID(),
                                   station->GetStationType()->GetCriticalSound(),
-                                  "%s in %s critically damaged and under attack by %s", station->GetName(), 
+                                  "%s in %s critically damaged and under attack by %s", station->GetName(),
                                   station->GetCluster()->GetName(), GetModelName(launcher));
                     }
                     else
                     {
                         SendChatf(NULL, CHAT_TEAM, station->GetSide()->GetObjectID(),
                                   station->GetStationType()->GetUnderAttackSound(),
-                                  "%s in %s under attack by %s", station->GetName(), 
+                                  "%s in %s under attack by %s", station->GetName(),
                                   station->GetCluster()->GetName(), GetModelName(launcher));
                     }
                 }
@@ -9847,7 +9974,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
     }
 }
 
-void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plauncher, float amount) 
+void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plauncher, float amount)
 {
   StationID stationID = pstation->GetObjectID();
 
@@ -9869,8 +9996,8 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
           {
              CFSShip*      ps = (CFSShip*)(psl->data()->GetPrivateData());
              ps->GetPlayerScoreObject()->KillBase(false);
-          }      
-      }  
+          }
+      }
 
       psideLauncher = plauncher->GetSide();
       if (psideLauncher)
@@ -9884,7 +10011,14 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   pfmStationDestroyed->stationID = stationID;
   pfmStationDestroyed->launcher = (otLauncher == OT_ship) ? plauncher->GetObjectID() : NA;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
-
+  // Tigereye, fire AGCEvent when base is destroyed
+  LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
+  _AGCModule.TriggerContextEvent(NULL, EventID_StationDeleted, pszContext,
+    plauncher->GetName(), plauncher->GetUniqueID(), plauncher->GetSide()->GetUniqueID(), -1, 3,
+    "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
+    "zStationName", VT_LPSTR, pstation->GetName());	
+  // parameter is named zStationName so it appears at end of alphabetical list
+  // Tigereye end
   IsideIGC*   pside = pstation->GetSide();
   IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationKill(pstation, pside);
   if (psideWin)
@@ -9901,7 +10035,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   }
   else if ((otLauncher == OT_ship) && psideLauncher)
       SendChatf(NULL, CHAT_EVERYONE, NA,
-                NA, "%s has destroyed %s's %s.", 
+                NA, "%s has destroyed %s's %s.",
                 psideLauncher->GetName(), pside->GetName(), pstation->GetName());
 
   pstation->Terminate();
@@ -10140,7 +10274,7 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
     }
 
     //Copy the list of desired parts
-    IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with 
+    IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
     memcpy(ptDesired, pfsPlayer->GetDesiredLoadout(), sizeof(ptDesired));
 
     //Go through and fill any holes with the desired parts
@@ -10256,7 +10390,7 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
         short   slot = pshipCarrier->GetLaunchSlot();
 
         position += phtCarrier->GetLaunchPosition(slot) * orientation;
-        
+
         Vector  forward = phtCarrier->GetLaunchDirection(slot) * orientation;
 
         position += forward * (pship->GetRadius() + vLaunch * 0.5f);
@@ -10323,14 +10457,14 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
 }
 
 
-void FedSrvSiteBase::CaptureStationEvent(IshipIGC* pship, IstationIGC* pstation) 
+void FedSrvSiteBase::CaptureStationEvent(IshipIGC* pship, IstationIGC* pstation)
 {
     CFSShip* pfsShip = (CFSShip *) pship->GetPrivateData();
     pfsShip->CaptureStation(pstation);
 }
 
 
-bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation) 
+bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation)
 {
   assert (pship->GetParentShip() == NULL);
 
@@ -10362,7 +10496,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
               pside->SetArtifacts(pside->GetArtifacts() + 1);
 
               SendChatf(NULL, CHAT_TEAM, pside->GetObjectID(),
-                        artifactSecuredSound, "%s has secured an artifact.", 
+                        artifactSecuredSound, "%s has secured an artifact.",
                         pship->GetName());
           }
           else
@@ -10371,11 +10505,11 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
               pside->SetFlags(pside->GetFlags() + 1);
 
               SendChatf(NULL, CHAT_TEAM, pside->GetObjectID(),
-                        enemyFlagSecuredSound, "%s has secured %s's flag.", 
+                        enemyFlagSecuredSound, "%s has secured %s's flag.",
                         pship->GetName(), pfsShip->GetIGCShip()->GetMission()->GetSide(sidFlag)->GetName());
 
               SendChatf(NULL, CHAT_TEAM, sidFlag,
-                        flagSecuredSound, "%s of %s has secured your flag.", 
+                        flagSecuredSound, "%s of %s has secured your flag.",
                         pship->GetName(), pside->GetName ());
           }
 
@@ -10391,7 +10525,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
           if (psideWin)
           {
               static char szReason[100];     //Make this static so we only need to keep a pointer to it around
-              sprintf(szReason, 
+              sprintf(szReason,
                       (sidFlag != NA)
                       ? "%s wins with the flag recovered by %s"
                       : "%s wins with the artifact recovered by %s",
@@ -10599,7 +10733,9 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
         pship->SetCurrentTurnRate(c_axisRoll, 0.0f);
 
         pship->SetCluster(pcluster);
-        
+
+		//FAZ: this is where tp1/tp2 are randomly destroyed (1/6 chance)
+		// future mod: use ((IprobeIGC)pmodel) to access the igcprobe datas
         if ((type == OT_probe) && (randomInt(0, 5) == 0))
         {
             KillProbeEvent((IprobeIGC*)pmodel);
@@ -10609,10 +10745,10 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 
     return true;
 }
-void FedSrvSiteBase::HitWarpEvent(IshipIGC* pship, IwarpIGC* pwarp) 
+void FedSrvSiteBase::HitWarpEvent(IshipIGC* pship, IwarpIGC* pwarp)
 {
   CFSShip * pfsShip = (CFSShip *) pship->GetPrivateData();
-  
+
   pfsShip->HitWarp(pwarp);
 }
 
@@ -10637,15 +10773,15 @@ void FedSrvSiteBase::LoadoutChangeEvent(IshipIGC* pship, IpartIGC* ppart, Loadou
 {
     // if we are mounting or dismounting an area effect weapon...
     if (lc == c_lcAdded && ppart->GetEquipmentType() == ET_Weapon
-        && ((IweaponIGC*)ppart)->GetProjectileType()->GetBlastRadius() > 0.0f) 
+        && ((IweaponIGC*)ppart)->GetProjectileType()->GetBlastRadius() > 0.0f)
     {
         // REVIEW: we could add a check to see if there was already an area effect weapon mounted,
         // or even cache the last target that was broadcast.  It's probably not worth maintaining
-        // the extra code, however.  
-    
+        // the extra code, however.
+
         // ...resend the current target
-        CommandChangedEvent(c_cmdCurrent, pship, 
-            pship->GetCommandTarget(c_cmdCurrent), 
+        CommandChangedEvent(c_cmdCurrent, pship,
+            pship->GetCommandTarget(c_cmdCurrent),
             pship->GetCommandID(c_cmdCurrent));
     }
 
@@ -10688,7 +10824,7 @@ bool FedSrvSiteBase::HitTreasureEvent(Time now, IshipIGC* ship, ItreasureIGC* tr
 
     if (tc == c_tcPart)
     {
-        // if this was a player, the message below will take care of it. 
+        // if this was a player, the message below will take care of it.
         // REVIEW: shouldn't drones pick up treasure if they can?
     }
     else if (tc == c_tcCash)
@@ -10749,7 +10885,7 @@ bool FedSrvSiteBase::HitTreasureEvent(Time now, IshipIGC* ship, ItreasureIGC* tr
     return true;
 }
 
-void FedSrvSiteBase::PaydayEvent(IsideIGC* pside, float money) 
+void FedSrvSiteBase::PaydayEvent(IsideIGC* pside, float money)
 {
   m_pfsMission->GiveSideMoney(pside, Money(money));
 }
@@ -10831,7 +10967,7 @@ void FedSrvSiteBase::CommandChangedEvent(Command i, IshipIGC * pship, ImodelIGC*
         bool fCurrentTarget = (i == c_cmdCurrent);
         g.fm.SendMessages(fCurrentTarget
                               ? GetGroupSectorFlying(pcluster)
-                              : CFSSide::FromIGC(pship->GetSide())->GetGroup(), 
+                              : CFSSide::FromIGC(pship->GetSide())->GetGroup(),
                           fCurrentTarget ? FM_NOT_GUARANTEED : FM_GUARANTEED, FM_FLUSH);
     }
 }
@@ -10906,7 +11042,7 @@ void        FedSrvSiteBase::LayExpendable(Time                   now,
     {
         assert (type == OT_probeType);
 
-        DataProbeIGC dp; 
+        DataProbeIGC dp;
         dp.pside = pside;
         dp.pship = NULL;
         dp.pmodelTarget = NULL;
@@ -11016,7 +11152,7 @@ void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag)
 
             dt.objectID = m_pfsMission->GetIGCMission()->GenerateNewTreasureID();
 
-            dt.p0 = pstation->GetPosition(); 
+            dt.p0 = pstation->GetPosition();
             dt.p0.z += pstation->GetRadius() + c_fFlagOffset;
             dt.v0 = Vector::GetZero();
             dt.time0 = g.timeNow;
@@ -11118,7 +11254,12 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
  *    This class is called by the assert code when an assert happens
  */
 
+// mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
+#define SRVLOG
+#endif
+
+#ifdef SRVLOG // mmf changed this from _DEBUG
 
     void    FlushDebugLog(void)
     {
@@ -11138,12 +11279,12 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
     {
       SYSTEMTIME systime;
       DWORD l = strlen(psz);
-      const c_cbPrefix = 19; // time format: 12/31 23:59:59.999 
+      const c_cbPrefix = 19; // time format: 12/31 23:59:59.999
       DWORD cbLine = l + c_cbPrefix;
       OVERLAPPED* pov = (OVERLAPPED*)(new char [ sizeof(OVERLAPPED) + cbLine ]);
       *pov = m_overlapped;
       GetLocalTime(&systime);
-      wsprintf((char*)(pov + 1), "%02d/%02d %02d:%02d:%02d.%03d ", systime.wMonth, systime.wDay, 
+      wsprintf((char*)(pov + 1), "%02d/%02d %02d:%02d:%02d.%03d ", systime.wMonth, systime.wDay,
           systime.wHour, systime.wMinute, systime.wSecond, systime.wMilliseconds);
       //_strtime((char*)(pov + 1));
       //((char*)(pov + 1))[8] = ' ';
@@ -11182,7 +11323,7 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
 
     bool FedSrvApp::OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule)
     {
-        _AGCModule.TriggerEvent(NULL, EventID_AGCAssert, "", -1, -1, -1, 3, 
+        _AGCModule.TriggerEvent(NULL, EventID_AGCAssert, "", -1, -1, -1, 3,
             "File", VT_LPSTR, pszFile,
             "Line", VT_I4, line,
             "Text", VT_LPSTR, psz);

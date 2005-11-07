@@ -37,7 +37,7 @@ BOOL InitializeCivs(CSQLWrap * pSQLWrap, CTechItemList * pCivList)
     CHAR szName[TECH_ITEM_NAME_LENGTH + 4];
     SHORT shID;
     SHORT shStationID;
-    SHORT shConstructionDroneID;
+//  SHORT shConstructionDroneID; -- KGJV: obsolete field
     SHORT shEjectPodID;
     LONG lLen[10];
     SQL_PARAMETER_LIST Parameter[] =
@@ -46,7 +46,7 @@ BOOL InitializeCivs(CSQLWrap * pSQLWrap, CTechItemList * pCivList)
         SQL_POUT_CHAR(szName, TECH_ITEM_NAME_LENGTH + 1, lLen[1]),
         SQL_POUT_CHAR(szBitMask, TECH_ITEM_BITMASK_LENGTH + 1, lLen[2]),
         SQL_POUT_INT2(shStationID, lLen[3]),
-        SQL_POUT_INT2(shConstructionDroneID, lLen[4]),
+//      SQL_POUT_INT2(shConstructionDroneID, lLen[4]), -- KGJV obsolete field
         SQL_POUT_INT2(shEjectPodID, lLen[5]),
         SQL_PNULL
     } ;
@@ -60,7 +60,7 @@ BOOL InitializeCivs(CSQLWrap * pSQLWrap, CTechItemList * pCivList)
     SQLResult = pSQLWrap->Execute("select CivID, RTRIM(Name), "
                                     "RTRIM(TechBitsCiv), "
                                     "InitialStationTypeID, "
-                                    "ConstructionDroneTypeID, "
+// KGJV - obsolete field            "ConstructionDroneTypeID, "
                                     "EscapePodShipTypeID "
                                     "from civs",
                                     Parameter,
@@ -81,7 +81,7 @@ BOOL InitializeCivs(CSQLWrap * pSQLWrap, CTechItemList * pCivList)
                 pCiv->SetName(szName);
                 pCiv->SetEffectBitMask(GetBitMask(szBitMask));
                 pCiv->SetStartingStationID(shStationID);
-                pCiv->SetConstructionDroneID(shConstructionDroneID);
+//              pCiv->SetConstructionDroneID(shConstructionDroneID); -- KGJV: obsolete field
                 pCiv->SetEjectPodShipID(shEjectPodID);
                 pCivList->Enqueue(pCiv);
             } else
@@ -130,7 +130,7 @@ BOOL InitializeStations(CSQLWrap * pSQLWrap, CTechItemList * pItemList)
                                         "RTRIM(TechBitsRequired), "
                                         "RTRIM(TechBitsEffect), "
                                         "RTRIM(TechBitsLocal), "
-                                        "UpgradeStationTypeID, "
+                                        "UpgradeStationTypeID " // KGJV: syntax error fixed (extra comma)
                                         //"UpgradeTechBitsReq "
                                         "from stationtypes "
                                         "order by stationtypeid",

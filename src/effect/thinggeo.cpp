@@ -299,7 +299,7 @@ public:
         // This destructor crashes sometimes.  If it does, just continue.
         //
 
-        __try {
+        __try { 
             /*
             static count = 0;
             count++;
@@ -325,13 +325,13 @@ public:
             m_pParticleGeo = NULL;
             m_pbitsGeo = NULL;
             m_pimageGlow = NULL;
-        } __except (true) {
+        } __except (true) {  
             //
             // We got an exception.  Just continue.
             //
 
-            s_crashCount++;
-        }
+        //    s_crashCount++;
+        } 
     }
 
     //////////////////////////////////////////////////////////////////////////////

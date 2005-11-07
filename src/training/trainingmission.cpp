@@ -717,7 +717,7 @@ namespace Training
         MessageAction*                  pTooCloseMessage = new MessageAction (ZString ("Don't get too close to ") + GetModelName (place) + "!");
         float                           fDisplayRadius = pWithinRadiusCondition->GetRadarRadius ();
         char                            cFloatStringBuffer[256];
-        fDisplayRadius = floorf (fDisplayRadius * 0.02) * 50.0;
+        fDisplayRadius = floorf (fDisplayRadius * 0.02f) * 50.0f;
         sprintf (cFloatStringBuffer, "Stay at least %g meters from ", floorf (fDisplayRadius));
         pTooCloseMessage->AddMessage (ZString (cFloatStringBuffer) + GetModelName (place) + "!");
         pTooCloseMessage->AddMessage ("A little close, don't ya think?");

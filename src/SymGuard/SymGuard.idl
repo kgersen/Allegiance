@@ -26,7 +26,7 @@ interface ISymInfo;
 ]
 interface ISymGuardApp : IDispatch
 {
-  [helpstring("Creates and initializes a module object. The symbol path may contain multiple, semicolon-delimited paths, and may include environment variables (such as %temp%). The module name need not specify an extension, and may be a symbol file rather than an executable image. The image base and size each must be specified as an integer type or the string form of a hex value.")]
+  [helpstring("Creates and initializes a module object. The symbol path may contain multiple, semicolon-delimited paths, and may include environment variables (such as %temp%).")]
   HRESULT LoadModule([in] BSTR bstrSymbolPath, [in] BSTR bstrModuleName,
     [in, optional] VARIANT* pvarImageBase, [in, optional] VARIANT* pvarImageSize,
     [out, retval] ISymModule** ppModule);
@@ -107,7 +107,7 @@ interface ISymModule : IDispatch
   [propget, helpstring("The number of symbols in the symbol table.")]
   HRESULT SymbolCount([out, retval] long* pc);
 
-  [propget, helpstring("The type of symbols that are loaded. This will be one of the following strings: 'SymNone' - No symbols are loaded, 'SymCoff' - COFF symbols, 'SymCv' - CodeView symbols, 'SymPdb' - PDB file, 'SymExport' - Symbols generated from a DLL's export table, 'SymDeferred' - The library has not yet attempted to load symbols, 'SymSym' - SYM file.")]
+  [propget, helpstring("The type of symbols that are loaded. This will be one of the following strings: 'SymNone' - No symbols are loaded, 'SymCoff' - COFF symbols, 'SymCv' - CodeView symbols, 'SymPdb' - PDB file, 'SymExport' - Symbols generated f")]
   HRESULT SymbolType([out, retval] BSTR* pbstr);
 
   [propget, helpstring("The image name. The name may or may not contain a full path.")]

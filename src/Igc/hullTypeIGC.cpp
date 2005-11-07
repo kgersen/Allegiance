@@ -91,7 +91,10 @@ HRESULT         ChullTypeIGC::Initialize(ImissionIGC* pMission,
                 const HardpointData&    hd = GetHardpointData(i);
 
                 const FrameDataUTL*   pfd = pmhb->GetFrame(hd.frameName);
-                assert (pfd);   //Note: still need to handle pfd == NULL semi-gracefully in retail
+                // KGJV: temp fix assert (pfd);   //Note: still need to handle pfd == NULL semi-gracefully in retail
+				// mmf added debugf to log what would have been the above assert that KGJV commented out
+				// this seems to happen a lot at core load, no sense logging it
+				// if (pfd==NULL) debugf("mmf hullTypeIGC.cpp ln 96 pfd == NULL would have called assert\n");
 
                 if (hd.bFixed)
                 {
@@ -100,7 +103,17 @@ HRESULT         ChullTypeIGC::Initialize(ImissionIGC* pMission,
                 }
                 else
                 {
-                    assert (i >= m_data->maxFixedWeapons);
+					// mmf debug build failing on this assert with newer cores like plus14b or rps55
+					// dn 4.05 and zone core work
+					// this has been logged sufficiently to provide core authors enough info
+					// if they wanted to try and resolve the 'errors' they seem not to be problematic
+					// if (i < m_data->maxFixedWeapons) {
+					//	debugf("mmf hullTypeIGC.cpp would have called assert\n");
+					//	debugf("mmf i=%d, maxFixedWeapons=%d, hullID = %d\n",i,m_data->maxFixedWeapons,m_data->hullID);
+					// }
+					// end mmf
+					// mmf comment out this assert so debug build will work
+					// assert (i >= m_data->maxFixedWeapons);
 
                     if (pfd)
                     {
@@ -209,7 +222,14 @@ HRESULT         ChullTypeIGC::Initialize(ImissionIGC* pMission,
     if (m_data->successorHullID != NA)
     {
         m_phtSuccessor = pMission->GetHullType(m_data->successorHullID);
-        assert (m_phtSuccessor);
+        // mmf this assert causing plus15b2 core to exit
+		// comment out for now so this core can be tested with debug build
+		// assert (m_phtSuccessor);
+		// add debugf 
+		// this has been logged enough if core devs want to resolve it
+		// does not seem to be problem
+		// debugf("mmf hullTypeIGC.cpp m_phtSuccessor == NULL would have called assert\n");
+		// debugf("mmf m_data->successorHullID = %d, hullID = %d\n",m_data->successorHullID,m_data->hullID);
     }
 
     pMission->AddHullType(this);

@@ -108,6 +108,14 @@ public:
         if (m_pt)
             m_pt->AddRef();
     }
+
+	template< class Other > TRef( const TRef<Other>& oref ) : 
+		m_pt( static_cast<Other*>(oref) ) 
+	{ 
+		if (m_pt) 
+			m_pt->AddRef(); 
+	} 
+
     
     //
     // assignment
@@ -140,7 +148,7 @@ public:
 
         return *this;
     }
-
+/*
     TRef& operator=(const Type* ptNew)
     {
         Type* ptOld = m_pt;
@@ -154,7 +162,7 @@ public:
 
         return *this;
     }
-
+*/
     //
     // destructor
     //

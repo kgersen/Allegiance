@@ -1,5 +1,6 @@
 #include "pch.h"
 
+
 const Orientation Orientation::s_orientIdentity;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -306,8 +307,8 @@ float       Orientation::TurnTo(const Vector&   target,
 void    Orientation::Reset()
 {
     // set to identity.
-    m_r[0][1] = m_r[0][2] = m_r[1][0] = m_r[1][2] = m_r[2][0] = m_r[2][1] = 0.0F;
-    m_r[0][0] = m_r[1][1] = m_r[2][2] = 1.0F;
+    m_r[0][1] = m_r[0][2] = m_r[1][0] = m_r[1][2] = m_r[2][0] = m_r[2][1] = 0.0f; // mmf changed from 0.0F
+    m_r[0][0] = m_r[1][1] = m_r[2][2] = 1.0f; // mmf changed from 0.0F
 }
 
 bool    Orientation::Set(const Vector& forwardAxis)
@@ -315,7 +316,7 @@ bool    Orientation::Set(const Vector& forwardAxis)
     bool    rc = true;
     float   forwardLength2 = forwardAxis.LengthSquared();
 
-    if (forwardLength2 != 0.0F)
+    if (forwardLength2 != 0.0f) // mmf changed from 0.0F
     {
         //
         // Construct an orientation matrix with the given forward axis
@@ -397,7 +398,7 @@ static  float    cosX(const Vector& axis,
     if (l2 != 0.0f)
         return dot / (float)sqrt(l2);
     else
-        return 0.0F;
+        return 0.0f; // mmf changed from 0.0F
 }
 
 static  float    cosX2(const Vector& axis,
@@ -407,9 +408,9 @@ static  float    cosX2(const Vector& axis,
     float    l2 = xyz.LengthSquared();
 
     if (l2)
-        return dot >= 0.0F ? (dot*dot/l2) : (-dot*dot/l2);
+        return dot >= 0.0f ? (dot*dot/l2) : (-dot*dot/l2); // mmf changed from 0.0F
     else
-        return 0.0F;
+        return 0.0f; // mmf changed from 0.0F
 }
 
 float            Orientation::CosUp(const Vector&    xyz) const
@@ -519,6 +520,7 @@ Orientation& Orientation::Pitch(float theta)
     **
     ** Do it as fast as possible.
     */
+
     float c = (float)cos(theta);
     float s = (float)sin(theta);
 
@@ -542,7 +544,8 @@ Orientation& Orientation::Yaw(float theta)
     **
     ** Do it as fast as possible.
     */
-    float c = (float)cos(theta);
+
+	float c = (float)cos(theta);
     float s = (float)sin(theta);
 
     float r[3][3] =
@@ -565,6 +568,7 @@ Orientation& Orientation::Roll(float theta)
     **
     ** Do it as fast as possible.
     */
+
     float   c = (float)cos(theta);
     float   s = (float)sin(theta);
 

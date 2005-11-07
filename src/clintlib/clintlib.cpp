@@ -668,6 +668,8 @@ void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
     m_pfmMissionDef->misparms.bAllowDevelopments = pfmLobbyMissionInfo->fAllowDevelopments;
     m_pfmMissionDef->misparms.bInvulnerableStations = pfmLobbyMissionInfo->fInvulnerableStations;
     m_pfmMissionDef->misparms.bObjectModelCreated = pfmLobbyMissionInfo->fMSArena;
+	// KGJV - receive game core file
+	Strncpy(m_pfmMissionDef->misparms.szIGCStaticFile, FM_VAR_REF(pfmLobbyMissionInfo, szIGCStaticFile), c_cbFileName);
     m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
     m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
     m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
@@ -3609,7 +3611,7 @@ void BaseClient::RemovePlayerFromSide(PlayerInfo* pPlayerInfo, QuitSideReason re
 
     ZAssert(pPlayerInfo->SideID() != NA);
 
-    pPlayerInfo->SetReady(true);
+    // pPlayerInfo->SetReady(true); // Imago commented out so afk does not reset
     pPlayerInfo->SetTeamLeader(false);
     pPlayerInfo->SetMissionOwner(false);
     pPlayerInfo->Reset(false);
@@ -3753,7 +3755,7 @@ void BaseClient::RemovePlayerFromMission(PlayerInfo* pPlayerInfo, QuitSideReason
     assert(pPlayerInfo);
     
     m_pMissionInfo->RemovePlayer(pPlayerInfo);
-    pPlayerInfo->SetReady(true);
+    // pPlayerInfo->SetReady(true); Imago commented out so afk does not reset
 
     if (pPlayerInfo == m_pPlayerInfo)
     {
@@ -3812,7 +3814,7 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 
     m_pMissionInfo->RemovePlayer(pPlayerInfo);
     assert(pPlayerInfo->GetMoney() == 0);
-    pPlayerInfo->SetReady(true);
+    // pPlayerInfo->SetReady(true); Imago commented out so afk does not reset
 
     if (pPlayerInfo == m_pPlayerInfo)
     {
@@ -3883,10 +3885,9 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 static void DoDecrypt(int size, char* pdata)
 {
     DWORD encrypt = 0;
-    //Do a rolling XOR to demunge the data
     for (int i = 0; (i < size); i += 4)
     {
-        DWORD*  p = (DWORD*)(pdata + size);
+        DWORD*  p = (DWORD*)(pdata + i);
 
         encrypt = *p = *p ^ encrypt;
     }

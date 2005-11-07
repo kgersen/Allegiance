@@ -171,7 +171,7 @@ BOOL CServiceModule::IsInstalledAsService()
 
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
-    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
+    lRes = key.QueryStringValue(_T("LocalService"), szValue, &dwLen);
 
     if (lRes == ERROR_SUCCESS)
         return TRUE;
@@ -526,8 +526,8 @@ HRESULT CServiceModule::RegisterServer(BOOL bReRegister, BOOL bRegTypeLib, BOOL 
     
       if (bService)
       {
-          key.SetValue(__MODULE__, _T("LocalService"));
-          key.SetValue(_T("-Service"), _T("ServiceParameters"));
+          key.SetStringValue(_T("LocalService"), __MODULE__);
+          key.SetStringValue(_T("ServiceParameters"), _T("-Service"));
           // Create service
           InstallService(argc, argv);
       }

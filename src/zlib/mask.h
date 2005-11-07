@@ -21,7 +21,7 @@ class TBitMask
 private:
     WordType m_word;
 
-protected:
+public: //KGJV protected:
     TBitMask(WordType word) :
         m_word(word)
     {
@@ -186,7 +186,7 @@ template<int nBits> class TLargeBitMask
 
             return true;
         }
-
+		// CHECK THIS, IT MIGHT OVERFLOW ! -KGJV
         void ToString(char* pszBytes, int cch) const
         {
           int cb = min(cch / 2, sizeof(m_bits));

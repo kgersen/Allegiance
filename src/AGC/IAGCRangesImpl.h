@@ -9,7 +9,6 @@
 #include <..\TCLib\RangeSet.h>
 #include <..\TCLib\ObjectLock.h>
 
-
 /////////////////////////////////////////////////////////////////////////////
 // Interface Map Macro
 //
@@ -43,9 +42,10 @@ class ATL_NO_VTABLE IAGCRangesImpl :
 public:
   typedef TCObjectLock<T>                            XLock;
   typedef range<RT>                                  XRange;
-  typedef rangeset<XRange>                           XRangeSet;
-  typedef XRangeSet::iterator                        XRangeIt;
-  typedef XRangeSet::reverse_iterator                XRangeRevIt;
+  typedef rangeset<XRange>			                 XRangeSet;
+// VS.Net 2003 port: typename keyword (VSNET_TNFIX) required; see Compiler Warning (level 1) C4346
+  typedef VSNET_TNFIX XRangeSet::iterator            XRangeIt;
+  typedef VSNET_TNFIX XRangeSet::reverse_iterator    XRangeRevIt;
   typedef IDispatchImpl<ITF, &__uuidof(ITF), plibid> IAGCRangesImplBase;
 
 // Construction
@@ -54,9 +54,9 @@ public:
   {
     // Create a range COM object to be reused multiple times
     ZSucceeded(T::CreateRange(RT(), RT(), &m_spRange));
-    m_spPrivate = m_spRange;
+    m_spRange.QueryInterface(&m_spPrivate);  
     assert(NULL != m_spPrivate);
-    m_spPersist = m_spRange;
+    m_spRange.QueryInterface(&m_spPersist);    
     if (NULL == m_spPersist)
     {
       ZSucceeded(m_spRange->QueryInterface(IID_IPersistStreamInit,
@@ -107,7 +107,12 @@ public:
     }
 
     // Initialize enumerator object with the temporary CComVariant vector
-    RETURN_FAILED(pEnum->Init(vecTemp.begin(), vecTemp.end(), NULL, AtlFlagCopy));
+// VS.Net 2003 port
+#if _MSC_VER >= 1310
+	RETURN_FAILED(pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy));
+#else
+	RETURN_FAILED(pEnum->Init(vecTemp.begin(), vecTemp.end(), NULL, AtlFlagCopy));
+#endif
 
     // Copy the new object to the [out] parameter
     RETURN_FAILED(spEnum->QueryInterface(IID_IEnumVARIANT, (void**)ppunkEnum));

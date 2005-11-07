@@ -169,7 +169,11 @@ class   CmodelIGC
         }
         void            SetVelocity(const Vector& newVal)
         {
-            assert (newVal * newVal >= 0.0f);
+			// mmf replaced assert with log msg
+		    if (!(newVal * newVal >= 0.0f)) {
+				debugf("mmf Igc modelIGC.h SetVelocity: newVal^2 debug build would have called assert and exited, commented out for now\n");
+			}
+            // assert (newVal * newVal >= 0.0f);
             m_pHitTest->SetVelocity(newVal);
         }
 

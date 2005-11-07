@@ -2342,6 +2342,12 @@ public:
 
         TRef<ZFile> pfile= new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
 
+		// mmf added debugf but will still have it call assert
+		if ((bError && !pfile->IsValid() && m_psite)) {
+			debugf("Could not open the artwork file '" + strToOpen + "'");
+			// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
+		}
+
         ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
         /*
         if (

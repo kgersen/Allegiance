@@ -44,7 +44,8 @@ void QueueMissions(FedMessaging * pfm)
         while (!iterMissions.End())
         {
           FMD_LS_LOBBYMISSIONINFO * plmi = iterMissions.Value()->GetMissionInfo();
-          if (plmi && (fIsFreeLobby || plmi->nNumPlayers > 0 || plmi->fMSArena))
+          if (plmi && (fIsFreeLobby || plmi->nNumPlayers > 0 || plmi->fMSArena
+			  || (!fIsFreeLobby && strcmp(FM_VAR_REF(plmi,szIGCStaticFile),"zone_core")))) //-KGJV: advertize custom core game 
             pfm->QueueExistingMsg(plmi);
           iterMissions.Next();
         }
@@ -54,7 +55,7 @@ void QueueMissions(FedMessaging * pfm)
 }
 
 
-#ifdef USEAUTH
+#ifdef USECLUB
 /*-------------------------------------------------------------------------
  * GotLogonInfo
  *-------------------------------------------------------------------------
@@ -111,7 +112,9 @@ void GotLogonInfo(CQLobbyLogon * pquery)
 
     delete [] pargSquads;
 
-    QueueMissions(FedMessaging * pfm);
+	// KGJV - undeclared identifier error 
+    // QueueMissions(FedMessaging * pfm);
+	QueueMissions(&fm);
   }
 
   if (!pqd->fValid)
@@ -190,13 +193,16 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 #ifdef USEAUTH
       LPBYTE pZoneTicket = (LPBYTE) FM_VAR_REF(pfmLogon, ZoneTicket);
       TRef<IZoneAuthServer> pzas = g_pLobbyApp->GetZoneAuthServer();
-
+#ifdef USECLUB
       CQLobbyLogon * pquery = new CQLobbyLogon(GotLogonInfo);
       CQLobbyLogonData * pqd = pquery->GetData();
       pqd->dTime = pfmLogon->dwTime - Time::Now().clock();
       Strcpy(pqd->szCharacterName, cnxnFrom.GetName()); // unless and until we get one form the zticket
       pqd->characterID = 0;
 
+	  // KGJV - bug fix: the SQL query crashes if pqd->szCDKey isnt initialized
+	  strcpy(pqd->szCDKey,""); // so set an empty value since we dont use it
+#endif
       if (pzas) // it's all in the Zone Ticket
       {
         if (pZoneTicket) 
@@ -208,20 +214,29 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
             case ZT_NO_ERROR:
             {
               bool fValidNow = false;
+#ifdef USECLUB
               Strcpy(pqd->szCharacterName, pzas->GetName());
               pqd->characterID = pzas->GetAccountID();
+#endif //USECLUB
               fValid = pzas->HasToken(g_pLobbyApp->GetToken(), &fValidNow);
               // todo: keep track of players for find/zone friends
               if (!(fValid && fValidNow))
               {
                 fRetry = true;
+/*
                 const char szExpired[] = "The Allegiance Zone subscription for %s has expired.  Hit <Sign Up> to go to the Allegiance Zone signup and subscription page, where you can renew your account subscription.";
                 const char szNoToken[] = "The %s Zone account does not have a valid Allegiance Zone subscription.  Hit <Sign Up> to go to the Allegiance Zone signup and subscription page, where you can look up your account status.";
                 const DWORD cbReason = 25 + max(sizeof(szNoToken), sizeof(szExpired)); // 25 = sizeof max zoneid
                 szReason = (char*)_alloca(cbReason); 
                 _snprintf(szReason, cbReason, (fValid ? szExpired : szNoToken), pqd->szCharacterName); 
+*/
+				const char szNoAuth[] = "Your authentication has failed.  Please try again.";
+                const DWORD cbReason = sizeof(szNoAuth); // 25 = sizeof max zoneid
+                szReason = (char*)_alloca(cbReason); 
+                _snprintf(szReason, cbReason, szNoAuth); 
                 fValid = false;
               }
+#ifdef USECLUB // Requires bits from club SQL callback
               else if (g_pLobbyApp->EnforceCDKey())
               {
                 const char * szEncryptedCDKey = (const char*) FM_VAR_REF(pfmLogon, CDKey);
@@ -248,6 +263,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
                     _snprintf(szReason, cbReason, szDuplicateCDKey, (PCC)strOldPlayer); 
                 }
               }
+#endif // USECLUB
               break;
             }
 
@@ -279,7 +295,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         }
       }
       else
-#endif
+#endif // USEAUTH
         fValid = true; // if this isn't secure, then you're automatically in
 
       if (g_pAutoUpdate && pfmLogon->crcFileList != g_pAutoUpdate->GetFileListCRC())
@@ -297,9 +313,9 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         // This is sort of a wacky case. It's the only case that's neither valid nor invalid.
         // That is, we neither send a logon ack, nor a logon nack, so we kind of have to munge things
         pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
-#ifdef USEAUTH
+#ifdef USECLUB
         delete pquery;
-#endif
+#endif // USECLUB
         break; // out of big switch
       }
 
@@ -315,7 +331,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         }
       }
 
-#ifdef USEAUTH
+#ifdef USECLUB
       pqd->fValid = fValid;
       pqd->fRetry = fRetry;
       // I'd rather not alloc, but since the strings are not all static, and failure should be fairly uncommon, I'll accept it

@@ -29,9 +29,9 @@ MAINTARGEXT=lib
 INCLUDELOCAL=$(FEDSRC)\ZLib
 PCHROOT=pch
 NODEPENDENCIES=1
+UNWINDCARG=/GX-
 
 !include "..\makefile.inc"
-
 
 OBJS= $(DESTDIR)\zlib.obj         \
       $(DESTDIR)\ztime.obj         \

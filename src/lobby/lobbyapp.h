@@ -56,7 +56,7 @@ class CFLMission;
 class CFLServer;
 
 class CLobbyApp: public Win32App
-#ifdef USEAUTH
+#ifdef USECLUB
           , public ISQLSite2
 #endif    
 {
@@ -72,7 +72,7 @@ public:
   int             Run();
   bool            IsFMServers(FedMessaging * pfm) {return pfm == &m_fmServers;}
 
-#ifdef USEAUTH
+#ifdef USECLUB
   // ISQLSite2
   virtual void OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError);
 #endif
@@ -126,6 +126,11 @@ public:
     return m_fFreeLobby && m_fCheckCDKey;
   }
 
+  // -KGJV: added
+  bool IsFreeLobby()
+  {
+	  return m_fFreeLobby;
+  }
   void SetPlayerMission(const char* szPlayerName, const char* szCDKey, CFLMission* pMission);
   void RemovePlayerFromMission(const char* szPlayerName, CFLMission* pMission);
   void RemoveAllPlayersFromMission(CFLMission* pMission);
@@ -134,7 +139,7 @@ public:
 
   bool BootPlayersByCDKey(const ZString& strCDKey, const ZString& strNameExclude = "", ZString& strOldPlayer = ZString());
 
-#ifdef USEAUTH
+#ifdef USECLUB
   CSQLCore & GetSQL() 
   {
     return m_sql;
@@ -216,7 +221,7 @@ private:
   PlayerByCDKey     m_playerByCDKey;
   PlayerByName      m_playerByName;
 
-#ifdef USEAUTH
+#ifdef USECLUB
   // SQL Stuff
   CSQLCore          m_sql;
   DWORD             m_csqlSilentThreads;

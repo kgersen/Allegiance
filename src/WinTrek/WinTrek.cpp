@@ -13,14 +13,14 @@
 #include "CommandAcknowledgedCondition.h"
 
 #include <Delayimp.h>   // For error handling & advanced features
-#include "..\\icqapi\\ICQAPIInterface.h"
+//#include "..\\icqapi\\ICQAPIInterface.h"
 
 class QuickChatNode : public IMDLObject {};
 
 #include "quickchat.h"
 
 // Tell the linker that my DLL should be delay loaded
-#pragma comment(linker, "/DelayLoad:icqmapi.dll")
+//#pragma comment(linker, "/DelayLoad:icqmapi.dll")
 
 const float AnyViewMinRenderScreenSize = 1.0f;
 
@@ -4859,11 +4859,14 @@ public:
             //
             // Hangar or loadout switch to 8x6
             //
-
+			// -KGJV - resolution fix - test
             Set3DAccelerationImportant(false);
-            SetWindowedSize(WinPoint(800, 600));
-            SetFullscreenSize(WinPoint(800, 600));
+            SetWindowedSize(m_sizeCombat);
+            SetFullscreenSize(m_sizeCombatFullscreen);
             SetSizeable(false);
+            //SetWindowedSize(WinPoint(800, 600));
+            //SetFullscreenSize(WinPoint(800, 600));
+            //SetSizeable(false);
         } else {
             ZDebugOutput("SetViewMode : combat size\n");
 
@@ -9053,10 +9056,10 @@ public:
                   static bool fICQInit = false;
                   if (!fICQInit)
                   {
-                    ICQAPICall_SetLicenseKey("Microsoft", "hankukkk", "EDB699A39FE5BAE8");
+                    //ICQAPICall_SetLicenseKey("Microsoft", "hankukkk", "EDB699A39FE5BAE8");
                     fICQInit = true;
                   }
-                  ICQAPICall_SendMessage(pfmICQChat->icqid, FM_VAR_REF(pfmICQChat, Message));
+                  //ICQAPICall_SendMessage(pfmICQChat->icqid, FM_VAR_REF(pfmICQChat, Message));
                   //ICQAPICall_SendExternal(pfmICQChat->icqid, "", FM_VAR_REF(pfmICQChat, Message), true);
                 }
                 __except(DelayLoadDllExceptionFilter(GetExceptionInformation()))

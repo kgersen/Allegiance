@@ -5,8 +5,18 @@
 /////////////////////////////////////////////////////////////////////////////
 // XMLPtrs.h : Smart pointer declarations for MSXML interface pointers.
 //
-
-#include "..\..\Extern\sbn\include\msxml.h"
+// VS.Net 2003 port: msxml.h is part of VS.Net default includes
+#if _MSC_VER >= 1310
+#include <msxml2.h>
+#else
+	#ifdef VC6_BUILD
+	// Ok this isn't ideal, but IXMLHttpRequest and IXMLDSOControl have been removed (it had no effect on anything).
+	// they werent removed!  they were renamed!!! --imago
+	#include <msxml2.h>
+	#else
+	#include "..\..\Extern\sbn\include\msxml2.h"
+	#endif // VC6_BUILD
+#endif
 
 #ifdef __cplusplus
   extern "C++"
@@ -40,8 +50,10 @@
     TC_COM_SMARTPTR_TYPEDEF(IXMLDOMEntityReference);
     TC_COM_SMARTPTR_TYPEDEF(IXMLDOMParseError);
     TC_COM_SMARTPTR_TYPEDEF(IXTLRuntime);
-    TC_COM_SMARTPTR_TYPEDEF(IXMLHttpRequest);
-    TC_COM_SMARTPTR_TYPEDEF(IXMLDSOControl);
+#ifndef VC6_BUILD
+    TC_COM_SMARTPTR_TYPEDEF(IXMLHTTPRequest);
+    TC_COM_SMARTPTR_TYPEDEF(DSOControl);
+#endif // VC6_BUILD
 //    TC_COM_SMARTPTR_TYPEDEF(IXMLElementCollection); //already in <comdef.h>
 //    TC_COM_SMARTPTR_TYPEDEF(IXMLDocument);          //already in <comdef.h>
     TC_COM_SMARTPTR_TYPEDEF(IXMLDocument2);

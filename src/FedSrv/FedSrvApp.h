@@ -9,8 +9,12 @@
 #define FED_DEBUG_DEBUGOUT 1
 #define FED_DEBUG_FILE     2
 
+// mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
+#define SRVLOG
+#endif
 
+#ifdef SRVLOG // mmf changed this from _DEBUG
 
   class FedSrvApp : public Win32App 
   {
@@ -30,16 +34,36 @@
     virtual void OpenLogFile(void)
     {
         CloseLogFile();
+        // mmf server logfilename set here 
+		// mmf changed to use logfile mechanism from client (Win32app.cpp)
+        // char    bfr[200];
+		// GetModuleFileName(NULL, bfr, 150);
+        // char*   p = strrchr(bfr, '.');
+        // if (p)
+        //    *(p + 1) = '\0';
+        // //_itoa(Time::Now().clock(), bfr + strlen(bfr), 10);
+		// strcat(bfr, "txt");
 
-        char    bfr[200];
-        GetModuleFileName(NULL, bfr, 150);
-        char*   p = strrchr(bfr, '.');
-        if (p)
-            *(p + 1) = '\0';
-        //_itoa(Time::Now().clock(), bfr + strlen(bfr), 10);
-        strcat(bfr, "txt");
+		time_t  longTime;
+        time(&longTime);
+        tm*             t = localtime(&longTime);
 
-        m_hFile = CreateFile(bfr, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NOT_CONTENT_INDEXED | FILE_FLAG_OVERLAPPED, NULL);
+        char    logFileName[MAX_PATH + 16];
+        GetModuleFileName(NULL, logFileName, MAX_PATH);
+        char*   p = strrchr(logFileName, '\\');
+        if (!p)
+			p = logFileName;
+        else
+			p++;
+
+        const char* months[] = {"jan", "feb", "mar", "apr",
+                                "may", "jun", "jul", "aug",
+                                "sep", "oct", "nov", "dec"};
+        strcpy(p, months[t->tm_mon]);
+        sprintf(p + 3, "%02d%02d%02d%02d.txt",
+                t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+
+        m_hFile = CreateFile(logFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NOT_CONTENT_INDEXED | FILE_FLAG_OVERLAPPED, NULL);
         assert (m_hFile);
 
         m_overlapped.Offset = 0;

@@ -445,6 +445,7 @@ enum {
 
 //Redefined data types (so we can change them later)
 const int NA = -1; // meaning unspecified, none, or all.
+const float fNA = -1; // To support supression of compiler warnings.  Floats should probably all be doubles anyways, but hey.  --Dhauzimmer, 8/14/04
  
 typedef long            MissionID;
 
@@ -1099,7 +1100,7 @@ struct MissionParams
     float       fStartingMoney;                         //Multiplier on team starting money
     short       iLives;                                 //Player must die more than this number of times to be exit, c_cUnlimitedLives = unlimited
     MapMakerID  mmMapType;                              //Map type
-    short       iMapSize;                       //Not used
+    short       iMapSize;								//KGJV: non zero value = 2 starting garrisons
     short       iRandomEncounters;                      //Use to indicate how many alephs are randomly removed
     short       bNeutralSectors;                //Not used
     short       iAlephPositioning;              //Not used
@@ -1264,7 +1265,7 @@ struct MissionParams
             {
                 return "You must choose one or more winning conditions.";
             }
-            else if (bAutoRestart || (bObjectModelCreated && bClubGame) || bAllowEmptyTeams)
+			else if (bAutoRestart || (bObjectModelCreated && bClubGame) || bAllowEmptyTeams)
             {
                 return "HACK: one or more admin-only flags are set.";
             }

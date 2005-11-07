@@ -68,7 +68,8 @@ float    solveForImpact(const Vector&      deltaP,
         if ((a == 0.0f) || ((a > 0.0f) && (b > 0.0f)) || (b24ac < 0.0f))
         {
             //No valid solution
-            t = FLT_MAX;
+            t = (FLT_MAX / 500000000.0f); // mmf podpickup bug added the divisor 
+			// mmf also note *direction is NOT SET in this case...
         }
         else
         {
@@ -135,8 +136,8 @@ float    turnToFace(const Vector&       deltaTarget,
     controls->jsValues[c_axisRoll] = 0.0f;      //Ships never try to roll
 
     const Orientation&  myOrientation = pship->GetOrientation();
-
     double  cosTurn = myOrientation.CosForward(deltaTarget);
+
     if (cosTurn <= -0.999)
     {
         //Target is almost exactly behind, just yaw
@@ -160,7 +161,7 @@ float    turnToFace(const Vector&       deltaTarget,
             Vector  twist = CrossProduct(myOrientation.GetBackward(), deltaTarget).Normalize();
             yaw = -(twist * myOrientation.GetUp()) * deltaAngle;
             pitch = (twist * myOrientation.GetRight()) * deltaAngle;
-        }
+		}
         else
         {
             //The target is almost directly in front of us (within 11 degrees or so)
@@ -429,7 +430,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
             {
                 if (ttBest)
                 {
-                    int     n;
+                    int     n = 0;
                     float   d;
                     if (ttMask & (c_ttFront | c_ttNearest))
                     {
@@ -844,7 +845,7 @@ bool    SearchClusters(ImodelIGC*    pmodel,
 {
     assert (pmodel);
 
-    bool    rc;
+    bool    rc = false; // mmf initialize to false
     IclusterIGC*    pcluster = pmodel->GetCluster();
 
     if (pcluster)
@@ -1212,6 +1213,7 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
 
             case OT_ship:
             {
+				// mmf pod pickup
                 //Trying to pick up a ship ... where will he be when we get there?
                 Vector  direction;
                 Vector  dp = itsPosition - myPosition;
@@ -1750,9 +1752,10 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                     turnToFace(facing, dt, m_pship, pcontrols, m_fSkill);
                 if ((gpm & c_gpmRoll) != 0)
                 {
-                    float   rollMax2 = 1.0f -
-                                       pcontrols->jsValues[c_axisPitch] * pcontrols->jsValues[c_axisPitch] -
-                                       pcontrols->jsValues[c_axisYaw] * pcontrols->jsValues[c_axisYaw];
+					// mmf took this out, compiler says it is never referenced
+                    //float   rollMax2 = 1.0f -
+                    //                   pcontrols->jsValues[c_axisPitch] * pcontrols->jsValues[c_axisPitch] -
+                    //                   pcontrols->jsValues[c_axisYaw] * pcontrols->jsValues[c_axisYaw];
 
                     //What is the angle we'd like to roll? Is the angle between the ship's Y axis and the global z-axis
                     const Orientation&  o = m_pship->GetOrientation();
@@ -1905,7 +1908,7 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                 //Always face where we are going
                 if (path * path >= 0.1f)
                 {
-                    float da = turnToFace(path, dt, m_pship, pcontrols, m_fSkill);
+					float da = turnToFace(path, dt, m_pship, pcontrols, m_fSkill);
 
                     if (da < pi / 8.0f)
                     {

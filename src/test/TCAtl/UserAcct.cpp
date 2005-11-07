@@ -320,7 +320,7 @@ HRESULT TCUserAccount::SetRunAsInteractiveUser(LPCTSTR szAppID)
   key.Attach(hkey);
 
   // Set "Interactive User" as the RunAs user for the AppID
-  LONG lr = key.SetValue(TEXT("Interactive User"), TEXT("RunAs"));
+  LONG lr = key.SetStringValue(TEXT("RunAs"), TEXT("Interactive User"));
   if (lr)
     return HRESULT_FROM_WIN32(lr);
 
@@ -421,7 +421,7 @@ HRESULT TCUserAccount::SetRunAsUser(LPCTSTR szAppID, LPCTSTR szUserName, LPCTSTR
     &lsaPasswordString));
 
   // Set the specified user name as the RunAs user for the AppID
-  LONG lr = key.SetValue(pszUserName, TEXT("RunAs"));
+  LONG lr = key.SetStringValue(TEXT("RunAs"), pszUserName);
   if (lr)
     return HRESULT_FROM_WIN32(lr);
 

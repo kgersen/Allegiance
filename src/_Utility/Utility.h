@@ -693,7 +693,7 @@ const HitTestShape  c_htsConvexHullMin = 0;
 const HitTestShape  c_htsConvexHullMax = 127;
 
 typedef void*   HitTestID;
-HitTestID const c_htidStaticObject = (HitTestID)(0xffffffff);
+HitTestID const c_htidStaticObject = (HitTestID)(-1);
 
 class   MultiHullBase
 {
@@ -977,9 +977,26 @@ class   HitTest : public Transform44
         }
         void            SetVelocity(const Vector& v)
         {
-            assert (v * v >= 0.0f);
-            assert (v.LengthSquared() < (100000.0f * 100000.0f));
-            m_velocity = v;
+			// mmf replaced asserts with log msg, rewrite to zero
+			if (!(v.LengthSquared() < (100000.0f * 100000.0f))) {
+				debugf("mmf Utility.h SetVelocity: v.LengthSquared debug build would have called assert and exited, commented out and set to zero for now\n");   
+				m_velocity.x = 0.0f; m_velocity.y = 0.0f; m_velocity.z = 0.0f;
+			} else {
+			    m_velocity = v;
+			}
+
+		    if (!(v * v >= 0.0f)) {
+				debugf("mmf Utility.h SetVelocity: v^2 debug build would have called assert and exited, commented out and set to zero for now\n");   
+			    m_velocity.x = 0.0f; m_velocity.y = 0.0f; m_velocity.z = 0.0f;
+			} else {
+			    m_velocity = v;
+			}
+            
+			// mmf orig code
+			// assert (v * v >= 0.0f);
+            // assert (v.LengthSquared() < (100000.0f * 100000.0f));
+            // m_velocity = v;
+			// mmf end orig code
         }
 
         HitTestID       GetID(void) const

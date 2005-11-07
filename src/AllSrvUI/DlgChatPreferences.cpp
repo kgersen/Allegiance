@@ -13,6 +13,12 @@
   static char THIS_FILE[] = __FILE__;
 #endif
 
+#if defined(_UNICODE) || defined(UNICODE)
+  #define IShellLinkPtr IShellLinkWPtr
+#else // defined(_UNICODE) || defined(UNICODE)
+  #define IShellLinkPtr IShellLinkAPtr
+#endif // defined(_UNICODE) || defined(UNICODE)
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CDlgChatPreferences dialog
@@ -94,27 +100,27 @@ void CDlgChatPreferences::LoadFromRegistry()
 
   // AdminAlertChatList
   DWORD dwBool = true;
-  key.QueryValue(dwBool, TEXT("AdminAlertChatList"));
+  key.QueryDWORDValue(TEXT("AdminAlertChatList"), dwBool);
   m_bAdminChatList = !!dwBool;
 
   // AdminAlertMessageBox
   dwBool = true;
-  key.QueryValue(dwBool, TEXT("AdminAlertMessageBox"));
+  key.QueryDWORDValue(TEXT("AdminAlertMessageBox"), dwBool);
   m_bAdminMessageBox = !!dwBool;
 
   // AdminAlertRun
   dwBool = false;
   if (ShortcutExists())
-    key.QueryValue(dwBool, TEXT("AdminAlertRun"));
+    key.QueryDWORDValue(TEXT("AdminAlertRun"), dwBool);
   m_bAdminRun = !!dwBool;
 
   // ChatList
   dwBool = true;
-  key.QueryValue(dwBool, TEXT("ChatList"));
+  key.QueryDWORDValue(TEXT("ChatList"), dwBool);
   m_bEnableChatList = !!dwBool;
 
   // ChatListLimit
-  key.QueryValue(m_dwChatListLimit, TEXT("ChatListLimit"));
+  key.QueryDWORDValue(TEXT("ChatListLimit"), m_dwChatListLimit);
 }
 
 void CDlgChatPreferences::SaveToRegistry()
@@ -124,19 +130,19 @@ void CDlgChatPreferences::SaveToRegistry()
   key.Create(HKEY_LOCAL_MACHINE, HKLM_AllSrvUI);
 
   // AdminAlertChatList
-  key.SetValue(m_bAdminChatList, TEXT("AdminAlertChatList"));
+  key.SetDWORDValue(TEXT("AdminAlertChatList"), m_bAdminChatList);
 
   // AdminAlertMessageBox
-  key.SetValue(m_bAdminMessageBox, TEXT("AdminAlertMessageBox"));
+  key.SetDWORDValue(TEXT("AdminAlertMessageBox"), m_bAdminMessageBox);
 
   // AdminAlertRun
-  key.SetValue(m_bAdminRun, TEXT("AdminAlertRun"));
+  key.SetDWORDValue(TEXT("AdminAlertRun"), m_bAdminRun);
 
   // ChatList
-  key.SetValue(m_bEnableChatList, TEXT("ChatList"));
+  key.SetDWORDValue(TEXT("ChatList"), m_bEnableChatList);
 
   // ChatListLimit
-  key.SetValue(m_dwChatListLimit, TEXT("ChatListLimit"));
+  key.SetDWORDValue(TEXT("ChatListLimit"), m_dwChatListLimit);
 }
 
 bool CDlgChatPreferences::ShortcutExists()
@@ -232,6 +238,10 @@ void CDlgChatPreferences::OnAdminRun()
 
 void CDlgChatPreferences::OnAdminRunProperties() 
 {
+    // <NKM>
+    // remocve for now
+
+//#if 0
   // Create the shortcut if it does not exist
   if (!ShortcutExists())
   {
@@ -253,6 +263,7 @@ void CDlgChatPreferences::OnAdminRunProperties()
   shei.lpFile = m_strShortcutPath;
   shei.nShow  = SW_SHOWNORMAL;
   bool bExecuted = !!::ShellExecuteEx(&shei);
+//#endif
 }
 
 void CDlgChatPreferences::OnAdminRunTest() 

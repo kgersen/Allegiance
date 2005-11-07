@@ -82,7 +82,9 @@ HRESULT CreateWaveFileSoundTemplate(TRef<ISoundTemplate>& pstDest, const ZString
     TRef<WaveFileTemplate> ptemplate = new WaveFileTemplate();
     HRESULT hr = ptemplate->Init(strFilename);
     
-    if (ZSucceeded(hr))
+	// Suppressed so debug version doesn't break on nonexistent wavs
+    //if (ZSucceeded(hr))
+	if (SUCCEEDED(hr))
         pstDest = ptemplate; 
 
     return hr;
@@ -1489,7 +1491,8 @@ public:
                 {
                     // calculate the probability of playing a sound in this 
                     // frame.
-                    float fProbability = 1 - (float)pow(2, -(dwElapsedTime/m_fPeriodMS));
+					// KGJV: typecasted pow args to keep compiler happy
+                    float fProbability = 1 - (float)pow((float)2, -((float)dwElapsedTime/m_fPeriodMS));
 
                     if (rand() < fProbability * RAND_MAX)
                     {

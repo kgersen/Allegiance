@@ -1,6 +1,8 @@
 #ifndef _TVector_H_
 #define _TVector_H_
 
+#pragma warning(disable:4291) //no matching operator delete found; memory will not be freed if initialization throws an exception
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Vector Template
@@ -8,7 +10,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 template<
-    class TValue, 
+    class TValue,
     class EqualsFunctionType  = DefaultNoEquals,
     class CompareFunctionType = DefaultNoCompare
 >

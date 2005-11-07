@@ -17,5 +17,5 @@
 #define SZORIGFILENAME "AllLobby.exe"
 #define SZINTERNALNAME "ALLLOBBY"
 
-//#include "..\Inc\VerRes.rc"
+#include "VerRes.rc"
 

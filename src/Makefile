@@ -1,3 +1,4 @@
+# $Id: Makefile,v 1.2.4.1 2004/05/20 01:00:56 KGJV Exp $
 #############################################################################
 #
 # Makefile for all major Federation Components
@@ -13,9 +14,6 @@
 #    FEDSQLSRV             // Recreate: SQL server to be passed to recreate.bat, NO DEFAULT
 #    FEDSQLDB              // Recreate: SQL database to be passed to recreate.bat, NO DEFAULT
 #    FEDSQLPW              // Recreate: SQL database password to be passed to recreate.bat, NO DEFAULT
-#
-# Environment variable options:
-#    ALLEGIANCE_DEV        // Set this variable to anything if you want to use a different registry key root from the installed builds
 #
 # nmake args:
 #
@@ -40,6 +38,11 @@
 #   DX7=         // will use dx7 instead of the default, which is dx6
 #   copyclient=  // will copy the client (EACH AND EVERY FLAVOR BUILT) to the artwork directory.
 #                   This is so that developers can easily a client on a second machine and automatically get updates
+#   USEAUTH=1     // Enable legacy Allegiance Zone
+#   USEASGS=1     // This will use the ASGS member database handler and closed source functions
+#   HTTP=1		   // Set to anything to enable AppWeb library inclusion for HTTP Client/Server support (experimental)
+#   ALLEGIANCE_DEV=1        // Set to anything if you want to use a the /dev registry key root rather than 1.0 (recommended)
+#
 #
 # command line arguments to cut a release:
 #
@@ -76,6 +79,8 @@ OBJSDIR=sdebug
 !elseif defined(retail)
 RETAILNMAKEARGS=retail=$(RETAIL)
 OBJSDIR=retail
+WAV=0
+SLIM=0
 !elseif defined(test)
 RETAILNMAKEARGS=test=
 OBJSDIR=test
@@ -91,6 +96,7 @@ OBJSDIR=prefix
 !else
 RETAILNMAKEARGS=
 OBJSDIR=debug
+WAV=0
 !endif
 
 !endif
@@ -125,12 +131,6 @@ VERBOSENMAKEARGS=
 
 RECURSNMAKEARGS=$(RETAILNMAKEARGS) $(NUMEGANMAKEARGS) $(VERNMAKEARGS) $(VERBOSENMAKEARGS)
 
-!if defined(USERNAME)
-!if "$(USERNAME)"=="a-markcu"
-USERNAME=markcu
-!endif
-RECURSNMAKEARGS=$(RECURSNMAKEARGS) USERNAME=$(USERNAME)
-!endif
 
 !if defined(WIN95)
 RECURSNMAKEARGS=$(RECURSNMAKEARGS) WIN95=$(WIN95)
@@ -158,7 +158,7 @@ NMAKE=@nmake /NOLOGO /S /C
 #
 #############################################################################
 
-All: Client AllGuardApp Server Server32 AllSrvUI32App Lobby Club AutoUpdateApp Test
+All: Client AllGuardApp Server Server32 MdlEdit AllSrvUI32App AllSrvUIApp Lobby Club AutoUpdateApp ArtBin SymGuard Test
 
 
 #############################################################################
@@ -168,7 +168,7 @@ All: Client AllGuardApp Server Server32 AllSrvUI32App Lobby Club AutoUpdateApp T
 #############################################################################
 
 Clean:
-    $(FEDROOT)\src\tools\bin32\delnode -q $(FEDROOT)\Objs\$(OBJSDIR)
+    del /S /Q $(FEDROOT)\Objs\$(OBJSDIR)\*
 
 #############################################################################
 #
@@ -422,9 +422,9 @@ FedGuids_Full: FedGuids_Clean FedGuids
 #############################################################################
 
 MDLHeaders: MDLC
-    @cd artwork\256
-    $(NMAKE) -f mdlheader.mak $(RECURSNMAKEARGS)
-    @cd ..\..
+#    @cd artwork\256
+#    $(NMAKE) -f mdlheader.mak $(RECURSNMAKEARGS)
+#    @cd ..\..
 
 
 #############################################################################
@@ -1515,12 +1515,21 @@ Pigs: PigAccts PigSrv
 # Test_Full: cleans all dependencies and builds Test
 #
 #############################################################################
+###
+# For retail and debug flavors this is the last step!
 
-Test: Common Clintlib Pigs
+Test: Common Clintlib
     @cd techtree
     $(NMAKE) $(RECURSNMAKEARGS)
     @cd ..
 
+!ifdef SLIM
+    @slim
+!endif
+
+#!ifdef WAV    
+#    @"$(FEDROOT)\src\tools\bin32\wav $(WINDIR)\media\tada /Q /v100"
+#!endif
 
 #############################################################################
 #
@@ -1553,11 +1562,22 @@ TCDeploy_Export: TCDeploy
 
 #############################################################################
 #
+# Drone: builds drone
+#
+#############################################################################
+
+Drone:
+    @cd drones
+    $(NMAKE) $(RECURSNMAKEARGS)
+    @cd ..
+
+#############################################################################
+#
 # Cadet: builds Cadet
 #
 #############################################################################
 
-Cadet: Common Effect
+Cadet: Common Effect Drone
     @cd cadet
     $(NMAKE) $(RECURSNMAKEARGS)
     @cd ..

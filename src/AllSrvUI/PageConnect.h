@@ -76,6 +76,8 @@ protected:
   CWinThread* m_pthCreateSession;
   CEvent      m_evtCreateSession;
   CAutoSizer  m_AutoSizer;
+public:
+	afx_msg void OnNMCustomdrawProgressConnecting(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 

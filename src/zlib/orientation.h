@@ -9,7 +9,7 @@
 
 class Orientation {
 private:
-    float m_r[3][3];
+    float m_r[3][3]; 
 
     static const Orientation s_orientIdentity;
     friend class Matrix;

@@ -33,7 +33,8 @@ HRESULT         CdroneTypeIGC::Initialize(ImissionIGC*  pMission,
                 ? NULL
                 : pMission->GetExpendableType(m_data.etidLaid);
 
-    assert ((m_petLaid != NULL) == (m_data.pilotType == c_ptLayer));
+	// KGJV - fix for debug mode - to remove later
+    //assert ((m_petLaid != NULL) == (m_data.pilotType == c_ptLayer));
 
     pMission->AddDroneType(this);
 

@@ -30,6 +30,7 @@ MAINTARGEXT=lib
 INCLUDELOCAL=$(FEDSRC)\Training;$(FEDSRC)\Effect;$(FEDSRC)\Engine;$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(FEDSRC)\inc;$(FEDSRC)\clintlib;$(FEDSRC)\SoundEngine;$(FEDSRC)\wintrek;$(FEDSRC)\offline;$(FEDSRC)\lobby
 PCHROOT=pch
 PCHINC=$(FEDSRC)\Training\*.h $(FEDSRC)\igc\*.h $(FEDSRC)\wintrek\*.h $(FEDSRC)\SoundEngine\*.h
+UNWINDCARG=/GX
 
 !include "..\makefile.inc"
 
