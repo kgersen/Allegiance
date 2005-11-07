@@ -1,0 +1,23 @@
+HKCR
+{
+	AllSrv.Server.1 = s 'Server Class'
+	{
+		CLSID = s '{5B5ED2A6-E7C0-11D2-8B4B-00C04F681633}'
+	}
+	AllSrv.Server = s 'Server Class'
+	{
+		CLSID = s '{5B5ED2A6-E7C0-11D2-8B4B-00C04F681633}'
+		CurVer = s 'AllSrv.Server.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {5B5ED2A6-E7C0-11D2-8B4B-00C04F681633} = s 'Server Class'
+		{
+			ProgID = s 'AllSrv.Server.1'
+			VersionIndependentProgID = s 'AllSrv.Server'
+			ForceRemove 'Programmable'
+			val AppID = s '{E4E8767E-DFDB-11d2-8B46-00C04F681633}'
+			'TypeLib' = s '{BB5FC41C-DDA4-11d2-8B46-00C04F681633}'
+		}
+	}
+}

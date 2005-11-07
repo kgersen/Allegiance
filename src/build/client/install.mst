@@ -1,0 +1,63 @@
+'$INCLUDE 'RECORDER.INC'
+
+GLOBAL gszLogFile AS STRING
+
+SetDefaultWaitTimeout(Timeout)
+
+Scenario "install"
+	Timeout = 30
+	gszLogFile = "VTError.txt"
+
+	CurrentWindow = WFndWndC("Welcome", "#32770", FINDWINDOWFLAGS_IF, 25 + Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("&Next >")
+
+	CurrentWindow = WFndWndC("Software License Agreement", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("&Yes")
+	
+	CurrentWindow = WFndWndC("Choose Destination Location", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("&Next >")
+
+	CurrentWindow = WFndWndC("Setup Type", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("&Next >")
+
+	CurrentWindow = WFndWndC("Select Program Folder", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("&Next >")
+	
+	CurrentWindow = WFndWndC("DirectX", "#32770", FINDWINDOWFLAGS_IF, 900 + Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("&Next >")
+
+	CurrentWindow = WFndWndC("Information", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 410, 332, 210, 119)
+	WButtonClick("OK")
+	
+	CurrentWindow = WFndWndC("DirectX 6", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("&Next >")
+
+	CurrentWindow = WFndWndC("Install", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 326, 341, 380, 100)
+	WButtonClick("&Yes")
+	
+	CurrentWindow = WFndWndC("Enter Information", "#32770", FINDWINDOWFLAGS_IF, 30 + Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	Play "{BS}fedtest"
+	WButtonClick("&Next >")
+
+	CurrentWindow = WFndWndC("Setup Complete", "#32770", FINDWINDOWFLAGS_IF, Timeout)
+	WSetWndPosSiz(CurrentWindow, 272, 205, 479, 357)
+	WButtonClick("Finish")
+
+	gszLogFile = "VTSignal.txt"
+
+Scenario Cleanup
+	OPEN gszLogFile FOR OUTPUT AS 1
+	PRINT #1, "Success"
+	CLOSE 1
+
+End Scenario

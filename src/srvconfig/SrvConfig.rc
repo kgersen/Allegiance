@@ -1,0 +1,406 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""SrvConfig.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "SrvConfig.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 85
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About SrvConfig"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,11,20,20
+    LTEXT           "Allegiance Game Server Configuration Wizard, 1.0",
+                    IDC_STATIC,40,10,188,8,SS_NOPREFIX
+    LTEXT           "Copyright © 1998-1999, Microsoft Corporation",
+                    IDC_STATIC,40,25,188,8
+    DEFPUSHBUTTON   "OK",IDOK,92,64,50,14,WS_GROUP
+    LTEXT           " ",
+                    IDC_STATIC,40,40,188,16
+END
+
+#if defined(APSTUDIO_INVOKED) || !defined(ALLSRV_STANDALONE)
+IDD_GENERAL DIALOG DISCARDABLE  0, 0, 210, 186
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Lobby",IDC_STATIC,7,7,196,35
+    LTEXT           "&Server:",IDC_STATIC,14,21,24,8
+    EDITTEXT        IDC_LOBBYSERVER,56,19,140,14,ES_AUTOHSCROLL
+    GROUPBOX        "Artwork",IDC_STATIC,7,47,196,34
+    LTEXT           "Local &Path:",IDC_STATIC,14,61,37,8
+    EDITTEXT        IDC_FILEARTDIR,56,59,140,14,ES_AUTOHSCROLL
+    GROUPBOX        "Settings",IDC_STATIC,7,86,196,93
+    CONTROL         "&Timeout clients that don't respond",IDC_TIMEOUT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,21,98,122,10
+    CONTROL         "Want to &break into debugger (int3) on asserts",
+                    IDC_WANTINT3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,
+                    112,158,10
+    CONTROL         "Use DirectPlay low-level p&rotocol",IDC_PROTOCOL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,21,126,119,10
+    CONTROL         "Send debug output to file",IDC_DEBUG_FILE,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,21,140,95,10
+    LTEXT           "&Updates Per Second:",IDC_STATIC,21,159,69,8
+    EDITTEXT        IDC_UPDATESPERSECOND,94,157,22,14,ES_RIGHT | ES_NUMBER
+    CONTROL         "Spin1",IDC_UPDATES_PER_SECOND_SPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,107,157,9,14
+    PUSHBUTTON      "Restore &Default",IDC_UPDATES_PER_SECOND_DEFAULT,122,
+                    157,73,14
+END
+#endif
+
+IDD_AUTODOWNLOAD DIALOG DISCARDABLE  0, 0, 210, 111
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Auto Download"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "  ",IDC_STATIC,7,7,196,98
+    CONTROL         "&Enable auto-download for clients:",IDC_WATCHARTDIR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,6,121,10
+    LTEXT           "&HTTP Server:",IDC_STATIC,14,21,45,8
+    EDITTEXT        IDC_FTPSERVER,62,19,134,14,ES_AUTOHSCROLL
+    LTEXT           "HTTP &Root:",IDC_STATIC,14,42,40,8
+    EDITTEXT        IDC_FTPROOT,62,40,134,14,ES_AUTOHSCROLL
+    LTEXT           "FTP &User ID:",IDC_STATIC,14,64,42,8,WS_DISABLED
+    EDITTEXT        IDC_FTPUSERID,70,62,126,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "FTP &Password:",IDC_STATIC,14,85,49,8,WS_DISABLED
+    EDITTEXT        IDC_FTPPASSWORD,70,83,126,14,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+END
+
+#if defined(APSTUDIO_INVOKED) || !defined(ALLSRV_STANDALONE)
+IDD_DATABASE DIALOG DISCARDABLE  0, 0, 210, 258
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Database"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Game data",IDC_STATIC,7,7,196,75
+    LTEXT           "U&ser Id:",IDC_STATIC,14,21,26,8
+    EDITTEXT        IDC_SQLUSER,52,19,144,14,ES_AUTOHSCROLL
+    LTEXT           "Pass&word:",IDC_STATIC,14,42,34,8
+    EDITTEXT        IDC_SQLPASSWORD,52,40,144,14,ES_AUTOHSCROLL
+    LTEXT           "&DSN:",IDC_STATIC,14,63,18,8
+    EDITTEXT        IDC_SQLSRC,52,61,144,14,ES_AUTOHSCROLL
+    GROUPBOX        "&Game database",IDC_STATIC,7,85,196,89,WS_GROUP
+    LTEXT           "&Connection String:",IDC_STATIC,13,94,59,8
+    EDITTEXT        IDC_CONNECTIONSTRING2,13,104,160,30,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | WS_VSCROLL
+    PUSHBUTTON      "...",IDC_BTNCONNECTIONSTRING2,179,120,16,14
+    LTEXT           "Server threads (N):",IDC_STATIC,13,140,60,8
+    EDITTEXT        IDC_SQLNOTIFYTHREADS,75,138,21,14,ES_AUTOHSCROLL
+    LTEXT           "Server threads (S):",IDC_STATIC,110,140,60,8
+    EDITTEXT        IDC_SQLSILENTTHREADS,174,138,21,14,ES_AUTOHSCROLL
+    LTEXT           "Lobby threads (N):",IDC_STATIC,13,158,59,8
+    EDITTEXT        IDC_SQLNOTIFYTHREADS2,75,155,21,14,ES_AUTOHSCROLL
+    LTEXT           "Lobby threads (S):",IDC_STATIC,110,158,58,8
+    EDITTEXT        IDC_SQLSILENTTHREADS2,174,155,21,14,ES_AUTOHSCROLL
+    GROUPBOX        "&Event logging",IDC_STATIC,7,179,196,60,WS_GROUP
+    LTEXT           "&Connection String:",IDC_STATIC,14,189,59,8
+    EDITTEXT        IDC_CONNECTIONSTRING,14,199,160,30,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | WS_VSCROLL
+    PUSHBUTTON      "...",IDC_BTNCONNECTIONSTRING,180,215,16,14
+END
+#endif
+
+IDD_EVENTS DIALOGEX 0, 0, 210, 186
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Events"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "By &Group",IDC_BY_GROUP,"Button",BS_AUTORADIOBUTTON | 
+                    NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,107,6,45,10
+    CONTROL         "&Flat List",IDC_FLAT_LIST,"Button",BS_AUTORADIOBUTTON | 
+                    NOT WS_VISIBLE,163,6,40,10
+    LTEXT           "&Available Events:",IDC_STATIC,7,7,56,8
+    CONTROL         "EventTree",IDC_EVENTS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | TVS_INFOTIP | TVS_FULLROWSELECT | 
+                    NOT WS_VISIBLE | WS_TABSTOP,7,16,196,80,WS_EX_CLIENTEDGE
+    CONTROL         "EventList",IDC_EVENTS_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | 
+                    NOT WS_VISIBLE | WS_BORDER | WS_TABSTOP,7,16,196,80
+    GROUPBOX        "Event Detail",IDC_STATIC,7,99,196,80
+    LTEXT           "Type:",IDC_STATIC,14,111,38,8
+    RTEXT           "Information",IDC_EVENT_TYPE,56,111,36,8,NOT WS_GROUP
+    LTEXT           "Event ID:",IDC_STATIC,14,121,31,8
+    RTEXT           "99999 - 99999",IDC_EVENT_ID,45,121,47,8,NOT WS_GROUP
+    LTEXT           "Description:",IDC_STATIC,14,131,38,8
+    EDITTEXT        IDC_DESCRIPTION,14,141,182,31,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | NOT WS_TABSTOP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,100,108,1,30
+    CONTROL         "Log to NT &Event Log",IDC_LOG2NT,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,107,111,89,10
+    CONTROL         "Log to Event &Database",IDC_LOG2DB,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,107,125,89,10
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(ALLSRV_STANDALONE)
+#if defined(APSTUDIO_INVOKED)
+IDD_DATABASE$(ALLSRV_STANDALONE) DIALOG DISCARDABLE  0, 0, 210, 153
+#else
+IDD_DATABASE DIALOG DISCARDABLE  0, 0, 210, 153
+#endif
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Database"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "&Event logging",-1,7,86,196,60,WS_GROUP
+    LTEXT           "&Connection String:",-1,14,98,59,8
+    EDITTEXT        IDC_CONNECTIONSTRING,14,108,160,30,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | WS_VSCROLL
+    PUSHBUTTON      "...",IDC_BTNCONNECTIONSTRING,180,124,16,14
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(ALLSRV_STANDALONE)
+#if defined(APSTUDIO_INVOKED)
+IDD_GENERAL$(ALLSRV_STANDALONE) DIALOG DISCARDABLE  0, 0, 210, 186
+#else
+IDD_GENERAL DIALOG DISCARDABLE  0, 0, 210, 186
+#endif
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Lobby",IDC_STATIC,7,7,196,35,NOT WS_VISIBLE
+    LTEXT           "&Server:",IDC_STATIC,14,21,24,8,NOT WS_VISIBLE
+    EDITTEXT        IDC_LOBBYSERVER,56,19,140,14,ES_AUTOHSCROLL | NOT 
+                    WS_VISIBLE
+    GROUPBOX        "Artwork",IDC_STATIC,7,47,196,34
+    LTEXT           "Local &Path:",IDC_STATIC,14,61,37,8
+    EDITTEXT        IDC_FILEARTDIR,56,59,140,14,ES_AUTOHSCROLL
+    GROUPBOX        "Settings",IDC_STATIC,7,86,196,93
+    CONTROL         "&Timeout clients that don't respond",IDC_TIMEOUT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,21,98,122,10
+    CONTROL         "Want to &break into debugger (int3) on asserts",
+                    IDC_WANTINT3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,
+                    112,158,10
+    LTEXT           "&Updates Per Second:",IDC_STATIC,21,159,69,8
+    EDITTEXT        IDC_UPDATESPERSECOND,94,157,22,14,ES_RIGHT | ES_NUMBER
+    CONTROL         "Spin1",IDC_UPDATES_PER_SECOND_SPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,107,157,9,14
+    PUSHBUTTON      "Restore &Default",IDC_UPDATES_PER_SECOND_DEFAULT,122,
+                    157,73,14
+    CONTROL         "Use DirectPlay low-level p&rotocol",IDC_PROTOCOL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,21,126,119,10
+    CONTROL         "Send debug output to file",IDC_DEBUG_FILE,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,21,140,95,10
+END
+#endif
+
+IDD_LOBBY DIALOG DISCARDABLE  0, 0, 210, 186
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Lobby"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Lobby",IDC_STATIC,7,7,196,74
+    LTEXT           "&Authentication Server:",IDC_STATIC,14,21,71,8
+    EDITTEXT        IDC_AUTHSERVER,14,32,182,14,ES_AUTOHSCROLL
+    LTEXT           "&Token:",IDC_STATIC,14,50,24,8
+    EDITTEXT        IDC_TOKEN,14,60,182,14,ES_AUTOHSCROLL
+    LTEXT           "&Game Info Server(s):",IDC_STATIC,14,84,66,8
+    EDITTEXT        IDC_GAMEINFOSERVERS,14,94,182,14,ES_AUTOHSCROLL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 78
+    END
+
+    IDD_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+
+    IDD_AUTODOWNLOAD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+    END
+
+    IDD_DATABASE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 254
+    END
+
+    IDD_EVENTS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+
+    "IDD_DATABASE$(ALLSRV_STANDALONE)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 146
+    END
+
+    "IDD_GENERAL$(ALLSRV_STANDALONE)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+
+    IDD_LOBBY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_IMAGES              BITMAP  DISCARDABLE     "images.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About SrvConfig..."
+    IDS_TITLE               "Allegiance Game Server Config"
+    IDS_TYPE_ERROR          "Error"
+    IDS_TYPE_WARNING        "Warning"
+    IDS_TYPE_INFORMATION    "Information"
+    IDS_TYPE_SUCCESS        "Success"
+    IDS_TYPE_GROUP          "Group"
+    IDS_COLUMN_TYPE         "Type"
+    IDS_COLUMN_EVENTID      "ID"
+    IDS_COLUMN_NAME         "Name"
+    IDS_GAME_PARAMS         "Game Settings"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "SrvConfig.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

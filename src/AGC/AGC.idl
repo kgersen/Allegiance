@@ -1,0 +1,612 @@
+/////////////////////////////////////////////////////////////////////////////
+// AGC.idl : IDL source for AGC.dll
+//
+// This file will be processed by the MIDL tool to
+// produce the type library (AGC.tlb) and marshalling code.
+
+import "AGCIDL.idl";
+
+
+/////////////////////////////////////////////////////////////////////////////
+[
+  uuid(AB33E136-0A3E-11D3-8B58-00C04F681633),
+  version(1.0),
+  helpstring("AGC 1.0 Type Library")
+]
+library AGCLib
+{
+  importlib("stdole32.tlb");
+  importlib("stdole2.tlb");
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Reference these (enumerations) so that they get into the typelib
+  enum AGCObjectType;
+  enum AGCHullAbility;
+  enum AGCAxis;
+  enum AGCEquipmentType;
+  enum AGCTreasureType;
+  enum AGCChatTarget;
+  enum AGCEventID;
+  enum FileAttributes;
+
+
+  ///////////////////////////////////////////////////////////////////////////
+	// {secret}
+	[
+		hidden, noncreatable, uuid(1E700618-E334-4b54-9A54-040F65D2B9FF)
+	]
+	coclass AGCInterfaces
+	{
+		/////////////////////////////////////////////////////////////////////////
+		// Reference these (interfaces) so that they get into the typelib
+    // Also determines sort order of the interfaces in the typelib
+
+//    interface IAGCEventSink;           // [local]
+//    interface IAGCGlobal;              // [local]
+    interface IAGCVector;
+//    interface IAGCVectorPrivate;       // [local]
+    interface IAGCOrientation;
+//    interface IAGCOrientationPrivate;  // [local]
+    interface IAGCEvent;
+    interface IAGCEventCreate;
+    interface IAGCGameParameters;
+    interface IAGCCommand;
+//    interface IAGCCommandPrivate;      // [local]
+    interface IAGCVersionInfo;
+    interface IAGCDBParams;
+    interface IAGCEventLogger;
+//    interface IAGCEventLoggerPrivate;
+//    interface IAGCRangePrivate;        // [local]
+//    interface IAGCRangesPrivate;       // [local]
+    interface IAGCEventIDRange;
+    interface IAGCEventIDRanges;
+    interface ITCCollection;
+    interface ITCStrings;
+    interface ITCPropBagOnRegKey;
+    interface ITCSessionInfo;
+    interface ITCSessionInfos;
+    interface ITCCollectionPersistHelper;
+    interface ITCUtility;
+    interface IAdminSessionHelper;
+
+//    interface IAGCPrivate;             // [local]
+    interface IAGCCommon;
+    interface IAGCCollection;
+    interface IAGCBase;  // "base" as in "base class", not to be confused with Station
+    interface IAGCModel;
+    interface IAGCModels;
+    interface IAGCBuyable;
+    interface IAGCHullType;
+//    //interface IAGCHullTypes;         // Not defined yet
+//    interface IAGCTreasure;            // This doesn't want to work in here
+//    interface IAGCTreasures;           // This doesn't want to work in here
+    interface IAGCDamage;
+    interface IAGCScanner;
+    interface IAGCProbe;
+    interface IAGCProbes;
+    interface IAGCGame;
+    interface IAGCShip;
+    interface IAGCShips;
+    interface IAGCStation;
+    interface IAGCStations;
+    interface IAGCAleph;
+    interface IAGCAlephs;
+    interface IAGCSector;
+    interface IAGCSectors;
+    interface IAGCTeam;
+    interface IAGCTeams;
+    interface IAGCAsteroid;
+    interface IAGCAsteroids;
+  };
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(08118086-1FE1-11d3-AF03-0000F810C3F4),
+    helpstring("AGCGlobal Class")
+  ]
+  coclass AGCGlobal
+  {
+    [default] interface IAGCGlobal;
+
+  }; // End: coclass AGCGlobal
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(12249214-13B5-11d3-8B5E-00C04F681633),
+    helpstring("AGCVector Class")
+  ]
+  coclass AGCVector
+  {
+    [default] interface IAGCVector;
+
+  }; // End: coclass AGCVector
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(C8204960-3999-11d3-A51D-00C04F68DEB0),
+    helpstring("AGCOrientation Class")
+  ]
+  coclass AGCOrientation
+  {
+    [default] interface IAGCOrientation;
+  
+  }; // End: coclass AGCOrientation
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(AA18A676-14A7-11d3-8B5F-00C04F681633),
+    helpstring("AGCEvent Class")
+  ]
+  coclass AGCEvent
+  {
+    [default] interface IAGCEvent;
+
+  }; // End: coclass AGCEvent
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(F9E52A78-EBA4-11D2-8B4B-00C04F681633),
+    helpstring("AGCGameParameters Class")
+  ]
+  coclass AGCGameParameters
+  {
+    [default] interface IAGCGameParameters;
+
+  }; // End: coclass AGCGameParameters
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(4272AD82-FF3F-11d2-A50F-00C04F68DEB0),
+    helpstring("Active Game Core Command Class")
+  ]
+  coclass AGCCommand
+  {
+    [default] interface IAGCCommand;
+
+  }; // End: coclass AGCCommand
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(9942F23D-B460-4bf0-8B2C-7B003A43F37C),
+    helpstring("Active Game Core VersionInfo Class")
+  ]
+  coclass AGCVersionInfo
+  {
+    [default] interface IAGCVersionInfo;
+
+  }; // End: coclass AGCVersionInfo
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(85A50536-6442-41bc-B011-2BFD93CFB5A3),
+    helpstring("Active Game Core Database Parameters Class")
+  ]
+  coclass AGCDBParams
+  {
+    [default] interface IAGCDBParams;
+
+  }; // End: coclass AGCDBParams
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(9EBFAA09-2793-4a50-8F57-1D7B26A307F3),
+    helpstring("Active Game Core Event Logger Class")
+  ]
+  coclass AGCEventLogger
+  {
+    [default] interface IAGCEventLogger;
+
+  }; // End: coclass AGCEventLogger
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(1537A87B-910E-4258-9C77-79554AA3C839),
+    helpstring("Active Game Core EventIDRange Class")
+  ]
+  coclass AGCEventIDRange
+  {
+    [default] interface IAGCEventIDRange;
+
+  }; // End: coclass AGCEventIDRange
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(C63EFD2A-8763-44f4-A1CF-BEFB992482DA),
+    helpstring("Active Game Core EventIDRanges Class")
+  ]
+  coclass AGCEventIDRanges
+  {
+    [default] interface IAGCEventIDRanges;
+
+  }; // End: coclass AGCEventIDRanges
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCMarshalByValue CoClass
+  [
+    uuid(8962E244-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCMarshalByValue Class")
+  ]
+  coclass TCMarshalByValue
+  {
+    interface IUnknown;
+
+  }; // End: coclass TCMarshalByValue
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCStrings CoClass
+  [
+    uuid(8962E245-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCStrings Class")
+  ]
+  coclass TCStrings
+  {
+    [default] interface ITCStrings;
+
+  }; // End: coclass TCStrings
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCNullStream CoClass
+  [
+    uuid(8962E248-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCNullStream Class")
+  ]
+  coclass TCNullStream
+  {
+    interface IUnknown;
+
+  }; // End: coclass TCNullStream
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCPropBagOnRegKey
+  [
+    uuid(8962E246-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCPropBagOnRegKey Class")
+  ]
+  coclass TCPropBagOnRegKey
+  {
+    [default] interface ITCPropBagOnRegKey;
+
+  }; // End: coclass TCPropBagOnRegKey
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCUtility
+  [
+    uuid(E9EE9E82-ED3A-11d2-A50B-00C04F68DEB0),
+    helpstring("TCUtility Class")
+  ]
+  coclass TCUtility
+  {
+    [default] interface ITCUtility;
+
+  }; // End: coclass TCUtility
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // AdminSessionHelper
+  [
+    uuid(859E6E3A-875D-4b0d-8775-E7C533E9EBEF),
+    helpstring("AdminSessionHelper Class")
+  ]
+  coclass AdminSessionHelper
+  {
+    [default] interface IAdminSessionHelper;
+
+  }; // End: coclass AdminSessionHelper
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(CFA3F5F2-0A42-11D3-8B58-00C04F681633),
+    helpstring("AGCBase Class")
+  ]
+  coclass AGCBase
+  {
+    [default] interface IAGCBase;
+
+  }; // End: coclass AGCBase
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(DF2F4B4D-0A42-11D3-8B58-00C04F681633),
+    helpstring("AGCModel Class")
+  ]
+  coclass AGCModel
+  {
+    [default] interface IAGCModel;
+
+  }; // End: coclass AGCModel
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(FF8126CC-1ED2-43c5-B07E-D7B2E8487EE5),
+    helpstring("AGCModels Class")
+  ]
+  coclass AGCModels
+  {
+    [default] interface IAGCModels;
+
+  }; // End: coclass AGCModels
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(6E5B27C8-2ED9-11d3-A51C-00C04F68DEB0),
+    helpstring("AGCHullType Class")
+  ]
+  coclass AGCHullType
+  {
+    [default] interface IAGCHullType;
+
+  }; // End: coclass AGCHullType
+
+
+#if 0
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(E428B8B2-2ED9-11d3-A51C-00C04F68DEB0),
+    helpstring("AGCHullTypes Class")
+  ]
+  coclass AGCHullTypes
+  {
+    [default] interface IAGCHullTypes;
+
+  }; // End: coclass AGCHullTypes
+#endif
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(E9004E6F-0A42-11D3-8B58-00C04F681633),
+    helpstring("AGCDamage Class")
+  ]
+  coclass AGCDamage
+  {
+    [default] interface IAGCDamage;
+
+  }; // End: coclass AGCDamage
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(F56824BB-0A42-11D3-8B58-00C04F681633),
+    helpstring("AGCScanner Class")
+  ]
+  coclass AGCScanner
+  {
+    [default] interface IAGCScanner;
+
+  }; // End: coclass AGCScanner
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(A23C1044-ED2D-4f80-813B-FBB5DE7B8CFB),
+    helpstring("AGCProbe Class")
+  ]
+  coclass AGCProbe
+  {
+    [default] interface IAGCProbe;
+
+  }; // End: coclass AGCProbe
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(BB92CE8C-CC20-497a-B7CC-26F29E1D8877),
+    helpstring("AGCProbes Class")
+  ]
+  coclass AGCProbes
+  {
+    [default] interface IAGCProbes;
+
+  }; // End: coclass AGCProbes
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(4F860D2E-0A42-11D3-8B58-00C04F681633),
+    helpstring("AGCGame Class")
+  ]
+  coclass AGCGame
+  {
+    [default] interface IAGCGame;
+
+  }; // End: coclass AGCGame
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(5C271C62-0A42-11D3-8B58-00C04F681633),
+    helpstring("AGCShip Class")
+  ]
+  coclass AGCShip
+  {
+    [default] interface IAGCShip;
+
+  }; // End: coclass AGCShip
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(5BEA791C-1EBF-11d3-8B63-00C04F681633),
+    helpstring("AGCShips Class")
+  ]
+  coclass AGCShips
+  {
+    [default] interface IAGCShips;
+
+  }; // End: coclass AGCShips
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(88400BB2-026B-11D3-8B55-00C04F681633),
+    helpstring("AGCStation Class")
+  ]
+  coclass AGCStation
+  {
+    [default] interface IAGCStation;
+
+  }; // End: coclass AGCStation
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(7A0159B4-0272-11D3-8B55-00C04F681633),
+    helpstring("AGCStations Class")
+  ]
+  coclass AGCStations
+  {
+    [default] interface IAGCStations;
+
+  }; // End: coclass AGCStations
+  
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(46AF05A8-0325-11D3-8B57-00C04F681633),
+    helpstring("AGCAleph Class")
+  ]
+  coclass AGCAleph
+  {
+    [default] interface IAGCAleph;
+
+  }; // End: coclass AGCAleph
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(991B6C06-026B-11D3-8B55-00C04F681633),
+    helpstring("AGCAlephs Class")
+  ]
+  coclass AGCAlephs
+  {
+    [default] interface IAGCAlephs;
+
+  }; // End: coclass AGCAlephs
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(338DA8FE-EBA5-11D2-8B4B-00C04F681633),
+    helpstring("AGCSector Class")
+  ]
+  coclass AGCSector
+  {
+    [default] interface IAGCSector;
+
+  }; // End: coclass AGCSector
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(4214FD6E-EBA5-11D2-8B4B-00C04F681633),
+    helpstring("AGCSectors Class")
+  ]
+  coclass AGCSectors
+  {
+    [default] interface IAGCSectors;
+
+  }; // End: coclass AGCSectors
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(5C2B1828-EBA5-11D2-8B4B-00C04F681633),
+    helpstring("AGCTeam Class")
+  ]
+  coclass AGCTeam
+  {
+    [default] interface IAGCTeam;
+
+  }; // End: coclass AGCTeam
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(7151948E-EBA5-11D2-8B4B-00C04F681633),
+    helpstring("AGCTeams Class")
+  ]
+  coclass AGCTeams
+  {
+    [default] interface IAGCTeams;
+
+  }; // End: coclass AGCTeams
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(12430BFC-38B5-11d3-A51D-00C04F68DEB0),
+    helpstring("AGCAsteroid Class")
+  ]
+  coclass AGCAsteroid
+  {
+    [default] interface IAGCAsteroid;
+
+  }; // End: coclass AGCAsteroid
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(12430BFD-38B5-11d3-A51D-00C04F68DEB0),
+    helpstring("AGCAsteroids Class")
+  ]
+  coclass AGCAsteroids
+  {
+    [default] interface IAGCAsteroids;
+
+  }; // End: coclass AGCAsteroids
+
+}; // End: library AGCLib
+
+
+cpp_quote("/////////////////////////////////////////////////////////////////////////////")
+cpp_quote("// CATID Declarations")
+cpp_quote("")
+cpp_quote("#ifdef __cplusplus")
+cpp_quote("  ///////////////////////////////////////////////////////////////////////////")
+cpp_quote("  // {6394A435-0B27-11D3-8B58-00C04F681633}")
+cpp_quote("  extern \"C\" const __declspec(selectany) GUID CATID_AGC =")
+cpp_quote("    {0x6394A435,0xB27,0x11D3,{0x8B,0x58,0x00,0xC0,0x4F,0x68,0x16,0x33}};")
+cpp_quote("#endif // __cplusplus")
+cpp_quote("")
+

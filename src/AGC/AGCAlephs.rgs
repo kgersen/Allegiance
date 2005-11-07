@@ -1,0 +1,21 @@
+HKCR
+{
+	AGC.AGCAlephs.1 = s 'AGCAlephs Class'
+	{
+		CLSID = s '{991B6C06-026B-11D3-8B55-00C04F681633}'
+	}
+	AGC.AGCAlephs = s 'AGCAlephs Class'
+	{
+		CLSID = s '{991B6C06-026B-11D3-8B55-00C04F681633}'
+		CurVer = s 'AGC.AGCAlephs.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {991B6C06-026B-11D3-8B55-00C04F681633} = s 'AGCAlephs Class'
+		{
+			ProgID = s 'AGC.AGCAlephs.1'
+			VersionIndependentProgID = s 'AGC.AGCAlephs'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}

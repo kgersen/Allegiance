@@ -1,0 +1,121 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Event Log Database Test Page</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<font face="Verdana" size="2">
+
+<h1>Pigs Session Event Log Database Test Page</h1>
+<hr>
+<p>This form tests the Pig Session object's event logging abilities.</p>
+
+<p>Enter the computer name of the Pig machine for which you would like to see
+logged events:</p>
+<p><input type="text" id="ComputerName" SIZE="16" MAXLENGTH="15">
+</input>
+</p>
+
+<p>Next, press the Get DB Params button to connect to the specified Pig machine
+and retrieve its Event Log parameters.</p>
+
+<p><input TYPE="button" VALUE="Get DB Params" onclick="GetDBParams()"></input>
+</p>
+
+<table width="80%" CELLPADDING="0" CELLSPACING="0" BORDER="1" bgcolor="#E0E0E0" bordercolor="#FFFFFF" STYLE="font-family:Verdana;font-size:x-small">
+  <tr>
+    <td width="20%" bgcolor="#CCCCCC"><b>Connection String</b></td>
+    <td><textarea id="ConnectionString" cols="78" rows="4">PROVIDER=SQLOLEDB;Server=jtasler2-nt;DATABASE=TestEvents2;UID=sa;PWD=</textarea></td>
+  </tr>
+  <tr>
+    <td width="20%" bgcolor="#CCCCCC"><b>Table Name</b></td>
+    <td><input id="TableName" size="32" value="Events"></input></td>
+  </tr>
+</table>
+
+<P>Click the Refresh button to query the event log database</P>
+<p><input TYPE="button" VALUE="Refresh" onclick="RefreshRows()"></input>
+</p>
+
+<table width="100%" CELLPADDING="0" CELLSPACING="0" BORDER="1" bgcolor="#E0E0E0" bordercolor="#FFFFFF" STYLE="font-family:Verdana;font-size:x-small">
+  <thead>
+  <tr bgcolor="#CCCCCC">
+    <td width="25%">Time</td>
+    <td width="10%">Event#</td>
+    <td width="7%">Subject#</td>
+    <td width="8%">Subject</td>
+    <td width="50%">Description</td>
+  </tr>
+  </thead>
+  
+  <tbody id="OutputTable">
+  </tbody>
+</table>
+<P></P>
+&nbsp;
+
+<hr>
+<h6><a href="mailto:jtasler">John A. Tasler</a>, and the <a href="mailto:fedtest"> Allegiance Test
+Team</a>.<br>
+Copyright © 1999 Microsoft Corporation. All rights reserved.<br>
+</h6>
+
+</font>
+
+<blockquote>
+
+<script language="jscript">
+
+function GetDBParams()
+{
+  if (ComputerName.value.length)
+  {
+    var objUtil = new ActiveXObject("TCUtil");
+    var objSession = objUtil.CreateObject("Pigs", ComputerName.value);
+    var objDBParams = objSession.EventLogParams;
+    ConnectionString.innerText = objDBParams.ConnectionString;
+    TableName.innerText = objDBParams.TableName;
+    objUtil = null;
+  }
+}
+
+function RefreshRows()
+{
+  if (ConnectionString.value.length && TableName.value.length)
+  {
+    // Clear all current rows
+    var nRows = OutputTable.rows.length;
+    while (nRows--)
+      OutputTable.deleteRow(nRows);
+
+    var objUtil = new ActiveXObject("TCUtil");
+    var conn = new ActiveXObject("ADODB.Connection");
+    conn.Open(ConnectionString.value);
+    var rs = conn.Execute("SELECT * from " + TableName.value + " WHERE ComputerName='" + ComputerName.value + "' ORDER BY IDENTITYCOL");
+    while (!rs.eof)
+    {
+      var row = OutputTable.insertRow();
+      row.insertCell().innerText = rs("DateTime");
+      row.insertCell().innerText = rs("Event");
+      row.insertCell().innerText = (-1 == rs("Subject")) ? " " : rs("Subject");
+      row.insertCell().innerText = rs("SubjectName");
+      
+      var sObjRef = rs("ObjectRef").Value;
+      var oEvent = objUtil.GetObject(sObjRef, false);
+      row.insertCell().innerText = oEvent.Description;
+
+      rs.MoveNext();
+    }
+  }
+}
+
+</script>
+
+</body>
+
+</html>

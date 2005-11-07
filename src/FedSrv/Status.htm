@@ -1,0 +1,127 @@
+<html>
+
+<head>
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<meta HTTP-EQUIV="Content-Language" CONTENT="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Allegiance Server Status Page</title>
+
+
+<object id="Session" classid="clsid:AAA8270F-DDA4-11D2-8B46-00C04F681633">
+</object>
+
+</head>
+
+<!-- <script language="jscript">
+
+function Update() // Update
+{
+  // Get the server object for global info
+  var objServer = Session.Server;
+	
+  Session.ActivateEvents(5);
+
+  // Check the status of the object
+  Status_PlayerCount.innerText = objServer.PlayerCount;
+  Status_MissionCount.innerText = objServer.MissionCount;
+}
+
+function Session_OnEvent(event)
+{
+ alert("Event Received");
+}
+
+</script> -->
+
+<script language="vbscript">
+
+Sub ConnectToServer()
+  Session.ActivateEvents(4)
+  Update()
+End Sub
+
+Sub Update()
+  ' Check the status of the object
+  Status_PlayerCount.innerText = Session.Server.PlayerCount
+  Status_MissionCount.innerText = Session.Server.MissionCount
+
+End Sub
+
+Sub Session_OnEvent(objEvent)
+	Chat_Game.innerText = Chat_Game.innerText & vbCrLF & vbCrLF & objEvent.Dictionary("GAME")
+	Chat_Type.innerText = Chat_Type.innerText & vbCrLF & vbCrLF & objEvent.Dictionary("TYPE")
+	Chat_Source.innerText = Chat_Source.innerText & vbCrLF & vbCrLF & objEvent.Dictionary("SOURCE")
+	Chat_Dest.innerText = Chat_Dest.innerText & vbCrLF & vbCrLF & objEvent.Dictionary("TARGET")
+	Chat_Message.innerText = Chat_Message.innerText & vbCrLF & vbCrLF & objEvent.Dictionary("MESSAGE")
+End Sub
+
+Sub ClearChat()
+	Chat_Game.innerText = "Game"
+	Chat_Type.innerText = "Type"
+	Chat_Source.innerText = "Source"
+	Chat_Dest.innerText = "Target"
+	Chat_Message.innerText = "Message"
+End Sub
+
+</script>
+
+<body bgcolor="#FFFFFF">
+<font face="Verdana" size="2">
+
+<h1>Allegiance Server Status&nbsp;</h1>
+<hr>
+<p><b>Computer
+      (optional):</b> <input id="ComputerName" SIZE="35"> (Remote web page
+connections not support yet, use regular VB for the time being)</p>
+<h5><input TYPE="submit" VALUE="Connect To Server" onclick="ConnectToServer()">
+
+</h5>
+<hr>
+<h2>Status</h2>
+<blockquote>
+
+</font>
+<table border="1" width="32%" bordercolor="#C0C0C0" cellspacing="0" bordercolorlight="#FFFFFF" bordercolordark="#FFFFFF" height="40">
+  <tr>
+    <th width="24%" bgcolor="#C0C0C0" align="left" height="16"><b><font face="Verdana" size="2">PlayerCount:</font></b></th>
+<font face="Verdana" size="2">
+
+    <td width="76%" id="Status_PlayerCount" bgcolor="#C0C0C0" align="center" height="16">&nbsp;</td>
+  </tr>
+
+</font>
+  <tr>
+    <th width="24%" bgcolor="#C0C0C0" align="left" height="16"><b><font face="Verdana" size="2">MissionCount:</font></b></th>
+<font face="Verdana" size="2">
+
+    <td width="76%" id="Status_MissionCount" bgcolor="#C0C0C0" align="center" height="16">&nbsp;</td>
+  </tr>
+</table>
+</blockquote>
+<p><input TYPE="submit" VALUE="Update Status" onclick="Update()">
+
+</p>
+<hr>
+<h2>Chat</h2>
+<table border="1" width="100%" bordercolorlight="#FFFFFF" bordercolor="#FFFFFF" bordercolordark="#FFFFFF" cellspacing="4" cellpadding="4">
+  <tr>
+    <td width="10%" id="Chat_Game">Game</td>
+    <td width="10%" id="Chat_Type">Type</td>
+    <td width="10%" id="Chat_Source">Source</td>
+    <td width="10%" id="Chat_Dest">Target</td>
+    <td width="60%" id="Chat_Message">Message</td>
+  </tr>
+</table>
+<p><input TYPE="submit" VALUE="Clear Chat" onclick="ClearChat()">
+
+</p>
+<hr>
+<h6>
+Copyright © 2000 Microsoft Corporation. All rights reserved.<br>
+</h6>
+
+</font>
+</body>
+
+</html>

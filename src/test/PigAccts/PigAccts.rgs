@@ -1,0 +1,12 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		{9BA731AE-E7CB-11d2-A508-00C04F68DEB0} = s 'Pig Account Server'
+		'PigAccts.EXE'
+		{
+			val AppID = s {9BA731AE-E7CB-11d2-A508-00C04F68DEB0}
+		}
+	}
+}
+

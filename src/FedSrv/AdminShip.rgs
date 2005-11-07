@@ -1,0 +1,23 @@
+HKCR
+{
+	AllSrv.Ship.1 = s 'Ship Class'
+	{
+		CLSID = s '{3E389806-2DB4-11d3-8B66-00C04F681633}'
+	}
+	AllSrv.Ship = s 'Ship Class'
+	{
+		CLSID = s '{3E389806-2DB4-11d3-8B66-00C04F681633}'
+		CurVer = s 'AllSrv.Ship.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {3E389806-2DB4-11d3-8B66-00C04F681633} = s 'Ship Class'
+		{
+			ProgID = s 'AllSrv.Ship.1'
+			VersionIndependentProgID = s 'AllSrv.Ship'
+			ForceRemove 'Programmable'
+			val AppID = s '{E4E8767E-DFDB-11d2-8B46-00C04F681633}'
+			'TypeLib' = s '{BB5FC41C-DDA4-11d2-8B46-00C04F681633}'
+		}
+	}
+}

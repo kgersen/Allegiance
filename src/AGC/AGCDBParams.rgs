@@ -1,0 +1,25 @@
+HKCR
+{
+  AGC.DBParams.1 = s 'Active Game Core Database Parameters Class'
+  {
+    CLSID = s '{85A50536-6442-41bc-B011-2BFD93CFB5A3}'
+  }
+  AGC.DBParams = s 'Active Game Core Database Parameters Class'
+  {
+    CLSID = s '{85A50536-6442-41bc-B011-2BFD93CFB5A3}'
+    CurVer = s 'AGC.DBParams.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {85A50536-6442-41bc-B011-2BFD93CFB5A3} = s 'Active Game Core Database Parameters Class'
+    {
+      ProgID = s 'AGC.DBParams.1'
+      VersionIndependentProgID = s 'AGC.DBParams'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+HKCR
+{
+	AGC.AGCProbe.1 = s 'AGCProbe Class'
+	{
+		CLSID = s '{A23C1044-ED2D-4f80-813B-FBB5DE7B8CFB}'
+	}
+	AGC.AGCProbe = s 'AGCProbe Class'
+	{
+		CLSID = s '{A23C1044-ED2D-4f80-813B-FBB5DE7B8CFB}'
+		CurVer = s 'AGC.AGCProbe.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {A23C1044-ED2D-4f80-813B-FBB5DE7B8CFB} = s 'AGCProbe Class'
+		{
+			ProgID = s 'AGC.AGCProbe.1'
+			VersionIndependentProgID = s 'AGC.AGCProbe'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}
+					   

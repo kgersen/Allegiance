@@ -1,0 +1,24 @@
+<Schema name="PigBehavior"
+  xmlns="urn:schemas-microsoft-com:xml-data"
+  xmlns:dt="urn:schemas-microsoft-com:datatypes">
+
+  <ElementType name="script" content="textOnly" model="open"/>
+
+  <ElementType name="InvokeCommand" content="textOnly"/>
+
+  <ElementType name="registration" content="eltOnly">
+    <element type="InvokeCommand" minOccurs="0" maxOccurs="*"/>
+  </ElementType>
+
+  <AttributeType name="language" required="yes" dt:type="string"/>
+  <AttributeType name="base" required="no" dt:type="string"/>
+
+  <ElementType name="pigbehavior" content="eltOnly">
+    <attribute type="language"/>
+    <attribute type="base"/>
+    <element type="registration" minOccurs="0" maxOccurs="1"/>
+    <element type="script" minOccurs="1" maxOccurs="*"/>
+  </ElementType>
+
+</Schema>
+

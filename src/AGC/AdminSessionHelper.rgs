@@ -1,0 +1,25 @@
+HKCR
+{
+  AllSrv.AdminSessionHelper.1 = s 'AdminSessionHelper Class'
+  {
+    CLSID = s '{859E6E3A-875D-4b0d-8775-E7C533E9EBEF}'
+  }
+  AllSrv.AdminSessionHelper = s 'AdminSessionHelper Class'
+  {
+    CLSID = s '{859E6E3A-875D-4b0d-8775-E7C533E9EBEF}'
+    CurVer = s 'AllSrv.AdminSessionHelper.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {859E6E3A-875D-4b0d-8775-E7C533E9EBEF} = s 'AdminSessionHelper Class'
+    {
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+      ProgID = s 'TCObj.Utility.1'
+      VersionIndependentProgID = s 'AllSrv.AdminSessionHelper'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}

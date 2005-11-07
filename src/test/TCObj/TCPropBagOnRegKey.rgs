@@ -1,0 +1,25 @@
+HKCR
+{
+  TCObj.PropBagOnRegKey.1 = s 'Property Bag Implemented on a Registry Key'
+  {
+    CLSID = s '{8962E245-CD81-11d2-9646-00C04F68DEB0}'
+  }
+  TCObj.PropBagOnRegKey = s 'Property Bag Implemented on a Registry Key'
+  {
+    CLSID = s '{8962E245-CD81-11d2-9646-00C04F68DEB0}'
+    CurVer = s 'TCObj.PropBagOnRegKey.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {8962E245-CD81-11d2-9646-00C04F68DEB0} = s 'Property Bag Implemented on a Registry Key'
+    {
+      TypeLib = s '{8962E243-CD81-11d2-9646-00C04F68DEB0}'
+      ProgID = s 'TCObj.PropBagOnRegKey.1'
+      VersionIndependentProgID = s 'TCObj.PropBagOnRegKey'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}

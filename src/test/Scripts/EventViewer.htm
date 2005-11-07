@@ -1,0 +1,345 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Event Log Database Test Page</title>
+
+<style>
+  label {height:1em;}
+  td {vertical-align: top;}
+</style>
+
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<font face="Verdana" size="2">
+
+<h1>AGC Event Log Viewer</h1>
+<hr>
+
+<b>Database</b>
+
+<table width="80%" CELLPADDING="0" CELLSPACING="0" BORDER="1" bgcolor="#E0E0E0" bordercolor="#FFFFFF" STYLE="font-family:Verdana;font-size:x-small">
+  <tr>
+    <td width="30%" bgcolor="#00CCCC"><b>SQL Server Computer:</b></td>
+    <td><input type="text" id="SQLSRV" size="50" value="OBLSQL"></input></td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CC00CC"><b>SQL Database:</td>
+    <td><input type="text" id="SQLDB" size="50" value="Pigs"></input></td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCC00"><b>SQL Table:</td>
+    <td><input type="text" id="SQLTABLE" size="50" value="Events"></input></td>
+  </tr>
+</table>
+
+<b>Query Filter</b>
+
+<table width="80%" CELLPADDING="0" CELLSPACING="0" BORDER="1" bgcolor="#E0E0E0" bordercolor="#FFFFFF" STYLE="font-family:Verdana;font-size:x-small">
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"><b>Source Computer:</b></td>
+    <td colspan="2"><input type="text" id="EVENTSRV" size="50"></input></td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"><b>Subject Name:</b></td>
+    <td colspan="2"><input type="text" id="SUBJECTNAME" size="50"></input></td>
+  </tr>
+  <tr>
+<!--
+    <td width="30%" bgcolor="#CCCCCC"><b>Date/Time Filter:</b></td>
+    <td colspan="1">
+      <table cellpadding="0" cellspacing="0" border="0" STYLE="font-family:Verdana;font-size:x-small">
+        <tr>
+          <td colspan="3">
+            <label for="alltime">
+              <INPUT id=alltime name=buildtype type=radio value=on>
+                All&nbsp;</INPUT>
+              </label>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <label for="lasthourtime">
+              <INPUT id=lasthourtime name=buildtype type=radio value=off>
+                Last Hour&nbsp;</INPUT>
+              </label>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <label for="last5time">
+              <INPUT id=last5time name=buildtype type=radio value=off>
+                Last 5 minutes&nbsp;</INPUT>
+              </label>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <label for="customtime">
+              <INPUT id=customtime name=buildtype type=radio value=off onpropertychange="OnCustomTimeClicked();">
+                Custom&nbsp;</INPUT>
+              </label>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <table cellpadding="0" cellspacing="0" border="0" STYLE="font-family:Verdana;font-size:x-small"
+              id="trCustomTime" style="display:inline;">
+              <tr>
+                <td>
+                  <label for="btnDateTimeFrom">
+                    <INPUT type="checkbox" id="btnDateTimeFrom">
+                      On or After:&nbsp;</INPUT>
+                    </label>
+                </td>
+                <td style="padding-left:12px;">
+                  <object id="dateFrom" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+                    codebase="MSComCt2.CAB#6,0,84,18"
+                    height="24px" width="116px">
+                    <param name="Format" value="1"></param>
+                    <param name="CustomFormat" value="mon dd yyyy"></param>
+                    </object>
+                </td>
+                <td style="padding-left:12px;">
+                  <object id="timeFrom" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+                    codebase="MSComCt2.CAB#6,0,84,18"
+                    height="24px" width="116px">
+                    <param name="Format" value="2"></param>
+                    <param name="CustomFormat" value="hh:mi:ss:000"></param>
+                    </object>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="btnDateTimeTo">
+                    <INPUT type="checkbox" id="btnDateTimeTo">
+                      Before:&nbsp;</INPUT>
+                    </label>
+                </td>
+                <td style="padding-left:12px;">
+                  <object id="dateTo" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+                    codebase="MSComCt2.CAB#6,0,84,18"
+                    height="24px" width="116px">
+                    <param name="Format" value="1"></param>
+                    </object>
+                </td>
+                <td style="padding-left:12px;">
+                  <object id="timeTo" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+                    codebase="MSComCt2.CAB#6,0,84,18"
+                    height="24px" width="116px">
+                    <param name="Format" value="2"></param>
+                    </object>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+-->
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"><b>Chat Filter</b></td>
+    <td>
+      <label for="btnChatOnly">
+        <input type="checkbox" id="btnChatOnly" onclick="OnChatOnlyClicked();">
+          Chat Events Only&nbsp;
+          </input>
+        </label>
+      <label id="labelIncludeAdminPages" for="btnIncludeAdminPages" style="height:1em; display:none;">
+        <input type="checkbox" id="btnIncludeAdminPages" CHECKED="true">
+          Include Admin Page Requests also&nbsp;
+          </input>
+        </label>
+    </td>
+  </tr>
+</table>
+
+
+
+<P>Click the Refresh button to query the event log database, or the Empty button to clear the specified entries from the log.</P>
+<p>
+<input TYPE="button" VALUE="Refresh" onclick="RefreshRows()"></input>
+<input TYPE="button" VALUE=" Empty " onclick="DeleteRows()"></input>
+</p>
+
+<table width="100%" CELLPADDING="0" CELLSPACING="0" BORDER="1" bgcolor="#E0E0E0" bordercolor="#FFFFFF" STYLE="font-family:Verdana;font-size:x-small">
+  <thead>
+  <tr bgcolor="#CCCCCC" VALIGN="baseline">
+    <td width="28%">Date/Time</td>
+    <td width="4%" align="center">ID</td>
+    <td width="8%" ALIGN="center">Subject</td>
+    <td width="60%">Description</td>
+  </tr>
+  </thead>
+  
+  <tbody id="OutputTable">
+  </tbody>
+</table>
+<P></P>
+&nbsp;
+
+<hr>
+<h6><a href="mailto:jtasler">John A. Tasler</a>, and the <a href="mailto:fedtest"> Allegiance Test
+Team</a>.<br>
+Copyright © 1999 Microsoft Corporation. All rights reserved.<br>
+</h6>
+
+</font>
+
+<blockquote>
+
+<script language="jscript">
+
+function CreateWhereClause()
+{
+  // Create the query string
+  var bHaveFirst = false;
+  var strWhere = "";
+
+  // Evaluate the ComputerName filter
+  if (EVENTSRV.value.length)
+  {
+    strWhere += " WHERE ComputerName LIKE '" + EVENTSRV.value + "'";
+    bHaveFirst = true;
+  }
+
+  // Evaluate the SubjectName filter
+  if (SUBJECTNAME.value.length)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += " SubjectName LIKE '" + SUBJECTNAME.value + "'";
+  }
+
+@if (0)
+  // Evaluate the Date filter
+  if (btnDateTimeFrom.checked)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += "(DateTime >= " + dateFrom.value + timeFrom.value + ")";
+  }
+
+  // Evaluate the Date filter
+  if (lasthourtime.checked) 
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += " datetime > DATEADD(hh, -1, GETDATE())";
+  }
+  else if (last5time.checked) 
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += " datetime > DATEADD(mi, -5, GETDATE())";
+  }
+@end
+
+  // Evaluate the Chat Filter
+  if (btnChatOnly.checked)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+
+    if (btnIncludeAdminPages.checked)
+      strWhere += "(Event >= 4030 AND Event <= 4031)";
+    else
+      strWhere += "(Event = 4030)";
+  }
+
+  // Return the generated clause
+  return strWhere;
+}
+
+function RefreshRows()
+{
+  if (SQLSRV.value.length && SQLDB.value.length && SQLTABLE.value.length)
+  {
+    // Create the connection string
+    var strConnectionString = "PROVIDER=SQLOLEDB;Server=" + SQLSRV.value;
+    strConnectionString += ";DATABASE=" + SQLDB.value + ";UID=sa;PWD=";
+
+    // Create the query string
+    var strQuery = "SELECT Event,SubjectName,DateTime,ObjectRef from " + SQLTABLE.value;
+    strQuery += CreateWhereClause() + " ORDER BY IDENTITYCOL";
+    alert(strQuery);
+
+    // Clear all current HTML <TR> rows
+    var nRows = OutputTable.rows.length;
+    while (nRows--)
+      OutputTable.deleteRow(nRows);
+
+    var oEvent = new ActiveXObject("AGC.AGCEvent");
+    var conn = new ActiveXObject("ADODB.Connection");
+    conn.Open(strConnectionString);
+    var rs = conn.Execute(strQuery);
+    while (!rs.eof)
+    {
+      var sObjRef = rs("ObjectRef").Value;
+      oEvent.LoadFromString(sObjRef);
+      var row = OutputTable.insertRow();
+      row.vAlign = "baseline";
+      row.insertCell().innerText = rs("DateTime");
+      row.insertCell().innerText = rs("Event");
+      var tdSubject = row.insertCell();
+      var strSubject = rs("SubjectName") + "";
+      if (!strSubject.length)
+        tdSubject.innerHTML = "&nbsp;";
+      else
+        tdSubject.innerText = strSubject;
+      tdSubject.align = "center";
+      // Special case for Chat and AdminPage events (until format string gets fixed)
+      if (4030 == oEvent.ID || 4031 == oEvent.ID)
+        row.insertCell().innerText = oEvent("Message");
+      else
+        row.insertCell().innerText = oEvent.Description;
+      rs.MoveNext();
+    }
+
+    // Close the recordset and connection, since we're done with them
+    rs.Close();
+    conn.Close();
+  }
+}
+
+function DeleteRows()
+{
+  if (SQLSRV.value.length && SQLDB.value.length && SQLTABLE.value.length)
+  {
+    // Create the connection string
+    var strConnectionString = "PROVIDER=SQLOLEDB;Server=" + SQLSRV.value;
+    strConnectionString += ";DATABASE=" + SQLDB.value + ";UID=sa;PWD=";
+
+    // Create the delete string
+    var strQuery = "DELETE from " + SQLTABLE.value;
+    strQuery += CreateWhereClause();
+
+    // Clear all current HTML <TR> rows
+    var nRows = OutputTable.rows.length;
+    while (nRows--)
+      OutputTable.deleteRow(nRows);
+
+    // Delete the rows in SQL
+    var conn = new ActiveXObject("ADODB.Connection");
+    conn.Open(strConnectionString);
+    var rs = conn.Execute(strQuery);
+
+    // Close the connection, since we're done with it
+    conn.Close();
+  }
+}
+
+function OnChatOnlyClicked()
+{
+  labelIncludeAdminPages.style.display = btnChatOnly.checked ? "" : "none";
+}
+
+function OnCustomTimeClicked()
+{
+  trCustomTime.style.display = (customtime.checked ? "" : "none");
+}
+
+</script>
+
+</body>
+

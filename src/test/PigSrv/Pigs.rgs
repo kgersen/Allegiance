@@ -1,0 +1,22 @@
+HKCR
+{
+  Pigs.Pigs.1 = s 'Pigs Collection Class'
+  {
+    CLSID = s '{DC2A26D8-DDC0-11d2-A507-00C04F68DEB0}'
+  }
+  Pigs.Pigs = s 'Pigs Collection Class'
+  {
+    CLSID = s '{DC2A26D8-DDC0-11d2-A507-00C04F68DEB0}'
+    CurVer = s 'Pigs.Pigs.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {DC2A26D8-DDC0-11d2-A507-00C04F68DEB0} = s 'Pigs Collection Class'
+    {
+      ProgID = s 'Pigs.Pigs.1'
+      VersionIndependentProgID = s 'Pigs.Pigs'
+      val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+      'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+    }
+  }
+}

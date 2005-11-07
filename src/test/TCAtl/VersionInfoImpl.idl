@@ -1,0 +1,121 @@
+/////////////////////////////////////////////////////////////////////////////
+// VersionInfoImpl.idl : Property declarations for an interface to be
+// implemented by the TCVersionInfoImpl class template (defined in
+// VersionInfoImpl.h.
+//
+
+  // Initialization
+  [propput, helpstring("Gets/sets the name of the file for which version information is currently loaded, if any.")]
+  HRESULT FileName([in] BSTR bstrFileName);
+  [propget]
+  HRESULT FileName([out, retval] BSTR* pbstrFileName);
+
+  // File Version
+  [propget, helpstring("Gets the File Version as a string formatted as 'AA.BB.CC.DDDD', where A, B, C, and D, are the MS high, MS low, LS high, and LS low words of the version, respectively.")]
+  HRESULT FileVersionString([out, retval] BSTR* pbstrString);
+  [propget, helpstring("Gets the high word of the MS (Most Significant) File Version.")]
+  HRESULT FileVersionMSHigh([out, retval] WORD* pwMSHigh);
+  [propget, helpstring("Gets the low word of the MS (Most Significant) File Version.")]
+  HRESULT FileVersionMSLow ([out, retval] WORD* pwMSLow );
+  [propget, helpstring("Gets the high word of the LS (Least Significant) File Version.")]
+  HRESULT FileVersionLSHigh([out, retval] WORD* pwLSHigh);
+  [propget, helpstring("Gets the low word of the LS (Least Significant) File Version.")]
+  HRESULT FileVersionLSLow ([out, retval] WORD* pwLSLow );
+  [propget, helpstring("Gets the build number of the File Version. Just a friendlier name for LSLow.")]
+  HRESULT FileBuildNumber  ([out, retval] WORD* pwBuildNumber);
+
+  // Product Version
+  [propget, helpstring("Gets the Product Version as a string formatted as 'AA.BB.CC.DDDD', where A, B, C, and D, are the MS high, MS low, LS high, and LS low words of the version, respectively.")]
+  HRESULT ProductVersionString([out, retval] BSTR* pbstrString);
+  [propget, helpstring("Gets the high word of the MS (Most Significant) Product Version.")]
+  HRESULT ProductVersionMSHigh([out, retval] WORD* pwMSHigh);
+  [propget, helpstring("Gets the low word of the MS (Most Significant) Product Version.")]
+  HRESULT ProductVersionMSLow ([out, retval] WORD* pwMSLow );
+  [propget, helpstring("Gets the high word of the LS (Least Significant) Product Version.")]
+  HRESULT ProductVersionLSHigh([out, retval] WORD* pwLSHigh);
+  [propget, helpstring("Gets the low word of the LS (Least Significant) Product Version.")]
+  HRESULT ProductVersionLSLow ([out, retval] WORD* pwLSLow );
+  [propget, helpstring("Gets the build number of the Product Version. Just a friendlier name for LSLow.")]
+  HRESULT ProductBuildNumber  ([out, retval] WORD* pwBuildNumber);
+
+  // File Flags
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDebug            ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsInfoInferred     ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsPatched          ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsPreRelease       ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsPrivateBuild     ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsSpecialBuild     ([out, retval] VARIANT_BOOL* pFlag);
+
+  // Target Operation Systems
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetUnknown    ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetDOS        ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetOS216      ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetOS232      ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetNT         ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetBase       ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetWin16      ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetPM16       ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetPM32       ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetWin32      ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetDOSWin16   ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetDOSWin32   ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetOS216PM16  ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetOS232PM32  ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsTargetNTWin32    ([out, retval] VARIANT_BOOL* pFlag);
+
+  // File Types
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsApp              ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDll              ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriver           ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsFont             ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsVxd              ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsStaticLib        ([out, retval] VARIANT_BOOL* pFlag);
+
+  // Driver Types
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverUnknown    ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverPrinter    ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverKeyboard   ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverLanguage   ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverDisplay    ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverMouse      ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverNetwork    ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverSystem     ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverInstallable([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverSound      ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverComm       ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsDriverInputMethod([out, retval] VARIANT_BOOL* pFlag);
+
+  // Font Types
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsFontRaster       ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsFontVector       ([out, retval] VARIANT_BOOL* pFlag);
+  [propget, helpstring("Tests the corresponding bit.")] HRESULT IsFontTrueType     ([out, retval] VARIANT_BOOL* pFlag);
+
+  // String Values
+  [propput, helpstring("Gets/sets the language ID for string value lookups. -1 specifies the default (US English).")]
+  HRESULT LanguageID([in] WORD wLangID);
+  [propget]
+  HRESULT LanguageID([out, retval] WORD* pwLangID);
+  [propput, helpstring("Gets/sets the code page for string value lookups. -1 specifies the defaults (Unicode, Windows Multilingual, Neutral).")]
+
+  HRESULT CodePage([in] WORD wCodePage);
+  [propget]
+  HRESULT CodePage([out, retval] WORD* pwCodePage);
+
+  [propget, helpstring("Tests if the specified named value exists.")]
+  HRESULT Exists([in] BSTR bstrKey, [out, retval] VARIANT_BOOL* pbExists);
+  [propget, id(DISPID_VALUE), helpstring("Gets the specified named value, if it exists.")]
+  HRESULT Value([in] BSTR bstrKey, [out, retval] BSTR* pbstrValue);
+
+  // Common String Values
+  [propget, helpstring("Gets the CompanyName string value, if it exists."     )] HRESULT CompanyName     ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the FileDescription string value, if it exists." )] HRESULT FileDescription ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the FileVersion string value, if it exists."     )] HRESULT FileVersion     ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the InternalName string value, if it exists."    )] HRESULT InternalName    ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the LegalCopyright string value, if it exists."  )] HRESULT LegalCopyright  ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the OriginalFilename string value, if it exists.")] HRESULT OriginalFilename([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the ProductName string value, if it exists."     )] HRESULT ProductName     ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the ProductVersion string value, if it exists."  )] HRESULT ProductVersion  ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the SpecialBuild string value, if it exists."    )] HRESULT SpecialBuild    ([out, retval] BSTR* pbstrValue);
+  [propget, helpstring("Gets the OLESelfRegister string value, if it exists." )] HRESULT OLESelfRegister ([out, retval] BSTR* pbstrValue);
+
+/////////////////////////////////////////////////////////////////////////////

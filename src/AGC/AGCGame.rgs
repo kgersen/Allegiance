@@ -1,0 +1,21 @@
+HKCR
+{
+	AGC.AGCGame.1 = s 'AGCGame Class'
+	{
+		CLSID = s '{4F860D2E-0A42-11D3-8B58-00C04F681633}'
+	}
+	AGC.AGCGame = s 'AGCGame Class'
+	{
+		CLSID = s '{4F860D2E-0A42-11D3-8B58-00C04F681633}'
+		CurVer = s 'AGC.AGCGame.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {4F860D2E-0A42-11D3-8B58-00C04F681633} = s 'AGCGame Class'
+		{
+			ProgID = s 'AGC.AGCGame.1'
+			VersionIndependentProgID = s 'AGC.AGCGame'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}

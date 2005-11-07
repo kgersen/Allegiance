@@ -1,0 +1,76 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// list functions
+//
+//////////////////////////////////////////////////////////////////////////////
+
+map func list = 
+    if (empty list) then
+        []
+    else
+        func (head list) :: map func (tail list);
+
+map2 func list1 list2 = 
+    if (empty list1) then
+        []
+    else
+        func (head list1) (head list2) :: map2 func (tail list1) (tail list2);
+
+nth index list =
+    if (equal index 0) then
+        head list
+    else
+        nth (index - 1) (tail list);
+
+firstn index list =
+    if (equal index 0) then
+        []
+    else
+        head list :: firstn (index - 1) (tail list);
+
+aftern index list =
+    if (empty list) then
+        []
+    else if (equal index 0) then
+        list
+    else
+        aftern (index - 1) (tail list);
+
+middlen min max list =
+    firstn (max - min) (aftern min list);
+
+filter func list =
+    if (empty list) then
+        []
+    else if (func (head list)) then
+        head list :: filter func (tail list)
+    else
+        filter func (tail list);
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Junk
+//
+//////////////////////////////////////////////////////////////////////////////
+
+integers = 1 :: map (1 +) integers;
+fib = 1 :: 2 :: map2 add fib (tail fib);
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// TypeDelay
+//
+//////////////////////////////////////////////////////////////////////////////
+
+removens n list =
+    filter (function x -> not (equal (mod x n) 0)) list;
+
+makeprimes numbers = 
+    head numbers :: makeprimes (removens (head numbers) numbers);
+
+primes = makeprimes (tail integers);
+
+diff = map2 sub (tail primes) primes;
+
+result = middlen 0 10 primes;
+

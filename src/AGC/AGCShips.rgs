@@ -1,0 +1,21 @@
+HKCR
+{
+	AGC.AGCShips.1 = s 'AGCShips Class'
+	{
+		CLSID = s '{5BEA791C-1EBF-11d3-8B63-00C04F681633}'
+	}
+	AGC.AGCShips = s 'AGCShips Class'
+	{
+		CLSID = s '{5BEA791C-1EBF-11d3-8B63-00C04F681633}'
+		CurVer = s 'AGC.AGCShips.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {5BEA791C-1EBF-11d3-8B63-00C04F681633} = s 'AGCShips Class'
+		{
+			ProgID = s 'AGC.AGCShips.1'
+			VersionIndependentProgID = s 'AGC.AGCShips'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}

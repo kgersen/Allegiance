@@ -1,0 +1,8 @@
+LIBRARY fedperf
+
+DESCRIPTION 'Performance Counters'
+
+EXPORTS
+	DwInitialize @1
+	DwCollectData @2
+	DwCleanup @3

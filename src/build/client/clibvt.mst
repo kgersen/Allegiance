@@ -1,0 +1,298 @@
+'=====================================================================
+' TEST CASE NAME:
+'
+' GENERAL DESCRIPTION OF WHAT IS VERIFIED:
+'
+'
+' SPECIFIC AREA ADDRESSED BY THIS TEST CASE:
+'
+'
+' NAME OF APPLICATION UNDER TEST:
+'
+'=====================================================================
+' TEST CASE PURPOSE:
+'
+'
+' TEST CASE ABSTRACT OF TECHNIQUES USED TO TEST THE FEATURE:
+'
+'
+' SCENARIOS:    1. Log on to the server
+'
+'---------------------------------------------------------------------------
+' OTHER FILES REQUIRED TO RUN TEST CASE:
+'
+'
+'
+'---------------------------------------------------------------------------
+' REVISION HISTORY:
+'
+'    [ 0]    <DD-MM-YY>        <NAME>    : <CHANGES MADE>
+'    [ 1]      -  -            <????>    : Created test.
+'---------------------------------------------------------------------------
+
+
+' '#DEFINES and '$INCLUDES for test case
+'-------------------------------------------------------------------
+'$INCLUDE 'log.inc'
+'$INCLUDE 'screen.inc'
+'$INCLUDE 'wintrek.inc'
+
+' DIM statements, TYPE declarations, global variables,
+' constants, and so on for test case
+'-------------------------------------------------------------------
+
+TYPE StateTransition
+    StateFrom as LONG
+    StateTo as LONG
+END TYPE
+
+GLOBAL ghwndMain as LONG
+GLOBAL ghwndLogon as LONG
+GLOBAL ghwndFailedLogon as LONG
+GLOBAL gdwTimeout as LONG
+GLOBAL gfWon as LONG
+GLOBAL gszLogFile as STRING
+
+' *************************
+' **** BEGIN TEST CASE ****
+' *************************
+
+'******* Test Case INITIALIZATION/SETUP *********
+
+
+'
+' Other variables
+'
+ghwndMain = 0
+ghwndLogon = 0
+ghwndFailedLogon = 0
+gdwTimeout = 10
+SetDefaultWaitTimeout(gdwTimeout)
+gfWon = 0
+gszLogFile = "VTError.txt"
+
+LogInit("clibvt.log")
+WintrekInit()
+
+'******* SCENARIO SECTION ***********************
+
+'*** Scenario 1:
+Scenario ("Client BVT")
+
+    SLEEP(30)
+
+    '
+    ' Get a handle to the main window.
+    '
+    ghwndMain = WFndWndC(NULL, "Window", FW_FOCUS OR FW_PART, gdwTimeout)
+    IF (0 = ghwndMain) THEN
+        LogMessage("FATAL: Can not find window.")
+        FAIL "FATAL: Can not find window."
+    END IF
+    WSetWndPosSiz(ghwndMain, 0, 0, 800, 600)
+    SLEEP(5)
+
+    '
+    ' MAIN MENU
+    '
+
+    '
+    ' Move to the missions button and click on it.
+    '
+    WMoveToWnd(0, gbuttonTitleToMissions.CX, gbuttonTitleToMissions.CY)
+    PLAY "{CLICK CURPOS, CURPOS}"
+
+    '
+    ' LOGON
+    '
+
+    '
+    ' Locate the Logon Dialog.
+    '
+    ghwndLogon = WFndWndC("Logon", "#32770", FW_FOCUS OR FW_PART OR FW_ERROR, gdwTimeout)
+    WSetWndPosSiz(ghwndLogon, 0, 0, 411, 118)
+
+    '
+    ' Set focus to the user name, enter it and the password
+    ' and then hit enter to trigger the logon button.
+    '
+    WEditSetSel("@1", 1, -1)
+    PLAY "{BS}fink{TAB}{BS}password"
+
+    '
+    ' Hit the Logon button.
+    '
+    WButtonClick("&Logon")
+
+    '
+    ' Wait for the failed logon dialog to pop up.  If it doesn't,
+    ' we say that we succeeded.
+    '
+    ghwndFailedLogon = WFndWndC("Allegiance", "#32770", FW_FOCUS OR FW_PART, gdwTimeout)
+    IF (0 <> ghwndFailedLogon) THEN
+        LogMessage("FATAL: Logon failed")
+        FAIL "Logon failed"
+    END IF
+    SLEEP(3)
+
+    '
+    ' MISSION MENU
+    '
+
+    '
+    ' Move to the request position button and click on it.
+    '
+    WMoveToWnd(0, gbuttonMissionsReqPosition.CX, gbuttonMissionsReqPosition.CY)
+    PLAY "{CLICK CURPOS, CURPOS}"
+    SLEEP(2)
+
+    '
+    ' Move to the team room button and click on it.
+    '
+    'WMoveToWnd(0, gbuttonMissionsToTeamRoom.CX, gbuttonMissionsToTeamRoom.CY)
+    'PLAY "{CLICK CURPOS, CURPOS}"
+
+    IF (0 = WintrekWaitForLong("Screen", c_dsSideStrategy, 60)) THEN
+        LogMessage("FATAL: We have not entered the team room in 1 minute.")
+        FAIL "FATAL: We have not entered the team room in 1 minute."
+    END IF
+    SLEEP(1)
+
+    '
+    ' TEAM ROOM
+    '
+
+    '
+    ' Move to the loadout button and click on it.
+    '
+    WMoveToWnd(0, gbuttonTeamRoomToLoadout.CX, gbuttonTeamRoomToLoadout.CY)
+    PLAY "{CLICK CURPOS, CURPOS}"
+    SLEEP(2)
+
+    IF (0 = WintrekWaitForLong("Screen", c_dsLoadout, 60)) THEN
+        LogMessage("FATAL: We have not entered loadout in 1 minute.")
+        FAIL "FATAL: We have not entered loadout in 1 minute."
+    END IF
+    SLEEP(1)
+
+    '
+    ' LOADOUT
+    '
+    LoadoutGenericShip()
+    
+    '
+    ' Return to the team room.
+    '
+    WMoveToWnd(0, gbuttonLoadoutToTeamRoom.CX, gbuttonLoadoutToTeamRoom.CY)
+    PLAY "{CLICK CURPOS, CURPOS}"
+
+    IF (0 = WintrekWaitForLong("Screen", c_dsSideStrategy, 60)) THEN
+        LogMessage("FATAL: We have made it back to the team room in 1 minute.")
+        FAIL "FATAL: We have not made it back to the team room in 1 minute."
+    END IF
+    SLEEP(1)
+
+
+    '
+    ' Move to the launch button and click on it.
+    '
+    WMoveToWnd(0, gbuttonTeamRoomLaunch.CX, gbuttonTeamRoomLaunch.CY)
+    PLAY "{CLICK CURPOS, CURPOS}"
+    SLEEP(5)
+
+    IF (0 = WintrekWaitForLong("Screen", c_dsCombat, 60)) THEN
+        '
+        ' Just in case we were the first person in, hit launch again.
+        '
+        PLAY "{CLICK CURPOS, CURPOS}"
+
+        IF (0 = WintrekWaitForLong("Screen", c_dsCombat, 60)) THEN
+            LogMessage("FATAL: We have made it into space in 1 minute.")
+            FAIL "FATAL: We have not made it into space in 1 minute."
+        END IF
+    END IF
+
+    SLEEP(20)
+
+
+    '
+    ' SPACE
+    '
+
+    '
+    ' Turn on chain fire.
+    '
+    PLAY "\"
+
+    '
+    ' Turn on auto pilot.
+    '
+    PLAY "p"
+
+    '
+    ' Give myself a command to take over a station (and win the game).
+    '
+    PLAY "{ENTER}fink capture Crimson Wing Starbas!{ENTER}"
+
+    '
+    ' Wait until we win the game (max 10 minutes)
+    '
+    IF (1 = WintrekWaitForLong("Screen", c_dsGameOver, 600)) THEN
+        LogMessage("SUCCESS:  We won the game.")
+        gfWon = 1
+    ELSE
+        LogMessage("FATAL: We have not won the game in 10 minutes")
+        FAIL "FATAL: We have not won the game in 10 minutes"
+    END IF
+
+    '
+    ' See if we won.
+    '
+    IF (1 = gfWon) THEN
+        '
+        ' Exit the game.
+        '
+        WMoveToWnd(0, gbuttonEndGameToMissions.CX, gbuttonEndGameToMissions.CY)
+        PLAY "{CLICK CURPOS, CURPOS}"
+        SLEEP(1)
+
+        IF (0 = WintrekWaitForLong("Screen", c_dsViewMissions, 60)) THEN
+            LogMessage("FATAL: We have not made it back to the mission list in 1 minute.")
+            FAIL "FATAL: We have not made it back to the mission list in 1 minute."
+        END IF
+        SLEEP(1)
+
+        '
+        ' Unfortunately, there's no UI to exit the game from here.
+        '
+    END IF
+
+
+Scenario Cleanup 'and handling of scenario failure
+    '
+    ' Alt F4 the app.  
+    ' BUGBUG: Can't Alt-F4 if cursor is over a button.
+    '
+    WMoveToWnd(0, 0, 0)
+    PLAY "%({F4})"
+    gszLogFile = "VTSignal.txt"
+
+    OPEN gszLogFile FOR OUTPUT AS 1
+    PRINT #1, "Success"
+    CLOSE 1
+
+End Scenario
+
+
+'******* Test Case CLEANUP **********************
+
+WintrekTerm()
+LogTerm()
+
+End
+
+
+
+'*****************************************************************************
+'                          LOCAL SCRIPT SUBS/FUNCTIONS
+'*****************************************************************************

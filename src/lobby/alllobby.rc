@@ -1,0 +1,23 @@
+//Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+	IDS_SERVICENAME					"AllLobby"
+	IDS_SERVICEDESC					"MS Allegiance Lobby Server"
+END
+
+/////////////////////////////////////////////////////////////////////////////
+
+IDR_Lobby REGISTRY "Lobby.rgs"
+
+
+ICO_LOBBY ICON DISCARDABLE "lobby.ico"
+
+#include "alllobby.rc2"

@@ -1,0 +1,26 @@
+HKCR
+{
+	AGC.GameParameters.1 = s 'AGCGameParameters Class'
+	{
+		CLSID = s '{F9E52A78-EBA4-11D2-8B4B-00C04F681633}'
+	}
+	AGC.GameParameters = s 'AGCGameParameters Class'
+	{
+		CLSID = s '{F9E52A78-EBA4-11D2-8B4B-00C04F681633}'
+		CurVer = s 'AGC.AGCGameParameters.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {F9E52A78-EBA4-11D2-8B4B-00C04F681633} = s 'AGCGameParameters Class'
+		{
+			ProgID = s 'AGC.AGCGameParameters.1'
+			VersionIndependentProgID = s 'AGC.AGCGameParameters'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}
+

@@ -1,0 +1,21 @@
+HKCR
+{
+	AGC.AGCTeam.1 = s 'AGCTeam Class'
+	{
+		CLSID = s '{5C2B1828-EBA5-11D2-8B4B-00C04F681633}'
+	}
+	AGC.AGCTeam = s 'AGCTeam Class'
+	{
+		CLSID = s '{5C2B1828-EBA5-11D2-8B4B-00C04F681633}'
+		CurVer = s 'AGC.AGCTeam.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {5C2B1828-EBA5-11D2-8B4B-00C04F681633} = s 'AGCTeam Class'
+		{
+			ProgID = s 'AGC.AGCTeam.1'
+			VersionIndependentProgID = s 'AGC.AGCTeam'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}

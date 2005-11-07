@@ -1,0 +1,184 @@
+
+/////////////////////////////////////////////////////////////////////////////
+// The IUnknown interface lets clients get pointers to other interfaces on a
+// given object through the QueryInterface method, and manage the existence
+// of the object through the IUnknown::AddRef and IUnknown::Release methods.
+// All other COM interfaces are inherited, directly or indirectly, from
+// IUnknown. Therefore, the three methods in IUnknown are the first entries
+// in the VTable for every interface. 
+//
+// *When to Implement*
+//
+// You must implement IUnknown as part of every interface. If you are using
+// C++ multiple inheritance to implement multiple interfaces, the various
+// interfaces can share one implementation of IUnknown. If you are using
+// nested classes to implement multiple interfaces, you must implement
+// IUnknown once for each interface you implement. 
+//
+// *When to Use*
+//
+// Use IUnknown methods to switch between interfaces on an object, add
+// references, and release objects.
+[
+  local,
+  object,
+  uuid(00000000-0000-0000-C000-000000000046),
+  pointer_default(unique)
+]
+interface IUnknown
+{
+  ///////////////////////////////////////////////////////////////////////////
+  // Description: Returns pointers to supported interfaces.
+  //
+  // Returns a pointer to a specified interface on an object to which a
+  // client currently holds an interface pointer. This function must call
+  // IUnknown::AddRef on the pointer it returns.
+  //
+  // Remarks: The QueryInterface method gives a client access to other
+  // interfaces on an object. 
+  //
+  // For any one object, a specific query for the IUnknown interface on any
+  // of the object’s interfaces must always return the same pointer value.
+  // This allows a client to determine whether two pointers point to the same
+  // component by calling QueryInterface on both and comparing the results.
+  // It is specifically not the case that queries for interfaces (even the
+  // same interface through the same pointer) must return the same pointer
+  // value. 
+  //
+  // There are four requirements for implementations of QueryInterface (In
+  // these cases, "must succeed" means "must succeed barring catastrophic
+  // failure."): 
+  //
+  // + The set of interfaces accessible on an object
+  // object through IUnknown::QueryInterface must be static, not dynamic.
+  // This means that if a call to QueryInterface for a pointer to a
+  // specified interface succeeds the first time, it must succeed again, and
+  // if it fails the first time, it must fail on all subsequent queries. 
+  //
+  // + It must be symmetric - if a client holds a pointer to an interface on
+  // an object, and queries for that interface, the call must succeed. 
+  //
+  // + It must be reflexive - if a client holding a pointer to one interface
+  // queries successfully for another, a query through the obtained pointer
+  // for the first interface must succeed. 
+  //
+  // + It must be transitive - if a client holding a pointer to one interface
+  // queries successfully for a second, and through that pointer queries
+  // successfully for a third interface, a query for the first interface
+  // through the pointer for the third interface must succeed. 
+  //
+  // Parameters:
+  //   riid - Identifier of the interface being requested.
+  //   ppvObject - Indirectly points to the interface specified in /iid/. If
+  // the object does not support the interface specified in iid, *ppvObject
+  // is set to NULL.
+  //
+  // Return Value: S_OK if the interface is supported, E_NOINTERFACE if not.
+  HRESULT QueryInterface([in] REFIID riid, [out, iid_is(riid)] void **ppvObject);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Description: Increments reference count.
+  //
+  // The IUnknown::AddRef method increments the reference count for an
+  // interface on an object. It should be called for every new copy of a
+  // pointer to an interface on a given object.
+  //
+  // Remarks: Objects use a reference counting mechanism to ensure that the
+  // lifetime of the object includes the lifetime of references to it. You
+  // use IUnknown::AddRef to stabilize a copy of an interface pointer. It can
+  // also be called when the life of a cloned pointer must extend beyond the
+  // lifetime of the original pointer. The cloned pointer must be released by
+  // calling IUnknown::Release. 
+  //
+  // Objects must be able to maintain (2 (31) )-1 outstanding pointer
+  // references. Therefore, the internal reference counter that
+  // IUnknown::AddRef maintains must be a 32-bit unsigned integer.
+  //
+  // *Notes to Callers*
+  //
+  // Call this function for every new copy of an interface pointer that you
+  // make. For example, if you are passing a copy of a pointer back from a
+  // function, you must call IUnknown::AddRef on that pointer. You must also
+  // call IUnknown::AddRef on a pointer before passing it as an in-out
+  // parameter to a function; the function will call IUnknown::Release before
+  // copying the out-value on top of it.
+  //
+  // Return Value: Returns an integer from 1 to n, the value of the new
+  // reference count. This information is meant to be used for
+  // diagnostic/testing purposes only, because, in certain situations, the
+  // value may be unstable.
+  //
+  // See Also: IUnknown::Release
+  ULONG AddRef();
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Description: Decrements reference count.
+  //
+  // Decrements the reference count for the calling interface on a object.
+  // If the reference count on the object falls to 0, the object is freed
+  // from memory.
+  //
+  // Remarks: If IUnknown::AddRef has been called on this object’s interface
+  // n times and this is the n+1th call to IUnknown::Release, the
+  // implementation of IUnknown::AddRef must cause the interface pointer to
+  // free itself. When the released pointer is the only existing reference to
+  // an object (whether the object supports single or multiple interfaces),
+  // the implementation must free the object. 
+  // 
+  // Note: Aggregation of objects restricts the ability to recover interface
+  // pointers. 
+  // 
+  // *Notes to Callers*
+  // 
+  // Call this function when you no longer need to use an interface pointer.
+  // If you are writing a function that takes an in-out parameter, call
+  // IUnknown::Release on the pointer you are passing in before copying the
+  // out-value on top of it.
+  //
+  // Return Value: Returns the resulting value of the reference count, which
+  // is used for diagnostic/testing purposes only. If you need to know that
+  // resources have been freed, use an interface with higher-level semantics.
+  //
+  // See Also: IUnknown::AddRef
+  ULONG Release();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Exposes objects, methods, and properties to Automation programming tools
+// and other applications
+[
+  object,
+  uuid(00020400-0000-0000-C000-000000000046),
+  pointer_default(unique)
+]
+interface IDispatch : IUnknown
+{
+  ///////////////////////////////////////////////////////////////////////////
+  // Description: Retrieves the number of type information interfaces that an
+  // object provides.
+  //
+  HRESULT GetTypeInfoCount([out] UINT * pctinfo);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Description: Retrieves the type information for an object.
+  //
+  HRESULT GetTypeInfo([in] UINT iTInfo, [in] LCID lcid, [out] ITypeInfo ** ppTInfo);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Description: Maps a single member name and an optional set of argument
+  // names to a corresponding set of integer dispatch identifiers (DISPIDs),
+  // which can then be used on subsequent calls to Invoke.
+  //
+  HRESULT GetIDsOfNames([in] REFIID riid, [in, size_is(cNames)] LPOLESTR * rgszNames,
+    [in] UINT cNames, [in] LCID lcid, [out, size_is(cNames)] DISPID * rgDispId);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Description: Provides access to properties and methods exposed by an
+  // object.
+  //
+  HRESULT Invoke([in] DISPID dispIdMember, [in] REFIID riid, [in] LCID lcid,
+    [in] WORD wFlags, [in, out] DISPPARAMS * pDispParams, [out] VARIANT * pVarResult,
+    [out] EXCEPINFO * pExcepInfo, [out] UINT * puArgErr);
+};
+

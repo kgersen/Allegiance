@@ -1,0 +1,28 @@
+HKCR
+{
+	AllSrv.AdminSession.1 = s 'AdminSession Class'
+	{
+		CLSID = s '{AAA8270F-DDA4-11d2-8B46-00C04F681633}'
+	}
+	AllSrv.AdminSession = s 'AdminSession Class'
+	{
+		CLSID = s '{AAA8270F-DDA4-11d2-8B46-00C04F681633}'
+		CurVer = s 'AllSrv.AdminSession.1'
+	}
+	AllSrv = s 'AllSrv Server Class'
+	{
+		CLSID = s '{AAA8270F-DDA4-11d2-8B46-00C04F681633}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {AAA8270F-DDA4-11d2-8B46-00C04F681633} = s 'AdminSession Class'
+		{
+			ProgID = s 'AllSrv.AdminSessions.1'
+			VersionIndependentProgID = s 'AllSrv.AdminSession'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			val AppID = s '{E4E8767E-DFDB-11d2-8B46-00C04F681633}'
+			'TypeLib' = s '{BB5FC41C-DDA4-11d2-8B46-00C04F681633}'
+		}
+	}
+}

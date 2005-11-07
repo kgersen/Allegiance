@@ -1,0 +1,21 @@
+HKCR
+{
+	AGC.AGCHullTypes.1 = s 'AGCHullTypes Class'
+	{
+		CLSID = s '{E428B8B2-2ED9-11d3-A51C-00C04F68DEB0}'
+	}
+	AGC.AGCHullTypes = s 'AGCHullTypes Class'
+	{
+		CLSID = s '{E428B8B2-2ED9-11d3-A51C-00C04F68DEB0}'
+		CurVer = s 'AGC.AGCHullTypes.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {E428B8B2-2ED9-11d3-A51C-00C04F68DEB0} = s 'AGCHullTypes Class'
+		{
+			ProgID = s 'AGC.AGCHullTypes.1'
+			VersionIndependentProgID = s 'AGC.AGCHullTypes'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}

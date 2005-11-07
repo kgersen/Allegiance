@@ -1,0 +1,25 @@
+HKCR
+{
+  AGC.EventLogger.1 = s 'Active Game Core Event Logger Class'
+  {
+    CLSID = s '{9EBFAA09-2793-4a50-8F57-1D7B26A307F3}'
+  }
+  AGC.EventLogger = s 'Active Game Core Event Logger Class'
+  {
+    CLSID = s '{9EBFAA09-2793-4a50-8F57-1D7B26A307F3}'
+    CurVer = s 'AGC.EventLogger.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {9EBFAA09-2793-4a50-8F57-1D7B26A307F3} = s 'Active Game Core Event Logger Class'
+    {
+      ProgID = s 'AGC.EventLogger.1'
+      VersionIndependentProgID = s 'AGC.EventLogger'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Free'
+      }
+    }
+  }
+}

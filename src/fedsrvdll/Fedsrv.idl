@@ -1,0 +1,44 @@
+// Fedsrv.idl : IDL source for Fedsrv.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (Fedsrv.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+	[
+		object,
+		uuid(A9173834-D731-11D2-B2F0-00A0C9C9CCA4),
+		dual,
+		helpstring("IAllegianceController Interface"),
+		pointer_default(unique)
+	]
+	interface IAllegianceController : IDispatch
+	{
+		[id(1), helpstring("method StartService")] HRESULT StartService();
+		[id(2), helpstring("method StopService")] HRESULT StopService();
+		[id(3), helpstring("method InstallService")] HRESULT InstallService(BSTR bstrUser, BSTR bstrPassword);
+		[id(4), helpstring("method RemoveService")] HRESULT RemoveService();
+		[id(5), helpstring("method QueryService")] HRESULT QueryService();
+		[id(6), helpstring("method KillService")] HRESULT KillService();
+	};
+
+[
+	uuid(A0D20FFA-D731-11D2-B2F0-00A0C9C9CCA4),
+	version(1.0),
+	helpstring("Fedsrv 1.0 Type Library")
+]
+library FEDSRVLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(D45E87E0-D731-11D2-B2F0-00A0C9C9CCA4),
+		helpstring("Allegiance Server Controller Class")
+	]
+	coclass AllegianceController
+	{
+		[default] interface IAllegianceController;
+	};
+};

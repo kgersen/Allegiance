@@ -1,0 +1,265 @@
+/////////////////////////////////////////////////////////////////////////////
+// PigsLib.idl : IDL source for PigsLib.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (PigsLib.tlb) and marshalling code.
+
+import "PigsIDL.idl";
+
+
+/////////////////////////////////////////////////////////////////////////////
+[
+  uuid(F132B4E2-C6EF-11D2-85C9-00C04F68DEB0),
+  version(1.0),
+  helpstring("PigsLib 1.0 Type Library")
+]
+library PigsLib
+{
+  importlib("stdole32.tlb");
+  importlib("stdole2.tlb");
+  importlib("ScrRun.dll");
+  importlib("agc.tlb");
+
+	
+	///////////////////////////////////////////////////////////////////////////
+	// Reference these (enumerations) so that they get into the typelib
+
+  enum dispid_PigsIDL;
+  enum PigState;
+  enum PigMapType;
+  enum PigThrust;
+
+
+  ///////////////////////////////////////////////////////////////////////////
+	// {secret}
+	[
+		hidden, noncreatable, uuid(29E0A264-CC16-11d2-9646-00C04F68DEB0)
+	]
+	coclass PigsInterfaces
+	{
+		/////////////////////////////////////////////////////////////////////////
+		// Reference these (interfaces) so that they get into the typelib
+
+    interface IPigBehaviorType;
+    interface IPigBehaviorTypes;
+    interface IPigBehaviorScriptType;
+    interface IPigBehaviorHost;
+    interface IPigBehavior;
+    interface IPigBehaviors;
+    interface IPigBehaviorStack;
+    interface IPig;
+    interface IPigs;
+    interface IPigTeam;
+    interface IPigTeams;
+    interface IPigMissionParams;
+    interface IPigMissionParamsPrivate;
+    interface IPigMission;
+    interface IPigMissions;
+    interface IPigLobby;
+    interface IPigLobbies;
+    interface IPigSession;
+    interface IPigSessionEvents;
+    dispinterface _IPigSessionEvents;
+    interface IPigEvent;
+    interface IPigTimer;
+    interface IPigShip;
+    interface IPigShipEvent;
+    interface IPigAccount;
+    interface IPigAccountDispenser;
+    interface IPigHullTypes;
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(9BCD384E-C6F2-11D2-85C9-00C04F68DEB0),
+    helpstring("Pig Session Class")
+  ]
+  coclass PigSession
+  {
+    [default] interface IPigSession;
+    [default, source] dispinterface _IPigSessionEvents;
+    [defaultvtable, source] interface IPigSessionEvents;
+
+  }; // End: coclass PigSession
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(29E0A265-CC16-11d2-9646-00C04F68DEB0),
+    helpstring("Pig Behavior Script Class")
+  ]
+  coclass PigBehaviorScript
+  {
+    [default] interface IPigBehavior;
+
+  }; // End: coclass PigBehaviorScript
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(75A3CFA1-D306-11d2-9646-00C04F68DEB0),
+    helpstring("Pig Behavior Script Type Class")
+  ]
+  coclass PigBehaviorScriptType
+  {
+    [default] interface IPigBehaviorScriptType;
+
+  }; // End: coclass PigBehaviorScriptType
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(8962E24C-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("Pig Behavior Host Class")
+  ]
+  coclass PigBehaviorHost
+  {
+    [default] interface IPigBehaviorHost;
+
+  }; // End: coclass PigBehaviorHost
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(15219787-D562-11d2-9646-00C04F68DEB0),
+    helpstring("Pig Mission Parameters Class")
+  ]
+  coclass PigMissionParams
+  {
+    [default] interface IPigMissionParams;
+
+  }; // End: coclass PigMissionParams
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(15219788-D562-11d2-9646-00C04F68DEB0),
+    helpstring("Pig Player Class")
+  ]
+  coclass Pig
+  {
+    [default] interface IPig;
+
+  }; // End: coclass Pig
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(DC2A26D8-DDC0-11d2-A507-00C04F68DEB0),
+    helpstring("Pig s Collection Class")
+  ]
+  coclass Pigs
+  {
+    [default] interface IPigs;
+
+  }; // End: coclass Pigs
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(75A3CFA0-D306-11d2-9646-00C04F68DEB0),
+    helpstring("Pig Timer Class")
+  ]
+  coclass PigTimer
+  {
+    [default] interface IPigTimer;
+
+  }; // End: coclass PigTimer
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(E57D7452-E3AC-11d2-A507-00C04F68DEB0),
+    helpstring("Pig Ship Class")
+  ]
+  coclass PigShip
+  {
+    [default] interface IPigShip;
+
+  }; // End: coclass PigShip
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(4F16D144-EF2F-11d2-A50D-00C04F68DEB0),
+    helpstring("Pig Ship Event Class")
+  ]
+  coclass PigShipEvent
+  {
+    [default] interface IPigShipEvent;
+
+  }; // End: coclass PigShipEvent
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(9C627DCC-E7DC-11d2-A508-00C04F68DEB0),
+    helpstring("Pig Account Class")
+  ]
+  coclass PigAccount
+  {
+    [default] interface IPigAccount;
+
+  }; // End: coclass PigAccount
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(8D6763CA-E7CB-11d2-A508-00C04F68DEB0),
+    helpstring("Pig Account Dispenser Class")
+  ]
+  coclass PigAccountDispenser
+  {
+    [default] interface IPigAccountDispenser;
+
+  }; // End: coclass PigAccountDispenser
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(E1A2D508-F8FD-11d2-A50F-00C04F68DEB0),
+    helpstring("Pig Hull Type Collection Class")
+  ]
+  coclass PigHullTypes
+  {
+    [default] interface IPigHullTypes;
+
+  }; // End: coclass PigHullTypes
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    noncreatable,
+    uuid(4E9FF98A-364D-11d3-A51D-00C04F68DEB0),
+    helpstring("Pig Behavior Stack Class")
+  ]
+  coclass PigBehaviorStack
+  {
+    [default] interface IPigBehaviorStack;
+
+  }; // End: coclass PigBehaviorStack
+
+
+}; // End: library PigsLib
+
+
+cpp_quote("/////////////////////////////////////////////////////////////////////////////")
+cpp_quote("// CATID Declarations")
+cpp_quote("")
+cpp_quote("extern \"C\" const __declspec(selectany) CATID CATID_PigBehaviors =")
+cpp_quote("  {0x6BA550EC,0xC6FD,0x11D2,{0x85,0xC9,0x00,0xC0,0x4F,0x68,0xDE,0xB0}};")
+cpp_quote("extern \"C\" const __declspec(selectany) CATID CATID_PigObjects =")
+cpp_quote("  {0x72F12FF0,0xC717,0x11D2,{0x85,0xC9,0x00,0xC0,0x4F,0x68,0xDE,0xB0}};")
+cpp_quote("")

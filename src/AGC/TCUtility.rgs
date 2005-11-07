@@ -1,0 +1,29 @@
+HKCR
+{
+  TCUtil = s 'Utility object'
+  {
+    CLSID = s '{E9EE9E82-ED3A-11d2-A50B-00C04F68DEB0}'
+  }
+  TCObj.Utility.1 = s 'Utility object'
+  {
+    CLSID = s '{E9EE9E82-ED3A-11d2-A50B-00C04F68DEB0}'
+  }
+  TCObj.Utility = s 'Utility object'
+  {
+    CLSID = s '{E9EE9E82-ED3A-11d2-A50B-00C04F68DEB0}'
+    CurVer = s 'TCObj.Utility.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {E9EE9E82-ED3A-11d2-A50B-00C04F68DEB0} = s 'Utility object'
+    {
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+      ProgID = s 'TCObj.Utility.1'
+      VersionIndependentProgID = s 'TCObj.Utility'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}

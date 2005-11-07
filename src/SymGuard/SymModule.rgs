@@ -1,0 +1,22 @@
+HKCR
+{
+  SymGuard.Module.1 = s 'Microsoft Research Symbol Module Class'
+  {
+    CLSID = s '{857C6872-38D4-45ab-AC00-F43813B82006}'
+  }
+  SymGuard.Module = s 'Microsoft Research Symbol Module Class'
+  {
+    CLSID = s '{857C6872-38D4-45ab-AC00-F43813B82006}'
+    CurVer = s 'SymGuard.Module.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {857C6872-38D4-45ab-AC00-F43813B82006} = s 'Microsoft Research Symbol Module Class'
+    {
+      ProgID = s 'SymGuard.Module.1'
+      VersionIndependentProgID = s 'SymGuard.Module'
+      'TypeLib' = s '{744C0DAF-296D-400b-8640-5A339A368EC4}'
+    }
+  }
+}
+

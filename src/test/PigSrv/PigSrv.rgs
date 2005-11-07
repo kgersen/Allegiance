@@ -1,0 +1,34 @@
+HKCR
+{
+  NoRemove AppID
+  {
+    {F132B4E3-C6EF-11D2-85C9-00C04F68DEB0} = s 'Pig Server'
+    'PigSrv.EXE'
+    {
+      val AppID = s {F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}
+    }
+  }
+}
+HKLM
+{
+  NoRemove SYSTEM
+  {
+    NoRemove CurrentControlSet
+    {
+      NoRemove Services
+      {
+        NoRemove EventLog
+        {
+          NoRemove Application
+          {
+            'PigSrv'
+            {
+              val EventMessageFile = s '%AGCMODULE%'
+              val TypesSupported = d '7'
+            }
+          }
+        }
+      }
+    }
+  }
+}

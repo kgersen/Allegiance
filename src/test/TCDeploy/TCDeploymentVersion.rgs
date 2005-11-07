@@ -1,0 +1,26 @@
+HKCR
+{
+	TCDeployment.Version = s 'Deployment Class'
+	{
+		CLSID = s '{BE969F01-FB2F-4d8e-8C8E-7234B8FDE2B0}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {BE969F01-FB2F-4d8e-8C8E-7234B8FDE2B0} = s 'Deployment Version Class'
+		{
+      val AppID = s '{BE969F01-FB2F-4d8e-8C8E-7234B8FDE2B0}'
+			ProgID = s 'TCDeployment.Version'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+		}
+	}
+  NoRemove APPID
+  {
+    ForceRemove {BE969F01-FB2F-4d8e-8C8E-7234B8FDE2B0} = s 'Deployment Version Class'
+    {
+      val DllSurrogate = s ''
+    }
+  }
+}
