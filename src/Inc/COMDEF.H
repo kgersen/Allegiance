@@ -283,7 +283,7 @@ inline void __stdcall
 #endif
 #if defined(_COM_SMARTPTR)
  #if !defined(_COM_SMARTPTR_TYPEDEF)
-  #if defined(_COM_SMARTPTR_LEVEL2
+  #if defined(_COM_SMARTPTR_LEVEL2)
    #define _COM_SMARTPTR_TYPEDEF(Interface, IID) \
     typedef _COM_SMARTPTR<_COM_SMARTPTR_LEVEL2<Interface, &IID> > \
             Interface ## Ptr
