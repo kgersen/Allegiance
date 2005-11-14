@@ -357,8 +357,10 @@ public:
         m_peventStats->AddSink(m_psinkStats = new IItemEvent::Delegate(this));
 
         AddEventTarget(OnButtonBarStats, m_pbuttonbarStats->GetEventSource());
-        OnButtonBarStats(7);
-
+        // WLP - 2005 - changed default to sort by score instead of players - magic number 7(kills) goes to 5(score)
+        // OnButtonBarStats(7);
+        OnButtonBarStats(5); // WLP sort with low scores on top
+        OnButtonBarStats(5); // WLP toggle sort with high scores on top
         //
         // Side Stats
         //
