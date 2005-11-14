@@ -552,7 +552,10 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
 
   // Set their stuff appropriate for this side
   assert(pfsPlayer->GetMoney() == 0);
-  pfsPlayer->GetIGCShip()->SetWingID(1); // mmf splat edit this to change default wing, 0 = command
+
+  // WLP 2005 - Modified default wing to command - changed magic number 1(attack) to 0(command)
+  // pfsPlayer->GetIGCShip()->SetWingID(1); // mmf splat edit this to change default wing, 0 = command
+  pfsPlayer->GetIGCShip()->SetWingID(0); // mmf splat edit this to change default wing, 0 = command
 
   if (!HasPlayers(pside, true)) // we have a new team leader
   {
@@ -1326,14 +1329,20 @@ void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
   CFSPlayer * pfsOldLeader = GetLeader(sid);
   assert(pfsOldLeader);
 
+  //
+  // WLP 2005 - commander now stays on command wing - they used to be set to attack
+  //
   // take the old leader off of the command wing
   if (pfsOldLeader->GetIGCShip()->GetWingID() == 0)
   {
-    pfsOldLeader->GetIGCShip()->SetWingID(1); 
+    // pfsOldLeader->GetIGCShip()->SetWingID(1);
+    pfsOldLeader->GetIGCShip()->SetWingID(0); // WLP - command wing
 
     BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
     END_PFM_CREATE
-    pfmSetWingID->wingID = 1;
+    // WLP 2005 - changed following line to use command wing (0)
+    // pfmSetWingID->wingID = 1;
+    pfmSetWingID->wingID = 0; // WLP - command wing
     pfmSetWingID->shipID = pfsOldLeader->GetShipID();
     pfmSetWingID->bCommanded = true;
   }
