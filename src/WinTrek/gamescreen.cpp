@@ -636,8 +636,9 @@ public:
         {
             ResetFilters();
 
-            m_vuSorts.PushEnd(0);
-            m_vbReversedSorts.PushEnd(false);
+            // WLP 2005 - removed the sorts from here - they are done in resetfilters now
+            // m_vuSorts.PushEnd(0);
+            // m_vbReversedSorts.PushEnd(false);
 
             bStaticsInitialized = true;
         }
@@ -845,6 +846,14 @@ public:
         m_sFilterTerritorial = DontCare;
 
         m_strGameNameSubstring.SetEmpty();
+
+        // WLP 2005 - I added these next 4 lines to force the default sort to the number of players
+
+        m_vuSorts.SetEmpty();              // WLP 2005 - clear it out
+        m_vbReversedSorts.SetEmpty();      // WLP 2005 - Clear it out
+
+        m_vuSorts.PushEnd(7);              // WLP 2005 - number of players magic number
+        m_vbReversedSorts.PushEnd(true);  // we do want the big numbers on top(reversed)
 
         UpdateGameList();
     }
