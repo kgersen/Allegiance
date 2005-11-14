@@ -2712,7 +2712,11 @@ public:
                                                  psl = psl->next())
                                             {
                                                 IshipIGC*   pship = psl->data();
-                                                if (pship->GetSide() != psideMine)
+
+												// WLP 2005 - Only talk to enemy pilots - not cons
+												// I added the pilot check to enforce this
+												//
+                                                if ((pship->GetSide() != psideMine)&& (pship->GetPilotType()== c_ptPlayer ))
                                                 {
                                                     int score = MatchName(pcc, pship->GetName());
                                                     if ((ct == CHAT_INDIVIDUAL)
