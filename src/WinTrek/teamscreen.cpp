@@ -1205,10 +1205,17 @@ public:
 
             m_pbuttonTeamSettings->SetHidden(!trekClient.GetPlayerInfo()->IsTeamLeader()
                 || m_sideCurrent != trekClient.GetSideID());
-            m_pbuttonTeamSettings->SetEnabled(!m_pMission->GetMissionParams().bLockTeamSettings); 
-            
-            m_pbuttonbarChat->SetHidden(1, trekClient.GetSideID() == SIDE_TEAMLOBBY);
-            m_pbuttonbarChat->SetEnabled(1, trekClient.GetSideID() != SIDE_TEAMLOBBY);
+            m_pbuttonTeamSettings->SetEnabled(!m_pMission->GetMissionParams().bLockTeamSettings);
+
+            //
+            // WLP - mod to allow team chat button for noat - changed 2 lines to allow it
+            //
+            // m_pbuttonbarChat->SetHidden(1, trekClient.GetSideID() == SIDE_TEAMLOBBY);
+            // m_pbuttonbarChat->SetEnabled(1, trekClient.GetSideID() != SIDE_TEAMLOBBY);
+
+            m_pbuttonbarChat->SetHidden(1, false); // WLP 2005 - show button
+            m_pbuttonbarChat->SetEnabled(1, true); // WLP 2005 - turn it on
+
             m_pbuttonbarChat->SetHidden(2, !trekClient.GetPlayerInfo()->IsTeamLeader());
             m_pbuttonbarChat->SetEnabled(2, trekClient.GetPlayerInfo()->IsTeamLeader());
         }
@@ -2306,10 +2313,13 @@ public:
 
             // if I'm in the team leader chat and am no longer a team leader, 
             // or if I'm in the team chat and no longer on a team, throw me out.
-            if ((m_chattargetChannel == CHAT_LEADERS) 
-                && (!trekClient.MyPlayerInfo()->IsTeamLeader())
-                || (m_chattargetChannel == CHAT_TEAM) 
-                && (trekClient.GetSideID() == SIDE_TEAMLOBBY))
+            //
+            // WLP 2005 - commented the qualififiers out to always start everyone on (all) chat
+            //
+            // if ((m_chattargetChannel == CHAT_LEADERS)
+            //    && (!trekClient.MyPlayerInfo()->IsTeamLeader())
+            //    || (m_chattargetChannel == CHAT_TEAM)
+            //    && (trekClient.GetSideID() == SIDE_TEAMLOBBY))
             {
                 m_pbuttonbarChat->SetSelection(0);
                 OnButtonBarChat(0);
