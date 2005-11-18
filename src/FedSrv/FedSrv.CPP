@@ -10736,11 +10736,19 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 
 		//FAZ: this is where tp1/tp2 are randomly destroyed (1/6 chance)
 		// future mod: use ((IprobeIGC)pmodel) to access the igcprobe datas
-        if ((type == OT_probe) && (randomInt(0, 5) == 0))
+		// mmf comment out for now
+		//     this is causing a server crash, not every time, but seems like if TP is destroyed while
+		//     someone else is ripping to it, boom, server goes down
+		//     we crashed it with a TP1 dropped in open space (not near an asteroid)
+        /*
+		if ((type == OT_probe) && (randomInt(0, 5) == 0))
         {
+			// mmf debug
+			debugf("mmf debug teleprobe random destroy\n");
             KillProbeEvent((IprobeIGC*)pmodel);
             //pmodel->Terminate();
         }
+		*/
     }
 
     return true;

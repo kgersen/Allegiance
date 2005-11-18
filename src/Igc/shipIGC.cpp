@@ -1652,10 +1652,11 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
 
                         //but only if we can find some place to run to
 						//mmf debuging code
-						if (!pmodel) {
-						  debugf("mmf Miner/con tried to run but did not find anyhwhere to go\n");
-						  debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
-						}
+						// training mission 6 triggers this for GetName = Enemy Support
+						//if (!pmodel) {
+						//  debugf("mmf Miner/con tried to run but did not find anyhwhere to go\n");
+						//  debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
+						//}
 						//mmf end debugging code
 						
 						if (pmodel)
@@ -2356,6 +2357,8 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 			debugf("mmf pVelocity^2 < 0.0 ship = %s\n",GetName());
 			debugf("pVelocity x=%g y=%g z=%g\n",(*pVelocity).x,(*pVelocity).y,(*pVelocity).z);
 			debugf("Igc shipIGC.cpp debug build would have called assert and exited, commented out for now\n");
+			// cause an exception for debugging
+			// (*(int*)0) = 0;
 		}
         // assert (*pVelocity * *pVelocity >= 0.0f); // mmf commented out 
     }

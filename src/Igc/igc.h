@@ -2307,7 +2307,8 @@ class   CompactShipFractions         //5 bytes
 
         void        SetEnergy(float maxEnergy, float   energy)
         {
-            m_bpEnergy = maxEnergy == 0.0f ? BytePercentage(0.0f) : BytePercentage(energy / maxEnergy);
+			// mmf note rixian inverter trips second assert in BytePercentage, only effects debug build of server
+			m_bpEnergy = maxEnergy == 0.0f ? BytePercentage(0.0f) : BytePercentage(energy / maxEnergy);
         }
 
         float        GetEnergy(float maxEnergy) const

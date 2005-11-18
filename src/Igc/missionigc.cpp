@@ -1076,9 +1076,10 @@ IbaseIGC*           CmissionIGC::CreateObject(Time now, ObjectType objecttype,
         //Increment the ref count because IGC objects should be created with a ref count of 1.
         pBase->AddRef();
 
-        HRESULT hr = pBase->Initialize(this, now, data, dataSize);
-        if (FAILED(hr))
+		HRESULT hr = pBase->Initialize(this, now, data, dataSize);
+        if (FAILED(hr) || (hr == S_FALSE))  // mmf added or check for S_FALSE to support destroyed TP
         {
+			debugf("mmf Initialize return failed or S_FALSE in missionigc, S_FALSE added to support TP destroy\n");
             if (hr != E_ABORT)
                 pBase->Terminate();
 

@@ -1,6 +1,25 @@
 #include    "pch.h"
 #include    <math.h>
 
+// mmf begin
+/*
+int _matherr( struct _exception *except )
+{
+	printf("offending function %s\n",except->name);
+	// cause an exception not handled to exit
+	// fmod in ThingGeo thows a math exception, skip it
+	// hopefully the miner bug is not an fmod
+	
+	if ( strcmp( except->name, "fmod" ) == 0 ) return (0);
+	
+	(*(int*)0) = 0;
+
+	return (0);
+
+}
+*/
+// mmf end
+
 const char*       c_pszWingName[c_widMax] =
                         { "command",
                           "attack",
@@ -73,6 +92,13 @@ float    solveForImpact(const Vector&      deltaP,
         }
         else
         {
+			// mmf added check for negative
+			// revisit what to set b24ac to in this case
+			if (b24ac < 0.0f) { 
+				debugf("common.cpp b24ac is less than zero about to sqrt it, it to 0.1f\n");
+				b24ac = 0.1f;
+			}
+
             //quadratic formula ... we only care about the smallest root > 0
             t = (b + (float)sqrt(b24ac)) / (-2.0f * a);   //(-b-sqrt(b24ac))/(2a)    Only or smallest possible positive root
 
@@ -169,6 +195,13 @@ float    turnToFace(const Vector&       deltaTarget,
             //So ... instead ... get the yaw and pitch off of the angles with the right * up
             yaw   = acos(myOrientation.CosRight(deltaTarget)) - 0.5f * pi;
             pitch = acos(myOrientation.CosUp(deltaTarget)) - 0.5f * pi;
+
+			// mmf
+			{ 
+				float check = yaw * yaw + pitch * pitch;
+				if (check != check) debugf("common.cpp yaw * yaw + pitch * pitch is a nan\n");
+				if (check < 0.0f) debugf("common.cpp yaw * yaw + pitch * pitch is a negative about to sqrt it\n");
+			}
 
             deltaAngle = (float)sqrt(yaw * yaw + pitch * pitch);
         }
@@ -1017,7 +1050,15 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
             float   c = *pcenter * *pcenter - myRadius * myRadius;
             assert (c < 0.0f);
 
-            float   t = sqrt(b*b - c) - b;
+			// mmf added check for negative
+			// revisit what to set t to in this case splat
+			
+			float t=0.1f;
+			if ((b*b - c) < 0.0f) { 
+				debugf("common.cpp b*b-c is less than zero about to sqrt it, set t to 0.1f\n");
+			} else { t = sqrt(b*b - c) - b; }
+
+            // float   t = sqrt(b*b - c) - b;
             assert (t >= 0.0f);
 
             goal = *pcenter + *pdirection * t;
@@ -1547,6 +1588,7 @@ bool    GotoPlan::Execute(Time  now, float  dt, bool bDodge)
     return bDone;
 }
 
+// mmf this is where autopilot does its work 
 bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, int* pstate)
 {
     bool    bDone;
@@ -1786,6 +1828,15 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
 
                         if (d2 + r * r > 1.0)
                         {
+							// mmf debug
+							// mmf when pitch or yaw is very close to one and the other is close to zero d2
+							// is greater than 1 so set it to 1
+							if (d2 > 1.0) {
+								// debugf("mmf common.cpp d2 > 1.0 about to sqrt a negative number setting d2 to 1\n");
+								//debugf("d2=%g, r=%g, js pitch=%f yaw=%f\n",d2,r,pcontrols->jsValues[c_axisPitch],
+								//		pcontrols->jsValues[c_axisYaw]);
+								d2=1.0;
+							}
                             float   f = float(sqrt(1.0 - d2));
                             pcontrols->jsValues[c_axisRoll] = (r > 0.0) ? f : -f;
                         }

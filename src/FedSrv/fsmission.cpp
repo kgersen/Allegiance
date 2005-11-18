@@ -552,7 +552,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
 
   // Set their stuff appropriate for this side
   assert(pfsPlayer->GetMoney() == 0);
-  pfsPlayer->GetIGCShip()->SetWingID(1); // mmf splat edit this to change default wing, 0 = command
+  pfsPlayer->GetIGCShip()->SetWingID(1); // mmf edit this to change default wing, 0 = command
 
   if (!HasPlayers(pside, true)) // we have a new team leader
   {

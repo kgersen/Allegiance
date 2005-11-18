@@ -96,7 +96,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             {
                 //Station exports are allowed to "fail" because they may simply update an existing station.
                 //Ships are allowed to fail because sometimes an existing ship will be updated.
-                assert ((pfmExport->objecttype == OT_station) || (pfmExport->objecttype == OT_ship));
+				// mmf commented out assert as it seems to trigger when TP is destroyed for being too close to asteroid
+				//     that returns S_FALSE
+                // assert ((pfmExport->objecttype == OT_station) || (pfmExport->objecttype == OT_ship));
             }
             Sleep(0);
         }
