@@ -2426,23 +2426,25 @@ namespace {
 }
 
 
+// -Imago: Same ranks for all civs w/o club
 ZString BaseClient::LookupRankName(RankID rank, CivID civ)
 {
     const char* szRankNameTemplate = "Unknown (%d)";
     int nClosestRank = -1;
 
-    if (m_cRankInfo <= 0 || !GetIsZoneClub())
+    if (m_cRankInfo <= 0 && !GetIsZoneClub())
     {
         assert(!m_fm.IsConnected() || !GetIsZoneClub());
         szRankNameTemplate = "";
     }
     else
     {
+      if (!GetIsZoneClub()) civ = -1;
         // 'slow', but probably still fast enough
         for (int iEntry = 0; iEntry < m_cRankInfo; iEntry++)
         {
-            if (m_vRankInfo[iEntry].civ == civ 
-                && m_vRankInfo[iEntry].rank <= rank 
+            if (m_vRankInfo[iEntry].civ == civ
+                && m_vRankInfo[iEntry].rank <= rank
                 && m_vRankInfo[iEntry].rank >= nClosestRank)
             {
                 szRankNameTemplate = m_vRankInfo[iEntry].RankName;
@@ -2454,7 +2456,7 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
 
     char cbTemp[c_cbName + 8];
     wsprintf(cbTemp, szRankNameTemplate, rank - nClosestRank + 1);
-	RemoveTrailingSpaces(cbTemp);
+   RemoveTrailingSpaces(cbTemp);
 
     return cbTemp;
 }

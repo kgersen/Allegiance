@@ -12,6 +12,8 @@
 
 #define _ATL_STATIC_REGISTRY
 
+#include "appWeb/appWeb.h" //Imago: HTTP Library for ASGS services
+
 // browse info overflow warnings for STL objects
 #pragma warning(disable : 4786)
 
@@ -31,6 +33,7 @@
 #include <commctrl.h>
 #include <sqlext.h>
 #include <dplobby.h>
+#include <mmsystem.h> 
 
 // ZLib Includes
 #if !defined(ALLSRV_STANDALONE)

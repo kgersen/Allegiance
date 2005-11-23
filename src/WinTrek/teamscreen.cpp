@@ -364,7 +364,7 @@ private:
                 TrekResources::SmallFont(),
                 color,
                 WinPoint(m_viColumns[2] + 2, 0),
-                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(")") + ZString(trekClient.LookupRankName(pplayer->Rank(), pplayer->GetCivID()))
+                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(") ") + ZString(trekClient.LookupRankName(pplayer->Rank(), pplayer->GetCivID()))
             );
             psurface->RestoreClipRect(rectClipOld);
 
