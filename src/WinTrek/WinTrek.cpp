@@ -4709,8 +4709,13 @@ public:
         Orientation     orthogonal (Vector (1.0f, 0.0f, 0.0f), Vector (0.0f, 0.0f, 1.0f));
         m_cameraControl.SetOrientation (orthogonal);
 
-        m_timeOverrideStop = now + (bOverridePosition ? 5.0f : 3.0f);
-        m_bUseOverridePosition = bOverridePosition;
+        // original code
+        // m_timeOverrideStop = now + (bOverridePosition ? 5.0f : 3.0f);
+        // this controls how long the launch animation lasts
+        // WLP 2005 - I shortened the next line's animation time to give the ships control sooner
+        m_timeOverrideStop = now + (bOverridePosition ? 1.0f : 0.75f) ; // mmf use 1/.75 sec instead of WLPs 0.1
+
+		m_bUseOverridePosition = bOverridePosition;
 
         if (bOverridePosition)
         {
