@@ -3418,8 +3418,12 @@ public:
 
     void ShowWebPage(const char* szURL)
     {
-        if (szURL[0] == '\0')
-            szURL = "http://www.zone.com/allegiance";
+		//
+		// WLP - 2005 removed line below - this overrides all web pages to alleg.net for now
+		//  the compare doesn't work anyway 
+		//   if (szURL[0] == '\0') 
+		if (szURL[0] == '\0')
+			szURL = "http://www.alleg.net";
 
         if (!IsWindows9x()) {
             /*
