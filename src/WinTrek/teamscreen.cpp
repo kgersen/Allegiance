@@ -10,6 +10,7 @@
 
 int g_civIDStart = -1;
 extern bool g_bDisableNewCivs;
+extern bool g_bAFKToggled; // Imago: Manual AFK toggle flag
 
 class TeamScreen :
     public Screen,
@@ -1931,12 +1932,15 @@ public:
     */
     bool OnButtonAwayFromKeyboard()
     {
+		trekClient.GetPlayerInfo ()->SetReady(!m_pbuttonAwayFromKeyboard->GetChecked()); // Imago - prevents sending duplicate player_ready msg when DoTrekUpdate
         trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
         BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
         END_PFM_CREATE
         pfmReady->fReady = !m_pbuttonAwayFromKeyboard->GetChecked();
         pfmReady->shipID = trekClient.GetShipID();
         UpdateStatusText();
+		g_bAFKToggled = (g_bAFKToggled) ? false : true; //Imago: Manual AFK toggle flag
+
         return true;
     }
 
@@ -2020,6 +2024,9 @@ public:
             assert(false);
             return true;
         }
+
+		// Imago - They are not AFK, "click the button for them"
+		if (g_bAFKToggled) OnButtonAwayFromKeyboard();
 
         // ZAssert(m_sideCurrent != trekClient.GetSideID());
         if (m_sideCurrent == SIDE_TEAMLOBBY

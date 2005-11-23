@@ -31,6 +31,10 @@ const float c_dtFlashingDuration = 2.0f;
 const int c_nCountdownMax = 1000000; // just a big number
 const int c_nMinGain = -60;
 
+// -Imago: manual AFK toggle flags for auto-AFK
+extern bool g_bActivity = true;
+extern bool g_bAFKToggled = false;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Stuff that was moved out of this file
@@ -711,6 +715,7 @@ public:
 
         bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
         { 
+			g_bActivity = true; // - Imago: Key press = activity
             return m_pwindow->OnSuperKeyFilter(pprovider, ks, fForceTranslate);
         }
 
@@ -1043,6 +1048,8 @@ public:
     Time                m_timeLastFrame;
     Time                m_timeLastDamage;
     float               m_fDeltaTime;
+	// -Imago: Last activity timer
+	Time				m_timeLastActivity;
 
     //
     // Rendering Toggles
@@ -6418,6 +6425,37 @@ public:
                       float dt,
                       bool  activeControlsF)
     {
+		// - Imago: Only set AFK from inactivity when logged on
+		if (trekClient.m_fLoggedOn) {
+			Time timeLastMouseMove;
+			timeLastMouseMove = GetMouseActivity();
+			if (g_bActivity || timeLastMouseMove.clock() >= m_timeLastActivity.clock()) {
+				m_timeLastActivity = now;
+				g_bActivity = false;
+				if (!g_bAFKToggled && trekClient.GetPlayerInfo() && !trekClient.GetPlayerInfo ()->IsReady()) {
+					trekClient.GetPlayerInfo ()->SetReady(true);
+					trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+					BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
+					END_PFM_CREATE
+					pfmReady->fReady = true;
+					pfmReady->shipID = trekClient.GetShipID();
+					//trekClient.SendChat(trekClient.GetShip(), CHAT_EVERYONE, NA, NA, "I'm back from being AFK!");
+				}
+			} else {
+				if (now.clock() - m_timeLastActivity.clock() > 180000) {
+					if (!g_bAFKToggled && trekClient.GetPlayerInfo() && trekClient.GetPlayerInfo ()->IsReady()) {
+						trekClient.GetPlayerInfo ()->SetReady(false);
+						trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
+						END_PFM_CREATE
+						pfmReady->fReady = false;
+						pfmReady->shipID = trekClient.GetShipID();
+						//trekClient.SendChat(trekClient.GetShip(), CHAT_EVERYONE, NA, NA, "I've been AFK for 3 minutes!");
+					}
+				}
+			}
+		}
+
         if (trekClient.GetCluster() && GetWindow()->screen() == ScreenIDCombat)
         {
             //For now, leave joystick specific code here.
@@ -6508,8 +6546,27 @@ public:
                                 SwitchToJoyThrottle();
                                 fAutoPilot = false;
                                 trekClient.PlaySoundEffect(salAutopilotDisengageSound);
+								g_bActivity = true; // Imago: Joystick movment while Autopiloting = active!
                             }
-                        }
+                        } else //Imago: Joystick movment while not Autopiloting = active!
+                        {
+							if (oldButtonsM != buttonsM)
+								bControlsInUse = true;
+							else
+							{
+								bControlsInUse = bControlsInUse ||
+												 js.button1 || js.button2 || js.button3 || js.button4 || js.button5 || js.button6;
+							}
+							bControlsInUse = bControlsInUse ||
+								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -g_fJoystickDeadZone) ||
+								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  g_fJoystickDeadZone) ||
+								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] < -g_fJoystickDeadZone) ||
+								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  g_fJoystickDeadZone) ||
+								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -g_fJoystickDeadZone) ||
+								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  g_fJoystickDeadZone);
+
+							if (bControlsInUse) g_bActivity = true;
+						}
                     }
                     else
                     {

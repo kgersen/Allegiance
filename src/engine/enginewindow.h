@@ -237,6 +237,7 @@ public:
     IPopupContainer* GetPopupContainer() { return m_ppopupContainer;         }
     InputEngine*     GetInputEngine()    { return m_pinputEngine;            }
     const Point&     GetMousePosition()  { return m_ppointMouse->GetValue(); }
+	Time&		   	 GetMouseActivity()  { return m_timeLastMouseMove;		 } //Imago: Added to adjust AFK status from mouse movment
     bool             GetActive()         { return m_bActive;                 }
 
     TRef<IPopup> GetEngineMenu(IEngineFont* pfont);
