@@ -370,7 +370,7 @@ void    CmissileIGC::Update(Time now)
             const Vector&   myPosition = GetPosition();
             const Vector&   myVelocity = GetVelocity();
 
-            if (m_target)
+            if (m_target && (acceleration > 0.0f))
             {
                 //Where will our target be when we get there ... try several passes
                 //adjusting our speed (to account for velocity).
