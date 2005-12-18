@@ -112,7 +112,7 @@ HRESULT CmissileIGC::Initialize(ImissionIGC* pMission, Time now, const void* dat
             m_target->AddRef();
 
             //Estimate the time of impact with the target
-            m_tImpact = dataMissileType->readyTime + ((dataMissiltType->acceleration <= 0.0f)
+            m_tImpact = dataMissileType->readyTime + ((dataMissileType->acceleration <= 0.0f)
 						? 0.0f
 						: (float)sqrt((2.0f / dataMissileType->acceleration) *
 						(m_target->GetPosition() -
