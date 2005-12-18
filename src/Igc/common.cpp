@@ -73,6 +73,12 @@ float    solveForImpact(const Vector&      deltaP,
         }
         else
         {
+			// mmf added check for negative
+ 			// revisit what to set b24ac to in this case
+ 			if (b24ac < 0.0f) { 
+ 				debugf("common.cpp b24ac is less than zero about to sqrt it, it to 0.1f\n");
+ 				b24ac = 0.1f;
+ 			}
             //quadratic formula ... we only care about the smallest root > 0
             t = (b + (float)sqrt(b24ac)) / (-2.0f * a);   //(-b-sqrt(b24ac))/(2a)    Only or smallest possible positive root
 
@@ -1017,7 +1023,14 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
             float   c = *pcenter * *pcenter - myRadius * myRadius;
             assert (c < 0.0f);
 
-            float   t = sqrt(b*b - c) - b;
+			// mmf added check for negative
+ 			// revisit what to set t to in this case splat
+ 			
+ 			float t=0.1f;
+ 			if ((b*b - c) < 0.0f) { 
+ 				debugf("common.cpp b*b-c is less than zero about to sqrt it, set t to 0.1f\n");
+ 			} else { t = sqrt(b*b - c) - b; }
+            // float   t = sqrt(b*b - c) - b;
             assert (t >= 0.0f);
 
             goal = *pcenter + *pdirection * t;
@@ -1783,6 +1796,16 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
 
                         double   d2 = pcontrols->jsValues[c_axisPitch] * pcontrols->jsValues[c_axisPitch] +
                                       pcontrols->jsValues[c_axisYaw] * pcontrols->jsValues[c_axisYaw];
+
+						// mmf debug
+ 						// mmf when pitch or yaw is very close to one and the other is close to zero d2
+ 						// is greater than 1 so set it to 1
+ 						if (d2 > 1.0) {
+ 							// debugf("mmf common.cpp d2 > 1.0 about to sqrt a negative number setting d2 to 1\n");
+ 							//debugf("d2=%g, r=%g, js pitch=%f yaw=%f\n",d2,r,pcontrols->jsValues[c_axisPitch],
+ 							//		pcontrols->jsValues[c_axisYaw]);
+ 							d2=1.0;
+ 						}
 
                         if (d2 + r * r > 1.0)
                         {

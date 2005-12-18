@@ -1077,8 +1077,9 @@ IbaseIGC*           CmissionIGC::CreateObject(Time now, ObjectType objecttype,
         pBase->AddRef();
 
         HRESULT hr = pBase->Initialize(this, now, data, dataSize);
-        if (FAILED(hr))
+        if (FAILED(hr) || (hr == S_FALSE)) // mmf added or check for S_FALSE to support destroyed TP
         {
+			debugf("mmf Initialize return failed or S_FALSE in missionigc, S_FALSE added to support TP destroy\n");
             if (hr != E_ABORT)
                 pBase->Terminate();
 

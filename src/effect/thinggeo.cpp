@@ -446,6 +446,10 @@ public:
 
     void UpdateGlow()
     {
+ 		//mmf bounds check m_thrust as it may not have been initialized
+ 		if (m_thrust != m_thrust) m_thrust = 0.0f; // must be NAN
+ 		if (m_thrust < 0.0f) m_thrust = 0.0f;
+ 		if (m_thrust > 100.0f) m_thrust = 100.0f; // it gets raised to the 20th pow below
         float value = m_thrust;
 
         if (m_fThrustPower != 0) {

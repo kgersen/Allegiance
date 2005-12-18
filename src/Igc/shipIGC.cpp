@@ -1652,10 +1652,10 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
 
                         //but only if we can find some place to run to
 						//mmf debuging code
-						if (!pmodel) {
-						  debugf("mmf Miner/con tried to run but did not find anyhwhere to go\n");
-						  debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
-						}
+						//if (!pmodel) {
+						//  debugf("mmf Miner/con tried to run but did not find anyhwhere to go\n");
+						//  debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
+						//}
 						//mmf end debugging code
 						
 						if (pmodel)
