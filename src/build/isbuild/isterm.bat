@@ -1,7 +1,0 @@
-
-set ISROOT=
-set ISFGLROOT=
-set ISMEDIAROOT=
-set ISMEDIADISK=
-set ISTEMP=
-

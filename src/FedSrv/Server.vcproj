@@ -220,7 +220,8 @@
 				AdditionalLibraryDirectories="../Inc/appWeb"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
-				DelayLoadDLLs="netapi32.dll;advapi32.dll"/>
+				DelayLoadDLLs="netapi32.dll;advapi32.dll"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;&quot;$(TargetDir)\..\AGC&quot;"
