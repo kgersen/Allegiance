@@ -342,8 +342,12 @@ void DisconnectFromLobby();
 void ChangeStationOwners(IstationIGC * pstation, CFSMission * pfsMission, IsideIGC* iSideNew);
 void ExportObj(IbaseIGC * pIGC, ObjectType ot, FMD_S_EXPORT ** ppfmExport);
 void CheatDPGroups(CFSShip * pfsShip);
-BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType, 
-        LPCDPNAME lpName, DWORD dwFlags, LPVOID lpContext);
+
+// <NKM> 8-Aug-2004
+// DX 9 doesn't use callbacks for this
+//BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType, 
+//                                    LPCDPNAME lpName, DWORD dwFlags, LPVOID lpContext);
+
 void SendPlayerInfo(CFSPlayer * pfsPlayer, CFSShip * pfsShip, CFSMission* pfsMission, bool bSend = true);
 bool LeaveShip(CFSShip* pfsShip, IshipIGC* pshipParent);
 CFMGroup * GetGroupSectorDocked(IclusterIGC * pCluster);

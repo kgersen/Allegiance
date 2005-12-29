@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "dplay.h"
-#include "dplobby.h"
+//#include "dplay.h"
+//#include "dplobby.h"
 
 // {BF062CD6-D0EE-11d2-99B6-00E0291AB536}
 static const GUID CLSID_CADET = 

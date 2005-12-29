@@ -105,7 +105,7 @@ public:
       _SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p1, &spVector1));
       _SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p2, &spVector2));
 
-	  // TigerEye 7 lines added to support added zLifepod below
+	  // TE: Determine if the killed player was in a lifepod or not
       int IsLifepod = 0;
       IhullTypeIGC*   pht = ship->GetBaseHullType();
 	  if (pht != NULL)
@@ -116,16 +116,16 @@ public:
       LPCSTR pszContext = ship ? ship->GetMission()->GetContextName() : NULL;
 
       // Trigger the event
-      // TigerEye add MissionId and zLifepod
+      // TE add MissionId and zLifepod
 	  _AGCModule.TriggerContextEvent(hListeners, EventID_ShipKilled, pszContext,
-        pszShip, shipID, -1, -1, 7,                // 7 for tigereye, used to be 5
+        pszShip, shipID, -1, -1, 7,                // TE: 7 now, used to be 5
         "Launcher"     , VT_I4      , launcherID,
         "LauncherName" , VT_LPSTR   , pszLauncher,
         "Amount"       , VT_R4      , amount,
-		"MissionID"    , VT_I4      , ship->GetMission()->GetMissionID(),  // TigerEye added
+		"MissionID"    , VT_I4      , ship->GetMission()->GetMissionID(),  // TE added
         "Vector1"      , VT_DISPATCH, (IAGCVector*)spVector1,
         "Vector2"      , VT_DISPATCH, (IAGCVector*)spVector2,
-		"zLifepod"     , VT_I4      , IsLifepod);                          // TigerEye added
+		"zLifepod"     , VT_I4      , IsLifepod);                          // TE added
     }
 
     // Allow the server/client site class to invoke event

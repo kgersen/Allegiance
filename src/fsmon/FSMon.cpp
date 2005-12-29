@@ -1,7 +1,7 @@
 #define INITGUID
 #include <windows.h>
 #include <windowsx.h>
-#include <dplobby.h>
+//#include <dplobby.h>
 #include "resource.h"
 
 // {81662310-FCB4-11d0-A88A-006097B58FBF}

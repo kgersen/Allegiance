@@ -130,7 +130,6 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Inc;$(OutDir);..\..\Zlib"
 				PreprocessorDefinitions="_ATL_STATIC_REGISTRY;_WINDLL;_USRDLL;_DEBUG;DEBUG"
-				ExceptionHandling="FALSE"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
@@ -141,7 +140,8 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"/>
+				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="$(OutDir);..\Inc"
@@ -192,7 +192,8 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
-				IgnoreDefaultLibraryNames="LIBCMT.lib"/>
+				IgnoreDefaultLibraryNames="LIBCMT.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="$(OutDir);..\Inc"

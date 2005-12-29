@@ -10,7 +10,7 @@
 ******************************************************************************/
 
 #include "pch.h"
-#include <dplobby.h>
+//#include <dplobby.h>
 
 #define CURRENT_DPLAY_VER 318
 

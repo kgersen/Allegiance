@@ -125,8 +125,8 @@
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="pch.h"
-				WarningLevel="1"
-				WarnAsError="FALSE"
+				WarningLevel="3"
+				WarnAsError="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>

@@ -14,7 +14,7 @@
 #include "zlib.h"
 #include <windows.h>
 #include <windowsx.h>
-#include <dplobby.h>
+//#include <dplobby.h>
 #include <stdlib.h>
 //#include <commctrl.h>
 #include <memory.h>

@@ -1,24 +1,18 @@
 #ifndef MessagesCore_h
 #define MessagesCore_h
-#include <dplobby.h>
+#include <dplay8.h>
 #include <d3dtypes.h>
 
-// MONOLITHIC_DPLAY means that we want to use a private dplay (MSRGIP.dll, MSRGTRAN.dll) instead
-// of the stock dplay, which has private fixes. Only those HOSTING a session will use this, even if
-// it's defined, which means that clients will never use it.
-// #define MONOLITHIC_DPLAY
+//  <NKM> 09-Aug-2004
+// STL lists for message queue and map for connections
+#include <list>
+#include <map>
 
 #define OBLIVION_CLIENT_REG_KEY "Allegiance"
 
-// Specify which flavor of dplay we're using. Never specify interface explicity anywhere else
-#define IDirectPlayX IDirectPlay4A
-#define IID_IDirectPlayX IID_IDirectPlay4A
-
-#define IDirectPlayLobbyX IDirectPlayLobby3A
-#define IID_IDirectPlayLobbyX IID_IDirectPlayLobby3A
-
 #define FEDMSGID unsigned short
 #define CFEDMSGID const FEDMSGID
+#define DPID DWORD
 
 #define IB unsigned short // index of bytes to var-length data from start of struct
 #define CB unsigned short // count of bytes 
@@ -149,7 +143,6 @@ private:
   DWORD   m_dwPrivate;
 };
 
-typedef TList<CFMConnection*> ListConnections;
 
 /*-------------------------------------------------------------------------
  * CMFGroup
@@ -175,16 +168,14 @@ private:
   int m_cPlayers;
 };
 
-typedef TList<CFMGroup*> ListGroups;
-
 class FMSessionDesc
 {
 public:
-  FMSessionDesc(LPDPSESSIONDESC2 pdpSessionDesc);
-  PCC     GetGameName()   {return m_strGameName;}
-  REFGUID GetInstance()   {return m_guidInstance;}
-  int     GetNumPlayers() {return m_nNumPlayers;}
-  int     GetMaxPlayers() {return m_nMaxPlayers;}
+  FMSessionDesc( const DPN_APPLICATION_DESC* appDesc);
+  PCC     GetGameName()   { return m_strGameName; }
+  REFGUID GetInstance()   { return m_guidInstance; }
+  int     GetNumPlayers() { return m_nNumPlayers; }
+  int     GetMaxPlayers() { return m_nMaxPlayers; }
   
 private:
   GUID    m_guidInstance;       // ID for the session instance
@@ -221,7 +212,9 @@ public:
   virtual HRESULT OnDestroyConnection(FedMessaging * pthis, CFMConnection & cnxn) {return S_OK;}
   virtual HRESULT OnSessionLost(FedMessaging * pthis) {return S_OK;}
   virtual void    OnPreCreate (FedMessaging * pthis) {}
-  virtual void    OnPostCreate(FedMessaging * pthis, IDirectPlayX* pdpIn, IDirectPlayX** pdpOut) {*pdpOut = pdpIn;}
+  //  <NKM> 07-Aug-2004
+  // Not used!
+  //  virtual void    OnPostCreate(FedMessaging * pthis, IDirectPlayX* pdpIn, IDirectPlayX** pdpOut) {*pdpOut = pdpIn;}
   virtual void    OnSessionFound(FedMessaging * pthis, FMSessionDesc * pSessionDesc) {} // you cannot save any pointer to session desc
   virtual void    OnMessageSent(FedMessaging * pthis, CFMRecipient * precip, const void * pv, DWORD cb, FMGuaranteed fmg) {}
 #ifndef NO_MSG_CRC
@@ -229,21 +222,35 @@ public:
 #endif
 };
 
+//  <NKM> 09-Aug-2004
+// DPlay message wrapper
+struct DPlayMsg
+{
+  DWORD dwType;
+  LPVOID pData;
+};
+
+typedef TList<CFMConnection*> ListConnections;
 
 class FedMessaging
 {
 public:
+
+  //  <NKM> 18-Aug-2004
+  // new collections of things
+  typedef std::map< DWORD, CFMConnection* > ConnectionMap;
+  typedef std::map< DWORD, CFMGroup* > GroupMap;
+
+
   static const  MsgClsPrio c_mcpDefault;
   FedMessaging(IFedMessagingSite * pfmSite);
   ~FedMessaging();
   HRESULT             Connect(const char * szAddress);
-  HRESULT             HostSession(GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol
-#ifdef MONOLITHIC_DPLAY
-    , bool fMonolithic = true
-#endif
-    );
+  HRESULT             HostSession(GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol );
   HRESULT             JoinSession(GUID guidApplication, const char * szServer, const char * szName);
   HRESULT             JoinSessionInstance(GUID guidInstance, const char * szName);
+  HRESULT             JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, const char * szName );
+
 
   GUID                GetHostApplicationGuid()
   {
@@ -252,7 +259,7 @@ public:
 
   GUID                GetSessionGuid()    
   {
-    assert(m_pDirectPlay); 
+    assert( m_pDirectPlayServer || m_pDirectPlayClient );
     return m_guidInstance;
   }
   int                 SendMessages(CFMRecipient * precip, FMGuaranteed fmg, FMFlush fmf);
@@ -266,7 +273,6 @@ public:
   {
     return m_fConnected;
   }
-  bool                CheckVersion();
 
   void *              PFedMsgCreate(bool fQueueMsg, BYTE * pbFMBuff, FEDMSGID fmid, CB cbfm, ...);
   /* The variable parameters are pairings of pointers to the variable length
@@ -293,6 +299,10 @@ public:
          (or way) to free a message created with this function.
   */
   
+  //  <NKM> 09-Aug-2004
+  // All Dplay messages now go to this callback via a static handler in Message.cpp
+  HRESULT MsgHandler( DWORD dwMessageId, PVOID pMsgBuffer );
+
   HRESULT         ReceiveMessages();
   BYTE *          BuffOut()             
   {
@@ -332,15 +342,7 @@ public:
     return m_pbFMNext - ((BYTE*) BuffOut());
   }
   void            QueueExistingMsg(const FEDMESSAGE * pfm);
-  void            SetPriority(USHORT priority) {m_priority = priority;}
-  USHORT          GetPriority()         
-  {
-    return m_priority;
-  }
-  static USHORT   GetGuaranteedBias()   
-  {
-    return 1000;
-  }
+
   Time            CheckOdometer(float& flDTime, int& cMsgsOdometer, int& cBytesOdometer);
   void            SetDefaultRecipient(CFMRecipient * precip, FMGuaranteed fmg);
   CFMRecipient *  GetDefaultRecipient(FMGuaranteed * pfmg);
@@ -349,10 +351,12 @@ public:
   {
     return m_listCnxns.GetCount();
   }
+
   ListConnections * GetConnections()
   {
     return &m_listCnxns;
   }
+
   CFMConnection * GetConnectionFromId(DWORD id)
   {
     return GetConnectionFromDpid((DPID) id);
@@ -361,13 +365,14 @@ public:
   {
     return m_pcnxnServer;
   }
+
   CFMGroup *      CreateGroup(const char * szName)
   {
     static CTempTimer tt("in CreateGroup", .01f);
     tt.Start();
     CFMGroup * pgrp = new CFMGroup(this, szName);
     tt.Stop();
-    m_listGroups.PushFront(pgrp);
+    m_groupMap[ pgrp->GetID() ] = pgrp;
     return pgrp;
   }
 
@@ -375,9 +380,13 @@ public:
   {
     static CTempTimer tt("in DeleteConnection", .01f);
     tt.Start();
+    DPID dpnid = cnxn.GetID();
     m_pfmSite->OnDestroyConnection(this, cnxn);
     tt.Stop();
+
+    m_cnxnsMap.erase( dpnid );
     m_listCnxns.Remove(&cnxn);
+
     cnxn.Delete(this);
   }
 
@@ -385,7 +394,7 @@ public:
   {
     if (pgrp)
     {
-      m_listGroups.Remove(pgrp);
+      m_groupMap.erase( pgrp->GetID() );
       static CTempTimer tt("in DeleteGroup", .01f);
       tt.Start();
       pgrp->Delete(this);
@@ -412,28 +421,27 @@ public:
   }
 
   HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16]);
-  HRESULT         GetSendQueue(DWORD * pcMsgs, DWORD * pcBytes)
-  {
-    return GetDPlay()->GetMessageQueue(0, 0, DPMESSAGEQUEUE_SEND, pcMsgs, pcBytes);
-  }
-  HRESULT         GetReceiveQueue(DWORD * pcMsgs, DWORD * pcBytes)
-  {
-    return GetDPlay()->GetMessageQueue(0, 0, DPMESSAGEQUEUE_RECEIVE, pcMsgs, pcBytes);
-  }
 
-  HRESULT         GetConnectionSendQueue(CFMConnection * pcnxn, DWORD * pcMsgs, DWORD * pcBytes)
-  {
-    return GetDPlay()->GetMessageQueue(0, pcnxn->GetDPID(), DPMESSAGEQUEUE_SEND, pcMsgs, pcBytes);
-  }
+  //  <NKM> 07-Aug-2004
+  // Removed from header till i work out what to do with them
+  HRESULT         GetSendQueue(DWORD * pcMsgs, DWORD * pcBytes);
+  HRESULT         GetReceiveQueue(DWORD * pcMsgs, DWORD * pcBytes);
+  HRESULT         GetConnectionSendQueue(CFMConnection * pcnxn, DWORD * pcMsgs, DWORD * pcBytes);
+
+  //  <NKM> 10-Aug-2004
+  // EnumHosts now a member (was EnumSessionsCallBack)
+  void EnumHostsCallback ( const DPNMSG_ENUM_HOSTS_RESPONSE& resp );
 
   CFMGroup *  Everyone() 
   {
     return m_pgrpEveryone;
   }
 
-  IDirectPlayX *  GetDPlay() // only messaging stuff should need this
+  IDirectPlay8Server *  GetDPlayServer() // only messaging stuff should need this
   {
-    return m_pDirectPlay;
+    assert( m_pDirectPlayServer );
+    return m_pDirectPlayServer;
+
   } 
 
   void UseMainOutBox(bool fMain) // set false for one or more messages that don't go to the same recipient as main stream
@@ -447,18 +455,9 @@ public:
     }
   }
 
-  DWORD GetCountConnections()
-  {
-    DPSESSIONDESC2 * psd = NULL;
-    DWORD dwSize = 0;
-    HRESULT hr = m_pDirectPlay->GetSessionDesc(psd, &dwSize);
-    assert (DPERR_BUFFERTOOSMALL  == hr);
-    psd = (DPSESSIONDESC2 *) new char[dwSize];
-    ZSucceeded(m_pDirectPlay->GetSessionDesc(psd, &dwSize));
-    DWORD dwConnections = psd->dwCurrentPlayers - 1; // let's not count the server
-    delete [] psd;
-    return dwConnections;
-  }
+  //  <NKM> 08-Aug-2004
+  // comment for now
+  DWORD GetCountConnections();
 
   Time GetLastMsgTime()
   {
@@ -466,45 +465,11 @@ public:
   }
 
   HRESULT GetLinkDetails(CFMConnection * pcnxn, OUT DWORD * pdwHundredbpsG, OUT DWORD * pdwmsLatencyG, 
-                                                  OUT DWORD * pdwHundredbpsU, OUT DWORD * pdwmsLatencyU)
-  {
-    DPCAPS caps;
-    HRESULT hr = E_FAIL;
-    if (!pcnxn || !GetDPlay()) // throw error?
-      return E_FAIL;
-    
-    caps.dwSize = sizeof(caps);
-    hr = GetDPlay()->GetPlayerCaps(pcnxn->GetDPID(), &caps, DPGETCAPS_GUARANTEED);
-    if FAILED(hr)
-      goto Exit;
-    if (pdwHundredbpsG)
-      *pdwHundredbpsG = caps.dwHundredBaud;
-    if (pdwmsLatencyG)
-      *pdwmsLatencyG = caps.dwLatency;
-
-    hr = GetDPlay()->GetPlayerCaps(pcnxn->GetDPID(), &caps, 0);
-    if FAILED(hr)
-      goto Exit;
-    if (pdwHundredbpsU)
-      *pdwHundredbpsU = caps.dwHundredBaud;
-    if (pdwmsLatencyU)
-      *pdwmsLatencyU = caps.dwLatency;
-  Exit:    
-    return hr;
-  }
+                         OUT DWORD * pdwHundredbpsU, OUT DWORD * pdwmsLatencyU);
 
   HRESULT EnumSessions(GUID guidApplication, const char * szServer); // blank for broadcast
 
-  void SetSessionDetails(char * szDetails) // tokenized name/value pairs: Name\tValue\nName\tValue...
-  {
-    char rgchBuff[10<<10];
-    LPDPSESSIONDESC2 pdpSession = (LPDPSESSIONDESC2) rgchBuff;
-    DWORD dw = sizeof(rgchBuff);
-    assert(m_pDirectPlay);
-    ZSucceeded(m_pDirectPlay->GetSessionDesc(pdpSession, &dw));
-    pdpSession->lpszSessionNameA = szDetails;
-    m_pDirectPlay->SetSessionDesc(pdpSession, 0);
-  }
+  void SetSessionDetails(char * szDetails); // tokenized name/value pairs: Name\tValue\nName\tValue...
 
   void ResetOutBuffer()
   {
@@ -521,33 +486,29 @@ private:
 
   FEDMESSAGE *    PfmGetNext(FEDMESSAGE * pfm); // Use to run through all messages in a received packet
       // returns NULL if no more messages in packet
-  IDirectPlayLobbyX * GetDPlayLobby()     
-  {
-    return m_pDirectPlayLobby;
-  }
+
   int             SendToDefault(FMFlush fmf);
-  HRESULT         InitDPlay(
-#ifdef MONOLITHIC_DPLAY
-    bool fMonolithic
-#endif
-  );
+  HRESULT         InitDPlayClient();
+  HRESULT         InitDPlayServer();
   bool            KillSvr();
   HRESULT         ConnectToDPAddress(LPVOID pAddress);
-  HRESULT         OnSysMessage(FedMessaging * pthis, LPDPMSG_GENERIC pMsg);
-  HRESULT         EnumSessionsInternal(GUID guidApplication, const char * szServer);
-  friend BOOL FAR PASCAL EnumSessionsCallback(LPCDPSESSIONDESC2 lpThisSD,
-                                      LPDWORD lpdwTimeOut,
-                                      DWORD dwFlags,
-                                      LPVOID lpContext);
+  HRESULT         OnSysMessage( const DPlayMsg& msg );
+  HRESULT         EnumHostsInternal(GUID guidApplication, const char * szServer);
   
-  BYTE                m_rgbbuffInPacket[c_cbBuff];
+  //  <NKM> 08-Aug-2004
+  // No enum sessions in DX9 - probably need EnumHosts.
+//   friend BOOL FAR PASCAL EnumSessionsCallback(LPCDPSESSIONDESC2 lpThisSD,
+//                                       LPDWORD lpdwTimeOut,
+//                                       DWORD dwFlags,
+//                                       LPVOID lpContext);
+
+  BYTE*               m_rgbbuffInPacket;
   BYTE                m_rgbbuffOutPacket[c_cbBuff];
   BYTE                m_rgbbuffSecondaryOutPacket[1<<10];
   BYTE                m_rgbbuffAlloc[2<<10];      // 2K this is a temp buffer for alloc'd messages
   BYTE *              m_pbFMNext;                 // where next message gets queued in the CURRENT outbox
   BYTE *              m_pbFMNextT;                 // where next message IN THE OTHER OUTBOX gets queued
   DWORD               m_dwcbPacket;               // size of packet read, not CB because used with DPlay
-  USHORT              m_priority;
   Time                m_timeOdometerStart;
   int                 m_cMsgsOdometer;
   int                 m_cBytesOdometer;
@@ -560,14 +521,27 @@ private:
   CFMConnection *     m_pcnxnServer;               // same as above, used only by GetServerConnection
   CFMGroup *          m_pgrpEveryone;
   GUID                m_guidInstance;
+  IDirectPlay8Address* m_pHostAddress;
   GUID                m_guidApplication;            // guid given to HostSession()
-  IDirectPlayX *      m_pDirectPlay;
-  IDirectPlayLobbyX * m_pDirectPlayLobby;
+  IDirectPlay8Client* m_pDirectPlayClient;
+  IDirectPlay8Server* m_pDirectPlayServer;
   IFedMessagingSite * m_pfmSite;
 
-  // these lists are somewhat redundant, since dplay manages them also, but it's nice to have our own list (maybe)
-  ListConnections     m_listCnxns; 
-  ListGroups          m_listGroups; 
+  //  <NKM> 09-Aug-2004
+  // List of messages and mutual-exclusion locking
+  CRITICAL_SECTION   m_csMsgList;
+  std::list<DPlayMsg> m_msgList;
+
+  // Now have to keep our own lists here
+  ListConnections m_listCnxns;
+  ConnectionMap m_cnxnsMap;
+  GroupMap m_groupMap;
+
+  //  <NKM> 15-Aug-2004
+  // This blows - SEND_COMPLETE no longers tell us who
+  // the send was to, so we have to buffer :(
+  typedef std::map< DPNHANDLE, DPID > HandleIDMap;
+  HandleIDMap m_handleMap;
 
   int                 m_cbConnection; // sizeof each connection
 };

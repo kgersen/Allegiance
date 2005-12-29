@@ -111,7 +111,7 @@ private:
                     Color(1, 0, 0)
                 );
             }
-
+			char *test = (char*)(game->GetMissionParams().szIGCStaticFile);
             TRef<IEngineFont> pfont = TrekResources::SmallFont();
             Color             color = Color::White();
 
@@ -120,6 +120,18 @@ private:
             if (game->WasObjectModelCreated() && trekClient.GetIsZoneClub())
             {
                 DrawIcon(psurface, m_viColumns[0] - 90, GetYSize()/2, "iconzonebmp");
+
+                // draw the Squad Pointer, but shifted left to make room for the zone icon
+                if (trekClient.HasPlayerSquad(game))
+                    DrawIcon(psurface, m_viColumns[0] - 120, GetYSize()/2, "iconsquadminebmp");
+                else if (game->GetMissionParams().bSquadGame)
+                    DrawIcon(psurface, m_viColumns[0] - 120, GetYSize()/2, "iconsquadherebmp");
+            }
+			// KGJV - added draw custom core game
+			// draw the 'custom core' icon if game core isnt default
+			else if (strcmp(game->GetMissionParams().szIGCStaticFile,trekClient.GetIsZoneClub()?IGC_ENCRYPT_CORE_FILENAME:IGC_STATIC_CORE_FILENAME))
+            {
+                DrawIcon(psurface, m_viColumns[0] - 90, GetYSize()/2, "iconcorebmp");
 
                 // draw the Squad Pointer, but shifted left to make room for the zone icon
                 if (trekClient.HasPlayerSquad(game))

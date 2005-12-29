@@ -89,10 +89,11 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                                         FM_VAR_REF(pfmExport, exportData),
                                         pfmExport->cbexportData);
 
+			//debugf("IGC Object count: %d\n", u->GetCount()); //Imago
 
-            if (u)
+			if (u) {		
                 u->Release();
-            else
+			} else
             {
                 //Station exports are allowed to "fail" because they may simply update an existing station.
                 //Ships are allowed to fail because sometimes an existing ship will be updated.
@@ -100,7 +101,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
  				//     that returns S_FALSE
                 // assert ((pfmExport->objecttype == OT_station) || (pfmExport->objecttype == OT_ship));
             }
-            Sleep(0);
+            Sleep(0); //huh? --Imago
         }
         break;
 
@@ -2106,6 +2107,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             debugf("I am ship %d\n", pfmJoinedMission->shipID);
 
             // Make sure we have the right static core
+			debugf("MI StaticFile: %s - SZ StaticFile: %s\n",m_pMissionInfo->GetIGCStaticFile(), m_szIGCStaticFile); // Imago
             if (lstrcmp(m_pMissionInfo->GetIGCStaticFile(), m_szIGCStaticFile) != 0
                 && !ResetStaticData(m_pMissionInfo->GetIGCStaticFile(), &m_pCoreIGC, now, GetIsZoneClub()))
             {
@@ -2118,6 +2120,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 
                 OnLogonAck(false, false, "The client and server data files are out of sync. Please restart and go to a games list to auto-update "
                   "the latest files. If this doesn't work, try deleting the file 'filelist.txt' from the install directory and restarting the application.");
+
+				//continues to die... -Imago
             }
             else
             {

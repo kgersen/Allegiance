@@ -131,7 +131,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;..\..\FreeZoneAuth;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
 				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="1"
 				RuntimeLibrary="3"
 				StructMemberAlignment="0"

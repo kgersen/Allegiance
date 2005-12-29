@@ -106,7 +106,7 @@
 				ImproveFloatingPointConsistency="TRUE"
 				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone;..\..\FreeZoneAuth"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
@@ -146,7 +146,8 @@
 				ImproveFloatingPointConsistency="FALSE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone;..\..\FreeZoneAuth"
-				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;"/>
+				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;"
+				RuntimeLibrary="2"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool

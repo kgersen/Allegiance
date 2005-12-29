@@ -150,7 +150,7 @@
 				AdditionalIncludeDirectories="..\AGC;..\ZLib;..\Igc;..\Inc;..\Test\Inc;&quot;$(OutDir)&quot;"
 				PreprocessorDefinitions="_USRDLL;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL"
 				MinimalRebuild="FALSE"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="1"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"

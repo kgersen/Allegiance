@@ -595,7 +595,7 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
   g.fm.SendMessages(GetMission()->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
   pstation->SetSide(pside);
-  // Tigereye, Fire AGCEvent when base is captured
+  // TE: Fire AGCEvent when base is captured
   CFSMission * pfsMission = this->GetMission();
   LPCSTR pszContext = pfsMission->GetIGCMission() ? pfsMission->GetIGCMission()->GetContextName() : NULL;
   _AGCModule.TriggerContextEvent(NULL, EventID_StationChangesSides, pszContext,
@@ -1034,7 +1034,7 @@ void CFSPlayer::SetSide(CFSMission * pfsMission, IsideIGC * pside)
     if (psideOld ) // if leaving a side
     {
       LPCSTR pszContext = GetIGCShip()->GetMission() ? GetIGCShip()->GetMission()->GetContextName() : NULL;
-	  // Tigereye Modify LeaveTeam AGCEvent to include MissionID, and change UniqueID to ObjectID
+	  // TE: Modify LeaveTeam AGCEvent to include MissionID, and change UniqueID to ObjectID
       _AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext,
         GetName(), idShip, psideOld->GetUniqueID(), -1, 3, // Changed UniqueID to ObjectID. Modified ParamCount to 3
         "MissionID", VT_I4	, psideOld->GetMission()->GetMissionID(),	// Added line MissionID as param
@@ -1050,7 +1050,7 @@ void CFSPlayer::SetSide(CFSMission * pfsMission, IsideIGC * pside)
 
     if (pside) // if joining a side
     {
-        // Tigereye Modify JoinTeam AGCEvent to include MissionID, and change UniqueID to ObjectID
+        // TE: Modify JoinTeam AGCEvent to include MissionID, and change UniqueID to ObjectID
 		_AGCModule.TriggerEvent(NULL, EventID_JoinTeam, GetName(), idShip,
          pside->GetUniqueID(), -1, 3, // Changed UniqueID to ObjectID. Modified ParamCount to 3
 		 "MissionID", VT_I4	, pfsMission->GetMissionID(),		// Added line MissionID

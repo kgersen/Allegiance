@@ -42,7 +42,7 @@
 #define ID_APP_ICON "winTrekIcon"
 #include "zlib.h"
 
-#include <dplobby.h>
+//#include <dplobby.h>
 
 //
 // WinTrek headers

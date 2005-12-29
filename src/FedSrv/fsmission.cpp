@@ -2054,7 +2054,7 @@ void CFSMission::StartGame()
     LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
     GetSite()->SendChat(NULL, CHAT_EVERYONE, NA, NA, "The game has started.");
-    // Tigereye, Modify GameStarted AGCEvent to include MissionID.
+    // TE: Modify GameStarted AGCEvent to include MissionID.
 	_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameStarted, pszContext, 
 		GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 0);
     // Changed "" and -1 to MissionName and MissionID
@@ -2478,7 +2478,7 @@ void CFSMission::GameOver(IsideIGC * psideWin, const char* pszReason)
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
   // the game will actually end when we get around to checking whether a team has won
-  // Tigereye, Modify GameEnded AGCEvent to include MissionName and MissionID.
+  // TE: Modify GameEnded AGCEvent to include MissionName and MissionID.
   _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
       GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 1,
       "Reason", VT_LPSTR, pszReason);  // changed "" to MissionName and -1 to MissionID
@@ -3109,7 +3109,7 @@ void CFSMission::ProcessGameOver()
   m_pMission->ResetMission();
   
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
-  // Tigereye, Modify GameOver AGCEvent to include MissionID.
+  // TE: Modify GameOver AGCEvent to include MissionID.
   _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameOver, pszContext,
     GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), 
    -1, -1, 0); // // Modified "" and -1 to MissionName and MissionID

@@ -294,8 +294,10 @@ HRESULT CLobbyApp::Init()
       strcat(szFileName, "FileList.txt");
       CreateAutoUpdate(hk, szFileName);
     }
-    else 
-      g_pAutoUpdate = NULL;
+	else {
+		g_pAutoUpdate = NULL;
+		_putts("Not Performing AutoUpdate.");
+	}
 
     RegCloseKey(hk);
   }

@@ -122,7 +122,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Test\Inc;..\Inc;..\AGC;&quot;$(OutDir)/../Test/TCObj&quot;;&quot;$(OutDir)/../FedSrv&quot;;&quot;$(OutDir)/../AGC&quot;;../ZLib"
 				PreprocessorDefinitions="WIN32;_DEBUG;WINVER=0x0400"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="TRUE"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
@@ -138,7 +138,8 @@
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				SubSystem="2"
-				EntryPointSymbol=""/>
+				EntryPointSymbol=""
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -188,7 +189,8 @@
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="FALSE"
 				GenerateMapFile="FALSE"
-				SubSystem="2"/>
+				SubSystem="2"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

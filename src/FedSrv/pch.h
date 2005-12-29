@@ -32,7 +32,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <sqlext.h>
-#include <dplobby.h>
+//#include <dplobby.h>
 #include <mmsystem.h> 
 
 // ZLib Includes

@@ -14,7 +14,7 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <dplobby.h>
+//#include <dplobby.h>
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "LobbyModule.h"

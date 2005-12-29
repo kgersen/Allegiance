@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <sqlext.h>
-#include <dplobby.h>
+//#include <dplobby.h>
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "AllClubModule.h"

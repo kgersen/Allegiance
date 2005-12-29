@@ -88,7 +88,8 @@
 				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllClub.exe"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
-				SubSystem="1"/>
+				SubSystem="1"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -123,7 +124,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth"
 				PreprocessorDefinitions="ALLCLUB;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY;_DEBUG"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
@@ -140,7 +141,8 @@
 				SuppressStartupBanner="FALSE"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
-				SubSystem="1"/>
+				SubSystem="1"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
