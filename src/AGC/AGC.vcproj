@@ -148,7 +148,7 @@
 				Optimization="0"
 				ImproveFloatingPointConsistency="TRUE"
 				AdditionalIncludeDirectories="..\AGC;..\ZLib;..\Igc;..\Inc;..\Test\Inc;&quot;$(OutDir)&quot;"
-				PreprocessorDefinitions="_USRDLL;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL"
+				PreprocessorDefinitions="_ATL_STATIC_REGISTRY;_USRDLL;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL"
 				MinimalRebuild="FALSE"
 				ExceptionHandling="TRUE"
 				BasicRuntimeChecks="1"

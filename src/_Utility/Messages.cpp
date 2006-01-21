@@ -504,6 +504,7 @@ HRESULT FedMessaging::GenericSend(CFMRecipient * precip, const void * pv, CB cb,
   
   dwTimeout = (fGuaranteed ? 0 : 500); // guaranteed messages will NEVER time out
 
+#define DUMPMSGS
 #ifdef DUMPMSGS
   GETSORC;
   debugf("*** (FM=%8x %s) Sending message to %8x, %8x flags = 0x%x, "

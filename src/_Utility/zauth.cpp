@@ -8,8 +8,8 @@
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
-#include "pch.h"
 #include <comdef.h>
+#include "pch.h"
 #include "zauth.h"
 
 const int cTokensMax = 500;
