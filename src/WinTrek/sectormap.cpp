@@ -610,7 +610,7 @@ public:
     // <NKM>
     // Don't belive this is called? - comment out and just declare it - see if
     // we get unresolved symbol.
-    void OnSessionLost(char * szReason, Time lastUpdate, Time now);
+  //  void OnSessionLost(char * szReason, Time lastUpdate, Time now);
 //    {
 //        SetVisible(false);
 //        //Clear the selected cluster without sending the advise

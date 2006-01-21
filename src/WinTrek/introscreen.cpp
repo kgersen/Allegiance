@@ -328,9 +328,40 @@ private:
 
         void FindGames(const char* szServerName)
         {
+			// WLP 2005 - turned off the every second search to keep the mouse responding
+			// added next line to turn off polling
+            m_bDoBackgroundPolling = false ;
             TList<TRef<LANServerInfo> > listResults;
 
             trekClient.FindStandaloneServersByName(szServerName, listResults);
+
+
+            // WLP 2005 - DPLAY8 upgrade addition code
+            // DPLAY8 EnumHosts returns duplicates in the list
+            // so we have to strip them out
+            // How this works =
+            // destroy all dupes to the first entry
+            // destroy all dupes to the second entry - etc.
+            // just keep at it until the end
+            
+		    TList<TRef<LANServerInfo> >::Iterator iterNew(listResults);   // Walking list 
+		    for( int i = 1 ; i < listResults.GetCount() ; i++ ) // Walk the entire list 
+		    {
+		    iterNew.First();     // set on the first one
+            for ( int j = 1 ; j < i ; j++, iterNew.Next() ) ;               // find the starting position
+			GUID matchGUID = iterNew.Value()->guidSession ;               // this is the one to check for dupes
+		
+			iterNew.Next();             // bump to the next one to start comparing
+            while (!iterNew.End())                                   // walk from here to the end checking dupes
+                {
+				    if (memcmp(&(iterNew.Value()->guidSession),      // compare GUID for dupes
+				            &matchGUID, sizeof(GUID)) == 0)
+	    	        iterNew.Remove();
+			        else iterNew.Next();
+		        }
+		    }
+
+            // WLP - 2005 end of add for DPLAY8 upgrade
 
             // add to or update the the server list with the new results
             // Note: we have to maintain some degree of consistancy to 

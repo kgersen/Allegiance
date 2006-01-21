@@ -1227,7 +1227,8 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
     if (ci.guidSession != GUID_NULL)
     {
         assert(ci.strServer.IsEmpty());
-        //hr = m_fm.JoinSessionInstance(ci.guidSession, ci.szName);
+	
+        hr = m_fm.JoinSessionInstance(ci.guidSession,ci.szName);
     }
     else
     {

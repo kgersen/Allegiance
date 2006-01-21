@@ -449,8 +449,11 @@ FEDMESSAGE * FedMessaging::PfmGetNext(FEDMESSAGE * pfm)
 
   if (pfmNext - BuffIn() >= (int) PacketSize()) // no more messages in packet
   {
+   //WLP = added connection test for disconnect from server interruption
+   if (m_fConnected) // WLP - only if we have a connection
     assert((BYTE*)pfmNext == BuffIn() + PacketSize()); // should be exactly equal
-    return NULL;
+
+	return NULL;
   }
   // Assert(!IsBadReadPointer(pfmNext, pfmNext->fm.cbfm))
   return (FEDMESSAGE *)pfmNext;
@@ -1036,7 +1039,10 @@ HRESULT FedMessaging::ReceiveMessages()
         }
         else
         {
-          m_pDirectPlayServer->ReturnBuffer( p_dpMsg->hBufferHandle, 0 );
+        //  WLP - added test for valid obj - DPLAY* - exit game error
+        //  m_pDirectPlayServer->ReturnBuffer( p_dpMsg->hBufferHandle, 0 );
+         if (m_pDirectPlayServer)
+			 m_pDirectPlayServer->ReturnBuffer( p_dpMsg->hBufferHandle, 0 );
         }
         m_timeMsgLast = Time::Now();
       }
@@ -1468,6 +1474,11 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
  */
 HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, const char * szName)
 {
+  // WLP 2005 - added init client if needed for DPLAY8
+  //
+  if ( !m_pDirectPlayClient ) InitDPlayClient(); // WLP - make client when needed
+  // WLP - end init code
+
   assert (m_pDirectPlayClient );
 
   if ( !m_pDirectPlayClient )
@@ -1520,7 +1531,13 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
   return hr;
 }
 
+// WLP 2005 added this 2 parameter call to update to DPLAY8
         
+HRESULT FedMessaging::JoinSessionInstance(GUID guidInstance, const char * szName)
+{
+return JoinSessionInstance( GUID_NULL, m_guidInstance, m_pHostAddress, szName);
+}
+// WLP - End
 
 CFMConnection * FedMessaging::GetConnectionFromDpid(DPID dpid)
 {
@@ -1560,11 +1577,18 @@ HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16
 
   IDirectPlay8Address* pAddress;
 
+  // WLP 2005 - made this server client and server side
+  //
+  if (m_pDirectPlayServer)
   ZSucceeded( m_pDirectPlayServer->GetClientAddress( cnxn.GetDPID(), &pAddress, 0 ) );
+
+  if (m_pDirectPlayClient)
+  ZSucceeded( m_pDirectPlayClient->GetServerAddress(&pAddress, 0 ) );
 
   WCHAR add[200];
   DWORD cnt = 200;
   DWORD type;
+
   HRESULT hr = pAddress->GetComponentByName( DPNA_KEY_HOSTNAME, (void*)add, &cnt, &type );
   if ( FAILED( hr ) )
   {
@@ -1585,6 +1609,17 @@ HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16
 
 HRESULT FedMessaging::EnumSessions(GUID guidApplication, const char * szServer)
 {
+// WLP 2005 - added init client if needed
+//
+if (!m_pDirectPlayClient)
+{
+HRESULT hr;
+hr = InitDPlayClient();
+  if ( FAILED(hr) )
+    return hr;
+}
+// WLP 2005 - end of client init
+
   m_fSessionCallback = true;
   
   return EnumHostsInternal(guidApplication, szServer);
@@ -1592,6 +1627,17 @@ HRESULT FedMessaging::EnumSessions(GUID guidApplication, const char * szServer)
 
 HRESULT FedMessaging::EnumHostsInternal(GUID guidApplication, const char * szServer)
 {
+// WLP 2005 - added init client if needed
+//
+if (!m_pDirectPlayClient)
+{
+HRESULT hr;
+hr = InitDPlayClient();
+  if ( FAILED(hr) )
+    return hr;
+}
+// WLP 2005 - end of client init
+
   //  <NKM> 10-Aug-2004
   // Left this in from old method.... well why not :)
   DWORD dwSize = 0;
@@ -1602,7 +1648,7 @@ HRESULT FedMessaging::EnumHostsInternal(GUID guidApplication, const char * szSer
   // restore the hourglass cursor
   SetCursor(LoadCursor(NULL, IDC_WAIT));
 
- //assert( m_pDirectPlayClient );
+  assert( m_pDirectPlayClient ); // WLP 2005 - uncommented
 
   DPN_APPLICATION_DESC   dpnAppDesc;
   IDirectPlay8Address*   pDP8AddressHost  = 0;
@@ -1679,6 +1725,33 @@ HRESULT FedMessaging::EnumHostsInternal(GUID guidApplication, const char * szSer
                                        pDP8AddressLocal, NULL,
                                        0, 0, 0, 0, NULL,
                                        0 /*MUST use 0 handle for DPNOP_SYNC flag */ , DPNOP_SYNC );
+
+// WLP - DPLAY8 def = STDMETHOD(EnumHosts)
+//  (THIS_ PDPN_APPLICATION_DESC const pApplicationDesc,                     &dpnAppDesc
+//  IDirectPlay8Address *const pAddrHost                                     pDP8AddressHost
+//  IDirectPlay8Address *const pDeviceInfo,                                  pDP8AddressLocal
+//  PVOID const pUserEnumData,                                               NULL
+//  const DWORD dwUserEnumDataSize, .........................................0
+//  const DWORD dwEnumCount,                                                 0   number of times to repeat
+//  const DWORD dwRetryInterval,                                             0   milliseconds between retries
+//  const DWORD dwTimeOut,                                                   0   milliseconds to wait for responses
+//  PVOID const pvUserContext,                                               NULL
+//  DPNHANDLE *const pAsyncHandle,                                           0
+//   const DWORD dwFlags) PURE;                                              DPNOP_SYNC
+/* WLP - this is from the MSDN
+HRESULT EnumHosts(
+PDPN_APPLICATION_DESC const pApplicationDesc,
+IDirectPlay8Address *const pdpaddrHost,
+IDirectPlay8Address *const pdpaddrDeviceInfo,
+PVOID const pvUserEnumData,
+const DWORD dwUserEnumDataSize,
+const DWORD dwEnumCount,
+const DWORD dwRetryInterval,
+const DWORD dwTimeOut,
+PVOID const pvUserContext,
+HANDLE *const pAsyncHandle,
+const DWORD dwFlags
+*/
 
   if( FAILED(hr) )
   {
