@@ -123,9 +123,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth"
-				PreprocessorDefinitions="LOBBY;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY;_DEBUG"
-				ExceptionHandling="FALSE"
+				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth;..\Inc\appWeb"
+				PreprocessorDefinitions="LOBBY;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY;_DEBUG;WIN"
+				ExceptionHandling="TRUE"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
@@ -135,8 +135,9 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib dplayx.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib dplayx.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appWeb.lib"
 				OutputFile="$(OutDir)/AllLobby.exe"
+				AdditionalLibraryDirectories="..\Inc\appWeb"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
 				TargetMachine="1"/>
@@ -175,8 +176,8 @@
 				Name="VCCLCompilerTool"
 				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth"
-				PreprocessorDefinitions="LOBBY;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY"
+				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth;..\Inc\appWeb"
+				PreprocessorDefinitions="LOBBY;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY;WIN"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
@@ -185,9 +186,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib dplayx.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib dplayx.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appWeb.lib"
 				OutputFile="$(OutDir)/AllLobby.exe"
-				IgnoreDefaultLibraryNames="LIBCMT.lib"/>
+				AdditionalLibraryDirectories="..\Inc\appWeb"
+				IgnoreDefaultLibraryNames="LIBCMT.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

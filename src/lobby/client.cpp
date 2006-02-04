@@ -7,9 +7,149 @@
   
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
-
+//
+// wlp 2006 - the next line goes above the pch.h to avoid compile errors
+// 
+#include "appWeb.h" //Imago: HTTP Library for ASGS services
 #include "pch.h"
 
+//
+// wlp 2006 - added inet client support to access ASGS token XML web service
+//  the idea is to verify with ASGS that a player can play
+// this is the request string that we send
+// http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign=Radar&Ticket=BunchOfAsciiStuff
+// and the response expected for an invalid token is :  
+// <?xml version="1.0" encoding="utf-8" ?> 
+//  <int xmlns="http://ASGS.Alleg.net/ASGS/ASGS">-1</int> 
+// Valid tokens will return 0 or greater than zero 
+// this code is a rework of the rank code by Imago to adapt it here for tokens access
+// 
+//
+
+// thia encodes the data areas of the URL for service calls
+//
+void encodeURL( char * url,char * token) // url = output, token gets append to url
+{
+    // wlp - we will do brute force URL encoding - it's normal alphaNumeric or it's URL encoded
+    // we will URL encode everything that is in data areas
+   
+	url = url + strlen(url) ;       // point past any existing data
+	
+	char* tokenEnd = ( token + strlen(token)); // this is where we end                    
+	for( ; token < tokenEnd ;)
+	{
+	//  filter out special characters 
+	// IF it is not (a to z) or (A to Z) or (0 to 9) then filter it
+    	if ( ((*token >= 'a') && (*token <= 'z'))     
+           | ((*token >= 'A') && (*token <= 'Z')) 
+           | ((*token >= '0') && (*token <= '9'))
+		   )
+		{
+        *(url++) = *(token++) ;   // unfiltered straight transfer
+		}
+		else // ok this needs URL encoding with percent sign followed by ascii hex value %22
+		{
+        *(url++) = '%' ;  // paste in percent sign then the 2 hex bytes
+		*(url++) = (( *token / 16 ) < 10) ? ( *token / 16) + '0' : ( *token /16 ) + ('a'-10) ;
+        *(url++) = (( *token & 0x0F ) < 10) ? ( *(token++) & 0x0F ) + '0' : ( *(token++) & 0x0F ) + ('a'-10) ;
+		}
+   }
+	*url = 0 ;  // terminate the string - should always be at the end
+}
+
+// wlp - make ASGS service call to validate a ticket
+// also check registry to see is ASGS is off
+//
+BOOLEAN  getASGS(char * strName,char* ASGS_Token)
+{
+ // check registry to see is ASGS is on or off
+
+  DWORD dw; // Gets result of whether it opened or created... - we only read
+  HKEY  hk;
+  if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
+  {
+   // read ASGS is on or off in registry
+   DWORD dwASGS_OFF ;
+   bool bSuccess = _Module.ReadFromRegistry(hk, false, "ASGS_OFF", &dwASGS_OFF, 0);
+   RegCloseKey(hk);
+   if(bSuccess && dwASGS_OFF) return true ; // ASGS is off - so let them in 
+  }
+
+    // we will use ASGS from here on
+
+ 	// Wlp - setup variables up for the socket service
+	// use setTimeout to adjust the transmit timer ( probably milliseconds )
+	// use setRetries to adjust the retries
+    
+	// appWeb Socket
+	MaClient *http_client;  
+
+	// socket variables
+	int contentLen;         // length of Web Service Response
+	char *szContent;        // pointer to Service response
+	char szResponse[255];   // actual XML Web Service Response
+    ZString strContent ;    // work buffer for response
+	 
+	// URL buffers
+	char szURL[2000];        // Web Service ASCII Request String ( URL Encoded by us )
+	
+	// wlp - the URL requires URL Encoding - %22 = quote marks
+	// basically any special character is encoded with percent(%) and 2 character Hex Value 
+	// like %22 for double quote marks
+	// this can cause the ASGS Ticket to grow from around 300 characters to 900.
+	//
+	// Load initial value in Request String
+    Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign=");
+	
+	// URL encode callsign and ticket data field as we build URL string
+	//
+	 encodeURL(szURL,strName); // unencoded Callsign
+	 strcat(szURL,"&Ticket=");  
+     encodeURL(szURL,ASGS_Token) ; // and the unencoded ticket
+  
+	// Setup the socket Client to Process requests on AppWeb threads
+	Mpr   mpr("AllSrv");
+	mpr.start(MPR_SERVICE_THREAD);
+	http_client = new MaClient();
+
+	// Send the Service Request
+	http_client->getRequest(szURL);
+
+	// Check the Response From Service
+	if (szContent = http_client->getResponseContent(&contentLen)) 
+	   {
+		// if we get answered then we 
+		// Check it out to see if the player was validated
+		strContent = szContent;
+
+        // shut down the Service Socket
+        mpr.stop(0);
+		delete http_client;
+
+        // look for failure string at the end 
+		// anything else is a pass 
+		if ( strContent.ReverseFind("<int xmlns=\"http://ASGS.Alleg.net/ASGS/ASGS\">-1</int>"   ) > -1 )
+		{
+			debugf("ASGS player was not validated!\n");
+        // log it 
+        debugf("sent asgs %s \n",szURL);   // string gets too long
+		debugf(" And asgs sent:  %s\n", (PCC)strContent);
+    	return false ;
+		} 
+		else
+		{
+        // debugf("ASGS player was validated!\n");
+		return true ;
+	    }
+	   } else 
+	    {
+		debugf("ASGS Server did not respond!\n");
+		return true ;  // Let them on
+	    }
+}
+ 
+// wlp 2006 end of added routine ASGS
+ 
 const DWORD CFLClient::c_dwID = 19680815;
 #ifndef NO_MSG_CRC
 bool g_fLogonCRC = true; 
@@ -296,7 +436,23 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       }
       else
 #endif // USEAUTH
+
         fValid = true; // if this isn't secure, then you're automatically in
+
+       if (fValid) // wlp 2006 - added token verification code
+	   {
+	   // grab the ASGS Ticket from the variable field
+       char * szASGS = (char*) FM_VAR_REF(pfmLogon, ASGS_Ticket);
+      
+       if (!szASGS || szASGS[pfmLogon->cbASGS_Ticket - 1] != '\0') szASGS = "";
+	       
+        if ( !getASGS(pfmLogon->szName,szASGS) ) // Let ASGS sort it out.
+	    {
+	    // rejected Ticket - Bad Ticket or ASGS didn't answer
+	    fValid = false;
+	    szReason = " ASGS Did Not Authorize You To Play!!\n \n ReStart the Game Using ASGS\n" ;
+		}
+       }
 
       if (g_pAutoUpdate && pfmLogon->crcFileList != g_pAutoUpdate->GetFileListCRC())
       {
@@ -345,11 +501,23 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         pquery->DataReady();
 #else
       pthis->SetDefaultRecipient(&cnxnFrom, FM_GUARANTEED);
+
+	  // wlp 2006 - if there are no problems then log them in
+	  if (fValid)
+	  {
       BEGIN_PFM_CREATE(*pthis, pfmLogonAck, L, LOGON_ACK)
       END_PFM_CREATE
       pfmLogonAck->dwTimeOffset = pfmLogon->dwTime - Time::Now().clock();
-
       QueueMissions(pthis);
+	  }
+	  else // wlp 2006 - added rejection code - reject with message
+	  {
+      BEGIN_PFM_CREATE(*pthis, pfmLogonNack, L, LOGON_NACK)
+      FM_VAR_PARM(szReason, CB_ZTS)
+      END_PFM_CREATE
+      pfmLogonNack->fRetry = false;
+	  } // wlp 2006 end of rejection code
+
       g_pLobbyApp->GetFMClients().SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
 
 #endif

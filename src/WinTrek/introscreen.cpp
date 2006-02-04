@@ -678,11 +678,11 @@ public:
         //
         // pop up the call sign/login dialog
         //
-
-        TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
+        
+		TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
             "Enter a call sign to use for this game.", trekClient.GetSavedCharacterName(), "", false);
         GetWindow()->GetPopupContainer()->OpenPopup(plogonPopup, false);
-
+		
         return true;
     }
 
@@ -695,7 +695,7 @@ public:
             trekClient.SetIsZoneClub(false);
             GetWindow()->screen(ScreenIDTrainScreen);
         }
-        else
+        else // wlp 2006 - go straight to lobby
         {
             // otherwise give the player the option to download the training files
             // if they do, then go to the download, and restart allegiance

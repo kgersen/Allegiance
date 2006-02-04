@@ -6969,6 +6969,10 @@ IHTTPSession * BeginConfigDownload()
     }
   }
 
+  // WLP 2006 - added next line of code to force server to report invalid config
+  // if the new config is not found. It used to just use the old one without an error
+  //
+  DeleteFile(".\\temp.cfg") ;  // WLP 2006 - yell invalid if not found
 
   if (ZString(szConfig).Find("http://") == -1)
   {
@@ -10012,6 +10016,8 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   pfmStationDestroyed->launcher = (otLauncher == OT_ship) ? plauncher->GetObjectID() : NA;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
   // Tigereye, fire AGCEvent when base is destroyed
+  // mmf to do check to see if plauncher is null, this may be the case if base is destroyed by a Nova bomb
+  // (which is a drone)
   LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
   _AGCModule.TriggerContextEvent(NULL, EventID_StationDeleted, pszContext,
     plauncher->GetName(), plauncher->GetUniqueID(), plauncher->GetSide()->GetUniqueID(), -1, 3,

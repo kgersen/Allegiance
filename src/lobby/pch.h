@@ -11,10 +11,15 @@
 #ifndef _LOBBY_PCH_
 #define _LOBBY_PCH_
 
+// #include "appWeb.h" //Imago: HTTP Library for ASGS services
+
 #include <windows.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <dplobby.h>
+#include <mmsystem.h> // wlp 2006 added = somehow appweb.h excludes timegetTime in this module 
+
+
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "LobbyModule.h"

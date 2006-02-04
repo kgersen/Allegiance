@@ -4392,16 +4392,20 @@ void            WinTrekClient::Preload(const char*  pszModelName,
 void WinTrekClient::SetCDKey(const ZString& strCDKey)
 {
     HKEY hKey;
-
+    // wlp 2006 - Cdkey is the ASGS Ticket Now - we don't want to save it
+    //
+    //
     // save the new key for future use.
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
-        ALLEGIANCE_REGISTRY_KEY_ROOT,
-        0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
-    {
-        ::RegSetValueEx(hKey, "CDKey", NULL, REG_SZ, 
-            (const unsigned char*)(PCC)strCDKey, strCDKey.GetLength());
-        ::RegCloseKey(hKey);
-    }
+	//
+    // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    //    ALLEGIANCE_REGISTRY_KEY_ROOT,
+    //    0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
+    // {
+    //    ::RegSetValueEx(hKey, "CDKey", NULL, REG_SZ, 
+    // wlp -        (const unsigned char*)(PCC)strCDKey, strCDKey.GetLength());
+    //      
+    //   ::RegCloseKey(hKey);
+    // }
     
     BaseClient::SetCDKey(strCDKey);
 }
