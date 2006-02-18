@@ -450,7 +450,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	    {
 	    // rejected Ticket - Bad Ticket or ASGS didn't answer
 	    fValid = false;
-	    szReason = " ASGS Did Not Authorize You To Play!!\n \n ReStart the Game Using ASGS\n" ;
+	    szReason = "ASGS Authentication Failure.\n\n Please restart the game using ASGS\n" ;
 		}
        }
 

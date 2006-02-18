@@ -564,6 +564,9 @@ void ChatInfo::SetChat(ChatTarget       ctRecipient,
                        bool             bFromObjectModel,
                        bool             bFromLeader)
 {
+
+	logchat(strText);  // mmf added log chat
+
     m_ctRecipient = ctRecipient;
 
     m_cidCommand = cid;

@@ -112,11 +112,14 @@ HRESULT CmissileIGC::Initialize(ImissionIGC* pMission, Time now, const void* dat
             m_target->AddRef();
 
             //Estimate the time of impact with the target
+			// mmf / Tkela modifications for zero accel
             m_tImpact = dataMissileType->readyTime +
-                        (float)sqrt((2.0f / dataMissileType->acceleration) *
-                                    (m_target->GetPosition() -
-                                     dataMissile->position +
-                                     dataMissileType->readyTime * (m_target->GetVelocity() - dataMissile->velocity)).Length());
+						((dataMissileType->acceleration <= 0.0f)
+						? 0.0f 
+						: (float)sqrt((2.0f / dataMissileType->acceleration) *
+						(m_target->GetPosition() -
+                        dataMissile->position +
+                        dataMissileType->readyTime * (m_target->GetVelocity() - dataMissile->velocity)).Length()));
         }
 
         m_lock = dataMissile->lock;
@@ -192,7 +195,9 @@ double   NewtonA(double a, double b, double c, double d, double tOld)
 
     if (nCycles >= 20)
     {
-        debugf("**** Timeout NewtonA(%f %f %f %f %f) %f %f\n", a, b, c, d, tOld, t0, t1);
+		// mmf commented this out, occurs way too often in 'normal' play, especially with quickfires
+		// we can stick it back in if someone wants to work on this code and needs this info
+        // debugf("**** Timeout NewtonA(%f %f %f %f %f) %f %f\n", a, b, c, d, tOld, t0, t1);
     }
 
     return t0;
@@ -245,6 +250,9 @@ double   NewtonB(double a, double b, double c, double d, double tOld, double ti)
 
     if (nCycles >= 20)
     {
+		// mmf commented this out, occurs too often in 'normal' play, especially with quickfires
+		// we can stick it back in if someone wants to work on this code and needs this info
+        // debugf("**** Timeout NewtonA(%f %f %f %f %f) %f %f\n", a, b, c, d, tOld, t0, t1);
         debugf("**** Timeout NewtonB(%f %f %f %f %f) %f %f\n", a, b, c, d, tOld, t0, t1);
     }
 
@@ -370,7 +378,8 @@ void    CmissileIGC::Update(Time now)
             const Vector&   myPosition = GetPosition();
             const Vector&   myVelocity = GetVelocity();
 
-            if (m_target)
+			// mmf / Tkela modifications for zero accel
+            if (m_target && (acceleration > 0.0f))
             {
                 //Where will our target be when we get there ... try several passes
                 //adjusting our speed (to account for velocity).

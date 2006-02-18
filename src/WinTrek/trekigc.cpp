@@ -4281,7 +4281,8 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 
             static const ZString c_str1(" (");
             static const ZString c_str2("): ");
-            l->data().SetChat(ctRecipient, strSender + c_str1 + strRecipient + c_str2 + strOrder,
+
+			l->data().SetChat(ctRecipient, strSender + c_str1 + strRecipient + c_str2 + strOrder,
                               c_cidNone, pmodelTarget, color, bFromPlayer, bObjectModel, bIsLeader);
             trekClient.GetChatList()->last(l);
 

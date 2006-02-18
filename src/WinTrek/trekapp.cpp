@@ -589,6 +589,9 @@ public:
                     g_fZoneAuth = false;
                 } else if (str == "cdkey") {
                     g_bAskForCDKey = true;
+                // wlp 2006 - added debug option to turn on debug output
+				} else if (str == "debug") {
+                    g_outputdebugstring  = true;           //wlp allow debug outputs
   				} else if (str.Left(10) == "authtoken=") { // wlp - 2006, added new ASGS tickettoken
                     trekClient.SetCDKey(str.RightOf(10)) ; // Use CdKey for ASGS storage
                 } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token

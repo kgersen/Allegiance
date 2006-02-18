@@ -10015,16 +10015,36 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   pfmStationDestroyed->stationID = stationID;
   pfmStationDestroyed->launcher = (otLauncher == OT_ship) ? plauncher->GetObjectID() : NA;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
-  // Tigereye, fire AGCEvent when base is destroyed
-  // mmf to do check to see if plauncher is null, this may be the case if base is destroyed by a Nova bomb
-  // (which is a drone)
+  
+  // TE: Added default values for plauncher's members used in StationDeleted event
+  const char* szLauncherName = "(unknown)";
+  int iLauncherUniqueID = -1;
+  int iLauncherSideUniqueID = -1;
+  
+  // If the launcher exists...
+  if (plauncher != NULL)
+  {
+	  // Retrieve the type of object that destroyed this station...
+	  ObjectType LauncherType = plauncher->GetObjectType();
+
+	  // If the launcher is NOT a probe (novabomb) or a missile (aleph res)...
+	  if (LauncherType != OT_probe && LauncherType != OT_missile)
+	  {
+		  // Safely read the values from the launcher
+		  szLauncherName = plauncher->GetName();
+		  iLauncherUniqueID = plauncher->GetUniqueID();
+		  iLauncherSideUniqueID = plauncher->GetSide()->GetUniqueID();
+	  }
+  }
+
+  // TE: fire AGCEvent when base is destroyed
   LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
   _AGCModule.TriggerContextEvent(NULL, EventID_StationDeleted, pszContext,
-    plauncher->GetName(), plauncher->GetUniqueID(), plauncher->GetSide()->GetUniqueID(), -1, 3,
+    szLauncherName, iLauncherUniqueID, iLauncherSideUniqueID, -1, 3,
     "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
     "zStationName", VT_LPSTR, pstation->GetName());	
-  // parameter is named zStationName so it appears at end of alphabetical list
-  // Tigereye end
+  // parameter is named zStationName so it appears at end of alphabetical list, keeping compatibility with allsrv1.0
+  // End-TE
   IsideIGC*   pside = pstation->GetSide();
   IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationKill(pstation, pside);
   if (psideWin)
