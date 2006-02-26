@@ -60,7 +60,7 @@ void encodeURL( char * url,char * token) // url = output, token gets append to u
 // wlp - make ASGS service call to validate a ticket
 // also check registry to see is ASGS is off
 //
-BOOLEAN  getASGS(char * strName,char* ASGS_Token)
+BOOLEAN  getASGS(char * strName,char* playerIP,char* ASGS_Token)
 {
  // check registry to see is ASGS is on or off
 
@@ -104,6 +104,8 @@ BOOLEAN  getASGS(char * strName,char* ASGS_Token)
 	// URL encode callsign and ticket data field as we build URL string
 	//
 	 encodeURL(szURL,strName); // unencoded Callsign
+     strcat(szURL,"&IP=");  
+     encodeURL(szURL,playerIP) ;  // include Ip of requester for security
 	 strcat(szURL,"&Ticket=");  
      encodeURL(szURL,ASGS_Token) ; // and the unencoded ticket
   
@@ -441,12 +443,15 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
        if (fValid) // wlp 2006 - added token verification code
 	   {
-	   // grab the ASGS Ticket from the variable field
-       char * szASGS = (char*) FM_VAR_REF(pfmLogon, ASGS_Ticket);
+	    // wlp grab  the requester IP 
+        char szPlayerIP[16];
+        HRESULT hr = pthis->GetIPAddress(cnxnFrom,szPlayerIP);
+        // grab the ASGS Ticket from the variable field
+        char * szASGS = (char*) FM_VAR_REF(pfmLogon, ASGS_Ticket);
       
        if (!szASGS || szASGS[pfmLogon->cbASGS_Ticket - 1] != '\0') szASGS = "";
 	       
-        if ( !getASGS(pfmLogon->szName,szASGS) ) // Let ASGS sort it out.
+        if ( !getASGS(pfmLogon->szName,szPlayerIP,szASGS) ) // Let ASGS sort it out.
 	    {
 	    // rejected Ticket - Bad Ticket or ASGS didn't answer
 	    fValid = false;
