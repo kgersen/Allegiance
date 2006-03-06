@@ -4472,14 +4472,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                     // send them to the game lobby
                     debugf("#ban: %s banned by %s\n", pfsShip->GetName(), pfsPlayer->GetName());
-					// Tigereye, Fire AGCEvent informing of the ban
+					// TE, Fire AGCEvent informing of the ban
 					LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
 					_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(), 
 						pfsShip->GetShipID(), -1, -1, 3, "GameID",   VT_I4,    pfsMission->GetMissionID(),
 						"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
 						"zBooter", VT_LPSTR, pfsPlayer->GetName());	
 					// This is named zBooter so the parameter appears last in the alphabetical list
-					// Tigereye end
+					// TE end
                     pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QSR_OwnerBooted);
 
                     pfmChat->cd.chatTarget = CHAT_EVERYONE;
@@ -5832,7 +5832,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         // send them to the game lobby
 		if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings) 
 		{
-		    // Tigereye,  Fire AGCEvent informing of the boot
+		    // TE,  Fire AGCEvent informing of the boot
 			 if (bIsBoot)
 			 {
 				LPCSTR pszContext = pfsMission->GetIGCMission() ? pfsMission->GetIGCMission()->GetContextName() : NULL;
@@ -5843,7 +5843,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 					"TeamName", VT_LPSTR, pside->GetName(),
 					"zBooter", VT_LPSTR, pfsPlayer->GetName());
 			 }
-			// Tigereye end
+			// TE end
 			pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason);
 		}
       }
@@ -9300,17 +9300,20 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
+   
+	// TE: Fire AGCEvent informing of station created
+	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
+	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
+		pside->GetName(), pside->GetObjectID(), -1, -1, 4,
+		"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+		"TeamID"    , VT_I4   , pside->GetObjectID(),
+		"TeamName", VT_LPSTR, pside->GetName(),
+		"StationName", VT_LPSTR, pstationNew->GetName());
+    // TE end
 
     pstationNew->Release();
 
     UpgradeDrones(pside);
-    // Tigereye, Fire AGCEvent when base is built
-	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
-	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
-		pside->GetName(), pside->GetObjectID(), -1, -1, 3,"MissionID", VT_I4, m_pfsMission->GetMissionID(),
-		"TeamID"    , VT_I4   , pside->GetObjectID(),"TeamName", VT_LPSTR, pside->GetName(),
-		"StationName", VT_LPSTR, pstationNew->GetName());
-    // Tigereye end
     //Possibly the built themselves to a victory
     IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationBuild(pside);
     if (psideWin)
@@ -10040,8 +10043,10 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   // TE: fire AGCEvent when base is destroyed
   LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
   _AGCModule.TriggerContextEvent(NULL, EventID_StationDeleted, pszContext,
-    szLauncherName, iLauncherUniqueID, iLauncherSideUniqueID, -1, 3,
-    "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
+    szLauncherName, iLauncherUniqueID, iLauncherSideUniqueID, -1, 4,
+	"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+    "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),
+	"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
     "zStationName", VT_LPSTR, pstation->GetName());	
   // parameter is named zStationName so it appears at end of alphabetical list, keeping compatibility with allsrv1.0
   // End-TE
