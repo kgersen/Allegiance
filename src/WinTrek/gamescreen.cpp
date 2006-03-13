@@ -636,8 +636,9 @@ public:
         {
             ResetFilters();
 
-            m_vuSorts.PushEnd(0);
-            m_vbReversedSorts.PushEnd(false);
+            // WLP 2005 - removed the sorts from here - they are done in resetfilters now
+            // m_vuSorts.PushEnd(0);
+            // m_vbReversedSorts.PushEnd(false);
 
             bStaticsInitialized = true;
         }

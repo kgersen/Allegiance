@@ -129,7 +129,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;..\..\FreeZoneAuth;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
+				AdditionalIncludeDirectories="..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
 				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL"
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="1"
@@ -184,7 +184,7 @@
 				Name="VCCLCompilerTool"
 				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;..\..\FreeZoneAuth;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
+				AdditionalIncludeDirectories="..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
 				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_WINDOWS;WIN32;AFXDLL"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"

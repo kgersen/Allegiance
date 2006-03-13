@@ -174,7 +174,7 @@
 				Name="VCCLCompilerTool"
 				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc"
 				PreprocessorDefinitions="ALLCLUB;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"

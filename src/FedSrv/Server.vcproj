@@ -140,8 +140,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				ImproveFloatingPointConsistency="TRUE"
-				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;;..\..\FreeZoneAuth"
-				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400"
+				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;"
+				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400;WIN"
 				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -154,10 +154,11 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
 				OutputFile="$(OutDir)/AllSrv.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="FALSE"
+				AdditionalLibraryDirectories="..\Inc\appWeb"
 				DelayLoadDLLs="netapi32.dll;advapi32.dll"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
@@ -203,8 +204,8 @@
 				GlobalOptimizations="TRUE"
 				ImproveFloatingPointConsistency="FALSE"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;;..\..\FreeZoneAuth"
-				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400"
+				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;"
+				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400;WIN"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
@@ -213,12 +214,14 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
 				OutputFile="$(OutDir)/AllSrv.exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\Inc\appWeb"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
-				DelayLoadDLLs="netapi32.dll;advapi32.dll"/>
+				DelayLoadDLLs="netapi32.dll;advapi32.dll"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;&quot;$(TargetDir)\..\AGC&quot;"

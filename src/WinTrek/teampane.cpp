@@ -296,7 +296,13 @@ public:
               case 5:
                   m_pimageTab = GetModeler()->LoadImage("btnteamwhitebmp", true);
                   break;
-              }
+              //
+              // WLP 2005 - added default for NOAT lobby team display
+              //
+              default:                                                                // WLP 2005 - view lobby
+                  m_pimageTab = GetModeler()->LoadImage("btnteamwhitebmp", true);     // WLP 2005 - view lobby
+
+             }
               
               psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
               if (!m_bSingle){
@@ -318,18 +324,21 @@ public:
                   );
               psurface->RestoreClipRect(rectClipOld);
               
-              
-              // draw number of human players on team
-              psurface->DrawString(
+                           //
+			  // WLP - don't show this for lobby - so I added the IF test
+			  //
+			  if ( pitem->GetSideID()!= SIDE_TEAMLOBBY )
+			  {
+               // draw number of human players on team
+               psurface->DrawString(
                   TrekResources::SmallFont(),
                   Color::White(),
                   WinPoint(110, 2),
                   ZString("(") + ZString(m_pMission->SideNumPlayers(pitem->GetSideID())) + ZString(")")
                   );
-              
-          }
-          
-    };
+			  } 
+        }
+     };
     
     class TeamPanelPainter : public ItemPainter
     {
@@ -446,8 +455,11 @@ public:
             return Color(57/256.0f, 207/256.0f, 132/256.0f);
 
         default:
-            assert(false);
-            return Color(0.5, 0.5, 0.5);
+            // WLP 2005 - allow viewing NOAT lobby team - re-use case 5
+           // assert(false);
+           // return Color(0.5, 0.5, 0.5);
+
+           return Color(57/256.0f, 207/256.0f, 132/256.0f);
         }
     }
     
@@ -545,24 +557,36 @@ public:
             //
             // Team combo
             //
-            
-            for (SideID sideID = 0; sideID < trekClient.MyMission()->NumSides(); sideID++)
+                   //
+            // Team combo
+            //
+            // WLP 2005 - modified this to show lobby
+            //
+            //  lobby is the last selection on menu
+            //
+            // for (SideID sideID = 0; sideID < trekClient.MyMission()->NumSides(); sideID++)
+            for (SideID sideID = 0; sideID <= trekClient.MyMission()->NumSides(); sideID++)
             {
-                Color color = GetSideUIColor(sideID);
-                
-                TRef<IMenuItem> pitem =
+                Color color = GetSideUIColor(sideID);  //  use normal order here
+                //
+                // WLP 2005 - added else code to show lobby as last team selection
+                //
+                if ( sideID < trekClient.MyMission()->NumSides() )
+				 {                        // WLP - the playing teams
+                  TRef<IMenuItem> pitem =
+                   m_pcomboTeams->AddItem(
+                   CensorBadWords (trekClient.MyMission()->SideName(sideID)) + ZString("  (") + ZString(trekClient.MyMission()->SideNumPlayers(sideID)) + ZString(")"),
+                   sideID,color);
+				  pitem->SetColors(color,Color(1, 1, 1),color * 1.5f,Color(1, 1, 1));
+				 }
+			     else  // WLP - show the lobby tab
+				 {
+				 TRef<IMenuItem> pitem =
                     m_pcomboTeams->AddItem(
-                    CensorBadWords (trekClient.MyMission()->SideName(sideID)) + ZString("  (") + ZString(trekClient.MyMission()->SideNumPlayers(sideID)) + ZString(")"),
-                    sideID,
-                    color
-                    );
-                
-                pitem->SetColors(
-                    color,
-                    Color(1, 1, 1),
-                    color * 1.5f,
-                    Color(1, 1, 1)
-                    );
+               	    ZString(trekClient.MyMission()->SideName(SIDE_TEAMLOBBY)), // WLP - just show the name
+                    SIDE_TEAMLOBBY,color);  // WLP modded sideID to newSideID to allow lobby
+				 pitem->SetColors(color,Color(1, 1, 1),color * 1.5f,Color(1, 1, 1));
+				 }
             }
             
             AddEventTarget(OnTeamCombo, m_pcomboTeams->GetEventSource());
@@ -797,9 +821,8 @@ public:
     {
         if (pitem == NULL)
         {
-            // default the selection to the last team
-            m_plistPaneTeams->SetSelection(
-                trekClient.MyMission()->GetSideInfo(trekClient.MyMission()->NumSides()-1));
+        // WLP 2005 - show LOBBY
+        m_plistPaneTeams->SetSelection(trekClient.MyMission()->GetSideInfo(SIDE_TEAMLOBBY));
         }
         else
         {
@@ -1026,8 +1049,10 @@ public:
             PlayerInfo* pplayer = trekClient.FindPlayer(shipID);
             
             assert(pplayer);
-            
-            assert (pplayer->SideID() != SIDE_TEAMLOBBY);
+            //
+            // WLP 2005 - removed next line to allow lobby
+            //
+            // assert (pplayer->SideID() != SIDE_TEAMLOBBY);
             {
                 if (Training::IsTraining ())
                 {
@@ -1707,7 +1732,12 @@ public:
         m_peventTeams = m_plistPaneTeams->GetSelectionEventSource();
         m_peventTeams->AddSink(m_psinkTeams = new IItemEvent::Delegate(this));
         m_plistPaneTeams->SetList(
-            new SortedList<ItemIDCompareFunction>(trekClient.MyMission()->GetSideList(), SideCompare));
+              // WLP 2005 - tacked TEAM LOBBY onto the list of team names 
+                new ConcatinatedList(
+			    new SortedList<ItemIDCompareFunction>(trekClient.MyMission()->GetSideList(), SideCompare),
+                new SingletonList(trekClient.MyMission()->GetSideInfo(SIDE_TEAMLOBBY))
+				));
+            //  WLP
         m_plistPaneTeams->UpdateLayout();
         m_plistPaneTeams->SetItemPainter(new TeamPainter(
             trekClient.MyMission(), 

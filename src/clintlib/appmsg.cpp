@@ -1148,6 +1148,16 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                                    ship->GetName(), ship->GetObjectID(),
                                    pcluster->GetName());
 
+                            //
+                            // WLP 2005 - added this to help keep cloaking persistent during aleph exits
+                            //
+                            if (ship->GetStateM() & cloakActiveIGC)  // if ship cloaked
+                            {
+                                 ship->SetCloaking(0.20); // WLP - set cloaking to 20% sig
+                                 ship->SetVisibleF(false); // need to set the ship to not visible in first frame
+                            }
+                            // WLP - end of added code
+
                             ship->SetCluster(pcluster);
                             ship->SetLastUpdate(time);
                         }

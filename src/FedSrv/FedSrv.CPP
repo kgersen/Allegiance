@@ -130,10 +130,11 @@ void LoadTechBits()
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
-#if !defined(ALLSRV_STANDALONE)
 
 void LoadRankInfo()
 {
+
+#if !defined(ALLSRV_STANDALONE)	
   SQL_GO(GetRankCount);
   SQL_GETROW(GetRankCount);
   g.cRankInfo = GetRankCount_Count;
@@ -152,6 +153,29 @@ void LoadRankInfo()
       strcpy(g.vRankInfo[i].RankName, (char*)GetRanks_Name);
     }
   }
+#else //Imago: Changed to load rank_info from <artwork>/ranks.txt
+    char        mapfilename[MAX_PATH + 1];
+    HRESULT     hr = UTL::getFile("ranks", ".txt", mapfilename, true, true);
+    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
+    if (file)
+    {
+      int nbranks;
+      fscanf(file,"%d\n",&nbranks);
+      g.cRankInfo = nbranks;
+      g.vRankInfo = new RankInfo[g.cRankInfo];
+      for (int i=0;i<nbranks;i++)
+      {
+         int rank;
+         fscanf(file,"%d,%[^,\n]\n",&rank,g.vRankInfo[i].RankName);
+         g.vRankInfo[i].rank = rank;
+         g.vRankInfo[i].requiredRanking = 0;
+         g.vRankInfo[i].civ = -1;
+      }
+      fclose(file);
+   }
+   else
+      g.cRankInfo = 0;
+#endif // !defined(ALLSRV_STANDALONE)
 }
 
 void UnloadRankInfo()
@@ -159,7 +183,7 @@ void UnloadRankInfo()
   delete [] g.vRankInfo;
   g.cRankInfo = 0;
 }
-#endif // !defined(ALLSRV_STANDALONE)
+
 
 void LoadStaticMapInfo()
 {
@@ -800,6 +824,58 @@ void GotLogonDetails(CQLogonStats * pquery)
       // no persist object is active now; will be when they go to a side
 
     #endif // !defined(ALLSRV_STANDALONE)
+	
+  	// -Imago: ASGS Login/Rank
+	MaClient *http_client; int contentLen;
+	char *szContent;
+	char szURL[255]; char szName[64]; char szResponse[255];
+	ZString strName = pfsPlayer->GetName();
+	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
+
+	// Fixup player names 
+	Strcpy(szName,(PCC)strName);
+	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
+	strcat(szURL,szName);
+
+	// Process requests on AppWeb threads
+	Mpr   mpr("AllSrv");
+	mpr.start(MPR_SERVICE_THREAD);
+	http_client = new MaClient();
+	http_client->getRequest(szURL);
+	if (szContent = http_client->getResponseContent(&contentLen)) {
+		// Fixup XML Response
+		ZString strContent = szContent;
+		strContent = strContent.RightOf(88);
+		strContent = strContent.LeftOf("<");
+		debugf("sent asgs %s and asgs sent %s\n",szURL, (PCC)strContent);
+		Strcpy(szResponse,(PCC)strContent);
+
+		mpr.stop(0);
+		delete http_client;
+
+		// If the Response is 0, Deny Logon with provided Reason
+		if (strcmp(strtok(szResponse,"|"),"0") != 0 ) {
+			strtok(NULL,"|");
+			Strcpy(pqd->szReason,strtok(NULL,"|"));
+			fValid = false;
+			debugf("Lobby possibly validated ASGS user but Server did not!\n");
+		} else {  //Set the Rank the same for all civs only on the NA side
+			RankID myRank = atoi(strtok(NULL,"|"));
+
+			const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+			for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+			{
+				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+				pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+			}
+			fValid = true;
+		}
+	} else {
+		fValid = true; //assume all is OK, Rank will be 0
+		debugf("ASGS Server did not respond!\n");
+	}
   }
   else
   {
@@ -818,6 +894,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 
 
   // -KGJV: changed for StaticMapInfo in all mode
+  // -Imago: changed for RankInfo in all mode
   if (fValid)
   {
 
@@ -826,12 +903,13 @@ void GotLogonDetails(CQLogonStats * pquery)
       FM_VAR_PARM(g.vStaticMapInfo, sizeof(StaticMapInfo) * g.cStaticMapInfo)
     END_PFM_CREATE
 
-#if !defined(ALLSRV_STANDALONE)
     // send the rank info for this server
     BEGIN_PFM_CREATE(g.fm, pfmRankInfo, S, RANK_INFO)
       FM_VAR_PARM(g.vRankInfo, sizeof(RankInfo) * g.cRankInfo)
     END_PFM_CREATE
     pfmRankInfo->cRanks = g.cRankInfo;
+
+#if !defined(ALLSRV_STANDALONE)
 
     // Get their squad memberships, but whether we need it b4 joining depends on whether it's a squad game
     CQCharSquads * pqueryCharSquads = new CQCharSquads(GotCharSquads);
@@ -7692,9 +7770,10 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   rgeventHandles[0] = g.hKillReceiveEvent;
   // rgeventHandles[1] = g.hPlayerEvent;
 
-  #if !defined(ALLSRV_STANDALONE)
-    LoadRankInfo();
-  #endif
+  // -Imago: changed for RankInfo in all modes
+  LoadRankInfo();
+  debugf("LoadRankInfo result: #ranks=%d\n",g.cRankInfo);
+
   // -KGJV: changed for StaticMapInfo in all modes
   debugf("calling LoadStaticMapInfo\n");
     LoadStaticMapInfo();
@@ -7773,10 +7852,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   // Release the CAdminServer instance
   spunkServer = NULL;
 
+  UnloadRankInfo(); //Imago: LoadRankInfo in all modes
 
-  #if !defined(ALLSRV_STANDALONE)
-    UnloadRankInfo();
-  #endif
   // -KGJV: StaticMapInfo in all modes
     UnloadStaticMapInfo();
 

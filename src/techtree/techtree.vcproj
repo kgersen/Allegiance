@@ -25,7 +25,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\ZLib;../_Utility;../IGC"
+				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\IGC"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -83,7 +83,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ZLib;../_Utility;../IGC"
+				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\IGC"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
