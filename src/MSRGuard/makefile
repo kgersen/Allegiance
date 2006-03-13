@@ -61,7 +61,7 @@ PCHINC=
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
 CARGSLOCAL=/D"MSRGuard" /D _WIN32_WINNT=0x0400 $(STANDALONEDEFS)
-
+UNWINDCARG=/GX
 
 #############################################################################
 # Rules

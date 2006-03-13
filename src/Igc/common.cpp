@@ -1,6 +1,25 @@
 #include    "pch.h"
 #include    <math.h>
 
+// mmf begin
+/*
+int _matherr( struct _exception *except )
+{
+	printf("offending function %s\n",except->name);
+	// cause an exception not handled to exit
+	// fmod in ThingGeo thows a math exception, skip it
+	// hopefully the miner bug is not an fmod
+	
+	if ( strcmp( except->name, "fmod" ) == 0 ) return (0);
+	
+	(*(int*)0) = 0;
+
+	return (0);
+
+}
+*/
+// mmf end
+
 const char*       c_pszWingName[c_widMax] =
                         { "command",
                           "attack",
@@ -68,10 +87,18 @@ float    solveForImpact(const Vector&      deltaP,
         if ((a == 0.0f) || ((a > 0.0f) && (b > 0.0f)) || (b24ac < 0.0f))
         {
             //No valid solution
-            t = FLT_MAX;
+            t = (FLT_MAX / 500000000.0f); // mmf podpickup bug added the divisor 
+			// mmf also note *direction is NOT SET in this case...
         }
         else
         {
+			// mmf added check for negative
+			// revisit what to set b24ac to in this case
+			if (b24ac < 0.0f) { 
+				debugf("common.cpp b24ac is less than zero about to sqrt it, it to 0.1f\n");
+				b24ac = 0.1f;
+			}
+
             //quadratic formula ... we only care about the smallest root > 0
             t = (b + (float)sqrt(b24ac)) / (-2.0f * a);   //(-b-sqrt(b24ac))/(2a)    Only or smallest possible positive root
 
@@ -135,8 +162,8 @@ float    turnToFace(const Vector&       deltaTarget,
     controls->jsValues[c_axisRoll] = 0.0f;      //Ships never try to roll
 
     const Orientation&  myOrientation = pship->GetOrientation();
-
     double  cosTurn = myOrientation.CosForward(deltaTarget);
+
     if (cosTurn <= -0.999)
     {
         //Target is almost exactly behind, just yaw
@@ -160,7 +187,7 @@ float    turnToFace(const Vector&       deltaTarget,
             Vector  twist = CrossProduct(myOrientation.GetBackward(), deltaTarget).Normalize();
             yaw = -(twist * myOrientation.GetUp()) * deltaAngle;
             pitch = (twist * myOrientation.GetRight()) * deltaAngle;
-        }
+		}
         else
         {
             //The target is almost directly in front of us (within 11 degrees or so)
@@ -168,6 +195,13 @@ float    turnToFace(const Vector&       deltaTarget,
             //So ... instead ... get the yaw and pitch off of the angles with the right * up
             yaw   = acos(myOrientation.CosRight(deltaTarget)) - 0.5f * pi;
             pitch = acos(myOrientation.CosUp(deltaTarget)) - 0.5f * pi;
+
+			// mmf
+			{ 
+				float check = yaw * yaw + pitch * pitch;
+				if (check != check) debugf("common.cpp yaw * yaw + pitch * pitch is a nan\n");
+				if (check < 0.0f) debugf("common.cpp yaw * yaw + pitch * pitch is a negative about to sqrt it\n");
+			}
 
             deltaAngle = (float)sqrt(yaw * yaw + pitch * pitch);
         }
@@ -429,7 +463,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
             {
                 if (ttBest)
                 {
-                    int     n;
+                    int     n = 0;
                     float   d;
                     if (ttMask & (c_ttFront | c_ttNearest))
                     {
@@ -844,7 +878,7 @@ bool    SearchClusters(ImodelIGC*    pmodel,
 {
     assert (pmodel);
 
-    bool    rc;
+    bool    rc = false; // mmf initialize to false
     IclusterIGC*    pcluster = pmodel->GetCluster();
 
     if (pcluster)
@@ -1016,7 +1050,15 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
             float   c = *pcenter * *pcenter - myRadius * myRadius;
             assert (c < 0.0f);
 
-            float   t = sqrt(b*b - c) - b;
+			// mmf added check for negative
+			// revisit what to set t to in this case splat
+			
+			float t=0.1f;
+			if ((b*b - c) < 0.0f) { 
+				debugf("common.cpp b*b-c is less than zero about to sqrt it, set t to 0.1f\n");
+			} else { t = sqrt(b*b - c) - b; }
+
+            // float   t = sqrt(b*b - c) - b;
             assert (t >= 0.0f);
 
             goal = *pcenter + *pdirection * t;
@@ -1212,6 +1254,7 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
 
             case OT_ship:
             {
+				// mmf pod pickup
                 //Trying to pick up a ship ... where will he be when we get there?
                 Vector  direction;
                 Vector  dp = itsPosition - myPosition;
@@ -1545,6 +1588,7 @@ bool    GotoPlan::Execute(Time  now, float  dt, bool bDodge)
     return bDone;
 }
 
+// mmf this is where autopilot does its work 
 bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, int* pstate)
 {
     bool    bDone;
@@ -1750,9 +1794,10 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                     turnToFace(facing, dt, m_pship, pcontrols, m_fSkill);
                 if ((gpm & c_gpmRoll) != 0)
                 {
-                    float   rollMax2 = 1.0f -
-                                       pcontrols->jsValues[c_axisPitch] * pcontrols->jsValues[c_axisPitch] -
-                                       pcontrols->jsValues[c_axisYaw] * pcontrols->jsValues[c_axisYaw];
+					// mmf took this out, compiler says it is never referenced
+                    //float   rollMax2 = 1.0f -
+                    //                   pcontrols->jsValues[c_axisPitch] * pcontrols->jsValues[c_axisPitch] -
+                    //                   pcontrols->jsValues[c_axisYaw] * pcontrols->jsValues[c_axisYaw];
 
                     //What is the angle we'd like to roll? Is the angle between the ship's Y axis and the global z-axis
                     const Orientation&  o = m_pship->GetOrientation();
@@ -1783,6 +1828,15 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
 
                         if (d2 + r * r > 1.0)
                         {
+							// mmf debug
+							// mmf when pitch or yaw is very close to one and the other is close to zero d2
+							// is greater than 1 so set it to 1
+							if (d2 > 1.0) {
+								// debugf("mmf common.cpp d2 > 1.0 about to sqrt a negative number setting d2 to 1\n");
+								//debugf("d2=%g, r=%g, js pitch=%f yaw=%f\n",d2,r,pcontrols->jsValues[c_axisPitch],
+								//		pcontrols->jsValues[c_axisYaw]);
+								d2=1.0;
+							}
                             float   f = float(sqrt(1.0 - d2));
                             pcontrols->jsValues[c_axisRoll] = (r > 0.0) ? f : -f;
                         }
@@ -1905,7 +1959,7 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                 //Always face where we are going
                 if (path * path >= 0.1f)
                 {
-                    float da = turnToFace(path, dt, m_pship, pcontrols, m_fSkill);
+					float da = turnToFace(path, dt, m_pship, pcontrols, m_fSkill);
 
                     if (da < pi / 8.0f)
                     {

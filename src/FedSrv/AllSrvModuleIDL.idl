@@ -261,7 +261,7 @@ interface IAdminGame : IAGCGame
   [id(117), helpstring("Changes a team's default tech bit which is normally based on its civid.  The only has an effect if done before the game starts (and before the countdown).")]
   HRESULT OverrideTechBit([in] int iSideID, [in] int nTechBitID, [in] BOOL bNewSetting);
 
-  [id(118), helpstring("Sets the mml file(s) to display when the user clicks on 'details' in the games list.  The files are seperated by spaces, and are assumed to be in the directory specified by ZoneEventDetailsURL in the config file.  The mml file should always be the last one in the list.")]
+  [id(118), helpstring("Sets mml file(s) to display when user clicks 'details' in games list. Files seperated by spaces, must be in the directory specified by ZoneEventDetailsURL in config file.  The mml file should be  last list.")]
   HRESULT SetDetailsFiles([in] BSTR bstrName);
 
   [id(119), helpstring("Assigns everyone in the game to a random team except the team leaders.")]
@@ -567,6 +567,8 @@ library ALLEGIANCESERVERLib
 
 
 /////////////////////////////////////////////////////////////////////////////
+// VS.Net 2003 port: added "inline" to IsAllSrvRunning() to avoid linik errors
+// 
 
 cpp_quote("#if defined(__cplusplus) && _MSC_VER >= 1100")
 cpp_quote("  extern \"C++\"")
@@ -601,7 +603,11 @@ cpp_quote("// AllSrv Existence")
 cpp_quote("#define szAllSrvRunning TEXT(\"{5B5ED2A6-E7C0-11D2-8B4B-00C04F681633}_Running\")")
 cpp_quote("#define szAllSrvRunningGlobal (TEXT(\"Global\\\\\") szAllSrvRunning)")
 cpp_quote("")
+cpp_quote("#if _MSC_VER >= 1310")
+cpp_quote("BOOL inline IsAllSrvRunning()")
+cpp_quote("#else")
 cpp_quote("BOOL IsAllSrvRunning()")
+cpp_quote("#endif")
 cpp_quote("{")
 cpp_quote("  // Open the mutex using the global name first")
 cpp_quote("  HANDLE hMutex = ::OpenMutex(SYNCHRONIZE, false, szAllSrvRunningGlobal);")

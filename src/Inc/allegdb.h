@@ -459,6 +459,7 @@ public:
     // NOT the size of the whole m_cmd, since we can't stomp on atl data members--atl also doesn't support copying accessors
     CQuery * pqueryDestT = static_cast<CQuery *>(pqueryDest);
     CopyMemory(&pqueryDestT->m_cmd, &m_cmd, sizeof(TQueryData));
+	debugf("CSQLQuery->Copy: size = %d\n",sizeof(TQueryData));
     pqueryDestT->m_cRowsAlloc = m_cRowsAlloc; 
     pqueryDestT->m_pargQueryData = m_pargQueryData; 
     pqueryDestT->m_cRows = m_cRows;

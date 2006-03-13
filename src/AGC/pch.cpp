@@ -5,7 +5,7 @@
 
 #include "pch.h"
 
-#include <atlimpl.cpp>
+//#include <atlimpl.cpp>
 #include <TCAtl.cpp>
 #include <..\TCAtl\PropertyClass.cpp>
 #include <..\TCAtl\TCNullStreamImpl.cpp>

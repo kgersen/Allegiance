@@ -26,7 +26,7 @@ public:
         m_ptLineSize(ptLineSize)
     {
         ZString strMsg = CensorBadWords (m_pchatInfo->GetMessage());
-        IEngineFont* pfont = pchatInfo->IsFromLeader() ? TrekResources::SmallBoldFont() : TrekResources::SmallFont();
+		IEngineFont* pfont = pchatInfo->IsFromLeader() ? TrekResources::SmallBoldFont() : TrekResources::SmallFont();
         int nStrLenLeft = strMsg.GetLength();
         int nStrLenLine;
         while ((nStrLenLine = pfont->GetMaxTextLength(strMsg, ptLineSize.X(), true))

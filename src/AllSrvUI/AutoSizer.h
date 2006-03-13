@@ -131,8 +131,8 @@ protected:
     XRule();
     XRule(const AutoSizerRule* pRule);
     XRule(const XRule& that);
-    operator=(const AutoSizerRule* pRule);
-    operator=(const XRule& that);
+    const XRule& operator=(const AutoSizerRule* pRule);
+    const XRule& operator=(const XRule& that);
     bool operator==(const AutoSizerRule* pRule);
     HWND GetFollower() const;
     HWND GetLeader() const;
@@ -207,17 +207,20 @@ inline CAutoSizer::XRule::XRule(const XRule& that)
   CopyMemory(m_Offsets, that.m_Offsets, sizeof(m_Offsets));
 }
 
-inline CAutoSizer::XRule::operator=(const AutoSizerRule* pRule)
-{
-  CopyMemory(&m_Rule, pRule, sizeof(m_Rule));
-  ZeroMemory(m_Offsets, sizeof(m_Offsets));
-}
+inline const CAutoSizer::XRule& CAutoSizer::XRule::operator=(const AutoSizerRule* pRule) 
+{ 
+  CopyMemory(&m_Rule, pRule, sizeof(m_Rule)); 
+  ZeroMemory(m_Offsets, sizeof(m_Offsets)); 
+  return *this; 
+} 
 
-inline CAutoSizer::XRule::operator=(const XRule& that)
-{
-  CopyMemory(&m_Rule, &that.m_Rule, sizeof(m_Rule));
-  CopyMemory(m_Offsets, that.m_Offsets, sizeof(m_Offsets));
-}
+inline const CAutoSizer::XRule& CAutoSizer::XRule::operator=(const XRule& that) 
+{ 
+  CopyMemory(&m_Rule, &that.m_Rule, sizeof(m_Rule)); 
+  CopyMemory(m_Offsets, that.m_Offsets, sizeof(m_Offsets)); 
+  return *this; 
+} 
+
 
 inline bool CAutoSizer::XRule::operator==(const AutoSizerRule* pRule)
 {

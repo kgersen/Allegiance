@@ -21,7 +21,7 @@ const int c_cDronesMax    = 500; // max drones  allowed on a server
 const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
 
 #if defined(ALLSRV_STANDALONE)
-  const short c_cMaxPlayersPerGame = 64;
+  const short c_cMaxPlayersPerGame = 200; // KGJV-; changed from 64 to 200. 
 #else // defined(ALLSRV_STANDALONE)
   const short c_cMaxPlayersPerGame = 0x7FFF;
 #endif // defined(ALLSRV_STANDALONE)
@@ -356,9 +356,10 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon);
 
 void GetInvitations(int nInvitationID, MissionID missionID);
 
-#if defined(ALLSRV_STANDALONE)
+//-KGJV - AZ uses StartDefaultGames now
+//#if defined(ALLSRV_STANDALONE)
 void StartDefaultGames();
-#endif
+//#endif
 
 ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, DataTreasureIGC* pdt, const Vector& position, float dv);
 

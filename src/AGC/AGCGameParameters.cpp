@@ -916,7 +916,7 @@ STDMETHODIMP CAGCGameParameters::get_GoalTeamMoney(AGCMoney* pVal)
 STDMETHODIMP CAGCGameParameters::put_GoalTeamMoney(AGCMoney Val)
 {
   XLock lock(this);
-  m_mp.fGoalTeamMoney = Val;
+  m_mp.fGoalTeamMoney = static_cast<float>(Val);
   return S_OK;
 }
 

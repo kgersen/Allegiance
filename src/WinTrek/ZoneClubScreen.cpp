@@ -267,7 +267,13 @@ public:
 #else
             lstrcpy(m_szName, trekClient.GetSavedCharacterName());
 #endif
-        
+		  // wlp - don't ask for callsign if it was on the command line
+          if (!g_bAskForCallSign) 
+		  {
+		  this->OnLogon(trekClient.GetSavedCharacterName(), "", false);
+	      } // wlp - end of dont ask for callsign 
+		  else
+		  {
             TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, 
                 (trekClient.GetIsZoneClub() ? 
                   LogonAllegianceZone :
@@ -280,6 +286,7 @@ public:
             Point point(c_PopupX, c_PopupY);
             Rect rect(point, point);
             GetWindow()->GetPopupContainer()->OpenPopup(plogonPopup, rect, false);
+		    }// wlp = end of else ask for callsign
         }
     }
 
@@ -740,10 +747,10 @@ public:
         lstrcpy(m_szName, strName);
         lstrcpy(m_szPW, strPassword);
         m_fRememberPW = fRememberPW;
-#ifdef USEAUTH        
-#else
-        trekClient.SaveCharacterName(strName);
-#endif        
+//#ifdef USEAUTH        
+//#else
+//        trekClient.SaveCharacterName(strName);
+//#endif        
         GetWindow()->SetWaitCursor();
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Connecting...", NULL, false);
         Point point(c_PopupX, c_PopupY);

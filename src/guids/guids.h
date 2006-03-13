@@ -8,9 +8,9 @@
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 #include "objbase.h"
-#include "zoneauth.h"
-#include "zoneauthdecrypt.h"
-#include "zoneauthencrypt.h"
+//#include "zoneauth.h"
+//#include "zoneauthdecrypt.h"
+//#include "zoneauthencrypt.h"
 
 // FEDSRV_GUID. The guid of the dplay session application of the server
 // {81662310-FCB4-11d0-A88A-006097B58FBF}

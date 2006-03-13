@@ -8,6 +8,7 @@
 #include "PageConnect.h"
 #include "..\FedSrv\AdminSessionSecure.h"
 #include "..\FedSrv\AdminSessionSecureHost.h"
+#include ".\pageconnect.h"
 
 #ifdef _DEBUG
   #define new DEBUG_NEW
@@ -44,6 +45,7 @@ BEGIN_MESSAGE_MAP(CPageConnect, CPropertyPage)
   //}}AFX_MSG_MAP
   ON_MESSAGE(wm_SessionFailed, OnSessionFailed)
   ON_MESSAGE(wm_SessionSucceeded, OnSessionSucceeded)
+  ON_NOTIFY(NM_CUSTOMDRAW, IDC_PROGRESS_CONNECTING, OnNMCustomdrawProgressConnecting)
 END_MESSAGE_MAP()
 
 
@@ -210,3 +212,10 @@ LRESULT CPageConnect::OnSessionFailed(WPARAM wParam, LPARAM)
 
 // TODO: OnCancel
 
+
+void CPageConnect::OnNMCustomdrawProgressConnecting(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	*pResult = 0;
+}

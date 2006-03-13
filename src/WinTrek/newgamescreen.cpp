@@ -208,6 +208,18 @@ public:
         }
     }
 
+	// KGJV: added - return (closest) connectivity name
+    ZString GetConnectivityString(const MissionParams& missionparams)
+    {
+		return GetNthString("ConnectivityNames", FindClosestValue(missionparams.iRandomEncounters, "ConnectivityValues"));
+	}
+
+	// KGJV: added - return (closest) total money setting
+	ZString GetTotalMoneyString(const MissionParams& missionparams)
+    {
+		return GetNthString("TotalMoneyNames", FindClosestValue(missionparams.fHe3Density, "TotalMoneyValues"));
+	}
+
     ZString GetResourceString(const MissionParams& missionparams)
     {
         const char* vszResourceNames[4] = {
@@ -245,9 +257,13 @@ public:
         str =
               "Name: "                  + ZString(mp.strGameName)         + "<p>"
             + "<p>"
+			+ "Core Name: "             + ZString(mp.szIGCStaticFile)     + "<p>" // KGJV: added
+			+ "<p>"
             + "Lives: "                 + GetLives(mp)                    + "<p>"
             + "Map Type: "              + GetMapType(mp)                  + "<p>"
+			+ "Map Connectivity: "      + GetConnectivityString(mp)       + "<p>" // KGJV: added
             + "Resources: "             + GetResourceString(mp)           + "<p>"
+			+ "Total money: "           + GetTotalMoneyString(mp)         + "<p>" // KGJV: added
             + "Scores Count: "          + YesNo(mp.bScoresCount)          + "<p>"
             + "Eject Pods: "            + YesNo(mp.bEjectPods)            + "<p>"
             + "Allow Friendly Fire: "   + YesNo(mp.bAllowFriendlyFire)    + "<p>"

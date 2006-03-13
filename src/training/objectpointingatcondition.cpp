@@ -22,8 +22,8 @@ namespace Training
     /* void */  ObjectPointingAtCondition::ObjectPointingAtCondition (ImodelIGC* pObject, ImodelIGC* pTarget) :
     m_pObject (new TypeIDTarget (pObject->GetObjectType (), pObject->GetObjectID ())),
     m_pTarget (new TypeIDTarget (pTarget->GetObjectType (), pTarget->GetObjectID ())),
-    m_vectorMask (NA, NA, NA),
-    m_fMinimumAngle (NA)
+    m_vectorMask (fNA, fNA, fNA),
+    m_fMinimumAngle (fNA)
     {
     }
 
@@ -31,8 +31,8 @@ namespace Training
     /* void */  ObjectPointingAtCondition::ObjectPointingAtCondition (ImodelIGC* pObject, ObjectType targetType, ObjectID targetID) :
     m_pObject (new TypeIDTarget (pObject->GetObjectType (), pObject->GetObjectID ())),
     m_pTarget (new TypeIDTarget (targetType, targetID)),
-    m_vectorMask (NA, NA, NA),
-    m_fMinimumAngle (NA)
+    m_vectorMask (fNA, fNA, fNA),
+    m_fMinimumAngle (fNA)
     {
     }
 
@@ -40,8 +40,8 @@ namespace Training
     /* void */  ObjectPointingAtCondition::ObjectPointingAtCondition (ImodelIGC* pObject, AbstractTarget* pTarget) :
     m_pObject (new TypeIDTarget (pObject->GetObjectType (), pObject->GetObjectID ())),
     m_pTarget (pTarget),
-    m_vectorMask (NA, NA, NA),
-    m_fMinimumAngle (NA)
+    m_vectorMask (fNA, fNA, fNA),
+    m_fMinimumAngle (fNA)
     {
     }
 
@@ -111,7 +111,7 @@ namespace Training
     //------------------------------------------------------------------------------
     void        ObjectPointingAtCondition::ClearVectorMask (void)
     {
-        m_vectorMask = Vector (NA, NA, NA);
+        m_vectorMask = Vector (fNA, fNA, fNA);
     }
 
     //------------------------------------------------------------------------------

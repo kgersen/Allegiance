@@ -645,7 +645,7 @@ public:
         PartWrapper::ExportAccessors(m_pns);
 
         //console mode
-        m_pns->AddMember("OverlayFlags", m_pnumberOverlayFlags = new ModifiableNumber((float)0));
+        m_pns->AddMember("OverlayFlags", m_pnumberOverlayFlags = new ModifiableNumber(0.0f));
 
         // data about me
         m_pns->AddMember("Me", m_pmodelDataMe = new ModelData());
@@ -3139,7 +3139,12 @@ public:
         // back button
 
         CastTo(m_pbuttonBack, pnsDisplays->FindMember("backButtonPane"));
+// VS.Net 2003 port: error C2465 here.
+#if _MSC_VER >= 1310
+		m_pconsoleData->AddEventTarget(&ConsoleDataImpl::OnBackButton, m_pbuttonBack->GetEventSource());
+#else
         m_pconsoleData->AddEventTarget(m_pconsoleData->OnBackButton, m_pbuttonBack->GetEventSource());
+#endif
         
         //
         // Add all of the loaded displays

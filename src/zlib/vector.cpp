@@ -1,6 +1,6 @@
 #include "pch.h"
 
-const Vector Vector::s_vectorZero(0, 0, 0);
+const Vector Vector::s_vectorZero(0.0f, 0.0f, 0.0f);  // mmf changed these to 0.0f from just 0
 
 Vector Vector::GetOrthogonalVector() const
 {
@@ -54,3 +54,17 @@ Vector Vector::RandomPosition(float radius)
             ? Vector::GetZero()
             : Vector::RandomDirection() * (radius * pow(rnd, 1.0f/3.0f));
 }
+
+// VS.Net 2003 port: friend definition must be out of class/namespace to work with argument dep lookup
+// see vector.h
+#if _MSC_VER >= 1310
+Vector CrossProduct(const Vector& v1, const Vector& v2)
+    {
+        return
+            Vector(
+                (v1.y * v2.z) - (v2.y * v1.z),
+                (v1.z * v2.x) - (v2.z * v1.x),
+                (v1.x * v2.y) - (v2.x * v1.y)
+            );
+    }
+#endif    

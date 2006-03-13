@@ -22,11 +22,13 @@
 #include <vector>
 #include <map>
 
+
 #include <crtdbg.h>
 #include <windows.h>
 #include <tchar.h>
 #include <malloc.h>
 #include <comcat.h>
+#include <..\zlib\zassert.h>
 #include <comdef.h>
 #include <commctrl.h>
 #include <atlconv.h>
@@ -34,6 +36,7 @@
 #include <mmsystem.h>
 
 // ZLib headers
+
 #include <..\zlib\zlib.h>
 
 

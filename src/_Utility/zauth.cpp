@@ -9,6 +9,7 @@
  *-----------------------------------------------------------------------*/
 
 #include "pch.h"
+#include <comdef.h>
 #include "zauth.h"
 
 const int cTokensMax = 500;
@@ -165,15 +166,15 @@ public:
     // TODO: Get the server name from somewhere
     HANDLE hFinished = CreateEvent(NULL, FALSE, FALSE, NULL);
     HRESULT hr = m_pZoneAuth->ReAuthenticate(m_strAuthServer, OBLIVION_TOKEN_GROUP, //$ CRASHGUARD
-            FEDSRV_GUID, hFinished, &m_pzas);
+            FEDSRV_GUID, (ULONG *) hFinished, &m_pzas);
     if (SUCCEEDED(hr))
     {
       DWORD dwObj = WaitForSingleObject(hFinished, INFINITE); // msTimeout);
       if (WAIT_OBJECT_0 == dwObj)
       {
-        IZoneAuthSession::STATUS status;
+        /*IZoneAuthSession::*/STATUS status;
         m_pzas->GetStatus(&status);
-        if (IZoneAuthSession::STATUS_COMPLETED != status)
+        if (/*IZoneAuthSession::*/STATUS_COMPLETED != status)
           hr = m_pzas->GetError();
       }
       else
@@ -198,17 +199,23 @@ public:
 
   // TODO: Get the server name from somewhere
     HANDLE hFinished = CreateEvent(NULL, FALSE, FALSE, NULL);
-    HRESULT hr = m_pZoneAuth->Authenticate(m_strAuthServer, OBLIVION_TOKEN_GROUP, 
-            FEDSRV_GUID, szName, szPW, fPWChanged, fRememberPW, hFinished, &m_pzas);
+	HRESULT hr;
+	try {
+		hr = m_pZoneAuth->Authenticate(m_strAuthServer, OBLIVION_TOKEN_GROUP, 
+            FEDSRV_GUID, szName, szPW, fPWChanged, fRememberPW, (ULONG *)hFinished, &m_pzas);
+	} catch (_com_error &c) {
+		hr = c.Error();
+	};
+
     if (SUCCEEDED(hr))
     {
       // The cancel thing doesn't work without having to wait again, so that's pointless. Just wait now.
       DWORD dwObj = WaitForSingleObject(hFinished, INFINITE); //msTimeout);
       if (WAIT_OBJECT_0 == dwObj)
       {
-        IZoneAuthSession::STATUS status;
+		/*IZoneAuthSession::*/STATUS status;
         hr = m_pzas->GetStatus(&status);
-        if (IZoneAuthSession::STATUS_COMPLETED != status)
+        if (/*IZoneAuthSession::*/STATUS_COMPLETED != status)
           hr = m_pzas->GetError();
       }
       else
@@ -286,7 +293,12 @@ public:
   }
   
 private:
-  ~CZoneAuthClient() {} //$ CRASHGUARD
+  ~CZoneAuthClient()
+  {
+	  // KGJV - release the authsession
+	  if (m_pzas)
+		  m_pzas->Cancel();
+  } //$ CRASHGUARD (not any more :))
   
   TRef<IZoneAuth>        m_pZoneAuth;
   TRef<IZoneAuthSession> m_pzas;
@@ -314,3 +326,4 @@ TRef<IZoneAuthServer> CreateZoneAuthServer()
   return pzas;
 }
 
+#include <FreeZoneAuth_i.c>

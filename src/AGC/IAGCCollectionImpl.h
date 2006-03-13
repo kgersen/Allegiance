@@ -68,7 +68,12 @@ public:
     }
 
     // Initialize enumerator object with the temporary CComVariant vector
+// VS.Net 2003 port - accomodate change in iterators under VC.Net 200x (see 'breaking changes' in vsnet doc)
+#if _MSC_VER >= 1300
+    HRESULT hr = pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy);
+#else
     HRESULT hr = pEnum->Init(vecTemp.begin(), vecTemp.end(), NULL, AtlFlagCopy);
+#endif
     if (SUCCEEDED(hr))
       hr = pEnum->QueryInterface(IID_IEnumVARIANT, (void**)ppunkEnum);
     if (FAILED(hr))

@@ -55,6 +55,7 @@ PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\Igc\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\lobby\messagesAll.h $(FEDSRC)\lobby\messagesLS.h
 MSGFILE=FedMsg
 SPLITSYMBOLS=1
+UNWINDCARG=/GX
 
 IDLTARGS= $(DESTDIR)\AllSrvModuleIDL.h \
           $(DESTDIR)\AllSrvModuleIDL.tlb

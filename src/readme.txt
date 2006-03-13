@@ -1,14 +1,3 @@
-Version 1.2 Release (02/26/2004)
---------------------------------
-The release is a refresh that adds additional files in the \test folder. "Pigs" were the bots the Allegiance team used for testing Allegiance. These are mostly sample scripts which will be helpful in both testing and developing intelligent drones.” 
-
-Version 1.1 Release (02/11/2004)
---------------------------------
-This release is a refresh that adds some additional files need to build the product.
-The additional files can be found under the newly added \test folder.
-
-Version 1.0 Release (02/05/2004)
---------------------------------
 Allegiance was an incredible experience for the dev team. We were all first-timers, trying our best to create a fun, innovative, challenging game. We think we succeeded there, even if we failed at being commercially successful. Allegiance seemed to die all too soon—for a variety of reasons. But we’ve been amazed at the level to which some of the Allegiance fans have remained hard-core. We’re astounded at the progress that has been made at creating new factions, hosting new servers, replacing authentication, etc. It seems that Allegiance hasn’t really died.
  
 

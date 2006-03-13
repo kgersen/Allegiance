@@ -104,7 +104,7 @@ BOOL CPerfShare::Initialize(BOOL bReadOnly)
     //
     // Create/access the shared memory queue.
     //
-    mhSharedMemory = CreateFileMapping((HANDLE) 0xFFFFFFFF, // OS paging file
+    mhSharedMemory = CreateFileMapping(INVALID_HANDLE_VALUE, // OS paging file
                                         &sa,                // Security
                                         PAGE_READWRITE,     // Permissions
                                         0,                  // Max Size High

@@ -23,12 +23,13 @@ bool    g_bReloaded = false;
 int     g_civStart    = -1;
 bool    g_bDownloadNewConfig = true;
 bool    g_bAskForCDKey = 
-#ifdef USEAUTH
-  true;
-#else
+//#ifdef USEAUTH // We don't bother with CD keys anymore.
+//  true;
+//#else
   false;
-#endif
-
+//#endif
+// wlp 2006 - added askforcallsign - don't ask if passed in on commandline
+bool g_bAskForCallSign = true ; // wlp 2006
 //////////////////////////////////////////////////////////////////////////////
 //
 // Trek Application Implementation
@@ -588,14 +589,19 @@ public:
                     g_fZoneAuth = false;
                 } else if (str == "cdkey") {
                     g_bAskForCDKey = true;
+                // wlp 2006 - added debug option to turn on debug output
+				} else if (str == "debug") {
+                    g_outputdebugstring  = true;           //wlp allow debug outputs
+  				} else if (str.Left(10) == "authtoken=") { // wlp - 2006, added new ASGS tickettoken
+                    trekClient.SetCDKey(str.RightOf(10)) ; // Use CdKey for ASGS storage
+                } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
+                    trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
+                    g_bAskForCallSign = false ; // wlp callsign was entered on commandline
                 }                 
             }
-            else
-            if (token.IsString(str)) 
-            {
-                // do nothing if string (just skip it!)...this avoids infinite loops if given bad command-lines
+            else // wlp 2006 - adapted this string featture to add ASGS Ticket to cdKey field
+            if (token.IsString(str)){} ;
             }
-        }
 
         // 
         // Check for other running copies of the app

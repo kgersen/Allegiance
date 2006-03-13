@@ -99,7 +99,7 @@ END_FEDMSG
 
 DEFINE_FEDMSG(C, LOGON_LOBBY, 265) // if the lobby is in club mode, everyone has to have a valid ticket, otherwise the ticket is ignored
   FM_VAR_ITEM(ZoneTicket);    // Encrypted
-  FM_VAR_ITEM(CDKey);         // Scrambled with the key CL_LOGON_KEY, dwTime, CharacterName
+  FM_VAR_ITEM(ASGS_Ticket);         // wlp 2006 - used to be CdKey
   short verLobby;    
   int   crcFileList; 
   DWORD dwTime;

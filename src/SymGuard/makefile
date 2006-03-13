@@ -52,6 +52,7 @@ PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
 MIDLINCLOCAL=/I ..\Inc
 CARGSLOCAL=/D _ATL_STATIC_REGISTRY /D _WINDLL /D _USRDLL
+UNWINDCARG=/GX
 
 
 #############################################################################

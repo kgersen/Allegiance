@@ -98,20 +98,15 @@ BEGIN_QUERY(CQCharSquads, true,
 END_QUERY(CQCharSquads, true)
 
   
-// Character Stats
+// Character Stats - KGJV - set type to bool instead of char for b* params
 BEGIN_QUERY(CQCharStats, false, 
   TEXT("{Call SetCharacterStats (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}"))
 
+  float Score;
   bool  bScoresCount;
   int   CharacterID;
   short CivID;
   short Rating;
-  float WarpsSpotted;
-  float AsteroidsSpotted;
-  float TechsRecovered;
-  float MinerKills;
-  float BuilderKills;
-  float LayerKills;
   float PlayerKills;
   float BaseKills;
   float BaseCaptures;
@@ -119,12 +114,20 @@ BEGIN_QUERY(CQCharStats, false,
   short PilotBaseKills;
   short PilotBaseCaptures;
   int   Minutes;
-  char  bWin;
-  char  bLose;
-  char  bWinCmd;
-  char  bLoseCmd;
+  bool  bWin;
+  bool  bLose;
+  bool  bWinCmd;
+  bool  bLoseCmd;
   short RankOld;
-  float Score;
+  float WarpsSpotted;
+  float AsteroidsSpotted;
+  float TechsRecovered;
+  float MinerKills;
+  float BuilderKills;
+  float LayerKills;
+#if _MSC_VER >= 1310
+  char dummy[100]; // -KGJV : workaround till big bug found
+#endif
 
   BEGIN_PARAM_MAP(CQCharStatsData)
     COLUMN_ENTRY_TYPE( 1,  DBTYPE_I1, bScoresCount)
@@ -163,6 +166,9 @@ BEGIN_QUERY(CQReportSquadGame, false,
   int squadIDLost3;
   int squadIDLost4;
   int squadIDLost5;
+#if _MSC_VER >= 1310
+  char dummy[100]; // -KGJV : workaround till big bug found
+#endif
 
   BEGIN_PARAM_MAP(CQReportSquadGameData)
     COLUMN_ENTRY_TYPE(1, DBTYPE_I4, squadIDWon)
@@ -218,6 +224,9 @@ BEGIN_QUERY(CQGameResults, false,
   short nGoalArtifacts;
   short nGoalFlags;
   long  nDuration;
+#if _MSC_VER >= 1310
+  char dummy[100]; // -KGJV : workaround till big bug found
+#endif
 
   BEGIN_PARAM_MAP(CQGameResultsData)
     COLUMN_ENTRY_TYPE( 1, DBTYPE_STR, szGameID         )
@@ -270,7 +279,7 @@ BEGIN_QUERY(CQTeamResults, false,
   short nTeamID;
   char  szName[c_cbName];
   short nCivID;
-  char  szTechs[(c_ttbMax + 7) / 8 * 2];
+  char  szTechs[(c_ttbMax + 7) / 8 * 2]; // KGJV: warning could overflow the db / sp
   short cPlayerKills;
   short cBaseKills;
   short cBaseCaptures;
@@ -282,6 +291,9 @@ BEGIN_QUERY(CQTeamResults, false,
   short nProsperityPercentBought;
   short nProsperityPercentComplete;
   long  nTimeEndured;
+#if _MSC_VER >= 1310
+  char dummy[100]; // -KGJV : workaround till big bug found
+#endif
 
   BEGIN_PARAM_MAP(CQTeamResultsData)
     COLUMN_ENTRY_TYPE( 1, DBTYPE_STR, szGameID                  )
@@ -365,6 +377,9 @@ BEGIN_QUERY(CQPlayerResults, false,
   float fCombatRating;
   float fScore;
   long  nTimePlayed;
+#if _MSC_VER >= 1310
+  char dummy[100]; // -KGJV : workaround till big bug found
+#endif
 
   BEGIN_PARAM_MAP(CQPlayerResultsData)
     COLUMN_ENTRY_TYPE( 1, DBTYPE_STR, szGameID          )

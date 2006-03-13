@@ -1,6 +1,8 @@
 #ifndef _TList_H_
 #define _TList_H_
 
+#pragma warning(disable:4291) //no matching operator delete found; memory will not be freed if initialization throws an exception
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //  List Template Generic Implementation
@@ -175,20 +177,20 @@ public:
         TValue& Value() { return ((ListNode*)(ListNodeImpl*)m_pnode)->m_value; }
 
         void Remove()
-        { 
+        {
             RemoveImpl();
 
             ((TList<TValue, EqualsFunctionType, CompareFunctionType, SinkFunctionType>&)m_list).GetSink()();
         }
 
         void InsertBefore(const TValue& value)
-        { 
+        {
             m_list.InsertBeforeImpl(m_pnode, new ListNodeImpl(value, NULL, NULL));
             ((TList<TValue, EqualsFunctionType, CompareFunctionType, SinkFunctionType>&)m_list).GetSink()();
         }
 
         void InsertAfter(TValue& value)
-        { 
+        {
             m_list.InsertAfterImpl(m_pnode, new ListNodeImpl(value, NULL, NULL));
             ((TList<TValue, EqualsFunctionType, CompareFunctionType, SinkFunctionType>&)m_list).GetSink()();
         }
@@ -369,7 +371,8 @@ template<
 class TPointerListObject : public IObject {
 private:
     TList<TRef<TValue> >           m_list;
-    TList<TRef<TValue> >::Iterator m_iter;
+
+    VSNET_TNFIX TList<TRef<TValue> >::Iterator m_iter;
 
 public:
     TPointerListObject() :

@@ -18,7 +18,7 @@ class TPoint : public PointType {
 public:
     TPoint() {}
 
-    TPoint(PointType::Number x, PointType::Number y) :
+    TPoint(VSNET_TNFIX PointType::Number x, VSNET_TNFIX PointType::Number y) :
         PointType(x, y)
     {}
 
@@ -42,12 +42,12 @@ public:
 
     //  , there should really be a Vector2 class
 
-    PointType::Number LengthSquared() const
+    VSNET_TNFIX PointType::Number LengthSquared() const
     {
         return X() * X() + Y() * Y();
     }
 
-    PointType::Number Length() const
+    VSNET_TNFIX PointType::Number Length() const
     {
         if (LengthSquared() == 1) {
             return 1;
@@ -61,17 +61,17 @@ public:
         return ZString("(") + ZString(X()) + ", " + ZString(Y()) + ")";
     }
 
-    friend TPoint operator*(PointType::Number value, const TPoint& p1)
+    friend TPoint operator*(VSNET_TNFIX PointType::Number value, const TPoint& p1)
     {
         return TPoint(p1.X() * value, p1.Y() * value);
     }
 
-    friend TPoint operator*(const TPoint& p1, PointType::Number value)
+    friend TPoint operator*(const TPoint& p1, VSNET_TNFIX PointType::Number value)
     {
         return TPoint(p1.X() * value, p1.Y() * value);
     }
 
-    friend TPoint operator/(const TPoint& p1, PointType::Number value)
+    friend TPoint operator/(const TPoint& p1, VSNET_TNFIX PointType::Number value)
     {
         return TPoint(p1.X() / value, p1.Y() / value);
     }

@@ -43,7 +43,7 @@ namespace Training
         float   fValue = m_bUseInputControls ? g_inputControls.jsValues[m_axis] : m_ship->GetControls ().jsValues[m_axis];
         if (m_axis == c_axisThrottle)
             // if the axis is the throttle, we need to translate the value into the 0..1 range
-            fValue = (fValue + 1.0) * 0.5;
+            fValue = (fValue + 1.0f) * 0.5f;
         else
             // otherwise we just take the absolute value
             fValue = fabsf (fValue);

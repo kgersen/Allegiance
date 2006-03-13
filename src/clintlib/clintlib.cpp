@@ -564,6 +564,9 @@ void ChatInfo::SetChat(ChatTarget       ctRecipient,
                        bool             bFromObjectModel,
                        bool             bFromLeader)
 {
+
+	logchat(strText);  // mmf added log chat
+
     m_ctRecipient = ctRecipient;
 
     m_cidCommand = cid;
@@ -668,6 +671,8 @@ void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
     m_pfmMissionDef->misparms.bAllowDevelopments = pfmLobbyMissionInfo->fAllowDevelopments;
     m_pfmMissionDef->misparms.bInvulnerableStations = pfmLobbyMissionInfo->fInvulnerableStations;
     m_pfmMissionDef->misparms.bObjectModelCreated = pfmLobbyMissionInfo->fMSArena;
+	// KGJV - receive game core file
+	Strncpy(m_pfmMissionDef->misparms.szIGCStaticFile, FM_VAR_REF(pfmLobbyMissionInfo, szIGCStaticFile), c_cbFileName);
     m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
     m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
     m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
@@ -1247,7 +1252,9 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
         BEGIN_PFM_CREATE(m_fm, pfmLogon, C, LOGONREQ)
             FM_VAR_PARM(ci.szName, CB_ZTS)
             FM_VAR_PARM(ci.pZoneTicket, ci.cbZoneTicket)
-            FM_VAR_PARM((PCC)m_strCDKey.Scramble(bStandalonePrivate ? "corrupt wave file" : ci.szName), CB_ZTS)
+        // wlp 2006 - this is the ASGS Ticket
+        //     FM_VAR_PARM((PCC)m_strCDKey, CB_ZTS)            
+             FM_VAR_PARM("FERAL-1234567890123456", CB_ZTS)            // wlp 2006 - Don't send ASGS token to game server
             FM_VAR_PARM(szPassword, CB_ZTS)
         END_PFM_CREATE
         pfmLogon->fedsrvVer = MSGVER;
@@ -1314,7 +1321,7 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
         // Let's formally announce ourselves to the server
         BEGIN_PFM_CREATE(m_fmLobby, pfmLogon, C, LOGON_LOBBY)
             FM_VAR_PARM(m_ci.pZoneTicket, m_ci.cbZoneTicket)
-            FM_VAR_PARM(PCC(m_strCDKey.Scramble(szEncryptionKey)), CB_ZTS)
+            FM_VAR_PARM(PCC(m_strCDKey), CB_ZTS)                   // Wlp 2006 - This is the ASGS Ticket now
         END_PFM_CREATE
         pfmLogon->verLobby = LOBBYVER;
         pfmLogon->crcFileList = crcFileList;
@@ -1392,7 +1399,7 @@ void BaseClient::FindStandaloneServersByName(const char* szName, TList<TRef<LANS
 
 void BaseClient::SetCDKey(const ZString& strCDKey)
 {
-    m_strCDKey = strCDKey.ToUpper();
+    m_strCDKey = strCDKey;
 }
 
 void BaseClient::HandleAutoDownload(DWORD dwTimeAlloted)
@@ -3609,7 +3616,7 @@ void BaseClient::RemovePlayerFromSide(PlayerInfo* pPlayerInfo, QuitSideReason re
 
     ZAssert(pPlayerInfo->SideID() != NA);
 
-    pPlayerInfo->SetReady(true);
+    // pPlayerInfo->SetReady(true); // Imago commented out so afk does not reset
     pPlayerInfo->SetTeamLeader(false);
     pPlayerInfo->SetMissionOwner(false);
     pPlayerInfo->Reset(false);
@@ -3753,7 +3760,7 @@ void BaseClient::RemovePlayerFromMission(PlayerInfo* pPlayerInfo, QuitSideReason
     assert(pPlayerInfo);
     
     m_pMissionInfo->RemovePlayer(pPlayerInfo);
-    pPlayerInfo->SetReady(true);
+    // pPlayerInfo->SetReady(true); Imago commented out so afk does not reset
 
     if (pPlayerInfo == m_pPlayerInfo)
     {
@@ -3812,7 +3819,7 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 
     m_pMissionInfo->RemovePlayer(pPlayerInfo);
     assert(pPlayerInfo->GetMoney() == 0);
-    pPlayerInfo->SetReady(true);
+    // pPlayerInfo->SetReady(true); Imago commented out so afk does not reset
 
     if (pPlayerInfo == m_pPlayerInfo)
     {
@@ -3883,10 +3890,9 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 static void DoDecrypt(int size, char* pdata)
 {
     DWORD encrypt = 0;
-    //Do a rolling XOR to demunge the data
     for (int i = 0; (i < size); i += 4)
     {
-        DWORD*  p = (DWORD*)(pdata + size);
+        DWORD*  p = (DWORD*)(pdata + i);
 
         encrypt = *p = *p ^ encrypt;
     }

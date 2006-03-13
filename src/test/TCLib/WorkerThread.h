@@ -341,7 +341,7 @@ protected:
 
 // Group=Types
 protected:
-  typedef std::queue<XWorkItem*, std::list<XWorkItem*> > XQueue;
+	typedef std::queue<XWorkItem*, std::list<XWorkItem*> > XQueue;
 	typedef TCObjectLock<TCAutoCriticalSection>            XLockQueue;
 
 // Group=Data Members

@@ -50,6 +50,7 @@ PCHROOT=pch
 PCHINC=
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
+UNWINDCARG=/GX
 
 
 #############################################################################

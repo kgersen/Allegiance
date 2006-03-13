@@ -61,7 +61,7 @@ static void DoDecrypt(int size, char* pdata)
     //Do a rolling XOR to demunge the data
     for (int i = 0; (i < size); i += 4)
     {
-        DWORD*  p = (DWORD*)(pdata + size);
+        DWORD*  p = (DWORD*)(pdata + i);
 
         encrypt = *p = *p ^ encrypt;
     }
@@ -1076,9 +1076,10 @@ IbaseIGC*           CmissionIGC::CreateObject(Time now, ObjectType objecttype,
         //Increment the ref count because IGC objects should be created with a ref count of 1.
         pBase->AddRef();
 
-        HRESULT hr = pBase->Initialize(this, now, data, dataSize);
-        if (FAILED(hr))
+		HRESULT hr = pBase->Initialize(this, now, data, dataSize);
+        if (FAILED(hr) || (hr == S_FALSE))  // mmf added or check for S_FALSE to support destroyed TP
         {
+			// debugf("mmf Initialize return failed or S_FALSE in missionigc, S_FALSE added to support TP destroy\n");
             if (hr != E_ABORT)
                 pBase->Terminate();
 
@@ -1577,6 +1578,68 @@ void                    CmissionIGC::GenerateMission(Time                   now,
         // Make a mission with a custom map
         //
 
+		// KGJV - randomize alephs positions
+		// ---------------------------------
+		// code from CmapMakerIGC::GenerateMission
+		// adapted for predefined alephs.
+		{
+			//Adjust the position of all alephs in all clusters
+			float   majorRadius = GetFloatConstant(c_fcidRadiusUniverse);
+			for (ClusterLinkIGC*    pcl = m_clusters.first(); (pcl != NULL); pcl = pcl->next())
+			{
+				IclusterIGC*    pcluster = pcl->data();
+				const WarpListIGC*  pwarps = pcluster->GetWarps();
+				if (pwarps->n() != 0)
+				{
+					float   nWarps = (float)(pwarps->n());
+					const int c_maxWarps = 10;
+					assert (pwarps->n() <= c_maxWarps);
+					float   offset[c_maxWarps] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+					float   displacement;
+					if (pwarps->n() > 1)
+					{
+						displacement =  sin(pi/nWarps) * 2.0f / 3.0f;
+						for (int index = 0; (index < pwarps->n()); index++)
+						{
+							int swap = randomInt(0, pwarps->n() - 1);
+							if (swap != index)
+							{
+								float   t = offset[index];
+								offset[index] = offset[swap];
+								offset[swap] = t;
+							}
+						}
+					}
+					else
+						displacement = 2.0f / 3.0f;
+					{
+						float   bias = random(0.0f, 2.0f * pi);
+						int     index = 0;
+
+						for (WarpLinkIGC*   pwl = pwarps->first(); (pwl != NULL); pwl = pwl->next())
+						{
+							IwarpIGC*   pwarp = pwl->data();
+							//float       r = pwarp->GetPosition().z * majorRadius;
+							float       r = 0.6f * majorRadius;
+							float       angle = bias + offset[index++] * (2.0f * pi) / nWarps;
+							Vector      position;
+							position = Vector::RandomPosition(r * displacement);
+							position.x  += cos(angle) * r;
+							position.y  += sin(angle) * r;
+							position.z  *= 1.2f;
+							pwarp->SetPosition(position);
+							Orientation o(-position);
+							pwarp->SetOrientation(o);
+							// fix rotating alephs
+							Rotation rot(0,0,1,0);
+							pwarp->SetRotation(rot);
+							pwarp->GetHitTest()->UpdateStaticBB();
+						}
+					}
+				}
+			}
+		}
+		//---------------------------------------
         float   amountHe3;
         {
             float   nHe3 = 0.0f;

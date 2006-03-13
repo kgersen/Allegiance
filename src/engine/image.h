@@ -136,7 +136,7 @@ private:
     bool    m_bHasCapture;
 
 public:
-    CastMember(WrapImage);
+    int CastMember(WrapImage);
 
     WrapImage(Image* pimage) : Image(pimage), m_bHasCapture(false)
     {

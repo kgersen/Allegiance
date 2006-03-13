@@ -57,8 +57,8 @@ inline HRESULT CServiceModule::RegisterServer(BOOL bRegTypeLib, BOOL bService, c
     
     if (bService)
     {
-        key.SetValue(_T("AllLobby"), _T("LocalService"));
-        key.SetValue(_T("-Service"), _T("ServiceParameters"));
+        key.SetStringValue(_T("LocalService"), _T("AllLobby"));
+        key.SetStringValue(_T("ServiceParameters"), _T("-Service"));
         // Create service
         //Install();
         InstallService(szAccount, szPassword);
@@ -558,7 +558,7 @@ int __cdecl main(int argc, char *argv[])
     
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
-    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
+    lRes = key.QueryStringValue(_T("LocalService"), szValue, &dwLen);
 
     _Module.m_bService = FALSE;
     if (lRes == ERROR_SUCCESS)

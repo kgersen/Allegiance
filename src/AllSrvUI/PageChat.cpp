@@ -303,8 +303,8 @@ void CPageChat::LoadFromRegistry()
   {
     // Read the count of strings
     DWORD cStrings = 0;
-    keyMRU.QueryValue(cStrings, TEXT(".Count"));
-
+	keyMRU.QueryDWORDValue(TEXT(".Count"), cStrings);
+    
     // Read each string and add it to the combo box
     for (DWORD i = 0; i < cStrings; ++i)
     {
@@ -320,7 +320,7 @@ void CPageChat::LoadFromRegistry()
 
   // SendChatAllGames
   DWORD dwSendChatAllGames = 0;
-  key.QueryValue(dwSendChatAllGames, TEXT("SendChatAllGames"));
+  key.QueryDWORDValue(TEXT("SendChatAllGames"), dwSendChatAllGames);
   m_bSendChatAllGames = !!dwSendChatAllGames;
 }
 
@@ -347,7 +347,7 @@ void CPageChat::SaveChatListColumnOrderToRegistry()
   }
 
   // Save to the registry
-  key.SetValue(strColumnOrder, TEXT("ChatListColumnOrder"));
+  key.SetStringValue(TEXT("ChatListColumnOrder"), strColumnOrder);
 }
 
 void CPageChat::SaveChatListColumnWidthsToRegistry()
@@ -374,7 +374,7 @@ void CPageChat::SaveChatListColumnWidthsToRegistry()
   }
 
   // Save to the registry
-  key.SetValue(strColumnWidths, TEXT("ChatListColumnWidths"));
+  key.SetStringValue(TEXT("ChatListColumnWidths"), strColumnWidths);
 }
 
 void CPageChat::SaveSendChatMRUToRegistry()
@@ -391,7 +391,7 @@ void CPageChat::SaveSendChatMRUToRegistry()
 
   // Write the count of strings
   int cStrings = min(m_comboSendChat.GetCount(), c_cMaxChatsInRegistry);
-  keyMRU.SetValue(cStrings, TEXT(".Count"));
+  keyMRU.SetDWORDValue(TEXT(".Count"), cStrings);
 
   // Write each string
   for (int i = 0; i < cStrings; ++i)
@@ -399,7 +399,7 @@ void CPageChat::SaveSendChatMRUToRegistry()
     TCHAR szInt[16];
     CString strMRUItem;
     m_comboSendChat.GetLBText(i, strMRUItem);
-    keyMRU.SetValue(strMRUItem, _itot(i, szInt, 10));
+    keyMRU.SetStringValue(_itot(i, szInt, 10), strMRUItem);
   }
 }
 
@@ -412,7 +412,7 @@ void CPageChat::SaveSendChatAllGames()
 
   // SendChatAllGames
   DWORD dwSendChatAllGames = m_bSendChatAllGames;
-  key.SetValue(dwSendChatAllGames, TEXT("SendChatAllGames"));
+  key.SetDWORDValue(TEXT("SendChatAllGames"), dwSendChatAllGames);
 }
 
 void CPageChat::TrimExcessChats()

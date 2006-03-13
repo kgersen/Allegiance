@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -10,6 +10,7 @@
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "windows.h"
 #undef APSTUDIO_HIDDEN_SYMBOLS
+
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -28,8 +29,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 // Dialog
 //
 
-IDD_ABOUT DIALOG DISCARDABLE  22, 17, 229, 78
-STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+IDD_ABOUT DIALOG  22, 17, 229, 78
+STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "About Allegiance Server"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -48,7 +49,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_ABOUT, DIALOG
     BEGIN
@@ -78,7 +79,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Menu
 //
 
-MNU_FEDSRV MENU DISCARDABLE 
+MNU_FEDSRV MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -101,21 +102,21 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""fedsrv.h""\r\n"
+    "\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "1 TYPELIB ""AllSrvModuleIDL.tlb""\r\n"
     "#include ""Fedsrv.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
@@ -132,29 +133,27 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-ICO_FEDSRV              ICON    DISCARDABLE     "fedsrv.ico"
+ICO_FEDSRV              ICON                    "fedsrv.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-#if defined(APSTUDIO_INVOKED) || !defined(ALLSRV_STANDALONE)
-IDR_AllSrv              REGISTRY MOVEABLE PURE  "AllSrv.rgs"
-#endif
-IDR_ADMINSESSION        REGISTRY DISCARDABLE    "AdminSession.rgs"
-IDR_ADMINGAME           REGISTRY DISCARDABLE    "AdminGame.rgs"
-IDR_ADMINGAMES          REGISTRY DISCARDABLE    "AdminGames.rgs"
-IDR_ADMINSERVER         REGISTRY DISCARDABLE    "AdminServer.rgs"
-IDR_USER                REGISTRY DISCARDABLE    "AdminUser.rgs"
-IDR_USERS               REGISTRY DISCARDABLE    "AdminUsers.rgs"
-IDR_ADMINSHIP           REGISTRY DISCARDABLE    "AdminShip.rgs"
-IDR_DPMONO              REGISTRY DISCARDABLE    "DPMono.rgs"
+IDR_AllSrv              REGISTRY                "AllSrv.rgs"
+IDR_ADMINSESSION        REGISTRY                "AdminSession.rgs"
+IDR_ADMINGAME           REGISTRY                "AdminGame.rgs"
+IDR_ADMINGAMES          REGISTRY                "AdminGames.rgs"
+IDR_ADMINSERVER         REGISTRY                "AdminServer.rgs"
+IDR_USER                REGISTRY                "AdminUser.rgs"
+IDR_USERS               REGISTRY                "AdminUsers.rgs"
+IDR_ADMINSHIP           REGISTRY                "AdminShip.rgs"
+IDR_DPMONO              REGISTRY                "DPMono.rgs"
 #if defined(APSTUDIO_INVOKED) || defined(ALLSRV_STANDALONE)
 #if defined(APSTUDIO_INVOKED)
-IDR_AllSrv$(ALLSRV_STANDALONE) REGISTRY MOVEABLE PURE  "AllSrv32.rgs"
+IDR_ALLSRV$(ALLSRV_STANDALONE) REGISTRY                "AllSrv32.rgs"
 #else
-IDR_AllSrv              REGISTRY MOVEABLE PURE  "AllSrv32.rgs"
+IDR_ALLSRV              REGISTRY                "AllSrv32.rgs"
 #endif
 #endif
 
@@ -163,7 +162,7 @@ IDR_AllSrv              REGISTRY MOVEABLE PURE  "AllSrv32.rgs"
 // String Table
 //
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_E_LOBBYSERVER_GAMES_EXIST 
                             "LobbyServer property cannot be changed while games exist."

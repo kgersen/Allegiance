@@ -63,7 +63,7 @@ PCHINC=*.h
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
 CARGSLOCAL=/D"AllSrvUI" /D _WIN32_WINNT=0x0400 $(STANDALONEDEFS)
-
+UNWINDCARG=/GX
 
 #############################################################################
 # Rules

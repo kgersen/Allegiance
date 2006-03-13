@@ -16,7 +16,7 @@ ALLOC_MSG_LIST;
 
 CLobbyApp * g_pLobbyApp = NULL;
 
-#ifdef USEAUTH
+#ifdef USECLUB
 void CLobbyApp::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
   // don't make the event an error event, because this may or may not be fatal. 
@@ -49,7 +49,7 @@ bool CLobbyApp::ProcessMsgPump()
     TranslateMessage(&msg);
     switch (msg.message)
     {
-#ifdef USEAUTH
+#ifdef USECLUB
       case wm_sql_querydone:
       {
         CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
@@ -140,7 +140,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   m_cReportServers(0),
   m_sGameInfoInterval(0), // doesn't really matter, but...
   m_fProtocol(true)
-#ifdef USEAUTH
+#ifdef USECLUB
   ,
   m_csqlSilentThreads(0),
   m_csqlNotifyThreads(0),
@@ -150,7 +150,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   assert(m_plas);
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_Creating);
 
-#ifdef USEAUTH
+#ifdef USECLUB
   m_strSQLConfig.Empty();
 #endif
   // see if we're setup to report to any web servers
@@ -192,7 +192,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
 
     DWORD dwFreeLobby;
     bSuccess = _Module.ReadFromRegistry(hk, false, "fFreeLobby", &dwFreeLobby, (unsigned long) 
-#ifdef USEAUTH
+#ifdef USECLUB
     false
 #else    
     true
@@ -202,7 +202,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
 
     DWORD dwCheckKey;
     bSuccess = _Module.ReadFromRegistry(hk, false, "fCheckCDKey", &dwCheckKey, (unsigned long) 
-#ifdef USEAUTH
+#ifdef USECLUB
       true
 #else      
       false
@@ -210,7 +210,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
     );
     m_fCheckCDKey = !!dwCheckKey;
 
-#ifdef USEAUTH
+#ifdef USECLUB
     bSuccess = _Module.ReadFromRegistry(hk, false, "SQLThreadsNotify", &m_csqlNotifyThreads, (unsigned long) 5);
     bSuccess = _Module.ReadFromRegistry(hk, false, "SQLThreadsSilent", &m_csqlSilentThreads, (unsigned long) 1);
 
@@ -260,7 +260,7 @@ HRESULT CLobbyApp::Init()
                       sizeof(LOBBY_COUNTERS));
   ZeroMemory(m_pCounters, sizeof(LOBBY_COUNTERS));
 
-#ifdef USEAUTH
+#ifdef USECLUB
   hr = m_sql.Init(m_strSQLConfig.m_str, GetCurrentThreadId(), m_csqlSilentThreads, m_csqlNotifyThreads);
   if (FAILED(hr))
   {
@@ -526,7 +526,7 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
   ZString strCDKey = szCDKey;
 
   // boot any old copies of this player
-#ifdef USEAUTH
+#ifdef USECLUB
   BootPlayersByName(strPlayerName);
 #endif
   if (EnforceCDKey())

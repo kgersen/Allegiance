@@ -45,7 +45,8 @@ public:
     COM_INTERFACE_ENTRY(IPersistPropertyBag)
     COM_INTERFACE_ENTRY(IPersistStorage)
     COM_INTERFACE_ENTRY(IPersistStreamInit)
-    COM_INTERFACE_ENTRY2(IPersistStream, TCPersistStreamInitImplBase)
+// KGJV - to check: original was 'IPersistStream', changed to 'IPersistStreamInit'
+    COM_INTERFACE_ENTRY2(IPersistStreamInit, TCPersistStreamInitImplBase)
     COM_INTERFACE_ENTRY_AUTOAGGREGATE(IID_IMarshal, m_punkMBV.p,
       CLSID_TCMarshalByValue)
   END_COM_MAP()

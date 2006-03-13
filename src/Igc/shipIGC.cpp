@@ -363,6 +363,11 @@ void    CshipIGC::Update(Time now)
 
             if (r2 > oob)
             {
+				// mmf added debugf for non players
+				if (m_pilotType < c_ptPlayer) {
+				    debugf("mmf ship out of bounds %s %f %f %f\n",GetName(),position.x, position.y, position.z);
+				}
+
                 m_warningMask |= c_wmOutOfBounds;
 
                 float   d = dt * 
@@ -822,7 +827,12 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 Vector  newVelocity1 = vElastic1 * cElasticity;
 
                 //verify the velocities are valid
-                assert (newVelocity1 * newVelocity1 >= 0.0f);
+				// mmf replaced assert with log msg
+		        if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
+				  debugf("mmf Igc shipIGC.cpp 830 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+		          newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
+				}
+                // assert (newVelocity1 * newVelocity1 >= 0.0f);
 
                 //velocity1 is a reference, so calculate the damage before setting the velocity
                 float   damage2 = (velocity1 - newVelocity1).LengthSquared() * c_impactDamageCoefficient;
@@ -990,8 +1000,18 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             Vector  newVelocity2 = vInelastic * (1.0f - cElasticity) + vElastic2 * cElasticity;
 
             //verify the velocities are valid
-            assert (newVelocity1 * newVelocity1 >= 0.0f);
-            assert (newVelocity2 * newVelocity2 >= 0.0f);
+			// mmf replaced assert with log msg
+		    if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
+		      debugf("mmf Igc shipIGC.cpp 1004 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+		      newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
+			}
+		    // mmf replaced assert with log msg
+		    if (!(newVelocity2 * newVelocity2 >= 0.0f)) {
+			  debugf("mmf Igc shipIGC.cpp 1009 newVelocity2^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+		      newVelocity2.x = 0.0f; newVelocity2.y = 0.0f; newVelocity2.z = 0.0f;
+			}
+            //assert (newVelocity1 * newVelocity1 >= 0.0f);
+            //assert (newVelocity2 * newVelocity2 >= 0.0f);
 
             //velocity1 & 2 are references, so calculate the damge before setting the new velocity
             float   base1 = (velocity1 - newVelocity1).LengthSquared() * c_impactDamageCoefficient;
@@ -1513,7 +1533,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
 
     if (m_bAutopilot && (m_pshipParent == NULL) && ((m_stateM & buildingMaskIGC) == 0))
     {
-        //debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), GetPosition().x, GetPosition().y, GetPosition().z);
+        // debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), GetPosition().x, GetPosition().y, GetPosition().z);
 
         //First ... do we need to run away?
         if (m_pilotType < c_ptCarrier)      //Carriers never run
@@ -1561,7 +1581,12 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 }
                 else
                 {
-                    assert (m_pilotType == c_ptMiner);
+                    // assert (m_pilotType == c_ptMiner);
+					// mmf replaced assert with log msg
+					if ( ! (m_pilotType == c_ptMiner) ) {
+						debugf ("mmf shipIGC.cpp assert (m_pilotType == c_ptMiner), m_pilotType = %d\n",
+					    m_pilotType);
+					}
                     if (m_fraction == 1.0f)
                     {
                         IshieldIGC* pshield = (IshieldIGC*)(m_mountedOthers[ET_Shield]);
@@ -1626,7 +1651,15 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                                                         NULL, NULL, NULL, NULL, c_sabmRepair);
 
                         //but only if we can find some place to run to
-                        if (pmodel)
+						//mmf debuging code
+						// training mission 6 triggers this for GetName = Enemy Support
+						//if (!pmodel) {
+						//  debugf("mmf Miner/con tried to run but did not find anyhwhere to go\n");
+						//  debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
+						//}
+						//mmf end debugging code
+						
+						if (pmodel)
                         {
                             SetCommand(c_cmdPlan, pmodel, c_cidGoto);
 
@@ -1643,14 +1676,20 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                             //Set m_bRunningAway after the SetCommand (which clears it)
                             m_bRunningAway = true;
                             m_timeRanAway = timeStop;
-                        }
+
+						    //mmf debuging code
+						    debugf("mmf Miner/con found place to run to.\n");
+							debugf("%-20s %x I am at %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
+							debugf("running to %f %f %f\n",pmodel->GetPosition().x,pmodel->GetPosition().y,pmodel->GetPosition().z);
+						    //mmf end debugging code
+						}
                     }
                 }
                 else if (m_bRunningAway)
                 {
                     //We want to stop running
                     SetCommand(c_cmdPlan, NULL, c_cidNone);
-
+					debugf("mmf %-20s stoped running\n", GetName());
                     assert (m_bRunningAway == false);   //Set by SetCommand
                     m_timeRanAway = timeStop;
                 }
@@ -1698,7 +1737,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                         IstationIGC*    pstation = (IstationIGC*)((ImodelIGC*)m_commandTargets[c_cmdPlan]);
                         if (pstation->GetBaseStationType()->HasCapability(c_sabmTeleportUnload))
                         {
-                            //Are we close enough to mine our target asteroid?
+                            //Are we close enough to mine our target asteroid? // mmf incorrect comment
                             Vector  dp = pstation->GetPosition() - positionMe;
                             float   distance2 = dp.LengthSquared();
                             float   radius = pstation->GetRadius() + GetRadius() + 100.0f;
@@ -1836,8 +1875,11 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                                 GetMyMission()->GetIgcSite()->SendChat(pship, CHAT_TEAM, GetSide()->GetObjectID(),
                                                                                        droneComingHomeEmptySound, "Coming home empty");
                                         }
-                                        else
+										else { // mmf added debugf and else curly braces
                                             pship->SetCommand(c_cmdAccepted, NULL, c_cidNone);
+											debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+												GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
+										}
                                     }
                                 }
                             }
@@ -1882,8 +1924,11 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                                         NULL, NULL, NULL, NULL, c_sabmUnload);
 
                         //If we can't find a place to unload ... stick around here for lack of a better place to go
-                        if (pmodel)
+                        if (pmodel) 
                             SetCommand(c_cmdPlan, pmodel, c_cidGoto);
+						// mmf added else and debugf
+						else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+												GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
                     }
                 }
 
@@ -2133,7 +2178,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
         assert (GetMass() > 0.0f);
         float   thrustToVelocity = dT / GetMass();
 
-        //No maneuvering if ripcording
+		//No maneuvering if ripcording
         /*
         {
             float   tm = GetTorqueMultiplier() * thrustToVelocity;
@@ -2151,7 +2196,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
         if (!m_pmodelRipcord)
         {
             //constrain the desired yaw/pitch/roll rates to an sphere rather than a box
-            float   l = m_controls.jsValues[c_axisYaw]   * m_controls.jsValues[c_axisYaw] +
+				float   l = m_controls.jsValues[c_axisYaw]   * m_controls.jsValues[c_axisYaw] +
                         m_controls.jsValues[c_axisPitch] * m_controls.jsValues[c_axisPitch] +
                         m_controls.jsValues[c_axisRoll]  * m_controls.jsValues[c_axisRoll];
 
@@ -2192,7 +2237,8 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
         //What would our velocity be if we simply let drag slow us down
         Vector  drag;
         {
-            double   f = exp(-thrust * thrustToVelocity / maxSpeed);
+            // double   f = exp(-thrust * thrustToVelocity / maxSpeed);
+			double   f = exp(double(double(-thrust) * double(thrustToVelocity) / (double)maxSpeed));  // mmf type cast changes
 
             //New velocity = old velocity * f
             //drag = thrust required to create this change in velocity
@@ -2209,9 +2255,9 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
             if (afterburner)
             {
                 float   abThrust = afterburner->GetMaxThrust();
-                if (afterF)
+				if (afterF) {
                     thrustRatio = abThrust / thrust;
-
+				}
                 afterburner->IncrementalUpdate(timeStart, timeStop, false);
 
                 float power = afterburner->GetPower();
@@ -2264,6 +2310,8 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 
                     //Find out how much thrust is required to obtain our desired velocity,
                     //accounting for drag
+					// mmf added zero check and debugf
+					if (thrustToVelocity == 0.0f) debugf("shipIGC.cpp ~2320 thrustToVelocity = 0 about to devide by zero\n");
                     localThrust = pOrientation->TimesInverse((desiredVelocity - *pVelocity) / thrustToVelocity + drag);
                 }
             }
@@ -2271,11 +2319,16 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
             {
                 //Clip the engine vector the the available thrust from the engine
                 float   sm = m_myHullType.GetSideMultiplier();
-                Vector  scaledThrust(localThrust.x / sm,
+				// mmf added zero checks and debugf
+				if (sm == 0.0f) debugf("shipIGC.cpp ~2330 sm = 0 about to devide by zero\n");
+				if ((m_myHullType.GetBackMultiplier()==0.0f)&&(localThrust.z<=0.0f)) 
+					debugf("shipIGC.cpp ~2331 backmultip = 0 about to devide by zero\n");
+				Vector  scaledThrust(localThrust.x / sm,
                                      localThrust.y / sm,
                                      localThrust.z <= 0.0f ? localThrust.z : (localThrust.z / m_myHullType.GetBackMultiplier()));
 
                 float   r2 = scaledThrust.LengthSquared();
+
                 if (r2 == 0.0f)
                     m_engineVector = Vector::GetZero();
                 else if (r2 <= thrust2)
@@ -2286,13 +2339,28 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                 else
                 {
                     //Trying to thrust too much ... clip it back.
-                    m_engineVector = (localThrust * *pOrientation) * (thrust / (float)sqrt(r2));
+					m_engineVector = (localThrust * *pOrientation) * (thrust / (float)sqrt(r2));
                 }
             }
         }
 
+
         *pVelocity += thrustToVelocity * (m_engineVector - drag);
-        assert (*pVelocity * *pVelocity >= 0.0f);
+		// mmf added log msg for large velocity^2
+		if ((*pVelocity * *pVelocity) > 150000.0f) {
+			debugf("mmf pVelocity^2 = %g ship = %s\n",(*pVelocity * *pVelocity),GetName());
+		}
+
+		// mmf other velocity checks were added for debugging, this one was definitely being tripped
+		// replaced assert with log msg
+		if (!(*pVelocity * *pVelocity >= 0.0f)) {
+			debugf("mmf pVelocity^2 < 0.0 ship = %s\n",GetName());
+			debugf("pVelocity x=%g y=%g z=%g\n",(*pVelocity).x,(*pVelocity).y,(*pVelocity).z);
+			debugf("Igc shipIGC.cpp debug build would have called assert and exited, commented out for now\n");
+			// cause an exception for debugging
+			// (*(int*)0) = 0;
+		}
+        // assert (*pVelocity * *pVelocity >= 0.0f); // mmf commented out 
     }
 }
 

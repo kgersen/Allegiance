@@ -170,7 +170,7 @@ static bool findPivot(int               nHitTests,
 
     //Only pivots with a cost less than zero will be considered by pivot, so set the best cost to
     //zero so the only the positives costs pivots will be ignored.
-    float   bestValue;
+    float   bestValue = 0.0f;  // was 0, changed to 0.0f
     int     bestCost = 0;
 
     while (true)

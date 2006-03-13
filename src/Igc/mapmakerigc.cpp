@@ -16,7 +16,7 @@
 
 //
 // Static members.
-//
+// 08/30/04 -KGJV: added Titty Baby memorial sector name
 const char * CMapData::smszClusterName[c_NumClusterNames] =
 {
     "Aegis",        "Aeroflex",     "Ahto",         "Aredne",
@@ -35,7 +35,7 @@ const char * CMapData::smszClusterName[c_NumClusterNames] =
     "Raiko",        "Resnik",       "Rib'zki",		"Rimin",  "Sleipener",
     "Solitaire",    "Soron",        "Sri Metsa",    "Surma",
     "Tathlum",      "Tierankeen",   "Tjeerd",       "Torc",
-    "Touni",        "Tauceti",      "Turakeen",   /*"Uranus",*/"Udar", "Virkinow",
+    "Touni",        "Tauceti",      "Titty Baby"    ,"Turakeen",   /*"Uranus",*/"Udar", "Virkinow",
   /*"Venus",*/      "Xuping"
 } ;
 
@@ -874,7 +874,9 @@ VOID CmapMakerIGC::LinkClusters(CMapData * pMapData)
 
 VOID CmapMakerIGC::GenerateLayout(CMapData * pMapData)
 {
-    SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
+    //SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
+	//KGJV-: changed, use now MapSize parameter
+    SectorID    s = pMapData->GetMapSize() != 0 ? 2 : 1;
     pMapData->SetTeamClustersPerTeam(s);
     pMapData->SetNeutralClustersPerTeam(1);
 
@@ -1117,7 +1119,9 @@ CmapMakerBigRingIGC::CmapMakerBigRingIGC()
 
 VOID CmapMakerBigRingIGC::GenerateLayout(CMapData * pMapData)
 {
-    SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
+    //SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
+	//KGJV-: changed, use now MapSize parameter
+    SectorID    s = pMapData->GetMapSize() != 0 ? 2 : 1;
     pMapData->SetTeamClustersPerTeam(s);
     pMapData->SetNeutralClustersPerTeam(2);
 
@@ -1201,7 +1205,9 @@ CmapMakerHiLoIGC::CmapMakerHiLoIGC()
 
 VOID CmapMakerHiLoIGC::GenerateLayout(CMapData * pMapData)
 {
-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+	//KGJV-: changed, use now MapSize parameter
+    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
                                     
     pMapData->SetNeutralClustersPerTeam(3);
 
@@ -1328,7 +1334,9 @@ CmapMakerHiHigherIGC::CmapMakerHiHigherIGC()
 VOID CmapMakerHiHigherIGC::GenerateLayout(CMapData * pMapData)
 {
     pMapData->SetTeamClustersPerTeam((mMMID == c_mmHiHigher)
-                                     ? (pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1)
+                                     //? (pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1)
+									 //KGJV-: changed, use now MapSize parameter
+									 ? (pMapData->GetMapSize() != 0 ? 2 : 1)
                                      : ((mMMID == c_mmLargeSplit)
                                         ? 2
                                         : 1));
@@ -1500,7 +1508,9 @@ CmapMakerStarIGC::CmapMakerStarIGC()
 
 VOID CmapMakerStarIGC::GenerateLayout(CMapData * pMapData)
 {
-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+	//KGJV-: changed, use now MapSize parameter
+    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
                                     
     pMapData->SetNeutralClustersPerTeam(5);
 
@@ -1764,7 +1774,9 @@ VOID CmapMakerPinWheelIGC::GenerateLayout(CMapData * pMapData)
 {
     pMapData->SetTeamClustersPerTeam(1);
 
-    if (pMapData->GetMaxPlayersInMission() <= 30)
+	//if (pMapData->GetMaxPlayersInMission() <= 30)
+    //KGJV-: changed, use now MapSize parameter
+    if (pMapData->GetMapSize() == 0)
         pMapData->SetOtherClusters(1);
     else
         pMapData->SetNeutralClustersPerTeam(1);
@@ -1879,7 +1891,9 @@ const char* CmapMakerDiamondRingIGC::IsValid(const MissionParams * pmp)
 
 VOID CmapMakerDiamondRingIGC::GenerateLayout(CMapData * pMapData)
 {
-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+	//KGJV-: changed, use now MapSize parameter
+    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
     pMapData->SetNeutralClustersPerTeam(2);
 
     this->GenerateRingClusters(pMapData);
@@ -1998,7 +2012,9 @@ CmapMakerSnowFlakeIGC::CmapMakerSnowFlakeIGC()
 
 VOID CmapMakerSnowFlakeIGC::GenerateLayout(CMapData * pMapData)
 {
-    SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
+    //SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
+	//KGJV-: changed, use now MapSize parameter
+    SectorID    s = pMapData->GetMapSize() != 0 ? 2 : 1;
     pMapData->SetTeamClustersPerTeam(s);
     pMapData->SetNeutralClustersPerTeam(3);
 
@@ -2206,7 +2222,9 @@ CmapMakerGridIGC::CmapMakerGridIGC()
 
 VOID CmapMakerGridIGC::GenerateLayout(CMapData * pMapData)
 {
-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
+	//KGJV-: changed, use now MapSize parameter
+    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
                                     
     pMapData->SetNeutralClustersPerTeam(4);
 

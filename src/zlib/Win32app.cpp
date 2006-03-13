@@ -31,6 +31,91 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
     }
 }
 
+// mmf added code for chat logging
+
+HANDLE chat_logfile = NULL;
+
+void InitializeLogchat()
+{
+	HKEY hKey;
+	DWORD dwType;
+	char szValue[20];
+	DWORD cbValue = sizeof(szValue);
+	bool bLogChat = false;
+
+	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	{
+		::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue);		
+		::RegCloseKey(hKey);
+		bLogChat = (strcmp(szValue, "1") == 0);
+	}
+
+	if (bLogChat)
+	{
+	time_t longTime;
+	time(&longTime);
+	tm* t = localtime(&longTime);
+
+	char logFileName[MAX_PATH + 21];
+	GetModuleFileName(NULL, logFileName, MAX_PATH);
+	char* p = strrchr(logFileName, '\\');
+	if (!p)
+	p = logFileName;
+	else
+	p++;
+
+	const char* months[] ={"chat_jan", "chat_feb", "chat_mar", "chat_apr",
+	"chat_may", "chat_jun", "chat_jul", "chat_aug",
+	"chat_sep", "chat_oct", "chat_nov", "chat_dec"};
+	strcpy(p, months[t->tm_mon]);
+	sprintf(p + 8, "%02d%02d%02d%02d.txt",
+	t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+	chat_logfile =
+		CreateFile(
+			logFileName,
+			GENERIC_WRITE,
+			0,
+			NULL,
+			OPEN_ALWAYS,
+			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
+			NULL
+		);
+	}
+}
+
+void TerminateLogchat()
+{
+	if (chat_logfile) {
+		CloseHandle(chat_logfile);
+        chat_logfile = NULL;
+    }
+}
+
+void logchat(const char* strText)
+{
+	// unravel this from debugf-ZDebugOutputImpl-DebugOutput
+    const size_t size = 512;
+    char         bfr[size];
+	int length;
+
+	time_t  longTime;
+    time(&longTime);
+    tm*             t = localtime(&longTime);
+
+	length = strlen(strText);
+
+	sprintf(bfr, "%02d/%02d/%02d %02d%02d%02d: %s\n",
+            (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
+
+	if (chat_logfile) {
+        DWORD nBytes;
+        ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
+    }
+}
+
+// end mmf chat logging code
+
+
 void ZDebugOutputImpl(const char *psz)
 {
     if (g_papp)
@@ -39,6 +124,8 @@ void ZDebugOutputImpl(const char *psz)
         ::OutputDebugStringA(psz);
 }
 HANDLE g_logfile = NULL;
+
+extern int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
 
 void retailf(const char* format, ...)
 {
@@ -62,7 +149,12 @@ void retailf(const char* format, ...)
 
 extern bool g_bOutput = true;
 
+// mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
+#define SRVLOG
+#endif
+
+#ifdef SRVLOG // mmf changed this from _DEBUG
 
     void ZWarningImpl(bool bSucceeded, const char* psz, const char* pszFile, int line, const char* pszModule)
     {
@@ -160,6 +252,15 @@ extern bool g_bOutput = true;
         DWORD cbValue = sizeof(szValue);
         bool  bLogToFile = false;
 
+		// mmf added this regkey check 
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        {
+            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+            ::RegCloseKey(hKey);
+
+            g_outputdebugstring = (strcmp(szValue, "1") == 0);
+        }
+
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
@@ -188,7 +289,8 @@ extern bool g_bOutput = true;
             strcpy(p, months[t->tm_mon]);
             sprintf(p + 3, "%02d%02d%02d%02d.txt",
                     t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-
+			// mmf this is NOT where the logfile AllSrv.txt is generated
+			//     this is the client logfile and only for FZDebug build
             g_logfile = 
                 CreateFile(
                     logFileName, 
@@ -212,7 +314,7 @@ extern bool g_bOutput = true;
         }
 #endif
     }
-#endif
+#endif  // SRVLOG or _DEBUG
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -263,7 +365,9 @@ void Win32App::DebugOutput(const char *psz)
             g_listOutput.PopEnd();
         }
     #else
-        ::OutputDebugStringA(psz);
+		// mmf for now tie this to a registry key
+		if (g_outputdebugstring)
+			::OutputDebugStringA(psz);
 
         if (g_logfile) {
             DWORD nBytes;
@@ -323,15 +427,18 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     // clock time to shake things up a bit)
     srand(GetTickCount() + time(NULL));
 
+	// mmf why is this done?
     // shift the stack locals and the heap by a random amount.            
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-    __try {
+    __try { 
         do {
             #ifdef _DEBUG
                 InitializeDebugf();
             #endif
+
+			InitializeLogchat();  // mmf
 
             BreakOnError(hr = Window::StaticInitialize());
             BreakOnError(hr = g_papp->Initialize(lpszCmdLine));
@@ -352,10 +459,11 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
                 TerminateDebugf();
             #endif
 
-        } while (false);
-    } __except (g_papp->OnException(_exception_code(), (ExceptionData*)_exception_info())){
-    }
+			TerminateLogchat(); // mmf
 
+        } while (false);
+    }  __except (g_papp->OnException(_exception_code(), (ExceptionData*)_exception_info())){
+    }  
     delete pzSpacer;
 
     return 0;

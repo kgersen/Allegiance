@@ -203,6 +203,20 @@ public:
             return pbyte;
         }
 
+#ifdef VC6_BUILD
+		// MJP - Added this to fix compiler warnings.
+		void operator delete( void * p )
+		{
+			delete p;			// Does this actually work - ie. does it call the underlying delete?
+		}
+
+		// MJP - Added this to fix compiler warnings.
+		void operator delete(void * p, int size )
+		{
+			delete p;
+		}
+#endif // VC6_BUILD
+
         static IMDLObject* Allocate(int size, MDLType* ptype)
         {
             return new(size) IMDLObject(ptype);

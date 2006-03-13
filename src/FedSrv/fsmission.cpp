@@ -113,10 +113,18 @@ CFSMission::CFSMission(
   m_misdef.misparms.bLobbiedGame = g.fmLobby.IsConnected();
 #if !defined(ALLSRV_STANDALONE)
   m_misdef.misparms.bClubGame = true;
-  strcpy(m_misdef.misparms.szIGCStaticFile, IGC_ENCRYPT_CORE_FILENAME);
+  // -KGJV only set core if not defined in game params
+  if (m_misdef.misparms.szIGCStaticFile[0] == '\0')
+  {
+	strcpy(m_misdef.misparms.szIGCStaticFile, IGC_ENCRYPT_CORE_FILENAME);
+  }
 #else // !defined(ALLSRV_STANDALONE)
   m_misdef.misparms.bClubGame = false;
+  // -KGJV only set core if not defined in game params
+  if (m_misdef.misparms.szIGCStaticFile[0] == '\0')
+  {
   strcpy(m_misdef.misparms.szIGCStaticFile, IGC_STATIC_CORE_FILENAME);
+  }
   // hardcode this cap in one more place to make it harder to work around.
   m_misdef.misparms.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, misparms.nTotalMaxPlayersPerGame);
 #endif // !defined(ALLSRV_STANDALONE)
@@ -464,6 +472,9 @@ void CFSMission::RemovePlayerFromMission(CFSPlayer * pfsPlayer, QuitSideReason r
   if (!HasPlayers(NULL, true)          && // no one left in the mission
       !m_misdef.misparms.bAllowEmptyTeams && // game doesn't allow empty sides
       m_misdef.misparms.bClubGame && // not a standalone server
+#if !defined(ALLSRV_STANDALONE)
+	  !strcmp(m_misdef.misparms.szIGCStaticFile,IGC_ENCRYPT_CORE_FILENAME) && // -KGJV custom core games
+#endif
       (IMPLIES( GetMissionDef()->misparms.bObjectModelCreated, GetStage() != STAGE_NOTSTARTED )) // not an admin created game that has started
      )
   {
@@ -541,7 +552,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
 
   // Set their stuff appropriate for this side
   assert(pfsPlayer->GetMoney() == 0);
-  pfsPlayer->GetIGCShip()->SetWingID(1);
+  pfsPlayer->GetIGCShip()->SetWingID(1); // mmf edit this to change default wing, 0 = command
 
   if (!HasPlayers(pside, true)) // we have a new team leader
   {
@@ -591,7 +602,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
 
   pfsPlayer->SetTreasureObjectID(NA);         //NYI shouldn't we also set money here?
   pfsPlayer->SetSide(this, pside);
-  pfsPlayer->SetReady(true);
+  // pfsPlayer->SetReady(true); Imago commented out so afk not reset
 
   // set them on their starting wing
   BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
@@ -1041,8 +1052,7 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
       pfsPlayer->GetIGCShip()->SetExperience(1.0f);
 
   pfsPlayer->SetSide(this, pMission->GetSide(SIDE_TEAMLOBBY));
-  pfsPlayer->SetReady(true);
-  
+  // pfsPlayer->SetReady(true); Imago commented out so afk not reset
   GiveSideMoney(psideOld, payday);
 
   bool fDeactivate = (STAGE_NOTSTARTED != m_misdef.stage) && !HasPlayers(psideOld, false);
@@ -1319,7 +1329,7 @@ void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
   // take the old leader off of the command wing
   if (pfsOldLeader->GetIGCShip()->GetWingID() == 0)
   {
-    pfsOldLeader->GetIGCShip()->SetWingID(1);
+    pfsOldLeader->GetIGCShip()->SetWingID(1); 
 
     BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
     END_PFM_CREATE
@@ -2035,8 +2045,11 @@ void CFSMission::StartGame()
     LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
     GetSite()->SendChat(NULL, CHAT_EVERYONE, NA, NA, "The game has started.");
-    _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameStarted, pszContext, "", -1, -1, -1, 0);
-
+    // TE, Modify GameStarted AGCEvent to include MissionID.
+	_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameStarted, pszContext, 
+		GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 0);
+    // Changed "" and -1 to MissionName and MissionID
+	// _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameStarted, pszContext, "", -1, -1, -1, 0);
     DoPayday();
   }
 }
@@ -2456,9 +2469,14 @@ void CFSMission::GameOver(IsideIGC * psideWin, const char* pszReason)
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
   // the game will actually end when we get around to checking whether a team has won
+  // TE, Modify GameEnded AGCEvent to include MissionName and MissionID.
   _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
-      "", -1, -1, -1, 1,
-      "Reason", VT_LPSTR, pszReason);
+      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 1,
+      "Reason", VT_LPSTR, pszReason);  // changed "" to MissionName and -1 to MissionID
+  // old event
+  // _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
+  //    "", -1, -1, -1, 1,
+  //    "Reason", VT_LPSTR, pszReason);
 }
 
 
@@ -2571,7 +2589,11 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
     pqd->szGameID[sizeofArray(pqd->szGameID) - 1] = '\0';
     pqd->szName[sizeofArray(pqd->szName) - 1] = '\0';
 
+	// KGJV- make sure there is a trailing zero
+	for (int i=0;i<sizeofArray(pqd->szTechs);i++) pqd->szTechs[i]=0;
     pside->GetTechs().ToString(pqd->szTechs, sizeofArray(pqd->szTechs));
+	pqd->szTechs[sizeofArray(pqd->szTechs)-1]=0;
+
     pqd->nCivID                     = pside->GetCivilization()->GetObjectID();
     pqd->nTeamID                    = pside->GetObjectID();
     pqd->cPlayerKills               = pside->GetKills();
@@ -3031,6 +3053,7 @@ void CFSMission::ProcessGameOver()
                        m_psideWon->GetName());
   */
 
+/*  Imago commented out so afk not reset
   // set all of the players to unready
   for (pShiplink = pShips->first(); pShiplink; pShiplink = pShiplink->next())
   {
@@ -3043,7 +3066,7 @@ void CFSMission::ProcessGameOver()
     if (pfsShip->GetSide()->GetObjectID() != SIDE_TEAMLOBBY) 
         pfsShip->GetPlayer()->SetReady(true);
   }
-
+*/
   // Restart the game if the server is not paused.
   bool bRestartable = !g.fPaused && m_misdef.misparms.bAllowRestart;
   #if defined(ALLSRV_STANDALONE)
@@ -3077,9 +3100,13 @@ void CFSMission::ProcessGameOver()
   m_pMission->ResetMission();
   
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
-
+  // TE, Modify GameOver AGCEvent to include MissionID.
   _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameOver, pszContext,
-    "", -1, -1, -1, 0);
+    GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), 
+   -1, -1, 0); // // Modified "" and -1 to MissionName and MissionID
+  // old event
+  //_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameOver, pszContext,
+  //  "", -1, -1, -1, 0);
 
   // if the game is an auto-restart game, reset the start time.
   if (bRestartable && m_misdef.misparms.bAutoRestart)
@@ -3470,11 +3497,12 @@ void CFSMission::QueueLobbyMissionInfo()
       }
     }
   }
-
+  // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)
     FM_VAR_PARM(m_misdef.misparms.strGameName, CB_ZTS)
     FM_VAR_PARM(nSquadCount ? rgSquadIDs : NULL, nSquadCount * sizeof(SquadID))
     FM_VAR_PARM((PCC)m_strDetailsFiles, CB_ZTS)
+	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
   END_PFM_CREATE
 
   pfmLobbyMissionInfo->dwCookie = GetCookie();
@@ -3814,6 +3842,9 @@ bool CFSMission::FAllReady()
  */
 SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsigned char bannedSideMask)
 {
+  // KGJV - set everyone in lobby by default
+  return SIDE_TEAMLOBBY;
+
   if (bAllowTeamLobby && (GetStage() > STAGE_NOTSTARTED))
     return SIDE_TEAMLOBBY;
 
@@ -4307,16 +4338,17 @@ void CFSMission::RandomizeSides()
   SetLockSides(false);
 
   // turn on auto accept for all sides
+  // KGJV: changed to turn on auto accept off
   {
     for (SideLinkIGC* psl = m_pMission->GetSides()->first(); psl != NULL; psl = psl->next())
     {
-      if (!GetAutoAccept(psl->data()))
+      if (GetAutoAccept(psl->data()))
       {
-        SetAutoAccept(psl->data(), true);
+        SetAutoAccept(psl->data(), false);
         BEGIN_PFM_CREATE(g.fm, pfmAutoAccept, CS, AUTO_ACCEPT)
         END_PFM_CREATE
         pfmAutoAccept->iSide = psl->data()->GetObjectID();
-        pfmAutoAccept->fAutoAccept = true;
+        pfmAutoAccept->fAutoAccept = false;
         g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_DONT_FLUSH);
       }
     }
@@ -4348,6 +4380,8 @@ void CFSMission::RandomizeSides()
   }
   
   // randomly put everyone back on a team
+  // KGJV-: changed dont randomize anymore, just leave everyone in lobby
+/*
   {
     IsideIGC* psideLobby = m_pMission->GetSide(SIDE_TEAMLOBBY);
     const ShipListIGC* pshipsLobby = psideLobby->GetShips();
@@ -4365,7 +4399,7 @@ void CFSMission::RandomizeSides()
       // pick a random player from the lobby side
       CFSPlayer* pfsPlayer;
       {
-        int nPlayerIndex = (int)random(0, pshipsLobby->n());
+        int nPlayerIndex = (int)random(0, static_cast<float>(pshipsLobby->n()));
         ShipLinkIGC* pshipLink;
         for (pshipLink = pshipsLobby->first();
            nPlayerIndex > 0;
@@ -4386,6 +4420,7 @@ void CFSMission::RandomizeSides()
     }
   }
 
+
   // then lock the sides.
   {
     SetLockSides(true);
@@ -4394,6 +4429,7 @@ void CFSMission::RandomizeSides()
     pfmLockSides->fLock = true;
     g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
   }
+*/
 }
 
 void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)

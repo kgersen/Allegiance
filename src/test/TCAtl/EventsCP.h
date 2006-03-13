@@ -77,7 +77,7 @@ public:
   // Declares a vector type of /IV/ interface pointers.
   typedef std::vector<IV*> vector_vtbl;
   // Declares a vector iterator type for vector_vtbl.
-  typedef vector_vtbl::iterator it_vtbl;
+  typedef VSNET_TNFIX vector_vtbl::iterator it_vtbl;
 
 // Overrides
 protected:
@@ -210,7 +210,12 @@ void TCComEventsCP<T, IV, piid>::FireEvents(TCComEventCall<IV>& call)
 // See Also: TCComEventsCP::FireEvents, TCComDualEventsCP::GetEventSinks
 template <class T, class IV, const IID* piid>
 inline void TCComEventsCP<T, IV, piid>::GetEventSinks(
-  TCComEventsCP<T, IV, piid>::vector_vtbl& vec_vtbl)
+// VS.Net 2003 port: use same type as in declaration (see line 92)
+#if _MSC_VER >= 1310
+	vector_vtbl& vec_vtbl)
+#else
+	TCComEventsCP<T, IV, piid>::vector_vtbl& vec_vtbl)
+#endif
 {
   // Lock the object (just long enough to copy the event sinks)
   TCObjectLock<T> lock(static_cast<T*>(this));
@@ -301,8 +306,8 @@ void TCComEventsCP<T, IV, piid>::RemoveFailedSink(HRESULT hr, IV* pIfVtbl)
   class ATL_NO_VTABLE className : public TCComEventsCP<T, IV, &IID_vtbl>    \
   {                                                                         \
   protected:                                                                \
-    typedef TCComEventsCP<T, IV, &IID_vtbl>::TIV TIV;                       \
-    typedef TCComEventsCP<T, IV, &IID_vtbl>::PIV PIV;
+    typedef VSNET_TNFIX TCComEventsCP<T, IV, &IID_vtbl>::TIV TIV;                       \
+    typedef VSNET_TNFIX TCComEventsCP<T, IV, &IID_vtbl>::PIV PIV;
 
 /////////////////////////////////////////////////////////////////////////////
 // {partof:BEGIN_TCComEventsCP}

@@ -151,7 +151,31 @@ HRESULT CprobeIGC::Initialize(ImissionIGC* pMission, Time now, const void* data,
         {
             pMission->GetIgcSite()->ActivateTeleportProbe(this);
         }
-    }
+
+		// mmf added code to detect tp drop near asteroid and if too close destroy it
+		// is this a tp
+		if (dataProbeType->dtRipcord >= 0.0f)
+		{
+			debugf("mmf checking if tp is too close to any asteroids\n");
+			Vector dV;
+			float asteroid_rad, distance;
+			// loop through list of asteroids
+            for (AsteroidLinkIGC*   pal = pcluster->GetAsteroids()->first(); (pal != NULL); pal = pal->next())
+                {
+                    asteroid_rad = (pal->data()->GetRadius());
+                    dV=this->GetPosition() - pal->data()->GetPosition();
+					distance = dV.Length();
+					if (distance < (asteroid_rad-5)) {
+						debugf("mmf tp dropped too close to asteroid (within -5) destroying probe. dist = %f, asteroid rad = %f\n",
+							distance,asteroid_rad);
+						// this->Terminate(); should be terminated when missionigc processes S_FALSE
+						return S_FALSE; 
+						// break; don't look for more asteroids as the probe has already been destroyed
+					}
+				}
+		}		
+		// mmf end	
+	}
 
     return S_OK;
 }

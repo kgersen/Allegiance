@@ -26,6 +26,7 @@ DEFINE_FEDMSG(LS, LOBBYMISSIONINFO, 301)
   FM_VAR_ITEM(szGameName); 
   FM_VAR_ITEM(rgSquadIDs);
   FM_VAR_ITEM(szGameDetailsFiles);
+  FM_VAR_ITEM(szIGCStaticFile); // KGJV added
   DWORD         dwCookie; // how the mission is identified on the lobby
   unsigned      dwStartTime;
   short         nMinRank;

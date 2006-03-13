@@ -299,7 +299,7 @@ public:
         // This destructor crashes sometimes.  If it does, just continue.
         //
 
-        __try {
+        __try { 
             /*
             static count = 0;
             count++;
@@ -325,13 +325,13 @@ public:
             m_pParticleGeo = NULL;
             m_pbitsGeo = NULL;
             m_pimageGlow = NULL;
-        } __except (true) {
+        } __except (true) {  
             //
             // We got an exception.  Just continue.
             //
 
-            s_crashCount++;
-        }
+        //    s_crashCount++;
+        } 
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -446,6 +446,11 @@ public:
 
     void UpdateGlow()
     {
+		//mmf bounds check m_thrust as it may not have been initialized
+		if (m_thrust != m_thrust) m_thrust = 0.0f; // must be NAN
+		if (m_thrust < 0.0f) m_thrust = 0.0f;
+		if (m_thrust > 100.0f) m_thrust = 100.0f; // it gets raised to the 20th pow below
+
         float value = m_thrust;
 
         if (m_fThrustPower != 0) {

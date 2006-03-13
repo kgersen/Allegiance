@@ -98,7 +98,7 @@ CString CAdminPageThreadWnd::GetDate()
   SystemTimeToVariantTime(&sysTime, &date);
   CComBSTR bstr;
   VarBstrFromDate(date, GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &bstr);
-  return bstr;
+  return CString(bstr.m_str,bstr.Length());
 }
 
 CString CAdminPageThreadWnd::GetSender()
@@ -106,7 +106,7 @@ CString CAdminPageThreadWnd::GetSender()
   CComBSTR bstrSender;
   if (FAILED(m_spEvent->get_SubjectName(&bstrSender)))
     return CString();
-  return bstrSender;
+  return CString(bstrSender.m_str,bstrSender.Length());
 }
 
 CString CAdminPageThreadWnd::GetMessage()

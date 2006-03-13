@@ -22,7 +22,7 @@ typedef  Slink_utl<ImapMakerIGC*>       MapMakerLinkIGC;
 // Constants currently being used.
 //
 const int c_MaxClustersPerMap = 50;
-const int c_NumClusterNames = 68;
+const int c_NumClusterNames = 69;
 const int c_NumberOfPlanetPosters = 25;
 
 const int c_FriendlyAleph = 0;          // Friend to Friend
@@ -136,6 +136,9 @@ class CMapData
 
         short GetMaxPlayersOnTeam()
             { return(mpMissionParams->nMaxPlayersPerTeam); }
+		// KGJV-: added, access to iMapSize parameter
+		short GetMapSize()
+			{ return (mpMissionParams->iMapSize); }
         short GetMaxPlayersInMission()
             { return(GetMaxPlayersOnTeam() * GetTeams()); }
         CivID GetCivID(SideID sideID)

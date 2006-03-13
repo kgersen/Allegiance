@@ -105,16 +105,27 @@ public:
       _SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p1, &spVector1));
       _SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p2, &spVector2));
 
+	  // TigerEye 7 lines added to support added zLifepod below
+      int IsLifepod = 0;
+      IhullTypeIGC*   pht = ship->GetBaseHullType();
+	  if (pht != NULL)
+	  {
+		if (pht->HasCapability(c_habmLifepod)) IsLifepod = 1; 
+	  }
+
       LPCSTR pszContext = ship ? ship->GetMission()->GetContextName() : NULL;
 
       // Trigger the event
-      _AGCModule.TriggerContextEvent(hListeners, EventID_ShipKilled, pszContext,
-        pszShip, shipID, -1, -1, 5,
+      // TigerEye add MissionId and zLifepod
+	  _AGCModule.TriggerContextEvent(hListeners, EventID_ShipKilled, pszContext,
+        pszShip, shipID, -1, -1, 7,                // 7 for tigereye, used to be 5
         "Launcher"     , VT_I4      , launcherID,
         "LauncherName" , VT_LPSTR   , pszLauncher,
         "Amount"       , VT_R4      , amount,
+		"MissionID"    , VT_I4      , ship->GetMission()->GetMissionID(),  // TigerEye added
         "Vector1"      , VT_DISPATCH, (IAGCVector*)spVector1,
-        "Vector2"      , VT_DISPATCH, (IAGCVector*)spVector2);
+        "Vector2"      , VT_DISPATCH, (IAGCVector*)spVector2,
+		"zLifepod"     , VT_I4      , IsLifepod);                          // TigerEye added
     }
 
     // Allow the server/client site class to invoke event

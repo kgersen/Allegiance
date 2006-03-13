@@ -29,6 +29,7 @@ MAINTARGEXT=lib
 INCLUDELOCAL=$(FEDSRC)\ZLib
 PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h
+UNWINDCARG=/GX
 
 !include "..\makefile.inc"
 

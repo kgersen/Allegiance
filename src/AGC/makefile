@@ -52,6 +52,7 @@ PCHINCLOCAL=
 PROJCLEAN=ProjectClean
 MIDLINCLOCAL=/I ..\test\Inc /I ..\Inc
 CARGSLOCAL=/D _ATL_STATIC_REGISTRY /D _WINDLL /D _USRDLL
+UNWINDCARG=/GX
 
 
 #############################################################################

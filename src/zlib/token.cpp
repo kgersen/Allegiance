@@ -181,7 +181,7 @@ bool TextTokenImpl::ReadExponent()
         return false;
     }
 
-    m_numberValue = mantisa * pow(10, m_numberValue);
+    m_numberValue = mantisa * pow((float)10, m_numberValue);
     return true;
 }
 
@@ -560,7 +560,7 @@ bool CommandLineToken::ReadExponent(float& number)
         return false;
     }
 
-    number = mantisa * pow(10, number);
+    number = mantisa * pow((float)10, number);
     return true;
 }
 

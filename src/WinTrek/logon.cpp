@@ -39,7 +39,7 @@ public:
         else
             logonNameType = lntZone;
 
-        TRef<INameSpace> pnsLogonData = pmodeler->CreateNameSpace("logondata", pmodeler->GetNameSpace("gamepanes"));
+				        TRef<INameSpace> pnsLogonData = pmodeler->CreateNameSpace("logondata", pmodeler->GetNameSpace("gamepanes"));
         pnsLogonData->AddMember("promptText", new ModifiableString(szPrompt));
         pnsLogonData->AddMember("Callsign", new ModifiableNumber((float)lntCallsign));
         pnsLogonData->AddMember("ZoneID", new ModifiableNumber((float)lntZone));
@@ -97,6 +97,7 @@ public:
         }
 
         pmodeler->UnloadNameSpace(pns);
+
     }
 
     bool OnButtonLogon()
@@ -146,7 +147,8 @@ public:
 
     bool OnButtonSignUp()
     {
-        GetWindow()->ShowWebPage("http://www.zone.com/allegiance/minilaunch1.asp");
+		// KGJV - Alleg.net registration
+        GetWindow()->ShowWebPage("http://asgs.alleg.net/");
         return true;
     }
 
@@ -236,7 +238,7 @@ public:
             } 
             else if (ks.vk == VK_TAB) 
             {
-                if (m_pfocus == m_peditName 
+                if (m_pfocus == static_cast<EditPane*>(m_peditName)	// Resolve ambiguity - added by Dhauzmmer 8/14/04
                     && (LogonAllegianceZone == m_lt || LogonFreeZone == m_lt)) 
                 {
                     SetFocus(m_peditPassword);
@@ -266,6 +268,7 @@ public:
 TRef<IPopup> CreateLogonPopup(Modeler* pmodeler, LogonSite* psite, LogonType lt, LPCSTR szPrompt, LPCSTR szName, LPCSTR szPW, BOOL fRememberPW)
 {
     return new LogonPopup(pmodeler, psite, lt, szPrompt, szName, szPW, fRememberPW);
+
 }
 
 
