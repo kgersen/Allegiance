@@ -847,6 +847,14 @@ public:
 
         m_strGameNameSubstring.SetEmpty();
 
+        // WLP 2005 - I added these next 4 lines to force the default sort to the number of players
+
+        m_vuSorts.SetEmpty();              // WLP 2005 - clear it out
+        m_vbReversedSorts.SetEmpty();      // WLP 2005 - Clear it out
+
+        m_vuSorts.PushEnd(7);              // WLP 2005 - number of players magic number
+        m_vbReversedSorts.PushEnd(true);  // we do want the big numbers on top(reversed)
+
         UpdateGameList();
     }
 
