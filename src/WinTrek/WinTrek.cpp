@@ -4716,7 +4716,7 @@ public:
         m_cameraControl.SetOrientation (orthogonal);
 
         // this controls how long the launch animation lasts
-        m_timeOverrideStop = now + (bOverridePosition ? 5.0f : 3.0f);
+        m_timeOverrideStop = now + (bOverridePosition ? 1.0f : 0.75f);	// wlp: changed 5.0f:3.0f to 1.0f:0.75f
         
         m_bUseOverridePosition = bOverridePosition;
 
