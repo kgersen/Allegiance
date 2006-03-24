@@ -569,6 +569,7 @@ public:
 
 
           AddEventTarget(OnListSelect, m_pListPane->GetEventSource());
+          AddEventTarget(OnPartial, m_pListPane->GetRightClickEventSource());	// TE: hooked up RightClickEvent to OnPartial method
           AddEventTarget(OnListHover, m_pListPane->GetMouseOverEvent());
           AddEventTarget(OnInvest, m_pButtonInvest->GetEventSource());
           AddEventTarget(OnButtonBack, m_pButtonClose->GetEventSource());
@@ -603,6 +604,28 @@ public:
           }
           return true;
       }
+      
+	  // TE: Added OnPartial method to handle partial-investing
+      bool OnPartial()
+      {
+          if (trekClient.MyMissionInProgress())
+          {
+              TRef<ListItem> pItem = m_pListPane->GetSelItem();
+              if (pItem)
+              {
+                  IbucketIGC* pBucket =  (IbucketIGC*)m_pListPane->GetSelItem()->GetItemData();
+
+                  if (CanInvest(pBucket))
+                  {
+                      Money bucketCost = pBucket->GetPrice() * 0.1;	// Invest 10% of the research cost
+                      Money investmentAmount = min(bucketCost, trekClient.GetMoney());
+
+					  trekClient.AddMoneyToBucket(pBucket, investmentAmount);
+                  }
+              }                    
+          }
+          return true;
+     }
 
      bool OnButtonBack()
      {

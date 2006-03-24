@@ -2474,18 +2474,21 @@ void CFSMission::GameOver(IsideIGC * psideWin, const char* pszReason)
   m_psideWon = psideWin;
   m_pszReason = pszReason;
   m_bDraw = m_psideWon == NULL;
+  
+  // TE: Safely retrieve the team's ID and name
+  const ObjectID iTeamObjectID = (psideWin) ? psideWin->GetObjectID() : -1;
+  const char* pszTeamName = (psideWin) ? psideWin->GetName() : "";
 
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
   // the game will actually end when we get around to checking whether a team has won
   // TE, Modify GameEnded AGCEvent to include MissionName and MissionID.
   _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
-      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 1,
-      "Reason", VT_LPSTR, pszReason);  // changed "" to MissionName and -1 to MissionID
-  // old event
-  // _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
-  //    "", -1, -1, -1, 1,
-  //    "Reason", VT_LPSTR, pszReason);
+      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 1, // changed "" to MissionName and -1 to MissionID
+      "Reason", VT_LPSTR, pszReason,
+	  "WinningTeamID", VT_I4, iTeamObjectID,	 // TE: Added winning teamID
+	  "WinningTeamName", VT_LPSTR, pszTeamName); // TE: Added winning teamName 
+
 }
 
 
