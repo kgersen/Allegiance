@@ -617,9 +617,21 @@ public:
 
                   if (CanInvest(pBucket))
                   {
-                      Money bucketCost = pBucket->GetPrice() * 0.1;	// Invest 10% of the research cost
-                      Money investmentAmount = min(bucketCost, trekClient.GetMoney());
+                      Money bucketCost = pBucket->GetPrice() - pBucket->GetMoney();	// Get required money to finish development
+					  
+					  // Prevent finishing the development with the right-click
+					  if (bucketCost == 1)
+						  return true;
 
+                      Money TenPercent = pBucket->GetPrice() * 0.1;					// Get 10% of the total research cost
+
+					  Money investmentAmount = min(TenPercent, trekClient.GetMoney());	// Get what's less: Your money? or the reqdevcost
+
+					  // If we're about to finish this development, remove 1cr so we don't!!
+					  if (pBucket->GetMoney() + investmentAmount == pBucket->GetPrice())
+						  investmentAmount -= 1;
+
+					  // Perform the investment
 					  trekClient.AddMoneyToBucket(pBucket, investmentAmount);
                   }
               }                    
