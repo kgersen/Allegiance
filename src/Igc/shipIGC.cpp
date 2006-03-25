@@ -1678,9 +1678,9 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                             m_timeRanAway = timeStop;
 
 						    //mmf debuging code
-						    debugf("mmf Miner/con found place to run to.\n");
-							debugf("%-20s %x I am at %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
-							debugf("running to %f %f %f\n",pmodel->GetPosition().x,pmodel->GetPosition().y,pmodel->GetPosition().z);
+						    //debugf("mmf Miner/con found place to run to.\n");
+							//debugf("%-20s %x I am at %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
+							//debugf("running to %f %f %f\n",pmodel->GetPosition().x,pmodel->GetPosition().y,pmodel->GetPosition().z);
 						    //mmf end debugging code
 						}
                     }

@@ -158,7 +158,7 @@ NMAKE=@nmake /NOLOGO /S /C
 #
 #############################################################################
 
-All: Client AllGuardApp Server Server32 MdlEdit AllSrvUI32App AllSrvUIApp Lobby Club AutoUpdateApp ArtBin SymGuard Test
+All: Client AllGuardApp Server Server32 MdlEdit AllSrvUIApp AllSrvUIApp Lobby Club AutoUpdateApp ArtBin SymGuard Test
 
 
 #############################################################################
@@ -257,7 +257,7 @@ parisman: client server lobby art browse
 #
 #############################################################################
 
-BrettonW: Client AllSrvUI32App art
+BrettonW: Client AllSrvUIApp art
 
 #############################################################################
 #
@@ -704,16 +704,16 @@ SrvConfigApp_Full: SrvConfigApp_Clean SrvConfigApp
 
 #############################################################################
 #
-# SrvConfig32App: builds the server configuration utility.
+# SrvConfigApp: builds the server configuration utility.
 #
 #############################################################################
 
-SrvConfig32App: AGC AllSrv32Exe
+SrvConfigApp: AGC AllSrvExe
     @cd SrvConfig
     $(NMAKE) $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-SrvConfig32App_Clean:
+SrvConfigApp_Clean:
     @cd SrvConfig
     $(NMAKE) clean $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
@@ -759,16 +759,16 @@ AllSrvUIApp_Full: AllSrvUIApp_Clean AllSrvUIApp
 
 #############################################################################
 #
-# AllSrvUI32App: builds the server configuration utility.
+# AllSrvUIApp: builds the server configuration utility.
 #
 #############################################################################
 
-AllSrvUI32App: AGC AllSrv32Exe
+AllSrvUIApp: AGC AllSrvExe
     @cd AllSrvUI
     $(NMAKE) $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-AllSrvUI32App_Clean:
+AllSrvUIApp_Clean:
     @cd AllSrvUI
     $(NMAKE) clean $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
@@ -854,21 +854,21 @@ AllSrvExe_Full: AllSrvExe_Clean AllSrvExe
 
 #############################################################################
 #
-# AllSrv32Exe: builds the Allegiance (stand-alone) game server application.
+# AllSrvExe: builds the Allegiance (stand-alone) game server application.
 #
 #############################################################################
 
-AllSrv32Exe: AGC Common FedPerfDll
+AllSrvExe: AGC Common FedPerfDll
     @cd fedsrv
     $(NMAKE) $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-AllSrv32Exe_Clean:
+AllSrvExe_Clean:
     @cd fedsrv
     $(NMAKE) clean $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-AllSrv32Exe_Full: AllSrv32Exe_Clean AllSrv32Exe
+AllSrvExe_Full: AllSrvExe_Clean AllSrvExe
 
 
 #############################################################################
@@ -890,9 +890,9 @@ Server_Full: Server_Clean Server
 #
 #############################################################################
 
-Server32: SrvConfig32App AllSrv32Exe
+Server32: SrvConfigApp AllSrvExe
 
-Server32_Clean: AGC Common FedPerfDll SrvConfig32App_Clean
+Server32_Clean: AGC Common FedPerfDll SrvConfigApp_Clean
 
 Server32_Full: Server32_Clean Server32
 
@@ -1124,16 +1124,16 @@ FilelistS:
     @copy AGC.dll $(FEDROOT)\objs\artworkS\agcretail.dll
 
 # Directory Change
-    @cd $(FEDROOT)\objs\retail\allsrv32
-    @copy allsrv32.exe $(FEDROOT)\objs\artworkS\allsrv32retail.exe
+    @cd $(FEDROOT)\objs\retail\allsrv
+    @copy allsrv.exe $(FEDROOT)\objs\artworkS\allsrvretail.exe
 
 # Directory Change
-    @cd $(FEDROOT)\objs\retail\allsrvui32
-    @copy allsrvui32.exe $(FEDROOT)\objs\artworkS\allsrvui32retail.exe
+    @cd $(FEDROOT)\objs\retail\allsrvui
+    @copy allsrvui.exe $(FEDROOT)\objs\artworkS\allsrvuiretail.exe
 
 # Directory Change
-    @cd $(FEDROOT)\objs\retail\srvconfig32
-    @copy srvconfig32.exe $(FEDROOT)\objs\artworkS\srvconfig32retail.exe
+    @cd $(FEDROOT)\objs\retail\srvconfig
+    @copy srvconfig.exe $(FEDROOT)\objs\artworkS\srvconfigretail.exe
 
 # Directory Change
     @cd $(FEDROOT)\src\setup
@@ -1243,19 +1243,19 @@ ArtComp: ClientAllFlavors Art ReadMe Filelist FilelistS
     -@($(FEDROOT)\src\tools\build\isbigger.exe "agc.dll" "$(FEDROOT)\objs\artworkc\agcretail.dll" && @copy "agc.dll" "$(FEDROOT)\objs\artworkc\agcretail.dll")
 
 # Directory Change
-    @cd $(FEDROOT)\objs\retail\allsrv32
-    $(FEDROOT)\build\compress -d allsrv32.exe $(FEDROOT)\objs\ArtworkC\allsrv32retail.exe
-    -@($(FEDROOT)\src\tools\build\isbigger.exe "allsrv32.exe" "$(FEDROOT)\objs\artworkc\allsrv32retail.exe" && @copy "allsrv32.exe" "$(FEDROOT)\objs\artworkc\allsrv32retail.exe")
+    @cd $(FEDROOT)\objs\retail\allsrv
+    $(FEDROOT)\build\compress -d allsrv.exe $(FEDROOT)\objs\ArtworkC\allsrvretail.exe
+    -@($(FEDROOT)\src\tools\build\isbigger.exe "allsrv.exe" "$(FEDROOT)\objs\artworkc\allsrvretail.exe" && @copy "allsrv.exe" "$(FEDROOT)\objs\artworkc\allsrvretail.exe")
 
 # Directory Change
-    @cd $(FEDROOT)\objs\retail\allsrvui32
-    $(FEDROOT)\build\compress -d allsrvui32.exe $(FEDROOT)\objs\ArtworkC\allsrvui32retail.exe
-    -@($(FEDROOT)\src\tools\build\isbigger.exe "allsrvui32.exe" "$(FEDROOT)\objs\artworkc\allsrvui32retail.exe" && @copy "allsrvui32.exe" "$(FEDROOT)\objs\artworkc\allsrvui32retail.exe")
+    @cd $(FEDROOT)\objs\retail\allsrvui
+    $(FEDROOT)\build\compress -d allsrvui.exe $(FEDROOT)\objs\ArtworkC\allsrvuiretail.exe
+    -@($(FEDROOT)\src\tools\build\isbigger.exe "allsrvui.exe" "$(FEDROOT)\objs\artworkc\allsrvuiretail.exe" && @copy "allsrvui.exe" "$(FEDROOT)\objs\artworkc\allsrvuiretail.exe")
 
 # Directory Change
-    @cd $(FEDROOT)\objs\retail\srvconfig32
-    $(FEDROOT)\build\compress -d srvconfig32.exe $(FEDROOT)\objs\ArtworkC\srvconfig32retail.exe
-    -@($(FEDROOT)\src\tools\build\isbigger.exe "srvconfig32.exe" "$(FEDROOT)\objs\artworkc\srvconfig32retail.exe" && @copy "srvconfig32.exe" "$(FEDROOT)\objs\artworkc\srvconfig32retail.exe")
+    @cd $(FEDROOT)\objs\retail\srvconfig
+    $(FEDROOT)\build\compress -d srvconfig.exe $(FEDROOT)\objs\ArtworkC\srvconfigretail.exe
+    -@($(FEDROOT)\src\tools\build\isbigger.exe "srvconfig.exe" "$(FEDROOT)\objs\artworkc\srvconfigretail.exe" && @copy "srvconfig.exe" "$(FEDROOT)\objs\artworkc\srvconfigretail.exe")
 
 # Directory Change - NOTE: Intentionally NOT compressing AutoUpdate.exe
     @cd $(FEDROOT)\objs\retail\autoupdate

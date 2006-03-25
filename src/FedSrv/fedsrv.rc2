@@ -22,8 +22,8 @@
 #else // !defined(ALLSRV_STANDALONE)
 
   #define SZFILEDESCRIPTION "Microsoft (R) Allegiance Game Server (stand-alone)"
-  #define SZORIGFILENAME "AllSrv32.exe"
-  #define SZINTERNALNAME "AllSrv32"
+  #define SZORIGFILENAME "AllSrv.exe"
+  #define SZINTERNALNAME "AllSrv"
 
 #endif // !defined(ALLSRV_STANDALONE)
 

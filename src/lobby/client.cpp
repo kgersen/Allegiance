@@ -69,10 +69,10 @@ BOOLEAN  getASGS(char * strName,char* playerIP,char* ASGS_Token)
   if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
   {
    // read ASGS is on or off in registry
-   DWORD dwASGS_OFF ;
-   bool bSuccess = _Module.ReadFromRegistry(hk, false, "ASGS_OFF", &dwASGS_OFF, 0);
+   DWORD dwASGS_ON=0;
+   bool bSuccess = _Module.ReadFromRegistry(hk, false, "ASGS_ON", &dwASGS_ON, 0);
    RegCloseKey(hk);
-   if(bSuccess && dwASGS_OFF) return true ; // ASGS is off - so let them in 
+   if (!(bSuccess && dwASGS_ON)) return true ; // ASGS is off - so let them in 
   }
 
     // we will use ASGS from here on

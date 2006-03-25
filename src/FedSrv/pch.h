@@ -39,7 +39,7 @@
 #if !defined(ALLSRV_STANDALONE)
   #define __MODULE__ "AllSrv"
 #else // !defined(ALLSRV_STANDALONE)
-  #define __MODULE__ "AllSrv32"
+  #define __MODULE__ "AllSrv"
 #endif // !defined(ALLSRV_STANDALONE)
 #include <guids.h>
 #include <zlib.h>

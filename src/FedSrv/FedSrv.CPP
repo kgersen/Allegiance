@@ -24,6 +24,53 @@
     #include "FedSrvApp.h"
 #endif
 
+// begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_ON
+/*-------------------------------------------------------------------------
+ * ReadFromRegistry
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Read info from the registry
+ * 
+ * Parameters:
+ *    hk:        which key to read from
+ *    bIsString: if false, then item is cosnidered to be a DWORD
+ *    szItem:    name of item to read
+ *    pValue:    destination of read
+ *    dwDefault: default value can be an int or a pointer to a string
+ *
+ * Returns:
+ *    true: iff pValue was set
+ */
+bool ReadFromRegistry(HKEY & hk, bool bIsString, const char * szItem, void * pValue, DWORD dwDefault)
+{
+    char psz[MAX_PATH] = {""};
+    DWORD dwSize = (bIsString ? sizeof(psz): sizeof(DWORD));
+
+    if (RegQueryValueEx(hk, szItem, NULL, NULL, (BYTE *)psz, &dwSize) != ERROR_SUCCESS ||
+        (bIsString && psz[0] == 0)) // if blank like what SrvConfig.exe makes
+    {
+        if (bIsString)
+        {
+            if (dwDefault)
+            {
+                strcpy((char*)pValue, (char*)dwDefault);
+                return true;
+            }
+            return false;
+        }
+        *(DWORD*)pValue = dwDefault;
+        return true;
+    }
+
+    if (bIsString)
+        strcpy((char*)pValue, psz);
+    else
+        *(DWORD*)pValue = *(DWORD*)psz;
+
+    return true;
+}
+// end mmf
+
 #if !defined(ALLSRV_STANDALONE)
 void DoDecrypt(int size, char* pdata)
 {
@@ -826,24 +873,37 @@ void GotLogonDetails(CQLogonStats * pquery)
     #endif // !defined(ALLSRV_STANDALONE)
 	
   	// -Imago: ASGS Login/Rank
-	MaClient *http_client; int contentLen;
-	char *szContent;
-	char szURL[255]; char szName[64]; char szResponse[255];
-	ZString strName = pfsPlayer->GetName();
-	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
+    // mmf only do this if ASGS is ON
+    //     check reg key to see if we are using ASGS ranks or not
+	DWORD dw; // Gets result of whether it opened or created... - we only read
+	HKEY  hk;
+	DWORD dwASGS_ON=0;
+	// use same key for server as lobby
+	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
+	{
+		// read ASGS is on or off in registry
+		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_ON, 0);
+		RegCloseKey(hk); 
+	}
+	if (dwASGS_ON) {
+	  MaClient *http_client; int contentLen;
+	  char *szContent;
+	  char szURL[255]; char szName[64]; char szResponse[255];
+	  ZString strName = pfsPlayer->GetName();
+	  Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
 
-	// Fixup player names 
-	Strcpy(szName,(PCC)strName);
-	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
-	strcat(szURL,szName);
+	  // Fixup player names 
+	  Strcpy(szName,(PCC)strName);
+	  if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
+	  strcat(szURL,szName);
 
-	// Process requests on AppWeb threads
-	Mpr   mpr("AllSrv");
-	mpr.start(MPR_SERVICE_THREAD);
-	http_client = new MaClient();
-	http_client->getRequest(szURL);
-	if (szContent = http_client->getResponseContent(&contentLen)) {
-		// Fixup XML Response
+	  // Process requests on AppWeb threads
+	  Mpr   mpr("AllSrv");
+	  mpr.start(MPR_SERVICE_THREAD);
+	  http_client = new MaClient();
+	  http_client->getRequest(szURL);
+	  if (szContent = http_client->getResponseContent(&contentLen)) {
+	  	// Fixup XML Response
 		ZString strContent = szContent;
 		strContent = strContent.RightOf(88);
 		strContent = strContent.LeftOf("<");
@@ -872,9 +932,13 @@ void GotLogonDetails(CQLogonStats * pquery)
 			}
 			fValid = true;
 		}
-	} else {
+	  } else {
 		fValid = true; //assume all is OK, Rank will be 0
 		debugf("ASGS Server did not respond!\n");
+	  }
+	} else {
+		fValid = true; // not using asgs, Rank will be 0
+		debugf("Not using ASGS, rank query not done\n");
 	}
   }
   else
@@ -7090,17 +7154,17 @@ bool OnAutoUpdateEXEDownloadDone(const char * szFilelistCRC, int nFilelistCRC, i
     }
 
     //
-    // Decide what will be launched after the update (AllSrv32 or UI), and how it will be launched (as service or EXE)
+    // Decide what will be launched after the update (AllSrv or UI), and how it will be launched (as service or EXE)
     //
     char * szLaunchPostUpdate;
 
     if (_Module.WasCOMStarted())
     {
-      szLaunchPostUpdate = "AllSrvUI32.exe";
+      szLaunchPostUpdate = "AllSrvUI.exe";
     }
     else
     {
-      szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv32" : "AllSrv32.exe";  // S: is short for "Start as Service"
+      szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv" : "AllSrv.exe";  // S: is short for "Start as Service"
     }
 
     char szCommandLine[MAX_PATH * 10];
@@ -8630,7 +8694,7 @@ int __cdecl main(int argc, char *argv[])
     #ifndef _DEBUG
     if (argc == 1 && !_Module.IsInstalledAsService() && !_Module.WasCOMStarted())
     {
-      printf("\nUse AllSrvUI32.exe to run the Allegiance Server.\n");
+      printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
       // Terminate AGC
       _Module.TermAGC();
       return 0;

@@ -26,6 +26,8 @@ const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
   const short c_cMaxPlayersPerGame = 0x7FFF;
 #endif // defined(ALLSRV_STANDALONE)
 
+// mmf took this from lobbyapp.h, need it here to check reg key for ASGS rank look up
+#define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"
 
 HRESULT pascal FedSrv_Init();
 HRESULT pascal FedSrv_Terminate(void);

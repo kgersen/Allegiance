@@ -104,10 +104,9 @@ void logchat(const char* strText)
 
 	length = strlen(strText);
 
-	sprintf(bfr, "%02d/%02d/%02d %02d%02d%02d: %s\n",
-            (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
-
 	if (chat_logfile) {
+		sprintf(bfr, "%02d/%02d/%02d %02d%02d%02d: %s\n",
+            (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
         DWORD nBytes;
         ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
     }
