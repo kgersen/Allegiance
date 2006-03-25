@@ -459,7 +459,7 @@ public:
            // assert(false);
            // return Color(0.5, 0.5, 0.5);
 
-           return Color(57/256.0f, 207/256.0f, 132/256.0f);
+           return Color(165/256.0f, 165/256.0f, 180/256.0f); // yp your_persona march 14 2006 : NOATcolor patch change color from teal to NOAT grey.
         }
     }
     
