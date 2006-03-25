@@ -86,21 +86,22 @@ BOOL CAllSrvUIApp::InitInstance()
   }
 
   // Ensure that the EULA has been agreed to
-  HRESULT hr = FirstRunEula();
-  if (E_FAIL == hr)
-  {
-    ::MessageBox(0, "Error while loading loading ebueula.dll", "Allegiance Server", 0);
-    return false;
-  }
-  else if (S_FALSE == hr)
-  {
-    ::MessageBox(0, "You must accept the End User License Agreement before running the Allegiance Server", "Allegiance Server", 0);
-    return false;
-  }
-  else 
-  {
-    assert(S_OK == hr);
-  }
+  // yp your_persona march 25 2006 : Remove EULA.dll dependency patch
+  //HRESULT hr = FirstRunEula();
+  //if (E_FAIL == hr)
+  //{
+  //  ::MessageBox(0, "Error while loading loading ebueula.dll", "Allegiance Server", 0);
+  //  return false;
+  //}
+  //else if (S_FALSE == hr)
+  //{
+  //  ::MessageBox(0, "You must accept the End User License Agreement before running the Allegiance Server", "Allegiance Server", 0);
+  //  return false;
+  //}
+  //else 
+  //{
+  //  assert(S_OK == hr);
+  //}
 
   // Create the instance event
   CreateAllSrvUIEvent();
@@ -181,56 +182,58 @@ void CAllSrvUIApp::CreateAllSrvUIEvent()
 //
 // EULA related files should be in the artwork folder so that they may be autoupdated
 //
-HRESULT CAllSrvUIApp::FirstRunEula()
-{
-  TCHAR   szArtpath[MAX_PATH];
-  GetArtPath(szArtpath);
-  PathString strArtPath = szArtpath;
-  PathString strEulaRTF = strArtPath + "eula.rtf";
-
-  {
-    ZFile file(strEulaRTF);
-    int n = file.GetLength(); // -1 means error
-    if (n == -1)
-        return E_FAIL;
-  }
-
-  // don't use += operator cause it's buggy with PathString
-  strArtPath = strArtPath + "EBUEula.dll";
-
-  HINSTANCE hMod = LoadLibrary(PCC(strArtPath));
-  if (NULL == hMod)       // can't attach to DLL
-  {
-    // this time, search path
-    hMod = LoadLibrary("EBUEula.dll");
-    if (NULL == hMod)       // can't attach to DLL
-      return E_FAIL;
-  }
-
-  EBUPROC pfnEBUEula = (EBUPROC) GetProcAddress(hMod, "EBUEula");
-  if (NULL == pfnEBUEula)     // can't find entry point
-  {
-    FreeLibrary(hMod);
-    return E_FAIL;
-  }
-
-  /*
-  TCHAR   szWarranty[MAX_PATH];
-  LoadString(GetModuleHandle(), STR_EULAFILENAME, szEULA, sizeof(szEULA));
-  LoadString(GetModuleHandle(), STR_WARRANTYNAME, szWarranty, sizeof(szWarranty));
-
-  //
-  //This call enables both EULA and warranty accepting/viewing/printing.  If your
-  //game doesn't ship with a WARRANTY file, specifiy NULL instead of szWarranty…
-  //The code below, for instance, works with both OEM and retail builds…
-  //
-  TCHAR *pszWarrantyParam = 0xFFFFFFFF != GetFileAttributes(szWarranty) ? szWarranty : NULL;
-  */
-  bool bAllowGameToRun = pfnEBUEula(HKLM_AllSrvUI, PCC(strEulaRTF), NULL, TRUE) != 0;
-
-  FreeLibrary(hMod);
-
-  return (bAllowGameToRun ? S_OK : S_FALSE);
-}
+// yp your_persona march 25 2006 : Remove EULA.dll dependency patch
+//
+//HRESULT CAllSrvUIApp::FirstRunEula()
+//{
+//  TCHAR   szArtpath[MAX_PATH];
+//  GetArtPath(szArtpath);
+//  PathString strArtPath = szArtpath;
+//  PathString strEulaRTF = strArtPath + "eula.rtf";
+//
+//  {
+//    ZFile file(strEulaRTF);
+//    int n = file.GetLength(); // -1 means error
+//    if (n == -1)
+//        return E_FAIL;
+//  }
+//
+//  // don't use += operator cause it's buggy with PathString
+//  strArtPath = strArtPath + "EBUEula.dll";
+//
+//  HINSTANCE hMod = LoadLibrary(PCC(strArtPath));
+//  if (NULL == hMod)       // can't attach to DLL
+//  {
+//    // this time, search path
+//    hMod = LoadLibrary("EBUEula.dll");
+//    if (NULL == hMod)       // can't attach to DLL
+//      return E_FAIL;
+//  }
+//
+//  EBUPROC pfnEBUEula = (EBUPROC) GetProcAddress(hMod, "EBUEula");
+//  if (NULL == pfnEBUEula)     // can't find entry point
+//  {
+//    FreeLibrary(hMod);
+//    return E_FAIL;
+//  }
+//
+//  /*
+//  TCHAR   szWarranty[MAX_PATH];
+//  LoadString(GetModuleHandle(), STR_EULAFILENAME, szEULA, sizeof(szEULA));
+//  LoadString(GetModuleHandle(), STR_WARRANTYNAME, szWarranty, sizeof(szWarranty));
+//
+//  //
+//  //This call enables both EULA and warranty accepting/viewing/printing.  If your
+//  //game doesn't ship with a WARRANTY file, specifiy NULL instead of szWarranty…
+//  //The code below, for instance, works with both OEM and retail builds…
+//  //
+//  TCHAR *pszWarrantyParam = 0xFFFFFFFF != GetFileAttributes(szWarranty) ? szWarranty : NULL;
+//  */
+//  bool bAllowGameToRun = pfnEBUEula(HKLM_AllSrvUI, PCC(strEulaRTF), NULL, TRUE) != 0;
+//
+//  FreeLibrary(hMod);
+//
+//  return (bAllowGameToRun ? S_OK : S_FALSE);
+//}
 
 
