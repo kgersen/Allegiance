@@ -2777,8 +2777,12 @@ public:
     void OnPrintable(char ch)
     {
         assert (m_csComposeState > c_csComposeMouseCommand);
-
-        m_strTypedText += ZString(ch, 1);
+		
+		// yp your_persona march 24 2005: constrain chat messages to always fit in the buffer size 255
+		if (m_strTypedText.GetLength() < 255)
+		{
+			m_strTypedText += ZString(ch, 1);
+		}   
 
         if (m_csComposeState == c_csComposeCommand)
         {
