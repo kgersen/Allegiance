@@ -32,8 +32,10 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
 }
 
 // mmf added code for chat logging
+// mmf 3/25/06 modified to open and close file after each chat line
 
 HANDLE chat_logfile = NULL;
+char logFileName[MAX_PATH + 21];
 
 void InitializeLogchat()
 {
@@ -56,7 +58,7 @@ void InitializeLogchat()
 	time(&longTime);
 	tm* t = localtime(&longTime);
 
-	char logFileName[MAX_PATH + 21];
+	// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
 	GetModuleFileName(NULL, logFileName, MAX_PATH);
 	char* p = strrchr(logFileName, '\\');
 	if (!p)
@@ -81,6 +83,7 @@ void InitializeLogchat()
 			NULL
 		);
 	}
+	if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
 }
 
 void TerminateLogchat()
@@ -109,7 +112,7 @@ void logchat(const char* strText)
             (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
         DWORD nBytes;
         ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
-    }
+	}
 }
 
 // end mmf chat logging code

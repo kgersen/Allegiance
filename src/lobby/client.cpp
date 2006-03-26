@@ -66,7 +66,7 @@ BOOLEAN  getASGS(char * strName,char* playerIP,char* ASGS_Token)
 
   DWORD dw; // Gets result of whether it opened or created... - we only read
   HKEY  hk;
-  if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
+  if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
   {
    // read ASGS is on or off in registry
    DWORD dwASGS_ON=0;

@@ -10,6 +10,9 @@
 #ifndef _LOBBYAPP_H_ 
 #define _LOBBYAPP_H_ 
 
+// mmf added this include so client.cpp has HKLM_FedSrv defined
+#include "regkey.h"
+
 #define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"
 
 /////////////////////////////////////////////////////////////////////////////

@@ -879,7 +879,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 	HKEY  hk;
 	DWORD dwASGS_ON=0;
 	// use same key for server as lobby
-	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
+	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
 	{
 		// read ASGS is on or off in registry
 		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_ON, 0);
