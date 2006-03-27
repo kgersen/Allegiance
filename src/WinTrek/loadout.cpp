@@ -629,7 +629,7 @@ public:
 					  Money investmentAmount = min(TenPercent, trekClient.GetMoney());	// Get what's less: Your money? or the reqdevcost
 
 					  // If we're about to finish this development, remove 1cr so we don't!!
-					  if (pBucket->GetMoney() + investmentAmount == pBucket->GetPrice())
+					  while (pBucket->GetMoney() + investmentAmount >= pBucket->GetPrice())
 						  investmentAmount -= 1;
 
 					  // Perform the investment
