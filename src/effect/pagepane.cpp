@@ -79,6 +79,68 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
+// Hyperlink Pane
+//
+//////////////////////////////////////////////////////////////////////////////
+
+class HyperlinkPane : public StringPane {
+private:
+    ZString m_strName; //TRef<StringEventSourceImpl> m_peventSource;
+	ZString m_strURL;
+    ZString m_strTopic;
+    Color   m_color;
+    Color   m_colorSelected;
+    bool    m_bInside;
+
+public:
+    HyperlinkPane(
+        const ZString&         szName, //StringEventSourceImpl* peventSource,
+        const ZString&		   szURL,
+        IEngineFont*           pfont,
+        const Color&           color,
+        const Color&           colorSelected
+    ) :
+        StringPane(ZString(szName), pfont),
+		m_strURL(szURL),
+        m_strName(szName), //m_peventSource(peventSource),
+        m_color(color),
+        m_colorSelected(colorSelected),
+        m_bInside(false)
+    {
+        SetTextColor(m_color);
+    }
+
+	void ShowWebPage(const char* szURL)
+    {
+        ShellExecute(NULL, NULL, szURL, NULL, NULL, SW_SHOWNORMAL);
+    }
+
+    void MouseEnter(IInputProvider* pprovider, const Point& point)
+    { 
+        m_bInside = true;
+		if (m_strName!="INVALID URL") {
+			SetTextColor(m_colorSelected);
+		}
+    }
+
+    void MouseLeave(IInputProvider* pprovider)
+    { 
+        m_bInside = false;
+        SetTextColor(m_color);
+    }
+
+    MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
+    { 
+        if (button == 0 && bDown) {
+			if (m_strName!="INVALID URL") {
+				ShowWebPage(m_strURL);
+			}
+        }
+	    return MouseResult(); 
+    }
+};
+//////////////////////////////////////////////////////////////////////////////
+//
 // Page Pane
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -157,7 +219,47 @@ public:
         InsertAtBottom(new TabWordPane(1));
     }
 
-    bool InsertLink(PCC& pcc, PCC pccEnd, const Color& color, StringEventSourceImpl* peventSource)
+    bool InsertHyperlink(PCC& pcc, PCC pccEnd, const Color& color, StringEventSourceImpl* peventSource)
+    {
+		//
+        // Name
+        //
+
+        ZString strName;
+        if (!ParseSymbol(pcc, pccEnd, '|', strName)) {
+            return false;
+        }
+        //
+        // URL
+        //
+
+        ZString strURL;
+        if (!ParseSymbol(pcc, pccEnd, '>', strURL)) {
+            return false;
+        }
+
+        //
+        // The HyperlinkPane
+        //
+        if (strURL.Left(7) != "http://") {
+				strName="INVALID URL";
+			}
+
+        TRef<HyperlinkPane> plinkPane =
+            new HyperlinkPane(
+                strName + " ", //peventSource,
+                strURL,
+                m_pfont,
+                color,
+                Color(0,0,1)
+            );
+
+        InsertAtBottom(plinkPane);
+
+        return true;
+    }
+
+	    bool InsertLink(PCC& pcc, PCC pccEnd, const Color& color, StringEventSourceImpl* peventSource)
     {
         //
         // topic|text>
@@ -232,6 +334,7 @@ public:
     {
         return MatchBrace(pcc, pccEnd);
     }
+
 
     bool ParseBullet(INameSpace* pns, PCC& pcc, PCC pccEnd)
     {
@@ -470,6 +573,8 @@ public:
             return InsertLink(pcc, pccEnd, m_colorSecondary, m_peventSourceSecondary);
         } else if (strTag == "Bullet") {
             return ParseBullet(pns, pcc, pccEnd);
+        } else if (strTag == "Hyperlink") {
+            return InsertHyperlink(pcc, pccEnd, Color(0,.4,1), m_peventSourceSecondary);
         }
 
         return Error("Unknown tag: " + strTag);

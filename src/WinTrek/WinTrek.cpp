@@ -7469,7 +7469,7 @@ public:
 
     void InitializeHelp()
     {
-        m_phelp = CreateHelpPane(GetModeler(), "hlpblank", new PagePaneIncluderImpl());
+        m_phelp = CreateHelpPane(GetModeler(), "hlpStart", new PagePaneIncluderImpl());
 
         m_phelp->SetString("pid", GetProductID());
         m_phelp->SetString("ver", ZVersionInfo().GetProductVersionString());

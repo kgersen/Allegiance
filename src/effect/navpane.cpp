@@ -23,6 +23,7 @@ private:
         ZString                     m_str;
         ZString                     m_strMain;
         ZString                     m_strSecondary;
+		ZString						m_strStartSub;
         int                         m_indent;
         Color                       m_color;
         Color                       m_colorHighlight;
@@ -47,7 +48,8 @@ private:
             m_strSecondary(strSecondary),
             m_indent(indent * 8),
             m_colorHighlight(colorHighlight),
-            m_bInside(false)
+            m_bInside(false),
+			m_strStartSub(ZString("hlpStartSub"))
         {
             m_ppane =
                 new AnimatedImagePane(
@@ -308,7 +310,15 @@ public:
 
         if (ptopic) {
             return ptopic->m_strSecondary;
-        } else {
+		} else if (str=="hlpStart") {
+			ptopic = FindTopic("hlpa0");
+			if (ptopic) {
+				return ptopic->m_strStartSub;
+			} else {
+				return str;
+			}
+		}
+		else {
             return str;
         }
     }
