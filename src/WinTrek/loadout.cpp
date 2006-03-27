@@ -569,6 +569,7 @@ public:
 
 
           AddEventTarget(OnListSelect, m_pListPane->GetEventSource());
+          AddEventTarget(OnInvest, m_pListPane->GetDoubleClickEventSource());
           AddEventTarget(OnPartial, m_pListPane->GetRightClickEventSource());	// TE: hooked up RightClickEvent to OnPartial method
           AddEventTarget(OnListHover, m_pListPane->GetMouseOverEvent());
           AddEventTarget(OnInvest, m_pButtonInvest->GetEventSource());

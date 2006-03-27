@@ -195,6 +195,7 @@ private:
     TRef<Pane> m_pBlankPane;
     TRef<IntegerEventSourceImpl> m_pEventSource;
     TRef<IntegerEventSourceImpl> m_pRightClickEventSource;	// TE: Declared new RightClick event
+    TRef<IntegerEventSourceImpl> m_pDoubleClickEventSource;	// TE: Declared new RightClick event
     TRef<IntegerEventSourceImpl> m_pMouseOverEventSource;
     TRef<EventSourceImpl> m_pEventScroll;
     
@@ -222,6 +223,7 @@ public:
         m_nItemWidth = size.X();
         m_pEventSource = new IntegerEventSourceImpl();
         m_pRightClickEventSource = new IntegerEventSourceImpl();	// TE: Initialized RightClick event
+        m_pDoubleClickEventSource = new IntegerEventSourceImpl();	// TE: Initialized RightClick event
         m_pMouseOverEventSource = new IntegerEventSourceImpl();
         m_pEventScroll = new EventSourceImpl();
         
@@ -296,6 +298,12 @@ public:
     IIntegerEventSource* GetRightClickEventSource()
     {
         return m_pRightClickEventSource;
+    }
+
+	// TE: Added getter for the DoubleClickEvent
+    IIntegerEventSource* GetDoubleClickEventSource()
+    {
+        return m_pDoubleClickEventSource;
     }
 
     IIntegerEventSource* GetMouseOverEvent()
@@ -470,6 +478,23 @@ public:
  
         NeedPaint();
         m_pEventSource->Trigger(m_iSelItem);
+    }
+
+    void InvestItemByIdx(int iItem)
+    {
+        if (iItem < 0)
+            iItem = -1;
+        if (iItem >= m_vItems.GetCount())
+            iItem = m_vItems.GetCount() - 1;
+
+        // find the first matching item
+        while (iItem >= 1 && m_vItems[iItem-1] == m_vItems[iItem])
+            iItem--;
+
+        m_iSelItem = iItem;
+ 
+        NeedPaint();
+        m_pDoubleClickEventSource->Trigger(m_iSelItem);
     }
 
 	// TE: Added PartialInvest method to trigger right-clicking
@@ -650,9 +675,14 @@ public:
                     if (iItem < m_vItems.GetCount())
                         {
                         m_bMouseSel = true; 
-						// If leftclicked, select normally:
+						
 						if (button == 0)
-							SetSelItemByIdx(iItem);
+						{	// If leftclicked and doubleclicked
+							if (pprovider->IsDoubleClick())
+								InvestItemByIdx(iItem);		// invest
+							else
+								SetSelItemByIdx(iItem);		// select if single-left clicked
+						}
 						else if (button == 1)	// if rightclicked, partial invest!
 							PartialInvestItemByIdx(iItem);
 

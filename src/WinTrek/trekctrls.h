@@ -68,6 +68,7 @@ public:
 
     virtual IIntegerEventSource* GetEventSource() = 0;
     virtual IIntegerEventSource* GetRightClickEventSource() = 0;	// TE: Added to allow retrieval of the RightClick event
+    virtual IIntegerEventSource* GetDoubleClickEventSource() = 0;	// TE: Added to allow retrieval of the DoubleClickClick event
     virtual IIntegerEventSource* GetMouseOverEvent() = 0;
     virtual IEventSource*   GetScrollEvent() = 0;
 
@@ -85,6 +86,7 @@ public:
     virtual void            SetSelItem(ListItem* pListItem) = 0;
     virtual void            SetSelItemByIdx(int iItem) = 0;
     virtual void            PartialInvestItemByIdx(int iItem) = 0;	// TE: Added to instigate PartialInvesting
+    virtual void            InvestItemByIdx(int iItem) = 0;	// TE: Added to instigate DoubleclickInvesting
     virtual void            SetSelItemByData(long lItemData) = 0;
     virtual TRef<ListItem>  GetSelItem() = 0;
     virtual int             GetSelItemIdx() = 0;
