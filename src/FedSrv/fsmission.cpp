@@ -2484,7 +2484,7 @@ void CFSMission::GameOver(IsideIGC * psideWin, const char* pszReason)
   // the game will actually end when we get around to checking whether a team has won
   // TE, Modify GameEnded AGCEvent to include MissionName and MissionID.
   _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
-      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 1, // changed "" to MissionName and -1 to MissionID
+      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 3, // changed "" to MissionName and -1 to MissionID
       "Reason", VT_LPSTR, pszReason,
 	  "WinningTeamID", VT_I4, iTeamObjectID,	 // TE: Added winning teamID
 	  "WinningTeamName", VT_LPSTR, pszTeamName); // TE: Added winning teamName 

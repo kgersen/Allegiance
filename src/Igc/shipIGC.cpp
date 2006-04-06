@@ -1163,7 +1163,21 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
             m_fraction = 0.0f;
             if (oldFraction > 0.0f)  //Only send the death message once.
             {
-                GetMyMission()->GetIgcSite()->KillShipEvent(timeCollision, this, launcher, amount, position1, position2);
+				// TE: Get the player credited for the kill
+				DamageBucketLink* pdmglink = NULL;
+				ImodelIGC* pcredit = launcher;
+				DamageTrack*  pdt = this->GetDamageTrack();
+				if (pdt)
+				{
+					pdmglink = pdt->GetDamageBuckets()->first();
+					if (pdmglink)
+					{
+						if (pdmglink->data()->model()->GetMission() == GetMyMission())
+							pcredit = pdmglink->data()->model();
+					}
+				}
+				// TE: end
+                GetMyMission()->GetIgcSite()->KillShipEvent(timeCollision, this, pcredit, amount, position1, position2);
                 dr = c_drKilled;
             }
         }

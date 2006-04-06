@@ -9449,7 +9449,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		"MissionID", VT_I4, m_pfsMission->GetMissionID(),
 		"TeamID"    , VT_I4   , pside->GetObjectID(),
 		"TeamName", VT_LPSTR, pside->GetName(),
-		"StationName", VT_LPSTR, pstationNew->GetName());
+		"zStationName", VT_LPSTR, pstationNew->GetName());
     // TE end
 
     pstationNew->Release();
