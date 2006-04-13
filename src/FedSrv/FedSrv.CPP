@@ -3395,7 +3395,19 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                         //Also echo this command to the command wing, but mark individual echo so the
                         //client will know how to process it.
                         pcd->chatTarget = CHAT_INDIVIDUAL_ECHO;
-                        ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 0, pfsSender->GetIGCShip());
+                        ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 0, pfsSender->GetIGCShip()); //Command
+
+						//AEM - Forward drone orders to the rest of the wings
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 1, pfsSender->GetIGCShip()); //Attack
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 2, pfsSender->GetIGCShip()); //Defend 
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 3, pfsSender->GetIGCShip()); //Escort
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 4, pfsSender->GetIGCShip()); //Search
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 5, pfsSender->GetIGCShip()); //Alpha
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 6, pfsSender->GetIGCShip()); //Bravo
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 7, pfsSender->GetIGCShip()); //Charlie
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 8, pfsSender->GetIGCShip()); //Delta
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 9, pfsSender->GetIGCShip()); //Echo
+
                     }
 
                     if (pdb && pmodel)
