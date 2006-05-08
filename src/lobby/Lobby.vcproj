@@ -216,6 +216,12 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{A8E7888A-84AC-485E-9FB2-35382C003E0B}"
+			Name="sharemem"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{1695996C-F698-4509-BF5C-ADE10ADA67F9}"
+			Name="TCLib"/>
 	</References>
 	<Files>
 		<Filter
