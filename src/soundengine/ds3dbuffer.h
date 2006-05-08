@@ -61,19 +61,20 @@ private:
 protected:
 
     // The current sound buffer
-    TRef<IDirectSoundBuffer> m_pdirectsoundbuffer;
+	// mdvalley: Now with DirectSound8
+    TRef<IDirectSoundBuffer8> m_pdirectsoundbuffer;
     TRef<IDirectSound3DBuffer> m_pdirectsound3Dbuffer;
 
 
     // initializes the object, creating the DSoundBuffer itself and 
     // initializing local variables.
-    virtual HRESULT CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData* pdata,
+    virtual HRESULT CreateBuffer(IDirectSound8* pDirectSound, ISoundPCMData* pdata,
         DWORD dwBufferSize, bool bStatic, bool bSupport3D, ISoundEngine::Quality quality, 
         bool bAllowHardware);
 
     // Use an exisiting to initialize this buffer.  Note that the buffers will 
     // share memory, so this only really works for static buffers.
-    virtual HRESULT DuplicateBuffer(IDirectSound* pDirectSound, DS3DSoundBuffer* pBuffer);
+    virtual HRESULT DuplicateBuffer(IDirectSound8* pDirectSound, DS3DSoundBuffer* pBuffer);
 
     // Start the buffer, starting as a looping buffer if requested.
     HRESULT StartImpl(bool bLooping);
@@ -186,7 +187,8 @@ public:
 
     // Initializes this object with the given wave data, 3D support, and sound 
     // quality.
-    HRESULT Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+	// mdvalley: more DirectSound8 portage.
+    HRESULT Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
         bool bLooping, bool bSupport3D, ISoundEngine::Quality quality,
         bool bAllowHardware
         );
@@ -275,7 +277,8 @@ protected:
 
     // Initializes this object with the given wave data, 3D support, sound 
     // quality, and buffer length (in seconds)
-    HRESULT Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+	// mdvalley: DSound8 here.
+    HRESULT Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
         bool bLooping, bool bSupport3D, ISoundEngine::Quality quality,
         bool bAllowHardware, float fBufferLength
         );
@@ -298,7 +301,8 @@ public:
 
     // Initializes this object with the given wave data, 3D support, and sound 
     // quality.
-    HRESULT Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+	// mdvalley: DirectSound8 makes md happy.
+    HRESULT Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
         bool bLooping, bool bSupport3D, ISoundEngine::Quality quality,
         bool bAllowHardware
         );
@@ -368,7 +372,8 @@ public:
 
     // Initializes this object with the given wave data, 3D support, and sound 
     // quality.
-    HRESULT Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+	// mdvalley: DirectSound8
+    HRESULT Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
         DWORD dwLoopOffset, DWORD dwLoopLength, bool bSupport3D, 
         ISoundEngine::Quality quality , bool bAllowHardware
         );

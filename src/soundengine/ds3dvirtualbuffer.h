@@ -211,7 +211,8 @@ protected:
 
     // prepare a sound buffer with the given quality and 3D support using the
     // direct sound object pointed to by pDirectSound.
-    virtual HRESULT PrepareBuffer(IDirectSound* pDirectSound, 
+	// mdvalley: DirectSound8
+    virtual HRESULT PrepareBuffer(IDirectSound8* pDirectSound, 
         ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D);
 
 public:
@@ -260,7 +261,8 @@ public:
             const Vector& vectListenerPosition, float fRolloffFactor);
 
     // Creates and starts a real dsound buffer for this sound
-    virtual HRESULT StartBuffer(IDirectSound* pDirectSound, 
+	// mdvalley: DirectSound8
+    virtual HRESULT StartBuffer(IDirectSound8* pDirectSound, 
         ISoundEngine::Quality quality, bool bAllowHardware);
 
     // forcibly stops the given buffer.
@@ -372,7 +374,8 @@ protected:
 
     // prepare a sound buffer with the given quality and 3D support using the
     // direct sound object pointed to by pDirectSound.
-    virtual HRESULT PrepareBuffer(IDirectSound* pDirectSound, 
+	// mdvalley: DirectSound8
+    virtual HRESULT PrepareBuffer(IDirectSound8* pDirectSound, 
         ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D);
 
 public:

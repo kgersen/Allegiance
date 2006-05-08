@@ -266,7 +266,8 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
     HRESULT hr;
 
     // Create the device
-    hr = DirectSoundCreate(NULL, &m_pDirectSound, NULL);
+	// mdvalley: Changed to Create8
+    hr = DirectSoundCreate8(NULL, &m_pDirectSound, NULL);
     if (hr == DSERR_NODRIVER || hr == DSERR_ALLOCATED || ZFailed(hr)) return hr;
 
     hr = m_pDirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
@@ -278,7 +279,8 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
     if (ZFailed(hr)) return hr;
 
     // go ahead and try compacting the memory; it's not neccessary but may 
-    // give us better hardware utilization on some sound cards.  
+    // give us better hardware utilization on some sound cards.
+	// mdvalley: This has no function in DX8, but it's harmless.
     m_pDirectSound->Compact(); // if it fails, who cares.  
 
     // get the primary buffer
