@@ -365,7 +365,7 @@ private:
                 TrekResources::SmallFont(),
                 color,
                 WinPoint(m_viColumns[2] + 2, 0),
-                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(") ") + ZString(trekClient.LookupRankName(pplayer->Rank(), pplayer->GetCivID()))
+                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(") ") + ZString(trekClient.LookupRankName(pplayer->GetPersistScore(NA).GetRank(), pplayer->GetCivID()))
             );
             psurface->RestoreClipRect(rectClipOld);
 
@@ -2426,7 +2426,7 @@ public:
 
             case QSR_RandomizeSides:
                 if (!m_bShowingRandomizeWarning)
-                    strMessage = "You have been reassigned to a random team.";
+                    strMessage = "You have been reassigned to NOT ON A TEAM.";
                 break;
 
             case QSR_Quit:
