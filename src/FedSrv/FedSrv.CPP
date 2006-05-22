@@ -24,7 +24,7 @@
     #include "FedSrvApp.h"
 #endif
 
-// begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_ON
+// begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_RANKS_ON
 /*-------------------------------------------------------------------------
  * ReadFromRegistry
  *-------------------------------------------------------------------------
@@ -873,19 +873,19 @@ void GotLogonDetails(CQLogonStats * pquery)
     #endif // !defined(ALLSRV_STANDALONE)
 	
   	// -Imago: ASGS Login/Rank
-    // mmf only do this if ASGS is ON
+    // mmf only do this if ASGS_RANKS_ON is ON
     //     check reg key to see if we are using ASGS ranks or not
 	DWORD dw; // Gets result of whether it opened or created... - we only read
 	HKEY  hk;
-	DWORD dwASGS_ON=0;
+	DWORD dwASGS_RANKS_ON=0;
 	// use same key for server as lobby
 	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
 	{
 		// read ASGS is on or off in registry
-		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_ON, 0);
+		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_RANKS_ON, 0);
 		RegCloseKey(hk); 
 	}
-	if (dwASGS_ON) {
+	if (dwASGS_RANKS_ON) {
 	  MaClient *http_client; int contentLen;
 	  char *szContent;
 	  char szURL[255]; char szName[64]; char szResponse[255];
@@ -937,8 +937,8 @@ void GotLogonDetails(CQLogonStats * pquery)
 		debugf("ASGS Server did not respond!\n");
 	  }
 	} else {
-		fValid = true; // not using asgs, Rank will be 0
-		debugf("Not using ASGS, rank query not done\n");
+		fValid = true; // not using asgs ranks, Rank will be 0
+		debugf("Not using ASGS (ASGS_RANKS_ON regkey not set), rank query not done\n");
 	}
   }
   else
