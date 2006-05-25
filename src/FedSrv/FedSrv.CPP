@@ -598,7 +598,9 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
-  if (!pfsPlayer->CanCheat())
+  // mmf added check here for special users so they can join any game
+
+  if (!pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
   {
     // make sure the player meets the rank requirements for this mission
     RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();

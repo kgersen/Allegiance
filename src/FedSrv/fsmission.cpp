@@ -1673,7 +1673,8 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
       CFSPlayer* pfsPlayer = ((CFSShip*)(pshipLink->data()->GetPrivateData()))->GetPlayer();
 
       RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
-      if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat())
+	  // mmf also added check here for special players
+	  if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
       {
         RemovePlayerFromMission(pfsPlayer, QSR_RankLimits);
       }

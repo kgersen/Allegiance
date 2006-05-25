@@ -313,6 +313,20 @@ public:
     return m_fCanCheat;
   }
 
+  // mmf added member function for use for things like circumventing rank restrictions
+  //     same function also added to PlayerInfo class for the client
+  bool            PrivilegedUser()            
+  {
+	size_t nameLen;
+	nameLen=strlen(GetName());
+
+	if ( (nameLen>2) && ( ((strncmp(GetName(),"?",1))==0) || ((strncmp(GetName(),"+",1))==0) ) ) return true;
+	if ( (nameLen>4) && ( (strncmp(GetName()+(nameLen-4),"@Dev",4))==0 ) ) return true;
+	if ( (nameLen>6) && ( (strncmp(GetName()+(nameLen-6),"@Alleg",6))==0 ) ) return true;
+
+    return false;
+  }
+
   CFSPlayer*      GetAutoDonate(void) const
   {
     IshipIGC*   pship = GetIGCShip()->GetAutoDonate();

@@ -832,15 +832,16 @@ public:
 
         const char* pszReason = pfmMissionParams->missionparams.Invalid(true);
 
-        // don't let the player choose a game which they can't play in.  
+        // don't let the player choose a game which they can't play in.
+		// mmf unless they are a Privileged user
         RankID rankOwner = trekClient.MyPlayerInfo()->GetPersistScore(NA).GetRank();
         if (!pszReason)
         {
-            if (rankOwner < pfmMissionParams->missionparams.iMinRank)
+			if ( (rankOwner < pfmMissionParams->missionparams.iMinRank) && !trekClient.MyPlayerInfo()->PrivilegedUser() )
             {
                 pszReason = "Skill Level must be set low enough for you to play.";
             }
-            else if (rankOwner > pfmMissionParams->missionparams.iMaxRank)
+			else if ( (rankOwner > pfmMissionParams->missionparams.iMaxRank) && !trekClient.MyPlayerInfo()->PrivilegedUser() )
             {
                 pszReason = "Skill Level must be set high enough for you to play.";
             }
