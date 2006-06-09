@@ -151,17 +151,20 @@ HRESULT DS3DSoundBuffer::DuplicateBuffer(IDirectSound8* pDirectSound, DS3DSoundB
     // duplicate the buffer
 
     // mdvalley: temp 'n' change. See last function.
-
+/*
 	LPDIRECTSOUNDBUFFER mdDsb = NULL;
 
-    hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &mdDsb);
+	hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &mdDsb);
 	if (FAILED(hr)) return hr;
 
 	hr = mdDsb->QueryInterface(IID_IDirectSoundBuffer8, (LPVOID*) &m_pdirectsoundbuffer);
 	mdDsb->Release();
 	if (FAILED(hr)) return hr;
-
-    // reset the 2D info.
+*/
+//    hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &m_pdirectsoundbuffer);
+    hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, (LPDIRECTSOUNDBUFFER*)&m_pdirectsoundbuffer);	// Cast 2nd param as LPDIRECTSOUNDBUFFER
+    if (FAILED(hr)) return hr;
+	// reset the 2D info.
     hr = m_pdirectsoundbuffer->SetVolume(DSoundVolume(m_fGain));
     if (ZFailed(hr)) return hr;
     hr = m_pdirectsoundbuffer->SetFrequency((LONG)(m_fPitch*m_dwSampleRate));
