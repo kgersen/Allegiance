@@ -114,7 +114,6 @@ public:
             );
             psurface->RestoreClipRect(rectClipOld);
             
-
             // draw the player rank
             rectClipOld = psurface->GetClipRect();
             psurface->SetClipRect(WinRect(WinPoint(m_viColumns[1] + 4, 0), WinPoint(m_viColumns[2], GetYSize()))); // clip rank to fit in column
@@ -122,11 +121,8 @@ public:
                 TrekResources::SmallFont(),
                 Color::White(),
                 WinPoint(m_viColumns[1] + 4, 0),
-                trekClient.LookupRankName(
-                    pplayer->scoring.GetRank(), 
-                    trekClient.GetEndgameSideCiv(pplayer->sideId)
-                    )
-                );
+                trekClient.LookupRankName(trekClient.FindPlayer(pplayer->characterName)->GetPersistScore(NA).GetRank(), trekClient.GetEndgameSideCiv(pplayer->sideId)) // TE: Modified this to pull rank name properly
+                ); 
             psurface->RestoreClipRect(rectClipOld);
 
             // draw the player's ratings

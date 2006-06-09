@@ -1528,7 +1528,8 @@ public:
         PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
         PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
         
-        return pplayer1->Rank() > pplayer2->Rank();
+		// TE: Modified this line to get rank properly so sorting works as expected
+        return pplayer1->GetPersistScore(NA).GetRank() > pplayer2->GetPersistScore(NA).GetRank();
     }
 
     class PlayerStatusCompare
@@ -1834,8 +1835,9 @@ public:
 
     void OnNewChatMessage()
     {
-        ChatTarget target = trekClient.m_chatList.last()->data().GetChatTarget();
-        if (target != m_chattargetChannel)
+		ChatInfo info = trekClient.m_chatList.last()->data();
+        ChatTarget target = info.GetChatTarget();
+        if (target != m_chattargetChannel && info.IsFromPlayer())	// TE: Added IsFromPlayer check to prevent unnecessary blinking
         {
             switch (target)
             {
