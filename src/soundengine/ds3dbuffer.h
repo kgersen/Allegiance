@@ -63,8 +63,9 @@ protected:
     // The current sound buffer
 	// mdvalley: Now with DirectSound8
     TRef<IDirectSoundBuffer8> m_pdirectsoundbuffer;
-    TRef<IDirectSound3DBuffer> m_pdirectsound3Dbuffer;
+//	TRef<IDirectSoundBuffer> m_pdirectsoundbuffer;
 
+	TRef<IDirectSound3DBuffer> m_pdirectsound3Dbuffer;
 
     // initializes the object, creating the DSoundBuffer itself and 
     // initializing local variables.

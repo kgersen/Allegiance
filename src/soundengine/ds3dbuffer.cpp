@@ -97,25 +97,25 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound8* pDirectSound, ISoundPCMData
     }
 #endif
 
-
 	// mdvalley: To use the dx8 buffers, you must create a temp buffer,
     // then change it up to DX8. Or something like that.
 
     LPDIRECTSOUNDBUFFER mdDsb = NULL;
-
     // create the new buffer
 
-//    hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, NULL);
 	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &mdDsb, NULL);
 	if (FAILED(hr)) return hr;
 
 	// and up to DX8. Behold the power of cut and paste programming!
 
 	hr = mdDsb->QueryInterface(IID_IDirectSoundBuffer8, (LPVOID*) &m_pdirectsoundbuffer);
-	mdDsb->Release();
+	while(mdDsb->Release() > 1) {}
 	if (FAILED(hr)) return hr;
 
-    // get a handle to the 3D buffer, if this is 3D
+//	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, NULL);
+//	if (FAILED(hr)) return hr;
+
+	// get a handle to the 3D buffer, if this is 3D
     if (bSupport3D)
     {
         hr = m_pdirectsoundbuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pdirectsound3Dbuffer);
@@ -151,19 +151,18 @@ HRESULT DS3DSoundBuffer::DuplicateBuffer(IDirectSound8* pDirectSound, DS3DSoundB
     // duplicate the buffer
 
     // mdvalley: temp 'n' change. See last function.
-/*
 	LPDIRECTSOUNDBUFFER mdDsb = NULL;
 
 	hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &mdDsb);
 	if (FAILED(hr)) return hr;
 
 	hr = mdDsb->QueryInterface(IID_IDirectSoundBuffer8, (LPVOID*) &m_pdirectsoundbuffer);
-	mdDsb->Release();
+	while(mdDsb->Release() > 1) {}
 	if (FAILED(hr)) return hr;
-*/
-//    hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &m_pdirectsoundbuffer);
-    hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, (LPDIRECTSOUNDBUFFER*)&m_pdirectsoundbuffer);	// Cast 2nd param as LPDIRECTSOUNDBUFFER
-    if (FAILED(hr)) return hr;
+
+//	hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &m_pdirectsoundbuffer);
+//  if (FAILED(hr)) return hr;
+
 	// reset the 2D info.
     hr = m_pdirectsoundbuffer->SetVolume(DSoundVolume(m_fGain));
     if (ZFailed(hr)) return hr;
@@ -536,10 +535,10 @@ HRESULT DS3DStaticSoundBuffer::Init(IDirectSound8* pDirectSound, ISoundPCMData* 
     // see if we have an instance of this buffer which we can simply clone    
     CacheKey cacheKey(pdata, bSupport3D, quality, bAllowHardware);
 
-    BufferCache::iterator iterCache = bufferCache.find(cacheKey);    
-    if (iterCache != bufferCache.end())
+    BufferCache::iterator iterCache = bufferCache.find(cacheKey);  
+    if ((iterCache != bufferCache.end()) && false)					// mdvalley: disable buffer duplication
     {
-        hr = DuplicateBuffer(pDirectSound, (*iterCache).second);
+		hr = DuplicateBuffer(pDirectSound, (*iterCache).second);
         if (FAILED(hr)) return hr;
     }
     else

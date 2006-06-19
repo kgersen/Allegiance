@@ -270,7 +270,7 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
     hr = DirectSoundCreate8(NULL, &m_pDirectSound, NULL);
     if (hr == DSERR_NODRIVER || hr == DSERR_ALLOCATED || ZFailed(hr)) return hr;
 
-    hr = m_pDirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
+	hr = m_pDirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
     if (hr == DSERR_ALLOCATED) 
     {
         debugf("Failure: unable to get DSSCL_PRIORITY access to DSound.  Failing over to DSSCL_NORMAL.\n");
@@ -320,7 +320,11 @@ HRESULT DS3DSoundEngine::Update()
     HRESULT hr;
     Vector vectListenerPosition;
     DWORD dwUpdateTime = timeGetTime();
-    DWORD dwUpdatePeriod = dwUpdateTime - m_dwLastUpdateTime; 
+    DWORD dwUpdatePeriod = dwUpdateTime - m_dwLastUpdateTime;
+
+	// mdvalley: Update no faster than every 30ms
+	if(dwUpdatePeriod < 30)
+		return S_OK;
 
     // fire the update event.
     m_peventsourceUpdate->Trigger(dwUpdatePeriod);
