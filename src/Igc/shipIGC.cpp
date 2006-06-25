@@ -1891,8 +1891,8 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                         }
 										else { // mmf added debugf and else curly braces
                                             pship->SetCommand(c_cmdAccepted, NULL, c_cidNone);
-											debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
-												GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
+											// debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+											//	GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
 										}
                                     }
                                 }
@@ -1941,8 +1941,8 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         if (pmodel) 
                             SetCommand(c_cmdPlan, pmodel, c_cidGoto);
 						// mmf added else and debugf
-						else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
-												GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
+						// else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+						// 						GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
                     }
                 }
 

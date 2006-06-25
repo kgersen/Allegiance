@@ -50,7 +50,10 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound8* pDirectSound, ISoundPCMData
     WAVEFORMATEX waveformatex;
     DSBUFFERDESC dsbufferdesc;
 
-    waveformatex.cbSize = sizeof(waveformatex);
+	memset(&waveformatex, 0, sizeof(WAVEFORMATEX));		// Null the memory
+	memset(&dsbufferdesc, 0, sizeof(DSBUFFERDESC));
+
+    waveformatex.cbSize = sizeof(WAVEFORMATEX);
     waveformatex.wFormatTag = WAVE_FORMAT_PCM; 
     waveformatex.nChannels = pdata->GetNumberOfChannels(); 
     waveformatex.nSamplesPerSec = m_dwSampleRate; 
@@ -58,12 +61,13 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound8* pDirectSound, ISoundPCMData
     waveformatex.nBlockAlign = waveformatex.wBitsPerSample / 8 * waveformatex.nChannels;
     waveformatex.nAvgBytesPerSec = waveformatex.nSamplesPerSec * waveformatex.nBlockAlign;
 
-    dsbufferdesc.dwSize = sizeof(dsbufferdesc);
+    dsbufferdesc.dwSize = sizeof(DSBUFFERDESC);
     dsbufferdesc.dwFlags = 
         (bSupport3D ? DSBCAPS_CTRL3D | DSBCAPS_MUTE3DATMAXDISTANCE : 0)
         | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLVOLUME 
         | DSBCAPS_GETCURRENTPOSITION2  
-        | (bStatic ? DSBCAPS_STATIC : 0);
+//        | (bStatic ? DSBCAPS_STATIC : 0)		// mdvalley: Modern sound hardware doesn't like this flag.
+		;
     dsbufferdesc.dwBufferBytes = dwBufferSize;
     dsbufferdesc.dwReserved = 0;
     dsbufferdesc.lpwfxFormat = &waveformatex;
@@ -121,6 +125,15 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound8* pDirectSound, ISoundPCMData
         hr = m_pdirectsoundbuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pdirectsound3Dbuffer);
         if (ZFailed(hr)) return hr;
     }
+
+	BYTE nFillValue = (waveformatex.wBitsPerSample == 8) ? 0x80 : 0;
+	LPVOID writePtr;
+	DWORD writeBytes;
+
+	// Fill the buffer with silence
+	m_pdirectsoundbuffer->Lock(0, 0, &writePtr, &writeBytes, NULL, NULL, DSBLOCK_ENTIREBUFFER);
+	memset(writePtr, nFillValue, writeBytes);		// Seeing as we just created the buffer, the writePtr is at the beginning.
+	m_pdirectsoundbuffer->Unlock(writePtr, writeBytes, NULL, NULL);
 
     return S_OK;
 };

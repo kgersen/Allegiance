@@ -136,6 +136,8 @@ HRESULT DS3DSoundEngine::SetPrimaryBufferFormat(int nSampleRate, int nNumberOfBi
     HRESULT hr;
     WAVEFORMATEX waveformatex;
 
+	memset(&waveformatex, 0, sizeof(WAVEFORMATEX));	// mdvalley: Zero it
+
     waveformatex.cbSize = sizeof(WAVEFORMATEX);
     waveformatex.wFormatTag = WAVE_FORMAT_PCM; 
     waveformatex.nChannels = nChannels; 
@@ -285,9 +287,11 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
 
     // get the primary buffer
     DSBUFFERDESC dsbufferdesc;
-    memset(&dsbufferdesc, 0, sizeof(dsbufferdesc));
+    memset(&dsbufferdesc, 0, sizeof(DSBUFFERDESC));
     dsbufferdesc.dwSize = sizeof(dsbufferdesc);
     dsbufferdesc.dwFlags = DSBCAPS_CTRL3D | DSBCAPS_PRIMARYBUFFER;
+	dsbufferdesc.dwBufferBytes = 0;		// mdvalley: Set these for the primary
+	dsbufferdesc.lpwfxFormat = NULL;
     hr = m_pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pPrimaryBuffer, NULL);
     if (ZFailed(hr)) return hr;
 
@@ -296,8 +300,8 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
     if (ZFailed(hr)) return hr;
 
     // get the capabilities of the hardware
-    memset(&m_dscaps, 0, sizeof(m_dscaps));
-    m_dscaps.dwSize = sizeof(m_dscaps);
+    memset(&m_dscaps, 0, sizeof(DSCAPS));
+    m_dscaps.dwSize = sizeof(DSCAPS);
     hr = m_pDirectSound->GetCaps(&m_dscaps);
     if (ZFailed(hr)) return hr;
     DumpCaps();
