@@ -145,8 +145,7 @@ void BufferPositionTracker::SetPosition(DWORD dwPosition)
 
 // prepare a sound buffer with the given quality and 3D support using the
 // direct sound object pointed to by pDirectSound.
-// mdvalley: DirectSound8
-HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound8* pDirectSound, 
+HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
 {
     HRESULT hr;
@@ -333,8 +332,7 @@ HRESULT DSVirtualSoundBuffer::Update(DWORD dwTimeElapsed,
 
 
 // Creates and starts a real dsound buffer for this sound
-// mdvalley: DirectSound8
-HRESULT DSVirtualSoundBuffer::StartBuffer(IDirectSound8* pDirectSound, 
+HRESULT DSVirtualSoundBuffer::StartBuffer(IDirectSound* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware)
 {
     HRESULT hr;
@@ -550,8 +548,7 @@ DS3DVirtualSoundBuffer::DS3DVirtualSoundBuffer(ISoundPCMData* pdata, DWORD dwLoo
 
 // prepare a sound buffer with the given quality and 3D support using the
 // direct sound object pointed to by pDirectSound.
-	// mdvalley: DSound8
-HRESULT DS3DVirtualSoundBuffer::PrepareBuffer(IDirectSound8* pDirectSound, 
+HRESULT DS3DVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
 {
     HRESULT hr;

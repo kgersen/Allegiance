@@ -136,8 +136,6 @@ HRESULT DS3DSoundEngine::SetPrimaryBufferFormat(int nSampleRate, int nNumberOfBi
     HRESULT hr;
     WAVEFORMATEX waveformatex;
 
-	memset(&waveformatex, 0, sizeof(WAVEFORMATEX));	// mdvalley: Zero it
-
     waveformatex.cbSize = sizeof(WAVEFORMATEX);
     waveformatex.wFormatTag = WAVE_FORMAT_PCM; 
     waveformatex.nChannels = nChannels; 
@@ -268,11 +266,10 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
     HRESULT hr;
 
     // Create the device
-	// mdvalley: Changed to Create8
-    hr = DirectSoundCreate8(NULL, &m_pDirectSound, NULL);
+    hr = DirectSoundCreate(NULL, &m_pDirectSound, NULL);
     if (hr == DSERR_NODRIVER || hr == DSERR_ALLOCATED || ZFailed(hr)) return hr;
 
-	hr = m_pDirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
+    hr = m_pDirectSound->SetCooperativeLevel(hwnd, DSSCL_PRIORITY);
     if (hr == DSERR_ALLOCATED) 
     {
         debugf("Failure: unable to get DSSCL_PRIORITY access to DSound.  Failing over to DSSCL_NORMAL.\n");
@@ -281,17 +278,14 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
     if (ZFailed(hr)) return hr;
 
     // go ahead and try compacting the memory; it's not neccessary but may 
-    // give us better hardware utilization on some sound cards.
-	// mdvalley: This has no function in DX8, but it's harmless.
+    // give us better hardware utilization on some sound cards.  
     m_pDirectSound->Compact(); // if it fails, who cares.  
 
     // get the primary buffer
     DSBUFFERDESC dsbufferdesc;
-    memset(&dsbufferdesc, 0, sizeof(DSBUFFERDESC));
+    memset(&dsbufferdesc, 0, sizeof(dsbufferdesc));
     dsbufferdesc.dwSize = sizeof(dsbufferdesc);
     dsbufferdesc.dwFlags = DSBCAPS_CTRL3D | DSBCAPS_PRIMARYBUFFER;
-	dsbufferdesc.dwBufferBytes = 0;		// mdvalley: Set these for the primary
-	dsbufferdesc.lpwfxFormat = NULL;
     hr = m_pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pPrimaryBuffer, NULL);
     if (ZFailed(hr)) return hr;
 
@@ -300,8 +294,8 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd)
     if (ZFailed(hr)) return hr;
 
     // get the capabilities of the hardware
-    memset(&m_dscaps, 0, sizeof(DSCAPS));
-    m_dscaps.dwSize = sizeof(DSCAPS);
+    memset(&m_dscaps, 0, sizeof(m_dscaps));
+    m_dscaps.dwSize = sizeof(m_dscaps);
     hr = m_pDirectSound->GetCaps(&m_dscaps);
     if (ZFailed(hr)) return hr;
     DumpCaps();
@@ -324,11 +318,7 @@ HRESULT DS3DSoundEngine::Update()
     HRESULT hr;
     Vector vectListenerPosition;
     DWORD dwUpdateTime = timeGetTime();
-    DWORD dwUpdatePeriod = dwUpdateTime - m_dwLastUpdateTime;
-
-	// mdvalley: Update no faster than every 30ms
-	if(dwUpdatePeriod < 30)
-		return S_OK;
+    DWORD dwUpdatePeriod = dwUpdateTime - m_dwLastUpdateTime; 
 
     // fire the update event.
     m_peventsourceUpdate->Trigger(dwUpdatePeriod);
