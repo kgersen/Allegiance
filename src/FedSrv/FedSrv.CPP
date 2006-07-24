@@ -888,6 +888,43 @@ void GotLogonDetails(CQLogonStats * pquery)
 		RegCloseKey(hk); 
 	}
 	if (dwASGS_RANKS_ON) {
+	  // mmf pull rank from callsign (#) for now
+	  char szRank[64];
+	  char newName[64];
+	  int leftParen; int strLen;
+	  ZString strName = pfsPlayer->GetName();
+
+	  strLen = strName.GetLength();
+	  leftParen = strName.ReverseFind('(',0);
+	  if (leftParen>=1) {
+	    Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
+	    RankID myRank = atoi(szRank); 
+		if (!((myRank>0) && (myRank<100))) {
+			debugf("Rank out of range rank=%d\n",myRank);
+			myRank=0; // sanity check
+		}
+        const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+		{
+		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+		}
+		// remove the (#) from callsign
+		// only for ranks above 4 so people can see newbs for boot protection as per the COD
+		if (myRank>4) {
+			Strncpy(newName,(PCC)strName,leftParen);
+			Strncpy(newName+leftParen,"\0",1); // null terminate
+			pship->SetName(newName);
+		}
+	    fValid = true;
+	  } else {
+		fValid = true; // No rank found, Rank not set, should default to 0
+		debugf("No rank found in callsign %s\n",(PCC)strName);
+	  }
+	  // mmf end pull rank from callsign
+#if 0 // http asgs rank lookup, disabled for now as it can hang the server waiting on a timeout, mmf
 	  MaClient *http_client; int contentLen;
 	  char *szContent;
 	  char szURL[255]; char szName[64]; char szResponse[255];
@@ -938,6 +975,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 		fValid = true; //assume all is OK, Rank will be 0
 		debugf("ASGS Server did not respond!\n");
 	  }
+#endif // http asgs rank lookup
 	} else {
 		fValid = true; // not using asgs ranks, Rank will be 0
 		debugf("Not using ASGS (ASGS_RANKS_ON regkey not set), rank query not done\n");
