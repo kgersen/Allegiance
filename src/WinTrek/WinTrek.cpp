@@ -7505,6 +7505,16 @@ public:
     {
         if (m_screen != ScreenIDSplashScreen) {
             switch(tk) {
+				// SR added ability to toggle virtual joystick during launch animation 8/06
+				case TK_ToggleMouse:
+					if (trekClient.IsInGame() &&
+					GetViewMode() == vmOverride &&
+					!trekClient.IsLockedDown()) {
+						m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;                
+						return true;
+					}
+					return false;
+
                 case TK_Help:
                     OnHelp(false);
                     return true;

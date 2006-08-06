@@ -250,6 +250,19 @@ private:
             }
             else
             {
+				//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+				//  mmf - modified to not show if total is zero
+				// Add up the sum of all the players ranks.
+				const ShipListIGC* mp_ships = pside->GetShips();
+				int teamTotalRank = 0;
+				for (const ShipLinkIGC* lShip = mp_ships->first(); lShip; lShip = lShip->next())
+				{
+					IshipIGC* pship = lShip->data();
+					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
+					teamTotalRank += pplayer->GetPersistScore(NA).GetRank();
+				}
+				// end yp
+
                 // draw the team name
                 WinRect rectClipOld = psurface->GetClipRect();
                 psurface->SetClipRect(WinRect(WinPoint(m_viColumns[0], 0), WinPoint(m_viColumns[1] - 4, GetYSize()))); // clip name to fit in column
@@ -266,13 +279,22 @@ private:
                 if (pitem->GetSideID() == SIDE_TEAMLOBBY)
                 {
                     TRef<List> plistPlayers = pitem->GetMemberList();
-                    wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
+					if (teamTotalRank > 0)
+                        wsprintf(cbPositions, "(%d)[%d]", plistPlayers->GetCount(), teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+					else
+						wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
                 }
                 else
                 {
-                    wsprintf(cbPositions, "(%d/%d)", 
-                        m_pMission->SideNumPlayers(pitem->GetSideID()),
-                        m_pMission->SideMaxPlayers(pitem->GetSideID()));
+					if (teamTotalRank > 0)
+						wsprintf(cbPositions, "(%d/%d)[%d]", //	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+							m_pMission->SideNumPlayers(pitem->GetSideID()),
+							m_pMission->SideMaxPlayers(pitem->GetSideID()),
+							teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+					else
+						wsprintf(cbPositions, "(%d/%d)",
+							m_pMission->SideNumPlayers(pitem->GetSideID()),
+							m_pMission->SideMaxPlayers(pitem->GetSideID()));
                 }
                 psurface->DrawString(
                     TrekResources::SmallFont(),
