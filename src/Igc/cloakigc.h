@@ -74,13 +74,8 @@ class CcloakIGC : public IcloakIGC
                 m_ship->ChangeSignature(m_typeData->signature);
                 m_fActive = true;
 
-                //
-                // WLP 2005 - Changed line below Turn Cloak On right away if ship is cloaked
-                //   m_cloaking = 0.0f;
-
-                m_cloaking = ( 1 - m_ship->GetCloaking() ) ; // WLP - it is the complement to ours
-
-                //  assert (m_ship->GetCloaking() == 1.0f); // wlp NOT NOW IT ISNT - LOL
+                m_cloaking = 0.0f;
+				assert (m_ship->GetCloaking() == 1.0f);
             }
         }
         virtual void             Deactivate(void)
