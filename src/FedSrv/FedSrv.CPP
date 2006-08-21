@@ -24,7 +24,7 @@
     #include "FedSrvApp.h"
 #endif
 
-// begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_ON
+// begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_RANKS_ON
 /*-------------------------------------------------------------------------
  * ReadFromRegistry
  *-------------------------------------------------------------------------
@@ -598,7 +598,9 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
-  if (!pfsPlayer->CanCheat())
+  // mmf added check here for special users so they can join any game
+
+  if (!pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
   {
     // make sure the player meets the rank requirements for this mission
     RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
@@ -873,19 +875,56 @@ void GotLogonDetails(CQLogonStats * pquery)
     #endif // !defined(ALLSRV_STANDALONE)
 	
   	// -Imago: ASGS Login/Rank
-    // mmf only do this if ASGS is ON
+    // mmf only do this if ASGS_RANKS_ON is ON
     //     check reg key to see if we are using ASGS ranks or not
 	DWORD dw; // Gets result of whether it opened or created... - we only read
 	HKEY  hk;
-	DWORD dwASGS_ON=0;
+	DWORD dwASGS_RANKS_ON=0;
 	// use same key for server as lobby
 	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
 	{
 		// read ASGS is on or off in registry
-		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_ON, 0);
+		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_RANKS_ON, 0);
 		RegCloseKey(hk); 
 	}
-	if (dwASGS_ON) {
+	if (dwASGS_RANKS_ON) {
+	  // mmf pull rank from callsign (#) for now
+	  char szRank[64];
+	  char newName[64];
+	  int leftParen; int strLen;
+	  ZString strName = pfsPlayer->GetName();
+
+	  strLen = strName.GetLength();
+	  leftParen = strName.ReverseFind('(',0);
+	  if (leftParen>=1) {
+	    Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
+	    RankID myRank = atoi(szRank); 
+		if (!((myRank>0) && (myRank<100))) {
+			debugf("Rank out of range rank=%d\n",myRank);
+			myRank=0; // sanity check
+		}
+        const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+		{
+		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+		}
+		// remove the (#) from callsign
+		// only for ranks above 4 so people can see newbs for boot protection as per the COD
+		if (myRank>4) {
+			Strncpy(newName,(PCC)strName,leftParen);
+			Strncpy(newName+leftParen,"\0",1); // null terminate
+			pship->SetName(newName);
+		}
+	    fValid = true;
+	  } else {
+		fValid = true; // No rank found, Rank not set, should default to 0
+		debugf("No rank found in callsign %s\n",(PCC)strName);
+	  }
+	  // mmf end pull rank from callsign
+#if 0 // http asgs rank lookup, disabled for now as it can hang the server waiting on a timeout, mmf
 	  MaClient *http_client; int contentLen;
 	  char *szContent;
 	  char szURL[255]; char szName[64]; char szResponse[255];
@@ -936,9 +975,10 @@ void GotLogonDetails(CQLogonStats * pquery)
 		fValid = true; //assume all is OK, Rank will be 0
 		debugf("ASGS Server did not respond!\n");
 	  }
+#endif // http asgs rank lookup
 	} else {
-		fValid = true; // not using asgs, Rank will be 0
-		debugf("Not using ASGS, rank query not done\n");
+		fValid = true; // not using asgs ranks, Rank will be 0
+		debugf("Not using ASGS (ASGS_RANKS_ON regkey not set), rank query not done\n");
 	}
   }
   else
@@ -3397,13 +3437,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                         pcd->chatTarget = CHAT_INDIVIDUAL_ECHO;
                         ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 0, pfsSender->GetIGCShip()); //Command
 
-						//AEM - Forward drone orders to the rest of the wings
-						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 1, pfsSender->GetIGCShip()); //Attack
-						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 2, pfsSender->GetIGCShip()); //Defend 
-						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 3, pfsSender->GetIGCShip()); //Escort
-						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 4, pfsSender->GetIGCShip()); //Search
-						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 5, pfsSender->GetIGCShip()); //Alpha
-						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 6, pfsSender->GetIGCShip()); //Bravo
+						//AEM/TE: - Forward drone orders to Charlie, Delta, and Echo wings
 						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 7, pfsSender->GetIGCShip()); //Charlie
 						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 8, pfsSender->GetIGCShip()); //Delta
 						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 9, pfsSender->GetIGCShip()); //Echo

@@ -4293,45 +4293,46 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
         }
     }
 
-    //NYI hack to piggify a pilot
     if (bForMe)
     {
-        if ((cid == c_cidNone) && pszText && (strncmp(pszText, "cheat-", 6) == 0))
-        {
-            pszText += 6;
-            if (strncmp(pszText, "board ", 6) == 0)
-            {
-                //Find a matching player
-                pszText += 6;
+	// TE: Removed cheat-board
+    ////NYI hack to piggify a pilot
+    //    if ((cid == c_cidNone) && pszText && (strncmp(pszText, "cheat-", 6) == 0))
+    //    {
+    //        pszText += 6;
+    //        if (strncmp(pszText, "board ", 6) == 0)
+    //        {
+    //            //Find a matching player
+    //            pszText += 6;
 
-                IshipIGC*   pship = NULL;
-                for (ShipLinkIGC*   psl = trekClient.GetSide()->GetShips()->first();
-                     (psl != NULL);
-                     psl = psl->next())
-                {
-                    if (strcmp(pszText, psl->data()->GetName()) == 0)
-                    {
-                        pship = psl->data();
-                        break;
-                    }
-                }
+    //            IshipIGC*   pship = NULL;
+    //            for (ShipLinkIGC*   psl = trekClient.GetSide()->GetShips()->first();
+    //                 (psl != NULL);
+    //                 psl = psl->next())
+    //            {
+    //                if (strcmp(pszText, psl->data()->GetName()) == 0)
+    //                {
+    //                    pship = psl->data();
+    //                    break;
+    //                }
+    //            }
 
-                if (pship)
-                {
-                    trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-                    BEGIN_PFM_CREATE(trekClient.m_fm, pfmBoardShip, C, BOARD_SHIP)
-                    END_PFM_CREATE
+    //            if (pship)
+    //            {
+    //                trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+    //                BEGIN_PFM_CREATE(trekClient.m_fm, pfmBoardShip, C, BOARD_SHIP)
+    //                END_PFM_CREATE
 
-                    pfmBoardShip->sidParent = pship->GetObjectID();
-                }
-            }
-            else if (strncmp(pszText, "log ", 4) == 0)
-            {
-                pszText += 4;
-                GetWindow()->SetShowFPS(*pszText == '1',
-                                        *(pszText + 1) == '\0' ? NULL : pszText + 1);
-            }
-        }
+    //                pfmBoardShip->sidParent = pship->GetObjectID();
+    //            }
+    //        }
+    //        else if (strncmp(pszText, "log ", 4) == 0)
+    //        {
+    //            pszText += 4;
+    //            GetWindow()->SetShowFPS(*pszText == '1',
+    //                                    *(pszText + 1) == '\0' ? NULL : pszText + 1);
+    //        }
+    //    }
 
         if (pmodelTarget && trekClient.GetShip()->LegalCommand(cid, pmodelTarget))
         {

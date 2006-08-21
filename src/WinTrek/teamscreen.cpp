@@ -250,6 +250,19 @@ private:
             }
             else
             {
+				//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+				//  mmf - modified to not show if total is zero
+				// Add up the sum of all the players ranks.
+				const ShipListIGC* mp_ships = pside->GetShips();
+				int teamTotalRank = 0;
+				for (const ShipLinkIGC* lShip = mp_ships->first(); lShip; lShip = lShip->next())
+				{
+					IshipIGC* pship = lShip->data();
+					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
+					teamTotalRank += pplayer->GetPersistScore(NA).GetRank();
+				}
+				// end yp
+
                 // draw the team name
                 WinRect rectClipOld = psurface->GetClipRect();
                 psurface->SetClipRect(WinRect(WinPoint(m_viColumns[0], 0), WinPoint(m_viColumns[1] - 4, GetYSize()))); // clip name to fit in column
@@ -266,13 +279,22 @@ private:
                 if (pitem->GetSideID() == SIDE_TEAMLOBBY)
                 {
                     TRef<List> plistPlayers = pitem->GetMemberList();
-                    wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
+					if (teamTotalRank > 0)
+                        wsprintf(cbPositions, "(%d)[%d]", plistPlayers->GetCount(), teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+					else
+						wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
                 }
                 else
                 {
-                    wsprintf(cbPositions, "(%d/%d)", 
-                        m_pMission->SideNumPlayers(pitem->GetSideID()),
-                        m_pMission->SideMaxPlayers(pitem->GetSideID()));
+					if (teamTotalRank > 0)
+						wsprintf(cbPositions, "(%d/%d)[%d]", //	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+							m_pMission->SideNumPlayers(pitem->GetSideID()),
+							m_pMission->SideMaxPlayers(pitem->GetSideID()),
+							teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+					else
+						wsprintf(cbPositions, "(%d/%d)",
+							m_pMission->SideNumPlayers(pitem->GetSideID()),
+							m_pMission->SideMaxPlayers(pitem->GetSideID()));
                 }
                 psurface->DrawString(
                     TrekResources::SmallFont(),
@@ -365,7 +387,7 @@ private:
                 TrekResources::SmallFont(),
                 color,
                 WinPoint(m_viColumns[2] + 2, 0),
-                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(") ") + ZString(trekClient.LookupRankName(pplayer->Rank(), pplayer->GetCivID()))
+                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(") ") + ZString(trekClient.LookupRankName(pplayer->GetPersistScore(NA).GetRank(), pplayer->GetCivID()))
             );
             psurface->RestoreClipRect(rectClipOld);
 
@@ -1528,7 +1550,8 @@ public:
         PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
         PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
         
-        return pplayer1->Rank() > pplayer2->Rank();
+		// TE: Modified this line to get rank properly so sorting works as expected
+        return pplayer1->GetPersistScore(NA).GetRank() > pplayer2->GetPersistScore(NA).GetRank();
     }
 
     class PlayerStatusCompare
@@ -1834,8 +1857,9 @@ public:
 
     void OnNewChatMessage()
     {
-        ChatTarget target = trekClient.m_chatList.last()->data().GetChatTarget();
-        if (target != m_chattargetChannel)
+		ChatInfo info = trekClient.m_chatList.last()->data();
+        ChatTarget target = info.GetChatTarget();
+        if (target != m_chattargetChannel && info.IsFromPlayer())	// TE: Added IsFromPlayer check to prevent unnecessary blinking
         {
             switch (target)
             {
@@ -2426,7 +2450,7 @@ public:
 
             case QSR_RandomizeSides:
                 if (!m_bShowingRandomizeWarning)
-                    strMessage = "You have been reassigned to a random team.";
+                    strMessage = "You have been reassigned to NOT ON A TEAM.";
                 break;
 
             case QSR_Quit:

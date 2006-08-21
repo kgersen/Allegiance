@@ -553,10 +553,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   // Set their stuff appropriate for this side
   assert(pfsPlayer->GetMoney() == 0);
 
-  // WLP 2005 - Modified default wing to command - changed magic number 1(attack) to 0(command)
-  // pfsPlayer->GetIGCShip()->SetWingID(1); // mmf splat edit this to change default wing, 0 = command
-  pfsPlayer->GetIGCShip()->SetWingID(0); // mmf splat edit this to change default wing, 0 = command
-
+  pfsPlayer->GetIGCShip()->SetWingID(1); // TE: Default wing is Attack(1)
   if (!HasPlayers(pside, true)) // we have a new team leader
   {
     fTeamLeader = true;
@@ -1329,20 +1326,13 @@ void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
   CFSPlayer * pfsOldLeader = GetLeader(sid);
   assert(pfsOldLeader);
 
-  //
-  // WLP 2005 - commander now stays on command wing - they used to be set to attack
-  //
-  // take the old leader off of the command wing
   if (pfsOldLeader->GetIGCShip()->GetWingID() == 0)
   {
-    // pfsOldLeader->GetIGCShip()->SetWingID(1);
-    pfsOldLeader->GetIGCShip()->SetWingID(0); // WLP - command wing
+    pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing
 
     BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
     END_PFM_CREATE
-    // WLP 2005 - changed following line to use command wing (0)
-    // pfmSetWingID->wingID = 1;
-    pfmSetWingID->wingID = 0; // WLP - command wing
+    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing
     pfmSetWingID->shipID = pfsOldLeader->GetShipID();
     pfmSetWingID->bCommanded = true;
   }
@@ -1683,7 +1673,8 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
       CFSPlayer* pfsPlayer = ((CFSShip*)(pshipLink->data()->GetPrivateData()))->GetPlayer();
 
       RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
-      if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat())
+	  // mmf also added check here for special players
+	  if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
       {
         RemovePlayerFromMission(pfsPlayer, QSR_RankLimits);
       }
