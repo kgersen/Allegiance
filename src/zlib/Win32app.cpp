@@ -32,8 +32,10 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
 }
 
 // mmf added code for chat logging
+// mmf 7/15 changed creation flag on chat file so other processes can read from it
 
 HANDLE chat_logfile = NULL;
+char logFileName[MAX_PATH + 21];
 
 void InitializeLogchat()
 {
@@ -56,7 +58,8 @@ void InitializeLogchat()
 	time(&longTime);
 	tm* t = localtime(&longTime);
 
-	char logFileName[MAX_PATH + 21];
+	// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
+	// turns out this is not needed but leaving it here instead of moving it again
 	GetModuleFileName(NULL, logFileName, MAX_PATH);
 	char* p = strrchr(logFileName, '\\');
 	if (!p)
@@ -70,17 +73,19 @@ void InitializeLogchat()
 	strcpy(p, months[t->tm_mon]);
 	sprintf(p + 8, "%02d%02d%02d%02d.txt",
 	t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+	// mmf changed 3 param from 0 to FILE_SHARE_READ
 	chat_logfile =
 		CreateFile(
 			logFileName,
 			GENERIC_WRITE,
-			0,
+			FILE_SHARE_READ,
 			NULL,
 			OPEN_ALWAYS,
 			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
 			NULL
 		);
 	}
+	if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
 }
 
 void TerminateLogchat()
@@ -104,13 +109,13 @@ void logchat(const char* strText)
 
 	length = strlen(strText);
 
-	sprintf(bfr, "%02d/%02d/%02d %02d%02d%02d: %s\n",
+	// don't log if text is bigger than buffer, we don't want to log these long 'spam' chat's anyway
+	if (chat_logfile && (length < 490)) {
+		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\n",
             (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
-
-	if (chat_logfile) {
         DWORD nBytes;
         ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
-    }
+	}
 }
 
 // end mmf chat logging code

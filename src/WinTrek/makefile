@@ -36,8 +36,8 @@ SPLITSYMBOLS=1
 SRCROOT=Wintrek
 MAINTARGROOT=Allegiance
 MAINTARGEXT=exe
-CARGSLOCAL=/D"WINTREK" /D "igc_static" /D "IGC_SHIP" /D "_USRDLL" /D"DLL" /I$(FEDROOT)\Objs\$(FLAVOR)\AGC /I$(FEDROOT)\Objs\$(FLAVOR)\AllSrv32
-INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDSRC)\Effect;$(FEDSRC)\Engine;$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(FEDSRC)\clintlib;$(FEDSRC)\SoundEngine;$(FEDSRC)\agc;$(FEDSRC)\FedSrv;$(FEDSRC)\Training;$(FEDSRC)\lobby;$(FEDSRC)\test\inc;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\AllSrv32
+CARGSLOCAL=/D"WINTREK" /D "igc_static" /D "IGC_SHIP" /D "_USRDLL" /D"DLL" /I$(FEDROOT)\Objs\$(FLAVOR)\AGC /I$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
+INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDSRC)\Effect;$(FEDSRC)\Engine;$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(FEDSRC)\clintlib;$(FEDSRC)\SoundEngine;$(FEDSRC)\agc;$(FEDSRC)\FedSrv;$(FEDSRC)\Training;$(FEDSRC)\lobby;$(FEDSRC)\test\inc;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
 
 UNWINDCARG=/GX
 

@@ -230,7 +230,7 @@ public:
             ppopup->SetOwner(ppopupOwner);
         }
 
-        EngineWindow::DoHitTest();
+        //EngineWindow::DoHitTest(); // TE: Commented to prevent mouse from triggering quickchats prematurely
     }
 
     void OpenPopup(IPopup* ppopup, const Rect& rect, bool bCloseAll, bool bCascadeDown, IPopup* ppopupOwner)

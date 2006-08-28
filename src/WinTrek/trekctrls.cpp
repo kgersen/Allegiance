@@ -194,6 +194,8 @@ private:
     TRef<Pane> m_pScrollBar;
     TRef<Pane> m_pBlankPane;
     TRef<IntegerEventSourceImpl> m_pEventSource;
+    TRef<IntegerEventSourceImpl> m_pRightClickEventSource;	// TE: Declared new RightClick event
+    TRef<IntegerEventSourceImpl> m_pDoubleClickEventSource;	// TE: Declared new RightClick event
     TRef<IntegerEventSourceImpl> m_pMouseOverEventSource;
     TRef<EventSourceImpl> m_pEventScroll;
     
@@ -220,6 +222,8 @@ public:
     {
         m_nItemWidth = size.X();
         m_pEventSource = new IntegerEventSourceImpl();
+        m_pRightClickEventSource = new IntegerEventSourceImpl();	// TE: Initialized RightClick event
+        m_pDoubleClickEventSource = new IntegerEventSourceImpl();	// TE: Initialized RightClick event
         m_pMouseOverEventSource = new IntegerEventSourceImpl();
         m_pEventScroll = new EventSourceImpl();
         
@@ -288,6 +292,18 @@ public:
     IIntegerEventSource* GetEventSource()
     {
         return m_pEventSource;
+    }
+
+	// TE: Added getter for the RightClickEvent
+    IIntegerEventSource* GetRightClickEventSource()
+    {
+        return m_pRightClickEventSource;
+    }
+
+	// TE: Added getter for the DoubleClickEvent
+    IIntegerEventSource* GetDoubleClickEventSource()
+    {
+        return m_pDoubleClickEventSource;
     }
 
     IIntegerEventSource* GetMouseOverEvent()
@@ -464,6 +480,41 @@ public:
         m_pEventSource->Trigger(m_iSelItem);
     }
 
+    void InvestItemByIdx(int iItem)
+    {
+        if (iItem < 0)
+            iItem = -1;
+        if (iItem >= m_vItems.GetCount())
+            iItem = m_vItems.GetCount() - 1;
+
+        // find the first matching item
+        while (iItem >= 1 && m_vItems[iItem-1] == m_vItems[iItem])
+            iItem--;
+
+        m_iSelItem = iItem;
+ 
+        NeedPaint();
+        m_pDoubleClickEventSource->Trigger(m_iSelItem);
+    }
+
+	// TE: Added PartialInvest method to trigger right-clicking
+    void PartialInvestItemByIdx(int iItem)
+    {
+        if (iItem < 0)
+            iItem = -1;
+        if (iItem >= m_vItems.GetCount())
+            iItem = m_vItems.GetCount() - 1;
+
+        // find the first matching item
+        while (iItem >= 1 && m_vItems[iItem-1] == m_vItems[iItem])
+            iItem--;
+
+        m_iSelItem = iItem;
+ 
+        NeedPaint();
+        m_pRightClickEventSource->Trigger(m_iSelItem);
+    }
+
     void SetSelItemByData(long lItemData)     
     {
         SetSelItemByIdx(GetItemIdxByData(lItemData));
@@ -616,7 +667,7 @@ public:
     {
         if (point.X() < m_pBlankPane->GetSize().X())
             {
-            if (button == 0) 
+            if (button == 0 || button == 1) // TE: Allowed rightclicks to trigger button event
                 {
                 if (bDown) 
                     {
@@ -624,7 +675,17 @@ public:
                     if (iItem < m_vItems.GetCount())
                         {
                         m_bMouseSel = true; 
-                        SetSelItemByIdx(iItem);
+						
+						if (button == 0)
+						{	// If leftclicked and doubleclicked
+							if (pprovider->IsDoubleClick())
+								InvestItemByIdx(iItem);		// invest
+							else
+								SetSelItemByIdx(iItem);		// select if single-left clicked
+						}
+						else if (button == 1)	// if rightclicked, partial invest!
+							PartialInvestItemByIdx(iItem);
+
                         ScrollToItemByIdx(iItem);
                         m_bMouseSel = false;
                         }

@@ -742,7 +742,7 @@ BOOL WINAPI HandlerRoutine(
 void RunAsWindow()
 {
   // Create an invisible window
-  HWND hwnd = ::CreateWindow("static", "AllSrv32", WS_OVERLAPPED,
+  HWND hwnd = ::CreateWindow("static", "AllSrv", WS_OVERLAPPED,
     0, 0, 0, 0, NULL, NULL, ::GetModuleHandle(NULL), NULL);
 
   // Load the small application icon

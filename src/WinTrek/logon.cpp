@@ -39,7 +39,7 @@ public:
         else
             logonNameType = lntZone;
 
-				        TRef<INameSpace> pnsLogonData = pmodeler->CreateNameSpace("logondata", pmodeler->GetNameSpace("gamepanes"));
+        TRef<INameSpace> pnsLogonData = pmodeler->CreateNameSpace("logondata", pmodeler->GetNameSpace("gamepanes"));
         pnsLogonData->AddMember("promptText", new ModifiableString(szPrompt));
         pnsLogonData->AddMember("Callsign", new ModifiableNumber((float)lntCallsign));
         pnsLogonData->AddMember("ZoneID", new ModifiableNumber((float)lntZone));
@@ -97,7 +97,6 @@ public:
         }
 
         pmodeler->UnloadNameSpace(pns);
-
     }
 
     bool OnButtonLogon()
@@ -268,7 +267,6 @@ public:
 TRef<IPopup> CreateLogonPopup(Modeler* pmodeler, LogonSite* psite, LogonType lt, LPCSTR szPrompt, LPCSTR szName, LPCSTR szPW, BOOL fRememberPW)
 {
     return new LogonPopup(pmodeler, psite, lt, szPrompt, szName, szPW, fRememberPW);
-
 }
 
 

@@ -569,6 +569,8 @@ public:
 
 
           AddEventTarget(OnListSelect, m_pListPane->GetEventSource());
+          AddEventTarget(OnInvest, m_pListPane->GetDoubleClickEventSource());
+          AddEventTarget(OnPartial, m_pListPane->GetRightClickEventSource());	// TE: hooked up RightClickEvent to OnPartial method
           AddEventTarget(OnListHover, m_pListPane->GetMouseOverEvent());
           AddEventTarget(OnInvest, m_pButtonInvest->GetEventSource());
           AddEventTarget(OnButtonBack, m_pButtonClose->GetEventSource());
@@ -603,6 +605,40 @@ public:
           }
           return true;
       }
+      
+	  // TE: Added OnPartial method to handle partial-investing
+      bool OnPartial()
+      {
+          if (trekClient.MyMissionInProgress())
+          {
+              TRef<ListItem> pItem = m_pListPane->GetSelItem();
+              if (pItem)
+              {
+                  IbucketIGC* pBucket =  (IbucketIGC*)m_pListPane->GetSelItem()->GetItemData();
+
+                  if (CanInvest(pBucket))
+                  {
+                      Money bucketCost = pBucket->GetPrice() - pBucket->GetMoney();	// Get required money to finish development
+					  
+					  // Prevent finishing the development with the right-click
+					  if (bucketCost == 1)
+						  return true;
+
+                      Money TenPercent = pBucket->GetPrice() * 0.1;					// Get 10% of the total research cost
+
+					  Money investmentAmount = min(TenPercent, trekClient.GetMoney());	// Get what's less: Your money? or the reqdevcost
+
+					  // If we're about to finish this development, remove 1cr so we don't!!
+					  while (pBucket->GetMoney() + investmentAmount >= pBucket->GetPrice())
+						  investmentAmount -= 1;
+
+					  // Perform the investment
+					  trekClient.AddMoneyToBucket(pBucket, investmentAmount);
+                  }
+              }                    
+          }
+          return true;
+     }
 
      bool OnButtonBack()
      {

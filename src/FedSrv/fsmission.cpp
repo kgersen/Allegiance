@@ -552,8 +552,8 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
 
   // Set their stuff appropriate for this side
   assert(pfsPlayer->GetMoney() == 0);
-  pfsPlayer->GetIGCShip()->SetWingID(1); // mmf edit this to change default wing, 0 = command
 
+  pfsPlayer->GetIGCShip()->SetWingID(1); // TE: Default wing is Attack(1)
   if (!HasPlayers(pside, true)) // we have a new team leader
   {
     fTeamLeader = true;
@@ -1326,14 +1326,13 @@ void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
   CFSPlayer * pfsOldLeader = GetLeader(sid);
   assert(pfsOldLeader);
 
-  // take the old leader off of the command wing
   if (pfsOldLeader->GetIGCShip()->GetWingID() == 0)
   {
-    pfsOldLeader->GetIGCShip()->SetWingID(1); 
+    pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing
 
     BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
     END_PFM_CREATE
-    pfmSetWingID->wingID = 1;
+    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing
     pfmSetWingID->shipID = pfsOldLeader->GetShipID();
     pfmSetWingID->bCommanded = true;
   }
@@ -1674,7 +1673,8 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
       CFSPlayer* pfsPlayer = ((CFSShip*)(pshipLink->data()->GetPrivateData()))->GetPlayer();
 
       RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
-      if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat())
+	  // mmf also added check here for special players
+	  if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
       {
         RemovePlayerFromMission(pfsPlayer, QSR_RankLimits);
       }
@@ -2465,18 +2465,21 @@ void CFSMission::GameOver(IsideIGC * psideWin, const char* pszReason)
   m_psideWon = psideWin;
   m_pszReason = pszReason;
   m_bDraw = m_psideWon == NULL;
+  
+  // TE: Safely retrieve the team's ID and name
+  const ObjectID iTeamObjectID = (psideWin) ? psideWin->GetObjectID() : -1;
+  const char* pszTeamName = (psideWin) ? psideWin->GetName() : "";
 
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
   // the game will actually end when we get around to checking whether a team has won
   // TE, Modify GameEnded AGCEvent to include MissionName and MissionID.
   _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
-      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 1,
-      "Reason", VT_LPSTR, pszReason);  // changed "" to MissionName and -1 to MissionID
-  // old event
-  // _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
-  //    "", -1, -1, -1, 1,
-  //    "Reason", VT_LPSTR, pszReason);
+      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 3, // changed "" to MissionName and -1 to MissionID
+      "Reason", VT_LPSTR, pszReason,
+	  "WinningTeamID", VT_I4, iTeamObjectID,	 // TE: Added winning teamID
+	  "WinningTeamName", VT_LPSTR, pszTeamName); // TE: Added winning teamName 
+
 }
 
 

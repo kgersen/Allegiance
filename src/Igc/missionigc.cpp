@@ -406,7 +406,9 @@ int     LoadIGCStaticCore (const char* name, ImissionIGC* pMission, bool fGetVer
     }
     else
     {
-        assert ("Load IGC Static Core failed." && false);
+		// mmf added debugf
+        debugf("Load IGC Static Core failed to load %s\n",name);
+		assert ("Load IGC Static Core failed." && false);
         return NA;
     }
 }

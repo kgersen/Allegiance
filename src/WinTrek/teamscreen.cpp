@@ -10,6 +10,7 @@
 
 int g_civIDStart = -1;
 extern bool g_bDisableNewCivs;
+extern bool g_bAFKToggled; // Imago: Manual AFK toggle flag
 
 class TeamScreen :
     public Screen,
@@ -249,6 +250,19 @@ private:
             }
             else
             {
+				//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+				//  mmf - modified to not show if total is zero
+				// Add up the sum of all the players ranks.
+				const ShipListIGC* mp_ships = pside->GetShips();
+				int teamTotalRank = 0;
+				for (const ShipLinkIGC* lShip = mp_ships->first(); lShip; lShip = lShip->next())
+				{
+					IshipIGC* pship = lShip->data();
+					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
+					teamTotalRank += pplayer->GetPersistScore(NA).GetRank();
+				}
+				// end yp
+
                 // draw the team name
                 WinRect rectClipOld = psurface->GetClipRect();
                 psurface->SetClipRect(WinRect(WinPoint(m_viColumns[0], 0), WinPoint(m_viColumns[1] - 4, GetYSize()))); // clip name to fit in column
@@ -265,13 +279,22 @@ private:
                 if (pitem->GetSideID() == SIDE_TEAMLOBBY)
                 {
                     TRef<List> plistPlayers = pitem->GetMemberList();
-                    wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
+					if (teamTotalRank > 0)
+                        wsprintf(cbPositions, "(%d)[%d]", plistPlayers->GetCount(), teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+					else
+						wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
                 }
                 else
                 {
-                    wsprintf(cbPositions, "(%d/%d)", 
-                        m_pMission->SideNumPlayers(pitem->GetSideID()),
-                        m_pMission->SideMaxPlayers(pitem->GetSideID()));
+					if (teamTotalRank > 0)
+						wsprintf(cbPositions, "(%d/%d)[%d]", //	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+							m_pMission->SideNumPlayers(pitem->GetSideID()),
+							m_pMission->SideMaxPlayers(pitem->GetSideID()),
+							teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+					else
+						wsprintf(cbPositions, "(%d/%d)",
+							m_pMission->SideNumPlayers(pitem->GetSideID()),
+							m_pMission->SideMaxPlayers(pitem->GetSideID()));
                 }
                 psurface->DrawString(
                     TrekResources::SmallFont(),
@@ -364,7 +387,7 @@ private:
                 TrekResources::SmallFont(),
                 color,
                 WinPoint(m_viColumns[2] + 2, 0),
-                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(")") + ZString(trekClient.LookupRankName(pplayer->Rank(), pplayer->GetCivID()))
+                ZString(" (") + ZString(pplayer->GetPersistScore(NA).GetRank()) + ZString(") ") + ZString(trekClient.LookupRankName(pplayer->GetPersistScore(NA).GetRank(), pplayer->GetCivID()))
             );
             psurface->RestoreClipRect(rectClipOld);
 
@@ -1051,6 +1074,8 @@ public:
         AddEventTarget(OnTeamDoubleClicked, m_plistPaneTeams->GetDoubleClickEventSource());
         AddEventTarget(OnTeamClicked, m_plistPaneTeams->GetSingleClickEventSource());
 
+        // WLP 2005 - added line below to trap click on player
+        AddEventTarget(OnPlayerClicked, m_plistPanePlayers->GetSingleClickEventSource()); // WLP - click selects
 
         //
         // Chat pane
@@ -1142,6 +1167,21 @@ public:
             trekClient.SendChat(trekClient.GetShip(), CHAT_INDIVIDUAL, pplayer->ShipID(),
                                 NA, (const char*)strChat.RightOf(":"));
         }
+
+        // WLP 2005 - added this to send chat to a highlighted player
+        //   This only works when highlighted – when highlight is off it works normal
+        //
+        else if ( m_plistPanePlayers->GetSelection() ) // if something is selected now
+        {
+        // convert selected player to a ship id we can use to chat with
+
+        ShipID shipID_S = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
+        PlayerInfo* pplayer_S = trekClient.FindPlayer(shipID_S);
+
+        trekClient.SendChat(trekClient.GetShip(), CHAT_INDIVIDUAL, pplayer_S->ShipID(), NA, (const char*)strChat);
+        }
+        // WLP - end of added code for chat to selected player
+
         else
         {
             trekClient.SendChat(trekClient.GetShip(), m_chattargetChannel, NA,
@@ -1207,8 +1247,15 @@ public:
                 || m_sideCurrent != trekClient.GetSideID());
             m_pbuttonTeamSettings->SetEnabled(!m_pMission->GetMissionParams().bLockTeamSettings); 
             
-            m_pbuttonbarChat->SetHidden(1, trekClient.GetSideID() == SIDE_TEAMLOBBY);
-            m_pbuttonbarChat->SetEnabled(1, trekClient.GetSideID() != SIDE_TEAMLOBBY);
+            //
+            // WLP - mod to allow team chat button for noat - changed 2 lines to allow it
+            //
+            // m_pbuttonbarChat->SetHidden(1, trekClient.GetSideID() == SIDE_TEAMLOBBY);
+            // m_pbuttonbarChat->SetEnabled(1, trekClient.GetSideID() != SIDE_TEAMLOBBY);
+
+            m_pbuttonbarChat->SetHidden(1, false); // WLP 2005 - show button
+            m_pbuttonbarChat->SetEnabled(1, true); // WLP 2005 - turn it on
+
             m_pbuttonbarChat->SetHidden(2, !trekClient.GetPlayerInfo()->IsTeamLeader());
             m_pbuttonbarChat->SetEnabled(2, trekClient.GetPlayerInfo()->IsTeamLeader());
         }
@@ -1503,7 +1550,8 @@ public:
         PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
         PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
         
-        return pplayer1->Rank() > pplayer2->Rank();
+		// TE: Modified this line to get rank properly so sorting works as expected
+        return pplayer1->GetPersistScore(NA).GetRank() > pplayer2->GetPersistScore(NA).GetRank();
     }
 
     class PlayerStatusCompare
@@ -1638,6 +1686,30 @@ public:
 
         return true;
     }
+
+    //
+    // WLP 2005 - added OnPlayerClicked to toggle selected player on/off for highlighted chat routine
+    //
+    bool OnPlayerClicked()
+    {
+        static ShipID CurrentPlayerSelection = NULL ;
+
+        ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
+
+        if ( shipID )
+        {
+            if ( shipID == CurrentPlayerSelection )  // WLP - This is second click - turn off highlight
+            {
+                CurrentPlayerSelection = NULL ;
+                m_plistPanePlayers->SetSelection(NULL);
+            }
+            else CurrentPlayerSelection = shipID ;  // WLP - this is first click - leave highlight on
+
+            trekClient.PlaySoundEffect(mouseclickSound);
+        }
+        return true;
+    }
+    // WLP 2005 - end of add OnPlayerClicked()
 
     bool OnSelPlayer(ItemID pitem)
     {
@@ -1785,8 +1857,9 @@ public:
 
     void OnNewChatMessage()
     {
-        ChatTarget target = trekClient.m_chatList.last()->data().GetChatTarget();
-        if (target != m_chattargetChannel)
+		ChatInfo info = trekClient.m_chatList.last()->data();
+        ChatTarget target = info.GetChatTarget();
+        if (target != m_chattargetChannel && info.IsFromPlayer())	// TE: Added IsFromPlayer check to prevent unnecessary blinking
         {
             switch (target)
             {
@@ -1883,12 +1956,15 @@ public:
     */
     bool OnButtonAwayFromKeyboard()
     {
+		trekClient.GetPlayerInfo ()->SetReady(!m_pbuttonAwayFromKeyboard->GetChecked()); // Imago - prevents sending duplicate player_ready msg when DoTrekUpdate
         trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
         BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
         END_PFM_CREATE
         pfmReady->fReady = !m_pbuttonAwayFromKeyboard->GetChecked();
         pfmReady->shipID = trekClient.GetShipID();
         UpdateStatusText();
+		g_bAFKToggled = (g_bAFKToggled) ? false : true; //Imago: Manual AFK toggle flag
+
         return true;
     }
 
@@ -1973,6 +2049,9 @@ public:
             return true;
         }
 
+		// Imago - They are not AFK, "click the button for them"
+		if (g_bAFKToggled) OnButtonAwayFromKeyboard();
+
         // ZAssert(m_sideCurrent != trekClient.GetSideID());
         if (m_sideCurrent == SIDE_TEAMLOBBY
             && trekClient.GetSideID() != SIDE_TEAMLOBBY)
@@ -2031,6 +2110,9 @@ public:
     bool OnButtonAccept()
     {
         ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
+
+        // WLP 2005 – remove highlight from player to prevent chat target
+        m_plistPanePlayers->SetSelection(NULL); // WLP – remove as chat target
         
         trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
         BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
@@ -2222,6 +2304,9 @@ public:
         ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
         PlayerInfo* pplayer = trekClient.FindPlayer(shipID);
         
+		// WLP 2005 - remove highlight from player to prevent chat target
+ 		m_plistPanePlayers->SetSelection(NULL); // WLP 2005 - remove as chat target
+
         if (pplayer && pplayer->SideID() == trekClient.GetSideID())
         {
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
@@ -2306,10 +2391,13 @@ public:
 
             // if I'm in the team leader chat and am no longer a team leader, 
             // or if I'm in the team chat and no longer on a team, throw me out.
-            if ((m_chattargetChannel == CHAT_LEADERS) 
-                && (!trekClient.MyPlayerInfo()->IsTeamLeader())
-                || (m_chattargetChannel == CHAT_TEAM) 
-                && (trekClient.GetSideID() == SIDE_TEAMLOBBY))
+            //
+            // WLP 2005 - commented the qualififiers out to always start everyone on (all) chat
+            //
+            // if ((m_chattargetChannel == CHAT_LEADERS)
+            //    && (!trekClient.MyPlayerInfo()->IsTeamLeader())
+            //    || (m_chattargetChannel == CHAT_TEAM)
+            //    && (trekClient.GetSideID() == SIDE_TEAMLOBBY))
             {
                 m_pbuttonbarChat->SetSelection(0);
                 OnButtonBarChat(0);
@@ -2362,7 +2450,7 @@ public:
 
             case QSR_RandomizeSides:
                 if (!m_bShowingRandomizeWarning)
-                    strMessage = "You have been reassigned to a random team.";
+                    strMessage = "You have been reassigned to NOT ON A TEAM.";
                 break;
 
             case QSR_Quit:

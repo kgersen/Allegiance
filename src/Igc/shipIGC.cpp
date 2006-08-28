@@ -1163,7 +1163,21 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
             m_fraction = 0.0f;
             if (oldFraction > 0.0f)  //Only send the death message once.
             {
-                GetMyMission()->GetIgcSite()->KillShipEvent(timeCollision, this, launcher, amount, position1, position2);
+				// TE: Get the player credited for the kill
+				DamageBucketLink* pdmglink = NULL;
+				ImodelIGC* pcredit = launcher;
+				DamageTrack*  pdt = this->GetDamageTrack();
+				if (pdt)
+				{
+					pdmglink = pdt->GetDamageBuckets()->first();
+					if (pdmglink)
+					{
+						if (pdmglink->data()->model()->GetMission() == GetMyMission())
+							pcredit = pdmglink->data()->model();
+					}
+				}
+				// TE: end
+                GetMyMission()->GetIgcSite()->KillShipEvent(timeCollision, this, pcredit, amount, position1, position2);
                 dr = c_drKilled;
             }
         }
@@ -1678,9 +1692,9 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                             m_timeRanAway = timeStop;
 
 						    //mmf debuging code
-						    debugf("mmf Miner/con found place to run to.\n");
-							debugf("%-20s %x I am at %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
-							debugf("running to %f %f %f\n",pmodel->GetPosition().x,pmodel->GetPosition().y,pmodel->GetPosition().z);
+						    //debugf("mmf Miner/con found place to run to.\n");
+							//debugf("%-20s %x I am at %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
+							//debugf("running to %f %f %f\n",pmodel->GetPosition().x,pmodel->GetPosition().y,pmodel->GetPosition().z);
 						    //mmf end debugging code
 						}
                     }
@@ -1877,8 +1891,8 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                         }
 										else { // mmf added debugf and else curly braces
                                             pship->SetCommand(c_cmdAccepted, NULL, c_cidNone);
-											debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
-												GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
+											// debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+											//	GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
 										}
                                     }
                                 }
@@ -1927,8 +1941,8 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         if (pmodel) 
                             SetCommand(c_cmdPlan, pmodel, c_cidGoto);
 						// mmf added else and debugf
-						else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
-												GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
+						// else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+						// 						GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
                     }
                 }
 

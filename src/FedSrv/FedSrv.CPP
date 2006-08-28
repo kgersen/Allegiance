@@ -24,6 +24,53 @@
     #include "FedSrvApp.h"
 #endif
 
+// begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_RANKS_ON
+/*-------------------------------------------------------------------------
+ * ReadFromRegistry
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Read info from the registry
+ * 
+ * Parameters:
+ *    hk:        which key to read from
+ *    bIsString: if false, then item is cosnidered to be a DWORD
+ *    szItem:    name of item to read
+ *    pValue:    destination of read
+ *    dwDefault: default value can be an int or a pointer to a string
+ *
+ * Returns:
+ *    true: iff pValue was set
+ */
+bool ReadFromRegistry(HKEY & hk, bool bIsString, const char * szItem, void * pValue, DWORD dwDefault)
+{
+    char psz[MAX_PATH] = {""};
+    DWORD dwSize = (bIsString ? sizeof(psz): sizeof(DWORD));
+
+    if (RegQueryValueEx(hk, szItem, NULL, NULL, (BYTE *)psz, &dwSize) != ERROR_SUCCESS ||
+        (bIsString && psz[0] == 0)) // if blank like what SrvConfig.exe makes
+    {
+        if (bIsString)
+        {
+            if (dwDefault)
+            {
+                strcpy((char*)pValue, (char*)dwDefault);
+                return true;
+            }
+            return false;
+        }
+        *(DWORD*)pValue = dwDefault;
+        return true;
+    }
+
+    if (bIsString)
+        strcpy((char*)pValue, psz);
+    else
+        *(DWORD*)pValue = *(DWORD*)psz;
+
+    return true;
+}
+// end mmf
+
 #if !defined(ALLSRV_STANDALONE)
 void DoDecrypt(int size, char* pdata)
 {
@@ -130,10 +177,11 @@ void LoadTechBits()
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
-#if !defined(ALLSRV_STANDALONE)
 
 void LoadRankInfo()
 {
+
+#if !defined(ALLSRV_STANDALONE)	
   SQL_GO(GetRankCount);
   SQL_GETROW(GetRankCount);
   g.cRankInfo = GetRankCount_Count;
@@ -152,6 +200,29 @@ void LoadRankInfo()
       strcpy(g.vRankInfo[i].RankName, (char*)GetRanks_Name);
     }
   }
+#else //Imago: Changed to load rank_info from <artwork>/ranks.txt
+    char        mapfilename[MAX_PATH + 1];
+    HRESULT     hr = UTL::getFile("ranks", ".txt", mapfilename, true, true);
+    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
+    if (file)
+    {
+      int nbranks;
+      fscanf(file,"%d\n",&nbranks);
+      g.cRankInfo = nbranks;
+      g.vRankInfo = new RankInfo[g.cRankInfo];
+      for (int i=0;i<nbranks;i++)
+      {
+         int rank;
+         fscanf(file,"%d,%[^,\n]\n",&rank,g.vRankInfo[i].RankName);
+         g.vRankInfo[i].rank = rank;
+         g.vRankInfo[i].requiredRanking = 0;
+         g.vRankInfo[i].civ = -1;
+      }
+      fclose(file);
+   }
+   else
+      g.cRankInfo = 0;
+#endif // !defined(ALLSRV_STANDALONE)
 }
 
 void UnloadRankInfo()
@@ -159,7 +230,7 @@ void UnloadRankInfo()
   delete [] g.vRankInfo;
   g.cRankInfo = 0;
 }
-#endif // !defined(ALLSRV_STANDALONE)
+
 
 void LoadStaticMapInfo()
 {
@@ -527,7 +598,9 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
-  if (!pfsPlayer->CanCheat())
+  // mmf added check here for special users so they can join any game
+
+  if (!pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
   {
     // make sure the player meets the rank requirements for this mission
     RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
@@ -800,6 +873,113 @@ void GotLogonDetails(CQLogonStats * pquery)
       // no persist object is active now; will be when they go to a side
 
     #endif // !defined(ALLSRV_STANDALONE)
+	
+  	// -Imago: ASGS Login/Rank
+    // mmf only do this if ASGS_RANKS_ON is ON
+    //     check reg key to see if we are using ASGS ranks or not
+	DWORD dw; // Gets result of whether it opened or created... - we only read
+	HKEY  hk;
+	DWORD dwASGS_RANKS_ON=0;
+	// use same key for server as lobby
+	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
+	{
+		// read ASGS is on or off in registry
+		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_RANKS_ON, 0);
+		RegCloseKey(hk); 
+	}
+	if (dwASGS_RANKS_ON) {
+	  // mmf pull rank from callsign (#) for now
+	  char szRank[64];
+	  char newName[64];
+	  int leftParen; int strLen;
+	  ZString strName = pfsPlayer->GetName();
+
+	  strLen = strName.GetLength();
+	  leftParen = strName.ReverseFind('(',0);
+	  if (leftParen>=1) {
+	    Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
+	    RankID myRank = atoi(szRank); 
+		if (!((myRank>0) && (myRank<100))) {
+			debugf("Rank out of range rank=%d\n",myRank);
+			myRank=0; // sanity check
+		}
+        const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+		{
+		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+		}
+		// remove the (#) from callsign
+		// only for ranks above 4 so people can see newbs for boot protection as per the COD
+		if (myRank>4) {
+			Strncpy(newName,(PCC)strName,leftParen);
+			Strncpy(newName+leftParen,"\0",1); // null terminate
+			pship->SetName(newName);
+		}
+	    fValid = true;
+	  } else {
+		fValid = true; // No rank found, Rank not set, should default to 0
+		debugf("No rank found in callsign %s\n",(PCC)strName);
+	  }
+	  // mmf end pull rank from callsign
+#if 0 // http asgs rank lookup, disabled for now as it can hang the server waiting on a timeout, mmf
+	  MaClient *http_client; int contentLen;
+	  char *szContent;
+	  char szURL[255]; char szName[64]; char szResponse[255];
+	  ZString strName = pfsPlayer->GetName();
+	  Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
+
+	  // Fixup player names 
+	  Strcpy(szName,(PCC)strName);
+	  if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
+	  strcat(szURL,szName);
+
+	  // Process requests on AppWeb threads
+	  Mpr   mpr("AllSrv");
+	  mpr.start(MPR_SERVICE_THREAD);
+	  http_client = new MaClient();
+	  http_client->getRequest(szURL);
+	  if (szContent = http_client->getResponseContent(&contentLen)) {
+	  	// Fixup XML Response
+		ZString strContent = szContent;
+		strContent = strContent.RightOf(88);
+		strContent = strContent.LeftOf("<");
+		debugf("sent asgs %s and asgs sent %s\n",szURL, (PCC)strContent);
+		Strcpy(szResponse,(PCC)strContent);
+
+		mpr.stop(0);
+		delete http_client;
+
+		// If the Response is 0, Deny Logon with provided Reason
+		if (strcmp(strtok(szResponse,"|"),"0") != 0 ) {
+			strtok(NULL,"|");
+			Strcpy(pqd->szReason,strtok(NULL,"|"));
+			fValid = false;
+			debugf("Lobby possibly validated ASGS user but Server did not!\n");
+		} else {  //Set the Rank the same for all civs only on the NA side
+			RankID myRank = atoi(strtok(NULL,"|"));
+
+			const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+			for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+			{
+				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+				pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+			}
+			fValid = true;
+		}
+	  } else {
+		fValid = true; //assume all is OK, Rank will be 0
+		debugf("ASGS Server did not respond!\n");
+	  }
+#endif // http asgs rank lookup
+	} else {
+		fValid = true; // not using asgs ranks, Rank will be 0
+		debugf("Not using ASGS (ASGS_RANKS_ON regkey not set), rank query not done\n");
+	}
   }
   else
   {
@@ -818,6 +998,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 
 
   // -KGJV: changed for StaticMapInfo in all mode
+  // -Imago: changed for RankInfo in all mode
   if (fValid)
   {
 
@@ -826,12 +1007,13 @@ void GotLogonDetails(CQLogonStats * pquery)
       FM_VAR_PARM(g.vStaticMapInfo, sizeof(StaticMapInfo) * g.cStaticMapInfo)
     END_PFM_CREATE
 
-#if !defined(ALLSRV_STANDALONE)
     // send the rank info for this server
     BEGIN_PFM_CREATE(g.fm, pfmRankInfo, S, RANK_INFO)
       FM_VAR_PARM(g.vRankInfo, sizeof(RankInfo) * g.cRankInfo)
     END_PFM_CREATE
     pfmRankInfo->cRanks = g.cRankInfo;
+
+#if !defined(ALLSRV_STANDALONE)
 
     // Get their squad memberships, but whether we need it b4 joining depends on whether it's a squad game
     CQCharSquads * pqueryCharSquads = new CQCharSquads(GotCharSquads);
@@ -3253,7 +3435,13 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                         //Also echo this command to the command wing, but mark individual echo so the
                         //client will know how to process it.
                         pcd->chatTarget = CHAT_INDIVIDUAL_ECHO;
-                        ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 0, pfsSender->GetIGCShip());
+                        ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 0, pfsSender->GetIGCShip()); //Command
+
+						//AEM/TE: - Forward drone orders to Charlie, Delta, and Echo wings
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 7, pfsSender->GetIGCShip()); //Charlie
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 8, pfsSender->GetIGCShip()); //Delta
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 9, pfsSender->GetIGCShip()); //Echo
+
                     }
 
                     if (pdb && pmodel)
@@ -7012,17 +7200,17 @@ bool OnAutoUpdateEXEDownloadDone(const char * szFilelistCRC, int nFilelistCRC, i
     }
 
     //
-    // Decide what will be launched after the update (AllSrv32 or UI), and how it will be launched (as service or EXE)
+    // Decide what will be launched after the update (AllSrv or UI), and how it will be launched (as service or EXE)
     //
     char * szLaunchPostUpdate;
 
     if (_Module.WasCOMStarted())
     {
-      szLaunchPostUpdate = "AllSrvUI32.exe";
+      szLaunchPostUpdate = "AllSrvUI.exe";
     }
     else
     {
-      szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv32" : "AllSrv32.exe";  // S: is short for "Start as Service"
+      szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv" : "AllSrv.exe";  // S: is short for "Start as Service"
     }
 
     char szCommandLine[MAX_PATH * 10];
@@ -7692,9 +7880,10 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   rgeventHandles[0] = g.hKillReceiveEvent;
   // rgeventHandles[1] = g.hPlayerEvent;
 
-  #if !defined(ALLSRV_STANDALONE)
-    LoadRankInfo();
-  #endif
+  // -Imago: changed for RankInfo in all modes
+  LoadRankInfo();
+  debugf("LoadRankInfo result: #ranks=%d\n",g.cRankInfo);
+
   // -KGJV: changed for StaticMapInfo in all modes
   debugf("calling LoadStaticMapInfo\n");
     LoadStaticMapInfo();
@@ -7773,10 +7962,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   // Release the CAdminServer instance
   spunkServer = NULL;
 
+  UnloadRankInfo(); //Imago: LoadRankInfo in all modes
 
-  #if !defined(ALLSRV_STANDALONE)
-    UnloadRankInfo();
-  #endif
   // -KGJV: StaticMapInfo in all modes
     UnloadStaticMapInfo();
 
@@ -8553,7 +8740,7 @@ int __cdecl main(int argc, char *argv[])
     #ifndef _DEBUG
     if (argc == 1 && !_Module.IsInstalledAsService() && !_Module.WasCOMStarted())
     {
-      printf("\nUse AllSrvUI32.exe to run the Allegiance Server.\n");
+      printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
       // Terminate AGC
       _Module.TermAGC();
       return 0;
@@ -9308,7 +9495,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		"MissionID", VT_I4, m_pfsMission->GetMissionID(),
 		"TeamID"    , VT_I4   , pside->GetObjectID(),
 		"TeamName", VT_LPSTR, pside->GetName(),
-		"StationName", VT_LPSTR, pstationNew->GetName());
+		"zStationName", VT_LPSTR, pstationNew->GetName());
     // TE end
 
     pstationNew->Release();

@@ -2712,7 +2712,11 @@ public:
                                                  psl = psl->next())
                                             {
                                                 IshipIGC*   pship = psl->data();
-                                                if (pship->GetSide() != psideMine)
+
+												// WLP 2005 - Only talk to enemy pilots - not cons
+												// I added the pilot check to enforce this
+												//
+                                                if ((pship->GetSide() != psideMine)&& (pship->GetPilotType()== c_ptPlayer ))
                                                 {
                                                     int score = MatchName(pcc, pship->GetName());
                                                     if ((ct == CHAT_INDIVIDUAL)
@@ -2773,8 +2777,12 @@ public:
     void OnPrintable(char ch)
     {
         assert (m_csComposeState > c_csComposeMouseCommand);
-
-        m_strTypedText += ZString(ch, 1);
+		
+		// yp your_persona march 24 2005: constrain chat messages to always fit in the buffer size 255
+		if (m_strTypedText.GetLength() < 255)
+		{
+			m_strTypedText += ZString(ch, 1);
+		}   
 
         if (m_csComposeState == c_csComposeCommand)
         {

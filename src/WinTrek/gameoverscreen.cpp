@@ -114,19 +114,23 @@ public:
             );
             psurface->RestoreClipRect(rectClipOld);
             
-
             // draw the player rank
+			// TE: Retrieve the PlayerInfo
+			PlayerInfo* pinfo = trekClient.FindPlayer(pplayer->characterName);
+			RankID PlayerRankID = pplayer->stats.GetRank();
+
+			// Grab their rank if the player is still ingame
+			if (pinfo)
+				PlayerRankID = pinfo->GetPersistScore(NA).GetRank();
+
             rectClipOld = psurface->GetClipRect();
             psurface->SetClipRect(WinRect(WinPoint(m_viColumns[1] + 4, 0), WinPoint(m_viColumns[2], GetYSize()))); // clip rank to fit in column
             psurface->DrawString(
                 TrekResources::SmallFont(),
                 Color::White(),
                 WinPoint(m_viColumns[1] + 4, 0),
-                trekClient.LookupRankName(
-                    pplayer->scoring.GetRank(), 
-                    trekClient.GetEndgameSideCiv(pplayer->sideId)
-                    )
-                );
+                trekClient.LookupRankName(PlayerRankID, trekClient.GetEndgameSideCiv(pplayer->sideId)) // TE: Modified this to pull rank name properly
+                ); 
             psurface->RestoreClipRect(rectClipOld);
 
             // draw the player's ratings
@@ -357,8 +361,10 @@ public:
         m_peventStats->AddSink(m_psinkStats = new IItemEvent::Delegate(this));
 
         AddEventTarget(OnButtonBarStats, m_pbuttonbarStats->GetEventSource());
-        OnButtonBarStats(7);
-
+        // WLP - 2005 - changed default to sort by score instead of players - magic number 7(kills) goes to 5(score)
+        // OnButtonBarStats(7);
+        OnButtonBarStats(5); // WLP sort with low scores on top
+        OnButtonBarStats(5); // WLP toggle sort with high scores on top
         //
         // Side Stats
         //

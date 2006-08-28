@@ -26,7 +26,6 @@ const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
   const short c_cMaxPlayersPerGame = 0x7FFF;
 #endif // defined(ALLSRV_STANDALONE)
 
-
 HRESULT pascal FedSrv_Init();
 HRESULT pascal FedSrv_Terminate(void);
 HRESULT pascal FedSrv_Pause();

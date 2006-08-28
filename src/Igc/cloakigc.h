@@ -75,7 +75,7 @@ class CcloakIGC : public IcloakIGC
                 m_fActive = true;
 
                 m_cloaking = 0.0f;
-                assert (m_ship->GetCloaking() == 1.0f);
+				assert (m_ship->GetCloaking() == 1.0f);
             }
         }
         virtual void             Deactivate(void)

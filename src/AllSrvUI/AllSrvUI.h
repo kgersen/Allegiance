@@ -55,7 +55,8 @@ public:
 protected:
   HANDLE GetAllSrvUIEvent();
   void CreateAllSrvUIEvent();
-  HRESULT FirstRunEula();
+  // yp your_persona march 25 2006 : Remove EULA.dll dependency patch
+  //HRESULT FirstRunEula();
 
 // Types
 protected:

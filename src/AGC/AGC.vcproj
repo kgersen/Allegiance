@@ -169,7 +169,8 @@
 				ModuleDefinitionFile="AGC.def"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
-				MapExports="FALSE"/>
+				MapExports="FALSE"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;..\Inc"
@@ -229,7 +230,8 @@
 				ShowProgress="0"
 				SuppressStartupBanner="FALSE"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
-				ModuleDefinitionFile="AGC.def"/>
+				ModuleDefinitionFile="AGC.def"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;..\Inc"
