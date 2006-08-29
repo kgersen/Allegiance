@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
 				MinimalRebuild="FALSE"
 				ExceptionHandling="TRUE"
@@ -65,7 +65,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"
@@ -108,7 +108,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
 				MinimalRebuild="FALSE"
 				ExceptionHandling="TRUE"
@@ -118,6 +118,7 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -153,7 +154,7 @@
 				Name="VCCLCompilerTool"
 				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="TRUE"

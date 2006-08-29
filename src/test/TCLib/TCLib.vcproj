@@ -107,6 +107,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\TCLib;..\Inc;..\..\ZLib"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"

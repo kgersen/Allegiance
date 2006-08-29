@@ -175,7 +175,7 @@ void    HitTest::Collide(HitTest*           pHitTest,
                 double   a = dV * dV;
                 if (a > 0.0)   //Shouldn't be a problem but ... float do have their limits of resolution
                 {
-                    tMax = (float)((halfB + (float)sqrt(halfB*halfB - a * c)) / a);
+                    tMax = (float)((halfB + (double)sqrt(halfB*halfB - a * c)) / a); // mmf cast sqrt to double instead of float
                 }
             }
 

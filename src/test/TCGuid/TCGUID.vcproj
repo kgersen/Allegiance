@@ -98,6 +98,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(OutDir)/../TCObj"
+				ExceptionHandling="FALSE"
 				RuntimeLibrary="1"
 				WarningLevel="3"
 				WarnAsError="TRUE"

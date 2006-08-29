@@ -95,6 +95,8 @@ void KillAnythingGoal::Update(Time now, float dt)
 void GotoGoal::Update(Time now, float dt) 
 {
     assert (!OBJECT_IS_BAD(m_pShip) && !OBJECT_IS_BAD(m_pTarget));
+	
+	if(!m_pShip->CanSee(m_pTarget)) return;	// AEM: Added check to ensure drone is chasing a target that's spotted
 
     if (m_pTarget->GetCluster() != m_pShip->GetCluster())					// Make sure the target is in this sector
     {
@@ -138,6 +140,8 @@ void FollowGoal::Update(Time now, float dt)
 {
     assert (!OBJECT_IS_BAD(m_pShip) && !OBJECT_IS_BAD(m_pTarget));			
 
+	if(!m_pShip->CanSee(m_pTarget)) return;	// Check for visibility 
+
     if (m_pTarget->GetCluster() != m_pShip->GetCluster())					// Make sure the target is in this sector
     {
         m_pDrone->SetGoal(new GotoSameSectorGoal(m_pDrone, m_pTarget));		
@@ -173,6 +177,8 @@ void FollowGoal::Update(Time now, float dt)
 void DestroyGoal::Update(Time now, float dt) {
     assert (!OBJECT_IS_BAD(m_pShip) && !OBJECT_IS_BAD(m_pTarget));
     
+	if(!m_pShip->CanSee(m_pTarget)) return;	// Check for visibility 
+
     if (m_pTarget->GetCluster() != m_pShip->GetCluster())					// Make sure the target is in this sector
     {
         m_pDrone->SetGoal(new GotoSameSectorGoal(m_pDrone, m_pTarget));

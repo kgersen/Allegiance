@@ -129,12 +129,14 @@
 				AdditionalIncludeDirectories="../Zlib;../Engine;../Effect"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
 				MinimalRebuild="TRUE"
+				ExceptionHandling="FALSE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -143,6 +145,7 @@
 				AdditionalOptions="/debugtype:map,cv"
 				AdditionalDependencies="$(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib ddraw.lib dsound.lib dxguid.lib winmm.lib dplayx.lib amstrmid.lib dinput.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/mdlc.exe"
+				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="FALSE"
 				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="TRUE"

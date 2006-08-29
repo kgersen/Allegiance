@@ -1446,6 +1446,15 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
   if ( FAILED(hr) )
     return hr;
 
+  // Mdvalley: since Enum is now asyncronous, we have to wait until a proper reply comes back.
+  // Sure, it'll freeze for 15 secs if there's no connection, but it did that under dplay4, too.
+  int i = 0;
+  while(IsEqualGUID(GUID_NULL, m_guidInstance) && i < 150)	// 15 second timeout
+  {
+	  Sleep(100);	// check every 100 ms
+	  i++;
+  }
+
   if (IsEqualGUID(GUID_NULL, m_guidInstance))
     hr = E_FAIL; // something else?
   else
@@ -1454,7 +1463,10 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
   ResetOutBuffer();
 
   if (FAILED(hr))
+  {
+	m_pDirectPlayClient->CancelAsyncOperation(NULL, DPNCANCEL_ENUM);		// Cancel all enumeration requests
     Shutdown();
+  }
   
   return hr;
 }
@@ -1721,37 +1733,69 @@ hr = InitDPlayClient();
   g_guidApplication = guidApplication;
 
   // Enumerate all StressMazeApp hosts running on IP service providers
+//  hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
+//                                       pDP8AddressLocal, NULL,
+//                                       0, 0, 0, 0, NULL,
+//                                       0 /*MUST use 0 handle for DPNOP_SYNC flag */ , DPNOP_SYNC );
+  // Mdvalley: Use an asyncronous EnumHosts with infinite retries to make NATs happy.
+  DPNHANDLE fillerHandle;	// Use of filler keeps DPlay from saying nasty things.
   hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
                                        pDP8AddressLocal, NULL,
-                                       0, 0, 0, 0, NULL,
-                                       0 /*MUST use 0 handle for DPNOP_SYNC flag */ , DPNOP_SYNC );
+                                       0, INFINITE, 0, 0, NULL,
+                                       &fillerHandle, 0 );
 
-// WLP - DPLAY8 def = STDMETHOD(EnumHosts)
-//  (THIS_ PDPN_APPLICATION_DESC const pApplicationDesc,                     &dpnAppDesc
-//  IDirectPlay8Address *const pAddrHost                                     pDP8AddressHost
-//  IDirectPlay8Address *const pDeviceInfo,                                  pDP8AddressLocal
-//  PVOID const pUserEnumData,                                               NULL
-//  const DWORD dwUserEnumDataSize, .........................................0
-//  const DWORD dwEnumCount,                                                 0   number of times to repeat
-//  const DWORD dwRetryInterval,                                             0   milliseconds between retries
-//  const DWORD dwTimeOut,                                                   0   milliseconds to wait for responses
-//  PVOID const pvUserContext,                                               NULL
-//  DPNHANDLE *const pAsyncHandle,                                           0
-//   const DWORD dwFlags) PURE;                                              DPNOP_SYNC
-/* WLP - this is from the MSDN
-HRESULT EnumHosts(
-PDPN_APPLICATION_DESC const pApplicationDesc,
-IDirectPlay8Address *const pdpaddrHost,
-IDirectPlay8Address *const pdpaddrDeviceInfo,
-PVOID const pvUserEnumData,
-const DWORD dwUserEnumDataSize,
-const DWORD dwEnumCount,
-const DWORD dwRetryInterval,
-const DWORD dwTimeOut,
-PVOID const pvUserContext,
-HANDLE *const pAsyncHandle,
-const DWORD dwFlags
-*/
+// WLP - DPLAY8 def = STDMETHOD(EnumHosts)
+
+//  (THIS_ PDPN_APPLICATION_DESC const pApplicationDesc,                     &dpnAppDesc
+
+//  IDirectPlay8Address *const pAddrHost                                     pDP8AddressHost
+
+//  IDirectPlay8Address *const pDeviceInfo,                                  pDP8AddressLocal
+
+//  PVOID const pUserEnumData,                                               NULL
+
+//  const DWORD dwUserEnumDataSize, .........................................0
+
+//  const DWORD dwEnumCount,                                                 0   number of times to repeat
+
+//  const DWORD dwRetryInterval,                                             0   milliseconds between retries
+
+//  const DWORD dwTimeOut,                                                   0   milliseconds to wait for responses
+
+//  PVOID const pvUserContext,                                               NULL
+
+//  DPNHANDLE *const pAsyncHandle,                                           0
+
+//   const DWORD dwFlags) PURE;                                              DPNOP_SYNC
+
+/* WLP - this is from the MSDN
+
+HRESULT EnumHosts(
+
+PDPN_APPLICATION_DESC const pApplicationDesc,
+
+IDirectPlay8Address *const pdpaddrHost,
+
+IDirectPlay8Address *const pdpaddrDeviceInfo,
+
+PVOID const pvUserEnumData,
+
+const DWORD dwUserEnumDataSize,
+
+const DWORD dwEnumCount,
+
+const DWORD dwRetryInterval,
+
+const DWORD dwTimeOut,
+
+PVOID const pvUserContext,
+
+HANDLE *const pAsyncHandle,
+
+const DWORD dwFlags
+
+*/
+
 
   if( FAILED(hr) )
   {

@@ -31,6 +31,96 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
     }
 }
 
+// mmf added code for chat logging
+// mmf 7/15 changed creation flag on chat file so other processes can read from it
+
+HANDLE chat_logfile = NULL;
+char logFileName[MAX_PATH + 21];
+
+void InitializeLogchat()
+{
+	HKEY hKey;
+	DWORD dwType;
+	char szValue[20];
+	DWORD cbValue = sizeof(szValue);
+	bool bLogChat = false;
+
+	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	{
+		::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue);		
+		::RegCloseKey(hKey);
+		bLogChat = (strcmp(szValue, "1") == 0);
+	}
+
+	if (bLogChat)
+	{
+	time_t longTime;
+	time(&longTime);
+	tm* t = localtime(&longTime);
+
+	// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
+	// turns out this is not needed but leaving it here instead of moving it again
+	GetModuleFileName(NULL, logFileName, MAX_PATH);
+	char* p = strrchr(logFileName, '\\');
+	if (!p)
+	p = logFileName;
+	else
+	p++;
+
+	const char* months[] ={"chat_jan", "chat_feb", "chat_mar", "chat_apr",
+	"chat_may", "chat_jun", "chat_jul", "chat_aug",
+	"chat_sep", "chat_oct", "chat_nov", "chat_dec"};
+	strcpy(p, months[t->tm_mon]);
+	sprintf(p + 8, "%02d%02d%02d%02d.txt",
+	t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+	// mmf changed 3 param from 0 to FILE_SHARE_READ
+	chat_logfile =
+		CreateFile(
+			logFileName,
+			GENERIC_WRITE,
+			FILE_SHARE_READ,
+			NULL,
+			OPEN_ALWAYS,
+			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
+			NULL
+		);
+	}
+	if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
+}
+
+void TerminateLogchat()
+{
+	if (chat_logfile) {
+		CloseHandle(chat_logfile);
+        chat_logfile = NULL;
+    }
+}
+
+void logchat(const char* strText)
+{
+	// unravel this from debugf-ZDebugOutputImpl-DebugOutput
+    const size_t size = 512;
+    char         bfr[size];
+	int length;
+
+	time_t  longTime;
+    time(&longTime);
+    tm*             t = localtime(&longTime);
+
+	length = strlen(strText);
+
+	// don't log if text is bigger than buffer, we don't want to log these long 'spam' chat's anyway
+	if (chat_logfile && (length < 490)) {
+		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\n",
+            (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
+        DWORD nBytes;
+        ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
+	}
+}
+
+// end mmf chat logging code
+
+
 void ZDebugOutputImpl(const char *psz)
 {
     if (g_papp)
@@ -39,6 +129,8 @@ void ZDebugOutputImpl(const char *psz)
         ::OutputDebugStringA(psz);
 }
 HANDLE g_logfile = NULL;
+
+extern int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
 
 void retailf(const char* format, ...)
 {
@@ -165,6 +257,15 @@ extern bool g_bOutput = true;
         DWORD cbValue = sizeof(szValue);
         bool  bLogToFile = false;
 
+		// mmf added this regkey check 
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        {
+            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+            ::RegCloseKey(hKey);
+
+            g_outputdebugstring = (strcmp(szValue, "1") == 0);
+        }
+
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
@@ -194,6 +295,7 @@ extern bool g_bOutput = true;
             sprintf(p + 3, "%02d%02d%02d%02d.txt",
                     t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 			// mmf this is NOT where the logfile AllSrv.txt is generated
+			//     this is the client logfile and only for FZDebug build
             g_logfile = 
                 CreateFile(
                     logFileName, 
@@ -217,7 +319,7 @@ extern bool g_bOutput = true;
         }
 #endif
     }
-#endif
+#endif  // SRVLOG or _DEBUG
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -268,7 +370,9 @@ void Win32App::DebugOutput(const char *psz)
             g_listOutput.PopEnd();
         }
     #else
-        ::OutputDebugStringA(psz);
+		// mmf for now tie this to a registry key
+		if (g_outputdebugstring)
+			::OutputDebugStringA(psz);
 
         if (g_logfile) {
             DWORD nBytes;
@@ -339,6 +443,8 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
                 InitializeDebugf();
             #endif
 
+			InitializeLogchat();  // mmf
+
             BreakOnError(hr = Window::StaticInitialize());
             BreakOnError(hr = g_papp->Initialize(lpszCmdLine));
 
@@ -357,6 +463,8 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
             #ifdef _DEBUG
                 TerminateDebugf();
             #endif
+
+			TerminateLogchat(); // mmf
 
         } while (false);
     }  __except (g_papp->OnException(_exception_code(), (ExceptionData*)_exception_info())){

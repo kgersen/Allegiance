@@ -599,9 +599,12 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
   CFSMission * pfsMission = this->GetMission();
   LPCSTR pszContext = pfsMission->GetIGCMission() ? pfsMission->GetIGCMission()->GetContextName() : NULL;
   _AGCModule.TriggerContextEvent(NULL, EventID_StationChangesSides, pszContext,
-    GetName(), GetShipID(), pside->GetUniqueID(), -1, 3,"OldTeam"    , VT_I4   , psideOld->GetUniqueID(),
-    "OldTeamName", VT_LPSTR, psideOld->GetName(),"StationName", VT_LPSTR, pstation->GetName());
-  //Tigereye end
+    GetName(), GetShipID(), pside->GetUniqueID(), -1, 4,
+	"GameID"	 , VT_I4   , pfsMission->GetMissionID(),
+	"OldTeam"    , VT_I4   , psideOld->GetUniqueID(),
+    "OldTeamName", VT_LPSTR, psideOld->GetName(),
+	"StationName", VT_LPSTR, pstation->GetName());
+  // TE end
   //Possibly the built themselves to a victory
   IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationCapture(pside, psideOld);
   if (psideWin)

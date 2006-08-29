@@ -1648,10 +1648,11 @@ CmapMakerBrawlIGC::CmapMakerBrawlIGC()
 
 const char* CmapMakerBrawlIGC::IsValid(const MissionParams * pmp)
 {
-    if (pmp->nMaxPlayersPerTeam * pmp->nTeams > 36)
-        return("Brawl maps must have less than 37 players; "
-                "please change the map type, number of players per team, "
-                "or number of teams.");
+	// yp your_persona removed march 24 2006
+    //if (pmp->nMaxPlayersPerTeam * pmp->nTeams > 36)
+    //    return("Brawl maps must have less than 37 players; "
+    //            "please change the map type, number of players per team, "
+    //            "or number of teams.");
 
     return(NULL);
 }
@@ -1762,10 +1763,11 @@ CmapMakerPinWheelIGC::CmapMakerPinWheelIGC()
 
 const char* CmapMakerPinWheelIGC::IsValid(const MissionParams * pmp)
 {
-    if (pmp->nMaxPlayersPerTeam > 15)
-        return("Pinwheel maps must have less than 16 player per team; "
-               "please change the map type, or number of players per team.");
-
+	// yp your_persona removed march 24 2006
+    //if (pmp->nMaxPlayersPerTeam > 200)
+    //  return("Pinwheel maps must have less than 201 player per team; "
+    //"please change the map type, or number of players per team.");
+	//
     return(NULL);
 }
 
@@ -2194,10 +2196,11 @@ VOID CmapMakerSnowFlakeIGC::LinkClusters(CMapData * pMapData)
 
 const char* CmapMakerLargeSplitIGC::IsValid(const MissionParams * pmp)
 {
-    if (pmp->nMinPlayersPerTeam < 10)
-        return("Large split maps must have at least 10 players per team; "
-                "please change the map type, or number of players per team.");
-
+	// yp your_persona removed march 24 2006
+    //if (pmp->nMinPlayersPerTeam < 10)
+    //  return("Large split maps must have at least 10 players per team; "
+    //          "please change the map type, or number of players per team.");
+	//
     return(NULL);
 }
 
@@ -2369,9 +2372,10 @@ const char* CmapMakerEastWestIGC::IsValid(const MissionParams * pmp)
     if (pmp->nTeams != 2) 
         return("East West maps must have exactly two teams; "
                 "please change the map type, or the number of teams.");
-    else if (pmp->nMinPlayersPerTeam < 10)
-        return("East West maps must have at least 10 players per team; "
-                "please change the map type, or the number or players per team.");
+	// yp your_persona removed march 24 2006
+    // else if (pmp->nMinPlayersPerTeam < 10)
+    //     return("East West maps must have at least 10 players per team; "
+    //            "please change the map type, or the number or players per team.");
 
     return(NULL);
 }
@@ -2504,9 +2508,10 @@ VOID CmapMakerEastWestIGC::PopulateCluster(CMapData*    pMapData,
 
 const char* CmapMakerSplitBaseIGC::IsValid(const MissionParams * pmp)
 {
-    if (pmp->nTeams * pmp->nMinPlayersPerTeam < 30)
-        return("Split base maps must have at least 30 players; "
-               "please change the map type, the number of teams, or number of players per team.");
+	// yp your_persona removed  march 24 2006
+    //if (pmp->nTeams * pmp->nMinPlayersPerTeam < 30)
+    //    return("Split base maps must have at least 30 players; "
+    //           "please change the map type, the number of teams, or number of players per team.");
 
     return(NULL);
 }

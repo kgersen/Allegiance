@@ -3013,8 +3013,11 @@ public:
         HKEY hKey;
         DWORD dwResult = dwDefault;
 
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
-                0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
+		// mmf lets actually load it instead of creating it
+        // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+        //        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+                0, KEY_READ, &hKey))
         {
             DWORD dwSize = sizeof(dwResult);
             DWORD dwType = REG_DWORD;
@@ -3047,8 +3050,11 @@ public:
         HKEY hKey;
         ZString strResult = strDefault;
 
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
-                0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
+		// mmf lets actually load it instead of creating it
+        //if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+        //        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+                0, KEY_READ, &hKey))
         {
             const int nMaxStrLen = 2048;
             DWORD dwSize = nMaxStrLen;
@@ -4709,13 +4715,10 @@ public:
         Orientation     orthogonal (Vector (1.0f, 0.0f, 0.0f), Vector (0.0f, 0.0f, 1.0f));
         m_cameraControl.SetOrientation (orthogonal);
 
-        // original code
-        // m_timeOverrideStop = now + (bOverridePosition ? 5.0f : 3.0f);
         // this controls how long the launch animation lasts
-        // WLP 2005 - I shortened the next line's animation time to give the ships control sooner
-        m_timeOverrideStop = now + (bOverridePosition ? 1.0f : 0.75f) ; // mmf use 1/.75 sec instead of WLPs 0.1
-
-		m_bUseOverridePosition = bOverridePosition;
+        m_timeOverrideStop = now + (bOverridePosition ? 5.0f : 3.0f);
+        
+        m_bUseOverridePosition = bOverridePosition;
 
         if (bOverridePosition)
         {
@@ -4894,7 +4897,16 @@ public:
             SetFullscreenSize(m_sizeCombatFullscreen);
             Set3DAccelerationImportant(true);
             SetSizeable(true);
-            m_bCombatSize = true;
+
+			//aem res reset fix, previously just m_bCombatSize=true;
+			if ( (m_sizeCombatFullscreen.X()==640 && m_sizeCombatFullscreen.Y()==480) ||
+			(m_sizeCombatFullscreen.X()==800 && m_sizeCombatFullscreen.Y()==600) ||
+			(m_sizeCombatFullscreen.X()==1024 && m_sizeCombatFullscreen.Y()==768) ||
+			(m_sizeCombatFullscreen.X()==1280 && m_sizeCombatFullscreen.Y()==1024) ||
+			(m_sizeCombatFullscreen.X()==1600 && m_sizeCombatFullscreen.Y()==1200) )
+			{
+				m_bCombatSize = true;
+			}
         }
     }
 
@@ -5888,7 +5900,7 @@ public:
                 && GetFullscreen()
                 && GetPopupContainer()->IsEmpty()
                 && trekClient.flyingF()
-                && m_viewmode == vmCombat 
+                && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
                 && ((m_voverlaymask[m_viewmode] & c_omBanishablePanes) == 0);
 
             m_pjoystickImage->SetEnabled(bEnable, bEnable);
@@ -7457,7 +7469,7 @@ public:
 
     void InitializeHelp()
     {
-        m_phelp = CreateHelpPane(GetModeler(), "hlpblank", new PagePaneIncluderImpl());
+        m_phelp = CreateHelpPane(GetModeler(), "hlpStart", new PagePaneIncluderImpl());
 
         m_phelp->SetString("pid", GetProductID());
         m_phelp->SetString("ver", ZVersionInfo().GetProductVersionString());
@@ -7493,6 +7505,16 @@ public:
     {
         if (m_screen != ScreenIDSplashScreen) {
             switch(tk) {
+				// SR added ability to toggle virtual joystick during launch animation 8/06
+				case TK_ToggleMouse:
+					if (trekClient.IsInGame() &&
+					GetViewMode() == vmOverride &&
+					!trekClient.IsLockedDown()) {
+						m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;                
+						return true;
+					}
+					return false;
+
                 case TK_Help:
                     OnHelp(false);
                     return true;

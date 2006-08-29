@@ -24,6 +24,53 @@
     #include "FedSrvApp.h"
 #endif
 
+// begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_RANKS_ON
+/*-------------------------------------------------------------------------
+ * ReadFromRegistry
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Read info from the registry
+ * 
+ * Parameters:
+ *    hk:        which key to read from
+ *    bIsString: if false, then item is cosnidered to be a DWORD
+ *    szItem:    name of item to read
+ *    pValue:    destination of read
+ *    dwDefault: default value can be an int or a pointer to a string
+ *
+ * Returns:
+ *    true: iff pValue was set
+ */
+bool ReadFromRegistry(HKEY & hk, bool bIsString, const char * szItem, void * pValue, DWORD dwDefault)
+{
+    char psz[MAX_PATH] = {""};
+    DWORD dwSize = (bIsString ? sizeof(psz): sizeof(DWORD));
+
+    if (RegQueryValueEx(hk, szItem, NULL, NULL, (BYTE *)psz, &dwSize) != ERROR_SUCCESS ||
+        (bIsString && psz[0] == 0)) // if blank like what SrvConfig.exe makes
+    {
+        if (bIsString)
+        {
+            if (dwDefault)
+            {
+                strcpy((char*)pValue, (char*)dwDefault);
+                return true;
+            }
+            return false;
+        }
+        *(DWORD*)pValue = dwDefault;
+        return true;
+    }
+
+    if (bIsString)
+        strcpy((char*)pValue, psz);
+    else
+        *(DWORD*)pValue = *(DWORD*)psz;
+
+    return true;
+}
+// end mmf
+
 #if !defined(ALLSRV_STANDALONE)
 void DoDecrypt(int size, char* pdata)
 {
@@ -551,7 +598,9 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
-  if (!pfsPlayer->CanCheat())
+  // mmf added check here for special users so they can join any game
+
+  if (!pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
   {
     // make sure the player meets the rank requirements for this mission
     RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
@@ -826,24 +875,74 @@ void GotLogonDetails(CQLogonStats * pquery)
     #endif // !defined(ALLSRV_STANDALONE)
 	
   	// -Imago: ASGS Login/Rank
-	MaClient *http_client; int contentLen;
-	char *szContent;
-	char szURL[255]; char szName[64]; char szResponse[255];
-	ZString strName = pfsPlayer->GetName();
-	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
+    // mmf only do this if ASGS_RANKS_ON is ON
+    //     check reg key to see if we are using ASGS ranks or not
+	DWORD dw; // Gets result of whether it opened or created... - we only read
+	HKEY  hk;
+	DWORD dwASGS_RANKS_ON=0;
+	// use same key for server as lobby
+	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
+	{
+		// read ASGS is on or off in registry
+		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_RANKS_ON, 0);
+		RegCloseKey(hk); 
+	}
+	if (dwASGS_RANKS_ON) {
+	  // mmf pull rank from callsign (#) for now
+	  char szRank[64];
+	  char newName[64];
+	  int leftParen; int strLen;
+	  ZString strName = pfsPlayer->GetName();
 
-	// Fixup player names 
-	Strcpy(szName,(PCC)strName);
-	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
-	strcat(szURL,szName);
+	  strLen = strName.GetLength();
+	  leftParen = strName.ReverseFind('(',0);
+	  if (leftParen>=1) {
+	    Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
+	    RankID myRank = atoi(szRank); 
+		if (!((myRank>0) && (myRank<100))) {
+			debugf("Rank out of range rank=%d\n",myRank);
+			myRank=0; // sanity check
+		}
+        const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+		{
+		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+		}
+		// remove the (#) from callsign
+		// only for ranks above 4 so people can see newbs for boot protection as per the COD
+		if (myRank>4) {
+			Strncpy(newName,(PCC)strName,leftParen);
+			Strncpy(newName+leftParen,"\0",1); // null terminate
+			pship->SetName(newName);
+		}
+	    fValid = true;
+	  } else {
+		fValid = true; // No rank found, Rank not set, should default to 0
+		debugf("No rank found in callsign %s\n",(PCC)strName);
+	  }
+	  // mmf end pull rank from callsign
+#if 0 // http asgs rank lookup, disabled for now as it can hang the server waiting on a timeout, mmf
+	  MaClient *http_client; int contentLen;
+	  char *szContent;
+	  char szURL[255]; char szName[64]; char szResponse[255];
+	  ZString strName = pfsPlayer->GetName();
+	  Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
 
-	// Process requests on AppWeb threads
-	Mpr   mpr("AllSrv");
-	mpr.start(MPR_SERVICE_THREAD);
-	http_client = new MaClient();
-	http_client->getRequest(szURL);
-	if (szContent = http_client->getResponseContent(&contentLen)) {
-		// Fixup XML Response
+	  // Fixup player names 
+	  Strcpy(szName,(PCC)strName);
+	  if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
+	  strcat(szURL,szName);
+
+	  // Process requests on AppWeb threads
+	  Mpr   mpr("AllSrv");
+	  mpr.start(MPR_SERVICE_THREAD);
+	  http_client = new MaClient();
+	  http_client->getRequest(szURL);
+	  if (szContent = http_client->getResponseContent(&contentLen)) {
+	  	// Fixup XML Response
 		ZString strContent = szContent;
 		strContent = strContent.RightOf(88);
 		strContent = strContent.LeftOf("<");
@@ -872,9 +971,14 @@ void GotLogonDetails(CQLogonStats * pquery)
 			}
 			fValid = true;
 		}
-	} else {
+	  } else {
 		fValid = true; //assume all is OK, Rank will be 0
 		debugf("ASGS Server did not respond!\n");
+	  }
+#endif // http asgs rank lookup
+	} else {
+		fValid = true; // not using asgs ranks, Rank will be 0
+		debugf("Not using ASGS (ASGS_RANKS_ON regkey not set), rank query not done\n");
 	}
   }
   else
@@ -3331,7 +3435,13 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                         //Also echo this command to the command wing, but mark individual echo so the
                         //client will know how to process it.
                         pcd->chatTarget = CHAT_INDIVIDUAL_ECHO;
-                        ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 0, pfsSender->GetIGCShip());
+                        ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 0, pfsSender->GetIGCShip()); //Command
+
+						//AEM/TE: - Forward drone orders to Charlie, Delta, and Echo wings
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 7, pfsSender->GetIGCShip()); //Charlie
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 8, pfsSender->GetIGCShip()); //Delta
+						ForwardChatMessageToWing(pfsMission, pfsSender, pfm, 9, pfsSender->GetIGCShip()); //Echo
+
                     }
 
                     if (pdb && pmodel)
@@ -4501,7 +4611,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       CASTPFM(pfmPing, CS, PING, pfm);
       pfmPing->timeServer = g.timeNow;
       //debugf("Ping from %s in at %u, ", pfsPlayer->GetName(), Time::Now ());
+      //g.fm.SetPriority(FedMessaging::c_mcpDefault + 1); // TE: This was in R2 but not in DPlay8
       g.fm.ForwardMessage(pfsPlayer->GetConnection(), pfmPing, pfmPing->fmg);
+      //g.fm.SetPriority(FedMessaging::c_mcpDefault); // TE: This was in R2 but not DPlay8
       //debugf("out at %u\n", Time::Now ());
 
       // Would be nice if this worked, but it always reports 500ms.
@@ -7045,6 +7157,10 @@ IHTTPSession * BeginConfigDownload()
     }
   }
 
+  // WLP 2006 - added next line of code to force server to report invalid config
+  // if the new config is not found. It used to just use the old one without an error
+  //
+  DeleteFile(".\\temp.cfg") ;  // WLP 2006 - yell invalid if not found
 
   if (ZString(szConfig).Find("http://") == -1)
   {
@@ -7084,17 +7200,17 @@ bool OnAutoUpdateEXEDownloadDone(const char * szFilelistCRC, int nFilelistCRC, i
     }
 
     //
-    // Decide what will be launched after the update (AllSrv32 or UI), and how it will be launched (as service or EXE)
+    // Decide what will be launched after the update (AllSrv or UI), and how it will be launched (as service or EXE)
     //
     char * szLaunchPostUpdate;
 
     if (_Module.WasCOMStarted())
     {
-      szLaunchPostUpdate = "AllSrvUI32.exe";
+      szLaunchPostUpdate = "AllSrvUI.exe";
     }
     else
     {
-      szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv32" : "AllSrv32.exe";  // S: is short for "Start as Service"
+      szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv" : "AllSrv.exe";  // S: is short for "Start as Service"
     }
 
     char szCommandLine[MAX_PATH * 10];
@@ -7763,7 +7879,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   rgeventHandles[0] = g.hKillReceiveEvent;
   // rgeventHandles[1] = g.hPlayerEvent;
- 
+
   // -Imago: changed for RankInfo in all modes
   LoadRankInfo();
   debugf("LoadRankInfo result: #ranks=%d\n",g.cRankInfo);
@@ -8624,7 +8740,7 @@ int __cdecl main(int argc, char *argv[])
     #ifndef _DEBUG
     if (argc == 1 && !_Module.IsInstalledAsService() && !_Module.WasCOMStarted())
     {
-      printf("\nUse AllSrvUI32.exe to run the Allegiance Server.\n");
+      printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
       // Terminate AGC
       _Module.TermAGC();
       return 0;
@@ -9371,17 +9487,20 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
+   
+	// TE: Fire AGCEvent informing of station created
+	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
+	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
+		pside->GetName(), pside->GetObjectID(), -1, -1, 4,
+		"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+		"TeamID"    , VT_I4   , pside->GetObjectID(),
+		"TeamName", VT_LPSTR, pside->GetName(),
+		"zStationName", VT_LPSTR, pstationNew->GetName());
+    // TE end
 
     pstationNew->Release();
 
     UpgradeDrones(pside);
-    // TE, Fire AGCEvent when base is built
-	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
-	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
-		pside->GetName(), pside->GetObjectID(), -1, -1, 3,"MissionID", VT_I4, m_pfsMission->GetMissionID(),
-		"TeamID"    , VT_I4   , pside->GetObjectID(),"TeamName", VT_LPSTR, pside->GetName(),
-		"StationName", VT_LPSTR, pstationNew->GetName());
-    // TE
     //Possibly the built themselves to a victory
     IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationBuild(pside);
     if (psideWin)
@@ -10086,14 +10205,38 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   pfmStationDestroyed->stationID = stationID;
   pfmStationDestroyed->launcher = (otLauncher == OT_ship) ? plauncher->GetObjectID() : NA;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
-  // TE, fire AGCEvent when base is destroyed
+  
+  // TE: Added default values for plauncher's members used in StationDeleted event
+  const char* szLauncherName = "(unknown)";
+  int iLauncherUniqueID = -1;
+  int iLauncherSideUniqueID = -1;
+  
+  // If the launcher exists...
+  if (plauncher != NULL)
+  {
+	  // Retrieve the type of object that destroyed this station...
+	  ObjectType LauncherType = plauncher->GetObjectType();
+
+	  // If the launcher is NOT a probe (novabomb) or a missile (aleph res)...
+	  if (LauncherType != OT_probe && LauncherType != OT_missile)
+	  {
+		  // Safely read the values from the launcher
+		  szLauncherName = plauncher->GetName();
+		  iLauncherUniqueID = plauncher->GetUniqueID();
+		  iLauncherSideUniqueID = plauncher->GetSide()->GetUniqueID();
+	  }
+  }
+
+  // TE: fire AGCEvent when base is destroyed
   LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
   _AGCModule.TriggerContextEvent(NULL, EventID_StationDeleted, pszContext,
-    plauncher->GetName(), plauncher->GetUniqueID(), plauncher->GetSide()->GetUniqueID(), -1, 3,
-    "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
+    szLauncherName, iLauncherUniqueID, iLauncherSideUniqueID, -1, 4,
+	"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+    "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),
+	"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
     "zStationName", VT_LPSTR, pstation->GetName());	
-  // parameter is named zStationName so it appears at end of alphabetical list
-  // TE end
+  // parameter is named zStationName so it appears at end of alphabetical list, keeping compatibility with allsrv1.0
+  // End-TE
   IsideIGC*   pside = pstation->GetSide();
   IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationKill(pstation, pside);
   if (psideWin)
@@ -10812,12 +10955,14 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 		//FAZ: this is where tp1/tp2 are randomly destroyed (1/6 chance)
 		// future mod: use ((IprobeIGC)pmodel) to access the igcprobe datas
 		// mmf comment out for now
- 		//     this is causing a server crash, not every time, but seems like if TP is destroyed while
- 		//     someone else is ripping to it, boom, server goes down
- 		//     we crashed it with a TP1 dropped in open space (not near an asteroid)
-        /* 
+		//     this is causing a server crash, not every time, but seems like if TP is destroyed while
+		//     someone else is ripping to it, boom, server goes down
+		//     we crashed it with a TP1 dropped in open space (not near an asteroid)
+        /*
 		if ((type == OT_probe) && (randomInt(0, 5) == 0))
         {
+			// mmf debug
+			debugf("mmf debug teleprobe random destroy\n");
             KillProbeEvent((IprobeIGC*)pmodel);
             //pmodel->Terminate();
         }

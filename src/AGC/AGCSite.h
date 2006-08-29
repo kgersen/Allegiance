@@ -105,7 +105,7 @@ public:
       _SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p1, &spVector1));
       _SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p2, &spVector2));
 
-	  // TE: Determine if the killed player was in a lifepod or not
+	  // TE 7 lines added to support added zLifepod below
       int IsLifepod = 0;
       IhullTypeIGC*   pht = ship->GetBaseHullType();
 	  if (pht != NULL)
@@ -115,17 +115,16 @@ public:
 
       LPCSTR pszContext = ship ? ship->GetMission()->GetContextName() : NULL;
 
-      // Trigger the event
-      // TE add MissionId and zLifepod
+      // Trigger the event - TE add MissionId and zLifepod
 	  _AGCModule.TriggerContextEvent(hListeners, EventID_ShipKilled, pszContext,
-        pszShip, shipID, -1, -1, 7,                // TE: 7 now, used to be 5
+        pszShip, shipID, -1, -1, 7,                // TE: Added 2 params
         "Launcher"     , VT_I4      , launcherID,
         "LauncherName" , VT_LPSTR   , pszLauncher,
         "Amount"       , VT_R4      , amount,
-		"MissionID"    , VT_I4      , ship->GetMission()->GetMissionID(),  // TE added
+		"MissionID"    , VT_I4      , ship->GetMission()->GetMissionID(),  // TE: Add the GameID
         "Vector1"      , VT_DISPATCH, (IAGCVector*)spVector1,
         "Vector2"      , VT_DISPATCH, (IAGCVector*)spVector2,
-		"zLifepod"     , VT_I4      , IsLifepod);                          // TE added
+		"zLifepod"     , VT_I4      , IsLifepod);                          // TE: 1 if this ship is a lifepod
     }
 
     // Allow the server/client site class to invoke event

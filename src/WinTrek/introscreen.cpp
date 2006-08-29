@@ -726,7 +726,7 @@ public:
             trekClient.SetIsZoneClub(false);
             GetWindow()->screen(ScreenIDTrainScreen);
         }
-        else
+        else // wlp 2006 - go straight to lobby
         {
             // otherwise give the player the option to download the training files
             // if they do, then go to the download, and restart allegiance

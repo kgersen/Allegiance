@@ -421,40 +421,40 @@ public:
             strcat(szFileNameWithPath, "AllSrv.map");
         }
         else ///////////////////////////////////////////////////////
-        if (_stricmp(szRawFileName, "AllSrv32Retail.exe") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Debug.exe") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Test.exe") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32.exe") == 0)
+        if (_stricmp(szRawFileName, "AllSrvRetail.exe") == 0 ||
+            _stricmp(szRawFileName, "AllSrvDebug.exe") == 0 ||
+            _stricmp(szRawFileName, "AllSrvTest.exe") == 0 ||
+            _stricmp(szRawFileName, "AllSrv.exe") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrv32.exe");
+            strcat(szFileNameWithPath, "AllSrv.exe");
         }
         else
-        if (_stricmp(szRawFileName, "AllSrv32Retail.pdb") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Debug.pdb") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Test.pdb") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32.pdb") == 0)
+        if (_stricmp(szRawFileName, "AllSrvRetail.pdb") == 0 ||
+            _stricmp(szRawFileName, "AllSrvDebug.pdb") == 0 ||
+            _stricmp(szRawFileName, "AllSrvTest.pdb") == 0 ||
+            _stricmp(szRawFileName, "AllSrv.pdb") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrv32.pdb");
+            strcat(szFileNameWithPath, "AllSrv.pdb");
         }
         else
-        if (_stricmp(szRawFileName, "AllSrv32Retail.sym") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Debug.sym") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Test.sym") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32.sym") == 0)
+        if (_stricmp(szRawFileName, "AllSrvRetail.sym") == 0 ||
+            _stricmp(szRawFileName, "AllSrvDebug.sym") == 0 ||
+            _stricmp(szRawFileName, "AllSrvTest.sym") == 0 ||
+            _stricmp(szRawFileName, "AllSrv.sym") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrv32.sym");
+            strcat(szFileNameWithPath, "AllSrv.sym");
         }
         else
-        if (_stricmp(szRawFileName, "AllSrv32Retail.map") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Debug.map") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32Test.map") == 0 ||
-            _stricmp(szRawFileName, "AllSrv32.map") == 0)
+        if (_stricmp(szRawFileName, "AllSrvRetail.map") == 0 ||
+            _stricmp(szRawFileName, "AllSrvDebug.map") == 0 ||
+            _stricmp(szRawFileName, "AllSrvTest.map") == 0 ||
+            _stricmp(szRawFileName, "AllSrv.map") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrv32.map");
+            strcat(szFileNameWithPath, "AllSrv.map");
         }
         else ///////////////////////////////////////////////////////
         if (_stricmp(szRawFileName, "AGCRetail.dll") == 0 ||
@@ -529,40 +529,40 @@ public:
             strcat(szFileNameWithPath, "AllSrvUI.map");
         }
         else ///////////////////////////////////////////////////////
-        if (_stricmp(szRawFileName, "AllSrvUI32Retail.exe") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Debug.exe") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Test.exe") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32.exe") == 0)
+        if (_stricmp(szRawFileName, "AllSrvUIRetail.exe") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUIDebug.exe") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUITest.exe") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUI.exe") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrvUI32.exe");
+            strcat(szFileNameWithPath, "AllSrvUI.exe");
         }
         else
-        if (_stricmp(szRawFileName, "AllSrvUI32Retail.pdb") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Debug.pdb") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Test.pdb") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32.pdb") == 0)
+        if (_stricmp(szRawFileName, "AllSrvUIRetail.pdb") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUIDebug.pdb") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUITest.pdb") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUI.pdb") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrvUI32.pdb");
+            strcat(szFileNameWithPath, "AllSrvUI.pdb");
         }
         else
-        if (_stricmp(szRawFileName, "AllSrvUI32Retail.sym") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Debug.sym") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Test.sym") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32.sym") == 0)
+        if (_stricmp(szRawFileName, "AllSrvUIRetail.sym") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUIDebug.sym") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUITest.sym") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUI.sym") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrvUI32.sym");
+            strcat(szFileNameWithPath, "AllSrvUI.sym");
         }
         else
-        if (_stricmp(szRawFileName, "AllSrvUI32Retail.map") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Debug.map") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32Test.map") == 0 ||
-            _stricmp(szRawFileName, "AllSrvUI32.map") == 0)
+        if (_stricmp(szRawFileName, "AllSrvUIRetail.map") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUIDebug.map") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUITest.map") == 0 ||
+            _stricmp(szRawFileName, "AllSrvUI.map") == 0)
         {
             strcpy(szFileNameWithPath, szEXEPath);
-            strcat(szFileNameWithPath, "AllSrvUI32.map");
+            strcat(szFileNameWithPath, "AllSrvUI.map");
         }
         else ///////////////////////////////////////////////////////
         if (_stricmp(szRawFileName, "AutoUpdateRetail.exe") == 0 ||

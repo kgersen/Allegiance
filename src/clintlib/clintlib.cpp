@@ -564,6 +564,9 @@ void ChatInfo::SetChat(ChatTarget       ctRecipient,
                        bool             bFromObjectModel,
                        bool             bFromLeader)
 {
+
+	logchat(strText);  // mmf added log chat
+
     m_ctRecipient = ctRecipient;
 
     m_cidCommand = cid;
@@ -1250,7 +1253,9 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
         BEGIN_PFM_CREATE(m_fm, pfmLogon, C, LOGONREQ)
             FM_VAR_PARM(ci.szName, CB_ZTS)
             FM_VAR_PARM(ci.pZoneTicket, ci.cbZoneTicket)
-            FM_VAR_PARM((PCC)m_strCDKey.Scramble(bStandalonePrivate ? "corrupt wave file" : ci.szName), CB_ZTS)
+        // wlp 2006 - this is the ASGS Ticket
+        //     FM_VAR_PARM((PCC)m_strCDKey, CB_ZTS)            
+             FM_VAR_PARM("FERAL-1234567890123456", CB_ZTS)            // wlp 2006 - Don't send ASGS token to game server
             FM_VAR_PARM(szPassword, CB_ZTS)
         END_PFM_CREATE
         pfmLogon->fedsrvVer = MSGVER;
@@ -1317,7 +1322,7 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
         // Let's formally announce ourselves to the server
         BEGIN_PFM_CREATE(m_fmLobby, pfmLogon, C, LOGON_LOBBY)
             FM_VAR_PARM(m_ci.pZoneTicket, m_ci.cbZoneTicket)
-            FM_VAR_PARM(PCC(m_strCDKey.Scramble(szEncryptionKey)), CB_ZTS)
+            FM_VAR_PARM(PCC(m_strCDKey), CB_ZTS)                   // Wlp 2006 - This is the ASGS Ticket now
         END_PFM_CREATE
         pfmLogon->verLobby = LOBBYVER;
         pfmLogon->crcFileList = crcFileList;
@@ -1395,7 +1400,7 @@ void BaseClient::FindStandaloneServersByName(const char* szName, TList<TRef<LANS
 
 void BaseClient::SetCDKey(const ZString& strCDKey)
 {
-    m_strCDKey = strCDKey.ToUpper();
+    m_strCDKey = strCDKey;
 }
 
 void BaseClient::HandleAutoDownload(DWORD dwTimeAlloted)
@@ -2444,8 +2449,8 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
         // 'slow', but probably still fast enough
         for (int iEntry = 0; iEntry < m_cRankInfo; iEntry++)
         {
-            if (m_vRankInfo[iEntry].civ == civ
-                && m_vRankInfo[iEntry].rank <= rank
+            if (m_vRankInfo[iEntry].civ == civ 
+                && m_vRankInfo[iEntry].rank <= rank 
                 && m_vRankInfo[iEntry].rank >= nClosestRank)
             {
                 szRankNameTemplate = m_vRankInfo[iEntry].RankName;
@@ -2457,7 +2462,7 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
 
     char cbTemp[c_cbName + 8];
     wsprintf(cbTemp, szRankNameTemplate, rank - nClosestRank + 1);
-   RemoveTrailingSpaces(cbTemp);
+    RemoveTrailingSpaces(cbTemp);
 
     return cbTemp;
 }

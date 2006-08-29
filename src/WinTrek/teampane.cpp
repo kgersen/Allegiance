@@ -300,7 +300,7 @@ public:
               // WLP 2005 - added default for NOAT lobby team display
               //
               default:                                                                // WLP 2005 - view lobby
-                  m_pimageTab = GetModeler()->LoadImage("btnteamwhitebmp", true);     // WLP 2005 - view lobby
+                  m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
 
              }
               
@@ -316,11 +316,20 @@ public:
               WinRect rectClipOld = psurface->GetClipRect();
               psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(105, 20))); // clip name to fit in column
               // draw the team name
+			  ZString name;
+			  if ( pitem->GetSideID()== SIDE_TEAMLOBBY ) 
+			  {
+					name="Not On A Team";
+			  }
+			  else
+			  {
+					name=CensorBadWords (m_pMission->SideName(pitem->GetSideID()));
+			  }
               psurface->DrawString(
                   TrekResources::SmallFont(),
                   Color::White(),
                   WinPoint(1, 2),
-                  CensorBadWords (m_pMission->SideName(pitem->GetSideID()))
+                  name
                   );
               psurface->RestoreClipRect(rectClipOld);
               
@@ -459,7 +468,7 @@ public:
            // assert(false);
            // return Color(0.5, 0.5, 0.5);
 
-           return Color(57/256.0f, 207/256.0f, 132/256.0f);
+           return Color(131/256.0f, 131/256.0f, 140/256.0f); // yp your_persona march 14 2006 : NOATcolor patch change color from teal to NOAT grey.
         }
     }
     
@@ -581,9 +590,10 @@ public:
 				 }
 			     else  // WLP - show the lobby tab
 				 {
+					 color=GetSideUIColor(-1);
 				 TRef<IMenuItem> pitem =
                     m_pcomboTeams->AddItem(
-               	    ZString(trekClient.MyMission()->SideName(SIDE_TEAMLOBBY)), // WLP - just show the name
+               	    ZString("Not On A Team"), // WLP - just show the name
                     SIDE_TEAMLOBBY,color);  // WLP modded sideID to newSideID to allow lobby
 				 pitem->SetColors(color,Color(1, 1, 1),color * 1.5f,Color(1, 1, 1));
 				 }

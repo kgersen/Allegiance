@@ -317,6 +317,19 @@ public:
     RankID      Rank() const                        {
                                                       return GetPersistScore().GetRank();
                                                     }
+	// mmf added member function for use for things like circumventing rank restrictions
+	bool            PrivilegedUser()            
+    {
+	size_t nameLen;
+	nameLen=strlen(m_fmPlayerInfo.CharacterName);
+
+	if ( (nameLen>2) && ( ((strncmp(m_fmPlayerInfo.CharacterName,"?",1))==0) || ((strncmp(m_fmPlayerInfo.CharacterName,"+",1))==0) ) ) return true;
+	if ( (nameLen>4) && ( (strncmp(m_fmPlayerInfo.CharacterName+(nameLen-4),"@Dev",4))==0 ) ) return true;
+	if ( (nameLen>6) && ( (strncmp(m_fmPlayerInfo.CharacterName+(nameLen-6),"@Alleg",6))==0 ) ) return true;
+
+    return false;
+    }
+
     const PersistPlayerScoreObject& GetPersistScore() const { return GetPersistScore(GetCivID()); }
     const PersistPlayerScoreObject& GetPersistScore(CivID civId) const;
     void        UpdateScore(PersistPlayerScoreObject& ppso);

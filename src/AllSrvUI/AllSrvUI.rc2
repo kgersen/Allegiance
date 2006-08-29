@@ -16,8 +16,8 @@
   #define SZORIGFILENAME "AllSrvUI.exe"
   #define SZINTERNALNAME "AllSrvUI"
 #else // !defined(ALLSRV_STANDALONE)
-  #define SZORIGFILENAME "AllSrvUI32.exe"
-  #define SZINTERNALNAME "AllSrvUI32"
+  #define SZORIGFILENAME "AllSrvUI.exe"
+  #define SZINTERNALNAME "AllSrvUI"
 #endif // !defined(ALLSRV_STANDALONE)
 
 /////////////////////////////////////////////////////////////////////////////

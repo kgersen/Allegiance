@@ -24,7 +24,7 @@
 				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="2"
@@ -63,7 +63,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
 				BasicRuntimeChecks="1"
 				RuntimeLibrary="3"
@@ -104,11 +104,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				ImproveFloatingPointConsistency="TRUE"
-				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
-				BasicRuntimeChecks="1"
+				ExceptionHandling="FALSE"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
+				WarningLevel="1"
 				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
@@ -143,7 +145,7 @@
 				GlobalOptimizations="TRUE"
 				ImproveFloatingPointConsistency="FALSE"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone;..\..\FreeZoneAuth"
+				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;"
 				RuntimeLibrary="2"/>
 			<Tool

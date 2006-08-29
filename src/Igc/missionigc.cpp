@@ -406,7 +406,9 @@ int     LoadIGCStaticCore (const char* name, ImissionIGC* pMission, bool fGetVer
     }
     else
     {
-        assert ("Load IGC Static Core failed." && false);
+		// mmf added debugf
+        debugf("Load IGC Static Core failed to load %s\n",name);
+		assert ("Load IGC Static Core failed." && false);
         return NA;
     }
 }
@@ -1076,10 +1078,10 @@ IbaseIGC*           CmissionIGC::CreateObject(Time now, ObjectType objecttype,
         //Increment the ref count because IGC objects should be created with a ref count of 1.
         pBase->AddRef();
 
-        HRESULT hr = pBase->Initialize(this, now, data, dataSize);
-        if (FAILED(hr) || (hr == S_FALSE)) // mmf added or check for S_FALSE to support destroyed TP
+		HRESULT hr = pBase->Initialize(this, now, data, dataSize);
+        if (FAILED(hr) || (hr == S_FALSE))  // mmf added or check for S_FALSE to support destroyed TP
         {
-			debugf("mmf Initialize return failed or S_FALSE in missionigc, S_FALSE added to support TP destroy\n");
+			// debugf("mmf Initialize return failed or S_FALSE in missionigc, S_FALSE added to support TP destroy\n");
             if (hr != E_ABORT)
                 pBase->Terminate();
 

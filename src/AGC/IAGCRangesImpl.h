@@ -54,9 +54,11 @@ public:
   {
     // Create a range COM object to be reused multiple times
     ZSucceeded(T::CreateRange(RT(), RT(), &m_spRange));
-    m_spPrivate = m_spRange;
+    // m_spPrivate = m_spRange; // TE: This was in DPlay8 but not in R2. Line below was used instead from R2.
+    m_spRange.QueryInterface(&m_spPrivate);  
     assert(NULL != m_spPrivate);
-    m_spPersist = m_spRange;
+    // m_spPersist = m_spRange; // TE: This was in DPlay8 but not in R2. Line below was used instead from R2.
+    m_spRange.QueryInterface(&m_spPersist);    
     if (NULL == m_spPersist)
     {
       ZSucceeded(m_spRange->QueryInterface(IID_IPersistStreamInit,
