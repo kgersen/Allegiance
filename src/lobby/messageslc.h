@@ -12,7 +12,7 @@
 #define _MESSAGES_LC_H_ 
 
 #include "MessageCore.h"
-#define LOBBYVER 8
+#define LOBBYVER 9
 
  /*
   *************************************************
@@ -70,6 +70,7 @@ END_FEDMSG
 DEFINE_FEDMSG(L, JOIN_MISSION, 260)
   DWORD dwCookie; // client should ignore this message unless it's the cookie for the most recent join/create request 
   char szServer[16];
+  DWORD dwPort;			// mdvalley: Lobby passes the server's port to the client
   GUID guidInstance;
 END_FEDMSG    
 

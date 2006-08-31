@@ -593,6 +593,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         g_pLobbyApp->GetFMServers().GetIPAddress(*pMission->GetServer()->GetConnection(), szServer);
         assert(lstrlen(szServer) < sizeof(pfmJoinMission->szServer)); // as long as szServer is fixed length
         lstrcpy(pfmJoinMission->szServer, szServer);
+		pfmJoinMission->dwPort = pMission->GetServer()->GetServerPort();		// mdvalley: Slap the server port info in there
         pfmJoinMission->dwCookie = pfmJoinGameReq->dwCookie;
         pfmJoinMission->guidInstance = GUID_NULL; // until we have separate sessions for each game
       }

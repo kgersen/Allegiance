@@ -680,6 +680,7 @@ public: //todo: make protected
       }
       FILETIME  ftLastArtUpdate;
       ZString   strServer;
+	  DWORD		dwPort;
       char      szName  [c_cbName];
       LPBYTE    pZoneTicket;
       CB        cbZoneTicket;

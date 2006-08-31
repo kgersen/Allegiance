@@ -7557,10 +7557,19 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
     "", -1, -1, -1, 1,
     "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
 
+    // mdvalley: Discover listening port
+  DWORD dwPort = 0;						// Passing a port of 0 informs the lobby of the error.
+  hr = g.fm.GetListeningPort(&dwPort);
+  if(FAILED(hr))
+  {
+	  debugf("Cannot discover listening port.\n");
+  }
+
   // Give lobby the version
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
   END_PFM_CREATE
   pfmLogon->verLobby = LOBBYVER_LS;
+  pfmLogon->dwPort = dwPort;
   g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
 
   // Make sure the lobby knows whether we're paused before we do anything else

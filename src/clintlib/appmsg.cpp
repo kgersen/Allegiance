@@ -3334,6 +3334,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             if (m_dwCookieToJoin = pfmJoinMission->dwCookie) // this is our number--join up
             {
                 m_ci.strServer = pfmJoinMission->szServer;
+				m_ci.dwPort = pfmJoinMission->dwPort;		// mdvalley: get the port number
                 m_ci.guidSession = GUID_NULL;
                 ConnectToServer(m_ci, pfmJoinMission->dwCookie, now, m_strPasswordToJoin, false);
             }

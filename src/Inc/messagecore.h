@@ -246,8 +246,8 @@ public:
   FedMessaging(IFedMessagingSite * pfmSite);
   ~FedMessaging();
   HRESULT             Connect(const char * szAddress);
-  HRESULT             HostSession(GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol );
-  HRESULT             JoinSession(GUID guidApplication, const char * szServer, const char * szName);
+  HRESULT             HostSession(GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol, DWORD dwPort = 0 );	// mdvalley: added optional dwPort. Set for lobby. Game servers should leave it at 0.
+  HRESULT             JoinSession(GUID guidApplication, const char * szServer, const char * szName, DWORD dwPort = 6073);			// 6073 is the standard enum port, and should be used when a specfic one is not known/not available
   HRESULT             JoinSessionInstance(GUID guidInstance, const char * szName);
   HRESULT             JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, const char * szName );
 
@@ -421,6 +421,7 @@ public:
   }
 
   HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16]);
+  HRESULT         GetListeningPort(DWORD* dwPort);
 
   //  <NKM> 07-Aug-2004
   // Removed from header till i work out what to do with them
@@ -493,7 +494,7 @@ private:
   bool            KillSvr();
   HRESULT         ConnectToDPAddress(LPVOID pAddress);
   HRESULT         OnSysMessage( const DPlayMsg& msg );
-  HRESULT         EnumHostsInternal(GUID guidApplication, const char * szServer);
+  HRESULT         EnumHostsInternal(GUID guidApplication, const char * szServer, DWORD dwPort = 6073);	// mdvalley: dwPort defaults to standard enumeration port
   
   //  <NKM> 08-Aug-2004
   // No enum sessions in DX9 - probably need EnumHosts.

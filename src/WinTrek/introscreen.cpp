@@ -330,7 +330,7 @@ private:
         {
 			// WLP 2005 - turned off the every second search to keep the mouse responding
 			// added next line to turn off polling
-            m_bDoBackgroundPolling = false ;
+            //m_bDoBackgroundPolling = false ;	// TE: Commented now that enumeration is done asynchronously
             TList<TRef<LANServerInfo> > listResults;
 
             trekClient.FindStandaloneServersByName(szServerName, listResults);

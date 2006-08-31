@@ -183,6 +183,11 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
       }
       bSuccess = _Module.ReadFromRegistry(hk, false, "GameInfoInterval", &m_sGameInfoInterval, 25);
     }
+
+    DWORD dwPort;
+    bSuccess = _Module.ReadFromRegistry(hk, false, "ClientPort", &dwPort, 2302);	// mdvalley: read listening port, default to 2302
+	m_sPort = dwPort;
+
     m_szToken[0] = '\0';
     bSuccess = _Module.ReadFromRegistry(hk, true, "Token", m_szToken, NULL);
 
@@ -270,8 +275,8 @@ HRESULT CLobbyApp::Init()
 #endif
 
   // TODO: Make keep-alives an option
-  if (FAILED(hr = m_fmServers.HostSession(m_fFreeLobby ? FEDFREELOBBYSERVERS_GUID : FEDLOBBYSERVERS_GUID, false, 0, m_fProtocol)) ||
-      FAILED(hr = m_fmClients.HostSession(m_fFreeLobby ? FEDFREELOBBYCLIENTS_GUID : FEDLOBBYCLIENTS_GUID, true, 0, m_fProtocol)))
+  if (FAILED(hr = m_fmServers.HostSession(m_fFreeLobby ? FEDFREELOBBYSERVERS_GUID : FEDLOBBYSERVERS_GUID, false, 0, m_fProtocol, m_sPort + 1)) ||		// This one does not need fixing,
+      FAILED(hr = m_fmClients.HostSession(m_fFreeLobby ? FEDFREELOBBYCLIENTS_GUID : FEDLOBBYCLIENTS_GUID, true, 0, m_fProtocol, m_sPort)))				// But we need to make sure it doesn't grab the same as this one
   {
     m_plas->LogEvent(EVENTLOG_ERROR_TYPE, LE_HostSessionFailure);
     return hr;

@@ -1237,8 +1237,8 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
     {
         if (bStandalonePrivate)
           hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);
-        else
-          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName);
+        else																		// mdvalley: of the places this function is called,
+          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);	// only connections to the lobby lead to this line. (I hope)
     }
 
     // TODO: Remove this when we are ready to enforce CD Keys
@@ -1310,7 +1310,18 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
         iterMissions.Next();
     }
     m_mapMissions.SetEmpty();
-    hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName);
+
+	// mdvalley: get the lobby port from the registry
+	DWORD dwPort = 2302;		// default if value not present
+	HKEY hKey;
+	if(SUCCEEDED(::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)))
+	{
+		DWORD dwSize = sizeof(DWORD);
+		::RegQueryValueEx(hKey, "LobbyPort", NULL, NULL, (BYTE*)&dwPort, &dwSize);
+		::RegCloseKey(hKey);
+	}
+
+    hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName, dwPort);
     assert(IFF(m_fmLobby.IsConnected(), SUCCEEDED(hr)));
     if (m_fmLobby.IsConnected())
     {

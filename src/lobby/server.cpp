@@ -27,7 +27,13 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       CASTPFM(pfmLogon, S, LOGON_LOBBY, pfm);
 
       if (pfmLogon->verLobby == LOBBYVER_LS)
+	  {
+		  if(pfmLogon->dwPort != 0)						// mdvalley: note down the port the server said
+			  pServer->SetServerPort(pfmLogon->dwPort);
+		  else
+			  pServer->SetServerPort(6073);				// If the server don't say, then it's 6073 (normal enum port)
         break;
+	  }
 
       char * szReason;
 
@@ -212,6 +218,7 @@ void LobbyServerSite::OnBadCRC(FedMessaging * pthis, CFMConnection & cnxn, BYTE 
 CFLServer::CFLServer(CFMConnection * pcnxn) :
   m_dwID(c_dwID),
   m_pcnxn(pcnxn),
+  m_sPort(6073),	// mdvalley: probably don't have to initialize it like this
   m_cPlayers(0),
   m_maxLoad(300), // get from reg or something
   m_bHere(false),

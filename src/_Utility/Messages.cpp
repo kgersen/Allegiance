@@ -9,6 +9,7 @@
 //  <NKM> 25-Aug-2004
 // For debug purposes....
 #define GETSORC  const char* sOrC = m_pDirectPlayClient == 0 ? "S" : "C"
+#define DPNGETLOCALHOSTADDRESSES_COMBINED               0x0001
 
 
 const MsgClsPrio FedMessaging::c_mcpDefault = 1000;
@@ -1292,7 +1293,7 @@ HRESULT FedMessaging::InitDPlayServer()
  * Side Effects:
  *    
  */
-HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol )
+HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol, DWORD dwPort )	// mdvalley: (optional) dwPort forces enumeration to that port
 {
   HRESULT hr = E_FAIL;
 
@@ -1336,11 +1337,12 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
     return hr;
   }
 
-  if( FAILED(hr) )
-  {
-    m_pfmSite->OnMessageBox( this, "Failed to set DPlay server port", "Allegiance", MB_OK );
-    return hr;
-  }
+  if( dwPort )
+	  if(FAILED(hr = pDP8AddressLocal->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
+		{
+		    m_pfmSite->OnMessageBox( this, "Failed to set DPlay server port", "Allegiance", MB_OK );
+		    return hr;
+		}
 
   ZeroMemory( &dpnAppDesc, sizeof( DPN_APPLICATION_DESC ) );
   dpnAppDesc.dwSize = sizeof( DPN_APPLICATION_DESC );
@@ -1432,7 +1434,7 @@ void FedMessaging::Shutdown()
  *    what server, what application, and what instance to join (or NULL for default)
  *    OUT: connection to the sevrer that all messages should be sent to
  */
-HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, const char * szCharName)
+HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, const char * szCharName, DWORD dwPort)	// mdvalley: (optional) dwPort forces enumeration on given port
 {
   HRESULT hr = E_FAIL;
   Time timeStart = Time::Now();
@@ -1442,7 +1444,7 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
   if ( FAILED(hr) )
     return hr;
 
-  hr = EnumHostsInternal(guidApplication, szServer);
+  hr = EnumHostsInternal(guidApplication, szServer, dwPort);
   if ( FAILED(hr) )
     return hr;
 
@@ -1617,7 +1619,33 @@ HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16
   return S_OK;
 }
 
+HRESULT FedMessaging::GetListeningPort(DWORD* dwPort)	// mdvalley: Finds the port the server is listening at
+{
+	assert(m_pDirectPlayServer);
 
+	if(!m_pDirectPlayServer)
+		return E_FAIL;			// needs a better error code, or something.
+
+	IDirectPlay8Address* pAddress;
+	HRESULT hr;
+
+	DWORD dwAddySize = 1;
+
+	hr = m_pDirectPlayServer->GetLocalHostAddresses(&pAddress, &dwAddySize, DPNGETLOCALHOSTADDRESSES_COMBINED);
+	if (ZFailed(hr)) return hr;
+
+	DWORD dwBuffSize = sizeof(DWORD);
+	DWORD dwDataType;
+
+	DWORD dwPortGot;
+
+	hr = pAddress->GetComponentByName(DPNA_KEY_PORT, &dwPortGot, &dwBuffSize, &dwDataType);
+	if (ZFailed(hr)) return hr;
+
+	*dwPort = dwPortGot;
+
+	return S_OK;
+}
 
 HRESULT FedMessaging::EnumSessions(GUID guidApplication, const char * szServer)
 {
@@ -1637,7 +1665,7 @@ hr = InitDPlayClient();
   return EnumHostsInternal(guidApplication, szServer);
 }
 
-HRESULT FedMessaging::EnumHostsInternal(GUID guidApplication, const char * szServer)
+HRESULT FedMessaging::EnumHostsInternal(GUID guidApplication, const char * szServer, DWORD dwPort)	// mdvalley: (optional) dwPort forces enumeration to that port
 {
 // WLP 2005 - added init client if needed
 //
@@ -1699,8 +1727,15 @@ hr = InitDPlayClient();
   // Set IP service provider
   if( FAILED( hr = pDP8AddressHost->SetSP( &CLSID_DP8SP_TCPIP ) ) )
   {
-    m_pfmSite->OnMessageBox( this, "Failed to create DPlay local SP", "Allegiance", MB_OK );
+    m_pfmSite->OnMessageBox( this, "Failed to create DPlay remote SP", "Allegiance", MB_OK );
     return hr;
+  }
+
+  // Set the remote port
+  if(dwPort != 6073 && FAILED(hr = pDP8AddressHost->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
+  {
+	  m_pfmSite->OnMessageBox( this, "Failed to set DPlay client remote port", "Allegiance", MB_OK );
+	  return hr;
   }
 
 
