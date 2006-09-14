@@ -600,6 +600,7 @@ public:
   int     crcClubMessageFile;
   int     crcPublicMessageFile;
   bool    bUsePassport;
+  DWORD   dwLobbyPort;				// mdvalley: Port number to connect to lobby with
 };
 
 struct LANServerInfo : public IObject
@@ -680,8 +681,8 @@ public: //todo: make protected
       }
       FILETIME  ftLastArtUpdate;
       ZString   strServer;
-	  DWORD		dwPort;
       char      szName  [c_cbName];
+	  DWORD     dwPort;				// mdvalley: The port number to connect to
       LPBYTE    pZoneTicket;
       CB        cbZoneTicket;
       GUID      guidSession;

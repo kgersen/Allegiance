@@ -6841,7 +6841,7 @@ void ProcessNetworkMessages()
       DWORD cMsgs;
       DWORD cbMsgs;
       HRESULT hr = g.fm.GetConnectionSendQueue(&cnxn, &cMsgs, &cbMsgs);
-      const cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
+      const DWORD cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
       if ((cnxn.IncAbsentCount() > 6) || // give them a ridiculous 1 minute of no messages
           FAILED(hr) ||
           (cMsgs > cMaxQ)) // dead--nuke 'em
@@ -7315,6 +7315,14 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
       return false;
     g.strLobbyServer = szLobby;
 
+    // mdvalley: get lobby port
+    char szPort[8];
+
+    GetPrivateProfileString("Allegiance", "LobbyServerPort", "2303",
+      szPort, sizeofArray(szPort), szConfig);
+
+    g.dwLobbyPort = atoi(szPort);
+
     char szFilelistCRC[50];
 
     
@@ -7541,7 +7549,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 #else
         FEDLOBBYSERVERS_GUID,
 #endif
-        PCC(g.strLobbyServer), PCC(g.strLocalAddress));
+		PCC(g.strLobbyServer), PCC(g.strLocalAddress), g.dwLobbyPort);		// mdvalley: forced to lobby port
   if (FAILED(hr))
   {
     printf("failed.\n", PCC(g.strLobbyServer));
@@ -11514,7 +11522,7 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
     {
       SYSTEMTIME systime;
       DWORD l = strlen(psz);
-      const c_cbPrefix = 19; // time format: 12/31 23:59:59.999
+      const DWORD c_cbPrefix = 19; // time format: 12/31 23:59:59.999
       DWORD cbLine = l + c_cbPrefix;
       OVERLAPPED* pov = (OVERLAPPED*)(new char [ sizeof(OVERLAPPED) + cbLine ]);
       *pov = m_overlapped;

@@ -219,8 +219,14 @@ void FedMessaging::EnumHostsCallback ( const DPNMSG_ENUM_HOSTS_RESPONSE& resp )
     if ( m_pHostAddress != 0 )
       m_pHostAddress->Release();
 
+    if ( m_pDeviceAddress != 0)
+      m_pDeviceAddress->Release();
+
     ZSucceeded( resp.pAddressSender->QueryInterface( IID_IDirectPlay8Address,
                                                 (LPVOID*) &m_pHostAddress ) );
+
+    ZSucceeded( resp.pAddressDevice->QueryInterface( IID_IDirectPlay8Address,
+                                                (LPVOID*) &m_pDeviceAddress ) );	// mdvalley: get device address
 
     if ( m_fSessionCallback )
       m_pfmSite->OnSessionFound( this, &fmSession );
@@ -1460,7 +1466,8 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
   if (IsEqualGUID(GUID_NULL, m_guidInstance))
     hr = E_FAIL; // something else?
   else
-    hr = JoinSessionInstance( guidApplication, m_guidInstance, m_pHostAddress, szCharName);
+//    hr = JoinSessionInstance( guidApplication, m_guidInstance, m_pHostAddress, szCharName);
+    hr = JoinSessionInstance( guidApplication, m_guidInstance, m_pHostAddress, m_pDeviceAddress, szCharName);
 
   ResetOutBuffer();
 
@@ -1486,7 +1493,7 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
   Side Effects:
       joins the session, creates the named player
  */
-HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, const char * szName)
+HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, IDirectPlay8Address* device, const char * szName)	// mdvalley: added device argument
 {
   // WLP 2005 - added init client if needed for DPLAY8
   //
@@ -1521,7 +1528,7 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
       
   hr = m_pDirectPlayClient->Connect( &dpnAppDesc,        // Application description
                                      addr,               // Session host address
-                                     0,                  // Address of device used to connect to the host
+                                     device,             // Address of device used to connect to the host (mdvalley: formerly 0)
                                      NULL, NULL,         // Security descriptions & credientials (MBZ in DPlay8)
                                      NULL, 0,            // User data & its size
                                      NULL,               // Asynchronous connection context (returned with DPNMSG_CONNECT_COMPLETE in async handshaking)
@@ -1549,7 +1556,8 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
         
 HRESULT FedMessaging::JoinSessionInstance(GUID guidInstance, const char * szName)
 {
-return JoinSessionInstance( GUID_NULL, m_guidInstance, m_pHostAddress, szName);
+//return JoinSessionInstance( GUID_NULL, m_guidInstance, m_pHostAddress, szName);
+return JoinSessionInstance( GUID_NULL, m_guidInstance, m_pHostAddress, m_pDeviceAddress, szName);
 }
 // WLP - End
 

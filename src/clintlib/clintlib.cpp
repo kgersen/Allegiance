@@ -1230,15 +1230,14 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
     if (ci.guidSession != GUID_NULL)
     {
         assert(ci.strServer.IsEmpty());
-	
-        hr = m_fm.JoinSessionInstance(ci.guidSession,ci.szName);
+        hr = m_fm.JoinSessionInstance(ci.guidSession, ci.szName);
     }
     else
     {
         if (bStandalonePrivate)
           hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);
-        else																		// mdvalley: of the places this function is called,
-          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);	// only connections to the lobby lead to this line. (I hope)
+        else															// Mdvalley: Connecting via the lobby can only lead to this option.
+          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
     }
 
     // TODO: Remove this when we are ready to enforce CD Keys
@@ -1311,17 +1310,18 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     }
     m_mapMissions.SetEmpty();
 
-	// mdvalley: get the lobby port from the registry
-	DWORD dwPort = 2302;		// default if value not present
+	// Mdvalley: Pull lobby port from registry
+	// This was removed since now lobby port is retrieved from CFG file
+/*    DWORD dwPort = 2302;		// Default to 2302
 	HKEY hKey;
-	if(SUCCEEDED(::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)))
+	if(ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
 		DWORD dwSize = sizeof(DWORD);
 		::RegQueryValueEx(hKey, "LobbyPort", NULL, NULL, (BYTE*)&dwPort, &dwSize);
 		::RegCloseKey(hKey);
 	}
-
-    hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName, dwPort);
+*/
+	hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName, GetCfgInfo().dwLobbyPort);
     assert(IFF(m_fmLobby.IsConnected(), SUCCEEDED(hr)));
     if (m_fmLobby.IsConnected())
     {
@@ -2473,7 +2473,7 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
 
     char cbTemp[c_cbName + 8];
     wsprintf(cbTemp, szRankNameTemplate, rank - nClosestRank + 1);
-    RemoveTrailingSpaces(cbTemp);
+	RemoveTrailingSpaces(cbTemp);
 
     return cbTemp;
 }
@@ -2955,7 +2955,7 @@ void BaseClient::FireMissile(IshipIGC* pShip,
 
     if (!m_fm.IsConnected())
     {
-        for (i = 0; i < iNumMissiles; i++)
+        for (int i = 0; i < iNumMissiles; i++)
         {
             dataMissile.position    = missileLaunchData[i].vecPosition;
             dataMissile.forward     = missileLaunchData[i].vecForward;
@@ -4070,6 +4070,11 @@ void CfgInfo::Load(const char * szConfig)
     GetPrivateProfileString(c_szCfgApp, "UsePassport", "0", 
                                    szStr, sizeof(szStr), szConfig);
     bUsePassport = atoi(szStr) != 0;
+
+    // mdvalley: get lobby port
+    GetPrivateProfileString(c_szCfgApp, "LobbyClientPort", "2302",
+                                   szStr, sizeof(szStr), szConfig);
+	dwLobbyPort = atoi(szStr);
 }
 
 void _debugf(const char* format, ...)

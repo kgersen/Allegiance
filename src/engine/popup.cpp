@@ -230,7 +230,7 @@ public:
             ppopup->SetOwner(ppopupOwner);
         }
 
-        EngineWindow::DoHitTest();
+        // EngineWindow::DoHitTest(); // TE: Popups aren't affected by mouse unless moved!
     }
 
     void OpenPopup(IPopup* ppopup, const Rect& rect, bool bCloseAll, bool bCascadeDown, IPopup* ppopupOwner)

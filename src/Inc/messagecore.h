@@ -249,7 +249,8 @@ public:
   HRESULT             HostSession(GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol, DWORD dwPort = 0 );	// mdvalley: added optional dwPort. Set for lobby. Game servers should leave it at 0.
   HRESULT             JoinSession(GUID guidApplication, const char * szServer, const char * szName, DWORD dwPort = 6073);			// 6073 is the standard enum port, and should be used when a specfic one is not known/not available
   HRESULT             JoinSessionInstance(GUID guidInstance, const char * szName);
-  HRESULT             JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, const char * szName );
+//  HRESULT             JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, const char * szName );
+  HRESULT             JoinSessionInstance(GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, IDirectPlay8Address* device, const char * szName );	// mdvalley: added device argument, aquired from enum response
 
 
   GUID                GetHostApplicationGuid()
@@ -523,6 +524,7 @@ private:
   CFMGroup *          m_pgrpEveryone;
   GUID                m_guidInstance;
   IDirectPlay8Address* m_pHostAddress;
+  IDirectPlay8Address* m_pDeviceAddress;			// mdvalley: Device address returned by enum response
   GUID                m_guidApplication;            // guid given to HostSession()
   IDirectPlay8Client* m_pDirectPlayClient;
   IDirectPlay8Server* m_pDirectPlayServer;

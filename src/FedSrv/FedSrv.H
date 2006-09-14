@@ -306,6 +306,7 @@ struct Global
   ZString             strAuthServer;
   ZString             strLocalAddress;
   char                rgTechs[cTechs][CbTechBitName+1];
+  DWORD               dwLobbyPort;
 
   RankInfo*           vRankInfo;
   short               cRankInfo;
