@@ -145,7 +145,8 @@ void BufferPositionTracker::SetPosition(DWORD dwPosition)
 
 // prepare a sound buffer with the given quality and 3D support using the
 // direct sound object pointed to by pDirectSound.
-HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound, 
+// mdvalley: DirectSound8
+HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound8* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
 {
     HRESULT hr;
@@ -166,7 +167,8 @@ HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound,
             m_pds3dbuffer = pds3dASRBuffer;
         }
         // stream sounds that are larger than 1 MB or so.
-        else if (m_pdata->GetSize() > 1000000)
+//        else if (m_pdata->GetSize() > 1000000)
+		else if (m_pdata->GetSize() > 100000)		// mdvalley: lower limit to 100k for debugging
         {
             DS3DStreamingSoundBuffer* pds3DStreamingBuffer = new DS3DStreamingSoundBuffer();
 
@@ -332,7 +334,8 @@ HRESULT DSVirtualSoundBuffer::Update(DWORD dwTimeElapsed,
 
 
 // Creates and starts a real dsound buffer for this sound
-HRESULT DSVirtualSoundBuffer::StartBuffer(IDirectSound* pDirectSound, 
+// mdvalley: DirectSound8
+HRESULT DSVirtualSoundBuffer::StartBuffer(IDirectSound8* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware)
 {
     HRESULT hr;
@@ -548,7 +551,8 @@ DS3DVirtualSoundBuffer::DS3DVirtualSoundBuffer(ISoundPCMData* pdata, DWORD dwLoo
 
 // prepare a sound buffer with the given quality and 3D support using the
 // direct sound object pointed to by pDirectSound.
-HRESULT DS3DVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound, 
+	// mdvalley: DSound8
+HRESULT DS3DVirtualSoundBuffer::PrepareBuffer(IDirectSound8* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
 {
     HRESULT hr;

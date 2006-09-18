@@ -40,6 +40,18 @@
 #include <windows.h>
 #include <dsound.h>
 
+#include <mmreg.h>	// mdvalley: Required for waveformatextensible
+#include <ks.h>
+
+// mdvalley: additional includes for the vorbis codec
+#include <stdlib.h>
+#include <math.h>
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
+// include for timing information
+#include <sys/types.h>
+#include <sys/timeb.h>
+
 #include "zlib.h"
 //#include "fixdelete.h"
 

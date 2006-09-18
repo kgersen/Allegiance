@@ -120,11 +120,11 @@ public:
             m_pszFileList = m_pszFileListData;
         }
 
-        strcpy(m_szDestFolder, szDestFolder);
+        strcpy_s(m_szDestFolder, _MAX_PATH, szDestFolder);
         if (m_szDestFolder[0] == '\0' ||  // prevent access of not our memory        
            m_szDestFolder[strlen(m_szDestFolder)-1] != '\\')
         {
-           strcat(m_szDestFolder, "\\");
+           strcat_s(m_szDestFolder, _MAX_PATH, "\\");
         }
 
         m_bAutoDisconnect = bDisconnectWhenDone;
@@ -590,7 +590,7 @@ protected:
         char szMsg[sizeof(m_szLastError) - 50];
         va_list pArg;
         va_start(pArg, szFormat);
-        _vsnprintf(szMsg, sizeof(szMsg), szFormat, pArg);
+        _vsnprintf_s(szMsg, sizeof(szMsg), sizeof(szMsg), szFormat, pArg);
         va_end(pArg);
 
         strcpy(m_szLastError, szMsg);

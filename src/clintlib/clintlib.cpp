@@ -1236,8 +1236,8 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
     {
         if (bStandalonePrivate)
           hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);
-        else
-          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName);
+        else															// Mdvalley: Connecting via the lobby can only lead to this option.
+          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
     }
 
     // TODO: Remove this when we are ready to enforce CD Keys
@@ -1309,7 +1309,18 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
         iterMissions.Next();
     }
     m_mapMissions.SetEmpty();
-    hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName);
+
+	// Mdvalley: Pull lobby port from registry
+/*    DWORD dwPort = 2302;		// Default to 2302
+	HKEY hKey;
+	if(ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	{
+		DWORD dwSize = sizeof(DWORD);
+		::RegQueryValueEx(hKey, "LobbyPort", NULL, NULL, (BYTE*)&dwPort, &dwSize);
+		::RegCloseKey(hKey);
+	}
+*/
+	hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName, GetCfgInfo().dwLobbyPort);
     assert(IFF(m_fmLobby.IsConnected(), SUCCEEDED(hr)));
     if (m_fmLobby.IsConnected())
     {
@@ -2943,7 +2954,7 @@ void BaseClient::FireMissile(IshipIGC* pShip,
 
     if (!m_fm.IsConnected())
     {
-        for (i = 0; i < iNumMissiles; i++)
+        for (int i = 0; i < iNumMissiles; i++)
         {
             dataMissile.position    = missileLaunchData[i].vecPosition;
             dataMissile.forward     = missileLaunchData[i].vecForward;
@@ -4058,6 +4069,11 @@ void CfgInfo::Load(const char * szConfig)
     GetPrivateProfileString(c_szCfgApp, "UsePassport", "0", 
                                    szStr, sizeof(szStr), szConfig);
     bUsePassport = atoi(szStr) != 0;
+
+    // mdvalley: get lobby port
+    GetPrivateProfileString(c_szCfgApp, "LobbyClientPort", "2302",
+                                   szStr, sizeof(szStr), szConfig);
+	dwLobbyPort = atoi(szStr);
 }
 
 void _debugf(const char* format, ...)

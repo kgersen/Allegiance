@@ -306,7 +306,9 @@ CFSMission::~CFSMission()
   }
   
   // remove us from our list of missions
-  for (LinkFSMission * plinkFSMis = s_list.first(); plinkFSMis; plinkFSMis = plinkFSMis->next())
+  // mdvalley: plinkFSMis needs defining out here
+  LinkFSMission * plinkFSMis;
+  for (plinkFSMis = s_list.first(); plinkFSMis; plinkFSMis = plinkFSMis->next())
   {
     CFSMission * pfsMission = plinkFSMis->data();
     if (this == pfsMission)
@@ -361,6 +363,8 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
   if (popl)
   {
       pfsPlayer->SetBannedSideMask(popl->data().bannedSideMask);
+	  // mdvalley: Pull the side flown for
+	  pfsPlayer->SetLastSide(popl->data().lastSide);
 
       PlayerScoreObject * ppso = &(popl->data().pso);
 
@@ -520,6 +524,9 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   }
   else if (pfsPlayer->GetSide()->GetObjectID() != SIDE_TEAMLOBBY)
     RemovePlayerFromSide(pfsPlayer, QSR_SwitchingSides);
+
+  // mdvalley: Set side last flown for
+  pfsPlayer->SetLastSide(sideid);
 
   debugf("Player %s, ship=%d joined side %d, mission=%x\n", 
           pfsPlayer->GetName(), pfsPlayer->GetShipID(),           
@@ -801,6 +808,10 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
 
   pfsPlayer->GetPlayerScoreObject()->Disconnect(g.timeNow);
 
+  // mdvalley: Set last side to NOAT if the game is not running
+  if(GetStage() != STAGE_STARTED)
+	  pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
+
   SideID   sidFlag = pshipPlayer->GetFlag();
   if (sidFlag != NA)
   {
@@ -1067,7 +1078,6 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
 
   if (bTurnOnAutoaccept)
     SetAutoAccept(psideOld, true);
-
 
   if (QSRIsBoot(reason) && (sideidOld >= 0))
   {
@@ -1859,7 +1869,8 @@ void CFSMission::StartCountdown(float fCountdownLength)
         if (nStations == 1)
         {
             //Start all ships at that station
-            for (pshipLink = pships->first();
+			// mdvalley: 2005 needs pshipLink defined
+            for (ShipLinkIGC* pshipLink = pships->first();
                  (pshipLink != NULL);
                  pshipLink = pshipLink->next())
             {
@@ -1886,7 +1897,8 @@ void CFSMission::StartCountdown(float fCountdownLength)
             int     unassignedWings = 0;
 
             {
-                for (pshipLink = pships->first();
+				// mdvalley: gotta define it each time now
+                for (ShipLinkIGC* pshipLink = pships->first();
                      (pshipLink != NULL);
                      pshipLink = pshipLink->next())
                 {
@@ -1939,7 +1951,8 @@ void CFSMission::StartCountdown(float fCountdownLength)
             }
             
             {
-                for (pshipLink = pships->first();
+				// mdvalley: define it again!
+                for (ShipLinkIGC* pshipLink = pships->first();
                      (pshipLink != NULL);
                      pshipLink = pshipLink->next())
                 {
@@ -2413,6 +2426,9 @@ void CFSMission::SaveAsOldPlayer(CFSPlayer* pfsplayer, bool bBooted)
   PlayerScoreObject*  ppso = pfsplayer->GetPlayerScoreObject();
   opi.pso = *ppso;
   opi.sideID = pfsplayer->GetSide()->GetObjectID();
+
+  // mdvalley: save side flown for
+  opi.lastSide = pfsplayer->GetLastSide();
 
   if ((GetStage() != STAGE_STARTED) ||
       (m_pMission->GetMissionParams()->bAllowDefections))
@@ -3946,6 +3962,11 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
   const MissionParams*  pmp = m_pMission->GetMissionParams();
   IsideIGC* psideCurrent = pfsPlayer->GetSide();
 
+  // mdvalley: Check for defects off, and side last flown not requested side.
+  if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED)
+	  && (sideID != pfsPlayer->GetLastSide()) && (pfsPlayer->GetLastSide() != SIDE_TEAMLOBBY))
+	  return DPR_NoDefections;
+
   if (psideCurrent && psideCurrent->GetObjectID() != SIDE_TEAMLOBBY)
   {
     if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED))
@@ -4374,10 +4395,13 @@ void CFSMission::RandomizeSides()
       // clear their banned side mask (it simplifies life)
       pfsPlayer->SetBannedSideMask(0);
 
-      // if they are not already on the lobby side and not a team leader
+	  // if they are not already on the lobby side and not a team leader
       if (sideID != SIDE_TEAMLOBBY && GetLeader(sideID) != pfsPlayer)
       {
         RemovePlayerFromSide(pfsPlayer, QSR_RandomizeSides);
+        // mdvalley: empty last side masks
+        pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
+
       }
     }
   }

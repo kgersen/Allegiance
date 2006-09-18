@@ -49,21 +49,22 @@ public:
         TRef<INameSpace> pns = pmodeler->GetNameSpace("logon");
         CastTo(m_ppane, pns->FindMember("popup"));
 
+		// mdvalley: Needs the pointer and class name.
         CastTo(m_pbuttonLogon,        pns->FindMember("logonButtonPane"));
-        AddEventTarget(OnButtonLogon, m_pbuttonLogon->GetEventSource());
+        AddEventTarget(&LogonPopup::OnButtonLogon, m_pbuttonLogon->GetEventSource());
         CastTo(m_pbuttonAbort,        pns->FindMember("abortButtonPane"));
-        AddEventTarget(OnButtonAbort, m_pbuttonAbort->GetEventSource());
+        AddEventTarget(&LogonPopup::OnButtonAbort, m_pbuttonAbort->GetEventSource());
         CastTo(m_pbuttonSignUp,       pns->FindMember("signUpButtonPane"));
-        AddEventTarget(OnButtonSignUp, m_pbuttonSignUp->GetEventSource());
+        AddEventTarget(&LogonPopup::OnButtonSignUp, m_pbuttonSignUp->GetEventSource());
         CastTo(m_pbuttonCDKey,        pns->FindMember("cdKeyButtonPane"));
-        AddEventTarget(OnButtonCDKey, m_pbuttonCDKey->GetEventSource());
+        AddEventTarget(&LogonPopup::OnButtonCDKey, m_pbuttonCDKey->GetEventSource());
         CastTo(m_peditName,     (Pane*)pns->FindMember("nameEditPane"    ));
-        AddEventTarget(OnNameClick,     m_peditName->GetClickEvent());
+        AddEventTarget(&LogonPopup::OnNameClick,     m_peditName->GetClickEvent());
 
         CastTo(m_pbuttonSavePassword, pns->FindMember("savePasswordButtonPane"));
         CastTo(m_ppanePassword, pns->FindMember("passwordPane"));
         CastTo(m_peditPassword, (Pane*)pns->FindMember("passwordEditPane"));
-        AddEventTarget(OnPasswordClick, m_peditPassword->GetClickEvent());
+        AddEventTarget(&LogonPopup::OnPasswordClick, m_peditPassword->GetClickEvent());
         m_peditPassword->SetType(EditPane::Password);
         m_peditPassword->SetString(ZString());
 

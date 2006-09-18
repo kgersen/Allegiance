@@ -51,7 +51,7 @@ STDMETHODIMP CTCStrings::get__NewEnum(IUnknown** ppunkEnum)
 
   // Copy the elements of stored vector to a temporary CComVariant vector
   std::vector<CComVariant> vecTemp(m_vecStrings.size(), CComVariant());
-  for (int i = 0; i < m_vecStrings.size(); ++i)
+  for (UINT i = 0; i < m_vecStrings.size(); ++i)
     vecTemp[i] = m_vecStrings[i];
 
   // Initialize enumerator object with the temporary CComVariant vector
@@ -89,7 +89,7 @@ STDMETHODIMP CTCStrings::get_Item(VARIANT* pvIndex, BSTR* pbstr)
   CLock lock(this);
 
   // Ensure that the specified index is in range
-  if (V_I4(&var) < 0 || V_I4(&var) >= m_vecStrings.size())
+  if (V_I4(&var) < 0 || V_I4(&var) >= (int)m_vecStrings.size())
     return E_INVALIDARG;
 
   // Copy the item at the specified index into the vector
@@ -121,7 +121,7 @@ STDMETHODIMP CTCStrings::Remove(VARIANT* pvIndex)
   CLock lock(this);
 
   // Ensure that the specified index is in range
-  if (V_I4(&var) < 0 || V_I4(&var) >= m_vecStrings.size())
+  if (V_I4(&var) < 0 || V_I4(&var) >= (int)m_vecStrings.size())
     return E_INVALIDARG;
 
   // Use the long as an index into the vector
@@ -202,7 +202,7 @@ STDMETHODIMP CTCStrings::get_DelimitedItems(BSTR bstrDelimiter,
   *psz = OLESTR('\0');
 
   // Loop thru the collection and concatenate the strings
-  for (i = 0; i < nCount; ++i)
+  for (UINT i = 0; i < nCount; ++i)
   {
     if (i)
       wcscat(psz, bstrDelimiter);

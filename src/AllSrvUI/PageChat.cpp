@@ -303,7 +303,8 @@ void CPageChat::LoadFromRegistry()
   {
     // Read the count of strings
     DWORD cStrings = 0;
-	keyMRU.QueryDWORDValue(TEXT(".Count"), cStrings);
+	//mdvalley: former QueryDWORDValue(TEXT, cStrings)
+	keyMRU.QueryValue(cStrings, TEXT(".Count"));
     
     // Read each string and add it to the combo box
     for (DWORD i = 0; i < cStrings; ++i)
@@ -320,7 +321,8 @@ void CPageChat::LoadFromRegistry()
 
   // SendChatAllGames
   DWORD dwSendChatAllGames = 0;
-  key.QueryDWORDValue(TEXT("SendChatAllGames"), dwSendChatAllGames);
+  // mdvalley: formor QueryDWORDValue(TEXT, dwSend)
+  key.QueryValue(dwSendChatAllGames, TEXT("SendChatAllGames"));
   m_bSendChatAllGames = !!dwSendChatAllGames;
 }
 
@@ -347,7 +349,8 @@ void CPageChat::SaveChatListColumnOrderToRegistry()
   }
 
   // Save to the registry
-  key.SetStringValue(TEXT("ChatListColumnOrder"), strColumnOrder);
+  // mdvalley: SetString(text, strColumn)
+  key.SetValue(strColumnOrder, TEXT("ChatListColumnOrder"));
 }
 
 void CPageChat::SaveChatListColumnWidthsToRegistry()
@@ -374,7 +377,8 @@ void CPageChat::SaveChatListColumnWidthsToRegistry()
   }
 
   // Save to the registry
-  key.SetStringValue(TEXT("ChatListColumnWidths"), strColumnWidths);
+  // mdvalley: SetString, str, TEXT
+  key.SetValue(strColumnWidths, TEXT("ChatListColumnWidths"));
 }
 
 void CPageChat::SaveSendChatMRUToRegistry()
@@ -391,7 +395,8 @@ void CPageChat::SaveSendChatMRUToRegistry()
 
   // Write the count of strings
   int cStrings = min(m_comboSendChat.GetCount(), c_cMaxChatsInRegistry);
-  keyMRU.SetDWORDValue(TEXT(".Count"), cStrings);
+  // mdvalley: SetDWORD(text, cstring)
+  keyMRU.SetValue(cStrings, TEXT(".Count"));
 
   // Write each string
   for (int i = 0; i < cStrings; ++i)
@@ -399,7 +404,8 @@ void CPageChat::SaveSendChatMRUToRegistry()
     TCHAR szInt[16];
     CString strMRUItem;
     m_comboSendChat.GetLBText(i, strMRUItem);
-    keyMRU.SetStringValue(_itot(i, szInt, 10), strMRUItem);
+	// mdvalley: SetString(_itot, str)
+    keyMRU.SetValue(strMRUItem, _itot(i, szInt, 10));
   }
 }
 
@@ -412,7 +418,8 @@ void CPageChat::SaveSendChatAllGames()
 
   // SendChatAllGames
   DWORD dwSendChatAllGames = m_bSendChatAllGames;
-  key.SetDWORDValue(TEXT("SendChatAllGames"), dwSendChatAllGames);
+  // mdvalley: SetDWORD(text, dwsend)
+  key.SetValue(dwSendChatAllGames, TEXT("SendChatAllGames"));
 }
 
 void CPageChat::TrimExcessChats()

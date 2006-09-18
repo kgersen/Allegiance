@@ -275,7 +275,7 @@ namespace Training
 
         // walk the array of leaf conditions pairing them using Or conditions
         Condition*      pTmpCondition = pTargetCondition[0];
-        for (i = 1; i < TM_NUMBER_OF_DERELICTS; i++)
+        for (int i = 1; i < TM_NUMBER_OF_DERELICTS; i++)
             pTmpCondition = new OrCondition (pTmpCondition, pTargetCondition[i]);
 
         // return the last Or condition generated

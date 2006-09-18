@@ -27,7 +27,7 @@ inline LONG DS3DSoundBuffer::DSoundVolume(float fGain)
 
 // initializes the object, creating the DSoundBuffer itself and 
 // initializing local variables.
-HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData* pdata,
+HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound8* pDirectSound, ISoundPCMData* pdata,
     DWORD dwBufferSize, bool bStatic, bool bSupport3D, ISoundEngine::Quality quality,
     bool bAllowHardware)
 {
@@ -50,7 +50,8 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData*
     WAVEFORMATEX waveformatex;
     DSBUFFERDESC dsbufferdesc;
 
-    waveformatex.cbSize = sizeof(waveformatex);
+//    waveformatex.cbSize = sizeof(WAVEFORMATEX);
+	waveformatex.cbSize = 0;	// mdvalley: Size refers to extra data, not to waveformatex size. PCM has 0.
     waveformatex.wFormatTag = WAVE_FORMAT_PCM; 
     waveformatex.nChannels = pdata->GetNumberOfChannels(); 
     waveformatex.nSamplesPerSec = m_dwSampleRate; 
@@ -58,15 +59,16 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData*
     waveformatex.nBlockAlign = waveformatex.wBitsPerSample / 8 * waveformatex.nChannels;
     waveformatex.nAvgBytesPerSec = waveformatex.nSamplesPerSec * waveformatex.nBlockAlign;
 
-    dsbufferdesc.dwSize = sizeof(dsbufferdesc);
+    dsbufferdesc.dwSize = sizeof(DSBUFFERDESC);
     dsbufferdesc.dwFlags = 
         (bSupport3D ? DSBCAPS_CTRL3D | DSBCAPS_MUTE3DATMAXDISTANCE : 0)
         | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLVOLUME 
         | DSBCAPS_GETCURRENTPOSITION2  
-        | (bStatic ? DSBCAPS_STATIC : 0);
+//        | (bStatic ? DSBCAPS_STATIC : 0)		// mdvalley: Modern sound hardware doesn't like this flag.
+		;
     dsbufferdesc.dwBufferBytes = dwBufferSize;
     dsbufferdesc.dwReserved = 0;
-    dsbufferdesc.lpwfxFormat = &waveformatex;
+	dsbufferdesc.lpwfxFormat = &waveformatex;
 
 #if DIRECTSOUND_VERSION >= 0x0700
     if (bAllowHardware)
@@ -97,25 +99,46 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData*
     }
 #endif
 
+	// mdvalley: To use the dx8 buffers, you must create a dx4 buffer,
+    // then query it up to DX8. Or something like that.
 
+    LPDIRECTSOUNDBUFFER mdDsb = NULL;
     // create the new buffer
 
-    hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, NULL);
-    if (FAILED(hr)) return hr;
+	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &mdDsb, NULL);
+	if (ZFailed(hr)) return hr;
 
-    // get a handle to the 3D buffer, if this is 3D
+	// and up to DX8.
+
+	hr = mdDsb->QueryInterface(IID_IDirectSoundBuffer8, (LPVOID*) &m_pdirectsoundbuffer);
+	mdDsb->Release();
+	if (ZFailed(hr)) return hr;
+
+//	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, NULL);
+//	if (FAILED(hr)) return hr;
+
+	// get a handle to the 3D buffer, if this is 3D
     if (bSupport3D)
     {
         hr = m_pdirectsoundbuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pdirectsound3Dbuffer);
         if (ZFailed(hr)) return hr;
     }
 
+	BYTE nFillValue = (waveformatex.wBitsPerSample == 8) ? 0x80 : 0;
+	LPVOID writePtr;
+	DWORD writeBytes;
+
+	// Fill the buffer with silence
+	m_pdirectsoundbuffer->Lock(0, 0, &writePtr, &writeBytes, NULL, NULL, DSBLOCK_ENTIREBUFFER);
+	memset(writePtr, nFillValue, writeBytes);		// Seeing as we just created the buffer, the writePtr is at the beginning.
+	m_pdirectsoundbuffer->Unlock(writePtr, writeBytes, NULL, NULL);
+
     return S_OK;
 };
 
 // Use an exisiting to initialize this buffer.  Note that the buffers will 
 // share memory, so this only really works for static buffers.
-HRESULT DS3DSoundBuffer::DuplicateBuffer(IDirectSound* pDirectSound, DS3DSoundBuffer* pBuffer)
+HRESULT DS3DSoundBuffer::DuplicateBuffer(IDirectSound8* pDirectSound, DS3DSoundBuffer* pBuffer)
 {
     HRESULT hr; 
 
@@ -137,10 +160,22 @@ HRESULT DS3DSoundBuffer::DuplicateBuffer(IDirectSound* pDirectSound, DS3DSoundBu
     m_dwSampleRate = pBuffer->m_dwSampleRate;
 
     // duplicate the buffer
-    hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &m_pdirectsoundbuffer);
-    if (FAILED(hr)) return hr;
 
-    // reset the 2D info.
+    // mdvalley: temp 'n' change. See last function.
+	LPDIRECTSOUNDBUFFER mdDsb = NULL;
+
+	hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &mdDsb);
+	if (ZFailed(hr)) return hr;
+
+	hr = mdDsb->QueryInterface(IID_IDirectSoundBuffer8, (LPVOID*) &m_pdirectsoundbuffer);
+//	while(mdDsb->Release() > 1) {}
+	mdDsb->Release();
+	if (ZFailed(hr)) return hr;
+
+//	hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer, &m_pdirectsoundbuffer);
+//  if (FAILED(hr)) return hr;
+
+	// reset the 2D info.
     hr = m_pdirectsoundbuffer->SetVolume(DSoundVolume(m_fGain));
     if (ZFailed(hr)) return hr;
     hr = m_pdirectsoundbuffer->SetFrequency((LONG)(m_fPitch*m_dwSampleRate));
@@ -500,7 +535,7 @@ DS3DStaticSoundBuffer::~DS3DStaticSoundBuffer()
 
 // Initializes this object with the given wave data, 3D support, and sound 
 // quality.
-HRESULT DS3DStaticSoundBuffer::Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+HRESULT DS3DStaticSoundBuffer::Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
     bool bLooping, bool bSupport3D, ISoundEngine::Quality quality, bool bAllowHardware
     )
 {
@@ -512,10 +547,10 @@ HRESULT DS3DStaticSoundBuffer::Init(IDirectSound* pDirectSound, ISoundPCMData* p
     // see if we have an instance of this buffer which we can simply clone    
     CacheKey cacheKey(pdata, bSupport3D, quality, bAllowHardware);
 
-    BufferCache::iterator iterCache = bufferCache.find(cacheKey);    
-    if (iterCache != bufferCache.end())
+    BufferCache::iterator iterCache = bufferCache.find(cacheKey);  
+    if ((iterCache != bufferCache.end()) && false)					// mdvalley: disable buffer duplication
     {
-        hr = DuplicateBuffer(pDirectSound, (*iterCache).second);
+		hr = DuplicateBuffer(pDirectSound, (*iterCache).second);
         if (FAILED(hr)) return hr;
     }
     else
@@ -811,7 +846,7 @@ HRESULT DS3DStreamingSoundBuffer::StreamData(void *pvBuffer, DWORD dwLength)
 
 // Initializes this object with the given wave data, 3D support, sound 
 // quality, and buffer length (in seconds)
-HRESULT DS3DStreamingSoundBuffer::Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+HRESULT DS3DStreamingSoundBuffer::Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
     bool bLooping, bool bSupport3D, ISoundEngine::Quality quality, bool bAllowHardware,
     float fBufferLength
     )
@@ -869,11 +904,12 @@ DS3DStreamingSoundBuffer::~DS3DStreamingSoundBuffer()
 
 // Initializes this object with the given wave data, 3D support, and sound 
 // quality.
-HRESULT DS3DStreamingSoundBuffer::Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+HRESULT DS3DStreamingSoundBuffer::Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
     bool bLooping, bool bSupport3D, ISoundEngine::Quality quality, bool bAllowHardware
     )
 {
-    return Init(pDirectSound, pdata, bLooping, bSupport3D, quality, bAllowHardware, 5.0f);
+//    return Init(pDirectSound, pdata, bLooping, bSupport3D, quality, bAllowHardware, 5.0f);
+	return Init(pDirectSound, pdata, bLooping, bSupport3D, quality, bAllowHardware, 1.0f);		// mdvalley: Make it shorter.
 }
 
 // starts the given buffer playing at the given position.  
@@ -954,7 +990,8 @@ HRESULT DS3DStreamingSoundBuffer::GetStatus(bool& bPlaying, bool& bBufferLost)
 
 
 // The update thread which handles filling the buffers as they play
-TaskListThread DS3DStreamingSoundBuffer::m_threadUpdate(THREAD_PRIORITY_TIME_CRITICAL, 500);
+//TaskListThread DS3DStreamingSoundBuffer::m_threadUpdate(THREAD_PRIORITY_TIME_CRITICAL, 500);
+TaskListThread DS3DStreamingSoundBuffer::m_threadUpdate(THREAD_PRIORITY_TIME_CRITICAL, 100);		// mdvalley: Update streaming buffers more often
 
 
 
@@ -1225,7 +1262,7 @@ HRESULT DS3DASRSoundBuffer::StreamData(void *pvBuffer, DWORD dwLength)
 
 // Initializes this object with the given wave data, 3D support, and sound 
 // quality.
-HRESULT DS3DASRSoundBuffer::Init(IDirectSound* pDirectSound, ISoundPCMData* pdata, 
+HRESULT DS3DASRSoundBuffer::Init(IDirectSound8* pDirectSound, ISoundPCMData* pdata, 
     DWORD dwLoopOffset, DWORD dwLoopLength, bool bSupport3D, 
     ISoundEngine::Quality quality, bool bAllowHardware
     )
@@ -1240,8 +1277,10 @@ HRESULT DS3DASRSoundBuffer::Init(IDirectSound* pDirectSound, ISoundPCMData* pdat
     m_dwLoopLength = dwLoopLength;
 
     // REVIEW: what size buffer would work best for these sounds?
-    hr = DS3DStreamingSoundBuffer::Init(
-        pDirectSound, pdata, false, bSupport3D, quality, bAllowHardware, 1.5f);
+//    hr = DS3DStreamingSoundBuffer::Init(
+//        pDirectSound, pdata, false, bSupport3D, quality, bAllowHardware, 1.5f);
+	hr = DS3DStreamingSoundBuffer::Init(
+		pDirectSound, pdata, false, bSupport3D, quality, bAllowHardware, 1.0f);		// mdvalley: shorten it to 1.0
     if (ZFailed(hr)) return hr;
 
     return S_OK;

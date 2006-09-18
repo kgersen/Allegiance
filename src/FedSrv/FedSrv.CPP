@@ -4611,9 +4611,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       CASTPFM(pfmPing, CS, PING, pfm);
       pfmPing->timeServer = g.timeNow;
       //debugf("Ping from %s in at %u, ", pfsPlayer->GetName(), Time::Now ());
-      g.fm.SetPriority(FedMessaging::c_mcpDefault + 1);
+      //g.fm.SetPriority(FedMessaging::c_mcpDefault + 1); // TE: This was in R2 but not in DPlay8
       g.fm.ForwardMessage(pfsPlayer->GetConnection(), pfmPing, pfmPing->fmg);
-      g.fm.SetPriority(FedMessaging::c_mcpDefault);
+      //g.fm.SetPriority(FedMessaging::c_mcpDefault); // TE: This was in R2 but not DPlay8
       //debugf("out at %u\n", Time::Now ());
 
       // Would be nice if this worked, but it always reports 500ms.
@@ -4660,14 +4660,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                     // send them to the game lobby
                     debugf("#ban: %s banned by %s\n", pfsShip->GetName(), pfsPlayer->GetName());
-					// TE, Fire AGCEvent informing of the ban
+					// TE: Fire AGCEvent informing of the ban
 					LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
 					_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(), 
 						pfsShip->GetShipID(), -1, -1, 3, "GameID",   VT_I4,    pfsMission->GetMissionID(),
 						"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
 						"zBooter", VT_LPSTR, pfsPlayer->GetName());	
 					// This is named zBooter so the parameter appears last in the alphabetical list
-					// TE end
+					// TE
                     pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QSR_OwnerBooted);
 
                     pfmChat->cd.chatTarget = CHAT_EVERYONE;
@@ -6020,7 +6020,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         // send them to the game lobby
 		if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings) 
 		{
-		    // TE,  Fire AGCEvent informing of the boot
+		    // TE:  Fire AGCEvent informing of the boot
 			 if (bIsBoot)
 			 {
 				LPCSTR pszContext = pfsMission->GetIGCMission() ? pfsMission->GetIGCMission()->GetContextName() : NULL;
@@ -6031,7 +6031,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 					"TeamName", VT_LPSTR, pside->GetName(),
 					"zBooter", VT_LPSTR, pfsPlayer->GetName());
 			 }
-			// TE end
+			// TE
 			pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason);
 		}
       }
@@ -6841,7 +6841,7 @@ void ProcessNetworkMessages()
       DWORD cMsgs;
       DWORD cbMsgs;
       HRESULT hr = g.fm.GetConnectionSendQueue(&cnxn, &cMsgs, &cbMsgs);
-      const cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
+      const DWORD cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
       if ((cnxn.IncAbsentCount() > 6) || // give them a ridiculous 1 minute of no messages
           FAILED(hr) ||
           (cMsgs > cMaxQ)) // dead--nuke 'em
@@ -7315,6 +7315,14 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
       return false;
     g.strLobbyServer = szLobby;
 
+    // mdvalley: get lobby port
+    char szPort[8];
+
+    GetPrivateProfileString("Allegiance", "LobbyServerPort", "2303",
+      szPort, sizeofArray(szPort), szConfig);
+
+    g.dwLobbyPort = atoi(szPort);
+
     char szFilelistCRC[50];
 
     
@@ -7541,7 +7549,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 #else
         FEDLOBBYSERVERS_GUID,
 #endif
-        PCC(g.strLobbyServer), PCC(g.strLocalAddress));
+		PCC(g.strLobbyServer), PCC(g.strLocalAddress), g.dwLobbyPort);		// mdvalley: forced to lobby port
   if (FAILED(hr))
   {
     printf("failed.\n", PCC(g.strLobbyServer));
@@ -7557,10 +7565,19 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
     "", -1, -1, -1, 1,
     "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
 
+    // mdvalley: Discover listening port
+  DWORD dwPort = 0;						// Passing a port of 0 informs the lobby of the error.
+  hr = g.fm.GetListeningPort(&dwPort);
+  if(FAILED(hr))
+  {
+	  debugf("Cannot discover listening port.\n");
+  }
+
   // Give lobby the version
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
   END_PFM_CREATE
   pfmLogon->verLobby = LOBBYVER_LS;
+  pfmLogon->dwPort = dwPort;
   g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
 
   // Make sure the lobby knows whether we're paused before we do anything else
@@ -11505,7 +11522,7 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
     {
       SYSTEMTIME systime;
       DWORD l = strlen(psz);
-      const c_cbPrefix = 19; // time format: 12/31 23:59:59.999
+      const DWORD c_cbPrefix = 19; // time format: 12/31 23:59:59.999
       DWORD cbLine = l + c_cbPrefix;
       OVERLAPPED* pov = (OVERLAPPED*)(new char [ sizeof(OVERLAPPED) + cbLine ]);
       *pov = m_overlapped;

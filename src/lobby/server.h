@@ -84,6 +84,16 @@ public:
     return m_fPaused;
   }
 
+  void SetServerPort(DWORD dwPort)		// mdvalley: functions for setting and getting server port
+  {
+	  m_sPort = dwPort;
+  }
+
+  DWORD GetServerPort()
+  {
+	  return m_sPort;
+  }
+
   void Pause(bool fPause);
 
 private:
@@ -92,6 +102,7 @@ private:
   static const DWORD c_dwID;
   DWORD m_dwID;
   CFMConnection * m_pcnxn;
+  DWORD m_sPort;					// mdvalley: track the port number
   PER_SERVER_COUNTERS * m_pCounters;
   MissionList     m_missions;
   int             m_cPlayers;

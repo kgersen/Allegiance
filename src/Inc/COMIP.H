@@ -113,7 +113,10 @@ public:
 
 	// Copy the pointer and AddRef().
 	//
-	template<> _com_ptr_t(const _com_ptr_t& cp) ALLEGIANCE_THROW0()
+
+	// mdvalley: Stupid changes to VC 2005.
+//	template<> _com_ptr_t(const _com_ptr_t& cp) ALLEGIANCE_THROW0()
+	_com_ptr_t(const _com_ptr_t& cp) ALLEGIANCE_THROW0()
 		: m_pInterface(cp.m_pInterface)
 	{ 
 		_AddRef(); 
@@ -222,7 +225,10 @@ public:
 
 	// Copies and AddRef()'s the interface.
 	//
-	template<> _com_ptr_t& operator=(const _com_ptr_t& cp) ALLEGIANCE_THROW0()
+
+	// mdvalley: Another stupid VC2005 incompatibility.
+//	template<> _com_ptr_t& operator=(const _com_ptr_t& cp) ALLEGIANCE_THROW0()
+	_com_ptr_t& operator=(const _com_ptr_t& cp) ALLEGIANCE_THROW0()
 	{ 
 		return operator=(cp.m_pInterface); 
 	}

@@ -1267,7 +1267,7 @@ public:
 
             // play the mining sound if this ship is actively mining
             PlaySoundIf(m_pMiningSound, miningSound, GetSoundSource(), 
-                (m_pship->GetStateM() & miningMaskIGC) != 0);
+				((m_pship->GetStateM() & miningMaskIGC) != 0) && trekClient.GetShip()->CanSee(m_pship));	// mdvalley: Uneyed miners silent.
 
             // play the sounds for each weapon
             PlayWeaponSounds();
@@ -2957,7 +2957,9 @@ public:
         CastTo(m_pstrpaneCurrentFile,    pns->FindMember("AutoDownloadCurrentFileStringPane"  ));
         CastTo(m_pstrpaneApproxMinutes,  pns->FindMember("AutoDownloadApproxMinutes"  ));
 
-        AddEventTarget(OnButtonAbort, m_pbuttonAbort->GetEventSource());
+		// mdvalley: '05 needs a pointer and class name for arg1. Should still work in '03
+        AddEventTarget(&AutoDownloadProgressDialogPopup::OnButtonAbort, m_pbuttonAbort->GetEventSource());
+
 
         pmodeler->UnloadNameSpace(pns);
     }
@@ -3982,7 +3984,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
         PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
         if (ppi->GetMute() 
             || (m_bFilterChatsToAll && ctRecipient == CHAT_EVERYONE && trekClient.IsInGame())
-            || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)
+//            || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
             || (m_bFilterLobbyChats && ppi->SideID() == SIDE_TEAMLOBBY && trekClient.IsInGame()))
             return;
         bIsLeader = ppi->IsTeamLeader();

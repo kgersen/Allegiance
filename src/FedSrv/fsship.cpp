@@ -862,6 +862,8 @@ CFSPlayer::CFSPlayer(CFMConnection * pcnxn, int characterID, const char * szCDKe
   m_pfsClusterFlying(NULL),
   m_pclusterLifepod(NULL),
   m_bannedSideMask(0),
+  // mdvalley: add last flown for
+  m_lastSide(SIDE_TEAMLOBBY),
   m_chatBudget(c_chatBudgetMax),
   m_strCDKey(szCDKey)
 {

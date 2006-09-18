@@ -70,6 +70,8 @@ class OldPlayerInfo
         IclusterIGC*                pclusterLifepod;
         Vector                      positionLifepod;
         unsigned char               bannedSideMask;
+		// mdvalley: Track last flown for
+		SideID						lastSide;
 };
 typedef Slist_utl<OldPlayerInfo>    OldPlayerList;
 typedef Slink_utl<OldPlayerInfo>    OldPlayerLink;

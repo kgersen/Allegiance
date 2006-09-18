@@ -395,7 +395,7 @@ TList<TRef<IKeyboardInput> > g_listKeyboardInputFilters;
 
 void Window::AddKeyboardInputFilter(IKeyboardInput* pkeyboardInput)
 {
-    g_listKeyboardInputFilters.PushEnd(pkeyboardInput);
+	g_listKeyboardInputFilters.PushEnd(pkeyboardInput);
 }
 
 void Window::RemoveKeyboardInputFilter(IKeyboardInput* pkeyboardInput)

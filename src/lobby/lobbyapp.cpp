@@ -183,6 +183,11 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
       }
       bSuccess = _Module.ReadFromRegistry(hk, false, "GameInfoInterval", &m_sGameInfoInterval, 25);
     }
+
+    DWORD dwPort;
+	bSuccess = _Module.ReadFromRegistry(hk, false, "ClientPort", &dwPort, 2302);		// Mdvalley: defaults to port 2302
+	m_sPort = dwPort;
+
     m_szToken[0] = '\0';
     bSuccess = _Module.ReadFromRegistry(hk, true, "Token", m_szToken, NULL);
 
@@ -270,8 +275,8 @@ HRESULT CLobbyApp::Init()
 #endif
 
   // TODO: Make keep-alives an option
-  if (FAILED(hr = m_fmServers.HostSession(m_fFreeLobby ? FEDFREELOBBYSERVERS_GUID : FEDLOBBYSERVERS_GUID, false, 0, m_fProtocol)) ||
-      FAILED(hr = m_fmClients.HostSession(m_fFreeLobby ? FEDFREELOBBYCLIENTS_GUID : FEDLOBBYCLIENTS_GUID, true, 0, m_fProtocol)))
+  if (FAILED(hr = m_fmServers.HostSession(m_fFreeLobby ? FEDFREELOBBYSERVERS_GUID : FEDLOBBYSERVERS_GUID, false, 0, m_fProtocol, m_sPort + 1)) ||	// Mdvalley: I don't know what happens if you try to host 2 servers on one port. Let's not find out.
+      FAILED(hr = m_fmClients.HostSession(m_fFreeLobby ? FEDFREELOBBYCLIENTS_GUID : FEDLOBBYCLIENTS_GUID, true, 0, m_fProtocol, m_sPort)))			// The first session doesn't need the port fixed, but I don't want to risk having it take the one the second is going to use.
   {
     m_plas->LogEvent(EVENTLOG_ERROR_TYPE, LE_HostSessionFailure);
     return hr;

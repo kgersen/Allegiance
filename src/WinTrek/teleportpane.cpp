@@ -176,9 +176,10 @@ public:
         // Buttons
         //
 
-        AddEventTarget(OnButtonTeleport,    m_pbuttonTeleport->GetEventSource());
-        AddEventTarget(OnButtonBack,        m_pbuttonBack->GetEventSource());
-        AddEventTarget(OnButtonBar,         m_pbuttonbarDestinations->GetEventSource());
+		// mdvalley: Pointers and class names to shut up error C3867
+        AddEventTarget(&TeleportPane::OnButtonTeleport,    m_pbuttonTeleport->GetEventSource());
+        AddEventTarget(&TeleportPane::OnButtonBack,        m_pbuttonBack->GetEventSource());
+        AddEventTarget(&TeleportPane::OnButtonBar,         m_pbuttonbarDestinations->GetEventSource());
 
         //
         // The Destination list
@@ -191,7 +192,8 @@ public:
             m_peventDestinations->RemoveSink(m_psinkDestinations);
         m_peventDestinations->AddSink(m_psinkDestinations = new IItemEvent::Delegate(this));
 
-        AddEventTarget(OnButtonTeleport, m_plistPaneDestinations->GetDoubleClickEventSource());
+		// mdvalley: It's a pointer.
+        AddEventTarget(&TeleportPane::OnButtonTeleport, m_plistPaneDestinations->GetDoubleClickEventSource());
 
         RebuildList();
     }

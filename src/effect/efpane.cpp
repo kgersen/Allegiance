@@ -1003,7 +1003,9 @@ public:
 
     TRef<IObject> Apply(ObjectStack& stack)
     {
-        TRef<Pane> ppane; CastTo(ppane, (Value*)(IObject*)stack.Pop());
+		// mdvalley: Okay, can't cast Value to Pane. Gee.
+//        TRef<Pane> ppane; CastTo(ppane, (Value*)(IObject*)stack.Pop());
+		TRef<Pane> ppane; CastTo(ppane, (IObject*)stack.Pop());
 
         return CreateBlackPane(ppane);
     }

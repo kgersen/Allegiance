@@ -101,7 +101,8 @@ public:
         //
 
         CastTo(m_pbuttonBack, m_pns->FindMember("backButton"   ));
-        AddEventTarget(OnButtonBack, m_pbuttonBack->GetEventSource());
+		// mdvalley: OnButtonBack now pointered and with class named.
+		AddEventTarget(&HelpPaneImpl::OnButtonBack, m_pbuttonBack->GetEventSource());
 
         CastTo(m_pbuttonClose, m_pns->FindMember("closeButton"));
 

@@ -1417,6 +1417,9 @@ void                        CmissionIGC::UpdateSides(Time now,
                                                      const MissionParams * pmp,
                                                      const char sideNames[c_cSidesMax][c_cbSideName])
 {
+	// mdvalley: declaration moved to here. Compiler doesn't like it in the for loop for some reason.
+	SideID sid;
+
     static const float sideColors[c_cSidesMax][3] =
                                 { {188.0f/255.0f, 160.0f/255.0f,   0.0f/255.0f}, //Gold
                                   {  0.0f/255.0f, 138.0f/255.0f, 217.0f/255.0f}, //Blue
@@ -1425,7 +1428,7 @@ void                        CmissionIGC::UpdateSides(Time now,
                                   {255.0f/255.0f, 145.0f/255.0f, 145.0f/255.0f}, //icky orange
                                   { 50.0f/255.0f, 200.0f/255.0f, 125.0f/255.0f}};//icky magenta
 
-    for (SideID sid = GetSides()->n(); sid < pmp->nTeams; sid++)
+    for (sid = GetSides()->n(); sid < pmp->nTeams; sid++)
     {
         IcivilizationIGC*   pcivilization = GetCivilization(pmp->rgCivID[sid]);
         assert (pcivilization);

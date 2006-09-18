@@ -86,7 +86,7 @@ private:
 
             pcreditsTime->SetWrappedValue(Subtract(ptime, new Number(ptime->GetValue())));
 
-            AddEventTarget(OnButtonClose, m_pbuttonClose->GetEventSource());
+			AddEventTarget(&IntroScreen::CreditsPopup::OnButtonClose, m_pbuttonClose->GetEventSource());
         }
 
         //
@@ -240,9 +240,9 @@ private:
             CastTo(pListXSize,              pns->FindMember("serverListWidth"));
 
             //AddEventTarget(OnButtonFind, m_pbuttonFind->GetEventSource());
-            AddEventTarget(OnButtonJoin, m_pbuttonJoin->GetEventSource());
-            AddEventTarget(OnButtonCancel, m_pbuttonCancel->GetEventSource());
-            AddEventTarget(OnButtonJoin, m_plistPane->GetDoubleClickEventSource());
+			AddEventTarget(&IntroScreen::FindServerPopup::OnButtonJoin, m_pbuttonJoin->GetEventSource());
+            AddEventTarget(&IntroScreen::FindServerPopup::OnButtonCancel, m_pbuttonCancel->GetEventSource());
+            AddEventTarget(&IntroScreen::FindServerPopup::OnButtonJoin, m_plistPane->GetDoubleClickEventSource());
 
             m_peventServerList = m_plistPane->GetSelectionEventSource();
             m_peventServerList->AddSink(m_psinkServerList = new IItemEvent::Delegate(this));
@@ -255,7 +255,7 @@ private:
 
             m_pserverSearching = new LANServerInfo(GUID_NULL, "Searching...", 0, 0);
 
-            AddEventTarget(PollForServers, GetWindow(), 1.0f);
+            AddEventTarget(&IntroScreen::FindServerPopup::PollForServers, GetWindow(), 1.0f);
         }
 
         ~FindServerPopup()
@@ -328,9 +328,40 @@ private:
 
         void FindGames(const char* szServerName)
         {
+			// WLP 2005 - turned off the every second search to keep the mouse responding
+			// added next line to turn off polling
+            //m_bDoBackgroundPolling = false ;	// TE: Commented now that enumeration is done asynchronously
             TList<TRef<LANServerInfo> > listResults;
 
             trekClient.FindStandaloneServersByName(szServerName, listResults);
+
+
+            // WLP 2005 - DPLAY8 upgrade addition code
+            // DPLAY8 EnumHosts returns duplicates in the list
+            // so we have to strip them out
+            // How this works =
+            // destroy all dupes to the first entry
+            // destroy all dupes to the second entry - etc.
+            // just keep at it until the end
+            
+		    TList<TRef<LANServerInfo> >::Iterator iterNew(listResults);   // Walking list 
+		    for( int i = 1 ; i < listResults.GetCount() ; i++ ) // Walk the entire list 
+		    {
+		    iterNew.First();     // set on the first one
+            for ( int j = 1 ; j < i ; j++, iterNew.Next() ) ;               // find the starting position
+			GUID matchGUID = iterNew.Value()->guidSession ;               // this is the one to check for dupes
+		
+			iterNew.Next();             // bump to the next one to start comparing
+            while (!iterNew.End())                                   // walk from here to the end checking dupes
+                {
+				    if (memcmp(&(iterNew.Value()->guidSession),      // compare GUID for dupes
+				            &matchGUID, sizeof(GUID)) == 0)
+	    	        iterNew.Remove();
+			        else iterNew.Next();
+		        }
+		    }
+
+            // WLP - 2005 end of add for DPLAY8 upgrade
 
             // add to or update the the server list with the new results
             // Note: we have to maintain some degree of consistancy to 
@@ -549,49 +580,49 @@ public:
 
         //AddEventTarget(OnButtonGames,       m_pbuttonPlayLan->GetEventSource());
         //AddEventTarget(OnButtonTraining,    m_pbuttonTraining->GetEventSource());
-        AddEventTarget(OnButtonTraining,    m_pbuttonTrainingBig->GetEventSource());
-        AddEventTarget(OnButtonExit,        m_pbuttonExit->GetEventSource());
-        AddEventTarget(OnButtonHelp,        m_pbuttonHelp->GetEventSource());
+		AddEventTarget(&IntroScreen::OnButtonTraining,    m_pbuttonTrainingBig->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonExit,        m_pbuttonExit->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonHelp,        m_pbuttonHelp->GetEventSource());
 #ifdef USEAZ
         AddEventTarget(OnButtonZoneClub,    m_pbuttonZoneClub->GetEventSource());
 #endif
-        AddEventTarget(OnButtonInternet,    m_pbuttonPlayInt->GetEventSource());
-        AddEventTarget(OnButtonLAN,         m_pbuttonPlayLan->GetEventSource());
-        AddEventTarget(OnButtonZoneWeb,     m_pbuttonZoneWeb->GetEventSource());
-        AddEventTarget(OnButtonOptions,     m_pbuttonOptions->GetEventSource());
-        AddEventTarget(OnButtonCredits,     m_pbuttonCredits->GetEventSource());
-        AddEventTarget(OnButtonIntro,       m_pbuttonIntro->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonInternet,    m_pbuttonPlayInt->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonLAN,         m_pbuttonPlayLan->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonZoneWeb,     m_pbuttonZoneWeb->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonOptions,     m_pbuttonOptions->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonCredits,     m_pbuttonCredits->GetEventSource());
+        AddEventTarget(&IntroScreen::OnButtonIntro,       m_pbuttonIntro->GetEventSource());
         
 
-        AddEventTarget(OnHoverPlayLan,      m_pbuttonPlayLan->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverPlayInt,      m_pbuttonPlayInt->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverPlayLan,      m_pbuttonPlayLan->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverPlayInt,      m_pbuttonPlayInt->GetMouseEnterEventSource());
 #ifdef USEAZ
         AddEventTarget(OnHoverZoneClub,     m_pbuttonZoneClub->GetMouseEnterEventSource());
 #endif
         //AddEventTarget(OnHoverTrain,        m_pbuttonTraining->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverTrain,        m_pbuttonTrainingBig->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverZoneWeb,      m_pbuttonZoneWeb->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverOptions,       m_pbuttonOptions->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverIntro,        m_pbuttonIntro->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverCredits,      m_pbuttonCredits->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverTrain,        m_pbuttonTrainingBig->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverZoneWeb,      m_pbuttonZoneWeb->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverOptions,       m_pbuttonOptions->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverIntro,        m_pbuttonIntro->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverCredits,      m_pbuttonCredits->GetMouseEnterEventSource());
         //AddEventTarget(OnHoverQuickstart,   m_pbuttonQuickstart->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverExit,         m_pbuttonExit->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverHelp,         m_pbuttonHelp->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverExit,         m_pbuttonExit->GetMouseEnterEventSource());
+        AddEventTarget(&IntroScreen::OnHoverHelp,         m_pbuttonHelp->GetMouseEnterEventSource());
 
-        AddEventTarget(OnHoverNone,     m_pbuttonPlayLan->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonPlayInt->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonPlayLan->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonPlayInt->GetMouseLeaveEventSource());
 #ifdef USEAZ
         AddEventTarget(OnHoverNone,     m_pbuttonZoneClub->GetMouseLeaveEventSource());
 #endif
         //AddEventTarget(OnHoverNone,     m_pbuttonTraining->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonTrainingBig->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonZoneWeb->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonOptions->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonIntro->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonCredits->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonTrainingBig->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonZoneWeb->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonOptions->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonIntro->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonCredits->GetMouseLeaveEventSource());
         //AddEventTarget(OnHoverNone,     m_pbuttonQuickstart->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonHelp->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonExit->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonHelp->GetMouseLeaveEventSource());
+        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonExit->GetMouseLeaveEventSource());
 
         //m_pbuttonPlayLan->SetEnabled(false);
         //m_pbuttonPlayInt->SetEnabled(false);
@@ -603,7 +634,7 @@ public:
         trekClient.Disconnect();
         trekClient.DisconnectLobby();
         if (g_bQuickstart || g_bReloaded)
-            AddEventTarget(OnQuickstart, GetWindow(), 0.01f);
+            AddEventTarget(&IntroScreen::OnQuickstart, GetWindow(), 0.01f);
 
         // we only do this once per execution, and only if training is installed
         static  bool    bHaveVisited = false;
@@ -678,11 +709,11 @@ public:
         //
         // pop up the call sign/login dialog
         //
-        
-		TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
+
+        TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
             "Enter a call sign to use for this game.", trekClient.GetSavedCharacterName(), "", false);
         GetWindow()->GetPopupContainer()->OpenPopup(plogonPopup, false);
-		
+
         return true;
     }
 
@@ -709,8 +740,8 @@ public:
             pAbortButton->SetOffset (WinPoint(300, 170));
             m_pMsgBox->GetPane ()->InsertAtBottom (pOKButton);
             m_pMsgBox->GetPane ()->InsertAtBottom (pAbortButton);
-            AddEventTarget(OnButtonBailTraining, pAbortButton->GetEventSource());
-            AddEventTarget(OnButtonDownloadTraining, pOKButton->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonBailTraining, pAbortButton->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonDownloadTraining, pOKButton->GetEventSource());
             GetWindow()->GetPopupContainer()->OpenPopup (m_pMsgBox, false);
         }
         return true;
@@ -788,7 +819,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(OnTryLogon, GetWindow(), 0.1f);
+        AddEventTarget(&IntroScreen::OnTryLogon, GetWindow(), 0.1f);
     }
 
     bool OnTryLogon()
@@ -930,7 +961,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(OnTryLogon, GetWindow(), 0.1f);
+        AddEventTarget(&IntroScreen::OnTryLogon, GetWindow(), 0.1f);
     }
 
     void OnAbort()

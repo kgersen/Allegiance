@@ -171,7 +171,8 @@ BOOL CServiceModule::IsInstalledAsService()
 
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
-    lRes = key.QueryStringValue(_T("LocalService"), szValue, &dwLen);
+	// mdvalley: QueryStringValue isn't in my ATL, so edited slightly
+    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
 
     if (lRes == ERROR_SUCCESS)
         return TRUE;
@@ -526,8 +527,9 @@ HRESULT CServiceModule::RegisterServer(BOOL bReRegister, BOOL bRegTypeLib, BOOL 
     
       if (bService)
       {
-          key.SetStringValue(_T("LocalService"), __MODULE__);
-          key.SetStringValue(_T("ServiceParameters"), _T("-Service"));
+		  // mdvalley: I hate my ATL libraries sometimes (SetStringValue)
+          key.SetValue(__MODULE__, _T("LocalService"));
+          key.SetValue(_T("-Service"), _T("ServiceParameters"));
           // Create service
           InstallService(argc, argv);
       }

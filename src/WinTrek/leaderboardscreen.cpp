@@ -296,24 +296,25 @@ public:
         // Buttons
         //
         
-        AddEventTarget(OnButtonBack, m_pbuttonBack->GetEventSource());
-        AddEventTarget(OnButtonFindMe, m_pbuttonFindMe->GetEventSource());
-        AddEventTarget(OnButtonPlayerProfile, m_pbuttonPlayerProfile->GetEventSource());
-        AddEventTarget(OnButtonZoneWeb, m_pbuttonWeb->GetEventSource());
+		// mdvalley: Pointer. Class.
+        AddEventTarget(&LeaderBoardScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonFindMe, m_pbuttonFindMe->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonPlayerProfile, m_pbuttonPlayerProfile->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonZoneWeb, m_pbuttonWeb->GetEventSource());
 
-        AddEventTarget(OnButtonPlayerProfile, m_pbuttonPlayerProfile2->GetEventSource());
-        AddEventTarget(OnButtonSquadProfile, m_pbuttonSquadProfile->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonPlayerProfile, m_pbuttonPlayerProfile2->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonSquadProfile, m_pbuttonSquadProfile->GetEventSource());
         
         m_pbuttonSquadProfile->SetEnabled(!g_bDisableZoneClub);
         m_pbuttonSquads->SetEnabled(!g_bDisableZoneClub);
         
-        AddEventTarget(OnButtonSquadProfile, m_pbuttonSquads->GetEventSource());
-        AddEventTarget(OnButtonTop, m_pbuttonTop->GetEventSource());
-        AddEventTarget(OnButtonPageUp, m_pbuttonPageUp->GetEventSource());
-        AddEventTarget(OnButtonPageUp, m_pbuttonPageUp->GetDoubleClickEventSource());
-        AddEventTarget(OnButtonPageDown, m_pbuttonPageDown->GetEventSource());
-        AddEventTarget(OnButtonPageDown, m_pbuttonPageDown->GetDoubleClickEventSource());
-        AddEventTarget(OnButtonBarStats, m_pbuttonbarStats->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonSquadProfile, m_pbuttonSquads->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonTop, m_pbuttonTop->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonPageUp, m_pbuttonPageUp->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonPageUp, m_pbuttonPageUp->GetDoubleClickEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonPageDown, m_pbuttonPageDown->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonPageDown, m_pbuttonPageDown->GetDoubleClickEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonBarStats, m_pbuttonbarStats->GetEventSource());
 
 
         //
@@ -321,7 +322,7 @@ public:
         //
 
         FillCombo(m_pcomboCiv, "CivNames");
-        AddEventTarget(OnCivChange, m_pcomboCiv->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnCivChange, m_pcomboCiv->GetEventSource());
 
 
         //
@@ -339,7 +340,7 @@ public:
         m_strBasis = strCharacter.IsEmpty() ? trekClient.GetNameLogonClubServer() : strCharacter;
         m_idBasis = strCharacter.IsEmpty() ? -2 : -1;
 
-        AddEventTarget(OnButtonSearch, m_pbuttonSearch->GetEventSource());
+        AddEventTarget(&LeaderBoardScreen::OnButtonSearch, m_pbuttonSearch->GetEventSource());
         m_cEntries = 0;
 
         s_pLeaderBoard = this;

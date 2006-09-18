@@ -5769,7 +5769,8 @@ public:
         }
     }
 
-    virtual UpdateCommandView(void)
+	// mdvalley: the func return type has to be explicit now.
+    virtual void UpdateCommandView(void)
     {
         assert (CommandCamera(m_cm));
 
@@ -6283,7 +6284,8 @@ public:
 
                                 pthing->SetThrust(0.5f * (pship->GetControls().jsValues[3] + 1));
 
-                                if (stateM & miningMaskIGC)
+								// mdvalley: Uneyed miners no bolties.
+								if ((stateM & miningMaskIGC) && trekClient.GetShip()->CanSee(pship))
                                     psite->ActivateBolt();
                                 else
                                     psite->DeactivateBolt();

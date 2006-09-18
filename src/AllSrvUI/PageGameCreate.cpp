@@ -263,7 +263,12 @@ BOOL CPageGameCreate::OnInitDialog()
     DWORD cchUserName = sizeofArray(szUserName);
     GetUserName(szUserName, &cchUserName);
     WCHAR szDefaultGameName[_MAX_PATH];
-    swprintf(szDefaultGameName, L"%hs's Game", szUserName);
+	// mdvalley: _s for the hell of it
+#if _MSC_VER >= 1400
+    swprintf_s(szDefaultGameName, _MAX_PATH, L"%hs's Game", szUserName);
+#else
+	swprintf(szDefaultGameName, L"%hs's Game", szUserName);
+#endif
     hr = m_spGameParameters->put_GameName(CComBSTR(szDefaultGameName));
     if (FAILED(hr))
       return S_OK == GetSheet()->HandleError(hr, "setting Game Parameters property", true);

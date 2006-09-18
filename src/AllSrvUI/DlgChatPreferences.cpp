@@ -98,29 +98,30 @@ void CDlgChatPreferences::LoadFromRegistry()
   CRegKey key;
   key.Create(HKEY_LOCAL_MACHINE, HKLM_AllSrvUI);
 
+  // mdvalley: all QueryDWORDValue(text, dwbool);
   // AdminAlertChatList
   DWORD dwBool = true;
-  key.QueryDWORDValue(TEXT("AdminAlertChatList"), dwBool);
+  key.QueryValue(dwBool, TEXT("AdminAlertChatList"));
   m_bAdminChatList = !!dwBool;
 
   // AdminAlertMessageBox
   dwBool = true;
-  key.QueryDWORDValue(TEXT("AdminAlertMessageBox"), dwBool);
+  key.QueryValue(dwBool, TEXT("AdminAlertMessageBox"));
   m_bAdminMessageBox = !!dwBool;
 
   // AdminAlertRun
   dwBool = false;
   if (ShortcutExists())
-    key.QueryDWORDValue(TEXT("AdminAlertRun"), dwBool);
+    key.QueryValue(dwBool, TEXT("AdminAlertRun"));
   m_bAdminRun = !!dwBool;
 
   // ChatList
   dwBool = true;
-  key.QueryDWORDValue(TEXT("ChatList"), dwBool);
+  key.QueryValue(dwBool, TEXT("ChatList"));
   m_bEnableChatList = !!dwBool;
 
   // ChatListLimit
-  key.QueryDWORDValue(TEXT("ChatListLimit"), m_dwChatListLimit);
+  key.QueryValue(m_dwChatListLimit, TEXT("ChatListLimit"));
 }
 
 void CDlgChatPreferences::SaveToRegistry()
@@ -129,20 +130,21 @@ void CDlgChatPreferences::SaveToRegistry()
   CRegKey key;
   key.Create(HKEY_LOCAL_MACHINE, HKLM_AllSrvUI);
 
+  // mdvalley: All SetDWORDValue(text, m_b(
   // AdminAlertChatList
-  key.SetDWORDValue(TEXT("AdminAlertChatList"), m_bAdminChatList);
+  key.SetValue(m_bAdminChatList, TEXT("AdminAlertChatList"));
 
   // AdminAlertMessageBox
-  key.SetDWORDValue(TEXT("AdminAlertMessageBox"), m_bAdminMessageBox);
+  key.SetValue(m_bAdminMessageBox, TEXT("AdminAlertMessageBox"));
 
   // AdminAlertRun
-  key.SetDWORDValue(TEXT("AdminAlertRun"), m_bAdminRun);
+  key.SetValue(m_bAdminRun, TEXT("AdminAlertRun"));
 
   // ChatList
-  key.SetDWORDValue(TEXT("ChatList"), m_bEnableChatList);
+  key.SetValue(m_bEnableChatList, TEXT("ChatList"));
 
   // ChatListLimit
-  key.SetDWORDValue(TEXT("ChatListLimit"), m_dwChatListLimit);
+  key.SetValue(m_dwChatListLimit, TEXT("ChatListLimit"));
 }
 
 bool CDlgChatPreferences::ShortcutExists()

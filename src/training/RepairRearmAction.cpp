@@ -44,8 +44,12 @@ namespace Training
         pShip->SetAmmo (pShip->GetHullType ()->GetMaxAmmo ());
         pShip->SetFuel (pShip->GetHullType ()->GetMaxFuel ());
 
+		// mdvalley: i needs defining outside the fors
+
+		int i;
+
         // fill the first empty cargo slot with missiles
-        for (int i = -1; i > -c_maxCargo; i--)
+        for (i = -1; i > -c_maxCargo; i--)
             if (pShip->GetMountedPart (NA, i) == 0)
             {
                 g_pMission->AddPartToShip (150, i, 0x7fff);

@@ -284,13 +284,21 @@ void CAGCEventLogger::LogEvent(IAGCEvent* pEvent, bool bSynchronous)
         CAGCEventDef::XParamStrings vecParamStrings;
         PRIVATE_VERIFYE(SUCCEEDED(CAGCEventDef::GetEventParameters(pEvent,
           vecParamStrings, pEventDef)));
+	
+		// mdvalley: prevent crashes when no %Parameter% in strings.
+		// That took so long to figure out.
+		WORD NumStrings = vecParamStrings.size();
+		LPCWSTR* lpStrings = NULL;
+		if(NumStrings)
+			lpStrings = (LPCWSTR*)(&(*vecParamStrings.begin()));
 
         // Report the event to the NT Event log
         ReportEventW(m_shEventLog, wSeverity, 0, dwEventID, NULL,
           vecParamStrings.size(), 0,
 // VS.Net 2003 port
 #if _MSC_VER >= 1310
-		(LPCWSTR*)(&(*vecParamStrings.begin())), NULL);
+        lpStrings, NULL);
+//		(LPCWSTR*)(&(*vecParamStrings.begin())), NULL);
 #else
 		(LPCWSTR*)(vecParamStrings.begin()), NULL);
 #endif
@@ -510,7 +518,9 @@ HRESULT CAGCEventLogger::ReadStringValueFromRegistry(LPCTSTR pszValueName,
   LPTSTR pszValue = (LPTSTR)_alloca(cbData);
 
   // Attempt to read the specified value
-  lr = m_key.QueryStringValue(pszValueName, pszValue, &cbData);
+  // mdvalley: No damn QueryStringValue
+  // Swap first 2 params.
+  lr = m_key.QueryValue(pszValue, pszValueName, &cbData);
 
   // Save the value string to the [out] parameter
   bstrOut = pszValue;
@@ -811,7 +821,8 @@ STDMETHODIMP CAGCEventLogger::put_NTEventLog(BSTR bstrComputer)
   if (keyWrite.m_hKey)
   {
     USES_CONVERSION;
-    long lr = keyWrite.SetStringValue(TEXT("NTEventLog"), OLE2CT(bstrComputer));
+	// mdvalley: No SetStringValue
+    long lr = keyWrite.SetValue(OLE2CT(bstrComputer), TEXT("NTEventLog"));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -916,9 +927,10 @@ STDMETHODIMP CAGCEventLogger::put_DBEventLog(IAGCDBParams* pDBParams)
   if (keyWrite.m_hKey)
   {
     USES_CONVERSION;
-    long lr = keyWrite.SetStringValue(TEXT("ConnectionString"), OLE2CT(bstrConnectionString));
+	// mdvalley: SetStringValue
+    long lr = keyWrite.SetValue(OLE2CT(bstrConnectionString), TEXT("ConnectionString"));
     assert(ERROR_SUCCESS == lr);
-    lr = keyWrite.SetStringValue(TEXT("TableName"), OLE2CT(bstrTableName));
+    lr = keyWrite.SetValue(OLE2CT(bstrTableName), TEXT("TableName"));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -1025,7 +1037,8 @@ STDMETHODIMP CAGCEventLogger::put_EnabledNTEvents(IAGCEventIDRanges* pEvents)
   {
     USES_CONVERSION;
     LPCTSTR pszValue = bstrEventRanges ? OLE2CT(bstrEventRanges) : TEXT("");
-    long lr = keyWrite.SetStringValue(TEXT("EnabledNTEvents"), pszValue);
+	// mdvalley: SetStringValue
+    long lr = keyWrite.SetValue(pszValue, TEXT("EnabledNTEvents"));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -1080,7 +1093,8 @@ STDMETHODIMP CAGCEventLogger::put_EnabledDBEvents(IAGCEventIDRanges* pEvents)
   {
     USES_CONVERSION;
     LPCTSTR pszValue = bstrEventRanges ? OLE2CT(bstrEventRanges) : TEXT("");
-    long lr = keyWrite.SetStringValue(TEXT("EnabledDBEvents"), pszValue);
+	// mdvalley: SetStringValue
+    long lr = keyWrite.SetValue(pszValue, TEXT("EnabledDBEvents"));
     assert(ERROR_SUCCESS == lr);
   }
 

@@ -893,7 +893,7 @@ private:
 
         m_pHTTPSession->InitiateDownload(pszURLs, ".\\AutoUpdate\\");
 
-        for (i = 0; i < m_cFiles * 2; i++)
+        for (int i = 0; i < m_cFiles * 2; i++)
             free(pszURLs[i]);
 
         delete[] pszURLs;

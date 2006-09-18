@@ -157,7 +157,8 @@ const DWORD CFLClient::c_dwID = 19680815;
 bool g_fLogonCRC = true; 
 #endif
 
-static GetRegDWORD(const char* szKey, DWORD dwDefault)
+// mdvalley: 2005 needs to specify dword
+static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
 {
   DWORD dwResult = dwDefault;
 
@@ -593,6 +594,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         g_pLobbyApp->GetFMServers().GetIPAddress(*pMission->GetServer()->GetConnection(), szServer);
         assert(lstrlen(szServer) < sizeof(pfmJoinMission->szServer)); // as long as szServer is fixed length
         lstrcpy(pfmJoinMission->szServer, szServer);
+		pfmJoinMission->dwPort = pMission->GetServer()->GetServerPort();	// mdvalley: pass the port to the client
         pfmJoinMission->dwCookie = pfmJoinGameReq->dwCookie;
         pfmJoinMission->guidInstance = GUID_NULL; // until we have separate sessions for each game
       }

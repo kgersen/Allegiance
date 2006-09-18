@@ -792,14 +792,15 @@ public:
 
         m_pbuttonHullList->SetDownTrigger(true);
 
-        AddEventTarget(OnButtonDefault , m_pbuttonDefault ->GetEventSource());
-        AddEventTarget(OnButtonNext    , m_pbuttonNext    ->GetEventSource());
-        AddEventTarget(OnButtonPrevious, m_pbuttonPrevious->GetEventSource());
-        AddEventTarget(OnButtonLaunch  , m_pbuttonLaunch  ->GetEventSource());
-        AddEventTarget(OnButtonBuy     , m_pbuttonBuy     ->GetEventSource());
-        AddEventTarget(OnButtonBuy     , m_pbuttonConfirm ->GetEventSource());
-        AddEventTarget(OnButtonBack    , m_pbuttonBack    ->GetEventSource());
-        AddEventTarget(OnButtonHullList, m_pbuttonHullList->GetEventSource());
+		// mdvalley: A pointer and some class.
+        AddEventTarget(&LoadoutImpl::OnButtonDefault , m_pbuttonDefault ->GetEventSource());
+        AddEventTarget(&LoadoutImpl::OnButtonNext    , m_pbuttonNext    ->GetEventSource());
+        AddEventTarget(&LoadoutImpl::OnButtonPrevious, m_pbuttonPrevious->GetEventSource());
+        AddEventTarget(&LoadoutImpl::OnButtonLaunch  , m_pbuttonLaunch  ->GetEventSource());
+        AddEventTarget(&LoadoutImpl::OnButtonBuy     , m_pbuttonBuy     ->GetEventSource());
+        AddEventTarget(&LoadoutImpl::OnButtonBuy     , m_pbuttonConfirm ->GetEventSource());
+        AddEventTarget(&LoadoutImpl::OnButtonBack    , m_pbuttonBack    ->GetEventSource());
+        AddEventTarget(&LoadoutImpl::OnButtonHullList, m_pbuttonHullList->GetEventSource());
     }
 
     //////////////////////////////////////////////////////////////////////////////

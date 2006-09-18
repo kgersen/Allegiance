@@ -83,32 +83,33 @@ public:
         // Buttons
         //
 
-        AddEventTarget(OnButtonLaunch,  m_pbuttonLaunch->GetEventSource());
-        AddEventTarget(OnButtonCommand, m_pbuttonCommand->GetEventSource());
-        AddEventTarget(OnButtonLoadout, m_pbuttonLoadout->GetEventSource());
-        AddEventTarget(OnButtonInvest,  m_pbuttonInvest->GetEventSource());
-        AddEventTarget(OnButtonHelp,    m_pbuttonHelp->GetEventSource());
-        AddEventTarget(OnButtonTeleport,  m_pbuttonTeleport->GetEventSource());
-        AddEventTarget(OnButtonTeam,    m_pbuttonTeam->GetEventSource());
-        AddEventTarget(OnButtonExit,    m_pbuttonExit->GetEventSource());
+		// mdvalley: pointers and class.
+        AddEventTarget(&HangarScreen::OnButtonLaunch,  m_pbuttonLaunch->GetEventSource());
+        AddEventTarget(&HangarScreen::OnButtonCommand, m_pbuttonCommand->GetEventSource());
+        AddEventTarget(&HangarScreen::OnButtonLoadout, m_pbuttonLoadout->GetEventSource());
+        AddEventTarget(&HangarScreen::OnButtonInvest,  m_pbuttonInvest->GetEventSource());
+        AddEventTarget(&HangarScreen::OnButtonHelp,    m_pbuttonHelp->GetEventSource());
+        AddEventTarget(&HangarScreen::OnButtonTeleport,  m_pbuttonTeleport->GetEventSource());
+        AddEventTarget(&HangarScreen::OnButtonTeam,    m_pbuttonTeam->GetEventSource());
+        AddEventTarget(&HangarScreen::OnButtonExit,    m_pbuttonExit->GetEventSource());
 
-        AddEventTarget(OnHoverLaunch,   m_pbuttonLaunch->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverCommand,  m_pbuttonCommand->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverLoadout,  m_pbuttonLoadout->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverInvest,   m_pbuttonInvest->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverHelp,     m_pbuttonHelp->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverTeleport,   m_pbuttonTeleport->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverTeam,     m_pbuttonTeam->GetMouseEnterEventSource());
-        AddEventTarget(OnHoverExit,     m_pbuttonExit->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverLaunch,   m_pbuttonLaunch->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverCommand,  m_pbuttonCommand->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverLoadout,  m_pbuttonLoadout->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverInvest,   m_pbuttonInvest->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverHelp,     m_pbuttonHelp->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverTeleport,   m_pbuttonTeleport->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverTeam,     m_pbuttonTeam->GetMouseEnterEventSource());
+        AddEventTarget(&HangarScreen::OnHoverExit,     m_pbuttonExit->GetMouseEnterEventSource());
 
-        AddEventTarget(OnHoverNone,     m_pbuttonLaunch->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonCommand->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonLoadout->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonInvest->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonHelp->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonTeleport->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonTeam->GetMouseLeaveEventSource());
-        AddEventTarget(OnHoverNone,     m_pbuttonExit->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonLaunch->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonCommand->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonLoadout->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonInvest->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonHelp->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonTeleport->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonTeam->GetMouseLeaveEventSource());
+        AddEventTarget(&HangarScreen::OnHoverNone,     m_pbuttonExit->GetMouseLeaveEventSource());
 
         if (!trekClient.MyMission()->AllowDevelopments())
             m_pbuttonInvest->SetHidden(true);

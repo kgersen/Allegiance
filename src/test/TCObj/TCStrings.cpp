@@ -202,7 +202,8 @@ STDMETHODIMP CTCStrings::get_DelimitedItems(BSTR bstrDelimiter,
   *psz = OLESTR('\0');
 
   // Loop thru the collection and concatenate the strings
-  for (i = 0; i < nCount; ++i)
+  // mdvalley: need int
+  for (int i = 0; i < nCount; ++i)
   {
     if (i)
       wcscat(psz, bstrDelimiter);

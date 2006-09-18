@@ -43,7 +43,7 @@
 // DX headers
 //
 
-#include <dplobby.h>
+//#include <dplobby.h>
 #include <dinput.h>
 
 #include "guids.h"

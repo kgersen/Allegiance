@@ -771,7 +771,7 @@ HRESULT TCComPropertyClassRoot::ISpecifyPropertyPages_GetPages(
   if (pPages->pElems == NULL)
     return E_OUTOFMEMORY;
   nCnt = 0;
-  for(i = 0; pMap[i].pclsidPropPage != NULL; i++)
+  for(int i = 0; pMap[i].pclsidPropPage != NULL; i++)
   {
     if (!InlineIsEqualGUID(*pMap[i].pclsidPropPage, CLSID_NULL))
     {

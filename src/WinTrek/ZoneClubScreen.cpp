@@ -91,17 +91,18 @@ public:
         CastTo(m_pbuttonPlayerProfile, pns->FindMember("playerProfileButtonPane"));
         CastTo(m_pbuttonLeaderboard, pns->FindMember("leaderboardButtonPane"));
         CastTo(m_pbuttonWeb, pns->FindMember("webButtonPane"));
-        AddEventTarget(OnButtonGames, m_pbuttonGames->GetEventSource());
-        AddEventTarget(OnButtonGames, m_pbuttonGamesBig->GetEventSource());
-        AddEventTarget(OnButtonMainMenu, m_pbuttonMainMenu->GetEventSource());
+		// mdvalley: Lots of &ZoneClubScreen:: added
+        AddEventTarget(&ZoneClubScreen::OnButtonGames, m_pbuttonGames->GetEventSource());
+        AddEventTarget(&ZoneClubScreen::OnButtonGames, m_pbuttonGamesBig->GetEventSource());
+        AddEventTarget(&ZoneClubScreen::OnButtonMainMenu, m_pbuttonMainMenu->GetEventSource());
         
         if (trekClient.GetIsZoneClub())
         {
-            AddEventTarget(OnButtonZoneEvents, m_pbuttonZoneEvents->GetEventSource());
-            AddEventTarget(OnButtonSquads, m_pbuttonSquads->GetEventSource());
-            AddEventTarget(OnButtonPlayerProfile, m_pbuttonPlayerProfile->GetEventSource());
-            AddEventTarget(OnButtonZoneWeb, m_pbuttonWeb->GetEventSource());
-            AddEventTarget(OnButtonLeaderBoard, m_pbuttonLeaderboard->GetEventSource());
+            AddEventTarget(&ZoneClubScreen::OnButtonZoneEvents, m_pbuttonZoneEvents->GetEventSource());
+            AddEventTarget(&ZoneClubScreen::OnButtonSquads, m_pbuttonSquads->GetEventSource());
+            AddEventTarget(&ZoneClubScreen::OnButtonPlayerProfile, m_pbuttonPlayerProfile->GetEventSource());
+            AddEventTarget(&ZoneClubScreen::OnButtonZoneWeb, m_pbuttonWeb->GetEventSource());
+            AddEventTarget(&ZoneClubScreen::OnButtonLeaderBoard, m_pbuttonLeaderboard->GetEventSource());
         }
         
         //temporarily disable all buttons 
@@ -122,7 +123,8 @@ public:
         BeginConfigDownload();
 
         if (g_bQuickstart)
-            AddEventTarget(OnButtonGames, GetWindow(), 0.01f);
+			// mdvalley: &ZoneClubScreen:: needed.
+            AddEventTarget(&ZoneClubScreen::OnButtonGames, GetWindow(), 0.01f);
 
         trekClient.FlushSessionLostMessage();
     }
@@ -758,7 +760,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(OnUsernameAndPassword, GetWindow(), 0.1f);
+        AddEventTarget(&ZoneClubScreen::OnUsernameAndPassword, GetWindow(), 0.1f);
     }
 
     bool OnUsernameAndPassword()

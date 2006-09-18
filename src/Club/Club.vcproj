@@ -1,24 +1,45 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="Club"
 	ProjectGUID="{4B0BFF91-D476-4317-BA7C-B052052FBD7D}"
 	RootNamespace="Club"
-	Keyword="Win32Proj">
+	Keyword="Win32Proj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -26,330 +47,447 @@
 				PreprocessorDefinitions="ALLCLUB;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY;_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllClub.exe"
-				SuppressStartupBanner="FALSE"
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
-				SubSystem="1"/>
+				SuppressStartupBanner="false"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				SubSystem="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth"
 				PreprocessorDefinitions="ALLCLUB;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="pch.h"/>
+				BufferSecurityCheck="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="pch.h"
+				Detect64BitPortabilityProblems="false"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllClub.exe"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
-				SubSystem="1"/>
+				SubSystem="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc;..\..\FreeZoneAuth"
 				PreprocessorDefinitions="ALLCLUB;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY;_DEBUG"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllClub.exe"
-				SuppressStartupBanner="FALSE"
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
-				SubSystem="1"/>
+				SuppressStartupBanner="false"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				SubSystem="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Club"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\ZLib;..\_Utility;..\Inc;..\Guids;..\Zone;..\Test\Inc"
 				PreprocessorDefinitions="ALLCLUB;_WIN32_WINNT=0x0400;_ATL_STATIC_REGISTRY"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="pch.h"/>
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="pch.h"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllClub.exe"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
-				SubSystem="1"/>
+				SubSystem="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<File
-			RelativePath=".\AllClub.cpp">
+			RelativePath=".\AllClub.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\AllClub.h">
+			RelativePath=".\AllClub.h"
+			>
 		</File>
 		<File
-			RelativePath=".\AllClub.rc">
+			RelativePath=".\AllClub.rc"
+			>
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="Debug|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc
-type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc
-type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc
-"
+					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc&#x0D;&#x0A;type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc&#x0D;&#x0A;"
 					AdditionalDependencies="$(IntDir)\AllClubMsg.rc"
-					Outputs="$(IntDir)\$(TargetName).res"/>
+					Outputs="$(IntDir)\$(TargetName).res"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="Retail|Win32">
+				Name="Retail|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc
-type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc
-type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc
-"
+					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc&#x0D;&#x0A;type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc&#x0D;&#x0A;"
 					AdditionalDependencies="$(IntDir)\AllClubMsg.rc"
-					Outputs="$(IntDir)\$(TargetName).res"/>
+					Outputs="$(IntDir)\$(TargetName).res"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZDebug|Win32">
+				Name="FZDebug|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc
-type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc
-type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc
-"
+					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc&#x0D;&#x0A;type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc&#x0D;&#x0A;"
 					AdditionalDependencies="$(IntDir)\AllClubMsg.rc"
-					Outputs="$(IntDir)\$(TargetName).res"/>
+					Outputs="$(IntDir)\$(TargetName).res"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZRetail|Win32">
+				Name="FZRetail|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc
-type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc
-type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc
-RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc
-"
+					CommandLine="copy $(InputPath)  $(IntDir)\$(TargetName).rc&#x0D;&#x0A;type $(IntDir)\AllClubMsg.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;echo #define FLAVOR &quot;$(ConfigurationName)&quot; &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;type ..\Inc\VerRes.rc &gt;&gt;$(IntDir)\$(TargetName).rc&#x0D;&#x0A;RC /l 0x409 /d&quot;ALLCLUB&quot; /I$(ProjectDir)\..\Inc /Fo$(IntDir)\$(TargetName).res $(IntDir)\$(TargetName).rc&#x0D;&#x0A;"
 					AdditionalDependencies="$(IntDir)\AllClubMsg.rc"
-					Outputs="$(IntDir)\$(TargetName).res"/>
+					Outputs="$(IntDir)\$(TargetName).res"
+				/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\AllClubModule.h">
+			RelativePath=".\AllClubModule.h"
+			>
 		</File>
 		<File
-			RelativePath=".\AllClubMsg.msg">
+			RelativePath=".\AllClubMsg.msg"
+			>
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="Debug|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="Retail|Win32">
+				Name="Retail|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZDebug|Win32">
+				Name="FZDebug|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZRetail|Win32">
+				Name="FZRetail|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\ClubApp.cpp">
+			RelativePath=".\ClubApp.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ClubApp.h">
+			RelativePath=".\ClubApp.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ClubClient.cpp">
+			RelativePath=".\ClubClient.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ClubClient.h">
+			RelativePath=".\ClubClient.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ClubCounters.h">
+			RelativePath=".\ClubCounters.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ClubMessages.h">
+			RelativePath=".\ClubMessages.h"
+			>
 		</File>
 		<File
-			RelativePath=".\clubqguids.cpp">
+			RelativePath=".\clubqguids.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ClubQueries.h">
+			RelativePath=".\ClubQueries.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ClubSite.h">
+			RelativePath=".\ClubSite.h"
+			>
 		</File>
 		<File
-			RelativePath=".\makefile">
+			RelativePath=".\makefile"
+			>
 		</File>
 		<File
-			RelativePath=".\pch.cpp">
+			RelativePath=".\pch.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\pch.h">
+			RelativePath=".\pch.h"
+			>
 		</File>
 		<File
-			RelativePath=".\StaticData.cpp">
+			RelativePath=".\StaticData.cpp"
+			>
 		</File>
 	</Files>
 	<Globals>

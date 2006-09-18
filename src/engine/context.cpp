@@ -2008,7 +2008,9 @@ public:
         //
 
         int countDecalSets = vdecalSet.GetCount();
-        for(int indexSet = 0; indexSet < countDecalSets; indexSet++) {
+		// mdvalley: Define that out here.
+		int indexSet;
+        for(indexSet = 0; indexSet < countDecalSets; indexSet++) {
             const DecalSet& set = vdecalSet[indexSet];
 
             if (psurface == set.m_psurface) {
@@ -2125,8 +2127,10 @@ public:
 
                 VertexL*   pvertex = GetVertexLBuffer(countDecal * 4);
                 MeshIndex* pindex  = GetIndexBuffer(countDecal * 6);
+				// mdvalley: Another moved definition
+				int index;
 
-                for (int index = 0; index < countDecal; index++) {
+                for (index = 0; index < countDecal; index++) {
                     set.m_vdecal[index].GetVertices(pvertex + index * 4);
 
                     pindex[index * 6 + 0] = index * 4 + 0;

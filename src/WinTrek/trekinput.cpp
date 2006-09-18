@@ -1521,6 +1521,7 @@ private:
 
     class CommandMap {
     public:
+		int indexJoystick;
         TList<KeyMapping>    m_listKeyMapping;
         TList<ButtonMapping> m_listButtonMapping;
 
@@ -1987,9 +1988,10 @@ public:
         CastTo(m_pbuttonRestore,  pns->FindMember("restoreButton"));
         CastTo(m_pbuttonClose,    pns->FindMember("closeButton"));
 
-        AddEventTarget(OnButtonOK,      m_pbuttonOK->GetEventSource());
-        AddEventTarget(OnButtonCancel,  m_pbuttonCancel->GetEventSource());
-        AddEventTarget(OnButtonRestore, m_pbuttonRestore->GetEventSource());
+		// mdvalley: Pointers and class names
+        AddEventTarget(&InputMapPopup::OnButtonOK,      m_pbuttonOK->GetEventSource());
+        AddEventTarget(&InputMapPopup::OnButtonCancel,  m_pbuttonCancel->GetEventSource());
+        AddEventTarget(&InputMapPopup::OnButtonRestore, m_pbuttonRestore->GetEventSource());
         //AddEventTarget(OnButtonCancel,  m_pbuttonClose->GetEventSource());
 
         //
@@ -2007,7 +2009,8 @@ public:
 
         CastTo(m_plistPane, (Pane*)pns->FindMember("listPane"));
 
-        AddEventTarget(OnDoubleClick, m_plistPane->GetDoubleClickEventSource());
+		// mdvalley: needs pointer and class
+        AddEventTarget(&InputMapPopup::OnDoubleClick, m_plistPane->GetDoubleClickEventSource());
 
         m_plistPane->SetItemPainter(this);
         m_plistPane->SetList(this);
@@ -2568,8 +2571,8 @@ public:
         if (m_bEditing) {
             int countJoystick = m_pinputEngine->GetJoystickCount();
             int vindex        = 0;
-
-            for (int indexJoystick = 0; indexJoystick < countJoystick; indexJoystick++) {
+			int indexJoystick;
+            for (indexJoystick = 0; indexJoystick < countJoystick; indexJoystick++) {
                 JoystickInputStream* pjoystick = m_pinputEngine->GetJoystick(indexJoystick);
 
                 if (IsAxisSelection()) {

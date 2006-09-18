@@ -404,12 +404,31 @@ public:
   {
       m_bannedSideMask |= bsm;
   }
+
+  // mdvalley: functions to set/retrieve last side flown for
+  SideID GetLastSide(void) const
+  {
+	  return m_lastSide;
+  }
+  void SetLastSide(SideID side)
+  {
+	  m_lastSide = side;
+  }
+/*  void ClearLastSide(void)	// don't really need this one, come to think of it
+  {
+	  m_lastSide = SIDE_TEAMLOBBY;	// SetLastSide(SIDE_TEAMLOBBY) works just as well.
+  }
+*/
   virtual void  Reset(bool  bFull)
   {
     m_chatBudget = c_chatBudgetMax;
     SetDPGroup(NULL, false);
     if (bFull)
+	{
         SetBannedSideMask(0);
+		// mdvalley: Clear out the last side, too
+		SetLastSide(SIDE_TEAMLOBBY);
+	}
     GetPlayerScoreObject()->Disconnect(g.timeNow);
     GetPlayerScoreObject()->Reset(bFull);
     CFSShip::Reset(bFull);
@@ -475,6 +494,9 @@ private:
   IpartTypeIGC*     m_ptDesiredLoadout[c_maxCargo + 3];
 
   bool              RemoveFromSide(bool fSendSideChange);
+
+  // mdvalley: Track side last flown for
+  SideID			m_lastSide;
 
   unsigned char     m_bannedSideMask;
   short             m_chatBudget;

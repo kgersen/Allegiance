@@ -51,7 +51,8 @@ bool CAutoSizer::SetWindowAndRules(HWND hwnd, const AutoSizerRule* pRules)
   {
     // Count the number of rules in the specified array
     const AutoSizerRule* pRulesIt = pRules;
-    for (int cRules = 0; !pRulesIt->IsEnd(); ++pRulesIt)
+	int cRules;	// mdvalley: define it here
+    for (cRules = 0; !pRulesIt->IsEnd(); ++pRulesIt)
       ++cRules;
 
     // Copy the rules
@@ -186,8 +187,9 @@ bool CAutoSizer::AddRule(HWND hwndFollower, AutoSizer_Follower edgeFollower,
   rule.m_eLeader    = edgeLeader;
   rule.m_eRefresh   = refresh;
 
+  XRuleIt it;	// mdvalley: define it here
   // Ensure that the specified rule does not already exist in the array
-  for (XRuleIt it = m_Rules.begin(); it != m_Rules.end(); ++it)
+  for (it = m_Rules.begin(); it != m_Rules.end(); ++it)
     if (*it == &rule)
       return false;
 

@@ -703,8 +703,9 @@ private:
             CastTo(m_pcomboCiv,                pns->FindMember("civComboPane"));
             CastTo(m_pcomboSquad,              pns->FindMember("squadComboPane"));
 
-            AddEventTarget(OnButtonOk, m_pbuttonOk->GetEventSource());
-            AddEventTarget(OnButtonCancel, m_pbuttonCancel->GetEventSource());
+			// mdvalley: Search for '&TeamScreen::' to see so many pointers copied in.
+            AddEventTarget(&TeamScreen::TeamSettingsDialogPopup::OnButtonOk, m_pbuttonOk->GetEventSource());
+            AddEventTarget(&TeamScreen::TeamSettingsDialogPopup::OnButtonCancel, m_pbuttonCancel->GetEventSource());
 
             m_peditPaneTeamName->SetMaxLength(c_cbName - 1);
 
@@ -1012,33 +1013,33 @@ public:
             );
         }
         m_pcomboWing->SetSelection(trekClient.GetShip()->GetWingID());
-        AddEventTarget(OnWingCombo, m_pcomboWing->GetEventSource());
+        AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
 
 
         //
         // Buttons
         //
 
-        AddEventTarget(OnButtonBack, m_pbuttonBack->GetEventSource());
-        AddEventTarget(OnButtonGameOver, m_pbuttonGameOver->GetEventSource());
-        AddEventTarget(OnButtonStart, m_pbuttonStart->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonGameOver, m_pbuttonGameOver->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonStart, m_pbuttonStart->GetEventSource());
         //AddEventTarget(OnButtonReady, m_pbuttonReady->GetEventSource());
-        AddEventTarget(OnButtonAwayFromKeyboard, m_pbuttonAwayFromKeyboard->GetEventSource());
-        AddEventTarget(OnButtonTeamReady, m_pbuttonTeamReady->GetEventSource());
-        AddEventTarget(OnButtonAutoAccept, m_pbuttonAutoAccept->GetEventSource());
-        AddEventTarget(OnButtonLockLobby, m_pbuttonLockLobby->GetEventSource());
-        AddEventTarget(OnButtonLockSides, m_pbuttonLockSides->GetEventSource());
-        AddEventTarget(OnButtonRandomize, m_pbuttonRandomize->GetEventSource());
-        AddEventTarget(OnButtonAccept, m_pbuttonAccept->GetEventSource());
-        AddEventTarget(OnButtonReject, m_pbuttonReject->GetEventSource());
-        AddEventTarget(OnButtonJoin, m_pbuttonJoin->GetEventSource());
-        AddEventTarget(OnButtonBarChat, m_pbuttonbarChat->GetEventSource());
-        AddEventTarget(OnButtonBarPlayers, m_pbuttonbarPlayers->GetEventSource());
-        AddEventTarget(OnButtonSend, m_pbuttonSend->GetEventSource());
-        AddEventTarget(OnButtonDetails, m_pbuttonDetails->GetEventSource());
-        AddEventTarget(OnButtonDetails, m_pbuttonSettings->GetEventSource());
-        AddEventTarget(OnButtonTeamSettings, m_pbuttonTeamSettings->GetEventSource());
-        AddEventTarget(OnButtonMakeLeader, m_pbuttonMakeLeader->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonAwayFromKeyboard, m_pbuttonAwayFromKeyboard->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonTeamReady, m_pbuttonTeamReady->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonAutoAccept, m_pbuttonAutoAccept->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonLockLobby, m_pbuttonLockLobby->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonLockSides, m_pbuttonLockSides->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonRandomize, m_pbuttonRandomize->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonAccept, m_pbuttonAccept->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonReject, m_pbuttonReject->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonJoin, m_pbuttonJoin->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonBarChat, m_pbuttonbarChat->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonBarPlayers, m_pbuttonbarPlayers->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonSend, m_pbuttonSend->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonDetails, m_pbuttonDetails->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonDetails, m_pbuttonSettings->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonTeamSettings, m_pbuttonTeamSettings->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonMakeLeader, m_pbuttonMakeLeader->GetEventSource());
         m_pbuttonGameOver->SetHidden(trekClient.GetNumEndgamePlayers() == 0);
 
         //
@@ -1071,11 +1072,11 @@ public:
         m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(trekClient.GetSideID()));
 
             
-        AddEventTarget(OnTeamDoubleClicked, m_plistPaneTeams->GetDoubleClickEventSource());
-        AddEventTarget(OnTeamClicked, m_plistPaneTeams->GetSingleClickEventSource());
+        AddEventTarget(&TeamScreen::OnTeamDoubleClicked, m_plistPaneTeams->GetDoubleClickEventSource());
+        AddEventTarget(&TeamScreen::OnTeamClicked, m_plistPaneTeams->GetSingleClickEventSource());
 
         // WLP 2005 - added line below to trap click on player
-        AddEventTarget(OnPlayerClicked, m_plistPanePlayers->GetSingleClickEventSource()); // WLP - click selects
+        AddEventTarget(&TeamScreen::OnPlayerClicked, m_plistPanePlayers->GetSingleClickEventSource()); // WLP - click selects
 
         //
         // Chat pane
@@ -2100,7 +2101,7 @@ public:
                 = CreateTrekButton(CreateButtonFacePane(psurface, ButtonNormal), false, positiveButtonClickSound);
             pQuitTeamButton->SetOffset(WinPoint(183, 170));
             m_pmsgBox->GetPane()->InsertAtBottom(pQuitTeamButton);
-            AddEventTarget(OnCancelRequest, pQuitTeamButton->GetEventSource());
+            AddEventTarget(&TeamScreen::OnCancelRequest, pQuitTeamButton->GetEventSource());
             GetWindow()->GetPopupContainer()->OpenPopup(m_pmsgBox, false);
         }
 
@@ -2472,7 +2473,7 @@ public:
                 if (reason == QSR_RandomizeSides)
                 {
                     m_bShowingRandomizeWarning = true;
-                    AddEventTarget(OnDismissRandomizeMessageBox, pmsgBox->GetEventSource());
+                    AddEventTarget(&TeamScreen::OnDismissRandomizeMessageBox, pmsgBox->GetEventSource());
                 }
 
                 GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);

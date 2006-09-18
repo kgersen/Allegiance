@@ -607,14 +607,16 @@ public:
         return m_pimageBkgnd->HitTest(pprovider, point, bCaptured);
     }
 
-    void OnSessionLost(char * szReason, LPDPMSG_SESSIONLOST lpSessionLost, Time lastUpdate, Time now)
-    {
-        SetVisible(false);
-
-        //Clear the selected cluster without sending the advise
-        m_pClusterSel = NULL;
-        m_pSectorInfoPane->ClearCluster();
-    }
+    // <NKM>
+    // Don't belive this is called? - comment out and just declare it - see if
+    // we get unresolved symbol.
+  //  void OnSessionLost(char * szReason, Time lastUpdate, Time now);
+//    {
+//        SetVisible(false);
+//        //Clear the selected cluster without sending the advise
+//        m_pClusterSel = NULL;
+//        m_pSectorInfoPane->ClearCluster();
+//    }
     
     void OnDelPlayer(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo, QuitSideReason reason, const char* szMessageParam)
     {

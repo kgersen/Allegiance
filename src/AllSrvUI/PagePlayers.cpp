@@ -239,7 +239,8 @@ void CPagePlayers::LoadFromRegistry()
   {
     // Read the count of strings
     DWORD cStrings = 0;
-    keyMRU.QueryDWORDValue(TEXT(".Count"), cStrings);
+	// mdvalley: Former QueryDWORDValue(cStr, TEXT);
+    keyMRU.QueryValue(cStrings, TEXT(".Count"));
 
     // Read each string and add it to the combo box
     for (DWORD i = 0; i < cStrings; ++i)
@@ -278,7 +279,8 @@ void CPagePlayers::SavePlayerListColumnOrderToRegistry()
   }
 
   // Save to the registry
-  key.SetStringValue(TEXT("PlayerListColumnOrder"), strColumnOrder);
+  // mdvalley: SetStringValue (swap)
+  key.SetValue(strColumnOrder, TEXT("PlayerListColumnOrder"));
 }
 
 void CPagePlayers::SavePlayerListColumnWidthsToRegistry()
@@ -298,7 +300,8 @@ void CPagePlayers::SavePlayerListColumnWidthsToRegistry()
   }
 
   // Save to the registry
-  key.SetStringValue(TEXT("PlayerListColumnWidths"), strColumnWidths);
+  // mdvalley: SetStringValue(swap)
+  key.SetValue(strColumnWidths, TEXT("PlayerListColumnWidths"));
 }
 
 void CPagePlayers::SaveSendChatMRUToRegistry()
@@ -315,7 +318,8 @@ void CPagePlayers::SaveSendChatMRUToRegistry()
 
   // Write the count of strings
   int cStrings = min(m_comboSendChat.GetCount(), c_cMaxChatsInRegistry);
-  keyMRU.SetDWORDValue(TEXT(".Count"), cStrings);
+  // mdvalley: SetDWORDValue (swap)
+  keyMRU.SetValue(cStrings, TEXT(".Count"));
 
   // Write each string
   for (int i = 0; i < cStrings; ++i)
@@ -323,7 +327,8 @@ void CPagePlayers::SaveSendChatMRUToRegistry()
     TCHAR szInt[16];
     CString strMRUItem;
     m_comboSendChat.GetLBText(i, strMRUItem);
-    keyMRU.SetStringValue(_itot(i, szInt, 10), strMRUItem);
+	// mdvalley: SetStringValue(swap)
+    keyMRU.SetValue(strMRUItem, _itot(i, szInt, 10));
   }
 }
 

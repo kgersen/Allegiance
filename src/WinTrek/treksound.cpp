@@ -33,13 +33,20 @@ public:
         TRef<StringValue> pstring; CastTo(pstring, (IObject*)stack.Pop());
         TRef<ISoundTemplate> pTemplate;
 
-        ZString strFilename = m_pmodeler->GetArtPath() + "\\..\\SoundPack\\" + pstring->GetValue() + ".wav";
+		// mdvalley: Look for files in this order: Soundpack OGG, Soundpack WAV, Artwork OGG, Artwork WAV
+//        ZString strFilename = m_pmodeler->GetArtPath() + "\\..\\SoundPack\\" + pstring->GetValue() + ".wav";
+		ZString strFilename = m_pmodeler->GetArtPath() + "\\..\\SoundPack\\" + pstring->GetValue() + ".ogg";	// mdvalley: OGG it.
 
+		if(!FileExists(strFilename))
+			strFilename = m_pmodeler->GetArtPath() + "\\..\\SoundPack\\" + pstring->GetValue() + ".wav";
+
+		if(!FileExists(strFilename))
+			strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".ogg";
+		
         // if it's not in the soundpac1, look in the artwork directory 
         if (!FileExists(strFilename))
-        {
-            strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".wav";
-        }
+//            strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".wav";
+			strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".wav";
 
         if (FAILED(CreateWaveFileSoundTemplate(pTemplate, strFilename)))
         {

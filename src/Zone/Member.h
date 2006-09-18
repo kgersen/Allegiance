@@ -17,7 +17,8 @@ public:
     RANK_GENERAL,
   };
 
-  static IsRankValid(Rank rank)
+  // mdvalley: 2005 doesn't support assumed int anymore.
+  static int IsRankValid(Rank rank)
   {
       return rank >= RANK_PRIVATE && rank <= RANK_GENERAL;
   }
@@ -41,7 +42,8 @@ public:
     POS_LEADER // if change this, you need to update enum DetailedStatus
   };
 
-  static IsPositionValid(Position position)
+  // mdvalley: int again
+  static int IsPositionValid(Position position)
   {
       return position >= POS_MEMBER && position <= POS_LEADER;
   }
@@ -67,7 +69,8 @@ public:
     STAT_ACTIVE, // if you add another need to update GetStatus -AND- maybe even GetDetailedStatus()
   };
 
-  static IsStatusValid(Status status)
+  // mdvalley: int
+  static int IsStatusValid(Status status)
   {
       return status >= STAT_NO_ASSOCIATION && status <= STAT_ACTIVE;
   }
@@ -97,7 +100,8 @@ public:
     DSTAT_LEADER, // if you add another need to update GetDetailedStatus() -AND- maybe even GetStatus()
   };
 
-  static IsDetailedStatusValid(DetailedStatus status)
+  // mdvalley: pwnt by an ic int
+  static int IsDetailedStatusValid(DetailedStatus status)
   {
       return status >= DSTAT_NO_ASSOCIATION && status <= DSTAT_LEADER;
   }

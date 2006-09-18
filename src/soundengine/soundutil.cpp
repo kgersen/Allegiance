@@ -47,8 +47,11 @@ private:
     // the file from which this is mapped
     ZString m_strFilename;
 
+	// mdvalley: whether the file is Ogg (true) or Wav (false)
+	bool m_bIsOgg;
+
     SoundFile()
-        : m_pvData(NULL), m_pvFileContents(NULL) {};
+        : m_pvData(NULL), m_pvFileContents(NULL), m_bIsOgg(false) {};
 
     ~SoundFile()
     {
@@ -62,6 +65,10 @@ private:
         {
             // remove this from the file cache
             m_mapOpenFiles.erase(m_strFilename);
+
+			if(m_bIsOgg)
+				// mdvalley: free the data malloc'd in DecodeOGG
+				free(m_pvData);
         }
     }
 
@@ -218,6 +225,116 @@ private:
         return S_OK;
     }
 
+	HRESULT DecodeOGG(const ZString& strFilename)
+	{
+//		struct _timeb timestart;
+//		struct _timeb timedone;
+//		double elapsed;
+//		_ftime_s(&timestart);
+
+		char pcmout[4096];
+
+		OggVorbis_File vf;
+		bool eof = false;
+		int current_section;
+
+		BYTE* writePtr;
+		FILE* OggFile = NULL;
+#if _MSC_VER >= 1400		// mdvalley: Makes '05 happy
+		fopen_s(&OggFile, strFilename, "rb");
+#else
+		OggFile = fopen(strFilename, "rb");
+#endif
+		if(OggFile == NULL)
+		{
+			debugf("%s: File not found.\n", strFilename);
+			return E_FAIL;
+		}
+		
+		if(ov_open(OggFile, &vf, NULL, 0) < 0)
+		{
+			debugf("%s is not a valid Ogg bitstream.\n", strFilename);
+			fclose(OggFile);
+			return E_FAIL;
+		}
+
+		{
+			vorbis_info *vi = ov_info(&vf, -1);
+			m_uChannels = vi->channels;		// Number of channels. Alleg's 3D sound only works on mono.
+			m_uSampleRate = vi->rate;		// Bitrate
+			m_uBitsPerSample = 16;			// The decoder only supports 8 and 16 bit audio.
+			long sampleCount = (long)ov_pcm_total(&vf, -1);
+			m_uSize = (m_uBitsPerSample / 8) * sampleCount * m_uChannels;		// Find the size of the resulting wave data
+			m_pvData = malloc(m_uSize);
+			writePtr = (BYTE*)m_pvData;
+		}
+
+		while(!eof)
+		{
+			long ret = ov_read(&vf, pcmout, 4096, 0, (m_uBitsPerSample / 8), 1, &current_section);
+			if(ret == 0)
+			{
+				// End of file
+				eof = true;
+			}
+			else if(ret < 0)
+			{
+				// Stream error. Should be OK to keep going
+			}
+			else
+			{
+				// Possible sample rate change. Anyone who tries to make a multi-rate
+				// OGG for Alleg deserves the problems it'll cause with this decoder.
+#if _MSC_VER >= 1400									// Might as well make it '05 compatible
+				memcpy_s(writePtr, 4096, pcmout, ret);	// Write it to the wave data.
+#else
+				memcpy(writePtr, pcmout, ret);
+#endif
+				writePtr += ret;						// Increment write pointer.
+			}
+		}
+
+		ov_clear(&vf);
+
+		fclose(OggFile);
+
+//		_ftime_s(&timedone);
+
+//		elapsed = timedone.millitm - timestart.millitm;
+
+//		debugf("%s decoded in %f.\n", strFilename, elapsed);
+		
+		return S_OK;
+	}
+
+	void ToMono()
+	{
+		if(m_uChannels == 1)
+			return;
+
+		BYTE bytePerSample = m_uBitsPerSample / 8;
+		unsigned int monoSize = m_uSize / m_uChannels;
+		unsigned int numSamples = monoSize / bytePerSample;
+
+		void* monoData = malloc(monoSize);
+
+		BYTE* writePtr = (BYTE*)monoData;
+		BYTE* readPtr = (BYTE*)m_pvData;
+
+		for(unsigned int i = 0; i < numSamples; i++)
+		{
+			memcpy(writePtr, readPtr, bytePerSample);
+			writePtr += bytePerSample;
+			readPtr += bytePerSample * m_uChannels;
+		}
+
+		m_uChannels = 1;
+		m_uSize = monoSize;
+		m_pvData = monoData;	// point the wave data to the new mono
+
+		return;
+	}
+
     // initialize the data object with the contents of strFilename
     HRESULT Init(const ZString& strFilename)
     {
@@ -229,10 +346,35 @@ private:
         hr = ParseWaveData(m_pvFileContents);
         if (FAILED(hr)) return hr;
 
+		ToMono();
+
         m_strFilename = strFilename;
+		m_bIsOgg = false;
         m_mapOpenFiles.insert(std::pair<ZString, ISoundPCMData*>(m_strFilename, this));
         return S_OK;
     }
+
+	// mdvalley: Initialize and convert OGG file, then process as normal
+	HRESULT InitOgg(const ZString& strFilename)
+	{
+		HRESULT hr;
+
+//		hr = OpenFile(strFilename);		// OggToWave opens it itself
+//		if (FAILED(hr)) return hr;
+
+		hr = DecodeOGG(strFilename);
+		if (FAILED(hr)) return hr;
+
+//		hr = ParseWaveData(m_pvPcmFromOgg);
+//		if (FAILED(hr)) return hr;
+
+		ToMono();
+
+		m_strFilename = strFilename;
+		m_bIsOgg = true;
+		m_mapOpenFiles.insert(std::pair<ZString, ISoundPCMData*>(m_strFilename, this));
+		return S_OK;
+	}
 
 public:
 
@@ -253,8 +395,14 @@ public:
         {
             // not found - let's try loading it.
             TRef<SoundFile> psoundfile = new SoundFile();
-            
-            HRESULT hr = psoundfile->Init(strFilename);
+
+			HRESULT hr;
+
+			if(strFilename.Right(4) == ".ogg")		// mdvalley: Find the file extension to decide whether to ogg it.
+				hr = psoundfile->InitOgg(strFilename);
+			else
+				hr = psoundfile->Init(strFilename);
+
             if (FAILED(hr)) return hr;
                         
             pdata = psoundfile;

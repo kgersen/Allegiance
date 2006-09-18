@@ -37,7 +37,7 @@
     {
         if (psource != NULL) {
             pdest = dynamic_cast<DestType*>(psource);
-            ZAssert(pdest != NULL);
+//            ZAssert(pdest != NULL);					// mdvalley: debugging sound, not panes!
         }
         pdest = (DestType*)(psource);
     }
@@ -47,7 +47,7 @@
     {
         if (psource != NULL) {
             pdest = dynamic_cast<DestType*>(psource);
-            ZAssert(pdest != NULL);
+//            ZAssert(pdest != NULL);
         }
         pdest = (DestType*)(psource);
     }
@@ -57,7 +57,7 @@
     {
         if (psource != NULL) {
             pdest = dynamic_cast<DestType*>((SourceType*)psource);
-            ZAssert(pdest != NULL);
+//            ZAssert(pdest != NULL);
         }
         pdest = (DestType*)((SourceType*)psource);
     }
@@ -67,7 +67,7 @@
     {
         if (psource != NULL) {
             pdest = dynamic_cast<DestType*>((SourceType*)psource);
-            ZAssert(pdest != NULL);
+//            ZAssert(pdest != NULL);
         }
         pdest = (DestType*)((SourceType*)psource);
     }

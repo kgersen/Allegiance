@@ -151,7 +151,7 @@ inline ZString ZVersionInfo::GetFileVersionString() const
 {
   assert(m_pFixed);
   TCHAR szText[32];
-  _stprintf(szText, TEXT("%hu.%02hu.%02hu.%04hu"),
+  _stprintf_s(szText, 32, TEXT("%hu.%02hu.%02hu.%04hu"),
     GetFileVersionMSHigh(), GetFileVersionMSLow(),
     GetFileVersionLSHigh(), GetFileVersionLSLow());
   return ZString(szText);
@@ -190,7 +190,7 @@ inline ZString ZVersionInfo::GetProductVersionString() const
 {
   assert(m_pFixed);
   TCHAR szText[32];
-  _stprintf(szText, TEXT("%hd.%02hd.%02hd.%04hd"),
+  _stprintf_s(szText, 32, TEXT("%hd.%02hd.%02hd.%04hd"),
     GetProductVersionMSHigh(), GetProductVersionMSLow(),
     GetProductVersionLSHigh(), GetProductVersionLSLow());
   return ZString(szText);
