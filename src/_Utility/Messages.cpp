@@ -508,13 +508,10 @@ HRESULT FedMessaging::GenericSend(CFMRecipient * precip, const void * pv, CB cb,
   //
   bool fGuaranteed = FM_GUARANTEED == fmg;
   static DWORD s_guarenteedFlags = DPNSEND_GUARANTEED | DPNSEND_PRIORITY_HIGH | DPNSEND_COALESCE;
-  static DWORD s_normalFlags = DPNSEND_NOCOMPLETE;
+  static DWORD s_normalFlags = DPNSEND_NOCOMPLETE | DPNSEND_NONSEQUENTIAL;
 
   dwFlags = fGuaranteed ? s_guarenteedFlags : s_normalFlags;
 
-  // mdvalley: Disable sequencing (for now)
-  dwFlags |= DPNSEND_NONSEQUENTIAL;
-  
   dwTimeout = (fGuaranteed ? 0 : 500); // guaranteed messages will NEVER time out
 
 #define DUMPMSGS
