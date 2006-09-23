@@ -3456,13 +3456,13 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
     FEDMSGID fmid = pfm->fmid;
     ZAssert(0 != fmid);
 
-    if (fmid != FM_CS_PING && 
-        fmid != FM_S_LIGHT_SHIPS_UPDATE &&
-        fmid != FM_S_HEAVY_SHIPS_UPDATE &&
-        fmid != FM_CS_CHATMESSAGE && 
-        fmid != FM_S_STATIONS_UPDATE && 
-        fmid != FM_S_PROBES_UPDATE)
-        debugf("Received %s at time %u\n", g_rgszMsgNames[fmid], m_now.clock());
+    //if (fmid != FM_CS_PING && 
+    //    fmid != FM_S_LIGHT_SHIPS_UPDATE &&
+    //    fmid != FM_S_HEAVY_SHIPS_UPDATE &&
+    //    fmid != FM_CS_CHATMESSAGE && 
+    //    fmid != FM_S_STATIONS_UPDATE && 
+    //    fmid != FM_S_PROBES_UPDATE)
+    // debugf("Received %s at time %u\n", g_rgszMsgNames[fmid], m_now.clock()); mmf took this out, too much debug output
 
     if (m_bDisconnected && pthis == &m_fm)
     {

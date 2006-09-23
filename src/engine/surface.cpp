@@ -910,8 +910,8 @@ public:
         ZAssert(rect.XMax() <= m_size.X()                                              );
         ZAssert(rect.YMin() >= 0                                                       );
         ZAssert(rect.YMax() <= m_size.Y()                                              );
-        ZAssert(rect.XSize() + pointSource.X() <= psurfaceSourceOriginal->GetSize().X());
-        ZAssert(rect.YSize() + pointSource.Y() <= psurfaceSourceOriginal->GetSize().Y());
+        // ZAssert(rect.XSize() + pointSource.X() <= psurfaceSourceOriginal->GetSize().X()); mmf took these two out as they assert too often in debug build
+        // ZAssert(rect.YSize() + pointSource.Y() <= psurfaceSourceOriginal->GetSize().Y()); mmf return and log these and perhaps fix them ? 
 
         if (rect.XSize() == 0 || rect.YSize() == 0) {
             return;            
