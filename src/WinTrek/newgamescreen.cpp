@@ -877,6 +877,10 @@ public:
             }
         }
 
+		// TE: If they set stats count, set lock sides.
+		if (pfmMissionParams->missionparams.bScoresCount)
+			pfmMissionParams->missionparams.bLockSides = true;
+
         if (pszReason)
         {
             GetWindow()->GetPopupContainer()->OpenPopup(CreateMessageBox(pszReason, NULL),
@@ -918,7 +922,7 @@ public:
         
         m_pbuttonEjectPods->SetEnabled(bEnable);
         m_pbuttonFriendlyFire->SetEnabled(bEnable);
-        m_pbuttonStatsCount->SetEnabled(bEnable && m_bIsZoneClub);
+        m_pbuttonStatsCount->SetEnabled(bEnable); // TE: Show the StatsCount checkbox
         m_pbuttonDefections->SetEnabled(bEnable);
         m_pbuttonJoiners->SetEnabled(bEnable);
         m_pbuttonSquadGame->SetEnabled(bEnable && m_bIsZoneClub);

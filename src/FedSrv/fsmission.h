@@ -251,6 +251,8 @@ public:
   bool                  RemovePlayerByName(const char* szCharacterName, QuitSideReason reason, const char* szMessageParam = NULL);
   bool                  RemovePlayerByCDKey(const char* szCDKey, QuitSideReason reason, const char* szMessageParam = NULL);
   int                   GetCountOfPlayers(IsideIGC * pside, bool bCountGhosts);
+  int                   GetSideRankSum(IsideIGC * pside, bool bCountGhosts);	// TE: Added for balancing
+  int                   GetRankThreshold();	// TE: Added for balancing
   bool                  HasPlayers(IsideIGC * pside, bool bCountGhosts);
   IstationIGC *         GetBase(IsideIGC * pside);
   int                   GetCountSides()   
@@ -289,6 +291,8 @@ public:
   }
   void                  SetLockLobby(bool bLock);
   void                  SetLockSides(bool bLock);
+  bool                  GetLockSides();
+  void                  FlushSides();	// TE: Added FlushSides function
   void                  RandomizeSides();
 
   void                  SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv);

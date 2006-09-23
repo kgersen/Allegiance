@@ -691,7 +691,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   // assign a random side (if we can)
   if ((iSide == NA) || ((iSide == SIDE_TEAMLOBBY) && pmp->bLockSides))
   {
-    iSide = pfsMission->PickNewSide(pfsPlayer, true, bannedSideMask);
+    iSide = SIDE_TEAMLOBBY;	// TE: Made all players join lobby when joining game
     assert (iSide != NA);
   }
 
@@ -6070,19 +6070,20 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitSide->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
 
-        if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
-        {
-          // turn it down because the sides are locked
-          BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
-          END_PFM_CREATE
-          pfmDelPosReq->shipID    = pfsPlayer->GetShipID();
-          pfmDelPosReq->iSide     = sideID;
-          pfmDelPosReq->reason    = DPR_SidesLocked;
+		// TE: Commented this block since locked sides now handle balancing
+        //if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
+        //{
+        //  // turn it down because the sides are locked
+        //  BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
+        //  END_PFM_CREATE
+        //  pfmDelPosReq->shipID    = pfsPlayer->GetShipID();
+        //  pfmDelPosReq->iSide     = sideID;
+        //  pfmDelPosReq->reason    = DPR_SidesLocked;
 
-          g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
-        }
-        else
-        {
+        //  g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+        //}
+        //else
+        //{
           // send them to the game lobby
           if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings)
           {
@@ -6097,7 +6098,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitSide->reason);
             }
           }
-        }
+        // } // TE: matches above comment
       }
 
       break;
@@ -6167,8 +6168,17 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (pfsMission->GetStage() != STAGE_NOTSTARTED)
         break;
 
-      // randomly assign everyone to a side
-      pfsMission->RandomizeSides();
+      // TE: Balance or Flush depending on the LockSides parameter
+	  if (!pfsMission->GetLockSides())
+	  {
+		// Balance the teams
+		pfsMission->RandomizeSides();
+	  }
+	  else
+	  {
+		// Flush the teams
+		pfsMission->FlushSides();
+	  }
 
       break;
     }

@@ -1247,6 +1247,68 @@ int CFSMission::GetCountOfPlayers(IsideIGC * pside, bool bCountGhosts)
   return cPlayers;
 }
 
+/*-------------------------------------------------------------------------
+ * TE: GetSideRankSum
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Count up the sum of ranks for a specified side
+ * 
+ * Parameters:
+ *    side to check
+ * 
+ * Returns:
+ *    sum of all players' ranks on side
+ */
+int CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
+{
+  int iRankSum = 0;
+  const ShipListIGC * plistShip = pside ? pside->GetShips() : m_pMission->GetShips();
+  CFSPlayer* pfsPlayer = NULL;
+  for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
+  {
+    if (ISPLAYER(plinkShip->data()) && (bCountGhosts || !plinkShip->data()->IsGhost()))
+	{
+		pfsPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
+		iRankSum += pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
+	}
+  }
+  return iRankSum;
+}
+ 
+ /*-------------------------------------------------------------------------
+ * TE: GetRankThreshold
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Retrieves the threshold to be used for rank balancing
+ * 
+ * Returns:
+ *    The threshold to be used for rank balancing
+ */
+int CFSMission::GetRankThreshold()
+{
+	int iHighestRank = 1;
+	int iAverageRank = 0;
+
+	const ShipListIGC * plistShip = m_pMission->GetShips();
+	CFSPlayer* pfsPlayer = NULL;
+	int iTempRank = 0;
+	for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
+	{
+		CFSShip* pfsShip = ((CFSShip *) (plinkShip->data())->GetPrivateData());
+		if (pfsShip->IsPlayer())
+		{
+			iTempRank = pfsShip->GetPlayer()->GetPersistPlayerScore(NA)->GetRank();
+			if (iTempRank > iHighestRank)
+				iHighestRank = iTempRank;
+
+			iAverageRank += iTempRank;
+		}
+	}
+
+	iAverageRank = iAverageRank / plistShip->n();
+	int iThreshold = iHighestRank + ((iAverageRank * iAverageRank) / (iHighestRank + iAverageRank));
+	return iThreshold;
+}
 
 /*-------------------------------------------------------------------------
  * HasPlayers
@@ -1625,6 +1687,10 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
   #else // !defined(ALLSRV_STANDALONE)
     misparms.bClubGame = false;
   #endif // !defined(ALLSRV_STANDALONE)
+
+  // TE: Enforce LockSides = on if ScoresCount
+  if (misparms.bScoresCount)
+	  misparms.bLockSides = true;
 
   int numTeamsOld = m_misdef.misparms.nTeams;
 
@@ -3862,13 +3928,17 @@ bool CFSMission::FAllReady()
 SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsigned char bannedSideMask)
 {
   // KGJV - set everyone in lobby by default
-  return SIDE_TEAMLOBBY;
+  // return SIDE_TEAMLOBBY; // TE: Commented to allow balancing to work
 
   if (bAllowTeamLobby && (GetStage() > STAGE_NOTSTARTED))
     return SIDE_TEAMLOBBY;
 
-  IsideIGC * psideMostAvailablePositions = NULL;
-  int nMostAvailablePositions = 0;
+  IsideIGC * psideFewestPlayers = NULL;
+  IsideIGC * psideLowestRank = NULL;
+  int nFewestPlayers = 2147483646; // TE: Records the #players on the smallest team; Initialize to very high number
+  int nLowestRank = 2147483646;	// TE: Records the lowest rank of a team; Initialize to very high number
+  int nNumPlayers = -1;
+  int nRankSum = -1;
 
   // find the side with the most positions free that will automatically accept the player
   const SideListIGC * plistSide = m_pMission->GetSides();
@@ -3877,32 +3947,49 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
     IsideIGC*   pside = plinkSide->data();
     if ((SideMask(pside) & bannedSideMask) == 0)
     {
-      int nNumPlayers = GetCountOfPlayers(pside, false);
-      int nAvailablePositions = m_misdef.misparms.nMaxPlayersPerTeam - nNumPlayers;
+      nNumPlayers = GetCountOfPlayers(pside, false); // TE: Retrieve #players of this side
+      nRankSum = GetSideRankSum(pside, false);	// TE: Retrieve the total rank of this side
 
-      if ((CheckPositionRequest(pfsPlayer, pside) == NA)
-          && nAvailablePositions > nMostAvailablePositions
-          && (GetAutoAccept(pside) 
-            || (m_misdef.fAutoAcceptLeaders && !GetLeader(pside->GetObjectID()))))
+      if (CheckPositionRequest(pfsPlayer, pside) == NA)	// they are allowed to join
+      // TE: Removed AutoAccept check (since it's disabled before this runs) and comm check
       {
-        // in a squad game, favor a team with my squad over an empty team
-        if (m_misdef.misparms.bSquadGame && nNumPlayers == 0)
+       // Flag this team as the lowest-ranked team if they are
+        if (nRankSum < nLowestRank)
         {
-          if (psideMostAvailablePositions == NULL)
-            psideMostAvailablePositions = pside;
+          psideLowestRank = pside;
+          nLowestRank = nRankSum;
         }
-        else
+
+        // Flag this team as the most-open team if it is
+        if (nNumPlayers < nFewestPlayers)
         {
-          nMostAvailablePositions = nAvailablePositions;
-          psideMostAvailablePositions = pside;
+          psideFewestPlayers = pside;
+          nFewestPlayers = nNumPlayers;
         }
       }
     }
   }
 
+  // We now have the side with the lowest rank, and the side with the fewest players.
+
+  // Default newside to lowest ranked side
+  IsideIGC * psideNewSide = psideLowestRank;
+
+  // TE: If player imbalance is on, enforce it as necessary
+  int nImbalance = m_misdef.misparms.iMaxImbalance;
+  if (nImbalance != 0x7fff && psideNewSide != NULL)
+  {
+	  int nRankedTeamPlayers = GetCountOfPlayers(psideNewSide, false);
+
+	  if (nRankedTeamPlayers + 1 > nFewestPlayers + nImbalance)
+	  {
+		  // Override rank choice with imbalance choice
+		  psideNewSide = psideFewestPlayers;
+	  }
+  }
   // place suggest that side, or the team lobby if no side was found that would accept them
-  return psideMostAvailablePositions
-         ? psideMostAvailablePositions->GetObjectID()
+  return psideNewSide
+         ? psideNewSide->GetObjectID()
          : SIDE_TEAMLOBBY;
 }
 
@@ -3971,7 +4058,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
   {
     if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED))
       return DPR_NoDefections;
-    else if (pmp->bLockSides)
+    else if (pmp->bLockSides && sideID != SIDE_TEAMLOBBY) // TE: Added 2nd check to allow them to go to NOAT any time)
       return DPR_SidesLocked;
   }
   
@@ -4015,6 +4102,48 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
       return DPR_TeamFull;
     else if (nNumPlayers >= maxPlayers)
       return DPR_TeamBalance;
+
+	// TE: Can they join chosen side based on rank?
+	if ((STAGE_NOTSTARTED != GetStage()) && (pmp->bLockSides == true))
+	{
+		int nRequestedSideRank = GetSideRankSum(pside, false);
+		int nHighestTeamRank = 0;
+		int nLowestTeamRank = 2147483646;
+
+		// Grab lowest and highest teamranks
+		for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
+		{
+			IsideIGC*   pTempSide = psl->data();
+			if (pTempSide->GetActiveF())
+			{
+				int nTempSideRank = GetSideRankSum(pTempSide, false);
+
+				// Store lowest teamrank
+				if (nTempSideRank < nLowestTeamRank)
+					nLowestTeamRank = nTempSideRank;
+
+				// Store highest teamrank
+				if (nTempSideRank > nHighestTeamRank)
+					nHighestTeamRank = nTempSideRank;
+			}
+		}
+
+		int nPlayerRank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
+		int nRankThreshold = GetRankThreshold();
+		
+		// Prevent joining a team if it will put it over the threshold
+		int nNewSideRank = nRequestedSideRank + nPlayerRank;
+		if (nNewSideRank - nLowestTeamRank > nRankThreshold)
+			return DPR_TeamBalance;
+
+		// Prevent joining a team if a newbie is trying to newbstack
+		if (nPlayerRank <= 8 && nRequestedSideRank == nLowestTeamRank)
+		{
+			int nDifference = nHighestTeamRank - nRequestedSideRank;
+			if (nDifference > nRankThreshold)
+				return DPR_TeamBalance;
+		}
+	}
 
     if (m_misdef.misparms.bSquadGame)
     {
@@ -4348,12 +4477,12 @@ void CFSMission::SetLockSides(bool bLock)
 }
 
 /*-------------------------------------------------------------------------
- * RandomizeSides
+ * FlushSides
  *-------------------------------------------------------------------------
  * Purpose:
- *    Assigns everyone in the mission to a random team except the team leaders
+ *    Removes all players (except for commanders) from all sides and puts them inn the team lobby
  */
-void CFSMission::RandomizeSides()
+void CFSMission::FlushSides()
 {
   assert(GetStage() == STAGE_NOTSTARTED);
 
@@ -4405,58 +4534,148 @@ void CFSMission::RandomizeSides()
       }
     }
   }
-  
-  // randomly put everyone back on a team
-  // KGJV-: changed dont randomize anymore, just leave everyone in lobby
-/*
+}
+
+ /*-------------------------------------------------------------------------
+ * TE: GetLockSides
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Retrieve the status of the LockSides game parameter
+ */
+bool CFSMission::GetLockSides()
+{
+  return m_misdef.misparms.bLockSides;
+}
+
+/*-------------------------------------------------------------------------
+ * RandomizeSides
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    [Assigns everyone in the mission to a random team except the team leaders] --MS
+ *    Evenly distributes all non-afk players to all available teams --TE
+ */
+void CFSMission::RandomizeSides()
+{
+  assert(GetStage() == STAGE_NOTSTARTED);
+
+  // Make sure the sides are not locked 
+  // (no need to tell the clients, since we tell them when we lock the sides again below)
+  // SetLockSides(false); // TE: Commented this. Randomize should not touch LockSides
+
+  // turn on auto accept for all sides
+  // KGJV: changed to turn on auto accept off
   {
-    IsideIGC* psideLobby = m_pMission->GetSide(SIDE_TEAMLOBBY);
-    const ShipListIGC* pshipsLobby = psideLobby->GetShips();
-    
-    bool bPickTeamFailed = false;
-
-    // this is O(n^2), but I think n is small enough and it's used rarely
-    // enough that it won't matter.  
-
-    // randomly pick players and asign them to teams until we hit a player 
-    // that can't be assigned to a team.  At that point, the teams should
-    // be full.
-    while (pshipsLobby->n() > 0 && !bPickTeamFailed)
+    for (SideLinkIGC* psl = m_pMission->GetSides()->first(); psl != NULL; psl = psl->next())
     {
-      // pick a random player from the lobby side
-      CFSPlayer* pfsPlayer;
+      if (GetAutoAccept(psl->data()))
       {
-        int nPlayerIndex = (int)random(0, static_cast<float>(pshipsLobby->n()));
-        ShipLinkIGC* pshipLink;
-        for (pshipLink = pshipsLobby->first();
-           nPlayerIndex > 0;
-           pshipLink = pshipLink->next(), --nPlayerIndex)
-        {            
-        }
-
-        pfsPlayer = ((CFSShip*)(pshipLink->data()->GetPrivateData()))->GetPlayer();
+        SetAutoAccept(psl->data(), false);
+        BEGIN_PFM_CREATE(g.fm, pfmAutoAccept, CS, AUTO_ACCEPT)
+        END_PFM_CREATE
+        pfmAutoAccept->iSide = psl->data()->GetObjectID();
+        pfmAutoAccept->fAutoAccept = false;
+        g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_DONT_FLUSH);
       }
-      
-      // try to find a side to assign them to.
-      SideID sideID = PickNewSide(pfsPlayer, true, pfsPlayer->GetBannedSideMask());
+    }
+    g.fm.PurgeOutBox();
+  }
 
-      if (sideID == SIDE_TEAMLOBBY)
-        bPickTeamFailed = true;
-      else
-        AddPlayerToSide(pfsPlayer, m_pMission->GetSide(sideID));
+  // move everyone who's not a team leader to the lobby side.  
+  {
+    const ShipListIGC*      pships = m_pMission->GetShips();
+    ShipLinkIGC* pshipLinkNext;
+    for (ShipLinkIGC* pshipLink = pships->first();
+         (pshipLink != NULL);
+         pshipLink = pshipLinkNext)
+    {
+      pshipLinkNext = pshipLink->next();
+      CFSPlayer* pfsPlayer = ((CFSShip*)(pshipLink->data()->GetPrivateData()))->GetPlayer();
+
+      SideID sideID = pfsPlayer->GetSide()->GetObjectID();
+
+      // clear their banned side mask (it simplifies life)
+      pfsPlayer->SetBannedSideMask(0);
+
+	  // if they are not already on the lobby side and not a team leader
+      if (sideID != SIDE_TEAMLOBBY && GetLeader(sideID) != pfsPlayer)
+      {
+        RemovePlayerFromSide(pfsPlayer, QSR_RandomizeSides);
+        // mdvalley: empty last side masks
+        pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
+
+      }
     }
   }
+  
+  // TE: Assign players to sides
+  IsideIGC* psideLobby = m_pMission->GetSide(SIDE_TEAMLOBBY);
+  const ShipListIGC* pshipsLobby = psideLobby->GetShips();
+    
+  bool bPickTeamFailed = false;
+  CFSPlayer* pshipHighestRank = NULL;
+  CFSPlayer* pshipTemp = NULL;
 
+  // this is O(n^2), but I think n is small enough and it's used rarely
+  // enough that it won't matter.  
 
-  // then lock the sides.
+  // Loop through highest to lowest rank, assigning them to the team with the lowest rank
+  while (pshipsLobby->n() > 0 && !bPickTeamFailed)
   {
-    SetLockSides(true);
-    BEGIN_PFM_CREATE(g.fm, pfmLockSides, CS, LOCK_SIDES)
-    END_PFM_CREATE
-    pfmLockSides->fLock = true;
+    // Pick player with highest rank from Lobby
+    {
+      ShipLinkIGC* pshipLinkNext;
+      pshipTemp = NULL;
+      pshipHighestRank = NULL;
+
+      for (ShipLinkIGC* pshipLink = pshipsLobby->first();
+          (pshipLink != NULL);
+           pshipLink = pshipLinkNext)
+      {
+          // Get the current player
+			pshipLinkNext = pshipLink->next();
+			pshipTemp = ((CFSShip*)(pshipLink->data()->GetPrivateData()))->GetPlayer();
+
+			// Grab the current player's rank
+			RankID rank = pshipTemp->GetPersistPlayerScore(NA)->GetRank();
+
+			// Ignore AFK players
+			if (pshipTemp->GetReady())
+			{
+				if (pshipHighestRank == NULL)
+					pshipHighestRank = pshipTemp;
+
+				// If current player's rank is higher than our current, remember highest rank
+				if (pshipTemp->GetPersistPlayerScore(NA)->GetRank() > pshipHighestRank->GetPersistPlayerScore(NA)->GetRank())
+					pshipHighestRank = pshipTemp;
+			}
+        }
+
+        // pshipHighestRank is now the highest-ranked non-AFK player on NOAT
+		// or it's NULL, meaning we've gone through all non-AFK players.
+		// If we didn't find any non-AFK players on NOAT, we're done!
+		if (pshipHighestRank == NULL)
+		{
+			bPickTeamFailed = true;
+			break;
+      }
+    }
+      
+    // try to find a side to assign them to.
+    SideID sideID = PickNewSide(pshipHighestRank, true, pshipHighestRank->GetBannedSideMask());
+
+    if (sideID == SIDE_TEAMLOBBY)
+      bPickTeamFailed = true;
+    else
+      AddPlayerToSide(pshipHighestRank, m_pMission->GetSide(sideID));
+  }
+
+  {
+    //SetLockSides(true);  // TE: Commented this. Randomize should not touch sides!
+    //BEGIN_PFM_CREATE(g.fm, pfmLockSides, CS, LOCK_SIDES)
+    //END_PFM_CREATE
+    //pfmLockSides->fLock = true;
     g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
   }
-*/
 }
 
 void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)

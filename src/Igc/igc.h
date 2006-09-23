@@ -1381,11 +1381,13 @@ struct MissionParams
             return "Scores can't be counted for a game where defections are allowed; "
                 "please turn off defections or stats count.";
         }
-        else if (bScoresCount && nMinPlayersPerTeam < 5)
-        {
-            return "Scores can't be counted for a game with less than 5 players per team; "
-                "please increase the minimum players per team or turn stats count off.";
-        }
+		// TE: Commented this out to allow players to set 'stats count' without restriction
+		//		since the game won't count if there weren't enough players by the end anyways
+        //else if (bScoresCount && nMinPlayersPerTeam < 5)
+        //{
+        //    return "Scores can't be counted for a game with less than 5 players per team; "
+        //        "please increase the minimum players per team or turn stats count off.";
+        //}
         else if (IsConquestGame() && bInvulnerableStations)
         {
             return "You can't play a conquest game with invulnerable stations; "

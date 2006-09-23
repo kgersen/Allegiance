@@ -259,7 +259,7 @@ private:
 				{
 					IshipIGC* pship = lShip->data();
 					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
-					teamTotalRank += pplayer->GetPersistScore(NA).GetRank();
+					teamTotalRank += (pplayer->GetPersistScore(NA).GetRank() < 5) ? 5 : pplayer->GetPersistScore(NA).GetRank();	// TE: Modified this to add a minimum of 5 per player
 				}
 				// end yp
 
@@ -1224,7 +1224,7 @@ public:
                 && !m_pMission->GetMissionParams().bLockGameOpen);
             m_pbuttonLockLobby->SetChecked(m_pMission->GetLockLobby());
 
-            m_pbuttonLockSides->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner());
+            m_pbuttonLockSides->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner() && !m_pMission->GetMissionParams().bScoresCount); // TE: Disable LockSides if ScoresCount
             m_pbuttonLockSides->SetChecked(m_pMission->GetLockSides());
 
             m_pbuttonRandomize->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner());
@@ -1285,9 +1285,8 @@ public:
             || m_sideCurrent == SIDE_TEAMLOBBY);
 
         m_pbuttonJoin->SetEnabled(
-            (trekClient.GetSideID() == SIDE_TEAMLOBBY 
-                || !m_pMission->GetMissionParams().bLockSides)
-            && (m_sideCurrent == SIDE_TEAMLOBBY
+                (trekClient.GetSideID() == SIDE_TEAMLOBBY) // TE: Commented this from the brackets so you can always join NOAT: || !m_pMission->GetMissionParams().bLockSides
+                || (m_sideCurrent == SIDE_TEAMLOBBY
                 || m_pMission->SideAvailablePositions(m_sideCurrent) > 0
                     && m_pMission->SideActive(m_sideCurrent))
             && m_sideCurrent != trekClient.GetSideID());
@@ -1383,27 +1382,61 @@ public:
             IsideIGC*   psideMin;
             IsideIGC*   psideMax = psideMin = psl->data();
             minPlayers = maxPlayers = psl->data()->GetShips()->n();
-            while (true)
-            {
-                psl = psl->next();
-                if (psl == NULL)
-                    break;
+            
+			// TE: Store minrank and maxrank
+			IsideIGC*   psideMinRank;
+			IsideIGC*   psideMaxRank = psideMinRank = psl->data();
+			int minRank = 2147483646;
+			int maxRank = 1;
+			int tempRank = 0;
 
-                int n = psl->data()->GetShips()->n();
-                if (n < minPlayers)
-                {
-                    psideMin = psl->data();
-                    minPlayers = n;
-                }
+			int threshold = 1;
+			if (m_pMission->GetMissionParams().bLockSides)
+			{
+				threshold = GetRankThreshold();
+				while (true)
+				{
+					if (psl == NULL)
+						break;
 
-                if (n > maxPlayers)
-                {
-                    psideMax = psl->data();
-                    maxPlayers = n;
-                }
-            }
+					// TE: Store min rank
+					tempRank = GetSideRankSum(psl->data(), false);
+					if (tempRank < minRank)
+					{
+						psideMinRank = psl->data();
+						minRank = tempRank;
+					}
 
-            if (minPlayers + m_pMission->MaxImbalance() < maxPlayers)
+					// TE: Store max rank
+					if (tempRank > maxRank)
+					{
+						psideMaxRank = psl->data();
+						maxRank = tempRank;
+					}
+
+					int n = psl->data()->GetShips()->n();
+
+					// TE: Remember lowest side
+					if (n < minPlayers)
+					{
+						psideMin = psl->data();
+						minPlayers = n;
+					}
+
+					// TE: Remember lowest side
+					if (n > maxPlayers)
+					{
+						psideMax = psl->data();
+						maxPlayers = n;
+					}
+
+					psl = psl->next();
+				}
+			}
+
+			// TE: Added || to check rank balancing
+            if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
+			(m_pMission->GetMissionParams().bLockSides && maxRank - minRank > threshold))
             {
                 m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
                 m_ptextStatus2->SetString("");
@@ -1464,6 +1497,99 @@ public:
             }
         }
     }
+
+	/*-------------------------------------------------------------------------
+	 * TE: GetSideRankSum
+	 *-------------------------------------------------------------------------
+	 * Purpose:
+	 *    Count up the sum of ranks for a specified side
+	 * 
+	 * Parameters:
+	 *    side to check
+	 * 
+	 * Returns:
+	 *    sum of all players' ranks on side
+	 */
+	int GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
+	{
+	  int iRankSum = 0;
+	  const ShipListIGC * plistShips = pside->GetShips();
+
+	  IshipIGC* pShip = NULL;
+	  PlayerInfo* pPlayer = NULL;
+	
+	  for (ShipLinkIGC * plinkShip = plistShips->first(); plinkShip; plinkShip = plinkShip->next())
+	  {
+		pShip = plinkShip->data();
+		pPlayer = trekClient.FindPlayer(pShip->GetObjectID());
+		iRankSum += (pPlayer->Rank() < 5) ? 5 : pPlayer->Rank();
+	  }
+	  return iRankSum;
+	}
+	
+	/*-------------------------------------------------------------------------
+	 * TE: GetRankThreshold
+	 *-------------------------------------------------------------------------
+	 * Purpose:
+	 *    Retrieves the threshold to be used for rank balancing
+	 * 
+	 * Returns:
+	 *    The threshold to be used for rank balancing
+	 */
+	int GetRankThreshold()
+	{
+		int iHighestRank = 1;
+		int iAverageRank = 0;
+	
+		ShipList plistMembers;
+	
+		SideInfo* pSide = NULL;
+	    PlayerInfo* pPlayer = NULL;
+		int iTempRank = 0;
+		int iShipIndex = 0;
+	
+		// Loop through sides
+		for (SideID iSideID = 0; iSideID < m_pMission->NumSides(); iSideID++)
+		{
+			pSide = m_pMission->GetSideInfo(iSideID);
+	
+			// Loop through ships
+			plistMembers = pSide->GetMembers();
+			if (plistMembers.GetCount() > 0)
+			{
+				iShipIndex = 0;
+				for (ShipID iShipID = plistMembers.GetFront(); iShipIndex < plistMembers.GetCount(); iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID))
+				{
+					pPlayer = trekClient.FindPlayer(iShipID);
+	
+					if (pPlayer->IsHuman())
+					{
+						iTempRank = pPlayer->Rank();
+	
+						// If it's the highest rank, remember it
+						if (iTempRank > iHighestRank)
+							iHighestRank = iTempRank;
+	
+						// Add to average
+						iAverageRank += iTempRank;
+					}
+					iShipIndex++;
+				}
+			}
+		}
+	
+		// Divide average by #players
+		int Divisor = trekClient.MyMission()->NumPlayers();
+		if (Divisor > 0)
+			iAverageRank = iAverageRank / Divisor;
+		else
+			iAverageRank = 1;
+	
+		// Calculate threshold
+		int iThreshold = iHighestRank + ((iAverageRank * iAverageRank) / (iHighestRank + iAverageRank));
+	
+		return iThreshold;
+	}
 
     int GetCountdownTime()
     {
@@ -2511,6 +2637,7 @@ public:
     void OnLockSides(bool bLock)
     {
         UpdateButtonStates();
+		UpdateStatusText();
     }
 
     void OnTeamForceReadyChange(MissionInfo* pMissionInfo, SideID sideID, bool fTeamForceReady)
