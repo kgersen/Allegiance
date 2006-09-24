@@ -4692,6 +4692,13 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfsMission->AddBallot(new OfferDrawBallot(pfsPlayer));
                 bForward = false;
               }
+			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006
+			   //
+			  else if(pfsMission->GetOwner() == pfsPlayer && pfmChat->cbMessage > strlen("#autoaccept") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autoaccept", strlen("#autoaccept")) == 0)
+              {
+				pfsMission->SetAutoAccept(pfsPlayer->GetSide(),!pfsMission->GetAutoAccept(pfsPlayer->GetSide()));
+                bForward = true;
+              }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
 		 // beta feature only

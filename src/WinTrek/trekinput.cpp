@@ -1291,7 +1291,7 @@ CommandInfo g_pCommandInfo[] =
     { TK_NextWeapon                      , "Next Weapon"                           },
     { TK_ToggleGroupFire                 , "Toggle Group Fire"                     },
     { TK_Reload                          , "Reload"                                },
-    { TK_DropMine                        , "Drop Mine"                             },
+    { TK_DropMine                        , "Drop Mine or Probe"                    },// yp - Your_Persona fix bug65 (rewording) Aug-04-2006
     { TK_DropChaff                       , "Drop Chaff"                            },
 
     { TK_NoKeyMapping                    , ""                                      },

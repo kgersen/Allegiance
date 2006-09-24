@@ -1022,7 +1022,8 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
 
             float   hp1 = GetHitPoints();
             if (m_mountedOthers[ET_Shield])
-                hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
+				// terralthra fix, this was an = should be a +=, comment added by mmf
+                hp1 += ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
                       ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetMaxStrength();
 
             float   hp2 = ((IdamageIGC*)pModel)->GetHitPoints();
