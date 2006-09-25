@@ -6176,7 +6176,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         break;
 
       // TE: Balance or Flush depending on the LockSides parameter
-	  if (!pfsMission->GetLockSides())
+	  if (pfsMission->GetLockSides())
 	  {
 		// Balance the teams
 		pfsMission->RandomizeSides();

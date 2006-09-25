@@ -259,7 +259,7 @@ private:
 				{
 					IshipIGC* pship = lShip->data();
 					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
-					teamTotalRank += (pplayer->GetPersistScore(NA).GetRank() < 5) ? 5 : pplayer->GetPersistScore(NA).GetRank();	// TE: Modified this to add a minimum of 5 per player
+					teamTotalRank += (pplayer->GetPersistScore(NA).GetRank() < 1) ? 1 : pplayer->GetPersistScore(NA).GetRank();	// TE: Modified this to add a minimum of 5 per player
 				}
 				// end yp
 
@@ -1522,7 +1522,7 @@ public:
 	  {
 		pShip = plinkShip->data();
 		pPlayer = trekClient.FindPlayer(pShip->GetObjectID());
-		iRankSum += (pPlayer->Rank() < 5) ? 5 : pPlayer->Rank();
+		iRankSum += (pPlayer->Rank() < 1) ? 1 : pPlayer->Rank();
 	  }
 	  return iRankSum;
 	}
@@ -2577,7 +2577,7 @@ public:
 
             case QSR_RandomizeSides:
                 if (!m_bShowingRandomizeWarning)
-                    strMessage = "You have been reassigned to NOT ON A TEAM.";
+                    strMessage = "You have been reassigned to another team, or flushed to NOAT with everyone else.";
                 break;
 
             case QSR_Quit:

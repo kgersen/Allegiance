@@ -1269,7 +1269,7 @@ int CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
     if (ISPLAYER(plinkShip->data()) && (bCountGhosts || !plinkShip->data()->IsGhost()))
 	{
 		pfsPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
-		iRankSum += pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
+		iRankSum += (pfsPlayer->GetPersistPlayerScore(NA)->GetRank() < 1) ? 1 : pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
 	}
   }
   return iRankSum;
@@ -4486,10 +4486,6 @@ void CFSMission::FlushSides()
 {
   assert(GetStage() == STAGE_NOTSTARTED);
 
-  // Make sure the sides are not locked 
-  // (no need to tell the clients, since we tell them when we lock the sides again below)
-  SetLockSides(false);
-
   // turn on auto accept for all sides
   // KGJV: changed to turn on auto accept off
   {
@@ -4534,6 +4530,8 @@ void CFSMission::FlushSides()
       }
     }
   }
+  
+  g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
 }
 
  /*-------------------------------------------------------------------------
@@ -4557,10 +4555,6 @@ bool CFSMission::GetLockSides()
 void CFSMission::RandomizeSides()
 {
   assert(GetStage() == STAGE_NOTSTARTED);
-
-  // Make sure the sides are not locked 
-  // (no need to tell the clients, since we tell them when we lock the sides again below)
-  // SetLockSides(false); // TE: Commented this. Randomize should not touch LockSides
 
   // turn on auto accept for all sides
   // KGJV: changed to turn on auto accept off
