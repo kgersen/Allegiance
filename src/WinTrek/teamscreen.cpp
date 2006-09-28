@@ -1291,8 +1291,6 @@ public:
                     && m_pMission->SideActive(m_sideCurrent))
             && m_sideCurrent != trekClient.GetSideID());
         m_pbuttonStart->SetHidden(!trekClient.MyPlayerInfo()->IsMissionOwner());
-        
-
     }
 
     void UpdateTitleText()
@@ -1383,47 +1381,51 @@ public:
             IsideIGC*   psideMax = psideMin = psl->data();
             minPlayers = maxPlayers = psl->data()->GetShips()->n();
             
-			// TE: Store minrank and maxrank
+			// TE: Balance code
+			// Initialize variables
 			IsideIGC*   psideMinRank;
 			IsideIGC*   psideMaxRank = psideMinRank = psl->data();
-			int minRank = 2147483646;
-			int maxRank = 1;
+			int minTeamRank = 1000000; // Set really high: 1 meellion dollars!!!
+			int maxTeamRank = 1;
 			int tempRank = 0;
-
 			int threshold = 1;
+
+			// If "Enforce Balance" is checked, find the highest and lowest-ranked teams...
 			if (m_pMission->GetMissionParams().bLockSides)
 			{
 				threshold = GetRankThreshold();
+
+				// Loop through all teams
 				while (true)
 				{
 					if (psl == NULL)
 						break;
 
-					// TE: Store min rank
+					// TE: Remember lowest TeamRank
 					tempRank = GetSideRankSum(psl->data(), false);
-					if (tempRank < minRank)
+					if (tempRank < minTeamRank)
 					{
 						psideMinRank = psl->data();
-						minRank = tempRank;
+						minTeamRank = tempRank;
 					}
 
-					// TE: Store max rank
-					if (tempRank > maxRank)
+					// TE: Remember highest TeamRank
+					if (tempRank > maxTeamRank)
 					{
 						psideMaxRank = psl->data();
-						maxRank = tempRank;
+						maxTeamRank = tempRank;
 					}
 
 					int n = psl->data()->GetShips()->n();
 
-					// TE: Remember lowest side
+					// TE: Remember smallest side
 					if (n < minPlayers)
 					{
 						psideMin = psl->data();
 						minPlayers = n;
 					}
 
-					// TE: Remember lowest side
+					// TE: Remember largest side
 					if (n > maxPlayers)
 					{
 						psideMax = psl->data();
@@ -1434,9 +1436,12 @@ public:
 				}
 			}
 
+			//SendChat(ZString("Max: ") + ZString(maxTeamRank) + ZString("; Min: ") + ZString(minTeamRank) + "; Diff: " + ZString(maxTeamRank - minTeamRank) + ZString("; Thresh: ") + ZString(threshold));
+
+			// This section hides/shows the "Launch" button
 			// TE: Added || to check rank balancing
             if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
-			(m_pMission->GetMissionParams().bLockSides && maxRank - minRank > threshold))
+			(m_pMission->GetMissionParams().bLockSides && (maxTeamRank - minTeamRank > threshold)))
             {
                 m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
                 m_ptextStatus2->SetString("");
@@ -1557,23 +1562,29 @@ public:
 			plistMembers = pSide->GetMembers();
 			if (plistMembers.GetCount() > 0)
 			{
-				iShipIndex = 0;
-				for (ShipID iShipID = plistMembers.GetFront(); iShipIndex < plistMembers.GetCount(); iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID))
+				ShipID iShipID = plistMembers.GetFront();
+				while (true)
 				{
+					if (!iShipID)
+						break;
+
 					pPlayer = trekClient.FindPlayer(iShipID);
 	
-					if (pPlayer->IsHuman())
+					if (pPlayer)
 					{
-						iTempRank = pPlayer->Rank();
-	
-						// If it's the highest rank, remember it
-						if (iTempRank > iHighestRank)
-							iHighestRank = iTempRank;
-	
-						// Add to average
-						iAverageRank += iTempRank;
+						if (pPlayer->IsHuman())
+						{
+							iTempRank = pPlayer->Rank();
+		
+							// If it's the highest rank, remember it
+							if (iTempRank > iHighestRank)
+								iHighestRank = iTempRank;
+		
+							// Add to average
+							iAverageRank += iTempRank;
+						}
 					}
-					iShipIndex++;
+					iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID);
 				}
 			}
 		}
@@ -2577,8 +2588,19 @@ public:
 
             case QSR_RandomizeSides:
                 if (!m_bShowingRandomizeWarning)
-                    strMessage = "You have been reassigned to another team, or flushed to NOAT with everyone else.";
+                    strMessage = "You have been assigned to a random team.";
                 break;
+
+			// TE: Add Flush and Balance messages
+			//     Piggyback the RandomizeWarning flag to make the messages appear properly
+			case QSR_FlushSides:
+				if (!m_bShowingRandomizeWarning)
+					strMessage = "You have been removed from your team because the Game Commander flushed all teams.";
+				break;
+
+			case QSR_BalanceSides:
+				if (!m_bShowingRandomizeWarning)
+					strMessage = "You have been removed from your team and assigned to another because the teams have been balanced.";
 
             case QSR_Quit:
             case QSR_LinkDead:
@@ -2596,7 +2618,9 @@ public:
             {
                 TRef<IMessageBox> pmsgBox = CreateMessageBox(strMessage);
 
-                if (reason == QSR_RandomizeSides)
+                if (reason == QSR_RandomizeSides || 
+					reason == QSR_BalanceSides ||	// TE: Added Balance and Flush reasons for the popup
+					reason == QSR_FlushSides)
                 {
                     m_bShowingRandomizeWarning = true;
                     AddEventTarget(&TeamScreen::OnDismissRandomizeMessageBox, pmsgBox->GetEventSource());
@@ -2607,8 +2631,8 @@ public:
         }
         else
         {
-            UpdateStatusText();
             UpdateButtonStates();
+            UpdateStatusText();
         }
     }
 

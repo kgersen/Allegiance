@@ -1295,13 +1295,16 @@ int CFSMission::GetRankThreshold()
 	for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
 	{
 		CFSShip* pfsShip = ((CFSShip *) (plinkShip->data())->GetPrivateData());
-		if (pfsShip->IsPlayer())
+		if (pfsShip)
 		{
-			iTempRank = pfsShip->GetPlayer()->GetPersistPlayerScore(NA)->GetRank();
-			if (iTempRank > iHighestRank)
-				iHighestRank = iTempRank;
+			if (pfsShip->IsPlayer())
+			{
+				iTempRank = pfsShip->GetPlayer()->GetPersistPlayerScore(NA)->GetRank();
+				if (iTempRank > iHighestRank)
+					iHighestRank = iTempRank;
 
-			iAverageRank += iTempRank;
+				iAverageRank += iTempRank;
+			}
 		}
 	}
 
@@ -4523,7 +4526,7 @@ void CFSMission::FlushSides()
 	  // if they are not already on the lobby side and not a team leader
       if (sideID != SIDE_TEAMLOBBY && GetLeader(sideID) != pfsPlayer)
       {
-        RemovePlayerFromSide(pfsPlayer, QSR_RandomizeSides);
+        RemovePlayerFromSide(pfsPlayer, QSR_FlushSides);
         // mdvalley: empty last side masks
         pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
 
@@ -4546,7 +4549,7 @@ bool CFSMission::GetLockSides()
 }
 
 /*-------------------------------------------------------------------------
- * RandomizeSides
+ * RandomizeSides (TE: Now works like "BalanceSides")
  *-------------------------------------------------------------------------
  * Purpose:
  *    [Assigns everyone in the mission to a random team except the team leaders] --MS
@@ -4593,7 +4596,7 @@ void CFSMission::RandomizeSides()
 	  // if they are not already on the lobby side and not a team leader
       if (sideID != SIDE_TEAMLOBBY && GetLeader(sideID) != pfsPlayer)
       {
-        RemovePlayerFromSide(pfsPlayer, QSR_RandomizeSides);
+        RemovePlayerFromSide(pfsPlayer, QSR_BalanceSides);
         // mdvalley: empty last side masks
         pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
 
