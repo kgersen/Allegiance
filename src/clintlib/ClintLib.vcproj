@@ -172,7 +172,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Inc;..\igc;..\_Utility;..\ZLib;..\WinTrek;..\jpeg;..\clintlib;..\Zone;..\training;..\lobby;..\engine;..\guids"
 				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_AFXDLL;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE"
-				ExceptionHandling="0"
+				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="true"

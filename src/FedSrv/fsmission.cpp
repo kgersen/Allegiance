@@ -3889,6 +3889,8 @@ bool CFSMission::FAllReady()
         //Not everyone is ready if sides are imbalanced
         int   minPlayers;
         int   maxPlayers;
+		int   minTeamRank = 1000000; // TE: Added for rank balancing
+		int   maxTeamRank = 1;       // TE: Added for rank balancing
 
         SideLinkIGC*   psl = m_pMission->GetSides()->first();
         assert (psl);
@@ -3900,16 +3902,29 @@ bool CFSMission::FAllReady()
                 break;
 
             int n = psl->data()->GetShips()->n();
+
             if (n < minPlayers)
                 minPlayers = n;
 
             if (n > maxPlayers)
                 maxPlayers = n;
+
+			// TE: Remember highest/lowest rank
+			int r = GetSideRankSum(psl->data(), false);
+
+			if (r < minTeamRank)
+				minTeamRank = r;
+
+			if (r > maxTeamRank)
+				maxTeamRank = r;
         }
+
+		int threshold = GetRankThreshold();
 
         if ((minPlayers < m_misdef.misparms.nMinPlayersPerTeam) ||
             (maxPlayers > m_misdef.misparms.nMaxPlayersPerTeam) ||
-            (minPlayers + m_misdef.misparms.iMaxImbalance < maxPlayers))
+            (minPlayers + m_misdef.misparms.iMaxImbalance < maxPlayers) ||
+			(m_misdef.misparms.bLockSides && (maxTeamRank - minTeamRank) > threshold))	// TE: Add check for rank balancing if it's on
             return false;
     }
 
