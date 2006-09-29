@@ -149,6 +149,7 @@ public:
             );
 
         pnsCommands->AddMember("CommandHelp"                     , new Number((float)TK_Help                     ));
+		pnsCommands->AddMember("CommandScreenShot"               , new Number((float)TK_ScrnShot                 ));
         pnsCommands->AddMember("CommandNextCommMsg"              , new Number((float)TK_NextCommMsg              ));
         pnsCommands->AddMember("CommandPrevCommMsg"              , new Number((float)TK_PrevCommMsg              ));
         pnsCommands->AddMember("CommandPrevWeapon"               , new Number((float)TK_PrevWeapon               ));
@@ -1025,7 +1026,7 @@ KeyInfo g_pkeyInfo[] =
     { NULL               }, // 29
     { NULL               }, // 2a
     { NULL               }, // 2b
-    { NULL               }, // 2c
+    { "PrintScreen"      }, // 2c
     { "Insert"           }, // 2d
     { "Delete"           }, // 2e
     { NULL               }, // 2f
@@ -1480,6 +1481,7 @@ CommandInfo g_pCommandInfo[] =
     { TK_PauseTM                         , "Pause (training mission only)"         },
     { TK_CommandFinishTM                 , "Finish goal (training mission only)"   },
     { TK_TrackCommandView                , "Toggle command view target tracking"   },
+	{ TK_ScrnShot                        , "Take a screen shot"                    },
 
     { TK_NoKeyMapping                    , ""                                      },
     { TK_NoKeyMapping                    , "Joystick"                              },

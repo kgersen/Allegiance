@@ -431,7 +431,9 @@ const TrekKey TK_PromoteTurret4                 = 215; // Swap the current weapo
 const TrekKey TK_VoteYes                        = 216; // Vote Yes on the current issue
 const TrekKey TK_VoteNo                         = 217; // Vote No on the current issue
 
-const TrekKey TK_Max                            = 218; // Must be last trekkey
+const TrekKey TK_ScrnShot                       = 218; // Take a screen shot
+
+const TrekKey TK_Max                            = 219; // Must be last trekkey
 
 typedef short   SoundID;
 typedef short   VoiceID;

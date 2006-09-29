@@ -3520,6 +3520,78 @@ public:
     #define idmVoiceOverVolumeUp    709
     #define idmVoiceOverVolumeDown  710
 
+	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
+	 * bitmap. Filename is determined by the user's local time.
+	 * Author: Stain_Rat
+	 */
+	void TakeScreenShot()
+	{
+		//capturing screen size this way (instead of using a native GDI call) will create
+		//windowed screen shots which look like they were taken with the game running
+		//in full screen mode.
+		Point currentResolution = GetRenderRectValue()->GetValue().Size();
+		int screenX = currentResolution.X();
+		int screenY = currentResolution.Y();
+
+		HDC hDesktopDC = GetDC();
+		HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
+		void* DIBBitValues;
+		BITMAPINFO bmpInfo = {0};
+
+		//build up the BITMAPINFOHEADER
+		bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		bmpInfo.bmiHeader.biWidth = screenX;
+		bmpInfo.bmiHeader.biHeight = screenY;
+		bmpInfo.bmiHeader.biPlanes = 1;
+		bmpInfo.bmiHeader.biBitCount = 24;
+		bmpInfo.bmiHeader.biCompression = BI_RGB;
+
+		HBITMAP hCaptureBitmap = CreateDIBSection(hDesktopDC, &bmpInfo, DIB_RGB_COLORS, &DIBBitValues, NULL, NULL);
+		SelectObject(hCaptureDC, hCaptureBitmap);
+		BitBlt(hCaptureDC, 0, 0, screenX, screenY, hDesktopDC, 0, 0, SRCCOPY);
+		
+		//populates bmpInfo.bmiHeader.biSizeImage with the actual size
+		GetDIBits(hDesktopDC, hCaptureBitmap, 0, 0, NULL, &bmpInfo, DIB_RGB_COLORS); 
+
+		//build up the BITMAPFILEHEADER
+		BITMAPFILEHEADER bmpFileHeader = {0};
+		bmpFileHeader.bfType = 'MB';
+		bmpFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpInfo.bmiHeader.biSizeImage;
+		bmpFileHeader.bfReserved1 = 0;
+		bmpFileHeader.bfReserved2 = 0;
+		bmpFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER); 
+		
+		//create a filename for our screenshot using the local time
+		SYSTEMTIME sysTimeForName;
+		GetLocalTime(&sysTimeForName);
+		ZString scrnShotName = sysTimeForName.wYear;
+		scrnShotName += "-";
+		scrnShotName += sysTimeForName.wMonth;
+		scrnShotName += "-";
+		scrnShotName += sysTimeForName.wDay;
+		scrnShotName += "_";
+		scrnShotName += sysTimeForName.wHour;
+		scrnShotName += ".";
+		scrnShotName += sysTimeForName.wMinute;
+		scrnShotName += ".";
+		scrnShotName += sysTimeForName.wSecond;
+		scrnShotName += ".";
+		scrnShotName += sysTimeForName.wMilliseconds;
+		scrnShotName += ".bmp";
+
+		FILE* outputFile;
+		outputFile = fopen(scrnShotName,"wb");
+		//write the BITMAPFILEHEADER, BITMAPINFOHEADER, and bimap bit values to create the *.bmp
+		fwrite(&bmpFileHeader, sizeof(BITMAPFILEHEADER), 1, outputFile);
+		fwrite(&bmpInfo.bmiHeader, sizeof(BITMAPINFOHEADER), 1, outputFile);
+		fwrite(DIBBitValues, bmpInfo.bmiHeader.biSizeImage, 1, outputFile); 
+		fclose(outputFile);
+
+		ReleaseDC(hDesktopDC);
+		DeleteDC(hCaptureDC);
+		DeleteObject(hCaptureBitmap);
+	}
+
     void ShowMainMenu()
     {
         m_pmenu =
@@ -3530,7 +3602,7 @@ public:
             );
 
 		// TE: Add version menu
-		m_pmenu->AddMenuItem(idmVersion      , "FAZ R3 Build #" + ZString(ZVersionInfo().GetProductBuildNumber()));
+		m_pmenu->AddMenuItem(0               , "FAZ R3 Build #" + ZString(ZVersionInfo().GetFileBuildNumber()));
 		m_pmenu->AddMenuItem(0               , "----------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
@@ -7511,6 +7583,10 @@ public:
     {
         if (m_screen != ScreenIDSplashScreen) {
             switch(tk) {
+				// SR: added ability to take screenshot
+				case TK_ScrnShot:
+					TakeScreenShot();
+					return true;
 				// SR added ability to toggle virtual joystick during launch animation 8/06
 				case TK_ToggleMouse:
 					if (trekClient.IsInGame() &&
