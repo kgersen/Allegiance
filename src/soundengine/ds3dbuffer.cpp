@@ -991,7 +991,7 @@ HRESULT DS3DStreamingSoundBuffer::GetStatus(bool& bPlaying, bool& bBufferLost)
 
 // The update thread which handles filling the buffers as they play
 //TaskListThread DS3DStreamingSoundBuffer::m_threadUpdate(THREAD_PRIORITY_TIME_CRITICAL, 500);
-TaskListThread DS3DStreamingSoundBuffer::m_threadUpdate(THREAD_PRIORITY_TIME_CRITICAL, 100);		// mdvalley: Update streaming buffers more often
+TaskListThread DS3DStreamingSoundBuffer::m_threadUpdate(THREAD_PRIORITY_TIME_CRITICAL, 250);		// mdvalley: Update streaming buffers more often
 
 
 

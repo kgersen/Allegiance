@@ -238,6 +238,8 @@ public:
 
 	virtual void ShowOptionsMenu() = 0;
 
+	virtual void ShowPlayerContextMenu(PlayerInfo * playerInfo) = 0;
+
     virtual void RejectQueuedCommand(bool    bClear = true,
                                      bool    bNegative = false) = 0;
     virtual void AcceptQueuedCommand(bool    bExecute) = 0;

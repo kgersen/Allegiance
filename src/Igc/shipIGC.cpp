@@ -1427,15 +1427,6 @@ void    CshipIGC::MountPart(IpartIGC*    part,
         *plNew = part;
     }
 
-/*		// mdvalley: Loading missiles, chaff, booster, or mine/probe reloads that slot
-        // functionality moved to clintlib.h, SwapPart
-	if((et == ET_Magazine || et == ET_ChaffLauncher || et == ET_Afterburner || et == ET_Dispenser)
-		&& mountNew >= 0 && *pmountOld != c_mountNA)
-	{
-		IIgcSite* pigc = GetMyMission()->GetIgcSite();
-		pigc->Reload(this, (IlauncherIGC*)part, et, false);		// do not transmit the reload message to the server;
-	}															// it tends to set off the hack boot
-*/
     *pmountOld = mountNew;
 
     GetMyMission()->GetIgcSite()->LoadoutChangeEvent(this, part, (mountNew < 0) ? c_lcDismounted : c_lcMounted);

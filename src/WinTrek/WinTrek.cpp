@@ -1282,6 +1282,10 @@ public:
     int             m_nLastCountdown;
     TRef<IMessageBox> m_pmessageBoxLockdown;
 
+	//
+	//	ContextMenu data
+	//
+	PlayerInfo * contextPlayerInfo;
 
     //
     // Music
@@ -3344,6 +3348,52 @@ public:
         }
     }
 
+	void contextAcceptPlayer()
+	{
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+        BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
+        END_PFM_CREATE
+        pfmPosAck->shipID = contextPlayerInfo->ShipID();
+        pfmPosAck->fAccepted = true;
+        pfmPosAck->iSide = trekClient.GetSideID();
+	}
+
+	void contextRejectPlayer()
+	{
+		// if we are booting a player who is already on our team...
+       if (contextPlayerInfo->SideID() == trekClient.GetSideID())
+        {
+            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+            BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
+            END_PFM_CREATE
+            pfmQuitSide->shipID = contextPlayerInfo->ShipID();
+            pfmQuitSide->reason = QSR_LeaderBooted;
+        }
+        else
+        {
+            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+            BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
+            END_PFM_CREATE
+            pfmPosAck->shipID = contextPlayerInfo->ShipID();
+            pfmPosAck->fAccepted = false;
+            pfmPosAck->iSide = trekClient.GetSideID();
+        }
+	}
+
+	void contextMakeLeader()
+	{
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+        BEGIN_PFM_CREATE(trekClient.m_fm, pfmSetTeamLeader, CS, SET_TEAM_LEADER)
+        END_PFM_CREATE
+        pfmSetTeamLeader->sideID = trekClient.GetSideID(); 
+        pfmSetTeamLeader->shipID = contextPlayerInfo->ShipID(); 
+	}
+
+	void contextMute()
+	{
+		contextPlayerInfo->SetMute(!contextPlayerInfo->GetMute());
+	}
+
     //////////////////////////////////////////////////////////////////////////////
     //
     // ModelerSite
@@ -3520,6 +3570,12 @@ public:
     #define idmVoiceOverVolumeUp    709
     #define idmVoiceOverVolumeDown  710
 
+	#define idmContextAcceptPlayer	801
+	#define idmContextRejectPlayer	802
+	#define idmContextMakeLeader	803
+	#define idmContextMutePlayer	804
+
+
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
 	 * Author: Stain_Rat
@@ -3602,8 +3658,8 @@ public:
             );
 
 		// TE: Add version menu
-		m_pmenu->AddMenuItem(0               , "FAZ R3 Build #" + ZString(ZVersionInfo().GetFileBuildNumber()));
-		m_pmenu->AddMenuItem(0               , "----------------------");
+		m_pmenu->AddMenuItem(0               , "FAZ R3 Build #" + ZString(ZVersionInfo().GetStringValue("FileVersion").Right(6)));
+		m_pmenu->AddMenuItem(0               , "------------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmSoundOptions , "Sound Options"   , 'S', m_psubmenuEventSink);
@@ -3620,6 +3676,78 @@ public:
 
         OpenPopup(m_pmenu, Point(10, 10));
     }
+	
+	// YP: Add this for the rightclick lobby patch
+	void ShowPlayerContextMenu(PlayerInfo * playerInfo)
+	{
+		contextPlayerInfo = playerInfo;
+
+		char str1[30];	
+		char str2[30];	
+		char str3[30];	sprintf(str3, "Make Leader  ",playerInfo->CharacterName());
+		char str4[30];	sprintf(str4, playerInfo->GetMute() == false ?"Mute         " :"UnMute       ",playerInfo->CharacterName());
+
+        bool bEnableAccept = false;
+        bool bEnableReject = false; 
+        bool bEnableMakeLeader = false;
+		bool bEnableMute = false;
+			if (playerInfo->SideID() == trekClient.GetSideID())
+			{
+				if(trekClient.GetPlayerInfo()->IsTeamLeader())
+				{
+					sprintf(str2,"Boot       ",playerInfo->CharacterName());
+					bEnableReject = playerInfo->ShipID() != trekClient.GetShipID()
+						&& (!trekClient.MyMission()->GetMissionParams().bLockTeamSettings
+							|| playerInfo->SideID() != trekClient.GetSideID());
+
+					bEnableMakeLeader = playerInfo->SideID() == trekClient.GetSideID()
+						&& playerInfo->ShipID() != trekClient.GetShipID();
+
+					
+				}				
+			}
+			else 
+			{
+				if(trekClient.GetPlayerInfo()->IsTeamLeader())
+				{
+					sprintf(str1,"Accept       ",playerInfo->CharacterName());
+					bEnableAccept = trekClient.MyMission()->SideAvailablePositions(trekClient.GetSideID()) > 0
+						&& trekClient.MyMission()->FindRequest(trekClient.GetSideID(), playerInfo->ShipID());
+				
+					sprintf(str2,"Reject       ",playerInfo->CharacterName());
+					bEnableReject = playerInfo->ShipID() != trekClient.GetShipID()
+							&& trekClient.MyMission()->FindRequest(trekClient.GetSideID(), playerInfo->ShipID())
+							&& (!trekClient.MyMission()->GetMissionParams().bLockTeamSettings
+								|| playerInfo->SideID() != trekClient.GetSideID());
+				}
+			}
+
+			// we always want to be able to mute :)
+			bEnableMute = playerInfo != trekClient.GetPlayerInfo() ? true : false ;
+
+		m_pmenu =
+            CreateMenu(
+                GetModeler(),
+                TrekResources::SmallFont(),
+                m_pmenuCommandSink
+            );
+	
+
+        if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str1 , 'A');
+        if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str2 , 'R');
+        if(bEnableMakeLeader)	m_pmenu->AddMenuItem(idmContextMakeLeader , str3 , 'L');
+        if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');
+
+		Point popupPosition = GetMousePosition();
+		
+
+		TRef<Pane> ppane = m_pmenu->GetPane();
+		ppane->UpdateLayout();
+		Point p = Point::Cast(ppane->GetSize());
+
+		popupPosition.SetY(popupPosition.Y() - p.Y());  
+        OpenPopup(m_pmenu,	popupPosition);
+	}
 
     void ShowOptionsMenu()
     {
@@ -4764,6 +4892,22 @@ public:
             case idmVoiceOverVolumeDown:
                 AdjustVoiceOverVolume(-c_fVolumeDelta);
                 break;
+			// YP: Add cases for rightclick lobby patch
+			case idmContextAcceptPlayer:
+				contextAcceptPlayer();	CloseMenu();
+				break;
+
+			case idmContextRejectPlayer:
+				contextRejectPlayer();	CloseMenu();
+				break;
+
+			case idmContextMakeLeader:
+				contextMakeLeader();	CloseMenu();
+				break;
+
+			case idmContextMutePlayer:
+				contextMute();			CloseMenu();
+				break;
         }
     }
 
@@ -5027,6 +5171,9 @@ public:
             // kill any mouse capture
             m_pwrapImageTop->RemoveCapture();
 
+			// yp - Your_Persona buttons get stuck patch. aug-03-2006
+			// clear the keyboard buttons. 
+			m_ptrekInput->ClearButtonStates();
 
             switch (vm)
             {

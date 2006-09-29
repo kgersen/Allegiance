@@ -1712,12 +1712,12 @@ public:
             pdata->mountOld = mountOld;
             pdata->mountNew = mountNew;
         }
-/*		// mdvalley: If part is a missile, chaff, boost, or dispenser, reload it.
+		// mdvalley: If part is a missile, chaff, boost, or dispenser, reload it.
 		if((et == ET_Magazine || et == ET_ChaffLauncher || et == ET_Afterburner || et == ET_Dispenser)
 			&& mountNew >= 0 && mountOld != c_mountNA)
-		{												// The swap message must be processed by the server before the reload.
-			Reload(m_ship, (IlauncherIGC*)ppart, et);	// DPlay8 guarantees this, but DPlay4 does not.
-		} */
+		{
+			Reload(m_ship, (IlauncherIGC*)ppart, et);
+		}
     }
 
     virtual void ForwardSquadMessage(FEDMESSAGE* pSquadMessage) {} // forward message to squads screen

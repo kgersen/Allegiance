@@ -39,7 +39,9 @@ public:
 
     virtual IItemEvent::Source* GetSelectionEventSource()     = 0;
     virtual IEventSource*       GetSingleClickEventSource()   = 0;
+	virtual IEventSource*       GetSingleRightClickEventSource()   = 0;
     virtual IEventSource*       GetDoubleClickEventSource()   = 0;
+	virtual IEventSource*       GetDoubleRightClickEventSource()   = 0;
 };
 
 TRef<ListPane> CreateListPane(

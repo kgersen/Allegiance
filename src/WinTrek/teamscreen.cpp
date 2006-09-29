@@ -1077,7 +1077,8 @@ public:
 
         // WLP 2005 - added line below to trap click on player
         AddEventTarget(&TeamScreen::OnPlayerClicked, m_plistPanePlayers->GetSingleClickEventSource()); // WLP - click selects
-
+		AddEventTarget(&TeamScreen::OnPlayerRightClicked, m_plistPanePlayers->GetSingleRightClickEventSource()); // yp
+		AddEventTarget(&TeamScreen::OnPlayerDoubleRightClicked, m_plistPanePlayers->GetDoubleRightClickEventSource()); // yp
         //
         // Chat pane
         //
@@ -1827,6 +1828,24 @@ public:
 
         return true;
     }
+
+
+	bool OnPlayerRightClicked()
+    {			
+		ItemID pitem = m_plistPanePlayers->GetSelection();
+
+        if (pitem != NULL && trekClient.GetPlayerInfo())
+        {
+            PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
+			GetWindow()->ShowPlayerContextMenu(pplayer);            
+        }		
+        return true;
+    }
+
+	bool OnPlayerDoubleRightClicked()
+	{
+		return true;
+	}
 
     //
     // WLP 2005 - added OnPlayerClicked to toggle selected player on/off for highlighted chat routine
