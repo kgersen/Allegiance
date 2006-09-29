@@ -1518,6 +1518,7 @@ public:
 	int GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
 	{
 	  int iRankSum = 0;
+	  int iTempRank = 0;
 	  const ShipListIGC * plistShips = pside->GetShips();
 
 	  IshipIGC* pShip = NULL;
@@ -1527,7 +1528,9 @@ public:
 	  {
 		pShip = plinkShip->data();
 		pPlayer = trekClient.FindPlayer(pShip->GetObjectID());
-		iRankSum += (pPlayer->Rank() < 1) ? 1 : pPlayer->Rank();
+		int iTempRank = pPlayer->GetPersistScore(NA).GetRank();
+
+		iRankSum += (iTempRank < 1) ? 1 : iTempRank;
 	  }
 	  return iRankSum;
 	}

@@ -1262,6 +1262,7 @@ int CFSMission::GetCountOfPlayers(IsideIGC * pside, bool bCountGhosts)
 int CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
 {
   int iRankSum = 0;
+  int iTempRank = 0;
   const ShipListIGC * plistShip = pside ? pside->GetShips() : m_pMission->GetShips();
   CFSPlayer* pfsPlayer = NULL;
   for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
@@ -1269,7 +1270,8 @@ int CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
     if (ISPLAYER(plinkShip->data()) && (bCountGhosts || !plinkShip->data()->IsGhost()))
 	{
 		pfsPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
-		iRankSum += (pfsPlayer->GetPersistPlayerScore(NA)->GetRank() < 1) ? 1 : pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
+		iTempRank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
+		iRankSum += (iTempRank < 1) ? 1 : iTempRank;
 	}
   }
   return iRankSum;

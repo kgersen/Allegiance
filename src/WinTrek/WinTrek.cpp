@@ -3452,6 +3452,7 @@ public:
     #define idmGameOptions       11
     #define idmExitApp           12
     #define idmGameDetails       13
+	#define idmVersion           14 // TE: Added Version menu
 
     #define idmChannelN          101
     #define idmChannelShow       102
@@ -3528,6 +3529,9 @@ public:
                 m_pmenuCommandSink
             );
 
+		// TE: Add version menu
+		m_pmenu->AddMenuItem(idmVersion      , "FAZ R3 Build #" + ZString(ZVersionInfo().GetProductBuildNumber()));
+		m_pmenu->AddMenuItem(0               , "----------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmSoundOptions , "Sound Options"   , 'S', m_psubmenuEventSink);
