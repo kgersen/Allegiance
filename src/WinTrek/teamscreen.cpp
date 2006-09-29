@@ -2114,19 +2114,17 @@ public:
         return true;
     }
     */
-    bool OnButtonAwayFromKeyboard()
-    {
-		trekClient.GetPlayerInfo ()->SetReady(!m_pbuttonAwayFromKeyboard->GetChecked()); // Imago - prevents sending duplicate player_ready msg when DoTrekUpdate
-        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-        BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
-        END_PFM_CREATE
-        pfmReady->fReady = !m_pbuttonAwayFromKeyboard->GetChecked();
-        pfmReady->shipID = trekClient.GetShipID();
-        UpdateStatusText();
-		g_bAFKToggled = (g_bAFKToggled) ? false : true; //Imago: Manual AFK toggle flag
-
-        return true;
-    }
+	bool OnButtonAwayFromKeyboard() // wlp 8/5/2006 modded to support comm afk during settings
+	{
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
+		END_PFM_CREATE
+		pfmReady->fReady = !m_pbuttonAwayFromKeyboard->GetChecked();
+		pfmReady->shipID = trekClient.GetShipID();
+		UpdateButtonStates(); // wlp - 8/5/2006 added to show the comm status afk during settings
+		UpdateStatusText();
+		return true;
+	}
 
     bool OnButtonTeamReady()
     {
@@ -2444,20 +2442,49 @@ public:
         return true;
     }
 
-    bool OnButtonDetails()
-    {
-        s_nLastSelectedChatTab = ChatTargetToButton(m_chattargetChannel);
-        GetWindow()->screen(ScreenIDCreateMission);
-        return true;
-    }
+	bool OnButtonDetails()
+	{
+		// wlp 8/5/2006
+		// code added to prevent game starting when the comm is doing settings
+		//
+		// do this only for the commander without game control
+		//
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()// wlp - is a comm
+			&& !trekClient.MyPlayerInfo()->IsMissionOwner()		// wlp - not in control
+			)
+		{
+			m_pbuttonTeamReady->SetChecked(	false) ; // wlp - turn off team ready
+			OnButtonTeamReady();// wlp - send to server
+			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
+			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
+		} ;
+		// wlp 8/5/2006 - end of Afk added code
+		s_nLastSelectedChatTab = ChatTargetToButton(m_chattargetChannel);
+		GetWindow()->screen(ScreenIDCreateMission);
+		return true;
+	}
 
-    bool OnButtonTeamSettings()
-    {
-        GetWindow()->GetPopupContainer()->OpenPopup(m_pteamSettingsPopup, false);
-        debugf("opening team settings.\n");
-        
-        return true;
-    }
+	bool OnButtonTeamSettings()
+	{
+		// wlp 8/5/2006
+		// code added to prevent game starting when the comm is doing settings
+		//
+		// do this only for the commander without game control
+		//
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()// wlp - is a comm
+			&& !trekClient.MyPlayerInfo()->IsMissionOwner()// wlp - not in control
+			)
+		{
+			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
+			OnButtonTeamReady() ;// wlp - send to server
+			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
+			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
+		} ;
+		// wlp 8/5/2006 - end of Afk added code
+		GetWindow()->GetPopupContainer()->OpenPopup(m_pteamSettingsPopup,false);
+		debugf("opening team settings.\n");
+		return true;
+	}
 
     bool OnButtonMakeLeader()
     {
