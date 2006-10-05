@@ -2116,6 +2116,7 @@ public:
     */
 	bool OnButtonAwayFromKeyboard() // wlp 8/5/2006 modded to support comm afk during settings
 	{
+		trekClient.GetPlayerInfo ()->SetReady(!m_pbuttonAwayFromKeyboard->GetChecked()); // Imago - prevents sending duplicate player_ready msg when DoTrekUpdate
 		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
 		BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
 		END_PFM_CREATE
@@ -2123,6 +2124,8 @@ public:
 		pfmReady->shipID = trekClient.GetShipID();
 		UpdateButtonStates(); // wlp - 8/5/2006 added to show the comm status afk during settings
 		UpdateStatusText();
+		g_bAFKToggled = (g_bAFKToggled) ? false : true; //Imago: Manual AFK toggle flag
+
 		return true;
 	}
 
