@@ -9,9 +9,69 @@
  *-----------------------------------------------------------------------*/
 
 #include "pch.h"
+#include <string.h> // mmf added for strncmp used below
 
 const DWORD        CFLServer::c_dwID        = 19680815;
 const CFLMission * CFLServer::c_AllMissions = (CFLMission*) -1;
+
+// mmf old C style (i.e. I did not stick this in a class) function to check lobby.cfg file
+// for allowed servers.  I used the existing GetPrivateProfileString functions, not the most
+// efficient as it pulls the info one line at a time but it is more than quick enough
+// for this check
+bool IsServerAllowed(const char *ip)
+{
+	char    config_dir[MAX_PATH];
+	char    config_file_name[MAX_PATH];
+
+	GetCurrentDirectory(MAX_PATH,config_dir);
+
+	sprintf(config_file_name,"%s\\Allegiance.cfg",config_dir);
+
+	const char * c_szCfgApp = "Lobby";
+    char numservStr[128], ftStr[128], szStr[128];
+    
+    GetPrivateProfileString(c_szCfgApp, "NumberOfServers", "", 
+                                  numservStr, sizeof(numservStr), config_file_name);
+
+    GetPrivateProfileString(c_szCfgApp, "FilterType", "", 
+                                  ftStr, sizeof(ftStr), config_file_name);
+
+	int numServers=0, ipLen=0, ftLen=0, i=0;
+	bool bFilterTypeAllow=true;
+	char key[128];
+	
+	ipLen = strlen(ip);
+    ftLen =	strlen(ftStr);
+
+	if (ftLen>0) {
+	    if (!strncmp("Block",ftStr,ftLen)) bFilterTypeAllow=false;
+		else bFilterTypeAllow=true;
+	}
+
+	if (strlen(numservStr)>0) {
+		// find out how many servers are in the file
+		numServers = atoi(numservStr);
+		for (i=1; i<=numServers; i++) {
+			sprintf(key,"Server%d",i);
+			GetPrivateProfileString(c_szCfgApp, key, "", 
+                                  szStr, sizeof(szStr), config_file_name);
+			if (!strncmp(ip,szStr,ipLen)) {
+			// found match in list now figure out if we block it or allow it	
+			   if (bFilterTypeAllow) return true;
+			   else return false;
+			}
+		}
+		// if we got this far we did not find a match
+		if (bFilterTypeAllow) return false;
+		else return true;
+	} else {
+		// no entry so allow all servers
+		return true;
+	}
+}
+
+// end mmf
+
 
 HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm)
 {
@@ -32,13 +92,25 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
           pServer->SetServerPort(pfmLogon->dwPort);
         else
           pServer->SetServerPort(6073);				// Tell the client to enum the old fashioned way
-      break;
+      // break; mmf took out break so we can check ip below
 	  }
-      char * szReason;
 
+	  char * szReason;
+
+	  // mmf add check to see if they are an allowed or blocked server
+	  char szRemote[16];
+      pthis->GetIPAddress(cnxnFrom, szRemote);
+
+	  if (!strncmp("127.0.0.1",szRemote,9)) break;  // check for loopback and always allow
+	  if (IsServerAllowed(szRemote)) break;
+
+	  // if we got this far we are not on the approved list fall through to reject below
+	  szReason = "Your server IP address is not approved for connection to this Lobby.  Please contact the Lobby Amin.";
+	  // end mmf
+	  
       if (pfmLogon->verLobby > LOBBYVER_LS)
         szReason = "The Public Lobby server that you connected to is older than your version.  The Zone needs to update their lobby server.  Please try again later.";
-      else /*if (pfmLogon->verLobby < LOBBYVER_LS)*/
+      if (pfmLogon->verLobby < LOBBYVER_LS) // mmf took out the else and made this an explicit if for above szReason
         szReason = "Your server's version did not get auto-updated properly.  Please try again later.";
 
       BEGIN_PFM_CREATE(*pthis, pfmNewMissionAck, L, LOGON_SERVER_NACK)

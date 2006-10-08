@@ -728,14 +728,16 @@ public:
     void ClearButtonStates()
     {
         for (int index = 0; index < TK_Max; index++) {
-            m_pboolTrekKeyDown[index]       = false; // keyboard // yp - Your_Persona buttons get stuck patch. aug-03-2006
-            m_ppboolTrekKeyButtonDown[index] = false;
+			m_boolTrekKeyButtonDown[index] = false;
+        // mmf pull yp's changes for now
+			//m_pboolTrekKeyDown[index]       = false; // keyboard // yp - Your_Persona buttons get stuck patch. aug-03-2006
+            //m_ppboolTrekKeyButtonDown[index] = false;
         }
-		// After that for loop we lose responce from most of our keys.. so..		 
+		// yp - After that for loop we lose responce from most of our keys.. so..		 
 		// hack.. we reload the map, and something in there fixes it.
-		if (!LoadMap(INPUTMAP_FILE)) {
-            LoadMap(DEFAULTINPUTMAP_FILE);
-        }
+		//if (!LoadMap(INPUTMAP_FILE)) {
+        //    LoadMap(DEFAULTINPUTMAP_FILE);
+        //}
     }
 
     //////////////////////////////////////////////////////////////////////////////

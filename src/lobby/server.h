@@ -11,6 +11,9 @@
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
+// mmf added this to support lobby checking for allowed server ips
+bool IsServerAllowed(const char *ip);
+
 const int c_GameFactor = 5; // factor to multiply count of games by when adding to player count ot determine server load
 
 class CFLServer : public IObject
