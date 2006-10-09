@@ -1578,7 +1578,9 @@ public:
 					{
 						if (pPlayer->IsHuman())
 						{
-							iTempRank = pPlayer->Rank();
+							iTempRank = pPlayer->GetPersistScore(NA).GetRank();
+							if (iTempRank <= 0)
+								iTempRank = 1;
 		
 							// If it's the highest rank, remember it
 							if (iTempRank > iHighestRank)
