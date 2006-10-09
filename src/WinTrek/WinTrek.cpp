@@ -1255,6 +1255,7 @@ public:
     TRef<IMenuItem>            m_pitemFilterLobbyChats;
     TRef<IMenuItem>            m_pitemSoundQuality;
     TRef<IMenuItem>            m_pitemToggleSoundHardware;
+	TRef<IMenuItem>            m_pitemToggleDSound8Usage;
     TRef<IMenuItem>            m_pitemToggleMusic;
     TRef<IMenuItem>            m_pitemMusicVolumeUp;
     TRef<IMenuItem>            m_pitemMusicVolumeDown;
@@ -1302,6 +1303,7 @@ public:
     TVector<TRef<ISoundTemplate> >  m_vSoundMap;
     ISoundEngine::Quality           m_soundquality;
     bool                            m_bEnableSoundHardware;
+	bool                            m_bUseDSound8;
     TRef<IDiskPlayer>               m_pDiskPlayer;
     TRef<ISoundMutex>               m_psoundmutexSal;
     TRef<ISoundMutex>               m_psoundmutexVO;
@@ -2610,9 +2612,11 @@ public:
 
         DWORD dwSoundInitStartTime = timeGetTime();
 
+		m_bUseDSound8 = LoadPreference("UseDSound8", true);
+
         if (g_bEnableSound) {
             assert (m_pSoundEngine == NULL);
-            hr = CreateSoundEngine(m_pSoundEngine, GetHWND());
+            hr = CreateSoundEngine(m_pSoundEngine, GetHWND(), m_bUseDSound8);
         }
 
         if (FAILED(hr) || !g_bEnableSound)
@@ -3569,6 +3573,7 @@ public:
     #define idmSFXVolumeDown        708
     #define idmVoiceOverVolumeUp    709
     #define idmVoiceOverVolumeDown  710
+	#define idmUseDSound8           711
 
 	#define idmContextAcceptPlayer	801
 	#define idmContextRejectPlayer	802
@@ -3816,6 +3821,7 @@ public:
                 #endif
                 m_pitemSoundQuality         = pmenu->AddMenuItem(idmSoundQuality, GetSoundQualityMenuString());
                 m_pitemToggleSoundHardware  = pmenu->AddMenuItem(idmSoundHardware, GetSoundHardwareMenuString());
+				m_pitemToggleDSound8Usage   = pmenu->AddMenuItem(idmUseDSound8, GetDSound8EnabledString());
                 m_pitemToggleMusic          = pmenu->AddMenuItem(idmToggleMusic, GetMusicMenuString());
                 m_pitemMusicVolumeUp        = pmenu->AddMenuItem(idmMusicVolumeUp,
                     GetGainMenuString("Music", m_pnumMusicGain->GetValue(), c_fVolumeDelta), 'M');
@@ -4427,6 +4433,16 @@ public:
             m_pitemToggleSoundHardware->SetString(GetSoundHardwareMenuString());
     }
 
+	void ToggleUseDSound8()
+	{
+		m_bUseDSound8 = !m_bUseDSound8;
+
+		SavePreference("UseDSound8", (DWORD)m_bUseDSound8);
+
+		if(m_pitemToggleDSound8Usage != NULL)
+			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
+	}
+
     void ToggleMusic()
     {
         m_bMusic = !m_bMusic;
@@ -4619,6 +4635,13 @@ public:
     {
         return m_bEnableSoundHardware ? "Sound Card Acceleration On" : "Sound Card Acceleration Off";
     }
+
+	// mdv new sound8 or old sound engine
+	// mmf changed wording
+	ZString GetDSound8EnabledString()
+	{
+		return m_bUseDSound8 ? "DirectSound (Restart Reqd.): New" : "DirectSound (Restart Reqd.): Old";
+	}
 
     ZString GetMusicMenuString()
     {
@@ -4864,6 +4887,10 @@ public:
             case idmSoundHardware:
                 ToggleSoundHardware();
                 break;
+
+			case idmUseDSound8:
+				ToggleUseDSound8();
+				break;
 
             case idmToggleMusic:
                 ToggleMusic();
