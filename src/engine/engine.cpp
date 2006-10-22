@@ -32,6 +32,7 @@ private:
     bool                      m_bFullscreen;
     bool                      m_bAllowSecondary;
     bool                      m_bAllow3DAcceleration;
+	DWORD					  m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
     bool                      m_b3DAccelerationImportant;
 
     //
@@ -134,7 +135,7 @@ private:
 
 public:
     EngineImpl(bool bAllow3DAcceleration, bool bAllowSecondary) :
-        m_pointFullscreen(640, 480),
+        m_pointFullscreen(800, 600),
         m_pointFullscreenCurrent(0, 0),
         m_bFullscreen(false),
         m_bAllow3DAcceleration(bAllow3DAcceleration),
@@ -935,6 +936,17 @@ private:
             m_bValidDevice = false;
         }
     }
+// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	void SetMaxTextureSize(DWORD dwMaxTextureSize)
+	{
+		if (m_dwMaxTextureSize != dwMaxTextureSize)
+		{
+			m_dwMaxTextureSize = dwMaxTextureSize;
+			m_pdddevicePrimary->SetMaxTextureSize(m_dwMaxTextureSize);
+			m_bValid		= false;
+			m_bValidDevice	= false;
+		}
+	}
 
     void Set3DAccelerationImportant(bool b3DAccelerationImportant)
     {

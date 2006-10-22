@@ -250,7 +250,7 @@ private:
             }
             else
             {
-				//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+				//	yp - Your_Persona Team total rank in lobby patch Aug-04-2006
 				//  mmf - modified to not show if total is zero
 				// Add up the sum of all the players ranks.
 				const ShipListIGC* mp_ships = pside->GetShips();
@@ -259,7 +259,8 @@ private:
 				{
 					IshipIGC* pship = lShip->data();
 					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
-					teamTotalRank += (pplayer->GetPersistScore(NA).GetRank() < 1) ? 1 : pplayer->GetPersistScore(NA).GetRank();	// TE: Modified this to add a minimum of 5 per player
+					// teamTotalRank += (pplayer->GetPersistScore(NA).GetRank() < 1) ? 1 : pplayer->GetPersistScore(NA).GetRank();	// TE: Modified this to add a minimum of 5 per player
+					teamTotalRank += pplayer->GetPersistScore(NA).GetRank(); // mmf this is just for display purposes, undoing TE's above modification
 				}
 				// end yp
 
@@ -280,7 +281,7 @@ private:
                 {
                     TRef<List> plistPlayers = pitem->GetMemberList();
 					if (teamTotalRank > 0)
-                        wsprintf(cbPositions, "(%d)[%d]", plistPlayers->GetCount(), teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+                        wsprintf(cbPositions, "(%d)[%d]", plistPlayers->GetCount(), teamTotalRank);//	yp - Your_Persona Team total rank in lobby patch Aug-04-2006
 					else
 						wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
                 }

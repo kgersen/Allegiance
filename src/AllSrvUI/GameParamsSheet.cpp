@@ -46,8 +46,8 @@ void CGameParamsSheet::InitButtons()
 {
   // Calculate the height of 7 dialog units
   CRect rectUnits(0, 0, 0, 7);
-  MapDialogRect(GetSafeHwnd(), rectUnits);
-  //MapDialogRect(rectUnits);
+  // MapDialogRect(GetSafeHwnd(), rectUnits); mmf vc8 does not like two arguments, below was commented out, I uncommented it
+  MapDialogRect(rectUnits);
 
   // Get the OK and cancel buttons
   CWnd* pwndOK     = GetDlgItem(IDOK);

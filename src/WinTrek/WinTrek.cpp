@@ -1263,6 +1263,7 @@ public:
     TRef<IMenuItem>            m_pitemSFXVolumeDown;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeUp;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeDown;
+	TRef<IMenuItem>            m_pitemMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
     bool                       m_bLensFlare;
     bool                       m_bMusic;
@@ -2916,6 +2917,9 @@ public:
             CycleStyleHUD();
         if (LoadPreference("LargeDeadZone", FALSE))
             ToggleLargeDeadZone();
+		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+
+		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
         bool bAllow3DAcceleration;
 
@@ -3561,7 +3565,7 @@ public:
     #define idmToggleFlipY                 629
     #define idmToggleStickyChase           630
     #define idmToggleEnableFeedback        631
-
+	#define idmMaxTextureSize          632// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -3662,8 +3666,21 @@ public:
                 m_pmenuCommandSink
             );
 
-		// TE: Add version menu
-		m_pmenu->AddMenuItem(0               , "FAZ R3 Build #" + ZString(ZVersionInfo().GetStringValue("FileVersion").Right(6)));
+		// mmf format octal version (defined in SlmVer.h) to decimal YY.MM.DD
+		int YY,MM,DD;
+		{
+			ZString dVer, dYY, dMM, dDD;
+			dVer = ZString(ZVersionInfo().GetStringValue("FileVersion").Right(6));
+			dDD = dVer.Right(2);
+			dMM = dVer.Middle(2,2);
+			dYY = dVer.Middle(0,2);
+			YY = atoi(dYY); 	YY = (YY/10)*8+(YY%10); 
+			MM = atoi(dMM); 	MM = (MM/10)*8+(MM%10); 
+			DD = atoi(dDD); 	DD = (DD/10)*8+(DD%10);
+		}
+
+		// TE: Add version menu, mmf changed format
+		m_pmenu->AddMenuItem(0               , "FAZ R3 Build # " + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
 		m_pmenu->AddMenuItem(0               , "------------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
@@ -3799,7 +3816,10 @@ public:
                 m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            , 'F');
                 m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(), 'B');
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             , 'H');
-                break;
+                // yp Your_Persona August 2 2006 : MaxTextureSize Patch
+                m_pitemMaxTextureSize              = pmenu->AddMenuItem(idmMaxTextureSize,            GetMaxTextureSizeMenuString(),    'X');
+
+				break;
 
             case idmGameOptions:
                 m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'S');
@@ -4064,6 +4084,19 @@ public:
             m_pitemToggleBidirectionalLighting->SetString(GetBidirectionalLightingMenuString());
         }
     }
+
+	// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	void ToggleMaxTextureSize(DWORD dwNewMaxSize)
+	{
+		if(dwNewMaxSize > 3){dwNewMaxSize =0;}
+        trekClient.MaxTextureSize(dwNewMaxSize);
+		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());
+        SavePreference("MaxTextureSize", trekClient.MaxTextureSize());
+ 
+        if (m_pitemMaxTextureSize != NULL) {
+            m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
+        }
+	}
 
     SoundID GetFlightMusic()
     {
@@ -4528,6 +4561,16 @@ public:
         return (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment) ? "Environment On " : "Environment Off ";
     }
 
+// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	ZString GetMaxTextureSizeMenuString()
+    {
+		int i = 0;
+		int j = 2;
+		i = 8 + trekClient.MaxTextureSize();
+		j = pow((float)j,(float)i);
+        return "Max Texture Size ("  + ZString( j)  + ") ";
+    }
+
     ZString GetRoundRadarMenuString()
     {
         return (m_bRoundRadar) ? "Round Radar" : "Square Radar";
@@ -4786,6 +4829,11 @@ public:
 
             case idmToggleEnvironment:
                 ToggleEnvironment();
+                break;
+
+			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+            case idmMaxTextureSize:
+                ToggleMaxTextureSize(trekClient.MaxTextureSize()+1);
                 break;
 
             case idmToggleRoundRadar:
