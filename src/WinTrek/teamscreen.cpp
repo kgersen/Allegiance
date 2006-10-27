@@ -1226,7 +1226,7 @@ public:
                 && !m_pMission->GetMissionParams().bLockGameOpen);
             m_pbuttonLockLobby->SetChecked(m_pMission->GetLockLobby());
 
-            m_pbuttonLockSides->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner() && !m_pMission->GetMissionParams().bScoresCount); // TE: Disable LockSides if ScoresCount
+            m_pbuttonLockSides->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner()); // && !m_pMission->GetMissionParams().bScoresCount); // TE: Disable LockSides if ScoresCount mmf undo this change
             m_pbuttonLockSides->SetChecked(m_pMission->GetLockSides());
 
             m_pbuttonRandomize->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner());
@@ -1392,8 +1392,8 @@ public:
 			int tempRank = 0;
 			int threshold = 1;
 
-			// If "Enforce Balance" is checked, find the highest and lowest-ranked teams...
-			if (m_pMission->GetMissionParams().bLockSides)
+			// If "Enforce Balance" is checked, find the highest and lowest-ranked teams... mmf changed from lock sides to mImbalance
+			if (m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe)
 			{
 				threshold = GetRankThreshold();
 
@@ -1441,9 +1441,9 @@ public:
 			//SendChat(ZString("Max: ") + ZString(maxTeamRank) + ZString("; Min: ") + ZString(minTeamRank) + "; Diff: " + ZString(maxTeamRank - minTeamRank) + ZString("; Thresh: ") + ZString(threshold));
 
 			// This section hides/shows the "Launch" button
-			// TE: Added || to check rank balancing
+			// TE: Added || to check rank balancing mmf changed from locksides to MaxImbalnce
             if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
-			(m_pMission->GetMissionParams().bLockSides && (maxTeamRank - minTeamRank > threshold)))
+			((m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank > threshold)))
             {
                 m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
                 m_ptextStatus2->SetString("");

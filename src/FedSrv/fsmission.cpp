@@ -994,6 +994,13 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
                 END_PFM_CREATE
                 pfmLockSides->fLock = false;
             }
+
+			// mmf see if we can also reset skill level here
+			// might need to revisit this if we make this a server side setting for some games (like to keep
+			// the newb server always Nov. Only.  Also using current values in skilllevels.mdl which could change
+			// splat revist this and make Set functions
+			m_misdef.misparms.iMinRank = -1;
+			m_misdef.misparms.iMaxRank = 1000;
         }
 
         // No one's left in this side
@@ -1693,9 +1700,9 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
     misparms.bClubGame = false;
   #endif // !defined(ALLSRV_STANDALONE)
 
-  // TE: Enforce LockSides = on if ScoresCount
+  // TE: Enforce LockSides = on if ScoresCount mmf change to MaxImbalance
   if (misparms.bScoresCount)
-	  misparms.bLockSides = true;
+	  misparms.iMaxImbalance = 0x7ffe;
 
   int numTeamsOld = m_misdef.misparms.nTeams;
 
@@ -3926,7 +3933,8 @@ bool CFSMission::FAllReady()
         if ((minPlayers < m_misdef.misparms.nMinPlayersPerTeam) ||
             (maxPlayers > m_misdef.misparms.nMaxPlayersPerTeam) ||
             (minPlayers + m_misdef.misparms.iMaxImbalance < maxPlayers) ||
-			(m_misdef.misparms.bLockSides && (maxTeamRank - minTeamRank) > threshold))	// TE: Add check for rank balancing if it's on
+			((m_misdef.misparms.iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank) > threshold))	// TE: Add check for rank balancing if it's on
+			// mmf changed to MaxImbalance
             return false;
     }
 
@@ -3996,8 +4004,10 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
   IsideIGC * psideNewSide = psideLowestRank;
 
   // TE: If player imbalance is on, enforce it as necessary
+  // mmf added check for nImbalance of 7fffe for auto (balance)
+  //     
   int nImbalance = m_misdef.misparms.iMaxImbalance;
-  if (nImbalance != 0x7fff && psideNewSide != NULL)
+  if (nImbalance != 0x7fff && nImbalance != 0x7fff && psideNewSide != NULL)
   {
 	  int nRankedTeamPlayers = GetCountOfPlayers(psideNewSide, false);
 
@@ -4123,8 +4133,8 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
     else if (nNumPlayers >= maxPlayers)
       return DPR_TeamBalance;
 
-	// TE: Can they join chosen side based on rank?
-	if ((STAGE_NOTSTARTED != GetStage()) && (pmp->bLockSides == true))
+	// TE: Can they join chosen side based on rank? mmf changed to MaxImbalance
+	if ((STAGE_NOTSTARTED != GetStage()) && (pmp->iMaxImbalance == 0x7ffe))
 	{
 		int nRequestedSideRank = GetSideRankSum(pside, false);
 		int nHighestTeamRank = 0;

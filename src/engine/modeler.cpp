@@ -2348,12 +2348,10 @@ public:
 		if(strToTryOpen.Right(7) == "bmp.mdl") // if its a texture, try loading from the strToTryOpen
 		{
 			pfile = new ZFile(strToTryOpen, OF_READ | OF_SHARE_DENY_WRITE);
-			if(pfile)
+			// mmf modified Y_P's logic
+			if(!pfile->IsValid())
 			{
-				if ((bError && !pfile->IsValid() && m_psite)) 	
-				{
-					pfile = NULL;
-				}
+				pfile = NULL;
 			}
 		}
 		if(!pfile) // if we dont have a file here, then load regularly.
@@ -2361,7 +2359,7 @@ public:
 			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
 
 			// mmf added debugf but will still have it call assert
-			if ((bError && !pfile->IsValid() && m_psite)) {
+			if ((bError && !pfile->IsValid() && m_psite)) { // logic from ZRAssert below
 				debugf("Could not open the artwork file '" + strToOpen + "'");
 				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
 			}

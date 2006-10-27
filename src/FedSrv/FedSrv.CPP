@@ -6077,20 +6077,21 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitSide->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
 
-		// TE: Commented this block since locked sides now handle balancing
-        //if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
-        //{
-        //  // turn it down because the sides are locked
-        //  BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
-        //  END_PFM_CREATE
-        //  pfmDelPosReq->shipID    = pfsPlayer->GetShipID();
-        //  pfmDelPosReq->iSide     = sideID;
-        //  pfmDelPosReq->reason    = DPR_SidesLocked;
+		// TE: Commented this block since locked sides now handle balancing 
+		// mmf MaxBalance is now used instead of lock sides so put this back, not that lock sides is that useful
+        if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
+        {
+          // turn it down because the sides are locked
+          BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
+          END_PFM_CREATE
+          pfmDelPosReq->shipID    = pfsPlayer->GetShipID();
+          pfmDelPosReq->iSide     = sideID;
+          pfmDelPosReq->reason    = DPR_SidesLocked;
 
-        //  g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
-        //}
-        //else
-        //{
+          g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+        }
+        else
+        {
           // send them to the game lobby
           if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings)
           {
@@ -6105,7 +6106,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitSide->reason);
             }
           }
-        // } // TE: matches above comment
+        } // TE: matches above comment mmf put this back
       }
 
       break;
@@ -6175,8 +6176,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (pfsMission->GetStage() != STAGE_NOTSTARTED)
         break;
 
-      // TE: Balance or Flush depending on the LockSides parameter
-	  if (pfsMission->GetLockSides())
+      // TE: Balance or Flush depending on the LockSides parameter mmf MaxBalance
+	  if (pfsMission->GetMissionDef()->misparms.iMaxImbalance == 0x7ffe)
 	  {
 		// Balance the teams
 		pfsMission->RandomizeSides();
