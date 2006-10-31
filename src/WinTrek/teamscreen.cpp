@@ -1521,18 +1521,33 @@ public:
 	{
 	  int iRankSum = 0;
 	  int iTempRank = 0;
-	  const ShipListIGC * plistShips = pside->GetShips();
+	  SideInfo* pSideInfo = m_pMission->GetSideInfo(pside->GetObjectID());
 
 	  IshipIGC* pShip = NULL;
 	  PlayerInfo* pPlayer = NULL;
-	
-	  for (ShipLinkIGC * plinkShip = plistShips->first(); plinkShip; plinkShip = plinkShip->next())
+	  ShipList plistMembers;
+	  plistMembers = pSideInfo->GetMembers();
+	  if (plistMembers.GetCount() > 0)
 	  {
-		pShip = plinkShip->data();
-		pPlayer = trekClient.FindPlayer(pShip->GetObjectID());
-		int iTempRank = pPlayer->GetPersistScore(NA).GetRank();
+		  ShipID iShipID = plistMembers.GetFront();
+		  while (true)
+		  {
+			  if (!iShipID)
+				  break;
 
-		iRankSum += (iTempRank < 1) ? 1 : iTempRank;
+			  pPlayer = trekClient.FindPlayer(iShipID);
+
+			  if (pPlayer)
+			  {
+				  if (pPlayer->IsHuman())
+				  {
+					  iTempRank = pPlayer->GetPersistScore(NA).GetRank();
+					  iRankSum += (iTempRank < 1) ? 1 : iTempRank;
+				  }
+			  }
+			  iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID);
+		  }
+
 	  }
 	  return iRankSum;
 	}
