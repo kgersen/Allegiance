@@ -4693,12 +4693,28 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 bForward = false;
               }
 			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006
-			   //
-			  else if(pfsMission->GetOwner() == pfsPlayer && pfmChat->cbMessage > strlen("#autoaccept") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autoaccept", strlen("#autoaccept")) == 0)
+			   // mmf changed this from GetOwner to GetLeader
+			  else if(pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) == pfsPlayer && pfmChat->cbMessage > strlen("#autoaccept") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autoaccept", strlen("#autoaccept")) == 0)
               {
 				pfsMission->SetAutoAccept(pfsPlayer->GetSide(),!pfsMission->GetAutoAccept(pfsPlayer->GetSide()));
                 bForward = true;
-              }
+			  }
+			  // mmf added ability to change balance (MaxTeamImbalance) to 1 2 a (for auto) n (for N/A)
+			  else if(pfsMission->GetOwner() == pfsPlayer && pfmChat->cbMessage > strlen("#autobalance  ") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance", strlen("#autobalance")) == 0)
+              {
+                // check all cases explicitly instead of doing a string manipulation to pull of the parameter
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance 1", strlen("#autobalance 1")) == 0)
+					pfsMission->SetMaxTeamImbalance(1);
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance 2", strlen("#autobalance 2")) == 0)
+					pfsMission->SetMaxTeamImbalance(2);
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance a", strlen("#autobalance a")) == 0)
+					pfsMission->SetMaxTeamImbalance(0x7ffe);
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance n", strlen("#autobalance n")) == 0)
+					pfsMission->SetMaxTeamImbalance(0x7fff);
+                pfmChat->cd.chatTarget = CHAT_EVERYONE;
+                pfmChat->cd.oidRecipient = NA;
+				bForward = true;
+			  }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
 		 // beta feature only

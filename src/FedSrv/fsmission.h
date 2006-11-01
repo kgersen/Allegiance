@@ -291,6 +291,7 @@ public:
   }
   void                  SetLockLobby(bool bLock);
   void                  SetLockSides(bool bLock);
+  void                  SetMaxTeamImbalance(int imbalance); // mmf: added this to fmission.cpp
   bool                  GetLockSides();
   void                  FlushSides();	// TE: Added FlushSides function
   void                  RandomizeSides();

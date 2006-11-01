@@ -6768,7 +6768,10 @@ public:
 					//trekClient.SendChat(trekClient.GetShip(), CHAT_EVERYONE, NA, NA, "I'm back from being AFK!");
 				}
 			} else {
-				if (now.clock() - m_timeLastActivity.clock() > 180000) {
+				int inactive_threshold; // mmf added this so those in NOAT go afk quicker
+				if (trekClient.GetSideID() == SIDE_TEAMLOBBY) inactive_threshold = 90000; 
+				else inactive_threshold = 180000;
+				if (now.clock() - m_timeLastActivity.clock() > inactive_threshold) {
 					if (!g_bAFKToggled && trekClient.GetPlayerInfo() && trekClient.GetPlayerInfo ()->IsReady()) {
 						trekClient.GetPlayerInfo ()->SetReady(false);
 						trekClient.SetMessageType(BaseClient::c_mtGuaranteed);

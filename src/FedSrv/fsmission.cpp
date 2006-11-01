@@ -4506,6 +4506,22 @@ void CFSMission::SetLockSides(bool bLock)
   m_pMission->SetMissionParams(&m_misdef.misparms);
 }
 
+/* mmf added this function to support #autobalance chat command
+ *-------------------------------------------------------------------------
+ * SetMaxTeamImbalance
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Set the MaxTeamImbalance game parameter
+ *     
+ * Notes:
+ *    0x7ffe is 'auto' balance, 0x7fff is N/A
+ */
+void CFSMission::SetMaxTeamImbalance(int imbalance)
+{
+  m_misdef.misparms.iMaxImbalance = imbalance;
+  m_pMission->SetMissionParams(&m_misdef.misparms);
+}
+
 /*-------------------------------------------------------------------------
  * FlushSides
  *-------------------------------------------------------------------------

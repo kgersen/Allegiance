@@ -1438,10 +1438,13 @@ public:
 				}
 			}
 
+			// mmf using the below SendChat intermittently crashes the server
 			//SendChat(ZString("Max: ") + ZString(maxTeamRank) + ZString("; Min: ") + ZString(minTeamRank) + "; Diff: " + ZString(maxTeamRank - minTeamRank) + ZString("; Thresh: ") + ZString(threshold));
+			// mmf debugging, these do show up in the client log of the debug build
+			//debugf("maxTR: %d minTR: %d thresh: %d\n",maxTeamRank, minTeamRank, threshold);
 
 			// This section hides/shows the "Launch" button
-			// TE: Added || to check rank balancing mmf changed from locksides to MaxImbalnce
+			// TE: Added || to check rank balancing mmf changed from locksides to MaxImbalance
             if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
 			((m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank > threshold)))
             {
@@ -1457,13 +1460,12 @@ public:
                 for (SideID id = 0; id < m_pMission->NumSides(); id++)
                 {
                     const char* szReason = NULL;
-
                     if (m_pMission->SideNumPlayers(id) < m_pMission->MinPlayersPerTeam())
                         szReason = "BELOW MINIMUM SIZE";
                     else if (m_pMission->SideNumPlayers(id) > m_pMission->MaxPlayersPerTeam())
                         szReason = "ABOVE MAXIMUM SIZE";
-                    else if (!m_pMission->SideReady(id))
-                        szReason = "NOT READY";
+					else if (!m_pMission->SideReady(id))
+						szReason = "NOT READY";
 
                     if (szReason)
                     {
@@ -1471,6 +1473,7 @@ public:
                         {
                             idBlockingSide = id;
                             szBlockingReason = szReason;
+							debugf("%s szBlockingReason set to %s\n",trekClient.GetCore()->GetSide(id)->GetName(),szBlockingReason);
                         }
                         else
                         {
@@ -2474,7 +2477,7 @@ public:
 			&& !trekClient.MyPlayerInfo()->IsMissionOwner()		// wlp - not in control
 			)
 		{
-			m_pbuttonTeamReady->SetChecked(	false) ; // wlp - turn off team ready
+			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
 			OnButtonTeamReady();// wlp - send to server
 			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
 			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
