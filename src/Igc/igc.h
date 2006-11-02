@@ -1383,13 +1383,12 @@ struct MissionParams
             return "Scores can't be counted for a game where defections are allowed; "
                 "please turn off defections or stats count.";
         }
-		// TE: Commented this out to allow players to set 'stats count' without restriction
-		//		since the game won't count if there weren't enough players by the end anyways
-        //else if (bScoresCount && nMinPlayersPerTeam < 5)
-        //{
-        //    return "Scores can't be counted for a game with less than 5 players per team; "
-        //        "please increase the minimum players per team or turn stats count off.";
-        //}
+		// TE: Confirms that the MaxImbalance = AUTO when scores count
+        else if (bScoresCount && iMaxImbalance != 0x7ffe)
+        {
+            return "Scores can't be counted for a game where the MaxImbalance setting is not Auto; "
+                "please set the MaxImbalance setting to Auto, or turn off stats count.";
+        }
         else if (IsConquestGame() && bInvulnerableStations)
         {
             return "You can't play a conquest game with invulnerable stations; "

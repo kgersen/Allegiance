@@ -879,8 +879,10 @@ public:
 
 		// TE: If they set stats count, set lock sides. mmf changed to modify MaxImbalance to 'auto' setting
 		// mmf note game settings Max Team Imbalance field is not updated until you accept changes
-		if (pfmMissionParams->missionparams.bScoresCount)
-			pfmMissionParams->missionparams.iMaxImbalance = 0x7ffe;
+		// TE: NOTE!! This has been removed since the balancing is now handled from within the GameSettings
+		// screen itself, and does not rely on settings chosen outside of the screen.
+		/*if (pfmMissionParams->missionparams.bScoresCount)
+			pfmMissionParams->missionparams.iMaxImbalance = 0x7ffe;*/
 
         if (pszReason)
         {
