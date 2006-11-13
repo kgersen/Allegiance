@@ -1704,7 +1704,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 {
                     //We want to stop running
                     SetCommand(c_cmdPlan, NULL, c_cidNone);
-					debugf("mmf %-20s stoped running\n", GetName());
+					// debugf("mmf %-20s stoped running\n", GetName());
                     assert (m_bRunningAway == false);   //Set by SetCommand
                     m_timeRanAway = timeStop;
                 }

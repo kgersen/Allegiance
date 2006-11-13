@@ -2360,7 +2360,7 @@ public:
 
 			// mmf added debugf but will still have it call assert
 			if ((bError && !pfile->IsValid() && m_psite)) { // logic from ZRAssert below
-				debugf("Could not open the artwork file '" + strToOpen + "'");
+				debugf("Could not open the artwork file %s\n",strToOpen);
 				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
 			}
 		}

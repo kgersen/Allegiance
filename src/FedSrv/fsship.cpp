@@ -1166,8 +1166,11 @@ void CFSPlayer::SetDPGroup(CFSCluster*  pfsCluster, bool bFlying)
 
   if (m_pgrp)
   {
+#ifdef DEBUG
+    // mmf only log this in debug build
     debugf("Removing %s(%u) from group %s(%u)\n", GetName(), GetConnection()->GetID(), 
             m_pgrp->GetName(), m_pgrp->GetID());
+#endif
     g.fm.DeleteConnectionFromGroup(m_pgrp, GetConnection());
   }
   m_pgrp = pgrp;

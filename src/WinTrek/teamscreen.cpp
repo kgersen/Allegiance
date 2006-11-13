@@ -2480,6 +2480,7 @@ public:
 			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
 			OnButtonTeamReady();// wlp - send to server
 			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
+			g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off
 			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
 		} ;
 		// wlp 8/5/2006 - end of Afk added code
@@ -2502,6 +2503,7 @@ public:
 			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
 			OnButtonTeamReady() ;// wlp - send to server
 			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
+			g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off
 			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
 		} ;
 		// wlp 8/5/2006 - end of Afk added code

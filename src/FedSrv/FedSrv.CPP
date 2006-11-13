@@ -1060,7 +1060,8 @@ void SetCharStats(int                   characterID,
                   PlayerScoreObject&    pso,
                   CFSMission*           pfsMission)
 {
-    if (0.0f == pso.GetTimePlayed())
+#if !defined(ALLSRV_STANDALONE)  // mmf moved this up from further down
+	if (0.0f == pso.GetTimePlayed())
     {
       return;
     }
@@ -1115,7 +1116,7 @@ void SetCharStats(int                   characterID,
         }
     }
 
-  #if !defined(ALLSRV_STANDALONE)
+ // #if !defined(ALLSRV_STANDALONE) mmf moved this further up
 
     CQCharStats * pquery = new CQCharStats(NULL); // don't need call-back notification
     CQCharStatsData * pdq = pquery->GetData();
@@ -1168,6 +1169,29 @@ void SetCharStats(int                   characterID,
     g.sql.PostQuery(pquery);
 
   #endif // !defined(ALLSRV_STANDALONE)
+
+#ifdef DEBUG
+	// mmf have debug build of server log this
+	// mmf converted debug statement from pdq structure
+	if (0.0f == pso.GetTimePlayed())
+    {   return;    }
+    assert(pso.GetScore() >= 0.0f);
+	assert(pSide);
+    PersistPlayerScoreObject& ppso = pso.GetPersist();
+    RankID  Rank = ppso.GetRank();
+	debugf("PlayerName=%s, Rank=%d, bScoresCount=%d, CharacterID=%d, CivID=%d, Rating=%d,\n",
+        pfsPlayer->GetName(),Rank ,pfsMission->GetScoresCount(), characterID, pSide->GetCivilization()->GetObjectID(), 
+		RATING_INT2EXT(pso.GetCombatRating()));
+    debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
+        pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
+    debugf("    MinerKills=%.2f, BuilderKills=%.2f, LayerKills=%.2f, PlayerKills=%.2f,\n",
+        pso.GetMinerKills(), pso.GetBuilderKills(), pso.GetLayerKills(), pso.GetPlayerKills());
+    debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
+        pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
+    debugf("    Minutes=%d, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
+        (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(), 
+		pso.GetScore());
+#endif
 }
 
 /*-------------------------------------------------------------------------
@@ -4416,10 +4440,13 @@ void FedSrvSiteBase::OnMessageSent(FedMessaging * pthis, CFMRecipient * precip, 
     if (FM_CS_ORDER_CHANGE == pfm->fmid)
     {
       CASTPFM(pfmOrderChange, CS, ORDER_CHANGE, pfm);
+#ifdef DEBUG
+      // mmf only log this in debug build
       debugf("FM_CS_ORDER_CHANGE: shipID=%d, objectID=%d, objectType=%d, commandID=%d, command=%d.\n",
           pfmOrderChange->shipID, pfmOrderChange->objectID, pfmOrderChange->objectType,
           pfmOrderChange->commandID, pfmOrderChange->command);
-    }
+#endif
+	}
 
     g.pServerCounters->cPacketsOut          += cConnections;
     g.pServerCounters->cPacketsOutPerSecond += cConnections;

@@ -996,9 +996,11 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
             }
 
 			// mmf see if we can also reset skill level here
-			// might need to revisit this if we make this a server side setting for some games (like to keep
+			// might need to revisit this if we make this a server setting for some games (like to keep
 			// the newb server always Nov. Only.  Also using current values in skilllevels.mdl which could change
-			// splat revist this and make Set functions
+			// mmf revist
+			// this works (when they try and connect) but it does not let the clients know so it does not update their gui
+			// AFAIK there is no corresponding message we can send for this like there is above for LOCK_SIDES, etc
 			m_misdef.misparms.iMinRank = -1;
 			m_misdef.misparms.iMaxRank = 1000;
         }
@@ -4163,15 +4165,23 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 		
 		// Prevent joining a team if it will put it over the threshold
 		int nNewSideRank = nRequestedSideRank + nPlayerRank;
-		if (nNewSideRank - nLowestTeamRank > nRankThreshold)
+		if (nNewSideRank - nLowestTeamRank > nRankThreshold) {
+			// mmf log this
+			debugf("join blocked would unbalance sides Rank=%d, NewSideRank=%d, RequestedSideRank=%d, LowestTeamRank=%d, RankThreshold=%d\n",
+				nPlayerRank,nNewSideRank,nRequestedSideRank,nLowestTeamRank,nRankThreshold);	
 			return DPR_TeamBalance;
+		}
 
 		// Prevent joining a team if a newbie is trying to newbstack
 		if (nPlayerRank <= 8 && nRequestedSideRank == nLowestTeamRank)
 		{
 			int nDifference = nHighestTeamRank - nRequestedSideRank;
-			if (nDifference > nRankThreshold)
+			if (nDifference > nRankThreshold) {
+				// mmf log this
+				debugf("join blocked (newbstack) Rank=%d, Difference=%d, RequestedSideRank=%d, HighestTeamRank=%d, RankThreshold=%d\n",
+				nPlayerRank,nDifference,nRequestedSideRank,nHighestTeamRank,nRankThreshold);	
 				return DPR_TeamBalance;
+			}
 		}
 	}
 
