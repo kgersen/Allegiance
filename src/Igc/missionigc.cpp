@@ -1769,6 +1769,27 @@ void                    CmissionIGC::GenerateMission(Time                   now,
         for (SideLinkIGC*   psl = m_sides.first(); (psl != NULL); psl = psl->next())
             psl->data()->SetTerritoryCount(nTerritoriesPerSide[psl->data()->GetObjectID()]);
     }
+	// mmf log mission params server side via debugf's
+	// may want to revisit this and make it a member function
+    debugf("Name: %s\n",pmp->strGameName);
+    debugf("Core Name: %s\n",pmp->szIGCStaticFile);
+	debugf("Lives: %d\n",pmp->iLives);
+	debugf("Map Type: %s\n",pmp->szCustomMapFile);
+	debugf("Map Connectivity: %d\n",pmp->iRandomEncounters);
+	debugf("Resources: %d\n",pmp->iResources);
+	debugf("Total money: %f\n",pmp->fHe3Density);
+	debugf("Player Sector He3 rocks: %d\n",pmp->nPlayerSectorMineableAsteroids);
+	debugf("Neutral Sector He3 rocks: %d\n",pmp->nNeutralSectorMineableAsteroids);
+	debugf("Max Miners: %d\n",pmp->nMaxMinersPerTeam);
+    debugf("Scores Count: %s\n",pmp->bScoresCount ? "yes" : "no");
+    debugf("Eject Pods: %s\n",pmp->bEjectPods ? "yes" : "no");
+    debugf("Allow Friendly Fire: %s\n",pmp->bAllowFriendlyFire ? "yes" : "no");
+    debugf("Allow Defections: %s\n",pmp->bAllowDefections ? "yes" : "no");
+	debugf("Allow Joiners: %s\n",pmp->bAllowJoiners ? "yes" : "no");
+    debugf("Invulnerable Stations: %s\n",pmp->bInvulnerableStations ? "yes" : "no");
+    debugf("Developments: %s\n",pmp->bAllowDevelopments ? "yes" : "no");
+    debugf("Allow Shipyards: %s\n",pmp->bAllowShipyardPath ? "yes" : "no");
+    
 }
 
 void    CmissionIGC::GenerateTreasure(Time         now,

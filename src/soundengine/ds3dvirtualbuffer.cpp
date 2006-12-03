@@ -167,8 +167,8 @@ HRESULT DSVirtualSoundBuffer::PrepareBuffer8(IDirectSound8* pDirectSound,
             m_pds3dbuffer = pds3dASRBuffer;
         }
         // stream sounds that are larger than 1 MB or so.
-//        else if (m_pdata->GetSize() > 1000000)
-		else if (m_pdata->GetSize() > 100000)		// mdvalley: lower limit to 100k for debugging
+        else if (m_pdata->GetSize() > 1000000)
+		// else if (m_pdata->GetSize() > 100000)		// mdvalley: lower limit to 100k for debugging
         {
             DS3DStreamingSoundBuffer* pds3DStreamingBuffer = new DS3DStreamingSoundBuffer();
 
@@ -223,8 +223,8 @@ HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound,
             m_pds3dbuffer = pds3dASRBuffer;
         }
         // stream sounds that are larger than 1 MB or so.
-//        else if (m_pdata->GetSize() > 1000000)
-		else if (m_pdata->GetSize() > 100000)		// mdvalley: lower limit to 100k for debugging
+        else if (m_pdata->GetSize() > 1000000)
+		// else if (m_pdata->GetSize() > 100000)		// mdvalley: lower limit to 100k for debugging
         {
             DS3DStreamingSoundBuffer* pds3DStreamingBuffer = new DS3DStreamingSoundBuffer();
 
