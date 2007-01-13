@@ -17,7 +17,15 @@ public:
         TRef<StringValue> pstring; CastTo(pstring, (IObject*)stack.Pop());
         TRef<ISoundTemplate> pTemplate;
 
-        ZSucceeded(CreateWaveFileSoundTemplate(pTemplate, m_pmodeler->GetArtPath() + "/" + pstring->GetValue() + ".wav"));
+//        ZSucceeded(CreateWaveFileSoundTemplate(pTemplate, m_pmodeler->GetArtPath() + "/" + pstring->GetValue() + ".wav"));
+
+		HRESULT oggResult;
+
+		// If the ogg isn't found, fall back to wave.
+		oggResult = CreateWaveFileSoundTemplate(pTemplate, m_pmodeler->GetArtPath() + "/" + pstring->GetValue() + ".ogg");
+		if(FAILED(oggResult))
+			ZSucceeded(CreateWaveFileSoundTemplate(pTemplate, m_pmodeler->GetArtPath() + "/" + pstring->GetValue() + ".wav"));
+
 
         return pTemplate;
     }

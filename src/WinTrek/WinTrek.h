@@ -64,7 +64,9 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 // WinTrek Client
-const c_numGrooveLevels = 3;
+
+// mdvalley: gotta be explicitly an int now
+const int c_numGrooveLevels = 3;
 
 class  WinTrekClient :
     public BaseClient,
@@ -124,7 +126,7 @@ class  WinTrekClient :
         bool                    m_bFilterChatsToAll;
         bool                    m_bFilterQuickComms;
         bool                    m_bFilterLobbyChats;
-
+		DWORD					m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
         //
         // Explosions
@@ -194,6 +196,8 @@ class  WinTrekClient :
         void              FilterQuickComms(bool bFilterQuickComms) { m_bFilterQuickComms = bFilterQuickComms; };
         bool              FilterLobbyChats() { return m_bFilterLobbyChats; };
         void              FilterLobbyChats(bool bFilterLobbyChats) { m_bFilterLobbyChats = bFilterLobbyChats; };
+		DWORD             MaxTextureSize() {return m_dwMaxTextureSize; };// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+        void              MaxTextureSize(DWORD bMaxTextureSize) {m_dwMaxTextureSize = bMaxTextureSize; };// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 /*
         virtual void FireMissile(IshipIGC* pship, ImagazineIGC* pmagazine,
                         Time timeFired, ImodelIGC* pTarget, float lock);

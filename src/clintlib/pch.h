@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <mmsystem.h>
-#include <dplobby.h>
+//#include <dplobby.h>
 #include <tchar.h>
 
 //

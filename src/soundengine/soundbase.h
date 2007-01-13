@@ -237,7 +237,7 @@ public:
 //
 
 // create a sound engine for the default sound device
-HRESULT CreateSoundEngine(TRef<ISoundEngine>& psoundengine, HWND hwnd);
+HRESULT CreateSoundEngine(TRef<ISoundEngine>& psoundengine, HWND hwnd, bool bUseDSound8);
 
 // create a dummy sound engine
 HRESULT CreateDummySoundEngine(TRef<ISoundEngine>& psoundengine);

@@ -1255,6 +1255,7 @@ public:
     TRef<IMenuItem>            m_pitemFilterLobbyChats;
     TRef<IMenuItem>            m_pitemSoundQuality;
     TRef<IMenuItem>            m_pitemToggleSoundHardware;
+	TRef<IMenuItem>            m_pitemToggleDSound8Usage;
     TRef<IMenuItem>            m_pitemToggleMusic;
     TRef<IMenuItem>            m_pitemMusicVolumeUp;
     TRef<IMenuItem>            m_pitemMusicVolumeDown;
@@ -1262,6 +1263,7 @@ public:
     TRef<IMenuItem>            m_pitemSFXVolumeDown;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeUp;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeDown;
+	TRef<IMenuItem>            m_pitemMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
     bool                       m_bLensFlare;
     bool                       m_bMusic;
@@ -1282,6 +1284,10 @@ public:
     int             m_nLastCountdown;
     TRef<IMessageBox> m_pmessageBoxLockdown;
 
+	//
+	//	ContextMenu data
+	//
+	PlayerInfo * contextPlayerInfo;
 
     //
     // Music
@@ -1298,6 +1304,7 @@ public:
     TVector<TRef<ISoundTemplate> >  m_vSoundMap;
     ISoundEngine::Quality           m_soundquality;
     bool                            m_bEnableSoundHardware;
+	bool                            m_bUseDSound8;
     TRef<IDiskPlayer>               m_pDiskPlayer;
     TRef<ISoundMutex>               m_psoundmutexSal;
     TRef<ISoundMutex>               m_psoundmutexVO;
@@ -2606,9 +2613,11 @@ public:
 
         DWORD dwSoundInitStartTime = timeGetTime();
 
+		m_bUseDSound8 = LoadPreference("UseDSound8", true);
+
         if (g_bEnableSound) {
             assert (m_pSoundEngine == NULL);
-            hr = CreateSoundEngine(m_pSoundEngine, GetHWND());
+            hr = CreateSoundEngine(m_pSoundEngine, GetHWND(), m_bUseDSound8);
         }
 
         if (FAILED(hr) || !g_bEnableSound)
@@ -2908,6 +2917,9 @@ public:
             CycleStyleHUD();
         if (LoadPreference("LargeDeadZone", FALSE))
             ToggleLargeDeadZone();
+		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+
+		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
         bool bAllow3DAcceleration;
 
@@ -3344,6 +3356,52 @@ public:
         }
     }
 
+	void contextAcceptPlayer()
+	{
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+        BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
+        END_PFM_CREATE
+        pfmPosAck->shipID = contextPlayerInfo->ShipID();
+        pfmPosAck->fAccepted = true;
+        pfmPosAck->iSide = trekClient.GetSideID();
+	}
+
+	void contextRejectPlayer()
+	{
+		// if we are booting a player who is already on our team...
+       if (contextPlayerInfo->SideID() == trekClient.GetSideID())
+        {
+            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+            BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
+            END_PFM_CREATE
+            pfmQuitSide->shipID = contextPlayerInfo->ShipID();
+            pfmQuitSide->reason = QSR_LeaderBooted;
+        }
+        else
+        {
+            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+            BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
+            END_PFM_CREATE
+            pfmPosAck->shipID = contextPlayerInfo->ShipID();
+            pfmPosAck->fAccepted = false;
+            pfmPosAck->iSide = trekClient.GetSideID();
+        }
+	}
+
+	void contextMakeLeader()
+	{
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+        BEGIN_PFM_CREATE(trekClient.m_fm, pfmSetTeamLeader, CS, SET_TEAM_LEADER)
+        END_PFM_CREATE
+        pfmSetTeamLeader->sideID = trekClient.GetSideID(); 
+        pfmSetTeamLeader->shipID = contextPlayerInfo->ShipID(); 
+	}
+
+	void contextMute()
+	{
+		contextPlayerInfo->SetMute(!contextPlayerInfo->GetMute());
+	}
+
     //////////////////////////////////////////////////////////////////////////////
     //
     // ModelerSite
@@ -3452,6 +3510,7 @@ public:
     #define idmGameOptions       11
     #define idmExitApp           12
     #define idmGameDetails       13
+	#define idmVersion           14 // TE: Added Version menu
 
     #define idmChannelN          101
     #define idmChannelShow       102
@@ -3506,7 +3565,7 @@ public:
     #define idmToggleFlipY                 629
     #define idmToggleStickyChase           630
     #define idmToggleEnableFeedback        631
-
+	#define idmMaxTextureSize          632// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -3518,6 +3577,85 @@ public:
     #define idmSFXVolumeDown        708
     #define idmVoiceOverVolumeUp    709
     #define idmVoiceOverVolumeDown  710
+	#define idmUseDSound8           711
+
+	#define idmContextAcceptPlayer	801
+	#define idmContextRejectPlayer	802
+	#define idmContextMakeLeader	803
+	#define idmContextMutePlayer	804
+
+
+	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
+	 * bitmap. Filename is determined by the user's local time.
+	 * Author: Stain_Rat
+	 */
+	void TakeScreenShot()
+	{
+		//capturing screen size this way (instead of using a native GDI call) will create
+		//windowed screen shots which look like they were taken with the game running
+		//in full screen mode.
+		Point currentResolution = GetRenderRectValue()->GetValue().Size();
+		int screenX = currentResolution.X();
+		int screenY = currentResolution.Y();
+
+		HDC hDesktopDC = GetDC();
+		HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
+		void* DIBBitValues;
+		BITMAPINFO bmpInfo = {0};
+
+		//build up the BITMAPINFOHEADER
+		bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		bmpInfo.bmiHeader.biWidth = screenX;
+		bmpInfo.bmiHeader.biHeight = screenY;
+		bmpInfo.bmiHeader.biPlanes = 1;
+		bmpInfo.bmiHeader.biBitCount = 24;
+		bmpInfo.bmiHeader.biCompression = BI_RGB;
+
+		HBITMAP hCaptureBitmap = CreateDIBSection(hDesktopDC, &bmpInfo, DIB_RGB_COLORS, &DIBBitValues, NULL, NULL);
+		SelectObject(hCaptureDC, hCaptureBitmap);
+		BitBlt(hCaptureDC, 0, 0, screenX, screenY, hDesktopDC, 0, 0, SRCCOPY);
+		
+		//populates bmpInfo.bmiHeader.biSizeImage with the actual size
+		GetDIBits(hDesktopDC, hCaptureBitmap, 0, 0, NULL, &bmpInfo, DIB_RGB_COLORS); 
+
+		//build up the BITMAPFILEHEADER
+		BITMAPFILEHEADER bmpFileHeader = {0};
+		bmpFileHeader.bfType = 'MB';
+		bmpFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpInfo.bmiHeader.biSizeImage;
+		bmpFileHeader.bfReserved1 = 0;
+		bmpFileHeader.bfReserved2 = 0;
+		bmpFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER); 
+		
+		//create a filename for our screenshot using the local time
+		SYSTEMTIME sysTimeForName;
+		GetLocalTime(&sysTimeForName);
+		ZString scrnShotName = sysTimeForName.wYear;
+		scrnShotName += "-";
+		scrnShotName += sysTimeForName.wMonth;
+		scrnShotName += "-";
+		scrnShotName += sysTimeForName.wDay;
+		scrnShotName += "_";
+		scrnShotName += sysTimeForName.wHour;
+		scrnShotName += ".";
+		scrnShotName += sysTimeForName.wMinute;
+		scrnShotName += ".";
+		scrnShotName += sysTimeForName.wSecond;
+		scrnShotName += ".";
+		scrnShotName += sysTimeForName.wMilliseconds;
+		scrnShotName += ".bmp";
+
+		FILE* outputFile;
+		outputFile = fopen(scrnShotName,"wb");
+		//write the BITMAPFILEHEADER, BITMAPINFOHEADER, and bimap bit values to create the *.bmp
+		fwrite(&bmpFileHeader, sizeof(BITMAPFILEHEADER), 1, outputFile);
+		fwrite(&bmpInfo.bmiHeader, sizeof(BITMAPINFOHEADER), 1, outputFile);
+		fwrite(DIBBitValues, bmpInfo.bmiHeader.biSizeImage, 1, outputFile); 
+		fclose(outputFile);
+
+		ReleaseDC(hDesktopDC);
+		DeleteDC(hCaptureDC);
+		DeleteObject(hCaptureBitmap);
+	}
 
     void ShowMainMenu()
     {
@@ -3528,6 +3666,27 @@ public:
                 m_pmenuCommandSink
             );
 
+		// mmf format octal version (defined in SlmVer.h) to decimal YY.MM.DD
+		int YY,MM,DD;
+		{
+			ZString dVer, dYY, dMM, dDD;
+			dVer = ZString(ZVersionInfo().GetStringValue("FileVersion").Right(6));
+			dDD = dVer.Right(2);
+			dMM = dVer.Middle(2,2);
+			dYY = dVer.Middle(0,2);
+			YY = atoi(dYY); 	YY = (YY/10)*8+(YY%10); 
+			MM = atoi(dMM); 	MM = (MM/10)*8+(MM%10); 
+			DD = atoi(dDD); 	DD = (DD/10)*8+(DD%10);
+		}
+
+		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
+		// mmf added ifs to zero pad MM and DD 
+		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
+		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
+		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
+		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+
+		m_pmenu->AddMenuItem(0               , "------------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmSoundOptions , "Sound Options"   , 'S', m_psubmenuEventSink);
@@ -3544,6 +3703,78 @@ public:
 
         OpenPopup(m_pmenu, Point(10, 10));
     }
+	
+	// YP: Add this for the rightclick lobby patch
+	void ShowPlayerContextMenu(PlayerInfo * playerInfo)
+	{
+		contextPlayerInfo = playerInfo;
+
+		char str1[30];	
+		char str2[30];	
+		char str3[30];	sprintf(str3, "Make Leader  ",playerInfo->CharacterName());
+		char str4[30];	sprintf(str4, playerInfo->GetMute() == false ?"Mute         " :"UnMute       ",playerInfo->CharacterName());
+
+        bool bEnableAccept = false;
+        bool bEnableReject = false; 
+        bool bEnableMakeLeader = false;
+		bool bEnableMute = false;
+			if (playerInfo->SideID() == trekClient.GetSideID())
+			{
+				if(trekClient.GetPlayerInfo()->IsTeamLeader())
+				{
+					sprintf(str2,"Boot       ",playerInfo->CharacterName());
+					bEnableReject = playerInfo->ShipID() != trekClient.GetShipID()
+						&& (!trekClient.MyMission()->GetMissionParams().bLockTeamSettings
+							|| playerInfo->SideID() != trekClient.GetSideID());
+
+					bEnableMakeLeader = playerInfo->SideID() == trekClient.GetSideID()
+						&& playerInfo->ShipID() != trekClient.GetShipID();
+
+					
+				}				
+			}
+			else 
+			{
+				if(trekClient.GetPlayerInfo()->IsTeamLeader())
+				{
+					sprintf(str1,"Accept       ",playerInfo->CharacterName());
+					bEnableAccept = trekClient.MyMission()->SideAvailablePositions(trekClient.GetSideID()) > 0
+						&& trekClient.MyMission()->FindRequest(trekClient.GetSideID(), playerInfo->ShipID());
+				
+					sprintf(str2,"Reject       ",playerInfo->CharacterName());
+					bEnableReject = playerInfo->ShipID() != trekClient.GetShipID()
+							&& trekClient.MyMission()->FindRequest(trekClient.GetSideID(), playerInfo->ShipID())
+							&& (!trekClient.MyMission()->GetMissionParams().bLockTeamSettings
+								|| playerInfo->SideID() != trekClient.GetSideID());
+				}
+			}
+
+			// we always want to be able to mute :)
+			bEnableMute = playerInfo != trekClient.GetPlayerInfo() ? true : false ;
+
+		m_pmenu =
+            CreateMenu(
+                GetModeler(),
+                TrekResources::SmallFont(),
+                m_pmenuCommandSink
+            );
+	
+
+        if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str1 , 'A');
+        if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str2 , 'R');
+        if(bEnableMakeLeader)	m_pmenu->AddMenuItem(idmContextMakeLeader , str3 , 'L');
+        if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');
+
+		Point popupPosition = GetMousePosition();
+		
+
+		TRef<Pane> ppane = m_pmenu->GetPane();
+		ppane->UpdateLayout();
+		Point p = Point::Cast(ppane->GetSize());
+
+		popupPosition.SetY(popupPosition.Y() - p.Y());  
+        OpenPopup(m_pmenu,	popupPosition);
+	}
 
     void ShowOptionsMenu()
     {
@@ -3590,7 +3821,10 @@ public:
                 m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            , 'F');
                 m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(), 'B');
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             , 'H');
-                break;
+                // yp Your_Persona August 2 2006 : MaxTextureSize Patch
+                m_pitemMaxTextureSize              = pmenu->AddMenuItem(idmMaxTextureSize,            GetMaxTextureSizeMenuString(),    'X');
+
+				break;
 
             case idmGameOptions:
                 m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'S');
@@ -3612,6 +3846,7 @@ public:
                 #endif
                 m_pitemSoundQuality         = pmenu->AddMenuItem(idmSoundQuality, GetSoundQualityMenuString());
                 m_pitemToggleSoundHardware  = pmenu->AddMenuItem(idmSoundHardware, GetSoundHardwareMenuString());
+				m_pitemToggleDSound8Usage   = pmenu->AddMenuItem(idmUseDSound8, GetDSound8EnabledString());
                 m_pitemToggleMusic          = pmenu->AddMenuItem(idmToggleMusic, GetMusicMenuString());
                 m_pitemMusicVolumeUp        = pmenu->AddMenuItem(idmMusicVolumeUp,
                     GetGainMenuString("Music", m_pnumMusicGain->GetValue(), c_fVolumeDelta), 'M');
@@ -3854,6 +4089,19 @@ public:
             m_pitemToggleBidirectionalLighting->SetString(GetBidirectionalLightingMenuString());
         }
     }
+
+	// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	void ToggleMaxTextureSize(DWORD dwNewMaxSize)
+	{
+		if(dwNewMaxSize > 3){dwNewMaxSize =0;}
+        trekClient.MaxTextureSize(dwNewMaxSize);
+		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());
+        SavePreference("MaxTextureSize", trekClient.MaxTextureSize());
+ 
+        if (m_pitemMaxTextureSize != NULL) {
+            m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
+        }
+	}
 
     SoundID GetFlightMusic()
     {
@@ -4223,6 +4471,16 @@ public:
             m_pitemToggleSoundHardware->SetString(GetSoundHardwareMenuString());
     }
 
+	void ToggleUseDSound8()
+	{
+		m_bUseDSound8 = !m_bUseDSound8;
+
+		SavePreference("UseDSound8", (DWORD)m_bUseDSound8);
+
+		if(m_pitemToggleDSound8Usage != NULL)
+			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
+	}
+
     void ToggleMusic()
     {
         m_bMusic = !m_bMusic;
@@ -4306,6 +4564,16 @@ public:
     ZString GetEnvironmentMenuString()
     {
         return (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment) ? "Environment On " : "Environment Off ";
+    }
+
+// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	ZString GetMaxTextureSizeMenuString()
+    {
+		int i = 0;
+		int j = 2;
+		i = 8 + trekClient.MaxTextureSize();
+		j = pow((float)j,(float)i);
+        return "Max Texture Size ("  + ZString( j)  + ") ";
     }
 
     ZString GetRoundRadarMenuString()
@@ -4415,6 +4683,13 @@ public:
     {
         return m_bEnableSoundHardware ? "Sound Card Acceleration On" : "Sound Card Acceleration Off";
     }
+
+	// mdv new sound8 or old sound engine
+	// mmf changed wording
+	ZString GetDSound8EnabledString()
+	{
+		return m_bUseDSound8 ? "DirectSound (Restart Reqd.): New" : "DirectSound (Restart Reqd.): Old";
+	}
 
     ZString GetMusicMenuString()
     {
@@ -4561,6 +4836,11 @@ public:
                 ToggleEnvironment();
                 break;
 
+			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+            case idmMaxTextureSize:
+                ToggleMaxTextureSize(trekClient.MaxTextureSize()+1);
+                break;
+
             case idmToggleRoundRadar:
                 ToggleRoundRadar ();
                 break;
@@ -4661,6 +4941,10 @@ public:
                 ToggleSoundHardware();
                 break;
 
+			case idmUseDSound8:
+				ToggleUseDSound8();
+				break;
+
             case idmToggleMusic:
                 ToggleMusic();
                 break;
@@ -4688,6 +4972,22 @@ public:
             case idmVoiceOverVolumeDown:
                 AdjustVoiceOverVolume(-c_fVolumeDelta);
                 break;
+			// YP: Add cases for rightclick lobby patch
+			case idmContextAcceptPlayer:
+				contextAcceptPlayer();	CloseMenu();
+				break;
+
+			case idmContextRejectPlayer:
+				contextRejectPlayer();	CloseMenu();
+				break;
+
+			case idmContextMakeLeader:
+				contextMakeLeader();	CloseMenu();
+				break;
+
+			case idmContextMutePlayer:
+				contextMute();			CloseMenu();
+				break;
         }
     }
 
@@ -4951,6 +5251,9 @@ public:
             // kill any mouse capture
             m_pwrapImageTop->RemoveCapture();
 
+			// yp - Your_Persona buttons get stuck patch. aug-03-2006
+			// clear the keyboard buttons. 
+			m_ptrekInput->ClearButtonStates();
 
             switch (vm)
             {
@@ -5769,7 +6072,8 @@ public:
         }
     }
 
-    virtual UpdateCommandView(void)
+	// mdvalley: the func return type has to be explicit now.
+    virtual void UpdateCommandView(void)
     {
         assert (CommandCamera(m_cm));
 
@@ -6283,7 +6587,8 @@ public:
 
                                 pthing->SetThrust(0.5f * (pship->GetControls().jsValues[3] + 1));
 
-                                if (stateM & miningMaskIGC)
+								// mdvalley: Uneyed miners no bolties.
+								if ((stateM & miningMaskIGC) && trekClient.GetShip()->CanSee(pship))
                                     psite->ActivateBolt();
                                 else
                                     psite->DeactivateBolt();
@@ -6463,7 +6768,10 @@ public:
 					//trekClient.SendChat(trekClient.GetShip(), CHAT_EVERYONE, NA, NA, "I'm back from being AFK!");
 				}
 			} else {
-				if (now.clock() - m_timeLastActivity.clock() > 180000) {
+				int inactive_threshold; // mmf added this so those in NOAT go afk quicker
+				if (trekClient.GetSideID() == SIDE_TEAMLOBBY) inactive_threshold = 90000; 
+				else inactive_threshold = 180000;
+				if (now.clock() - m_timeLastActivity.clock() > inactive_threshold) {
 					if (!g_bAFKToggled && trekClient.GetPlayerInfo() && trekClient.GetPlayerInfo ()->IsReady()) {
 						trekClient.GetPlayerInfo ()->SetReady(false);
 						trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
@@ -7505,6 +7813,10 @@ public:
     {
         if (m_screen != ScreenIDSplashScreen) {
             switch(tk) {
+				// SR: added ability to take screenshot
+				case TK_ScrnShot:
+					TakeScreenShot();
+					return true;
 				// SR added ability to toggle virtual joystick during launch animation 8/06
 				case TK_ToggleMouse:
 					if (trekClient.IsInGame() &&

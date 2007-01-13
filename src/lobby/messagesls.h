@@ -13,7 +13,7 @@
 
 #include "MessageCore.h"
 
-#define LOBBYVER_LS 4 // If you change this file, increment this
+#define LOBBYVER_LS 6 // If you change this file, increment this
 
 
 /*
@@ -34,6 +34,7 @@
 // mean that the server will have games created on it, since the Lobby has a list of creatable servers.
 DEFINE_FEDMSG(S, LOGON_LOBBY, 201) 
   short verLobby;
+  DWORD dwPort;
 END_FEDMSG
 
 DEFINE_FEDMSG(S, LOGOFF_LOBBY, 202) 

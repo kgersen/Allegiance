@@ -1,30 +1,16 @@
-FAZ - Free Allegiance Zone
+FAZ Readme
+==========
+Load Allegiance.sln in Visual C++ 2005 and use the FZDebug and FZRetail configurations.
+If you want to use Visual Studio .NET 2003, load the Allegiance2k3.sln file instead.
 
-version 1.0.0.6
+Build the solution and everything will be built and put into the \objs folder of your checkout's root.
+The files will be built under configuration subfolders:
+\objs\FZDebug
+\objs\FZRetail
 
-Database
---------
-
- update (to do in that order):
-	- 'profile' database - src\database\profile.sql - create a db named 'profile' and run this sql script
-	- Fed database update for 'profile' - src\database\update-federation.sql - run this on the 'federation' db
-	- Fed database fixes - src\database\fix-federation.sql - run this on the 'federation' db
-	- A+/DN factions - src\database\add-new-factions.sql - run this on the 'federation' db
-
-Sources
--------
-Fixes/Changes:
-
-- Integrate Authentication. Source/include of external dll not provided for security reasons.
-- Temporary multicore support by using 'DefaultGames' system (Core1,Core2,... registry) and 'core game' icons on clients. See src\FedSrv\FedSrv.CPP(7434).
-- Screen resolution changes removed on loadout screen.
-- "#start": "force start" command for game owner added. beta feature only.(define FAZBETA)
-- added 'Core name", 'Map connectivity' and 'Total Money' in esc-i (game info) screen. (bug #74).
-
-Artwork (see FAZ autoupdate for files)
--------
-
-- updated introscreen.mdl for AZ ui
-- updated mdl/bmp for player added factions (GT, Dreg, TF).
-- new main backgrounds bmps by Pook.
-
+The files you'll be interested are:
+...\Lobby\alllobby.exe		The Lobby server
+...\AGC\AGC.dll			DLL needed by Allsrv and Allegiance
+...\FedSrv\allsrv.exe		The Gameserver
+...\AllsrvUI\allsrvui.exe	The UI for the gameserver in 'Desktop' mode
+...\WinTrek\Allegiance.exe	The game client

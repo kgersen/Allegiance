@@ -187,8 +187,9 @@ public:
         // Buttons
         //
         
-        AddEventTarget(OnButtonBack, m_pbuttonBack->GetEventSource());
-        AddEventTarget(OnButtonSignUp, m_pbuttonSignUp->GetEventSource());
+		// mdvalley: 2005 needs a pointer and the class spelled out
+        AddEventTarget(&ZoneEventsScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
+        AddEventTarget(&ZoneEventsScreen::OnButtonSignUp, m_pbuttonSignUp->GetEventSource());
 
 
         //

@@ -38,7 +38,8 @@ public:
     void Randomize() // fill in random data for testing
     {
 #ifdef DEBUG
-    static i = 0;
+		// mdvalley: needs to be explicit int
+    static int i = 0;
 
     m_rank = (Rank) (i % 3 + 1);
 

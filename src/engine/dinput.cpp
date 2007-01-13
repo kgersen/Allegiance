@@ -180,7 +180,8 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
     
-    TRef<IDirectInputDevice2>           m_pdid;
+//    TRef<IDirectInputDevice2>           m_pdid;
+	TRef<IDirectInputDevice7>			m_pdid;					// mdvalley: DInput7
     TRef<ButtonEvent::SourceImpl>       m_pbuttonEventSource;
     DIDeviceCaps                        m_didc;
     DIDeviceInstance                    m_didi;
@@ -203,7 +204,8 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
     
-    MouseInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
+//    MouseInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
+	MouseInputStreamImpl(IDirectInputDevice7* pdid, HWND hwnd) :		// mdvalley: DInput7
         m_pdid(pdid),
         m_rect(0, 0, 0, 0),                                                                         
         m_point(0, 0),
@@ -425,6 +427,24 @@ public:
                         ButtonChanged(3, ((didod.dwData & 0x80) != 0)); 
                         break;
 
+					// mdvalley: More buttons
+
+					case DIMOFS_BUTTON4:
+						ButtonChanged(4, ((didod.dwData & 0x80) != 0));
+						break;
+
+					case DIMOFS_BUTTON5:
+						ButtonChanged(5, ((didod.dwData & 0x80) != 0));
+						break;
+
+					case DIMOFS_BUTTON6:
+						ButtonChanged(6, ((didod.dwData & 0x80) != 0));
+						break;
+
+					case DIMOFS_BUTTON7:
+						ButtonChanged(7, ((didod.dwData & 0x80) != 0));
+						break;
+
                     case DIMOFS_X:
                         dx += int(didod.dwData);
                         break;
@@ -459,7 +479,8 @@ public:
         // Get the data
         //
 
-        DIMOUSESTATE dims;
+//        DIMOUSESTATE dims;
+		DIMOUSESTATE2 dims;		// mdvalley: Mousestate2 allows 8 buttons
         DDCall(m_pdid->GetDeviceState(sizeof(dims), &dims));
 
         //
@@ -601,7 +622,8 @@ public:
 
 class JoystickInputStreamImpl : public JoystickInputStream {
 private:
-    TRef<IDirectInputDevice2>           m_pdid;
+//    TRef<IDirectInputDevice2>           m_pdid;
+	TRef<IDirectInputDevice7>			m_pdid;		// mdvalley: DInput7
     DIDeviceCaps                        m_didc;
     DIDeviceInstance                    m_didi;
     TVector<TRef<ValueDDInputObject > > m_vvalueObject;
@@ -690,7 +712,8 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    JoystickInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
+//    JoystickInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
+	JoystickInputStreamImpl(IDirectInputDevice7* pdid, HWND hwnd) :		// mdvalley: DInput7
         m_pdid(pdid),
         m_bFocus(false),
         m_vvalueObject(5)
@@ -891,7 +914,7 @@ public:
                     }
                 }
 
-                for (index = 0; index < countButtons; index++) {
+                for (int index = 0; index < countButtons; index++) {
                     m_vbuttonObject[index]->GetValue()->SetValue(
                         m_pbyteData[countValues * 4 + index] != 0
                     );
@@ -1206,10 +1229,12 @@ private:
     bool EnumDeviceCallback(LPDIDEVICEINSTANCE pdidi)
     {
         TRef<IDirectInputDevice>  pdid;
-        TRef<IDirectInputDevice2> pdid2;
+//        TRef<IDirectInputDevice2> pdid2;
+		TRef<IDirectInputDevice7> pdid2;		// mdvalley: DInput7
 
         DDCall(m_pdi->CreateDevice( pdidi->guidInstance, &pdid, NULL));
-        DDCall(pdid->QueryInterface(IID_IDirectInputDevice2, (void**)&pdid2));
+//        DDCall(pdid->QueryInterface(IID_IDirectInputDevice2, (void**)&pdid2));
+		DDCall(pdid->QueryInterface(IID_IDirectInputDevice7, (void**)&pdid2));
 
         switch (pdidi->dwDevType & 0xff) {
             case DIDEVTYPE_MOUSE:
@@ -1294,7 +1319,8 @@ public:
             // grab the address of a few dinput globals
             //
 
-            g_pdfDIMouse = (DIDATAFORMAT*)::GetProcAddress(m_hdinput, "c_dfDIMouse");
+//            g_pdfDIMouse = (DIDATAFORMAT*)::GetProcAddress(m_hdinput, "c_dfDIMouse");
+			g_pdfDIMouse = (DIDATAFORMAT*)::GetProcAddress(m_hdinput, "c_dfDIMouse2");		// mdvalley: Mouse2 for more buttons
             ZAssert(g_pdfDIMouse != NULL);
         #else
             DDCall(DirectInputCreate(
@@ -1304,7 +1330,8 @@ public:
                 NULL
             ));
 
-            g_pdfDIMouse = &c_dfDIMouse;
+//            g_pdfDIMouse = &c_dfDIMouse;
+			g_pdfDIMouse = &c_dfDIMouse2;		// mdvalley: Mouse2 for more buttons
         #endif
 
         //

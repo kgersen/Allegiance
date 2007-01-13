@@ -395,7 +395,7 @@ TList<TRef<IKeyboardInput> > g_listKeyboardInputFilters;
 
 void Window::AddKeyboardInputFilter(IKeyboardInput* pkeyboardInput)
 {
-    g_listKeyboardInputFilters.PushEnd(pkeyboardInput);
+	g_listKeyboardInputFilters.PushEnd(pkeyboardInput);
 }
 
 void Window::RemoveKeyboardInputFilter(IKeyboardInput* pkeyboardInput)
@@ -1144,7 +1144,7 @@ HRESULT Window::MessageLoop()
                                 && (msg.lParam & (1 << 29)); // See help for WM_SYSKEYDOWN
                             ks.bShift = (GetKeyState(VK_SHIFT) & 0x8000) !=0;
                             ks.bControl = (GetKeyState(VK_CONTROL) & 0x8000) !=0;
-                            ks.bDown = (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN);
+                            ks.bDown = (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN || ks.vk == 44); // special exception for PrintScreen key
                             ks.countRepeat = LOWORD(msg.lParam);
 
                             bool fHandled = false;

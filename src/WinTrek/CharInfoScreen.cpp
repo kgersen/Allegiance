@@ -306,19 +306,20 @@ public:
         CastTo(m_pbuttonSquads, pns->FindMember("squadsButtonPane"));
         CastTo(m_pbuttonSquads2, pns->FindMember("squads2ButtonPane"));
         CastTo(m_pbuttonZoneClub, pns->FindMember("zoneclubButtonPane"));
-        AddEventTarget(OnButtonLeaderboard, m_pbuttonLeaderboard->GetEventSource());
-        AddEventTarget(OnButtonSquads, m_pbuttonSquads->GetEventSource());
-        AddEventTarget(OnButtonSquads, m_pbuttonSquads2->GetEventSource());
-        AddEventTarget(OnButtonZoneClub, m_pbuttonZoneClub->GetEventSource());
+		// mdvalley: Pointers and class.
+        AddEventTarget(&CharInfoScreen::OnButtonLeaderboard, m_pbuttonLeaderboard->GetEventSource());
+        AddEventTarget(&CharInfoScreen::OnButtonSquads, m_pbuttonSquads->GetEventSource());
+        AddEventTarget(&CharInfoScreen::OnButtonSquads, m_pbuttonSquads2->GetEventSource());
+        AddEventTarget(&CharInfoScreen::OnButtonZoneClub, m_pbuttonZoneClub->GetEventSource());
         CastTo(m_pbuttonApply, pns->FindMember("applyButtonPane"));
-        AddEventTarget(OnButtonApply, m_pbuttonApply->GetEventSource());
+        AddEventTarget(&CharInfoScreen::OnButtonApply, m_pbuttonApply->GetEventSource());
         m_pbuttonSquads->SetEnabled(!g_bDisableZoneClub);
         m_pbuttonSquads2->SetEnabled(!g_bDisableZoneClub);
         m_pbuttonApply->SetEnabled(false);
         m_pbuttonApply->SetHidden(true);
 
         CastTo(m_pbuttonWeb, pns->FindMember("webButtonPane"));
-        AddEventTarget(OnButtonZoneWeb, m_pbuttonWeb->GetEventSource());
+        AddEventTarget(&CharInfoScreen::OnButtonZoneWeb, m_pbuttonWeb->GetEventSource());
 
         //
         // Medals Window
@@ -338,7 +339,7 @@ public:
         //  headers stuff -- description with edit button
         //
         CastTo(m_pbuttonEdit, pns->FindMember("editButtonPane"));
-        AddEventTarget(OnButtonEdit, m_pbuttonEdit->GetEventSource());
+        AddEventTarget(&CharInfoScreen::OnButtonEdit, m_pbuttonEdit->GetEventSource());
 
         if (trekClient.GetZoneClubID() != idZone)
            m_pbuttonEdit->SetEnabled(false);
@@ -346,21 +347,21 @@ public:
         CastTo(m_peditPaneCharDescription, (Pane*)pns->FindMember("descriptionEditPane"));
         m_peditPaneCharDescription->SetMaxLength(c_cbDescriptionDB);
         m_peditPaneCharDescription->SetHidden(true);
-        AddEventTarget(OnDescriptionClick, m_peditPaneCharDescription->GetClickEvent());
+        AddEventTarget(&CharInfoScreen::OnDescriptionClick, m_peditPaneCharDescription->GetClickEvent());
 
         m_peditPaneCharDescription->SetString(szDefault);
         m_peditPaneCharDescription->SetReadOnly();
 
         CastTo(m_peditPaneCharName, (Pane*)pns->FindMember("characterNameEditPane"));
         m_peditPaneCharName->SetMaxLength(c_cbNameDB);
-        AddEventTarget(OnNameClick, m_peditPaneCharName->GetClickEvent());
+        AddEventTarget(&CharInfoScreen::OnNameClick, m_peditPaneCharName->GetClickEvent());
       
         m_peditPaneCharName->SetString(szDefault);
         m_peditPaneCharName->SetReadOnly();
 
         CastTo(m_pcomboCiv, pns->FindMember("civComboPane"));
         m_pcomboCiv->SetEnabled(true);
-        AddEventTarget(OnCivChange, m_pcomboCiv->GetEventSource());
+        AddEventTarget(&CharInfoScreen::OnCivChange, m_pcomboCiv->GetEventSource());
 
         int cNames = FillCombo(pns, m_pcomboCiv, "CivNames");
         m_cCivs = cNames;
@@ -375,7 +376,7 @@ public:
         // Stats
         //
         CastTo(m_plistPaneSquads,(Pane*)pns->FindMember("squadsListPane"));
-        AddEventTarget(OnSquadDoubleClick, m_plistPaneSquads->GetDoubleClickEventSource());
+        AddEventTarget(&CharInfoScreen::OnSquadDoubleClick, m_plistPaneSquads->GetDoubleClickEventSource());
 
         pmodeler->UnloadNameSpace(pns);
 
@@ -584,7 +585,8 @@ public:
                     + "\n\n" + ZString(FM_VAR_REF(pMedalInfo, szSpecificInfo)));
 
                 pMedal->SetImageFileName(ZString(FM_VAR_REF(pMedalInfo, szBitmap)) + ZString("bmp"));
-                static c = 0;
+                // mdvalley: Gotta be explicit int in 2005
+                static int c = 0;
                 pMedal->SetRanking(c++);
 
                 // find out which index this civid maps to

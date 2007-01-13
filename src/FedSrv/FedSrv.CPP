@@ -691,7 +691,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   // assign a random side (if we can)
   if ((iSide == NA) || ((iSide == SIDE_TEAMLOBBY) && pmp->bLockSides))
   {
-    iSide = pfsMission->PickNewSide(pfsPlayer, true, bannedSideMask);
+    iSide = SIDE_TEAMLOBBY;	// TE: Made all players join lobby when joining game
     assert (iSide != NA);
   }
 
@@ -1060,7 +1060,8 @@ void SetCharStats(int                   characterID,
                   PlayerScoreObject&    pso,
                   CFSMission*           pfsMission)
 {
-    if (0.0f == pso.GetTimePlayed())
+#if !defined(ALLSRV_STANDALONE)  // mmf moved this up from further down
+	if (0.0f == pso.GetTimePlayed())
     {
       return;
     }
@@ -1115,7 +1116,7 @@ void SetCharStats(int                   characterID,
         }
     }
 
-  #if !defined(ALLSRV_STANDALONE)
+ // #if !defined(ALLSRV_STANDALONE) mmf moved this further up
 
     CQCharStats * pquery = new CQCharStats(NULL); // don't need call-back notification
     CQCharStatsData * pdq = pquery->GetData();
@@ -1168,6 +1169,29 @@ void SetCharStats(int                   characterID,
     g.sql.PostQuery(pquery);
 
   #endif // !defined(ALLSRV_STANDALONE)
+
+#ifdef DEBUG
+	// mmf have debug build of server log this
+	// mmf converted debug statement from pdq structure
+	if (0.0f == pso.GetTimePlayed())
+    {   return;    }
+    assert(pso.GetScore() >= 0.0f);
+	assert(pSide);
+    PersistPlayerScoreObject& ppso = pso.GetPersist();
+    RankID  Rank = ppso.GetRank();
+	debugf("PlayerName=%s, Rank=%d, bScoresCount=%d, CharacterID=%d, CivID=%d, Rating=%d,\n",
+        pfsPlayer->GetName(),Rank ,pfsMission->GetScoresCount(), characterID, pSide->GetCivilization()->GetObjectID(), 
+		RATING_INT2EXT(pso.GetCombatRating()));
+    debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
+        pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
+    debugf("    MinerKills=%.2f, BuilderKills=%.2f, LayerKills=%.2f, PlayerKills=%.2f,\n",
+        pso.GetMinerKills(), pso.GetBuilderKills(), pso.GetLayerKills(), pso.GetPlayerKills());
+    debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
+        pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
+    debugf("    Minutes=%d, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
+        (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(), 
+		pso.GetScore());
+#endif
 }
 
 /*-------------------------------------------------------------------------
@@ -4416,10 +4440,13 @@ void FedSrvSiteBase::OnMessageSent(FedMessaging * pthis, CFMRecipient * precip, 
     if (FM_CS_ORDER_CHANGE == pfm->fmid)
     {
       CASTPFM(pfmOrderChange, CS, ORDER_CHANGE, pfm);
+#ifdef DEBUG
+      // mmf only log this in debug build
       debugf("FM_CS_ORDER_CHANGE: shipID=%d, objectID=%d, objectType=%d, commandID=%d, command=%d.\n",
           pfmOrderChange->shipID, pfmOrderChange->objectID, pfmOrderChange->objectType,
           pfmOrderChange->commandID, pfmOrderChange->command);
-    }
+#endif
+	}
 
     g.pServerCounters->cPacketsOut          += cConnections;
     g.pServerCounters->cPacketsOutPerSecond += cConnections;
@@ -4611,9 +4638,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       CASTPFM(pfmPing, CS, PING, pfm);
       pfmPing->timeServer = g.timeNow;
       //debugf("Ping from %s in at %u, ", pfsPlayer->GetName(), Time::Now ());
-      g.fm.SetPriority(FedMessaging::c_mcpDefault + 1);
+      //g.fm.SetPriority(FedMessaging::c_mcpDefault + 1); // TE: This was in R2 but not in DPlay8
       g.fm.ForwardMessage(pfsPlayer->GetConnection(), pfmPing, pfmPing->fmg);
-      g.fm.SetPriority(FedMessaging::c_mcpDefault);
+      //g.fm.SetPriority(FedMessaging::c_mcpDefault); // TE: This was in R2 but not DPlay8
       //debugf("out at %u\n", Time::Now ());
 
       // Would be nice if this worked, but it always reports 500ms.
@@ -4660,14 +4687,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                     // send them to the game lobby
                     debugf("#ban: %s banned by %s\n", pfsShip->GetName(), pfsPlayer->GetName());
-					// TE, Fire AGCEvent informing of the ban
+					// TE: Fire AGCEvent informing of the ban
 					LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
 					_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(), 
 						pfsShip->GetShipID(), -1, -1, 3, "GameID",   VT_I4,    pfsMission->GetMissionID(),
 						"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
 						"zBooter", VT_LPSTR, pfsPlayer->GetName());	
 					// This is named zBooter so the parameter appears last in the alphabetical list
-					// TE end
+					// TE
                     pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QSR_OwnerBooted);
 
                     pfmChat->cd.chatTarget = CHAT_EVERYONE;
@@ -4692,6 +4719,29 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfsMission->AddBallot(new OfferDrawBallot(pfsPlayer));
                 bForward = false;
               }
+			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006
+			   // mmf changed this from GetOwner to GetLeader
+			  else if(pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) == pfsPlayer && pfmChat->cbMessage > strlen("#autoaccept") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autoaccept", strlen("#autoaccept")) == 0)
+              {
+				pfsMission->SetAutoAccept(pfsPlayer->GetSide(),!pfsMission->GetAutoAccept(pfsPlayer->GetSide()));
+                bForward = true;
+			  }
+			  // mmf added ability to change balance (MaxTeamImbalance) to 1 2 a (for auto) n (for N/A)
+			  else if(pfsMission->GetOwner() == pfsPlayer && pfmChat->cbMessage > strlen("#autobalance  ") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance", strlen("#autobalance")) == 0)
+              {
+                // check all cases explicitly instead of doing a string manipulation to pull of the parameter
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance 1", strlen("#autobalance 1")) == 0)
+					pfsMission->SetMaxTeamImbalance(1);
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance 2", strlen("#autobalance 2")) == 0)
+					pfsMission->SetMaxTeamImbalance(2);
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance a", strlen("#autobalance a")) == 0)
+					pfsMission->SetMaxTeamImbalance(0x7ffe);
+				if (_strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance n", strlen("#autobalance n")) == 0)
+					pfsMission->SetMaxTeamImbalance(0x7fff);
+                pfmChat->cd.chatTarget = CHAT_EVERYONE;
+                pfmChat->cd.oidRecipient = NA;
+				bForward = true;
+			  }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
 		 // beta feature only
@@ -6020,7 +6070,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         // send them to the game lobby
 		if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings) 
 		{
-		    // TE,  Fire AGCEvent informing of the boot
+		    // TE:  Fire AGCEvent informing of the boot
 			 if (bIsBoot)
 			 {
 				LPCSTR pszContext = pfsMission->GetIGCMission() ? pfsMission->GetIGCMission()->GetContextName() : NULL;
@@ -6031,7 +6081,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 					"TeamName", VT_LPSTR, pside->GetName(),
 					"zBooter", VT_LPSTR, pfsPlayer->GetName());
 			 }
-			// TE end
+			// TE
 			pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason);
 		}
       }
@@ -6070,6 +6120,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitSide->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
 
+		// TE: Commented this block since locked sides now handle balancing 
+		// mmf MaxBalance is now used instead of lock sides so put this back, not that lock sides is that useful
         if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
         {
           // turn it down because the sides are locked
@@ -6097,7 +6149,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitSide->reason);
             }
           }
-        }
+        } // TE: matches above comment mmf put this back
       }
 
       break;
@@ -6167,8 +6219,17 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (pfsMission->GetStage() != STAGE_NOTSTARTED)
         break;
 
-      // randomly assign everyone to a side
-      pfsMission->RandomizeSides();
+      // TE: Balance or Flush depending on the LockSides parameter mmf MaxBalance
+	  if (pfsMission->GetMissionDef()->misparms.iMaxImbalance == 0x7ffe)
+	  {
+		// Balance the teams
+		pfsMission->RandomizeSides();
+	  }
+	  else
+	  {
+		// Flush the teams
+		pfsMission->FlushSides();
+	  }
 
       break;
     }
@@ -6841,7 +6902,7 @@ void ProcessNetworkMessages()
       DWORD cMsgs;
       DWORD cbMsgs;
       HRESULT hr = g.fm.GetConnectionSendQueue(&cnxn, &cMsgs, &cbMsgs);
-      const cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
+      const DWORD cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
       if ((cnxn.IncAbsentCount() > 6) || // give them a ridiculous 1 minute of no messages
           FAILED(hr) ||
           (cMsgs > cMaxQ)) // dead--nuke 'em
@@ -7315,6 +7376,14 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
       return false;
     g.strLobbyServer = szLobby;
 
+    // mdvalley: get lobby port
+    char szPort[8];
+
+    GetPrivateProfileString("Allegiance", "LobbyServerPort", "2303",
+      szPort, sizeofArray(szPort), szConfig);
+
+    g.dwLobbyPort = atoi(szPort);
+
     char szFilelistCRC[50];
 
     
@@ -7541,7 +7610,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 #else
         FEDLOBBYSERVERS_GUID,
 #endif
-        PCC(g.strLobbyServer), PCC(g.strLocalAddress));
+		PCC(g.strLobbyServer), PCC(g.strLocalAddress), g.dwLobbyPort);		// mdvalley: forced to lobby port
   if (FAILED(hr))
   {
     printf("failed.\n", PCC(g.strLobbyServer));
@@ -7557,10 +7626,19 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
     "", -1, -1, -1, 1,
     "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
 
+    // mdvalley: Discover listening port
+  DWORD dwPort = 0;						// Passing a port of 0 informs the lobby of the error.
+  hr = g.fm.GetListeningPort(&dwPort);
+  if(FAILED(hr))
+  {
+	  debugf("Cannot discover listening port.\n");
+  }
+
   // Give lobby the version
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
   END_PFM_CREATE
   pfmLogon->verLobby = LOBBYVER_LS;
+  pfmLogon->dwPort = dwPort;
   g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
 
   // Make sure the lobby knows whether we're paused before we do anything else
@@ -11505,7 +11583,7 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
     {
       SYSTEMTIME systime;
       DWORD l = strlen(psz);
-      const c_cbPrefix = 19; // time format: 12/31 23:59:59.999
+      const DWORD c_cbPrefix = 19; // time format: 12/31 23:59:59.999
       DWORD cbLine = l + c_cbPrefix;
       OVERLAPPED* pov = (OVERLAPPED*)(new char [ sizeof(OVERLAPPED) + cbLine ]);
       *pov = m_overlapped;

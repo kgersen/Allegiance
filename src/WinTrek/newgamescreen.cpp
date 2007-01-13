@@ -304,12 +304,13 @@ public:
 
         CastTo(m_pbuttonCancel,         m_pns->FindMember("cancelButtonPane"));
         CastTo(m_pbuttonBack,         m_pns->FindMember("backButtonPane"));
-        AddEventTarget(OnButtonBack,   m_pbuttonBack->GetEventSource());
+		// mdvalley: Needs the class name and pointer now
+        AddEventTarget(&NewGameScreen::OnButtonBack,   m_pbuttonBack->GetEventSource());
         CastTo(m_pbuttonCreate,       m_pns->FindMember("createButtonPane"));
 
-        AddEventTarget(OnButtonBack,   m_pbuttonCancel->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnButtonBack,   m_pbuttonCancel->GetEventSource());
         
-        AddEventTarget(OnButtonCreate, m_pbuttonCreate->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnButtonCreate, m_pbuttonCreate->GetEventSource());
 
         //
         // Edit controls
@@ -321,8 +322,8 @@ public:
         CastTo(m_peditPaneGamePassword, (Pane*)m_pns->FindMember("gamePasswordEditPane"));
         m_peditPaneGamePassword->SetMaxLength(c_cbGamePassword - 1);
 
-        AddEventTarget(OnGameNameClick, m_peditPaneGameName->GetClickEvent());
-        AddEventTarget(OnGamePasswordClick, m_peditPaneGamePassword->GetClickEvent());
+        AddEventTarget(&NewGameScreen::OnGameNameClick, m_peditPaneGameName->GetClickEvent());
+        AddEventTarget(&NewGameScreen::OnGamePasswordClick, m_peditPaneGamePassword->GetClickEvent());
 
         //
         // Checkboxes
@@ -397,7 +398,7 @@ public:
         FillCombo(m_pcomboMapType            , "MapTypeNames");
         AddCustomMapTypes();
 
-        AddEventTarget(OnPickGameType, m_pcomboGameType->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnPickGameType, m_pcomboGameType->GetEventSource());
 
 
         //
@@ -409,20 +410,20 @@ public:
         // Add event hooks
         //
 
-        AddEventTarget(OnMaxPlayersChange, m_pcomboMaxPlayers->GetEventSource());
-        AddEventTarget(OnTeamCountChange, m_pcomboTeamCount->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnMaxPlayersChange, m_pcomboMaxPlayers->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnTeamCountChange, m_pcomboTeamCount->GetEventSource());
 
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboLives->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboCountdownTime->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboDeathWatchKills->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboProsperity->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboArtifactCount->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboFlagCount->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboConquestBases->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedComboChange, m_pcomboTerritory->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedCheckboxChange, m_pbuttonInvulnerableStations->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedCheckboxChange, m_pbuttonDevelopment->GetEventSource());
-        AddEventTarget(OnGameTypeRelatedCheckboxChange, m_pbuttonStatsCount->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboLives->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboCountdownTime->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboDeathWatchKills->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboProsperity->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboArtifactCount->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboFlagCount->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboConquestBases->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboTerritory->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedCheckboxChange, m_pbuttonInvulnerableStations->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedCheckboxChange, m_pbuttonDevelopment->GetEventSource());
+        AddEventTarget(&NewGameScreen::OnGameTypeRelatedCheckboxChange, m_pbuttonStatsCount->GetEventSource());
 
 
         //
@@ -876,6 +877,13 @@ public:
             }
         }
 
+		// TE: If they set stats count, set lock sides. mmf changed to modify MaxImbalance to 'auto' setting
+		// mmf note game settings Max Team Imbalance field is not updated until you accept changes
+		// TE: NOTE!! This has been removed since the balancing is now handled from within the GameSettings
+		// screen itself, and does not rely on settings chosen outside of the screen.
+		/*if (pfmMissionParams->missionparams.bScoresCount)
+			pfmMissionParams->missionparams.iMaxImbalance = 0x7ffe;*/
+
         if (pszReason)
         {
             GetWindow()->GetPopupContainer()->OpenPopup(CreateMessageBox(pszReason, NULL),
@@ -917,7 +925,7 @@ public:
         
         m_pbuttonEjectPods->SetEnabled(bEnable);
         m_pbuttonFriendlyFire->SetEnabled(bEnable);
-        m_pbuttonStatsCount->SetEnabled(bEnable && m_bIsZoneClub);
+        m_pbuttonStatsCount->SetEnabled(bEnable); // TE: Show the StatsCount checkbox
         m_pbuttonDefections->SetEnabled(bEnable);
         m_pbuttonJoiners->SetEnabled(bEnable);
         m_pbuttonSquadGame->SetEnabled(bEnable && m_bIsZoneClub);

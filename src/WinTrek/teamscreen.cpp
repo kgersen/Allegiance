@@ -250,7 +250,7 @@ private:
             }
             else
             {
-				//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+				//	yp - Your_Persona Team total rank in lobby patch Aug-04-2006
 				//  mmf - modified to not show if total is zero
 				// Add up the sum of all the players ranks.
 				const ShipListIGC* mp_ships = pside->GetShips();
@@ -259,7 +259,8 @@ private:
 				{
 					IshipIGC* pship = lShip->data();
 					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
-					teamTotalRank += pplayer->GetPersistScore(NA).GetRank();
+					// teamTotalRank += (pplayer->GetPersistScore(NA).GetRank() < 1) ? 1 : pplayer->GetPersistScore(NA).GetRank();	// TE: Modified this to add a minimum of 5 per player
+					teamTotalRank += pplayer->GetPersistScore(NA).GetRank(); // mmf this is just for display purposes, undoing TE's above modification
 				}
 				// end yp
 
@@ -280,7 +281,7 @@ private:
                 {
                     TRef<List> plistPlayers = pitem->GetMemberList();
 					if (teamTotalRank > 0)
-                        wsprintf(cbPositions, "(%d)[%d]", plistPlayers->GetCount(), teamTotalRank);//	yp - Your_Persona Team toal rank in lobby patch Aug-04-2006
+                        wsprintf(cbPositions, "(%d)[%d]", plistPlayers->GetCount(), teamTotalRank);//	yp - Your_Persona Team total rank in lobby patch Aug-04-2006
 					else
 						wsprintf(cbPositions, "(%d)", plistPlayers->GetCount());
                 }
@@ -703,8 +704,9 @@ private:
             CastTo(m_pcomboCiv,                pns->FindMember("civComboPane"));
             CastTo(m_pcomboSquad,              pns->FindMember("squadComboPane"));
 
-            AddEventTarget(OnButtonOk, m_pbuttonOk->GetEventSource());
-            AddEventTarget(OnButtonCancel, m_pbuttonCancel->GetEventSource());
+			// mdvalley: Search for '&TeamScreen::' to see so many pointers copied in.
+            AddEventTarget(&TeamScreen::TeamSettingsDialogPopup::OnButtonOk, m_pbuttonOk->GetEventSource());
+            AddEventTarget(&TeamScreen::TeamSettingsDialogPopup::OnButtonCancel, m_pbuttonCancel->GetEventSource());
 
             m_peditPaneTeamName->SetMaxLength(c_cbName - 1);
 
@@ -1012,33 +1014,33 @@ public:
             );
         }
         m_pcomboWing->SetSelection(trekClient.GetShip()->GetWingID());
-        AddEventTarget(OnWingCombo, m_pcomboWing->GetEventSource());
+        AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
 
 
         //
         // Buttons
         //
 
-        AddEventTarget(OnButtonBack, m_pbuttonBack->GetEventSource());
-        AddEventTarget(OnButtonGameOver, m_pbuttonGameOver->GetEventSource());
-        AddEventTarget(OnButtonStart, m_pbuttonStart->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonGameOver, m_pbuttonGameOver->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonStart, m_pbuttonStart->GetEventSource());
         //AddEventTarget(OnButtonReady, m_pbuttonReady->GetEventSource());
-        AddEventTarget(OnButtonAwayFromKeyboard, m_pbuttonAwayFromKeyboard->GetEventSource());
-        AddEventTarget(OnButtonTeamReady, m_pbuttonTeamReady->GetEventSource());
-        AddEventTarget(OnButtonAutoAccept, m_pbuttonAutoAccept->GetEventSource());
-        AddEventTarget(OnButtonLockLobby, m_pbuttonLockLobby->GetEventSource());
-        AddEventTarget(OnButtonLockSides, m_pbuttonLockSides->GetEventSource());
-        AddEventTarget(OnButtonRandomize, m_pbuttonRandomize->GetEventSource());
-        AddEventTarget(OnButtonAccept, m_pbuttonAccept->GetEventSource());
-        AddEventTarget(OnButtonReject, m_pbuttonReject->GetEventSource());
-        AddEventTarget(OnButtonJoin, m_pbuttonJoin->GetEventSource());
-        AddEventTarget(OnButtonBarChat, m_pbuttonbarChat->GetEventSource());
-        AddEventTarget(OnButtonBarPlayers, m_pbuttonbarPlayers->GetEventSource());
-        AddEventTarget(OnButtonSend, m_pbuttonSend->GetEventSource());
-        AddEventTarget(OnButtonDetails, m_pbuttonDetails->GetEventSource());
-        AddEventTarget(OnButtonDetails, m_pbuttonSettings->GetEventSource());
-        AddEventTarget(OnButtonTeamSettings, m_pbuttonTeamSettings->GetEventSource());
-        AddEventTarget(OnButtonMakeLeader, m_pbuttonMakeLeader->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonAwayFromKeyboard, m_pbuttonAwayFromKeyboard->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonTeamReady, m_pbuttonTeamReady->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonAutoAccept, m_pbuttonAutoAccept->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonLockLobby, m_pbuttonLockLobby->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonLockSides, m_pbuttonLockSides->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonRandomize, m_pbuttonRandomize->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonAccept, m_pbuttonAccept->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonReject, m_pbuttonReject->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonJoin, m_pbuttonJoin->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonBarChat, m_pbuttonbarChat->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonBarPlayers, m_pbuttonbarPlayers->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonSend, m_pbuttonSend->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonDetails, m_pbuttonDetails->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonDetails, m_pbuttonSettings->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonTeamSettings, m_pbuttonTeamSettings->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonMakeLeader, m_pbuttonMakeLeader->GetEventSource());
         m_pbuttonGameOver->SetHidden(trekClient.GetNumEndgamePlayers() == 0);
 
         //
@@ -1071,12 +1073,13 @@ public:
         m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(trekClient.GetSideID()));
 
             
-        AddEventTarget(OnTeamDoubleClicked, m_plistPaneTeams->GetDoubleClickEventSource());
-        AddEventTarget(OnTeamClicked, m_plistPaneTeams->GetSingleClickEventSource());
+        AddEventTarget(&TeamScreen::OnTeamDoubleClicked, m_plistPaneTeams->GetDoubleClickEventSource());
+        AddEventTarget(&TeamScreen::OnTeamClicked, m_plistPaneTeams->GetSingleClickEventSource());
 
         // WLP 2005 - added line below to trap click on player
-        AddEventTarget(OnPlayerClicked, m_plistPanePlayers->GetSingleClickEventSource()); // WLP - click selects
-
+        AddEventTarget(&TeamScreen::OnPlayerClicked, m_plistPanePlayers->GetSingleClickEventSource()); // WLP - click selects
+		AddEventTarget(&TeamScreen::OnPlayerRightClicked, m_plistPanePlayers->GetSingleRightClickEventSource()); // yp
+		AddEventTarget(&TeamScreen::OnPlayerDoubleRightClicked, m_plistPanePlayers->GetDoubleRightClickEventSource()); // yp
         //
         // Chat pane
         //
@@ -1223,7 +1226,7 @@ public:
                 && !m_pMission->GetMissionParams().bLockGameOpen);
             m_pbuttonLockLobby->SetChecked(m_pMission->GetLockLobby());
 
-            m_pbuttonLockSides->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner());
+            m_pbuttonLockSides->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner()); // && !m_pMission->GetMissionParams().bScoresCount); // TE: Disable LockSides if ScoresCount mmf undo this change
             m_pbuttonLockSides->SetChecked(m_pMission->GetLockSides());
 
             m_pbuttonRandomize->SetEnabled(trekClient.GetPlayerInfo()->IsMissionOwner());
@@ -1284,15 +1287,12 @@ public:
             || m_sideCurrent == SIDE_TEAMLOBBY);
 
         m_pbuttonJoin->SetEnabled(
-            (trekClient.GetSideID() == SIDE_TEAMLOBBY 
-                || !m_pMission->GetMissionParams().bLockSides)
-            && (m_sideCurrent == SIDE_TEAMLOBBY
+                (trekClient.GetSideID() == SIDE_TEAMLOBBY) // TE: Commented this from the brackets so you can always join NOAT: || !m_pMission->GetMissionParams().bLockSides
+                || (m_sideCurrent == SIDE_TEAMLOBBY
                 || m_pMission->SideAvailablePositions(m_sideCurrent) > 0
                     && m_pMission->SideActive(m_sideCurrent))
             && m_sideCurrent != trekClient.GetSideID());
         m_pbuttonStart->SetHidden(!trekClient.MyPlayerInfo()->IsMissionOwner());
-        
-
     }
 
     void UpdateTitleText()
@@ -1382,27 +1382,71 @@ public:
             IsideIGC*   psideMin;
             IsideIGC*   psideMax = psideMin = psl->data();
             minPlayers = maxPlayers = psl->data()->GetShips()->n();
-            while (true)
-            {
-                psl = psl->next();
-                if (psl == NULL)
-                    break;
+            
+			// TE: Balance code
+			// Initialize variables
+			IsideIGC*   psideMinRank;
+			IsideIGC*   psideMaxRank = psideMinRank = psl->data();
+			int minTeamRank = 1000000; // Set really high: 1 meellion dollars!!!
+			int maxTeamRank = 1;
+			int tempRank = 0;
+			int threshold = 1;
 
-                int n = psl->data()->GetShips()->n();
-                if (n < minPlayers)
-                {
-                    psideMin = psl->data();
-                    minPlayers = n;
-                }
+			// If "Enforce Balance" is checked, find the highest and lowest-ranked teams... mmf changed from lock sides to mImbalance
+			if (m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe)
+			{
+				threshold = GetRankThreshold();
 
-                if (n > maxPlayers)
-                {
-                    psideMax = psl->data();
-                    maxPlayers = n;
-                }
-            }
+				// Loop through all teams
+				while (true)
+				{
+					if (psl == NULL)
+						break;
 
-            if (minPlayers + m_pMission->MaxImbalance() < maxPlayers)
+					// TE: Remember lowest TeamRank
+					tempRank = GetSideRankSum(psl->data(), false);
+					if (tempRank < minTeamRank)
+					{
+						psideMinRank = psl->data();
+						minTeamRank = tempRank;
+					}
+
+					// TE: Remember highest TeamRank
+					if (tempRank > maxTeamRank)
+					{
+						psideMaxRank = psl->data();
+						maxTeamRank = tempRank;
+					}
+
+					int n = psl->data()->GetShips()->n();
+
+					// TE: Remember smallest side
+					if (n < minPlayers)
+					{
+						psideMin = psl->data();
+						minPlayers = n;
+					}
+
+					// TE: Remember largest side
+					if (n > maxPlayers)
+					{
+						psideMax = psl->data();
+						maxPlayers = n;
+					}
+
+					psl = psl->next();
+				}
+			}
+
+			// mmf using the below SendChat intermittently crashes the server
+			//SendChat(ZString("Max: ") + ZString(maxTeamRank) + ZString("; Min: ") + ZString(minTeamRank) + "; Diff: " + ZString(maxTeamRank - minTeamRank) + ZString("; Thresh: ") + ZString(threshold));
+			// mmf debugging, these do show up in the client log of the debug build
+			//debugf("maxTR: %d minTR: %d thresh: %d\n",maxTeamRank, minTeamRank, threshold);
+
+			// This section hides/shows the "Launch" button
+			// TE: Added || to check rank balancing mmf changed from locksides to MaxImbalance
+            if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
+			((m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank > threshold)))
             {
                 m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
                 m_ptextStatus2->SetString("");
@@ -1416,13 +1460,12 @@ public:
                 for (SideID id = 0; id < m_pMission->NumSides(); id++)
                 {
                     const char* szReason = NULL;
-
                     if (m_pMission->SideNumPlayers(id) < m_pMission->MinPlayersPerTeam())
                         szReason = "BELOW MINIMUM SIZE";
                     else if (m_pMission->SideNumPlayers(id) > m_pMission->MaxPlayersPerTeam())
                         szReason = "ABOVE MAXIMUM SIZE";
-                    else if (!m_pMission->SideReady(id))
-                        szReason = "NOT READY";
+					else if (!m_pMission->SideReady(id))
+						szReason = "NOT READY";
 
                     if (szReason)
                     {
@@ -1430,6 +1473,7 @@ public:
                         {
                             idBlockingSide = id;
                             szBlockingReason = szReason;
+							debugf("%s szBlockingReason set to %s\n",trekClient.GetCore()->GetSide(id)->GetName(),szBlockingReason);
                         }
                         else
                         {
@@ -1463,6 +1507,125 @@ public:
             }
         }
     }
+
+	/*-------------------------------------------------------------------------
+	 * TE: GetSideRankSum
+	 *-------------------------------------------------------------------------
+	 * Purpose:
+	 *    Count up the sum of ranks for a specified side
+	 * 
+	 * Parameters:
+	 *    side to check
+	 * 
+	 * Returns:
+	 *    sum of all players' ranks on side
+	 */
+	int GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
+	{
+	  int iRankSum = 0;
+	  int iTempRank = 0;
+	  SideInfo* pSideInfo = m_pMission->GetSideInfo(pside->GetObjectID());
+
+	  IshipIGC* pShip = NULL;
+	  PlayerInfo* pPlayer = NULL;
+	  ShipList plistMembers;
+	  plistMembers = pSideInfo->GetMembers();
+	  if (plistMembers.GetCount() > 0)
+	  {
+		  ShipID iShipID = plistMembers.GetFront();
+		  while (true)
+		  {
+			  if (!iShipID)
+				  break;
+
+			  pPlayer = trekClient.FindPlayer(iShipID);
+
+			  if (pPlayer)
+			  {
+				  if (pPlayer->IsHuman())
+				  {
+					  iTempRank = pPlayer->GetPersistScore(NA).GetRank();
+					  iRankSum += (iTempRank < 1) ? 1 : iTempRank;
+				  }
+			  }
+			  iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID);
+		  }
+
+	  }
+	  return iRankSum;
+	}
+	
+	/*-------------------------------------------------------------------------
+	 * TE: GetRankThreshold
+	 *-------------------------------------------------------------------------
+	 * Purpose:
+	 *    Retrieves the threshold to be used for rank balancing
+	 * 
+	 * Returns:
+	 *    The threshold to be used for rank balancing
+	 */
+	int GetRankThreshold()
+	{
+		int iHighestRank = 1;
+		int iAverageRank = 0;
+	
+		ShipList plistMembers;
+	
+		SideInfo* pSide = NULL;
+	    PlayerInfo* pPlayer = NULL;
+		int iTempRank = 0;
+		int iShipIndex = 0;
+	
+		// Loop through sides
+		for (SideID iSideID = 0; iSideID < m_pMission->NumSides(); iSideID++)
+		{
+			pSide = m_pMission->GetSideInfo(iSideID);
+	
+			// Loop through ships
+			plistMembers = pSide->GetMembers();
+			if (plistMembers.GetCount() > 0)
+			{
+				ShipID iShipID = plistMembers.GetFront();
+				while (true)
+				{
+					if (!iShipID)
+						break;
+
+					pPlayer = trekClient.FindPlayer(iShipID);
+	
+					if (pPlayer)
+					{
+						if (pPlayer->IsHuman())
+						{
+							iTempRank = pPlayer->GetPersistScore(NA).GetRank();
+							if (iTempRank <= 0)
+								iTempRank = 1;
+		
+							// If it's the highest rank, remember it
+							if (iTempRank > iHighestRank)
+								iHighestRank = iTempRank;
+		
+							// Add to average
+							iAverageRank += iTempRank;
+						}
+					}
+					iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID);
+				}
+			}
+		}
+	
+		// Divide average by #players
+		int Divisor = trekClient.MyMission()->NumPlayers();
+		if (Divisor > 0)
+			iAverageRank = iAverageRank / Divisor;
+		else
+			iAverageRank = 1;
+	
+		// Calculate threshold
+		int iThreshold = iHighestRank + ((iAverageRank * iAverageRank) / (iHighestRank + iAverageRank));
+	
+		return iThreshold;
+	}
 
     int GetCountdownTime()
     {
@@ -1686,6 +1849,24 @@ public:
 
         return true;
     }
+
+
+	bool OnPlayerRightClicked()
+    {			
+		ItemID pitem = m_plistPanePlayers->GetSelection();
+
+        if (pitem != NULL && trekClient.GetPlayerInfo())
+        {
+            PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
+			GetWindow()->ShowPlayerContextMenu(pplayer);            
+        }		
+        return true;
+    }
+
+	bool OnPlayerDoubleRightClicked()
+	{
+		return true;
+	}
 
     //
     // WLP 2005 - added OnPlayerClicked to toggle selected player on/off for highlighted chat routine
@@ -1954,19 +2135,20 @@ public:
         return true;
     }
     */
-    bool OnButtonAwayFromKeyboard()
-    {
+	bool OnButtonAwayFromKeyboard() // wlp 8/5/2006 modded to support comm afk during settings
+	{
 		trekClient.GetPlayerInfo ()->SetReady(!m_pbuttonAwayFromKeyboard->GetChecked()); // Imago - prevents sending duplicate player_ready msg when DoTrekUpdate
-        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-        BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
-        END_PFM_CREATE
-        pfmReady->fReady = !m_pbuttonAwayFromKeyboard->GetChecked();
-        pfmReady->shipID = trekClient.GetShipID();
-        UpdateStatusText();
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(trekClient.m_fm, pfmReady, CS, PLAYER_READY)
+		END_PFM_CREATE
+		pfmReady->fReady = !m_pbuttonAwayFromKeyboard->GetChecked();
+		pfmReady->shipID = trekClient.GetShipID();
+		UpdateButtonStates(); // wlp - 8/5/2006 added to show the comm status afk during settings
+		UpdateStatusText();
 		g_bAFKToggled = (g_bAFKToggled) ? false : true; //Imago: Manual AFK toggle flag
 
-        return true;
-    }
+		return true;
+	}
 
     bool OnButtonTeamReady()
     {
@@ -2100,7 +2282,7 @@ public:
                 = CreateTrekButton(CreateButtonFacePane(psurface, ButtonNormal), false, positiveButtonClickSound);
             pQuitTeamButton->SetOffset(WinPoint(183, 170));
             m_pmsgBox->GetPane()->InsertAtBottom(pQuitTeamButton);
-            AddEventTarget(OnCancelRequest, pQuitTeamButton->GetEventSource());
+            AddEventTarget(&TeamScreen::OnCancelRequest, pQuitTeamButton->GetEventSource());
             GetWindow()->GetPopupContainer()->OpenPopup(m_pmsgBox, false);
         }
 
@@ -2284,20 +2466,51 @@ public:
         return true;
     }
 
-    bool OnButtonDetails()
-    {
-        s_nLastSelectedChatTab = ChatTargetToButton(m_chattargetChannel);
-        GetWindow()->screen(ScreenIDCreateMission);
-        return true;
-    }
+	bool OnButtonDetails()
+	{
+		// wlp 8/5/2006
+		// code added to prevent game starting when the comm is doing settings
+		//
+		// do this only for the commander without game control
+		//
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()// wlp - is a comm
+			&& !trekClient.MyPlayerInfo()->IsMissionOwner()		// wlp - not in control
+			)
+		{
+			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
+			OnButtonTeamReady();// wlp - send to server
+			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
+			g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off
+			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
+		} ;
+		// wlp 8/5/2006 - end of Afk added code
+		s_nLastSelectedChatTab = ChatTargetToButton(m_chattargetChannel);
+		GetWindow()->screen(ScreenIDCreateMission);
+		return true;
+	}
 
-    bool OnButtonTeamSettings()
-    {
-        GetWindow()->GetPopupContainer()->OpenPopup(m_pteamSettingsPopup, false);
-        debugf("opening team settings.\n");
-        
-        return true;
-    }
+	bool OnButtonTeamSettings()
+	{
+		// wlp 8/5/2006
+		// code added to prevent game starting when the comm is doing settings
+		//
+		// do this only for the commander without game control
+		//
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()// wlp - is a comm
+			&& !trekClient.MyPlayerInfo()->IsMissionOwner()// wlp - not in control
+			)
+		{
+			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
+			OnButtonTeamReady() ;// wlp - send to server
+			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
+			g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off
+			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
+		} ;
+		// wlp 8/5/2006 - end of Afk added code
+		GetWindow()->GetPopupContainer()->OpenPopup(m_pteamSettingsPopup,false);
+		debugf("opening team settings.\n");
+		return true;
+	}
 
     bool OnButtonMakeLeader()
     {
@@ -2450,8 +2663,19 @@ public:
 
             case QSR_RandomizeSides:
                 if (!m_bShowingRandomizeWarning)
-                    strMessage = "You have been reassigned to NOT ON A TEAM.";
+                    strMessage = "You have been assigned to a random team.";
                 break;
+
+			// TE: Add Flush and Balance messages
+			//     Piggyback the RandomizeWarning flag to make the messages appear properly
+			case QSR_FlushSides:
+				if (!m_bShowingRandomizeWarning)
+					strMessage = "You have been removed from your team because the Game Commander flushed all teams.";
+				break;
+
+			case QSR_BalanceSides:
+				if (!m_bShowingRandomizeWarning)
+					strMessage = "You have been removed from your team and assigned to another because the teams have been balanced.";
 
             case QSR_Quit:
             case QSR_LinkDead:
@@ -2469,10 +2693,12 @@ public:
             {
                 TRef<IMessageBox> pmsgBox = CreateMessageBox(strMessage);
 
-                if (reason == QSR_RandomizeSides)
+                if (reason == QSR_RandomizeSides || 
+					reason == QSR_BalanceSides ||	// TE: Added Balance and Flush reasons for the popup
+					reason == QSR_FlushSides)
                 {
                     m_bShowingRandomizeWarning = true;
-                    AddEventTarget(OnDismissRandomizeMessageBox, pmsgBox->GetEventSource());
+                    AddEventTarget(&TeamScreen::OnDismissRandomizeMessageBox, pmsgBox->GetEventSource());
                 }
 
                 GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
@@ -2480,8 +2706,8 @@ public:
         }
         else
         {
-            UpdateStatusText();
             UpdateButtonStates();
+            UpdateStatusText();
         }
     }
 
@@ -2510,6 +2736,7 @@ public:
     void OnLockSides(bool bLock)
     {
         UpdateButtonStates();
+		UpdateStatusText();
     }
 
     void OnTeamForceReadyChange(MissionInfo* pMissionInfo, SideID sideID, bool fTeamForceReady)

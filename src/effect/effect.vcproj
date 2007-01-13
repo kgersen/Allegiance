@@ -1,193 +1,293 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="Effect"
 	ProjectGUID="{D22B6577-79A0-4834-9847-8AEC1D4F9BB4}"
-	Keyword="Win32Proj">
+	Keyword="Win32Proj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\objs\Retail\Effect"
 			IntermediateDirectory=".\..\..\objs\Retail\Effect"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\SoundEngine;..\Inc;..\ZLib;..\engine"
 				PreprocessorDefinitions="_LIB;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700;"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
-				BrowseInformationFile=""/>
+				BrowseInformationFile=""
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\objs\Debug\Effect"
 			IntermediateDirectory=".\..\..\objs\Debug\Effect"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\SoundEngine;..\Inc;..\ZLib;..\engine"
 				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL;DIRECTINPUT_VERSION=0x0700"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
 				BrowseInformationFile=""
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Effect"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Effect"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\SoundEngine;..\Inc;..\ZLib;..\engine"
-				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL;DIRECTINPUT_VERSION=0x0700"
-				ExceptionHandling="FALSE"
+				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL;DIRECTINPUT_VERSION=0x0700;_CRT_SECURE_NO_DEPRECATE"
+				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
 				BrowseInformationFile=""
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Effect"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Effect"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\SoundEngine;..\Inc;..\ZLib;..\engine"
-				PreprocessorDefinitions="_LIB;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700;"
-				ExceptionHandling="FALSE"
+				PreprocessorDefinitions="_LIB;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				BufferSecurityCheck="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
-				BrowseInformationFile=""/>
+				BrowseInformationFile=""
+				Detect64BitPortabilityProblems="false"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -195,211 +295,279 @@
 	<Files>
 		<Filter
 			Name="excluded"
-			Filter="">
+			>
 			<File
-				RelativePath=".\efsound.cpp">
+				RelativePath=".\efsound.cpp"
+				>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\efsound.h">
+				RelativePath=".\efsound.h"
+				>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\panes.cpp">
+				RelativePath=".\panes.cpp"
+				>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\alephgeo.cpp">
+			RelativePath=".\alephgeo.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\combopane.cpp">
+			RelativePath=".\combopane.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\combopane.h">
+			RelativePath=".\combopane.h"
+			>
 		</File>
 		<File
-			RelativePath=".\conegeo.cpp">
+			RelativePath=".\conegeo.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\debrisgeo.cpp">
+			RelativePath=".\debrisgeo.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\debrisgeo.h">
+			RelativePath=".\debrisgeo.h"
+			>
 		</File>
 		<File
-			RelativePath=".\efapp.cpp">
+			RelativePath=".\efapp.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\efapp.h">
+			RelativePath=".\efapp.h"
+			>
 		</File>
 		<File
-			RelativePath=".\efart.h">
+			RelativePath=".\efart.h"
+			>
 		</File>
 		<File
-			RelativePath=".\effect.h">
+			RelativePath=".\effect.h"
+			>
 		</File>
 		<File
-			RelativePath=".\efgeo.cpp">
+			RelativePath=".\efgeo.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\efgeo.h">
+			RelativePath=".\efgeo.h"
+			>
 		</File>
 		<File
-			RelativePath=".\efimage.cpp">
+			RelativePath=".\efimage.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\efimage.h">
+			RelativePath=".\efimage.h"
+			>
 		</File>
 		<File
-			RelativePath=".\efpane.cpp">
+			RelativePath=".\efpane.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\efpane.h">
+			RelativePath=".\efpane.h"
+			>
 		</File>
 		<File
-			RelativePath=".\efpopup.cpp">
+			RelativePath=".\efpopup.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\efpopup.h">
+			RelativePath=".\efpopup.h"
+			>
 		</File>
 		<File
-			RelativePath=".\efwindow.cpp">
+			RelativePath=".\efwindow.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\efwindow.h">
+			RelativePath=".\efwindow.h"
+			>
 		</File>
 		<File
-			RelativePath=".\explosion.cpp">
+			RelativePath=".\explosion.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\explosion.h">
+			RelativePath=".\explosion.h"
+			>
 		</File>
 		<File
-			RelativePath=".\framedata.cpp">
+			RelativePath=".\framedata.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\framedata.h">
+			RelativePath=".\framedata.h"
+			>
 		</File>
 		<File
-			RelativePath=".\gamestate.cpp">
+			RelativePath=".\gamestate.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\gamestate.h">
+			RelativePath=".\gamestate.h"
+			>
 		</File>
 		<File
-			RelativePath=".\help.cpp">
+			RelativePath=".\help.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\help.h">
+			RelativePath=".\help.h"
+			>
 		</File>
 		<File
-			RelativePath=".\listpane.cpp">
+			RelativePath=".\listpane.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\listpane.h">
+			RelativePath=".\listpane.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mmlpopup.cpp">
+			RelativePath=".\mmlpopup.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\navpane.cpp">
+			RelativePath=".\navpane.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\pagepane.cpp">
+			RelativePath=".\pagepane.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\particlegeo.cpp">
+			RelativePath=".\particlegeo.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\particlegeo.h">
+			RelativePath=".\particlegeo.h"
+			>
 		</File>
 		<File
-			RelativePath=".\pch.cpp">
+			RelativePath=".\pch.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\pch.h">
+			RelativePath=".\pch.h"
+			>
 		</File>
 		<File
-			RelativePath=".\starimage.cpp">
+			RelativePath=".\starimage.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\starimage.h">
+			RelativePath=".\starimage.h"
+			>
 		</File>
 		<File
-			RelativePath=".\thinggeo.cpp">
+			RelativePath=".\thinggeo.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\thinggeo.h">
+			RelativePath=".\thinggeo.h"
+			>
 		</File>
 	</Files>
 	<Globals>

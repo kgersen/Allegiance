@@ -21,7 +21,8 @@ public:
         CastTo(m_ppane, pns->FindMember("screen"));
 
         CastTo(m_pbuttonQuit, pns->FindMember("quitButtonPane"));
-        AddEventTarget(OnButtonQuit, m_pbuttonQuit->GetEventSource());
+		// mdvalley: Just one pointer/class this file.
+        AddEventTarget(&GameStartingScreen::OnButtonQuit, m_pbuttonQuit->GetEventSource());
         pmodeler->UnloadNameSpace(pns);
     }
 

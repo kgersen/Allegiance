@@ -1,431 +1,608 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="Igc"
 	ProjectGUID="{BF99DCB8-4127-4403-82C9-72190C6ABF5F}"
-	SccProjectName=""
-	SccLocalPath=""
-	Keyword="MakeFileProj">
+	Keyword="MakeFileProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\objs\Retail\Igc"
 			IntermediateDirectory=".\..\..\objs\Retail\Igc"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../ZLib;../Guids;../_Utility"
 				PreprocessorDefinitions="_LIB;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="pch.h"/>
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="pch.h"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\objs\Debug\Igc"
 			IntermediateDirectory=".\..\..\objs\Debug\Igc"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../ZLib;../Guids;../_Utility"
 				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				BasicRuntimeChecks="1"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Igc"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Igc"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				ImproveFloatingPointConsistency="TRUE"
 				AdditionalIncludeDirectories="../ZLib;../Guids;../_Utility"
 				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="1"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Igc"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Igc"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				ImproveFloatingPointConsistency="FALSE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../ZLib;../Guids;../_Utility"
 				PreprocessorDefinitions="SRVLOG;_LIB;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="pch.h"/>
+				BufferSecurityCheck="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="pch.h"
+				Detect64BitPortabilityProblems="false"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<File
-			RelativePath="afterburnerIGC.cpp">
+			RelativePath="afterburnerIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="afterburnerIGC.h">
+			RelativePath="afterburnerIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="asteroidigc.cpp">
+			RelativePath="asteroidigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="asteroidigc.h">
+			RelativePath="asteroidigc.h"
+			>
 		</File>
 		<File
-			RelativePath="bucketigc.cpp">
+			RelativePath="bucketigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="bucketigc.h">
+			RelativePath="bucketigc.h"
+			>
 		</File>
 		<File
-			RelativePath="buoyigc.cpp">
+			RelativePath="buoyigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="buoyigc.h">
+			RelativePath="buoyigc.h"
+			>
 		</File>
 		<File
-			RelativePath=".\chaffigc.cpp">
+			RelativePath=".\chaffigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\chaffigc.h">
+			RelativePath=".\chaffigc.h"
+			>
 		</File>
 		<File
-			RelativePath=".\chafftypeigc.cpp">
+			RelativePath=".\chafftypeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\chafftypeigc.h">
+			RelativePath=".\chafftypeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="civilizationigc.cpp">
+			RelativePath="civilizationigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="civilizationigc.h">
+			RelativePath="civilizationigc.h"
+			>
 		</File>
 		<File
-			RelativePath="cloakigc.cpp">
+			RelativePath="cloakigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="cloakigc.h">
+			RelativePath="cloakigc.h"
+			>
 		</File>
 		<File
-			RelativePath="clusterIGC.cpp">
+			RelativePath="clusterIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="clusterIGC.h">
+			RelativePath="clusterIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="common.cpp">
+			RelativePath="common.cpp"
+			>
 		</File>
 		<File
-			RelativePath="developmentigc.cpp">
+			RelativePath="developmentigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="developmentigc.h">
+			RelativePath="developmentigc.h"
+			>
 		</File>
 		<File
-			RelativePath="dispenserigc.cpp">
+			RelativePath="dispenserigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="dispenserigc.h">
+			RelativePath="dispenserigc.h"
+			>
 		</File>
 		<File
-			RelativePath="dronetypeigc.cpp">
+			RelativePath="dronetypeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="dronetypeigc.h">
+			RelativePath="dronetypeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="hullTypeIGC.cpp">
+			RelativePath="hullTypeIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="hullTypeIGC.h">
+			RelativePath="hullTypeIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="igc.h">
+			RelativePath="igc.h"
+			>
 		</File>
 		<File
-			RelativePath="launchertypeigc.cpp">
+			RelativePath="launchertypeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="launchertypeigc.h">
+			RelativePath="launchertypeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="magazineigc.cpp">
+			RelativePath="magazineigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="magazineigc.h">
+			RelativePath="magazineigc.h"
+			>
 		</File>
 		<File
-			RelativePath="mapmakerigc.cpp">
+			RelativePath="mapmakerigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="mapmakerigc.h">
+			RelativePath="mapmakerigc.h"
+			>
 		</File>
 		<File
-			RelativePath="mineigc.cpp">
+			RelativePath="mineigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="mineigc.h">
+			RelativePath="mineigc.h"
+			>
 		</File>
 		<File
-			RelativePath="minetypeigc.cpp">
+			RelativePath="minetypeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="minetypeigc.h">
+			RelativePath="minetypeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="missileigc.cpp">
+			RelativePath="missileigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="missileigc.h">
+			RelativePath="missileigc.h"
+			>
 		</File>
 		<File
-			RelativePath="missiletypeigc.cpp">
+			RelativePath="missiletypeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="missiletypeigc.h">
+			RelativePath="missiletypeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="missionigc.cpp">
+			RelativePath="missionigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="missionigc.h">
+			RelativePath="missionigc.h"
+			>
 		</File>
 		<File
-			RelativePath="modelIGC.cpp">
+			RelativePath="modelIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="modelIGC.h">
+			RelativePath="modelIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="packigc.cpp">
+			RelativePath="packigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="packigc.h">
+			RelativePath="packigc.h"
+			>
 		</File>
 		<File
-			RelativePath="partTypeIGC.cpp">
+			RelativePath="partTypeIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="partTypeIGC.h">
+			RelativePath="partTypeIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="pch.cpp">
+			RelativePath="pch.cpp"
+			>
 		</File>
 		<File
-			RelativePath="pch.h">
+			RelativePath="pch.h"
+			>
 		</File>
 		<File
-			RelativePath="private.cpp">
+			RelativePath="private.cpp"
+			>
 		</File>
 		<File
-			RelativePath="private.h">
+			RelativePath="private.h"
+			>
 		</File>
 		<File
-			RelativePath="probeigc.cpp">
+			RelativePath="probeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="probeigc.h">
+			RelativePath="probeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="probetypeigc.cpp">
+			RelativePath="probetypeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="probetypeigc.h">
+			RelativePath="probetypeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="projectileIGC.cpp">
+			RelativePath="projectileIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="projectileIGC.h">
+			RelativePath="projectileIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="projectileTypeIGC.cpp">
+			RelativePath="projectileTypeIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="projectileTypeIGC.h">
+			RelativePath="projectileTypeIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="shieldIGC.cpp">
+			RelativePath="shieldIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="shieldIGC.h">
+			RelativePath="shieldIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="shipIGC.cpp">
+			RelativePath="shipIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="shipIGC.h">
+			RelativePath="shipIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="sideigc.cpp">
+			RelativePath="sideigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="sideigc.h">
+			RelativePath="sideigc.h"
+			>
 		</File>
 		<File
-			RelativePath="sounds.h">
+			RelativePath="sounds.h"
+			>
 		</File>
 		<File
-			RelativePath="stationIGC.cpp">
+			RelativePath="stationIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="stationIGC.h">
+			RelativePath="stationIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="stationtypeigc.cpp">
+			RelativePath="stationtypeigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="stationtypeigc.h">
+			RelativePath="stationtypeigc.h"
+			>
 		</File>
 		<File
-			RelativePath="treasureIGC.cpp">
+			RelativePath="treasureIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="treasureIGC.h">
+			RelativePath="treasureIGC.h"
+			>
 		</File>
 		<File
-			RelativePath=".\treasuresetigc.cpp">
+			RelativePath=".\treasuresetigc.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\treasuresetigc.h">
+			RelativePath=".\treasuresetigc.h"
+			>
 		</File>
 		<File
-			RelativePath="warpIGC.cpp">
+			RelativePath="warpIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="warpIGC.h">
+			RelativePath="warpIGC.h"
+			>
 		</File>
 		<File
-			RelativePath="weaponIGC.cpp">
+			RelativePath="weaponIGC.cpp"
+			>
 		</File>
 		<File
-			RelativePath="weaponIGC.h">
+			RelativePath="weaponIGC.h"
+			>
 		</File>
 	</Files>
 	<Globals>

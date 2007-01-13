@@ -1,301 +1,452 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="TCObj"
 	ProjectGUID="{CAFFB3DB-EADD-46A1-ABAE-3A341011B0A6}"
 	RootNamespace="TCObj"
-	SccProjectName=""
-	SccLocalPath=""
-	Keyword="MakeFileProj">
+	Keyword="MakeFileProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\..\objs\Retail\Test\TCObj"
 			IntermediateDirectory=".\..\..\..\objs\Retail\Test\TCObj"
 			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="$(OutDir);..\Inc"
+				GenerateTypeLibrary="true"
+				TypeLibraryName=""
+				OutputDirectory="$(OutDir)"
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\Inc;$(OutDir);..\..\Zlib"
 				PreprocessorDefinitions="_ATL_STATIC_REGISTRY _WINDLL _USRDLL"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
-				WarningLevel="2"/>
+				WarningLevel="2"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
-				IgnoreDefaultLibraryNames="LIBCMT.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				AdditionalIncludeDirectories="$(OutDir);..\Inc"
-				GenerateTypeLibrary="TRUE"
-				TypeLibraryName=""
-				OutputDirectory="$(OutDir)"
-				HeaderFileName="$(InputName).h"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="FLAVOR=&quot;&quot;$(ConfigurationName)&quot;&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
+				IgnoreDefaultLibraryNames="LIBCMT.lib"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCObj"
 			IntermediateDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCObj"
 			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="$(OutDir);..\Inc"
+				GenerateTypeLibrary="true"
+				TypeLibraryName="$(TargetDir)\TCObj.tlb"
+				OutputDirectory="$(OutDir)"
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Inc;$(OutDir);..\..\Zlib"
 				PreprocessorDefinitions="_ATL_STATIC_REGISTRY;_WINDLL;_USRDLL;_DEBUG;DEBUG"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				AdditionalIncludeDirectories="$(OutDir);..\Inc"
-				GenerateTypeLibrary="TRUE"
-				TypeLibraryName="$(TargetDir)\TCObj.tlb"
-				OutputDirectory="$(OutDir)"
-				HeaderFileName="$(InputName).h"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="FLAVOR=&quot;&quot;$(ConfigurationName)&quot;&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCObj"
 			IntermediateDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCObj"
 			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="$(OutDir);..\Inc"
+				GenerateTypeLibrary="true"
+				TypeLibraryName="$(TargetDir)\TCObj.tlb"
+				OutputDirectory="$(OutDir)"
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Inc;$(OutDir);..\..\Zlib"
-				PreprocessorDefinitions="_ATL_STATIC_REGISTRY;_WINDLL;_USRDLL;_DEBUG;DEBUG"
-				ExceptionHandling="FALSE"
+				PreprocessorDefinitions="_ATL_STATIC_REGISTRY;_WINDLL;_USRDLL;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				ExceptionHandling="0"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+				UndefinePreprocessorDefinitions="_ATL_DLL"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				AdditionalIncludeDirectories="$(OutDir);..\Inc"
-				GenerateTypeLibrary="TRUE"
-				TypeLibraryName="$(TargetDir)\TCObj.tlb"
-				OutputDirectory="$(OutDir)"
-				HeaderFileName="$(InputName).h"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="FLAVOR=&quot;&quot;Debug&quot;&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCObj"
 			IntermediateDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCObj"
 			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="$(OutDir);..\Inc"
+				GenerateTypeLibrary="true"
+				TypeLibraryName=""
+				OutputDirectory="$(OutDir)"
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\Inc;$(OutDir);..\..\Zlib"
 				PreprocessorDefinitions="_ATL_STATIC_REGISTRY _WINDLL _USRDLL"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				BufferSecurityCheck="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
-				WarningLevel="2"/>
+				WarningLevel="2"
+				Detect64BitPortabilityProblems="false"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
-				IgnoreDefaultLibraryNames="LIBCMT.lib"/>
-			<Tool
-				Name="VCMIDLTool"
-				AdditionalIncludeDirectories="$(OutDir);..\Inc"
-				GenerateTypeLibrary="TRUE"
-				TypeLibraryName=""
-				OutputDirectory="$(OutDir)"
-				HeaderFileName="$(InputName).h"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="FLAVOR=&quot;&quot;Retail&quot;&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\..\ZLib\ZLib.lib $(OutDir)\..\TCLib\TCLib.lib winmm.lib delayimp.lib"
+				IgnoreDefaultLibraryNames="LIBCMT.lib"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<File
-			RelativePath="pch.cpp">
+			RelativePath="pch.cpp"
+			>
 		</File>
 		<File
-			RelativePath="pch.h">
+			RelativePath="pch.h"
+			>
 		</File>
 		<File
-			RelativePath="resource.h">
+			RelativePath="resource.h"
+			>
 		</File>
 		<File
-			RelativePath="..\Inc\ScrRun.idl">
+			RelativePath="..\Inc\ScrRun.idl"
+			>
 		</File>
 		<File
-			RelativePath="SrcInc.cpp">
+			RelativePath="SrcInc.cpp"
+			>
 		</File>
 		<File
-			RelativePath="SrcInc.h">
+			RelativePath="SrcInc.h"
+			>
 		</File>
 		<File
-			RelativePath="..\Inc\TCIDL.idl">
+			RelativePath="..\Inc\TCIDL.idl"
+			>
 		</File>
 		<File
-			RelativePath="TCMarshalByValue.cpp">
+			RelativePath="TCMarshalByValue.cpp"
+			>
 		</File>
 		<File
-			RelativePath="TCMarshalByValue.h">
+			RelativePath="TCMarshalByValue.h"
+			>
 		</File>
 		<File
-			RelativePath="TCMarshalByValue.rgs">
+			RelativePath="TCMarshalByValue.rgs"
+			>
 		</File>
 		<File
-			RelativePath="TCNullStream.cpp">
+			RelativePath="TCNullStream.cpp"
+			>
 		</File>
 		<File
-			RelativePath="TCNullStream.h">
+			RelativePath="TCNullStream.h"
+			>
 		</File>
 		<File
-			RelativePath="TCNullStream.rgs">
+			RelativePath="TCNullStream.rgs"
+			>
 		</File>
 		<File
-			RelativePath="TCObj.cpp">
+			RelativePath="TCObj.cpp"
+			>
 		</File>
 		<File
-			RelativePath="TCObj.def">
+			RelativePath="TCObj.def"
+			>
 		</File>
 		<File
-			RelativePath="TCObj.idl">
+			RelativePath="TCObj.idl"
+			>
 		</File>
 		<File
-			RelativePath="TCObj.rc">
+			RelativePath="TCObj.rc"
+			>
 		</File>
 		<File
-			RelativePath="TCObj.rc2">
+			RelativePath="TCObj.rc2"
+			>
 		</File>
 		<File
-			RelativePath="TCStrings.cpp">
+			RelativePath="TCStrings.cpp"
+			>
 		</File>
 		<File
-			RelativePath="TCStrings.h">
+			RelativePath="TCStrings.h"
+			>
 		</File>
 		<File
-			RelativePath="TCStrings.rgs">
+			RelativePath="TCStrings.rgs"
+			>
 		</File>
 		<File
-			RelativePath="TCUtility.cpp">
+			RelativePath="TCUtility.cpp"
+			>
 		</File>
 		<File
-			RelativePath="TCUtility.h">
+			RelativePath="TCUtility.h"
+			>
 		</File>
 		<File
-			RelativePath="TCUtility.rgs">
+			RelativePath="TCUtility.rgs"
+			>
 		</File>
 	</Files>
 	<Globals>

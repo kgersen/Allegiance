@@ -248,7 +248,7 @@ public:
         {
             char cbError[256];
             mciGetErrorString(dwError, cbError, 256);
-            debugf("Open failed for CD Audio device '%': %s\n", (const char*)strDevice, cbError);
+            debugf("Open failed for CD Audio device '%c': %s\n", (const char*)strDevice, cbError);
             return E_FAIL;
         }
         mciSendCommand(mciOpenParms.wDeviceID, MCI_CLOSE, 0, NULL);

@@ -47,7 +47,9 @@ private:
     TRef<IIntegerEventSink>      m_pintegerEventSink;
     TRef<IItemEvent::SourceImpl> m_peventSelection;
     TRef<EventSourceImpl>        m_peventSingleClick;
+	TRef<EventSourceImpl>        m_peventSingleRightClick;
     TRef<EventSourceImpl>        m_peventDoubleClick;
+	TRef<EventSourceImpl>        m_peventDoubleRightClick;
 
     int                          m_indexSelection;
     int                          m_posScroll;
@@ -83,6 +85,8 @@ public:
         m_peventSelection   = new IItemEvent::SourceImpl();
         m_peventSingleClick = new EventSourceImpl();
         m_peventDoubleClick = new EventSourceImpl();
+		m_peventSingleRightClick = new EventSourceImpl();
+		m_peventDoubleRightClick = new EventSourceImpl();
 
         if (m_ppainter == NULL) {
             m_ppainter = new DefaultItemPainter();
@@ -339,9 +343,19 @@ public:
         return m_peventDoubleClick;
     }
 
+	IEventSource* GetDoubleRightClickEventSource()
+    {
+        return m_peventDoubleRightClick;
+    }
+
     IEventSource* GetSingleClickEventSource()
     {
         return m_peventSingleClick;
+    }
+
+    IEventSource* GetSingleRightClickEventSource()
+    {
+        return m_peventSingleRightClick;
     }
 
     void ScrollToItem(ItemID pitem)
@@ -599,6 +613,24 @@ public:
             }
 
         }
+		else if(button == 1 && bDown)
+		{
+			int nSize = GetSignificantSize(*m_ppainter);
+
+            int nSignificantMouseDim = (int)(m_bHorizontal ? point.X(): point.Y());
+
+            SetSelection(m_plist->GetItem((nSignificantMouseDim + GetScrollPos()) / nSize));
+
+            NeedPaint();
+
+            SelectionChanged();
+            if (pprovider->IsDoubleClick()) {
+                m_peventDoubleRightClick->Trigger();
+            }
+            else {
+                m_peventSingleRightClick->Trigger();
+            }
+		}
 
         return MouseResult();
     }

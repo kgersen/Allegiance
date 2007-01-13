@@ -48,7 +48,8 @@ public:
         //
 
         CastTo(m_pbuttonClose, m_pns->FindMember("closeButton"));
-        AddEventTarget(OnButtonClose, m_pbuttonClose->GetEventSource());
+		// mdvalley: OnButtonClose now needs to be pointer and with class spelled out in 2005.
+		AddEventTarget(&MMLPopup::OnButtonClose, m_pbuttonClose->GetEventSource());
 
         //
         // Default attributes

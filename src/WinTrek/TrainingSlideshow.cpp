@@ -39,7 +39,8 @@ public:
         GetWindow ()->GetPopupContainer ()->OpenPopup (pMsgBox, false);
 
         // pause to let the "starting..." box draw itself
-        AddEventTarget (OnSwitchOut, GetWindow(), 0.1f);
+		// mdvalley: pause to add in another pointer and class name
+        AddEventTarget (&TrainingSlideshow::OnSwitchOut, GetWindow(), 0.1f);
     }
 
     bool OnSwitchOut (void)

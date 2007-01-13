@@ -57,8 +57,9 @@ inline HRESULT CServiceModule::RegisterServer(BOOL bRegTypeLib, BOOL bService, c
     
     if (bService)
     {
-        key.SetStringValue(_T("LocalService"), _T("AllLobby"));
-        key.SetStringValue(_T("ServiceParameters"), _T("-Service"));
+		// mdvalley: SetStringValue not in my ATL
+        key.SetValue(_T("AllLobby"), _T("LocalService"));
+        key.SetValue(_T("-Service"), _T("ServiceParameters"));
         // Create service
         //Install();
         InstallService(szAccount, szPassword);
@@ -513,7 +514,7 @@ void CServiceModule::Run()
 int __cdecl main(int argc, char *argv[])
 { 
     HINSTANCE hInstance = GetModuleHandle(NULL);
-  
+
     LPSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
     // {5B5BE9E8-F1C7-4b95-960A-542A495CCE20}
@@ -558,7 +559,8 @@ int __cdecl main(int argc, char *argv[])
     
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
-    lRes = key.QueryStringValue(_T("LocalService"), szValue, &dwLen);
+	// mdvalley: QueryStringValue? Not on my compiler.
+    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
 
     _Module.m_bService = FALSE;
     if (lRes == ERROR_SUCCESS)

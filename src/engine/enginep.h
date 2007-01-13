@@ -122,7 +122,7 @@ public:
     virtual IDirect3DDeviceX* GetD3DDeviceX()         = 0;
     virtual PixelFormat*      GetTextureFormat()      = 0;
     virtual WinPoint          GetMinTextureSize()     = 0;
-    virtual WinPoint          GetMaxTextureSize()     = 0;
+    virtual WinPoint          GetMaxTextureSize(DWORD dwMaxTextureSize) = 0;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
     virtual bool              IsHardwareAccelerated() = 0;
 };
 
@@ -154,6 +154,7 @@ public:
     virtual PixelFormat*       GetZBufferPixelFormat()                              = 0;
     virtual ZString            GetName()                                            = 0;
     virtual void               SetAllow3DAcceleration(bool bAllow3DAcceleration)    = 0;
+	virtual void			   SetMaxTextureSize(DWORD bMaxTextureSize)		= 0;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
     virtual WinPoint           NextMode(const WinPoint& size)                       = 0;
     virtual WinPoint           PreviousMode(const WinPoint& size)                   = 0;

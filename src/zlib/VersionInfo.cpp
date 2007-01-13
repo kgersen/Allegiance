@@ -216,14 +216,14 @@ ZString ZVersionInfo::GetStringValue(LPCTSTR pszKey, bool* pbExists) const
 
   // Format the base sub-block string
   TCHAR szBase[32];
-  _stprintf(szBase, TEXT("\\StringFileInfo\\%04X"), wLangID);
+  _stprintf_s(szBase, 32, TEXT("\\StringFileInfo\\%04X"), wLangID);
 
   // Loop thru each code page
   for (int iCP = 0; iCP < cCodePages; ++iCP)
   {
     // Format a sub-block string
     TCHAR szSubBlock[_MAX_PATH * 2];
-    _stprintf(szSubBlock, TEXT("%s%04X\\%s"), szBase, rgwCodePages[iCP], pszKey);
+    _stprintf_s(szSubBlock, _MAX_PATH * 2, TEXT("%s%04X\\%s"), szBase, rgwCodePages[iCP], pszKey);
 
     // Query the value
     UINT cbValue = 0;

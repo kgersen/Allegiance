@@ -145,6 +145,63 @@ void BufferPositionTracker::SetPosition(DWORD dwPosition)
 
 // prepare a sound buffer with the given quality and 3D support using the
 // direct sound object pointed to by pDirectSound.
+// mdvalley: DirectSound8
+HRESULT DSVirtualSoundBuffer::PrepareBuffer8(IDirectSound8* pDirectSound, 
+    ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
+{
+    HRESULT hr;
+
+    if (m_pds3dbuffer == NULL)
+    {
+        if (m_bufferPositionTracker.IsASR())
+        {
+            DS3DASRSoundBuffer* pds3dASRBuffer = new DS3DASRSoundBuffer();
+
+            // initialize the buffer.
+            hr = pds3dASRBuffer->Init8(pDirectSound, m_pdata, 
+                m_bufferPositionTracker.GetLoopOffset(), 
+                m_bufferPositionTracker.GetLoopLength(),
+                bSupport3D, quality, bAllowHardware);
+            if (ZFailed(hr)) return hr;
+
+            m_pds3dbuffer = pds3dASRBuffer;
+        }
+        // stream sounds that are larger than 1 MB or so.
+        else if (m_pdata->GetSize() > 1000000)
+		// else if (m_pdata->GetSize() > 100000)		// mdvalley: lower limit to 100k for debugging
+        {
+            DS3DStreamingSoundBuffer* pds3DStreamingBuffer = new DS3DStreamingSoundBuffer();
+
+            // initialize the buffer.
+            hr = pds3DStreamingBuffer->Init8(pDirectSound, m_pdata, 
+                m_bufferPositionTracker.IsLooping(), bSupport3D, quality, bAllowHardware);
+            if (ZFailed(hr)) return hr;
+
+            m_pds3dbuffer = pds3DStreamingBuffer;
+        }
+        else
+        {
+            DS3DStaticSoundBuffer* pds3DStaticBuffer = new DS3DStaticSoundBuffer();
+
+            // initialize the buffer.
+            hr = pds3DStaticBuffer->Init8(pDirectSound, m_pdata, 
+                m_bufferPositionTracker.IsLooping(), bSupport3D, quality, bAllowHardware);
+            if (FAILED(hr)) return hr;
+
+            m_pds3dbuffer = pds3DStaticBuffer;
+        }
+    }
+
+    m_quality = quality;
+    m_bAllowHardware = bAllowHardware;
+
+    // update the buffers's volume and pitch as needed.
+    hr = m_pds3dbuffer->UpdateState(m_fGain, m_fPitch, false);
+    if (ZFailed(hr)) return hr;
+
+    return S_OK;
+}
+
 HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
 {
@@ -167,6 +224,7 @@ HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound,
         }
         // stream sounds that are larger than 1 MB or so.
         else if (m_pdata->GetSize() > 1000000)
+		// else if (m_pdata->GetSize() > 100000)		// mdvalley: lower limit to 100k for debugging
         {
             DS3DStreamingSoundBuffer* pds3DStreamingBuffer = new DS3DStreamingSoundBuffer();
 
@@ -199,7 +257,6 @@ HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound,
 
     return S_OK;
 }
-
 
 // Creates a virtual sound buffer for a normal sound, possibly looping
 DSVirtualSoundBuffer::DSVirtualSoundBuffer(ISoundPCMData* pdata, bool bLooping) : 
@@ -332,6 +389,34 @@ HRESULT DSVirtualSoundBuffer::Update(DWORD dwTimeElapsed,
 
 
 // Creates and starts a real dsound buffer for this sound
+// mdvalley: DirectSound8
+HRESULT DSVirtualSoundBuffer::StartBuffer8(IDirectSound8* pDirectSound, 
+    ISoundEngine::Quality quality, bool bAllowHardware)
+{
+    HRESULT hr;
+
+    // if we have a buffer playing, we have nothing more to do
+    if (m_bBufferPlaying)
+    {
+        ZAssert(false);  // I want to know about this
+        return S_FALSE;
+    }
+
+    // Create a sound buffer with the given quality (or reuse the one we 
+    // have, if appropriate).
+    hr = PrepareBuffer8(pDirectSound, quality, bAllowHardware, false);
+    if (FAILED(hr)) return hr;
+
+    // start the sound.
+    hr = m_pds3dbuffer->Start(m_bufferPositionTracker.GetPosition(), 
+        m_bufferPositionTracker.IsStopping());
+    if (FAILED(hr)) return hr;
+
+    m_bBufferPlaying = true;
+
+    return S_OK;
+};
+
 HRESULT DSVirtualSoundBuffer::StartBuffer(IDirectSound* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware)
 {
@@ -358,7 +443,6 @@ HRESULT DSVirtualSoundBuffer::StartBuffer(IDirectSound* pDirectSound,
 
     return S_OK;
 };
-
 
 // forcibly stops the given buffer.
 HRESULT DSVirtualSoundBuffer::StopBuffer()
@@ -548,6 +632,35 @@ DS3DVirtualSoundBuffer::DS3DVirtualSoundBuffer(ISoundPCMData* pdata, DWORD dwLoo
 
 // prepare a sound buffer with the given quality and 3D support using the
 // direct sound object pointed to by pDirectSound.
+	// mdvalley: DSound8
+HRESULT DS3DVirtualSoundBuffer::PrepareBuffer8(IDirectSound8* pDirectSound, 
+    ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
+{
+    HRESULT hr;
+
+    // If the old and new quality are not the same, we need a new buffer
+    // because the 3D quality is set on a per-buffer basis.
+    if (quality != m_quality || m_bAllowHardware != bAllowHardware)
+        m_pds3dbuffer = NULL;
+
+    // do all of the 2D buffer creation stuff.
+    hr = DSVirtualSoundBuffer::PrepareBuffer8(pDirectSound, quality, bAllowHardware, true);
+    if (FAILED(hr)) return hr;
+
+    // update the playing sound's 3D state, as needed.
+    hr = m_pds3dbuffer->UpdateState3D(
+        m_vectPosition, m_vectVelocity, m_vectOrientation, 
+        m_fMinimumDistance, 
+        m_fInnerAngle, m_fOuterAngle, m_fOutsideGain,
+        m_bPlayingIn3D,
+        m_bListenerRelative,
+        false
+        );
+    if (ZFailed(hr)) return hr;
+
+    return S_OK;
+};
+
 HRESULT DS3DVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound, 
     ISoundEngine::Quality quality, bool bAllowHardware, bool bSupport3D)
 {

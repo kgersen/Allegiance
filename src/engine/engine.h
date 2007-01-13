@@ -90,6 +90,7 @@ public:
 
     virtual void SetAllowSecondary(bool bAllowSecondary)                   = 0;
     virtual void SetAllow3DAcceleration(bool bAllow3DAcceleration)         = 0;
+	virtual void SetMaxTextureSize(DWORD bMaxTextureSize)		   = 0;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
     virtual void Set3DAccelerationImportant(bool b3DAccelerationImportant) = 0;
     virtual void SetFullscreen(bool bFullscreen)                           = 0;
     virtual void SetFullscreenSize(const WinPoint& point)                  = 0;

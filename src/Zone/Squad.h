@@ -22,7 +22,8 @@ public:
     RANK_UNKNOWN,
   };
 
-  static IsRankValid(Rank rank)
+  // mdvalley: 2005 needs the int
+  static int IsRankValid(Rank rank)
   {
       return rank >= RANK_COTTON && rank < RANK_MAX;
   }

@@ -519,7 +519,8 @@ unsigned TCUtilityThread::ThreadProc(void*)
 
 void TCUtilityThread::DispatchWorkItem(TCUtilityThread::XWorkItem* pArgs)
 {
-  __try
+///  __try
+	try
   {
 // VS.Net 2003 port: see "Breaking Changes in the Standard C++ Library Since Visual C++ 6.0" in documentation
 #if _MSC_VER >= 1310
@@ -528,7 +529,8 @@ void TCUtilityThread::DispatchWorkItem(TCUtilityThread::XWorkItem* pArgs)
     OnMessage(pArgs->m_idMsg, pArgs->m_vec.size(), pArgs->m_vec.begin());
 #endif
   }
-  __except(1)
+///  __except(1)
+	catch(...)
   {
     TCERRLOG0("TCUtilityThread::DispatchThreadMessage: Exception Caught! Message loop continuing...\n");
   }

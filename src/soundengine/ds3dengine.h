@@ -14,9 +14,13 @@ class DS3DSoundEngine : public ISoundEngine, public ISoundBufferSource  SoundDeb
 {
 
     // the currently chosen DirectSound implementation
-    TRef<IDirectSound> m_pDirectSound;
+	// mdvalley: Now uses DirectSound8 interface.
+    TRef<IDirectSound8> m_pDirectSound8;
+	TRef<IDirectSound> m_pDirectSound;
 
     // the primary buffer of this DirectSound instance
+	// mdvalley: The DX SDK says to keep the old interface for the primary
+	// buffer. I'm not arguing.
     TRef<IDirectSoundBuffer> m_pPrimaryBuffer;
 
     // the capabilities of the chosen DirectSound implementation
@@ -117,7 +121,7 @@ public:
 
     // Basic initialization.  This was pulled out of the constructor so that we
     // can return error values.
-    HRESULT Init(HWND hwnd);
+    HRESULT Init(HWND hwnd, bool bUseDSound8);
 
 
     //

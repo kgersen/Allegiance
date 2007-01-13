@@ -431,7 +431,9 @@ const TrekKey TK_PromoteTurret4                 = 215; // Swap the current weapo
 const TrekKey TK_VoteYes                        = 216; // Vote Yes on the current issue
 const TrekKey TK_VoteNo                         = 217; // Vote No on the current issue
 
-const TrekKey TK_Max                            = 218; // Must be last trekkey
+const TrekKey TK_ScrnShot                       = 218; // Take a screen shot
+
+const TrekKey TK_Max                            = 219; // Must be last trekkey
 
 typedef short   SoundID;
 typedef short   VoiceID;
@@ -1381,10 +1383,11 @@ struct MissionParams
             return "Scores can't be counted for a game where defections are allowed; "
                 "please turn off defections or stats count.";
         }
-        else if (bScoresCount && nMinPlayersPerTeam < 5)
+		// TE: Confirms that the MaxImbalance = AUTO when scores count
+        else if (bScoresCount && iMaxImbalance != 0x7ffe)
         {
-            return "Scores can't be counted for a game with less than 5 players per team; "
-                "please increase the minimum players per team or turn stats count off.";
+            return "Scores can't be counted for a game where the MaxImbalance setting is not Auto; "
+                "please set the MaxImbalance setting to Auto, or turn off stats count.";
         }
         else if (IsConquestGame() && bInvulnerableStations)
         {

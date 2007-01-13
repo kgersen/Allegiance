@@ -1,26 +1,49 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="Server"
 	ProjectGUID="{05EAD557-56B0-4070-83F0-8A2B6FB9C54D}"
 	RootNamespace="Server"
-	SccProjectName=""
-	SccLocalPath=""
-	Keyword="MakeFileProj">
+	Keyword="MakeFileProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;&quot;$(TargetDir)\..\AGC&quot;"
+				TypeLibraryName="$(TargetDir)/$(InputName).tlb"
+				OutputDirectory="$(TargetDir)"
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -28,226 +51,328 @@
 				PreprocessorDefinitions="USEAUTH;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="FLAVOR=\&quot;$(ConfigurationName)\&quot;;FEDSRV;FEDMSG=\&quot;$(OutDir)\FedMsg.rc\&quot;"
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllSrv.exe"
-				SuppressStartupBanner="FALSE"
+				SuppressStartupBanner="false"
 				DelayLoadDLLs="netapi32.dll;advapi32.dll"
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
 				SubSystem="1"
 				EntryPointSymbol="mainCRTStartup"
-				TargetMachine="1"/>
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCMIDLTool"
-				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;&quot;$(TargetDir)\..\AGC&quot;"
-				TypeLibraryName="$(TargetDir)/$(InputName).tlb"
-				OutputDirectory="$(TargetDir)"
-				HeaderFileName="$(InputName).h"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="FLAVOR=\&quot;$(ConfigurationName)\&quot;;FEDSRV;FEDMSG=\&quot;$(OutDir)\FedMsg.rc\&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
 			<Tool
-				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="0"
-				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;;..\..\FreeZoneAuth"
-				PreprocessorDefinitions="USEAUTH;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400"
-				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="pch.h"/>
+				Name="VCPreBuildEventTool"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+			/>
 			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
-				OutputFile="$(OutDir)/AllSrv.exe"
-				LinkIncremental="1"
-				IgnoreAllDefaultLibraries="FALSE"
-				IgnoreDefaultLibraryNames=""
-				DelayLoadDLLs="netapi32.dll;advapi32.dll"/>
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;&quot;$(TargetDir)\..\AGC&quot;"
 				TypeLibraryName="$(TargetDir)/$(InputName).tlb"
 				OutputDirectory="$(TargetDir)"
-				HeaderFileName="$(InputName).h"/>
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="0"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;;..\..\FreeZoneAuth"
+				PreprocessorDefinitions="USEAUTH;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="pch.h"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="FLAVOR=\&quot;$(ConfigurationName)\&quot;;FEDSRV;FEDMSG=\&quot;$(OutDir)\FedMsg.rc\&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				OutputFile="$(OutDir)/AllSrv.exe"
+				LinkIncremental="1"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames=""
+				DelayLoadDLLs="netapi32.dll;advapi32.dll"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			UseOfATL="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			UseOfATL="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
 			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				ImproveFloatingPointConsistency="TRUE"
-				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;"
-				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400;WIN"
-				ExceptionHandling="FALSE"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="pch.h"
-				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				Name="VCPreBuildEventTool"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+			/>
 			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
-				OutputFile="$(OutDir)/AllSrv.exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="FALSE"
-				AdditionalLibraryDirectories="..\Inc\appWeb"
-				DelayLoadDLLs="netapi32.dll;advapi32.dll"
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
-				SubSystem="1"
-				EntryPointSymbol="mainCRTStartup"
-				TargetMachine="1"/>
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;&quot;$(TargetDir)\..\AGC&quot;"
 				TypeLibraryName="$(TargetDir)/$(InputName).tlb"
 				OutputDirectory="$(TargetDir)"
-				HeaderFileName="$(InputName).h"/>
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;"
+				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400;WIN;_CRT_SECURE_NO_DEPRECATE"
+				ExceptionHandling="1"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="pch.h"
+				WarningLevel="2"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="FLAVOR=\&quot;$(ConfigurationName)\&quot;;FEDSRV;FEDMSG=\&quot;$(OutDir)\FedMsg.rc\&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
+				OutputFile="$(OutDir)/AllSrv.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="false"
+				AdditionalLibraryDirectories="..\Inc\appWeb"
+				DelayLoadDLLs="netapi32.dll;advapi32.dll"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				SubSystem="1"
+				EntryPointSymbol="mainCRTStartup"
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\FedSrv"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
 			<Tool
-				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
-				ImproveFloatingPointConsistency="FALSE"
-				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;"
-				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400;WIN"
-				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="pch.h"/>
+				Name="VCPreBuildEventTool"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+			/>
 			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib dplayx.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
-				OutputFile="$(OutDir)/AllSrv.exe"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\Inc\appWeb"
-				IgnoreAllDefaultLibraries="FALSE"
-				IgnoreDefaultLibraryNames=""
-				DelayLoadDLLs="netapi32.dll;advapi32.dll"
-				TargetMachine="1"/>
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
 			<Tool
 				Name="VCMIDLTool"
 				AdditionalIncludeDirectories="&quot;$(TargetDir)&quot;;&quot;$(TargetDir)\..\AGC&quot;"
 				TypeLibraryName="$(TargetDir)/$(InputName).tlb"
 				OutputDirectory="$(TargetDir)"
-				HeaderFileName="$(InputName).h"/>
+				HeaderFileName="$(InputName).h"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCCLCompilerTool"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;"
+				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400;WIN"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough="pch.h"
+				Detect64BitPortabilityProblems="false"
+				DisableSpecificWarnings="4996"
+				OmitDefaultLibName="false"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="FLAVOR=\&quot;$(ConfigurationName)\&quot;;FEDSRV;FEDMSG=\&quot;$(OutDir)\FedMsg.rc\&quot;"
-				AdditionalIncludeDirectories="$(OutDir)"/>
+				AdditionalIncludeDirectories="$(OutDir)"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
+				OutputFile="$(OutDir)/AllSrv.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\Inc\appWeb"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames=""
+				DelayLoadDLLs="netapi32.dll;advapi32.dll"
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -255,526 +380,695 @@
 	<Files>
 		<Filter
 			Name="excluded"
-			Filter="">
+			>
 			<File
-				RelativePath="config.cpp">
+				RelativePath="config.cpp"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="config.h">
+				RelativePath="config.h"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="DIALOGS.CPP">
+				RelativePath="DIALOGS.CPP"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="dirmon.cpp">
+				RelativePath="dirmon.cpp"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="dirmon.h">
+				RelativePath="dirmon.h"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\srvconfig\srvconfig.ico">
+				RelativePath="..\srvconfig\srvconfig.ico"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="srvdbg.cpp">
+				RelativePath="srvdbg.cpp"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCLCompilerTool"/>
+						Name="VCCLCompilerTool"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="srvdbg.h">
+				RelativePath="srvdbg.h"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Retail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZDebug|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="FZRetail|Win32"
-					ExcludedFromBuild="TRUE">
+					ExcludedFromBuild="true"
+					>
 					<Tool
-						Name="VCCustomBuildTool"/>
+						Name="VCCustomBuildTool"
+					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resources"
-			Filter="">
+			>
 			<File
-				RelativePath="AdminGame.rgs">
+				RelativePath="AdminGame.rgs"
+				>
 			</File>
 			<File
-				RelativePath="AdminGames.rgs">
+				RelativePath="AdminGames.rgs"
+				>
 			</File>
 			<File
-				RelativePath="AdminServer.rgs">
+				RelativePath="AdminServer.rgs"
+				>
 			</File>
 			<File
-				RelativePath="AdminSession.rgs">
+				RelativePath="AdminSession.rgs"
+				>
 			</File>
 			<File
-				RelativePath="AdminShip.rgs">
+				RelativePath="AdminShip.rgs"
+				>
 			</File>
 			<File
-				RelativePath="AdminUser.rgs">
+				RelativePath="AdminUser.rgs"
+				>
 			</File>
 			<File
-				RelativePath="AdminUsers.rgs">
+				RelativePath="AdminUsers.rgs"
+				>
 			</File>
 			<File
-				RelativePath="allsrv.rgs">
+				RelativePath="allsrv.rgs"
+				>
 			</File>
 			<File
-				RelativePath="AllSrv32.rgs">
+				RelativePath="AllSrv32.rgs"
+				>
 			</File>
 			<File
-				RelativePath="DPMono.rgs">
+				RelativePath="DPMono.rgs"
+				>
 			</File>
 			<File
-				RelativePath="fedsrv.ico">
+				RelativePath="fedsrv.ico"
+				>
 			</File>
 			<File
-				RelativePath="FedSrv.RC">
+				RelativePath="FedSrv.RC"
+				>
 				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Retail|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FZDebug|Win32">
-					<Tool
-						Name="VCResourceCompilerTool"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FZRetail|Win32">
+					Name="Debug|Win32"
+					>
 					<Tool
 						Name="VCResourceCompilerTool"
-						AdditionalIncludeDirectories="$(OutDir)"/>
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Retail|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="FZDebug|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="FZRetail|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories="$(OutDir)"
+					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\fedsrv.rc2">
+				RelativePath=".\fedsrv.rc2"
+				>
 			</File>
 		</Filter>
 		<File
-			RelativePath="_fedsrv.h">
+			RelativePath="_fedsrv.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminEventLoggerHook.cpp">
+			RelativePath="AdminEventLoggerHook.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminEventLoggerHook.h">
+			RelativePath="AdminEventLoggerHook.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminGame.cpp">
+			RelativePath="AdminGame.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminGame.h">
+			RelativePath="AdminGame.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminGames.cpp">
+			RelativePath="AdminGames.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminGames.h">
+			RelativePath="AdminGames.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminServer.cpp">
+			RelativePath="AdminServer.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminServer.h">
+			RelativePath="AdminServer.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminSession.cpp">
+			RelativePath="AdminSession.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminSession.h">
+			RelativePath="AdminSession.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminSessionClass.cpp">
+			RelativePath="AdminSessionClass.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminSessionClass.h">
+			RelativePath="AdminSessionClass.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminSessionEventSink.cpp">
+			RelativePath="AdminSessionEventSink.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminSessionEventSink.h">
+			RelativePath="AdminSessionEventSink.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminSessionSecure.h">
+			RelativePath="AdminSessionSecure.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminSessionSecureHost.h">
+			RelativePath="AdminSessionSecureHost.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminShip.cpp">
+			RelativePath="AdminShip.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminShip.h">
+			RelativePath="AdminShip.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminUser.cpp">
+			RelativePath="AdminUser.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminUser.h">
+			RelativePath="AdminUser.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminUsers.cpp">
+			RelativePath="AdminUsers.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminUsers.h">
+			RelativePath="AdminUsers.h"
+			>
 		</File>
 		<File
-			RelativePath="AdminUtil.h">
+			RelativePath="AdminUtil.h"
+			>
 		</File>
 		<File
-			RelativePath="allsrvmodule.cpp">
+			RelativePath="allsrvmodule.cpp"
+			>
 		</File>
 		<File
-			RelativePath="allsrvmodule.h">
+			RelativePath="allsrvmodule.h"
+			>
 		</File>
 		<File
-			RelativePath="AllSrvModuleIDL.idl">
+			RelativePath="AllSrvModuleIDL.idl"
+			>
 		</File>
 		<File
-			RelativePath="BitArray.cpp">
+			RelativePath="BitArray.cpp"
+			>
 		</File>
 		<File
-			RelativePath="BitArray.h">
+			RelativePath="BitArray.h"
+			>
 		</File>
 		<File
-			RelativePath="counters.h">
+			RelativePath="counters.h"
+			>
 		</File>
 		<File
-			RelativePath="dbgutil.h">
+			RelativePath="dbgutil.h"
+			>
 		</File>
 		<File
-			RelativePath=".\fedmsg.msg">
+			RelativePath=".\fedmsg.msg"
+			>
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="Debug|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="Retail|Win32">
+				Name="Retail|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZDebug|Win32">
+				Name="FZDebug|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZRetail|Win32">
+				Name="FZRetail|Win32"
+				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)
-"
-					Outputs="$(IntDir)\$(InputName).rc"/>
+					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
+					Outputs="$(IntDir)\$(InputName).rc"
+				/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="FedSrv.CPP">
+			RelativePath="FedSrv.CPP"
+			>
 		</File>
 		<File
-			RelativePath="FedSrv.H">
+			RelativePath="FedSrv.H"
+			>
 		</File>
 		<File
-			RelativePath="FedSrvApp.h">
+			RelativePath="FedSrvApp.h"
+			>
 		</File>
 		<File
-			RelativePath="fedsrvsql.h">
+			RelativePath="fedsrvsql.h"
+			>
 		</File>
 		<File
-			RelativePath="fscluster.cpp">
+			RelativePath="fscluster.cpp"
+			>
 		</File>
 		<File
-			RelativePath="fscluster.h">
+			RelativePath="fscluster.h"
+			>
 		</File>
 		<File
-			RelativePath="fslobby.cpp">
+			RelativePath="fslobby.cpp"
+			>
 		</File>
 		<File
-			RelativePath="fsmission.cpp">
+			RelativePath="fsmission.cpp"
+			>
 		</File>
 		<File
-			RelativePath="fsmission.h">
+			RelativePath="fsmission.h"
+			>
 		</File>
 		<File
-			RelativePath="fsship.cpp">
+			RelativePath="fsship.cpp"
+			>
 		</File>
 		<File
-			RelativePath="fsship.h">
+			RelativePath="fsship.h"
+			>
 		</File>
 		<File
-			RelativePath="fsside.cpp">
+			RelativePath="fsside.cpp"
+			>
 		</File>
 		<File
-			RelativePath="fsside.h">
+			RelativePath="fsside.h"
+			>
 		</File>
 		<File
-			RelativePath=".\makefile">
+			RelativePath=".\makefile"
+			>
 		</File>
 		<File
-			RelativePath="pch.cpp">
+			RelativePath="pch.cpp"
+			>
 		</File>
 		<File
-			RelativePath="pch.h">
+			RelativePath="pch.h"
+			>
 		</File>
 		<File
-			RelativePath="queries.h">
+			RelativePath="queries.h"
+			>
 		</File>
 		<File
-			RelativePath="regini.txt">
+			RelativePath="regini.txt"
+			>
 		</File>
 		<File
-			RelativePath="resource.h">
+			RelativePath="resource.h"
+			>
 		</File>
 		<File
-			RelativePath="sqlhelp.cpp">
+			RelativePath="sqlhelp.cpp"
+			>
 		</File>
 		<File
-			RelativePath="srvqguids.cpp">
+			RelativePath="srvqguids.cpp"
+			>
 		</File>
 		<File
-			RelativePath="srvqueries.h">
+			RelativePath="srvqueries.h"
+			>
 		</File>
 		<File
-			RelativePath="SWMRG.CPP">
+			RelativePath="SWMRG.CPP"
+			>
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="Debug|Win32"
+				>
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="Retail|Win32">
+				Name="Retail|Win32"
+				>
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZDebug|Win32">
+				Name="FZDebug|Win32"
+				>
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZRetail|Win32">
+				Name="FZRetail|Win32"
+				>
 				<Tool
-					Name="VCCLCompilerTool"/>
+					Name="VCCLCompilerTool"
+				/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="SWMRG.H">
+			RelativePath="SWMRG.H"
+			>
 			<FileConfiguration
-				Name="Debug|Win32">
+				Name="Debug|Win32"
+				>
 				<Tool
-					Name="VCCustomBuildTool"/>
+					Name="VCCustomBuildTool"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="Retail|Win32">
+				Name="Retail|Win32"
+				>
 				<Tool
-					Name="VCCustomBuildTool"/>
+					Name="VCCustomBuildTool"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZDebug|Win32">
+				Name="FZDebug|Win32"
+				>
 				<Tool
-					Name="VCCustomBuildTool"/>
+					Name="VCCustomBuildTool"
+				/>
 			</FileConfiguration>
 			<FileConfiguration
-				Name="FZRetail|Win32">
+				Name="FZRetail|Win32"
+				>
 				<Tool
-					Name="VCCustomBuildTool"/>
+					Name="VCCustomBuildTool"
+				/>
 			</FileConfiguration>
 		</File>
 	</Files>

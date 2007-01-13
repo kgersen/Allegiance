@@ -25,7 +25,8 @@ public:
     {
         ZAssert(pobject != NULL);
         ZAssert(pfn != NULL);
-        AddEventTarget(OnEvent, peventSource);
+		// mdvalley: Needs pointer and class.
+        AddEventTarget(&TMemberSnapshotValue<ObjectClass,StaticType>::OnEvent, peventSource);
     }
 
     bool OnEvent()
@@ -188,34 +189,35 @@ public:
 
     static void ExportAccessors(INameSpace* pns)
     {
-        pns->AddMember("GetModelType",  new TMemberSnapshotValueFactory<ModelData, float>(GetModelType, (float)OT_invalid));
-        pns->AddMember("GetModelTypeDesc",  new TMemberSnapshotValueFactory<ModelData, ZString>(GetModelTypeDesc, ""));
+		// mdvalley: many many pointers and class names now
+        pns->AddMember("GetModelType",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetModelType, (float)OT_invalid));
+        pns->AddMember("GetModelTypeDesc",  new TMemberSnapshotValueFactory<ModelData, ZString>(&ModelData::GetModelTypeDesc, ""));
 //        pns->AddMember("GetModelTypeIcon",  new TMemberSnapshotValueFactory<ModelData, TRef<Image> >(GetModelTypeIcon));
-        pns->AddMember("GetName",  new TMemberSnapshotValueFactory<ModelData, ZString>(GetName, ""));
-        pns->AddMember("GetSectorName",  new TMemberSnapshotValueFactory<ModelData, ZString>(GetSectorName, ""));
-        pns->AddMember("GetSideName",  new TMemberSnapshotValueFactory<ModelData, ZString>(GetSideName, ""));
-        pns->AddMember("GetSideColor",  new TMemberSnapshotValueFactory<ModelData, Color>(GetSideColor, Color(255,255,255)));
+        pns->AddMember("GetName",  new TMemberSnapshotValueFactory<ModelData, ZString>(&ModelData::GetName, ""));
+        pns->AddMember("GetSectorName",  new TMemberSnapshotValueFactory<ModelData, ZString>(&ModelData::GetSectorName, ""));
+        pns->AddMember("GetSideName",  new TMemberSnapshotValueFactory<ModelData, ZString>(&ModelData::GetSideName, ""));
+        pns->AddMember("GetSideColor",  new TMemberSnapshotValueFactory<ModelData, Color>(&ModelData::GetSideColor, Color(255,255,255)));
 //        pns->AddMember("GetSideIcon",  new TMemberSnapshotValueFactory<ModelData, TRef<Image> >(GetSideIcon));
-        pns->AddMember("GetSpeed",  new TMemberSnapshotValueFactory<ModelData, float>(GetSpeed, 0.0f));
-        pns->AddMember("GetMass",  new TMemberSnapshotValueFactory<ModelData, float>(GetMass, 0.0f));
-        pns->AddMember("GetRange",  new TMemberSnapshotValueFactory<ModelData, float>(GetRange, 0.0f));
-        pns->AddMember("GetPercentHitPoints",  new TMemberSnapshotValueFactory<ModelData, float>(GetPercentHitPoints, 0.0f));
-        pns->AddMember("GetPercentShields",  new TMemberSnapshotValueFactory<ModelData, float>(GetPercentShields, 0.0f));
-        pns->AddMember("GetPercentEnergy",  new TMemberSnapshotValueFactory<ModelData, float>(GetPercentEnergy, 0.0f));
-        pns->AddMember("GetAmmo",  new TMemberSnapshotValueFactory<ModelData, float>(GetAmmo, 0.0f));
-        pns->AddMember("GetFuel",  new TMemberSnapshotValueFactory<ModelData, float>(GetFuel, 0.0f));
-        pns->AddMember("GetOre",  new TMemberSnapshotValueFactory<ModelData, float>(GetOre, 0.0f));
-        pns->AddMember("GetVectorLock",  new TMemberSnapshotValueFactory<ModelData, float>(GetVectorLock, 0.0f));
-        pns->AddMember("GetCloaking",  new TMemberSnapshotValueFactory<ModelData, float>(GetCloaking, 0.0f));
-        pns->AddMember("GetNumObservers",  new TMemberSnapshotValueFactory<ModelData, float>(GetNumObservers, 0.0f));
-        pns->AddMember("GetSignature",  new TMemberSnapshotValueFactory<ModelData, float>(GetSignature, 0.0f));
-        pns->AddMember("GetRipcordTimeLeft",  new TMemberSnapshotValueFactory<ModelData, float>(GetRipcordTimeLeft, 0.0f));
-        pns->AddMember("GetEndurance",  new TMemberSnapshotValueFactory<ModelData, float>(GetEndurance, 1.0f));
-        pns->AddMember("IsCloaked",  new TMemberSnapshotValueFactory<ModelData, float>(IsCloaked, 0.0f));
-        pns->AddMember("IsEjectPod",  new TMemberSnapshotValueFactory<ModelData, float>(IsEjectPod, 0.0f));
-        pns->AddMember("IsRipcording",  new TMemberSnapshotValueFactory<ModelData, float>(IsRipcording, 0.0f));
-        pns->AddMember("IsVisible", new TMemberSnapshotValueFactory<ModelData, bool>(IsVisible, false));
-        pns->AddMember("IsNotNull", new TMemberSnapshotValueFactory<ModelData, bool>(IsNotNull, false));
+        pns->AddMember("GetSpeed",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetSpeed, 0.0f));
+        pns->AddMember("GetMass",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMass, 0.0f));
+        pns->AddMember("GetRange",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetRange, 0.0f));
+        pns->AddMember("GetPercentHitPoints",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentHitPoints, 0.0f));
+        pns->AddMember("GetPercentShields",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentShields, 0.0f));
+        pns->AddMember("GetPercentEnergy",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentEnergy, 0.0f));
+        pns->AddMember("GetAmmo",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetAmmo, 0.0f));
+        pns->AddMember("GetFuel",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetFuel, 0.0f));
+        pns->AddMember("GetOre",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetOre, 0.0f));
+        pns->AddMember("GetVectorLock",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetVectorLock, 0.0f));
+        pns->AddMember("GetCloaking",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetCloaking, 0.0f));
+        pns->AddMember("GetNumObservers",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetNumObservers, 0.0f));
+        pns->AddMember("GetSignature",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetSignature, 0.0f));
+        pns->AddMember("GetRipcordTimeLeft",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetRipcordTimeLeft, 0.0f));
+        pns->AddMember("GetEndurance",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetEndurance, 1.0f));
+        pns->AddMember("IsCloaked",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::IsCloaked, 0.0f));
+        pns->AddMember("IsEjectPod",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::IsEjectPod, 0.0f));
+        pns->AddMember("IsRipcording",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::IsRipcording, 0.0f));
+        pns->AddMember("IsVisible", new TMemberSnapshotValueFactory<ModelData, bool>(&ModelData::IsVisible, false));
+        pns->AddMember("IsNotNull", new TMemberSnapshotValueFactory<ModelData, bool>(&ModelData::IsNotNull, false));
     }
 
 };
@@ -291,30 +293,31 @@ public:
 
     static void ExportAccessors(INameSpace* pns)
     {
-        pns->AddMember("GetPartName",  new TMemberSnapshotValueFactory<PartWrapper, ZString>(GetPartName, ""));
-        pns->AddMember("GetCount",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetCount, 1.0f));
-        pns->AddMember("GetWeaponRange",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetRange, 0.0f));
-        pns->AddMember("GetDamage",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetDamage, 0.0f));
-		pns->AddMember("GetRate",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetRate, 0.0f));
-        pns->AddMember("GetAfterburnerFuelConsumption",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetAfterburnerFuelConsumption, 0.0f));
-        pns->AddMember("GetAfterburnerFuelLeft",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetAfterburnerFuelLeft, 0.0f));
-        pns->AddMember("GetAfterburnerTopSpeed",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetAfterburnerTopSpeed, 0.0f));
-		pns->AddMember("GetAfterburnerTimeLeft",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetAfterburnerTimeLeft, 0.0f));
-        pns->AddMember("GetMaxShieldStrength",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetMaxShieldStrength, 0.0f));
-		pns->AddMember("GetShieldStrength",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetShieldStrength, 0.0f));
-		pns->AddMember("GetRegenRate",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetRegenRate, 0.0f));
-        pns->AddMember("GetRechargeTime",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetRechargeTime, 0.0f));
-		pns->AddMember("GetCloakTimeLeft",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetCloakTimeLeft, 0.0f));
-		pns->AddMember("IsEnergyDamage",  new TMemberSnapshotValueFactory<PartWrapper, float>(IsEnergyDamage, 0.0f));
-        pns->AddMember("IsSelected",  new TMemberSnapshotValueFactory<PartWrapper, float>(IsSelected, 0.0f));
-        pns->AddMember("IsShipKiller",  new TMemberSnapshotValueFactory<PartWrapper, float>(IsShipKiller, 0.0f));
-        pns->AddMember("IsStationKiller",  new TMemberSnapshotValueFactory<PartWrapper, float>(IsStationKiller, 0.0f));
-        pns->AddMember("IsAsteroidKiller",  new TMemberSnapshotValueFactory<PartWrapper, float>(IsAsteroidKiller, 0.0f));
-        pns->AddMember("IsActive",  new TMemberSnapshotValueFactory<PartWrapper, float>(IsActive, 0.0f));
-        pns->AddMember("IsOutOfAmmo",  new TMemberSnapshotValueFactory<PartWrapper, float>(IsOutOfAmmo, 0.0f));
-        pns->AddMember("GetReadyState",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetReadyState, 0.0f));
-        pns->AddMember("GetMountedFraction",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetMountedFraction, 0.0f));
-        pns->AddMember("GetArmedFraction",  new TMemberSnapshotValueFactory<PartWrapper, float>(GetArmedFraction, 0.0f));
+		// mdvalley: like earlier, pointers and class names
+        pns->AddMember("GetPartName",  new TMemberSnapshotValueFactory<PartWrapper, ZString>(&PartWrapper::GetPartName, ""));
+        pns->AddMember("GetCount",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetCount, 1.0f));
+        pns->AddMember("GetWeaponRange",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetRange, 0.0f));
+        pns->AddMember("GetDamage",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetDamage, 0.0f));
+		pns->AddMember("GetRate",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetRate, 0.0f));
+        pns->AddMember("GetAfterburnerFuelConsumption",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetAfterburnerFuelConsumption, 0.0f));
+        pns->AddMember("GetAfterburnerFuelLeft",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetAfterburnerFuelLeft, 0.0f));
+        pns->AddMember("GetAfterburnerTopSpeed",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetAfterburnerTopSpeed, 0.0f));
+		pns->AddMember("GetAfterburnerTimeLeft",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetAfterburnerTimeLeft, 0.0f));
+        pns->AddMember("GetMaxShieldStrength",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetMaxShieldStrength, 0.0f));
+		pns->AddMember("GetShieldStrength",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetShieldStrength, 0.0f));
+		pns->AddMember("GetRegenRate",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetRegenRate, 0.0f));
+        pns->AddMember("GetRechargeTime",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetRechargeTime, 0.0f));
+		pns->AddMember("GetCloakTimeLeft",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetCloakTimeLeft, 0.0f));
+		pns->AddMember("IsEnergyDamage",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::IsEnergyDamage, 0.0f));
+        pns->AddMember("IsSelected",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::IsSelected, 0.0f));
+        pns->AddMember("IsShipKiller",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::IsShipKiller, 0.0f));
+        pns->AddMember("IsStationKiller",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::IsStationKiller, 0.0f));
+        pns->AddMember("IsAsteroidKiller",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::IsAsteroidKiller, 0.0f));
+        pns->AddMember("IsActive",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::IsActive, 0.0f));
+        pns->AddMember("IsOutOfAmmo",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::IsOutOfAmmo, 0.0f));
+        pns->AddMember("GetReadyState",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetReadyState, 0.0f));
+        pns->AddMember("GetMountedFraction",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetMountedFraction, 0.0f));
+        pns->AddMember("GetArmedFraction",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetArmedFraction, 0.0f));
     }
 
 };

@@ -44,9 +44,10 @@ public:
         DoCreateButton(pmodeler, m_pbuttonRestore,  "btnrestorebmp",  WinPoint(761, 5), ppane);
         DoCreateButton(pmodeler, m_pbuttonMinimize, "btnminimizebmp", WinPoint(744, 5), ppane);
 
-        AddEventTarget(OnClose,    m_pbuttonClose->GetEventSource());
-        AddEventTarget(OnRestore,  m_pbuttonRestore->GetEventSource());
-        AddEventTarget(OnMinimize, m_pbuttonMinimize->GetEventSource());
+		// mdvalley: Three pointers and class names
+        AddEventTarget(&CaptionImpl::OnClose,    m_pbuttonClose->GetEventSource());
+        AddEventTarget(&CaptionImpl::OnRestore,  m_pbuttonRestore->GetEventSource());
+        AddEventTarget(&CaptionImpl::OnMinimize, m_pbuttonMinimize->GetEventSource());
     }
 
     bool OnClose()

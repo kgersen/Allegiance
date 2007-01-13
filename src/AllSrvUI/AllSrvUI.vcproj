@@ -1,215 +1,343 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="AllSrvUI"
 	ProjectGUID="{97B8370B-16BC-4A2F-A0FE-4BEEF2EAED42}"
 	RootNamespace="AllSrvUI"
-	SccProjectName=""
-	SccLocalPath=""
-	Keyword="MakeFileProj">
+	Keyword="MakeFileProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\objs\Retail\AllSrvUI"
 			IntermediateDirectory=".\..\..\objs\Retail\AllSrvUI"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\FedSrv;..\Test\Inc;..\Inc;..\AGC;&quot;$(OutDir)/../Test/TCObj&quot;;&quot;$(OutDir)/../FedSrv&quot;;&quot;$(OutDir)/../AGC&quot;;../ZLib"
 				PreprocessorDefinitions="WIN32;WINVER=0x0400"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
-				WarningLevel="2"/>
+				UsePrecompiledHeader="0"
+				WarningLevel="2"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib wininet.lib comsupp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				AdditionalLibraryDirectories=""
-				SubSystem="2"/>
+				SubSystem="2"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\AllSrvUI"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\AllSrvUI"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Test\Inc;..\Inc;..\AGC;&quot;$(OutDir)/../Test/TCObj&quot;;&quot;$(OutDir)/../FedSrv&quot;;&quot;$(OutDir)/../AGC&quot;;../ZLib"
 				PreprocessorDefinitions="WIN32;_DEBUG;WINVER=0x0400"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib wininet.lib comsupp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
 				SubSystem="2"
-				EntryPointSymbol=""/>
+				EntryPointSymbol=""
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCAppVerifierTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCWebDeploymentTool"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\AllSrvUI"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\AllSrvUI"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Test\Inc;..\Inc;..\AGC;&quot;$(OutDir)/../Test/TCObj&quot;;&quot;$(OutDir)/../FedSrv&quot;;&quot;$(OutDir)/../AGC&quot;;../ZLib"
 				PreprocessorDefinitions="WIN32;_DEBUG;WINVER=0x0400"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="1"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib wininet.lib comsupp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).exe"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="TRUE"
-				GenerateMapFile="TRUE"
-				SubSystem="2"
-				EntryPointSymbol=""/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"/>
+				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib wininet.lib comsupp.lib"
+				OutputFile="$(OutDir)/$(ProjectName).exe"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				SubSystem="2"
+				EntryPointSymbol=""
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\AllSrvUI"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\AllSrvUI"
 			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\FedSrv;..\Test\Inc;..\Inc;..\AGC;&quot;$(OutDir)/../Test/TCObj&quot;;&quot;$(OutDir)/../FedSrv&quot;;&quot;$(OutDir)/../AGC&quot;;../ZLib"
 				PreprocessorDefinitions="WIN32;WINVER=0x0400"
 				RuntimeLibrary="2"
-				UsePrecompiledHeader="2"
+				BufferSecurityCheck="true"
+				TreatWChar_tAsBuiltInType="false"
+				UsePrecompiledHeader="0"
 				WarningLevel="2"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib wininet.lib comsupp.lib"
-				OutputFile="$(OutDir)/$(ProjectName).exe"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="FALSE"
-				GenerateMapFile="FALSE"
-				SubSystem="2"/>
-			<Tool
-				Name="VCMIDLTool"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"/>
+				PreprocessorDefinitions="_AFXDLL;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib wininet.lib comsupp.lib"
+				OutputFile="$(OutDir)/$(ProjectName).exe"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="false"
+				GenerateMapFile="false"
+				SubSystem="2"
+				TargetMachine="1"
+			/>
 			<Tool
-				Name="VCWebDeploymentTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
+				Name="VCManifestTool"
+			/>
 			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -217,177 +345,233 @@
 	<Files>
 		<Filter
 			Name="Resources"
-			Filter="">
+			>
 			<File
-				RelativePath="AllSrvUI.ico">
+				RelativePath="AllSrvUI.ico"
+				>
 			</File>
 			<File
-				RelativePath=".\AllSrvUI.rc">
+				RelativePath=".\AllSrvUI.rc"
+				>
 			</File>
 			<File
-				RelativePath=".\AllSrvUI.rc2">
+				RelativePath=".\AllSrvUI.rc2"
+				>
 			</File>
 			<File
-				RelativePath="ArtifactRun.ico">
+				RelativePath="ArtifactRun.ico"
+				>
 			</File>
 			<File
-				RelativePath="Conquest.ico">
+				RelativePath="Conquest.ico"
+				>
 			</File>
 			<File
-				RelativePath="CountDown.ico">
+				RelativePath="CountDown.ico"
+				>
 			</File>
 			<File
-				RelativePath="DeathMatch.ico">
+				RelativePath="DeathMatch.ico"
+				>
 			</File>
 			<File
-				RelativePath="Flags.ico">
+				RelativePath="Flags.ico"
+				>
 			</File>
 			<File
-				RelativePath="Inbalance.ico">
+				RelativePath="Inbalance.ico"
+				>
 			</File>
 			<File
-				RelativePath="Lives.ico">
+				RelativePath="Lives.ico"
+				>
 			</File>
 			<File
-				RelativePath="MaxTeam.ico">
+				RelativePath="MaxTeam.ico"
+				>
 			</File>
 			<File
-				RelativePath="MinTeam.ico">
+				RelativePath="MinTeam.ico"
+				>
 			</File>
 			<File
-				RelativePath="Prosperity.ico">
+				RelativePath="Prosperity.ico"
+				>
 			</File>
 			<File
-				RelativePath="Skill.ico">
+				RelativePath="Skill.ico"
+				>
 			</File>
 			<File
-				RelativePath="StartMoney.ico">
+				RelativePath="StartMoney.ico"
+				>
 			</File>
 			<File
-				RelativePath="TeamCount.ico">
+				RelativePath="TeamCount.ico"
+				>
 			</File>
 			<File
-				RelativePath="TotalMoney.ico">
+				RelativePath="TotalMoney.ico"
+				>
 			</File>
 			<File
-				RelativePath="zone.bmp">
+				RelativePath="zone.bmp"
+				>
 			</File>
 		</Filter>
 		<File
-			RelativePath="AdminPageThreadWnd.cpp">
+			RelativePath="AdminPageThreadWnd.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AdminPageThreadWnd.h">
+			RelativePath="AdminPageThreadWnd.h"
+			>
 		</File>
 		<File
-			RelativePath="..\FedSrv\AdminSessionSecure.h">
+			RelativePath="..\FedSrv\AdminSessionSecure.h"
+			>
 		</File>
 		<File
-			RelativePath="AllSrvUI.cpp">
+			RelativePath="AllSrvUI.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AllSrvUI.h">
+			RelativePath="AllSrvUI.h"
+			>
 		</File>
 		<File
-			RelativePath="AllSrvUISheet.cpp">
+			RelativePath="AllSrvUISheet.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AllSrvUISheet.h">
+			RelativePath="AllSrvUISheet.h"
+			>
 		</File>
 		<File
-			RelativePath="AutoSizer.cpp">
+			RelativePath="AutoSizer.cpp"
+			>
 		</File>
 		<File
-			RelativePath="AutoSizer.h">
+			RelativePath="AutoSizer.h"
+			>
 		</File>
 		<File
-			RelativePath="DlgAbout.cpp">
+			RelativePath="DlgAbout.cpp"
+			>
 		</File>
 		<File
-			RelativePath="DlgAbout.h">
+			RelativePath="DlgAbout.h"
+			>
 		</File>
 		<File
-			RelativePath="DlgChatPreferences.cpp">
+			RelativePath="DlgChatPreferences.cpp"
+			>
 		</File>
 		<File
-			RelativePath="DlgChatPreferences.h">
+			RelativePath="DlgChatPreferences.h"
+			>
 		</File>
 		<File
-			RelativePath="DlgGameSelect.cpp">
+			RelativePath="DlgGameSelect.cpp"
+			>
 		</File>
 		<File
-			RelativePath="DlgGameSelect.h">
+			RelativePath="DlgGameSelect.h"
+			>
 		</File>
 		<File
-			RelativePath="GamePageSpecifics.cpp">
+			RelativePath="GamePageSpecifics.cpp"
+			>
 		</File>
 		<File
-			RelativePath="GamePageSpecifics.h">
+			RelativePath="GamePageSpecifics.h"
+			>
 		</File>
 		<File
-			RelativePath="GamePageTeam.cpp">
+			RelativePath="GamePageTeam.cpp"
+			>
 		</File>
 		<File
-			RelativePath="GamePageTeam.h">
+			RelativePath="GamePageTeam.h"
+			>
 		</File>
 		<File
-			RelativePath="GamePageWin.cpp">
+			RelativePath="GamePageWin.cpp"
+			>
 		</File>
 		<File
-			RelativePath="GamePageWin.h">
+			RelativePath="GamePageWin.h"
+			>
 		</File>
 		<File
-			RelativePath="GameParamsSheet.cpp">
+			RelativePath="GameParamsSheet.cpp"
+			>
 		</File>
 		<File
-			RelativePath="GameParamsSheet.h">
+			RelativePath="GameParamsSheet.h"
+			>
 		</File>
 		<File
-			RelativePath="makefile">
+			RelativePath="makefile"
+			>
 		</File>
 		<File
-			RelativePath="PageChat.cpp">
+			RelativePath="PageChat.cpp"
+			>
 		</File>
 		<File
-			RelativePath="PageChat.h">
+			RelativePath="PageChat.h"
+			>
 		</File>
 		<File
-			RelativePath="PageConnect.cpp">
+			RelativePath="PageConnect.cpp"
+			>
 		</File>
 		<File
-			RelativePath="PageConnect.h">
+			RelativePath="PageConnect.h"
+			>
 		</File>
 		<File
-			RelativePath="PageDummy.cpp">
+			RelativePath="PageDummy.cpp"
+			>
 		</File>
 		<File
-			RelativePath="PageDummy.h">
+			RelativePath="PageDummy.h"
+			>
 		</File>
 		<File
-			RelativePath="PageGameCreate.cpp">
+			RelativePath="PageGameCreate.cpp"
+			>
 		</File>
 		<File
-			RelativePath="PageGameCreate.h">
+			RelativePath="PageGameCreate.h"
+			>
 		</File>
 		<File
-			RelativePath="PagePlayers.cpp">
+			RelativePath="PagePlayers.cpp"
+			>
 		</File>
 		<File
-			RelativePath="PagePlayers.h">
+			RelativePath="PagePlayers.h"
+			>
 		</File>
 		<File
-			RelativePath="resource.h">
+			RelativePath="resource.h"
+			>
 		</File>
 		<File
-			RelativePath="StdAfx.cpp">
+			RelativePath="StdAfx.cpp"
+			>
 		</File>
 		<File
-			RelativePath="StdAfx.h">
+			RelativePath="StdAfx.h"
+			>
 		</File>
 	</Files>
 	<Globals>
 		<Global
 			Name="RESOURCE_FILE"
-			Value="AllSrvUI.rc"/>
+			Value="AllSrvUI.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

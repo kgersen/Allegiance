@@ -18,6 +18,8 @@
 #include <stdarg.h>
 #include <time.h>
 #include <malloc.h>
+// mdvalley: Another include to shut the ATL libraries up.
+#include <stddef.h>
 
 //
 // Windows headers

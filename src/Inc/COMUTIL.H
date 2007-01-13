@@ -81,7 +81,8 @@ namespace _com_util {
   {
     LPCOLESTR pszSrc = pSrc ? pSrc : L"";
     UINT cch = ::SysStringLen(pSrc);
-    char* psz = AtlW2AHelper(new char[cch + 1], pszSrc, cch, CP_ACP);
+	// mdvalley: added namespace
+	char* psz = AtlW2AHelper(new char[cch + 1], pszSrc, cch, CP_ACP);
     psz[cch] = '\0';
     return psz;
   }

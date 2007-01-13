@@ -63,7 +63,8 @@ LPCTSTR TCGetIIDName(REFIID riid)
   CRegKey key;
   LONG lr = key.Open(HKEY_CLASSES_ROOT, TEXT("Interface"));
   if (ERROR_SUCCESS == lr && ERROR_SUCCESS == (lr = key.Open(key, pszIID)))
-    if (ERROR_SUCCESS == key.QueryStringValue(NULL, szName, &dw))
+	  // mdvalley: no such thing as QueryStringValue!
+    if (ERROR_SUCCESS == key.QueryValue(NULL, szName, &dw))
       pszIID = szName;
 
   // Add the IID and it's string representation to the map

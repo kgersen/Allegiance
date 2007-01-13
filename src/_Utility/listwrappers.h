@@ -109,7 +109,7 @@ public:
     IntItemIDWrapper(T t) : m_t(t) {}
     IntItemIDWrapper(ItemID pitem) { m_t = ((int)pitem == ZeroValue) ? 0 : (T)pitem; }
 
-    operator = (T t) { m_t = t; }
+    int operator = (T t) { m_t = t; }
     operator T () { return m_t; }
     operator ItemID () { return (ItemID)((m_t == 0) ? (T)ZeroValue : m_t); };
 

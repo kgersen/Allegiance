@@ -508,32 +508,33 @@ public:
             // Buttons
             //
             
+			// mdvalley: Lots of '&TeamPane::' in this file. Client is rigged to crash if this button is used on mdvalley.
             if (m_pbuttonBoot)
-                AddEventTarget(OnButtonBoot,   m_pbuttonBoot->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonBoot,   m_pbuttonBoot->GetEventSource());
             
             if (m_pbuttonDonate)
             {
                 m_pbuttonDonate->SetRepeat(0.1f, 0.5f);
-                AddEventTarget(OnButtonDonate, m_pbuttonDonate->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonDonate, m_pbuttonDonate->GetEventSource());
             }
             
             if (m_pbuttonAutoDonate)
-                AddEventTarget(OnButtonAutoDonate, m_pbuttonAutoDonate->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonAutoDonate, m_pbuttonAutoDonate->GetEventSource());
             
             if (m_pbuttonStopDonate)
-                AddEventTarget(OnButtonAutoDonate, m_pbuttonStopDonate->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonAutoDonate, m_pbuttonStopDonate->GetEventSource());
             
             if (m_pbuttonAccept)
-                AddEventTarget(OnButtonAccept, m_pbuttonAccept->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonAccept, m_pbuttonAccept->GetEventSource());
             
             if (m_pbuttonTakeMeTo)
-                AddEventTarget(OnButtonTakeMeTo, m_pbuttonTakeMeTo->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonTakeMeTo, m_pbuttonTakeMeTo->GetEventSource());
             
-            AddEventTarget(OnButtonBack,  m_pbuttonClose->GetEventSource());
-            AddEventTarget(OnButtonBar,    m_pbuttonbarPlayers->GetEventSource());
+            AddEventTarget(&TeamPane::OnButtonBack,  m_pbuttonClose->GetEventSource());
+            AddEventTarget(&TeamPane::OnButtonBar,    m_pbuttonbarPlayers->GetEventSource());
             
             if (m_pbuttonExpand)
-                AddEventTarget(OnButtonSize, m_pbuttonExpand->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonSize, m_pbuttonExpand->GetEventSource());
             
             //
             // The player list
@@ -561,7 +562,7 @@ public:
                     );
             }
             m_pcomboWing->SetSelection(trekClient.GetShip()->GetWingID());
-            AddEventTarget(OnWingCombo, m_pcomboWing->GetEventSource());
+            AddEventTarget(&TeamPane::OnWingCombo, m_pcomboWing->GetEventSource());
             
             //
             // Team combo
@@ -599,7 +600,7 @@ public:
 				 }
             }
             
-            AddEventTarget(OnTeamCombo, m_pcomboTeams->GetEventSource());
+            AddEventTarget(&TeamPane::OnTeamCombo, m_pcomboTeams->GetEventSource());
             
             m_pcomboTeams->SetSelection(trekClient.GetSideID());
             OnTeamCombo(trekClient.GetSideID());
@@ -1731,7 +1732,7 @@ public:
         
         CastTo(m_pbuttonCollapse,     pns->FindMember(strPrefix + "CollapseButtonPane"));
         
-        AddEventTarget(OnButtonSize, m_pbuttonCollapse->GetEventSource());
+        AddEventTarget(&TeamPane::OnButtonSize, m_pbuttonCollapse->GetEventSource());
         
         
         m_plistPanePlayers->SetItemPainter(new ExpandedPlayerPainter(m_viColumns));

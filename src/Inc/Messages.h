@@ -788,7 +788,9 @@ enum QuitSideReason
     QSR_DuplicateCDKey,
 
     QSR_SwitchingSides,
-    QSR_RandomizeSides
+    QSR_RandomizeSides,
+	QSR_FlushSides,		// TE: Add this for balance patch
+	QSR_BalanceSides	// TE: Add this for balance patch
 };
 
 #define QSRIsBoot(reason) ((reason) >= QSR_LeaderBooted && (reason) <= QSR_AdminBooted)

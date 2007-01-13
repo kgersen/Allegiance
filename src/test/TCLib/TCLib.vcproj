@@ -1,25 +1,44 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="TCLib"
 	ProjectGUID="{1695996C-F698-4509-BF5C-ADE10ADA67F9}"
 	RootNamespace="TCLib"
-	SccProjectName=""
-	SccLocalPath=""
-	Keyword="MakeFileProj">
+	Keyword="MakeFileProj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\..\objs\Debug\Test\TCLib"
 			IntermediateDirectory=".\..\..\..\objs\Debug\Test\TCLib"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -27,291 +46,415 @@
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				BrowseInformationFile=""
 				WarningLevel="3"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\..\objs\Retail\Test\TCLib"
 			IntermediateDirectory=".\..\..\..\objs\Retail\Test\TCLib"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\TCLib;..\Inc;..\..\ZLib"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
-				WarningLevel="3"/>
+				WarningLevel="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCLib"
 			IntermediateDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCLib"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\TCLib;..\Inc;..\..\ZLib"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				BrowseInformationFile=""
 				WarningLevel="3"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCLib"
 			IntermediateDirectory=".\..\..\..\objs\$(ConfigurationName)\Test\TCLib"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\TCLib;..\Inc;..\..\ZLib"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
-				WarningLevel="3"/>
+				BufferSecurityCheck="true"
+				PrecompiledHeaderThrough="pch.h"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="false"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<File
-			RelativePath="AdviseHolder.h">
+			RelativePath="AdviseHolder.h"
+			>
 		</File>
 		<File
-			RelativePath="AutoCriticalSection.h">
+			RelativePath="AutoCriticalSection.h"
+			>
 		</File>
 		<File
-			RelativePath="AutoHandle.h">
+			RelativePath="AutoHandle.h"
+			>
 		</File>
 		<File
-			RelativePath="AutoMutex.h">
+			RelativePath="AutoMutex.h"
+			>
 		</File>
 		<File
-			RelativePath="BinString.h">
+			RelativePath="BinString.h"
+			>
 		</File>
 		<File
-			RelativePath="CoInit.h">
+			RelativePath="CoInit.h"
+			>
 		</File>
 		<File
-			RelativePath="CommonControls.h">
+			RelativePath="CommonControls.h"
+			>
 		</File>
 		<File
-			RelativePath="CompositeValue.h">
+			RelativePath="CompositeValue.h"
+			>
 		</File>
 		<File
-			RelativePath="DynaLib.cpp">
+			RelativePath="DynaLib.cpp"
+			>
 		</File>
 		<File
-			RelativePath="DynaLib.h">
+			RelativePath="DynaLib.h"
+			>
 		</File>
 		<File
-			RelativePath="ExcepInfo.cpp">
+			RelativePath="ExcepInfo.cpp"
+			>
 		</File>
 		<File
-			RelativePath="ExcepInfo.h">
+			RelativePath="ExcepInfo.h"
+			>
 		</File>
 		<File
-			RelativePath="InvokeArgs.cpp">
+			RelativePath="InvokeArgs.cpp"
+			>
 		</File>
 		<File
-			RelativePath="InvokeArgs.h">
+			RelativePath="InvokeArgs.h"
+			>
 		</File>
 		<File
-			RelativePath="LookupTable.h">
+			RelativePath="LookupTable.h"
+			>
 		</File>
 		<File
-			RelativePath="ObjectLock.h">
+			RelativePath="ObjectLock.h"
+			>
 		</File>
 		<File
-			RelativePath="pch.cpp">
+			RelativePath="pch.cpp"
+			>
 		</File>
 		<File
-			RelativePath="pch.h">
+			RelativePath="pch.h"
+			>
 		</File>
 		<File
-			RelativePath="PropertyPageSite.cpp">
+			RelativePath="PropertyPageSite.cpp"
+			>
 		</File>
 		<File
-			RelativePath="PropertyPageSite.h">
+			RelativePath="PropertyPageSite.h"
+			>
 		</File>
 		<File
-			RelativePath="Range.h">
+			RelativePath="Range.h"
+			>
 		</File>
 		<File
-			RelativePath="RangeSet.h">
+			RelativePath="RangeSet.h"
+			>
 		</File>
 		<File
-			RelativePath="RefCountedData.h">
+			RelativePath="RefCountedData.h"
+			>
 		</File>
 		<File
-			RelativePath="RelPath.cpp">
+			RelativePath="RelPath.cpp"
+			>
 		</File>
 		<File
-			RelativePath="RelPath.h">
+			RelativePath="RelPath.h"
+			>
 		</File>
 		<File
-			RelativePath="StrManip.cpp">
+			RelativePath="StrManip.cpp"
+			>
 		</File>
 		<File
-			RelativePath="StrManip.h">
+			RelativePath="StrManip.h"
+			>
 		</File>
 		<File
-			RelativePath="TCCAUUID.h">
+			RelativePath="TCCAUUID.h"
+			>
 		</File>
 		<File
-			RelativePath="TCLib.cpp">
+			RelativePath="TCLib.cpp"
+			>
 		</File>
 		<File
-			RelativePath="..\Inc\TCLib.h">
+			RelativePath="..\Inc\TCLib.h"
+			>
 		</File>
 		<File
-			RelativePath="TCThread.cpp">
+			RelativePath="TCThread.cpp"
+			>
 		</File>
 		<File
-			RelativePath="TCThread.h">
+			RelativePath="TCThread.h"
+			>
 		</File>
 		<File
-			RelativePath="TraceScope.h">
+			RelativePath="TraceScope.h"
+			>
 		</File>
 		<File
-			RelativePath="tstring.h">
+			RelativePath="tstring.h"
+			>
 		</File>
 		<File
-			RelativePath="UtilImpl.cpp">
+			RelativePath="UtilImpl.cpp"
+			>
 		</File>
 		<File
-			RelativePath="UtilImpl.h">
+			RelativePath="UtilImpl.h"
+			>
 		</File>
 		<File
-			RelativePath="UtilityThread.cpp">
+			RelativePath="UtilityThread.cpp"
+			>
 		</File>
 		<File
-			RelativePath="UtilityThread.h">
+			RelativePath="UtilityThread.h"
+			>
 		</File>
 		<File
-			RelativePath="WinApp.h">
+			RelativePath="WinApp.h"
+			>
 		</File>
 		<File
-			RelativePath="WindowThreadBase.h">
+			RelativePath="WindowThreadBase.h"
+			>
 		</File>
 		<File
-			RelativePath="WindowThreadImpl.h">
+			RelativePath="WindowThreadImpl.h"
+			>
 		</File>
 		<File
-			RelativePath="WorkerThread.cpp">
+			RelativePath="WorkerThread.cpp"
+			>
 		</File>
 		<File
-			RelativePath="WorkerThread.h">
+			RelativePath="WorkerThread.h"
+			>
 		</File>
 		<File
-			RelativePath="WotLib.h">
+			RelativePath="WotLib.h"
+			>
 		</File>
 	</Files>
 	<Globals>

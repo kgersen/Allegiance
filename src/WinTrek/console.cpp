@@ -730,10 +730,11 @@ public:
         m_omRecipientsVisible = OverlayMask(m_pnsDisplays->FindNumber("RecipientsVisibleOM", 0.0f));
 
         CastTo(m_pbuttonbarRecipients, m_pnsDisplays->FindMember("RecipientsBB"));
-        AddEventTarget(OnRecipientButton, m_pbuttonbarRecipients->GetEventSource());
+		// mdvalley: Pointers and class.
+        AddEventTarget(&ConsoleDataImpl::OnRecipientButton, m_pbuttonbarRecipients->GetEventSource());
 
         CastTo(m_pbuttonbarVerbs, m_pnsDisplays->FindMember("VerbsBB"));
-        AddEventTarget(OnVerbButton, m_pbuttonbarVerbs->GetEventSource());
+        AddEventTarget(&ConsoleDataImpl::OnVerbButton, m_pbuttonbarVerbs->GetEventSource());
 
         CastTo(m_pcomboWing, m_pnsDisplays->FindMember("WingCombo"));
 
@@ -743,7 +744,7 @@ public:
                                   wingID);
         }
        
-        AddEventTarget(OnWingCombo, m_pcomboWing->GetEventSource());
+        AddEventTarget(&ConsoleDataImpl::OnWingCombo, m_pcomboWing->GetEventSource());
 
     }
 

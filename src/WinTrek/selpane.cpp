@@ -78,7 +78,8 @@ public:
     SelectionPane(IEventSource* peventSourceOnSelChange)
     {
         InsertAtBottom(m_prowPane = new RowPane());
-        AddEventTarget(OnSelChange, peventSourceOnSelChange);
+		// mdvalley: needs pointer and class.
+        AddEventTarget(&SelectionPane::OnSelChange, peventSourceOnSelChange);
     }
 
     bool OnSelChange()

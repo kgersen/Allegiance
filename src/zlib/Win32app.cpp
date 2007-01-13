@@ -56,7 +56,9 @@ void InitializeLogchat()
 	{
 	time_t longTime;
 	time(&longTime);
-	tm* t = localtime(&longTime);
+	tm* t = new tm;
+//	tm* t = localtime(&longTime);
+	localtime_s(t, &longTime);
 
 	// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
 	// turns out this is not needed but leaving it here instead of moving it again
@@ -70,6 +72,9 @@ void InitializeLogchat()
 	const char* months[] ={"chat_jan", "chat_feb", "chat_mar", "chat_apr",
 	"chat_may", "chat_jun", "chat_jul", "chat_aug",
 	"chat_sep", "chat_oct", "chat_nov", "chat_dec"};
+//	strcpy_s(p, _MAX_PATH + 21, months[t->tm_mon]);
+//	sprintf_s(p + 8, _MAX_PATH + 13, "%02d%02d%02d%02d.txt",
+//	t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 	strcpy(p, months[t->tm_mon]);
 	sprintf(p + 8, "%02d%02d%02d%02d.txt",
 	t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
@@ -84,6 +89,7 @@ void InitializeLogchat()
 			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
 			NULL
 		);
+	delete t;
 	}
 	if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
 }
@@ -105,7 +111,9 @@ void logchat(const char* strText)
 
 	time_t  longTime;
     time(&longTime);
-    tm*             t = localtime(&longTime);
+	tm* t = new tm;
+//    tm*             t = localtime(&longTime);
+	localtime_s(t, &longTime);
 
 	length = strlen(strText);
 
@@ -116,6 +124,7 @@ void logchat(const char* strText)
         DWORD nBytes;
         ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
 	}
+	delete t;
 }
 
 // end mmf chat logging code
@@ -142,7 +151,7 @@ void retailf(const char* format, ...)
 
         va_list vl;
         va_start(vl, format);
-        _vsnprintf(bfr, size, format, vl);
+        _vsnprintf_s(bfr, size, size, format, vl);
         va_end(vl);
 
         ZDebugOutputImpl(bfr);
@@ -238,7 +247,7 @@ extern bool g_bOutput = true;
 
             va_list vl;
             va_start(vl, format);
-            _vsnprintf(bfr, size, format, vl);
+            _vsnprintf_s(bfr, size, size, format, vl);
             va_end(vl);
 
             ZDebugOutputImpl(bfr);
@@ -278,7 +287,9 @@ extern bool g_bOutput = true;
         {
             time_t  longTime;
             time(&longTime);
-            tm*             t = localtime(&longTime);
+			tm* t = new tm;
+//            tm*             t = localtime(&longTime);
+			localtime_s(t, &longTime);
 
             char    logFileName[MAX_PATH + 16];
             GetModuleFileName(NULL, logFileName, MAX_PATH);
@@ -291,9 +302,13 @@ extern bool g_bOutput = true;
             const char* months[] = {"jan", "feb", "mar", "apr",
                                     "may", "jun", "jul", "aug",
                                     "sep", "oct", "nov", "dec"};
-            strcpy(p, months[t->tm_mon]);
-            sprintf(p + 3, "%02d%02d%02d%02d.txt",
-                    t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+//            strcpy_s(p, _MAX_PATH + 16, months[t->tm_mon]);
+//            sprintf_s(p + 3, _MAX_PATH + 13, "%02d%02d%02d%02d.txt",
+//                    t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+			strcpy(p, months[t->tm_mon]);
+			sprintf(p+3, "%02d%02d%02d%02d.txt",
+				t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+			delete t;
 			// mmf this is NOT where the logfile AllSrv.txt is generated
 			//     this is the client logfile and only for FZDebug build
             g_logfile = 
@@ -430,7 +445,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     // seed the random number generator with the current time
     // (GetTickCount may be semi-predictable on server startup, so we add the 
     // clock time to shake things up a bit)
-    srand(GetTickCount() + time(NULL));
+    srand(GetTickCount() + (int)time(NULL));
 
 	// mmf why is this done?
     // shift the stack locals and the heap by a random amount.            

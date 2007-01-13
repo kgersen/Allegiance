@@ -236,7 +236,8 @@ public:
         m_colorAlt(Color::White()),
         m_colorGlobal(Color::White()),
 
-        m_pfnDrawLines(DrawLinesRasterizer),
+		// mdvalley: Added pointer and class name. Search for '&Device3D::' to find more.
+		m_pfnDrawLines(&Device3D::DrawLinesRasterizer),
         m_lineWidth(0.5f)
     {
         m_sizeSurface = prasterizer->GetSurfaceSize();
@@ -503,11 +504,11 @@ public:
 
             if (m_pdeform != NULL) {
                 bClip = true;
-                m_pfnTransform = TransformDeformClip;
+                m_pfnTransform = &Device3D::TransformDeformClip;
             } else if (bClip) {
-                m_pfnTransform = TransformClip;
+                m_pfnTransform = &Device3D::TransformClip;
             } else {
-                m_pfnTransform = TransformNoClip;
+                m_pfnTransform = &Device3D::TransformNoClip;
             }
 
             m_pfnLightVertexL = m_pfnTransform;
@@ -516,27 +517,27 @@ public:
                 case ShadeModeNone:
                 case ShadeModeCopy:
                     if (bClip) {
-                        m_pfnLightVertex = LightVertexCopy;
+                        m_pfnLightVertex = &Device3D::LightVertexCopy;
                     } else {
-                        m_pfnLightVertex = TransformNoClipNoLight;
+                        m_pfnLightVertex = &Device3D::TransformNoClipNoLight;
                     }
                     break;
 
                 case ShadeModeGlobalColor:
-                    m_pfnLightVertex = LightVertexGlobalColor;
+                    m_pfnLightVertex = &Device3D::LightVertexGlobalColor;
                     break;
 
                 case ShadeModeFlat:
                 case ShadeModeGouraud:
                     if (m_pmaterial) {
-                        m_pfnLightVertex = MaterialLightVertex;
+                        m_pfnLightVertex = &Device3D::MaterialLightVertex;
                     } else if (m_bBidirectional) {
-                        m_pfnLightVertex = BidirectionalLightVertex;
+                        m_pfnLightVertex = &Device3D::BidirectionalLightVertex;
                     } else {
                         if (bClip) {
-                            m_pfnLightVertex = LightVertex;
+                            m_pfnLightVertex = &Device3D::LightVertex;
                         } else {
-                            m_pfnLightVertex = TransformAndLightNoClip;
+                            m_pfnLightVertex = &Device3D::TransformAndLightNoClip;
                         }
                     }
                     break;
@@ -562,9 +563,9 @@ public:
                        )
                    )
             ) {
-                m_pfnDrawLines = DrawLinesRasterizer;
+                m_pfnDrawLines = &Device3D::DrawLinesRasterizer;
             } else {
-                m_pfnDrawLines = DrawLinesWithPolygons;
+                m_pfnDrawLines = &Device3D::DrawLinesWithPolygons;
             }
         }
     }
@@ -2189,7 +2190,7 @@ public:
         #endif
 
         UpdatePointers();
-        (this->*m_pfnLightVertex)(pvertex, vcount, pindex, icount, ClipTriangles, DrawTriangles);
+        (this->*m_pfnLightVertex)(pvertex, vcount, pindex, icount, &Device3D::ClipTriangles, &Device3D::DrawTriangles);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2205,7 +2206,7 @@ public:
         #endif
 
         UpdatePointers();
-        (this->*m_pfnLightVertex)(pvertex, vcount, pindex, icount, ClipLines, m_pfnDrawLines);
+        (this->*m_pfnLightVertex)(pvertex, vcount, pindex, icount, &Device3D::ClipLines, m_pfnDrawLines);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2221,7 +2222,7 @@ public:
         #endif
 
         UpdatePointers();
-        (this->*m_pfnLightVertex)(pvertex, vcount, NULL, 0, ClipPoints, DrawPoints);
+        (this->*m_pfnLightVertex)(pvertex, vcount, NULL, 0, &Device3D::ClipPoints, &Device3D::DrawPoints);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2237,7 +2238,7 @@ public:
         #endif
 
         UpdatePointers();
-        (this->*m_pfnLightVertexL)(pvertex, vcount, pindex, icount, ClipTriangles, DrawTriangles);
+        (this->*m_pfnLightVertexL)(pvertex, vcount, pindex, icount, &Device3D::ClipTriangles, &Device3D::DrawTriangles);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2253,7 +2254,7 @@ public:
         #endif
 
         UpdatePointers();
-        (this->*m_pfnLightVertexL)(pvertex, vcount, pindex, icount, ClipLines, m_pfnDrawLines);
+        (this->*m_pfnLightVertexL)(pvertex, vcount, pindex, icount, &Device3D::ClipLines, m_pfnDrawLines);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2269,7 +2270,7 @@ public:
         #endif
 
         UpdatePointers();
-        (this->*m_pfnLightVertexL)(pvertex, vcount, NULL, 0, ClipPoints, DrawPoints);
+        (this->*m_pfnLightVertexL)(pvertex, vcount, NULL, 0, &Device3D::ClipPoints, &Device3D::DrawPoints);
     }
 };
 

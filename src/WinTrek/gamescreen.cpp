@@ -348,8 +348,9 @@ private:
             InitializeYesNoDontCare(m_pcomboFlags);
             InitializeYesNoDontCare(m_pcomboTerritorial);
 
-            AddEventTarget(OnButtonOK, m_pbuttonOK->GetEventSource());
-            AddEventTarget(OnButtonCancel, m_pbuttonCancel->GetEventSource());
+			// mdvalley: Pointers and classes.
+            AddEventTarget(&GameScreen::FilterDialogPopup::OnButtonOK, m_pbuttonOK->GetEventSource());
+            AddEventTarget(&GameScreen::FilterDialogPopup::OnButtonCancel, m_pbuttonCancel->GetEventSource());
         }
 
         void InitializeYesNoDontCare(ComboPane* pcombo)
@@ -485,8 +486,8 @@ private:
             CastTo(m_pbuttonCancel,         pns->FindMember("findCancelButtonPane"));
             CastTo(m_peditPane,      (Pane*)pns->FindMember("findPlayerEditPane"));
 
-            AddEventTarget(OnButtonOK, m_pbuttonOK->GetEventSource());
-            AddEventTarget(OnButtonCancel, m_pbuttonCancel->GetEventSource());
+            AddEventTarget(&GameScreen::FindDialogPopup::OnButtonOK, m_pbuttonOK->GetEventSource());
+            AddEventTarget(&GameScreen::FindDialogPopup::OnButtonCancel, m_pbuttonCancel->GetEventSource());
         }
 
         //
@@ -626,7 +627,7 @@ public:
         m_peventGames = m_plistPaneGames->GetSelectionEventSource();
         m_peventGames->AddSink(m_psinkGames = new IItemEvent::Delegate(this));
 
-        AddEventTarget(OnButtonJoin, m_plistPaneGames->GetDoubleClickEventSource());
+        AddEventTarget(&GameScreen::OnButtonJoin, m_plistPaneGames->GetDoubleClickEventSource());
 
         m_plistPaneGames->SetItemPainter(new GameItemPainter(m_viColumns, this));
 
@@ -655,15 +656,15 @@ public:
 
         if (IsZoneLobby())
         {
-            AddEventTarget(OnButtonNewGame, m_pbuttonNewGame->GetEventSource());
-            AddEventTarget(OnButtonDetails, m_pbuttonDetails->GetEventSource());
+            AddEventTarget(&GameScreen::OnButtonNewGame, m_pbuttonNewGame->GetEventSource());
+            AddEventTarget(&GameScreen::OnButtonDetails, m_pbuttonDetails->GetEventSource());
         }
-        AddEventTarget(OnButtonFindPlayer, m_pbuttonFindPlayer->GetEventSource());
-        AddEventTarget(OnButtonBack, m_pbuttonBack->GetEventSource());
-        AddEventTarget(OnButtonJoin, m_pbuttonJoin->GetEventSource());
-        AddEventTarget(OnButtonFilter, m_pbuttonFilter->GetEventSource());
+        AddEventTarget(&GameScreen::OnButtonFindPlayer, m_pbuttonFindPlayer->GetEventSource());
+        AddEventTarget(&GameScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
+        AddEventTarget(&GameScreen::OnButtonJoin, m_pbuttonJoin->GetEventSource());
+        AddEventTarget(&GameScreen::OnButtonFilter, m_pbuttonFilter->GetEventSource());
 
-        AddEventTarget(OnButtonBarGames, m_pbuttonbarGamesHeader->GetEventSource());
+        AddEventTarget(&GameScreen::OnButtonBarGames, m_pbuttonbarGamesHeader->GetEventSource());
 
         // update the join button
         OnSelectMission((MissionInfo*)m_plistPaneGames->GetSelection());
@@ -671,8 +672,8 @@ public:
         if (g_bQuickstart)
             OnButtonNewGame();
 
-        AddEventTarget(OnListChanged, trekClient.GetMissionList()->GetChangedEvent());
-        AddEventTarget(OnRefreshTimer, GetWindow(), 5);
+        AddEventTarget(&GameScreen::OnListChanged, trekClient.GetMissionList()->GetChangedEvent());
+        AddEventTarget(&GameScreen::OnRefreshTimer, GetWindow(), 5);
 
         // if we are not connected, pop up a dialog box and let the screen
         // draw itself while we are waiting.
@@ -687,7 +688,7 @@ public:
                 CreateMessageBox("Connecting to lobby....", NULL, false, false);
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
-            AddEventTarget(DoLobbyConnect, GetWindow(), 0.1f);
+            AddEventTarget(&GameScreen::DoLobbyConnect, GetWindow(), 0.1f);
         }
     }
 

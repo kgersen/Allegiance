@@ -70,8 +70,9 @@ void ZString::ZStringData::Set(int index, char ch)
 
 int ZString::ZStringData::Find(const ZStringData* pdata) const
 {
+	int index2;
     for(int index = 0; index < m_length - pdata->m_length + 1; index++) {
-        for (int index2 = 0; index2 < pdata->m_length; index2++) {
+        for (index2 = 0; index2 < pdata->m_length; index2++) {
             if (m_pcc[index + index2] != pdata->m_pcc[index2]) {
                 break;
             }
@@ -86,8 +87,9 @@ int ZString::ZStringData::Find(const ZStringData* pdata) const
 
 int ZString::ZStringData::ReverseFind(const ZStringData* pdata) const
 {
+	int index2;
     for(int index = m_length - pdata->m_length + 1; index >=0 ; index--) {
-        for (int index2 = 0; index2 < pdata->m_length; index2++) {
+        for (index2 = 0; index2 < pdata->m_length; index2++) {
             if (m_pcc[index + index2] != pdata->m_pcc[index2]) {
                 break;
             }
@@ -235,7 +237,7 @@ ZString::ZString(int value)
 {
     char buf[32];
 
-    _itoa(value,buf,10);
+    _itoa_s(value,buf,32,10);
 
     m_pdata = new ZStringData(buf);
 }
@@ -245,8 +247,8 @@ ZString::ZString(float value, int total, int precision)
     char format[32];
     char buf[32];
 
-    sprintf(format, "%%%d.%df", total, precision);
-    sprintf(buf, format, value);
+    sprintf_s(format, 32, "%%%d.%df", total, precision);
+    sprintf_s(buf, 32, format, value);
 
     m_pdata = new ZStringData(buf);
 }
@@ -255,7 +257,7 @@ ZString::ZString(float value)
 {
     #ifndef DREAMCAST
         char buf[32];
-        sprintf(buf, "%g", value);
+        sprintf_s(buf, 32, "%g", value);
         m_pdata = new ZStringData(buf);
     #else
         int  decimal, sign;
@@ -562,7 +564,8 @@ ZString ZString::ToUpper() const
 
 void ZToLower(char* szDest, PCC szSource)
 {
-    for (int index = 0; szSource[index] != '\0'; ++index) {
+	int index;
+    for (index = 0; szSource[index] != '\0'; ++index) {
         char ch = szSource[index];
         if (ch >= 'A' && ch <= 'Z')
             szDest[index] = (ch - ('A' - 'a'));
@@ -574,7 +577,8 @@ void ZToLower(char* szDest, PCC szSource)
 
 void ZToUpper(char* szDest, PCC szSource)
 {
-    for (int index = 0; szSource[index] != '\0'; ++index) {
+	int index;
+    for (index = 0; szSource[index] != '\0'; ++index) {
         char ch = szSource[index];
         if (ch >= 'a' && ch <= 'z')
             szDest[index] = (ch - ('a' - 'A'));

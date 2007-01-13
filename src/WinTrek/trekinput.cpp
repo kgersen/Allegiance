@@ -149,6 +149,7 @@ public:
             );
 
         pnsCommands->AddMember("CommandHelp"                     , new Number((float)TK_Help                     ));
+		pnsCommands->AddMember("CommandScreenShot"               , new Number((float)TK_ScrnShot                 ));
         pnsCommands->AddMember("CommandNextCommMsg"              , new Number((float)TK_NextCommMsg              ));
         pnsCommands->AddMember("CommandPrevCommMsg"              , new Number((float)TK_PrevCommMsg              ));
         pnsCommands->AddMember("CommandPrevWeapon"               , new Number((float)TK_PrevWeapon               ));
@@ -727,8 +728,16 @@ public:
     void ClearButtonStates()
     {
         for (int index = 0; index < TK_Max; index++) {
-            m_boolTrekKeyButtonDown[index] = false;
+			m_boolTrekKeyButtonDown[index] = false;
+        // mmf pull yp's changes for now
+			//m_pboolTrekKeyDown[index]       = false; // keyboard // yp - Your_Persona buttons get stuck patch. aug-03-2006
+            //m_ppboolTrekKeyButtonDown[index] = false;
         }
+		// yp - After that for loop we lose responce from most of our keys.. so..		 
+		// hack.. we reload the map, and something in there fixes it.
+		//if (!LoadMap(INPUTMAP_FILE)) {
+        //    LoadMap(DEFAULTINPUTMAP_FILE);
+        //}
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1025,7 +1034,7 @@ KeyInfo g_pkeyInfo[] =
     { NULL               }, // 29
     { NULL               }, // 2a
     { NULL               }, // 2b
-    { NULL               }, // 2c
+    { "PrintScreen"      }, // 2c
     { "Insert"           }, // 2d
     { "Delete"           }, // 2e
     { NULL               }, // 2f
@@ -1291,7 +1300,7 @@ CommandInfo g_pCommandInfo[] =
     { TK_NextWeapon                      , "Next Weapon"                           },
     { TK_ToggleGroupFire                 , "Toggle Group Fire"                     },
     { TK_Reload                          , "Reload"                                },
-    { TK_DropMine                        , "Drop Mine"                             },
+    { TK_DropMine                        , "Drop Mine or Probe"                    },// yp - Your_Persona fix bug65 (rewording) Aug-04-2006
     { TK_DropChaff                       , "Drop Chaff"                            },
 
     { TK_NoKeyMapping                    , ""                                      },
@@ -1480,6 +1489,7 @@ CommandInfo g_pCommandInfo[] =
     { TK_PauseTM                         , "Pause (training mission only)"         },
     { TK_CommandFinishTM                 , "Finish goal (training mission only)"   },
     { TK_TrackCommandView                , "Toggle command view target tracking"   },
+	{ TK_ScrnShot                        , "Take a screen shot"                    },
 
     { TK_NoKeyMapping                    , ""                                      },
     { TK_NoKeyMapping                    , "Joystick"                              },
@@ -1521,6 +1531,7 @@ private:
 
     class CommandMap {
     public:
+		int indexJoystick;
         TList<KeyMapping>    m_listKeyMapping;
         TList<ButtonMapping> m_listButtonMapping;
 
@@ -1987,9 +1998,10 @@ public:
         CastTo(m_pbuttonRestore,  pns->FindMember("restoreButton"));
         CastTo(m_pbuttonClose,    pns->FindMember("closeButton"));
 
-        AddEventTarget(OnButtonOK,      m_pbuttonOK->GetEventSource());
-        AddEventTarget(OnButtonCancel,  m_pbuttonCancel->GetEventSource());
-        AddEventTarget(OnButtonRestore, m_pbuttonRestore->GetEventSource());
+		// mdvalley: Pointers and class names
+        AddEventTarget(&InputMapPopup::OnButtonOK,      m_pbuttonOK->GetEventSource());
+        AddEventTarget(&InputMapPopup::OnButtonCancel,  m_pbuttonCancel->GetEventSource());
+        AddEventTarget(&InputMapPopup::OnButtonRestore, m_pbuttonRestore->GetEventSource());
         //AddEventTarget(OnButtonCancel,  m_pbuttonClose->GetEventSource());
 
         //
@@ -2007,7 +2019,8 @@ public:
 
         CastTo(m_plistPane, (Pane*)pns->FindMember("listPane"));
 
-        AddEventTarget(OnDoubleClick, m_plistPane->GetDoubleClickEventSource());
+		// mdvalley: needs pointer and class
+        AddEventTarget(&InputMapPopup::OnDoubleClick, m_plistPane->GetDoubleClickEventSource());
 
         m_plistPane->SetItemPainter(this);
         m_plistPane->SetList(this);
@@ -2568,8 +2581,8 @@ public:
         if (m_bEditing) {
             int countJoystick = m_pinputEngine->GetJoystickCount();
             int vindex        = 0;
-
-            for (int indexJoystick = 0; indexJoystick < countJoystick; indexJoystick++) {
+			int indexJoystick;
+            for (indexJoystick = 0; indexJoystick < countJoystick; indexJoystick++) {
                 JoystickInputStream* pjoystick = m_pinputEngine->GetJoystick(indexJoystick);
 
                 if (IsAxisSelection()) {

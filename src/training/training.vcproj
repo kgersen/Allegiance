@@ -1,685 +1,946 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="training"
 	ProjectGUID="{281F3AC6-FAD1-40F4-B798-F634A6162D39}"
-	Keyword="Win32Proj">
+	Keyword="Win32Proj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\objs\Debug\training"
 			IntermediateDirectory=".\..\..\objs\Debug\training"
 			ConfigurationType="4"
-			CharacterSet="2">
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
-				MinimalRebuild="FALSE"
-				ExceptionHandling="TRUE"
+				MinimalRebuild="false"
+				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)/training.lib"/>
+				OutputFile="$(OutDir)/training.lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\objs\Retail\training"
 			IntermediateDirectory=".\..\..\objs\Retail\training"
 			ConfigurationType="4"
-			CharacterSet="2">
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile="$(OutDir)/training.lib"
-				IgnoreDefaultLibraryNames=""/>
+				IgnoreDefaultLibraryNames=""
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\training"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\training"
 			ConfigurationType="4"
-			CharacterSet="2">
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
-				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG"
-				MinimalRebuild="FALSE"
-				ExceptionHandling="TRUE"
+				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="false"
+				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)/training.lib"/>
+				OutputFile="$(OutDir)/training.lib"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\training"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\training"
 			ConfigurationType="4"
-			CharacterSet="2">
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\Training;..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\inc;..\clintlib;..\SoundEngine;..\wintrek;..\offline;..\lobby;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				BufferSecurityCheck="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile="$(OutDir)/training.lib"
-				IgnoreDefaultLibraryNames=""/>
+				IgnoreDefaultLibraryNames=""
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<File
-			RelativePath=".\AbstractTarget.cpp">
+			RelativePath=".\AbstractTarget.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\AbstractTarget.h">
+			RelativePath=".\AbstractTarget.h"
+			>
 		</File>
 		<File
-			RelativePath=".\Action.cpp">
+			RelativePath=".\Action.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Action.h">
+			RelativePath=".\Action.h"
+			>
 		</File>
 		<File
-			RelativePath=".\actionlist.cpp">
+			RelativePath=".\actionlist.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\actionlist.h">
+			RelativePath=".\actionlist.h"
+			>
 		</File>
 		<File
-			RelativePath=".\andcondition.cpp">
+			RelativePath=".\andcondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\andcondition.h">
+			RelativePath=".\andcondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\CommandAcknowledgedCondition.cpp">
+			RelativePath=".\CommandAcknowledgedCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\CommandAcknowledgedCondition.h">
+			RelativePath=".\CommandAcknowledgedCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\Condition.cpp">
+			RelativePath=".\Condition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Condition.h">
+			RelativePath=".\Condition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\conditionalaction.cpp">
+			RelativePath=".\conditionalaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\conditionalaction.h">
+			RelativePath=".\conditionalaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\conditionlist.cpp">
+			RelativePath=".\conditionlist.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\conditionlist.h">
+			RelativePath=".\conditionlist.h"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateDroneAction.cpp">
+			RelativePath=".\CreateDroneAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateDroneAction.h">
+			RelativePath=".\CreateDroneAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateObjectAction.cpp">
+			RelativePath=".\CreateObjectAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateObjectAction.h">
+			RelativePath=".\CreateObjectAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateProbeAction.cpp">
+			RelativePath=".\CreateProbeAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateProbeAction.h">
+			RelativePath=".\CreateProbeAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateWaypointAction.cpp">
+			RelativePath=".\CreateWaypointAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\CreateWaypointAction.h">
+			RelativePath=".\CreateWaypointAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\CurrentTarget.cpp">
+			RelativePath=".\CurrentTarget.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\CurrentTarget.h">
+			RelativePath=".\CurrentTarget.h"
+			>
 		</File>
 		<File
-			RelativePath=".\DoDamageAction.cpp">
+			RelativePath=".\DoDamageAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\DoDamageAction.h">
+			RelativePath=".\DoDamageAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\elapsedtimecondition.h">
+			RelativePath=".\elapsedtimecondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\endmissionaction.cpp">
+			RelativePath=".\endmissionaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\endmissionaction.h">
+			RelativePath=".\endmissionaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\falsecondition.h">
+			RelativePath=".\falsecondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetAutopilotCondition.cpp">
+			RelativePath=".\GetAutopilotCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetAutopilotCondition.h">
+			RelativePath=".\GetAutopilotCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetChatCondition.cpp">
+			RelativePath=".\GetChatCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetChatCondition.h">
+			RelativePath=".\GetChatCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetCommandCondition.cpp">
+			RelativePath=".\GetCommandCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetCommandCondition.h">
+			RelativePath=".\GetCommandCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetControlActiveCondition.cpp">
+			RelativePath=".\GetControlActiveCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetControlActiveCondition.h">
+			RelativePath=".\GetControlActiveCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetKeyCondition.cpp">
+			RelativePath=".\GetKeyCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetKeyCondition.h">
+			RelativePath=".\GetKeyCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetPickedCondition.cpp">
+			RelativePath=".\GetPickedCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetPickedCondition.h">
+			RelativePath=".\GetPickedCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetProbeCountCondition.cpp">
+			RelativePath=".\GetProbeCountCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetProbeCountCondition.h">
+			RelativePath=".\GetProbeCountCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetRadarLODCondition.cpp">
+			RelativePath=".\GetRadarLODCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetRadarLODCondition.h">
+			RelativePath=".\GetRadarLODCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetSectorCondition.cpp">
+			RelativePath=".\GetSectorCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetSectorCondition.h">
+			RelativePath=".\GetSectorCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipHasAmmoCondition.cpp">
+			RelativePath=".\GetShipHasAmmoCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipHasAmmoCondition.h">
+			RelativePath=".\GetShipHasAmmoCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipHasCargoCondition.cpp">
+			RelativePath=".\GetShipHasCargoCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipHasCargoCondition.h">
+			RelativePath=".\GetShipHasCargoCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipIsDamagedCondition.cpp">
+			RelativePath=".\GetShipIsDamagedCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipIsDamagedCondition.h">
+			RelativePath=".\GetShipIsDamagedCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipIsDestroyedCondition.h">
+			RelativePath=".\GetShipIsDestroyedCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipIsStoppedCondition.cpp">
+			RelativePath=".\GetShipIsStoppedCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetShipIsStoppedCondition.h">
+			RelativePath=".\GetShipIsStoppedCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetStateBitsCondition.cpp">
+			RelativePath=".\GetStateBitsCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetStateBitsCondition.h">
+			RelativePath=".\GetStateBitsCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetTargetCondition.cpp">
+			RelativePath=".\GetTargetCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetTargetCondition.h">
+			RelativePath=".\GetTargetCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\GetViewSectorCondition.cpp">
+			RelativePath=".\GetViewSectorCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\GetViewSectorCondition.h">
+			RelativePath=".\GetViewSectorCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\Goal.cpp">
+			RelativePath=".\Goal.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Goal.h">
+			RelativePath=".\Goal.h"
+			>
 		</File>
 		<File
-			RelativePath=".\goallist.cpp">
+			RelativePath=".\goallist.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\goallist.h">
+			RelativePath=".\goallist.h"
+			>
 		</File>
 		<File
-			RelativePath=".\Makefile">
+			RelativePath=".\Makefile"
+			>
 		</File>
 		<File
-			RelativePath=".\messageaction.cpp">
+			RelativePath=".\messageaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\messageaction.h">
+			RelativePath=".\messageaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mission2.cpp">
+			RelativePath=".\mission2.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Mission2.h">
+			RelativePath=".\Mission2.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mission3.cpp">
+			RelativePath=".\mission3.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Mission3.h">
+			RelativePath=".\Mission3.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mission4.cpp">
+			RelativePath=".\mission4.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Mission4.h">
+			RelativePath=".\Mission4.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mission5.cpp">
+			RelativePath=".\mission5.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Mission5.h">
+			RelativePath=".\Mission5.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mission6.cpp">
+			RelativePath=".\mission6.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\mission6.h">
+			RelativePath=".\mission6.h"
+			>
 		</File>
 		<File
-			RelativePath=".\noaction.cpp">
+			RelativePath=".\noaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\noaction.h">
+			RelativePath=".\noaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\notcondition.h">
+			RelativePath=".\notcondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ntimescondition.cpp">
+			RelativePath=".\ntimescondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ntimescondition.h">
+			RelativePath=".\ntimescondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\objectmovingtowardscondition.cpp">
+			RelativePath=".\objectmovingtowardscondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\objectmovingtowardscondition.h">
+			RelativePath=".\objectmovingtowardscondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\objectpointingatcondition.cpp">
+			RelativePath=".\objectpointingatcondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\objectpointingatcondition.h">
+			RelativePath=".\objectpointingatcondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\objectwithinradiuscondition.cpp">
+			RelativePath=".\objectwithinradiuscondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\objectwithinradiuscondition.h">
+			RelativePath=".\objectwithinradiuscondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\onetimeaction.cpp">
+			RelativePath=".\onetimeaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\onetimeaction.h">
+			RelativePath=".\onetimeaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\orcondition.cpp">
+			RelativePath=".\orcondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\orcondition.h">
+			RelativePath=".\orcondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\pch.cpp">
+			RelativePath=".\pch.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\pch.h">
+			RelativePath=".\pch.h"
+			>
 		</File>
 		<File
-			RelativePath=".\periodiccondition.cpp">
+			RelativePath=".\periodiccondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\periodiccondition.h">
+			RelativePath=".\periodiccondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\PlayerShipTarget.cpp">
+			RelativePath=".\PlayerShipTarget.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\PlayerShipTarget.h">
+			RelativePath=".\PlayerShipTarget.h"
+			>
 		</File>
 		<File
-			RelativePath=".\playsoundaction.cpp">
+			RelativePath=".\playsoundaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\playsoundaction.h">
+			RelativePath=".\playsoundaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\Predicate.cpp">
+			RelativePath=".\Predicate.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Predicate.h">
+			RelativePath=".\Predicate.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ProxyAction.cpp">
+			RelativePath=".\ProxyAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ProxyAction.h">
+			RelativePath=".\ProxyAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ProxyCondition.cpp">
+			RelativePath=".\ProxyCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ProxyCondition.h">
+			RelativePath=".\ProxyCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ReleaseConsumerAction.cpp">
+			RelativePath=".\ReleaseConsumerAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ReleaseConsumerAction.h">
+			RelativePath=".\ReleaseConsumerAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\RepairRearmAction.cpp">
+			RelativePath=".\RepairRearmAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\RepairRearmAction.h">
+			RelativePath=".\RepairRearmAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\resetaction.cpp">
+			RelativePath=".\resetaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\resetaction.h">
+			RelativePath=".\resetaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\resetshipaction.cpp">
+			RelativePath=".\resetshipaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\resetshipaction.h">
+			RelativePath=".\resetshipaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SetAutopilotAction.cpp">
+			RelativePath=".\SetAutopilotAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SetAutopilotAction.h">
+			RelativePath=".\SetAutopilotAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\setcommandaction.cpp">
+			RelativePath=".\setcommandaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\setcommandaction.h">
+			RelativePath=".\setcommandaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SetControlConstraintsAction.cpp">
+			RelativePath=".\SetControlConstraintsAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SetControlConstraintsAction.h">
+			RelativePath=".\SetControlConstraintsAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SetControlsAction.cpp">
+			RelativePath=".\SetControlsAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SetControlsAction.h">
+			RelativePath=".\SetControlsAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\setdisplaymodeaction.cpp">
+			RelativePath=".\setdisplaymodeaction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\setdisplaymodeaction.h">
+			RelativePath=".\setdisplaymodeaction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SetHUDOverlayAction.cpp">
+			RelativePath=".\SetHUDOverlayAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SetHUDOverlayAction.h">
+			RelativePath=".\SetHUDOverlayAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SetRadarLODAction.cpp">
+			RelativePath=".\SetRadarLODAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SetRadarLODAction.h">
+			RelativePath=".\SetRadarLODAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SetSignatureAction.cpp">
+			RelativePath=".\SetSignatureAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SetSignatureAction.h">
+			RelativePath=".\SetSignatureAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ShipSeesObjectCondition.cpp">
+			RelativePath=".\ShipSeesObjectCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ShipSeesObjectCondition.h">
+			RelativePath=".\ShipSeesObjectCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ShowEyeballAction.cpp">
+			RelativePath=".\ShowEyeballAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ShowEyeballAction.h">
+			RelativePath=".\ShowEyeballAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ShowPaneAction.cpp">
+			RelativePath=".\ShowPaneAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ShowPaneAction.h">
+			RelativePath=".\ShowPaneAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\soundfinishedcondition.cpp">
+			RelativePath=".\soundfinishedcondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\soundfinishedcondition.h">
+			RelativePath=".\soundfinishedcondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SuspendedPlaySoundAction.cpp">
+			RelativePath=".\SuspendedPlaySoundAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SuspendedPlaySoundAction.h">
+			RelativePath=".\SuspendedPlaySoundAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SuspendedSoundFinishedCondition.cpp">
+			RelativePath=".\SuspendedSoundFinishedCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SuspendedSoundFinishedCondition.h">
+			RelativePath=".\SuspendedSoundFinishedCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\SwapWeaponAction.cpp">
+			RelativePath=".\SwapWeaponAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\SwapWeaponAction.h">
+			RelativePath=".\SwapWeaponAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ToggleWeaponAction.cpp">
+			RelativePath=".\ToggleWeaponAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ToggleWeaponAction.h">
+			RelativePath=".\ToggleWeaponAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\Training.cpp">
+			RelativePath=".\Training.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\Training.h">
+			RelativePath=".\Training.h"
+			>
 		</File>
 		<File
-			RelativePath=".\trainingmission.cpp">
+			RelativePath=".\trainingmission.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\trainingmission.h">
+			RelativePath=".\trainingmission.h"
+			>
 		</File>
 		<File
-			RelativePath=".\truecondition.cpp">
+			RelativePath=".\truecondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\truecondition.h">
+			RelativePath=".\truecondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\TurnShipAboutCondition.cpp">
+			RelativePath=".\TurnShipAboutCondition.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\TurnShipAboutCondition.h">
+			RelativePath=".\TurnShipAboutCondition.h"
+			>
 		</File>
 		<File
-			RelativePath=".\TurnToAction.cpp">
+			RelativePath=".\TurnToAction.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\TurnToAction.h">
+			RelativePath=".\TurnToAction.h"
+			>
 		</File>
 		<File
-			RelativePath=".\TypeIDTarget.cpp">
+			RelativePath=".\TypeIDTarget.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\TypeIDTarget.h">
+			RelativePath=".\TypeIDTarget.h"
+			>
 		</File>
 	</Files>
 	<Globals>

@@ -139,7 +139,8 @@ public:
         return Point(u, v);
     }
 
-    friend operator==(const Vertex& v0, const Vertex& v1)
+	// mdvalley: 2005 likes bools
+    friend BOOL operator==(const Vertex& v0, const Vertex& v1)
     {
         return
                v0.x  == v1.x
@@ -253,7 +254,8 @@ public:
         return Color(r, g, b, a);
     }
 
-    friend operator==(const VertexL& v0, const VertexL& v1)
+	// mdvalley: bool
+    friend BOOL operator==(const VertexL& v0, const VertexL& v1)
     {
         return
                v0.x == v1.x

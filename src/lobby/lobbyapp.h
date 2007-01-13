@@ -213,6 +213,7 @@ private:
   int               m_cReportServers; // actual servers reporting to
   unsigned long     m_rgulIP[c_cReportServersMax]; // ip address(es) to report game info to
   DWORD             m_sGameInfoInterval;
+  DWORD             m_sPort;				// port the lobby listens on for new clients
   bool              m_fProtocol;
   bool              m_fFreeLobby;
   bool              m_fCheckCDKey;

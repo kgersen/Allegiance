@@ -1267,7 +1267,7 @@ public:
 
             // play the mining sound if this ship is actively mining
             PlaySoundIf(m_pMiningSound, miningSound, GetSoundSource(), 
-                (m_pship->GetStateM() & miningMaskIGC) != 0);
+				((m_pship->GetStateM() & miningMaskIGC) != 0) && trekClient.GetShip()->CanSee(m_pship));	// mdvalley: Uneyed miners silent.
 
             // play the sounds for each weapon
             PlayWeaponSounds();
@@ -2957,7 +2957,9 @@ public:
         CastTo(m_pstrpaneCurrentFile,    pns->FindMember("AutoDownloadCurrentFileStringPane"  ));
         CastTo(m_pstrpaneApproxMinutes,  pns->FindMember("AutoDownloadApproxMinutes"  ));
 
-        AddEventTarget(OnButtonAbort, m_pbuttonAbort->GetEventSource());
+		// mdvalley: '05 needs a pointer and class name for arg1. Should still work in '03
+        AddEventTarget(&AutoDownloadProgressDialogPopup::OnButtonAbort, m_pbuttonAbort->GetEventSource());
+
 
         pmodeler->UnloadNameSpace(pns);
     }
@@ -3454,13 +3456,13 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
     FEDMSGID fmid = pfm->fmid;
     ZAssert(0 != fmid);
 
-    if (fmid != FM_CS_PING && 
-        fmid != FM_S_LIGHT_SHIPS_UPDATE &&
-        fmid != FM_S_HEAVY_SHIPS_UPDATE &&
-        fmid != FM_CS_CHATMESSAGE && 
-        fmid != FM_S_STATIONS_UPDATE && 
-        fmid != FM_S_PROBES_UPDATE)
-        debugf("Received %s at time %u\n", g_rgszMsgNames[fmid], m_now.clock());
+    //if (fmid != FM_CS_PING && 
+    //    fmid != FM_S_LIGHT_SHIPS_UPDATE &&
+    //    fmid != FM_S_HEAVY_SHIPS_UPDATE &&
+    //    fmid != FM_CS_CHATMESSAGE && 
+    //    fmid != FM_S_STATIONS_UPDATE && 
+    //    fmid != FM_S_PROBES_UPDATE)
+    // debugf("Received %s at time %u\n", g_rgszMsgNames[fmid], m_now.clock()); mmf took this out, too much debug output
 
     if (m_bDisconnected && pthis == &m_fm)
     {
@@ -3982,7 +3984,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
         PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
         if (ppi->GetMute() 
             || (m_bFilterChatsToAll && ctRecipient == CHAT_EVERYONE && trekClient.IsInGame())
-            || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)
+//            || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
             || (m_bFilterLobbyChats && ppi->SideID() == SIDE_TEAMLOBBY && trekClient.IsInGame()))
             return;
         bIsLeader = ppi->IsTeamLeader();

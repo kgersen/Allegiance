@@ -600,7 +600,8 @@ typedef TPointerListObject<IObject> IObjectList;
 template<class Type>
 class DoSetIndex {
 public:
-    static SetIndex(Type* pobject, int index)
+	// mdvalley: has to be void
+    static void SetIndex(Type* pobject, int index)
     {
         pobject->SetIndex(index);
     }
@@ -608,7 +609,8 @@ public:
 
 class DontSetIndex {
 public:
-    static SetIndex(void* pobject, int index)
+	// mdvalley: It has to be explicit. And it ain't an int.
+    static void SetIndex(void* pobject, int index)
     {
     }
 };
@@ -616,7 +618,8 @@ public:
 template<class Type, class SetIndexType = DontSetIndex>
 class TLookup {
 public:
-    static Parse(IObjectList* plist, int offset, TVector<TRef<Type> >& m_v)
+	// mdvalley: explicit void now
+    static void Parse(IObjectList* plist, int offset, TVector<TRef<Type> >& m_v)
     {
         int maxIndex = offset;
 

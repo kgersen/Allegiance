@@ -26,6 +26,7 @@ const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
   const short c_cMaxPlayersPerGame = 0x7FFF;
 #endif // defined(ALLSRV_STANDALONE)
 
+
 HRESULT pascal FedSrv_Init();
 HRESULT pascal FedSrv_Terminate(void);
 HRESULT pascal FedSrv_Pause();
@@ -305,6 +306,7 @@ struct Global
   ZString             strAuthServer;
   ZString             strLocalAddress;
   char                rgTechs[cTechs][CbTechBitName+1];
+  DWORD               dwLobbyPort;
 
   RankInfo*           vRankInfo;
   short               cRankInfo;
@@ -341,8 +343,12 @@ void DisconnectFromLobby();
 void ChangeStationOwners(IstationIGC * pstation, CFSMission * pfsMission, IsideIGC* iSideNew);
 void ExportObj(IbaseIGC * pIGC, ObjectType ot, FMD_S_EXPORT ** ppfmExport);
 void CheatDPGroups(CFSShip * pfsShip);
-BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType, 
-        LPCDPNAME lpName, DWORD dwFlags, LPVOID lpContext);
+
+// <NKM> 8-Aug-2004
+// DX 9 doesn't use callbacks for this
+//BOOL FAR PASCAL EnumPlayersCallback(DPID dpId, DWORD dwPlayerType, 
+//                                    LPCDPNAME lpName, DWORD dwFlags, LPVOID lpContext);
+
 void SendPlayerInfo(CFSPlayer * pfsPlayer, CFSShip * pfsShip, CFSMission* pfsMission, bool bSend = true);
 bool LeaveShip(CFSShip* pfsShip, IshipIGC* pshipParent);
 CFMGroup * GetGroupSectorDocked(IclusterIGC * pCluster);

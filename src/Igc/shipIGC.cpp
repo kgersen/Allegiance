@@ -1022,7 +1022,8 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
 
             float   hp1 = GetHitPoints();
             if (m_mountedOthers[ET_Shield])
-                hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
+				// terralthra fix, this was an = should be a +=, comment added by mmf
+                hp1 += ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
                       ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetMaxStrength();
 
             float   hp2 = ((IdamageIGC*)pModel)->GetHitPoints();
@@ -1703,7 +1704,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 {
                     //We want to stop running
                     SetCommand(c_cmdPlan, NULL, c_cidNone);
-					debugf("mmf %-20s stoped running\n", GetName());
+					// debugf("mmf %-20s stoped running\n", GetName());
                     assert (m_bRunningAway == false);   //Set by SetCommand
                     m_timeRanAway = timeStop;
                 }
@@ -2361,7 +2362,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 
         *pVelocity += thrustToVelocity * (m_engineVector - drag);
 		// mmf added log msg for large velocity^2
-		if ((*pVelocity * *pVelocity) > 150000.0f) {
+		if ((*pVelocity * *pVelocity) > 180000.0f) {
 			debugf("mmf pVelocity^2 = %g ship = %s\n",(*pVelocity * *pVelocity),GetName());
 		}
 
@@ -2875,10 +2876,17 @@ void    CshipIGC::Promote(void)
         }
     }
 
+	// mdvalley: If parent in base, put child in base.
+//	IstationIGC * currentBase = pshipParent->GetStation();
+//	if(currentBase)
+//		SetStation(currentBase);
+//	else
+//	{
     const Vector& position = pshipParent->GetPosition();
     SetPosition(position);
     SetVelocity(pshipParent->GetVelocity());
     SetOrientation(pshipParent->GetOrientation());
+//	}
 
     SetFraction(pshipParent->GetFraction());
     {

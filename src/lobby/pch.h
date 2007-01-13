@@ -16,8 +16,10 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <dplobby.h>
 #include <mmsystem.h> // wlp 2006 added = somehow appweb.h excludes timegetTime in this module 
+
+
+//#include <dplobby.h>
 
 
 

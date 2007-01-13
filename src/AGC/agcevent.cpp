@@ -431,7 +431,9 @@ HRESULT CAGCEvent::SaveToStream(IStream* pStm, BOOL fClearDirty)
 
   // Count the number of non-static fields
   long cPairs = 0;
-  for (XPropertyIt it = m_Properties.begin(); m_Properties.end() != it; ++it)
+  // mdvalley: again with the variable declarations
+  XPropertyIt it;
+  for (it = m_Properties.begin(); m_Properties.end() != it; ++it)
     if (!IsStaticField(it->first))
       ++cPairs;
 
@@ -640,7 +642,9 @@ STDMETHODIMP CAGCEvent::Save(LPSTREAM pStm, BOOL fClearDirty)
 
   // Count the number of non-static fields
   long cPairs = 0;
-  for (XPropertyIt it = m_Properties.begin(); m_Properties.end() != it; ++it)
+  // mdvalley: Declaration motion makes me seasick.
+  XPropertyIt it;
+  for (it = m_Properties.begin(); m_Properties.end() != it; ++it)
     if (!IsStaticField(it->first))
       ++cPairs;
 

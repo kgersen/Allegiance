@@ -16,6 +16,9 @@
   static char THIS_FILE[] = __FILE__;
 #endif
 
+//mdvalley: defines good
+#define _WIN32_DCOM
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CPageConnect property page
@@ -94,7 +97,9 @@ LRESULT CPageConnect::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 UINT CPageConnect::CreateSessionThreadThunk(void* pvParam)
 {
   // Enter this thread into a COM MTA
-  CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	//mdvalley: Use older CoInit
+  CoInitialize(NULL);
+//  CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
   // Reinterpret the specified parameter as a 'this' pointer
   CPageConnect* pThis = reinterpret_cast<CPageConnect*>(pvParam);

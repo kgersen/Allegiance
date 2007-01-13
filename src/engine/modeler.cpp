@@ -2083,7 +2083,8 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class ModelerImpl : public Modeler {
+class ModelerImpl : public Modeler 
+{
 private:
     TRef<Engine>      m_pengine;
     TRef<ModelerSite> m_psite;
@@ -2095,15 +2096,15 @@ public:
     ModelerImpl(Engine* pengine) :
         m_pengine(pengine),
         m_pathStr(".")
-    {
+		{
         m_psite = new ModelerSiteImpl();
         InitializeNameSpace();
-    }
+		}
 
     void SetSite(ModelerSite* psite)
     {
         m_psite = psite;
-    }
+	}
 
     void SetArtPath(const PathString& pathStr)
     {
@@ -2123,7 +2124,7 @@ public:
     }
 
     void InitializeNameSpace()
-    {
+	{
         INameSpace* pns = CreateNameSpace("model");
 
         //
@@ -2319,51 +2320,55 @@ public:
         pns->AddMember("AnimatedImagePaneRect", new AnimatedImagePaneRectFactory());
         pns->AddMember("FrameImageButtonPane",  new FrameImageButtonPaneFactory(this, ptime));
         pns->AddMember("PaneImage",             new PaneImageFactory(this));
-    }
+	}
 
     Engine* GetEngine()
     {
         return m_pengine;
-    }
+	}
 
     TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
     {
         ZString strExtension = pathStr.GetExtension();
-        ZString strToOpen;
+        ZString strToTryOpen;// yp Your_Persona October 7 2006 : TextureFolder Patch
+		ZString strToOpen;
+		TRef<ZFile> pfile = NULL;
 
         if (!strExtension.IsEmpty()) {
             if (strExtension != strExtensionArg) {
                 return NULL;
             }
             strToOpen = m_pathStr + pathStr;
+			strToTryOpen = m_pathStr + "Textures/" + pathStr;
         } else {
             strToOpen = ZString(m_pathStr + pathStr) + ("." + strExtensionArg);
+			strToTryOpen = ZString(m_pathStr + "Textures/" + pathStr) + ("." + strExtensionArg);
         }
+		// yp Your_Persona October 7 2006 : TextureFolder Patch
+		if(strToTryOpen.Right(7) == "bmp.mdl") // if its a texture, try loading from the strToTryOpen
+		{
+			pfile = new ZFile(strToTryOpen, OF_READ | OF_SHARE_DENY_WRITE);
+			// mmf modified Y_P's logic
+			if(!pfile->IsValid())
+			{
+				pfile = NULL;
+			}
+		}
+		if(!pfile) // if we dont have a file here, then load regularly.
+		{
+			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
 
-        TRef<ZFile> pfile= new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
-
-		// mmf added debugf but will still have it call assert
-		if ((bError && !pfile->IsValid() && m_psite)) {
-			debugf("Could not open the artwork file '" + strToOpen + "'");
-			// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
+			// mmf added debugf but will still have it call assert
+			if ((bError && !pfile->IsValid() && m_psite)) { // logic from ZRAssert below
+				debugf("Could not open the artwork file %s\n",strToOpen);
+				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
+			}
 		}
 
-        ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
-        /*
-        if (
-               bError
-            && !pfile->IsValid()
-            && m_psite
-        ) {
-            m_psite->Error(
-                  "Could not open the artwork file '"
-                + strToOpen + "'"
-            );
-        }
-        */
+		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
 
         return pfile->IsValid() ? pfile : NULL;
-    }
+	}
 
     TRef<ZFile> LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
     {

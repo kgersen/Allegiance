@@ -6,15 +6,14 @@
 #include "pch.h"
 #include "MessageCore.h"
 
+//  <NKM> 25-Aug-2004
+// For debug purposes....
+#define GETSORC  const char* sOrC = m_pDirectPlayClient == 0 ? "S" : "C"
+#define DPNGETLOCALHOSTADDRESSES_COMBINED               0x0001
+
+
 const MsgClsPrio FedMessaging::c_mcpDefault = 1000;
 static GUID g_guidApplication;
-
-static DPID            g_dpidFrom = 0;
-static bool            g_fHandlingMsg = false;
-static CFMConnection * g_pcnxnFrom = NULL;
-static LPBYTE          g_pbReceiveBuff = NULL;
-static DWORD           g_dwMsgPacketSize = 0;
-
 
 // Ok, this is kinda hacky, but it's too late to make wide-effect changes. The problem is that while in the OnAppMessage
 // callback, they may delete the connection from which the message came. Then there may be another FEDMEESSAGE packed in 
@@ -29,47 +28,130 @@ void DumpMemory()
   _CrtDumpMemoryLeaks();
 }
 
-void whodidit()
+template< class T > class SafeReleaser
 {
-  if (g_fHandlingMsg)
+public:
+  SafeReleaser( T* t = 0 )
+    : m_toRelease( t )
+  {}
+
+  ~SafeReleaser()
   {
-    CB cb = ((FEDMESSAGE*)(g_pbReceiveBuff))->cbmsg;
-    FEDMSGID id = ((FEDMESSAGE*)(g_pbReceiveBuff))->fmid;
-    debugf("Currently handling message from %s(%u).\n"
-           "cbmsg=%d, fmid=%d, total packet size=%d\n", 
-           g_pcnxnFrom ? g_pcnxnFrom->GetName() : "<unknown>", g_dpidFrom,
-           cb, id, g_dwMsgPacketSize);
+    if ( m_toRelease )
+      m_toRelease->Release();
   }
-  else
-    debugf("Not currently handling a message.\n");
+
+
+private:
+  SafeReleaser( const SafeReleaser&  );
+  SafeReleaser& operator = ( const SafeReleaser& );
+
+  T* m_toRelease;
+};
+
+static const char* g_dpMsgids[] = {
+  "unknown",
+  "DPN_MSGID_ADD_PLAYER_TO_GROUP",
+  "DPN_MSGID_APPLICATION_DESC",
+  "DPN_MSGID_ASYNC_OP_COMPLETE",
+  "DPN_MSGID_CLIENT_INFO",
+  "DPN_MSGID_CONNECT_COMPLETE",
+  "DPN_MSGID_CREATE_GROUP",
+  "DPN_MSGID_CREATE_PLAYER",
+  "DPN_MSGID_DESTROY_GROUP",
+  "DPN_MSGID_DESTROY_PLAYER",
+  "DPN_MSGID_ENUM_HOSTS_QUERY",
+  "DPN_MSGID_ENUM_HOSTS_RESPONSE",
+  "DPN_MSGID_GROUP_INFO",
+  "DPN_MSGID_HOST_MIGRATE",
+  "DPN_MSGID_INDICATE_CONNECT",
+  "DPN_MSGID_INDICATED_CONNECT_ABORTED",
+  "DPN_MSGID_PEER_INFO",
+  "DPN_MSGID_RECEIVE",
+  "DPN_MSGID_REMOVE_PLAYER_FROM_GROUP",
+  "DPN_MSGID_RETURN_BUFFER",
+  "DPN_MSGID_SEND_COMPLETE",
+  "DPN_MSGID_SERVER_INFO",
+  "DPN_MSGID_TERMINATE_SESSION",
+  "DPN_MSGID_CREATE_THREAD",
+  "DPN_MSGID_DESTROY_THREAD"
+};
+
+
+static const char* getMessageString( DWORD id )
+{
+  DWORD myMsgid = id & 0xFF;
+  if ( myMsgid > 0x18 )
+    myMsgid = 0;
+
+  return g_dpMsgids[myMsgid];
+}
+
+//  <NKM> 08-Aug-2004
+// Added
+//-----------------------------------------------------------------------------
+// Name: DXUtil_ConvertAnsiStringToWideCch()
+// Desc: This is a UNICODE conversion utility to convert a CHAR string into a
+//       WCHAR string.
+//       cchDestChar is the size in TCHARs of wstrDestination.  Be careful not to
+//       pass in sizeof(strDest)
+//-----------------------------------------------------------------------------
+static WCHAR* constChar2Wchar( const char* from )
+{
+  if( from == 0 )
+    return 0;
+
+  //  <NKM> 07-Aug-2004
+  // first get the count
+  //  CP_ACP - ansi code page
+  //  next 0 is the flags for character options
+  // from = char*  and -1 means the whole lot
+  // *to is the output and 0 means count how much I need!
+  WCHAR* to = 0;
+  int n = MultiByteToWideChar( CP_ACP, 0, from, -1, to, 0 );
+
+  if( n == 0 )
+    return 0;
+
+  //  <NKM> 07-Aug-2004 - allocate buffer and do the actual call
+  to = new WCHAR[n];
+  MultiByteToWideChar( CP_ACP, 0, from, -1, to, n );
+
+  return to;
 }
 
 
-/*-------------------------------------------------------------------------
- * EnumAddressCallback
- *-------------------------------------------------------------------------
- * Purpose:
- *     Silly dplay mechanism to get all the parts of an address
- * 
- * Parameters:
- *     DPlay defined
- * 
- * Returns:
- *     Whether to continue enumerating address parts
- */
-BOOL FAR PASCAL EnumAddressCallback(REFGUID guidDataType,
-                                    DWORD dwDataSize,
-                                    LPCVOID lpData,
-                                    LPVOID lpContext)
+
+//  <NKM> 08-Aug-2004
+// Added
+//-----------------------------------------------------------------------------
+// Name: DXUtil_ConvertWideStringToAnsi()
+// Desc: This is a UNICODE conversion utility to convert a WCHAR string into a
+//       CHAR string.
+//       cchDestChar is the size in TCHARs of strDestination
+//-----------------------------------------------------------------------------
+static char* wChar2ConstChar( WCHAR* from )
 {
-  // What the hell? Why do I get so many parts, and not even of the known guid types??? Oh well, jump through the hoops
-  if (DPAID_INet == guidDataType)
-  {
-    assert(dwDataSize > (DWORD) lstrlen((char *) lpData));
-    lstrcpy((char *) lpContext, (char *) lpData);
-    return FALSE;
-  }
-  return TRUE;
+  if( from == 0 )
+    return 0;
+
+  //  <NKM> 07-Aug-2004
+  // first get the count
+  //  CP_ACP - ansi code page
+  //  next 0 is the flags for character options
+  // from = char*  and -1 means the whole lot
+  // *to is the output and 0 means count how much I need!
+  // 0's on the end are coz we don't used default chars
+  char* to = 0;
+  int n = WideCharToMultiByte( CP_ACP, 0, from, -1, to, 0, 0, 0 );
+  if( n == 0 )
+    return 0;
+
+
+  to = new char[n];
+  WideCharToMultiByte( CP_ACP, 0, from, -1, to, n, 0, 0 );
+
+  return to;
 }
 
 
@@ -105,58 +187,73 @@ void VerifyMessage(LPBYTE pb, CB cbTotal)
 }
 
 
-/*-------------------------------------------------------------------------
- * EnumSessionsCallback
- *-------------------------------------------------------------------------
- * Purpose:
- *    Called by IDirectPlay#::EnumSessions when doing a broadcast EnumSessions
- * 
- * Parameters:
- *    specified by dplay
- */
-BOOL FAR PASCAL EnumSessionsCallback (LPCDPSESSIONDESC2 lpThisSD,
-                                      LPDWORD lpdwTimeOut,
-                                      DWORD dwFlags,
-                                      LPVOID lpContext)
-{
-  if( dwFlags & DPESC_TIMEDOUT )
-      return FALSE; // The enumeration has timed out, so stop the enumeration.
 
-  assert(lpThisSD);
-  // lpContext is a FedMessaging*
+//  <NKM> 10-Aug-2004
+// Changed to EnumHosts and made a member function
+void FedMessaging::EnumHostsCallback ( const DPNMSG_ENUM_HOSTS_RESPONSE& resp )
+{
 #ifdef DEBUG  
   char szBuff[128];
+  const DPN_APPLICATION_DESC* appDesc = resp.pApplicationDescription;
   wsprintf(szBuff, "Found a session: {%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x} for application {%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}\n", 
-          lpThisSD->guidInstance.Data1,    lpThisSD->guidInstance.Data2, 
-          lpThisSD->guidInstance.Data3,    lpThisSD->guidInstance.Data4[0], 
-          lpThisSD->guidInstance.Data4[1], lpThisSD->guidInstance.Data4[2], 
-          lpThisSD->guidInstance.Data4[3], lpThisSD->guidInstance.Data4[4], 
-          lpThisSD->guidInstance.Data4[5], lpThisSD->guidInstance.Data4[6], 
-          lpThisSD->guidInstance.Data4[7],
-          lpThisSD->guidApplication.Data1,    lpThisSD->guidApplication.Data2, 
-          lpThisSD->guidApplication.Data3,    lpThisSD->guidApplication.Data4[0], 
-          lpThisSD->guidApplication.Data4[1], lpThisSD->guidApplication.Data4[2], 
-          lpThisSD->guidApplication.Data4[3], lpThisSD->guidApplication.Data4[4], 
-          lpThisSD->guidApplication.Data4[5], lpThisSD->guidApplication.Data4[6], 
-          lpThisSD->guidApplication.Data4[7]);
+          appDesc->guidInstance.Data1,    appDesc->guidInstance.Data2,
+          appDesc->guidInstance.Data3,    appDesc->guidInstance.Data4[0],
+          appDesc->guidInstance.Data4[1], appDesc->guidInstance.Data4[2],
+          appDesc->guidInstance.Data4[3], appDesc->guidInstance.Data4[4],
+          appDesc->guidInstance.Data4[5], appDesc->guidInstance.Data4[6],
+          appDesc->guidInstance.Data4[7],
+          appDesc->guidApplication.Data1,    appDesc->guidApplication.Data2,
+          appDesc->guidApplication.Data3,    appDesc->guidApplication.Data4[0],
+          appDesc->guidApplication.Data4[1], appDesc->guidApplication.Data4[2],
+          appDesc->guidApplication.Data4[3], appDesc->guidApplication.Data4[4],
+          appDesc->guidApplication.Data4[5], appDesc->guidApplication.Data4[6],
+          appDesc->guidApplication.Data4[7]);
   debugf(szBuff);
 #endif  
-  if (lpThisSD->guidApplication == g_guidApplication)
+  if ( IsEqualGUID( resp.pApplicationDescription->guidApplication, g_guidApplication ) )
   {
-    FedMessaging * pfm = (FedMessaging *)lpContext;
-    FMSessionDesc fmSession(const_cast<LPDPSESSIONDESC2>(lpThisSD));
-    pfm->m_guidInstance = lpThisSD->guidInstance;
-    if (pfm->m_fSessionCallback)
-      pfm->m_pfmSite->OnSessionFound(pfm, &fmSession);
+    FMSessionDesc fmSession( resp.pApplicationDescription );
+
+    m_guidInstance = resp.pApplicationDescription->guidInstance;
+
+    if ( m_pHostAddress != 0 )
+      m_pHostAddress->Release();
+
+    if ( m_pDeviceAddress != 0)
+      m_pDeviceAddress->Release();
+
+    ZSucceeded( resp.pAddressSender->QueryInterface( IID_IDirectPlay8Address,
+                                                (LPVOID*) &m_pHostAddress ) );
+
+    ZSucceeded( resp.pAddressDevice->QueryInterface( IID_IDirectPlay8Address,
+                                                (LPVOID*) &m_pDeviceAddress ) );	// mdvalley: get device address
+
+    if ( m_fSessionCallback )
+      m_pfmSite->OnSessionFound( this, &fmSession );
   }
-  return TRUE;
+}
+
+
+//  <NKM> 09-Aug-2004
+/*-------------------------------------------------------------------------
+ * DPlayMsgHandler
+ *-------------------------------------------------------------------------
+
+  Receives messages from Dplay and forwards them to the right FedMessaging
+*/
+
+HRESULT WINAPI DPlayMsgHandler( PVOID pvUserContext,
+                                DWORD dwMessageId,
+                                PVOID pMsgBuffer )
+{
+  return ((FedMessaging*) pvUserContext)->MsgHandler( dwMessageId, pMsgBuffer );
 }
 
 
 
 FedMessaging::FedMessaging(IFedMessagingSite * pfmSite) :
-  m_pDirectPlay(NULL),
-  m_pDirectPlayLobby(NULL),
+  m_pDirectPlayClient( 0 ),
+  m_pDirectPlayServer( 0 ),
   m_cMsgsOdometer(0),
   m_cBytesOdometer(0),
   m_pbFMNext(m_rgbbuffOutPacket),
@@ -171,16 +268,17 @@ FedMessaging::FedMessaging(IFedMessagingSite * pfmSite) :
   m_pbFMNextT(m_rgbbuffSecondaryOutPacket),
   m_guidInstance(GUID_NULL),
   m_guidApplication(GUID_NULL),
-  m_timeMsgLast(Time::Now()),
-  m_priority(c_mcpDefault)
+  m_timeMsgLast(Time::Now())
 {
   assert (pfmSite);
+  InitializeCriticalSection( &m_csMsgList );
 }
 
 
 FedMessaging::~FedMessaging()
 {
   Shutdown();
+  DeleteCriticalSection( &m_csMsgList );
 }
 
 
@@ -349,11 +447,20 @@ StartOver: // if we overrun our buffer, need to start over after flushing it
 FEDMESSAGE * FedMessaging::PfmGetNext(FEDMESSAGE * pfm)
 {
   BYTE * pfmNext = (BYTE*)pfm + pfm->cbmsg;
-  assert(pfmNext >= BuffIn() && (BYTE*) pfm < (BuffIn()) + sizeof(m_rgbbuffInPacket));
+
+  //  <NKM> 30-Aug-2004
+  // Changed the next assert from
+  //  assert(pfmNext >= BuffIn()  && (BYTE*) pfm < (BuffIn()) + sizeof(m_rgbbuffInPacket));
+  // as the 2nd half is now bogus as we don't have a fixed size input buffer no more :)
+  assert( pfmNext >= BuffIn() );
+
   if (pfmNext - BuffIn() >= (int) PacketSize()) // no more messages in packet
   {
+   //WLP = added connection test for disconnect from server interruption
+   if (m_fConnected) // WLP - only if we have a connection
     assert((BYTE*)pfmNext == BuffIn() + PacketSize()); // should be exactly equal
-    return NULL;
+
+	return NULL;
   }
   // Assert(!IsBadReadPointer(pfmNext, pfmNext->fm.cbfm))
   return (FEDMESSAGE *)pfmNext;
@@ -393,56 +500,70 @@ void FedMessaging::QueueExistingMsg(const FEDMESSAGE * pfm)
  */
 HRESULT FedMessaging::GenericSend(CFMRecipient * precip, const void * pv, CB cb, FMGuaranteed fmg)
 {
-  DWORD dwFlags, dwPriority, dwTimeout;
+  DWORD dwFlags, dwTimeout;
   HRESULT hr;
 
   //
   // Give guaranteed messages a higher priority, and longer ttl
   //
   bool fGuaranteed = FM_GUARANTEED == fmg;
-  dwFlags = DPSEND_ASYNC | (fGuaranteed ?
-              DPSEND_GUARANTEED : DPSEND_NOSENDCOMPLETEMSG);
-  dwPriority = m_priority;
-  if (fGuaranteed)
-    dwPriority += GetGuaranteedBias();
-  
+  static DWORD s_guarenteedFlags = DPNSEND_GUARANTEED | DPNSEND_PRIORITY_HIGH | DPNSEND_COALESCE;
+  static DWORD s_normalFlags = DPNSEND_NOCOMPLETE | DPNSEND_NONSEQUENTIAL;
+
+  dwFlags = fGuaranteed ? s_guarenteedFlags : s_normalFlags;
+
   dwTimeout = (fGuaranteed ? 0 : 500); // guaranteed messages will NEVER time out
 
+// #define DUMPMSGS mmf commented this out, enable if we want dplay8 message debugging again
 #ifdef DUMPMSGS
-  debugf("*** Sending message to %u, flags = 0x%x, Priority = %d, "
-          "Timeout = %d, length = %d, thread = 0x%x\n", precip->GetDPID(), dwFlags,
-          dwPriority, dwTimeout, cbBuffer, GetCurrentThreadId());
+  GETSORC;
+  debugf("*** (FM=%8x %s) Sending message to %8x, %8x flags = 0x%x, "
+         "Timeout = %4d, length = %4d, thread = 0x%x\n", this, sOrC, precip->GetID(), this, dwFlags,
+         dwTimeout, cb, GetCurrentThreadId());
 #endif
 
 #ifndef NO_MSG_CRC
-    // add the crc to the end to minimize possible conflict of assumptions
-    // We have to use our own buffer, so as to not overrun any input buffers ** :-( ** 
-    char crcbuff[sizeof(m_rgbbuffOutPacket)];
-    CopyMemory(crcbuff, pv, cb);
-    int crc = MemoryCRC(crcbuff, cb);
-    *(int*)(crcbuff + cb) = crc;
-    pv = crcbuff;
-    cb += sizeof(crc);
+  // add the crc to the end to minimize possible conflict of assumptions
+  // We have to use our own buffer, so as to not overrun any input buffers ** :-( ** 
+  char crcbuff[sizeof(m_rgbbuffOutPacket)];
+  CopyMemory(crcbuff, pv, cb);
+  int crc = MemoryCRC(crcbuff, cb);
+  *(int*)(crcbuff + cb) = crc;
+  pv = crcbuff;
+  cb += sizeof(crc);
 #endif
 
-static CTempTimer tt("in dplay SendEx", 0.05f);
+  DPN_BUFFER_DESC sendBufDesc;
+  sendBufDesc.dwBufferSize = cb;
+  sendBufDesc.pBufferData = (BYTE*) pv;
+  DPNHANDLE handle;
+
+  static CTempTimer tt("in dplay Send", 0.05f);
   tt.Start();
-  hr = m_pDirectPlay->SendEx(m_pcnxnMe->GetID(), precip->GetID(), dwFlags, (void*) pv, cb, 
-                          dwPriority, dwTimeout, precip, NULL);
-  tt.Stop("dpidTo=%u, guaranteed=%d, hr=%x, 1st message (fmid)=%u", precip->GetID(), fGuaranteed, hr, 
+  if ( m_pDirectPlayClient )
+  {
+    hr = m_pDirectPlayClient->Send( &sendBufDesc, 1, dwTimeout, this, &handle, dwFlags );
+  }
+  else
+  {
+    hr = m_pDirectPlayServer->SendTo( precip->GetID(), &sendBufDesc, 1, dwTimeout, this, &handle, dwFlags );
+
+  }
+
+  tt.Stop("dpidTo=%8x, guaranteed=%d, hr=%x, 1st message (fmid)=%u", precip->GetID(), fGuaranteed, hr,
           ((FEDMESSAGE*)pv)->fmid);
 
   m_pfmSite->OnMessageSent(this, precip, pv, cb, fmg);
-  assert(hr != E_INVALIDARG);
+
 #ifdef DEBUG
-  if (!(hr == E_PENDING || SUCCEEDED(hr)))
+  if ( ! ( hr == DPNSUCCESS_PENDING || hr == S_OK ) )
   {
-    debugf("Return code of SendEx was 0x%x to player with dpid %u.\n", 
+    debugf("Return code of Send was 0x%x to player with dpid %8x.\n",
            hr, precip->GetID());
   }
 #endif // DEBUG
 
-  return(hr);
+  return hr;
 }
 
 
@@ -558,7 +679,7 @@ Time FedMessaging::CheckOdometer(float& flDTime, int& cMsgsOdometer, int& cBytes
  * Side Effects:
  *    Various
  */
-HRESULT FedMessaging::OnSysMessage(FedMessaging * pthis, LPDPMSG_GENERIC pMsg)
+HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 {
   // The body of each case is there so you can set a breakpoint and examine
   // the contents of the message received.
@@ -569,143 +690,254 @@ HRESULT FedMessaging::OnSysMessage(FedMessaging * pthis, LPDPMSG_GENERIC pMsg)
 
   m_pfmSite->OnSysMessage(this); // just for tracking
     
-  switch (pMsg->dwType)
+  GETSORC;
+  // debugf("** (FM=%8x %s) OnSysMessage, type %8x %s \n", this, sOrC, msg.dwType, getMessageString(msg.dwType) );
+
+  if( msg.dwType == DPN_MSGID_CREATE_PLAYER )
   {
-    case DPSYS_CREATEPLAYERORGROUP:
-    {
-      static CTempTimer tt("handling DPSYS_CREATEPLAYERORGROUP", .01f);
-      tt.Start();
-      LPDPMSG_CREATEPLAYERORGROUP lp = (LPDPMSG_CREATEPLAYERORGROUP) pMsg;
-      bool fPlayer = lp->dwPlayerType == DPPLAYERTYPE_PLAYER;
-      debugf("DPSYS_CREATEPLAYERORGROUP for %s %s(%u)\n", 
-              fPlayer ? "player" : "group", lp->dpnName.lpszShortNameA, lp->dpId);
+    static CTempTimer tt( "handling DPN_MSGID_CREATE_PLAYER", .01f);
+    tt.Start();
+    DPNMSG_CREATE_PLAYER* lp = (DPNMSG_CREATE_PLAYER*) msg.pData;
 
-      // **CFMConnections** are created IN RESPONSE to getting DPSYS_CREATEPLAYERORGROUP.
-      // But **CFMGroups** are created prior to, and result in, getting DPSYS_CREATEPLAYERORGROUP.
-      if (fPlayer)
-      {
-        CFMConnection * pcnxn = CreateConnection(lp->dpnName.lpszShortNameA, lp->dpId);
-        char szRemoteAddress[16];
-        GetIPAddress(*pcnxn, szRemoteAddress);
-        debugf(" ip=%s, which gives us %u players\n", szRemoteAddress, lp->dwCurrentPlayers);
-      }
-      else
-      {
-        assert(0 == lp->dpIdParent); // nesting groups is bad, so we don't support it
-      }
+    if ( lp->pvPlayerContext == (void*) 1 )
+    {
+      //  <NKM> 18-Aug-2004
+      // This is the server player
+      m_pcnxnMe = new CFMConnection( this, "<Server connection>", lp->dpnidPlayer );
       tt.Stop();
+      return DPN_OK;
     }
-    break;
 
-    case DPSYS_DESTROYPLAYERORGROUP:
+    // Only get this if I'm a server
+    assert( m_pDirectPlayServer != 0 );
+
+    //  <NKM> 23-Aug-2004
+    // Do the DPLAY bizare API thing...
+    DPN_PLAYER_INFO* pPlayerInfo = 0;
+    DWORD dwSize = 0;
+
+    HRESULT hr = m_pDirectPlayServer->GetClientInfo( lp->dpnidPlayer, pPlayerInfo,
+                                          &dwSize, 0);
+
+    assert( hr == DPNERR_BUFFERTOOSMALL );
+    pPlayerInfo = (DPN_PLAYER_INFO*) new BYTE[dwSize];
+    ZeroMemory( pPlayerInfo, dwSize );
+    pPlayerInfo->dwSize = sizeof( DPN_PLAYER_INFO );
+
+    hr = m_pDirectPlayServer->GetClientInfo( lp->dpnidPlayer, pPlayerInfo,
+                                             &dwSize, 0 );
+
+    if ( hr != DPN_OK )
     {
-      static CTempTimer tt("handling DPSYS_DESTROYPLAYERORGROUP", .01f);
-      tt.Start();
-      LPDPMSG_DESTROYPLAYERORGROUP lp = (LPDPMSG_DESTROYPLAYERORGROUP) pMsg;
-      bool fPlayer = lp->dwPlayerType == DPPLAYERTYPE_PLAYER;
-      debugf("DPSYS_DESTROYPLAYERORGROUP for %s %s(%u)\n", 
-              fPlayer ? "player" : "group", lp->dpnName.lpszShortNameA, lp->dpId);
-
-      if (fPlayer)
-      {
-        CFMConnection * pcnxn = GetConnectionFromDpid(lp->dpId);
-        // if your player dies, or the server dies, you're SOL--not much point in 
-        // waiting until dplay gets around to telling the session is dead,
-        // since sometimes they don't anyway.
-        if (pcnxn && (m_pcnxnMe == pcnxn || m_pcnxnServer == pcnxn))
-        {
-          m_pfmSite->OnSessionLost(this);
-          Shutdown();
-        }
-        else if (pcnxn)
-          DeleteConnection(*pcnxn);
-        // else we've lost the above player, but they don't have an associated CFMConnection, probably because we manually nuked it
-      }
-      else
-      {
-        // we should've already nuked our CFMGroup
-        // But there's a very small nonzero chance that dplay got around to nuking their group before we did
-        //assert(!GetGroupFromDpid(lp->dpId));
-      }
-      tt.Stop();
+        debugf( "m_pDirectPlayServer->GetClientInfo failed\n");
+        return hr;
     }
-    break;
 
-    case DPSYS_SENDCOMPLETE:
-    {
-      static CTempTimer tt("handling DPSYS_SENDCOMPLETE", .01f);
-      tt.Start();
-      LPDPMSG_SENDCOMPLETE lp = (LPDPMSG_SENDCOMPLETE) pMsg;
+    char* name = wChar2ConstChar( pPlayerInfo->pwszName );
 
-      bool fGroup = true;
-      CFMRecipient * prcp = NULL;
-      prcp = GetGroupFromDpid(lp->idTo);
-      if (!prcp)
-      {
-        fGroup = false;
-        CFMConnection * pcnxn = GetConnectionFromDpid(lp->idTo);
-        if (pcnxn)
-        {
-          prcp = pcnxn;
-          if (DP_OK == lp->hr)
-            pcnxn->SetLastComplete(timeNow.clock());
-        }
-      }
+    // debugf("(FM=%8x %s) Create Player for %s (%u)\n", this, sOrC, name, lp->dpnidPlayer );
 
-      if (DP_OK != lp->hr)
-      {
+    CFMConnection * pcnxn = CreateConnection( name, lp->dpnidPlayer );
+    char szRemoteAddress[16];
+    GetIPAddress( *pcnxn, szRemoteAddress );
 
-        debugf("DPSYS_SENDCOMPLETE: Message was not delivered to %s(%u), priority %d, "
-                "hr=0x%x, SendTime=%d.\n",
-                prcp ? prcp->GetName() : "<not found>", lp->idTo, lp->dwPriority, lp->hr, lp->dwSendTime);
-        if (prcp) 
-          m_pfmSite->OnMessageNAK(this, lp->dwSendTime, prcp);
-      }
-      tt.Stop();
-    }
-    break;
+    debugf(" ip=%s\n", szRemoteAddress );
 
-    case DPSYS_ADDPLAYERTOGROUP:
-    {
-      LPDPMSG_ADDPLAYERTOGROUP lp = (LPDPMSG_ADDPLAYERTOGROUP) pMsg;
-      CFMGroup * pgrp = GetGroupFromDpid(lp->dpIdGroup );
-      CFMConnection * pcnxn = GetConnectionFromDpid(lp->dpIdPlayer);
-      if (pgrp)
-        pgrp->PlayerAdded(pcnxn);
-      debugf("DPSYS_ADDPLAYERTOGROUP: player %s(%u) to group %s(%u)\n", 
-          pcnxn ? pcnxn->GetName() : "<gone>", lp->dpIdPlayer,
-          pgrp ? pgrp->GetName() : "<gone>", lp->dpIdGroup);
-    }
-    break;
+    delete[] name;
+    delete[] pPlayerInfo;
+    tt.Stop();
+  }
+  else if( msg.dwType == DPN_MSGID_CREATE_GROUP )
+  {
+    // Moved to asynchronus handle
+  }
+  else if ( msg.dwType == DPN_MSGID_DESTROY_PLAYER )
+  {
+    static CTempTimer tt("handling DPN_MSGID_DESTROY_PLAYER", .01f);
+    tt.Start();
 
-    case DPSYS_DELETEPLAYERFROMGROUP:
-    {
-      LPDPMSG_DELETEPLAYERFROMGROUP lp = (LPDPMSG_DELETEPLAYERFROMGROUP) pMsg;
-      CFMGroup * pgrp = GetGroupFromDpid(lp->dpIdGroup );
-      CFMConnection * pcnxn = GetConnectionFromDpid(lp->dpIdPlayer);
-      if (pgrp)
-        pgrp->PlayerDeleted(pcnxn);
-      debugf("DPSYS_DELETEPLAYERFROMGROUP: player %s(%u) from group %s(%u)\n", 
-          pcnxn ? pcnxn->GetName() : "<gone>", lp->dpIdPlayer,
-          pgrp ? pgrp->GetName() : "<gone>", lp->dpIdGroup);
-    }
-    break;
+    DPNMSG_DESTROY_PLAYER* lp = (DPNMSG_DESTROY_PLAYER *) msg.pData;
 
-    case DPSYS_SESSIONLOST:
+    CFMConnection * pcnxn = GetConnectionFromDpid( lp->dpnidPlayer );
+
+    //debugf("(FM=%8x %s) DESTROY Player for %s (%u)\n", this, sOrC, pcnxn ? pcnxn->GetName() : "<unknown>" , lp->dpnidPlayer );
+
+    // if your player dies, or the server dies, you're SOL--not much point in
+    // waiting until dplay gets around to telling the session is dead,
+    // since sometimes they don't anyway.
+    if ( pcnxn && ( m_pcnxnMe == pcnxn || m_pcnxnServer == pcnxn) )
     {
       m_pfmSite->OnSessionLost(this);
+      Shutdown();
     }
-    break;
-
-    default:
+    else if (pcnxn)
     {
-        debugf("***** Unknown system message, type %lu *****\n", pMsg->dwType);
+      DeleteConnection(*pcnxn);
     }
+
+    tt.Stop();
+  }
+  else if ( msg.dwType == DPN_MSGID_SEND_COMPLETE )
+  {
+    static CTempTimer tt("handling DPN_MSGID_SEND_COMPLETE", .01f);
+    tt.Start();
+
+    DPNMSG_SEND_COMPLETE* lp = (DPNMSG_SEND_COMPLETE *) msg.pData;
+
+    CFMRecipient * prcp = NULL;
+    DPID to;
+
+    //  <NKM> 22-Aug-2004
+    // If this is an Async op we have a handle to, then remove it
+    HandleIDMap::iterator it = m_handleMap.find( lp->hAsyncOp );
+    if ( it != m_handleMap.end() )
+    {
+      to = it->second;
+      m_handleMap.erase( it );
+      prcp = GetGroupFromDpid( to );
+    }
+
+    if ( !prcp )
+    {
+      CFMConnection * pcnxn = GetConnectionFromDpid( to );
+      if ( pcnxn )
+      {
+        prcp = pcnxn;
+        if ( DPN_OK == lp->hResultCode )
+          pcnxn->SetLastComplete( timeNow.clock() );
+      }
+    }
+
+    if ( DPN_OK != lp->hResultCode )
+    {
+      // debugf("(FM=%8x %s) SEND FAILED: Message was not delivered to %s(%u), hr=0x%x, SendTime=%d.\n",
+      //       this, sOrC, prcp ? prcp->GetName() : "<not found>", to, lp->hResultCode, lp->dwSendTime );
+
+      if ( prcp )
+        m_pfmSite->OnMessageNAK( this, lp->dwSendTime, prcp );
+    }
+
+    tt.Stop();
+  }
+  else if ( msg.dwType == DPN_MSGID_ADD_PLAYER_TO_GROUP )
+  {
+    DPNMSG_ADD_PLAYER_TO_GROUP* lp = (DPNMSG_ADD_PLAYER_TO_GROUP*) msg.pData;
+
+    CFMGroup * pgrp = GetGroupFromDpid( lp->dpnidGroup );
+    CFMConnection * pcnxn = GetConnectionFromDpid(lp->dpnidPlayer);
+    if ( pgrp )
+      pgrp->PlayerAdded( pcnxn );
+    //debugf("(FM=%8x %s) ADD Player to Group: player %s(%u) to group %s(%u)\n",
+    //       this, sOrC,
+    //       pcnxn ? pcnxn->GetName() : "<gone>", lp->dpnidPlayer,
+    //       pgrp ? pgrp->GetName() : "<gone>", lp->dpnidGroup);
+  }
+  else if ( msg.dwType == DPN_MSGID_REMOVE_PLAYER_FROM_GROUP )
+  {
+    DPNMSG_REMOVE_PLAYER_FROM_GROUP* lp = (DPNMSG_REMOVE_PLAYER_FROM_GROUP*) msg.pData;
+
+    CFMGroup * pgrp = GetGroupFromDpid( lp->dpnidGroup );
+    CFMConnection * pcnxn = GetConnectionFromDpid(lp->dpnidPlayer);
+    if ( pgrp )
+      pgrp->PlayerDeleted( pcnxn );
+    //debugf("(FM=%8x %s) REMOVE Player from Group: player %s(%u) to group %s(%u)\n",
+    //       this, sOrC,
+    //       pcnxn ? pcnxn->GetName() : "<gone>", lp->dpnidPlayer,
+    //       pgrp ? pgrp->GetName() : "<gone>", lp->dpnidGroup);
+  }
+  else if( msg.dwType == DPN_MSGID_TERMINATE_SESSION )
+  {
+    m_pfmSite->OnSessionLost(this);
   }
 
   timerSysMsg.Stop();
 
   return(S_OK);
+}
+
+template< class T > T* allocAndCopyStruct( const T& data )
+{
+  return new T(data);
+}
+
+//  <NKM> 09-Aug-2004
+// DPlay handler - copy and store messages in list for later processing
+HRESULT FedMessaging::MsgHandler( DWORD dwMessageId, PVOID pMsgBuffer )
+{
+  // For most messages we make a copy and store it.
+  DPlayMsg msg;
+  msg.dwType = dwMessageId;
+  msg.pData = 0;
+
+  // Default to OK
+  HRESULT result = DPN_OK;
+
+  const char* sOrC = m_pDirectPlayClient == 0 ? "S" : "C";
+
+  // debugf("** (FM=%8x %s) RECV DPlay message, type %8x %s \n", this, sOrC, dwMessageId, getMessageString( dwMessageId ) );
+
+  switch( dwMessageId )
+  {
+  case DPN_MSGID_CREATE_PLAYER:
+    msg.pData = allocAndCopyStruct( *((DPNMSG_CREATE_PLAYER*) pMsgBuffer) );
+    break;
+  case DPN_MSGID_CREATE_GROUP:
+    msg.pData = allocAndCopyStruct( *((DPNMSG_CREATE_GROUP*) pMsgBuffer) );
+
+    // Moved this here.  Groups are create in a synchronus op so this is safe,
+    // And I need to set the dpid here
+    {
+      DPNMSG_CREATE_GROUP* lp = (DPNMSG_CREATE_GROUP*) msg.pData;
+      CFMGroup* grp = (CFMGroup*) lp->pvGroupContext;
+      grp->m_dpid = lp->dpnidGroup;
+    }
+    break;
+  case DPN_MSGID_DESTROY_PLAYER:
+    msg.pData = allocAndCopyStruct( *((DPNMSG_DESTROY_PLAYER*) pMsgBuffer) );
+    break;
+//  case DPN_MSGID_DESTROY_GROUP:
+//    msg.pData = allocAndCopyStruct( *((DPNMSG_DESTROY_GROUP*) pMsgBuffer) );
+//    break;
+  case DPN_MSGID_SEND_COMPLETE:
+    msg.pData = allocAndCopyStruct( *((DPNMSG_SEND_COMPLETE*) pMsgBuffer) );
+    break;
+  case DPN_MSGID_ADD_PLAYER_TO_GROUP:
+    msg.pData = allocAndCopyStruct( *((DPNMSG_ADD_PLAYER_TO_GROUP*) pMsgBuffer) );
+    break;
+  case DPN_MSGID_REMOVE_PLAYER_FROM_GROUP:
+    msg.pData = allocAndCopyStruct( *((DPNMSG_REMOVE_PLAYER_FROM_GROUP*) pMsgBuffer) );
+    break;
+  case DPN_MSGID_TERMINATE_SESSION:
+    msg.pData = allocAndCopyStruct( *((DPNMSG_TERMINATE_SESSION*) pMsgBuffer) );
+    break;
+
+  case DPN_MSGID_RECEIVE:
+    //  <NKM> 09-Aug-2004
+    // This is different coz we have to have to return SUCESS_PENDING so that DPlay
+    // doesn't free the message buffer;
+    msg.pData = allocAndCopyStruct( *((DPNMSG_RECEIVE*) pMsgBuffer ) );
+    result = DPNSUCCESS_PENDING;
+    break;
+
+  case DPN_MSGID_ENUM_HOSTS_RESPONSE:
+    //  <NKM> 10-Aug-2004
+    //  Also special as we deal with this in-line
+    EnumHostsCallback( *((DPNMSG_ENUM_HOSTS_RESPONSE*) pMsgBuffer) );
+    return DPN_OK;
+
+  default:
+    //  <NKM> 09-Aug-2004
+    // Don't care about others for now... log and return
+    // debugf("***** (FM=%8x %s) Unhandled DPlay message, type %8x *****\n", this, sOrC, dwMessageId);
+    return DPN_OK;
+  }
+
+  // Now enter critical section and save message to buffer
+  EnterCriticalSection( &m_csMsgList );
+  m_msgList.push_back( msg );
+  LeaveCriticalSection( &m_csMsgList );
+
+  return result;
 }
 
 /*-------------------------------------------------------------------------
@@ -716,80 +948,44 @@ HRESULT FedMessaging::OnSysMessage(FedMessaging * pthis, LPDPMSG_GENERIC pMsg)
  */
 HRESULT FedMessaging::ReceiveMessages()
 {
-  HRESULT hr = S_OK;
-  DWORD   dwMsgBufferSize = 0;
-  DPID dpidFrom, dpidTo;
-  assert(!g_fHandlingMsg);
-  g_fHandlingMsg = true;
-
   // loop to read all messages in queue
-  while (SUCCEEDED(hr) && IsConnected())
+  while ( IsConnected() )
   {
-    // read messages from any player, including system player
-    dpidFrom = 0;
-    dpidTo = 0;
+    DPlayMsg msg;
 
-    m_dwcbPacket = sizeof(m_rgbbuffInPacket); // NOT PacketSize()!
-    g_pbReceiveBuff = m_rgbbuffInPacket;
-    static CTempTimer ttReceive("spent in m_pDirectPlay->Receive()", .01f);
-    ttReceive.Start();
-    hr = m_pDirectPlay->Receive(&dpidFrom, &dpidTo, DPRECEIVE_ALL, 
-                                m_rgbbuffInPacket, &m_dwcbPacket);
-    ttReceive.Stop();
-    g_dpidFrom = dpidFrom;
-    g_dwMsgPacketSize = m_dwcbPacket;
-    assert(IMPLIES(FAILED(hr), DPERR_NOMESSAGES == hr)); // this is the only error return code we expect
-
-    if ((SUCCEEDED(hr)) && // successfully read a message
-        m_dwcbPacket >= sizeof(DPMSG_GENERIC))  // it is big enough
+    // Now enter critical section and pop message from buffer
+    // if we have one!
+    int msgCount;
+    EnterCriticalSection( &m_csMsgList );
+    msgCount = m_msgList.size();
+    if ( msgCount > 0 )
     {
-        /*
-        {
-            static Time     timeStart;
-            static DWORD    cbTotal;
-            static DWORD    cMessagesTotal;
-            static bool     bRunning = false;
-            Time    now = Time::Now();
-            if (bRunning)
-            {
-                float   dt = now - timeStart;
-                if (dt >= 5.0f)
-                {
-                    debugf("Messages @ %d = %f bytes/second; %f total bytes/second; %f packets/second\n",
-                           now.clock(), float(cbTotal) / dt, float(cbTotal + cMessagesTotal * 55) / dt, float(cMessagesTotal) / dt);
-                    timeStart = now;
-                    cbTotal = PacketSize();
-                    cMessagesTotal = 1;
-                }
-                else
-                {
-                    cbTotal += PacketSize();
-                    cMessagesTotal++;
-                }
-            }
-            else
-            {
-                timeStart = now;
-                cbTotal = 0;
-                cMessagesTotal = 0;
-                bRunning = true;
-            }
-        }
-        */
+      msg = m_msgList.front();
+      m_msgList.pop_front();
+    }
+    LeaveCriticalSection( &m_csMsgList );
 
-      // check for system message
-      if (dpidFrom == DPID_SYSMSG)
-        OnSysMessage(this, (LPDPMSG_GENERIC) m_rgbbuffInPacket);
+    GETSORC;
+    // If no message break out
+    if ( msgCount != 0 )
+    {
+      // If it's not a recieve message then we pass it off
+      if ( msg.dwType != DPN_MSGID_RECEIVE )
+      {
+        OnSysMessage( msg );
+      }
       else
       {
-        CFMConnection * pcnxnFrom = NULL;
-        DWORD dwSize = sizeof(CFMConnection *);
-        hr = m_pDirectPlay->GetPlayerData(dpidFrom, &pcnxnFrom, &dwSize, DPGET_LOCAL);
-        // debugf("Called GetPlayerData: hr=0x%08x, pcnxnFrom=0x%08x, dwSize=%u\n", hr, pcnxnFrom, dwSize);
-        g_pcnxnFrom = pcnxnFrom;
-        if (pcnxnFrom && SUCCEEDED(hr)) // if we can't resolve the player, then it's into the bit bucket with this message
+        DPNMSG_RECEIVE* p_dpMsg = (DPNMSG_RECEIVE*) msg.pData;
+
+        CFMConnection * pcnxnFrom = GetConnectionFromDpid( p_dpMsg->dpnidSender );
+
+        if ( pcnxnFrom != 0 ) // if we can't resolve the player, then it's into the bit bucket with this message
         {
-          FEDMESSAGE * pfm = (FEDMESSAGE *) m_rgbbuffInPacket;
+          m_rgbbuffInPacket = p_dpMsg->pReceiveData;
+          FEDMESSAGE* pfm = (FEDMESSAGE *) p_dpMsg->pReceiveData;
+          m_dwcbPacket = p_dpMsg->dwReceiveDataSize;
+
           int cMsgs = 0;
 #ifndef NO_MSG_CRC
           int crc = MemoryCRC(m_rgbbuffInPacket, PacketSize());
@@ -799,10 +995,19 @@ HRESULT FedMessaging::ReceiveMessages()
             static CTempTimer tt("spent looping through message queue", .1f);
             tt.Start();
             g_fConnectionDeleted = false;
+
+            CB cb = pfm->cbmsg;
+            FEDMSGID id = pfm->fmid;
+
             while (pfm && !g_fConnectionDeleted)
             {
               if(pfm->fmid > 0 && pfm->cbmsg >= sizeof(FEDMESSAGE) && pfm->cbmsg <= PacketSize())
               {
+               // debugf( "(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
+               //         this, sOrC,
+               //         pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
+               //        cb, id, m_dwcbPacket );
+
                 m_pfmSite->OnAppMessage(this, *pcnxnFrom, pfm);
                 pfm = PfmGetNext(pfm);
                 cMsgs++;
@@ -810,15 +1015,16 @@ HRESULT FedMessaging::ReceiveMessages()
               else
               {
                 // ACK! Hacker?
-                whodidit();
+                debugf("HACKER?? message from %s(%8x).\ncbmsg=%d, fmid=%d, total packet size=%d\n",
+                       pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
+                       cb, id, m_dwcbPacket );
+
 #ifndef NO_MSG_CRC
                 // we'll just call it a bad crc, even though it's not quite the same thing
                 m_pfmSite->OnBadCRC(this, *pcnxnFrom, m_rgbbuffInPacket, m_dwcbPacket);
 #endif
-                break;
               }
             }
-            tt.Stop();
 #ifndef NO_MSG_CRC          
           }
           else
@@ -830,21 +1036,33 @@ HRESULT FedMessaging::ReceiveMessages()
         }
         else
         {
-          debugf("Warning: Ignoring message from dpid %u who doesn't have an associated CFMConnection\n", dpidFrom);
-          assert(DPERR_INVALIDPLAYER == hr);
+          //debugf("(FM=%8x %s) Warning: Ignoring message from dpid %u who doesn't have an associated CFMConnection\n",
+          //       this, sOrC, p_dpMsg->dpnidSender );
+        }
+
+        if ( m_pDirectPlayClient != 0 )
+        {
+          m_pDirectPlayClient->ReturnBuffer( p_dpMsg->hBufferHandle, 0 );
+        }
+        else
+        {
+        //  WLP - added test for valid obj - DPLAY* - exit game error
+        //  m_pDirectPlayServer->ReturnBuffer( p_dpMsg->hBufferHandle, 0 );
+         if (m_pDirectPlayServer)
+			 m_pDirectPlayServer->ReturnBuffer( p_dpMsg->hBufferHandle, 0 );
         }
         m_timeMsgLast = Time::Now();
       }
+
+      delete msg.pData;
     }
     else
-      assert (DPERR_NOMESSAGES == hr || !IsConnected());
+    {
+      break;  // Carry on :)
+    }
   }
-  
-  g_dpidFrom = 0;
-  g_pcnxnFrom = NULL;
-  g_fHandlingMsg = false;
 
-  return (DP_OK);
+  return DPN_OK;
 }
 
 
@@ -856,16 +1074,18 @@ HRESULT FedMessaging::ReceiveMessages()
  */
 HRESULT FedMessaging::ConnectToDPAddress(LPVOID pvAddress)
 {
-  HRESULT hr = m_pDirectPlay->InitializeConnection(pvAddress, 0);
-  if (FAILED(hr))
-  {
-    if (DPERR_ALREADYINITIALIZED == hr)
-      hr = S_OK;
-    else
-      m_pfmSite->OnMessageBox(this, "Failed to connect to server. Please check network connection.",
-                            "Allegiance", MB_OK);
-  }
-  return hr;
+  assert(0);
+  return DPN_OK;
+//   HRESULT hr = m_pDirectPlay->InitializeConnection(pvAddress, 0);
+//   if (FAILED(hr))
+//   {
+//     if (DPERR_ALREADYINITIALIZED == hr)
+//       hr = S_OK;
+//     else
+//       m_pfmSite->OnMessageBox(this, "Failed to connect to server. Please check network connection.",
+//                             "Allegiance", MB_OK);
+//   }
+//   return hr;
 }
 
 
@@ -880,23 +1100,25 @@ HRESULT FedMessaging::ConnectToDPAddress(LPVOID pvAddress)
  */
 HRESULT FedMessaging::Connect(const char * szAddress)
 {
-  assert(m_pDirectPlay);
-  assert(!m_fConnected);
-  void * pvAddress = NULL;
-  DWORD dwAddressSize;
-  HRESULT hr = E_FAIL;
-  // Find out how big the address buffer needs to be--intentional fail 1st time
-  hr = m_pDirectPlayLobby->CreateAddress(DPSPGUID_TCPIP, DPAID_INet, szAddress, 
-          lstrlen(szAddress) + 1, pvAddress, &dwAddressSize);
-  assert(DPERR_BUFFERTOOSMALL == hr);
+    assert(0);
+  return DPN_OK;
+//   assert(m_pDirectPlay);
+//   assert(!m_fConnected);
+//   void * pvAddress = NULL;
+//   DWORD dwAddressSize;
+//   HRESULT hr = E_FAIL;
+//   // Find out how big the address buffer needs to be--intentional fail 1st time
+//   hr = m_pDirectPlayLobby->CreateAddress(DPSPGUID_TCPIP, DPAID_INet, szAddress,
+//           lstrlen(szAddress) + 1, pvAddress, &dwAddressSize);
+//   assert(DPERR_BUFFERTOOSMALL == hr);
     
-  pvAddress = new char[dwAddressSize];
-  ZSucceeded(m_pDirectPlayLobby->CreateAddress(DPSPGUID_TCPIP, DPAID_INet, szAddress, 
-          lstrlen(szAddress) + 1, pvAddress, &dwAddressSize));
-  hr = ConnectToDPAddress(pvAddress);
-  delete [] pvAddress;
+//   pvAddress = new char[dwAddressSize];
+//   ZSucceeded(m_pDirectPlayLobby->CreateAddress(DPSPGUID_TCPIP, DPAID_INet, szAddress,
+//           lstrlen(szAddress) + 1, pvAddress, &dwAddressSize));
+//   hr = ConnectToDPAddress(pvAddress);
+//   delete [] pvAddress;
   
-  return hr;
+//   return hr;
 }
 
 
@@ -974,46 +1196,87 @@ bool FedMessaging::KillSvr()
  *    Creates a dplay object m_pDirectPlay, that must later be closed, 
  *        released, and set to NULL.
  */
-HRESULT FedMessaging::InitDPlay(
-#ifdef MONOLITHIC_DPLAY
-    bool fMonolithic
-#endif
-)
+HRESULT FedMessaging::InitDPlayClient()
 {
   HRESULT hr = E_FAIL;
-  assert(!m_fConnected);
-  assert(!m_pDirectPlay);
+  assert( !m_fConnected);
+  assert( !m_pDirectPlayClient );
+  assert( !m_pDirectPlayServer );
 
   // Create an IDirectPlay interface
   m_pfmSite->OnPreCreate(this);
-  IDirectPlayX* pdp = NULL;
 
-  hr = CoCreateInstance(
-#ifdef MONOLITHIC_DPLAY
-      fMonolithic ? MSRG_CLSID_DPLAY :
-#endif
-      CLSID_DirectPlay, NULL, CLSCTX_INPROC_SERVER, IID_IDirectPlayX, (void**)&pdp);
 
-  m_pfmSite->OnPostCreate(this, pdp, &m_pDirectPlay);
-  if (FAILED(hr))
+  if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Client, NULL,
+                                     CLSCTX_INPROC_SERVER, IID_IDirectPlay8Client,
+                                     (LPVOID*) &m_pDirectPlayClient ) ) )
   {
-    assert(!pdp);
-    m_pfmSite->OnMessageBox(this, "Failed to initialze DirectPlay in DirectX 6. Check installation of DirectX, and reinstall if necessary.",
-                            "Allegiance", MB_OK);
+    m_pfmSite->OnMessageBox(this, "Failed to Create DirectPlayClient in DirectX 8/9", "Allegiance", MB_OK);
     return hr;
   }
 
-  if (!CheckVersion())
+  //  <NKM> 08-Aug-2004
+  // AT some point we can set flags to DPNINITIALIZE_DISABLEPARAMVAL - but for BETA I
+  // I sugegst we leave it at this
+  //  const DWORD dwInitFlags = DPNINITIALIZE_DISABLEPARAMVAL;
+  const DWORD dwInitFlags = 0;
+
+  if( FAILED( hr = m_pDirectPlayClient->Initialize( this, DPlayMsgHandler, dwInitFlags ) ) )
   {
-    Shutdown();
-    return E_FAIL;
+    m_pfmSite->OnMessageBox(this, "Failed to initialize DirectX 8/9", "Allegiance", MB_OK);
+    return hr;
   }
 
-  IDirectPlayLobby * pDirectPlayLobby;
-  ZSucceeded(DirectPlayLobbyCreate(NULL, &pDirectPlayLobby, NULL, NULL, 0));
-  ZSucceeded(pDirectPlayLobby->QueryInterface(IID_IDirectPlayLobbyX, (LPVOID*) &m_pDirectPlayLobby)); 
-  pDirectPlayLobby->Release();
-  pDirectPlayLobby = NULL;
+  //  <NKM> 09-Aug-2004
+  // No longer check version as that is somewhat implicit
+  // in the interfaces - and as Dplay 8 is the last version of Dplay.... :)
+
+  return S_OK;
+}
+
+
+/*-------------------------------------------------------------------------
+ * InitDPlayServer
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Must be called before you can Host a session
+ *
+ */
+HRESULT FedMessaging::InitDPlayServer()
+{
+  HRESULT hr = E_FAIL;
+  assert( !m_fConnected);
+  assert( !m_pDirectPlayClient );
+  assert( !m_pDirectPlayServer );
+
+  // Create an IDirectPlay interface
+  m_pfmSite->OnPreCreate(this);
+
+
+  if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Server, NULL,
+                                     CLSCTX_INPROC_SERVER, IID_IDirectPlay8Server,
+                                     (LPVOID*) &m_pDirectPlayServer ) ) )
+  {
+    m_pfmSite->OnMessageBox(this, "Failed to Create DirectPlaySever in DirectX 8/9", "Allegiance", MB_OK);
+    return hr;
+  }
+
+  //  <NKM> 08-Aug-2004
+  // AT some point we can set flags to DPNINITIALIZE_DISABLEPARAMVAL - but for BETA I
+  // I sugegst we leave it at this
+  //  const DWORD dwInitFlags = DPNINITIALIZE_DISABLEPARAMVAL;
+  const DWORD dwInitFlags = 0;
+
+  if( FAILED( hr = m_pDirectPlayServer->Initialize( this, DPlayMsgHandler, dwInitFlags ) ) )
+  {
+    m_pfmSite->OnMessageBox(this, "Failed to initialize DirectX 8/9", "Allegiance", MB_OK);
+    return hr;
+  }
+
+  //  <NKM> 09-Aug-2004
+  // No longer check version as that is somewhat implicit
+  // in the interfaces - and as Dplay 8 is the last version of Dplay.... :)
+
   return S_OK;
 }
 
@@ -1036,20 +1299,9 @@ HRESULT FedMessaging::InitDPlay(
  * Side Effects:
  *    
  */
-HRESULT FedMessaging::HostSession(GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol
-#ifdef MONOLITHIC_DPLAY
-                                  , bool fMonolithic
-#endif
-                                  )
+HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol, DWORD dwPort )	// mdvalley: (optional) dwPort forces enumeration to that port
 {
   HRESULT hr = E_FAIL;
-  void *           pvAddress = NULL; // dplay address of self
-  // DPSECURITYDESC   securityDesc;
-  DPSESSIONDESC2   sessionDesc;
-  bool             fSecure = false;
-  DPSECURITYDESC * pSecurityDesc = NULL; // assume no security descriptor will be needed;
-  char             szHostName[20]; // length of machine name--also long enough for ip address if that's what we get
-  WSADATA          WSAData;
 
   assert(!m_fConnected);
   if (false) // TODO: How do we know when to make sure dplaysvr isn't hosed?
@@ -1062,99 +1314,63 @@ HRESULT FedMessaging::HostSession(GUID guidApplication, bool fKeepAlive, HANDLE 
     }
   }
   
-  if(!m_pDirectPlay)
+  if( m_pDirectPlayServer == 0 )
   {
-    hr = InitDPlay(
-#ifdef MONOLITHIC_DPLAY
-      fMonolithic
-#endif      
-    );
-    if FAILED(hr)
-      goto CLEANUP;
+    hr = InitDPlayServer();
+    if ( FAILED(hr) )
+      return hr;
   }
   
-  hr = E_FAIL;
-  WSAStartup(MAKEWORD(1,1), &WSAData);
-  gethostname(szHostName, sizeof(szHostName));
-  WSACleanup();
 
-  hr = Connect(szHostName);
-  if (FAILED(hr))
-    goto CLEANUP;
+  DPN_APPLICATION_DESC   dpnAppDesc;
+  IDirectPlay8Address*   pDP8AddressLocal = 0;
 
-  // Start session
-  ZeroMemory(&sessionDesc, sizeof(DPSESSIONDESC2));
-  sessionDesc.dwSize = sizeof(DPSESSIONDESC2);
-  sessionDesc.guidApplication = guidApplication;
-  sessionDesc.dwMaxPlayers = 0; // no limit
-  sessionDesc.lpszSessionNameA = "FedSrv";
-#if !defined(DPSESSION_NOSESSSIONDESCMESSAGES)
-  #define DPSESSION_NOSESSSIONDESCMESSAGES  0x00020000  // only available in dx8 and private Allegiance dplay bits
-#endif
-  sessionDesc.dwFlags = DPSESSION_CLIENTSERVER | 
-                        DPSESSION_OPTIMIZELATENCY |
-                        (fProtocol ? DPSESSION_DIRECTPLAYPROTOCOL : 0) | 
-                        DPSESSION_NODATAMESSAGES |
-#ifdef MONOLITHIC_DPLAY
-                        (fMonolithic ? DPSESSION_NOSESSSIONDESCMESSAGES : 0) | 
-#else
-                        DPSESSION_NOSESSSIONDESCMESSAGES | 
-#endif
-                        (fKeepAlive ? DPSESSION_KEEPALIVE    : 0) |
-                        (fSecure    ? DPSESSION_SECURESERVER : 0);
+  // Create the local device address object
+  if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
+                                     CLSCTX_ALL, IID_IDirectPlay8Address,
+                                     (LPVOID*) &pDP8AddressLocal ) ) )
+  {
+    m_pfmSite->OnMessageBox( this, "Failed to create DPlay server local address", "Allegiance", MB_OK );
+    return hr;
+  }
+
+  SafeReleaser<IDirectPlay8Address> r1( pDP8AddressLocal );
+
+  // Set IP service provider
+  if( FAILED( hr = pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) ) )
+  {
+    m_pfmSite->OnMessageBox( this, "Failed to create DPlay server local SP", "Allegiance", MB_OK );
+    return hr;
+  }
+
+  if( dwPort )
+	  if(FAILED(hr = pDP8AddressLocal->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
+		{
+		    m_pfmSite->OnMessageBox( this, "Failed to set DPlay server port", "Allegiance", MB_OK );
+		    return hr;
+		}
+
+  ZeroMemory( &dpnAppDesc, sizeof( DPN_APPLICATION_DESC ) );
+  dpnAppDesc.dwSize = sizeof( DPN_APPLICATION_DESC );
+  dpnAppDesc.dwFlags = DPNSESSION_CLIENT_SERVER;
+  dpnAppDesc.guidApplication = guidApplication;
+  dpnAppDesc.pwszSessionName = L"FedSrv";
+  dpnAppDesc.dwMaxPlayers = 0;
+
+  // Set host player context to non-NULL so we can determine which player indication is
+  // the host's.
+  hr = m_pDirectPlayServer->Host( &dpnAppDesc, &pDP8AddressLocal, 1, NULL, NULL, (void *) 1, 0  );
 
   m_guidApplication = guidApplication;
 
-/*
-  if (fSecure)
-  {
-    ZeroMemory(&securityDesc, sizeof(DPSECURITYDESC));
-    securityDesc.dwSize = sizeof(DPSECURITYDESC);
-    securityDesc.dwFlags = 0;
-    securityDesc.lpszSSPIProviderA = "something";
-    pSecurityDesc = &securityDesc;
-  }
-*/
-
-  // host the session
-  hr = m_pDirectPlay->Open(&sessionDesc, DPOPEN_CREATE);
-  // Now, since we need to use a flag that was added as a bug fix, the version of dplay we run on may or may not have this flag.
-  // The only way to know is to try using it, and if it fails with DPERR_INVALIDFLAGS, then we need to try again without it.
-  if (DPERR_INVALIDFLAGS == hr)
-  {
-    sessionDesc.dwFlags &= ~DPSESSION_NOSESSSIONDESCMESSAGES;
-    hr = m_pDirectPlay->Open(&sessionDesc, DPOPEN_CREATE);
-  }
-
-  ZSucceeded(hr);
   m_fConnected = true;
-
-  // Now let's get the sessiondesc back to look at it
-  {
-    DPSESSIONDESC2 * psd = NULL;
-    DWORD dwSize = 0;
-    hr = m_pDirectPlay->GetSessionDesc(psd, &dwSize);
-    assert (DPERR_BUFFERTOOSMALL  == hr);
-    psd = (DPSESSIONDESC2 *) new char[dwSize];
-    hr = m_pDirectPlay->GetSessionDesc(psd, &dwSize);
-    m_guidInstance = psd->guidInstance;
-    delete [] psd;
-  }
-
-  // create a server "player"
-  DPID dpid;
-  ZSucceeded(m_pDirectPlay->CreatePlayer(&dpid, NULL, hEventServer, 
-                                     NULL, 0, DPPLAYER_SERVERPLAYER));
-  assert(dpid == DPID_SERVERPLAYER);
-  m_pcnxnMe = new CFMConnection(this, "<Server connection>", dpid);
 
   // then create the Everyone group
   ZVerify(m_pgrpEveryone = CreateGroup("Everyone"));
 
   ResetOutBuffer();
 
-CLEANUP:
-  if (FAILED(hr))
+  if ( FAILED(hr) )
     Shutdown();
   
   return hr;
@@ -1171,30 +1387,23 @@ void FedMessaging::Shutdown()
 {
   static CTempTimer tt("In FedMessaging::Shutdown", 0.1f);
   tt.Start();
-  if (m_pDirectPlay)
+  if ( m_pDirectPlayClient )
   {
-    // empty the msg queue, and wait to make sure sys msgs get flushed
-    m_pDirectPlay->CancelMessage(0, 0);
-    DWORD dwQueueLen = 0;
-    do
-    {
-      Sleep(100); // don't ask
-      GetSendQueue(&dwQueueLen, NULL);
-    } while (dwQueueLen > 0);
-    
-    if (m_pcnxnMe)
-    {
-      Sleep(100); // don't ask
-      m_pDirectPlay->DestroyPlayer(m_pcnxnMe->GetDPID());
-      delete m_pcnxnMe;
-      m_pcnxnMe = NULL;
-    }
-    Sleep(1); // don't ask
-    
-    m_pDirectPlay->Close();
-    m_pDirectPlay->Release();
-    m_pDirectPlay = NULL;
+    m_pDirectPlayClient->Close(0);
+    m_pDirectPlayClient->Release();
+    m_pDirectPlayClient = NULL;
+  }
+  if ( m_pDirectPlayServer )
+  {
+    m_pDirectPlayServer->Close(0);
+    m_pDirectPlayServer->Release();
+    m_pDirectPlayServer = NULL;
+  }
 
+  if( m_pcnxnMe )
+  {
+    delete m_pcnxnMe;
+    m_pcnxnMe = NULL;
   }
 
   if (m_pcnxnServer)
@@ -1202,9 +1411,21 @@ void FedMessaging::Shutdown()
     delete m_pcnxnServer;
     m_pcnxnServer = NULL;
   }
+
   ResetOutBuffer();
+
+  // Flush the lists
+  m_listCnxns.SetEmpty();
+  m_cnxnsMap.clear();
+  m_groupMap.clear();
+
+  // Flush message queue
+  m_msgList.clear();
+
   m_guidInstance = GUID_NULL;
+
   m_fConnected  = false;
+
   tt.Stop();
 }
 
@@ -1219,35 +1440,42 @@ void FedMessaging::Shutdown()
  *    what server, what application, and what instance to join (or NULL for default)
  *    OUT: connection to the sevrer that all messages should be sent to
  */
-HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, const char * szCharName)
+HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, const char * szCharName, DWORD dwPort)	// mdvalley: (optional) dwPort forces enumeration on given port
 {
   HRESULT hr = E_FAIL;
   Time timeStart = Time::Now();
   m_fSessionCallback = false; // we're going to join the session right here, so we don't want any site methods being called
 
-  hr = EnumSessionsInternal(guidApplication, szServer);
-  do
+  hr = InitDPlayClient();
+  if ( FAILED(hr) )
+    return hr;
+
+  hr = EnumHostsInternal(guidApplication, szServer, dwPort);
+  if ( FAILED(hr) )
+    return hr;
+
+  // Mdvalley: since Enum is now asyncronous, we have to wait until a proper reply comes back.
+  // Sure, it'll freeze for 15 secs if there's no connection, but it did that under dplay4, too.
+  int i = 0;
+  while(IsEqualGUID(GUID_NULL, m_guidInstance) && i < 150)	// 15 second timeout
   {
-    Sleep(500);
-    hr = EnumSessionsInternal(guidApplication, NULL);
-    if (DPERR_CONNECTING != hr && FAILED(hr))
-      goto Cleanup;
-    // Important implementation detail!!! dplay times out enum requests at 15 seconds, and bad things have been known to happen
-    // if you try and kill a request, so to avoid that possibility, let's make SURE we wait longer than that.
-  } while ((SUCCEEDED(hr) || DPERR_CONNECTING == hr) && 
-           IsEqualGUID(GUID_NULL, m_guidInstance) && 
-           (Time::Now().clock() - timeStart.clock() < 17000)); // don't try for more than 17 seconds
+	  Sleep(100);	// check every 100 ms
+	  i++;
+  }
 
   if (IsEqualGUID(GUID_NULL, m_guidInstance))
     hr = E_FAIL; // something else?
   else
-    hr = JoinSessionInstance(m_guidInstance, szCharName);
+//    hr = JoinSessionInstance( guidApplication, m_guidInstance, m_pHostAddress, szCharName);
+    hr = JoinSessionInstance( guidApplication, m_guidInstance, m_pHostAddress, m_pDeviceAddress, szCharName);
 
   ResetOutBuffer();
 
-Cleanup:
   if (FAILED(hr))
+  {
+	m_pDirectPlayClient->CancelAsyncOperation(NULL, DPNCANCEL_ENUM);		// Cancel all enumeration requests
     Shutdown();
+  }
   
   return hr;
 }
@@ -1265,257 +1493,360 @@ Cleanup:
   Side Effects:
       joins the session, creates the named player
  */
-HRESULT FedMessaging::JoinSessionInstance(GUID guidInstance, const char * szName)
+HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstance, IDirectPlay8Address* addr, IDirectPlay8Address* device, const char * szName)	// mdvalley: added device argument
 {
-  DPSESSIONDESC2 sessionDesc;
-  static CTempTimer tt("in FedMessaging::JoinSessionInstance", 0.5f);
-  tt.Start();
-  ZeroMemory(&sessionDesc, sizeof(sessionDesc));
-  sessionDesc.dwSize = sizeof(sessionDesc);
-  sessionDesc.guidInstance = guidInstance;
+  // WLP 2005 - added init client if needed for DPLAY8
+  //
+  if ( !m_pDirectPlayClient ) InitDPlayClient(); // WLP - make client when needed
+  // WLP - end init code
 
-  assert(m_pDirectPlay);
-  // But just to be paranoid, since people will be using retail clients before this can get lots of testing...
-  if (!m_pDirectPlay)
+  assert (m_pDirectPlayClient );
+
+  if ( !m_pDirectPlayClient )
     return E_FAIL;
-  
-  HRESULT hr = m_pDirectPlay->Open(&sessionDesc, DPOPEN_JOIN);
-  if (FAILED(hr))
-    goto CLEANUP;
 
-  m_guidInstance = sessionDesc.guidInstance;
+  DPN_APPLICATION_DESC dpnAppDesc;
+  ZeroMemory( &dpnAppDesc, sizeof( DPN_APPLICATION_DESC ) );
+  dpnAppDesc.dwSize          = sizeof( DPN_APPLICATION_DESC );
+  dpnAppDesc.guidApplication = guidApplication;
+  dpnAppDesc.guidInstance    = guidInstance;
+
+  addr->AddRef();
+  device->AddRef();
+  SafeReleaser<IDirectPlay8Address> r1( addr );
+
+  DPN_PLAYER_INFO playerInfo;
+  ZeroMemory( &playerInfo, sizeof( DPN_PLAYER_INFO ) );
+  playerInfo.dwSize = sizeof( DPN_PLAYER_INFO );
+  playerInfo.dwInfoFlags = DPNINFO_NAME;
+  playerInfo.pwszName = constChar2Wchar( szName );
+      
+  HRESULT hr = m_pDirectPlayClient->SetClientInfo( &playerInfo, 0, 0 /*0 for sync op*/, DPNSETCLIENTINFO_SYNC );
+
+  if (FAILED(hr))
+    return hr;
+
+      
+  hr = m_pDirectPlayClient->Connect( &dpnAppDesc,        // Application description
+                                     addr,               // Session host address
+                                     device,             // Address of device used to connect to the host (mdvalley: formerly 0)
+                                     NULL, NULL,         // Security descriptions & credientials (MBZ in DPlay8)
+                                     NULL, 0,            // User data & its size
+                                     NULL,               // Asynchronous connection context (returned with DPNMSG_CONNECT_COMPLETE in async handshaking)
+                                     NULL,               // Asynchronous connection handle (used to cancel connection process)
+                                     DPNOP_SYNC );       // Connect synchronously
+
+  delete[] playerInfo.pwszName;
+  if (FAILED(hr))
+    return hr;
+
+  m_guidInstance = guidInstance;
   m_fConnected = true;
-  DPNAME dpName;
-  dpName.dwSize = sizeof(DPNAME);
-  dpName.dwFlags = 0;
-  dpName.lpszLongNameA = 
-  dpName.lpszShortNameA = const_cast<char*>(szName);
-  DPID dpid;
-  ZSucceeded(hr = m_pDirectPlay->CreatePlayer(&dpid, &dpName, NULL, NULL, 0, 0));
-  m_pcnxnMe = new CFMConnection(this, szName, dpid);
+
+  //  <NKM> 19-Aug-2004
+  // use 0 dor DPID for now
+  m_pcnxnMe = new CFMConnection( this, szName, 0);
 
   // Set the output connection that the client will send msgs to
-  m_pcnxnServer = new CFMConnection(this, "Server", DPID_SERVERPLAYER);
-
-CLEANUP:
-  tt.Stop();
+  m_pcnxnServer = new CFMConnection(this, "Server", 1);
+        
   return hr;
 }
 
-
-/*-------------------------------------------------------------------------
- * CheckVersion
- *-------------------------------------------------------------------------
-   Purpose:
-      Verify that the version of dplay on the system is the one expected
-          by other machines in the session
-
-      There are a variety of acceptable versions of dplay. You pass the test if:
-          you're using our custom branded dplay (1.2.3.12), or
-          you're using the released dx6.1a on win9x, or
-          you're using some minimum build of dx7 on win9x, or
-          you're using some minimum build of w2k (save caveat as above)
-   
-   Returns:
-      Whether version is correct
-   
-   Side Effects:
-      Fire message event if version is wrong
- */
-bool FedMessaging::CheckVersion()
+// WLP 2005 added this 2 parameter call to update to DPLAY8
+        
+HRESULT FedMessaging::JoinSessionInstance(GUID guidInstance, const char * szName)
 {
-    HANDLE hMem = NULL;         
-    LPVOID lpvMem = NULL;         
-    char  szFullPath[256];     
-    DWORD dwVerHnd; 
-    DWORD dwVerInfoSize;
-    bool fRet = false;
-    UINT dwBytes = 0; 
-    VS_FIXEDFILEINFO *lpvsFixedFileInfo = NULL;
-
-    // Get version information from the application 
-    HMODULE hmodDPlay = GetModuleHandle("dplayx");
-    if (NULL == hmodDPlay) // why isn't the dll loaded???
-      goto Cleanup;
-
-    GetModuleFileName(hmodDPlay, szFullPath, sizeof(szFullPath)); 
-    if (0 == (dwVerInfoSize = GetFileVersionInfoSize(szFullPath, &dwVerHnd)))
-      goto Cleanup;
-
-    if (NULL == (hMem = GlobalAlloc(GMEM_MOVEABLE, dwVerInfoSize)) ||
-        NULL == (lpvMem = GlobalLock(hMem)))
-      goto Cleanup;
-
-    GetFileVersionInfo(szFullPath, dwVerHnd, dwVerInfoSize, lpvMem);
-    if (!VerQueryValue(lpvMem, "\\", (LPVOID*) &lpvsFixedFileInfo, &dwBytes))
-      goto Cleanup;
-    {
-      WORD ver1 = HIWORD(lpvsFixedFileInfo->dwFileVersionMS);
-      WORD ver2 = LOWORD(lpvsFixedFileInfo->dwFileVersionMS);
-      WORD ver3 = HIWORD(lpvsFixedFileInfo->dwFileVersionLS);
-      WORD ver4 = LOWORD(lpvsFixedFileInfo->dwFileVersionLS);
-
-      char msg[256];
-      
-      sprintf(msg, "DPlay Version found: %d.%d.%d.%d. Version Required: 4.7.0.177 (DX7) or 5.0.2046.1 (Win2k) or 4.6.3.516 (DX6.1a)\r\n", 
-        ver1, ver2, ver3, ver4);
-      debugf(msg);
-
-      if (ver1 > 5) // assume all major new versions work
-        fRet = true;
-
-      if (ver1 == 5) // NT -- WARNING -- if future versions of DX go outside 4.??? and spill into NT versions, we're in trouble
-      {
-        fRet = ver2 > 0 || ver3 >= 2113; // ver3 == NT build #
-      }
-      
-      if (ver1 == 4) // Stand-alone DX runtimes
-      {
-        if (ver2 > 7) // new major dx versions (DX8+)
-          fRet = true;
-
-        if (ver2 == 7) // DX7.0a
-          fRet = ver3 > 0 || ver4 >= 700;
-
-        if (ver2 == 6) // DX6.1a
-          fRet = (ver3 == 3 && ver4 >= 516) || ver3 > 3;
-
-        // Anything before 6.1a is NOT sufficient.
-      }
-
-      if (!fRet)
-      {
-        m_pfmSite->OnMessageBox(this, msg, "Allegiance",  MB_OK);
-        goto Cleanup;
-      }
-    }
-        
-Cleanup:
-
-    if (lpvMem)
-      GlobalUnlock(hMem);
-    if (hMem)
-      GlobalFree(hMem);
-        
-  return fRet;
+//return JoinSessionInstance( GUID_NULL, m_guidInstance, m_pHostAddress, szName);
+return JoinSessionInstance( GUID_NULL, m_guidInstance, m_pHostAddress, m_pDeviceAddress, szName);
 }
+// WLP - End
 
 CFMConnection * FedMessaging::GetConnectionFromDpid(DPID dpid)
 {
-  DWORD dwSize = sizeof(CFMConnection);
   CFMConnection * pcnxn = NULL;
-  static CTempTimer tt("in GetConnectionFromDpid", .01f);
-  tt.Start();
-  HRESULT hr = GetDPlay()->GetPlayerData(dpid, &pcnxn, &dwSize, DPGET_LOCAL);
-  if (hr == DPERR_INVALIDPLAYER) // dplay killed our player already! :-( See if we can find the dpid in our list
+
+  if ( m_pcnxnMe && ( m_pcnxnMe->GetDPID() == dpid ) )
   {
-    assert(!pcnxn);
-    ListConnections::Iterator iter(m_listCnxns);
-    for (; !pcnxn && !iter.End(); iter.Next()) 
-    {
-      if (iter.Value()->GetDPID() == dpid)
-      {
-        pcnxn = iter.Value();
-        break;
-      }
-    }
-    if (m_pcnxnMe && (m_pcnxnMe->GetDPID() == dpid))
-      pcnxn = m_pcnxnMe;
-    else if (m_pcnxnServer && (m_pcnxnServer->GetDPID() == dpid))
-      pcnxn = m_pcnxnServer;
+    return m_pcnxnMe;
   }
-  tt.Stop();
-  return pcnxn;
+
+  if ( m_pcnxnServer && ( m_pcnxnServer->GetDPID() == dpid) )
+  {
+    return m_pcnxnServer;
+  }
+
+  ConnectionMap::iterator it = m_cnxnsMap.find( dpid );
+  if ( it != m_cnxnsMap.end() )
+    return it->second;
+
+  return 0;
 }
 
 
 CFMGroup * FedMessaging::GetGroupFromDpid(DPID dpid)
 {
-  DWORD dwSize = sizeof(CFMGroup);
-  CFMGroup * pgrp = NULL;
-  static CTempTimer tt("in GetGroupFromDpid", .01f);
-  tt.Start();
-  GetDPlay()->GetGroupData(dpid, &pgrp, &dwSize, DPGET_LOCAL);
-  tt.Stop();
-  return pgrp;
+  GroupMap::iterator it = m_groupMap.find( dpid );
+  if ( it != m_groupMap.end() )
+    return it->second;
+
+  return 0;
 }
 
 
 HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16])
 {
-  char rgcDPAddress[300];
-  DWORD cbDPAddress = sizeof(rgcDPAddress);
-  static CTempTimer tt("in GetIPAddress", .01f);
-  tt.Start();
-  HRESULT hr = GetDPlay()->GetPlayerAddress(cnxn.GetDPID(), rgcDPAddress, &cbDPAddress);
-  if (SUCCEEDED(hr))
-    hr = GetDPlayLobby()->EnumAddress(EnumAddressCallback, rgcDPAddress, cbDPAddress, szRemoteAddress);
-  tt.Stop();
-  return hr;
+  //assert( m_pDirectPlayServer != 0 );
+
+  IDirectPlay8Address* pAddress;
+
+  // WLP 2005 - made this server client and server side
+  //
+  if (m_pDirectPlayServer)
+  ZSucceeded( m_pDirectPlayServer->GetClientAddress( cnxn.GetDPID(), &pAddress, 0 ) );
+
+  if (m_pDirectPlayClient)
+  ZSucceeded( m_pDirectPlayClient->GetServerAddress(&pAddress, 0 ) );
+
+  WCHAR add[200];
+  DWORD cnt = 200;
+  DWORD type;
+
+  HRESULT hr = pAddress->GetComponentByName( DPNA_KEY_HOSTNAME, (void*)add, &cnt, &type );
+  if ( FAILED( hr ) )
+  {
+    strcpy( szRemoteAddress, "0.0.0.0" );
+  }
+  else
+  {
+    char* aadd = wChar2ConstChar( add );
+    strcpy( szRemoteAddress, aadd );
+    delete[] aadd;
+  }
+
+  pAddress->Release();
+  return S_OK;
 }
 
+HRESULT FedMessaging::GetListeningPort(DWORD* dwPort)	// mdvalley: Finds the port the server is listening at
+{
+	assert(m_pDirectPlayServer);
 
+	if(!m_pDirectPlayServer)
+		return E_FAIL;			// needs a better error code, or something.
+
+	IDirectPlay8Address* pAddress;
+	HRESULT hr;
+
+	DWORD dwAddySize = 1;
+
+	hr = m_pDirectPlayServer->GetLocalHostAddresses(&pAddress, &dwAddySize, DPNGETLOCALHOSTADDRESSES_COMBINED);
+	if (ZFailed(hr)) return hr;
+
+	DWORD dwBuffSize = sizeof(DWORD);
+	DWORD dwDataType;
+
+	DWORD dwPortGot;
+
+	hr = pAddress->GetComponentByName(DPNA_KEY_PORT, &dwPortGot, &dwBuffSize, &dwDataType);
+	if (ZFailed(hr)) return hr;
+
+	*dwPort = dwPortGot;
+
+	return S_OK;
+}
 
 HRESULT FedMessaging::EnumSessions(GUID guidApplication, const char * szServer)
 {
+// WLP 2005 - added init client if needed
+//
+if (!m_pDirectPlayClient)
+{
+HRESULT hr;
+hr = InitDPlayClient();
+  if ( FAILED(hr) )
+    return hr;
+}
+// WLP 2005 - end of client init
+
   m_fSessionCallback = true;
   
-  return EnumSessionsInternal(guidApplication, szServer);
+  return EnumHostsInternal(guidApplication, szServer);
 }
 
-
-HRESULT FedMessaging::EnumSessionsInternal(GUID guidApplication, const char * szServer)
+HRESULT FedMessaging::EnumHostsInternal(GUID guidApplication, const char * szServer, DWORD dwPort)	// mdvalley: (optional) dwPort forces enumeration to that port
 {
-  HRESULT hr = E_FAIL;
+// WLP 2005 - added init client if needed
+//
+if (!m_pDirectPlayClient)
+{
+HRESULT hr;
+hr = InitDPlayClient();
+  if ( FAILED(hr) )
+    return hr;
+}
+// WLP 2005 - end of client init
+
+  //  <NKM> 10-Aug-2004
+  // Left this in from old method.... well why not :)
   DWORD dwSize = 0;
   Time timeStart = Time::Now();
   static CTempTimer tt("in FedMessaging::EnumSessionsInternal", 1.0f);
   tt.Start();
+
   // restore the hourglass cursor
   SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-  if (szServer)
-    Shutdown();
+  assert( m_pDirectPlayClient ); // WLP 2005 - uncommented
 
-  if(!m_pDirectPlay)
+  DPN_APPLICATION_DESC   dpnAppDesc;
+  IDirectPlay8Address*   pDP8AddressHost  = 0;
+  IDirectPlay8Address*   pDP8AddressLocal = 0;
+  WCHAR*                 wszHostName      = 0;
+  HRESULT                hr;
+
+  // Create the local device address object
+  if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
+                                     CLSCTX_ALL, IID_IDirectPlay8Address,
+                                     (LPVOID*) &pDP8AddressLocal ) ) )
   {
-    hr = InitDPlay(
-#ifdef MONOLITHIC_DPLAY
-        false
-#endif
-    );
-    if FAILED(hr)
-      goto CLEANUP;
+    m_pfmSite->OnMessageBox( this, "Failed to create DPlay client local address", "Allegiance", MB_OK );
+    return hr;
   }
 
-  if (szServer)
+  SafeReleaser<IDirectPlay8Address> r1( pDP8AddressLocal );
+
+  // Set IP service provider
+  if( FAILED( hr = pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) ) )
   {
-    hr = Connect(szServer);
-    if FAILED(hr)
-      goto CLEANUP;
+    m_pfmSite->OnMessageBox( this, "Failed to create DPlay local SP", "Allegiance", MB_OK );
+    return hr;
   }
     
-  // Find the session.
-  DPSESSIONDESC2 sessionDesc;
+  // Create the remote host address object
+  if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
+                                     CLSCTX_ALL, IID_IDirectPlay8Address,
+                                     (LPVOID*) &pDP8AddressHost ) ) )
+  {
+    m_pfmSite->OnMessageBox( this, "Failed to create DPlay client remote address", "Allegiance", MB_OK );
+    return hr;
+  }
 
-  ZeroMemory(&sessionDesc, sizeof(sessionDesc));
-  sessionDesc.dwSize = sizeof(sessionDesc);
+  SafeReleaser<IDirectPlay8Address> r2( pDP8AddressHost );
+  // Set IP service provider
+  if( FAILED( hr = pDP8AddressHost->SetSP( &CLSID_DP8SP_TCPIP ) ) )
+  {
+    m_pfmSite->OnMessageBox( this, "Failed to create DPlay remote SP", "Allegiance", MB_OK );
+    return hr;
+  }
+
+  // Set the remote port
+  if(dwPort != 6073 && FAILED(hr = pDP8AddressHost->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
+  {
+	  m_pfmSite->OnMessageBox( this, "Failed to set DPlay client remote port", "Allegiance", MB_OK );
+	  return hr;
+  }
+
+
+  // Set the remote host name (if provided)
+  if( szServer != 0 )
+  {
+    wszHostName = constChar2Wchar( szServer );
+
+    hr = pDP8AddressHost->AddComponent( DPNA_KEY_HOSTNAME, wszHostName,
+                                        (wcslen(wszHostName)+1)*sizeof(WCHAR),
+                                        DPNA_DATATYPE_STRING );
+
+    delete[] wszHostName;
+
+    if( FAILED(hr) )
+    {
+      m_pfmSite->OnMessageBox( this, "Failed to set DPlay server", "Allegiance", MB_OK );
+      return hr;
+    }
+  }
+
+  ZeroMemory( &dpnAppDesc, sizeof( DPN_APPLICATION_DESC ) );
+  dpnAppDesc.dwSize = sizeof( DPN_APPLICATION_DESC );
+  dpnAppDesc.guidApplication = guidApplication;
+
+  //  <NKM> 22-Aug-2004
+  // Hmm - hacky globals I don't like, but i'm going to perpetuate this one
+  // variable for now.....
+  // This is how we pass "what we are looking for" to the enum callback.
   g_guidApplication = guidApplication;
-  sessionDesc.guidApplication = guidApplication; //GUID_NULL;
-  debugf("Looking for session on \"%s\"\n", szServer);
 
-  if (szServer)
-    hr = m_pDirectPlay->EnumSessions(&sessionDesc, 20000, EnumSessionsCallback, // resend every 3 seconds if we don't hear back
-                                    this, DPENUMSESSIONS_STOPASYNC);
+  // Enumerate all StressMazeApp hosts running on IP service providers
+//  hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
+//                                       pDP8AddressLocal, NULL,
+//                                       0, 0, 0, 0, NULL,
+//                                       0 /*MUST use 0 handle for DPNOP_SYNC flag */ , DPNOP_SYNC );
+  // Mdvalley: Use an asyncronous EnumHosts with infinite retries to make NATs happy.
+  DPNHANDLE fillerHandle;	// Use of filler keeps DPlay from saying nasty things.
+  hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
+                                       pDP8AddressLocal, NULL,
+                                       0, INFINITE, 0, 0, NULL,
+                                       &fillerHandle, 0 );
 
-  hr = m_pDirectPlay->EnumSessions(&sessionDesc, 20000, EnumSessionsCallback, // resend every 3 seconds if we don't hear back
-                                    this, DPENUMSESSIONS_ASYNC);
+// WLP - DPLAY8 def = STDMETHOD(EnumHosts)
+
+//  (THIS_ PDPN_APPLICATION_DESC const pApplicationDesc,                     &dpnAppDesc
+
+//  IDirectPlay8Address *const pAddrHost                                     pDP8AddressHost
+
+//  IDirectPlay8Address *const pDeviceInfo,                                  pDP8AddressLocal
+
+//  PVOID const pUserEnumData,                                               NULL
+
+//  const DWORD dwUserEnumDataSize, .........................................0
+
+//  const DWORD dwEnumCount,                                                 0   number of times to repeat
+
+//  const DWORD dwRetryInterval,                                             0   milliseconds between retries
+
+//  const DWORD dwTimeOut,                                                   0   milliseconds to wait for responses
+
+//  PVOID const pvUserContext,                                               NULL
+
+//  DPNHANDLE *const pAsyncHandle,                                           0
+
+//   const DWORD dwFlags) PURE;                                              DPNOP_SYNC
+
+/* WLP - this is from the MSDN
+
+HRESULT EnumHosts(
+
+PDPN_APPLICATION_DESC const pApplicationDesc,
+
+IDirectPlay8Address *const pdpaddrHost,
+
+IDirectPlay8Address *const pdpaddrDeviceInfo,
+
+PVOID const pvUserEnumData,
+
+const DWORD dwUserEnumDataSize,
+
+const DWORD dwEnumCount,
+
+const DWORD dwRetryInterval,
+
+const DWORD dwTimeOut,
+
+PVOID const pvUserContext,
+
+HANDLE *const pAsyncHandle,
+
+const DWORD dwFlags
+
+*/
+
+
+  if( FAILED(hr) )
+  {
+      m_pfmSite->OnMessageBox( this, "Failed to set Enumerate Hosts", "Allegiance", MB_OK );
+      return hr;
+  }
       
-CLEANUP:
-  tt.Stop(); // the shutdown below has its own timer
-  if (DPERR_CONNECTING != hr && FAILED(hr))
-    Shutdown();
-  // else we need to keep the connection/sessions around for more enum'ing and joining later
   
   return hr;
 }  
@@ -1526,11 +1857,104 @@ CFMConnection * FedMessaging::CreateConnection(const char * szName, DPID dpid) /
   tt.Start();
   CFMConnection * pcnxn = new CFMConnection(this, szName, dpid);
   m_listCnxns.PushFront(pcnxn);
+  m_cnxnsMap[dpid] = pcnxn;
   m_pgrpEveryone->AddConnection(this, pcnxn); // we'll let dplay own removing them when they disconnect, since they retain lifetime membership
   m_pfmSite->OnNewConnection(this, *pcnxn);
   tt.Stop();
   return pcnxn;
 }
+
+//  <NKM> 07-Aug-2004
+// Moved from header file as I need to convert
+// from char* to WCHAR and I've put those functions in this file as well
+void FedMessaging::SetSessionDetails(char * szDetails) // tokenized name/value pairs: Name\tValue\nName\tValue...
+{
+  //  <NKM> 07-Aug-2004
+  // Change to use Application Desc from DPlay4 Session Desc structures
+  DWORD size = 0;
+  assert( m_pDirectPlayServer );
+  HRESULT hr = m_pDirectPlayServer->GetApplicationDesc( 0, &size, 0 );
+  if( hr != DPNERR_BUFFERTOOSMALL )
+  {
+    ZSucceeded( hr );
+  }
+
+  DPN_APPLICATION_DESC* pAppDesc = (DPN_APPLICATION_DESC*) new BYTE[size];
+  ZeroMemory( pAppDesc, size );
+  pAppDesc->dwSize = sizeof( DPN_APPLICATION_DESC );
+
+  ZSucceeded( m_pDirectPlayServer->GetApplicationDesc( pAppDesc, &size, 0 ) );
+
+
+  WCHAR* wDetails = constChar2Wchar( szDetails );
+  pAppDesc->pwszSessionName = wDetails;
+
+  m_pDirectPlayServer->SetApplicationDesc( pAppDesc, 0 );
+
+  delete[] wDetails;
+  delete[] pAppDesc;
+}
+
+DWORD FedMessaging::GetCountConnections()
+{
+    DWORD size = 0; //sizeof( DPN_APPLICATION_DESC );
+    assert( m_pDirectPlayServer );
+
+    // first get size we need
+    HRESULT hr2 = m_pDirectPlayServer->GetApplicationDesc( 0, &size, 0 );
+
+    //  <NKM> 23-Aug-2004
+    // I love this - we now allocate memory of amount size, but we set
+    // the size of the struct to sizeof(DPN_APPLICATION_DESC)
+    //  Bizare api....
+    DPN_APPLICATION_DESC* pAppDesc = (DPN_APPLICATION_DESC*) new BYTE[size];
+    ZeroMemory( pAppDesc, size );
+    pAppDesc->dwSize = sizeof( DPN_APPLICATION_DESC );
+
+    HRESULT hr = m_pDirectPlayServer->GetApplicationDesc( pAppDesc, &size, 0 );
+
+    DWORD dwConnections = pAppDesc->dwCurrentPlayers;
+
+    delete[] pAppDesc;
+    return dwConnections;
+  }
+
+//  <NKM> 08-Aug-2004
+// Moved from header
+// TODO: change for DX9 structs and calls
+HRESULT FedMessaging::GetLinkDetails(CFMConnection * pcnxn, OUT DWORD * pdwHundredbpsG, OUT DWORD * pdwmsLatencyG,
+                                     OUT DWORD * pdwHundredbpsU, OUT DWORD * pdwmsLatencyU)
+{
+//   DPCAPS caps;
+//   HRESULT hr = E_FAIL;
+//   if ( !pcnxn || !GetDPlay() ) // throw error?
+//     return E_FAIL;
+
+//   caps.dwSize = sizeof(caps);
+//   hr = GetDPlay()->GetPlayerCaps(pcnxn->GetDPID(), &caps, DPGETCAPS_GUARANTEED);
+//   if FAILED(hr)
+//              goto Exit;
+//   if (pdwHundredbpsG)
+//     *pdwHundredbpsG = caps.dwHundredBaud;
+//   if (pdwmsLatencyG)
+//     *pdwmsLatencyG = caps.dwLatency;
+
+//   hr = GetDPlay()->GetPlayerCaps(pcnxn->GetDPID(), &caps, 0);
+//   if FAILED(hr)
+//              goto Exit;
+//   if (pdwHundredbpsU)
+//     *pdwHundredbpsU = caps.dwHundredBaud;
+//   if (pdwmsLatencyU)
+//     *pdwmsLatencyU = caps.dwLatency;
+//  Exit:
+//   return hr;
+  *pdwHundredbpsG = 0;
+  *pdwmsLatencyG = 0;
+  *pdwHundredbpsU = 0;
+  *pdwmsLatencyU = 0;
+  return S_OK;
+}
+
 
 
 CFMConnection::CFMConnection(FedMessaging * pfm, const char * szName, DPID dpid) : // only FedMessaging::CreateConnection can create these things
@@ -1539,24 +1963,18 @@ CFMConnection::CFMConnection(FedMessaging * pfm, const char * szName, DPID dpid)
     m_dwPrivate(0)
 {
   assert(GetDPID() == dpid);
-  debugf("New CFMConnection: dpid=%u, name=%s, playerdata(this)=%p, private=%u\n", 
-          dpid, szName, this, m_dwPrivate);
-  LPVOID pv = this;
-  if (FAILED((pfm->GetDPlay()->SetPlayerData(GetDPID(), &pv, sizeof(pv), DPSET_LOCAL))))
-    debugf("Player %s(%u) gone immediately after connection. He should drop out rsn.\n", szName, dpid);
+  // debugf("CFMConnection: pfm=%8x dpid=%8x, name=%s, playerdata(this)=%p\n", pfm, dpid, szName, this );
 }
 
 
 void CFMConnection::Delete(FedMessaging * pfm) // basically the destructor, but with a parameter
 {
-  debugf("Deleting connection: dpid=%u, name=%s, playerdata=%p, private=%u\n", 
-          GetDPID(), GetName(), this, m_dwPrivate);
+  //debugf("Deleting connection: pfm=%8x dpid=%8x, name=%s, playerdata=%p, private=%u\n",
+  //       pfm, GetDPID(), GetName(), this, m_dwPrivate);
   // Don't want to hear anything more from this player
   static CTempTimer tt("in DestroyPlayer/SetPlayerData", 0.02f);
   tt.Start();
-  HRESULT hr = pfm->GetDPlay()->SetPlayerData(GetDPID(), NULL, 0, DPSET_LOCAL); // just in case dplay hasn't really killed the player yet. ignore return code; they may already be dead
-  debugf("SetPlayerData=0x%08x\n", hr);
-  hr = pfm->GetDPlay()->DestroyPlayer(GetDPID());
+  HRESULT hr = pfm->GetDPlayServer()->DestroyClient(GetDPID(), 0, 0, 0);
   debugf("DestroyPlayer=0x%08x\n", hr);
   tt.Stop();
   delete this;
@@ -1568,35 +1986,39 @@ void CFMConnection::Delete(FedMessaging * pfm) // basically the destructor, but 
 
 void CFMGroup::AddConnection(FedMessaging * pfm, CFMConnection * pcnxn)
 {
-  pfm->GetDPlay()->AddPlayerToGroup(GetDPID(), pcnxn->GetDPID());
+  DPNHANDLE hand;
+  pfm->GetDPlayServer()->AddPlayerToGroup( GetDPID(), pcnxn->GetDPID(), 0, &hand, 0 );
 }
 
 
 void CFMGroup::DeleteConnection(FedMessaging * pfm, CFMConnection * pcnxn)
 {
   // ignore return code, since dplay connection could already be dead
-  pfm->GetDPlay()->DeletePlayerFromGroup(GetDPID(), pcnxn->GetDPID());
+  DPNHANDLE hand;
+  pfm->GetDPlayServer()->RemovePlayerFromGroup(GetDPID(), pcnxn->GetDPID(), 0, &hand, 0);
 }
 
 
-CFMGroup::CFMGroup(FedMessaging * pfm, const char * szName) :
-    m_cPlayers(0),
-    CFMRecipient(szName, 0) // dplay group hasn't been created yet
+CFMGroup::CFMGroup(FedMessaging * pfm, const char * szName)
+  : m_cPlayers(0), CFMRecipient(szName, 0) // dplay group hasn't been created yet
 {
-  DPNAME dpn;
-  dpn.dwSize = sizeof(dpn);
-  dpn.dwFlags = 0;
-  dpn.lpszShortNameA = const_cast<char*>(szName);
-  dpn.lpszLongNameA  = "";
-  ZSucceeded(pfm->GetDPlay()->CreateGroup(&m_dpid, &dpn, NULL, 0, 0));
-  LPVOID pv = this;
-  ZSucceeded(pfm->GetDPlay()->SetGroupData(GetDPID(), &pv, sizeof(pv), DPSET_LOCAL));
+  DPN_GROUP_INFO dpn;
+  ZeroMemory( &dpn, sizeof( DPN_GROUP_INFO ) );
+  dpn.dwSize = sizeof( DPN_GROUP_INFO );
+  dpn.dwInfoFlags = DPNINFO_NAME;
+  dpn.pwszName = constChar2Wchar( szName );
+  ZSucceeded( pfm->GetDPlayServer()->CreateGroup( &dpn, this, NULL, NULL, DPNOP_SYNC ) );
+
+  //debugf("CFMGroup: pfm=%8x dpid=%8x, name=%s, playerdata(this)=%p, ", pfm, GetDPID(), szName, this );
+
+  delete[] dpn.pwszName;
 }
 
 
 void CFMGroup::Delete (FedMessaging * pfm) 
 {
-  pfm->GetDPlay()->DestroyGroup(GetDPID());
+  DPNHANDLE hand;
+  pfm->GetDPlayServer()->DestroyGroup(GetDPID(), 0, 0, DPNOP_SYNC );
   delete this;
 }
 
@@ -1622,14 +2044,16 @@ void CFMGroup::PlayerDeleted(CFMConnection * pcnxn)
   Side Effects:
       This is kinda of bad coupling, since the server packs this, and the messaging layer unpacks. 
  */
-FMSessionDesc::FMSessionDesc(LPDPSESSIONDESC2 pdpSessionDesc)
+FMSessionDesc::FMSessionDesc( const DPN_APPLICATION_DESC* appDesc)
 {
-  char * szName = NULL;
-  char * szValue = NULL;
+  char* szName = 0;
+  char* szValue = 0;
   m_nNumPlayers = 0;
   m_nMaxPlayers = 1;
 
-  szName = strtok((char *) pdpSessionDesc->lpszSessionNameA, "\t");
+  char* sessionName = wChar2ConstChar( appDesc->pwszSessionName );
+
+  szName = strtok( sessionName , "\t");
   while(szName)
   {
     if (!lstrcmp(szName, "GAM"))
@@ -1656,8 +2080,39 @@ FMSessionDesc::FMSessionDesc(LPDPSESSIONDESC2 pdpSessionDesc)
     szName = strtok(NULL, "\t");
   }
   
-  m_guidInstance = pdpSessionDesc->guidInstance;
+  m_guidInstance = appDesc->guidInstance;
+
+  delete[] sessionName;
 }
 
 
+//  <NKM> 19-Aug-2004
+// re-implment these
 
+HRESULT FedMessaging::GetSendQueue(DWORD * pcMsgs, DWORD * pcBytes)
+{
+  if( m_pDirectPlayClient != 0 )
+    return m_pDirectPlayClient->GetSendQueueInfo( pcMsgs, pcBytes, 0 );
+
+  *pcMsgs = 0;
+  *pcBytes = 0;
+  return S_OK;
+}
+
+HRESULT FedMessaging::GetReceiveQueue(DWORD * pcMsgs, DWORD * pcBytes)
+{
+  // DPlay 8 has no receive queue - we handle them async
+  *pcMsgs = 0;
+  *pcBytes = 0;
+  return S_OK;
+}
+
+HRESULT FedMessaging::GetConnectionSendQueue(CFMConnection * pcnxn, DWORD * pcMsgs, DWORD * pcBytes)
+{
+  if ( m_pDirectPlayServer != 0 )
+    return m_pDirectPlayServer->GetSendQueueInfo( pcnxn->GetID(), pcMsgs, pcBytes, 0 );
+
+  *pcMsgs = 0;
+  *pcBytes = 0;
+  return S_OK;
+}

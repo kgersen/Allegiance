@@ -1,428 +1,605 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="8.00"
 	Name="Engine"
 	ProjectGUID="{82807D04-1A0C-4B6B-AA06-525750EF4610}"
-	Keyword="Win32Proj">
+	Keyword="Win32Proj"
+	>
 	<Platforms>
 		<Platform
-			Name="Win32"/>
+			Name="Win32"
+		/>
 	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Retail|Win32"
 			OutputDirectory=".\..\..\objs\Retail\Engine"
 			IntermediateDirectory=".\..\..\objs\Retail\Engine"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
-				BrowseInformationFile=""/>
+				BrowseInformationFile=""
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\objs\Debug\Engine"
 			IntermediateDirectory=".\..\..\objs\Debug\Engine"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
 				BrowseInformationFile=""
-				DebugInformationFormat="3"/>
+				DebugInformationFormat="3"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZDebug|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Engine"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Engine"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
-				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG"
-				ExceptionHandling="FALSE"
+				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
 				BrowseInformationFile=""
-				DebugInformationFormat="3"/>
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="FZRetail|Win32"
 			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Engine"
 			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Engine"
 			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				GlobalOptimizations="TRUE"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\Inc;..\_Utility;..\WinTrek;..\ZLib;..\Guids;..\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0700"
-				ExceptionHandling="FALSE"
+				ExceptionHandling="0"
 				RuntimeLibrary="2"
-				RuntimeTypeInfo="TRUE"
-				UsePrecompiledHeader="2"
+				BufferSecurityCheck="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
 				BrowseInformation="0"
-				BrowseInformationFile=""/>
+				BrowseInformationFile=""
+				Detect64BitPortabilityProblems="false"
+				DisableSpecificWarnings="4996"
+			/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCManagedResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCLibrarianTool"/>
+				Name="VCResourceCompilerTool"
+			/>
 			<Tool
-				Name="VCMIDLTool"/>
+				Name="VCPreLinkEventTool"
+			/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCLibrarianTool"
+			/>
 			<Tool
-				Name="VCPreBuildEventTool"/>
+				Name="VCALinkTool"
+			/>
 			<Tool
-				Name="VCPreLinkEventTool"/>
+				Name="VCXDCMakeTool"
+			/>
 			<Tool
-				Name="VCResourceCompilerTool"/>
+				Name="VCBscMakeTool"
+			/>
 			<Tool
-				Name="VCWebServiceProxyGeneratorTool"/>
+				Name="VCFxCopTool"
+			/>
 			<Tool
-				Name="VCXMLDataGeneratorTool"/>
-			<Tool
-				Name="VCManagedWrapperGeneratorTool"/>
-			<Tool
-				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<File
-			RelativePath=".\bounds.cpp">
+			RelativePath=".\bounds.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\bounds.h">
+			RelativePath=".\bounds.h"
+			>
 		</File>
 		<File
-			RelativePath=".\bspgeo.cpp">
+			RelativePath=".\bspgeo.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\bspgeo.h">
+			RelativePath=".\bspgeo.h"
+			>
 		</File>
 		<File
-			RelativePath=".\button.cpp">
+			RelativePath=".\button.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\button.h">
+			RelativePath=".\button.h"
+			>
 		</File>
 		<File
-			RelativePath=".\camera.cpp">
+			RelativePath=".\camera.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\camera.h">
+			RelativePath=".\camera.h"
+			>
 		</File>
 		<File
-			RelativePath=".\caption.cpp">
+			RelativePath=".\caption.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\caption.h">
+			RelativePath=".\caption.h"
+			>
 		</File>
 		<File
-			RelativePath=".\context.cpp">
+			RelativePath=".\context.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\context.h">
+			RelativePath=".\context.h"
+			>
 		</File>
 		<File
-			RelativePath=".\controls.cpp">
+			RelativePath=".\controls.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\controls.h">
+			RelativePath=".\controls.h"
+			>
 		</File>
 		<File
-			RelativePath=".\d3ddevice.cpp">
+			RelativePath=".\d3ddevice.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\dddevice.cpp">
+			RelativePath=".\dddevice.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\dderror.cpp">
+			RelativePath=".\dderror.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\ddstruct.h">
+			RelativePath=".\ddstruct.h"
+			>
 		</File>
 		<File
-			RelativePath=".\ddsurface.cpp">
+			RelativePath=".\ddsurface.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\device3d.cpp">
+			RelativePath=".\device3d.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\dinput.cpp">
+			RelativePath=".\dinput.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\engine.cpp">
+			RelativePath=".\engine.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\engine.h">
+			RelativePath=".\engine.h"
+			>
 		</File>
 		<File
-			RelativePath=".\engineapp.cpp">
+			RelativePath=".\engineapp.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\engineapp.h">
+			RelativePath=".\engineapp.h"
+			>
 		</File>
 		<File
-			RelativePath=".\enginep.h">
+			RelativePath=".\enginep.h"
+			>
 		</File>
 		<File
-			RelativePath=".\enginewindow.cpp">
+			RelativePath=".\enginewindow.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\enginewindow.h">
+			RelativePath=".\enginewindow.h"
+			>
 		</File>
 		<File
-			RelativePath=".\font.cpp">
+			RelativePath=".\font.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\font.h">
+			RelativePath=".\font.h"
+			>
 		</File>
 		<File
-			RelativePath=".\frameimage.cpp">
+			RelativePath=".\frameimage.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\frameimage.h">
+			RelativePath=".\frameimage.h"
+			>
 		</File>
 		<File
-			RelativePath=".\geometry.cpp">
+			RelativePath=".\geometry.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\geometry.h">
+			RelativePath=".\geometry.h"
+			>
 		</File>
 		<File
-			RelativePath=".\image.cpp">
+			RelativePath=".\image.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\image.h">
+			RelativePath=".\image.h"
+			>
 		</File>
 		<File
-			RelativePath=".\inputengine.h">
+			RelativePath=".\inputengine.h"
+			>
 		</File>
 		<File
-			RelativePath=".\keyframe.cpp">
+			RelativePath=".\keyframe.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\keyframe.h">
+			RelativePath=".\keyframe.h"
+			>
 		</File>
 		<File
-			RelativePath=".\material.cpp">
+			RelativePath=".\material.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\material.h">
+			RelativePath=".\material.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mdl.cpp">
+			RelativePath=".\mdl.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\mdl.h">
+			RelativePath=".\mdl.h"
+			>
 		</File>
 		<File
-			RelativePath=".\mdlbin.cpp">
+			RelativePath=".\mdlbin.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\menu.cpp">
+			RelativePath=".\menu.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\menu.h">
+			RelativePath=".\menu.h"
+			>
 		</File>
 		<File
-			RelativePath=".\model.h">
+			RelativePath=".\model.h"
+			>
 		</File>
 		<File
-			RelativePath=".\modeler.cpp">
+			RelativePath=".\modeler.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\namespace.cpp">
+			RelativePath=".\namespace.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\namespace.h">
+			RelativePath=".\namespace.h"
+			>
 		</File>
 		<File
-			RelativePath=".\palette.cpp">
+			RelativePath=".\palette.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\palette.h">
+			RelativePath=".\palette.h"
+			>
 		</File>
 		<File
-			RelativePath=".\pane.cpp">
+			RelativePath=".\pane.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\pane.h">
+			RelativePath=".\pane.h"
+			>
 		</File>
 		<File
-			RelativePath=".\paneimage.cpp">
+			RelativePath=".\paneimage.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\paneimage.h">
+			RelativePath=".\paneimage.h"
+			>
 		</File>
 		<File
-			RelativePath=".\pch.h">
+			RelativePath=".\pch.h"
+			>
 		</File>
 		<File
-			RelativePath=".\pixelformat.cpp">
+			RelativePath=".\pixelformat.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\pixelformat.h">
+			RelativePath=".\pixelformat.h"
+			>
 		</File>
 		<File
-			RelativePath=".\popup.cpp">
+			RelativePath=".\popup.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\popup.h">
+			RelativePath=".\popup.h"
+			>
 		</File>
 		<File
-			RelativePath=".\raster.cpp">
+			RelativePath=".\raster.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\softraster.cpp">
+			RelativePath=".\softraster.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\surface.cpp">
+			RelativePath=".\surface.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\surface.h">
+			RelativePath=".\surface.h"
+			>
 		</File>
 		<File
-			RelativePath=".\toppane.cpp">
+			RelativePath=".\toppane.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\toppane.h">
+			RelativePath=".\toppane.h"
+			>
 		</File>
 		<File
-			RelativePath=".\transform.cpp">
+			RelativePath=".\transform.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\transform.h">
+			RelativePath=".\transform.h"
+			>
 		</File>
 		<File
-			RelativePath=".\transform2.cpp">
+			RelativePath=".\transform2.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\value.cpp">
+			RelativePath=".\value.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\value.h">
+			RelativePath=".\value.h"
+			>
 		</File>
 		<File
-			RelativePath=".\videoimage.cpp">
+			RelativePath=".\videoimage.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\viewport.cpp">
+			RelativePath=".\viewport.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\viewport.h">
+			RelativePath=".\viewport.h"
+			>
 		</File>
 		<File
-			RelativePath=".\xfile.cpp">
+			RelativePath=".\xfile.cpp"
+			>
 		</File>
 		<File
-			RelativePath=".\xfile.h">
+			RelativePath=".\xfile.h"
+			>
 		</File>
 	</Files>
 	<Globals>

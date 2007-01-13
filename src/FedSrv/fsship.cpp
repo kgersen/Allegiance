@@ -862,6 +862,8 @@ CFSPlayer::CFSPlayer(CFMConnection * pcnxn, int characterID, const char * szCDKe
   m_pfsClusterFlying(NULL),
   m_pclusterLifepod(NULL),
   m_bannedSideMask(0),
+  // mdvalley: add last flown for
+  m_lastSide(SIDE_TEAMLOBBY),
   m_chatBudget(c_chatBudgetMax),
   m_strCDKey(szCDKey)
 {
@@ -1164,8 +1166,11 @@ void CFSPlayer::SetDPGroup(CFSCluster*  pfsCluster, bool bFlying)
 
   if (m_pgrp)
   {
+#ifdef DEBUG
+    // mmf only log this in debug build
     debugf("Removing %s(%u) from group %s(%u)\n", GetName(), GetConnection()->GetID(), 
             m_pgrp->GetName(), m_pgrp->GetID());
+#endif
     g.fm.DeleteConnectionFromGroup(m_pgrp, GetConnection());
   }
   m_pgrp = pgrp;

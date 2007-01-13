@@ -225,7 +225,10 @@ STDMETHODIMP CTCNullStreamImpl::CopyTo(IStream* pstm, ULARGE_INTEGER cb,
 
   // Copy the NULL memory chunk for the specified number of bytes
   HRESULT hr;
-  for (ULONG nRemaining = nMax; nRemaining > cbBuf; nRemaining -= cbBuf)
+
+  ULONG nRemaining;
+
+  for (nRemaining = nMax; nRemaining > cbBuf; nRemaining -= cbBuf)
     if (FAILED(hr = spstm->Write(pBuf, cbBuf, NULL)))
       return hr;
 
