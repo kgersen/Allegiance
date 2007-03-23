@@ -280,13 +280,16 @@ void    CshipIGC::Update(Time now)
             else
                 SetRipcordModel(NULL);
         }
-
-        m_energy += m_myHullType.GetRechargeRate() * dt;
-        {
-            float   eMax = m_myHullType.GetMaxEnergy();
-            if (m_energy > eMax)
-                m_energy = eMax;
-        }
+        // mmf 03/22/07 fix don't let energy go negative
+        if((m_myHullType.GetRechargeRate() > 0.0f)||(m_energy != 0.0f)) 
+		{  
+			m_energy += m_myHullType.GetRechargeRate() * dt;
+			float   eMax = m_myHullType.GetMaxEnergy(); 
+			if (m_energy > eMax) 
+				m_energy = eMax; 
+			else if (m_energy < 0.0f) 
+				m_energy = 0.0f; 
+		}
 
         {
             //Give the cloak the first dibs on energy

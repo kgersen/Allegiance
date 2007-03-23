@@ -1168,19 +1168,21 @@ void SetCharStats(int                   characterID,
 
     g.sql.PostQuery(pquery);
 
-  #endif // !defined(ALLSRV_STANDALONE)
+#endif // !defined(ALLSRV_STANDALONE)
 
 #ifdef DEBUG
 	// mmf have debug build of server log this
 	// mmf converted debug statement from pdq structure
+	//     note pfsPlayer can be NULL so added check for that
 	if (0.0f == pso.GetTimePlayed())
     {   return;    }
     assert(pso.GetScore() >= 0.0f);
 	assert(pSide);
     PersistPlayerScoreObject& ppso = pso.GetPersist();
     RankID  Rank = ppso.GetRank();
-	debugf("PlayerName=%s, Rank=%d, bScoresCount=%d, CharacterID=%d, CivID=%d, Rating=%d,\n",
-        pfsPlayer->GetName(),Rank ,pfsMission->GetScoresCount(), characterID, pSide->GetCivilization()->GetObjectID(), 
+	if (pfsPlayer != NULL) debugf("PlayerName =%s, ",pfsPlayer->GetName());
+	debugf("CharacterID=%d, Rank=%d, bScoresCount=%d, CivID=%d, Rating=%d,\n",
+        characterID, Rank ,pfsMission->GetScoresCount(), pSide->GetCivilization()->GetObjectID(), 
 		RATING_INT2EXT(pso.GetCombatRating()));
     debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
         pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
@@ -1188,7 +1190,7 @@ void SetCharStats(int                   characterID,
         pso.GetMinerKills(), pso.GetBuilderKills(), pso.GetLayerKills(), pso.GetPlayerKills());
     debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
         pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
-    debugf("    Minutes=%d, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
+    debugf("    Minutes=%.2f, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
         (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(), 
 		pso.GetScore());
 #endif
@@ -4741,6 +4743,16 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfmChat->cd.chatTarget = CHAT_EVERYONE;
                 pfmChat->cd.oidRecipient = NA;
 				bForward = true;
+			  }
+			  // mmf 03/22/07 added #list to display all the other # commands
+			  //              keep this at the end of this else if
+			  else if(pfmChat->cbMessage > strlen("#list") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#list", strlen("#list")) == 0)
+              {				
+			    // mmf splat send message to self
+				
+				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban");
+				bForward = false;
 			  }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner

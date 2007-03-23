@@ -33,6 +33,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
 
 // mmf added code for chat logging
 // mmf 7/15 changed creation flag on chat file so other processes can read from it
+// avalanche + mmf 03/22/07 (bugs 108 and 109) place chat logs in logs folder, use \r\n
 
 HANDLE chat_logfile = NULL;
 char logFileName[MAX_PATH + 21];
@@ -65,19 +66,22 @@ void InitializeLogchat()
 	GetModuleFileName(NULL, logFileName, MAX_PATH);
 	char* p = strrchr(logFileName, '\\');
 	if (!p)
-	p = logFileName;
+		p = logFileName;
 	else
-	p++;
+		p++;
 
-	const char* months[] ={"chat_jan", "chat_feb", "chat_mar", "chat_apr",
-	"chat_may", "chat_jun", "chat_jul", "chat_aug",
-	"chat_sep", "chat_oct", "chat_nov", "chat_dec"};
-//	strcpy_s(p, _MAX_PATH + 21, months[t->tm_mon]);
-//	sprintf_s(p + 8, _MAX_PATH + 13, "%02d%02d%02d%02d.txt",
-//	t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-	strcpy(p, months[t->tm_mon]);
-	sprintf(p + 8, "%02d%02d%02d%02d.txt",
-	t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+	strcpy(p, "logs\\");
+
+	if (!CreateDirectory(logFileName, NULL))
+	{
+		if (GetLastError() == ERROR_PATH_NOT_FOUND)
+		{
+			debugf("Unable to create chat log directory %s\n",logFileName);
+		}
+	}
+
+	sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+
 	// mmf changed 3 param from 0 to FILE_SHARE_READ
 	chat_logfile =
 		CreateFile(
@@ -119,7 +123,7 @@ void logchat(const char* strText)
 
 	// don't log if text is bigger than buffer, we don't want to log these long 'spam' chat's anyway
 	if (chat_logfile && (length < 490)) {
-		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\n",
+		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\r\n",
             (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
         DWORD nBytes;
         ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
