@@ -2958,13 +2958,14 @@ public:
         // Show the intro videos
         //
 
-        if (!g_bQuickstart && bMovies  && !g_bReloaded) {
-            SetScreen(CreateVideoScreen(GetModeler(), false));
-        } else {
+        // KGJV 32B - byebye video for now
+        //if (!g_bQuickstart && bMovies  && !g_bReloaded) {
+        //    SetScreen(CreateVideoScreen(GetModeler(), false));
+        //} else {
             SetScreen(CreateIntroScreen(GetModeler()));
             m_screen = ScreenIDIntroScreen;
             RestoreCursor();
-        }
+        //}
     }
 
     void InitializeImages()
@@ -3681,10 +3682,10 @@ public:
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
 		// mmf added ifs to zero pad MM and DD 
-		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
-		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
-		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
-		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
+		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
+		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
+		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
 
 		m_pmenu->AddMenuItem(0               , "------------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);

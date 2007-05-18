@@ -308,7 +308,9 @@ public:
             TRef<Engine> pengine = psurface->GetEngine();
 
             TRef<Rasterizer> prasterizer;
-            bool bAlwaysUseD3D = false;
+            // KGJV 32B : true if 32 bpp only (keep 16bpp unchanged)
+            // reverted - Loadout 3D image needs a fix 1st to handle artwork not in 16bpp
+            bool bAlwaysUseD3D = (pengine->GetPrimaryPixelFormat()->PixelBits() == 32); 
 
             if (
                     bAlwaysUseD3D 
@@ -632,7 +634,12 @@ public:
         static MeshIndex indices[6] = { 0, 2, 1, 0, 3, 2 };
 
         UpdateState();
-        m_pdevice3D->SetTexture(psurface);
+        // KGJV 32B
+#ifdef DEBUGOFF //DEBUG
+        if (psurface->GetPixelFormat()->PixelBits() != m_psurface->GetPixelFormat()->PixelBits())
+            debugf ("DrawImage3D ppf mismatch for %s - will convert\n",(const char *)psurface->GetName());
+#endif
+        m_pdevice3D->SetTexture(psurface->GetConvertedSurface(m_psurface->GetPixelFormat()));
 
         switch (GetShadeMode()) {
             case ShadeModeCopy:

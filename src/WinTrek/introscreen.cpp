@@ -4,6 +4,8 @@
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
 
+//KGJV test
+#define ENABLE3DINTROSCREEN
 //////////////////////////////////////////////////////////////////////////////
 //
 // Intro Screen
@@ -40,6 +42,18 @@ private:
     ZString             m_strCharacterName;
     ZString             m_strPassword;
     MissionInfo*        m_pmissionJoining;
+
+#ifdef ENABLE3DINTROSCREEN
+	//KGJV
+	TRef<Number>            m_ptime;
+	TRef<Pane>              m_ppaneGeo;
+    TRef<Camera>            m_pcamera;
+    TRef<Viewport>          m_pviewport;
+    TRef<WrapGeo>           m_pwrapGeo;
+    TRef<WrapImage>         m_pwrapImageGeo;
+	TRef<WrapImage>		    m_pwrapImage;
+	TRef<ThingGeo>          m_pthing;
+#endif
 
     enum
     {
@@ -560,6 +574,11 @@ public:
 
         pnsIntroScreen->AddMember("CurrentHover", m_pnumberCurrentHover = new ModifiableNumber(hoverNone));
 
+#ifdef ENABLE3DINTROSCREEN
+//KGJV
+		pnsIntroScreen->AddMember("bgImage",   (Value*)(m_pwrapImage = new WrapImage(Image::GetEmpty())));
+		m_pthing = NULL;
+#endif
         TRef<INameSpace> pns = pmodeler->GetNameSpace("introscreen");
         CastTo(m_ppane, pns->FindMember("screen"));
         CastTo(m_pbuttonPlayLan,    pns->FindMember("playLanButtonPane"));
@@ -681,11 +700,43 @@ public:
         bHaveVisited = true;
 
         trekClient.FlushSessionLostMessage();
+
+#ifdef ENABLE3DINTROSCREEN
+		// KGJV test
+		{
+			m_pwrapImage->SetImage((Image*)(Value *)pns->FindMember("bkImage"));
+			m_ppaneGeo = CreateGeoPane(
+				pns->FindPoint("geoSize"),
+				pns->FindPoint("geoPosition")
+			);
+			m_ppaneGeo->SetOffset(pns->FindWinPoint("geoPosition"));
+			m_ppane->InsertAtTop(m_ppaneGeo);
+
+			TRef<StringValue> pstring; CastTo(pstring, pns->FindMember("geoModel"));
+			TRef<INameSpace> pnsgeo = m_pmodeler->GetNameSpace(pstring->GetValue());
+	
+			if (pnsgeo) {
+				m_pthing = ThingGeo::Create(m_pmodeler, m_ptime);
+				m_pthing->LoadMDL(0, pnsgeo, NULL);
+				m_pthing->SetShadeAlways(true);
+				m_pthing->SetTransparentObjects(true);
+				m_pthing->SetShowBounds(true);
+		
+				SetGeo(m_pthing->GetGeo());
+			}
+	    
+	    }
+#endif
+
     }
 
     virtual ~IntroScreen() 
     {
         m_pmodeler->UnloadNameSpace("introscreendata");
+#ifdef ENABLE3DINTROSCREEN
+		m_pthing->SetTransparentObjects(false);
+		m_pthing->SetShowBounds(false);
+#endif
     }
 
 
@@ -695,6 +746,83 @@ public:
         return false;
     }
 
+#ifdef ENABLE3DINTROSCREEN
+	// KGJV
+    void SetGeo(Geo* pgeo)
+    {
+        m_pwrapGeo->SetGeo(pgeo);
+
+        float radius = pgeo->GetRadius(Matrix::GetIdentity());
+
+        //m_scaleCone = 0.75f * radius;
+
+        m_pcamera->SetPosition(
+            Vector(
+                0,
+                0,
+                2.4f * radius
+            )
+        );
+    }
+
+	// KGJV    
+    TRef<Pane> CreateGeoPane(const Point& size, const Point& offset)
+    {
+        m_pcamera = new Camera();
+        m_pcamera->SetZClip(1, 10000);
+        m_pcamera->SetFOV(RadiansFromDegrees(50));
+
+        Rect rect(Point(0, 0), size);
+        TRef<RectValue> prect = new RectValue(rect);
+
+        m_pviewport = new Viewport(m_pcamera, prect);
+
+        m_pwrapGeo  = new WrapGeo(Geo::GetEmpty());
+		m_pwrapImageGeo = new WrapImage(Image::GetEmpty());
+		m_ptime = GetWindow()->GetTime();
+        GeoImage* pgeo =
+			new GeoImage(                
+                    new TransformGeo(
+                        new TransformGeo(
+                            m_pwrapGeo,
+                            new AnimateRotateTransform(
+                                new VectorValue(Vector(0, 1, 0)),
+                                Multiply(m_ptime, new Number(1.0))
+                            )
+                        ),
+                        new RotateTransform(Vector(1, 0, 0), pi/8)
+                    ),
+                    m_pviewport,
+                    true
+				);
+        TRef<Image> pimage = 
+			new GroupImage(
+				m_pwrapImageGeo,
+				pgeo,
+				new TranslateImage(
+                    m_pwrapImage,
+                    Point(-offset.X(), -(600 - size.Y() - offset.Y()))    
+                )
+				);
+
+        //
+        // Give this guy a zbuffer
+        //
+
+        return
+            new AnimatedImagePane(
+                CreatePaneImage( 
+                    GetEngine(),
+                    SurfaceType3D() | SurfaceTypeZBuffer(),
+                    false,
+                    new AnimatedImagePane(
+                        pimage,
+                        rect
+                    )
+                )
+            );
+    }
+#endif
     //////////////////////////////////////////////////////////////////////////////
     //
     // Event handlers

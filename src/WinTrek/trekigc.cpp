@@ -3234,6 +3234,21 @@ void WinTrekClient::CreateMissionReq()
     GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
     BaseClient::CreateMissionReq();
 }
+// KGJV #114
+void WinTrekClient::ServerListReq()
+{
+    GetWindow()->SetWaitCursor();
+    TRef<IMessageBox> pmsgBox = CreateMessageBox("Asking about servers and cores...", NULL, false);
+    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	BaseClient::ServerListReq();
+}
+void WinTrekClient::CreateMissionReq(const char *szServer,const char *szAddr, const char *szIGCStaticFile, const char *szGameName)
+{
+    GetWindow()->SetWaitCursor();
+    TRef<IMessageBox> pmsgBox = CreateMessageBox("Creating a game...", NULL, false);
+    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	BaseClient::CreateMissionReq(szServer,szAddr,szIGCStaticFile,szGameName);
+}
 
 void WinTrekClient::JoinMission(MissionInfo * pMission, const char* szMissionPassword)
 {

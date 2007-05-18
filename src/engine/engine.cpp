@@ -35,6 +35,7 @@ private:
 	DWORD					  m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
     bool                      m_b3DAccelerationImportant;
 
+    DWORD                     m_dwBPP; // KGJV 32B - user choosen bpp or desktop bbp
     //
     // Direct Draw Devices
     //
@@ -134,7 +135,7 @@ private:
     //////////////////////////////////////////////////////////////////////////////
 
 public:
-    EngineImpl(bool bAllow3DAcceleration, bool bAllowSecondary) :
+    EngineImpl(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP) :
         m_pointFullscreen(800, 600),
         m_pointFullscreenCurrent(0, 0),
         m_bFullscreen(false),
@@ -145,7 +146,8 @@ public:
         m_bValidDevice(false),
         m_hwndFocus(NULL),
         m_hwndClip(NULL),
-        m_gamma(1.0f)
+        m_gamma(1.0f),
+        m_dwBPP(dwBPP) // KGJV 32B
     {
         //
         // Get the primary device
@@ -182,7 +184,20 @@ public:
         // Create a default pixel format
         //
 
-        m_ppf = new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000);
+        // KGJV 32B - set PixelFormat according to bpp
+        
+        if (m_dwBPP == 0)
+        {
+            // fetch the desktop bpp
+            DDSDescription ddsd;
+            DDCall(m_pdddevicePrimary->GetDD()->GetDisplayMode(&ddsd));
+            m_dwBPP = ddsd.ddpfPixelFormat.dwRGBBitCount;
+            if (m_dwBPP != 32) m_dwBPP = 16; // fallback to 16 if desktop bpp isnt 32
+        }
+        if (m_dwBPP == 32)
+            m_ppf = new PixelFormat(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        if (m_dwBPP == 16)
+            m_ppf = new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000);
     }
 
 private:
@@ -487,7 +502,8 @@ private:
         // If the primary surface isn't 16bpp go to fullscreen automatically
         //
 
-        if (m_ppf->PixelBits() != 16) {
+        // KGJV 32B : if game bpp != desktop bpp go fullscreen
+        if (m_ppf->PixelBits() != m_dwBPP) {
             m_bFullscreen = true;
             return false;
         }
@@ -765,7 +781,7 @@ private:
             m_pdddevice->GetDD()->SetDisplayMode(
                 size.X(),
                 size.Y(),
-                16,
+                m_dwBPP, // KGJV 32B - set as parameter
                 0,
                 0
             );
@@ -1045,6 +1061,11 @@ private:
     PrivateSurface* GetBackBuffer()
     {
         return m_psurfaceBack;
+    }
+
+    ZString GetPixelFormatName()
+    {
+        return ZString("Bits per pixel = ") + ZString((int)(GetPrimaryPixelFormat()->PixelBits()));
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1533,8 +1554,8 @@ private:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
-TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary)
+// KGJV 32B - BPP parameter
+TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP)
 {
-    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary);
+    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP);
 }

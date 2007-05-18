@@ -469,7 +469,13 @@ public:
         m_rectClip    = m_rectClipSave;
     }
 
-    PrivateSurface* GetConvertedSurface(PixelFormat* ppf)
+    // KGJV 32B - we make this public
+    Surface* GetConvertedSurface(PixelFormat* ppf)
+    {
+        return (Surface *)GetConvertedPrivateSurface(ppf); 
+    }
+    // KGJV 32B - GetConvertedSurface -> GetConvertedPrivateSurface
+    PrivateSurface* GetConvertedPrivateSurface(PixelFormat* ppf)
     {
         if (ppf == m_ppf) {
             return this;
@@ -478,7 +484,6 @@ public:
                 //
                 // Create a surface with the requested pixel format
                 //
-            
                 m_ppfConverted = ppf;
 
                 m_psurfaceConverted =
@@ -514,6 +519,8 @@ public:
                     this,
                     WinRect(WinPoint(0, 0), m_size)
                 );
+
+                //debugf("GetConvertedSurface : %s : Convert %d to %d\n",(const char *)GetName(),m_ppf->PixelBits(),ppf->PixelBits());
 
                 m_idConverted = m_id;
         }
@@ -790,87 +797,173 @@ public:
         int         ysize       = rect.YSize();
 
         if (psurfaceSource->HasColorKey()) {
-            ZAssert(m_ppf->PixelBytes() == 2);
+            //ZAssert(m_ppf->PixelBytes() == 2); // KGJV 32B 
+            // debugf("UnclippedBltHandled : m_ppf->PixelBytes() = %d\n",m_ppf->PixelBytes());
+            if (m_ppf->PixelBytes() == 2)
+            {
+                int xdqwords = scanSize / 16;
+                int xwords   = (scanSize - 16 * xdqwords) / 2;
 
-            int xdqwords = scanSize / 16;
-            int xwords   = (scanSize - 16 * xdqwords) / 2;
+                __asm {
+                  yloop:
+                    mov     esi, [psource]
+                    mov     edi, [pdest]
 
-            __asm {
-              yloop:
-                mov     esi, [psource]
-                mov     edi, [pdest]
+                    mov     ecx, xdqwords
+                    or      ecx, ecx
+                    je      xwordsTop
+                  xdqwordloop:
+                    mov     dx, [esi + 0]
+                    or      dx, dx
+                    je      skip1
+                    mov     [edi + 0], dx
+                  skip1:
+                    mov     dx, [esi + 2]
+                    or      dx, dx
+                    je      skip2
+                    mov     [edi + 2], dx
+                  skip2:
+                    mov     dx, [esi + 4]
+                    or      dx, dx
+                    je      skip3
+                    mov     [edi + 4], dx
+                  skip3:
+                    mov     dx, [esi + 6]
+                    or      dx, dx
+                    je      skip4
+                    mov     [edi + 6], dx
+                  skip4:
+                    mov     dx, [esi + 8]
+                    or      dx, dx
+                    je      skip5
+                    mov     [edi + 8], dx
+                  skip5:
+                    mov     dx, [esi + 10]
+                    or      dx, dx
+                    je      skip6
+                    mov     [edi + 10], dx
+                  skip6:
+                    mov     dx, [esi + 12]
+                    or      dx, dx
+                    je      skip7
+                    mov     [edi + 12], dx
+                  skip7:
+                    mov     dx, [esi + 14]
+                    or      dx, dx
+                    je      skip8
+                    mov     [edi + 14], dx
+                  skip8:
+                    add     esi, 16
+                    add     edi, 16
+                    dec     ecx
+                    jne     xdqwordloop
+              
+                  xwordsTop:  
+                    mov     ecx, xwords
+                    or      ecx, ecx
+                    je      nowords
+                  xwordloop:
+                    mov     dx, [esi]
+                    or      dx, dx
+                    je      skipword
+                    mov     [edi], dx
+                  skipword:
+                    add     esi, 2
+                    add     edi, 2
+                    dec     ecx
+                    jne     xwordloop
 
-                mov     ecx, xdqwords
-                or      ecx, ecx
-                je      xwordsTop
-              xdqwordloop:
-                mov     dx, [esi + 0]
-                or      dx, dx
-                je      skip1
-                mov     [edi + 0], dx
-              skip1:
-                mov     dx, [esi + 2]
-                or      dx, dx
-                je      skip2
-                mov     [edi + 2], dx
-              skip2:
-                mov     dx, [esi + 4]
-                or      dx, dx
-                je      skip3
-                mov     [edi + 4], dx
-              skip3:
-                mov     dx, [esi + 6]
-                or      dx, dx
-                je      skip4
-                mov     [edi + 6], dx
-              skip4:
-                mov     dx, [esi + 8]
-                or      dx, dx
-                je      skip5
-                mov     [edi + 8], dx
-              skip5:
-                mov     dx, [esi + 10]
-                or      dx, dx
-                je      skip6
-                mov     [edi + 10], dx
-              skip6:
-                mov     dx, [esi + 12]
-                or      dx, dx
-                je      skip7
-                mov     [edi + 12], dx
-              skip7:
-                mov     dx, [esi + 14]
-                or      dx, dx
-                je      skip8
-                mov     [edi + 14], dx
-              skip8:
-                add     esi, 16
-                add     edi, 16
-                dec     ecx
-                jne     xdqwordloop
-          
-              xwordsTop:  
-                mov     ecx, xwords
-                or      ecx, ecx
-                je      nowords
-              xwordloop:
-                mov     dx, [esi]
-                or      dx, dx
-                je      skipword
-                mov     [edi], dx
-              skipword:
-                add     esi, 2
-                add     edi, 2
-                dec     ecx
-                jne     xwordloop
+                  nowords:
+                    mov     eax, pitchSource
+                    mov     ebx, pitchDest
+                    add     [psource], eax
+                    add     [pdest], ebx
+                    dec     ysize
+                    jne     yloop
+                }
+            }
+            else // KGJV 32B : assert (m_ppf->PixelBytes() == 4)
+            {
+                int xdqwords = scanSize / 32;
+                int xwords   = (scanSize - 32 * xdqwords) / 4;
 
-              nowords:
-                mov     eax, pitchSource
-                mov     ebx, pitchDest
-                add     [psource], eax
-                add     [pdest], ebx
-                dec     ysize
-                jne     yloop
+                __asm {
+                  b32_yloop:
+                    mov     esi, [psource]
+                    mov     edi, [pdest]
+
+                    mov     ecx, xdqwords
+                    or      ecx, ecx
+                    je      b32_xwordsTop
+                  b32_xdqwordloop:
+                    mov     edx, [esi + 0]
+                    or      edx, edx
+                    je      b32_skip1
+                    mov     [edi + 0], edx
+                  b32_skip1:
+                    mov     edx, [esi + 4]
+                    or      edx, edx
+                    je      b32_skip2
+                    mov     [edi + 4], edx
+                  b32_skip2:
+                    mov     edx, [esi + 8]
+                    or      edx, edx
+                    je      b32_skip3
+                    mov     [edi + 8], edx
+                  b32_skip3:
+                    mov     edx, [esi + 12]
+                    or      edx, edx
+                    je      b32_skip4
+                    mov     [edi + 12], edx
+                  b32_skip4:
+                    mov     edx, [esi + 16]
+                    or      edx, edx
+                    je      b32_skip5
+                    mov     [edi + 16], edx
+                  b32_skip5:
+                    mov     edx, [esi + 20]
+                    or      edx, edx
+                    je      b32_skip6
+                    mov     [edi + 20], edx
+                  b32_skip6:
+                    mov     edx, [esi + 24]
+                    or      edx, edx
+                    je      b32_skip7
+                    mov     [edi + 24], edx
+                  b32_skip7:
+                    mov     edx, [esi + 28]
+                    or      edx, edx
+                    je      b32_skip8
+                    mov     [edi + 28], edx
+                  b32_skip8:
+                    add     esi, 32
+                    add     edi, 32
+                    dec     ecx
+                    jne     b32_xdqwordloop
+              
+                  b32_xwordsTop:  
+                    mov     ecx, xwords
+                    or      ecx, ecx
+                    je      b32_nowords
+                  b32_xwordloop:
+                    mov     edx, [esi]
+                    or      edx, edx
+                    je      b32_skipword
+                    mov     [edi], edx
+                  b32_skipword:
+                    add     esi, 4
+                    add     edi, 4
+                    dec     ecx
+                    jne     b32_xwordloop
+
+                  b32_nowords:
+                    mov     eax, pitchSource
+                    mov     ebx, pitchDest
+                    add     [psource], eax
+                    add     [pdest], ebx
+                    dec     ysize
+                    jne     b32_yloop
+                }
             }
         } else {
             int xdwords = scanSize / 4;
@@ -917,17 +1010,18 @@ public:
             return;            
         }
 
-        PrivateSurface* psurfaceSource = psurfaceSourceOriginal->GetConvertedSurface(m_ppf);
+        PrivateSurface* psurfaceSource = psurfaceSourceOriginal->GetConvertedPrivateSurface(m_ppf);
         ZAssert(psurfaceSource->GetPixelFormat() == m_ppf);
 
-        /* Uncomment this code to use DDraw for blts
-        if (m_pbits == NULL) {
+        // KGJV 32B guard with bpp mode test
+        // 
+        if ((m_ppf->PixelBits() != 16) && (m_pbits == NULL)) {
             m_pvideoSurface->UnclippedBlt(
                 rect, 
                 psurfaceSource->GetVideoSurface(), 
                 pointSource
             );
-        } else*/
+        } else
         {
             BYTE* pdest = GetWritablePointer(rect.Min());
 
@@ -1069,23 +1163,39 @@ public:
         ZAssert(rect.YMin() >= 0         );
         ZAssert(rect.YMax() <= m_size.Y());
 
+        // KGJV 32B 
         if (m_pbits == NULL) {
             m_pvideoSurface->UnclippedFill(rect, pixel);
         } else {
-            ZAssert(m_ppf->PixelBytes() == 2);
+            // KGJV 32B 
+            // ZAssert(m_ppf->PixelBytes() == 2);
+            if (m_ppf->PixelBytes() == 4) // KGJV 32B
+            {
+                BYTE* pdest    = GetWritablePointer(rect.Min());
+                //int   scanSize = rect.XSize() * 4; // unused ?
+                DWORD  wPixel   = (DWORD)pixel.Value();
+                int   pitch    = GetPitch();
 
-            BYTE* pdest    = GetWritablePointer(rect.Min());
-            int   scanSize = rect.XSize() * 2;
-            WORD  wPixel   = (WORD)pixel.Value();
-            int   pitch    = GetPitch();
+                for (int y = rect.YSize(); y > 0; y--) {
+                    for (int x = 0; x < rect.XSize(); x++) {
+                        ((DWORD*)pdest)[x] = wPixel;
+                    }
+                    pdest += pitch;
+                }            }
+            else // defaut old code
+            {
+                BYTE* pdest    = GetWritablePointer(rect.Min());
+                int   scanSize = rect.XSize() * 2;
+                WORD  wPixel   = (WORD)pixel.Value();
+                int   pitch    = GetPitch();
 
-            for (int y = rect.YSize(); y > 0; y--) {
-                for (int x = 0; x < rect.XSize(); x++) {
-                    ((WORD*)pdest)[x] = wPixel;
+                for (int y = rect.YSize(); y > 0; y--) {
+                    for (int x = 0; x < rect.XSize(); x++) {
+                        ((WORD*)pdest)[x] = wPixel;
+                    }
+                    pdest += pitch;
                 }
-                pdest += pitch;
             }
-
             ReleasePointer();
         }
     }

@@ -1032,7 +1032,7 @@ public:
     {
         #ifdef FixPermedia
             pcontext->SetShadeMode(ShadeModeGlobalColor);
-            pcontext->SetColor(Color::White());
+            pcontext->SetGlobalColor(Color::White());
         #else
             pcontext->SetShadeMode(ShadeModeCopy);
         #endif

@@ -2,11 +2,17 @@
 #include "training.h"
 #include "badwords.h"
 
+// KGJV #62
+#include "mappreview.h"
 //////////////////////////////////////////////////////////////////////////////
 //
 // Team Screen
 //
 //////////////////////////////////////////////////////////////////////////////
+
+// KGJV #104 : 27 march 2006 - changes to remove the modal popup while waiting to join a team
+// some 'extra checks' cleanup may be required after beta test
+// search "KGJV #104" to find all changes
 
 int g_civIDStart = -1;
 extern bool g_bDisableNewCivs;
@@ -25,7 +31,12 @@ private:
 
     SideID m_sideCurrent;
     SideID m_sideToJoin;
-    MissionInfo* m_pMission;
+    SideID m_lastToJoinSend; // KGKV #104: last m_sideToJoin send to server (extra control).
+
+	TRef<MapPreviewPane> m_ppaneMapPreview; // KGJV #62
+    TRef<ButtonPane>	 m_pbuttonsTeam[6]; // KGJV #62
+	TRef<List>           m_plistSides; // KGJV #62
+	MissionInfo* m_pMission;
 
     int               m_secondsOld;
 
@@ -112,6 +123,7 @@ private:
     class TeamPainter : public ItemPainter
     {
         MissionInfo* m_pMission;
+        SideID *m_pSideToJoin; // KGJV #104
 
         TRef<Image> m_pimageArrow;
         TRef<Image> m_pimageTab;
@@ -125,8 +137,10 @@ private:
         const TVector<int>& m_viColumns;
 
     public:
-        TeamPainter(MissionInfo* pMission, const TVector<int>& viColumns, int nHeight, float fColorIntensity, float fColorBrightness) : 
-            m_pMission(pMission), 
+        // KGJV #104 - new param pSideToJoin
+        TeamPainter(MissionInfo* pMission, SideID *pSideToJoin, const TVector<int>& viColumns, int nHeight, float fColorIntensity, float fColorBrightness) : 
+            m_pMission(pMission),
+            m_pSideToJoin(pSideToJoin), // KGJV #104
             m_viColumns(viColumns), 
             m_nHeight(nHeight),
             m_fColorIntensity(fColorIntensity),
@@ -168,7 +182,10 @@ private:
                 pside = trekClient.GetCore()->GetSide(pitem->GetSideID());
             int pnumberside = pitem->GetSideID();
             
-            
+			// KGJV #114 - remove empty teams
+			if (!m_pMission->SideActive(pitem->GetSideID()) && m_pMission->GetStage() != STAGE_STARTED)
+				return;
+
             switch (pnumberside)
                 {
                 case 0:
@@ -224,6 +241,13 @@ private:
                 psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
             }
 
+            // KGJV #104 - paint the arrow if we request to join this team
+            if (*m_pSideToJoin == pnumberside)
+            {
+                psurface->BitBlt(WinPoint(-2,-4), m_pimageArrow->GetSurface());
+            }
+
+
             // if this team is empty...
             if (m_pMission->SideNumPlayers(pitem->GetSideID()) == 0 
                 && pitem->GetSideID() != SIDE_TEAMLOBBY)
@@ -238,7 +262,7 @@ private:
                 }
                 else
                 {
-                    strDescription = "destroyed";
+					strDescription = "destroyed";
                 }
 
                 psurface->DrawString(
@@ -265,13 +289,23 @@ private:
 				// end yp
 
                 // draw the team name
+				int idy = (pitem->GetSideID() >= 0)?-4:0;  // KGJV #62 if faction name, move team name up 4px
                 WinRect rectClipOld = psurface->GetClipRect();
                 psurface->SetClipRect(WinRect(WinPoint(m_viColumns[0], 0), WinPoint(m_viColumns[1] - 4, GetYSize()))); // clip name to fit in column
                 psurface->DrawString(
                     TrekResources::SmallFont(),
                     Color::White(),
-                    WinPoint(m_viColumns[0], m_nHeight * 1/2 - 8),
+                    WinPoint(m_viColumns[0], m_nHeight * 1/2 - 8 +idy), // KGJV #62 
                     CensorBadWords (m_pMission->SideName(pitem->GetSideID())).ToUpper()
+                );
+				// KGJV #62 - draw the faction name under team name
+				// faction name is under team and shifted +4px to the right
+				if (pitem->GetSideID() >= 0)
+                psurface->DrawString(
+                    TrekResources::SmallFont(),
+                    Color::White(),
+                    WinPoint(m_viColumns[0]+4, m_nHeight * 1/2 -2),
+                    trekClient.GetCore()->GetSide(pitem->GetSideID())->GetCivilization()->GetName()
                 );
                 psurface->RestoreClipRect(rectClipOld);
 
@@ -914,7 +948,8 @@ public:
         m_bDetailsChanged(false),
         m_bTeamSettingsPopupOpen(false),
         m_bShowingRandomizeWarning(false),
-        m_sideToJoin(NA)
+        m_sideToJoin(NA),
+        m_lastToJoinSend(NA)//KGJV #104
     {
         TRef<IObject> pobjPlayerColumns;
         TRef<IObject> pobjTeamColumns;
@@ -930,9 +965,8 @@ public:
         pnsTeamScreenData->AddMember("statsCount", m_pnumberStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("squadStatsCount", m_pnumberSquadStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("civColor", m_pcolorCiv = new ModifiableColorValue(Color::Black()));
-        
 
-        //
+		//
         // Load the members from MDL
         //
 
@@ -974,6 +1008,18 @@ public:
         CastTo(m_ptextStatus2,      (Pane*)pns->FindMember("textStatus2"         ));
         CastTo(m_ptextTimer,        (Pane*)pns->FindMember("textTimer"           ));
         CastTo(m_ptextTimerType,    (Pane*)pns->FindMember("textTimerType"       ));
+
+		// KGJV #62
+		CastTo(m_ppaneMapPreview ,  (Pane*)pns->FindMember("mapPreviewPane"));
+
+		// KGJV #62
+		CastTo(m_pbuttonsTeam[0],pns->FindMember("activeTeamButtonPane1"));
+		CastTo(m_pbuttonsTeam[1],pns->FindMember("activeTeamButtonPane2"));
+		CastTo(m_pbuttonsTeam[2],pns->FindMember("activeTeamButtonPane3"));
+		CastTo(m_pbuttonsTeam[3],pns->FindMember("activeTeamButtonPane4"));
+		CastTo(m_pbuttonsTeam[4],pns->FindMember("activeTeamButtonPane5"));
+		CastTo(m_pbuttonsTeam[5],pns->FindMember("activeTeamButtonPane6"));
+
 
         m_pteamSettingsPopup = new TeamSettingsDialogPopup(pns, this);
 
@@ -1042,6 +1088,13 @@ public:
         AddEventTarget(&TeamScreen::OnButtonTeamSettings, m_pbuttonTeamSettings->GetEventSource());
         AddEventTarget(&TeamScreen::OnButtonMakeLeader, m_pbuttonMakeLeader->GetEventSource());
         m_pbuttonGameOver->SetHidden(trekClient.GetNumEndgamePlayers() == 0);
+		// KGJV #62
+        AddEventTarget(&TeamScreen::OnButtonToggleTeam0, m_pbuttonsTeam[0]->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonToggleTeam1, m_pbuttonsTeam[1]->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonToggleTeam2, m_pbuttonsTeam[2]->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonToggleTeam3, m_pbuttonsTeam[3]->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonToggleTeam4, m_pbuttonsTeam[4]->GetEventSource());
+        AddEventTarget(&TeamScreen::OnButtonToggleTeam5, m_pbuttonsTeam[5]->GetEventSource());
 
         //
         // Lists
@@ -1055,15 +1108,18 @@ public:
         ParseIntVector(pobjTeamColumns, m_viTeamColumns);
         m_peventTeams = m_plistPaneTeams->GetSelectionEventSource();
         m_peventTeams->AddSink(m_psinkTeams = new IItemEvent::Delegate(this));
+		// KGJV #62
+		m_plistSides = new SortedList<ItemIDCompareFunction>(m_pMission->GetSideList(), SideCompare);
         m_plistPaneTeams->SetList(
             new ConcatinatedList(
-                new SortedList<ItemIDCompareFunction>(m_pMission->GetSideList(), SideCompare),
+                m_plistSides,// KGJV #62
                 new SingletonList(m_pMission->GetSideInfo(SIDE_TEAMLOBBY))
                 )
             );
         m_plistPaneTeams->UpdateLayout();
         m_plistPaneTeams->SetItemPainter(new TeamPainter(
-            m_pMission, 
+            m_pMission,
+            &m_sideToJoin,// KGJV #104
             m_viTeamColumns, 
             m_plistPaneTeams->YSize() / (c_cSidesMax + 1), 
             m_fColorIntensity,
@@ -1126,6 +1182,7 @@ public:
             m_pnumberStatsCount->SetValue(0);
 
         UpdateSquadsStatsMessage();
+
     }
 
     ~TeamScreen()
@@ -1191,7 +1248,29 @@ public:
                                 NA, (const char*)strChat);
         }
     }
+	// KGJV #62
+	void SetHiddenTeamButtons(bool bHidden)
+	{
+		SideID i;
+		for (i = 0; i < m_plistSides->GetCount() ; i++)
+			m_pbuttonsTeam[i]->SetHidden(bHidden);
+		for (;i < c_cSidesMax; i++)
+			m_pbuttonsTeam[i]->SetHidden(true);
 
+	}
+	// KGJV #62
+	void UpdateTeamButtons(bool bCanChange)
+	{
+		SetHiddenTeamButtons(!bCanChange);
+		for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
+		{
+			m_pbuttonsTeam[i]->SetChecked(m_pMission->SideActive(i));
+		}
+		for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
+		{
+			m_pbuttonsTeam[i]->SetEnabled(m_pMission->SideNumPlayers(i)==0);
+		}
+	}
     void UpdateButtonStates()
     {
         OnSelPlayer(m_plistPanePlayers->GetSelection());
@@ -1261,6 +1340,10 @@ public:
 
             m_pbuttonbarChat->SetHidden(2, !trekClient.GetPlayerInfo()->IsTeamLeader());
             m_pbuttonbarChat->SetEnabled(2, trekClient.GetPlayerInfo()->IsTeamLeader());
+
+			// KGJV #62
+			UpdateTeamButtons(bCanChangeSettings);
+			
         }
         else
         {
@@ -1280,7 +1363,8 @@ public:
             m_pbuttonbarChat->SetHidden(1, true);
             m_pbuttonbarChat->SetHidden(2, true);
 
-            
+			// KGJV #62
+            SetHiddenTeamButtons(true);
         }
         
         m_pcomboWing->SetHidden(m_sideCurrent != trekClient.GetSideID() 
@@ -1292,6 +1376,7 @@ public:
                 || m_pMission->SideAvailablePositions(m_sideCurrent) > 0
                     && m_pMission->SideActive(m_sideCurrent))
             && m_sideCurrent != trekClient.GetSideID());
+
         m_pbuttonStart->SetHidden(!trekClient.MyPlayerInfo()->IsMissionOwner());
     }
 
@@ -1303,6 +1388,11 @@ public:
     
     void UpdatePromptText()
     {
+        // KGJV #104 - display join requests
+        if (m_sideToJoin != NA)
+            m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper() 
+                + ZString(", YOU ARE REQUESTING TO JOIN A TEAM ")); // todo: append team name may be or not :)
+        else
         if (trekClient.GetSideID() != NA && trekClient.GetSideID() != SIDE_TEAMLOBBY)
             m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper() 
                 + ZString(", YOU ARE ON TEAM ") + CensorBadWords (ZString(trekClient.GetSide()->GetName())).ToUpper());
@@ -1460,11 +1550,16 @@ public:
                 for (SideID id = 0; id < m_pMission->NumSides(); id++)
                 {
                     const char* szReason = NULL;
-                    if (m_pMission->SideNumPlayers(id) < m_pMission->MinPlayersPerTeam())
+					// KGJV #62 - logic changed for AllowEmptyTeams 
+					if (m_pMission->SideNumPlayers(id) < ( !m_pMission->SideActive(id) ? 0 : m_pMission->MinPlayersPerTeam()))
                         szReason = "BELOW MINIMUM SIZE";
                     else if (m_pMission->SideNumPlayers(id) > m_pMission->MaxPlayersPerTeam())
                         szReason = "ABOVE MAXIMUM SIZE";
-					else if (!m_pMission->SideReady(id))
+					// EmptyTeams not allowed so check SideReady
+					else if (m_pMission->SideActive(id) && !m_pMission->SideReady(id))
+						szReason = "NOT READY";
+					// EmptyTeams allowed so check SideReady only if it has at least 1 player
+					else if (m_pMission->SideActive(id) && (m_pMission->SideNumPlayers(id) > 0 ) && !m_pMission->SideReady(id))
 						szReason = "NOT READY";
 
                     if (szReason)
@@ -1824,6 +1919,7 @@ public:
         } else if (pevent = m_peventTeams) {
             OnSelTeam(pitem);
         }
+        UpdatePromptText();//KGJV #104 - extra debug
 
         return true;
     }
@@ -1943,14 +2039,24 @@ public:
 
     bool OnSelTeam(ItemID pitem)
     {
+        SideInfo* sideinfo = (SideInfo*)pitem;
+
         if (pitem == NULL)
         {
             // default the selection to the lobby side
             m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(SIDE_TEAMLOBBY));
         }
+		else
+		// KGJV #114 cant select destroyed/inactive & empty teams
+		if (!m_pMission->SideActive(sideinfo->GetSideID()) && //destroyed/inactive
+			m_pMission->SideNumPlayers(sideinfo->GetSideID()) == 0) //empty teams
+		{
+            // default the selection to the lobby side
+            m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(SIDE_TEAMLOBBY));
+		}
         else
         {
-            SideInfo* sideinfo = (SideInfo*)pitem;
+
 
             m_sideCurrent   = sideinfo->GetSideID();
             IsideIGC* pside = trekClient.GetCore()->GetSide(m_sideCurrent);
@@ -2110,6 +2216,12 @@ public:
 
     bool OnButtonGameOver()
     {
+        // KGJV #104 -
+        // cancel any join request while looking at previous game scores
+        if (m_lastToJoinSend != NA)
+        {
+            OnCancelRequest();
+        }
         s_nLastSelectedChatTab = ChatTargetToButton(m_chattargetChannel);
         GetWindow()->screen(ScreenIDGameOverScreen);
 
@@ -2202,23 +2314,36 @@ public:
 
     bool OnCancelRequest()
     {
+        // KGJV #104: called when cancelling a request to join a team
+        // assert to do: m_sideToJoin should be valid  and match last POSITIONREQ message
+        //assert(m_lastToJoinSend == NA);
+        debugf("TeamScreen::OnCancelRequest: %d\n",m_lastToJoinSend);
         if (m_pmsgBox)
         {
             GetWindow()->GetPopupContainer()->ClosePopup(m_pmsgBox);
             GetWindow()->RestoreCursor();
         }
+
+        if (m_lastToJoinSend == NA)  // shouldnt happen
+        {
+            debugf("TeamScreen::OnCancelRequest - m_lastToJoinSend == NA\n"); 
+            return false;
+        }
+
         GetWindow()->SetWaitCursor();
         m_pmsgBox = CreateMessageBox("Canceling request...", NULL, false, false, 1.0f);
         GetWindow()->GetPopupContainer()->OpenPopup(m_pmsgBox, false);
-        m_sideToJoin = NA;
+        // KGJV #104
+        // we'll clear this when server replies
+        // m_sideToJoin = NA;
 
         trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
         BEGIN_PFM_CREATE(trekClient.m_fm, pfmDelPosReq, CS, DELPOSITIONREQ)
         END_PFM_CREATE
         pfmDelPosReq->shipID = trekClient.MyPlayerInfo()->ShipID();
-        pfmDelPosReq->iSide = m_sideCurrent;
+        pfmDelPosReq->iSide = m_sideToJoin; // KGJV #104 - we cancel for sideToJoin
         pfmDelPosReq->reason = DPR_Canceled;
-
+        m_lastToJoinSend = NA;  // KGJV #104
         return false;
     }
 
@@ -2234,6 +2359,17 @@ public:
 		// Imago - They are not AFK, "click the button for them"
 		if (g_bAFKToggled) OnButtonAwayFromKeyboard();
 
+        UpdatePromptText();//KGJV #104 - extra debug
+        // KGJV - #104
+        // already requesting to join here or another team, so we cancel the request
+        if (m_sideToJoin != NA)
+        {
+            OnCancelRequest();
+            UpdateButtonStates();
+            UpdatePromptText();//KGJV #104 - extra debug
+            return true;
+         }
+        
         // ZAssert(m_sideCurrent != trekClient.GetSideID());
         if (m_sideCurrent == SIDE_TEAMLOBBY
             && trekClient.GetSideID() != SIDE_TEAMLOBBY)
@@ -2270,20 +2406,26 @@ public:
 
             m_sideToJoin = m_sideCurrent;
 
-            m_pmsgBox = 
-                CreateMessageBox(
-                    "Waiting to be accepted to the new team...",
-                    NULL,
-                    false
-                );
+            // KGJV #104 : remove modal popup
+            //m_pmsgBox = 
+            //    CreateMessageBox(
+            //        "Waiting to be accepted to the new team...",
+            //        NULL,
+            //        false
+            //    );
 
-            TRef<Surface> psurface = GetModeler()->LoadSurface(AWF_TEAMROOM_QUIT_TEAM_BUTTON, true);
-            TRef<ButtonPane> pQuitTeamButton 
-                = CreateTrekButton(CreateButtonFacePane(psurface, ButtonNormal), false, positiveButtonClickSound);
-            pQuitTeamButton->SetOffset(WinPoint(183, 170));
-            m_pmsgBox->GetPane()->InsertAtBottom(pQuitTeamButton);
-            AddEventTarget(&TeamScreen::OnCancelRequest, pQuitTeamButton->GetEventSource());
-            GetWindow()->GetPopupContainer()->OpenPopup(m_pmsgBox, false);
+            //assert(m_lastToJoinSend == NA); // check for no previous unanswered or cancelled request
+            m_lastToJoinSend = m_sideToJoin;
+            UpdateButtonStates();
+            UpdatePromptText();
+
+            //TRef<Surface> psurface = GetModeler()->LoadSurface(AWF_TEAMROOM_QUIT_TEAM_BUTTON, true);
+            //TRef<ButtonPane> pQuitTeamButton 
+            //    = CreateTrekButton(CreateButtonFacePane(psurface, ButtonNormal), false, positiveButtonClickSound);
+            //pQuitTeamButton->SetOffset(WinPoint(183, 170));
+            //m_pmsgBox->GetPane()->InsertAtBottom(pQuitTeamButton);
+            //AddEventTarget(&TeamScreen::OnCancelRequest, pQuitTeamButton->GetEventSource());
+            //GetWindow()->GetPopupContainer()->OpenPopup(m_pmsgBox, false);
         }
 
         return true;
@@ -2484,6 +2626,13 @@ public:
 			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
 		} ;
 		// wlp 8/5/2006 - end of Afk added code
+
+        // KGJV #104
+        // cancel any join request while looking at setting
+        if (m_lastToJoinSend != NA)
+        {
+            OnCancelRequest();
+        }
 		s_nLastSelectedChatTab = ChatTargetToButton(m_chattargetChannel);
 		GetWindow()->screen(ScreenIDCreateMission);
 		return true;
@@ -2536,7 +2685,24 @@ public:
 
         return true;
     }
-
+	// KGJV #62
+	bool OnButtonToggleTeam(SideID side)
+	{
+        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+        BEGIN_PFM_CREATE(trekClient.m_fm, pfmSideInactive, CS, SIDE_INACTIVE)
+        END_PFM_CREATE
+        pfmSideInactive->sideID = side;
+        pfmSideInactive->bActive = m_pbuttonsTeam[side]->GetChecked();
+		pfmSideInactive->bChangeAET = false; // server will set this when replying
+		debugf("toggle team %d\n",(int)side);
+		return true;
+	}
+	bool OnButtonToggleTeam0()	{	return OnButtonToggleTeam(0); }
+	bool OnButtonToggleTeam1()	{	return OnButtonToggleTeam(1); }
+	bool OnButtonToggleTeam2()	{	return OnButtonToggleTeam(2); }
+	bool OnButtonToggleTeam3()	{	return OnButtonToggleTeam(3); }
+	bool OnButtonToggleTeam4()	{	return OnButtonToggleTeam(4); }
+	bool OnButtonToggleTeam5()	{	return OnButtonToggleTeam(5); }
     //////////////////////////////////////////////////////////////////////////////
     //
     // Game Event handlers
@@ -2571,6 +2737,9 @@ public:
             UpdateButtonStates();
             UpdateSquadsStatsMessage();
             m_bDetailsChanged = true;
+
+			// KGJV #62
+			m_ppaneMapPreview->ComputePreview(trekClient.MyMission()->GetMissionParams());
         }
     }
 
@@ -2584,6 +2753,7 @@ public:
 
         if (trekClient.MyPlayerInfo()->ShipID() == pPlayerInfo->ShipID())
         {
+            debugf("TeamScreen::OnAddPlayer: sideID=%d, m_sideToJoin=%d, m_lastToJoinSend=%d \n",sideID,m_sideToJoin,m_lastToJoinSend); // KGJV #104
             if (g_civIDStart != -1 && sideID != SIDE_TEAMLOBBY) {
                 OnCivChosen(g_civIDStart);
                 g_civStart = -1;
@@ -2592,7 +2762,7 @@ public:
             if (pPlayerInfo->SideID() == m_sideToJoin)
             {
                 m_sideToJoin = NA;
-
+                m_lastToJoinSend = NA; // KGJV #104 - request fullfilled
                 if (m_pmsgBox)
                 {
                     // dismiss the "waiting to be accepted..." popup
@@ -2601,7 +2771,13 @@ public:
                 }
                 m_pmsgBox = NULL;
             }
-
+            // KGJV #104
+            // player was added to a team while requesting to join another
+            // so cancel his request
+            else if (m_sideToJoin != NA)
+                if (pPlayerInfo->SideID() != SIDE_TEAMLOBBY) // joining NOAT never generates a request
+                if (m_sideToJoin != SIDE_TEAMLOBBY) // joining NOAT never generates a request
+                    OnCancelRequest();
             // if I'm in the team leader chat and am no longer a team leader, 
             // or if I'm in the team chat and no longer on a team, throw me out.
             //
@@ -2630,8 +2806,18 @@ public:
         // if this is me...
         if (trekClient.MyPlayerInfo()->ShipID() == pPlayerInfo->ShipID())
         {
+            debugf("TeamScreen::OnDelPlayer: %d %d\n",sideID, reason); // KGJV #104
             ZString strMessage;
 
+            // KGJV #104
+            // at this point, we've been removed from a team
+            // if we was requesting to join a team, abort the request if needed
+            if (m_lastToJoinSend != NA)
+            {
+                if (m_sideToJoin != m_lastToJoinSend)
+                    if( reason != QSR_SwitchingSides) // dont abort the join request if we were removed because we asked to switch team
+                        OnCancelRequest();
+            }
             switch (reason)
             {
             case QSR_LeaderBooted:
@@ -2784,6 +2970,7 @@ public:
     {
         if (pPlayerInfo == trekClient.MyPlayerInfo())
         {
+            debugf("TeamScreen::OnDelRequest: %d %d\n",sideID, reason); // KGJV #104
             if (m_pmsgBox)
             {
                 GetWindow()->GetPopupContainer()->ClosePopup(m_pmsgBox);
@@ -2874,6 +3061,11 @@ public:
                 TRef<IMessageBox> pmsgBox = CreateMessageBox(strReason);
                 GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
             }
+            //KGJV #104
+            // we got a reject to join, clear m_sideToJoin
+            m_sideToJoin = NA;
+            m_lastToJoinSend = NA;
+            UpdatePromptText();
         }
     }
 
@@ -2906,6 +3098,16 @@ public:
         else
             m_pnumberSquadStatsCount->SetValue(0);
     }
+	// KGJV #62
+	void OnTeamInactive(MissionInfo* pMissionDef, SideID sideID)
+	{
+		m_plistPaneTeams->ForceRefresh();
+        UpdateStatusText();
+        UpdatePromptText();
+        UpdateTitleText();
+        UpdateButtonStates();
+        UpdateSquadsStatsMessage();
+	}
 };
 
 int TeamScreen::s_nLastSelectedChatTab = NA;

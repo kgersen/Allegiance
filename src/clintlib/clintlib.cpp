@@ -287,6 +287,11 @@ public:
     {
         ForEachSink( OnLogonGameServerFailed(bRetry, szReason) )
     }
+	// KGJV #114
+	void OnServersList(int cCores, char *Cores, int cServers, char *Servers)
+	{
+		ForEachSink( OnServersList(cCores, Cores, cServers, Servers));
+	}
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -546,6 +551,11 @@ public:
     {
         m_psink->OnLogonGameServerFailed(bRetry, szReason);
     }
+	// KGJV #114
+	void OnServersList(int cCores, char *Cores, int cServers, char *Servers)
+	{
+		m_psink->OnServersList(cCores, Cores, cServers, Servers);
+	}
 };
 
 TRef<IClientEventSink> IClientEventSink::CreateDelegate(IClientEventSink* psink)
@@ -673,6 +683,10 @@ void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
     m_pfmMissionDef->misparms.bObjectModelCreated = pfmLobbyMissionInfo->fMSArena;
 	// KGJV - receive game core file
 	Strncpy(m_pfmMissionDef->misparms.szIGCStaticFile, FM_VAR_REF(pfmLobbyMissionInfo, szIGCStaticFile), c_cbFileName);
+	// KGJV #114 - fill in server name & ip
+	Strncpy(m_pfmMissionDef->szServerName, FM_VAR_REF(pfmLobbyMissionInfo,szServerName), c_cbName);
+	Strncpy(m_pfmMissionDef->szServerAddr, FM_VAR_REF(pfmLobbyMissionInfo,szServerAddr), 16);
+
     m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
     m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
     m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
@@ -1824,7 +1838,27 @@ void BaseClient::CreateMissionReq()
     SendLobbyMessages();
     // now we wait for FM_L_CREATE_MISSION_ACK
 }
-
+// KGJV #114
+void BaseClient::ServerListReq()
+{
+    //No need to set message type for non m_fm messages
+    BEGIN_PFM_CREATE(m_fmLobby, pfmGetServerReq, C, GET_SERVERS_REQ)
+    END_PFM_CREATE
+    SendLobbyMessages();
+    // now we wait for FM_L_SERVERS_LIST
+}
+void BaseClient::CreateMissionReq(const char *szServer, const char *szAddr, const char *szIGCStaticFile, const char *szGameName)
+{
+    //No need to set message type for non m_fm messages
+    BEGIN_PFM_CREATE(m_fmLobby, pfmCreateMission, C, CREATE_MISSION_REQ)
+		FM_VAR_PARM(szServer,        CB_ZTS)
+		FM_VAR_PARM(szAddr,          CB_ZTS)
+		FM_VAR_PARM(szIGCStaticFile, CB_ZTS)
+		FM_VAR_PARM(szGameName,      CB_ZTS)
+    END_PFM_CREATE
+    SendLobbyMessages();
+    // now we wait for FM_L_CREATE_MISSION_ACK
+}
 #ifdef markcu
     const int g_cPingsTimeout = int(unsigned(1<<31)-1); // close to infinity as possible for int
 #else
@@ -3977,9 +4011,33 @@ void BaseClient::BoardShip(IshipIGC*  pship)
         StartLockDown("Disembarking from " + ZString(pshipParent->GetName()) + "'s ship....", lockdownTeleporting);
     }
 }
+//KGJV #114
+// call GetPrivateProfileString with preset cfgfile. Valid after a Load(...) only.
+DWORD CfgInfo::GetCfgProfileString(
+	const char *c_szCfgApp,
+	const char *c_szKeyName,
+	const char *c_szDefaultValue,
+	char *szStr,
+	DWORD dwSize)
+{
 
+	return GetPrivateProfileString(
+		c_szCfgApp,
+		c_szKeyName,
+		c_szDefaultValue,
+		szStr,
+		dwSize,
+		m_szConfigFile);
+}
+//KGJV #114 - set config file name for GetCfgProfileString without loading
+void CfgInfo::SetCfgFile(const char * szConfig)
+{
+	m_szConfigFile = ZString(szConfig);
+}
 void CfgInfo::Load(const char * szConfig)
 {
+	m_szConfigFile = ZString(szConfig); // KGJV #114 - save config file name for GetCfgProfileString
+
     const char * c_szCfgApp = "Allegiance";
     char szStr[128]; // random number;
     

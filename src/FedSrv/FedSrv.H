@@ -21,7 +21,7 @@ const int c_cDronesMax    = 500; // max drones  allowed on a server
 const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
 
 #if defined(ALLSRV_STANDALONE)
-  const short c_cMaxPlayersPerGame = 200; // KGJV-; changed from 64 to 200. 
+  const short c_cMaxPlayersPerGame = 0x7FFF; // KGJV-; changed from 64 to 200. KGJV #114 back to AZ size
 #else // defined(ALLSRV_STANDALONE)
   const short c_cMaxPlayersPerGame = 0x7FFF;
 #endif // defined(ALLSRV_STANDALONE)
@@ -312,6 +312,12 @@ struct Global
   short               cRankInfo;
   StaticMapInfo*      vStaticMapInfo;
   short               cStaticMapInfo;
+
+  // KGJV #114 - cores list for create game
+  StaticCoreInfo*     vStaticCoreInfo; //array of core file name
+  int				  cStaticCoreInfo; // nb of cores, 0 if none
+  int				  cMaxGames;	   // max games allowed, reg entry
+  ZString			  strLocation;     // Location, reg entry
 
   bool                fProtocol;
   bool                fPaused;

@@ -5,6 +5,8 @@
 #ifndef MARKCU
 #include "consoledata.h"
 #endif 
+// KGJV #62
+#include "mappreview.h"
 //////////////////////////////////////////////////////////////////////////////
 //
 // SwitchValuePane
@@ -803,6 +805,109 @@ public:
     }
 };
 
+//////////////////////////////////////////////////////////////////////////////
+// KGJV #62 - MapPreviewPane
+// MDL syntax:
+//  MapPreviewPane(image, bshowdetails, bshowside)
+//     image = background image on which the preview will be rendered. So image also sets the size of the pane.
+//     bshowdetails = bool, if true displays map details whern the mouse is over the pane
+//     bshowside = bool, if true displays the side arrow on the map
+
+class MapPreviewPaneFactory : public IFunction {
+private:
+    TRef<Modeler>         m_pmodeler;
+public:
+    MapPreviewPaneFactory(
+        Modeler*         pmodeler
+    ) :
+        m_pmodeler(pmodeler)
+    {
+    }
+
+    TRef<IObject> Apply(ObjectStack& stack)
+    {
+        //TRef<RectValue> prect  = RectValue::Cast((IObject*)stack.Pop());
+		TRef<Image>   pimage               = Image::Cast((Value*)(IObject*)stack.Pop());
+		TRef<Boolean> pbooleanShowDetails  = Boolean::Cast((IObject*)stack.Pop());
+		TRef<Boolean> pbooleanShowSide     = Boolean::Cast((IObject*)stack.Pop());
+
+        return (Pane*)
+            new MapPreviewPane(m_pmodeler,pimage,pbooleanShowDetails->GetValue(),pbooleanShowSide->GetValue());
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////
+// KGJV #114
+// TextButtonBarPane
+//  serverColumns       = [-1,-1,-1];
+//  serverHeaderColumns = ["Name","Location","Ping"];
+//  serverListHeader    = TextButtonBarPane(serverColumns, serverHeaderColumns, Button3State, false);
+//////////////////////////////////////////////////////////////////////////////
+
+class TextButtonBarPaneFactory : public IFunction {
+private:
+    TRef<Modeler> m_pmodeler;
+
+public:
+    TextButtonBarPaneFactory(Modeler* pmodeler) :
+        m_pmodeler(pmodeler)
+    {
+    }
+
+    TRef<IObject> Apply(ObjectStack& stack)
+    {
+        TVector<int> m_vecColumns;
+        ParseIntVector((IObject*)stack.Pop(), m_vecColumns);
+		
+		TVector<ZString> m_vecColumnsNames;
+        ParseStringVector((IObject*)stack.Pop(), m_vecColumnsNames);
+
+        TRef<Number>      pnumberFaces;  CastTo(pnumberFaces,  (IObject*)stack.Pop());
+        bool              bActAsTabs = false;
+
+        if (stack.GetCount() > 0)
+        {
+            TRef<Boolean>  pbooleanActAsTabs;  CastTo(pbooleanActAsTabs, (IObject*)stack.Pop());
+            bActAsTabs = pbooleanActAsTabs->GetValue();
+        }
+
+        TRef<ButtonBarPane> pbuttonbar = 
+            CreateButtonBarPane(bActAsTabs,false);
+
+		int count = m_vecColumns.GetCount();
+		int xprev = 0;
+
+		for (int index = 0; index < count; index++) {
+			int x = m_vecColumns[index];
+
+			WinPoint p = TrekResources::SmallFont()->GetTextExtent(m_vecColumnsNames[index]);
+
+			TRef<StringPane> s1 = new StringPane(
+									m_vecColumnsNames[index],
+									TrekResources::SmallFont(),
+									WinPoint(x-xprev,p.Y()),
+									JustifyLeft());
+			TRef<StringPane> s2 = new StringPane(
+									m_vecColumnsNames[index],
+									TrekResources::SmallBoldFont(),
+									WinPoint(x-xprev,p.Y()),
+									JustifyLeft());
+			s1->SetOpaque(true);
+			s1->SetTextColor(Color::White());
+			s2->SetOpaque(true);
+			s2->SetTextColor(Color::Yellow());
+
+			pbuttonbar->InsertButton(CreateButton(CreateButtonFacePane(s1,s2)),index);
+
+			xprev = x;
+		}
+    
+        pbuttonbar->GetMouseEnterWhileEnabledEventSource()->AddSink(new SoundIDEventSink(mouseoverSound));
+        pbuttonbar->GetEventSource()->AddSink(new SoundIDEventSink(mouseclickSound));
+
+        return pbuttonbar;
+    }
+};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -848,4 +953,11 @@ void ExportPaneFactories(INameSpace* pns)
     pns->AddMember("ChatListPane",  new ChatListPaneFactory());
     pns->AddMember("InventoryImage",  new InventoryImageFactory());
 #endif
+
+	// KGJV #62 - Map preview pane
+	pns->AddMember("MapPreviewPane", new MapPreviewPaneFactory(GetModeler()));
+
+	// KGJV #114 - TextButtonBarPane
+    pns->AddMember("TextButtonBarPane",new TextButtonBarPaneFactory(GetModeler()));
+
 }

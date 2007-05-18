@@ -139,7 +139,9 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   m_fmClients(&m_psiteClient),
   m_cReportServers(0),
   m_sGameInfoInterval(0), // doesn't really matter, but...
-  m_fProtocol(true)
+  m_fProtocol(true),
+  m_cStaticCoreInfo(0),
+  m_vStaticCoreInfo(NULL)
 #ifdef USECLUB
   ,
   m_csqlSilentThreads(0),
@@ -250,6 +252,7 @@ CLobbyApp::~CLobbyApp()
   m_pzas = NULL;
   m_perfshare.FreeCounters(m_pCounters);
   ZGameInfoClose();
+  FreeStaticCoreInfo(); // KGJV #114
   WSACleanup();
 }
 
@@ -707,3 +710,65 @@ bool CLobbyApp::StringICmpLess::operator () (const ZString& str1, const ZString&
   else
     return nLength1 < nLength2;
 };
+
+// KGJV #114
+void CLobbyApp::BuildStaticCoreInfo()
+{
+	// build the master core list
+	// then set coremask for each server
+	// 1. get ride of the old list
+	FreeStaticCoreInfo();
+	// 2. loop thru unpaused servers and build a TList of StaticCoreInfo and the coremask
+	ListConnections::Iterator iterCnxn(*GetFMServers().GetConnections());
+	TList<StaticCoreInfo*> CoreList;
+	while (!iterCnxn.End())
+	{
+		CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn.Value());
+		if (pServerT) // skip lost/terminating server
+		{
+			pServerT->SetStaticCoreMask(0); // clear the core mask, not really needed here but it doesnt hurt
+			int c = pServerT->GetcStaticCoreInfo();
+			if (!pServerT->GetPaused()) // skip paused serveR
+				for (int i=0; i<c; i++)
+				{
+					if (!CoreList.Find(&(pServerT->GetvStaticCoreInfo()[i])))
+						CoreList.PushFront(&(pServerT->GetvStaticCoreInfo()[i]));
+				}
+		}
+		iterCnxn.Next();
+	}
+
+	// 3. Allocate mem 
+	m_cStaticCoreInfo = CoreList.GetCount();
+	if (m_cStaticCoreInfo)
+		m_vStaticCoreInfo =  new StaticCoreInfo[m_cStaticCoreInfo];
+	else
+		return; // no core, all done
+
+
+    // 4. transform the TList into an array
+
+	for (int i = 0; i < m_cStaticCoreInfo; i++)
+		strcpy(m_vStaticCoreInfo[i].cbIGCFile,CoreList[i]->cbIGCFile);
+		
+	// 5. loop thru unpaused servers and build the coremask
+	ListConnections::Iterator iterCnxn2(*GetFMServers().GetConnections());
+	while (!iterCnxn2.End())
+	{
+		CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn2.Value());
+		if (pServerT) // skip lost/terminating server
+		{
+			int c = pServerT->GetcStaticCoreInfo();
+			pServerT->SetStaticCoreMask(0); // clear the core mask
+			if (!pServerT->GetPaused()) // skip paused server
+				for (int i=0; i<c; i++)
+				{
+					for (int j = 0; j < m_cStaticCoreInfo; j++)
+						if (strcmp(pServerT->GetvStaticCoreInfo()[i].cbIGCFile,m_vStaticCoreInfo[j].cbIGCFile) == 0)
+							pServerT->SetStaticCoreMask(pServerT->GetStaticCoreMask() | 1<<j);
+						
+				}
+		}
+		iterCnxn2.Next();
+	}
+}

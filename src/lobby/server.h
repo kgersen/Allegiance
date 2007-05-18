@@ -97,6 +97,37 @@ public:
 	  return m_sPort;
   }
 
+  // KGJV #114
+  void FreeStaticCoreInfo()
+  {
+	  if (m_vStaticCoreInfo)
+		  delete [] m_vStaticCoreInfo;
+	  m_vStaticCoreInfo = NULL;
+	  m_cStaticCoreInfo = 0;
+  }
+  void SetStaticCoreInfo(int cStaticCoreInfo, StaticCoreInfo *vStaticCoreInfo)
+  {
+		FreeStaticCoreInfo(); // free in case of reconnect
+		m_cStaticCoreInfo = cStaticCoreInfo;
+		if (cStaticCoreInfo)
+		{
+			m_vStaticCoreInfo = new StaticCoreInfo[cStaticCoreInfo];
+			memcpy(m_vStaticCoreInfo,vStaticCoreInfo,cStaticCoreInfo*sizeof(StaticCoreInfo));
+		}
+  }
+  int GetcStaticCoreInfo() { return m_cStaticCoreInfo; }
+  StaticCoreInfo* GetvStaticCoreInfo() {return m_vStaticCoreInfo;}
+  void SetStaticCoreMask(DWORD dwStaticCoreMask) { m_dwStaticCoreMask = dwStaticCoreMask; }
+  DWORD GetStaticCoreMask() { return m_dwStaticCoreMask; }
+  int GetCurrentGamesCount() { return m_missions.GetCount(); }
+  int GetMaxGamesAllowed()   { return m_iMaxGames; }
+  void SetMaxGamesAllowed(int max) {m_iMaxGames = max;}
+  char *GetLocation() { return m_szLocation; }
+  void SetLocation(char *loc) { 
+	  strncpy(m_szLocation,loc,sizeof(m_szLocation));
+	  m_szLocation[sizeof(m_szLocation)-1]='\0';
+  };
+
   void Pause(bool fPause);
 
 private:
@@ -112,6 +143,12 @@ private:
   int             m_maxLoad; // some combination of games/players
   bool            m_bHere; // don't count them for periodic roll call until they show up for the 1st time.
   bool            m_fPaused;
+  // KGJV #114
+  StaticCoreInfo *m_vStaticCoreInfo;
+  int m_cStaticCoreInfo;
+  DWORD m_dwStaticCoreMask;
+  int  m_iMaxGames;
+  char m_szLocation[c_cbFileName]; // it's not a filename but we want it short
 };
 
 #endif

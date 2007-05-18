@@ -42,6 +42,9 @@ public:
 class DDPixelFormat      : public TZeroFillWithSize<DDPIXELFORMAT> {};
 
 class DDDeviceIdentifier : public TZeroFill<DDDEVICEIDENTIFIER> {};
+#ifdef USEDX7
+class DDDeviceIdentifier2 : public TZeroFill<DDDEVICEIDENTIFIER2> {};
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //

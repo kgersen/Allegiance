@@ -223,6 +223,9 @@ public:
     virtual Engine*         GetEngine() = 0;
     virtual ZString         GetArtPath() = 0;
 
+    // KGJV 32B - move this to abstrat class modeler
+    virtual TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError) = 0;
+
     virtual INameSpace*     CreateNameSpace(const ZString& str)                        = 0;
     virtual INameSpace*     CreateNameSpace(const ZString& str, INameSpace* pnsParent) = 0;
     virtual INameSpace*     GetNameSpace(const ZString& str, bool bError = true)       = 0;

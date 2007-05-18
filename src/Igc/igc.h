@@ -1246,8 +1246,8 @@ struct MissionParams
         nInitialMinersPerTeam           = 1;
         nMaxMinersPerTeam               = 4;
 
-        nMinPlayersPerTeam              = 7;
-        nMaxPlayersPerTeam              = 15;
+        nMinPlayersPerTeam              = 1;   // KGJV #114 changed
+        nMaxPlayersPerTeam              = 100; // KGJV #114 changed
 
         nTotalMaxPlayersPerGame         = 0x7FFF;
     }
@@ -1267,7 +1267,7 @@ struct MissionParams
             {
                 return "You must choose one or more winning conditions.";
             }
-			else if (bAutoRestart || (bObjectModelCreated && bClubGame) || bAllowEmptyTeams)
+			else if (bAutoRestart || (bObjectModelCreated && bClubGame)) // KGJV #62 || bAllowEmptyTeams)
             {
                 return "HACK: one or more admin-only flags are set.";
             }

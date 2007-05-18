@@ -231,6 +231,38 @@ void UnloadRankInfo()
   g.cRankInfo = 0;
 }
 
+//KGJV #114
+// read <artpath>/cores.txt and fill in g.cStaticCoreInfo (size) and g.vStaticCoreInfo (data)
+// this assumes cores.txt is well formated (no overflow control)
+void LoadStaticCoreInfo()
+{
+    char        mapfilename[MAX_PATH + 1];
+    HRESULT     hr = UTL::getFile("cores", ".txt", mapfilename, true, true);
+    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
+	g.cStaticCoreInfo = 0;
+	g.vStaticCoreInfo = NULL;
+    if (file)
+    {
+		// 1st line = nb cores
+		fscanf(file,"%d\n",&g.cStaticCoreInfo);
+		g.vStaticCoreInfo = new StaticCoreInfo[g.cStaticCoreInfo];
+		memset(g.vStaticCoreInfo,0,g.cStaticCoreInfo*sizeof(StaticCoreInfo));// mainly for debugging purpose
+		for (int i=0;i<g.cStaticCoreInfo;i++)
+		{
+			// one core per line, no .igc extension, max size = c_cbFileName
+			fscanf(file,"%[^\n]\n",g.vStaticCoreInfo[i].cbIGCFile);
+		}
+		fclose(file);
+	}
+}
+void UnloadStaticCoreInfo()
+{
+	if (g.vStaticCoreInfo)
+		delete [] g.vStaticCoreInfo;
+	g.cStaticCoreInfo = 0;
+}
+// End of KGJV #114
+
 
 void LoadStaticMapInfo()
 {
@@ -1168,7 +1200,7 @@ void SetCharStats(int                   characterID,
 
     g.sql.PostQuery(pquery);
 
-#endif // !defined(ALLSRV_STANDALONE)
+  #endif // !defined(ALLSRV_STANDALONE)
 
 #ifdef DEBUG
 	// mmf have debug build of server log this
@@ -6555,6 +6587,52 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	// KGJV #62
+    case FM_CS_SIDE_INACTIVE:
+    {
+		TrapHackBoot(pfsMission);
+		TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
+		TrapHackBoot(pfsMission->GetStage() == STAGE_NOTSTARTED);
+		TrapHackBoot(!pfsMission->GetMissionDef()->misparms.bObjectModelCreated);
+
+		CASTPFM(pfmSideInactive, CS, SIDE_INACTIVE, pfm);
+  		SideID sid = pfmSideInactive->sideID;
+
+		TrapHackBoot(!pfsMission->HasPlayers(pfsMission->GetIGCMission()->GetSide(sid),true));
+
+		pfsMission->SetSideActive(sid,pfmSideInactive->bActive); // update cached missdef
+
+		// here we update the AllowEmptyTeams (AET) game parameter if needed
+		// 1.  get current AET
+		bool bAET = pfsMission->GetAllowEmptyTeams(); 
+
+		// 2. check if all sides are active
+		bool bAllActive = true; 
+		for (SideID i = 0; i < pfsMission->GetCountSides() ; i++) // or pfsMission->GetIGCMission()->GetSides()->n()
+		{
+			if (!pfsMission->GetSideActive(i))
+				bAllActive = false;
+		}
+		// 3. do we need to change AET ?
+		bool bMustChangeAET = false; 
+		if (bAllActive && bAET) bMustChangeAET = true; // all active and AET is on, change it 
+		if (!bAllActive && !bAET) bMustChangeAET = true; // not all active and AET is off, change it
+
+		// 4.  if needed, change AET and inform clients
+		if (bMustChangeAET)
+		{
+			pfsMission->SetAllowEmptyTeams(!bAET); // toggle AET
+			pfmSideInactive->bChangeAET = true;
+			pfmSideInactive->bAET = pfsMission->GetAllowEmptyTeams(); 
+		}
+		else
+			pfmSideInactive->bChangeAET = false;
+
+		// 4. broadcast both the team activeF and the AET changes
+        g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfmSideInactive, FM_GUARANTEED);//broadcast the change
+	}
+	break;
+
     case FM_CS_SET_TEAM_INFO:
     {
       if (!pfsMission)
@@ -6670,10 +6748,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         #if defined(ALLSRV_STANDALONE)
           // for a stand alone server, don't let the client try to change the password
           // (we can't assert this due to a race condition)
+		  // KGJV #114 - only for bObjectModelCreated games (=DefaultGames) 
+		  if (pfmMissionParams->missionparams.bObjectModelCreated)
+		  {
           strcpy(pfmMissionParams->missionparams.strGamePassword,
               pfsMission->GetMissionDef()->misparms.strGamePassword);
           strcpy(pfmMissionParams->missionparams.strGameName,
               pfsMission->GetMissionDef()->misparms.strGameName);
+		  }
         #endif // defined(ALLSRV_STANDALONE)
 
         // change the settings
@@ -6828,7 +6910,8 @@ HANDLE CreateUniqueMutex()
  */
 void CheckForNoShows()
 {
-#if !defined(ALLSRV_STANDALONE)
+//KGJV #114 reactivated
+//#if !defined(ALLSRV_STANDALONE)
 
   const ListFSMission * plistMission = CFSMission::GetMissions();
   for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
@@ -6860,7 +6943,7 @@ void CheckForNoShows()
 
     }
   }
-#endif
+//#endif
 }
 
 
@@ -7648,7 +7731,11 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 
   // Give lobby the version
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
+	  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
+	  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
   END_PFM_CREATE
+  pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114 
+  pfmLogon->MaxGames = g.cMaxGames; // KGJV #114
   pfmLogon->verLobby = LOBBYVER_LS;
   pfmLogon->dwPort = dwPort;
   g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
@@ -7789,6 +7876,10 @@ void StartDefaultGames()
 
   MissionParams mp;
   mp.Reset();
+  // KGJV #92
+  // clean MissionParams to fetch default values
+  MissionParams mpClean;
+  mpClean.Reset();
 
   // we access the registry here because these keys don't need to be saved as globals.
   HKEY hKey;
@@ -7808,13 +7899,14 @@ void StartDefaultGames()
 #endif
 
     // lock the games open, if requested.
-    cbValue = sizeof(dwValue);
-    if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LockOpen", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-      mp.bLockGameOpen = !!dwValue;
+    // KGJV #92 - do this per game (see below) instead of global
+    //cbValue = sizeof(dwValue);
+    //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LockOpen", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+    //  mp.bLockGameOpen = !!dwValue;
 
 #if defined(ALLSRV_STANDALONE)
     mp.nMinPlayersPerTeam = 1;
-    mp.nMaxPlayersPerTeam = (char)(min(200, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
+    mp.nMaxPlayersPerTeam = (char)(min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
 
 	mp.bObjectModelCreated = true; // a little bit of a fib, but it makes it look normal
 #else
@@ -7855,7 +7947,34 @@ void StartDefaultGames()
 		//LoadRegString(hKey, cbValueName, strMap);
 		//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
 
-		printf("Starting game \"%s\" with core: %s on map %s\n", mp.strGameName, mp.szIGCStaticFile, mp.szCustomMapFile);
+        // KGJV #92 - LockOpen# option  per game
+        // dword value - 1 to lockopen
+        wsprintf(cbValueName, "LockOpen%d", iGame);
+        cbValue = sizeof(dwValue);
+        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, cbValueName, NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+            mp.bLockGameOpen = !!dwValue;
+        else
+            mp.bLockGameOpen = mpClean.bLockGameOpen; // fetch default value
+
+        // KGJV #92 - MinRank# option  per game
+        // string value (but numeric)
+        ZString strRankParam;
+        wsprintf(cbValueName, "MinRank%d", iGame);
+        if (LoadRegString(hKey, cbValueName, strRankParam) == S_OK)
+            sscanf(strRankParam,"%hd",&(mp.iMinRank));
+        else
+            mp.iMinRank = mpClean.iMinRank; // fetch default value
+
+        // KGJV #92 - MinRank# option  per game
+        // string value (but numeric)
+        wsprintf(cbValueName, "MaxRank%d", iGame);
+        if (LoadRegString(hKey, cbValueName, strRankParam) == S_OK)
+            sscanf(strRankParam,"%hd",&(mp.iMaxRank));
+        else
+            mp.iMaxRank = mpClean.iMaxRank; // fetch default value
+        
+        // KGJV #92 - display LockOpen/Min/Maxrank and removed map name
+        printf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
 
         // Create the new mission
         FedSrvSite * psiteFedSrv = new FedSrvSite();
@@ -7948,6 +8067,11 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 #endif // !defined(ALLSRV_STANDALONE)
   assert (iStaticCoreVersion != NA);
   debugf("iStaticCoreVersion = %d\n",iStaticCoreVersion);
+
+  // KGJV #114
+  // load cores list (must be done before 1st connection to a lobby)
+  LoadStaticCoreInfo();
+
   //
   // This is the first place where we can might connect to a lobby
   //
@@ -8056,6 +8180,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   // -KGJV: StaticMapInfo in all modes
     UnloadStaticMapInfo();
+  // KGJV #114
+	UnloadStaticCoreInfo();
 
   // destroy IGC stuff
   UnloadDbCache();
@@ -8137,6 +8263,8 @@ void LoadSettings()
         #endif // !defined(ALLSRV_STANDALONE)
 
         // Use winsock-provided address for clients, unless overridden (e.g. dual nic)
+		// KGJV #114 localaddress isnt used anymore by DP8 so we use it as public userfriendly server name
+	    // KGJV #114 TODO: eventually rename 'LocalAdresss' to something more appropriate now, PublicName for instance.
         if (FAILED(LoadRegString(hKey, "LocalAddress", g.strLocalAddress)))
         {
           WSADATA WSAData;
@@ -8147,7 +8275,18 @@ void LoadSettings()
           g.strLocalAddress = szHostName;
         }
 
-        ZString strArtPath;
+		// KGJV #114
+        if (FAILED(LoadRegString(hKey, "Location", g.strLocation)))
+        {
+			g.strLocation = "unknown";
+		}
+
+		// KGJV #114
+		g.cMaxGames = 99; // default max game
+        cbValue = sizeof(dwValue);
+		RegQueryValueEx(hKey, "MaxGames", NULL, &dwType, (unsigned char*)&g.cMaxGames, &cbValue);
+
+		ZString strArtPath;
         if (SUCCEEDED(LoadRegString(hKey, "ArtPath", strArtPath)))
         {
           if (strArtPath.Right(1) != "\\")

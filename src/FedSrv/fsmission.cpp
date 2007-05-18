@@ -473,13 +473,12 @@ void CFSMission::RemovePlayerFromMission(CFSPlayer * pfsPlayer, QuitSideReason r
     g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
   }
 
+  // KGJV #114 changed logic to remove empty games
   if (!HasPlayers(NULL, true)          && // no one left in the mission
-      !m_misdef.misparms.bAllowEmptyTeams && // game doesn't allow empty sides
-      m_misdef.misparms.bClubGame && // not a standalone server
-#if !defined(ALLSRV_STANDALONE)
-	  !strcmp(m_misdef.misparms.szIGCStaticFile,IGC_ENCRYPT_CORE_FILENAME) && // -KGJV custom core games
-#endif
-      (IMPLIES( GetMissionDef()->misparms.bObjectModelCreated, GetStage() != STAGE_NOTSTARTED )) // not an admin created game that has started
+      //!m_misdef.misparms.bAllowEmptyTeams && // game doesn't allow empty sides
+      //m_misdef.misparms.bClubGame && // not a standalone server - KGJV #114
+      //(IMPLIES( GetMissionDef()->misparms.bObjectModelCreated, GetStage() != STAGE_NOTSTARTED )) // not an admin created game that has started
+	  !GetMissionDef()->misparms.bObjectModelCreated
      )
   {
     m_bShouldDelete = true;
@@ -1959,7 +1958,7 @@ void CFSMission::StartCountdown(float fCountdownLength)
             }
         }
         else
-        {
+		{
             //Multiple stations for a side ... try to divy things up evenly without breaking wings up
 
             //We need at least this many/station,
@@ -2067,9 +2066,22 @@ void CFSMission::StartCountdown(float fCountdownLength)
             }
         }
   
-        if (pmp->bAllowDevelopments)
-        {
+		
+		// KGJV #62 - Eliminate all of the inactive teams bases if bAllowEmptyTeams
+		if (pmp->bAllowEmptyTeams && !pside->GetActiveF())
+		{
+		  while (StationLinkIGC* psl = pside->GetStations()->first())
+		  {
+			  IstationIGC*   pstation = psl->data();
+			  debugf("removing station %s, cause bAllowEmptyTeams & Inactive side\n",pstation->GetName());
+			  m_psiteIGC->KillStationEvent(pstation,NULL,0);
+		  }
+		}
+
+		else if (pmp->bAllowDevelopments)
+		{
             //Create miners for each side in the sector with their home starbase
+			if (pmp->bAllowEmptyTeams ? pside->GetActiveF() : true) // KGJV #62 only for active sides when empty teams allowed
             for (DroneTypeLinkIGC* pdl = m_pMission->GetDroneTypes()->first(); (pdl != NULL); pdl = pdl->next())
             {
               IdroneTypeIGC*  pdt = pdl->data();
@@ -3189,7 +3201,22 @@ void CFSMission::ProcessGameOver()
     m_misdef.rgfForceReady  [sideID] = false;
     m_misdef.rgfActive      [sideID] = true;
     m_rgMoney               [sideID] = 0;
-    pside->SetActiveF(true);  
+    pside->SetActiveF(true);
+	// KGJV #62 - reset AET
+	bool bAET = m_misdef.misparms.bAllowEmptyTeams;
+	if (!m_misdef.misparms.bObjectModelCreated)
+		m_misdef.misparms.bAllowEmptyTeams = false;
+	// send new AET value if changed
+	if (bAET)
+	{
+		BEGIN_PFM_CREATE(g.fm, pfmSideInactive, CS, SIDE_INACTIVE)
+		END_PFM_CREATE
+		pfmSideInactive->sideID = 0; // doesnt matter which side but 0 is always valid
+		pfmSideInactive->bActive = true;
+		pfmSideInactive->bChangeAET = true;
+		pfmSideInactive->bAET = false;
+		g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+	}
     CheckForSideAllReady(pside);      
   }
 
@@ -3240,11 +3267,12 @@ IsideIGC*   CFSMission::CheckForVictoryByStationCapture(IsideIGC* psideTest, Isi
 IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled, IsideIGC* psideOld)
 {
   IsideIGC*   psideWon = NULL;
-  if ((STAGE_STARTED == GetStage()) && (m_psideWon == NULL))
+  const MissionParams* pmp = m_pMission->GetMissionParams();
+
+  if ( (STAGE_STARTED == GetStage()) || ((STAGE_STARTING == GetStage()) && pmp->bAllowEmptyTeams) && (m_psideWon == NULL))
   {
     const SideListIGC*  psides = m_pMission->GetSides();
 
-    const MissionParams* pmp = m_pMission->GetMissionParams();
 
     bool                 bChange = false;
     if (pmp->IsConquestGame())
@@ -3268,6 +3296,9 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
             }
         }
 
+		// KGJV #62 count active teams
+		int nActiveTeams = 0;
+
         if (nStationsTotal != 0)
         {
             const SideListIGC*  psides = m_pMission->GetSides();
@@ -3275,6 +3306,9 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
             for (SideLinkIGC* l = psides->first(); (l != NULL); l = l->next())
             {
                 IsideIGC*       pside = l->data();
+				// KGJV #62 count active team
+				if (pside->GetActiveF()) nActiveTeams++;
+
                 unsigned char   conquest = (unsigned char)(100 * nStationsPerSide[pside->GetObjectID()] / nStationsTotal);
 
                 if (conquest != pside->GetConquestPercent())
@@ -3286,6 +3320,9 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                         psideWon = pside;
                 }
             }
+			// KGJV #62 - no winner if bAllowEmptyTeam and one active team is left
+			if (pmp->bAllowEmptyTeams && (nActiveTeams == 1))
+				psideWon = NULL;
         }
     }
     
@@ -3448,6 +3485,12 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
       pSideWin = NULL;
   }
 
+  // KGJV #62 - handling of AllowEmptyTeams 
+  // don't end game during STAGE_STARTING if bAllowEmptyTeams
+  if ((GetStage() == STAGE_STARTING) && m_misdef.misparms.bAllowEmptyTeams)
+  {
+      pSideWin = NULL;
+  }
   return pSideWin;
 }
 
@@ -3596,12 +3639,16 @@ void CFSMission::QueueLobbyMissionInfo()
       }
     }
   }
+
+  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)
     FM_VAR_PARM(m_misdef.misparms.strGameName, CB_ZTS)
     FM_VAR_PARM(nSquadCount ? rgSquadIDs : NULL, nSquadCount * sizeof(SquadID))
     FM_VAR_PARM((PCC)m_strDetailsFiles, CB_ZTS)
 	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
+	FM_VAR_PARM((PCC)(g.strLocalAddress),CB_ZTS) // KGJV #114 - ServerName
+	FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it
   END_PFM_CREATE
 
   pfmLobbyMissionInfo->dwCookie = GetCookie();
@@ -3912,7 +3959,13 @@ bool CFSMission::FAllReady()
             if (psl == NULL)
                 break;
 
+
             int n = psl->data()->GetShips()->n();
+
+			// KGJV #62 AllowEmptyTeams
+			if (m_misdef.misparms.bAllowEmptyTeams)
+				if (n==0 && !m_misdef.rgfActive[psl->data()->GetObjectID()])
+					continue; // skip inactive & empty teams
 
             if (n < minPlayers)
                 minPlayers = n;
@@ -3942,7 +3995,11 @@ bool CFSMission::FAllReady()
 
     SideID iSide = m_misdef.misparms.nTeams;
 
-    while (iSide-- > 0 && GetReady(iSide))
+	// KGJV #62 AllowEmptyTeams - not active + AllowEmptyTeams = team ready
+	while (iSide-- > 0 && (
+		GetReady(iSide) ||
+		(m_misdef.misparms.bAllowEmptyTeams && (!m_misdef.rgfActive[iSide]))
+		));
     ;
 
     return iSide < 0;
@@ -4746,7 +4803,17 @@ void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)
   }
 }
 
-
+//*-------------------------------------------------------------------------
+//* SetSideActive - KGJV #62
+//*-------------------------------------------------------------------------
+ void CFSMission::SetSideActive(SideID sideid, bool bActive)
+{
+	m_misdef.rgfActive[sideid] = bActive;
+}
+ bool CFSMission::GetSideActive(SideID sideid)
+ {
+	 return (bool)m_misdef.rgfActive[sideid];
+ }
 /*-------------------------------------------------------------------------
  * DeactivateSide
  *-------------------------------------------------------------------------
@@ -4759,8 +4826,9 @@ void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)
  */
 void CFSMission::DeactivateSide(IsideIGC * pside)
 {
-  if (!m_misdef.misparms.bAllowEmptyTeams)
-  {
+   // KGJV #62
+  //if (!m_misdef.misparms.bAllowEmptyTeams)
+  //{
       assert(pside->GetMission() == m_pMission);
       debugf("DeactivateSide side=%d.\n", pside->GetObjectID());
       pside->SetActiveF(false);
@@ -4805,9 +4873,11 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
         }
       }
 
-      BEGIN_PFM_CREATE(g.fm, pfmSideInactive, S, SIDE_INACTIVE)
+      BEGIN_PFM_CREATE(g.fm, pfmSideInactive, CS, SIDE_INACTIVE) // KGJV #62
       END_PFM_CREATE
       pfmSideInactive->sideID = pside->GetObjectID();
+	  pfmSideInactive->bActive = false; // KGJV #62
+	  pfmSideInactive->bChangeAET = false; // KGJV #62
       g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
       GetSite()->SendChatf(NULL, CHAT_EVERYONE, NA, NA, "%s is no more.", pside->GetName());
 
@@ -4841,7 +4911,7 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
           g.fm.SendMessages(pgroup, FM_GUARANTEED, FM_FLUSH);
       }
 
-  }
+ // }
 }
 
 /*-------------------------------------------------------------------------

@@ -99,6 +99,8 @@ public:
     virtual void OnLogonLobbyFailed(bool bRetry, const char * szReason) = 0;
     virtual void OnLogonGameServer() = 0;
     virtual void OnLogonGameServerFailed(bool bRetry, const char * szReason) = 0;
+	//KGJV #114 - callback for core and server lists
+	virtual void OnServersList(int cCores, char *Cores, int cServers, char *Servers) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -169,6 +171,8 @@ public:
     virtual void OnLogonLobbyFailed(bool bRetry, const char * szReason) {};
     virtual void OnLogonGameServer() {};
     virtual void OnLogonGameServerFailed(bool bRetry, const char * szReason) {};
+	//KGJV #114 - callback for core and server lists
+	virtual void OnServersList(int cCores, char *Cores, int cServers, char *Servers) {} ;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -524,6 +528,9 @@ public:
                                                     * m_pfmMissionDef->misparms.nTeams
                                                 - m_nNumPlayers; };
     const ZString&  GetDetailsFiles()       { return m_strGameDetailsFiles; }
+
+	// KGJV #62
+	void			SetAllowEmptyTeams(bool bValue)	{ m_pfmMissionDef->misparms.bAllowEmptyTeams = bValue;}
     
     // Team Accessors
     LPCSTR          SideName(SideID sideID)         { return (sideID == SIDE_TEAMLOBBY) ? "Not on a team" : m_pfmMissionDef->rgszName[sideID]; }
@@ -579,9 +586,12 @@ class BucketStatusArray : public MoneyVector, public IObjectSingle
 
 class CfgInfo
 {
+private:
+  ZString m_szConfigFile; //KGJV #114 - last config file name
 public:
+  void SetCfgFile(const char * szConfig); //KGJV #114
   void Load(const char * szConfig);
-
+  DWORD GetCfgProfileString(const char *c_szCfgApp,const char *c_szKeyName,const char *c_szDefaultValue,char *szStr,DWORD dwSize); // KGJV #114
   ZString strClubLobby;
   ZString strPublicLobby;
   ZString strClub;
@@ -775,6 +785,8 @@ public:
     virtual void Terminate();
     virtual void FlushGameState();
     virtual void CreateMissionReq();
+	virtual void ServerListReq(); // KGJV #114
+	virtual void CreateMissionReq(const char *szServer, const char *szAddr, const char *szIGCStaticFile, const char *szGameName); // KGJV #114
     virtual void JoinMission(MissionInfo * pMission, const char* szMissionPassword);
 
     // AutoDownload functions

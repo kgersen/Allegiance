@@ -7,6 +7,72 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+// KGJV #114
+// internal structs for core/server
+struct CoreInfo
+{
+  char Name[c_cbName];
+  bool bOfficial;
+  DWORD dwBit;
+  StaticCoreInfo mStatic;
+};
+struct ServerInfo
+{
+  ServerCoreInfo mStatic;
+  int ping;
+  bool bOfficial;
+  bool IsFull()
+  {
+	  return (mStatic.iCurGames >= mStatic.iMaxGames);
+  }
+  bool HandleCore(CoreInfo *pcore)
+  {
+	return (mStatic.dwCoreMask & pcore->dwBit);
+  }
+};
+// find the user friendly name of a core - return param if not found
+ZString CoreInfoGetName(const char *s) 
+{
+	char temp[c_cbName];
+	DWORD l = trekClient.GetCfgInfo().GetCfgProfileString("Cores",s,s,temp,c_cbName);
+	return ZString(temp,(int)l);
+}
+bool IsOfficialCore(const char *s)
+{
+	char temp[c_cbName];
+	DWORD l = trekClient.GetCfgInfo().GetCfgProfileString("OfficialCores",s,"false",temp,c_cbName);
+	return (_stricmp(temp,"true") == 0);
+}
+bool IsOfficialServer(const char *name, const char *addr)
+{
+	char temp[c_cbName];
+	DWORD l = trekClient.GetCfgInfo().GetCfgProfileString("OfficialServers",name,"",temp,c_cbName);
+	return (_stricmp(temp,addr) == 0);
+}
+// sample data for UI testing
+//OldServerInfo sampleServers[10] = {
+//	{"Planet","USA", 4,20,80,true},
+//	{"Strip","CAN", 2,10,140,true},
+//	{"GPZ","EU", 2,10,40,true},
+//	{"BServ","unknown", 1,3,350,true},
+//	{"123456789012345678901234","123456789012345678901234", 999,999,2000,false},
+//	{"","",0,0,0,false}
+//	};
+//OldCoreInfo sampleCores[10] = {
+//	{"FZ 1.25","static_core",false},
+//	{"AZ 1.25","zone_core",false},
+//	{"DN 4.60","dn_000460",true},
+//	{"GoD II 4","GoDII_04",true},
+//	{"StarWars 1.03","sw_a103",false},
+//	{"EoR 6a ","RTc006a",true},
+//	{"RPS 5.5","rps55",true},
+//	{"Warpcore","warpcore",false},
+//	{"12","12",false},
+//	//{"123456789012345678901234","123456789012",false},
+//	{"",""}
+//};
+
+
 class GameScreen :
     public Screen,
     public EventTargetContainer<GameScreen>,
@@ -73,6 +139,7 @@ private:
     TRef<ModifiableNumber> m_pnumberPlayerCount;
 
     TRef<ListPane>   m_plistPaneGames;
+
     TRef<IItemEvent::Source>   m_peventGames;
     TRef<TEvent<ItemID>::Sink> m_psinkGames;
 
@@ -92,7 +159,7 @@ private:
 
         int GetXSize()
         {
-            return m_viColumns[8];
+            return m_viColumns[7]; //KGJV #114 was col8
         }
 
         int GetYSize()
@@ -117,7 +184,7 @@ private:
 
 
             // draw the Zone Icon
-            if (game->WasObjectModelCreated() && trekClient.GetIsZoneClub())
+            if (game->WasObjectModelCreated())// KGJV #114 && trekClient.GetIsZoneClub())
             {
                 DrawIcon(psurface, m_viColumns[0] - 90, GetYSize()/2, "iconzonebmp");
 
@@ -211,26 +278,37 @@ private:
             psurface->RestoreClipRect(rectClipOld);
 
             // draw team info:
+            //wsprintf(cbTemp, "%d", game->NumSides());
+            //psurface->DrawString(pfont, color,
+            //    WinPoint(m_viColumns[4] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
+            //    cbTemp);
 
-            wsprintf(cbTemp, "%d", game->NumSides());
-            psurface->DrawString(pfont, color,
+            wsprintf(cbTemp, "%s", game->GetMissionDef().szServerName);
+			psurface->DrawString(pfont, color,
                 WinPoint(m_viColumns[4] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
                 cbTemp);
 
-            wsprintf(cbTemp, "%d", game->MinPlayersPerTeam());
-            psurface->DrawString(pfont, color,
-                WinPoint(m_viColumns[5] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
-                cbTemp);
+			// KGJV #114
+            //wsprintf(cbTemp, "%d", game->MinPlayersPerTeam());
+            //psurface->DrawString(pfont, color,
+            //    WinPoint(m_viColumns[5] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
+            //    cbTemp);
 
-            wsprintf(cbTemp, "%d", game->MaxPlayersPerTeam());
-            psurface->DrawString(pfont, color,
-                WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
-                cbTemp);
+            //wsprintf(cbTemp, "%d", game->MaxPlayersPerTeam());
+            //psurface->DrawString(pfont, color,
+            //    WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
+            //    cbTemp);
+			// draw core name
+			ZString sCorename = ZString(CoreInfoGetName(game->GetIGCStaticFile()));
+            rectClipOld = psurface->GetClipRect();
+            psurface->SetClipRect(WinRect(WinPoint(m_viColumns[4] + 4, 0), WinPoint(m_viColumns[5], GetYSize()))); // clip to fit in column
+            psurface->DrawString(pfont, color, WinPoint(m_viColumns[4] + 4, 6), sCorename);
+            psurface->RestoreClipRect(rectClipOld);
 
             // draw slot info
             wsprintf(cbTemp, "%d/%d", game->NumPlayers(), game->MaxPlayers());
             psurface->DrawString(pfont, color,
-                WinPoint(m_viColumns[7] - pfont->GetTextExtent(cbTemp).X() - 3, 6),
+                WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 3, 6), // KGJV #114 was col7
                 cbTemp);
 
             // find the game type...
@@ -239,33 +317,40 @@ private:
             if (pGameType != NULL)
             {
                 // draw the game type's name
-                psurface->DrawString(pfont, color, WinPoint(m_viColumns[7] + 4, 6), pGameType->GetName());
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[6] + 4, 6), pGameType->GetName());//KGJV #114 was col7
             }
             else
             {
                 // custom type - draw style icons
+				// KGJV #114 was col7
                 if (game->GoalConquest())
-                    DrawIcon(psurface, m_viColumns[7] + 3, GetYSize()/2, "iconconquestbmp");
+                    DrawIcon(psurface, m_viColumns[6] + 3, GetYSize()/2, "iconconquestbmp");
                 if (game->GoalTerritory())
-                    DrawIcon(psurface, m_viColumns[7] + 19, GetYSize()/2, "iconterritorialbmp");
+                    DrawIcon(psurface, m_viColumns[6] + 19, GetYSize()/2, "iconterritorialbmp");
                 if (game->GoalProsperity())
-                    DrawIcon(psurface, m_viColumns[7] + 35, GetYSize()/2, "iconprosperitybmp");
+                    DrawIcon(psurface, m_viColumns[6] + 35, GetYSize()/2, "iconprosperitybmp");
                 if (game->GoalArtifacts())
-                    DrawIcon(psurface, m_viColumns[7] + 51, GetYSize()/2, "iconartifactsbmp");
+                    DrawIcon(psurface, m_viColumns[6] + 51, GetYSize()/2, "iconartifactsbmp");
                 if (game->GoalFlags())
-                    DrawIcon(psurface, m_viColumns[7] + 67, GetYSize()/2, "iconflagsbmp");
+                    DrawIcon(psurface, m_viColumns[6] + 67, GetYSize()/2, "iconflagsbmp");
                 if (game->GoalDeathMatch())
-                    DrawIcon(psurface, m_viColumns[7] + 83, GetYSize()/2, "icondeathmatchbmp");
+                    DrawIcon(psurface, m_viColumns[6] + 83, GetYSize()/2, "icondeathmatchbmp");
                 if (game->GoalCountdown())
-                    DrawIcon(psurface, m_viColumns[7] + 99, GetYSize()/2, "iconcountdownbmp");
+                    DrawIcon(psurface, m_viColumns[6] + 99, GetYSize()/2, "iconcountdownbmp");
             }
 
-            if (game->ScoresCount())
-                DrawIcon(psurface, m_viColumns[7] + 115, GetYSize()/2 - 1, "iconscorescountbmp");
+            //if (game->ScoresCount())
+            //    DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "iconscorescountbmp");
+			// KGJV #114 - ScoresCount symbol now mean Official game (= official server + official core)
+			bool bOfficial = IsOfficialServer(game->GetMissionDef().szServerName,game->GetMissionDef().szServerAddr);
+			bOfficial &= IsOfficialCore(game->GetIGCStaticFile());
+            if (bOfficial)
+                DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "iconscorescountbmp");
+
             if (game->AllowDevelopments())
-                DrawIcon(psurface, m_viColumns[7] + 115, GetYSize()/2 - 1, "icondevelopmentsbmp");
+                DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "icondevelopmentsbmp");
             if (game->LimitedLives())
-                DrawIcon(psurface, m_viColumns[7] + 115, GetYSize()/2 - 1, "iconlivesbmp");
+                DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "iconlivesbmp");
          }
 
         int DrawIcon(Surface* psurface, int nXLeft, int nYCenter, const char* iconName)
@@ -281,6 +366,419 @@ private:
             return nXLeft + (int)pimage->GetBounds().GetRect().XSize() + 2;
         }
     };
+
+
+	//KGJV #114
+	friend class CreateGameDialogPopup;
+    class CreateGameDialogPopup : 
+		public IPopup,
+		public EventTargetContainer<CreateGameDialogPopup>,
+		public IItemEvent::Sink
+    {
+		class ServerItemPainter : public ItemPainter
+		{
+			const TVector<int>& m_viColumns;
+			CreateGameDialogPopup* m_pparent;
+		public:
+			ServerItemPainter(const TVector<int>& viColumns, CreateGameDialogPopup* pparent) :
+			  m_viColumns(viColumns), m_pparent(pparent) {};
+			int GetXSize()
+			{
+				return m_viColumns[4];
+			}
+
+			int GetYSize()
+			{
+				return 14;
+			}
+			void Paint(ItemID pitemArg, Surface* psurface, bool bSelected, bool bFocus)
+			{
+				ServerInfo *pserver = (ServerInfo*)pitemArg;
+				CoreInfo *pcore = m_pparent->GetSelectedCore();
+
+				TRef<IEngineFont> pfont = TrekResources::SmallFont();
+				Color             color = Color::White();
+
+				if (bSelected) {
+					psurface->FillRect(
+						WinRect(0, 0, GetXSize(), GetYSize()),
+						Color(0, 0, 1)*0.7f
+					);
+				}
+				if (pserver->bOfficial)
+					DrawIcon(psurface, 0, GetYSize()/2, "iconscorescountbmp");
+
+				if (pcore) if (!pserver->HandleCore(pcore)) color = Color::White()*0.5f;
+
+				char cbTemp[256];
+				WinRect rectClipOld = psurface->GetClipRect();
+
+				psurface->SetClipRect(WinRect(m_viColumns[0], 0, m_viColumns[1], GetYSize())); // clip name to fit in column
+				wsprintf(cbTemp, "%s", pserver->mStatic.szName);
+				psurface->DrawString(pfont, color,
+					WinPoint(m_viColumns[0] + 1, 1),
+					cbTemp);
+				psurface->RestoreClipRect(rectClipOld);
+
+				rectClipOld = psurface->GetClipRect();
+				psurface->SetClipRect(WinRect(m_viColumns[1], 0, m_viColumns[2], GetYSize())); // clip name to fit in column
+				wsprintf(cbTemp, "%s", pserver->mStatic.szLocation);
+				psurface->DrawString(pfont, color,
+					WinPoint(m_viColumns[1] + 1, 1),
+					cbTemp);
+				psurface->RestoreClipRect(rectClipOld);
+
+
+				wsprintf(cbTemp, "%d/%d", pserver->mStatic.iCurGames,pserver->mStatic.iMaxGames);
+				psurface->DrawString(pfont, pserver->IsFull() ? Color::Red() : color,
+					WinPoint(m_viColumns[2] + 1, 1),
+					cbTemp);
+
+				wsprintf(cbTemp, "%d", pserver->ping);
+				color = Color(1,1,0); // yellow
+				if (pserver->ping<100) color = Color::Green();
+				if (pserver->ping>250) color = Color::Red();
+				if (pserver->ping == NA)
+				{
+					color = Color::Gray();
+					strcpy(cbTemp,"?");
+				}
+				psurface->DrawString(pfont, color,
+					WinPoint(m_viColumns[3] + 1, 1),
+					cbTemp);
+				// line under
+				psurface->FillRect(WinRect(0,GetYSize()-1,GetXSize(),GetYSize()),Color::Gray());
+			}
+			int DrawIcon(Surface* psurface, int nXLeft, int nYCenter, const char* iconName)
+			{
+				TRef<Image> pimage = GetModeler()->LoadImage(iconName, true);
+
+				WinPoint pntIcon(
+					nXLeft,
+					nYCenter - (int)pimage->GetBounds().GetRect().YSize()/2
+					);
+				psurface->BitBlt(pntIcon, pimage->GetSurface());
+
+				return nXLeft + (int)pimage->GetBounds().GetRect().XSize() + 2;
+			}
+		};
+		class CoreItemPainter : public ItemPainter
+		{
+			const TVector<int>& m_viColumns;
+			CreateGameDialogPopup* m_pparent;
+		public:
+			CoreItemPainter(const TVector<int>& viColumns, CreateGameDialogPopup* pparent) :
+			  m_viColumns(viColumns), m_pparent(pparent) {};
+			int GetXSize()
+			{
+				return m_viColumns[1];
+			}
+
+			int GetYSize()
+			{
+				return 14;
+			}
+			void Paint(ItemID pitemArg, Surface* psurface, bool bSelected, bool bFocus)
+			{
+				CoreInfo *pcore = (CoreInfo*)pitemArg;
+				TRef<IEngineFont> pfont = TrekResources::SmallFont();
+				Color             color = Color::White();
+				ServerInfo *pserver = m_pparent->GetSelectedServer();
+
+				if (bSelected) {
+					psurface->FillRect(
+						WinRect(0, 0, GetXSize(), GetYSize()),
+						Color(0, 0, 1)
+					);
+				}
+				char cbTemp[256];
+
+				if (pserver) if (!pserver->HandleCore(pcore)) color = Color::White()*0.5f;
+
+				if (pcore->bOfficial)
+					DrawIcon(psurface, 0, GetYSize()/2, "iconscorescountbmp");
+
+				WinRect rectClipOld = psurface->GetClipRect();
+				psurface->SetClipRect(WinRect(m_viColumns[0], 0, m_viColumns[1], GetYSize())); // clip name to fit in column
+
+				wsprintf(cbTemp, "%s", pcore->Name);
+				psurface->DrawString(pfont, color,
+					WinPoint(m_viColumns[0]+1, 1),
+					cbTemp);
+				psurface->RestoreClipRect(rectClipOld);
+
+			}
+			int DrawIcon(Surface* psurface, int nXLeft, int nYCenter, const char* iconName)
+			{
+				TRef<Image> pimage = GetModeler()->LoadImage(iconName, true);
+
+				WinPoint pntIcon(
+					nXLeft,
+					nYCenter - (int)pimage->GetBounds().GetRect().YSize()/2
+					);
+				psurface->BitBlt(pntIcon, pimage->GetSurface());
+
+				return nXLeft + (int)pimage->GetBounds().GetRect().XSize() + 2;
+			}
+		};
+
+
+    private:
+        TRef<Pane> m_ppane;
+        TRef<ButtonPane> m_pbuttonOK;
+        TRef<ButtonPane> m_pbuttonCancel;
+		TRef<EditPane>	 m_peditGameName;
+
+		TRef<ListPane>   m_plistPaneServers;
+		TRef<ListPane>   m_plistPaneCores;
+		TVector<int>     m_viServerColumns;
+		TVector<int>     m_viCoreColumns;
+
+		TRef<IItemEvent::Source>   m_peventServers;
+		TRef<TEvent<ItemID>::Sink> m_psinkServers;
+		TRef<IItemEvent::Source>   m_peventCores;
+		TRef<TEvent<ItemID>::Sink> m_psinkCores;
+
+		TRef<IKeyboardInput> m_pkeyboardInputOldFocus;
+        GameScreen* m_pparent;
+		//data
+		int m_cCores;
+		CoreInfo *m_pCores;
+		int m_cServers;
+		ServerInfo *m_pServers;
+
+	public:
+		// ctor
+		CreateGameDialogPopup(TRef<INameSpace> pns, GameScreen* pparent) :
+			m_cCores(0),
+			m_pCores(NULL),
+			m_cServers(0),
+			m_pServers(NULL)
+		{
+            CastTo(m_ppane,                 pns->FindMember("createDialog"));
+            CastTo(m_pbuttonOK,             pns->FindMember("createOkButtonPane"));
+            CastTo(m_pbuttonCancel,         pns->FindMember("createCancelButtonPane"));
+            CastTo(m_peditGameName,	 (Pane*)pns->FindMember("createEditPane"));
+
+			TRef<IObject> pserverColumns;
+			TRef<IObject> pcoreColumns;
+			
+			CastTo(m_plistPaneServers, (Pane*)pns->FindMember("serverListPane" ));
+			CastTo(m_plistPaneCores,   (Pane*)pns->FindMember("coreListPane"   ));
+			CastTo(pserverColumns,            pns->FindMember("serverColumns"  ));
+			CastTo(pcoreColumns,              pns->FindMember("coreColumns"    ));
+
+			ParseIntVector(pserverColumns, m_viServerColumns);
+			ParseIntVector(pcoreColumns, m_viCoreColumns);
+
+			m_plistPaneServers->SetItemPainter(new ServerItemPainter(m_viServerColumns,this));
+			m_plistPaneCores->SetItemPainter(new CoreItemPainter(m_viCoreColumns,this));
+
+			AddEventTarget(&GameScreen::CreateGameDialogPopup::OnButtonOK, m_pbuttonOK->GetEventSource());
+            AddEventTarget(&GameScreen::CreateGameDialogPopup::OnButtonCancel, m_pbuttonCancel->GetEventSource());
+
+		}
+		// construct data
+		void FreeData()
+		{
+			if (m_cCores) delete [] m_pCores;
+			m_cCores = 0;
+			m_pCores = NULL;
+			if (m_cServers) delete [] m_pServers;
+			m_cServers = 0;
+			m_pServers = NULL;
+		}
+		void OnServersList(int cCores, StaticCoreInfo *pcores, int cServers, ServerCoreInfo *pservers)
+		{
+			FreeData();
+			m_cCores = cCores;
+			m_cServers = cServers;
+			if (cCores)
+			{
+				m_pCores = new CoreInfo[cCores];
+				for (int i=0; i < cCores; i++)
+				{
+					memcpy(&(m_pCores[i].mStatic),&(pcores[i]),sizeof(StaticCoreInfo));
+					m_pCores[i].bOfficial = IsOfficialCore(m_pCores[i].mStatic.cbIGCFile);
+					m_pCores[i].dwBit = 1<<i;
+					strcpy(m_pCores[i].Name,CoreInfoGetName(m_pCores[i].mStatic.cbIGCFile));
+				}
+			}
+			if (cServers)
+			{
+				m_pServers = new ServerInfo[cServers];
+				for (int i=0; i < cServers; i++)
+				{
+					memcpy(&(m_pServers[i].mStatic),&(pservers[i]),sizeof(ServerCoreInfo));
+					m_pServers[i].ping = -1;
+					m_pServers[i].bOfficial = IsOfficialServer(m_pServers[i].mStatic.szName,m_pServers[i].mStatic.szRemoteAddress);
+				}
+				
+			}
+		}
+
+		// logic
+		ServerInfo *GetSelectedServer()
+		{
+			return (ServerInfo *)m_plistPaneServers->GetSelection();
+		}
+		CoreInfo *GetSelectedCore()
+		{
+			return (CoreInfo *)m_plistPaneCores->GetSelection();
+		}
+		// logic for ok button
+		void RefreshOkButton()
+		{
+			ServerInfo *pserver = GetSelectedServer();
+			CoreInfo *pcore = GetSelectedCore();
+			if (pserver)
+				if (!pserver->IsFull())
+					if (pcore)
+					{
+						m_pbuttonOK->SetHidden(!pserver->HandleCore(pcore));
+						return;
+					}
+			m_pbuttonOK->SetHidden(true);
+		}
+		// logic for server list
+		void OnSelectServer(ServerInfo* pserver)
+		{
+			CoreInfo *pcore = (CoreInfo *)m_plistPaneCores->GetSelection();
+			m_plistPaneCores->ForceRefresh();
+			if (pcore && pserver)
+			{
+				if (!pserver->HandleCore(pcore))
+					// this server doesnt support current core so unselect core
+					m_plistPaneCores->SetSelection(NULL);
+			}
+			RefreshOkButton();
+		}
+		// logic for core list
+		void OnSelectCore(CoreInfo* pcore)
+		{
+			ServerInfo *pserver = (ServerInfo *)m_plistPaneServers->GetSelection();
+			m_plistPaneServers->ForceRefresh();
+			if (pserver && pcore)
+			{
+				if (!pserver->HandleCore(pcore))
+					// this core not supported on current server so unselect server
+					m_plistPaneServers->SetSelection(NULL);
+
+			}
+			RefreshOkButton();
+		}
+		// events
+		bool OnEvent(IItemEvent::Source *pevent, ItemID pitem)
+		{
+			if (pevent == m_peventServers) {
+				ServerInfo* p = (ServerInfo*)pitem;
+				OnSelectServer(p);
+			}
+			if (pevent == m_peventCores) {
+				CoreInfo* p = (CoreInfo*)pitem;
+				OnSelectCore(p);
+			}
+			return true;
+		}
+		// IPopUp
+		virtual void OnClose()
+        {
+            if (m_pkeyboardInputOldFocus)
+                GetWindow()->SetFocus(m_pkeyboardInputOldFocus);
+
+            m_pkeyboardInputOldFocus = NULL;
+
+			m_peventServers->RemoveSink(m_psinkServers);
+			m_peventCores->RemoveSink(m_psinkCores);
+            IPopup::OnClose();
+        }
+		Pane* GetPane()
+        {
+            return m_ppane;
+        }
+        bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
+        {
+            // we need to make sure we get OnChar calls to pass on to the edit box
+            fForceTranslate = true;
+            return false;
+        }
+
+        bool OnChar(IInputProvider* pprovider, const KeyState& ks)
+        {
+            if (ks.vk == VK_ESCAPE)
+            {
+                OnButtonCancel();
+                return true;
+            }
+            else
+                return ((IKeyboardInput*)m_peditGameName)->OnChar(pprovider, ks);
+        }
+        virtual void SetContainer(IPopupContainer* pcontainer)
+        {
+			TRef<TListListWrapper<ServerInfo*> > plistServers = new TListListWrapper<ServerInfo*>();
+			TRef<TListListWrapper<CoreInfo*> > plistCores = new TListListWrapper<CoreInfo*>();
+			
+			for (int i=0;i<m_cCores; i++)	plistCores->PushEnd(&(m_pCores[i]));
+			for (int i=0;i<m_cServers; i++) plistServers->PushEnd(&(m_pServers[i]));
+
+			m_plistPaneServers->SetList(plistServers);
+			m_plistPaneCores->SetList(plistCores);
+
+			m_peventServers = m_plistPaneServers->GetSelectionEventSource();
+			m_peventServers->AddSink(m_psinkServers = new IItemEvent::Delegate(this));
+			m_peventCores = m_plistPaneCores->GetSelectionEventSource();
+			m_peventCores->AddSink(m_psinkCores = new IItemEvent::Delegate(this));
+
+            RefreshOkButton();
+            m_peditGameName->SetString(
+				ZString(trekClient.GetNameLogonZoneServer()) + ZString("'s game"));
+
+            m_pkeyboardInputOldFocus = GetWindow()->GetFocus();
+            GetWindow()->SetFocus(m_peditGameName);
+
+			IPopup::SetContainer(pcontainer);
+        }
+        bool OnButtonOK()
+        {
+			if (m_peditGameName->GetString().IsEmpty())
+			{
+				TRef<IMessageBox> pmsgBox =
+					CreateMessageBox("Error : Game name is empty");
+				GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+				return true;
+			}
+			if (m_peditGameName->GetString().GetLength()>=c_cbGameName)
+			{
+				TRef<IMessageBox> pmsgBox =
+					CreateMessageBox("Error : Game name is too long");
+				GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+				return true;
+			}
+		
+			if (m_ppopupOwner) {
+                m_ppopupOwner->ClosePopup(this);
+            } else {
+                m_pcontainer->ClosePopup(this);
+            }
+			// create the game
+			//1. get the name, server and core
+			ServerInfo *pserver = (ServerInfo*)m_plistPaneServers->GetSelection();
+			CoreInfo *pcore = (CoreInfo*)m_plistPaneCores->GetSelection();
+			const ZString pgamename = m_peditGameName->GetString();
+			//2. send the create message
+			trekClient.CreateMissionReq(pserver->mStatic.szName,pserver->mStatic.szRemoteAddress,pcore->mStatic.cbIGCFile,pgamename);
+			return true;
+		}
+        bool OnButtonCancel()
+        {
+            if (m_ppopupOwner) {
+                m_ppopupOwner->ClosePopup(this);
+            } else {
+                m_pcontainer->ClosePopup(this);
+            }
+            return true;
+        }
+	};
 
     friend class FilterDialogPopup;
     class FilterDialogPopup : public IPopup, public EventTargetContainer<FilterDialogPopup>
@@ -577,6 +1075,7 @@ private:
 
     TRef<FilterDialogPopup> m_pfilterDialog;
     TRef<FindDialogPopup> m_pfindDialog;
+	TRef<CreateGameDialogPopup> m_pcreateDialog; // KGJV #114
     TRef<INameSpace>     m_pns;
 
     static bool IsZoneLobby()
@@ -615,9 +1114,10 @@ public:
         CastTo(m_pbuttonbarGamesHeader, m_pns->FindMember("gameListHeader"   ));
         CastTo(pobjColumns,             m_pns->FindMember("gameColumns"      ));
 
-        m_pfilterDialog = new FilterDialogPopup(m_pns, this);
+		m_pfilterDialog = new FilterDialogPopup(m_pns, this);
         m_pfindDialog = new FindDialogPopup(m_pns, this);
-
+		// KGJV #114
+		m_pcreateDialog = new CreateGameDialogPopup(m_pns,this);
         //
         // game lists
         //
@@ -654,9 +1154,10 @@ public:
         // buttons
         //
 
+		// KGJV #114
+        AddEventTarget(&GameScreen::OnButtonNewGame, m_pbuttonNewGame->GetEventSource());
         if (IsZoneLobby())
         {
-            AddEventTarget(&GameScreen::OnButtonNewGame, m_pbuttonNewGame->GetEventSource());
             AddEventTarget(&GameScreen::OnButtonDetails, m_pbuttonDetails->GetEventSource());
         }
         AddEventTarget(&GameScreen::OnButtonFindPlayer, m_pbuttonFindPlayer->GetEventSource());
@@ -742,7 +1243,6 @@ public:
             MissionInfo* pmission = (MissionInfo*)pitem;
             OnSelectMission(pmission);
         }
-
         return true;
     }
 
@@ -776,7 +1276,7 @@ public:
     void RefreshButtonBarGames()
     {
         // do radio-button behavior
-        for  (int i = 0; i < 9; i++)
+        for  (int i = 0; i < 8; i++) // KGJV #114 
         {
             m_pbuttonbarGamesHeader->SetChecked(i, false);
             m_pbuttonbarGamesHeader->SetChecked2(i, false);
@@ -793,7 +1293,7 @@ public:
         bool bReverse;
 
         // do radio-button behavior
-        for  (int i = 0; i < 9; i++)
+        for  (int i = 0; i < 8; i++) // KGJV #114
         {
             if (i != nColumn) {
                 m_pbuttonbarGamesHeader->SetChecked(i, false);
@@ -853,7 +1353,7 @@ public:
         m_vuSorts.SetEmpty();              // WLP 2005 - clear it out
         m_vbReversedSorts.SetEmpty();      // WLP 2005 - Clear it out
 
-        m_vuSorts.PushEnd(7);              // WLP 2005 - number of players magic number
+        m_vuSorts.PushEnd(6);              // WLP 2005 - number of players magic number KGJV #114 7->6
         m_vbReversedSorts.PushEnd(true);  // we do want the big numbers on top(reversed)
 
         UpdateGameList();
@@ -1030,6 +1530,15 @@ public:
 
         return pgame1->MaxPlayersPerTeam() > pgame2->MaxPlayersPerTeam();
     }
+	// KGJV #114
+    static bool CoreCompare(ItemID pitem1, ItemID pitem2)
+    {
+        MissionInfo* pgame1 = (MissionInfo*)pitem1;
+        MissionInfo* pgame2 = (MissionInfo*)pitem2;
+		ZString n1 = CoreInfoGetName(pgame1->GetIGCStaticFile());
+		ZString n2 = CoreInfoGetName(pgame2->GetIGCStaticFile());
+        return _stricmp(PCC(n1),PCC(n2)) > 0;
+    }
 
     static bool NumPlayersCompare(ItemID pitem1, ItemID pitem2)
     {
@@ -1119,19 +1628,21 @@ public:
                 plist = SortingList(plist, TeamCompare, m_vbReversedSorts[i]);
                 break;
 
+			// KGJV #114
             case 5:
-                plist = SortingList(plist, MinPlayerCompare, m_vbReversedSorts[i]);
+                //plist = SortingList(plist, MinPlayerCompare, m_vbReversedSorts[i]);
+				plist = SortingList(plist, CoreCompare, m_vbReversedSorts[i]);
                 break;
+
+            //case 6:
+            //    plist = SortingList(plist, MaxPlayerCompare, m_vbReversedSorts[i]);
+            //    break;
 
             case 6:
-                plist = SortingList(plist, MaxPlayerCompare, m_vbReversedSorts[i]);
-                break;
-
-            case 7:
                 plist = SortingList(plist, NumPlayersCompare, m_vbReversedSorts[i]);
                 break;
 
-            case 8:
+            case 7:
                 plist = SortingList(plist, SettingsCompare, m_vbReversedSorts[i]);
                 break;
             }
@@ -1201,7 +1712,11 @@ public:
 
     bool OnButtonNewGame()
     {
-        trekClient.CreateMissionReq();
+		// KGJV #114
+		// ask lobby for the core/server list
+		// reply will call OnServersList
+		trekClient.ServerListReq();
+        //trekClient.CreateMissionReq();
         return true;
     }
 
@@ -1246,6 +1761,36 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
+	//KGJV #114
+	void OnServersList(int cCores, char *Cores, int cServers, char *Servers)
+	{
+		if (!GetWindow()->GetPopupContainer()->IsEmpty())
+            GetWindow()->GetPopupContainer()->ClosePopup(NULL);
+        GetWindow()->RestoreCursor();
+
+		StaticCoreInfo *pcores   = (StaticCoreInfo*)Cores;
+		ServerCoreInfo *pservers = (ServerCoreInfo*)Servers;
+#ifdef _DEBUG
+		debugf("got OnServersList: %d, %d\n",cCores,cServers);
+		for (int i=0; i<cCores; i++)
+		{
+			debugf("  core %s\n",pcores[i].cbIGCFile);
+		}
+		for (int i=0; i<cServers; i++)
+		{
+			debugf("  server %d\n",i);
+			debugf("    name = %s\n",pservers[i].szName);
+			debugf("    addr = %s\n",pservers[i].szRemoteAddress);
+			debugf("    loca = %s\n",pservers[i].szLocation);
+			debugf("    curg = %d\n",pservers[i].iCurGames);
+			debugf("    magx = %d\n",pservers[i].iMaxGames);
+			debugf("    mask = %x\n",pservers[i].dwCoreMask);
+		}
+#endif
+		m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
+		GetWindow()->GetPopupContainer()->OpenPopup(m_pcreateDialog, false);
+
+	}
     void OnMissionEnded(MissionInfo* pmission)
     {
         MissionInfo* pmissionSelected = (MissionInfo*)m_plistPaneGames->GetSelection();

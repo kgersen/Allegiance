@@ -6,6 +6,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////////
+#define USEDX7 1
 
 #define EnablePerformanceCounters
 
@@ -107,6 +108,9 @@ public:
     virtual const WinPoint& GetFullscreenSize()                            = 0;
     virtual float           GetGammaLevel()                                = 0;
 
+    //KGJV 32B
+    virtual PixelFormat* GetPrimaryPixelFormat()                           = 0;
+    virtual ZString         GetPixelFormatName()                           = 0;
     //
     // For our exception handler
     //
@@ -159,7 +163,7 @@ public:
     virtual int GetAvailableVideoMemory()   = 0;
 };
 
-TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary);
+TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP);
 
 //////////////////////////////////////////////////////////////////////////////
 //

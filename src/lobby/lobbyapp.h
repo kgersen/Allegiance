@@ -150,6 +150,18 @@ public:
 #endif
 
   bool ProcessMsgPump();
+  //KGJV #114 - CoreInfoStuff
+  int GetcStaticCoreInfo() { return m_cStaticCoreInfo; }
+  StaticCoreInfo* GetvStaticCoreInfo() {return m_vStaticCoreInfo;}
+  void BuildStaticCoreInfo();
+  void FreeStaticCoreInfo()
+  {
+	  if (m_vStaticCoreInfo)
+		  delete [] m_vStaticCoreInfo;
+	  m_vStaticCoreInfo = NULL;
+	  m_cStaticCoreInfo = 0;
+  }
+
 
 private:
   const char *    SzFmMsgHeader(FedMessaging * pthis) {return IsFMServers(pthis) ? "Servers: " : "Clients: ";}
@@ -224,6 +236,10 @@ private:
   typedef std::multimap<ZString, PlayerByCDKey::iterator, StringICmpLess> PlayerByName;
   PlayerByCDKey     m_playerByCDKey;
   PlayerByName      m_playerByName;
+
+  // KGJV #114 - core stuff
+  StaticCoreInfo   *m_vStaticCoreInfo;
+  int               m_cStaticCoreInfo;
 
 #ifdef USECLUB
   // SQL Stuff

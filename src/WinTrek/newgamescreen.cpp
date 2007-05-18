@@ -1,5 +1,7 @@
 #include "pch.h"
 
+//KGJV #62
+#include "mappreview.h"
 //////////////////////////////////////////////////////////////////////////////
 //
 // NewGame Screen
@@ -24,14 +26,33 @@ private:
 
     TRef<ButtonPane>     m_pbuttonEjectPods;
     TRef<ButtonPane>     m_pbuttonFriendlyFire;
-    TRef<ButtonPane>     m_pbuttonStatsCount;
+    // TRef<ButtonPane>     m_pbuttonStatsCount; KGJV #62 removed statscount
     TRef<ButtonPane>     m_pbuttonDefections;
     TRef<ButtonPane>     m_pbuttonJoiners;
     TRef<ButtonPane>     m_pbuttonSquadGame;
     TRef<ButtonPane>     m_pbuttonInvulnerableStations;
     TRef<ButtonPane>     m_pbuttonDevelopment;
     TRef<ButtonPane>     m_pbuttonAllowShipyards;
-    TRef<ButtonPane>     m_pbuttonShowMap;
+
+	// KGJV #62
+    TRef<ButtonPane>     m_pbuttonAllowTactical;
+    TRef<ButtonPane>     m_pbuttonAllowExpansion;
+    TRef<ButtonPane>     m_pbuttonAllowSupremacy;
+    TRef<ButtonPane>     m_pbuttonAllowEmptyTeams;
+    
+	TRef<ComboPane>      m_pcomboMapSize;
+    TRef<ComboPane>      m_pcomboTreasures;
+	TRef<ComboPane>      m_pcomboAsteriods;
+    TRef<ComboPane>      m_pcomboInitialMiners;
+    TRef<ComboPane>      m_pcomboMaximumMiners;
+
+	int					 m_icomboMapTypeCount;
+	int					 m_icomboCustomMapsCount;
+	TRef<ButtonPane>     m_pbuttonNextMap;
+	TRef<ButtonPane>     m_pbuttonPrevMap;
+	TRef<MapPreviewPane> m_pimageMapPreview;
+
+	TRef<ButtonPane>     m_pbuttonShowMap;
 
     TRef<ComboPane>      m_pcomboGameType; 
     TRef<ComboPane>      m_pcomboTeamCount; 
@@ -102,13 +123,19 @@ private:
 
         m_pbuttonEjectPods           ->SetChecked(missionparams.bEjectPods);
         m_pbuttonFriendlyFire        ->SetChecked(missionparams.bAllowFriendlyFire);
-        m_pbuttonStatsCount          ->SetChecked(missionparams.bScoresCount);
+        //m_pbuttonStatsCount          ->SetChecked(missionparams.bScoresCount); KGJV #62
         m_pbuttonDefections          ->SetChecked(missionparams.bAllowDefections);
         m_pbuttonJoiners             ->SetChecked(missionparams.bAllowJoiners);
         m_pbuttonSquadGame           ->SetChecked(missionparams.bSquadGame);
         m_pbuttonInvulnerableStations->SetChecked(missionparams.bInvulnerableStations);
         m_pbuttonDevelopment         ->SetChecked(missionparams.bAllowDevelopments);
         m_pbuttonAllowShipyards      ->SetChecked(missionparams.bAllowShipyardPath);
+		// KGJV #62
+        m_pbuttonAllowTactical       ->SetChecked(missionparams.bAllowTacticalPath);
+        m_pbuttonAllowExpansion      ->SetChecked(missionparams.bAllowExpansionPath);
+        m_pbuttonAllowSupremacy      ->SetChecked(missionparams.bAllowSupremacyPath);
+        m_pbuttonAllowEmptyTeams     ->SetChecked(missionparams.bAllowEmptyTeams);
+
         m_pbuttonShowMap             ->SetChecked(missionparams.bShowMap);
 
         m_pcomboTeamCount->SetSelection(FindClosestValue(missionparams.nTeams, "TeamCountValues"));
@@ -164,10 +191,34 @@ private:
         m_pcomboFlagCount      ->SetSelection(FindClosestValue(missionparams.nGoalFlagsCount, "FlagCountValues"));
         m_pcomboConquestBases  ->SetSelection(FindClosestValue(missionparams.iGoalConquestPercentage, "ConquestPercentValues"));
         m_pcomboTerritory      ->SetSelection(FindClosestValue(missionparams.iGoalTerritoryPercentage, "TerritoryValues"));
-        m_bIsZoneClub = missionparams.bClubGame;
+
+		// KGJV #62
+		m_pcomboMapSize		   ->SetSelection(FindClosestValue(missionparams.iMapSize, "MapSizeValues"));
+
+		const char* vszAsteriodsNames[2] = {"AsteriodsHomeValues","AsteriodsNeutralValues"};
+        float vfAsteriodsValues[2] = { 
+            (float)missionparams.nPlayerSectorAsteroids, 
+            (float)missionparams.nNeutralSectorAsteroids,
+        };
+		m_pcomboAsteriods      ->SetSelection(FindClosestValue(vfAsteriodsValues,vszAsteriodsNames,2));
+
+        const char* vszTreasureNames[4] = {
+			"TreasureHomeValues","TreasureNeutralValues",
+			"TreasureRateHomeValues","TreasureRateNeutralValues"
+		};
+        float vfTreasureValues[4] = { 
+            (float)missionparams.nPlayerSectorTreasures, 
+            (float)missionparams.nNeutralSectorTreasures,
+			(float)missionparams.nPlayerSectorTreasureRate * 60.0f, 
+            (float)missionparams.nNeutralSectorTreasureRate * 60.0f, 
+        };
+		m_pcomboTreasures      ->SetSelection(FindClosestValue(vfTreasureValues,vszTreasureNames,4));
+		m_pcomboInitialMiners  ->SetSelection(FindClosestValue(missionparams.nInitialMinersPerTeam, "initialMinersValues"));
+		m_pcomboMaximumMiners  ->SetSelection(FindClosestValue(missionparams.nMaxMinersPerTeam, "maxMinersValues"));
+
+        m_bIsZoneClub = !missionparams.bObjectModelCreated;// KGJV #114   missionparams.bClubGame;
         m_bLockGameOpen = missionparams.bLockGameOpen;
     }
-
 public:
     ZString YesNo(bool b)
     {
@@ -272,6 +323,11 @@ public:
             + "Invulnerable Stations: " + YesNo(mp.bInvulnerableStations) + "<p>"
             + "Developments: "          + YesNo(mp.bAllowDevelopments)    + "<p>"
             + "Allow Shipyards: "       + YesNo(mp.bAllowShipyardPath)    + "<p>"
+			// KGJV #62
+            + "Allow Tactical: "        + YesNo(mp.bAllowTacticalPath)    + "<p>"
+            + "Allow Expansion: "       + YesNo(mp.bAllowExpansionPath)   + "<p>"
+            + "Allow Supremacy: "       + YesNo(mp.bAllowSupremacyPath)   + "<p>"
+			+ "Allow Empty Teams: "     + YesNo(mp.bAllowEmptyTeams)      + "<p>"
             + "<p>"
             ;
     }
@@ -281,6 +337,7 @@ public:
         TRef<INameSpace> pnsTeamScreenData = GetModeler()->CreateNameSpace("newgamescreendata");
         pnsTeamScreenData->AddMember("CanChooseMaxPlayers", m_pnumberCanChooseMaxPlayers = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("IsCustomMap", m_pnumberIsCustomMap = new ModifiableNumber(0));
+
         m_pns = m_pmodeler->GetNameSpace("newgamescreen");
     }
 
@@ -331,14 +388,22 @@ public:
 
         CastTo(m_pbuttonEjectPods           , m_pns->FindMember("ejectPodsCheckboxPane"));
         CastTo(m_pbuttonFriendlyFire        , m_pns->FindMember("friendlyFireCheckboxPane"));
-        CastTo(m_pbuttonStatsCount          , m_pns->FindMember("statsCountCheckboxPane"));
+        //CastTo(m_pbuttonStatsCount          , m_pns->FindMember("statsCountCheckboxPane")); KGJV #62
         CastTo(m_pbuttonDefections          , m_pns->FindMember("defectionsCheckboxPane"));
         CastTo(m_pbuttonJoiners             , m_pns->FindMember("joinersCheckboxPane"));
         CastTo(m_pbuttonSquadGame           , m_pns->FindMember("squadGameCheckboxPane"));
         CastTo(m_pbuttonInvulnerableStations, m_pns->FindMember("invulnerableStationsCheckboxPane"));
         CastTo(m_pbuttonDevelopment         , m_pns->FindMember("developmentCheckboxPane"));
         CastTo(m_pbuttonAllowShipyards      , m_pns->FindMember("allowShipyardsCheckboxPane"));
-        CastTo(m_pbuttonShowMap             , m_pns->FindMember("showMapCheckboxPane"));
+		// KGJV #62
+        CastTo(m_pbuttonAllowTactical       , m_pns->FindMember("allowTacticalCheckboxPane"));
+        CastTo(m_pbuttonAllowExpansion      , m_pns->FindMember("allowExpansionCheckboxPane"));
+        CastTo(m_pbuttonAllowSupremacy      , m_pns->FindMember("allowSupremacyCheckboxPane"));
+        CastTo(m_pbuttonAllowEmptyTeams     , m_pns->FindMember("allowEmptyTeamsCheckboxPane"));
+		CastTo(m_pbuttonNextMap             , m_pns->FindMember("mapPreviewNextButtonPane"));
+		CastTo(m_pbuttonPrevMap				, m_pns->FindMember("mapPreviewPrevButtonPane"));
+
+		CastTo(m_pbuttonShowMap             , m_pns->FindMember("showMapCheckboxPane"));
 
 
         //
@@ -365,6 +430,14 @@ public:
         CastTo(m_pcomboFlagCount          , m_pns->FindMember("flagCountComboPane"));
         CastTo(m_pcomboConquestBases      , m_pns->FindMember("conquestBasesComboPane"));
         CastTo(m_pcomboTerritory          , m_pns->FindMember("territoryComboPane"));
+		// KGJV #62
+        CastTo(m_pcomboMapSize            , m_pns->FindMember("mapSizeComboPane"));
+		CastTo(m_pcomboAsteriods          , m_pns->FindMember("asteriodsComboPane"));
+        CastTo(m_pcomboTreasures          , m_pns->FindMember("treasuresComboPane"));
+        CastTo(m_pcomboInitialMiners      , m_pns->FindMember("initialMinersCountComboPane"));
+        CastTo(m_pcomboMaximumMiners      , m_pns->FindMember("maxMinersCountComboPane"));
+
+		CastTo(m_pimageMapPreview		  , (Pane*)m_pns->FindMember("mapPreviewPane"));
 
         TList<TRef<GameType> >::Iterator gameTypesIter(GameType::GetGameTypes());
         int index = 0;
@@ -395,11 +468,18 @@ public:
         FillCombo(m_pcomboConquestBases      , "ConquestPercentNames");
         FillCombo(m_pcomboTerritory          , "TerritoryNames");
 
-        FillCombo(m_pcomboMapType            , "MapTypeNames");
+		// KGJV #62: changed to store # maptype entries
+        m_icomboMapTypeCount = FillCombo(m_pcomboMapType            , "MapTypeNames");
         AddCustomMapTypes();
 
-        AddEventTarget(&NewGameScreen::OnPickGameType, m_pcomboGameType->GetEventSource());
+		// KGJV #62
+        FillCombo(m_pcomboMapSize            , "MapSizeNames");
+		FillCombo(m_pcomboAsteriods			 , "AsteriodsNames");
+        FillCombo(m_pcomboTreasures          , "TreasuresNames");
+        FillCombo(m_pcomboInitialMiners      , "initialMinersNames");
+        FillCombo(m_pcomboMaximumMiners      , "maxMinersNames");
 
+        AddEventTarget(&NewGameScreen::OnPickGameType, m_pcomboGameType->GetEventSource());
 
         //
         // Countdown box
@@ -423,8 +503,14 @@ public:
         AddEventTarget(&NewGameScreen::OnGameTypeRelatedComboChange, m_pcomboTerritory->GetEventSource());
         AddEventTarget(&NewGameScreen::OnGameTypeRelatedCheckboxChange, m_pbuttonInvulnerableStations->GetEventSource());
         AddEventTarget(&NewGameScreen::OnGameTypeRelatedCheckboxChange, m_pbuttonDevelopment->GetEventSource());
-        AddEventTarget(&NewGameScreen::OnGameTypeRelatedCheckboxChange, m_pbuttonStatsCount->GetEventSource());
+        //AddEventTarget(&NewGameScreen::OnGameTypeRelatedCheckboxChange, m_pbuttonStatsCount->GetEventSource()); KGJV #62
 
+		// KGJV #62
+		AddEventTarget(&NewGameScreen::OnButtonMapNext, m_pbuttonNextMap->GetEventSource());
+		AddEventTarget(&NewGameScreen::OnButtonMapPrev, m_pbuttonPrevMap->GetEventSource());
+		// new event hooks for controls that can trigger a map preview change
+		AddEventTarget(&NewGameScreen::OnRefreshMapPreview, m_pcomboMapType->GetEventSource());
+		AddEventTarget(&NewGameScreen::OnRefreshMapPreview, m_pcomboMapSize->GetEventSource());
 
         //
         // set the keyboard focus
@@ -463,7 +549,8 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void FillCombo(ComboPane* pcombo, const char* szContentName)
+	// KGJV #62 ; changed to return the number of items filled
+    int FillCombo(ComboPane* pcombo, const char* szContentName)
     {
         IObjectList* plist; 
         
@@ -477,6 +564,7 @@ public:
             plist->GetNext();
             ++index;
         }
+		return index;
     }
 
     void FillIntComboWithLimit(ComboPane* pcombo, float fLimit, const char* szContentName, const char* szTableName)
@@ -604,9 +692,11 @@ public:
 
     void AddCustomMapTypes()
     {
+		m_icomboCustomMapsCount = 0;
         for (int i = 0; i < trekClient.GetNumStaticMaps(); i++)
         {
             m_pcomboMapType->AddItem(trekClient.GetStaticMapInfo(i).cbFriendlyName, CustomMapIDToItemID(i));
+			m_icomboCustomMapsCount++;
         }
     }
 
@@ -672,6 +762,64 @@ public:
     // Events
     //
     //////////////////////////////////////////////////////////////////////////////
+	
+	// KGJV #62 handler for settings change that affect mappreview
+    bool OnRefreshMapPreview(int max)
+	{
+		debugf("mapid = %d\n",m_pcomboMapType->GetSelection());
+		MissionParams mp;
+        ReadControls(mp);
+		m_pimageMapPreview->ComputePreview(mp);
+		return true;
+	}
+	// cycling thru map types
+	// point is to change m_pcomboMapType->GetSelection(i)
+	//   i values: 0 <----> (M-1)                   if no cust maps
+	//   i values: 0 <----> (M-1) -1 <-----> -(C-1) if cust maps
+	// M = m_icomboMapTypeCount - # of std maps
+	// C = m_icomboCustomMapsCount - # of custom maps (O if none)
+
+	bool OnButtonMapNext()
+	{
+		int i = m_pcomboMapType->GetSelection();
+		//debugf("next: %d ",i);
+
+		if (i>=0 && i<m_icomboMapTypeCount-1) // we're between 0 <----> (M-1)
+			i++;
+		else 
+			if (m_icomboCustomMapsCount>0) // there is cust maps
+				if (i == m_icomboMapTypeCount-1) // are we at (M-1)
+					i = CustomMapIDToItemID(0);  // so next is 1st cust map (-1)
+				else
+					if (i > CustomMapIDToItemID(m_icomboCustomMapsCount-1)) // are we a last cust map
+						i--; // no so move to next custmap
+					else i = 0; // yes to move to 1st std map
+			else i = 0; // no custmap so next is 1st std map
+				
+		//debugf("to %d\n",i);
+		m_pcomboMapType->SetSelection(i);
+		return true;
+	}
+	bool OnButtonMapPrev()
+	{
+		int i = m_pcomboMapType->GetSelection();
+		//debugf("prev: %d ",i);
+
+		if (i==0) // 1st map so prev is last custom if any or last standard
+			if (m_icomboCustomMapsCount>0)
+				i = CustomMapIDToItemID(m_icomboCustomMapsCount-1);
+			else
+				i = m_icomboMapTypeCount-1;
+		else
+			if (i==-1) // 1st custom so prev is last standard
+				i = m_icomboMapTypeCount-1;
+			else // else dec if positive and inc if negative
+				i += (i>0?-1:1);
+
+		//debugf("to %d\n",i,m_pcomboMapType->GetSelection());
+		m_pcomboMapType->SetSelection(i);
+		return true;
+	}
 
     bool OnMaxPlayersChange(int max)
     {
@@ -687,10 +835,17 @@ public:
         {
             m_ptextMaxPlayers->SetString(
                 ZString(GetBaseMissionParams().nMinPlayersPerTeam) + " - " 
-                    + ZString(GetBaseMissionParams().nTotalMaxPlayersPerGame 
-                        / (int)FindValue(m_pcomboTeamCount->GetSelection(), "TeamCountValues"))
+                    + ZString(
+						min(
+							100,
+							GetBaseMissionParams().nTotalMaxPlayersPerGame
+							/ (int)FindValue(m_pcomboTeamCount->GetSelection(), "TeamCountValues")))
                 );
         }
+		// KGJV #62
+		MissionParams mp;
+        ReadControls(mp);
+		m_pimageMapPreview->ComputePreview(mp);
         return true;
     }
 
@@ -780,13 +935,19 @@ public:
 
         misparams.bEjectPods = m_pbuttonEjectPods->GetChecked();
         misparams.bAllowFriendlyFire = m_pbuttonFriendlyFire->GetChecked();
-        misparams.bScoresCount = m_pbuttonStatsCount->GetChecked();
+        //misparams.bScoresCount = m_pbuttonStatsCount->GetChecked(); KGJV #62
         misparams.bAllowDefections = m_pbuttonDefections->GetChecked();
         misparams.bAllowJoiners = m_pbuttonJoiners->GetChecked();
         misparams.bSquadGame = m_pbuttonSquadGame->GetChecked();
         misparams.bInvulnerableStations = m_pbuttonInvulnerableStations->GetChecked();
         misparams.bAllowDevelopments = m_pbuttonDevelopment->GetChecked();
         misparams.bAllowShipyardPath = m_pbuttonAllowShipyards->GetChecked();
+		// KGJV #62
+		misparams.bAllowTacticalPath = m_pbuttonAllowTactical->GetChecked();
+		misparams.bAllowExpansionPath = m_pbuttonAllowExpansion->GetChecked();
+		misparams.bAllowSupremacyPath = m_pbuttonAllowSupremacy->GetChecked();
+		misparams.bAllowEmptyTeams = m_pbuttonAllowEmptyTeams->GetChecked();
+
         misparams.bShowMap = m_pbuttonShowMap->GetChecked();
 
         misparams.nTeams = FindValue(m_pcomboTeamCount->GetSelection(), "TeamCountValues");
@@ -799,7 +960,7 @@ public:
         else
         {
             misparams.nMinPlayersPerTeam = 1;
-            misparams.nMaxPlayersPerTeam = misparams.nTotalMaxPlayersPerGame / misparams.nTeams;
+            misparams.nMaxPlayersPerTeam = min(100,misparams.nTotalMaxPlayersPerGame / misparams.nTeams);// KGJV #114
         }
 
         misparams.iMaxImbalance = FindValue(m_pcomboMaxImbalance->GetSelection(), "MaxImbalanceValues");
@@ -822,7 +983,19 @@ public:
         misparams.nGoalFlagsCount = FindValue(m_pcomboFlagCount->GetSelection(), "FlagCountValues");
         misparams.iGoalConquestPercentage = FindValue(m_pcomboConquestBases->GetSelection(), "ConquestPercentValues");
         misparams.iGoalTerritoryPercentage = FindValue(m_pcomboTerritory->GetSelection(), "TerritoryValues");
-    }
+
+		//KGJV #62
+		misparams.iMapSize = FindValue(m_pcomboMapSize->GetSelection(), "MapSizeValues");
+		misparams.nPlayerSectorAsteroids  = FindValue(m_pcomboAsteriods->GetSelection(), "AsteriodsHomeValues");
+		misparams.nNeutralSectorAsteroids = FindValue(m_pcomboAsteriods->GetSelection(), "AsteriodsNeutralValues");
+		misparams.nPlayerSectorTreasures = FindValue(m_pcomboTreasures->GetSelection(), "TreasureHomeValues");
+		misparams.nPlayerSectorTreasureRate = FindValue(m_pcomboTreasures->GetSelection(), "TreasureRateHomeValues") / 60.0f;
+		misparams.nNeutralSectorTreasures = FindValue(m_pcomboTreasures->GetSelection(), "TreasureNeutralValues");
+		misparams.nNeutralSectorTreasureRate = FindValue(m_pcomboTreasures->GetSelection(), "TreasureRateNeutralValues") / 60.0f;
+		misparams.nInitialMinersPerTeam = FindValue(m_pcomboInitialMiners->GetSelection(), "initialMinersValues");
+		misparams.nMaxMinersPerTeam = FindValue(m_pcomboMaximumMiners->GetSelection(), "maxMinersValues");
+
+	}
 
     bool OnButtonCreate()
     {
@@ -925,19 +1098,25 @@ public:
         
         m_pbuttonEjectPods->SetEnabled(bEnable);
         m_pbuttonFriendlyFire->SetEnabled(bEnable);
-        m_pbuttonStatsCount->SetEnabled(bEnable); // TE: Show the StatsCount checkbox
+        //m_pbuttonStatsCount->SetEnabled(bEnable); // TE: Show the StatsCount checkbox - KGJV #62 removed
         m_pbuttonDefections->SetEnabled(bEnable);
         m_pbuttonJoiners->SetEnabled(bEnable);
         m_pbuttonSquadGame->SetEnabled(bEnable && m_bIsZoneClub);
         m_pbuttonInvulnerableStations->SetEnabled(bEnable);
         m_pbuttonDevelopment->SetEnabled(bEnable);
         m_pbuttonAllowShipyards->SetEnabled(bEnable);
-        m_pbuttonShowMap->SetEnabled(bEnable);
+		// KGJV #62
+		m_pbuttonAllowTactical->SetEnabled(bEnable);
+        m_pbuttonAllowExpansion->SetEnabled(bEnable);
+        m_pbuttonAllowSupremacy->SetEnabled(bEnable);
+		m_pbuttonAllowEmptyTeams->SetEnabled(false);//bEnable && m_bIsZoneClub); // KGJV #62
+
+		m_pbuttonShowMap->SetEnabled(bEnable);
 
         m_pcomboTeamCount->SetEnabled(bEnable);
         m_pcomboMaxPlayers->SetEnabled(bEnable && !m_bLockGameOpen);
         m_pcomboMaxImbalance->SetEnabled(bEnable);
-        m_pcomboSkillLevel->SetEnabled(bEnable);
+        m_pcomboSkillLevel->SetEnabled(bEnable && !m_bLockGameOpen); // KGJV #92
         m_pcomboMapType->SetEnabled(bEnable);
         m_pcomboConnectivity->SetEnabled(bEnable);
         m_pcomboLives->SetEnabled(bEnable);
@@ -952,6 +1131,14 @@ public:
         m_pcomboConquestBases->SetEnabled(bEnable);
         m_pcomboTerritory->SetEnabled(bEnable);
         m_pcomboGameType->SetEnabled(bEnable);
+		// KGJV #62
+		m_pcomboMapSize->SetEnabled(bEnable);
+		m_pcomboAsteriods->SetEnabled(bEnable);
+		m_pcomboTreasures->SetEnabled(bEnable);
+		m_pcomboInitialMiners->SetEnabled(bEnable);
+		m_pcomboMaximumMiners->SetEnabled(bEnable);
+		m_pbuttonNextMap->SetHidden(!bEnable);
+		m_pbuttonPrevMap->SetHidden(!bEnable);
 
         m_pbuttonCreate->SetEnabled(bEnable);
         m_pbuttonCreate->SetHidden(!bEnable);

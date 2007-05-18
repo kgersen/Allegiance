@@ -2486,11 +2486,15 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             break;
         }
 
-        case FM_S_SIDE_INACTIVE:
+        case FM_CS_SIDE_INACTIVE: //KGJV #62 - changed to CS
         {
-            CASTPFM(pfmSideInactive, S, SIDE_INACTIVE, pfm);
+            CASTPFM(pfmSideInactive, CS, SIDE_INACTIVE, pfm); // KGJV #62 - changed to CS
             debugf("Side inactive, side=%d\n", pfmSideInactive->sideID);
-            m_pMissionInfo->SetSideActive(pfmSideInactive->sideID, false);
+            m_pMissionInfo->SetSideActive(pfmSideInactive->sideID, pfmSideInactive->bActive); // KGJV #62 was false
+			// update the AET bit
+			if (pfmSideInactive->bChangeAET)
+				m_pMissionInfo->SetAllowEmptyTeams(pfmSideInactive->bAET);
+				
             m_pClientEventSource->OnTeamInactive(m_pMissionInfo, pfmSideInactive->sideID);
             m_mapMissions.GetSink()();
             break;
@@ -3429,6 +3433,19 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             m_pClientEventSource->OnFoundPlayer(pMissionInfo);
         }
         break;
+
+		// KGJV #114
+		case FM_L_SERVERS_LIST:
+		{
+			CASTPFM(pfmServerList, L, SERVERS_LIST, pfm);
+			m_pClientEventSource->OnServersList(
+				pfmServerList->cCores,
+				FM_VAR_REF(pfmServerList,Cores),
+				pfmServerList->cServers,
+				FM_VAR_REF(pfmServerList,Servers)
+				);
+		}
+		break;
 
         default:
         {

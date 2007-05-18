@@ -5,6 +5,17 @@
 // DeviceTextureImpl
 //
 //////////////////////////////////////////////////////////////////////////////
+//
+//#define MAX_DX_ZBUF_FMTS 20
+//static int cNumZBufFmts = 0;
+//DDPIXELFORMAT ZBufFmtsArr[MAX_DX_ZBUF_FMTS];
+//HRESULT CALLBACK EnumZBufFmtsCallback(LPDDPIXELFORMAT pddpf, VOID *param1)  {
+//   //DDPIXELFORMAT *ZBufFmtsArr = (DDPIXELFORMAT *) param;
+//   assert(cNumZBufFmts < MAX_DX_ZBUF_FMTS);
+//   memcpy(&(ZBufFmtsArr[cNumZBufFmts]), pddpf, sizeof(DDPIXELFORMAT));
+//   cNumZBufFmts++;
+//   return DDENUMRET_OK;
+//}
 
 class DeviceTexture : public IObject {
 private:
@@ -63,14 +74,19 @@ public:
 
                 DDCall(m_pdds->SetColorKey(DDCKEY_SRCBLT, &key));
             }
-
+#ifdef USEDX7
+            m_pd3dtexture = m_pdds;
+#else
             DDCall(m_pdds->QueryInterface(IID_IDirect3DTextureX, (void**)&m_pd3dtexture));
-
+#endif
             //
             // Try to load the surface
             //
-
+#ifdef USEDX7
+            DoLoad(m_pd3dtexture, size, pd3dd->GetD3DDeviceX());
+#else
             DoLoad(m_pd3dtexture, size);
+#endif
         }
     }
 
@@ -84,8 +100,11 @@ public:
     {
         return m_pd3dtexture != NULL;
     }
-
+#ifdef USEDX7
+    bool DoLoad(TRef<IDirect3DTextureX> pd3dtexture, WinPoint size, IDirect3DDeviceX* pd3ddx)
+#else
     bool DoLoad(TRef<IDirect3DTextureX> pd3dtexture, WinPoint size)
+#endif
     {
         #ifdef DREAMCAST
             TRef<IDirectDrawSurfaceX> pddsSrc;
@@ -107,10 +126,22 @@ public:
             DDCall(m_pdds->Unlock(NULL));
         #else
             while (pd3dtexture != NULL) {
+#ifdef USEDX7
+                RECT r = {0,0,0,0};
+                r.right = size.x;
+                r.bottom = size.y;
+                HRESULT hr = pd3ddx->Load(
+                    pd3dtexture,
+                    NULL,
+                    m_pddsurface->GetTextureX(m_ppf, size, m_idSurface),
+                    &r,
+                    0);
+#else
                 HRESULT hr = 
                     pd3dtexture->Load(
                         m_pddsurface->GetTextureX(m_ppf, size, m_idSurface)
                     );
+#endif
 
                 if (FAILED(hr)) {
                     //
@@ -149,13 +180,23 @@ public:
         return true;
     }
 
-    IDirect3DTextureX* GetTextureX(const WinPoint& size)
+    IDirect3DTextureX* GetTextureX(const WinPoint& size
+#ifdef USEDX7
+        ,IDirect3DDeviceX* pd3ddx
+#endif
+    )
     {
         int idSave = m_idSurface;
         IDirect3DTextureX* pd3dtexture = m_pddsurface->GetTextureX(m_ppf, size, m_idSurface);
 
         if (idSave != m_idSurface) {
-            if (!DoLoad(pd3dtexture, size)) {
+#ifdef USEDX7
+            if (!DoLoad(pd3dtexture, size,pd3ddx)) 
+
+#else
+            if (!DoLoad(pd3dtexture, size)) 
+#endif
+            {
                 return NULL;
             }
         }
@@ -240,7 +281,7 @@ private:
         DWORD dwNeededVideoMemory = 6 * xsize * ysize;
 
         if (
-               bits == 16
+               bits == 16 // KGJV 32B TODO: this works as long as all 16bpp modes are supported in 32bpp too...
             && xsize >= 640
             && ysize >= 480
             // !!! NT doesn't return the right value for TotalVideoMemory
@@ -274,14 +315,17 @@ private:
 
         return pthis->EnumZBufferFormats(*(DDPixelFormat*)pddpf);
     }
-
+	// KGJV 32B
+	DWORD dwmaxZBufferBD;
     HRESULT EnumZBufferFormats(const DDPixelFormat& ddpf)
     {
         //  , should we always choose the most bits or try to get 16bit?
+		//  KGJV 32B: yes choose the most bits
 
-        if(ddpf.dwZBufferBitDepth >= 16) {
+        if(ddpf.dwZBufferBitDepth > dwmaxZBufferBD) { // KGJV 32B
+			dwmaxZBufferBD = ddpf.dwZBufferBitDepth;   // KGJV 32B
             m_ppfZBuffer = m_pengine->GetPixelFormat(ddpf);
-            return D3DENUMRET_CANCEL;
+            //return D3DENUMRET_CANCEL;
         }
 
         return D3DENUMRET_OK;
@@ -298,7 +342,11 @@ private:
         if (pdd == NULL) {
             TRef<IDirectDraw> pddPrimary;
 
+#ifdef USEDX7
+            HRESULT hr = DirectDrawCreateEx(NULL, (void **)&pddPrimary, IID_IDirectDraw7, NULL); 
+#else
             HRESULT hr = DirectDrawCreate(NULL, &pddPrimary, NULL);
+#endif
 
             if (SUCCEEDED(hr)) {
                 DDCall(pddPrimary->QueryInterface(IID_IDirectDrawX, (void**)&m_pdd));
@@ -313,10 +361,17 @@ private:
             // Get Device Info
             //
 
+#ifdef USEDX7
+            DDDeviceIdentifier2 dddi7;
+            m_pdd->GetDeviceIdentifier(&dddi7,DDGDI_GETHOSTIDENTIFIER);
+            m_strName = dddi7.szDescription;
+#else
             DDDeviceIdentifier dddi;
             m_pdd->GetDeviceIdentifier(&dddi, DDGDI_GETHOSTIDENTIFIER);
-
             m_strName = dddi.szDescription;
+#endif
+
+
 
             //
             // Get device capabilities.
@@ -371,8 +426,10 @@ private:
             //
 
             #ifndef DREAMCAST
+				dwmaxZBufferBD = 0; // KGJV 32B
                 m_pd3d->EnumZBufferFormats(GetIID(true), StaticEnumZBufferFormats, this);
             #endif
+
         }
     }
 
@@ -609,9 +666,11 @@ public:
                 GetIID(bAcceleration),
                 pddsurface->GetDDSX(),
                 &pd3dd
+#ifndef USEDX7
                 #ifndef DREAMCAST
                     ,NULL
                 #endif
+#endif
             );
 
         if (hr == DDERR_INVALIDPARAMS) {
@@ -818,7 +877,12 @@ public:
             }
 
             if (ptexture) {
-                TRef<IDirect3DTextureX> pd3dtexture = ptexture->GetTextureX(size);
+                TRef<IDirect3DTextureX> pd3dtexture = 
+#ifdef USEDX7
+                    ptexture->GetTextureX(size,pd3dd->GetD3DDeviceX());
+#else
+                    ptexture->GetTextureX(size);
+#endif
 
                 if (pd3dtexture) {
                     return pd3dtexture;

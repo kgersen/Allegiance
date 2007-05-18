@@ -611,6 +611,113 @@ public:
     }
 };
 
+
+//////////////////////////////////////////////////////////////////////////////
+// KGJV 32B
+//
+// ImportImageFromFile file factory (png,...)
+//////////////////////////////////////////////////////////////////////////////
+unsigned DLL_CALLCONV
+myReadProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
+    ZFile *zf = (ZFile *)handle;
+	return zf->Read(buffer,size*count); // fread(buffer, size, count, (FILE *)handle);
+}
+
+//unsigned DLL_CALLCONV
+//myWriteProc(void *buffer, unsigned size, unsigned count, fi_handle handle) {
+//    ZFile *zf = (ZFile *)handle;
+//	return fwrite(buffer, size, count, (FILE *)handle);
+//}
+
+int DLL_CALLCONV
+mySeekProc(fi_handle handle, long offset, int origin) {
+    ZFile *zf = (ZFile *)handle;
+    return zf->Seek(offset, origin);
+}
+
+long DLL_CALLCONV
+myTellProc(fi_handle handle) {
+    ZFile *zf = (ZFile *)handle;
+	return zf->Tell(); //ftell((FILE *)handle);
+}
+
+
+
+class ImportImageFromFileFactory : public IFunction {
+private:
+    TRef<Modeler> m_pmodeler;
+    TRef<PrivateEngine> m_pengine;
+
+public:
+    ImportImageFromFileFactory(Modeler* pmodeler) :
+        m_pmodeler(pmodeler)
+    {
+        CastTo(m_pengine, m_pmodeler->GetEngine());
+    }
+
+    TRef<IObject> Apply(ObjectStack& stack)
+    {
+        ZString  str    = GetString((IObject*)stack.Pop());
+        bool     b      = GetBoolean((IObject*)stack.Pop());
+
+        TRef<ZFile> zf = m_pmodeler->GetFile(str,"",true);
+
+        FreeImageIO fio;
+        fio.read_proc = myReadProc;
+        fio.seek_proc = mySeekProc;
+        fio.tell_proc = myTellProc;
+
+        FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromHandle(&fio,zf);
+        if (fif != FIF_UNKNOWN)
+        {
+            FIBITMAP * dib = FreeImage_LoadFromHandle(fif,&fio,zf,PNG_IGNOREGAMMA);
+            if (dib)
+            {
+                int bpp = FreeImage_GetBPP(dib);
+                assert((bpp == 16) || (bpp==24) || (bpp==32));
+                debugf("%s = %d bpp\n",(const char *)str,bpp);
+                UINT redm = FreeImage_GetRedMask(dib);
+                UINT grnm = FreeImage_GetGreenMask(dib);
+                UINT blum = FreeImage_GetBlueMask(dib);
+                UINT alpm = (bpp==32)?0xFF000000:0;
+                PixelFormat* ppf = m_pengine->GetPixelFormat(
+                    bpp,
+                    redm,
+                    grnm,
+                    blum,
+                    alpm
+                );  
+
+                // engine handles bitmaps mirrored ... yeeee
+                FreeImage_FlipHorizontal(dib);
+                FreeImage_FlipVertical(dib);
+                FreeImage_FlipHorizontal(dib);
+
+                TRef<Surface> psurface =
+                    m_pengine->CreateSurface(
+                    WinPoint(FreeImage_GetWidth(dib),FreeImage_GetHeight(dib)),
+                    ppf,
+                    NULL,
+                    FreeImage_GetPitch(dib),
+                    FreeImage_GetBits(dib),
+                    zf
+                );
+                //FreeImage_Unload(dib); never free 
+                
+                if (b) {
+                    // could use FreeImage_HasBackgroundColor/FreeImage_GetBackgroundColor here
+                    // or extend MDL syntax to pass the transp color
+                    psurface->SetColorKey(Color(0, 0, 0));
+                }
+
+                return (Value*)new ConstantImage(psurface, ZString());
+            }
+        }
+        debugf("ImportImageFromFileFactory: error reading file %s\n",(const char *)str);
+        return NULL;
+    }
+};
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //
@@ -1842,6 +1949,26 @@ public:
     }
 };
 
+// Camera
+// KGJV addition
+class CameraFactory : public IFunction {
+public:
+    TRef<IObject> Apply(ObjectStack& stack)
+    {
+		TRef<Number> znear    =  Number::Cast((IObject*)stack.Pop());
+		TRef<Number> zfar     = Number::Cast((Value*)(IObject*)stack.Pop());
+		TRef<Number> fov      = Number::Cast((Value*)(IObject*)stack.Pop());
+		TRef<VectorValue> pvector = VectorValue::Cast((IObject*)stack.Pop());
+
+		TRef<Camera> pcam = new Camera();
+		pcam->SetZClip(znear->GetValue(),zfar->GetValue());
+		pcam->SetFOV(RadiansFromDegrees(fov->GetValue()));
+		pcam->SetPosition(pvector->GetValue());
+        return pcam;
+    }
+};
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //
@@ -2222,6 +2349,7 @@ public:
         //
 
         pns->AddMember("ImportImage",        new ImportImageFactory(this));
+        pns->AddMember("ImportImageFromFile",new ImportImageFromFileFactory(this)); // KGJV 32B
         pns->AddMember("ImportImage3D",      new ImportImage3DFactory(this));
         pns->AddMember("ImportImageLR",      new ImportImageLRFactory(this));
 
@@ -2304,6 +2432,9 @@ public:
         pns->AddMember("Translate",            new TranslateFactory());
         pns->AddMember("Rotate",               new RotateFactory());
 
+		// Camera (KGJV)
+		//  Camera(zclip near,zclip far,FOV in degrees,position_vector)
+		pns->AddMember("Camera",                new CameraFactory());
 
         //
         // Fonts
@@ -2331,17 +2462,22 @@ public:
     {
         ZString strExtension = pathStr.GetExtension();
         ZString strToTryOpen;// yp Your_Persona October 7 2006 : TextureFolder Patch
-		ZString strToOpen;
+        ZString strToTryOpenFromDev;// KGJV - 'dev' subfolder
+
+        ZString strToOpen;
 		TRef<ZFile> pfile = NULL;
 
         if (!strExtension.IsEmpty()) {
-            if (strExtension != strExtensionArg) {
+            if (!strExtensionArg.IsEmpty()) // KGJV 32B - ignore empty strExtensionArg
+            if (strExtension.ToLower() != strExtensionArg.ToLower()) { // KGJV 32B - ignore case
                 return NULL;
             }
             strToOpen = m_pathStr + pathStr;
+            strToTryOpenFromDev = m_pathStr + "dev/" + pathStr;
 			strToTryOpen = m_pathStr + "Textures/" + pathStr;
         } else {
             strToOpen = ZString(m_pathStr + pathStr) + ("." + strExtensionArg);
+            strToTryOpenFromDev = ZString(m_pathStr + "dev/" + pathStr) + ("." + strExtensionArg);
 			strToTryOpen = ZString(m_pathStr + "Textures/" + pathStr) + ("." + strExtensionArg);
         }
 		// yp Your_Persona October 7 2006 : TextureFolder Patch
@@ -2356,11 +2492,18 @@ public:
 		}
 		if(!pfile) // if we dont have a file here, then load regularly.
 		{
-			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
+            // KGJV try dev folder 1st
+            pfile = new ZFile(strToTryOpenFromDev, OF_READ | OF_SHARE_DENY_WRITE);
+            if (!pfile->IsValid())
+			    pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
+            else
+                if (g_bMDLLog)
+                    ZDebugOutput("'dev' file found for " + pathStr + "'\n");
+                
 
 			// mmf added debugf but will still have it call assert
 			if ((bError && !pfile->IsValid() && m_psite)) { // logic from ZRAssert below
-				debugf("Could not open the artwork file %s\n",strToOpen);
+				ZDebugOutput("Could not open the artwork file "+ strToOpen + "'\n");
 				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
 			}
 		}

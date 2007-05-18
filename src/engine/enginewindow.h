@@ -136,6 +136,7 @@ protected:
     TRef<IMenuItem>            m_pitemRenderer;
     TRef<IMenuItem>            m_pitemResolution;
     TRef<IMenuItem>            m_pitemRendering;
+    TRef<IMenuItem>            m_pitemBPP; // KGJV 32B
     TRef<IMenuItem>            m_pitemAllowSecondary;
     TRef<IMenuItem>            m_pitemAllow3DAcceleration;
     TRef<IMenuItem>            m_pitemHigherResolution;
@@ -202,6 +203,7 @@ protected:
     ZString GetDeviceString();
     ZString GetResolutionString();
     ZString GetRenderingString();
+    ZString GetPixelFormatString(); // KGJV 32B
     ZString GetAllow3DAccelerationString();
     ZString GetAllowSecondaryString();
     void    UpdateMenuStrings();

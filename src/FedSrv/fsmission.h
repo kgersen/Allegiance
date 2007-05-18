@@ -297,6 +297,10 @@ public:
   void                  RandomizeSides();
 
   void                  SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv);
+  void					SetSideActive(SideID sideid, bool bActive); // KGJV #62
+  bool					GetSideActive(SideID sideid);				// KGJV #62
+  bool					GetAllowEmptyTeams() { return m_misdef.misparms.bAllowEmptyTeams;} // KGJV #62
+  void					SetAllowEmptyTeams(bool bValue) { m_misdef.misparms.bAllowEmptyTeams = bValue;} // KGJV #62
   void                  DeactivateSide(IsideIGC * pside);
   void                  GiveSideMoney(IsideIGC * pside, Money money);
   void                  SetForceReady(SideID iSide, bool fForceReady);

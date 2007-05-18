@@ -13,8 +13,9 @@ const int MAX_DRONES = 100;        // this is the maximum number of drones for t
 
 class Drone;    // class declaration, but not definition.  See drone.h
 
-
-
+//KGJV - missing decl
+typedef WORD DroneType;
+typedef WORD CommandMask;
 
 /*-------------------------------------------------------------------------
  * Class: Drones

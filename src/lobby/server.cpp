@@ -92,6 +92,18 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
           pServer->SetServerPort(pfmLogon->dwPort);
         else
           pServer->SetServerPort(6073);				// Tell the client to enum the old fashioned way
+		//KGJV #114
+		// fill in StaticCoreInfo
+		StaticCoreInfo* pcoreinfo  = (StaticCoreInfo*)FM_VAR_REF(pfmLogon, vStaticCoreInfo);
+		pServer->SetStaticCoreInfo(pfmLogon->cStaticCoreInfo, pcoreinfo);
+		// location
+		char * szLoc =  FM_VAR_REF(pfmLogon, szLocation);
+		pServer->SetLocation(szLoc);
+		// max games
+		pServer->SetMaxGamesAllowed(pfmLogon->MaxGames);
+
+		// rebuild the master core list
+		g_pLobbyApp->BuildStaticCoreInfo();
       // break; mmf took out break so we can check ip below
 	  }
 
@@ -138,6 +150,11 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     case FM_LS_LOBBYMISSIONINFO:
     {
       CASTPFM(pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO, pfm);
+	  //KGJV #114 - server didnt fill szServerAddr but only reserved the bits. We fill it here.
+	  char szAddr[16];
+      pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
+	  char *pfmdata = FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr); // get the addr in the message
+	  strcpy(pfmdata,szAddr); // overwrite with the real addr
       CFLMission * pMission = CFLMission::FromCookie(pfmLobbyMissionInfo->dwCookie);
       if (pMission) // if it's already gone away--just ignore it. 
       {
@@ -217,6 +234,8 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     {
       CASTPFM(pfmPause, S, PAUSE, pfm);
       pServer->Pause(pfmPause->fPause);
+	  // KGJV #114 cant create game on paused server
+      g_pLobbyApp->BuildStaticCoreInfo();
       break;
     }      
 
@@ -258,6 +277,8 @@ HRESULT LobbyServerSite::OnDestroyConnection(FedMessaging * pthis, CFMConnection
   // connection is already gone, so we can't get address
   g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_ServerDisconnected, cnxn.GetName());
   delete CFLServer::FromConnection(cnxn);
+  // server gone, rebuild the master core list
+  g_pLobbyApp->BuildStaticCoreInfo();
   return S_OK;
 }
 
@@ -293,12 +314,18 @@ CFLServer::CFLServer(CFMConnection * pcnxn) :
   m_cPlayers(0),
   m_maxLoad(300), // get from reg or something
   m_bHere(false),
-  m_fPaused(false)
+  m_fPaused(false),
+  m_cStaticCoreInfo(0),    // KGJV #114
+  m_vStaticCoreInfo(NULL), // KGJV #114
+  m_dwStaticCoreMask(0),   // KGJV #114
+  m_iMaxGames(20)		   // KGJV #114
 {
   assert(m_pcnxn);
   m_pcnxn->SetPrivateData((DWORD) this); // set up two-way link between connection and this
 
   m_pCounters = g_pLobbyApp->AllocatePerServerCounters(pcnxn->GetName());  
+
+  strcpy(m_szLocation,"unknown"); // KGJV #114 - default location
 }
 
 CFLServer::~CFLServer()
@@ -314,7 +341,9 @@ CFLServer::~CFLServer()
   { 
     delete iter.Value();
     iter.Remove(); 
-  } 
+  }
+  // KGJV #114
+  FreeStaticCoreInfo();
 }
 
 void CFLServer::DeleteMission(const CFLMission * pMission)

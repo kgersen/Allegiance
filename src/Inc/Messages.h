@@ -21,7 +21,7 @@
    one server, and many clients, the server is always up to date by definition.
    ***Also gets incremented for changes to parts.h***
 */
-const int MSGVER = 198;
+const int MSGVER = 199; // KGJV updated for R4
  
 
 /*
@@ -294,7 +294,9 @@ DEFINE_FEDMSG(S, MISSIONDEF, 38) // sent when a mission is created, and when it 
   bool      fAutoAcceptLeaders : 1;
   bool      fInProgress        : 1;
   STAGE     stage;
-  
+  // KGJV #114 - added server name & addr
+  char      szServerName[c_cbName];
+  char      szServerAddr[16];
   // yes, for missions with fewer than c_cSidesMax sides, the following arrays will waste space,
   // but that allows us to just keep an array of missions
   // $CRC: should probably just make a struct for the per team stuff and have an array of the struct
@@ -519,8 +521,11 @@ DEFINE_FEDMSG(C, PLAYER_DONATE, 67)
   ShipID    shipID;
 END_FEDMSG
 
-DEFINE_FEDMSG(S, SIDE_INACTIVE, 68)
+DEFINE_FEDMSG(CS, SIDE_INACTIVE, 68) // KGJV #62 both way now
   SideID    sideID;
+  bool      bActive;    // KGJV #62 - extended for empty teams feature
+  bool		bChangeAET; // KGJV #62 - extended for empty teams feature
+  bool		bAET;       // KGJV #62 - extended for empty teams feature
 END_FEDMSG
 
 struct MissileLaunchData

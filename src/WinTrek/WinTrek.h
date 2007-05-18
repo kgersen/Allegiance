@@ -208,6 +208,9 @@ class  WinTrekClient :
 
         virtual void      JoinMission(MissionInfo * pMission, const char* szMissionPassword);
         virtual void      CreateMissionReq();
+		// KGJV #114
+		virtual void      ServerListReq();
+		virtual void      CreateMissionReq(const char *szServer, const char *szAddr, const char *szIGCStaticFile, const char *szGameName);
         
 // IFedMessagingSite
         virtual HRESULT   OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm);
