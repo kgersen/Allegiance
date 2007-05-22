@@ -104,17 +104,17 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
 		// rebuild the master core list
 		g_pLobbyApp->BuildStaticCoreInfo();
-      // break; mmf took out break so we can check ip below
+		// break; mmf took out break so we can check ip below
+		// KGJV moved mmf's stuff inside lobby version check
+		// mmf add check to see if they are an allowed or blocked server
+		  char szRemote[16];
+		  pthis->GetIPAddress(cnxnFrom, szRemote);
+
+		  if (!strncmp("127.0.0.1",szRemote,9)) break;  // check for loopback and always allow
+		  if (IsServerAllowed(szRemote)) break;
 	  }
 
 	  char * szReason;
-
-	  // mmf add check to see if they are an allowed or blocked server
-	  char szRemote[16];
-      pthis->GetIPAddress(cnxnFrom, szRemote);
-
-	  if (!strncmp("127.0.0.1",szRemote,9)) break;  // check for loopback and always allow
-	  if (IsServerAllowed(szRemote)) break;
 
 	  // if we got this far we are not on the approved list fall through to reject below
 	  szReason = "Your server IP address is not approved for connection to this Lobby.  Please contact the Lobby Amin.";

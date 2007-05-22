@@ -283,10 +283,14 @@ private:
             //    WinPoint(m_viColumns[4] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
             //    cbTemp);
 
+			// KGJV #114 draw server name
+			rectClipOld = psurface->GetClipRect();
+			psurface->SetClipRect(WinRect(m_viColumns[3], 0, m_viColumns[4], GetYSize()));
             wsprintf(cbTemp, "%s", game->GetMissionDef().szServerName);
 			psurface->DrawString(pfont, color,
-                WinPoint(m_viColumns[4] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
+                WinPoint(m_viColumns[3] +4, 6),
                 cbTemp);
+			psurface->RestoreClipRect(rectClipOld);
 
 			// KGJV #114
             //wsprintf(cbTemp, "%d", game->MinPlayersPerTeam());
@@ -1531,6 +1535,15 @@ public:
         return pgame1->MaxPlayersPerTeam() > pgame2->MaxPlayersPerTeam();
     }
 	// KGJV #114
+    static bool ServerCompare(ItemID pitem1, ItemID pitem2)
+    {
+        MissionInfo* pgame1 = (MissionInfo*)pitem1;
+        MissionInfo* pgame2 = (MissionInfo*)pitem2;
+		const char * n1 = pgame1->GetMissionDef().szServerName;
+		const char * n2 = pgame2->GetMissionDef().szServerName;
+        return _stricmp(n1,n2) > 0;
+    }
+	// KGJV #114
     static bool CoreCompare(ItemID pitem1, ItemID pitem2)
     {
         MissionInfo* pgame1 = (MissionInfo*)pitem1;
@@ -1624,8 +1637,10 @@ public:
                 plist = SortingList(plist, SkillCompare, m_vbReversedSorts[i]);;
                 break;
 
+			// KGJV #114
             case 4:
-                plist = SortingList(plist, TeamCompare, m_vbReversedSorts[i]);
+                //plist = SortingList(plist, TeamCompare, m_vbReversedSorts[i]);
+				plist = SortingList(plist, ServerCompare, m_vbReversedSorts[i]);
                 break;
 
 			// KGJV #114

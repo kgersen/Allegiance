@@ -522,7 +522,7 @@ public:
                 AddEventTarget(&TeamPane::OnButtonAutoDonate, m_pbuttonAutoDonate->GetEventSource());
             
             if (m_pbuttonStopDonate)
-                AddEventTarget(&TeamPane::OnButtonAutoDonate, m_pbuttonStopDonate->GetEventSource());
+                AddEventTarget(&TeamPane::OnButtonStopDonate, m_pbuttonStopDonate->GetEventSource()); // KGJV #110
             
             if (m_pbuttonAccept)
                 AddEventTarget(&TeamPane::OnButtonAccept, m_pbuttonAccept->GetEventSource());
@@ -699,6 +699,7 @@ public:
     }
 
 
+	//KGJV #110 - changed logic for donate
     bool OnSelectPlayer(ItemID pitem)
     {
         bool bEnableDonate = false;
@@ -721,11 +722,11 @@ public:
         if (pitem != NULL)
         {
             PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
-            if (m_sideCurrent == trekClient.GetSideID())
+            if (m_sideCurrent == trekClient.GetSideID()) // my side
             {
                 bHideBoot = !trekClient.GetPlayerInfo()->IsTeamLeader();
                 
-                if (pplayer->SideID() == SIDE_TEAMLOBBY)
+                if (pplayer->SideID() == SIDE_TEAMLOBBY) // my side is NOAT
                 {
                     if (trekClient.MyMission()->FindRequest(trekClient.GetSideID(), pplayer->ShipID()))
                     {
@@ -735,16 +736,30 @@ public:
                         bEnableBoot = true;
                     }
                 }
-                else if (pplayer != trekClient.GetPlayerInfo())
+                else if (pplayer != trekClient.GetPlayerInfo()) // selected player is not me
                 {
                     IshipIGC* pship = pplayer->GetShip();
                     
                     if (pplayer->IsHuman())
                     {
+						// psd = to whom he is donating
                         IshipIGC*   psd = pship->GetAutoDonate();
-                        bEnableAutoDonate = ((psd == NULL) ||
-                                             (psd == trekClient.GetShip())) &&
-                                            (pship != trekClient.GetShip()->GetAutoDonate());
+
+						if (trekClient.GetPlayerInfo()->IsTeamLeader()) // i'm team leader
+						{
+							bHideStopDonate = false;
+							bEnableStopDonate = true; /*((psd == NULL) ||
+												 (psd == trekClient.GetShip())) &&
+												(pship != trekClient.GetShip()->GetAutoDonate());*/
+							bEnableAutoDonate = true;
+						}
+						else // i'm not team leader
+						{
+							bool bTargetIsLeader = pplayer->IsTeamLeader();
+							// i'm not donating and selected is leader
+							bEnableAutoDonate = (trekClient.GetShip()->GetAutoDonate() == NULL && bTargetIsLeader);
+							bEnableStopDonate = false;
+						}
 
                         bEnableDonate = (trekClient.GetMoney() > 0);
                     }
@@ -764,11 +779,11 @@ public:
                     
                     bEnableTakeMeTo = true;
                 }
-                else
+                else // selected player is me
                 {
-                    bHideAutoDonate = true;
-                    bHideStopDonate = false;
-                    bEnableStopDonate = trekClient.GetShip()->GetAutoDonate() != NULL;
+                    bHideAutoDonate = false;
+					bHideStopDonate = true;
+                    bEnableStopDonate = false; //trekClient.GetShip()->GetAutoDonate() != NULL;
                 }
             }
             else
@@ -1019,14 +1034,34 @@ public:
         
         return true;
     }
-    
+
+	// KGJV #110
+    bool OnButtonStopDonate()
+    {
+		if (!trekClient.MyPlayerInfo()->IsTeamLeader()) return true;// only leader can toggle someone to stop donating
+        if ((m_plistPanePlayers->GetSelection() != NULL) && (trekClient.m_fm.IsConnected ()))
+        {
+	        ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
+            //m_pbuttonAutoDonate->SetEnabled(false);
+            //m_pbuttonStopDonate->SetEnabled(false);
+            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+            BEGIN_PFM_CREATE(trekClient.m_fm, pfmAutoDonate, C, AUTODONATE)
+            END_PFM_CREATE
+            pfmAutoDonate->sidDonateTo = shipID; 
+            pfmAutoDonate->amount = -1; // indicate to toggle stop donating for sidDonateTo
+		}
+		return true;
+	}
+	// KGJV #110 - logic change - does only "team deposit" now
     bool OnButtonAutoDonate()
     {
         ShipID  shipID;
         if ((m_plistPanePlayers->GetSelection() != NULL) && (trekClient.m_fm.IsConnected ()))
         {
             shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
-            
+			if (shipID == trekClient.GetShipID()) return true; // skip stop donating
+			PlayerInfo* pplayer = trekClient.FindPlayer(shipID);
+
             m_pbuttonAutoDonate->SetEnabled(false);
             m_pbuttonStopDonate->SetEnabled(false);
 
@@ -1034,14 +1069,14 @@ public:
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmAutoDonate, C, AUTODONATE)
                 END_PFM_CREATE
                 
-                if (shipID == trekClient.GetShipID())
+                //if (shipID == trekClient.GetShipID())
+                //{
+                //    pfmAutoDonate->sidDonateTo = NA;
+                //    pfmAutoDonate->amount = 0;
+                //}
+                //else
                 {
-                    pfmAutoDonate->sidDonateTo = NA;
-                    pfmAutoDonate->amount = 0;
-                }
-                else
-                {
-                    pfmAutoDonate->sidDonateTo = shipID;
+                    pfmAutoDonate->sidDonateTo = shipID; 
                     pfmAutoDonate->amount = trekClient.GetMoney();
                     trekClient.SetMoney(0);
                 }

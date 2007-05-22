@@ -4753,6 +4753,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfsMission->AddBallot(new OfferDrawBallot(pfsPlayer));
                 bForward = false;
               }
+				// KGJV #110
+               else if (pfmChat->cbMessage > strlen("#mutiny") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#mutiny", strlen("#mutiny")) == 0)
+              {
+				// leader cant mutiny
+			    if (pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) != pfsPlayer)
+					pfsMission->AddBallot(new MutinyBallot(pfsPlayer));
+                bForward = false;
+              }
 			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006
 			   // mmf changed this from GetOwner to GetLeader
 			  else if(pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) == pfsPlayer && pfmChat->cbMessage > strlen("#autoaccept") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autoaccept", strlen("#autoaccept")) == 0)
@@ -4781,9 +4789,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  else if(pfmChat->cbMessage > strlen("#list") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#list", strlen("#list")) == 0)
               {				
 			    // mmf splat send message to self
-				
+				// KGJV #110 added #mutiny
 				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
-					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban");
+					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny");
 				bForward = false;
 			  }
           }
@@ -5068,6 +5076,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	// KGJV #110 - changed logic
     case FM_C_AUTODONATE:
     {
       if (!pfsMission || (pfsMission->GetStage() != STAGE_STARTED))
@@ -5079,6 +5088,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
 
       IsideIGC* pside = pfsPlayer->GetSide();
+	  SideID    sideID = pside->GetObjectID();
+	  if (pfmAutoDonate->amount==-1 && pfsMission->GetLeader(sideID)!=pfsPlayer)
+		  TrapHackBoot(false); // only leader can toggle someone donation
 
       CFSPlayer*    pfsDonate = NULL;
       ShipID        shipID = pfsPlayer->GetShipID();
@@ -5091,11 +5103,30 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           }
       }
 
-      pfsPlayer->SetAutoDonate(pfsDonate, pfmAutoDonate->amount);
+	  // logic change here
+	  // if amount is -1 then it's the leader that is toggling someone donation
+	  // otherwise do like previous version (aka redonate to leader or set new leader)
+	  CFSPlayer *pfsPlayerChanged = NULL;
+	  if (pfmAutoDonate->amount == -1)
+	  {
+		  if (!pfsDonate) break; // in case target dropped/left
+		  // toggle donation:
+		  if (pfsDonate->GetAutoDonate() != NULL)
+			pfsDonate->SetAutoDonate(NULL,0);
+		  else
+			pfsDonate->SetAutoDonate(pfsPlayer,0);
+		  pfsPlayerChanged = pfsDonate;
+	  }
+	  else
+	  {
+		  pfsPlayer->SetAutoDonate(pfsDonate, pfmAutoDonate->amount);
+  		  pfsPlayerChanged = pfsPlayer;
+	  }
+	  assert(pfsPlayerChanged);
 
       if (pMission->GetMissionStage() == STAGE_STARTED)
       {
-          IshipIGC*     pshipNewDonate = pfsPlayer->GetIGCShip()->GetAutoDonate();
+          IshipIGC*     pshipNewDonate = pfsPlayerChanged->GetIGCShip()->GetAutoDonate();
 
           SideID        sideID = pside->GetObjectID();
           IshipIGC*     pshipLeader = pfsMission->GetLeader(sideID)->GetIGCShip();
@@ -6598,9 +6629,12 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		CASTPFM(pfmSideInactive, CS, SIDE_INACTIVE, pfm);
   		SideID sid = pfmSideInactive->sideID;
 
-		TrapHackBoot(!pfsMission->HasPlayers(pfsMission->GetIGCMission()->GetSide(sid),true));
-
-		pfsMission->SetSideActive(sid,pfmSideInactive->bActive); // update cached missdef
+		//TrapHackBoot(!pfsMission->HasPlayers(pfsMission->GetIGCMission()->GetSide(sid),true));
+		// only change activeflag if team is empty
+		if (!pfsMission->HasPlayers(pfsMission->GetIGCMission()->GetSide(sid),true))
+			pfsMission->SetSideActive(sid,pfmSideInactive->bActive); // update cached missdef
+		else // otherwise revert
+			pfmSideInactive->bActive = pfsMission->GetSideActive(sid);
 
 		// here we update the AllowEmptyTeams (AET) game parameter if needed
 		// 1.  get current AET

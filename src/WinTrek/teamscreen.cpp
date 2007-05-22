@@ -1259,8 +1259,12 @@ public:
 
 	}
 	// KGJV #62
-	void UpdateTeamButtons(bool bCanChange)
+	void UpdateTeamButtons()
 	{
+        bool bCanChange = trekClient.GetPlayerInfo()->IsMissionOwner() 
+                && !trekClient.MyMission()->WasObjectModelCreated() 
+                && trekClient.MyMission()->GetStage() == STAGE_NOTSTARTED;
+
 		SetHiddenTeamButtons(!bCanChange);
 		for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
 		{
@@ -1342,7 +1346,7 @@ public:
             m_pbuttonbarChat->SetEnabled(2, trekClient.GetPlayerInfo()->IsTeamLeader());
 
 			// KGJV #62
-			UpdateTeamButtons(bCanChangeSettings);
+			UpdateTeamButtons();
 			
         }
         else
@@ -1493,37 +1497,40 @@ public:
 					if (psl == NULL)
 						break;
 
-					// TE: Remember lowest TeamRank
-					tempRank = GetSideRankSum(psl->data(), false);
-					if (tempRank < minTeamRank)
+					// KGJV #62 - skip deactivated team
+					if (psl->data()->GetActiveF())
 					{
-						psideMinRank = psl->data();
-						minTeamRank = tempRank;
+						// TE: Remember lowest TeamRank
+						tempRank = GetSideRankSum(psl->data(), false);
+						if (tempRank < minTeamRank)
+						{
+							psideMinRank = psl->data();
+							minTeamRank = tempRank;
+						}
+
+						// TE: Remember highest TeamRank
+						if (tempRank > maxTeamRank)
+						{
+							psideMaxRank = psl->data();
+							maxTeamRank = tempRank;
+						}
+
+						int n = psl->data()->GetShips()->n();
+
+						// TE: Remember smallest side
+						if (n < minPlayers)
+						{
+							psideMin = psl->data();
+							minPlayers = n;
+						}
+
+						// TE: Remember largest side
+						if (n > maxPlayers)
+						{
+							psideMax = psl->data();
+							maxPlayers = n;
+						}
 					}
-
-					// TE: Remember highest TeamRank
-					if (tempRank > maxTeamRank)
-					{
-						psideMaxRank = psl->data();
-						maxTeamRank = tempRank;
-					}
-
-					int n = psl->data()->GetShips()->n();
-
-					// TE: Remember smallest side
-					if (n < minPlayers)
-					{
-						psideMin = psl->data();
-						minPlayers = n;
-					}
-
-					// TE: Remember largest side
-					if (n > maxPlayers)
-					{
-						psideMax = psl->data();
-						maxPlayers = n;
-					}
-
 					psl = psl->next();
 				}
 			}
@@ -2748,6 +2755,8 @@ public:
         // if this is the side I'm looking at, if we just upped the number of 
         // players we may need to change the civ watermark.
         UpdateCivBitmap();
+
+		UpdateTeamButtons();// KGJV #62
 
         // if this is me...
 

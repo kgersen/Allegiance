@@ -712,6 +712,13 @@ bool CLobbyApp::StringICmpLess::operator () (const ZString& str1, const ZString&
 };
 
 // KGJV #114
+class StaticCoreInfoEquals {
+public:
+    bool operator () (const StaticCoreInfo* value1, const StaticCoreInfo* value2)
+    {
+        return (stricmp(value1->cbIGCFile,value2->cbIGCFile) == 0);
+    }
+};
 void CLobbyApp::BuildStaticCoreInfo()
 {
 	// build the master core list
@@ -720,7 +727,7 @@ void CLobbyApp::BuildStaticCoreInfo()
 	FreeStaticCoreInfo();
 	// 2. loop thru unpaused servers and build a TList of StaticCoreInfo and the coremask
 	ListConnections::Iterator iterCnxn(*GetFMServers().GetConnections());
-	TList<StaticCoreInfo*> CoreList;
+	TList<StaticCoreInfo*,StaticCoreInfoEquals> CoreList;
 	while (!iterCnxn.End())
 	{
 		CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn.Value());
@@ -750,7 +757,8 @@ void CLobbyApp::BuildStaticCoreInfo()
 
 	for (int i = 0; i < m_cStaticCoreInfo; i++)
 		strcpy(m_vStaticCoreInfo[i].cbIGCFile,CoreList[i]->cbIGCFile);
-		
+	CoreList.SetEmpty();
+
 	// 5. loop thru unpaused servers and build the coremask
 	ListConnections::Iterator iterCnxn2(*GetFMServers().GetConnections());
 	while (!iterCnxn2.End())

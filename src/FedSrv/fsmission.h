@@ -146,9 +146,22 @@ protected:
   Time m_timeExpiration;
 
   bool m_bCanceled;
+
+  // KGJV #110
+  bool m_bHideToLeader;
 };
 
 typedef TList<Ballot*> BallotList;
+
+// KGJV #110
+class MutinyBallot : public Ballot
+{
+  IsideIGC* m_pside;
+  ShipID m_idInitiatorShip;
+public:
+  MutinyBallot(CFSPlayer* pfsInitiator);
+  virtual void OnPassed();
+};
 
 // a ballot used when a player suggests resigning
 class ResignBallot : public Ballot

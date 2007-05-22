@@ -349,12 +349,27 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             if (!(pfmBallot->otInitiator == OT_ship && pfmBallot->oidInitiator == GetShipID())
               && !(pfmBallot->otInitiator == OT_side && pfmBallot->oidInitiator == GetSideID()))
             {
-                // then propose the issue.
-                m_listBallots.PushEnd(BallotInfo(
-                    (char*)(FM_VAR_REF(pfmBallot, BallotText)) + ZString("Press [Y] to vote yes, [N] to vote no."), 
-                    pfmBallot->ballotID, 
-                    ClientTimeFromServerTime(pfmBallot->timeExpiration)
-                    ));
+				// KGJV #110
+				// if bHideToLeader and i'm the team leader then auto vote no
+				if (pfmBallot->bHideToLeader &&	MyPlayerInfo()->IsTeamLeader())
+				{
+					// auto vote no
+					SetMessageType(c_mtGuaranteed);
+					BEGIN_PFM_CREATE(m_fm, pfmVote, C, VOTE)
+					END_PFM_CREATE
+					pfmVote->ballotID = pfmBallot->ballotID;
+					pfmVote->bAgree = false;
+				}
+				else
+				{
+	                // then propose the issue.
+					m_listBallots.PushEnd(BallotInfo(
+						(char*)(FM_VAR_REF(pfmBallot, BallotText)) + ZString("Press [Y] to vote yes, [N] to vote no."), 
+						pfmBallot->ballotID, 
+						ClientTimeFromServerTime(pfmBallot->timeExpiration)
+						));
+				}
+		
             }
         }
         break;

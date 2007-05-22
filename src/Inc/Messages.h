@@ -170,6 +170,7 @@ DEFINE_FEDMSG(S, BALLOT, 17)
   ObjectID    oidInitiator;
   BallotID    ballotID;
   Time        timeExpiration;
+  bool		  bHideToLeader; // KGJV #110
 END_FEDMSG
 
 DEFINE_FEDMSG(S, CANCEL_BALLOT, 18)

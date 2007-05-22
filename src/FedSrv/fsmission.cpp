@@ -5222,6 +5222,7 @@ void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const
   pfmBallot->timeExpiration = m_timeExpiration;
   pfmBallot->otInitiator = OT_ship;
   pfmBallot->oidInitiator = pfsInitiator->GetShipID();
+  pfmBallot->bHideToLeader = m_bHideToLeader;  // KGJV #110
 
   g.fm.SendMessages(m_pgroup, FM_GUARANTEED, FM_FLUSH);        
 
@@ -5282,6 +5283,7 @@ void Ballot::Init(CFSSide* pfsideInitiator, const ZString& strProposalName, cons
   pfmBallot->timeExpiration = m_timeExpiration;
   pfmBallot->otInitiator = OT_side;
   pfmBallot->oidInitiator = pfsideInitiator->GetSideIGC()->GetObjectID();
+  pfmBallot->bHideToLeader = false; // KGJV #110
 
   g.fm.SendMessages(m_pgroup, FM_GUARANTEED, FM_FLUSH);        
 }
@@ -5375,11 +5377,39 @@ bool Ballot::AllVotesAreIn()
 
 BallotID Ballot::s_ballotIDNext = 0;
 
+// KGJV #110
+// mutiny ballot to change commander
+MutinyBallot::MutinyBallot(CFSPlayer* pfsInitiator)
+{
+  m_pside = pfsInitiator->GetSide();
+  m_idInitiatorShip = pfsInitiator->GetShipID();
+  m_bHideToLeader = true;
+  Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to mutiny"), pfsInitiator->GetName() + ZString(" has proposed to munity.  "));
+}
+
+void MutinyBallot::OnPassed()
+{
+  Ballot::OnPassed();
+
+  SideID    sideID = m_pside->GetObjectID();
+  if (sideID >= 0 && STAGE_STARTED == m_pmission->GetStage())
+  {
+	  CFSShip*    pfssNewLeader = CFSShip::GetShipFromID(m_idInitiatorShip);
+      if (pfssNewLeader && pfssNewLeader->IsPlayer() && 
+		  pfssNewLeader->GetSide() == m_pside)
+      {
+		  CFSPlayer * pfspNewLeader = pfssNewLeader->GetPlayer();
+		  if (pfspNewLeader->GetSide() == m_pside)
+			  m_pmission->SetLeader(pfspNewLeader);
+      }
+   }
+}
 
 // a ballot used when a player suggests resigning
 ResignBallot::ResignBallot(CFSPlayer* pfsInitiator)
 {
   m_pside = pfsInitiator->GetSide();
+  m_bHideToLeader = false; // KGJV #110
   Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to resign"), pfsInitiator->GetName() + ZString(" has proposed resigning.  "));
 }
 
@@ -5398,6 +5428,7 @@ void ResignBallot::OnPassed()
 OfferDrawBallot::OfferDrawBallot(CFSPlayer* pfsInitiator)
 {
   m_pfside = CFSSide::FromIGC(pfsInitiator->GetSide());
+  m_bHideToLeader = false; // KGJV #110
   Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to offer a draw"), pfsInitiator->GetName() + ZString(" has proposed offering a draw.  "));
 }
 
@@ -5412,6 +5443,7 @@ void OfferDrawBallot::OnPassed()
 // a ballot used when one team offers a draw
 AcceptDrawBallot::AcceptDrawBallot(CFSSide* pfsideInitiator)
 {
+  m_bHideToLeader = false; // KGJV #110
   Init(pfsideInitiator, pfsideInitiator->GetSideIGC()->GetName() + ZString("'s offer of a draw"), pfsideInitiator->GetSideIGC()->GetName() + ZString(" has offered a draw.  "));
 }
 
