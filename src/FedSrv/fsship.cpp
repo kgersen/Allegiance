@@ -99,6 +99,14 @@ void CFSShip::HitWarp(IwarpIGC * pwarp)
               float   r = pwarp->GetRadius();
 
               error = (d / (r*r)) + 0.125f;      //Error ranges from 0.125 to 1.125
+			  // yp: to prevent 'spin of death' in massive ships.
+			  // This works and is explained in that the more massive the ship the less effect going through the aleph should have
+			  // on its rotational velocity, because the massive amount of inertia should prevent changes in rotational velocity.
+			  if(m_pShip->GetMass() > 300.0f)
+			  {
+				error = error * (300.0f / m_pShip->GetMass()); // the greater the mass is above 750 the less error will be applied.
+			  }
+			  // yp end
           }
 
           alephOrientation.Pitch(random(-error, error));
