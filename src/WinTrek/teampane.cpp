@@ -270,6 +270,19 @@ public:
                   pside = trekClient.GetCore()->GetSide(pitem->GetSideID());
               int pnumberside = pitem->GetSideID();
               
+
+			  	//	yp - Your_Persona Team total rank teampane patch may 24 2007
+				// Add up the sum of all the players ranks.
+				const ShipListIGC* mp_ships = pside->GetShips();
+				int teamTotalRank = 0;
+				for (const ShipLinkIGC* lShip = mp_ships->first(); lShip; lShip = lShip->next())
+				{
+					IshipIGC* pship = lShip->data();
+					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
+					teamTotalRank += pplayer->GetPersistScore(NA).GetRank(); // mmf this is just for display purposes
+				}
+				// end yp
+
               
               switch (pnumberside)
               {
@@ -314,7 +327,7 @@ public:
               }
               
               WinRect rectClipOld = psurface->GetClipRect();
-              psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(105, 20))); // clip name to fit in column
+              psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(90, 20))); // clip name to fit in column // yp: changed from 105 to 90
               // draw the team name
 			  ZString name;
 			  if ( pitem->GetSideID()== SIDE_TEAMLOBBY ) 
@@ -342,8 +355,9 @@ public:
                psurface->DrawString(
                   TrekResources::SmallFont(),
                   Color::White(),
-                  WinPoint(110, 2),
-                  ZString("(") + ZString(m_pMission->SideNumPlayers(pitem->GetSideID())) + ZString(")")
+                  WinPoint(95, 2), // yp: changed from (110,2) to make room for the teamTotalRank
+                  ZString("(") + ZString(m_pMission->SideNumPlayers(pitem->GetSideID())) + ZString(")") +				  
+				  ZString("[") + ZString(teamTotalRank) + ZString("]") // yp: added team total rank to team name display.
                   );
 			  } 
         }
@@ -1647,13 +1661,20 @@ class ExpandedTeamPane : public TeamPane
                 pfont = TrekResources::SmallFont();
                 color = Color::White();
             }
-            
+			// yp: show player name with rank attached if is human
+            ZString pzsPlayerDisplayName = ZString(  pplayer->CharacterName())+
+					ZString("[")+ ZString( pplayer->GetPersistScore(NA).GetRank())+ZString("]");
+			if(!pplayer->IsHuman()) // if they arnt human only show their name.
+			{
+				pzsPlayerDisplayName = ZString(  pplayer->CharacterName());
+			}
+			// yp end
             WinRect rectClipOld = psurface->GetClipRect();
             psurface->SetClipRect(WinRect(WinPoint(0, 0), WinPoint(100, 20))); // clip name to fit in column
             psurface->DrawString(
                 pfont, color,   
                 WinPoint(17, 2),
-                pplayer->CharacterName()
+                pzsPlayerDisplayName  // yp: show player name with rank attached if is human
                 );
             psurface->RestoreClipRect(rectClipOld);
             
