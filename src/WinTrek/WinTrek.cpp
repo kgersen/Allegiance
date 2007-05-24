@@ -2822,11 +2822,13 @@ public:
         m_pgroupImage3D = new GroupImage();
 
         m_pgroupImage3D->AddImage(m_pwrapImageHudGroup   );
-        m_pgroupImage3D->AddImage(m_pmuzzleFlareImage    );
-        m_pgroupImage3D->AddImage(m_pwrapImageLensFlare  );
+        m_pgroupImage3D->AddImage(m_pmuzzleFlareImage    );  
+		//m_pgroupImage3D->AddImage(m_pwrapImageLensFlare  ); // Your_Persona: this line was moved down one line to move it up in the draw order.
         m_pgroupImage3D->AddImage(m_pwrapImageScene      );
+		m_pgroupImage3D->AddImage(m_pwrapImageLensFlare  );// moved to here
         m_pgroupImage3D->AddImage(m_pwrapImagePosters    );
         m_pgroupImage3D->AddImage(m_pwrapImageStars      );
+
         m_pgroupImage3D->AddImage(m_pwrapImageEnvironment);
 
         m_pwrapImageConsole     = new WrapImage(Image::GetEmpty());
@@ -3009,6 +3011,7 @@ public:
         SetCursorImage(pimageCursor);
     }
 
+	// TODO: rewrite all load and savepreference methods to use a settings file instead of the registry.
     void SavePreference(const ZString& szName, DWORD dwValue)
     {
         HKEY hKey;
