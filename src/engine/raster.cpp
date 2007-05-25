@@ -516,12 +516,14 @@ public:
     {
 #ifdef USEDX7
         if (bLinearFilter && Has3DAcceleration()) {
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MINFILTER, D3DFILTER_LINEAR));
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MAGFILTER, D3DFILTER_LINEAR));
+            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MAGFILTER, D3DTFG_LINEAR));
+            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MINFILTER, D3DTFN_LINEAR));
+			D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MIPFILTER, D3DTFP_NONE));
         } else {
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MINFILTER, D3DFILTER_NEAREST));
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MAGFILTER, D3DFILTER_NEAREST));
-        }
+            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MAGFILTER, D3DTFG_POINT));
+            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MINFILTER, D3DTFN_POINT));
+			D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MIPFILTER, D3DTFP_NONE));
+		}
 #else
         if (bLinearFilter && Has3DAcceleration()) {
             D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMAG, D3DFILTER_LINEAR));

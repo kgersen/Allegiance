@@ -2033,7 +2033,7 @@ public:
         if (pside && m_sideCurrent != SIDE_TEAMLOBBY && pside->GetShips()->n() > 0) {
             ZString str = ZString(pside->GetCivilization()->GetIconName()).ToLower() + "lobbybmp";
 
-            m_pwrapImageCiv->SetImage(GetModeler()->LoadImage(str, true));
+            m_pwrapImageCiv->SetImage(GetModeler()->LoadImage(str, false)); // KGJV 32B - consistency with defaultwatermark below
         } else {
             m_pwrapImageCiv->SetImage(GetModeler()->LoadImage("defaultwatermarkbmp", false));
         }

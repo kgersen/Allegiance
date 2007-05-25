@@ -606,10 +606,11 @@ public:
         float xOffset = point.X() - (bCentered ? rectSource.XSize() / 2 : 0);
         float yOffset = point.Y() - (bCentered ? rectSource.YSize() / 2 : 0);
 
-        float xmin = xOffset                   ;
-        float xmax = xOffset + rectSource.XSize();
-        float ymin = yOffset;
-        float ymax = yOffset + rectSource.YSize();
+		// KGJV 32B - Mapping Texels to Pixels correction
+        float xmin = xOffset-0.5f                   ;
+        float xmax = xOffset + rectSource.XSize()-0.5f;
+        float ymin = yOffset-0.5f;
+        float ymax = yOffset + rectSource.YSize()-0.5f;
 
         float xt;
         float yt;
@@ -780,8 +781,11 @@ public:
         UpdateState();
 
         m_pdevice3D->SetShadeMode(ShadeModeFlat);
+		m_pdevice3D->SetColorKey(false); // KGJV 32B
         m_pdevice3D->DrawTriangles(vertices, 4, indices, 6);
         m_pdevice3D->SetShadeMode(m_pstateDevice->m_shadeMode);
+		m_pdevice3D->SetColorKey(m_pstateDevice->m_bColorKey); // KGJV 32B
+
     }
 
     void FillInfinite(const Color& color)
