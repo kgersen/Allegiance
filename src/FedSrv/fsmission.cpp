@@ -4216,7 +4216,22 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 					nHighestTeamRank = nTempSideRank;
 			}
 		}
-
+		// mmf go with simple method of only allowing new players on the side with the lowest rank
+		if (nRequestedSideRank != nLowestTeamRank)	
+			return DPR_TeamBalance;
+		
+		// mmf disable this for now with if 0
+		// TODO: revisit this
+		//   Perhaps just select the team for them when they click join, so instead of rejecting
+		//   them from the selected team stick them on the proper team.
+		//
+		//   The below is bugged in that if the difference between teams gets too large
+		//   no one can join either side.  Also newbstack is too restrictive also frequently resulting
+		//   in players ranked 5,6,7,8 not being able to join either side.
+		//
+		//   Fix the below.  Why? so instead of forcing them on a side they may not want to be
+		//   on allow them on if the ranks are close enough.
+#if 0
 		int nPlayerRank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
 		int nRankThreshold = GetRankThreshold();
 		
@@ -4240,6 +4255,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 				return DPR_TeamBalance;
 			}
 		}
+#endif
 	}
 
     if (m_misdef.misparms.bSquadGame)

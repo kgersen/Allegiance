@@ -4788,7 +4788,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  //              keep this at the end of this else if
 			  else if(pfmChat->cbMessage > strlen("#list") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#list", strlen("#list")) == 0)
               {				
-			    // mmf splat send message to self
+			    // mmf send message to self
 				// KGJV #110 added #mutiny
 				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
 					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny");

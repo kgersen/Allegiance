@@ -344,7 +344,10 @@ private:
         {
 			// WLP 2005 - turned off the every second search to keep the mouse responding
 			// added next line to turn off polling
-            //m_bDoBackgroundPolling = false ;	// TE: Commented now that enumeration is done asynchronously
+			// TE: Commented now that enumeration is done asynchronously
+			// mmf: LAN mode is still sync so leave this in, otherwise GUI hangs on LAN game select screen
+			m_bDoBackgroundPolling = false ;
+
             TList<TRef<LANServerInfo> > listResults;
 
             trekClient.FindStandaloneServersByName(szServerName, listResults);
