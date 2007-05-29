@@ -268,7 +268,9 @@ FedMessaging::FedMessaging(IFedMessagingSite * pfmSite) :
   m_pbFMNextT(m_rgbbuffSecondaryOutPacket),
   m_guidInstance(GUID_NULL),
   m_guidApplication(GUID_NULL),
-  m_timeMsgLast(Time::Now())
+  m_timeMsgLast(Time::Now()),
+  m_pHostAddress(NULL), // KGJV pigs - was uninitialized
+  m_pDeviceAddress(NULL) // KGJV pigs - was uninitialized
 {
   assert (pfmSite);
   InitializeCriticalSection( &m_csMsgList );

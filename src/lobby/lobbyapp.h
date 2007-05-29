@@ -13,7 +13,8 @@
 // mmf added this include so client.cpp has HKLM_FedSrv defined
 #include "regkey.h"
 
-#define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"
+// KGJV moved into regkey.h
+//#define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"
 
 /////////////////////////////////////////////////////////////////////////////
 // Forward Declarations

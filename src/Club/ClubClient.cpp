@@ -1520,7 +1520,7 @@ HRESULT IClubClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         //  This message is sent when a zone character requests info about himself 
         //  specific to a CIV.
 
-        int cCivs = g_pStaticData->GetCivCount();
+        //int cCivs = g_pStaticData->GetCivCount(); KGJV - obsolete
         CharInfoByCiv_CharacterID = CharInfoGeneral_CharacterID;  // setup input for CharInfoByCiv queries
 
         SQL_GO(CharInfoByCiv);

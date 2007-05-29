@@ -325,7 +325,10 @@ CFSMission::~CFSMission()
 
   #if defined(ALLSRV_STANDALONE)
     // Possibly shutdown the standalone server if no more games
-    if (0 == s_list.n())
+
+    // KGJV #114 - if lobbied then dont shutdown if create game allowed on this server
+    bool bSupposedToConnectToLobby = !(FEDSRV_GUID != g.fm.GetHostApplicationGuid());
+	if ( (0 == s_list.n()) && (bSupposedToConnectToLobby ? (g.cStaticCoreInfo==0) : true))
     {
       // Disconnect from the lobby server
       DisconnectFromLobby();

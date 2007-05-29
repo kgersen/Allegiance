@@ -13,7 +13,8 @@
 
 #include <zreg.h>
 
-#define HKLM_AllClub "SYSTEM\\CurrentControlSet\\Services\\AllClub" // Keep in sync with HKLM_FedSrv found in ClubQueries.h
+// KGJV changed & moved in regkey.h (see pch.h)
+//#define HKLM_AllClub "SYSTEM\\CurrentControlSet\\Services\\AllClub" // Keep in sync with HKLM_FedSrv found in ClubQueries.h
 
 CSQLSiteImpl g_SQLSite;  // needs to be global cause SQL stuff is globally initialized
 
@@ -41,7 +42,7 @@ CClubApp::CClubApp(IClubSite * plas) :
   // ,m_sql(this)
 {
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, "Creating AllClub");
-  g_pStaticData = CreateStaticData();
+  //g_pStaticData = CreateStaticData(); KGJV - obsolete
   assert(m_plas);
   g_pClubApp = this;
 
@@ -72,8 +73,8 @@ CClubApp::~CClubApp()
   m_pzas = NULL;
 
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, "Shutting down AllClub");
-  if(g_pStaticData)
-    delete g_pStaticData;
+  //if(g_pStaticData) KGJV - obsolete
+  //  delete g_pStaticData;
   m_perfshare.FreeCounters(m_pCounters);
 }
 

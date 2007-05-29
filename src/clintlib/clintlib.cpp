@@ -1088,7 +1088,10 @@ BaseClient::BaseClient(void)
     m_lockdownCriteria(0),
     m_lobbyServerOffset(0),
     m_plistFindServerResults(NULL),
-    m_strCDKey("")
+    m_strCDKey(""),
+	// KGJV pigs - extra default init
+	m_sidBoardAfterDisembark(NA),
+	m_sidTeleportAfterDisembark(NA)
 {
     CoInitialize(NULL);
     m_timeLastPing = m_lastSend;

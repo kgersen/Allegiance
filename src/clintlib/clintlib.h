@@ -590,6 +590,11 @@ private:
   ZString m_szConfigFile; //KGJV #114 - last config file name
 public:
   void SetCfgFile(const char * szConfig); //KGJV #114
+  // KGJV - pigs - added ctor to init some values in case Load is never called
+  CfgInfo() :
+	dwLobbyPort(2302)
+  {
+  }
   void Load(const char * szConfig);
   DWORD GetCfgProfileString(const char *c_szCfgApp,const char *c_szKeyName,const char *c_szDefaultValue,char *szStr,DWORD dwSize); // KGJV #114
   ZString strClubLobby;
