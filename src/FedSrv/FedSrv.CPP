@@ -9763,23 +9763,28 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
     // yp: Add event for players who escorted a constructor
 	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
-    ShipLinkIGC * pShiplink = m_pfsMission->GetIGCMission()->GetShips()->first();
-    while (pShiplink)
-    {
-        CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
-        if (pfsShip->IsPlayer())
-        {
-			if(pfsShip->GetSide() && pfsShip->GetSide()->GetObjectID() == pside->GetObjectID() && // if they are on 'this' side. and..
-			pfsShip->GetCluster()->GetObjectID() == pcluster->GetObjectID()) // they are in this sector
+	if(pmission->GetShips() != NULL && pside)	// GetShips() returns ShipListIGC*
+	{
+		ShipLinkIGC * pShiplink = pmission->GetShips()->first();
+		while (pShiplink)
+		{
+			CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
+			if (pfsShip != NULL & pfsShip->IsPlayer())
 			{
-			pszPlayerList = pszPlayerList + ";" + ZString(pfsShip->GetPlayer()->GetName()); // players name
-			// The distance the player is from the asteroid that the constructor built into.
-			pszPlayerList = pszPlayerList +  ":" + ZString( (pasteroid->GetPosition() - pfsShip->GetPlayer()->GetIGCShip()->GetPosition()).Length()); // the distance?
+				if(pfsShip->GetSide() && pfsShip->GetSide()->GetObjectID() == pside->GetObjectID() && // if they are on 'this' side. and..
+					pfsShip->GetCluster()->GetObjectID() == pcluster->GetObjectID() && pfsShip->GetPlayer()) // they are in this sector
+				{
+					pszPlayerList = pszPlayerList + ";" + ZString(pfsShip->GetPlayer()->GetName()); // players name
+					// The distance the player is from the asteroid that the constructor built into.
+					if(pfsShip->GetPlayer()->GetIGCShip())
+					{
+						pszPlayerList = pszPlayerList +  ":" + ZString( (pasteroid->GetPosition() - pfsShip->GetPlayer()->GetIGCShip()->GetPosition()).Length()); // the distance?
+					}
+				}
 			}
-        }
-        pShiplink = pShiplink->next();
-    }
-	 
+			pShiplink = pShiplink->next();
+		}
+	}
 	 // Fire AGCEvent listing players in the sector
 	_AGCModule.TriggerContextEvent(NULL, EventID_StationCreatedEscort, pszContext,
 						pside->GetName(), pside->GetObjectID(), -1, -1, 4,
@@ -10532,22 +10537,28 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 
 	// yp: Add event for players who were involved in the destruction of an enemy base.
 	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
-    ShipLinkIGC * pShiplink = m_pfsMission->GetIGCMission()->GetShips()->first();
-    while (pShiplink)
-    {
-        CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
-        if (pfsShip->IsPlayer())
-        {
-			if(pfsShip->GetSide()		&& pfsShip->GetSide()->GetObjectID()	== iLauncherSideUniqueID && // if they are on the side that did the killing. and..
-			   pfsShip->GetCluster()	&& pstation->GetCluster()	&& pfsShip->GetCluster()->GetObjectID() == pstation->GetCluster()->GetObjectID()) // they are in this sector
+	 if(m_pfsMission->GetIGCMission() && m_pfsMission->GetIGCMission()->GetShips()) // we hate null pointers
+	 {
+		ShipLinkIGC * pShiplink = m_pfsMission->GetIGCMission()->GetShips()->first();
+		while (pShiplink)
+		{
+			CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
+			if (pfsShip && pfsShip->IsPlayer())
 			{
-			pszPlayerList = pszPlayerList + ";" + ZString(pfsShip->GetPlayer()->GetName()); // players name
-			// The distance the player is from the station that was destroyed.
-			pszPlayerList = pszPlayerList +  ":" + ZString( (pstation->GetPosition() - pfsShip->GetPlayer()->GetIGCShip()->GetPosition()).Length()); // the distance
+				if(pfsShip->GetSide()		&& pfsShip->GetSide()->GetObjectID()	== iLauncherSideUniqueID && // if they are on the side that did the killing. and..
+				   pfsShip->GetCluster()	&& pstation->GetCluster()	&& pfsShip->GetCluster()->GetObjectID() == pstation->GetCluster()->GetObjectID()) // they are in this sector
+				{
+					pszPlayerList = pszPlayerList + ";" + ZString(pfsShip->GetPlayer()->GetName()); // players name
+					// The distance the player is from the station that was destroyed.
+					if(pfsShip->GetPlayer()->GetIGCShip() )
+					{
+						pszPlayerList = pszPlayerList +  ":" + ZString( (pstation->GetPosition() - pfsShip->GetPlayer()->GetIGCShip()->GetPosition()).Length()); // the distance
+					}
+				}
 			}
-        }
-        pShiplink = pShiplink->next();
-    }
+			pShiplink = pShiplink->next();
+		}
+	 }
 	 
 	 // Fire AGCEvent listing players in the sector
 	// Might want to add into the event weither or not this was a VICTORY kill.. should we track that as well?
