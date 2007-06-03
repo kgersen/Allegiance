@@ -711,6 +711,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
           END_PFM_CREATE
           pfmGain->sideidFlag = sidFlag;
           pfmGain->shipidRecipient = pship->GetObjectID();
+		  pfmGain->bIsTreasureDocked = false; // KGJV #118
         }
       }
     }

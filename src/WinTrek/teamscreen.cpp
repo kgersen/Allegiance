@@ -2042,6 +2042,7 @@ public:
     void OnTeamCivChange(MissionInfo *pMissionDef, SideID sideID, CivID civID)
     {
         UpdateCivBitmap();
+		m_plistPaneTeams->ForceRefresh(); // KGJV #62 fix: force faction names to refresh
     }
 
     bool OnSelTeam(ItemID pitem)

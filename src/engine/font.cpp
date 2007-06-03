@@ -338,7 +338,6 @@ public:
         return count;
     }
 
-	// KGJV 32B TODO: this function not upgraded for 32bits mode. fine for now since it's almost never called.
     void DrawClippedChar(
         const WinRect& rectClip, 
         byte ch, 
@@ -347,7 +346,8 @@ public:
         int x, BYTE* 
         pdestTop, 
         DWORD pixel, // KGJV 32B
-        int pitchDest
+        int pitchDest,
+		int pixelBytes // KGJV 32B - bbp
     ) {
         const CharData& charData  = m_data[ch];
         int             xsizeChar = charData.m_size.X();
@@ -381,7 +381,7 @@ public:
               m_pdata 
             + charData.m_offset 
             + bytesSource * ytop;
-        BYTE* pdestStart          = pdestTop + (x + xleft) * 2; // KGJV 32B TODO 2->byteperpixel
+        BYTE* pdestStart          = pdestTop + (x + xleft) * pixelBytes; // KGJV 32B 2 -> pixelBytes
 
         //
         // copy bits between xleft and xright
@@ -413,10 +413,13 @@ public:
 
             while (ibit < xright) {
                 if (byte & 1) {
-                    *(WORD*)pdest = (WORD)pixel; // KGJV 32B TODO 32bits mode
+					if (pixelBytes==4) // KGJV 32B
+						*(DWORD*)pdest = pixel;
+					else // assumes 16bpp
+						*(WORD*)pdest = (WORD)pixel; 
                 }
 
-                pdest += 2;
+                pdest += pixelBytes; // KGJV 32B
                 byte   = byte >> 1;
                 ibit  += 1;
                 if (ibit & 0x7 == 0) {
@@ -635,7 +638,7 @@ public:
 
         if (x < rectClip.XMin()) 
         {
-            DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel, pitchDest);
+            DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel, pitchDest, pixelBytes);
             if (++ichar >= length)
                 return;
             x     += m_data[(BYTE)str[ichar]].m_size.X();
@@ -804,7 +807,9 @@ public:
         //
 
         if (x < rectClip.XMax())
-           DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel32, pitchDest);
+		{
+           DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel32, pitchDest, pixelBytes);
+		}
     }
 };
 

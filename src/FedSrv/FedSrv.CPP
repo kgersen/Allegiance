@@ -10049,6 +10049,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
             END_PFM_CREATE
             pfmGain->sideidFlag = NA;
             pfmGain->shipidRecipient = pship->GetObjectID();
+			pfmGain->bIsTreasureDocked = false; // KGJV #118
             g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
         }
     }
@@ -11071,6 +11072,8 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
           END_PFM_CREATE
           pfmGain->sideidFlag = NA;
           pfmGain->shipidRecipient = pship->GetObjectID();
+          pfmGain->bIsTreasureDocked = false; // KGJV #118
+
           g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
           IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByFlags(pside, sidFlag);
@@ -11130,6 +11133,20 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
                 IpartIGC*   ppart = ppl->data();
 
                 ttbm |= ppart->GetPartType()->GetEffectTechs();
+				// KGJV #118
+				if (pship->GetSide()->IsNewDevelopmentTechs(ppart->GetPartType()->GetEffectTechs()))
+				{
+					// send message that player secured new tech
+					BEGIN_PFM_CREATE(g.fm, pfmGain, S, GAIN_FLAG)
+					END_PFM_CREATE
+					pfmGain->sideidFlag = NA;
+					pfmGain->shipidRecipient = pship->GetObjectID();
+					pfmGain->bIsTreasureDocked = true;
+					pfmGain->parttypeidDocked = ppart->GetPartType()->GetObjectID();
+					g.fm.SendMessages(CFSSide::FromIGC(pship->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+				}
+				// end of KGJV #118
+				
             }
 
             IsideIGC*   pside = pship->GetSide();
@@ -11374,6 +11391,7 @@ bool FedSrvSiteBase::HitTreasureEvent(Time now, IshipIGC* ship, ItreasureIGC* tr
         END_PFM_CREATE
         pfmGain->sideidFlag = oid;
         pfmGain->shipidRecipient = ship->GetObjectID();
+		pfmGain->bIsTreasureDocked = false; // KGJV #118
         g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
         //Clear the flag so it does not respawn

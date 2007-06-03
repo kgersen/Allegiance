@@ -4028,6 +4028,7 @@ class IsideIGC : public IbaseIGC
 
         virtual const TechTreeBitMask&      GetDevelopmentTechs(void) const = 0;
         virtual void                        SetDevelopmentTechs(const TechTreeBitMask& ttbm) = 0;
+		virtual bool						IsNewDevelopmentTechs(const TechTreeBitMask& ttbm) = 0; // KGJV #118
         virtual bool                        ApplyDevelopmentTechs(const TechTreeBitMask& ttbm) = 0;
 
         virtual const TechTreeBitMask&      GetInitialTechs(void) const = 0;

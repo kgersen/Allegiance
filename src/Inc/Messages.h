@@ -853,6 +853,8 @@ END_FEDMSG
 DEFINE_FEDMSG(S, GAIN_FLAG, 156)
   SideID        sideidFlag;
   ShipID        shipidRecipient;
+  bool			bIsTreasureDocked; // KGJV #118 - extended to notify docking of new tech (if true)
+  PartID		parttypeidDocked;  // KGJV #118 - which part was docked, only valid if bIsTreasureDocked is true
 END_FEDMSG
 
 DEFINE_FEDMSG(C, START_GAME, 157)

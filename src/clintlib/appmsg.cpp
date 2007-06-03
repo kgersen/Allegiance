@@ -3041,45 +3041,58 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmGain, S, GAIN_FLAG, pfm);
             IshipIGC*   pship = m_pCoreIGC->GetShip(pfmGain->shipidRecipient);
             assert (pship);
-            assert ((pship->GetFlag() == NA) || (pfmGain->sideidFlag == NA));
+			if (pfmGain->bIsTreasureDocked) // KGJV #118 - extended for docked tech
+			{
+				if (pship->GetSide() != GetSide()) break;
+				IpartTypeIGC *ppartType = GetCore()->GetPartType(pfmGain->parttypeidDocked);
+				if (ppartType)
+					PostText(true, "%s has secured %s",
+						pship->GetName(),
+						ppartType->GetName()
+					);
+			}
+			else
+			{ // normal flag capture code
+				assert ((pship->GetFlag() == NA) || (pfmGain->sideidFlag == NA));
 
-            pship->SetFlag(pfmGain->sideidFlag);
+				pship->SetFlag(pfmGain->sideidFlag);
 
-            if (pfmGain->sideidFlag != NA)
-            {
-                if (pship->GetSide() == GetSide())
-                {
-                    if (pfmGain->sideidFlag != SIDE_TEAMLOBBY)
-                    {
-                        PostText(true, "%s has stolen " START_COLOR_STRING "%s's" END_COLOR_STRING " flag.", 
-                            pship->GetName(), 
-                            (PCC) ConvertColorToString (GetCore()->GetSide(pfmGain->sideidFlag)->GetColor ()),
-                            GetCore()->GetSide(pfmGain->sideidFlag)->GetName()
-                            );
+				if (pfmGain->sideidFlag != NA)
+				{
+					if (pship->GetSide() == GetSide())
+					{
+						if (pfmGain->sideidFlag != SIDE_TEAMLOBBY)
+						{
+							PostText(true, "%s has stolen " START_COLOR_STRING "%s's" END_COLOR_STRING " flag.", 
+								pship->GetName(), 
+								(PCC) ConvertColorToString (GetCore()->GetSide(pfmGain->sideidFlag)->GetColor ()),
+								GetCore()->GetSide(pfmGain->sideidFlag)->GetName()
+								);
 
-                        PlaySoundEffect(enemyFlagLostSound);
-                    }
-                    else
-                    {
-                        PostText(true, "%s has found an artifact.", 
-                            pship->GetName());
+							PlaySoundEffect(enemyFlagLostSound);
+						}
+						else
+						{
+							PostText(true, "%s has found an artifact.", 
+								pship->GetName());
 
-                        PlaySoundEffect(artifactFoundSound);
-                    }
-                }
-                else if (pfmGain->sideidFlag > 0 && pfmGain->sideidFlag == GetSideID())
-                {
-                    ZString color = ConvertColorToString (pship->GetSide()->GetColor ());
-                    PostText(true, START_COLOR_STRING "%s" END_COLOR_STRING " of " START_COLOR_STRING "%s" END_COLOR_STRING " has stolen our flag.", 
-                        (PCC) color,
-                        pship->GetName(), 
-                        (PCC) color,
-                        pship->GetSide()->GetName()
-                        );
+							PlaySoundEffect(artifactFoundSound);
+						}
+					}
+					else if (pfmGain->sideidFlag > 0 && pfmGain->sideidFlag == GetSideID())
+					{
+						ZString color = ConvertColorToString (pship->GetSide()->GetColor ());
+						PostText(true, START_COLOR_STRING "%s" END_COLOR_STRING " of " START_COLOR_STRING "%s" END_COLOR_STRING " has stolen our flag.", 
+							(PCC) color,
+							pship->GetName(), 
+							(PCC) color,
+							pship->GetSide()->GetName()
+							);
 
-                    PlaySoundEffect(flagLostSound);
-                }
-            }
+						PlaySoundEffect(flagLostSound);
+					}
+				}
+			}// KGJV #118 - else bIsTreasureDocked
         }
         break;
 

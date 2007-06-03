@@ -23,6 +23,8 @@ private:
 	float                   m_xDrag;
 	float                   m_yDrag;
 	bool                    m_bCanDrag;
+    bool                    m_bDragging;
+    Point                   m_pointLastDrag;
 
 	bool					m_bShowDetails;
 	bool					m_bShowSide;
@@ -43,6 +45,7 @@ public:
 		m_yDrag(0),
 		m_bValidPreview(false),
 		m_bCanDrag(false),
+		m_bDragging(false),
 		m_bShowDetails(false),
 		m_bShowSide(false),
 		m_missionpv(pmodeler)
@@ -294,7 +297,9 @@ public:
 			return;
 		}
 
-		//pcontext->DrawImage(m_pimageSectorBkgnd->GetSurface());
+		// draw the minimap background
+        pcontext->SetShadeMode(ShadeModeFlat);
+		pcontext->DrawImage(m_pimageSectorBkgnd->GetSurface());
 
 		if (m_pszReason[0] == '1')
 			DrawStringCentered(pcontext,
@@ -310,6 +315,96 @@ public:
 
 	}
 private:
+	// mouse/draging
+    MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
+    {
+        return m_pimageSectorBkgnd->HitTest(pprovider, point, bCaptured);
+    }
+    void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside)
+    {
+        if (bCaptured)
+        {
+            ZAssert(m_bDragging && m_bCanDrag);
+
+            float fScale = (m_xMax - m_xMin)/m_rectMap.XSize();
+
+            float fDeltaX = fScale * (m_pointLastDrag.X() - point.X());
+            float fDeltaY = fScale * (m_pointLastDrag.Y() - point.Y());
+
+            // make sure we don't drag the map off of the screen
+            m_xDrag = max(min((m_xClusterMax - m_xClusterMin) - (m_xMax - m_xMin), m_xDrag + fDeltaX), 0);
+            m_yDrag = max(min((m_yClusterMax - m_yClusterMin) - (m_yMax - m_yMin), m_yDrag + fDeltaY), 0);
+
+            m_pointLastDrag = point;
+            GetWindow()->SetCursor(AWF_CURSOR_DRAG);
+            Changed();
+        }
+        else
+        {
+ 
+            if (m_bCanDrag)
+            {
+                GetWindow()->SetCursor(AWF_CURSOR_DRAG);
+            }
+            else
+            {
+                GetWindow()->SetCursor(AWF_CURSOR_DEFAULT);
+            }
+        }
+
+        Changed();
+    }
+
+    virtual void MouseLeave(IInputProvider* pprovider)
+    { 
+        if (!m_bDragging)
+            GetWindow()->SetCursor(AWF_CURSOR_DEFAULT);
+
+        Changed();
+    }
+
+    MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
+    {
+        if (bDown)
+        {
+            if (0 == button)
+            {
+				if (m_bCanDrag)
+                {
+                    // start a drag
+                    m_bDragging = true;
+                    m_pointLastDrag = point;
+                    GetWindow()->SetCursor(AWF_CURSOR_DRAG);
+                    Changed();
+                    return MouseResultCapture();
+                }
+            }
+        }
+        else
+        {
+            if (m_bDragging && 0 == button)
+            {
+                m_bDragging = false;
+
+				if (!bInside)
+                {
+                    GetWindow()->SetCursor(AWF_CURSOR_DEFAULT);
+                }
+                else
+                {
+                    GetWindow()->SetCursor(AWF_CURSOR_DRAG);
+                }
+
+                Changed();
+                return MouseResultRelease();
+            }
+        }
+    
+        Changed();
+        return MouseResult();
+    }
+
+
 	void DrawStringCentered(Context* pcontext,IEngineFont*  pfont,  const Color&   color,  const ZString& str)
 	{
 		Rect r = m_bounds.GetRect();
@@ -441,10 +536,13 @@ void  MapPreviewPane::MouseEnter(IInputProvider* pprovider, const Point& point)
 {
 	if(m_pMapPreviewImage && m_bShowDetails)
 		m_pMapPreviewImage->ShowDetails(true);
+	if (m_pMapPreviewImage) m_pMapPreviewImage->MouseEnter(pprovider, point);
+
 }
 void  MapPreviewPane::MouseLeave(IInputProvider* pprovider)
 {
 	if(m_pMapPreviewImage && m_bShowDetails)
 		m_pMapPreviewImage->ShowDetails(false);
+	if (m_pMapPreviewImage) m_pMapPreviewImage->MouseLeave(pprovider);
 	
 }
