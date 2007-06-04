@@ -550,7 +550,41 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
-  if (pfsMission->RequiresInvitation())
+
+  if(pfsPlayer->PrivilegedUser()){ //Avalanche: Let admins bypass most checks.
+  // check to see if the mission is running and whether joiners are allowed
+  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
+  const MissionParams*    pmp = pMission->GetMissionParams();
+  SideID iSide=SIDE_TEAMLOBBY;
+  unsigned char     bannedSideMask;
+  //Check if previously part of the game.
+  if (popi)
+  {
+	bannedSideMask = popi->data().bannedSideMask;
+	//Place on lobby if banned from team.
+    if ((popi->data().sideID < 0) || (bannedSideMask & SideMask(popi->data().sideID))
+        || ((pfsMission->GetStage() == STAGE_STARTED) && pmp->bAllowDefections)
+        || (popi->data().sideID >= pmp->nTeams))
+    {
+      iSide = SIDE_TEAMLOBBY;
+    }
+    else
+    {
+      iSide = popi->data().sideID;
+    }
+  }
+  //Join the mission.
+  pfsMission->AddPlayerToMission(pfsPlayer);
+  IsideIGC* psideReq = pMission->GetSide(iSide);
+  //Rejoin team
+  if (psideReq->GetObjectID() != SIDE_TEAMLOBBY)
+	    pfsMission->RequestPosition(pfsPlayer, psideReq, popi != NULL);
+  return;
+  }	  
+	  
+	  
+if (pfsMission->RequiresInvitation())
   {
     if (!pfsMission->IsInvited(pfsPlayer))
     {
