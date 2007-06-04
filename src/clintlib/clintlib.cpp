@@ -3505,6 +3505,7 @@ void BaseClient::OnQuitSide()
         EndLockDown(lockdownDonating | lockdownLoadout | lockdownTeleporting);
 
     // clear any team chats, in case they join another team
+	/* Removed by Avalanche to ensure chat messages are kept. 
     ChatLink*  lChat = m_chatList.first();
     while (lChat != NULL)
     {
@@ -3513,6 +3514,7 @@ void BaseClient::OnQuitSide()
         if (lChatPrev->data().GetChatTarget() != CHAT_EVERYONE)
             delete lChatPrev;
     }
+	*/
 
     // nuke any saved player status information 
     // (in case they rejoin this game on a different side)
