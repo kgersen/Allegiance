@@ -615,6 +615,8 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
   // TE end
 
 	// yp: Add event for players who were involved in the capture of an enemy base.
+    // mmf commented this out for now pending additional testing
+#if 0
 	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
 	 if(m_pfsMission->GetIGCMission() && m_pfsMission->GetIGCMission()->GetShips())
 	 {
@@ -650,6 +652,7 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
 						"OldTeamName", VT_LPSTR, psideOld->GetName(),
 						"zPlayerList", VT_LPSTR, pszPlayerList); // pszPlayerList should look like ";player@squad:1500;player2@squad:500"
  // yp:end
+#endif
 
 
 

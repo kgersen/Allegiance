@@ -9796,6 +9796,8 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
     // TE end
 
     // yp: Add event for players who escorted a constructor
+    // mmf commented this out for now pending more testing
+#if 0
 	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
 	if(pmission->GetShips() != NULL && pside)	// GetShips() returns ShipListIGC*
 	{
@@ -9827,7 +9829,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 						"TeamName", VT_LPSTR, pside->GetName(), // team the con was on.
 						"zPlayerList", VT_LPSTR, pszPlayerList); // pszPlayerList should look like ";player@squad:1500;player2@squad:500"
 	// YP: end
-
+#endif
 
     pstationNew->Release();
 
@@ -10571,6 +10573,8 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   // End-TE
 
 	// yp: Add event for players who were involved in the destruction of an enemy base.
+    // mmf commented this out for now pending more testing
+#if 0
 	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
 	 if(m_pfsMission->GetIGCMission() && m_pfsMission->GetIGCMission()->GetShips()) // we hate null pointers
 	 {
@@ -10604,7 +10608,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 						"TeamName", VT_LPSTR, pstation->GetSide()->GetName(), // team the base was on.
 						"zPlayerList", VT_LPSTR, pszPlayerList); // pszPlayerList should look like ";player@squad:1500;player2@squad:500"
 	// YP: end
-
+#endif
 
   IsideIGC*   pside = pstation->GetSide();
   IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationKill(pstation, pside);

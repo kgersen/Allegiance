@@ -271,17 +271,54 @@ public:
               int pnumberside = pitem->GetSideID();
               
 
-			  	//	yp - Your_Persona Team total rank teampane patch may 24 2007
-				// Add up the sum of all the players ranks.
-				const ShipListIGC* mp_ships = pside->GetShips();
-				int teamTotalRank = 0;
-				for (const ShipLinkIGC* lShip = mp_ships->first(); lShip; lShip = lShip->next())
-				{
-					IshipIGC* pship = lShip->data();
-					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
-					teamTotalRank += pplayer->GetPersistScore(NA).GetRank(); // mmf this is just for display purposes
-				}
-				// end yp
+			  // yp - Your_Persona Team total rank teampane patch may 24 2007  // modified by aem
+			  // Add up the sum of all the players ranks.
+			  // modified to add IsHuman check, aem and mmf
+              const ShipListIGC* mp_ships = pside->GetShips();
+              int iRankSum = 0;
+              for (const ShipLinkIGC* lShip = mp_ships->first(); lShip; lShip = lShip->next())
+              {
+                   IshipIGC* pship = lShip->data();
+				   if (pship) {
+						PlayerInfo* pPlayer = (PlayerInfo*)pship->GetPrivateData();
+						if (pPlayer) {
+                            if (pPlayer->IsHuman()) 
+						        iRankSum += pPlayer->GetPersistScore(NA).GetRank(); // mmf this is just for display purposes
+						}
+				   }
+              }
+			  // end yp
+			  //aem : added TE's code for team rank sum from teamscreen.cpp 6/3/07
+#if 0
+			  int iRankSum = 0;
+              int iTempRank = 0;
+              // IshipIGC* pShip = NULL; mmf splat not needed
+              PlayerInfo* pPlayer = NULL;
+              ShipList plistMembers;
+              plistMembers = pitem->GetMembers();
+              if (plistMembers.GetCount() > 0)
+              {
+                  ShipID iShipID = plistMembers.GetFront();
+                  while (true)
+                  {
+                      if (!iShipID)
+                          break;
+
+                      pPlayer = trekClient.FindPlayer(iShipID);
+
+                      if (pPlayer)
+                      {
+                          if (pPlayer->IsHuman())
+                          {
+                              iTempRank = pPlayer->GetPersistScore(NA).GetRank();
+                              iRankSum += iTempRank; //(iTempRank < 1) ? 1 : iTempRank;
+                          }
+                      }
+                      iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID);
+                  }
+              }
+#endif
+			  // end aem
 
               
               switch (pnumberside)
@@ -357,7 +394,7 @@ public:
                   Color::White(),
                   WinPoint(95, 2), // yp: changed from (110,2) to make room for the teamTotalRank
                   ZString("(") + ZString(m_pMission->SideNumPlayers(pitem->GetSideID())) + ZString(")") +				  
-				  ZString("[") + ZString(teamTotalRank) + ZString("]") // yp: added team total rank to team name display.
+				  ZString("[") + ZString(iRankSum) + ZString("]") // yp: added team total rank to team name display.  // modified by aem
                   );
 			  } 
         }
@@ -1661,14 +1698,11 @@ class ExpandedTeamPane : public TeamPane
                 pfont = TrekResources::SmallFont();
                 color = Color::White();
             }
-			// yp: show player name with rank attached if is human
-            ZString pzsPlayerDisplayName = ZString(  pplayer->CharacterName())+
-					ZString("[")+ ZString( pplayer->GetPersistScore(NA).GetRank())+ZString("]");
-			if(!pplayer->IsHuman()) // if they arnt human only show their name.
-			{
-				pzsPlayerDisplayName = ZString(  pplayer->CharacterName());
-			}
-			// yp end
+			// yp: show player name with rank attached if is human  // modified by aem
+            ZString pzsPlayerDisplayName = ZString(pplayer->CharacterName());
+            if (pplayer->IsHuman()) // this is a human, attach rank to name
+                pzsPlayerDisplayName += ZString("[")+ ZString( pplayer->GetPersistScore(NA).GetRank())+ZString("]");
+			// yp end // end aem
             WinRect rectClipOld = psurface->GetClipRect();
             psurface->SetClipRect(WinRect(WinPoint(0, 0), WinPoint(100, 20))); // clip name to fit in column
             psurface->DrawString(

@@ -998,14 +998,18 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
                 pfmLockSides->fLock = false;
             }
 
-			// mmf see if we can also reset skill level here
-			// might need to revisit this if we make this a server setting for some games (like to keep
-			// the newb server always Nov. Only.  Also using current values in skilllevels.mdl which could change
+			// mmf reset skill level on an empty game
+			// Note using current values in skilllevels.mdl which could change
 			// mmf revist
-			// this works (when they try and connect) but it does not let the clients know so it does not update their gui
+			// This works (when they try and connect) but it does not let the clients know things were reset so it does not update their gui
 			// AFAIK there is no corresponding message we can send for this like there is above for LOCK_SIDES, etc
-			m_misdef.misparms.iMinRank = -1;
-			m_misdef.misparms.iMaxRank = 1000;
+			// mmf don't reset skill level if there is a server skill level setting for this server (KGJV added this feature keying of registry)
+			// mmf since there isn't an easy way to check for Min/MaxRank# entries in registry as we don't know the game number
+			//     assume if game is locked open we don't want to change the min and max rank
+			if (!(m_misdef.misparms.bLockGameOpen)) {
+				m_misdef.misparms.iMinRank = -1;
+				m_misdef.misparms.iMaxRank = 1000;
+			}
         }
 
         // No one's left in this side
