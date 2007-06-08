@@ -3960,21 +3960,22 @@ bool CFSMission::FAllReady()
 
         SideLinkIGC*   psl = m_pMission->GetSides()->first();
         assert (psl);
-        minPlayers = maxPlayers = psl->data()->GetShips()->n();
+		// KGJV: fix initial values
+        minPlayers = m_misdef.misparms.nMaxPlayersPerTeam; // or anything 'big' enough
+		maxPlayers = 0;//psl->data()->GetShips()->n();
         while (true)
         {
-            psl = psl->next();
-            if (psl == NULL)
-                break;
-
-
             int n = psl->data()->GetShips()->n();
 
 			// KGJV #62 AllowEmptyTeams
+			// KGJV: fix to include 1st team 
+			bool bSkipTeam = false;
 			if (m_misdef.misparms.bAllowEmptyTeams)
 				if (n==0 && !m_misdef.rgfActive[psl->data()->GetObjectID()])
-					continue; // skip inactive & empty teams
+					bSkipTeam = true; // skip inactive & empty teams
 
+			if (!bSkipTeam)
+			{
             if (n < minPlayers)
                 minPlayers = n;
 
@@ -3989,6 +3990,11 @@ bool CFSMission::FAllReady()
 
 			if (r > maxTeamRank)
 				maxTeamRank = r;
+			}
+			// KGJV: moved here to include 1st team in the loop
+			psl = psl->next();
+            if (psl == NULL)
+                break;
         }
 
 		int threshold = GetRankThreshold();
@@ -4040,6 +4046,8 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
   for (SideLinkIGC * plinkSide = plistSide->first(); plinkSide; plinkSide = plinkSide->next())
   {
     IsideIGC*   pside = plinkSide->data();
+	// KGJV : fix for deactivated teams
+	if (m_misdef.rgfActive[pside->GetObjectID()])
     if ((SideMask(pside) & bannedSideMask) == 0)
     {
       nNumPlayers = GetCountOfPlayers(pside, false); // TE: Retrieve #players of this side
