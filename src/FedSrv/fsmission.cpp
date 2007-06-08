@@ -2150,6 +2150,9 @@ void CFSMission::StartGame()
     m_bDraw = false;
     m_pMission->EnterGame();
 
+	//Clear out old players to avoid them rejoining the game if they have dropped from a team
+	m_oldPlayers.purge();
+
     // let everyone know that the game has started
     BEGIN_PFM_CREATE(g.fm, pfmEnterGame, S, ENTER_GAME)
     END_PFM_CREATE
