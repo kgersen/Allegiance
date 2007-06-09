@@ -5435,7 +5435,36 @@ void MutinyBallot::OnPassed()
       {
 		  CFSPlayer * pfspNewLeader = pfssNewLeader->GetPlayer();
 		  if (pfspNewLeader->GetSide() == m_pside)
+		  {
+			  // KGJV fix: donate money too
+			  CFSPlayer * pfspOldLeader = m_pmission->GetLeader(sideID);
+			  if (pfspOldLeader)
+			  {
+				  Money money = pfspOldLeader->GetMoney();
+				  if (money>0) // avoid sending message if no money 
+				  {
+						pfspOldLeader->SetMoney(0);
+						pfspNewLeader->SetMoney(pfspNewLeader->GetMoney() + money);
+
+						// we must send 2 messages because of how client handles MONEY_CHANGE msg
+						BEGIN_PFM_CREATE(g.fm, pfmMoneyChange, S, MONEY_CHANGE)
+						END_PFM_CREATE
+						pfmMoneyChange->dMoney  = -money;
+						pfmMoneyChange->sidTo   = pfspOldLeader->GetShipID();
+						pfmMoneyChange->sidFrom = NA;
+
+						BEGIN_PFM_CREATE(g.fm, pfmMoneyChange2, S, MONEY_CHANGE)
+						END_PFM_CREATE
+						pfmMoneyChange2->dMoney  = money;
+						pfmMoneyChange2->sidTo   = pfspNewLeader->GetShipID();
+						pfmMoneyChange2->sidFrom = NA;
+
+						g.fm.SendMessages(CFSSide::FromIGC(m_pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+				  }
+			  }
+			  // set pfspNewLeader as new leader
 			  m_pmission->SetLeader(pfspNewLeader);
+		  }
       }
    }
 }
