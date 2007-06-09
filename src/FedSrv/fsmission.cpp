@@ -4172,6 +4172,10 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
   
   if (sideID != SIDE_TEAMLOBBY)
   {
+	 // KGJV fix: no rejoin to a deactivated team
+    if (!m_misdef.rgfActive[sideID])
+		return DPR_SideGone;
+
     if (GetStage() == STAGE_OVER)
       return DPR_ServerPaused;
 
