@@ -1013,15 +1013,16 @@ public:
         PrivateSurface* psurfaceSource = psurfaceSourceOriginal->GetConvertedPrivateSurface(m_ppf);
         ZAssert(psurfaceSource->GetPixelFormat() == m_ppf);
 
-        // KGJV 32B guard with bpp mode test
-        // 
-        if ((m_ppf->PixelBits() != 16) && (m_pbits == NULL)) {
+        /* Uncomment this code to use DDraw for blts
+		   KGJV 32B: seems some ATI have issues with DDraw & colorkey
+		   so we keep cpu code for now.
+        if (m_pbits == NULL) {
             m_pvideoSurface->UnclippedBlt(
                 rect, 
                 psurfaceSource->GetVideoSurface(), 
                 pointSource
             );
-        } else
+        } else*/
         {
             BYTE* pdest = GetWritablePointer(rect.Min());
 
