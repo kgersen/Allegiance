@@ -5445,36 +5445,36 @@ void MutinyBallot::OnPassed()
 		  pfssNewLeader->GetSide() == m_pside)
       {
 		  CFSPlayer * pfspNewLeader = pfssNewLeader->GetPlayer();
+		  // KGJV fix: changed whole logic
 		  if (pfspNewLeader->GetSide() == m_pside)
 		  {
-			  // KGJV fix: donate money too
-			  CFSPlayer * pfspOldLeader = m_pmission->GetLeader(sideID);
-			  if (pfspOldLeader)
-			  {
-				  Money money = pfspOldLeader->GetMoney();
-				  if (money>0) // avoid sending message if no money 
-				  {
-						pfspOldLeader->SetMoney(0);
-						pfspNewLeader->SetMoney(pfspNewLeader->GetMoney() + money);
+				// get the old leader
+				CFSPlayer * pfspOldLeader = m_pmission->GetLeader(sideID);
+				assert(pfspOldLeader); // this should really never assert ...
+				
+				// if player who proposed is already leader, we do nothing (leader change between Ballot start and end)
+				if (pfspOldLeader == pfssNewLeader) return;
 
-						// we must send 2 messages because of how client handles MONEY_CHANGE msg
-						BEGIN_PFM_CREATE(g.fm, pfmMoneyChange, S, MONEY_CHANGE)
-						END_PFM_CREATE
-						pfmMoneyChange->dMoney  = -money;
-						pfmMoneyChange->sidTo   = pfspOldLeader->GetShipID();
-						pfmMoneyChange->sidFrom = NA;
+				// set new leader to stop donating
+				pfspNewLeader->SetAutoDonate(NULL,0,false);
 
-						BEGIN_PFM_CREATE(g.fm, pfmMoneyChange2, S, MONEY_CHANGE)
-						END_PFM_CREATE
-						pfmMoneyChange2->dMoney  = money;
-						pfmMoneyChange2->sidTo   = pfspNewLeader->GetShipID();
-						pfmMoneyChange2->sidFrom = NA;
+				// get old leader money and set him to autodonate to new leader
+				// this will transfert old leader money to new leader and cascade autodonation of everyone
+				Money money = pfspOldLeader->GetMoney();
+				pfspOldLeader->SetAutoDonate(pfspNewLeader,money,true);
 
-						g.fm.SendMessages(CFSSide::FromIGC(m_pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-				  }
-			  }
-			  // set pfspNewLeader as new leader
-			  m_pmission->SetLeader(pfspNewLeader);
+				// but old leader will still see his money because of how client handle AUTODONATE msg
+				// (search for "mutiny-note" in clintlib\appmsg.cpp)
+				// so we send him the change here:
+				BEGIN_PFM_CREATE(g.fm, pfmMoneyChange, S, MONEY_CHANGE)
+				END_PFM_CREATE
+				pfmMoneyChange->dMoney  = -money;
+				pfmMoneyChange->sidTo   = pfspOldLeader->GetShipID();
+				pfmMoneyChange->sidFrom = NA;
+				g.fm.SendMessages(pfspOldLeader->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+
+				// set pfspNewLeader as new leader
+				m_pmission->SetLeader(pfspNewLeader);
 		  }
       }
    }

@@ -1252,7 +1252,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     ppiTo->SetMoney(ppiTo->GetMoney() + pfmAutoDonate->amount);
                     m_pClientEventSource->OnMoneyChange(ppiTo);
 
-                    if (pshipBy != m_ship)
+                    if (pshipBy != m_ship) // KGJV mutiny-note: dont change this without changing MutinyBallot::OnPassed server side
                     {
                         //Someone other than me autodonated ... subtract their money
                         PlayerInfo* ppiBy = (PlayerInfo*)(pshipBy->GetPrivateData());
