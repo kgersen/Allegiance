@@ -576,12 +576,16 @@ private:
     TRef<ModifiableString> m_pstringQueuedOrder;
 
     // data for help tips
-    TRef<ModifiableString> m_pstringTipText;
+    TRef<ModifiableString> m_pstringTipText0; // yp - Your_Persona Bug10 (3 lines for status text) patch
+	TRef<ModifiableString> m_pstringTipText1;  // yp 
+	TRef<ModifiableString> m_pstringTipText2;  // end yp 
     TRef<ModifiableString> m_pstringCriticalTipText0;
     TRef<ModifiableString> m_pstringCriticalTipText1;
     TRef<ModifiableString> m_pstringCriticalTipText2;
     TRef<ModifiableString> m_pstringCriticalTipText3;
-    Time                   m_timeLastTipSet;
+    Time                   m_timeLastTipSet0;  // yp - Your_Persona Bug10 (3 lines for status text) patch
+	Time                   m_timeLastTipSet1;   // yp 
+	Time                   m_timeLastTipSet2;   // end yp 
     Time                   m_timeLastCriticalTipSet0;
     Time                   m_timeLastCriticalTipSet1;
     Time                   m_timeLastCriticalTipSet2;
@@ -618,7 +622,9 @@ public:
         m_csComposeState(c_csNotComposing),
         m_rPreviousMissileLock(0.0f),
         m_fTargetChanged(false),
-        m_timeLastTipSet(Time::Now()),
+        m_timeLastTipSet0(Time::Now()),  // yp - Your_Persona Bug10 (3 lines for status text) patch
+		m_timeLastTipSet1(Time::Now()),   // yp 
+		m_timeLastTipSet2(Time::Now()),   // end yp 
         m_timeLastCriticalTipSet0(Time::Now()),
         m_timeLastCriticalTipSet1(Time::Now()),
         m_timeLastCriticalTipSet2(Time::Now()),
@@ -706,7 +712,9 @@ public:
         m_pns->AddMember("QueuedOrder", m_pstringQueuedOrder = new ModifiableString(""));
 
         // data for help line tips
-        m_pns->AddMember("TipText", m_pstringTipText = new ModifiableString(""));
+        m_pns->AddMember("TipText", m_pstringTipText0 = new ModifiableString(""));  // yp - Your_Persona Bug10 (3 lines for status text) patch
+		m_pns->AddMember("TipText1", m_pstringTipText1 = new ModifiableString(""));  // yp 
+		m_pns->AddMember("TipText2", m_pstringTipText2 = new ModifiableString(""));  // end yp 
         m_pns->AddMember("CriticalTipText0", m_pstringCriticalTipText0 = new ModifiableString(""));
         m_pns->AddMember("CriticalTipText1", m_pstringCriticalTipText1 = new ModifiableString(""));
         m_pns->AddMember("CriticalTipText2", m_pstringCriticalTipText2 = new ModifiableString(""));
@@ -1019,8 +1027,13 @@ public:
 
     void SetTipText(const ZString& strHelp)
     {
-        m_timeLastTipSet = Time::Now();
-        m_pstringTipText->SetValue(strHelp);        
+		m_timeLastTipSet2 = m_timeLastTipSet1;  // yp - Your_Persona Bug10 (3 lines for status text) patch
+		m_timeLastTipSet1 = m_timeLastTipSet0;  // yp 
+        m_timeLastTipSet0 = Time::Now();       // yp 
+
+		m_pstringTipText2->SetValue(m_pstringTipText1->GetValue());   // yp 
+		m_pstringTipText1->SetValue(m_pstringTipText0->GetValue());   // yp      
+        m_pstringTipText0->SetValue(strHelp);        // end yp 
     }
 
     void SetCriticalTipText(const ZString& strHelp)

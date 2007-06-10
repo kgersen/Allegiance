@@ -131,6 +131,12 @@ public:
 
   virtual int GetCountConnections() {return 1;}
 
+  // w0dk4 join-drop bug fix allow more time when joining
+  void SetQueuePayload(int newPayload) {
+    m_nQueuePaylod = newPayload;
+  }
+  int GetQueuePayload() {return m_nQueuePaylod; }
+  // end wOdk4
 
 private:
   CFMConnection(FedMessaging * fm, const char * szName, DPID dpid); // only FedMessaging::CreateConnection can create these things
@@ -140,7 +146,8 @@ private:
   
   int     m_cAbsentCount; // for roll call
   DWORD   m_dwTimeLastComplete;
-  DWORD   m_dwPrivate;
+  DWORD   m_dwPrivate;  
+  int	  m_nQueuePaylod; // join-drop bug fix w0dk4 allow more time when joining
 };
 
 

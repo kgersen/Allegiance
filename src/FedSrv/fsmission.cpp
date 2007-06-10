@@ -513,6 +513,9 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   bool      fMissionOwner = false;
   ImissionIGC * pMission = GetIGCMission();
 
+  // w0dk4 join-drop bug fix (allow more time when joining)
+  pfsPlayer->SetJustJoined(true);
+
   assert (sideid != SIDE_TEAMLOBBY);
 
   CFSSide*  pfsSide = CFSSide::FromIGC(pside);
@@ -1912,6 +1915,10 @@ void CFSMission::StartCountdown(float fCountdownLength)
           pfsShip->SetMoney(0);
           pfsShip->GetPlayer()->SetTreasureObjectID(NA);
   
+          // w0dk4 join-drop bug fix (allow more time when joining)
+		  // w0dk4 - set join parameter here
+		  pfsShip->GetPlayer()->SetJustJoined(true);
+
           if ((pfsShip != pfsLeader) && pfsShip->IsPlayer())
               pfsShip->GetPlayer()->SetAutoDonate(pfsLeader, 0, false);
         }

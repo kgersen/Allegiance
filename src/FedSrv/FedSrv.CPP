@@ -7065,10 +7065,25 @@ void ProcessNetworkMessages()
       DWORD cMsgs;
       DWORD cbMsgs;
       HRESULT hr = g.fm.GetConnectionSendQueue(&cnxn, &cMsgs, &cbMsgs);
-      const DWORD cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
+      const DWORD cMaxQ = 100;  // mmf Imago this was 50 bumped it up to 150, wOkd4 set to 100
+
+	  // w0dk4 join-drop bug fix (allow more time when joining)
+	  int cMsgPayload;
+	  CFSPlayer * pfsPlayer = CFSPlayer::GetPlayerFromConnection(cnxn);
+	  if (pfsPlayer && pfsPlayer->GetJustJoined() == true) {
+		  cMsgPayload = cMsgs;
+		  cnxn.SetQueuePayload(cMsgPayload);
+		  pfsPlayer->SetJustJoined(false);
+	  } else {
+		  cMsgPayload = cnxn.GetQueuePayload();
+	  }
+	  if (cMsgPayload > cMsgs)
+		  cMsgPayload = cMsgs;
+	  // end w0dk4
+
       if ((cnxn.IncAbsentCount() > 6) || // give them a ridiculous 1 minute of no messages
           FAILED(hr) ||
-          (cMsgs > cMaxQ)) // dead--nuke 'em
+          ((cMsgs-cMsgPayload) > cMaxQ)) // dead--nuke 'em, w0dk4 added '- cMsgPayload'
       {
         char szBuff[128];
         int cb = wsprintf(szBuff, "Nuking %s(%u) because ", cnxn.GetName(), cnxn.GetID());
