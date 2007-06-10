@@ -1886,8 +1886,16 @@ public:
     void    PickObject(IclusterIGC* pcluster, const Point& pointPick, int button)
     {
         ImodelIGC*  pmodelMin = ResolvePick(pcluster, pointPick, button);
+		
+		//AEM - We don't want to go to an object the mouse cursor happens to be over if we are picking
+		//      a coordinate above or below the grid (6/10/07)
+		bool goToObject = true;
+		//		Check to see if the mouse moved, allowing some room for error when you are moving the mouse around fast to select a object target 
+		if ( ( ( m_pointMouseStart.X() - m_pointMouseStop.X() ) * ( m_pointMouseStart.X() - m_pointMouseStop.X() ) )+
+			( ( m_pointMouseStart.Y() - m_pointMouseStop.Y() ) * ( m_pointMouseStart.Y() - m_pointMouseStop.Y() ) ) > 6000 )
+			goToObject = false;
 
-        if (pmodelMin)
+        if (pmodelMin && goToObject) //was if (pmodelMin)
         {
             if (m_csComposeState != c_csComposeCommand)
             {
