@@ -606,11 +606,10 @@ public:
         float xOffset = point.X() - (bCentered ? rectSource.XSize() / 2 : 0);
         float yOffset = point.Y() - (bCentered ? rectSource.YSize() / 2 : 0);
 
-		// KGJV 32B - Mapping Texels to Pixels correction
-        float xmin = xOffset-0.5f                   ;
-        float xmax = xOffset + rectSource.XSize()-0.5f;
-        float ymin = yOffset-0.5f;
-        float ymax = yOffset + rectSource.YSize()-0.5f;
+        float xmin = xOffset;
+        float xmax = xOffset + rectSource.XSize();
+        float ymin = yOffset;
+        float ymax = yOffset + rectSource.YSize();
 
         float xt;
         float yt;
@@ -641,6 +640,7 @@ public:
             debugf ("DrawImage3D ppf mismatch for %s - will convert\n",(const char *)psurface->GetName());
 #endif
         m_pdevice3D->SetTexture(psurface->GetConvertedSurface(m_psurface->GetPixelFormat()));
+		m_pdevice3D->SetLinearFilter(false); //KGJV 32B fix  turn off linear filter
 
         switch (GetShadeMode()) {
             case ShadeModeCopy:
@@ -682,6 +682,7 @@ public:
         }
 
         m_pdevice3D->SetTexture(m_pstateDevice->m_psurfaceTexture);
+		m_pdevice3D->SetLinearFilter(m_pstateDevice->m_bLinearFilter); //KGJV 32B fix: reset linear filter
     }
 
     void DrawImage3D(

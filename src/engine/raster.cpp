@@ -601,6 +601,10 @@ public:
             } else if (pcheck[index].z > 1) {
                 pcheck[index].z = 1;
             }
+			// KGJV 32B: general Texels to Pixels correction
+			pcheck[index].x -= 0.5f;
+			pcheck[index].y -= 0.5f;
+			pcheck[index].z -= 0.5f;
         }
     }
 

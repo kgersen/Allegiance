@@ -89,6 +89,12 @@ public:
 
     void ComputePreview(const MissionParams& p)
     {
+		// KGJV fix: reset dragging
+		m_xDrag = 0;
+		m_yDrag = 0;
+		m_bCanDrag = false;
+		m_bDragging = false;
+
 		m_mp = p;
 		m_missionpv.Clear();
 		m_bValidPreview = true;
