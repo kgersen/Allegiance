@@ -734,8 +734,13 @@ private:
 			m_peventCores->AddSink(m_psinkCores = new IItemEvent::Delegate(this));
 
             RefreshOkButton();
-            m_peditGameName->SetString(
-				ZString(trekClient.GetNameLogonZoneServer()) + ZString("'s game"));
+			// KGJV fix: remove trailing rank "(#)" from default game name
+			ZString szPlayerName = ZString(trekClient.GetNameLogonZoneServer());
+			int leftParen = szPlayerName.ReverseFind('(',0);
+			if (leftParen > 1)
+				szPlayerName = szPlayerName.Left(leftParen);
+			
+            m_peditGameName->SetString(szPlayerName + ZString("'s game"));
 
             m_pkeyboardInputOldFocus = GetWindow()->GetFocus();
             GetWindow()->SetFocus(m_peditGameName);
