@@ -305,10 +305,26 @@ public:
 
         const MissionParams& mp = trekClient.MyMission()->GetMissionParams();
 
+		// KGJV : reformated + official stuff added
+		// 
+		const char* szServerName = trekClient.MyMission()->GetMissionDef().szServerName;
+		const char* szCoreName = mp.szIGCStaticFile;
+
+
         str =
-              "Name: "                  + ZString(mp.strGameName)         + "<p>"
-            + "<p>"
-			+ "Core Name: "             + ZString(mp.szIGCStaticFile)     + "<p>" // KGJV: added
+			ZString("<Color|yellow><Font|medBoldVerdana>Game details<Font|smallFont><Color|white><p>")
+            + "Name: "                  + ZString(mp.strGameName)         + "<p>"
+            + "<p>Server: " +
+			+ (trekClient.CfgIsOfficialServer(szServerName,trekClient.MyMission()->GetMissionDef().szServerAddr) ?
+				ZString("<Color|green>") :
+				ZString("<Color|white>")
+			  )
+			+ ZString(szServerName)           + "<Color|white><p>Core: "
+			+ (trekClient.CfgIsOfficialCore(szCoreName) ?
+				ZString("<Color|green>") :
+				ZString("<Color|white>")
+			  )
+			+ trekClient.CfgGetCoreName(szCoreName)     + "<Color|white><p>" // KGJV: added
 			+ "<p>"
             + "Lives: "                 + GetLives(mp)                    + "<p>"
             + "Map Type: "              + GetMapType(mp)                  + "<p>"

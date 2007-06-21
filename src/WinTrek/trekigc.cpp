@@ -2896,7 +2896,27 @@ void WinTrekClient::SaveCharacterName(ZString strName)
     }
 }
 
-
+// KGJV : added utility functions for cores & server names
+// find the user friendly name of a core - return param if not found
+ZString WinTrekClient::CfgGetCoreName(const char *s) 
+{
+	char temp[c_cbName];
+	DWORD l = GetCfgInfo().GetCfgProfileString("Cores",s,s,temp,c_cbName);
+	return ZString(temp,(int)l);
+}
+bool WinTrekClient::CfgIsOfficialCore(const char *s)
+{
+	char temp[c_cbName];
+	DWORD l = GetCfgInfo().GetCfgProfileString("OfficialCores",s,"false",temp,c_cbName);
+	return (_stricmp(temp,"true") == 0);
+}
+bool WinTrekClient::CfgIsOfficialServer(const char *name, const char *addr)
+{
+	char temp[c_cbName];
+	DWORD l = GetCfgInfo().GetCfgProfileString("OfficialServers",name,"",temp,c_cbName);
+	return (_stricmp(temp,addr) == 0);
+}
+// KGJV end
 
 class AutoDownloadProgressDialogPopup : 
     public IPopup, 
@@ -3486,6 +3506,19 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
     }
     else 
     {
+		// KGJV: fill in server ip for FM_S_MISSIONDEF
+		// this is a bit hacky: we cant do this in HandleMsg where FM_S_MISSIONDEF is handled
+		// because pthis and cnxnFrom are not available
+		// and we cant do this server side either because of NAT/Firewall 
+		if (pfm->fmid == FM_S_MISSIONDEF)
+		{
+			CASTPFM(pfmMissionDef, S, MISSIONDEF, pfm);
+			char szAddr[16];
+			pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
+			strcpy_s(pfmMissionDef->szServerAddr,16,szAddr);
+		}
+		// KGJV: end
+
         hr = HandleMsg(pfm, m_lastUpdate, m_now);
 
         bool bWasHandled = hr == S_OK;

@@ -965,6 +965,13 @@ public:
         pnsTeamScreenData->AddMember("statsCount", m_pnumberStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("squadStatsCount", m_pnumberSquadStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("civColor", m_pcolorCiv = new ModifiableColorValue(Color::Black()));
+		//KGJV added: core name & server name export 
+		// so we can use strServerName and strCoreName in teamscreen.mdl
+		const char* szServerName = trekClient.MyMission()->GetMissionDef().szServerName;
+		const char* szServerAddr = trekClient.MyMission()->GetMissionDef().szServerAddr;
+		pnsTeamScreenData->AddMember("strServerName", new StringValue(szServerName));
+		const char* szCoreName = trekClient.MyMission()->GetMissionParams().szIGCStaticFile;
+		pnsTeamScreenData->AddMember("strCoreName", new StringValue(trekClient.CfgGetCoreName(szCoreName)));
 
 		//
         // Load the members from MDL
@@ -1176,10 +1183,18 @@ public:
         else
             m_pnumberShowSquad->SetValue(0);
 
+		// KGJV: changed logic, ScoresCount is not from parameters anymore
+		/*
         if (trekClient.MyMission()->GetMissionParams().bScoresCount)
             m_pnumberStatsCount->SetValue(1);
         else
             m_pnumberStatsCount->SetValue(0);
+		*/
+		if (trekClient.CfgIsOfficialServer(szServerName,szServerAddr) &&
+			trekClient.CfgIsOfficialCore(szCoreName))
+			m_pnumberStatsCount->SetValue(1);
+		else
+			m_pnumberStatsCount->SetValue(0);
 
         UpdateSquadsStatsMessage();
 
@@ -2733,10 +2748,11 @@ public:
             else
                 m_pnumberShowSquad->SetValue(0);
 
-            if (trekClient.MyMission()->GetMissionParams().bScoresCount)
-                m_pnumberStatsCount->SetValue(1);
-            else
-                m_pnumberStatsCount->SetValue(0);
+			// KGJV : changed, see ctor
+            //if (trekClient.MyMission()->GetMissionParams().bScoresCount)
+            //    m_pnumberStatsCount->SetValue(1);
+            //else
+            //    m_pnumberStatsCount->SetValue(0);
 
             // Update the text
             UpdateStatusText();

@@ -1,0 +1,236 @@
+use "gamepanes";
+use "font";
+use "missionbriefdata";
+
+///////////////////////////////////////////////////////////////////////////////
+// civ-specific strings
+
+ictrainerTitle = "Iron Coalition Rookie Training";
+ictrainerNoWin = "You rookies, %s have been assigned to %s. Hostile %s units nearby. Kill them all. Order will prevail. Good hunting!";
+ictrainerDefault = "You rookies, %s have been assigned to %s. Hostile %s units nearby. Locate them, then destroy or capture all of their bases. Remember your training and it'll be a milk run.  Good Hunting!";
+ictrainerSecondaryObjectives = "\n\nOther objectives include:\n";
+ictrainerConquest = "\n *  Control %d%% of the bases.";
+ictrainerCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+ictrainerArtifacts = "\n *  Capture and return %d of the artifacts.";
+ictrainerFlags = "\n *  Capture and return %d of the enemy flags.";
+ictrainerProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+ictrainerDeathmatch = "\n *  Destroy %d enemy ships.";
+
+ironleagueTitle = "Iron Coalition Tactical Briefing";
+ironleagueNoWin = "Your squadron %s have been assigned to %s. Hostile %s units nearby. Kill them all. Order will prevail. Good hunting!";
+ironleagueDefault = "Your squadron %s have been assigned to %s. Hostile %s units nearby. Locate them, then destroy or capture all of their bases. Order will prevail. Good hunting!";
+ironleagueSecondaryObjectives = "\n\nOther objectives include:\n";
+ironleagueConquest = "\n *  Control %d%% of the bases.";
+ironleagueCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+ironleagueArtifacts = "\n *  Capture and return %d of the artifacts.";
+ironleagueFlags = "\n *  Capture and return %d of the enemy flags.";
+ironleagueProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+ironleagueDeathmatch = "\n *  Destroy %d enemy ships.";
+
+crimsonTitle = "GigaCorp Objective Assignment";
+crimsonNoWin = "Your Security Force %s has been assigned to %s. Opposition is expected from nearby %s units. Kill them all. Your career looks promising, so make this one count.";
+crimsonDefault = "Your Security Force %s has been assigned to %s. Opposition is expected from nearby %s units. Locate them, then destroy or capture all of their bases. Your career looks promising, so make this one count.";
+crimsonSecondaryObjectives = "\n\nOther objectives include:";
+crimsonConquest = "\n *  Control %d%% of the bases.";
+crimsonCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+crimsonArtifacts = "\n *  Capture and return %d of the artifacts.";
+crimsonFlags = "\n *  Capture and return %d of the enemy flags.";
+crimsonProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+crimsonDeathmatch = "\n *  Destroy %d enemy ships.";
+
+beltersTitle = "Belters’ Call to Arms";
+beltersNoWin = "%s, congratulations on your move to %s. DataNet reports enemy %s units nearby. Kill them. Live free or die my friend ... may the Raven watch over you.";
+beltersDefault = "%s, congratulations on your move to %s. DataNet reports enemy %s units nearby. Destroy or capture all their bases. Live free or die my friend ... may the Raven watch over you.";
+beltersSecondaryObjectives = "\n\nOther objectives include:";
+beltersConquest = "\n *  Control %d%% of the bases.";
+beltersCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+beltersArtifacts = "\n *  Capture and return %d of the artifacts.";
+beltersFlags = "\n *  Capture and return %d of the enemy flags.";
+beltersProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+beltersDeathmatch = "\n *  Destroy %d enemy ships.";
+
+biosTitle = "Bios Intelligence Communiqué";
+biosNoWin = "Group %s, the council has assigned you to %s. Our agents report stalegene %s forces in the region. Eliminate them. The council observes your lineage.";
+biosDefault = "Group %s, the council has assigned you to %s. Our agents report stalegene %s forces in the region. Locate them, then destroy or capture all of their bases. The council observes your lineage.";
+biosSecondaryObjectives = "\n\nOther objectives include:";
+biosConquest = "\n *  Control %d%% of the bases.";
+biosCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+biosArtifacts = "\n *  Capture and return %d of the artifacts.";
+biosFlags = "\n *  Capture and return %d of the enemy flags.";
+biosProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+biosDeathmatch = "\n *  Destroy %d enemy ships.";
+
+rixianTitle = "Rixian Crusade Objective";
+rixianNoWin = "Brethren %s, congratulations on the completion of our new temple in %s. Our Observers report unclean %s. Remove them with all haste. Victory will assure your ascension.";
+rixianDefault = "Brethren %s, congratulations on the completion of our new temple in %s. Our Observers report unclean %s. Remove them with all haste. Destroy or capture all their bases. Victory will assure your ascension.";
+rixianSecondaryObjectives = "\n\nOther objectives include:";
+rixianConquest = "\n *  Control %d%% of the bases.";
+rixianCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+rixianArtifacts = "\n *  Capture and return %d of the artifacts.";
+rixianFlags = "\n *  Capture and return %d of the enemy flags.";
+rixianProsperity = "\n * Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+rixianDeathmatch = "\n *  Destroy %d enemy ships.";
+
+lizardsTitle = "Dreghklar Imperial Decree";
+lizardsNoWin = "Loyal Deghklar subjects %s, your presence has been demanded in %s. %s infidels currently fester in this sector. Your duty is to rout all who oppose the Empire, and claim this region of space for our own. Long live the Empire, long live the Dreg!";
+lizardsDefault = "Loyal Deghklar subjects %s, your presence has been demanded in %s. %s infidels currently fester in this sector. Your duty is to rout all who oppose the Empire, and claim this region of space for our own. Long live the Empire, long live the Dreg!";
+lizardsSecondaryObjectives = "\n\nOther objectives include:\n";
+lizardsConquest = "\n *  Control %d%% of the bases.";
+lizardsCountdown = "\n *  Decimate as many enemies as possible within %d minutes.";
+lizardsArtifacts = "\n *  Capture and return %d of the artifacts.";
+lizardsFlags = "\n *  Capture and return %d of the enemy flags.";
+lizardsProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+lizardsDeathmatch = "\n *  Destroy %d enemy ships.";
+
+technofluxTitle = "Technoflux Data Upload";
+technofluxNoWin = "Combat cell %s, proceed to %s. Current scans indicate %s movement.  Implement engagement program Alpha-419027Z.  End transfer.";
+technofluxDefault = "Combat cell %s, proceed to %s. Current scans indicate %s movement.  Implement engagement program Alpha-419027Z.  End transfer.";
+technofluxSecondaryObjectives = "\n\nOther objectives include:\n";
+technofluxConquest = "\n *  Control %d%% of the bases.";
+technofluxCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+technofluxArtifacts = "\n *  Capture and return %d of the artifacts.";
+technofluxFlags = "\n *  Capture and return %d of the enemy flags.";
+technofluxProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+technofluxDeathmatch = "\n *  Destroy %d enemy ships.";
+
+gataaranTitle = "Ga'Taraan Federation Tactical Briefing";
+gataaranNoWin = "%s of the federal forces, move out to %s immediately. Swiftly eliminate %s threats to restore the security of our borders. The Federation will endure!";
+gataaranDefault = "Federal Brigade %s, move out to %s immediately. Swiftly eliminate %s threats to restore the security of our borders. The Federation will endure!";
+gataaranSecondaryObjectives = "\n\nOther objectives include:\n";
+gataaranConquest = "\n *  Control %d%% of the bases.";
+gataaranCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+gataaranArtifacts = "\n *  Capture and return %d of the artifacts.";
+gataaranFlags = "\n *  Capture and return %d of the enemy flags.";
+gataaranProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+gataaranDeathmatch = "\n *  Destroy %d enemy ships.";
+
+dn_faphbkTitle = "Phoenix Mission Declaration";
+dn_faphbkNoWin = "Phoenix loyalists %s, our righteous cause needs you in %s. The soulless %s have moved into this sector. Cleanse their existance from our home!";
+dn_faphbkDefault = "Phoenix loyalists %s, our righteous cause needs you in %s. The soulless %s have moved into this sector. Cleanse their existance from our home!";
+dn_faphbkSecondaryObjectives = "\n\nOther objectives include:\n";
+dn_faphbkConquest = "\n *  Control %d%% of the bases.";
+dn_faphbkCountdown = "\n *  Decimate as many enemies as possible within %d minutes.";
+dn_faphbkArtifacts = "\n *  Capture and return %d of the artifacts.";
+dn_faphbkFlags = "\n *  Capture and return %d of the enemy flags.";
+dn_faphbkProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+dn_faphbkDeathmatch = "\n *  Destroy %d enemy ships.";
+
+effixTitle = "Effix Colonial Fleet Command";
+effixNoWin = "Colonial Fleet Task Force %s , you are allocated to %s to secure the local Helium 3 reserves of that sector. Intelligence reports hostile %s forces approaching your position. Dismissed! ";
+effixDefault = "Colonial Fleet Task Force %s , you are allocated to %s to secure the local Helium 3 reserves of that sector. Intelligence reports hostile %s forces approaching your position. Dismissed!";
+effixSecondaryObjectives = "\n\nOther objectives include:";
+effixConquest = "\n *  Control %d%% of the bases.";
+effixCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+effixArtifacts = "\n *  Capture and return %d of the artifacts.";
+effixFlags = "\n *  Capture and return %d of the enemy flags.";
+effixProsperity = "\n * Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+effixDeathmatch = "\n *  Destroy %d enemy ships.";
+
+///////////////////////////////////////////////////////////////////////////////
+// AW4 strings
+
+earthTitle = "Earth Objectives";
+earthNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
+earthDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
+earthSecondaryObjectives = "\n\nOther objectives are:\n";
+earthConquest = "\n *  Control %d%% of the bases.";
+earthCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+earthArtifacts = "\n *  Capture and return %d of the artifacts.";
+earthFlags = "\n *  Capture and return %d of the enemy flags.";
+earthProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+earthDeathmatch = "\n *  Destroy %d enemy ships.";
+
+jupiterTitle = "Jupiter Objectives";
+jupiterNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
+jupiterDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
+jupiterSecondaryObjectives = "\n\nOther objectives are:\n";
+jupiterConquest = "\n *  Control %d%% of the bases.";
+jupiterCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+jupiterArtifacts = "\n *  Capture and return %d of the artifacts.";
+jupiterFlags = "\n *  Capture and return %d of the enemy flags.";
+jupiterProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+jupiterDeathmatch = "\n *  Destroy %d enemy ships.";
+
+marsTitle = "Mars Objectives";
+marsNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
+marsDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
+marsSecondaryObjectives = "\n\nOther objectives are:\n";
+marsConquest = "\n *  Control %d%% of the bases.";
+marsCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+marsArtifacts = "\n *  Capture and return %d of the artifacts.";
+marsFlags = "\n *  Capture and return %d of the enemy flags.";
+marsProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+marsDeathmatch = "\n *  Destroy %d enemy ships.";
+
+saturnTitle = "Saturn Objectives";
+saturnNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
+saturnDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
+saturnSecondaryObjectives = "\n\nOther objectives are:\n";
+saturnConquest = "\n *  Control %d%% of the bases.";
+saturnCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+saturnArtifacts = "\n *  Capture and return %d of the artifacts.";
+saturnFlags = "\n *  Capture and return %d of the enemy flags.";
+saturnProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+saturnDeathmatch = "\n *  Destroy %d enemy ships.";
+
+venusTitle = "Venus Objectives";
+venusNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
+venusDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
+venusSecondaryObjectives = "\n\nOther objectives are:\n";
+venusConquest = "\n *  Control %d%% of the bases.";
+venusCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+venusArtifacts = "\n *  Capture and return %d of the artifacts.";
+venusFlags = "\n *  Capture and return %d of the enemy flags.";
+venusProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+venusDeathmatch = "\n *  Destroy %d enemy ships.";
+
+///////////////////////////////////////////////////////////////////////////////
+// Wars strings
+
+sw_eTitle = "Galactic Empire Tactical Briefing";
+sw_eNoWin = "Imperial task force %s has been assigned to %s. Opposition is expected from nearby %s units. These traitors cannot be allowed to survive. Crush them swiftly, the Emperor demands it.";
+sw_eDefault = "Imperial task force %s has been assigned to %s. Opposition is expected from nearby %s units. Locate them, then destroy or capture all of their bases. These traitors cannot be allowed to survive. Crush them swiftly, the Emperor demands it.";
+sw_eSecondaryObjectives = "\n\nOther objectives include:";
+sw_eConquest = "\n *  Control %d%% of the bases.";
+sw_eCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+sw_eArtifacts = "\n *  Capture and return %d of the artifacts.";
+sw_eFlags = "\n *  Capture and return %d of the enemy flags.";
+sw_eProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+sw_eDeathmatch = "\n *  Destroy %d enemy ships.";
+
+sw_rTitle = "Rebel Alliance Tactical Briefing";
+sw_rNoWin = "Rebel task force %s has been assigned to %s. Opposition is expected from nearby %s units. They must be defeated. We fight for freedom across the galaxy.";
+sw_rDefault = "Rebel task force %s has been assigned to %s. Opposition is expected from nearby %s units. Locate them, then destroy or capture all of their bases. They must be defeated. We fight for freedom across the galaxy.";
+sw_rSecondaryObjectives = "\n\nOther objectives include:";
+sw_rConquest = "\n *  Control %d%% of the bases.";
+sw_rCountdown = "\n *  Eliminate as many enemies as possible within %d minutes.";
+sw_rArtifacts = "\n *  Capture and return %d of the artifacts.";
+sw_rFlags = "\n *  Capture and return %d of the enemy flags.";
+sw_rProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
+sw_rDeathmatch = "\n *  Destroy %d enemy ships.";
+
+
+///////////////////////////////////////////////////////////////////////////////
+// The mission briefing dialog
+
+missionBriefingTitle = StringPane(missionBriefingTitleText, white, Point(430, 32), JustifyCenter, lgBoldVerdana);
+missionBriefingTextBody = AnimatedImagePaneRect(StringImage(JustifyLeft, 306, medVerdana, white, missionBriefingBodyText), Rect(0, -131, 306, 0));
+missionBriefingCountDown = StringPane(NumberString(countdown), white, Point(36, 36), JustifyCenter, hugeBoldFont);
+missionBriefingTeamImage = AnimatedImagePaneRect(teamImage, Rect(0, 0, 73, 68));
+// R4
+//mapPreviewPane      = MapPreviewPane(Rect(0, 0, 120, 96),false,true);
+mapPreviewPane      = MapPreviewPane(ImportImage("sectormapbkgndbmp",false),false,true);
+
+MissionBriefDialog =
+        (
+            ImagePane(
+              ImportImage("missionbriefbkgndbmp", false),
+                [
+                  (missionBriefingTeamImage, Point(398,68)),
+                  (missionBriefingCountDown, Point(415, 181)),
+                  (missionBriefingTitle, Point(38, 24)),
+                  (missionBriefingTextBody, Point(51, 85)),
+                  (mapPreviewPane, Point(150, 165)) //R4
+                ]
+            )
+        );

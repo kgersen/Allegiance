@@ -105,6 +105,9 @@ CFSMission::CFSMission(
   //m_misdef.misparms.iGoalTerritoryPercentage = 75;  //NYI
   //m_misdef.misparms.iRandomEncounters = 2;  //NYI
 
+  // KGJV fix: fill in server friendly name so clients can display it
+  strcpy_s(m_misdef.szServerName,sizeof(m_misdef.szServerName),g.strLocalAddress);
+
   psiteMission->Create(this);
 
   assert(!g.strLobbyServer.IsEmpty() == !!g.fmLobby.IsConnected());

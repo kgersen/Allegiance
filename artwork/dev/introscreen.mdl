@@ -1,0 +1,130 @@
+use "gamepanes";
+use "introscreendata";
+use "font";
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Intro Screen
+//
+/////////////////////////////////////////////////////////////////////////////
+
+//
+// Normal buttons
+//
+
+//gamesButtonPane     = ButtonPane(ImportImage("btnmaingamesbmp", false), ButtonFaceDown, false);
+
+trainBigButtonPane      = ButtonPane(ImportImage("btnmaintrainbigbmp", true),   ButtonNormal, false);
+
+playLanButtonPane       = ButtonPane(ImportImage("btnmainplaylanbmp", true),    ButtonNormal, false);
+playIntButtonPane       = ButtonPane(ImportImage("btnmainplayintbmp", true),    ButtonNormal, false);
+//zoneClubButtonPane      = ButtonPane(ImportImage("btnmainplayzonebmp", true),   ButtonNormal, false);
+
+//trainButtonPane           = ButtonPane(ImportImage("btnmaintrainbmp", true),      ButtonNormal, false);
+zoneWebButtonPane       = ButtonPane(ImportImage("btnmainzonewebbmp", true),    ButtonNormal, false);
+optionsButtonPane       = ButtonPane(ImportImage("btnmainkeyconbmp", true),     ButtonNormal, false);
+introButtonPane         = ButtonPane(ImportImage("btnmainintrobmp", true),      ButtonNormal, false);
+creditsButtonPane       = ButtonPane(ImportImage("btnmaincreditsbmp", true),    ButtonNormal, false);
+//quickstartButtonPane  = ButtonPane(ImportImage("btnmainquickstartbmp", true), ButtonNormal, false);
+
+exitButtonPane          = ButtonPane(ImportImage("btnmainexitbmp",  true),      ButtonNormal, false);
+helpButtonPane           = ButtonPane(ImportImage("btnhelpbmp",      true),     ButtonNormal,   false);
+
+//
+//  Mouseoer Help Text
+//
+
+hoverInfoString =
+    SwitchString(
+        CurrentHover,
+        emptyString,
+        [
+            ( hoverPlayLan   , "Play a free game on a private server located on a LAN."  ),
+            ( hoverPlayInt   , "Play a free game on a public server listed on the MSN Gaming Zone." ),
+            //( hoverZoneClub  , "Play a game as a member of the Allegiance Zone."),
+            ( hoverTrain     , "Play a training mission."         ),
+            ( hoverZoneWeb   , "Connect to the Allegiance Web page for the latest Allegiance information, including event schedules, strategies, and help."        ),
+            ( hoverOptions   , "Customize the graphics, sound, and controls in Allegiance." ),
+            ( hoverIntro     , "Replay the Allegiance introductory video."),
+            ( hoverCredits   , "View the names of those who created Allegiance."  ),
+            ( hoverQuickstart, "Immediately connect to a game."   ),
+            ( hoverHelp      , "View the in-game Help display."                  ),
+            ( hoverExit      , "Quit Allegiance."                 )
+        ]
+    );
+
+hoverTextColor = Color(0.75, 0.75, 0.75);
+hoverTextFont  = smallFont;
+hoverInfoImage = StringImage(JustifyLeft, 230, hoverTextFont, hoverTextColor, hoverInfoString);
+hoverInfoPane  = AnimatedImagePaneRect(hoverInfoImage, Rect(0, -50, 230, 0));
+
+
+// KGJV test
+geoPosition = Point(0, 0);
+geoSize     = Point(800, 500);
+geoModel = "fig22"; // TODO need a cool 3D logo
+
+// bkground image.
+bkImage = ImportImage("mainbkgndbmp", false);
+//
+// The background and control positions
+//
+
+screen =
+    ScreenPane(
+        bgImage, // use bgImage if 3D introscreen enable
+        [
+            //(gamesButtonPane,     Point(251, 506)),
+            
+            (trainBigButtonPane,    Point( 9, 535)),
+            
+            //(zoneClubButtonPane,    Point( 86, 535)),
+            (playIntButtonPane,     Point(151, 535)),
+            (playLanButtonPane,     Point(217, 535)),
+            
+            (introButtonPane,       Point(290, 553)),
+            (zoneWebButtonPane,     Point(290, 568)),
+            
+            (creditsButtonPane,     Point(355, 553)),
+            (optionsButtonPane,     Point(355, 568)),
+            
+            (exitButtonPane,        Point(420, 553)),
+            (helpButtonPane,        Point(420, 568)),
+
+            (hoverInfoPane,         Point(560, 550))
+
+        ]
+    );
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Find server dialog
+//
+//////////////////////////////////////////////////////////////////////////
+
+// serverEditPane = EditPane(Point(322, 18), largeFont);
+// serverFindButtonPane = ButtonPane(ImportImage("btnfindbmp", true), ButtonNormal, false);
+serverJoinButtonPane = ButtonPane(ImportImage("btnjoin3bmp", true), ButtonNormal, false);
+serverCancelButtonPane = ButtonPane(ImportImage("btnabortbmp", true), ButtonNormal, false);
+serverScrollBar = ScrollBarPane(Point(14, 164)); 
+serverListWidth = 310;
+serverListGameNameX = 100;
+serverListPane = ListWithScrollBarPane(Point(serverListWidth, 162), serverScrollBar);
+
+ServerDialog =
+    (
+        ImagePane(
+            ImportImage("findserverdialogbmp", false),
+            [
+//                (serverEditPane,                  Point( 31, 62)),
+//                (serverFindButtonPane,            Point(375, 60)),
+
+                (serverScrollBar,                 Point(338,63)),
+                (serverListPane,                  Point( 28,65)),
+
+                (serverJoinButtonPane,            Point(375,60)),
+                (serverCancelButtonPane,          Point(375,110))
+            ]
+        )
+    );

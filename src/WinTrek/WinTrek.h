@@ -290,6 +290,10 @@ class  WinTrekClient :
         ZString           GetSavedCharacterName();
         void              SaveCharacterName(ZString strName);
         
+		// KGJV : added utility functions for cores & server names
+		ZString           CfgGetCoreName(const char *s);
+		bool              CfgIsOfficialCore(const char *s);
+		bool              CfgIsOfficialServer(const char *name, const char *addr);
 
     private:
 

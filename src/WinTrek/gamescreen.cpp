@@ -30,25 +30,7 @@ struct ServerInfo
 	return (mStatic.dwCoreMask & pcore->dwBit);
   }
 };
-// find the user friendly name of a core - return param if not found
-ZString CoreInfoGetName(const char *s) 
-{
-	char temp[c_cbName];
-	DWORD l = trekClient.GetCfgInfo().GetCfgProfileString("Cores",s,s,temp,c_cbName);
-	return ZString(temp,(int)l);
-}
-bool IsOfficialCore(const char *s)
-{
-	char temp[c_cbName];
-	DWORD l = trekClient.GetCfgInfo().GetCfgProfileString("OfficialCores",s,"false",temp,c_cbName);
-	return (_stricmp(temp,"true") == 0);
-}
-bool IsOfficialServer(const char *name, const char *addr)
-{
-	char temp[c_cbName];
-	DWORD l = trekClient.GetCfgInfo().GetCfgProfileString("OfficialServers",name,"",temp,c_cbName);
-	return (_stricmp(temp,addr) == 0);
-}
+
 // sample data for UI testing
 //OldServerInfo sampleServers[10] = {
 //	{"Planet","USA", 4,20,80,true},
@@ -303,7 +285,7 @@ private:
             //    WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 5, 6),
             //    cbTemp);
 			// draw core name
-			ZString sCorename = ZString(CoreInfoGetName(game->GetIGCStaticFile()));
+			ZString sCorename = ZString(trekClient.CfgGetCoreName(game->GetIGCStaticFile()));
             rectClipOld = psurface->GetClipRect();
             psurface->SetClipRect(WinRect(WinPoint(m_viColumns[4] + 4, 0), WinPoint(m_viColumns[5], GetYSize()))); // clip to fit in column
             psurface->DrawString(pfont, color, WinPoint(m_viColumns[4] + 4, 6), sCorename);
@@ -346,8 +328,8 @@ private:
             //if (game->ScoresCount())
             //    DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "iconscorescountbmp");
 			// KGJV #114 - ScoresCount symbol now mean Official game (= official server + official core)
-			bool bOfficial = IsOfficialServer(game->GetMissionDef().szServerName,game->GetMissionDef().szServerAddr);
-			bOfficial &= IsOfficialCore(game->GetIGCStaticFile());
+			bool bOfficial = trekClient.CfgIsOfficialServer(game->GetMissionDef().szServerName,game->GetMissionDef().szServerAddr);
+			bOfficial &= trekClient.CfgIsOfficialCore(game->GetIGCStaticFile());
             if (bOfficial)
                 DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "iconscorescountbmp");
 
@@ -603,9 +585,9 @@ private:
 				for (int i=0; i < cCores; i++)
 				{
 					memcpy(&(m_pCores[i].mStatic),&(pcores[i]),sizeof(StaticCoreInfo));
-					m_pCores[i].bOfficial = IsOfficialCore(m_pCores[i].mStatic.cbIGCFile);
+					m_pCores[i].bOfficial = trekClient.CfgIsOfficialCore(m_pCores[i].mStatic.cbIGCFile);
 					m_pCores[i].dwBit = 1<<i;
-					strcpy(m_pCores[i].Name,CoreInfoGetName(m_pCores[i].mStatic.cbIGCFile));
+					strcpy(m_pCores[i].Name,trekClient.CfgGetCoreName(m_pCores[i].mStatic.cbIGCFile));
 				}
 			}
 			if (cServers)
@@ -615,7 +597,7 @@ private:
 				{
 					memcpy(&(m_pServers[i].mStatic),&(pservers[i]),sizeof(ServerCoreInfo));
 					m_pServers[i].ping = -1;
-					m_pServers[i].bOfficial = IsOfficialServer(m_pServers[i].mStatic.szName,m_pServers[i].mStatic.szRemoteAddress);
+					m_pServers[i].bOfficial = trekClient.CfgIsOfficialServer(m_pServers[i].mStatic.szName,m_pServers[i].mStatic.szRemoteAddress);
 				}
 				
 			}
@@ -1553,8 +1535,8 @@ public:
     {
         MissionInfo* pgame1 = (MissionInfo*)pitem1;
         MissionInfo* pgame2 = (MissionInfo*)pitem2;
-		ZString n1 = CoreInfoGetName(pgame1->GetIGCStaticFile());
-		ZString n2 = CoreInfoGetName(pgame2->GetIGCStaticFile());
+		ZString n1 = trekClient.CfgGetCoreName(pgame1->GetIGCStaticFile());
+		ZString n2 = trekClient.CfgGetCoreName(pgame2->GetIGCStaticFile());
         return _stricmp(PCC(n1),PCC(n2)) > 0;
     }
 

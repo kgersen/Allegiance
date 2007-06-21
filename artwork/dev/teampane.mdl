@@ -1,0 +1,168 @@
+use "console";
+use "font";
+
+//
+// Player list
+//
+
+teamPanePlayerColumns    = [118, 167, 167, 167, 167, 167]; //Pilot, Kills/Death, Turrets, Ship, Wing, Credits
+teamPanePlayerListHeader = ButtonBarPane(ImportImage("teampaneheaderbmp", false), ButtonNormal, teamPanePlayerColumns, false);
+teamPanePlayerScrollBar  = ScrollBarPane(Point(12, 220));
+teamPanePlayerListPane   = ListWithScrollBarPane(Point(160, 225), teamPanePlayerScrollBar);
+
+//
+// buttons
+//
+
+//teamPaneBootButtonPane   = ButtonPane(ImportImage("btnbootbmp",      true), ButtonNormal, false);
+//teamPaneAutoDonateButtonPane = ButtonPane(ImportImage("btndonatebmp",true), ButtonNormal, false);
+//teamPaneDonateButtonPane = ButtonPane(ImportImage("btninvestnewbmp", true), ButtonNormal, false);
+//teamPaneBoardButtonPane  = ButtonPane(ImportImage("btnboardbmp",   true), ButtonNormal, false);
+teamPaneExpandButtonPane = ButtonPane(ImportImage("btnexpandbmp",    true), ButtonNormal, false);
+teamPaneTakeMeToButtonPane = ButtonPane(ImportImage("btntakemetobmp",true), ButtonNormal, false);
+teamPaneAcceptButtonPane = ButtonPane(ImportImage("btnacceptbmp",true), ButtonNormal, false);
+teamPaneComboButtonPane = ButtonPane(ImportImage("btncdownarrowbmp", true), ButtonNormal, false);
+teamStringImagePane = ImagePane(ImportImage("strteambmp", false), []);
+teamPaneCloseButtonPane      = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+
+teamPaneTeamComboPane    = 
+    StringColorComboPane(
+        Point(109, 12), 
+        Point(125, 12),
+        smallFont, 
+        Color(1, 1, 1)
+    );
+
+teamPaneWingComboPane = ImageComboPane(ImportImage("btnchangewingbmp", true), largeFont);
+
+//    StringComboPane(
+//        Point(39, 12), 
+//        Point(50, 12),
+//        smallFont, 
+//        Color(1, 1, 1)
+//    );
+
+//
+// The background and control positions
+//
+
+teamPane =
+    ImagePane(
+        ImportImage("teampanebmp", false),
+        [	
+			(teamPanePlayerScrollBar,      Point(183,  109)),
+            (teamPaneTeamComboPane,        Point( 50,  10)),
+			(teamPaneComboButtonPane,	   Point(159,  8)),
+            (teamPaneCloseButtonPane,	   Point(188,  8)),
+			(teamPaneExpandButtonPane,     Point(188,  28)),
+
+			(teamStringImagePane,		   Point( 10,  8)),
+
+            (teamPanePlayerListHeader,     Point( 14,  44)),
+            (teamPanePlayerListPane,       Point( 13,  104)),
+            
+
+            //(teamPaneBootButtonPane,       Point(  2, 246)),
+            //(teamPaneAutoDonateButtonPane, Point( 45, 246)),
+            //(teamPaneWingComboPane,        Point( 95, 248)),
+            //(teamPaneBoardButtonPane,      Point(180, 246)),
+            //(teamPaneDonateButtonPane,     Point(225, 246)),
+            (teamPaneTakeMeToButtonPane,   Point(41, 338)),
+            (teamPaneAcceptButtonPane,     Point(41, 338))
+        ]
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Expanded Team Pane
+//
+///////////////////////////////////////////////////////////////////////////////
+
+//
+// Player list
+//
+
+eTeamPanePlayerColumns    = [117, 167, 259, 299, 374, 424, 466]; //Pilot, Kills/Deaths, Turrets, Ship, Wing, Credits
+eTeamPanePlayerListHeader = ButtonBarPane(ImportImage("eteampaneheaderbmp", false), ButtonNormal, eTeamPanePlayerColumns, false);
+eTeamPanePlayerScrollBar  = ScrollBarPane(Point(12, 175));
+eTeamPanePlayerListPane   = ListWithScrollBarPane(Point(446, 180), eTeamPanePlayerScrollBar);
+
+eTeamPaneTeamListPane     = ListPane(Point(140, 120));
+eTeamPaneSelTeamListPane     = ListPane(Point(140, 20));
+
+eTeamPaneIconListPane     = ListPane(Point(73, 68));
+
+//
+// buttons
+//
+
+eTeamPaneBootButtonPane   = ButtonPane(ImportImage("btnbootbmp",      true), ButtonNormal, false);
+eTeamPaneDonateButtonPane = ButtonPane(ImportImage("btninvestnewbmp", true), ButtonNormal, false);
+eTeamPaneAutoDonateButtonPane = ButtonPane(ImportImage("btndonatebmp", true), ButtonNormal, false);
+eTeamPaneStopDonateButtonPane = ButtonPane(ImportImage("btnstopdonatebmp", true), ButtonNormal, false);
+//eTeamPaneBoardButtonPane  = ButtonPane(ImportImage("btnboardbmp",     true), ButtonNormal, false);
+eTeamPaneCollapseButtonPane = ButtonPane(ImportImage("btncollapsebmp",true), ButtonNormal, false);
+eTeamPaneTakeMeToButtonPane = ButtonPane(ImportImage("btntakemetobmp",true), ButtonNormal, false);
+eTeamPaneAcceptButtonPane = ButtonPane(ImportImage("btnacceptbmp",true), ButtonNormal, false);
+eTeamPaneCloseButtonPane      = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+
+
+eTeamPaneTeamComboPane    = 
+    StringColorComboPane(
+        Point(109, 12), 
+        Point(125, 12),
+        smallFont, 
+        Color(1, 1, 1)
+    );
+
+eTeamPaneWingComboPane    = 
+	ImageComboPane(ImportImage("btnchangewing2bmp", false), largeFont);
+
+//
+// The background and control positions
+//
+
+expandedTeamPane =
+    ImagePane(
+        ImportImage("eteampanebmp", false),
+        [
+            //(eTeamPaneTeamComboPane,        Point( 20,  34)),
+			
+			(eTeamPaneSelTeamListPane,		Point( 5, 109)),
+			(eTeamPaneTeamListPane,			Point( 5, 158)),
+
+            (eTeamPaneCloseButtonPane,		Point(610,  87)),
+			(eTeamPaneCollapseButtonPane,   Point(610,  107)),
+
+            (eTeamPanePlayerListHeader,     Point(145,  89)),
+            (eTeamPanePlayerListPane,       Point(145,  152)),
+            (eTeamPanePlayerScrollBar,      Point(610,  152)),
+
+			(eTeamPaneAutoDonateButtonPane, Point( 18, 343)), 
+			(eTeamPaneStopDonateButtonPane, Point( 18, 313)), // R4
+			(eTeamPaneDonateButtonPane,     Point(130, 343)),
+            //(eTeamPaneBoardButtonPane,      Point(611, 169)),
+			(eTeamPaneTakeMeToButtonPane,   Point(242, 343)),
+			(eTeamPaneAcceptButtonPane,     Point(242, 343)),
+            (eTeamPaneBootButtonPane,       Point(354, 343)),
+            (eTeamPaneWingComboPane,        Point(466, 343)),
+			
+			(eTeamPaneIconListPane,			Point(530, 12))
+            
+            
+            
+        ]
+    );
+
+//
+// Put the pane on the screen
+//
+
+TeamPanePane =
+    SwitchPane(
+        TeamPaneCollapsed,
+        [
+            (teamPane,   1)
+        ],
+        expandedTeamPane
+    );
