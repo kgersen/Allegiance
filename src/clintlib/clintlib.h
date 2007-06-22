@@ -593,7 +593,8 @@ public:
   void SetCfgFile(const char * szConfig); //KGJV #114
   // KGJV - pigs - added ctor to init some values in case Load is never called
   CfgInfo() :
-	dwLobbyPort(2302)
+	dwLobbyPort(2302),
+	m_szConfigFile("") // KGJV: fix init value for LAN mode
   {
   }
   void Load(const char * szConfig);
