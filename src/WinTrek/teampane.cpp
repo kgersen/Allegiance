@@ -292,7 +292,7 @@ public:
 #if 0
 			  int iRankSum = 0;
               int iTempRank = 0;
-              // IshipIGC* pShip = NULL; mmf splat not needed
+              // IshipIGC* pShip = NULL; mmf not needed
               PlayerInfo* pPlayer = NULL;
               ShipList plistMembers;
               plistMembers = pitem->GetMembers();

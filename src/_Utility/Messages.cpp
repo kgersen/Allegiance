@@ -2101,3 +2101,12 @@ HRESULT FedMessaging::GetConnectionSendQueue(CFMConnection * pcnxn, DWORD * pcMs
   *pcBytes = 0;
   return S_OK;
 }
+
+HRESULT FedMessaging::GetConnectionInfo(CFMConnection * pcnxn, DPN_CONNECTION_INFO & ConnectionInfo)
+{
+
+  if ( m_pDirectPlayServer != 0 )
+	  return m_pDirectPlayServer->GetConnectionInfo(pcnxn->GetID(),&ConnectionInfo,0);
+
+  return S_FALSE;
+}

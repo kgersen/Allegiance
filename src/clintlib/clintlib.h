@@ -260,9 +260,26 @@ class PlayerInfo : public IObject
 
     bool                        m_bMute;
 
+	unsigned int				m_ping; // w0dk4 player-pings feature
+	unsigned int				m_loss; // w0dk4 player-pings feature
+
 public:
     PlayerInfo(void);
     ~PlayerInfo();
+
+	// w0dk4 player-pings feature
+	void GetConnectionData(unsigned int * ping,unsigned int * loss)
+	{
+		*ping = m_ping;
+		*loss = m_loss;
+	}
+	void SetConnectionData(unsigned int ping, unsigned int loss)
+	{
+		m_ping = ping;
+		m_loss = loss;
+	}
+	// end w0dk4
+
 
     IshipIGC*   GetShip(void) const
     {

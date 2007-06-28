@@ -14,6 +14,8 @@
 #define CFEDMSGID const FEDMSGID
 #define DPID DWORD
 
+
+
 #define IB unsigned short // index of bytes to var-length data from start of struct
 #define CB unsigned short // count of bytes 
 // ***NOTE: there is code that depends on these being the same size. 
@@ -96,6 +98,7 @@ protected: // groups set their own dpid since they're not pre-created.
   DPID    m_dpid;
 };
 
+
 /*-------------------------------------------------------------------------
  * CFMConnection
  *-------------------------------------------------------------------------
@@ -138,6 +141,35 @@ public:
   int GetQueuePayload() {return m_nQueuePaylod; }
   // end wOdk4
 
+  // w0dk4 player-pings feature
+  void ClearPacketLossData() {
+	  m_lastLost = 0;
+	  m_lastPackets = 0;
+  }
+
+  void GetPacketLossData(DWORD * lastPackets, DWORD * lastLost) {
+	  *lastPackets = m_lastPackets;
+	  *lastLost = m_lastLost;
+	  return;
+  }
+
+  void SetPacketLossData(DWORD lastPackets, DWORD lastLost) {
+	  m_lastPackets = lastPackets;
+	  m_lastLost = lastLost;
+	  return;
+  }
+
+  bool PingQuery() {
+	  Time tmNow = Time::Now();
+	  if ( (tmNow.clock() - t_lastPingQuery.clock()) > (CLOCKS_PER_SEC*5)){
+		  t_lastPingQuery = tmNow;
+		  return true;
+	  } else
+		  return false;
+  }
+  // end wOdk4
+
+
 private:
   CFMConnection(FedMessaging * fm, const char * szName, DPID dpid); // only FedMessaging::CreateConnection can create these things
   ~CFMConnection() {} // you can't delete these directly. You must use Delete()
@@ -146,8 +178,17 @@ private:
   
   int     m_cAbsentCount; // for roll call
   DWORD   m_dwTimeLastComplete;
-  DWORD   m_dwPrivate;  
-  int	  m_nQueuePaylod; // join-drop bug fix w0dk4 allow more time when joining
+  DWORD   m_dwPrivate;
+
+  int	  m_nQueuePaylod; // w0dk4 join-drop bug fix allow more time when joining
+
+  // w0dk4 player-pings feature
+  DWORD	  m_lastPackets;
+  DWORD   m_lastLost;
+  Time	  t_lastPingQuery;
+  // end w0dk4
+
+
 };
 
 
@@ -436,6 +477,9 @@ public:
   HRESULT         GetSendQueue(DWORD * pcMsgs, DWORD * pcBytes);
   HRESULT         GetReceiveQueue(DWORD * pcMsgs, DWORD * pcBytes);
   HRESULT         GetConnectionSendQueue(CFMConnection * pcnxn, DWORD * pcMsgs, DWORD * pcBytes);
+
+  // w0dk4 player-pings feature
+  HRESULT         GetConnectionInfo(CFMConnection * pcnxn, DPN_CONNECTION_INFO & ConnectionInfo);
 
   //  <NKM> 10-Aug-2004
   // EnumHosts now a member (was EnumSessionsCallBack)

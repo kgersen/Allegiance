@@ -986,5 +986,21 @@ DEFINE_FEDMSG(S, RELAUNCH_SHIP, 192)
     CompactOrientation  orientation;
     Cookie              cookie;
 END_FEDMSG
+
+// w0dk4 player-pings feature
+DEFINE_FEDMSG(S, PINGDATA, 194)
+  ShipID              shipID;
+  unsigned short	  ping;
+  unsigned short      loss;
+END_FEDMSG
+
+DEFINE_FEDMSG(C, REQPINGDATA, 195)
+END_FEDMSG
+// end w0dk4
+
+
 #endif // _MESSAGES_ 
+
+
+
 

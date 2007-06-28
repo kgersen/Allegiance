@@ -786,6 +786,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
       }
 
       g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+
     }
   }
 }
@@ -3757,6 +3758,7 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
 
     SideID  sideID = pside->GetObjectID();
 
+
     // Send all clusters, and what that side sees in them
     const ClusterListIGC * pclstlist = pMission->GetClusters();
     ClusterLinkIGC * pclstlink;
@@ -3841,6 +3843,8 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
             ExportObj(pplink->data(), OT_probe, NULL);
         }
     }
+
+
 
     //For the player's side, update the money & completion state of all buckets
     BEGIN_PFM_CREATE(g.fm, pfmCreateBuckets, S, CREATE_BUCKETS)
@@ -3928,6 +3932,7 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
     }
 
     g.fm.SendMessages(NULL, FM_GUARANTEED, FM_FLUSH); // default recipient
+
 }
 
 
@@ -5530,4 +5535,7 @@ void AcceptDrawBallot::OnPassed()
   Ballot::OnPassed();
   m_pmission->GameOver(NULL, "The game was declared a draw");
 }
+
+
+
 

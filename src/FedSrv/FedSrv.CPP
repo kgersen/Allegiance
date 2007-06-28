@@ -6916,6 +6916,76 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	// w0dk4 player-pings feature
+	// send ping data
+	case FM_C_REQPINGDATA:
+    {
+		CFMConnection * cnxn = pfsPlayer->GetConnection();
+		if(cnxn->PingQuery()) { // check if last ping request longer than 5 seconds ago
+
+			// iterate through all connections and if player data available, go for it
+			ListConnections::Iterator iterCnxn(*g.fm.GetConnections());
+			while (!iterCnxn.End())
+			{
+			  CFMConnection & cnxn = *iterCnxn.Value();
+			  iterCnxn.Next();
+
+			  CFSPlayer * pfsTempPlayer = CFSPlayer::GetPlayerFromConnection(cnxn);
+
+			  if(pfsTempPlayer) {
+
+				  // now get all the data and queue message
+
+				  BEGIN_PFM_CREATE(g.fm, pfmPingData, S, PINGDATA)
+				  END_PFM_CREATE
+				  pfmPingData->shipID = pfsTempPlayer->GetShipID();
+
+				  DPN_CONNECTION_INFO Connection_Info;
+				  Connection_Info.dwSize = sizeof(DPN_CONNECTION_INFO);
+				  if(g.fm.GetConnectionInfo(&cnxn, Connection_Info) == S_OK) {
+					pfmPingData->ping = Connection_Info.dwRoundTripLatencyMS;
+					// calculate packet loss
+					DWORD m_lastLost;
+					DWORD m_lastPackets;
+					cnxn.GetPacketLossData(&m_lastPackets,&m_lastLost);
+					DWORD packets_now = Connection_Info.dwPacketsSentGuaranteed + Connection_Info.dwPacketsSentNonGuaranteed;
+					DWORD lost_now = Connection_Info.dwPacketsRetried + Connection_Info.dwPacketsDropped;
+					float fLossPercentage;
+					if ((packets_now-m_lastPackets) > 0) // check for division by zero
+						fLossPercentage = (float)((float)(lost_now - m_lastLost)/(float)(packets_now-m_lastPackets))*100;
+					else
+						fLossPercentage = 0.0;
+					pfmPingData->loss = (unsigned int)fLossPercentage;
+
+				  } else {
+					  pfmPingData->ping = 0;
+					  pfmPingData->loss = 0;
+				  }
+
+
+			  }
+
+			}
+
+			BEGIN_PFM_CREATE(g.fm, pfmPingDataOpenWindow, S, PINGDATA)
+			END_PFM_CREATE
+			// send open ping window code
+			pfmPingDataOpenWindow->shipID = -1;
+			pfmPingDataOpenWindow->ping = 1;
+
+			g.fm.SendMessages(pfsPlayer->GetConnection(),FM_GUARANTEED, FM_FLUSH);
+
+		} else {
+			BEGIN_PFM_CREATE(g.fm, pfmPingData, S, PINGDATA)
+			END_PFM_CREATE
+			// send open unchanged ping window code
+			pfmPingData->shipID = -1;
+			pfmPingData->ping = 1;
+			g.fm.SendMessages(pfsPlayer->GetConnection(),FM_GUARANTEED, FM_FLUSH);
+		}
+	}
+	break;
+
     default:
     {
       // an unrecognized message was received.
@@ -7054,7 +7124,7 @@ void ProcessNetworkMessages()
   // Do a periodic roll call. If we haven't heard from anyone for two roll calls in a row, waste 'em
   // Also waste 'em if they have more that 100 messages queued up (which is hopelessly behind)
   static Time timeRollCall = Time::Now();
-  if (g.timeNow.clock() - timeRollCall.clock() > 5000) // 10 second interval
+  if (g.timeNow.clock() - timeRollCall.clock() > (CLOCKS_PER_SEC*10)) // 10 second interval, w0dk4 changed to dynamic calculation based on constant in header file
   {
     timerClientRollCall.Start();
     ListConnections::Iterator iterCnxn(*g.fm.GetConnections());
@@ -7062,6 +7132,22 @@ void ProcessNetworkMessages()
     {
       CFMConnection & cnxn = *iterCnxn.Value();
       iterCnxn.Next(); // have to move iterator FIRST, because we might kill the current node
+
+
+	  // w0dk4 player-pings feature
+	  // Packet Loss Update
+	  DWORD m_lastLost;
+	  DWORD m_lastPackets;
+	  cnxn.GetPacketLossData(&m_lastPackets,&m_lastLost);
+	  DPN_CONNECTION_INFO Connection_Info;
+	  Connection_Info.dwSize = sizeof(DPN_CONNECTION_INFO);
+	  if(g.fm.GetConnectionInfo(&cnxn, Connection_Info) == S_OK) {
+		m_lastLost = Connection_Info.dwPacketsDropped + Connection_Info.dwPacketsRetried;
+		m_lastPackets = Connection_Info.dwPacketsSentNonGuaranteed + Connection_Info.dwPacketsSentGuaranteed;
+		cnxn.SetPacketLossData(m_lastPackets,m_lastLost);
+	  }
+	  // end w0dk4
+
       DWORD cMsgs;
       DWORD cbMsgs;
       HRESULT hr = g.fm.GetConnectionSendQueue(&cnxn, &cMsgs, &cbMsgs);
@@ -7077,8 +7163,10 @@ void ProcessNetworkMessages()
 	  } else {
 		  cMsgPayload = cnxn.GetQueuePayload();
 	  }
-	  if (cMsgPayload > cMsgs)
+	  if (cMsgPayload > cMsgs) {
 		  cMsgPayload = cMsgs;
+		  cnxn.SetQueuePayload(cMsgPayload);
+	  }
 	  // end w0dk4
 
       if ((cnxn.IncAbsentCount() > 6) || // give them a ridiculous 1 minute of no messages

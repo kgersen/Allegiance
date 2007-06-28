@@ -3569,7 +3569,8 @@ public:
     #define idmToggleFlipY                 629
     #define idmToggleStickyChase           630
     #define idmToggleEnableFeedback        631
-	#define idmMaxTextureSize          632// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+    #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
+    #define idmPings                       633 // w0dk4 player-pings feature
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -3697,12 +3698,13 @@ public:
         m_pmenu->AddMenuItem(idmGameOptions  , "Game Options",     'G', m_psubmenuEventSink);
 
         if (trekClient.MyMission() != NULL) {
-            m_pmenu->AddMenuItem(idmGameDetails  , "Game Details",     'I');
-        }
+            m_pmenu->AddMenuItem(idmGameDetails, "Game Details",   'I');
+			m_pmenu->AddMenuItem(idmPings  ,     "Player Pings",   'P');	// w0dk4 player-pings feature
+		}
 
         m_pmenu->AddMenuItem(idmHelp         , "Help"            , 'H'                     );
         if ((trekClient.MyMission() != NULL) || Slideshow::IsInSlideShow ())
-            m_pmenu->AddMenuItem(idmExitGame     , "Quit Mission"    , 'Q'                 );
+            m_pmenu->AddMenuItem(idmExitGame , "Quit Mission"    , 'Q'                 );
         m_pmenu->AddMenuItem(idmExitApp      , "Exit Allegiance" , 'X'                     );
 
         OpenPopup(m_pmenu, Point(10, 10));
@@ -4797,6 +4799,45 @@ public:
         );
     }
 
+	// w0dk4 player-pings feature
+	void ShowPlayerPings()
+    {
+		const ShipListIGC* ships = trekClient.m_pCoreIGC->GetShips();		
+
+		ZString str1;
+		str1 += "Connection Info of Players<p><p>";
+		ZString str2;
+		PlayerInfo* pPlayerInfo;
+		ShipID shipID;
+
+		for (ShipLinkIGC*   l = ships->first();
+                     (l != NULL);
+                     l = l->next())
+        {
+            IshipIGC*  s = l->data();
+
+			unsigned int m_ping;
+			unsigned int m_loss;
+			
+			if ((pPlayerInfo = (PlayerInfo*)s->GetPrivateData()) && (pPlayerInfo == trekClient.GetPlayerInfo())){
+				pPlayerInfo->GetConnectionData(&m_ping,&m_loss);
+				str1 += "Your Connection Info<p>Ping: " + ZString((int)m_ping) + "ms	Packet Loss: " + ZString((int)m_loss) + "%<p><p>";
+			} else if ((pPlayerInfo = (PlayerInfo*)s->GetPrivateData()) && pPlayerInfo->IsHuman()) {
+				pPlayerInfo->GetConnectionData(&m_ping,&m_loss);
+				str2 += "Ping: " + ZString((int)m_ping)
+				+ "ms	Packet Loss: " + ZString((int)m_loss) + "%		Name: " + ZString(pPlayerInfo->CharacterName()) + "<p>";
+			}
+		}
+
+        GetPopupContainer()->OpenPopup(
+			CreateMMLPopup(
+            GetModeler(),
+            (str1+str2),
+            true)
+			);
+    }
+    // end w0dk4 player-pings feature
+
     void OnMenuCommand(IMenuItem* pitem)
     {
         switch (pitem->GetID()) {
@@ -4813,6 +4854,18 @@ public:
                 CloseMenu();
                 OnGameState();
                 break;
+
+			// w0dk4 player-pings feature
+			case idmPings:
+				{
+					CloseMenu();
+					if (trekClient.m_fm.IsConnected()){
+						trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmPingDataReq, C, REQPINGDATA)
+						END_PFM_CREATE
+					}
+				}
+				break;
 
             case idmExitGame:
                 CloseMenu();
@@ -9472,6 +9525,22 @@ public:
                 }
             }
             break;
+
+			// w0dk4 player-pings feature
+			case FM_S_PINGDATA:
+			{
+				CASTPFM(pfmPingData, S, PINGDATA, pfm);
+				if(pfmPingData->shipID != -1){
+					PlayerInfo* playerInfo = trekClient.FindPlayer(pfmPingData->shipID);
+					if(playerInfo)
+						playerInfo->SetConnectionData(pfmPingData->ping,pfmPingData->loss);
+
+				} else {
+					if (pfmPingData->ping == 1)
+						TrekWindowImpl::ShowPlayerPings();
+				}
+			}
+			break;
 
             case FM_S_TREASURE_SETS:
             {
