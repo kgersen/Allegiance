@@ -9,6 +9,7 @@
 #include "soundbase.h"
 #include "soundutil.h"
 #include "soundtemplates.h"
+#include "regkey.h"
 
 namespace SoundEngine {
 
@@ -59,7 +60,33 @@ public:
         {
             // try to load it.
             ZAssert(!m_strFilename.IsEmpty());
-            if (FAILED(LoadWaveFile(m_pdata, m_strFilename)))
+
+			bool m_bConvertMono = false;	//AEM - Ability to avoid ToMono() call if
+											//		it is causing problems in Allegiance 7.4.07
+
+			//Start code to read MonoOff setting from registry, AEM 7.4.07
+			HKEY hKey;
+			DWORD dwResult = 0;
+
+			if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+					0, KEY_READ, &hKey))
+			{
+				DWORD dwSize = sizeof(dwResult);
+				DWORD dwType = REG_DWORD;
+
+				::RegQueryValueEx(hKey, "MonoOff", NULL, &dwType, (BYTE*)&dwResult, &dwSize);
+				::RegCloseKey(hKey);
+
+				if (dwType != REG_DWORD)
+					dwResult = 0;
+			}
+			
+			if ( dwResult == 1 )
+				m_bConvertMono = false;
+			else
+				m_bConvertMono = true;
+			//End mono check
+            if (FAILED(LoadWaveFile(m_pdata, m_strFilename, m_bConvertMono))) //AEM 7.4.07 sending new mono parameter
             {
                 if (ZFailed(CreateDummyPCMData(m_pdata)))
                     return E_FAIL;
