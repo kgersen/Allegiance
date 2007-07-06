@@ -3680,7 +3680,7 @@ public:
 			dMM = dVer.Middle(2,2);
 			dYY = dVer.Middle(0,2);
 			YY = atoi(dYY); 	YY = (YY/10)*8+(YY%10); 
-			MM = atoi(dMM); 	MM = (MM/10)*8+(MM%10); 
+			MM = atoi(dMM); 	MM = (MM/10)*8+(MM%10);  
 			DD = atoi(dDD); 	DD = (DD/10)*8+(DD%10);
 		}
 
@@ -3690,22 +3690,33 @@ public:
 		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
 		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
 		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
-
-		m_pmenu->AddMenuItem(0               , "------------------------");
+		//AEM, redesigned ESC menu 7/6/07
+		m_pmenu->AddMenuItem(0               , "");
+		m_pmenu->AddMenuItem(0				 , "HELP");
+		m_pmenu->AddMenuItem(0               , "--------------------------");
+		m_pmenu->AddMenuItem(idmHelp         , "Manual & Quick Reference"            , 'H'                     );	
+		m_pmenu->AddMenuItem(0               , "");
+		m_pmenu->AddMenuItem(0               , "OPTIONS");
+		m_pmenu->AddMenuItem(0               , "--------------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmSoundOptions , "Sound Options"   , 'S', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmGameOptions  , "Game Options",     'G', m_psubmenuEventSink);
+        m_pmenu->AddMenuItem(idmOptions      , "Graphics", 'O', m_psubmenuEventSink);
+        m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
+        m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
 
         if (trekClient.MyMission() != NULL) {
+			m_pmenu->AddMenuItem(0               , "");
+			m_pmenu->AddMenuItem(0               , "INFORMATION");
+			m_pmenu->AddMenuItem(0               , "--------------------------");
             m_pmenu->AddMenuItem(idmGameDetails, "Game Details",   'I');
 			m_pmenu->AddMenuItem(idmPings  ,     "Player Pings",   'P');	// w0dk4 player-pings feature
 		}
 
-        m_pmenu->AddMenuItem(idmHelp         , "Help"            , 'H'                     );
+        m_pmenu->AddMenuItem(0               , "");
+		m_pmenu->AddMenuItem(0               , "QUIT");
+		m_pmenu->AddMenuItem(0               , "--------------------------");
         if ((trekClient.MyMission() != NULL) || Slideshow::IsInSlideShow ())
-            m_pmenu->AddMenuItem(idmExitGame , "Quit Mission"    , 'Q'                 );
-        m_pmenu->AddMenuItem(idmExitApp      , "Exit Allegiance" , 'X'                     );
+            m_pmenu->AddMenuItem(idmExitGame , "Mission"    , 'Q'                 );
+        m_pmenu->AddMenuItem(idmExitApp      , "Allegiance" , 'X'                     );
 
         OpenPopup(m_pmenu, Point(10, 10));
     }
