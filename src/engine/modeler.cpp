@@ -2287,6 +2287,7 @@ public:
         pns->AddMember("green",              new ColorValue(Color::Green() ) );
         pns->AddMember("blue",               new ColorValue(Color::Blue()  ) );
         pns->AddMember("yellow",             new ColorValue(Color::Yellow()) );
+		pns->AddMember("cyan",               new ColorValue(Color::Cyan()  ) );
         pns->AddMember("pi",                 new Number(pi)                  );
 
         pns->AddMember("defaultFont",        

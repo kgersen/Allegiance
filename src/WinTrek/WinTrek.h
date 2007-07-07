@@ -125,7 +125,7 @@ class  WinTrekClient :
 
         bool                    m_bFilterChatsToAll;
         bool                    m_bFilterQuickComms;
-        bool                    m_bFilterLobbyChats;
+        DWORD                   m_dwFilterLobbyChats; //TheBored 25-JUN-07: Changed from bool to dword (Lobby filter patch)
 		DWORD					m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
         //
@@ -194,8 +194,8 @@ class  WinTrekClient :
         void              FilterChatsToAll(bool bFilterChatsToAll) { m_bFilterChatsToAll = bFilterChatsToAll; };
         bool              FilterQuickComms() { return m_bFilterQuickComms; };
         void              FilterQuickComms(bool bFilterQuickComms) { m_bFilterQuickComms = bFilterQuickComms; };
-        bool              FilterLobbyChats() { return m_bFilterLobbyChats; };
-        void              FilterLobbyChats(bool bFilterLobbyChats) { m_bFilterLobbyChats = bFilterLobbyChats; };
+        DWORD             FilterLobbyChats() { return m_dwFilterLobbyChats; }; //TheBored 25-JUN-07: Changed from bool to dword (Lobby filter patch)
+        void              FilterLobbyChats(DWORD dwFilterLobbyChats) { m_dwFilterLobbyChats = dwFilterLobbyChats; }; //TheBored 25-JUN-07: Changed from bool to dword (Lobby filter patch)
 		DWORD             MaxTextureSize() {return m_dwMaxTextureSize; };// yp Your_Persona August 2 2006 : MaxTextureSize Patch
         void              MaxTextureSize(DWORD bMaxTextureSize) {m_dwMaxTextureSize = bMaxTextureSize; };// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 /*

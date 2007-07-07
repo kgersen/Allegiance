@@ -2275,7 +2275,7 @@ WinTrekClient::WinTrekClient(void)
     m_strDisconnectReason(""),
     m_bFilterChatsToAll(false),
     m_bFilterQuickComms(false),
-    m_bFilterLobbyChats(false)
+    m_dwFilterLobbyChats(3) //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
 {
     // restore the CD Key from the registry
 
@@ -4029,11 +4029,17 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 
     if (pshipSender)
     {
-        PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
-        if (ppi->GetMute() 
+		//TheBored 25-JUN-07: Checking to see if admin is PMing the user. If so, bypass the filter.
+		bool bPrivilegedUserPM = false;
+		PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
+        if((ctRecipient == CHAT_INDIVIDUAL) && (ppi->PrivilegedUser()))
+		{
+			bPrivilegedUserPM = true;
+		}
+		if (ppi->GetMute() 
             || (m_bFilterChatsToAll && ctRecipient == CHAT_EVERYONE && trekClient.IsInGame())
-//            || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
-            || (m_bFilterLobbyChats && ppi->SideID() == SIDE_TEAMLOBBY && trekClient.IsInGame()))
+//          || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
+            || ((((m_dwFilterLobbyChats == 1) && (ctRecipient != CHAT_INDIVIDUAL)) || (m_dwFilterLobbyChats == 2)) && (ppi->SideID() == SIDE_TEAMLOBBY) && (trekClient.IsInGame()) && (!bPrivilegedUserPM))) //TheBored 25-JUN-07: Changed conditions for the lobby mute options.
             return;
         bIsLeader = ppi->IsTeamLeader();
     }

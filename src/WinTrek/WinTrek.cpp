@@ -2884,8 +2884,10 @@ public:
             ToggleFilterChatsToAll();
         if (!LoadPreference("FilterQuickComms", TRUE))
             ToggleFilterQuickComms();
-        if (!LoadPreference("FilterLobbyChats", TRUE))
-            ToggleFilterLobbyChats();
+        //TheBored 25-JUN-07: Commented out original code. Replaced with with different load values. 
+		//if (!LoadPreference("FilterLobbyChats", TRUE))
+        //    ToggleFilterLobbyChats();
+		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 1));
         if (!LoadPreference("LinearControlResponse", TRUE))
             ToggleLinearControls();
         if (!LoadPreference("Environment", TRUE))
@@ -3997,20 +3999,23 @@ public:
             m_pitemFilterQuickComms->SetString(GetFilterQuickCommsMenuString());
         }
     }
-
-    void ToggleFilterLobbyChats()
+	//TheBored 25-JUN-07: Altered function allowing for 3 options. 1 = Filter Lobby, 2 = Filter Lobby and PMs, 3 = Dont Filter Anything
+    void ToggleFilterLobbyChats(DWORD dwLobbyChatSetting)
     {
-        if (trekClient.FilterLobbyChats())
-        {
-            trekClient.FilterLobbyChats(false);
-            SavePreference("FilterLobbyChats", FALSE);
-        }
-        else
-        {
-            trekClient.FilterLobbyChats(true);
-            SavePreference("FilterLobbyChats", TRUE);
-        }
-
+		if (dwLobbyChatSetting > 3){dwLobbyChatSetting = 1;}
+		switch (dwLobbyChatSetting)
+		{
+			case 1:
+				trekClient.FilterLobbyChats(dwLobbyChatSetting);
+				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
+				break;
+			case 2:
+				trekClient.FilterLobbyChats(dwLobbyChatSetting);
+				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
+			case 3:
+				trekClient.FilterLobbyChats(dwLobbyChatSetting);
+				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
+		}
         if (m_pitemFilterLobbyChats != NULL) {
             m_pitemFilterLobbyChats->SetString(GetFilterLobbyChatsMenuString());
         }
@@ -4620,7 +4625,22 @@ public:
 
     ZString GetFilterLobbyChatsMenuString()
     {
-        return trekClient.FilterLobbyChats() ? "Filter Chats Sent From Lobby" : "Don't Filter Chats Sent From Lobby";
+		//TheBored 25-JUN-07: Added a new option so the user can choose if PMs are filtered.
+        switch (trekClient.FilterLobbyChats())
+        {
+            case 1:
+                return "Filter Chats Sent From Lobby";
+                break;
+            case 2:
+                return "Filter Chats Sent From Lobby Including PMs";
+                break;
+            case 3:
+                return "Don't Filter Chats Sent From Lobby";
+                break;
+            default:
+                return "Default Case"; //TB: Shouldn't happen, but left in for testing.
+                break;
+        }
     }
 
     ZString GetLinearControlsMenuString()
@@ -4816,10 +4836,14 @@ public:
 		const ShipListIGC* ships = trekClient.m_pCoreIGC->GetShips();		
 
 		ZString str1;
-		str1 += "Connection Info of Players<p><p>";
+		str1 += "<Color|yellow><Font|medBoldVerdana>Connection Info of Players<Font|smallFont><Color|white><p><p>";
 		ZString str2;
 		PlayerInfo* pPlayerInfo;
 		ShipID shipID;
+
+		int iAveragePing = 0;
+		int iAverageLoss = 0;
+		int iShips = 0;
 
 		for (ShipLinkIGC*   l = ships->first();
                      (l != NULL);
@@ -4832,12 +4856,94 @@ public:
 			
 			if ((pPlayerInfo = (PlayerInfo*)s->GetPrivateData()) && (pPlayerInfo == trekClient.GetPlayerInfo())){
 				pPlayerInfo->GetConnectionData(&m_ping,&m_loss);
-				str1 += "Your Connection Info<p>Ping: " + ZString((int)m_ping) + "ms	Packet Loss: " + ZString((int)m_loss) + "%<p><p>";
+
+				if(m_ping > 1000)
+					m_ping = 999;
+				if(m_ping < 10)
+					m_ping = 10;
+
+				if(m_loss > 100)
+					m_loss = 99;
+
+				iAveragePing += m_ping;
+				iAverageLoss += m_loss;
+				iShips++;
+
+				ZString formatPing;
+				if(m_ping < 150)
+					formatPing = "<Color|green>";
+				else if(m_ping < 300)
+					formatPing = "<Color|yellow>";
+				else
+					formatPing = "<Color|red>";
+
+				ZString formatLoss;
+				if(m_loss < 5)
+					formatLoss = "<Color|green>";
+				else if(m_loss < 15)
+					formatLoss = "<Color|yellow>";
+				else
+					formatLoss = "<Color|red>";
+
+				str1 += "<Color|cyan>Your Connection Info<Color|white><p>Ping: " + formatPing + ZString((int)m_ping) + "ms<Color|white>	Packet Loss: " + formatLoss + ZString((int)m_loss) + "%<Color|white><p><p>";
+
 			} else if ((pPlayerInfo = (PlayerInfo*)s->GetPrivateData()) && pPlayerInfo->IsHuman()) {
 				pPlayerInfo->GetConnectionData(&m_ping,&m_loss);
-				str2 += "Ping: " + ZString((int)m_ping)
-				+ "ms	Packet Loss: " + ZString((int)m_loss) + "%		Name: " + ZString(pPlayerInfo->CharacterName()) + "<p>";
+
+				if(m_ping > 1000)
+					m_ping = 999;
+				if(m_ping < 10)
+					m_ping = 10;
+
+				if(m_loss > 100)
+					m_loss = 99;
+
+				iAveragePing += m_ping;
+				iAverageLoss += m_loss;
+				iShips++;
+
+				ZString formatPing;
+				if(m_ping < 150)
+					formatPing = "<Color|green>";
+				else if(m_ping < 300)
+					formatPing = "<Color|yellow>";
+				else
+					formatPing = "<Color|red>";
+
+				ZString formatLoss;
+				if(m_loss < 5)
+					formatLoss = "<Color|green>";
+				else if(m_loss < 15)
+					formatLoss = "<Color|yellow>";
+				else
+					formatLoss = "<Color|red>";
+
+				str2 += "Ping: " + formatPing + ((m_ping < 100) ? ZString("0") : ZString("")) + ZString((int)m_ping)
+					+ "ms<Color|white>	Packet Loss: " + formatLoss + ((m_loss < 10) ? ZString("0") : ZString("")) + ZString((int)m_loss) + "%<Color|white>		Name: <Color|cyan>" + ZString(pPlayerInfo->CharacterName()) + "<Color|white><p>";
 			}
+		}
+
+		if(iShips > 0) {
+			iAveragePing = iAveragePing/iShips;
+			iAverageLoss = iAverageLoss/iShips;
+
+			ZString formatPing;
+				if(iAveragePing < 150)
+					formatPing = "<Color|green>";
+				else if(iAveragePing < 300)
+					formatPing = "<Color|yellow>";
+				else
+					formatPing = "<Color|red>";
+
+				ZString formatLoss;
+				if(iAverageLoss < 5)
+					formatLoss = "<Color|green>";
+				else if(iAverageLoss < 15)
+					formatLoss = "<Color|yellow>";
+				else
+					formatLoss = "<Color|red>";
+
+			str2 += "<p>Average Ping: " + formatPing + ZString(iAveragePing) + "ms<Color|white>	Average Packet Loss: " + formatLoss + ZString(iAverageLoss) + "%";			
 		}
 
         GetPopupContainer()->OpenPopup(
@@ -4930,7 +5036,8 @@ public:
                 break;
 
             case idmFilterLobbyChats:
-                ToggleFilterLobbyChats();
+                //TheBored 25-JUN-07: Lobby filter change.
+				ToggleFilterLobbyChats(trekClient.FilterLobbyChats() + 1);
                 break;
 
             case idmToggleLinearControls:

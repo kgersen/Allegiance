@@ -339,15 +339,17 @@ public:
                                                       return GetPersistScore().GetRank();
                                                     }
 	// mmf added member function for use for things like circumventing rank restrictions
+	//TheBored 25-JUN-07: Edited function to be case insensitive (@HQ == @hq)
 	bool            PrivilegedUser()            
     {
 	size_t nameLen;
 	nameLen=strlen(m_fmPlayerInfo.CharacterName);
-
 	if ( (nameLen>2) && ( ((strncmp(m_fmPlayerInfo.CharacterName,"?",1))==0) || ((strncmp(m_fmPlayerInfo.CharacterName,"+",1))==0) ) ) return true;
-	if ( (nameLen>4) && ( (strncmp(m_fmPlayerInfo.CharacterName+(nameLen-3),"@HQ",3))==0 ) ) return true;
-	if ( (nameLen>4) && ( (strncmp(m_fmPlayerInfo.CharacterName+(nameLen-4),"@Dev",4))==0 ) ) return true;
-	if ( (nameLen>6) && ( (strncmp(m_fmPlayerInfo.CharacterName+(nameLen-6),"@Alleg",6))==0 ) ) return true;
+	if ( (nameLen>4) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-3),"@Hq"))==0 ) ) return true;
+	if ( (nameLen>4) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-4),"@Dev"))==0 ) ) return true;
+	if ( (nameLen>6) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-6),"@Alleg"))==0 ) ) return true;
+	//TheBored 25-JUN-07: Added @Zone
+	if ( (nameLen>5) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-5),"@Zone"))==0 ) ) return true;
 
     return false;
     }
