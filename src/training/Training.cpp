@@ -17,6 +17,7 @@
 #include    "Mission4.h"
 #include    "Mission5.h"
 #include    "Mission6.h"
+#include	"Mission8.h" //TheBored 06-JUL-07: Adding nanite mission.
 
 namespace Training
 {
@@ -74,6 +75,11 @@ namespace Training
             case c_TM_6_Practice_Arena:
                 g_pMission = new Mission6;
                 break;
+			//TheBored 06-JUL-07: adding nanite mission
+			case c_TM_8_Nanite:
+				g_pMission = new Mission8;
+				break;
+			//End TB
             case c_TM_7_Live:
                 g_bIsMission7 = true;
                 // fall through

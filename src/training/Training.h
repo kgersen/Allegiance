@@ -26,7 +26,8 @@ namespace Training
         c_TM_4_Enemy_Engagement = 4,
         c_TM_5_Command_View     = 5,
         c_TM_6_Practice_Arena   = 6,
-        c_TM_7_Live             = 7
+        c_TM_7_Live             = 7,
+		c_TM_8_Nanite			= 8 //TheBored 06-JUL-07: adding nanite mission
     };
 
     //------------------------------------------------------------------------------

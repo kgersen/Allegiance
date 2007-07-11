@@ -2234,7 +2234,7 @@ public:
                 {
                     extern  TRef<ModifiableNumber>  g_pnumberMissionNumber;
                     int     iMission = static_cast<int> (g_pnumberMissionNumber->GetValue ());
-                    ZAssert ((iMission >= 1) && (iMission <= 6));
+                    ZAssert ((iMission >= 1) && (iMission <= 8)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
                     char*   strNamespace[] = 
                     {
                         "",
@@ -2244,6 +2244,8 @@ public:
                         "tm_4_enemy_engagement",
                         "tm_5_command_view",
                         "tm_6_practice_arena",
+						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
+						"tm_8_nanite", //TheBored 06-JUL-07: Mish #8 pregame panels. 
                     };
 
                     SetScreen (CreateTrainingSlideshow (GetModeler (), strNamespace[iMission], iMission));
@@ -2254,7 +2256,7 @@ public:
                 {
                     extern  TRef<ModifiableNumber>  g_pnumberMissionNumber;
                     int     iMission = static_cast<int> (g_pnumberMissionNumber->GetValue ());
-                    ZAssert ((iMission >= 1) && (iMission <= 6));
+                    ZAssert ((iMission >= 1) && (iMission <= 8)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
                     char*   strNamespace[] = 
                     {
                         "",
@@ -2264,6 +2266,8 @@ public:
                         "tm_4_enemy_engagement_post",
                         "tm_5_command_view_post",
                         "tm_6_practice_arena_post",
+						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
+						"tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
                     };
                     SetScreen (CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
                     break;

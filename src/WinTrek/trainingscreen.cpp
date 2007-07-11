@@ -32,6 +32,7 @@ private:
     TRef<ButtonPane>                    m_pbuttonTrainMission5;
     TRef<ButtonPane>                    m_pbuttonTrainMission6;
     TRef<ButtonPane>                    m_pbuttonTrainMission7;
+	TRef<ButtonPane>                    m_pbuttonTrainMission8; //TheBored 06-JUL-07: nanite mission
     TRef<ButtonPane>                    m_pbuttonTrain;
 
     static  IAdminGamesPtr              m_spAdminGamesPtr;
@@ -151,6 +152,7 @@ public:
         CastTo(m_pbuttonTrainMission5,      pns->FindMember("trainMission5ButtonPane"   ));
         CastTo(m_pbuttonTrainMission6,      pns->FindMember("trainMission6ButtonPane"   ));
         CastTo(m_pbuttonTrainMission7,      pns->FindMember("trainMission7ButtonPane"   ));
+		CastTo(m_pbuttonTrainMission8,      pns->FindMember("trainMission8ButtonPane"   )); //TheBored 06-JUL-07: nanite mission
         CastTo(m_pbuttonTrain,              pns->FindMember("trainButtonPane"           ));
 
         m_pTrainLivePopup = new TrainLiveDialogPopup(pns, this);
@@ -171,6 +173,7 @@ public:
         AddEventTarget(&TrainingScreen::OnButtonTrainMission5, m_pbuttonTrainMission5->GetEventSource());
         AddEventTarget(&TrainingScreen::OnButtonTrainMission6, m_pbuttonTrainMission6->GetEventSource());
         AddEventTarget(&TrainingScreen::OnButtonTrainMission7, m_pbuttonTrainMission7->GetEventSource());
+		AddEventTarget(&TrainingScreen::OnButtonTrainMission8, m_pbuttonTrainMission8->GetEventSource()); //TheBored 06-JUL-07: nanite mission
 
         //
         // buttons
@@ -183,6 +186,7 @@ public:
         AddEventTarget(&TrainingScreen::OnButtonTrain, m_pbuttonTrainMission5->GetDoubleClickEventSource());
         AddEventTarget(&TrainingScreen::OnButtonTrain, m_pbuttonTrainMission6->GetDoubleClickEventSource());
         AddEventTarget(&TrainingScreen::OnButtonTrain, m_pbuttonTrainMission7->GetDoubleClickEventSource());
+		AddEventTarget(&TrainingScreen::OnButtonTrain, m_pbuttonTrainMission8->GetDoubleClickEventSource()); //TheBored 06-JUL-07: nanite mission
 
         // hilite the current mission
         switch (m_iMissionNext)
@@ -206,6 +210,11 @@ public:
             case Training::c_TM_6_Practice_Arena:
                 m_pbuttonTrainMission6->SetChecked (true);
                 break;
+			//TheBored 06-JUL-07: nanite mission
+			case Training::c_TM_8_Nanite:
+                m_pbuttonTrainMission8->SetChecked (true);
+                break;
+			//End TB
             case Training::c_TM_7_Live:
             default:
                 m_pbuttonTrainMission7->SetChecked (true);
@@ -251,8 +260,8 @@ public:
         if (iMission == m_iMissionNext)
         {
             m_iMissionNext++;
-            if (m_iMissionNext > Training::c_TM_6_Practice_Arena)
-                m_iMissionNext = Training::c_TM_6_Practice_Arena;
+            if (m_iMissionNext > Training::c_TM_8_Nanite) //TB: Pretty sure this just doesnt let you go past the last mish, in this case that is the new one.
+                m_iMissionNext = Training::c_TM_8_Nanite;
         }
 
         // check to see which mission this is
@@ -266,6 +275,7 @@ public:
             case Training::c_TM_4_Enemy_Engagement:
             case Training::c_TM_5_Command_View:
             case Training::c_TM_6_Practice_Arena:
+			case Training::c_TM_8_Nanite: //TheBored 06-JUL-07: nanite mission
                 // note that the training slideshow can get the mission number from the global
                 // value when subsequently launching.
                 GetWindow ()->screen (ScreenIDTrainSlideshow);
@@ -276,7 +286,7 @@ public:
         }
         return true;
     }
-
+	//TheBored 06-JUL-07: nanite mission (Each OnButtonTrainMission#() was edited to add #8)
     bool OnButtonTrainMission1()
     {
         g_pnumberMissionNumber->SetValue (Training::c_TM_1_Introduction);
@@ -287,6 +297,7 @@ public:
         m_pbuttonTrainMission5->SetChecked (false);
         m_pbuttonTrainMission6->SetChecked (false);
         m_pbuttonTrainMission7->SetChecked (false);
+		m_pbuttonTrainMission8->SetChecked (false);
         m_pbuttonTrain->SetEnabled (true);
         m_pbuttonTrain->SetChecked (true);
         return true;
@@ -302,6 +313,7 @@ public:
         m_pbuttonTrainMission5->SetChecked (false);
         m_pbuttonTrainMission6->SetChecked (false);
         m_pbuttonTrainMission7->SetChecked (false);
+		m_pbuttonTrainMission8->SetChecked (false);
         m_pbuttonTrain->SetEnabled (true);
         m_pbuttonTrain->SetChecked (true);
         return true;
@@ -317,6 +329,7 @@ public:
         m_pbuttonTrainMission5->SetChecked (false);
         m_pbuttonTrainMission6->SetChecked (false);
         m_pbuttonTrainMission7->SetChecked (false);
+		m_pbuttonTrainMission8->SetChecked (false);
         m_pbuttonTrain->SetEnabled (true);
         m_pbuttonTrain->SetChecked (true);
         return true;
@@ -332,6 +345,7 @@ public:
         m_pbuttonTrainMission5->SetChecked (false);
         m_pbuttonTrainMission6->SetChecked (false);
         m_pbuttonTrainMission7->SetChecked (false);
+		m_pbuttonTrainMission8->SetChecked (false);
         m_pbuttonTrain->SetEnabled (true);
         m_pbuttonTrain->SetChecked (true);
         return true;
@@ -347,6 +361,7 @@ public:
         m_pbuttonTrainMission5->SetChecked (true);
         m_pbuttonTrainMission6->SetChecked (false);
         m_pbuttonTrainMission7->SetChecked (false);
+		m_pbuttonTrainMission8->SetChecked (false);
         m_pbuttonTrain->SetEnabled (true);
         m_pbuttonTrain->SetChecked (true);
         return true;
@@ -362,6 +377,7 @@ public:
         m_pbuttonTrainMission5->SetChecked (false);
         m_pbuttonTrainMission6->SetChecked (true);
         m_pbuttonTrainMission7->SetChecked (false);
+		m_pbuttonTrainMission8->SetChecked (false);
         m_pbuttonTrain->SetEnabled (true);
         m_pbuttonTrain->SetChecked (true);
         return true;
@@ -377,10 +393,28 @@ public:
         m_pbuttonTrainMission5->SetChecked (false);
         m_pbuttonTrainMission6->SetChecked (false);
         m_pbuttonTrainMission7->SetChecked (true);
+		m_pbuttonTrainMission8->SetChecked (false);
         m_pbuttonTrain->SetEnabled (true);
         m_pbuttonTrain->SetChecked (true);
         return true;
     }
+	//TheBored 06-JUL-07: #8 added
+	bool OnButtonTrainMission8()
+    {
+        g_pnumberMissionNumber->SetValue (Training::c_TM_8_Nanite);
+        m_pbuttonTrainMission1->SetChecked (false);
+        m_pbuttonTrainMission2->SetChecked (false);
+        m_pbuttonTrainMission3->SetChecked (false);
+        m_pbuttonTrainMission4->SetChecked (false);
+        m_pbuttonTrainMission5->SetChecked (false);
+        m_pbuttonTrainMission6->SetChecked (false);
+        m_pbuttonTrainMission7->SetChecked (false);
+		m_pbuttonTrainMission8->SetChecked (true);
+        m_pbuttonTrain->SetEnabled (true);
+        m_pbuttonTrain->SetChecked (true);
+        return true;
+    }
+	//End TB
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -773,4 +807,6 @@ void    KillTrainingStandaloneGame (void)
 {
     TrainingScreen::KillStandaloneGame ();
 }
+
+
 

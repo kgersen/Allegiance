@@ -1561,8 +1561,16 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 bool    bDamage = true;
                 bool    bRunAway = true;
                 if (m_pilotType == c_ptWingman)
-                {
-                    bRunAway = m_fraction < m_fractionLastOrder;
+				{
+					// bahdohday&AEM 7.09.07 Added check to allow certain wingmen drones to never run away: if they have a nan in slot 1 or are have a station as their target
+					if ( (m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0 ) || ( m_commandTargets[c_cmdAccepted] && (m_commandTargets[c_cmdAccepted]->GetObjectType() == OT_station) ) )
+					{
+						bRunAway = false; 
+					} 
+					else 
+					{
+						bRunAway = m_fraction < m_fractionLastOrder; //previously just this line was here
+					}
                 }
                 else if ((m_pilotType == c_ptBuilder) || (m_pilotType == c_ptLayer))
                 {
@@ -1813,7 +1821,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
         //Special case up front: miners mine
         if (m_pilotType == c_ptMiner)
-        {
+		{
             if ((m_stateM & wantsToMineMaskIGC) != 0)
             {
                 IclusterIGC*    pcluster = GetCluster();
@@ -2071,7 +2079,8 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
             if (((m_pilotType == c_ptWingman) || (m_pilotType == c_ptCheatPlayer)) &&
                 (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster()))
             {
-                if ((m_commandIDs[c_cmdPlan] == c_cidAttack) && m_mountedWeapons[0])
+				//AEM 7.9.07 allow wingman to repair if they are equipped with a nan
+                if ( m_commandIDs[c_cmdPlan] == c_cidAttack || ( (m_commandIDs[c_cmdPlan] == c_cidRepair) && m_mountedWeapons[0]->GetProjectileType()->GetPower()<0.0) )
                 {
                     //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
                     float   fShootSkill = 0.75f;
@@ -2086,12 +2095,22 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                              &direction,
                                              fShootSkill);
 
-
                     float   da = turnToFace(direction, dT, this, &m_controls, fTurnSkill);
 
                     // make the drone always fly hard - throttle range 0.5 to 1.0, depending on how they are
                     // angled to their target
                     m_controls.jsValues[c_axisThrottle] = 0.5f + ((pi - da) / (2.0f * pi));
+					
+					/*  AEM - 7.10.07 New Wingman Repair functionality could use improvement.  Attempting to tweak it but have not come up with anything I'm happy with yet.
+					//if (m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0]->GetShip()->GetHullType()->GetMaxEnergy() > m_mountedWeapons[0]->GetShip()->GetEnergy()  )
+					if (m_commandIDs[c_cmdPlan] == c_cidRepair )
+					{
+						m_controls.jsValues[c_axisThrottle] = ((pi - da) / (1.0f * pi));
+						if ( m_mountedWeapons[0]->fFiringBurst() || m_mountedWeapons[0]->fFiringShot() )
+							if (GetVelocity().Length() > m_commandTargets[c_cmdPlan]->GetVelocity().Length())
+								m_controls.jsValues[c_axisThrottle] = 0.2f;
+					}
+					*/
 
                     const float c_fMaxOffAngle = 0.10f;
                     float lifespan = m_mountedWeapons[0]->GetLifespan();
