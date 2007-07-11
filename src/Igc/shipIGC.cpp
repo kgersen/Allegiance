@@ -1600,10 +1600,15 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 else
                 {
                     // assert (m_pilotType == c_ptMiner);
-					// mmf replaced assert with log msg
+					// we are expecting a miner at this stage
+					// mmf replaced assert with log msg to track down what is triggering it
+					//     recent logs (07/04/2007) show that the pilot type is 1 and it is a Recon or Rescue ship
+					//     so don't log if it is a 1 now
 					if ( ! (m_pilotType == c_ptMiner) ) {
-						debugf ("mmf shipIGC.cpp assert (m_pilotType == c_ptMiner), m_pilotType = %d\n",
-					    m_pilotType);
+						if (m_pilotType != 1) {
+						  debugf ("mmf shipIGC.cpp assert (m_pilotType == c_ptMiner), m_pilotType = %d\n",
+					              m_pilotType);
+						}
 					}
                     if (m_fraction == 1.0f)
                     {

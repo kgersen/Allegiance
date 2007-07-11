@@ -5373,15 +5373,18 @@ public:
             Set3DAccelerationImportant(true);
             SetSizeable(true);
 
+			//mmf comment this all out, as per aem setting m_bCombatSize to true is
+			//    what triggers the res check which often fails even when the mode is 
+			//    supported.  This results in the screen size being reset to 800x600
 			//aem res reset fix, previously just m_bCombatSize=true;
-			if ( (m_sizeCombatFullscreen.X()==640 && m_sizeCombatFullscreen.Y()==480) ||
-			(m_sizeCombatFullscreen.X()==800 && m_sizeCombatFullscreen.Y()==600) ||
-			(m_sizeCombatFullscreen.X()==1024 && m_sizeCombatFullscreen.Y()==768) ||
-			(m_sizeCombatFullscreen.X()==1280 && m_sizeCombatFullscreen.Y()==1024) ||
-			(m_sizeCombatFullscreen.X()==1600 && m_sizeCombatFullscreen.Y()==1200) )
-			{
-				m_bCombatSize = true;
-			}
+			//if ( (m_sizeCombatFullscreen.X()==640 && m_sizeCombatFullscreen.Y()==480) ||
+			//(m_sizeCombatFullscreen.X()==800 && m_sizeCombatFullscreen.Y()==600) ||
+			//(m_sizeCombatFullscreen.X()==1024 && m_sizeCombatFullscreen.Y()==768) ||
+			//(m_sizeCombatFullscreen.X()==1280 && m_sizeCombatFullscreen.Y()==1024) ||
+			//(m_sizeCombatFullscreen.X()==1600 && m_sizeCombatFullscreen.Y()==1200) )
+			//{
+			//	m_bCombatSize = true;
+			//}
         }
     }
 
