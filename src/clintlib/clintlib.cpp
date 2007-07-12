@@ -3127,6 +3127,7 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
                 dataMine.p0 = launchPosition;
                 dataMine.exportF = false;
 
+				dataMine.psideLauncher = pShip->GetSide(); //bahdohday (commit by AEM 7.12.07) Fix to allow mines to be dropped in training.
                 dataMine.pshipLauncher = pShip;
                 dataMine.pcluster = pCluster;
 
