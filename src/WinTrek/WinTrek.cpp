@@ -5342,7 +5342,12 @@ public:
     {
         if (m_bCombatSize) {
             m_sizeCombat           = GetWindowedSize();
-            m_sizeCombatFullscreen = GetFullscreenSize();
+			//	AEM 7.14.07 - This leads to frequent resolution resets, removing this..
+            //m_sizeCombatFullscreen = GetFullscreenSize(); 
+			//	and the following two lines have replaced the old GetFullscreenSize() call
+			m_sizeCombatFullscreen.SetX(GetScreenRectValue()->GetValue().Size().X());
+			m_sizeCombatFullscreen.SetY(GetScreenRectValue()->GetValue().Size().Y());
+			//	end new code
             m_bCombatSize = false;
         }
     }
@@ -5377,17 +5382,16 @@ public:
             Set3DAccelerationImportant(true);
             SetSizeable(true);
 
-			//mmf comment this all out, as per aem setting m_bCombatSize to true is
-			//    what triggers the res check which often fails even when the mode is 
-			//    supported.  This results in the screen size being reset to 800x600
-			//aem res reset fix, previously just m_bCombatSize=true;
+			//aem res reset fix, originally just m_bCombatSize=true; 
+			//fix removed by AEM 7.14.07, we are now disabling the fullscreen resolution check
+
 			//if ( (m_sizeCombatFullscreen.X()==640 && m_sizeCombatFullscreen.Y()==480) ||
 			//(m_sizeCombatFullscreen.X()==800 && m_sizeCombatFullscreen.Y()==600) ||
 			//(m_sizeCombatFullscreen.X()==1024 && m_sizeCombatFullscreen.Y()==768) ||
 			//(m_sizeCombatFullscreen.X()==1280 && m_sizeCombatFullscreen.Y()==1024) ||
 			//(m_sizeCombatFullscreen.X()==1600 && m_sizeCombatFullscreen.Y()==1200) )
 			//{
-			//	m_bCombatSize = true;
+			m_bCombatSize = true;
 			//}
         }
     }
