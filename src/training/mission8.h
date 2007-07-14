@@ -49,8 +49,7 @@ namespace Training
 					ImodelIGC*              pShip;
 					ImissionIGC*			pMission;
 					ImodelIGC*				pStation;
-					ShipID					bomberShipID;
-					ShipID					nanShipID;
+
     };
 }
 

@@ -26,11 +26,13 @@ namespace Training
     {
         public:
                     /* void */          GetShipIsStoppedCondition (const TRef<IshipIGC>& ship);
+					/* void */          GetShipIsStoppedCondition (const ShipID shipID);
             virtual /* void */          ~GetShipIsStoppedCondition (void);
             virtual bool                Evaluate (void);
 
         protected:
                     TRef<IshipIGC>      m_ship;
+					ShipID				m_shipID;
     };
 
     //------------------------------------------------------------------------------
