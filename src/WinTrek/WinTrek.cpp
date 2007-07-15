@@ -2149,6 +2149,8 @@ public:
                     // Switch to combat resolution
                     //
 
+					SetFullscreenSize(m_sizeCombatFullscreen);  //AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
+
                     SetFocus();
                     m_frameID = 0;
                     m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
@@ -3101,7 +3103,8 @@ public:
         // Save the screen resolution
         //
 
-        SaveCombatSize();
+		if ( m_screen == ScreenIDCombat )  //AEM 7.15.07 Don't want to end up saving a non combat resolution (800x600)
+			SaveCombatSize();
 
         SavePreference("CombatXSize", m_sizeCombat.X());
         SavePreference("CombatYSize", m_sizeCombat.Y());
@@ -5342,12 +5345,7 @@ public:
     {
         if (m_bCombatSize) {
             m_sizeCombat           = GetWindowedSize();
-			//	AEM 7.14.07 - This leads to frequent resolution resets, removing this..
-            //m_sizeCombatFullscreen = GetFullscreenSize(); 
-			//	and the following two lines have replaced the old GetFullscreenSize() call
-			m_sizeCombatFullscreen.SetX(GetScreenRectValue()->GetValue().Size().X());
-			m_sizeCombatFullscreen.SetY(GetScreenRectValue()->GetValue().Size().Y());
-			//	end new code
+            m_sizeCombatFullscreen = GetFullscreenSize(); 
             m_bCombatSize = false;
         }
     }
