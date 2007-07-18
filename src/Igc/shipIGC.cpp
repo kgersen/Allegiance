@@ -2079,8 +2079,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
             if (((m_pilotType == c_ptWingman) || (m_pilotType == c_ptCheatPlayer)) &&
                 (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster()))
             {
-				//AEM 7.9.07 allow wingman to repair if they are equipped with a nan
-                if ( m_commandIDs[c_cmdPlan] == c_cidAttack || ( (m_commandIDs[c_cmdPlan] == c_cidRepair) && m_mountedWeapons[0]->GetProjectileType()->GetPower()<0.0) )
+                if ( m_commandIDs[c_cmdPlan] == c_cidAttack )
                 {
                     //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
                     float   fShootSkill = 0.75f;
@@ -2100,17 +2099,6 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     // make the drone always fly hard - throttle range 0.5 to 1.0, depending on how they are
                     // angled to their target
                     m_controls.jsValues[c_axisThrottle] = 0.5f + ((pi - da) / (2.0f * pi));
-					
-					/*  AEM - 7.10.07 New Wingman Repair functionality could use improvement.  Attempting to tweak it but have not come up with anything I'm happy with yet.
-					//if (m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0]->GetShip()->GetHullType()->GetMaxEnergy() > m_mountedWeapons[0]->GetShip()->GetEnergy()  )
-					if (m_commandIDs[c_cmdPlan] == c_cidRepair )
-					{
-						m_controls.jsValues[c_axisThrottle] = ((pi - da) / (1.0f * pi));
-						if ( m_mountedWeapons[0]->fFiringBurst() || m_mountedWeapons[0]->fFiringShot() )
-							if (GetVelocity().Length() > m_commandTargets[c_cmdPlan]->GetVelocity().Length())
-								m_controls.jsValues[c_axisThrottle] = 0.2f;
-					}
-					*/
 
                     const float c_fMaxOffAngle = 0.10f;
                     float lifespan = m_mountedWeapons[0]->GetLifespan();
@@ -2136,6 +2124,56 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     }
                     */
 
+                    SetStateBits(~selectedWeaponMaskIGC,
+                                 ((da <= c_fMaxOffAngle) && (t <= lifespan * 0.9f))
+                                 ? (state | allWeaponsIGC)
+                                 : state);
+
+                    return;
+                }
+				//AEM 7.9.07 allow wingman to repair if they are equipped with a nan
+                else if ( m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0]->GetProjectileType()->GetPower()<0.0 )
+                {
+                    //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
+                    float   fShootSkill = 1.00f;
+                    float   fTurnSkill = 1.00f;
+                    int     state = 0;
+                    bool    bDodge = Dodge(this, NULL, &state);
+
+                    Vector  direction;
+                    float   t = solveForLead(this,
+                                             m_commandTargets[c_cmdPlan],
+                                             m_mountedWeapons[0],
+                                             &direction,
+                                             fShootSkill);
+
+                    float   da = turnToFace(direction, dT, this, &m_controls, fTurnSkill);
+
+                    // make the drone always fly hard - throttle range 0.5 to 1.0, depending on how they are
+                    // angled to their target
+                    m_controls.jsValues[c_axisThrottle] = 0.5f + ((pi - da) / (2.0f * pi));
+					
+                    const float c_fMaxOffAngle = 0.10f;
+                    float lifespan = m_mountedWeapons[0]->GetLifespan();
+
+                    if ((!bDodge) && (t <= lifespan * 0.25f))
+                    {
+                        //We are close and not dodging anything so ...
+                        //strafe
+                        state = leftButtonIGC;
+                        if (da < pi * 0.5f)
+                        {
+                            if (da > c_fMaxOffAngle)
+                            {
+                                //too close ... back off
+                                state |= backwardButtonIGC;
+
+                            }
+                            else
+                                state |= forwardButtonIGC;
+                        }
+                    }
+                  
                     SetStateBits(~selectedWeaponMaskIGC,
                                  ((da <= c_fMaxOffAngle) && (t <= lifespan * 0.9f))
                                  ? (state | allWeaponsIGC)

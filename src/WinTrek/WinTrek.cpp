@@ -5364,7 +5364,7 @@ public:
             Set3DAccelerationImportant(false);
             SetWindowedSize(m_sizeCombat);
             SetFullscreenSize(m_sizeCombatFullscreen);
-            SetSizeable(false);
+            SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
             //SetWindowedSize(WinPoint(800, 600));
             //SetFullscreenSize(WinPoint(800, 600));
             //SetSizeable(false);
@@ -5379,19 +5379,11 @@ public:
             SetFullscreenSize(m_sizeCombatFullscreen);
             Set3DAccelerationImportant(true);
             SetSizeable(true);
-
-			//aem res reset fix, originally just m_bCombatSize=true; 
-			//fix removed by AEM 7.14.07, we are now disabling the fullscreen resolution check
-
-			//if ( (m_sizeCombatFullscreen.X()==640 && m_sizeCombatFullscreen.Y()==480) ||
-			//(m_sizeCombatFullscreen.X()==800 && m_sizeCombatFullscreen.Y()==600) ||
-			//(m_sizeCombatFullscreen.X()==1024 && m_sizeCombatFullscreen.Y()==768) ||
-			//(m_sizeCombatFullscreen.X()==1280 && m_sizeCombatFullscreen.Y()==1024) ||
-			//(m_sizeCombatFullscreen.X()==1600 && m_sizeCombatFullscreen.Y()==1200) )
-			//{
-			m_bCombatSize = true;
-			//}
         }
+
+		m_bCombatSize = true;	//AEM 7.16.07	Moved here from inside the else block.  Since the Loadout size
+								//				now = the Combat size we need to allow for adjusting the fullscreen size
+								//				in the Loadout as well
     }
 
     void SetViewMode(ViewMode vm, bool bForce = false)
