@@ -722,8 +722,8 @@ public:
 				m_pthing = ThingGeo::Create(m_pmodeler, m_ptime);
 				m_pthing->LoadMDL(0, pnsgeo, NULL);
 				m_pthing->SetShadeAlways(true);
-				m_pthing->SetTransparentObjects(true);
-				m_pthing->SetShowBounds(true);
+				//m_pthing->SetTransparentObjects(true);
+				//m_pthing->SetShowBounds(true);
 		
 				SetGeo(m_pthing->GetGeo());
 			}

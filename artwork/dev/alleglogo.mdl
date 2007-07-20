@@ -1,0 +1,6 @@
+use "model";
+use "effect";
+
+object = ImportXFile("alleglogo.x",0);
+
+

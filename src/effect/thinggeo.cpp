@@ -1532,9 +1532,18 @@ public:
             pcontext->SetShadeMode(ShadeModeCopy);
         }
 
+		// KGJV- fix transparent models
+		bool bColorKey = pcontext->GetColorKey();
+
         if (m_psurfaceTexture) {
             pcontext->SetTexture(m_psurfaceTexture);
         }
+		else
+		{
+			//KGJV- fix transparent models - blendmodeadd and turn off colorkey
+			pcontext->SetBlendMode(BlendModeAdd);
+			pcontext->SetColorKey(false,true);
+		}
 
         // draw transparent stuff
         pcontext->DrawCallbackGeo(new Callback(this), false);
@@ -1563,6 +1572,9 @@ public:
         //
 
         pcontext->SetClipping(bClipSave);
+
+		// KGJV- fix transparent models - restore colorkey
+		pcontext->SetColorKey(bColorKey,true); 
     }
 
     void RenderGeo(Context* pcontext)

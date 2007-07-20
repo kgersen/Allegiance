@@ -62,7 +62,7 @@ hoverInfoPane  = AnimatedImagePaneRect(hoverInfoImage, Rect(0, -50, 230, 0));
 // KGJV test
 geoPosition = Point(0, 0);
 geoSize     = Point(800, 500);
-geoModel = "fig22"; // TODO need a cool 3D logo
+geoModel = "alleglogo"; // TODO need a cool 3D logo
 
 // bkground image.
 bkImage = ImportImage("mainbkgndbmp", false);
