@@ -721,7 +721,9 @@ typedef TLargeBitMask<c_ttbMax> TechTreeBitMask;
 
 typedef AbilityBitMask          ExpendableAbilityBitMask;
 const ExpendableAbilityBitMask  c_eabmCapture         = 0x01;
-const ExpendableAbilityBitMask  c_eabmWarpBomb        = 0x02;
+const ExpendableAbilityBitMask  c_eabmWarpBombDual    = 0x02; // KGJV: both sides aleph rez
+const ExpendableAbilityBitMask  c_eabmWarpBombSingle  = 0x04; // KGJV: one side aleph rez
+const ExpendableAbilityBitMask  c_eabmWarpBomb        = c_eabmWarpBombDual | c_eabmWarpBombSingle; // KGJV: both types into one for backward compatibility
 const ExpendableAbilityBitMask  c_eabmQuickReady      = 0x08;
 const ExpendableAbilityBitMask  c_eabmRipcord         = 0x10;
 const ExpendableAbilityBitMask  c_eabmShootStations   = 0x20;
