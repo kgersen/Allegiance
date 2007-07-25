@@ -32,6 +32,7 @@ BEGIN_AUTO_SIZER_MAP(_AutoSizerMap)
   AUTO_SIZER_ENTRY(IDC_GAME_SETTINGS_CAPTION,    Bottom, 0,  Bottom, BkRefresh)
 //AUTO_SIZER_ENTRY(IDC_GAME_NAME_CAPTION    ,     Right, 0,   Right, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_GAME_NAME            ,     Right, 0,   Right, NoRefresh)
+  AUTO_SIZER_ENTRY(IDC_GAME_CORE            ,     Right, 0,   Right, NoRefresh)
 //AUTO_SIZER_ENTRY(IDC_GAME_PASSWORD_CAPTION,     Right, 0,   Right, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_GAME_PASSWORD        ,     Right, 0,   Right, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_MAX_PLAYERS_CAPTION  , LeftRight, 0,   Right, NoRefresh)
@@ -40,6 +41,8 @@ BEGIN_AUTO_SIZER_MAP(_AutoSizerMap)
   AUTO_SIZER_ENTRY(IDC_MAX_PLAYERS          , TopBottom, 0,  Bottom, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_LOCK_GAME_OPEN       , LeftRight, 0,   Right, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_LOCK_GAME_OPEN       , TopBottom, 0,  Bottom, NoRefresh)
+  AUTO_SIZER_ENTRY(IDC_AET                  , LeftRight, 0,   Right, NoRefresh)
+  AUTO_SIZER_ENTRY(IDC_AET                  , TopBottom, 0,  Bottom, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_GAME_SELECT          , LeftRight, 0,   Right, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_GAME_SELECT          , TopBottom, 0,  Bottom, NoRefresh)
   AUTO_SIZER_ENTRY(IDC_GAME_SETTINGS        , TopBottom, 0,  Bottom, NoRefresh)
@@ -58,12 +61,14 @@ BEGIN_MESSAGE_MAP(CPageGameCreate, CPropertyPage)
   ON_BN_CLICKED(IDC_PRIVATE_GAME, OnPrivateGame)
   ON_BN_CLICKED(IDC_PUBLIC_GAME, OnPublicGame)
   ON_EN_CHANGE(IDC_GAME_NAME, OnChangeGameName)
+  ON_EN_CHANGE(IDC_GAME_CORE, OnChangeGameCore)
   ON_BN_CLICKED(IDC_GAME_SELECT, OnGameSelect)
   ON_BN_CLICKED(IDC_GAME_SETTINGS, OnGameSettings)
   ON_BN_CLICKED(IDC_GAME_CREATE, OnGameCreate)
   ON_BN_CLICKED(IDC_GAME_DESTROY, OnGameDestroy)
   ON_WM_TIMER()
   //}}AFX_MSG_MAP
+  
 END_MESSAGE_MAP()
 
 
@@ -77,8 +82,10 @@ CPageGameCreate::CPageGameCreate() :
   m_iGameVisibility = -1;
   m_strGameName = _T("");
   m_strGamePassword = _T("");
+  m_strGameCore = _T(""); // KGJV: core
   m_nMaxPlayers = -1;
   m_bLockGameOpen = FALSE;
+  m_bAET = FALSE; // KGJV: AET
   //}}AFX_DATA_INIT
 }
 
@@ -130,23 +137,28 @@ void CPageGameCreate::DoDataExchange(CDataExchange* pDX)
 
   //{{AFX_DATA_MAP(CPageGameCreate)
   DDX_Control(pDX, IDC_LOCK_GAME_OPEN, m_btnLockGameOpen);
+  DDX_Control(pDX, IDC_AET, m_btnAET); // KGJV added AET
   DDX_Control(pDX, IDC_MAX_PLAYERS_CAPTION, m_staticMaxPlayers);
   DDX_Control(pDX, IDC_MAX_PLAYERS, m_comboMaxPlayers);
   DDX_Control(pDX, IDC_GAME_PASSWORD_CAPTION, m_staticGamePassword);
   DDX_Control(pDX, IDC_GAME_NAME_CAPTION, m_staticGameName);
+  DDX_Control(pDX, IDC_GAME_CORE_CAPTION, m_staticGameCore); // KGJV added core
   DDX_Control(pDX, IDC_GAME_DESTROY, m_btnGameDestroy);
   DDX_Control(pDX, IDC_GAME_CREATE, m_btnGameCreate);
   DDX_Control(pDX, IDC_GAME_SELECT, m_btnGameSelect);
   DDX_Control(pDX, IDC_GAME_SETTINGS, m_btnGameSettings);
   DDX_Control(pDX, IDC_GAME_PASSWORD, m_editGamePassword);
   DDX_Control(pDX, IDC_GAME_NAME, m_editGameName);
+  DDX_Control(pDX, IDC_GAME_CORE, m_editGameCore); // KGJV added core
   DDX_Radio(pDX, IDC_PRIVATE_GAME, m_iGameVisibility);
   DDX_Text(pDX, IDC_GAME_NAME, m_strGameName);
   DDX_Text(pDX, IDC_GAME_PASSWORD, m_strGamePassword);
+  DDX_Text(pDX, IDC_GAME_CORE, m_strGameCore); // KGJV added core
   DDX_Control(pDX, IDC_PUBLIC_GAME, m_btnPublicGame);
   DDX_Control(pDX, IDC_PRIVATE_GAME, m_btnPrivateGame);
   DDX_CBIndex(pDX, IDC_MAX_PLAYERS, m_nMaxPlayers);
   DDX_Check(pDX, IDC_LOCK_GAME_OPEN, m_bLockGameOpen);
+  DDX_Check(pDX, IDC_AET, m_bAET); // KGJV added AET
   //}}AFX_DATA_MAP
 }
 
@@ -177,7 +189,9 @@ void CPageGameCreate::UpdateUI(bool bUpdateData)
   m_btnPrivateGame.EnableWindow(!bGameInProgress);
   m_btnPublicGame.EnableWindow(!bGameInProgress);
   m_staticGameName.EnableWindow(!bGameInProgress);
+  m_staticGameCore.EnableWindow(!bGameInProgress); // KGJV- added core
   m_editGameName.EnableWindow(!bGameInProgress);
+  m_editGameCore.EnableWindow(!bGameInProgress); // KGJV- added core
   m_staticGamePassword.EnableWindow(!bGameInProgress);
   m_editGamePassword.EnableWindow(!bGameInProgress);
   m_staticMaxPlayers.EnableWindow(!bGameInProgress);
@@ -185,6 +199,7 @@ void CPageGameCreate::UpdateUI(bool bUpdateData)
   m_btnGameCreate.EnableWindow(!bGameInProgress && !m_strGameName.IsEmpty());
   m_btnGameDestroy.EnableWindow(bGameInProgress);
   m_btnLockGameOpen.EnableWindow(!bGameInProgress);
+  m_btnAET.EnableWindow(!bGameInProgress); // KGJV - added AET
 }
 
 void CPageGameCreate::UpdateFromGameParameters()
@@ -209,6 +224,15 @@ void CPageGameCreate::UpdateFromGameParameters()
   }
   m_strGamePassword = bstr;
 
+  // KGJV- GameCore
+  if (FAILED(hr = m_spGameParameters->get_IGCStaticFile(&bstr)))
+  {
+    GetSheet()->HandleError(hr, pszContext, true);
+    return;
+  }
+  m_strGameCore = bstr;
+
+
   // TotalMaxPlayers
   short cMaxPlayers;
   if (FAILED(hr = m_spGameParameters->get_TotalMaxPlayers(&cMaxPlayers)))
@@ -230,6 +254,16 @@ void CPageGameCreate::UpdateFromGameParameters()
     return;
   }
   m_bLockGameOpen = !!bLockGameOpen;
+
+  // AET - KGJV
+  VARIANT_BOOL bAET;
+  if (FAILED(hr = m_spGameParameters->get_AllowEmptyTeams(&bAET)))
+  {
+    GetSheet()->HandleError(hr, pszContext, true);
+    return;
+  }
+  m_bAET = !!bAET;
+
 }
 
 
@@ -362,6 +396,12 @@ void CPageGameCreate::OnChangeGameName()
   UpdateUI(true);
 }
 
+// KGJV: added core
+void CPageGameCreate::OnChangeGameCore()
+{
+  UpdateUI(true);
+}
+
 void CPageGameCreate::OnGameSettings() 
 {
   CGameParamsSheet dlg;
@@ -391,6 +431,16 @@ void CPageGameCreate::OnGameCreate()
     GetSheet()->HandleError(hr, pszContext, true);
     return;
   }
+  // KGJV- core
+  if (!m_strGameCore.IsEmpty())
+  {
+	hr = m_spGameParameters->put_IGCStaticFile(CComBSTR(m_strGameCore));
+	if (FAILED(hr))
+	{
+		GetSheet()->HandleError(hr, pszContext, true);
+		return;
+	}
+  }
 
   // Set the TotalMaxPlayers property of the IAGCGameParameters
   CString strMaxPlayers;
@@ -415,6 +465,15 @@ void CPageGameCreate::OnGameCreate()
     GetSheet()->HandleError(hr, pszContext, true);
     return;
   }
+
+  // KGJV Set the AET property of the IAGCGameParameters
+  VARIANT_BOOL bAET = m_bAET ? VARIANT_TRUE : VARIANT_FALSE;
+  if (FAILED(hr = m_spGameParameters->put_AllowEmptyTeams(bAET)))
+  {
+    GetSheet()->HandleError(hr, pszContext, true);
+    return;
+  }
+
 
   // Determine whether or not to connect to a lobby server
   bool bLobbyServer = (1 == m_iGameVisibility);
@@ -491,4 +550,3 @@ void CPageGameCreate::OnGameDestroy()
   // Update the UI
   UpdateUI();
 }
-
