@@ -4036,10 +4036,12 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 		{
 			bPrivilegedUserPM = true;
 		}
+		
 		if (ppi->GetMute() 
             || (m_bFilterChatsToAll && ctRecipient == CHAT_EVERYONE && trekClient.IsInGame())
 //          || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
-            || ((((m_dwFilterLobbyChats == 1) && (ctRecipient != CHAT_INDIVIDUAL)) || (m_dwFilterLobbyChats == 2)) && (ppi->SideID() == SIDE_TEAMLOBBY) && (trekClient.IsInGame()) && (!bPrivilegedUserPM))) //TheBored 25-JUN-07: Changed conditions for the lobby mute options.
+            || ((((m_dwFilterLobbyChats == 1) && (ctRecipient != CHAT_INDIVIDUAL)) || (m_dwFilterLobbyChats == 2)) && (ppi->SideID() == SIDE_TEAMLOBBY) && (trekClient.IsInGame()) && (!bPrivilegedUserPM)) //TheBored 25-JUN-07: Changed conditions for the lobby mute options.
+			|| ((idSonicChat != NA) && (GetWindow()->GetSonicChatText(idSonicChat, 0) == "Unknown chat"))) //TheBored 20-JUL-07: Don't display unknown VCs.
             return;
         bIsLeader = ppi->IsTeamLeader();
     }

@@ -10818,6 +10818,13 @@ void FedSrvSiteBase::KillMissileEvent(ImissileIGC* pmissile, const Vector& posit
   pfmMissileDestroyed->position = position;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
+  // KGJV- explode the missile before terminating it
+  // skip special case for resonators (position == 0). see CmissileIGC::HandleCollision
+  // if we want resonators to actually explode on impact while still producing the resonate effect
+  // then changes are required in CmissileIGC::HandleCollision to not set "position" to 0
+  // as well as treatment of FM_S_MISSILE_DESTROYED in BaseClient::HandleMsg()
+  if (position != Vector::GetZero()) pmissile->Explode(position);
+
   pmissile->Terminate();
 }
 
