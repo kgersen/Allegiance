@@ -359,7 +359,7 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
 	{
 		int friendlyShipCount = 0;	
 
-		for (ShipLinkIGC*   psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
+		for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next()) // mmf changed this to pcluste->GetShips from pside
         {
             IshipIGC*   pship = psl->data();
 			// If our team knows that ship is there or its one of our ships, then we can count it.
@@ -376,7 +376,7 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
 				}	
 			}
         }	
-		
+
 		if(friendlyShipCount>=0)// do we have a good chance of being safe?
 		{
 			rc = true; // to do this...

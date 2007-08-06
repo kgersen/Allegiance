@@ -2275,6 +2275,7 @@ WinTrekClient::WinTrekClient(void)
     m_strDisconnectReason(""),
     m_bFilterChatsToAll(false),
     m_bFilterQuickComms(false),
+	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
     m_dwFilterLobbyChats(3) //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
 {
     // restore the CD Key from the registry
@@ -4041,7 +4042,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
             || (m_bFilterChatsToAll && ctRecipient == CHAT_EVERYONE && trekClient.IsInGame())
 //          || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
             || ((((m_dwFilterLobbyChats == 1) && (ctRecipient != CHAT_INDIVIDUAL)) || (m_dwFilterLobbyChats == 2)) && (ppi->SideID() == SIDE_TEAMLOBBY) && (trekClient.IsInGame()) && (!bPrivilegedUserPM)) //TheBored 25-JUN-07: Changed conditions for the lobby mute options.
-			|| ((idSonicChat != NA) && (GetWindow()->GetSonicChatText(idSonicChat, 0) == "Unknown chat"))) //TheBored 20-JUL-07: Don't display unknown VCs.
+			|| (m_bFilterUnknownChats && (ppi->IsHuman()) && (pszText == NULL) && (idSonicChat != NA) && (GetWindow()->GetSonicChatText(idSonicChat, 0) == "Unknown chat"))) //TheBored 20-JUL-07: Don't display unknown VCs.
             return;
         bIsLeader = ppi->IsTeamLeader();
     }

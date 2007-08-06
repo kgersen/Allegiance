@@ -832,7 +832,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 //verify the velocities are valid
 				// mmf replaced assert with log msg
 		        if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
-				  debugf("mmf Igc shipIGC.cpp 830 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+				  debugf("mmf Igc shipIGC.cpp ~835 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
 		          newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
 				}
                 // assert (newVelocity1 * newVelocity1 >= 0.0f);
@@ -1005,12 +1005,12 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             //verify the velocities are valid
 			// mmf replaced assert with log msg
 		    if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
-		      debugf("mmf Igc shipIGC.cpp 1004 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+		      debugf("mmf Igc shipIGC.cpp ~1008 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
 		      newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
 			}
 		    // mmf replaced assert with log msg
 		    if (!(newVelocity2 * newVelocity2 >= 0.0f)) {
-			  debugf("mmf Igc shipIGC.cpp 1009 newVelocity2^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+			  debugf("mmf Igc shipIGC.cpp ~1013 newVelocity2^2 debug build would have called assert and exited, commented out and set to zero for now\n");
 		      newVelocity2.x = 0.0f; newVelocity2.y = 0.0f; newVelocity2.z = 0.0f;
 			}
             //assert (newVelocity1 * newVelocity1 >= 0.0f);
@@ -1618,7 +1618,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
 					              m_pilotType);
 						}
 					}
-                    if (m_fraction == 1.0f)
+                    if (m_fraction >= 0.95f)  // mmf added Your_Persona's change, allow Miners to be slightly damaged  (was == 100.0f)
                     {
                         IshieldIGC* pshield = (IshieldIGC*)(m_mountedOthers[ET_Shield]);
                         if ((pshield == NULL) || (pshield->GetFraction() >= 0.75f))
@@ -2391,7 +2391,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                     //Find out how much thrust is required to obtain our desired velocity,
                     //accounting for drag
 					// mmf added zero check and debugf
-					if (thrustToVelocity == 0.0f) debugf("shipIGC.cpp ~2320 thrustToVelocity = 0 about to devide by zero\n");
+					if (thrustToVelocity == 0.0f) debugf("shipIGC.cpp ~2394 thrustToVelocity = 0 about to devide by zero\n");
                     localThrust = pOrientation->TimesInverse((desiredVelocity - *pVelocity) / thrustToVelocity + drag);
                 }
             }
@@ -2400,9 +2400,9 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                 //Clip the engine vector the the available thrust from the engine
                 float   sm = m_myHullType.GetSideMultiplier();
 				// mmf added zero checks and debugf
-				if (sm == 0.0f) debugf("shipIGC.cpp ~2330 sm = 0 about to devide by zero\n");
+				if (sm == 0.0f) debugf("shipIGC.cpp ~2403 sm = 0 about to devide by zero\n");
 				if ((m_myHullType.GetBackMultiplier()==0.0f)&&(localThrust.z<=0.0f)) 
-					debugf("shipIGC.cpp ~2331 backmultip = 0 about to devide by zero\n");
+					debugf("shipIGC.cpp ~2405 backmultip = 0 about to devide by zero\n");
 				Vector  scaledThrust(localThrust.x / sm,
                                      localThrust.y / sm,
                                      localThrust.z <= 0.0f ? localThrust.z : (localThrust.z / m_myHullType.GetBackMultiplier()));

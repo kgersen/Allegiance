@@ -1263,7 +1263,9 @@ public:
     TRef<IMenuItem>            m_pitemSFXVolumeDown;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeUp;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeDown;
-	TRef<IMenuItem>            m_pitemMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	TRef<IMenuItem>            m_pitemMaxTextureSize;		// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	TRef<IMenuItem>            m_pitemMuteFilter;			//TheBored 30-JUL-07: Filter Unknown Chat patch
+	TRef<IMenuItem>            m_pitemFilterUnknownChats;	//TheBored 30-JUL-07: Filter Unknown Chat patch
 
     bool                       m_bLensFlare;
     bool                       m_bMusic;
@@ -2890,10 +2892,8 @@ public:
             ToggleFilterChatsToAll();
         if (!LoadPreference("FilterQuickComms", TRUE))
             ToggleFilterQuickComms();
-        //TheBored 25-JUN-07: Commented out original code. Replaced with with different load values. 
-		//if (!LoadPreference("FilterLobbyChats", TRUE))
-        //    ToggleFilterLobbyChats();
-		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 1));
+		if (!LoadPreference("FilterUnknownChats", TRUE))
+            ToggleFilterUnknownChats(); //TheBored 30-JUL-07: Filter Unknown Chat patch
         if (!LoadPreference("LinearControlResponse", TRUE))
             ToggleLinearControls();
         if (!LoadPreference("Environment", TRUE))
@@ -2928,6 +2928,7 @@ public:
         if (LoadPreference("LargeDeadZone", FALSE))
             ToggleLargeDeadZone();
 		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 1)); //TheBored 25-JUN-07: Mute lobby chat patch 
 
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
@@ -3580,6 +3581,8 @@ public:
     #define idmToggleEnableFeedback        631
     #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
     #define idmPings                       633 // w0dk4 player-pings feature
+	#define	idmMuteFilterOptions		   634 //TheBored 30-JUL-07: Filter Unknown Chat patch
+	#define idmFilterUnknownChats		   635 //TheBored 30-JUL-07: Filter Unknown Chat patch
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -3853,11 +3856,8 @@ public:
 				break;
 
             case idmGameOptions:
-                m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'S');
+                m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,					"Mute/Filter",						'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
-                m_pitemFilterChatsToAll            = pmenu->AddMenuItem(idmFilterChatsToAll,            GetFilterChatsToAllMenuString(),    'A');
-                m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'Q');
-                m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'F');
                 m_pitemToggleLinearControls        = pmenu->AddMenuItem(idmToggleLinearControls,        GetLinearControlsMenuString(),      'L');
                 m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetLargeDeadZoneMenuString(),       'Z');
                 m_pitemToggleVirtualJoystick       = pmenu->AddMenuItem(idmToggleVirtualJoystick,       GetVirtualJoystickMenuString(),     'J');
@@ -3887,6 +3887,16 @@ public:
                 m_pitemVoiceOverVolumeDown  = pmenu->AddMenuItem(idmVoiceOverVolumeDown,
                     GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), -c_fVolumeDelta), 'C');
                 break;
+
+			//TheBored 30-JUL-07: Filter Unknown Chat patch
+			case idmMuteFilterOptions:
+                m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'D');
+				m_pitemFilterChatsToAll            = pmenu->AddMenuItem(idmFilterChatsToAll,            GetFilterChatsToAllMenuString(),    'A');
+                m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'V');
+				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
+                m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
+				break;
+			//End TB 30-JUL-07
         }
 
         return pmenu;
@@ -4006,6 +4016,25 @@ public:
             m_pitemFilterQuickComms->SetString(GetFilterQuickCommsMenuString());
         }
     }
+	//TheBored 30-JUL-07: Filter Unknown Chat patch
+    void ToggleFilterUnknownChats()
+    {
+        if (trekClient.FilterUnknownChats())
+        {
+            trekClient.FilterUnknownChats(false);
+            SavePreference("FilterUnknownChats", FALSE);
+        }
+        else
+        {
+            trekClient.FilterUnknownChats(true);
+            SavePreference("FilterUnknownChats", TRUE);
+        }
+
+        if (m_pitemFilterUnknownChats != NULL) {
+            m_pitemFilterUnknownChats->SetString(GetFilterUnknownChatsString());
+        }
+    }
+	//End TB 30-JUL-07
 	//TheBored 25-JUN-07: Altered function allowing for 3 options. 1 = Filter Lobby, 2 = Filter Lobby and PMs, 3 = Dont Filter Anything
     void ToggleFilterLobbyChats(DWORD dwLobbyChatSetting)
     {
@@ -4027,7 +4056,7 @@ public:
             m_pitemFilterLobbyChats->SetString(GetFilterLobbyChatsMenuString());
         }
     }
-
+	//End TB 25-JUN-07
     void ToggleLinearControls()
     {
         if (m_bLinearControls)
@@ -4629,6 +4658,12 @@ public:
     {
         return trekClient.FilterQuickComms() ? "Filter Voice Commands" : "Don't Filter Voice Commands";
     }
+	
+	//TheBored 30-JUL-07: Filter Unknown Chat patch
+    ZString GetFilterUnknownChatsString()
+    {
+        return trekClient.FilterUnknownChats() ? "Filter Unknown Chats" : "Don't Filter Unknown Chats";
+    }
 
     ZString GetFilterLobbyChatsMenuString()
     {
@@ -5040,6 +5075,11 @@ public:
 
             case idmFilterQuickComms:
                 ToggleFilterQuickComms();
+                break;
+			
+			//TheBored 30-JUL-07: Filter Unknown Chat patch
+			case idmFilterUnknownChats:
+                ToggleFilterUnknownChats();
                 break;
 
             case idmFilterLobbyChats:
