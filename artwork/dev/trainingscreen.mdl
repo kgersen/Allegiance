@@ -1,0 +1,191 @@
+use "trainingdata";
+use "font";
+use "gamepanes";
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Training Screen
+//
+/////////////////////////////////////////////////////////////////////////////
+
+//
+// Normal buttons
+//
+
+backButtonPane          = SoundButtonPane(ImportImage("btnzone2mainmenubmp", true), ButtonNormal, false, negativeButtonClickSoundId);
+trainButtonPane         = ButtonPane(ImportImage("btntrainbmp",      false), ButtonNormal, false);
+trainMission1ButtonPane = ButtonPane(ImportImage("btnmission1bmp",   false), ButtonNormal, false);
+trainMission2ButtonPane = ButtonPane(ImportImage("btnmission2bmp",   false), ButtonNormal, false);
+trainMission3ButtonPane = ButtonPane(ImportImage("btnmission3bmp",   false), ButtonNormal, false);
+trainMission4ButtonPane = ButtonPane(ImportImage("btnmission4bmp",   false), ButtonNormal, false);
+trainMission5ButtonPane = ButtonPane(ImportImage("btnmission5bmp",   false), ButtonNormal, false);
+trainMission6ButtonPane = ButtonPane(ImportImage("btnmission6bmp",   false), ButtonNormal, false);
+trainMission7ButtonPane = ButtonPane(ImportImage("btnmission7bmp",   false), ButtonNormal, false);
+trainMission8ButtonPane = ButtonPane(ImportImage("btnmission8bmp",   false), ButtonNormal, false);
+
+missionNumber1Bmp       = ImportImage("trainingmission1bmp", false);
+missionNumber2Bmp       = ImportImage("trainingmission2bmp", false);
+missionNumber3Bmp       = ImportImage("trainingmission3bmp", false);
+missionNumber4Bmp       = ImportImage("trainingmission4bmp", false);
+missionNumber5Bmp       = ImportImage("trainingmission5bmp", false);
+missionNumber6Bmp       = ImportImage("trainingmission6bmp", false);
+missionNumber7Bmp       = ImportImage("trainingmission7bmp", false);
+missionNumber8Bmp       = ImportImage("trainingmission8bmp", false);
+
+
+NoMissionSelected       = 0;
+missionNumber1          = 1;
+missionNumber2          = 2;
+missionNumber3          = 3;
+missionNumber4          = 4;
+missionNumber5          = 5;
+missionNumber6          = 6;
+missionNumber7          = 7;
+missionNumber8          = 8;
+
+missionInfoImage =
+    SwitchImage(
+        missionNumber,
+        emptyImage,
+        [
+            (missionNumber1 , missionNumber1Bmp),
+            (missionNumber2 , missionNumber2Bmp),
+            (missionNumber3 , missionNumber3Bmp),
+            (missionNumber4 , missionNumber4Bmp),
+            (missionNumber5 , missionNumber5Bmp),
+            (missionNumber6 , missionNumber6Bmp),
+            (missionNumber7 , missionNumber7Bmp),
+			(missionNumber8 , missionNumber8Bmp)
+        ]
+    );
+
+missionInfoPane = AnimatedImagePaneRect(missionInfoImage, Rect(0, 0, 400, 327));
+//
+// Titles
+//
+
+yellowText			= Color(0.878, 0.573, 0);
+whiteText			= Color(1, 1, 1);
+titlePane			= StringPane("TRAINING MISSIONS", yellowText,	Point(300, 30), JustifyLeft, titleFont);
+captionPane         = StringPane("CHOOSE A LESSON FROM THE LIST ON THE LEFT.", whiteText, Point(800, 30), JustifyLeft, promptFont);
+
+// mission info text
+missionInfoTextSize = Point (400, 30);
+missionInfoTextPane = 
+    SwitchPane(
+        missionNumber,
+        [
+            (
+                StringPane("CHOOSE A LESSON FROM THE LIST ON THE LEFT.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), NoMissionSelected
+            ),
+            (
+                StringPane("INTRODUCTION TO ALLEGIANCE AND THE HANGAR.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber1
+            ),
+            (
+                StringPane("LEARN THE BASICS OF SPACEFLIGHT.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber2
+            ),
+            (
+                StringPane("LEARN HOW TO USE THE WEAPON AND TARGETING SYSTEMS.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber3
+            ),
+            (
+                StringPane("LEARN ABOUT INTERSECTOR TRAVEL AND ECONOMICS.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber4
+            ),
+			(
+                StringPane("TRAIN TO BECOME A MISSION COMMANDER.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber5
+            ),
+            (
+                StringPane("PRACTICE YOUR COMBAT SKILLS IN A SIMULATED ARENA.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber6
+            ),
+            (
+                StringPane("FREELY EXPLORE FACTION TECHNOLOGY.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber7
+            ),
+			(
+                StringPane("LEARN HOW TO REPAIR SHIPS AND STATIONS.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber8
+            )
+        ]
+    );
+
+missionInfoLaunchTextPane = 
+    SwitchPane(
+        missionNumber,
+        [
+            (
+                StringPane("", whiteText, missionInfoTextSize, JustifyLeft, promptFont), NoMissionSelected
+            ),
+            (
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber1
+            ),
+            (
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber2
+            ),
+            (
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber3
+            ),
+            (
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber4
+            ),
+			(
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber5
+            ),
+			(
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber6
+            ),
+            (
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber7
+            ),
+			(
+                StringPane("CLICK THE LAUNCH BUTTON ON THE RIGHT TO BEGIN.", whiteText, missionInfoTextSize, JustifyLeft, promptFont), missionNumber8
+            )
+        ]
+    );
+
+//
+// The background and control positions
+//
+
+screen =
+    ScreenPane(
+        ImportImage("trainscreenbmp", false),
+        [
+			(titlePane,					Point( 15,   5)),
+			(captionPane,				Point( 75,  32)),
+            (backButtonPane,            Point( 24, 523)),
+            (trainMission1ButtonPane,   Point( 28, 148)),
+            (trainMission2ButtonPane,   Point( 28, 174)),
+            (trainMission3ButtonPane,   Point( 28, 200)),
+            (trainMission4ButtonPane,   Point( 28, 226)),
+            (trainMission5ButtonPane,   Point( 28, 252)),
+            (trainMission6ButtonPane,   Point( 28, 278)),
+//          (trainMission7ButtonPane,   Point( 28, 304)),
+			(trainMission8ButtonPane,   Point( 28, 304)),
+            (missionInfoPane,           Point(283,  65)),
+            (missionInfoTextPane,       Point(283, 450)),
+            (missionInfoLaunchTextPane, Point(283, 490)),
+            (trainButtonPane,           Point(700, 175))
+        ]
+    );
+
+
+///////////////////////////////////////////////////////////////////////////////
+// The civ dialog
+
+okButtonPane      = ButtonPane(ImportImage("btnokbmp",        true), ButtonNormal, false);
+cancelButtonPane  = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+cancelButtonPane2 = ButtonPane(ImportImage("btnabortbmp",     true), ButtonNormal, false);
+
+civComboPane     = StringComboPane(Point(317, 22), Point(317, 22), largeFont, whiteText);
+
+TrainLiveDialog =
+        (
+            ImagePane(
+                ImportImage("trainlivedialogbmp", false),
+                [   
+                    (civComboPane,      Point(100, 118)),
+                    (okButtonPane,      Point(100, 200)),
+                    (cancelButtonPane2, Point(300, 200)),
+                    (cancelButtonPane,  Point(476, 7))
+                ]
+            )
+        );
+
+
