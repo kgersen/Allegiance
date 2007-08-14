@@ -31,7 +31,7 @@ namespace Training
             virtual /* void */              ~Mission8 (void);
             virtual int                     GetMissionID (void);
             virtual SectorID                GetStartSectorID (void);
-            virtual bool                    RestoreShip (void);
+            //virtual bool                    RestoreShip (void);
 
         protected:
             virtual void                    CreateUniverse (void);
