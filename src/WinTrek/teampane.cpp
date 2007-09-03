@@ -288,39 +288,7 @@ public:
 				   }
               }
 			  // end yp
-			  //aem : added TE's code for team rank sum from teamscreen.cpp 6/3/07
-#if 0
-			  int iRankSum = 0;
-              int iTempRank = 0;
-              // IshipIGC* pShip = NULL; mmf not needed
-              PlayerInfo* pPlayer = NULL;
-              ShipList plistMembers;
-              plistMembers = pitem->GetMembers();
-              if (plistMembers.GetCount() > 0)
-              {
-                  ShipID iShipID = plistMembers.GetFront();
-                  while (true)
-                  {
-                      if (!iShipID)
-                          break;
 
-                      pPlayer = trekClient.FindPlayer(iShipID);
-
-                      if (pPlayer)
-                      {
-                          if (pPlayer->IsHuman())
-                          {
-                              iTempRank = pPlayer->GetPersistScore(NA).GetRank();
-                              iRankSum += iTempRank; //(iTempRank < 1) ? 1 : iTempRank;
-                          }
-                      }
-                      iShipID = (ShipID)plistMembers.GetNext((ItemID)iShipID);
-                  }
-              }
-#endif
-			  // end aem
-
-              
               switch (pnumberside)
               {
               case 0:
@@ -353,18 +321,19 @@ public:
                   m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
 
              }
-              
+              if (m_pimageTab)
+			  {
               psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
               if (!m_bSingle){
                   if (bSelected) 
                   {
                       // draw the selected tab arrow
-                      psurface->BitBlt(WinPoint(130,0), m_pimageArrow->GetSurface());
+                      psurface->BitBlt(WinPoint(157,0), m_pimageArrow->GetSurface());  //AEM 7.21.07 Expanded to X of 160 from 130 
                   }
               }
               
               WinRect rectClipOld = psurface->GetClipRect();
-              psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(90, 20))); // clip name to fit in column // yp: changed from 105 to 90
+              psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(105, 20))); // clip name to fit in column // yp: changed from 105 to 90 //AEM to 130
               // draw the team name
 			  ZString name;
 			  if ( pitem->GetSideID()== SIDE_TEAMLOBBY ) 
@@ -392,11 +361,13 @@ public:
                psurface->DrawString(
                   TrekResources::SmallFont(),
                   Color::White(),
-                  WinPoint(95, 2), // yp: changed from (110,2) to make room for the teamTotalRank
-                  ZString("(") + ZString(m_pMission->SideNumPlayers(pitem->GetSideID())) + ZString(")") +				  
-				  ZString("[") + ZString(iRankSum) + ZString("]") // yp: added team total rank to team name display.  // modified by aem
+                  WinPoint(115, 2),
+                  ZString(m_pMission->SideNumPlayers(pitem->GetSideID())) +				  
+				  ZString("|") + ZString(iRankSum) // yp: added team total rank to team name display.  
+												   // AEM 7.21.07 changed format from (#players)[rank] to #players|rank to free up room for a few more characters
                   );
 			  } 
+			  }
         }
      };
     
@@ -438,7 +409,6 @@ public:
               if (trekClient.GetCore())
                   pside = trekClient.GetCore()->GetSide(pitem->GetSideID());
               int pnumberside = pitem->GetSideID();
-              
               
               switch (pnumberside)
               {
@@ -1279,31 +1249,31 @@ public:
             m_sortPlayers = sortName;
             break;
             
-        case 2:
+        case 3:
             m_sortPlayers = sortSector;
             break;
             
-        case 3:
+        case 4:
             m_sortPlayers = sortShip;
             break;
             
-        case 1:
+        case 2:
             m_sortPlayers = sortKills;
             break;
             
-        case 5:
+        case 6:
             m_sortPlayers = sortCredits;
             break;
             
-        case 6:
+        case 7:
             m_sortPlayers = sortObjective;
             break;
             
-            //case 6:
-            //    m_sortPlayers = sortRank;
-            //    break;
+        case 1:
+            m_sortPlayers = sortRank;
+            break;
             
-        case 4:
+        case 5:
             m_sortPlayers = sortWing;
             break;
             
@@ -1395,13 +1365,13 @@ public:
         
         return _stricmp(CurrentCommandText(pship1), CurrentCommandText(pship2)) > 0;
     }
-    
+
     static bool PlayerRankCompare(ItemID pitem1, ItemID pitem2)
     {
         PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
         PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
         
-        return pplayer1->Rank() > pplayer2->Rank();
+        return pplayer1->Rank() < pplayer2->Rank();
     }
     
     static bool PlayerWingCompare(ItemID pitem1, ItemID pitem2)
@@ -1628,7 +1598,7 @@ class ExpandedTeamPane : public TeamPane
         
         int GetXSize()
         {
-            return m_viColumns[6] - 15;
+            return m_viColumns[7] - 15;
         }
         
         int GetYSize()
@@ -1676,7 +1646,7 @@ class ExpandedTeamPane : public TeamPane
             
             if (pimageObj){
                 psurface->BitBlt(
-                    WinPoint(m_viColumns[5] + 2, -1),
+                    WinPoint(m_viColumns[6] + 2, -1),
                     pimageObj->GetSurface()
                     );
             }
@@ -1698,17 +1668,17 @@ class ExpandedTeamPane : public TeamPane
                 pfont = TrekResources::SmallFont();
                 color = Color::White();
             }
-			// yp: show player name with rank attached if is human  // modified by aem
+			// yp: show player name with rank attached if is human  // cut by aem
             ZString pzsPlayerDisplayName = ZString(pplayer->CharacterName());
-            if (pplayer->IsHuman()) // this is a human, attach rank to name
-                pzsPlayerDisplayName += ZString("[")+ ZString( pplayer->GetPersistScore(NA).GetRank())+ZString("]");
+            //if (pplayer->IsHuman()) // this is a human, attach rank to name
+                //pzsPlayerDisplayName += ZString("[")+ ZString( pplayer->GetPersistScore(NA).GetRank())+ZString("]");
 			// yp end // end aem
             WinRect rectClipOld = psurface->GetClipRect();
-            psurface->SetClipRect(WinRect(WinPoint(0, 0), WinPoint(100, 20))); // clip name to fit in column
+            psurface->SetClipRect(WinRect(WinPoint(0, 0), WinPoint(120, 20))); // clip name to fit in column
             psurface->DrawString(
                 pfont, color,   
                 WinPoint(17, 2),
-                pzsPlayerDisplayName  // yp: show player name with rank attached if is human
+                pzsPlayerDisplayName
                 );
             psurface->RestoreClipRect(rectClipOld);
             
@@ -1716,27 +1686,40 @@ class ExpandedTeamPane : public TeamPane
             // draw the player's Wing
             if (pplayer->SideID() == trekClient.GetSideID())
             {
-                psurface->DrawString(pfont, color, WinPoint(m_viColumns[3] + 2, 1), c_pszWingName[pship->GetWingID()]);
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[4] + 2, 1), c_pszWingName[pship->GetWingID()]);
             }
+
+			// draw the rank: AEM 7.21.07
             
+			if (pplayer->IsHuman())
+			{
+				short checkRank(pplayer->GetPersistScore(NA).GetRank());
+				ZString strRankF6 = checkRank;
+				if (checkRank<10)
+					strRankF6 = " " + strRankF6;
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 2, 1), strRankF6);
+			}
+			else
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 2, 1), ZString(""));
+
             // draw the deaths
             
             if (pplayer->MissionDeaths())
-                psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 27, 1), pplayer->MissionDeaths());
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[1] + 27, 1), pplayer->MissionDeaths());
             else
-                psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 27, 1), ZString("0"));
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[1] + 27, 1), ZString("0"));
             
             // draw the kills
             
             if (pplayer->MissionKills())
-                psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 2, 1), pplayer->MissionKills());
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[1] + 2, 1), pplayer->MissionKills());
             else
-                psurface->DrawString(pfont, color, WinPoint(m_viColumns[0] + 2, 1), ZString("0"));
+                psurface->DrawString(pfont, color, WinPoint(m_viColumns[1] + 2, 1), ZString("0"));
             
             // draw the sector location or turret/observer location if aboard a ship
             ZString strLocation;
             rectClipOld = psurface->GetClipRect();
-            psurface->SetClipRect(WinRect(WinPoint(m_viColumns[1] + 2, 0), WinPoint(m_viColumns[2], GetYSize()))); // clip status to fit in column
+            psurface->SetClipRect(WinRect(WinPoint(m_viColumns[2] + 2, 0), WinPoint(m_viColumns[3], GetYSize()))); // clip status to fit in column
 
             if (pplayer->LastSeenState() == c_ssObserver || pplayer->LastSeenState() == c_ssTurret )
             {
@@ -1751,7 +1734,7 @@ class ExpandedTeamPane : public TeamPane
             {
                 strLocation = SectorName(pplayer->LastSeenSector());
             }
-            psurface->DrawString(pfont, color, WinPoint(m_viColumns[1] + 2, 0), strLocation);
+            psurface->DrawString(pfont, color, WinPoint(m_viColumns[2] + 2, 0), strLocation);
 
             psurface->RestoreClipRect(rectClipOld);
             
@@ -1785,7 +1768,7 @@ class ExpandedTeamPane : public TeamPane
             
             if (pimageicon){
                 psurface->BitBlt(
-                    WinPoint(m_viColumns[2] + 10, -1),
+                    WinPoint(m_viColumns[3] + 10, -1),
                     pimageicon->GetSurface()
                     );
             }
@@ -1798,7 +1781,7 @@ class ExpandedTeamPane : public TeamPane
                 psurface->DrawString(
                     pfont,
                     color,
-                    WinPoint(m_viColumns[4] + 2, 1),
+                    WinPoint(m_viColumns[5] + 2, 1),
                     cbTemp
                     );
             }
