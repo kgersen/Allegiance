@@ -324,7 +324,25 @@ private:
 	// mouse/draging
     MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
     {
-        return m_pimageSectorBkgnd->HitTest(pprovider, point, bCaptured);
+		// KGJV fix: remove capture if map was changed while dragging
+		MouseResult mr = m_pimageSectorBkgnd->HitTest(pprovider, point, bCaptured);
+		if (bCaptured && !m_bDragging) // we were capturing mouse but we're not dragging anymore
+		{
+			// reset the mouse cursor
+			// if can drag and inside image then set 'hand' cursor
+            if (m_bCanDrag && mr.Test(MouseResultHit()))
+            {
+                GetWindow()->SetCursor(AWF_CURSOR_DRAG);
+            }
+            else // otherwise default cursor
+            {
+                GetWindow()->SetCursor(AWF_CURSOR_DEFAULT);
+            }
+
+			// release the mouse capture
+			mr.Set(MouseResultRelease());
+		}
+		return mr;
     }
     void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside)
     {
