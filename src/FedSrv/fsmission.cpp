@@ -1010,7 +1010,7 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
 			// mmf revist
 			// This works (when they try and connect) but it does not let the clients know things were reset so it does not update their gui
 			// AFAIK there is no corresponding message we can send for this like there is above for LOCK_SIDES, etc
-			// mmf don't reset skill level if there is a server skill level setting for this server (KGJV added this feature keying of registry)
+			// mmf don't reset skill level if there is a server skill level setting for this server (KGJV added this feature keying off registry)
 			// mmf since there isn't an easy way to check for Min/MaxRank# entries in registry as we don't know the game number
 			//     assume if game is locked open we don't want to change the min and max rank
 			if (!(m_misdef.misparms.bLockGameOpen)) {
@@ -1163,6 +1163,19 @@ void CFSMission::TallyVote(CFSPlayer* pfsPlayer, BallotID ballotID, bool bVote)
   }
 }
 
+/*-------------------------------------------------------------------------
+ * HasBallots  mmf/KGJV 09/07 allow only one ballot of each type at a time
+ *-------------------------------------------------------------------------
+ */
+bool CFSMission::HasBallots(BallotType iType)
+{
+    for (BallotList::Iterator iter(m_ballots); !iter.End();)
+    {
+        if (iter.Value()->GetType() == iType) return true;
+        iter.Next();
+    }
+   return false;
+}
 
 /*-------------------------------------------------------------------------
  * RemovePlayerByName
@@ -5225,6 +5238,13 @@ BallotID Ballot::GetBallotID()
   return m_ballotID;
 }
 
+// mmf/KGJV 09/07 allow only one ballot of each type at a time
+// gets the type of this ballot
+BallotType Ballot::GetType()
+{
+	return m_type;
+}
+
 // initializes the ballot for a given vote proposed by a player to their team
 void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const ZString& strBallotText)
 {
@@ -5438,6 +5458,7 @@ MutinyBallot::MutinyBallot(CFSPlayer* pfsInitiator)
   m_pside = pfsInitiator->GetSide();
   m_idInitiatorShip = pfsInitiator->GetShipID();
   m_bHideToLeader = true;
+  m_type = BALLOT_MUTINY; // mmf/KGJV 09/07 allow only one ballot of each type at a time
   Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to mutiny"), pfsInitiator->GetName() + ZString(" has proposed to munity.  "));
 }
 
@@ -5493,6 +5514,7 @@ ResignBallot::ResignBallot(CFSPlayer* pfsInitiator)
 {
   m_pside = pfsInitiator->GetSide();
   m_bHideToLeader = false; // KGJV #110
+  m_type = BALLOT_RESIGN;  // mmf/KGJV 09/07 allow only one ballot of each type at a time
   Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to resign"), pfsInitiator->GetName() + ZString(" has proposed resigning.  "));
 }
 
@@ -5512,6 +5534,7 @@ OfferDrawBallot::OfferDrawBallot(CFSPlayer* pfsInitiator)
 {
   m_pfside = CFSSide::FromIGC(pfsInitiator->GetSide());
   m_bHideToLeader = false; // KGJV #110
+  m_type = BALLOT_OFFERDRAW; // mmf/KGJV 09/07 allow only one ballot of each type at a time
   Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to offer a draw"), pfsInitiator->GetName() + ZString(" has proposed offering a draw.  "));
 }
 
@@ -5527,6 +5550,7 @@ void OfferDrawBallot::OnPassed()
 AcceptDrawBallot::AcceptDrawBallot(CFSSide* pfsideInitiator)
 {
   m_bHideToLeader = false; // KGJV #110
+  m_type = BALLOT_ACCEPTDRAW; // mmf/KGJV 09/07 allow only one ballot of each type at a time
   Init(pfsideInitiator, pfsideInitiator->GetSideIGC()->GetName() + ZString("'s offer of a draw"), pfsideInitiator->GetSideIGC()->GetName() + ZString(" has offered a draw.  "));
 }
 

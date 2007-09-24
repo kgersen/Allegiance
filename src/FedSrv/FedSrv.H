@@ -15,7 +15,7 @@
 
 #undef new // because we override it
 
-const int c_cbArtFilePath = 128;
+const int c_cbArtFilePath = 256; // mmf 09/07 increased this from 128
 const int c_cPlayersMax   = 500; // max players allowed on a server
 const int c_cDronesMax    = 500; // max drones  allowed on a server
 const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;

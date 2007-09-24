@@ -271,6 +271,12 @@ public:
 		return GetNthString("TotalMoneyNames", FindClosestValue(missionparams.fHe3Density, "TotalMoneyValues"));
 	}
 
+	// mmf: added - return (closest) max team imbalance setting
+	ZString GetMaxImbalanceString(const MissionParams& missionparams)
+    {
+		return GetNthString("MaxImbalanceNames", FindClosestValue(missionparams.iMaxImbalance, "MaxImbalanceValues"));
+	}
+
     ZString GetResourceString(const MissionParams& missionparams)
     {
         const char* vszResourceNames[4] = {
@@ -334,8 +340,9 @@ public:
             + "Scores Count: "          + YesNo(mp.bScoresCount)          + "<p>"
             + "Eject Pods: "            + YesNo(mp.bEjectPods)            + "<p>"
             + "Allow Friendly Fire: "   + YesNo(mp.bAllowFriendlyFire)    + "<p>"
+			+ "Max Team Imbalance: "    + GetMaxImbalanceString(mp)       + "<p>" // mmf: added  note this does not update properly if updated after launch with #autobalance
             + "Allow Defections: "      + YesNo(mp.bAllowDefections)      + "<p>"
-            + "Allow Joiners "          + YesNo(mp.bAllowJoiners)         + "<p>"
+			+ "Allow Joiners: "         + YesNo(mp.bAllowJoiners)         + "<p>"
             + "Invulnerable Stations: " + YesNo(mp.bInvulnerableStations) + "<p>"
             + "Developments: "          + YesNo(mp.bAllowDevelopments)    + "<p>"
             + "Allow Shipyards: "       + YesNo(mp.bAllowShipyardPath)    + "<p>"

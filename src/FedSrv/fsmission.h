@@ -76,6 +76,13 @@ class OldPlayerInfo
 typedef Slist_utl<OldPlayerInfo>    OldPlayerList;
 typedef Slink_utl<OldPlayerInfo>    OldPlayerLink;
 
+// mmf/KGJV 09/07 allow only one ballot of each type at a time
+typedef int BallotType;
+#define BALLOT_RESIGN      1
+#define BALLOT_OFFERDRAW   2
+#define BALLOT_ACCEPTDRAW  3
+#define BALLOT_MUTINY      4
+
 class Ballot
 {
 public:
@@ -92,6 +99,9 @@ public:
 
   // gets the ID of this ballot
   BallotID GetBallotID();
+
+  // return the ballot type  
+  BallotType GetType();      // mmf/KGJV 09/07 allow only one ballot of each type at a time
 
   // destructor
   virtual ~Ballot() {};
@@ -149,6 +159,10 @@ protected:
 
   // KGJV #110
   bool m_bHideToLeader;
+
+  // mmf/KGJV 09/07 allow only one ballot of each type at a time
+  BallotType m_type;
+
 };
 
 typedef TList<Ballot*> BallotList;
@@ -415,6 +429,7 @@ public:
 
   void                  AddBallot(Ballot * pBallot);
   void                  TallyVote(CFSPlayer* pfsPlayer, BallotID ballotID, bool bVote);
+  bool					HasBallots(BallotType iType); // mmf/KGJV 09/07 allow only one ballot of each type at a time
 
   void                  MakeOverrideTechBits(); // alloc memory for overriding tech bits as needed
 

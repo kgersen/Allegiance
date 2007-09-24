@@ -4779,12 +4779,20 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           {
               if (pfmChat->cbMessage > strlen("#resign") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#resign", strlen("#resign")) == 0)
               {
-                pfsMission->AddBallot(new ResignBallot(pfsPlayer));
+				// mmf/KGJV 09/07 allow only one ballot of each type at a time
+				if (!pfsMission->HasBallots(BALLOT_RESIGN))
+                  pfsMission->AddBallot(new ResignBallot(pfsPlayer));
+				else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "Resign vote already in progress...");
                 bForward = false;
               }
               else if (pfmChat->cbMessage > strlen("#draw") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#draw", strlen("#draw")) == 0)
               {
-                pfsMission->AddBallot(new OfferDrawBallot(pfsPlayer));
+				// mmf/KGJV 09/07 allow only one ballot of each type at a time
+				if (!pfsMission->HasBallots(BALLOT_OFFERDRAW))
+                  pfsMission->AddBallot(new OfferDrawBallot(pfsPlayer));
+				else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "Draw vote already in progress...");
                 bForward = false;
               }
 				// KGJV #110
@@ -4792,7 +4800,11 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               {
 				// leader cant mutiny
 			    if (pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) != pfsPlayer)
-					pfsMission->AddBallot(new MutinyBallot(pfsPlayer));
+				  // mmf/KGJV 09/07 allow only one ballot of each type at a time
+				  if (!pfsMission->HasBallots(BALLOT_MUTINY))
+				    pfsMission->AddBallot(new MutinyBallot(pfsPlayer));
+				  else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "Mutiny vote already in progress...");
                 bForward = false;
               }
 			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006

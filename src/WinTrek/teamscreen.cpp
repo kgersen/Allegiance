@@ -2293,7 +2293,19 @@ public:
         pfmReady->iSide = trekClient.GetSideID();
         pfmReady->fForceReady = m_pbuttonTeamReady->GetChecked();
         UpdateStatusText();
-        return true;        
+
+		// mmf 09/07 partial fix launching with comm showing status as afk, they can still click afk after clicking TeamReady and will show as afk
+		// uncheck comm's afk if they click TeamReady
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()      // is a comm
+			&& m_pbuttonAwayFromKeyboard->GetChecked())    // afk is checked
+		{
+			m_pbuttonAwayFromKeyboard->SetChecked(false) ; //  clear comm's afk
+			g_bAFKToggled = true; // mmf : wlp added this, not sure if it is needed in this situation
+			OnButtonAwayFromKeyboard();
+		} ;
+        // end mmf 09/07
+		
+		return true;        
     }
 
     bool OnButtonAutoAccept()
@@ -2638,14 +2650,14 @@ public:
 		//
 		// do this only for the commander without game control
 		//
-		if (trekClient.MyPlayerInfo()->IsTeamLeader()// wlp - is a comm
-			&& !trekClient.MyPlayerInfo()->IsMissionOwner()		// wlp - not in control
-			)
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()       // wlp - is a comm
+			&& !trekClient.MyPlayerInfo()->IsMissionOwner()	// wlp - not in control
+			&& !m_pbuttonAwayFromKeyboard->GetChecked())    // mmf 9/07 don't do anything if afk already checked
 		{
 			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
 			OnButtonTeamReady();// wlp - send to server
 			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
-			g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off
+			// g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off  // mmf 9/07 may not need this anymore given above change
 			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
 		} ;
 		// wlp 8/5/2006 - end of Afk added code
@@ -2668,14 +2680,14 @@ public:
 		//
 		// do this only for the commander without game control
 		//
-		if (trekClient.MyPlayerInfo()->IsTeamLeader()// wlp - is a comm
-			&& !trekClient.MyPlayerInfo()->IsMissionOwner()// wlp - not in control
-			)
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()       // wlp - is a comm
+			&& !trekClient.MyPlayerInfo()->IsMissionOwner() // wlp - not in control
+			&& !m_pbuttonAwayFromKeyboard->GetChecked())    // mmf 9/07 don't do anything if afk already checked
 		{
 			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
 			OnButtonTeamReady() ;// wlp - send to server
 			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
-			g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off
+			// g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off // mmf 9/07 may not need this anymore given above change
 			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
 		} ;
 		// wlp 8/5/2006 - end of Afk added code
