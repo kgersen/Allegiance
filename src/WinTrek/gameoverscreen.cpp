@@ -17,6 +17,8 @@ class GameOverScreen :
 public:
     TRef<Pane>                  m_ppane;
     TRef<ButtonPane>            m_pbuttonBack;
+	// KGJV-save stats button
+	TRef<ButtonPane>            m_pbuttonSave;
     TRef<TEvent<ZString>::Sink> m_psinkChatEdit;
     TRef<ButtonPane>            m_pbuttonSend;
     TRef<ChatListPane>          m_pchatPane;
@@ -308,6 +310,8 @@ public:
 
 
         CastTo(m_pbuttonBack, pns->FindMember("backButtonPane"));
+        CastTo(m_pbuttonSave, pns->FindMember("saveButtonPane")); // KGJV- save stats button
+
         CastTo(m_peditPane,         (Pane*)pns->FindMember("chatEditPane"        ));
         CastTo(m_pbuttonSend,              pns->FindMember("sendButtonPane"      ));
         CastTo(m_pchatPane,         (Pane*)pns->FindMember("chatText"            ));
@@ -332,6 +336,10 @@ public:
         // 
 
         AddEventTarget(&GameOverScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
+
+		// KGJV
+		// save button
+		AddEventTarget(&GameOverScreen::OnButtonSave, m_pbuttonSave->GetEventSource());
 
         //
         // Text messages
@@ -459,6 +467,128 @@ public:
     {
         return true;
     }
+
+	// KGJV- SAVE STATS TO XML FILE
+	bool OnButtonSave()
+	{
+		// 1. construct file name with date/time
+		SYSTEMTIME sysTimeForName;
+		GetLocalTime(&sysTimeForName);
+
+		ZString statsFileName = "scores-";
+		statsFileName += sysTimeForName.wYear;
+		statsFileName += "-";
+		statsFileName += sysTimeForName.wMonth;
+		statsFileName += "-";
+		statsFileName += sysTimeForName.wDay;
+		statsFileName += "_";
+		statsFileName += sysTimeForName.wHour;
+		statsFileName += ".";
+		statsFileName += sysTimeForName.wMinute;
+		statsFileName += ".xml";
+
+		// 2. open the file
+		FILE* outputFile;
+		outputFile = fopen(statsFileName,"wt");
+		if (!outputFile)
+		{
+			statsFileName = "error opening file "+statsFileName;
+			trekClient.SendChat(trekClient.MyPlayerInfo()->GetShip(),
+				CHAT_INDIVIDUAL,
+				trekClient.MyPlayerInfo()->ShipID(),
+				NA,
+				(const char*)statsFileName);			
+			return true;
+		}
+
+		// 3. save the results
+		// stats are stored (unsorted) in: 
+		//    m_plistStats - players stats
+		//    m_plistStatsSide - side stats
+		// and are stored sorted in
+		//	m_plistSortedStats
+		//	m_plistSortedStatsSide
+		// we save unsorted for now
+		
+		// store current date/time in a ZString
+		char tmpbuf[128];
+		ZString dateName;
+		_strdate_s( tmpbuf, 128 );
+		dateName = tmpbuf;
+	    _strtime_s( tmpbuf, 128 );
+		dateName += " ";
+		dateName += tmpbuf;
+		ZString s;
+
+		// generate XML (hand made XML, fiesty!)
+		s = "<xml>\n";	fwrite((const char *)s,1,s.GetLength(),outputFile);
+		// game info
+		s = "<GameInfo>\n";
+		s += "  <Date>"; s += dateName; s += "</Date>\n";
+		s += "  <Server>"; s+= trekClient.MyMission()->GetMissionDef().szServerName; s += "</Server>\n";
+		s += "  <Core>"; s+= trekClient.MyMission()->GetMissionDef().misparms.szIGCStaticFile; s += "</Core>\n";
+		s += "  <GameOverReason>"; s += m_ptextReason->GetString(); s += "</GameOverReason>\n";
+		s += "</GameInfo>\n"; fwrite((const char *)s,1,s.GetLength(),outputFile);
+		// iterate thru teams
+		s = "<Teams>\n"; fwrite((const char *)s,1,s.GetLength(),outputFile);
+		TListListWrapper<SideEndgameInfo*>::Iterator iterSides(*m_plistStatsSide);
+		SideEndgameInfo* si; int n = 0;
+		while (!iterSides.End()) 
+        {
+			s = "  <Team>\n";
+			si = iterSides.Value();
+			s += "    <TeamNumber>"; s += n++; s += "</TeamNumber>\n";
+			s += "    <Name>"; s += si->sideName; s += "</Name>\n";
+			s += "    <Faction>"; s += trekClient.GetCore()->GetCivilization(si->civID)->GetName(); s += "</Faction>\n";
+			s += "  </Team>\n";
+			fwrite((const char *)s,1,s.GetLength(),outputFile);
+
+			iterSides.Next();
+		}
+		s = "</Teams>\n"; fwrite((const char *)s,1,s.GetLength(),outputFile);
+		// end - iterate thru teams
+
+		// iterate thru players
+		s = "<PlayersScore>\n";	fwrite((const char *)s,1,s.GetLength(),outputFile);
+	
+		TListListWrapper<PlayerEndgameInfo*>::Iterator iterPlayers(*m_plistStats);
+		PlayerEndgameInfo* pi;
+		while (!iterPlayers.End()) 
+        {
+			s = "  <PlayerScore>\n";
+            pi = iterPlayers.Value();
+			s += "    <Name>"; s += pi->characterName; s += "</Name>\n";
+			s += "    <TeamNumber>"; s += pi->sideId; s += "</TeamNumber>\n";
+			s += "    <IsCommander>"; s += pi->scoring.GetCommander()? "true" : "false" ; s += "</IsCommander>\n";
+			s += "    <Rank>"; s += pi->scoring.GetRank(); s += "</Rank>\n";
+			s += "    <Assists>"; s += pi->scoring.GetRecentAssists(); s += "</Assists>\n";
+			s += "    <BaseCaptures>"; s += pi->scoring.GetRecentBaseCaptures(); s += "</BaseCaptures>\n";
+			s += "    <BaseKills>"; s += pi->scoring.GetRecentBaseKills(); s += "</BaseKills>\n";
+			s += "    <Deaths>"; s += pi->scoring.GetRecentDeaths(); s += "</Deaths>\n";
+			s += "    <Ejections>"; s += pi->scoring.GetRecentEjections(); s += "</Ejections>\n";
+			s += "    <Kills>"; s += pi->scoring.GetRecentKills(); s += "</Kills>\n";
+			s += "    <Score>"; s += pi->scoring.GetRecentScore(); s += "</Score>\n";
+			s += "    <TimePlayed>"; s += pi->scoring.GetRecentTimePlayed(); s += "</TimePlayed>\n";
+			s += "  </PlayerScore>\n";
+			fwrite((const char *)s,1,s.GetLength(),outputFile);
+            iterPlayers.Next();
+        }
+		s = "</PlayersScore>\n"; fwrite((const char *)s,1,s.GetLength(),outputFile);
+		// end - iterate thru players
+
+		s = "</xml>\n";	fwrite((const char *)s,1,s.GetLength(),outputFile);
+
+		fclose(outputFile);
+
+		// 4. inform player
+		statsFileName = "scores saved to "+statsFileName;
+		trekClient.SendChat(trekClient.MyPlayerInfo()->GetShip(),
+			CHAT_INDIVIDUAL,
+			trekClient.MyPlayerInfo()->ShipID(),
+			NA,
+			(const char*)statsFileName);			
+		return true;
+	}
 
     bool OnButtonBack()
     {
