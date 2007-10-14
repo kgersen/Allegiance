@@ -3,9 +3,55 @@ use "font";
 use "missionbriefdata";
 
 ///////////////////////////////////////////////////////////////////////////////
+// Tip of the Game
+numTips = "40";
+
+Tip1 = "Use your I key to toggle between Radar modes. None-target only-default-all";
+Tip2 = "Use Ctrl-G to turn on the grid feature when flying.";
+Tip3 = "Remember to turn off your nanite gun when flying a Ga'Taraan Scout (Press 1 to select the gun, 2 to select the nanite -- press the same number again to select all-fire again).";
+Tip4 = "When not sure what to do, deploy more probes.";
+Tip5 = "Click and drag with the right mouse button in F3 to set a waypoint off the grid.";
+Tip6 = "Click on the arrow on the minimap. It will show you rocks, HE (Helium) levels, etc.";
+Tip7 = "Alephs are arranged in sectors geometrically. Use F3 to scout the map.";
+Tip8 = "Place your probes off-plane (above and below the grid) to lower the chances of them being found.";
+Tip9 = "Did you know you can ripcord while boosting? Hold the boost button down and then hit R while holding the boost button.";
+Tip10 = "Rixian combat pods only fire on what you have targetted when you deploy them (they won't switch targets with you).";
+Tip11 = "Phoenix bombers (and all Nix piloted ships) can *NOT* be repaired with a nanite gun.";
+Tip12 = "A Belter Stealth Fighter can be an awesome nan for a Stealth Bomber";
+Tip13 = "Ctrl-w lets you select all weapons. Pressing 1,2 or 3 will activate that gun only.";
+Tip14 = "Prox mines, as you're flying forward, appear behind you. Backpedal, and they'll appear in front.";
+Tip15 = "Camp means to gather at a choke point, an aleph (usually), an enemy base opening.";
+Tip16 = "Calling the drop, BIOS figs, non tf scouts, have prox mines, a 'drop' command means to drop prox mines at the choke point (in preparation of an incoming bomber, etc.)";
+Tip17 = "You can boost immediately during the launch sequence when exiting a base. Useful when exiting a base that is camped.";
+Tip18 = "Place your probes off-plane (above and below the grid) to lesson the chances of them being found.";
+Tip19 = "When turreting, your throttle controls act as a 'zoom' feature; use this to your advantage.";
+Tip20 = "Hold down forward thrust when getting rammed in a bomber, it will carry your speed longer.";
+Tip21 = "Allegiance is a competitive TEAM-based game. Players must work together to complete goals, and commanders may eject players who are not contributing to their teams.";
+Tip22 = "The Allegiance Community has dedicated a LOT of time into helping everyone play Allegiance. Make sure to check out the many resources available to you.";
+Tip23 = "After training, learn basic gameplay and technology on the Newbie servers. Once you've mastered the basics, join the vets and don't look back.";
+Tip24 = "Games with an imbalanced skill are NOT fun. If you're new, don't join the team with the most new players.";
+Tip25 = "As with all communities, Allegiance has 'good apples' and 'bad apples.' Don't let the bad ones ruin your fun.";
+Tip26 = "Enemy nans will often be with important targets. Attack the nans first because any damage you attempt to inflict on the main target will be instantly repaired.)";
+Tip27 = "If you are too close to a friendly con it will think you're on a collision course, and try and avoid you. This can delay it's building time.";
+Tip28 = "Both sheilds and missiles raise your radar signature, making it easier for the enemy to spot you.  Keep them in cargo when you don't need them.";
+Tip29 = "Picking up teammates who are in a lifepod transports them instantly back to base, where they can immediately launch to help defend, attack, or whatever again.";
+Tip30 = "If no one probes then the enemy will always surprise you, always have the upper hand, and your team will lose. This is a fact.";
+Tip31 = "Exploring with an int or fig does not work because their scan range is very low.";
+Tip32 = "Do not attempt to command on the regular server until you have a LOT of experince.  You need know other aspects of the game well to be a successful commander.";
+Tip33 = "TEK is a downloadable tool which can be used to look up scan ranges, damage charts, and much more.";
+Tip34 = "Teamspeak (TS for short) is a program that Allegiance players use to communicate with each other by voice.  Visit the Academy or the Wiki to find out how to use it.";
+Tip35 = "Press ENTER to start composing a chat.  Press tilde '~' to access the quick chat menu.  Press TAB when composing a message to change the chat target.";
+Tip36 = "Bios pods have the unique ability to ripcord.  They also are able to equip a heavy cloak on almost all their ships.";
+Tip37 = "You can pick up objects dropped by your enemy or spawned randomly.  The 'T' symbol in F3 indicates an unresearched technology.  Pick them up and return them to base.";
+Tip38 = "Commanders use the team's income as they feel is best for the team.  Not all ships are free.  You must request to purchase them, but the commander will not always say yes.";
+Tip39 = "Pay attention to the map preview shown before entering a game.  Learn what each map looks like and you will be able to find alephs much faster.";
+Tip40 = "Some of the best players in the game fly with a mouse and some fly with a joystick.  A couple even fly with controllers.  You should avoid using the keyboard to fly.";
+
+///////////////////////////////////////////////////////////////////////////////
 // civ-specific strings
 
-ictrainerTitle = "Iron Coalition Rookie Training";
+ictrainerTitle = "Iron Coalition";
+ictrainerString = "Rookie Training";
 ictrainerNoWin = "You rookies, %s have been assigned to %s. Hostile %s units nearby. Kill them all. Order will prevail. Good hunting!";
 ictrainerDefault = "You rookies, %s have been assigned to %s. Hostile %s units nearby. Locate them, then destroy or capture all of their bases. Remember your training and it'll be a milk run.  Good Hunting!";
 ictrainerSecondaryObjectives = "\n\nOther objectives include:\n";
@@ -16,7 +62,8 @@ ictrainerFlags = "\n *  Capture and return %d of the enemy flags.";
 ictrainerProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 ictrainerDeathmatch = "\n *  Destroy %d enemy ships.";
 
-ironleagueTitle = "Iron Coalition Tactical Briefing";
+ironleagueTitle = "Iron Coalition";
+ironleagueString = "Tactical Briefing";
 ironleagueNoWin = "Your squadron %s have been assigned to %s. Hostile %s units nearby. Kill them all. Order will prevail. Good hunting!";
 ironleagueDefault = "Your squadron %s have been assigned to %s. Hostile %s units nearby. Locate them, then destroy or capture all of their bases. Order will prevail. Good hunting!";
 ironleagueSecondaryObjectives = "\n\nOther objectives include:\n";
@@ -27,7 +74,8 @@ ironleagueFlags = "\n *  Capture and return %d of the enemy flags.";
 ironleagueProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 ironleagueDeathmatch = "\n *  Destroy %d enemy ships.";
 
-crimsonTitle = "GigaCorp Objective Assignment";
+crimsonTitle = "GigaCorp";
+crimsonString = "Objective Assignment";
 crimsonNoWin = "Your Security Force %s has been assigned to %s. Opposition is expected from nearby %s units. Kill them all. Your career looks promising, so make this one count.";
 crimsonDefault = "Your Security Force %s has been assigned to %s. Opposition is expected from nearby %s units. Locate them, then destroy or capture all of their bases. Your career looks promising, so make this one count.";
 crimsonSecondaryObjectives = "\n\nOther objectives include:";
@@ -38,7 +86,8 @@ crimsonFlags = "\n *  Capture and return %d of the enemy flags.";
 crimsonProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 crimsonDeathmatch = "\n *  Destroy %d enemy ships.";
 
-beltersTitle = "Belters’ Call to Arms";
+beltersTitle = "Belters";
+beltersString = "Call to Arms";
 beltersNoWin = "%s, congratulations on your move to %s. DataNet reports enemy %s units nearby. Kill them. Live free or die my friend ... may the Raven watch over you.";
 beltersDefault = "%s, congratulations on your move to %s. DataNet reports enemy %s units nearby. Destroy or capture all their bases. Live free or die my friend ... may the Raven watch over you.";
 beltersSecondaryObjectives = "\n\nOther objectives include:";
@@ -49,7 +98,8 @@ beltersFlags = "\n *  Capture and return %d of the enemy flags.";
 beltersProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 beltersDeathmatch = "\n *  Destroy %d enemy ships.";
 
-biosTitle = "Bios Intelligence Communiqué";
+biosTitle = "Bios";
+biosString = "Intelligence Communiqué";
 biosNoWin = "Group %s, the council has assigned you to %s. Our agents report stalegene %s forces in the region. Eliminate them. The council observes your lineage.";
 biosDefault = "Group %s, the council has assigned you to %s. Our agents report stalegene %s forces in the region. Locate them, then destroy or capture all of their bases. The council observes your lineage.";
 biosSecondaryObjectives = "\n\nOther objectives include:";
@@ -60,7 +110,8 @@ biosFlags = "\n *  Capture and return %d of the enemy flags.";
 biosProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 biosDeathmatch = "\n *  Destroy %d enemy ships.";
 
-rixianTitle = "Rixian Crusade Objective";
+rixianTitle = "Rixian Unity";
+rixianString = "Objective";
 rixianNoWin = "Brethren %s, congratulations on the completion of our new temple in %s. Our Observers report unclean %s. Remove them with all haste. Victory will assure your ascension.";
 rixianDefault = "Brethren %s, congratulations on the completion of our new temple in %s. Our Observers report unclean %s. Remove them with all haste. Destroy or capture all their bases. Victory will assure your ascension.";
 rixianSecondaryObjectives = "\n\nOther objectives include:";
@@ -71,7 +122,8 @@ rixianFlags = "\n *  Capture and return %d of the enemy flags.";
 rixianProsperity = "\n * Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 rixianDeathmatch = "\n *  Destroy %d enemy ships.";
 
-lizardsTitle = "Dreghklar Imperial Decree";
+lizardsTitle = "Dreghklar";
+lizardsString = "Imperial Decree";
 lizardsNoWin = "Loyal Deghklar subjects %s, your presence has been demanded in %s. %s infidels currently fester in this sector. Your duty is to rout all who oppose the Empire, and claim this region of space for our own. Long live the Empire, long live the Dreg!";
 lizardsDefault = "Loyal Deghklar subjects %s, your presence has been demanded in %s. %s infidels currently fester in this sector. Your duty is to rout all who oppose the Empire, and claim this region of space for our own. Long live the Empire, long live the Dreg!";
 lizardsSecondaryObjectives = "\n\nOther objectives include:\n";
@@ -82,7 +134,8 @@ lizardsFlags = "\n *  Capture and return %d of the enemy flags.";
 lizardsProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 lizardsDeathmatch = "\n *  Destroy %d enemy ships.";
 
-technofluxTitle = "Technoflux Data Upload";
+technofluxTitle = "Technoflux";
+technofluxString = "Data Upload";
 technofluxNoWin = "Combat cell %s, proceed to %s. Current scans indicate %s movement.  Implement engagement program Alpha-419027Z.  End transfer.";
 technofluxDefault = "Combat cell %s, proceed to %s. Current scans indicate %s movement.  Implement engagement program Alpha-419027Z.  End transfer.";
 technofluxSecondaryObjectives = "\n\nOther objectives include:\n";
@@ -93,7 +146,8 @@ technofluxFlags = "\n *  Capture and return %d of the enemy flags.";
 technofluxProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 technofluxDeathmatch = "\n *  Destroy %d enemy ships.";
 
-gataaranTitle = "Ga'Taraan Federation Tactical Briefing";
+gataaranTitle = "Ga'Taraan Federation";
+gataaranString = "Tactical Briefing";
 gataaranNoWin = "%s of the federal forces, move out to %s immediately. Swiftly eliminate %s threats to restore the security of our borders. The Federation will endure!";
 gataaranDefault = "Federal Brigade %s, move out to %s immediately. Swiftly eliminate %s threats to restore the security of our borders. The Federation will endure!";
 gataaranSecondaryObjectives = "\n\nOther objectives include:\n";
@@ -104,7 +158,8 @@ gataaranFlags = "\n *  Capture and return %d of the enemy flags.";
 gataaranProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 gataaranDeathmatch = "\n *  Destroy %d enemy ships.";
 
-dn_faphbkTitle = "Phoenix Mission Declaration";
+dn_faphbkTitle = "Phoenix";
+dn_faphbkString = "Mission Declaration";
 dn_faphbkNoWin = "Phoenix loyalists %s, our righteous cause needs you in %s. The soulless %s have moved into this sector. Cleanse their existance from our home!";
 dn_faphbkDefault = "Phoenix loyalists %s, our righteous cause needs you in %s. The soulless %s have moved into this sector. Cleanse their existance from our home!";
 dn_faphbkSecondaryObjectives = "\n\nOther objectives include:\n";
@@ -115,7 +170,8 @@ dn_faphbkFlags = "\n *  Capture and return %d of the enemy flags.";
 dn_faphbkProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 dn_faphbkDeathmatch = "\n *  Destroy %d enemy ships.";
 
-effixTitle = "Effix Colonial Fleet Command";
+effixTitle = "Effix";
+effixString = "Colonial Fleet Command";
 effixNoWin = "Colonial Fleet Task Force %s , you are allocated to %s to secure the local Helium 3 reserves of that sector. Intelligence reports hostile %s forces approaching your position. Dismissed! ";
 effixDefault = "Colonial Fleet Task Force %s , you are allocated to %s to secure the local Helium 3 reserves of that sector. Intelligence reports hostile %s forces approaching your position. Dismissed!";
 effixSecondaryObjectives = "\n\nOther objectives include:";
@@ -129,7 +185,8 @@ effixDeathmatch = "\n *  Destroy %d enemy ships.";
 ///////////////////////////////////////////////////////////////////////////////
 // AW4 strings
 
-earthTitle = "Earth Objectives";
+earthTitle = "Earth";
+earthString = "Objectives";
 earthNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
 earthDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
 earthSecondaryObjectives = "\n\nOther objectives are:\n";
@@ -140,7 +197,8 @@ earthFlags = "\n *  Capture and return %d of the enemy flags.";
 earthProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 earthDeathmatch = "\n *  Destroy %d enemy ships.";
 
-jupiterTitle = "Jupiter Objectives";
+jupiterTitle = "Jupiter";
+jupiterString = "Objectives";
 jupiterNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
 jupiterDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
 jupiterSecondaryObjectives = "\n\nOther objectives are:\n";
@@ -151,7 +209,8 @@ jupiterFlags = "\n *  Capture and return %d of the enemy flags.";
 jupiterProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 jupiterDeathmatch = "\n *  Destroy %d enemy ships.";
 
-marsTitle = "Mars Objectives";
+marsTitle = "Mars";
+marsString = "Objectives";
 marsNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
 marsDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
 marsSecondaryObjectives = "\n\nOther objectives are:\n";
@@ -162,7 +221,8 @@ marsFlags = "\n *  Capture and return %d of the enemy flags.";
 marsProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 marsDeathmatch = "\n *  Destroy %d enemy ships.";
 
-saturnTitle = "Saturn Objectives";
+saturnTitle = "Saturn";
+saturnString = "Objectives";
 saturnNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
 saturnDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
 saturnSecondaryObjectives = "\n\nOther objectives are:\n";
@@ -173,7 +233,8 @@ saturnFlags = "\n *  Capture and return %d of the enemy flags.";
 saturnProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 saturnDeathmatch = "\n *  Destroy %d enemy ships.";
 
-venusTitle = "Venus Objectives";
+venusTitle = "Venus";
+venusString = "Objectives";
 venusNoWin = "Your team %s has arrived in %s. Those fools %s face you. Kill them all.";
 venusDefault = "Your team %s has arrived in %s. Those fools %s face you. Destroy or capture all their bases. This one's important. Make it count.";
 venusSecondaryObjectives = "\n\nOther objectives are:\n";
@@ -187,7 +248,8 @@ venusDeathmatch = "\n *  Destroy %d enemy ships.";
 ///////////////////////////////////////////////////////////////////////////////
 // Wars strings
 
-sw_eTitle = "Galactic Empire Tactical Briefing";
+sw_eTitle = "Galactic Empire";
+sw_eString = "Tactical Briefing";
 sw_eNoWin = "Imperial task force %s has been assigned to %s. Opposition is expected from nearby %s units. These traitors cannot be allowed to survive. Crush them swiftly, the Emperor demands it.";
 sw_eDefault = "Imperial task force %s has been assigned to %s. Opposition is expected from nearby %s units. Locate them, then destroy or capture all of their bases. These traitors cannot be allowed to survive. Crush them swiftly, the Emperor demands it.";
 sw_eSecondaryObjectives = "\n\nOther objectives include:";
@@ -198,7 +260,8 @@ sw_eFlags = "\n *  Capture and return %d of the enemy flags.";
 sw_eProsperity = "\n *  Invest in \"Reinforcement\", costing %d credits, whereby reinforcements will be sent immediately to crush the opposition.";
 sw_eDeathmatch = "\n *  Destroy %d enemy ships.";
 
-sw_rTitle = "Rebel Alliance Tactical Briefing";
+sw_rTitle = "Rebel Alliance";
+sw_rString = "Tactical Briefing";
 sw_rNoWin = "Rebel task force %s has been assigned to %s. Opposition is expected from nearby %s units. They must be defeated. We fight for freedom across the galaxy.";
 sw_rDefault = "Rebel task force %s has been assigned to %s. Opposition is expected from nearby %s units. Locate them, then destroy or capture all of their bases. They must be defeated. We fight for freedom across the galaxy.";
 sw_rSecondaryObjectives = "\n\nOther objectives include:";
@@ -213,10 +276,14 @@ sw_rDeathmatch = "\n *  Destroy %d enemy ships.";
 ///////////////////////////////////////////////////////////////////////////////
 // The mission briefing dialog
 
-missionBriefingTitle = StringPane(missionBriefingTitleText, white, Point(430, 32), JustifyCenter, lgBoldVerdana);
+missionBriefingFaction = StringPane(missionBriefingTitleText, white, Point(300, 32), JustifyLeft, lgBoldVerdana);
+missionBriefingString = StringPane(missionBriefingStringText, white, Point(300, 32), JustifyLeft, medBoldVerdana);
+missionBriefingMapStr = StringPane(missionBriefingMapType, white, Point(118, 32), JustifyCenter, medVerdana);
 missionBriefingTextBody = AnimatedImagePaneRect(StringImage(JustifyLeft, 306, medVerdana, white, missionBriefingBodyText), Rect(0, -131, 306, 0));
 missionBriefingCountDown = StringPane(NumberString(countdown), white, Point(36, 36), JustifyCenter, hugeBoldFont);
 missionBriefingTeamImage = AnimatedImagePaneRect(teamImage, Rect(0, 0, 73, 68));
+missionTipText = AnimatedImagePaneRect(StringImage(JustifyLeft, 250, medVerdana, white, missionBriefingTipText), Rect(0, -131, 306, 0));
+
 // R4
 //mapPreviewPane      = MapPreviewPane(Rect(0, 0, 120, 96),false,true);
 mapPreviewPane      = MapPreviewPane(ImportImage("sectormapbkgndbmp",false),false,true);
@@ -226,11 +293,14 @@ MissionBriefDialog =
             ImagePane(
               ImportImage("missionbriefbkgndbmp", false),
                 [
-                  (missionBriefingTeamImage, Point(398,68)),
-                  (missionBriefingCountDown, Point(415, 181)),
-                  (missionBriefingTitle, Point(38, 24)),
-                  (missionBriefingTextBody, Point(51, 85)),
-                  (mapPreviewPane, Point(150, 165)) //R4
+                  (missionBriefingTeamImage, Point(8,160)),
+                  (missionBriefingCountDown, Point(406, 333)),
+                  (missionBriefingFaction, Point(95, 170)),
+			(missionBriefingString, Point(95, 195)),
+                  (missionBriefingTextBody, Point(27, 240)),
+			(missionBriefingMapStr, Point(365, 162)),
+                  (mapPreviewPane, Point(365, 177)), //R4
+			(missionTipText, Point(225, 82)) //R4
                 ]
             )
         );

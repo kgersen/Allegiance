@@ -1,6 +1,11 @@
 #include "pch.h"
 #include "training.h"
 #include "badwords.h"
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string>
 
 // KGJV #62
 #include "mappreview.h"
@@ -542,6 +547,9 @@ private:
         TRef<Pane> m_ppane;
         TRef<ModifiableString> m_strTitle;
         TRef<ModifiableString> m_strBody;
+		TRef<ModifiableString> m_strTips; //AEM 10.13.07
+		TRef<ModifiableString> m_strString; //AEM 10.13.07
+		TRef<ModifiableString> m_strMap; //AEM 10.13.07
         TRef<ModifiableNumber> m_numCountdown;
         TRef<TeamIconImage> m_pimageTeamIcon;
 
@@ -602,6 +610,59 @@ private:
                 return GetCivMissionBriefing(pns);
             else
                 return trekClient.GetBriefingText();
+        }
+		
+		//AEM 10.13.07 Display the map name above the map preview on the briefing
+		ZString GetMissionMapType(TRef<INameSpace> pns)
+        {
+            const MissionParams& missionparams = trekClient.MyMission()->GetMissionParams();
+			if (missionparams.szCustomMapFile[0] == '\0') 
+			{
+				switch ( missionparams.mmMapType )
+				{
+					case 0:
+						return "Single Ring";
+					case 1:
+						return "Double Ring";
+					case 2:
+						return "Pinwheel";
+					case 3:
+						return "Diamond Ring";
+					case 4:
+						return "Snowflake";
+					case 5:
+						return "Split Bases";
+					case 6:
+						return "Brawl";
+					case 7:
+						return "Big Ring";
+					case 8:
+						return "HiLo";
+					case 9:
+						return "HiHigher";
+					case 10:
+						return "Star";
+					case 11:
+						return "InsideOut";
+					case 12:
+						return "Grid";
+					case 13:
+						return "EastWest";
+					case 14:
+						return "LargeSplit";
+					default:
+						return "Unknown map name";
+				}				
+			} else 
+			{
+				int mapNum;
+				for (int i = 0; i < trekClient.GetNumStaticMaps(); i++)
+				{
+					if (strcmp(missionparams.szCustomMapFile, trekClient.GetStaticMapInfo(i).cbIGCFile) == 0)
+						mapNum = i;
+				}
+				return trekClient.GetStaticMapInfo(mapNum).cbFriendlyName;
+			}
         }
 
         ZString GetCivMissionBriefing(TRef<INameSpace> pns)
@@ -671,15 +732,36 @@ private:
         {
             return GetCivString("Title", pns);
         }
+
+		//AEM 10.13.07 Used to get "Objective" or similar message from the mdl
+		ZString GetMissionBriefingString(TRef<INameSpace> pns)
+        {
+            return GetCivString("String", pns);
+        }
+
+		//AEM 10.13.07 Find a random tip to display for the Tip of the Game
+		ZString GetMissionTip(TRef<INameSpace> pns)
+        {
+			ZString numTipsStr = GetString("numTips", pns);
+			int numTipsInt = numTipsStr.GetInteger();
+			srand(time(NULL));
+			int randTip = rand() % numTipsInt + 1;
+			ZString getTip = "Tip";
+			getTip += randTip;
+			return GetString(getTip, pns);
+        }
         
         MissionBriefPopup()
         {
             TRef<INameSpace> pnsMissionBriefingData = GetModeler()->CreateNameSpace("missionbriefdata");
             pnsMissionBriefingData->AddMember("missionBriefingBodyText", m_strBody = new ModifiableString("<bug>"));
+			pnsMissionBriefingData->AddMember("missionBriefingTipText", m_strTips = new ModifiableString("<bug>")); //AEM 10.13.07 Used to display Tip of the Game
+			pnsMissionBriefingData->AddMember("missionBriefingStringText", m_strString = new ModifiableString("<bug>")); //AEM 10.13.07 Used to display "Objective" or equivalent message under the faction name
             pnsMissionBriefingData->AddMember("missionBriefingTitleText", m_strTitle = new ModifiableString("<bug>"));
+			pnsMissionBriefingData->AddMember("missionBriefingMapType", m_strMap = new ModifiableString("<bug>")); //AEM 10.13.07 Get the map name to display
             pnsMissionBriefingData->AddMember("countdown", m_numCountdown = new ModifiableNumber(-1));
             pnsMissionBriefingData->AddMember("teamImage", (Value*)(m_pimageTeamIcon = new TeamIconImage()));
-
+			
             m_pimageTeamIcon->SetSide(trekClient.GetSideID());
             m_pimageTeamIcon->SetCivilization(trekClient.GetSide()->GetCivilization());
 
@@ -687,8 +769,11 @@ private:
 
             CastTo(m_ppane, pns->FindMember("MissionBriefDialog"));
 
+			m_strString->SetValue(GetMissionBriefingString(pns)); //AEM 10.8.07
             m_strBody->SetValue(GetMissionBriefingBodyText(pns));
             m_strTitle->SetValue(GetMissionBriefingTitle(pns));
+			m_strMap->SetValue(GetMissionMapType(pns)); //AEM 10.8.07
+			m_strTips->SetValue(GetMissionTip(pns)); //AEM 10.8.07
 
             GetModeler()->UnloadNameSpace("missionbrief");
         }
