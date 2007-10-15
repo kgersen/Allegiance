@@ -152,7 +152,7 @@ expandedTeamPane =
             (eTeamPaneBootButtonPane,       Point(354, 343)),
             (eTeamPaneWingComboPane,        Point(466, 343)),
 			
-			(eTeamPaneIconListPane,			Point(530, 12))
+			(eTeamPaneIconListPane,			Point(100, 12))
             
             
             
