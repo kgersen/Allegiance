@@ -1039,7 +1039,7 @@ public:
             }
             else if (reason == DPR_Banned)
             {
-                TRef<IMessageBox> pmsgBox = CreateMessageBox("You have been banned from this mission.");
+                TRef<IMessageBox> pmsgBox = CreateMessageBox("You have been removed (i.e. booted) from this game by the commander(s)."); // mmf 09/07 was "You have been banned from this mission."
                 GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
                 trekClient.Disconnect();
             }

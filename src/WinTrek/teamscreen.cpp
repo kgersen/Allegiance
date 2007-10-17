@@ -3141,7 +3141,7 @@ public:
                     break;
 
                 case DPR_Banned:
-                    strReason = "You have been banned from this team.";
+                    strReason = "You have been removed (i.e. booted) from this team by the commander."; // mmf 09/07 was "You have been banned from this team."
                     break;
 
                 case DPR_SideGone:

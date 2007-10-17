@@ -3703,6 +3703,7 @@ public:
 		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
 		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
 		//AEM, redesigned ESC menu 7/6/07
+		// mmf 10/07 swapped position of S and G
 		m_pmenu->AddMenuItem(0               , "");
 		m_pmenu->AddMenuItem(0				 , "HELP");
 		m_pmenu->AddMenuItem(0               , "--------------------------");
@@ -3712,8 +3713,9 @@ public:
 		m_pmenu->AddMenuItem(0               , "--------------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmOptions      , "Graphics", 'O', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
+		m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
+
 
         if (trekClient.MyMission() != NULL) {
 			m_pmenu->AddMenuItem(0               , "");

@@ -1018,6 +1018,9 @@ public:
 		misparams.nInitialMinersPerTeam = FindValue(m_pcomboInitialMiners->GetSelection(), "initialMinersValues");
 		misparams.nMaxMinersPerTeam = FindValue(m_pcomboMaximumMiners->GetSelection(), "maxMinersValues");
 
+		// mmf 10/07 Experimental game type.  Hard coded this to 5 as GameType is not 'filled' from newgamescreen.mdl like
+		// the others.  The entries are built in VerifyGameTypeInitialization in gametypes.cpp
+		 misparams.bExperimental = (m_pcomboGameType->GetSelection() == 5) ? true : false;
 	}
 
     bool OnButtonCreate()

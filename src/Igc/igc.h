@@ -1075,7 +1075,8 @@ struct MissionParams
     bool        bAutoStart          : 1;                //Does the game start automatically when all sides are ready?
     bool        bAutoRestart        : 1;                //Does the game restart automatically
     bool        bAllowRestart       : 1;                //Can the game be restarted at all?
-    float       fGoalTeamMoney;                         //Cost of win the game tech = fGoalTeamMoney * WinTheGameMoney, 0 == no win the game tech
+	bool        bExperimental       : 1;                // mmf 10/07 Experimental game type
+	float       fGoalTeamMoney;                         //Cost of win the game tech = fGoalTeamMoney * WinTheGameMoney, 0 == no win the game tech
     int         verIGCcore;                             //this is set only by the server, so the client can know whether it needs to get a new igc static core
     float       nPlayerSectorTreasureRate;              //# of treasures that generate/second in player sectors
     float       nNeutralSectorTreasureRate;             //                                       neutral
@@ -1186,6 +1187,7 @@ struct MissionParams
         bAutoStart                      = false;
         bAutoRestart                    = false;
         bAllowRestart                   = true;
+		bExperimental                   = false; // mmf 10/07 Experimental game type
         nInvitationListID               = 0;
 
         fStartCountdown                 = 15.0f;
