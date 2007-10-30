@@ -389,7 +389,7 @@ TipTextImage1 =
         JustifyCenter,
         600, 
         medVerdana, 
-        Color(.5, 0, 0), 
+        Color(.7, .5, .5), 
         TipText1
     );
     
@@ -398,7 +398,7 @@ TipTextImage2 =
         JustifyCenter,
         600, 
         smVerdana, 
-        Color(.3, 0, 0), 
+        Color(.7, .4, .4), 
         TipText2
     );
 	//
@@ -1767,15 +1767,15 @@ dialogs =
         //
         
         //
-		// yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
-		// start
+        // yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
+        // start
         
-		(TipTextImage2,                               SideBottom,      Point( -300, -180), Point(-300,   34), .5,65535, true),
-		(TipTextImage1,                               SideBottom,      Point( -300, -190), Point(-300,   24), .5,65535, true),
+        (TipTextImage2,                               SideBottom,      Point( -300, -180), Point(-300,   34), .5,65535, true),
+        (TipTextImage1,                               SideBottom,      Point( -300, -190), Point(-300,   25), .5,65535, true),
         
         //
-		// yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
-		// end
+        // yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
+        // end
         
         (TipTextImage,                                SideBottom,      Point( -300, -200), Point(-300,   14), .5,65535, true),
         (CriticalTipImage,                            SideTop,         Point( -310, -119), Point(-310, -119), .5,   15, true),
