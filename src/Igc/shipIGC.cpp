@@ -2426,8 +2426,8 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 
 
         *pVelocity += thrustToVelocity * (m_engineVector - drag);
-		// mmf added log msg for large velocity^2
-		if ((*pVelocity * *pVelocity) > 180000.0f) {
+		// mmf added log msg for large velocity^2, mmf 10/07 increased threshold to 800^2 as some cores commonly have ships with speeds in the 500's
+		if ((*pVelocity * *pVelocity) > 640000.0f) {
 			debugf("mmf pVelocity^2 = %g ship = %s\n",(*pVelocity * *pVelocity),GetName());
 		}
 
