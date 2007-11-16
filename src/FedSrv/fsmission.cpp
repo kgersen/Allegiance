@@ -830,7 +830,7 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
     float           r = 1.5f * m_pMission->GetFloatConstant(c_fcidRadiusUniverse);
     if (p.x*p.x + p.y*p.y + p.z*p.z/(lm*lm) > r*r)
     {
-      ((FedSrvSiteBase*)m_psiteIGC)->RespawnFlag(sidFlag);
+      ((FedSrvSiteBase*)m_psiteIGC)->RespawnFlag(sidFlag, NULL); // mmf 11/07 added second argument pside (which is set to null in this case)
     }
     else
     {

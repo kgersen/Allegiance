@@ -183,7 +183,7 @@ public:
   void UpgradeShip(IshipIGC*  pship, const IstationIGC* pstation);
   void UpgradeDrones(IsideIGC* pside);
 
-  void RespawnFlag(SideID sidFlag);
+  void RespawnFlag(SideID sidFlag, IsideIGC* pside); // mmf 11/07 added second argument pside
   
 protected:
   CFSMission * m_pfsMission;

@@ -71,6 +71,7 @@ public:
             && ((misparams.nGoalTeamKills == 0) == (m_nGoalTeamKills == 0))
             && ((misparams.iGoalTerritoryPercentage == 100) == (m_nGoalTerritory == 100))
             && ((misparams.dtGameLength == 0) == (m_fGameLength == 0))
+			&& (misparams.bExperimental == m_bExperimental)  // mmf 11/07 Experimental game type
             //&& (misparams.bScoresCount == trekClient.GetIsZoneClub())
             ;
 
@@ -134,7 +135,7 @@ namespace
 
 			// mmf 10/07 add new game type for trying things on the live servers 
             pNewGameType = new GameTypeImpl(
-                "Experimental", true, false, false, c_cUnlimitedLives, 0, 100, 0, 0, 0, 100, 0, true, c_mmHiLo
+                "Experimental", true, false, true, c_cUnlimitedLives, 0, 100, 0, 0, 0, 100, 0, true, c_mmHiLo
                 ); // mmf 10/07 added true experimental param
             listGameTypes.PushEnd(pNewGameType);
 

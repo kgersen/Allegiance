@@ -10183,7 +10183,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
             float           r = 1.5f * pmission->GetFloatConstant(c_fcidRadiusUniverse);
             if (p.x*p.x + p.y*p.y + p.z*p.z/(lm*lm) > r*r)
             {
-                RespawnFlag(sidFlag);
+                RespawnFlag(sidFlag,NULL); // mmf 11/07 added second argument pside (which is set to null in this case)
             }
             else
             {
@@ -10815,7 +10815,7 @@ void FedSrvSiteBase::KillTreasureEvent(ItreasureIGC* ptreasure)
         g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_NOT_GUARANTEED, FM_FLUSH);
 
         if (ptreasure->GetTreasureCode() == c_tcFlag)
-            RespawnFlag(ptreasure->GetTreasureID());
+            RespawnFlag(ptreasure->GetTreasureID(),NULL); // mmf 11/07 added second argument pside (which is set to null in this case)
     }
 
     ptreasure->Terminate();
@@ -11248,7 +11248,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
               m_pfsMission->GameOver(psideWin, szReason);
           }
 
-          RespawnFlag(sidFlag);
+          RespawnFlag(sidFlag,pside);  // mmf 11/07 added second argument pside
       }
   }
 
@@ -11813,7 +11813,7 @@ void        FedSrvSiteBase::LayExpendable(Time                   now,
     KillShipEvent(now, pshipLayer, NULL, 0.0f, position, Vector::GetZero());
 }
 
-void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag)
+void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag, IsideIGC* pcapturersside) // mmf 11/07 added second argument pside of capturer
 {
     //Don't respawn flags that have just been picked up by a ship
     if (sidFlag != NA)
@@ -11877,30 +11877,43 @@ void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag)
                     }
                 }
             }
-            assert (nStations > 0);
+            // assert (nStations > 0); mmf 11/07 commented this out as this can happen in 'only one side' games
 
-            IstationIGC*    pstation = pstations[randomInt(0, nStations - 1)];
-            DataTreasureIGC dt;
-            dt.treasureCode = c_tcFlag;
-            dt.treasureID = sidFlag;
-            dt.amount = 0;
-            dt.clusterID = pstation->GetCluster()->GetObjectID();
-            dt.lifespan = 10.0f * 24.0f * 3600.0f;
-            dt.createNow = false;
+			// mmf 11/07 add if nStations == 0
+			//     If the side that the flag belongs to has no bases AND one of their flags was captured
+			//     the side that captured it wins.
+			//     Otherwise don't spawn a flag (there is no base to get a position for).
+			//     It is unlikely this second case will occur but best to cover it just incase.
+			if (nStations == 0) {
+				if (pcapturersside != NULL) {
+					static char szReason[100];	//Make this static so we only need to keep a pointer to it around
+					sprintf(szReason,"%s wins. Team owning captured flag has no stations left.",
+                      pcapturersside->GetName());
+					m_pfsMission->GameOver(pcapturersside, szReason);
+				}
+			} else {
+				IstationIGC*    pstation = pstations[randomInt(0, nStations - 1)];
+				DataTreasureIGC dt;
+	            dt.treasureCode = c_tcFlag;
+	            dt.treasureID = sidFlag;
+	            dt.amount = 0;
+				dt.clusterID = pstation->GetCluster()->GetObjectID();
+				dt.lifespan = 10.0f * 24.0f * 3600.0f;
+				dt.createNow = false;
 
-            dt.objectID = m_pfsMission->GetIGCMission()->GenerateNewTreasureID();
+				dt.objectID = m_pfsMission->GetIGCMission()->GenerateNewTreasureID();
 
-            dt.p0 = pstation->GetPosition();
-            dt.p0.z += pstation->GetRadius() + c_fFlagOffset;
-            dt.v0 = Vector::GetZero();
-            dt.time0 = g.timeNow;
+				dt.p0 = pstation->GetPosition();
+	            dt.p0.z += pstation->GetRadius() + c_fFlagOffset;
+				dt.v0 = Vector::GetZero();
+				dt.time0 = g.timeNow;
 
-            ItreasureIGC* t = (ItreasureIGC *)m_pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_treasure,
+				ItreasureIGC* t = (ItreasureIGC *)m_pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_treasure,
                                                                                           &dt, sizeof(dt));
-
-            assert (t);
-            t->Release();
-        }
+				assert (t);
+				t->Release();
+			}
+		}
     }
 }
 

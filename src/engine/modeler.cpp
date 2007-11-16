@@ -2493,6 +2493,8 @@ public:
 		}
 		if(!pfile) // if we dont have a file here, then load regularly.
 		{
+			// mmf #if this out for release.  I left the strtoTryOpenFromDev code in above
+#if 0
             // KGJV try dev folder 1st
             pfile = new ZFile(strToTryOpenFromDev, OF_READ | OF_SHARE_DENY_WRITE);
             if (!pfile->IsValid())
@@ -2500,10 +2502,12 @@ public:
             else
                 if (g_bMDLLog)
                     ZDebugOutput("'dev' file found for " + pathStr + "'\n");
-                
+#else
+			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
+#endif                
 
 			// mmf added debugf but will still have it call assert
-			if ((bError && !pfile->IsValid() && m_psite)) { // logic from ZRAssert below
+			if (!pfile->IsValid()) {
 				ZDebugOutput("Could not open the artwork file "+ strToOpen + "'\n");
 				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
 			}
