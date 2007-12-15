@@ -1,7 +1,8 @@
 #ifndef _CLUBQUERIES_
 #define _CLUBQUERIES_
 
-#define HKLM_FedSrv		"SYSTEM\\CurrentControlSet\\Services\\AllClub"
+// KGJV obsolete
+//#define HKLM_FedSrv		"SYSTEM\\CurrentControlSet\\Services\\AllClub"
 
 const int c_cbErrorMsgDB        = 128;
 const int c_cbErrorMsg          = c_cbErrorMsgDB + 1;
@@ -14,7 +15,7 @@ const int c_cbOwnershipLog      = c_cbOwnershipLogDB + 1;
 // Old-style synchronous queries
 // ******************************************************************
 
-BEGIN_SQL_DEF(&g_SQLSite)
+BEGIN_SQL_DEF(HKLM_AllClub, &g_SQLSite)
 
   //
   // Input:   Character Name

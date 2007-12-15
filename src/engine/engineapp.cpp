@@ -12,6 +12,10 @@ HRESULT EngineApp::Initialize(const ZString& strCommandLine)
     // Initialize the pane code
     //
 
+    // KGJV 32B - FreeImage Lib
+    FreeImage_Initialise();
+
+
     Pane::Initialize();
 
     //
@@ -20,14 +24,14 @@ HRESULT EngineApp::Initialize(const ZString& strCommandLine)
 
     bool bSoftwareOnly;
     bool bPrimaryOnly;
-
-    ParseCommandLine(strCommandLine, bSoftwareOnly, bPrimaryOnly);
+    DWORD dwBPP = 0; // KGJV 32B - forced bpp, 16, 32 or 0 = use desktop
+    ParseCommandLine(strCommandLine, bSoftwareOnly, bPrimaryOnly, dwBPP);
 
     //
     // Create the engine
     //
 
-    m_pengine = CreateEngine(!bSoftwareOnly, !bPrimaryOnly);
+    m_pengine = CreateEngine(!bSoftwareOnly, !bPrimaryOnly, dwBPP);
 
     if (!m_pengine->IsValid()) {
         return E_FAIL;
@@ -58,13 +62,17 @@ void EngineApp::Terminate()
     m_pmodeler = NULL;
     m_pengine = NULL;
 
+    // KGJV 32B - FreeImage
+    FreeImage_DeInitialise();
+
     Win32App::Terminate();
 }
 
 void EngineApp::ParseCommandLine(
     const ZString& strCommandLine,
     bool& bSoftwareOnly,
-    bool& bPrimaryOnly
+    bool& bPrimaryOnly,
+    DWORD& dwBPP
 ) {
     bPrimaryOnly     = false;
     bSoftwareOnly    = false;
@@ -79,6 +87,13 @@ void EngineApp::ParseCommandLine(
                 bPrimaryOnly = true;
             } else if (str == "software") {
                 bSoftwareOnly = true;
+            }
+            //KGJV 32B
+            if (str == "32b") {
+                dwBPP = 32;
+            }
+            else if (str == "16b") {
+                dwBPP = 16;
             }
         } else {
             token.IsString(str);

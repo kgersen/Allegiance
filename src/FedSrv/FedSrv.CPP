@@ -231,6 +231,38 @@ void UnloadRankInfo()
   g.cRankInfo = 0;
 }
 
+//KGJV #114
+// read <artpath>/cores.txt and fill in g.cStaticCoreInfo (size) and g.vStaticCoreInfo (data)
+// this assumes cores.txt is well formated (no overflow control)
+void LoadStaticCoreInfo()
+{
+    char        mapfilename[MAX_PATH + 1];
+    HRESULT     hr = UTL::getFile("cores", ".txt", mapfilename, true, true);
+    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
+	g.cStaticCoreInfo = 0;
+	g.vStaticCoreInfo = NULL;
+    if (file)
+    {
+		// 1st line = nb cores
+		fscanf(file,"%d\n",&g.cStaticCoreInfo);
+		g.vStaticCoreInfo = new StaticCoreInfo[g.cStaticCoreInfo];
+		memset(g.vStaticCoreInfo,0,g.cStaticCoreInfo*sizeof(StaticCoreInfo));// mainly for debugging purpose
+		for (int i=0;i<g.cStaticCoreInfo;i++)
+		{
+			// one core per line, no .igc extension, max size = c_cbFileName
+			fscanf(file,"%[^\n]\n",g.vStaticCoreInfo[i].cbIGCFile);
+		}
+		fclose(file);
+	}
+}
+void UnloadStaticCoreInfo()
+{
+	if (g.vStaticCoreInfo)
+		delete [] g.vStaticCoreInfo;
+	g.cStaticCoreInfo = 0;
+}
+// End of KGJV #114
+
 
 void LoadStaticMapInfo()
 {
@@ -518,6 +550,40 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
+
+  if(pfsPlayer->PrivilegedUser()){ //Avalanche: Let admins bypass most checks.
+  // check to see if the mission is running and whether joiners are allowed
+  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
+  const MissionParams*    pmp = pMission->GetMissionParams();
+  SideID iSide=SIDE_TEAMLOBBY;
+  unsigned char     bannedSideMask;
+  //Check if previously part of the game.
+  if (popi)
+  {
+	bannedSideMask = popi->data().bannedSideMask;
+	//Place on lobby if banned from team.
+    if ((popi->data().sideID < 0) || (bannedSideMask & SideMask(popi->data().sideID))
+        || ((pfsMission->GetStage() == STAGE_STARTED) && pmp->bAllowDefections)
+        || (popi->data().sideID >= pmp->nTeams))
+    {
+      iSide = SIDE_TEAMLOBBY;
+    }
+    else
+    {
+      iSide = popi->data().sideID;
+    }
+  }
+  //Join the mission.
+  pfsMission->AddPlayerToMission(pfsPlayer);
+  IsideIGC* psideReq = pMission->GetSide(iSide);
+  //Rejoin team
+  if (psideReq->GetObjectID() != SIDE_TEAMLOBBY)
+	    pfsMission->RequestPosition(pfsPlayer, psideReq, popi != NULL);
+  return;
+  }	  
+	  
+	  
   if (pfsMission->RequiresInvitation())
   {
     if (!pfsMission->IsInvited(pfsPlayer))
@@ -1168,19 +1234,21 @@ void SetCharStats(int                   characterID,
 
     g.sql.PostQuery(pquery);
 
-  #endif // !defined(ALLSRV_STANDALONE)
+#endif // !defined(ALLSRV_STANDALONE)
 
 #ifdef DEBUG
 	// mmf have debug build of server log this
 	// mmf converted debug statement from pdq structure
+	//     note pfsPlayer can be NULL so added check for that
 	if (0.0f == pso.GetTimePlayed())
     {   return;    }
     assert(pso.GetScore() >= 0.0f);
 	assert(pSide);
     PersistPlayerScoreObject& ppso = pso.GetPersist();
     RankID  Rank = ppso.GetRank();
-	debugf("PlayerName=%s, Rank=%d, bScoresCount=%d, CharacterID=%d, CivID=%d, Rating=%d,\n",
-        pfsPlayer->GetName(),Rank ,pfsMission->GetScoresCount(), characterID, pSide->GetCivilization()->GetObjectID(), 
+	if (pfsPlayer != NULL) debugf("PlayerName =%s, ",pfsPlayer->GetName());
+	debugf("CharacterID=%d, Rank=%d, bScoresCount=%d, CivID=%d, Rating=%d,\n",
+        characterID, Rank ,pfsMission->GetScoresCount(), pSide->GetCivilization()->GetObjectID(), 
 		RATING_INT2EXT(pso.GetCombatRating()));
     debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
         pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
@@ -1188,7 +1256,7 @@ void SetCharStats(int                   characterID,
         pso.GetMinerKills(), pso.GetBuilderKills(), pso.GetLayerKills(), pso.GetPlayerKills());
     debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
         pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
-    debugf("    Minutes=%d, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
+    debugf("    Minutes=%.2f, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
         (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(), 
 		pso.GetScore());
 #endif
@@ -4711,12 +4779,32 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           {
               if (pfmChat->cbMessage > strlen("#resign") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#resign", strlen("#resign")) == 0)
               {
+				// mmf/KGJV 09/07 allow only one ballot of each type at a time
+				if (!pfsMission->HasBallots(BALLOT_RESIGN))
                 pfsMission->AddBallot(new ResignBallot(pfsPlayer));
+				else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "Resign vote already in progress...");
                 bForward = false;
               }
               else if (pfmChat->cbMessage > strlen("#draw") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#draw", strlen("#draw")) == 0)
               {
+				// mmf/KGJV 09/07 allow only one ballot of each type at a time
+				if (!pfsMission->HasBallots(BALLOT_OFFERDRAW))
                 pfsMission->AddBallot(new OfferDrawBallot(pfsPlayer));
+				else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "Draw vote already in progress...");
+                bForward = false;
+              }
+				// KGJV #110
+               else if (pfmChat->cbMessage > strlen("#mutiny") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#mutiny", strlen("#mutiny")) == 0)
+              {
+				// leader cant mutiny
+			    if (pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) != pfsPlayer)
+				  // mmf/KGJV 09/07 allow only one ballot of each type at a time
+				  if (!pfsMission->HasBallots(BALLOT_MUTINY))
+				    pfsMission->AddBallot(new MutinyBallot(pfsPlayer));
+				  else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "Mutiny vote already in progress...");
                 bForward = false;
               }
 			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006
@@ -4741,6 +4829,16 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfmChat->cd.chatTarget = CHAT_EVERYONE;
                 pfmChat->cd.oidRecipient = NA;
 				bForward = true;
+			  }
+			  // mmf 03/22/07 added #list to display all the other # commands
+			  //              keep this at the end of this else if
+			  else if(pfmChat->cbMessage > strlen("#list") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#list", strlen("#list")) == 0)
+              {				
+			    // mmf send message to self
+				// KGJV #110 added #mutiny
+				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny");
+				bForward = false;
 			  }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
@@ -4984,7 +5082,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               {
                     Vector  d = position - pMissileLaunchData[i].vecPosition;
                     float   d2 = d * d;
-                    if (d2 > 10.0f)
+                    if (d2 > 20.0f)  // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway
                         debugf("missile position error %f %s\n", d2, pfsPlayer->GetName());
                     if ((d2 < 0.0f) || (d2 > 200.0f * 200.0f))
                         pMissileLaunchData[i].vecPosition = position;
@@ -4992,7 +5090,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               {
                     Vector  d = velocity - pMissileLaunchData[i].vecVelocity;
                     float   d2 = d * d;
-                    if (d2 > 10.0f)
+                    if (d2 > 20.0f) // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway
                         debugf("missile velocity error %f\n", d2);
                     if ((d2 < 0.0f) || (d2 > 100.0f * 100.0f))
                         pMissileLaunchData[i].vecVelocity = velocity;
@@ -5024,6 +5122,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	// KGJV #110 - changed logic
     case FM_C_AUTODONATE:
     {
       if (!pfsMission || (pfsMission->GetStage() != STAGE_STARTED))
@@ -5035,6 +5134,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
 
       IsideIGC* pside = pfsPlayer->GetSide();
+	  SideID    sideID = pside->GetObjectID();
+	  if (pfmAutoDonate->amount==-1 && pfsMission->GetLeader(sideID)!=pfsPlayer)
+		  TrapHackBoot(false); // only leader can toggle someone donation
 
       CFSPlayer*    pfsDonate = NULL;
       ShipID        shipID = pfsPlayer->GetShipID();
@@ -5047,11 +5149,30 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           }
       }
 
+	  // logic change here
+	  // if amount is -1 then it's the leader that is toggling someone donation
+	  // otherwise do like previous version (aka redonate to leader or set new leader)
+	  CFSPlayer *pfsPlayerChanged = NULL;
+	  if (pfmAutoDonate->amount == -1)
+	  {
+		  if (!pfsDonate) break; // in case target dropped/left
+		  // toggle donation:
+		  if (pfsDonate->GetAutoDonate() != NULL)
+			pfsDonate->SetAutoDonate(NULL,0);
+		  else
+			pfsDonate->SetAutoDonate(pfsPlayer,0);
+		  pfsPlayerChanged = pfsDonate;
+	  }
+	  else
+	  {
       pfsPlayer->SetAutoDonate(pfsDonate, pfmAutoDonate->amount);
+  		  pfsPlayerChanged = pfsPlayer;
+	  }
+	  assert(pfsPlayerChanged);
 
       if (pMission->GetMissionStage() == STAGE_STARTED)
       {
-          IshipIGC*     pshipNewDonate = pfsPlayer->GetIGCShip()->GetAutoDonate();
+          IshipIGC*     pshipNewDonate = pfsPlayerChanged->GetIGCShip()->GetAutoDonate();
 
           SideID        sideID = pside->GetObjectID();
           IshipIGC*     pshipLeader = pfsMission->GetLeader(sideID)->GetIGCShip();
@@ -6543,6 +6664,55 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	// KGJV #62
+    case FM_CS_SIDE_INACTIVE:
+    {
+		TrapHackBoot(pfsMission);
+		TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
+		TrapHackBoot(pfsMission->GetStage() == STAGE_NOTSTARTED);
+		TrapHackBoot(!pfsMission->GetMissionDef()->misparms.bObjectModelCreated);
+
+		CASTPFM(pfmSideInactive, CS, SIDE_INACTIVE, pfm);
+  		SideID sid = pfmSideInactive->sideID;
+
+		//TrapHackBoot(!pfsMission->HasPlayers(pfsMission->GetIGCMission()->GetSide(sid),true));
+		// only change activeflag if team is empty
+		if (!pfsMission->HasPlayers(pfsMission->GetIGCMission()->GetSide(sid),true))
+			pfsMission->SetSideActive(sid,pfmSideInactive->bActive); // update cached missdef
+		else // otherwise revert
+			pfmSideInactive->bActive = pfsMission->GetSideActive(sid);
+
+		// here we update the AllowEmptyTeams (AET) game parameter if needed
+		// 1.  get current AET
+		bool bAET = pfsMission->GetAllowEmptyTeams(); 
+
+		// 2. check if all sides are active
+		bool bAllActive = true; 
+		for (SideID i = 0; i < pfsMission->GetCountSides() ; i++) // or pfsMission->GetIGCMission()->GetSides()->n()
+		{
+			if (!pfsMission->GetSideActive(i))
+				bAllActive = false;
+		}
+		// 3. do we need to change AET ?
+		bool bMustChangeAET = false; 
+		if (bAllActive && bAET) bMustChangeAET = true; // all active and AET is on, change it 
+		if (!bAllActive && !bAET) bMustChangeAET = true; // not all active and AET is off, change it
+
+		// 4.  if needed, change AET and inform clients
+		if (bMustChangeAET)
+		{
+			pfsMission->SetAllowEmptyTeams(!bAET); // toggle AET
+			pfmSideInactive->bChangeAET = true;
+			pfmSideInactive->bAET = pfsMission->GetAllowEmptyTeams(); 
+		}
+		else
+			pfmSideInactive->bChangeAET = false;
+
+		// 4. broadcast both the team activeF and the AET changes
+        g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfmSideInactive, FM_GUARANTEED);//broadcast the change
+	}
+	break;
+
     case FM_CS_SET_TEAM_INFO:
     {
       if (!pfsMission)
@@ -6658,10 +6828,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         #if defined(ALLSRV_STANDALONE)
           // for a stand alone server, don't let the client try to change the password
           // (we can't assert this due to a race condition)
+		  // KGJV #114 - only for bObjectModelCreated games (=DefaultGames) 
+		  if (pfmMissionParams->missionparams.bObjectModelCreated)
+		  {
           strcpy(pfmMissionParams->missionparams.strGamePassword,
               pfsMission->GetMissionDef()->misparms.strGamePassword);
           strcpy(pfmMissionParams->missionparams.strGameName,
               pfsMission->GetMissionDef()->misparms.strGameName);
+		  }
         #endif // defined(ALLSRV_STANDALONE)
 
         // change the settings
@@ -6754,6 +6928,76 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	// w0dk4 player-pings feature
+	// send ping data
+	case FM_C_REQPINGDATA:
+    {
+		CFMConnection * cnxn = pfsPlayer->GetConnection();
+		if(cnxn->PingQuery()) { // check if last ping request longer than 5 seconds ago
+
+			// iterate through all connections and if player data available, go for it
+			ListConnections::Iterator iterCnxn(*g.fm.GetConnections());
+			while (!iterCnxn.End())
+			{
+			  CFMConnection & cnxn = *iterCnxn.Value();
+			  iterCnxn.Next();
+
+			  CFSPlayer * pfsTempPlayer = CFSPlayer::GetPlayerFromConnection(cnxn);
+
+			  if(pfsTempPlayer) {
+
+				  // now get all the data and queue message
+
+				  BEGIN_PFM_CREATE(g.fm, pfmPingData, S, PINGDATA)
+				  END_PFM_CREATE
+				  pfmPingData->shipID = pfsTempPlayer->GetShipID();
+
+				  DPN_CONNECTION_INFO Connection_Info;
+				  Connection_Info.dwSize = sizeof(DPN_CONNECTION_INFO);
+				  if(g.fm.GetConnectionInfo(&cnxn, Connection_Info) == S_OK) {
+					pfmPingData->ping = Connection_Info.dwRoundTripLatencyMS;
+					// calculate packet loss
+					DWORD m_lastLost;
+					DWORD m_lastPackets;
+					cnxn.GetPacketLossData(&m_lastPackets,&m_lastLost);
+					DWORD packets_now = Connection_Info.dwPacketsSentGuaranteed + Connection_Info.dwPacketsSentNonGuaranteed;
+					DWORD lost_now = Connection_Info.dwPacketsRetried + Connection_Info.dwPacketsDropped;
+					float fLossPercentage;
+					if ((packets_now-m_lastPackets) > 0) // check for division by zero
+						fLossPercentage = (float)((float)(lost_now - m_lastLost)/(float)(packets_now-m_lastPackets))*100;
+					else
+						fLossPercentage = 0.0;
+					pfmPingData->loss = (unsigned int)fLossPercentage;
+
+				  } else {
+					  pfmPingData->ping = 0;
+					  pfmPingData->loss = 0;
+				  }
+
+
+			  }
+
+			}
+
+			BEGIN_PFM_CREATE(g.fm, pfmPingDataOpenWindow, S, PINGDATA)
+			END_PFM_CREATE
+			// send open ping window code
+			pfmPingDataOpenWindow->shipID = -1;
+			pfmPingDataOpenWindow->ping = 1;
+
+			g.fm.SendMessages(pfsPlayer->GetConnection(),FM_GUARANTEED, FM_FLUSH);
+
+		} else {
+			BEGIN_PFM_CREATE(g.fm, pfmPingData, S, PINGDATA)
+			END_PFM_CREATE
+			// send open unchanged ping window code
+			pfmPingData->shipID = -1;
+			pfmPingData->ping = 1;
+			g.fm.SendMessages(pfsPlayer->GetConnection(),FM_GUARANTEED, FM_FLUSH);
+		}
+	}
+	break;
+
     default:
     {
       // an unrecognized message was received.
@@ -6816,7 +7060,8 @@ HANDLE CreateUniqueMutex()
  */
 void CheckForNoShows()
 {
-#if !defined(ALLSRV_STANDALONE)
+//KGJV #114 reactivated
+//#if !defined(ALLSRV_STANDALONE)
 
   const ListFSMission * plistMission = CFSMission::GetMissions();
   for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
@@ -6848,7 +7093,7 @@ void CheckForNoShows()
 
     }
   }
-#endif
+//#endif
 }
 
 
@@ -6891,7 +7136,7 @@ void ProcessNetworkMessages()
   // Do a periodic roll call. If we haven't heard from anyone for two roll calls in a row, waste 'em
   // Also waste 'em if they have more that 100 messages queued up (which is hopelessly behind)
   static Time timeRollCall = Time::Now();
-  if (g.timeNow.clock() - timeRollCall.clock() > 5000) // 10 second interval
+  if (g.timeNow.clock() - timeRollCall.clock() > (CLOCKS_PER_SEC*10)) // 10 second interval, w0dk4 changed to dynamic calculation based on constant in header file
   {
     timerClientRollCall.Start();
     ListConnections::Iterator iterCnxn(*g.fm.GetConnections());
@@ -6899,13 +7144,46 @@ void ProcessNetworkMessages()
     {
       CFMConnection & cnxn = *iterCnxn.Value();
       iterCnxn.Next(); // have to move iterator FIRST, because we might kill the current node
+
+
+	  // w0dk4 player-pings feature
+	  // Packet Loss Update
+	  DWORD m_lastLost;
+	  DWORD m_lastPackets;
+	  cnxn.GetPacketLossData(&m_lastPackets,&m_lastLost);
+	  DPN_CONNECTION_INFO Connection_Info;
+	  Connection_Info.dwSize = sizeof(DPN_CONNECTION_INFO);
+	  if(g.fm.GetConnectionInfo(&cnxn, Connection_Info) == S_OK) {
+		m_lastLost = Connection_Info.dwPacketsDropped + Connection_Info.dwPacketsRetried;
+		m_lastPackets = Connection_Info.dwPacketsSentNonGuaranteed + Connection_Info.dwPacketsSentGuaranteed;
+		cnxn.SetPacketLossData(m_lastPackets,m_lastLost);
+	  }
+	  // end w0dk4
+
       DWORD cMsgs;
       DWORD cbMsgs;
       HRESULT hr = g.fm.GetConnectionSendQueue(&cnxn, &cMsgs, &cbMsgs);
-      const DWORD cMaxQ = 150;  // mmf Imago this was 50 bumped it up to 150
+      const DWORD cMaxQ = 100;  // mmf Imago this was 50 bumped it up to 150, wOkd4 set to 100
+
+	  // w0dk4 join-drop bug fix (allow more time when joining)
+	  int cMsgPayload;
+	  CFSPlayer * pfsPlayer = CFSPlayer::GetPlayerFromConnection(cnxn);
+	  if (pfsPlayer && pfsPlayer->GetJustJoined() == true) {
+		  cMsgPayload = cMsgs;
+		  cnxn.SetQueuePayload(cMsgPayload);
+		  pfsPlayer->SetJustJoined(false);
+	  } else {
+		  cMsgPayload = cnxn.GetQueuePayload();
+	  }
+	  if (cMsgPayload > cMsgs) {
+		  cMsgPayload = cMsgs;
+		  cnxn.SetQueuePayload(cMsgPayload);
+	  }
+	  // end w0dk4
+
       if ((cnxn.IncAbsentCount() > 6) || // give them a ridiculous 1 minute of no messages
           FAILED(hr) ||
-          (cMsgs > cMaxQ)) // dead--nuke 'em
+          ((cMsgs-cMsgPayload) > cMaxQ)) // dead--nuke 'em, w0dk4 added '- cMsgPayload'
       {
         char szBuff[128];
         int cb = wsprintf(szBuff, "Nuking %s(%u) because ", cnxn.GetName(), cnxn.GetID());
@@ -7636,7 +7914,11 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 
   // Give lobby the version
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
+	  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
+	  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
   END_PFM_CREATE
+  pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114 
+  pfmLogon->MaxGames = g.cMaxGames; // KGJV #114
   pfmLogon->verLobby = LOBBYVER_LS;
   pfmLogon->dwPort = dwPort;
   g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
@@ -7777,6 +8059,10 @@ void StartDefaultGames()
 
   MissionParams mp;
   mp.Reset();
+  // KGJV #92
+  // clean MissionParams to fetch default values
+  MissionParams mpClean;
+  mpClean.Reset();
 
   // we access the registry here because these keys don't need to be saved as globals.
   HKEY hKey;
@@ -7796,13 +8082,14 @@ void StartDefaultGames()
 #endif
 
     // lock the games open, if requested.
-    cbValue = sizeof(dwValue);
-    if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LockOpen", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-      mp.bLockGameOpen = !!dwValue;
+    // KGJV #92 - do this per game (see below) instead of global
+    //cbValue = sizeof(dwValue);
+    //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LockOpen", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+    //  mp.bLockGameOpen = !!dwValue;
 
 #if defined(ALLSRV_STANDALONE)
     mp.nMinPlayersPerTeam = 1;
-    mp.nMaxPlayersPerTeam = (char)(min(200, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
+    mp.nMaxPlayersPerTeam = (char)(min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
 
 	mp.bObjectModelCreated = true; // a little bit of a fib, but it makes it look normal
 #else
@@ -7843,7 +8130,34 @@ void StartDefaultGames()
 		//LoadRegString(hKey, cbValueName, strMap);
 		//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
 
-		printf("Starting game \"%s\" with core: %s on map %s\n", mp.strGameName, mp.szIGCStaticFile, mp.szCustomMapFile);
+        // KGJV #92 - LockOpen# option  per game
+        // dword value - 1 to lockopen
+        wsprintf(cbValueName, "LockOpen%d", iGame);
+        cbValue = sizeof(dwValue);
+        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, cbValueName, NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+            mp.bLockGameOpen = !!dwValue;
+        else
+            mp.bLockGameOpen = mpClean.bLockGameOpen; // fetch default value
+
+        // KGJV #92 - MinRank# option  per game
+        // string value (but numeric)
+        ZString strRankParam;
+        wsprintf(cbValueName, "MinRank%d", iGame);
+        if (LoadRegString(hKey, cbValueName, strRankParam) == S_OK)
+            sscanf(strRankParam,"%hd",&(mp.iMinRank));
+        else
+            mp.iMinRank = mpClean.iMinRank; // fetch default value
+
+        // KGJV #92 - MinRank# option  per game
+        // string value (but numeric)
+        wsprintf(cbValueName, "MaxRank%d", iGame);
+        if (LoadRegString(hKey, cbValueName, strRankParam) == S_OK)
+            sscanf(strRankParam,"%hd",&(mp.iMaxRank));
+        else
+            mp.iMaxRank = mpClean.iMaxRank; // fetch default value
+        
+        // KGJV #92 - display LockOpen/Min/Maxrank and removed map name
+        printf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
 
         // Create the new mission
         FedSrvSite * psiteFedSrv = new FedSrvSite();
@@ -7936,6 +8250,11 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 #endif // !defined(ALLSRV_STANDALONE)
   assert (iStaticCoreVersion != NA);
   debugf("iStaticCoreVersion = %d\n",iStaticCoreVersion);
+
+  // KGJV #114
+  // load cores list (must be done before 1st connection to a lobby)
+  LoadStaticCoreInfo();
+
   //
   // This is the first place where we can might connect to a lobby
   //
@@ -8044,6 +8363,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   // -KGJV: StaticMapInfo in all modes
     UnloadStaticMapInfo();
+  // KGJV #114
+	UnloadStaticCoreInfo();
 
   // destroy IGC stuff
   UnloadDbCache();
@@ -8125,6 +8446,8 @@ void LoadSettings()
         #endif // !defined(ALLSRV_STANDALONE)
 
         // Use winsock-provided address for clients, unless overridden (e.g. dual nic)
+		// KGJV #114 localaddress isnt used anymore by DP8 so we use it as public userfriendly server name
+	    // KGJV #114 TODO: eventually rename 'LocalAdresss' to something more appropriate now, PublicName for instance.
         if (FAILED(LoadRegString(hKey, "LocalAddress", g.strLocalAddress)))
         {
           WSADATA WSAData;
@@ -8134,6 +8457,17 @@ void LoadSettings()
           WSACleanup();
           g.strLocalAddress = szHostName;
         }
+
+		// KGJV #114
+        if (FAILED(LoadRegString(hKey, "Location", g.strLocation)))
+        {
+			g.strLocation = "unknown";
+		}
+
+		// KGJV #114
+		g.cMaxGames = 99; // default max game
+        cbValue = sizeof(dwValue);
+		RegQueryValueEx(hKey, "MaxGames", NULL, &dwType, (unsigned char*)&g.cMaxGames, &cbValue);
 
         ZString strArtPath;
         if (SUCCEEDED(LoadRegString(hKey, "ArtPath", strArtPath)))
@@ -9567,7 +9901,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
    
 	// TE: Fire AGCEvent informing of station created
-	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
+	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL; // this is a timestamp.
 	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
 		pside->GetName(), pside->GetObjectID(), -1, -1, 4,
 		"MissionID", VT_I4, m_pfsMission->GetMissionID(),
@@ -9575,6 +9909,42 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		"TeamName", VT_LPSTR, pside->GetName(),
 		"zStationName", VT_LPSTR, pstationNew->GetName());
     // TE end
+
+    // yp: Add event for players who escorted a constructor
+    // mmf commented this out for now pending more testing
+#if 0
+	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
+	if(pmission->GetShips() != NULL && pside)	// GetShips() returns ShipListIGC*
+	{
+		ShipLinkIGC * pShiplink = pmission->GetShips()->first();
+		while (pShiplink)
+		{
+			CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
+			if (pfsShip != NULL & pfsShip->IsPlayer())
+			{
+				if(pfsShip->GetSide() && pfsShip->GetSide()->GetObjectID() == pside->GetObjectID() && // if they are on 'this' side. and..
+					pfsShip->GetCluster()->GetObjectID() == pcluster->GetObjectID() && pfsShip->GetPlayer()) // they are in this sector
+				{
+					pszPlayerList = pszPlayerList + ";" + ZString(pfsShip->GetPlayer()->GetName()); // players name
+					// The distance the player is from the asteroid that the constructor built into.
+					if(pfsShip->GetPlayer()->GetIGCShip())
+					{
+						pszPlayerList = pszPlayerList +  ":" + ZString( (pasteroid->GetPosition() - pfsShip->GetPlayer()->GetIGCShip()->GetPosition()).Length()); // the distance?
+					}
+				}
+			}
+			pShiplink = pShiplink->next();
+		}
+	}
+	 // Fire AGCEvent listing players in the sector
+	_AGCModule.TriggerContextEvent(NULL, EventID_StationCreatedEscort, pszContext,
+						pside->GetName(), pside->GetObjectID(), -1, -1, 4,
+						"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+						"Team"    , VT_I4   , pside->GetObjectID(), // teamID the con was on.
+						"TeamName", VT_LPSTR, pside->GetName(), // team the con was on.
+						"zPlayerList", VT_LPSTR, pszPlayerList); // pszPlayerList should look like ";player@squad:1500;player2@squad:500"
+	// YP: end
+#endif
 
     pstationNew->Release();
 
@@ -9813,7 +10183,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
             float           r = 1.5f * pmission->GetFloatConstant(c_fcidRadiusUniverse);
             if (p.x*p.x + p.y*p.y + p.z*p.z/(lm*lm) > r*r)
             {
-                RespawnFlag(sidFlag);
+                RespawnFlag(sidFlag,NULL); // mmf 11/07 added second argument pside (which is set to null in this case)
             }
             else
             {
@@ -9830,6 +10200,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
             END_PFM_CREATE
             pfmGain->sideidFlag = NA;
             pfmGain->shipidRecipient = pship->GetObjectID();
+			pfmGain->bIsTreasureDocked = false; // KGJV #118
             g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
         }
     }
@@ -10315,6 +10686,45 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
     "zStationName", VT_LPSTR, pstation->GetName());	
   // parameter is named zStationName so it appears at end of alphabetical list, keeping compatibility with allsrv1.0
   // End-TE
+
+	// yp: Add event for players who were involved in the destruction of an enemy base.
+    // mmf commented this out for now pending more testing
+#if 0
+	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
+	 if(m_pfsMission->GetIGCMission() && m_pfsMission->GetIGCMission()->GetShips()) // we hate null pointers
+	 {
+		ShipLinkIGC * pShiplink = m_pfsMission->GetIGCMission()->GetShips()->first();
+		while (pShiplink)
+		{
+			CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
+			if (pfsShip && pfsShip->IsPlayer())
+			{
+				if(pfsShip->GetSide()		&& pfsShip->GetSide()->GetObjectID()	== iLauncherSideUniqueID && // if they are on the side that did the killing. and..
+				   pfsShip->GetCluster()	&& pstation->GetCluster()	&& pfsShip->GetCluster()->GetObjectID() == pstation->GetCluster()->GetObjectID()) // they are in this sector
+				{
+					pszPlayerList = pszPlayerList + ";" + ZString(pfsShip->GetPlayer()->GetName()); // players name
+					// The distance the player is from the station that was destroyed.
+					if(pfsShip->GetPlayer()->GetIGCShip() )
+					{
+						pszPlayerList = pszPlayerList +  ":" + ZString( (pstation->GetPosition() - pfsShip->GetPlayer()->GetIGCShip()->GetPosition()).Length()); // the distance
+					}
+				}
+			}
+			pShiplink = pShiplink->next();
+		}
+	 }
+	 
+	 // Fire AGCEvent listing players in the sector
+	// Might want to add into the event weither or not this was a VICTORY kill.. should we track that as well?
+	_AGCModule.TriggerContextEvent(NULL, EventID_StationDeletedEscort, pszContext,
+						szLauncherName, iLauncherUniqueID, iLauncherSideUniqueID, -1, 4,
+						"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+						"TeamID"    , VT_I4   , pstation->GetSide()->GetUniqueID(), // teamID the base was on.
+						"TeamName", VT_LPSTR, pstation->GetSide()->GetName(), // team the base was on.
+						"zPlayerList", VT_LPSTR, pszPlayerList); // pszPlayerList should look like ";player@squad:1500;player2@squad:500"
+	// YP: end
+#endif
+
   IsideIGC*   pside = pstation->GetSide();
   IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationKill(pstation, pside);
   if (psideWin)
@@ -10405,7 +10815,7 @@ void FedSrvSiteBase::KillTreasureEvent(ItreasureIGC* ptreasure)
         g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_NOT_GUARANTEED, FM_FLUSH);
 
         if (ptreasure->GetTreasureCode() == c_tcFlag)
-            RespawnFlag(ptreasure->GetTreasureID());
+            RespawnFlag(ptreasure->GetTreasureID(),NULL); // mmf 11/07 added second argument pside (which is set to null in this case)
     }
 
     ptreasure->Terminate();
@@ -10419,6 +10829,13 @@ void FedSrvSiteBase::KillMissileEvent(ImissileIGC* pmissile, const Vector& posit
   pfmMissileDestroyed->missileID = pmissile->GetObjectID();
   pfmMissileDestroyed->position = position;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
+
+  // KGJV- explode the missile before terminating it
+  // skip special case for resonators (position == 0). see CmissileIGC::HandleCollision
+  // if we want resonators to actually explode on impact while still producing the resonate effect
+  // then changes are required in CmissileIGC::HandleCollision to not set "position" to 0
+  // as well as treatment of FM_S_MISSILE_DESTROYED in BaseClient::HandleMsg()
+  if (position != Vector::GetZero()) pmissile->Explode(position);
 
   pmissile->Terminate();
 }
@@ -10815,6 +11232,8 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
           END_PFM_CREATE
           pfmGain->sideidFlag = NA;
           pfmGain->shipidRecipient = pship->GetObjectID();
+          pfmGain->bIsTreasureDocked = false; // KGJV #118
+
           g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
           IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByFlags(pside, sidFlag);
@@ -10829,7 +11248,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
               m_pfsMission->GameOver(psideWin, szReason);
           }
 
-          RespawnFlag(sidFlag);
+          RespawnFlag(sidFlag,pside);  // mmf 11/07 added second argument pside
       }
   }
 
@@ -10874,6 +11293,20 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
                 IpartIGC*   ppart = ppl->data();
 
                 ttbm |= ppart->GetPartType()->GetEffectTechs();
+				// KGJV #118
+				if (pship->GetSide()->IsNewDevelopmentTechs(ppart->GetPartType()->GetEffectTechs()))
+				{
+					// send message that player secured new tech
+					BEGIN_PFM_CREATE(g.fm, pfmGain, S, GAIN_FLAG)
+					END_PFM_CREATE
+					pfmGain->sideidFlag = NA;
+					pfmGain->shipidRecipient = pship->GetObjectID();
+					pfmGain->bIsTreasureDocked = true;
+					pfmGain->parttypeidDocked = ppart->GetPartType()->GetObjectID();
+					g.fm.SendMessages(CFSSide::FromIGC(pship->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+            }
+				// end of KGJV #118
+
             }
 
             IsideIGC*   pside = pship->GetSide();
@@ -11118,6 +11551,7 @@ bool FedSrvSiteBase::HitTreasureEvent(Time now, IshipIGC* ship, ItreasureIGC* tr
         END_PFM_CREATE
         pfmGain->sideidFlag = oid;
         pfmGain->shipidRecipient = ship->GetObjectID();
+		pfmGain->bIsTreasureDocked = false; // KGJV #118
         g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
         //Clear the flag so it does not respawn
@@ -11379,7 +11813,7 @@ void        FedSrvSiteBase::LayExpendable(Time                   now,
     KillShipEvent(now, pshipLayer, NULL, 0.0f, position, Vector::GetZero());
 }
 
-void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag)
+void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag, IsideIGC* pcapturersside) // mmf 11/07 added second argument pside of capturer
 {
     //Don't respawn flags that have just been picked up by a ship
     if (sidFlag != NA)
@@ -11443,8 +11877,21 @@ void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag)
                     }
                 }
             }
-            assert (nStations > 0);
+            // assert (nStations > 0); mmf 11/07 commented this out as this can happen in 'only one side' games
 
+			// mmf 11/07 add if nStations == 0
+			//     If the side that the flag belongs to has no bases AND one of their flags was captured
+			//     the side that captured it wins.
+			//     Otherwise don't spawn a flag (there is no base to get a position for).
+			//     It is unlikely this second case will occur but best to cover it just incase.
+			if (nStations == 0) {
+				if (pcapturersside != NULL) {
+					static char szReason[100];	//Make this static so we only need to keep a pointer to it around
+					sprintf(szReason,"%s wins. Team owning captured flag has no stations left.",
+                      pcapturersside->GetName());
+					m_pfsMission->GameOver(pcapturersside, szReason);
+				}
+			} else {
             IstationIGC*    pstation = pstations[randomInt(0, nStations - 1)];
             DataTreasureIGC dt;
             dt.treasureCode = c_tcFlag;
@@ -11463,11 +11910,11 @@ void    FedSrvSiteBase::RespawnFlag(SideID  sidFlag)
 
             ItreasureIGC* t = (ItreasureIGC *)m_pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_treasure,
                                                                                           &dt, sizeof(dt));
-
             assert (t);
             t->Release();
         }
     }
+}
 }
 
 /*-------------------------------------------------------------------------

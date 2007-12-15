@@ -197,11 +197,11 @@ float    turnToFace(const Vector&       deltaTarget,
             pitch = acos(myOrientation.CosUp(deltaTarget)) - 0.5f * pi;
 
 			// mmf
-			{ 
-				float check = yaw * yaw + pitch * pitch;
-				if (check != check) debugf("common.cpp yaw * yaw + pitch * pitch is a nan\n");
-				if (check < 0.0f) debugf("common.cpp yaw * yaw + pitch * pitch is a negative about to sqrt it\n");
-			}
+			//{ 
+			//	float check = yaw * yaw + pitch * pitch;
+			//	if (check != check) debugf("common.cpp yaw * yaw + pitch * pitch is a nan\n");
+			//	if (check < 0.0f) debugf("common.cpp yaw * yaw + pitch * pitch is a negative about to sqrt it\n");
+			//}
 
             deltaAngle = (float)sqrt(yaw * yaw + pitch * pitch);
         }
@@ -348,8 +348,54 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
         psl = psl->next();
     }
     while (psl != NULL);
+	//It has stations but no enemy stations ... therefore at least one friendly station
 
-    //It has stations but no enemy stations ... therefore at least one friendly station
+	// mmf 10/07 controversial change, enable it with Experimental game type
+	ImissionIGC*         pmission = pside->GetMission();  // mmf 10/07 added so we can get at bExperimental game type
+    const MissionParams* pmp = pmission->GetMissionParams(); // mmf 10/07
+
+	if (!(pmp->bExperimental)) {
+	  return rc; // mmf 10/07 orig code
+	}
+    // mmf else if Experimental game type fall through to yp's code
+	// yp: Improving AI: no reason to check further if we already know its a hostile sector
+	if(rc == false) 
+		return rc;
+	// we should also check to see if there is a lot of enemy in the sector.
+	// we wouldnt want to go somewhere hostile even if we do have a base there.
+	if(pcluster->GetShips() != NULL)
+	{
+		int friendlyShipCount = 0;	
+
+		for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next()) // mmf changed this to pcluste->GetShips from pside
+        {
+            IshipIGC*   pship = psl->data();
+			// If our team knows that ship is there or its one of our ships, then we can count it.
+            if (pship->SeenBySide(pside) || pship->GetSide() == pside) 
+			{
+				if (pside != pship->GetSide()) // if its not our side then we subtract 1 from our count
+				{// count hostiles in the system.
+					// TODO: Make smarter: Assign differnt ship hulls a differnt amount of points, could also handle drones differntly
+					friendlyShipCount--; 
+				}
+				else//, otherwise we increment it.
+				{// count friendlys in the system.					
+					friendlyShipCount++; 
+				}	
+			}
+        }	
+
+		if(friendlyShipCount>=0)// do we have a good chance of being safe?
+		{
+			rc = true; // to do this...
+		}
+		else
+		{
+			rc = false;
+		}
+	}	
+    // yp end
+    
     return rc;
 }
 
@@ -1029,6 +1075,9 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
     float   error2Best = FLT_MAX;
     float   offset2Best;
     int     bayBest;
+	ImissionIGC*         pmission = pship->GetMission();  // mmf 10/07 added so we can get at bExperimental game type
+    const MissionParams* pmp = pmission->GetMissionParams(); // mmf 10/07
+
     for (int i = 0; (i < nLand); i++)
     {
         const Vector* pcenter = pCenters + i;
@@ -1140,8 +1189,12 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
             float rateYaw = pship->GetCurrentTurnRate(c_axisYaw);
             float ratePitch = pship->GetCurrentTurnRate(c_axisPitch);
             float rate2 = rateYaw * rateYaw + ratePitch * ratePitch;
+            float rateMax = 0.01f; // mmf 10/07 orig code had this as a static const
 
-            static const float rateMax = 0.01f;
+			// mmf 10/07 controversial change, enable it with Experimental game type
+			if (pmp->bExperimental)
+              rateMax = 0.10f; // yp: was 0.01f but we dont need to be going THAT Slow. We want to get in this thing!
+
             static const float cosMin = 0.999f * 0.999f;
             if ((rate2 < rateMax * rateMax) && (pship->GetOrientation().CosForward2(*pvectorFacing) > cosMin))
             {
@@ -1151,7 +1204,9 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
             else
             {
                 //On track and almost stopped ... pivot to face the bay
-                gpm = c_gpmPivot | c_gpmDodgeShips;
+                gpm = c_gpmPivot; // yp: We just want to pivot and get in there, we dont want to worry about trying to dodge anytying.
+				// changed to only c_gpmPivot from below.
+				//gpm = c_gpmPivot; | c_gpmDodgeShips; // previous
             }
         }
     }
@@ -1229,8 +1284,23 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
                 Vector  centers[2];
                 Vector  directions[2];
 
-                centers[0].x = centers[0].y = centers[0].z = 0.0f;
-                centers[1].x = centers[1].y = centers[1].z = 0.0f;
+				// yp: get an alignment position that is unique to this ship
+				// this will greatly decrease the odds of two constructors tring to build on a asteroid from the same spot
+				// could also allow two miners to mine the same asteroid, though that will
+				// require a fix somewhere else as well.
+				float uniquePosX = ((int)pship->GetObjectID() %10)/10;
+				float uniquePosY = ((int)pship->GetObjectID() %9)/9;
+				float uniquePosZ = ((int)pship->GetObjectID() %8)/8;
+                centers[0].x = uniquePosX;
+				centers[0].y = uniquePosY;
+				centers[0].z = uniquePosZ;
+                centers[1].x = uniquePosX;
+				centers[1].y = uniquePosY;
+				centers[1].z = uniquePosZ;				
+				// previously
+				//centers[0].x = centers[0].y = centers[0].z = 0.0f;
+				//centers[1].x = centers[1].y = centers[1].z = 0.0f;
+				// yp end
 
                 const Rotation& r = m_pmodelTarget->GetRotation();
                 directions[0] = r.axis();

@@ -594,6 +594,7 @@ public:
                 debugf("Renaming %s to %s\n", PCC(pathTemp), PCC(pathConfig));
                 DeleteFile(PCC(pathConfig));
                 MoveFile(PCC(pathTemp), PCC(pathConfig));
+				trekClient.GetCfgInfo().SetCfgFile(pathConfig); 
             }
             else 
             {

@@ -280,13 +280,16 @@ void    CshipIGC::Update(Time now)
             else
                 SetRipcordModel(NULL);
         }
-
-        m_energy += m_myHullType.GetRechargeRate() * dt;
-        {
-            float   eMax = m_myHullType.GetMaxEnergy();
-            if (m_energy > eMax)
-                m_energy = eMax;
-        }
+        // mmf 03/22/07 fix don't let energy go negative
+        if((m_myHullType.GetRechargeRate() > 0.0f)||(m_energy != 0.0f)) 
+		{  
+			m_energy += m_myHullType.GetRechargeRate() * dt;
+			float   eMax = m_myHullType.GetMaxEnergy(); 
+			if (m_energy > eMax) 
+				m_energy = eMax; 
+			else if (m_energy < 0.0f) 
+				m_energy = 0.0f; 
+		}
 
         {
             //Give the cloak the first dibs on energy
@@ -829,7 +832,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 //verify the velocities are valid
 				// mmf replaced assert with log msg
 		        if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
-				  debugf("mmf Igc shipIGC.cpp 830 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+				  debugf("mmf Igc shipIGC.cpp ~835 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
 		          newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
 				}
                 // assert (newVelocity1 * newVelocity1 >= 0.0f);
@@ -1002,12 +1005,12 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             //verify the velocities are valid
 			// mmf replaced assert with log msg
 		    if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
-		      debugf("mmf Igc shipIGC.cpp 1004 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+		      debugf("mmf Igc shipIGC.cpp ~1008 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
 		      newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
 			}
 		    // mmf replaced assert with log msg
 		    if (!(newVelocity2 * newVelocity2 >= 0.0f)) {
-			  debugf("mmf Igc shipIGC.cpp 1009 newVelocity2^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+			  debugf("mmf Igc shipIGC.cpp ~1013 newVelocity2^2 debug build would have called assert and exited, commented out and set to zero for now\n");
 		      newVelocity2.x = 0.0f; newVelocity2.y = 0.0f; newVelocity2.z = 0.0f;
 			}
             //assert (newVelocity1 * newVelocity1 >= 0.0f);
@@ -1558,8 +1561,16 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 bool    bDamage = true;
                 bool    bRunAway = true;
                 if (m_pilotType == c_ptWingman)
-                {
-                    bRunAway = m_fraction < m_fractionLastOrder;
+				{
+					// bahdohday&AEM 7.09.07 Added check to allow certain wingmen drones to never run away: if they have a nan in slot 1 or are have a station as their target
+					if ( (m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0 ) || ( m_commandTargets[c_cmdAccepted] && (m_commandTargets[c_cmdAccepted]->GetObjectType() == OT_station) ) )
+					{
+						bRunAway = false; 
+					} 
+					else 
+					{
+						bRunAway = m_fraction < m_fractionLastOrder; //previously just this line was here
+					}
                 }
                 else if ((m_pilotType == c_ptBuilder) || (m_pilotType == c_ptLayer))
                 {
@@ -1597,12 +1608,17 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 else
                 {
                     // assert (m_pilotType == c_ptMiner);
-					// mmf replaced assert with log msg
+					// we are expecting a miner at this stage
+					// mmf replaced assert with log msg to track down what is triggering it
+					//     recent logs (07/04/2007) show that the pilot type is 1 and it is a Recon or Rescue ship
+					//     so don't log if it is a 1 now
 					if ( ! (m_pilotType == c_ptMiner) ) {
-						debugf ("mmf shipIGC.cpp assert (m_pilotType == c_ptMiner), m_pilotType = %d\n",
-					    m_pilotType);
+						if (m_pilotType != 1) {
+						  debugf ("mmf shipIGC.cpp assert (m_pilotType == c_ptMiner), m_pilotType = %d\n",
+					              m_pilotType);
+						}
 					}
-                    if (m_fraction == 1.0f)
+                    if (m_fraction >= 0.95f)  // mmf added Your_Persona's change, allow Miners to be slightly damaged  (was == 100.0f)
                     {
                         IshieldIGC* pshield = (IshieldIGC*)(m_mountedOthers[ET_Shield]);
                         if ((pshield == NULL) || (pshield->GetFraction() >= 0.75f))
@@ -1805,7 +1821,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
         //Special case up front: miners mine
         if (m_pilotType == c_ptMiner)
-        {
+		{
             if ((m_stateM & wantsToMineMaskIGC) != 0)
             {
                 IclusterIGC*    pcluster = GetCluster();
@@ -2063,7 +2079,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
             if (((m_pilotType == c_ptWingman) || (m_pilotType == c_ptCheatPlayer)) &&
                 (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster()))
             {
-                if ((m_commandIDs[c_cmdPlan] == c_cidAttack) && m_mountedWeapons[0])
+                if ( m_commandIDs[c_cmdPlan] == c_cidAttack )
                 {
                     //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
                     float   fShootSkill = 0.75f;
@@ -2077,7 +2093,6 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                              m_mountedWeapons[0],
                                              &direction,
                                              fShootSkill);
-
 
                     float   da = turnToFace(direction, dT, this, &m_controls, fTurnSkill);
 
@@ -2109,6 +2124,56 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     }
                     */
 
+                    SetStateBits(~selectedWeaponMaskIGC,
+                                 ((da <= c_fMaxOffAngle) && (t <= lifespan * 0.9f))
+                                 ? (state | allWeaponsIGC)
+                                 : state);
+
+                    return;
+                }
+				//AEM 7.9.07 allow wingman to repair if they are equipped with a nan
+                else if ( m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0]->GetProjectileType()->GetPower()<0.0 )
+                {
+                    //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
+                    float   fShootSkill = 1.00f;
+                    float   fTurnSkill = 1.00f;
+                    int     state = 0;
+                    bool    bDodge = Dodge(this, NULL, &state);
+
+                    Vector  direction;
+                    float   t = solveForLead(this,
+                                             m_commandTargets[c_cmdPlan],
+                                             m_mountedWeapons[0],
+                                             &direction,
+                                             fShootSkill);
+
+                    float   da = turnToFace(direction, dT, this, &m_controls, fTurnSkill);
+
+                    // make the drone always fly hard - throttle range 0.5 to 1.0, depending on how they are
+                    // angled to their target
+                    m_controls.jsValues[c_axisThrottle] = 0.5f + ((pi - da) / (2.0f * pi));
+					
+                    const float c_fMaxOffAngle = 0.10f;
+                    float lifespan = m_mountedWeapons[0]->GetLifespan();
+
+                    if ((!bDodge) && (t <= lifespan * 0.25f))
+                    {
+                        //We are close and not dodging anything so ...
+                        //strafe
+                        state = leftButtonIGC;
+                        if (da < pi * 0.5f)
+                        {
+                            if (da > c_fMaxOffAngle)
+                            {
+                                //too close ... back off
+                                state |= backwardButtonIGC;
+
+                            }
+                            else
+                                state |= forwardButtonIGC;
+                        }
+                    }
+                  
                     SetStateBits(~selectedWeaponMaskIGC,
                                  ((da <= c_fMaxOffAngle) && (t <= lifespan * 0.9f))
                                  ? (state | allWeaponsIGC)
@@ -2326,7 +2391,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                     //Find out how much thrust is required to obtain our desired velocity,
                     //accounting for drag
 					// mmf added zero check and debugf
-					if (thrustToVelocity == 0.0f) debugf("shipIGC.cpp ~2320 thrustToVelocity = 0 about to devide by zero\n");
+					if (thrustToVelocity == 0.0f) debugf("shipIGC.cpp ~2394 thrustToVelocity = 0 about to devide by zero\n");
                     localThrust = pOrientation->TimesInverse((desiredVelocity - *pVelocity) / thrustToVelocity + drag);
                 }
             }
@@ -2335,9 +2400,9 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                 //Clip the engine vector the the available thrust from the engine
                 float   sm = m_myHullType.GetSideMultiplier();
 				// mmf added zero checks and debugf
-				if (sm == 0.0f) debugf("shipIGC.cpp ~2330 sm = 0 about to devide by zero\n");
+				if (sm == 0.0f) debugf("shipIGC.cpp ~2403 sm = 0 about to devide by zero\n");
 				if ((m_myHullType.GetBackMultiplier()==0.0f)&&(localThrust.z<=0.0f)) 
-					debugf("shipIGC.cpp ~2331 backmultip = 0 about to devide by zero\n");
+					debugf("shipIGC.cpp ~2405 backmultip = 0 about to devide by zero\n");
 				Vector  scaledThrust(localThrust.x / sm,
                                      localThrust.y / sm,
                                      localThrust.z <= 0.0f ? localThrust.z : (localThrust.z / m_myHullType.GetBackMultiplier()));
@@ -2361,8 +2426,8 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 
 
         *pVelocity += thrustToVelocity * (m_engineVector - drag);
-		// mmf added log msg for large velocity^2
-		if ((*pVelocity * *pVelocity) > 180000.0f) {
+		// mmf added log msg for large velocity^2, mmf 10/07 increased threshold to 800^2 as some cores commonly have ships with speeds in the 500's
+		if ((*pVelocity * *pVelocity) > 640000.0f) {
 			debugf("mmf pVelocity^2 = %g ship = %s\n",(*pVelocity * *pVelocity),GetName());
 		}
 

@@ -105,6 +105,9 @@ CFSMission::CFSMission(
   //m_misdef.misparms.iGoalTerritoryPercentage = 75;  //NYI
   //m_misdef.misparms.iRandomEncounters = 2;  //NYI
 
+  // KGJV fix: fill in server friendly name so clients can display it
+  strcpy_s(m_misdef.szServerName,sizeof(m_misdef.szServerName),g.strLocalAddress);
+
   psiteMission->Create(this);
 
   assert(!g.strLobbyServer.IsEmpty() == !!g.fmLobby.IsConnected());
@@ -325,7 +328,10 @@ CFSMission::~CFSMission()
 
   #if defined(ALLSRV_STANDALONE)
     // Possibly shutdown the standalone server if no more games
-    if (0 == s_list.n())
+
+    // KGJV #114 - if lobbied then dont shutdown if create game allowed on this server
+    bool bSupposedToConnectToLobby = !(FEDSRV_GUID != g.fm.GetHostApplicationGuid());
+	if ( (0 == s_list.n()) && (bSupposedToConnectToLobby ? (g.cStaticCoreInfo==0) : true))
     {
       // Disconnect from the lobby server
       DisconnectFromLobby();
@@ -473,13 +479,12 @@ void CFSMission::RemovePlayerFromMission(CFSPlayer * pfsPlayer, QuitSideReason r
     g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
   }
 
+  // KGJV #114 changed logic to remove empty games
   if (!HasPlayers(NULL, true)          && // no one left in the mission
-      !m_misdef.misparms.bAllowEmptyTeams && // game doesn't allow empty sides
-      m_misdef.misparms.bClubGame && // not a standalone server
-#if !defined(ALLSRV_STANDALONE)
-	  !strcmp(m_misdef.misparms.szIGCStaticFile,IGC_ENCRYPT_CORE_FILENAME) && // -KGJV custom core games
-#endif
-      (IMPLIES( GetMissionDef()->misparms.bObjectModelCreated, GetStage() != STAGE_NOTSTARTED )) // not an admin created game that has started
+      //!m_misdef.misparms.bAllowEmptyTeams && // game doesn't allow empty sides
+      //m_misdef.misparms.bClubGame && // not a standalone server - KGJV #114
+      //(IMPLIES( GetMissionDef()->misparms.bObjectModelCreated, GetStage() != STAGE_NOTSTARTED )) // not an admin created game that has started
+	  !GetMissionDef()->misparms.bObjectModelCreated
      )
   {
     m_bShouldDelete = true;
@@ -510,6 +515,9 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   bool      fTeamLeader   = false;
   bool      fMissionOwner = false;
   ImissionIGC * pMission = GetIGCMission();
+
+  // w0dk4 join-drop bug fix (allow more time when joining)
+  pfsPlayer->SetJustJoined(true);
 
   assert (sideid != SIDE_TEAMLOBBY);
 
@@ -709,6 +717,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
           END_PFM_CREATE
           pfmGain->sideidFlag = sidFlag;
           pfmGain->shipidRecipient = pship->GetObjectID();
+		  pfmGain->bIsTreasureDocked = false; // KGJV #118
         }
       }
     }
@@ -777,6 +786,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
       }
 
       g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+
     }
   }
 }
@@ -820,7 +830,7 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
     float           r = 1.5f * m_pMission->GetFloatConstant(c_fcidRadiusUniverse);
     if (p.x*p.x + p.y*p.y + p.z*p.z/(lm*lm) > r*r)
     {
-      ((FedSrvSiteBase*)m_psiteIGC)->RespawnFlag(sidFlag);
+      ((FedSrvSiteBase*)m_psiteIGC)->RespawnFlag(sidFlag, NULL); // mmf 11/07 added second argument pside (which is set to null in this case)
     }
     else
     {
@@ -995,14 +1005,18 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
                 pfmLockSides->fLock = false;
             }
 
-			// mmf see if we can also reset skill level here
-			// might need to revisit this if we make this a server setting for some games (like to keep
-			// the newb server always Nov. Only.  Also using current values in skilllevels.mdl which could change
+			// mmf reset skill level on an empty game
+			// Note using current values in skilllevels.mdl which could change
 			// mmf revist
-			// this works (when they try and connect) but it does not let the clients know so it does not update their gui
+			// This works (when they try and connect) but it does not let the clients know things were reset so it does not update their gui
 			// AFAIK there is no corresponding message we can send for this like there is above for LOCK_SIDES, etc
-			m_misdef.misparms.iMinRank = -1;
-			m_misdef.misparms.iMaxRank = 1000;
+			// mmf don't reset skill level if there is a server skill level setting for this server (KGJV added this feature keying off registry)
+			// mmf since there isn't an easy way to check for Min/MaxRank# entries in registry as we don't know the game number
+			//     assume if game is locked open we don't want to change the min and max rank
+			if (!(m_misdef.misparms.bLockGameOpen)) {
+				m_misdef.misparms.iMinRank = -1;
+				m_misdef.misparms.iMaxRank = 1000;
+			}
         }
 
         // No one's left in this side
@@ -1149,6 +1163,19 @@ void CFSMission::TallyVote(CFSPlayer* pfsPlayer, BallotID ballotID, bool bVote)
   }
 }
 
+/*-------------------------------------------------------------------------
+ * HasBallots  mmf/KGJV 09/07 allow only one ballot of each type at a time
+ *-------------------------------------------------------------------------
+ */
+bool CFSMission::HasBallots(BallotType iType)
+{
+    for (BallotList::Iterator iter(m_ballots); !iter.End();)
+    {
+        if (iter.Value()->GetType() == iType) return true;
+        iter.Next();
+    }
+   return false;
+}
 
 /*-------------------------------------------------------------------------
  * RemovePlayerByName
@@ -1905,6 +1932,10 @@ void CFSMission::StartCountdown(float fCountdownLength)
           pfsShip->SetMoney(0);
           pfsShip->GetPlayer()->SetTreasureObjectID(NA);
   
+          // w0dk4 join-drop bug fix (allow more time when joining)
+		  // w0dk4 - set join parameter here
+		  pfsShip->GetPlayer()->SetJustJoined(true);
+
           if ((pfsShip != pfsLeader) && pfsShip->IsPlayer())
               pfsShip->GetPlayer()->SetAutoDonate(pfsLeader, 0, false);
         }
@@ -1959,7 +1990,7 @@ void CFSMission::StartCountdown(float fCountdownLength)
             }
         }
         else
-        {
+		{
             //Multiple stations for a side ... try to divy things up evenly without breaking wings up
 
             //We need at least this many/station,
@@ -2067,9 +2098,22 @@ void CFSMission::StartCountdown(float fCountdownLength)
             }
         }
   
-        if (pmp->bAllowDevelopments)
-        {
+		
+		// KGJV #62 - Eliminate all of the inactive teams bases if bAllowEmptyTeams
+		if (pmp->bAllowEmptyTeams && !pside->GetActiveF())
+		{
+		  while (StationLinkIGC* psl = pside->GetStations()->first())
+		  {
+			  IstationIGC*   pstation = psl->data();
+			  debugf("removing station %s, cause bAllowEmptyTeams & Inactive side\n",pstation->GetName());
+			  m_psiteIGC->KillStationEvent(pstation,NULL,0);
+		  }
+		}
+
+		else if (pmp->bAllowDevelopments)
+		{
             //Create miners for each side in the sector with their home starbase
+			if (pmp->bAllowEmptyTeams ? pside->GetActiveF() : true) // KGJV #62 only for active sides when empty teams allowed
             for (DroneTypeLinkIGC* pdl = m_pMission->GetDroneTypes()->first(); (pdl != NULL); pdl = pdl->next())
             {
               IdroneTypeIGC*  pdt = pdl->data();
@@ -2129,6 +2173,9 @@ void CFSMission::StartGame()
     m_pszReason = NULL;
     m_bDraw = false;
     m_pMission->EnterGame();
+
+	//Clear out old players to avoid them rejoining the game if they have dropped from a team
+	m_oldPlayers.purge();
 
     // let everyone know that the game has started
     BEGIN_PFM_CREATE(g.fm, pfmEnterGame, S, ENTER_GAME)
@@ -3189,7 +3236,22 @@ void CFSMission::ProcessGameOver()
     m_misdef.rgfForceReady  [sideID] = false;
     m_misdef.rgfActive      [sideID] = true;
     m_rgMoney               [sideID] = 0;
-    pside->SetActiveF(true);  
+    pside->SetActiveF(true);
+	// KGJV #62 - reset AET
+	bool bAET = m_misdef.misparms.bAllowEmptyTeams;
+	if (!m_misdef.misparms.bObjectModelCreated)
+		m_misdef.misparms.bAllowEmptyTeams = false;
+	// send new AET value if changed
+	if (bAET)
+	{
+		BEGIN_PFM_CREATE(g.fm, pfmSideInactive, CS, SIDE_INACTIVE)
+		END_PFM_CREATE
+		pfmSideInactive->sideID = 0; // doesnt matter which side but 0 is always valid
+		pfmSideInactive->bActive = true;
+		pfmSideInactive->bChangeAET = true;
+		pfmSideInactive->bAET = false;
+		g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+	}
     CheckForSideAllReady(pside);      
   }
 
@@ -3240,11 +3302,12 @@ IsideIGC*   CFSMission::CheckForVictoryByStationCapture(IsideIGC* psideTest, Isi
 IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled, IsideIGC* psideOld)
 {
   IsideIGC*   psideWon = NULL;
-  if ((STAGE_STARTED == GetStage()) && (m_psideWon == NULL))
+  const MissionParams* pmp = m_pMission->GetMissionParams();
+
+  if ( (STAGE_STARTED == GetStage()) || ((STAGE_STARTING == GetStage()) && pmp->bAllowEmptyTeams) && (m_psideWon == NULL))
   {
     const SideListIGC*  psides = m_pMission->GetSides();
 
-    const MissionParams* pmp = m_pMission->GetMissionParams();
 
     bool                 bChange = false;
     if (pmp->IsConquestGame())
@@ -3268,6 +3331,9 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
             }
         }
 
+		// KGJV #62 count active teams
+		int nActiveTeams = 0;
+
         if (nStationsTotal != 0)
         {
             const SideListIGC*  psides = m_pMission->GetSides();
@@ -3275,6 +3341,9 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
             for (SideLinkIGC* l = psides->first(); (l != NULL); l = l->next())
             {
                 IsideIGC*       pside = l->data();
+				// KGJV #62 count active team
+				if (pside->GetActiveF()) nActiveTeams++;
+
                 unsigned char   conquest = (unsigned char)(100 * nStationsPerSide[pside->GetObjectID()] / nStationsTotal);
 
                 if (conquest != pside->GetConquestPercent())
@@ -3286,6 +3355,9 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                         psideWon = pside;
                 }
             }
+			// KGJV #62 - no winner if bAllowEmptyTeam and one active team is left
+			if (pmp->bAllowEmptyTeams && (nActiveTeams == 1))
+				psideWon = NULL;
         }
     }
     
@@ -3448,6 +3520,12 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
       pSideWin = NULL;
   }
 
+  // KGJV #62 - handling of AllowEmptyTeams 
+  // don't end game during STAGE_STARTING if bAllowEmptyTeams
+  if ((GetStage() == STAGE_STARTING) && m_misdef.misparms.bAllowEmptyTeams)
+  {
+      pSideWin = NULL;
+  }
   return pSideWin;
 }
 
@@ -3596,12 +3674,16 @@ void CFSMission::QueueLobbyMissionInfo()
       }
     }
   }
+
+  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)
     FM_VAR_PARM(m_misdef.misparms.strGameName, CB_ZTS)
     FM_VAR_PARM(nSquadCount ? rgSquadIDs : NULL, nSquadCount * sizeof(SquadID))
     FM_VAR_PARM((PCC)m_strDetailsFiles, CB_ZTS)
 	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
+	FM_VAR_PARM((PCC)(g.strLocalAddress),CB_ZTS) // KGJV #114 - ServerName
+	FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it
   END_PFM_CREATE
 
   pfmLobbyMissionInfo->dwCookie = GetCookie();
@@ -3689,6 +3771,7 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
 
     SideID  sideID = pside->GetObjectID();
 
+
     // Send all clusters, and what that side sees in them
     const ClusterListIGC * pclstlist = pMission->GetClusters();
     ClusterLinkIGC * pclstlink;
@@ -3773,6 +3856,8 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
             ExportObj(pplink->data(), OT_probe, NULL);
         }
     }
+
+
 
     //For the player's side, update the money & completion state of all buckets
     BEGIN_PFM_CREATE(g.fm, pfmCreateBuckets, S, CREATE_BUCKETS)
@@ -3860,6 +3945,7 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
     }
 
     g.fm.SendMessages(NULL, FM_GUARANTEED, FM_FLUSH); // default recipient
+
 }
 
 
@@ -3905,15 +3991,22 @@ bool CFSMission::FAllReady()
 
         SideLinkIGC*   psl = m_pMission->GetSides()->first();
         assert (psl);
-        minPlayers = maxPlayers = psl->data()->GetShips()->n();
+		// KGJV: fix initial values
+        minPlayers = m_misdef.misparms.nMaxPlayersPerTeam; // or anything 'big' enough
+		maxPlayers = 0;//psl->data()->GetShips()->n();
         while (true)
         {
-            psl = psl->next();
-            if (psl == NULL)
-                break;
-
             int n = psl->data()->GetShips()->n();
 
+			// KGJV #62 AllowEmptyTeams
+			// KGJV: fix to include 1st team 
+			bool bSkipTeam = false;
+			if (m_misdef.misparms.bAllowEmptyTeams)
+				if (n==0 && !m_misdef.rgfActive[psl->data()->GetObjectID()])
+					bSkipTeam = true; // skip inactive & empty teams
+
+			if (!bSkipTeam)
+			{
             if (n < minPlayers)
                 minPlayers = n;
 
@@ -3928,6 +4021,11 @@ bool CFSMission::FAllReady()
 
 			if (r > maxTeamRank)
 				maxTeamRank = r;
+			}
+			// KGJV: moved here to include 1st team in the loop
+			psl = psl->next();
+            if (psl == NULL)
+                break;
         }
 
 		int threshold = GetRankThreshold();
@@ -3942,7 +4040,11 @@ bool CFSMission::FAllReady()
 
     SideID iSide = m_misdef.misparms.nTeams;
 
-    while (iSide-- > 0 && GetReady(iSide))
+	// KGJV #62 AllowEmptyTeams - not active + AllowEmptyTeams = team ready
+	while (iSide-- > 0 && (
+		GetReady(iSide) ||
+		(m_misdef.misparms.bAllowEmptyTeams && (!m_misdef.rgfActive[iSide]))
+		));
     ;
 
     return iSide < 0;
@@ -3975,6 +4077,8 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
   for (SideLinkIGC * plinkSide = plistSide->first(); plinkSide; plinkSide = plinkSide->next())
   {
     IsideIGC*   pside = plinkSide->data();
+	// KGJV : fix for deactivated teams
+	if (m_misdef.rgfActive[pside->GetObjectID()])
     if ((SideMask(pside) & bannedSideMask) == 0)
     {
       nNumPlayers = GetCountOfPlayers(pside, false); // TE: Retrieve #players of this side
@@ -4096,6 +4200,10 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
   
   if (sideID != SIDE_TEAMLOBBY)
   {
+	 // KGJV fix: no rejoin to a deactivated team
+    if (!m_misdef.rgfActive[sideID])
+		return DPR_SideGone;
+
     if (GetStage() == STAGE_OVER)
       return DPR_ServerPaused;
 
@@ -4159,7 +4267,22 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 					nHighestTeamRank = nTempSideRank;
 			}
 		}
-
+		// mmf go with simple method of only allowing new players on the side with the lowest rank
+		if (nRequestedSideRank != nLowestTeamRank)	
+			return DPR_TeamBalance;
+		
+		// mmf disable this for now with if 0
+		// TODO: revisit this
+		//   Perhaps just select the team for them when they click join, so instead of rejecting
+		//   them from the selected team stick them on the proper team.
+		//
+		//   The below is bugged in that if the difference between teams gets too large
+		//   no one can join either side.  Also newbstack is too restrictive also frequently resulting
+		//   in players ranked 5,6,7,8 not being able to join either side.
+		//
+		//   Fix the below.  Why? so instead of forcing them on a side they may not want to be
+		//   on allow them on if the ranks are close enough.
+#if 0
 		int nPlayerRank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
 		int nRankThreshold = GetRankThreshold();
 		
@@ -4183,6 +4306,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 				return DPR_TeamBalance;
 			}
 		}
+#endif
 	}
 
     if (m_misdef.misparms.bSquadGame)
@@ -4746,7 +4870,17 @@ void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)
   }
 }
 
-
+//*-------------------------------------------------------------------------
+//* SetSideActive - KGJV #62
+//*-------------------------------------------------------------------------
+ void CFSMission::SetSideActive(SideID sideid, bool bActive)
+{
+	m_misdef.rgfActive[sideid] = bActive;
+}
+ bool CFSMission::GetSideActive(SideID sideid)
+ {
+	 return (bool)m_misdef.rgfActive[sideid];
+ }
 /*-------------------------------------------------------------------------
  * DeactivateSide
  *-------------------------------------------------------------------------
@@ -4759,8 +4893,9 @@ void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)
  */
 void CFSMission::DeactivateSide(IsideIGC * pside)
 {
-  if (!m_misdef.misparms.bAllowEmptyTeams)
-  {
+   // KGJV #62
+  //if (!m_misdef.misparms.bAllowEmptyTeams)
+  //{
       assert(pside->GetMission() == m_pMission);
       debugf("DeactivateSide side=%d.\n", pside->GetObjectID());
       pside->SetActiveF(false);
@@ -4805,9 +4940,11 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
         }
       }
 
-      BEGIN_PFM_CREATE(g.fm, pfmSideInactive, S, SIDE_INACTIVE)
+      BEGIN_PFM_CREATE(g.fm, pfmSideInactive, CS, SIDE_INACTIVE) // KGJV #62
       END_PFM_CREATE
       pfmSideInactive->sideID = pside->GetObjectID();
+	  pfmSideInactive->bActive = false; // KGJV #62
+	  pfmSideInactive->bChangeAET = false; // KGJV #62
       g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
       GetSite()->SendChatf(NULL, CHAT_EVERYONE, NA, NA, "%s is no more.", pside->GetName());
 
@@ -4841,7 +4978,7 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
           g.fm.SendMessages(pgroup, FM_GUARANTEED, FM_FLUSH);
       }
 
-  }
+ // }
 }
 
 /*-------------------------------------------------------------------------
@@ -5101,6 +5238,13 @@ BallotID Ballot::GetBallotID()
   return m_ballotID;
 }
 
+// mmf/KGJV 09/07 allow only one ballot of each type at a time
+// gets the type of this ballot
+BallotType Ballot::GetType()
+{
+	return m_type;
+}
+
 // initializes the ballot for a given vote proposed by a player to their team
 void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const ZString& strBallotText)
 {
@@ -5152,6 +5296,7 @@ void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const
   pfmBallot->timeExpiration = m_timeExpiration;
   pfmBallot->otInitiator = OT_ship;
   pfmBallot->oidInitiator = pfsInitiator->GetShipID();
+  pfmBallot->bHideToLeader = m_bHideToLeader;  // KGJV #110
 
   g.fm.SendMessages(m_pgroup, FM_GUARANTEED, FM_FLUSH);        
 
@@ -5212,6 +5357,7 @@ void Ballot::Init(CFSSide* pfsideInitiator, const ZString& strProposalName, cons
   pfmBallot->timeExpiration = m_timeExpiration;
   pfmBallot->otInitiator = OT_side;
   pfmBallot->oidInitiator = pfsideInitiator->GetSideIGC()->GetObjectID();
+  pfmBallot->bHideToLeader = false; // KGJV #110
 
   g.fm.SendMessages(m_pgroup, FM_GUARANTEED, FM_FLUSH);        
 }
@@ -5305,11 +5451,70 @@ bool Ballot::AllVotesAreIn()
 
 BallotID Ballot::s_ballotIDNext = 0;
 
+// KGJV #110
+// mutiny ballot to change commander
+MutinyBallot::MutinyBallot(CFSPlayer* pfsInitiator)
+{
+  m_pside = pfsInitiator->GetSide();
+  m_idInitiatorShip = pfsInitiator->GetShipID();
+  m_bHideToLeader = true;
+  m_type = BALLOT_MUTINY; // mmf/KGJV 09/07 allow only one ballot of each type at a time
+  Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to mutiny"), pfsInitiator->GetName() + ZString(" has proposed to munity.  "));
+}
+
+void MutinyBallot::OnPassed()
+{
+  Ballot::OnPassed();
+
+  SideID    sideID = m_pside->GetObjectID();
+  if (sideID >= 0 && STAGE_STARTED == m_pmission->GetStage())
+  {
+	  CFSShip*    pfssNewLeader = CFSShip::GetShipFromID(m_idInitiatorShip);
+      if (pfssNewLeader && pfssNewLeader->IsPlayer() && 
+		  pfssNewLeader->GetSide() == m_pside)
+      {
+		  CFSPlayer * pfspNewLeader = pfssNewLeader->GetPlayer();
+		  // KGJV fix: changed whole logic
+		  if (pfspNewLeader->GetSide() == m_pside)
+		  {
+				// get the old leader
+				CFSPlayer * pfspOldLeader = m_pmission->GetLeader(sideID);
+				assert(pfspOldLeader); // this should really never assert ...
+				
+				// if player who proposed is already leader, we do nothing (leader change between Ballot start and end)
+				if (pfspOldLeader == pfssNewLeader) return;
+
+				// set new leader to stop donating
+				pfspNewLeader->SetAutoDonate(NULL,0,false);
+
+				// get old leader money and set him to autodonate to new leader
+				// this will transfert old leader money to new leader and cascade autodonation of everyone
+				Money money = pfspOldLeader->GetMoney();
+				pfspOldLeader->SetAutoDonate(pfspNewLeader,money,true);
+
+				// but old leader will still see his money because of how client handle AUTODONATE msg
+				// (search for "mutiny-note" in clintlib\appmsg.cpp)
+				// so we send him the change here:
+				BEGIN_PFM_CREATE(g.fm, pfmMoneyChange, S, MONEY_CHANGE)
+				END_PFM_CREATE
+				pfmMoneyChange->dMoney  = -money;
+				pfmMoneyChange->sidTo   = pfspOldLeader->GetShipID();
+				pfmMoneyChange->sidFrom = NA;
+				g.fm.SendMessages(pfspOldLeader->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+
+				// set pfspNewLeader as new leader
+				m_pmission->SetLeader(pfspNewLeader);
+		  }
+      }
+   }
+}
 
 // a ballot used when a player suggests resigning
 ResignBallot::ResignBallot(CFSPlayer* pfsInitiator)
 {
   m_pside = pfsInitiator->GetSide();
+  m_bHideToLeader = false; // KGJV #110
+  m_type = BALLOT_RESIGN;  // mmf/KGJV 09/07 allow only one ballot of each type at a time
   Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to resign"), pfsInitiator->GetName() + ZString(" has proposed resigning.  "));
 }
 
@@ -5328,6 +5533,8 @@ void ResignBallot::OnPassed()
 OfferDrawBallot::OfferDrawBallot(CFSPlayer* pfsInitiator)
 {
   m_pfside = CFSSide::FromIGC(pfsInitiator->GetSide());
+  m_bHideToLeader = false; // KGJV #110
+  m_type = BALLOT_OFFERDRAW; // mmf/KGJV 09/07 allow only one ballot of each type at a time
   Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to offer a draw"), pfsInitiator->GetName() + ZString(" has proposed offering a draw.  "));
 }
 
@@ -5342,6 +5549,8 @@ void OfferDrawBallot::OnPassed()
 // a ballot used when one team offers a draw
 AcceptDrawBallot::AcceptDrawBallot(CFSSide* pfsideInitiator)
 {
+  m_bHideToLeader = false; // KGJV #110
+  m_type = BALLOT_ACCEPTDRAW; // mmf/KGJV 09/07 allow only one ballot of each type at a time
   Init(pfsideInitiator, pfsideInitiator->GetSideIGC()->GetName() + ZString("'s offer of a draw"), pfsideInitiator->GetSideIGC()->GetName() + ZString(" has offered a draw.  "));
 }
 
@@ -5350,4 +5559,7 @@ void AcceptDrawBallot::OnPassed()
   Ballot::OnPassed();
   m_pmission->GameOver(NULL, "The game was declared a draw");
 }
+
+
+
 

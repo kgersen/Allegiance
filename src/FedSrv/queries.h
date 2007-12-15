@@ -30,7 +30,7 @@ The NAME part of the parameter macros end up as global variables, so name them u
 That is where you set and get the parameters
 */
 
-BEGIN_SQL_DEF(&g.siteFedSrv)
+BEGIN_SQL_DEF(HKLM_FedSrv,&g.siteFedSrv)
   DEF_STMT(ShipTypeIDs, "SELECT ShipTypeID FROM ShipTypes ORDER BY SortOrder")
     SQL_INT2_PARM(ShipTypeIDs_ShipTypeID,           SQL_OUT_PARM)
 

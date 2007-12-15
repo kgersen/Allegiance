@@ -1263,7 +1263,9 @@ public:
     TRef<IMenuItem>            m_pitemSFXVolumeDown;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeUp;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeDown;
-	TRef<IMenuItem>            m_pitemMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	TRef<IMenuItem>            m_pitemMaxTextureSize;		// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	TRef<IMenuItem>            m_pitemMuteFilter;			//TheBored 30-JUL-07: Filter Unknown Chat patch
+	TRef<IMenuItem>            m_pitemFilterUnknownChats;	//TheBored 30-JUL-07: Filter Unknown Chat patch
 
     bool                       m_bLensFlare;
     bool                       m_bMusic;
@@ -2149,6 +2151,8 @@ public:
                     // Switch to combat resolution
                     //
 
+					SetFullscreenSize(m_sizeCombatFullscreen);  //AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
+
                     SetFocus();
                     m_frameID = 0;
                     m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
@@ -2234,7 +2238,7 @@ public:
                 {
                     extern  TRef<ModifiableNumber>  g_pnumberMissionNumber;
                     int     iMission = static_cast<int> (g_pnumberMissionNumber->GetValue ());
-                    ZAssert ((iMission >= 1) && (iMission <= 6));
+                    ZAssert ((iMission >= 1) && (iMission <= 8)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
                     char*   strNamespace[] = 
                     {
                         "",
@@ -2244,6 +2248,8 @@ public:
                         "tm_4_enemy_engagement",
                         "tm_5_command_view",
                         "tm_6_practice_arena",
+						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
+						"tm_8_nanite", //TheBored 06-JUL-07: Mish #8 pregame panels. 
                     };
 
                     SetScreen (CreateTrainingSlideshow (GetModeler (), strNamespace[iMission], iMission));
@@ -2254,7 +2260,7 @@ public:
                 {
                     extern  TRef<ModifiableNumber>  g_pnumberMissionNumber;
                     int     iMission = static_cast<int> (g_pnumberMissionNumber->GetValue ());
-                    ZAssert ((iMission >= 1) && (iMission <= 6));
+                    ZAssert ((iMission >= 1) && (iMission <= 8)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
                     char*   strNamespace[] = 
                     {
                         "",
@@ -2264,6 +2270,8 @@ public:
                         "tm_4_enemy_engagement_post",
                         "tm_5_command_view_post",
                         "tm_6_practice_arena_post",
+						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
+						"tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
                     };
                     SetScreen (CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
                     break;
@@ -2822,11 +2830,13 @@ public:
         m_pgroupImage3D = new GroupImage();
 
         m_pgroupImage3D->AddImage(m_pwrapImageHudGroup   );
-        m_pgroupImage3D->AddImage(m_pmuzzleFlareImage    );
-        m_pgroupImage3D->AddImage(m_pwrapImageLensFlare  );
+        m_pgroupImage3D->AddImage(m_pmuzzleFlareImage    );  
+		//m_pgroupImage3D->AddImage(m_pwrapImageLensFlare  ); // Your_Persona: this line was moved down one line to move it up in the draw order.
         m_pgroupImage3D->AddImage(m_pwrapImageScene      );
+		m_pgroupImage3D->AddImage(m_pwrapImageLensFlare  );// moved to here
         m_pgroupImage3D->AddImage(m_pwrapImagePosters    );
         m_pgroupImage3D->AddImage(m_pwrapImageStars      );
+
         m_pgroupImage3D->AddImage(m_pwrapImageEnvironment);
 
         m_pwrapImageConsole     = new WrapImage(Image::GetEmpty());
@@ -2882,8 +2892,8 @@ public:
             ToggleFilterChatsToAll();
         if (!LoadPreference("FilterQuickComms", TRUE))
             ToggleFilterQuickComms();
-        if (!LoadPreference("FilterLobbyChats", TRUE))
-            ToggleFilterLobbyChats();
+		if (!LoadPreference("FilterUnknownChats", TRUE))
+            ToggleFilterUnknownChats(); //TheBored 30-JUL-07: Filter Unknown Chat patch
         if (!LoadPreference("LinearControlResponse", TRUE))
             ToggleLinearControls();
         if (!LoadPreference("Environment", TRUE))
@@ -2918,6 +2928,7 @@ public:
         if (LoadPreference("LargeDeadZone", FALSE))
             ToggleLargeDeadZone();
 		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 1)); //TheBored 25-JUN-07: Mute lobby chat patch 
 
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
@@ -2958,13 +2969,14 @@ public:
         // Show the intro videos
         //
 
-        if (!g_bQuickstart && bMovies  && !g_bReloaded) {
-            SetScreen(CreateVideoScreen(GetModeler(), false));
-        } else {
+        // KGJV 32B - byebye video for now
+        //if (!g_bQuickstart && bMovies  && !g_bReloaded) {
+        //    SetScreen(CreateVideoScreen(GetModeler(), false));
+        //} else {
             SetScreen(CreateIntroScreen(GetModeler()));
             m_screen = ScreenIDIntroScreen;
             RestoreCursor();
-        }
+        //}
     }
 
     void InitializeImages()
@@ -3008,6 +3020,7 @@ public:
         SetCursorImage(pimageCursor);
     }
 
+	// TODO: rewrite all load and savepreference methods to use a settings file instead of the registry.
     void SavePreference(const ZString& szName, DWORD dwValue)
     {
         HKEY hKey;
@@ -3091,7 +3104,8 @@ public:
         // Save the screen resolution
         //
 
-        SaveCombatSize();
+		if ( m_screen == ScreenIDCombat )  //AEM 7.15.07 Don't want to end up saving a non combat resolution (800x600)
+			SaveCombatSize();
 
         SavePreference("CombatXSize", m_sizeCombat.X());
         SavePreference("CombatYSize", m_sizeCombat.Y());
@@ -3565,7 +3579,10 @@ public:
     #define idmToggleFlipY                 629
     #define idmToggleStickyChase           630
     #define idmToggleEnableFeedback        631
-	#define idmMaxTextureSize          632// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+    #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
+    #define idmPings                       633 // w0dk4 player-pings feature
+	#define	idmMuteFilterOptions		   634 //TheBored 30-JUL-07: Filter Unknown Chat patch
+	#define idmFilterUnknownChats		   635 //TheBored 30-JUL-07: Filter Unknown Chat patch
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -3675,31 +3692,45 @@ public:
 			dMM = dVer.Middle(2,2);
 			dYY = dVer.Middle(0,2);
 			YY = atoi(dYY); 	YY = (YY/10)*8+(YY%10); 
-			MM = atoi(dMM); 	MM = (MM/10)*8+(MM%10); 
+			MM = atoi(dMM); 	MM = (MM/10)*8+(MM%10);  
 			DD = atoi(dDD); 	DD = (DD/10)*8+(DD%10);
 		}
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
 		// mmf added ifs to zero pad MM and DD 
-		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
-		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
-		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
-		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R3 Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
-
-		m_pmenu->AddMenuItem(0               , "------------------------");
+		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
+		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
+		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
+		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+		//AEM, redesigned ESC menu 7/6/07
+		// mmf 10/07 swapped position of S and G
+		m_pmenu->AddMenuItem(0               , "");
+		m_pmenu->AddMenuItem(0				 , "HELP");
+		m_pmenu->AddMenuItem(0               , "--------------------------");
+		m_pmenu->AddMenuItem(idmHelp         , "Manual & Quick Reference"            , 'H'                     );	
+		m_pmenu->AddMenuItem(0               , "");
+		m_pmenu->AddMenuItem(0               , "OPTIONS");
+		m_pmenu->AddMenuItem(0               , "--------------------------");
         m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmSoundOptions , "Sound Options"   , 'S', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmGameOptions  , "Game Options",     'G', m_psubmenuEventSink);
+        m_pmenu->AddMenuItem(idmOptions      , "Graphics", 'O', m_psubmenuEventSink);
+        m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
+		m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
+
 
         if (trekClient.MyMission() != NULL) {
-            m_pmenu->AddMenuItem(idmGameDetails  , "Game Details",     'I');
-        }
+			m_pmenu->AddMenuItem(0               , "");
+			m_pmenu->AddMenuItem(0               , "INFORMATION");
+			m_pmenu->AddMenuItem(0               , "--------------------------");
+            m_pmenu->AddMenuItem(idmGameDetails, "Game Details",   'I');
+			m_pmenu->AddMenuItem(idmPings  ,     "Player Pings",   'P');	// w0dk4 player-pings feature
+		}
 
-        m_pmenu->AddMenuItem(idmHelp         , "Help"            , 'H'                     );
+        m_pmenu->AddMenuItem(0               , "");
+		m_pmenu->AddMenuItem(0               , "QUIT");
+		m_pmenu->AddMenuItem(0               , "--------------------------");
         if ((trekClient.MyMission() != NULL) || Slideshow::IsInSlideShow ())
-            m_pmenu->AddMenuItem(idmExitGame     , "Quit Mission"    , 'Q'                 );
-        m_pmenu->AddMenuItem(idmExitApp      , "Exit Allegiance" , 'X'                     );
+            m_pmenu->AddMenuItem(idmExitGame , "Mission"    , 'Q'                 );
+        m_pmenu->AddMenuItem(idmExitApp      , "Allegiance" , 'X'                     );
 
         OpenPopup(m_pmenu, Point(10, 10));
     }
@@ -3827,11 +3858,8 @@ public:
 				break;
 
             case idmGameOptions:
-                m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'S');
+                m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,					"Mute/Filter",						'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
-                m_pitemFilterChatsToAll            = pmenu->AddMenuItem(idmFilterChatsToAll,            GetFilterChatsToAllMenuString(),    'A');
-                m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'Q');
-                m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'F');
                 m_pitemToggleLinearControls        = pmenu->AddMenuItem(idmToggleLinearControls,        GetLinearControlsMenuString(),      'L');
                 m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetLargeDeadZoneMenuString(),       'Z');
                 m_pitemToggleVirtualJoystick       = pmenu->AddMenuItem(idmToggleVirtualJoystick,       GetVirtualJoystickMenuString(),     'J');
@@ -3861,6 +3889,16 @@ public:
                 m_pitemVoiceOverVolumeDown  = pmenu->AddMenuItem(idmVoiceOverVolumeDown,
                     GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), -c_fVolumeDelta), 'C');
                 break;
+
+			//TheBored 30-JUL-07: Filter Unknown Chat patch
+			case idmMuteFilterOptions:
+                m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'D');
+				m_pitemFilterChatsToAll            = pmenu->AddMenuItem(idmFilterChatsToAll,            GetFilterChatsToAllMenuString(),    'A');
+                m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'V');
+				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
+                m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
+				break;
+			//End TB 30-JUL-07
         }
 
         return pmenu;
@@ -3980,25 +4018,47 @@ public:
             m_pitemFilterQuickComms->SetString(GetFilterQuickCommsMenuString());
         }
     }
-
-    void ToggleFilterLobbyChats()
+	//TheBored 30-JUL-07: Filter Unknown Chat patch
+    void ToggleFilterUnknownChats()
     {
-        if (trekClient.FilterLobbyChats())
+        if (trekClient.FilterUnknownChats())
         {
-            trekClient.FilterLobbyChats(false);
-            SavePreference("FilterLobbyChats", FALSE);
+            trekClient.FilterUnknownChats(false);
+            SavePreference("FilterUnknownChats", FALSE);
         }
         else
         {
-            trekClient.FilterLobbyChats(true);
-            SavePreference("FilterLobbyChats", TRUE);
+            trekClient.FilterUnknownChats(true);
+            SavePreference("FilterUnknownChats", TRUE);
         }
 
+        if (m_pitemFilterUnknownChats != NULL) {
+            m_pitemFilterUnknownChats->SetString(GetFilterUnknownChatsString());
+        }
+    }
+	//End TB 30-JUL-07
+	//TheBored 25-JUN-07: Altered function allowing for 3 options. 1 = Filter Lobby, 2 = Filter Lobby and PMs, 3 = Dont Filter Anything
+    void ToggleFilterLobbyChats(DWORD dwLobbyChatSetting)
+    {
+		if (dwLobbyChatSetting > 3){dwLobbyChatSetting = 1;}
+		switch (dwLobbyChatSetting)
+		{
+			case 1:
+				trekClient.FilterLobbyChats(dwLobbyChatSetting);
+				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
+				break;
+			case 2:
+				trekClient.FilterLobbyChats(dwLobbyChatSetting);
+				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
+			case 3:
+				trekClient.FilterLobbyChats(dwLobbyChatSetting);
+				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
+		}
         if (m_pitemFilterLobbyChats != NULL) {
             m_pitemFilterLobbyChats->SetString(GetFilterLobbyChatsMenuString());
         }
     }
-
+	//End TB 25-JUN-07
     void ToggleLinearControls()
     {
         if (m_bLinearControls)
@@ -4600,10 +4660,31 @@ public:
     {
         return trekClient.FilterQuickComms() ? "Filter Voice Commands" : "Don't Filter Voice Commands";
     }
+	
+	//TheBored 30-JUL-07: Filter Unknown Chat patch
+    ZString GetFilterUnknownChatsString()
+    {
+        return trekClient.FilterUnknownChats() ? "Filter Unknown Chats" : "Don't Filter Unknown Chats";
+    }
 
     ZString GetFilterLobbyChatsMenuString()
     {
-        return trekClient.FilterLobbyChats() ? "Filter Chats Sent From Lobby" : "Don't Filter Chats Sent From Lobby";
+		//TheBored 25-JUN-07: Added a new option so the user can choose if PMs are filtered.
+        switch (trekClient.FilterLobbyChats())
+        {
+            case 1:
+                return "Filter Chats Sent From Lobby";
+                break;
+            case 2:
+                return "Filter Chats Sent From Lobby Including PMs";
+                break;
+            case 3:
+                return "Don't Filter Chats Sent From Lobby";
+                break;
+            default:
+                return "Default Case"; //TB: Shouldn't happen, but left in for testing.
+                break;
+        }
     }
 
     ZString GetLinearControlsMenuString()
@@ -4793,6 +4874,131 @@ public:
         );
     }
 
+	// w0dk4 player-pings feature
+	void ShowPlayerPings()
+    {
+		const ShipListIGC* ships = trekClient.m_pCoreIGC->GetShips();		
+
+		ZString str1;
+		str1 += "<Color|yellow><Font|medBoldVerdana>Connection Info of Players<Font|smallFont><Color|white><p><p>";
+		ZString str2;
+		PlayerInfo* pPlayerInfo;
+		ShipID shipID;
+
+		int iAveragePing = 0;
+		int iAverageLoss = 0;
+		int iShips = 0;
+
+		for (ShipLinkIGC*   l = ships->first();
+                     (l != NULL);
+                     l = l->next())
+        {
+            IshipIGC*  s = l->data();
+
+			unsigned int m_ping;
+			unsigned int m_loss;
+			
+			if ((pPlayerInfo = (PlayerInfo*)s->GetPrivateData()) && (pPlayerInfo == trekClient.GetPlayerInfo())){
+				pPlayerInfo->GetConnectionData(&m_ping,&m_loss);
+
+				if(m_ping > 1000)
+					m_ping = 999;
+				if(m_ping < 10)
+					m_ping = 10;
+
+				if(m_loss > 100)
+					m_loss = 99;
+
+				iAveragePing += m_ping;
+				iAverageLoss += m_loss;
+				iShips++;
+
+				ZString formatPing;
+				if(m_ping < 150)
+					formatPing = "<Color|green>";
+				else if(m_ping < 300)
+					formatPing = "<Color|yellow>";
+				else
+					formatPing = "<Color|red>";
+
+				ZString formatLoss;
+				if(m_loss < 5)
+					formatLoss = "<Color|green>";
+				else if(m_loss < 15)
+					formatLoss = "<Color|yellow>";
+				else
+					formatLoss = "<Color|red>";
+
+				str1 += "<Color|cyan>Your Connection Info<Color|white><p>Ping: " + formatPing + ZString((int)m_ping) + "ms<Color|white>	Packet Loss: " + formatLoss + ZString((int)m_loss) + "%<Color|white><p><p>";
+
+			} else if ((pPlayerInfo = (PlayerInfo*)s->GetPrivateData()) && pPlayerInfo->IsHuman()) {
+				pPlayerInfo->GetConnectionData(&m_ping,&m_loss);
+
+				if(m_ping > 1000)
+					m_ping = 999;
+				if(m_ping < 10)
+					m_ping = 10;
+
+				if(m_loss > 100)
+					m_loss = 99;
+
+				iAveragePing += m_ping;
+				iAverageLoss += m_loss;
+				iShips++;
+
+				ZString formatPing;
+				if(m_ping < 150)
+					formatPing = "<Color|green>";
+				else if(m_ping < 300)
+					formatPing = "<Color|yellow>";
+				else
+					formatPing = "<Color|red>";
+
+				ZString formatLoss;
+				if(m_loss < 5)
+					formatLoss = "<Color|green>";
+				else if(m_loss < 15)
+					formatLoss = "<Color|yellow>";
+				else
+					formatLoss = "<Color|red>";
+
+				str2 += "Ping: " + formatPing + ((m_ping < 100) ? ZString("0") : ZString("")) + ZString((int)m_ping)
+					+ "ms<Color|white>	Packet Loss: " + formatLoss + ((m_loss < 10) ? ZString("0") : ZString("")) + ZString((int)m_loss) + "%<Color|white>		Name: <Color|cyan>" + ZString(pPlayerInfo->CharacterName()) + "<Color|white><p>";
+			}
+		}
+
+		if(iShips > 0) {
+			iAveragePing = iAveragePing/iShips;
+			iAverageLoss = iAverageLoss/iShips;
+
+			ZString formatPing;
+				if(iAveragePing < 150)
+					formatPing = "<Color|green>";
+				else if(iAveragePing < 300)
+					formatPing = "<Color|yellow>";
+				else
+					formatPing = "<Color|red>";
+
+				ZString formatLoss;
+				if(iAverageLoss < 5)
+					formatLoss = "<Color|green>";
+				else if(iAverageLoss < 15)
+					formatLoss = "<Color|yellow>";
+				else
+					formatLoss = "<Color|red>";
+
+			str2 += "<p>Average Ping: " + formatPing + ZString(iAveragePing) + "ms<Color|white>	Average Packet Loss: " + formatLoss + ZString(iAverageLoss) + "%";			
+		}
+
+        GetPopupContainer()->OpenPopup(
+			CreateMMLPopup(
+            GetModeler(),
+            (str1+str2),
+            true)
+			);
+    }
+    // end w0dk4 player-pings feature
+
     void OnMenuCommand(IMenuItem* pitem)
     {
         switch (pitem->GetID()) {
@@ -4809,6 +5015,18 @@ public:
                 CloseMenu();
                 OnGameState();
                 break;
+
+			// w0dk4 player-pings feature
+			case idmPings:
+				{
+					CloseMenu();
+					if (trekClient.m_fm.IsConnected()){
+						trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmPingDataReq, C, REQPINGDATA)
+						END_PFM_CREATE
+					}
+				}
+				break;
 
             case idmExitGame:
                 CloseMenu();
@@ -4860,9 +5078,15 @@ public:
             case idmFilterQuickComms:
                 ToggleFilterQuickComms();
                 break;
+			
+			//TheBored 30-JUL-07: Filter Unknown Chat patch
+			case idmFilterUnknownChats:
+                ToggleFilterUnknownChats();
+                break;
 
             case idmFilterLobbyChats:
-                ToggleFilterLobbyChats();
+                //TheBored 25-JUN-07: Lobby filter change.
+				ToggleFilterLobbyChats(trekClient.FilterLobbyChats() + 1);
                 break;
 
             case idmToggleLinearControls:
@@ -5163,7 +5387,7 @@ public:
     {
         if (m_bCombatSize) {
             m_sizeCombat           = GetWindowedSize();
-            m_sizeCombatFullscreen = GetFullscreenSize();
+            m_sizeCombatFullscreen = GetFullscreenSize(); 
             m_bCombatSize = false;
         }
     }
@@ -5182,7 +5406,7 @@ public:
             Set3DAccelerationImportant(false);
             SetWindowedSize(m_sizeCombat);
             SetFullscreenSize(m_sizeCombatFullscreen);
-            SetSizeable(false);
+            SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
             //SetWindowedSize(WinPoint(800, 600));
             //SetFullscreenSize(WinPoint(800, 600));
             //SetSizeable(false);
@@ -5197,17 +5421,11 @@ public:
             SetFullscreenSize(m_sizeCombatFullscreen);
             Set3DAccelerationImportant(true);
             SetSizeable(true);
-
-			//aem res reset fix, previously just m_bCombatSize=true;
-			if ( (m_sizeCombatFullscreen.X()==640 && m_sizeCombatFullscreen.Y()==480) ||
-			(m_sizeCombatFullscreen.X()==800 && m_sizeCombatFullscreen.Y()==600) ||
-			(m_sizeCombatFullscreen.X()==1024 && m_sizeCombatFullscreen.Y()==768) ||
-			(m_sizeCombatFullscreen.X()==1280 && m_sizeCombatFullscreen.Y()==1024) ||
-			(m_sizeCombatFullscreen.X()==1600 && m_sizeCombatFullscreen.Y()==1200) )
-			{
-				m_bCombatSize = true;
-			}
         }
+
+		m_bCombatSize = true;	//AEM 7.16.07	Moved here from inside the else block.  Since the Loadout size
+								//				now = the Combat size we need to allow for adjusting the fullscreen size
+								//				in the Loadout as well
     }
 
     void SetViewMode(ViewMode vm, bool bForce = false)
@@ -9468,6 +9686,22 @@ public:
                 }
             }
             break;
+
+			// w0dk4 player-pings feature
+			case FM_S_PINGDATA:
+			{
+				CASTPFM(pfmPingData, S, PINGDATA, pfm);
+				if(pfmPingData->shipID != -1){
+					PlayerInfo* playerInfo = trekClient.FindPlayer(pfmPingData->shipID);
+					if(playerInfo)
+						playerInfo->SetConnectionData(pfmPingData->ping,pfmPingData->loss);
+
+				} else {
+					if (pfmPingData->ping == 1)
+						TrekWindowImpl::ShowPlayerPings();
+				}
+			}
+			break;
 
             case FM_S_TREASURE_SETS:
             {

@@ -1789,7 +1789,7 @@ void                    CmissionIGC::GenerateMission(Time                   now,
     debugf("Invulnerable Stations: %s\n",pmp->bInvulnerableStations ? "yes" : "no");
     debugf("Developments: %s\n",pmp->bAllowDevelopments ? "yes" : "no");
     debugf("Allow Shipyards: %s\n",pmp->bAllowShipyardPath ? "yes" : "no");
-    
+    debugf("Experimental: %s\n",pmp->bExperimental ? "yes" : "no");  // mmf 10/07 Experimental game type
 }
 
 void    CmissionIGC::GenerateTreasure(Time         now,

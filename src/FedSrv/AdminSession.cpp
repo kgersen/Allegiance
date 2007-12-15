@@ -81,7 +81,9 @@ CAdminSession::~CAdminSession()
           // Shutdown the server if no games exist
           long cGames = 0;
           spGames->get_Count(&cGames);
-          if (0 == cGames)
+		  // KGJV #114 - if lobbied then dont shutdown if create game allowed on this server
+		  bool bSupposedToConnectToLobby = !(FEDSRV_GUID != g.fm.GetHostApplicationGuid());
+		  if ((0 == cGames) && (bSupposedToConnectToLobby ? (g.cStaticCoreInfo==0) : true))
             PostThreadMessage(g.idReceiveThread, WM_QUIT, 0, 0);
         }
       }

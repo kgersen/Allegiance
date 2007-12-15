@@ -268,7 +268,9 @@ FedMessaging::FedMessaging(IFedMessagingSite * pfmSite) :
   m_pbFMNextT(m_rgbbuffSecondaryOutPacket),
   m_guidInstance(GUID_NULL),
   m_guidApplication(GUID_NULL),
-  m_timeMsgLast(Time::Now())
+  m_timeMsgLast(Time::Now()),
+  m_pHostAddress(NULL), // KGJV pigs - was uninitialized
+  m_pDeviceAddress(NULL) // KGJV pigs - was uninitialized
 {
   assert (pfmSite);
   InitializeCriticalSection( &m_csMsgList );
@@ -1456,11 +1458,12 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
 
   // Mdvalley: since Enum is now asyncronous, we have to wait until a proper reply comes back.
   // Sure, it'll freeze for 15 secs if there's no connection, but it did that under dplay4, too.
+
   int i = 0;
   while(IsEqualGUID(GUID_NULL, m_guidInstance) && i < 150)	// 15 second timeout
   {
-	  Sleep(100);	// check every 100 ms
-	  i++;
+     Sleep(100);	// check every 100 ms
+     i++;
   }
 
   if (IsEqualGUID(GUID_NULL, m_guidInstance))
@@ -1777,65 +1780,47 @@ hr = InitDPlayClient();
   g_guidApplication = guidApplication;
 
   // Enumerate all StressMazeApp hosts running on IP service providers
-//  hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
-//                                       pDP8AddressLocal, NULL,
-//                                       0, 0, 0, 0, NULL,
-//                                       0 /*MUST use 0 handle for DPNOP_SYNC flag */ , DPNOP_SYNC );
+  // mmf 05/07 implement WLP's LAN fix, use sync for LAN game, async otherwise
+
+  if (IsEqualGUID(FEDSRV_STANDALONE_PRIVATE_GUID, guidApplication)) {
+     hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
+                                          pDP8AddressLocal, NULL,
+                                          0, 0, 0, 0, NULL,  // 0, 0, 0, 0, NULL,
+                                          0 /*MUST use 0 handle for DPNOP_SYNC flag */ , DPNOP_SYNC );
+  } else {
   // Mdvalley: Use an asyncronous EnumHosts with infinite retries to make NATs happy.
-  DPNHANDLE fillerHandle;	// Use of filler keeps DPlay from saying nasty things.
-  hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
-                                       pDP8AddressLocal, NULL,
-                                       0, INFINITE, 0, 0, NULL,
-                                       &fillerHandle, 0 );
+     DPNHANDLE fillerHandle;	// Use of filler keeps DPlay from saying nasty things.
+     hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
+                                          pDP8AddressLocal, NULL,
+                                          0, INFINITE, 0, 0, NULL,
+                                          &fillerHandle, 0 );
+  }
 
 // WLP - DPLAY8 def = STDMETHOD(EnumHosts)
-
 //  (THIS_ PDPN_APPLICATION_DESC const pApplicationDesc,                     &dpnAppDesc
-
 //  IDirectPlay8Address *const pAddrHost                                     pDP8AddressHost
-
 //  IDirectPlay8Address *const pDeviceInfo,                                  pDP8AddressLocal
-
 //  PVOID const pUserEnumData,                                               NULL
-
 //  const DWORD dwUserEnumDataSize, .........................................0
-
 //  const DWORD dwEnumCount,                                                 0   number of times to repeat
-
 //  const DWORD dwRetryInterval,                                             0   milliseconds between retries
-
 //  const DWORD dwTimeOut,                                                   0   milliseconds to wait for responses
-
 //  PVOID const pvUserContext,                                               NULL
-
 //  DPNHANDLE *const pAsyncHandle,                                           0
-
 //   const DWORD dwFlags) PURE;                                              DPNOP_SYNC
-
 /* WLP - this is from the MSDN
 
 HRESULT EnumHosts(
-
 PDPN_APPLICATION_DESC const pApplicationDesc,
-
 IDirectPlay8Address *const pdpaddrHost,
-
 IDirectPlay8Address *const pdpaddrDeviceInfo,
-
 PVOID const pvUserEnumData,
-
 const DWORD dwUserEnumDataSize,
-
 const DWORD dwEnumCount,
-
 const DWORD dwRetryInterval,
-
 const DWORD dwTimeOut,
-
 PVOID const pvUserContext,
-
 HANDLE *const pAsyncHandle,
-
 const DWORD dwFlags
 
 */
@@ -2115,4 +2100,13 @@ HRESULT FedMessaging::GetConnectionSendQueue(CFMConnection * pcnxn, DWORD * pcMs
   *pcMsgs = 0;
   *pcBytes = 0;
   return S_OK;
+}
+
+HRESULT FedMessaging::GetConnectionInfo(CFMConnection * pcnxn, DPN_CONNECTION_INFO & ConnectionInfo)
+{
+
+  if ( m_pDirectPlayServer != 0 )
+	  return m_pDirectPlayServer->GetConnectionInfo(pcnxn->GetID(),&ConnectionInfo,0);
+
+  return S_FALSE;
 }

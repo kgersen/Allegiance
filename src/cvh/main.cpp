@@ -656,7 +656,8 @@ bool    qh2cvh(const char*   file, FILE*    fOut, int mode)
                                 if (v < vBest)
                                 {
                                     //Vertify that all of the other points in the convex hull are properly contained.
-                                    for (int m = 0; (m < nUsedVertices); m++)
+                                    int m;
+									for (m = 0; (m < nUsedVertices); m++)
                                     {
                                         double x = vertices[vertexIDs[m]].xyz[0] / a;
                                         double y = vertices[vertexIDs[m]].xyz[1] / b;

@@ -21,6 +21,12 @@ namespace Training
     /* void */  GetShipIsStoppedCondition::GetShipIsStoppedCondition (const TRef<IshipIGC>& ship) :
     m_ship (ship)
     {
+		m_shipID = -1;
+    }
+
+    /* void */  GetShipIsStoppedCondition::GetShipIsStoppedCondition (const ShipID shipID) :
+    m_shipID (shipID)
+    {
     }
 
     //------------------------------------------------------------------------------
@@ -32,6 +38,8 @@ namespace Training
     //------------------------------------------------------------------------------
     bool        GetShipIsStoppedCondition::Evaluate (void)
     {
+		if (m_shipID != -1)
+			m_ship = trekClient.GetSide()->GetShip(m_shipID);
         Vector  velocity = m_ship->GetVelocity ();
         float   fSpeedSquared = velocity.LengthSquared ();
         return (fSpeedSquared < 1.0f) ? true : false;

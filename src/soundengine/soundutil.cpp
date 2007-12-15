@@ -336,7 +336,7 @@ private:
 	}
 
     // initialize the data object with the contents of strFilename
-    HRESULT Init(const ZString& strFilename)
+    HRESULT Init(const ZString& strFilename, bool convert) //AEM - Added convert parameter (7.4.07)
     {
         HRESULT hr;
             
@@ -346,7 +346,8 @@ private:
         hr = ParseWaveData(m_pvFileContents);
         if (FAILED(hr)) return hr;
 
-		ToMono();
+		if (convert)
+			ToMono();
 
         m_strFilename = strFilename;
 		m_bIsOgg = false;
@@ -355,7 +356,7 @@ private:
     }
 
 	// mdvalley: Initialize and convert OGG file, then process as normal
-	HRESULT InitOgg(const ZString& strFilename)
+	HRESULT InitOgg(const ZString& strFilename, bool convert) //AEM - Added convert parameter (7.4.07)
 	{
 		HRESULT hr;
 
@@ -367,8 +368,9 @@ private:
 
 //		hr = ParseWaveData(m_pvPcmFromOgg);
 //		if (FAILED(hr)) return hr;
-
-		ToMono();
+		
+		if (convert)
+			ToMono();
 
 		m_strFilename = strFilename;
 		m_bIsOgg = true;
@@ -379,7 +381,7 @@ private:
 public:
 
     // returns a PCM data object for the specified file.
-    static HRESULT LoadWaveFile(TRef<ISoundPCMData>& pdata, const ZString& strFilename)
+    static HRESULT LoadWaveFile(TRef<ISoundPCMData>& pdata, const ZString& strFilename, bool convertMono) //AEM - Added convertMono parameter (7.4.07)
     {
         // first, check the cache.
         SoundFileCache::iterator iterfile;
@@ -399,9 +401,9 @@ public:
 			HRESULT hr;
 
 			if(strFilename.Right(4) == ".ogg")		// mdvalley: Find the file extension to decide whether to ogg it.
-				hr = psoundfile->InitOgg(strFilename);
+				hr = psoundfile->InitOgg(strFilename, convertMono ); //AEM - Added convertMono parameter (7.4.07)
 			else
-				hr = psoundfile->Init(strFilename);
+				hr = psoundfile->Init(strFilename, convertMono); //AEM - Added convertMono parameter (7.4.07)
 
             if (FAILED(hr)) return hr;
                         
@@ -475,9 +477,9 @@ SoundFile::SoundFileCache SoundFile::m_mapOpenFiles;
 
 
 // returns a PCM data object for a given wave file.
-HRESULT LoadWaveFile(TRef<ISoundPCMData>& data, const ZString& strFilename)
+HRESULT LoadWaveFile(TRef<ISoundPCMData>& data, const ZString& strFilename, const bool convertMono) //AEM - Added convertMono parameter (7.4.07)
 {
-    return SoundFile::LoadWaveFile(data, strFilename);
+    return SoundFile::LoadWaveFile(data, strFilename, convertMono);
 }
 
 

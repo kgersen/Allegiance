@@ -46,9 +46,11 @@
 //$ ASYNCCLUB
 // #include "clubqueries2.h"
 
+#include "regkey.h" // KGJV added
+
 #include "ClubApp.h"
 #include "ClubClient.h"
-#include "StaticData.h"
+//#include "StaticData.h" - obsolete
 
 
 /////////////////////////////////////////////////////////////////////////////

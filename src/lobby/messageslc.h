@@ -12,7 +12,7 @@
 #define _MESSAGES_LC_H_ 
 
 #include "MessageCore.h"
-#define LOBBYVER 9
+#define LOBBYVER 10 // KGJV updated for R4
 
  /*
   *************************************************
@@ -51,6 +51,10 @@ DEFINE_FEDMSG(L, AUTO_UPDATE_INFO, 253)
 END_FEDMSG
 
 DEFINE_FEDMSG(C, CREATE_MISSION_REQ, 254) // client should lock ui until it gets back an ack or nack
+    FM_VAR_ITEM(Server);        // KGJV #114
+    FM_VAR_ITEM(Address);       // KGJV #114
+	FM_VAR_ITEM(IGCStaticFile); // KGJV #114
+	FM_VAR_ITEM(GameName);      // KGJV #114
 END_FEDMSG
 
 DEFINE_FEDMSG(L, CREATE_MISSION_ACK, 255) 
@@ -105,6 +109,27 @@ DEFINE_FEDMSG(C, LOGON_LOBBY, 265) // if the lobby is in club mode, everyone has
   int   crcFileList; 
   DWORD dwTime;
   char  szName[c_cbName];
+END_FEDMSG
+
+// KGJV #114
+struct ServerCoreInfo
+{
+	char szName[c_cbName];
+	char szRemoteAddress[16];
+	char szLocation[c_cbFileName]; //it's not a filename but we want it short- keep in sync with CFLServer::m_szLocation
+	int  iCurGames;
+	int  iMaxGames;
+	DWORD dwCoreMask; // 32 bits mask (so max is 32 cores)
+};
+
+DEFINE_FEDMSG(C, GET_SERVERS_REQ, 266) // sent by clients to request the servers list
+END_FEDMSG
+
+DEFINE_FEDMSG(L, SERVERS_LIST, 267) // sent by lobby in reply to GET_SERVERS_REQ
+  FM_VAR_ITEM(Cores);	// CoreInfo array of cCores elements
+  FM_VAR_ITEM(Servers); // ServerCoreInfo array of cServers elements
+  int cCores;
+  int cServers;
 END_FEDMSG
 
 #endif // _MESSAGES_LC_H_

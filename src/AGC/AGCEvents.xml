@@ -74,24 +74,45 @@
 
             <Event id="201" Name="StationCreated"
                 Description="Fired when a station is created."
-                Format="Station was created.\nCurrently, this event isn't ever fired."
+                Format="Station was created.\n"
                 Severity="Info"
                 LogAsNTEvent="0"
                 LogAsDBEvent="1"
             />
             <Event id="202" Name="StationDeleted"
                 Description="Fired when a station is destroyed."
-                Format="Station was deleted.\nCurrently, this event isn't ever fired."
+                Format="Station was deleted.\n"
                 Severity="Info"
                 LogAsNTEvent="0"
                 LogAsDBEvent="1"
             />
             <Event id="203" Name="StationChangesSides"
                 Description="Fired when a station changes sides."
-                Format="Station changed sides.\nCurrently, this event isn't ever fired."
+                Format="Station changed sides.\n"
                 Severity="Info"
                 LogAsNTEvent="0"
                 LogAsDBEvent="1"
+            />
+          <Event id="211" Name="StationCreatedEscort"
+                Description="Fired when a station is created. Contains a shiplist"
+                Format="Station was created.\n"
+                Severity="Info"
+                LogAsNTEvent="0"
+                LogAsDBEvent="1"
+            />
+          <Event id="212" Name="StationDeletedEscort"
+              Description="Fired when a station is destroyed. Contains a shiplist"
+              Format="Station was deleted.\n"
+              Severity="Info"
+              LogAsNTEvent="0"
+              LogAsDBEvent="1"
+            />
+          <Event id="213" Name="StationChangesSidesEscort"
+              Description="Fired when a station changes sides. Contains a shiplist"
+              Format="Station changed sides.\n"
+              Severity="Info"
+              LogAsNTEvent="0"
+              LogAsDBEvent="1"
             />
 
         </EventGroup>

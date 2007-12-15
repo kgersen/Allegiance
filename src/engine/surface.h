@@ -65,6 +65,8 @@ public:
     virtual SurfaceType     GetSurfaceType() = 0;
     virtual const WinPoint& GetSize()        = 0;
     virtual PixelFormat*    GetPixelFormat() = 0;
+    // KGJV 32B - GetName goes public
+    virtual const ZString& GetName()         = 0;
 
     //
     // Context
@@ -105,6 +107,9 @@ public:
     virtual void  SetPixel(const WinPoint& point, Pixel pixel)        = 0;
     virtual Color GetColor(const WinPoint& point)                     = 0;
     virtual void  SetColor(const WinPoint& point, const Color& color) = 0;
+
+    // KGJV 32B - this is public now
+    virtual Surface* GetConvertedSurface(PixelFormat* ppf)            = 0;
 
     //
     // Drawing

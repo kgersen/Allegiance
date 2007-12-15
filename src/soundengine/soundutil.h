@@ -9,7 +9,7 @@
 namespace SoundEngine {
 
 // returns a PCM data object for a given wave file.
-HRESULT LoadWaveFile(TRef<ISoundPCMData>& pdata, const ZString& strFilename);
+HRESULT LoadWaveFile(TRef<ISoundPCMData>& pdata, const ZString& strFilename, const bool convertMono); //AEM - Added convertMono parameter (7.4.07)
 
 // returns a dummy PCM data object.
 HRESULT CreateDummyPCMData(TRef<ISoundPCMData>& pdata);

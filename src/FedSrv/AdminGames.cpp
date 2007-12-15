@@ -77,7 +77,10 @@ STDMETHODIMP CAdminGames::Add(IAGCGameParameters* pGameParameters)
     return Error(szInvalid);
 
   // Creation through this method always indicates object model created
-  pMissionParams->bObjectModelCreated = true;
+  // KGJV : hack fix for AllSrvUI created game
+  // since bObjectModelCreated isnt exposed thru the AGC interface we use bAllowEmptyTeams
+  // so if bAllowEmptyTeams, game will be like a player created game
+  pMissionParams->bObjectModelCreated = !pMissionParams->bAllowEmptyTeams; 
 
   // Get the story text of the specified AGCGameParameters object
   CComBSTR bstrStoryText;

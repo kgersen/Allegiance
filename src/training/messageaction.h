@@ -26,14 +26,18 @@ namespace Training
     {
         public:
                     /* void */          MessageAction (void);
-                    /* void */          MessageAction (const ZString message);
+                    /* void */          MessageAction (const ZString message, const SoundID soundID = NA); //TheBored 06-JUL-07: Bahdohday's sound w/text edit.
             virtual /* void */          ~MessageAction (void);
             virtual void                Execute (void);
-                    void                AddMessage (const ZString message);
+                    void                AddMessage (const ZString message, const SoundID soundID = NA); //TheBored 06-JUL-07: Bahdohday's sound w/text edit.
 
         protected:
                     std::list<ZString>              m_messageList;
                     std::list<ZString>::iterator    m_iterator;
+					//TheBored 06-JUL-07: Bahdohday's sound w/text edit.
+					std::list<SoundID>				m_soundList;
+					std::list<SoundID>::iterator	m_soundIterator;
+					//End TB
     };
 
     //------------------------------------------------------------------------------

@@ -64,6 +64,7 @@ protected:
   afx_msg void OnPrivateGame();
   afx_msg void OnPublicGame();
   afx_msg void OnChangeGameName();
+  afx_msg void OnChangeGameCore(); // KGJV: core
   afx_msg void OnGameSettings();
   afx_msg void OnGameSelect();
   afx_msg void OnGameCreate();
@@ -78,20 +79,25 @@ protected:
   CComboBox m_comboMaxPlayers;
   CStatic m_staticGamePassword;
   CStatic m_staticGameName;
+  CStatic m_staticGameCore; // KGJV - added core
   CButton m_btnGameDestroy;
   CButton m_btnGameCreate;
   CButton m_btnGameSelect;
   CButton m_btnGameSettings;
   CEdit m_editGamePassword;
-  CEdit m_editGameName;
+  CEdit m_editGameName; 
+  CEdit m_editGameCore; // KGJV - added core
   int   m_iGameVisibility;
   CString m_strGameName;
   CString m_strGamePassword;
+  CString m_strGameCore; // KGJV - added core
   CButton m_btnPublicGame;
   CButton m_btnPrivateGame;
   int   m_nMaxPlayers;
   CButton m_btnLockGameOpen;
+  CButton m_btnAET; // KGJV - added AET
   BOOL  m_bLockGameOpen;
+  BOOL  m_bAET; // KGJV - added AET
   //}}AFX_DATA
 
 protected:

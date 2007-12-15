@@ -174,6 +174,8 @@ bool CheckFreeMemory()
 
 bool CheckForAllGuard()
 {
+  // KGJV: allways bypass
+  return true;
   // Bypass any other tests if -nod is specified on the command line
   ZString strCmdLine(::GetCommandLine());
   while (!strCmdLine.IsEmpty())

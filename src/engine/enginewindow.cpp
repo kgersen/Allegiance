@@ -752,6 +752,7 @@ TRef<IPopup> EngineWindow::GetEngineMenu(IEngineFont* pfont)
     m_pitemRenderer            = pmenu->AddMenuItem(0                     , GetRendererString()                                    );
     m_pitemResolution          = pmenu->AddMenuItem(0                     , GetResolutionString()                                  );
     m_pitemRendering           = pmenu->AddMenuItem(0                     , GetRenderingString()                                   );
+    m_pitemBPP                 = pmenu->AddMenuItem(0                     , GetPixelFormatString()                                 ); // KGJV 32B
 
     return pmenu;
 }
@@ -770,6 +771,11 @@ ZString EngineWindow::GetRenderingString()
     return "Rendering: " + ZString(size.X()) + " x " + ZString(size.Y());
 }
 
+// KGJV 32B
+ZString EngineWindow::GetPixelFormatString()
+{
+    return GetEngine()->GetPixelFormatName();
+}
 ZString EngineWindow::GetRendererString()
 {
     return 
@@ -814,6 +820,7 @@ void EngineWindow::UpdateMenuStrings()
         m_pitemRenderer           ->SetString(GetRendererString()           );
         m_pitemResolution         ->SetString(GetResolutionString()         );
         m_pitemRendering          ->SetString(GetRenderingString()          );
+        m_pitemBPP                ->SetString(GetPixelFormatString()        );
     }
 }
 

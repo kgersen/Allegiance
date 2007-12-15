@@ -1,0 +1,2505 @@
+use "gamepanes";
+use "musicdef";
+use "trainingsounddef";
+
+DefaultVOTimeout = 10;
+DefaultSalTimeout = 10;
+
+//
+// Edge of Reality Sounds - Begin
+//
+
+er_ninemm                   = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(125, ImportWave("er9mm"))));
+er_thirtymm                 = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(150, ImportWave("er30mm"))));
+er_eighthundredmm           = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("er800mm"))));
+er_beam                     = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("erbeam"))));
+er_flaka                    = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("erflaka"))));
+er_flakb                    = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(125, ImportWave("erflakb"))));
+er_flakc                    = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("erflakc"))));
+er_ninemmburst              = GainSound(SFXGain, PrioritySound(5, ThreeDSound(125, RepeatingFireSound(0.1, ImportWave("er9mmi")))));
+er_thirtymmburst            = GainSound(SFXGain, PrioritySound(5, ThreeDSound(150, RepeatingFireSound(0.1, ImportWave("er30mmi")))));
+er_flakaburst               = GainSound(SFXGain, PrioritySound(5, ThreeDSound(200, RepeatingFireSound(0.3, ImportWave("erflaka")))));
+capsulein                   = GainSound(SFXGain, ThreeDSound(200, ImportWave("capsulestart")));
+capsuleout                  = GainSound(SFXGain, PrioritySound(5, ThreeDSound(200, ImportWave("capsulestop"))));
+
+//
+// Edge of Reality Sounds - End
+//
+
+//
+// Dark Nebulae Sounds - Begin
+//
+
+dn_VersionSound             = GainSound(SFXGain, ImportWave("dn_version"));
+dn_MRMQuickFireLaunchSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("dn_mqflch")));
+dn_ptdebshlDropSound        = GainSound(SFXGain, ThreeDSound(1000, LoopingSound(ImportWave("dn_fagiptpdes"))));
+dn_ptplsgenDropSound        = GainSound(SFXGain, ThreeDSound(100, LoopingSound(ImportWave("dn_ppedrp"))));
+
+dn_ptlngtomActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("dn_ptlngtompwrup")));
+dn_ptlngtomShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("dn_ptlngtomshoot")))); 
+dn_ptlngtomBurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(200, ASRSound(0.000000, 1.000000, ImportWave("dn_ptlngtomshoot")))));
+
+dn_SRPLaunchSound           = GainSound(SFXGain, ThreeDSound(20, ImportWave("ef100")));
+dn_MRPLaunchSound           = GainSound(SFXGain, ThreeDSound(20, ImportWave("ef10")));
+dn_LRPLaunchSound           = GainSound(SFXGain, ThreeDSound(20, ImportWave("ef11")));
+dn_XRPLaunchSound           = GainSound(SFXGain, ThreeDSound(20, ImportWave("ef11")));
+
+dn_AftIonInSound            = GainSound(SFXGain, ASRSound(2.093878, 1.514421, ImportWave("dn_ptaftion")));
+dn_AftLgtInSound            = GainSound(SFXGain, ASRSound(2.093878, 1.514421, ImportWave("dn_ptaftlgt")));
+dn_AftCrsInSound            = GainSound(SFXGain, ASRSound(2.093878, 1.514421, ImportWave("dn_ptaftcrs")));
+dn_AftHvyInSound            = GainSound(SFXGain, ASRSound(2.093878, 1.514421, ImportWave("dn_ptafthvy")));
+dn_AftHprInSound            = GainSound(SFXGain, ASRSound(1.863000, 0.080000, ImportWave("dn_ptafthpr")));
+dn_AftHprOutSound           = GainSound(SFXGain, ThreeDSound(1000, ASRSound(1.863000, 0.080000, ImportWave("dn_ptafthpr"))));
+
+dn_PhStarbaseInternalSound  = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-5, IntermittentSound(5, false, RandomSound([
+                                        (ImportWave("dn_faphbkamb01"), 1),
+                                        (ImportWave("dn_faphbkamb02"), 1),
+                                        (ImportWave("dn_faphbkamb03"), 1),
+                                        (ImportWave("dn_faphbkamb04"), 1),
+                                        (ImportWave("dn_faphbkamb05"), 1),
+                                        (ImportWave("dn_faphbkamb06"), 1),
+                                        (ImportWave("dn_faphbkamb07"), 1),
+                                        (ImportWave("dn_faphbkamb08"), 1),
+                                        (ImportWave("dn_faphbkamb09"), 1),
+                                        (ImportWave("dn_faphbkamb10"), 1),
+                                        (ImportWave("dn_faphbkamb11"), 1)
+                                    ])))
+                                ));                          
+
+dn_tranBuilderAttackedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_attack_transeiverbuilder"))));
+dn_tranBuilderDestroyedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_destroy_transeiver"))));
+dn_tranCompletedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_builder_transeiver"))));
+dn_tranAttackedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_attack_transeiver"))));
+dn_tranCritical              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_critical_station"))));
+dn_tranDestroyedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_destroy_transeiver"))));
+dn_tranCapturedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_capture_transeiver"))));
+dn_tranEnemyDestroyedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_destroy_enemytranseiver"))));
+dn_tranEnemyCapturedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("dn_vo_capture_enemytranseiver"))));
+
+dn_ptvulcan1ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("dn_ptvulcan1pwrup")));
+dn_ptvulcan1ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("dn_ptvulcan1shoot")))); 
+dn_ptvulcan1BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000000, 0.190000, ImportWave("dn_ptvulcan1shoot")))));
+dn_ptvulcan2ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("dn_ptvulcan2pwrup")));
+dn_ptvulcan2ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("dn_ptvulcan2shoot")))); 
+dn_ptvulcan2BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000000, 0.190000, ImportWave("dn_ptvulcan2shoot")))));
+
+dn_ptlascan1ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("dn_ptlascan1pwrup")));
+dn_ptlascan1ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(150, ImportWave("dn_ptlascan1shoot")))); 
+dn_ptlascan1BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(150, ASRSound(0.000000, 0.083000, ImportWave("dn_ptlascan1shoot")))));
+dn_ptlascan2ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("dn_ptlascan2pwrup")));
+dn_ptlascan2ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(150, ImportWave("dn_ptlascan2shoot")))); 
+dn_ptlascan2BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(150, ASRSound(0.000000, 0.083000, ImportWave("dn_ptlascan2shoot")))));
+
+dn_ptlasbls1DropSound        = GainSound(SFXGain, ThreeDSound(100, ASRSound(5.000000, 0.083000, ImportWave("dn_ptlasbls1drop"))));
+dn_ptlasbls2DropSound        = GainSound(SFXGain, ThreeDSound(100, ASRSound(5.000000, 0.083000, ImportWave("dn_ptlasbls2drop"))));
+
+//
+// Dark Nebulae Sounds - End
+//
+
+//
+// Wars Sounds - Begin
+//
+
+sw_000ActivationSound	= GainSound(SFXGain, ThreeDSound(20, ImportWave("sw_000")));
+sw_001ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_001"))));
+sw_001BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_001")))));
+sw_002ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_002"))));
+sw_002BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_002")))));
+sw_003ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_003"))));
+sw_003BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_003")))));
+sw_004ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_004"))));
+sw_004BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_004")))));
+sw_005ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_005"))));
+sw_005BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_005")))));
+sw_006ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_006"))));
+sw_006BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_006")))));
+sw_007ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_007"))));
+sw_007BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_007")))));
+sw_008ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_008"))));
+sw_008BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_008")))));
+sw_009ShotSound      	= GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sw_009"))));
+sw_009BurstSound     	= GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(1.000000, 0.400000, ImportWave("sw_009")))));
+sw_011MissileLaunch	= GainSound(SFXGain, ThreeDSound(20, ImportWave("sw_011")));
+sw_012MissileLaunch	= GainSound(SFXGain, ThreeDSound(20, ImportWave("sw_012")));
+sw_013MissileLaunch	= GainSound(SFXGain, ThreeDSound(20, ImportWave("sw_013")));
+sw_014MissileLaunch	= GainSound(SFXGain, ThreeDSound(20, ImportWave("sw_014")));
+sw_015MissileLaunch	= GainSound(SFXGain, ThreeDSound(20, ImportWave("sw_015")));
+sw_016probe1Sound	= GainSound(SFXGain, ThreeDSound(100, LoopingSound(ImportWave("sw_016"))));
+sw_017probe1Sound	= GainSound(SFXGain, ThreeDSound(100, LoopingSound(ImportWave("sw_017"))));
+
+EStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-7, IntermittentSound(10, false, RandomSound([
+                                        (ImportWave("gigambient_1"), 1),
+                                        (ImportWave("gigambient_2"), 1),
+                                        (ImportWave("gigambient_3"), 1),
+                                        (ImportWave("gigambient_4"), 1),
+                                        (ImportWave("gigambient_5"), 1),
+                                        (ImportWave("gigambient_6"), 1),
+                                        (ImportWave("gigambient_7"), 1),
+                                        (ImportWave("gigambient_21"), 1),
+                                        (ImportWave("gigambient_25"), 1)
+                                    ])))
+                                ));
+RStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-7, IntermittentSound(10, false, RandomSound([
+                                        (ImportWave("gigambient_1"), 1),
+                                        (ImportWave("gigambient_2"), 1),
+                                        (ImportWave("gigambient_3"), 1),
+                                        (ImportWave("gigambient_4"), 1),
+                                        (ImportWave("gigambient_5"), 1),
+                                        (ImportWave("gigambient_6"), 1),
+                                        (ImportWave("gigambient_7"), 1),
+                                        (ImportWave("gigambient_21"), 1),
+                                        (ImportWave("gigambient_25"), 1)
+                                    ])))
+                                ));
+
+//
+// Wars Sounds - End
+//
+
+newShipSound                = GainSound(SFXGain, ImportWave("newtarget"));
+newEnemySound               = GainSound(SFXGain, ImportWave("newtargetenemy"));
+
+myShieldHitSound            = GainSound(SFXGain, ThreeDSound(200, RandomSound(
+                                [
+                                    (ImportWave("HitMeShield1"), 1), 
+                                    (ImportWave("HitMeShield2"), 1),
+                                    (ImportWave("HitMeShield3"), 1)
+                                ])));
+myHullHitSound              = GainSound(SFXGain, ThreeDSound(200, RandomSound(
+                                [
+                                    (ImportWave("HitMeArmor1"), 1), 
+                                    (ImportWave("HitMeArmor2"), 1),
+                                    (ImportWave("HitMeArmor3"), 1)
+                                ])));
+
+otherShieldHitSound         = PrioritySound(-1.6, myShieldHitSound);
+otherHullHitSound           = GainSound(SFXGain, PrioritySound(-1.6, ThreeDSound(200, ImportWave("ef120"))));
+
+rockHitSound                = GainSound(SFXGain, PrioritySound(-4, ThreeDSound(100, ImportWave("hitrock")))); 
+
+largeExplosionSound         = GainSound(SFXGain, ThreeDSound(1000, ImportWave("explosionshockwave")));
+mediumExplosionSound        = GainSound(SFXGain, ThreeDSound(400, ImportWave("ef24")));
+smallExplosionSound         = GainSound(SFXGain, PrioritySound(-1, ThreeDSound(200, ImportWave("ef120"))));
+
+errorSound                  = GainSound(SFXGain, ImportWave("ef03"));
+jumpSound                   = GainSound(SFXGain, ImportWave("jumpin"));
+personalJumpSound           = GainSound(SFXGain, ImportWave("jumpin"));
+explodeStationSound         = largeExplosionSound;
+explodeShipSound            = mediumExplosionSound;
+
+pickUpPartSound             = GainSound(SFXGain, ThreeDSound(20, ImportWave("hoover")));
+pickUpDevelopmentSound      = GainSound(SFXGain, ThreeDSound(20, ImportWave("PowerupDevelopment")));
+pickUpPowerupSound          = GainSound(SFXGain, ThreeDSound(20, ImportWave("PowerupShield")));
+pickUpCashSound             = GainSound(SFXGain, ThreeDSound(20, ImportWave("hoover")));
+rescuePlayerSound           = GainSound(SFXGain, ThreeDSound(20, ImportWave("hoover")));
+
+
+outOfFuelSound              = GainSound(SFXGain, ThreeDSound(20, ImportWave("nofuel")));
+mountSound                  = GainSound(SFXGain, ImportWave("mount"));
+mountedSound                = GainSound(SFXGain, ImportWave("unmount"));
+unmountSound                = GainSound(SFXGain, ImportWave("unmount"));
+startReloadSound            = GainSound(SFXGain, ImportWave("mount"));
+dropSound                   = PairedSound(GainSound(SFXGain, ThreeDSound(20, ImportWave("drop"))), 
+                                SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_cargoejected"))));
+
+investSound                 = GainSound(SFXGain, ImportWave("invest"));
+paydaySound                 = GainSound(SFXGain, ImportWave("payday"));
+vectorLockSound             = GainSound(SFXGain, ImportWave("vector"));
+
+newChatMsgSound             = GainSound(SFXGain, ImportWave("receivechat"));
+newChatMsgFromCommanderSound= GainSound(SFXGain, ImportWave("receivedcomchat"));
+newOfflineChatMsgSound      = GainSound(SFXGain, GainSound(-10, ImportWave("receivechat")));
+newCommandMsgSound          = GainSound(SFXGain, ImportWave("receivedobjective"));
+newPersonalMsgSound         = GainSound(SFXGain, ImportWave("receivepersonalchat"));
+newCriticalMsgSound         = GainSound(SFXGain, ImportWave("criticalmessage"));
+newNonCriticalMsgSound      = GainSound(SFXGain, ImportWave("noncriticalmessage"));
+acceptCommandSound          = GainSound(SFXGain, ImportWave("accept"));
+composeChatMsgSound         = GainSound(SFXGain, ImportWave("enttxt"));
+sendChatMsgSound            = GainSound(SFXGain, ImportWave("send"));
+
+collisionSound              = GainSound(SFXGain, ThreeDSound(100, ImportWave("colisionlarge")));
+turretLimitSound            = GainSound(SFXGain, ThreeDSound(20, ImportWave("collisionmedium")));
+
+newTargetSound              = GainSound(SFXGain, ThreeDSound(100, ImportWave("newtargetneutral")));
+
+positiveButtonClickSound    = GainSound(SFXGain, ImportWave("accept"));
+negativeButtonClickSound    = GainSound(SFXGain, ImportWave("cancel"));
+
+dockedSound                 = GainSound(SFXGain, ImportWave("landed"));
+
+changeLoadoutSound          = GainSound(SFXGain, ImportWave("loadoutship"));
+
+panelSound                  = GainSound(SFXGain, ImportWave("panel"));
+mouseclickSound             = GainSound(SFXGain, ImportWave("mousedown"));
+mouseoverSound              = GainSound(SFXGain, ImportWave("mouseover"));
+paneSlideSound              = GainSound(SFXGain, ImportWave("windowslides"));
+chatKeySound                = GainSound(SFXGain, ImportWave("text"));
+
+countdownStartingSound      = GainSound(SFXGain, ImportWave("countdownStart"));
+countdown10minSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_time_10min")));
+countdown5minSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_time_5min")));
+countdown1minSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_time_1min")));
+countdown30Sound            = SerializedSound(MutexSal,                 5, 0, true, GainSound(VoiceOverGain, ImportWave("vo_time_30sec")));
+countdown15Sound            = SerializedSound(MutexSal,                 1, 0, true, GainSound(VoiceOverGain, ImportWave("vo_time_15sec")));
+countdown10Sound            = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown10")));
+countdown9Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown9")));
+countdown8Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown8")));
+countdown7Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown7")));
+countdown6Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown6")));
+countdown5Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown5")));
+countdown4Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown4")));
+countdown3Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown3")));
+countdown2Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown2")));
+countdown1Sound             = SerializedSound(MutexSal,               0.1, 0, true, GainSound(VoiceOverGain, ImportWave("countdown1")));
+
+undockSound                 = GainSound(SFXGain, ImportWave("pwrup"));
+
+outOfBoundsLoopSound        = GainSound(SFXGain, LoopingSound(ImportWave("boundsAlert")));
+
+ripcordOnLoopSound          = GainSound(SFXGain, ImportWave("countdownStart"));
+salNoRipcordSound           = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_noripcord")));
+salRipcordDestroyedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_noripcord")));
+salShipCantRipcordSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_shipcantripcord")));
+salRipcordAbortedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_ripcordaborted")));
+
+ripcord10Sound              = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown10"))));
+ripcord9Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown9"))));
+ripcord8Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown8"))));
+ripcord7Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown7"))));
+ripcord6Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown6"))));
+ripcord5Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown5"))));
+ripcord4Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown4"))));
+ripcord3Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown3"))));
+ripcord2Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown2"))));
+ripcord1Sound               = SerializedSound(MutexSal,               0.3,10, true, GainSound(VoiceOverGain, GainSound(-7,  ImportWave("countdown1"))));
+
+missileLockSound            = GainSound(SFXGain, LoopingSound(ImportWave("missilelockonme")));
+missileToneSound            = GainSound(SFXGain, ImportWave("missilelock"));
+
+deployChaffSound            = GainSound(SFXGain, ImportWave("dropobject"));
+deployMineSound             = GainSound(SFXGain, ImportWave("dropmine"));
+deployProbeSound            = GainSound(SFXGain, ImportWave("dropobject"));
+
+ammoLowSound                = GainSound(SFXGain, ImportWave("outofammo"));
+fuelLowSound                = GainSound(SFXGain, ImportWave("fuellow"));
+energyLowSound              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_lowenergy")));
+hullLowSound                = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_hullcritical")));
+
+groupWeaponsSound           = GainSound(SFXGain, ImportWave("groupweapons"));
+ungroupWeaponsSound         = GainSound(SFXGain, ImportWave("ungroupweapons"));
+
+miningSound                 = GainSound(SFXGain, ThreeDSound(200, LoopingSound(ImportWave("miningsound"))));
+buildSound                  = GainSound(SFXGain, ThreeDSound(1000, LoopingSound(ImportWave("constructionsound"))));
+
+asteroidSound               = GainSound(SFXGain, PitchSound(0.35, ThreeDSound(200, LoopingSound(ImportWave("shipout")))));
+                              // GainSound(SFXGain, ThreeDSound(400, LoopingSound(ImportWave("asteroid"))));
+
+alephSound                  = GainSound(SFXGain, ThreeDSound(200, LoopingSound(ImportWave("alephloop"))));
+
+voAwsomeSound               = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_awesome"))); 
+voByeSound                  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_bye"))); 
+voDangSound                 = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_dang"))); 
+voDoahSound                 = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_doah"))); 
+voHiSound                   = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_hi"))); 
+voNiceWorkSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_nicework"))); 
+voNoooSound                 = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_nooo"))); 
+voOhYeahSound               = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_ohyeah"))); 
+voPhewSound                 = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_pheww"))); 
+voRipcordingSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_ripcording"))); 
+voSweetSound                = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_sweet"))); 
+voWatchFireSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_watchfire"))); 
+voYeeHaSound                = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_yeeehaa"))); 
+
+
+voDefendBaseSound           = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendbase"))); 
+voAttackTargetSound         = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attacktarget"))); 
+voAttackSound               = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attack"))); 
+voCoverMeSound              = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_coverme"))); 
+voDefendSound               = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_defend"))); 
+voDonateCreditsSound        = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_donatecredits"))); 
+voEscortBuilderSound        = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_escortbuilder"))); 
+voEscortMinerSound          = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_escortminer"))); 
+voFindAlephsSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findalephs"))); 
+voFindCarbonacousSound      = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findcarbonacous"))); 
+voFindEnemySound            = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findenemy"))); 
+voFindHeliumSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findhelium"))); 
+voFindLavaSound             = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findlava"))); 
+voFindIronSound             = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findiron"))); 
+voFindProbesSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findprobes"))); 
+voFollowSound               = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_follow"))); 
+voFormOnMyWingSound         = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_formonmywing"))); 
+voFormateSound              = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_formate"))); 
+voGetOffMeSound             = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_getoffme"))); 
+voGoGoGoSound               = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_gogogo"))); 
+voHeadBackSound             = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_headback"))); 
+voHoldUpSound               = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_holdup"))); 
+voMeetAtJumpSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_meetatjump"))); 
+voRegroupSound              = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_regroup"))); 
+voRetreatSound              = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_retreat"))); 
+voStayOnTargetSound         = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_stayontarget"))); 
+voWaitForSignalSound        = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_wait4signal"))); 
+
+
+voAlephMinedSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_alephmined"))); 
+voBaseCapturedSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_basecaptured"))); 
+voBomberWaitingSound        = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_bomberwaiting"))); 
+voCapShipWaitingSound       = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_capshipwaiting"))); 
+voEnemyHasFlagSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_enemyhasflag"))); 
+voFoundAlephSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundaleph"))); 
+voFoundCarbonacousSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundcarbonacous"))); 
+voFoundEnemyShipsSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundenemyships"))); 
+voFoundEnemyBaseSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundenemybase"))); 
+voFoundHeliumSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundhelium"))); 
+voFoundLavaSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundlava"))); 
+voFoundIronSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundiron"))); 
+voEnemyTransSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_inboundenemytrans"))); 
+voEnemyCapSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_inboundenemycap"))); 
+voEnemyFightersSound        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_inboundenemyfight"))); 
+voIsOurBaseClearSound       = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_isourbaseclear"))); 
+voMinersAreDeadSound        = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_minersaredead"))); 
+voShieldsAreDownSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_shieldsaredown"))); 
+voPursuingElectronicsSound  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_pursuingelectron"))); 
+voPursuingEnergySound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_pursuingenergy"))); 
+voPursuingOrdinanceSound    = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_pursuingordinance"))); 
+voHaveShipyardSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_haveshipyard"))); 
+voHaveCapsSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_havecapitols"))); 
+voTraitorSound              = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_traitor"))); 
+
+
+voAcknowledgedSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_acknowledged"))); 
+voAffirmativeSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_affirmative"))); 
+voCompleteSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_complete"))); 
+voCoolSound                 = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_cool"))); 
+voFiestySound               = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_fiesty"))); 
+voImBusySound               = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_imbusy"))); 
+voImOnItSound               = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_imonit"))); 
+voInboundSound              = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_inbound"))); 
+voNegativeSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_negative"))); 
+voObjectiveCompleteSound    = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_objectivecomplete"))); 
+voOnMyWaySound              = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_onmyway"))); 
+voYoureMadSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_yourmad"))); 
+
+
+voPayloadDeliveredSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_payloaddelivered"))); 
+voAlmostHadYouSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_almosthadyou"))); 
+voComeBackAndFightSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_comebackandfight"))); 
+voDeathBecomesYouSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_deathbecomesyou"))); 
+voShootingFishSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_shootingfish"))); 
+voHowdThatFeelSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_howdthatfeel"))); 
+voLikeLambsSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_likelambs"))); 
+voOutOfAmmoSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_outofammohmmm"))); 
+voRipcordLastResortSound    = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_ripcordlastresort"))); 
+voThanksSound               = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_thanks"))); 
+voYesSound                  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_yes"))); 
+voYouDiedWithDignitySound   = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_udiedwithdignity"))); 
+voYouHaveNoHonorSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_uhavenohonor"))); 
+voYoullBeSorrySound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_ullbesorry"))); 
+voYouAreGoodButSound        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_urgoodbut"))); 
+    
+
+voGimmeSomethingSound       = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_gimmesomething"))); 
+voTakingItToThemSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_takingittothem"))); 
+voNeedFuelSound             = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needfuel"))); 
+voNeedHelpSound             = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_needhelp"))); 
+voNeedRepairsSound          = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needrepairs"))); 
+voNeedAmmoSound             = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needammo"))); 
+voNeedRescueSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needrescue"))); 
+voCantHoldEmSound           = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_cantholdem"))); 
+voHaveAnArtifactSound       = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_haveanartifact"))); 
+voNeedBomberSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needbomber"))); 
+voNeedCruiserSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needcruiser"))); 
+voNeedFighterSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needfighter"))); 
+voNeedScoutSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needscout"))); 
+voStationNeedsRepairsSound  = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_stationrepair"))); 
+voTargetNeededSound         = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_targetneeded"))); 
+voNeedPickupSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needpickup"))); 
+voTransportOutboundSound    = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_transportoutbound")));
+
+voShootSound                = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_shoot")));
+voDonateInvestorSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_donateinvestor")));
+voNeedTurretSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needturret")));
+voJoiningTurretSound        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_joiningturret")));
+voOopsSound                 = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_oops")));
+
+voAttackBaseSound           = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackbase")));
+voNeedBaseSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needbase")));
+voAttackConstructorSound    = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackconstuctor")));
+voDefendConstructorSound    = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendconstuctor")));
+voNeedConstructorSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needconstructor")));
+voAttackDefenderSound       = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackdefender")));
+voDefendDefenderSound       = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defenddefender")));
+voNeedDefenderSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needdefender")));
+voNeedBetterFightersSound   = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needbetterfighters")));
+voAttackFighterSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackfighter")));
+voDefendFighterSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendfighter")));
+voAttackInterceptorSound    = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackinterceptor")));
+voDefendInterceptorSound    = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendinterceptor")));
+voNeedInterceptorSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needinterceptor")));
+voNeedObjectiveSound        = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needobjective")));
+voAttackCapitalSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackcapital")));
+voDefendCapitalSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendcapital")));
+voNeedCapitalSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needcapital")));
+voAttackMinerSound          = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackminer")));
+voDefendMinerSound          = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendminer")));
+voNeedMinerSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needminer")));
+voAttackBomberSound         = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackbomber")));
+voDefendBomberSound         = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendbomber")));
+voAttackRipcordSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackripcord")));
+voDefendRipcordSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendripcord")));
+voNeedRipcordSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needripcord")));
+voAttackStealthSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackstealth")));
+voDefendStealthSound        = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendstealth")));
+voNeedStealthSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needstealth")));
+voAttackTransportSound      = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attacktransport")));
+voDefendTransportSound      = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendtransport")));
+voNeedTransportSound        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needtransport")));
+voAttackScoutSound          = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attackscout")));
+voDefendScoutSound          = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendscout")));
+voAttackTowerSound          = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_attacktower")));
+voDefendTowerSound          = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_defendtower")));
+voNeedTowerSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needtower")));
+voNeedBetterWepSound        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needbetterwep")));
+voNeedMoneySound            = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_needmoney")));
+
+voScoutAlephSound           = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_scoutaleph"))); 
+voFoundEnemyConstructSound  = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundenemyconstruct")));    
+voConstructorLaunchingSound = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_constructorlaunching")));
+voMinersHammeredSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_minershammered")));
+voFindFreakinBaseSound      = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_findfreakinbase")));            
+voMinerHuntSound            = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_minerhunt")));  
+voStayTogetherSound         = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_staytogether")));
+voRipcordHomeSound          = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_ripcordhome"))); 
+voLayLowSound               = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_laylow")));
+voFoundEnemyMinerSound      = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_foundenemyminer")));
+voBaseUnderAttackSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_baseunderattack")));
+voDeployProbesSound         = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_deployprobes")));
+voDeployMinesSound          = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_deploymines")));
+voRepairStationSound        = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_repairstation")));
+
+voFindMinerSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_findminer")));
+voFindSiliconSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_findsilicon")));
+voFindUraniumSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_finduranium")));
+voNoMoneySound              = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_nomoney")));
+voSurelyJokingSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_surelyjoking")));
+voAintNoThinSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_aintnothin")));
+voHellYeahSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_hellyeah")));
+voYoureCrazySound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_yourecrazy")));
+voThatHurtSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_thathurt")));
+voSlapInvestorSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_slapinvestor")));
+voOoohSorrySound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_ooohsorry")));
+voWantAPieceSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_wantapiece")));
+voShootCommanderSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_shootcommander")));
+
+voSteadyTigerSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_steadytiger")));
+voRealLifeSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_reallife")));
+voMakeMeSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_makeme")));
+voISPDropSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_ISPdrop")));
+voEveryoneReadySound    = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_everyoneready")));
+voSavingUpSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_savingup")));
+voStartTheGameSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_startthegame")));
+voHoldYourHorsesSound   = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_holdurehorses")));
+voCoupleMinutesSound    = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_coupleminutes")));
+voJustASecSound         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_justasec")));
+voNiceWeatherSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_niceweather")));
+voWhoCommanderSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_whocommander")));
+voChangeTheMapSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_changethemap")));
+voImCluelessSound       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_imclueless")));
+voItsLateSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_itslate")));
+voPitstopSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_pitstop")));
+voRematchSound          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_rematch")));
+voChangedSettingsSound  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_changedsettings")));
+voGoToTeamOnlySound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_gototeamonly")));
+voShallWeBeginSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_shallwebegin")));
+voCheckWingSound        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_checkwing")));
+voArghSound             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_argh")));
+voGunnerReadySound      = SerializedSound(MutexVO, DefaultVOTimeout,10, true, GainSound(VoiceOverGain, ImportWave("vo_player_gunnerready")));
+voYowieSound            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_yowie")));
+voInboundBombSound      = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_inboundenemybomb")));
+voKingUniverseSound     = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_kinguniverse")));
+voTurretsAttackSound    = SerializedSound(MutexVO, DefaultVOTimeout,20, true, GainSound(VoiceOverGain, ImportWave("vo_player_turretsattack")));
+
+voGotchaSound               = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_gotcha")));
+voNeedFighterSupportSound   = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_needfightersupport")));
+voThanksLiftSound           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_thankslift")));
+
+// start new sounds 1/28/2000
+voComeOnDown        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_comeondown")));
+voHeeHeeHee         = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_heeheehee")));
+voHowWasThat        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_howwasthat")));
+voIMissed           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_imissed")));
+voIQuit             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_iquit")));
+voMisc2             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc2")));
+voMisc3             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc3")));
+voMisc9             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc9")));
+voMisc17            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc17")));
+voMisc20            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc20")));
+voMisc21            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc21")));
+voMisc25            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc25")));
+voMisc27            = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_misc27")));
+voOoooAaaa          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_ooooaaaa")));
+voAaaaOooo          = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_aaaaoooo")));
+voScuseMe           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_scuseme")));
+voWhat              = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_what")));
+voWhatNow           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_whatnow")));
+voYouSuck           = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_yousuck")));
+// end of new sounds 1/28/2000
+
+voDidYouCopy        = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_didyoucopy")));
+voReadTheChat       = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_readchat")));
+voRoger             = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_roger")));
+
+//Z Taunts
+voGohanHello=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_gohanhello")));
+voGokuSpace=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_gokuspace")));
+voKrillinPossible=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_krillinpossible")));
+voPiccoloTrash=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_piccolotrash")));
+voPiccoloWeak=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_piccoloweak")));
+voPiccoloWuss=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_piccolowuss")));
+voRaditzBirdie=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_raditzbirdie")));
+voRaditzCookMeat=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_raditzcookmeat")));
+voRaditzListen=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_raditzlisten")));
+voRaditzReadyOrNot=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_raditzreadyornot")));
+voRaditzTeach=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_raditzteach")));
+voSoloAttack=SerializedSound(MutexVO, DefaultVOTimeout, 20, true, GainSound(VoiceOverGain, ImportWave("vo_player_soloattack")));
+voVaderDestroy=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_vaderdestroy")));
+voVegetaOppose=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_vegetaoppose")));
+voVegetaLaugh=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_player_vegetalaugh")));
+// end Z taunts
+
+// MA/Papsmear community soundpack sounds 5/19/2002
+voalephmineddroned= SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_alephmineddroned")));
+voasseskicked=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_asseskicked")));
+voattackminefield=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_attackminefield")));
+voattacknanite=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_attacknanite")));
+voattackprobe=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_attackprobe")));
+voattackrescue=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_attackrescue")));
+voattackspecial=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_attackspecial")));
+vobugout=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_bugout")));
+vocampaleph=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_campaleph")));
+vocampbase=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_campbase")));
+vocampteleport=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_campteleport")));
+vocantpodded=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_cantpodded")));
+vocapturingbase=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_capturingbase")));
+vocloaked=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_cloaked")));
+vodefendersclose=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_defendersclose")));
+vodefendspecial=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_defendspecial")));
+vodeployrescue=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_deployrescue")));
+vodogmeat=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_dogmeat")));
+vodontdefend=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_dontdefend")));
+vodontkillpods=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_dontkillpods")));
+vodontthinkso=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_dontthinkso")));
+voevenup=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_evenup")));
+vofindass=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_findass")));
+vofindcash=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_findcash")));
+vofindconst=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_findconst")));
+vofindscout=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_findscout")));
+vogameover=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_gameover")));
+vogametime=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_gametime")));
+voharshlanguage=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_harshlanguage")));
+vohello=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_hello")));
+vohowfar=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_howfar")));
+voiqs=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_iqs")));
+voisalephmined=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_isalephmined")));
+voletsgo=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_letsgo")));
+vomutiny=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_mutiny")));
+vonanitesclose=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_nanitesclose")));
+vonaniteslaunch=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_naniteslaunch")));
+vonanitesrip=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_nanitesrip")));
+voneeddefense=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_needdefense")));
+voneedmines=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_needmines")));
+voneednanonconst=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_neednanonconst")));
+voneedoffense=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_needoffense")));
+voneedrescue=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_needrescue")));
+voneedtpscout=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_needtpscout")));
+vonoImeanit=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_noImeanit")));
+vonotenough=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_notenough")));
+vonotime=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_notime")));
+vonotseen=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_notseen")));
+vonowyouseeme=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_nowyouseeme")));
+vooffturret=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_offturret")));
+vopickteams=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_pickteams")));
+vopickuppods=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_pickuppods")));
+vopushop=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_pushop")));
+voready=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_ready")));
+voripped=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_ripped")));
+vorush=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_rush")));
+voscoutahead=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_scoutahead")));
+vosettingssuck=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_settingssuck")));
+vospotted=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_spotted")));
+vostayoutofmiddle=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_stayoutofmiddle")));
+vostopgrin=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_stopgrin")));
+votheyexp=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_theyexp")));
+votheysup=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_theysup")));
+votheytac=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_theytac")));
+vowonttolerate=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_wonttolerate")));
+vowoopie=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_woopie")));
+voleavemark=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_leavemark")));
+vopodded=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_podded")));
+vostopspam=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_stopspam")));
+vowakeup=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_wakeup")));
+vopickuptech=SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_ma_pickuptech")));
+
+droneReport4DutySound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_miner_report4duty")))); 
+droneEnemyOnScopeSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_miner_enemyonscope")))); 
+droneWatchFireSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_watchfire")))); 
+droneYouGotItSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_miner_yougotit")))); 
+droneCantDoThatSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_miner_cantdothat")))); 
+droneTooMuchDamageSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_miner_dontgetpaid")))); 
+droneTooCrowdedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_request_miner")))); 
+droneWhereToSound           = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_request_miner")))); 
+droneComingHomeEmptySound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_minerpartial")))); 
+droneWhereToBuildSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_builder_nobuild")))); 
+droneWhereToLayMinefieldSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_minefield")))); 
+droneWhereToLayTowerSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_tower")))); 
+minerDestroyedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_miner")))); 
+carrierDestroyedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_carrier")))); 
+towerLayerDestroyedSound    = errorSound;
+minefieldLayerDestroyedSound= errorSound;
+droneInTransitSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_miner_intransit")))); 
+droneUnderAttackSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_miner_underattack")))); 
+minerUnderAttackSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_miner")))); 
+minerCriticalSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_minercritical")))); 
+carrierUnderAttackSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_carrierattack")))); 
+droneAintGonnaWorkSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_aintgonnawork")))); 
+droneMiningSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_miner_mining")))); 
+constructorRunningSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_cover_builder")))); 
+
+teleportProbeActiveSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_teleportprobe")))); 
+teleportProbeSpottedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_teleportenemy")))); 
+
+minerThreatenedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_detect_miner")))); 
+constructorThreatenedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_detect_builder")))); 
+carrierThreatenedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_carrieratrisk")))); 
+bomberDetectedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_bombersighted")))); 
+carrierDetectedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_carrierdetected")))); 
+capitalDetectedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_capitalsighted")))); 
+teleportDetectedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_teleportsighted")))); 
+transportDetectedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_transportsighted")))); 
+stationThreatenedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_stationrisk")))); 
+
+sectorSecuredSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_sectorsecured")))); 
+sectorLostSound             = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_sectorlost")))); 
+
+flagLostSound               = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_stolen_flag")))); 
+flagSecuredSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_secured_flag")))); 
+enemyFlagLostSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_stolen_enemyflag")))); 
+enemyFlagSecuredSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_secured_enemyflag")))); 
+
+artifactFoundSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_artifact")))); 
+artifactSecuredSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_secured_artifact")))); 
+
+commanderSound              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_madecommander")))); 
+investorSound               = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_madeinvestor")))); 
+
+boardSound                  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_playerboarded")))); 
+noTurretsSound              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_noturrets")))); 
+
+salCommenceScanSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_commencescan")))); 
+salRixSightedSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_rixsighted")))); 
+salCrimsonSightedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_crimsonsighted")))); 
+salIronSightedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_ironsighted")))); 
+salContactsInRangeSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_contactsinrange")))); 
+salRedAlertSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_redalert")))); 
+salShieldsOfflineSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_shieldsoffline"))); 
+salEnemyTroopsSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_enemytroops")))); 
+salCoreMeltdownSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_coremeltdown")))); 
+salCompletedShipSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_completedfabrication")))); 
+salCompletedModsSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_completedmod")))); 
+salCompletedEquipmentSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_completeddev")))); 
+salCompletedDramaticSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_completeddramatic")))); 
+salCompletedRadicalSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_completedradical")))); 
+salEnteredShieldWallSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_enteredwall")))); 
+salClearedShieldWallSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_clearedwall")))); 
+salWelcomeHomeSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_welcomehome"))); 
+salRepairedAtCarrierSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_shipisrepaired"))); 
+salBoundryExceededSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_boundryexceeded"))); 
+salSectorCrowdedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_sectorcrowded"))); 
+salAutopilotEngageSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_autopilotengage"))); 
+salAutopilotDisengageSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_autopilotdisengage"))); 
+salCloakEngageSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_cloakengage"))); 
+salCloakDisengageSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_cloakdisengage"))); 
+salShieldsDownSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_shieldsdown"))); 
+salCargoFullSound           = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_cargofull"))); 
+salNoFuelSound              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_nofuel"))); // GainSound(VoiceOverGain, ASRSound(0.000006, 0.757500, ImportWave("vo_sal_nofuel"))); 
+salNoAmmoSound              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_noammo"))); // GainSound(VoiceOverGain, ASRSound(0.000006, 0.839128, ImportWave("vo_sal_noammo"))); 
+salMustBeAtStationSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_mustbeatstation"))); 
+salReloadingFuelSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_reloadingfuel"))); 
+salReloadingChaffSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_reloadingchaff"))); 
+salReloadingMissilesSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_reloadingmissiles"))); 
+salReloadingDispenserSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_reloadingdispenser"))); 
+salReloadingAmmoSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_reloadingammo"))); 
+salReloadingSound           = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_reloading"))); 
+salChaffDepletedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_chaffdepleted"))); 
+salMissilesDepletedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_missilesdepleted"))); 
+salDispenserEmptySound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("vo_sal_dispenserempty"))); 
+
+salPlayerWaitingSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_playerwaiting")))); 
+salRecruitsArrivedSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_recruitsarrived")))); 
+salMIASound                 = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_mia")))); 
+salQuitSound                = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain,GainSound(-7, ImportWave("vo_sal_mia")))); 
+salBootedSound              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_booted")))); 
+salChangeSidesSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7, ImportWave("vo_sal_traitor")))); 
+salEnemyJoinersSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_enemyjoiners")))); 
+salEnemyLeavesSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_enemyleaves")))); 
+
+oink1Sound                  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("oink1"))); 
+oink2Sound                  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("oink2"))); 
+oink3Sound                  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("oink3"))); 
+oink4Sound                  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("oink4"))); 
+oink5Sound                  = SerializedSound(MutexVO, DefaultVOTimeout, 0, true, GainSound(VoiceOverGain, ImportWave("oink5"))); 
+
+//
+// Weapon sounds
+//
+
+antiBaseCap1ShotSound       = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("turretgun1")))); 
+antiBaseCap2ShotSound       = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("turretgun2")))); 
+
+cannon1ShotSound            = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("cannon1")))); 
+cannon2ShotSound            = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("cannon2")))); 
+
+machineGun1ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("machinegun1")))); 
+machineGun2ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("machinegun2")))); 
+machineGun3ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("machinegun3")))); 
+
+miniGun1ShotSound           = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("minigun1")))); 
+miniGun2ShotSound           = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("minigun2")))); 
+miniGun3ShotSound           = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("minigun3")))); 
+
+plasmamini1ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmamini1"))));
+plasmamini2ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmamini2"))));
+plasmamini3ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmamini3"))));
+plasmagat1ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmagat1"))));
+plasmagat2ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmagat2"))));
+plasmagat3ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmagat3"))));
+plasmaac1ShotSound          = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmaac1"))));
+plasmaac2ShotSound          = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmaac2"))));
+plasmaac3ShotSound          = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmaac3"))));
+antishieldShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("ef42"))));
+hvycannonShotSound          = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("hvycannon"))));
+basecannonShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("basecannon"))));
+sbcannonShotSound           = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sbcannon")))); 
+
+antiUtility1ShotSound       = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmarifle1")))); 
+antiUtility2ShotSound       = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmarifle2")))); 
+antiUtility3ShotSound       = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmarifle3")))); 
+
+antiShield1ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmarifle1")))); 
+antiShield2ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmarifle2")))); 
+antiShield3ShotSound        = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("plasmarifle3")))); 
+
+sniperLaser1ShotSound       = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sniperlaser1")))); 
+sniperLaser2ShotSound       = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("sniperlaser2")))); 
+
+turretCannon1ShotSound      = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("turretcannon1")))); 
+turretCannon2ShotSound      = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("turretcannon2")))); 
+turretCannon3ShotSound      = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("turretcannon3")))); 
+
+turretGun1ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(150, ImportWave("turretgun1")))); 
+turretGun2ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(150, ImportWave("turretgun2")))); 
+turretGun3ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(150, ImportWave("turretgun3")))); 
+
+repairWeapon1ShotSound      = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("repairweapon")))); 
+repairWeapon2ShotSound      = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(100, ImportWave("repairweapon")))); 
+
+skyRipper1ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("turretcannon2")))); 
+skyRipper2ShotSound         = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("turretcannon3")))); 
+
+//Gataraan guns
+gaussShotSound		    = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("gauss")))); 
+gaussActivationSound	    = GainSound(SFXGain, ThreeDSound(20, ImportWave("gausspwrup")));
+pulselaserShotSound	    = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("pulselaser")))); 
+strikerShotSound	    = GainSound(SFXGain, PrioritySound(-1.5, ThreeDSound(200, ImportWave("striker")))); 
+pulselaserBurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("pulselaser"))))); 
+strikerBurstSound           = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.25, ImportWave("striker"))))); 
+
+
+antiBaseCap1BurstSound      = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("turretgun1"))))); 
+antiBaseCap2BurstSound      = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("turretgun2"))))); 
+
+machineGun1BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.100658, ImportWave("machinegun1")))));
+machineGun2BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.100317, ImportWave("machinegun2")))));
+machineGun3BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.100385, ImportWave("machinegun3")))));
+
+miniGun1BurstSound          = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.079864, ImportWave("minigun1")))));
+miniGun2BurstSound          = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.078118, ImportWave("minigun2")))));
+miniGun3BurstSound          = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.082313, ImportWave("minigun3")))));
+
+plasmamini1BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmamini1")))));
+plasmamini2BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmamini2")))));
+plasmamini3BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmamini3")))));
+plasmagat1BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmagat1")))));
+plasmagat2BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmagat2")))));
+plasmagat3BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmagat3")))));
+plasmaac1BurstSound         = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmaac1")))));
+plasmaac2BurstSound         = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmaac2")))));
+plasmaac3BurstSound         = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmaac3")))));
+
+antiUtility1BurstSound      = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.160703, ImportWave("plasmarifle1")))));
+antiUtility2BurstSound      = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.157664, ImportWave("plasmarifle2")))));
+antiUtility3BurstSound      = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, ASRSound(0.000023, 0.164558, ImportWave("plasmarifle3")))));
+
+antiShield1BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmarifle1")))));
+antiShield2BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmarifle2")))));
+antiShield3BurstSound       = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("plasmarifle3")))));
+
+sniperLaser1BurstSound      = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("sniperlaser1"))))); 
+sniperLaser2BurstSound      = GainSound(SFXGain, PrioritySound(5, ThreeDSound(100, RepeatingFireSound(0.125, ImportWave("sniperlaser2"))))); 
+
+turretGun1BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(150, ASRSound(0.000023, 0.082404, ImportWave("turretgun1")))));
+turretGun2BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(150, ASRSound(0.000023, 0.083084, ImportWave("turretgun2")))));
+turretGun3BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(150, ASRSound(0.000023, 0.083220, ImportWave("turretgun3")))));
+
+skyRipper1BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(200, RepeatingFireSound(0.067, ImportWave("turretcannon2"))))); 
+skyRipper2BurstSound        = GainSound(SFXGain, PrioritySound(5, ThreeDSound(200, RepeatingFireSound(0.067, ImportWave("turretcannon3"))))); 
+
+
+antiBaseCap1ActivationSound = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun1pwrup")));
+antiBaseCap2ActivationSound = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun2pwrup")));
+
+cannon1ActivationSound      = GainSound(SFXGain, ThreeDSound(20, ImportWave("cannon1pwrup")));
+cannon2ActivationSound      = GainSound(SFXGain, ThreeDSound(20, ImportWave("cannon2pwrup")));
+
+machineGun1ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("machinegun1pwrup")));
+machineGun2ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("machinegun2pwrup")));
+machineGun3ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("machinegun3pwrup")));
+
+miniGun1ActivationSound     = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun1pwrup")));
+miniGun2ActivationSound     = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun2pwrup")));
+miniGun3ActivationSound     = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun3pwrup")));
+
+plasmamini1ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun1pwrup")));
+plasmamini2ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun2pwrup")));
+plasmamini3ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun3pwrup")));
+plasmagat1ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("machinegun1pwrup")));
+plasmagat2ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("machinegun2pwrup")));
+plasmagat3ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("machinegun3pwrup")));
+plasmaac1ActivationSound    = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun1pwrup")));
+plasmaac2ActivationSound    = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun2pwrup")));
+plasmaac3ActivationSound    = GainSound(SFXGain, ThreeDSound(20, ImportWave("minigun3pwrup")));
+antishieldActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("tfpwrup")));
+hvycannonActivationSound    = GainSound(SFXGain, ThreeDSound(20, ImportWave("turretcannon3pwrup")));
+basecannonActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("turretcannon2pwrup")));
+sbcannonActivationSound     = GainSound(SFXGain, ThreeDSound(20, ImportWave("plasmarifle3pwrup")));
+
+
+antiUtility1ActivationSound = GainSound(SFXGain, ThreeDSound(20, ImportWave("plasmarifle1pwrup")));
+antiUtility2ActivationSound = GainSound(SFXGain, ThreeDSound(20, ImportWave("plasmarifle2pwrup")));
+antiUtility3ActivationSound = GainSound(SFXGain, ThreeDSound(20, ImportWave("plasmarifle3pwrup")));
+
+antiShield1ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("plasmarifle1pwrup")));
+antiShield2ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("plasmarifle2pwrup")));
+antiShield3ActivationSound  = GainSound(SFXGain, ThreeDSound(20, ImportWave("plasmarifle3pwrup")));
+
+sniperLaser1ActivationSound = GainSound(SFXGain, ThreeDSound(20, ImportWave("sniperlaser1pwrup")));
+sniperLaser2ActivationSound = GainSound(SFXGain, ThreeDSound(20, ImportWave("sniperlaser2pwrup")));
+
+turretCannon1ActivationSound= GainSound(SFXGain, ThreeDSound(20, ImportWave("turretCannon1pwrup")));
+turretCannon2ActivationSound= GainSound(SFXGain, ThreeDSound(20, ImportWave("turretCannon2pwrup")));
+turretCannon3ActivationSound= GainSound(SFXGain, ThreeDSound(20, ImportWave("turretCannon3pwrup")));
+
+turretGun1ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("turretgun1pwrup")));
+turretGun2ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("turretgun2pwrup")));
+turretGun3ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("turretgun3pwrup")));
+
+repairWeapon1ActivationSound= GainSound(SFXGain, ThreeDSound(20, ImportWave("sniperlaser1pwrup"))); 
+repairWeapon2ActivationSound= GainSound(SFXGain, ThreeDSound(20, ImportWave("sniperlaser1pwrup"))); 
+
+skyRipper1ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("turretCannon2pwrup")));
+skyRipper2ActivationSound   = GainSound(SFXGain, ThreeDSound(20, ImportWave("turretCannon3pwrup")));
+
+
+//
+// ship turret sounds
+//
+
+smallTurretSound            = GainSound(SFXGain, ThreeDSound(20, ASRSound(0.341633, 0.224671, ImportWave("sturret"))));
+mediumTurretSound           = GainSound(SFXGain, ThreeDSound(20, ASRSound(0.717506, 0.810340, ImportWave("mturret"))));
+largeTurretSound            = GainSound(SFXGain, ThreeDSound(20, ASRSound(0.538254, 0.413152, ImportWave("lturret"))));
+
+
+//
+// ship sounds
+// 
+
+smallShipInteriorSound      = GainSound(SFXGain, GainSound(-15,LoopingSound(ImportWave("sshipint"))));
+smallShipExteriorSound      = GainSound(SFXGain, ThreeDSound(20, LoopingSound(ImportWave("shipout"))));
+smallShipThrustInteriorSound= GainSound(SFXGain, ThreeDSound(100, LoopingSound(ImportWave("accelSmall"))));
+smallShipThrustExteriorSound= GainSound(SFXGain, ThreeDSound(100, LoopingSound(ImportWave("accelSmall"))));
+smallShipTurnInteriorSound  = GainSound(SFXGain, ThreeDSound(60, GainSound(-4, LoopingSound(ImportWave("adjust")))));
+smallShipTurnExteriorSound  = GainSound(SFXGain, ThreeDSound(60, LoopingSound(ImportWave("adjust"))));
+
+capitalShipInteriorSound      = GainSound(SFXGain, GainSound(-15,LoopingSound(ImportWave("lshipint"))));
+capitalShipExteriorSound      = GainSound(SFXGain, ThreeDSound(60, PitchSound(0.5, LoopingSound(ImportWave("shipout")))));
+capitalShipThrustInteriorSound= GainSound(SFXGain, ThreeDSound(300, LoopingSound(ImportWave("accelCapital"))));
+capitalShipThrustExteriorSound= GainSound(SFXGain, ThreeDSound(300, LoopingSound(ImportWave("accelCapital"))));
+capitalShipTurnInteriorSound  = GainSound(SFXGain, ThreeDSound(100, GainSound(-5, LoopingSound(ImportWave("accelSmall")))));
+capitalShipTurnExteriorSound  = GainSound(SFXGain, ThreeDSound(100, LoopingSound(ImportWave("accelSmall"))));
+
+//
+// starbase sounds
+//
+
+GCStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-7, IntermittentSound(10, false, RandomSound([
+                                        (ImportWave("gigambient_1"), 1),
+                                        (ImportWave("gigambient_2"), 1),
+                                        (ImportWave("gigambient_3"), 1),
+                                        (ImportWave("gigambient_4"), 1),
+                                        (ImportWave("gigambient_5"), 1),
+                                        (ImportWave("gigambient_6"), 1),
+                                        (ImportWave("gigambient_7"), 1),
+                                        (ImportWave("gigambient_21"), 1),
+                                        (ImportWave("gigambient_25"), 1)
+                                    ])))
+                                ));
+ILStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-7, IntermittentSound(10, false, RandomSound([
+                                        (ImportWave("ironambient_1"), 1),
+                                        (ImportWave("ironambient_2"), 1),
+                                        (ImportWave("ironambient_3"), 1),
+                                        (ImportWave("ironambient_4"), 1),
+                                        (ImportWave("ironambient_5"), 1),
+                                        (ImportWave("ironambient_6"), 1),
+                                        (ImportWave("ironambient_7"), 1),
+                                        (ImportWave("ironambient_8"), 1),
+                                        (ImportWave("ironambient_9"), 1),
+                                        (ImportWave("ironambient_21"), 1),
+                                        (ImportWave("ironambient_24"), 1),
+                                        (ImportWave("announce1"), .5),
+                                        (ImportWave("announce5"), 1)
+                                    ])))
+                                ));
+BOStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-7, IntermittentSound(10, false, RandomSound([
+                                        (ImportWave("bioambient_1"), 1),
+                                        (ImportWave("bioambient_2"), 1),
+                                        (ImportWave("bioambient_21"), 1),
+                                        (ImportWave("bioambient_22"), 1),
+                                        (ImportWave("bioambient_23"), 1),
+                                        (ImportWave("bioambient_24"), 1),
+                                        (ImportWave("bioambient_25"), 1),
+                                        (ImportWave("bioambient_26"), 1),
+                                        (ImportWave("bioambient_27"), 1),
+                                        (ImportWave("bioambient_3"), 1),
+                                        (ImportWave("bioambient_4"), 1),
+                                        (ImportWave("bioambient_5"), 1),
+                                        (ImportWave("bioambient_6"), 1),
+                                        (ImportWave("bioambient_7"), 1)
+                                    ])))
+                                ));
+BLStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-7, IntermittentSound(10, false, RandomSound([
+                                        (ImportWave("Beltambient_1"), 1),
+                                        (ImportWave("Beltambient_2"), .25),
+                                        (ImportWave("Beltambient_3c"), .1),
+                                        (ImportWave("Beltambient_4"), 1),
+                                        (ImportWave("Beltambient_5"), 1),
+                                        (ImportWave("Beltambient_6"), 1),
+                                        (ImportWave("Beltambient_7"), 1),
+                                        (ImportWave("Beltambient_8"), 1),
+                                        (ImportWave("Beltambient_9"), 1),
+                                        (ImportWave("Beltambient_3b"), 1),
+                                        (ImportWave("Beltambient_5b"), 1),
+                                        (ImportWave("announce4"), 1),
+                                        (ImportWave("announce5"), 1),
+                                        (ImportWave("Beltambient_6b"), 1),
+                                        (ImportWave("Beltambient_8b"), 1),
+                                        (ImportWave("Beltambient_22"), 1)
+                                    ])))
+                                ));
+RUStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-5, IntermittentSound(5, false, RandomSound([
+                                        (ImportWave("amb10_48int"), 1),
+                                        (ImportWave("amb10_49int"), 1),
+                                        (ImportWave("amb10_50int"), 1),
+                                        (ImportWave("amb10_52int"), 1),
+                                        (ImportWave("amb10_53int"), 1),
+                                        (ImportWave("amb10_54int"), 1),
+                                        (ImportWave("amb10_55int"), 1),
+                                        (ImportWave("amb10_56int"), 1),
+                                        (ImportWave("amb10_57int"), 1),
+                                        (ImportWave("amb10_59int"), 1),
+                                        (ImportWave("amb10_62int"), 1)
+                                    ])))
+                                ));
+DEStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-5, IntermittentSound(5, false, RandomSound([
+                                        (ImportWave("lizard01"), 1),
+                                        (ImportWave("lizard02"), 1),
+                                        (ImportWave("lizard03"), 1),
+                                        (ImportWave("lizard04"), 1),
+                                        (ImportWave("lizard05"), 1),
+                                        (ImportWave("lizard06"), 1),
+                                        (ImportWave("lizard07"), 1),
+                                        (ImportWave("lizard08"), 1),
+                                        (ImportWave("lizard09"), 1),
+                                        (ImportWave("lizard10"), 1)
+                                    ])))
+                                )); 
+TFStarbaseInternalSound     = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    GainSound(-5, IntermittentSound(5, false, RandomSound([
+                                        (ImportWave("tfambient1"), 1),
+                                        (ImportWave("tfambient2"), 1),
+                                        (ImportWave("tfambient3"), 1),
+                                        (ImportWave("tfambient4"), 1),
+                                        (ImportWave("tfambient5"), 1),
+                                        (ImportWave("tfambient6"), 1),
+                                        (ImportWave("tfambient7"), 1),
+                                        (ImportWave("tfambient8"), 1),
+                                        (ImportWave("tfambient12"), 1)
+                                    ])))
+                                ));                          
+
+ILStationExternalSound      = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, ThreeDSound(200, LoopingSound(ImportWave("shipout")))),
+                                    GainSound(-7, IntermittentSound(5, false, RandomSound([
+                                        (ThreeDSound(200, ImportWave("static1")), 1),
+                                        (ThreeDSound(200, ImportWave("static2")), 1),
+                                        (ThreeDSound(100, ImportWave("clank")), 0.3)
+                                    ])))
+                                ));
+
+ILStarbaseAlertSound        = GainSound(SFXGain, 
+                                PairedSound(
+                                    PitchSound(0.5, LoopingSound(ImportWave("shipint"))),
+                                    IntermittentSound(10, false, ImportWave("vo_sal_stationwarning"))
+                                ));
+
+constructorReqCarbonSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_buildercarbon")))); 
+constructorReqGenericSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_buildergeneric")))); 
+constructorReqSiliconSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_buildersilicon")))); 
+constructorReqUraniumSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_builderuranium")))); 
+constructorReqHeliumSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_builderhelium")))); 
+constructorReqSpecialSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_request_special")))); 
+
+garrisonBuilderAttackedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_garrisonbuilder")))); 
+outpostBuilderAttackedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_outpostbuilder")))); 
+shipyardBuilderAttackedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_shipyardbuilder")))); 
+teleportBuilderAttackedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_teleportbuilder")))); 
+refineryBuilderAttackedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_refinerybuilder")))); 
+expansionBuilderAttackedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_expansionbuilder")))); 
+supremecyBuilderAttackedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_supremecybuilder")))); 
+tacticalBuilderAttackedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_tacticalbuilder")))); 
+mineBuilderAttackedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_minebuilder")))); 
+palisadeBuilderAttackedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_palisadebuilder")))); 
+researchBuilderAttackedSound      = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_researchbuilder")))); 
+
+garrisonBuilderDestroyedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_garrison")))); 
+outpostBuilderDestroyedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_outpost")))); 
+shipyardBuilderDestroyedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_shipyard")))); 
+teleportBuilderDestroyedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_teleport")))); 
+refineryBuilderDestroyedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_refinery")))); 
+expansionBuilderDestroyedSound= SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_expansion")))); 
+supremecyBuilderDestroyedSound= SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_supremecy")))); 
+tacticalBuilderDestroyedSound = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_tactical")))); 
+mineBuilderDestroyedSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_minebuilder")))); 
+palisadeBuilderDestroyedSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_palisade")))); 
+researchBuilderDestroyedSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_research")))); 
+
+garrisonCompletedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_garrison")))); 
+outpostCompletedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_outpost")))); 
+shipyardCompletedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_shipyard")))); 
+teleportCompletedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_teleport")))); 
+refineryCompletedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_refinery")))); 
+expansionCompletedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_expansion")))); 
+supremecyCompletedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_supremecy")))); 
+tacticalCompletedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_tactical")))); 
+mineCompletedSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_mine")))); 
+palisadeCompletedSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_palisade")))); 
+researchCompletedSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_builder_research")))); 
+
+garrisonAttackedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_garrison")))); 
+outpostAttackedSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_outpost")))); 
+shipyardAttackedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_shipyard")))); 
+teleportAttackedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_teleport")))); 
+refineryAttackedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_refinery")))); 
+expansionAttackedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_expansion")))); 
+supremecyAttackedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_supremecy")))); 
+tacticalAttackedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_tactical")))); 
+mineAttackedSound             = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_mine")))); 
+palisadeAttackedSound             = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_palisade")))); 
+researchAttackedSound             = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_attack_research")))); 
+
+garrisonCritical              = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_critical_station")))); 
+outpostCritical               = garrisonCritical;
+shipyardCritical              = garrisonCritical;
+teleportCritical              = garrisonCritical;
+refineryCritical              = garrisonCritical;
+expansionCritical             = garrisonCritical;
+supremecyCritical             = garrisonCritical;
+tacticalCritical              = garrisonCritical;
+mineCritical                  = garrisonCritical;
+palisadeCritical	      = garrisonCritical;
+researchCritical	      = garrisonCritical;
+
+garrisonDestroyedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_garrison")))); 
+outpostDestroyedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_outpost")))); 
+shipyardDestroyedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_shipyard")))); 
+teleportDestroyedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_teleport")))); 
+refineryDestroyedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_refinery")))); 
+expansionDestroyedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_expansion")))); 
+supremecyDestroyedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_supremecy")))); 
+tacticalDestroyedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_tactical")))); 
+mineDestroyedSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_mine")))); 
+palisadeDestroyedSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_palisade")))); 
+researchDestroyedSound            = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_research")))); 
+
+garrisonCapturedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_garrison")))); 
+outpostCapturedSound          = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_outpost")))); 
+shipyardCapturedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_shipyard")))); 
+teleportCapturedSound         = errorSound;
+refineryCapturedSound         = errorSound; 
+expansionCapturedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_expansion")))); 
+supremecyCapturedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_supremecy")))); 
+tacticalCapturedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_tactical")))); 
+mineCapturedSound             = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_mine")))); 
+palisadeCapturedSound             = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_palisade")))); 
+researchCapturedSound             = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_research")))); 
+
+garrisonEnemyCapturedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemygarrison")))); 
+outpostEnemyCapturedSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemyoutpost")))); 
+shipyardEnemyCapturedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemyshipyard")))); 
+teleportEnemyCapturedSound    = errorSound;
+refineryEnemyCapturedSound    = errorSound; 
+expansionEnemyCapturedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemyexpansion")))); 
+supremecyEnemyCapturedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemysupremecy")))); 
+tacticalEnemyCapturedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemytactical")))); 
+mineEnemyCapturedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemymine")))); 
+palisadeEnemyCapturedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemypalisade")))); 
+researchEnemyCapturedSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_capture_enemyresearch")))); 
+
+
+garrisonEnemyDestroyedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemygarrison")))); 
+outpostEnemyDestroyedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemyoutpost")))); 
+shipyardEnemyDestroyedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemyshipyard")))); 
+teleportEnemyDestroyedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemyteleport")))); 
+refineryEnemyDestroyedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemyrefinery")))); 
+expansionEnemyDestroyedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemyexpansion")))); 
+supremecyEnemyDestroyedSound  = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemysupremecy")))); 
+tacticalEnemyDestroyedSound   = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemytactical")))); 
+mineEnemyDestroyedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemymine")))); 
+palisadeEnemyDestroyedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemypalisade")))); 
+researchEnemyDestroyedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_destroy_enemyresearch")))); 
+
+
+newResearchCompletedSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_researchcomplete")))); 
+newShipCompletedSound         = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_shiptech")))); 
+newWeaponCompletedSound       = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_weptech")))); 
+newMissilesCompletedSound     = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_missiletech")))); 
+newEquipmentCompletedSound    = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_newequip")))); 
+newStationUpgradeSound        = SerializedSound(MutexSal, DefaultSalTimeout, 0, true, GainSound(VoiceOverGain, GainSound(-7,ImportWave("vo_sal_stationupgrade")))); 
+
+
+
+
+
+//
+// missile sounds
+//
+
+HornetMissileLaunch         = GainSound(SFXGain, ThreeDSound(20, ImportWave("lrgslideout")));
+HornetMissileFlight         = GainSound(SFXGain, ThreeDSound(100, ASRSound(1.976236, 1.959269, ImportWave("mmissile"))));
+
+
+//
+// Shield sounds
+//
+
+fastShieldActivate          = GainSound(SFXGain, ThreeDSound(40, ImportWave("shieldup")));
+fastShieldDeactivate        = GainSound(SFXGain, ThreeDSound(40, ImportWave("noshld")));
+
+
+//
+// cloaking sounds
+//
+
+cloak1OnSound               = GainSound(SFXGain, ThreeDSound(30, ImportWave("cloakOn")));
+cloak1OffSound              = GainSound(SFXGain, ThreeDSound(30, ImportWave("cloakOff")));
+
+
+//
+// afterburner sounds
+//
+
+afterburner1InSound         = GainSound(SFXGain, ASRSound(2.093878, 1.514421, ImportWave("iafter")));
+afterburner1OutSound        = GainSound(SFXGain, ThreeDSound(200, ASRSound(2.357211, 2.490862, ImportWave("xafter"))));
+
+//
+// probe/drone turret sounds
+//
+
+probe1Sound                 = GainSound(SFXGain, ThreeDSound(100, LoopingSound(ImportWave("probe"))));
+
+//
+// training misc sounds
+// 
+
+tm_4_17rSound               = GainSound(VoiceOverGain, ImportWave("tm_4_17r")); 
+
+//
+// mapping to game sounds
+//
+
+soundList =
+    [
+        (newShipSoundId, newShipSound),
+        (newEnemySoundId, newEnemySound),
+
+        (myShieldHitSoundId, myShieldHitSound),
+        (myHullHitSoundId, myHullHitSound),
+
+        (otherShieldHitSoundId, otherShieldHitSound),
+        (otherHullHitSoundId, otherHullHitSound),
+        (rockHitSoundId, rockHitSound),
+
+        (errorSoundId, errorSound),
+        (jumpSoundId, jumpSound),
+        (personalJumpSoundId, personalJumpSound),
+        (explodeStationSoundId, explodeStationSound),
+        (explodeShipSoundId, explodeShipSound),
+
+        (largeExplosionSoundId, largeExplosionSound),
+        (mediumExplosionSoundId, mediumExplosionSound),
+        (smallExplosionSoundId, smallExplosionSound),
+
+        (pickUpPartSoundId, pickUpPartSound),
+        (pickUpDevelopmentSoundId, pickUpDevelopmentSound),
+        (pickUpPowerupSoundId, pickUpPowerupSound),
+        (pickUpCashSoundId, pickUpCashSound),
+        (rescuePlayerSoundId, rescuePlayerSound),
+
+        (outOfFuelSoundId, outOfFuelSound),
+        (mountSoundId, mountSound),
+        (mountedSoundId, mountedSound),
+        (unmountSoundId, unmountSound),
+        (startReloadSoundId, startReloadSound),
+        (dropSoundId, dropSound),
+        (investSoundId, investSound),
+        (paydaySoundId, paydaySound),
+        (vectorLockSoundId, vectorLockSound),
+
+        (newChatMsgSoundId, newChatMsgSound),
+        (newChatMsgFromCommanderSoundId, newChatMsgFromCommanderSound),
+        (newOfflineChatMsgSoundId, newOfflineChatMsgSound),
+        (newCommandMsgSoundId, newCommandMsgSound),
+        (newPersonalMsgSoundId, newPersonalMsgSound),
+        (newCriticalMsgSoundId, newCriticalMsgSound),
+        (newNonCriticalMsgSoundId, newNonCriticalMsgSound),
+        (acceptCommandSoundId, acceptCommandSound),
+        (composeChatMsgSoundId, composeChatMsgSound),
+        (sendChatMsgSoundId, sendChatMsgSound),
+        (collisionSoundId, collisionSound),
+        (turretLimitSoundId, turretLimitSound),
+
+        (newTargetSoundId, newTargetSound),
+
+        (deployChaffSoundId, deployChaffSound),
+        (deployMineSoundId, deployMineSound),
+        (deployProbeSoundId, deployProbeSound),
+
+        (ammoLowSoundId, ammoLowSound),
+        (fuelLowSoundId, fuelLowSound),
+        (energyLowSoundId, energyLowSound),
+        (hullLowSoundId, hullLowSound),
+
+        (groupWeaponsSoundId, groupWeaponsSound),
+        (ungroupWeaponsSoundId, ungroupWeaponsSound),
+
+        (positiveButtonClickSoundId, positiveButtonClickSound),
+        (negativeButtonClickSoundId, negativeButtonClickSound),
+
+        (dockedSoundId, dockedSound),
+
+        (changeLoadoutSoundId, changeLoadoutSound),
+
+        (panelSoundId, panelSound),
+        (mouseclickSoundId, mouseclickSound),
+        (mouseoverSoundId, mouseoverSound),
+        (paneSlideSoundId, paneSlideSound),
+        (chatKeySoundId, chatKeySound),
+
+        (countdownStartingSoundId, countdownStartingSound),
+        (countdown10minSoundId, countdown10minSound),
+        (countdown5minSoundId, countdown5minSound),
+        (countdown1minSoundId, countdown1minSound),
+        (countdown30SoundId, countdown30Sound),
+        (countdown15SoundId, countdown15Sound),
+        (countdown10SoundId, countdown10Sound),
+        (countdown9SoundId, countdown9Sound),
+        (countdown8SoundId, countdown8Sound),
+        (countdown7SoundId, countdown7Sound),
+        (countdown6SoundId, countdown6Sound),
+        (countdown5SoundId, countdown5Sound),
+        (countdown4SoundId, countdown4Sound),
+        (countdown3SoundId, countdown3Sound),
+        (countdown2SoundId, countdown2Sound),
+        (countdown1SoundId, countdown1Sound),
+
+        (undockSoundId, undockSound),
+
+        (outOfBoundsLoopSoundId, outOfBoundsLoopSound),
+
+        (ripcordOnLoopSoundId, ripcordOnLoopSound),
+        (salNoRipcordSoundId, salNoRipcordSound),
+        (salRipcordDestroyedSoundId, salRipcordDestroyedSound),
+        (salShipCantRipcordSoundId, salShipCantRipcordSound),  
+        (salRipcordAbortedSoundId, salRipcordAbortedSound),      
+
+        (ripcord10SoundId, ripcord10Sound),
+        (ripcord9SoundId, ripcord9Sound),
+        (ripcord8SoundId, ripcord8Sound),
+        (ripcord7SoundId, ripcord7Sound),
+        (ripcord6SoundId, ripcord6Sound),
+        (ripcord5SoundId, ripcord5Sound),
+        (ripcord4SoundId, ripcord4Sound),
+        (ripcord3SoundId, ripcord3Sound),
+        (ripcord2SoundId, ripcord2Sound),
+        (ripcord1SoundId, ripcord1Sound),
+
+        (flightMusic1ASoundId, flightMusic1ASound),
+        (flightMusic1BSoundId, flightMusic1BSound),
+        (flightMusic1CSoundId, flightMusic1CSound),
+        (flightMusic2ASoundId, flightMusic2ASound),
+        (flightMusic2BSoundId, flightMusic2BSound),
+        (flightMusic2CSoundId, flightMusic2CSound),
+        (flightMusic3ASoundId, flightMusic3ASound),
+        (flightMusic3BSoundId, flightMusic3BSound),
+        (flightMusic3CSoundId, flightMusic3CSound),
+        (gameScreenMusicSoundId, gameScreenMusicSound),
+        (deathMusicSoundId, deathMusicSound),
+        (gameOverWonMusicSoundId, gameOverWonMusicSound),
+        (gameOverLostMusicSoundId, gameOverLostMusicSound),
+
+        (missileLockSoundId, missileLockSound),
+        (missileToneSoundId, missileToneSound),
+
+        (miningSoundId, miningSound),
+        (buildSoundId, buildSound),
+
+        (asteroidSoundId, asteroidSound),
+        (alephSoundId, alephSound),
+
+        (voAwsomeSoundId, voAwsomeSound),
+        (voByeSoundId, voByeSound),
+        (voDangSoundId, voDangSound),
+        (voDoahSoundId, voDoahSound),
+        (voHiSoundId, voHiSound),
+        (voNiceWorkSoundId, voNiceWorkSound),
+        (voNoooSoundId, voNoooSound),
+        (voOhYeahSoundId, voOhYeahSound),
+        (voPhewSoundId, voPhewSound),
+        (voRipcordingSoundId, voRipcordingSound),
+        (voSweetSoundId, voSweetSound),
+        (voWatchFireSoundId, voWatchFireSound),
+        (voYeeHaSoundId, voYeeHaSound),
+
+        (voDefendBaseSoundId, voDefendBaseSound),
+        (voAttackTargetSoundId, voAttackTargetSound),
+        (voAttackSoundId, voAttackSound),
+        (voCoverMeSoundId, voCoverMeSound),
+        (voDefendSoundId, voDefendSound),
+        (voDonateCreditsSoundId, voDonateCreditsSound),
+        (voEscortBuilderSoundId, voEscortBuilderSound),
+        (voEscortMinerSoundId, voEscortMinerSound),
+        (voFindAlephsSoundId, voFindAlephsSound),
+        (voFindCarbonacousSoundId, voFindCarbonacousSound),
+        (voFindEnemySoundId, voFindEnemySound),
+        (voFindHeliumSoundId, voFindHeliumSound),
+        (voFindLavaSoundId, voFindLavaSound),
+        (voFindIronSoundId, voFindIronSound),
+        (voFindProbesSoundId, voFindProbesSound),
+        (voFollowSoundId, voFollowSound),
+        (voFormOnMyWingSoundId, voFormOnMyWingSound),
+        (voFormateSoundId, voFormateSound),
+        (voGetOffMeSoundId, voGetOffMeSound),
+        (voGoGoGoSoundId, voGoGoGoSound),
+        (voHeadBackSoundId, voHeadBackSound),
+        (voHoldUpSoundId, voHoldUpSound),
+        (voMeetAtJumpSoundId, voMeetAtJumpSound),
+        (voRegroupSoundId, voRegroupSound),
+        (voRetreatSoundId, voRetreatSound),
+        (voStayOnTargetSoundId, voStayOnTargetSound),
+        (voWaitForSignalSoundId, voWaitForSignalSound),
+
+
+        (voAlephMinedSoundId, voAlephMinedSound),
+        (voBaseCapturedSoundId, voBaseCapturedSound),
+        (voBomberWaitingSoundId, voBomberWaitingSound),
+        (voCapShipWaitingSoundId, voCapShipWaitingSound),
+        (voEnemyHasFlagSoundId, voEnemyHasFlagSound),
+        (voFoundAlephSoundId, voFoundAlephSound),
+        (voFoundCarbonacousSoundId, voFoundCarbonacousSound),
+        (voFoundEnemyShipsSoundId, voFoundEnemyShipsSound),
+        (voFoundEnemyBaseSoundId, voFoundEnemyBaseSound),
+        (voFoundHeliumSoundId, voFoundHeliumSound),
+        (voFoundLavaSoundId, voFoundLavaSound),
+        (voFoundIronSoundId, voFoundIronSound),
+        (voEnemyTransSoundId, voEnemyTransSound),
+        (voEnemyCapSoundId, voEnemyCapSound),
+        (voEnemyFightersSoundId, voEnemyFightersSound),
+        (voIsOurBaseClearSoundId, voIsOurBaseClearSound),
+        (voMinersAreDeadSoundId, voMinersAreDeadSound),
+        (voShieldsAreDownSoundId, voShieldsAreDownSound),
+        (voPursuingElectronicsSoundId, voPursuingElectronicsSound),
+        (voPursuingEnergySoundId, voPursuingEnergySound),
+        (voPursuingOrdinanceSoundId, voPursuingOrdinanceSound),
+        (voHaveShipyardSoundId, voHaveShipyardSound),
+        (voHaveCapsSoundId, voHaveCapsSound),
+        (voTraitorSoundId, voTraitorSound),
+
+
+        (voAcknowledgedSoundId, voAcknowledgedSound),
+        (voAffirmativeSoundId, voAffirmativeSound),
+        (voCompleteSoundId, voCompleteSound),
+        (voCoolSoundId, voCoolSound),
+        (voFiestySoundId, voFiestySound),
+        (voImBusySoundId, voImBusySound),
+        (voImOnItSoundId, voImOnItSound),
+        (voInboundSoundId, voInboundSound),
+        (voNegativeSoundId, voNegativeSound),
+        (voObjectiveCompleteSoundId, voObjectiveCompleteSound),
+        (voOnMyWaySoundId, voOnMyWaySound),
+        (voYoureMadSoundId, voYoureMadSound),
+
+
+        (voPayloadDeliveredSoundId, voPayloadDeliveredSound),
+        (voAlmostHadYouSoundId, voAlmostHadYouSound),
+        (voComeBackAndFightSoundId, voComeBackAndFightSound),
+        (voDeathBecomesYouSoundId, voDeathBecomesYouSound),
+        (voShootingFishSoundId, voShootingFishSound),
+        (voHowdThatFeelSoundId, voHowdThatFeelSound),
+        (voLikeLambsSoundId, voLikeLambsSound),
+        (voOutOfAmmoSoundId, voOutOfAmmoSound),
+        (voRipcordLastResortSoundId, voRipcordLastResortSound),
+        (voThanksSoundId, voThanksSound),
+        (voYesSoundId, voYesSound),
+        (voYouDiedWithDignitySoundId, voYouDiedWithDignitySound),
+        (voYouHaveNoHonorSoundId, voYouHaveNoHonorSound),
+        (voYoullBeSorrySoundId, voYoullBeSorrySound),
+        (voYouAreGoodButSoundId, voYouAreGoodButSound),
+
+
+        (voGimmeSomethingSoundId, voGimmeSomethingSound),
+        (voTakingItToThemSoundId, voTakingItToThemSound),
+        (voNeedFuelSoundId, voNeedFuelSound),
+        (voNeedHelpSoundId, voNeedHelpSound),
+        (voNeedRepairsSoundId, voNeedRepairsSound),
+        (voNeedAmmoSoundId, voNeedAmmoSound),
+        (voNeedRescueSoundId, voNeedRescueSound),
+        (voCantHoldEmSoundId, voCantHoldEmSound),
+        (voHaveAnArtifactSoundId, voHaveAnArtifactSound),
+        (voNeedBomberSoundId, voNeedBomberSound),
+        (voNeedCruiserSoundId, voNeedCruiserSound),
+        (voNeedFighterSoundId, voNeedFighterSound),
+        (voNeedScoutSoundId, voNeedScoutSound),
+        (voStationNeedsRepairsSoundId, voStationNeedsRepairsSound),
+        (voTargetNeededSoundId, voTargetNeededSound),
+        (voNeedPickupSoundId, voNeedPickupSound),
+        (voTransportOutboundSoundId, voTransportOutboundSound),
+
+        (voShootSoundId, voShootSound),
+        (voDonateInvestorSoundId, voDonateInvestorSound),
+        (voNeedTurretSoundId, voNeedTurretSound),
+        (voJoiningTurretSoundId, voJoiningTurretSound),
+        (voOopsSoundId, voOopsSound),
+        (voAttackBaseSoundId, voAttackBaseSound),
+        (voNeedBaseSoundId, voNeedBaseSound),
+        (voAttackConstructorSoundId, voAttackConstructorSound),
+        (voDefendConstructorSoundId, voDefendConstructorSound),
+        (voNeedConstructorSoundId, voNeedConstructorSound),
+        (voAttackDefenderSoundId, voAttackDefenderSound),
+        (voDefendDefenderSoundId, voDefendDefenderSound),
+        (voNeedDefenderSoundId, voNeedDefenderSound),
+        (voNeedBetterFightersSoundId, voNeedBetterFightersSound),
+        (voAttackFighterSoundId, voAttackFighterSound),
+        (voDefendFighterSoundId, voDefendFighterSound),
+        (voAttackInterceptorSoundId, voAttackInterceptorSound),
+        (voDefendInterceptorSoundId, voDefendInterceptorSound),
+        (voNeedInterceptorSoundId, voNeedInterceptorSound),
+        (voNeedObjectiveSoundId, voNeedObjectiveSound),
+        (voAttackCapitalSoundId, voAttackCapitalSound),
+        (voDefendCapitalSoundId, voDefendCapitalSound),
+        (voNeedCapitalSoundId, voNeedCapitalSound),
+        (voAttackMinerSoundId, voAttackMinerSound),
+        (voDefendMinerSoundId, voDefendMinerSound),
+        (voNeedMinerSoundId, voNeedMinerSound),
+        (voAttackBomberSoundId, voAttackBomberSound),
+        (voDefendBomberSoundId, voDefendBomberSound),
+        (voAttackRipcordSoundId, voAttackRipcordSound),
+        (voDefendRipcordSoundId, voDefendRipcordSound),
+        (voNeedRipcordSoundId, voNeedRipcordSound),
+        (voAttackStealthSoundId, voAttackStealthSound),
+        (voDefendStealthSoundId, voDefendStealthSound),
+        (voNeedStealthSoundId, voNeedStealthSound),
+        (voAttackTransportSoundId, voAttackTransportSound),
+        (voDefendTransportSoundId, voDefendTransportSound),
+        (voNeedTransportSoundId, voNeedTransportSound),
+        (voAttackScoutSoundId, voAttackScoutSound),
+        (voDefendScoutSoundId, voDefendScoutSound),
+        (voAttackTowerSoundId, voAttackTowerSound),
+        (voDefendTowerSoundId, voDefendTowerSound),
+        (voNeedTowerSoundId, voNeedTowerSound),
+        (voNeedBetterWepSoundId, voNeedBetterWepSound),
+        (voNeedMoneySoundId, voNeedMoneySound),
+
+        (voScoutAlephSoundId, voScoutAlephSound),
+        (voFoundEnemyConstructSoundId, voFoundEnemyConstructSound),
+        (voConstructorLaunchingSoundId, voConstructorLaunchingSound),
+        (voMinersHammeredSoundId, voMinersHammeredSound),
+        (voFindFreakinBaseSoundId, voFindFreakinBaseSound),
+        (voMinerHuntSoundId, voMinerHuntSound),
+        (voStayTogetherSoundId, voStayTogetherSound),
+        (voRipcordHomeSoundId, voRipcordHomeSound),
+        (voLayLowSoundId, voLayLowSound),
+        (voFoundEnemyMinerSoundId, voFoundEnemyMinerSound),
+        (voBaseUnderAttackSoundId, voBaseUnderAttackSound),
+        (voDeployProbesSoundId, voDeployProbesSound),
+        (voDeployMinesSoundId, voDeployMinesSound),
+        (voRepairStationSoundId, voRepairStationSound),
+
+        (voFindMinerSoundId, voFindMinerSound),
+        (voFindSiliconSoundId, voFindSiliconSound),
+        (voFindUraniumSoundId, voFindUraniumSound),
+        (voNoMoneySoundId, voNoMoneySound),
+        (voSurelyJokingSoundId, voSurelyJokingSound),
+        (voAintNoThinSoundId, voAintNoThinSound),
+        (voHellYeahSoundId, voHellYeahSound),
+        (voYoureCrazySoundId, voYoureCrazySound),
+        (voThatHurtSoundId, voThatHurtSound),
+        (voSlapInvestorSoundId, voSlapInvestorSound),
+        (voOoohSorrySoundId, voOoohSorrySound),
+        (voWantAPieceSoundId, voWantAPieceSound),
+        (voShootCommanderSoundId, voShootCommanderSound),
+
+        (voSteadyTigerSoundId, voSteadyTigerSound),
+        (voRealLifeSoundId, voRealLifeSound),
+        (voMakeMeSoundId, voMakeMeSound),
+        (voISPDropSoundId, voISPDropSound),
+        (voEveryoneReadySoundId, voEveryoneReadySound),
+        (voSavingUpSoundId, voSavingUpSound),
+        (voStartTheGameSoundId, voStartTheGameSound),
+        (voHoldYourHorsesSoundId, voHoldYourHorsesSound),
+        (voCoupleMinutesSoundId, voCoupleMinutesSound),
+        (voJustASecSoundId, voJustASecSound),
+        (voNiceWeatherSoundId, voNiceWeatherSound),
+        (voWhoCommanderSoundId, voWhoCommanderSound),
+        (voChangeTheMapSoundId, voChangeTheMapSound),
+        (voImCluelessSoundId, voImCluelessSound),
+        (voItsLateSoundId, voItsLateSound),
+        (voPitstopSoundId, voPitstopSound),
+        (voRematchSoundId, voRematchSound),
+        (voChangedSettingsSoundId, voChangedSettingsSound),
+        (voGoToTeamOnlySoundId, voGoToTeamOnlySound),
+        (voShallWeBeginSoundId, voShallWeBeginSound),
+        (voCheckWingSoundId, voCheckWingSound),
+        (voArghSoundId, voArghSound),
+        (voGunnerReadySoundId, voGunnerReadySound),
+        (voYowieSoundId, voYowieSound),
+        (voInboundBombSoundId, voInboundBombSound),
+        (voKingUniverseSoundId, voKingUniverseSound),
+        (voTurretsAttackSoundId, voTurretsAttackSound),
+
+        (voGotchaSoundId, voGotchaSound),
+        (voNeedFighterSupportSoundId, voNeedFighterSupportSound),
+        (voThanksLiftSoundId, voThanksLiftSound),
+
+
+        (droneReport4DutySoundId, droneReport4DutySound),
+        (droneEnemyOnScopeSoundId, droneEnemyOnScopeSound),
+        (droneWatchFireSoundId, droneWatchFireSound),
+        (droneYouGotItSoundId, droneYouGotItSound),
+        (droneCantDoThatSoundId, droneCantDoThatSound),
+        (droneTooMuchDamageSoundId, droneTooMuchDamageSound),
+        (droneTooCrowdedSoundId, droneTooCrowdedSound),
+        (droneWhereToSoundId, droneWhereToSound),
+        (droneComingHomeEmptySoundId, droneComingHomeEmptySound),
+        (droneWhereToBuildSoundId, droneWhereToBuildSound),
+        (droneWhereToLayMinefieldSoundId, droneWhereToLayMinefieldSound),
+        (droneWhereToLayTowerSoundId, droneWhereToLayTowerSound),
+        (minerDestroyedSoundId, minerDestroyedSound),
+        (carrierDestroyedSoundId, carrierDestroyedSound),
+        (towerLayerDestroyedSoundId, towerLayerDestroyedSound),
+        (minefieldLayerDestroyedSoundId, minefieldLayerDestroyedSound),
+        (droneInTransitSoundId, droneInTransitSound),
+        (droneUnderAttackSoundId, droneUnderAttackSound),
+        (minerUnderAttackSoundId, minerUnderAttackSound),
+        (minerCriticalSoundId, minerCriticalSound),
+        (carrierUnderAttackSoundId, carrierUnderAttackSound),
+        (droneAintGonnaWorkSoundId, droneAintGonnaWorkSound),
+        (droneMiningSoundId, droneMiningSound),
+        (constructorRunningSoundId, constructorRunningSound),
+        (constructorRunningSoundId, constructorRunningSound),
+
+        (teleportProbeActiveSoundId, teleportProbeActiveSound),
+        (teleportProbeSpottedSoundId, teleportProbeSpottedSound),
+
+        (minerThreatenedSoundId, minerThreatenedSound),
+        (constructorThreatenedSoundId, constructorThreatenedSound),
+        (carrierThreatenedSoundId, carrierThreatenedSound),
+        (bomberDetectedSoundId, bomberDetectedSound),
+        (carrierDetectedSoundId, carrierDetectedSound),
+        (capitalDetectedSoundId, capitalDetectedSound),
+        (teleportDetectedSoundId, teleportDetectedSound),
+        (transportDetectedSoundId, transportDetectedSound),
+        (stationThreatenedSoundId, stationThreatenedSound),
+
+        (sectorSecuredSoundId, sectorSecuredSound),
+        (sectorLostSoundId, sectorLostSound),
+
+        (flagLostSoundId, flagLostSound),
+        (flagSecuredSoundId, flagSecuredSound),
+        (enemyFlagLostSoundId, enemyFlagLostSound),
+        (enemyFlagSecuredSoundId, enemyFlagSecuredSound),
+
+        (artifactFoundSoundId, artifactFoundSound),
+        (artifactSecuredSoundId, artifactSecuredSound),
+
+        (commanderSoundId, commanderSound),
+        (investorSoundId, investorSound),
+
+        (boardSoundId, boardSound),
+        (noTurretsSoundId, noTurretsSound),
+
+        (salCommenceScanSoundId, salCommenceScanSound),
+        (salRixSightedSoundId, salRixSightedSound),
+        (salCrimsonSightedSoundId, salCrimsonSightedSound),
+        (salIronSightedSoundId, salIronSightedSound),
+        (salContactsInRangeSoundId, salContactsInRangeSound),
+        (salRedAlertSoundId, salRedAlertSound),
+        (salShieldsOfflineSoundId, salShieldsOfflineSound),
+        (salEnemyTroopsSoundId, salEnemyTroopsSound),
+        (salCoreMeltdownSoundId, salCoreMeltdownSound),
+        (salCompletedShipSoundId, salCompletedShipSound),
+        (salCompletedModsSoundId, salCompletedModsSound),
+        (salCompletedEquipmentSoundId, salCompletedEquipmentSound),
+        (salCompletedDramaticSoundId, salCompletedDramaticSound),
+        (salCompletedRadicalSoundId, salCompletedRadicalSound),
+        (salEnteredShieldWallSoundId, salEnteredShieldWallSound),
+        (salClearedShieldWallSoundId, salClearedShieldWallSound),
+        (salWelcomeHomeSoundId, salWelcomeHomeSound),
+        (salRepairedAtCarrierSoundId, salRepairedAtCarrierSound),
+        (salBoundryExceededSoundId, salBoundryExceededSound),
+        (salSectorCrowdedSoundId, salSectorCrowdedSound),
+        (salAutopilotEngageSoundId, salAutopilotEngageSound),
+        (salAutopilotDisengageSoundId, salAutopilotDisengageSound),
+        (salCloakEngageSoundId, salCloakEngageSound),
+        (salCloakDisengageSoundId, salCloakDisengageSound),
+        (salShieldsDownSoundId, salShieldsDownSound),
+        (salCargoFullSoundId, salCargoFullSound),
+        (salNoFuelSoundId, salNoFuelSound),
+        (salNoAmmoSoundId, salNoAmmoSound),
+        (salMustBeAtStationSoundId, salMustBeAtStationSound),
+        (salReloadingFuelSoundId, salReloadingFuelSound),
+        (salReloadingChaffSoundId, salReloadingChaffSound),
+        (salReloadingMissilesSoundId, salReloadingMissilesSound),
+        (salReloadingDispenserSoundId, salReloadingDispenserSound),
+        (salReloadingAmmoSoundId, salReloadingAmmoSound),
+        (salReloadingSoundId, salReloadingSound),
+        (salChaffDepletedSoundId, salChaffDepletedSound),
+        (salMissilesDepletedSoundId, salMissilesDepletedSound),
+        (salDispenserEmptySoundId, salDispenserEmptySound),
+
+        (salPlayerWaitingSoundId, salPlayerWaitingSound),
+        (salRecruitsArrivedSoundId, salRecruitsArrivedSound),
+        (salMIASoundId, salMIASound),
+        (salQuitSoundId, salQuitSound),
+        (salBootedSoundId, salBootedSound),
+        (salChangeSidesSoundId, salChangeSidesSound),
+        (salEnemyJoinersSoundId, salEnemyJoinersSound),
+        (salEnemyLeavesSoundId, salEnemyLeavesSound),
+
+        (oink1SoundId, oink1Sound),
+        (oink2SoundId, oink2Sound),
+        (oink3SoundId, oink3Sound),
+        (oink4SoundId, oink4Sound),
+        (oink5SoundId, oink5Sound),
+
+        //gataraan sounds
+        
+        (141, gaussShotSound),
+        (142, gaussActivationSound),
+        (143, pulselaserShotSound),
+        (144, pulselaserBurstSound),
+        (145, strikerShotSound),
+        (146, strikerBurstSound),
+        
+        (18, antiBaseCap1ShotSound),
+        (6,  antiBaseCap2ShotSound),
+
+        (17, cannon1ShotSound),
+        (5,  cannon2ShotSound),
+
+        (2,  machineGun1ShotSound),
+        (16, machineGun2ShotSound),
+        (15, machineGun3ShotSound),
+
+        (19, miniGun1ShotSound),
+        (7,  miniGun2ShotSound),
+        (20, miniGun3ShotSound),
+
+        (30, plasmamini1ShotSound),
+        (38, plasmamini2ShotSound),
+        (39, plasmamini3ShotSound),
+        (31, plasmagat1ShotSound),
+        (29, plasmagat2ShotSound),
+	  (123,plasmagat3ShotSound),
+        (32, plasmaac1ShotSound),
+        (125,plasmaac2ShotSound),
+        (126,plasmaac3ShotSound),
+        (34, antishieldShotSound),
+        (35, hvycannonShotSound),
+        (36, basecannonShotSound),
+        (37, sbcannonShotSound),
+
+        (27, antiUtility1ShotSound),
+        (1,  antiUtility1ShotSound),
+        (4,  antiUtility2ShotSound),
+        (12, antiUtility3ShotSound),
+
+        (24, antiShield1ShotSound),
+        (11, antiShield2ShotSound),
+        (25, antiShield3ShotSound),
+
+        (13, sniperLaser1ShotSound),
+        (14, sniperLaser2ShotSound),
+
+        (9,  turretCannon1ShotSound),
+        (23, turretCannon2ShotSound),
+        (10, turretCannon3ShotSound),
+
+        (8,  turretGun1ShotSound),
+        (21, turretGun2ShotSound),
+        (22, turretGun3ShotSound),
+
+        (3,  repairWeapon1ShotSound),
+        (26, repairWeapon2ShotSound),
+
+        (27, skyRipper1ShotSound),
+        (28, skyRipper2ShotSound),
+
+
+        (58, antiBaseCap1BurstSound),
+        (46, antiBaseCap2BurstSound),
+
+        (42, machineGun1BurstSound),
+        (56, machineGun2BurstSound),
+        (55, machineGun3BurstSound),
+
+        (59, miniGun1BurstSound),
+        (47, miniGun2BurstSound),
+        (60, miniGun3BurstSound),
+
+        (70, plasmamini1BurstSound),
+        (73, plasmamini2BurstSound),
+        (74, plasmamini3BurstSound),
+        (71, plasmagat1BurstSound),
+        (75, plasmagat2BurstSound),
+        (76, plasmagat3BurstSound),
+        (72, plasmaac1BurstSound),
+        (77, plasmaac2BurstSound),
+        (78, plasmaac3BurstSound),
+
+        (67, antiUtility1BurstSound),
+        (41, antiUtility1BurstSound),
+        (44, antiUtility2BurstSound),
+        (52, antiUtility3BurstSound),
+
+        (64, antiShield1BurstSound),
+        (51, antiShield2BurstSound),
+        (65, antiShield3BurstSound),
+
+        (53, sniperLaser1BurstSound),
+        (54, sniperLaser2BurstSound),
+
+        (48, turretGun1BurstSound),
+        (61, turretGun2BurstSound),
+        (62, turretGun3BurstSound),
+
+        (67, skyRipper1BurstSound),
+        (68, skyRipper2BurstSound),
+
+
+        (98, antiBaseCap1ActivationSound),
+        (86, antiBaseCap2ActivationSound),
+
+        (97, cannon1ActivationSound),
+        (85, cannon2ActivationSound),
+
+        (82, machineGun1ActivationSound),
+        (96, machineGun2ActivationSound),
+        (95, machineGun3ActivationSound),
+
+        (99, miniGun1ActivationSound),
+        (87, miniGun2ActivationSound),
+        (100,miniGun3ActivationSound),
+
+        (109,plasmamini1ActivationSound),
+        (127,plasmamini2ActivationSound),
+        (128,plasmamini3ActivationSound),
+        (110,plasmagat1ActivationSound),
+        (129,plasmagat2ActivationSound),
+        (130,plasmagat3ActivationSound),
+        (111,plasmaac1ActivationSound),
+        (131,plasmaac2ActivationSound),
+        (132,plasmaac3ActivationSound),
+        (113,antishieldActivationSound),
+        (114,hvycannonActivationSound),
+        (115,basecannonActivationSound),
+        (116,sbcannonActivationSound),
+
+        (107,antiUtility1ActivationSound),
+        (81, antiUtility1ActivationSound),
+        (84, antiUtility2ActivationSound),
+        (92, antiUtility3ActivationSound),
+
+        (104,antiShield1ActivationSound),
+        (91, antiShield2ActivationSound),
+        (105,antiShield3ActivationSound),
+
+        (93, sniperLaser1ActivationSound),
+        (94, sniperLaser2ActivationSound),
+
+        (89, turretCannon1ActivationSound),
+        (103,turretCannon2ActivationSound),
+        (90, turretCannon3ActivationSound),
+
+        (88, turretGun1ActivationSound),
+        (101,turretGun2ActivationSound),
+        (102,turretGun3ActivationSound),
+
+        (83, repairWeapon1ActivationSound),
+        (106,repairWeapon2ActivationSound),
+
+        (107, skyRipper1ActivationSound),
+        (108, skyRipper2ActivationSound),
+
+
+
+        (120, smallTurretSound),
+        (121, mediumTurretSound),
+        (122, largeTurretSound),
+
+
+        (140, smallShipInteriorSound),
+        (160, capitalShipInteriorSound),
+
+        (180, smallShipExteriorSound),
+        (200, capitalShipExteriorSound),
+
+        (220, smallShipThrustInteriorSound),
+        (240, capitalShipThrustInteriorSound),
+
+        (260, smallShipThrustExteriorSound),
+        (280, capitalShipThrustExteriorSound),
+
+        (300, smallShipTurnInteriorSound),
+        (320, capitalShipTurnInteriorSound),
+
+        (340, smallShipTurnExteriorSound),
+        (360, capitalShipTurnExteriorSound),
+
+        (380, ILStationExternalSound),
+
+	(418, EStarbaseInternalSound),
+	(419, RStarbaseInternalSound),
+        (420, GCStarbaseInternalSound),
+        (425, ILStarbaseInternalSound),
+        (430, BOStarbaseInternalSound),
+        (435, BLStarbaseInternalSound),
+        (440, RUStarbaseInternalSound),
+        (445, DEStarbaseInternalSound),
+	  (450, TFStarbaseInternalSound),
+	  (451, dn_PhStarbaseInternalSound),
+
+        (460, ILStarbaseAlertSound),
+
+
+        (500, HornetMissileLaunch),
+
+//
+// Edge of Reality Sounds - Begin
+//
+
+        (301, er_ninemm),
+        (302, er_thirtymm),
+        (303, er_eighthundredmm),
+        (304, er_beam),
+        (305, er_flaka),
+        (306, er_flakb),
+        (307, er_flakc),
+        (308, er_ninemmburst),
+        (309, er_thirtymmburst),
+        (310, er_flakaburst),
+        (311, capsulein),
+        (312, capsuleout),
+//
+// Edge of Reality Sounds - End
+//
+
+//
+// Dark Nebulae Sounds - Begin
+//
+
+        (501, dn_VersionSound),
+        (502, dn_MRMQuickFireLaunchSound),
+        (503, dn_ptdebshlDropSound),
+        (504, dn_ptplsgenDropSound),
+
+        (505, dn_SRPLaunchSound),
+        (506, dn_MRPLaunchSound),
+        (507, dn_LRPLaunchSound),
+        (508, dn_XRPLaunchSound),
+//        (509, dn_SRPFlightSound),
+//        (510, dn_MRPFlightSound),
+//        (511, dn_LRPFlightSound),
+//        (512, dn_XRPFlightSound),
+
+        (514, dn_AftIonInSound),
+        (515, dn_AftLgtInSound),
+        (516, dn_AftCrsInSound),
+        (518, dn_AftHvyInSound),
+        (519, dn_AftHprInSound),
+//        (525, dn_AftIonOutSound),
+//        (526, dn_AftLgtOutSound),
+//        (527, dn_AftCrsOutSound),
+//        (528, dn_AftHvyOutSound),
+        (529, dn_AftHprOutSound),
+
+        (530, dn_ptvulcan1ActivationSound),
+        (531, dn_ptvulcan1ShotSound),
+        (532, dn_ptvulcan1BurstSound),
+        (533, dn_ptvulcan2ActivationSound),
+        (534, dn_ptvulcan2ShotSound),
+        (535, dn_ptvulcan2BurstSound),
+
+        (536, dn_ptlngtomActivationSound),
+        (537, dn_ptlngtomShotSound),
+        (538, dn_ptlngtomBurstSound),
+
+//
+// Dark Nebulae Sounds - End
+//
+
+        (540, HornetMissileFlight),
+
+//
+// Dark Nebulae Sounds - Begin
+//
+
+        (550, dn_ptlascan1ActivationSound),
+        (551, dn_ptlascan1ShotSound),
+        (552, dn_ptlascan1BurstSound),
+        (553, dn_ptlascan2ActivationSound),
+        (554, dn_ptlascan2ShotSound),
+        (555, dn_ptlascan2BurstSound),
+
+        (556, dn_ptlasbls1DropSound),
+        (557, dn_ptlasbls2DropSound),
+
+//
+// Dark Nebulae Sounds - End
+//
+
+        (580, fastShieldActivate),
+
+
+//
+// Wars Sounds - Begin
+//
+
+	(600, sw_000ActivationSound),
+	(601, sw_001ShotSound),
+	(602, sw_001BurstSound),
+	(603, sw_002ShotSound),
+	(604, sw_002BurstSound),
+	(605, sw_003ShotSound),
+	(606, sw_003BurstSound),
+	(607, sw_004ShotSound),
+	(608, sw_004BurstSound),
+	(609, sw_005ShotSound),
+	(610, sw_005BurstSound),
+	(611, sw_006ShotSound),
+	(612, sw_006BurstSound),
+	(613, sw_007ShotSound),
+	(614, sw_007BurstSound),
+	(615, sw_008ShotSound),
+	(616, sw_008BurstSound),
+	(617, sw_009ShotSound),
+	(618, sw_009BurstSound),
+
+//
+// Wars Sounds - End
+//
+
+        (620, fastShieldDeactivate),
+
+//
+// Wars Sounds - Begin
+//
+
+	(621, sw_011MissileLaunch),
+	(622, sw_012MissileLaunch),
+	(623, sw_013MissileLaunch),
+	(624, sw_014MissileLaunch),
+	(625, sw_015MissileLaunch),
+	(626, sw_016probe1Sound),
+	(627, sw_017probe1Sound),
+
+//
+// Wars Sounds - End
+//
+
+	(640, cloak1OnSound),
+
+        (660, cloak1OffSound),
+
+        
+        (680, afterburner1InSound),
+        
+        (700, afterburner1OutSound),
+
+
+        (720, probe1Sound),
+
+        (740, constructorReqGenericSound    ),
+        (741, constructorReqGenericSound    ),
+        (742, constructorReqGenericSound    ),
+        (743, constructorReqGenericSound    ),
+        (744, constructorReqGenericSound    ),
+        (745, constructorReqUraniumSound    ),
+        (746, constructorReqCarbonSound     ),
+        (747, constructorReqSiliconSound    ),
+        (748, constructorReqHeliumSound     ),
+	  (749, constructorReqSpecialSound    ),
+	
+        (760, garrisonBuilderAttackedSound  ),
+        (761, outpostBuilderAttackedSound   ),
+        (762, shipyardBuilderAttackedSound  ),
+        (763, teleportBuilderAttackedSound  ),
+        (764, refineryBuilderAttackedSound  ),
+        (765, expansionBuilderAttackedSound ),
+        (766, supremecyBuilderAttackedSound ),
+        (767, tacticalBuilderAttackedSound  ),
+        (768, mineBuilderAttackedSound      ),
+        (769, palisadeBuilderAttackedSound      ),
+        (770, researchBuilderAttackedSound      ),
+        (771, dn_tranBuilderAttackedSound),
+
+        (780, garrisonBuilderDestroyedSound ),
+        (781, outpostBuilderDestroyedSound  ),
+        (782, shipyardBuilderDestroyedSound ),
+        (783, teleportBuilderDestroyedSound ),
+        (784, refineryBuilderDestroyedSound ),
+        (785, expansionBuilderDestroyedSound),
+        (786, supremecyBuilderDestroyedSound),
+        (787, tacticalBuilderDestroyedSound ),
+        (788, mineBuilderDestroyedSound     ),
+        (789, palisadeBuilderDestroyedSound     ),
+        (790, researchBuilderDestroyedSound     ),        
+        (791, dn_tranBuilderDestroyedSound),        
+
+        (800, garrisonCompletedSound        ),
+        (801, outpostCompletedSound         ),
+        (802, shipyardCompletedSound        ),
+        (803, teleportCompletedSound        ),
+        (804, refineryCompletedSound        ),
+        (805, expansionCompletedSound       ),
+        (806, supremecyCompletedSound       ),
+        (807, tacticalCompletedSound        ),
+        (808, mineCompletedSound            ),
+        (809, palisadeCompletedSound            ),
+        (810, researchCompletedSound            ),
+        (811, dn_tranCompletedSound  ),
+                
+        (820, garrisonAttackedSound         ),
+        (821, outpostAttackedSound          ),
+        (822, shipyardAttackedSound         ),
+        (823, teleportAttackedSound         ),
+        (824, refineryAttackedSound         ),
+        (825, expansionAttackedSound        ),
+        (826, supremecyAttackedSound        ),
+        (827, tacticalAttackedSound         ),
+        (828, mineAttackedSound             ),
+        (829, palisadeAttackedSound             ),        
+        (830, researchAttackedSound             ),
+        (831, dn_tranAttackedSound   ),
+
+        (840, garrisonCritical              ),
+        (841, outpostCritical               ),
+        (842, shipyardCritical              ),
+        (843, teleportCritical              ),
+        (844, refineryCritical              ),
+        (845, expansionCritical             ),
+        (846, supremecyCritical             ),
+        (847, tacticalCritical              ),
+        (848, mineCritical                  ),
+        (851, dn_tranCritical        ),
+
+        (860, garrisonDestroyedSound        ),
+        (861, outpostDestroyedSound         ),
+        (862, shipyardDestroyedSound        ),
+        (863, teleportDestroyedSound        ),
+        (864, refineryDestroyedSound        ),
+        (865, expansionDestroyedSound       ),
+        (866, supremecyDestroyedSound       ),
+        (867, tacticalDestroyedSound        ),
+        (868, mineDestroyedSound            ),
+        (869, palisadeDestroyedSound            ),        
+        (870, researchDestroyedSound            ),
+        (871, dn_tranDestroyedSound  ),
+
+        (880, garrisonCapturedSound         ),
+        (881, outpostCapturedSound          ),
+        (882, shipyardCapturedSound         ),
+        (883, teleportCapturedSound         ),
+        (884, refineryCapturedSound         ),
+        (885, expansionCapturedSound        ),
+        (886, supremecyCapturedSound        ),
+        (887, tacticalCapturedSound         ),
+        (888, mineCapturedSound             ),
+        (889, palisadeCapturedSound             ),        
+        (890, researchCapturedSound             ),
+        (891, dn_tranCapturedSound   ),
+
+        (900, garrisonEnemyDestroyedSound    ),
+        (901, outpostEnemyDestroyedSound     ),
+        (902, shipyardEnemyDestroyedSound    ),
+        (903, teleportEnemyDestroyedSound    ),
+        (904, refineryEnemyDestroyedSound    ),
+        (905, expansionEnemyDestroyedSound   ),
+        (906, supremecyEnemyDestroyedSound   ),
+        (907, tacticalEnemyDestroyedSound    ),
+        (908, mineEnemyDestroyedSound        ),
+        (909, palisadeEnemyDestroyedSound        ),
+        (910, researchEnemyDestroyedSound        ),
+        (911, dn_tranEnemyDestroyedSound),
+
+        (920, garrisonEnemyCapturedSound    ),
+        (921, outpostEnemyCapturedSound     ),
+        (922, shipyardEnemyCapturedSound    ),
+        (923, teleportEnemyCapturedSound    ),
+        (924, refineryEnemyCapturedSound    ),
+        (925, expansionEnemyCapturedSound   ),
+        (926, supremecyEnemyCapturedSound   ),
+        (927, tacticalEnemyCapturedSound    ),
+        (928, mineEnemyCapturedSound        ),
+        (929, palisadeEnemyCapturedSound        ),        
+        (930, researchEnemyCapturedSound        ),
+        (931, dn_tranEnemyCapturedSound),
+
+        (940, newResearchCompletedSound),
+        (941, newShipCompletedSound),
+        (942, newWeaponCompletedSound),
+        (943, newMissilesCompletedSound),
+        (944, newEquipmentCompletedSound),
+        (945, newStationUpgradeSound),
+
+        // training mission sounds
+        (tm_slide_1_01SoundId,  tm_slide_1_01Sound),
+        (tm_slide_1_02SoundId,  tm_slide_1_02Sound),
+        (tm_slide_1_03SoundId,  tm_slide_1_03Sound),
+        (tm_slide_1_04aSoundId, tm_slide_1_04aSound),
+        (tm_slide_1_04bSoundId, tm_slide_1_04bSound),
+        (tm_slide_1_05SoundId,  tm_slide_1_05Sound),
+        (tm_slide_1_06SoundId,  tm_slide_1_06Sound),
+        (tm_slide_1_07SoundId,  tm_slide_1_07Sound),
+        (tm_slide_1_08SoundId,  tm_slide_1_08Sound),
+        (tm_slide_1_09SoundId,  tm_slide_1_09Sound),
+        (tm_slide_1_10SoundId,  tm_slide_1_10Sound),
+        (tm_slide_1_11SoundId,  tm_slide_1_11Sound),
+        (tm_slide_1_12SoundId,  tm_slide_1_12Sound),
+        (tm_slide_1_13SoundId,  tm_slide_1_13Sound),
+        (tm_slide_1_14SoundId,  tm_slide_1_14Sound),
+
+        (tm_slide_2_01SoundId, tm_slide_2_01Sound),
+        (tm_2_01SoundId, tm_2_01Sound),
+        (tm_2_02SoundId, tm_2_02Sound),
+        (tm_2_03SoundId, tm_2_03Sound),
+        (tm_2_04SoundId, tm_2_04Sound),
+        (tm_2_05SoundId, tm_2_05Sound),
+        (tm_2_06SoundId, tm_2_06Sound),
+        (tm_2_07SoundId, tm_2_07Sound),
+        (tm_2_08SoundId, tm_2_08Sound),
+        (tm_2_09SoundId, tm_2_09Sound),
+        (tm_2_10SoundId, tm_2_10Sound),
+        (tm_2_11SoundId, tm_2_11Sound),
+        (tm_2_11rSoundId, tm_2_11rSound),
+        (tm_2_12SoundId, tm_2_12Sound),
+        (tm_2_13SoundId, tm_2_13Sound),
+        (tm_2_14SoundId, tm_2_14Sound),
+        (tm_2_15SoundId, tm_2_15Sound),
+        (tm_2_16SoundId, tm_2_16Sound),
+        (tm_2_16rSoundId, tm_2_16rSound),
+        (tm_2_17SoundId, tm_2_17Sound),
+        (tm_2_18SoundId, tm_2_18Sound),
+        (tm_2_18rSoundId, tm_2_18rSound),
+        (tm_2_19SoundId, tm_2_19Sound),
+        (tm_2_20SoundId, tm_2_20Sound),
+        (tm_2_21SoundId, tm_2_21Sound),
+        (tm_2_22SoundId, tm_2_22Sound),
+        (tm_2_23SoundId, tm_2_23Sound),
+        (tm_2_24SoundId, tm_2_24Sound),
+        (tm_2_24rSoundId, tm_2_24rSound),
+        (tm_2_25SoundId, tm_2_25Sound),
+        (tm_2_26SoundId, tm_2_26Sound),
+        (tm_2_27SoundId, tm_2_27Sound),
+        (tm_2_28SoundId, tm_2_28Sound),
+        (tm_2_29SoundId, tm_2_29Sound),
+        (tm_2_30SoundId, tm_2_30Sound),
+        (tm_2_31SoundId, tm_2_31Sound),
+        (tm_2_32SoundId, tm_2_32Sound),
+        (tm_2_33SoundId, tm_2_33Sound),
+        (tm_2_34SoundId, tm_2_34Sound),
+        (tm_2_35SoundId, tm_2_35Sound),
+        (tm_2_36SoundId, tm_2_36Sound),
+        (tm_2_37SoundId, tm_2_37Sound),
+        (tm_2_38SoundId, tm_2_38Sound),
+        (tm_slide_2_post_01SoundId, tm_slide_2_post_01Sound),
+
+        (tm_slide_3_01SoundId, tm_slide_3_01Sound),
+        (tm_slide_3_02SoundId, tm_slide_3_02Sound),
+        (tm_slide_3_03SoundId, tm_slide_3_03Sound),
+        (tm_slide_3_04SoundId, tm_slide_3_04Sound),
+        (tm_slide_3_05SoundId, tm_slide_3_05Sound),
+        (tm_slide_3_06SoundId, tm_slide_3_06Sound),
+        (tm_slide_3_07SoundId, tm_slide_3_07Sound),
+        (tm_slide_3_08SoundId, tm_slide_3_08Sound),
+        (tm_slide_3_09SoundId, tm_slide_3_09Sound),
+        (tm_slide_3_10SoundId, tm_slide_3_10Sound),
+        (tm_slide_3_11SoundId, tm_slide_3_11Sound),
+        (tm_slide_3_12SoundId, tm_slide_3_12Sound),
+        (tm_slide_3_13SoundId, tm_slide_3_13Sound),
+        (tm_3_01SoundId, tm_3_01Sound),
+        (tm_3_02SoundId, tm_3_02Sound),
+        (tm_3_03SoundId, tm_3_03Sound),
+        (tm_3_04SoundId, tm_3_04Sound),
+        (tm_3_05SoundId, tm_3_05Sound),
+        (tm_3_06SoundId, tm_3_06Sound),
+        (tm_3_07SoundId, tm_3_07Sound),
+        (tm_3_08SoundId, tm_3_08Sound),
+        (tm_3_09SoundId, tm_3_09Sound),
+        (tm_3_10SoundId, tm_3_10Sound),
+        (tm_3_11SoundId, tm_3_11Sound),
+        (tm_3_11rSoundId, tm_3_11rSound),
+        (tm_3_12SoundId, tm_3_12Sound),
+        (tm_3_12rSoundId, tm_3_12rSound),
+        (tm_3_13SoundId, tm_3_13Sound),
+        (tm_3_14SoundId, tm_3_14Sound),
+        (tm_3_15SoundId, tm_3_15Sound),
+        (tm_3_16SoundId, tm_3_16Sound),
+        (tm_3_17SoundId, tm_3_17Sound),
+        (tm_3_18SoundId, tm_3_18Sound),
+        (tm_3_19SoundId, tm_3_19Sound),
+        (tm_3_20SoundId, tm_3_20Sound),
+        (tm_3_21SoundId, tm_3_21Sound),
+        (tm_3_22SoundId, tm_3_22Sound),
+        (tm_3_23SoundId, tm_3_23Sound),
+        (tm_3_23rSoundId, tm_3_23rSound),
+        (tm_3_24SoundId, tm_3_24Sound),
+        (tm_3_25SoundId, tm_3_25Sound),
+        (tm_3_26SoundId, tm_3_26Sound),
+        (tm_3_27SoundId, tm_3_27Sound),
+        (tm_3_28SoundId, tm_3_28Sound),
+        (tm_3_29SoundId, tm_3_29Sound),
+        (tm_3_30SoundId, tm_3_30Sound),
+        (tm_3_31SoundId, tm_3_31Sound),
+        (tm_3_31rSoundId, tm_3_31rSound),
+        (tm_3_32SoundId, tm_3_32Sound),
+        (tm_3_33SoundId, tm_3_33Sound),
+        (tm_3_34SoundId, tm_3_34Sound),
+        (tm_3_35SoundId, tm_3_35Sound),
+        (tm_3_36SoundId, tm_3_36Sound),
+        (tm_3_37SoundId, tm_3_37Sound),
+        (tm_3_38SoundId, tm_3_38Sound),
+        (tm_3_39SoundId, tm_3_39Sound),
+        (tm_3_40SoundId, tm_3_40Sound),
+        (tm_3_41SoundId, tm_3_41Sound),
+        (tm_3_42SoundId, tm_3_42Sound),
+        (tm_3_42rSoundId, tm_3_42rSound),
+        (tm_3_43SoundId, tm_3_43Sound),
+        (tm_3_44SoundId, tm_3_44Sound),
+        (tm_3_45SoundId, tm_3_45Sound),
+        (tm_3_46SoundId, tm_3_46Sound),
+        (tm_3_47SoundId, tm_3_47Sound),
+        (tm_3_48SoundId, tm_3_48Sound),
+        (tm_3_49SoundId, tm_3_49Sound),
+        (tm_3_49rSoundId, tm_3_49rSound),
+        (tm_slide_3_post_01SoundId, tm_slide_3_post_01Sound),
+
+        (tm_slide_4_01SoundId, tm_slide_4_01Sound),
+        (tm_slide_4_02SoundId, tm_slide_4_02Sound),
+        (tm_4_01SoundId, tm_4_01Sound),
+        (tm_4_02SoundId, tm_4_02Sound),
+        (tm_4_03SoundId, tm_4_03Sound),
+        (tm_4_03rSoundId, tm_4_03rSound),
+        (tm_4_04SoundId, tm_4_04Sound),
+        (tm_4_04rSoundId, tm_4_04rSound),
+        (tm_4_05SoundId, tm_4_05Sound),
+        (tm_4_06SoundId, tm_4_06Sound),
+        (tm_4_06rSoundId, tm_4_06rSound),
+        (tm_4_07SoundId, tm_4_07Sound),
+        (tm_4_08SoundId, tm_4_08Sound),
+        (tm_4_08rSoundId, tm_4_08rSound),
+        (tm_4_09SoundId, tm_4_09Sound),
+        (tm_4_10SoundId, tm_4_10Sound),
+        (tm_4_11SoundId, tm_4_11Sound),
+        (tm_4_12SoundId, tm_4_12Sound),
+        (tm_4_13SoundId, tm_4_13Sound),
+        (tm_4_14SoundId, tm_4_14Sound),
+        (tm_4_15SoundId, tm_4_15Sound),
+        (tm_4_16SoundId, tm_4_16Sound),
+        (tm_4_17SoundId, tm_4_17Sound),
+        (tm_4_17rSoundId, tm_4_17rSound),
+        (tm_4_18SoundId, tm_4_18Sound),
+        (tm_4_19SoundId, tm_4_19Sound),
+        (tm_4_20SoundId, tm_4_20Sound),
+        (tm_4_21SoundId, tm_4_21Sound),
+        (tm_4_22SoundId, tm_4_22Sound),
+        (tm_4_23SoundId, tm_4_23Sound),
+        (tm_4_24SoundId, tm_4_24Sound),
+        (tm_4_25SoundId, tm_4_25Sound),
+        (tm_4_26SoundId, tm_4_26Sound),
+        (tm_4_26rSoundId, tm_4_26rSound),
+        (tm_4_27SoundId, tm_4_27Sound),
+        (tm_4_28SoundId, tm_4_28Sound),
+        (tm_4_29SoundId, tm_4_29Sound),
+        (tm_4_29rSoundId, tm_4_29rSound),
+        (tm_4_30SoundId, tm_4_30Sound),
+        (tm_4_31SoundId, tm_4_31Sound),
+        (tm_4_32SoundId, tm_4_32Sound),
+        (tm_4_33SoundId, tm_4_33Sound),
+        (tm_4_33rSoundId, tm_4_33rSound),
+        (tm_4_34SoundId, tm_4_34Sound),
+        (tm_4_35SoundId, tm_4_35Sound),
+        (tm_slide_4_post_01SoundId, tm_slide_4_post_01Sound),
+
+        (tm_slide_5_01SoundId, tm_slide_5_01Sound),
+        (tm_slide_5_02SoundId, tm_slide_5_02Sound),
+        (tm_slide_5_03SoundId, tm_slide_5_03Sound),
+        (tm_slide_5_04SoundId, tm_slide_5_04Sound),
+        (tm_slide_5_05SoundId, tm_slide_5_05Sound),
+        (tm_slide_5_06SoundId, tm_slide_5_06Sound),
+        (tm_slide_5_07SoundId, tm_slide_5_07Sound),
+        (tm_slide_5_08SoundId, tm_slide_5_08Sound),
+        (tm_slide_5_09SoundId, tm_slide_5_09Sound),
+        (tm_slide_5_10SoundId, tm_slide_5_10Sound),
+        (tm_slide_5_11SoundId, tm_slide_5_11Sound),
+        (tm_slide_5_12SoundId, tm_slide_5_12Sound),
+        (tm_slide_5_13SoundId, tm_slide_5_13Sound),
+        (tm_slide_5_14SoundId, tm_slide_5_14Sound),
+        (tm_slide_5_15SoundId, tm_slide_5_15Sound),
+        (tm_slide_5_16SoundId, tm_slide_5_16Sound),
+        (tm_slide_5_17SoundId, tm_slide_5_17Sound),
+        (tm_slide_5_18SoundId, tm_slide_5_18Sound),
+        (tm_slide_5_19SoundId, tm_slide_5_19Sound),
+        (tm_slide_5_20SoundId, tm_slide_5_20Sound),
+        (tm_slide_5_21SoundId, tm_slide_5_21Sound),
+        (tm_slide_5_22SoundId, tm_slide_5_22Sound),
+        (tm_slide_5_23SoundId, tm_slide_5_23Sound),
+        (tm_slide_5_24SoundId, tm_slide_5_24Sound),
+        (tm_slide_5_25SoundId, tm_slide_5_25Sound),
+        (tm_slide_5_26SoundId, tm_slide_5_26Sound),
+        (tm_5_01SoundId, tm_5_01Sound),
+        (tm_5_02SoundId, tm_5_02Sound),
+        (tm_5_03SoundId, tm_5_03Sound),
+        (tm_5_03rSoundId, tm_5_03rSound),
+        (tm_5_04SoundId, tm_5_04Sound),
+        (tm_5_04rSoundId, tm_5_04rSound),
+        (tm_5_05SoundId, tm_5_05Sound),
+        (tm_5_05rSoundId, tm_5_05rSound),
+        (tm_5_06SoundId, tm_5_06Sound),
+        (tm_5_06rSoundId, tm_5_06rSound),
+        (tm_5_07SoundId, tm_5_07Sound),
+        (tm_5_07rSoundId, tm_5_07rSound),
+        (tm_5_08SoundId, tm_5_08Sound),
+        (tm_5_08rSoundId, tm_5_08rSound),
+        (tm_5_09SoundId, tm_5_09Sound),
+        (tm_5_10SoundId, tm_5_10Sound),
+        (tm_5_11SoundId, tm_5_11Sound),
+        (tm_5_12SoundId, tm_5_12Sound),
+        (tm_5_13SoundId, tm_5_13Sound),
+        (tm_5_13rSoundId, tm_5_13rSound),
+        (tm_5_14SoundId, tm_5_14Sound),
+        (tm_5_15SoundId, tm_5_15Sound),
+        (tm_5_15rSoundId, tm_5_15rSound),
+        (tm_5_16SoundId, tm_5_16Sound),
+        (tm_5_17SoundId, tm_5_17Sound),
+        (tm_5_18SoundId, tm_5_18Sound),
+        (tm_5_18rSoundId, tm_5_18rSound),
+        (tm_5_19SoundId, tm_5_19Sound),
+        (tm_5_20SoundId, tm_5_20Sound),
+        (tm_slide_5_post_01SoundId, tm_slide_5_post_01Sound),
+        (tm_slide_5_post_02SoundId, tm_slide_5_post_02Sound),
+        (tm_slide_5_post_03SoundId, tm_slide_5_post_03Sound),
+        (tm_slide_5_post_04SoundId, tm_slide_5_post_04Sound),
+
+        (tm_slide_6_01SoundId, tm_slide_6_01Sound),
+        (tm_6_01SoundId, tm_6_01Sound),
+        (tm_6_02SoundId, tm_6_02Sound),
+        (tm_6_03SoundId, tm_6_03Sound),
+        (tm_slide_6_post_01SoundId, tm_slide_6_post_01Sound),
+
+        //AEM - Training Mission 8 Sounds
+        (tm_slide_8_01SoundId, tm_slide_8_01Sound),
+        (tm_slide_8_02SoundId, tm_slide_8_02Sound),
+        (tm_slide_8_03SoundId, tm_slide_8_03Sound),
+        (tm_slide_8_04SoundId, tm_slide_8_04Sound),
+        (tm_slide_8_05SoundId, tm_slide_8_05Sound),
+        (tm_8_01SoundId, tm_8_01Sound),
+        (tm_8_02SoundId, tm_8_02Sound),
+        (tm_8_03SoundId, tm_8_03Sound),
+        (tm_8_04SoundId, tm_8_04Sound),
+        (tm_8_05SoundId, tm_8_05Sound),
+        (tm_8_06SoundId, tm_8_06Sound),
+        (tm_8_07SoundId, tm_8_07Sound),
+        (tm_8_08SoundId, tm_8_08Sound),
+        (tm_8_09SoundId, tm_8_09Sound),
+        (tm_8_10SoundId, tm_8_10Sound),
+        (tm_8_11SoundId, tm_8_11Sound),
+        (tm_8_12SoundId, tm_8_12Sound),
+        (tm_8_13SoundId, tm_8_13Sound),
+        (tm_8_14SoundId, tm_8_14Sound),
+        (tm_8_15SoundId, tm_8_15Sound),
+        (tm_8_16SoundId, tm_8_16Sound),
+        (tm_8_17SoundId, tm_8_17Sound),
+        (tm_8_18SoundId, tm_8_18Sound),
+        (tm_8_19SoundId, tm_8_19Sound),
+        (tm_8_20SoundId, tm_8_20Sound),
+	  (tm_8_21SoundId, tm_8_21Sound),
+        (tm_slide_8_post_01SoundId, tm_slide_8_post_01Sound),
+        (tm_slide_8_post_02SoundId, tm_slide_8_post_02Sound),
+        (tm_slide_8_post_03SoundId, tm_slide_8_post_03Sound),
+        (tm_slide_8_post_04SoundId, tm_slide_8_post_04Sound),
+	  (tm_slide_8_post_05SoundId, tm_slide_8_post_05Sound),
+
+	  (tm_0_blankSoundId, tm_0_blankSound)
+
+        // warning: these numbers cannot go above 1000 without modifying igc.h
+    ];
+

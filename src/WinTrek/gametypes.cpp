@@ -15,6 +15,7 @@ class GameTypeImpl : public GameType
     short m_nGoalTeamKills;
     short m_nGoalTerritory;
     float m_fGameLength;
+	bool m_bExperimental; // mmf 10/07 Experimental game type
     MapMakerID m_mmMapType;
 
 public:
@@ -31,7 +32,8 @@ public:
         short nGoalTeamKills,
         short iGoalTerritory,
         float fGameLength,
-        MapMakerID mmMapType
+	    bool bExperimental, // mmf 10/07 Experimental game type
+		MapMakerID mmMapType
         ) :
 
         m_strName(strName),
@@ -46,6 +48,7 @@ public:
         m_nGoalTeamKills(nGoalTeamKills),
         m_nGoalTerritory(iGoalTerritory),
         m_fGameLength(fGameLength),
+		m_bExperimental(bExperimental), // mmf 10/07 Experimental game type
         m_mmMapType(mmMapType)
     {
     };
@@ -68,6 +71,7 @@ public:
             && ((misparams.nGoalTeamKills == 0) == (m_nGoalTeamKills == 0))
             && ((misparams.iGoalTerritoryPercentage == 100) == (m_nGoalTerritory == 100))
             && ((misparams.dtGameLength == 0) == (m_fGameLength == 0))
+			&& (misparams.bExperimental == m_bExperimental)  // mmf 11/07 Experimental game type
             //&& (misparams.bScoresCount == trekClient.GetIsZoneClub())
             ;
 
@@ -87,7 +91,8 @@ public:
         misparams.nGoalTeamKills = m_nGoalTeamKills;
         misparams.iGoalTerritoryPercentage = m_nGoalTerritory;
         misparams.dtGameLength = m_fGameLength;
-        misparams.mmMapType = m_mmMapType;
+		misparams.bExperimental = m_bExperimental; // mmf 10/07 Experimental game type
+		misparams.mmMapType = m_mmMapType;
         misparams.bScoresCount = misparams.bClubGame;
  }
 };
@@ -102,29 +107,36 @@ namespace
         TRef<GameType> pNewGameType;
         if (!bGameTypesInitialized)
         {
+			// mmf 10/07 if this list changes see Experimental game type comment in newgamescreen.cpp
             pNewGameType = new GameTypeImpl(
-                "Conquest", true, false, true, c_cUnlimitedLives, 0, 100, 0, 0, 0, 100, 0, c_mmHiLo
-                );
+                "Conquest", true, false, true, c_cUnlimitedLives, 0, 100, 0, 0, 0, 100, 0, false, c_mmHiLo
+                ); // mmf 10/07 added false experimental param
             listGameTypes.PushEnd(pNewGameType);
 
             pNewGameType = new GameTypeImpl(
-                "Death Match", false, true, false, c_cUnlimitedLives, 0, 0, 0, 0, 20, 100, 0, c_mmBrawl
-                );
+                "Death Match", false, true, false, c_cUnlimitedLives, 0, 0, 0, 0, 20, 100, 0, false, c_mmBrawl
+                ); // mmf 10/07 added false experimental param
             listGameTypes.PushEnd(pNewGameType);
 
             pNewGameType = new GameTypeImpl(
-                "Capture the Flag", false, true, true, c_cUnlimitedLives, 0, 0, 10, 0, 0, 100, 0, c_mmHiLo
-                );
+                "Capture the Flag", false, true, true, c_cUnlimitedLives, 0, 0, 10, 0, 0, 100, 0, false, c_mmHiLo
+                ); // mmf 10/07 added false experimental param
             listGameTypes.PushEnd(pNewGameType);
 
             pNewGameType = new GameTypeImpl(
-                "Artifacts", true, false, true, c_cUnlimitedLives, 0, 0, 0, 10, 0, 100, 0, c_mmPinWheel
-                );
+                "Artifacts", true, false, true, c_cUnlimitedLives, 0, 0, 0, 10, 0, 100, 0, false, c_mmPinWheel
+                ); // mmf 10/07 added false experimental param
             listGameTypes.PushEnd(pNewGameType);
 
             pNewGameType = new GameTypeImpl(
-                "Territorial", true, false, true, c_cUnlimitedLives, 0, 0, 0, 0, 0, 70, 0, c_mmGrid
-                );
+                "Territorial", true, false, true, c_cUnlimitedLives, 0, 0, 0, 0, 0, 70, 0, false, c_mmGrid
+                ); // mmf 10/07 added false experimental param
+            listGameTypes.PushEnd(pNewGameType);
+
+			// mmf 10/07 add new game type for trying things on the live servers 
+            pNewGameType = new GameTypeImpl(
+                "Experimental", true, false, true, c_cUnlimitedLives, 0, 100, 0, 0, 0, 100, 0, true, c_mmHiLo
+                ); // mmf 10/07 added true experimental param
             listGameTypes.PushEnd(pNewGameType);
 
             bGameTypesInitialized = true;

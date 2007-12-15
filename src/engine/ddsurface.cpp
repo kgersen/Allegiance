@@ -139,9 +139,12 @@ public:
         //
         // Get a texture handle if needed
         //
-
         if (m_bTextureSize && !m_stype.Test(SurfaceTypeVideo())) {
+#ifdef USEDX7
+            m_data.m_pd3dtexture = m_data.m_pdds;
+#else
             DDCall(m_data.m_pdds->QueryInterface(IID_IDirect3DTextureX, (void**)&(m_data.m_pd3dtexture)));
+#endif
         }
     }
 
@@ -610,7 +613,11 @@ public:
         }
 
         if (caps & DDSCAPS_TEXTURE) {
+#ifdef USEDX7
+            data.m_pd3dtexture = data.m_pdds;
+#else
             DDCall(data.m_pdds->QueryInterface(IID_IDirect3DTextureX, (void**)&(data.m_pd3dtexture)));
+#endif
         } else {
             data.m_pd3dtexture = NULL;
         }

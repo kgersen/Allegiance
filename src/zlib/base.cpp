@@ -167,3 +167,18 @@ ZWriteFile::ZWriteFile(const PathString& strPath) :
     ZFile(strPath, OF_CREATE | OF_WRITE | OF_SHARE_EXCLUSIVE)
 {
 }
+
+// KGJV 32B - added Tell and Seek
+long   ZFile::Tell()
+{
+    DWORD dwPtr = SetFilePointer(m_handle,0,NULL,FILE_CURRENT);
+    if (dwPtr != INVALID_SET_FILE_POINTER)
+        return (long) dwPtr;
+    else
+        return -1;
+}
+int   ZFile::Seek(long offset, int origin)
+{
+    DWORD dwPtr = SetFilePointer(m_handle,offset,NULL,origin);
+    return (dwPtr != INVALID_SET_FILE_POINTER);
+}

@@ -349,12 +349,27 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             if (!(pfmBallot->otInitiator == OT_ship && pfmBallot->oidInitiator == GetShipID())
               && !(pfmBallot->otInitiator == OT_side && pfmBallot->oidInitiator == GetSideID()))
             {
-                // then propose the issue.
-                m_listBallots.PushEnd(BallotInfo(
-                    (char*)(FM_VAR_REF(pfmBallot, BallotText)) + ZString("Press [Y] to vote yes, [N] to vote no."), 
-                    pfmBallot->ballotID, 
-                    ClientTimeFromServerTime(pfmBallot->timeExpiration)
-                    ));
+				// KGJV #110
+				// if bHideToLeader and i'm the team leader then auto vote no
+				if (pfmBallot->bHideToLeader &&	MyPlayerInfo()->IsTeamLeader())
+				{
+					// auto vote no
+					SetMessageType(c_mtGuaranteed);
+					BEGIN_PFM_CREATE(m_fm, pfmVote, C, VOTE)
+					END_PFM_CREATE
+					pfmVote->ballotID = pfmBallot->ballotID;
+					pfmVote->bAgree = false;
+				}
+				else
+				{
+	                // then propose the issue.
+					m_listBallots.PushEnd(BallotInfo(
+						(char*)(FM_VAR_REF(pfmBallot, BallotText)) + ZString("Press [Y] to vote yes, [N] to vote no."), 
+						pfmBallot->ballotID, 
+						ClientTimeFromServerTime(pfmBallot->timeExpiration)
+						));
+				}
+		
             }
         }
         break;
@@ -1237,7 +1252,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     ppiTo->SetMoney(ppiTo->GetMoney() + pfmAutoDonate->amount);
                     m_pClientEventSource->OnMoneyChange(ppiTo);
 
-                    if (pshipBy != m_ship)
+                    if (pshipBy != m_ship) // KGJV mutiny-note: dont change this without changing MutinyBallot::OnPassed server side
                     {
                         //Someone other than me autodonated ... subtract their money
                         PlayerInfo* ppiBy = (PlayerInfo*)(pshipBy->GetPrivateData());
@@ -2486,11 +2501,15 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             break;
         }
 
-        case FM_S_SIDE_INACTIVE:
+        case FM_CS_SIDE_INACTIVE: //KGJV #62 - changed to CS
         {
-            CASTPFM(pfmSideInactive, S, SIDE_INACTIVE, pfm);
+            CASTPFM(pfmSideInactive, CS, SIDE_INACTIVE, pfm); // KGJV #62 - changed to CS
             debugf("Side inactive, side=%d\n", pfmSideInactive->sideID);
-            m_pMissionInfo->SetSideActive(pfmSideInactive->sideID, false);
+            m_pMissionInfo->SetSideActive(pfmSideInactive->sideID, pfmSideInactive->bActive); // KGJV #62 was false
+			// update the AET bit
+			if (pfmSideInactive->bChangeAET)
+				m_pMissionInfo->SetAllowEmptyTeams(pfmSideInactive->bAET);
+				
             m_pClientEventSource->OnTeamInactive(m_pMissionInfo, pfmSideInactive->sideID);
             m_mapMissions.GetSink()();
             break;
@@ -3022,45 +3041,58 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmGain, S, GAIN_FLAG, pfm);
             IshipIGC*   pship = m_pCoreIGC->GetShip(pfmGain->shipidRecipient);
             assert (pship);
-            assert ((pship->GetFlag() == NA) || (pfmGain->sideidFlag == NA));
+			if (pfmGain->bIsTreasureDocked) // KGJV #118 - extended for docked tech
+			{
+				if (pship->GetSide() != GetSide()) break;
+				IpartTypeIGC *ppartType = GetCore()->GetPartType(pfmGain->parttypeidDocked);
+				if (ppartType)
+					PostText(true, "%s has secured %s",
+						pship->GetName(),
+						ppartType->GetName()
+					);
+			}
+			else
+			{ // normal flag capture code
+				assert ((pship->GetFlag() == NA) || (pfmGain->sideidFlag == NA));
 
-            pship->SetFlag(pfmGain->sideidFlag);
+				pship->SetFlag(pfmGain->sideidFlag);
 
-            if (pfmGain->sideidFlag != NA)
-            {
-                if (pship->GetSide() == GetSide())
-                {
-                    if (pfmGain->sideidFlag != SIDE_TEAMLOBBY)
-                    {
-                        PostText(true, "%s has stolen " START_COLOR_STRING "%s's" END_COLOR_STRING " flag.", 
-                            pship->GetName(), 
-                            (PCC) ConvertColorToString (GetCore()->GetSide(pfmGain->sideidFlag)->GetColor ()),
-                            GetCore()->GetSide(pfmGain->sideidFlag)->GetName()
-                            );
+				if (pfmGain->sideidFlag != NA)
+				{
+					if (pship->GetSide() == GetSide())
+					{
+						if (pfmGain->sideidFlag != SIDE_TEAMLOBBY)
+						{
+							PostText(true, "%s has stolen " START_COLOR_STRING "%s's" END_COLOR_STRING " flag.", 
+								pship->GetName(), 
+								(PCC) ConvertColorToString (GetCore()->GetSide(pfmGain->sideidFlag)->GetColor ()),
+								GetCore()->GetSide(pfmGain->sideidFlag)->GetName()
+								);
 
-                        PlaySoundEffect(enemyFlagLostSound);
-                    }
-                    else
-                    {
-                        PostText(true, "%s has found an artifact.", 
-                            pship->GetName());
+							PlaySoundEffect(enemyFlagLostSound);
+						}
+						else
+						{
+							PostText(true, "%s has found an artifact.", 
+								pship->GetName());
 
-                        PlaySoundEffect(artifactFoundSound);
-                    }
-                }
-                else if (pfmGain->sideidFlag > 0 && pfmGain->sideidFlag == GetSideID())
-                {
-                    ZString color = ConvertColorToString (pship->GetSide()->GetColor ());
-                    PostText(true, START_COLOR_STRING "%s" END_COLOR_STRING " of " START_COLOR_STRING "%s" END_COLOR_STRING " has stolen our flag.", 
-                        (PCC) color,
-                        pship->GetName(), 
-                        (PCC) color,
-                        pship->GetSide()->GetName()
-                        );
+							PlaySoundEffect(artifactFoundSound);
+						}
+					}
+					else if (pfmGain->sideidFlag > 0 && pfmGain->sideidFlag == GetSideID())
+					{
+						ZString color = ConvertColorToString (pship->GetSide()->GetColor ());
+						PostText(true, START_COLOR_STRING "%s" END_COLOR_STRING " of " START_COLOR_STRING "%s" END_COLOR_STRING " has stolen our flag.", 
+							(PCC) color,
+							pship->GetName(), 
+							(PCC) color,
+							pship->GetSide()->GetName()
+							);
 
-                    PlaySoundEffect(flagLostSound);
-                }
-            }
+						PlaySoundEffect(flagLostSound);
+					}
+				}
+			}// KGJV #118 - else bIsTreasureDocked
         }
         break;
 
@@ -3429,6 +3461,19 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             m_pClientEventSource->OnFoundPlayer(pMissionInfo);
         }
         break;
+
+		// KGJV #114
+		case FM_L_SERVERS_LIST:
+		{
+			CASTPFM(pfmServerList, L, SERVERS_LIST, pfm);
+			m_pClientEventSource->OnServersList(
+				pfmServerList->cCores,
+				FM_VAR_REF(pfmServerList,Cores),
+				pfmServerList->cServers,
+				FM_VAR_REF(pfmServerList,Servers)
+				);
+		}
+		break;
 
         default:
         {

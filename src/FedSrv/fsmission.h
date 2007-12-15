@@ -76,6 +76,13 @@ class OldPlayerInfo
 typedef Slist_utl<OldPlayerInfo>    OldPlayerList;
 typedef Slink_utl<OldPlayerInfo>    OldPlayerLink;
 
+// mmf/KGJV 09/07 allow only one ballot of each type at a time
+typedef int BallotType;
+#define BALLOT_RESIGN      1
+#define BALLOT_OFFERDRAW   2
+#define BALLOT_ACCEPTDRAW  3
+#define BALLOT_MUTINY      4
+
 class Ballot
 {
 public:
@@ -92,6 +99,9 @@ public:
 
   // gets the ID of this ballot
   BallotID GetBallotID();
+
+  // return the ballot type  
+  BallotType GetType();      // mmf/KGJV 09/07 allow only one ballot of each type at a time
 
   // destructor
   virtual ~Ballot() {};
@@ -146,9 +156,26 @@ protected:
   Time m_timeExpiration;
 
   bool m_bCanceled;
+
+  // KGJV #110
+  bool m_bHideToLeader;
+
+  // mmf/KGJV 09/07 allow only one ballot of each type at a time
+  BallotType m_type;
+
 };
 
 typedef TList<Ballot*> BallotList;
+
+// KGJV #110
+class MutinyBallot : public Ballot
+{
+  IsideIGC* m_pside;
+  ShipID m_idInitiatorShip;
+public:
+  MutinyBallot(CFSPlayer* pfsInitiator);
+  virtual void OnPassed();
+};
 
 // a ballot used when a player suggests resigning
 class ResignBallot : public Ballot
@@ -297,6 +324,10 @@ public:
   void                  RandomizeSides();
 
   void                  SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv);
+  void					SetSideActive(SideID sideid, bool bActive); // KGJV #62
+  bool					GetSideActive(SideID sideid);				// KGJV #62
+  bool					GetAllowEmptyTeams() { return m_misdef.misparms.bAllowEmptyTeams;} // KGJV #62
+  void					SetAllowEmptyTeams(bool bValue) { m_misdef.misparms.bAllowEmptyTeams = bValue;} // KGJV #62
   void                  DeactivateSide(IsideIGC * pside);
   void                  GiveSideMoney(IsideIGC * pside, Money money);
   void                  SetForceReady(SideID iSide, bool fForceReady);
@@ -398,6 +429,7 @@ public:
 
   void                  AddBallot(Ballot * pBallot);
   void                  TallyVote(CFSPlayer* pfsPlayer, BallotID ballotID, bool bVote);
+  bool					HasBallots(BallotType iType); // mmf/KGJV 09/07 allow only one ballot of each type at a time
 
   void                  MakeOverrideTechBits(); // alloc memory for overriding tech bits as needed
 

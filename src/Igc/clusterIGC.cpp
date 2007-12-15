@@ -116,15 +116,23 @@ void        CclusterIGC::Update(Time now)
                     {
                         IshipIGC*   pship = psl->data();
                         pslNext = psl->next();             //Get the next link now since the ship may launch
-
+                        const MissionParams* pmp = m_pMission->GetMissionParams(); // mmf 10/07 added so we can get at bExperimental game type
                         if (pship->GetAutopilot() && (pship->GetPilotType() < c_ptPlayer))
                         {
                             //Docked non-players on autopilot never are observers/parents
                             assert (pship->GetParentShip() == NULL);
                             assert (pship->GetChildShips()->n() == 0);
 
-                            if (pship->OkToLaunch(now))
+							// mmf/yp 10/07 added this so drones launch when ordered to even if OkToLaunch might be false
+							// intentionally left c_cidMine out of the list otherwise miners would launch with their AI
+							// 'order' to mine
+	
+							if (pship->OkToLaunch(now) || (pship->GetCommandID(c_cmdAccepted) == c_cidGoto) ||
+							   (pship->GetCommandID(c_cmdAccepted) == c_cidBuild) )
                                 pship->SetStation(NULL);
+							// if (pship->OkToLaunch(now))  // mmf orig code
+							//	  pship->SetStation(NULL);
+							
                         }
                     }
                 }

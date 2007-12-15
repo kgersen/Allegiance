@@ -18,11 +18,13 @@ namespace Training
     //------------------------------------------------------------------------------
     // class methods
     //------------------------------------------------------------------------------
-    /* void */  ConditionalAction::ConditionalAction (Condition* pCondition, Action* pAction, bool bImmediateExecute) : 
+    /* void */  ConditionalAction::ConditionalAction (Condition* pCondition, Action* pAction, bool bImmediateExecute, bool bRunOnce) : 
     m_pCondition (pCondition),
     m_pAction (pAction),
-    m_bImmediateExecute (bImmediateExecute)
+    m_bImmediateExecute (bImmediateExecute),
+	m_bRunOnce (bRunOnce)
     {
+		m_bRanOnce = false;
     }
     
     //------------------------------------------------------------------------------
@@ -51,27 +53,37 @@ namespace Training
     //------------------------------------------------------------------------------
     bool        ConditionalAction::Evaluate (void)
     {
-        // some scenarios demand that the condition return value be processed
-        // before the action is executed, so we provide that functionality
-        // in the form of two flags.
-        if (m_bImmediateExecute == IMMEDIATE_EXECUTION)
-        {
-            // immediate execution checks the enclosed condition and performs the action
-            // if it is true
-            m_bExecute = m_pCondition->Evaluate ();
-            if (m_bExecute == true)
-                m_pAction->Execute ();
-        }
-        else
-        {
-            // delayed execution checks to see if the enclosed condition was true last
-            // time this condition was tested, and performs the action if it was. It
-            // then checks the enclosed condition and saves the result for next time.
-            if (m_bExecute == true)
-                m_pAction->Execute ();
-            m_bExecute = m_pCondition->Evaluate ();
-        }
-        return m_bExecute;
+		if ( (m_bRanOnce == false && m_bRunOnce == true ) || m_bRunOnce == false)
+		{
+			// some scenarios demand that the condition return value be processed
+			// before the action is executed, so we provide that functionality
+			// in the form of two flags.
+			if (m_bImmediateExecute == IMMEDIATE_EXECUTION)
+			{
+				// immediate execution checks the enclosed condition and performs the action
+				// if it is true
+				m_bExecute = m_pCondition->Evaluate ();
+				if (m_bExecute == true)
+				{
+					m_bRanOnce=true;
+					m_pAction->Execute ();
+				}
+			}
+			else
+			{
+				// delayed execution checks to see if the enclosed condition was true last
+				// time this condition was tested, and performs the action if it was. It
+				// then checks the enclosed condition and saves the result for next time.
+				if (m_bExecute == true)
+				{
+					m_bRanOnce=true;
+					m_pAction->Execute ();
+				}
+				m_bExecute = m_pCondition->Evaluate ();
+			}
+			return m_bExecute;
+		}
+		return false;
     }
 
     //------------------------------------------------------------------------------

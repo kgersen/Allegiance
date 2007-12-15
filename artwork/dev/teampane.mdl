@@ -1,0 +1,173 @@
+use "console";
+use "font";
+
+//
+// Player list
+//
+
+teamPanePlayerColumns    = [118, 167, 167, 167, 167, 167]; //Pilot, Kills/Death, Turrets, Ship, Wing, Credits
+teamPanePlayerListHeader = ButtonBarPane(ImportImage("teampaneheaderbmp", false), ButtonNormal, teamPanePlayerColumns, false);
+teamPanePlayerScrollBar  = ScrollBarPane(Point(12, 220));
+teamPanePlayerListPane   = ListWithScrollBarPane(Point(160, 225), teamPanePlayerScrollBar);
+
+//
+// buttons
+//
+
+//teamPaneBootButtonPane   = ButtonPane(ImportImage("btnbootbmp",      true), ButtonNormal, false);
+//teamPaneAutoDonateButtonPane = ButtonPane(ImportImage("btndonatebmp",true), ButtonNormal, false);
+//teamPaneDonateButtonPane = ButtonPane(ImportImage("btninvestnewbmp", true), ButtonNormal, false);
+//teamPaneBoardButtonPane  = ButtonPane(ImportImage("btnboardbmp",   true), ButtonNormal, false);
+teamPaneExpandButtonPane = ButtonPane(ImportImage("btnexpandbmp",    true), ButtonNormal, false);
+teamPaneTakeMeToButtonPane = ButtonPane(ImportImageFromFile("btntakemeto.png",true), ButtonNormal, false);
+teamPaneAcceptButtonPane = ButtonPane(ImportImageFromFile("btnaccept.png",true), ButtonNormal, false);
+teamPaneComboButtonPane = ButtonPane(ImportImage("btncdownarrowbmp", true), ButtonNormal, false);
+teamStringImagePane = ImagePane(ImportImage("strteambmp", false), []);
+teamPaneCloseButtonPane      = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+
+teamPaneTeamComboPane    = 
+    StringColorComboPane(
+        Point(109, 12), 
+        Point(125, 12),
+        smallFont, 
+        Color(1, 1, 1)
+    );
+
+teamPaneWingComboPane = ImageComboPane(ImportImage("btnchangewingbmp", true), largeFont);
+
+//    StringComboPane(
+//        Point(39, 12), 
+//        Point(50, 12),
+//        smallFont, 
+//        Color(1, 1, 1)
+//    );
+
+//
+// The background and control positions
+//
+
+teamPane =
+    ImagePane(
+        ImportImage("teampanebmp", false),
+        [	
+			(teamPanePlayerScrollBar,      Point(183,  109)),
+            (teamPaneTeamComboPane,        Point( 50,  10)),
+			(teamPaneComboButtonPane,	   Point(159,  8)),
+            (teamPaneCloseButtonPane,	   Point(188,  8)),
+			(teamPaneExpandButtonPane,     Point(188,  28)),
+
+			(teamStringImagePane,		   Point( 10,  8)),
+
+            (teamPanePlayerListHeader,     Point( 14,  44)),
+            (teamPanePlayerListPane,       Point( 13,  104)),
+            
+
+            //(teamPaneBootButtonPane,       Point(  2, 246)),
+            //(teamPaneAutoDonateButtonPane, Point( 45, 246)),
+            //(teamPaneWingComboPane,        Point( 95, 248)),
+            //(teamPaneBoardButtonPane,      Point(180, 246)),
+            //(teamPaneDonateButtonPane,     Point(225, 246)),
+            (teamPaneTakeMeToButtonPane,   Point(41, 338)),
+            (teamPaneAcceptButtonPane,     Point(41, 338))
+        ]
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Expanded Team Pane
+//
+///////////////////////////////////////////////////////////////////////////////
+
+//
+// Player list
+//player,	d/k,	sector,	Turret+ship,	wing, 	credits, 	objetive
+//[158 OK, 	205OK,	292, 	336, 		404, 	496, 		500]
+
+eTeamPanePlayerColumns    = [129, 158, 202, 294, 333, 405, 457, 490]; //Pilot, Rank, Kills/Deaths, Turrets, Ship, Wing, Credits
+eTeamPanePlayerListHeader = ButtonBarPane(ImportImageFromFile("eteampaneheader.png", false), ButtonNormal, eTeamPanePlayerColumns, false);
+eTeamPanePlayerScrollBar  = ScrollBarPane(Point(12, 175));
+eTeamPanePlayerListPane   = ListWithScrollBarPane(Point(446, 180), eTeamPanePlayerScrollBar);
+// point(140,120)
+eTeamPaneTeamListPane     = ListPane(Point(170, 120));
+// point(140,20)
+eTeamPaneSelTeamListPane     = ListPane(Point(160, 20));
+
+eTeamPaneIconListPane     = ListPane(Point(73, 68));
+
+//
+// buttons
+//
+
+eTeamPaneBootButtonPane   = ButtonPane(ImportImageFromFile("btnboot.png",      true), ButtonNormal, false);
+eTeamPaneDonateButtonPane = ButtonPane(ImportImageFromFile("btninvestnew.png", true), ButtonNormal, false);
+eTeamPaneAutoDonateButtonPane = ButtonPane(ImportImageFromFile("btndonate.png", true), ButtonNormal, false);
+eTeamPaneStopDonateButtonPane = ButtonPane(ImportImageFromFile("btnstopdonate.png", true), ButtonNormal, false);
+//eTeamPaneBoardButtonPane  = ButtonPane(ImportImage("btnboardbmp",     true), ButtonNormal, false);
+eTeamPaneCollapseButtonPane = ButtonPane(ImportImageFromFile("btncollapseteampane.png",true), ButtonNormal, false);
+eTeamPaneTakeMeToButtonPane = ButtonPane(ImportImageFromFile("btntakemeto.png",true), ButtonNormal, false);
+eTeamPaneAcceptButtonPane = ButtonPane(ImportImageFromFile("btnaccept.png",true), ButtonNormal, false);
+eTeamPaneCloseButtonPane      = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+
+eTeamPaneTeamComboPane    = 
+    StringColorComboPane(
+        Point(109, 12), 
+	//125,12
+	Point(125, 12),
+        smallFont, 
+        Color(1, 1, 1)
+    );
+
+eTeamPaneWingComboPane    = 
+	ImageComboPane(ImportImageFromFile("btnchangewing2.png", true), largeFont);
+
+//
+// The background and control positions
+//
+
+expandedTeamPane =
+    ImagePane(
+        ImportImageFromFile("eteampane.png", false),
+        [
+            //(eTeamPaneTeamComboPane,        Point( 20,  34)),
+			//This control the position of the top team select list's point(x,y) 5,109
+			(eTeamPaneSelTeamListPane,		Point( 5, 112)),
+			//This control the position of the team list's point(x,y) 5,158
+			(eTeamPaneTeamListPane,			Point( 5, 160)),
+	    // 610,87
+            (eTeamPaneCloseButtonPane,		Point(677,  87)),
+			(eTeamPaneCollapseButtonPane,   Point(677,  107)),
+	    //This control the header point(x,y) 170,89
+            (eTeamPanePlayerListHeader,     Point(175,  90)),
+	    //This control the player list point(x,y) 170,152
+            (eTeamPanePlayerListPane,       Point(180,  153)),
+	    // 610,152 OK
+            (eTeamPanePlayerScrollBar,      Point(677,  150)),
+
+			(eTeamPaneAutoDonateButtonPane, Point( 18, 343)),
+			(eTeamPaneStopDonateButtonPane, Point( 18, 313)),
+			(eTeamPaneDonateButtonPane,     Point(130, 343)),
+            //(eTeamPaneBoardButtonPane,      Point(611, 169)),
+			(eTeamPaneTakeMeToButtonPane,   Point(242, 343)),
+			(eTeamPaneAcceptButtonPane,     Point(242, 343)),
+            (eTeamPaneBootButtonPane,       Point(354, 343)),
+            (eTeamPaneWingComboPane,        Point(466, 343)),
+			
+			(eTeamPaneIconListPane,			Point(100, 12))
+            
+            
+            
+        ]
+    ); 
+
+//
+// Put the pane on the screen
+//
+
+TeamPanePane =
+    SwitchPane(
+        TeamPaneCollapsed,
+        [
+            (teamPane,   1)
+        ],
+        expandedTeamPane
+    );

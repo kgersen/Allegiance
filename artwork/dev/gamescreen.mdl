@@ -1,0 +1,323 @@
+use "gamepanes";
+use "font";
+use "skilllevels";
+use "gamescreendata";
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Game Screen
+//
+/////////////////////////////////////////////////////////////////////////////
+
+//
+// Game list
+//
+
+//gameHeaderColumns = [63, 184, 230, 297, 351, 385, 423, 470, 599];
+//                   name,dur, skill,team,min,max, slots,type,---
+gameHeaderColumns =   [63, 184, 230, 297, 349,      423, 470, 599];
+//                   name,dur, skill,team,core, slots,type,---
+
+gameListHeader = ButtonBarPane(ImportImageFromFile("headergames.png", true), Button3State, gameHeaderColumns, false);
+gameScrollBar  = ScrollBarPane(Point(14, 380));
+//gameColumns    = [116, 237, 283, 348, 401, 435, 470, 521, 654]; // widened to fit zone icon and squad icon
+gameColumns    =   [116, 237, 283, 348, 399,      470, 521, 654]; // widened to fit zone icon and squad icon
+gameListPane   = ListWithScrollBarPane(Point(618, 388), gameScrollBar);
+
+// Normal buttons
+//
+
+backButtonPane       = SoundButtonPane(ImportImage("btnbackbmp",	true),  ButtonNormal, false, negativeButtonClickSoundId);
+newGameButtonPane    = ButtonPane(ImportImage("btnnewmissionbmp",	false), ButtonNormal, false);
+filterButtonPane     = ButtonPane(ImportImage("btnfilterbmp",		false), ButtonNormal, false);
+findPlayerButtonPane = ButtonPane(ImportImage("btnfindbmp",			false), ButtonNormal, false);
+//detailsButtonPane  = ButtonPane(ImportImage("btndetailsbmp",		false), ButtonNormal, false);
+joinButtonPane       = ButtonPane(ImportImage("btnjoinbmp",			false), ButtonNormal, false);
+
+//
+//  Title Text
+//
+
+whiteText               = Color(1, 1, 1);
+yellowText              = Color(0.878, 0.573, 0);
+titlePane           = StringPane("GAMES LIST", yellowText,  Point(300, 30), JustifyLeft, titleFont);
+captionPane         = StringPane("SELECT A FREE GAME IN THE LIST AND THEN CLICK JOIN GAME", whiteText, Point(800, 30), JustifyLeft, promptFont);
+
+playerCountString = StringImage(JustifyLeft, 200, promptFont, white, ConcatinatedString(NumberString(playerCount), " \nTOTAL PLAYERS"));
+playerCountPane  = AnimatedImagePaneRect(playerCountString, Rect(0, -25, 200, 0));
+
+
+
+//
+//  Mouseover Text
+//
+
+hoverSite = HoverSite(0);
+
+hoverString =
+    SwitchString(
+        HoverSiteGetID(hoverSite),
+        "",
+        [
+            ( 1, "Indicates whether you can play the game and whether it has started."),
+            ( 2, "Shows the name of the created game."),
+            ( 3, "Shows how long the game has been running.."),
+            ( 4, "Shows the skill level setting of the game."),
+//          ( 5, "Shows the number of teams in the game."),
+	    ( 5, "Shows the server hosting the game."),
+            ( 6, "Shows the core used for this game"),
+//          ( 6, "Shows the minimum number of players allowed per team."),
+//          ( 7, "Shows the maximum number of players allowed per team."),
+            ( 7, "Shows the number of occupied player slots and the total slots in the game."),
+            ( 8, "Indicates what the game parameters are, as set by the game owner."),
+            ( 9, "RESERVED"),
+            (10, "Return to the previous screen."),
+            (11, "Create a new game on a public server."),
+            (12, "Designate the game types that appear in the Games List."),
+            (13, "Locate an online Allegiance Zone Member."),
+            (14, "Display all details on the currently selected game."),
+            (15, "Join the currently selected game."),
+            (16, "Filter games by type of Countdown."),
+            (17, "Filter games by type of Conquest.")
+        ]
+    );
+
+hoverImage = StringImage(JustifyLeft, 200, medVerdana, white, hoverString);
+hoverPane  = AnimatedImagePaneRect(hoverImage, Rect(0, -25, 200, 0));
+
+
+//
+// The background and control positions
+//
+
+screen =
+    ScreenPane(
+        ImportImageFromFile("gamescreen.png", false),
+        [
+            (titlePane,             Point(30,  7)),
+            (captionPane,           Point(100, 37)),
+            (HoverPaneColumns(hoverSite, 1, gameListHeader, gameHeaderColumns), Point(55,  60)),
+            (HoverPaneColumns(hoverSite, 1, gameListPane, gameColumns),   Point( 2,  90)),
+            (gameScrollBar,         Point(665,  95)),
+
+            (HoverPane(hoverSite,   10, backButtonPane),        Point( 20, 560)),
+            (HoverPane(hoverSite,   11, newGameButtonPane),     Point(685, 365)),
+            (HoverPane(hoverSite,   12, filterButtonPane),      Point(685, 137)),
+            (HoverPane(hoverSite,   13, findPlayerButtonPane),  Point(685, 112)),
+            (HoverPane(hoverSite,   15, joinButtonPane),        Point(685, 264)),
+            (hoverPane, Point(550, 560)),
+            (playerCountPane, Point(690, 195))
+        ]
+    );
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// The filter dialog
+
+white = Color(1, 1, 1);
+
+filterOkButtonPane = ButtonPane(ImportImage("btnokbmp",       true), ButtonNormal, false);
+filterCancelButtonPane = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+
+dialogHoverSite = HoverSite(0);
+
+dialogHoverString =
+    SwitchString(
+        HoverSiteGetID(dialogHoverSite),
+        "",
+        [
+            ( 1, "Filter Games List based on games that will register scores."),
+            ( 2, "Filter Games List based on games that have a Conquest win condition."),
+            ( 3, "Accept changes and return to the Games List."),
+            ( 4, "Cancel changes and return to the Games List."),
+            ( 5, "Locate the game name entered in the text box."),
+            ( 6, "Return to the Games List."),
+            ( 7, "Filter Games List based on games that have a tech tree."),
+            ( 8, "Filter Games List based on games that have life limits."),
+            ( 9, "Filter Games List based on games that are on the Zone."),
+            (10, "Filter Games List based on games that have a Deathmatch win condition."),
+            (11, "Filter Games List based on games that have a Prosperity win condition."),
+            (12, "Filter Games List based on games that have a Countdown win condition."),
+            (13, "Filter Games List based on games that have an Artifacts win condition."),
+            (14, "Filter Games List based on games that have a Flags win condition."),
+            (15, "Filter Games List based on games that have a Territorial win condition.")
+        ]
+    );
+
+dialogHoverImage = StringImage(JustifyLeft, 200, medVerdana, white, dialogHoverString);
+dialogHoverPane  = AnimatedImagePaneRect(dialogHoverImage, Rect(0, -25, 200, 0));
+
+// the text for these should probably be in the button instead of the background
+// when we do the final art, so the text can do things like highlight on mouseover.
+
+gameNameEditPane = EditPane(Point(318, 21), largeFont); 
+
+xsize = 107;
+ysize = 19;
+size = Point(xsize, ysize);
+
+developmentsComboPane   = StringComboPane(size, size, smallFont, white);
+livesComboPane          = StringComboPane(size, size, smallFont, white);    
+scoresCountComboPane    = StringComboPane(size, size, smallFont, white);
+zoneComboPane           = StringComboPane(size, size, smallFont, white);
+
+conquestComboPane       = StringComboPane(size, size, smallFont, white);
+deathmatchComboPane     = StringComboPane(size, size, smallFont, white);
+prosperityComboPane     = StringComboPane(size, size, smallFont, white);
+countdownComboPane      = StringComboPane(size, size, smallFont, white);
+artifactComboPane       = StringComboPane(size, size, smallFont, white);
+flagsComboPane          = StringComboPane(size, size, smallFont, white);
+territorialComboPane    = StringComboPane(size, size, smallFont, white);
+
+col1 = 165;
+col2 = 418;
+
+FilterDialog =
+        (
+            ImagePane(
+                ImportImage("filterbkgndbmp", false),
+                [
+                    (HoverPane(dialogHoverSite,  5, gameNameEditPane),         Point( 92,  58)),
+                    
+                    (HoverPane(dialogHoverSite,  7, developmentsComboPane),    Point(col1, 126)),
+                    (HoverPane(dialogHoverSite,  8, livesComboPane),           Point(col1, 157)),
+                    (HoverPane(dialogHoverSite,  1, scoresCountComboPane),     Point(col1, 188)),
+                    (HoverPane(dialogHoverSite,  9, zoneComboPane),            Point(col1, 219)),
+                    
+                    (HoverPane(dialogHoverSite,  2, conquestComboPane),        Point(col2, 125)),
+                    (HoverPane(dialogHoverSite, 10, deathmatchComboPane),      Point(col2, 148)),
+                    (HoverPane(dialogHoverSite, 11, prosperityComboPane),      Point(col2, 172)),
+                    (HoverPane(dialogHoverSite, 12, countdownComboPane),       Point(col2, 195)),
+                    (HoverPane(dialogHoverSite, 13, artifactComboPane),        Point(col2, 219)),
+                    (HoverPane(dialogHoverSite, 14, flagsComboPane),           Point(col2, 242)),
+                    (HoverPane(dialogHoverSite, 15, territorialComboPane),     Point(col2, 265)),
+                    
+                    (HoverPane(dialogHoverSite,  3, filterOkButtonPane),       Point( 216, 293)),
+                    (HoverPane(dialogHoverSite,  4, filterCancelButtonPane),   Point( 476,   7)),
+                    (dialogHoverPane,                                          Point( 290, 291))
+                ]
+            )
+        );
+
+
+///////////////////////////////////////////////////////////////////////////////
+// The find dialog
+
+
+findOkButtonPane = ButtonPane(ImportImage("btnokbmp", false), ButtonNormal, false);
+findCancelButtonPane = ButtonPane(ImportImage("btnabortbmp", false), ButtonNormal, false);
+findPlayerEditPane = EditPane(Point(450, 23), largeFont);
+
+dialogHoverSite2 = HoverSite(0);
+
+dialogHoverString2 =
+    SwitchString(
+        HoverSiteGetID(dialogHoverSite2),
+        "",
+        [
+          ( 1, "Locate the player name entered in the text box."),
+          ( 2, "Cancel the search and return to the Games List.") 
+          
+        ]
+    );
+
+dialogHoverImage2 = StringImage(JustifyLeft, 250, medVerdana, white, dialogHoverString2);
+dialogHoverPane2  = AnimatedImagePaneRect(dialogHoverImage2, Rect(0, -25, 250, 0));
+
+FindDialog =
+        (
+            ImagePane(
+               ImportImage("findplayerdialogbmp", false),
+                [
+                  (StringPane("Find Player", white, Point(400, 30), JustifyCenter, lgBoldVerdana), Point(50, 20)),
+                  (StringPane("Find the game with the player named....", white, Point(200, 30), JustifyLeft, medBoldVerdana), Point(24, 50)),
+                  (findPlayerEditPane,            Point(35, 114)),
+
+                    (HoverPane(dialogHoverSite2, 1, findOkButtonPane),              Point(350,180)),
+                    (HoverPane(dialogHoverSite2, 2, findCancelButtonPane),          Point(24, 180)),
+                  (dialogHoverPane2, Point(250, 220))
+                ]
+            )
+        );
+
+///////////////////////////////////////////////////////////////////////////////
+// create game dialog
+
+
+// Server List
+serverColumns       = [20,140,220,270,320];
+serverHeaderColumns = ["","NAME","LOCATION","GAMES","PING"];
+serverListHeader    = TextButtonBarPane(serverColumns, serverHeaderColumns, Button3State, false);
+serverScrollBar     = ScrollBarPane(Point(14, 102));
+serverListPane      = ListWithScrollBarPane(Point(320, 110), serverScrollBar);
+
+// Core list
+coreColumns         = [20,110];
+coreHeaderColumns   = ["","NAME"];
+coreListHeader      = TextButtonBarPane(coreColumns, coreHeaderColumns, Button3State, false);
+coreScrollBar       = ScrollBarPane(Point(14, 102));
+coreListPane        = ListWithScrollBarPane(Point(110, 110), coreScrollBar);
+
+// buttons
+createOkButtonPane     = ButtonPane(ImportImage("btnnewmissionbmp", true), ButtonNormal, false);
+createCancelButtonPane = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+
+// edit box
+createEditPane = EditPane(Point(450, 23), largeFont);
+
+// hover
+dialogHoverSite3 = HoverSite(0);
+
+dialogHoverString3 =
+    SwitchString(
+        HoverSiteGetID(dialogHoverSite3),
+        "",
+        [
+          ( 1, "Enter the game name"),
+          ( 2, "Create the game"),
+          ( 3, "Cancel and return to the Games List."),
+          
+          // serverColumns
+          ( 4, "Leading icon indicates an official server"),
+          ( 5, "Server name"),
+          ( 6, "Server location"),
+          ( 7, "Current and max games on this server"),
+          ( 8, "average latency to this server (not yet implemented)"),
+          
+          // coreColumns
+          ( 9, "Leading icon indicates an official core"),
+          (10, "The name of the core")
+
+        ]
+    );
+
+dialogHoverImage3 = StringImage(JustifyLeft, 250, medVerdana, white, dialogHoverString3);
+dialogHoverPane3  = AnimatedImagePaneRect(dialogHoverImage3, Rect(0, -25, 250, 0));
+
+// dialog
+createDialog =
+        (
+            ImagePane(
+                ImportImageFromFile("creategamebkgnd.png", false),
+                [
+                    (HoverPane(dialogHoverSite3,  1, createEditPane),         Point( 92,  58)),
+
+	            (HoverPaneColumns(dialogHoverSite3, 4 , serverListHeader, serverColumns), Point(10,120)),
+	            (HoverPaneColumns(dialogHoverSite3, 4 , serverListPane  , serverColumns), Point(10,135)),
+	            (serverScrollBar , Point(330,140)),
+	
+	            (HoverPaneColumns(dialogHoverSite3, 9 , coreListHeader  , coreColumns),   Point(360,120)),
+	            (HoverPaneColumns(dialogHoverSite3, 9 , coreListPane    , coreColumns),   Point(360,135)),
+	            (coreScrollBar , Point(470,140)),
+                    
+                    (HoverPane(dialogHoverSite3,  2, createOkButtonPane),       Point( 190, 260)), // 216
+                    (HoverPane(dialogHoverSite3,  3, createCancelButtonPane),   Point( 476,   7)),
+                    (dialogHoverPane3,                                          Point( 290, 266))
+                ]
+            )
+        );
+
+
+
+

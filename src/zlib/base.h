@@ -72,6 +72,9 @@ public:
     bool  WriteString(const ZString& str);
     bool  WriteAlignedString(const ZString& str);
     bool  WritePad(int length);
+//KGJV 32B - added Tell and Seek
+    long  Tell();
+    int   Seek(long offset, int origin);
 
     template<class Type>
     bool WriteStructure(const Type& value) 

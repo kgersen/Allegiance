@@ -32,7 +32,7 @@ namespace Training
                     enum    {IMMEDIATE_EXECUTION = true, DELAYED_EXECUTION = false};
 
         public:
-                    /* void */          ConditionalAction (Condition* pcondition, Action* paction, bool bImmediateExecute = IMMEDIATE_EXECUTION);
+                    /* void */          ConditionalAction (Condition* pcondition, Action* paction, bool bImmediateExecute = IMMEDIATE_EXECUTION, bool bRunOnce = false); //AEM 7.9.07 Added parameter to only allow the conditional action to be executed once
             virtual /* void */          ~ConditionalAction (void);
             virtual bool                Start (void);
             virtual void                Stop (void);
@@ -43,6 +43,8 @@ namespace Training
                     Action*             m_pAction;
                     bool                m_bImmediateExecute;
                     bool                m_bExecute;
+					bool				m_bRunOnce;
+					bool				m_bRanOnce;
     };
 
     //------------------------------------------------------------------------------

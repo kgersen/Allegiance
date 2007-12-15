@@ -1,6 +1,10 @@
 #ifndef _enginep_h_
 #define _enginep_h_
 
+// KGJV 32 B - FreeImage lib
+//#define FREEIMAGE_LIB 1
+#include "FreeImage/FreeImage.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Global hacks
@@ -20,18 +24,38 @@ extern bool g_bWindowLog;
 // DirectX Stuff
 //
 
-typedef IDirectDraw4                 IDirectDrawX;
-typedef IDirectDrawSurface4          IDirectDrawSurfaceX;
+
 typedef IDirectDrawClipper           IDirectDrawClipperX;
 typedef IDirectDrawPalette           IDirectDrawPaletteX;
 typedef IDirectDrawGammaControl      IDirectDrawGammaControlX;
+
+#ifdef USEDX7
+
+typedef IDirectDraw7                 IDirectDrawX;
+typedef IDirectDrawSurface7          IDirectDrawSurfaceX;
+
+typedef IDirect3D7                   IDirect3DX;
+typedef IDirect3DDevice7             IDirect3DDeviceX;
+
+typedef IDirectDrawSurface7          IDirect3DTextureX; // with DX7+, tex are surfaces
+typedef LPD3DVIEWPORT7               IDirect3DViewportX;
+typedef IDirect3DMaterial3           IDirect3DMaterialX;
+
+#define IID_IDirectDrawX             IID_IDirectDraw7
+#define IID_IDirectDrawSurfaceX      IID_IDirectDrawSurface7
+#define IID_IDirect3DX               IID_IDirect3D7
+#define IID_IDirect3DTextureX        IID_IDirect3DTexture2
+#define IID_IDirectDrawGammaControlX IID_IDirectDrawGammaControl
+
+#else
+typedef IDirectDraw4                 IDirectDrawX;
+typedef IDirectDrawSurface4          IDirectDrawSurfaceX;
 
 typedef IDirect3D3                   IDirect3DX;
 typedef IDirect3DDevice3             IDirect3DDeviceX;
 
 typedef IDirect3DTexture2            IDirect3DTextureX;
 typedef IDirect3DViewport3           IDirect3DViewportX;
-typedef IDirect3DLight               IDirect3DLightX;
 typedef IDirect3DMaterial3           IDirect3DMaterialX;
 
 #define IID_IDirectDrawX             IID_IDirectDraw4
@@ -39,6 +63,12 @@ typedef IDirect3DMaterial3           IDirect3DMaterialX;
 #define IID_IDirect3DX               IID_IDirect3D3
 #define IID_IDirect3DTextureX        IID_IDirect3DTexture2
 #define IID_IDirectDrawGammaControlX IID_IDirectDrawGammaControl
+
+#endif
+
+typedef IDirect3DLight               IDirect3DLightX;
+
+
 
 typedef DDSURFACEDESC2               DDSURFACEDESCX;
 typedef DDSCAPS2                     DDSCAPSX;
@@ -244,7 +274,11 @@ public:
     
     virtual TRef<IDirect3DDeviceX>   GetD3DDeviceX()                    = 0;
     virtual TRef<IDirect3DX>         GetD3D()                           = 0;
+#ifdef USEDX7
+    virtual IDirect3DViewportX       GetViewport()                      = 0;
+#else
     virtual TRef<IDirect3DViewportX> GetViewport()                      = 0;
+#endif
     
     virtual void DrawTrianglesD3D(const D3DLVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
     virtual void     DrawLinesD3D(const D3DLVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
