@@ -1,0 +1,2 @@
+use "model"; 
+mainbkgndbmp = ImportImageFromFile("dev/mainbkgnd2.png", false); 

@@ -27,8 +27,9 @@ SQLRETURN SqlGetRow(SQLHSTMT hstmt);
 int InitSql(char * szRegKey, ISQLSite * pSQLSite);
 void ShutDownSQL();
 
-#define BEGIN_SQL_DEF(SQLSITE) \
-  const int fooinitsql = InitSql(HKLM_FedSrv, SQLSITE); // defining variable just so we can call function
+// KGJV : added REGKEY so server & club dont share same reg key anymore
+#define BEGIN_SQL_DEF(REGKEY,SQLSITE) \
+  const int fooinitsql = InitSql(REGKEY /*HKLM_FedSrv*/, SQLSITE); // defining variable just so we can call function
 
 #define END_SQL_DEF
 

@@ -99,6 +99,8 @@ public:
     virtual void OnLogonLobbyFailed(bool bRetry, const char * szReason) = 0;
     virtual void OnLogonGameServer() = 0;
     virtual void OnLogonGameServerFailed(bool bRetry, const char * szReason) = 0;
+	//KGJV #114 - callback for core and server lists
+	virtual void OnServersList(int cCores, char *Cores, int cServers, char *Servers) = 0;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -169,6 +171,8 @@ public:
     virtual void OnLogonLobbyFailed(bool bRetry, const char * szReason) {};
     virtual void OnLogonGameServer() {};
     virtual void OnLogonGameServerFailed(bool bRetry, const char * szReason) {};
+	//KGJV #114 - callback for core and server lists
+	virtual void OnServersList(int cCores, char *Cores, int cServers, char *Servers) {} ;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -256,9 +260,26 @@ class PlayerInfo : public IObject
 
     bool                        m_bMute;
 
+	unsigned int				m_ping; // w0dk4 player-pings feature
+	unsigned int				m_loss; // w0dk4 player-pings feature
+
 public:
     PlayerInfo(void);
     ~PlayerInfo();
+
+	// w0dk4 player-pings feature
+	void GetConnectionData(unsigned int * ping,unsigned int * loss)
+	{
+		*ping = m_ping;
+		*loss = m_loss;
+	}
+	void SetConnectionData(unsigned int ping, unsigned int loss)
+	{
+		m_ping = ping;
+		m_loss = loss;
+	}
+	// end w0dk4
+
 
     IshipIGC*   GetShip(void) const
     {
@@ -318,14 +339,19 @@ public:
                                                       return GetPersistScore().GetRank();
                                                     }
 	// mmf added member function for use for things like circumventing rank restrictions
+	//     same function also added to CFSPlayer class for the server (fsship.h)
+	//TheBored 25-JUN-07: Edited function to be case insensitive (@HQ == @hq)
 	bool            PrivilegedUser()            
     {
 	size_t nameLen;
 	nameLen=strlen(m_fmPlayerInfo.CharacterName);
-
-	if ( (nameLen>2) && ( ((strncmp(m_fmPlayerInfo.CharacterName,"?",1))==0) || ((strncmp(m_fmPlayerInfo.CharacterName,"+",1))==0) ) ) return true;
-	if ( (nameLen>4) && ( (strncmp(m_fmPlayerInfo.CharacterName+(nameLen-4),"@Dev",4))==0 ) ) return true;
-	if ( (nameLen>6) && ( (strncmp(m_fmPlayerInfo.CharacterName+(nameLen-6),"@Alleg",6))==0 ) ) return true;
+	if ( (nameLen>2) && ( ((strncmp(m_fmPlayerInfo.CharacterName,"?",1))==0) || ((strncmp(m_fmPlayerInfo.CharacterName,"+",1))==0)
+		                  || ((strncmp(m_fmPlayerInfo.CharacterName,"$",1))==0) ) ) return true;
+	if ( (nameLen>4) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-3),"@Hq"))==0 ) ) return true;
+	if ( (nameLen>4) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-4),"@Dev"))==0 ) ) return true;
+	if ( (nameLen>6) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-6),"@Alleg"))==0 ) ) return true;
+	//TheBored 25-JUN-07: Added @Zone
+	if ( (nameLen>5) && ( (_stricmp(m_fmPlayerInfo.CharacterName+(nameLen-5),"@Zone"))==0 ) ) return true;
 
     return false;
     }
@@ -524,6 +550,9 @@ public:
                                                     * m_pfmMissionDef->misparms.nTeams
                                                 - m_nNumPlayers; };
     const ZString&  GetDetailsFiles()       { return m_strGameDetailsFiles; }
+
+	// KGJV #62
+	void			SetAllowEmptyTeams(bool bValue)	{ m_pfmMissionDef->misparms.bAllowEmptyTeams = bValue;}
     
     // Team Accessors
     LPCSTR          SideName(SideID sideID)         { return (sideID == SIDE_TEAMLOBBY) ? "Not on a team" : m_pfmMissionDef->rgszName[sideID]; }
@@ -579,9 +608,18 @@ class BucketStatusArray : public MoneyVector, public IObjectSingle
 
 class CfgInfo
 {
+private:
+  ZString m_szConfigFile; //KGJV #114 - last config file name
 public:
+  void SetCfgFile(const char * szConfig); //KGJV #114
+  // KGJV - pigs - added ctor to init some values in case Load is never called
+  CfgInfo() :
+	dwLobbyPort(2302),
+	m_szConfigFile("") // KGJV: fix init value for LAN mode
+  {
+  }
   void Load(const char * szConfig);
-
+  DWORD GetCfgProfileString(const char *c_szCfgApp,const char *c_szKeyName,const char *c_szDefaultValue,char *szStr,DWORD dwSize); // KGJV #114
   ZString strClubLobby;
   ZString strPublicLobby;
   ZString strClub;
@@ -775,6 +813,8 @@ public:
     virtual void Terminate();
     virtual void FlushGameState();
     virtual void CreateMissionReq();
+	virtual void ServerListReq(); // KGJV #114
+	virtual void CreateMissionReq(const char *szServer, const char *szAddr, const char *szIGCStaticFile, const char *szGameName); // KGJV #114
     virtual void JoinMission(MissionInfo * pMission, const char* szMissionPassword);
 
     // AutoDownload functions

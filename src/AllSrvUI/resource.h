@@ -1,5 +1,5 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
+// Microsoft Visual C++ generated include file.
 // Used by AllSrvUI.rc
 //
 #define IDS_TITLE                       1
@@ -66,6 +66,8 @@
 #define IDC_GAME_NAME_CAPTION           1010
 #define IDC_GAME_PASSWORD_CAPTION       1011
 #define IDC_LOBBY_SERVER                1012
+#define IDC_GAME_CORE                   1012
+#define IDC_GAME_CORE_CAPTION           1013
 #define IDC_CHAT_PREFERENCES            1015
 #define IDC_CHAT_LIST                   1016
 #define IDC_SEND_CHAT_TEXT              1017
@@ -130,6 +132,8 @@
 #define IDC_COPYRIGHT                   1057
 #define IDC_PRODUCT_ID                  1058
 #define IDC_LEGAL_WARNING               1059
+#define IDC_CHECK1                      1060
+#define IDC_AET                         1060
 
 // Next default values for new objects
 // 
@@ -137,7 +141,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        136
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1060
+#define _APS_NEXT_CONTROL_VALUE         1061
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

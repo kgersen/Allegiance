@@ -314,16 +314,20 @@ public:
   }
 
   // mmf added member function for use for things like circumventing rank restrictions
-  //     same function also added to PlayerInfo class for the client
+  //     same function also added to PlayerInfo class for the client (clintlib.h)
+  //TheBored 25-JUN-07: Edited function to be case insensitive (@HQ == @hq)
   bool            PrivilegedUser()            
   {
 	size_t nameLen;
 	nameLen=strlen(GetName());
 
-	if ( (nameLen>2) && ( ((strncmp(GetName(),"?",1))==0) || ((strncmp(GetName(),"+",1))==0) ) ) return true;
-	if ( (nameLen>4) && ( (strncmp(GetName()+(nameLen-4),"@Dev",4))==0 ) ) return true;
-	if ( (nameLen>6) && ( (strncmp(GetName()+(nameLen-6),"@Alleg",6))==0 ) ) return true;
-
+	if ( (nameLen>2) && ( ((strncmp(GetName(),"?",1))==0) || ((strncmp(GetName(),"+",1))==0)
+		 || ((strncmp(GetName(),"$",1))==0) ) ) return true;
+	if ( (nameLen>3) && ( (_stricmp(GetName()+(nameLen-3),"@HQ"))==0 ) ) return true;
+	if ( (nameLen>4) && ( (_stricmp(GetName()+(nameLen-4),"@Dev"))==0 ) ) return true;
+	if ( (nameLen>6) && ( (_stricmp(GetName()+(nameLen-6),"@Alleg"))==0 ) ) return true;
+    //TheBored 25-JUN-07: Added @Zone
+	if ( (nameLen>5) && ( (_stricmp(GetName()+(nameLen-5),"@Zone"))==0 ) ) return true;
     return false;
   }
 
@@ -490,6 +494,10 @@ public:
       return m_ptDesiredLoadout;
   }
 
+// w0dk4  allow more time when joining
+bool			GetJustJoined() {return b_JustJoined; };
+void			SetJustJoined(bool b_joined) {b_JustJoined = b_joined; };
+
 private:
   IpartTypeIGC*     m_ptDesiredLoadout[c_maxCargo + 3];
 
@@ -529,6 +537,9 @@ private:
   Vector                m_positionLifepod;
 
   ZString               m_strCDKey;
+
+  // w0dk4 allow more time when joining
+  bool					b_JustJoined;
 
   friend   void FedSrvSiteBase::ChangeCluster(IshipIGC* pship,
                                           IclusterIGC* pclusterOld,

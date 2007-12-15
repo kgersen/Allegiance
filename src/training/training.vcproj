@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="training"
 	ProjectGUID="{281F3AC6-FAD1-40F4-B798-F634A6162D39}"
+	RootNamespace="training"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -403,6 +404,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\DoDamageAdjustableAction.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\DoDamageAdjustableAction.h"
+			>
+		</File>
+		<File
 			RelativePath=".\elapsedtimecondition.h"
 			>
 		</File>
@@ -504,6 +513,14 @@
 		</File>
 		<File
 			RelativePath=".\GetShipHasCargoCondition.h"
+			>
+		</File>
+		<File
+			RelativePath=".\GetShipHasMountedCondition.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\GetShipHasMountedCondition.h"
 			>
 		</File>
 		<File
@@ -616,6 +633,14 @@
 		</File>
 		<File
 			RelativePath=".\mission6.h"
+			>
+		</File>
+		<File
+			RelativePath=".\mission8.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\mission8.h"
 			>
 		</File>
 		<File
@@ -775,6 +800,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\SetCargoNanAction.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\SetCargoNanAction.h"
+			>
+		</File>
+		<File
 			RelativePath=".\setcommandaction.cpp"
 			>
 		</File>
@@ -807,6 +840,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\SetDroneNanAction.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\SetDroneNanAction.h"
+			>
+		</File>
+		<File
 			RelativePath=".\SetHUDOverlayAction.cpp"
 			>
 		</File>
@@ -828,6 +869,14 @@
 		</File>
 		<File
 			RelativePath=".\SetSignatureAction.h"
+			>
+		</File>
+		<File
+			RelativePath=".\SetStationDestroyedAction.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\SetStationDestroyedAction.h"
 			>
 		</File>
 		<File

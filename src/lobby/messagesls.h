@@ -13,7 +13,8 @@
 
 #include "MessageCore.h"
 
-#define LOBBYVER_LS 6 // If you change this file, increment this
+// KGJV updated for R4
+#define LOBBYVER_LS 7 // If you change this file, increment this
 
 
 /*
@@ -32,7 +33,11 @@
 
 // when AllSrv announces to lobby that it's there. This does not necessarily 
 // mean that the server will have games created on it, since the Lobby has a list of creatable servers.
-DEFINE_FEDMSG(S, LOGON_LOBBY, 201) 
+DEFINE_FEDMSG(S, LOGON_LOBBY, 201)
+  FM_VAR_ITEM(vStaticCoreInfo); // KGJV #114 core list
+  FM_VAR_ITEM(szLocation);      // KGJV #114 location string
+  int cStaticCoreInfo;          // KGJV #114 size of core list
+  int MaxGames;					// KGJV #114 max games allowed on server
   short verLobby;
   DWORD dwPort;
 END_FEDMSG
@@ -41,7 +46,8 @@ DEFINE_FEDMSG(S, LOGOFF_LOBBY, 202)
 END_FEDMSG
 
 DEFINE_FEDMSG(L, CREATE_MISSION_REQ, 203)
-    FM_VAR_ITEM(NameCreator);
+    FM_VAR_ITEM(GameName);   // KGJV #114 - actually it's game name now
+	FM_VAR_ITEM(IGCStaticFile); // KGJV #114
     DWORD dwCookie; // server will return this when mission is created so we know which is which
                     // this is only guaranteed to be unique among currently running missions
                     // Really a CFLServer*

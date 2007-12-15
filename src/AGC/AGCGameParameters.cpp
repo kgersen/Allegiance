@@ -2731,6 +2731,28 @@ STDMETHODIMP CAGCGameParameters::put_AllowRestart(VARIANT_BOOL newVal)
   return S_OK;
 }
 
+/*-------------------------------------------------------------------------
+ * get_Experimental() // mmf 10/07 Experimental game type
+ *-------------------------------------------------------------------------
+ */
+STDMETHODIMP CAGCGameParameters::get_Experimental(VARIANT_BOOL *pVal)
+{
+  XLock lock(this);
+  CLEAROUT(pVal, VARBOOL(m_mp.bExperimental));
+  return S_OK;
+}
+
+
+/*-------------------------------------------------------------------------
+ * put_Experimental() // mmf 10/07 Experimental game type
+ *-------------------------------------------------------------------------
+ */
+STDMETHODIMP CAGCGameParameters::put_Experimental(VARIANT_BOOL newVal)
+{
+  XLock lock(this);
+  m_mp.bExperimental = !!newVal;
+  return S_OK;
+}
 
 /*-------------------------------------------------------------------------
  * get_AllowShipyardPath()

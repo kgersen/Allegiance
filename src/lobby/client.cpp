@@ -535,31 +535,115 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       // TODO: mark 'em so we know they weren't dropped
     }
     break;
-    
+
+	// KGJV #114
+	case FM_C_GET_SERVERS_REQ:
+	{
+		// construct the servers list
+		ListConnections::Iterator iterCnxn(*g_pLobbyApp->GetFMServers().GetConnections());
+		int  cServers = 20; // fixed max servers (for now)
+		ServerCoreInfo* pSCI = new ServerCoreInfo[cServers];
+		int i=0;
+		while (!iterCnxn.End())
+		{
+			CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn.Value());
+			if (pServerT)
+			{
+				if (!pServerT->GetPaused() && (pServerT->GetStaticCoreMask() != 0))// server isnt paused and has at least one core
+				{
+					strcpy_s(pSCI[i].szName,sizeof(pSCI[i].szName),iterCnxn.Value()->GetName());
+					g_pLobbyApp->GetFMServers().GetIPAddress(*iterCnxn.Value(), pSCI[i].szRemoteAddress);
+					strcpy_s(pSCI[i].szLocation,sizeof(pSCI[i].szLocation),pServerT->GetLocation());
+					pSCI[i].iCurGames = pServerT->GetCurrentGamesCount();
+					pSCI[i].iMaxGames = pServerT->GetMaxGamesAllowed();
+					pSCI[i].dwCoreMask = pServerT->GetStaticCoreMask();
+					i++;
+				}
+			}
+			iterCnxn.Next();
+			if (i>cServers) break; // dont go above max allowed servers
+		}
+		cServers = i;
+
+		// construct the message
+		BEGIN_PFM_CREATE(*pthis, pfmServerList, L, SERVERS_LIST)
+			// fill in the master core list
+			FM_VAR_PARM(g_pLobbyApp->GetcStaticCoreInfo() ? g_pLobbyApp->GetvStaticCoreInfo() : NULL, g_pLobbyApp->GetcStaticCoreInfo() * sizeof(StaticCoreInfo))
+			// fill in the server list
+			FM_VAR_PARM(cServers ? pSCI : NULL,cServers*sizeof(ServerCoreInfo))
+        END_PFM_CREATE
+		pfmServerList->cCores = g_pLobbyApp->GetcStaticCoreInfo();
+		pfmServerList->cServers = cServers;
+
+		// send the servers list
+		pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
+		delete [] pSCI;
+		pSCI = NULL;
+	}
+    break;
+
     case FM_C_CREATE_MISSION_REQ:
     {
-      // Choose a server to host the game on
+	  // KGJV #114
+	  CASTPFM(pfmCreateMissionReq, C, CREATE_MISSION_REQ, pfm);
+	  const char* szServer        = FM_VAR_REF(pfmCreateMissionReq, Server);
+	  const char* szAddr          = FM_VAR_REF(pfmCreateMissionReq, Address);
+	  const char* szIGCStaticFile = FM_VAR_REF(pfmCreateMissionReq, IGCStaticFile);
+	  const char* szGameName      = FM_VAR_REF(pfmCreateMissionReq, GameName);
+
+      // Find the server to host the game on
       CFLServer * pServerMin = NULL;
-      //int cPlayersMin = 10000; // some big number we'll never hit      
-      int cPlayersMin = c_cMaxPlayers; 
-      debugf("Received mission creation request from %s\n", cnxnFrom.GetName());
-      ListConnections::Iterator iterCnxn(*g_pLobbyApp->GetFMServers().GetConnections());
+	  debugf("Received mission creation request from %s - create %s with %s on %s\n",
+		  cnxnFrom.GetName(),
+		  szGameName,
+		  szIGCStaticFile,
+		  szServer);
+	  // loop thru servers
+	  ListConnections::Iterator iterCnxn(*g_pLobbyApp->GetFMServers().GetConnections());
       while (!iterCnxn.End())
       {
         CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn.Value());
-        if (!pServerT->GetPaused() && pServerT->GetPlayerCount() < cPlayersMin)
-        {
-          cPlayersMin = pServerT->GetPlayerCount();
-          pServerMin = pServerT;
-        }
-        iterCnxn.Next();
-      }
+		if (pServerT) // valid
+		{
+			if (!pServerT->GetPaused()) // not paused
+			{
+				char szRemoteAddress[16];
+				g_pLobbyApp->GetFMServers().GetIPAddress(*iterCnxn.Value(), szRemoteAddress);
+				if (strcmp(szRemoteAddress,szAddr)==0) // IPs match
+				{
+					if (strcmp(iterCnxn.Value()->GetName(),szServer)==0) // names match
+					{
+						pServerMin = pServerT; // found it
+						break;
+					}
+				}
+			}
+		}
+		iterCnxn.Next();
+	  }
+
+	  // old AZ balancing code
+      ////int cPlayersMin = 10000; // some big number we'll never hit      
+      //int cPlayersMin = c_cMaxPlayers; 
+      //debugf("Received mission creation request from %s\n", cnxnFrom.GetName());
+      //ListConnections::Iterator iterCnxn(*g_pLobbyApp->GetFMServers().GetConnections());
+      //while (!iterCnxn.End())
+      //{
+      //  CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn.Value());
+      //  if (!pServerT->GetPaused() && pServerT->GetPlayerCount() < cPlayersMin)
+      //  {
+      //    cPlayersMin = pServerT->GetPlayerCount();
+      //    pServerMin = pServerT;
+      //  }
+      //  iterCnxn.Next();
+      //}
 
       if (pServerMin)
       {
         CFLMission * pMission = pServerMin->CreateMission(pClient);
         BEGIN_PFM_CREATE(g_pLobbyApp->GetFMServers(), pfmNewMissionReq, L, CREATE_MISSION_REQ)
-          FM_VAR_PARM(cnxnFrom.GetName(), CB_ZTS)
+          FM_VAR_PARM(szGameName,	   CB_ZTS) // game name
+          FM_VAR_PARM(szIGCStaticFile, CB_ZTS) // core name
         END_PFM_CREATE
         pfmNewMissionReq->dwCookie = pMission->GetCookie();
 
@@ -574,7 +658,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       }
       else
       {
-        debugf("No servers exist to create the game on\n");
+        debugf("Server not found to create the game on\n");
         BEGIN_PFM_CREATE(*pthis, pfmCreateMissionNack, L, CREATE_MISSION_NACK)
         END_PFM_CREATE
       }

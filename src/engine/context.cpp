@@ -308,7 +308,9 @@ public:
             TRef<Engine> pengine = psurface->GetEngine();
 
             TRef<Rasterizer> prasterizer;
-            bool bAlwaysUseD3D = false;
+            // KGJV 32B : true if 32 bpp only (keep 16bpp unchanged)
+            // reverted - Loadout 3D image needs a fix 1st to handle artwork not in 16bpp
+            bool bAlwaysUseD3D = (pengine->GetPrimaryPixelFormat()->PixelBits() == 32); 
 
             if (
                     bAlwaysUseD3D 
@@ -604,7 +606,7 @@ public:
         float xOffset = point.X() - (bCentered ? rectSource.XSize() / 2 : 0);
         float yOffset = point.Y() - (bCentered ? rectSource.YSize() / 2 : 0);
 
-        float xmin = xOffset                   ;
+        float xmin = xOffset;
         float xmax = xOffset + rectSource.XSize();
         float ymin = yOffset;
         float ymax = yOffset + rectSource.YSize();
@@ -632,7 +634,13 @@ public:
         static MeshIndex indices[6] = { 0, 2, 1, 0, 3, 2 };
 
         UpdateState();
-        m_pdevice3D->SetTexture(psurface);
+        // KGJV 32B
+#ifdef DEBUGOFF //DEBUG
+        if (psurface->GetPixelFormat()->PixelBits() != m_psurface->GetPixelFormat()->PixelBits())
+            debugf ("DrawImage3D ppf mismatch for %s - will convert\n",(const char *)psurface->GetName());
+#endif
+        m_pdevice3D->SetTexture(psurface->GetConvertedSurface(m_psurface->GetPixelFormat()));
+		m_pdevice3D->SetLinearFilter(false); //KGJV 32B fix  turn off linear filter
 
         switch (GetShadeMode()) {
             case ShadeModeCopy:
@@ -674,6 +682,7 @@ public:
         }
 
         m_pdevice3D->SetTexture(m_pstateDevice->m_psurfaceTexture);
+		m_pdevice3D->SetLinearFilter(m_pstateDevice->m_bLinearFilter); //KGJV 32B fix: reset linear filter
     }
 
     void DrawImage3D(
@@ -773,8 +782,11 @@ public:
         UpdateState();
 
         m_pdevice3D->SetShadeMode(ShadeModeFlat);
+		m_pdevice3D->SetColorKey(false); // KGJV 32B
         m_pdevice3D->DrawTriangles(vertices, 4, indices, 6);
         m_pdevice3D->SetShadeMode(m_pstateDevice->m_shadeMode);
+		m_pdevice3D->SetColorKey(m_pstateDevice->m_bColorKey); // KGJV 32B
+
     }
 
     void FillInfinite(const Color& color)

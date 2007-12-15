@@ -176,6 +176,14 @@ class       CsideIGC : public IsideIGC
                 AdjustBuckets();
             }
         }
+		// KGJV #118 - same as ApplyDevelopmentTechs but without doing anything (just the rc)
+		virtual bool					IsNewDevelopmentTechs(const TechTreeBitMask& ttbm)
+		{
+			if (!(ttbm <= m_data.ttbmDevelopmentTechs))
+				return true;
+			else
+				return false;
+		}
         virtual bool                    ApplyDevelopmentTechs(const TechTreeBitMask& ttbm)
         {
             bool    rc;

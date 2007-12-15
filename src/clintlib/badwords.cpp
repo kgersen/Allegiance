@@ -183,8 +183,8 @@ int sortfunc (const void* a, const void* b)
 //------------------------------------------------------------------------------
 // abbreviations for important constants
 //------------------------------------------------------------------------------
-#define ENDWORD         0x0d
-#define ENDWORDLIST     0x20
+#define ENDWORD         0x7c
+#define ENDWORDLIST     0x03  // mmf this was a space (0x20), changed it to end of text (0x03)
 
 //------------------------------------------------------------------------------
 // function to build the automata that will be used to do the filtering
@@ -196,7 +196,7 @@ void    BuildFilterAutomata (char* pBuffer)
         pBuffer++;
 
     // now skip to the beginning of the first dirty word
-    pBuffer += 2;
+    pBuffer++;
 
     // now, for each word in the list, install it into the table
     while (*pBuffer != ENDWORDLIST)
@@ -211,7 +211,7 @@ void    BuildFilterAutomata (char* pBuffer)
         // set the null on the end of the word and advance to the beginning
         // of the next dirty word (skip the newline after the carriage return)
         *pBuffer++ = 0;
-        pBuffer++;
+        //pBuffer++;
 
         // add the word to the automata
         //AddWordToFilterAutomata (pDirtyWord);
@@ -232,82 +232,26 @@ char* gszConvertToLowerCase = "\0........\t\n..\r.................. !\"#$%&'()*+
 //------------------------------------------------------------------------------
 // resource id and other defines
 //------------------------------------------------------------------------------
-#define IDR_BADWORDS    1123
-#define BADWORDS_DLL_NAME   "allbad"
-#define DLL_SUFFIX   ".dll"
+//#define IDR_BADWORDS    1123
+//#define BADWORDS_DLL_NAME   "allbad"
+//#define DLL_SUFFIX   ".dll"
 
 //------------------------------------------------------------------------------
 // function to load the bad words
 //------------------------------------------------------------------------------
 void    LoadBadWords (void)
 {
-    // load the bad words resource dll from the artwork directory
-    char        szFilename[MAX_PATH + 1];
-    HRESULT     hr = UTL::getFile (BADWORDS_DLL_NAME, DLL_SUFFIX, szFilename, false, false);
-    HMODULE     hModule = 0;
-    if (hr == S_OK)
-    {
-        debugf ("Attempting to load %s\n", szFilename);
-	    hModule = LoadLibrary (szFilename);
+   	// yp your_persona march 24 2006 : Remove dependency on allbad.dll which is a lib we dont have the source code for. 
+	char *pBuffer;
+	pBuffer = (char*)malloc(sizeof(char)*774);
+	// orig list 
+	// memcpy(pBuffer, "zone55|fuckyou|fuck_you|fuck_u|fucku|fucka|fuckit|fuckthis|fuckme|fucker|fuckr|fucking|fuckin|fuckn|motherfucker|motherfuck|mutherfucker|fucked|f_u_c|f_ck|f_k|fahq|fck|fkyou|fu_k|fuc|fuck|fuhk|fuk|fuq|schit|sh1t|shit|shlt|shyt|niger|nigr|niggr|nigger|faggot|phaq|phuc|phuk|phuq|phvc|phvk|phvq|f__c|f__k|f__u|fuh_q|   ", 318);
+    // new list provided by BlackViper with a few modifications by mmf
+    memcpy(pBuffer, "zone55|anus|a n u s|asshole|a s s h o l e|bastard|bitch|b i t c h|blowjob|b l o w j o b|clit|c l i t|cock|c0ck|cocksucker|c u m|cunt|c u n t|dick|dildo|d i l d o|faggot|f a g g o t|fatass|f uck|fugly|fux0r|fuckyou|fuck_you|fuck_u|fucku|fucka|fuckit|fuckthis|fuckme|fucker|fuckr|fucking|fuckin|fuckn|motherfucker|motherfuck|mutherfucker|fucked|f_u_c|f_ck|f_k|fahq|fck|fkyou|fu_k|fuc|fuck|f u c k|fuhk|fuk|fuq|f__c|f__k|f__u|fuh_q|gay|genital|hitler|jackoff|jism|l3itch|lesbian|masterbat|mofo|nazi|n a z i|niger|nigr|nigga|niggr|nigger|n i g g e r|nutsack|orgy|pecker|penis|p e n i s|phaq|phuc|phuk|phuck|phuq|phvc|phvk|phvq|phallus|pimp|prick|p r i c k|puss|pussy|p u s s y|s.o.b|scrotum|schit|sh1t|shit|s h i t|shlt|shyt|slut|testical|tits|t i t s|vagina|wank|whore|whoar|\x03", 774);
+    if (pBuffer)
+    {        
+        BuildFilterAutomata (pBuffer);
     }
-
-    // load from anywhere 
-    if (!hModule)
-    {
-        debugf ("Attempting to load " BADWORDS_DLL_NAME DLL_SUFFIX "\n");
-	    hModule = LoadLibrary (BADWORDS_DLL_NAME DLL_SUFFIX);
-    }
-
-    // if the load worked, proceed normally
-	if (hModule)
-    {
-        debugf ("Load of " BADWORDS_DLL_NAME " succeeded, bad word filtering will be enabled\n");
-
-        // find the binary resource containing the scrambled data
-	    HRSRC   hResource = FindResource (hModule, MAKEINTRESOURCE(IDR_BADWORDS), "BINARY");
-        if (hResource)
-        {
-            // get the size of that resource so we can allocate a buffer for it
-            int     iSize = SizeofResource (hModule, hResource);
-            if (iSize > 0)
-            {
-                // load the resource into memory
-                HGLOBAL hResourceData = LoadResource (hModule, hResource);
-                if (hResourceData)
-                {
-                    // lock the resource memory so we can copy it
-                    void*   pResourceData = LockResource (hResourceData);
-                    if (pResourceData)
-                    {
-                        // allocate the buffer for our own copy of the data
-                        char*   pBuffer = new char[iSize];
-                        if (pBuffer)
-                        {
-                            // copy the data
-                            CopyMemory (pBuffer, pResourceData, iSize);
-
-                            // it's encrypted in a really dumb way, so decode it, and convert it all to lower case
-                            for (int i = 0; i < iSize; i++)
-                            {
-                                char   iCharacter = pBuffer[i] ^ 0xcd;
-                                pBuffer[i] = gszConvertToLowerCase[iCharacter];
-                            }
-
-                            // build the filter automata
-                            BuildFilterAutomata (pBuffer);
-
-                            // release the buffer
-                            // actually, don't because the pointers are stored directly in the table now. Yes, this is a memory leak on a global scale.
-                            //delete[] pBuffer;
-                        }
-                    }
-                }
-            }
-        }
-        FreeLibrary (hModule);
-    }
-    else
-        debugf ("FAILED TO LOAD " BADWORDS_DLL_NAME ", bad word filtering will be disabled\n");
 }
 
 //------------------------------------------------------------------------------

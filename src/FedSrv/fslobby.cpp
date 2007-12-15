@@ -19,21 +19,24 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
   switch(pfm->fmid)
   {
-    #if !defined(ALLSRV_STANDALONE)
+	  // KGJV #114 - reactivate create mission
+    //#if !defined(ALLSRV_STANDALONE)
       case FM_L_CREATE_MISSION_REQ:
       {
         CASTPFM(pfmCreateMissionReq, L, CREATE_MISSION_REQ, pfm);
         MissionParams mp;
         mp.Reset();
-        lstrcpy(mp.strGameName, ZString(FM_VAR_REF(pfmCreateMissionReq, NameCreator)) + "'s game");
-        mp.bScoresCount = true;
+		lstrcpy(mp.strGameName,    ZString(FM_VAR_REF(pfmCreateMissionReq, GameName)));// + "'s game");
+		lstrcpy(mp.szIGCStaticFile,ZString(FM_VAR_REF(pfmCreateMissionReq, IGCStaticFile)));
+        mp.bScoresCount = false;// dont set to true till clients can change this!
+		mp.iMaxImbalance = 0x7ffe;// added
         assert(!mp.Invalid());
         FedSrvSite * psiteFedSrv = new FedSrvSite();
         CFSMission * pfsMissionNew = new CFSMission(mp, "", psiteFedSrv, psiteFedSrv, NULL, NULL);
         pfsMissionNew->SetCookie(pfmCreateMissionReq->dwCookie);
       }
       break;
-    #endif
+    //#endif
 
     case FM_L_NEW_MISSION_ACK:
     {
@@ -122,6 +125,9 @@ int FedSrvLobbySite::OnMessageBox(FedMessaging * pthis, const char * strText, co
 HRESULT FedSrvLobbySite::OnSessionLost(FedMessaging * pthis)
 {
   _AGCModule.TriggerEvent(NULL, AllsrvEventID_LostLobby, "", -1, -1, -1, 0);
+  // KGJV: close the connexion
+  if (pthis)
+	pthis->Shutdown();
   return S_OK;
 }
 

@@ -17,7 +17,8 @@ private:
     void ParseCommandLine(
         const ZString& strCommandLine,
         bool& bSoftwareOnly,
-        bool& bPrimaryOnly
+        bool& bPrimaryOnly,
+        DWORD& dwBPP
     );
 
 public:

@@ -27,6 +27,8 @@ DEFINE_FEDMSG(LS, LOBBYMISSIONINFO, 301)
   FM_VAR_ITEM(rgSquadIDs);
   FM_VAR_ITEM(szGameDetailsFiles);
   FM_VAR_ITEM(szIGCStaticFile); // KGJV added
+  FM_VAR_ITEM(szServerName); // KGJV #114 added
+  FM_VAR_ITEM(szServerAddr); // KGJV #114 added
   DWORD         dwCookie; // how the mission is identified on the lobby
   unsigned      dwStartTime;
   short         nMinRank;
@@ -97,6 +99,12 @@ DEFINE_FEDMSG(LS, SQUAD_MEMBERSHIPS, 303)
   int   cSquadMemberships;
 END_FEDMSG
 
+// KGJV #114
+// only core file name atm, but in a struct for futur extensibility 
+struct StaticCoreInfo
+{
+    char    cbIGCFile[c_cbFileName];
+};
 
 
 #endif // _MESSAGES_LS_

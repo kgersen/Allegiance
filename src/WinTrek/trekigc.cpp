@@ -2275,7 +2275,8 @@ WinTrekClient::WinTrekClient(void)
     m_strDisconnectReason(""),
     m_bFilterChatsToAll(false),
     m_bFilterQuickComms(false),
-    m_bFilterLobbyChats(false)
+	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
+    m_dwFilterLobbyChats(3) //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
 {
     // restore the CD Key from the registry
 
@@ -2896,7 +2897,27 @@ void WinTrekClient::SaveCharacterName(ZString strName)
     }
 }
 
-
+// KGJV : added utility functions for cores & server names
+// find the user friendly name of a core - return param if not found
+ZString WinTrekClient::CfgGetCoreName(const char *s) 
+{
+	char temp[c_cbName];
+	DWORD l = GetCfgInfo().GetCfgProfileString("Cores",s,s,temp,c_cbName);
+	return ZString(temp,(int)l);
+}
+bool WinTrekClient::CfgIsOfficialCore(const char *s)
+{
+	char temp[c_cbName];
+	DWORD l = GetCfgInfo().GetCfgProfileString("OfficialCores",s,"false",temp,c_cbName);
+	return (_stricmp(temp,"true") == 0);
+}
+bool WinTrekClient::CfgIsOfficialServer(const char *name, const char *addr)
+{
+	char temp[c_cbName];
+	DWORD l = GetCfgInfo().GetCfgProfileString("OfficialServers",name,"",temp,c_cbName);
+	return (_stricmp(temp,addr) == 0);
+}
+// KGJV end
 
 class AutoDownloadProgressDialogPopup : 
     public IPopup, 
@@ -3234,6 +3255,21 @@ void WinTrekClient::CreateMissionReq()
     GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
     BaseClient::CreateMissionReq();
 }
+// KGJV #114
+void WinTrekClient::ServerListReq()
+{
+    GetWindow()->SetWaitCursor();
+    TRef<IMessageBox> pmsgBox = CreateMessageBox("Asking about servers and cores...", NULL, false);
+    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	BaseClient::ServerListReq();
+}
+void WinTrekClient::CreateMissionReq(const char *szServer,const char *szAddr, const char *szIGCStaticFile, const char *szGameName)
+{
+    GetWindow()->SetWaitCursor();
+    TRef<IMessageBox> pmsgBox = CreateMessageBox("Creating a game...", NULL, false);
+    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	BaseClient::CreateMissionReq(szServer,szAddr,szIGCStaticFile,szGameName);
+}
 
 void WinTrekClient::JoinMission(MissionInfo * pMission, const char* szMissionPassword)
 {
@@ -3471,6 +3507,19 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
     }
     else 
     {
+		// KGJV: fill in server ip for FM_S_MISSIONDEF
+		// this is a bit hacky: we cant do this in HandleMsg where FM_S_MISSIONDEF is handled
+		// because pthis and cnxnFrom are not available
+		// and we cant do this server side either because of NAT/Firewall 
+		if (pfm->fmid == FM_S_MISSIONDEF)
+		{
+			CASTPFM(pfmMissionDef, S, MISSIONDEF, pfm);
+			char szAddr[16];
+			pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
+			strcpy_s(pfmMissionDef->szServerAddr,16,szAddr);
+		}
+		// KGJV: end
+
         hr = HandleMsg(pfm, m_lastUpdate, m_now);
 
         bool bWasHandled = hr == S_OK;
@@ -3981,11 +4030,19 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 
     if (pshipSender)
     {
-        PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
-        if (ppi->GetMute() 
+		//TheBored 25-JUN-07: Checking to see if admin is PMing the user. If so, bypass the filter.
+		bool bPrivilegedUserPM = false;
+		PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
+        if((ctRecipient == CHAT_INDIVIDUAL) && (ppi->PrivilegedUser()))
+		{
+			bPrivilegedUserPM = true;
+		}
+		
+		if (ppi->GetMute() 
             || (m_bFilterChatsToAll && ctRecipient == CHAT_EVERYONE && trekClient.IsInGame())
-//            || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
-            || (m_bFilterLobbyChats && ppi->SideID() == SIDE_TEAMLOBBY && trekClient.IsInGame()))
+//          || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
+            || ((((m_dwFilterLobbyChats == 1) && (ctRecipient != CHAT_INDIVIDUAL)) || (m_dwFilterLobbyChats == 2)) && (ppi->SideID() == SIDE_TEAMLOBBY) && (trekClient.IsInGame()) && (!bPrivilegedUserPM)) //TheBored 25-JUN-07: Changed conditions for the lobby mute options.
+			|| (m_bFilterUnknownChats && (ppi->IsHuman()) && (pszText == NULL) && (idSonicChat != NA) && (GetWindow()->GetSonicChatText(idSonicChat, 0) == "Unknown chat"))) //TheBored 20-JUL-07: Don't display unknown VCs.
             return;
         bIsLeader = ppi->IsTeamLeader();
     }

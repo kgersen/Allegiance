@@ -345,8 +345,9 @@ public:
         int ysize, 
         int x, BYTE* 
         pdestTop, 
-        WORD pixel, 
-        int pitchDest
+        DWORD pixel, // KGJV 32B
+        int pitchDest,
+		int pixelBytes // KGJV 32B - bbp
     ) {
         const CharData& charData  = m_data[ch];
         int             xsizeChar = charData.m_size.X();
@@ -380,7 +381,7 @@ public:
               m_pdata 
             + charData.m_offset 
             + bytesSource * ytop;
-        BYTE* pdestStart          = pdestTop + (x + xleft) * 2;
+        BYTE* pdestStart          = pdestTop + (x + xleft) * pixelBytes; // KGJV 32B 2 -> pixelBytes
 
         //
         // copy bits between xleft and xright
@@ -412,10 +413,13 @@ public:
 
             while (ibit < xright) {
                 if (byte & 1) {
-                    *(WORD*)pdest = pixel;
+					if (pixelBytes==4) // KGJV 32B
+						*(DWORD*)pdest = pixel;
+					else // assumes 16bpp
+						*(WORD*)pdest = (WORD)pixel; 
                 }
 
-                pdest += 2;
+                pdest += pixelBytes; // KGJV 32B
                 byte   = byte >> 1;
                 ibit  += 1;
                 if (ibit & 0x7 == 0) {
@@ -489,6 +493,8 @@ public:
         // All access to the surface needs to be inside an exception handler
         //
 
+        //KGJV 32B
+        //debugf("drawstring: @%d,%d = %s\n",point.X(), point.Y(), (const char *)str);
         __try {
             int ichar = 0;
             int x = point.X ();
@@ -589,8 +595,8 @@ public:
         int          pitchDest  = psurface->GetPitch();
         WORD         pixel      = (WORD)(ppf->MakePixel(color).Value());
 
-        ZAssert(pixelBytes == 2);
-
+        //ZAssert(pixelBytes == 2); // KGJV 32B
+        DWORD        pixel32    = ppf->MakePixel(color).Value();
         //
         // loop through characters that are clipped on the left
         //
@@ -632,7 +638,7 @@ public:
 
         if (x < rectClip.XMin()) 
         {
-            DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel, pitchDest);
+            DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel, pitchDest, pixelBytes);
             if (++ichar >= length)
                 return;
             x     += m_data[(BYTE)str[ichar]].m_size.X();
@@ -668,12 +674,15 @@ public:
                         int   scans               = ysize;
                         int   bytesSource         = (xsizeChar + 7) / 8;
                         BYTE* psource             = m_pdata + charData.m_offset + (bytesSource * ytop);
-                        BYTE* pdest               = pdestTop + x * 2;
+                        BYTE* pdest               = pdestTop + x * pixelBytes; // KGJV 32B (was 2)
 
                         //
                         // transparent blt 1bpp -> 16bpp
                         //
 
+                        // KGJV 32B - 16 bpp mode
+                        if (pixelBytes == 2)
+                        {
                         _asm {
                             mov     esi, psource
                             mov     ax,  pixel
@@ -726,7 +735,64 @@ public:
                             dec     [scans]
                             jne     yloop
                         }
+                        }
 
+                        else  // KGJV 32B - (assume) 32 bpp mode
+                        {
+                        _asm {
+                            mov     esi, psource
+                            mov     eax, pixel32
+                            mov     ecx, pdest
+
+                          b32_yloop:
+                            mov     edi, ecx
+                            mov     ebx, [bytesSource]
+
+                          b32_byteLoop:
+                            mov     dl, [esi]
+                            inc     esi
+                            shr     dl, 1
+                            jnc     b32_skipbit1
+                            mov     [edi + 0], eax
+                          b32_skipbit1:
+                            shr     dl, 1
+                            jnc     b32_skipbit2
+                            mov     [edi + 4], eax
+                          b32_skipbit2:
+                            shr     dl, 1
+                            jnc     b32_skipbit3
+                            mov     [edi + 8], eax
+                          b32_skipbit3:
+                            shr     dl, 1
+                            jnc     b32_skipbit4
+                            mov     [edi + 12], eax
+                          b32_skipbit4:
+                            shr     dl, 1
+                            jnc     b32_skipbit5
+                            mov     [edi + 16], eax
+                          b32_skipbit5:
+                            shr     dl, 1
+                            jnc     b32_skipbit6
+                            mov     [edi + 20], eax
+                          b32_skipbit6:
+                            shr     dl, 1
+                            jnc     b32_skipbit7     
+                            mov     [edi + 24], eax
+                          b32_skipbit7:
+                            shr     dl, 1
+                            jnc     b32_skipbit8
+                            mov     [edi + 28], eax
+
+                          b32_skipbit8:
+                            add     edi, 32
+                            dec     ebx
+                            jne     b32_byteLoop
+
+                            add     ecx, [pitchDest]
+                            dec     [scans]
+                            jne     b32_yloop
+                        }
+                        }
                         if (++ichar >= length)
                             return;
                         x += xsizeChar;
@@ -741,7 +807,9 @@ public:
         //
 
         if (x < rectClip.XMax())
-           DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel, pitchDest);
+		{
+           DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel32, pitchDest, pixelBytes);
+		}
     }
 };
 

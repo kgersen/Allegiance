@@ -721,7 +721,9 @@ typedef TLargeBitMask<c_ttbMax> TechTreeBitMask;
 
 typedef AbilityBitMask          ExpendableAbilityBitMask;
 const ExpendableAbilityBitMask  c_eabmCapture         = 0x01;
-const ExpendableAbilityBitMask  c_eabmWarpBomb        = 0x02;
+const ExpendableAbilityBitMask  c_eabmWarpBombDual    = 0x02; // KGJV: both sides aleph rez
+const ExpendableAbilityBitMask  c_eabmWarpBombSingle  = 0x04; // KGJV: one side aleph rez
+const ExpendableAbilityBitMask  c_eabmWarpBomb        = c_eabmWarpBombDual | c_eabmWarpBombSingle; // KGJV: both types into one for backward compatibility
 const ExpendableAbilityBitMask  c_eabmQuickReady      = 0x08;
 const ExpendableAbilityBitMask  c_eabmRipcord         = 0x10;
 const ExpendableAbilityBitMask  c_eabmShootStations   = 0x20;
@@ -1073,7 +1075,8 @@ struct MissionParams
     bool        bAutoStart          : 1;                //Does the game start automatically when all sides are ready?
     bool        bAutoRestart        : 1;                //Does the game restart automatically
     bool        bAllowRestart       : 1;                //Can the game be restarted at all?
-    float       fGoalTeamMoney;                         //Cost of win the game tech = fGoalTeamMoney * WinTheGameMoney, 0 == no win the game tech
+	bool        bExperimental       : 1;                // mmf 10/07 Experimental game type
+	float       fGoalTeamMoney;                         //Cost of win the game tech = fGoalTeamMoney * WinTheGameMoney, 0 == no win the game tech
     int         verIGCcore;                             //this is set only by the server, so the client can know whether it needs to get a new igc static core
     float       nPlayerSectorTreasureRate;              //# of treasures that generate/second in player sectors
     float       nNeutralSectorTreasureRate;             //                                       neutral
@@ -1184,6 +1187,7 @@ struct MissionParams
         bAutoStart                      = false;
         bAutoRestart                    = false;
         bAllowRestart                   = true;
+		bExperimental                   = false; // mmf 10/07 Experimental game type
         nInvitationListID               = 0;
 
         fStartCountdown                 = 15.0f;
@@ -1246,8 +1250,8 @@ struct MissionParams
         nInitialMinersPerTeam           = 1;
         nMaxMinersPerTeam               = 4;
 
-        nMinPlayersPerTeam              = 7;
-        nMaxPlayersPerTeam              = 15;
+        nMinPlayersPerTeam              = 1;   // KGJV #114 changed
+        nMaxPlayersPerTeam              = 100; // KGJV #114 changed
 
         nTotalMaxPlayersPerGame         = 0x7FFF;
     }
@@ -1267,7 +1271,7 @@ struct MissionParams
             {
                 return "You must choose one or more winning conditions.";
             }
-			else if (bAutoRestart || (bObjectModelCreated && bClubGame) || bAllowEmptyTeams)
+			else if (bAutoRestart || (bObjectModelCreated && bClubGame)) // KGJV #62 || bAllowEmptyTeams)
             {
                 return "HACK: one or more admin-only flags are set.";
             }
@@ -4028,6 +4032,7 @@ class IsideIGC : public IbaseIGC
 
         virtual const TechTreeBitMask&      GetDevelopmentTechs(void) const = 0;
         virtual void                        SetDevelopmentTechs(const TechTreeBitMask& ttbm) = 0;
+		virtual bool						IsNewDevelopmentTechs(const TechTreeBitMask& ttbm) = 0; // KGJV #118
         virtual bool                        ApplyDevelopmentTechs(const TechTreeBitMask& ttbm) = 0;
 
         virtual const TechTreeBitMask&      GetInitialTechs(void) const = 0;

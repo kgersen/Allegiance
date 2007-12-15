@@ -63,8 +63,9 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
                 DamageTypeID    dtid = pmt->GetDamageType();
                 float           p    = pmt->GetPower();
                 float           r    = pmt->GetBlastRadius();
-
+				
                 IclusterIGC*    pcluster = GetCluster();
+				if (pmt->HasCapability(c_eabmWarpBombDual)) // KGJV- only Dual explode this side
                 pcluster->CreateExplosion(dtid,
                                           p,
                                           r,

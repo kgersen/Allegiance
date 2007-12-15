@@ -1528,7 +1528,8 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                 case c_ptWingman:
                 {
-                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidAttack) || (cid == c_cidPickup) || (cid == c_cidDoNothing);
+					//AEM 7.9.07 Wingman can now be ordered to Repair (no effect if not equipped with nan)
+                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidAttack) || (cid == c_cidPickup) || (cid == c_cidDoNothing) || (cid == c_cidRepair);
                 }
                 break;
 
@@ -1617,7 +1618,8 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     case c_cidRepair:
                     {
                         //Can only repair friendly ships or stations
-                        bLegal = (m_pilotType >= c_ptPlayer) && ((type == OT_ship) || (type == OT_station)) && bFriendly;
+						//AEM 7.9.07 Wingman pilotType now acceptable
+                        bLegal = ((m_pilotType == c_ptWingman) || (m_pilotType >= c_ptPlayer)) && ((type == OT_ship) || (type == OT_station)) && bFriendly;
                     }
                     break;
 

@@ -811,6 +811,7 @@ private:
     DWORD                m_pitchSurface;
     WinPoint             m_sizeSurface;
     bool                 m_b565;
+    bool                 m_b888; // KGJV 32B
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -877,13 +878,21 @@ public:
     {
         PixelFormat* ppf = m_psurface->GetPixelFormat();
 
-        ZAssert(ppf->RedSize()  == 0x1f);
-        ZAssert(ppf->BlueSize() == 0x1f);
+        // KGJV 32B
+        //ZAssert(ppf->RedSize()  == 0x1f);
+        //ZAssert(ppf->BlueSize() == 0x1f);
+
+        // KGJV 32B TODO: seems we dont need this anymore since we going full D3DRasterizer
+        if (ppf->PixelBits() == 32)
+        {
+            m_b888 = true;
+        }
 
         if (ppf->GreenSize() == 0x1f) {
             m_b565 = false;
         } else {
-            ZAssert(ppf->GreenSize() == 0x3f);
+            //ZAssert(ppf->GreenSize() == 0x3f);
+            // KGJV 32B
             m_b565 = true;
         }
     }

@@ -108,6 +108,7 @@ void CFLMission::NotifyCreator()
     assert(lstrlen(szServer) < sizeof(pfmJoinMission->szServer)); // as long as szServer is fixed length
     lstrcpy(pfmJoinMission->szServer, szServer);
     pfmJoinMission->dwCookie = GetCookie();
+	pfmJoinMission->dwPort = GetServer()->GetServerPort();	// KGJV #114: pass the port to the client
     g_pLobbyApp->GetFMClients().SendMessages(GetCreator()->GetConnection(), FM_GUARANTEED, FM_FLUSH);
   }
   m_fNotifiedCreator = true;

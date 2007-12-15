@@ -13,6 +13,11 @@
 
 #include "engine.h"
 
+#ifdef USEDX7
+#define FixPermedia 1
+#endif
+
+
 //
 // Effect headers
 //

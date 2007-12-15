@@ -99,6 +99,14 @@ void CFSShip::HitWarp(IwarpIGC * pwarp)
               float   r = pwarp->GetRadius();
 
               error = (d / (r*r)) + 0.125f;      //Error ranges from 0.125 to 1.125
+			  // yp: to prevent 'spin of death' in massive ships.
+			  // This works and is explained in that the more massive the ship the less effect going through the aleph should have
+			  // on its rotational velocity. The massive amount of inertia should decrease changes in rotational velocity.
+			  if(m_pShip->GetMass() > 300.0f)
+			  {
+				error = error * (300.0f / m_pShip->GetMass()); // the greater the mass is above 750 the less error will be applied.
+			  }
+			  // yp end
           }
 
           alephOrientation.Pitch(random(-error, error));
@@ -605,6 +613,49 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
     "OldTeamName", VT_LPSTR, psideOld->GetName(),
 	"StationName", VT_LPSTR, pstation->GetName());
   // TE end
+
+	// yp: Add event for players who were involved in the capture of an enemy base.
+    // mmf commented this out for now pending additional testing
+#if 0
+	 ZString pszPlayerList = ""; // this creates a new ZString object and set its value to "", it's not a pointer to ""
+	 if(m_pfsMission->GetIGCMission() && m_pfsMission->GetIGCMission()->GetShips())
+	 {
+		ShipLinkIGC * pShiplink = m_pfsMission->GetIGCMission()->GetShips()->first();
+		while (pShiplink)
+		{
+			CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
+			if (pfsShip && pfsShip->IsPlayer())
+			{
+				// this logic might need to be tweeked to include the ship that did the capture if its
+				if(pfsShip->GetSide()		&& pfsShip->GetSide()->GetObjectID()	== iSide && // if they are on the side that did the Capture. and..
+					pfsShip->GetPlayer()->GetIGCShip()->GetObjectID() == GetIGCShip()->GetObjectID() ||	// they are the ship that did the caputure. or
+				   pfsShip->GetCluster()	&& pstation->GetCluster()	&& pfsShip->GetCluster()->GetObjectID() == pstation->GetCluster()->GetObjectID()) // they are in this sector
+				{
+					pszPlayerList = pszPlayerList + ";" + ZString(pfsShip->GetPlayer()->GetName()); // players name
+					// The distance the player is from the station that was destroyed.
+					if(pfsShip->GetPlayer()->GetIGCShip() )
+					{
+						pszPlayerList = pszPlayerList +  ":" + ZString( (pstation->GetPosition() - pfsShip->GetPlayer()->GetIGCShip()->GetPosition()).Length()); // the distance
+					}
+				}
+			}
+			pShiplink = pShiplink->next();
+		}
+	 }
+	 
+	 // Fire AGCEvent listing players in the sector
+	// TODO: Might want to add into the event weither or not this was a VICTORY capture.. should we track that as well?
+	_AGCModule.TriggerContextEvent(NULL, EventID_StationChangesSides, pszContext,
+						GetName(), GetShipID(), pside->GetUniqueID(), -1, 4,
+						"GameID"	 , VT_I4   , pfsMission->GetMissionID(),
+						"OldTeam"    , VT_I4   , psideOld->GetUniqueID(),
+						"OldTeamName", VT_LPSTR, psideOld->GetName(),
+						"zPlayerList", VT_LPSTR, pszPlayerList); // pszPlayerList should look like ";player@squad:1500;player2@squad:500"
+ // yp:end
+#endif
+
+
+
   //Possibly the built themselves to a victory
   IsideIGC*   psideWin = m_pfsMission->CheckForVictoryByStationCapture(pside, psideOld);
   if (psideWin)
