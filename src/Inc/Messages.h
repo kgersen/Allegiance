@@ -987,6 +987,12 @@ DEFINE_FEDMSG(S, RELAUNCH_SHIP, 192)
     Cookie              cookie;
 END_FEDMSG
 
+// w0dk4 June 2007: Bandwith Patch
+DEFINE_FEDMSG(C, BANDWIDTH, 193)
+  unsigned int          value;     
+END_FEDMSG
+
+
 // w0dk4 player-pings feature
 DEFINE_FEDMSG(S, PINGDATA, 194)
   ShipID              shipID;
@@ -1000,6 +1006,7 @@ END_FEDMSG
 
 
 #endif // _MESSAGES_ 
+
 
 
 

@@ -920,6 +920,10 @@ void GotLogonDetails(CQLogonStats * pquery)
     pfsPlayer = new CFSPlayer(pcnxn, pqd->characterID, pqd->szCDKey, pship, !! pqd->fCanCheat);
     assert(pfsPlayer);
 
+	// w0dk4 Bandwidth Patch
+	// set bandwidth to standard value, bandwidth packet should arrive soon anyways
+	pfsPlayer->SetBandwidth(2);
+
     #if !defined(ALLSRV_STANDALONE)
       PlayerScoreObject * plrsc = pfsPlayer->GetPlayerScoreObject();
 
@@ -3768,30 +3772,42 @@ void SendShipUpdates(CFSMission * pfsMission)
 
             if (cShipUpdates + cActiveTurretUpdates + cInactiveTurretUpdates > 0)
             {
+
+
+				for (PlayerLink* pplayerLink = pplayerList->first(); (pplayerLink != NULL); pplayerLink = pplayerLink->next())
+                {
+                    CFSPlayer*  pfsPlayer = pplayerLink->data();
+
+
+
                 //Calculate how many heavy ship & active turret updates we can afford to send and still stay within our
                 //bandwidth constraints (where we can afford to send a max of 1500 bytes/second and the clients will send
                 //one update each interval)
-                const int cbAvailable = int(1600.0f * c_dsecUpdateClient);
+					//const int cbAvailable = int(1600.0f * c_dsecUpdateClient);
 
                 //This is what we can possibly send and still remain within out constraints
-                const int cHeavyPerInterval  = 2;
-                const int cLightPerInterval  = 2;
-                const int cActivePerInterval = 2;
+					// w0dk4 Bandwidth Patch
+					const int cHeavyPerInterval  = pfsPlayer->GetBandwidth();
+					const int cLightPerInterval  = pfsPlayer->GetBandwidth();
+					const int cActivePerInterval = pfsPlayer->GetBandwidth();
 
+					
+					/*
                 assert (cbAvailable > cHeavyPerInterval  * sizeof(ServerHeavyShipUpdate) +
                                       cLightPerInterval  * sizeof(ServerLightShipUpdate) +
                                       cActivePerInterval * sizeof(ServerActiveTurretUpdate));
+										*/
 
                 int cLightUpdates;
                 int cHeavyUpdates;
-                if (cShipUpdates <= 2)
+					if (cShipUpdates <= cHeavyPerInterval)
                 {
                     cHeavyUpdates = cShipUpdates;
                     cLightUpdates = 0;
                 }
                 else
                 {
-                    cHeavyUpdates = 2;
+						cHeavyUpdates = cHeavyPerInterval;
                     cLightUpdates = (cShipUpdates * cLightPerInterval) / cShips;
 
                     if (cHeavyUpdates + cLightUpdates > cShipUpdates)
@@ -3799,6 +3815,23 @@ void SendShipUpdates(CFSMission * pfsMission)
                 }
 
                 int cTurretUpdates;
+	
+					if (cActiveTurretUpdates < cActivePerInterval)
+					{
+
+						// for every 3 unused turret updates (-> -36byte) increase heavy and lower light updates (-> +30byte)
+
+						cLightUpdates -= ((cActivePerInterval-cActiveTurretUpdates)/3);
+						if (cLightUpdates < 0)
+							cLightUpdates = 0;
+						cHeavyUpdates += ((cActivePerInterval-cActiveTurretUpdates)/3);
+						cTurretUpdates = cActiveTurretUpdates;
+					} else
+						cTurretUpdates = cActivePerInterval;
+
+
+					// w0dk4 Bandwidth Patch
+					/* weird code, replaced with above
                 if (cActiveTurretUpdates <= 1)
                 {
                     if ((cLightUpdates > 0) && (cActiveTurretUpdates == 0))
@@ -3813,7 +3846,7 @@ void SendShipUpdates(CFSMission * pfsMission)
                 else
                 {
                     cTurretUpdates = (cActiveTurretUpdates == cTurrets) ? 2 : 1;
-                }
+					}*/
 
                 //OK ... given our bandwidth limits ... we think we can send the following this frame
                 //      cTurretUpdates      turret updates (active or inactive)
@@ -3930,9 +3963,11 @@ void SendShipUpdates(CFSMission * pfsMission)
 
                 //Number of light updates depends on the recipients ... so do not fill in the following fields immediately
 
-                for (PlayerLink* pplayerLink = pplayerList->first(); (pplayerLink != NULL); pplayerLink = pplayerLink->next())
-                {
-                    CFSPlayer*  pfsPlayer = pplayerLink->data();
+					// w0dk4 old for-loop starts here
+					// actually, we could rewrite the whole code because we no longer should pre-assemble the first
+					// packet part for every player as bandwidth settings may change ...
+					// but lets not mess with the code, it *should* be not that of a performance problem
+
                     IshipIGC*   pshipPlayer = pfsPlayer->GetIGCShip();
 
                     {
@@ -4090,13 +4125,15 @@ void SendShipUpdates(CFSMission * pfsMission)
                         g.fm.ForwardMessage(pfsPlayer->GetConnection(), pfmLight, FM_NOT_GUARANTEED);
                     }
 
-                    /*
-                    debugf("%d %d %d %d %d\n",
+                    
+					/*debugf("hvy/int: %d hvy updates: %d ship update: %d %d %d %d %d\n",
+						cHeavyPerInterval,
+						cHeavyUpdates,
                         Time::Now().clock(),
                         pfmLight->cbmsg - sizeof(FMD_S_LIGHT_SHIPS_UPDATE),
                         pfmHeavy->cbmsg - sizeof(FMD_S_HEAVY_SHIPS_UPDATE),
-                        cShips, cShipUpdates);
-                    */
+                        cShips, cShipUpdates);*/
+                    
                 }
 
                 for (int i = 0; (i < cShipUpdates); i++)
@@ -6928,6 +6965,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	// w0dk4 Bandwidth Patch
+	case FM_C_BANDWIDTH:
+    {
+		CASTPFM(pfmBandwidth, C, BANDWIDTH, pfm);
+		pfsPlayer->SetBandwidth(pfmBandwidth->value);
+
+	}
+	break;
+
 	// w0dk4 player-pings feature
 	// send ping data
 	case FM_C_REQPINGDATA:
@@ -8421,10 +8467,15 @@ void LoadSettings()
 
         dwValue=0;
         cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "nUpdatesPerSecond", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+		// w0dk4 Bandwidth Patch - removed registry-check and set tickrate to 20 so client bandwidth settings are not fooled
+		// g.nUpdatesPerSecond = 20;
+		// mmf leave this in, server admins should have control of this even if clients are not getting the bandwidth
+		//     they expect from the 'rough' data rate w0dk4 added
+		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "nUpdatesPerSecond", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             g.nUpdatesPerSecond = dwValue;
         else
             g.nUpdatesPerSecond = 10;
+
 
 // mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
@@ -8468,6 +8519,13 @@ void LoadSettings()
 		g.cMaxGames = 99; // default max game
         cbValue = sizeof(dwValue);
 		RegQueryValueEx(hKey, "MaxGames", NULL, &dwType, (unsigned char*)&g.cMaxGames, &cbValue);
+
+		// w0dk4 Bandwidth Patch
+		g.cMaxBandwidth = 32;
+		dwValue=0;
+        cbValue = sizeof(dwValue);
+		RegQueryValueEx(hKey, "MaxBandwidth", NULL, &dwType, (unsigned char*)&g.cMaxBandwidth, &cbValue);
+
 
 		ZString strArtPath;
         if (SUCCEEDED(LoadRegString(hKey, "ArtPath", strArtPath)))

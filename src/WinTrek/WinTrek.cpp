@@ -1255,7 +1255,7 @@ public:
     TRef<IMenuItem>            m_pitemFilterLobbyChats;
     TRef<IMenuItem>            m_pitemSoundQuality;
     TRef<IMenuItem>            m_pitemToggleSoundHardware;
-	TRef<IMenuItem>            m_pitemToggleDSound8Usage;
+    TRef<IMenuItem>            m_pitemToggleDSound8Usage;
     TRef<IMenuItem>            m_pitemToggleMusic;
     TRef<IMenuItem>            m_pitemMusicVolumeUp;
     TRef<IMenuItem>            m_pitemMusicVolumeDown;
@@ -1263,9 +1263,10 @@ public:
     TRef<IMenuItem>            m_pitemSFXVolumeDown;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeUp;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeDown;
-	TRef<IMenuItem>            m_pitemMaxTextureSize;		// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-	TRef<IMenuItem>            m_pitemMuteFilter;			//TheBored 30-JUL-07: Filter Unknown Chat patch
-	TRef<IMenuItem>            m_pitemFilterUnknownChats;	//TheBored 30-JUL-07: Filter Unknown Chat patch
+    TRef<IMenuItem>            m_pitemMaxTextureSize;		// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+    TRef<IMenuItem>            m_pitemToggleBandwidth; // w0dk4 June 2007: Bandwith Patch
+    TRef<IMenuItem>            m_pitemMuteFilter;			//TheBored 30-JUL-07: Filter Unknown Chat patch
+    TRef<IMenuItem>            m_pitemFilterUnknownChats;	//TheBored 30-JUL-07: Filter Unknown Chat patch
 
     bool                       m_bLensFlare;
     bool                       m_bMusic;
@@ -2932,6 +2933,8 @@ public:
 
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
+		ToggleBandwidth(LoadPreference("Bandwidth",2)); // w0dk4 June 2007: Bandwith Patch
+
         bool bAllow3DAcceleration;
 
         if (bSoftware || bHardware) {
@@ -3581,8 +3584,9 @@ public:
     #define idmToggleEnableFeedback        631
     #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
     #define idmPings                       633 // w0dk4 player-pings feature
-	#define	idmMuteFilterOptions		   634 //TheBored 30-JUL-07: Filter Unknown Chat patch
-	#define idmFilterUnknownChats		   635 //TheBored 30-JUL-07: Filter Unknown Chat patch
+    #define idmBandwidth		       634 // w0dk4 June 2007: Bandwith Patch
+    #define	idmMuteFilterOptions		 635 //TheBored 30-JUL-07: Filter Unknown Chat patch
+    #define idmFilterUnknownChats		 636 //TheBored 30-JUL-07: Filter Unknown Chat patch
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -3698,10 +3702,10 @@ public:
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
 		// mmf added ifs to zero pad MM and DD 
-		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
-		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
-		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
-		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R4-32B Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
+		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
+		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
+		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
 		//AEM, redesigned ESC menu 7/6/07
 		// mmf 10/07 swapped position of S and G
 		m_pmenu->AddMenuItem(0               , "");
@@ -3865,6 +3869,8 @@ public:
                 m_pitemToggleVirtualJoystick       = pmenu->AddMenuItem(idmToggleVirtualJoystick,       GetVirtualJoystickMenuString(),     'J');
                 m_pitemToggleFlipY                 = pmenu->AddMenuItem(idmToggleFlipY,                 GetFlipYMenuString(),               'Y');
                 m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E');
+				 // w0dk4 June 2007: Bandwith Patch
+				m_pitemToggleBandwidth			   = pmenu->AddMenuItem(idmBandwidth,					GetBandwidthMenuString(),		    'B');
                                                      pmenu->AddMenuItem(idmConfigure           ,        "Map Keys and Controls"      ,      'C');
                 break;
 
@@ -4160,6 +4166,19 @@ public:
  
         if (m_pitemMaxTextureSize != NULL) {
             m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
+        }
+	}
+
+	// w0dk4 June 2007: Bandwith Patch
+	void ToggleBandwidth(unsigned int iBandwidth)
+	{
+		if(iBandwidth > 32){iBandwidth = 2;}
+		trekClient.MaxBandwidth(iBandwidth);
+		
+		SavePreference("Bandwidth", (DWORD)trekClient.MaxBandwidth());
+ 
+        if (m_pitemToggleBandwidth != NULL) {
+            m_pitemToggleBandwidth->SetString(GetBandwidthMenuString());
         }
 	}
 
@@ -4636,6 +4655,23 @@ public:
         return "Max Texture Size ("  + ZString( j)  + ") ";
     }
 
+	// w0dk4 June 2007: Bandwith Patch
+	ZString GetBandwidthMenuString()
+	{
+		if(trekClient.MaxBandwidth() == 2)
+			return "Bandwidth: Dial-Up (33k)";
+		if(trekClient.MaxBandwidth() == 4)
+			return "Bandwidth: Dial-Up (56k)";
+		if(trekClient.MaxBandwidth() == 8)
+			return "Bandwidth: Broadband (128k)";
+		if(trekClient.MaxBandwidth() == 16)
+			return "Bandwidth: Broadband (512k)";
+		if(trekClient.MaxBandwidth() == 32)
+			return "Bandwidth: Broadband (>1mbit)";
+
+		return "Error";
+	}
+
     ZString GetRoundRadarMenuString()
     {
         return (m_bRoundRadar) ? "Round Radar" : "Square Radar";
@@ -5057,6 +5093,18 @@ public:
 			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
             case idmMaxTextureSize:
                 ToggleMaxTextureSize(trekClient.MaxTextureSize()+1);
+                break;
+
+			// w0dk4 June 2007: Bandwith Patch
+			case idmBandwidth:
+				ToggleBandwidth(trekClient.MaxBandwidth()*2);
+				if(trekClient.m_fLoggedOn) {
+					// send change to server if connected
+					trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+					BEGIN_PFM_CREATE(trekClient.m_fm, pfmBandwidth, C, BANDWIDTH)
+					END_PFM_CREATE
+					pfmBandwidth->value = trekClient.MaxBandwidth();
+				}
                 break;
 
             case idmToggleRoundRadar:

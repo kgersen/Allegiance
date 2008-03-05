@@ -494,6 +494,18 @@ public:
       return m_ptDesiredLoadout;
   }
 
+  // w0dk4 Bandwidth Patch
+  unsigned int	GetBandwidth() {return m_nBandwidth; };
+  void			SetBandwidth(unsigned int iBandwidth)
+  {
+	  if (iBandwidth >= 2 && iBandwidth <= 32) {
+		  m_nBandwidth = iBandwidth;
+		  if(m_nBandwidth > g.cMaxBandwidth && g.cMaxBandwidth >= 2)
+			m_nBandwidth = g.cMaxBandwidth;
+	  } else
+		m_nBandwidth = 2;	  
+  }
+
 // w0dk4  allow more time when joining
 bool			GetJustJoined() {return b_JustJoined; };
 void			SetJustJoined(bool b_joined) {b_JustJoined = b_joined; };
@@ -537,6 +549,9 @@ private:
   Vector                m_positionLifepod;
 
   ZString               m_strCDKey;
+
+  // w0dk4
+  unsigned int			m_nBandwidth;
 
   // w0dk4 allow more time when joining
   bool					b_JustJoined;

@@ -80,7 +80,8 @@ void InitializeLogchat()
 		}
 	}
 
-	sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+	// mmf 1/17/08 fixed month
+	sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), (t->tm_mon+1), t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
 	// mmf changed 3 param from 0 to FILE_SHARE_READ
 	chat_logfile =

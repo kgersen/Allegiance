@@ -35,7 +35,7 @@ HRESULT pascal FedSrv_Continue();
 const bool c_fCheatsOff = false;
 const bool c_fCheatsOn  = true;
 
-const int  c_cShipsPerSectorMax = 110;
+const int  c_cShipsPerSectorMax = 200; // w0dk4
 const int  c_cMissionsMax       = 10; // arbitrary number of how many missions there can be
 const int  c_cMemberListRelloc  = 8; // size of member reallocs, *** keep it a power of two ***
 
@@ -318,6 +318,9 @@ struct Global
   int				  cStaticCoreInfo; // nb of cores, 0 if none
   int				  cMaxGames;	   // max games allowed, reg entry
   ZString			  strLocation;     // Location, reg entry
+
+  // w0dk4 Bandwidth Patch
+  unsigned int		  cMaxBandwidth;
 
   bool                fProtocol;
   bool                fPaused;
