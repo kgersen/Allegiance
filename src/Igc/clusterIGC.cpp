@@ -116,7 +116,7 @@ void        CclusterIGC::Update(Time now)
                     {
                         IshipIGC*   pship = psl->data();
                         pslNext = psl->next();             //Get the next link now since the ship may launch
-                        const MissionParams* pmp = m_pMission->GetMissionParams(); // mmf 10/07 added so we can get at bExperimental game type
+                        // const MissionParams* pmp = m_pMission->GetMissionParams(); // mmf 10/07 added so we can get at bExperimental game type
                         if (pship->GetAutopilot() && (pship->GetPilotType() < c_ptPlayer))
                         {
                             //Docked non-players on autopilot never are observers/parents

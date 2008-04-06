@@ -2508,7 +2508,7 @@ public:
 
 			// mmf added debugf but will still have it call assert
 			if (!pfile->IsValid()) {
-				ZDebugOutput("Could not open the artwork file "+ strToOpen + "'\n");
+				ZDebugOutput("Could not open the artwork file "+ strToOpen + "\n");
 				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
 			}
 		}

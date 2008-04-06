@@ -1204,9 +1204,10 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
             else
             {
                 //On track and almost stopped ... pivot to face the bay
-                gpm = c_gpmPivot; // yp: We just want to pivot and get in there, we dont want to worry about trying to dodge anytying.
-				// changed to only c_gpmPivot from below.
-				//gpm = c_gpmPivot; | c_gpmDodgeShips; // previous
+				// gpm = c_gpmPivot | c_gpmDodgeShips; // original 
+				// gpm = c_gpmPivot; yp: We just want to pivot and get in there, we dont want to worry about trying to dodge anytying.
+				gpm = c_gpmPivot | c_gpmNoDodge; // 04/08 mmf added | c_gpmNoDodge
+				                                 // yp's change resulted in cons dodging missiles on pivot which was undesirable
             }
         }
     }

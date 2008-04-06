@@ -922,14 +922,17 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                     if ((habmHim & c_habmRescue) && igcsite->RescueShipEvent(this, (IshipIGC*)pModel))
                         break;
                 }
-                else if (habmHim & c_habmCarrier)
+				// mmf 3/08 drones (like fighter drones) docking at carrier crash the server
+				// if pModel is a drone skip this part (i.e. don't let them dock)
+				// 
+                else if ( (habmHim & c_habmCarrier) && (((IshipIGC*)pModel)->GetPilotType() == c_ptPlayer) )// mmf added && ...
                 {
                     if ((habmMe & c_habmLandOnCarrier) &&
                         ((IshipIGC*)pModel)->InGarage(this, tCollision) &&
                         igcsite->LandOnCarrierEvent((IshipIGC*)pModel, this, tCollision))
                         break;
                 }
-                else if (habmMe & c_habmCarrier)
+                else if ( (habmMe & c_habmCarrier) && (((IshipIGC*)pModel)->GetPilotType() == c_ptPlayer) )// mmf added && ...
                 {
                     if ((habmHim & c_habmLandOnCarrier) &&
                         InGarage((IshipIGC*)pModel, tCollision) &&
