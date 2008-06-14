@@ -488,6 +488,9 @@ public:
 
         number = bound(number, 0.0f, 1.0f);
 
+		// KGJV - fix: NaN value to 0
+		if (_isnan(number)) number = 0.0f;
+
         Rect  rect = m_rect;
         Point offset(0, 0);
 

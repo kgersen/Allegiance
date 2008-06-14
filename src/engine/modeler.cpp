@@ -886,6 +886,35 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////
+// KGJV - Image3D - addition
+// Syntax: 'Image3D(<Image>,<Color>)'
+//
+//////////////////////////////////////////////////////////////////////////////
+
+class Image3DFactory : public IFunction {
+private:
+    TRef<Modeler>     m_pmodeler;
+    TRef<PrivateEngine> m_pengine;
+
+public:
+    Image3DFactory(Modeler* pmodeler) :
+        m_pmodeler(pmodeler)
+    {
+        CastTo(m_pengine, m_pmodeler->GetEngine());
+    }
+
+    TRef<IObject> Apply(ObjectStack& stack)
+    {
+        TRef<Image>  pimage   =  Image::Cast((Value*)(IObject*)stack.Pop());
+        TRef<ColorValue> pcolor = ColorValue::Cast(        (IObject*)stack.Pop());
+
+        TRef<Surface> psurface = pimage->GetSurface();
+
+        return (Value*)CreateConstantImage3D(psurface, pcolor); 
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////
 //
 //
 //
@@ -2352,6 +2381,7 @@ public:
         pns->AddMember("ImportImage",        new ImportImageFactory(this));
         pns->AddMember("ImportImageFromFile",new ImportImageFromFileFactory(this)); // KGJV 32B
         pns->AddMember("ImportImage3D",      new ImportImage3DFactory(this));
+        pns->AddMember("Image3D",            new Image3DFactory(this)); // KGJV - added
         pns->AddMember("ImportImageLR",      new ImportImageLRFactory(this));
 
         pns->AddMember("FrameImage",         CreateFrameImageFactory());
