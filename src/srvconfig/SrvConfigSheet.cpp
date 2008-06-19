@@ -142,7 +142,7 @@ void CSrvConfigSheet::InitIcon()
     SetIcon(hIcon, true);
 
     // Load and set the small icon
-    HICON hIconSmall = (HICON)::LoadImage(AfxGetResourceHandle(), pszRes, 
+    HICON hIconSmall = (HICON)::LoadImage(AfxGetResourceHandle(), pszRes,
         IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON),
         ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
     SetIcon(hIconSmall, false);
@@ -152,7 +152,7 @@ void CSrvConfigSheet::InitButtons()
 {
     // Caculate the height of 7 dialog units
     CRect rectUnits(0, 0, 0, 7);
-    MapDialogRect(GetSafeHwnd(), rectUnits);
+    MapDialogRect(rectUnits);
 
     // Get the OK and cancel buttons
     CWnd* pwndOK     = GetDlgItem(IDOK);
@@ -191,7 +191,7 @@ void CSrvConfigSheet::InitButtons()
     // Show the OK and Cancel buttons
     GetDlgItem(IDOK)->ShowWindow(SW_SHOW);
     GetDlgItem(IDCANCEL)->ShowWindow(SW_SHOW);
-    
+
     // Enable the OK and Cancel buttons
     GetDlgItem(IDOK)->EnableWindow(true);
     GetDlgItem(IDCANCEL)->EnableWindow(true);

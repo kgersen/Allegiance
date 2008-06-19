@@ -10,13 +10,14 @@
 #include "IAGCRangeImpl.h"
 #include "AGCEventDef.h"
 
+#pragma warning(disable:4996)
 
 /////////////////////////////////////////////////////////////////////////////
 // CAGCEventIDRange
-class ATL_NO_VTABLE CAGCEventIDRange : 
+class ATL_NO_VTABLE CAGCEventIDRange :
   public IAGCRangeImpl<CAGCEventIDRange, AGCEventID, VT_I4, IAGCEventIDRange, &LIBID_AGCLib>,
   public AGCObjectSafetyImpl<CAGCEventIDRange>,
-	public CComObjectRootEx<CComMultiThreadModel>, 
+	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<CAGCEventIDRange, &CLSID_AGCEventIDRange>
 {
 // Declarations

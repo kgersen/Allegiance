@@ -58,8 +58,8 @@ CC=cl
 LINK=link
 BSCMAKE=bscmake
 LIB=lib
-MIDL=midl
-MSDEV=msdev
+MIDL=$(FEDEXT)\vc\bin\midl
+MSDEV=devenv
 REMDIR=$(FEDSRC)\tools\bin32\delnode -q
 MKDEP=$(FEDSRC)\tools\bin32\mkdep
 REGSVR=regsvr32 /s /c
@@ -147,11 +147,10 @@ COMPILEAUTH=$(COMPILEAUTH) /D"USEASGS"
 #############################################################################
 
 !IFDEF VER
-RARGSVERSION= /d VER=$(VER)
+RARGSVERSION=/D"VER=$(VER)"
 
 !ELSE
 RARGSVERSION=
-
 !ENDIF
 
 #############################################################################
@@ -199,7 +198,7 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "NDEBUG" /D "OPTIMIZED" /MT $(OPTIMIZATION
 RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" $(RARGSVERSION)
 LIBSFLAVOR=libcmt.lib libcpmt.lib libcimt.lib
 MFCLIBSFLAVOR=nafxcw.lib ctl3d32s.lib comctl32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /OPT:REF /OPT:NOICF
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /RELEASE /nodefaultlib /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF stest
 
@@ -215,7 +214,7 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "_DEBUG" /D "DEBUG" /D "OPTIMIZED" /MT $(O
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D "OPTIMIZED" $(RARGSVERSION)
 LIBSFLAVOR=libcmtd.lib libcpmtd.lib libcimtd.lib
 MFCLIBSFLAVOR=nafxcwd.lib ctl3d32s.lib comctl32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:NOICF
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF sdebug
 
@@ -227,11 +226,11 @@ LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT
 FLAVOR=SDebug
 STATICFLAVOR=SDebug
 
-CARGSFLAVOR = $(COMPILE_DEV_REGKEY) /D "_DEBUG" /D "DEBUG" /MTd /Od /GR /GZ
+CARGSFLAVOR = $(COMPILE_DEV_REGKEY) /D "_DEBUG" /D "DEBUG" /MTd /Od /GR /RTC1
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" $(RARGSVERSION)
 LIBSFLAVOR=libcmtd.lib libcpmtd.lib libcimtd.lib
 MFCLIBSFLAVOR=nafxcwd.lib ctl3d32s.lib comctl32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib
 
 
 !ELSEIFDEF retail
@@ -249,7 +248,7 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) $(USEAUTH) /D "NDEBUG" /D "OPTIMIZED" /D"_AFX
 RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrt.lib msvcprt.lib
 MFCLIBSFLAVOR=mfc42.lib mfcs42.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no /OPT:REF /OPT:NOICF
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF test
 
@@ -264,7 +263,7 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "_DEBUG" /D "DEBUG" /D "OPTIMIZED" /D"_AFX
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D "OPTIMIZED" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrtd.lib msvcprtd.lib
 MFCLIBSFLAVOR=mfc42d.lib mfcs42d.lib mfco42d.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:NOICF
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF training
 
@@ -279,7 +278,7 @@ CARGSFLAVOR = $(COMPILE_DEV_REGKEY)  /D "_DEBUG_TRAINING" /D "_DEBUG" /D "DEBUG"
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrtd.lib msvcprtd.lib
 MFCLIBSFLAVOR=mfc42d.lib mfcs42d.lib mfco42d.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib
 
 !ELSEIFDEF icap
 
@@ -322,23 +321,23 @@ CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" /MD $(
 RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrt.lib msvcprt.lib
 MFCLIBSFLAVOR=mfc42.lib mfcs42.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no
 
 !ELSE
 
 #############################################################################
 #
-# Debug build
+# Debug build MFC9 ATL3 DX81 WINSDK6A
 #
 #############################################################################
 
 FLAVOR=Debug
 
-CARGSFLAVOR = $(COMPILE_DEV_REGKEY) $(COMPILEAUTH) /D "_DEBUG" /D "DEBUG" /D"_AFXDLL" /MDd /Od /GR /GZ
+CARGSFLAVOR = $(COMPILE_DEV_REGKEY) $(COMPILEAUTH) /D _CRT_SECURE_NO_WARNINGS /D "_DEBUG" /D "DEBUG" /MDd /Od /GR /RTC1
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrtd.lib msvcprtd.lib
-MFCLIBSFLAVOR=mfc42d.lib mfcs42d.lib mfco42d.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:map,cv /INCREMENTAL:NO /nodefaultlib
+MFCLIBSFLAVOR=mfc90d.lib
+LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib
 
 !ENDIF
 
@@ -504,7 +503,7 @@ BSCTARG=
 !else
 
 !IFNDEF NOBSC
-BSCARG=/Fr$* /Zn
+BSCARG=/FR$*
 BSCTARG=$(BSC)
 !ELSE
 BSCARG=
@@ -527,7 +526,7 @@ CARGSINC=  $(CARGSFLAVOR)
 CARGSINC=  $(CARGSFLAVOR) \
            $(BSCARG) \
            $(NOLOGO) /W3 /WX /Zi /c \
-           /Gi- /Gm- \
+           /Gm- \
            /D "WIN32" /D "_WINDOWS" /D "STRICT" \
            /Fo$(DESTDIR)\ /FD /Fd$(PDB)
 !endif
@@ -577,7 +576,7 @@ MC=@MC
 LIBARGS= $(NOLOGO) /out:$(MAINTARGFULLPATH)
 
 !if defined(VERBOSE)
-MAPSYM=MAPSYM
+MAPSYM=$(FEDEXT)\vc\bin\MAPSYM
 !else
 MAPSYM=@MAPSYM -nologo
 !endif
@@ -640,7 +639,7 @@ MSGRCFILE=$(DESTDIR)\$(MSGFILE).rc
 $(MSGFILE): $(MSGRCFILE)
 $(MSGRCFILE): $(SRCDIR)\$(MSGFILE).msg
 !if defined(VERBOSE)
-  $(MC) $(SRCDIR)\$(@B).msg -r $(DESTDIR) -h $(DESTDIR) 2>&1 | $(SED) -n -e "/Redefining value of English/!p"
+  $(MC) $(SRCDIR)\$(@B).msg -r $(DESTDIR) -h $(DESTDIR) 2>&1
 !else
   $(MC) $(SRCDIR)\$(@B).msg -r $(DESTDIR) -h $(DESTDIR)
 !endif
@@ -659,6 +658,6 @@ $(MSGRCFILE): $(SRCDIR)\$(MSGFILE).msg
 # Automatic Dependency Generation
 #
 
-!ifndef NODEPENDENCIES
-!include "makedep.inc"
-!endif
+#!ifndef NODEPENDENCIES
+#!include "makedep.inc"
+#!endif

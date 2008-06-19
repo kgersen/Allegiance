@@ -1,5 +1,5 @@
 #
-# Makefile for IGC.lib
+# Makefile for sharemem
 #
 # Environment variable Requirements:
 #   
@@ -26,6 +26,7 @@
 
 MAINTARGROOT=sharemem
 MAINTARGEXT=lib
+CARGSLOCAL=/D _CRT_NON_CONFORMING_SWPRINTFS
 
 !include "..\makefile.inc"
 

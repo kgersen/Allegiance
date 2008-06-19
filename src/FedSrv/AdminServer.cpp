@@ -1,11 +1,11 @@
 
 /*-------------------------------------------------------------------------
  * fedsrv\AdminServer.CPP
- * 
+ *
  * Implementation of CAdminServer
- * 
- * Owner: 
- * 
+ *
+ * Owner:
+ *
  * Copyright 1986-1999 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
@@ -29,7 +29,7 @@ TC_OBJECT_EXTERN_NON_CREATEABLE_IMPL(CAdminServer)
 
 STDMETHODIMP CAdminServer::InterfaceSupportsErrorInfo(REFIID riid)
 {
-  static const IID* arr[] = 
+  static const IID* arr[] =
   {
     &IID_IAdminServer
   };
@@ -49,8 +49,8 @@ STDMETHODIMP CAdminServer::InterfaceSupportsErrorInfo(REFIID riid)
  * get_Games()
  *-------------------------------------------------------------------------
  * Purpose:
- *    
- * 
+ *
+ *
  */
 STDMETHODIMP CAdminServer::get_Games(IAdminGames** ppAdminGames)
 {
@@ -67,7 +67,7 @@ STDMETHODIMP CAdminServer::get_Games(IAdminGames** ppAdminGames)
  *-------------------------------------------------------------------------
  * Purpose:
  *    Determine the number of players currently playing
- * 
+ *
  */
 STDMETHODIMP CAdminServer::get_PlayerCount(long* pVal)
 {
@@ -81,7 +81,7 @@ STDMETHODIMP CAdminServer::get_PlayerCount(long* pVal)
  *-------------------------------------------------------------------------
  * Purpose:
  *    Determine the number of missions (that is, games) currently running
- * 
+ *
  */
 STDMETHODIMP CAdminServer::get_MissionCount(long* pVal)
 {
@@ -96,7 +96,7 @@ STDMETHODIMP CAdminServer::get_MissionCount(long* pVal)
  *-------------------------------------------------------------------------
  * Purpose:
  *    Send a message to everyone on the server
- * 
+ *
  * Note: If no one is in the sector, no messages are sent
  */
 STDMETHODIMP CAdminServer::SendMsg(BSTR bstrMessage)
@@ -122,7 +122,7 @@ STDMETHODIMP CAdminServer::SendMsg(BSTR bstrMessage)
       pfsMission->GetSite()->SendChat(
         NULL,                     //from system
         CHAT_EVERYONE,            //send to everyone
-        NA,                       //no target ship 
+        NA,                       //no target ship
         NA,                       //No voice over
         pszMessage,
         c_cidNone,
@@ -145,8 +145,8 @@ STDMETHODIMP CAdminServer::SendMsg(BSTR bstrMessage)
  * CAdminServer::get_Users()
  *-------------------------------------------------------------------------
  * Purpose:
- *   Returns the collection of users currently on the server.   
- * 
+ *   Returns the collection of users currently on the server.
+ *
  */
 
 STDMETHODIMP CAdminServer::get_Users(/*[out, retval]*/ IAdminUsers** ppAdminUsers)
@@ -178,7 +178,7 @@ STDMETHODIMP CAdminServer::get_FindUser(BSTR bstrName, IAdminUser** ppUser)
   *ppUser = NULL; // assume not found for now
 
   USES_CONVERSION;
-                  
+
   char * szName = OLE2A(bstrName);
 
   const ListFSMission * plistMission = CFSMission::GetMissions();
@@ -371,9 +371,9 @@ STDMETHODIMP CAdminServer::put_LobbyServer(BSTR bstrLobbyServer)
         _AGCModule.TriggerEvent(NULL, AllsrvEventID_ConnectError, "", -1, -1, -1, 0);
         return HRESULT_FROM_WIN32(lr);
       }
-      key.SetValue(pszLobbyServer, "LobbyServer");
+      key.SetStringValue("LobbyServer",pszLobbyServer);
     #endif // !defined(ALLSRV_STANDALONE)
-    
+
   }
   else
   {
@@ -411,7 +411,7 @@ STDMETHODIMP CAdminServer::get_LobbyServer(BSTR* pbstrLobbyServer)
 STDMETHODIMP CAdminServer::CreateDefaultGames()
 {
   #if defined(ALLSRV_STANDALONE)
-    // Don't create new games if any games are already there.  This is to 
+    // Don't create new games if any games are already there.  This is to
     // prevent starting two copies of the default games.
     const ListFSMission * plistMission = CFSMission::GetMissions();
     if (plistMission->n())
@@ -440,7 +440,7 @@ STDMETHODIMP CAdminServer::get_PublicLobby(VARIANT_BOOL *pVal)
 //
 STDMETHODIMP CAdminServer::put_PublicLobby(VARIANT_BOOL bPublic)
 {
-  // make sure no games are present; otherwise players could have there sessions 
+  // make sure no games are present; otherwise players could have there sessions
   // terminated
   const ListFSMission * plistMission = CFSMission::GetMissions();
   if (plistMission->n())
@@ -455,7 +455,7 @@ STDMETHODIMP CAdminServer::put_PublicLobby(VARIANT_BOOL bPublic)
     if (g.fm.GetHostApplicationGuid() != FEDSRV_GUID)
     {
       // if existing session running, kill it
-      if (g.fm.GetHostApplicationGuid() != GUID_NULL) 
+      if (g.fm.GetHostApplicationGuid() != GUID_NULL)
         g.fm.Shutdown();
 
       printf("Preparing public session for clients ... ");
@@ -509,7 +509,7 @@ STDMETHODIMP CAdminServer::put_PublicLobby(VARIANT_BOOL bPublic)
   else
   {
     #if !defined(ALLSRV_STANDALONE)
-    return Error("Only standalone servers can have private games"); 
+    return Error("Only standalone servers can have private games");
     #endif
     //
     // Setup the private session for standalone server

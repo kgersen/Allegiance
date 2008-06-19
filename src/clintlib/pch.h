@@ -8,6 +8,7 @@
 // Headers for fed code.
 //
 #define __MODULE__  "clintlib"
+#pragma warning(disable:4018)
 
 #include "guids.h"
 #include "zlib.h"

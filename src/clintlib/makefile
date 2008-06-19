@@ -29,6 +29,7 @@ MAINTARGROOT=clintlib
 INCLUDELOCAL=$(FEDSRC)\igc;$(FEDSRC)\Utility;$(FEDSRC)\ZLib;$(FEDSRC)\WinTrek;$(DESTDIR);$(FEDSRC)\jpeg;$(FEDSRC)\clintlib;$(FEDSRC)\Zone;$(FEDSRC)\training;$(FEDSRC)\lobby;$(FEDSRC)\engine
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\igc\*.h $(FEDSRC)\clintlib\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\lobby\messageslc.h $(FEDSRC)\lobby\messagesall.h $(FEDSRC)\club\clubmessages.h $(FEDSRC)\guids\*.h
 PCHROOT=pch
+UNWINDCARG=/EHsc
 
 MAINTARGEXT=lib
 

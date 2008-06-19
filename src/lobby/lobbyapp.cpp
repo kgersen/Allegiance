@@ -1,10 +1,10 @@
 /*-------------------------------------------------------------------------
   LobbyApp.cpp
-  
+
   Implementation of the lobby
-  
-  Owner: 
-  
+
+  Owner:
+
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@ CLobbyApp * g_pLobbyApp = NULL;
 #ifdef USECLUB
 void CLobbyApp::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
-  // don't make the event an error event, because this may or may not be fatal. 
+  // don't make the event an error event, because this may or may not be fatal.
   // But we certainly want to see them all in any case.
   m_plas->LogEvent(EVENTLOG_WARNING_TYPE, LE_DatabaseError, perror->pwszMessage,
     perror->pwszProcedure, perror->lNative, perror->wLineNumber, postrError);
@@ -68,7 +68,7 @@ bool CLobbyApp::ProcessMsgPump()
   }
 
   timerMsgPump.Stop();
-  
+
   return fQuit;
 }
 
@@ -98,7 +98,7 @@ void CLobbyApp::SetVariableGameInfo()
   gameInfo->info[0].maxPopulation = 1000;
 
   gameInfo->info[0].gameAddr = 0; //inet_addr ("127.0.0/1");
-  gameInfo->info[0].gamePort = 0; //2803; //your game port 
+  gameInfo->info[0].gamePort = 0; //2803; //your game port
   gameInfo->info[0].serviceType = GAMEINFO_SERVICE_TYPE_GAME;
   gameInfo->info[0].gameState = zGameStateActive;
   gameInfo->info[0].gameVersion = 1;
@@ -175,12 +175,12 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
           if (phe)
             ip = * (unsigned long *) phe->h_addr_list[0];
         }
-        
+
         if (INADDR_NONE != ip)
           m_rgulIP[m_cReportServers++] = ip;
         else
           m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_BadGameInfoSrv, token);
-          
+
         token = strtok(NULL, " ");
       }
       bSuccess = _Module.ReadFromRegistry(hk, false, "GameInfoInterval", &m_sGameInfoInterval, 25);
@@ -198,20 +198,20 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
     m_fProtocol = !!dwProtocol;
 
     DWORD dwFreeLobby;
-    bSuccess = _Module.ReadFromRegistry(hk, false, "fFreeLobby", &dwFreeLobby, (unsigned long) 
+    bSuccess = _Module.ReadFromRegistry(hk, false, "fFreeLobby", &dwFreeLobby, (unsigned long)
 #ifdef USECLUB
     false
-#else    
+#else
     true
-#endif    
+#endif
     );
     m_fFreeLobby = !!dwFreeLobby;
 
     DWORD dwCheckKey;
-    bSuccess = _Module.ReadFromRegistry(hk, false, "fCheckCDKey", &dwCheckKey, (unsigned long) 
+    bSuccess = _Module.ReadFromRegistry(hk, false, "fCheckCDKey", &dwCheckKey, (unsigned long)
 #ifdef USECLUB
       true
-#else      
+#else
       false
 #endif
     );
@@ -223,7 +223,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
 
     if (FAILED(LoadRegString(hk, "SQLConfig", m_strSQLConfig)))
     {
-      m_strSQLConfig.Empty(); 
+      m_strSQLConfig.Empty();
       _Module.LogEvent(EVENTLOG_ERROR_TYPE, LE_RegStrMissingNoDef, "SQLConfig");
     }
 #endif
@@ -241,7 +241,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   SetConstantGameInfo();
 
   // if zone club lobby
-#ifdef USEAUTH  
+#ifdef USEAUTH
   m_pzas = CreateZoneAuthServer();
 #endif
 }
@@ -302,7 +302,7 @@ HRESULT CLobbyApp::Init()
       strcat(szFileName, "FileList.txt");
       CreateAutoUpdate(hk, szFileName);
     }
-    else 
+    else
       g_pAutoUpdate = NULL;
 
     RegCloseKey(hk);
@@ -441,9 +441,9 @@ int CLobbyApp::OnMessageBox(const char * strText, const char * strCaption, UINT 
 
 PER_SERVER_COUNTERS * CLobbyApp::AllocatePerServerCounters(const char * szServername)
 {
-  PER_SERVER_COUNTERS * pPerServerCounters = (PER_SERVER_COUNTERS *) 
+  PER_SERVER_COUNTERS * pPerServerCounters = (PER_SERVER_COUNTERS *)
         m_perfshare.AllocateCounters((CHAR *) "AllLobbyPerServer", (CHAR*) szServername, sizeof(PER_SERVER_COUNTERS));
-  ZeroMemory(pPerServerCounters, sizeof(*pPerServerCounters));  
+  ZeroMemory(pPerServerCounters, sizeof(*pPerServerCounters));
   return pPerServerCounters;
 }
 
@@ -480,14 +480,14 @@ void CLobbyApp::BootPlayersByName(const ZString& strName)
   {
     // boot all old copies
     CFLMission * pMissionOld = (*(*iterPlayer).second).second.GetMission();
-    
+
     BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
       FM_VAR_PARM((PCC)strName, CB_ZTS)
       FM_VAR_PARM(NULL, 0)
     END_PFM_CREATE
     pfmRemovePlayer->dwMissionCookie = pMissionOld->GetCookie();
     pfmRemovePlayer->reason = RPR_duplicateName;
-    m_fmServers.SendMessages(pMissionOld->GetServer()->GetConnection(), 
+    m_fmServers.SendMessages(pMissionOld->GetServer()->GetConnection(),
       FM_GUARANTEED, FM_FLUSH);
 
     ++iterPlayer;
@@ -507,14 +507,14 @@ bool CLobbyApp::BootPlayersByCDKey(const ZString& strCDKey, const ZString& strNa
     if ((*iterPlayerByCDKey).second.GetName() != strNameExclude)
     {
         CFLMission * pMissionOld = (*iterPlayerByCDKey).second.GetMission();
-    
+
         BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
           FM_VAR_PARM((PCC)(*iterPlayerByCDKey).second.GetName(), CB_ZTS)
           FM_VAR_PARM((PCC)(strNameExclude), CB_ZTS)
         END_PFM_CREATE
         pfmRemovePlayer->dwMissionCookie = pMissionOld->GetCookie();
-        pfmRemovePlayer->reason = RPR_duplicateCDKey;    
-        m_fmServers.SendMessages(pMissionOld->GetServer()->GetConnection(), 
+        pfmRemovePlayer->reason = RPR_duplicateCDKey;
+        m_fmServers.SendMessages(pMissionOld->GetServer()->GetConnection(),
           FM_GUARANTEED, FM_FLUSH);
 
         // note: only returns the name of the last player we booted.
@@ -539,7 +539,7 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
 #endif
   if (EnforceCDKey())
   {
-    // make sure the key requested is valid (since we can't guarantee that 
+    // make sure the key requested is valid (since we can't guarantee that
     // they reported the correct value to the server).
 /* // we don't have any "instant" way to validate keys, and it's not worth it (now) to go back to db
     if (!CDKeyIsValid(szCDKey))
@@ -548,13 +548,13 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
         FM_VAR_PARM(szPlayerName, CB_ZTS)
       END_PFM_CREATE
       pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
-      pfmRemovePlayer->reason = RPR_duplicateCDKey;    
-      m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
+      pfmRemovePlayer->reason = RPR_duplicateCDKey;
+      m_fmServers.SendMessages(pMission->GetServer()->GetConnection(),
         FM_GUARANTEED, FM_FLUSH);
       GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
           pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
     }
-    else 
+    else
 */
     ZString strOldPlayer;
 
@@ -565,14 +565,14 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
         FM_VAR_PARM((PCC)strOldPlayer, CB_ZTS)
       END_PFM_CREATE
       pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
-      pfmRemovePlayer->reason = RPR_duplicateCDKey;    
-      m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
+      pfmRemovePlayer->reason = RPR_duplicateCDKey;
+      m_fmServers.SendMessages(pMission->GetServer()->GetConnection(),
         FM_GUARANTEED, FM_FLUSH);
     }
   }
 
   // create a new player by creating entries in the maps
-  PlayerByCDKey::iterator iterPlayerByCDKey = 
+  PlayerByCDKey::iterator iterPlayerByCDKey =
       m_playerByCDKey.insert(PlayerByCDKey::value_type(strCDKey, PlayerLocInfo(strPlayerName, pMission)));
   m_playerByName.insert(PlayerByName::value_type(strPlayerName, iterPlayerByCDKey));
 
@@ -601,7 +601,7 @@ void CLobbyApp::RemovePlayerFromMission(const char* szPlayerName, CFLMission* pM
 
         return;
       }
-        
+
       ++iterPlayer;
     }
   }
@@ -617,7 +617,7 @@ void CLobbyApp::RemoveAllPlayersFromMission(CFLMission* pMission)
     // REVIEW: O(AllPlayers).  We could do this in O(ln(AllPlayers)) by
     // storing a set of players on each mission, but that requires extra
     // work for the common case (inserting or removing players) to speed
-    // up the uncommon case (removing a server with players).  
+    // up the uncommon case (removing a server with players).
 
     // loop through all of the players
     PlayerByName::iterator iterPlayer = m_playerByName.begin();
@@ -644,13 +644,13 @@ void CLobbyApp::RemoveAllPlayersFromMission(CFLMission* pMission)
 void CLobbyApp::RemoveAllPlayersFromServer(CFLServer* pServer)
 {
   // remove all players playing in this server
-  
+
   if (pServer->GetPlayerCount() != 0)
   {
     // REVIEW: O(AllPlayers).  We could do this in O(ln(AllPlayers)) by
     // storing a set of players on each mission, but that requires extra
     // work for the common case (inserting or removing players) to speed
-    // up the uncommon case (removing a server with players).  
+    // up the uncommon case (removing a server with players).
 
     // loop through all of the players
     PlayerByName::iterator iterPlayer = m_playerByName.begin();
@@ -688,25 +688,25 @@ CFLMission* CLobbyApp::FindPlayersMission(const char* szPlayerName)
 }
 
 bool CLobbyApp::StringCmpLess::operator () (const ZString& str1, const ZString& str2) const
-{ 
+{
   // comparing lengths first is faster than a strcmp and still creates a strong ordering
-  int nLength1 = str1.GetLength(); 
+  int nLength1 = str1.GetLength();
   int nLength2 = str2.GetLength();
 
   if (nLength1 == nLength2)
-    return memcmp((PCC)str1, (PCC)str2, nLength1) < 0; 
+    return memcmp((PCC)str1, (PCC)str2, nLength1) < 0;
   else
     return nLength1 < nLength2;
 };
 
 bool CLobbyApp::StringICmpLess::operator () (const ZString& str1, const ZString& str2) const
-{ 
+{
   // comparing lengths first is faster than a strcmp and still creates a strong ordering
-  int nLength1 = str1.GetLength(); 
+  int nLength1 = str1.GetLength();
   int nLength2 = str2.GetLength();
 
   if (nLength1 == nLength2)
-    return _stricmp(str1, str2) < 0; 
+    return _stricmp(str1, str2) < 0;
   else
     return nLength1 < nLength2;
 };
@@ -716,7 +716,7 @@ class StaticCoreInfoEquals {
 public:
     bool operator () (const StaticCoreInfo* value1, const StaticCoreInfo* value2)
     {
-        return (stricmp(value1->cbIGCFile,value2->cbIGCFile) == 0);
+        return (_stricmp(value1->cbIGCFile,value2->cbIGCFile) == 0);
     }
 };
 void CLobbyApp::BuildStaticCoreInfo()
@@ -745,7 +745,7 @@ void CLobbyApp::BuildStaticCoreInfo()
 		iterCnxn.Next();
 	}
 
-	// 3. Allocate mem 
+	// 3. Allocate mem
 	m_cStaticCoreInfo = CoreList.GetCount();
 	if (m_cStaticCoreInfo)
 		m_vStaticCoreInfo =  new StaticCoreInfo[m_cStaticCoreInfo];
@@ -774,7 +774,7 @@ void CLobbyApp::BuildStaticCoreInfo()
 					for (int j = 0; j < m_cStaticCoreInfo; j++)
 						if (strcmp(pServerT->GetvStaticCoreInfo()[i].cbIGCFile,m_vStaticCoreInfo[j].cbIGCFile) == 0)
 							pServerT->SetStaticCoreMask(pServerT->GetStaticCoreMask() | 1<<j);
-						
+
 				}
 		}
 		iterCnxn2.Next();

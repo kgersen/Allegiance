@@ -9,17 +9,18 @@
 #include <..\TCLib\ObjectLock.h>
 #include "resource.h"
 
+#pragma warning(disable:4996)
 
 /////////////////////////////////////////////////////////////////////////////
 // CAGCVector
-class ATL_NO_VTABLE CAGCVector : 
+class ATL_NO_VTABLE CAGCVector :
   public IDispatchImpl<IAGCVector, &IID_IAGCVector, &LIBID_AGCLib>,
   public IAGCVectorPrivate,
 	public ISupportErrorInfo,
   public IPersistStreamInit,
   public IPersistPropertyBag,
   public AGCObjectSafetyImpl<CAGCVector>,
-	public CComObjectRootEx<CComMultiThreadModel>, 
+	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<CAGCVector, &CLSID_AGCVector>
 {
 // Declarations
@@ -141,7 +142,7 @@ protected:
 private:
   Vector m_vector; // the actual vector data goes here!
   bool   m_bDirty;
-public:  
+public:
   CComPtr<IUnknown> m_punkMBV;
 };
 

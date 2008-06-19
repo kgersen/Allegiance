@@ -1,16 +1,16 @@
 /*-------------------------------------------------------------------------
   Client.cpp
-  
+
   Per client stuff, including site for Clients session
-  
-  Owner: 
-  
+
+  Owner:
+
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 //
 // wlp 2006 - the next line goes above the pch.h to avoid compile errors
-// 
-#include "appWeb.h" //Imago: HTTP Library for ASGS services
+//
+
 #include "pch.h"
 
 //
@@ -18,12 +18,12 @@
 //  the idea is to verify with ASGS that a player can play
 // this is the request string that we send
 // http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign=Radar&Ticket=BunchOfAsciiStuff
-// and the response expected for an invalid token is :  
-// <?xml version="1.0" encoding="utf-8" ?> 
-//  <int xmlns="http://ASGS.Alleg.net/ASGS/ASGS">-1</int> 
-// Valid tokens will return 0 or greater than zero 
+// and the response expected for an invalid token is :
+// <?xml version="1.0" encoding="utf-8" ?>
+//  <int xmlns="http://ASGS.Alleg.net/ASGS/ASGS">-1</int>
+// Valid tokens will return 0 or greater than zero
 // this code is a rework of the rank code by Imago to adapt it here for tokens access
-// 
+//
 //
 
 // thia encodes the data areas of the URL for service calls
@@ -32,16 +32,16 @@ void encodeURL( char * url,char * token) // url = output, token gets append to u
 {
     // wlp - we will do brute force URL encoding - it's normal alphaNumeric or it's URL encoded
     // we will URL encode everything that is in data areas
-   
+
 	url = url + strlen(url) ;       // point past any existing data
-	
-	char* tokenEnd = ( token + strlen(token)); // this is where we end                    
+
+	char* tokenEnd = ( token + strlen(token)); // this is where we end
 	for( ; token < tokenEnd ;)
 	{
-	//  filter out special characters 
+	//  filter out special characters
 	// IF it is not (a to z) or (A to Z) or (0 to 9) then filter it
-    	if ( ((*token >= 'a') && (*token <= 'z'))     
-           | ((*token >= 'A') && (*token <= 'Z')) 
+    	if ( ((*token >= 'a') && (*token <= 'z'))
+           | ((*token >= 'A') && (*token <= 'Z'))
            | ((*token >= '0') && (*token <= '9'))
 		   )
 		{
@@ -72,7 +72,7 @@ BOOLEAN  getASGS(char * strName,char* playerIP,char* ASGS_Token)
    DWORD dwASGS_ON=0;
    bool bSuccess = _Module.ReadFromRegistry(hk, false, "ASGS_ON", &dwASGS_ON, 0);
    RegCloseKey(hk);
-   if (!(bSuccess && dwASGS_ON)) return true ; // ASGS is off - so let them in 
+   if (!(bSuccess && dwASGS_ON)) return true ; // ASGS is off - so let them in
   }
 
     // we will use ASGS from here on
@@ -80,35 +80,36 @@ BOOLEAN  getASGS(char * strName,char* playerIP,char* ASGS_Token)
  	// Wlp - setup variables up for the socket service
 	// use setTimeout to adjust the transmit timer ( probably milliseconds )
 	// use setRetries to adjust the retries
-    
+
 	// appWeb Socket
-	MaClient *http_client;  
+	/*
+	MaClient *http_client;
 
 	// socket variables
 	int contentLen;         // length of Web Service Response
 	char *szContent;        // pointer to Service response
 	char szResponse[255];   // actual XML Web Service Response
     ZString strContent ;    // work buffer for response
-	 
+
 	// URL buffers
 	char szURL[2000];        // Web Service ASCII Request String ( URL Encoded by us )
-	
+
 	// wlp - the URL requires URL Encoding - %22 = quote marks
-	// basically any special character is encoded with percent(%) and 2 character Hex Value 
+	// basically any special character is encoded with percent(%) and 2 character Hex Value
 	// like %22 for double quote marks
 	// this can cause the ASGS Ticket to grow from around 300 characters to 900.
 	//
 	// Load initial value in Request String
     Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign=");
-	
+
 	// URL encode callsign and ticket data field as we build URL string
 	//
 	 encodeURL(szURL,strName); // unencoded Callsign
-     strcat(szURL,"&IP=");  
+     strcat(szURL,"&IP=");
      encodeURL(szURL,playerIP) ;  // include Ip of requester for security
-	 strcat(szURL,"&Ticket=");  
+	 strcat(szURL,"&Ticket=");
      encodeURL(szURL,ASGS_Token) ; // and the unencoded ticket
-  
+
 	// Setup the socket Client to Process requests on AppWeb threads
 	Mpr   mpr("AllSrv");
 	mpr.start(MPR_SERVICE_THREAD);
@@ -118,9 +119,9 @@ BOOLEAN  getASGS(char * strName,char* playerIP,char* ASGS_Token)
 	http_client->getRequest(szURL);
 
 	// Check the Response From Service
-	if (szContent = http_client->getResponseContent(&contentLen)) 
+	if (szContent = http_client->getResponseContent(&contentLen))
 	   {
-		// if we get answered then we 
+		// if we get answered then we
 		// Check it out to see if the player was validated
 		strContent = szContent;
 
@@ -128,33 +129,34 @@ BOOLEAN  getASGS(char * strName,char* playerIP,char* ASGS_Token)
         mpr.stop(0);
 		delete http_client;
 
-        // look for failure string at the end 
-		// anything else is a pass 
+        // look for failure string at the end
+		// anything else is a pass
 		if ( strContent.ReverseFind("<int xmlns=\"http://ASGS.Alleg.net/ASGS/ASGS\">-1</int>"   ) > -1 )
 		{
 			debugf("ASGS player was not validated!\n");
-        // log it 
+        // log it
         debugf("sent asgs %s \n",szURL);   // string gets too long
 		debugf(" And asgs sent:  %s\n", (PCC)strContent);
     	return false ;
-		} 
+		}
 		else
 		{
         // debugf("ASGS player was validated!\n");
 		return true ;
 	    }
-	   } else 
+	   } else
 	    {
 		debugf("ASGS Server did not respond!\n");
+		*/
 		return true ;  // Let them on
-	    }
+	   // }
 }
- 
+
 // wlp 2006 end of added routine ASGS
- 
+
 const DWORD CFLClient::c_dwID = 19680815;
 #ifndef NO_MSG_CRC
-bool g_fLogonCRC = true; 
+bool g_fLogonCRC = true;
 #endif
 
 // mdvalley: 2005 needs to specify dword
@@ -163,7 +165,7 @@ static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
   DWORD dwResult = dwDefault;
 
   HKEY  hk;
-  if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", 
+  if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "",
       REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hk, NULL) == ERROR_SUCCESS)
   {
     _Module.ReadFromRegistry(hk, false, szKey, &dwResult, dwDefault);
@@ -188,7 +190,7 @@ void QueueMissions(FedMessaging * pfm)
         {
           FMD_LS_LOBBYMISSIONINFO * plmi = iterMissions.Value()->GetMissionInfo();
           if (plmi && (fIsFreeLobby || plmi->nNumPlayers > 0 || plmi->fMSArena
-			  || (!fIsFreeLobby && strcmp(FM_VAR_REF(plmi,szIGCStaticFile),"zone_core")))) //-KGJV: advertize custom core game 
+			  || (!fIsFreeLobby && strcmp(FM_VAR_REF(plmi,szIGCStaticFile),"zone_core")))) //-KGJV: advertize custom core game
             pfm->QueueExistingMsg(plmi);
           iterMissions.Next();
         }
@@ -251,11 +253,11 @@ void GotLogonInfo(CQLobbyLogon * pquery)
     BEGIN_PFM_CREATE(fm, pfmSquadMemberships, LS, SQUAD_MEMBERSHIPS)
         FM_VAR_PARM(cRows ? pargSquads : NULL, sizeof(SquadMembership) * cRows)
     END_PFM_CREATE
-    pfmSquadMemberships->cSquadMemberships = cRows;          
+    pfmSquadMemberships->cSquadMemberships = cRows;
 
     delete [] pargSquads;
 
-	// KGJV - undeclared identifier error 
+	// KGJV - undeclared identifier error
     // QueueMissions(FedMessaging * pfm);
 	QueueMissions(&fm);
   }
@@ -267,7 +269,7 @@ void GotLogonInfo(CQLobbyLogon * pquery)
     END_PFM_CREATE
     pfmLogonNack->fRetry = pqd->fRetry;
   }
-  
+
   g_pLobbyApp->GetFMClients().SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
 }
 #endif
@@ -280,7 +282,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
   assert(pClient);
 
   debugf("Client: %s from <%s> at time %u\n", g_rgszMsgNames[pfm->fmid], cnxnFrom.GetName(), Time::Now());
-  
+
   switch (pfm->fmid)
   {
     // TODO: remove this post-beta.
@@ -289,7 +291,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 #ifndef NO_MSG_CRC
       bool fCRC = g_fLogonCRC;
       g_fLogonCRC = true; // assume always yes until we find one via OnBadCRC that is not.
-#endif      
+#endif
       CASTPFM(pfmLogon, C, LOGON_LOBBY_OLD, pfm);
 
       // no need to authenticate - they're out of sync and need to auto-update
@@ -307,7 +309,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         pfmAutoUpdate->crcFileList = g_pAutoUpdate->GetFileListCRC();
         pfmAutoUpdate->nFileListSize = g_pAutoUpdate->GetFileListSize();
       }
-      else 
+      else
       {
         // tell client that his version is wrong
         char * szReason = "Your game's version did not get auto-updated properly.  Please try again later.";
@@ -318,11 +320,11 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       }
 
 #ifndef NO_MSG_CRC
-      // Big hack to communicate w/ old non-crc clients. This is the ONLY time we send them any non-crc'd messages 
+      // Big hack to communicate w/ old non-crc clients. This is the ONLY time we send them any non-crc'd messages
       // by increasing the announced size of the message, the client will skip past the crc.
       if (!fCRC)
         *(CB*)(pthis->BuffOut()) += sizeof(int);
-#endif      
+#endif
       pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
     }
     break;
@@ -348,7 +350,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 #endif
       if (pzas) // it's all in the Zone Ticket
       {
-        if (pZoneTicket) 
+        if (pZoneTicket)
         {
           HRESULT hr = pzas->DecryptTicket(pZoneTicket, pfmLogon->cbZoneTicket);
 
@@ -370,13 +372,13 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
                 const char szExpired[] = "The Allegiance Zone subscription for %s has expired.  Hit <Sign Up> to go to the Allegiance Zone signup and subscription page, where you can renew your account subscription.";
                 const char szNoToken[] = "The %s Zone account does not have a valid Allegiance Zone subscription.  Hit <Sign Up> to go to the Allegiance Zone signup and subscription page, where you can look up your account status.";
                 const DWORD cbReason = 25 + max(sizeof(szNoToken), sizeof(szExpired)); // 25 = sizeof max zoneid
-                szReason = (char*)_alloca(cbReason); 
-                _snprintf(szReason, cbReason, (fValid ? szExpired : szNoToken), pqd->szCharacterName); 
+                szReason = (char*)_alloca(cbReason);
+                _snprintf(szReason, cbReason, (fValid ? szExpired : szNoToken), pqd->szCharacterName);
 */
 				const char szNoAuth[] = "Your authentication has failed.  Please try again.";
                 const DWORD cbReason = sizeof(szNoAuth); // 25 = sizeof max zoneid
-                szReason = (char*)_alloca(cbReason); 
-                _snprintf(szReason, cbReason, szNoAuth); 
+                szReason = (char*)_alloca(cbReason);
+                _snprintf(szReason, cbReason, szNoAuth);
                 fValid = false;
               }
 #ifdef USECLUB // Requires bits from club SQL callback
@@ -390,8 +392,8 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
                 char * szDecryptionKey = (char *)_alloca(strlen(CL_LOGON_KEY) + 12 + c_cbName);
                 wsprintf(szDecryptionKey, CL_LOGON_KEY, pfmLogon->dwTime, szName);
 
-                // note: they can get away with a replay attack here, but only 
-                // if they keep the name the same.  
+                // note: they can get away with a replay attack here, but only
+                // if they keep the name the same.
                 ZUnscramble(pqd->szCDKey, szEncryptedCDKey, szDecryptionKey);
 
                 ZString strOldPlayer;
@@ -399,11 +401,11 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
                 {
                     fValid = false;
                     fRetry = true;
-                    
+
                     const char szDuplicateCDKey[] = "%s was logged on with your CD Key!";
                     const DWORD cbReason = 25 + sizeof(szDuplicateCDKey); // 25 = sizeof max zoneid
-                    szReason = (char*)_alloca(cbReason); 
-                    _snprintf(szReason, cbReason, szDuplicateCDKey, (PCC)strOldPlayer); 
+                    szReason = (char*)_alloca(cbReason);
+                    _snprintf(szReason, cbReason, szDuplicateCDKey, (PCC)strOldPlayer);
                 }
               }
 #endif // USECLUB
@@ -418,7 +420,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
             {
               char szRemoteAddress[16];
               HRESULT hr = pthis->GetIPAddress(cnxnFrom, szRemoteAddress);
-              g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadZTicket, 
+              g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadZTicket,
                   SUCCEEDED(hr) ? szRemoteAddress : "unknown");
               szReason = "Could not validate Zone ID.";
               break;
@@ -444,14 +446,14 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
        if (fValid) // wlp 2006 - added token verification code
 	   {
-	    // wlp grab  the requester IP 
+	    // wlp grab  the requester IP
         char szPlayerIP[16];
         HRESULT hr = pthis->GetIPAddress(cnxnFrom,szPlayerIP);
         // grab the ASGS Ticket from the variable field
         char * szASGS = (char*) FM_VAR_REF(pfmLogon, ASGS_Ticket);
-      
+
        if (!szASGS || szASGS[pfmLogon->cbASGS_Ticket - 1] != '\0') szASGS = "";
-	       
+
         if ( !getASGS(pfmLogon->szName,szPlayerIP,szASGS) ) // Let ASGS sort it out.
 	    {
 	    // rejected Ticket - Bad Ticket or ASGS didn't answer
@@ -497,7 +499,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       pqd->fValid = fValid;
       pqd->fRetry = fRetry;
       // I'd rather not alloc, but since the strings are not all static, and failure should be fairly uncommon, I'll accept it
-      pqd->szReason = new char[lstrlen(szReason) + 1]; 
+      pqd->szReason = new char[lstrlen(szReason) + 1];
       Strcpy(pqd->szReason, szReason);
       pqd->dwConnectionID = cnxnFrom.GetID();
 
@@ -623,8 +625,8 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	  }
 
 	  // old AZ balancing code
-      ////int cPlayersMin = 10000; // some big number we'll never hit      
-      //int cPlayersMin = c_cMaxPlayers; 
+      ////int cPlayersMin = 10000; // some big number we'll never hit
+      //int cPlayersMin = c_cMaxPlayers;
       //debugf("Received mission creation request from %s\n", cnxnFrom.GetName());
       //ListConnections::Iterator iterCnxn(*g_pLobbyApp->GetFMServers().GetConnections());
       //while (!iterCnxn.End())
@@ -653,7 +655,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         pfmCreateMissionAck->dwCookie = pfmNewMissionReq->dwCookie;
 
         g_pLobbyApp->GetFMServers().SendMessages(pServerMin->GetConnection(), FM_GUARANTEED, FM_FLUSH);
-        
+
         // TODO: check up on this mission later to make sure that we got a lobbymissioninfo from the server
       }
       else
@@ -684,7 +686,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       }
       else
       {
-        BEGIN_PFM_CREATE(*pthis, pfmJoingameNack, L, JOIN_GAME_NACK) 
+        BEGIN_PFM_CREATE(*pthis, pfmJoingameNack, L, JOIN_GAME_NACK)
         END_PFM_CREATE
         // client will know which one, because they're waiting for it
       }
@@ -697,7 +699,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       CASTPFM(pfmFindPlayer, C, FIND_PLAYER, pfm);
       const char* szCharacterName = FM_VAR_REF(pfmFindPlayer, szCharacterName);
       CFLMission * pMissionFound = NULL;
-      
+
       if (szCharacterName == NULL || szCharacterName[pfmFindPlayer->cbszCharacterName-1] != '\0')
       {
         // corrupt data
@@ -709,33 +711,33 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
       BEGIN_PFM_CREATE(*pthis, pfmFoundPlayer, L, FOUND_PLAYER)
       END_PFM_CREATE
-      pfmFoundPlayer->dwCookie = pMissionFound ? pMissionFound->GetCookie() : -1; 
+      pfmFoundPlayer->dwCookie = pMissionFound ? pMissionFound->GetCookie() : -1;
       pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
     }
     break;
 
     default:
-      g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_UnknownMsgFromPlayer, 
-        pfm->fmid, cnxnFrom.GetName(), cnxnFrom.GetID());  
+      g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_UnknownMsgFromPlayer,
+        pfm->fmid, cnxnFrom.GetName(), cnxnFrom.GetID());
   }
 
   return S_OK;
 }
 
 
-HRESULT LobbyClientSite::OnSysMessage(FedMessaging * pthis) 
+HRESULT LobbyClientSite::OnSysMessage(FedMessaging * pthis)
 {
   return S_OK;
 }
 
 
-void LobbyClientSite::OnMessageNAK(FedMessaging * pthis, DWORD dwTime, CFMRecipient * prcp) 
+void LobbyClientSite::OnMessageNAK(FedMessaging * pthis, DWORD dwTime, CFMRecipient * prcp)
 {
   debugf("ACK!! A guaranteed message didn't make it through to recipient %s.\n", prcp->GetName());
 }
 
 
-HRESULT LobbyClientSite::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn) 
+HRESULT LobbyClientSite::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
   CFLClient * pClient = new CFLClient(&cnxn);
   debugf("Player %s has connected.\n", cnxn.GetName());
@@ -744,7 +746,7 @@ HRESULT LobbyClientSite::OnNewConnection(FedMessaging * pthis, CFMConnection & c
 }
 
 
-HRESULT LobbyClientSite::OnDestroyConnection(FedMessaging * pthis, CFMConnection & cnxn) 
+HRESULT LobbyClientSite::OnDestroyConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
   debugf("Player %s has left.\n", cnxn.GetName());
   g_pLobbyApp->GetCounters()->cLogoffs++;
@@ -753,7 +755,7 @@ HRESULT LobbyClientSite::OnDestroyConnection(FedMessaging * pthis, CFMConnection
 }
 
 
-HRESULT LobbyClientSite::OnSessionLost(FedMessaging * pthis) 
+HRESULT LobbyClientSite::OnSessionLost(FedMessaging * pthis)
 {
   g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_ERROR_TYPE, LE_ClientsSessionLost);
   return S_OK;
@@ -762,7 +764,7 @@ HRESULT LobbyClientSite::OnSessionLost(FedMessaging * pthis)
 
 int LobbyClientSite::OnMessageBox(FedMessaging * pthis, const char * strText, const char * strCaption, UINT nType)
 {
-  debugf("LobbyClientSite::OnMessageBox: "); 
+  debugf("LobbyClientSite::OnMessageBox: ");
   return g_pLobbyApp->OnMessageBox(strText, strCaption, nType);
 }
 
@@ -773,7 +775,7 @@ void LobbyClientSite::OnBadCRC(FedMessaging * pthis, CFMConnection & cnxn, BYTE 
   char buf[256];
   // We don't KNOW it's a logon, but let's assume it is (it's ok if it's not)
   FMD_C_LOGON_LOBBY * pfmLogon = (FMD_C_LOGON_LOBBY *) pMsg;
-  if (pfmLogon->fmid == FM_C_LOGON_LOBBY && 
+  if (pfmLogon->fmid == FM_C_LOGON_LOBBY &&
     cbMsg == sizeof(FMD_C_LOGON_LOBBY) + pfmLogon->cbZoneTicket) // we'll accept it, just so that we can auto-update
   {
     // there can never be a piggy-backed message w/ FM_C_LOGON_LOBBY
@@ -784,7 +786,7 @@ void LobbyClientSite::OnBadCRC(FedMessaging * pthis, CFMConnection & cnxn, BYTE 
   {
     wsprintf(buf, "HEY! We got a corrupt message!\nPlayer=%s(%d), "
            "cbmsg=%d, fmid=%d, total packet size=%d.\n"
-           "Copy the above line to crashplayers.txt on \\\\zoneagga01. Going to drop player now.\n", 
+           "Copy the above line to crashplayers.txt on \\\\zoneagga01. Going to drop player now.\n",
            cnxn.GetName(), cnxn.GetID(),
            cbMsg >= 2 ? pfmLogon->cbmsg : 0, cbMsg >= 4 ? pfmLogon->fmid : 0, cbMsg);
 

@@ -19,13 +19,15 @@
 //#include "stdtime.h"
 //#endif
 
+#pragma warning(disable:4430)
+
 // data structure used during parsing of date strings
 struct rcParse { int nBump; int nVal; };
 
 class TValue
-{                                         
+{
 protected:
-  int value;                              
+  int value;
 public:
   TValue(int i=0) : value(i) {};
 
@@ -47,12 +49,12 @@ class  CSec  : public TValue { public: CSec (int i=0) : TValue(i) {} };
 
 //------------------------------------------------------------------------------
 //
-// @class   This class is used to contain a date and time object which can 
-//          manipulated and used to keep track of a date/time value.  Other 
-//          services provided allow for querying the day of week, day of year, 
+// @class   This class is used to contain a date and time object which can
+//          manipulated and used to keep track of a date/time value.  Other
+//          services provided allow for querying the day of week, day of year,
 //          etc.
 //
-class CDate 
+class CDate
 {
 public:
     // This enumeration is used to parse the Windows int date format
@@ -110,10 +112,10 @@ public:
     CDate() { SetDateCurrent(); }
     CDate(CYear newyear, CMon newmonth, CDay newmday, CHour newhour, CMin newminute, CSec newsecond )
         : sec(newsecond), minute(newminute), hour(newhour), mday(newmday), mon(newmonth), year(newyear) {}
-    //CDate(const ATime& a) 
+    //CDate(const ATime& a)
     //    : year(a.Year()), mon(a.Month()), mday(a.Day()), hour(a.Hour()), minute(a.Minute()), sec(0) {}
-    //CDate(const RTime&); 
-    CDate(const CDate& d) 
+    //CDate(const RTime&);
+    CDate(const CDate& d)
         : year(d.year), mon(d.mon), mday(d.mday), hour(d.hour), minute(d.minute), sec(d.sec) {}
     CDate(const FILETIME ft);
 
@@ -192,7 +194,7 @@ CArchive& operator<< (CArchive& ar, CDate& d);
   CDate operator+=(CDate& d,const type& t)
 #define protoMinusEquals(type)  \
   CDate operator-=(CDate& d,const type& t)
-  
+
 protoPlusEquals(CYear);
 protoMinusEquals(CYear);
 protoPlusEquals(CMon);

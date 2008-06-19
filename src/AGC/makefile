@@ -51,16 +51,15 @@ PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\Igc\*.h
 PCHINCLOCAL=
 PROJCLEAN=ProjectClean
 MIDLINCLOCAL=/I ..\test\Inc /I ..\Inc
-CARGSLOCAL=/D _ATL_STATIC_REGISTRY /D _WINDLL /D _USRDLL
-UNWINDCARG=/GX
+CARGSLOCAL=/D _ATL_STATIC_REGISTRY /D _WINDLL /D _USRDLL /EHsc
+
+
 
 
 #############################################################################
 # Rules
 #
-
 !include "..\makefile.inc"
-
 
 #############################################################################
 # Build Targets
@@ -114,15 +113,16 @@ OBJS= $(DESTDIR)\AGC.obj                \
 LIBS= $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib        \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib \
-      version.lib delayimp.lib ws2_32.lib dplayx.lib comsupp.lib
+      version.lib delayimp.lib ws2_32.lib dplayx.lib comsupp.lib comsvcs.lib atlsd.lib
 
 USERLIBS= $(DESTDIR)\AGCGuid.lib                            \
           $(FEDROOT)\Objs\$(FLAVOR)\Test\TCLib\TCLib.lib    \
           $(FEDROOT)\Objs\$(FLAVOR)\ZLib\ZLib.lib           \
           $(FEDROOT)\Objs\$(FLAVOR)\_utility\Utility.lib    \
           $(FEDROOT)\Objs\$(FLAVOR)\igc\igc.lib             \
-          $(DXROOT)\lib\dxguid.lib                          \
-          $(FEDEXT)\sbn\lib\nt50\uuid.lib
+          $(FEDEXT)\vc\lib\dxguid.lib                         \
+          $(FEDEXT)\vc\lib\uuid.lib\
+         $(FEDEXT)\vc\lib\atl.lib
 
 RESFILE = $(DESTDIR)\AGC.res
 
@@ -143,7 +143,7 @@ LARGS= /LIBPATH:$(FEDEXT)\Vc\lib                     \
 
 $(MAINTARGFULLPATH) : $(DESTDIR) $(IDLTARGS) $(RESFILE) $(OBJS) $(USERLIBS) $(DESTDIR)\AGCGuid.lib
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS)
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map 2> NUL
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr
@@ -190,12 +190,12 @@ $(DESTDIR)\AGCIDL_p.c  \
 $(DESTDIR)\AGCIDL_i.c  : $(DESTDIR)\AGCEventsIDL.idl ..\Inc\AGCIDL.idl \
                          ..\Test\Inc\ScrRun.idl  \
                          ..\Test\TCAtl\VersionInfoImpl.idl
-  $(MIDL) $(MIDLARGS) ..\Inc\AGCIDL.idl 2>NUL
-
+  $(MIDL) $(MIDLARGS) ..\Inc\AGCIDL.idl
+  
 $(DESTDIR)\AGC.h    \
 $(DESTDIR)\AGC.tlb  \
 $(DESTDIR)\AGC_i.c  : AGC.idl $(DESTDIR)\AGCIDL.h
-  $(MIDL) $(MIDLARGS) .\AGC.idl 2>NUL
+  $(MIDL) $(MIDLARGS) .\AGC.idl
 
 $(DESTDIR)\AGCGuid.obj : AGCGuid.c $(DESTDIR)\AGCIDL_i.c $(DESTDIR)\AGC_i.c
   $(CC) $(NOLOGO) /c /Fo$(DESTDIR)\AGCGuid.obj AGCGuid.c
@@ -241,6 +241,8 @@ $(DESTDIR)\AGCTeams.obj          : $(PCHFILE)
 $(DESTDIR)\AGCAsteroid.obj       : $(PCHFILE)
 $(DESTDIR)\AGCAsteroids.obj      : $(PCHFILE)
 
+
+
 $(RESFILE): $(FEDSRC)\Inc\VerRes.rc $(MAINTARGROOT).rc $(MAINTARGROOT).rc2 resource.h *.rgs \
             $(DESTDIR)\AGCEventsRC2.rc2 $(DESTDIR)\AGCEventsRCH.h   \
             $(DESTDIR)\AGCEventsMC.rc $(DESTDIR)\AGC.tlb
@@ -248,6 +250,7 @@ $(RESFILE): $(FEDSRC)\Inc\VerRes.rc $(MAINTARGROOT).rc $(MAINTARGROOT).rc2 resou
    @copy $(MAINTARGROOT).rc $(DESTDIR)
    @echo #define FLAVOR "$(FLAVOR)" >>$(DESTDIR)\$(MAINTARGROOT).rc
    @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(MAINTARGROOT).rc
+#   echo [$(RC) $(RARGS) /D "DLL" /Fo$(DESTDIR)\$(MAINTARGROOT).res $(DESTDIR)\$(MAINTARGROOT).rc]
    $(RC) $(RARGS) /D "DLL" /Fo$(DESTDIR)\$(MAINTARGROOT).res $(DESTDIR)\$(MAINTARGROOT).rc
 
 RegServer:
@@ -255,7 +258,7 @@ RegServer:
 
 UnregServer:
   @echo Unregistering $(MAINTARGFULLPATH)...
-  $(UNREGDLL)
+ $(UNREGDLL)
   @if not exist $(MAINTARGFULLPATH) echo File $(MAINTARGFULLPATH) does not exist
   @if exist $(DESTDIR)\RegSvr32.trg del $(DESTDIR)\RegSvr32.trg
 

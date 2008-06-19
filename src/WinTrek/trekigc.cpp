@@ -3,7 +3,7 @@
 **
 **  File:    trekigc.cpp
 **
-**  Author: 
+**  Author:
 **
 **  Description:
 **      This file contains most of the IGC calls from wintrek.
@@ -106,7 +106,7 @@ class ClusterSiteImpl : public ClusterSite
             int         count           = 0;
 
             switch(type) {
-                case 1: 
+                case 1:
                     count           = 4;
                     radiusWave      = 50;
                     radiusExplosion = 25;
@@ -300,9 +300,9 @@ class ClusterSiteImpl : public ClusterSite
         }
 
         virtual AssetMask               GetClusterAssetMask(void) { return m_assetmask; }
-        virtual void                    SetClusterAssetMask(AssetMask am) 
+        virtual void                    SetClusterAssetMask(AssetMask am)
         {
-            m_assetmask=am; 
+            m_assetmask=am;
 
             // if the game hasn't started yet, don't warn them about events
             if (!trekClient.IsInGame())
@@ -320,18 +320,18 @@ class ClusterSiteImpl : public ClusterSite
 
             if ((cwNew != cwOld) && (cwNew > c_cwNoThreat))
             {
-                static const SoundID c_vAlertSounds[c_cwMax] = 
+                static const SoundID c_vAlertSounds[c_cwMax] =
                 {
-                    NA, 
                     NA,
                     NA,
                     NA,
                     NA,
-                    minerThreatenedSound, 
-                    constructorThreatenedSound, 
-                    carrierThreatenedSound, 
+                    NA,
+                    minerThreatenedSound,
+                    constructorThreatenedSound,
+                    carrierThreatenedSound,
                     bomberDetectedSound,
-                    carrierDetectedSound, 
+                    carrierDetectedSound,
                     capitalDetectedSound,
                     teleportDetectedSound,
                     transportDetectedSound,
@@ -349,17 +349,17 @@ class ClusterSiteImpl : public ClusterSite
 
             if (trekClient.IsInGame())
             {
-                bool bNewSectorSecured = (m_assetmask & c_amStation) 
+                bool bNewSectorSecured = (m_assetmask & c_amStation)
                     && !(m_assetmask & c_amEnemyStation);
                 bool bOldSectorSecured = (m_assetmaskLastWarning & c_amStation)
                     && !(m_assetmaskLastWarning & c_amEnemyStation);
-            
+
                 if (bNewSectorSecured && !bOldSectorSecured)
                 {
                     trekClient.PostText(false, "%s secured.", m_pcluster->GetName());
                     trekClient.PlaySoundEffect(sectorSecuredSound);
                 }
-                else if (!(m_assetmask & c_amStation) 
+                else if (!(m_assetmask & c_amStation)
                     && (m_assetmaskLastWarning & c_amStation))
                 {
                     trekClient.PostText(false, "%s lost.", m_pcluster->GetName());
@@ -437,7 +437,7 @@ class ClusterSiteImpl : public ClusterSite
 class ModelPointSoundSource : public ISoundPositionSource
 {
 private:
-    // the model to which this is attached.    
+    // the model to which this is attached.
     ImodelIGC* m_pmodel;
 
     // the position of the sound source on the model
@@ -456,16 +456,16 @@ public:
 
     // constructs a sound source with the given position and orientation in
     // model space.
-    ModelPointSoundSource(ImodelIGC* pmodel, 
-            const Vector& vectPosition = Vector(0,0,0), 
+    ModelPointSoundSource(ImodelIGC* pmodel,
+            const Vector& vectPosition = Vector(0,0,0),
             const Vector& vectOrientation = Vector(0,0,-1)) :
-        m_pmodel(pmodel), 
-        m_vectPosition(vectPosition), 
+        m_pmodel(pmodel),
+        m_vectPosition(vectPosition),
         m_vectOrientation(vectOrientation)
     {
     }
 
-    // Any playing sounds attached to this source, used when a model is 
+    // Any playing sounds attached to this source, used when a model is
     // destroyed or leaves the cluster
     void Destroy()
     {
@@ -491,13 +491,13 @@ public:
         {
             // get the position of the source based on the position and orientation
             // of the model.
-            vectPosition = m_pmodel->GetPosition() 
+            vectPosition = m_pmodel->GetPosition()
                 + m_vectPosition * m_pmodel->GetOrientation();
         }
 
         return S_OK;
     };
-    
+
     // Gets the velocity of the sound in space
     virtual HRESULT GetVelocity(Vector& vectVelocity)
     {
@@ -511,7 +511,7 @@ public:
 
         return S_OK;
     };
-    
+
     // Gets the orientation of the sound in space, used for sound cones.
     virtual HRESULT GetOrientation(Vector& vectOrientation)
     {
@@ -526,15 +526,15 @@ public:
         return S_OK;
     };
 
-    // Returns S_OK if the position, velocity and orientation reported are 
-    // relative to the listener, S_FALSE otherwise.  
+    // Returns S_OK if the position, velocity and orientation reported are
+    // relative to the listener, S_FALSE otherwise.
     virtual HRESULT IsListenerRelative()
     {
         return IsRelative() ? S_OK : S_FALSE;
     }
 
-    // Returns S_OK if this source is still playing the sound, S_FALSE 
-    // otherwise.  This might be false if a sound emitter is destroyed, for 
+    // Returns S_OK if this source is still playing the sound, S_FALSE
+    // otherwise.  This might be false if a sound emitter is destroyed, for
     // example, in which case the sound might fade out.  Once it returns
     // S_FALSE once, it should never return S_OK again.
     virtual HRESULT IsPlaying()
@@ -558,9 +558,9 @@ private:
 
     public:
         // constructor
-        RegisteredModelPointSoundSource(ImodelIGC* pmodel, 
+        RegisteredModelPointSoundSource(ImodelIGC* pmodel,
                 SoundSite* site,
-                const Vector& vectPosition = Vector(0,0,0), 
+                const Vector& vectPosition = Vector(0,0,0),
                 const Vector& vectOrientation = Vector(0,0,-1)) :
             ModelPointSoundSource(pmodel, vectPosition, vectOrientation),
             m_pSite(site)
@@ -574,7 +574,7 @@ private:
                 m_pSite->UnregisterSource(this);
         };
 
-        // destroy this sound source, usually due to a model being destroyed 
+        // destroy this sound source, usually due to a model being destroyed
         // or moved out of the sector.
         void Destroy()
         {
@@ -593,7 +593,7 @@ public:
     {
     }
 
-    virtual ~SoundSite() 
+    virtual ~SoundSite()
     {
         StopSounds();
     };
@@ -654,12 +654,12 @@ public:
         return m_psourceCenter;
     }
 
-    // Gets a sounds source that can be used for this object with the given 
+    // Gets a sounds source that can be used for this object with the given
     // offset from center.
-    TRef<ISoundPositionSource> GetSoundSource(const Vector& vectOffset, 
+    TRef<ISoundPositionSource> GetSoundSource(const Vector& vectOffset,
         const Vector& vectOrientation = Vector(0, 0, -1))
     {
-        TRef<RegisteredModelPointSoundSource> psource = 
+        TRef<RegisteredModelPointSoundSource> psource =
             new RegisteredModelPointSoundSource(m_pmodel, this, vectOffset);
         m_listRegisteredSources.PushFront(psource);
 
@@ -714,7 +714,7 @@ class ShipSoundSite : public SoundSite
 private:
     IshipIGC* m_pship;
     Mount m_mountLastTurret;
-    
+
     float m_fHullFraction;
     float m_fAmmoFraction;
     float m_fFuelFraction;
@@ -755,19 +755,19 @@ private:
     enum { wasSilent, wasPlaying } m_stateLast;
     float m_fThrustSoundLevel;
     float m_fTurnSoundLevel;
-    
+
     // calculate the current fraction of the potential amount of forward thrust
     float ForwardThrustFraction()
     {
-        //float fForwardThrust = -1 * m_pship->GetEngineVector() 
+        //float fForwardThrust = -1 * m_pship->GetEngineVector()
         //    * m_pship->GetOrientation().GetBackward();
         //float fForwardThrustFraction = fForwardThrust / m_pship->GetHullType()->GetThrust();
-        
+
         // return fForwardThrustFraction;
-        // realistic as this may be, it does not reflect the player's 
-        // expectations.  Thus, use the throttle instead. 
+        // realistic as this may be, it does not reflect the player's
+        // expectations.  Thus, use the throttle instead.
         const ControlData&  controls = m_pship->GetControls();
-        return max(controls.jsValues[c_axisThrottle] * 0.5f + 0.5f, 
+        return max(controls.jsValues[c_axisThrottle] * 0.5f + 0.5f,
             (m_pship->GetStateM() & afterburnerButtonIGC) ? 1.0f : 0.0f);
     }
 
@@ -775,11 +775,11 @@ private:
     float SidewaysThrustFraction()
     {
         const IhullTypeIGC* pht = m_pship->GetHullType();
-        float fThrust = m_pship->GetHullType()->GetThrust() 
+        float fThrust = m_pship->GetHullType()->GetThrust()
             / m_pship->GetHullType()->GetSideMultiplier();
-        float fForwardThrust = max(0, -1 * m_pship->GetEngineVector() 
+        float fForwardThrust = max(0, -1 * m_pship->GetEngineVector()
             * m_pship->GetOrientation().GetBackward());
-        Vector vectSideThrust = m_pship->GetEngineVector() + 
+        Vector vectSideThrust = m_pship->GetEngineVector() +
             fForwardThrust * m_pship->GetOrientation().GetBackward();
 
         return vectSideThrust.LengthSquared() / (fThrust * fThrust);
@@ -801,12 +801,12 @@ private:
     // calculate the current afterburner power
     float AfterburnerPower()
     {
-        IafterburnerIGC* pafterburner = 
+        IafterburnerIGC* pafterburner =
             (IafterburnerIGC*)(m_pship->GetMountedPart(ET_Afterburner, 0));
         return pafterburner ? pafterburner->GetPower() : 0.0f;
     }
 
-    // true if the player is trying to fire an ammo weapon without enough 
+    // true if the player is trying to fire an ammo weapon without enough
     // ammunition, or observing someone doing the same.
     bool TryingToFireWeaponWithoutAmmo()
     {
@@ -829,13 +829,13 @@ private:
         {
             // check all of the fixed weapon mounts
             Mount maxFixedWeapons = m_pship->GetHullType()->GetMaxFixedWeapons();
-            for (mount = 0; mount < maxFixedWeapons; mount++) 
+            for (mount = 0; mount < maxFixedWeapons; mount++)
             {
                 const IweaponIGC* pweapon;
                 CastTo(pweapon, m_pship->GetMountedPart(ET_Weapon, mount));
 
                 if (pweapon && pweapon->fActive() && pweapon->GetMountedFraction() >= 1.0f
-                    && pweapon->GetAmmoPerShot() > m_pship->GetAmmo()) 
+                    && pweapon->GetAmmoPerShot() > m_pship->GetAmmo())
                 {
                     return true;
                 }
@@ -847,11 +847,11 @@ private:
 
     bool TryingToFireAfterburnersWithoutFuel()
     {
-        IafterburnerIGC* pafterburner = 
+        IafterburnerIGC* pafterburner =
             (IafterburnerIGC*)(m_pship->GetMountedPart(ET_Afterburner, 0));
-        return pafterburner 
+        return pafterburner
             && (m_pship->GetStateM() & afterburnerButtonIGC)
-            && m_pship->GetFuel() <= 0.0f 
+            && m_pship->GetFuel() <= 0.0f
             && pafterburner->GetMountedFraction() >= 1.0;;
     }
 
@@ -881,14 +881,14 @@ private:
         fThrustVolumeFactor *= fThrustVolumeFactor;
 
         if (m_pMainThrusterInteriorSound)
-            m_pMainThrusterInteriorSound->GetISoundTweakable()->SetGain(fGain + 
+            m_pMainThrusterInteriorSound->GetISoundTweakable()->SetGain(fGain +
             fThrustVolumeFactor * -60);
 
         float fTurnThrustVolumeFactor = (1 - m_fTurnSoundLevel);
         fTurnThrustVolumeFactor *= fTurnThrustVolumeFactor;
 
         if (m_pTurnThrusterInteriorSound)
-            m_pTurnThrusterInteriorSound->GetISoundTweakable()->SetGain(fGain + 
+            m_pTurnThrusterInteriorSound->GetISoundTweakable()->SetGain(fGain +
                 fTurnThrustVolumeFactor * -60);
         if (m_pAfterburnerInteriorSound)
             m_pAfterburnerInteriorSound->GetISoundTweakable()->SetGain(fGain);
@@ -900,16 +900,16 @@ private:
         if (m_pExteriorSound)
             m_pExteriorSound->GetISoundTweakable()->SetGain(fGain);
         if (m_pMainThrusterExteriorSound)
-            m_pMainThrusterExteriorSound->GetISoundTweakable()->SetGain(fGain + 
+            m_pMainThrusterExteriorSound->GetISoundTweakable()->SetGain(fGain +
                 (1 - m_fThrustSoundLevel) * -40);
         if (m_pTurnThrusterExteriorSound)
-            m_pTurnThrusterExteriorSound->GetISoundTweakable()->SetGain(fGain + 
+            m_pTurnThrusterExteriorSound->GetISoundTweakable()->SetGain(fGain +
                 (1 - m_fTurnSoundLevel) * -40);
         if (m_pAfterburnerExteriorSound)
             m_pAfterburnerExteriorSound->GetISoundTweakable()->SetGain(fGain);
     }
 
-    void PlaySoundIf(TRef<ISoundInstance>& pSound, SoundID id, 
+    void PlaySoundIf(TRef<ISoundInstance>& pSound, SoundID id,
             ISoundPositionSource* psource, bool bPlay)
     {
         if (bPlay)
@@ -934,8 +934,8 @@ private:
     void PlayWeaponSounds()
     {
         // check all of the fixed weapon mounts
-        Mount maxWeapons = m_pship->GetHullType()->GetMaxWeapons();        
-        for (Mount mount = 0; mount < maxWeapons; mount++) 
+        Mount maxWeapons = m_pship->GetHullType()->GetMaxWeapons();
+        for (Mount mount = 0; mount < maxWeapons; mount++)
         {
             const IweaponIGC* pweapon;
             CastTo(pweapon, m_pship->GetMountedPart(ET_Weapon, mount));
@@ -943,13 +943,13 @@ private:
             // if the weapon has been changed...
             if (pweapon && pweapon->GetPartType() != m_vpCurrentWeaponType[mount])
             {
-                // silence the old weapon, since the sounds may be different 
+                // silence the old weapon, since the sounds may be different
                 // for the new one.
                 if (m_vpBurstSound[mount])
                     m_vpBurstSound[mount]->Stop();
                 if (m_vpActiveSound[mount])
                     m_vpActiveSound[mount]->Stop();
-                
+
                 m_vpBurstSound[mount] = NULL;
                 m_vpActiveSound[mount] = NULL;
 
@@ -957,33 +957,33 @@ private:
             }
 
             // if the weapon is just being activated, play the relevant sound
-            PlaySoundIf(m_vpActiveSound[mount], pweapon ? pweapon->GetActivateSound() : NA, 
+            PlaySoundIf(m_vpActiveSound[mount], pweapon ? pweapon->GetActivateSound() : NA,
                 m_psounceWeaponMount[mount], pweapon && pweapon->fActive());
 
             // if the turret is manned and moving, play the turret sound
             // REVIEW: it looks like we only get turrent move info for other
             // players if the turret is firing!
-            PlaySoundIf(m_vpTurretSound[mount], 
-                m_pship->GetHullType()->GetHardpointData(mount).turnSound, 
-                m_psounceWeaponMount[mount], 
+            PlaySoundIf(m_vpTurretSound[mount],
+                m_pship->GetHullType()->GetHardpointData(mount).turnSound,
+                m_psounceWeaponMount[mount],
                 pweapon && pweapon->GetGunner()
-                    && (pweapon->fActive() 
+                    && (pweapon->fActive()
                         || pweapon->GetGunner() == trekClient.GetShip())
                     && TurnRate(pweapon->GetGunner()) > 0.01);
 
             // if the weapon is burst-firing, play that sound
             bool bWasBurstFiring = m_vpBurstSound[mount] != NULL;
             SoundID idBurstSound = pweapon ? pweapon->GetBurstSound() : NA;
-            PlaySoundIf(m_vpBurstSound[mount], idBurstSound, 
-                m_psounceWeaponMount[mount], 
+            PlaySoundIf(m_vpBurstSound[mount], idBurstSound,
+                m_psounceWeaponMount[mount],
                 pweapon && pweapon->fFiringBurst() && (idBurstSound != NA));
 
             // if we shot this frame and we are not playing a burst-fire sound,
             // play a single shot sound.
-            if (pweapon && pweapon->fFiringShot() 
+            if (pweapon && pweapon->fFiringShot()
                 && m_vpBurstSound[mount] == NULL && !bWasBurstFiring)
             {
-                trekClient.StartSound(pweapon->GetSingleShotSound(), 
+                trekClient.StartSound(pweapon->GetSingleShotSound(),
                     m_psounceWeaponMount[mount]);
             }
         }
@@ -1057,12 +1057,12 @@ private:
 
         // create sound sources for each of the weapon mounts
         const IhullTypeIGC* pht = m_pship->GetHullType();
-        Mount maxWeapons = pht->GetMaxWeapons();        
-        for (Mount mount = 0; mount < maxWeapons; mount++) 
+        Mount maxWeapons = pht->GetMaxWeapons();
+        for (Mount mount = 0; mount < maxWeapons; mount++)
         {
             // review: does not handle turret orientation
             m_psounceWeaponMount[mount] = GetSoundSource(
-                pht->GetWeaponPosition(mount), 
+                pht->GetWeaponPosition(mount),
                 pht->GetWeaponOrientation(mount).GetForward()
                 );
         }
@@ -1090,7 +1090,7 @@ private:
 
     SoundID GetAfterburnerSoundID(bool fInterior)
     {
-        IafterburnerIGC* pafterburner = 
+        IafterburnerIGC* pafterburner =
             (IafterburnerIGC*)(m_pship->GetMountedPart(ET_Afterburner, 0));
 
         if (pafterburner)
@@ -1117,7 +1117,7 @@ private:
             const float cfMaxThrustRateOfChange = 0.0005f;
             const float cfMaxTurnRateOfChange = 0.002f;
 
-            // clip the new sound level according to the max rate of change 
+            // clip the new sound level according to the max rate of change
             // allowed.
             fNewThrustSoundLevel = max(
                 m_fThrustSoundLevel - cfMaxThrustRateOfChange * dwElapsedTime,
@@ -1175,10 +1175,10 @@ public:
     // updates the current sounds for this object acording to its state.
     void UpdateSounds(DWORD dwElapsedTime)
     {
-        // if this is not a turret or an observer 
+        // if this is not a turret or an observer
         // REVIEW: Assumes that we can never go from in flight to observer/turret
         // (but the reverse works properly, and is needed for eject pods)
-        if (!m_pship->GetParentShip()) 
+        if (!m_pship->GetParentShip())
         {
             // make sure we have the sound sources that we need.
             if (!m_psourceEngine)
@@ -1192,9 +1192,9 @@ public:
 
             // if this is the player's current ship at the moment
             bool bIsPlayersShip = trekClient.GetShip()->GetSourceShip() == m_pship;
-        
+
             // are we on the inside of this ship?
-            bool bIsInterior = bIsPlayersShip 
+            bool bIsInterior = bIsPlayersShip
                 && TrekWindow::InternalCamera(GetWindow()->GetCameraMode());
 
             // make sure we reset the turret interior sound when switching turrets
@@ -1209,7 +1209,7 @@ public:
                 m_mountLastTurret = trekClient.GetShip()->GetTurretID();
             }
             bool bIsGunner = bIsPlayersShip && m_mountLastTurret != NA;
-        
+
             float fNewHullFraction = 1.0f;
             float fNewAmmoFraction = 1.0f;
             float fNewFuelFraction = 1.0f;
@@ -1220,16 +1220,16 @@ public:
             if (bIsPlayersShip)
             {
                 fNewHullFraction = m_pship->GetFraction();
-                fNewAmmoFraction = m_pship->GetAmmo() 
+                fNewAmmoFraction = m_pship->GetAmmo()
                     / (float)m_pship->GetHullType()->GetMaxAmmo();
                 if (m_pship->GetHullType()->GetMaxFuel() > 0)
                 {
-                    fNewFuelFraction = m_pship->GetFuel() 
+                    fNewFuelFraction = m_pship->GetFuel()
                         / m_pship->GetHullType()->GetMaxFuel();
                 }
                 if (m_pship->GetHullType()->GetMaxEnergy() > 0)
                 {
-                    fNewEnergyFraction = m_pship->GetEnergy() 
+                    fNewEnergyFraction = m_pship->GetEnergy()
                         / m_pship->GetHullType()->GetMaxEnergy();
                 }
                 fNewFiringWithoutAmmo = TryingToFireWeaponWithoutAmmo();
@@ -1244,7 +1244,7 @@ public:
                 trekClient.StartSound(fuelLowSound, GetSoundSource());
             if (bIsPlayersShip && fNewEnergyFraction < 0.05f && m_fEnergyFraction >= 0.05f)
                 trekClient.StartSound(energyLowSound, GetSoundSource());
-            
+
             if (!m_bTryingToFireWeaponWithoutAmmo && fNewFiringWithoutAmmo)
                 trekClient.StartSound(salNoAmmoSound, GetSoundSource());
             if (!m_bTryingToUseAfterburnersWithoutFuel && fNewThrustingWithoutFuel)
@@ -1260,21 +1260,21 @@ public:
 
             PlaySoundIf(m_pOutOfBoundsSound, outOfBoundsLoopSound, GetSoundSource(),
                 (trekClient.GetShip()->GetWarningMask() & (c_wmOutOfBounds | c_wmCrowdedSector)) != 0);
-            PlaySoundIf(m_pRipcordingSound, ripcordOnLoopSound, GetSoundSource(), 
+            PlaySoundIf(m_pRipcordingSound, ripcordOnLoopSound, GetSoundSource(),
                 bIsPlayersShip && m_pship->fRipcordActive());
             PlaySoundIf(m_pMissileToneSound, missileToneSound, GetSoundSource(),
                 bIsPlayersShip && HasMissileLock());
 
             // play the mining sound if this ship is actively mining
-            PlaySoundIf(m_pMiningSound, miningSound, GetSoundSource(), 
+            PlaySoundIf(m_pMiningSound, miningSound, GetSoundSource(),
 				((m_pship->GetStateM() & miningMaskIGC) != 0) && trekClient.GetShip()->CanSee(m_pship));	// mdvalley: Uneyed miners silent.
 
             // play the sounds for each weapon
             PlayWeaponSounds();
 
             // play the interior sounds (perhaps silently) even if we are
-            // in an exterior view, because we may need to switch back in 
-            // the middle of a sound.  
+            // in an exterior view, because we may need to switch back in
+            // the middle of a sound.
             if (bIsPlayersShip)
             {
                 //
@@ -1283,18 +1283,18 @@ public:
 
                 SoundID gunnerInteriorSoundID = GetGunnerInteriorSoundID();
 
-                PlaySoundIf(m_pGunnerInteriorSound, gunnerInteriorSoundID, 
+                PlaySoundIf(m_pGunnerInteriorSound, gunnerInteriorSoundID,
                     GetSoundSource(), bIsGunner);
-                PlaySoundIf(m_pPilotInteriorSound, pht->GetInteriorSound(), 
+                PlaySoundIf(m_pPilotInteriorSound, pht->GetInteriorSound(),
                     GetSoundSource(), !bIsGunner);
-                PlaySoundIf(m_pMainThrusterInteriorSound, 
+                PlaySoundIf(m_pMainThrusterInteriorSound,
                     pht->GetMainThrusterInteriorSound(),
                     m_psourceEngine, m_fThrustSoundLevel > 0.01f);
-                PlaySoundIf(m_pTurnThrusterInteriorSound,  
-                    pht->GetManuveringThrusterInteriorSound(), GetSoundSource(), 
+                PlaySoundIf(m_pTurnThrusterInteriorSound,
+                    pht->GetManuveringThrusterInteriorSound(), GetSoundSource(),
                     m_fTurnSoundLevel > 0.01f);
-                PlaySoundIf(m_pAfterburnerInteriorSound, 
-                    GetAfterburnerSoundID(true), 
+                PlaySoundIf(m_pAfterburnerInteriorSound,
+                    GetAfterburnerSoundID(true),
                     m_psourceEngine, AfterburnerPower() > 0.0f);
             }
 
@@ -1303,14 +1303,14 @@ public:
             //
 
             PlaySoundIf(m_pExteriorSound, pht->GetExteriorSound(), GetSoundSource(), true);
-            PlaySoundIf(m_pMainThrusterExteriorSound, 
-                pht->GetMainThrusterExteriorSound(), m_psourceEngine, 
+            PlaySoundIf(m_pMainThrusterExteriorSound,
+                pht->GetMainThrusterExteriorSound(), m_psourceEngine,
                 m_fThrustSoundLevel > 0.01f);
-            PlaySoundIf(m_pTurnThrusterExteriorSound, 
-                pht->GetManuveringThrusterExteriorSound(), GetSoundSource(), 
+            PlaySoundIf(m_pTurnThrusterExteriorSound,
+                pht->GetManuveringThrusterExteriorSound(), GetSoundSource(),
                 m_fTurnSoundLevel > 0.01f);
-            PlaySoundIf(m_pAfterburnerExteriorSound,                
-                GetAfterburnerSoundID(false), 
+            PlaySoundIf(m_pAfterburnerExteriorSound,
+                GetAfterburnerSoundID(false),
                 m_psourceEngine,
                 AfterburnerPower() > 0.0f);
 
@@ -1323,7 +1323,7 @@ public:
                 SetExternalVolume(-100);
                 SetInternalVolume(0);
             }
-            else 
+            else
             {
                 // we are outside of the ship
 
@@ -1353,14 +1353,14 @@ public:
             m_pMainThrusterInteriorSound = NULL;
             m_pTurnThrusterInteriorSound = NULL;
             m_pAfterburnerInteriorSound = NULL;
-    
+
             m_pExteriorSound = NULL;
             m_pMainThrusterExteriorSound = NULL;
             m_pTurnThrusterExteriorSound = NULL;
             m_pAfterburnerExteriorSound = NULL;
 
             Mount maxWeapons = m_pship->GetHullType()->GetMaxWeapons();
-            for (Mount mount = 0; mount < maxWeapons; mount++) 
+            for (Mount mount = 0; mount < maxWeapons; mount++)
             {
                 m_psounceWeaponMount[mount] = NULL;
 
@@ -1382,7 +1382,7 @@ class ThingSiteImpl : public ThingSitePrivate
             m_bSideVisibility(false),
             m_pmodel(pmodel),
             m_mask(0),
-            m_bPlayedHitSoundThisFrame(false)            
+            m_bPlayedHitSoundThisFrame(false)
         {
             assert (pmodel);
             //Don't bother to AddRef pmodel -- it lifespan always exceeds that of the thingsite.
@@ -1403,12 +1403,12 @@ class ThingSiteImpl : public ThingSitePrivate
                 break;
 
             case OT_probe:
-                m_pSoundSite = new AmbientSoundSite(pmodel, 
+                m_pSoundSite = new AmbientSoundSite(pmodel,
                     ((IprobeIGC*)pmodel)->GetAmbientSound());
                 break;
 
             case OT_missile:
-                m_pSoundSite = new AmbientSoundSite(pmodel, 
+                m_pSoundSite = new AmbientSoundSite(pmodel,
                     ((ImissileIGC*)pmodel)->GetMissileType()->GetAmbientSound());
                 break;
 
@@ -1424,7 +1424,7 @@ class ThingSiteImpl : public ThingSitePrivate
                 break;
 
             case OT_station:
-                m_pSoundSite = new AmbientSoundSite(pmodel, 
+                m_pSoundSite = new AmbientSoundSite(pmodel,
                     ((IstationIGC*)pmodel)->GetExteriorSound());
                 break;
 
@@ -1726,7 +1726,7 @@ class ThingSiteImpl : public ThingSitePrivate
                                                   GetWindow()->GetTime(),
                                                   color);
 
-                    
+
             return S_OK;
         }
 
@@ -1735,7 +1735,7 @@ class ThingSiteImpl : public ThingSitePrivate
             ZAssert(m_pthing == NULL && m_pdecal == NULL);
 
             Number* ptime = GetWindow()->GetTime();
-            TRef<AnimatedImage> pimage = 
+            TRef<AnimatedImage> pimage =
                 GetWindow()->LoadAnimatedImage(
                     Divide(
                         Subtract(ptime, ptime->MakeConstant()),
@@ -1849,17 +1849,17 @@ class ThingSiteImpl : public ThingSitePrivate
                 );
             m_pthingGeo = m_pthing->GetGeo();
 
-            TRef<Image> pimageAleph = 
+            TRef<Image> pimageAleph =
                 GetWindow()->GetModeler()->LoadImage(ZString(textureName) + "bmp", false);
 
             if (pimageAleph) {
                 m_peventSourceAleph = new TEvent<float>::SourceImpl;
 
-                HRESULT hr = 
+                HRESULT hr =
                     m_pthing->Load(
-                        0, 
+                        0,
                         CreateAlephGeo(
-                            GetWindow()->GetModeler(), 
+                            GetWindow()->GetModeler(),
                             m_peventSourceAleph,
                             GetWindow()->GetTime()
                         ),
@@ -1883,7 +1883,7 @@ class ThingSiteImpl : public ThingSitePrivate
                 );
             m_pthingGeo = m_pthing->GetGeo();
 
-            TRef<Surface> psurface = 
+            TRef<Surface> psurface =
                 GetWindow()->GetModeler()->LoadSurface(ZString(textureName) + "bmp", true);
 
             if (psurface) {
@@ -1923,12 +1923,12 @@ class ThingSiteImpl : public ThingSitePrivate
         {
             return m_distanceToEdge;
         }
-        
+
         float GetScreenRadius()
         {
             return m_fScreenRadius;
         }
-        
+
         unsigned char GetRadarState()
         {
             return m_ucRadarState;
@@ -2110,8 +2110,8 @@ class ThingSiteImpl : public ThingSitePrivate
                     m_pvisibleGeoBolt =
                         new VisibleGeo(
                             CreateBoltGeo(
-                                m_pvvBoltP1, 
-                                m_pvvBoltP2, 
+                                m_pvvBoltP1,
+                                m_pvvBoltP2,
                                 0.125f,
                                 GetModeler()->LoadSurface("lightningbmp", true)
                             )
@@ -2199,14 +2199,14 @@ class ThingSiteImpl : public ThingSitePrivate
                     if (bAbsorbedByShield)
                         soundId = myShieldHitSound;
                     else
-                        soundId = myHullHitSound;                
+                        soundId = myHullHitSound;
                 }
                 else
                 {
                     if (bAbsorbedByShield)
                         soundId = otherShieldHitSound;
                     else
-                        soundId = otherHullHitSound;                
+                        soundId = otherHullHitSound;
                 }
 
                 // play the appropriate sound
@@ -2282,7 +2282,7 @@ WinTrekClient::WinTrekClient(void)
 
     HKEY hKey;
 
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE,
         ALLEGIANCE_REGISTRY_KEY_ROOT,
         0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
     {
@@ -2290,7 +2290,7 @@ WinTrekClient::WinTrekClient(void)
         DWORD dwType;
         char szCDKey[c_cbCDKey];
 
-        if (::RegQueryValueEx(hKey, "CDKey", NULL, &dwType, 
+        if (::RegQueryValueEx(hKey, "CDKey", NULL, &dwType,
                 (unsigned char*)szCDKey, &dwSize) == ERROR_SUCCESS
             && dwType == REG_SZ && dwSize != 0)
         {
@@ -2409,7 +2409,7 @@ IpartIGC*   WinTrekClient::GetCargoPart(void)
 
     IpartIGC* ppart = GetShip()->GetMountedPart(NA, mountSelected);
 
-    // make sure it's the first item of a grouped set of items.  
+    // make sure it's the first item of a grouped set of items.
     if (mountSelected < -1) // first item in the list is always the first item of its type
     {
         mountSelected++;
@@ -2454,13 +2454,13 @@ void    WinTrekClient::NextCargoPart(void)
     }
     while (!bFoundPart);
 }
-Mount     WinTrekClient::GetSelectedCargoMount() 
-{ 
+Mount     WinTrekClient::GetSelectedCargoMount()
+{
     assert (mountSelected < 0 && mountSelected >= -c_maxCargo);
 
     IpartIGC* ppart = GetShip()->GetSourceShip()->GetMountedPart(NA, mountSelected);
 
-    // make sure it's the first empty slot if it's a slot.  
+    // make sure it's the first empty slot if it's a slot.
     if (mountSelected < -1 && !ppart)
     {
         mountSelected++;
@@ -2481,7 +2481,7 @@ void      WinTrekClient::OnReload(IpartIGC* ppart, bool bConsumed)
 bool      WinTrekClient::SelectCargoPartOfType(EquipmentType et, PartMask maxPartMask, IpartTypeIGC* pptNotThis)
 {
     IpartIGC* ppartStart = GetCargoPart();
-        
+
     if (ppartStart && (
                (ppartStart->GetEquipmentType() != et) ||
                ((ppartStart->GetPartType()->GetPartMask() & ~maxPartMask) != 0) ||
@@ -2492,7 +2492,7 @@ bool      WinTrekClient::SelectCargoPartOfType(EquipmentType et, PartMask maxPar
 
         do
         {
-            NextCargoPart();                    
+            NextCargoPart();
             ppart = GetCargoPart();
         }
         while (ppart != ppartStart
@@ -2579,9 +2579,9 @@ void WinTrekClient::ChangeCluster(IshipIGC*  pship, IclusterIGC* pclusterOld, Ic
         for (Command i = 0; i < c_cmdMax; i++)
         {
             ImodelIGC* ptarget = pship->GetCommandTarget(i);
-            
+
             // if this command has a cluster buoy in this cluster...
-            if (ptarget && ptarget->GetObjectType() == OT_buoy 
+            if (ptarget && ptarget->GetObjectType() == OT_buoy
                 && ((IbuoyIGC*)ptarget)->GetBuoyType() == c_buoyCluster
                 && ((IbuoyIGC*)ptarget)->GetCluster() == pclusterNew)
             {
@@ -2624,7 +2624,7 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
                     {
                         if ((!Training::IsTraining ()) || (Training::GetTrainingMissionID () != Training::c_TM_5_Command_View))
                         {
-                            GetWindow()->SetViewMode(trekClient.GetShip()->IsGhost() 
+                            GetWindow()->SetViewMode(trekClient.GetShip()->IsGhost()
                                 ? TrekWindow::vmCommand : TrekWindow::vmHangar);
                             PlaySoundEffect(dockedSound);
                             PlaySoundEffect(salWelcomeHomeSound);
@@ -2660,7 +2660,7 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
                     Mount nHardpoints = pht->GetMaxFixedWeapons();
                     if ((trekClient.m_selectedWeapon >= nHardpoints) ||
                         (trekClient.GetShip()->GetMountedPart(ET_Weapon, trekClient.m_selectedWeapon) == NULL))
-                    {                       
+                    {
                         trekClient.NextWeapon();
                     }
                 }
@@ -2742,7 +2742,7 @@ void WinTrekClient::TargetKilled(ImodelIGC*  pmodel)
     }
 }
 
-void WinTrekClient::ShipWarped(IshipIGC*    pship, 
+void WinTrekClient::ShipWarped(IshipIGC*    pship,
                                SectorID    sidOld,
                                SectorID    sidNew)
 {
@@ -2773,7 +2773,7 @@ void WinTrekClient::PostNotificationText(ImodelIGC* pmodel, bool bCritical, cons
         _vsnprintf(bfr, size, pszText, vl);
         va_end(vl);
 
-        if (bCritical) 
+        if (bCritical)
         {
             PlaySoundEffect(newCriticalMsgSound);
             GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(bfr);
@@ -2846,7 +2846,7 @@ void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
         _vsnprintf(bfr, size, pszText, vl);
         va_end(vl);
 
-        if (bCritical) 
+        if (bCritical)
         {
             PlaySoundEffect(newCriticalMsgSound);
             GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(bfr);
@@ -2872,8 +2872,8 @@ ZString WinTrekClient::GetSavedCharacterName()
     DWORD cbName = c_cbName;
     char szName[c_cbName];
     szName[0] = '\0';
-    
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
+
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
     {
         RegQueryValueEx(hKey, "CharacterName", NULL, &dwType, (unsigned char*)&szName, &cbName);
         RegCloseKey(hKey);
@@ -2888,10 +2888,10 @@ void WinTrekClient::SaveCharacterName(ZString strName)
     DWORD cbName = c_cbName;
     char szName[c_cbName];
     szName[0] = '\0';
-    
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey)) 
+
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
     {
-        RegSetValueEx(hKey, "CharacterName", NULL, REG_SZ, 
+        RegSetValueEx(hKey, "CharacterName", NULL, REG_SZ,
             (const BYTE*)(const char*)strName, strName.GetLength() + 1);
         RegCloseKey(hKey);
     }
@@ -2899,7 +2899,7 @@ void WinTrekClient::SaveCharacterName(ZString strName)
 
 // KGJV : added utility functions for cores & server names
 // find the user friendly name of a core - return param if not found
-ZString WinTrekClient::CfgGetCoreName(const char *s) 
+ZString WinTrekClient::CfgGetCoreName(const char *s)
 {
 	char temp[c_cbName];
 	DWORD l = GetCfgInfo().GetCfgProfileString("Cores",s,s,temp,c_cbName);
@@ -2919,8 +2919,8 @@ bool WinTrekClient::CfgIsOfficialServer(const char *name, const char *addr)
 }
 // KGJV end
 
-class AutoDownloadProgressDialogPopup : 
-    public IPopup, 
+class AutoDownloadProgressDialogPopup :
+    public IPopup,
     public EventTargetContainer<AutoDownloadProgressDialogPopup>,
     public IIntegerEventSink,
     public IAutoUpdateSink
@@ -2940,7 +2940,7 @@ private:
     unsigned long     m_cGrandTotalBytes; // total bytes of transfer
     int               m_cFilesCompleted;
     unsigned long     m_cTotalFiles;
-        
+
     const char*       m_szPrevCurrentFile; // last file transfered
     bool              m_bAborted;
     IAutoUpdateSink * m_pSink;
@@ -2948,7 +2948,7 @@ private:
 
 public:
 
-    
+
     AutoDownloadProgressDialogPopup(IAutoUpdateSink * pSink, bool bConnectToLobby) :
         m_cFilesCompleted(0),
         m_bAborted(false),
@@ -2985,7 +2985,7 @@ public:
         pmodeler->UnloadNameSpace(pns);
     }
 
-    virtual ~AutoDownloadProgressDialogPopup() 
+    virtual ~AutoDownloadProgressDialogPopup()
     {
     }
 
@@ -3008,12 +3008,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////
-    //    
+    //
     // Events associated with IAutoUpdateSink
     //
     ////////////////////////////////////////////////////////////////////
 
-    void OnBeginDownloadProgressBar(unsigned cTotalBytes, int cFiles) 
+    void OnBeginDownloadProgressBar(unsigned cTotalBytes, int cFiles)
     {
         m_cGrandTotalBytes = cTotalBytes;
         m_cTotalFiles = cFiles;
@@ -3021,7 +3021,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////
 
-    virtual void OnAutoUpdateSystemTermination(bool bErrorOccurred, bool bRestarting) 
+    virtual void OnAutoUpdateSystemTermination(bool bErrorOccurred, bool bRestarting)
     {
         if(m_pSink)
             m_pSink->OnAutoUpdateSystemTermination(bErrorOccurred, bRestarting);
@@ -3042,7 +3042,7 @@ public:
             m_pModifiableNumberDownloadPercent->SetValue(1.0f);
             m_pModifiableNumberDownloadPercent->Update();
 
-            if (bRestarting)  
+            if (bRestarting)
             {
                 GetWindow()->SetWaitCursor();
                 m_pmsgBox = CreateMessageBox("Restarting to complete update...", NULL, false);
@@ -3063,9 +3063,9 @@ public:
 
     ////////////////////////////////////////////////////////////////////
 
-    virtual void OnUserAbort() 
+    virtual void OnUserAbort()
     {
-        m_bAborted = true; 
+        m_bAborted = true;
 
         // trap multiple presses of Abort
         if(m_pmsgBox != NULL)
@@ -3094,7 +3094,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////
 
-    virtual void OnAnalysisProgress(float fPercentDone) 
+    virtual void OnAnalysisProgress(float fPercentDone)
     {
         debugf("Verify %3.3f%% \n", 100.0f*fPercentDone);
 
@@ -3145,7 +3145,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////
 
-    virtual void OnProgress(unsigned long cTotalBytes, const char* szCurrentFile, unsigned long cCurrentFileBytes, unsigned nEstimatedSecondsLeft) 
+    virtual void OnProgress(unsigned long cTotalBytes, const char* szCurrentFile, unsigned long cCurrentFileBytes, unsigned nEstimatedSecondsLeft)
     {
         #ifdef DEBUG
         char sz[80];
@@ -3163,13 +3163,13 @@ public:
 
             char szBuffer[15];
             sprintf(szBuffer, " (%i/%i)", m_cFilesCompleted, m_cTotalFiles);
-                           
+
             m_pstrpaneCurrentFile->SetString(ZString(szCurrentFile) + ZString(szBuffer));
 
             m_szPrevCurrentFile = szCurrentFile;
         }
 
-        if (nEstimatedSecondsLeft != -1 && 
+        if (nEstimatedSecondsLeft != -1 &&
             m_pstrpaneApproxMinutes) // if they have an up-to-date art file
           m_pstrpaneApproxMinutes->SetString(ZString("Min Left ") + ZString((((int)nEstimatedSecondsLeft-1)/60)+1));
 
@@ -3178,19 +3178,19 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////
-    //    
+    //
     // Events associated with IFTPSessionUpdateSink
     //
     ////////////////////////////////////////////////////////////////////
 
-    virtual void OnError(char * szErrorMessage) 
+    virtual void OnError(char * szErrorMessage)
     {
         char * szBuffer = new char[strlen(szErrorMessage) + 100];
 
         sprintf(szBuffer, "AutoUpdate Error \n%s ", szErrorMessage);
 
         assert(m_pmsgBox == NULL);
-         
+
         m_pmsgBox = CreateMessageBox(szBuffer);
 
         m_pmsgBox->GetEventSource()->AddSink(IIntegerEventSink::CreateDelegate(this));
@@ -3205,7 +3205,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////
-    //    
+    //
     // Events associated with IIntegerEventSink
     //
     ////////////////////////////////////////////////////////////////////
@@ -3287,7 +3287,7 @@ void WinTrekClient::OnLogonAck(bool fValidated, bool bRetry, LPCSTR szFailureRea
         GetWindow()->GetPopupContainer()->ClosePopup(NULL);
     GetWindow()->RestoreCursor();
 
-    if (fValidated) 
+    if (fValidated)
     {
         GetClientEventSource()->OnLogonGameServer();
 		// w0dk4 June 2007: Bandwith Patch
@@ -3313,14 +3313,14 @@ void WinTrekClient::OnLogonLobbyAck(bool fValidated, bool bRetry, LPCSTR szFailu
     if (GetWindow()->GetPopupContainer() && !GetWindow()->GetPopupContainer()->IsEmpty())
         GetWindow()->GetPopupContainer()->ClosePopup(NULL);
     GetWindow()->RestoreCursor();
-        
-    if (!fValidated) 
+
+    if (!fValidated)
     {
         DisconnectLobby();
         GetClientEventSource()->OnLogonLobbyFailed(bRetry, szFailureReason);
         g_bQuickstart = false;
     }
-    else 
+    else
     {
         GetClientEventSource()->OnLogonLobby();
     }
@@ -3336,21 +3336,21 @@ void WinTrekClient::OnLogonClubAck(bool fValidated, bool bRetry, LPCSTR szFailur
     if (GetWindow()->GetPopupContainer() && !GetWindow()->GetPopupContainer()->IsEmpty())
         GetWindow()->GetPopupContainer()->ClosePopup(NULL);
     GetWindow()->RestoreCursor();
-        
-    if (!fValidated) 
+
+    if (!fValidated)
     {
         DisconnectClub();
         GetClientEventSource()->OnLogonClubFailed(bRetry, szFailureReason);
         g_bQuickstart = false;
     }
-    else 
+    else
     {
-        GetClientEventSource()->OnLogonClub(); 
+        GetClientEventSource()->OnLogonClub();
     }
 }
 
 
-void WinTrekClient::Disconnect(void) 
+void WinTrekClient::Disconnect(void)
 {
     BaseClient::Disconnect();
     m_bDisconnected = true;
@@ -3390,7 +3390,7 @@ HRESULT WinTrekClient::OnSessionLost(char* szReason, FedMessaging * pthis)
                     GetWindow()->GetPopupContainer()->ClosePopup(NULL);
                 GetWindow()->RestoreCursor();
 
-                TRef<IMessageBox> pmsgBox = 
+                TRef<IMessageBox> pmsgBox =
                     CreateMessageBox(
                         "Your connection to the game server was lost.\n"
                         "Reason: " + ZString(szReason) + ".\n"
@@ -3424,7 +3424,7 @@ HRESULT WinTrekClient::OnSessionLost(char* szReason, FedMessaging * pthis)
 
         GetWindow()->screen(ScreenIDZoneClubScreen);
 
-        TRef<IMessageBox> pmsgBox = 
+        TRef<IMessageBox> pmsgBox =
             CreateMessageBox(
                 "Your connection to the Club server was lost.\n"
                 "Reason: " + ZString(szReason) + ".\n"
@@ -3441,15 +3441,15 @@ HRESULT WinTrekClient::OnSessionLost(char* szReason, FedMessaging * pthis)
 
         GetWindow()->screen(ScreenIDZoneClubScreen);
 
-        TRef<IMessageBox> pmsgBox = 
+        TRef<IMessageBox> pmsgBox =
             CreateMessageBox(
                 "Your connection to the lobby server was lost.\n"
                 "Reason: " + ZString(szReason) + ".\n"
             );
 
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
-        
-        // if we lost the lobby while we were connecting to a server, we 
+
+        // if we lost the lobby while we were connecting to a server, we
         // need to kill the server connection too.
         Disconnect();
     }
@@ -3492,16 +3492,16 @@ void WinTrekClient::OnBadCRC(FedMessaging * pthis, CFMConnection & cnxn, BYTE * 
 
 HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm)
 {
-    HRESULT hr = E_FAIL; 
+    HRESULT hr = E_FAIL;
 
     FEDMSGID fmid = pfm->fmid;
     ZAssert(0 != fmid);
 
-    //if (fmid != FM_CS_PING && 
+    //if (fmid != FM_CS_PING &&
     //    fmid != FM_S_LIGHT_SHIPS_UPDATE &&
     //    fmid != FM_S_HEAVY_SHIPS_UPDATE &&
-    //    fmid != FM_CS_CHATMESSAGE && 
-    //    fmid != FM_S_STATIONS_UPDATE && 
+    //    fmid != FM_CS_CHATMESSAGE &&
+    //    fmid != FM_S_STATIONS_UPDATE &&
     //    fmid != FM_S_PROBES_UPDATE)
     // debugf("Received %s at time %u\n", g_rgszMsgNames[fmid], m_now.clock()); mmf took this out, too much debug output
 
@@ -3510,12 +3510,12 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
         debugf("Client is disconnected - message ignored.\n");
         hr = S_FALSE;
     }
-    else 
+    else
     {
 		// KGJV: fill in server ip for FM_S_MISSIONDEF
 		// this is a bit hacky: we cant do this in HandleMsg where FM_S_MISSIONDEF is handled
 		// because pthis and cnxnFrom are not available
-		// and we cant do this server side either because of NAT/Firewall 
+		// and we cant do this server side either because of NAT/Firewall
 		if (pfm->fmid == FM_S_MISSIONDEF)
 		{
 			CASTPFM(pfmMissionDef, S, MISSIONDEF, pfm);
@@ -3529,7 +3529,7 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
 
         bool bWasHandled = hr == S_OK;
 
-        // review: - we check m_fm.IsConnected() here because HandleMissionMessage might blow 
+        // review: - we check m_fm.IsConnected() here because HandleMissionMessage might blow
         // away the connection as a side effect of retrying a logon... should review
         if (SUCCEEDED(hr) && m_fm.IsConnected())
         {
@@ -3537,7 +3537,7 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
 
             // someone had better handle the message (otherwise, why are we sending it?)
             // If you want to leave the message as NYI for the moment, add it to the NYI
-            // section of HandleMsg in WinTrek.cpp so we can track it.  
+            // section of HandleMsg in WinTrek.cpp so we can track it.
             assert(bWasHandled || hr == S_OK);
         }
     }
@@ -3666,7 +3666,7 @@ void WinTrekClient::LayExpendable(Time now, IexpendableTypeIGC* pet, IshipIGC* p
     {
         assert (type == OT_probeType);
 
-        DataProbeIGC dp; 
+        DataProbeIGC dp;
         dp.pside = pside;
         dp.pship = NULL;
         dp.pmodelTarget = NULL;
@@ -3887,7 +3887,7 @@ void WinTrekClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLaunche
 void WinTrekClient::DamageShipEvent(Time now,
                                 IshipIGC * pShip,
                                 ImodelIGC * pcredit,
-                                DamageTypeID type, 
+                                DamageTypeID type,
                                 float flAmount,
                                 float flLeakage,
                                 const Vector& p1,
@@ -3927,8 +3927,8 @@ void WinTrekClient::DamageShipEvent(Time now,
             if (pts)
             {
                 pts->RegisterHit(
-                    flAmount, 
-                    pShip->GetOrientation().TimesInverse(p2 - p1), 
+                    flAmount,
+                    pShip->GetOrientation().TimesInverse(p2 - p1),
                     flLeakage == 0.0f
                     );
             }
@@ -4042,8 +4042,8 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 		{
 			bPrivilegedUserPM = true;
 		}
-		
-		if (ppi->GetMute() 
+
+		if (ppi->GetMute()
             || (m_bFilterChatsToAll && ctRecipient == CHAT_EVERYONE && trekClient.IsInGame())
 //          || (m_bFilterQuickComms && ppi->IsHuman() && idSonicChat != NA && ctRecipient != CHAT_INDIVIDUAL)		// mdvalley: commented out
             || ((((m_dwFilterLobbyChats == 1) && (ctRecipient != CHAT_INDIVIDUAL)) || (m_dwFilterLobbyChats == 2)) && (ppi->SideID() == SIDE_TEAMLOBBY) && (trekClient.IsInGame()) && (!bPrivilegedUserPM)) //TheBored 25-JUN-07: Changed conditions for the lobby mute options.
@@ -4070,11 +4070,11 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
             bIsSonicChat = true;
 
             // if quick coms are being filtered, at least don't play the sound
-            if (m_bFilterQuickComms && pshipSender 
+            if (m_bFilterQuickComms && pshipSender
                 && ((PlayerInfo*)(pshipSender->GetPrivateData()))->IsHuman())
                 idSonicChat = NA;
         }
-    } 
+    }
 
     // only play a sound if the chat would be visible in the curret chat window
     if (ctRecipient == CHAT_INDIVIDUAL
@@ -4232,7 +4232,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                 {
                     bForMe = true;
                 }
-                else 
+                else
                 {
                     wid = oidRecipient;
                     bForMe = false;
@@ -4335,8 +4335,8 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                 trekClient.GetClientEventSource()->OnDeleteChatMessage(&lOldestChat->data());
                 delete lOldestChat;
             }
-            
-            bool bFromPlayer = pshipSender 
+
+            bool bFromPlayer = pshipSender
                                && (!pshipSender->GetPrivateData()
                                || ((PlayerInfo*)pshipSender->GetPrivateData())->IsHuman());
 
@@ -4427,11 +4427,11 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                     if ((cid == c_cidPickup) && (pmodelTarget == pshipSender) &&
                         pshipSender->GetBaseHullType()->HasCapability(c_habmRescue))
                     {
-                        trekClient.PostText(true, "New orders from %s: prepare for recovery. Press [insert] to accept.", 
+                        trekClient.PostText(true, "New orders from %s: prepare for recovery. Press [insert] to accept.",
                                             (const char*)strSender);
                     }
                     else
-                        trekClient.PostText(true, "New orders from %s to %s: %s. Press [insert] to accept.", 
+                        trekClient.PostText(true, "New orders from %s to %s: %s. Press [insert] to accept.",
                                             (const char*)strSender, (const char*)strRecipient, (const char*)strOrder);
                 }
             }
@@ -4457,22 +4457,22 @@ void            WinTrekClient::Preload(const char*  pszModelName,
 
 void WinTrekClient::SetCDKey(const ZString& strCDKey)
 {
-    HKEY hKey;
+    //HKEY hKey; --this too Imago
     // wlp 2006 - Cdkey is the ASGS Ticket Now - we don't want to save it
     //
     //
     // save the new key for future use.
 	//
-    // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE,
     //    ALLEGIANCE_REGISTRY_KEY_ROOT,
     //    0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
     // {
-    //    ::RegSetValueEx(hKey, "CDKey", NULL, REG_SZ, 
+    //    ::RegSetValueEx(hKey, "CDKey", NULL, REG_SZ,
     // wlp -        (const unsigned char*)(PCC)strCDKey, strCDKey.GetLength());
-    //      
+    //
     //   ::RegCloseKey(hKey);
     // }
-    
+
     BaseClient::SetCDKey(strCDKey);
 }
 
@@ -4483,10 +4483,10 @@ TRef<ThingSite> WinTrekClient::CreateThingSite(ImodelIGC* pModel)
 
 TRef<ClusterSite>   WinTrekClient::CreateClusterSite(IclusterIGC* pCluster)
 {
-    return 
+    return
         new ClusterSiteImpl(
-            GetWindow()->GetModeler(), 
-            GetWindow()->GetTime(), 
+            GetWindow()->GetModeler(),
+            GetWindow()->GetTime(),
             GetWindow()->GetPosterViewport(),
             pCluster
         );
@@ -4497,7 +4497,7 @@ void WinTrekClient::PlaySoundEffect(SoundID soundID, ImodelIGC* model)
 {
     if (!model || (model->GetCluster() && model->GetCluster() == GetCluster()))
     {
-        TRef<ISoundPositionSource> psource = model ? 
+        TRef<ISoundPositionSource> psource = model ?
             ((ThingSiteImpl*)model->GetThingSite())->GetSoundSource() : NULL;
         StartSound(soundID, psource);
     }
@@ -4507,7 +4507,7 @@ void WinTrekClient::PlaySoundEffect(SoundID soundID, ImodelIGC* model, const Vec
 {
     if (!model || (model->GetCluster() && model->GetCluster() == GetCluster()))
     {
-        TRef<ISoundPositionSource> psource = model ? 
+        TRef<ISoundPositionSource> psource = model ?
             ((ThingSiteImpl*)model->GetThingSite())->GetSoundSource(vectOffset) : NULL;
         StartSound(soundID, psource);
     }
@@ -4517,7 +4517,7 @@ void WinTrekClient::PlayNotificationSound(SoundID soundID, ImodelIGC* model)
 {
     if (model == GetShip() || model == GetShip()->GetSourceShip())
     {
-        TRef<ISoundPositionSource> psource = model ? 
+        TRef<ISoundPositionSource> psource = model ?
             ((ThingSiteImpl*)model->GetThingSite())->GetSoundSource() : NULL;
         StartSound(soundID, psource);
     }
@@ -4567,7 +4567,7 @@ void WinTrekClient::UpdateAmbientSounds(DWORD dwElapsedTime)
         float fBestLock = 0.0f;
 
         IclusterIGC* pcluster = GetCluster();
-        
+
         // let every object in the sector update its sounds
         for (ModelLinkIGC*   pml = pcluster->GetModels()->first(); (pml != NULL); pml = pml->next())
         {
@@ -4598,7 +4598,7 @@ void WinTrekClient::UpdateAmbientSounds(DWORD dwElapsedTime)
             {
                 ThingSite*  pts = trekClient.GetShip()->GetThingSite();
                 if (pts)
-                {                    
+                {
                     m_psoundMissileWarning = StartSound(missileLockSound, ((ThingSiteImpl*)pts)->GetSoundSource());
                 }
             }
@@ -4611,15 +4611,15 @@ void WinTrekClient::UpdateAmbientSounds(DWORD dwElapsedTime)
             m_psoundMissileWarning = NULL;
         }
     }
-    else if (trekClient.GetShip()->GetStation() 
+    else if (trekClient.GetShip()->GetStation()
         && GetWindow()->screen() == ScreenIDCombat)
     {
         SoundID newAmbientSound = trekClient.GetShip()->GetStation()->GetInteriorSound();
-        
+
         if (!m_psoundAmbient || m_idAmbient != newAmbientSound)
         {
             m_idAmbient = newAmbientSound;
-        
+
             if (m_psoundAmbient)
                 m_psoundAmbient->Stop();
 
@@ -4664,7 +4664,7 @@ void WinTrekClient::ResetSound()
     if (GetCluster())
     {
         IclusterIGC* pcluster = GetCluster();
-        
+
         // stop the sounds from every object in the sector
         for (ModelLinkIGC*   pml = pcluster->GetModels()->first(); (pml != NULL); pml = pml->next())
         {
@@ -4691,7 +4691,7 @@ HRESULT WinTrekClient::ConnectToServer(BaseClient::ConnectInfo & ci, DWORD dwCoo
         GetWindow()->GetPopupContainer()->ClosePopup(NULL);
     GetWindow()->RestoreCursor();
 
-    if (!m_fm.IsConnected()) 
+    if (!m_fm.IsConnected())
     {
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Failed to connect to the server.");
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
@@ -4714,7 +4714,7 @@ HRESULT WinTrekClient::ConnectToLobby(BaseClient::ConnectInfo * pci)
 
     if (m_fmLobby.IsConnected())
         return S_OK; // maybe specify return code indicating already connected?
-    
+
     // if we get a NULL pci, that means we're gonna let BaseClient take care of it (relogin using cached credentials
 
     // The actual connect happens in BaseClient
@@ -4725,7 +4725,7 @@ HRESULT WinTrekClient::ConnectToLobby(BaseClient::ConnectInfo * pci)
         GetWindow()->GetPopupContainer()->ClosePopup(NULL);
     GetWindow()->RestoreCursor();
 
-    if (!m_fmLobby.IsConnected()) 
+    if (!m_fmLobby.IsConnected())
     {
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Failed to connect to the lobby.");
         Point point(c_PopupX, c_PopupY);
@@ -4742,7 +4742,7 @@ HRESULT WinTrekClient::ConnectToLobby(BaseClient::ConnectInfo * pci)
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false);
         // waiting for logonack from lobby
     }
-    
+
     return hr;
 }
 
@@ -4753,7 +4753,7 @@ HRESULT WinTrekClient::ConnectToClub(BaseClient::ConnectInfo * pci)
 
     if (m_fmClub.IsConnected())
         return S_OK; // maybe specify return code indicating already connected?
-    
+
     // if we get a NULL pci, that means we're gonna let BaseClient take care of it (relogin using cached credentials
     if (pci)
         pci->strServer = GetCfgInfo().strClub;
@@ -4766,7 +4766,7 @@ HRESULT WinTrekClient::ConnectToClub(BaseClient::ConnectInfo * pci)
         GetWindow()->GetPopupContainer()->ClosePopup(NULL);
     GetWindow()->RestoreCursor();
 
-    if (!m_fmClub.IsConnected()) 
+    if (!m_fmClub.IsConnected())
     {
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Failed to connect to the Allegiance Zone.");
         Point point(c_PopupX, c_PopupY);
@@ -4783,7 +4783,7 @@ HRESULT WinTrekClient::ConnectToClub(BaseClient::ConnectInfo * pci)
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false);
         // waiting for logonack from lobby
     }
-    
+
     return hr;
 }
 
@@ -4849,7 +4849,7 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
 
         case QSR_DuplicateCDKey:
             assert(szMessageParam);
-            strMessage = ZString(szMessageParam ? szMessageParam : "someone") 
+            strMessage = ZString(szMessageParam ? szMessageParam : "someone")
                 + " used your CD Key to log into a game!";
             break;
 
@@ -4892,7 +4892,7 @@ void WinTrekClient::SetGameoverInfo(FMD_S_GAME_OVER* pfmGameOver)
     memcpy(m_vsideEndgameInfo, pfmGameOver->rgSides, sizeof(SideEndgameInfo) * c_cSidesMax);
     m_bEndgameEjectPods = pfmGameOver->bEjectPods;
     m_bGameCounted = true; // assume the game counted until we are told otherwise
-    m_bScoresCounted = MyMission()->GetMissionParams().bScoresCount; 
+    m_bScoresCounted = MyMission()->GetMissionParams().bScoresCount;
 
     trekClient.GetClientEventSource()->OnGameoverStats();
     trekClient.GetClientEventSource()->OnGameoverPlayers();
@@ -4901,7 +4901,7 @@ void WinTrekClient::SetGameoverInfo(FMD_S_GAME_OVER* pfmGameOver)
 void WinTrekClient::AddGameoverPlayers(PlayerEndgameInfo* vEndgamePlayerInfo, int nCount)
 {
     PlayerEndgameInfo* vnewInfo = new PlayerEndgameInfo[m_nNumEndgamePlayers + nCount];
-    
+
     if (m_nNumEndgamePlayers > 0)
         memcpy(vnewInfo, m_vplayerEndgameInfo, sizeof(PlayerEndgameInfo) * m_nNumEndgamePlayers);
     memcpy(vnewInfo + m_nNumEndgamePlayers, vEndgamePlayerInfo, sizeof(PlayerEndgameInfo) * nCount);
@@ -4981,11 +4981,11 @@ void  WinTrekClient::SaveSquadMemberships(const char* szCharacterName)
 
     HKEY hKey;
 
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE,
         ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
         0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
     {
-        ::RegSetValueEx(hKey, szCharacterName, NULL, REG_BINARY, 
+        ::RegSetValueEx(hKey, szCharacterName, NULL, REG_BINARY,
             (const unsigned char*)vsquadIDs, dwMembershipSize);
         ::RegCloseKey(hKey);
     }
@@ -4997,7 +4997,7 @@ void  WinTrekClient::RestoreSquadMemberships(const char* szCharacterName)
 
     HKEY hKey;
 
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE,
         ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
         0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
     {
@@ -5010,7 +5010,7 @@ void  WinTrekClient::RestoreSquadMemberships(const char* szCharacterName)
             SquadID* vsquadIDs = (SquadID*)_alloca(dwSize);
             int numSquads = dwSize / sizeof(SquadID);
 
-            ::RegQueryValueEx(hKey, szCharacterName, NULL, NULL, 
+            ::RegQueryValueEx(hKey, szCharacterName, NULL, NULL,
                 (unsigned char*)vsquadIDs, &dwSize);
 
             for (int iSquad = 0; iSquad < numSquads; iSquad++)
@@ -5046,12 +5046,12 @@ int WinTrekClient::GetGrooveLevel()
     {
         // figure out whether we are firing and what our maximum range is
         Mount maxFixedWeapons = pht->GetMaxWeapons();
-        for (Mount mount = 0; mount < maxFixedWeapons; mount++) 
+        for (Mount mount = 0; mount < maxFixedWeapons; mount++)
         {
             const IweaponIGC* pweapon;
             CastTo(pweapon, GetShip()->GetMountedPart(ET_Weapon, mount));
 
-            if (pweapon) 
+            if (pweapon)
             {
                 if (pweapon->fActive())
                     bFiring = true;
@@ -5065,18 +5065,18 @@ int WinTrekClient::GetGrooveLevel()
         const ImagazineIGC* pmagazine;
         CastTo(pmagazine, GetShip()->GetSourceShip()->GetMountedPart(ET_Magazine, 0));
 
-        if (pmagazine) 
+        if (pmagazine)
         {
             if (pmagazine->fActive() && (GetShip()->GetSourceShip()->GetStateM() & missileFireIGC))
                 bFiring = true;
 
             ImissileTypeIGC* pmt = pmagazine->GetMissileType();
-            fMaximumRange = max(fMaximumRange, 
+            fMaximumRange = max(fMaximumRange,
                 pmt->GetLifespan()*(pmt->GetInitialSpeed()+0.5f*pmt->GetLifespan()*pmt->GetAcceleration()));
         }
     }
 
-    
+
     // look for all visible enemies in the player's sector
     if (GetCluster())
     {
@@ -5090,12 +5090,12 @@ int WinTrekClient::GetGrooveLevel()
                 && pship->SeenBySide(GetSide()))
             {
                 bEnemiesSighted = true;
-                
+
                 if (GetShip()->GetSourceShip()->GetCluster())
                 {
                     float c_fFudgeFactor = 2.0f; // extend the ranges a little
 
-                    bEnemiesInRange = 
+                    bEnemiesInRange =
                         (GetShip()->GetSourceShip()->GetPosition()
                             - pship->GetSourceShip()->GetPosition()).LengthSquared()
                             < fMaximumRange * fMaximumRange * c_fFudgeFactor;
@@ -5104,7 +5104,7 @@ int WinTrekClient::GetGrooveLevel()
                         && (pship->GetCommandTarget(c_cmdCurrent) == GetShip()->GetSourceShip())
                         && (pship->GetStateM() & (missileFireIGC | chaffFireIGC | weaponsMaskIGC));
                 }
-            }               
+            }
         }
     }
 
@@ -5125,8 +5125,8 @@ int WinTrekClient::GetGrooveLevel()
     {
         IclusterIGC* pCluster = cLink->data();
 
-        ClusterWarning warn = 
-            GetClusterWarning(pCluster->GetClusterSite()->GetClusterAssetMask(), 
+        ClusterWarning warn =
+            GetClusterWarning(pCluster->GetClusterSite()->GetClusterAssetMask(),
                 trekClient.MyMission()->GetMissionParams().bInvulnerableStations);
 
         switch (warn)
@@ -5145,9 +5145,9 @@ int WinTrekClient::GetGrooveLevel()
     // Groove level 2 polling triggers:
     //
 
-    // if the client tries to fire while an enemy is within range or if an 
+    // if the client tries to fire while an enemy is within range or if an
     // enemy is firing on the client, raise the grove level.
-    if (bEnemiesInRange && bFiring 
+    if (bEnemiesInRange && bFiring
         || bEnemiesInRangeShootingAtMe)
     {
         m_nGrooveLevel = max(m_nGrooveLevel, 2);
@@ -5155,7 +5155,7 @@ int WinTrekClient::GetGrooveLevel()
     }
 
     // drop the current groove level until we find one that matches
-    while (Time::Now() > m_vtimeGrooveDrops[m_nGrooveLevel] 
+    while (Time::Now() > m_vtimeGrooveDrops[m_nGrooveLevel]
         && m_nGrooveLevel > 0)
     {
         --m_nGrooveLevel;

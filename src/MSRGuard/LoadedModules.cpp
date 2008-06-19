@@ -48,8 +48,9 @@ void CLoadedModules::Remove(void* pvImageBase)
 //
 CLoadedModuleIt CLoadedModules::findAddress(void* pvAddress)
 {
+	CLoadedModuleIt it; //--Imago
   const ULONG nAddress = reinterpret_cast<ULONG>(pvAddress);
-  for (CLoadedModuleIt it = begin(); it != end(); ++it)
+  for (it = begin(); it != end(); ++it)
   {
     const CLoadedModule& m = it->second;
     if (m.m_ModuleBase < nAddress && nAddress < (m.m_ModuleBase + m.m_ModuleSize))
@@ -151,7 +152,7 @@ void CLoadedModules::ResolveUnknownSizes(HANDLE hProcessSym)
         m.m_ModuleSize = mi.ImageSize;
         if (!bFullyQualified)
           m.m_strModuleName = mi.ImageName;
-      }      
+      }
     }
   }
 }

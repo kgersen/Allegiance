@@ -56,12 +56,12 @@ MAINTARGROOT=SrvConfig
 SERVERDEST=$(FEDROOT)\Objs\$(FLAVOR)\FedSrv
 !endif
 MAINTARGEXT=exe
-INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDEXT)\vc\atl\inc;$(FEDSRC)\Test\Inc;$(FEDSRC)\Inc;$(FEDSRC)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\Test\TCObj;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(SERVERDEST);$(FEDEXT)\sbn\include
+INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDEXT)\vc\atl\inc;$(FEDSRC)\Test\Inc;$(FEDSRC)\Inc;$(FEDSRC)\Zlib;$(FEDSRC)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\Test\TCObj;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\Allsrv;$(SERVERDEST);$(FEDEXT)\sbn\include
 PCHROOT=stdafx
 PCHINC=$(FEDSRC)\Inc\*.h
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
-CARGSLOCAL=/D"SrvConfig" /D _WIN32_WINNT=0x0400 $(STANDALONEDEFS) /D AGC_HOST
+CARGSLOCAL=/D"SrvConfig" $(STANDALONEDEFS) /D AGC_HOST /D _AFXDLL
 
 
 #############################################################################
@@ -91,10 +91,10 @@ LIBS= $(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
       version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
-      comsupp.lib
+      comsupp.lib atlsd.lib mfc90d.lib mfcs90.lib
 
-USERLIBS= $(FEDROOT)\Objs\$(FLAVOR)\AGC\AGCGuid.lib
-
+USERLIBS= $(FEDROOT)\Objs\$(FLAVOR)\AGC\AGCGuid.lib\
+	$(FEDROOT)\Objs\$(FLAVOR)\Zlib\zlib.lib
 RESFILE= $(DESTDIR)\SrvConfig.res
 
 LARGS=/LIBPATH:$(DXROOT)\lib \
@@ -112,7 +112,7 @@ LARGS=/LIBPATH:$(DXROOT)\lib \
 
 $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr

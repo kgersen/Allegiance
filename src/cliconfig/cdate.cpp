@@ -5,7 +5,7 @@
 //
 // This file implements the functionality for a date processing
 // class, as well as parsing functionality and an example of one
-// way to implement a state machine in C++.  
+// way to implement a state machine in C++.
 //
 // Copyright <cp> 1995 Microsoft Corporation, All Rights Reserved
 //
@@ -134,7 +134,7 @@ int ParseMonthName(const char* lpChar, rcParse& rcp)
     return 0;
 
   // see if target[] is an abbreviation for one of the month names
-  for (i=0;i<12;i++)
+  for (int i=0;i<12;i++)
   {
     if ( strstr(Months[i],target) )
     {
@@ -365,7 +365,7 @@ BOOL CDate::isLessThan(const CDate& testDate) const
     return 1;
   return 0;
 }
- 
+
 //------------------------------------------------------------------------------
 //
 //  @mfunc    This function calculates the number of units between x and y
@@ -1575,7 +1575,7 @@ void CDate::Serialize( CArchive& ar )
             break;
         default:
             // fail the load!!!  invalid binder file!!!
-            AfxThrowArchiveException(CArchiveException::generic);
+            AfxThrowArchiveException(CArchiveException::genericException);
             ASSERT(FALSE);
         }
     }

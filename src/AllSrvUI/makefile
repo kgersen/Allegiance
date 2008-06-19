@@ -45,8 +45,8 @@
 
 SRCROOT=AllSrvUI
 !if defined(ALLSRV_STANDALONE)
-DESTROOT=AllSrvUI
-MAINTARGROOT=AllSrvUI
+DESTROOT=AllSrv32UI
+MAINTARGROOT=AllSrv32UI
 STANDALONEDEFS=/D "ALLSRV_STANDALONE"
 SERVERDEST=$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
 !else
@@ -57,13 +57,13 @@ SERVERDEST=$(FEDROOT)\Objs\$(FLAVOR)\FedSrv
 !endif
 
 MAINTARGEXT=exe
-INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDEXT)\vc\atl\inc;$(FEDSRC)\Test\Inc;$(FEDSRC)\Inc;$(FEDSRC)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\Test\TCObj;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(SERVERDEST);$(FEDEXT)\sbn\include;$(FEDSRC)\Zlib
+INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDEXT)\vc\atl\inc;$(FEDSRC)\Test\Inc;$(FEDSRC)\Inc;$(FEDSRC)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\Test\TCObj;$(FEDROOT)\Objs\$(FLAVOR)\Allsrv;$(FEDROOT)\Objs\$(FLAVOR)\FedSrv;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(SERVERDEST);$(FEDEXT)\sbn\include;$(FEDSRC)\Zlib
 PCHROOT=stdafx
 PCHINC=*.h
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
-CARGSLOCAL=/D"AllSrvUI" /D _WIN32_WINNT=0x0400 $(STANDALONEDEFS)
-UNWINDCARG=/GX
+CARGSLOCAL=/D"AllSrvUI" /D _AFXDLL $(STANDALONEDEFS)
+UNWINDCARG=/EHsc
 
 #############################################################################
 # Rules
@@ -100,7 +100,7 @@ LIBS= $(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
       version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
-      wininet.lib comsupp.lib
+      wininet.lib comsupp.lib comsuppw.lib atlsd.lib mfc90d.lib mfcs90d.lib
 
 USERLIBS= \
     $(DESTDIR)\..\zlib\zlib.lib         \
@@ -125,7 +125,7 @@ LARGS=/LIBPATH:$(DXROOT)\lib \
 
 $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr
@@ -164,6 +164,6 @@ $(RESFILE): $(FEDSRC)\Inc\VerRes.rc $(SRCROOT).rc
   @echo Compiling Resources...
    @copy $(SRCROOT).rc $(DESTDIR)
    @echo #define FLAVOR "$(FLAVOR)" >>$(DESTDIR)\$(SRCROOT).rc
-   @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(SRCROOT).rc
+#   @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(SRCROOT).rc
    $(RC) $(RARGS) $(STANDALONEDEFS) /Fo$(DESTDIR)\$(SRCROOT).res $(DESTDIR)\$(SRCROOT).rc
 

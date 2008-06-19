@@ -38,6 +38,7 @@ PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\lobby\*.h
 MSGFILE=LobbyMsg
 SPLITSYMBOLS=1
+UNWINDCARG=/EHsc
 
 #IDLOUTPUT=LobbyModuleIDL
 
@@ -98,6 +99,6 @@ $(RESFILE): $(DESTDIR)\$(MSGFILE).rc $(FEDSRC)\Inc\VerRes.rc $(MAINTARGROOT).rc
    @copy $(FEDSRC)\$(SRCROOT)\$(MAINTARGROOT).rc $(DESTDIR)
    @type $(DESTDIR)\$(MSGFILE).rc >>$(DESTDIR)\$(MAINTARGROOT).rc
    @echo #define FLAVOR "$(FLAVOR)" >>$(DESTDIR)\$(MAINTARGROOT).rc
-   @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(MAINTARGROOT).rc
+#   @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(MAINTARGROOT).rc
    @$(RC) $(RARGS) /Fo$(RESFILE) $(DESTDIR)\$(MAINTARGROOT).rc
 

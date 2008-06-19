@@ -12,4 +12,6 @@
 #include "cntrmap.h"
 #include "perfutil.h"
 
+#pragma warning(disable:4996)
+
 

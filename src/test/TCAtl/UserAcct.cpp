@@ -321,7 +321,8 @@ HRESULT TCUserAccount::SetRunAsInteractiveUser(LPCTSTR szAppID)
 
   // Set "Interactive User" as the RunAs user for the AppID
   // mdvalley: it used to be SetStringValue, but that ain't in my ATL.
-  LONG lr = key.SetValue(TEXT("RunAs"), TEXT("Interactive User"));
+  // Imago: get a new ATL
+  LONG lr = key.SetStringValue(TEXT("RunAs"), TEXT("Interactive User"));
   if (lr)
     return HRESULT_FROM_WIN32(lr);
 
@@ -423,7 +424,8 @@ HRESULT TCUserAccount::SetRunAsUser(LPCTSTR szAppID, LPCTSTR szUserName, LPCTSTR
 
   // Set the specified user name as the RunAs user for the AppID
   // mdvalley: Another former SetStringValue
-  LONG lr = key.SetValue(TEXT("RunAs"), pszUserName);
+  // imago: Another SetValue that i've had to touch twice
+  LONG lr = key.SetStringValue(TEXT("RunAs"), pszUserName);
   if (lr)
     return HRESULT_FROM_WIN32(lr);
 

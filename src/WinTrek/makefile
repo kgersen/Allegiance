@@ -36,10 +36,10 @@ SPLITSYMBOLS=1
 SRCROOT=Wintrek
 MAINTARGROOT=Allegiance
 MAINTARGEXT=exe
-CARGSLOCAL=/D"WINTREK" /D "igc_static" /D "IGC_SHIP" /D "_USRDLL" /D"DLL" /I$(FEDROOT)\Objs\$(FLAVOR)\AGC /I$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
+CARGSLOCAL=/D DIRECTINPUT_VERSION=0x700 /D"WINTREK" /D "igc_static" /D "IGC_SHIP" /D "_USRDLL" /D"DLL" /I$(FEDROOT)\Objs\$(FLAVOR)\AGC /I$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
 INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDSRC)\Effect;$(FEDSRC)\Engine;$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(FEDSRC)\clintlib;$(FEDSRC)\SoundEngine;$(FEDSRC)\agc;$(FEDSRC)\FedSrv;$(FEDSRC)\Training;$(FEDSRC)\lobby;$(FEDSRC)\test\inc;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
 
-UNWINDCARG=/GX
+UNWINDCARG=/EHsc
 
 PCHROOT=pch
 PCHINC=                                    \
@@ -111,7 +111,10 @@ OBJS= \
     $(DESTDIR)\ZoneSquad.obj                \
     $(DESTDIR)\ZoneEventsScreen.obj         \
     $(DESTDIR)\netinfo.obj                  \
-    $(DESTDIR)\GameTypes.obj                 
+    $(DESTDIR)\GameTypes.obj                \
+$(DESTDIR)\MapPreview.obj\
+$(DESTDIR)\MapPVMaker.obj
+
 
 
 USERLIBS= \
@@ -124,6 +127,7 @@ USERLIBS= \
     $(DESTDIR)\..\clintlib\clintlib.lib \
     $(DESTDIR)\..\agc\AGCGuid.lib       \
     $(DESTDIR)\..\training\training.lib \
+    $(DESTDIR)\..\vorbis\vorbis.lib \
     $(DESTDIR)\$(MAINTARGROOT).res
 
 !include "../makeexe.inc"
@@ -167,7 +171,7 @@ $(DESTDIR)\cmdview.obj:              $(PCHFILE)
 $(DESTDIR)\sectormap.obj:            $(PCHFILE)
 $(DESTDIR)\chatpane.obj:             $(PCHFILE)
 $(DESTDIR)\logon.obj:                $(PCHFILE)
-$(DESTDIR)\passworddialog.obj:          $(PCHFILE)
+$(DESTDIR)\passworddialog.obj:       $(PCHFILE)
 $(DESTDIR)\cdkeydialog.obj:          $(PCHFILE)
 $(DESTDIR)\videoscreen.obj:          $(PCHFILE)
 $(DESTDIR)\trainingscreen.obj:       $(PCHFILE)
@@ -177,6 +181,7 @@ $(DESTDIR)\PostTrainingSlideshow.obj:$(PCHFILE)
 $(DESTDIR)\ZoneSquad.obj:            $(PCHFILE)
 $(DESTDIR)\ZoneEventsScreen.obj:     $(PCHFILE)
 $(DESTDIR)\GameTypes.obj:            $(PCHFILE)
+$(DESTDIR)\MapPreview.obj:           $(PCHFILE)
 
 RARGS = /l 0x409 $(RARGSFLAVOR) /d"WINTREK" /I$(FEDSRC)\Lang\NonIntl\$(MAINTARGROOT) /i$(FEDSRC)\Lang\$(LANG)\$(MAINTARGROOT)
 
@@ -184,5 +189,5 @@ $(DESTDIR)\$(MAINTARGROOT).res: $(FEDSRC)\Lang\$(LANG)\$(MAINTARGROOT)\$(MAINTAR
                                 $(FEDSRC)\Inc\VerRes.rc
    copy $(FEDSRC)\Lang\$(LANG)\$(MAINTARGROOT)\$(MAINTARGROOT).rc $(DESTDIR)
    echo #define FLAVOR "$(FLAVOR)" >>$(DESTDIR)\$(MAINTARGROOT).rc
-   type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(MAINTARGROOT).rc
+#   type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(MAINTARGROOT).rc
    $(RC) $(RARGS) /Fo$(DESTDIR)\$(MAINTARGROOT).res $(DESTDIR)\$(MAINTARGROOT).rc

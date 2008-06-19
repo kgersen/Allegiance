@@ -8,6 +8,8 @@
 #include <AGC.h>
 #include "resource.h"
 
+//imago: supress the depreciated ATL property bag
+#pragma warning(disable:4995)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTCStrings

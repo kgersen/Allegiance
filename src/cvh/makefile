@@ -22,3 +22,4 @@ $(DESTDIR)\main.obj:         $(PCHFILE)
 
 $(BSC):
   $(BSCMAKE) $(NOLOGO) /Iu /o$(BSC)
+

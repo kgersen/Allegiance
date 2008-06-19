@@ -5,6 +5,8 @@
 // IAGCRangesImpl.h : Declaration of the IAGCRangesImpl class template.
 //
 
+#pragma warning(disable:4018)
+
 #include <AGC.h>
 #include <..\TCLib\RangeSet.h>
 #include <..\TCLib\ObjectLock.h>
@@ -54,9 +56,9 @@ public:
   {
     // Create a range COM object to be reused multiple times
     ZSucceeded(T::CreateRange(RT(), RT(), &m_spRange));
-    m_spRange.QueryInterface(&m_spPrivate);  
+    m_spRange.QueryInterface(&m_spPrivate);
     assert(NULL != m_spPrivate);
-    m_spRange.QueryInterface(&m_spPersist);    
+    m_spRange.QueryInterface(&m_spPersist);
     if (NULL == m_spPersist)
     {
       ZSucceeded(m_spRange->QueryInterface(IID_IPersistStreamInit,
@@ -74,7 +76,7 @@ public:
   STDMETHODIMP get_Count(long* pnCount)
   {
     XLock lock(static_cast<T*>(this));
-    CLEAROUT(pnCount, static_cast<long>(m_ranges.size()));    
+    CLEAROUT(pnCount, static_cast<long>(m_ranges.size()));
     return S_OK;
   }
   STDMETHODIMP get__NewEnum(IUnknown** ppunkEnum)
@@ -89,7 +91,7 @@ public:
     // Get the number of items in the collection
     XLock lock(static_cast<T*>(this));
     long cTotal = m_ranges.size();
-    
+
     // Create a temporary array of variants
     std::vector<CComVariant> vecTemp(cTotal);
 
@@ -298,7 +300,7 @@ public:
 public:
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid)
   {
-	  static const IID* arr[] = 
+	  static const IID* arr[] =
 	  {
 		  &__uuidof(ITF),
 	  };
@@ -427,7 +429,7 @@ protected:
   IAGCRangePrivatePtr m_spPrivate;
   IPersistStreamPtr   m_spPersist;
 // Data Members
-public:  
+public:
   CComPtr<IUnknown> m_punkMBV;
 };
 

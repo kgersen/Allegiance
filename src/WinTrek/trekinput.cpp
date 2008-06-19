@@ -419,7 +419,7 @@ public:
         //
 
         if (
-               m_pinputEngine->GetJoystick(0) 
+               m_pinputEngine->GetJoystick(0)
             && m_pinputEngine->GetJoystick(0)->HasForceFeedback()
         ) {
             m_pinputEngine->GetJoystick(0)->CreateEffects();
@@ -681,7 +681,7 @@ public:
             if (!bNew) {
                 plist = pns->FindList("numericValues");
             }
-        
+
             plist->GetFirst();
             for (int indexValueOutput = 0; indexValueOutput < m_ppnumberAxis.GetCount(); indexValueOutput++) {
                 TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
@@ -706,7 +706,7 @@ public:
                     }
 
                     if (pvalueInput) {
-                        m_ppnumberAxis[indexValueOutput] = pvalueInput;    
+                        m_ppnumberAxis[indexValueOutput] = pvalueInput;
                     } else {
                         m_ppnumberAxis[indexValueOutput] = NULL;
                     }
@@ -733,7 +733,7 @@ public:
 			//m_pboolTrekKeyDown[index]       = false; // keyboard // yp - Your_Persona buttons get stuck patch. aug-03-2006
             //m_ppboolTrekKeyButtonDown[index] = false;
         }
-		// yp - After that for loop we lose responce from most of our keys.. so..		 
+		// yp - After that for loop we lose responce from most of our keys.. so..
 		// hack.. we reload the map, and something in there fixes it.
 		//if (!LoadMap(INPUTMAP_FILE)) {
         //    LoadMap(DEFAULTINPUTMAP_FILE);
@@ -833,11 +833,11 @@ public:
 
     TrekKey HandleKeyMessage(const KeyState& ks)
     {
-        /* 
+        /*
         ZDebugOutput(
-            "Key: " 
-            + ZString(ks.vk) 
-            + " Down: " 
+            "Key: "
+            + ZString(ks.vk)
+            + " Down: "
             + (ks.bDown    ? "True " : "False ")
             + (ks.bShift   ? "S"     : ""      )
             + (ks.bControl ? "C"     : ""      )
@@ -850,7 +850,7 @@ public:
             //
             // Update boolean value
             //
-        
+
             if (m_pboolKeyDown[ks.vk] != NULL) {
                 m_pboolKeyDown[ks.vk]->SetValue(ks.bDown);
             }
@@ -868,7 +868,7 @@ public:
     void PlayFFEffect(ForceEffectID effectID, LONG lDirection)
     {
         if (
-               m_pinputEngine->GetJoystick(0) 
+               m_pinputEngine->GetJoystick(0)
             && m_pinputEngine->GetJoystick(0)->HasForceFeedback()
         ) {
             m_pinputEngine->GetJoystick(0)->PlayFFEffect(effectID, lDirection);
@@ -908,7 +908,7 @@ public:
 
             for (int index = 0; index < 4; index++) {
                 m_ppboolHatButton[index]->SetValue(0);
-            } 
+            }
 
             if (value > 0.75f) {
                 m_ppboolHatButton[2]->SetValue(1);
@@ -938,12 +938,12 @@ public:
                     psite->OnTrekKey(index);
                 }
             }
-        }        
+        }
     }
 
     TRef<IPopup> CreateInputMapPopup(Modeler* pmodeler, IEngineFont* pfont, Number* ptime)
     {
-        return 
+        return
             ::CreateInputMapPopup(
                 pmodeler,
                 m_pinputEngine,
@@ -956,7 +956,7 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// 
+//
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -967,7 +967,7 @@ TRef<TrekInput> CreateTrekInput(HINSTANCE hInst, HWND hwnd, InputEngine* pinputE
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// 
+//
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -1500,7 +1500,7 @@ const int g_nCommandInfo = ArrayCount(g_pCommandInfo);
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// 
+//
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -1568,7 +1568,7 @@ private:
                 KeyMapping& map = iter.Value();
 
                 if (
-                       map.m_vk        == vk 
+                       map.m_vk        == vk
                     && map.m_modifiers == modifiers
                 ) {
                     return true;
@@ -1588,7 +1588,7 @@ private:
                 KeyMapping& map = iter.Value();
 
                 if (
-                       map.m_vk        == vk 
+                       map.m_vk        == vk
                     && map.m_modifiers == modifiers
                 ) {
                     iter.Remove();
@@ -1672,12 +1672,13 @@ private:
                     char buf[128];
 
                     UINT scan   = ::MapVirtualKey(map.m_vk, 0) << 16;
-
+					//undefined behavior --Imago
+					#pragma warning(disable : 4293)
                     if (scan & (1 << 32)) {
                         scan |= (1 << 24);
                         scan &= ~(1 << 23);
                     }
-
+					#pragma warning(default : 4293)
                     int length = 0;
 
                     if (bInternational) {
@@ -1774,9 +1775,9 @@ private:
                     }
 
                     pfile->Write(
-                          "        (" 
-                        + ZString(map.m_vk) 
-                        + ", " 
+                          "        ("
+                        + ZString(map.m_vk)
+                        + ", "
                         + ZString(modifiers)
                         + ", "
                         + ZString(cmd)
@@ -1803,7 +1804,7 @@ private:
                     }
 
                     pfile->Write(
-                          "        (" 
+                          "        ("
                         + ZString(map.m_indexButton)
                         + ", "
                         + ZString(cmd)
@@ -1830,9 +1831,9 @@ private:
                     }
 
                     pfile->Write(
-                          "        (" 
-                        + ZString(map.m_indexJoystick) 
-                        + ", " 
+                          "        ("
+                        + ZString(map.m_indexJoystick)
+                        + ", "
                         + ZString(map.m_indexButton)
                         + ", "
                         + ZString(cmd)
@@ -1874,7 +1875,7 @@ private:
         //////////////////////////////////////////////////////////////////////////////
 
         MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
-        { 
+        {
             MouseResult result = WrapImage::HitTest(pprovider, point, bCaptured);
 
             if (m_ppopup->IsEditing()) {
@@ -1885,7 +1886,7 @@ private:
         }
 
         MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
-        { 
+        {
             if (m_ppopup->IsEditing()) {
                 if (bDown) {
                     m_ppopup->Button(button);
@@ -2030,7 +2031,7 @@ public:
         //
 
         pmodeler->UnloadNameSpace(pns);
-        
+
         //
         // Load the current mapping
         //
@@ -2163,7 +2164,7 @@ public:
             if (!bNew) {
                 plist = pns->FindList("numericValues");
             }
-        
+
             plist->GetFirst();
             for (int indexValueOutput = 0; indexValueOutput < m_paxis.GetCount(); indexValueOutput++) {
                 TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
@@ -2178,7 +2179,7 @@ public:
                         } else if (m_paxis[indexValueOutput].m_indexValue == 3) {
                             m_paxis[indexValueOutput].m_indexValue = 2;
                         }
-                    } 
+                    }
                 } else {
                     m_paxis[indexValueOutput].m_indexJoystick = -1;
                     m_paxis[indexValueOutput].m_indexValue    =  0;
@@ -2207,11 +2208,11 @@ public:
         //
         // Calculate the modifier map
         //
-        
+
         int  index;
-        
+
         for (index = 0; index < 256; index++) {
-            m_pbNoModifiers[index] = true;    
+            m_pbNoModifiers[index] = true;
         }
 
         for (index = 0; index < TK_Max; index++) {
@@ -2561,7 +2562,7 @@ public:
         return true;
     }
 
-    void Button(int index) 
+    void Button(int index)
     {
         if (!IsAxisSelection()) {
             if (AddButtonMapping(-1, index)) {
@@ -2740,12 +2741,12 @@ public:
                 }
 
                 if (pvalueInput) {
-                    strMapping = 
+                    strMapping =
                           pjoystick->GetShortDescription(m_paxis[indexAxis].m_indexJoystick)
                         + " "
                         + pjoystick->GetValueDescription(m_paxis[indexAxis].m_indexValue);
                 } else {
-                    strMapping = 
+                    strMapping =
                           "Joy " + ZString(m_paxis[indexAxis].m_indexJoystick)
                         + " Value "
                         + ZString(m_paxis[indexAxis].m_indexValue);
@@ -2799,7 +2800,7 @@ public:
 
     TRef<Image> GetImage(Engine* pengine)
     {
-        return 
+        return
             new EvaluateImage(
                 this,
                 CreatePaneImage(pengine, SurfaceType3D(), true, GetPane()),
@@ -2814,7 +2815,7 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 
     bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
-    { 
+    {
         if (ks.bDown) {
             if (m_bQuestion) {
                 if (ks.vk == VK_ESCAPE) {
@@ -2830,7 +2831,7 @@ public:
                         RemoveKeyMappings(m_vkQuestion, m_modifiersQuestion);
                         AddKeyMapping(m_vkQuestion, m_modifiersQuestion);
                     }
-                    
+
                     StopEditing();
                 }
             } else if (m_bEditing) {
@@ -2901,7 +2902,7 @@ TRef<IPopup> CreateInputMapPopup(
     IEngineFont* pfont,
     Number*      ptime
 ) {
-    return 
+    return
         new InputMapPopup(
             pmodeler,
             pinputEngine,

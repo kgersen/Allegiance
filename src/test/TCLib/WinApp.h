@@ -5,6 +5,7 @@
 #ifndef __WinApp_h__
 #define __WinApp_h__
 
+//#pragma warning(disable:4018)
 
 /////////////////////////////////////////////////////////////////////////////
 // WinApp.h | Declaration of the TCWinApp class.
@@ -69,7 +70,7 @@ extern Win32App* g_papp;
     /////////////////////////////////////////////////////////////////////////
     virtual void DebugOutput(const char *psz)
     {
-      int cch = strlen(psz);
+      unsigned int cch = strlen(psz);
       if (cch < (sizeof(m_szModuleName) - (m_cchModuleName + 1)))
       {
         strcpy(m_pszModuleNameEnd, psz);

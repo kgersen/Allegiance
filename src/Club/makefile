@@ -38,6 +38,7 @@ PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\Club\*.h $(FEDSRC)\fedsrv\fedsrvsql.h $(FEDSRC)\fedsrv\sqlhelp.cpp
 MSGFILE=AllClubMsg
 SPLITSYMBOLS=1
+UNWINDCARG=/EHsc
 
 #IDLOUTPUT=AllClubModuleIDL
 

@@ -50,7 +50,7 @@ LIBS= $(LIBSFLAVOR) \
      dplayx.lib kernel32.lib user32.lib gdi32.lib winspool.lib \
      comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib \
      uuid.lib odbc32.lib odbccp32.lib wsock32.lib comctl32.lib \
-     urlmon.lib ddraw.lib d3drm.lib winmm.lib
+     urlmon.lib ddraw.lib winmm.lib
 
 USERLIBS= \
     $(DESTDIR)\..\_utility\Utility.lib \
@@ -65,7 +65,7 @@ LARGS=/LIBPATH:$(DXROOT)\lib /LIBPATH:$(FEDEXT)\Vc\lib \
 
 $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(BSCTARG) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS)
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
 $(RESFILE): $(DESTDIR)\SentMsg.rc $(FEDSRC)\Inc\VerRes.rc $(MAINTARGROOT).rc
    @copy $(FEDSRC)\Sentinal\Sentinal.rc $(DESTDIR)

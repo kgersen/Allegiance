@@ -61,7 +61,7 @@ PCHINC=
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
 CARGSLOCAL=/D"MSRGuard" /D _WIN32_WINNT=0x0400 $(STANDALONEDEFS)
-UNWINDCARG=/GX
+UNWINDCARG=/EHsc
 
 #############################################################################
 # Rules
@@ -110,7 +110,7 @@ LARGS=/LIBPATH:$(DXROOT)\lib \
 
 $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map 2> NUL
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map 2> NUL
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr

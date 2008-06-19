@@ -9,6 +9,7 @@
 
 // __MODULE__ is used by ZAssert
 #define __MODULE__ "SoundEngine"
+#pragma warning(disable:4018)
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -34,7 +35,7 @@
 #include <algorithm>
 #include <functional>
 #include <vector>
- 
+
 #include <stdio.h>
 #include <malloc.h>
 #include <windows.h>

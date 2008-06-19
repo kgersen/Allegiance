@@ -17,8 +17,10 @@ OBJS=$(DESTDIR)\xmunge.obj
 
 USERLIBS= \
       $(DESTDIR)\..\engine\engine.lib \
-      $(DESTDIR)\..\zlib\zlib.lib
-
+      $(DESTDIR)\..\zlib\zlib.lib\
+      $(FEDEXT)\dx\lib\d3d8.lib \
+      $(FEDSRC)\xmunge\d3drm.lib 
+      
 !include "../makeexe.inc"
 
 $(DESTDIR)\xmunge.obj:         $(PCHFILE)

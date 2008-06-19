@@ -2,7 +2,7 @@
 
 
 // Note: Proxy/Stub Information
-//      To build a separate proxy/stub DLL, 
+//      To build a separate proxy/stub DLL,
 //      run nmake -f Lobbyps.mk in the project directory.
 
 #include "pch.h"
@@ -54,12 +54,11 @@ inline HRESULT CServiceModule::RegisterServer(BOOL bRegTypeLib, BOOL bService, c
     if (lRes != ERROR_SUCCESS)
         return lRes;
     key.DeleteValue(_T("LocalService"));
-    
+
     if (bService)
     {
-		// mdvalley: SetStringValue not in my ATL
-        key.SetValue(_T("AllLobby"), _T("LocalService"));
-        key.SetValue(_T("-Service"), _T("ServiceParameters"));
+        key.SetStringValue(_T("LocalService"),_T("AllLobby"));
+        key.SetStringValue(_T("ServiceParameters"),_T("-Service"));
         // Create service
         //Install();
         InstallService(szAccount, szPassword);
@@ -92,7 +91,7 @@ const char * CServiceModule::GetModulePath()
         char*   p = strrchr(szFileName, '\\');
         if (p)
             *(p+1) = 0;
-        else 
+        else
         {
             szFileName[0] = '\\';
             szFileName[1] = 0;
@@ -102,7 +101,7 @@ const char * CServiceModule::GetModulePath()
     }
     return pszLast;
 }
- 
+
 
 
 /*-------------------------------------------------------------------------
@@ -110,7 +109,7 @@ const char * CServiceModule::GetModulePath()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Read info from the registry
- * 
+ *
  * Parameters:
  *    hk:        which key to read from
  *    bIsString: if false, then item is cosnidered to be a DWORD
@@ -184,7 +183,7 @@ inline void CServiceModule::Init(_ATL_OBJMAP_ENTRY* p, HINSTANCE h, UINT nServic
     LoadString(h, nServiceNameID, m_szServiceName, sizeof(m_szServiceName) / sizeof(TCHAR));
     LoadString(h, nServiceDescID, m_szServiceDesc, sizeof(m_szServiceDesc) / sizeof(TCHAR));
 
-    // set up the initial service status 
+    // set up the initial service status
     m_hServiceStatus = NULL;
     m_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
     m_status.dwCurrentState = SERVICE_STOPPED;
@@ -461,7 +460,7 @@ void WINAPI CServiceModule::_ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
 }
 void WINAPI CServiceModule::_Handler(DWORD dwOpcode)
 {
-    _Module.Handler(dwOpcode); 
+    _Module.Handler(dwOpcode);
 }
 
 void CServiceModule::SetServiceStatus(DWORD dwState)
@@ -512,13 +511,13 @@ void CServiceModule::Run()
 /////////////////////////////////////////////////////////////////////////////
 //
 int __cdecl main(int argc, char *argv[])
-{ 
+{
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
     LPSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
     // {5B5BE9E8-F1C7-4b95-960A-542A495CCE20}
-    static const GUID LIBID_LOBBY = 
+    static const GUID LIBID_LOBBY =
         {0x5b5be9e8, 0xf1c7, 0x4b95, {0x96, 0xa, 0x54, 0x2a, 0x49, 0x5c, 0xce, 0x20}};
 
     _Module.Init(ObjectMap, hInstance, IDS_SERVICENAME, IDS_SERVICEDESC, &LIBID_LOBBY);
@@ -530,11 +529,11 @@ int __cdecl main(int argc, char *argv[])
     // Register as Local Server
     if (argc > 1 && lstrcmpi(argv[1], _T("-RegServer"))==0)
         return _Module.RegisterServer(FALSE, FALSE, NULL, NULL);
-    
+
     // Register as Service
     if (argc > 1 && lstrcmpi(argv[1], _T("-Service"))==0)
     {
-        if (argc == 4) 
+        if (argc == 4)
             return _Module.RegisterServer(FALSE, TRUE, argv[2], argv[3]);
         else
             return _Module.RegisterServer(FALSE, TRUE, NULL, NULL);
@@ -556,11 +555,12 @@ int __cdecl main(int argc, char *argv[])
         _Module.LogEvent(EVENTLOG_ERROR_TYPE, LE_NotRegistered);
         return lRes;
     }
-    
+
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
 	// mdvalley: QueryStringValue? Not on my compiler.
-    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
+	//This was backward! --Imago
+    lRes = key.QueryStringValue(_T("LocalService"),szValue , &dwLen);
 
     _Module.m_bService = FALSE;
     if (lRes == ERROR_SUCCESS)

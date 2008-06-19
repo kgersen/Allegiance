@@ -1,6 +1,8 @@
 #ifndef __AutoSizer_h__
 #define __AutoSizer_h__
 
+#pragma warning(disable:4018) //noisy
+
 /////////////////////////////////////////////////////////////////////////////
 // AutoSizer.h | Declaration of the CAutoSizer class.
 
@@ -207,19 +209,19 @@ inline CAutoSizer::XRule::XRule(const XRule& that)
   CopyMemory(m_Offsets, that.m_Offsets, sizeof(m_Offsets));
 }
 
-inline const CAutoSizer::XRule& CAutoSizer::XRule::operator=(const AutoSizerRule* pRule) 
-{ 
-  CopyMemory(&m_Rule, pRule, sizeof(m_Rule)); 
-  ZeroMemory(m_Offsets, sizeof(m_Offsets)); 
-  return *this; 
-} 
+inline const CAutoSizer::XRule& CAutoSizer::XRule::operator=(const AutoSizerRule* pRule)
+{
+  CopyMemory(&m_Rule, pRule, sizeof(m_Rule));
+  ZeroMemory(m_Offsets, sizeof(m_Offsets));
+  return *this;
+}
 
-inline const CAutoSizer::XRule& CAutoSizer::XRule::operator=(const XRule& that) 
-{ 
-  CopyMemory(&m_Rule, &that.m_Rule, sizeof(m_Rule)); 
-  CopyMemory(m_Offsets, that.m_Offsets, sizeof(m_Offsets)); 
-  return *this; 
-} 
+inline const CAutoSizer::XRule& CAutoSizer::XRule::operator=(const XRule& that)
+{
+  CopyMemory(&m_Rule, &that.m_Rule, sizeof(m_Rule));
+  CopyMemory(m_Offsets, that.m_Offsets, sizeof(m_Offsets));
+  return *this;
+}
 
 
 inline bool CAutoSizer::XRule::operator==(const AutoSizerRule* pRule)

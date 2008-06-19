@@ -30,7 +30,7 @@ MAINTARGEXT=lib
 INCLUDELOCAL=$(FEDSRC)\Training;$(FEDSRC)\Effect;$(FEDSRC)\Engine;$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(FEDSRC)\inc;$(FEDSRC)\clintlib;$(FEDSRC)\SoundEngine;$(FEDSRC)\wintrek;$(FEDSRC)\offline;$(FEDSRC)\lobby
 PCHROOT=pch
 PCHINC=$(FEDSRC)\Training\*.h $(FEDSRC)\igc\*.h $(FEDSRC)\wintrek\*.h $(FEDSRC)\SoundEngine\*.h
-UNWINDCARG=/GX
+UNWINDCARG=/EHsc
 
 !include "..\makefile.inc"
 
@@ -111,7 +111,14 @@ OBJS=	$(DESTDIR)\AbstractTarget.obj                   \
 		$(DESTDIR)\Mission3.obj                         \
 		$(DESTDIR)\Mission4.obj                         \
 		$(DESTDIR)\Mission5.obj                         \
-		$(DESTDIR)\Mission6.obj
+		$(DESTDIR)\Mission8.obj                         \
+		$(DESTDIR)\Mission6.obj\
+		$(DESTDIR)\DoDamageAdjustableAction.obj\
+		$(DESTDIR)\GetShipHasMountedCondition.obj\
+		$(DESTDIR)\SetDroneNanAction.obj\
+		$(DESTDIR)\SetCargoNanAction.obj\
+		$(DESTDIR)\SetStationDestroyedAction.obj\
+
 
 LIBARGS= $(NOLOGO) /out:$(MAINTARGFULLPATH)
 
@@ -184,6 +191,7 @@ $(DESTDIR)\TurnToAction.obj:                    $(PCHFILE)
 $(DESTDIR)\ToggleWeaponAction.obj:              $(PCHFILE)
 $(DESTDIR)\SwapWeaponAction.obj:                $(PCHFILE)
 $(DESTDIR)\DoDamageAction.obj:                  $(PCHFILE)
+$(DESTDIR)\DoDamageAdjustableAction.obj:                  $(PCHFILE)
 $(DESTDIR)\RepairRearmAction.obj:               $(PCHFILE)
 $(DESTDIR)\ShipSeesObjectCondition.obj:         $(PCHFILE)
 $(DESTDIR)\GetPickedCondition.obj:              $(PCHFILE)
@@ -200,3 +208,8 @@ $(DESTDIR)\Mission3.obj:			            $(PCHFILE)
 $(DESTDIR)\Mission4.obj:			            $(PCHFILE)
 $(DESTDIR)\Mission5.obj:			            $(PCHFILE)
 $(DESTDIR)\Mission6.obj:			            $(PCHFILE)
+$(DESTDIR)\Mission8.obj:			            $(PCHFILE)
+$(DESTDIR)\GetShipHasMountedCondition.obj:	$(PCHFILE)
+$(DESTDIR)\SetDroneNanAction.obj:	$(PCHFILE)	
+$(DESTDIR)\SetStationDestroyedAction.obj:	$(PCHFILE)
+$(DESTDIR)\SetCargoNanAction.obj:	$(PCHFILE)

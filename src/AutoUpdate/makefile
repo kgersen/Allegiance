@@ -77,7 +77,7 @@ LIBS= $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
       version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
-      comctl32.lib wininet.lib lz32.lib
+      comctl32.lib wininet.lib lz32.lib atlsd.lib
 
 # Unfortunately Autodownload.cpp is in clintlib, so we need to include a bunch of other
 # libs.  One day I should move Autodownload.cpp out of clintlib and into another lib.  
@@ -108,7 +108,7 @@ LARGS=/LIBPATH:$(DXROOT)\lib \
 
 $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr

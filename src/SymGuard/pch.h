@@ -5,7 +5,7 @@
 //
 
 #pragma once
-
+#define __MODULE__ "SymGuard"
 
 /////////////////////////////////////////////////////////////////////////////
 // Standard C/C++ Includes
@@ -43,7 +43,7 @@ extern CComModule _Module;
 /////////////////////////////////////////////////////////////////////////////
 // ZLib Includes
 
-#define __MODULE__ "SymGuard"
+
 #define ZLIB_SKIP_NEW_REDEF
 #include <zlib.h>
 #include <zreg.h>

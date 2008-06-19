@@ -31,8 +31,8 @@
 SRCROOT=FedSrv
 !if defined(ALLSRV_STANDALONE)
 STANDALONEDEFS=/D "ALLSRV_STANDALONE"
-DESTROOT=AllSrv
-MAINTARGROOT=AllSrv
+DESTROOT=AllSrv32
+MAINTARGROOT=AllSrv32
 !if !defined(retail) && !defined(sretail) && !defined(ALLSRV_INVISIBLE)
 SUBSYSTEM=CONSOLE
 STANDALONEDEFS=$(STANDALONEDEFS) /D "_CONSOLE"
@@ -41,7 +41,7 @@ SUBSYSTEM=WINDOWS
 !endif
 !else
 STANDALONEDEFS=/D "_CONSOLE"
-DESTROOT=FedSrv
+DESTROOT=AllSrv
 MAINTARGROOT=AllSrv
 SUBSYSTEM=CONSOLE
 !endif
@@ -55,7 +55,7 @@ PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\Igc\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\lobby\messagesAll.h $(FEDSRC)\lobby\messagesLS.h
 MSGFILE=FedMsg
 SPLITSYMBOLS=1
-UNWINDCARG=/GX
+UNWINDCARG=/EHsc
 
 IDLTARGS= $(DESTDIR)\AllSrvModuleIDL.h \
           $(DESTDIR)\AllSrvModuleIDL.tlb
@@ -87,6 +87,7 @@ OBJSCNST= $(DESTDIR)\FedSrv.obj   \
           $(DESTDIR)\AdminShip.obj \
           $(DESTDIR)\AllSrvModule.obj \
           $(DESTDIR)\fslobby.obj \
+          $(DESTDIR)\asynchttp.obj \
           $(DESTDIR)\srvqguids.obj
 
 
@@ -141,6 +142,7 @@ $(DESTDIR)\AdminShip.obj             : $(PCHFILE)
 $(DESTDIR)\AllSrvModule.obj          : $(PCHFILE)
 $(DESTDIR)\fslobby.obj               : $(PCHFILE)
 $(DESTDIR)\srvqguids.obj             : $(PCHFILE)
+$(DESTDIR)\asynchttp.obj             : $(PCHFILE)
 
 $(RESFILE): $(DESTDIR)\FedMsg.rc $(FEDSRC)\Inc\VerRes.rc fedsrv.rc $(DESTDIR)\AllSrvModuleIDL.tlb
    @copy fedsrv.rc $(DESTDIR)\$(MAINTARGROOT).rc

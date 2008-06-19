@@ -16,7 +16,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CAGCEventLogger
-class ATL_NO_VTABLE CAGCEventLogger : 
+class ATL_NO_VTABLE CAGCEventLogger :
   public IAGCEventSink,
   public IAGCEventSinkSynchronous,
   public IDispatchImpl<IAGCEventLogger, &IID_IAGCEventLogger, &LIBID_AGCLib>,
@@ -75,7 +75,7 @@ protected:
   HRESULT CloseNTEventLog();
   HRESULT ChangeNTEventLog(BSTR bstrComputer);
   static HKEY RootKeyFromString(BSTR bstrRegKey, DWORD* cchEaten);
-  HRESULT ReadStringValueFromRegistry(LPCTSTR pszValueName,
+  HRESULT ReadStringValueFromRegistry(LPTSTR pszValueName,
     CComBSTR& bstrOut);
   HRESULT OpenWriteableRegKey(CRegKey& keyWrite);
   void FireNTEventLogStopped();

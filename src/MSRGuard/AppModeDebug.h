@@ -14,6 +14,7 @@
 #include "LoadedModules.h"
 #include "ToolHelp.h"
 
+#pragma warning(disable:4867)
 
 /////////////////////////////////////////////////////////////////////////////
 // Macro useful for writing a ZString to an IStream pointer.
@@ -183,7 +184,7 @@ STDMETHODIMP CAppModeDebug<T>::Run(int argc, TCHAR* argv[])
       if (FAILED(hr = ::CoCreateGuid(&guidReg)))
         return g.HandleError(hr, IDS_E_CREATEGUID);
 
-      // Convert the GUID to a string
+      // Convert the GUID to a string  // See about using the new SetGUIDValue here --Imago
       OLECHAR szGUIDReg[64];
       StringFromGUID2(guidReg, szGUIDReg, sizeofArray(szGUIDReg));
 
@@ -192,7 +193,7 @@ STDMETHODIMP CAppModeDebug<T>::Run(int argc, TCHAR* argv[])
       m_strRegGUID = OLE2CT(szGUIDReg);
 
       // Save the GUID string to the registry
-      lr = key.SetValue(m_strRegGUID, TEXT("GUID"));
+      lr = key.SetStringValue(TEXT("GUID"), m_strRegGUID);
       if (ERROR_SUCCESS != lr)
         m_strRegGUID.SetEmpty();
     }
@@ -397,7 +398,7 @@ DWORD CAppModeDebug<T>::HandleUnloadDLL(bool* pbExit)
 {
   // Remove the specified image from the map
   m_Images.Remove(m_pde->u.LoadDll.lpBaseOfDll);
-  
+
   // Delegate to most-derived class
   T* pThis = static_cast<T*>(this);
   return pThis->OnUnloadDLL(pbExit);
@@ -1198,7 +1199,8 @@ HRESULT CAppModeDebug<T>::FormatThreadState(IStream* pStm, DWORD dwThreadId,
     if (::ReadProcessMemory(m_cpdi.hProcess,
       reinterpret_cast<void*>(ctx.Esp), bBytes, sizeof(bBytes), &dwRead))
     {
-      // Format the bytes from the stack
+      // Format the bytes from the stack -Imago declared j
+      int j = 0;
       for (int i = 0, j = 0; i < c_cStackBytes; ++i, j += 2)
         _stprintf(szBytes + j, "%02X", bBytes[i]);
       szBytes[j] = TEXT('\0');
@@ -1341,7 +1343,7 @@ HRESULT CAppModeDebug<T>::FormatModuleInfo(IStream* pStm, CLoadedModuleIt it)
     // IsDebug, Company, Desc, ProdName, Copy
     strIsDebug  = vi.IsDebug() ? "1" : "0";
     strCompany  = vi.GetCompanyName();
-    strDesc     = vi.GetFileDescription();      
+    strDesc     = vi.GetFileDescription();
     strProdName = vi.GetProductName();
     strCopy     = vi.GetLegalCopyright();
   }
@@ -1517,7 +1519,7 @@ HRESULT CAppModeDebug<T>::FormatProcessInfo(IStream* pStm, LPCTSTR pszEXE)
     // IsDebug, Company, Desc, ProdName, Copy
     strIsDebug  = vi.IsDebug() ? "1" : "0";
     strCompany  = vi.GetCompanyName();
-    strDesc     = vi.GetFileDescription();      
+    strDesc     = vi.GetFileDescription();
     strProdName = vi.GetProductName();
     strCopy     = vi.GetLegalCopyright();
   }
@@ -1653,7 +1655,7 @@ ZString CAppModeDebug<T>::GetSearchPath()
   if (::GetWindowsDirectory(szPath, sizeofArray(szPath)))
   {
     // Get the 16-bit system directory
-    static s_bIsWinNT = IsWinNT();
+    static bool s_bIsWinNT = IsWinNT();
     if (s_bIsWinNT)
     {
       str += szPath;

@@ -27,9 +27,10 @@
 SRCROOT=_utility
 MAINTARGROOT=Utility
 MAINTARGEXT=lib
-INCLUDELOCAL=$(FEDSRC)\_Utility;$(FEDSRC)\WinTrek;$(FEDSRC)\ZLib
+INCLUDELOCAL=$(FEDSRC)\_Utility;$(FEDSRC)\WinTrek;$(FEDSRC)\ZLib;$(FEDSRC)\Inc
 PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_utility\*.h $(FEDSRC)\zone\zauth.h
+UNWINDCARG=/EHsc
 
 !include "..\makefile.inc"
 

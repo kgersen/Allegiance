@@ -25,12 +25,13 @@
 #endif
 
 // begin mmf, swiped this from AllClub.cpp so we can look up a reg key for ASGS_RANKS_ON
+// Imago says to use CRegKey cause we're linked to ATL (unlike Club)
 /*-------------------------------------------------------------------------
  * ReadFromRegistry
  *-------------------------------------------------------------------------
  * Purpose:
  *    Read info from the registry
- * 
+ *
  * Parameters:
  *    hk:        which key to read from
  *    bIsString: if false, then item is cosnidered to be a DWORD
@@ -71,6 +72,23 @@ bool ReadFromRegistry(HKEY & hk, bool bIsString, const char * szItem, void * pVa
 }
 // end mmf
 
+// imago - this ain't going to work, must use IHTTPSession (see Utility's FTPSession)
+void ASGSOnBegin( const AsyncHTTP::Response* r, void* userdata )
+{
+	debugf( "BEGIN (%d %s)\n", r->getstatus(), r->getreason() );
+}
+
+void ASGSOnData( const AsyncHTTP::Response* r, void* userdata, const unsigned char* data, int n )
+{
+	debugf( "DATA (%s)\n", data );
+
+}
+
+void ASGSOnComplete( const AsyncHTTP::Response* r, void* userdata )
+{
+	debugf( "COMPLETE\n");
+}
+
 #if !defined(ALLSRV_STANDALONE)
 void DoDecrypt(int size, char* pdata)
 {
@@ -103,15 +121,16 @@ static void DoEncrypt(int size, char* pdata)
 
 ALLOC_MSG_LIST;
 Global g;
+AsyncHTTP::Connection ASGS( "asgs.alleg.net", 80 );
 #include "queries.h"
 
-#if defined(ALLSRV_STANDALONE)
-  int GetNextCharacterID()
-  {
-    static int s_nID;
-    return ++s_nID;
-  }
-#endif // defined(ALLSRV_STANDALONE)
+//Imago -- make up id's untill ASGS hands us one.
+int GetNextCharacterID()
+{
+static int s_nID;
+return ++s_nID;
+}
+
 
 #if !defined(ALLSRV_STANDALONE)
   #ifdef MOTHBALLED
@@ -181,7 +200,7 @@ void LoadTechBits()
 void LoadRankInfo()
 {
 
-#if !defined(ALLSRV_STANDALONE)	
+#if !defined(ALLSRV_STANDALONE)
   SQL_GO(GetRankCount);
   SQL_GETROW(GetRankCount);
   g.cRankInfo = GetRankCount_Count;
@@ -581,9 +600,9 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   if (psideReq->GetObjectID() != SIDE_TEAMLOBBY)
 	    pfsMission->RequestPosition(pfsPlayer, psideReq, popi != NULL);
   return;
-  }	  
-	  
-	  
+  }
+
+
 if (pfsMission->RequiresInvitation())
   {
     if (!pfsMission->IsInvited(pfsPlayer))
@@ -943,7 +962,7 @@ void GotLogonDetails(CQLogonStats * pquery)
       // no persist object is active now; will be when they go to a side
 
     #endif // !defined(ALLSRV_STANDALONE)
-	
+
   	// -Imago: ASGS Login/Rank
     // mmf only do this if ASGS_RANKS_ON is ON
     //     check reg key to see if we are using ASGS ranks or not
@@ -955,9 +974,12 @@ void GotLogonDetails(CQLogonStats * pquery)
 	{
 		// read ASGS is on or off in registry
 		bool bSuccess = ReadFromRegistry(hk, false, "ASGS_RANKS_ON", &dwASGS_RANKS_ON, 0);
-		RegCloseKey(hk); 
+		RegCloseKey(hk);
 	}
-	if (dwASGS_RANKS_ON) {
+//	if (dwASGS_RANKS_ON) {
+
+
+#if 0
 	  // mmf pull rank from callsign (#) for now
 	  char szRank[64];
 	  char newName[64];
@@ -968,7 +990,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 	  leftParen = strName.ReverseFind('(',0);
 	  if (leftParen>=1) {
 	    Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
-	    RankID myRank = atoi(szRank); 
+	    RankID myRank = atoi(szRank);
 		if (!((myRank>0) && (myRank<100))) {
 			debugf("Rank out of range rank=%d\n",myRank);
 			myRank=0; // sanity check
@@ -994,62 +1016,26 @@ void GotLogonDetails(CQLogonStats * pquery)
 		debugf("No rank found in callsign %s\n",(PCC)strName);
 	  }
 	  // mmf end pull rank from callsign
-#if 0 // http asgs rank lookup, disabled for now as it can hang the server waiting on a timeout, mmf
-	  MaClient *http_client; int contentLen;
-	  char *szContent;
-	  char szURL[255]; char szName[64]; char szResponse[255];
-	  ZString strName = pfsPlayer->GetName();
-	  Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
-
-	  // Fixup player names 
-	  Strcpy(szName,(PCC)strName);
-	  if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
-	  strcat(szURL,szName);
-
-	  // Process requests on AppWeb threads
-	  Mpr   mpr("AllSrv");
-	  mpr.start(MPR_SERVICE_THREAD);
-	  http_client = new MaClient();
-	  http_client->getRequest(szURL);
-	  if (szContent = http_client->getResponseContent(&contentLen)) {
-	  	// Fixup XML Response
-		ZString strContent = szContent;
-		strContent = strContent.RightOf(88);
-		strContent = strContent.LeftOf("<");
-		debugf("sent asgs %s and asgs sent %s\n",szURL, (PCC)strContent);
-		Strcpy(szResponse,(PCC)strContent);
-
-		mpr.stop(0);
-		delete http_client;
-
-		// If the Response is 0, Deny Logon with provided Reason
-		if (strcmp(strtok(szResponse,"|"),"0") != 0 ) {
-			strtok(NULL,"|");
-			Strcpy(pqd->szReason,strtok(NULL,"|"));
-			fValid = false;
-			debugf("Lobby possibly validated ASGS user but Server did not!\n");
-		} else {  //Set the Rank the same for all civs only on the NA side
-			RankID myRank = atoi(strtok(NULL,"|"));
-
-			const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
-			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
-			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
-			for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
-			{
-				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
-				pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
-			}
-			fValid = true;
+	 // http asgs rank lookup, disabled for now as it can hang the server waiting on a timeout, mmf
+#endif
+		char szURL[255]; char szName[64];
+		ZString strName = pfsPlayer->GetName();
+		Strcpy(szURL,"/asgs/services.asmx/GetPlayerRank?Callsign=");
+		Strcpy(szName,(PCC)strName);
+		if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_")) strcpy(szName,strName.RightOf(1));
+		strcat(szURL,szName);
+		try {
+			ASGS.setcallbacks( ASGSOnBegin, ASGSOnData, ASGSOnComplete, 0 );
+			ASGS.request( "GET",szURL, 0, 0,0 );
+			debugf("AsyncHTTP: %s", szURL);
+		} catch(AsyncHTTP::Wobbly& e) {
+			debugf("AsyncHTTP calling exception: %s", e.what());
 		}
-	  } else {
-		fValid = true; //assume all is OK, Rank will be 0
-		debugf("ASGS Server did not respond!\n");
-	  }
-#endif // http asgs rank lookup
-	} else {
+		fValid = true;
+	//} else {
 		fValid = true; // not using asgs ranks, Rank will be 0
 		debugf("Not using ASGS (ASGS_RANKS_ON regkey not set), rank query not done\n");
-	}
+	//}
   }
   else
   {
@@ -1248,11 +1234,11 @@ void SetCharStats(int                   characterID,
     {   return;    }
     assert(pso.GetScore() >= 0.0f);
 	assert(pSide);
-    PersistPlayerScoreObject& ppso = pso.GetPersist();
-    RankID  Rank = ppso.GetRank();
+    //PersistPlayerScoreObject& ppso = pso.GetPersist();  --Imago
+    RankID  Rank = pso.GetPersist().GetRank();
 	if (pfsPlayer != NULL) debugf("PlayerName =%s, ",pfsPlayer->GetName());
 	debugf("CharacterID=%d, Rank=%d, bScoresCount=%d, CivID=%d, Rating=%d,\n",
-        characterID, Rank ,pfsMission->GetScoresCount(), pSide->GetCivilization()->GetObjectID(), 
+        characterID, Rank ,pfsMission->GetScoresCount(), pSide->GetCivilization()->GetObjectID(),
 		RATING_INT2EXT(pso.GetCombatRating()));
     debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
         pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
@@ -1261,7 +1247,7 @@ void SetCharStats(int                   characterID,
     debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
         pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
     debugf("    Minutes=%.2f, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
-        (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(), 
+        (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(),
 		pso.GetScore());
 #endif
 }
@@ -1422,10 +1408,6 @@ void LoadDbCache()
     g.trekCore = CreateMission(); // this isn't a *real* mission, just a gateway to static stuff
     g.trekCore->Initialize(Time::Now(), &g.siteFedSrv);
     g.trekCore->SetStaticCore(NULL);
-
-    // There's a number of database sizes that are greater than the message sizes,
-    // and I don't want to put casts all over the place, so...
-    #pragma warning(disable : 4244)
 
     LoadTechBits();
 
@@ -2071,7 +2053,6 @@ void LoadDbCache()
 
       pts->AddTreasureData(TreasureChance_TreasureCode, TreasureChance_ObjectID, TreasureChance_Chance);
     }
-    #pragma warning(default : 4244)
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
@@ -3791,7 +3772,7 @@ void SendShipUpdates(CFSMission * pfsMission)
 					const int cLightPerInterval  = pfsPlayer->GetBandwidth();
 					const int cActivePerInterval = pfsPlayer->GetBandwidth();
 
-					
+
 					/*
                 assert (cbAvailable > cHeavyPerInterval  * sizeof(ServerHeavyShipUpdate) +
                                       cLightPerInterval  * sizeof(ServerLightShipUpdate) +
@@ -3815,7 +3796,7 @@ void SendShipUpdates(CFSMission * pfsMission)
                 }
 
                 int cTurretUpdates;
-	
+
 					if (cActiveTurretUpdates < cActivePerInterval)
 					{
 
@@ -4125,7 +4106,7 @@ void SendShipUpdates(CFSMission * pfsMission)
                         g.fm.ForwardMessage(pfsPlayer->GetConnection(), pfmLight, FM_NOT_GUARANTEED);
                     }
 
-                    
+
 					/*debugf("hvy/int: %d hvy updates: %d ship update: %d %d %d %d %d\n",
 						cHeavyPerInterval,
 						cHeavyUpdates,
@@ -4133,7 +4114,7 @@ void SendShipUpdates(CFSMission * pfsMission)
                         pfmLight->cbmsg - sizeof(FMD_S_LIGHT_SHIPS_UPDATE),
                         pfmHeavy->cbmsg - sizeof(FMD_S_HEAVY_SHIPS_UPDATE),
                         cShips, cShipUpdates);*/
-                    
+
                 }
 
                 for (int i = 0; (i < cShipUpdates); i++)
@@ -4794,10 +4775,10 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     debugf("#ban: %s banned by %s\n", pfsShip->GetName(), pfsPlayer->GetName());
 					// TE: Fire AGCEvent informing of the ban
 					LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
-					_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(), 
+					_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
 						pfsShip->GetShipID(), -1, -1, 3, "GameID",   VT_I4,    pfsMission->GetMissionID(),
 						"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
-						"zBooter", VT_LPSTR, pfsPlayer->GetName());	
+						"zBooter", VT_LPSTR, pfsPlayer->GetName());
 					// This is named zBooter so the parameter appears last in the alphabetical list
 					// TE
                     pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QSR_OwnerBooted);
@@ -4870,7 +4851,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  // mmf 03/22/07 added #list to display all the other # commands
 			  //              keep this at the end of this else if
 			  else if(pfmChat->cbMessage > strlen("#list") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#list", strlen("#list")) == 0)
-              {				
+              {
 			    // mmf send message to self
 				// KGJV #110 added #mutiny
 				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
@@ -6226,7 +6207,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         TrapHackBoot(pfmQuitMission->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
 
         // send them to the game lobby
-		if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings) 
+		if (!bIsBoot || !pfsMission->GetMissionDef()->misparms.bLockTeamSettings)
 		{
 		    // TE:  Fire AGCEvent informing of the boot
 			 if (bIsBoot)
@@ -6278,7 +6259,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitSide->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
 
-		// TE: Commented this block since locked sides now handle balancing 
+		// TE: Commented this block since locked sides now handle balancing
 		// mmf MaxBalance is now used instead of lock sides so put this back, not that lock sides is that useful
         if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
         {
@@ -6721,18 +6702,18 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		// here we update the AllowEmptyTeams (AET) game parameter if needed
 		// 1.  get current AET
-		bool bAET = pfsMission->GetAllowEmptyTeams(); 
+		bool bAET = pfsMission->GetAllowEmptyTeams();
 
 		// 2. check if all sides are active
-		bool bAllActive = true; 
+		bool bAllActive = true;
 		for (SideID i = 0; i < pfsMission->GetCountSides() ; i++) // or pfsMission->GetIGCMission()->GetSides()->n()
 		{
 			if (!pfsMission->GetSideActive(i))
 				bAllActive = false;
 		}
 		// 3. do we need to change AET ?
-		bool bMustChangeAET = false; 
-		if (bAllActive && bAET) bMustChangeAET = true; // all active and AET is on, change it 
+		bool bMustChangeAET = false;
+		if (bAllActive && bAET) bMustChangeAET = true; // all active and AET is on, change it
 		if (!bAllActive && !bAET) bMustChangeAET = true; // not all active and AET is off, change it
 
 		// 4.  if needed, change AET and inform clients
@@ -6740,7 +6721,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		{
 			pfsMission->SetAllowEmptyTeams(!bAET); // toggle AET
 			pfmSideInactive->bChangeAET = true;
-			pfmSideInactive->bAET = pfsMission->GetAllowEmptyTeams(); 
+			pfmSideInactive->bAET = pfsMission->GetAllowEmptyTeams();
 		}
 		else
 			pfmSideInactive->bChangeAET = false;
@@ -6865,7 +6846,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         #if defined(ALLSRV_STANDALONE)
           // for a stand alone server, don't let the client try to change the password
           // (we can't assert this due to a race condition)
-		  // KGJV #114 - only for bObjectModelCreated games (=DefaultGames) 
+		  // KGJV #114 - only for bObjectModelCreated games (=DefaultGames)
 		  if (pfmMissionParams->missionparams.bObjectModelCreated)
 		  {
           strcpy(pfmMissionParams->missionparams.strGamePassword,
@@ -7710,7 +7691,7 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 
     char szFilelistCRC[50];
 
-    
+
 #ifdef USEAUTH
 	// Extract auth server from code and update our auth subsystem to use it.
 	// We share the client's field for this.  Probably not the right thing to do,
@@ -7963,7 +7944,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 	  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
 	  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
   END_PFM_CREATE
-  pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114 
+  pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
   pfmLogon->MaxGames = g.cMaxGames; // KGJV #114
   pfmLogon->verLobby = LOBBYVER_LS;
   pfmLogon->dwPort = dwPort;
@@ -8201,7 +8182,7 @@ void StartDefaultGames()
             sscanf(strRankParam,"%hd",&(mp.iMaxRank));
         else
             mp.iMaxRank = mpClean.iMaxRank; // fetch default value
-        
+
         // KGJV #92 - display LockOpen/Min/Maxrank and removed map name
         printf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
 
@@ -8301,6 +8282,14 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   // load cores list (must be done before 1st connection to a lobby)
   LoadStaticCoreInfo();
 
+  // Imago
+  // use non-blocking winsock2 for server-asgs messages
+  try {
+	  ASGS.connect();
+  } catch(AsyncHTTP::Wobbly& e) {
+	  debugf("AsyncHTTP Initial exception: %s", e.what());
+  }
+
   //
   // This is the first place where we can might connect to a lobby
   //
@@ -8353,6 +8342,14 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     timeStartIteration = Time::Now();
 
     g.timeNow = timeStartIteration;
+
+	//- Imago
+	// Process HTTP requests/responses
+	try {
+	  if (ASGS.outstanding()) ASGS.pump();
+	} catch(AsyncHTTP::Wobbly& e) {
+	  debugf("AsyncHTTP pump exception: %s", e.what());
+	}
 
     ProcessNetworkMessages();
 
@@ -8652,7 +8649,7 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
             }
         }
 
-        for (i = 0; i < g_cMapsCount; i++)
+        for (int i = 0; i < g_cMapsCount; i++) //declare i --imago
         {
             if (StringStartsWith (pMaps[i].szFileName, "template") || StringStartsWith (pMaps[i].szFileName, "t_"))
                 continue;
@@ -9957,7 +9954,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
-   
+
 	// TE: Fire AGCEvent informing of station created
 	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL; // this is a timestamp.
 	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
@@ -10712,12 +10709,12 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   pfmStationDestroyed->stationID = stationID;
   pfmStationDestroyed->launcher = (otLauncher == OT_ship) ? plauncher->GetObjectID() : NA;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
-  
+
   // TE: Added default values for plauncher's members used in StationDeleted event
   const char* szLauncherName = "(unknown)";
   int iLauncherUniqueID = -1;
   int iLauncherSideUniqueID = -1;
-  
+
   // If the launcher exists...
   if (plauncher != NULL)
   {
@@ -10741,7 +10738,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 	"MissionID", VT_I4, m_pfsMission->GetMissionID(),
     "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),
 	"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
-    "zStationName", VT_LPSTR, pstation->GetName());	
+    "zStationName", VT_LPSTR, pstation->GetName());
   // parameter is named zStationName so it appears at end of alphabetical list, keeping compatibility with allsrv1.0
   // End-TE
 
@@ -10771,7 +10768,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 			pShiplink = pShiplink->next();
 		}
 	 }
-	 
+
 	 // Fire AGCEvent listing players in the sector
 	// Might want to add into the event weither or not this was a VICTORY kill.. should we track that as well?
 	_AGCModule.TriggerContextEvent(NULL, EventID_StationDeletedEscort, pszContext,
@@ -11364,7 +11361,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 					g.fm.SendMessages(CFSSide::FromIGC(pship->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 				}
 				// end of KGJV #118
-				
+
             }
 
             IsideIGC*   pside = pship->GetSide();

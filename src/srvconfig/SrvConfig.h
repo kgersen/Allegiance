@@ -16,7 +16,8 @@
 #include "resource.h"       // main symbols
 
 #include "..\inc\regkey.h"
-#define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"
+//Imago -
+//#define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"  -KGJV added Lobby to regkey, how sweet.
 
 
 /////////////////////////////////////////////////////////////////////////////

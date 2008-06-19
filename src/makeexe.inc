@@ -22,11 +22,11 @@ LIBS= $(LIBSFLAVOR) \
       oleaut32.lib uuid.lib odbc32.lib     \
       odbccp32.lib ddraw.lib dsound.lib    \
       dxguid.lib winmm.lib dplayx.lib      \
-      d3drm.lib amstrmid.lib dinput.lib    \
+      d3d8.lib amstrmid.lib dinput.lib    \
       comctl32.lib version.lib  ws2_32.lib \
-      delayimp.lib            \
-      icqmapi.lib wininet.lib lz32.lib     \
-      fedguids.lib netapi32.lib comsupp.lib oledb.lib
+      delayimp.lib atlsd.lib atl.lib         \
+      wininet.lib lz32.lib freeimage.lib   \
+      fedguids.lib netapi32.lib comsuppd.lib comsuppwd.lib oledb.lib comsvcs.lib
       
 !endif
 
@@ -78,7 +78,7 @@ $(MAINTARGFULLPATH): $(DESTDIR)  \
 #                     $(BSCTARG)
   $(LINK) $(LARGSALL)
 !ifndef NOMAP
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 !endif
 !ifdef SPLITSYMBOLS
 #  $(SPLITSYMBOLSTOOL) $(DESTDIR)\$(MAINTARGROOT).exe $(DESTDIR)\$(MAINTARGROOT).dbg

@@ -37,18 +37,18 @@ CMSRGuardModule g;
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Static Initialization
+// Static Initialization - Fixed for VC9 - Imago
 
 const CMSRGuardModule::XOptionFlag CMSRGuardModule::s_OptionFlags[] =
 {
-  {TEXT("?"   ), -1, OnOptionHelp  },
-  {TEXT("help"),  1, OnOptionHelp  },
-  {TEXT("p"   ), -1, OnOptionPID   },
-  {TEXT("ini" ),  1, OnOptionINI   },
-  {TEXT("mini"),  1, OnOptionMINI  },
-  {TEXT("html"),  3, OnOptionHTML  },
-  {TEXT("bind"), -1, OnOptionBind  },
-  {TEXT("s"   ), -1, OnOptionSilent},
+  {TEXT("?"   ), -1, &CMSRGuardModule::OnOptionHelp  },
+  {TEXT("help"),  1, &CMSRGuardModule::OnOptionHelp  },
+  {TEXT("p"   ), -1, &CMSRGuardModule::OnOptionPID   },
+  {TEXT("ini" ),  1, &CMSRGuardModule::OnOptionINI   },
+  {TEXT("mini"),  1, &CMSRGuardModule::OnOptionMINI  },
+  {TEXT("html"),  3, &CMSRGuardModule::OnOptionHTML  },
+  {TEXT("bind"), -1, &CMSRGuardModule::OnOptionBind  },
+  {TEXT("s"   ), -1, &CMSRGuardModule::OnOptionSilent},
 };
 
 
@@ -96,8 +96,9 @@ void CMSRGuardModule::Init()
 //
 int CMSRGuardModule::DoMain(int argc, TCHAR* argv[])
 {
+	int i; //-Imago
   // Loop through command-line arguments until a non-option is found
-  for (int i = 1; i < argc; ++i)
+  for (i = 1; i < argc; ++i)
   {
     if (TEXT('-') != argv[i][0] && TEXT('/') != argv[i][0])
       break;
@@ -417,7 +418,7 @@ HRESULT CMSRGuardModule::LoadHTML(ZString& strOut)
 
 
 /////////////////////////////////////////////////////////////////////////////
-// 
+//
 HKEY CMSRGuardModule::HKEYFromString(const ZString& strHKEY)
 {
   // Types
@@ -594,7 +595,7 @@ HRESULT CMSRGuardModule::LoadConfig()
         sizeofArray(szValue), strINI);
       m_Configs[psz] = szValue;
       psz += cch + 1;
-    }    
+    }
   } while (cch);
 
   // Delete the file, !!! ONLY if it's a temporary !!!

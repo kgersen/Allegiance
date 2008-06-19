@@ -1,10 +1,10 @@
 /*-------------------------------------------------------------------------
   pch.h
-  
+
   Precompiled header for AllClub
-  
-  Owner: 
-  
+
+  Owner:
+
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
@@ -12,6 +12,7 @@
 #define _ALLCLUB_PCH_
 
 #define ALLCLUB_MODULE 1
+#pragma warning(disable:4244)
 
 #include <windows.h>
 #include <stdlib.h>
@@ -50,7 +51,7 @@
 
 #include "ClubApp.h"
 #include "ClubClient.h"
-//#include "StaticData.h" - obsolete
+#include "StaticData.h" //- obsolete
 
 
 /////////////////////////////////////////////////////////////////////////////

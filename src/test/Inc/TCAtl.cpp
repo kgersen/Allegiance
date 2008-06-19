@@ -64,7 +64,8 @@ LPCTSTR TCGetIIDName(REFIID riid)
   LONG lr = key.Open(HKEY_CLASSES_ROOT, TEXT("Interface"));
   if (ERROR_SUCCESS == lr && ERROR_SUCCESS == (lr = key.Open(key, pszIID)))
 	  // mdvalley: no such thing as QueryStringValue!
-    if (ERROR_SUCCESS == key.QueryValue(NULL, szName, &dw))
+	  //imago: there is now!  no wonder this was so f-ed up....wouldnt find the interface (backwards arguments)
+    if (ERROR_SUCCESS == key.QueryStringValue(szName, NULL, &dw))
       pszIID = szName;
 
   // Add the IID and it's string representation to the map
@@ -164,7 +165,7 @@ HRESULT TCReadSafeArrayFromStream(IStream* pstm, CComVariant& var)
     // Read the CComVariant from the stream
     CComVariant varTemp;
     RETURN_FAILED(varTemp.ReadFromStream(pstm));
-    
+
     // Ensure that the CComVariant is of the correct type
     if (vt != V_VT(&varTemp))
       return E_UNEXPECTED;

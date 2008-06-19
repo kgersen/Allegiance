@@ -180,7 +180,7 @@ void CPageChat::OnEvent(IAGCEvent* pEvent)
   }
 }
 
-BOOL CPageChat::OnSetActive() 
+BOOL CPageChat::OnSetActive()
 {
   // Reload the chat MRU from the registry
   LoadFromRegistry();
@@ -192,7 +192,7 @@ BOOL CPageChat::OnSetActive()
   return CPropertyPage::OnSetActive();
 }
 
-BOOL CPageChat::PreTranslateMessage(MSG* pMsg) 
+BOOL CPageChat::PreTranslateMessage(MSG* pMsg)
 {
   if (WM_KEYDOWN == pMsg->message)
   {
@@ -226,7 +226,7 @@ void CPageChat::DoDataExchange(CDataExchange* pDX)
   //}}AFX_DATA_MAP
 }
 
-LRESULT CPageChat::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+LRESULT CPageChat::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
   LRESULT lr;
   if (m_AutoSizer.ProcessMessage(message, wParam, lParam, &lr))
@@ -260,7 +260,7 @@ void CPageChat::LoadFromRegistry()
   {
     int vecOrder[c_cColumns];
     for (CComVariant i(0L); V_I4(&i) < c_cColumns; ++V_I4(&i))
-    { 
+    {
       bstrColumnOrder.Empty();
       m_spStrings->get_Item(&i, &bstrColumnOrder);
       vecOrder[V_I4(&i)] = _wtoi(bstrColumnOrder);
@@ -278,7 +278,7 @@ void CPageChat::LoadFromRegistry()
   if (c_cColumns == cWidthColumns)
   {
     for (CComVariant i(0L); V_I4(&i) < c_cColumns; ++V_I4(&i))
-    { 
+    {
       bstrColumnWidths.Empty();
       m_spStrings->get_Item(&i, &bstrColumnWidths);
       m_listChat.SetColumnWidth(V_I4(&i), _wtoi(bstrColumnWidths));
@@ -304,8 +304,8 @@ void CPageChat::LoadFromRegistry()
     // Read the count of strings
     DWORD cStrings = 0;
 	//mdvalley: former QueryDWORDValue(TEXT, cStrings)
-	keyMRU.QueryValue(cStrings, TEXT(".Count"));
-    
+	keyMRU.QueryDWORDValue(TEXT(".Count"), cStrings); //has been superseded --Imago
+
     // Read each string and add it to the combo box
     for (DWORD i = 0; i < cStrings; ++i)
     {
@@ -321,8 +321,7 @@ void CPageChat::LoadFromRegistry()
 
   // SendChatAllGames
   DWORD dwSendChatAllGames = 0;
-  // mdvalley: formor QueryDWORDValue(TEXT, dwSend)
-  key.QueryValue(dwSendChatAllGames, TEXT("SendChatAllGames"));
+  key.QueryDWORDValue(TEXT("SendChatAllGames"), dwSendChatAllGames);
   m_bSendChatAllGames = !!dwSendChatAllGames;
 }
 
@@ -349,8 +348,7 @@ void CPageChat::SaveChatListColumnOrderToRegistry()
   }
 
   // Save to the registry
-  // mdvalley: SetString(text, strColumn)
-  key.SetValue(strColumnOrder, TEXT("ChatListColumnOrder"));
+  key.SetStringValue(TEXT("ChatListColumnOrder"), strColumnOrder);
 }
 
 void CPageChat::SaveChatListColumnWidthsToRegistry()
@@ -377,8 +375,7 @@ void CPageChat::SaveChatListColumnWidthsToRegistry()
   }
 
   // Save to the registry
-  // mdvalley: SetString, str, TEXT
-  key.SetValue(strColumnWidths, TEXT("ChatListColumnWidths"));
+  key.SetStringValue(TEXT("ChatListColumnWidths"),strColumnWidths);
 }
 
 void CPageChat::SaveSendChatMRUToRegistry()
@@ -395,8 +392,7 @@ void CPageChat::SaveSendChatMRUToRegistry()
 
   // Write the count of strings
   int cStrings = min(m_comboSendChat.GetCount(), c_cMaxChatsInRegistry);
-  // mdvalley: SetDWORD(text, cstring)
-  keyMRU.SetValue(cStrings, TEXT(".Count"));
+  keyMRU.SetDWORDValue(TEXT(".Count"), cStrings); //ATL has them all NAME,VALUE now --Imago
 
   // Write each string
   for (int i = 0; i < cStrings; ++i)
@@ -404,8 +400,7 @@ void CPageChat::SaveSendChatMRUToRegistry()
     TCHAR szInt[16];
     CString strMRUItem;
     m_comboSendChat.GetLBText(i, strMRUItem);
-	// mdvalley: SetString(_itot, str)
-    keyMRU.SetValue(strMRUItem, _itot(i, szInt, 10));
+    keyMRU.SetStringValue(_itot(i, szInt, 10),strMRUItem);
   }
 }
 
@@ -418,8 +413,8 @@ void CPageChat::SaveSendChatAllGames()
 
   // SendChatAllGames
   DWORD dwSendChatAllGames = m_bSendChatAllGames;
-  // mdvalley: SetDWORD(text, dwsend)
-  key.SetValue(dwSendChatAllGames, TEXT("SendChatAllGames"));
+  // mdvalley: SetDWORD(text, dwsend)  - thank you for saving the types --Imago
+  key.SetDWORDValue(TEXT("SendChatAllGames"),dwSendChatAllGames);
 }
 
 void CPageChat::TrimExcessChats()
@@ -481,7 +476,7 @@ void CPageChat::UpdateUI(bool bUpdateData)
   m_comboSendChat.EnableWindow(bGameInProgress);
 }
 
-void CPageChat::SendChat() 
+void CPageChat::SendChat()
 {
   // Update data members from fields
   UpdateData();
@@ -506,7 +501,7 @@ void CPageChat::SendChat()
       cStrings = m_comboSendChat.GetCount();
       if (cStrings > c_cMaxChatsInRegistry)
       {
-        m_comboSendChat.DeleteString(cStrings - 1);        
+        m_comboSendChat.DeleteString(cStrings - 1);
       }
 
     } while (cStrings > c_cMaxChatsInRegistry);
@@ -617,7 +612,7 @@ void CPageChat::AdminPageRunThreadProc()
 /////////////////////////////////////////////////////////////////////////////
 // Message Handlers
 
-BOOL CPageChat::OnInitDialog() 
+BOOL CPageChat::OnInitDialog()
 {
   // Register for events of interest
   GetSheet()->GetSession()->ActivateEvents(EventID_GameDestroyed, -1);
@@ -677,7 +672,7 @@ BOOL CPageChat::OnInitDialog()
   return false;
 }
 
-void CPageChat::OnEndDragChatList(NMHDR* pNMHDR, LRESULT* pResult) 
+void CPageChat::OnEndDragChatList(NMHDR* pNMHDR, LRESULT* pResult)
 {
   HD_NOTIFY* phdn = (HD_NOTIFY*)pNMHDR;
   if (pNMHDR->hwndFrom != m_listChat.GetHeaderCtrl()->GetSafeHwnd())
@@ -689,7 +684,7 @@ void CPageChat::OnEndDragChatList(NMHDR* pNMHDR, LRESULT* pResult)
   *pResult = 0;
 }
 
-void CPageChat::OnEndTrackChatList(NMHDR* pNMHDR, LRESULT* pResult) 
+void CPageChat::OnEndTrackChatList(NMHDR* pNMHDR, LRESULT* pResult)
 {
   HD_NOTIFY* phdn = (HD_NOTIFY*)pNMHDR;
   if (pNMHDR->hwndFrom != m_listChat.GetHeaderCtrl()->GetSafeHwnd())
@@ -701,7 +696,7 @@ void CPageChat::OnEndTrackChatList(NMHDR* pNMHDR, LRESULT* pResult)
   *pResult = 0;
 }
 
-void CPageChat::OnChatPreferences() 
+void CPageChat::OnChatPreferences()
 {
   // Display the Chat Preferences dialog box
   int nResponse = m_Prefs.DoModal();
@@ -716,7 +711,7 @@ void CPageChat::OnChatPreferences()
   UpdateActivateChatMessage();
 }
 
-void CPageChat::OnChatListClear() 
+void CPageChat::OnChatListClear()
 {
   m_listChat.SetRedraw(false);
   m_listChat.DeleteAllItems();
@@ -724,7 +719,7 @@ void CPageChat::OnChatListClear()
   m_listChat.Invalidate();
 }
 
-void CPageChat::OnDestroy() 
+void CPageChat::OnDestroy()
 {
   // Get the worker thread handles
   HANDLE phObjects[] =
@@ -746,7 +741,7 @@ void CPageChat::OnDestroy()
   CPropertyPage::OnDestroy();
 }
 
-void CPageChat::OnTimer(UINT nIDEvent) 
+void CPageChat::OnTimer(UINT nIDEvent)
 {
   switch (nIDEvent)
   {
@@ -759,12 +754,12 @@ void CPageChat::OnTimer(UINT nIDEvent)
       SaveChatListColumnWidthsToRegistry();
       return;
   }
-  
+
   // Perform default processing
   CPropertyPage::OnTimer(nIDEvent);
 }
 
-void CPageChat::OnSendChatAllGames() 
+void CPageChat::OnSendChatAllGames()
 {
   // Update data members from fields
   UpdateData();

@@ -159,7 +159,7 @@ BOOL CCliConfigDlg::OnInitDialog()
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
-	
+
     // initialize the server MRU list
     for (int i=0;i<16;i++)
     {
@@ -202,18 +202,20 @@ BOOL CCliConfigDlg::OnInitDialog()
         cbValue = MAX_PATH; szValue[0] = '\0';
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "ZoneClubLobbyServer", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
             m_strZoneLobby = szValue;
-        
+
         cbValue = MAX_PATH; szValue[0] = '\0';
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
             m_strArtPath = szValue;
-        
+
         cbValue = sizeof(dwValue); dwValue = 0;
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "UpdateLow", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             ft.dwLowDateTime = dwValue;
         cbValue = sizeof(dwValue); dwValue = 0;
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "UpdateHigh", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             ft.dwHighDateTime = dwValue;
-        m_dateArt = CDate(ft);
+            //ATL CTime will assert if we go with default -Imago
+            if (ft.dwHighDateTime && ft.dwLowDateTime)
+        		m_dateArt = CDate(ft);
 
         cbValue = MAX_PATH; szValue[0] = '\0';
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogFrameData", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
@@ -250,7 +252,7 @@ BOOL CCliConfigDlg::OnInitDialog()
         cbValue = MAX_PATH; szValue[0] = '\0';
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             m_bLogToFile = (dwValue==1) ? 1 : 0;
-        
+
         RegCloseKey(hKey);
     }
     if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\DirectPlay\\Applications\\Allegiance", 0, KEY_READ, &hKey))
@@ -266,11 +268,11 @@ BOOL CCliConfigDlg::OnInitDialog()
         cbValue = MAX_PATH; szValue[0] = '\0';
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "File", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
             m_strZoneExeName = szValue;
-        
+
         cbValue = MAX_PATH; szValue[0] = '\0';
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "Guid", NULL, &dwType, (unsigned char*)szValue, &cbValue))
             m_strZoneGUID = szValue;
-        
+
         cbValue = MAX_PATH; szValue[0] = '\0';
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "Path", NULL, &dwType, (unsigned char*)szValue, &cbValue))
             m_strZoneFilePath = szValue;
@@ -305,10 +307,10 @@ BOOL CCliConfigDlg::OnInitDialog()
     CString strAppPathTry = m_strZoneFilePath + "\\" + m_strZoneExeName;
     if (strAppPath.CompareNoCase(strAppPathTry)!=0)
         MessageBox("App Path and Zone Exe Filename are not in-sync.  Check values and press OK to correct the problem.", "Registry Problem Detected", MB_OK);
-    
+
     // now that all the fields have the right values in them, put the values
     // in the controls on the dialog
-    
+
 	SetDlgItemText(IDC_SERVER, m_strServer);
 	SetDlgItemText(IDC_ZONELOBBY, m_strZoneLobby);
 	SetDlgItemText(IDC_ARTPATH, m_strArtPath);
@@ -354,7 +356,7 @@ void CCliConfigDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 
-void CCliConfigDlg::OnPaint() 
+void CCliConfigDlg::OnPaint()
 {
 	if (IsIconic())
 	{
@@ -386,7 +388,7 @@ HCURSOR CCliConfigDlg::OnQueryDragIcon()
 	return (HCURSOR) m_hIcon;
 }
 
-void CCliConfigDlg::OnOK() 
+void CCliConfigDlg::OnOK()
 {
     HKEY hKey;
     DWORD dw;
@@ -435,7 +437,7 @@ void CCliConfigDlg::OnOK()
         }
 
         if (m_bCaptureFrameData!=(BOOL)IsDlgButtonChecked(IDC_CAPTUREFRAMEDATA))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "LogFrameData", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "LogFrameData", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_CAPTUREFRAMEDATA) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bCaptureFrameData = IsDlgButtonChecked(IDC_CAPTUREFRAMEDATA);
 
@@ -445,37 +447,37 @@ void CCliConfigDlg::OnOK()
                 m_strFrameDataFilename = str;
 
         if (m_bCockpit!=(BOOL)IsDlgButtonChecked(IDC_COCKPIT))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Cockpit", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Cockpit", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_COCKPIT) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bCockpit = IsDlgButtonChecked(IDC_COCKPIT);
 
         if (m_bEnvironment!=(BOOL)IsDlgButtonChecked(IDC_ENVIRONMENT))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Environment", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Environment", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_ENVIRONMENT) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bEnvironment = IsDlgButtonChecked(IDC_ENVIRONMENT);
 
         if (m_bMusic!=(BOOL)IsDlgButtonChecked(IDC_MUSIC))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Music", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Music", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_MUSIC) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bMusic = IsDlgButtonChecked(IDC_MUSIC);
 
         if (m_bPosters!=(BOOL)IsDlgButtonChecked(IDC_POSTERS))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Posters", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "Posters", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_POSTERS) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bPosters = IsDlgButtonChecked(IDC_POSTERS);
 
         if (m_bRoundRadar!=(BOOL)IsDlgButtonChecked(IDC_ROUNDRADAR))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "RoundRadar", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "RoundRadar", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_ROUNDRADAR) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bRoundRadar = IsDlgButtonChecked(IDC_ROUNDRADAR);
 
         if (m_bSoftwareHUD!=(BOOL)IsDlgButtonChecked(IDC_SOFTWAREHUD))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "StyleHUD", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "StyleHUD", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_SOFTWAREHUD) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bSoftwareHUD = IsDlgButtonChecked(IDC_SOFTWAREHUD);
 
         if (m_bLogToFile!=(BOOL)IsDlgButtonChecked(IDC_LOGTOFILE))
-            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "LogToFile", NULL, REG_DWORD, 
+            if (ERROR_SUCCESS == ::RegSetValueEx(hKey, "LogToFile", NULL, REG_DWORD,
                 (const unsigned char*)(IsDlgButtonChecked(IDC_LOGTOFILE) ? &dwValueOne : &dwValueZero), sizeof(DWORD)))
                 m_bLogToFile = IsDlgButtonChecked(IDC_LOGTOFILE);
 
@@ -531,50 +533,50 @@ void CCliConfigDlg::OnOK()
 	CDialog::OnOK();
 }
 
-void CCliConfigDlg::OnCaptureframedata() 
+void CCliConfigDlg::OnCaptureframedata()
 {
     GetDlgItem(IDC_FRAMEFILENAME)->EnableWindow(IsDlgButtonChecked(IDC_CAPTUREFRAMEDATA));
 }
 
-void CCliConfigDlg::OnRetailbuild() 
+void CCliConfigDlg::OnRetailbuild()
 {
     SetDlgItemText(IDC_EXEFILENAME, m_strRetailFilename);
     //GetDlgItem(IDC_EXEFILENAME)->EnableWindow(FALSE);
 }
 
-void CCliConfigDlg::OnTestbuild() 
+void CCliConfigDlg::OnTestbuild()
 {
     SetDlgItemText(IDC_EXEFILENAME, m_strTestFilename);
     //GetDlgItem(IDC_EXEFILENAME)->EnableWindow(FALSE);
 }
 
-void CCliConfigDlg::OnDebugbuild() 
+void CCliConfigDlg::OnDebugbuild()
 {
     SetDlgItemText(IDC_EXEFILENAME, m_strDebugFilename);
     //GetDlgItem(IDC_EXEFILENAME)->EnableWindow(FALSE);
 }
 
-void CCliConfigDlg::OnOtherbuild() 
+void CCliConfigDlg::OnOtherbuild()
 {
     SetDlgItemText(IDC_EXEFILENAME, m_strOtherFilename);
     //GetDlgItem(IDC_EXEFILENAME)->EnableWindow(TRUE);
 }
 
-void CCliConfigDlg::OnExefilenamebutton() 
+void CCliConfigDlg::OnExefilenamebutton()
 {
     //OPENFILENAME ofn;
     //GetOpenFileName(&ofn);
 }
 
-void CCliConfigDlg::OnArtpathbutton() 
+void CCliConfigDlg::OnArtpathbutton()
 {
 	// TODO: Add your control notification handler code here
-	
+
 }
 
-void CCliConfigDlg::OnFramefilebutton() 
+void CCliConfigDlg::OnFramefilebutton()
 {
 	// TODO: Add your control notification handler code here
-	
+
 }
 

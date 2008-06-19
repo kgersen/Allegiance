@@ -32,7 +32,7 @@ public:
       return g.HandleError(HRESULT_FROM_WIN32(::GetLastError()),
         IDS_E_FMT_BINDCOPY, szModule, (LPCTSTR)strBind);
 
-    // Begin updating the resources of the specified file    
+    // Begin updating the resources of the specified file
     HANDLE hUpdRes = ::BeginUpdateResource(strBind, false);
     if (!hUpdRes)
       return g.HandleError(HRESULT_FROM_WIN32(::GetLastError()),
@@ -54,9 +54,9 @@ public:
         ::EndUpdateResource(hUpdRes, true);
         return g.HandleError(hr, IDS_E_FMT_BINDRES, (LPCTSTR)strBind);
       }
-
+      std::vector<WORD>::const_iterator it; //Imago full of win
       // Update the CONFIG resource of each language
-      for (WORD* it = languages.begin(); it != languages.end(); ++it)
+      for (it = languages.begin(); it != languages.end(); ++it)
       {
         // Update the CONFIG resource
         if (!::UpdateResource(hUpdRes, TEXT("CONFIG"), MAKEINTRESOURCE(1),
@@ -87,7 +87,8 @@ public:
       }
 
       // Update the MINI resource of each language
-      for (WORD* it = languages.begin(); it != languages.end(); ++it)
+      std::vector<WORD>::const_iterator it; //Imago full of win
+      for (it = languages.begin(); it != languages.end(); ++it)
       {
         // Update the MINI resource
         if (!::UpdateResource(hUpdRes, TEXT("MINI"), MAKEINTRESOURCE(1),
@@ -118,7 +119,8 @@ public:
       }
 
       // Update the RT_HTML resource of each language
-      for (WORD* it = languages.begin(); it != languages.end(); ++it)
+      std::vector<WORD>::const_iterator it; //Imago full of win
+      for (it = languages.begin(); it != languages.end(); ++it)
       {
         // Update the RT_HTML resource
         if (!::UpdateResource(hUpdRes, RT_HTML, MAKEINTRESOURCE(1),

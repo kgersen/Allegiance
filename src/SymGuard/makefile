@@ -51,8 +51,8 @@ PCHINC=
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
 MIDLINCLOCAL=/I ..\Inc
-CARGSLOCAL=/D _ATL_STATIC_REGISTRY /D _WINDLL /D _USRDLL
-UNWINDCARG=/GX
+CARGSLOCAL=/D _ATL_STATIC_REGISTRY /D _WINDLL /D _USRDLL 
+UNWINDCARG=/EHsc
 
 
 #############################################################################
@@ -81,7 +81,7 @@ OBJS= $(DESTDIR)\SymGuard.obj         \
 LIBS= $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib        \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib \
-      delayimp.lib netapi32.lib version.lib dbghelp.lib
+      delayimp.lib netapi32.lib version.lib dbghelp.lib atlsd.lib comsupp.lib comsuppw.lib
 
 USERLIBS= $(FEDROOT)\Objs\$(FLAVOR)\Test\TCLib\TCLib.lib                 \
           $(FEDROOT)\Objs\$(FLAVOR)\ZLib\ZLib.lib
@@ -105,7 +105,7 @@ LARGS= /LIBPATH:$(FEDEXT)\Vc\lib                      \
 
 $(MAINTARGFULLPATH) : $(DESTDIR) $(IDLTARGS) $(RESFILE) $(OBJS) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS)
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map 2> NUL
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map 2> NUL
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr

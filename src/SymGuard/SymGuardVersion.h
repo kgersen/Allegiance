@@ -11,7 +11,7 @@
 
 #include <SymGuard.h>
 #include "resource.h"
-#include <..\TCAtl\VersionInfoImpl.h>
+#include <..\Test\TCAtl\VersionInfoImpl.h> //was different -Imago
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,12 @@ public:
 public:
   BEGIN_COM_MAP(CSymGuardVersion)
     COM_INTERFACE_ENTRY(ISymGuardVersion)
-    COM_INTERFACE_ENTRIES_TCVersionInfoImpl()
+ 	COM_INTERFACE_ENTRY(IDispatch)
+    COM_INTERFACE_ENTRY(ISupportErrorInfo)
+    COM_INTERFACE_ENTRY(IPersistStreamInit)
+    //COM_INTERFACE_ENTRY2(IPersistStream, IPersistStreamInit) //only use one, see KGJV's change AGC\TCStrings.h(52)
+    COM_INTERFACE_ENTRY2(IPersist, IPersistStreamInit)
+    COM_INTERFACE_ENTRY(IMarshal)
   END_COM_MAP()
 };
 

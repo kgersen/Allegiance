@@ -49,7 +49,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUT, DIALOG
     BEGIN
@@ -79,7 +79,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Menu
 //
 
-MNU_FEDSRV MENU 
+MNU_FEDSRV MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -102,21 +102,21 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "\r\n"
+    "#include ""fedsrv.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "1 TYPELIB ""AllSrvModuleIDL.tlb""\r\n"
     "#include ""Fedsrv.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
@@ -140,20 +140,22 @@ ICO_FEDSRV              ICON                    "fedsrv.ico"
 // REGISTRY
 //
 
-IDR_AllSrv              REGISTRY                "AllSrv.rgs"
-IDR_ADMINSESSION        REGISTRY                "AdminSession.rgs"
-IDR_ADMINGAME           REGISTRY                "AdminGame.rgs"
-IDR_ADMINGAMES          REGISTRY                "AdminGames.rgs"
-IDR_ADMINSERVER         REGISTRY                "AdminServer.rgs"
-IDR_USER                REGISTRY                "AdminUser.rgs"
-IDR_USERS               REGISTRY                "AdminUsers.rgs"
-IDR_ADMINSHIP           REGISTRY                "AdminShip.rgs"
-IDR_DPMONO              REGISTRY                "DPMono.rgs"
+#if defined(APSTUDIO_INVOKED) || !defined(ALLSRV_STANDALONE)
+IDR_AllSrv              REGISTRY MOVEABLE PURE  "AllSrv.rgs"
+#endif
+IDR_ADMINSESSION        REGISTRY DISCARDABLE    "AdminSession.rgs"
+IDR_ADMINGAME           REGISTRY DISCARDABLE    "AdminGame.rgs"
+IDR_ADMINGAMES          REGISTRY DISCARDABLE    "AdminGames.rgs"
+IDR_ADMINSERVER         REGISTRY DISCARDABLE    "AdminServer.rgs"
+IDR_USER                REGISTRY DISCARDABLE    "AdminUser.rgs"
+IDR_USERS               REGISTRY DISCARDABLE    "AdminUsers.rgs"
+IDR_ADMINSHIP           REGISTRY DISCARDABLE    "AdminShip.rgs"
+IDR_DPMONO              REGISTRY DISCARDABLE    "DPMono.rgs"
 #if defined(APSTUDIO_INVOKED) || defined(ALLSRV_STANDALONE)
 #if defined(APSTUDIO_INVOKED)
-IDR_ALLSRV$(ALLSRV_STANDALONE) REGISTRY                "AllSrv.rgs"
+IDR_AllSrv$(ALLSRV_STANDALONE) REGISTRY MOVEABLE PURE  "AllSrv32.rgs"
 #else
-IDR_ALLSRV              REGISTRY                "AllSrv.rgs"
+IDR_AllSrv              REGISTRY MOVEABLE PURE  "AllSrv32.rgs"
 #endif
 #endif
 
@@ -162,13 +164,13 @@ IDR_ALLSRV              REGISTRY                "AllSrv.rgs"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
-    IDS_E_LOBBYSERVER_GAMES_EXIST 
+    IDS_E_LOBBYSERVER_GAMES_EXIST
                             "LobbyServer property cannot be changed while games exist."
-    IDS_E_ONE_GAME_PER_SERVER 
+    IDS_E_ONE_GAME_PER_SERVER
                             "Game server only supports creating a single game. Another game already exists."
-    IDS_E_GAME_SERVER_PAUSED 
+    IDS_E_GAME_SERVER_PAUSED
                             "Cannot create a game while Game server is paused."
     IDS_E_CONNECT_LOBBY     "Failed to connect to the specified lobby server."
 END

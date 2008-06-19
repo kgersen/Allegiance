@@ -3,57 +3,12 @@
 #
 # Makefile for all major Federation Components
 #
-# Environment variable Requirements:
-#   
-#    INCLUDE=foo           // can be set to anything, must be set
-#    PATH=                 // must have proper nmake on path
-#    FEDROOT=<path>        // MUST point to base of fed src enlistment
-#    FEDDSN                // IGCFiles: Data source name for SQL, NO DEFAULT
-#    FEDDSNUSER            // IGCFiles: User for the SQL login, NO DEFAULT
-#    FEDDSNPW              // IGCFiles: Password for the SQL login, NO DEFAULT
-#    FEDSQLSRV             // Recreate: SQL server to be passed to recreate.bat, NO DEFAULT
-#    FEDSQLDB              // Recreate: SQL database to be passed to recreate.bat, NO DEFAULT
-#    FEDSQLPW              // Recreate: SQL database password to be passed to recreate.bat, NO DEFAULT
-#
-# nmake args:
-#
-#   Clean        // will delete all files in destination dir
-#   Shell        // opens os-specific cmd/command shell (helps to debug build)
-#   debug=       // builds a debug build (default)
-#   retail=      // builds a retail build
-#   training=    // builds a debug build with special testing code for training
-#   test=        // retail but with the _DEBUG preprocessor symbol defined
-#                // NOT valid in combination with BCHK=, TRUETIME=, or ICAP=
-#   VER=         // must have this argument, \\msr\federation\builds\$(VER) is created/needed
-#   BCHK=        // if you want to do a boundschecker build.
-#                   note:  you must have BC already installed locally and define BCBINDIR to
-#                          point to the directory where nmcl.exe and nmlink.exe reside.
-#                          You can use the BCOPTS variable to add options to the BC compile.
-#   TRUETIME=    // if you want to instrument the build using Numega TrueTime
-#                   note:  you must have TrueTime already installed locally and define TTBINDIR to
-#                          point to the directory where the TrueTime nmcl.exe and nmlink.exe reside.  
-#                          You can use the TTOPTS variable to add options to the TT compile.
-#   VERBOSE=     // if you want verbose build mode. (default is non-verbose)
-#   DX5=         // will use dx5 instead of the default, which is dx6
-#   DX7=         // will use dx7 instead of the default, which is dx6
-#   copyclient=  // will copy the client (EACH AND EVERY FLAVOR BUILT) to the artwork directory.
-#                   This is so that developers can easily a client on a second machine and automatically get updates
-#   USEAUTH=1     // Enable legacy Allegiance Zone
-#   USEASGS=1     // This will use the ASGS member database handler and closed source functions
-#   HTTP=1		   // Set to anything to enable AppWeb library inclusion for HTTP Client/Server support (experimental)
-#   ALLEGIANCE_DEV=1        // Set to anything if you want to use a the /dev registry key root rather than 1.0 (recommended)
-#
-#
-# command line arguments to cut a release:
-#
-#       1:      use ver= commandline argument
-#       2:      use retail= if you want to do a retail build
-#       3:      no targets will get you all exe's/dll's and setup files (exes target)
-#       4:      use CopySrc if you want to copy the sources
-#       5:      use CopyArt if you want to copy the art from \\fedsrv\wwwroot\artwork\256
-#       6:      use Exes target to get exes with any of the above
-#
-#############################################################################
+
+!ifdef retail
+FLAVOR=Retail
+!else
+FLAVOR=Debug
+!endif
 
 !ifdef DREAMCAST
 
@@ -158,7 +113,7 @@ NMAKE=@nmake /NOLOGO /S /C
 #
 #############################################################################
 
-All: Client AllGuardApp Server Server32 MdlEdit AllSrvUIApp AllSrvUIApp Lobby Club AutoUpdateApp ArtBin SymGuard Test
+All: Client AllGuardApp Server Server32 MdlEdit AllSrvUIApp AllSrvUI32App Lobby Club AutoUpdateApp ArtBin SymGuard Test
 
 
 #############################################################################
@@ -612,10 +567,14 @@ ICapClient: Client
 #
 #############################################################################
 
-SoundEngineLib: ZLibrary
+SoundEngineLib: ZLibrary 
     @cd SoundEngine
     $(NMAKE) $(RECURSNMAKEARGS)
-    @cd ..
+    @cd ..    
+	@cd vorbis
+	@-if not exist $(FEDROOT)\objs\$(FLAVOR)\Vorbis\vorbis.lib _make.bat
+	@cd ..    
+	
 
 SoundEngineLib_Clean:
     @cd SoundEngine
@@ -666,7 +625,7 @@ AGC_Full: AGC_Clean AGC
 
 #############################################################################
 #
-# CliConfigApp: builds the server configuration utility.
+# CliConfigApp: builds the client configuration utility.
 #
 #############################################################################
 
@@ -704,21 +663,21 @@ SrvConfigApp_Full: SrvConfigApp_Clean SrvConfigApp
 
 #############################################################################
 #
-# SrvConfigApp: builds the server configuration utility.
+# SrvConfig32App: builds the server configuration utility.
 #
 #############################################################################
 
-SrvConfigApp: AGC AllSrvExe
-    @cd SrvConfig
-    $(NMAKE) $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
-    @cd ..
+SrvConfig32App: AGC AllSrv32Exe
+   @cd SrvConfig
+   $(NMAKE) $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
+   @cd ..
 
-SrvConfigApp_Clean:
-    @cd SrvConfig
-    $(NMAKE) clean $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
-    @cd ..
+SrvConfig32App_Clean:
+   @cd SrvConfig
+   $(NMAKE) clean $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
+   @cd ..
 
-SrvConfigApp32_Full: SrvConfigApp32_Clean SrvConfigApp32
+SrvConfig32App_Full: SrvConfig32App_Clean SrvConfig32App
 
 
 #############################################################################
@@ -759,21 +718,21 @@ AllSrvUIApp_Full: AllSrvUIApp_Clean AllSrvUIApp
 
 #############################################################################
 #
-# AllSrvUIApp: builds the server configuration utility.
+# AllSrv32UIApp: builds the server configuration utility. (stand-alone)
 #
 #############################################################################
 
-AllSrvUIApp: AGC AllSrvExe
+AllSrvUI32App: AGC AllSrv32Exe
     @cd AllSrvUI
     $(NMAKE) $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-AllSrvUIApp_Clean:
+AllSrvUI32App_Clean:
     @cd AllSrvUI
     $(NMAKE) clean $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-AllSrvUIApp32_Full: AllSrvUIApp32_Clean AllSrvUIApp32
+AllSrvUI32App_Full: AllSrvUI32App_Clean AllSrv32UIApp
 
 
 #############################################################################
@@ -839,7 +798,7 @@ SentinalExe_Full: SentinalExe_Clean SentinalExe
 #
 #############################################################################
 
-AllSrvExe: AGC Common FedPerfDll
+AllSrvExe: AGC Common FedPerfDll sharemem
     @cd fedsrv
     $(NMAKE) $(RECURSNMAKEARGS)
     @cd ..
@@ -858,17 +817,17 @@ AllSrvExe_Full: AllSrvExe_Clean AllSrvExe
 #
 #############################################################################
 
-AllSrvExe: AGC Common FedPerfDll
+AllSrv32Exe: AGC Common FedPerfDll sharemem
     @cd fedsrv
     $(NMAKE) $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-AllSrvExe_Clean:
+AllSrv32Exe_Clean:
     @cd fedsrv
     $(NMAKE) clean $(RECURSNMAKEARGS) ALLSRV_STANDALONE=
     @cd ..
 
-AllSrvExe_Full: AllSrvExe_Clean AllSrvExe
+AllSrv32Exe_Full: AllSrv32Exe_Clean AllSrv32Exe
 
 
 #############################################################################
@@ -890,9 +849,9 @@ Server_Full: Server_Clean Server
 #
 #############################################################################
 
-Server32: SrvConfigApp AllSrvExe
+Server32: SrvConfig32App AllSrv32Exe
 
-Server32_Clean: AGC Common FedPerfDll SrvConfigApp_Clean
+Server32_Clean: AGC Common FedPerfDll SrvConfig32App_Clean
 
 Server32_Full: Server32_Clean Server32
 
@@ -1341,9 +1300,9 @@ Patch: FedGuids ZLibrary
 #############################################################################
 
 ConvexHull: FedGuids
-    @cd cvh
-    $(NMAKE) $(RECURSNMAKEARGS)
-    @cd ..
+	@cd cvh
+	@-if not exist $(FEDROOT)\objs\$(FLAVOR)\cvh\cvh.exe _make.bat
+	@cd ..    
 
 
 #############################################################################
@@ -1527,9 +1486,9 @@ Test: Common Clintlib
     @slim
 !endif
 
-#!ifdef WAV    
-#    @"$(FEDROOT)\src\tools\bin32\wav $(WINDIR)\media\tada /Q /v100"
-#!endif
+!ifdef WAV    
+    @"$(FEDROOT)\src\tools\bin32\wav $(WINDIR)\media\tada /Q /v100"
+!endif
 
 #############################################################################
 #

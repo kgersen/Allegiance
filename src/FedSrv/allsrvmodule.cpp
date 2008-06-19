@@ -1,11 +1,11 @@
 
 /*-------------------------------------------------------------------------
  * fedsrv\AllSrvModule.CPP
- * 
- * This part of AllSrv contains Service-related functions and COM/ATL support.  
- * 
- * Owner: 
- * 
+ *
+ * This part of AllSrv contains Service-related functions and COM/ATL support.
+ *
+ * Owner:
+ *
  * Copyright 1986-1998 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
@@ -29,7 +29,7 @@
 #endif // _DEBUG
 
 // {E1A86098-DD81-11d2-8B45-00C04F681633}
-static const CATID CATID_AllegianceAdmin = 
+static const CATID CATID_AllegianceAdmin =
   {0xe1a86098,0xdd81,0x11d2,{0x8b,0x45,0x0,0xc0,0x4f,0x68,0x16,0x33}};
 
 // The following two APP IDs must be the same
@@ -90,22 +90,22 @@ END_OBJECT_MAP()
  * PrintSystemErrorMessage()
  *-------------------------------------------------------------------------
  * Paramters:
- *    dwErrorCode: take a dwErrorCode and print what it means as text    
- * 
+ *    dwErrorCode: take a dwErrorCode and print what it means as text
+ *
  */
 void PrintSystemErrorMessage(LPCTSTR szText, DWORD dwErrorCode)
 {
   LPVOID lpMsgBuf;
 
-  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | 
-                FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-                FORMAT_MESSAGE_IGNORE_INSERTS, 
-                NULL, 
-                dwErrorCode, 
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                dwErrorCode,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPTSTR) &lpMsgBuf,
                 0,
-                NULL 
+                NULL
                 );
 
   printf("%s", (LPCTSTR)szText);
@@ -119,7 +119,7 @@ void PrintSystemErrorMessage(LPCTSTR szText, DWORD dwErrorCode)
 }
 
 
-                                                 
+
 
 
 /*-------------------------------------------------------------------------
@@ -127,7 +127,7 @@ void PrintSystemErrorMessage(LPCTSTR szText, DWORD dwErrorCode)
  *-------------------------------------------------------------------------
  * Returns:
  *    TRUE iff AllSrv was properly installed (either as Service or EXE)
- * 
+ *
  */
 BOOL CServiceModule::IsInstalled()
 {
@@ -151,7 +151,7 @@ BOOL CServiceModule::IsInstalled()
  *-------------------------------------------------------------------------
  * Returns:
  *    TRUE iff AllSrv is installed as an NT service.
- * 
+ *
  */
 BOOL CServiceModule::IsInstalledAsService()
 {
@@ -172,7 +172,8 @@ BOOL CServiceModule::IsInstalledAsService()
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
 	// mdvalley: QueryStringValue isn't in my ATL, so edited slightly
-    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
+	// This one was backward too! --Imago
+    lRes = key.QueryStringValue(_T("LocalService"),szValue, &dwLen);
 
     if (lRes == ERROR_SUCCESS)
         return TRUE;
@@ -184,9 +185,9 @@ BOOL CServiceModule::IsInstalledAsService()
  * IsInServiceControlManager()
  *-------------------------------------------------------------------------
  * Returns:
- *    TRUE iff AllSrv is an NT service (by checking the Service Control 
+ *    TRUE iff AllSrv is an NT service (by checking the Service Control
  *    Manager).
- * 
+ *
  */
 BOOL CServiceModule::IsInServiceControlManager()
 {
@@ -217,7 +218,7 @@ BOOL CServiceModule::IsInServiceControlManager()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Init some COM/ATL/AGC stuff
- * 
+ *
  */
 HRESULT CServiceModule::Init(HINSTANCE hInst)
 {
@@ -236,7 +237,7 @@ HRESULT CServiceModule::Init(HINSTANCE hInst)
  *-------------------------------------------------------------------------
  * Purpose:
  *    Terminate some COM/ATL/AGC stuff
- * 
+ *
  */
 void CServiceModule::Term()
 {
@@ -275,7 +276,7 @@ HRESULT CServiceModule::InitAGC()
   RETURN_FAILED(hr);
 
   // Initialize the event logger object
-  CComBSTR bstrEventSource(__MODULE__);
+  CComBSTR bstrEventSource("Allsrv32");
   CComBSTR bstrRegKey("HKLM\\" HKLM_FedSrv);
   IAGCEventLoggerPrivatePtr spPrivate(m_spEventLogger);
   ZSucceeded(hr = spPrivate->Initialize(bstrEventSource, bstrRegKey));
@@ -325,7 +326,7 @@ void CServiceModule::TermAGC()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Gets the previously created event logger object.
- * 
+ *
  */
 HRESULT CServiceModule::get_EventLog(IAGCEventLogger** ppEventLogger)
 {
@@ -340,10 +341,10 @@ HRESULT CServiceModule::get_EventLog(IAGCEventLogger** ppEventLogger)
  * RegisterCOMObjects
  *-------------------------------------------------------------------------
  * Purpose:
- *    Let COM know about our class objects 
- * 
+ *    Let COM know about our class objects
+ *
  */
-void CServiceModule::RegisterCOMObjects() 
+void CServiceModule::RegisterCOMObjects()
 {
   // Make sure we haven't already been here
   assert(m_shevtMTAReady.IsNull());
@@ -380,9 +381,9 @@ void CServiceModule::RegisterCOMObjects()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Let COM 'un-know' about our class objects.
- * 
+ *
  */
-void CServiceModule::RevokeCOMObjects() 
+void CServiceModule::RevokeCOMObjects()
 {
   // Make sure that we have registered correctly
   assert(m_shevtMTAReady.IsNull());
@@ -450,7 +451,7 @@ void CServiceModule::RevokeCOMObjects()
  * Purpose:
  *    Put module into the registry.
  *
- * Paramters: 
+ * Paramters:
  *    bReRegister:  are we registering after an autoupdate?
  *    bRegTypeLib:  should we register the COM Type Lib?
  *    bService:     if TRUE, then module is placed in the service control manager
@@ -524,12 +525,14 @@ HRESULT CServiceModule::RegisterServer(BOOL bReRegister, BOOL bRegTypeLib, BOOL 
           return lRes;
 
       key.DeleteValue(_T("LocalService"));
-    
+
       if (bService)
       {
 		  // mdvalley: I hate my ATL libraries sometimes (SetStringValue)
-          key.SetValue(__MODULE__, _T("LocalService"));
-          key.SetValue(_T("-Service"), _T("ServiceParameters"));
+		  // Imago: Lucky you,  ATL is no longer supported by Microsoft. see: http://www.codeplex.com/AtlServer/
+		  //	I also reversed the param arguments so they are correct
+          key.SetStringValue(_T("LocalService"),__MODULE__);
+          key.SetStringValue(_T("ServiceParameters"),_T("-Service"));
           // Create service
           InstallService(argc, argv);
       }
@@ -822,7 +825,7 @@ VOID CServiceModule::RunAsExecutable()
     if (SUCCEEDED(hr))
     {
         HANDLE hConsole;
-                                  
+
         printf("\rType 'Q' to Quit.\n");
         printf("\rType 'P' to Pause.\n");
         printf("\rType 'C' to Continue.\n");
@@ -852,19 +855,19 @@ VOID CServiceModule::RunAsExecutable()
 
                 ReadConsoleInput(hConsole, &Key, 1, &dwRead);
 
-                if (Key.EventType == KEY_EVENT && 
+                if (Key.EventType == KEY_EVENT &&
                     Key.Event.KeyEvent.wVirtualKeyCode == 'Q')
                 {
                      debugf("Q pressed\n");
                      SetEvent(g.hKillReceiveEvent);
                 }
-                if (Key.EventType == KEY_EVENT && 
+                if (Key.EventType == KEY_EVENT &&
                     Key.Event.KeyEvent.wVirtualKeyCode == 'P')
                 {
                      debugf("P pressed\n");
                      FedSrv_Pause();
                 }
-                if (Key.EventType == KEY_EVENT && 
+                if (Key.EventType == KEY_EVENT &&
                     Key.Event.KeyEvent.wVirtualKeyCode == 'C')
                 {
                      debugf("C pressed\n");
@@ -875,7 +878,7 @@ VOID CServiceModule::RunAsExecutable()
         } while (dwAwaker != WAIT_OBJECT_0);
 
         FedSrv_Terminate();
-    } 
+    }
     else
     {
         printf("\rInitialization failed. (%x)\n", hr);
@@ -934,13 +937,13 @@ void CServiceModule::SetSvcStatus(
        SetServiceStatus(g.ssh,&ss);
    }
 }
-       
+
 DWORD WINAPI CServiceModule::ServerTerminateThread(DWORD dwUnused)
 {
     FedSrv_Terminate();
     SetSvcStatus(SERVICE_STOPPED,0);
     return 0;
-}      
+}
 
 void WINAPI CServiceModule::StartServerTerminateThread()
 {
@@ -948,7 +951,7 @@ void WINAPI CServiceModule::StartServerTerminateThread()
     HANDLE hthrPending = CreateThread(NULL, 8192, (LPTHREAD_START_ROUTINE) ServerTerminateThread, 0, 0, &dwId);
     CloseHandle(hthrPending);
 }
-       
+
 ////////////////////////////////////////////////////////////////////////
 // ServiceControl
 //
@@ -973,7 +976,7 @@ void WINAPI CServiceModule::ServiceControl(DWORD dwCode)
         case SERVICE_CONTROL_PAUSE:
             FedSrv_Pause();
             SetSvcStatus(SERVICE_PAUSED, 0);
-            
+
             break;
 
         case SERVICE_CONTROL_CONTINUE:
@@ -1039,11 +1042,11 @@ void WINAPI _ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
  * StopAllsrv
  *-------------------------------------------------------------------------
  * Purpose:
- *    cause allsrv to terminate 
+ *    cause allsrv to terminate
  */
 
 void CServiceModule::StopAllsrv()
-{ 
+{
   if(_Module.IsInstalledAsService())
     _Module.ServiceControl(SERVICE_CONTROL_STOP);
   else

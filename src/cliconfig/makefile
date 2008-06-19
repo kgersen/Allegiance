@@ -49,7 +49,7 @@ PCHROOT=stdafx
 PCHINC=
 PCHINCLOCAL=$(PCHROOT).h ..\zlib\zreg.h
 PROJCLEAN=ProjectClean
-CARGSLOCAL=/D"CLICONFIG" /D _WIN32_WINNT=0x0400
+CARGSLOCAL=/D"CLICONFIG" /D _AFXDLL
 
 
 #############################################################################
@@ -77,7 +77,8 @@ OBJS= $(DESTDIR)\CliConfig.obj       \
 LIBS= $(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
-      version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib 
+      version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
+      comsupp.lib atlsd.lib mfc90d.lib mfcs90.lib
 
 USERLIBS= 
 
@@ -98,7 +99,7 @@ LARGS=/LIBPATH:$(DXROOT)\lib \
 
 $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
-  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
+#  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr

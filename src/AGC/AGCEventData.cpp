@@ -7,6 +7,7 @@
 #include <..\TCAtl\SimpleStream.h>
 #include <..\TCAtl\TCNullStreamImpl.h>
 
+#pragma warning(disable:4244)
 
 /////////////////////////////////////////////////////////////////////////////
 // CAGCEventData
