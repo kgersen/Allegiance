@@ -11,6 +11,7 @@ PCHROOT=pch
 PCHINC=$(FEDSRC)\effect\*.h $(FEDSRC)\Engine\*.h $(FEDSRC)\ZLib\*.h
 NODEPENDENCIES=1
 
+
 !include "../makefile.inc"
 
 OBJS=$(DESTDIR)\mdlc.obj

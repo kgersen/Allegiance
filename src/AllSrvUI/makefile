@@ -48,16 +48,18 @@ SRCROOT=AllSrvUI
 DESTROOT=AllSrv32UI
 MAINTARGROOT=AllSrv32UI
 STANDALONEDEFS=/D "ALLSRV_STANDALONE"
-SERVERDEST=$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
+SRVROOT=AllSrv
+SERVERDEST=$(FEDROOT)\Objs\$(FLAVOR)\$(SRVROOT)
 !else
 STANDALONEDEFS=
 DESTROOT=AllSrvUI
 MAINTARGROOT=AllSrvUI
-SERVERDEST=$(FEDROOT)\Objs\$(FLAVOR)\FedSrv
+SRVROOT=FedSrv
+SERVERDEST=$(FEDROOT)\Objs\$(FLAVOR)\$(SRVROOT)
 !endif
 
 MAINTARGEXT=exe
-INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDEXT)\vc\atl\inc;$(FEDSRC)\Test\Inc;$(FEDSRC)\Inc;$(FEDSRC)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\Test\TCObj;$(FEDROOT)\Objs\$(FLAVOR)\Allsrv;$(FEDROOT)\Objs\$(FLAVOR)\FedSrv;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(SERVERDEST);$(FEDEXT)\sbn\include;$(FEDSRC)\Zlib
+INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDEXT)\vc\atl\inc;$(FEDSRC)\Test\Inc;$(FEDSRC)\Inc;$(FEDSRC)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\Test\TCObj;$(SERVERDEST);$(FEDSRC)\FedSrv;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDEXT)\sbn\include;$(FEDSRC)\Zlib
 PCHROOT=stdafx
 PCHINC=*.h
 PCHINCLOCAL=$(PCHROOT).h
@@ -96,11 +98,11 @@ OBJS= $(DESTDIR)\AllSrvUI.obj             \
       $(DESTDIR)\AutoSizer.obj
 
 
-LIBS= $(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
+LIBS=$(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
-      version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
-      wininet.lib comsupp.lib comsuppw.lib atlsd.lib mfc90d.lib mfcs90d.lib
+      version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib \
+      wininet.lib
 
 USERLIBS= \
     $(DESTDIR)\..\zlib\zlib.lib         \
@@ -127,10 +129,15 @@ $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
 #  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
+
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr
   @echo Creating browse info file ($(MAINTARGROOT).bsc)...
   $(BSCMAKE) /nologo /Iu /o$(BSCTARG) $(DESTDIR)\*.sbr
+!endif
+
+!if defined(sretail) || defined(retail)   
+ @$(FEDSRC)\tools\bin32\upx -9 -q $(DESTDIR)\$(MAINTARGROOT).exe
 !endif
 
 $(PROJCLEAN):
@@ -164,6 +171,6 @@ $(RESFILE): $(FEDSRC)\Inc\VerRes.rc $(SRCROOT).rc
   @echo Compiling Resources...
    @copy $(SRCROOT).rc $(DESTDIR)
    @echo #define FLAVOR "$(FLAVOR)" >>$(DESTDIR)\$(SRCROOT).rc
-#   @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(SRCROOT).rc
+   @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(SRCROOT).rc
    $(RC) $(RARGS) $(STANDALONEDEFS) /Fo$(DESTDIR)\$(SRCROOT).res $(DESTDIR)\$(SRCROOT).rc
 

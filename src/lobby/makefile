@@ -33,11 +33,10 @@ MAINTARGROOT=AllLobby
 MAINTARGEXT=exe
 SUBSYSTEM=CONSOLE
 CARGSLOCAL=/D"LOBBY" /D _WIN32_WINNT=0x0400 /D _ATL_STATIC_REGISTRY
-INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\inc\*.h;$(FEDROOT)\extern\vc\atl\inc;$(FEDROOT)\src\test\inc;$(DESTDIR)
+INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\inc\*.h;$(FEDROOT)\extern\vc\atl\inc;$(FEDROOT)\src\test\inc;$(DESTDIR);$(FEDSRC)\Inc
 PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\lobby\*.h
 MSGFILE=LobbyMsg
-SPLITSYMBOLS=1
 UNWINDCARG=/EHsc
 
 #IDLOUTPUT=LobbyModuleIDL

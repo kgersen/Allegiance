@@ -48,7 +48,7 @@ void InitializeLogchat()
 
 	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
-		::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue);		
+		::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
 		::RegCloseKey(hKey);
 		bLogChat = (strcmp(szValue, "1") == 0);
 	}
@@ -150,13 +150,13 @@ void retailf(const char* format, ...)
 {
     if (g_bOutput)
     {
-#ifndef DREAMCAST        
+#ifndef DREAMCAST
         const size_t size = 2048; //Avalance: Changed to log longer messages. (From 512)
         char         bfr[size];
 
         va_list vl;
         va_start(vl, format);
-        _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error. 
+        _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error.
         va_end(vl);
 
         ZDebugOutputImpl(bfr);
@@ -205,9 +205,9 @@ extern bool g_bOutput = true;
 
         void SetStrSpaces()
         {
-            g_strSpaces = 
+            g_strSpaces =
                   " "
-                + ZString((float)g_indent, 2, 0) 
+                + ZString((float)g_indent, 2, 0)
                 + ZString(' ', g_indent * 2 + 1);
         }
 
@@ -219,7 +219,7 @@ extern bool g_bOutput = true;
             g_line++;
         }
 
-        void ZEnterImpl(const char* pcc) 
+        void ZEnterImpl(const char* pcc)
         {
             ZTraceImpl("enter " + ZString(pcc));
             g_indent += 1;
@@ -246,13 +246,13 @@ extern bool g_bOutput = true;
     {
         if (g_bOutput)
         {
-#ifndef DREAMCAST        
+#ifndef DREAMCAST
             const size_t size = 2048; //Avalanche: Changed to handle longer messages (from 512)
             char         bfr[size];
 
             va_list vl;
             va_start(vl, format);
-            _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error. 
+            _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error.
             va_end(vl);
 
             ZDebugOutputImpl(bfr);
@@ -264,29 +264,24 @@ extern bool g_bOutput = true;
 
     void InitializeDebugf()
     {
-#ifndef DREAMCAST        
+#ifndef DREAMCAST
         HKEY hKey;
         DWORD dwType;
-        char  szValue[20];
-        DWORD cbValue = sizeof(szValue);
-        bool  bLogToFile = false;
+        DWORD dwValue = 0;
+        DWORD cbValue = sizeof(dwValue);
+        bool bLogToFile = false;
 
-		// mmf added this regkey check 
+		// mmf added this regkey check -Both works now, Imago
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+            if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+            	g_outputdebugstring = (dwValue==1) ? true : false;
+			cbValue = sizeof(dwValue);
+            if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+            	bLogToFile = (dwValue==1) ? true : false;
+
             ::RegCloseKey(hKey);
-
-            g_outputdebugstring = (strcmp(szValue, "1") == 0);
-        }
-
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
-            ::RegCloseKey(hKey);
-
-            bLogToFile = (strcmp(szValue, "1") == 0);
-        }
+		}
 
         if (bLogToFile)
         {
@@ -316,12 +311,12 @@ extern bool g_bOutput = true;
 			delete t;
 			// mmf this is NOT where the logfile AllSrv.txt is generated
 			//     this is the client logfile and only for FZDebug build
-            g_logfile = 
+            g_logfile =
                 CreateFile(
-                    logFileName, 
-                    GENERIC_WRITE, 
+                    logFileName,
+                    GENERIC_WRITE,
                     0,
-                    NULL, 
+                    NULL,
                     OPEN_ALWAYS,
                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
                     NULL
@@ -332,7 +327,7 @@ extern bool g_bOutput = true;
 
     void TerminateDebugf()
     {
-#ifndef DREAMCAST        
+#ifndef DREAMCAST
         if (g_logfile) {
             CloseHandle(g_logfile);
             g_logfile = NULL;
@@ -352,7 +347,7 @@ Win32App::Win32App()
     g_papp = this;
 }
 
-Win32App::~Win32App() 
+Win32App::~Win32App()
 {
 }
 
@@ -429,7 +424,7 @@ void Win32App::OnAssertBreak()
             iter.Next();
         }
     #endif
-    
+
     //
     // Cause an exception
     //
@@ -448,16 +443,16 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     HRESULT hr;
 
     // seed the random number generator with the current time
-    // (GetTickCount may be semi-predictable on server startup, so we add the 
+    // (GetTickCount may be semi-predictable on server startup, so we add the
     // clock time to shake things up a bit)
     srand(GetTickCount() + (int)time(NULL));
 
 	// mmf why is this done?
-    // shift the stack locals and the heap by a random amount.            
+    // shift the stack locals and the heap by a random amount.
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-    __try { 
+    __try {
         do {
             #ifdef _DEBUG
                 InitializeDebugf();
@@ -488,7 +483,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
         } while (false);
     }  __except (g_papp->OnException(_exception_code(), (ExceptionData*)_exception_info())){
-    }  
+    }
     delete pzSpacer;
 
     return 0;

@@ -45,7 +45,7 @@
 SRCROOT=AGC
 MAINTARGROOT=AGC
 MAINTARGEXT=dll
-INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\Igc;$(FEDSRC)\Test\Inc;$(DESTDIR);$(FEDEXT)\dx6\include;$(FEDEXT)\Zone;$(FEDEXT)\sbn\include
+INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\Igc;$(FEDSRC)\Test\Inc;$(DESTDIR);$(FEDEXT)\dx6\include;$(FEDEXT)\Zone;$(FEDEXT)\sbn\include;$(FEDSRC)\Inc
 PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\Igc\*.h
 PCHINCLOCAL=
@@ -110,19 +110,20 @@ OBJS= $(DESTDIR)\AGC.obj                \
       $(DESTDIR)\AGCAsteroids.obj       \
       $(DESTDIR)\pch.obj
 
+
 LIBS= $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib        \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib \
-      version.lib delayimp.lib ws2_32.lib dplayx.lib comsupp.lib comsvcs.lib atlsd.lib
+      version.lib delayimp.lib ws2_32.lib dplayx.lib  \
+      dxguid.lib netapi32.lib oledb.lib comsvcs.lib \
+      $(MFCLIBSFLAVOR)
 
 USERLIBS= $(DESTDIR)\AGCGuid.lib                            \
           $(FEDROOT)\Objs\$(FLAVOR)\Test\TCLib\TCLib.lib    \
           $(FEDROOT)\Objs\$(FLAVOR)\ZLib\ZLib.lib           \
           $(FEDROOT)\Objs\$(FLAVOR)\_utility\Utility.lib    \
           $(FEDROOT)\Objs\$(FLAVOR)\igc\igc.lib             \
-          $(FEDEXT)\vc\lib\dxguid.lib                         \
-          $(FEDEXT)\vc\lib\uuid.lib\
-         $(FEDEXT)\vc\lib\atl.lib
+
 
 RESFILE = $(DESTDIR)\AGC.res
 
@@ -131,7 +132,7 @@ DLLFLAGS= /DLL /DEF:AGC.def
 LARGS= /LIBPATH:$(FEDEXT)\Vc\lib                     \
        /OUT:$(MAINTARGFULLPATH) /SUBSYSTEM:CONSOLE   \
        $(LARGSFLAVOR) /PDB:$(PDB) $(NOLOGO)          \
-       /delayload:ole32.dll /delayload:oleaut32.dll  \
+       /delayload:ole32.dll /delayload:oleaut32.dll \
        /delayload:user32.dll /delayload:advapi32.dll \
        /MACHINE:I386 $(DLLFLAGS)
 
@@ -254,6 +255,9 @@ $(RESFILE): $(FEDSRC)\Inc\VerRes.rc $(MAINTARGROOT).rc $(MAINTARGROOT).rc2 resou
    $(RC) $(RARGS) /D "DLL" /Fo$(DESTDIR)\$(MAINTARGROOT).res $(DESTDIR)\$(MAINTARGROOT).rc
 
 RegServer:
+!if defined(sretail) || defined(retail)   
+    @$(FEDSRC)\tools\bin32\upx -9 -q $(DESTDIR)\$(MAINTARGROOT).dll
+!endif
   $(REGDLL)
 
 UnregServer:
@@ -269,3 +273,4 @@ $(DESTDIR)\RegSvr32.trg:
   @if not exist $(MAINTARGFULLPATH) echo File $(MAINTARGFULLPATH) does not exist
 
 BuildAndReg: $(MAINTARGFULLPATH) $(DESTDIR)\RegSvr32.trg
+

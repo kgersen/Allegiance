@@ -62,6 +62,7 @@ PCHINC=$(FEDSRC)\Inc\*.h
 PCHINCLOCAL=$(PCHROOT).h
 PROJCLEAN=ProjectClean
 CARGSLOCAL=/D"SrvConfig" $(STANDALONEDEFS) /D AGC_HOST /D _AFXDLL
+UNWINDCARG=/EHsc
 
 
 #############################################################################
@@ -87,11 +88,10 @@ OBJS= $(DESTDIR)\SrvConfig.obj         \
       $(DESTDIR)\DefRegKey.obj         \
       $(DESTDIR)\VerInfo.obj
 
-LIBS= $(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
+LIBS=$(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
       version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
-      comsupp.lib atlsd.lib mfc90d.lib mfcs90.lib
 
 USERLIBS= $(FEDROOT)\Objs\$(FLAVOR)\AGC\AGCGuid.lib\
 	$(FEDROOT)\Objs\$(FLAVOR)\Zlib\zlib.lib
@@ -113,6 +113,10 @@ LARGS=/LIBPATH:$(DXROOT)\lib \
 $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
 #  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
+
+!if defined(sretail) || defined(retail)   
+    @$(FEDSRC)\tools\bin32\upx -9 -q $(DESTDIR)\$(MAINTARGROOT).exe
+!endif
 
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr
@@ -136,9 +140,8 @@ $(DESTDIR)\VerInfo.obj           : $(PCHFILE)
 
 $(RESFILE): $(FEDSRC)\Inc\VerRes.rc $(SRCROOT).rc
   @echo Compiling Resources...
-#  @$(RC) $(RARGS) /Fo$(RESFILE) $(SRCROOT).rc
+  @$(RC) $(RARGS) /Fo$(RESFILE) $(SRCROOT).rc
    @copy $(SRCROOT).rc $(DESTDIR)
    @echo #define FLAVOR "$(FLAVOR)" >>$(DESTDIR)\$(SRCROOT).rc
    @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\$(SRCROOT).rc
    $(RC) $(RARGS) $(STANDALONEDEFS) /Fo$(DESTDIR)\$(SRCROOT).res $(DESTDIR)\$(SRCROOT).rc
-

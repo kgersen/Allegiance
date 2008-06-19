@@ -23,7 +23,7 @@
 #  Since no derived files are placed in the source tree, multiple builds
 #  can be run SIMULTANEOUSLY.
 
-
+INCLUDELOCAL=$(FEDSRC)\Inc
 MAINTARGROOT=sharemem
 MAINTARGEXT=lib
 CARGSLOCAL=/D _CRT_NON_CONFORMING_SWPRINTFS

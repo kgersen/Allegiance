@@ -461,8 +461,9 @@ FEDMESSAGE * FedMessaging::PfmGetNext(FEDMESSAGE * pfm)
    //WLP = added connection test for disconnect from server interruption
    if (m_fConnected) // WLP - only if we have a connection
     assert((BYTE*)pfmNext == BuffIn() + PacketSize()); // should be exactly equal
-
-	return NULL;
+#pragma warning(disable:4390)
+	return NULL; //Imago - null is not FEDMESSAGE
+#pragma warning(default:4390)
   }
   // Assert(!IsBadReadPointer(pfmNext, pfmNext->fm.cbfm))
   return (FEDMESSAGE *)pfmNext;

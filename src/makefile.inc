@@ -25,35 +25,14 @@ DESTDIR=$(FEDROOT)\Objs\$(FLAVOR)\$(DESTROOT)
 PCHINCLOCAL=$(SRCDIR)\*.h
 !ENDIF
 
-# Use DX6 by default, or define DX5, DX6, or DX7 to use dx5, dx6, or dx7
-!IFDEF DX9
-DXROOT=$(FEDEXT)\dx9
+!IFDEF DX
+DXROOT=$(FEDEXT)\dx$(DX)
 !ELSE
-!IFDEF DX5
 DXROOT=$(FEDEXT)\dx
-!ELSE
-!IFDEF DX6
-DXROOT=$(FEDEXT)\dx6
-!ELSE
-!IFDEF DX7
-DXROOT=$(FEDEXT)\dx7
-!ELSE
-# default to DX7
-DXROOT=$(FEDEXT)\dx7
-!ENDIF
-!ENDIF
-!ENDIF
 !ENDIF
 
 MAINTARG=$(MAINTARGROOT).$(MAINTARGEXT)
 MAINTARGFULLPATH=$(DESTDIR)\$(MAINTARG)
-
-#todo: use an env var to specify prefix installation location
-!if defined(prefix)
-CC=c:\prefix\bin\prefix.exe
-!else
-CC=cl
-!endif
 
 LINK=link
 BSCMAKE=bscmake
@@ -61,9 +40,8 @@ LIB=lib
 MIDL=$(FEDEXT)\vc\bin\midl
 MSDEV=devenv
 REMDIR=$(FEDSRC)\tools\bin32\delnode -q
-MKDEP=$(FEDSRC)\tools\bin32\mkdep
 REGSVR=regsvr32 /s /c
-SPLITSYMBOLSTOOL=$(FEDSRC)\tools\build\SplitSymbols
+SPLITSYMBOLSTOOL=$(FEDSRC)\tools\bin32\PrivateStrip
 
 
 #############################################################################
@@ -115,20 +93,10 @@ COMPILE_DEV_REGKEY=
 
 
 #############################################################################
-# What auth methods to use
-
-!if defined (HTTP)
-COMPILEAUTH=/D_HTTP_
-!else
-COPMILEAUTH=
-!endif
+# Use Zone emulation?
 
 !if defined (USEAUTH)
 COMPILEAUTH=$(COMPILEAUTH) /D"USEAUTH"
-!endif
-
-!if defined (USEASGS)
-COMPILEAUTH=$(COMPILEAUTH) /D"USEASGS"
 !endif
 
 
@@ -155,13 +123,10 @@ RARGSVERSION=
 
 #############################################################################
 #
-# Static Retail build
+# Optimization
 #
 #############################################################################
 
-# /O1 == /Og /Os /Oy /Ob1 /Gs /Gf /Gy
-# /O2 == /Og /Ot /Oy /Ob1 /Gs /Gf /Gy /Oi
-#
 # /Og   global optimization
 # /Os   small code sequences
 # /Ot   fast code sequences
@@ -179,9 +144,14 @@ RARGSVERSION=
 # /G5   Pentium
 # /G6   Pentium Pro
 
+OPTIMIZATION_FLAGS=/Os /Oy /Ob1 /Gs /Gy
 
-OPTIMIZATION_FLAGS=/Og /Os /Oy /Ob1 /Gs /Gf /Gy
+# /O1 == /Og /Os /Oy /Ob1 /Gs /Gf /Gy
+# /O2 == /Og /Ot /Oy /Ob1 /Gs /Gf /Gy /Oi
 #OPTIMIZATION_FLAGS=/O1
+#OPTIMIZATION_FLAGS=/O2
+#OPTIMIZATION_FLAGS=/Od
+#OPTIMIZATION_FLAGS=/Ox
 
 #############################################################################
 #
@@ -197,7 +167,7 @@ STATICFLAVOR=SRetail
 CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "NDEBUG" /D "OPTIMIZED" /MT $(OPTIMIZATION_FLAGS) /GR-
 RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" $(RARGSVERSION)
 LIBSFLAVOR=libcmt.lib libcpmt.lib libcimt.lib
-MFCLIBSFLAVOR=nafxcw.lib ctl3d32s.lib comctl32.lib
+MFCLIBSFLAVOR=
 LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /RELEASE /nodefaultlib /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF stest
@@ -232,23 +202,22 @@ LIBSFLAVOR=libcmtd.lib libcpmtd.lib libcimtd.lib
 MFCLIBSFLAVOR=nafxcwd.lib ctl3d32s.lib comctl32.lib
 LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib
 
-
 !ELSEIFDEF retail
-
 
 #############################################################################
 #
-# Retail build
+# Retail build - Get to work with /GL and /LTGC:PGOPTIMIZE
 #
 #############################################################################
 
 FLAVOR=Retail
 
-CARGSFLAVOR= $(COMPILE_DEV_REGKEY) $(USEAUTH) /D "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" /MD $(OPTIMIZATION_FLAGS) /GR-
+CARGSFLAVOR= $(COMPILE_DEV_REGKEY) $(COMPILEAUTH) /D "_CRT_SECURE_NO_WARNINGS" /D "NDEBUG" /D "OPTIMIZED" /MD $(OPTIMIZATION_FLAGS) /GR-
 RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrt.lib msvcprt.lib
-MFCLIBSFLAVOR=mfc42.lib mfcs42.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no /OPT:REF /OPT:NOICF
+#DXLIBS=dxguid.lib d3d8.lib ddraw.lib dinput.lib
+MFCLIBSFLAVOR=mfc90.lib mfcs90.lib comsupp.lib comsuppw.lib atls.lib
+LARGSFLAVOR=/debugtype:cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no /OPT:REF /OPT:NOICF
 
 !ELSEIFDEF test
 
@@ -269,10 +238,10 @@ LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib /OPT:REF /OPT:NOI
 
 #############################################################################
 #
-# Debug Training build
+# Debug Training Missions build
 #
 #############################################################################
-FLAVOR=Debug
+FLAVOR=Training
 
 CARGSFLAVOR = $(COMPILE_DEV_REGKEY)  /D "_DEBUG_TRAINING" /D "_DEBUG" /D "DEBUG" /D"_AFXDLL" /MDd /Od /GR /GZ
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D"_AFXDLL" $(RARGSVERSION)
@@ -284,9 +253,9 @@ LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib
 
 #############################################################################
 #
-# IceCap build
-#
-# This only works for the standard retail build.
+# Visual Studio Developer Edition profiling build
+# This needs to be updated?
+#     http://msdn.microsoft.com/en-us/library/bb385832.aspx#ProfilingTools
 #
 #############################################################################
 
@@ -306,28 +275,11 @@ LARGSFLAVOR= /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no /debug /debugtype:
 LIBSFLAVOR=libc.lib libcp.lib icecap.lib
 !endif
 
-!ELSEIFDEF prefix
-
-#############################################################################
-#
-# prefix build
-#
-# This only works for the standard retail build.
-#
-#############################################################################
-
-FLAVOR=prefix
-CARGSFLAVOR= $(COMPILE_DEV_REGKEY) /D "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" /MD $(OPTIMIZATION_FLAGS) /GR-
-RARGSFLAVOR= /d "NDEBUG" /D "OPTIMIZED" /D"_AFXDLL" $(RARGSVERSION)
-LIBSFLAVOR=msvcrt.lib msvcprt.lib
-MFCLIBSFLAVOR=mfc42.lib mfcs42.lib ctl3d32.lib
-LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /RELEASE /nodefaultlib /fixed:no
-
 !ELSE
 
 #############################################################################
 #
-# Debug build MFC9 ATL3 DX81 WINSDK6A
+# Debug build
 #
 #############################################################################
 
@@ -336,14 +288,15 @@ FLAVOR=Debug
 CARGSFLAVOR = $(COMPILE_DEV_REGKEY) $(COMPILEAUTH) /D _CRT_SECURE_NO_WARNINGS /D "_DEBUG" /D "DEBUG" /MDd /Od /GR /RTC1
 RARGSFLAVOR= /d "_DEBUG" /d "DEBUG" /D"_AFXDLL" $(RARGSVERSION)
 LIBSFLAVOR=msvcrtd.lib msvcprtd.lib
-MFCLIBSFLAVOR=mfc90d.lib
+MFCLIBSFLAVOR=mfc90d.lib mfcs90d.lib comsuppd.lib comsuppwd.lib atlsd.lib
 LARGSFLAVOR=/debug /debugtype:cv /INCREMENTAL:NO /nodefaultlib
+#DXLIBS=dxguid.lib d3d8.lib ddraw.lib dinput.lib dplayx.lib dsound.lib amstrmid.lib
 
 !ENDIF
 
 #############################################################################
 #
-# BoundsChecker build
+#  Compuware DevPartner Suite BoundsChecker build
 #
 #############################################################################
 
@@ -377,7 +330,7 @@ LINK   = "$(BCBINDIR)\nmlink.exe"
 
 #############################################################################
 #
-# Numega TrueTime build
+# Compuware DevPartner Suite TrueTime build
 #
 #############################################################################
 
@@ -430,7 +383,7 @@ UNREGDLL=@$(UNREGDLL)
 
 #############################################################################
 #
-# DreamCast build
+# SEGA DreamCast Windows Embedded build (lol)
 #
 #############################################################################
 
@@ -477,7 +430,7 @@ LIB=link.exe -lib
 
 #############################################################################
 #
-# Win95
+# Win95 (lol)
 #
 #############################################################################
 
@@ -538,7 +491,7 @@ INCLUDEINC=$(FEDEXT)\dreamcast\inc;$(FEDSRC)\Inc;
 INCLUDE=$(INCLUDELOCAL);$(INCLUDEINC);
 !else
 INCLUDESYS=$(DXROOT)\include;$(FEDEXT)\vc\inc;$(FEDEXT)\vc\inc\sys;$(FEDEXT)\vc\atl\inc;
-INCLUDEINC=$(DXROOT)\include;$(FEDSRC)\Inc;$(FEDEXT)\vc\inc;$(FEDEXT)\vc\inc\sys;$(FEDEXT)\vc\atl\inc;$(FEDEXT)\icecap\include;$(FEDEXT)\Zone;$(FEDSRC)\Zone;$(FEDEXT)\icqapi;$(FEDSRC)\Guids
+INCLUDEINC=$(DXROOT)\include;$(FEDEXT)\vc\inc;$(FEDEXT)\vc\inc\sys;$(FEDEXT)\vc\atl\inc;$(FEDEXT)\icecap\include;$(FEDEXT)\Zone;$(FEDSRC)\Zone;$(FEDEXT)\icqapi;$(FEDSRC)\Guids
 INCLUDE=$(INCLUDELOCAL);$(INCLUDEINC);$(FEDROOT)\FreeZoneAuth
 !endif
 
@@ -591,9 +544,6 @@ MAPSYM=@MAPSYM -nologo
 !MESSAGE Building $(MAINTARG), Flavor: $(FLAVOR), Language: $(LANG)
 
 First: $(DESTDIR) $(IDLTARGS) $(MAINTARGFULLPATH) 
-
-Shell:
-  $(OSCMDSHELL)
 
 DefaultClean: $(DESTDIR)
   del $(DESTDIR)\*.h <$(FEDSRC)\tools\yes.txt
@@ -652,12 +602,4 @@ $(MSGRCFILE): $(SRCDIR)\$(MSGFILE).msg
 #.c{$(DESTDIR)}.obj:
 #    $(CC) $(CARGS) $(SRCDIR)\$(@B).c
 
-
-#############################################################################
-#
-# Automatic Dependency Generation
-#
-
-#!ifndef NODEPENDENCIES
-#!include "makedep.inc"
-#!endif
+# End of makefile.inc

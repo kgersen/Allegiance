@@ -33,7 +33,7 @@ SRCROOT=FedSrv
 STANDALONEDEFS=/D "ALLSRV_STANDALONE"
 DESTROOT=AllSrv32
 MAINTARGROOT=AllSrv32
-!if !defined(retail) && !defined(sretail) && !defined(ALLSRV_INVISIBLE)
+!if !defined(retail) && !defined(sretail) && !defined(ALLSRV_INVISIBLE) #?
 SUBSYSTEM=CONSOLE
 STANDALONEDEFS=$(STANDALONEDEFS) /D "_CONSOLE"
 !else
@@ -50,11 +50,10 @@ LARGSLOCAL=/ENTRY:mainCRTStartup \
     /delayload:advapi32.dll
 MAINTARGEXT=exe
 CARGSLOCAL=/D"FEDSRV" /D _WIN32_WINNT=0x0400 $(STANDALONEDEFS) /D AGC_HOST
-INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(FEDSRC)\inc\*.h;$(FEDROOT)\extern\vc\atl\inc;$(FEDSRC)\AGC;$(DESTDIR);$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDSRC)\Test\Inc;$(FEDSRC)\lobby
+INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(FEDSRC)\inc\*.h;$(FEDROOT)\extern\vc\atl\inc;$(FEDSRC)\AGC;$(DESTDIR);$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDSRC)\Test\Inc;$(FEDSRC)\lobby;$(FEDSRC)\Inc
 PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\Igc\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\lobby\messagesAll.h $(FEDSRC)\lobby\messagesLS.h
 MSGFILE=FedMsg
-SPLITSYMBOLS=1
 UNWINDCARG=/EHsc
 
 IDLTARGS= $(DESTDIR)\AllSrvModuleIDL.h \

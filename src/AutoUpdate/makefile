@@ -73,11 +73,11 @@ RARGS = /l 0x409 /d"AutoUpdate" $(RARGSFLAVOR)
 OBJS= $(DESTDIR)\AutoUpdate.obj           
 
 
-LIBS= $(LIBSFLAVOR) \
+LIBS= $(LIBSFLAVOR) $(MFCLIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
-      version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
-      comctl32.lib wininet.lib lz32.lib atlsd.lib
+      version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib \
+      comctl32.lib wininet.lib lz32.lib
 
 # Unfortunately Autodownload.cpp is in clintlib, so we need to include a bunch of other
 # libs.  One day I should move Autodownload.cpp out of clintlib and into another lib.  
@@ -110,6 +110,10 @@ $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
   $(LINK) $(LARGS) $(OBJS) $(RESFILE) $(LIBS) $(USERLIBS) $(DESTDIR)\$(PCHROOT).obj
 #  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 
+!if defined(sretail) || defined(retail)   
+    @$(FEDSRC)\tools\bin32\upx -9 -q $(DESTDIR)\$(MAINTARGROOT).exe
+!endif
+
 !ifdef browse
 $(BSCTARG) : $(DESTDIR)\*.sbr
   @echo Creating browse info file ($(MAINTARGROOT).bsc)...
@@ -128,4 +132,3 @@ $(RESFILE): $(FEDSRC)\Inc\VerRes.rc $(SRCROOT).rc
    @echo #define FLAVOR "$(FLAVOR)" >>$(DESTDIR)\AutoUpdate.rc
    @type $(FEDSRC)\Inc\VerRes.rc >>$(DESTDIR)\AutoUpdate.rc
    $(RC) $(RARGS) /Fo$(DESTDIR)\$(SRCROOT).res $(DESTDIR)\$(SRCROOT).rc
-

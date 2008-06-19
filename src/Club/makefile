@@ -33,11 +33,10 @@ MAINTARGROOT=AllClub
 MAINTARGEXT=exe
 SUBSYSTEM=CONSOLE
 CARGSLOCAL=/D"ALLCLUB" /D _WIN32_WINNT=0x0400 /D _ATL_STATIC_REGISTRY
-INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\inc\*.h;$(FEDROOT)\extern\vc\atl\inc;$(FEDROOT)\src\test\inc;$(DESTDIR)
+INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\inc\*.h;$(FEDROOT)\extern\vc\atl\inc;$(FEDROOT)\src\test\inc;$(DESTDIR);$(FEDSRC)\Inc
 PCHROOT=pch
 PCHINC=$(FEDSRC)\ZLib\*.h $(FEDSRC)\_Utility\*.h $(FEDSRC)\inc\*.h $(FEDSRC)\Zone\*.h $(FEDSRC)\Club\*.h $(FEDSRC)\fedsrv\fedsrvsql.h $(FEDSRC)\fedsrv\sqlhelp.cpp
 MSGFILE=AllClubMsg
-SPLITSYMBOLS=1
 UNWINDCARG=/EHsc
 
 #IDLOUTPUT=AllClubModuleIDL

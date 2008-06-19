@@ -1,8 +1,37 @@
-# $Id: Makefile,v 1.2.4.1 2004/05/20 01:00:56 KGJV Exp $
 #############################################################################
 #
 # Makefile for all major Federation Components
+#    Default target and flavor is All and Debug with verbose messages off.
+#    Set ENV variable FEDROOT to your parent directory of \src (required).
 #
+#  Major targets include: 
+#    Full - Removes all intermediate files and builds all targets.
+#    Client - Builds only targets needed for Allegiance.
+#    Server - Builds only targets needed for AllSrv.
+#    Lobby - Builds only targets needed for AllLobby.
+#
+#  Flavors include:
+#    debug - Default development build flavor (dyanamically linked run-times)
+#    retail - Optimized build for nothing good (dyanamically linked run-times)
+#    sdebug - Development build flavor (statically linked run-times)
+#    sretail - Optimized build for nothing good (statically linked run-times)
+#    test - Optimized debug build for release (dyanamically linked RETAIL run-times)
+#    stest - Optimized debug build for testing (statically linked RETAIL run-times)
+#    icecap - Optimized build for performance profiling (statically linked single threaded run-times)
+#    training - Defualt flavor for testing training missions
+#
+#  Additional options for retail and sretail flavors:
+#    BCHK - Set with parameters for Compuware DevPartner Suite's BoundsChecker build 
+#    TRUETIME - Set with parameters for Compuware DevPartner Suite's TrueTime build
+#
+#  Build Options:
+#    DX - Set to the version number of your DirectX headers and libs 
+#	(this adjusts the /dx inc & lib paths)
+#    VER - Set to the build number (otherwise build number is taken from Inc\SlmVer.h)
+#    ALLEGIANCE_DEV - Define to use Allegiance\Dev as the registry key instead of Allegiance\1.x
+#    USEAUTH - Define to use Zone emulation.
+#    VERBOSE - Define to display all build messages.
+
 
 !ifdef retail
 FLAVOR=Retail
@@ -25,33 +54,34 @@ OBJSDIR=dreamcastd
 !if defined(sretail)
 RETAILNMAKEARGS=sretail=$(RETAIL)
 OBJSDIR=sretail
+WAV=1
 !elseif defined(stest)
 RETAILNMAKEARGS=stest=
 OBJSDIR=stest
+WAV=1
 !elseif defined(sdebug)
 RETAILNMAKEARGS=sdebug=
 OBJSDIR=sdebug
+WAV=1
 !elseif defined(retail)
 RETAILNMAKEARGS=retail=$(RETAIL)
 OBJSDIR=retail
-WAV=0
-SLIM=0
+WAV=1
 !elseif defined(test)
 RETAILNMAKEARGS=test=
 OBJSDIR=test
+WAV=1
 !elseif defined(training)
 RETAILNMAKEARGS=training=
+WAV=1
 OBJSDIR=debug
 !elseif defined(icap)
 RETAILNMAKEARGS=icap=
 OBJSDIR=icap
-!elseif defined(prefix)
-RETAILNMAKEARGS=prefix=
-OBJSDIR=prefix
 !else
 RETAILNMAKEARGS=
 OBJSDIR=debug
-WAV=0
+WAV=1
 !endif
 
 !endif
@@ -125,15 +155,6 @@ All: Client AllGuardApp Server Server32 MdlEdit AllSrvUIApp AllSrvUI32App Lobby 
 Clean:
     del /S /Q $(FEDROOT)\Objs\$(OBJSDIR)\*
 
-#############################################################################
-#
-#                 **** Is this ever used by anyone? ****
-#
-#############################################################################
-
-Shell:
-    $(OSCMDSHELL)
-
 
 #############################################################################
 #
@@ -178,61 +199,10 @@ ClientAllFlavors:
     $(NMAKE) Client retail=
     $(NMAKE) Client test=
 
-#############################################################################
-#
-# Daily: The daily build
-#
-#############################################################################
-
-Daily: DailyNoArt Art
-
-DailyNoArt: AllFlavors ReadMe
-    $(NMAKE) sretail= AllGuardApp
-
 
 #############################################################################
 #
-# Mikeke: Builds everything but igcfiles test
-#
-#############################################################################
-
-mikeke: client server lobby art browse
-
-#############################################################################
-#
-# parisman: Builds everything but igcfiles test
-#
-#############################################################################
-
-parisman: client server lobby art browse
-
-#############################################################################
-#
-# BrettonW: build stuff I care about
-#
-#############################################################################
-
-BrettonW: Client AllSrvUIApp art
-
-#############################################################################
-#
-# dpugh: Builds everything but igcfiles and test (same as mikeke)
-#
-#############################################################################
-
-dpugh: client server lobby art browse
-
-#############################################################################
-#
-# kendrics: Builds everything but igcfiles and test
-#
-#############################################################################
-
-kendrics: client server club lobby art browse
-
-#############################################################################
-#
-# Recreate: recreate the database from .dat files
+# Recreate: recreate the SQL database from .dat files
 #
 #############################################################################
 
@@ -545,7 +515,7 @@ Client: Common Effect Clintlib Training SoundEngineLib Reloader Server32
 
 #############################################################################
 #
-# ICaped exes
+# ICaped exes (this needs to be updated!)
 #
 #############################################################################
 
@@ -572,7 +542,7 @@ SoundEngineLib: ZLibrary
     $(NMAKE) $(RECURSNMAKEARGS)
     @cd ..    
 	@cd vorbis
-	@-if not exist $(FEDROOT)\objs\$(FLAVOR)\Vorbis\vorbis.lib _make.bat
+	@-if not exist $(FEDROOT)\objs\$(FLAVOR)\Vorbis\vorbis.lib _make.bat $(FLAVOR)
 	@cd ..    
 	
 
@@ -605,14 +575,15 @@ SoundTst_Full: SoundTst_Clean SoundTst
 
 #############################################################################
 #
-# AGC: builds the Active Game Core DLL
+# AGC: builds and registers the Active Game Core DLL
 #
 #############################################################################
 
 AGC: TCLib Igc
     @cd AGC
-#    $(NMAKE) BuildAndReg $(RECURSNMAKEARGS)
-    $(NMAKE) $(RECURSNMAKEARGS)
+    @AGC.manifest.bat $(FLAVOR)
+    $(NMAKE) BuildAndReg $(RECURSNMAKEARGS)
+#    $(NMAKE) $(RECURSNMAKEARGS)
     @cd ..
 
 AGC_Clean:
@@ -663,7 +634,7 @@ SrvConfigApp_Full: SrvConfigApp_Clean SrvConfigApp
 
 #############################################################################
 #
-# SrvConfig32App: builds the server configuration utility.
+# SrvConfig32App: builds the stand-alone server configuration utility.
 #
 #############################################################################
 
@@ -915,7 +886,7 @@ MSRGuardApp_Full: MSRGuardApp_Clean MSRGuardApp
 
 #############################################################################
 #
-# AllGuardApp: builds the AllGuard crash guard utility.
+# AllGuardApp: builds the AllGuard crash guard utility. (should be built /w static run-times)
 #
 #############################################################################
 
@@ -1301,7 +1272,7 @@ Patch: FedGuids ZLibrary
 
 ConvexHull: FedGuids
 	@cd cvh
-	@-if not exist $(FEDROOT)\objs\$(FLAVOR)\cvh\cvh.exe _make.bat
+	$(NMAKE) $(RECURSNMAKEARGS)
 	@cd ..    
 
 
@@ -1482,12 +1453,8 @@ Test: Common Clintlib
     $(NMAKE) $(RECURSNMAKEARGS)
     @cd ..
 
-!ifdef SLIM
-    @slim
-!endif
-
-!ifdef WAV    
-    @"$(FEDROOT)\src\tools\bin32\wav $(WINDIR)\media\tada /Q /v100"
+!ifdef WAV
+    @"$(FEDROOT)\src\tools\bin32\wav $(WINDIR)\media\tada /Q"
 !endif
 
 #############################################################################
@@ -1628,3 +1595,5 @@ UnregPigs: UnregPigAccts UnregPigSrv
 #          care about pre-1881 people anymore. :)
 ReadMe:
     @cscript.exe ..\build\VerDateStamp.js ^"$(FEDROOT)\doc\pm\ReadMe.txt^" ^"$(FEDROOT)\build\IS\Allegiance\Setup Files\Uncompressed Files\Disk1\ReadMe.txt^" $(VER)
+
+# End of Makefile

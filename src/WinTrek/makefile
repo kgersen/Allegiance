@@ -29,15 +29,18 @@
 #          can use the BCOPTS variable to add options to the BC compile.
 
 # keep the debug info in the exe for retail builds, so we can strip it out and leave the FPO info
+#TODO Get this working for Test
 !IFDEF retail
 SPLITSYMBOLS=1
+!ELSE 
+SPLITSYMBOLS=0
 !endif
 
 SRCROOT=Wintrek
 MAINTARGROOT=Allegiance
 MAINTARGEXT=exe
 CARGSLOCAL=/D DIRECTINPUT_VERSION=0x700 /D"WINTREK" /D "igc_static" /D "IGC_SHIP" /D "_USRDLL" /D"DLL" /I$(FEDROOT)\Objs\$(FLAVOR)\AGC /I$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
-INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDSRC)\Effect;$(FEDSRC)\Engine;$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(FEDSRC)\clintlib;$(FEDSRC)\SoundEngine;$(FEDSRC)\agc;$(FEDSRC)\FedSrv;$(FEDSRC)\Training;$(FEDSRC)\lobby;$(FEDSRC)\test\inc;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\AllSrv
+INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(FEDSRC)\Effect;$(FEDSRC)\Engine;$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(FEDSRC)\clintlib;$(FEDSRC)\SoundEngine;$(FEDSRC)\agc;$(FEDSRC)\FedSrv;$(FEDSRC)\Training;$(FEDSRC)\lobby;$(FEDSRC)\test\inc;$(FEDROOT)\Objs\$(FLAVOR)\AGC;$(FEDROOT)\Objs\$(FLAVOR)\AllSrv;$(FEDSRC)\Inc
 
 UNWINDCARG=/EHsc
 
@@ -112,8 +115,8 @@ OBJS= \
     $(DESTDIR)\ZoneEventsScreen.obj         \
     $(DESTDIR)\netinfo.obj                  \
     $(DESTDIR)\GameTypes.obj                \
-$(DESTDIR)\MapPreview.obj\
-$(DESTDIR)\MapPVMaker.obj
+    $(DESTDIR)\MapPreview.obj               \
+    $(DESTDIR)\MapPVMaker.obj
 
 
 

@@ -15,26 +15,25 @@ LIBS= $(LIBSFLAVOR) \
       strig.lib shintr.lib fulllibc.lib coredll.lib dsound.lib ddraw.lib dplayx.lib dinput.lib\
       dxguid.lib ole32.lib amstrmid.lib
 !else
-LIBS= $(LIBSFLAVOR) \
-      urlmon.lib kernel32.lib user32.lib   \
-      gdi32.lib winspool.lib comdlg32.lib  \
-      advapi32.lib shell32.lib ole32.lib   \
-      oleaut32.lib uuid.lib odbc32.lib     \
-      odbccp32.lib ddraw.lib dsound.lib    \
-      dxguid.lib winmm.lib dplayx.lib      \
-      d3d8.lib amstrmid.lib dinput.lib    \
-      comctl32.lib version.lib  ws2_32.lib \
-      delayimp.lib atlsd.lib atl.lib         \
-      wininet.lib lz32.lib freeimage.lib   \
-      fedguids.lib netapi32.lib comsuppd.lib comsuppwd.lib oledb.lib comsvcs.lib
-      
-!endif
+#32 bit windows
+LIBS=$(LIBSFLAVOR) \
+!IF  "$(SRCROOT)" == "FedSrv" || "$(SRCROOT)" == "Lobby" || "$(SRCROOT)" == "Club"
+	$(MFCLIBSFLAVOR) \
+!ENDIF
+	urlmon.lib kernel32.lib user32.lib   \
+	gdi32.lib winspool.lib comdlg32.lib  \
+	advapi32.lib shell32.lib ole32.lib   \
+	oleaut32.lib uuid.lib odbc32.lib     \
+	odbccp32.lib ddraw.lib dsound.lib    \
+	dxguid.lib winmm.lib dplayx.lib      \
+	d3d8.lib amstrmid.lib dinput.lib     \
+	comctl32.lib version.lib ws2_32.lib  \
+	delayimp.lib wininet.lib lz32.lib    \
+	netapi32.lib oledb.lib comsvcs.lib   \
+	fedguids.lib freeimage.lib
+!endif 
 
-!ifdef SPLITSYMBOLS
-LINKPDB= NONE
-!else
 LINKPDB= $(PDB)
-!endif
 
 !ifdef DREAMCAST
 LARGS= $(LARGSFLAVOR) $(NOLOGO) /subsystem:$(CESubsystem) \
@@ -80,6 +79,10 @@ $(MAINTARGFULLPATH): $(DESTDIR)  \
 !ifndef NOMAP
 #  $(MAPSYM) -o $(DESTDIR)\$(MAINTARGROOT).sym $(DESTDIR)\$(MAINTARGROOT).map
 !endif
-!ifdef SPLITSYMBOLS
-#  $(SPLITSYMBOLSTOOL) $(DESTDIR)\$(MAINTARGROOT).exe $(DESTDIR)\$(MAINTARGROOT).dbg
+!IF  "$(SPLITSYMBOLS)" == "1"
+#  $(SPLITSYMBOLSTOOL) -i $(DESTDIR) -o $(DESTDIR)
+!endif
+
+!if defined(sretail) || defined(retail)
+    @$(FEDSRC)\tools\bin32\upx -9 -q -k $(DESTDIR)\$(MAINTARGROOT).exe 
 !endif

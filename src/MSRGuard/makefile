@@ -43,13 +43,6 @@
 #
 
 # keep the debug info in the exe for retail builds, so we can strip it out and leave the FPO info
-!IFDEF retail
-SPLITSYMBOLS=1
-!endif
-!IFDEF sretail
-SPLITSYMBOLS=1
-!endif
-
 
 SRCROOT=MSRGuard
 DESTROOT=MSRGuard

@@ -7572,10 +7572,16 @@ bool OnAutoUpdateEXEDownloadDone(const char * szFilelistCRC, int nFilelistCRC, i
 
     if (_Module.WasCOMStarted())
     {
-      szLaunchPostUpdate = "AllSrvUI.exe";
+		// WasCOMStarted is allowed for Zone emulation /w stand-alone server
+		#if defined(ALLSRV_STANDALONE)
+		szLaunchPostUpdate = "AllSrv32UI.exe";
+		#else
+		szLaunchPostUpdate = "AllSrvUI.exe";
+		#endif
     }
     else
     {
+		// Are server admins running stand-along as a service? If so, revisit -Imago
       szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv" : "AllSrv.exe";  // S: is short for "Start as Service"
     }
 

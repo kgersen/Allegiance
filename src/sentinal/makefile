@@ -31,7 +31,7 @@
 MAINTARGROOT=sentinal
 MAINTARGEXT=exe
 CARGSLOCAL=/D"SENTINAL" /D _WIN32_WINNT=0x0400
-INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(DESTDIR)
+INCLUDELOCAL=$(FEDSRC)\ZLib;$(FEDSRC)\_Utility;$(FEDSRC)\Igc;$(DESTDIR)\..\igc;$(DESTDIR);$(FEDSRC)\Inc
 MSGFILE=sentmsg
 
 !include "..\makefile.inc"
@@ -83,3 +83,6 @@ $(RESFILE): $(DESTDIR)\SentMsg.rc $(FEDSRC)\Inc\VerRes.rc $(MAINTARGROOT).rc
 $(BSC): $(DESTDIR)\*.sbr
   $(BSCMAKE) $(NOLOGO) /Iu /o$(BSC) $(DESTDIR)\*.sbr
 
+!if defined(sretail) || defined(retail)   
+    @$(FEDSRC)\tools\bin32\upx -9 -q $(DESTDIR)\$(MAINTARGROOT).exe
+!endif

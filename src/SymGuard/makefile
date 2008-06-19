@@ -45,7 +45,7 @@
 SRCROOT=SymGuard
 MAINTARGROOT=SymGuard
 MAINTARGEXT=dll
-INCLUDELOCAL=$(FEDEXT)\vc\atl\inc;$(FEDEXT)\vc\mfc\inc;$(FEDSRC)\SymGuard;$(FEDSRC)\Test\Inc;$(DESTDIR);$(FEDSRC)\ZLib
+INCLUDELOCAL=$(FEDEXT)\vc\atl\inc;$(FEDEXT)\vc\mfc\inc;$(FEDSRC)\SymGuard;$(FEDSRC)\Test\Inc;$(DESTDIR);$(FEDSRC)\ZLib;$(FEDSRC)\Inc;
 PCHROOT=pch
 PCHINC=
 PCHINCLOCAL=$(PCHROOT).h
@@ -78,10 +78,10 @@ OBJS= $(DESTDIR)\SymGuard.obj         \
       $(DESTDIR)\SymInfo.obj          \
       $(DESTDIR)\pch.obj
 
-LIBS= $(LIBSFLAVOR) \
+LIBS= $(LIBSFLAVOR) $(MFCLIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib        \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib \
-      delayimp.lib netapi32.lib version.lib dbghelp.lib atlsd.lib comsupp.lib comsuppw.lib
+      delayimp.lib netapi32.lib version.lib dbghelp.lib
 
 USERLIBS= $(FEDROOT)\Objs\$(FLAVOR)\Test\TCLib\TCLib.lib                 \
           $(FEDROOT)\Objs\$(FLAVOR)\ZLib\ZLib.lib

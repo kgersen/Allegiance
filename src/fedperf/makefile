@@ -26,7 +26,7 @@
 
 MAINTARGROOT=fedperf
 MAINTARGEXT=dll
-INCLUDELOCAL=
+INCLUDELOCAL=$(FEDSRC)\Inc
 PCHINC=
 
 !include "..\makefile.inc"

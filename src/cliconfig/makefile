@@ -44,13 +44,13 @@
 
 MAINTARGROOT=CliConfig
 MAINTARGEXT=exe
-INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(DESTDIR)
+INCLUDELOCAL=$(FEDEXT)\vc\mfc\inc;$(DESTDIR);$(FEDSRC)\Inc
 PCHROOT=stdafx
 PCHINC=
 PCHINCLOCAL=$(PCHROOT).h ..\zlib\zreg.h
 PROJCLEAN=ProjectClean
 CARGSLOCAL=/D"CLICONFIG" /D _AFXDLL
-
+UNWINDCARG=/EHsc
 
 #############################################################################
 # Rules
@@ -77,8 +77,7 @@ OBJS= $(DESTDIR)\CliConfig.obj       \
 LIBS= $(MFCLIBSFLAVOR) $(LIBSFLAVOR) \
       kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib            \
       advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib winmm.lib     \
-      version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib dplayx.lib \
-      comsupp.lib atlsd.lib mfc90d.lib mfcs90.lib
+      version.lib netapi32.lib urlmon.lib delayimp.lib
 
 USERLIBS= 
 
@@ -105,6 +104,10 @@ $(MAINTARGFULLPATH): $(DESTDIR) $(MSGFILE) $(OBJS) $(RESFILE) $(USERLIBS)
 $(BSCTARG) : $(DESTDIR)\*.sbr
   @echo Creating browse info file ($(MAINTARGROOT).bsc)...
   $(BSCMAKE) /nologo /Iu /o$(BSCTARG) $(DESTDIR)\*.sbr
+!endif
+
+!if defined(sretail) || defined(retail)   
+    @$(FEDSRC)\tools\bin32\upx -9 -q $(DESTDIR)\$(MAINTARGROOT).exe
 !endif
 
 $(PROJCLEAN):
