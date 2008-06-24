@@ -11,6 +11,10 @@
 #include "main.h"
 #include "regkey.h"
 
+#ifdef BUILD_DX9
+#include "VideoSettingsDX9.h"
+#endif //BUILD_DX9
+
 extern bool g_bEnableSound = true;
 extern bool g_bCheckFiles;
 extern bool g_fZoneAuth;
@@ -337,7 +341,7 @@ public:
         {
             if (MessageBox(NULL,
                 "You are low on free memory and/or hard drive space.  "
-                "You may experience proplems running Allegiance.  Run anyway?",
+                "You may experience problems running Allegiance.  Run anyway?", 
                 "Allegiance",
                 MB_ICONERROR | MB_YESNO
                 ) != IDYES)
@@ -372,7 +376,10 @@ public:
         // Fix success HRESULT
         hr = S_OK;
 
-        EffectApp::Initialize(strCommandLine);
+#ifndef BUILD_DX9
+		// For the D3D build, move this to after the window has been created, as we need a valid HWND to create the device.
+		EffectApp::Initialize(strCommandLine);
+#endif // BUILD_DX9
 
         //
         // get the artpath
@@ -480,36 +487,38 @@ public:
             pathStr = logFileName;
         }
 
-        GetModeler()->SetArtPath(pathStr);
-        UTL::SetArtPath(pathStr);
+#ifndef BUILD_DX9
+		// Now set later for D3D build, as modeller isn't valid yet.
+		GetModeler()->SetArtPath(pathStr);
+#endif // BUILD_DX9
+ 		UTL::SetArtPath(pathStr);
 
-		// yp your_persona march 25 2006 : Remove EULA.dll dependency patch
-		//
-        /*{
-          HRESULT hr = FirstRunEula(pathStr);
+		/*{
+			HRESULT hr = FirstRunEula(pathStr);
 
-          if (hr == E_FAIL)
-          {
-              ::MessageBox(NULL, "Error while trying to load ebueula.dll. Please reboot and retry.  If it still fails, reinstall Allegiance", "Initialization Error", MB_OK);
-              return S_FALSE;
-          }
-          else
-          if (hr == S_FALSE)
-          {
-              ::MessageBox(NULL, "You must accept the End User License Agreement before playing the Allegiance", "Allegiance", MB_OK);
-              return S_FALSE;
-          }
-          else
-          {
-            assert(hr == S_OK);
-          }
-        }*/
+			if (hr == E_FAIL)
+			{
+				::MessageBox(NULL, "Error while trying to load ebueula.dll. Please reboot and retry.  If it still fails, reinstall Allegiance", "Initialization Error", MB_OK);
+				return S_FALSE;
+			}
+			else if (hr == S_FALSE) 
+			{
+				::MessageBox(NULL, "You must accept the End User License Agreement before playing the Allegiance", "Allegiance", MB_OK);
+				return S_FALSE;
+			}
+			else
+			{
+				assert(hr == S_OK);
+			}
+		}*/
 
+#ifndef BUILD_DX9
         //
         // load the fonts
         //
 
         TrekResources::Initialize(GetModeler());
+#endif // BUILD_DX9
 
         //
         // Initialize the runtime
@@ -648,9 +657,29 @@ public:
         // Create the window
         //
 
-        TRef<TrekWindow> pwindow =
+#ifdef BUILD_DX9
+		// Ask the user for video settings.
+		if( PromptUserForVideoSettings( GetModuleHandle(NULL), pathStr ) == false )
+		{
+			return E_FAIL;
+		}
+		CD3DDevice9::UpdateCurrentMode( );
+
+        TRef<TrekWindow> pwindow = 
             TrekWindow::Create(
-                this,
+                this, 
+                strCommandLine,
+				pathStr,
+                bMovies,
+                bSoftware,
+                bHardware,
+                bPrimary,
+                bSecondary
+            );
+#else
+        TRef<TrekWindow> pwindow = 
+            TrekWindow::Create(
+                this, 
                 strCommandLine,
                 bMovies,
                 bSoftware,
@@ -658,6 +687,7 @@ public:
                 bPrimary,
                 bSecondary
             );
+#endif // BUILD_DX9
 
         if (!pwindow->IsValid()) {
             return E_FAIL;

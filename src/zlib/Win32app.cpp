@@ -461,7 +461,13 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 			InitializeLogchat();  // mmf
 
             BreakOnError(hr = Window::StaticInitialize());
+
+#ifndef BUILD_DX9
             BreakOnError(hr = g_papp->Initialize(lpszCmdLine));
+#else
+			// Don't throw an error, if the user selects cancel it can return E_FAIL.
+            hr = g_papp->Initialize(lpszCmdLine);
+#endif // BUILD_DX9
 
             //
             // Win32App::Initialize() return S_FALSE if this is a command line app and

@@ -33,6 +33,14 @@ bool IsWindows9x()
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef BUILD_DX9
+ZFile::ZFile( )
+{
+	m_p = NULL;
+	m_handle = INVALID_HANDLE_VALUE;
+}
+#endif // BUILD_DX9
+
 ZFile::ZFile(const PathString& strPath, DWORD how) : 
     m_p(NULL)
 {

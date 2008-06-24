@@ -47,11 +47,19 @@
 // DirectX Stuff
 //
 
-#define DIRECTDRAW_VERSION 0x0700
-#define DIRECT3D_VERSION   0x0700
-
-#include "ddraw.h"
-#include "d3d.h"
+#ifdef BUILD_DX9					// Defined in project settings.
+	#define DIRECT3D_VERSION   0x0900
+	#include "d3d9.h"
+	#include "d3dx9.h"
+	#include "DxErr9.h"
+	#include "OldDXDefns.h"			// Older DX definitions included to get the project to build. At some point,
+									// they all become redundant.
+#else
+	#define DIRECTDRAW_VERSION 0x0700
+	#define DIRECT3D_VERSION   0x0700
+	#include "ddraw.h"
+	#include "d3d.h"
+#endif // BUILD_DX9
 
 //
 // Library Headers

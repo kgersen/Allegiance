@@ -49,20 +49,23 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 class ZFile : public WaitableObject {
-private:
+protected:
 
     BYTE* m_p;
     HANDLE m_hfileMapping;
 
 public:
+#ifdef BUILD_DX9
+	ZFile();
+#endif // BUILD_DX9
     ZFile(const PathString& strPath, DWORD how = OF_READ | OF_SHARE_DENY_WRITE);
-    ~ZFile();
+    virtual ~ZFile();
 
-    bool  IsValid();
-    int   GetLength();
-    BYTE* GetPointer(bool bWrite = false, bool bCopyOnWrite = false);
+    virtual bool  IsValid();
+    virtual int   GetLength();
+    virtual BYTE * GetPointer(bool bWrite = false, bool bCopyOnWrite = false);
 
-    DWORD Read(void* p, DWORD length);
+    virtual DWORD Read(void* p, DWORD length);
     DWORD Write(void* p, DWORD length);
 
     bool  Write(DWORD value);

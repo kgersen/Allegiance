@@ -134,6 +134,7 @@ public:
 
     void NextVideo()
     {
+#ifndef BUILD_DX9
         ZString str;
 
         m_indexVideo++;
@@ -175,6 +176,7 @@ public:
             m_pwrapImageVideo->SetImage(m_pvideoImage);
             m_pvideoImage->GetEventSource()->AddSink(IEventSink::CreateDelegate(this));
         }
+#endif // BUILD_DX9
     }
 
     bool OnEvent(IEventSource* pevent)

@@ -772,6 +772,61 @@ private:
         DefaultUpdateLayout();
     }
 
+//#ifdef BUILD_DX9
+#if 0
+    void Paint( Surface * pSurface )
+	{
+        if (m_pImageBkgnd)
+		{	
+			// TBD: See original function below.
+			_ASSERT( false );
+		}
+
+        // calc num Items to draw
+        int iLastVisibleItem = LastVisibleItem();
+        int iLastItem = m_vItems.GetCount() - 1;
+        if (iLastVisibleItem > iLastItem)
+            iLastVisibleItem = iLastItem;
+
+        // draw each Item
+        WinRect rectPaint = WinRect(0, 0, m_nItemWidth, YSize());
+        WinRect rectItem = rectPaint;
+        rectItem.bottom = rectItem.top;
+        ZAssert(m_iTopItem >= 0);
+
+        // count the number of slots for the first item which we are not drawing
+        int nNumHiddenSlots = 0;
+        
+        if (m_vItems.GetCount() > 0)
+        {
+            while (m_iTopItem - nNumHiddenSlots > 0 
+                && m_vItems[m_iTopItem - (nNumHiddenSlots + 1)] == m_vItems[m_iTopItem])
+                nNumHiddenSlots++;
+
+			for (int iItem = m_iTopItem;
+						iItem <= iLastVisibleItem; 
+						iItem += m_vItems[iItem]->GetItemHeight() - nNumHiddenSlots, nNumHiddenSlots = 0 )
+			{
+				rectItem.top = rectItem.bottom;
+				int nLinesLeft = (iLastVisibleItem - iItem) + 1;
+				int nLines = m_vItems[iItem]->GetItemHeight() - nNumHiddenSlots;
+				rectItem.bottom += m_nItemHeight * (nLines > nLinesLeft ? nLinesLeft : nLines);
+
+				// draw highlight if selected
+				bool bItemSel = (m_iSelItem == iItem);
+				if (bItemSel && m_pImageBkgndSel)
+				{
+					// TBD: See original function below.
+					_ASSERT( false );
+				}
+
+				// draw item
+				m_vItems[iItem]->DrawItem(pSurface, rectItem, bItemSel, nNumHiddenSlots);
+			}
+		}
+	}
+
+#else
     void Paint(Surface* pSurface)
     {
 
@@ -822,6 +877,8 @@ private:
                 }
             }
     }
+#endif // BUILD_DX9
+
 };
 
 TRef<ListPaneOld> ListPaneOld::Create(WinPoint size, int nItemHeight, bool bScroll, Pane* ppane)
