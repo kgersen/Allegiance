@@ -143,20 +143,20 @@ private:
 
     public:
         // KGJV #104 - new param pSideToJoin
-        TeamPainter(MissionInfo* pMission, SideID *pSideToJoin, const TVector<int>& viColumns, int nHeight, float fColorIntensity, float fColorBrightness) :
+        TeamPainter(MissionInfo* pMission, SideID *pSideToJoin, const TVector<int>& viColumns, int nHeight, float fColorIntensity, float fColorBrightness) : 
             m_pMission(pMission),
             m_pSideToJoin(pSideToJoin), // KGJV #104
-            m_viColumns(viColumns),
+            m_viColumns(viColumns), 
             m_nHeight(nHeight),
             m_fColorIntensity(fColorIntensity),
             m_fColorBrightness(fColorBrightness)
         {
-
+            
             m_pimageArrow = GetModeler()->LoadImage(AWF_TEAMROOM_PLAYERS_TEAM_ARROW, true);
             //m_pimageTab = GetModeler()->LoadImage(AWF_TEAMROOM_TAB_MASK, true);
-
-
-
+            
+            
+            
             //m_pimageSelectedTab = GetModeler()->LoadImage(AWF_TEAMROOM_SELECTED_TAB_MASK, true);
         };
 
@@ -166,7 +166,7 @@ private:
         }
 
         int GetYSize()
-        {
+        { 
             return m_nHeight;
         }
 
@@ -182,11 +182,11 @@ private:
 
             Color color;
             IsideIGC* pside = NULL;
-
+            
             if (trekClient.GetCore())
                 pside = trekClient.GetCore()->GetSide(pitem->GetSideID());
             int pnumberside = pitem->GetSideID();
-
+            
 			// KGJV #114 - remove empty teams
 			if (!m_pMission->SideActive(pitem->GetSideID()) && m_pMission->GetStage() != STAGE_STARTED)
 				return;
@@ -228,14 +228,14 @@ private:
                     m_pimageTab = GetModeler()->LoadImage("teamgreybmp", true);
                     break;
                 }
-
+            
 
             if (!pside)
                 color = m_fColorBrightness * 0.75 * Color::White() * m_fColorIntensity + 0.5 * Color::White() * (1 - m_fColorIntensity);
             else
                 color = m_fColorBrightness * pside->GetColor() * m_fColorIntensity + 0.5 * Color::White() * (1 - m_fColorIntensity);
 
-            if (bSelected)
+            if (bSelected) 
             {
                 // draw the selected tab outline
                 psurface->BitBlt(WinPoint(0,0), m_pimageSelectedTab->GetSurface());
@@ -254,12 +254,12 @@ private:
 
 
             // if this team is empty...
-            if (m_pMission->SideNumPlayers(pitem->GetSideID()) == 0
+            if (m_pMission->SideNumPlayers(pitem->GetSideID()) == 0 
                 && pitem->GetSideID() != SIDE_TEAMLOBBY)
             {
                 // draw "available" or "destroyed"
                 ZString strDescription;
-
+                
                 if (m_pMission->SideAvailablePositions(pitem->GetSideID()) > 0
                     && m_pMission->SideActive(pitem->GetSideID()))
                 {
@@ -287,7 +287,7 @@ private:
 				for (const ShipLinkIGC* lShip = mp_ships->first(); lShip; lShip = lShip->next())
 				{
 					IshipIGC* pship = lShip->data();
-					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();
+					PlayerInfo* pplayer = (PlayerInfo*)pship->GetPrivateData();		            
 					// teamTotalRank += (pplayer->GetPersistScore(NA).GetRank() < 1) ? 1 : pplayer->GetPersistScore(NA).GetRank();	// TE: Modified this to add a minimum of 5 per player
 					teamTotalRank += pplayer->GetPersistScore(NA).GetRank(); // mmf this is just for display purposes, undoing TE's above modification
 				}
@@ -300,7 +300,7 @@ private:
                 psurface->DrawString(
                     TrekResources::SmallFont(),
                     Color::White(),
-                    WinPoint(m_viColumns[0], m_nHeight * 1/2 - 8 +idy), // KGJV #62
+                    WinPoint(m_viColumns[0], m_nHeight * 1/2 - 8 +idy), // KGJV #62 
                     CensorBadWords (m_pMission->SideName(pitem->GetSideID())).ToUpper()
                 );
 				// KGJV #62 - draw the faction name under team name
@@ -339,7 +339,7 @@ private:
                 psurface->DrawString(
                     TrekResources::SmallFont(),
                     Color::White(),
-                    WinPoint(m_viColumns[1], m_nHeight * 1/2 - 8),
+                    WinPoint(m_viColumns[1], m_nHeight * 1/2 - 8), 
                     cbPositions
                 );
             }
@@ -386,16 +386,16 @@ private:
             bool bOnLobbySide = pplayer->SideID() == SIDE_TEAMLOBBY;
 
             // draw the crown icon for leaders
-
+        
             if (!bRequesting)
             {
-                TRef<Image> pimageCheck = GetModeler()->LoadImage("lobbycheckbmp", true);
+                TRef<Image> pimageCheck = GetModeler()->LoadImage("lobbycheckbmp", true);   
                 if (pplayer->IsTeamLeader())
                 {
                     WinPoint pntCheck = WinPoint(m_viColumns[1] + 2,
                         (GetYSize() - (int)pimageCheck->GetBounds().GetRect().YSize())/2
                         );
-                    psurface->BitBlt(pntCheck, pimageCheck->GetSurface());
+                    psurface->BitBlt(pntCheck, pimageCheck->GetSurface());   
                 }
 
                 if (pplayer->IsMissionOwner())
@@ -405,10 +405,10 @@ private:
                         );
                     psurface->BitBlt(pntCheck2, pimageCheck->GetSurface());
                 }
-            }
+            }              
 
             // draw the player name
-
+            
             WinRect rectClipOld = psurface->GetClipRect();
             psurface->SetClipRect(WinRect(WinPoint(0, 0), WinPoint(m_viColumns[0], GetYSize()))); // clip name to fit in column
             psurface->DrawString(
@@ -461,7 +461,7 @@ private:
                 psurface->DrawString(
                     TrekResources::SmallFont(),
                     color,
-                    WinPoint(m_viColumns[4] + 2, 0),
+                    WinPoint(m_viColumns[4] + 2, 0), 
                     c_pszWingName[pplayer->GetShip()->GetWingID()]
                 );
             }
@@ -539,8 +539,8 @@ private:
         }
     };
 
-    class MissionBriefPopup :
-        public IPopup,
+    class MissionBriefPopup : 
+        public IPopup, 
         public EventTargetContainer<MissionBriefPopup>
     {
     private:
@@ -586,7 +586,7 @@ private:
             }
 
             assert(vectCivs.GetCount() >= 1);
-
+            
             ZString strResult;
 
             for (int nCiv = 0; nCiv < vectCivs.GetCount() - 1; nCiv++)
@@ -611,12 +611,12 @@ private:
             else
                 return trekClient.GetBriefingText();
         }
-
+		
 		//AEM 10.13.07 Display the map name above the map preview on the briefing
 		ZString GetMissionMapType(TRef<INameSpace> pns)
         {
             const MissionParams& missionparams = trekClient.MyMission()->GetMissionParams();
-			if (missionparams.szCustomMapFile[0] == '\0')
+			if (missionparams.szCustomMapFile[0] == '\0') 
 			{
 				switch ( missionparams.mmMapType )
 				{
@@ -652,8 +652,8 @@ private:
 						return "LargeSplit";
 					default:
 						return "Unknown map name";
-				}
-			} else
+				}				
+			} else 
 			{
 				int mapNum;
 				for (int i = 0; i < trekClient.GetNumStaticMaps(); i++)
@@ -670,19 +670,19 @@ private:
             ZString strResult;
             const int nMaxText = 2048;
             char cbTemp[nMaxText];
-
+            
             ZString strMainText;
             const MissionParams& misparams = trekClient.MyMission()->GetMissionParams();
 
             if (misparams.IsNoWinningConditionsGame())
                 strMainText = GetCivString("NoWin", pns);
-            else
+            else 
                 strMainText = GetCivString("Default", pns);
 
             _snprintf(cbTemp, nMaxText, strMainText, (const char*)CensorBadWords (trekClient.GetSide()->GetName()), (const char*)trekClient.GetBriefingText(), (const char*)GetCivListString());
             strResult = cbTemp;
 
-            if (misparams.IsArtifactsGame() || misparams.IsFlagsGame() || misparams.IsCountdownGame()
+            if (misparams.IsArtifactsGame() || misparams.IsFlagsGame() || misparams.IsCountdownGame() 
                 || (misparams.IsConquestGame() && misparams.GetConquestPercentage() != 100)
                 || misparams.IsDeathMatchGame() || misparams.IsProsperityGame())
             {
@@ -724,10 +724,10 @@ private:
                     strResult += cbTemp;
                 }
             }
-
+            
             return strResult;
         }
-
+        
         ZString GetMissionBriefingTitle(TRef<INameSpace> pns)
         {
             return GetCivString("Title", pns);
@@ -750,7 +750,7 @@ private:
 			getTip += randTip;
 			return GetString(getTip, pns);
         }
-
+        
         MissionBriefPopup()
         {
             TRef<INameSpace> pnsMissionBriefingData = GetModeler()->CreateNameSpace("missionbriefdata");
@@ -761,7 +761,7 @@ private:
 			pnsMissionBriefingData->AddMember("missionBriefingMapType", m_strMap = new ModifiableString("<bug>")); //AEM 10.13.07 Get the map name to display
             pnsMissionBriefingData->AddMember("countdown", m_numCountdown = new ModifiableNumber(-1));
             pnsMissionBriefingData->AddMember("teamImage", (Value*)(m_pimageTeamIcon = new TeamIconImage()));
-
+			
             m_pimageTeamIcon->SetSide(trekClient.GetSideID());
             m_pimageTeamIcon->SetCivilization(trekClient.GetSide()->GetCivilization());
 
@@ -793,8 +793,8 @@ private:
         }
     };
 
-    class TeamSettingsDialogPopup :
-        public IPopup,
+    class TeamSettingsDialogPopup : 
+        public IPopup, 
         public EventTargetContainer<TeamSettingsDialogPopup>,
         public TrekClientEventSink
     {
@@ -830,15 +830,15 @@ private:
             m_peditPaneTeamName->SetMaxLength(c_cbName - 1);
 
             int index = g_civStart;
-            for (CivilizationLinkIGC* linkCiv = trekClient.GetCore()->GetCivilizations()->first();
+            for (CivilizationLinkIGC* linkCiv = trekClient.GetCore()->GetCivilizations()->first(); 
                 linkCiv != NULL; linkCiv = linkCiv->next())
             {
                 if (index == 0) {
-                    g_civIDStart = linkCiv->data()->GetObjectID();
+                    g_civIDStart = linkCiv->data()->GetObjectID();    
                 }
                 index--;
-                if (trekClient.MyPlayerInfo()->GetShip()->GetPilotType() == c_ptCheatPlayer
-                    || linkCiv->data()->GetObjectID() < 300)
+                if (trekClient.MyPlayerInfo()->GetShip()->GetPilotType() == c_ptCheatPlayer 
+                    || linkCiv->data()->GetObjectID() < 300)        
 
                     m_pcomboCiv->AddItem(linkCiv->data()->GetName(), linkCiv->data()->GetObjectID());
             }
@@ -849,11 +849,11 @@ private:
         //
         // IPopup methods
         //
-
+        
         void OnAddMission(MissionInfo* pMissionDef)
         {
             // if this is my mission...
-
+        
             if (pMissionDef == trekClient.MyMission())
             {
                 // Update the buttons
@@ -865,7 +865,7 @@ private:
             }
         }
 
-        void OnDelPlayer(MissionInfo* pMissionDef, SideID sideID, PlayerInfo* pPlayerInfo, QuitSideReason reason, const char* szMessageParamParam)
+        void OnDelPlayer(MissionInfo* pMissionDef, SideID sideID, PlayerInfo* pPlayerInfo, QuitSideReason reason, const char* szMessageParamParam) 
         {
             // if this is me...
             if (m_pparent->m_bTeamSettingsPopupOpen
@@ -889,13 +889,13 @@ private:
         {
             m_peditPaneTeamName->SetHidden(trekClient.MyMission()->GetMissionParams().bSquadGame);
             m_pcomboSquad->SetHidden(!trekClient.MyMission()->GetMissionParams().bSquadGame);
-
+            
         }
 
         void UpdateNameAndSquad()
         {
             m_peditPaneTeamName->SetString(trekClient.MyMission()->SideName(trekClient.GetSideID()));
-
+            
             if (trekClient.GetSide()->GetSquadID() != NA)
                 m_pcomboSquad->SetSelection(trekClient.GetSide()->GetSquadID());
         }
@@ -912,7 +912,7 @@ private:
         }
 
         virtual void SetContainer(IPopupContainer* pcontainer)
-        {
+        {      
             m_pkeyboardInputOldFocus = GetWindow()->GetFocus();
             IPopup::SetContainer(pcontainer);
             GetWindow()->SetFocus(m_peditPaneTeamName);
@@ -920,7 +920,7 @@ private:
 
             // add the squads list
             m_pcomboSquad->ClearContents();
-
+            
             for (TList<SquadMembership>::Iterator iterSquad(trekClient.GetSquadMemberships());
                 !iterSquad.End(); iterSquad.Next())
             {
@@ -956,7 +956,7 @@ private:
         {
             return m_ppane;
         }
-
+        
         bool OnButtonOk()
         {
             if (m_ppopupOwner) {
@@ -985,8 +985,8 @@ private:
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeCiv, CS, CHANGE_TEAM_CIV)
             END_PFM_CREATE
-            pfmChangeCiv->iSide = trekClient.GetSideID();
-            pfmChangeCiv->civID = m_pcomboCiv->GetSelection();
+            pfmChangeCiv->iSide = trekClient.GetSideID(); 
+            pfmChangeCiv->civID = m_pcomboCiv->GetSelection(); 
 
             return true;
         }
@@ -1006,7 +1006,7 @@ private:
 
     TRef<MissionBriefPopup>  m_pmissionBriefPopup;
     TRef<TeamSettingsDialogPopup>  m_pteamSettingsPopup;
-
+    
     static int s_nLastSelectedChatTab;
 
 public:
@@ -1025,8 +1025,8 @@ public:
     }
 
 public:
-    TeamScreen(Modeler* pmodeler) :
-        m_pMission(trekClient.MyMission()),
+    TeamScreen(Modeler* pmodeler) :         
+        m_pMission(trekClient.MyMission()), 
         m_fQuiting(false),
         m_sortPlayers(sortLeader),
         m_bReverseSort(false),
@@ -1050,7 +1050,7 @@ public:
         pnsTeamScreenData->AddMember("statsCount", m_pnumberStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("squadStatsCount", m_pnumberSquadStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("civColor", m_pcolorCiv = new ModifiableColorValue(Color::Black()));
-		//KGJV added: core name & server name export
+		//KGJV added: core name & server name export 
 		// so we can use strServerName and strCoreName in teamscreen.mdl
 		const char* szServerName = trekClient.MyMission()->GetMissionDef().szServerName;
 		const char* szServerAddr = trekClient.MyMission()->GetMissionDef().szServerAddr;
@@ -1123,8 +1123,8 @@ public:
 
         //
         // Text messages
-        //
-
+        // 
+        
         UpdateTitleText();
         UpdatePromptText();
         UpdateStatusText();
@@ -1148,7 +1148,7 @@ public:
         {
             m_pcomboWing->AddItem(
                 c_pszWingName[wingID],
-                wingID
+                wingID                
             );
         }
         m_pcomboWing->SetSelection(trekClient.GetShip()->GetWingID());
@@ -1212,15 +1212,15 @@ public:
         m_plistPaneTeams->SetItemPainter(new TeamPainter(
             m_pMission,
             &m_sideToJoin,// KGJV #104
-            m_viTeamColumns,
-            m_plistPaneTeams->YSize() / (c_cSidesMax + 1),
+            m_viTeamColumns, 
+            m_plistPaneTeams->YSize() / (c_cSidesMax + 1), 
             m_fColorIntensity,
             m_fColorBrightness
             ));
-
+        
         m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(trekClient.GetSideID()));
 
-
+            
         AddEventTarget(&TeamScreen::OnTeamDoubleClicked, m_plistPaneTeams->GetDoubleClickEventSource());
         AddEventTarget(&TeamScreen::OnTeamClicked, m_plistPaneTeams->GetSingleClickEventSource());
 
@@ -1247,7 +1247,7 @@ public:
 
         m_peventSinkTimer = IEventSink::CreateDelegate(this);
         GetWindow()->GetTimer()->AddSink(m_peventSinkTimer, 0.25f);
-
+        
         memset(&m_vbUncheckedMessages, 0, sizeof(m_vbUncheckedMessages));
 
         if (s_nLastSelectedChatTab != NA && m_pbuttonbarChat->GetEnabled(s_nLastSelectedChatTab))
@@ -1361,16 +1361,14 @@ public:
 	// KGJV #62
 	void UpdateTeamButtons()
 	{
-        bool bCanChange = trekClient.GetPlayerInfo()->IsMissionOwner()
-                && !trekClient.MyMission()->WasObjectModelCreated()
+        bool bCanChange = trekClient.GetPlayerInfo()->IsMissionOwner() 
+                && !trekClient.MyMission()->WasObjectModelCreated() 
                 && trekClient.MyMission()->GetStage() == STAGE_NOTSTARTED;
 
 		SetHiddenTeamButtons(!bCanChange);
 		for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
 		{
-			#pragma warning(disable : 4800)
-			m_pbuttonsTeam[i]->SetChecked(m_pMission->SideActive(i)); // compiler wont optimize --Imago
-			#pragma warning(default : 4800)
+			m_pbuttonsTeam[i]->SetChecked(m_pMission->SideActive(i));
 		}
 		for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
 		{
@@ -1383,27 +1381,27 @@ public:
 
         if (trekClient.GetPlayerInfo() != NULL)
         {
-            /*m_pbuttonReady->SetEnabled(!m_pMission->InProgress()
+            /*m_pbuttonReady->SetEnabled(!m_pMission->InProgress() 
                 && trekClient.GetSideID() != SIDE_TEAMLOBBY);
-            m_pbuttonReady->SetChecked(m_pMission->InProgress()
+            m_pbuttonReady->SetChecked(m_pMission->InProgress() 
                 || trekClient.GetPlayerInfo()->IsReady());
             */
-            m_pbuttonAwayFromKeyboard->SetEnabled(!m_pMission->InProgress()
+            m_pbuttonAwayFromKeyboard->SetEnabled(!m_pMission->InProgress() 
                 || trekClient.GetSideID() == SIDE_TEAMLOBBY);
             m_pbuttonAwayFromKeyboard->SetChecked(!trekClient.GetPlayerInfo()->IsReady()
                 && (!m_pMission->InProgress() || trekClient.GetSideID() == SIDE_TEAMLOBBY));
-
-            m_pbuttonTeamReady->SetHidden(!trekClient.GetPlayerInfo()->IsTeamLeader()
+            
+            m_pbuttonTeamReady->SetHidden(!trekClient.GetPlayerInfo()->IsTeamLeader() 
                 || m_sideCurrent != trekClient.GetSideID());
-            m_pbuttonTeamReady->SetEnabled(!m_pMission->InProgress()
+            m_pbuttonTeamReady->SetEnabled(!m_pMission->InProgress() 
                 && trekClient.GetPlayerInfo()->IsTeamLeader());
             m_pbuttonTeamReady->SetChecked(m_pMission->InProgress()
                 || m_pMission->SideForceReady(trekClient.GetSideID()));
 
-            m_pbuttonAutoAccept->SetHidden(!trekClient.GetPlayerInfo()->IsTeamLeader()
+            m_pbuttonAutoAccept->SetHidden(!trekClient.GetPlayerInfo()->IsTeamLeader() 
                 || m_sideCurrent != trekClient.GetSideID());
-            m_pbuttonAutoAccept->SetEnabled(!m_pMission->InProgress()
-                && trekClient.GetPlayerInfo()->IsTeamLeader()
+            m_pbuttonAutoAccept->SetEnabled(!m_pMission->InProgress() 
+                && trekClient.GetPlayerInfo()->IsTeamLeader() 
                 && !m_pMission->GetMissionParams().bLockGameOpen);
             m_pbuttonAutoAccept->SetChecked(m_pMission->SideAutoAccept(trekClient.GetSideID()));
 
@@ -1423,18 +1421,18 @@ public:
                 || m_sideCurrent != trekClient.GetSideID());
             m_pbuttonMakeLeader->SetHidden(!trekClient.GetPlayerInfo()->IsTeamLeader()
                 || m_sideCurrent != trekClient.GetSideID());
+            
 
-
-            bool bCanChangeSettings = trekClient.GetPlayerInfo()->IsMissionOwner()
-                && !trekClient.MyMission()->WasObjectModelCreated()
+            bool bCanChangeSettings = trekClient.GetPlayerInfo()->IsMissionOwner() 
+                && !trekClient.MyMission()->WasObjectModelCreated() 
                 && trekClient.MyMission()->GetStage() == STAGE_NOTSTARTED;
             m_pbuttonDetails->SetHidden(bCanChangeSettings);
             m_pbuttonSettings->SetHidden(!bCanChangeSettings);
 
             m_pbuttonTeamSettings->SetHidden(!trekClient.GetPlayerInfo()->IsTeamLeader()
                 || m_sideCurrent != trekClient.GetSideID());
-            m_pbuttonTeamSettings->SetEnabled(!m_pMission->GetMissionParams().bLockTeamSettings);
-
+            m_pbuttonTeamSettings->SetEnabled(!m_pMission->GetMissionParams().bLockTeamSettings); 
+            
             //
             // WLP - mod to allow team chat button for noat - changed 2 lines to allow it
             //
@@ -1449,7 +1447,7 @@ public:
 
 			// KGJV #62
 			UpdateTeamButtons();
-
+			
         }
         else
         {
@@ -1472,8 +1470,8 @@ public:
 			// KGJV #62
             SetHiddenTeamButtons(true);
         }
-
-        m_pcomboWing->SetHidden(m_sideCurrent != trekClient.GetSideID()
+        
+        m_pcomboWing->SetHidden(m_sideCurrent != trekClient.GetSideID() 
             || m_sideCurrent == SIDE_TEAMLOBBY);
 
         m_pbuttonJoin->SetEnabled(
@@ -1487,23 +1485,23 @@ public:
     }
 
     void UpdateTitleText()
-    {
+    {   
         ZString str = ZString(m_pMission->Name()).ToUpper();
         m_ptextTitle->SetString(((strcmp(str, "") != 0) ? CensorBadWords (m_pMission->Name()) : "THIS GAME"));
     }
-
+    
     void UpdatePromptText()
     {
         // KGJV #104 - display join requests
         if (m_sideToJoin != NA)
-            m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper()
+            m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper() 
                 + ZString(", YOU ARE REQUESTING TO JOIN A TEAM ")); // todo: append team name may be or not :)
         else
         if (trekClient.GetSideID() != NA && trekClient.GetSideID() != SIDE_TEAMLOBBY)
-            m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper()
+            m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper() 
                 + ZString(", YOU ARE ON TEAM ") + CensorBadWords (ZString(trekClient.GetSide()->GetName())).ToUpper());
         else
-            m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper()
+            m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper() 
                 + ZString(" -- you need to pick a team"));
     }
 
@@ -1512,7 +1510,7 @@ public:
         UpdateCountdownText();
 
         // if we should show the mission briefing...
-        if (trekClient.GetSideID() != SIDE_TEAMLOBBY
+        if (trekClient.GetSideID() != SIDE_TEAMLOBBY 
             && trekClient.MyMission()->GetStage() == STAGE_STARTING)
         {
             if (!m_pmsgBox)
@@ -1523,7 +1521,7 @@ public:
                     GetWindow()->RestoreCursor();
                 }
 
-                if (!m_pmissionBriefPopup && GetCountdownTime() > 0
+                if (!m_pmissionBriefPopup && GetCountdownTime() > 0 
                     && !trekClient.GetBriefingText().IsEmpty())
                 {
                     m_pmissionBriefPopup = new MissionBriefPopup();
@@ -1555,7 +1553,7 @@ public:
             m_ptextStatus2->SetString("");
             m_pbuttonStart->SetEnabled(false);
         }
-        else if (m_pMission->GetStage() == STAGE_STARTING
+        else if (m_pMission->GetStage() == STAGE_STARTING 
             || (m_pMission->GetMissionParams().bAutoRestart && m_pMission->GetStage() == STAGE_NOTSTARTED))
         {
             m_ptextStatus->SetString("COUNTDOWN IN PROGRESS");
@@ -1578,7 +1576,7 @@ public:
             IsideIGC*   psideMin;
             IsideIGC*   psideMax = psideMin = psl->data();
             minPlayers = maxPlayers = psl->data()->GetShips()->n();
-
+            
 			// TE: Balance code
 			// Initialize variables
 			IsideIGC*   psideMinRank;
@@ -1659,7 +1657,7 @@ public:
                 for (SideID id = 0; id < m_pMission->NumSides(); id++)
                 {
                     const char* szReason = NULL;
-					// KGJV #62 - logic changed for AllowEmptyTeams
+					// KGJV #62 - logic changed for AllowEmptyTeams 
 					if (m_pMission->SideNumPlayers(id) < ( !m_pMission->SideActive(id) ? 0 : m_pMission->MinPlayersPerTeam()))
                         szReason = "BELOW MINIMUM SIZE";
                     else if (m_pMission->SideNumPlayers(id) > m_pMission->MaxPlayersPerTeam())
@@ -1717,10 +1715,10 @@ public:
 	 *-------------------------------------------------------------------------
 	 * Purpose:
 	 *    Count up the sum of ranks for a specified side
-	 *
+	 * 
 	 * Parameters:
 	 *    side to check
-	 *
+	 * 
 	 * Returns:
 	 *    sum of all players' ranks on side
 	 */
@@ -1758,13 +1756,13 @@ public:
 	  }
 	  return iRankSum;
 	}
-
+	
 	/*-------------------------------------------------------------------------
 	 * TE: GetRankThreshold
 	 *-------------------------------------------------------------------------
 	 * Purpose:
 	 *    Retrieves the threshold to be used for rank balancing
-	 *
+	 * 
 	 * Returns:
 	 *    The threshold to be used for rank balancing
 	 */
@@ -1772,19 +1770,19 @@ public:
 	{
 		int iHighestRank = 1;
 		int iAverageRank = 0;
-
+	
 		ShipList plistMembers;
-
+	
 		SideInfo* pSide = NULL;
 	    PlayerInfo* pPlayer = NULL;
 		int iTempRank = 0;
 		int iShipIndex = 0;
-
+	
 		// Loop through sides
 		for (SideID iSideID = 0; iSideID < m_pMission->NumSides(); iSideID++)
 		{
 			pSide = m_pMission->GetSideInfo(iSideID);
-
+	
 			// Loop through ships
 			plistMembers = pSide->GetMembers();
 			if (plistMembers.GetCount() > 0)
@@ -1796,7 +1794,7 @@ public:
 						break;
 
 					pPlayer = trekClient.FindPlayer(iShipID);
-
+	
 					if (pPlayer)
 					{
 						if (pPlayer->IsHuman())
@@ -1804,11 +1802,11 @@ public:
 							iTempRank = pPlayer->GetPersistScore(NA).GetRank();
 							if (iTempRank <= 0)
 								iTempRank = 1;
-
+		
 							// If it's the highest rank, remember it
 							if (iTempRank > iHighestRank)
 								iHighestRank = iTempRank;
-
+		
 							// Add to average
 							iAverageRank += iTempRank;
 						}
@@ -1817,17 +1815,17 @@ public:
 				}
 			}
 		}
-
+	
 		// Divide average by #players
 		int Divisor = trekClient.MyMission()->NumPlayers();
 		if (Divisor > 0)
 			iAverageRank = iAverageRank / Divisor;
 		else
 			iAverageRank = 1;
-
+	
 		// Calculate threshold
 		int iThreshold = iHighestRank + ((iAverageRank * iAverageRank) / (iHighestRank + iAverageRank));
-
+	
 		return iThreshold;
 	}
 
@@ -1843,11 +1841,11 @@ public:
         int nSeconds = nTime - nMinutes * 60 - nHours * 60 * 60;
 
         if (nHours > 0)
-            m_ptextTimer->SetString(ZString(nHours)
+            m_ptextTimer->SetString(ZString(nHours) 
                 + ((nMinutes > 9) ? ":" : ":0") + ZString(nMinutes)
                 + ((nSeconds > 9) ? ":" : ":0") + ZString(nSeconds));
         else if (nMinutes > 0)
-            m_ptextTimer->SetString(ZString(nMinutes) +
+            m_ptextTimer->SetString(ZString(nMinutes) + 
                 ((nSeconds > 9) ? ":" : ":0") + ZString(nSeconds));
         else
             m_ptextTimer->SetString(ZString(nSeconds));
@@ -1857,7 +1855,7 @@ public:
     {
         if ((trekClient.MyMission()->GetStage() == STAGE_STARTING
                 && trekClient.GetSideID() == SIDE_TEAMLOBBY)
-            || (trekClient.MyMission()->GetMissionParams().bAutoRestart
+            || (trekClient.MyMission()->GetMissionParams().bAutoRestart 
                 && trekClient.MyMission()->GetStage() == STAGE_NOTSTARTED))
         {
             m_ptextTimerType->SetString("STARTING IN:");
@@ -1892,7 +1890,7 @@ public:
     {
         SideInfo* sideInfo1 = (SideInfo*)pitem1;
         SideInfo* sideInfo2 = (SideInfo*)pitem2;
-
+        
         return sideInfo1->GetSideID() > sideInfo2->GetSideID();
     }
 
@@ -1900,7 +1898,7 @@ public:
     {
         PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
         PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
-
+        
         return pplayer2->IsTeamLeader() && !pplayer1->IsMissionOwner();
     }
 
@@ -1908,7 +1906,7 @@ public:
     {
         PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
         PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
-
+        
         return _stricmp(pplayer1->CharacterName(), pplayer2->CharacterName()) > 0;
     }
 
@@ -1916,7 +1914,7 @@ public:
     {
         PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
         PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
-
+        
 		// TE: Modified this line to get rank properly so sorting works as expected
         return pplayer1->GetPersistScore(NA).GetRank() > pplayer2->GetPersistScore(NA).GetRank();
     }
@@ -1934,7 +1932,7 @@ public:
         {
             PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
             PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
-
+        
             bool bResult;
 
             // sort first by requesting/member, then by ready/unready
@@ -1962,7 +1960,7 @@ public:
         {
             PlayerInfo* pplayer1 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem1));
             PlayerInfo* pplayer2 = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem2));
-
+        
             bool bResult;
 
             // sort first by requesting/member, then by ready/unready
@@ -1983,7 +1981,7 @@ public:
 
         ItemIDCompareFunction m_func;
 
-        ReverseCompare(ItemIDCompareFunction func)
+        ReverseCompare(ItemIDCompareFunction func) 
             : m_func(func) {};
 
         bool operator () (ItemID id1, ItemID id2)
@@ -2057,14 +2055,14 @@ public:
 
 
 	bool OnPlayerRightClicked()
-    {
+    {			
 		ItemID pitem = m_plistPanePlayers->GetSelection();
 
         if (pitem != NULL && trekClient.GetPlayerInfo())
         {
             PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
-			GetWindow()->ShowPlayerContextMenu(pplayer);
-        }
+			GetWindow()->ShowPlayerContextMenu(pplayer);            
+        }		
         return true;
     }
 
@@ -2100,14 +2098,14 @@ public:
     bool OnSelPlayer(ItemID pitem)
     {
         bool bEnableAccept = false;
-        bool bEnableReject = false;
+        bool bEnableReject = false; 
         bool bEnableMakeLeader = false;
 
         if (pitem != NULL && trekClient.GetPlayerInfo())
         {
             PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
 
-            if (m_sideCurrent == trekClient.GetSideID()
+            if (m_sideCurrent == trekClient.GetSideID() 
                 && trekClient.GetPlayerInfo()->IsTeamLeader())
             {
                 bEnableAccept = m_pMission->SideAvailablePositions(m_sideCurrent) > 0
@@ -2123,7 +2121,7 @@ public:
         m_pbuttonAccept->SetEnabled(bEnableAccept);
         m_pbuttonReject->SetEnabled(bEnableReject);
         m_pbuttonMakeLeader->SetEnabled(bEnableMakeLeader);
-
+        
         return true;
     }
 
@@ -2170,7 +2168,7 @@ public:
 
             m_sideCurrent   = sideinfo->GetSideID();
             IsideIGC* pside = trekClient.GetCore()->GetSide(m_sideCurrent);
-
+            
             //
             // Update the background color
             //
@@ -2186,7 +2184,7 @@ public:
             color = m_fColorBrightness * color;
             color.SetAlpha(m_fColorIntensity);
             m_pcolorCiv->SetValue(color);
-
+            
 
             //
             // Update the civ bitmap
@@ -2289,7 +2287,7 @@ public:
             m_pbuttonDetails->SetChecked(s_bFlash);
 
         SideInfo* psideinfo = trekClient.MyMission()->GetSideInfo(m_sideCurrent);
-
+            
         if (psideinfo->GetRequests().GetCount() > 0)
             m_plistPanePlayers->ForceRefresh();
 
@@ -2305,7 +2303,7 @@ public:
     bool OnWingCombo(int index)
     {
         trekClient.SetWing(index);
-        return true;
+        return true;                
     }
 
     bool OnButtonBack()
@@ -2391,8 +2389,8 @@ public:
 			OnButtonAwayFromKeyboard();
 		} ;
         // end mmf 09/07
-
-		return true;
+		
+		return true;        
     }
 
     bool OnButtonAutoAccept()
@@ -2448,7 +2446,7 @@ public:
 
         if (m_lastToJoinSend == NA)  // shouldnt happen
         {
-            debugf("TeamScreen::OnCancelRequest - m_lastToJoinSend == NA\n");
+            debugf("TeamScreen::OnCancelRequest - m_lastToJoinSend == NA\n"); 
             return false;
         }
 
@@ -2491,7 +2489,7 @@ public:
             UpdatePromptText();//KGJV #104 - extra debug
             return true;
          }
-
+        
         // ZAssert(m_sideCurrent != trekClient.GetSideID());
         if (m_sideCurrent == SIDE_TEAMLOBBY
             && trekClient.GetSideID() != SIDE_TEAMLOBBY)
@@ -2500,12 +2498,12 @@ public:
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmPositionReq, CS, QUIT_SIDE)
             END_PFM_CREATE
-            pfmPositionReq->shipID = trekClient.GetShipID();
-            pfmPositionReq->reason = QSR_Quit;
+            pfmPositionReq->shipID = trekClient.GetShipID(); 
+            pfmPositionReq->reason = QSR_Quit; 
 
             m_sideToJoin = m_sideCurrent;
 
-            m_pmsgBox =
+            m_pmsgBox = 
                 CreateMessageBox(
                     "Quitting current team...",
                     NULL,
@@ -2514,7 +2512,7 @@ public:
 
             GetWindow()->GetPopupContainer()->OpenPopup(m_pmsgBox, false);
         }
-        else if (m_sideCurrent != trekClient.GetSideID()
+        else if (m_sideCurrent != trekClient.GetSideID() 
             && m_sideCurrent != SIDE_TEAMLOBBY
             && m_pMission->SideAvailablePositions(m_sideCurrent) > 0
             && m_pMission->SideActive(m_sideCurrent)
@@ -2524,12 +2522,12 @@ public:
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmPositionReq, C, POSITIONREQ)
             END_PFM_CREATE
-            pfmPositionReq->iSide = m_sideCurrent;
+            pfmPositionReq->iSide = m_sideCurrent; 
 
             m_sideToJoin = m_sideCurrent;
 
             // KGJV #104 : remove modal popup
-            //m_pmsgBox =
+            //m_pmsgBox = 
             //    CreateMessageBox(
             //        "Waiting to be accepted to the new team...",
             //        NULL,
@@ -2542,7 +2540,7 @@ public:
             UpdatePromptText();
 
             //TRef<Surface> psurface = GetModeler()->LoadSurface(AWF_TEAMROOM_QUIT_TEAM_BUTTON, true);
-            //TRef<ButtonPane> pQuitTeamButton
+            //TRef<ButtonPane> pQuitTeamButton 
             //    = CreateTrekButton(CreateButtonFacePane(psurface, ButtonNormal), false, positiveButtonClickSound);
             //pQuitTeamButton->SetOffset(WinPoint(183, 170));
             //m_pmsgBox->GetPane()->InsertAtBottom(pQuitTeamButton);
@@ -2559,7 +2557,7 @@ public:
 
         // WLP 2005 – remove highlight from player to prevent chat target
         m_plistPanePlayers->SetSelection(NULL); // WLP – remove as chat target
-
+        
         trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
         BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
         END_PFM_CREATE
@@ -2574,7 +2572,7 @@ public:
     {
         ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
         PlayerInfo* pplayer = trekClient.FindPlayer(shipID);
-
+        
         if (!pplayer)
         {
             // should never happen - the button should be disabled.
@@ -2612,8 +2610,8 @@ public:
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeCiv, CS, CHANGE_TEAM_CIV)
             END_PFM_CREATE
-            pfmChangeCiv->iSide = trekClient.GetSideID();
-            pfmChangeCiv->civID = civID;
+            pfmChangeCiv->iSide = trekClient.GetSideID(); 
+            pfmChangeCiv->civID = civID; 
         }
     }
 
@@ -2787,7 +2785,7 @@ public:
     {
         ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
         PlayerInfo* pplayer = trekClient.FindPlayer(shipID);
-
+        
 		// WLP 2005 - remove highlight from player to prevent chat target
  		m_plistPanePlayers->SetSelection(NULL); // WLP 2005 - remove as chat target
 
@@ -2796,8 +2794,8 @@ public:
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmSetTeamLeader, CS, SET_TEAM_LEADER)
             END_PFM_CREATE
-            pfmSetTeamLeader->sideID = trekClient.GetSideID();
-            pfmSetTeamLeader->shipID = shipID;
+            pfmSetTeamLeader->sideID = trekClient.GetSideID(); 
+            pfmSetTeamLeader->shipID = shipID; 
         }
         else
         {
@@ -2834,10 +2832,10 @@ public:
     void OnAddMission(MissionInfo* pMissionDef)
     {
         // if this is my mission...
-
+        
         if (pMissionDef == trekClient.MyMission())
         {
-            // if the side that we were looking at was nuked, switch back
+            // if the side that we were looking at was nuked, switch back 
             // to our team.
             if (m_sideCurrent >= pMissionDef->GetMissionParams().nTeams)
                 m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(trekClient.GetSideID()));
@@ -2868,7 +2866,7 @@ public:
 
     void OnAddPlayer(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo)
     {
-        // if this is the side I'm looking at, if we just upped the number of
+        // if this is the side I'm looking at, if we just upped the number of 
         // players we may need to change the civ watermark.
         UpdateCivBitmap();
 
@@ -2903,7 +2901,7 @@ public:
                 if (pPlayerInfo->SideID() != SIDE_TEAMLOBBY) // joining NOAT never generates a request
                 if (m_sideToJoin != SIDE_TEAMLOBBY) // joining NOAT never generates a request
                     OnCancelRequest();
-            // if I'm in the team leader chat and am no longer a team leader,
+            // if I'm in the team leader chat and am no longer a team leader, 
             // or if I'm in the team chat and no longer on a team, throw me out.
             //
             // WLP 2005 - commented the qualififiers out to always start everyone on (all) chat
@@ -2926,7 +2924,7 @@ public:
         UpdateStatusText();
     }
 
-    virtual void OnDelPlayer(MissionInfo* pMissionDef, SideID sideID, PlayerInfo* pPlayerInfo, QuitSideReason reason, const char* szMessageParamParam)
+    virtual void OnDelPlayer(MissionInfo* pMissionDef, SideID sideID, PlayerInfo* pPlayerInfo, QuitSideReason reason, const char* szMessageParamParam) 
     {
         // if this is me...
         if (trekClient.MyPlayerInfo()->ShipID() == pPlayerInfo->ShipID())
@@ -3004,7 +3002,7 @@ public:
             {
                 TRef<IMessageBox> pmsgBox = CreateMessageBox(strMessage);
 
-                if (reason == QSR_RandomizeSides ||
+                if (reason == QSR_RandomizeSides || 
 					reason == QSR_BalanceSides ||	// TE: Added Balance and Flush reasons for the popup
 					reason == QSR_FlushSides)
                 {
@@ -3059,7 +3057,7 @@ public:
         UpdateStatusText();
     }
 
-    void OnTeamReadyChange(MissionInfo* pMissionDef, SideID sideID, bool fTeamReady)
+    void OnTeamReadyChange(MissionInfo* pMissionDef, SideID sideID, bool fTeamReady) 
     {
         UpdateStatusText();
     }
@@ -3217,7 +3215,7 @@ public:
             m_pnumberSquadStatsCount->SetValue(-1);
         else if (trekClient.MyMission()->GetMissionParams().bScoresCount
                 && trekClient.MyMission()->GetMissionParams().nTeams == 2
-                && trekClient.GetCore()->GetSide(0)->GetSquadID()
+                && trekClient.GetCore()->GetSide(0)->GetSquadID() 
                     != trekClient.GetCore()->GetSide(1)->GetSquadID())
             m_pnumberSquadStatsCount->SetValue(1);
         else

@@ -1,5 +1,5 @@
 // DefRegKey.cpp : implementation file
-// Imago updated for new ATL
+//
 
 #include "stdafx.h"
 
@@ -8,13 +8,13 @@ LONG CDefaultRegKey::SetValue(DWORD dwValue, LPCTSTR lpszValueName, DWORD dwValu
     if (dwValue == dwValueDefault)
         return CRegKey::DeleteValue(lpszValueName);
     else
-        return CRegKey::SetDWORDValue(lpszValueName, dwValue);
+        return CRegKey::SetValue(dwValue, lpszValueName);
 }
 
 LONG CDefaultRegKey::SetValue(LPCTSTR lpszValue, LPCTSTR lpszValueName, LPCTSTR lpszValueDefault)
 {
     if (lstrcmpi(lpszValue, lpszValueDefault))
-        return CRegKey::SetStringValue(lpszValueName, lpszValue);
+        return CRegKey::SetValue(lpszValue, lpszValueName);
     else
         return CRegKey::DeleteValue(lpszValueName);
 }

@@ -120,7 +120,7 @@ void CPagePlayers::OnEvent(IAGCEvent* pEvent)
   }
 }
 
-BOOL CPagePlayers::OnSetActive()
+BOOL CPagePlayers::OnSetActive() 
 {
   // Reload the chat MRU from the registry
   LoadFromRegistry();
@@ -132,7 +132,7 @@ BOOL CPagePlayers::OnSetActive()
   return CPropertyPage::OnSetActive();
 }
 
-BOOL CPagePlayers::PreTranslateMessage(MSG* pMsg)
+BOOL CPagePlayers::PreTranslateMessage(MSG* pMsg) 
 {
   if (WM_KEYDOWN == pMsg->message)
   {
@@ -165,7 +165,7 @@ void CPagePlayers::DoDataExchange(CDataExchange* pDX)
   //}}AFX_DATA_MAP
 }
 
-LRESULT CPagePlayers::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CPagePlayers::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
 {
   LRESULT lr;
   if (m_AutoSizer.ProcessMessage(message, wParam, lParam, &lr))
@@ -196,7 +196,7 @@ void CPagePlayers::LoadFromRegistry()
   {
     int vecOrder[c_cColumns];
     for (CComVariant i(0L); V_I4(&i) < c_cColumns; ++V_I4(&i))
-    {
+    { 
       bstrColumnOrder.Empty();
       m_spStrings->get_Item(&i, &bstrColumnOrder);
       vecOrder[V_I4(&i)] = _wtoi(bstrColumnOrder);
@@ -214,7 +214,7 @@ void CPagePlayers::LoadFromRegistry()
   if (c_cColumns == cWidthColumns)
   {
     for (CComVariant i(0L); V_I4(&i) < c_cColumns; ++V_I4(&i))
-    {
+    { 
       bstrColumnWidths.Empty();
       m_spStrings->get_Item(&i, &bstrColumnWidths);
       m_listPlayers.SetColumnWidth(V_I4(&i), _wtoi(bstrColumnWidths));
@@ -239,7 +239,8 @@ void CPagePlayers::LoadFromRegistry()
   {
     // Read the count of strings
     DWORD cStrings = 0;
-    keyMRU.QueryDWORDValue(TEXT(".Count"),cStrings);
+	// mdvalley: Former QueryDWORDValue(cStr, TEXT);
+    keyMRU.QueryValue(cStrings, TEXT(".Count"));
 
     // Read each string and add it to the combo box
     for (DWORD i = 0; i < cStrings; ++i)
@@ -278,7 +279,8 @@ void CPagePlayers::SavePlayerListColumnOrderToRegistry()
   }
 
   // Save to the registry
-  key.SetStringValue(TEXT("PlayerListColumnOrder"),strColumnOrder);
+  // mdvalley: SetStringValue (swap)
+  key.SetValue(strColumnOrder, TEXT("PlayerListColumnOrder"));
 }
 
 void CPagePlayers::SavePlayerListColumnWidthsToRegistry()
@@ -298,7 +300,8 @@ void CPagePlayers::SavePlayerListColumnWidthsToRegistry()
   }
 
   // Save to the registry
-  key.SetStringValue(TEXT("PlayerListColumnWidths"),strColumnWidths);
+  // mdvalley: SetStringValue(swap)
+  key.SetValue(strColumnWidths, TEXT("PlayerListColumnWidths"));
 }
 
 void CPagePlayers::SaveSendChatMRUToRegistry()
@@ -315,7 +318,8 @@ void CPagePlayers::SaveSendChatMRUToRegistry()
 
   // Write the count of strings
   int cStrings = min(m_comboSendChat.GetCount(), c_cMaxChatsInRegistry);
-  keyMRU.SetDWORDValue(TEXT(".Count"),cStrings);
+  // mdvalley: SetDWORDValue (swap)
+  keyMRU.SetValue(cStrings, TEXT(".Count"));
 
   // Write each string
   for (int i = 0; i < cStrings; ++i)
@@ -323,7 +327,8 @@ void CPagePlayers::SaveSendChatMRUToRegistry()
     TCHAR szInt[16];
     CString strMRUItem;
     m_comboSendChat.GetLBText(i, strMRUItem);
-    keyMRU.SetStringValue(_itot(i, szInt, 10),strMRUItem);
+	// mdvalley: SetStringValue(swap)
+    keyMRU.SetValue(strMRUItem, _itot(i, szInt, 10));
   }
 }
 
@@ -345,7 +350,7 @@ void CPagePlayers::UpdateUI(bool bUpdateData)
   m_btnBootPlayers.EnableWindow(bGameInProgress && cSelectedItems);
 }
 
-void CPagePlayers::SendChat()
+void CPagePlayers::SendChat() 
 {
   CWaitCursor wait;
 
@@ -377,7 +382,7 @@ void CPagePlayers::SendChat()
       cStrings = m_comboSendChat.GetCount();
       if (cStrings > c_cMaxChatsInRegistry)
       {
-        m_comboSendChat.DeleteString(cStrings - 1);
+        m_comboSendChat.DeleteString(cStrings - 1);        
       }
 
     } while (cStrings > c_cMaxChatsInRegistry);
@@ -648,7 +653,7 @@ void CPagePlayers::TeamInfoChange(IAGCEvent* pEvent)
 /////////////////////////////////////////////////////////////////////////////
 // Message Handlers
 
-BOOL CPagePlayers::OnInitDialog()
+BOOL CPagePlayers::OnInitDialog() 
 {
   // Register for events of interest
   GetSheet()->GetSession()->ActivateEvents(EventID_GameCreated, -1);
@@ -691,7 +696,7 @@ BOOL CPagePlayers::OnInitDialog()
   return true;
 }
 
-void CPagePlayers::OnEndDragPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
+void CPagePlayers::OnEndDragPlayerList(NMHDR* pNMHDR, LRESULT* pResult) 
 {
   HD_NOTIFY* phdn = (HD_NOTIFY*)pNMHDR;
   if (pNMHDR->hwndFrom != m_listPlayers.GetHeaderCtrl()->GetSafeHwnd())
@@ -703,7 +708,7 @@ void CPagePlayers::OnEndDragPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
   *pResult = 0;
 }
 
-void CPagePlayers::OnEndTrackPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
+void CPagePlayers::OnEndTrackPlayerList(NMHDR* pNMHDR, LRESULT* pResult) 
 {
   HD_NOTIFY* phdn = (HD_NOTIFY*)pNMHDR;
   if (pNMHDR->hwndFrom != m_listPlayers.GetHeaderCtrl()->GetSafeHwnd())
@@ -715,7 +720,7 @@ void CPagePlayers::OnEndTrackPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
   *pResult = 0;
 }
 
-void CPagePlayers::OnTimer(UINT nIDEvent)
+void CPagePlayers::OnTimer(UINT nIDEvent) 
 {
   switch (nIDEvent)
   {
@@ -728,12 +733,12 @@ void CPagePlayers::OnTimer(UINT nIDEvent)
       SavePlayerListColumnWidthsToRegistry();
       return;
   }
-
+  
   // Perform default processing
   CPropertyPage::OnTimer(nIDEvent);
 }
 
-void CPagePlayers::OnItemChangedPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
+void CPagePlayers::OnItemChangedPlayerList(NMHDR* pNMHDR, LRESULT* pResult) 
 {
   // Interpret the message parameters
   NM_LISTVIEW* pNMLV = reinterpret_cast<NM_LISTVIEW*>(pNMHDR);
@@ -746,7 +751,7 @@ void CPagePlayers::OnItemChangedPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
   *pResult = 0;
 }
 
-void CPagePlayers::OnDeleteItemPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
+void CPagePlayers::OnDeleteItemPlayerList(NMHDR* pNMHDR, LRESULT* pResult) 
 {
   // Interpret the message parameters
   NM_LISTVIEW* pNMLV = reinterpret_cast<NM_LISTVIEW*>(pNMHDR);
@@ -756,13 +761,13 @@ void CPagePlayers::OnDeleteItemPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
   _ASSERTE(pShip);
 
   // Release the interface
-  pShip->Release();
-
+  pShip->Release();  
+  
   // Obligatory result code
   *pResult = 0;
 }
 
-void CPagePlayers::OnBootPlayers()
+void CPagePlayers::OnBootPlayers() 
 {
   HRESULT hr;
   LPCSTR pszContext = "booting player from the game";

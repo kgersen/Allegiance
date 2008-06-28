@@ -8,8 +8,6 @@
 #define _PCH_H_
 
 #define __MODULE__ "Engine"
-#pragma warning(disable:4554)
-#pragma warning(disable:4244)
 
 #include "guids.h"
 #include "engine.h"

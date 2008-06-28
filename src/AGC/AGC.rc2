@@ -29,5 +29,5 @@
 #define SZORIGFILENAME "AGC.dll"
 #define SZINTERNALNAME "AGC"
 
-//#include "..\Inc\VerRes.rc"
+#include "..\Inc\VerRes.rc"
 

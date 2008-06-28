@@ -1251,10 +1251,29 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
     }
     else
     {
-        if (bStandalonePrivate)
-          hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);
-        else															// Mdvalley: Connecting via the lobby can only lead to this option.
-          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
+		if (bStandalonePrivate) {
+			hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);		  
+		}
+		else {
+#ifdef DEBUG //Imago 6/23/08
+			HKEY hKey;
+			DWORD dwType;
+			DWORD cbValue = 16;
+			char szServer[c_cbName];
+			szServer[0] = '\0';
+
+			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
+				LSTATUS hr = ::RegQueryValueEx(hKey,"ServerAddress", NULL, &dwType, (unsigned char*)&szServer, &cbValue);
+				::RegCloseKey(hKey);
+			}
+
+			if (szServer[0]!=0)
+				 ci.strServer = szServer;
+
+			debugf("JoinSession %s,%s,%i\n",(PCC)ci.strServer,ci.szName,ci.dwPort);
+#endif
+			hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
+		}
     }
 
     // TODO: Remove this when we are ready to enforce CD Keys
@@ -4152,5 +4171,6 @@ void _debugf(const char* format, ...)
 
     debugf(bfr);
 }
+
 
 

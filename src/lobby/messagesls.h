@@ -14,7 +14,7 @@
 #include "MessageCore.h"
 
 // KGJV updated for R4
-#define LOBBYVER_LS 7 // If you change this file, increment this
+#define LOBBYVER_LS 8 // If you change this file, increment this
 
 
 /*
@@ -40,6 +40,8 @@ DEFINE_FEDMSG(S, LOGON_LOBBY, 201)
   int MaxGames;					// KGJV #114 max games allowed on server
   short verLobby;
   DWORD dwPort;
+  int CurGames;					// Imago - allow servers to update thier own mission count 
+									// (useful when re-logging in from dropped lobby cnxn)
 END_FEDMSG
 
 DEFINE_FEDMSG(S, LOGOFF_LOBBY, 202) 

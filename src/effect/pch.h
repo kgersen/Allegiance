@@ -8,7 +8,6 @@
 #define _PCH_H_
 
 #define __MODULE__ "Effect"
-#pragma warning(disable:4305)
 
 #include "effect.h"
 #include "efart.h"

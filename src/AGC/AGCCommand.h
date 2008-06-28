@@ -8,11 +8,10 @@
 #include <AGC.h>
 #include "resource.h"
 
-#pragma warning(disable:4996)
 
 /////////////////////////////////////////////////////////////////////////////
 // CAGCCommand
-class ATL_NO_VTABLE CAGCCommand :
+class ATL_NO_VTABLE CAGCCommand : 
   public IDispatchImpl<IAGCCommand, &IID_IAGCCommand, &LIBID_AGCLib>,
   public IAGCCommandPrivate,
   public IPersistStreamInit,
@@ -93,7 +92,7 @@ protected:
 protected:
   CComBSTR m_bstrTarget, m_bstrVerb;
   bool     m_bDirty : 1;
-public:
+public:  
   CComPtr<IUnknown> m_punkMBV;
 };
 

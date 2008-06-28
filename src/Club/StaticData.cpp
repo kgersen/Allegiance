@@ -1,16 +1,16 @@
 /*-------------------------------------------------------------------------
   StaticData.cpp
-
+  
   Contains data from database that never changes, like civ ids.
-
+  
   Owner: a-marcu
-
+  
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
 #include "pch.h"
 
-//IStaticData * g_pStaticData = NULL;
+IStaticData * g_pStaticData = NULL;
 
 
 

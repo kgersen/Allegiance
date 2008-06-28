@@ -26,7 +26,7 @@ bool    g_bQuickstart = false;
 bool    g_bReloaded = false;
 int     g_civStart    = -1;
 bool    g_bDownloadNewConfig = true;
-bool    g_bAskForCDKey =
+bool    g_bAskForCDKey = 
 //#ifdef USEAUTH // We don't bother with CD keys anymore.
 //  true;
 //#else
@@ -39,7 +39,7 @@ bool g_bAskForCallSign = true ; // wlp 2006
 // Trek Application Implementation
 //
 //////////////////////////////////////////////////////////////////////////////
-//#define GAME_REG_KEY        "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0"
+#define GAME_REG_KEY        "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0"
 
 typedef DWORD (*EBUPROC) (LPCTSTR lpRegKeyLocation, LPCTSTR lpEULAFileName, LPCSTR lpWarrantyFileName, BOOL fCheckForFirstRun);
 
@@ -98,14 +98,14 @@ typedef DWORD (*EBUPROC) (LPCTSTR lpRegKeyLocation, LPCTSTR lpEULAFileName, LPCS
 //
 bool CheckDSoundVersion()
 {
-    // Get version information from the application
-
+    // Get version information from the application 
+    
     HMODULE hmodDSound = GetModuleHandle("dsound");
     if (NULL == hmodDSound) // why isn't the dll loaded???
       return false;
 
     char  szDSoundPath[MAX_PATH];
-    GetModuleFileName(hmodDSound, szDSoundPath, sizeof(szDSoundPath));
+    GetModuleFileName(hmodDSound, szDSoundPath, sizeof(szDSoundPath)); 
 
     DWORD dwTemp;
     DWORD dwVerInfoSize = GetFileVersionInfoSize(szDSoundPath, &dwTemp);
@@ -152,17 +152,17 @@ bool CheckFreeMemory()
     const int nAppSize = 40 * 1024 * 1024;
 
     // first, try a non-invasive check to see if we would fit in the current
-    // swap file.
+    // swap file.  
     MEMORYSTATUS ms;
     GlobalMemoryStatus(&ms);
 
-    if (ms.dwAvailVirtual == -1 || ms.dwAvailPhys == -1
+    if (ms.dwAvailVirtual == -1 || ms.dwAvailPhys == -1 
         || ms.dwAvailVirtual + ms.dwAvailPhys >= nAppSize)
     {
         return true;
     }
 
-    // if that fails, try allocating a big chunk of memory to try to force the
+    // if that fails, try allocating a big chunk of memory to try to force the 
     // swap file to grow.
     void *pv = VirtualAlloc(NULL, nAppSize, MEM_COMMIT, PAGE_NOACCESS);
 
@@ -280,8 +280,8 @@ public:
         //
         //
         {
-          // Make sure the current path is where Allegiance.exe is for the AutoUpdate:
-          // For Download -AND- for Reloader.exe -AND- Loading FileList which happens
+          // Make sure the current path is where Allegiance.exe is for the AutoUpdate: 
+          // For Download -AND- for Reloader.exe -AND- Loading FileList which happens 
           // when client logs onto lobby
           //
           char    path[MAX_PATH + 16];
@@ -339,7 +339,7 @@ public:
 
         if (!CheckFreeMemory())
         {
-            if (MessageBox(NULL,
+            if (MessageBox(NULL, 
                 "You are low on free memory and/or hard drive space.  "
                 "You may experience problems running Allegiance.  Run anyway?", 
                 "Allegiance",
@@ -357,9 +357,9 @@ public:
 
         if (!CheckDSoundVersion())
         {
-            MessageBox(NULL,
+            MessageBox(NULL, 
                 "Allegiance requires DirectX 7 or higher, which was not detected.  "
-                    "Please re-run setup and choose to install DirectX 7.",
+                    "Please re-run setup and choose to install DirectX 7.", 
                 "Allegiance",
                 MB_ICONERROR | MB_OK
                 );
@@ -413,7 +413,7 @@ public:
                 CreateDirectoryA(szValue, NULL);
             }
             pathStr = szValue;
-
+ 
             cbValue = MAX_PATH; // reset this
 
             // Start the frame rate data log, if necessary
@@ -429,7 +429,7 @@ public:
                             ZString strFile = szValue;
                             g_pzfFrameDump = new ZWriteFile(strFile);
                             // check for a valid file handle
-                            if (g_pzfFrameDump->IsValid())
+                            if (g_pzfFrameDump->IsValid()) 
                             {
                                 // dump out the header row of data
                                 g_pzfFrameDump->Write(
@@ -492,10 +492,10 @@ public:
 		GetModeler()->SetArtPath(pathStr);
 #endif // BUILD_DX9
  		UTL::SetArtPath(pathStr);
-
+		
 		/*{
 			HRESULT hr = FirstRunEula(pathStr);
-
+		
 			if (hr == E_FAIL)
 			{
 				::MessageBox(NULL, "Error while trying to load ebueula.dll. Please reboot and retry.  If it still fails, reinstall Allegiance", "Initialization Error", MB_OK);
@@ -547,7 +547,7 @@ public:
         while (token.MoreTokens()) {
             ZString str;
 
-            if (token.IsMinus(str))
+            if (token.IsMinus(str)) 
             {
                 if (str == "training") {
                     bStartTraining = true;
@@ -566,7 +566,7 @@ public:
                 } else if (str == "quickstart") {
                     g_bQuickstart = true;
                     float civStart;
-                    if (token.IsNumber(civStart))
+                    if (token.IsNumber(civStart)) 
                         g_civStart = (int)civStart;
                 } else if (str == "nocfgdl")  {
                     g_bDownloadNewConfig = false;
@@ -585,7 +585,7 @@ public:
                 } else if (str == "newcivs")  {
                     g_bDisableNewCivs = false;
                 } else if (str == "map")  {
-                    if (token.IsString(strMap))
+                    if (token.IsString(strMap)) 
                     {
                         bStartOffline = true;
                         bLogonDialog = false;
@@ -593,13 +593,13 @@ public:
                 } else if(str == "reloaded") {
                     //
                     // reloaded after an auto-update
-                    //
+                    // 
                     //g_bReloaded = true;
 
                     // TODO: make two types of reloaded: one for internet, one for zone
                     // that way we know how to log on.  Right now there it just relogs on
                     // using internet connect
-                } else if (str == "multi") {
+                } else if (str == "multi") { 
                     bSingleInstance = false;
                 } else if (str == "noauth") {
                     g_fZoneAuth = false;
@@ -613,18 +613,18 @@ public:
                 } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
                     trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
                     g_bAskForCallSign = false ; // wlp callsign was entered on commandline
-                }
+                }                 
             }
             else // wlp 2006 - adapted this string featture to add ASGS Ticket to cdKey field
             if (token.IsString(str)){} ;
             }
 
-        //
+        // 
         // Check for other running copies of the app
         //
         if (bSingleInstance)
         {
-            HWND hOldInstance = FindWindow(TrekWindow::GetTopLevelWindowClassname(),
+            HWND hOldInstance = FindWindow(TrekWindow::GetTopLevelWindowClassname(), 
                 TrekWindow::GetWindowTitle());
 
             // if we found another copy of the app
@@ -648,7 +648,7 @@ public:
                         SetForegroundWindow(hPopup);
                     }
                 }
-
+    
                 return S_FALSE;
             }
         }

@@ -3,8 +3,6 @@
 //      but are changed infrequently
 
 #define __MODULE__ "WinTrek"
-#pragma warning(disable : 4244)
-#pragma warning(disable : 4018)
 
 //
 // C Headers
@@ -29,7 +27,7 @@
 // STL headers
 //
 
-#pragma warning( disable : 4786)
+#pragma warning( disable : 4786)  
 
 #include <algorithm>
 #include <map>

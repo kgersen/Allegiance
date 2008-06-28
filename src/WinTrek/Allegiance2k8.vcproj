@@ -235,7 +235,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="atls.lib ddraw.lib dsound.lib dinput.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\Engine\FreeImage\FreeImage.lib"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="atls.lib ddraw.lib dsound.lib dinput.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\vorbis\vorbis.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\Engine\FreeImage\FreeImage.lib"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				SubSystem="2"
@@ -318,13 +319,199 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="atls.lib ddraw.lib dsound.lib dinput.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\Engine\FreeImage\FreeImage.lib"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="atls.lib ddraw.lib dsound.lib dinput.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib $(OutDir)\..\vorbis\vorbis.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\Engine\FreeImage\FreeImage.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs=""
 				GenerateDebugInformation="false"
 				StripPrivateSymbols=""
+				GenerateMapFile="true"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="FZDebugDX9|Win32"
+			OutputDirectory=".\..\..\objs\$(ConfigurationName)\WinTrek"
+			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\WinTrek"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\effectDX9_V2;..\engineDX9_V2;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\AGC;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;&quot;$(IntDir)\..\AGC&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(DXSDK_DIR)Include&quot;"
+				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL;BUILD_DX9"
+				ExceptionHandling="1"
+				BasicRuntimeChecks="1"
+				RuntimeLibrary="3"
+				StructMemberAlignment="0"
+				EnableFunctionLevelLinking="false"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="pch.h"
+				BrowseInformation="1"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="WINTREK;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+				Culture="1033"
+				AdditionalIncludeDirectories="..\Inc;..\Lang\NonIntl\allegiance"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalDependencies="atls.lib dsound.lib dinput.lib $(IntDir)\..\zlib\zlib.lib $(IntDir)\..\soundengine\soundengine.lib $(IntDir)\..\_utility\Utility.lib $(IntDir)\..\engineDX9_V2\EngineDX9_V2.lib $(IntDir)\..\effectDX9_V2\EffectDX9_V2.lib $(IntDir)\..\igc\igc.lib $(IntDir)\..\clintlib\clintlib.lib $(IntDir)\..\agc\AGCGuid.lib $(IntDir)\..\Guids\guids.lib $(IntDir)\..\training\training.lib $(IntDir)\..\vorbis\vorbis.lib urlmon.lib dxguid.lib winmm.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib d3d9.lib d3dx9.lib ..\EngineDX9_V2\FreeImage\FreeImage.lib"
+				OutputFile="$(OutDir)\$(ProjectName)Debug.exe"
+				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="LIBCMTD"
+				GenerateDebugInformation="true"
+				GenerateMapFile="true"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="FZRetailDX9|Win32"
+			OutputDirectory=".\..\..\objs\$(ConfigurationName)\Wintrek"
+			IntermediateDirectory=".\..\..\objs\$(ConfigurationName)\Wintrek"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="..\effectDX9_V2;..\engineDX9_V2;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;&quot;$(IntDir)\..\AGC&quot;;&quot;$(IntDir)\..\FedSrv&quot;"
+				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;NDEBUG;_WINDOWS;WIN32;AFXDLL;BUILD_DX9"
+				StringPooling="true"
+				ExceptionHandling="1"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="2"
+				StructMemberAlignment="0"
+				EnableFunctionLevelLinking="false"
+				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="pch.h"
+				BrowseInformation="1"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="0"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="WINTREK;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+				Culture="1033"
+				AdditionalIncludeDirectories="..\Inc;..\Lang\NonIntl\allegiance"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkLibraryDependencies="false"
+				AdditionalOptions="/LTCG"
+				AdditionalDependencies="atls.lib dsound.lib dinput.lib $(IntDir)\..\zlib\zlib.lib $(IntDir)\..\soundengine\soundengine.lib $(IntDir)\..\_utility\Utility.lib $(IntDir)\..\engineDX9_V2\EngineDX9_V2.lib $(IntDir)\..\effectDX9_V2\EffectDX9_V2.lib $(IntDir)\..\igc\igc.lib $(IntDir)\..\clintlib\clintlib.lib $(IntDir)\..\agc\AGCGuid.lib $(IntDir)\..\Guids\guids.lib $(IntDir)\..\training\training.lib $(IntDir)\..\vorbis\vorbis.lib urlmon.lib dxguid.lib winmm.lib amstrmid.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\EngineDX9_V2\FreeImage\FreeImage.lib d3d9.lib d3dx9.lib"
+				OutputFile="$(OutDir)\$(ProjectName)R.exe"
+				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
@@ -365,6 +552,22 @@
 				>
 				<FileConfiguration
 					Name="FZDebug|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="FZDebugDX9|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						AdditionalIncludeDirectories=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="FZRetailDX9|Win32"
 					>
 					<Tool
 						Name="VCResourceCompilerTool"
@@ -416,6 +619,38 @@
 		<File
 			RelativePath="consoledata.h"
 			>
+		</File>
+		<File
+			RelativePath=".\DeviceModesDX9.cpp"
+			>
+			<FileConfiguration
+				Name="FZDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="FZRetail|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\DeviceModesDX9.h"
+			>
+			<FileConfiguration
+				Name="FZDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="gameoverscreen.cpp"
@@ -552,6 +787,22 @@
 		<File
 			RelativePath="pch.cpp"
 			>
+			<FileConfiguration
+				Name="FZDebugDX9|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="FZRetailDX9|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="pch.h"
@@ -571,6 +822,10 @@
 		</File>
 		<File
 			RelativePath="resource.h"
+			>
+		</File>
+		<File
+			RelativePath="..\Lang\Usa\allegiance\resource.h"
 			>
 		</File>
 		<File
@@ -650,6 +905,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\Lang\Usa\allegiance\trek.ico"
+			>
+		</File>
+		<File
 			RelativePath="trekapp.cpp"
 			>
 		</File>
@@ -704,6 +963,38 @@
 		<File
 			RelativePath="videoscreen.cpp"
 			>
+		</File>
+		<File
+			RelativePath=".\VideoSettingsDX9.cpp"
+			>
+			<FileConfiguration
+				Name="FZDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="FZRetail|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\VideoSettingsDX9.h"
+			>
+			<FileConfiguration
+				Name="FZDebug|Win32"
+				ExcludedFromBuild="true"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="WinTrek.CPP"

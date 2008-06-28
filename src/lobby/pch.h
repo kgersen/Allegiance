@@ -11,14 +11,12 @@
 #ifndef _LOBBY_PCH_
 #define _LOBBY_PCH_
 
-// #include "appWeb.h" //Imago: HTTP Library for ASGS services
-
 #include <windows.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <mmsystem.h> // wlp 2006 added = somehow appweb.h excludes timegetTime in this module 
 
-
+// Imago removed, we now use WinHTTP 5.1
+//#include <mmsystem.h> // wlp 2006 added = somehow appweb.h excludes timegetTime in this module 
 //#include <dplobby.h>
 
 

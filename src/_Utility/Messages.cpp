@@ -1,10 +1,15 @@
 /* Messages.cpp
    Interface between WinTrek and FedSrv
-   Owner:
+   Owner: 
 */
 
 #include "pch.h"
 #include "MessageCore.h"
+
+// Imago - 6/27/08 for ancient DX builds
+#ifndef BUILD_DX9
+#define DPNSEND_COALESCE 0x0100
+#endif
 
 //  <NKM> 25-Aug-2004
 // For debug purposes....
@@ -16,10 +21,10 @@ const MsgClsPrio FedMessaging::c_mcpDefault = 1000;
 static GUID g_guidApplication;
 
 // Ok, this is kinda hacky, but it's too late to make wide-effect changes. The problem is that while in the OnAppMessage
-// callback, they may delete the connection from which the message came. Then there may be another FEDMEESSAGE packed in
+// callback, they may delete the connection from which the message came. Then there may be another FEDMEESSAGE packed in 
 // the dplay message. In order to process any FEDMESSAGE, we need the pfsPlayer, which is no longer valid if we've deleted
 // the connection, so we need to set a flag when a connection is deleted, so we know not to process any more FEDMESSAGEs
-// that might be part of the same packet. Note that this does not apply to other messages in different packets (dplay
+// that might be part of the same packet. Note that this does not apply to other messages in different packets (dplay 
 // messages), because in that case the private data for the player will be NULL, and we won't get the pfsPlayer
 static bool g_fConnectionDeleted = false;
 
@@ -159,18 +164,18 @@ static char* wChar2ConstChar( WCHAR* from )
  * VerifyMessages
  *-------------------------------------------------------------------------
   Purpose:
-    Make sure that our output buffer adheres to the expected format of a
+    Make sure that our output buffer adheres to the expected format of a 
     string of valid FEDMESSAGEs.
-
+  
   Side Effects:
-    Important: The default recipient no longer remains the default if
+    Important: The default recipient no longer remains the default if 
                SendMessages is called with a non-NULL precip
  */
 void VerifyMessage(LPBYTE pb, CB cbTotal)
 {
 #ifndef NO_MSG_CRC
   // <sigh> we can't do this as long as we have the hack to support non-crc clients, since we munge the message length on ack from logon to lobby
-#else
+#else  
   int cMsgs = 0;
   CB cbRunning = 0;
   while (cbRunning < cbTotal)
@@ -192,10 +197,10 @@ void VerifyMessage(LPBYTE pb, CB cbTotal)
 // Changed to EnumHosts and made a member function
 void FedMessaging::EnumHostsCallback ( const DPNMSG_ENUM_HOSTS_RESPONSE& resp )
 {
-#ifdef DEBUG
+#ifdef DEBUG  
   char szBuff[128];
   const DPN_APPLICATION_DESC* appDesc = resp.pApplicationDescription;
-  wsprintf(szBuff, "Found a session: {%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x} for application {%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}\n",
+  wsprintf(szBuff, "Found a session: {%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x} for application {%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x}\n", 
           appDesc->guidInstance.Data1,    appDesc->guidInstance.Data2,
           appDesc->guidInstance.Data3,    appDesc->guidInstance.Data4[0],
           appDesc->guidInstance.Data4[1], appDesc->guidInstance.Data4[2],
@@ -209,7 +214,7 @@ void FedMessaging::EnumHostsCallback ( const DPNMSG_ENUM_HOSTS_RESPONSE& resp )
           appDesc->guidApplication.Data4[5], appDesc->guidApplication.Data4[6],
           appDesc->guidApplication.Data4[7]);
   debugf(szBuff);
-#endif
+#endif  
   if ( IsEqualGUID( resp.pApplicationDescription->guidApplication, g_guidApplication ) )
   {
     FMSessionDesc fmSession( resp.pApplicationDescription );
@@ -288,10 +293,10 @@ FedMessaging::~FedMessaging()
  * SetDefaultRecipient
  *-------------------------------------------------------------------------
   Purpose:
-      Set default recipient, to be used if the out buffer overflows, or
+      Set default recipient, to be used if the out buffer overflows, or 
       NULL recipient is specified in SendMessages
 
-      Important: The default recipient no longer remains the default if
+      Important: The default recipient no longer remains the default if 
                  SendMessages is called with a NULL precip
  */
 void FedMessaging::SetDefaultRecipient(CFMRecipient * precip, FMGuaranteed fmg)
@@ -306,7 +311,7 @@ void FedMessaging::SetDefaultRecipient(CFMRecipient * precip, FMGuaranteed fmg)
  * GetDefaultRecipient
  *-------------------------------------------------------------------------
   Purpose:
-      Get default recipient, and optionally other details about default recipient.
+      Get default recipient, and optionally other details about default recipient. 
       See SetDefaultRecipient
 
   Parameters:
@@ -325,20 +330,20 @@ CFMRecipient * FedMessaging::GetDefaultRecipient(FMGuaranteed * pfmg)
  *-------------------------------------------------------------------------
  * Purpose:
  *     Generate a FedMsg of specified type, and construct all variable-length parms
- *
+ * 
  * Parameters:
  *     pfm - Where to create the message (non-NULL). If NULL, memory is allocated for message
  *           Ignored if fQueueMsg==true
  * Returns:
  *     pointer to newly created message
- *
+ * 
  * Side Effects:
  *     Queues up the message if fQueueMsg is set, otherwise allocates new buffer for msg
  */
 void * FedMessaging::PFedMsgCreate(bool fQueueMsg, BYTE * pbFMBuff, FEDMSGID fmid, CB cbfm, ...)
 {
   va_list vl;
-  BYTE * pBlobSrc, * pBlobDst;
+  BYTE * pBlobSrc, * pBlobDst; 
   BYTE * pbFM;
 
   assert (IsConnected());
@@ -348,7 +353,7 @@ StartOver: // if we overrun our buffer, need to start over after flushing it
 
   if (fQueueMsg && (cbfm > CbFreeSpaceInOutbox()))
     SendToDefault(FM_FLUSH);
-
+    
   //figure out where to compose this message
   pbFM =  fQueueMsg ? m_pbFMNext :
          (pbFMBuff  ? pbFMBuff : m_rgbbuffAlloc);
@@ -409,11 +414,11 @@ StartOver: // if we overrun our buffer, need to start over after flushing it
       pBlobDst += cbBlob;
       *pcb = cbBlob;
     }
-
+    
     pib += 2; // advance to next ib/cb pair
   } // while more blobs left
   va_end(vl);
-
+  
   ((FEDMESSAGE *)pbFM)->cbmsg = pBlobDst - pbFM;
   if (fQueueMsg || !pbFMBuff) // if we're copying to pre-alloced pfm, then we're done
   {
@@ -421,7 +426,7 @@ StartOver: // if we overrun our buffer, need to start over after flushing it
     {
       m_pbFMNext = pBlobDst;
       // check for overrun buffer--relies on unsigned CB, otherwise check for free space >= 0
-      assert(CbFreeSpaceInOutbox() <= GetBuffOutSize());
+      assert(CbFreeSpaceInOutbox() <= GetBuffOutSize()); 
     }
     else // need to allocate space
     {
@@ -442,7 +447,7 @@ StartOver: // if we overrun our buffer, need to start over after flushing it
  *-------------------------------------------------------------------------
  * Purpose:
  *    Get message after some provided message
- *
+ * 
  * Parameters:
  *    a message
  */
@@ -461,9 +466,8 @@ FEDMESSAGE * FedMessaging::PfmGetNext(FEDMESSAGE * pfm)
    //WLP = added connection test for disconnect from server interruption
    if (m_fConnected) // WLP - only if we have a connection
     assert((BYTE*)pfmNext == BuffIn() + PacketSize()); // should be exactly equal
-#pragma warning(disable:4390)
-	return NULL; //Imago - null is not FEDMESSAGE
-#pragma warning(default:4390)
+
+	return NULL;
   }
   // Assert(!IsBadReadPointer(pfmNext, pfmNext->fm.cbfm))
   return (FEDMESSAGE *)pfmNext;
@@ -475,7 +479,7 @@ FEDMESSAGE * FedMessaging::PfmGetNext(FEDMESSAGE * pfm)
  *-------------------------------------------------------------------------
  * Purpose:
  *    Take a message that already exists, and queue it up for the outgoing packet
- *
+ * 
  * Parameters:
  *    pfm: the pre-existing, properly setup message
  */
@@ -491,7 +495,7 @@ void FedMessaging::QueueExistingMsg(const FEDMESSAGE * pfm)
   }
   CopyMemory(m_pbFMNext, pfm, pfm->cbmsg);
   m_pbFMNext += pfm->cbmsg;
-  assert(CbFreeSpaceInOutbox() <= GetBuffOutSize());
+  assert(CbFreeSpaceInOutbox() <= GetBuffOutSize()); 
 }
 
 
@@ -510,7 +514,7 @@ HRESULT FedMessaging::GenericSend(CFMRecipient * precip, const void * pv, CB cb,
   // Give guaranteed messages a higher priority, and longer ttl
   //
   bool fGuaranteed = FM_GUARANTEED == fmg;
-  static DWORD s_guarenteedFlags = DPNSEND_GUARANTEED | DPNSEND_PRIORITY_HIGH;//imago | DPNSEND_COALESCE;
+  static DWORD s_guarenteedFlags = DPNSEND_GUARANTEED | DPNSEND_PRIORITY_HIGH | DPNSEND_COALESCE;
   static DWORD s_normalFlags = DPNSEND_NOCOMPLETE | DPNSEND_NONSEQUENTIAL;
 
   dwFlags = fGuaranteed ? s_guarenteedFlags : s_normalFlags;
@@ -527,7 +531,7 @@ HRESULT FedMessaging::GenericSend(CFMRecipient * precip, const void * pv, CB cb,
 
 #ifndef NO_MSG_CRC
   // add the crc to the end to minimize possible conflict of assumptions
-  // We have to use our own buffer, so as to not overrun any input buffers ** :-( **
+  // We have to use our own buffer, so as to not overrun any input buffers ** :-( ** 
   char crcbuff[sizeof(m_rgbbuffOutPacket)];
   CopyMemory(crcbuff, pv, cb);
   int crc = MemoryCRC(crcbuff, cb);
@@ -591,18 +595,18 @@ int FedMessaging::SendToDefault(FMFlush fmf)
  *-------------------------------------------------------------------------
   Purpose:
     Send queued-up messages
-
+  
   Parameters:
-    pvContext:  This is passed back to us when dp tell us it couldn't
+    pvContext:  This is passed back to us when dp tell us it couldn't 
         deliver a message that we were tracking. FedSrv uses this as a pFSCon,
         and the client doesn't use it (yet).
     fflush: Whether you want to flush the queued message buffer
-
+  
   Returns:
     bytes sent
-
+  
   Side Effects:
-    Important: The default recipient no longer remains the default if
+    Important: The default recipient no longer remains the default if 
                SendMessages is called with a non-NULL precip
  */
 int FedMessaging::SendMessages(CFMRecipient * precip, FMGuaranteed fmg, FMFlush fmf)
@@ -644,14 +648,14 @@ int FedMessaging::SendMessages(CFMRecipient * precip, FMGuaranteed fmg, FMFlush 
  *-------------------------------------------------------------------------
  * Purpose:
  *    Tells you:
- *        How long it's been,
+ *        How long it's been, 
  *        How many messages have been sent, and
  *        How many bytes have been sent
- *    since you've last called CheckOdometer. So obviously the first time you
+ *    since you've last called CheckOdometer. So obviously the first time you 
  *    call it you can ignore the return values
- *
+ * 
  * Parameters:    The return values
- *
+ * 
  * Side Effects:  Resets the odometer
  *
  * Returns:       Current time
@@ -675,10 +679,10 @@ Time FedMessaging::CheckOdometer(float& flDTime, int& cMsgsOdometer, int& cBytes
  *-------------------------------------------------------------------------
  * Purpose:
  *    Handle system message
- *
+ * 
  * Parameters:
  *    System messages are those that dplay send us. They're handled here
- *
+ * 
  * Side Effects:
  *    Various
  */
@@ -692,7 +696,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
   Time timeNow = Time::Now();
 
   m_pfmSite->OnSysMessage(this); // just for tracking
-
+    
   GETSORC;
   // debugf("** (FM=%8x %s) OnSysMessage, type %8x %s \n", this, sOrC, msg.dwType, getMessageString(msg.dwType) );
 
@@ -722,7 +726,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
     HRESULT hr = m_pDirectPlayServer->GetClientInfo( lp->dpnidPlayer, pPlayerInfo,
                                           &dwSize, 0);
 
-    assert( hr == DPNERR_BUFFERTOOSMALL );
+    //assert( hr == DPNERR_BUFFERTOOSMALL );  Imago commented out for now?
     pPlayerInfo = (DPN_PLAYER_INFO*) new BYTE[dwSize];
     ZeroMemory( pPlayerInfo, dwSize );
     pPlayerInfo->dwSize = sizeof( DPN_PLAYER_INFO );
@@ -741,10 +745,13 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
     // debugf("(FM=%8x %s) Create Player for %s (%u)\n", this, sOrC, name, lp->dpnidPlayer );
 
     CFMConnection * pcnxn = CreateConnection( name, lp->dpnidPlayer );
-    char szRemoteAddress[16];
-    GetIPAddress( *pcnxn, szRemoteAddress );
+   
+	//removed below becasue connections can reset here 
+	//then GetIPAddress breaks the lobby -Imago
 
-    debugf(" ip=%s\n", szRemoteAddress );
+	// char szRemoteAddress[16];
+   // GetIPAddress( *pcnxn, szRemoteAddress );
+   // debugf(" ip=%s\n", szRemoteAddress );
 
     delete[] name;
     delete[] pPlayerInfo;
@@ -763,7 +770,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 
     CFMConnection * pcnxn = GetConnectionFromDpid( lp->dpnidPlayer );
 
-    //debugf("(FM=%8x %s) DESTROY Player for %s (%u)\n", this, sOrC, pcnxn ? pcnxn->GetName() : "<unknown>" , lp->dpnidPlayer );
+    debugf("(FM=%8x %s) DESTROY Player for %s (%u)\n", this, sOrC, pcnxn ? pcnxn->GetName() : "<unknown>" , lp->dpnidPlayer );
 
     // if your player dies, or the server dies, you're SOL--not much point in
     // waiting until dplay gets around to telling the session is dead,
@@ -788,7 +795,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
     DPNMSG_SEND_COMPLETE* lp = (DPNMSG_SEND_COMPLETE *) msg.pData;
 
     CFMRecipient * prcp = NULL;
-    DPID to;
+    DPID to = 0;
 
     //  <NKM> 22-Aug-2004
     // If this is an Async op we have a handle to, then remove it
@@ -931,7 +938,7 @@ HRESULT FedMessaging::MsgHandler( DWORD dwMessageId, PVOID pMsgBuffer )
   default:
     //  <NKM> 09-Aug-2004
     // Don't care about others for now... log and return
-    // debugf("***** (FM=%8x %s) Unhandled DPlay message, type %8x *****\n", this, sOrC, dwMessageId);
+     debugf("***** (FM=%8x %s) Unhandled DPlay message, type %8x *****\n", this, sOrC, dwMessageId);
     return DPN_OK;
   }
 
@@ -994,7 +1001,7 @@ HRESULT FedMessaging::ReceiveMessages()
           int crc = MemoryCRC(m_rgbbuffInPacket, PacketSize());
           if (crc == *(int*)(m_rgbbuffInPacket + PacketSize()))
           {
-#endif
+#endif            
             static CTempTimer tt("spent looping through message queue", .1f);
             tt.Start();
             g_fConnectionDeleted = false;
@@ -1006,10 +1013,10 @@ HRESULT FedMessaging::ReceiveMessages()
             {
               if(pfm->fmid > 0 && pfm->cbmsg >= sizeof(FEDMESSAGE) && pfm->cbmsg <= PacketSize())
               {
-               // debugf( "(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
-               //         this, sOrC,
-               //         pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
-               //        cb, id, m_dwcbPacket );
+                debugf( "(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
+                        this, sOrC,
+                        pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
+                       cb, id, m_dwcbPacket );
 
                 m_pfmSite->OnAppMessage(this, *pcnxnFrom, pfm);
                 pfm = PfmGetNext(pfm);
@@ -1028,19 +1035,19 @@ HRESULT FedMessaging::ReceiveMessages()
 #endif
               }
             }
-#ifndef NO_MSG_CRC
+#ifndef NO_MSG_CRC          
           }
           else
           {
             // ACK! Failed CRC. WTF??? ...<sigh> but it happens
             m_pfmSite->OnBadCRC(this, *pcnxnFrom, m_rgbbuffInPacket, m_dwcbPacket);
           }
-#endif
+#endif          
         }
         else
         {
-          //debugf("(FM=%8x %s) Warning: Ignoring message from dpid %u who doesn't have an associated CFMConnection\n",
-          //       this, sOrC, p_dpMsg->dpnidSender );
+          debugf("(FM=%8x %s) Warning: Ignoring message from dpid %u who doesn't have an associated CFMConnection\n",
+                 this, sOrC, p_dpMsg->dpnidSender );
         }
 
         if ( m_pDirectPlayClient != 0 )
@@ -1097,7 +1104,7 @@ HRESULT FedMessaging::ConnectToDPAddress(LPVOID pvAddress)
  *-------------------------------------------------------------------------
  * Purpose:
  *    Connect to a host machine. Could be self.
- *
+ * 
  * Parameters:
  *    string address of host
  */
@@ -1114,13 +1121,13 @@ HRESULT FedMessaging::Connect(const char * szAddress)
 //   hr = m_pDirectPlayLobby->CreateAddress(DPSPGUID_TCPIP, DPAID_INet, szAddress,
 //           lstrlen(szAddress) + 1, pvAddress, &dwAddressSize);
 //   assert(DPERR_BUFFERTOOSMALL == hr);
-
+    
 //   pvAddress = new char[dwAddressSize];
 //   ZSucceeded(m_pDirectPlayLobby->CreateAddress(DPSPGUID_TCPIP, DPAID_INet, szAddress,
 //           lstrlen(szAddress) + 1, pvAddress, &dwAddressSize));
 //   hr = ConnectToDPAddress(pvAddress);
 //   delete [] pvAddress;
-
+  
 //   return hr;
 }
 
@@ -1133,9 +1140,9 @@ HRESULT FedMessaging::Connect(const char * szAddress)
 
    Returns:
       Whether it was sucessfully killed (or if it wasn't running in the first place)
-
+   
    Side Effects:
-      Any running dplay server apps will be killed. This should never be
+      Any running dplay server apps will be killed. This should never be 
       true if any other dplay server app is running
  */
 bool FedMessaging::KillSvr()
@@ -1143,11 +1150,11 @@ bool FedMessaging::KillSvr()
   PROCESS_INFORMATION pi;
   STARTUPINFO si;
   ZeroMemory(&si, sizeof(si));
-  si.cb = sizeof(si);
+  si.cb = sizeof(si); 
 
   Shutdown(); // can't be doing this with an open session
-
-  BOOL fCreated = CreateProcess(NULL, "KillSvr.exe", NULL, NULL, FALSE,
+  
+  BOOL fCreated = CreateProcess(NULL, "KillSvr.exe", NULL, NULL, FALSE, 
             CREATE_NO_WINDOW, NULL, NULL, &si, &pi);
 
   if (fCreated)
@@ -1155,10 +1162,10 @@ bool FedMessaging::KillSvr()
     // Now we need to make sure it finishes before we go start using dplaysvr again
     // WARNING: We could hang if killsvr never comes back. Maybe just abort if it doesn't come back in a few seconds?
     DWORD exitcode = STILL_ACTIVE;
-
+    
     int i = 0;
     const int cRetries = 50; // let's give it 50 retries
-    while (STILL_ACTIVE == exitcode && i > cRetries)
+    while (STILL_ACTIVE == exitcode && i > cRetries) 
     {
       GetExitCodeProcess(pi.hProcess, &exitcode);
       Sleep(100);
@@ -1179,12 +1186,12 @@ bool FedMessaging::KillSvr()
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
                   (LPTSTR) &lpMsgBuf,
                   0,
-                  NULL
+                  NULL 
                   );
     m_pfmSite->OnMessageBox(this, (LPCTSTR)lpMsgBuf, "Couldn't run killsvr.exe.", MB_OK | MB_ICONINFORMATION);
     LocalFree( lpMsgBuf );
   }
-
+ 
   return !!fCreated;
 }
 
@@ -1194,9 +1201,9 @@ bool FedMessaging::KillSvr()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Must be called before you can do anything with dplay
- *
+ * 
  * Side Effects:
- *    Creates a dplay object m_pDirectPlay, that must later be closed,
+ *    Creates a dplay object m_pDirectPlay, that must later be closed, 
  *        released, and set to NULL.
  */
 HRESULT FedMessaging::InitDPlayClient()
@@ -1289,18 +1296,18 @@ HRESULT FedMessaging::InitDPlayServer()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Start a session and be the host (server)
- *
+ * 
  * Parameters:
  *    guidApplication: Clients will only find this session if they ask for the same application
  *    fKeepAlive:      Should dplay detect timeouts and kill players on dead connections?
  *    hEventServer:    Event to be signaled when a message comes to the server
- *    fKillSvr:        Whether to kill the dplaysvr process.
- *
+ *    fKillSvr:        Whether to kill the dplaysvr process. 
+ * 
  * Returns:
- *
- *
+ *    
+ * 
  * Side Effects:
- *
+ *    
  */
 HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE hEventServer, bool fProtocol, DWORD dwPort )	// mdvalley: (optional) dwPort forces enumeration to that port
 {
@@ -1316,14 +1323,14 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
       return E_FAIL;
     }
   }
-
+  
   if( m_pDirectPlayServer == 0 )
   {
     hr = InitDPlayServer();
     if ( FAILED(hr) )
       return hr;
   }
-
+  
 
   DPN_APPLICATION_DESC   dpnAppDesc;
   IDirectPlay8Address*   pDP8AddressLocal = 0;
@@ -1375,7 +1382,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
 
   if ( FAILED(hr) )
     Shutdown();
-
+  
   return hr;
 }
 
@@ -1390,7 +1397,7 @@ void FedMessaging::Shutdown()
 {
   static CTempTimer tt("In FedMessaging::Shutdown", 0.1f);
   tt.Start();
-  if ( m_pDirectPlayClient ) //IMAGO CRASHED HERE
+  if ( m_pDirectPlayClient )
   {
     m_pDirectPlayClient->Close(0);
     m_pDirectPlayClient->Release();
@@ -1438,7 +1445,7 @@ void FedMessaging::Shutdown()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Become a client in a session
- *
+ * 
  * Parameters:
  *    what server, what application, and what instance to join (or NULL for default)
  *    OUT: connection to the sevrer that all messages should be sent to
@@ -1480,7 +1487,7 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
 	m_pDirectPlayClient->CancelAsyncOperation(NULL, DPNCANCEL_ENUM);		// Cancel all enumeration requests
     Shutdown();
   }
-
+  
   return hr;
 }
 
@@ -1492,7 +1499,7 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
       Join a session that has already been enum'd
 
   Parameters:
-      session instance and name of player to create
+      session instance and name of player to create 
 
   Side Effects:
       joins the session, creates the named player
@@ -1524,13 +1531,13 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
   playerInfo.dwSize = sizeof( DPN_PLAYER_INFO );
   playerInfo.dwInfoFlags = DPNINFO_NAME;
   playerInfo.pwszName = constChar2Wchar( szName );
-
+      
   HRESULT hr = m_pDirectPlayClient->SetClientInfo( &playerInfo, 0, 0 /*0 for sync op*/, DPNSETCLIENTINFO_SYNC );
 
   if (FAILED(hr))
     return hr;
 
-
+      
   hr = m_pDirectPlayClient->Connect( &dpnAppDesc,        // Application description
                                      addr,               // Session host address
                                      device,             // Address of device used to connect to the host (mdvalley: formerly 0)
@@ -1553,12 +1560,12 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
 
   // Set the output connection that the client will send msgs to
   m_pcnxnServer = new CFMConnection(this, "Server", 1);
-
+        
   return hr;
 }
 
 // WLP 2005 added this 2 parameter call to update to DPLAY8
-
+        
 HRESULT FedMessaging::JoinSessionInstance(GUID guidInstance, const char * szName)
 {
 //return JoinSessionInstance( GUID_NULL, m_guidInstance, m_pHostAddress, szName);
@@ -1606,11 +1613,20 @@ HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16
 
   // WLP 2005 - made this server client and server side
   //
-  if (m_pDirectPlayServer)
-  ZSucceeded( m_pDirectPlayServer->GetClientAddress( cnxn.GetDPID(), &pAddress, 0 ) );
 
-  if (m_pDirectPlayClient)
-  ZSucceeded( m_pDirectPlayClient->GetServerAddress(&pAddress, 0 ) );
+  // imago removed ZSucceeded(  );
+  if (m_pDirectPlayServer) {
+	  if(FAILED(m_pDirectPlayServer->GetClientAddress( cnxn.GetDPID(), &pAddress, 0 ))) {
+		return E_FAIL;
+	  }
+  }
+  // imago removed ZSucceeded(  );
+  if (m_pDirectPlayClient) {
+	  if(FAILED(m_pDirectPlayClient->GetServerAddress(&pAddress, 0 ))) {
+		return E_FAIL;
+	  }
+  }
+
 
   WCHAR add[200];
   DWORD cnt = 200;
@@ -1674,7 +1690,7 @@ hr = InitDPlayClient();
 // WLP 2005 - end of client init
 
   m_fSessionCallback = true;
-
+  
   return EnumHostsInternal(guidApplication, szServer);
 }
 
@@ -1726,7 +1742,7 @@ hr = InitDPlayClient();
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay local SP", "Allegiance", MB_OK );
     return hr;
   }
-
+    
   // Create the remote host address object
   if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
                                      CLSCTX_ALL, IID_IDirectPlay8Address,
@@ -1832,10 +1848,10 @@ const DWORD dwFlags
       m_pfmSite->OnMessageBox( this, "Failed to set Enumerate Hosts", "Allegiance", MB_OK );
       return hr;
   }
-
-
+      
+  
   return hr;
-}
+}  
 
 CFMConnection * FedMessaging::CreateConnection(const char * szName, DPID dpid) // after the physical connection has already been established
 {
@@ -1949,14 +1965,14 @@ CFMConnection::CFMConnection(FedMessaging * pfm, const char * szName, DPID dpid)
     m_dwPrivate(0)
 {
   assert(GetDPID() == dpid);
-  // debugf("CFMConnection: pfm=%8x dpid=%8x, name=%s, playerdata(this)=%p\n", pfm, dpid, szName, this );
+  debugf("CFMConnection: pfm=%8x dpid=%8x, name=%s, playerdata(this)=%p\n", pfm, dpid, szName, this );
 }
 
 
 void CFMConnection::Delete(FedMessaging * pfm) // basically the destructor, but with a parameter
 {
-  //debugf("Deleting connection: pfm=%8x dpid=%8x, name=%s, playerdata=%p, private=%u\n",
-  //       pfm, GetDPID(), GetName(), this, m_dwPrivate);
+  debugf("Deleting connection: pfm=%8x dpid=%8x, name=%s, playerdata=%p, private=%u\n",
+         pfm, GetDPID(), GetName(), this, m_dwPrivate);
   // Don't want to hear anything more from this player
   static CTempTimer tt("in DestroyPlayer/SetPlayerData", 0.02f);
   tt.Start();
@@ -1995,15 +2011,15 @@ CFMGroup::CFMGroup(FedMessaging * pfm, const char * szName)
   dpn.pwszName = constChar2Wchar( szName );
   ZSucceeded( pfm->GetDPlayServer()->CreateGroup( &dpn, this, NULL, NULL, DPNOP_SYNC ) );
 
-  //debugf("CFMGroup: pfm=%8x dpid=%8x, name=%s, playerdata(this)=%p, ", pfm, GetDPID(), szName, this );
+  debugf("CFMGroup: pfm=%8x dpid=%8x, name=%s, playerdata(this)=%p, ", pfm, GetDPID(), szName, this );
 
   delete[] dpn.pwszName;
 }
 
 
-void CFMGroup::Delete (FedMessaging * pfm)
+void CFMGroup::Delete (FedMessaging * pfm) 
 {
-  //DPNHANDLE hand;
+  DPNHANDLE hand;
   pfm->GetDPlayServer()->DestroyGroup(GetDPID(), 0, 0, DPNOP_SYNC );
   delete this;
 }
@@ -2028,7 +2044,7 @@ void CFMGroup::PlayerDeleted(CFMConnection * pcnxn)
       Crack the name/value pairs in the dplay session name and populate the members
 
   Side Effects:
-      This is kinda of bad coupling, since the server packs this, and the messaging layer unpacks.
+      This is kinda of bad coupling, since the server packs this, and the messaging layer unpacks. 
  */
 FMSessionDesc::FMSessionDesc( const DPN_APPLICATION_DESC* appDesc)
 {
@@ -2065,7 +2081,7 @@ FMSessionDesc::FMSessionDesc( const DPN_APPLICATION_DESC* appDesc)
 
     szName = strtok(NULL, "\t");
   }
-
+  
   m_guidInstance = appDesc->guidInstance;
 
   delete[] sessionName;

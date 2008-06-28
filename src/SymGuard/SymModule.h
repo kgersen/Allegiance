@@ -12,7 +12,6 @@
 #include <SymGuard.h>
 #include "resource.h"
 
-#pragma warning(disable:4996)
 
 /////////////////////////////////////////////////////////////////////////////
 // Forward Declarations
@@ -23,8 +22,8 @@ class CSymGuardApp;
 /////////////////////////////////////////////////////////////////////////////
 // CSymModule
 //
-class CSymModule :
-  public IDispatchImpl<ISymModule, &IID_ISymModule, &LIBID_SymGuardLib>,
+class CSymModule : 
+  public IDispatchImpl<ISymModule, &IID_ISymModule, &LIBID_SymGuardLib>, 
   public ISupportErrorInfo,
   public CComObjectRootEx<CComMultiThreadModel>,
   public CComCoClass<CSymModule, &CLSID_SymModule>

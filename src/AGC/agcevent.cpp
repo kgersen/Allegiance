@@ -10,7 +10,7 @@
 #include <..\TCLib\BinString.h>
 #include <..\TCAtl\SimpleStream.h>
 
-#pragma warning(disable:4244)
+
 /////////////////////////////////////////////////////////////////////////////
 // CAGCEvent
 
@@ -543,7 +543,7 @@ HRESULT CAGCEvent::LoadFromStream(IStream* pStm)
 
 STDMETHODIMP CAGCEvent::InterfaceSupportsErrorInfo(REFIID riid)
 {
-	static const IID* arr[] =
+	static const IID* arr[] = 
 	{
 		&IID_IAGCEvent
 	};
@@ -569,7 +569,7 @@ STDMETHODIMP CAGCEvent::GetClassID(CLSID* pClassID)
   {
     return E_POINTER;
   }
-  return S_OK;
+  return S_OK;                  
 }
 
 
@@ -696,7 +696,7 @@ STDMETHODIMP CAGCEvent::InitNew()
   // Indicate success
   return S_OK;
 }
-
+      
 
 /////////////////////////////////////////////////////////////////////////////
 // IAGCEvent Interface Methods

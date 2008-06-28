@@ -74,16 +74,16 @@ private:
         } bmih;
 
         bmih.bmih.biSize          = sizeof(BITMAPINFOHEADER);
-        bmih.bmih.biWidth         = m_width;
-        bmih.bmih.biHeight        = -m_height;
-        bmih.bmih.biPlanes        = 1;
-        bmih.bmih.biBitCount      = 8;
-        bmih.bmih.biCompression   = BI_RGB;
-        bmih.bmih.biSizeImage     = 0;
-        bmih.bmih.biXPelsPerMeter = 0;
-        bmih.bmih.biYPelsPerMeter = 0;
-        bmih.bmih.biClrUsed       = 0;
-        bmih.bmih.biClrImportant  = 0;
+        bmih.bmih.biWidth         = m_width; 
+        bmih.bmih.biHeight        = -m_height; 
+        bmih.bmih.biPlanes        = 1; 
+        bmih.bmih.biBitCount      = 8; 
+        bmih.bmih.biCompression   = BI_RGB; 
+        bmih.bmih.biSizeImage     = 0; 
+        bmih.bmih.biXPelsPerMeter = 0; 
+        bmih.bmih.biYPelsPerMeter = 0; 
+        bmih.bmih.biClrUsed       = 0; 
+        bmih.bmih.biClrImportant  = 0; 
 
         for (index = 0; index < 256; index++) {
             bmih.colors[index].rgbBlue     = index;
@@ -93,7 +93,7 @@ private:
         }
 
         BYTE*   pbits;
-        HBITMAP hbitmap =
+        HBITMAP hbitmap = 
             ::CreateDIBSection(
                 NULL,
                 (BITMAPINFO*)&bmih,
@@ -127,14 +127,14 @@ private:
             unsigned char ch = index;
 
             ZVerify(::FillRect(
-                hdcBitmap,
-                &(RECT)WinRect(0, 0, m_width, m_height),
+                hdcBitmap, 
+                &(RECT)WinRect(0, 0, m_width, m_height), 
                 (HBRUSH)::GetStockObject(BLACK_BRUSH)
             ));
             ZVerify(::TextOut(hdcBitmap, 0, 0, (PCC)&ch, 1));
 
             //
-            // pull out the data
+            // pull out the data 
             //
 
             int xbytes = (xsize + 7) / 8;
@@ -146,7 +146,7 @@ private:
                             word |= 0x100;
                         }
                         word >>= 1;
-                    }
+                    }    
                     *pdata = (BYTE)word;
                     pdata++;
                 }
@@ -166,7 +166,7 @@ private:
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    //
+    // 
     //
     //////////////////////////////////////////////////////////////////////////////
 
@@ -209,7 +209,7 @@ private:
 
         ZVerify(::SelectObject(hdc, hfontOld));
         ZVerify(::ReleaseDC(NULL, hdc));
-
+    
         //
         // Make that all of the value GDI returned to us are good
         //
@@ -223,7 +223,7 @@ private:
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    //
+    // 
     //
     //////////////////////////////////////////////////////////////////////////////
 
@@ -245,7 +245,7 @@ public:
         memcpy(m_data, psite->GetPointer(), sizeof(m_data));
         psite->MovePointer(sizeof(m_data));
 
-        m_pdata = new BYTE[m_dataSize];
+        m_pdata = new BYTE[m_dataSize]; 
         memcpy(m_pdata, psite->GetPointer(), m_dataSize);
         psite->MovePointer(m_dataSize);
     }
@@ -339,12 +339,12 @@ public:
     }
 
     void DrawClippedChar(
-        const WinRect& rectClip,
-        byte ch,
-        int ytop,
-        int ysize,
-        int x, BYTE*
-        pdestTop,
+        const WinRect& rectClip, 
+        byte ch, 
+        int ytop, 
+        int ysize, 
+        int x, BYTE* 
+        pdestTop, 
         DWORD pixel, // KGJV 32B
         int pitchDest,
 		int pixelBytes // KGJV 32B - bbp
@@ -357,7 +357,7 @@ public:
         //
 
         int xleft;
-
+        
         if (x < rectClip.XMin()) {
             xleft = rectClip.XMin() - x;
         } else {
@@ -377,16 +377,16 @@ public:
         //
 
         int   bytesSource         = (xsizeChar + 7) / 8;
-        BYTE* psourceStart        =
-              m_pdata
-            + charData.m_offset
+        BYTE* psourceStart        = 
+              m_pdata 
+            + charData.m_offset 
             + bytesSource * ytop;
         BYTE* pdestStart          = pdestTop + (x + xleft) * pixelBytes; // KGJV 32B 2 -> pixelBytes
 
         //
         // copy bits between xleft and xright
         //
-
+        
         for (int scans = ysize; scans > 0; scans--) {
             BYTE* psource = psourceStart;
             BYTE* pdest   = pdestStart;
@@ -416,7 +416,7 @@ public:
 					if (pixelBytes==4) // KGJV 32B
 						*(DWORD*)pdest = pixel;
 					else // assumes 16bpp
-						*(WORD*)pdest = (WORD)pixel;
+						*(WORD*)pdest = (WORD)pixel; 
                 }
 
                 pdest += pixelBytes; // KGJV 32B
@@ -434,10 +434,10 @@ public:
     }
 
     void DrawString(
-              Surface*  psurface,
-        const WinPoint& point,
+              Surface*  psurface, 
+        const WinPoint& point, 
         const WinRect&  rectClip,
-        const ZString&  str,
+        const ZString&  str, 
         const Color&    color
     ) {
         if (str.GetLength() == 0) {
@@ -465,7 +465,7 @@ public:
 
         if (point.Y() + m_height > rectClip.YMax()) {
             ybottom = rectClip.YMax() - point.Y();
-        }
+        } 
 
         //
         // figure out the total number of scan lines to draw
@@ -485,8 +485,8 @@ public:
         // Get a pointer to the destination memory
         //
 
-        BYTE* pdestTop =
-              psurface->GetWritablePointer()
+        BYTE* pdestTop = 
+              psurface->GetWritablePointer() 
             + (point.Y() + ytop) * psurface->GetPitch();
 
         //
@@ -499,10 +499,10 @@ public:
             int ichar = 0;
             int x = point.X ();
             DrawStringHandled(
-                psurface,
-                x,
+                psurface, 
+                x, 
                 rectClip,
-                str,
+                str, 
                 color,
                 pdestTop,
                 ytop,
@@ -548,16 +548,16 @@ public:
     }
 
     void DrawColorCodedString(
-              Surface*  psurface,
-              int&      x,
+              Surface*  psurface, 
+              int&      x, 
         const WinRect&  rectClip,
-        const ZString&  str,
+        const ZString&  str, 
               BYTE*     pdestTop,
               int       ytop,
               int       ybottom,
               int       ysize,
               int&      ichar
-    )
+    ) 
     {
         // we started here because we encountered a color code,
         // so the first thing is to skip over the color code and
@@ -565,17 +565,17 @@ public:
         ichar += 2;
 
         // next we need to read the color, in the form rrggbbaa,
-        // where each pair of digits is
+        // where each pair of digits is 
         Color   nextColor = ReadColor (str, ichar);
         DrawStringHandled (psurface, x, rectClip, str, nextColor, pdestTop, ytop, ybottom, ysize, ichar);
     }
 
 
     void DrawStringHandled(
-              Surface*  psurface,
-              int&      x,
+              Surface*  psurface, 
+              int&      x, 
         const WinRect&  rectClip,
-        const ZString&  str,
+        const ZString&  str, 
         const Color&    color,
               BYTE*     pdestTop,
               int       ytop,
@@ -602,7 +602,7 @@ public:
         //
 
         bool    loop = true;
-        while (loop)
+        while (loop) 
         {
             BYTE    ch = str[ichar];
             switch (ch)
@@ -636,7 +636,7 @@ public:
         // there can be one character clipped on the left
         //
 
-        if (x < rectClip.XMin())
+        if (x < rectClip.XMin()) 
         {
             DrawClippedChar(rectClip, str[ichar], ytop, ysize, x, pdestTop, pixel, pitchDest, pixelBytes);
             if (++ichar >= length)
@@ -648,7 +648,7 @@ public:
         // loop through unclipped characters
         //
         loop = true;
-        while (loop)
+        while (loop) 
         {
             BYTE            ch        = str[ichar];
             switch (ch)
@@ -720,7 +720,7 @@ public:
                             mov     [edi + 10], ax
                           skipbit6:
                             shr     dl, 1
-                            jnc     skipbit7
+                            jnc     skipbit7     
                             mov     [edi + 12], ax
                           skipbit7:
                             shr     dl, 1
@@ -776,7 +776,7 @@ public:
                             mov     [edi + 20], eax
                           b32_skipbit6:
                             shr     dl, 1
-                            jnc     b32_skipbit7
+                            jnc     b32_skipbit7     
                             mov     [edi + 24], eax
                           b32_skipbit7:
                             shr     dl, 1
@@ -961,7 +961,7 @@ ZString GetFunctionName(const TRef<IEngineFont>& value)
                 mov     ebx, [xsize]
                 cmp     ebx, 8
                 jg      bits8
-                and     ebx, 0x7
+                and     ebx, 0x7 
                 jmp     [bitJumps + ecx]
 
               bits8:
@@ -986,7 +986,7 @@ ZString GetFunctionName(const TRef<IEngineFont>& value)
                 mov     [edi +  6], ax
               bits3:
                 shl     dl, 1
-                jnc     bits2
+                jnc     bits2    
                 mov     [edi +  4], ax
               bits2:
                 shl     dl, 1
@@ -1014,7 +1014,7 @@ ZString GetFunctionName(const TRef<IEngineFont>& value)
                 //
 
                 {
-
+                    
                     for (int iBytes = bytesSource; iBytes > 0; iBytes--) {
                         BYTE byte = *psource;
                         psource++;

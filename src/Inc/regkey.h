@@ -15,7 +15,7 @@
   #define HKLM_AllClub		 ALLEGIANCE_REGISTRY_KEY_ROOT "\\AllClub"
 //#define HKLM_AllClub       "SYSTEM\\CurrentControlSet\\Services\\AllClub"
 #else // !defined(ALLSRV_STANDALONE)
-  const char c_szSvcName[] = "AllSrv32";
+  const char c_szSvcName[] = "AllSrv";
   #define HKLM_FedSrv        ALLEGIANCE_REGISTRY_KEY_ROOT "\\Server"
   #define HKLM_AllSrvUI      HKLM_FedSrv
   #define HKLM_AllLobby		 ALLEGIANCE_REGISTRY_KEY_ROOT "\\AllLobby"

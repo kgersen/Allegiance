@@ -284,7 +284,7 @@ void CAGCEventLogger::LogEvent(IAGCEvent* pEvent, bool bSynchronous)
         CAGCEventDef::XParamStrings vecParamStrings;
         PRIVATE_VERIFYE(SUCCEEDED(CAGCEventDef::GetEventParameters(pEvent,
           vecParamStrings, pEventDef)));
-
+	
 		// mdvalley: prevent crashes when no %Parameter% in strings.
 		// That took so long to figure out.
 		WORD NumStrings = vecParamStrings.size();
@@ -498,7 +498,7 @@ HKEY CAGCEventLogger::RootKeyFromString(BSTR bstrRegKey, DWORD* cchEaten)
   return NULL;
 }
 
-HRESULT CAGCEventLogger::ReadStringValueFromRegistry(LPTSTR pszValueName,
+HRESULT CAGCEventLogger::ReadStringValueFromRegistry(LPCTSTR pszValueName,
   CComBSTR& bstrOut)
 {
   // Initialize the [out] parameter
@@ -518,10 +518,9 @@ HRESULT CAGCEventLogger::ReadStringValueFromRegistry(LPTSTR pszValueName,
   LPTSTR pszValue = (LPTSTR)_alloca(cbData);
 
   // Attempt to read the specified value
-  // mdvalley: No damn QueryStringValue -yes there is! -Imago
+  // mdvalley: No damn QueryStringValue
   // Swap first 2 params.
-  //lr = m_key.QueryStringValue(pszValue, pszValueName, &cbData); <-- WOAH!  Way wrong, it's now Value Name, Value
-  lr = m_key.QueryStringValue(pszValueName, pszValue, &cbData);
+  lr = m_key.QueryValue(pszValue, pszValueName, &cbData);
 
   // Save the value string to the [out] parameter
   bstrOut = pszValue;
@@ -822,8 +821,8 @@ STDMETHODIMP CAGCEventLogger::put_NTEventLog(BSTR bstrComputer)
   if (keyWrite.m_hKey)
   {
     USES_CONVERSION;
-	// mdvalley: No SetStringValue, yes there is, update your ATL SDK! --Imago corrected arguments
-    long lr = keyWrite.SetStringValue(TEXT("NTEventLog"),OLE2CT(bstrComputer));
+	// mdvalley: No SetStringValue
+    long lr = keyWrite.SetValue(OLE2CT(bstrComputer), TEXT("NTEventLog"));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -928,10 +927,10 @@ STDMETHODIMP CAGCEventLogger::put_DBEventLog(IAGCDBParams* pDBParams)
   if (keyWrite.m_hKey)
   {
     USES_CONVERSION;
-	// Imago: SetValue  -completley gone in VC9 & Vista (MSFT flipped the arguments/parameters too)
-    long lr = keyWrite.SetStringValue(TEXT("ConnectionString"),OLE2CT(bstrConnectionString));
+	// mdvalley: SetStringValue
+    long lr = keyWrite.SetValue(OLE2CT(bstrConnectionString), TEXT("ConnectionString"));
     assert(ERROR_SUCCESS == lr);
-    lr = keyWrite.SetStringValue(TEXT("TableName"),OLE2CT(bstrTableName));
+    lr = keyWrite.SetValue(OLE2CT(bstrTableName), TEXT("TableName"));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -1038,8 +1037,8 @@ STDMETHODIMP CAGCEventLogger::put_EnabledNTEvents(IAGCEventIDRanges* pEvents)
   {
     USES_CONVERSION;
     LPCTSTR pszValue = bstrEventRanges ? OLE2CT(bstrEventRanges) : TEXT("");
-	// mdvalley: SetStringValue   --yawn there are alog of these --Imago
-    long lr = keyWrite.SetStringValue(TEXT("EnabledNTEvents"),pszValue);
+	// mdvalley: SetStringValue
+    long lr = keyWrite.SetValue(pszValue, TEXT("EnabledNTEvents"));
     assert(ERROR_SUCCESS == lr);
   }
 
@@ -1094,8 +1093,8 @@ STDMETHODIMP CAGCEventLogger::put_EnabledDBEvents(IAGCEventIDRanges* pEvents)
   {
     USES_CONVERSION;
     LPCTSTR pszValue = bstrEventRanges ? OLE2CT(bstrEventRanges) : TEXT("");
-	// mdvalley: SetStringValue - I changed these for a good reason 4 years ago };-0 --Imago
-    long lr = keyWrite.SetStringValue(TEXT("EnabledDBEvents"),pszValue);
+	// mdvalley: SetStringValue
+    long lr = keyWrite.SetValue(pszValue, TEXT("EnabledDBEvents"));
     assert(ERROR_SUCCESS == lr);
   }
 

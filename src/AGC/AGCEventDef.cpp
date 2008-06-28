@@ -7,7 +7,7 @@
 #include "AGCEventDef.h"
 #include "resource.h"
 #include <..\TCLib\ObjectLock.h>
-#pragma warning(disable:4244)
+
 
 /////////////////////////////////////////////////////////////////////////////
 // TCSimpleLock Adaptor
@@ -458,7 +458,7 @@ CAGCEventDef::ParseState_ProcessVar(CAGCEventDef::XParseData& data)
     return ParseState_WriteVar(data);
   }
 
-  // Convert the variant to a string
+  // Convert the variant to a string  
   if (VT_BSTR != V_VT(&varValue))
   {
     VariantChangeTypeEx(&varValue, &varValue, GetThreadLocale(),

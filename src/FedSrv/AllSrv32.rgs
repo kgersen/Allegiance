@@ -2,8 +2,8 @@ HKCR
 {
   NoRemove AppID
   {
-    {E4E8767E-DFDB-11d2-8B46-00C04F681633} = s 'AllSrv32'
-    'AllSrv32.EXE'
+    {E4E8767E-DFDB-11d2-8B46-00C04F681633} = s 'AllSrv'
+    'AllSrv.EXE'
     {
       val AppID = s {E4E8767E-DFDB-11d2-8B46-00C04F681633}
     }
@@ -21,7 +21,7 @@ HKLM
         {
           NoRemove Application
           {
-            'AllSrv32'
+            'AllSrv'
             {
               val EventMessageFile = s '%AGCMODULE%'
               val TypesSupported = d '7'

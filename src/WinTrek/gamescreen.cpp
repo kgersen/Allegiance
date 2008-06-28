@@ -27,9 +27,7 @@ struct ServerInfo
   }
   bool HandleCore(CoreInfo *pcore)
   {
-	  #pragma warning(disable : 4800)
-	  return (mStatic.dwCoreMask & pcore->dwBit); // compiler wont optimize --Imago
-	  #pragma warning(default : 4800)
+	return (mStatic.dwCoreMask & pcore->dwBit);
   }
 };
 
@@ -358,7 +356,7 @@ private:
 
 	//KGJV #114
 	friend class CreateGameDialogPopup;
-    class CreateGameDialogPopup :
+    class CreateGameDialogPopup : 
 		public IPopup,
 		public EventTargetContainer<CreateGameDialogPopup>,
 		public IItemEvent::Sink
@@ -550,7 +548,7 @@ private:
 
 			TRef<IObject> pserverColumns;
 			TRef<IObject> pcoreColumns;
-
+			
 			CastTo(m_plistPaneServers, (Pane*)pns->FindMember("serverListPane" ));
 			CastTo(m_plistPaneCores,   (Pane*)pns->FindMember("coreListPane"   ));
 			CastTo(pserverColumns,            pns->FindMember("serverColumns"  ));
@@ -601,7 +599,7 @@ private:
 					m_pServers[i].ping = -1;
 					m_pServers[i].bOfficial = trekClient.CfgIsOfficialServer(m_pServers[i].mStatic.szName,m_pServers[i].mStatic.szRemoteAddress);
 				}
-
+				
 			}
 		}
 
@@ -705,7 +703,7 @@ private:
         {
 			TRef<TListListWrapper<ServerInfo*> > plistServers = new TListListWrapper<ServerInfo*>();
 			TRef<TListListWrapper<CoreInfo*> > plistCores = new TListListWrapper<CoreInfo*>();
-
+			
 			for (int i=0;i<m_cCores; i++)	plistCores->PushEnd(&(m_pCores[i]));
 			for (int i=0;i<m_cServers; i++) plistServers->PushEnd(&(m_pServers[i]));
 
@@ -723,7 +721,7 @@ private:
 			int leftParen = szPlayerName.ReverseFind('(',0);
 			if (leftParen > 1)
 				szPlayerName = szPlayerName.Left(leftParen);
-
+			
             m_peditGameName->SetString(szPlayerName + ZString("'s game"));
 
             m_pkeyboardInputOldFocus = GetWindow()->GetFocus();
@@ -747,7 +745,7 @@ private:
 				GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 				return true;
 			}
-
+		
 			if (m_ppopupOwner) {
                 m_ppopupOwner->ClosePopup(this);
             } else {
@@ -1269,7 +1267,7 @@ public:
     void RefreshButtonBarGames()
     {
         // do radio-button behavior
-        for  (int i = 0; i < 8; i++) // KGJV #114
+        for  (int i = 0; i < 8; i++) // KGJV #114 
         {
             m_pbuttonbarGamesHeader->SetChecked(i, false);
             m_pbuttonbarGamesHeader->SetChecked2(i, false);

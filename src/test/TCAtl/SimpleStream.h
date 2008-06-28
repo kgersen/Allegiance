@@ -3,8 +3,6 @@
 #ifndef __SimpleStream_h__
 #define __SimpleStream_h__
 
-#pragma warning(disable:4018)
-
 /////////////////////////////////////////////////////////////////////////////
 // SimpleStream.h : Declaration of the CTCSimpleStreamImpl class.
 
@@ -295,7 +293,7 @@ public:
 
     // Populate the fields of the specified structure
     pstatstg->pwcsName          = NULL;
-    pstatstg->type              = STGTY_STREAM;
+    pstatstg->type              = STGTY_STREAM; 
     pstatstg->cbSize.HighPart   = 0;
     pstatstg->cbSize.LowPart    = m_pbEnd - m_pbBegin;
     pstatstg->mtime             = ft;

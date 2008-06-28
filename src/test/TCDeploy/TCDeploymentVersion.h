@@ -19,7 +19,7 @@
 // TCDeploymentVersion
 //
 class TCDeploymentVersion :
-  public TCVersionInfoImpl<TCDeploymentVersion, ITCDeploymentVersion, &LIBID_TCDeployLib>,
+  public TCVersionInfoImpl<TCDeploymentVersion, ITCDeploymentVersion, &LIBID_TCDeployLib>, 
   public CComCoClass<TCDeploymentVersion, &CLSID_TCDeploymentVersion>
 {
 // Declarations

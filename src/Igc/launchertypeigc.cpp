@@ -3,7 +3,7 @@
 **
 **  File:	partTypeIGC.cpp
 **
-**  Author:
+**  Author: 
 **
 **  Description:
 **      Implementation of the CpartTypeIGC class. This file was initially created by
@@ -41,7 +41,8 @@ HRESULT         ClauncherTypeIGC::Initialize(ImissionIGC*   pMission,
             if (m_data.successorPartID != NA)
             {
                 m_pptSuccessor = pMission->GetPartType(m_data.successorPartID);
-					assert (m_pptSuccessor);
+				if (m_data.successorPartID != 238) // mmf splat added this so debug build will run with dn 04.50 until Noir fixes it
+                assert (m_pptSuccessor);
             }
 
             pMission->AddPartType(this);

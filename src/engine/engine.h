@@ -6,6 +6,7 @@
 //
 //
 //////////////////////////////////////////////////////////////////////////////
+//#define USEDX7 1
 
 #define EnablePerformanceCounters
 
@@ -130,8 +131,8 @@ public:
     virtual TRef<Surface> CreateSurface(HBITMAP hbitmap) = 0;
 
     virtual TRef<Surface> CreateSurface(
-        const WinPoint& size,
-        SurfaceType     stype,
+        const WinPoint& size, 
+        SurfaceType     stype, 
         SurfaceSite*    psite = NULL
     ) = 0;
 

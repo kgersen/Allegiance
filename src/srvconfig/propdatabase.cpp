@@ -104,7 +104,7 @@ int CALLBACK CPropDatabase::WordBreakProc(LPTSTR lpch, int ichCurrent,
 /////////////////////////////////////////////////////////////////////////////
 // Message Handlers
 
-BOOL CPropDatabase::OnInitDialog()
+BOOL CPropDatabase::OnInitDialog() 
 {
     CoInitialize( NULL );
     CPropertyPage::OnInitDialog();
@@ -114,16 +114,18 @@ BOOL CPropDatabase::OnInitDialog()
         (LPARAM)WordBreakProc);
     m_editConnectionString2.SendMessage(EM_SETWORDBREAKPROC, 0,
         (LPARAM)WordBreakProc);
-
+    
     // get the stuff from the registry
     HKEY hKey;
     DWORD dwType;
     char  szValue[MAX_PATH];
+#if !defined(ALLSRV_STANDALONE)
+    DWORD dwValue;
+#endif
     DWORD cbValue;
     if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, KEY_READ, &hKey))
     {
 #if !defined(ALLSRV_STANDALONE)
-		DWORD dwValue;
         szValue[0]='\0';
         cbValue = MAX_PATH;
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLUser", NULL, &dwType, (unsigned char*)szValue, &cbValue))
@@ -160,18 +162,14 @@ BOOL CPropDatabase::OnInitDialog()
         szValue[0]='\0';
         cbValue = MAX_PATH;
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "ConnectionString", NULL, &dwType, (unsigned char*)szValue, &cbValue))
-        {
             m_strConnectionString = szValue;
-		} else {
-			m_strConnectionString.Empty();
-		}
 
         RegCloseKey(hKey);
     }
 #if !defined(ALLSRV_STANDALONE)
     if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, KEY_READ, &hKey))
     {
-        DWORD dwValue=0;
+        dwValue=0;
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsSilent", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             m_nSilentThreads2 = dwValue;
@@ -194,7 +192,7 @@ BOOL CPropDatabase::OnInitDialog()
                   // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CPropDatabase::OnOK()
+void CPropDatabase::OnOK() 
 {
     UpdateData(true);
 
@@ -211,7 +209,7 @@ void CPropDatabase::OnOK()
 #endif
         key.SetValue(m_strConnectionString,   "ConnectionString", ""   );
     }
-
+    
 #if !defined(ALLSRV_STANDALONE)
     CDefaultRegKey keyLobby;
     if (ERROR_SUCCESS == keyLobby.Create(HKEY_LOCAL_MACHINE, HKLM_AllLobby))
@@ -221,11 +219,11 @@ void CPropDatabase::OnOK()
         keyLobby.SetValue(m_nNotifyThreads2,        "SQLThreadsNotify", 5 );
     }
 #endif
-
+    
     CPropertyPage::OnOK();
 }
 
-void CPropDatabase::OnBtnconnectionstring()
+void CPropDatabase::OnBtnconnectionstring() 
 {
 #if 1
     CDataSource m_DataSource;
@@ -288,7 +286,7 @@ void CPropDatabase::OnBtnconnectionstring()
 #endif
 }
 
-void CPropDatabase::OnBtnconnectionstring2()
+void CPropDatabase::OnBtnconnectionstring2() 
 {
 #if 1
     CDataSource m_DataSource;

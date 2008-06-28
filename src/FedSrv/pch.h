@@ -1,10 +1,10 @@
 /*-------------------------------------------------------------------------
  * pch.h
- *
+ * 
  * Headers for fedsrv
- *
- * Owner:
- *
+ * 
+ * Owner: 
+ * 
  * Copyright 1986-1998 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 #ifndef _FEDSRV_PCH_
@@ -12,10 +12,11 @@
 
 #define _ATL_STATIC_REGISTRY
 
+//Removed - Imago will use async calls to WinHTTP 5.1 unless someone else fixes it first.
+//#include "appWeb/appWeb.h" //Imago: HTTP Library for ASGS services
+
 // browse info overflow warnings for STL objects
 #pragma warning(disable : 4786)
-#pragma warning(disable:4018)
-#pragma warning(disable:4244)
 
 // Standard C Includes
 #include <conio.h>
@@ -33,17 +34,17 @@
 #include <commctrl.h>
 #include <sqlext.h>
 //#include <dplobby.h>
-#include <mmsystem.h>
+#include <mmsystem.h> 
 
 // ZLib Includes
 #if !defined(ALLSRV_STANDALONE)
   #define __MODULE__ "AllSrv"
 #else // !defined(ALLSRV_STANDALONE)
-  #define __MODULE__ "AllSrv32"
+  #define __MODULE__ "AllSrv"
 #endif // !defined(ALLSRV_STANDALONE)
 #include <guids.h>
 #include <zlib.h>
-
+                     
 #include "resource.h"
 #include <utility.h>
 #include <igc.h>
@@ -84,8 +85,8 @@
 #include "counters.h"
 #include "srvqueries.h" // and allegdb.h
 
-#include "AllSrvModuleIDL.h"
-#include "AdminUtil.h"
+#include "AllSrvModuleIDL.h" 
+#include "AdminUtil.h" 
 #include "fsside.h"
 #include "fscluster.h"
 #include "fsmission.h"
@@ -109,7 +110,7 @@ extern Global g;
 
 
 #include "regkey.h"
-#include "asynchttp.h"
+
 
 /////////////////////////////////////////////////////////////////////////////
 // This is included very last since it conflicts with <atlwin.h>, included

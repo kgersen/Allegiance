@@ -32,8 +32,7 @@ CPropGeneral::CPropGeneral() : CPropertyPage(CPropGeneral::IDD)
     {
         char szBuf[MAX_PATH];
         ::GetModuleFileName(NULL, szBuf, sizeof(szBuf));
-        char* sz;
-        for (sz=szBuf+strlen(szBuf); (sz > szBuf) && (*sz != '\\'); sz--);
+        for (char* sz=szBuf+strlen(szBuf); (sz > szBuf) && (*sz != '\\'); sz--);
         *sz = '\0';
         strcat(szBuf, "\\artwork");
         strValue = szBuf;
@@ -117,7 +116,7 @@ static int AddIfNotThere(CComboBox& combo, LPCTSTR pszString)
 /////////////////////////////////////////////////////////////////////////////
 // CPropGeneral message handlers
 
-BOOL CPropGeneral::OnInitDialog()
+BOOL CPropGeneral::OnInitDialog() 
 {
     CPropertyPage::OnInitDialog();
 
@@ -132,8 +131,8 @@ BOOL CPropGeneral::OnInitDialog()
     }
 
     // fill the server list with some server names if it doesn't have any yet
-    AddIfNotThere(m_comboConfig, "http://166.102.238.117/FazAU/FAZ.cfg");
-    AddIfNotThere(m_comboConfig, "http://69.93.201.149/allegiance.cfg");
+    AddIfNotThere(m_comboConfig, "http://allegiance/internal.cfg");
+    AddIfNotThere(m_comboConfig, "http://allegiance/public.cfg");
     AddIfNotThere(m_comboConfig, "http://207.46.173.22/allegiance.cfg");
 
     // in case the registry keys aren't present, set the values of the fields
@@ -169,9 +168,7 @@ BOOL CPropGeneral::OnInitDialog()
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "UpdateHigh", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             ft.dwHighDateTime = dwValue;
-            //ATL CTime will assert if we go with default -Imago
-            if (ft.dwHighDateTime && ft.dwLowDateTime)
-        		m_dateArt = CDate(ft);
+        m_dateArt = CDate(ft);
 
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogFrameData", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
@@ -203,7 +200,7 @@ BOOL CPropGeneral::OnInitDialog()
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             m_bLogToFile = (dwValue==1) ? 1 : 0;
-
+        
         RegCloseKey(hKey);
     }
 
@@ -213,7 +210,7 @@ BOOL CPropGeneral::OnInitDialog()
                   // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CPropGeneral::OnOK()
+void CPropGeneral::OnOK() 
 {
     UpdateData(true);
 
@@ -248,27 +245,27 @@ void CPropGeneral::OnOK()
         ::RegSetValueEx(hKey, "UpdateLow", NULL, REG_DWORD, (const unsigned char*)&ft.dwLowDateTime, sizeof(ft.dwLowDateTime));
         ::RegSetValueEx(hKey, "UpdateHigh", NULL, REG_DWORD, (const unsigned char*)&ft.dwHighDateTime, sizeof(ft.dwHighDateTime));
 
-        ::RegSetValueEx(hKey, "LogFrameData", NULL, REG_DWORD,
+        ::RegSetValueEx(hKey, "LogFrameData", NULL, REG_DWORD, 
             (const unsigned char*)(m_bCaptureFrameData ? &dwValueOne : &dwValueZero), sizeof(DWORD));
 
         ::RegSetValueEx(hKey, "LogFrameDataPath", NULL, REG_SZ, (const unsigned char*)(const char*)m_strFrameFileName, m_strFrameFileName.GetLength());
 
-        ::RegSetValueEx(hKey, "Cockpit", NULL, REG_DWORD,
+        ::RegSetValueEx(hKey, "Cockpit", NULL, REG_DWORD, 
                 (const unsigned char*)(m_bCockpit ? &dwValueOne : &dwValueZero), sizeof(DWORD));
 
-        ::RegSetValueEx(hKey, "Environment", NULL, REG_DWORD,
+        ::RegSetValueEx(hKey, "Environment", NULL, REG_DWORD, 
                 (const unsigned char*)(m_bEnvironment ? &dwValueOne : &dwValueZero), sizeof(DWORD));
 
-        ::RegSetValueEx(hKey, "Posters", NULL, REG_DWORD,
+        ::RegSetValueEx(hKey, "Posters", NULL, REG_DWORD, 
                 (const unsigned char*)(m_bPosters ? &dwValueOne : &dwValueZero), sizeof(DWORD));
 
-        ::RegSetValueEx(hKey, "RoundRadar", NULL, REG_DWORD,
+        ::RegSetValueEx(hKey, "RoundRadar", NULL, REG_DWORD, 
                 (const unsigned char*)(m_bRoundRadar ? &dwValueOne : &dwValueZero), sizeof(DWORD));
 
-        ::RegSetValueEx(hKey, "StyleHUD", NULL, REG_DWORD,
+        ::RegSetValueEx(hKey, "StyleHUD", NULL, REG_DWORD, 
                 (const unsigned char*)(m_bSoftwareHUD ? &dwValueOne : &dwValueZero), sizeof(DWORD));
 
-        ::RegSetValueEx(hKey, "LogToFile", NULL, REG_DWORD,
+        ::RegSetValueEx(hKey, "LogToFile", NULL, REG_DWORD, 
                 (const unsigned char*)(m_bLogToFile ? &dwValueOne : &dwValueZero), sizeof(DWORD));
 
         ::RegCloseKey(hKey);
@@ -277,7 +274,7 @@ void CPropGeneral::OnOK()
     CPropertyPage::OnOK();
 }
 
-void CPropGeneral::OnViewbtn()
+void CPropGeneral::OnViewbtn() 
 {
     CString strURL;
     GetDlgItemText(IDC_CONFIG, strURL);
@@ -291,8 +288,8 @@ void CPropGeneral::OnViewbtn()
 
     // Open the specified script file
     IStream* spstm;
-    HRESULT hr = URLOpenBlockingStream(NULL, strURL, &spstm, 0, NULL);
-    if (FAILED(hr))
+    HRESULT hr = URLOpenBlockingStream(NULL, strURL, &spstm, 0, NULL);        
+    if (FAILED(hr))          
     {
         MessageBox("Unable to open the specified config file, or it doesn't exist.", "Unable to Display", MB_OK);
         return;

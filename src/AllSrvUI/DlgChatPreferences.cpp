@@ -98,30 +98,30 @@ void CDlgChatPreferences::LoadFromRegistry()
   CRegKey key;
   key.Create(HKEY_LOCAL_MACHINE, HKLM_AllSrvUI);
 
-	//working once again --imago
+  // mdvalley: all QueryDWORDValue(text, dwbool);
   // AdminAlertChatList
   DWORD dwBool = true;
-  key.QueryDWORDValue(TEXT("AdminAlertChatList"),dwBool);
+  key.QueryValue(dwBool, TEXT("AdminAlertChatList"));
   m_bAdminChatList = !!dwBool;
 
   // AdminAlertMessageBox
   dwBool = true;
-  key.QueryDWORDValue(TEXT("AdminAlertMessageBox"),dwBool);
+  key.QueryValue(dwBool, TEXT("AdminAlertMessageBox"));
   m_bAdminMessageBox = !!dwBool;
 
   // AdminAlertRun
   dwBool = false;
   if (ShortcutExists())
-    key.QueryDWORDValue(TEXT("AdminAlertRun"),dwBool);
+    key.QueryValue(dwBool, TEXT("AdminAlertRun"));
   m_bAdminRun = !!dwBool;
 
   // ChatList
   dwBool = true;
-  key.QueryDWORDValue(TEXT("ChatList"), dwBool);
+  key.QueryValue(dwBool, TEXT("ChatList"));
   m_bEnableChatList = !!dwBool;
 
   // ChatListLimit
-  key.QueryDWORDValue(TEXT("ChatListLimit"),m_dwChatListLimit);
+  key.QueryValue(m_dwChatListLimit, TEXT("ChatListLimit"));
 }
 
 void CDlgChatPreferences::SaveToRegistry()
@@ -130,21 +130,21 @@ void CDlgChatPreferences::SaveToRegistry()
   CRegKey key;
   key.Create(HKEY_LOCAL_MACHINE, HKLM_AllSrvUI);
 
-  	//all working again --Imago
+  // mdvalley: All SetDWORDValue(text, m_b(
   // AdminAlertChatList
-  key.SetDWORDValue(TEXT("AdminAlertChatList"), m_bAdminChatList);
+  key.SetValue(m_bAdminChatList, TEXT("AdminAlertChatList"));
 
   // AdminAlertMessageBox
-  key.SetDWORDValue(TEXT("AdminAlertMessageBox"), m_bAdminMessageBox);
+  key.SetValue(m_bAdminMessageBox, TEXT("AdminAlertMessageBox"));
 
   // AdminAlertRun
-  key.SetDWORDValue(TEXT("AdminAlertRun"), m_bAdminRun);
+  key.SetValue(m_bAdminRun, TEXT("AdminAlertRun"));
 
   // ChatList
-  key.SetDWORDValue(TEXT("ChatList"),m_bEnableChatList);
+  key.SetValue(m_bEnableChatList, TEXT("ChatList"));
 
   // ChatListLimit
-  key.SetDWORDValue(TEXT("ChatListLimit"),m_dwChatListLimit);
+  key.SetValue(m_dwChatListLimit, TEXT("ChatListLimit"));
 }
 
 bool CDlgChatPreferences::ShortcutExists()
@@ -169,7 +169,7 @@ void CDlgChatPreferences::UpdateUI()
 /////////////////////////////////////////////////////////////////////////////
 // Message Handlers
 
-BOOL CDlgChatPreferences::OnInitDialog()
+BOOL CDlgChatPreferences::OnInitDialog() 
 {
   // Perform default processing
   CDialog::OnInitDialog();
@@ -187,7 +187,7 @@ BOOL CDlgChatPreferences::OnInitDialog()
   return true;
 }
 
-void CDlgChatPreferences::OnOK()
+void CDlgChatPreferences::OnOK() 
 {
   // Perform default processing
   CDialog::OnOK();
@@ -204,7 +204,7 @@ void CDlgChatPreferences::OnOK()
   SaveToRegistry();
 }
 
-void CDlgChatPreferences::OnEnableChatList()
+void CDlgChatPreferences::OnEnableChatList() 
 {
   // Update data members from fields
   UpdateData();
@@ -213,7 +213,7 @@ void CDlgChatPreferences::OnEnableChatList()
   UpdateUI();
 }
 
-void CDlgChatPreferences::OnUnlimitedChatHistory()
+void CDlgChatPreferences::OnUnlimitedChatHistory() 
 {
   // Update data members from fields
   UpdateData();
@@ -222,7 +222,7 @@ void CDlgChatPreferences::OnUnlimitedChatHistory()
   UpdateUI();
 }
 
-void CDlgChatPreferences::OnLimitChatHistory()
+void CDlgChatPreferences::OnLimitChatHistory() 
 {
   // Update data members from fields
   UpdateData();
@@ -231,14 +231,14 @@ void CDlgChatPreferences::OnLimitChatHistory()
   UpdateUI();
 }
 
-void CDlgChatPreferences::OnAdminRun()
+void CDlgChatPreferences::OnAdminRun() 
 {
   // Create the shortcut and set properties if it does not exist
   if (!ShortcutExists())
     OnAdminRunProperties();
 }
 
-void CDlgChatPreferences::OnAdminRunProperties()
+void CDlgChatPreferences::OnAdminRunProperties() 
 {
     // <NKM>
     // remocve for now
@@ -268,7 +268,7 @@ void CDlgChatPreferences::OnAdminRunProperties()
 //#endif
 }
 
-void CDlgChatPreferences::OnAdminRunTest()
+void CDlgChatPreferences::OnAdminRunTest() 
 {
   IAGCEventCreatePtr spEventCreate;
   HRESULT hr = spEventCreate.CreateInstance(__uuidof(AGCEvent));

@@ -5,7 +5,7 @@
 
 #if !defined(AFX_STDAFX_H__42522DF4_4621_4DC3_8967_8416F636D54C__INCLUDED_)
 #define AFX_STDAFX_H__42522DF4_4621_4DC3_8967_8416F636D54C__INCLUDED_
-#pragma warning(disable:4244)
+
 #if _MSC_VER > 1000
   #pragma once
 #endif // _MSC_VER > 1000

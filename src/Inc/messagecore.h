@@ -20,8 +20,8 @@
 
 
 #define IB unsigned short // index of bytes to var-length data from start of struct
-#define CB unsigned short // count of bytes
-// ***NOTE: there is code that depends on these being the same size.
+#define CB unsigned short // count of bytes 
+// ***NOTE: there is code that depends on these being the same size. 
 
 typedef unsigned short MsgClsPrio;
 /* A FedMessage by itself is never used. It is merely the start of every message.
@@ -29,19 +29,19 @@ typedef unsigned short MsgClsPrio;
 */
 struct FEDMESSAGE
 {
-  CB cbmsg;
-  /* Size of message. Messages can be variable length. This means that you
+  CB cbmsg; 
+  /* Size of message. Messages can be variable length. This means that you 
      don't create them off the stack. You must calculate cbmsg (sum of all
-     fixed length fields (just the size of the struct) + all variable length
+     fixed length fields (just the size of the struct) + all variable length 
      fields), and allocate a pointer to the message data off the heap. See
      below for function to easily create these things
   */
   FEDMSGID fmid;
-  // actual message data immediately follows.
+  // actual message data immediately follows. 
 };
 
 /* A packet is just an arbitrary number of messages strung together. Since we
-   know how big each message is, we can easily visit each message. It also
+   know how big each message is, we can easily visit each message. It also 
    makes it easy for the client to string messages together.
 */
 
@@ -50,14 +50,14 @@ struct FEDMESSAGE
       FM_S_*:  Messages that the server sends
       FM_CS_*: Messages that both client and server send.
 
-  Coresponding structures are named FMD_*, where * is the same.
-
+  Coresponding structures are named FMD_*, where * is the same. 
+  
   Yes, FM_C_* messages and FM_S_* messages could share message numbers, but
       let's not, to keep it simple.
-*/
+*/ 
 
-/*
-  ************** MESSAGING CLASS **************
+/* 
+  ************** MESSAGING CLASS ************** 
   Just make one of these FedMessaging (per session), and use it for all your messaging needs
 */
 
@@ -178,7 +178,7 @@ private:
   ~CFMConnection() {} // you can't delete these directly. You must use Delete()
 
   void Delete(FedMessaging * pfm); // basically the destructor, but with a parameter
-
+  
   int     m_cAbsentCount; // for roll call
   DWORD   m_dwTimeLastComplete;
   DWORD   m_dwPrivate;
@@ -227,10 +227,10 @@ public:
   REFGUID GetInstance()   { return m_guidInstance; }
   int     GetNumPlayers() { return m_nNumPlayers; }
   int     GetMaxPlayers() { return m_nMaxPlayers; }
-
+  
 private:
   GUID    m_guidInstance;       // ID for the session instance
-  ZString m_strGameName;
+  ZString m_strGameName; 
   short   m_nNumPlayers;
   short   m_nMaxPlayers;
 };
@@ -309,7 +309,7 @@ public:
     return m_guidApplication;
   }
 
-  GUID                GetSessionGuid()
+  GUID                GetSessionGuid()    
   {
     assert( m_pDirectPlayServer || m_pDirectPlayClient );
     return m_guidInstance;
@@ -321,42 +321,42 @@ public:
   }
   HRESULT             GenericSend(CFMRecipient * precip, const void * pv, CB cb, FMGuaranteed fmg);
   void                Shutdown();
-  inline bool         IsConnected()
+  inline bool         IsConnected()       
   {
     return m_fConnected;
   }
 
   void *              PFedMsgCreate(bool fQueueMsg, BYTE * pbFMBuff, FEDMSGID fmid, CB cbfm, ...);
   /* The variable parameters are pairings of pointers to the variable length
-         members, and their lengths (type MUST be CB), followed by FM_END to
-         terminate the variable length parameter list. Pointers/lengths must
-         be provided for every variable length member of the message. Pointers
-         can be null if that member is not used (in which case the length is
-         ignored, but must still be supplied. It is an error to provide a valid
+         members, and their lengths (type MUST be CB), followed by FM_END to 
+         terminate the variable length parameter list. Pointers/lengths must 
+         be provided for every variable length member of the message. Pointers 
+         can be null if that member is not used (in which case the length is 
+         ignored, but must still be supplied. It is an error to provide a valid 
          pointer with a length of zero. The value CB_ZTS may be used for null-
-         terminated strings, instead of predetermining their length. After
+         terminated strings, instead of predetermining their length. After 
          creating a message, you then fill in the fixed length stuff yourself.
          The variable length stuff is copied, so you don't have to keep it around.
-
-         ***NEVER*** call this function directly. Use the BEGINPFMCREATE,
+         
+         ***NEVER*** call this function directly. Use the BEGINPFMCREATE, 
          FM_VAR_PARM, and ENDPFMCREATE macros.
-
+     
      You can always cast PFedMsgCreate() to a FEDMESSAGE*, but I don't return
          FEDMESSAGE*, so that you can assign the return value to any message
          without requiring additional casting
-
-     Since the only reason to create a message is to send it, messages
-         automagically get recycled after sending them. Hence it is a bug to try
-         to reference a message once it's been sent. Likewise, there is no need
+     
+     Since the only reason to create a message is to send it, messages 
+         automagically get recycled after sending them. Hence it is a bug to try 
+         to reference a message once it's been sent. Likewise, there is no need 
          (or way) to free a message created with this function.
   */
-
+  
   //  <NKM> 09-Aug-2004
   // All Dplay messages now go to this callback via a static handler in Message.cpp
   HRESULT MsgHandler( DWORD dwMessageId, PVOID pMsgBuffer );
 
   HRESULT         ReceiveMessages();
-  BYTE *          BuffOut()
+  BYTE *          BuffOut()             
   {
     return m_fSecondaryOut ? m_rgbbuffSecondaryOutPacket : m_rgbbuffOutPacket;
   }
@@ -365,22 +365,22 @@ public:
     return m_fSecondaryOut ? sizeof(m_rgbbuffSecondaryOutPacket) : sizeof(m_rgbbuffOutPacket)
 #ifndef NO_MSG_CRC
       - sizeof(int) // crc
-#endif
+#endif      
     ;
   }
-  BYTE *          BuffIn()
+  BYTE *          BuffIn()              
   {
     return m_rgbbuffInPacket;
   }
-  DWORD           PacketSize()
+  DWORD           PacketSize()          
   {
     return m_dwcbPacket
 #ifndef NO_MSG_CRC
       - sizeof(int) // crc
-#endif
+#endif      
       ;
   }
-  void            PurgeOutBox()
+  void            PurgeOutBox()         
   {
     m_pbFMNext = BuffOut();
     m_precipDefault = NULL;
@@ -389,7 +389,7 @@ public:
   {
     return GetBuffOutSize() - CbUsedSpaceInOutbox();
   }
-  CB              CbUsedSpaceInOutbox()
+  CB              CbUsedSpaceInOutbox() 
   {
     return m_pbFMNext - ((BYTE*) BuffOut());
   }
@@ -399,7 +399,7 @@ public:
   void            SetDefaultRecipient(CFMRecipient * precip, FMGuaranteed fmg);
   CFMRecipient *  GetDefaultRecipient(FMGuaranteed * pfmg);
 
-  int             GetConnectionCount()
+  int             GetConnectionCount() 
   {
     return m_listCnxns.GetCount();
   }
@@ -428,7 +428,7 @@ public:
     return pgrp;
   }
 
-  void            DeleteConnection(CFMConnection & cnxn)
+  void            DeleteConnection(CFMConnection & cnxn) 
   {
     static CTempTimer tt("in DeleteConnection", .01f);
     tt.Start();
@@ -455,20 +455,20 @@ public:
   }
 
   void            AddConnectionToGroup(CFMGroup * pgrp, CFMConnection * pcnxn)
-  {
+  { 
     assert(pgrp && pcnxn);
     static CTempTimer tt("in AddConnectionToGroup", .01f);
     tt.Start();
-    pgrp->AddConnection(this, pcnxn);
+    pgrp->AddConnection(this, pcnxn); 
     tt.Stop();
   }
 
   void            DeleteConnectionFromGroup(CFMGroup * pgrp, CFMConnection * pcnxn)
-  {
+  { 
     assert(pgrp && pcnxn);
     static CTempTimer tt("in DeleteConnectionFromGroup", .01f);
     tt.Start();
-    pgrp->DeleteConnection(this, pcnxn);
+    pgrp->DeleteConnection(this, pcnxn); 
     tt.Stop();
   }
 
@@ -488,7 +488,7 @@ public:
   // EnumHosts now a member (was EnumSessionsCallBack)
   void EnumHostsCallback ( const DPNMSG_ENUM_HOSTS_RESPONSE& resp );
 
-  CFMGroup *  Everyone()
+  CFMGroup *  Everyone() 
   {
     return m_pgrpEveryone;
   }
@@ -498,7 +498,7 @@ public:
     assert( m_pDirectPlayServer );
     return m_pDirectPlayServer;
 
-  }
+  } 
 
   void UseMainOutBox(bool fMain) // set false for one or more messages that don't go to the same recipient as main stream
   {
@@ -520,7 +520,7 @@ public:
     return m_timeMsgLast;
   }
 
-  HRESULT GetLinkDetails(CFMConnection * pcnxn, OUT DWORD * pdwHundredbpsG, OUT DWORD * pdwmsLatencyG,
+  HRESULT GetLinkDetails(CFMConnection * pcnxn, OUT DWORD * pdwHundredbpsG, OUT DWORD * pdwmsLatencyG, 
                          OUT DWORD * pdwHundredbpsU, OUT DWORD * pdwmsLatencyU);
 
   HRESULT EnumSessions(GUID guidApplication, const char * szServer); // blank for broadcast
@@ -533,7 +533,7 @@ public:
     m_pbFMNext      = m_rgbbuffOutPacket;
     m_fSecondaryOut = false;
   }
-
+  
 private:
   Time            m_timeMsgLast;
   CFMConnection*  GetConnectionFromDpid(DPID dpid);
@@ -550,7 +550,7 @@ private:
   HRESULT         ConnectToDPAddress(LPVOID pAddress);
   HRESULT         OnSysMessage( const DPlayMsg& msg );
   HRESULT         EnumHostsInternal(GUID guidApplication, const char * szServer, DWORD dwPort = 6073);	// mdvalley: dwPort defaults to standard enumeration port
-
+  
   //  <NKM> 08-Aug-2004
   // No enum sessions in DX9 - probably need EnumHosts.
 //   friend BOOL FAR PASCAL EnumSessionsCallback(LPCDPSESSIONDESC2 lpThisSD,
@@ -604,12 +604,12 @@ private:
 };
 
 
-#define CB_ZTS 0xffff // indicates zero terminated string ONLY when creating
+#define CB_ZTS 0xffff // indicates zero terminated string ONLY when creating 
     // messages via PFedMsgCreate. CBs always hold true value for all var fields
 #define FM_END_VAR_PARMS (BYTE*) 0xffffffff // Always last argument passed to PFedMsgCreate.
 
 
-/* *************** MESSAGE CREATION MACROS ***************
+/* *************** MESSAGE CREATION MACROS *************** 
  Use these to actually create messages
 */
 // Use this for messages with a fixed size that will be sent
@@ -618,7 +618,7 @@ private:
     FM_VAR.fmid = FM_##TYPE##_##SHORTNAME; \
     FM_VAR.cbmsg = sizeof(FMD_##TYPE##_##SHORTNAME);
 
-// main macro use to create a message and queue it.
+// main macro use to create a message and queue it. 
 #define BEGIN_PFM_CREATE(OBJ, FM_VAR, TYPE, SHORTNAME) \
   FMD_##TYPE##_##SHORTNAME * FM_VAR = (FMD_##TYPE##_##SHORTNAME *) \
       (OBJ).PFedMsgCreate(true, NULL, FM_##TYPE##_##SHORTNAME, sizeof(FMD_##TYPE##_##SHORTNAME),
@@ -636,7 +636,7 @@ private:
       (OBJ).PFedMsgCreate(false, (BYTE*)(PBFM), FM_##TYPE##_##SHORTNAME, sizeof(FMD_##TYPE##_##SHORTNAME),
 
 // Use this to make sure they're always given in pairs and typed correctly
-#define FM_VAR_PARM(PBLOB, CBBLOB) (BYTE *)(PBLOB), (CB *)(CBBLOB),
+#define FM_VAR_PARM(PBLOB, CBBLOB) (BYTE *)(PBLOB), (CB *)(CBBLOB), 
 #define END_PFM_CREATE FM_END_VAR_PARMS );
 
 #define CASTPFM(FM_NEWVAR, TYPE, SHORTNAME, FM_OLDVAR) \
@@ -650,7 +650,7 @@ private:
   CFEDMSGID FM_##TYPE##_##SHORTNAME = NUMBER; \
   static AddMsg AM_##TYPE##_##SHORTNAME(NUMBER, "FM_" #TYPE "_" #SHORTNAME); \
   struct FMD_##TYPE##_##SHORTNAME : public FEDMESSAGE \
-  {
+  { 
 
 #define END_FEDMSG };
 
@@ -659,7 +659,7 @@ private:
 // Use this to actually reference existing var-length props
 #define FM_VAR_REF(PFM, NAME) ((PFM)->cb##NAME ? (char*)(PFM) + (PFM)->ib##NAME : NULL)
 
-/* For each message structure, the variable length items MUST go first, then the
+/* For each message structure, the variable length items MUST go first, then the 
    fixed length items
 
    We also need to keep track of the most number of variable length parameters
@@ -686,7 +686,7 @@ extern char * g_rgszMsgNames[];
  *-------------------------------------------------------------------------
  * Purpose:
  *    Automatically build array of message names
- *
+ * 
  * Notes:
  *    Called during global variable initialization, so no call stack
  */

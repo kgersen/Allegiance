@@ -85,7 +85,8 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     case FM_S_LOGON_LOBBY:
     {
       CASTPFM(pfmLogon, S, LOGON_LOBBY, pfm);
-
+	  pfmLogon->cbvStaticCoreInfo;
+	  char szRemote[16];
       if (pfmLogon->verLobby == LOBBYVER_LS)
       {
         if(pfmLogon->dwPort != 0)						// A port of 0 means the server couldn't find out its listening port
@@ -96,20 +97,24 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		// fill in StaticCoreInfo
 		StaticCoreInfo* pcoreinfo  = (StaticCoreInfo*)FM_VAR_REF(pfmLogon, vStaticCoreInfo);
 		pServer->SetStaticCoreInfo(pfmLogon->cStaticCoreInfo, pcoreinfo);
+		//Imago: reorganized some stuff to get a better debug message		
 		// location
 		char * szLoc =  FM_VAR_REF(pfmLogon, szLocation);
 		pServer->SetLocation(szLoc);
 		// max games
 		pServer->SetMaxGamesAllowed(pfmLogon->MaxGames);
+		
+		// current games (allow servers to update) - Imago 6/25/08
+		pServer->SetCurrentGamesCount(pfmLogon->CurGames);
 
 		// rebuild the master core list
 		g_pLobbyApp->BuildStaticCoreInfo();
 		// break; mmf took out break so we can check ip below
 		// KGJV moved mmf's stuff inside lobby version check
 		// mmf add check to see if they are an allowed or blocked server
-		  char szRemote[16];
-		  pthis->GetIPAddress(cnxnFrom, szRemote);
 
+		  pthis->GetIPAddress(cnxnFrom, szRemote);
+		  debugf("FM_S_LOGON_LOBBY: %s:%d loc:%s #games:%i\n",&szRemote,pfmLogon->dwPort,pServer->GetLocation(),pfmLogon->CurGames);
 		  if (!strncmp("127.0.0.1",szRemote,9)) break;  // check for loopback and always allow
 		  if (IsServerAllowed(szRemote)) break;
 	  }
@@ -144,20 +149,30 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       pfmNewMissionAck->dwCookie = (DWORD) pMission;
       pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
       // we won't broadcast it until the server sends us a lobby mission info, when it's good and ready
+	  debugf("FM_S_NEW_MISSION id:%d cookie:%d\n",pfmNewMissionAck->dwIGCMissionID,pfmNewMissionAck->dwCookie);
     }
     break;
 
     case FM_LS_LOBBYMISSIONINFO:
     {
       CASTPFM(pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO, pfm);
-	  //KGJV #114 - server didnt fill szServerAddr but only reserved the bits. We fill it here.
-	  char szAddr[16];
-      pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
-	  char *pfmdata = FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr); // get the addr in the message
-	  strcpy(pfmdata,szAddr); // overwrite with the real addr
       CFLMission * pMission = CFLMission::FromCookie(pfmLobbyMissionInfo->dwCookie);
       if (pMission) // if it's already gone away--just ignore it. 
-      {
+      {		  
+		  //Imago 6/26/08
+		  //Moved this code inside the mission check
+		  //now the lobby does not crash trying to find a disconnected server's IP
+
+		//KGJV #114 - server didnt fill szServerAddr but only reserved the bits. We fill it here.
+		debugf("FM_LS_LOBBYMISSIONINFO:%d (pmission:%x cookie:%x) sent cookie:%x connected?%i\n",pfmLobbyMissionInfo->dwPort,pMission,pfmLobbyMissionInfo->dwCookie,pfmLobbyMissionInfo->dwCookie,(pthis->IsConnected()) ? 1 : 0);  
+		char szAddr[16];
+		pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
+		debugf("\tFM_LS_LOBBYMISSIONINFO:%s sent port %d\n",&szAddr,pfmLobbyMissionInfo->dwPort);		
+		char *pfmdata = FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr); // get the addr in the message	  
+		strcpy(pfmdata,szAddr); // overwrite with the real addr
+
+			//end move code
+
         pMission->SetLobbyInfo(pfmLobbyMissionInfo);
         pMission->NotifyCreator();
       }
@@ -169,6 +184,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     {
       CASTPFM(pfmMissionGone, LS, MISSION_GONE, pfm);
       CFLMission * pMission = CFLMission::FromCookie(pfmMissionGone->dwCookie);
+	  debugf("deleting GONE mission: %x\n",pfmMissionGone->dwCookie);
       pServer->DeleteMission(pMission);
     }
     break;
@@ -176,6 +192,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     case FM_S_HEARTBEAT:
       // don't boot for missing roll call until we get one from them
       pServer->SetHere();
+	  //printf("heartbeat- remote port: %d server/mission id:%x running missions:%i\n",pServer->GetServerPort(),pServer->GetCurrentGamesCount());
     break;
     
     case FM_S_PLAYER_JOINED:
@@ -185,8 +202,10 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       const char* szCharacterName = FM_VAR_REF(pfmPlayerJoined, szCharacterName);
       const char* szCDKey = FM_VAR_REF(pfmPlayerJoined, szCDKey);
 
-      if (NULL == szCharacterName || '\0' != szCharacterName[pfmPlayerJoined->cbszCharacterName-1]
-          || NULL == szCDKey || '\0' != szCDKey[pfmPlayerJoined->cbszCDKey-1])
+      if (NULL == szCharacterName || '\0' != szCharacterName[pfmPlayerJoined->cbszCharacterName-1])
+          /* || NULL == szCDKey || '\0' != szCDKey[pfmPlayerJoined->cbszCDKey-1]  
+		  Imago 6/25/08 removed above
+		  */ 
       {
         // corrupt data
         g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_ERROR_TYPE, LE_CorruptPlayerJoinMsg,
@@ -318,8 +337,10 @@ CFLServer::CFLServer(CFMConnection * pcnxn) :
   m_cStaticCoreInfo(0),    // KGJV #114
   m_vStaticCoreInfo(NULL), // KGJV #114
   m_dwStaticCoreMask(0),   // KGJV #114
-  m_iMaxGames(20)		   // KGJV #114
+  m_iMaxGames(20),		   // KGJV #114
+  m_iCurGames(0)	// Imago
 {
+
   assert(m_pcnxn);
   m_pcnxn->SetPrivateData((DWORD) this); // set up two-way link between connection and this
 

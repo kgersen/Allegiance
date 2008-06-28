@@ -1,0 +1,145 @@
+#
+# Makefile for all major Federation Components
+#
+# Environment variable Requirements:
+#   
+#    INCLUDE=foo           // can be set to anything, must be set
+#    PATH=                 // must have proper nmake on path
+#    FEDROOT=<path>        // MUST point to base of fed src enlistment
+#
+# nmake args:
+#
+#   Clean        // will delete all files in destination dir
+#   Shell        // opens os-specific cmd/command shell (helps to debug build)
+#   RETAIL=      // builds a retail build (default is DEBUG)
+#                // no argument is used for debug builds
+#   VER=         // must have this argument, \\msr\federation\builds\$(VER) is created/needed
+#
+#
+#  All derived files (temp files, .res, output of midl, *.obj, *.exe/.dll...
+#  are placed directly into the appropriate tree under $(FEDROOT)\Objs.
+
+#  The $(FEDROOT)\Objs tree is created on demand.
+#  Since no derived files are placed in the source tree, multiple builds
+#  can be run SIMULTANEOUSLY.
+
+
+# command line arguments to cut a release:
+#
+#	1:	use ver= commandline argument
+#	2:	use retail= if you want to do a retail buld
+#	3:	no targets will get you all exe's/dll's and setup files (exes target)
+#	4:	use CopySrc if you want to copy the sources
+#	5:	use CopyArt if you want to copy the art from \\fedsrv\wwwroot\artwork\256
+#	6:	use Exes target to get exes with any of the above
+
+!IFNDEF VER
+
+!MESSAGE
+!MESSAGE ========================================
+!MESSAGE
+!MESSAGE MUST set command line argument VER=????
+!MESSAGE
+!MESSAGE ========================================
+!ERROR
+
+!ENDIF
+
+FEDSRC=$(FEDROOT)\src
+
+BLDDIR=\\research\root\federation\builds\$(VER)
+
+RECURSNMAKEARGS=
+
+!IFDEF retail
+RETAIL=Howdy Mom
+!ENDIF
+
+!IFDEF test
+TEST=Howdy Dad
+!endif
+
+!IFDEF RETAIL
+
+FLAVOR=Retail
+
+RECURSNMAKEARGS="retail="
+
+MSVCRTFLVR=MsvCrt
+
+!ELSE
+
+!IFDEF test
+FLAVOR=test
+
+MSVCRTFLVR=MsvCrtD
+!ELSE
+FLAVOR=Debug
+
+MSVCRTFLVR=MsvCrtD
+!ENDIF
+!ENDIF
+
+XCOPY_OS_ARGS=
+
+!IFDEF WINBOOTDIR
+
+OSPATHS=$(WINBOOTDIR)\system;$(WINBOOTDIR)
+OSCMDSHELL=command
+BINOS=Bin95
+XCOPY_OS_ARGS=
+
+!ELSE
+
+OSPATHS=$(SYSTEMROOT)\system32;$(WINDIR)
+OSCMDSHELL=cmd
+BINOS=BinNt
+
+#nt version of xcopy /Z ==> network restartable mode
+XCOPY_OS_ARGS=/Z
+
+!ENDIF
+
+PATH=$(FEDEXT)\vc\bin;$(OSPATHS);$(FEDEXT)\SharedIDE\Bin;$(FEDSRC)\Tools\Bin32;$(FEDSRC)\Tools\$(BINOS)
+NMAKE=nmake /NOLOGO /C /S
+
+# the main (default) target in all its glory
+
+Exes: $(BLDDIR) $(BLDDIR)\$(FLAVOR) Build SetupFiles
+  copy $(FEDROOT)\Objs\$(FLAVOR)\Wintrek\Wintrek.exe $(BLDDIR)\$(FLAVOR)
+  -copy $(FEDROOT)\Objs\$(FLAVOR)\Wintrek\Wintrek.pdb $(BLDDIR)\$(FLAVOR)
+  -copy $(FEDROOT)\Objs\$(FLAVOR)\Wintrek\Wintrek.bsc $(BLDDIR)\$(FLAVOR)
+  
+  copy $(FEDROOT)\Objs\$(FLAVOR)\FedSrv\FedSrv.exe $(BLDDIR)\$(FLAVOR)
+  -copy $(FEDROOT)\Objs\$(FLAVOR)\FedSrv\FedSrv.pdb $(BLDDIR)\$(FLAVOR)
+  -copy $(FEDROOT)\Objs\$(FLAVOR)\FedSrv\FedSrv.bsc $(BLDDIR)\$(FLAVOR)
+
+
+Build:
+    nmake $(RECURSNMAKEARGS)
+
+Full: Clean Exes
+   
+
+CopySrc: $(BLDDIR)\Src
+  xcopy /E /C /I /F /H /K $(XCOPY_OS_ARGS) $(FEDROOT)\Src $(BLDDIR)\Src
+
+CopyArt:
+  md $(BDLDIR)\Src\Artwork
+  xcopy /E /C /I /F /H /K $(XCOPY_OS_ARGS) \\research\root\federation\slm\src\federation\src\artwork\256 $(BLDDIR)\Src\Artwork\256
+
+SetupFiles:
+#  $(OSCMDSHELL) /c $(FEDSRC)\Setup\MakeSetup    $(BLDDIR)\$(FLAVOR)  > $(BLDDIR)\$(FLAVOR)\Setup.bat
+  copy $(FEDSRC)\Setup\CopyInitialArt.bat $(BLDDIR)\$(FLAVOR)
+  copy $(FEDSRC)\Setup\msvcrt.dll         $(BLDDIR)\$(FLAVOR)
+  copy $(FEDSRC)\Setup\msvcrtd.dll        $(BLDDIR)\$(FLAVOR)
+
+Clean:
+  nmake $(RECURSNMAKEARGS) Clean
+  md $(BLDDIR)
+  md $(BLDDIR)\Debug
+  md $(BLDDIR)\Retail
+  md $(BLDDIR)\Src
+
+Shell:
+  $(OSCMDSHELL)

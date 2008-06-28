@@ -106,8 +106,8 @@ inline void CLoadedModules::clear()
 //
 inline bool CLoadedModules::Enumerate(HANDLE hProcess, HANDLE hProcessSym)
 {
-  // Enumerate the modules --Imago fixed for VC9
-  if (!::EnumerateLoadedModules(hProcess, (PENUMLOADED_MODULES_CALLBACK)EnumLoadedModulesProc, this))
+  // Enumerate the modules
+  if (!::EnumerateLoadedModules(hProcess, EnumLoadedModulesProc, this))
     return false;
   ResolveEmptyNames(hProcess);
   ResolveUnknownSizes(hProcessSym);

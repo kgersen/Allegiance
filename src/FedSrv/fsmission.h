@@ -421,7 +421,7 @@ public:
   {
     return m_strDetailsFiles;
   }
-  void SetDetailsFiles(const ZString& strDetailsFiles)
+  void SetDetailsFiles(const ZString& strDetailsFiles) //Imago: (AllSrvModule) Sets mml file(s) to display when user clicks 'details' in games list. Files seperated by spaces, must be in the directory specified by ZoneEventDetailsURL in config file.  The mml file should be  last list.
   {
     m_strDetailsFiles = strDetailsFiles;
     SetLobbyIsDirty();

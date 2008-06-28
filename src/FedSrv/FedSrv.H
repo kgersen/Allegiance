@@ -245,7 +245,16 @@ struct Global
     csqlSilentThreads(0),
     csqlNotifyThreads(0),
     sql(&siteFedSrv)
-#endif    
+#endif
+	//imagos crap for multi-process servers 6/25/08
+#if defined(SRV_PARENT)
+	,
+	bRestarting(false)
+#endif
+#if defined(SRV_CHILD)
+	,
+	dwArgCookie(0)
+#endif
   {
     ZeroMemory(rgTechs, sizeof(rgTechs));
   }
@@ -260,6 +269,10 @@ struct Global
 #if !defined(ALLSRV_STANDALONE)
     strSQLConfig.Empty();
 #endif    
+#if defined(SRV_CHILD)  //imago -store command line arguments
+	strArgName.SetEmpty();
+	strArgCore.SetEmpty();
+#endif
   }
 
   SERVICE_STATUS_HANDLE ssh;
@@ -306,7 +319,7 @@ struct Global
   ZString             strAuthServer;
   ZString             strLocalAddress;
   char                rgTechs[cTechs][CbTechBitName+1];
-  DWORD               dwLobbyPort;
+  DWORD               dwLobbyPort;    // connect to this
 
   RankInfo*           vRankInfo;
   short               cRankInfo;
@@ -331,6 +344,15 @@ struct Global
   DWORD               csqlSilentThreads;
   DWORD               csqlNotifyThreads;
   CComBSTR            strSQLConfig;
+#endif
+  // more of imagos crap for one game per exe
+#if defined(SRV_CHILD)
+  ZString			strArgName;
+  ZString			strArgCore;
+  DWORD				dwArgCookie;
+#endif
+#if defined(SRV_PARENT)
+  bool				bRestarting;
 #endif
 };
 
@@ -386,5 +408,6 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 #define TrapHack(x) assert(x)
 
 #define wm_fs_pause WM_APP // wparam/lparam not used
+#define wm_fs_restart WM_QUEUESYNC //whatever
 
 #endif // _FEDSRV_H_

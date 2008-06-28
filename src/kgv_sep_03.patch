@@ -1,0 +1,534 @@
+Index: FedSrv/AdminGames.cpp
+===================================================================
+RCS file: /cvsroot/alleg_src/src/FedSrv/AdminGames.cpp,v
+retrieving revision 1.1
+diff -u -r1.1 AdminGames.cpp
+--- FedSrv/AdminGames.cpp	7 Feb 2004 02:51:26 -0000	1.1
++++ FedSrv/AdminGames.cpp	3 Sep 2004 13:37:26 -0000
+@@ -50,7 +50,7 @@
+     if (plistMission->n())
+       return Error(IDS_E_ONE_GAME_PER_SERVER, IID_IAdminGames);
+ 
+-    // Standalone server only support a maximum of 32 players total
++    // Standalone server only support a maximum of c_cMaxPlayersPerGame players total
+     if (pMissionParams->nTotalMaxPlayersPerGame > c_cMaxPlayersPerGame)
+       pMissionParams->nTotalMaxPlayersPerGame = c_cMaxPlayersPerGame;
+ 
+Index: FedSrv/FedSrv.CPP
+===================================================================
+RCS file: /cvsroot/alleg_src/src/FedSrv/FedSrv.CPP,v
+retrieving revision 1.1.4.1.2.2
+diff -u -r1.1.4.1.2.2 FedSrv.CPP
+--- FedSrv/FedSrv.CPP	24 Aug 2004 20:36:10 -0000	1.1.4.1.2.2
++++ FedSrv/FedSrv.CPP	3 Sep 2004 13:37:32 -0000
+@@ -154,9 +154,11 @@
+   delete [] g.vRankInfo;
+   g.cRankInfo = 0;
+ }
++#endif // !defined(ALLSRV_STANDALONE)
+ 
+ void LoadStaticMapInfo()
+ {
++#if !defined(ALLSRV_STANDALONE)
+   SQL_GO(GetStaticMapCount);
+   SQL_GETROW(GetStaticMapCount);
+   g.cStaticMapInfo = GetStaticMapCount_Count;
+@@ -175,6 +177,28 @@
+       assert(GetStaticMaps_NumTeams > 1 && GetStaticMaps_NumTeams <= c_cSidesMax);
+     }
+   }
++#else
++// --KGJV; FZ/FAZ version: load maps list from a file (<artwork>\maps.txt)
++    char        mapfilename[MAX_PATH + 1];
++    HRESULT     hr = UTL::getFile("maps", ".txt", mapfilename, true, true);
++    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
++    if (file)
++    {
++		int nbmaps;
++		fscanf(file,"%d\n",&nbmaps);
++		g.cStaticMapInfo = nbmaps;
++		g.vStaticMapInfo = new StaticMapInfo[g.cStaticMapInfo];
++		for (int i=0;i<nbmaps;i++)
++		{
++			int nbteams;
++			fscanf(file,"%d,%[^,],%[^,\n]\n",&nbteams,g.vStaticMapInfo[i].cbFriendlyName,g.vStaticMapInfo[i].cbIGCFile);
++			g.vStaticMapInfo[i].nNumTeams = nbteams;
++		}
++		fclose(file);
++	}
++	else
++		g.cStaticMapInfo = 0;
++#endif
+ }
+ 
+ bool VerifyUserMap(const char* szMapFile, int nTeams)
+@@ -195,7 +219,6 @@
+   g.cStaticMapInfo = 0;
+ }
+ 
+-#endif // !defined(ALLSRV_STANDALONE)
+ 
+ /*-------------------------------------------------------------------------
+  * AddNamedValue
+@@ -788,20 +811,23 @@
+   pfmLogonAck->cookie          = fValid ? pfsPlayer->GetCookie() : 0;
+   pfmLogonAck->timeServer      = g.timeNow;
+ 
+-#if !defined(ALLSRV_STANDALONE)
++
++  // -KGJV: changed for StaticMapInfo in all mode
+   if (fValid)
+   {
+-    // send the rank info for this server
+-    BEGIN_PFM_CREATE(g.fm, pfmRankInfo, S, RANK_INFO)
+-      FM_VAR_PARM(g.vRankInfo, sizeof(RankInfo) * g.cRankInfo)
+-    END_PFM_CREATE
+-    pfmRankInfo->cRanks = g.cRankInfo;
+ 
+     // send the static map info for the maps on this server
+     BEGIN_PFM_CREATE(g.fm, pfmStaticMapInfo, S, STATIC_MAP_INFO)
+       FM_VAR_PARM(g.vStaticMapInfo, sizeof(StaticMapInfo) * g.cStaticMapInfo)
+     END_PFM_CREATE
+ 
++#if !defined(ALLSRV_STANDALONE)
++    // send the rank info for this server
++    BEGIN_PFM_CREATE(g.fm, pfmRankInfo, S, RANK_INFO)
++      FM_VAR_PARM(g.vRankInfo, sizeof(RankInfo) * g.cRankInfo)
++    END_PFM_CREATE
++    pfmRankInfo->cRanks = g.cRankInfo;
++
+     // Get their squad memberships, but whether we need it b4 joining depends on whether it's a squad game
+     CQCharSquads * pqueryCharSquads = new CQCharSquads(GotCharSquads);
+     CQCharSquadsData * pqdSquads = pqueryCharSquads->GetData();
+@@ -816,8 +842,8 @@
+       lstrcpy(pqdSquads->szPassword, pqd->szPassword);
+       g.sql.PostQuery(pqueryCharSquads);
+     }
+-  }
+ #endif
++  }
+ 
+   g.fm.SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
+   g.fm.CheckOdometer(flDTime, cMsgsOdometer, cBytesOdometer);
+@@ -7515,10 +7541,11 @@
+ 		// -Imago
+        	// look for a core/map for Map#
+ 		// -KGJV : should we lock game settings when custom map specified. If so need 'GameParameters#' too ?
++		// removed map# for now
+ 		ZString strMap;
+-		wsprintf(cbValueName, "Map%d", iGame);
+-		LoadRegString(hKey, cbValueName, strMap);
+-		strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
++		//wsprintf(cbValueName, "Map%d", iGame);
++		//LoadRegString(hKey, cbValueName, strMap);
++		//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
+ 
+ 		printf("Starting game \"%s\" with core: %s on map %s\n", mp.strGameName, mp.szIGCStaticFile, mp.szCustomMapFile);
+ 
+@@ -7602,7 +7629,7 @@
+ 
+   g.trekCore = CreateMission(); // this isn't a *real* mission, just a gateway to static stuff
+   g.trekCore->Initialize (Time::Now(), &g.siteFedSrv);
+-
++  debugf("trekCore completed\n");
+   // until the server loads the appropriate igc static file based on mission params
+   // and only has one game per exe
+   int   iStaticCoreVersion;
+@@ -7612,7 +7639,7 @@
+   iStaticCoreVersion = LoadIGCStaticCore (IGC_STATIC_CORE_FILENAME, g.trekCore, false);
+ #endif // !defined(ALLSRV_STANDALONE)
+   assert (iStaticCoreVersion != NA);
+-
++  debugf("iStaticCoreVersion = %d\n",iStaticCoreVersion);
+   //
+   // This is the first place where we can might connect to a lobby
+   //
+@@ -7637,8 +7664,11 @@
+ 
+   #if !defined(ALLSRV_STANDALONE)
+     LoadRankInfo();
+-    LoadStaticMapInfo();
+   #endif
++  // -KGJV: changed for StaticMapInfo in all modes
++  debugf("calling LoadStaticMapInfo\n");
++    LoadStaticMapInfo();
++  debugf("LoadStaticMapInfo result: #maps=%d\n",g.cStaticMapInfo);
+ 
+   CTimer timerReceiveIterations("between iterations in ReceiveThread loop", .25f);
+ 
+@@ -7716,8 +7746,9 @@
+ 
+   #if !defined(ALLSRV_STANDALONE)
+     UnloadRankInfo();
+-    UnloadStaticMapInfo();
+   #endif
++  // -KGJV: StaticMapInfo in all modes
++    UnloadStaticMapInfo();
+ 
+   // destroy IGC stuff
+   UnloadDbCache();
+@@ -10659,6 +10690,8 @@
+ 
+         pship->SetCluster(pcluster);
+ 
++		//FAZ: this is where tp1/tp2 are randomly destroyed (1/6 chance)
++		// future mod: use ((IprobeIGC)pmodel) to access the igcprobe datas
+         if ((type == OT_probe) && (randomInt(0, 5) == 0))
+         {
+             KillProbeEvent((IprobeIGC*)pmodel);
+Index: FedSrv/FedSrv.H
+===================================================================
+RCS file: /cvsroot/alleg_src/src/FedSrv/FedSrv.H,v
+retrieving revision 1.1.4.1
+diff -u -r1.1.4.1 FedSrv.H
+--- FedSrv/FedSrv.H	20 May 2004 01:00:57 -0000	1.1.4.1
++++ FedSrv/FedSrv.H	3 Sep 2004 13:37:32 -0000
+@@ -21,7 +21,7 @@
+ const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
+ 
+ #if defined(ALLSRV_STANDALONE)
+-  const short c_cMaxPlayersPerGame = 64;
++  const short c_cMaxPlayersPerGame = 200; // KGJV-; changed from 64 to 200. 
+ #else // defined(ALLSRV_STANDALONE)
+   const short c_cMaxPlayersPerGame = 0x7FFF;
+ #endif // defined(ALLSRV_STANDALONE)
+Index: FedSrv/fsmission.cpp
+===================================================================
+RCS file: /cvsroot/alleg_src/src/FedSrv/fsmission.cpp,v
+retrieving revision 1.1.4.1.2.1
+diff -u -r1.1.4.1.2.1 fsmission.cpp
+--- FedSrv/fsmission.cpp	19 Aug 2004 21:01:57 -0000	1.1.4.1.2.1
++++ FedSrv/fsmission.cpp	3 Sep 2004 13:37:34 -0000
+@@ -120,7 +120,11 @@
+   }
+ #else // !defined(ALLSRV_STANDALONE)
+   m_misdef.misparms.bClubGame = false;
++  // -KGJV only set core if not defined in game params
++  if (m_misdef.misparms.szIGCStaticFile[0] == '\0')
++  {
+   strcpy(m_misdef.misparms.szIGCStaticFile, IGC_STATIC_CORE_FILENAME);
++  }
+   // hardcode this cap in one more place to make it harder to work around.
+   m_misdef.misparms.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, misparms.nTotalMaxPlayersPerGame);
+ #endif // !defined(ALLSRV_STANDALONE)
+@@ -3826,6 +3830,9 @@
+  */
+ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsigned char bannedSideMask)
+ {
++  // KGJV - set everyone in lobby by default
++  return SIDE_TEAMLOBBY;
++
+   if (bAllowTeamLobby && (GetStage() > STAGE_NOTSTARTED))
+     return SIDE_TEAMLOBBY;
+ 
+@@ -4319,16 +4326,17 @@
+   SetLockSides(false);
+ 
+   // turn on auto accept for all sides
++  // KGJV: changed to turn on auto accept off
+   {
+     for (SideLinkIGC* psl = m_pMission->GetSides()->first(); psl != NULL; psl = psl->next())
+     {
+-      if (!GetAutoAccept(psl->data()))
++      if (GetAutoAccept(psl->data()))
+       {
+-        SetAutoAccept(psl->data(), true);
++        SetAutoAccept(psl->data(), false);
+         BEGIN_PFM_CREATE(g.fm, pfmAutoAccept, CS, AUTO_ACCEPT)
+         END_PFM_CREATE
+         pfmAutoAccept->iSide = psl->data()->GetObjectID();
+-        pfmAutoAccept->fAutoAccept = true;
++        pfmAutoAccept->fAutoAccept = false;
+         g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_DONT_FLUSH);
+       }
+     }
+@@ -4360,6 +4368,8 @@
+   }
+   
+   // randomly put everyone back on a team
++  // KGJV-: changed dont randomize anymore, just leave everyone in lobby
++/*
+   {
+     IsideIGC* psideLobby = m_pMission->GetSide(SIDE_TEAMLOBBY);
+     const ShipListIGC* pshipsLobby = psideLobby->GetShips();
+@@ -4398,6 +4408,7 @@
+     }
+   }
+ 
++
+   // then lock the sides.
+   {
+     SetLockSides(true);
+@@ -4406,6 +4417,7 @@
+     pfmLockSides->fLock = true;
+     g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+   }
++*/
+ }
+ 
+ void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)
+Index: Igc/igc.h
+===================================================================
+RCS file: /cvsroot/alleg_src/src/Igc/igc.h,v
+retrieving revision 1.1.4.1.2.2
+diff -u -r1.1.4.1.2.2 igc.h
+--- Igc/igc.h	19 Aug 2004 21:01:57 -0000	1.1.4.1.2.2
++++ Igc/igc.h	3 Sep 2004 13:37:37 -0000
+@@ -925,7 +925,7 @@
+ //------------------------------------------------------------------------------
+ // for now, there is only one static data core, and this is its name
+ //------------------------------------------------------------------------------
+-#define IGC_STATIC_CORE_FILENAME    "plus13"
++#define IGC_STATIC_CORE_FILENAME    "static_core"
+ #define IGC_ENCRYPT_CORE_FILENAME   "zone_core"
+ 
+ 
+@@ -1100,7 +1100,7 @@
+     float       fStartingMoney;                         //Multiplier on team starting money
+     short       iLives;                                 //Player must die more than this number of times to be exit, c_cUnlimitedLives = unlimited
+     MapMakerID  mmMapType;                              //Map type
+-    short       iMapSize;                       //Not used
++    short       iMapSize;								//KGJV: non zero value = 2 starting garrisons
+     short       iRandomEncounters;                      //Use to indicate how many alephs are randomly removed
+     short       bNeutralSectors;                //Not used
+     short       iAlephPositioning;              //Not used
+Index: Igc/mapmakerigc.cpp
+===================================================================
+RCS file: /cvsroot/alleg_src/src/Igc/mapmakerigc.cpp,v
+retrieving revision 1.1
+diff -u -r1.1 mapmakerigc.cpp
+--- Igc/mapmakerigc.cpp	7 Feb 2004 02:54:16 -0000	1.1
++++ Igc/mapmakerigc.cpp	3 Sep 2004 13:37:38 -0000
+@@ -16,7 +16,7 @@
+ 
+ //
+ // Static members.
+-//
++// 08/30/04 -KGJV: added Titty Baby memorial sector name
+ const char * CMapData::smszClusterName[c_NumClusterNames] =
+ {
+     "Aegis",        "Aeroflex",     "Ahto",         "Aredne",
+@@ -35,7 +35,7 @@
+     "Raiko",        "Resnik",       "Rib'zki",		"Rimin",  "Sleipener",
+     "Solitaire",    "Soron",        "Sri Metsa",    "Surma",
+     "Tathlum",      "Tierankeen",   "Tjeerd",       "Torc",
+-    "Touni",        "Tauceti",      "Turakeen",   /*"Uranus",*/"Udar", "Virkinow",
++    "Touni",        "Tauceti",      "Titty Baby"    ,"Turakeen",   /*"Uranus",*/"Udar", "Virkinow",
+   /*"Venus",*/      "Xuping"
+ } ;
+ 
+@@ -874,7 +874,9 @@
+ 
+ VOID CmapMakerIGC::GenerateLayout(CMapData * pMapData)
+ {
+-    SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
++    //SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
++	//KGJV-: changed, use now MapSize parameter
++    SectorID    s = pMapData->GetMapSize() != 0 ? 2 : 1;
+     pMapData->SetTeamClustersPerTeam(s);
+     pMapData->SetNeutralClustersPerTeam(1);
+ 
+@@ -1117,7 +1119,9 @@
+ 
+ VOID CmapMakerBigRingIGC::GenerateLayout(CMapData * pMapData)
+ {
+-    SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
++    //SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
++	//KGJV-: changed, use now MapSize parameter
++    SectorID    s = pMapData->GetMapSize() != 0 ? 2 : 1;
+     pMapData->SetTeamClustersPerTeam(s);
+     pMapData->SetNeutralClustersPerTeam(2);
+ 
+@@ -1201,7 +1205,9 @@
+ 
+ VOID CmapMakerHiLoIGC::GenerateLayout(CMapData * pMapData)
+ {
+-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++	//KGJV-: changed, use now MapSize parameter
++    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
+                                     
+     pMapData->SetNeutralClustersPerTeam(3);
+ 
+@@ -1328,7 +1334,9 @@
+ VOID CmapMakerHiHigherIGC::GenerateLayout(CMapData * pMapData)
+ {
+     pMapData->SetTeamClustersPerTeam((mMMID == c_mmHiHigher)
+-                                     ? (pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1)
++                                     //? (pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1)
++									 //KGJV-: changed, use now MapSize parameter
++									 ? (pMapData->GetMapSize() != 0 ? 2 : 1)
+                                      : ((mMMID == c_mmLargeSplit)
+                                         ? 2
+                                         : 1));
+@@ -1500,7 +1508,9 @@
+ 
+ VOID CmapMakerStarIGC::GenerateLayout(CMapData * pMapData)
+ {
+-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++	//KGJV-: changed, use now MapSize parameter
++    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
+                                     
+     pMapData->SetNeutralClustersPerTeam(5);
+ 
+@@ -1764,7 +1774,9 @@
+ {
+     pMapData->SetTeamClustersPerTeam(1);
+ 
+-    if (pMapData->GetMaxPlayersInMission() <= 30)
++	//if (pMapData->GetMaxPlayersInMission() <= 30)
++    //KGJV-: changed, use now MapSize parameter
++    if (pMapData->GetMapSize() == 0)
+         pMapData->SetOtherClusters(1);
+     else
+         pMapData->SetNeutralClustersPerTeam(1);
+@@ -1879,7 +1891,9 @@
+ 
+ VOID CmapMakerDiamondRingIGC::GenerateLayout(CMapData * pMapData)
+ {
+-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++	//KGJV-: changed, use now MapSize parameter
++    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
+     pMapData->SetNeutralClustersPerTeam(2);
+ 
+     this->GenerateRingClusters(pMapData);
+@@ -1998,7 +2012,9 @@
+ 
+ VOID CmapMakerSnowFlakeIGC::GenerateLayout(CMapData * pMapData)
+ {
+-    SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
++    //SectorID    s = pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1;
++	//KGJV-: changed, use now MapSize parameter
++    SectorID    s = pMapData->GetMapSize() != 0 ? 2 : 1;
+     pMapData->SetTeamClustersPerTeam(s);
+     pMapData->SetNeutralClustersPerTeam(3);
+ 
+@@ -2206,7 +2222,9 @@
+ 
+ VOID CmapMakerGridIGC::GenerateLayout(CMapData * pMapData)
+ {
+-    pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++    //pMapData->SetTeamClustersPerTeam(pMapData->GetMaxPlayersOnTeam() >= 30 ? 2 : 1);
++	//KGJV-: changed, use now MapSize parameter
++    pMapData->SetTeamClustersPerTeam(pMapData->GetMapSize() != 0 ? 2 : 1);
+                                     
+     pMapData->SetNeutralClustersPerTeam(4);
+ 
+Index: Igc/mapmakerigc.h
+===================================================================
+RCS file: /cvsroot/alleg_src/src/Igc/mapmakerigc.h,v
+retrieving revision 1.1
+diff -u -r1.1 mapmakerigc.h
+--- Igc/mapmakerigc.h	7 Feb 2004 02:54:16 -0000	1.1
++++ Igc/mapmakerigc.h	3 Sep 2004 13:37:38 -0000
+@@ -22,7 +22,7 @@
+ // Constants currently being used.
+ //
+ const int c_MaxClustersPerMap = 50;
+-const int c_NumClusterNames = 68;
++const int c_NumClusterNames = 69;
+ const int c_NumberOfPlanetPosters = 25;
+ 
+ const int c_FriendlyAleph = 0;          // Friend to Friend
+@@ -136,6 +136,9 @@
+ 
+         short GetMaxPlayersOnTeam()
+             { return(mpMissionParams->nMaxPlayersPerTeam); }
++		// KGJV-: added, access to iMapSize parameter
++		short GetMapSize()
++			{ return (mpMissionParams->iMapSize); }
+         short GetMaxPlayersInMission()
+             { return(GetMaxPlayersOnTeam() * GetTeams()); }
+         CivID GetCivID(SideID sideID)
+Index: Igc/missionigc.cpp
+===================================================================
+RCS file: /cvsroot/alleg_src/src/Igc/missionigc.cpp,v
+retrieving revision 1.1.4.1
+diff -u -r1.1.4.1 missionigc.cpp
+--- Igc/missionigc.cpp	20 May 2004 01:00:59 -0000	1.1.4.1
++++ Igc/missionigc.cpp	3 Sep 2004 13:37:39 -0000
+@@ -1577,6 +1577,68 @@
+         // Make a mission with a custom map
+         //
+ 
++		// KGJV - randomize alephs positions
++		// ---------------------------------
++		// code from CmapMakerIGC::GenerateMission
++		// adapted for predefined alephs.
++		{
++			//Adjust the position of all alephs in all clusters
++			float   majorRadius = GetFloatConstant(c_fcidRadiusUniverse);
++			for (ClusterLinkIGC*    pcl = m_clusters.first(); (pcl != NULL); pcl = pcl->next())
++			{
++				IclusterIGC*    pcluster = pcl->data();
++				const WarpListIGC*  pwarps = pcluster->GetWarps();
++				if (pwarps->n() != 0)
++				{
++					float   nWarps = (float)(pwarps->n());
++					const int c_maxWarps = 10;
++					assert (pwarps->n() <= c_maxWarps);
++					float   offset[c_maxWarps] = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
++					float   displacement;
++					if (pwarps->n() > 1)
++					{
++						displacement =  sin(pi/nWarps) * 2.0f / 3.0f;
++						for (int index = 0; (index < pwarps->n()); index++)
++						{
++							int swap = randomInt(0, pwarps->n() - 1);
++							if (swap != index)
++							{
++								float   t = offset[index];
++								offset[index] = offset[swap];
++								offset[swap] = t;
++							}
++						}
++					}
++					else
++						displacement = 2.0f / 3.0f;
++					{
++						float   bias = random(0.0f, 2.0f * pi);
++						int     index = 0;
++
++						for (WarpLinkIGC*   pwl = pwarps->first(); (pwl != NULL); pwl = pwl->next())
++						{
++							IwarpIGC*   pwarp = pwl->data();
++							//float       r = pwarp->GetPosition().z * majorRadius;
++							float       r = 0.6f * majorRadius;
++							float       angle = bias + offset[index++] * (2.0f * pi) / nWarps;
++							Vector      position;
++							position = Vector::RandomPosition(r * displacement);
++							position.x  += cos(angle) * r;
++							position.y  += sin(angle) * r;
++							position.z  *= 1.2f;
++							pwarp->SetPosition(position);
++							Orientation o(-position);
++							pwarp->SetOrientation(o);
++							// fix rotating alephs
++							Rotation rot(0,0,1,0);
++							pwarp->SetRotation(rot);
++							pwarp->GetHitTest()->UpdateStaticBB();
++						}
++					}
++				}
++			}
++		}
++		//---------------------------------------
+         float   amountHe3;
+         {
+             float   nHe3 = 0.0f;
+Index: Inc/SlmVer.h
+===================================================================
+RCS file: /cvsroot/alleg_src/src/Inc/SlmVer.h,v
+retrieving revision 1.1.4.1
+diff -u -r1.1.4.1 SlmVer.h
+--- Inc/SlmVer.h	20 May 2004 01:00:59 -0000	1.1.4.1
++++ Inc/SlmVer.h	3 Sep 2004 13:37:39 -0000
+@@ -1,5 +1,5 @@
+ #define rmj		1
+ #define rmm		0
+-#define rup		6
++#define rup		9
+ #define szVerName	""
+ #define szVerUser	"CURTC3"
