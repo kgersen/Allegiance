@@ -208,7 +208,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="agc.manifest.bat $(ConfigurationName)"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -306,7 +306,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="agc.manifest.bat $(ConfigurationName)"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -402,7 +402,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="agc.manifest.bat $(ConfigurationName)"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -500,7 +500,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="agc.manifest.bat $(ConfigurationName)"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"

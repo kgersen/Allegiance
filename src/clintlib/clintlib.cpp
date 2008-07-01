@@ -1263,14 +1263,12 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
 			szServer[0] = '\0';
 
 			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
-				LSTATUS hr = ::RegQueryValueEx(hKey,"ServerAddress", NULL, &dwType, (unsigned char*)&szServer, &cbValue);
+				::RegQueryValueEx(hKey,"ServerAddress", NULL, &dwType, (unsigned char*)&szServer, &cbValue);
 				::RegCloseKey(hKey);
 			}
 
 			if (szServer[0]!=0)
 				 ci.strServer = szServer;
-
-			debugf("JoinSession %s,%s,%i\n",(PCC)ci.strServer,ci.szName,ci.dwPort);
 #endif
 			hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
 		}

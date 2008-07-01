@@ -1199,14 +1199,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\asynchttp.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\asynchttp.h"
-			>
-		</File>
-		<File
 			RelativePath="BitArray.cpp"
 			>
 		</File>
