@@ -1047,6 +1047,7 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="FZRetail|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1080,6 +1081,7 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="FZRetail|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"

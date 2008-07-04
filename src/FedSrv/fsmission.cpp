@@ -425,8 +425,8 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
     g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
 
 #if defined(SRV_CHILD)
-	// Imago 6/25/08 untested
-	if (GetGroupMission()->GetCountConnections() == 0 && GetGameDuration() < 15.0f) { // <-- set that to the pump cycle
+	// Imago 6/25/08 
+	if (GetGroupMission()->GetCountConnections() == 0 && GetGameDuration() < 15.0f && g.dwArgCookie > 99) { // <-- set that to the pump cycle
 		char strFilename[10] = "\0";
 		sprintf(strFilename,"%d.pid",GetCurrentProcessId());
 		UTL::SaveFile(strFilename,"1",2,NULL,false); // the creation of this file signals the parent

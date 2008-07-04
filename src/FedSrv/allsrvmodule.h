@@ -61,6 +61,7 @@ public:
   VOID         RunAsExecutable();
   //imago - parent/child server tracking functions 6/23/08
 #if defined(SRV_PARENT)  
+  void         BreakChildren();
   DWORD		   GetOutgoingPort(void);													//remember the last port used to 
   void		   SetOutgoingPort(DWORD dwPort);											//handle game creation requests from lobby
 
@@ -108,8 +109,11 @@ extern CServiceModule _Module;
 
 
 void PrintSystemErrorMessage(LPCTSTR szBuf, DWORD dwErrorCode);
+#if defined(SRV_PARENT)
+void WINAPI MPServiceMain(DWORD dwArgc, LPTSTR* lpszArgv);
+#else
 void WINAPI _ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv);
-
+#endif
 
 extern const GUID APPID_AllSrv;
 extern const char *c_szAPPID_AllSrv; // string form of APPID_AllSrv

@@ -282,7 +282,7 @@
 				Optimization="2"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\FedSrv;..\Test\Inc;..\Inc;..\AGC;&quot;$(OutDir)/../Test/TCObj&quot;;&quot;$(OutDir)/../FedSrv&quot;;&quot;$(OutDir)/../AGC&quot;;../ZLib"
-				PreprocessorDefinitions="WIN32;WINVER=0x0400"
+				PreprocessorDefinitions="WIN32;WINVER=0x0600"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
 				TreatWChar_tAsBuiltInType="false"

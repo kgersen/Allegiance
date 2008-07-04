@@ -371,6 +371,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="copy ..\..\objs\FZRetail\FedSrvChild\AllSrv.exe ..\..\objs\FZRetail\FedSrvParent\AllSrv.exe /y"
+				CommandLine="copy ..\..\objs\FZRetail\FedSrvChild\AllSrv.exe ..\..\objs\FZRetail\FedSrvParent\AllSrv.exe /y"
 			/>
 		</Configuration>
 	</Configurations>
@@ -1049,6 +1051,7 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="FZRetail|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1082,6 +1085,7 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="FZRetail|Win32"
+						ExcludedFromBuild="true"
 						>
 						<Tool
 							Name="VCCustomBuildTool"

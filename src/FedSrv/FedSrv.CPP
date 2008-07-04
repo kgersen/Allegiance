@@ -6960,7 +6960,7 @@ void CheckForNoShows()
         pfsMission->GetCountOfPlayers(NULL, true) == 0)
 	{
 #else
-    if (pfsMission->GetCountOfPlayers(NULL, true) == 0)
+    if (pfsMission->GetCountOfPlayers(NULL, true) == 0 && g.dwArgCookie > 99)
 	{
 #endif
       // nuke it if it's been around more than 15 seconds
@@ -7955,13 +7955,17 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* Imago can use now */
     // if we were started NOT from the COM object model, start any autostart games
   // KGJV - FZ servers starts default games only in service mode (ie not COMStarted).
 	  //Imago - Use StartDefaultGames in a child process to accept a mission from the parent
-#if !defined(SRV_PARENT)
+
+#if defined(SRV_PARENT)
+	if (!_Module.GetChildCount())
+		StartDefaultGames();
+#else
 #if defined(ALLSRV_STANDALONE)
   if (!_Module.WasCOMStarted())
 #endif
       StartDefaultGames();
-  // #endif
 #endif
+  // #endif
   }
 
   return hr;
@@ -8116,18 +8120,31 @@ void StartDefaultGames()
 	mp.bScoresCount = false;
 	mp.iMaxImbalance = 0x7ffe;
 	mp.bLockGameOpen = false;
+	
+	mp.bObjectModelCreated = (g.dwArgCookie < 99) ? true : false;
 
     // Create the new mission
     FedSrvSite * psiteFedSrv = new FedSrvSite();
     CFSMission * pfsMissionNew = new CFSMission(mp, NULL, psiteFedSrv, psiteFedSrv, NULL, NULL);
 
-	// Set the cookie to the connection request so the mission creator can auto-join
-	pfsMissionNew->SetCookie(g.dwArgCookie);
+	if(g.dwArgCookie < 99) {
+		// tell the lobby about the mission
+		if (g.fmLobby.IsConnected())
+		{
+		  BEGIN_PFM_CREATE(g.fmLobby, pfmNewMission, S, NEW_MISSION)
+		  END_PFM_CREATE
+		  pfmNewMission->dwIGCMissionID = pfsMissionNew->GetIGCMission()->GetMissionID();
+
+		  g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		}
+	} else {
+		// Set the cookie to the connection request so the mission creator can auto-join
+		pfsMissionNew->SetCookie(g.dwArgCookie);
+	}
     
 	debugf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
-#endif
+#else
 	// Imago: otherwise do the regular gig
-#if !defined(SRV_PARENT) 
 	while (SUCCEEDED(hr))
     {
       char cbValueName[24];
@@ -8188,7 +8205,8 @@ void StartDefaultGames()
         
         // KGJV #92 - display LockOpen/Min/Maxrank and removed map name
         printf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
-
+		debugf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
+#if !defined(SRV_PARENT)
         // Create the new mission
         FedSrvSite * psiteFedSrv = new FedSrvSite();
         CFSMission * pfsMissionNew = new CFSMission(mp, NULL, psiteFedSrv, psiteFedSrv, NULL, NULL);
@@ -8202,11 +8220,63 @@ void StartDefaultGames()
 
           g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
         }
+#else //start default games in their own process
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+		ZeroMemory( &si, sizeof(si) );	
+		si.cb = sizeof(si);				
+		ZeroMemory( &pi, sizeof(pi) );	
+		char szCmd[255]; char szName[32]; char szFile[32];
+		ZString strName = mp.strGameName;
+		ZString strFile = mp.szIGCStaticFile;
+		si.lpTitle = mp.strGameName;
+		Strcpy(szName,(PCC)strName);
+		Strcpy(szFile,(PCC)strFile);
+		sprintf(szCmd,"AllSrv.exe \"%s\" %s %x",szName,szFile,iGame);
+		
+		// Create a NULL dacl to give "everyone" access
+		SECURITY_DESCRIPTOR sd;
+		SECURITY_ATTRIBUTES sa = {sizeof(sa), &sd, false};
+		InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+		SetSecurityDescriptorDacl(&sd, true, NULL, FALSE);
+
+		if( !CreateProcess(
+			NULL,                   // No module name (use command line). 
+			szCmd,					
+			NULL,                   
+			NULL,                   
+			FALSE,                  // Set handle inheritance to FALSE. 
+			CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE, // we're destined to do amazing things
+			NULL,                   // Use parent's environment block. 
+			NULL,                   // Use parent's starting directory. 
+			&si,                    // Pointer to STARTUPINFO structure.
+			&pi )                   // Pointer to PROCESS_INFORMATION structure.
+		) 
+		{
+			debugf( "CreateProcess failed (%d).\n", GetLastError() );
+		}
+	
+		_Module.AddPID(pi.dwProcessId);
+		char strFilename[10] = "\0";
+		sprintf(strFilename,"%d.pid",pi.dwProcessId);
+		UTL::SaveFile(strFilename,"1",2,NULL,false);
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		g.bRestarting = true;
+		Sleep(1000);
+#endif
       }
       ++iGame;
     }
+
 #endif
     RegCloseKey(hKey);
+#if defined(SRV_PARENT) //reload ourselves to free the mission handles
+	if(g.bRestarting) {
+		Sleep(1000);
+		PostQuitMessage(0);
+	}
+#endif
   }
 }
 //#endif
@@ -9124,7 +9194,7 @@ int __cdecl main(int argc, char *argv[])
 {
 //Imago 6/25/08
 #if defined(SRV_PARENT)
-	SetPriorityClass(GetCurrentProcess(),ABOVE_NORMAL_PRIORITY_CLASS); //we're set out to do wonderful things
+	//SetPriorityClass(GetCurrentProcess(),ABOVE_NORMAL_PRIORITY_CLASS); //we're set out to do wonderful things
 #endif
     // Load the global settings from the registry
     LoadSettings();
@@ -9162,16 +9232,24 @@ int __cdecl main(int argc, char *argv[])
     RETURN_FAILED(hr);
 
     // Initialize AGC
-    ZSucceeded(hr = _Module.InitAGC()); //dies here if the "Event Log" service is not started
+    ZSucceeded(hr = _Module.InitAGC()); //dies here if the "Event Log" service is not started -Imago
     RETURN_FAILED(hr);
 
     char szSvcName[64];
-    strcpy(szSvcName, c_szSvcName);
+	strcpy(szSvcName, c_szSvcName);
+#if defined(SRV_PARENT)
+    SERVICE_TABLE_ENTRY rgSTE[] =
+    {
+        { szSvcName, (LPSERVICE_MAIN_FUNCTION) MPServiceMain },
+        { NULL, NULL }
+    };
+#else
     SERVICE_TABLE_ENTRY rgSTE[] =
     {
         { szSvcName, (LPSERVICE_MAIN_FUNCTION)_ServiceMain },
         { NULL, NULL }
     };
+#endif
     bool fShowUsage = false;
 
     g.hInst = GetModuleHandle(NULL);

@@ -59,10 +59,10 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		if( !CreateProcess(
 			NULL,                   // No module name (use command line). 
 			szCmd,					
-			&sa,                   
-			&sa,                   
+			NULL,                   
+			NULL,                   
 			FALSE,                  // Set handle inheritance to FALSE. 
-			HIGH_PRIORITY_CLASS, // we're destined to do amazing things
+			CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE, // we're destined to do amazing things
 			NULL,                   // Use parent's environment block. 
 			NULL,                   // Use parent's starting directory. 
 			&si,                    // Pointer to STARTUPINFO structure.
@@ -71,10 +71,8 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		{
 			debugf( "CreateProcess failed (%d).\n", GetLastError() );
 		}
-	
-		//printf("Created mission process %s (handle:%d)\n",szCmd,pi.hProcess);
 
-		// check to make sure the PID exists before restart
+		// check to make sure the child is ready before restart
  		char strFilename[10] = "\0";
 		sprintf(strFilename,"%d.pid",pi.dwProcessId);
         HANDLE hFile = (HANDLE)CreateFile(strFilename, 0, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
@@ -95,8 +93,6 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		CloseHandle(pi.hThread);
 		g.bRestarting = true;
 		PostQuitMessage(0);
-		//PostThreadMessage(g.idReceiveThread,wm_fs_restart,0,0);	
-	
 
 #endif 
 	
