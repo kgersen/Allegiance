@@ -174,12 +174,13 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 											&sD3DDev9.d3dPresParams,
 											&sD3DDev9.pD3DDevice );
 
+	// Imago comment out the D3DERR_NOTAVAILABLE checks...
 	// Did we create a valid device?
 	if( hr != D3D_OK )
 	{
 		pLogFile->OutputStringV( "Pure HWVP device creation failed: 0x%08x.\n", hr );
-		if( hr == D3DERR_NOTAVAILABLE )
-		{
+		//if( hr == D3DERR_NOTAVAILABLE )
+		//{
 			// No, try a non-pure device.
 			dwCreationFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING;
 			hr = sD3DDev9.pD3D9->CreateDevice(	sDevSetupParams.iAdapterID,
@@ -192,8 +193,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 			{
 				pLogFile->OutputStringV( "HWVP device creation failed: 0x%08x.\n", hr );
 				// Still no joy, try a software vp device.
-				if( hr == D3DERR_NOTAVAILABLE )
-				{
+				//if( hr == D3DERR_NOTAVAILABLE )
+				//{
 					dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 					hr = sD3DDev9.pD3D9->CreateDevice(	sDevSetupParams.iAdapterID,
 														D3DDEVTYPE_HAL,
@@ -211,7 +212,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 					{
 						pLogFile->OutputStringV( "SWVP device creation failed: 0x%08x.\n", hr );
 					}
-				}
+				//}
 			}
 			else
 			{
@@ -219,7 +220,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 				sD3DDev9.bPureDevice = false;
 				pLogFile->OutputString( "HWVP device created.\n" );
 			}
-		}
+		//}
 	}
 	else
 	{
@@ -256,18 +257,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	// Store state.
 	sD3DDev9.bIsWindowed = sDevSetupParams.bRunWindowed;
 
-	// Get flags and caps.
-	HRESULT hTemp = sD3DDev9.pD3D9->CheckDeviceFormat(	D3DADAPTER_DEFAULT, 
-														D3DDEVTYPE_HAL,
-														sD3DDev9.pCurrentMode->mode.Format,
-														0,
-														D3DRTYPE_TEXTURE,
-														D3DFMT_A1R5G5B5 );
-	if( hTemp == D3D_OK )
-	{
-		pLogFile->OutputString( "Device supports A1R5G5B5 format.\n" );
-		sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = true;
-	}
+	// Imago don't use this it breaks D3DCOLOR
+	sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = false;
 
 	// Auto gen mipmaps flag - include user setting.
 	if( ( ( sD3DDev9.sD3DDevCaps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP ) != 0 ) &&
