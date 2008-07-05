@@ -1,6 +1,6 @@
 ///
-///	@file 	copyHandler.h
-/// @brief 	Header for the copyHandler
+///	@file 	dirHandler.h
+/// @brief 	Header for dirHandler
 //	@copy	default
 //	
 //	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
@@ -27,58 +27,97 @@
 //	Software at http://www.mbedthis.com 
 //	
 //	@end
-////////////////////////////////// Includes ////////////////////////////////////
+/////////////////////////////////// Includes ///////////////////////////////////
 
-#ifndef _h_COPY_MODULE
-#define _h_COPY_MODULE 1
+#ifndef _h_DIR_MODULE
+#define _h_DIR_MODULE 1
 
 #include	"http.h"
 
 /////////////////////////////// Forward Definitions ////////////////////////////
+#if BLD_FEATURE_DIR_MODULE
 
-class MaCopyHandler;
-class MaCopyHandlerService;
-class MaCopyModule;
+class MaDirHandler;
+class MaDirHandlerService;
+class MaDirModule;
 
 extern "C" {
-	extern int mprCopyInit(void *handle);
+	extern int mprDirInit(void *handle);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////// MaCopyModule //////////////////////////////////
+////////////////////////////////// DirModule //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-class MaCopyModule : public MaModule {
+class MaDirModule : public MaModule {
   private:
-	MaCopyHandlerService 
-					*copyHandlerService;
+	MaDirHandlerService 
+					*dirHandlerService;
   public:
-					MaCopyModule(void *handle);
-					~MaCopyModule();
+					MaDirModule(void *handle);
+					~MaDirModule();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////// MaCopyHandler ////////////////////////////////
+//////////////////////////////// MaDirHandler /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-class MaCopyHandlerService : public MaHandlerService {
+typedef struct MaDirEntry {
+	MprStr			name;
+	uint64			lastModified;
+	bool			isDir;
+	uint			size;
+} MaDirEntry;
+
+
+class MaDirHandlerService : public MaHandlerService {
+  private:
+	MprLogModule	*log;
   public:
-					MaCopyHandlerService();
-					~MaCopyHandlerService();
-	MaHandler		*newHandler(MaServer *server, MaHost *host, char *ex);
+					MaDirHandlerService();
+					~MaDirHandlerService();
+	MaHandler		*newHandler(MaServer *server, MaHost *host, char *ext);
 };
 
-class MaCopyHandler : public MaHandler {
+
+class MaDirHandler : public MaHandler {
+  private:
+	MprStr			defaultIcon;
+	MprList			dirList;
+	bool			doIndexes;
+	MprStringList	extList;
+	int				fancyIndexing;
+	bool			foldersFirst;
+	MprStringList	ignoreList;
+	MprStr			pattern;
+	MprStr			sortField;
+	int				sortOrder;				// 1 == ascending, -1 descending
+
   public:
-					MaCopyHandler();
-					~MaCopyHandler();
+					MaDirHandler();
+					~MaDirHandler();
 	MaHandler		*cloneHandler();
+	int 			filterDirList(MaRequest *rq, MaDirEntry *list, int count);
+	void			generateListing(MaRequest *rq);
 	int				matchRequest(MaRequest *rq, char *uri, int uriLen);
 	int				run(MaRequest *rq);
+	void			parseQuery(MaRequest *rq);
+	void			outputFooter(MaRequest *rq);
+	void			outputLine(MaRequest *rq, MaDirEntry *ep, const char *dir,
+						int nameSize);
+	void			outputHeader(MaRequest *rq, const char *dir, int nameSize);
+	void			sortList(MaDirEntry *list, int count);
+
+#if BLD_FEATURE_CONFIG_PARSE
+	int				parseConfig(char *key, char *value, MaServer *server, 
+						MaHost *host, MaAuth *auth, MaDir *dir, 
+						MaLocation *location);
+#endif
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-#endif // _h_COPY_MODULE 
+#endif //	BLD_FEATURE_DIR_MODULE
+#endif // 	_h_DIR_MODULE 
 
 //
 // Local variables:

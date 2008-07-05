@@ -384,6 +384,27 @@ void CServiceModule::BreakChildren()
 }
 #endif
 
+//not really a queue but its fast and get's the job done -Imago 7/5/08
+WORD CServiceModule::QueueASGSResponse(DWORD dpid) {
+	if (this->m_asgsid == 8) //lucky number (2x max appweb threads)
+		this->m_asgsid = 0;
+
+	this->m_dpids[this->m_asgsid] = dpid;
+	DWORD asgsid = this->m_asgsid;
+	this->m_asgsid++;
+	return asgsid;
+}
+WORD CServiceModule::GetASGSResponse(DWORD dpid) {
+	WORD asgsid = 8; //cant happen
+	for(int i=0;i<=7;i++) {
+		if (this->m_dpids[i] == dpid) {
+			asgsid = i;
+			break;
+		}
+	}
+	return asgsid;
+}
+
 /*-------------------------------------------------------------------------
  * CServiceModule::get_EventLog
  *-------------------------------------------------------------------------

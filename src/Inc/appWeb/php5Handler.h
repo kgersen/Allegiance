@@ -3,7 +3,7 @@
 /// @brief 	Header for the phpHandler
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -33,24 +33,29 @@
 #define _h_PHP5_MODULE 1
 
 //
-//	Must always use Zend Thread Safety (appWeb is multi-threaded)
-#define ZTS 1
-
-//
 //	PHP includes crtdbg.h which messes up _delete definitions
 //
 #define _INC_CRTDBG
-
-//
-//	For PHP5
-//
-#define PTHREADS 1
 
 #ifndef UNSAFE_FUNCTIONS_OK
 #define UNSAFE_FUNCTIONS_OK 1
 #endif
 
 #include	"http.h"
+
+#if BLD_FEATURE_MULTITHREAD
+#define ZTS 1
+#define PTHREADS 1
+#endif
+
+//
+//	Workaround for VS 2005 and PHP5 headers. Need to include before PHP headers
+//	include it.
+//
+#if _MSC_VER >= 1400
+#include	<sys/utime.h>
+#endif
+
 
 #if BLD_FEATURE_PHP5_MODULE
 
@@ -68,15 +73,9 @@
 #define ZEND_DEBUG 0
 #endif
 
-#if PHP5
 #define MA_PHP_MODULE_NAME	"php5"
 #define MA_PHP_HANDLER_NAME	"php5Handler"
 #define MA_PHP_LOG_NAME		"php5"
-#else
-#define MA_PHP_MODULE_NAME	"php4"
-#define MA_PHP_HANDLER_NAME	"php4Handler"
-#define MA_PHP_LOG_NAME		"php4"
-#endif
 
 extern "C" {
 
@@ -86,6 +85,8 @@ extern "C" {
 //
 #define _MFC_OVERRIDES_NEW
 #endif
+
+#undef chdir
 
 #include <main/php.h>
 #include <main/php_globals.h>

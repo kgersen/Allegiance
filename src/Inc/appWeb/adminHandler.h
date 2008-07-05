@@ -3,7 +3,7 @@
 /// @brief 	Header for the adminHandler
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -43,7 +43,7 @@ class MaAdminHandlerService;
 
 extern "C" {
 	extern int mprAdminInit(void *handle);
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// MaAdminModule ////////////////////////////////
@@ -91,7 +91,5 @@ class MaAdminHandler : public MaHandler {
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim:tw=78
-// vim600: sw=4 ts=4 fdm=marker
-// vim<600: sw=4 ts=4
+// vim: sw=4 ts=4 
 //

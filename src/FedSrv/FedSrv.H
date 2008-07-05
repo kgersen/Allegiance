@@ -257,11 +257,13 @@ struct Global
 #endif
   {
     ZeroMemory(rgTechs, sizeof(rgTechs));
+	ZeroMemory(asgsResponses, sizeof(asgsResponses));
   }
 
   // Explicit initialization
   void Init()
   {
+
     // Explicitly initialize the ZString objects
     strLobbyServer.SetEmpty();
     strAuthServer.SetEmpty();
@@ -278,7 +280,7 @@ struct Global
   SERVICE_STATUS_HANDLE ssh;
 
   HINSTANCE           hInst;
-  SWMRG               swmrg;
+  //SWMRG               swmrg;
   FedSrvSite          siteFedSrv;
   FedSrvLobbySite     siteFSLobby;
   DPID                dpidEveryone;     // People in the mission lobby and every mission
@@ -319,6 +321,7 @@ struct Global
   ZString             strAuthServer;
   ZString             strLocalAddress;
   char                rgTechs[cTechs][CbTechBitName+1];
+  RankID              asgsResponses[7]; //imago - appweb threads sync asgs responses here (7 = max_appweb_threads(4) * 2 - 1 for 0)
   DWORD               dwLobbyPort;    // connect to this
 
   RankInfo*           vRankInfo;
@@ -408,6 +411,5 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 #define TrapHack(x) assert(x)
 
 #define wm_fs_pause WM_APP // wparam/lparam not used
-#define wm_fs_restart WM_QUEUESYNC //whatever
 
 #endif // _FEDSRV_H_

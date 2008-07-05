@@ -10,10 +10,9 @@
 #ifndef _FEDSRV_PCH_
 #define _FEDSRV_PCH_
 
-#define _ATL_STATIC_REGISTRY
+#include "appWeb\appWeb.h" //Imago - updated to 2.4.2-2 XP
 
-//Removed - Imago will use async calls to WinHTTP 5.1 unless someone else fixes it first.
-//#include "appWeb/appWeb.h" //Imago: HTTP Library for ASGS services
+#define _ATL_STATIC_REGISTRY
 
 // browse info overflow warnings for STL objects
 #pragma warning(disable : 4786)
@@ -75,7 +74,7 @@
 #include <Messages.h>
 #include <MessagesLS.h>
 
-#include "SWMRG.h"
+//#include "SWMRG.h"
 #include "BitArray.h"
 #include "point.h"
 //#include "srvdbg.h"
@@ -111,13 +110,11 @@ extern Global g;
 
 #include "regkey.h"
 
-
 /////////////////////////////////////////////////////////////////////////////
 // This is included very last since it conflicts with <atlwin.h>, included
 // indirectly by <TCAtl.h>.
 //
 #include <windowsx.h> // For GlobalAllocPtr and GlobalFreePtr
-
 
 /////////////////////////////////////////////////////////////////////////////
 

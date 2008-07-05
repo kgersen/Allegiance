@@ -8,7 +8,7 @@
 /*
  *	@copy	default.g
  *	
- *	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+ *	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
  *	Portions Copyright (c) GoAhead Software, 1995-2000. All Rights Reserved.
  *	
  *	This software is distributed under commercial and open source licenses.
@@ -260,7 +260,6 @@ extern int 		ejsGetVarCore(Ejs *ep, char *var, MprVar **obj,
 					MprVar **varValue, int flags);
 extern int		ejsParse(Ejs *ep, int state, int flags);
 extern Ejs 		*ejsPtr(EjsId eid);
-extern void 	ejsSetExitStatus(int eid, int status);
 extern void 	ejsSetFlags(int orFlags, int andFlags);
 
 /*
@@ -286,7 +285,5 @@ extern void		ejsError(Ejs *ep, char *fmt, ...);
  * tab-width: 4
  * c-basic-offset: 4
  * End:
- * vim:tw=78
- * vim600: sw=4 ts=4 fdm=marker
- * vim<600: sw=4 ts=4
+ * vim: sw=4 ts=4 
  */

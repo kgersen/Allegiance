@@ -247,11 +247,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
 				OutputFile="$(OutDir)/AllSrvMP.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="false"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="../Inc/AppWeb"
+				IgnoreDefaultLibraryNames="msvcrt.lib"
 				DelayLoadDLLs="netapi32.dll;advapi32.dll"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
@@ -338,10 +339,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib dxguid.lib amstrmid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib appweb.lib"
 				OutputFile="$(OutDir)/AllSrvMP.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="../Inc/AppWeb"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs="netapi32.dll;advapi32.dll"

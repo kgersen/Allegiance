@@ -1,9 +1,9 @@
 ///
-///	@file 	copyHandler.h
-/// @brief 	Header for the copyHandler
-//	@copy	default
+///	@file 	putHandler.h
+/// @brief 	Header for the putHandler
+//	@put	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+//	Putright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -29,56 +29,61 @@
 //	@end
 ////////////////////////////////// Includes ////////////////////////////////////
 
-#ifndef _h_COPY_MODULE
-#define _h_COPY_MODULE 1
+#ifndef _h_PUT_MODULE
+#define _h_PUT_MODULE 1
 
 #include	"http.h"
 
 /////////////////////////////// Forward Definitions ////////////////////////////
 
-class MaCopyHandler;
-class MaCopyHandlerService;
-class MaCopyModule;
+class MaPutHandler;
+class MaPutHandlerService;
+class MaPutModule;
 
 extern "C" {
-	extern int mprCopyInit(void *handle);
+	extern int mprPutInit(void *handle);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////// MaCopyModule //////////////////////////////////
+//////////////////////////////// MaPutModule //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-class MaCopyModule : public MaModule {
+class MaPutModule : public MaModule {
   private:
-	MaCopyHandlerService 
-					*copyHandlerService;
+	MaPutHandlerService 
+					*putHandlerService;
   public:
-					MaCopyModule(void *handle);
-					~MaCopyModule();
+					MaPutModule(void *handle);
+					~MaPutModule();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////// MaCopyHandler ////////////////////////////////
+///////////////////////////////// MaPutHandler ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-class MaCopyHandlerService : public MaHandlerService {
+class MaPutHandlerService : public MaHandlerService {
   public:
-					MaCopyHandlerService();
-					~MaCopyHandlerService();
+					MaPutHandlerService();
+					~MaPutHandlerService();
 	MaHandler		*newHandler(MaServer *server, MaHost *host, char *ex);
 };
 
-class MaCopyHandler : public MaHandler {
+class MaPutHandler : public MaHandler {
+  private:
+	MprFile			*file;
+	int				disableRange;
+
   public:
-					MaCopyHandler();
-					~MaCopyHandler();
+					MaPutHandler();
+					~MaPutHandler();
 	MaHandler		*cloneHandler();
 	int				matchRequest(MaRequest *rq, char *uri, int uriLen);
+	void			postData(MaRequest *rq, char *buf, int len);
 	int				run(MaRequest *rq);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-#endif // _h_COPY_MODULE 
+#endif // _h_PUT_MODULE 
 
 //
 // Local variables:

@@ -8,7 +8,7 @@
 //
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -101,9 +101,10 @@ class	MaSslConfig;
 #define MPR_HTTP_IN_BUFSIZE			(4096)
 #endif
 
-#define MPR_HTTP_SERVER_NAME		"Mbedthis-AppWeb/" BLD_VERSION
+#define MPR_HTTP_SERVER_NAME		"Mbedthis-Appweb/" BLD_VERSION
 #define MPR_HTTP_SERVER_TIMEOUT		(300 * 1000)	// Overridden in http.conf
 #define MPR_HTTP_SESSION_TIMEOUT	(1800)			// 30 mins "  "  "
+#define MA_SERVER_DEFAULT_PORT_NUM 	80
 
 // 
 //	Primary state machine states for the web server
@@ -123,27 +124,34 @@ class	MaSslConfig;
 #define MPR_HTTP_POST_REQUEST	0x8			// Post method
 #define MPR_HTTP_LOCAL			0x10		// Request originate on local system
 #define MPR_HTTP_SOCKET_EVENT	0x20		// Request came through socketEvent
-#define MPR_HTTP_LENGTH			0x80		// Request specified content length 
-#define MPR_HTTP_CONTENT_DATA	0x100		// Has content data
-#define MPR_HTTP_CONN_CLOSED	0x200		// Connection closed
-#define MPR_HTTP_INCOMPLETE		0x400		// Request prematurely terminated
-#define MPR_HTTP_BLOCKING		0x800		// Block waiting for data
-#define MPR_HTTP_REUSE			0x1000		// Connection used keep-alive
-#define MPR_HTTP_DONT_CACHE		0x4000		// Add no-cache to the response
-#define MPR_HTTP_HEADER_WRITTEN	0x8000		// Headers have been output
-#define MPR_HTTP_CREATE_ENV		0x10000		// Must create env for this request
-#define MPR_HTTP_FLUSHED		0x20000		// Already flushed some data
-#define MPR_HTTP_OPENED_DOC		0x40000		// Document has been opened
-#define MPR_HTTP_CUSTOM_HEADERS	0x80000		// Handler is using custom headers
-#define MPR_HTTP_DELETE_REQUEST	0x100000	// DELETE method 
-#define MPR_HTTP_GET_REQUEST	0x200000	// HEAD method 
-#define MPR_HTTP_HEAD_REQUEST	0x400000	// HEAD method 
-#define MPR_HTTP_OPTIONS_REQUEST 0x800000	// OPTIONS method 
-#define MPR_HTTP_PUT_REQUEST	0x1000000	// PUT method 
-#define MPR_HTTP_TRACE_REQUEST	0x2000000	// TRACE method 
-#define MPR_HTTP_PULL_POST		0x4000000	// Pull post data (server only)
-#define MPR_HTTP_DONT_FINISH 	0x8000000	// Don't auto finish the request
-#define MPR_HTTP_CHUNKED 		0x10000000	// Output is chunked
+#define MPR_HTTP_LENGTH			0x40		// Request specified content length 
+#define MPR_HTTP_CONTENT_DATA	0x80		// Has content data
+#define MPR_HTTP_CONN_CLOSED	0x100		// Connection closed
+#define MPR_HTTP_INCOMPLETE		0x200		// Request prematurely terminated
+#define MPR_HTTP_BLOCKING		0x400		// Block waiting for data
+#define MPR_HTTP_REUSE			0x800		// Connection used keep-alive
+#define MPR_HTTP_DONT_CACHE		0x1000		// Add no-cache to the response
+#define MPR_HTTP_HEADER_WRITTEN	0x2000		// Headers have been output
+#define MPR_HTTP_CREATE_ENV		0x4000		// Must create env for this request
+#define MPR_HTTP_FLUSHED		0x8000		// Already flushed some data
+#define MPR_HTTP_OPENED_DOC		0x10000		// Document has been opened
+#define MPR_HTTP_CUSTOM_HEADERS	0x20000		// Handler is using custom headers
+#define MPR_HTTP_DELETE_REQUEST	0x40000		// DELETE method 
+#define MPR_HTTP_GET_REQUEST	0x80000		// HEAD method 
+#define MPR_HTTP_HEAD_REQUEST	0x100000	// HEAD method 
+#define MPR_HTTP_OPTIONS_REQUEST 0x200000	// OPTIONS method 
+#define MPR_HTTP_PUT_REQUEST	0x400000	// PUT method 
+#define MPR_HTTP_TRACE_REQUEST	0x800000	// TRACE method 
+#define MPR_HTTP_PULL_POST		0x1000000	// Pull post data (server only)
+#define MPR_HTTP_DONT_FINISH 	0x2000000	// Don't auto finish the request
+#define MPR_HTTP_CHUNKED 		0x4000000	// Output is chunked
+#define MPR_HTTP_NO_CHUNKING 	0x8000000	// Client requested no chunking
+#define MPR_HTTP_OWN_GLOBAL 	0x10000000	// TerminalHandler creates own global obj
+
+#if BLD_FEATURE_RANGES
+#define MPR_HTTP_OUTPUT_MULTI 	0x10000000	// Using output multipart ranges
+#define MPR_HTTP_INPUT_RANGE 	0x20000000	// Using input ranges
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// MaLimits ////////////////////////////////////
@@ -390,7 +398,7 @@ class MaServer : public MprLink {
 	MaHttp			*http;		
 	MprLogModule	*tMod;
 	MprFileSystem	*fileSystem;
-	static MaServer	*MaServer::defaultServer;
+	static MaServer	*defaultServer;
 
   private:
 	MprFileSystem	*defaultFileSystem;
@@ -399,6 +407,7 @@ class MaServer : public MprLink {
 	MprHashTable	*hostAddresses;			// List of HostAddress objects
 	int				lineNumber;				// Line in http.conf
 	MprList			listens;				// List of listening sockets
+	int				maxConcurrentRequests;	// Maximum number of clients
 	MprStr			name;					// Unique name for this server
 	MprStr			serverRoot;				// Server root
 	bool			alreadyLogging;			// Already logging
@@ -435,9 +444,10 @@ class MaServer : public MprLink {
 	//
 	int				createHostAddresses(MaHost *host, char *value);
 	void			displayConfig();
+	int 			featureSupported(char *key);
+	MaHost			*findHost(char *name);
 	static MaServer	*getDefaultServer();
 	MaHost			*getDefaultHost();
-	MaHost			*findHost(char *name);
 	MprFileSystem	*getFileSystem() { return fileSystem; };
 	int				getValue(char **value, char *buf, char **nextToken, 
 						int quotes);
@@ -449,6 +459,7 @@ class MaServer : public MprLink {
 						MaDir* dir, MaLocation *location);
 	void			setDefaultHost(MaHost *host);
 	static void		setDefaultServer(MaServer *server);
+	void 			setDefaultPage(char *path, char *fileName);
 	void			setFileSystem(MprFileSystem *fs);
 	void			setServerRoot(char *path);
 	int				splitValue(char **s1, char **s2, char *buf, int quotes);
@@ -741,8 +752,8 @@ class MaMimeHashEntry : public MprHashEntry {
 ////////////////////////////////////////////////////////////////////////////////
 #if BLD_FEATURE_SESSION
 
-//	MOB -- should use product name to allow myAppWeb on same system.
-#define MA_HTTP_SESSION_PREFIX "_appWebSessionId_"
+//	MOB -- should use product name to allow myAppweb on same system.
+#define MA_HTTP_SESSION_PREFIX "_appwebSessionId_"
 
 //
 //	The MaSession class provides persistent data storage for user's state data
@@ -760,6 +771,8 @@ class MaSession : public MprHashEntry {
 #endif
 	int				timeout;				// Timeout period
 	MprVar			sessionData;			// Actual session[] data object
+	void			(*expiryCallback)(void *arg);
+	void			*expiryArg;	
 
   public:
 					MaSession(MaHost *host, char *sessionId, int timeout);
@@ -771,6 +784,10 @@ class MaSession : public MprHashEntry {
 	int				getTimeout() { return timeout; };
 	void			setLastActivity(int t) { lastActivity = t; };
 	void			setExpiryTimer(MprTimer *tp) { expiryTimer = tp; };
+	void			setExpiryCallback(void (*callback)(void *arg), void *arg) { 
+						expiryCallback = callback; 
+						expiryArg = arg; 
+					};
 
 #if BLD_FEATURE_MULTITHREAD
 	inline void		lock() { mutex->lock(); };
@@ -793,13 +810,14 @@ class MaSession : public MprHashEntry {
 #define MPR_HTTP_NAMED_VHOST		0x4		// Named virtual host
 #define MPR_HTTP_RESET_HANDLERS		0x8		// Handlers reset from default
 #define MPR_HTTP_ADD_HANDLER		0x10	// Added at least one handler
-#define MPR_HTTP_USE_CHUNKING		0x20	// Use output chunking
+#define MPR_HTTP_USE_CHUNKING		0x20	// Use output chunking if required
+#define MPR_HTTP_NO_TRACE			0x40	// Prevent use of TRACE
 
 //
 //	Flags for mapToStorage
 //
 #define MPR_HTTP_REDIRECT			0x1
-#define MPR_HTTP_ADD_INDEX			0x2
+#define MPR_HTTP_REMATCH			0x2
 
 //
 //	A Host object represents a single HTTP connection endpoint. This may be
@@ -817,6 +835,7 @@ class MaHost : public MprLink {
 	MprList			aliases;				// List of Alias definitions
 	MprList			dirs;					// List of Directory definitions
 	MprStr			documentRoot;
+	MprHashTable	*errorDocuments;
 	int				flags;
 	MprList			handlers;				// List of handlers for this host 
 	int				httpVersion;			// HTTP/1.X
@@ -868,6 +887,7 @@ class MaHost : public MprLink {
 					~MaHost();
 
 	int				addHandler(char *module, char *extensions);
+	void			addErrorDocument(char *code, char *url);
 	void 			addMimeType(char *mimeType, char *ext);
 	void			deleteHandlers();
 	void			disableAuth() { authEnabled = 0; };
@@ -909,16 +929,18 @@ class MaHost : public MprLink {
 	bool			isAuthEnabled() { return authEnabled; };
 	bool			isVhost();
 	bool			isNamedVhost();
+	char			*lookupErrorDocument(int code);
 	char			*lookupMimeType(char *ext);
 	MaHandler		*lookupHandler(char *name);
 	char			*makePath(char *buf, int buflen, char *file, 
 						bool validate = 1);
 	int				mapToStorage(MaRequest *rq, char *path, int len, char *uri,
 						int flags);
-	MaHandler		*matchHandlers(MaRequest *rq, char *uri);
+	MaHandler		*matchHandlers(MaRequest *rq);
 	int				openMimeTypes(char *path);
 	void			removeRequest(MaRequest *rq);
 	char			*replaceReferences(char *buf, int buflen, char *str);
+	void			setChunking(bool on);
 	void			setDocumentRoot(char *path);
 	void			setHttpVersion(int v);
 	void			setIpSpec(char *ipSpec);
@@ -930,9 +952,11 @@ class MaHost : public MprLink {
 	void			setModuleDirs(char *path);
 	void			setNamedVhost();
 	void			setTimeout(int t) { timeout = t; };
+	void			setTraceMethod(bool on);
 	void			setVhost();
 	int				start();
 	int				stop();
+	bool			useChunking();
 	void			writeLog(char *buf, int len);
 
 #if BLD_FEATURE_KEEP_ALIVE
@@ -1126,7 +1150,6 @@ class MaRequest : public MprLink {
 	MaDir*			dir;				// Best matching dir (PTR only)
 	MaHandler		*currentHandler;
 	MprStr			decodedQuery;
-	int				endRange;			// For partial content responses
 	MprStr			etag;				// Unique identifier tag
 	MprStr			extraPath;			// Extra path information
 	MprFile			*file;				// File to be served
@@ -1145,13 +1168,15 @@ class MaRequest : public MprLink {
 	MprVar			variables[MA_HTTP_OBJ_MAX];
 	MprStr			password;
 	char			localPort[8];
-	int				outputSeekPos;		// Current position in output
+	int				outputCurrentPos;	// Current position in output
 	int				remotePort;
 	int				remainingChunk;		// Remaining response chunk to output
 	int				remainingContent;	// Remaining content data to read
 	int				remainingKeepAlive;
 	MprStr			remoteIpAddr;
+	MprStr			remoteHostName;
 	char			*requestMimeType;	// Mime type of the URL document
+	int				responseLength;		// Response content length
 	MprStr			responseMimeType;	// Mime type of the response payload
 
 	MprStr			scriptName;
@@ -1161,7 +1186,6 @@ class MaRequest : public MprLink {
 	MprSocket		*sock;
 	int				socketEventMask;
 	int				state;
-	int				startRange;			// For partial content responses
 	MaHandler		*terminalHandler;	// Actual handler doing the processing
 	int				timeout;
 	MprTimer		*timer;
@@ -1180,6 +1204,22 @@ class MaRequest : public MprLink {
 	MaRequestMatch	requestMatch;
 	MaRequestModified requestModified;
 #endif
+#if BLD_FEATURE_RANGES
+	int				inputEnd;			// For ranged input requests
+	int				inputStart;			// For ranged input requests
+	int				inputTotalSize;		// Total size of input content
+	int				outputEnd;			// For ranged content responses
+	int				outputStart;		// For ranged content responses
+
+	/*
+	 *	Output ranges
+	 */
+	MprStr			range;		
+	MprStr			rangeTok;			// For tokenizing		
+	MprStr			rangeBoundary;
+	int				sumOfRanges;		// Sum of ranges
+	char			*nextRange;		
+#endif
 #if BLD_FEATURE_MULTITHREAD
 	MprMutex		*mutex;
 #endif
@@ -1191,7 +1231,8 @@ class MaRequest : public MprLink {
 					MaRequest(MaHostAddress *ap, MaHost *hp);
 					~MaRequest();
 #if BLD_FEATURE_COOKIE || BLD_FEATURE_SESSION
-	char			*getCookie();
+	char			*getCookie();	/* Use getCookies() now */
+	char			*getCookies();
 	int 			getCrackedCookie(char *cookie, char **name, char **value, 
 						char **path);
 #endif
@@ -1201,6 +1242,7 @@ class MaRequest : public MprLink {
 	char			*getVar(char *var, char *defaultValue);
 #endif
 	char			*getVar(MaEnvType objType, char *var, char *defaultValue);
+	int				getIntVar(MaEnvType objType, char *var, int defaultValue);
 	int				readPostData(char *buf, int bufsize);
 	void			redirect(int code, char *targetUrl);
 	void			requestError(int code, char *fmt, ...);
@@ -1209,13 +1251,14 @@ class MaRequest : public MprLink {
 						char *path, bool secure);
 #endif
 	void 			setHeader(char *value, bool allowMultiple = 0);
-	void			setHeaderFlags(int headerFlags);
+	void			setHeaderFlags(int setFlags, int clearFlags);
 	int				setFileName(char *newPath);
 	void			setPullPost();
 #if BLD_FEATURE_LEGACY_API
 	void			setVar(char *var, char *value);
 #endif
 	void			setVar(MaEnvType objType, char *var, char *value);
+	void			setIntVar(MaEnvType objType, char *var, int value);
 	int				write(char *buf, int size);
 	int				write(char *s);
 	int				writeFmt(char *fmt, ...);
@@ -1260,6 +1303,7 @@ class MaRequest : public MprLink {
 	void			resetEnvObj();
 	void			incAccessError() { stats.accessErrors++; };
 	int				backgroundFlush();
+	int				blockingWrite(char *buf, int len);
 	void			cancelOutput();
 	void			cancelRequest();
 	void			cancelTimeout();
@@ -1297,8 +1341,11 @@ class MaRequest : public MprLink {
 	char			*getGroup() { return group; };
 	MaHeader		*getHeader() { return &header; };
 	char			*getIpAddr() { return listenSock->getIpAddr(); };
+	char			*getRemoteIpAddr() { return remoteIpAddr; };
 	MaLimits		*getLimits() { return limits; };
+	MaLocation		*getLocation() { return location; };
 	char			*getMethod() { return header.method; };
+	int				getMethodFlags() { return methodFlags; };
 	int 			getNumEnvProperties();
 	char			*getPassword() { return password; };
 	int				getPort() { return listenSock->getPort(); };
@@ -1320,6 +1367,7 @@ class MaRequest : public MprLink {
 	MaHandler		*getHandler() { return terminalHandler; };
 	int				getTimeSinceLastActivity();
 	char			*getUri();
+	MaUrl			*getUrl() { return &url; };
 	char			*getUriExt() { return url.ext; };
 	char			*getUser() { return user; };
 	char			*getUserAgent() { return header.userAgent; };
@@ -1329,7 +1377,7 @@ class MaRequest : public MprLink {
 	bool			isDir(char *path);
 	void			logRequest();
 	int				matchHandlers();
-	int				outputBuffer(MaDataStream *dp);
+	int				outputBuffer(MaDataStream *dp, int len);
 	int				openDoc(char *path);
 	void			outputHeader(char *fmt, ...);
 	int				parseFirstLine(char *line);
@@ -1374,13 +1422,26 @@ class MaRequest : public MprLink {
 #endif
 	void			unsetVar(MaEnvType objType, char *var);
 
+#if BLD_FEATURE_RANGES
+	void			deRangeOutput();
+	bool			isRangedInput() { 
+						return (flags & MPR_HTTP_INPUT_RANGE) ? 1 : 0;
+					};
+	bool			isRangedOutput() { return (range) ? 1 : 0; };
+	int				getNextRange(char **nextRange);
+	int				getInputStart() { return inputStart;};
+	int				getInputEnd() { return inputEnd;};
+#else
+	bool			isRangedInput() { return 0; };
+#endif
+
 #if BLD_FEATURE_MULTITHREAD
 	inline void		lock() { 
 		mutex->lock(); 
 		inUse++;
 	};
 	inline void		unlock() { 
-		if (--inUse == 0 && flags & MPR_HTTP_CONN_CLOSED) {
+		if (--inUse <= 0 && flags & MPR_HTTP_CONN_CLOSED) {
 			delete this;
 		} else {
 			mutex->unlock(); 
@@ -1389,7 +1450,7 @@ class MaRequest : public MprLink {
 #else
 	inline void		lock() { inUse++; };
 	inline void		unlock() { 
-		if (--inUse == 0 && flags & MPR_HTTP_CONN_CLOSED) {
+		if (--inUse <= 0 && flags & MPR_HTTP_CONN_CLOSED) {
 			delete this;
 		}
 	};
@@ -1421,6 +1482,7 @@ class MaRequest : public MprLink {
 #define	MPR_HANDLER_MAP_VIRTUAL	0x400		// Don't map to physical storage
 #define	MPR_HANDLER_EXTRA_PATH	0x800		// Do extra path processing
 #define	MPR_HANDLER_OWN_GLOBAL	0x1000		// Creates own global object
+#define	MPR_HANDLER_NEED_FILENAME 0x2000	// Need setFileName to be called
 #define	MPR_HANDLER_ALL	\
 	(MPR_HANDLER_GET | MPR_HANDLER_POST | MPR_HANDLER_DELETE | \
 	 MPR_HANDLER_PUT | MPR_HANDLER_OPTIONS | MPR_HANDLER_TRACE)
@@ -1528,7 +1590,9 @@ class MaRomFile : public MprFile {
 					*romFileSystem;
 	MaRomInode		*inode;
 	int				pos;						///< Current read position 
+#if UNUSED
 	Rom*			rom;
+#endif
 
   public:
 					MaRomFile(MaRomFileSystem* romFileSystem);
@@ -1555,7 +1619,5 @@ extern MaHttp *maGetHttp();
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim:tw=78
-// vim600: sw=4 ts=4 fdm=marker
-// vim<600: sw=4 ts=4
+// vim: sw=4 ts=4 
 //

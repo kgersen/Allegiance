@@ -24,7 +24,98 @@
     #include "FedSrvApp.h"
 #endif
 
-//Imago removed extrenous function
+//appweb -Imago
+static Mpr *mpr;
+//static MprLogModule *tMod;
+static MprMutex	*mutex;
+
+static void doASGS(void* data, MprThread *threadp) {
+	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
+	CQLogonStats * pls = (CQLogonStats *)data;
+	CQLogonStatsData * pqd = pls->GetData();
+	
+	WORD asgsid = atoi(mprGetCurrentThreadName());
+	WORD next = asgsid + 1;
+	if (next == 8)	//slots for 2* max async http threads
+		next = 0;	// just to make sure next one is set correctly
+
+	int contentLen = 0; char *content; char szResponse[MAX_PATH];
+	RankID myRank = -2; // -3 wait, -2 wrong rank, -1 callsign does not exist, >=0 valid rank 
+	char szURL[MAX_PATH]; char szName[c_cbName]; 
+	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign="); 
+	
+	// one thread per connecting player
+	Strcpy(szName,pqd->szCharacterName);
+	
+	// ignore "tokens" in player name
+	ZString strName = szName;
+	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
+		strcpy(szName,strName.RightOf(1));
+
+	// add the name to the url
+	strcat(szURL,szName);
+
+	// the beast
+	MaClient* client = new MaClient();
+	
+	// max wait 5 seconds
+	client->setTimeout(2500);
+	client->setRetries(2);
+
+	client->setKeepAlive(0);
+
+	// finally
+	client->getRequest(szURL);
+	content = client->getResponseContent(&contentLen);
+	
+	if (contentLen) { // theres content, we excpect it a certain way...
+		ZString strContent = content;
+		strContent = strContent.RightOf(88);
+		strContent = strContent.LeftOf("<");
+		Strcpy(szResponse,(PCC)strContent);
+		
+		// the only explicit error known, Pook?
+		if (strcmp(strtok(szResponse,"|"),"0") != 0 ) {
+				myRank = -1;
+		} else {
+				myRank = atoi(strtok(NULL,"|"));
+		}
+
+		// sanity check
+		if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
+			mutex->lock();
+			g.asgsResponses[asgsid] = myRank;
+			g.asgsResponses[next] = -3; //ensure the next slot is ready to wait
+			mutex->unlock();
+		} else { // insanity
+			mutex->lock();
+			g.asgsResponses[asgsid] = -2;
+			g.asgsResponses[next] = -3; //ensure the next slot is ready to wait
+			mutex->unlock();
+		}
+	} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0|Newbie
+		int strLen = strName.GetLength();
+		int leftParen = strName.ReverseFind('(',0);
+		if (leftParen>=1) { //rank in the name
+			char szRank[3];
+			Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
+			myRank = atoi(szRank);
+			if (!((myRank>0) && (myRank<100))) { //more insanity
+				myRank=-2; // you are the wrong rank for all missions!
+			}
+		} else { //no rank in name
+			myRank = 0; 
+		}
+		mutex->lock();
+		g.asgsResponses[asgsid] = myRank;
+		g.asgsResponses[next] = -3; //ensure the next slot is ready to wait
+		mutex->unlock();
+	}
+
+	// tell the main thread we've finished using the existing thread msg for AZ SQL 
+	PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
+	delete client;
+}
 
 #if !defined(ALLSRV_STANDALONE)
 void DoDecrypt(int size, char* pdata)
@@ -802,7 +893,7 @@ void GotCharSquads(CQCharSquads * pquery)
 
 
 /*-------------------------------------------------------------------------
- * GotLogonDetails		Imago updated 6/25/08 - ASGS see AddPlayerToMission
+ * GotLogonDetails		Imago updated 6/25/08 7/5/08
  *-------------------------------------------------------------------------
   Purpose:
       Callback from GetLogonStats query. Logon finishes here
@@ -865,46 +956,34 @@ void GotLogonDetails(CQLogonStats * pquery)
 	// set bandwidth to standard value, bandwidth packet should arrive soon anyways
 	pfsPlayer->SetBandwidth(2);
  	
-	// Imago moving the reg check  up to init to see if we even need to (delay)load winhttp.dll...
-	// ASGS check repair mmf / Imago
-	// NYI: ASGS handle should've got some kind of status, let's check it.
+	// Imago ASGS check keyed from DPID
+	DWORD dpid = pcnxn->GetID();
+	RankID myRank = g.asgsResponses[_Module.GetASGSResponse(dpid)];
 
-	// mmf pull rank from callsign (#) for now
-	char szRank[64];
-	char newName[64];
-	int leftParen; int strLen;
-	ZString strName = pfsPlayer->GetName();
-
-	strLen = strName.GetLength();
-	leftParen = strName.ReverseFind('(',0);
-	if (leftParen>=1) {
-		Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
-		RankID myRank = atoi(szRank);
-		if (!((myRank>0) && (myRank<100))) {
-			debugf("Rank out of range rank=%d\n",myRank);
-			myRank=0; // sanity check
-		}
+	if (myRank == -1) {
+		fValid = false;
+		Strcpy(pqd->szReason,"Your callsign does not exist on this server.");
+	} else {
 		const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
 		PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
 		pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 		for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 		{
-		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
-		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 		}
-		// remove the (#) from callsign
-		// only for ranks above 4 so people can see newbs for boot protection as per the COD
-		if (myRank>4) {
-			Strncpy(newName,(PCC)strName,leftParen);
-			Strncpy(newName+leftParen,"\0",1); // null terminate
-			pship->SetName(newName);
-		}
-		fValid = true;
-	} else { //we didn't find a (
-		fValid = true; // No rank found, Rank not set, should default to 0
-		debugf("No rank found in callsign %s\n",(PCC)strName);
 	}
- 
+
+	// mmf/Imago remove rank from player name when NotNewb 
+	char newName[c_cbName];
+	ZString strName = pship->GetName();
+	int leftParen = strName.ReverseFind('(',0);
+	if (myRank>4 && leftParen>1) {
+		Strncpy(newName,(PCC)strName,leftParen);
+		Strncpy(newName+leftParen,"\0",1); // null terminate
+		pship->SetName(newName);
+	}
+
   } else { //no soup for you!
 	if (NULL != g.pServerCounters) {
 		g.pServerCounters->cLoginsFailed++;
@@ -4300,10 +4379,8 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
 
 HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
-  // we don't do anything until they login
-	//Imago: Changeing this, hit ASGS  now
 
-  return S_OK;
+	return S_OK;
 }
 
 
@@ -5281,7 +5358,6 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
     case FM_C_LOGONREQ:
     {
-		//Imago: lets fire http request even before this
       CQLogonStats * pquery = new CQLogonStats(GotLogonDetails);
       CQLogonStatsData * pqd = pquery->GetData();
       if (NULL != g.pServerCounters)
@@ -5381,12 +5457,19 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         lstrcpy(pqd->szCDKey, FM_VAR_REF(pfmLogon, CDKey));
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
+
+		char mprthname[2]; //thread name is asgsid
+		mprSprintf(mprthname, sizeof(mprthname), "%d",_Module.QueueASGSResponse(pqd->dwConnectionID));
+		MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
+		threadp->start();
+
 #if !defined(ALLSRV_STANDALONE)
         if (fValid)
           g.sql.PostQuery(pquery);
         else //pquery->OnDataReady() below is the else of this
 #endif
-          pquery->DataReady();
+		// imago commented below out, "mpr thread" will tell the main when true 7/5/08
+		//pquery->DataReady();
 
       } // if correct messaging version
       else
@@ -9209,6 +9292,23 @@ int __cdecl main(int argc, char *argv[])
     // clock time to shake things up a bit)
     srand(GetTickCount() + time(NULL));
 
+	// start the appweb service thread w/log Imago 7/3/08
+	//MprLogToFile *logger;
+	char *programName = mprGetBaseName(argv[0]);
+	mutex = new MprMutex();
+	mpr = new Mpr(programName);
+	//tMod = new MprLogModule(programName);
+	//logger = new MprLogToFile();
+	//mpr->addListener(logger);
+	//mpr->setLogSpec("stdout:9");
+	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
+	mpr->start(MPR_SERVICE_THREAD);
+
+	// init the stupid simple way of keeping track of responses
+	for(int i=0;i<=7;i++) {
+		g.asgsResponses[i] = -3;
+	}
+
     // Enter this thread into the COM MTA
     TCCoInit init(COINIT_MULTITHREADED);
     ZSucceeded((HRESULT)init);
@@ -9426,6 +9526,14 @@ int __cdecl main(int argc, char *argv[])
 
 	 // Terminate AGC
     _Module.TermAGC();
+
+	//appweb
+	mpr->stop(0);
+	delete mutex;
+//	delete tMod;
+	delete mpr;
+//	delete logger;
+	mprMemClose();
 
 	// Indicate success
     return 0;

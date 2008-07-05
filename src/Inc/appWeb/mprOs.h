@@ -3,7 +3,7 @@
 /// @brief 	Include O/S headers and smooth out per-O/S differences
 //	@copy	default
 //
-//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire
@@ -38,7 +38,7 @@
 #ifndef _h_MPR_OS_HDRS
 #define _h_MPR_OS_HDRS 1
 
-#include	"config.h"
+#include	"buildConfig.h"
 
 ////////////////////////////////// CPU Families ////////////////////////////////
 //
@@ -54,14 +54,18 @@
 #define MPR_CPU_68K 		7
 #define MPR_CPU_SIMNT 		8			//	VxWorks NT simulator
 #define MPR_CPU_SIMSPARC 	9			//	VxWorks sparc simulator
+#define MPR_CPU_IX64		10
+#define MPR_CPU_UNIVERSAL	11			/* MAC OS X universal binaries */
+#define MPR_CPU_SH4			12
 
 ////////////////////////////////// O/S Includes ////////////////////////////////
 
-#if LINUX || SOLARIS
+#if CYGWIN || LINUX || SOLARIS
 	#include	<sys/types.h>
 	#include	<time.h>
 	#include	<arpa/inet.h>
 	#include	<ctype.h>
+	#include	<dirent.h>
 	#include	<dlfcn.h>
 	#include	<fcntl.h>
 	#include	<grp.h>
@@ -75,7 +79,9 @@
 	#include	<netinet/ip.h>
 	#include	<pthread.h>
 	#include	<pwd.h>
+#if !CYGWIN
 	#include	<resolv.h>
+#endif
 	#include	<signal.h>
 	#include	<stdarg.h>
 	#include	<stdio.h>
@@ -96,7 +102,7 @@
 	#include	<sys/wait.h>
 	#include	<unistd.h>
 
-#if LINUX
+#if CYGWIN || LINUX
 	#include	<stdint.h>
 #endif
 
@@ -107,10 +113,12 @@
 #if BLD_FEATURE_FLOATING_POINT
 	#define __USE_ISOC99 1
 	#include	<math.h>
+#if !CYGWIN
 	#include	<values.h>
 #endif
+#endif
 
-#endif // LINUX || SOLARIS
+#endif // CYGWIN || LINUX || SOLARIS
 
 #if VXWORKS
 	#include	<vxWorks.h>
@@ -123,11 +131,14 @@
 	#include	<errno.h>
 	#include	<limits.h>
 	#include	<loadLib.h>
+	#include	<dirent.h>
+	#include	<math.h>
 	#include	<netdb.h>
 	#include	<net/if.h>
 	#include	<netinet/tcp.h>
 	#include	<netinet/in.h>
 	#include	<netinet/ip.h>
+	#include	<selectLib.h>
 	#include	<signal.h>
 	#include	<stdarg.h>
 	#include	<stdio.h>
@@ -164,6 +175,8 @@
 	#include	<time.h>
 	#include	<arpa/inet.h>
 	#include	<ctype.h>
+	#include	<dirent.h>
+	#include	<dlfcn.h>
 	#include	<fcntl.h>
 	#include	<grp.h>
 	#include	<errno.h>
@@ -201,7 +214,68 @@
 	#include	<sys/utsname.h>
 	#include	<sys/wait.h>
 	#include	<unistd.h>
+	#include	<libkern/OSAtomic.h>
+
+#if BLD_FEATURE_FLOATING_POINT
+	#include	<float.h>
+	#define __USE_ISOC99 1
+	#include	<math.h>
+#endif
+
 #endif // MACOSX
+
+#if FREEBSD
+	#include	<time.h>
+	#include	<arpa/inet.h>
+	#include	<ctype.h>
+	#include	<dirent.h>
+	#include	<dlfcn.h>
+	#include	<fcntl.h>
+	#include	<grp.h>
+	#include	<errno.h>
+	#include	<libgen.h>
+	#include	<limits.h>
+	#include	<netdb.h>
+	#include	<sys/socket.h>
+	#include	<net/if.h>
+	#include	<netinet/in_systm.h>
+	#include	<netinet/in.h>
+	#include	<netinet/tcp.h>
+	#include	<netinet/ip.h>
+	#include	<pthread.h>
+	#include	<pwd.h>
+	#include	<resolv.h>
+	#include	<signal.h>
+	#include	<stdarg.h>
+	#include	<stdio.h>
+	#include	<stdlib.h>
+	#include	<stdint.h>
+	#include	<string.h>
+	#include	<syslog.h>
+	#include	<sys/ioctl.h>
+	#include	<sys/types.h>
+	#include	<sys/stat.h>
+	#include	<sys/param.h>
+	#include 	<sys/resource.h>
+	#include	<sys/sem.h>
+	#include	<sys/shm.h>
+	#include	<sys/select.h>
+	#include	<sys/time.h>
+	#include	<sys/times.h>
+	#include	<sys/types.h>
+	#include	<sys/utsname.h>
+	#include	<sys/wait.h>
+	#include	<unistd.h>
+
+#if BLD_FEATURE_FLOATING_POINT
+	#include	<float.h>
+	#define __USE_ISOC99 1
+	#include	<math.h>
+#endif
+
+	#define CLD_EXITED 1
+	#define CLD_KILLED 2
+#endif // FREEBSD
 
 #if WIN
 	#include	<ctype.h>
@@ -241,7 +315,11 @@ extern "C" {
 //////////////////////////////// General Defines ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+	//imago
+#pragma warning(disable:4005)
 #define	MAXINT			INT_MAX
+#pragma warning(default:4005)
+
 #define BITS(type)		(BITSPERBYTE * (int) sizeof(type))
 
 #ifndef max
@@ -268,22 +346,30 @@ typedef char	*MprStr;					// Used for dynamic strings
 ///////////////////////////////// Linux Defines ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#if LINUX
+#if CYGWIN || LINUX
+#if CYGWIN
+	typedef unsigned long ulong;
+#endif
 	typedef unsigned char uchar;
 
-#if BLD_FEATURE_INT64
 	__extension__ typedef long long int int64;
 	__extension__ typedef unsigned long long int uint64;
 	#define INT64(x) (x##LL)
-#endif
 
+	typedef socklen_t	 	MprSocklen;
+	#define	SocketLenPtr	MprSocklen*
 	#define closesocket(x)	close(x)
 	#define MPR_BINARY		""
 	#define MPR_TEXT		""
-	#define O_BINARY		0
-	#define O_TEXT			0
 	#define	SOCKET_ERROR	-1
 	#define MPR_DLL_EXT		".so"
+
+#if CYGWIN
+	#define __WALL			0
+#else
+	#define O_BINARY		0
+	#define O_TEXT			0
+#endif
 
 #if BLD_FEATURE_FLOATING_POINT
 	#define MAX_FLOAT		MAXFLOAT
@@ -308,37 +394,11 @@ typedef char	*MprStr;					// Used for dynamic strings
 		#endif // UNUSED
 	#endif // BLD_FEATURE_MALLOC
 
-#if FUTURE
-//	#define mprGetHiResTime(x) __asm__ __volatile__ ("rdtsc" : "=A" (x))
-//	extern char *inet_ntoa_r(const struct in_addr in, char *buffer, int buflen);
+#ifndef PTHREAD_MUTEX_RECURSIVE_NP
+#define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
+#endif
 
-	//
-	//	Atomic functions
-	//
-	typedef struct { volatile int counter; } mprAtomic_t;
-
-	#if BLD_FEATURE_MULTITHREAD
-	#define LOCK "lock ; "
-	#else
-	#define LOCK ""
-	#endif
-
-	static __inline__ void mprAtomicInc(mprAtomic_t* v) {
-		__asm__ __volatile__(
-			LOCK "incl %0"
-			:"=m" (v->counter)
-			:"m" (v->counter));
-	}
-
-	static __inline__ void mprAtomicDec(mprAtomic_t* v) {
-		__asm__ __volatile__(
-			LOCK "decl %0"
-			:"=m" (v->counter)
-			:"m" (v->counter));
-	}
-#endif	// FUTURE
-
-#endif 	// LINUX
+#endif 	// CYGWIN || LINUX
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// VxWorks Defines ///////////////////////////////
@@ -350,14 +410,13 @@ typedef char	*MprStr;					// Used for dynamic strings
 	typedef unsigned int uint;
 	typedef unsigned long ulong;
 
-	#define HAVE_SOCKLEN_T
-	typedef int 	socklen_t;
+//6.3	#define HAVE_SOCKLEN_T
+	typedef uint 			MprSocklen;
+	#define	SocketLenPtr	int*
 
-#if BLD_FEATURE_INT64
 	typedef long long int int64;
 	typedef unsigned long long int uint64;
 	#define INT64(x) (x##LL)
-#endif
 
 	#define closesocket(x)	close(x)
 	#define getpid() 		taskIdSelf()
@@ -383,7 +442,13 @@ typedef char	*MprStr;					// Used for dynamic strings
 
 	#define MSG_NOSIGNAL 0
 
-	extern int access(char *path, int mode);
+	#ifndef SHUT_WR
+	#define SHUT_WR			1
+	#endif
+	#ifndef SHUT_RD
+	#define SHUT_RD			0
+	#endif
+
 	extern int sysClkRateGet();
 
 	#if BLD_FEATURE_MALLOC
@@ -404,20 +469,34 @@ typedef char	*MprStr;					// Used for dynamic strings
 			#endif
 		#endif // UNUSED
 	#endif // BLD_FEATURE_MALLOC
+
+#if _WRS_VXWORKS_MAJOR < 6
+	extern STATUS access(const char *path, int mode);
+#else
+
+	#if BLD_HOST_CPU_ARCH == MPR_CPU_PPC
+	#define __va_copy(dest, src) *(dest) = *(src)
+	#endif
+#endif
+
+	#define IOCTL_CAST int
+#else
+	#define IOCTL_CAST void*
 #endif 	// VXWORKS
 
 ////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////// MacOsx Defines ///////////////////////////////
+///////////////////////////////// MACOSX Defines ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 #if MACOSX
 	typedef unsigned long ulong;
 	typedef unsigned char uchar;
 
-#if BLD_FEATURE_INT64
 	__extension__ typedef long long int int64;
 	__extension__ typedef unsigned long long int uint64;
 	#define INT64(x) (x##LL)
-#endif
+
+	typedef socklen_t	 	MprSocklen;
+	#define	SocketLenPtr	MprSocklen*
 	#define closesocket(x)	close(x)
 	#define MPR_BINARY		""
 	#define MPR_TEXT		""
@@ -441,36 +520,43 @@ typedef char	*MprStr;					// Used for dynamic strings
 	#define MPR_GET_RETURN(ip)	__builtin_return_address
 	#endif
 
-#if FUTURE
-//	#define mprGetHiResTime(x) __asm__ __volatile__ ("rdtsc" : "=A" (x))
-//	extern char *inet_ntoa_r(const struct in_addr in, char *buffer, int buflen);
-
-	//
-	//	Atomic functions
-	//
-	typedef struct { volatile int counter; } mprAtomic_t;
-
-	#if MPR_FEATURE_MULTITHREAD
-	#define LOCK "lock ; "
-	#else
-	#define LOCK ""
-	#endif
-
-	static __inline__ void mprAtomicInc(mprAtomic_t* v) {
-		__asm__ __volatile__(
-			LOCK "incl %0"
-			:"=m" (v->counter)
-			:"m" (v->counter));
-	}
-
-	static __inline__ void mprAtomicDec(mprAtomic_t* v) {
-		__asm__ __volatile__(
-			LOCK "decl %0"
-			:"=m" (v->counter)
-			:"m" (v->counter));
-	}
-#endif
 #endif // MACOSX
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// FREEBSD Defines ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+#if FREEBSD
+	typedef unsigned long ulong;
+	typedef unsigned char uchar;
+
+	__extension__ typedef long long int int64;
+	__extension__ typedef unsigned long long int uint64;
+	#define INT64(x) (x##LL)
+
+	typedef socklen_t	 	MprSocklen;
+	#define	SocketLenPtr	MprSocklen*
+	#define closesocket(x)	close(x)
+	#define MPR_BINARY		""
+	#define MPR_TEXT		""
+	#define O_BINARY		0
+	#define O_TEXT			0
+	#define	SOCKET_ERROR	-1
+	#define MPR_DLL_EXT		".dylib"
+	#define __WALL          0x40000000
+	#define PTHREAD_MUTEX_RECURSIVE_NP  PTHREAD_MUTEX_RECURSIVE
+
+#if BLD_FEATURE_FLOATING_POINT
+	#define MAX_FLOAT		MAXFLOAT
+#endif
+
+	#if MPR_FEATURE_MALLOC
+	//
+	//	PORTERS: You will need add assembler code for your architecture here
+	//	only if you want to use the fast malloc (MPR_FEATURE_MALLOC)
+	//
+	#define MPR_GET_RETURN(ip)	__builtin_return_address
+	#endif
+#endif // FREEBSD
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// Windows Defines ///////////////////////////////
@@ -482,11 +568,9 @@ typedef char	*MprStr;					// Used for dynamic strings
 	typedef unsigned long ulong;
 	typedef unsigned short ushort;
 
-#if BLD_FEATURE_INT64
 	typedef __int64 int64;
 	typedef unsigned __int64 uint64;
 	#define INT64(x) (x##i64)
-#endif
 
 	typedef int 	uid_t;
 	typedef void 	*handle;
@@ -497,14 +581,19 @@ typedef char	*MprStr;					// Used for dynamic strings
 	typedef void 	*siginfo_t;
 
 	#define HAVE_SOCKLEN_T
-	typedef int 	socklen_t;
+	typedef int 			MprSocklen;
+	typedef int 			socklen_t;
+	#define	SocketLenPtr	MprSocklen*
 
+	/*
+ 	 *	On windows map X_OK to R_OK
+	 */
 	#undef R_OK
 	#define R_OK	4
 	#undef W_OK
 	#define W_OK	2
 	#undef X_OK
-	#define X_OK	1
+	#define X_OK	R_OK
 	#undef F_OK
 	#define F_OK	0
 
@@ -528,6 +617,9 @@ typedef char	*MprStr;					// Used for dynamic strings
 	#define MPR_BINARY		"b"
 	#define MPR_TEXT		"t"
 
+	#define SHUT_WR			SD_SEND
+	#define SHUT_RD			SD_RECEIVE
+
 #if BLD_FEATURE_FLOATING_POINT
 	#define MAX_FLOAT		DBL_MAX
 #endif
@@ -543,13 +635,17 @@ typedef char	*MprStr;					// Used for dynamic strings
 	#define getpid 	_getpid
 	#define open 	_open
 	#define putenv 	_putenv
-	//#define read 	_read
+//	#define read 	_read //Imago -conflicts with ATL
 	#define stat 	_stat
 	#define umask 	_umask
-	//#define unlink 	_unlink
+//	#define unlink 	_unlink //Imago -conflicts with ATL
 	#define write 	_write
 	#define strdup 	_strdup
 	#define lseek 	_lseek
+	#define getcwd 	_getcwd
+	#ifndef chdir
+	#define chdir 	_chdir
+	#endif
 
 	#define mkdir(a,b) 	_mkdir(a)
 	#define rmdir(a) 	_rmdir(a)
@@ -587,12 +683,12 @@ typedef char	*MprStr;					// Used for dynamic strings
 #if SOLARIS
 	typedef unsigned char uchar;
 
-#if BLD_FEATURE_INT64
 	typedef long long int int64;
 	typedef unsigned long long int uint64;
 	#define INT64(x) (x##LL)
-#endif
 
+	typedef socklen_t	 	MprSocklen;
+	#define	SocketLenPtr	MprSocklen*
 	#define closesocket(x)	close(x)
 	#define MPR_BINARY		""
 	#define MPR_TEXT		""
@@ -623,7 +719,5 @@ typedef char	*MprStr;					// Used for dynamic strings
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim:tw=78
-// vim600: sw=4 ts=4 fdm=marker
-// vim<600: sw=4 ts=4
+// vim: sw=4 ts=4
 //

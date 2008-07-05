@@ -10,7 +10,7 @@
 /*
  *	@copy	default.g
  *	
- *	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+ *	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
  *	Portions Copyright (c) GoAhead Software, 1995-2000. All Rights Reserved.
  *	
  *	This software is distributed under commercial and open source licenses.
@@ -96,7 +96,5 @@ extern void		ejSetVar(int eid, char_t *var, char_t *value);
  * tab-width: 4
  * c-basic-offset: 4
  * End:
- * vim:tw=78
- * vim600: sw=4 ts=4 fdm=marker
- * vim<600: sw=4 ts=4
+ * vim: sw=4 ts=4 
  */

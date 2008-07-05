@@ -3,7 +3,7 @@
 /// @brief 	Header for the Matrix SSL module
 //	@copy	default.p
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //	Copyright (c) PeerSec Networks LLC, 2002-2005. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
@@ -30,7 +30,7 @@
 //	@end
 //////////////////////////////// Documentation /////////////////////////////////
 ///
-///	This module integrates support for MatrixSSL into AppWeb via a dynamically
+///	This module integrates support for MatrixSSL into Appweb via a dynamically
 ///	loaded module.  The MatrixSSL library, including the latest version of
 ///	this file is available as source code at http://www.matrixssl.org.
 ///
@@ -43,7 +43,11 @@
 
 #if BLD_FEATURE_MATRIXSSL_MODULE
 #include	"sslModule.h"
-#include	"matrixSsl.h"
+
+	/*
+	 *	Protect from genDepend incase matrixSsl is not installed
+	 */
+	#include	"matrixSsl.h"
 
 ////////////////////////////// Forward Definitions /////////////////////////////
 
@@ -51,7 +55,7 @@ class MatrixSslModule;
 
 extern "C" {
 	extern int mprMatrixSslInit(void *handle);
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// MaMatrixSslModule ///////////////////////////////
@@ -134,7 +138,5 @@ void mprMatrixSslDummy();
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim:tw=78
-// vim600: sw=4 ts=4 fdm=marker
-// vim<600: sw=4 ts=4
+// vim: sw=4 ts=4 
 //

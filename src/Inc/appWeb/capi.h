@@ -7,7 +7,7 @@
 //
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -37,6 +37,7 @@
 #define _h_CAPI 1
 
 #include "mpr.h"
+#include "var.h"
 #include "httpEnv.h"
 
 #if BLD_FEATURE_C_API_MODULE || DOXYGEN
@@ -60,6 +61,7 @@ extern "C" {
 #else // !__cplusplus
 	typedef struct { void *x; } Mpr;
 	typedef struct { void *x; } MaHttp;
+	typedef struct { void *x; } MaHost;
 	typedef struct { void *x; } MaServer;
 	typedef struct { void *x; } MaRequest;
 	typedef struct { void *x; } MaClient;
@@ -207,6 +209,38 @@ extern void		mprStopMpr();
 extern void		mprTerminate(int graceful);
 extern void		mprTrace(int level, char *fmt, ...);
 
+/* */
+extern char 	*maGetRequestUserName(MaRequest *rq);
+extern char 	*maGetRequestCookies(MaRequest *rq);
+extern MprVar 	*maGetRequestVars(MaRequest *rq);
+extern char 	*maGetRequestIpAddr(MaRequest *rq);
+extern char 	*maGetRequestUriExt(MaRequest *rq);
+extern char 	*maGetRequestMimeType(MaRequest *rq);
+extern char 	*maGetRequestUriQuery(MaRequest *rq);
+extern int 		 maGetRequestPort(MaRequest *rq);
+extern void 	maFlushResponse(MaRequest *rq, int background, 
+						int completeRequired);
+extern MaHost	*maGetDefaultHost(MaServer *server);
+extern MaServer	*maGetDefaultServer();
+extern void 	maSetServerDefaultPage(MaServer *server, char *path, 
+						char *fileName);
+extern void 	maSetHostDefaultPage(MaHost *host, char *path, 
+					char *fileName);
+extern void		maSetServerRoot(MaServer *server, char *root);
+extern char 	*maGetServerRoot(MaServer *server);
+extern int 		maGetIntVar(MaRequest *rq, MaEnvType objType, char *var, int
+					defaultValue);
+extern void 	maSetIntVar(MaRequest *rq, MaEnvType objType, char *var, int
+					value);
+
+#if BLD_FEATURE_SESSION
+extern char 	*maGetSessionId(MaRequest *rq);
+extern void 	maSetSessionExpiryCallback(MaRequest *rq, 
+					void (*callback)(void *arg), void *arg);
+extern void 	maCreateSession(MaRequest *rq, int timeout);
+extern void 	maDestroySession(MaRequest *rq);
+#endif
+
 ///////////////////////////////// UnPublished API //////////////////////////////
 
 #if BLD_FEATURE_LEGACY_API
@@ -233,11 +267,14 @@ extern int mprAuthInit(void *handle);
 #if BLD_FEATURE_CGI_MODULE
 extern int mprCgiInit(void *handle);
 #endif
-#if BLD_FEATURE_COMPAT_MODULE
+#if BLD_FEATURE_GACOMPAT_MODULE
 extern int mprCompatInit(void *handle);
 #endif
 #if BLD_FEATURE_COPY_MODULE
 extern int mprCopyInit(void *handle);
+#endif
+#if BLD_FEATURE_DIR_MODULE
+extern int mprDirInit(void *handle);
 #endif
 #if BLD_FEATURE_EGI_MODULE
 extern int mprEgiInit(void *handle);
@@ -271,7 +308,5 @@ extern int mprPhp4Init(void *handle);
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim:tw=78
-// vim600: sw=4 ts=4 fdm=marker
-// vim<600: sw=4 ts=4
+// vim: sw=4 ts=4 
 //

@@ -35,8 +35,12 @@ class CServiceModule : public CComModule
 public:
   CServiceModule() :
     m_fCOMStarted(false),
-		m_iPIDID(0)
+#if defined(SRV_PARENT)
+		m_iPIDID(0),
+#endif
+		m_asgsid(0)
   {
+	  DWORD			m_dpids[7] = {0};  //remember the last 8 client's dplay ids for asgs response lookups
   }
   HRESULT      Init(HINSTANCE hInst);
   void         Term();
@@ -59,6 +63,8 @@ public:
   void         RevokeCOMObjects();
 
   VOID         RunAsExecutable();
+  WORD         QueueASGSResponse(DWORD dpid);											//imago
+  WORD         GetASGSResponse(DWORD dpid);											//imago
   //imago - parent/child server tracking functions 6/23/08
 #if defined(SRV_PARENT)  
   void         BreakChildren();
@@ -98,9 +104,13 @@ protected:
   TCHandle      m_shevtMTAExit;      // event to sync MTA keep-alive thread
   HRESULT       m_hrMTAKeepAlive;    // HRESULT from MTA keep-alive thread
   IAGCEventLoggerPtr m_spEventLogger;
+#if defined(SRV_PARENT)
   DWORD			m_dwMPort;				// our outgoing port last used to connect to g.dwLobby -Imago
   DWORD			m_dwPIDs[98];	     // simple array of process identifiers, we don't use key 0 for simplicity
   int			m_iPIDID;			// last used pid key, gets re-calculated each hand-off
+#endif
+  WORD			m_asgsid;		//imago
+  DWORD			m_dpids[7];
 };
 
 extern CServiceModule _Module;
