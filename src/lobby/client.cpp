@@ -92,6 +92,7 @@ static void doASGS(void* data, MprThread *threadp) {
 		if (strcmp(szResponse,"-1") == 0) {
 			mutex->lock();
 			pqd->fValid = false;
+			pqd->fRetry = false;
 			char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
 			pqd->szReason = new char[lstrlen(szReason) + 1];
 			Strcpy(pqd->szReason,szReason);
@@ -279,6 +280,8 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	  pqd->dTime = pfmLogon->dwTime - Time::Now().clock();
 	  const char * strCDKey = (const char*) FM_VAR_REF(pfmLogon, ASGS_Ticket); //ASGS_Ticket, CDKey, whatever
 	  strcpy(pqd->szCDKey,strCDKey);
+	  pqd->fValid = fValid;
+	  pqd->fRetry = fRetry;
 
       if (g_pAutoUpdate && pfmLogon->crcFileList != g_pAutoUpdate->GetFileListCRC())
       {
