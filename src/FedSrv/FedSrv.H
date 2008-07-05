@@ -257,7 +257,6 @@ struct Global
 #endif
   {
     ZeroMemory(rgTechs, sizeof(rgTechs));
-	ZeroMemory(asgsResponses, sizeof(asgsResponses));
   }
 
   // Explicit initialization
@@ -321,7 +320,6 @@ struct Global
   ZString             strAuthServer;
   ZString             strLocalAddress;
   char                rgTechs[cTechs][CbTechBitName+1];
-  RankID              asgsResponses[7]; //imago - appweb threads sync asgs responses here (7 = max_appweb_threads(4) * 2 - 1 for 0)
   DWORD               dwLobbyPort;    // connect to this
 
   RankInfo*           vRankInfo;

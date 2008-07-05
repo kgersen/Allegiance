@@ -7,6 +7,10 @@
 
 #include "pch.h"
 
+//appweb -Imago
+static Mpr *mpr;
+//static MprLogModule *tMod;
+
 CServiceModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
@@ -494,8 +498,6 @@ void CServiceModule::Run()
     hr = _Module.RegisterClassObjects(CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER, REGCLS_MULTIPLEUSE);
     _ASSERTE(SUCCEEDED(hr));
 
-	//Setup WinHTTP here?  --Imago
-
     LogEvent(EVENTLOG_INFORMATION_TYPE, LE_Started);
     if (m_bService)
         SetServiceStatus(SERVICE_RUNNING);
@@ -513,10 +515,22 @@ void CServiceModule::Run()
     CoUninitialize();
 }
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 int __cdecl main(int argc, char *argv[])
 { 
+	// start the appweb service thread w/log Imago 7/3/08
+	//MprLogToFile *logger;
+	char *programName = mprGetBaseName(argv[0]);
+	mpr = new Mpr(programName);
+	//tMod = new MprLogModule(programName);
+	//logger = new MprLogToFile();
+	//mpr->addListener(logger);
+	//mpr->setLogSpec("stdout:9");
+	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
+	mpr->start(MPR_SERVICE_THREAD);
+
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
     LPSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
@@ -564,13 +578,20 @@ int __cdecl main(int argc, char *argv[])
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
 	// mdvalley: QueryStringValue? Not on my compiler.
-    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
+    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen); //statreg.cpp is obsolete. Please remove it from your project.
 
     _Module.m_bService = FALSE;
     if (lRes == ERROR_SUCCESS)
         _Module.m_bService = TRUE;
 
     _Module.Start();
+
+	//appweb
+	mpr->stop(0);
+	//delete tMod;
+	delete mpr;
+	//delete logger;
+	mprMemClose();
 
     // When we get here, the service has been stopped
     return _Module.m_status.dwWin32ExitCode;

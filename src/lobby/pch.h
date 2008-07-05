@@ -11,15 +11,14 @@
 #ifndef _LOBBY_PCH_
 #define _LOBBY_PCH_
 
+#include "appweb/appweb.h" //Imago 7/5/08 uses version 2.4.2-2 xp
+
 #include <windows.h>
 #include <stdlib.h>
 #include <memory.h>
-
-// Imago removed, we now use WinHTTP 5.1
-//#include <mmsystem.h> // wlp 2006 added = somehow appweb.h excludes timegetTime in this module 
+#include <mmsystem.h> // wlp 2006 added = somehow appweb.h excludes timegetTime in this module 
+						// Imago - appweb.h defines "extra lean" so we've got to be more explicit
 //#include <dplobby.h>
-
-
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "LobbyModule.h"
@@ -44,9 +43,10 @@
 #include <..\TCAtl\UserAcct.h>
 #include <..\TCLib\TCThread.h>
 
-#ifdef USEAUTH
+//Imago removed 7/5/08
+//#ifdef USEAUTH
 #include "LobQueries.h" // and allegdb.h
-#endif
+//#endif
 #include <guids.h>
 #include "resource.h"
 #include "messagecore.h"

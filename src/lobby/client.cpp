@@ -18,6 +18,9 @@ const DWORD CFLClient::c_dwID = 19680815;
 bool g_fLogonCRC = true; 
 #endif
 
+//appweb
+static MprMutex* mutex = new MprMutex();
+
 // mdvalley: 2005 needs to specify dword
 static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
 {
@@ -31,6 +34,74 @@ static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
   }
 
   return dwResult;
+}
+
+static void doASGS(void* data, MprThread *threadp) {
+	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
+	CQLobbyLogon * pls = (CQLobbyLogon *)data;
+	CQLobbyLogonData * pqd = pls->GetData();
+	
+	FedMessaging & fm = g_pLobbyApp->GetFMClients();
+	CFMConnection * pcnxn = fm.GetConnectionFromId(pqd->dwConnectionID);
+	
+	int contentLen = 0; char *content; char szResponse[MAX_PATH];
+	char szURL[MPR_HTTP_MAX_URL]; char szName[c_cbName]; 
+	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign="); 
+	
+	// one thread per connecting player
+	Strcpy(szName,pqd->szCharacterName);
+	
+	// ignore "tokens" in player name
+	ZString strName = szName;
+	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
+		strcpy(szName,strName.RightOf(1));
+
+	// add the name to the url
+	strcat(szURL,szName);
+	
+	// add the IP to the url
+    char szAddress[16];
+	fm.GetIPAddress(*pcnxn,szAddress);
+	strcat(szURL,"&IP=");
+	strcat(szURL,szAddress);
+
+	// add the ticket to the url
+	strcat(szURL,"&Ticket=");
+	char escaped[2048];
+	maUrlEncode(escaped, sizeof(escaped), pqd->szCDKey, 1);
+	strcat(szURL,escaped);
+
+	// the beast
+	MaClient* client = new MaClient();
+	
+	// max wait 5 seconds
+	client->setTimeout(2500);
+	client->setRetries(2);
+	client->setKeepAlive(0);
+
+	// finally
+	client->getRequest(szURL);
+	content = client->getResponseContent(&contentLen);
+
+	if (contentLen) { // there's content, we excpect it a certain way...
+		ZString strContent = content;
+		strContent = strContent.RightOf(85);
+		strContent = strContent.LeftOf("<");
+		Strcpy(szResponse,(PCC)strContent);
+
+		if (strcmp(szResponse,"-1") == 0) {
+			mutex->lock();
+			pqd->fValid = false;
+			char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
+			pqd->szReason = new char[lstrlen(szReason) + 1];
+			Strcpy(pqd->szReason,szReason);
+			mutex->unlock();
+		}
+	} 
+
+	// tell the main thread we've finished, use the existing thread msg for AZ SQL 
+	PostThreadMessage(_Module.dwThreadID, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
+	delete client;
 }
 
 
@@ -59,7 +130,6 @@ void QueueMissions(FedMessaging * pfm)
 }
 
 
-#ifdef USECLUB
 /*-------------------------------------------------------------------------
  * GotLogonInfo
  *-------------------------------------------------------------------------
@@ -96,6 +166,7 @@ void GotLogonInfo(CQLobbyLogon * pquery)
     pfmLogonAck->dwTimeOffset = pqd->dTime;
 
     // tell them which squads they are on
+	/*
     int cRows;
     CQLobbyLogonData * pRows = pquery->GetOutputRows(&cRows); // all the rows are here
 
@@ -115,9 +186,11 @@ void GotLogonInfo(CQLobbyLogon * pquery)
     pfmSquadMemberships->cSquadMemberships = cRows;          
 
     delete [] pargSquads;
+	*/
 
 	// KGJV - undeclared identifier error 
-    // QueueMissions(FedMessaging * pfm);
+    // QueueMissions(FedMessaging * pfm)
+
 	QueueMissions(&fm);
   }
 
@@ -131,7 +204,6 @@ void GotLogonInfo(CQLobbyLogon * pquery)
   
   g_pLobbyApp->GetFMClients().SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
 }
-#endif
 
 const int c_cMaxPlayers = GetRegDWORD("MaxPlayersPerServer", 350);
 
@@ -188,13 +260,25 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     }
     break;
 
-	// Imago was here 6/26/08
+	// Imago was here 6/26/08 7/5/08
     case FM_C_LOGON_LOBBY:
     {
+	  CQLobbyLogon * pquery = new CQLobbyLogon(GotLogonInfo);
+      CQLobbyLogonData * pqd = pquery->GetData();
+    
+      Strcpy(pqd->szCharacterName, cnxnFrom.GetName());
+      pqd->characterID = 0; // Imago get Pook to have ASGS give us these? 
+	  pqd->dwConnectionID = cnxnFrom.GetID();
+
       CASTPFM(pfmLogon, C, LOGON_LOBBY, pfm);
-      bool fValid = false; // whether we have a valid logon
+      bool fValid = true; // whether we have a valid logon, changed default (FREE Allegiance) -Imago
       bool fRetry = false;
       char * szReason = NULL; // when fValid==false
+	  
+	  // Imago make the SQL stuff we're using for asgs happy
+	  pqd->dTime = pfmLogon->dwTime - Time::Now().clock();
+	  const char * strCDKey = (const char*) FM_VAR_REF(pfmLogon, ASGS_Ticket); //ASGS_Ticket, CDKey, whatever
+	  strcpy(pqd->szCDKey,strCDKey);
 
       if (g_pAutoUpdate && pfmLogon->crcFileList != g_pAutoUpdate->GetFileListCRC())
       {
@@ -214,40 +298,17 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         break; //client is out to autoupdate
       }
 	  
-	  //check for response data, if it's still not in yet we'll check for it again in JOIN_MISSION or GET_SERVERS
-	  fValid = true;
-	  //szReason = "ASGS Authentication Failure.\n\n Please restart the game using ASGS\n" ;
-
-
-	  if (fValid) {
-		// they don't need auto update
-		// verify messaging version
-		if(pfmLogon->verLobby != LOBBYVER) {
-			fValid = false;
-			// tell client that his version is wrong
-			szReason = "Your game's version did not get auto-updated properly.  Please try again later.";
-		}
+	  if(pfmLogon->verLobby != LOBBYVER) {
+		  fValid = false;
+		  szReason = "Your game's version did not get auto-updated properly.  Please try again later.";
+		  pqd->szReason = new char[lstrlen(szReason) + 1];
+		  Strcpy(pqd->szReason, szReason);
 	  }
 
-      pthis->SetDefaultRecipient(&cnxnFrom, FM_GUARANTEED);
-
-	  // wlp 2006 - if there are no problems then log them in
-	  if (fValid)
-	  {
-		  BEGIN_PFM_CREATE(*pthis, pfmLogonAck, L, LOGON_ACK)
-		  END_PFM_CREATE
-		  pfmLogonAck->dwTimeOffset = pfmLogon->dwTime - Time::Now().clock();
-		  QueueMissions(pthis);
-	  }
-	  else // wlp 2006 - added rejection code - reject with message
-	  {
-		  BEGIN_PFM_CREATE(*pthis, pfmLogonNack, L, LOGON_NACK)
-		  FM_VAR_PARM(szReason, CB_ZTS)
-		  END_PFM_CREATE
-		  pfmLogonNack->fRetry = false;
-	  } // wlp 2006 end of rejection code
-
-      g_pLobbyApp->GetFMClients().SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
+	  char mprthname[2];
+	  mprSprintf(mprthname, sizeof(mprthname), "%x",pqd->dwConnectionID);
+	  MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
+	  threadp->start();
     }
     break;
 

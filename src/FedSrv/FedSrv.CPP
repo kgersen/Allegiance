@@ -33,11 +33,6 @@ static void doASGS(void* data, MprThread *threadp) {
 	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
 	CQLogonStats * pls = (CQLogonStats *)data;
 	CQLogonStatsData * pqd = pls->GetData();
-	
-	WORD asgsid = atoi(mprGetCurrentThreadName());
-	WORD next = asgsid + 1;
-	if (next == 8)	//slots for 2* max async http threads
-		next = 0;	// just to make sure next one is set correctly
 
 	int contentLen = 0; char *content; char szResponse[MAX_PATH];
 	RankID myRank = -2; // -3 wait, -2 wrong rank, -1 callsign does not exist, >=0 valid rank 
@@ -84,13 +79,11 @@ static void doASGS(void* data, MprThread *threadp) {
 		// sanity check
 		if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
 			mutex->lock();
-			g.asgsResponses[asgsid] = myRank;
-			g.asgsResponses[next] = -3; //ensure the next slot is ready to wait
+			pqd->rank = myRank;
 			mutex->unlock();
 		} else { // insanity
 			mutex->lock();
-			g.asgsResponses[asgsid] = -2;
-			g.asgsResponses[next] = -3; //ensure the next slot is ready to wait
+			pqd->rank = -2;
 			mutex->unlock();
 		}
 	} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0|Newbie
@@ -107,8 +100,7 @@ static void doASGS(void* data, MprThread *threadp) {
 			myRank = 0; 
 		}
 		mutex->lock();
-		g.asgsResponses[asgsid] = myRank;
-		g.asgsResponses[next] = -3; //ensure the next slot is ready to wait
+		pqd->rank = myRank;
 		mutex->unlock();
 	}
 
@@ -958,18 +950,18 @@ void GotLogonDetails(CQLogonStats * pquery)
  	
 	// Imago ASGS check keyed from DPID
 	DWORD dpid = pcnxn->GetID();
-	RankID myRank = g.asgsResponses[_Module.GetASGSResponse(dpid)];
+	//RankID myRank = g.asgsResponses[_Module.GetASGSResponse(dpid)];
 
-	if (myRank == -1) {
+	if (pqd->rank == -1) {
 		fValid = false;
 		Strcpy(pqd->szReason,"Your callsign does not exist on this server.");
 	} else {
 		const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
-		PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+		PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,NA);  //and NOAT
 		pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 		for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 		{
-			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,pcl->data()->GetObjectID());
 			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 		}
 	}
@@ -978,7 +970,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 	char newName[c_cbName];
 	ZString strName = pship->GetName();
 	int leftParen = strName.ReverseFind('(',0);
-	if (myRank>4 && leftParen>1) {
+	if (pqd->rank>4 && leftParen>1) {
 		Strncpy(newName,(PCC)strName,leftParen);
 		Strncpy(newName+leftParen,"\0",1); // null terminate
 		pship->SetName(newName);
@@ -5458,8 +5450,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
 
-		char mprthname[2]; //thread name is asgsid
-		mprSprintf(mprthname, sizeof(mprthname), "%d",_Module.QueueASGSResponse(pqd->dwConnectionID));
+		char mprthname[2];
+		mprSprintf(mprthname, sizeof(mprthname), "%x",pqd->dwConnectionID);
 		MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
 		threadp->start();
 
@@ -9303,11 +9295,6 @@ int __cdecl main(int argc, char *argv[])
 	//mpr->setLogSpec("stdout:9");
 	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
-
-	// init the stupid simple way of keeping track of responses
-	for(int i=0;i<=7;i++) {
-		g.asgsResponses[i] = -3;
-	}
 
     // Enter this thread into the COM MTA
     TCCoInit init(COINIT_MULTITHREADED);

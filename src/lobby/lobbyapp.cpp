@@ -49,14 +49,15 @@ bool CLobbyApp::ProcessMsgPump()
     TranslateMessage(&msg);
     switch (msg.message)
     {
-#ifdef USECLUB
+//Imago removed
+//#ifdef USECLUB
       case wm_sql_querydone:
       {
         CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
         pQuery->DataReady();
         break;
       }
-#endif
+//#endif
 
       case WM_QUIT:
         fQuit = true;
@@ -312,11 +313,6 @@ HRESULT CLobbyApp::Init()
     }
     else 
       g_pAutoUpdate = NULL;
-
-
-	// NYI: read ASGS portion of registry - Imago 6/26/08
-	// Startup HTTP Client service thread
-
 
     RegCloseKey(hk);
   }

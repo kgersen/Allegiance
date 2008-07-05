@@ -17,9 +17,11 @@
 #ifndef STRICT
   #define STRICT
 #endif
-#ifndef _WIN32_WINNT
-  #define _WIN32_WINNT 0x0400
-#endif
+
+// Imago removed
+//#ifndef _WIN32_WINNT
+//  #define _WIN32_WINNT 0x0400
+//#endif
 #define _ATL_APARTMENT_THREADED
 
 #include <atlbase.h>
@@ -34,13 +36,12 @@ class CServiceModule : public CComModule
 // Construction / Destruction
 public:
   CServiceModule() :
-    m_fCOMStarted(false),
+    m_fCOMStarted(false)
 #if defined(SRV_PARENT)
-		m_iPIDID(0),
+		,
+		m_iPIDID(0)
 #endif
-		m_asgsid(0)
   {
-	  DWORD			m_dpids[7] = {0};  //remember the last 8 client's dplay ids for asgs response lookups
   }
   HRESULT      Init(HINSTANCE hInst);
   void         Term();
@@ -63,8 +64,6 @@ public:
   void         RevokeCOMObjects();
 
   VOID         RunAsExecutable();
-  WORD         QueueASGSResponse(DWORD dpid);											//imago
-  WORD         GetASGSResponse(DWORD dpid);											//imago
   //imago - parent/child server tracking functions 6/23/08
 #if defined(SRV_PARENT)  
   void         BreakChildren();
@@ -109,8 +108,6 @@ protected:
   DWORD			m_dwPIDs[98];	     // simple array of process identifiers, we don't use key 0 for simplicity
   int			m_iPIDID;			// last used pid key, gets re-calculated each hand-off
 #endif
-  WORD			m_asgsid;		//imago
-  DWORD			m_dpids[7];
 };
 
 extern CServiceModule _Module;
