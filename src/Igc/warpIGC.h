@@ -145,16 +145,18 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
             p->data().timeExplosion = timeExplosion;
             p->data().pmt = pmt;
 
-            // add the pulse effects
+            // add the pulse effects  Imago added to warp rez enhancment by KGJV 7/23/08
             Color       blastColor (0.6f, 0.8f, 1.0f);
             float       fExplodeTime = timeExplosion - Time::Now ();
-            GetCluster ()->GetClusterSite ()->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
+            if (pmt->HasCapability(c_eabmWarpBombDual))
+				GetCluster ()->GetClusterSite ()->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
             IwarpIGC*   pDestination = GetDestination();
             pDestination->GetCluster ()->GetClusterSite ()->AddPulse (fExplodeTime, m_destination->GetPosition (), pmt->GetBlastRadius (), blastColor);
 
             // this should tell the aleph rendering site about the pulse
             ThingSite*  pThingSite = GetThingSite ();
-            pThingSite->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
+            if (pmt->HasCapability(c_eabmWarpBombDual))
+				pThingSite->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
             pThingSite = pDestination->GetThingSite ();
             pThingSite->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
 
