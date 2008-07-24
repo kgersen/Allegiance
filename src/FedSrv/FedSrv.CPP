@@ -56,14 +56,17 @@ static void doASGS(void* data, MprThread *threadp) {
 	// max wait 5 seconds
 	client->setTimeout(2500);
 	client->setRetries(2);
-
 	client->setKeepAlive(0);
 
 	// finally
 	client->getRequest(szURL);
-	content = client->getResponseContent(&contentLen);
-	
-	if (contentLen) { // theres content, we excpect it a certain way...
+
+	// Imago check for a socket first! 7/22/08
+	if (client->getSock()) {
+		content = client->getResponseContent(&contentLen);
+	}
+
+	if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
 		ZString strContent = content;
 		strContent = strContent.RightOf(88);
 		strContent = strContent.LeftOf("<");
@@ -86,7 +89,7 @@ static void doASGS(void* data, MprThread *threadp) {
 			pqd->rank = -2;
 			mutex->unlock();
 		}
-	} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0|Newbie
+	} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
 		int strLen = strName.GetLength();
 		int leftParen = strName.ReverseFind('(',0);
 		if (leftParen>=1) { //rank in the name
@@ -5450,10 +5453,10 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
 
-		char mprthname[2];
-		mprSprintf(mprthname, sizeof(mprthname), "%x",pqd->dwConnectionID);
+		char mprthname[9];
+		mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
 		MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
-		threadp->start();
+		threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
 
 #if !defined(ALLSRV_STANDALONE)
         if (fValid)

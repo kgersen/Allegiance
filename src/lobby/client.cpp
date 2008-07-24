@@ -81,24 +81,28 @@ static void doASGS(void* data, MprThread *threadp) {
 
 	// finally
 	client->getRequest(szURL);
-	content = client->getResponseContent(&contentLen);
 
-	if (contentLen) { // there's content, we excpect it a certain way...
-		ZString strContent = content;
-		strContent = strContent.RightOf(85);
-		strContent = strContent.LeftOf("<");
-		Strcpy(szResponse,(PCC)strContent);
+	// Imago check for a socket first! 7/22/08
+	if (client->getSock()) {
+		content = client->getResponseContent(&contentLen);
 
-		if (strcmp(szResponse,"-1") == 0) {
-			mutex->lock();
-			pqd->fValid = false;
-			pqd->fRetry = false;
-			char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
-			pqd->szReason = new char[lstrlen(szReason) + 1];
-			Strcpy(pqd->szReason,szReason);
-			mutex->unlock();
-		}
-	} 
+		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
+			ZString strContent = content;
+			strContent = strContent.RightOf(85);
+			strContent = strContent.LeftOf("<");
+			Strcpy(szResponse,(PCC)strContent);
+
+			if (strcmp(szResponse,"-1") == 0) {
+				mutex->lock();
+				pqd->fValid = false;
+				pqd->fRetry = false;
+				char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
+				pqd->szReason = new char[lstrlen(szReason) + 1];
+				Strcpy(pqd->szReason,szReason);
+				mutex->unlock();
+			}
+		} 
+	}
 
 	// tell the main thread we've finished, use the existing thread msg for AZ SQL 
 	PostThreadMessage(_Module.dwThreadID, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
@@ -308,10 +312,10 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		  Strcpy(pqd->szReason, szReason);
 	  }
 
-	  char mprthname[2];
-	  mprSprintf(mprthname, sizeof(mprthname), "%x",pqd->dwConnectionID);
+	  char mprthname[9]; 
+	  mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
 	  MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
-	  threadp->start();
+	  threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
     }
     break;
 
