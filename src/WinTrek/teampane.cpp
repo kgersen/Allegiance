@@ -995,39 +995,65 @@ public:
         return true;                
     }
     
+    class BootSink : public IIntegerEventSink {
+    public:
+        ShipID  m_shipID;
+
+        BootSink(ShipID shipID) :
+            m_shipID(shipID)
+        {
+        }
+
+        bool OnEvent(IIntegerEventSource* pevent, int value)
+        {
+			if (value == IDOK) {
+				SideID  sideID = trekClient.GetSideID();
+				trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+				if (trekClient.MyMission()->FindRequest(trekClient.GetSideID(), m_shipID))
+				{
+					BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
+						END_PFM_CREATE
+						pfmPosAck->shipID = m_shipID;
+					pfmPosAck->fAccepted = false;
+					pfmPosAck->iSide = sideID;
+				}
+				else
+				{
+					// if defections are allowed, boot them to the lobby side.
+					if (trekClient.MyMission()->GetMissionParams().bAllowDefections)
+					{
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
+							END_PFM_CREATE
+							pfmQuitSide->shipID = m_shipID;
+						pfmQuitSide->reason = QSR_LeaderBooted;
+					}
+					else
+					{
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitMission, CS, QUIT_MISSION)
+							END_PFM_CREATE
+							pfmQuitMission->shipID = m_shipID;
+						pfmQuitMission->reason = QSR_LeaderBooted;
+					}
+				}
+			} // end OK was hit
+            return false;
+        }
+    };
+
     bool OnButtonBoot()
     {
         ShipID  shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
-        SideID  sideID = trekClient.GetSideID();
-        
-        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-        if (trekClient.MyMission()->FindRequest(trekClient.GetSideID(), shipID))
-        {
-            BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
-                END_PFM_CREATE
-                pfmPosAck->shipID = shipID;
-            pfmPosAck->fAccepted = false;
-            pfmPosAck->iSide = sideID;
-        }
-        else
-        {
-            // if defections are allowed, boot them to the lobby side.
-            if (trekClient.MyMission()->GetMissionParams().bAllowDefections)
-            {
-                BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
-                    END_PFM_CREATE
-                    pfmQuitSide->shipID = shipID;
-                pfmQuitSide->reason = QSR_LeaderBooted;
-            }
-            else
-            {
-                BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitMission, CS, QUIT_MISSION)
-                    END_PFM_CREATE
-                    pfmQuitMission->shipID = shipID;
-                pfmQuitMission->reason = QSR_LeaderBooted;
-            }
-        }
-        
+
+		//Imago sunk the boot into the message box above  7/22/08
+		TRef<IMessageBox> m_pmessageBox;
+		PlayerInfo* pplayer = trekClient.FindPlayer(shipID);
+		ZString strMsg = "Boot " + ZString(pplayer->CharacterName()) + "?";
+		if (m_pmessageBox == NULL) {
+			m_pmessageBox = CreateMessageBox(strMsg, NULL, true, true);
+			m_pmessageBox->GetEventSource()->AddSink(new BootSink(shipID));
+			GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+		}
+
         return true;
     }
     
