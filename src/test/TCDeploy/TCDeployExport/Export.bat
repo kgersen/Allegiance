@@ -1,9 +1,0 @@
-@echo off
-
-echo Copying TCDeploy.dll to \\research\root\Oblivion\_Deploy...
-  copy %FEDROOT%\Objs\Retail\Test\TCDeploy\TCDeploy.dll \\research\root\Oblivion\_Deploy
-echo Copying SetupDeploy.bat to \\research\root\Oblivion\_Deploy...
-  copy %FEDROOT%\Objs\Retail\Test\TCDeploy\SetupDeploy.bat \\research\root\Oblivion\_Deploy
-echo Copying IsNewer.vbs to \\research\root\Oblivion\_Deploy...
-  copy %FEDROOT%\Objs\Retail\Test\TCDeploy\IsNewer.vbs \\research\root\Oblivion\_Deploy
-
