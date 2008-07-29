@@ -1,0 +1,27 @@
+HKCR
+{
+	AGC.AGCOrientation.1 = s 'AGCOrientation Class'
+	{
+		CLSID = s '{C8204960-3999-11d3-A51D-00C04F68DEB0}'
+	}
+	AGC.AGCOrientation = s 'AGCOrientation Class'
+	{
+		CLSID = s '{C8204960-3999-11d3-A51D-00C04F68DEB0}'
+		CurVer = s 'AGC.AGCOrientation.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {C8204960-3999-11d3-A51D-00C04F68DEB0} = s 'AGCOrientation Class'
+		{
+			ProgID = s 'AGC.AGCOrientation.1'
+			VersionIndependentProgID = s 'AGC.AGCOrientation'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}
+					   

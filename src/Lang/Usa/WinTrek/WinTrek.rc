@@ -1,0 +1,458 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_AboutBox DIALOG DISCARDABLE  30, 14, 136, 65
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "About WinTrek"
+FONT 12, "Arial Rounded MT Bold"
+BEGIN
+    LTEXT           "WinTrek 2.1",103,43,13,42,8
+    LTEXT           "Based on the Xerox Alto version:",106,3,36,115,8
+    DEFPUSHBUTTON   "OK",IDOK,90,10,40,14
+    CTEXT           "Trek 2.1  --  Eugene Ball --  5/21/79",IDC_AltoTrek,6,
+                    47,125,12,SS_SUNKEN | WS_BORDER
+    ICON            "WINTREKICON",IDC_AltoTrek,8,8,18,20
+END
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_QuickHelp DIALOGEX 0, 0, 363, 233
+STYLE DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Quick Help"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,306,7,50,14
+    LTEXT           "Changing perspective:\n\t""+"" moves camera toward ship\n\t""-"" moves camera away from ship\n\t""/"" decreases viewing angle\n\t""*"" increases viewing angle",
+                    106,193,22,163,51,SS_SUNKEN | WS_BORDER,WS_EX_CLIENTEDGE
+    LTEXT           "Shields:\n\tKeys 1-4 increase shield power\n\t\tShield 1 is forward shield\n\t\tShield 2 is right shield\n\t\tShield 3 is back shield\n\t\tShield 4 is left shield\n\tHolding down shift with key will\n\t\tdecrease power to shield",
+                    107,7,147,141,79,SS_SUNKEN | WS_BORDER,WS_EX_CLIENTEDGE
+    LTEXT           "Function keys: \n\tF1 help\n\tF2 toggles 3D\n\tF3 turns cockpit mode on/off\n\tF4 toggles flight sim controls\n\tF5 turns sound on/off\n\tF6 toggles full screen/window\n\tF8 turns info display on/off\n\tF9 toggles short scan only \nmode\n\tF11 locks phasers",
+                    108,7,7,141,87,SS_SUNKEN | WS_BORDER,WS_EX_CLIENTEDGE
+    LTEXT           "Talk to other players:\n\tPress ""t"" and type to talk, end with <cr>",
+                    109,193,75,163,32,SS_SUNKEN | WS_BORDER,WS_EX_CLIENTEDGE
+    LTEXT           "3D movement:\n\t<up arrow> thrusts up\n\t<down arrow> thrusts down\n\t<home> speeds up\n\t<end> slows down",
+                    110,194,177,162,49,SS_SUNKEN | WS_BORDER,
+                    WS_EX_CLIENTEDGE
+    LTEXT           "Shift function keys:\n\t<shift>F8 and F9 create enemies\n\t<shift>F7 creates allies\n\t<shift>F5 deposits base",
+                    IDC_STATIC,7,97,142,42,SS_SUNKEN | WS_BORDER,
+                    WS_EX_CLIENTEDGE
+    LTEXT           "Ship controls:\n\t<space> fires torpedos\n\t<cntl> fires phasers\n\t<left arrow> turns left\n\t<right arrow> turns right\n\t<up> thrusts forward\n\t<down> thrusts backward",
+                    111,194,108,162,67,SS_SUNKEN | WS_BORDER,
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_Startup DIALOGEX 0, 0, 534, 369
+STYLE DS_NOIDLEMSG | DS_3DLOOK | WS_CHILD | WS_VISIBLE
+MENU WinTrekMenu
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&View Missions",IDD_ViewMissions,229,157,76,17,
+                    WS_DISABLED
+    PUSHBUTTON      "&Score Board",IDB_Startup_scoreBoard,229,186,76,17,
+                    WS_DISABLED
+    PUSHBUTTON      "Side &List",IDB_Startup_sideList,229,215,76,17,
+                    WS_DISABLED
+    PUSHBUTTON      "&Character Homepage",IDB_Startup_characterHomepage,229,
+                    70,76,17,WS_DISABLED
+    PUSHBUTTON      "&Flight School",IDB_Startup_flightSchool,229,99,76,17,
+                    WS_DISABLED
+    PUSHBUTTON      "Create &Mission",IDD_CreateMission,229,128,76,17,
+                    WS_DISABLED
+    PUSHBUTTON      "Federation &Webpage",IDB_Startup_federationWebpage,229,
+                    244,76,17,WS_DISABLED
+    PUSHBUTTON      "&Exit",IDABORT,229,273,76,17
+    CTEXT           "Federation",IDC_title,60,10,414,50,SS_CENTERIMAGE
+    LTEXT           "",IDC_Startup_news,10,300,514,34,SS_SUNKEN | WS_BORDER
+    PUSHBUTTON      "&Team room",IDD_SideStrategy,452,345,40,14,WS_DISABLED
+    PUSHBUTTON      "Back",IDCANCEL,502,345,22,14
+END
+
+IDD_Logon DIALOG DISCARDABLE  0, 0, 147, 77
+STYLE DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Logon"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "&Abort",IDABORT,80,56,52,14
+    EDITTEXT        IDC_Logon_characterName,64,6,77,14,ES_AUTOHSCROLL
+    RTEXT           "Character Name:",IDC_STATIC,6,9,53,8
+    RTEXT           "Password:",IDC_STATIC,6,27,53,8
+    EDITTEXT        IDC_Logon_password,64,24,77,14,ES_PASSWORD | ES_AUTOHSCROLL
+    PUSHBUTTON      "&Logon",IDOK,14,56,52,14
+    CONTROL         "Save password",IDC_Logon_savepw,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,63,42,65,10
+END
+
+IDD_LogonOld DIALOG DISCARDABLE  0, 0, 270, 57
+STYLE DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Logon"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "&Abort",IDABORT,231,26,32,14
+    EDITTEXT        IDC_Logon_characterName,62,7,151,13,ES_AUTOHSCROLL
+    LTEXT           "Character name",IDC_STATIC,7,7,53,13
+    LTEXT           "Password",IDC_STATIC,7,26,53,11
+    EDITTEXT        IDC_Logon_password,62,26,151,13,ES_PASSWORD | 
+                    ES_AUTOHSCROLL
+    PUSHBUTTON      "&Logon",IDOK,231,7,32,14
+END
+
+IDD_SideStrategy DIALOGEX 0, 0, 534, 369
+STYLE DS_3DLOOK | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+END
+
+IDD_Loadout DIALOGEX 0, 0, 534, 369
+STYLE DS_3DLOOK | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Reject",IDC_Loadout_reject,180,345,32,13
+    CONTROL         "",IDC_Loadout_bmp3,"Static",SS_BITMAP | SS_NOTIFY | 
+                    SS_CENTERIMAGE | SS_REALSIZEIMAGE | NOT WS_VISIBLE,10,
+                    135,150,50
+    CONTROL         "",IDC_Loadout_bmp1,"Static",SS_BITMAP | SS_NOTIFY | 
+                    SS_CENTERIMAGE | SS_REALSIZEIMAGE | NOT WS_VISIBLE,10,35,
+                    150,50
+    CONTROL         "",IDC_Loadout_bmp4,"Static",SS_BITMAP | SS_NOTIFY | 
+                    SS_CENTERIMAGE | SS_REALSIZEIMAGE | NOT WS_VISIBLE,10,
+                    185,150,50
+    CONTROL         "",IDC_Loadout_bmp5,"Static",SS_BITMAP | SS_NOTIFY | 
+                    SS_CENTERIMAGE | SS_REALSIZEIMAGE | NOT WS_VISIBLE,10,
+                    235,150,50
+    SCROLLBAR       IDC_Loadout_partScroll,160,35,10,250,SBS_VERT
+    LTEXT           "",IDC_Loadout_shipDetails,180,285,344,50,SS_SUNKEN | 
+                    WS_BORDER
+    LTEXT           "",IDC_Loadout_partDescription,10,295,160,64,SS_SUNKEN | 
+                    WS_BORDER
+    CONTROL         "Tab1",IDC_Loadout_tabView,"SysTabControl32",0x0,180,20,
+                    344,255
+    CONTROL         "",IDC_Loadout_bmp2,"Static",SS_BITMAP | SS_NOTIFY | 
+                    SS_CENTERIMAGE | SS_REALSIZEIMAGE | NOT WS_VISIBLE,10,85,
+                    150,50
+    PUSHBUTTON      "Accept",IDC_Loadout_accept,230,345,32,13
+    CTEXT           "",IDC_Loadout_money,369,10,43,10,SS_CENTERIMAGE | NOT 
+                    WS_GROUP
+    COMBOBOX        IDC_Loadout_partType,10,10,160,57,CBS_DROPDOWNLIST | 
+                    CBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_Loadout_tabImage,"Static",SS_BITMAP | 
+                    SS_CENTERIMAGE | SS_REALSIZEIMAGE,190,45,324,220
+    CONTROL         "List2",IDC_Loadout_tabList,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | WS_BORDER,190,45,324,190
+    PUSHBUTTON      "Dismount",IDC_Loadout_dismountButton,431,245,34,14,NOT 
+                    WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
+    PUSHBUTTON      "Sell",IDC_Loadout_sellButton,480,245,34,14,NOT 
+                    WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
+    PUSHBUTTON      "Buy",IDC_Loadout_buyButton,190,245,34,14,NOT WS_VISIBLE | 
+                    WS_DISABLED | NOT WS_TABSTOP
+    CTEXT           "",IDC_Loadout_capacity,449,10,43,10,SS_CENTERIMAGE | 
+                    NOT WS_GROUP
+    PUSHBUTTON      "Accept && launch",IDC_Loadout_launch,280,346,57,13,
+                    WS_DISABLED | NOT WS_TABSTOP
+END
+
+IDD_Loadout2 DIALOGEX 0, 0, 534, 369
+STYLE DS_3DLOOK | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+END
+
+IDD_CreateMission DIALOGEX 0, 0, 534, 369
+STYLE DS_3DLOOK | WS_CHILD | WS_VISIBLE | WS_BORDER
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&Back",IDCANCEL,502,345,22,14
+    PUSHBUTTON      "&Team room",IDD_SideStrategy2,452,345,40,14,WS_DISABLED
+    GROUPBOX        "Teams",IDC_STATIC,10,186,514,149
+    CONTROL         "List1",IDC_CreateMission_teams,"SysListView32",
+                    LVS_REPORT | LVS_SORTASCENDING | WS_BORDER | WS_TABSTOP,
+                    20,196,493,129
+    GROUPBOX        "Scenario",IDC_STATIC,10,10,319,166
+    GROUPBOX        "Map",IDC_STATIC,339,10,185,166
+    LISTBOX         IDC_CreateMission_map,349,20,164,14,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_CreateMission_missionName,20,20,92,14,ES_AUTOHSCROLL
+    LISTBOX         IDC_CreateMission_startTime,10,345,82,14,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_CreateMission_duration,105,345,82,14,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_CreateMission_missionDescription,20,44,299,122,
+                    ES_AUTOHSCROLL
+    LTEXT           "",IDC_CreateMission_mapDescription,349,44,164,122,
+                    SS_SUNKEN | WS_BORDER | NOT WS_GROUP
+    LISTBOX         IDC_CreateMission_missionObjective,226,20,92,14,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_CreateMission_missionType,123,20,92,14,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_ViewMissions DIALOGEX 0, 0, 534, 369
+STYLE DS_3DLOOK | WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+WINTREKICON             ICON    DISCARDABLE     "trek.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+WinTrekMenu MENU DISCARDABLE 
+BEGIN
+    POPUP "&Video Resolution"
+    BEGIN
+        MENUITEM "Available video modes",       ID_VIDEOMODES_ABOUTWINTREK
+    END
+    POPUP "&Viewpoint"
+    BEGIN
+        MENUITEM "&Cockpit",                    ID_VIEWPOINT_COCKPIT
+        MENUITEM "Chase",                       ID_VIEWPOINT_CHASE
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Sound",                      ID_OPTIONS_SOUND, CHECKED
+        MENUITEM "&Debris",                     ID_OPTIONS_DEBRIS, CHECKED
+        MENUITEM "&Background Stars",           ID_OPTIONS_BACKGROUNDSTARS
+        , CHECKED
+        MENUITEM "&Gravity",                    ID_OPTIONS_GRAVITY
+        MENUITEM "&Full Screen Mode",           ID_OPTIONS_FULLSCREENMODE
+        MENUITEM "S&hort Scan Only",            ID_OPTIONS_SHORTSCANONLY
+        MENUITEM "Collision detection",         ID_OPTIONS_COLLISIONDETECTION
+        , CHECKED
+    END
+    POPUP "&Graphics"
+    BEGIN
+        MENUITEM "&Linear filtering",           ID_GRAPHICS_FILTER
+        MENUITEM "&Dithering",                  ID_GRAPHICS_DITHER
+        MENUITEM "&Perspective Correction",     ID_GRAPHICS_PERSPECTIVE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      ID_HELP_ABOUT
+        MENUITEM "&Quick help",                 ID_HELP_QUICKHELP
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_QuickHelp, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 356
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 226
+    END
+
+    IDD_Startup, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 60
+        VERTGUIDE, 474
+        VERTGUIDE, 484
+        VERTGUIDE, 492
+        VERTGUIDE, 502
+        VERTGUIDE, 524
+        HORZGUIDE, 10
+        HORZGUIDE, 60
+        HORZGUIDE, 70
+        HORZGUIDE, 290
+        HORZGUIDE, 300
+        HORZGUIDE, 334
+        HORZGUIDE, 345
+        HORZGUIDE, 359
+    END
+
+    IDD_Logon, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 263
+        VERTGUIDE, 62
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 102
+        HORZGUIDE, 26
+    END
+
+    IDD_SideStrategy, DIALOG
+    BEGIN
+        HORZGUIDE, 345
+        HORZGUIDE, 359
+    END
+
+    IDD_Loadout, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 160
+        VERTGUIDE, 170
+        VERTGUIDE, 180
+        VERTGUIDE, 190
+        VERTGUIDE, 492
+        VERTGUIDE, 502
+        VERTGUIDE, 514
+        VERTGUIDE, 524
+        HORZGUIDE, 10
+        HORZGUIDE, 20
+        HORZGUIDE, 35
+        HORZGUIDE, 45
+        HORZGUIDE, 85
+        HORZGUIDE, 135
+        HORZGUIDE, 155
+        HORZGUIDE, 165
+        HORZGUIDE, 185
+        HORZGUIDE, 235
+        HORZGUIDE, 245
+        HORZGUIDE, 255
+        HORZGUIDE, 265
+        HORZGUIDE, 275
+        HORZGUIDE, 285
+        HORZGUIDE, 295
+        HORZGUIDE, 335
+        HORZGUIDE, 345
+        HORZGUIDE, 359
+    END
+
+    IDD_CreateMission, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 20
+        VERTGUIDE, 319
+        VERTGUIDE, 329
+        VERTGUIDE, 339
+        VERTGUIDE, 349
+        VERTGUIDE, 492
+        VERTGUIDE, 502
+        VERTGUIDE, 513
+        VERTGUIDE, 524
+        HORZGUIDE, 10
+        HORZGUIDE, 20
+        HORZGUIDE, 34
+        HORZGUIDE, 44
+        HORZGUIDE, 166
+        HORZGUIDE, 176
+        HORZGUIDE, 186
+        HORZGUIDE, 196
+        HORZGUIDE, 325
+        HORZGUIDE, 335
+        HORZGUIDE, 345
+        HORZGUIDE, 359
+    END
+
+    IDD_ViewMissions, DIALOG
+    BEGIN
+        VERTGUIDE, 10
+        VERTGUIDE, 20
+        VERTGUIDE, 310
+        VERTGUIDE, 318
+        VERTGUIDE, 522
+        VERTGUIDE, 527
+        HORZGUIDE, 35
+        HORZGUIDE, 207
+        HORZGUIDE, 244
+        HORZGUIDE, 335
+        HORZGUIDE, 350
+        HORZGUIDE, 363
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

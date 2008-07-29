@@ -1,0 +1,191 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOG  22, 17, 229, 78
+STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+CAPTION "About Allegiance Server"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CTEXT           "Microsoft Allegiance",-1,4,4,221,8
+    CTEXT           "Dedicated Server",-1,4,14,221,8
+    CTEXT           "Copyright (c) 1998, Microsoft Corporation.",-1,4,34,221,
+                    8
+    DEFPUSHBUTTON   "OK",IDOK,90,60,52,14,WS_GROUP
+    CTEXT           "All Rights Reserved.",-1,4,44,221,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 225
+        TOPMARGIN, 4
+        BOTTOMMARGIN, 74
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+MNU_FEDSRV MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "&Settings",                   ID_TOOLS_SETTINGS
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      ID_HELP_ABOUT
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "1 TYPELIB ""AllSrvModuleIDL.tlb""\r\n"
+    "#include ""Fedsrv.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+ICO_FEDSRV              ICON                    "fedsrv.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_AllSrv              REGISTRY                "AllSrv.rgs"
+IDR_ADMINSESSION        REGISTRY                "AdminSession.rgs"
+IDR_ADMINGAME           REGISTRY                "AdminGame.rgs"
+IDR_ADMINGAMES          REGISTRY                "AdminGames.rgs"
+IDR_ADMINSERVER         REGISTRY                "AdminServer.rgs"
+IDR_USER                REGISTRY                "AdminUser.rgs"
+IDR_USERS               REGISTRY                "AdminUsers.rgs"
+IDR_ADMINSHIP           REGISTRY                "AdminShip.rgs"
+IDR_DPMONO              REGISTRY                "DPMono.rgs"
+#if defined(APSTUDIO_INVOKED) || defined(ALLSRV_STANDALONE)
+#if defined(APSTUDIO_INVOKED)
+IDR_ALLSRV$(ALLSRV_STANDALONE) REGISTRY                "AllSrv.rgs"
+#else
+IDR_ALLSRV              REGISTRY                "AllSrv.rgs"
+#endif
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_E_LOBBYSERVER_GAMES_EXIST 
+                            "LobbyServer property cannot be changed while games exist."
+    IDS_E_ONE_GAME_PER_SERVER 
+                            "Game server only supports creating a single game. Another game already exists."
+    IDS_E_GAME_SERVER_PAUSED 
+                            "Cannot create a game while Game server is paused."
+    IDS_E_CONNECT_LOBBY     "Failed to connect to the specified lobby server."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+1 TYPELIB "AllSrvModuleIDL.tlb"
+#include "Fedsrv.rc2"  // non-Microsoft Visual C++ edited resources
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

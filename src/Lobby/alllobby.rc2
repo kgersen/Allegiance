@@ -1,0 +1,21 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// Lobby.RC2 : resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+  #error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+
+/////////////////////////////////////////////////////////////////////////////
+#define SZFILEDESCRIPTION "The Microsoft® Allegiance Lobby Server"
+#define SZORIGFILENAME "AllLobby.exe"
+#define SZINTERNALNAME "ALLLOBBY"
+
+#include "VerRes.rc"
+

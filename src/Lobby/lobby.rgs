@@ -1,0 +1,34 @@
+HKCR
+{
+  NoRemove AppID
+  {
+    {EFD52202-45CB-454D-B477-33BC5C29BDF1} = s 'AllLobby'
+    'AllLobby.EXE'
+    {
+      val AppID = s {EFD52202-45CB-454D-B477-33BC5C29BDF1}
+    }
+  }
+}
+HKLM
+{
+  NoRemove SYSTEM
+  {
+    NoRemove CurrentControlSet
+    {
+      NoRemove Services
+      {
+        NoRemove EventLog
+        {
+          NoRemove Application
+          {
+            'AllLobby'
+            {
+              val EventMessageFile = s '%MODULE%'
+              val TypesSupported = d '7'
+            }
+          }
+        }
+      }
+    }
+  }
+}

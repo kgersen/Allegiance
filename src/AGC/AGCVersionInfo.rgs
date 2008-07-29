@@ -1,0 +1,26 @@
+HKCR
+{
+	AGC.AGCVersionInfo = s 'AGCVersionInfo Class'
+	{
+		CLSID = s '{9942F23D-B460-4bf0-8B2C-7B003A43F37C}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {9942F23D-B460-4bf0-8B2C-7B003A43F37C} = s 'AGCVersionInfo Class'
+		{
+      val AppID = s '{9942F23D-B460-4bf0-8B2C-7B003A43F37C}'
+			ProgID = s 'AGC.AGCVersionInfo'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+		}
+	}
+  NoRemove APPID
+  {
+    ForceRemove {9942F23D-B460-4bf0-8B2C-7B003A43F37C} = s 'AGCVersionInfo Class'
+    {
+      val DllSurrogate = s ''
+    }
+  }
+}

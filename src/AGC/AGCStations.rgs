@@ -1,0 +1,21 @@
+HKCR
+{
+	AGC.AGCStations.1 = s 'AGCStations Class'
+	{
+		CLSID = s '{7A0159B4-0272-11D3-8B55-00C04F681633}'
+	}
+	AGC.AGCStations = s 'AGCStations Class'
+	{
+		CLSID = s '{7A0159B4-0272-11D3-8B55-00C04F681633}'
+		CurVer = s 'AGC.AGCStations.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {7A0159B4-0272-11D3-8B55-00C04F681633} = s 'AGCStations Class'
+		{
+			ProgID = s 'AGC.AGCStations.1'
+			VersionIndependentProgID = s 'AGC.AGCStations'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}

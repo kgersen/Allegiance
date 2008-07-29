@@ -1,0 +1,25 @@
+HKCR
+{
+  AGC.Command.1 = s 'Active Game Core Command Class'
+  {
+    CLSID = s '{4272AD82-FF3F-11d2-A50F-00C04F68DEB0}'
+  }
+  AGC.Command = s 'Active Game Core Command Class'
+  {
+    CLSID = s '{4272AD82-FF3F-11d2-A50F-00C04F68DEB0}'
+    CurVer = s 'AGC.Command.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {4272AD82-FF3F-11d2-A50F-00C04F68DEB0} = s 'Active Game Core Command Class'
+    {
+      ProgID = s 'AGC.Command.1'
+      VersionIndependentProgID = s 'AGC.Command'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}

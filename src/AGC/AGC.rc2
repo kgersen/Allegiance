@@ -1,0 +1,33 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// AGC.RC2 : resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+  #error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Include the XML/XSL-generated files
+#include <AGCEventsRCH.h>
+#include <AGCEventsRC2.rc2>
+
+1 AGCEventsXML "AGCEvents.xml"
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Include the MC-generated file
+#include <AGCEventsMC.rc>
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+/////////////////////////////////////////////////////////////////////////////
+#define SZFILEDESCRIPTION "Allegiance Active Game Core Components"
+#define SZORIGFILENAME "AGC.dll"
+#define SZINTERNALNAME "AGC"
+
+#include "..\Inc\VerRes.rc"
+

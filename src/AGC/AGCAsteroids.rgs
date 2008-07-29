@@ -1,0 +1,21 @@
+HKCR
+{
+	AGC.AGCAsteroids.1 = s 'AGCAsteroids Class'
+	{
+		CLSID = s '{12430BFD-38B5-11d3-A51D-00C04F68DEB0}'
+	}
+	AGC.AGCAsteroids = s 'AGCAsteroids Class'
+	{
+		CLSID = s '{12430BFD-38B5-11d3-A51D-00C04F68DEB0}'
+		CurVer = s 'AGC.AGCAsteroids.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {12430BFD-38B5-11d3-A51D-00C04F68DEB0} = s 'AGCAsteroids Class'
+		{
+			ProgID = s 'AGC.AGCAsteroids.1'
+			VersionIndependentProgID = s 'AGC.AGCAsteroids'
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}

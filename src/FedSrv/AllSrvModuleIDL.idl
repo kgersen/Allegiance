@@ -1,0 +1,622 @@
+import "AGCIDL.idl"; // kg - no relative path; use project settings
+
+//import "oaidl.idl";  // not needed if including AGCIDL.h
+//import "ocidl.idl";
+
+/////////////////////////////////////////////////////////////////////////////
+// {secret}
+// DISPID Enumeration
+//
+// Notes:
+//   Never remove one of these enumeration values without replacing it
+//   with a dispid_Reservedx value to take its place, where x is the next
+//   reserved index not in use.
+//
+//   Always add new values to the end of the enumeration so that these values
+//   will never change.
+//
+enum dispid_AdminIDL
+{
+  dispid_AdminIDL_Begin = dispid_AGCIDL_End,
+
+  dispid_GamesAdd,
+
+  dispid_SessionInfo,
+  dispid_Sessions,
+  dispid_SessionServer,
+  dispid_SessionGames,
+  dispid_SessionRegisterForEvent,
+  dispid_SessionUnregisterForEvent,
+  dispid_EventActivated,
+  dispid_WhoStartedServer,
+  dispid_ActivateAllEvents,
+  dispid_DeactivateAllEvents,
+  dispid_PlayerCount,
+  dispid_MissionCount,
+  dispid_SendMsg,
+  dispid_Users,
+  dispid_Version,
+  dispid_Stop,
+  dispid_Pause,
+  dispid_LookupUser,
+  dispid_FindUser,
+  dispid_ProcessID,
+  dispid_OnEvent,
+  dispid_EventLog,
+  dispid_MachineName,
+  dispid_PerfCounter1,
+  dispid_PerfCounter2,
+  dispid_PerfCounter3,
+  dispid_LobbyServer,
+  dispid_LobbyMode,
+  dispid_PerfCounters,
+
+  dispid_AdminIDL_End = dispid_AdminIDL_Begin + 0x1000
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Forward Declarations
+//
+interface IAdminSession;
+interface IAdminSessionEvents;
+dispinterface _IAdminSessionEvents;
+interface IAdminSessionHost;
+interface IAdminSessionSite;
+interface IAdminServer;
+interface IAdminShip;
+interface IAdminGame;
+interface IAdminGames;
+interface IAdminServer;
+interface IAdminUser;
+interface IAdminUsers; 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  uuid(4C3EB21E-2A97-11d3-8B66-00C04F681633),
+  helpstring("AdminUserID type.")
+]
+typedef short AdminUserID;
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  object,
+  uuid(8D9BE088-DDA4-11d2-8B46-00C04F681633),
+  dual,
+  helpstring("IAdminSession Interface"),
+  pointer_default(unique)
+]
+interface IAdminSession : IDispatch
+{
+  [propput, helpstring("Gets/sets the session information object.")]
+  HRESULT SessionInfo([in] ITCSessionInfo* pSessionInfo);
+
+  [propget, id(dispid_SessionInfo)]
+  HRESULT SessionInfo([out, retval] ITCSessionInfo** ppSessionInfo);
+
+  [propget, id(dispid_Sessions), helpstring("Gets the collection of connected sessions.")]
+  HRESULT SessionInfos([out, retval] ITCSessionInfos** ppSessionInfos);
+
+  [propget, id(dispid_SessionServer), helpstring("Returns the server object.")]
+  HRESULT Server([out, retval] IAdminServer** ppServer);
+
+  [id(dispid_SessionRegisterForEvent), helpstring("Use this to activate event firing for events of a certain type;  Use uniqueID optionally to limit event firing.")]
+  HRESULT ActivateEvents(AGCEventID AGCEvent, [in, defaultvalue(-1)] AGCUniqueID uniqueID);
+
+  [id(dispid_SessionUnregisterForEvent), helpstring("Use this to deactivate event firing for events of a certain type;  Use uniqueObjectID optionally to limit event firing.")]
+  HRESULT DeactivateEvents(AGCEventID AGCEvent, [in, defaultvalue(-1)] AGCUniqueID uniqueObjectID);
+
+  [propget, id(dispid_EventActivated), helpstring("Use this to find out of an event of a certain type is firing")]
+  HRESULT IsEventActivated([in] AGCEventID AGCEvent, [in, defaultvalue(-1)] AGCUniqueID uniqueID, [out, retval] BOOL* pVal);
+
+  [id(dispid_ActivateAllEvents), helpstring("Use this to turn on all available events for this session.")]
+  HRESULT ActivateAllEvents();
+
+  [id(dispid_DeactivateAllEvents), helpstring("Use this to turn off all active events for this session.")]
+  HRESULT DeactivateAllEvents();
+
+  [propget, id(dispid_ProcessID), helpstring("Gets the process ID of the server, meaningful only on the local machine.")]
+  HRESULT ProcessID([out, retval] long* pdwProcessID);
+
+  [propget, id(dispid_Version)]
+  HRESULT Version([out, retval] IAGCVersionInfo** ppVersion);
+
+  [id(dispid_Stop), helpstring("Use this to kill the server")] 
+  HRESULT Stop();
+
+  [id(dispid_Pause), helpstring("Use this to pause the server. When paused, no new users may join and once everyone logs off, the server shuts down. This method does nothing if the server is already paused.")] 
+  HRESULT Pause();
+
+  [propget, id(dispid_WhoStartedServer), helpstring("Use this to find out which session caused the server to launch.  This is NULL is COM did not start it.")]
+  HRESULT WhoStartedServer([out, retval] IAdminSession** pIAdminSession);
+
+  [propget, id(dispid_EventLog), helpstring("Gets the event log object.")]
+  HRESULT EventLog([out, retval] IAGCEventLogger** ppEventLogger);
+
+  [propget, id(dispid_PerfCounters), helpstring("Gets a collection of current performance counters.")]
+  HRESULT PerfCounters([out, retval] IAGCEvent** ppPerfCounters);
+
+  [helpstring("Causes an AdminChat event to be fired.")]
+  HRESULT SendAdminChat([in] BSTR bstrText, [in] long nUserID, [in] DATE dateOriginal);
+
+  [helpstring("Use this to continue a paused the server. This method does nothing if the server is not paused.")] 
+  HRESULT Continue();
+
+}; // End: interface IAdminSession : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+// IAdminSessionHost Interface
+[
+  object, oleautomation, pointer_default(unique),
+  uuid(CD7D4875-3D61-4cc4-83C1-48F698ED45F5),
+  helpstring("IAdminSessionHost interface")
+]
+interface IAdminSessionHost : IUnknown
+{
+  HRESULT GetIdentity([in] long nCookie, [out, retval] IUnknown** ppIdentity);
+
+}; // END: interface IAdminSessionHost : IUnknown
+
+
+/////////////////////////////////////////////////////////////////////////////
+// IAdminSessionClass Interface
+[
+  object, oleautomation, pointer_default(unique),
+  uuid(B3339C1B-D267-420b-B3D7-59F127CDD9CF),
+  helpstring("IAdminSessionClass interface")
+]
+interface IAdminSessionClass : IUnknown
+{
+  [helpstring("Creates an AdminSession class.")]
+  HRESULT CreateSession([in] IAdminSessionHost* pHost,
+    [out, retval] IAdminSession** ppSession);
+
+}; // END: interface IAdminSessionClass : IUnknown
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  object, oleautomation, pointer_default(unique), nonextensible,
+  uuid(DE3ED156-76A0-4a8e-8CFE-9ED26C3B0A5E),
+  helpstring("IAdminSessionEvents Interface")
+]
+interface IAdminSessionEvents : IUnknown
+{
+  [id(dispid_OnEvent), helpstring("Called when an event is fired for this session.")]
+  HRESULT OnEvent([in] IAGCEvent* pEvent);
+
+}; // End: interface IAdminSessionEvents : IUnknown
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  uuid(6A9E632E-1889-11d3-8B61-00C04F681633),
+  helpstring("_IAdminSessionEvents Interface")
+]
+dispinterface _IAdminSessionEvents
+{
+  interface IAdminSessionEvents;
+
+}; // End: dispinterface _IAdminSessionEvents
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  object,
+  uuid(986E689A-2DB4-11d3-8B66-00C04F681633),
+  dual,
+  helpstring("IAdminShip Interface"),
+  pointer_default(unique)
+]
+interface IAdminShip : IAGCShip
+{
+  [propget, id(500), helpstring("Returns the User who is piloting this ship.")]
+  HRESULT User([out, retval] IAdminUser** ppUser);
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  object,
+  uuid(8FC514F8-E6CE-11D2-8B4B-00C04F681633),
+  dual,
+  helpstring("IAdminGame Interface"),
+  pointer_default(unique)
+]
+interface IAdminGame : IAGCGame
+{
+  [id(102), helpstring("method SendMsg to everyone in game")] 
+  HRESULT SendMsg(BSTR  bstrMessage);
+
+  [id(108), helpstring("Terminates this game and then deletes itself")] 
+  HRESULT Kill();
+
+  [propget, id(109), helpstring("Returns a Users collection of the people in the game.")]
+  HRESULT Users([out, retval] IAdminUsers** ppUsers);
+
+  [propget, id(112), helpstring("Returns the User who is the game owner.")]
+  HRESULT GameOwnerUser([out, retval] IAdminUser** ppUser);
+
+  [id(113), helpstring("Changes a game's stage from AGCGameStage_NotStarted to AGCGameStage_Started")]
+  HRESULT StartGame();
+
+  [propget, id(114), helpstring("Returns description of the game which is unique among all games.")]
+  HRESULT Description([out, retval] BSTR* pbstrDescription);
+
+  [id(115), helpstring("Begins the countdown of the game.  Once countdown hits zero, the game starts.  The starting countdown amount is specified as a game parameter called DefaultCountdown.")]
+  HRESULT StartCountdown();
+
+  [id(116), helpstring("Changes a team's name.  Use game param, LockTeamSettings to ensure it stays that way. (SetTeamName overrides LockTeamSettings.)")]
+  HRESULT SetTeamName([in] int iSideID, [in] BSTR bstrName);
+
+  [id(117), helpstring("Changes a team's default tech bit which is normally based on its civid.  The only has an effect if done before the game starts (and before the countdown).")]
+  HRESULT OverrideTechBit([in] int iSideID, [in] int nTechBitID, [in] BOOL bNewSetting);
+
+  [id(118), helpstring("Sets mml file(s) to display when user clicks 'details' in games list. Files seperated by spaces, must be in the directory specified by ZoneEventDetailsURL in config file.  The mml file should be  last list.")]
+  HRESULT SetDetailsFiles([in] BSTR bstrName);
+
+  [id(119), helpstring("Assigns everyone in the game to a random team except the team leaders.")]
+  HRESULT RandomizeTeams();
+
+}; // End: interface IAdminGame : IAGCGame
+
+
+/////////////////////////////////////////////////////////////////////////////
+// The IAdminGames interface is used to enumerate a collection of
+// Game Objects.
+//
+// Through this interface, the collection can be enumerated using the Count
+// and Item properties. The Item property can be used to retrieve an item by
+// its 0-based index.
+//
+// *When To Implement*
+//
+// Implement this object on a collection of game objects.
+//
+// *When To Use*
+//
+// Use IAdminGames to enumerate a collection object provided by a
+// game object. This allows a client to determine what other clients, if
+// any, are also connected to the host of the session object. 
+//
+// See Also: IAdminGame
+[
+  object, dual, pointer_default(unique),
+  uuid(3ACE4410-E6D3-11D2-8B4B-00C04F681633),
+  helpstring("IAdminGames interface")
+]
+interface IAdminGames : IAGCCollection
+{
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   index - A *VARIANT* which is coerced to type *VT_I4*. Specifies the
+  // 0-relative index of the item which is to be retrieved.
+  //   ppGame - Address of an IAdminGame interface pointer that
+  // receives the item specified by /index/.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The function was successful.
+  //   E_POINTER - The specified pointer is invalid.
+  //   E_INVALIDARG - The specified index is out of range or is a
+  // *VARIANT* type not supported by this interface.
+  //
+  // See Also: IAdminGame
+  [propget, id(DISPID_VALUE), helpstring("Returns a Game from the collection, or NULL if the game does not exist. Takes an argument, index, which must be the index into the collection.")]
+  HRESULT Item([in] VARIANT* pvIndex, [out, retval] IAdminGame** ppGame);
+
+  [id(dispid_GamesAdd), helpstring("method Add")] 
+  HRESULT Add(IAGCGameParameters* pGameParameters);
+
+};  // END: interface IAdminGames : ITCCollection
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  object,
+  uuid(20721450-E7C0-11D2-8B4B-00C04F681633),
+  dual,
+  helpstring("IAdminServer Interface"),
+  pointer_default(unique)
+]
+interface IAdminServer : IDispatch
+{
+  [propget, id(dispid_SessionGames), helpstring("Gets the collection of active games on this server.")]
+  HRESULT Games([out, retval] IAdminGames** ppGames);
+
+  [propget, id(dispid_PlayerCount), helpstring("property PlayerCount")] 
+  HRESULT PlayerCount([out, retval] long *pVal);
+  
+  [propget, id(dispid_MissionCount), helpstring("property MissionCount")] 
+  HRESULT MissionCount([out, retval] long *pVal);
+
+  [id(dispid_SendMsg), helpstring("method SendMsg to everyone on the server")] 
+  HRESULT SendMsg(BSTR  bstrMessage);
+
+  [propget, id(dispid_Users), helpstring("Returns a Users collection of the people on the server.")]
+  HRESULT Users([out, retval] IAdminUsers** ppUsers);
+
+  [propget, id(dispid_LookupUser), helpstring("Finds and Returns the User based on AGC id -OR- NULL if not found. This is faster than FindUser")]
+  HRESULT LookupUser([in] AGCUniqueID id, [out, retval] IAdminUser** ppUser);
+
+  [propget, id(dispid_FindUser), helpstring("Finds and Returns the User based on name -OR- NULL if not found. This is slower and less reliable than LookupUser")]
+  HRESULT FindUser([in] BSTR bstrName, [out, retval] IAdminUser** ppUser);
+
+  [propget, id(dispid_MachineName), helpstring("prop MachineName returns name of computer running AllSrv")] 
+  HRESULT MachineName([out, retval] BSTR * pbstrMachineName);
+
+  [propget, id(dispid_PerfCounter1), helpstring("prop PacketsIn; number of messages received by server; monitor this as it changes of over time to determine server burden.")] 
+  HRESULT PacketsIn([out, retval] long * pVal);
+
+  [propget, id(dispid_PerfCounter2), helpstring("prop PlayersOnline, number of users logged onto the game server.")] 
+  HRESULT PlayersOnline([out, retval] long * pVal);
+
+  [propget, id(dispid_PerfCounter3), helpstring("prop TimeInnerLoop, milliseconds spent by server in inner loop; this slows how much load server has.")] 
+  HRESULT TimeInnerLoop([out, retval] long * pVal);
+
+  [propput, helpstring("Gets/Sets the Lobby server onto which this server publishes its games.")]
+  HRESULT LobbyServer([in] BSTR bstrLobbyServer);
+  [propget, id(dispid_LobbyServer)]
+  HRESULT LobbyServer([out, retval] BSTR* pbstrLobbyServer);
+
+  [propput, helpstring("For standalone server only. Gets/sets the Lobby Mode; true means games will be public, false means private.")]
+  HRESULT PublicLobby([in] VARIANT_BOOL bPublic);
+  [propget, id(dispid_LobbyMode)]
+  HRESULT PublicLobby([out, retval] VARIANT_BOOL* pbPublic);
+  
+  [helpstring("Create the default set of games (standalone only).")] 
+  HRESULT CreateDefaultGames();
+
+}; // End: interface IAdminServer : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  object,
+  uuid(D5C9AD80-EBA4-11D2-8B4B-00C04F681633),
+  dual,
+  helpstring("IAdminUser Interface"),
+  pointer_default(unique)
+]
+interface IAdminUser : IDispatch
+{
+  [propget, helpstring("Gets the user's name.")]
+  HRESULT Name([out, retval] BSTR* pbstr);
+
+  [helpstring("method SendMsg to specific player")]
+  HRESULT SendMsg(BSTR  bstrMessage);
+
+  [propget, helpstring("returns true if player is ready to play (from within in lobby)")] 
+  HRESULT isReady([out, retval] VARIANT_BOOL *pVal);
+  [propput]
+  HRESULT isReady([in] VARIANT_BOOL Val);
+
+  [propget, helpstring("returns the AGC Ship that the player is piloting, or NULL if none")]
+  HRESULT Ship([out, retval] IAdminShip** ppAdminShip);
+
+  [helpstring("method Boot: logoff user")]
+  HRESULT Boot();
+
+  [propget, helpstring("Returns the user id of the user")]
+  HRESULT UserID([out, retval] AdminUserID *userid);
+
+  [propget, helpstring("Returns the AGC unique id of the user")]
+  HRESULT UniqueID([out, retval] AGCUniqueID *uniqueID);
+
+  [propget, helpstring("Returns an AGCEvent object used to store the current statistics of the player.")]
+  HRESULT PlayerStats([out, retval] IAGCEvent** ppStats);
+
+}; // End: interface IAdminUser : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  object,
+  uuid(F9E52A79-EBA4-11D2-8B4B-00C04F681633),
+  dual,
+  helpstring("IAdminUsers Interface"),
+  pointer_default(unique)
+]
+interface IAdminUsers : ITCCollection
+{
+  [propget, id(DISPID_VALUE), helpstring("Returns a User from the collection, or NULL if the game does not exist. Takes an argument, index, which must be the index into the collection.")]
+  HRESULT Item([in] VARIANT index, [out, retval] IAdminUser** ppUser);
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+[
+  uuid(BB5FC41C-DDA4-11d2-8B46-00C04F681633),
+  version(1.0),
+  helpstring("AllSrv 1.0 Type Library")
+]
+library ALLEGIANCESERVERLib
+{
+  importlib("stdole32.tlb");
+  importlib("stdole2.tlb");
+  importlib("agc.tlb");
+
+  ///////////////////////////////////////////////////////////////////////////
+	// {secret}
+	[
+		hidden, noncreatable, uuid(8A1E3F7F-7A21-4fbf-9B39-D02CDB0D5402)
+	]
+	coclass AdminInterfaces
+	{
+		/////////////////////////////////////////////////////////////////////////
+		// Reference these (interfaces) so that they get into the typelib
+    interface IAdminSession;
+    interface IAdminSessionEvents;
+    dispinterface _IAdminSessionEvents;
+    interface IAdminSessionClass;
+    interface IAdminServer;
+    interface IAdminShip;
+    interface IAdminGame;
+    interface IAdminGames;
+    interface IAdminServer;
+    interface IAdminUser;
+    interface IAdminUsers; 
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  [
+    uuid(AAA8270F-DDA4-11d2-8B46-00C04F681633),
+    helpstring("AdminSession Class")
+  ]
+  coclass AdminSession
+  {
+    [default] interface IAdminSession;
+    [default, source] dispinterface _IAdminSessionEvents;
+    [defaultvtable, source] interface IAdminSessionEvents;
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  [
+    noncreatable,
+    uuid(3E389806-2DB4-11d3-8B66-00C04F681633),
+    helpstring("AdminShip Class")
+  ]
+  coclass AdminShip
+  {
+    [default] interface IAdminShip;
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  [
+    noncreatable,
+    uuid(9F17114A-E6CE-11D2-8B4B-00C04F681633),
+    helpstring("AdminGame Class")
+  ]
+  coclass AdminGame
+  {
+    [default] interface IAdminGame;
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  [
+    noncreatable,
+    uuid(67757064-E6FC-11D2-8B4B-00C04F681633),
+    helpstring("AdminGames Class")
+  ]
+  coclass AdminGames
+  {
+    [default] interface IAdminGames;
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  [
+    noncreatable,
+    uuid(5B5ED2A6-E7C0-11D2-8B4B-00C04F681633),
+    helpstring("AdminServer Class")
+  ]
+  coclass AdminServer
+  {
+    [default] interface IAdminServer;
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  [
+    noncreatable,
+    uuid(E71EA5B8-EBA4-11D2-8B4B-00C04F681633),
+    helpstring("AdminUser Class")
+  ]
+  coclass AdminUser
+  {
+    [default] interface IAdminUser;
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  [
+    noncreatable,
+    uuid(0BD51B94-EBA5-11D2-8B4B-00C04F681633),
+    helpstring("AdminUsers Class")
+  ]
+  coclass AdminUsers
+  {
+    [default] interface IAdminUsers;
+  };
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+// VS.Net 2003 port: added "inline" to IsAllSrvRunning() to avoid linik errors
+// 
+
+cpp_quote("#if defined(__cplusplus) && _MSC_VER >= 1100")
+cpp_quote("  extern \"C++\"")
+cpp_quote("  {")
+cpp_quote("    /////////////////////////////////////////////////////////////////////////")
+cpp_quote("    // Smart Pointer Declarations")
+cpp_quote("")
+cpp_quote("    #include <comdef.h>")
+cpp_quote("")
+cpp_quote("    #ifndef TC_COM_SMARTPTR_TYPEDEF")
+cpp_quote("      #define TC_COM_SMARTPTR_TYPEDEF(Interface) \\")
+cpp_quote("        _COM_SMARTPTR_TYPEDEF(Interface, __uuidof(Interface))")
+cpp_quote("    #endif // TC_COM_SMARTPTR_TYPEDEF")
+cpp_quote("")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminSession);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminSessionEvents);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminSessionHost);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminSessionClass);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminServer);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminShip);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminGame);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminGames);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminServer);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminUser);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(IAdminUsers);") 
+cpp_quote("")
+cpp_quote("  } // extern \"C++\"")
+cpp_quote("#endif // defined(__cplusplus) && _MSC_VER >= 1100")
+cpp_quote("")
+cpp_quote("/////////////////////////////////////////////////////////////////////////////")
+cpp_quote("// AllSrv Existence")
+cpp_quote("#define szAllSrvRunning TEXT(\"{5B5ED2A6-E7C0-11D2-8B4B-00C04F681633}_Running\")")
+cpp_quote("#define szAllSrvRunningGlobal (TEXT(\"Global\\\\\") szAllSrvRunning)")
+cpp_quote("")
+cpp_quote("#if _MSC_VER >= 1310")
+cpp_quote("BOOL inline IsAllSrvRunning()")
+cpp_quote("#else")
+cpp_quote("BOOL IsAllSrvRunning()")
+cpp_quote("#endif")
+cpp_quote("{")
+cpp_quote("  // Open the mutex using the global name first")
+cpp_quote("  HANDLE hMutex = ::OpenMutex(SYNCHRONIZE, false, szAllSrvRunningGlobal);")
+cpp_quote("  if (!hMutex)")
+cpp_quote("    hMutex = ::OpenMutex(SYNCHRONIZE, false, szAllSrvRunning);")
+cpp_quote("  BOOL bRunning = NULL != hMutex;")
+cpp_quote("  if (bRunning)")
+cpp_quote("    ::CloseHandle(hMutex);")
+cpp_quote("  return bRunning;")
+cpp_quote("}")
+cpp_quote("")
+

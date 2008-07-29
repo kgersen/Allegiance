@@ -1,0 +1,23 @@
+HKCR
+{
+	AllSrv.Game.1 = s 'Game Class'
+	{
+		CLSID = s '{9F17114A-E6CE-11D2-8B4B-00C04F681633}'
+	}
+	AllSrv.Game = s 'Game Class'
+	{
+		CLSID = s '{9F17114A-E6CE-11D2-8B4B-00C04F681633}'
+		CurVer = s 'AllSrv.Game.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {9F17114A-E6CE-11D2-8B4B-00C04F681633} = s 'Game Class'
+		{
+			ProgID = s 'AllSrv.Game.1'
+			VersionIndependentProgID = s 'AllSrv.Game'
+			ForceRemove 'Programmable'
+			val AppID = s '{E4E8767E-DFDB-11d2-8B46-00C04F681633}'
+			'TypeLib' = s '{BB5FC41C-DDA4-11d2-8B46-00C04F681633}'
+		}
+	}
+}

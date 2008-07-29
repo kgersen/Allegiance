@@ -1,0 +1,165 @@
+EFFECT	ef10	1	0
+EFFECT	ef28	2	0
+EFFECT	ef29	3	0
+EFFECT	ef41	4	0
+EFFECT	ef42	5	0
+EFFECT	ef77	6	0
+EFFECT	ef1000	7	0
+EFFECT	ef1001	8	0
+EFFECT	ef1002	9	0
+EFFECT	ef1003	10	0
+EFFECT	ef1004	11	0
+EFFECT	ef1005	12	0
+EFFECT	ef1006	13	0
+
+PROJECTILE	10	10	101	0		f03	3.0	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	11	14	105	0		f05	3.0	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	12	18	109	0		f27	3.0	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	13	22	113	0		f26	3.0	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	14	26	117	0		f05	3.0	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	15	30	121	0		f06	3.2	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	16	34	125	0		f07	3.4	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	17	38	129	0		f08	3.6	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	18	42	133	0		f09	3.8	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	19	46	137	0		f35	4.0	3.0	160.0	0.0	0.0	0.0	0.0	1
+PROJECTILE	20	50	141	0		f22	4.2	3.0	160.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	21	54	145	0		f12	4.4	3.0	160.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	22	58	149	0		f27	4.6	3.0	150.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	23	62	153	0		f23	4.8	3.0	160.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	24	66	157	0		f24	5.0	3.0	170.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	25	70	161	0		f16	5.2	3.0	180.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	26	74	165	0		f17	5.4	3.0	190.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	27	78	169	0		f18	5.6	3.0	200.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	28	82	173	0		f19	5.8	3.0	210.0	0.0	0.0	0.0	0.0	0
+PROJECTILE	29	86	177	0		f20	6.0	3.0	220.0	0.0	0.0	0.0	0.0	0
+
+HULLTYPE	4	Bom01a	IL Bomber	yadda	4667	120.0	0.01	1	89	1.78024	1.78024	29.75	3500	1	15	16	43	74	91	0	1	0	1	0.0	0.0	0.0	3208	35	20.0	 	0.755859	0.480468	0.0	0.0	0.267578	195312.0	9	2000.0	100.0	rbwepemtX	0	lbwepemtX	0	lwepemt1X	0	lwepemt2X	0	rwepemt1X	0	rwepemt2X	0	fwepmntX	d	awepmntx	d	tturrattx	d
+HULLTYPE	8	bom03	BF Bomber	blather	8000	180.0	0.01	2	47	1.06029	1.06029	24.75	2000	1	15	16	39	40	55	0	0	0	0	0.0	0.0	0.0	1125	20	18.0	 	0.582031	0.476562	0.068359	0.230468	0.298828	0.15625	10	2000.0	100.0	lwepemt1X	0	lwepemt2X	0	lwepemt3X	0	lwepemt4X	0	rwepemt1X	0	rwepemt2X	0	rwepemt3X	0	rwepemt4x	0	fwepmntX	d	tturrattx	d
+HULLTYPE	32	bom04	RU Bomber	blather	2333	100.0	0.01	3	26	0.667588	0.667588	19.125	2625	1	15	16	59	60	72	0	0	0	0	0.0	0.0	0.0	292	29	20.0	 	0.199218	0.570312	0.0	0.0	0.0	0.0	6	2000.0	100.0	rwepmnt1X	d	rwepmnt2X	d	lwepmnt1X	d	lwepmnt2X	d	taturattX	d	baturattx	d
+HULLTYPE	16	bom05	HB Bomber	has attachment	2333	150.0	0.02	4	64	1.22391	1.22391	25.5	2042	1	15	16	94	95	109	0	0	0	0	0.0	0.84	1.12	1167	6	18.0	 	0.498046	0.419921	0.511718	0.1875	0.0	0.0	4	2000.0	100.0	bwepemtX	0	fwepattx	c	lturattx	d	rturattx	d
+HULLTYPE	16	bom07	HB Heavy Bomber	blather	4667	130.0	0.01	5	51	0.890118	0.890118	14.875	2917	1	15	16	59	60	69	94	105	70	93	0.0	0.0	0.0	1604	35	24.0	 	0.208984	0.238281	0.24414	0.546875	0.910156	0.375	4	2000.0	100.0	lwepemtx	0	rwepemtx	0	aturattx	d	fwepattx	c
+HULLTYPE	0	fig01	Ambulance	blather	3333	120.0	0.01	6	100	1.98968	1.98968	33.25	2500	1	15	16	75	76	91	0	0	0	0	0.0	0.0	0.0	1250	25	11.0	 	0.101562	0.734375	0.0	0.0	0.927734	0.3125	0	2000.0	100.0	                                                                                                                                                                                                                                                               
+HULLTYPE	4	fig02	IL Fighter	blather	3333	112.0	0.01	7	100	1.98968	1.98968	33.25	2500	1	15	16	75	76	91	0	0	0	0	0.0	0.0	0.0	1250	25	11.0	 	0.101562	0.734375	0.177734	0.292968	0.888671	0.125	4	2000.0	100.0	fwepmntX	d	twepmntX	d	lwepattX	c	rwepattX	c
+HULLTYPE	8	fig03	BF FIghter	blather	5333	107.0	0.01	8	52	1.1781	1.1781	27.5	1333	1	15	16	46	47	62	94	108	63	93	0.0	0.0	0.0	750	13	9.0	 	0.724609	0.699218	0.849609	0.863281	0.628906	0.507812	6	2000.0	100.0	tlwepemtx	0	trwepemtx	0	lwepemt1X	0	lwepemt2X	0	rwepemt1X	0	rwepemt2X	0
+HULLTYPE	32	fig04	RU Hvy Fighter	Has  4 attachments	1667	114.0	0.01	9	28	0.746128	0.746128	21.375	1875	1	15	16	56	57	71	0	0	0	0	0.0	0.0	0.82	417	21	14.0	 	0.18164	0.5	0.521484	0.847656	0.201171	0.28125	4	2000.0	100.0	rwepmnt1X	d	rwepmnt2X	d	lwepmnt1X	d	lwepmnt2X	d
+HULLTYPE	1	fig05	CY Fighter Bike	blather	1333	115.0	0.01	10	75	1.4399	1.4399	30.0	1167	1	15	16	90	91	108	0	0	0	0	0.0	0.0	0.0	1333	3	8.0	 	0.238281	0.503906	0.802734	0.363281	0.9375	0.738281	2	2000.0	100.0	wepemtx	0	wepmntx	d
+HULLTYPE	1	fig07	CY Assault Ship	blather	1667	100.0	0.01	11	71	1.3679	1.3679	28.5	1458	1	7	8	57	58	65	0	0	0	0	0.0	0.0	0.0	1667	4	12.0	 	0.945312	0.257812	0.435546	0.375	0.732421	0.820312	8	2000.0	100.0	lwepmnt1X	d	lwpemnt2x	d	lwepatt1x	c	lwepatt2x	c	rwepmnt1X	d	rwepmnt2X	d	rwepatt1x	c	rwepatt2x	c
+HULLTYPE	2	fig08	CW Fighter	has attachment	4000	107.0	0.01	12	76	2.0944	2.0944	35.0	1833	1	15	16	75	76	90	121	133	91	120	0.0	0.0	0.0	1500	20	9.0	 	0.0	0.0	0.853515	0.824218	0.792968	0.339843	6	2000.0	100.0	lwepemt1X	0	lwepemt2X	0	lwepemt3X	0	rwepemt1X	0	rwepemt2X	0	rwepemt3X	0
+HULLTYPE	2	fig11	CW Heavy Fighter	has attachment	5000	110.0	0.01	13	72	1.98968	1.98968	33.25	2292	1	15	16	75	76	90	121	133	91	120	0.0	0.46	0.53	1875	20	13.0	 	0.0	0.0	0.853515	0.824218	0.544921	0.34375	7	2000.0	100.0	rwepemt1X	0	rwepemt2X	0	rwepemt3X	0	lwepemt1X	0	lwepemt2X	0	lwepemt3X	0	wepattX	C
+HULLTYPE	16	fig12	HB Fighter	has attachment	3333	110.0	0.01	14	57	0.994838	0.994838	16.625	2083	1	15	16	46	47	62	94	108	63	93	0.0	0.6971	0.0	2292	25	10.0	 	0.640625	0.761718	0.847656	0.316406	0.207031	0.277343	8	2000.0	100.0	rweapon1X	0	rweapon2X	0	lweapon1X	0	awepattX	c	fwepmntX	d	lweapon2X	0	lbwepemtX	0	rbwepemtX	0
+HULLTYPE	0	utl19	Mining Ship	blather	1333	112.0	0.01	15	75	1.4399	1.4399	30.0	1167	1	5	0	0	1	15	16	32	0	0	0.0	0.0	0.0	1333	3	8.0	 	0.580078	0.492187	0.912109	0.113281	0.0	0.0	0	2000.0	100.0	                                                                                                                                                                                                                                                               
+HULLTYPE	4	utl11	IL tug	blather	8000	150.0	0.02	16	84	1.67552	1.67552	28.0	6000	1	5	1	2	1	15	16	30	0	0	0.0	0.0	0.0	5500	60	25.0	 	0.0	0.0	0.0	0.0	0.0	0.0	0	5000.0	250.0	                                                                                                                                                                                                                                                               
+HULLTYPE	63	utl14a	Advanced Mining ship	blather	8000	150.0	0.02	17	84	1.67552	1.67552	28.0	6000	1	5	1	2	1	29	0	0	0	0	0.0	0.0	0.0	5500	60	25.0	 	0.0	0.0	0.0	0.0	0.0	0.0	0	5000.0	250.0	                                                                                                                                                                                                                                                               
+HULLTYPE	2	utl17a	CW Cruiser	blather	20000	400.0	0.04	18	61	1.67552	1.67552	28.0	7333	1	5	1	2	1	29	0	0	0	0	0.0	0.0	0.0	6000	80	120.0	 	0.0	0.0	0.0	0.0	0.0	0.0	0	5000.0	250.0	                                                                                                                                                                                                                                                               
+HULLTYPE	16	utl18a	HB Sky Lifter	blather	8000	160.0	0.02	19	48	0.837758	0.837758	14.0	5000	1	5	1	2	1	15	0	0	0	0	0.0	0.0	0.0	5500	60	90.0	 	0.0	0.0	0.0	0.0	0.0	0.0	0	5000.0	250.0	                                                                                                                                                                                                                                                               
+HULLTYPE	63	utl27	Boarding Ship	blather	3333	220.0	0.01	20	100	1.98968	1.98968	33.25	2500	1	15	16	45	46	60	0	0	0	0	0.0	0.0	0.0	1250	25	11.0	 	0.0	0.0	0.0	0.0	0.0	0.0	0	2000.0	100.0	                                                                                                                                                                                                                                                               
+HULLTYPE	2	cap01	CW Frigate	blather	15000	150.0	0.03	21	61	1.67552	1.67552	28.0	5500	1	15	16	45	46	60	0	0	0	0	0.0	0.0	0.0	4500	60	105.0	 	0.0	0.0	0.0	0.0	0.0	0.0	7	5000.0	250.0	lwepemt1X	0	lwepemt2X	0	lwepemt3X	0	rwepemt1X	0	rwepemt2X	0	rwepemtr3	0	turattX	d
+HULLTYPE	1	cap02	CY Frigate	blather	6667	300.0	0.04	22	60	1.15192	1.15192	24.0	4667	1	5	1	2	1	29	0	0	0	0	0.0	0.0	0.0	5333	13	110.0	 	0.0	0.0	0.0	0.0	0.0	0.0	4	5000.0	250.0	fwepemt1X	0	fwepemt2X	0	bturattX	d	turattX	d
+HULLTYPE	0	cap02a	Generic Minelayer	blather	6667	300.0	0.04	23	60	1.15192	1.15192	24.0	4667	1	5	1	2	1	29	0	0	0	0	0.0	0.0	0.0	5333	13	110.0	 	0.0	0.0	0.0	0.0	0.0	0.0	5	5000.0	250.0	twepemtX	0	fwepemtX	0	fwepemt2X	0	bturattX	d	tturrattX	d
+HULLTYPE	4	cap03	IL Carrier	blather	13333	500.0	0.03	24	79	1.5708	1.5708	26.25	10000	1	5	1	2	1	30	61	75	31	60	0.0	0.0	0.0	9167	100	250.0	 	0.0	0.0	0.0	0.0	0.0	0.0	6	5000.0	250.0	lwepatt1X	c	lwepatt2X	c	lwepatt3X	c	rwepatt1X	c	rwepatt2X	c	rwepatt3X	c
+HULLTYPE	1	cap04	CY Fleet Escort	blather	4000	210.0	0.03	25	60	1.15192	1.15192	24.0	3500	1	5	1	2	1	15	0	0	0	0	0.0	0.0	0.0	4000	10	60.0	 	0.0	0.0	0.0	0.0	0.0	0.0	2	5000.0	250.0	bturattX	d	tturrattX	d
+HULLTYPE	8	cap05	BF Defender	blather	21333	450.0	0.03	26	42	0.942478	0.942478	22.0	5333	1	5	1	2	1	25	0	0	0	0	0.0	0.0	0.0	6667	53	180.0	 	0.0	0.0	0.0	0.0	0.0	0.0	3	5000.0	250.0	fturattX	d	aturattX	d	rturattX	d
+HULLTYPE	8	cap06a	BF Avenger	blather	16000	350.0	0.02	27	42	0.942478	0.942478	22.0	4000	1	5	1	2	1	22	42	63	23	41	0.0	0.0	0.0	5000	40	130.0	 	0.0	0.0	0.0	0.0	0.0	0.0	3	5000.0	250.0	bturattX	d	tturrattX	d	wepemtX	0
+HULLTYPE	32	cap07	RU Frigate	blather	5333	230.0	0.03	28	24	0.628319	0.628319	18.0	6000	1	5	1	2	1	15	0	0	0	0	0.0	0.0	0.0	1333	67	100.0	 	0.0	0.0	0.0	0.0	0.0	0.0	2	5000.0	250.0	bwepattX	c	twepattX	c
+HULLTYPE	32	cap08	RU Carrier	blather	6667	300.0	0.04	29	22	0.589049	0.589049	16.875	7500	1	5	1	2	1	15	0	0	0	0	0.0	0.0	0.0	1667	83	200.0	 	0.0	0.0	0.0	0.0	0.0	0.0	8	5000.0	250.0	wepemt1X	0	wepemt2X	0	wepemt3X	0	wepemt4X	0	turatt1X	d	turatt2X	d	turatt3X	d	turatt4X	d
+HULLTYPE	4	cap09	IL Frigate	blather	10667	350.0	0.02	30	84	1.67552	1.67552	28.0	8000	1	5	1	2	1	15	0	0	0	0	0.0	0.0	0.0	7333	80	115.0	 	0.0	0.0	0.0	0.0	0.0	0.0	3	5000.0	250.0	wepemt1X	0	wepemt2X	0	turattX	d
+HULLTYPE	0	ops1	Enforcer	blather	99	1000.0	0.05	31	100	0.872665	0.872665	50.0	2000	31	45	16	30	1	15	46	60	61	75	0.0	0.0	0.0	2000	100	50.0	 	0.0	0.0	0.0	0.0	0.0	0.0	12	5000.0	250.0	fwepemt1X	0	fwepemt2X	0	fwepemt3X	0	twepemt1X	d	twepemt2X	d	twepemt3X	d	lwepatt1X	c	lwepatt2X	c	lwepatt3X	c	rwepatt1X	c	rwepatt2X	c	rwepatt3X	c
+HULLTYPE	0	utl25	Gun Tower		2000	100.0	0.01	32	10	0.872665	0.872665	10.0	3000	0	0	0	0	1	30	31	90	91	120	0.0	0.0	0.0	3000	30	20.0	 	0.0	0.0	0.0	0.0	0.0	0.0	1	2000.0	100.0	wepemtX	0
+
+
+WEAPON	63	Wep01	Pulse Laser Mk1	cost ($ 111)  drain ( 1.7)  mass ( .2)  NoFastShots( 3)  TimeBetwixtFastShots( 56ms)  TimeBetwixtSlowShots( 111ms)   Amm	111	1	1	91	2	250	250	25	0	1	10	1
+WEAPON	63	Wep02	Heavy Particle Accel	cost ($ 100)  drain ( 1.6)  mass ( .2)  NoFastShots( 3)  TimeBetwixtFastShots( 50ms)  TimeBetwixtSlowShots( 100ms)   Amm	100	1	1	92	2	250	275	30	0	1	11	2
+WEAPON	63	Wep03	Particle Accelerator	cost ($ 150)  drain ( .9)  mass ( .3)  NoFastShots( 5)  TimeBetwixtFastShots( 75ms)  TimeBetwixtSlowShots( 150ms)   Ammo	150	1	1	93	1	250	290	35	0	1	12	3
+WEAPON	63	Wep04	Boosted Pulse Laser	cost ($ 222)  drain ( 1.3)  mass ( .4)  NoFastShots( 7)  TimeBetwixtFastShots( 111ms)  TimeBetwixtSlowShots( 222ms)   Am	222	1	1	94	1	250	300	40	0	1	13	4
+WEAPON	63	Wep05	Double Particle Accl	cost ($ 200)  drain ( 1.2)  mass ( .4)  NoFastShots( 6)  TimeBetwixtFastShots( 100ms)  TimeBetwixtSlowShots( 200ms)   Am	200	1	1	95	1	250	320	45	0	1	14	5
+WEAPON	63	Wep06	Proton Cannon	cost ($ 250)  drain ( 1.5)  mass ( .5)  NoFastShots( 8)  TimeBetwixtFastShots( 125ms)  TimeBetwixtSlowShots( 250ms)   Am	250	1	1	96	2	250	340	50	0	1	15	6
+WEAPON	63	Wep07	Super Pulse Laser	cost ($ 333)  drain ( 2)  mass ( .7)  NoFastShots( 10)  TimeBetwixtFastShots( 167ms)  TimeBetwixtSlowShots( 333ms)   Amm	333	1	1	97	2	250	360	55	0	1	16	7
+WEAPON	63	Wep08	Rapid Pulse Laser	cost ($ 444)  drain ( 2.7)  mass ( .9)  NoFastShots( 13)  TimeBetwixtFastShots( 222ms)  TimeBetwixtSlowShots( 444ms)   A	444	1	1	98	3	250	380	60	0	1	17	8
+WEAPON	63	Wep09	Large Particle Accel	cost ($ 300)  drain ( 1.8)  mass ( .6)  NoFastShots( 9)  TimeBetwixtFastShots( 150ms)  TimeBetwixtSlowShots( 300ms)   Am	300	1	1	99	2	250	400	65	0	1	18	9
+WEAPON	63	Wep10	Gauss Rifle	cost ($ 350)  drain ( 2.1)  mass ( .7)  NoFastShots( 11)  TimeBetwixtFastShots( 175ms)  TimeBetwixtSlowShots( 350ms)   A	350	1	1	100	2	250	420	70	0	1	19	10
+WEAPON	63	Wep11	Meson Cannon	cost ($ 556)  drain ( 3.3)  mass ( 1.1)  NoFastShots( 17)  TimeBetwixtFastShots( 278ms)  TimeBetwixtSlowShots( 556ms)	556	1	1	101	3	250	440	75	0	1	20	11
+WEAPON	63	Wep12	Shield Disruptor	cost ($ 667)  drain ( 10)  mass ( 3)  NoFastShots( 45)  TimeBetwixtFastShots( 333ms)  TimeBetwixtSlowShots( 1500ms)   Am	667	3	1	102	10	250	460	80	0	1	21	12
+WEAPON	63	Wep13	Ion Cannon	cost ($ 1500)  drain ( 9)  mass ( 3)  NoFastShots( 45)  TimeBetwixtFastShots( 750ms)  TimeBetwixtSlowShots( 1500ms)   Am	1500	3	1	103	9	250	480	85	0	1	22	13
+WEAPON	63	Wep17	Widows Web	cost ($ 1500)  drain ( 9)  mass ( 3)  NoFastShots( 45)  TimeBetwixtFastShots( 750ms)  TimeBetwixtSlowShots( 1500ms)   Am	1500	3	1	105	9	250	520	95	0	1	24	2
+WEAPON	63	Wep18	Neutron Claw	cost ($ 667)  drain ( 4)  mass ( 1.3)  NoFastShots( 20)  TimeBetwixtFastShots( 333ms)  TimeBetwixtSlowShots( 667ms)   Am	667	1	1	106	4	250	540	100	0	1	25	3
+WEAPON	63	Wep19	Angel Gun	cost ($ 1500)  drain ( 9)  mass ( 3)  NoFastShots( 45)  TimeBetwixtFastShots( 750ms)  TimeBetwixtSlowShots( 1500ms)   Am	1500	3	1	107	9	250	560	105	0	1	26	4
+WEAPON	63	Acs42	Beam Laser Mk3	cost ($ 778)  drain ( 4.7)  mass ( 1.6)  NoFastShots( 23)  TimeBetwixtFastShots( 389ms)  TimeBetwixtSlowShots( 778ms)	778	1	1	108	5	250	580	110	0	1	27	5
+WEAPON	63	Acs56	Beam Laser Mk2	cost ($ 889)  drain ( 5.3)  mass ( 1.8)  NoFastShots( 27)  TimeBetwixtFastShots( 444ms)  TimeBetwixtSlowShots( 889ms)	889	1	1	109	5	250	600	115	0	1	28	6
+WEAPON	63	Acs57	Beam Laser Mk1	cost ($ 1000)  drain ( 6)  mass ( 2)  NoFastShots( 30)  TimeBetwixtFastShots( 500ms)  TimeBetwixtSlowShots( 1000ms)   Am	1000	2	1	110	6	250	620	120	0	1	29	7
+WEAPON	63	Wep16	Particle  Hurricane	cost ($ 508)  drain ( 1.9)  mass ( .6)  NoFastShots( 9)  TimeBetwixtFastShots( 156ms)  TimeBetwixtSlowShots( 311ms)   Am	508	1	1	104	2	250	500	90	0	1	23	1
+
+SHIELD	63	acs34	Particle dissipator	Preflect (20) Ereflect (5) Pleak (10) Eleak (0)	200	4	1	26	2	5.0	500	20	5
+SHIELD	63	acs38	Energy reflector	Preflect (5) Ereflect (20) Pleak (0) Eleak (10)	200	2	1	27	2	10.0	500	5	20
+SHIELD	63	acs29	Ammo Pack	Required for Projectile weapons	500	1	1	116	0	1.0	1	1	1
+SHIELD	63	acs36	Booster Fuel (1 Min)	Extended speed, accleration	600	2	1	117	1	1.0	1	1	1
+SHIELD	63	acs56	Scan Enhancer 1		900	3	1	118	2	1.0	1	1	1
+SHIELD	63	acs33	Electronic counter M		1200	4	1	119	3	1.0	1	1	1
+SHIELD	63	acs30	Radar Projector		1800	5	1	120	4	1.0	1	1	1
+SHIELD	63	acs48	Signature Damper		3000	6	1	121	5	1.0	1	1	1
+SHIELD	63	acs39	Cloaking Device		3100	7	1	122	6	1.0	1	1	1
+SHIELD	63	acs31	Flight Linking Syste		3500	8	1	123	7	1.0	1	1	1
+
+AFTERBURNER	63	Acs48	Booster Mk1	Booster Mk1	250	2	1	112	2	0.01	1000.0	0.0001	0.1	1.0
+AFTERBURNER	63	acs48	Booster Mk2	Booster Mk2	500	4	2	113	3	0.01	2000.0	0.0001	0.1	1.0
+AFTERBURNER	63	acs48	Booster Mk3	Booster Mk3	750	6	3	114	4	0.01	3000.0	0.0001	0.1	1.0
+AFTERBURNER	63	acs48	Booster Mk4	Booster Mk4	1000	8	4	115	5	0.01	4000.0	0.0001	0.1	1.0
+
+SECTOR	25	Goron.IL	800	1000	1	1.0	0.0	0.0	16777215
+SECTOR	26	L'Sau.CW	800	1000	2	1.0	0.0	0.0	16777215
+SECTOR	27	Nadir	800	1000	3	1.0	0.0	0.0	16777215
+
+ALEPH	55	54	plnt42	90	26	Nadir	1.0	-1500.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+ALEPH	59	60	plnt42	90	25	Nadir	2300.0	2300.0	800.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+ALEPH	54	55	plnt19	90	27	L'Sau	1600.0	500.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+ALEPH	60	59	plnt19	90	27	Goron	-500.0	-1600.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+
+PLANET	234	5	bgrnd05	bgrnd05	80	25		-300	-1000	0	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	235	5	bgrnd05	bgrnd05	250	25		1200	400	50	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	236	5	bgrnd05	bgrnd05	50	25		150	-1200	-40	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	237	5	bgrnd05	bgrnd05	10	25		120	-1100	70	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	238	5	bgrnd05	bgrnd05	130	25		2000	1500	800	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	239	5	bgrnd03	bgrnd03	90	25		-2000	-2000	-400	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	240	5	bgrnd03	bgrnd03	74	25		0	20	1300	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	241	5	bgrnd03	bgrnd03	234	25		-1300	-100	300	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	242	5	bgrnd05	bgrnd05	40	25		1000	-500	-600	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	243	5	bgrnd05	bgrnd05	80	26		-300	-1000	0	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	244	5	bgrnd05	bgrnd05	250	26		1200	400	50	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	245	5	bgrnd05	bgrnd05	50	26		150	-1200	-40	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	246	5	bgrnd05	bgrnd05	10	26		120	-1100	70	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	247	5	bgrnd05	bgrnd05	130	26		2000	1500	800	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	248	5	bgrnd03	bgrnd03	90	26		-2000	-2000	-400	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	249	5	bgrnd03	bgrnd03	74	26		0	20	1300	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	250	5	bgrnd03	bgrnd03	234	26		-1300	-100	300	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	251	5	bgrnd05	bgrnd05	40	26		1000	-500	-600	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	252	5	bgrnd03	bgrnd03	130	27		2000	1500	-2000	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	253	5	bgrnd03	bgrnd03	90	27		-2000	-2000	-400	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	254	5	bgrnd05	bgrnd05	74	27		0	20	1300	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	255	5	bgrnd05	bgrnd05	234	27		-1300	-100	300	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	256	5	bgrnd05	bgrnd05	40	27		1000	-500	-600	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	257	5	bgrnd05	bgrnd05	80	27		-300	-1000	0	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	258	5	bgrnd05	bgrnd05	250	27		1200	400	-250	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	259	5	bgrnd05	bgrnd05	50	27		150	-1200	-40	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	260	5	bgrnd03	bgrnd03	10	27		120	-1100	70	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	261	5	bgrnd03	bgrnd03	130	27		2000	1500	800	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	262	5	bgrnd03	bgrnd03	90	27		2000	-2000	-400	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	263	5	bgrnd05	bgrnd05	74	27		0	-500	1300	1.0	0.0	0.0	0.0	0.0	1.0	0.0	0.0	1.0	0.1
+PLANET	268	5	acs10	acs10	70	26		0	0	160	0.0	0.0	1.0	1.0	0.0	0.0	0.0	1.0	0.0	0.1
+PLANET	269	5	acs10	acs10	70	25		0	0	45	0.0	0.0	1.0	1.0	0.0	0.0	0.0	1.0	0.0	0.1
+
+STATION	76	10000	5000	1.0	2.0	ss21a	ss21a	200.0	1	15	25	1	IL Starbase	0.0	0.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+STATION	77	10000	5000	1.0	2.0	cap05	cap05	200.0	1	25	27	3	RU Starbase	0.0	0.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+STATION	78	10000	5000	1.0	2.0	ss19a	ss19a	200.0	1	40	26	2	CW Starbase	0.0	0.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+STATION	79	200	100	1.0	2.0	acs05	acs05	250.0	1	50	26	3	Spacedock	1500.0	1500.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+STATION	80	100	50	1.0	2.0	ss06	ss06	40.0	1	45	25	1	IL Platform	-200.0	-700.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+STATION	81	100	50	1.0	2.0	ss06	ss06	40.0	1	45	27	3	RU Platform	-200.0	-700.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+STATION	82	100	50	1.0	2.0	ss06	ss06	40.0	1	45	26	2	CW Platform	200.0	-700.0	0.0	0.0	0.0	1.0	1.0	0.0	0.0	0.0	0.0	0.0	0.0
+
+POSTER	f05	1	1	30	25
+POSTER	nebplnt02	0	270	180	25
+POSTER	neb09	0	180	200	25
+POSTER	f05	1	1	40	26
+POSTER	nebplnt01	0	270	180	26
+POSTER	neb10	0	180	200	26
+POSTER	f05	1	1	30	27
+POSTER	nebplnt35	0	270	180	27
+POSTER	neb07	0	180	200	27

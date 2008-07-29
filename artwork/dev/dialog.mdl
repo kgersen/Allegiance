@@ -1,0 +1,1803 @@
+use "console";
+use "font";
+use "teleportpane";
+use "teampane";
+
+
+White = Color(1, 1, 1);
+TextColor = Color(0, 0, 0.0625);
+
+mySideColor = GetSideColor(Me, OnEveryFrame);
+yellowText = Color(0.878, 0.573, 0);
+                
+
+myStationColor = GetSideColor(MyStation, OnEveryFrame);
+
+hudBlendMode = BlendModeAdd;
+
+//Zero for the 1st col so we can have something that corresponds to nothing selected
+
+RecipientsColumns    = [68, 135, 203, 270]; 
+RecipientsBB = ButtonBarPane(ImportImage("recipientsbmp", true), ButtonNormal, RecipientsColumns, true);
+
+VerbsColumns    = [43, 80, 123, 162, 198, 238, 268, 320, 365];
+VerbsBB      = ButtonBarPane(ImportImage("verbsbmp", true), ButtonNormal, VerbsColumns, false);
+
+
+WingCombo    = 
+   ImageComboPane(ImportImage("btnchangewing3bmp", true), smallFont);
+ 
+
+//
+//  Mouseover Text for Verbs
+//
+
+hoverSite = HoverSite(0);
+
+hoverString =
+    SwitchString(
+        HoverSiteGetID(hoverSite),
+        "",
+        [
+            ( 1, "Attack"),
+            ( 2, "Capture"),
+            ( 3, "Defend"),
+            ( 4, "Pickup"),
+            ( 5, "Goto"),
+            ( 6, "Repair"),
+            ( 7, "Join"),
+            ( 8, "Mine"),
+            ( 9, "Build")
+        ]
+    );
+
+hoverImage = StringImage(JustifyCenter, 170, promptFont, yellowText, hoverString);
+hoverPane  = AnimatedImagePaneRect(hoverImage, Rect(0, -13, 170, 0));
+
+commandRadarDetectPane = 
+    SwitchPane(
+                Detected,
+                [
+                    (ImagePane(ImportImage("radonbmp", false), []), 0)
+                ]
+               );
+
+CommandPane = 
+    ImagePane(
+        ImportImage("commandbkgndbmp", false),
+        [
+            (RecipientsBB, Point(14, 8)),
+            (WingCombo, Point(285, 8)),
+            (HoverPaneColumns(hoverSite, 1, VerbsBB, VerbsColumns), Point(0, 38)),
+            (hoverPane, Point(96, 73))
+        ]
+    );
+
+
+
+ComposingMouse = ImagePane(ImportImage("chatmousebmp", false),
+                          [
+                            (
+                             StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                             Point(3, 3)
+                            )
+                          ]
+                         );
+
+ComposingText = ImagePane(ImportImage("chattextbmp", false),
+                          [
+                            (
+//                             StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                             StringPane(ChatRecipient, mySideColor, Point(100,17)),
+                             Point(3, 3)
+                            ),
+                            (
+                             StringPane(ChatText, mySideColor, Point(154,17), JustifyLeft, smallFont, true),
+//                             Point(78, 3)
+                             Point(112, 3)
+
+                            )
+                          ]
+                         );
+
+ComposingCommand = ImagePane(ImportImage("chatcommandbmp", true),
+                          [(
+                            StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                            Point(3, 3)
+                           ),
+                           (
+                            SwitchPane(CommandVerb,
+                                       [
+                                           (ImagePane(ImportImage("ackillbmp",    true), []), 1),
+                                           (ImagePane(ImportImage("accptbmp",     true), []), 2),
+                                           (ImagePane(ImportImage("acdefendbmp",  true), []), 3),
+                                           (ImagePane(ImportImage("acpickupbmp",  true), []), 4),
+                                           (ImagePane(ImportImage("acgotobmp",    true), []), 5),
+                                           (ImagePane(ImportImage("acrepairbmp",  true), []), 6),
+                                           (ImagePane(ImportImage("acjoinbmp",    true), []), 7),
+                                           (ImagePane(ImportImage("acminebmp",    true), []), 8),
+                                           (ImagePane(ImportImage("acbuildbmp",   true), []), 9)
+                                       ]),
+                             Point(78, 2)
+                           ),
+                           (
+                            StringPane(ChatText, mySideColor, Point(128,17), JustifyLeft, smallFont, true),
+                            Point(104, 3)
+                           )
+                          ]);
+
+ComposingShell = ImagePane(ImportImage("chatshellbmp", false),
+                          [
+                            (
+                             StringPane(ChatText, mySideColor, Point(229,17)),
+                             Point(3, 3)
+                            )
+                          ]
+                         );
+
+ComposingQuick = ImagePane(ImportImage("chatmousebmp", false),
+                          [
+                            (
+                             StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                             Point(3, 3)
+                            )
+                          ]
+                         );
+
+ComposingPane =
+    SwitchPane(ComposeState,
+               [
+                   (ComposingMouse, 1),
+                   (ComposingText, 2),
+                   (ComposingCommand, 3),
+                   (ComposingShell, 4),
+                   (ComposingQuick, 5)
+               ]);
+
+
+ChatCompositionImage = PaneImage(ComposingPane, false, true);
+
+///////////////////////////////////////////////////////
+//
+//            Station Display                        
+//
+//////////////////////////////////////////////////////
+
+StationPane =
+    GroupImage(
+        [
+            TranslateImage(
+                GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(MyStation, OnEveryFrame)),
+                Point(20, 4)
+            ),
+            TranslateImage(
+                GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(MyStation, OnEveryFrame)),
+                Point(79, 4)
+            ),
+            TranslateImage(
+                StringImage(
+                    JustifyLeft,
+                    400,
+                    medBoldVerdana,
+                    myStationColor,
+                    ConcatinatedString(GetName(MyStation, OnEveryFrame), (ConcatinatedString(" in ", GetSectorName(MyStation, OnEveryFrame))))
+                ),
+                Point(150, 18)
+            ),
+            ImportImage("constationdisplay1bmp", false)
+            
+        ]
+    );
+        
+///////////////////////////////////////////////////////
+//
+//          Chat History Pane
+//
+//////////////////////////////////////////////////////
+
+
+chatListPane = ChatListPane(Point(370, 68));
+
+CommPane =
+    ImagePane(
+        ImportImage("concommdisplaybmp", false),
+        [
+            (
+                chatListPane,
+                Point(0,16)
+            )
+        ]
+    );
+
+//////////////////////////
+
+
+SectorNameImage = 
+    BlendImage(
+        StringImage(
+            JustifyCenter,
+            160,
+            medVerdana,
+            Color(1, 0, 0),
+            SectorName
+        ),
+        hudBlendMode);
+
+LocationImage =
+    GroupImage([
+        BlendImage(
+            StringImage(
+                JustifyCenter,
+                160,
+                promptFont,
+                yellowText,
+                "Current Location:"
+            ),
+            hudBlendMode),
+        TranslateImage(SectorNameImage, Point(0, -14))
+    ]);
+    
+AcceptedOrderImage = 
+    GroupImage([
+        TranslateImage(
+            BlendImage(
+                ImportImage3D("comacceptbmp", yellowText, true),
+                hudBlendMode),
+            Point(-16, -13)),
+        BlendImage(        
+            StringImage(
+                JustifyLeft,
+                160,
+                promptFont,
+                yellowText,
+                AcceptedOrder
+            ),
+        hudBlendMode)
+    ]);
+
+QueuedOrderImage = 
+    GroupImage([
+        TranslateImage(
+            BlendImage(
+                ImportImage3D("comqueuedbmp", Color(1, 0, 0), true),
+                hudBlendMode),
+            Point(-16, -13)),
+        BlendImage(
+            StringImage(
+                JustifyLeft,
+                160,
+                medVerdana,
+                Color(1, 0, 0),
+                QueuedOrder
+            ),
+        hudBlendMode)
+    ]);
+
+
+SectorInfoPaneX = SectorInfoPane([]);
+SectorOverviewFlag = 33536;
+SectorPane = SectorMapPane(SectorInfoPaneX, OverlayFlags, SectorOverviewFlag, []);
+
+SectorImage =
+    PaneImage(
+        BlackPane(
+            AnimatedImagePane(
+                GroupImage([
+                    TranslateImage(
+                        SectorPane, 
+                        Point(9, 20)
+                    ),
+                    SectorInfoPaneX
+                ])
+            )
+        ),
+        false, 
+        true
+    );
+
+////////////////////////////////////////////////
+//
+//          Investments Pane
+//
+///////////////////////////////////////////////
+
+InvestmentsInfoPane = PartInfoPane();
+InvestmentsPane = PurchasesPane(InvestmentsInfoPane);
+
+moneyPane = ImagePane(ImportImage("creditboxbmp", false),
+                          [ 
+                            (
+                                StringPane( ConcatinatedString(NumberString(Money)," cr"), 
+                                            White, 
+                                            Point(90, 13), 
+                                            JustifyCenter, 
+                                            smallFont, 
+                                            true),
+                                Point(58, 0)
+                            ),
+                            (
+                                StringPane("CURRENT CREDITS", 
+                                            White, 
+                                            Point(160, 13), 
+                                            JustifyCenter, 
+                                            smallBoldFont, 
+                                            true),
+                                Point(31, 13)
+                            ),
+                            (
+                                StringPane( "", 
+                                            White, 
+                                            Point(100, 13), 
+                                            JustifyCenter, 
+                                            smallFont, 
+                                            true),
+                                Point(43, 26)
+                            )
+                          ]
+                         );
+
+
+////////////////////////////////////////////////
+
+
+
+
+EjectPodDisplayOn = ImagePane(ImportImage("conejectpoddisplaybmp", false), 
+		[
+            (
+                GaugePane( 
+                    ImportImage("softgaugebmp", true),
+                    GetEndurance(Me, OnEveryFrame), 
+                    Color(0, 0, 0.04),
+                    Color(0, 0, 0.04)
+                ),
+                Point(66,30)
+            )
+		]
+	);
+
+EjectPodPane =
+    SwitchPane(
+        IsEjectPod(Me, OnEveryFrame),
+        [
+            (EjectPodDisplayOn,1)
+        ]
+    );
+
+DeathBannerPane =
+    SwitchPane(
+        IsGhost,
+        [
+            (ImagePane(ImportImage("deathbannerbmp", false), []), 1)
+        ]
+    );
+
+TipTextImage =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medBoldVerdana, 
+        mySideColor, 
+        TipText
+    );
+    
+    //
+    // yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
+    // start
+TipTextImage1 =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medVerdana, 
+        Color(.7, .5, .5), 
+        TipText1
+    );
+    
+TipTextImage2 =
+    StringImage(
+        JustifyCenter,
+        600, 
+        smVerdana, 
+        Color(.7, .4, .4), 
+        TipText2
+    );
+	//
+    // yp - Your_Persona Bug10 (3 lines for status text) patch
+    // end
+CriticalTip0Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText0
+    );
+CriticalTip1Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText1
+    );
+CriticalTip2Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText2
+    );
+CriticalTip3Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText3
+    );
+
+CriticalTipImage =
+    GroupImage([
+        CriticalTip0Image,
+        TranslateImage(CriticalTip1Image, Point(0, 14)),
+        TranslateImage(CriticalTip2Image, Point(0, 28)),
+        TranslateImage(CriticalTip3Image, Point(0, 42))
+    ]);
+
+LoadoutCriticalTipImage =
+    GroupImage([
+        CriticalTip0Image,
+        TranslateImage(CriticalTip1Image, Point(0, 14))
+    ]);
+
+ObserverTextImage =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medVerdana, 
+        mySideColor, 
+        ConcatinatedString("Observer of ", GetName(Me, OnEveryFrame))
+    );
+
+TurretTextImage =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medVerdana, 
+        mySideColor, 
+        ConcatinatedString("Turret of ", GetName(Me, OnEveryFrame))
+    );
+
+BoardTextImage =
+    SwitchImage(
+        BoardState,
+        emptyImage,
+        [
+            (1, ObserverTextImage),
+            (2, TurretTextImage)
+        ]
+    );
+
+VoteTextImage =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 1, 1), 
+        CurrentVote
+    );
+
+backButtonPane = 
+    SoundButtonPane(
+        ImportImage("btnbackbmp", true), 
+        ButtonNormal, 
+        false, 
+        negativeButtonClickSoundId
+    );
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Normal Center Hud
+//
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+thrustGaugeBack = 
+    BlendImage(
+        GaugeImageRect(
+            JustifyTop,
+            ImportImage("thrustgaugebmp", true),
+            Rect(15, 10, 110, 118),
+            true,
+            1
+        ),
+        hudBlendMode
+    );
+
+
+thrustGauge =
+        BlendImage(
+            GaugeImageRect(
+                JustifyTop,
+                ImportImage("thrustgauge2bmp", true),
+                Rect(15, 10, 110, 118),
+                true,
+                playerThrottle
+            ),
+            hudBlendMode
+        );
+
+thrustSpine = 
+    BlendImage(
+        ImportImage3D("thrustspinebmp", white, true),
+        hudBlendMode
+    );
+    
+thrustString = 
+    BlendImage(
+        StringImage(
+                JustifyRight,
+                100,
+                smVerdana,
+                hudColor,
+                "THRUST"
+        ),
+        hudBlendMode
+    );
+
+ThrustImage = 
+GroupImage(
+    [
+        TranslateImage(thrustGaugeBack, Point(15, 10)),
+        TranslateImage(thrustGauge, Point(15, 10)),
+        TranslateImage(thrustSpine, Point(4, 2)),
+        TranslateImage(thrustString, Point(16, 135))
+    ]
+);
+
+fuelGaugeBack = 
+   BlendImage(
+        GaugeImageRect(
+            JustifyTop,
+            ImportImage("fuelgaugebmp", true),
+            Rect(17, 10, 113, 118),
+            true,
+            1
+        ),
+        hudBlendMode
+    );              
+
+fuelGauge = 
+       BlendImage(
+            GaugeImageRect(
+                JustifyTop,
+                ImportImage("fuelgauge2bmp", true),
+                Rect(17, 10, 113, 118),
+                true,
+                GetFuel(Me, OnEveryFrame)
+            ),
+            hudBlendMode
+        );
+
+fuelSpine = 
+    BlendImage(
+        ImportImage3D("fuelspinebmp", white, true),
+        hudBlendMode
+    );
+
+fuelString = 
+    BlendImage(
+        StringImage(
+                JustifyLeft,
+                100,
+               smVerdana,
+                hudColor,
+                "FUEL"
+        ),
+        hudBlendMode
+    );
+
+FuelImage = 
+GroupImage(
+    [
+        TranslateImage(fuelGaugeBack, Point(17, 10)),
+        TranslateImage(fuelGauge, Point(17, 10)),
+        TranslateImage(fuelSpine, Point(-4, 2)),
+        TranslateImage(fuelString, Point(23, 135))
+    ]
+);
+
+ammoGaugeBack =
+    BlendImage(
+        GaugeImageRect(
+            JustifyTop,
+            ImportImage("ammogaugebmp", true),
+            Rect(29, 18, 98, 110),
+            true,
+            1
+        ),
+        hudBlendMode
+    );
+
+ammoGauge =
+        BlendImage(
+            GaugeImageRect(
+                JustifyBottom,
+                ImportImage("ammogauge2bmp", true),
+                Rect(29, 18, 98, 110),
+                true,
+                GetAmmo(Me, OnEveryFrame)
+                
+            ),
+            hudBlendMode
+        );
+
+ammoSpine = 
+    BlendImage(
+        ImportImage3D("ammospinebmp", white, true),
+        hudBlendMode
+    );
+
+ammoString = 
+    BlendImage(
+        StringImage(
+                JustifyRight,
+                100,
+                smVerdana,
+                hudColor,
+                "AMMO"
+        ),
+        hudBlendMode
+    );
+
+AmmoImage = 
+GroupImage(
+    [
+        TranslateImage(ammoGaugeBack, Point(29, 18)),
+        TranslateImage(ammoGauge, Point(29, 18)),
+        TranslateImage(ammoSpine, Point(5, -4)),
+        TranslateImage(ammoString, Point(0, 3))
+    ]
+);
+
+energyGaugeBack = 
+     BlendImage(
+        GaugeImageRect(
+            JustifyTop,
+            ImportImage("energygaugebmp", true),
+            Rect(30, 18, 99, 110),
+            true,
+            1
+        ),
+        hudBlendMode
+    );
+
+energyGauge = 
+        BlendImage(
+            GaugeImageRect(
+                JustifyBottom,
+                ImportImage("energygauge2bmp", true),
+                Rect(30, 18, 99, 110),
+                true,
+                GetPercentEnergy(Me, OnEveryFrame)
+            ),
+            hudBlendMode
+        );
+        
+
+energySpine = 
+    BlendImage(
+        ImportImage3D("energyspinebmp", white, true),
+        hudBlendMode
+    ); 
+
+energyString = 
+    BlendImage(
+        StringImage(
+                JustifyLeft,
+                100,
+                smVerdana,
+                hudColor,
+                "ENERGY"
+        ),
+        hudBlendMode
+    );
+    
+EnergyImage = 
+GroupImage(
+    [
+        TranslateImage(energyGaugeBack, Point(30, 18)),
+        TranslateImage(energyGauge, Point(30, 18)),
+        TranslateImage(energySpine, Point(-5, -4)),
+        TranslateImage(energyString, Point(24, 3))
+    ]
+);      
+
+CenterHudLeft =
+    BlendImage(
+        ImportImage3D("centerhudleftbmp", white, true),
+        hudBlendMode
+    );
+
+armorString = 
+    BlendImage(
+        StringImage(
+                JustifyLeft,
+                100,
+                smVerdana,
+                hudColor,
+                "ARMOR"
+        ),
+        hudBlendMode
+    );      
+
+
+
+HullGreen =
+        BlendImage(     
+            GaugeImageRect(         
+                JustifyBottom,
+                ImportImage("hullgaugebmp", true),
+                Rect(40, 23, 88, 105),
+                true,
+                GetPercentHitPoints(Me, OnEveryFrame)
+            ),
+            hudBlendMode
+        );
+     
+
+HullRed =
+    BlendImage( 
+        GaugeImageRect(         
+            JustifyBottom,
+            ImportImage("hullgaugeredbmp", true),
+            Rect(40, 23, 88, 105),
+            true,
+            GetPercentHitPoints(Me, OnEveryFrame)
+        ),
+        hudBlendMode
+    );
+
+hullGauge = 
+    SwitchImage(
+        Flash,
+        HullGreen,
+        [
+            (0, HullGreen),
+            (1, HullRed)
+        ]
+    );
+
+hullGaugeBack = 
+    BlendImage(
+        ImportImage3D("hullgauge2bmp", hudColorshadows, true),
+        hudBlendMode
+    );
+
+ArmorImage = 
+GroupImage(
+    [
+        CenterHudLeft,
+        TranslateImage(armorString, Point(-10, 63)),
+        TranslateImage(hullGaugeBack, Point(-13, 4)),
+        TranslateImage(hullGauge, Point(27, 27))
+    ]
+);
+
+    
+CenterHudRight =
+    BlendImage(
+        ImportImage3D("centerhudrightbmp", white, true),
+        hudBlendMode
+    );
+    
+shieldString = 
+    BlendImage(
+        StringImage(
+                JustifyRight,
+                100,
+                smVerdana,
+                hudColor,
+                "SHIELD"
+        ),
+        hudBlendMode
+    );      
+
+ShieldGreen =   
+        BlendImage(
+            GaugeImageRect(
+                JustifyBottom,
+                ImportImage("shieldgaugebmp", true),
+                Rect(40, 23, 88, 105),
+                true,
+                GetPercentShields(Me, OnEveryFrame)
+            ),
+            hudBlendMode
+    );
+
+ShieldRed =
+    BlendImage( 
+        GaugeImageRect(
+            JustifyBottom,
+            ImportImage("shieldgaugeredbmp", true),
+            Rect(40, 23, 88, 105),
+            true,
+            GetPercentShields(Me, OnEveryFrame)
+        ),
+        hudBlendMode
+    );
+
+
+shieldGauge =
+    SwitchImage(
+        Flash,
+        ShieldGreen,
+        [
+            (0, ShieldGreen),
+            (1, ShieldRed)
+        ]
+    );
+
+shieldGaugeBack = 
+    BlendImage(
+        ImportImage3D("shieldgauge2bmp", hudColorshadows, true),
+        hudBlendMode
+    );
+
+    
+ShieldImage = 
+GroupImage(
+    [
+        CenterHudRight,
+        TranslateImage(shieldString, Point(40, 63)),
+        TranslateImage(shieldGaugeBack, Point(12, 5)),
+        TranslateImage(shieldGauge, Point(52, 28))
+    ]
+);
+
+RadOff = 
+    ImagePane(ImportImage("radoffbmp", false), []);
+
+RadOn = 
+    ImagePane(ImportImage("radonbmp", false), []);
+
+
+RadarDetectPane = 
+    SwitchPane(
+                Detected,
+                [
+
+                    (RadOn, 0)
+                ]
+               );
+
+SpeedImage = 
+    
+        StringImage(
+                    JustifyCenter,
+                    80,
+                    lgBoldVerdana,
+                    hudColor,
+                    ConcatinatedString(NumberString(GetSpeed(Me, OnEveryFrame)), " mps")
+);
+
+ExperienceImage = 
+    GroupImage([
+        TranslateImage(StringImage(
+                    JustifyCenter,
+                    80,
+                    medBoldVerdana,
+                    Color(0, 0, 0),
+                    NumberString(Experience)), Point(0, 5)),
+        TranslateImage(
+            BlendImage(ImportImage3D("killcounterbmp", white, true),  hudBlendMode), Point(-23, -65))
+        ]);
+
+ArtifactImage   = 
+        BlendImage(ImportImage3D("captureflaglbmp", white, true), hudBlendMode);
+ 
+
+Artifact =
+    SwitchImage(
+        GotArtifact,
+        emptyImage,
+        [
+            (1, ArtifactImage)
+        ]
+    );
+
+CaptureFlagImage =
+        BlendImage(
+                ImportImage3D("captureflagrbmp", white, true), hudBlendMode);
+
+
+CaptureFlag = 
+    SwitchImage(
+        GotFlag,
+        emptyImage,
+        [
+            (1, CaptureFlagImage)
+        ]
+    );
+
+VectorLockNormal = ImportImage("convectorlockbmp", true);
+
+VectorLockOn = 
+    SwitchImage(
+        GetVectorLock(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, VectorLockNormal)
+        ]
+    );
+
+
+
+AutopilotNormal = ImportImage("conautopilotbmp", true);
+
+AutopilotOnImage =
+    SwitchImage(
+        AutopilotOn,
+        emptyImage, 
+        [
+            (1, AutopilotNormal)
+        ]
+    );
+
+CloakNormal = ImportImage("concloakbmp", true);
+
+CloakOn = 
+    SwitchImage(
+        IsCloaked(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, CloakNormal)
+        ]
+    );
+
+SignatureImage = 
+    StringImage(
+        JustifyCenter,
+        80,
+        medVerdana,
+        hudColor,
+        ConcatinatedString(ConcatinatedString("SIG: ", NumberString(Signature)), "%")
+        );
+    
+
+
+CenterHudOn = 
+        GroupImage(
+        [   
+            TranslateImage(VectorLockOn, Point(230, 287)),
+            TranslateImage(AutopilotOnImage, Point(277, 377)),
+            TranslateImage(CloakOn, Point(120, 80)),
+            TranslateImage(ArmorImage, Point(215, 180)),
+            TranslateImage(ShieldImage, Point(300, 180)),
+            TranslateImage(ThrustImage, Point(161, 246)),
+            TranslateImage(FuelImage, Point(361, 246)),
+            TranslateImage(AmmoImage, Point(147, 105)),
+            TranslateImage(EnergyImage, Point(372, 105)),
+            TranslateImage(SpeedImage, Point(281, 152)),
+            TranslateImage(ExperienceImage, Point(281, 102)),
+            TranslateImage(PaneImage(RadarDetectPane, false, true), Point(390, 55)),
+            TranslateImage(CaptureFlag, Point(427, 350)),
+            TranslateImage(Artifact, Point(159, 350)),
+            TranslateImage(SignatureImage, Point(281, 133))
+        
+
+        ]
+    );
+
+
+//////////////////////////////////////////////////////////////////
+///
+///  SOFTWARE HUD
+///
+//////////////////////////////////////////////////////////////////
+
+softText = Color(0.586, 0.578, 0.680);
+softTeamColor = ImportImage3D("softteamcolorbmp", hudColor, true);
+softExperience = 
+        StringImage(
+            JustifyCenter,
+            80,
+            medBoldVerdana,
+            Color(1, 1, 1),
+            NumberString(Experience));
+
+softThrustGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), playerThrottle);
+
+softThrustGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), playerThrottle);
+
+
+softThrust = 
+    SwitchImage(
+        0, //Flash,
+        softThrustGauge,
+        [
+            (0, softThrustGauge),
+            (1, softThrustGaugeHit)
+        ]
+    );
+
+softFuelGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetFuel(Me, OnEveryFrame));
+    
+softFuelGaugeHit = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetFuel(Me, OnEveryFrame));
+    
+softFuel = 
+    SwitchImage(
+        0, //Flash,
+        softFuelGauge,
+        [
+            (0, softFuelGauge),
+            (1, softFuelGaugeHit)
+        ]
+    );
+
+softAmmoGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetAmmo(Me, OnEveryFrame));
+
+softAmmoGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetAmmo(Me, OnEveryFrame));
+
+softAmmo = 
+    SwitchImage(
+        0, //Flash,
+        softAmmoGauge,
+        [
+            (0, softAmmoGauge),
+            (1, softAmmoGaugeHit)
+        ]
+    );
+
+softEnergyGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentEnergy(Me, OnEveryFrame));    
+
+softEnergyGaugeHit = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetPercentEnergy(Me, OnEveryFrame));    
+
+softEnergy = 
+    SwitchImage(
+        0, //Flash,
+        softEnergyGauge,
+        [
+            (0, softEnergyGauge),
+            (1, softEnergyGaugeHit)
+        ]
+    );
+
+softHullGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(Me, OnEveryFrame));    
+
+softHullGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetPercentHitPoints(Me, OnEveryFrame));
+
+softHull = 
+    SwitchImage(
+        Flash,
+        softHullGauge,
+        [
+            (0, softHullGauge),
+            (1, softHullGaugeHit)
+        ]
+    );
+
+softShieldGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(Me, OnEveryFrame));
+
+softShieldGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetPercentShields(Me, OnEveryFrame));
+
+softShield = 
+    SwitchImage(
+        Flash,
+        softShieldGauge,
+        [
+            (0, softShieldGauge),
+            (1, softShieldGaugeHit)
+        ]
+    );
+
+softSpeed = 
+    StringImage(
+        JustifyCenter,
+        55,
+        medVerdana,
+        softText,
+        ConcatinatedString(NumberString(GetSpeed(Me, OnEveryFrame)), " mps")
+);
+
+
+
+softRadOn = 
+    ImagePane(ImportImage("softrangedbmp", false), []);
+
+
+softRadarDetectPane = 
+    SwitchPane(
+                Detected,
+                [
+                    (softRadOn, 0)
+                ]
+               );
+
+VectorLockSoft   = ImportImage("softvectorbmp", false);
+
+softVectorLockOn = 
+    SwitchImage(
+        GetVectorLock(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, VectorLockSoft)
+        ]
+    );
+
+AutopilotSoft   = ImportImage("softautopilotbmp", false);
+
+softAutopilotOnImage =
+    SwitchImage(
+        AutopilotOn,
+        emptyImage, 
+        [
+            (1, AutopilotSoft)
+        ]
+    );
+
+CloakSoft   = ImportImage("softcloakbmp", false);
+
+softCloakOn = 
+    SwitchImage(
+        IsCloaked(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, CloakSoft)
+        ]
+    );
+
+softArtifactImage   = 
+        ImportImage("captureflaglbmp", true);
+
+softArtifact =
+    SwitchImage(
+        GotArtifact,
+        emptyImage,
+        [
+            (1, softArtifactImage)
+        ]
+    );
+
+softCaptureFlagImage =
+        ImportImage("captureflagrbmp", true);
+
+
+softCaptureFlag = 
+    SwitchImage(
+        GotFlag,
+        emptyImage,
+        [
+            (1, softCaptureFlagImage)
+        ]
+    );
+
+softSignatureImage = 
+    StringImage(
+        JustifyLeft,
+        75,
+        medVerdana,
+        softText,
+        ConcatinatedString("Sig ", NumberString(Signature))
+    );
+
+CenterHudSoftware = 
+    GroupImage([    
+        TranslateImage(softVectorLockOn, Point(150, 0)),
+        TranslateImage(softAutopilotOnImage, Point(49, 0)),
+        TranslateImage(softCloakOn, Point(235, 0)),
+        TranslateImage(softExperience, Point(-20, 22)),
+        TranslateImage(softTeamColor, Point(6, -1)),
+        TranslateImage(softShield, Point(53, 12)),
+        TranslateImage(softHull, Point(112, 12)),
+        TranslateImage(softAmmo, Point(171, 12)),
+        TranslateImage(softThrust, Point(230, 12)),
+        TranslateImage(softEnergy, Point(289, 12)),
+        TranslateImage(softFuel, Point(348, 12)),
+        TranslateImage(softSpeed, Point(405, 26)),
+        TranslateImage(PaneImage(softRadarDetectPane, false, true), Point(292, 0)),
+        TranslateImage(softArtifact, Point(432, 5)),
+        TranslateImage(softCaptureFlag, Point(467, 5)),
+        TranslateImage(softSignatureImage, Point(406, 14)),
+        ImportImage("softhudbgbmp", true)
+    ]);
+
+//////////////////////////////////////////////////////////////////
+///
+///  HUD STYLE SWITCH IMAGE
+///
+//////////////////////////////////////////////////////////////////
+
+CenterHudDisplay = 
+    SwitchImage(
+        StyleHUD,
+        emptyImage,
+        [   
+            (0, CenterHudOn)
+        ]
+    );
+
+softCenterHudDisplay =
+    SwitchImage(
+        StyleHUD,
+        emptyImage,
+        [   
+            (1, CenterHudSoftware)
+        ]
+    );
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Normal Target Hud
+//
+//////////////////////////////////////////////////////////////////////////////
+
+
+TargetName =
+        StringImage(
+            JustifyCenter, 
+            160,
+            medVerdana,
+            targetHudColor,
+            ConcatinatedString( GetName(Target, OnEveryFrame), ConcatinatedString(": ", GetModelTypeDesc(Target, OnEveryFrame)))
+        );
+
+
+TargetRangeString = 
+    SwitchString(
+        GetRange(Target, OnEveryFrame),
+        ConcatinatedString("RANGE: ", NumberString(GetRange(Target, OnEveryFrame))),
+        [
+            (-1, ConcatinatedString("LOCATION:", GetSectorName(Target, OnEveryFrame)))
+        ]
+    );
+
+        
+
+TargetRange =
+    StringImage(
+        JustifyLeft,
+        150,
+        smVerdana,
+        targetHudColor,
+        TargetRangeString
+    ); 
+
+TargetInRangeImage = 
+        ImportImage("turretrangebmp", true);
+
+TargetInRange =     
+    SwitchImage(
+        TargetInRangeFlag,
+        emptyImage,
+        [
+            (1, TargetInRangeImage)
+        ]
+    );
+
+//TargetDesc = 
+//    StringImage(
+//      JustifyRight,
+//      80,
+//      smVerdana,
+//      targetHudColor,
+//      GetModelTypeDesc(Target, OnEveryFrame)
+//    );
+
+
+TargetSpeed =
+    StringImage(
+        JustifyRight,
+        150,
+        smVerdana,
+        targetHudColor,
+        ConcatinatedString("SPEED: ", NumberString(GetSpeed(Target, OnEveryFrame)))
+    );  
+
+TargetArmor = 
+    StringImage(
+        JustifyRight,
+        60,
+        medVerdana,
+        targetHudColor,
+        "ARMOR"
+    );
+
+TargetShield = 
+    StringImage(
+        JustifyLeft,
+        60,
+        medVerdana,
+        targetHudColor,
+        "SHIELD"
+    );
+
+
+TargetShieldGauge =
+    BlendImage(
+            GaugeImageRect(
+                JustifyBottom,
+                ImportImage("targetshieldgaugebmp", true),
+                Rect(45, 26, 84, 101),
+                true,
+                GetPercentShields(Target, OnEveryFrame)
+        ),
+        hudBlendMode
+);
+
+TargetHullGauge =
+    BlendImage(
+            GaugeImageRect(
+                JustifyBottom,
+                ImportImage("targethullgaugebmp", true),
+                Rect(44, 26, 83, 101),
+                true,
+                GetPercentHitPoints(Target, OnEveryFrame)
+        ),
+        hudBlendMode
+);
+
+
+//TargetHud = 
+//        BlendImage(   
+//          ImportImage3D("targethudbmp", targetHudColor, true),
+//          hudBlendMode
+//        );
+    
+TargetOval =
+        BlendImage(
+            ImportImage3D("targetovalbmp", white, true),
+            hudBlendMode
+    );
+
+
+TargetOvalColor = ImportImage3D("targetovalcolorbmp", targetHudColor, true);
+        
+TargetOvalWord1 = 
+  BlendImage(
+            ImportImage3D("targetovalword1bmp", white, true),
+            hudBlendMode
+        );
+
+TargetOvalWord2 = 
+        BlendImage(
+            ImportImage3D("targetovalword2bmp", white, true),
+            hudBlendMode
+        );
+
+TargetExperienceOnImage = 
+    GroupImage([
+            StringImage(
+                JustifyCenter,
+                80,
+                medBoldVerdana,
+                Color(0, 0, 0),
+                NumberString(TargetExperience)),
+            TranslateImage(
+                BlendImage(
+                    ImportImage3D("targetexperiencebmp", white, true),
+                    hudBlendMode),
+                Point(25, -21)
+            )
+            ]);
+
+TargetExperienceImage =
+    SwitchImage(
+        GetModelType(Target, OnEveryFrame),
+        emptyImage,
+        [
+            (0, TargetExperienceOnImage)
+        ]
+    );
+
+DefaultTargetDisplay = 
+    VisibleImage(GroupImage(
+        [
+            
+            TranslateImage(TargetShieldGauge, Point(367, 33)),
+            TranslateImage(TargetHullGauge, Point(235, 33)),
+            TranslateImage(
+                GeoImage(
+                    targetGeo,
+                    Rect(0, 0, 96, 96),
+                    targetCamera,
+                    true
+                ), 
+                Point(270, 9)
+            ),
+            TranslateImage(TargetExperienceImage, Point(280, 110)),
+            TranslateImage(TargetOvalWord1, Point(193, 8)),
+            TranslateImage(TargetOvalWord2, Point(320, 8)),
+            TranslateImage(TargetOval, Point(192, -75)),
+            TranslateImage(TargetOvalColor, Point(256, -2)),
+            TranslateImage(TargetName, Point(240, 125)),
+            TranslateImage(TargetRange, Point(400, 33)),
+            TranslateImage(TargetSpeed, Point(92, 33)),
+            TranslateImage(TargetArmor, Point(168, 73)),
+            TranslateImage(TargetShield, Point(410, 73)),
+            TranslateImage(TargetInRange, Point(200, 90))
+            
+                
+        
+        //TranslateImage(TargetDesc, Point(140, 48)),
+        //TranslateImage(TargetHud, Point(194, -70)),
+        
+            ]
+    
+    ), IsNotNull(Target, OnEveryFrame));
+
+
+/////////////////////////////////////////////////////////////
+//
+//  SOFTWARE TARGET HUD
+//
+////////////////////////////////////////////////////////////
+
+softTargetTeamColor = ImportImage3D("softtargetteamcolorbmp", targetHudColor, true);
+
+softTargetExperienceOn = 
+        StringImage(
+                JustifyCenter,
+                80,
+                medBoldVerdana,
+                Color(1, 1, 1),
+                NumberString(TargetExperience));
+
+softTargetExperience =
+    SwitchImage(
+        GetModelType(Target, OnEveryFrame),
+        emptyImage,
+        [
+            (0, softTargetExperienceOn)
+        ]
+    );
+
+softTargetName =
+        StringImage(
+            JustifyLeft, 
+            130,
+            medVerdana,
+            softText,
+            GetName(Target, OnEveryFrame)
+        );
+
+SectorPatchImage = ImportImage("sectorpatchbmp", false);
+
+softTargetLocationImage = 
+    SwitchImage(
+        GetRange(Target, OnEveryFrame),
+        emptyImage,
+        [
+            (-1, SectorPatchImage)
+        ]
+    );
+
+softTargetRangeString = 
+    SwitchString(
+        GetRange(Target, OnEveryFrame),
+        NumberString(GetRange(Target, OnEveryFrame)),
+        [
+            (-1, GetSectorName(Target, OnEveryFrame))
+        ]
+    );
+
+softTargetRange =
+    StringImage(
+        JustifyLeft,
+        150,
+        medVerdana,
+        softText,
+        softTargetRangeString
+    );      
+    
+softTargetDesc = 
+    StringImage(
+        JustifyLeft,
+        130,
+        medVerdana,
+        softText,
+        GetModelTypeDesc(Target, OnEveryFrame)
+    );
+
+softTargetSpeed =
+    StringImage(
+        JustifyLeft,
+        150,
+        medVerdana,
+        softText,
+        ConcatinatedString(NumberString(GetSpeed(Target, OnEveryFrame)), " mps" )
+    );  
+
+softTargetShield =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(Target, OnEveryFrame));
+
+softTargetHull =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(Target, OnEveryFrame));
+
+softTargetInRangeImage = 
+        ImportImage("softturretrangebmp", true);
+
+softTargetInRange =     
+    SwitchImage(
+        TargetInRangeFlag,
+        emptyImage,
+        [
+            (1, softTargetInRangeImage)
+        ]
+    );
+
+SoftwareTargetDisplay = 
+    
+        VisibleImage(TranslateImage(
+        GroupImage(
+            [
+            TranslateImage(softTargetExperience, Point(-19, 29)),
+            TranslateImage(softTargetTeamColor, Point(6, 6)),
+            TranslateImage(softTargetShield, Point(54, 26)),
+            TranslateImage(softTargetHull, Point(54, 8)),
+            TranslateImage(softTargetName, Point(115, 38)),
+            TranslateImage(softTargetDesc, Point(115, 22)),
+            TranslateImage(softTargetLocationImage, Point(246, 24)),
+            TranslateImage(softTargetRange, Point(279, 38)),
+            TranslateImage(softTargetSpeed, Point(279, 22)),
+            TranslateImage(softTargetInRange, Point(-24, 25)),
+            ImportImage("softtargetbgbmp", true)
+
+            ]
+        ), Point(125, 30)),
+        IsNotNull(Target, OnEveryFrame));
+
+
+/////////////////////////////////////////////////////////////
+//
+//  TARGET HUD STYLE SWITCH IMAGE
+//
+////////////////////////////////////////////////////////////
+
+TargetDisplay = 
+    SwitchImage(
+        StyleHUD,
+        DefaultTargetDisplay,
+        [   
+            (0, DefaultTargetDisplay),
+            (1, SoftwareTargetDisplay)
+        ]
+    );
+
+commandTargetDisplay = SoftwareTargetDisplay;
+    
+
+/////////////////////////////////////////////////////////////
+//
+//  GAME STATE
+//
+////////////////////////////////////////////////////////////
+
+gameStateCloseButton = SoundButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false, negativeButtonClickSoundId);
+gameStateContainer = GameStateContainer(smallFont, smallFont, gameStateCloseButton);
+gameStateImage     =
+    JustifyImage(
+        GroupImage([
+            TranslateImage(
+                PaneImage(BlackPane(gameStateCloseButton), false, true),
+                Point(-23, -20)
+            ),
+            JustifyImage(GameStateImage(gameStateContainer), JustifyRight | JustifyTop)
+        ]),
+        JustifyLeft | JustifyYCenter
+    );
+
+RecipientsVisibleOM = 6;
+
+InventoryTabImage = ImportImage("inventorytabbmp", true);
+
+ShipNameImage = StringImage(
+                    JustifyCenter,
+                    214,
+                    smallBoldFont, 
+                    Color(1, 1, 1),
+                    GetModelTypeDesc(Me, OnEveryFrame)
+                );
+
+
+//////////////////////////////////////////////////////////////
+//
+//  LIVES COUNTER & COUNTDOWN & KILL COUNTER
+//
+//////////////////////////////////////////////////////////////
+
+
+
+
+
+LivesOnImage = 
+    GroupImage(
+        [
+            TranslateImage(StringImage(
+                            JustifyCenter,
+                            80,
+                            medBoldVerdana,
+                            Color(1, 1, 1),
+                            ConcatinatedString(NumberString(Lives), " lives")), Point(18, 20)),
+            ImportImage("livesbmp", true)
+        ]);
+
+LivesImage = 
+    SwitchImage(
+        LivesOn,
+        emptyImage,
+        [
+            (1, LivesOnImage)
+        ]
+    );
+
+CountdownOn = ModifiableNumber(0);
+
+CountdownOnImage = 
+                ImportImage("timebmp", true);
+
+
+
+CountdownImage = 
+    SwitchImage(
+        CountdownOn,
+        emptyImage,
+        [
+            (1, CountdownOnImage)
+        ]
+    );
+
+KillsOnImage = 
+    GroupImage(
+        [
+            TranslateImage(
+                StringImage(
+                        JustifyCenter,
+                        80,
+                        medBoldVerdana,
+                        Color(1, 1, 1),
+                        ConcatinatedString(NumberString(Kills), " kills")),
+                Point(15, 20)),
+            ImportImage("hudkillsbmp", true)
+        ]);
+
+
+
+KillsImage = 
+    SwitchImage(
+        KillsOn,
+        emptyImage,
+        [
+            (1, KillsOnImage)
+        ]
+    );
+
+
+//////////////////////////////////////////////////////////////
+//
+//  Ripcord countdown
+//
+//////////////////////////////////////////////////////////////
+
+RipcordCountdownImage = 
+    SwitchImage(
+        IsRipcording(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, 
+                StringImage(
+                    JustifyCenter,
+                    150,
+                    lgBoldVerdana,
+                    softText,
+                    ConcatinatedString("Ripcord in: ", NumberString(GetRipcordTimeLeft(Me, OnEveryFrame)))
+                )
+            )
+        ]
+    );
+ 
+//////////////////////////////////////////////////////////////
+//
+//  Sector View information
+//
+//////////////////////////////////////////////////////////////
+
+LookingAtImage =
+    GroupImage([
+        BlendImage(
+            StringImage(
+                JustifyCenter,
+                160,
+                promptFont,
+                yellowText,
+                "Currently Viewing:"
+            ),
+            hudBlendMode),
+        TranslateImage(SectorNameImage, Point(0, -14)),
+        TranslateImage(CloakOn, Point(30, -110))
+    ]);
+    
+//////////////////////////////////////////////////////////////
+//
+//  Actual dialogs
+//
+//////////////////////////////////////////////////////////////
+
+dialogs =
+    [
+        // (image, side, off point, on point, transition time, consoles modes, undetectable)
+
+        //
+        // This stuff is interactive so it should be on top
+        //
+         
+        (gameStateImage,                                    SideLeft,       Point( -500,   33), Point(  10,   33), .5,  1024,              false),
+        (ChatCompositionImage,                              SideBottom,     Point( -170,  -78), Point(-150,  148), .5, 65663,              false),
+        (PaneImage(CommandPane,         false, true),       SideBottom,     Point(  -60, -190), Point( -60,   49), .5, 16384,              false),
+        (PaneImage(commandRadarDetectPane, false, true),    SideTopRight,   Point( -100,  190), Point(-100, -100), .5, 16384,              true ),
+        (PaneImage(TeamPanePane,        false, true),       SideTopLeft,    Point( -620, -500), Point(   0, -500), .5,  6144,              false),
+        (PaneImage(TeleportPane,        false, true),       SideTopLeft,    Point( -620, -280), Point(  16, -280), .5,   256,              false),
+        (PaneImage(moneyPane,           false, true),       SideCenter,     Point( -159, 2000), Point(-159, -240), .5,   512,              true ),
+        (PaneImage(InvestmentsInfoPane, false, true),       SideCenter,     Point( -175, 2122), Point(-175, -118), .5,   512,              false),
+        (PaneImage(InvestmentsPane,     false, true),       SideCenter,     Point( -192, 2000), Point(-192, -240), .5,   512,              false),
+        (LocationImage,                                     SideTopRight,   Point( -200,  185), Point(-200,  -35), .5,    48,              true ),
+        (LookingAtImage,                                    SideTopRight,   Point( -200,  185), Point(-200,  -35), .5, 16384,              true ),
+        (AcceptedOrderImage,                                SideTopLeft,    Point(   50,   -7), Point(  50,  -37), .5,    48,              true ),
+        (QueuedOrderImage,                                  SideTopLeft,    Point(   50,  -27), Point(  50,  -57), .5,    48,              true ),
+        (SectorImage,                                       SideBottomLeft, Point(   49, -187), Point(  49,   36), .5, SectorOverviewFlag, false),
+        (PaneImage(BlackPane(backButtonPane), false, true), SideBottomLeft, Point( -200,   17), Point(  20,   17), .5,     6,              false),
+
+        //
+        // This stuff is non interactive so it should be below the interactive stuff
+        //
+        
+        //
+        // yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
+        // start
+        
+        (TipTextImage2,                               SideBottom,      Point( -300, -180), Point(-300,   34), .5,65535, true),
+        (TipTextImage1,                               SideBottom,      Point( -300, -190), Point(-300,   25), .5,65535, true),
+        
+        //
+        // yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
+        // end
+        
+        (TipTextImage,                                SideBottom,      Point( -300, -200), Point(-300,   14), .5,65535, true),
+        (CriticalTipImage,                            SideTop,         Point( -310, -119), Point(-310, -119), .5,   15, true),
+        (LoadoutCriticalTipImage,                     SideTop,         Point( -310, -184), Point(-310, -184), .5,   64, true),
+        (BoardTextImage,                              SideBottom,      Point( -300, -200), Point(-300,   28), .5,  119, true),
+        (VoteTextImage,							      SideTop,         Point( -310, -129), Point(-310, -129), .5,65535, true),
+
+        (PaneImage(EjectPodPane,        false, true), SideCenter,      Point( -86,  -87),  Point( -86,  -87), .5,   48, true ),
+        (PaneImage(DeathBannerPane,     false, true), SideCenter,      Point( -105,  15),  Point(-105,   15), .5,65535, true ),
+        (RipcordCountdownImage,                       SideCenter,      Point( -75,    15), Point( -75,   15), .5,   48, true ),
+        (ShipNameImage,                               SideBottomRight, Point( -250, -150), Point( -250,  54), .5, 8192, true ),
+        (InventoryImage(),                            SideBottomRight, Point( -250, -150), Point( -250,  40), .5, 8192, false),
+        (InventoryTabImage,                           SideBottomRight, Point( -260, -150), Point( -260,  44), .5, 8192, true ), 
+        
+        
+        (VisibleImage(PaneImage(CommPane, false, true),     ShowChatHistoryHUD), SideTop, Point(-130,  120), Point(-130, -100), .5, 119, true),
+        (VisibleImage(CenterHudDisplay,     ShowCenterHUD), SideCenter, Point( -320, 1000), Point( -320, -240), .5, 48, true ),
+        (VisibleImage(softCenterHudDisplay, ShowCenterHUD), SideTop,    Point( -320, 1000), Point( -232, -108), .5, 48, true ),
+        (VisibleImage(TargetDisplay,        ShowTargetHUD), SideBottom, Point( -320, -183), Point( -320,   12), .5, 48, true ),
+        
+        (StationPane,                                   SideTop,       Point(  -273,   70), Point( -273,  -22), .5, 65, true ),
+        (LivesImage,                                    SideTopLeft,   Point(   45,   -97), Point(   40,  -97), .5, 48, true ),
+        (CountdownImage,                                SideTopLeft,   Point(   45,  -137), Point(   40, -137), .5, 48, true ),
+        (KillsImage,                                    SideTopLeft,   Point(   45,  -177), Point(   40, -177), .5, 48, true )
+    ];

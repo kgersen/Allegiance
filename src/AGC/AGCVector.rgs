@@ -1,0 +1,27 @@
+HKCR
+{
+	AGC.AGCVector.1 = s 'AGCVector Class'
+	{
+		CLSID = s '{12249214-13B5-11d3-8B5E-00C04F681633}'
+	}
+	AGC.AGCVector = s 'AGCVector Class'
+	{
+		CLSID = s '{12249214-13B5-11d3-8B5E-00C04F681633}'
+		CurVer = s 'AGC.AGCVector.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {12249214-13B5-11d3-8B5E-00C04F681633} = s 'AGCVector Class'
+		{
+			ProgID = s 'AGC.AGCVector.1'
+			VersionIndependentProgID = s 'AGC.AGCVector'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}
+					   

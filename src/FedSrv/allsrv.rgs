@@ -1,0 +1,34 @@
+HKCR
+{
+  NoRemove AppID
+  {
+    {E4E8767E-DFDB-11d2-8B46-00C04F681633} = s 'AllSrv'
+    'AllSrv.EXE'
+    {
+      val AppID = s {E4E8767E-DFDB-11d2-8B46-00C04F681633}
+    }
+  }
+}
+HKLM
+{
+  NoRemove SYSTEM
+  {
+    NoRemove CurrentControlSet
+    {
+      NoRemove Services
+      {
+        NoRemove EventLog
+        {
+          NoRemove Application
+          {
+            'AllSrv'
+            {
+              val EventMessageFile = s '%AGCMODULE%'
+              val TypesSupported = d '7'
+            }
+          }
+        }
+      }
+    }
+  }
+}

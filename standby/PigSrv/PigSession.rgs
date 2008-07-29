@@ -1,0 +1,28 @@
+HKCR
+{
+	Pigs = s 'Pig Session Class'
+	{
+		CLSID = s '{9BCD384E-C6F2-11D2-85C9-00C04F68DEB0}'
+	}
+	Pigs.Session.1 = s 'Pig Session Class'
+	{
+		CLSID = s '{9BCD384E-C6F2-11D2-85C9-00C04F68DEB0}'
+	}
+	Pigs.Session = s 'Pig Session Class'
+	{
+		CLSID = s '{9BCD384E-C6F2-11D2-85C9-00C04F68DEB0}'
+		CurVer = s 'Pigs.Session.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {9BCD384E-C6F2-11D2-85C9-00C04F68DEB0} = s 'Pig Session Class'
+		{
+			ProgID = s 'Pigs.Session.1'
+			VersionIndependentProgID = s 'Pigs.Session'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+			'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+		}
+	}
+}

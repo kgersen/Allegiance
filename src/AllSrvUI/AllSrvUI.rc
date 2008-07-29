@@ -1,0 +1,680 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""AllSrvUI.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "AllSrvUI.ico"
+IDI_ARTIFACTRUN         ICON                    "ArtifactRun.ico"
+IDI_CONQUEST            ICON                    "Conquest.ico"
+IDI_COUNTDOWN           ICON                    "CountDown.ico"
+IDI_DEATHMATCH          ICON                    "DeathMatch.ico"
+IDI_FLAGS               ICON                    "Flags.ico"
+IDI_INBALANCE           ICON                    "Inbalance.ico"
+IDI_LIVES               ICON                    "Lives.ico"
+IDI_MAXTEAM             ICON                    "MaxTeam.ico"
+IDI_MINTEAM             ICON                    "MinTeam.ico"
+IDI_PROSPERITY          ICON                    "Prosperity.ico"
+IDI_SKILL               ICON                    "Skill.ico"
+IDI_START_MONEY         ICON                    "StartMoney.ico"
+IDI_TEAMCOUNT           ICON                    "TeamCount.ico"
+IDI_TOTAL_MONEY         ICON                    "TotalMoney.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PAGE_GAME_CREATE DIALOGEX 0, 0, 210, 170
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Game"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    GROUPBOX        "Game Visibility",IDC_GAME_VISIBILITY,7,3,196,42,WS_GROUP
+    CONTROL         "&Private Game",IDC_PRIVATE_GAME,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,15,59,10
+    CONTROL         "P&ublic Game (will be seen on the Zone Free Games list)",IDC_PUBLIC_GAME,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,14,29,189,10
+    GROUPBOX        "Game Identification",IDC_GAME_SETTINGS_CAPTION,7,49,196,93,WS_GROUP
+    LTEXT           "&Name:",IDC_GAME_NAME_CAPTION,14,64,22,8
+    EDITTEXT        IDC_GAME_NAME,50,62,147,14,ES_AUTOHSCROLL
+    LTEXT           "P&assword:",IDC_GAME_PASSWORD_CAPTION,14,85,34,8
+    EDITTEXT        IDC_GAME_PASSWORD,50,83,147,14,ES_AUTOHSCROLL
+    LTEXT           "&Total Max Players:",IDC_MAX_PLAYERS_CAPTION,15,125,59,8
+    COMBOBOX        IDC_MAX_PLAYERS,77,123,29,193,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "&Lock Game Open",IDC_LOCK_GAME_OPEN,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,125,125,72,10
+    PUSHBUTTON      "Game S&ettings...",IDC_GAME_SETTINGS,7,150,61,14,NOT WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
+    PUSHBUTTON      "&Select Game...",IDC_GAME_SELECT,142,150,61,14
+    PUSHBUTTON      "&Create Game",IDC_GAME_CREATE,75,150,60,14
+    PUSHBUTTON      "&Destroy Game",IDC_GAME_DESTROY,142,150,61,14
+    EDITTEXT        IDC_GAME_CORE,50,103,61,14,ES_AUTOHSCROLL
+    LTEXT           "Core:",IDC_GAME_CORE_CAPTION,15,107,18,8
+    CONTROL         "Allow empty teams",IDC_AET,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,123,106,74,10
+END
+
+IDD_ABOUTBOX DIALOG  0, 0, 255, 158
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Allegiance Game Manager"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,11,20,20
+    LTEXT           "[Description from VersionInfo resource]",IDC_DESCRIPTION,40,10,208,8,SS_NOPREFIX
+    LTEXT           "Version ",IDC_STATIC,40,18,26,8
+    LTEXT           "[Version from VersionInfo resource]",IDC_VERSION,66,18,182,8
+    LTEXT           "Developed by Microsoft Research Games.",IDC_STATIC,40,26,208,8
+    LTEXT           "Product ID: ",IDC_STATIC,40,42,39,8
+    LTEXT           "[PID from registry]",IDC_PRODUCT_ID,80,42,168,8
+    LTEXT           "[Copyright from VersionInfo resource]",IDC_COPYRIGHT,40,58,208,8
+    LTEXT           "[Legal warning from string resource (it's too long to put here)]",IDC_LEGAL_WARNING,40,74,208,56
+    DEFPUSHBUTTON   "OK",IDOK,102,137,50,14,WS_GROUP
+END
+
+IDD_PAGE_CHAT DIALOG  0, 0, 210, 170
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Chat"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List1",IDC_CHAT_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,7,7,196,106
+    LTEXT           "&Send Chat to All:",IDC_SEND_CHAT_CAPTION,7,118,54,8
+    COMBOBOX        IDC_SEND_CHAT_TEXT,7,129,196,113,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Send to &All Games",IDC_SEND_CHAT_ALL_GAMES,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,129,117,74,10
+    PUSHBUTTON      "&Preferences...",IDC_CHAT_PREFERENCES,7,150,61,14
+    PUSHBUTTON      "C&lear List",IDC_CHAT_LIST_CLEAR,142,150,61,14
+END
+
+IDD_CHAT_PREFERENCES DIALOG  0, 0, 220, 153
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Chat Preferences"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Admin (SysOp) Alerts",IDC_STATIC,7,3,206,71
+    LTEXT           "Do the following when a player sends a chat to Admin:",IDC_STATIC,14,15,172,8
+    CONTROL         "&Log to Chat List",IDC_ADMIN_CHAT_LIST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,27,65,10
+    CONTROL         "&Display a message box",IDC_ADMIN_MSGBOX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,41,88,10
+    CONTROL         "&Execute a shortcut:",IDC_ADMIN_RUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,55,77,10
+    PUSHBUTTON      "&Properties...",IDC_ADMIN_RUN_PROPERTIES,100,53,50,14
+    PUSHBUTTON      "&Test",IDC_ADMIN_RUN_TEST,156,53,50,14
+    GROUPBOX        "        ",IDC_STATIC,7,78,206,47
+    CONTROL         "Log &normal chat messages to Chat List",IDC_ENABLE_CHAT_LIST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,78,137,10
+    CONTROL         "&Unlimited Chat List",IDC_UNLIMITED_CHAT_HISTORY,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,21,92,74,10
+    CONTROL         "L&imit Chat List To:",IDC_LIMIT_CHAT_HISTORY,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,21,106,72,10
+    EDITTEXT        IDC_CHAT_HISTORY_LIMIT,95,104,34,14,ES_NUMBER | WS_GROUP
+    LTEXT           "messages",IDC_LIMIT_POST_CAPTION,133,106,32,8
+    DEFPUSHBUTTON   "OK",IDOK,52,132,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,118,132,50,14
+END
+
+IDD_PAGE_DUMMY DIALOG  0, 0, 210, 170
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Dummy"
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+IDD_PAGE_CONNECT DIALOG  0, 0, 210, 170
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Connecting"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "",IDC_PROGRESS_CONNECTING_GROUP,7,46,196,76
+    LTEXT           "Connecting to the Allegiance Game Server:",IDC_PROGRESS_CONNECTING_CAPTION,14,71,137,8
+    CONTROL         "Progress1",IDC_PROGRESS_CONNECTING,"msctls_progress32",WS_BORDER,14,81,182,12
+    PUSHBUTTON      "Cancel",IDCANCEL,79,100,50,14
+    CTEXT           "© && (p) 1995-2000 Microsoft Corporation.  All rights reserved.\nThis program is protected by U.S. and International copyright laws as described in Help/About.",IDC_LEGAL,7,139,196,24
+END
+
+IDD_PAGE_PLAYERS DIALOG  0, 0, 210, 170
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Players"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List1",IDC_PLAYER_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,7,7,196,106
+    LTEXT           "&Send Chat to Selected:",IDC_SEND_CHAT_CAPTION,7,118,74,8
+    COMBOBOX        IDC_SEND_CHAT_TEXT,7,129,196,113,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "&Boot Selected...",IDC_BOOT_PLAYERS,142,150,61,14
+END
+
+IDD_GAME_SPECIFICS DIALOGEX 0, 0, 220, 182
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Game Specifics"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "&Stats Count",IDC_STATS_COUNT,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_DISABLED | WS_TABSTOP,14,18,89,10
+    CONTROL         145,IDC_STATIC,"Static",SS_BITMAP,76,16,15,13,WS_EX_TRANSPARENT
+    CONTROL         "S&quad Game",IDC_SQUAD_GAME,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_DISABLED | WS_TABSTOP,117,18,89,10
+    CONTROL         145,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,179,16,15,13,WS_EX_TRANSPARENT
+    CONTROL         "Allow &Defections",IDC_ALLOW_DEFECTIONS,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,14,35,89,10
+    CONTROL         "Allow &Joiners",IDC_ALLOW_JOINERS,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,117,35,89,10
+    CONTROL         "&Eject Pods",IDC_EJECT_PODS,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,14,52,89,10
+    CONTROL         "Allow &Friendly Fire",IDC_ALLOW_FRIENDLY_FIRE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,117,52,89,10
+    CONTROL         "&Invulnerable Stations",IDC_INVULNERABLE_STATIONS,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,14,69,89,10
+    CONTROL         "De&velopment",IDC_DEVELOPMENT,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,117,69,89,10
+    CONTROL         "Revea&l Map",IDC_REVEAL_MAP,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,14,86,89,10
+    GROUPBOX        "Options",IDC_STATIC,7,7,206,96
+    LTEXT           "&Map Type:",IDC_STATIC,14,119,35,8
+    COMBOBOX        IDC_MAP_TYPE,28,129,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Resources:",IDC_STATIC,117,119,37,8
+    COMBOBOX        IDC_RESOURCES,131,129,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Universe",IDC_STATIC,7,107,206,43
+    CONTROL         145,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,14,162,15,13,WS_EX_TRANSPARENT
+    RTEXT           "Indicates options only available through the Zone Club",IDC_STATIC,28,163,178,8
+END
+
+IDD_TEAM_DYNAMICS DIALOG  0, 0, 220, 182
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Team Dynamics"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "N&umber of Teams:",IDC_STATIC,14,18,59,8
+    ICON            IDI_TEAMCOUNT,IDC_STATIC,14,29,20,20
+    COMBOBOX        IDC_TEAM_COUNT,28,28,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Maximum Team &Inbalance:",IDC_STATIC,117,18,86,8
+    ICON            IDI_INBALANCE,IDC_STATIC,117,29,20,20
+    COMBOBOX        IDC_MAX_TEAM_INBALANCE,131,28,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Minimum Players Per Team:",IDC_STATIC,14,47,88,8
+    ICON            IDI_MINTEAM,IDC_STATIC,14,58,20,20
+    COMBOBOX        IDC_MIN_TEAM_PLAYERS,28,57,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Ma&ximum Players Per Team:",IDC_STATIC,117,47,90,8
+    ICON            IDI_MAXTEAM,IDC_STATIC,117,58,20,20
+    COMBOBOX        IDC_MAX_TEAM_PLAYERS,131,57,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Team Size",IDC_STATIC,7,7,206,72
+    LTEXT           "S&kill Levels:",IDC_STATIC,14,95,38,8
+    ICON            IDI_SKILL,IDC_STATIC,14,106,20,20
+    COMBOBOX        IDC_SKILL_LEVEL,28,105,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Team &Lives:",IDC_STATIC,117,95,40,8
+    ICON            IDI_LIVES,IDC_STATIC,117,106,20,20
+    COMBOBOX        IDC_TEAM_LIVES,131,105,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Player Restrictions",IDC_STATIC,7,83,206,43
+    LTEXT           "&Starting Money:",IDC_STATIC,14,142,50,8
+    ICON            IDI_START_MONEY,IDC_STATIC,14,153,20,20
+    COMBOBOX        IDC_STARTING_MONEY,28,152,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Total Money:",IDC_STATIC,117,142,42,8
+    ICON            IDI_TOTAL_MONEY,IDC_STATIC,117,153,20,20
+    COMBOBOX        IDC_TOTAL_MONEY,131,152,75,183,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Money",IDC_STATIC,7,131,206,43
+END
+
+IDD_WINNING_CONDITIONS DIALOG  0, 0, 220, 182
+STYLE DS_SETFONT | WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Name And Type"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Game &Name:",IDC_MISSION_NAME_CAPTION,7,9,42,8
+    EDITTEXT        IDC_MISSION_NAME,75,7,138,14,ES_AUTOHSCROLL
+    LTEXT           "&Password (optional):",IDC_PASSWORD_CAPTION,7,30,64,8
+    EDITTEXT        IDC_PASSWORD,75,28,138,14,ES_AUTOHSCROLL
+    LTEXT           "&Game Type:",IDC_STATIC,14,57,40,8
+    COMBOBOX        IDC_GAME_TYPE,28,66,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Con&quest:",IDC_STATIC,14,86,33,8
+    ICON            IDI_CONQUEST,IDC_STATIC,14,97,20,20
+    COMBOBOX        IDC_CONQUEST,28,95,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Countdown:",IDC_STATIC,117,86,39,8
+    ICON            IDI_COUNTDOWN,IDC_STATIC,117,97,20,20
+    COMBOBOX        IDC_COUNTDOWN,131,95,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Required &Kills:",IDC_STATIC,14,114,46,8
+    ICON            IDI_DEATHMATCH,IDC_STATIC,14,126,20,20
+    COMBOBOX        IDC_REQUIRED_KILLS,28,125,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "P&rosperity:",IDC_STATIC,117,114,34,8
+    ICON            IDI_PROSPERITY,IDC_STATIC,117,126,20,20
+    COMBOBOX        IDC_PROSPERITY,131,125,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Artifact Runs:",IDC_STATIC,14,144,44,8
+    ICON            IDI_ARTIFACTRUN,IDC_STATIC,14,155,20,20
+    COMBOBOX        IDC_ARTIFACT_RUNS,28,154,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Flags:",IDC_STATIC,117,144,20,8
+    ICON            IDI_FLAGS,IDC_STATIC,117,155,20,20
+    COMBOBOX        IDC_FLAGS,131,154,75,183,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Winning Conditions",IDC_STATIC,7,47,206,128
+END
+
+IDD_GAME_SELECT DIALOG  0, 0, 186, 135
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Game"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "&Select a Game to Manage:",IDC_STATIC,7,7,86,8
+    CONTROL         "List1",IDC_GAME_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,7,17,172,90
+    DEFPUSHBUTTON   "OK",IDOK,35,114,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,101,114,50,14,WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_PAGE_GAME_CREATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 163
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 248
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 151
+    END
+
+    IDD_PAGE_CHAT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 163
+    END
+
+    IDD_CHAT_PREFERENCES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 146
+    END
+
+    IDD_PAGE_DUMMY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 163
+    END
+
+    IDD_PAGE_CONNECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 163
+    END
+
+    IDD_PAGE_PLAYERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 163
+    END
+
+    IDD_GAME_SPECIFICS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
+
+    IDD_TEAM_DYNAMICS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
+
+    IDD_WINNING_CONDITIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 175
+    END
+
+    IDD_GAME_SELECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 128
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_ZONE                BITMAP                  "zone.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_GAME_SPECIFICS DLGINIT
+BEGIN
+    IDC_MAP_TYPE, 0x403, 12, 0
+0x6953, 0x676e, 0x656c, 0x5220, 0x6e69, 0x0067, 
+    IDC_MAP_TYPE, 0x403, 12, 0
+0x6f44, 0x6275, 0x6c65, 0x5220, 0x6e69, 0x0067, 
+    IDC_MAP_TYPE, 0x403, 10, 0
+0x6950, 0x206e, 0x6857, 0x6565, 0x006c, 
+    IDC_MAP_TYPE, 0x403, 8, 0
+0x6944, 0x6d61, 0x6e6f, 0x0064, 
+    IDC_MAP_TYPE, 0x403, 10, 0
+0x6e53, 0x776f, 0x6c66, 0x6b61, 0x0065, 
+    IDC_MAP_TYPE, 0x403, 12, 0
+0x7053, 0x696c, 0x2074, 0x6142, 0x6573, 0x0073, 
+    IDC_MAP_TYPE, 0x403, 6, 0
+0x7242, 0x7761, 0x006c, 
+    IDC_MAP_TYPE, 0x403, 9, 0
+0x6942, 0x2067, 0x6952, 0x676e, "\000" 
+    IDC_MAP_TYPE, 0x403, 5, 0
+0x6948, 0x6f4c, "\000" 
+    IDC_MAP_TYPE, 0x403, 9, 0
+0x6948, 0x6948, 0x6867, 0x7265, "\000" 
+    IDC_MAP_TYPE, 0x403, 5, 0
+0x7453, 0x7261, "\000" 
+    IDC_RESOURCES, 0x403, 12, 0
+0x6556, 0x7972, 0x5320, 0x6163, 0x6372, 0x0065, 
+    IDC_RESOURCES, 0x403, 7, 0
+0x6353, 0x7261, 0x6563, "\000" 
+    IDC_RESOURCES, 0x403, 7, 0
+0x6f4e, 0x6d72, 0x6c61, "\000" 
+    IDC_RESOURCES, 0x403, 10, 0
+0x6c50, 0x6e65, 0x6974, 0x7566, 0x006c, 
+    0
+END
+
+IDD_TEAM_DYNAMICS DLGINIT
+BEGIN
+    IDC_TEAM_COUNT, 0x403, 2, 0
+0x0032, 
+    IDC_TEAM_COUNT, 0x403, 2, 0
+0x0033, 
+    IDC_TEAM_COUNT, 0x403, 2, 0
+0x0034, 
+    IDC_TEAM_COUNT, 0x403, 2, 0
+0x0035, 
+    IDC_TEAM_COUNT, 0x403, 2, 0
+0x0036, 
+    IDC_MAX_TEAM_INBALANCE, 0x403, 2, 0
+0x0031, 
+    IDC_MAX_TEAM_INBALANCE, 0x403, 2, 0
+0x0032, 
+    IDC_MAX_TEAM_INBALANCE, 0x403, 4, 0
+0x2f4e, 0x0041, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0031, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0032, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0033, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0034, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0035, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0036, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0037, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0038, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 2, 0
+0x0039, 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 3, 0
+0x3031, "\000" 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 3, 0
+0x3531, "\000" 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 3, 0
+0x3032, "\000" 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 3, 0
+0x3033, "\000" 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 3, 0
+0x3034, "\000" 
+    IDC_MIN_TEAM_PLAYERS, 0x403, 3, 0
+0x3035, "\000" 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0031, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0032, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0033, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0034, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0035, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0036, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0037, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0038, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 2, 0
+0x0039, 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 3, 0
+0x3031, "\000" 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 3, 0
+0x3531, "\000" 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 3, 0
+0x3032, "\000" 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 3, 0
+0x3033, "\000" 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 3, 0
+0x3034, "\000" 
+    IDC_MAX_TEAM_PLAYERS, 0x403, 3, 0
+0x3035, "\000" 
+    IDC_SKILL_LEVEL, 0x403, 12, 0
+0x6f4e, 0x6976, 0x6563, 0x4f20, 0x6c6e, 0x0079, 
+    IDC_SKILL_LEVEL, 0x403, 18, 0
+0x6e49, 0x6574, 0x6d72, 0x6465, 0x6169, 0x6574, 0x4f20, 0x6c6e, 0x0079, 
+
+    IDC_SKILL_LEVEL, 0x403, 12, 0
+0x7845, 0x6570, 0x7472, 0x4f20, 0x6c6e, 0x0079, 
+    IDC_SKILL_LEVEL, 0x403, 10, 0
+0x6f4e, 0x4520, 0x7078, 0x7265, 0x0074, 
+    IDC_SKILL_LEVEL, 0x403, 10, 0
+0x6f4e, 0x4e20, 0x766f, 0x6369, 0x0065, 
+    IDC_SKILL_LEVEL, 0x403, 4, 0
+0x6e41, 0x0079, 
+    IDC_TEAM_LIVES, 0x403, 10, 0
+0x6e55, 0x696c, 0x696d, 0x6574, 0x0064, 
+    IDC_TEAM_LIVES, 0x403, 2, 0
+0x0031, 
+    IDC_TEAM_LIVES, 0x403, 2, 0
+0x0032, 
+    IDC_TEAM_LIVES, 0x403, 2, 0
+0x0033, 
+    IDC_TEAM_LIVES, 0x403, 2, 0
+0x0034, 
+    IDC_TEAM_LIVES, 0x403, 2, 0
+0x0035, 
+    IDC_TEAM_LIVES, 0x403, 3, 0
+0x3031, "\000" 
+    IDC_STARTING_MONEY, 0x403, 4, 0
+0x6f4c, 0x0077, 
+    IDC_STARTING_MONEY, 0x403, 7, 0
+0x654d, 0x6964, 0x6d75, "\000" 
+    IDC_STARTING_MONEY, 0x403, 5, 0
+0x6948, 0x6867, "\000" 
+    IDC_STARTING_MONEY, 0x403, 10, 0
+0x6556, 0x7972, 0x4820, 0x6769, 0x0068, 
+    IDC_TOTAL_MONEY, 0x403, 4, 0
+0x6f4c, 0x0077, 
+    IDC_TOTAL_MONEY, 0x403, 7, 0
+0x654d, 0x6964, 0x6d75, "\000" 
+    IDC_TOTAL_MONEY, 0x403, 5, 0
+0x6948, 0x6867, "\000" 
+    IDC_TOTAL_MONEY, 0x403, 10, 0
+0x6556, 0x7972, 0x4820, 0x6769, 0x0068, 
+    0
+END
+
+IDD_PAGE_GAME_CREATE DLGINIT
+BEGIN
+    IDC_MAX_PLAYERS, 0x403, 2, 0
+0x0032, 
+    IDC_MAX_PLAYERS, 0x403, 2, 0
+0x0033, 
+    IDC_MAX_PLAYERS, 0x403, 2, 0
+0x0034, 
+    IDC_MAX_PLAYERS, 0x403, 2, 0
+0x0035, 
+    IDC_MAX_PLAYERS, 0x403, 2, 0
+0x0036, 
+    IDC_MAX_PLAYERS, 0x403, 2, 0
+0x0038, 
+    IDC_MAX_PLAYERS, 0x403, 2, 0
+0x0039, 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3031, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3231, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3531, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3631, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3831, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3032, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3432, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3532, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3033, "\000" 
+    IDC_MAX_PLAYERS, 0x403, 3, 0
+0x3233, "\000" 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About Allegiance Game Manager..."
+    IDS_COLUMN_SENDER       "Sender"
+    IDS_COLUMN_TARGET       "Target"
+    IDS_COLUMN_MESSAGE      "Message"
+    IDS_COLUMN_PLAYER       "Player"
+    IDS_COLUMN_TEAM         "Team"
+    IDS_COLUMN_SECTOR       "Sector"
+    IDS_AUTOUPDATE_NOW      "In order to create a public game, you will need to update some of your server components.\nUntil you update these components, you will only be able to create private games.\n\nWould you like to download the updated components now?"
+    IDS_AUTOUPDATE_NOW_KILLGAME 
+                            "In order to create a public game, you will need to update some of your server components.\nUntil you update these components, you will only be able to create private games.\n\nWould you like to end the current game and download the updated components now?"
+    IDS_GAME_PARAMS         "Game Settings"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_BOOT_SELECTED_ONE   "Are you sure you want to boot the\nselected player from the game?"
+    IDS_BOOT_SELECTED       "Are you sure you want to boot the\n%d selected players from the game?"
+    IDS_STAGE_NONE          "No game"
+    IDS_STAGE_NOTSTARTED    "The game has not started"
+    IDS_STAGE_STARTING      "The game is starting"
+    IDS_STAGE_STARTED       "The game is in progress"
+    IDS_STAGE_OVER          "The game is over"
+    IDS_STAGE_TERMINATE     "The game is terminated"
+    IDS_DESTROY_ON_EXIT     "There is currently a game in existence.\n\nWould you like to destroy the game before exiting?\n\nClick on YES to destroy the game before exiting.\nClick on NO to exit without destroying the game.\nClick on CANCEL to not exit."
+    IDS_PRODUCT_ID_NONE     "(unregistered)"
+    IDS_LEGAL_WARNING       "Warning: This computer program is protected by copyright law and international treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law."
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "Allegiance Game Manager"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "AllSrvUI.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

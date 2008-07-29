@@ -1,0 +1,173 @@
+<html>
+
+<head>
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=windows-1252">
+<meta HTTP-EQUIV="Content-Language" CONTENT="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>TCDeployment Test Page</title>
+</head>
+
+<script language="jscript">
+
+var objProcess;
+
+function Execute()
+{
+	// Create a local TCDeployment object on THIS computer
+	var objDeploy = new ActiveXObject("TCDeployment");
+	
+	// Execute the command line on the remote computer
+	if ("" == Wait.value)
+  		objProcess = objDeploy.Execute(CommandLine.value, Directory.value,
+			StdOut.value, StdErr.value, StdIn.value);
+	else
+		Status_ExitCode.innerText = objDeploy.ExecuteAndWait(CommandLine.value,
+			Directory.value, StdOut.value, StdErr.value, StdIn.value);
+	
+	// Update our status immediately
+	CheckStatus();
+}
+
+function CheckStatus()
+{
+	// Ensure that there is a valid process object
+	if ("object" != typeof(objProcess))
+		return;
+
+	// Check the status of the object
+	Status_IsCompleted.innerText = objProcess.IsCompleted;
+	Status_ExitCode.innerText = objProcess.ExitCode;
+}
+
+</script>
+
+<body bgcolor="#FFFFFF">
+<font face="Verdana" size="2">
+
+<h1>TCDeployment Test Page (InProc)</h1>
+<hr>
+<h5>Introduction</h5>
+<blockquote>
+<p>This form tests the TCDeployment object. The TCDeployment object is used to
+remotely execute a command line. This assists us in the automatic installation
+of our BVT tools, such as ActivePigs, and our server setup and database
+recreation scripts.</p>
+</blockquote>
+  <h5>Input</h5>
+<blockquote>
+  <p>Enter the command line to execute and, optionally, the name of a computer
+  on which to execute the command.<br>
+  When finished, press the &quot;Execute&quot; button below to execute the
+  command line on the specified computer.</p>
+
+</font>
+<table border="1" height="51" bordercolorlight="#FFFFFF" cellspacing="0" bordercolordark="#FFFFFF">
+  <tr>
+    <th width="164" bgcolor="#FFFFFF" align="left" height="23"><font face="Verdana" size="2">Directory
+      (optional):</font></th>
+<font face="Verdana" size="2">
+
+<td width="642" height="23">
+<font face="Verdana" size="2">
+
+<input id="Directory" SIZE="35"></font></td>
+
+</font>
+  </tr>
+  <tr>
+    <th width="164" bgcolor="#FFFFFF" align="left" height="23"><font face="Verdana" size="2">StdIn
+      (optional):</font></th>
+<font face="Verdana" size="2">
+
+<td width="642" height="23">
+<font face="Verdana" size="2">
+
+<input id="StdIn" SIZE="35"></font></td>
+
+</font>
+  </tr>
+  <tr>
+    <th width="164" bgcolor="#FFFFFF" align="left" height="23"><font face="Verdana" size="2">StdOut
+      (optional):</font></th>
+<font face="Verdana" size="2">
+
+<td width="642" height="23">
+<font face="Verdana" size="2">
+
+<input id="StdOut" SIZE="35"></font></td>
+
+</font>
+  </tr>
+  <tr>
+    <th width="164" bgcolor="#FFFFFF" align="left" height="23"><font face="Verdana" size="2">StdErr
+      (optional):</font></th>
+<font face="Verdana" size="2">
+
+<td width="642" height="23">
+<font face="Verdana" size="2">
+
+<input id="StdErr" SIZE="35"></font></td>
+
+</font>
+  </tr>
+  <tr>
+    <th width="164" bgcolor="#FFFFFF" align="left" height="16"><font face="Verdana" size="2">Command
+      Line:</font></th>
+<font face="Verdana" size="2">
+
+<td width="642" height="16">
+<font face="Verdana" size="2">
+
+<input id="CommandLine" size="62">&nbsp;&nbsp;<input TYPE="submit" VALUE="Execute" onclick="Execute();">
+
+</font>
+</td>
+    </tr>
+
+</font>
+<font face="Verdana" size="2">
+
+  <tr>
+    <th width="164" bgcolor="#FFFFFF" align="left" height="16">&nbsp;</th>
+
+<td width="642" height="16">
+<font face="Verdana" size="2">
+
+  <input type="checkbox" name="Wait" value="ON">Wait For Completion (Status
+  section will not be used)</font>
+</td>
+    </tr>
+
+  </table>
+</blockquote>
+<h5>Status</h5>
+<blockquote>
+  <P>Click <a href="javascript:CheckStatus();">Update Status</a> to
+  check on the status of the previously executed command.<br>
+
+</font>
+<table border="1" width="32%" bordercolor="#C0C0C0" cellspacing="0" bordercolorlight="#FFFFFF" bordercolordark="#FFFFFF">
+  <tr>
+    <th width="24%" bgcolor="#C0C0C0" align="left"><b><font face="Verdana" size="2">IsCompleted:</font></b></th>
+<font face="Verdana" size="2">
+
+    <td width="76%" id="Status_IsCompleted" bgcolor="#C0C0C0" align="center">&nbsp;</td>
+  </tr>
+
+</font>
+  <tr>
+    <th width="24%" bgcolor="#C0C0C0" align="left"><b><font face="Verdana" size="2">ExitCode:</font></b></th>
+<font face="Verdana" size="2">
+
+    <td width="76%" id="Status_ExitCode" bgcolor="#C0C0C0" align="center">&nbsp;</td>
+  </tr>
+</table>
+</blockquote>
+<hr>
+<h6><a href="mailto:jtasler">John A. Tasler</a>, and the <a href="mailto:fedtest"> Allegiance Test
+Team</a>.<br>
+Copyright © 1999 Microsoft Corporation. All rights reserved.<br>
+</h6>
+
+</font>

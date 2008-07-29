@@ -1,0 +1,32 @@
+HKCR
+{
+  MSRGTRAN = s 'Microsoft Allegiance Transport'
+  {
+    CLSID = s '{DA9CABC6-C724-4265-A61D-6E78EB2042B4}'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {DA9CABC6-C724-4265-A61D-6E78EB2042B4} = s 'Microsoft Allegiance Transport'
+    {
+      InprocServer32 = s '%MODULE_PATH%\msrgtran.dll'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+  MSGVLOBBY = s 'Microsoft Allegiance Lobby'
+  {
+    CLSID = s '{FD732D2F-6DDD-448d-8BFF-C8D94022BB9E}'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {FD732D2F-6DDD-448d-8BFF-C8D94022BB9E} = s 'Microsoft Allegiance Lobby'
+    {
+      InprocServer32 = s '%MODULE_PATH%\msrgtran.dll'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}
+

@@ -1,0 +1,26 @@
+HKCR
+{
+	TCDeployment = s 'Deployment Class'
+	{
+		CLSID = s '{5A559CE9-FE11-11D2-A50F-00C04F68DEB0}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {5A559CE9-FE11-11D2-A50F-00C04F68DEB0} = s 'Deployment Class'
+		{
+      val AppID = s '{5A559CE9-FE11-11D2-A50F-00C04F68DEB0}'
+			ProgID = s 'TCDeployment'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+		}
+	}
+  NoRemove APPID
+  {
+    ForceRemove {5A559CE9-FE11-11D2-A50F-00C04F68DEB0} = s 'Deployment Class'
+    {
+      val DllSurrogate = s ''
+    }
+  }
+}

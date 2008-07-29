@@ -1,0 +1,79 @@
+<html>
+<head>
+<title>Training Specification 1.0</title>
+</head>
+<body bgcolor=ffffff>
+
+<center>
+<font size=+2>
+<b>Training Specification</b><br>
+19.99.06.08</font><br>
+Written by 
+</center>
+<hr>
+
+<b>Purpose</b><br>
+<ul>
+	This document is intended to act as a proxy for data entry in the "spec" public	folder. The information should be suitable for pasting directly once I have been added to the "system".
+</ul>
+
+<b>Missions</b><br>
+<ul>
+	The training missions are designed to teach new players how to pilot spacecraft, engage in combat, and participate in strategic management of team play. Currently there are six missions that consist of a list of actions that should be completed in order by the player. The missions also contain text and educational tidbits to be of use to the inexperienced pilots. Later missions are freeform,virtually composing a single player version of the game.
+</ul>
+
+<b>Requirements</b><br>
+<ul>
+	The training missions specified have some common characteristics. They are composed of a list of actions to complete in order, they have textual messages presented as though a strategic commander were playing alongside the initiate, and they are all played "offline". This implies that a state maintenance mechanism is present, that this mechanism is capable of channeling messages through the console, and that the game engine is fully functional in an offline mode, including problems of authorability of the training universe.<p>
+
+	Thus far, failure conditions haven't been addressed, but it's easy to envision constraints on the player's actions that represent failure to accomplish a goal. These constraints are mentioned in some of the scenarios, such as issuing warnings to pilots that bring their ship too close to an asteroid.<p>
+
+	Some possible constraints are limited spatial locations, limited time, or limited control inputs. After some consideration, I think it would be bad to limit the control inputs excessively, because this would prevent the new player from gaining the experience that comes with mistakes, and may feel too much like hand-holding. A better approach would be to limit the region of space that can be occupied by the player, and reset the mission to the last successful task if they leave that region.<p>
+
+	One optional requirement that we have chosen to implement is to provide an authoring interface to the training missions in the form of a scripting interface that leverages the work done on "Pigs". This potential is very attractive, as a well designed interface would enable multiple people to build training missions, rather than constrict development to a single engineer.<p>
+</ul>
+
+<b>State Maintenance</b><br>
+<ul>
+	Code to maintain state is straightforward to design and implement. A simple state table with transitions can be built with an interface that allows the training mission designer to specify the list of items in order, along with constraints and appropriate messages.<p> 
+
+I propose that the state table be implemented in C++ in a self contained module that handles events and changes state while performing the appropriate actions. The state table construction interface should be exposed to the scripting engine such that at startup of the training mission, the universe is loaded, the state table is constructed, and the script is not called again with the exception of handling "unexpected" events. Unexpected events might be the accidental destruction of the player's ship, running out of ammo, or even something as simple as the player shooting at the wrong target. Failure of the level designer to account for some unknown event needs to be carefully considered. Any event which could affect the ability of the player to complete the mission needs to be handled, all others should be safe to completely ignore.<p>
+
+The interface for the state table should basically consist of a startup/construction/initialization method, coupled with a "This_Should_Happen_Next" method.
+</ul>
+
+<b>Conditional Tests</b><br>
+<ul>
+	In order to fulfill the requirements of the training missions, some events are going to need to be generated when certain conditions occur. Measurement of game parameters should be the domain of the training mission code module. Obvious parameters to monitor are position, ammo counts, velocity, orientation, control inputs, orders issued or accepted, and any of these same parameters for any other object in the universe.
+</ul>
+
+<b>Predicates</b><br>
+<ul>
+	Predicates in this context identify the combination of an object in the universe and some conditional test. Failure of the test results in a named event occuring. Examples would be "Ship A is inside Region 1", "Ship A has 2 missiles", and "elapsed time is less than 2 minutes".<p>
+
+	Predicates are used to define events that will result in a state change, define constraints on the successful completion of a state, or to define "Unexpected" events that can't otherwise be handled by a state change. An example of the latter might be to drop a rocket part/powerup into space near the player if they're out of rockets.
+</ul>
+
+<b>Execution</b><br>
+<ul>
+	The manner of execution is as follows for startup:
+	<li>Game starts up and player proceeds to training mission screens
+	<li>Player selects a training mission
+	<li>The training mission DLL is loaded and the name of the mission is passed as an initialization parameter, this name is the name of a script
+	<li>The training mission DLL creates a script object, and retaines the interface ptr.
+	<li>The training mission DLL calls the script initialization method.
+	<li>The script issues calls necessary to invoke the offline universe loader (I am uncertain of this detail).
+	<li>The script issues calls to the state maintenance interface to build up the list of actions, messages, constraints, and associated predicates.
+	<li>The script relinquishes control to the game engine.
+</ul>
+<ul>
+	The manner of execution is a follows for each frame of game play:
+	<li>The training mission DLL tests all of its predicates and issues events for those that fail.
+	<li>Events are evaluated for state changes, and resulting actions are taken as appropriate.
+	<li>Unexpected events are passed to the script for handling.
+</ul>
+
+<hr>
+
+</body>
+</html>

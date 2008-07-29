@@ -1,0 +1,22 @@
+HKCR
+{
+  Pigs.ShipEvent.1 = s 'Pig Ship Event Class'
+  {
+    CLSID = s '{4F16D144-EF2F-11d2-A50D-00C04F68DEB0}'
+  }
+  Pigs.ShipEvent = s 'Pig Ship Event Class'
+  {
+    CLSID = s '{4F16D144-EF2F-11d2-A50D-00C04F68DEB0}'
+    CurVer = s 'Pigs.ShipEvent.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {4F16D144-EF2F-11d2-A50D-00C04F68DEB0} = s 'Pig Ship Event Class'
+    {
+      ProgID = s 'Pigs.ShipEvent.1'
+      VersionIndependentProgID = s 'Pigs.ShipEvent'
+      val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+      'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+    }
+  }
+}

@@ -1,0 +1,27 @@
+HKCR
+{
+	AGC.EventIDRange.1 = s 'AGC Event ID Range Class'
+	{
+		CLSID = s '{1537A87B-910E-4258-9C77-79554AA3C839}'
+	}
+	AGC.EventIDRange = s 'AGC Event ID Range Class'
+	{
+		CLSID = s '{1537A87B-910E-4258-9C77-79554AA3C839}'
+		CurVer = s 'AGC.EventIDRange.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {1537A87B-910E-4258-9C77-79554AA3C839} = s 'AGC Event ID Range Class'
+		{
+			ProgID = s 'AGC.EventIDRange.1'
+			VersionIndependentProgID = s 'AGC.EventIDRange'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			'TypeLib' = s '{AB33E136-0A3E-11D3-8B58-00C04F681633}'
+		}
+	}
+}
+					   

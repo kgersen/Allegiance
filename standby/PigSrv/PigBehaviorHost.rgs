@@ -1,0 +1,22 @@
+HKCR
+{
+  Pigs.BehaviorHost.1 = s 'Pig Behavior Host Class'
+  {
+    CLSID = s '{8962E24C-CD81-11d2-9646-00C04F68DEB0}'
+  }
+  Pigs.BehaviorHost = s 'Pig Behavior Host Class'
+  {
+    CLSID = s '{8962E24C-CD81-11d2-9646-00C04F68DEB0}'
+    CurVer = s 'Pigs.BehaviorHost.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {8962E24C-CD81-11d2-9646-00C04F68DEB0} = s 'Pig Behavior Host Class'
+    {
+      ProgID = s 'Pigs.BehaviorHost.1'
+      VersionIndependentProgID = s 'Pigs.BehaviorHost'
+      val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+      'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+    }
+  }
+}

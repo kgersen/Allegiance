@@ -1,0 +1,25 @@
+HKCR
+{
+  Pigs.MissionParams.1 = s 'Pig Mission Parameters Class'
+  {
+    CLSID = s '{15219787-D562-11d2-9646-00C04F68DEB0}'
+  }
+  Pigs.MissionParams = s 'Pig Mission Parameters Class'
+  {
+    CLSID = s '{15219787-D562-11d2-9646-00C04F68DEB0}'
+    CurVer = s 'Pigs.MissionParams.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {15219787-D562-11d2-9646-00C04F68DEB0} = s 'Pig Mission Parameters Class'
+    {
+      'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+      ProgID = s 'Pigs.MissionParams.1'
+      VersionIndependentProgID = s 'Pigs.MissionParams'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+; \src\fedsrv\REGINI.TXT
+; This file lists the registry keys needed to setup allsrv properly.
+;
+; NOTE: These are not used directly, since the values here are hard-coded
+;       but rather, in \src\build\setupserver.vbs, the registry values
+;       are set up dynamically from script code.  If you add or remove
+;       stuff from this file, you MUST contact marksn and/or update
+;       setupserver.vbs to alter the registry correctly.
+;
+\Registry\Machine\System\CurrentControlSet\Services\AllSrv
+        fWantInt3 = REG_DWORD 1
+        fWatchArtDir = REG_DWORD 0
+        ArtPath = c:\server\artwork
+        FTPArtDir = foo
+        FTPArtServer = foo
+        FTPArtRoot = foo
+        FTPAccount = foo
+        FTPPW = foo
+        fTimeout = REG_DWORD 0
+        SQLUser = sa
+        SQLPW = 

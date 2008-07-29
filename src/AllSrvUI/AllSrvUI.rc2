@@ -1,0 +1,26 @@
+//
+// ALLSRVUI.RC2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+	#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+/////////////////////////////////////////////////////////////////////////////
+#define SZFILEDESCRIPTION "Allegiance Game Manager"
+#if !defined(ALLSRV_STANDALONE)
+  #define SZORIGFILENAME "AllSrvUI.exe"
+  #define SZINTERNALNAME "AllSrvUI"
+#else // !defined(ALLSRV_STANDALONE)
+  #define SZORIGFILENAME "AllSrvUI.exe"
+  #define SZINTERNALNAME "AllSrvUI"
+#endif // !defined(ALLSRV_STANDALONE)
+
+/////////////////////////////////////////////////////////////////////////////
+
+#include "..\Inc\VerRes.rc"
+

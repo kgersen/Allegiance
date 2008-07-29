@@ -1,0 +1,23 @@
+HKCR
+{
+	AllSrv.User.1 = s 'User Class'
+	{
+		CLSID = s '{E71EA5B8-EBA4-11D2-8B4B-00C04F681633}'
+	}
+	AllSrv.User = s 'User Class'
+	{
+		CLSID = s '{E71EA5B8-EBA4-11D2-8B4B-00C04F681633}'
+		CurVer = s 'AllSrv.User.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {E71EA5B8-EBA4-11D2-8B4B-00C04F681633} = s 'User Class'
+		{
+			ProgID = s 'AllSrv.User.1'
+			VersionIndependentProgID = s 'AllSrv.User'
+			ForceRemove 'Programmable'
+			val AppID = s '{E4E8767E-DFDB-11d2-8B46-00C04F681633}'
+			'TypeLib' = s '{BB5FC41C-DDA4-11d2-8B46-00C04F681633}'
+		}
+	}
+}

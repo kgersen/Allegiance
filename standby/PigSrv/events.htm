@@ -1,0 +1,75 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>New Page 1</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<!-- The Pigs Session object -->
+<object id="session" classid="clsid:9BCD384E-C6F2-11D2-85C9-00C04F68DEB0">
+</object>
+
+<script language="vbscript">
+
+Sub session_OnEvent(evt)
+
+	Dim sText
+	sText = "EventID:     " & evt.ID                                                        & vbCrLf _
+	      & "Time:        " & CStr(evt.Time)                                                & vbCrLf _
+	      & "Computer:    " & evt.ComputerName                                              & vbCrLf _
+	      & "Subject:     " & evt.SubjectName                                               & vbCrLf _
+	      & "SubjectID:   " & evt.SubjectID                                                 & vbCrLf _
+	      & "PrevState:   " & evt("PREVstate")                                              & vbCrLf _
+	      & "Description: " & evt.Description                                               & vbCrLf _
+	      & "-----------------------------------------------------------------------------" & vbCrLf
+
+	output.innerText = output.innerText & sText	
+
+End Sub
+
+Sub ActivateEvents()
+
+	' Activate all events on this session
+	session.ActivateAllEvents()
+
+End Sub
+
+Sub DeactivateEvents()
+
+	' Deactivate all events on this session
+	session.DeactivateAllEvents()
+
+End Sub
+
+</script>
+
+<font face="Verdana" size="2">
+
+<h1>Pigs Session Events Test Page</h1>
+<hr>
+<h5>Introduction</h5>
+<blockquote>
+<p>This form tests the Pigs Session object's event firing abilities.</p>
+
+<textarea id="output" READONLY="true" ROWS="25" COLS="79">
+</textarea>
+
+<P>
+<input TYPE="button" VALUE="  Activate Events  " onclick="ActivateEvents()">
+<input TYPE="button" VALUE="Deactivate Events" onclick="DeactivateEvents()">
+
+<hr>
+<h6><a href="mailto:jtasler">John A. Tasler</a>, and the <a href="mailto:fedtest"> Allegiance Test
+Team</a>.<br>
+Copyright © 1999 Microsoft Corporation. All rights reserved.<br>
+</h6>
+
+</font>
+
+</body>
+
+</html>

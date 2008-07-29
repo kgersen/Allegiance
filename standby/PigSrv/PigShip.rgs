@@ -1,0 +1,22 @@
+HKCR
+{
+  Pigs.Ship.1 = s 'Pig Ship Class'
+  {
+    CLSID = s '{E57D7452-E3AC-11d2-A507-00C04F68DEB0}'
+  }
+  Pigs.Ship = s 'Pig Ship Class'
+  {
+    CLSID = s '{E57D7452-E3AC-11d2-A507-00C04F68DEB0}'
+    CurVer = s 'Pigs.Ship.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {E57D7452-E3AC-11d2-A507-00C04F68DEB0} = s 'Pig Ship Class'
+    {
+      ProgID = s 'Pigs.Ship.1'
+      VersionIndependentProgID = s 'Pigs.Ship'
+      val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+      'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+    }
+  }
+}

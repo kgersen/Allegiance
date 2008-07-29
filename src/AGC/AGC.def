@@ -1,0 +1,12 @@
+; AGC.def : Declares the module parameters.
+
+LIBRARY      "AGC.DLL"
+
+EXPORTS
+    DllCanUnloadNow     PRIVATE
+    DllGetClassObject   PRIVATE
+    DllRegisterServer   PRIVATE
+    DllUnregisterServer PRIVATE
+    DllRegisterAGC
+    DllUnregisterAGC
+

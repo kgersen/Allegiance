@@ -1,0 +1,508 @@
+import "ScrRun.idl";
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Forward Declarations
+
+enum dispid_TCIDL;
+enum TCRegKeys;
+enum FileAttributes;
+
+interface ITCCollection;
+interface ITCStrings;
+interface ITCPropBagOnRegKey;
+interface ITCSessionInfo;
+interface ITCSessionInfos;
+interface ITCCollectionPersistHelper;
+interface ITCUtility;
+
+
+/////////////////////////////////////////////////////////////////////////////
+// {secret}
+// DISPID Enumeration
+//
+// Notes:
+//   Never remove one of these enumeration values without replacing it
+//   with a dispid_Reservedx value to take its place, where x is the next
+//   reserved index not in use.
+//
+//   Always add new values to the end of the enumeration so that these values
+//   will never change.
+//
+enum dispid_TCIDL
+{
+  dispid_TCIDL_Begin = DISPID_UNKNOWN,
+
+  dispid_UserName,
+  dispid_ComputerName,
+  dispid_ApplicationName,
+  dispid_TimeCreated,
+  dispid_Duration,
+  dispid_Cookie,
+  dispid_Collection1,
+  dispid_Collection2,
+  dispid_Collection3,
+  dispid_Collection4,
+  dispid_Collection5,
+  dispid_Collection6,
+  dispid_Collection7,
+  dispid_Collection8,
+
+  dispid_TCIDL_End = dispid_TCIDL_Begin + 0x0400
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+// The ITCCollection interface serves as the base interface from which most
+// collection interfaces derive.
+//
+// *When To Implement*
+//
+// Implement the methods of this interface on any collection object that has
+// the same collection semantics.
+//
+// *When To Use*
+//
+// Use this interface on a collection object.
+[
+  object, dual, pointer_default(unique), nonextensible,
+  uuid(B1935981-D27B-11d2-9646-00C04F68DEB0),
+  helpstring("Base interface for most collection interfaces.")
+]
+interface ITCCollection : IDispatch
+{
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   pnCount - Address of a variable to receive the number of items in the
+  // collection.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - The specified pointer is invalid.
+  [propget, helpstring("Returns the number of items in the collection.")]
+  HRESULT Count([out, retval] long* pnCount);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Remarks:
+  // This property is provided for compatibility with VB, VBA, and VBScript.
+  //
+  // Parameters:
+  //   ppunkEnum - Address of a variable to receive an enumerator object that
+  // implements IEnumVARIANT.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - The specified pointer is invalid.
+  [propget, hidden, restricted, id(DISPID_NEWENUM), helpstring("Returns an enumerator object that implements IEnumVARIANT.")]
+  HRESULT _NewEnum([out, retval] IUnknown** ppunkEnum);
+
+}; // End: interface ITCCollection : IDispatch
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// The ITCStrings interface exposes a collection of strings.
+//
+// *When To Implement*
+//
+// The Strings object implements this interface. Usually there is no reason
+// to implement it on other objects.
+//
+// *When To Use*
+//
+// Use this interface on the Strings object to manage or query a collection
+// of strings.
+[
+  object, dual, pointer_default(unique),
+  uuid(C04322E0-CB3B-11d2-9646-00C04F68DEB0),
+  helpstring("Interface to a collection of strings.")
+]
+interface ITCStrings : ITCCollection
+{
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   index - A pointer to a *VARIANT* of a type that can be coerced to
+  // *VT_I4*. Specifies the 0-relative index of the item which is to be
+  // retrieved.
+  //   pbstr - Address of a variable to receive the specified string from the
+  // collection.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - The specified pointer is invalid.
+  //   E_INVALIDARG - The specified index is out of range.
+  [propget, id(DISPID_VALUE), helpstring("Returns a BSTR from the collection or NULL if the index is out of range. Takes an argument, index, which must be the index into the collection.")]
+  HRESULT Item([in] VARIANT* pvIndex, [out, retval] BSTR* pbstr);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   bstr - The string to be added to the end of the collection.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - The specified pointer is invalid.
+  [helpstring("Adds the specified string to the collection.")]
+  HRESULT Add([in] BSTR bstr);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   index - A pointer to a *VARIANT* of a type that can be coerced to
+  // *VT_I4*. Specifies the 0-relative index of the item which is to be
+  // removed.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_INVALIDARG - The specified index is out of range.
+  [helpstring("Removes the specified string from the collection.")]
+  HRESULT Remove([in] VARIANT* pvIndex);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  [helpstring("Removes all strings from the collection.")]
+  HRESULT RemoveAll();
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   bstrDelimiter - The delimiter string which seperates the strings of
+  // the /bstrStrings/ parameter.
+  //   bstrStrings - The strings to be added to the end of the collection.
+  // Each string is seperated by the delimiter specified by the
+  // /bstrDelimiter/ parameter.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - The specified pointer is invalid.
+  [helpstring("Adds the specified delimited strings to the collection.")]
+  HRESULT AddDelimited([in] BSTR bstrDelimiter, [in] BSTR bstrStrings);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   bstrDelimiter - The delimiter string which is used to seperate the
+  // strings returned in the /pbstrStrings/ parameter.
+  //   pbstrStrings - Address of a variable to receive the entire array of
+  // strings as a single string. Each string is seperated by the delimiter
+  // specified by the /bstrDelimiter/ parameter.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - The specified pointer is invalid.
+  [propget, helpstring("Returns the entire array of strings as a single string, delimited by the specified delimiter string.")]
+  HRESULT DelimitedItems([in] BSTR bstrDelimiter, [out, retval] BSTR* pbstrStrings);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   pStrings - Another Strings object whose strings will be copied and
+  // added to the end of this collection.
+  //
+  // Return Value: One of the following results:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - The specified pointer is invalid.
+  [helpstring("Adds the strings of the specified collection.")]
+  HRESULT AddStrings([in] ITCStrings* pStrings);
+
+};  // End: interface ITCStrings : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+// ITCPropBagOnRegKey Interface
+[
+  object, dual, pointer_default(unique),
+  uuid(8962E242-CD81-11d2-9646-00C04F68DEB0),
+  helpstring("Interface to create a property bag on a registry key.")
+]
+interface ITCPropBagOnRegKey : IDispatch
+{
+  [helpstring("Creates or opens the specified registry key.")]
+  HRESULT CreateKey([in] BSTR bstrRegKey, [in] VARIANT_BOOL bReadOnly);
+
+  [helpstring("Opens the specified registry key.  Fails if the key does not exist.")]
+  HRESULT OpenKey([in] BSTR bstrRegKey, [in] VARIANT_BOOL bReadOnly);
+
+  [helpstring("Creates the object that is stored on the current registry key.")]
+  HRESULT CreateObject([out, retval] IUnknown** ppunkObj);
+
+  [helpstring("Creates the object, always on the local machine, that is stored on the current registry key.")]
+  HRESULT CreateLocalObject([out, retval] IUnknown** ppunkObj);
+
+  [helpstring("Creates the object, on the specified server, that is stored on the current registry key.")]
+  HRESULT CreateRemoteObject([in] BSTR bstrServer,
+    [out, retval] IUnknown** ppunkObj);
+
+  [helpstring("Load the specified object from the values stored in the current registry key.")]
+  HRESULT LoadObject([in] IUnknown* punkObj);
+
+  [helpstring("Saves the specified object to the current registry key.")]
+  HRESULT SaveObject([in] IUnknown* punkObj,
+    [in, defaultvalue(0)] VARIANT_BOOL bClearDirty,
+    [in, defaultvalue(-1)] VARIANT_BOOL bSaveAllProperties,
+    [in, defaultvalue(-1)] VARIANT_BOOL bSaveCreationInfo);
+
+  [propput, helpstring("Gets/sets the server on which the object stored on the current registry key will be created.")]
+  HRESULT Server([in] BSTR bstrServer);
+  [propget] HRESULT Server([out, retval] BSTR* pbstrServer);
+
+  [propget, helpstring("Gets the string representation of the CLSID of the object stored on the current registry key.")]
+  HRESULT ObjectCLSID([out, retval] BSTR* pbstrCLSID);
+
+};  // End: interface ITCPropBagOnRegKey : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+// The ITCSessionInfo interface exposes information about the connection of
+// a session object.
+[
+  object, dual, pointer_default(unique),
+  uuid(34E485E2-C7B7-11d2-85C9-00C04F68DEB0),
+  helpstring("ITCSessionInfo Interface")
+]
+interface ITCSessionInfo : IDispatch
+{
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameter:
+  //   pbstrUserName - Address of a variable to receive the name of the user
+  // who created this session.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - An invalid pointer was specified.
+  //   E_UNEXPECTED - Something unexpected occurred, such as an empty string
+  // was specified.
+  [propget, id(dispid_UserName), helpstring("Gets the user name of this session.")]
+  HRESULT UserName([out, retval] BSTR* pbstrUserName);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameter:
+  //   pbstrComputerName - Address of a variable to receive the computer name
+  // from which this session was created.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - An invalid pointer was specified.
+  //   E_UNEXPECTED - Something unexpected occurred, such as an empty string
+  // was specified.
+  [propget, id(dispid_ComputerName), helpstring("Gets the computer name of this session.")]
+  HRESULT ComputerName([out, retval] BSTR* pbstrComputerName);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameter:
+  //   bstrAppName - The name of the application from which this session was
+  // created.
+  //   pbstrAppName - Address of a variable to receive the name of the
+  // application from which this session was created.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - An invalid pointer was specified.
+  //   E_UNEXPECTED - Something unexpected occurred, such as an empty string
+  // was specified.
+  [propput, id(dispid_ApplicationName), helpstring("Gets/sets the application name of this session.")]
+  HRESULT ApplicationName([in]BSTR bstrAppName);
+  [propget]
+  HRESULT ApplicationName([out, retval] BSTR* pbstrAppName);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameter:
+  //   pdate - Address of a variable to receive the date and time, in
+  // Coordinated Universal Time (UCT), that the session was created.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - An invalid pointer was specified.
+  [propget, id(dispid_TimeCreated), helpstring("Returns the time the session was created.")]
+  HRESULT TimeCreated([out, retval] DATE* pdate);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameter:
+  //   pdate - Address of a variable to receive the duration of the session,
+  // which is time it was created subtracted from the current time.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - An invalid pointer was specified.
+  [propget, id(dispid_Duration), helpstring("Returns the duration of the session.")]
+  HRESULT Duration([out, retval] DATE* pdate);
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameter:
+  //   pCookie - Address of a variable to receive an opaque value used to
+  // uniquely identify this session within a process.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The method completed successfully.
+  //   E_POINTER - An invalid pointer was specified.
+  [propget, id(dispid_Cookie), helpstring("Uniquely identifies this session within a process.")]
+  HRESULT Cookie([out, retval] long* pCookie);
+
+}; // End: interface ITCSessionInfo : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+// The ITCSessionInfos interface is used to enumerate a collection of
+// Session Information Objects.
+//
+// Through this interface, the collection can be enumerated using the Count
+// and Item properties. The Item property can be used to retrieve an item by
+// its 1-based index.
+//
+// *When To Implement*
+//
+// Implement this object on a collection of session objects.
+//
+// *When To Use*
+//
+// Use ITCSessionInfos to enumerate a collection object provided by a
+// session object. This allows a client to determine what other clients, if
+// any, are also connected to the host of the session object. 
+//
+// See Also: ITCSessionInfo
+[
+  object, dual, pointer_default(unique),
+  uuid(45038C6E-C7B7-11d2-85C9-00C04F68DEB0),
+  helpstring("ITCSessionInfos interface")
+]
+interface ITCSessionInfos : ITCCollection
+{
+  ///////////////////////////////////////////////////////////////////////////
+  // Parameters:
+  //   index - A *VARIANT* which is coerced to type *VT_I4*. Specifies the
+  // 0-relative index of the item which is to be retrieved.
+  //   ppDriver - Address of an ITCSessionIdentity interface pointer that
+  // receives the item specified by /index/.
+  //
+  // Return Value: One of the following values or an RPC error code if an
+  // error occurred in the remoting layer:
+  //
+  //   S_OK - The function was successful.
+  //   E_POINTER - The specified pointer is invalid.
+  //   E_INVALIDARG - The specified index is out of range or is a
+  // *VARIANT* type not supported by this interface.
+  //
+  // See Also: ITCSessionInfo
+  [propget, id(DISPID_VALUE), helpstring("Returns a Session from the collection, or NULL if the session does not exist. Takes an argument, index, which must be the index into the collection.")]
+  HRESULT Item([in] VARIANT index, [out, retval] ITCSessionInfo** ppSessionInfo);
+
+};  // END: interface ITCSessionInfos : ITCCollection
+
+
+/////////////////////////////////////////////////////////////////////////////
+// ITCCollectionPersistHelper Interface
+[
+  object, dual, pointer_default(unique),
+  uuid(8962E24A-CD81-11d2-9646-00C04F68DEB0),
+  helpstring("ITCCollectionPersistHelper interface")
+]
+interface ITCCollectionPersistHelper : IDispatch
+{
+  [propput, helpstring("Gets/sets the current thread priority.")]
+  HRESULT Collection1([in] VARIANT* pvarSafeArray);
+  [propget, id(dispid_Collection1)]
+  HRESULT Collection1([out, retval] VARIANT* pvarSafeArray);
+
+};  // END: interface ITCCollectionPersistHelper : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+// ITCUtility Interface
+[
+  object, dual, pointer_default(unique),
+  uuid(ADD577E2-ED3A-11d2-A50B-00C04F68DEB0),
+  helpstring("ITCUtility interface")
+]
+interface ITCUtility : IDispatch
+{
+  [helpstring("Creates the specified object on the specified computer.")]
+  HRESULT CreateObject([in] BSTR bstrProgID,
+    [in, optional] BSTR bstrComputer, [out, retval] IUnknown** ppUnk);
+
+  [helpstring("Create an object reference string.")]
+  HRESULT ObjectReference([in] IUnknown* pUnk,
+    [out, retval] BSTR* pbstrObjectReference);
+
+  [helpstring("Sleeps for the specified number of milliseconds.")]
+  HRESULT Sleep([in] long nDurationMS);
+
+  [helpstring("Creates an object by binding the specified moniker display name.")]
+  HRESULT GetObject([in] BSTR bstrMoniker,
+    [in, optional, defaultvalue(-1)] VARIANT_BOOL bAllowUI,
+    [in, optional, defaultvalue(-1)] long nTimeoutMS,
+    [out, retval] IUnknown** ppUnk);
+
+};  // END: interface ITCUtility : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+// FileAttributes Enumeration
+[
+  uuid(2942EC80-D0DC-11d2-9646-00C04F68DEB0),
+  helpstring("Constants for file attributes.")
+]
+typedef [v1_enum] enum FileAttributes
+{
+  FileAttribute_None              = 0x00000000,
+  FileAttribute_ReadOnly          = 0x00000001,
+  FileAttribute_Hidden            = 0x00000002,
+  FileAttribute_System            = 0x00000004,
+  FileAttribute_Directory         = 0x00000010,
+  FileAttribute_Archive           = 0x00000020,
+  FileAttribute_Encrypted         = 0x00000040,
+  FileAttribute_Normal            = 0x00000080,
+  FileAttribute_Temporary         = 0x00000100,
+  FileAttribute_SparseFile        = 0x00000200,
+  FileAttribute_ReparsePoint      = 0x00000400,
+  FileAttribute_Compressed        = 0x00000800,
+  FileAttribute_Offline           = 0x00001000,
+  FileAttribute_NotContentIndexed = 0x00002000,
+} FileAttributes;
+
+
+cpp_quote("#ifdef __cplusplus")
+cpp_quote("  extern \"C++\"")
+cpp_quote("  {")
+cpp_quote("    /////////////////////////////////////////////////////////////////////////")
+cpp_quote("    // Smart Pointer Declarations")
+cpp_quote("")
+cpp_quote("    #if _MSC_VER >= 1100")
+cpp_quote("")
+cpp_quote("      #include <comdef.h>")
+cpp_quote("")
+cpp_quote("      #ifndef TC_COM_SMARTPTR_TYPEDEF")
+cpp_quote("        #define TC_COM_SMARTPTR_TYPEDEF(Interface) \\")
+cpp_quote("          _COM_SMARTPTR_TYPEDEF(Interface, __uuidof(Interface))")
+cpp_quote("      #endif // TC_COM_SMARTPTR_TYPEDEF")
+cpp_quote("")
+cpp_quote("      TC_COM_SMARTPTR_TYPEDEF(ITCCollection);")
+cpp_quote("      TC_COM_SMARTPTR_TYPEDEF(ITCStrings);")
+cpp_quote("      TC_COM_SMARTPTR_TYPEDEF(ITCPropBagOnRegKey);")
+cpp_quote("      TC_COM_SMARTPTR_TYPEDEF(ITCSessionInfo);")
+cpp_quote("      TC_COM_SMARTPTR_TYPEDEF(ITCSessionInfos);")
+cpp_quote("      TC_COM_SMARTPTR_TYPEDEF(ITCCollectionPersistHelper);")
+cpp_quote("      TC_COM_SMARTPTR_TYPEDEF(ITCUtility);")
+cpp_quote("")
+cpp_quote("    #endif // _MSC_VER >= 1100")
+cpp_quote("")
+cpp_quote("  } // extern \"C++\"")
+cpp_quote("#endif // __cplusplus")
+cpp_quote("")
+
