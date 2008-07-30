@@ -175,10 +175,15 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 											&sD3DDev9.pD3DDevice );
 
 	// Did we create a valid device?
+	// 29.07.08 - Courtesy of Imago, it appears that some device drivers (such as Intel Integrated chipset)
+	// don't return D3DERR_NOTAVAILABLE when they don't support certain device types. In the event that 
+	// the CreateDevice call fails, we'll not bother checking the return value and just step down the 
+	// creation chain.
 	if( hr != D3D_OK )
 	{
 		pLogFile->OutputStringV( "Pure HWVP device creation failed: 0x%08x.\n", hr );
-		if( hr == D3DERR_NOTAVAILABLE )
+		
+		//if( hr == D3DERR_NOTAVAILABLE )
 		{
 			// No, try a non-pure device.
 			dwCreationFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING;
@@ -191,8 +196,9 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 			if( hr != D3D_OK )
 			{
 				pLogFile->OutputStringV( "HWVP device creation failed: 0x%08x.\n", hr );
+				
 				// Still no joy, try a software vp device.
-				if( hr == D3DERR_NOTAVAILABLE )
+				//if( hr == D3DERR_NOTAVAILABLE )
 				{
 					dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 					hr = sD3DDev9.pD3D9->CreateDevice(	sDevSetupParams.iAdapterID,
