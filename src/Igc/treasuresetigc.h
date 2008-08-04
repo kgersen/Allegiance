@@ -56,6 +56,12 @@ class CtreasureSetIGC : public ItreasureSetIGC
         {
             return m_data->name;
         }
+    // Imago added
+        virtual short                       GetSize(void) const
+        {
+            return m_maxTreasureData;
+        }
+    // ^
         virtual bool                        GetZoneOnly(void) const
         {
             return m_data->bZoneOnly;

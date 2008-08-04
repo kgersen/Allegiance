@@ -397,6 +397,9 @@ class   CmissionIGC : public ImissionIGC
             SYSTEMTIME st;
             ::GetLocalTime(&st);
             ::SystemTimeToFileTime(&st, &m_ftCreated);
+
+			ZeroMemory(rgTechs, sizeof(rgTechs));
+			ZeroMemory(rgParts, sizeof(rgParts));
         }
 
         virtual ~CmissionIGC(void);
@@ -611,6 +614,23 @@ class   CmissionIGC : public ImissionIGC
                                                __int64  maskTypes,
                                                char*    pdata,
                                                int      datasize);
+		
+		// Imago
+		virtual ZString					BitsToTechsList(TechTreeBitMask & ttbm);
+		virtual ZString					BitsToPartsList(PartMask & pm, EquipmentType et);
+		
+		virtual void					TechsListToBits(const char * szTechs, TechTreeBitMask & ttbm);
+		virtual int						TechBitFromToken(const char * szToken);
+		
+		virtual PartMask				PartMaskFromToken(const char * szToken, EquipmentType et);
+		virtual PartMask				PartsListToMask(const char * szParts, EquipmentType et);
+		
+		virtual bool					LoadTechBitsList(void);
+		virtual bool					LoadPartsBitsList(void);
+		
+		virtual void					ExportStaticIGCObjs();
+		virtual void					ImportStaticIGCObjs();
+		// ^
 
         virtual void                            SetMissionID(MissionID mid)
         {
@@ -793,6 +813,28 @@ class   CmissionIGC : public ImissionIGC
             m_dwPrivate = dwPrivate;
         }
 
+		//imago 7/30/08
+        virtual ZString            GetTechFlagName(int id) const
+        {
+            return ZString(rgTechs[id]);
+        }
+        
+		virtual void            SetTechFlagName(int id, ZString name)
+        {
+            Strcpy(rgTechs[id],name);
+        }
+
+        virtual ZString            GetPartFlagName(int id, EquipmentType et) const
+        {
+            return ZString(rgParts[et][id]);
+        }
+        
+		virtual void            SetPartFlagName(int id, EquipmentType et, ZString name)
+        {
+            Strcpy(rgParts[et][id],name);
+        }
+		// /imago
+
         virtual DWORD           GetPrivateData(void) const
         {
             return m_dwPrivate;
@@ -912,6 +954,17 @@ class   CmissionIGC : public ImissionIGC
         bool                     m_bHasGenerated;
         short                    m_nReplayCount;
         ZString                  m_strContextName;
+		char					 rgTechs[cTechs][CbTechBitName+1];
+		char					 rgParts[ET_MAX][16][CbTechBitName+1];
 };
+
+// Read missions from plain-text Imago 8/3/08 NYI: XML
+#pragma warning(disable:4530)
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <vector>
+void readCSV(std::istream &input, std::vector< std::vector<std::string> > &output);
 
 #endif //__MISSIONIGC_H_

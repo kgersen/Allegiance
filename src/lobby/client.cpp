@@ -82,8 +82,8 @@ static void doASGS(void* data, MprThread *threadp) {
 	// finally
 	client->getRequest(szURL);
 
-	// Imago check for a socket first! 7/22/08
-	if (client->getSock()) {
+	// Imago check for HTTP OK 8/3/08  (this wont hang either)
+	if (client->getResponseCode() == 200) {
 		content = client->getResponseContent(&contentLen);
 
 		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...

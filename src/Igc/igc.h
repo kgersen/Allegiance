@@ -94,7 +94,7 @@ const FloatConstantID    c_fcidPlayerCost           = 36;
 const FloatConstantID    c_fcidBaseClusterCost      = 37;
 const FloatConstantID    c_fcidClusterDivisor       = 38;
 
-const FloatConstantID    c_fcidMax                  = 40;
+const FloatConstantID    c_fcidMax                  = 39; //imago changed, was 40 - 7/30/08
 
 //
 // Note: if you add or change any new ObjectTypes, then please notify
@@ -514,7 +514,11 @@ const EquipmentType   ET_Pack           = 6;
 const EquipmentType   ET_Afterburner    = 7;
 const EquipmentType   ET_MAX            = 8;
 
-
+typedef short     AbilityType; // Imago added
+const AbilityType	  AT_Hull			= 0;
+const AbilityType	  AT_Station		= 1;
+const AbilityType	  AT_Expendable		= 2;
+const AbilityType	  AT_Asteroid		= 3;
 
 typedef char     PackType;
 const PackType      c_packAmmo    = 0;
@@ -671,6 +675,25 @@ const unsigned char             c_ucRadarOnScreenSmall = 1;
 const unsigned char             c_ucRadarOffScreen = 2;
 
 typedef short                   PartMask;
+
+//Imago has "generic" part mask flags 7/29/08
+typedef PartMask				PartBitMask;
+const PartBitMask				c_pbm1	= 0x01;
+const PartBitMask				c_pbm2  = 0x02;
+const PartBitMask				c_pbm3  = 0x04;
+const PartBitMask				c_pbm4  = 0x08;
+const PartBitMask				c_pbm5  = 0x10;
+const PartBitMask				c_pbm6  = 0x20;
+const PartBitMask				c_pbm7  = 0x40;
+const PartBitMask				c_pbm8  = 0x80;
+const PartBitMask				c_pbm9  = 0x100;
+const PartBitMask				c_pbm10  = 0x200;
+const PartBitMask				c_pbm11  = 0x400;
+const PartBitMask				c_pbm12  = 0x800;
+const PartBitMask				c_pbm13  = 0x1000;
+const PartBitMask				c_pbm14  = 0x2000;
+const PartBitMask				c_pbm15  = 0x4000;
+const PartBitMask				c_pbm16  = (short)0x8000;
 
 typedef short                   AbilityBitMask;
 
@@ -2719,6 +2742,20 @@ class ImissionIGC : public IstaticIGC
                                                __int64   maskTypes,
                                                char*     pdata,
                                                int       datasize) = 0;
+		//Imago added
+		virtual ZString					BitsToTechsList(TechTreeBitMask & ttbm) = 0;
+		virtual void					TechsListToBits(const char * szTechs, TechTreeBitMask & ttbm) = 0;
+
+		virtual ZString					BitsToPartsList(PartMask & pm, EquipmentType et) = 0;
+		virtual PartMask				PartMaskFromToken(const char * szToken, EquipmentType et) = 0;
+		virtual PartMask				PartsListToMask(const char * szParts, EquipmentType et) = 0;
+		
+		virtual bool					LoadTechBitsList(void) = 0;
+		virtual bool					LoadPartsBitsList(void) = 0;
+		
+		virtual void					ExportStaticIGCObjs(void) = 0;
+		virtual void					ImportStaticIGCObjs(void) = 0;
+		// Imago ^
 
         virtual MissionID               GetMissionID(void) const = 0;
         virtual void                    SetMissionID(MissionID  mid) = 0;
@@ -4135,7 +4172,7 @@ class ItreasureSetIGC : public IbaseIGC
     public:
         virtual const char*                 GetName(void) const = 0;
         virtual bool                        GetZoneOnly(void) const = 0;
-
+		virtual short						GetSize(void) const = 0; //imago added 7/30/08
         virtual void                        AddTreasureData(TreasureCode tc, ObjectID oid, unsigned char chance) = 0;
 
         virtual const TreasureData&         GetRandomTreasureData(void) const = 0;

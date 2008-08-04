@@ -61,10 +61,9 @@ static void doASGS(void* data, MprThread *threadp) {
 	// finally
 	client->getRequest(szURL);
 
-	// Imago check for a socket first! 7/22/08
-	if (client->getSock()) {
+	// Imago check for HTTP OK 8/3/08  (this wont hang either)
+	if (client->getResponseCode() == 200)
 		content = client->getResponseContent(&contentLen);
-	}
 
 	if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
 		ZString strContent = content;
@@ -158,30 +157,7 @@ Global g;
 
 
 //removed mothballed MSRG code - Imago
-
-int TechBitFromToken(const char * szToken)
-{
-  int itoken = 0;
-  while (lstrcmpi(g.rgTechs[itoken], szToken))
-  {
-    if(itoken == cTechs)
-      return NA;
-    itoken++;
-  }
-  return itoken;
-}
-
-void TechsListToBits(BYTE * szTechs, TechTreeBitMask & ttbm)
-{
-  ttbm.ClearAll();
-  char * token;
-  token = strtok((char *) szTechs, " ");
-  while(token)
-  {
-    ttbm.SetBit(TechBitFromToken(token));
-    token = strtok(NULL, " ");
-  }
-}
+//moved tech bit stuff into igc mission
 
 void LoadTechBits()
 {
@@ -193,7 +169,7 @@ void LoadTechBits()
       assert(TechBitsAll_BitID < cTechs);
       SqlStrCpy(g.rgTechs[TechBitsAll_BitID], TechBitsAll_Name, sizeof(TechBitsAll_Name));
     }
-  #endif // !defined(ALLSRV_STANDALONE)
+  #endif
 }
 
 
@@ -951,10 +927,6 @@ void GotLogonDetails(CQLogonStats * pquery)
 	// set bandwidth to standard value, bandwidth packet should arrive soon anyways
 	pfsPlayer->SetBandwidth(2);
  	
-	// Imago ASGS check keyed from DPID
-	DWORD dpid = pcnxn->GetID();
-	//RankID myRank = g.asgsResponses[_Module.GetASGSResponse(dpid)];
-
 	if (pqd->rank == -1) {
 		fValid = false;
 		Strcpy(pqd->szReason,"Your callsign does not exist on this server.");
@@ -2862,6 +2834,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
     else
         fIsCheat = false;
   }
+  /* // Imago moved TechBitFromToken into IGC 7/28/08
   else if (!lstrcmpi(strToken, "IfYouBuildIt"))
   {
     ZString strTech;
@@ -2872,9 +2845,10 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
     {
       IsideIGC * pside = pfsShip->GetSide();
       SideID sideid = pside->GetObjectID();
+	  ImissionIGC * pMission = pside->GetMission();
       while (!(strTech = strCheat.GetToken()).IsEmpty()) // get a new token, and proceed if non-empty
       {
-        int ibit = TechBitFromToken(strTech);
+		  int ibit = pMission->TechBitFromToken(strTech); 
         if (NA != ibit)
         {
           TechTreeBitMask ttbm;
@@ -2890,6 +2864,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
       }
     }
   }
+  */
   else if (!lstrcmpi(strToken, "IfYouWishUponAStar"))
   {
     ZString strTech;
@@ -4235,86 +4210,6 @@ ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, IpartIGC* p, IpartTypeI
 
     return CreateTreasure(now, pship, amount, ppt, position, dv, lifespan);
 }
-
-
-
-/*-------------------------------------------------------------------------
- * ExportStaticIGCObjs
- *-------------------------------------------------------------------------
-  Purpose:
-      Send the client all the static IGC objects. A default recipient must be already set.
-
-  Not being used. Keep it around for a while just in case we want to resurrect it.
- */
-void ExportStaticIGCObjs()
-{
-  //g.fm.SetPriority(c_mcpLogonPrelim);
-
-  // Export station types
-  {
-    const StationTypeListIGC * pstlist = g.trekCore->GetStationTypes();
-    StationTypeLinkIGC * pstlink = NULL;
-    for (pstlink = pstlist->first(); pstlink; pstlink = pstlink->next())
-      ExportObj(pstlink->data(), OT_stationType, NULL);
-  }
-
-  // Export projectiles
-  {
-    const ProjectileTypeListIGC * pptlist = g.trekCore->GetProjectileTypes();
-    ProjectileTypeLinkIGC * pptlink = NULL;
-    for (pptlink = pptlist->first(); pptlink; pptlink = pptlink->next())
-      ExportObj(pptlink->data(), OT_projectileType, NULL);
-  }
-
-  // Export missile types
-  {
-    const ExpendableTypeListIGC* petlist = g.trekCore->GetExpendableTypes();
-    ExpendableTypeLinkIGC* petlink;
-    for (petlink = petlist->first(); petlink; petlink = petlink->next())
-      ExportObj(petlink->data(), petlink->data()->GetObjectType(), NULL);
-  }
-
-  // Export parts
-  {
-    const PartTypeListIGC * pptlist = g.trekCore->GetPartTypes();
-    PartTypeLinkIGC * pptlink = NULL;
-    for (pptlink = pptlist->first(); pptlink; pptlink = pptlink->next())
-      ExportObj(pptlink->data(), OT_partType, NULL);
-  }
-
-  // Export hull types
-  {
-    const HullTypeListIGC * phtlist = g.trekCore->GetHullTypes();
-    HullTypeLinkIGC * phtlink = NULL;
-    for (phtlink = phtlist->first(); phtlink; phtlink = phtlink->next())
-      ExportObj(phtlink->data(), OT_hullType, NULL);
-  }
-
-  // Export developments
-  {
-    const DevelopmentListIGC * pdtlist = g.trekCore->GetDevelopments();
-    DevelopmentLinkIGC * pdtlink = NULL;
-    for (pdtlink = pdtlist->first(); pdtlink; pdtlink = pdtlink->next())
-      ExportObj(pdtlink->data(), OT_development, NULL);
-  }
-
-  // Export drones types
-  {
-    const DroneTypeListIGC * pdtlist = g.trekCore->GetDroneTypes();
-    DroneTypeLinkIGC * pdtlink = NULL;
-    for (pdtlink = pdtlist->first(); pdtlink; pdtlink = pdtlink->next())
-      ExportObj(pdtlink->data(), OT_droneType, NULL);
-  }
-
-  // Export civilizations
-  {
-    const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
-    CivilizationLinkIGC * pctlink = NULL;
-    for (pctlink = pctlist->first(); pctlink; pctlink = pctlink->next())
-      ExportObj(pctlink->data(), OT_civilization, NULL);
-  }
-}
-
 
 int FedSrvSiteBase::OnMessageBox(FedMessaging * pthis, const char * strText, const char * strCaption, UINT nType)
 {
@@ -9419,6 +9314,102 @@ int __cdecl main(int argc, char *argv[])
       {
         UnregisterAllSrv(argv[0]);
       }
+	  //Imago ressurects the import/export functions (as structured text, not MSSQL)
+      else if (!lstrcmpi ("Core2Text", argv[1]+1))
+      {
+		  char szFilename[MAX_PATH + 1];
+		  UTL::SetArtPath(g.strArtPath);
+
+		  if ( (argc > 2) && (UTL::getFile(argv[2], ".igc", szFilename, true, true) == S_OK) ) {
+			
+			printf("Reading core binary from file %s%s.igc\n",UTL::artworkPath(),argv[2]);
+
+			MissionParams mp;
+			Strcpy(mp.szIGCStaticFile, argv[2]);
+			g.trekCore = CreateMission(); 
+			g.trekCore->Initialize(Time::Now(), &g.siteFedSrv);
+			g.trekCore->SetMissionParams(&mp);
+
+			// load the specified core as the one and only
+			int iStaticCoreVersion = LoadIGCStaticCore (argv[2], g.trekCore, false);   
+			ImissionIGC* pMission = g.trekCore;
+
+			//make a folder for our export
+			ZString strDir = ZString(UTL::artworkPath()) + ZString(argv[2]);
+			CreateDirectoryA((PCC)strDir,NULL);
+
+			if (!(pMission->LoadTechBitsList()))
+				printf("Warning: Failed to load Tech mask bit flags! (\\artwork\\%s\\BitsOfTechs.csv)\n",argv[2]);
+			if (!(pMission->LoadPartsBitsList()))
+				printf("Warning: Failed to load Part mask bit flags! (\\artwork\\%s\\BitsOfParts.csv)\n",argv[2]);
+
+			printf("Writing core text to folder %s\n",(PCC)strDir);
+			pMission->ExportStaticIGCObjs();
+			printf("Complete!\n");
+			pMission->Terminate();
+			delete pMission;
+		  } else {
+            printf ("Please provide a binary core IGC file...\n");
+		  }
+      }
+      else if (!lstrcmpi ("Map2Text", argv[1]+1))
+      {
+		  if (argc > 2) {
+            //ExportIGCObjs(argv[2]);
+			  printf("\n\n\n\nNYI\n");
+			  fShowUsage = true;
+		  } else {
+            printf ("Please provide the base name of a map IGC file...\n");
+			fShowUsage = true;
+		  }
+      }
+     else if (!lstrcmpi ("Text2Map", argv[1]+1))
+      {
+		  if (argc > 2) {
+            //ImportIGCObjs(argv[2]);
+			  printf("\n\n\n\nNYI\n");
+			  fShowUsage = true;
+		  } else {
+            printf ("Please provide the base name of a map IGC folder...\n");
+			fShowUsage = true;
+		  }
+      }
+     else if (!lstrcmpi ("Text2Core", argv[1]+1))
+      {
+		  char szFilename[MAX_PATH + 1];
+		  UTL::SetArtPath(g.strArtPath);
+		  ZString strFile = ZString(argv[2]) + "//Constants";
+
+		  if ( (argc > 2) && (UTL::getFile((PCC)strFile, ".csv", szFilename, true, true) == S_OK) ) {
+			
+			printf("Reading core text from folder %s%s\n",UTL::artworkPath(),argv[2]);
+
+			MissionParams mp;
+			Strcpy(mp.szIGCStaticFile, argv[2]);
+			g.trekCore = CreateMission(); 
+			g.trekCore->Initialize(Time::Now(), &g.siteFedSrv);
+			g.trekCore->SetMissionParams(&mp); 
+			g.trekCore->SetStaticCore(NULL); 
+
+			ImissionIGC* pMission = g.trekCore;
+			pMission->ImportStaticIGCObjs();
+			
+
+			if (!(pMission->LoadTechBitsList()))
+				printf("Warning: Failed to load Tech mask bit flags! (\\artwork\\%s\\BitsOfTechs.csv)\n",argv[2]);
+			if (!(pMission->LoadPartsBitsList()))
+				printf("Warning: Failed to load Part mask bit flags! (\\artwork\\%s\\BitsOfParts.csv)\n",argv[2]);
+
+			printf("Writing core binary to file %s%s.igc\n",UTL::artworkPath(),argv[2]);
+			strFile = "\\" + ZString(argv[2]) + "\\" + ZString(argv[2]);
+			DumpIGCStaticCore((PCC)strFile, pMission, c_maskStaticTypes, NULL);
+			printf("Complete!\n");
+			pMission->Terminate();
+			delete pMission;
+		  } else {
+            printf ("Please provide a text core IGC folder...\n");
+		  }
+      }
     #if !defined(ALLSRV_STANDALONE)
       else if (!lstrcmpi ("BuildIGCFiles", argv[1]+1))
       {
@@ -9496,8 +9487,12 @@ int __cdecl main(int argc, char *argv[])
       printf("AllSrv                             starts the server if registered as an exe\n");
       printf("AllSrv -RegServer                  install the server as an EXE\n");
     if (IsWinNT())
-      printf("AllSrv -Service [user pw]          install the server as an NT Service\n");
+      printf("AllSrv -Service   [user pw]        install the server as an NT Service\n");
       printf("AllSrv -UnregServer                uninstall the server\n");
+	  printf("AllSrv -Core2Text [core_name]      converts core igc to text\n");
+	  printf("AllSrv -Map2Text  [map_name]       converts map igc to text\n");
+	  printf("AllSrv -Text2Core [core_name]      converts text core to igc\n");
+	  printf("AllSrv -Text2Map  [map_name]       converts text map igc\n");
     #if !defined(ALLSRV_STANDALONE)
       printf("AllSrv -BuildIGCFiles <artpath>    builds igc files from database\n");
       printf("                                   (see root makefile for required env vars).\n");
