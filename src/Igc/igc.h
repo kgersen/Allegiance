@@ -3994,6 +3994,7 @@ class IwarpIGC : public ImodelIGC
         virtual void                AddBomb(Time               timeExplode,
                                             ImissileTypeIGC*   pmt) = 0;
         virtual const WarpBombList* GetBombs(void) const = 0;
+		virtual bool                IsFixedPosition()    = 0; // KG- added
 };
 
 class ItreasureIGC : public ImodelIGC

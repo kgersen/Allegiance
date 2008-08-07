@@ -1626,6 +1626,9 @@ void                    CmissionIGC::GenerateMission(Time                   now,
 							//float       r = pwarp->GetPosition().z * majorRadius;
 							float       r = 0.6f * majorRadius;
 							float       angle = bias + offset[index++] * (2.0f * pi) / nWarps;
+							// KG- added. dont move fixed position aleph
+							if (pwarp->IsFixedPosition()) continue;
+
 							Vector      position;
 							position = Vector::RandomPosition(r * displacement);
 							position.x  += cos(angle) * r;
