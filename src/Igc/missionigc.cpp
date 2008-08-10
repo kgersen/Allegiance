@@ -2610,29 +2610,40 @@ int     LoadIGCStaticCore (const char* name, ImissionIGC* pMission, bool fGetVer
     }
     else
     {
-		// Imago try to load a text-based core if no .igc is present
+		// Imago try to load a text-based core if no .igc is present 
 		ZString strName = ZString(name) + "\\Constants";
 		char        szFilename[MAX_PATH + 1];
 		HRESULT     hr = UTL::getFile(strName, ".csv", szFilename, true, true);
-		FILE*       file = fopen(szFilename, "rb");
-		if (file) {
+		if (hr == S_OK) {
+            
+            //NYI: Version
+		    FILE*       file = fopen(szFilename, "rb");
+            fclose (file);
+
 			if (!fGetVersionOnly)
-			{
+			{   
 				pMission->SetStaticCore(NULL);
 
-				pMission->ImportStaticIGCObjs();
+                //force new params /w core name if empty
+                if (pMission->GetMissionParams()->szIGCStaticFile[0] == '\0') {
+                    MissionParams mp;
+                    Strcpy(mp.szIGCStaticFile, name);
+			        pMission->SetMissionParams(&mp);
+                }
+                
+                //Text2Core 
+                pMission->ImportStaticIGCObjs();
 
 				CachedLink* pcl = new CachedLink;
-
 				pcl->data().pstatic = pMission->GetStaticCore();
 				strcpy(pcl->data().name, name);
 				pcl->data().version = 1337;
 				pcl->data().consumers = 1;
-
 				s_cores.last(pcl);
 			}
-			fclose (file);
-			return 1337;
+			
+			return 1337; 
+            //NYI Version
 		} else {
 			// mmf added debugf
 			debugf("Load IGC Static Core failed to load %s\n",name);
@@ -4137,7 +4148,12 @@ const char*             CmissionIGC::GetContextName(void)
   return m_strContextName;
 }
 
-//Imago NYI: BitsOfConstants.csv (if core devs want to name the defense-damage comments)
+//Imago NYI: TypesOfDamage.csv  - Core devs want to define the defense/damage, new OT_damageType:
+//  DamageType = {          DefenseType = {
+//      char name[maxname]      char name[maxname]
+//      float value             float value
+//      short id                short id
+//  }                       }
 ZString ConstantsDamageComment(int defenseid, int damageid) {
 	ZString strComment = "Uncommented damage constant";
 	ZString strComment2 = "Uncommented defense constant";
@@ -5207,6 +5223,7 @@ void Obj2Txt(IbaseIGC * pIGC, ObjectType ot, ImissionIGC * pMission)
 	}
 }
 
+//...these meanings shouldn't change
 ZString ConstantsGlobalComment(int constid) {
 	ZString strComment = "New uncommented constant";
 	switch(constid) {
@@ -5236,7 +5253,7 @@ ZString ConstantsGlobalComment(int constid) {
 		case 23: {strComment = "Point modifier (rank) for destorying a base.";} break;
 		case 24: {strComment = "Point modifier (rank) for capturing a base.";} break;
 		case 25: {strComment = "Point modifier (rank) for retrieving a flag.";} break;
-		case 26: {strComment = "Point modifier (rank) for recovering an artificat.";} break;
+		case 26: {strComment = "Point modifier (rank) for recovering an artifcat.";} break;
 		case 27: {strComment = "Point modifier (rank) for picking up a pod.";} break;
 		case 28: {strComment = "Combat rating modifier (rank) added to kill math";} break;
 		case 29: {strComment = "Combat rating modifier (rank) divided by kill math.";} break;
@@ -5279,6 +5296,7 @@ ZString ConstantsGlobalComment(int constid) {
 	  }
 	-
   TODO: math on various values to get proper units
+  TODO: typesOfDamage.csv
   TODO: support gzipped (/w xml option) allowing use as a "general public" core format
 		Implementations of Gzip are already in FedSrv using appweb.lib, and WinTrek using:
 			FreeImage_ZLibGZip(BYTE *target, DWORD target_size, BYTE *source, DWORD source_size);
