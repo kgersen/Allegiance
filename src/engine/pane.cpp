@@ -468,7 +468,7 @@ void Pane::PaintAll(	Surface * psurface )
             psurface->SetClipRect(WinRect(WinPoint(0, 0), ppane->GetSize()));
 
  			D3DVIEWPORT9 newViewport, oldViewport;
-			CD3DDevice9::GetViewport( &oldViewport );
+			CD3DDevice9::Get()->GetViewport( &oldViewport );
 			WinRect surfClip = psurface->GetClipRect();
 			WinPoint surfOffset = psurface->GetOffset();
 
@@ -487,7 +487,7 @@ void Pane::PaintAll(	Surface * psurface )
 			if( ( newViewport.Width > 0 ) &&
 				( newViewport.Height > 0 ) )
 			{
-				CD3DDevice9::SetViewport( &newViewport );			
+				CD3DDevice9::Get()->SetViewport( &newViewport );			
 				ppane->PaintAll( psurface );
 			}
 
@@ -497,7 +497,7 @@ void Pane::PaintAll(	Surface * psurface )
 			if( ( newViewport.Width > 0 ) &&
 				( newViewport.Height > 0 ) )
 			{
-				CD3DDevice9::SetViewport( &oldViewport );
+				CD3DDevice9::Get()->SetViewport( &oldViewport );
 			}
        }
         m_bNeedPaint = false;

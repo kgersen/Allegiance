@@ -4,11 +4,13 @@
 //#define APPLY_VERTEX_POSITION_TEXTURING_OFFSET
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// STATIC STORAGE.
-////////////////////////////////////////////////////////////////////////////////////////////////////
-CVertexGenerator::SVertexGeneratorState CVertexGenerator::sVGState = { false };
+// Class implemented as a singleton (mSingleInstance).
+// Use static function Get() to get access to the single instance of this class.
 
-CVertexGenerator::SPredefinedDynamicBufferConfig CVertexGenerator::sDynBufferConfig[ ePDBT_NumPredefinedDynamicBuffers ] =
+CVertexGenerator CVertexGenerator::mSingleInstance;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+CVertexGenerator::SPredefinedDynamicBufferConfig CVertexGenerator::m_sDynBufferConfig[ ePDBT_NumPredefinedDynamicBuffers ] =
 {
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIVERTEX), D3DFVF_UIVERTEX },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UICOLOURFILLVERTEX), D3DFVF_UICOLOURVERT },
@@ -16,6 +18,26 @@ CVertexGenerator::SPredefinedDynamicBufferConfig CVertexGenerator::sDynBufferCon
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIVERTEX), D3DFVF_UIVERTEX },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIFONTVERTEX), D3DFVF_UIFONTVERTEX },
 };
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// CVertexGenerator()
+// Constructor.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+CVertexGenerator::CVertexGenerator()
+{
+	memset( &m_sVGState, 0, sizeof( SVertexGeneratorState ) );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// ~CVertexGenerator()
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+CVertexGenerator::~CVertexGenerator()
+{
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Initialise()
@@ -27,20 +49,19 @@ void CVertexGenerator::Initialise( )
 	bool bResult;
 
 	// Reset state.
-	_ASSERT( sVGState.bInitialised == false );
-	memset( &sVGState, 0, sizeof( SVertexGeneratorState ) );
+	_ASSERT( m_sVGState.bInitialised == false );
 
 	// Create our predefined dynamic buffer resources.
 	for( i=0; i<ePDBT_NumPredefinedDynamicBuffers; i++ )
 	{
-		switch( sDynBufferConfig[i].dwBufferType )
+		switch( m_sDynBufferConfig[i].dwBufferType )
 		{
 		case CVBIBManager::eBT_VertexDynamic:
-			bResult = CVBIBManager::AllocateDynamicVertexBuffer(
-						&sVGState.hPredefinedDynBuffers[i],
-						sDynBufferConfig[i].dwNumElements,
-						sDynBufferConfig[i].dwElementSize,
-						sDynBufferConfig[i].dwFormat );
+			bResult = CVBIBManager::Get()->AllocateDynamicVertexBuffer(
+						&m_sVGState.hPredefinedDynBuffers[i],
+						m_sDynBufferConfig[i].dwNumElements,
+						m_sDynBufferConfig[i].dwElementSize,
+						m_sDynBufferConfig[i].dwFormat );
 			_ASSERT( bResult == true );
 			break;
 
@@ -48,7 +69,7 @@ void CVertexGenerator::Initialise( )
 			_ASSERT( false && "Non dynamic or unsupported format supplied." );
 		}
 	}
-	sVGState.bInitialised = true;
+	m_sVGState.bInitialised = true;
 }
 
 
@@ -67,11 +88,11 @@ void CVertexGenerator::GenerateUITexturedVertices( 	const TEXHANDLE hTexture,
 	DWORD dwWidth, dwHeight;
 	UIVERTEX * pVertArray;
 
-	CVRAMManager::GetOriginalDimensions( hTexture, &dwWidth, &dwHeight );
+	CVRAMManager::Get()->GetOriginalDimensions( hTexture, &dwWidth, &dwHeight );
 
-	if( CVBIBManager::LockDynamicVertexBuffer( 
-//							&sVGState.hUITexVertsVB, 
-							&sVGState.hPredefinedDynBuffers[ePDBT_UITexVB],
+	if( CVBIBManager::Get()->LockDynamicVertexBuffer( 
+//							&m_sVGState.hUITexVertsVB, 
+							&m_sVGState.hPredefinedDynBuffers[ePDBT_UITexVB],
 							4,
 							(void**) &pVertArray ) == false )
 	{
@@ -127,11 +148,11 @@ void CVertexGenerator::GenerateUITexturedVertices( 	const TEXHANDLE hTexture,
 	pVertArray[3].fV = fV1;
 
 	// Finished adding verts, unlock.
-	CVBIBManager::UnlockDynamicVertexBuffer( &sVGState.hPredefinedDynBuffers[ePDBT_UITexVB] );
+	CVBIBManager::Get()->UnlockDynamicVertexBuffer( &m_sVGState.hPredefinedDynBuffers[ePDBT_UITexVB] );
 
 	if( bSetStream == true )
 	{
-		CVBIBManager::SetVertexStream( &sVGState.hPredefinedDynBuffers[ePDBT_UITexVB] );
+		CVBIBManager::Get()->SetVertexStream( &m_sVGState.hPredefinedDynBuffers[ePDBT_UITexVB] );
 	}
 }
 
@@ -159,8 +180,8 @@ void CVertexGenerator::GenerateFillVertices( const WinRect & rectToFill, const b
 void CVertexGenerator::GenerateFillVerticesD3DColor( const WinRect & rectToFill, const bool bSetStream, D3DCOLOR d3dColor )
 {
 	UICOLOURFILLVERTEX * pVertArray;
-	if( CVBIBManager::LockDynamicVertexBuffer( 
-							&sVGState.hPredefinedDynBuffers[ePDBT_UIFillVB],
+	if( CVBIBManager::Get()->LockDynamicVertexBuffer( 
+							&m_sVGState.hPredefinedDynBuffers[ePDBT_UIFillVB],
 							4,
 							(void**) &pVertArray ) == false )
 	{
@@ -200,10 +221,10 @@ void CVertexGenerator::GenerateFillVerticesD3DColor( const WinRect & rectToFill,
 	pVertArray[3].color	= d3dColor;
 
 	// Finished adding verts, unlock.
-	CVBIBManager::UnlockDynamicVertexBuffer( &sVGState.hPredefinedDynBuffers[ePDBT_UIFillVB] );
+	CVBIBManager::Get()->UnlockDynamicVertexBuffer( &m_sVGState.hPredefinedDynBuffers[ePDBT_UIFillVB] );
 
 	if( bSetStream == true )
 	{
-		CVBIBManager::SetVertexStream( &sVGState.hPredefinedDynBuffers[ePDBT_UIFillVB] );
+		CVBIBManager::Get()->SetVertexStream( &m_sVGState.hPredefinedDynBuffers[ePDBT_UIFillVB] );
 	}
 }

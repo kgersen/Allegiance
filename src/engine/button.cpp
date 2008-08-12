@@ -46,7 +46,7 @@ private:
 		CastTo( pprivateSurfSource, m_psurface );
 		TEXHANDLE hTexture = pprivateSurfSource->GetTexHandle();
 		DWORD dwSurfaceWidth, dwSurfaceHeight;
-		CVRAMManager::GetOriginalDimensions( hTexture, &dwSurfaceWidth, &dwSurfaceHeight );
+		CVRAMManager::Get()->GetOriginalDimensions( hTexture, &dwSurfaceWidth, &dwSurfaceHeight );
 		
 		float fUpperV, fLowerV, fUpperY, fLowerY;
 		int iYMax = m_ysize;
@@ -298,25 +298,27 @@ public:
 
 		PrivateSurface * pprivateSurfSource;
 		CastTo( pprivateSurfSource, m_psurface );
-		CVRAMManager::SetTexture( pprivateSurfSource->GetTexHandle(), 0 );
+		CVRAMManager::Get()->SetTexture( pprivateSurfSource->GetTexHandle(), 0 );
 
         int index = GetFaceIndex(face);
 
         if (index != -1) 
 		{
+			CD3DDevice9 * pDev = CD3DDevice9::Get();
+
 			// If the texture has alpha, enable blending.
 			if( pprivateSurfSource->HasColorKey() == true )
 			{
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+				pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
+				pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
 
-				CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-				CD3DDevice9::SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-				CD3DDevice9::SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+				pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+				pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 			}
 			else
 			{
-				CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
 			}
 
 			// Render this pane.
@@ -326,9 +328,9 @@ public:
 
 			// Render via a dynamic vertex buffer.
 			UIVERTEX * pVerts;
-//			CVBIBManager::SVBIBHandle * pDynVB = CVertexGenerator::GetUITexVertsVB();
-			CVBIBManager::SVBIBHandle * pDynVB = CVertexGenerator::GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UITexVB );
-			CVBIBManager::LockDynamicVertexBuffer( pDynVB, m_iNumVertsPerButton, (void**)&pVerts );
+//			CVBIBManager::SVBIBHandle * pDynVB = CVertexGenerator::Get()->GetUITexVertsVB();
+			CVBIBManager::SVBIBHandle * pDynVB = CVertexGenerator::Get()->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UITexVB );
+			CVBIBManager::Get()->LockDynamicVertexBuffer( pDynVB, m_iNumVertsPerButton, (void**)&pVerts );
 												
 			// Overlay the focus bitmap on top of the button
 			if (m_bFocus && (m_dwFaces & ButtonFaceFocus)) 
@@ -349,11 +351,11 @@ public:
 				pVerts[i].fV	= m_pButtonVertices[ iButtonVertIndex ].fV;
 				iButtonVertIndex ++;
 			}
-			CVBIBManager::UnlockDynamicVertexBuffer( pDynVB );
-			CVBIBManager::SetVertexStream( pDynVB );
-			CD3DDevice9::SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
-			CD3DDevice9::SetFVF( D3DFVF_UIVERTEX );
-			CD3DDevice9::DrawPrimitive(	D3DPT_TRIANGLESTRIP, pDynVB->dwFirstElementOffset, 2 );
+			CVBIBManager::Get()->UnlockDynamicVertexBuffer( pDynVB );
+			CVBIBManager::Get()->SetVertexStream( pDynVB );
+			pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
+			pDev->SetFVF( D3DFVF_UIVERTEX );
+			pDev->DrawPrimitive(	D3DPT_TRIANGLESTRIP, pDynVB->dwFirstElementOffset, 2 );
 		}
 	}
 };

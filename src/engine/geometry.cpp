@@ -187,15 +187,17 @@ public:
         m_vertices(vcount, pvertices, pobjectMemory != NULL),
         m_indices(icount, pindices, pobjectMemory != NULL)
     {
-		CVBIBManager::AddVerticesToBuffer(	&m_hVB,
-											(BYTE*) pvertices,
-											vcount,
-											sizeof( D3DVertex ),
-											dwFVF );
-		CVBIBManager::AddIndicesToBuffer(	&m_hIB,
-											(BYTE*) pindices,
-											icount,
-											D3DFMT_INDEX16 );
+		CVBIBManager::Get()->AddVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) pvertices,
+					vcount,
+					sizeof( D3DVertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) pindices,
+					icount,
+					D3DFMT_INDEX16 );
 		m_dwFVF = dwFVF;
 		m_d3dIndexFormat = D3DFMT_INDEX16;
     }
@@ -204,15 +206,17 @@ public:
         m_vertices(vertices),
         m_indices(indices)
     {
-		CVBIBManager::AddVerticesToBuffer(	&m_hVB,
-											(BYTE*) &m_vertices.GetFront(),
-											m_vertices.GetCount(),
-											sizeof( D3DVertex ),
-											dwFVF );
-		CVBIBManager::AddIndicesToBuffer(	&m_hIB,
-											(BYTE*) &m_indices.GetFront(),
-											m_indices.GetCount(),
-											D3DFMT_INDEX16 );
+		CVBIBManager::Get()->AddVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) &m_vertices.GetFront(),
+					m_vertices.GetCount(),
+					sizeof( D3DVertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) &m_indices.GetFront(),
+					m_indices.GetCount(),
+					D3DFMT_INDEX16 );
 		m_dwFVF = dwFVF;
 		m_d3dIndexFormat = D3DFMT_INDEX16;
     }
@@ -223,15 +227,17 @@ public:
         m_vertices(vcount, pvertices, pobjectMemory != NULL),
         m_indices(icount, pindices, pobjectMemory != NULL)
     {
-		CVBIBManager::AddLegacyVerticesToBuffer(&m_hVB,
-												(BYTE*) pvertices,
-												vcount,
-												sizeof( Vertex ),
-												dwFVF );
-		CVBIBManager::AddIndicesToBuffer(	&m_hIB,
-											(BYTE*) pindices,
-											icount,
-											D3DFMT_INDEX16 );
+		CVBIBManager::Get()->AddLegacyVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) pvertices,
+					vcount,
+					sizeof( Vertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) pindices,
+					icount,
+					D3DFMT_INDEX16 );
 		m_dwFVF = dwFVF;
 		m_d3dIndexFormat = D3DFMT_INDEX16;
     }
@@ -240,15 +246,17 @@ public:
         m_vertices(vertices),
         m_indices(indices)
     {
-		CVBIBManager::AddLegacyVerticesToBuffer(&m_hVB,
-												(BYTE*) &m_vertices.GetFront(),
-												m_vertices.GetCount(),
-												sizeof( Vertex ),
-												dwFVF );
-		CVBIBManager::AddIndicesToBuffer(	&m_hIB,
-											(BYTE*) &m_indices.GetFront(),
-											m_indices.GetCount(),
-											D3DFMT_INDEX16 );
+		CVBIBManager::Get()->AddLegacyVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) &m_vertices.GetFront(),
+					m_vertices.GetCount(),
+					sizeof( Vertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) &m_indices.GetFront(),
+					m_indices.GetCount(),
+					D3DFMT_INDEX16 );
 		m_dwFVF = dwFVF;
 		m_d3dIndexFormat = D3DFMT_INDEX16;
     }
@@ -259,15 +267,17 @@ public:
         m_vertices(vcount, pvertices, pobjectMemory != NULL),
         m_indices(icount, pindices, pobjectMemory != NULL)
     {
-		CVBIBManager::AddLegacyLitVerticesToBuffer(	&m_hVB,
-													(BYTE*) pvertices,
-													vcount,
-													sizeof( VertexL ),
-													dwFVF );
-		CVBIBManager::AddIndicesToBuffer(	&m_hIB,
-											(BYTE*) pindices,
-											icount,
-											D3DFMT_INDEX16 );
+		CVBIBManager::Get()->AddLegacyLitVerticesToBuffer(	
+					&m_hVB,
+					(BYTE*) pvertices,
+					vcount,
+					sizeof( VertexL ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) pindices,
+					icount,
+					D3DFMT_INDEX16 );
 		m_dwFVF = dwFVF;
 		m_d3dIndexFormat = D3DFMT_INDEX16;
     }
@@ -276,15 +286,17 @@ public:
         m_vertices(vertices),
         m_indices(indices)
     {
-		CVBIBManager::AddLegacyLitVerticesToBuffer(	&m_hVB,
-													(BYTE*) &m_vertices.GetFront(),
-													m_vertices.GetCount(),
-													sizeof( VertexL ),
-													dwFVF );
-		CVBIBManager::AddIndicesToBuffer(	&m_hIB,
-											(BYTE*) &m_indices.GetFront(),
-											m_indices.GetCount(),
-											D3DFMT_INDEX16 );
+		CVBIBManager::Get()->AddLegacyLitVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) &m_vertices.GetFront(),
+					m_vertices.GetCount(),
+					sizeof( VertexL ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(	
+					&m_hIB,
+					(BYTE*) &m_indices.GetFront(),
+					m_indices.GetCount(),
+					D3DFMT_INDEX16 );
 		m_dwFVF = dwFVF;
 		m_d3dIndexFormat = D3DFMT_INDEX16;
     }

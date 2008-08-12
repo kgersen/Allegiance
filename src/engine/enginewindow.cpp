@@ -150,7 +150,8 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
     //
     // Should we start fullscreen?
-	m_bStartFullScreen = CD3DDevice9::sDevSetupParams.bRunWindowed ? false : true;
+	CD3DDevice9 * pDev = CD3DDevice9::Get();
+	m_bStartFullScreen = pDev->GetDeviceSetupParams()->bRunWindowed ? false : true;
     ParseCommandLine( strCommandLine, m_bStartFullScreen );
 
     // Get the mouse
@@ -194,21 +195,21 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 	HWND hWindow = GetHWND();
 
 	CLogFile devLog( "DeviceCreation.log" );
-	CD3DDevice9::Initialise( &devLog );
-	if( CD3DDevice9::CreateD3D9( &devLog ) != D3D_OK )
+	pDev->Initialise( &devLog );
+	if( pDev->CreateD3D9( &devLog ) != D3D_OK )
 	{
 		_ASSERT( false );
 	}
-	if( CD3DDevice9::CreateDevice( hWindow, &devLog ) != D3D_OK )
+	if( pDev->CreateDevice( hWindow, &devLog ) != D3D_OK )
 	{
 		_ASSERT( false );
 	}
 	devLog.OutputString( "Device creation finished.\n" );
 
 	// Initialise the various engine components.
-	CVRAMManager::Initialise( );
-	CVBIBManager::Initialise( );
-	CVertexGenerator::Initialise( );
+	CVRAMManager::Get()->Initialise( );
+	CVBIBManager::Get()->Initialise( );
+	CVertexGenerator::Get()->Initialise( );
 }
 
 EngineWindow::~EngineWindow()
@@ -341,26 +342,27 @@ void EngineWindow::InitialiseTime()
 
 void EngineWindow::UpdateSurfacePointer()
 {
+	CD3DDevice9 * pDev = CD3DDevice9::Get();
 	if( !m_pengine->IsFullscreen() )
 	{
 		m_psurface = m_pengine->CreateDummySurface( GetClientRect().Size(), NULL );
 		
-		if( CD3DDevice9::IsDeviceValid() == true )
+		if( pDev->IsDeviceValid() == true )
 		{
-			CD3DDevice9::ResetDevice(	CD3DDevice9::IsWindowed(), 
-										GetClientRect().Size().x,
-										GetClientRect().Size().y );
+			pDev->ResetDevice(	pDev->IsWindowed(), 
+								GetClientRect().Size().x,
+								GetClientRect().Size().y );
 		}
 	}
 	else
 	{
 		m_psurface = m_pengine->CreateDummySurface( m_pengine->GetFullscreenSize(), NULL );
 
-		if( CD3DDevice9::IsDeviceValid() == true )
+		if( pDev->IsDeviceValid() == true )
 		{
-			CD3DDevice9::ResetDevice(	CD3DDevice9::IsWindowed(), 
-										m_pengine->GetFullscreenSize().x,
-										m_pengine->GetFullscreenSize().y );
+			pDev->ResetDevice(	pDev->IsWindowed(), 
+								m_pengine->GetFullscreenSize().x,
+								m_pengine->GetFullscreenSize().y );
 		}
 	}
 
@@ -769,18 +771,19 @@ void EngineWindow::ChangeFullscreenSize(bool bLarger)
         RenderSizeChanged(	( size == WinPoint ( 640, 480 ) ) && 
 							( m_modeIndex < s_countModes ) );*/
 
+		CD3DDevice9 * pDev = CD3DDevice9::Get();
 		if( bLarger == true )
 		{
-			CD3DDevice9::sDevSetupParams.iCurrentRes ++;
-			CD3DDevice9::sDevSetupParams.iCurrentRes %= CD3DDevice9::sDevSetupParams.iNumRes;
+			pDev->GetDeviceSetupParams()->iCurrentRes ++;
+			pDev->GetDeviceSetupParams()->iCurrentRes %= pDev->GetDeviceSetupParams()->iNumRes;
 		}
 		else
 		{
-			CD3DDevice9::sDevSetupParams.iCurrentRes --;
-			CD3DDevice9::sDevSetupParams.iCurrentRes %= CD3DDevice9::sDevSetupParams.iNumRes;
+			pDev->GetDeviceSetupParams()->iCurrentRes --;
+			pDev->GetDeviceSetupParams()->iCurrentRes %= pDev->GetDeviceSetupParams()->iNumRes;
 		}
-		_ASSERT( ( CD3DDevice9::sDevSetupParams.iCurrentRes >= 0 ) &&
-				( CD3DDevice9::sDevSetupParams.iCurrentRes < CD3DDevice9::sDevSetupParams.iNumRes ) );
+		_ASSERT( ( pDev->GetDeviceSetupParams()->iCurrentRes >= 0 ) &&
+				( pDev->GetDeviceSetupParams()->iCurrentRes < pDev->GetDeviceSetupParams()->iNumRes ) );
         Invalidate();
         RenderSizeChanged( false );
     }
@@ -948,7 +951,7 @@ void EngineWindow::UpdatePerformanceCounters(Context* pcontext, Time timeCurrent
     if (m_bFPS) {
         if (m_frameCount == -1) {
 //            pcontext->ResetPerformanceCounters();
-			CD3DDevice9::ResetPerformanceCounters();
+			CD3DDevice9::Get()->ResetPerformanceCounters();
             m_frameCount    = 0;
             m_timeLastFrame = timeCurrent;
         }
@@ -957,13 +960,13 @@ void EngineWindow::UpdatePerformanceCounters(Context* pcontext, Time timeCurrent
 		if (m_timeCurrent - m_timeLastFrame > 1.0) 
 		{
 			float fOneOverFrameCount = 1.0f / m_frameCount;
-			float fNumPrims = (float)CD3DDevice9::GetPerformanceCounter( CD3DDevice9::eD9S_NumPrimsRendered );
+			float fNumPrims = (float)CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumPrimsRendered );
 			float fPrimsPerFrame = fNumPrims * fOneOverFrameCount;
 			float fPrimsPerSecond = fNumPrims / (timeCurrent - m_timeLastFrame);
-			float fDPsPerFrame = (float) CD3DDevice9::GetPerformanceCounter( CD3DDevice9::eD9S_NumDrawPrims );
-			float fStateChangesPerFrame = (float) CD3DDevice9::GetPerformanceCounter( CD3DDevice9::eD9S_NumStateChanges );
-			float fTextureChangesPerFrame = (float) CD3DDevice9::GetPerformanceCounter( CD3DDevice9::eD9S_NumTextureChanges );
-			float fShaderChangesPerFrame = (float) CD3DDevice9::GetPerformanceCounter( CD3DDevice9::eD9S_NumShaderChanges );
+			float fDPsPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumDrawPrims );
+			float fStateChangesPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumStateChanges );
+			float fTextureChangesPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumTextureChanges );
+			float fShaderChangesPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumShaderChanges );
 			fDPsPerFrame *= fOneOverFrameCount;
 			fStateChangesPerFrame *= fOneOverFrameCount;
 			fTextureChangesPerFrame *= fOneOverFrameCount;
@@ -1011,7 +1014,7 @@ void EngineWindow::UpdatePerformanceCounters(Context* pcontext, Time timeCurrent
 
             m_frameCount    = 0;
             m_timeLastFrame = timeCurrent;
-			CD3DDevice9::ResetPerformanceCounters();
+			CD3DDevice9::Get()->ResetPerformanceCounters();
         }
     }
 }
@@ -1029,7 +1032,7 @@ void EngineWindow::RenderPerformanceCounters(Surface* psurface)
     if (m_bFPS) {
 		
 		// Disable AA.
-		CD3DDevice9::SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE );
 
         int ysize = m_pfontFPS->GetHeight();
         Color color(1, 0, 0);
@@ -1042,7 +1045,7 @@ void EngineWindow::RenderPerformanceCounters(Surface* psurface)
         }
 		
 		// Reenable AA.
-		CD3DDevice9::SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
 	}
 
     #ifdef ICAP
@@ -1074,7 +1077,7 @@ bool EngineWindow::RenderFrame()
     PrivateEngine* pengine; CastTo(pengine, m_pengine);
     TRef<Surface> psurface;
 
-	HRESULT hr = CD3DDevice9::BeginScene();
+	HRESULT hr = CD3DDevice9::Get()->BeginScene();
 	_ASSERT( hr == D3D_OK );
 	_ASSERT( m_psurface != NULL );
 
@@ -1093,7 +1096,7 @@ bool EngineWindow::RenderFrame()
 		m_psurface->ReleaseContext(pcontext);
 		RenderPerformanceCounters(m_psurface);
 	}
-	hr = CD3DDevice9::EndScene();
+	hr = CD3DDevice9::Get()->EndScene();
 
 	if( hr == D3D_OK )
 	{
@@ -1172,14 +1175,14 @@ void EngineWindow::DoIdle()
         // Rendering
         if( ShouldDrawFrame() ) 
 		{
-			CD3DDevice9::ClearScreen( );
+			CD3DDevice9::Get()->ClearScreen( );
 
 			UpdateCursor();
 
 			// Render, and if successful, display.
 			if( RenderFrame() ) 
 			{
-				CD3DDevice9::RenderFinished( );
+				CD3DDevice9::Get()->RenderFinished( );
 				return;
 			}
         }

@@ -2,12 +2,25 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pch.h"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Class implemented as a singleton (mSingleInstance).
+// Use static function Get() to get access to the single instance of this class.
+
+CVBIBManager CVBIBManager::mSingleInstance;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// STATIC STORAGE.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CVBIBManager::SVBIBManagerState CVBIBManager::sVBIB = { false };
+CVBIBManager::CVBIBManager()
+{
+	memset( &m_sVBIB, 0, sizeof( CVBIBManager::SVBIBManagerState ) );
+}
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+CVBIBManager::~CVBIBManager()
+{
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,13 +29,13 @@ CVBIBManager::SVBIBManagerState CVBIBManager::sVBIB = { false };
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CVBIBManager::Initialise( )
 {
-	if( sVBIB.bInitialised == false )
+	if( m_sVBIB.bInitialised == false )
 	{
 		// Clear out the struct.
-		memset( &sVBIB, 0, sizeof( CVBIBManager::SVBIBManagerState ) );
+		memset( &m_sVBIB, 0, sizeof( CVBIBManager::SVBIBManagerState ) );
 
 		// Flag that its now valid and ready to use.
-		sVBIB.bInitialised = true;
+		m_sVBIB.bInitialised = true;
 	}
 }
 
@@ -34,34 +47,34 @@ void CVBIBManager::Initialise( )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CVBIBManager::Shutdown( )
 {
-	if( sVBIB.bInitialised == true )
+	if( m_sVBIB.bInitialised == true )
 	{
 		DWORD i;
 		ULONG refCount;
-		for( i=0; i<sVBIB.dwNumBuffersAllocated; i++ )
+		for( i=0; i<m_sVBIB.dwNumBuffersAllocated; i++ )
 		{
-//			_ASSERT( sVBIB.pBufferArray[i] != NULL );
+//			_ASSERT( m_sVBIB.pBufferArray[i] != NULL );
 
-			if( sVBIB.pBufferArray[i] != NULL )
+			if( m_sVBIB.pBufferArray[i] != NULL )
 			{
-				switch( sVBIB.pBufferArray[i]->eBufferType )
+				switch( m_sVBIB.pBufferArray[i]->eBufferType )
 				{
 				case eBT_Vertex:
 				case eBT_VertexDynamic:
-//					_ASSERT( sVBIB.pBufferArray[i]->pVertexBuffer != NULL );
-					if( sVBIB.pBufferArray[i]->pVertexBuffer )
+//					_ASSERT( m_sVBIB.pBufferArray[i]->pVertexBuffer != NULL );
+					if( m_sVBIB.pBufferArray[i]->pVertexBuffer )
 					{
-						refCount = sVBIB.pBufferArray[i]->pVertexBuffer->Release();
-						sVBIB.pBufferArray[i]->pVertexBuffer = NULL;
+						refCount = m_sVBIB.pBufferArray[i]->pVertexBuffer->Release();
+						m_sVBIB.pBufferArray[i]->pVertexBuffer = NULL;
 					}
 					break;
 
 				case eBT_Index:
-//					_ASSERT( sVBIB.pBufferArray[i]->pIndexBuffer != NULL );
-					if( sVBIB.pBufferArray[i]->pIndexBuffer )
+//					_ASSERT( m_sVBIB.pBufferArray[i]->pIndexBuffer != NULL );
+					if( m_sVBIB.pBufferArray[i]->pIndexBuffer )
 					{
-						refCount = sVBIB.pBufferArray[i]->pIndexBuffer->Release();
-						sVBIB.pBufferArray[i]->pIndexBuffer = NULL;
+						refCount = m_sVBIB.pBufferArray[i]->pIndexBuffer->Release();
+						m_sVBIB.pBufferArray[i]->pIndexBuffer = NULL;
 					}
 					break;
 
@@ -69,13 +82,13 @@ void CVBIBManager::Shutdown( )
 					_ASSERT( false );
 				}
 
-				delete [] sVBIB.pBufferArray[i];
-				sVBIB.pBufferArray[i] = NULL;
+				delete [] m_sVBIB.pBufferArray[i];
+				m_sVBIB.pBufferArray[i] = NULL;
 			}
 		}
 
 		// Clear out the struct.
-		sVBIB.bInitialised = false;
+		m_sVBIB.bInitialised = false;
 	}
 }
 
@@ -89,9 +102,9 @@ void CVBIBManager::EvictDefaultPoolResources( )
 {
 	DWORD i;
 
-	for( i=0; i<sVBIB.dwNumBuffersAllocated; i++ )
+	for( i=0; i<m_sVBIB.dwNumBuffersAllocated; i++ )
 	{
-		switch( sVBIB.pBufferArray[i]->eBufferType )
+		switch( m_sVBIB.pBufferArray[i]->eBufferType )
 		{
 		case eBT_Vertex:
 		case eBT_Index:
@@ -99,14 +112,14 @@ void CVBIBManager::EvictDefaultPoolResources( )
 			break;
 
 		case eBT_VertexDynamic:
-			if( ( sVBIB.pBufferArray[i]->bDefaultPool == true ) &&
-				( sVBIB.pBufferArray[i]->bResourceEvicted == false ) &&
-				( sVBIB.pBufferArray[i]->pVertexBuffer != NULL ) )
+			if( ( m_sVBIB.pBufferArray[i]->bDefaultPool == true ) &&
+				( m_sVBIB.pBufferArray[i]->bResourceEvicted == false ) &&
+				( m_sVBIB.pBufferArray[i]->pVertexBuffer != NULL ) )
 			{
-				sVBIB.pBufferArray[i]->pVertexBuffer->Release();
-				sVBIB.pBufferArray[i]->pVertexBuffer = NULL;
-				sVBIB.pBufferArray[i]->dwBufferOffset = 0;
-				sVBIB.pBufferArray[i]->bResourceEvicted = true;
+				m_sVBIB.pBufferArray[i]->pVertexBuffer->Release();
+				m_sVBIB.pBufferArray[i]->pVertexBuffer = NULL;
+				m_sVBIB.pBufferArray[i]->dwBufferOffset = 0;
+				m_sVBIB.pBufferArray[i]->bResourceEvicted = true;
 			}
 			break;
 
@@ -133,7 +146,7 @@ bool CVBIBManager::AllocateVertexRegion(	SVBIBHandle * pResult,
 	SD3DBuffer * pBuffer;
 
 	// Calls to AllocateVertexRegion() must be accompanied by a ReleaseRegion() call.
-	_ASSERT( sVBIB.bStaticVertexBufferLocked == false );
+	_ASSERT( m_sVBIB.bStaticVertexBufferLocked == false );
 
 	// Attempt to locate an existing buffer.
 	dwBufferIndex = FindBuffer( eBT_Vertex,
@@ -143,17 +156,17 @@ bool CVBIBManager::AllocateVertexRegion(	SVBIBHandle * pResult,
 
 	if( dwBufferIndex != 0xFFFFFFFF )
 	{
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 	}
 	else
 	{
 		// Create a new buffer.
-		dwBufferIndex = sVBIB.dwNumBuffersAllocated;
-		sVBIB.dwNumBuffersAllocated ++;
+		dwBufferIndex = m_sVBIB.dwNumBuffersAllocated;
+		m_sVBIB.dwNumBuffersAllocated ++;
 		
-		sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
-		memset( sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		m_sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
+		memset( m_sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
@@ -163,7 +176,7 @@ bool CVBIBManager::AllocateVertexRegion(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 
 		// Create the resource.
-		hr = CD3DDevice9::Device()->CreateVertexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					c_iDefaultBufferSize * pBuffer->dwElementSize,
 					D3DUSAGE_WRITEONLY,
 					dwFVF,
@@ -183,7 +196,7 @@ bool CVBIBManager::AllocateVertexRegion(	SVBIBHandle * pResult,
 	_ASSERT( ppData != NULL );
 
 	pBuffer->bLocked = true;
-	sVBIB.bStaticVertexBufferLocked = true;
+	m_sVBIB.bStaticVertexBufferLocked = true;
 
 	// Update the result structure.
 	pResult->eType					= eBT_Vertex;
@@ -213,7 +226,7 @@ bool CVBIBManager::AllocateIndexRegion(	SVBIBHandle * pResult,
 	SD3DBuffer * pBuffer;
 
 	// Calls to AllocateIndexRegion() must be accompanied by a ReleaseRegion() call.
-	_ASSERT( sVBIB.bStaticIndexBufferLocked == false );
+	_ASSERT( m_sVBIB.bStaticIndexBufferLocked == false );
 	_ASSERT( ( d3dIndexFormat == D3DFMT_INDEX16 ) || ( d3dIndexFormat == D3DFMT_INDEX32 ) );
 
 	dwIndexValueSize = (d3dIndexFormat == D3DFMT_INDEX16 ) ? 2 : 4;
@@ -226,17 +239,17 @@ bool CVBIBManager::AllocateIndexRegion(	SVBIBHandle * pResult,
 
 	if( dwBufferIndex != 0xFFFFFFFF )
 	{
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 	}
 	else
 	{
 		// Create a new buffer.
-		dwBufferIndex = sVBIB.dwNumBuffersAllocated;
-		sVBIB.dwNumBuffersAllocated ++;
+		dwBufferIndex = m_sVBIB.dwNumBuffersAllocated;
+		m_sVBIB.dwNumBuffersAllocated ++;
 		
-		sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
-		memset( sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		m_sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
+		memset( m_sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= d3dIndexFormat;
@@ -246,7 +259,7 @@ bool CVBIBManager::AllocateIndexRegion(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 
 		// Create the resource.
-		hr = CD3DDevice9::Device()->CreateIndexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateIndexBuffer(
 					c_iDefaultBufferSize * pBuffer->dwElementSize,
 					D3DUSAGE_WRITEONLY,
 					d3dIndexFormat,
@@ -264,7 +277,7 @@ bool CVBIBManager::AllocateIndexRegion(	SVBIBHandle * pResult,
 										0 );
 	_ASSERT( hr == D3D_OK );
 	pBuffer->bLocked				= true;
-	sVBIB.bStaticIndexBufferLocked	= true;
+	m_sVBIB.bStaticIndexBufferLocked	= true;
 
 	// Update the result structure.
 	pResult->eType					= eBT_Index;
@@ -289,19 +302,19 @@ bool CVBIBManager::ReleaseRegion( SVBIBHandle * pHandle )
 	HRESULT hr;
 
 	_ASSERT( pHandle != NULL );
-	SD3DBuffer * pBuffer = sVBIB.pBufferArray[ pHandle->dwBufferIndex ];
+	SD3DBuffer * pBuffer = m_sVBIB.pBufferArray[ pHandle->dwBufferIndex ];
 
 	switch( pBuffer->eBufferType )
 	{
 	case eBT_Vertex:
-		_ASSERT( sVBIB.bStaticVertexBufferLocked == true );
+		_ASSERT( m_sVBIB.bStaticVertexBufferLocked == true );
 		_ASSERT( pBuffer->bLocked == true );
 		hr = pBuffer->pVertexBuffer->Unlock();
 		_ASSERT( hr == D3D_OK );
 		break;
 
 	case eBT_Index:
-		_ASSERT( sVBIB.bStaticVertexBufferLocked == true );
+		_ASSERT( m_sVBIB.bStaticVertexBufferLocked == true );
 		_ASSERT( pBuffer->bLocked == true );
 		hr = pBuffer->pIndexBuffer->Unlock();
 		_ASSERT( hr == D3D_OK );
@@ -334,7 +347,7 @@ bool CVBIBManager::AddVerticesToBuffer(	SVBIBHandle * pResult,
 	BYTE * pData;
 
 	// Calls to AllocateVertexRegion() must be accompanied by a ReleaseRegion() call.
-	_ASSERT( sVBIB.bStaticVertexBufferLocked == false );
+	_ASSERT( m_sVBIB.bStaticVertexBufferLocked == false );
 
 	// Attempt to locate an existing buffer.
 	dwBufferIndex = FindBuffer( eBT_Vertex,
@@ -344,17 +357,17 @@ bool CVBIBManager::AddVerticesToBuffer(	SVBIBHandle * pResult,
 
 	if( dwBufferIndex != 0xFFFFFFFF )
 	{
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 	}
 	else
 	{
 		// Create a new buffer.
-		dwBufferIndex = sVBIB.dwNumBuffersAllocated;
-		sVBIB.dwNumBuffersAllocated ++;
+		dwBufferIndex = m_sVBIB.dwNumBuffersAllocated;
+		m_sVBIB.dwNumBuffersAllocated ++;
 		
-		sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
-		memset( sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		m_sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
+		memset( m_sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
@@ -364,7 +377,7 @@ bool CVBIBManager::AddVerticesToBuffer(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 
 		// Create the resource.
-		hr = CD3DDevice9::Device()->CreateVertexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					c_iDefaultBufferSize * pBuffer->dwElementSize,
 					D3DUSAGE_WRITEONLY,
 					dwFVF,
@@ -417,7 +430,7 @@ bool CVBIBManager::AddIndicesToBuffer(	SVBIBHandle * pResult,
 	BYTE * pData;
 
 	// Calls to AllocateIndexRegion() must be accompanied by a ReleaseRegion() call.
-	_ASSERT( sVBIB.bStaticIndexBufferLocked == false );
+	_ASSERT( m_sVBIB.bStaticIndexBufferLocked == false );
 	_ASSERT( ( d3dIndexFormat == D3DFMT_INDEX16 ) || ( d3dIndexFormat == D3DFMT_INDEX32 ) );
 
 	dwIndexValueSize = (d3dIndexFormat == D3DFMT_INDEX16 ) ? 2 : 4;
@@ -430,17 +443,17 @@ bool CVBIBManager::AddIndicesToBuffer(	SVBIBHandle * pResult,
 
 	if( dwBufferIndex != 0xFFFFFFFF )
 	{
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 	}
 	else
 	{
 		// Create a new buffer.
-		dwBufferIndex = sVBIB.dwNumBuffersAllocated;
-		sVBIB.dwNumBuffersAllocated ++;
+		dwBufferIndex = m_sVBIB.dwNumBuffersAllocated;
+		m_sVBIB.dwNumBuffersAllocated ++;
 		
-		sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
-		memset( sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		m_sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
+		memset( m_sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= d3dIndexFormat;
@@ -450,7 +463,7 @@ bool CVBIBManager::AddIndicesToBuffer(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 
 		// Create the resource.
-		hr = CD3DDevice9::Device()->CreateIndexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateIndexBuffer(
 					c_iDefaultBufferSize * pBuffer->dwElementSize,
 					D3DUSAGE_WRITEONLY,
 					d3dIndexFormat,
@@ -503,26 +516,26 @@ DWORD CVBIBManager::FindBuffer( EBufferType eBufferType,
 	_ASSERT((eBufferType > eBT_Invalid) && (eBufferType < eBT_NumTypes) );
 	bBufferFound = false;
 
-	for( i=0; i<sVBIB.dwNumBuffersAllocated; i++ )
+	for( i=0; i<m_sVBIB.dwNumBuffersAllocated; i++ )
 	{
 		switch( eBufferType )
 		{
 		case eBT_Vertex:
 		case eBT_Index:
-			if( ( sVBIB.pBufferArray[i]->eBufferType == eBufferType ) &&
-				( sVBIB.pBufferArray[i]->dwBufferFormat == dwFormat ) &&
-				( sVBIB.pBufferArray[i]->dwElementSize == dwElementSize ) &&
-				( sVBIB.pBufferArray[i]->dwBufferOffset + 
-						( dwNumElements * dwElementSize ) <= sVBIB.pBufferArray[i]->dwBufferSize ) )
+			if( ( m_sVBIB.pBufferArray[i]->eBufferType == eBufferType ) &&
+				( m_sVBIB.pBufferArray[i]->dwBufferFormat == dwFormat ) &&
+				( m_sVBIB.pBufferArray[i]->dwElementSize == dwElementSize ) &&
+				( m_sVBIB.pBufferArray[i]->dwBufferOffset + 
+						( dwNumElements * dwElementSize ) <= m_sVBIB.pBufferArray[i]->dwBufferSize ) )
 			{
 				bBufferFound = true;
 			}
 			break;
 		case eBT_VertexDynamic:
-			if( ( sVBIB.pBufferArray[i]->eBufferType == eBufferType ) &&
-				( sVBIB.pBufferArray[i]->dwBufferFormat == dwFormat ) &&
-				( sVBIB.pBufferArray[i]->dwElementSize == dwElementSize ) &&
-				( sVBIB.pBufferArray[i]->dwBufferSize <= dwNumElements * dwElementSize ) )
+			if( ( m_sVBIB.pBufferArray[i]->eBufferType == eBufferType ) &&
+				( m_sVBIB.pBufferArray[i]->dwBufferFormat == dwFormat ) &&
+				( m_sVBIB.pBufferArray[i]->dwElementSize == dwElementSize ) &&
+				( m_sVBIB.pBufferArray[i]->dwBufferSize <= dwNumElements * dwElementSize ) )
 			{
 				bBufferFound = true;
 			}
@@ -555,14 +568,14 @@ HRESULT CVBIBManager::SetVertexAndIndexStreams(	const SVBIBHandle * pVB,
 												const SVBIBHandle * pIB )
 {
 	HRESULT hr;
-	hr = CD3DDevice9::SetStreamSource(
+	hr = CD3DDevice9::Get()->SetStreamSource(
 			0, 
-			sVBIB.pBufferArray[ pVB->dwBufferIndex ]->pVertexBuffer,
+			m_sVBIB.pBufferArray[ pVB->dwBufferIndex ]->pVertexBuffer,
 			pVB->dwFirstElementOffset,
-			sVBIB.pBufferArray[ pVB->dwBufferIndex ]->dwElementSize );
+			m_sVBIB.pBufferArray[ pVB->dwBufferIndex ]->dwElementSize );
 	_ASSERT( hr == S_OK );
 
-	hr = CD3DDevice9::SetIndices( sVBIB.pBufferArray[ pIB->dwBufferIndex ]->pIndexBuffer );
+	hr = CD3DDevice9::Get()->SetIndices( m_sVBIB.pBufferArray[ pIB->dwBufferIndex ]->pIndexBuffer );
 	_ASSERT( hr == S_OK );
 
 	return hr;
@@ -579,15 +592,15 @@ HRESULT CVBIBManager::SetVertexStream( const SVBIBHandle * pVB )
 	HRESULT hr;
 	if( pVB == NULL )
 	{
-		hr = CD3DDevice9::SetStreamSource( 0, NULL, 0, 0 );
+		hr = CD3DDevice9::Get()->SetStreamSource( 0, NULL, 0, 0 );
 	}
 	else
 	{
-		hr = CD3DDevice9::SetStreamSource(
+		hr = CD3DDevice9::Get()->SetStreamSource(
 				0, 
-				sVBIB.pBufferArray[ pVB->dwBufferIndex ]->pVertexBuffer,
+				m_sVBIB.pBufferArray[ pVB->dwBufferIndex ]->pVertexBuffer,
 				0,
-				sVBIB.pBufferArray[ pVB->dwBufferIndex ]->dwElementSize );
+				m_sVBIB.pBufferArray[ pVB->dwBufferIndex ]->dwElementSize );
 	}
 	_ASSERT( hr == S_OK );
 
@@ -605,11 +618,11 @@ HRESULT CVBIBManager::SetIndexStream( const SVBIBHandle * pIB )
 	HRESULT hr;
 	if( pIB == NULL )
 	{
-		hr = CD3DDevice9::SetIndices( NULL );
+		hr = CD3DDevice9::Get()->SetIndices( NULL );
 	}
 	else
 	{
-		hr = CD3DDevice9::SetIndices( sVBIB.pBufferArray[ pIB->dwBufferIndex ]->pIndexBuffer );
+		hr = CD3DDevice9::Get()->SetIndices( m_sVBIB.pBufferArray[ pIB->dwBufferIndex ]->pIndexBuffer );
 	}
 	_ASSERT( hr == S_OK );
 
@@ -634,7 +647,7 @@ bool CVBIBManager::AddLegacyVerticesToBuffer(	SVBIBHandle * pResult,
 	BYTE * pData;
 
 	// Calls to AllocateVertexRegion() must be accompanied by a ReleaseRegion() call.
-	_ASSERT( sVBIB.bStaticVertexBufferLocked == false );
+	_ASSERT( m_sVBIB.bStaticVertexBufferLocked == false );
 	_ASSERT( dwFVF != 0 );
 
 	// Attempt to locate an existing buffer.
@@ -645,17 +658,17 @@ bool CVBIBManager::AddLegacyVerticesToBuffer(	SVBIBHandle * pResult,
 
 	if( dwBufferIndex != 0xFFFFFFFF )
 	{
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 	}
 	else
 	{
 		// Create a new buffer.
-		dwBufferIndex = sVBIB.dwNumBuffersAllocated;
-		sVBIB.dwNumBuffersAllocated ++;
+		dwBufferIndex = m_sVBIB.dwNumBuffersAllocated;
+		m_sVBIB.dwNumBuffersAllocated ++;
 		
-		sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
-		memset( sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		m_sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
+		memset( m_sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
@@ -665,7 +678,7 @@ bool CVBIBManager::AddLegacyVerticesToBuffer(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 
 		// Create the resource.
-		hr = CD3DDevice9::Device()->CreateVertexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					c_iDefaultBufferSize * pBuffer->dwElementSize,
 					D3DUSAGE_WRITEONLY,
 					dwFVF,
@@ -736,7 +749,7 @@ bool CVBIBManager::AddLegacyLitVerticesToBuffer(	SVBIBHandle * pResult,
 	BYTE * pData;
 
 	// Calls to AllocateVertexRegion() must be accompanied by a ReleaseRegion() call.
-	_ASSERT( sVBIB.bStaticVertexBufferLocked == false );
+	_ASSERT( m_sVBIB.bStaticVertexBufferLocked == false );
 	_ASSERT( dwFVF != 0 );
 	dwFVFVertexSize = sizeof( D3DLVERTEX );
 
@@ -748,17 +761,17 @@ bool CVBIBManager::AddLegacyLitVerticesToBuffer(	SVBIBHandle * pResult,
 
 	if( dwBufferIndex != 0xFFFFFFFF )
 	{
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 	}
 	else
 	{
 		// Create a new buffer.
-		dwBufferIndex = sVBIB.dwNumBuffersAllocated;
-		sVBIB.dwNumBuffersAllocated ++;
+		dwBufferIndex = m_sVBIB.dwNumBuffersAllocated;
+		m_sVBIB.dwNumBuffersAllocated ++;
 		
-		sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
-		memset( sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		m_sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
+		memset( m_sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
@@ -768,7 +781,7 @@ bool CVBIBManager::AddLegacyLitVerticesToBuffer(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 
 		// Create the resource.
-		hr = CD3DDevice9::Device()->CreateVertexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					c_iDefaultBufferSize * pBuffer->dwElementSize,
 					D3DUSAGE_WRITEONLY,
 					dwFVF,
@@ -847,17 +860,17 @@ bool CVBIBManager::AllocateDynamicVertexBuffer(	SVBIBHandle * pResult,
 
 	if( dwBufferIndex != 0xFFFFFFFF )
 	{
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 	}
 	else
 	{
 		// Create a new buffer.
-		dwBufferIndex = sVBIB.dwNumBuffersAllocated;
-		sVBIB.dwNumBuffersAllocated ++;
+		dwBufferIndex = m_sVBIB.dwNumBuffersAllocated;
+		m_sVBIB.dwNumBuffersAllocated ++;
 		
-		sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
-		memset( sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
-		pBuffer = sVBIB.pBufferArray[dwBufferIndex];
+		m_sVBIB.pBufferArray[dwBufferIndex] = new SD3DBuffer;
+		memset( m_sVBIB.pBufferArray[dwBufferIndex], 0, sizeof( SD3DBuffer ) );
+		pBuffer = m_sVBIB.pBufferArray[dwBufferIndex];
 
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
@@ -869,7 +882,7 @@ bool CVBIBManager::AllocateDynamicVertexBuffer(	SVBIBHandle * pResult,
 		pBuffer->bDefaultPool	= ( c_iDynamicBufferPool == D3DPOOL_DEFAULT ) ? true : false;
 
 		// Create the resource.
-		hr = CD3DDevice9::Device()->CreateVertexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					dwMaxVertices * pBuffer->dwElementSize,
 					D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 					dwFVF,
@@ -905,7 +918,7 @@ bool CVBIBManager::LockDynamicVertexBuffer(	SVBIBHandle * pHandle,
 	HRESULT hr;
 	DWORD dwLockFlags = D3DLOCK_NOOVERWRITE;
 	DWORD dwSizeToLock;
-	SD3DBuffer * pVB = sVBIB.pBufferArray[ pHandle->dwBufferIndex ];
+	SD3DBuffer * pVB = m_sVBIB.pBufferArray[ pHandle->dwBufferIndex ];
 
 	_ASSERT( pVB->eBufferType == eBT_VertexDynamic );
 	_ASSERT( pVB->bLocked == false );
@@ -915,7 +928,7 @@ bool CVBIBManager::LockDynamicVertexBuffer(	SVBIBHandle * pHandle,
 		_ASSERT( pVB->pVertexBuffer == NULL );
 
 		// Recreate the resource.
-		hr = CD3DDevice9::Device()->CreateVertexBuffer(
+		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					pVB->dwBufferSize,
 					D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 					pVB->dwBufferFormat,
@@ -960,7 +973,7 @@ bool CVBIBManager::LockDynamicVertexBuffer(	SVBIBHandle * pHandle,
 bool CVBIBManager::UnlockDynamicVertexBuffer( SVBIBHandle * pHandle )
 {
 	HRESULT hr;
-	SD3DBuffer * pVB = sVBIB.pBufferArray[ pHandle->dwBufferIndex ];
+	SD3DBuffer * pVB = m_sVBIB.pBufferArray[ pHandle->dwBufferIndex ];
 
 	_ASSERT( pVB->pVertexBuffer != NULL );
 	_ASSERT( pVB->bLocked == true );

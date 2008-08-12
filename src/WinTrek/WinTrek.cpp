@@ -2413,12 +2413,12 @@ public:
             papp,
             strCommandLine,
             true,
-            WinRect(0 + CD3DDevice9::sDevSetupParams.iWindowOffsetX, 
-					0 + CD3DDevice9::sDevSetupParams.iWindowOffsetY,
-					CD3DDevice9::GetCurrentMode()->mode.Width + 
-									CD3DDevice9::sDevSetupParams.iWindowOffsetX,
-					CD3DDevice9::GetCurrentMode()->mode.Height + 
-									CD3DDevice9::sDevSetupParams.iWindowOffsetY),
+			WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX, 
+					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Width + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Height + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
               WinPoint(800, 600)
         ),
 //#else
@@ -2720,8 +2720,8 @@ public:
                 int(LoadPreference("CombatYSize", 600))
             );
 		m_sizeCombatFullscreen = 
-			WinPoint(	CD3DDevice9::sDevSetupParams.sFullScreenMode.mode.Width,
-						CD3DDevice9::sDevSetupParams.sFullScreenMode.mode.Height );
+			WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
+						CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
 //#else
 //		m_sizeCombat = 
 //            WinPoint(

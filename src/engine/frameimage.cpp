@@ -9,7 +9,7 @@
 class FrameImage : public Image {
 private:
     TRef<Image>   m_pimageBackground;
-    TRef<Surface> m_psurface;
+    TRef<Surface> * m_ppsurface;
     TRef<IObject> m_pobjectMemory;
     int           m_nFrame;
     int           m_frameCurrent;
@@ -32,23 +32,65 @@ public:
         m_prle(prle),
         m_pobjectMemory(pobjectMemory)
     {
+		int i;
+		BYTE * pTempSurface, * pSrcCopy;
+		bool bHasColorKey;
+		HRESULT hResult;
+		D3DLOCKED_RECT lockRect;
+
         TRef<Surface> psurfaceBackground = m_pimageBackground->GetSurface();
+		PrivateSurface* pprivateSurface; CastTo(pprivateSurface, psurfaceBackground );
 
-        m_psurface =
-            psurfaceBackground->CreateCompatibleSurface(
-                psurfaceBackground->GetSize(),
-                SurfaceType2D()
-            );
+		// Don't support colour keying at the moment as the original data was
+		// in 565 format, no alpha.
+		bHasColorKey = pprivateSurface->HasColorKey();
+		pprivateSurface->SetEnableColorKey( false );
 
-        m_psurface->BitBlt(WinPoint(0, 0), psurfaceBackground, true );
+		pSrcCopy = new BYTE[pprivateSurface->GetPixelFormat()->PixelBytes() * 
+							pprivateSurface->GetSize().x * pprivateSurface->GetSize().y];
+		m_ppsurface = new TRef<Surface> [ m_nFrame ];
+
+		for( i=0; i<m_nFrame; i++ )
+		{
+			// Create a texture for each frame.
+			m_ppsurface[i] = psurfaceBackground->CreateCompatibleSurface(
+								psurfaceBackground->GetSize(),
+								SurfaceType2D() );
+
+			m_ppsurface[i]->BitBlt( WinPoint(0, 0), psurfaceBackground, true );
+
+			// On first pass, grab out a copy of the source data.
+			if( i == 0 )
+			{
+				int y;
+				PrivateSurface* pFrame0Surface; CastTo(pFrame0Surface, m_ppsurface[i]);
+				TEXHANDLE hTexture = pFrame0Surface->GetTexHandle( );
+
+				hResult = CVRAMManager::Get()->LockTexture( hTexture, &lockRect );
+				_ASSERT( hResult == D3D_OK );
+
+				// Copy the original texture frame data into our temp buffer.
+				BYTE * pSrc = (BYTE*) lockRect.pBits;
+				int iPixelSize = pFrame0Surface->GetPixelFormat()->PixelBytes();
+				for( y=0; y<pFrame0Surface->GetSize().y; y++ )
+				{
+					memcpy( &pSrcCopy[ y * ( pFrame0Surface->GetSize().x * iPixelSize ) ], 
+							&pSrc[ y * lockRect.Pitch ],
+							pFrame0Surface->GetSize().x * iPixelSize );
+				}
+				CVRAMManager::Get()->UnlockTexture( hTexture );
+			}
+
+			// Extract this animation frame.
+			ExtractRLEFrame( i, m_ppsurface[i], pSrcCopy );
+		}
+
+		// Tidy up.
+		delete pSrcCopy;
+
+		// Reset vars.
         m_frameCurrent = 0;
-
-        m_bounds.SetRect(
-            Rect(
-                Point(0, 0), 
-                Point::Cast(m_psurface->GetSize())
-            )
-        );
+        m_bounds.SetRect( Rect( Point(0, 0), Point::Cast( psurfaceBackground->GetSize()) ));
     }
 
     ~FrameImage()
@@ -76,6 +118,57 @@ public:
                 m_nFrame - 1
             );
     }
+
+	void ExtractRLEFrame( int iFrame, TRef<Surface> pSurface, BYTE * pSrc )
+	{
+		int i, x, y;
+		D3DLOCKED_RECT lockRect;
+		HRESULT hResult;
+
+		// Inflate each frame into a texture.
+		PrivateSurface * pprivateSurface; CastTo(pprivateSurface, pSurface );
+		TEXHANDLE hTexture = pprivateSurface->GetTexHandle( );
+
+		// Copy RLE data into texture.
+		hResult = CVRAMManager::Get()->LockTexture( hTexture, &lockRect );
+		_ASSERT( hResult == D3D_OK );
+
+		// Inflate RLE data into temp buffer.
+		BYTE * pDest = (BYTE*) lockRect.pBits;
+		int iPixelSize = pprivateSurface->GetPixelFormat()->PixelBytes();
+
+		// Copy original buffer in first.
+		BYTE * pTemp = new BYTE[pprivateSurface->GetPixelFormat()->PixelBytes() * 
+								pprivateSurface->GetSize().x * pprivateSurface->GetSize().y];
+		memcpy( pTemp, pSrc, pprivateSurface->GetPixelFormat()->PixelBytes() * pprivateSurface->GetSize().x * pprivateSurface->GetSize().y );
+
+		// Update the buffer with RLE data.
+		i = -1;
+		while( i < iFrame )
+		{
+			i++;
+			PlayRLE(	pTemp, 
+						m_prle + m_pdwOffsets[ i ],
+						m_prle + m_pdwOffsets[ i + 1 ] );
+		}
+
+		// Copy updated frame into texture.
+		pDest = (BYTE*) lockRect.pBits;
+		iPixelSize = pprivateSurface->GetPixelFormat()->PixelBytes();
+		for( y=0; y<pprivateSurface->GetSize().y; y++ )
+		{
+			for( x=0; x<pprivateSurface->GetSize().x; x++ )
+			{
+				memcpy( pDest + ( lockRect.Pitch * y ) + ( x * iPixelSize ),
+						&pTemp[ ( y * ( pprivateSurface->GetSize().x * iPixelSize ) ) + ( x * iPixelSize ) ],
+						iPixelSize );
+			}
+		}
+
+		// Unlock the texture and tidy up.
+		CVRAMManager::Get()->UnlockTexture( hTexture );
+		delete pTemp;
+	}
 
     void PlayRLE(BYTE* pd, BYTE* prle, BYTE* pend)
     {
@@ -136,41 +229,43 @@ public:
 
     void UpdateFrame()
     {
-        int newFrame = GetFrame();
+		m_frameCurrent = GetFrame();
+  //      int newFrame = GetFrame();
 
-        if (m_frameCurrent != newFrame) {
-            BYTE* pd = m_psurface->GetWritablePointer();
+  //      if (m_frameCurrent != newFrame) 
+		//{
+  //          BYTE* pd = m_psurface->GetWritablePointer();
 
-            //
-            // go forward
-            //
+  //          //
+  //          // go forward
+  //          //
 
-            while (m_frameCurrent < newFrame) {
-                PlayRLE(
-                    pd,
-                    m_prle + m_pdwOffsets[m_frameCurrent],
-                    m_prle + m_pdwOffsets[m_frameCurrent + 1]
-                );
+  //          while (m_frameCurrent < newFrame) {
+  //              PlayRLE(
+  //                  pd,
+  //                  m_prle + m_pdwOffsets[m_frameCurrent],
+  //                  m_prle + m_pdwOffsets[m_frameCurrent + 1]
+  //              );
 
-                m_frameCurrent++;
-            }
+  //              m_frameCurrent++;
+  //          }
 
-            //
-            // go backward
-            //
+  //          //
+  //          // go backward
+  //          //
 
-            while (m_frameCurrent > newFrame) {
-                m_frameCurrent--;
+  //          while (m_frameCurrent > newFrame) {
+  //              m_frameCurrent--;
 
-                PlayRLE(
-                    pd,
-                    m_prle + m_pdwOffsets[m_frameCurrent],
-                    m_prle + m_pdwOffsets[m_frameCurrent + 1]
-                );
-            }
+  //              PlayRLE(
+  //                  pd,
+  //                  m_prle + m_pdwOffsets[m_frameCurrent],
+  //                  m_prle + m_pdwOffsets[m_frameCurrent + 1]
+  //              );
+  //          }
 
-            m_psurface->ReleasePointer();
-        }
+  //          m_psurface->ReleasePointer();
+  //      }
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -182,13 +277,13 @@ public:
     TRef<Surface> GetSurface()
     {
         UpdateFrame();
-        return m_psurface;
+        return m_ppsurface[m_frameCurrent];
     }
 
     void Render(Context* pcontext)
     {
         UpdateFrame();
-        pcontext->DrawImage(m_psurface);
+        pcontext->DrawImage( m_ppsurface[m_frameCurrent] );
     }
 
     //////////////////////////////////////////////////////////////////////////////

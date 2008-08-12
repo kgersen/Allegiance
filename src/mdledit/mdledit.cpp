@@ -528,12 +528,12 @@ public:
             strCommandLine,
             "MDLEdit",
             false,
-            WinRect(0 + CD3DDevice9::sDevSetupParams.iWindowOffsetX, 
-					0 + CD3DDevice9::sDevSetupParams.iWindowOffsetY,
-					CD3DDevice9::GetCurrentMode()->mode.Width + 
-									CD3DDevice9::sDevSetupParams.iWindowOffsetX,
-					CD3DDevice9::GetCurrentMode()->mode.Height + 
-									CD3DDevice9::sDevSetupParams.iWindowOffsetY)
+            WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX, 
+					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Width + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Height + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY)
         ),
         m_bAnimate(false),
         m_bGlow(false),
@@ -1534,7 +1534,7 @@ public:
 		{
 			return E_FAIL;
 		}
-		CD3DDevice9::UpdateCurrentMode( );
+		CD3DDevice9::Get()->UpdateCurrentMode( );
 
 
         //

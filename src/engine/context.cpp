@@ -311,33 +311,8 @@ public:
         m_bInScene(false),
         m_bRenderingCallbacks(false)
     {
-        //
-        // Create a rasterizer and a 3D device
-/*        if (psurface->GetSurfaceType().Test(SurfaceType3D())) 
-		{
-            TRef<Engine> pengine = psurface->GetEngine();
 
-            TRef<Rasterizer> prasterizer;
-            bool bAlwaysUseD3D = true;
-
-            if(	bAlwaysUseD3D || ( pengine->GetUsing3DAcceleration() && psurface->GetSurfaceType().Test(SurfaceTypeVideo()) ) ) 
-			{
-                prasterizer = CreateD3DRasterizer( m_psurface, g_hwndMainWindow );
-            } 
-			else 
-			{
-				// No SW rasterizer ever, thanks.
-				prasterizer = NULL;
-//                prasterizer = CreateSoftwareRasterizer(m_psurface);
-            }
-
-            if (prasterizer == NULL) {
-                return;
-            }
-
-            m_pdevice3D = CreateDevice3D(prasterizer);
-        }*/
-
+		// Create a rasterizer and a 3D device
 		TRef<Rasterizer> pRasterizer = CreateD3D9Rasterizer(psurface);
 		if( pRasterizer == NULL )
 		{
@@ -375,12 +350,12 @@ public:
         m_pstateDevice->m_lineWidth              = 1;
 
 		// Mirror default states with d3d9.
-		CD3DDevice9::SetRenderState( D3DRS_ZENABLE, FALSE );
-		CD3DDevice9::SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-		CD3DDevice9::SetRenderState( D3DRS_SHADEMODE, D3DSHADE_GOURAUD );
-		CD3DDevice9::SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
-		CD3DDevice9::SetRenderState( D3DRS_WRAP0, 0 );
-		CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, false );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_ZENABLE, FALSE );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_SHADEMODE, D3DSHADE_GOURAUD );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_WRAP0, 0 );
+		CD3DDevice9::Get()->SetRenderState( D3DRS_ALPHABLENDENABLE, false );
     }
 
     bool IsValid()
@@ -696,18 +671,20 @@ public:
         static MeshIndex indices[6] = { 0, 2, 1, 0, 3, 2 };
 
         UpdateState();
-		CVRAMManager::SetTexture( psurface->GetTexHandle(), 0 );
+
+		CD3DDevice9 * pDev = CD3DDevice9::Get();
+		CVRAMManager::Get()->SetTexture( psurface->GetTexHandle(), 0 );
 
 		// Source mode blends might still want colour keying. If so,
 		// configure it now.
 		if( ( psurface->HasColorKey() == true ) &&
 			( GetBlendMode() == BlendModeSource ) )
 		{
-			CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-			CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-			CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-			CD3DDevice9::SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR );
-			CD3DDevice9::SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR );
+			pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
+			pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+			pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+			pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR );
+			pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR );
 		}
 
 		switch (GetShadeMode()) 
@@ -731,9 +708,9 @@ public:
 					UIFONTVERTEX * pVertexData;
 
 					// New dynamic VB path.
-					phVB = CVertexGenerator::GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFontVB );
+					phVB = CVertexGenerator::Get()->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFontVB );
 
-					if( CVBIBManager::LockDynamicVertexBuffer( phVB, 4, (void**) &pVertexData ) == false )
+					if( CVBIBManager::Get()->LockDynamicVertexBuffer( phVB, 4, (void**) &pVertexData ) == false )
 					{
 						// Failed to lock the vertex buffer.
 						_ASSERT( false );
@@ -796,9 +773,9 @@ public:
 					pVertexData[3].y -= 0.5f;
 
 					// Finished, unlock the buffer, set the stream.
-					CVBIBManager::UnlockDynamicVertexBuffer( phVB );
+					CVBIBManager::Get()->UnlockDynamicVertexBuffer( phVB );
 
-					CD3DDevice9::SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
+					pDev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
                     m_pdevice3D->SetShadeMode(ShadeModeFlat);
 					m_pdevice3D->DrawTriangles( D3DPT_TRIANGLESTRIP, 2, phVB );
                     m_pdevice3D->SetShadeMode(m_pstateDevice->m_shadeMode);
@@ -999,11 +976,12 @@ public:
         PushState();
 
 		// Configure texture settings.
-		CVRAMManager::SetTexture( INVALID_TEX_HANDLE, 0 );
-		CD3DDevice9::SetSamplerState( 0, D3DSAMP_MAGFILTER, CD3DDevice9::GetMagFilter() );
-		CD3DDevice9::SetSamplerState( 0, D3DSAMP_MINFILTER, CD3DDevice9::GetMinFilter() );
-		CD3DDevice9::SetSamplerState( 0, D3DSAMP_MIPFILTER, CD3DDevice9::GetMipFilter() );
-		if( CD3DDevice9::IsAntiAliased() == true )
+		CD3DDevice9 * pDev = CD3DDevice9::Get();
+		CVRAMManager::Get()->SetTexture( INVALID_TEX_HANDLE, 0 );
+		pDev->SetSamplerState( 0, D3DSAMP_MAGFILTER, pDev->GetMagFilter() );
+		pDev->SetSamplerState( 0, D3DSAMP_MINFILTER, pDev->GetMinFilter() );
+		pDev->SetSamplerState( 0, D3DSAMP_MIPFILTER, pDev->GetMipFilter() );
+		if( pDev->IsAntiAliased() == true )
 		{
 			// Use this to view the difference between aa and non-aa.
 			// Switches between the two every few frames.
@@ -1023,11 +1001,11 @@ public:
 			}*/
 
 			// Switch AA on for the 3d layer.
-			CD3DDevice9::SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
+			pDev->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
 		}
 
 		// Wacky scales in the world TM lead to wacky scales and normals.
-		CD3DDevice9::SetRenderState( D3DRS_NORMALIZENORMALS, TRUE );
+		pDev->SetRenderState( D3DRS_NORMALIZENORMALS, TRUE );
 
         //
         // Integrate the 2D transforms up until this point with the 3D transform
@@ -1134,11 +1112,11 @@ public:
         ZAssert(m_bIn3DLayer);
         ZAssert(m_bInScene);
 
-		CD3DDevice9::SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-		CD3DDevice9::SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
-		if( CD3DDevice9::IsAntiAliased() == true )
+		CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+		CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+		if( CD3DDevice9::Get()->IsAntiAliased() == true )
 		{
-			CD3DDevice9::SetRenderState( D3DRS_ANTIALIASEDLINEENABLE, FALSE );
+			CD3DDevice9::Get()->SetRenderState( D3DRS_ANTIALIASEDLINEENABLE, FALSE );
 		}
 
         //

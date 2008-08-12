@@ -20,7 +20,7 @@ private:
     //////////////////////////////////////////////////////////////////////////////
 
     typedef TList<PrivateSurface*>  SurfaceList;
-    typedef TList<DeviceDependant*> DeviceDependantList;
+    //typedef TList<DeviceDependant*> DeviceDependantList;
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -60,7 +60,7 @@ private:
     // Surface Cache
     //
 
-    DeviceDependantList       m_listDeviceDependant;
+    //DeviceDependantList       m_listDeviceDependant;
     SurfaceList               m_listSurfaces;
     SurfaceList               m_listDeviceFormatSurfaces;
 
@@ -143,10 +143,10 @@ public:
             m_dwBPP = ddsd.ddpfPixelFormat.dwRGBBitCount;
             if (m_dwBPP != 32) m_dwBPP = 16; // fallback to 16 if desktop bpp isnt 32
         }*/
-		if( ( CD3DDevice9::GetCurrentMode()->mode.Format == D3DFMT_A8B8G8R8 ) ||
-			( CD3DDevice9::GetCurrentMode()->mode.Format == D3DFMT_A8R8G8B8 ) ||
-			( CD3DDevice9::GetCurrentMode()->mode.Format == D3DFMT_X8B8G8R8 ) ||
-			( CD3DDevice9::GetCurrentMode()->mode.Format == D3DFMT_X8R8G8B8 ) )
+		if( ( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_A8B8G8R8 ) ||
+			( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_A8R8G8B8 ) ||
+			( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_X8B8G8R8 ) ||
+			( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_X8R8G8B8 ) )
 		{
 			m_dwBPP = 32;
 		}
@@ -177,26 +177,26 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void ClearDependants()
-    {
-/*        {
-            DeviceDependantList::Iterator iter(m_listDeviceDependant);
-
-            while (!iter.End()) {
-                iter.Value()->ClearDevice();
-                iter.Next();
-            }
-        }*/
-
-        {
-            SurfaceList::Iterator iter(m_listSurfaces);
-
-            while (!iter.End()) {
-                iter.Value()->ClearDevice();
-                iter.Next();
-            }
-        }
-    }
+//    void ClearDependants()
+//    {
+///*        {
+//            DeviceDependantList::Iterator iter(m_listDeviceDependant);
+//
+//            while (!iter.End()) {
+//                iter.Value()->ClearDevice();
+//                iter.Next();
+//            }
+//        }*/
+//
+//        {
+//            SurfaceList::Iterator iter(m_listSurfaces);
+//
+//            while (!iter.End()) {
+//                iter.Value()->ClearDevice();
+//                iter.Next();
+//            }
+//        }
+//    }
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -206,7 +206,7 @@ private:
 
     void TerminateDevice()
     {
-        ClearDependants();
+        //ClearDependants();
 
         m_hwndClip     = NULL;
 //        m_psurfaceBack = NULL;
@@ -225,7 +225,7 @@ private:
 
     void Terminate( bool bEngineAppTerminate /*=false*/)
     {
-        ClearDependants();
+        //ClearDependants();
 
         m_hwndClip       = NULL;
 //        m_psurfaceBack   = NULL;
@@ -233,34 +233,9 @@ private:
 		// Reset D3D device.
 		if( bEngineAppTerminate == true )
 		{
-			CD3DDevice9::Shutdown();
+			CD3DDevice9::Get()->Shutdown();
 		}
     }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // 
-    //
-    //////////////////////////////////////////////////////////////////////////////
-
-/*    DDDevice* GetCurrentDevice()
-    {
-        return m_pdddevice;
-    }
-
-    DDDevice* GetPrimaryDevice()
-    {
-        return m_pdddevicePrimary;
-    }
-
-/*    DDSDescription GetPrimaryDDSD()
-    {
-        DDSDescription ddsd;
-
-        DDCall(m_pdds->GetSurfaceDesc(&ddsd));
-
-        return ddsd;
-    }*/
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -270,8 +245,7 @@ private:
 
     bool IsValid()
     {
-//		return m_pD3DDevice->IsValid();
-		return CD3DDevice9::IsDeviceValid();
+		return CD3DDevice9::Get()->IsDeviceValid();
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -324,35 +298,7 @@ private:
 
     void SetGammaRamp()
     {
-/*        if (m_pdds) {
-            TRef<IDirectDrawGammaControlX> pddGammaControl;
-
-            DDCall(m_pdds->QueryInterface(IID_IDirectDrawGammaControlX, (void**)&(pddGammaControl)));
-
-            DDGAMMARAMP gammaRamp;
-
-            for (int index = 0; index < 256; index ++) {
-                float value  = (float)index / 255;
-                float level  = pow(value, 1.0f / m_gamma);
-                //float level  = (m_gamma - 1) + (1 - (m_gamma - 1)) * value;
-                int   ilevel = MakeInt(level * 65535.0f);
-
-                gammaRamp.red  [index] = ilevel;
-                gammaRamp.green[index] = ilevel;
-                gammaRamp.blue [index] = ilevel;
-            };
-
-            //
-            // zero is always black
-            //
-
-            gammaRamp.red  [0] = 0;
-            gammaRamp.green[0] = 0;
-            gammaRamp.blue [0] = 0;
-
-            pddGammaControl->SetGammaRamp(0, &gammaRamp);
-        }*/
-		if( CD3DDevice9::IsDeviceValid() == true )
+		if( CD3DDevice9::Get()->IsDeviceValid() == true )
 		{
             D3DGAMMARAMP gammaRamp;
 
@@ -376,7 +322,7 @@ private:
             gammaRamp.green[0] = 0;
             gammaRamp.blue [0] = 0;
 
-			CD3DDevice9::SetGammaRamp(0, D3DSGR_CALIBRATE, &gammaRamp);
+			CD3DDevice9::Get()->SetGammaRamp(0, D3DSGR_CALIBRATE, &gammaRamp);
         }
     }
 
@@ -461,7 +407,7 @@ private:
 //        UpdateSurfacesPixelFormat();
 
 		// Reset the device for windowed mode.
-		CD3DDevice9::ResetDevice( true, 800, 600 );
+		CD3DDevice9::Get()->ResetDevice( true, 800, 600 );
 
         if (g_bWindowLog) {
             ZDebugOutput("InitializeWindowed exiting\n");
@@ -752,7 +698,7 @@ private:
 
 		// TBD: SET TRUE TO FALSE.
 //		CD3DDevice9::ResetDevice( TRUE, size.X(), size.Y() );
-		CD3DDevice9::ResetDevice( false, size.X(), size.Y() );
+		CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y() );
 
         if (g_bWindowLog) {
             ZDebugOutput("SwitchToFullscreenDevice exiting\n");
@@ -804,7 +750,7 @@ private:
             return true;
         }*/
 
-		if( ( CD3DDevice9::IsDeviceValid() == true ) && 
+		if( ( CD3DDevice9::Get()->IsDeviceValid() == true ) && 
 			( m_pointFullscreenCurrent == m_pointFullscreen ) )
 		{
 			return true;
@@ -910,7 +856,7 @@ private:
 	{
 		// Store a local copy, reflect the setting in the vram manager.
 		m_bMipMapGenerationEnabled = bEnable;
-		CVRAMManager::SetEnableMipMapGeneration( bEnable );
+		CVRAMManager::Get()->SetEnableMipMapGeneration( bEnable );
 	}
 
     void Set3DAccelerationImportant(bool b3DAccelerationImportant)
@@ -995,27 +941,17 @@ private:
     bool PrimaryHas3DAcceleration()
     {
         return true;
-//               m_pdddevicePrimary->Has3DAcceleration()
-  //          && (m_pdddevicePrimary->GetZBufferPixelFormat() != NULL);
     }
 
     ZString GetDeviceName()
     {
-//        return m_pdddevice->GetName();
-		//return "TBD";
-		return CD3DDevice9::GetDeviceSetupString();
+		return CD3DDevice9::Get()->GetDeviceSetupString();
     }
 
     bool GetUsing3DAcceleration()
     {
-//        return m_pdddevice->GetAllow3DAcceleration();
 		return true;
     }
-
-//    PrivateSurface* GetBackBuffer()
-//   {
-//    return m_psurfaceBack;
-//    }
 
     ZString GetPixelFormatName()
     {
@@ -1102,9 +1038,10 @@ private:
 
     bool IsDeviceReady(bool& bChanges)
     {
-		if( CD3DDevice9::IsDeviceValid() )
+		CD3DDevice9 * pDev = CD3DDevice9::Get();
+		if( pDev->IsDeviceValid() )
 		{
-			HRESULT hr = CD3DDevice9::TestCooperativeLevel( );
+			HRESULT hr = pDev->TestCooperativeLevel( );
 			switch( hr )
 			{
 			case D3D_OK:
@@ -1119,7 +1056,7 @@ private:
 				break;
 
 			case D3DERR_DEVICENOTRESET:
-				hr = CD3DDevice9::ResetDevice( CD3DDevice9::IsWindowed() );
+				hr = pDev->ResetDevice( pDev->IsWindowed() );
 				if( hr == D3D_OK )
 				{
 					m_bValid = true;
@@ -1259,15 +1196,15 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void AddDeviceDependant(DeviceDependant* pdeviceDependant)
-    {
-        m_listDeviceDependant.PushFront(pdeviceDependant);
-    }
+    //void AddDeviceDependant(DeviceDependant* pdeviceDependant)
+    //{
+    //    m_listDeviceDependant.PushFront(pdeviceDependant);
+    //}
 
-    void RemoveDeviceDependant(DeviceDependant* pdeviceDependant)
-    {
-        m_listDeviceDependant.Remove(pdeviceDependant);
-    }
+    //void RemoveDeviceDependant(DeviceDependant* pdeviceDependant)
+    //{
+    //    m_listDeviceDependant.Remove(pdeviceDependant);
+    //}
 
     void RemovePrivateSurface(PrivateSurface* psurface)
     {
@@ -1429,7 +1366,7 @@ private:
 			}
 			else
 			{
-				if( CD3DDevice9::GetDevFlags()->bSupportsA1R5G6B6Format == true )
+				if( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == true )
 				{
 					m_ppf = new PixelFormat(16, 0x7C00, 0x03e0, 0x001f, 0x8000);
 				}
@@ -1480,7 +1417,7 @@ private:
 			// For now we just handle two explicit cases. 16 bit with 1 bit alpha or full 32 bit.
 			pixelFormat = psurface->GetPixelFormat();
 			if( ( pixelFormat->PixelBytes() == 2 ) &&
-				( CD3DDevice9::GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
+				( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
 			{
 				pixelFormat = new PixelFormat( D3DFMT_A1R5G5B5 );
 			}

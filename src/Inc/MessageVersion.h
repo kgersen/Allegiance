@@ -18,6 +18,6 @@
    one server, and many clients, the server is always up to date by definition.
    ***Also gets incremented for changes to parts.h***
 */
-const int MSGVER = 200; // KGJV updated for R5
+const int MSGVER = 199; // KGJV updated for R5
 
 #endif

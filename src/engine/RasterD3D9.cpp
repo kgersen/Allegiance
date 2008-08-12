@@ -70,7 +70,7 @@ public:
         UpdateViewport();
 
         // default rendering states
-		D3DCall( CD3DDevice9::SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL ) );
+		D3DCall( CD3DDevice9::Get()->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL ) );
 
 		m_bValid = true;
     }
@@ -141,7 +141,7 @@ public:
     void BeginScene()
 	{
 		// Clear out the last texture.
-		CVRAMManager::SetTexture( INVALID_TEX_HANDLE, 0 );
+		CVRAMManager::Get()->SetTexture( INVALID_TEX_HANDLE, 0 );
 	}
 
     void EndScene()
@@ -171,7 +171,7 @@ public:
 		m_Viewport.MinZ		= 0.0f;
 		m_Viewport.MaxZ		= 1.0f;
 
-		CD3DDevice9::SetViewport( &m_Viewport );
+		CD3DDevice9::Get()->SetViewport( &m_Viewport );
     }
 
     void SetClipRect(const Rect& rectClip)
@@ -196,7 +196,7 @@ public:
             (int)m_rectClip.YMax()
         );
 
-		HRESULT hr = CD3DDevice9::Clear( 1, &rect, D3DCLEAR_ZBUFFER, 0, 1.0f, 0 );
+		HRESULT hr = CD3DDevice9::Get()->Clear( 1, &rect, D3DCLEAR_ZBUFFER, 0, 1.0f, 0 );
         if( hr != D3D_OK ) 
 		{
             D3DCall(hr);
@@ -229,11 +229,11 @@ public:
     {
         if (psurfaceTextureArg != NULL) 
 		{
-			D3DCall( CVRAMManager::SetTexture( psurfaceTextureArg->GetTexHandle(), 0 ) );
+			D3DCall( CVRAMManager::Get()->SetTexture( psurfaceTextureArg->GetTexHandle(), 0 ) );
         } 
 		else 
 		{
-			CVRAMManager::SetTexture( INVALID_TEX_HANDLE, 0 );
+			CVRAMManager::Get()->SetTexture( INVALID_TEX_HANDLE, 0 );
         }
     }
 
@@ -246,12 +246,12 @@ public:
                 break;
 
             case ShadeModeFlat:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT));
                 break;
 
             case ShadeModeGlobalColor:
             case ShadeModeGouraud:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
                 break;
 
             default:
@@ -263,27 +263,27 @@ public:
     {
         switch (blendMode) {
             case BlendModeSource:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_ALPHABLENDENABLE, false));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
                 break;
 
             case BlendModeAdd:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
                 break;
 
             case BlendModeSourceAlpha:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
                 break;
 
             case BlendModeAlphaStampThrough:
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+				CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
+				CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
                 break;
 
             default:
@@ -295,19 +295,19 @@ public:
     {
         switch (wrapMode) {
             case WrapModeNone:
-				D3DCall(CD3DDevice9::SetRenderState( D3DRS_WRAP0, 0 ) );
+				D3DCall(CD3DDevice9::Get()->SetRenderState( D3DRS_WRAP0, 0 ) );
                 break;
 
             case WrapModeUCylinder:
-				D3DCall(CD3DDevice9::SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_0 ) );
+				D3DCall(CD3DDevice9::Get()->SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_0 ) );
                 break;
 
             case WrapModeVCylinder:
-				D3DCall(CD3DDevice9::SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_1 ) );
+				D3DCall(CD3DDevice9::Get()->SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_1 ) );
                 break;
 
             case WrapModeTorus:
-				D3DCall(CD3DDevice9::SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_0 | D3DWRAPCOORD_1 ) );
+				D3DCall(CD3DDevice9::Get()->SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_0 | D3DWRAPCOORD_1 ) );
                 break;
 
             default:
@@ -319,15 +319,15 @@ public:
     {
         switch (cullMode) {
             case CullModeNone:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
                 break;
 
             case CullModeCW:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_CULLMODE, D3DCULL_CW));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW));
                 break;
 
             case CullModeCCW:
-                D3DCall(CD3DDevice9::SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
                 break;
 
             case CullModeBoth:
@@ -346,25 +346,25 @@ public:
 
     void SetZTest(bool bZTest)
     {
-        D3DCall(CD3DDevice9::SetRenderState( D3DRS_ZENABLE, HasZBuffer() && bZTest ));
+        D3DCall(CD3DDevice9::Get()->SetRenderState( D3DRS_ZENABLE, HasZBuffer() && bZTest ));
     }
 
     void SetZWrite(bool bZWrite)
     {
-        D3DCall( CD3DDevice9::SetRenderState( D3DRS_ZWRITEENABLE, HasZBuffer() && bZWrite ) );
+        D3DCall( CD3DDevice9::Get()->SetRenderState( D3DRS_ZWRITEENABLE, HasZBuffer() && bZWrite ) );
     }
 
     void SetLinearFilter(bool bLinearFilter)
     {
         if( bLinearFilter ) 
 		{
-			D3DCall( CD3DDevice9::SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR ) );
-			D3DCall( CD3DDevice9::SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR ) );
+			D3DCall( CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR ) );
+			D3DCall( CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR ) );
         } 
 		else 
 		{
-			D3DCall( CD3DDevice9::SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT ) );
-			D3DCall( CD3DDevice9::SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT ) );
+			D3DCall( CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT ) );
+			D3DCall( CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT ) );
         }
     }
 
@@ -375,7 +375,7 @@ public:
     void SetDither(bool bDither)
     {
 		// Dither disabled. Looks rubbish anyway.
-//        D3DCall(CD3DDevice9::SetRenderState(
+//        D3DCall(CD3DDevice9::Get()->SetRenderState(
   //          D3DRS_DITHERENABLE,
     //        true
      //   ));
@@ -436,8 +436,9 @@ public:
     void DrawTrianglesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
 		_ASSERT( false );
-		D3DCall( CD3DDevice9::SetFVF( D3DFVF_LVERTEX ) );
-		D3DCall( CD3DDevice9::DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
+		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	
+													D3DPT_TRIANGLELIST,
 													0,
 													vcount,
 													icount / 3,
@@ -450,8 +451,9 @@ public:
     void DrawLinesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
 		_ASSERT( false );
- 		D3DCall( CD3DDevice9::SetFVF( D3DFVF_LVERTEX ) );
-		D3DCall( CD3DDevice9::DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
+ 		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	
+													D3DPT_LINELIST,
 													0,
 													vcount,
 													icount / 2,
@@ -464,17 +466,17 @@ public:
     void DrawPointsD3D(const D3DLVertex* pvertex, int vcount)
     {
 		_ASSERT( false );
- 		D3DCall( CD3DDevice9::SetFVF( D3DFVF_LVERTEX ) );
-		D3DCall( CD3DDevice9::DrawPrimitiveUP(	D3DPT_POINTLIST,
-											vcount,
-											pvertex,
-											sizeof( D3DLVertex ) ) );
+ 		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawPrimitiveUP(	D3DPT_POINTLIST,
+													vcount,
+													pvertex,
+													sizeof( D3DLVertex ) ) );
     }
 
     void DrawTrianglesD3D(const D3DVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-  		D3DCall( CD3DDevice9::SetFVF( D3DFVF_VERTEX ) );
-		D3DCall( CD3DDevice9::DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
+  		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_VERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
 													0,
 													vcount,
 													icount / 3,
@@ -486,8 +488,8 @@ public:
 
     void DrawLinesD3D(const D3DVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
- 		D3DCall( CD3DDevice9::SetFVF( D3DFVF_VERTEX ) );
-		D3DCall( CD3DDevice9::DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
+ 		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_VERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
 													0,
 													vcount,
 													icount / 2,
@@ -499,8 +501,8 @@ public:
 
     void DrawPointsD3D(const D3DVertex* pvertex, int vcount)
     {
- 		D3DCall( CD3DDevice9::SetFVF( D3DFVF_VERTEX ) );
-		D3DCall( CD3DDevice9::DrawPrimitiveUP(	D3DPT_POINTLIST,
+ 		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_VERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawPrimitiveUP(	D3DPT_POINTLIST,
 											vcount,
 											pvertex,
 											sizeof( D3DVertex ) ) );
@@ -512,8 +514,8 @@ public:
         CheckVertices(pvertex, vcount);
         CheckIndices(pindex, icount, vcount);
 
-  		D3DCall( CD3DDevice9::SetFVF( D3DFVF_TLVERTEX ) );
-		D3DCall( CD3DDevice9::DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
+  		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_TLVERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
 													0,
 													vcount,
 													icount / 3,
@@ -528,8 +530,8 @@ public:
         CheckVertices(pvertex, vcount);
         CheckIndices(pindex, icount, vcount);
 
- 		D3DCall( CD3DDevice9::SetFVF( D3DFVF_TLVERTEX ) );
-		D3DCall( CD3DDevice9::DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
+ 		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_TLVERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
 													0,
 													vcount,
 													icount / 2,
@@ -542,8 +544,8 @@ public:
 	void DrawPoints(const VertexScreen* pvertex, int vcount)
 	{
 		CheckVertices(pvertex, vcount);
-		D3DCall( CD3DDevice9::SetFVF( D3DFVF_TLVERTEX ) );
-		D3DCall( CD3DDevice9::DrawPrimitiveUP(	D3DPT_POINTLIST,
+		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_TLVERTEX ) );
+		D3DCall( CD3DDevice9::Get()->DrawPrimitiveUP(	D3DPT_POINTLIST,
 											vcount,
 											pvertex,
 											sizeof( VertexScreen ) ) );

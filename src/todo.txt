@@ -1,4 +1,5 @@
 - wintrek: move 3D settings dialog resource ('picker' resource) in engine
+	doofus - don't move the dialog resource into the engine as this is app specific.
 - lobby/client.cpp can't use PCH setting because of appweb
 - do something with Vorbis (remove or use as a lib (.h/.lib and no source))
 - fix mdlc (todo) and mdledit (partially done) for DX9
@@ -8,3 +9,5 @@
 - perform cleaning on ..\standby
 - refine all projects dependencies
 - DX9 'todo' : see src/engine/TODO.txt
+
+(MAJOR - move tools over to Collada intermediate format for geometry?)

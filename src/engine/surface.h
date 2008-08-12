@@ -69,7 +69,8 @@ public:
     virtual SurfaceType     GetSurfaceType() = 0;
     virtual const WinPoint& GetSize()        = 0;
     virtual PixelFormat*    GetPixelFormat() = 0;
-    // KGJV 32B - GetName goes public
+
+	// KGJV 32B - GetName goes public
     virtual const ZString& GetName()         = 0;
 
     //
@@ -93,9 +94,10 @@ public:
     // Color Keying
     //
 
-    virtual bool         HasColorKey()                   = 0;
-    virtual const Color& GetColorKey()                   = 0;
-    virtual void         SetColorKey(const Color& color) = 0;
+    virtual bool         HasColorKey()						= 0;
+    virtual const Color& GetColorKey()						= 0;
+    virtual void         SetColorKey(const Color& color)	= 0;
+    virtual void         SetEnableColorKey(bool bEnable )	= 0;
 
     //
     // Direct Surface manipulation

@@ -664,7 +664,7 @@ public:
 		{
 			return E_FAIL;
 		}
-		CD3DDevice9::UpdateCurrentMode( );
+		CD3DDevice9::Get()->UpdateCurrentMode( );
 
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(

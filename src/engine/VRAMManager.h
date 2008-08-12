@@ -32,6 +32,10 @@ class CVRAMManager
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
+	static CVRAMManager mSingleInstance;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	struct STexture
 	{
@@ -92,96 +96,102 @@ private:
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static SVRAMManagerState sVRAM;
+	SVRAMManagerState m_sVRAM;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-	////////////////////////////////////////////////////////////////////////////////////////////
-	static void			Initialise( );
+	CVRAMManager();
+	virtual ~CVRAMManager();
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void			Shutdown( );
+	static inline CVRAMManager * Get() { return &mSingleInstance;	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void			EvictDefaultPoolResources( );
+	void		Initialise( );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static TEXHANDLE	AllocateHandle( );
+	void		Shutdown( );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static bool			ReleaseHandle( TEXHANDLE texHandle );
+	void		EvictDefaultPoolResources( );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static int			GetTotalTextureCount( );
+	TEXHANDLE	AllocateHandle( );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		CreateTexture(	TEXHANDLE	texHandle,
-										D3DFORMAT	texFormat,
-										DWORD		dwWidth,
-										DWORD		dwHeight,
-										bool		bSystemMemory,
-										char *		szTextureName = NULL,
-										DWORD		dwUsageFlags = 0,
-										D3DPOOL		texPool = D3DPOOL_MANAGED );
+	bool		ReleaseHandle( TEXHANDLE texHandle );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		CreateTextureD3DX(	TEXHANDLE				texHandle,
-											const D3DXIMAGE_INFO *	pImageInfo,
-											const WinPoint *		pTargetSize, 
-											IObject *				pobjectMemory, 
-											const bool				bColorKey,
-											const Color &			cColorKey, 
-											char *					szTextureName = NULL );
+	int			GetTotalTextureCount( );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		CreateRenderTarget(	TEXHANDLE	texHandle,
-											DWORD		dwWidth,
-											DWORD		dwHeight );
+	HRESULT		CreateTexture(	TEXHANDLE	texHandle,
+								D3DFORMAT	texFormat,
+								DWORD		dwWidth,
+								DWORD		dwHeight,
+								bool		bSystemMemory,
+								char *		szTextureName = NULL,
+								DWORD		dwUsageFlags = 0,
+								D3DPOOL		texPool = D3DPOOL_MANAGED );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		LockTexture(	TEXHANDLE			texHandle,
-										D3DLOCKED_RECT *	pLockRect,
-										DWORD				dwFlags = 0,
-										DWORD				dwLevel = 0,
-										CONST RECT *		pAreaToLock = NULL );
+	HRESULT		CreateTextureD3DX(	TEXHANDLE				texHandle,
+									const D3DXIMAGE_INFO *	pImageInfo,
+									const WinPoint *		pTargetSize, 
+									IObject *				pobjectMemory, 
+									const bool				bColorKey,
+									const Color &			cColorKey, 
+									char *					szTextureName = NULL );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		UnlockTexture(	TEXHANDLE			texHandle,
-										DWORD				dwLevel = 0 );
+	HRESULT		CreateRenderTarget(	TEXHANDLE	texHandle,
+									DWORD		dwWidth,
+									DWORD		dwHeight );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		SetTexture(		TEXHANDLE			texHandle,
-										DWORD				dwTextureStage );
+	HRESULT		LockTexture(	TEXHANDLE			texHandle,
+								D3DLOCKED_RECT *	pLockRect,
+								DWORD				dwFlags = 0,
+								DWORD				dwLevel = 0,
+								CONST RECT *		pAreaToLock = NULL );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static bool			IsTextureValid(	TEXHANDLE			texHandle );
+	HRESULT		UnlockTexture(	TEXHANDLE			texHandle,
+								DWORD				dwLevel = 0 );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static DWORD		GetPower2( DWORD dwInitialValue );
+	HRESULT		SetTexture(		TEXHANDLE			texHandle,
+								DWORD				dwTextureStage );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void			GetOriginalDimensions( TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight );
+	bool		IsTextureValid(	TEXHANDLE			texHandle );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void			GetActualDimensions( TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight );
+	DWORD		GetPower2( DWORD dwInitialValue );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static D3DFORMAT	GetTextureFormat( TEXHANDLE texHandle );
+	void		GetOriginalDimensions( TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		GetTextureSurface( TEXHANDLE texHandle, IDirect3DSurface9 ** ppSurface );
+	void		GetActualDimensions( TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		PushRenderTarget( TEXHANDLE texHandle, DWORD dwTargetIndex = 0 );
+	D3DFORMAT	GetTextureFormat( TEXHANDLE texHandle );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static HRESULT		PopRenderTarget( DWORD dwTargetIndex = 0);
+	HRESULT		GetTextureSurface( TEXHANDLE texHandle, IDirect3DSurface9 ** ppSurface );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void			SetEnableMipMapGeneration( bool bEnable );
+	HRESULT		PushRenderTarget( TEXHANDLE texHandle, DWORD dwTargetIndex = 0 );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static DWORD		GetPixelSize( D3DFORMAT pixelFormat );
+	HRESULT		PopRenderTarget( DWORD dwTargetIndex = 0);
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	void		SetEnableMipMapGeneration( bool bEnable );
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	DWORD		GetPixelSize( D3DFORMAT pixelFormat );
 };
 
 #endif // _VRAMMANAGER_H_

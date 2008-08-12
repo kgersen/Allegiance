@@ -210,18 +210,21 @@ bool PromptUserForVideoSettings( HINSTANCE hInstance, PathString & szArtPath, LP
 		g_VideoSettings.bWaitForVSync );
 
 	// Set the static setup params.
-	CD3DDevice9::sDevSetupParams.iAdapterID						= g_VideoSettings.iCurrentDevice;
-	CD3DDevice9::sDevSetupParams.hMonitor						= g_VideoSettings.hSelectedMonitor;
-	CD3DDevice9::sDevSetupParams.monitorInfo.cbSize				= sizeof( MONITORINFOEX );
-	CD3DDevice9::sDevSetupParams.bRunWindowed					= g_VideoSettings.bWindowed;
-	CD3DDevice9::sDevSetupParams.bWaitForVSync					= g_VideoSettings.bWaitForVSync;
-	g_VideoSettings.pDevData->GetModeParams(	&CD3DDevice9::sDevSetupParams,
+	CD3DDevice9 * pDev = CD3DDevice9::Get();
+	CD3DDevice9::SD3DDeviceSetupParams * pParams = pDev->GetDeviceSetupParams();
+
+	pParams->iAdapterID			= g_VideoSettings.iCurrentDevice;
+	pParams->hMonitor			= g_VideoSettings.hSelectedMonitor;
+	pParams->monitorInfo.cbSize	= sizeof( MONITORINFOEX );
+	pParams->bRunWindowed		= g_VideoSettings.bWindowed;
+	pParams->bWaitForVSync		= g_VideoSettings.bWaitForVSync;
+	g_VideoSettings.pDevData->GetModeParams(	pParams,
 												g_VideoSettings.iCurrentDevice,
 												g_VideoSettings.iCurrentMode,
 												g_VideoSettings.iCurrentAASetting,
 												&logFile );
 	
-	if( GetMonitorInfo( g_VideoSettings.hSelectedMonitor, &CD3DDevice9::sDevSetupParams.monitorInfo ) == FALSE )
+	if( GetMonitorInfo( g_VideoSettings.hSelectedMonitor, &pParams->monitorInfo ) == FALSE )
 	{
 		// Failed to get valid monitor data.
 		logFile.OutputString( "ERROR: failed to get valid monitor info.\n" );
@@ -229,33 +232,33 @@ bool PromptUserForVideoSettings( HINSTANCE hInstance, PathString & szArtPath, LP
 	}
 
 	// Offset for windowed mode.
-	CD3DDevice9::sDevSetupParams.iWindowOffsetX	= CD3DDevice9::sDevSetupParams.monitorInfo.rcMonitor.left;
-	CD3DDevice9::sDevSetupParams.iWindowOffsetY	= CD3DDevice9::sDevSetupParams.monitorInfo.rcMonitor.top;
-	logFile.OutputStringV( "Window offset: %d  %d\n", CD3DDevice9::sDevSetupParams.iWindowOffsetX,
-		CD3DDevice9::sDevSetupParams.iWindowOffsetY );
+	pParams->iWindowOffsetX	= pParams->monitorInfo.rcMonitor.left;
+	pParams->iWindowOffsetY	= pParams->monitorInfo.rcMonitor.top;
+	logFile.OutputStringV( "Window offset: %d  %d\n", pParams->iWindowOffsetX,
+								pParams->iWindowOffsetY );
 
 	// Copy over the resolution array.
-	CD3DDevice9::sDevSetupParams.iNumRes = g_VideoSettings.iNumResolutions;
-	CD3DDevice9::sDevSetupParams.iCurrentRes = g_VideoSettings.iSelectedResolution;
-	CD3DDevice9::sDevSetupParams.pFullScreenResArray = new CD3DDevice9::SD3DVideoResolution[ g_VideoSettings.iNumResolutions ];
+	pParams->iNumRes = g_VideoSettings.iNumResolutions;
+	pParams->iCurrentRes = g_VideoSettings.iSelectedResolution;
+	pParams->pFullScreenResArray = new CD3DDevice9::SD3DVideoResolution[ g_VideoSettings.iNumResolutions ];
 
 	int i;
-	for( i=0; i<CD3DDevice9::sDevSetupParams.iNumRes; i++ )
+	for( i=0; i<pParams->iNumRes; i++ )
 	{
-		CD3DDevice9::sDevSetupParams.pFullScreenResArray[i].iWidth = g_VideoSettings.pResolutionSet[i].iWidth;
-		CD3DDevice9::sDevSetupParams.pFullScreenResArray[i].iHeight = g_VideoSettings.pResolutionSet[i].iHeight;
-		CD3DDevice9::sDevSetupParams.pFullScreenResArray[i].iFreq = g_VideoSettings.pResolutionSet[i].iFreq;
+		pParams->pFullScreenResArray[i].iWidth = g_VideoSettings.pResolutionSet[i].iWidth;
+		pParams->pFullScreenResArray[i].iHeight = g_VideoSettings.pResolutionSet[i].iHeight;
+		pParams->pFullScreenResArray[i].iFreq = g_VideoSettings.pResolutionSet[i].iFreq;
 	}
 
 	// Store filter details.
-	g_VideoSettings.minFilter = CD3DDevice9::sDevSetupParams.d3dMinFilter;
-	g_VideoSettings.magFilter = CD3DDevice9::sDevSetupParams.d3dMagFilter;
-	g_VideoSettings.mipFilter = CD3DDevice9::sDevSetupParams.d3dMipFilter;
+	g_VideoSettings.minFilter = pParams->d3dMinFilter;
+	g_VideoSettings.magFilter = pParams->d3dMagFilter;
+	g_VideoSettings.mipFilter = pParams->d3dMipFilter;
 
 	// Graphics settings.
-	CD3DDevice9::sDevSetupParams.maxTextureSize = (CD3DDevice9::EMaxTextureSize) g_VideoSettings.iMaxTextureSize;
-	CD3DDevice9::sDevSetupParams.bAutoGenMipmap = g_VideoSettings.bAutoGenMipmaps;
-	CD3DDevice9::sDevSetupParams.dwMaxTextureSize = 256 << g_VideoSettings.iMaxTextureSize;
+	pParams->maxTextureSize = (CD3DDevice9::EMaxTextureSize) g_VideoSettings.iMaxTextureSize;
+	pParams->bAutoGenMipmap = g_VideoSettings.bAutoGenMipmaps;
+	pParams->dwMaxTextureSize = 256 << g_VideoSettings.iMaxTextureSize;
 
 	// Data settings go into the engine settings object.
 	g_DX9Settings.mbUseTexturePackFiles = g_VideoSettings.bUseTexturePackFile;

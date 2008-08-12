@@ -571,10 +571,10 @@ TRef<DDSurface> CreateDDSurface(
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class DeviceDependant : public IObject {
-public:
-    virtual void ClearDevice() = 0;
-};
+//class DeviceDependant : public IObject {
+//public:
+//    virtual void ClearDevice() = 0;
+//};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -583,13 +583,13 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 class PrivateSurface : 
-    public Surface,
-    public DeviceDependant
+    public Surface
+//    public DeviceDependant
 {
 public:
 //    virtual DDSurface *		GetVideoSurface()                            = 0;
 //    virtual DDSurface *		GetVideoSurfaceNoAlloc()                     = 0;
-    virtual void			SetPixelFormat(PixelFormat* ppf)             = 0;
+//    virtual void			SetPixelFormat(PixelFormat* ppf)             = 0;
 //    virtual void			BitBltFromDC(HDC hdc)                        = 0;
 };
 
@@ -657,8 +657,8 @@ TRef<PrivateSurface> CreatePrivateSurface(	D3DFORMAT	texFormat,
 
 class PrivateEngine : public Engine {
 public:
-    virtual void AddDeviceDependant(DeviceDependant* pdeviceDependant)    = 0;
-    virtual void RemoveDeviceDependant(DeviceDependant* pdeviceDependant) = 0;
+    //virtual void AddDeviceDependant(DeviceDependant* pdeviceDependant)    = 0;
+    //virtual void RemoveDeviceDependant(DeviceDependant* pdeviceDependant) = 0;
     virtual void RemovePrivateSurface(PrivateSurface* psurface)           = 0;
 
 //    virtual DDDevice*       GetCurrentDevice() = 0;

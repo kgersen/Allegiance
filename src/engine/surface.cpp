@@ -120,13 +120,14 @@ public:
     {
 		HRESULT hr;
 		bool bSystemMemory = m_stype.Test( SurfaceTypeSystemMemory() );
+		CVRAMManager * pVRAMMan = CVRAMManager::Get();
 
 		// Allocate a handle.
 		// This function can be called even after a handle has been allocated. Not entirely sure
 		// why at the moment.
 		if( m_hTexture == INVALID_TEX_HANDLE )
 		{
-			m_hTexture = CVRAMManager::AllocateHandle();
+			m_hTexture = pVRAMMan->AllocateHandle();
 		}
 
 		// If the size is valid, we create the resource now.
@@ -134,21 +135,21 @@ public:
 		{
 			if( d3dOverrideFormat == D3DFMT_UNKNOWN )
 			{
-				hr = CVRAMManager::CreateTexture(	m_hTexture,
-													m_ppf->GetEquivalentD3DFormat( ),
-													m_size.X(),
-													m_size.Y(),
-													bSystemMemory,
-													szTextureName );
+				hr = pVRAMMan->CreateTexture(	m_hTexture,
+												m_ppf->GetEquivalentD3DFormat( ),
+												m_size.X(),
+												m_size.Y(),
+												bSystemMemory,
+												szTextureName );
 			}
 			else
 			{
-				hr = CVRAMManager::CreateTexture(	m_hTexture,
-													d3dOverrideFormat,
-													m_size.X(),
-													m_size.Y(),
-													bSystemMemory,
-													szTextureName );
+				hr = pVRAMMan->CreateTexture(	m_hTexture,
+												d3dOverrideFormat,
+												m_size.X(),
+												m_size.Y(),
+												bSystemMemory,
+												szTextureName );
 			}
 			_ASSERT( hr == D3D_OK );
 			m_bSurfaceAllocated = true;
@@ -170,13 +171,13 @@ public:
 		_ASSERT( m_hTexture == INVALID_TEX_HANDLE );
 		if( m_hTexture == INVALID_TEX_HANDLE )
 		{
-			m_hTexture = CVRAMManager::AllocateHandle( );
+			m_hTexture = CVRAMManager::Get()->AllocateHandle( );
 		}
 
 		// If the size is valid, we create the resource now.
 		if( ( m_size.X() != 1 ) || ( m_size.Y() != 1 ) )
 		{
-			hr = CVRAMManager::CreateRenderTarget(	m_hTexture,
+			hr = CVRAMManager::Get()->CreateRenderTarget(	m_hTexture,
 													m_size.X(),
 													m_size.Y() );
 			_ASSERT( hr == D3D_OK );
@@ -218,13 +219,13 @@ public:
 
 		if( m_stype.Test( SurfaceTypeDummy() ) == true )
 		{
-			m_ppf = new PixelFormat( CD3DDevice9::GetCurrentMode()->mode.Format );
+			m_ppf = new PixelFormat( CD3DDevice9::Get()->GetCurrentMode()->mode.Format );
 		}
 		else
 		{
 			_ASSERT( m_stype.Test( SurfaceTypeRenderTarget() ) == true );
 			AllocateRenderTarget( );
-			m_ppf = new PixelFormat( CVRAMManager::GetTextureFormat( m_hTexture ) );
+			m_ppf = new PixelFormat( CVRAMManager::Get()->GetTextureFormat( m_hTexture ) );
 		}
 
         if (m_psite)
@@ -306,6 +307,7 @@ public:
 		WORD wVal, wNewColour, wOriginalVal;
 		WORD pBuffer[16];
 		int iCount = 0;
+		bool bExtraGreenBit;
 
 		_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
 
@@ -313,20 +315,20 @@ public:
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
-		hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
+		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
 		_ASSERT( hr == D3D_OK );
 
 		// Copy over data. Only works for 16 bit texture at the moment.
 		ZAssert( m_ppf->PixelBytes() == 2 );
 
 		// Copy the data over. Need to invert the data in the y direction.
+		// TODO: Use the CImageTransfer functions.
 		for( y=0; y<m_size.Y(); y++ )
 		{
 			WORD * pSrc = (WORD*) ( m_pbits + ( y * m_pitch ) );
 			WORD * pDest = (WORD*) ( (BYTE*) lockRect.pBits + ( y * lockRect.Pitch ) );
 			for( x=0; x<m_size.X(); x++ )
 			{
-//				wVal = *pSrc;
 				WORD wRed, wGreen, wBlue;
 				wVal	= *pSrc;
 				wRed	= ( wVal & 0xF800 ) >> 11;
@@ -334,27 +336,19 @@ public:
 				wBlue	= ( wVal & 0x001F );
 				wVal	=  (wRed << 10 ) | ( wGreen << 5 ) | wBlue;
 
-				if( wVal == 0 )
+				// Additional check needed to make sure we don't lose the bottom G bit
+				// as we're going from 6 to 5 bits.
+				bExtraGreenBit = ( ( ( *pSrc >> 5 )& 0x0001 ) ) != 0 ? true : false;
+
+				if( ( wVal == 0 ) && ( bExtraGreenBit == false ) )
 				{
 					wNewColour = 0;			// No alpha, pixel not shown.
 				}
 				else
 				{
 					// Create an A1R5G5B5 entry with alpha 1.
-//					WORD wRed, wGreen, wBlue;
-//					wRed	= ( wVal & 0xF800 ) >> 11;
-//					wGreen	= ( wVal & 0x07E0 ) >> 6;
-//					wBlue	= ( wVal & 0x001F );
-//					wNewColour = 0x8000 | ( wRed << 10 ) | ( wGreen << 5 ) | wBlue;
 					wNewColour = 0x8000 | wVal;
 				}
-				//if( m_hTexture == 0x0000002c )
-				//{
-				//	if( ( x == y ) && ( iCount < 16 ) )
-				//	{
-				//		pBuffer[iCount++] = wNewColour;
-				//	}
-				//}
 				// Store colour.
 				*pDest = wNewColour;
 				pDest ++;
@@ -362,7 +356,7 @@ public:
 			}
 		}
 		// Unlock texture.
-		hr = CVRAMManager::UnlockTexture( m_hTexture );	
+		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
 	}
 
 
@@ -380,7 +374,7 @@ public:
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
-		hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
+		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
 		_ASSERT( hr == D3D_OK );
 
 		int x, y;
@@ -504,7 +498,7 @@ public:
 		//	}
 		//}
 		// Unlock texture.
-		hr = CVRAMManager::UnlockTexture( m_hTexture );	
+		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
 	}
 
 
@@ -522,7 +516,7 @@ public:
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
-		hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
+		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
 		_ASSERT( hr == D3D_OK );
 
 		int x, y;
@@ -559,7 +553,7 @@ public:
 		}
 
 		// Unlock texture.
-		hr = CVRAMManager::UnlockTexture( m_hTexture );	
+		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
 	}
 
 
@@ -577,7 +571,7 @@ public:
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
-		hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
+		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
 		_ASSERT( hr == D3D_OK );
 
 		int x, y;
@@ -614,7 +608,7 @@ public:
 		}
 
 		// Unlock texture.
-		hr = CVRAMManager::UnlockTexture( m_hTexture );	
+		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
 	}
 
 
@@ -669,8 +663,8 @@ public:
 		}
 		if( m_hTexture == INVALID_TEX_HANDLE )
 		{
-			m_hTexture = CVRAMManager::AllocateHandle();
-			hr = CVRAMManager::CreateTextureD3DX(
+			m_hTexture = CVRAMManager::Get()->AllocateHandle();
+			hr = CVRAMManager::Get()->CreateTextureD3DX(
 				m_hTexture,
 				pImageInfo,
 				pTargetSize,
@@ -738,7 +732,7 @@ public:
 		if( m_bColorKey == true )
 		{
 			if( ( ppf->PixelBytes() == 2 ) &&
-				( CD3DDevice9::GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
+				( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
 			{
 				// Create a A1R5G5B5 texture.
 				AllocateSurface( szTemp, D3DFMT_A1R5G5B5 );
@@ -786,7 +780,7 @@ public:
 			D3DLOCKED_RECT lockRect;
 			HRESULT hr;
 
-			hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
+			hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
 			_ASSERT( hr == D3D_OK );
 
 			// Copy over data. Only works for 16 bit texture at the moment.
@@ -854,13 +848,13 @@ public:
 			}
 
 			// Unlock texture.
-			hr = CVRAMManager::UnlockTexture( m_hTexture );
+			hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );
 		}
 
 		// Test if a resize is required.
 		if( bSystemMemory == false )
 		{
-			DWORD dwMaxTextureSize = CD3DDevice9::sDevSetupParams.dwMaxTextureSize;
+			DWORD dwMaxTextureSize = CD3DDevice9::Get()->GetDeviceSetupParams()->dwMaxTextureSize;
 
 			if( dwMaxTextureSize != 0 )
 			{
@@ -887,20 +881,20 @@ public:
 						TEXHANDLE hOld = m_hTexture;
 						m_hTexture = INVALID_TEX_HANDLE;
 
-						AllocateSurface( szTemp, CVRAMManager::GetTextureFormat( hOld ) );
+						AllocateSurface( szTemp, CVRAMManager::Get()->GetTextureFormat( hOld ) );
 						_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
 						
 						DWORD dwColourKey = m_bColorKey ? 0xFF000000 : 0;
 						LPDIRECT3DSURFACE9 pDest, pSrc;
-						CVRAMManager::GetTextureSurface( hOld, &pSrc );
-						CVRAMManager::GetTextureSurface( m_hTexture, &pDest );
+						CVRAMManager::Get()->GetTextureSurface( hOld, &pSrc );
+						CVRAMManager::Get()->GetTextureSurface( m_hTexture, &pDest );
 						hr = D3DXLoadSurfaceFromSurface(	pDest, NULL, NULL,
 															pSrc, NULL, NULL, 
 															D3DX_DEFAULT, dwColourKey );
 						pDest->Release();
 						pSrc->Release();
 
-						CVRAMManager::ReleaseHandle( hOld );
+						CVRAMManager::Get()->ReleaseHandle( hOld );
 
 #ifdef _DEBUG
 						char szBuffer[256];
@@ -979,7 +973,7 @@ public:
 		// Release associated texture.
 		if( m_hTexture != INVALID_TEX_HANDLE )			// Dummy surfaces == INVALID_TEX_HANDLE
 		{
-			if( CVRAMManager::ReleaseHandle( m_hTexture ) == true )
+			if( CVRAMManager::Get()->ReleaseHandle( m_hTexture ) == true )
 			{
 				// Function returns true if resource ref count reaches zero.
 				// Just a double check really.
@@ -1146,6 +1140,11 @@ public:
             m_psurfaceConverted->SetColorKey(color);
         }
     }
+
+	void SetEnableColorKey( bool bEnable )
+	{
+		m_bColorKey = bEnable;
+	}
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -1516,85 +1515,46 @@ public:
         }
 
 		HRESULT hr;
-		if( CD3DDevice9::IsInScene() == false )
+		CD3DDevice9 * pDev = CD3DDevice9::Get();
+		if( pDev->IsInScene() == false )
 		{
-			OutputDebugString("TODO: implement software blt.\n");
+//			OutputDebugString("TODO: implement software blt.\n");
+			// Software based texture copy.
+			CopySubsetFromSrc( WinPoint(rect.XMin(), rect.YMin() ),
+								psurfaceSourceOriginal,
+								rect );
 		}
 		else
 		{
 			// Note: this call also configures the stream.
-			CVertexGenerator::GenerateUITexturedVertices(	psurfaceSourceOriginal->GetTexHandle(), 
-															rect, 
-															true );
+			CVertexGenerator::Get()->GenerateUITexturedVertices(	
+							psurfaceSourceOriginal->GetTexHandle(), 
+							rect, 
+							true );
 			if( psurfaceSourceOriginal->HasColorKey() == true )
 			{
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-				CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-				CD3DDevice9::SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-				CD3DDevice9::SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+				pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
+				pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+				pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+				pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 			}
 			else
 			{
-				CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
 			}
 			// Render this pane.
-			CD3DDevice9::SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
-			hr = CVRAMManager::SetTexture( psurfaceSourceOriginal->GetTexHandle(), 0 );
-			hr = CD3DDevice9::SetFVF( D3DFVF_UIVERTEX );
-			hr = CD3DDevice9::DrawPrimitive( 
+			pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
+			hr = CVRAMManager::Get()->SetTexture( psurfaceSourceOriginal->GetTexHandle(), 0 );
+			hr = pDev->SetFVF( D3DFVF_UIVERTEX );
+			hr = pDev->DrawPrimitive( 
 						D3DPT_TRIANGLESTRIP,
 //						CVertexGenerator::GetUITexVertsVB()->dwFirstElementOffset, 
-						CVertexGenerator::GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UITexVB )->dwFirstElementOffset,
+						CVertexGenerator::Get()->GetPredefinedDynamicBuffer( 
+										CVertexGenerator::ePDBT_UITexVB )->dwFirstElementOffset,
 						2 );
 			_ASSERT( hr == D3D_OK );
 		}
-
-/*
-//        PrivateSurface* psurfaceSource = psurfaceSourceOriginal->GetConvertedSurface(m_ppf);
-		PrivateSurface * psurfaceSource = psurfaceSourceOriginal;
-		if( psurfaceSource->GetPixelFormat() != m_ppf )
-		{
-			return;
-		}
-
-        ZAssert(psurfaceSource->GetPixelFormat() == m_ppf);
-
-		_ASSERT( false );
-		DDDevice * pDDDevice = m_pvideoSurface->GetDDDevice();
-		_ASSERT( pDDDevice != NULL );
-
-		IDirect3DDevice9 * pD3DDevice = pDDDevice->GetD3DDevice()->GetD3DDeviceX();
-		_ASSERT( pD3DDevice != NULL );
-
-		//psurfaceSource
-
-        /* Uncomment this code to use DDraw for blts
-        if (m_pbits == NULL) {
-            m_pvideoSurface->UnclippedBlt(
-                rect, 
-                psurfaceSource->GetVideoSurface(), 
-                pointSource
-            );
-        } else*/
-
-/*
-		// WORKING CODE, NOT THE BIT ABOVE...
-        {
-            BYTE* pdest = GetWritablePointer(rect.Min());
-
-            __try {
-                UnclippedBltHandled(psurfaceSource, rect, pointSource, pdest);
-            } __except (true) {
-                //
-                // DDraw took away our access to some video memory.  Ignore the exception
-                // and continue.
-                //
-            }
-
-            psurfaceSource->ReleasePointer();
-            ReleasePointer();
-        }*/
     }
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1629,7 +1589,7 @@ public:
 
 			// Lock this texture and copy over.
 			D3DLOCKED_RECT lockRect;
-			hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
+			hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
 			_ASSERT( hr == D3D_OK );
 
 			switch( psurfaceSource->GetPixelFormat()->GetD3DFormat() )
@@ -1639,7 +1599,14 @@ public:
 					switch( m_ppf->GetD3DFormat() )
 					{
 					case D3DFMT_R5G6B5:
-						_ASSERT( false );
+						CImageTransfer::Transfer16BitTo16BitNoColourKey(
+									psurfaceSource->GetPointer( WinPoint( rectSource.XMin(), rectSource.YMin() ) ),
+									psurfaceSource->GetPitch(),
+									(BYTE *) lockRect.pBits,
+									lockRect.Pitch,
+									SourceOrigin,
+									WinPoint( 0, 0 ),
+									WinPoint( rectTarget.XSize(), rectTarget.YSize() ) );
 						break;
 					case D3DFMT_A1R5G5B5:
 						CImageTransfer::Transfer16BitTo16BitWithColourKey(
@@ -1705,30 +1672,8 @@ public:
 				_ASSERT( false );
 			}
 
-
-/*			// Copy over data. Only works for 16 bit texture at the moment.
-			//int iNumPixelsPerLine	= psurfaceSource->Get
-			ZAssert(m_ppf->PixelBytes() == 2);
-			int iPitch				= psurfaceSource->GetPitch();
-			const BYTE* pSrc		= psurfaceSource->GetPointer( WinPoint( rectSource.XMin(), rectSource.YMin() ) );
-			BYTE * pDest			= (BYTE *) lockRect.pBits;
-			int scanSize			= rectTarget.XSize() * 2;
-
-			int x, y, iPixel;
-			// Copy the data over.
-			for( y=rectTarget.YMin(); y<rectTarget.YMax() - rectTarget.YMin(); y++ )
-			{
-				for( x=rectTarget.XMin(); x<rectTarget.XMax() - rectTarget.XMin(); x++ )
-				{
-					for( iPixel=0; iPixel<2; iPixel++ )
-					{
-						pDest[ ( y * lockRect.Pitch ) + ( x * 2 ) + iPixel ] = pSrc[ ( y * iPitch ) + ( x * 2 ) + iPixel ];
-					}
-				}
-			}*/
-
 			// Unlock texture.
-			hr = CVRAMManager::UnlockTexture( m_hTexture );
+			hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );
         }
 
         SurfaceChanged();
@@ -1838,8 +1783,8 @@ public:
 			DWORD dwUMax, dwVMax, dwUOMax, dwVOMax;
 			float fUMax, fVMax;
 			
-			CVRAMManager::GetOriginalDimensions( psurfaceSource->GetTexHandle(), &dwUOMax, &dwVOMax );
-			CVRAMManager::GetActualDimensions( psurfaceSource->GetTexHandle(), &dwUMax, &dwVMax );
+			CVRAMManager::Get()->GetOriginalDimensions( psurfaceSource->GetTexHandle(), &dwUOMax, &dwVOMax );
+			CVRAMManager::Get()->GetActualDimensions( psurfaceSource->GetTexHandle(), &dwUMax, &dwVMax );
 			fUMax = 1.0f; //(float) dwUOMax / (float) (dwUMax - 1);
 			fVMax = 1.0f; //(float) dwVOMax / (float) (dwVMax - 1);
 
@@ -1885,82 +1830,37 @@ public:
 			pVerts[5].fU = fUMax;
 			pVerts[5].fV = fVMax;
 
+			CD3DDevice9 * pDev = CD3DDevice9::Get();
+
 			// If the texture has alpha, enable blending.
 			if( psurfaceSource->HasColorKey() == true )
 			{
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-				CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-				CD3DDevice9::SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-				CD3DDevice9::SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+				pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
+				pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+				pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+				pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 			}
 			else
 			{
-				CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
 			}
 
 			// Render this pane.
-			CD3DDevice9::SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
+			pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
 
-			HRESULT hr = CD3DDevice9::SetFVF( D3DFVF_UIVERTEX );
+			HRESULT hr = pDev->SetFVF( D3DFVF_UIVERTEX );
 			_ASSERT( hr == D3D_OK );
-			hr = CD3DDevice9::SetStreamSource( 0, NULL, 0, 0 );
+			hr = pDev->SetStreamSource( 0, NULL, 0, 0 );
 			_ASSERT( hr == D3D_OK );
-			hr = CVRAMManager::SetTexture( psurfaceSource->GetTexHandle(), 0 );
+			hr = CVRAMManager::Get()->SetTexture( psurfaceSource->GetTexHandle(), 0 );
 			_ASSERT( hr == D3D_OK );
-			hr = CD3DDevice9::DrawPrimitiveUP(	D3DPT_TRIANGLELIST,
-															2,
-															pVerts,
-															sizeof( UIVERTEX ) );
+			hr = pDev->DrawPrimitiveUP(	D3DPT_TRIANGLELIST,
+										2,
+										pVerts,
+										sizeof( UIVERTEX ) );
 			_ASSERT( hr == D3D_OK );
-
-			// Lock this texture and copy over.
-/*			D3DLOCKED_RECT lockRect;
-			hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
-			_ASSERT( hr == D3D_OK );
-
-			// Copy over data. Only works for 16 bit texture at the moment.
-			//int iNumPixelsPerLine	= psurfaceSource->Get
-			ZAssert(m_ppf->PixelBytes() == 2);
-			int iPitch				= psurfaceSource->GetPitch();
-			const BYTE* pSrc		= psurfaceSource->GetPointer( WinPoint( rectSource.XMin(), rectSource.YMin() ) );
-			BYTE * pDest			= (BYTE *) lockRect.pBits;
-			int scanSize			= rectTarget.XSize() * 2;
-
-			int x, y, iPixel;
-			// Copy the data over.
-			for( y=rectTarget.YMin(); y<rectTarget.YMax() - rectTarget.YMin(); y++ )
-			{
-				for( x=rectTarget.XMin(); x<rectTarget.XMax() - rectTarget.XMin(); x++ )
-				{
-					for( iPixel=0; iPixel<2; iPixel++ )
-					{
-						pDest[ ( y * lockRect.Pitch ) + ( x * 2 ) + iPixel ] = pSrc[ ( y * iPitch ) + ( x * 2 ) + iPixel ];
-					}
-				}
-			}
-
-			// Unlock texture.
-			hr = CVRAMManager::UnlockTexture( m_hTexture );*/
         }
-/*		SAMPLE FILL CODE:
-		ZAssert(m_ppf->PixelBytes() == 2);
-
-		BYTE* pdest    = (BYTE*) lockRect.pBits;
-		int   scanSize = rect.XSize() * 2;
-		WORD  wPixel   = (WORD)pixel.Value();
-		int   pitch    = lockRect.Pitch;
-
-		for (int y = rect.YSize(); y > 0; y--) 
-		{
-			for (int x = 0; x < rect.XSize(); x++) 
-			{
-				((WORD*)pdest)[x] = wPixel;
-			}
-			pdest += pitch;
-		}*/
-
-        //SurfaceChanged();
     }
 
     void BitBlt(const WinRect& rectTarget, Surface* psurfaceSource)
@@ -1991,52 +1891,56 @@ public:
 		DWORD dwPixel = pixel.Value();
 		dwPixel = dwPixel & 0x00FFFFFF;
 
+		CD3DDevice9 * pDev = CD3DDevice9::Get();
+		CVRAMManager * pVRAMMan = CVRAMManager::Get();
+		CVertexGenerator * pVertGen = CVertexGenerator::Get();
+
 		if( ( m_stype.Test( SurfaceTypeRenderTarget() ) == true ) &&
 			( dwPixel == 0 ) &&
 			( HasColorKey() == true  ) )
 		{
 			// Clear render target colour and alpha.
 			LPDIRECT3DSURFACE9 pSurface;
-			CVRAMManager::GetTextureSurface( m_hTexture, &pSurface );
-//			CD3DDevice9::ColorFill( pSurface, &rect, (DWORD) pixel.Value() );
-			CD3DDevice9::ColorFill( pSurface, &rect, dwPixel );
+			pVRAMMan->GetTextureSurface( m_hTexture, &pSurface );
+//			pDev->ColorFill( pSurface, &rect, (DWORD) pixel.Value() );
+			pDev->ColorFill( pSurface, &rect, dwPixel );
 
 			// Must remember to release the surface.
 			pSurface->Release();
 		}
 		else
 		{
-			if( CD3DDevice9::IsInScene() == true )
+			if( pDev->IsInScene() == true )
 			{
 				if( m_bColorKey == true )
 				{
 					if( dwPixel != 0 )
 					{
-						CVertexGenerator::GenerateFillVerticesD3DColor( (WinRect&)rect, true, (DWORD) pixel.Value() );
+						pVertGen->GenerateFillVerticesD3DColor( (WinRect&)rect, true, (DWORD) pixel.Value() );
 
-						CVRAMManager::SetTexture( INVALID_TEX_HANDLE, 0 );
-						CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-						CD3DDevice9::SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
-						CD3DDevice9::SetFVF( D3DFVF_UICOLOURVERT );
-						CD3DDevice9::DrawPrimitive( 
+						pVRAMMan->SetTexture( INVALID_TEX_HANDLE, 0 );
+						pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+						pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
+						pDev->SetFVF( D3DFVF_UICOLOURVERT );
+						pDev->DrawPrimitive( 
 									D3DPT_TRIANGLESTRIP, 
-//									CVertexGenerator::GetUIFillVertsVB()->dwFirstElementOffset,
-									CVertexGenerator::GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFillVB )->dwFirstElementOffset,
+//									pVertGen->GetUIFillVertsVB()->dwFirstElementOffset,
+									pVertGen->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFillVB )->dwFirstElementOffset,
 									2);
 					}
 				}
 				else
 				{
-					CVertexGenerator::GenerateFillVerticesD3DColor( (WinRect&)rect, true, dwPixel );
+					pVertGen->GenerateFillVerticesD3DColor( (WinRect&)rect, true, dwPixel );
 
-					CVRAMManager::SetTexture( INVALID_TEX_HANDLE, 0 );
-					CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-					CD3DDevice9::SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
-					CD3DDevice9::SetFVF( D3DFVF_UICOLOURVERT );
-					CD3DDevice9::DrawPrimitive( 
+					pVRAMMan->SetTexture( INVALID_TEX_HANDLE, 0 );
+					pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+					pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
+					pDev->SetFVF( D3DFVF_UICOLOURVERT );
+					pDev->DrawPrimitive( 
 									D3DPT_TRIANGLESTRIP, 
-//									CVertexGenerator::GetUIFillVertsVB()->dwFirstElementOffset,
-									CVertexGenerator::GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFillVB )->dwFirstElementOffset,
+//									pVertGen->GetUIFillVertsVB()->dwFirstElementOffset,
+									pVertGen->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFillVB )->dwFirstElementOffset,
 									2 );
 				}
 			}
@@ -2046,7 +1950,7 @@ public:
 				HRESULT hr;
 				D3DLOCKED_RECT lockRect;
 
-				hr = CVRAMManager::LockTexture( m_hTexture, &lockRect );
+				hr = pVRAMMan->LockTexture( m_hTexture, &lockRect );
 				_ASSERT( hr == D3D_OK );
 				ZAssert( ( m_ppf->PixelBytes() == 2) || ( m_ppf->PixelBytes() == 4) );
 
@@ -2087,72 +1991,10 @@ public:
 				}
 
 				// Finished, unlock.
-				hr = CVRAMManager::UnlockTexture( m_hTexture, 0 );
+				hr = pVRAMMan->UnlockTexture( m_hTexture, 0 );
 				_ASSERT( hr == D3D_OK );
 			}
 		}
-
-/*		HRESULT hr;
-		D3DLOCKED_RECT lockRect;
-
-		hr = CVRAMManager::LockTexture( m_hTexture, &lockRect, D3DLOCK_DISCARD, 0, &rect );
-		_ASSERT( hr == D3D_OK );
-		ZAssert( ( m_ppf->PixelBytes() == 2) || ( m_ppf->PixelBytes() == 4) );
-
-		if( m_ppf->PixelBytes() == 2 )
-		{
-			BYTE* pdest    = (BYTE*) lockRect.pBits;
-			int   scanSize = rect.XSize() * 2;
-			WORD  wPixel   = (WORD)pixel.Value();
-			int   pitch    = lockRect.Pitch;
-
-			for (int y = rect.YSize(); y > 0; y--) 
-			{
-				for (int x = 0; x < rect.XSize(); x++) 
-				{
-					((WORD*)pdest)[x] = wPixel;
-				}
-				pdest += pitch;
-			}
-		}
-		else
-		{
-			BYTE* pdest    = (BYTE*) lockRect.pBits;
-			int   scanSize = rect.XSize() * 2;
-			DWORD  dwPixel   = (DWORD)pixel.Value();
-			int   pitch    = lockRect.Pitch;
-
-			for (int y = rect.YSize(); y > 0; y--) 
-			{
-				for (int x = 0; x < rect.XSize(); x++) 
-				{
-					((DWORD*)pdest)[x] = dwPixel;
-				}
-				pdest += pitch;
-			}
-		}
-
-		hr = CVRAMManager::UnlockTexture( m_hTexture, 0 );
-		_ASSERT( hr == D3D_OK );
-
-  /*      if (m_pbits == NULL) {
-            m_pvideoSurface->UnclippedFill(rect, pixel);
-        } else {
-            ZAssert(m_ppf->PixelBytes() == 2);
-
-            BYTE* pdest    = GetWritablePointer(rect.Min());
-            int   scanSize = rect.XSize() * 2;
-            WORD  wPixel   = (WORD)pixel.Value();
-            int   pitch    = GetPitch();
-
-            for (int y = rect.YSize(); y > 0; y--) {
-                for (int x = 0; x < rect.XSize(); x++) {
-                    ((WORD*)pdest)[x] = wPixel;
-                }
-                pdest += pitch;
-            }
-            ReleasePointer();
-        }*/
     }
 
     void FillRect(const WinRect& rectArg, Pixel pixel)

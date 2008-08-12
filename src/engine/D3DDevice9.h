@@ -8,6 +8,9 @@ class CD3DDevice9
 	friend class CVRAMManager;
 	friend class CVBIBManager;
 
+private:
+	static CD3DDevice9 mSingleInstance;						// CD3DDevice9 singleton.
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,7 +27,7 @@ public:
 
 		eD9S_NumStatTypes
 	};
-	static int m_pPerformanceCounters[ eD9S_NumStatTypes ];
+	int m_pPerformanceCounters[ eD9S_NumStatTypes ];
 #endif // EnablePerformanceCounters
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,7 +90,7 @@ public:
 		DWORD					dwMaxTextureSize;
 	};
 
-	static SD3DDeviceSetupParams sDevSetupParams;
+	SD3DDeviceSetupParams m_sDevSetupParams;
 
 	// Note: D3DRS_BLENDOPALPHA is highest value in the D3DRENDERSTATETYPE enumerated type.
 	// D3DTSS_CONSTANT is the highest value in the D3DTEXTURESTAGESTATETYPE enumerated type.
@@ -291,42 +294,51 @@ private:
 		SD3D9LightCache			sLightCache;
 	};
 
-	static SD3DDevice9State sD3DDev9;
+	SD3DDevice9State m_sD3DDev9;
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-	static void		Initialise( class CLogFile * pLogFile );
-	static void		Shutdown( );
-	static void		ResetReferencedResources( );
-	static HRESULT	CreateD3D9( class CLogFile * pLogFile );
-	static HRESULT	CreateDevice( HWND hParentWindow, class CLogFile * pLogFile );
-	static HRESULT	ResetDevice( bool bWindowed, DWORD dwWidth = 0, DWORD dwHeight = 0 );
-	static HRESULT	ClearScreen( );
-	static HRESULT	RenderFinished( );
-	static WinPoint	GetCurrentResolution( );
-	static bool		IsDeviceValid( );
-	static bool		IsInScene( );
-	static bool		IsWindowed( );
+	CD3DDevice9();
+	virtual ~CD3DDevice9();
+
+	static inline CD3DDevice9 * Get()
+	{
+		return &mSingleInstance;
+	}
+
+	void		Initialise( class CLogFile * pLogFile );
+	void		Shutdown( );
+	void		ResetReferencedResources( );
+	HRESULT	CreateD3D9( class CLogFile * pLogFile );
+	HRESULT	CreateDevice( HWND hParentWindow, class CLogFile * pLogFile );
+	HRESULT	ResetDevice( bool bWindowed, DWORD dwWidth = 0, DWORD dwHeight = 0 );
+	HRESULT	ClearScreen( );
+	HRESULT	RenderFinished( );
+	WinPoint	GetCurrentResolution( );
+	bool		IsDeviceValid( );
+	bool		IsInScene( );
+	bool		IsWindowed( );
 
 	// Settings.
-	static void UpdateCurrentMode( );
-	static inline SD3DDeviceMode * GetCurrentMode( )	{ return sD3DDev9.pCurrentMode;	}
-	static inline D3DTEXTUREFILTERTYPE GetMinFilter( )	{ return sDevSetupParams.d3dMinFilter; }
-	static inline D3DTEXTUREFILTERTYPE GetMagFilter( )	{ return sDevSetupParams.d3dMagFilter; }
-	static inline D3DTEXTUREFILTERTYPE GetMipFilter( )	{ return sDevSetupParams.d3dMipFilter; }
+	void UpdateCurrentMode( );
+	inline SD3DDeviceSetupParams * GetDeviceSetupParams()	{ return &m_sDevSetupParams;	}
+	inline SD3DDeviceMode * GetCurrentMode( )				{ return m_sD3DDev9.pCurrentMode;	}
+	inline D3DTEXTUREFILTERTYPE GetMinFilter( )				{ return m_sDevSetupParams.d3dMinFilter; }
+	inline D3DTEXTUREFILTERTYPE GetMagFilter( )				{ return m_sDevSetupParams.d3dMagFilter; }
+	inline D3DTEXTUREFILTERTYPE GetMipFilter( )				{ return m_sDevSetupParams.d3dMipFilter; }
 	
 	// Antialias related access functions.
-	static inline bool IsAntiAliased( )								{ return sDevSetupParams.bAntiAliased;	}
-	static inline LPDIRECT3DSURFACE9 GetBackBufferDepthStencil( )	{ return sD3DDev9.pBackBufferDepthStencilSurface; }
-	static inline LPDIRECT3DSURFACE9 GetRTDepthStencil( )			{ return sD3DDev9.pRTDepthStencilSurface; }
-	static HRESULT SetRTDepthStencil( );
-	static HRESULT SetBackBufferDepthStencil( );
+	inline bool IsAntiAliased( )							{ return m_sDevSetupParams.bAntiAliased;	}
+	inline LPDIRECT3DSURFACE9 GetBackBufferDepthStencil( )	{ return m_sD3DDev9.pBackBufferDepthStencilSurface; }
+	inline LPDIRECT3DSURFACE9 GetRTDepthStencil( )			{ return m_sD3DDev9.pRTDepthStencilSurface; }
+	HRESULT SetRTDepthStencil( );
+	HRESULT SetBackBufferDepthStencil( );
 
-	static inline const LPDIRECT3D9 GetD3D9() { return sD3DDev9.pD3D9; }
-	static D3DCAPS9 * GetDevCaps( ) { return &sD3DDev9.sD3DDevCaps; }
-	static inline const SD3DDevice9FormatFlags * GetDevFlags() { return &sD3DDev9.sFormatFlags; }
+	inline const LPDIRECT3D9 GetD3D9() { return m_sD3DDev9.pD3D9; }
+	D3DCAPS9 * GetDevCaps( ) { return &m_sD3DDev9.sD3DDevCaps; }
+	inline const SD3DDevice9FormatFlags * GetDevFlags() { return &m_sD3DDev9.sFormatFlags; }
 
-	static inline DWORD GetMaxTextureSize() { return sDevSetupParams.dwMaxTextureSize; }
+	inline DWORD GetMaxTextureSize() { return m_sDevSetupParams.dwMaxTextureSize; }
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Device-level functions accessing cached values. Prototypes taken from and 
@@ -339,44 +351,44 @@ public:
 	// At some point:
 	// Set/GetVertexShader, Set/GetPixelShader, DP, DPUP
 
-	static HRESULT	SetRenderState( D3DRENDERSTATETYPE State, DWORD Value );
-	static HRESULT	GetRenderState( D3DRENDERSTATETYPE State, DWORD * pValue );
-	static HRESULT	SetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value );
-	static HRESULT	GetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD * pValue );
-	static HRESULT	SetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value );
-	static HRESULT	GetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD * pValue );
-	static HRESULT	SetTransform( D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX * pMatrix );
-	static HRESULT	GetTransform( D3DTRANSFORMSTATETYPE State, D3DMATRIX * pMatrix );
-	static HRESULT	SetMaterial( CONST D3DMATERIAL9 * pMaterial );
-	static HRESULT	GetMaterial( D3DMATERIAL9 * pMaterial );
-	static HRESULT	SetLight( DWORD Index, CONST D3DLIGHT9 * pLight );
-	static HRESULT	GetLight( DWORD Index, D3DLIGHT9 * pLight );
-	static HRESULT	LightEnable( DWORD Index, BOOL bEnable );
-	static HRESULT	GetLightEnable( DWORD Index, BOOL * pEnable );
-	static HRESULT	SetFVF( DWORD FVF );
-	static HRESULT	GetFVF( DWORD * pFVF );
-	static HRESULT	SetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 pTexture );
-	static HRESULT	GetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 * ppTexture );
-	static HRESULT	SetViewport( CONST D3DVIEWPORT9 * pViewport );
-	static HRESULT	GetViewport( D3DVIEWPORT9 * pViewport );
-	static HRESULT	SetIndices( LPDIRECT3DINDEXBUFFER9  pIndexData );
-	static HRESULT	GetIndices( LPDIRECT3DINDEXBUFFER9 * ppIndexData );
-	static HRESULT	SetStreamSource( UINT StreamNumber, LPDIRECT3DVERTEXBUFFER9 pStreamData, UINT OffsetInBytes, UINT Stride );
-	static HRESULT	GetStreamSource( UINT StreamNumber, LPDIRECT3DVERTEXBUFFER9 * ppStreamData, UINT * pOffsetInBytes, UINT * pStride );
+	HRESULT	SetRenderState( D3DRENDERSTATETYPE State, DWORD Value );
+	HRESULT	GetRenderState( D3DRENDERSTATETYPE State, DWORD * pValue );
+	HRESULT	SetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value );
+	HRESULT	GetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD * pValue );
+	HRESULT	SetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value );
+	HRESULT	GetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD * pValue );
+	HRESULT	SetTransform( D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX * pMatrix );
+	HRESULT	GetTransform( D3DTRANSFORMSTATETYPE State, D3DMATRIX * pMatrix );
+	HRESULT	SetMaterial( CONST D3DMATERIAL9 * pMaterial );
+	HRESULT	GetMaterial( D3DMATERIAL9 * pMaterial );
+	HRESULT	SetLight( DWORD Index, CONST D3DLIGHT9 * pLight );
+	HRESULT	GetLight( DWORD Index, D3DLIGHT9 * pLight );
+	HRESULT	LightEnable( DWORD Index, BOOL bEnable );
+	HRESULT	GetLightEnable( DWORD Index, BOOL * pEnable );
+	HRESULT	SetFVF( DWORD FVF );
+	HRESULT	GetFVF( DWORD * pFVF );
+	HRESULT	SetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 pTexture );
+	HRESULT	GetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 * ppTexture );
+	HRESULT	SetViewport( CONST D3DVIEWPORT9 * pViewport );
+	HRESULT	GetViewport( D3DVIEWPORT9 * pViewport );
+	HRESULT	SetIndices( LPDIRECT3DINDEXBUFFER9  pIndexData );
+	HRESULT	GetIndices( LPDIRECT3DINDEXBUFFER9 * ppIndexData );
+	HRESULT	SetStreamSource( UINT StreamNumber, LPDIRECT3DVERTEXBUFFER9 pStreamData, UINT OffsetInBytes, UINT Stride );
+	HRESULT	GetStreamSource( UINT StreamNumber, LPDIRECT3DVERTEXBUFFER9 * ppStreamData, UINT * pOffsetInBytes, UINT * pStride );
 	
 	// Draw calls.
-	static HRESULT DrawPrimitive(	D3DPRIMITIVETYPE Type,
+	HRESULT DrawPrimitive(	D3DPRIMITIVETYPE Type,
 									UINT StartVertex,
 									UINT PrimitiveCount );
 
-	static HRESULT DrawIndexedPrimitive(	D3DPRIMITIVETYPE Type, 
+	HRESULT DrawIndexedPrimitive(	D3DPRIMITIVETYPE Type, 
 											INT BaseVertexIndex, 
 											UINT MinIndex, 
 											UINT NumVertices, 
 											UINT StartIndex, 
 											UINT PrimitiveCount );
 
-	static HRESULT DrawIndexedPrimitiveUP(	D3DPRIMITIVETYPE PrimitiveType, 
+	HRESULT DrawIndexedPrimitiveUP(	D3DPRIMITIVETYPE PrimitiveType, 
 											UINT MinVertexIndex, 
 											UINT NumVertices, 
 											UINT PrimitiveCount, 
@@ -385,40 +397,40 @@ public:
 											CONST void * pVertexStreamZeroData,
 											UINT VertexStreamZeroStride );
 
-	static HRESULT DrawPrimitiveUP(	D3DPRIMITIVETYPE PrimitiveType, 
+	HRESULT DrawPrimitiveUP(	D3DPRIMITIVETYPE PrimitiveType, 
 									UINT PrimitiveCount,
 									CONST void * pVertexStreamZeroData,
 									UINT VertexStreamZeroStride );
 
-	static HRESULT ColorFill( LPDIRECT3DSURFACE9 pSurface, CONST RECT * pRect, D3DCOLOR color );
-	static HRESULT Clear( DWORD Count, CONST D3DRECT * pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil );
+	HRESULT ColorFill( LPDIRECT3DSURFACE9 pSurface, CONST RECT * pRect, D3DCOLOR color );
+	HRESULT Clear( DWORD Count, CONST D3DRECT * pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil );
 
 	// Miscellaneous device calls.
-	static HRESULT BeginScene();
-	static HRESULT EndScene();
-	static HRESULT TestCooperativeLevel( );
-	static void SetGammaRamp( UINT iSwapChain, DWORD Flags, CONST D3DGAMMARAMP * pRamp );
+	HRESULT BeginScene();
+	HRESULT EndScene();
+	HRESULT TestCooperativeLevel( );
+	void SetGammaRamp( UINT iSwapChain, DWORD Flags, CONST D3DGAMMARAMP * pRamp );
 
 #ifdef EnablePerformanceCounters
-	static void ResetPerformanceCounters();
-	static int GetPerformanceCounter(EDevice9Stat stat );
-	static const char * GetDeviceSetupString()	{ return sD3DDev9.pszDevSetupString; }
+	void ResetPerformanceCounters();
+	int GetPerformanceCounter(EDevice9Stat stat );
+	const char * GetDeviceSetupString()	{ return m_sD3DDev9.pszDevSetupString; }
 #endif // EnablePerformanceCounters
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	// Access functions.
-	static inline const LPDIRECT3DDEVICE9 Device() { return sD3DDev9.pD3DDevice; }
+	inline const LPDIRECT3DDEVICE9 Device() { return m_sD3DDev9.pD3DDevice; }
 
 	// State initialisation functions.
-	static void		InitialiseDeviceStateCache( SD3D9DeviceStateCache * pCache );
-	static void		InitialiseRenderStateCache( DWORD * pRenderStateCache );
-	static void		InitialiseTextureStageCache( DWORD dwStageIndex, DWORD * pTextureStateCache );
-	static void		InitialiseSamplerStateCache( DWORD dwSamplerIndex, DWORD * pSamplerStateCache );
-	static void		InitialiseTransformCache( SD3D9TransformCache * pCache );
-	static void		InitialiseMaterialCache( SD3D9MaterialCache * pCache );
-	static void		InitialiseLightCache( SD3D9LightCache * pCache );
-	static void		CreateAADepthStencilBuffer( );
+	void		InitialiseDeviceStateCache( SD3D9DeviceStateCache * pCache );
+	void		InitialiseRenderStateCache( DWORD * pRenderStateCache );
+	void		InitialiseTextureStageCache( DWORD dwStageIndex, DWORD * pTextureStateCache );
+	void		InitialiseSamplerStateCache( DWORD dwSamplerIndex, DWORD * pSamplerStateCache );
+	void		InitialiseTransformCache( SD3D9TransformCache * pCache );
+	void		InitialiseMaterialCache( SD3D9MaterialCache * pCache );
+	void		InitialiseLightCache( SD3D9LightCache * pCache );
+	void		CreateAADepthStencilBuffer( );
 };
 
 

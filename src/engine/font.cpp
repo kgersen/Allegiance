@@ -91,13 +91,13 @@ private:
 		float fTexWidth, fTexHeight;
 
 		// Create the texture - A8R8G8B8.
-		if( CD3DDevice9::GetDevFlags()->bSupportsA1R5G6B6Format == false )
+		if( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == false )
 		{
 			m_pFontTex = CreatePrivateSurface( D3DFMT_A8R8G8B8, dwTexWidth, dwTexHeight, "Font texture" );
 			hTex = m_pFontTex->GetTexHandle();
 
 			// Lock texture to copy font data into.
-			CVRAMManager::LockTexture( hTex, &lockRect );
+			CVRAMManager::Get()->LockTexture( hTex, &lockRect );
 
 			// Copy in all the data.
 			DWORD * pData = (DWORD*) lockRect.pBits;
@@ -173,7 +173,7 @@ private:
 			hTex = m_pFontTex->GetTexHandle();
 
 			// Lock texture to copy font data into.
-			CVRAMManager::LockTexture( hTex, &lockRect );
+			CVRAMManager::Get()->LockTexture( hTex, &lockRect );
 
 			// Copy in all the data.
 			WORD * pData = (WORD*) lockRect.pBits;
@@ -242,7 +242,7 @@ private:
 		}
 		
 		// Finished, unlock texture.
-		CVRAMManager::UnlockTexture( hTex );
+		CVRAMManager::Get()->UnlockTexture( hTex );
 	}
 
 
@@ -543,25 +543,27 @@ public:
 			return;
 		}
 
-		// Set the texture function.
-		CD3DDevice9::SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-		CD3DDevice9::SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-		CD3DDevice9::SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
-		CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
-		CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+		CD3DDevice9 * pDev = pDev->Get();
 
-		CD3DDevice9::SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
-		CD3DDevice9::SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
-		CD3DDevice9::SetTextureStageState( 2, D3DTSS_COLOROP,   D3DTOP_DISABLE );
+		// Set the texture function.
+		pDev->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
+		pDev->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
+		pDev->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
+		pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
+		pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+
+		pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
+		pDev->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
+		pDev->SetTextureStageState( 2, D3DTSS_COLOROP,   D3DTOP_DISABLE );
 		
-		CD3DDevice9::SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-		CD3DDevice9::SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+		pDev->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+		pDev->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
 		
-		CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		CD3DDevice9::SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-		CD3DDevice9::SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-		CD3DDevice9::SetRenderState( D3DRS_COLORVERTEX, TRUE );
-		CD3DDevice9::SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1 );
+		pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+		pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+		pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+		pDev->SetRenderState( D3DRS_COLORVERTEX, TRUE );
+		pDev->SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1 );
 
 		// Generate the geometry for rendering the text.
 		int iChar = 0;
@@ -577,10 +579,10 @@ public:
 		
 //		CVBIBManager::SVBIBHandle * pFontDynVB = CVertexGenerator::GetUIFontVertsVB();
 		CVBIBManager::SVBIBHandle * pFontDynVB = 
-			CVertexGenerator::GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFontVB );
+			CVertexGenerator::Get()->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFontVB );
 		_ASSERT( pFontDynVB != NULL );
 
-		if( CVBIBManager::LockDynamicVertexBuffer( 
+		if( CVBIBManager::Get()->LockDynamicVertexBuffer( 
 								pFontDynVB, 
 								str.GetLength() * 6,
 								(void**) &pFontVerts ) == false )
@@ -675,13 +677,13 @@ public:
 		}
 		
 		// Finished, unlock the buffer, set the stream.
-		CVBIBManager::UnlockDynamicVertexBuffer( pFontDynVB );
+		CVBIBManager::Get()->UnlockDynamicVertexBuffer( pFontDynVB );
 
 		// Render.
-		CVRAMManager::SetTexture( m_pFontTex->GetTexHandle(), 0 );
-		CVBIBManager::SetVertexStream( pFontDynVB );
-		CD3DDevice9::SetFVF( D3DFVF_UIFONTVERTEX );
-		CD3DDevice9::DrawPrimitive(	D3DPT_TRIANGLELIST,
+		CVRAMManager::Get()->SetTexture( m_pFontTex->GetTexHandle(), 0 );
+		CVBIBManager::Get()->SetVertexStream( pFontDynVB );
+		pDev->SetFVF( D3DFVF_UIFONTVERTEX );
+		pDev->DrawPrimitive(	D3DPT_TRIANGLELIST,
 									pFontDynVB->dwFirstElementOffset,
 									iCurrVert / 3 );
 

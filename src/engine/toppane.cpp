@@ -149,7 +149,7 @@ void TopPane::UpdateBits()
 		{
 			TEXHANDLE hTexture = pprivateSurface->GetTexHandle( );
 			_ASSERT( hTexture != INVALID_TEX_HANDLE );
-			hr = CVRAMManager::PushRenderTarget( hTexture );
+			hr = CVRAMManager::Get()->PushRenderTarget( hTexture );
 		}
 
 		ZTrace("m_bNeedPaint == true");
@@ -173,7 +173,7 @@ void TopPane::UpdateBits()
 
 		if( bRenderTargetRequired == true )
 		{
-			CVRAMManager::PopRenderTarget( );
+			CVRAMManager::Get()->PopRenderTarget( );
 		}
     }
     ZExit("TopPane::UpdateBits()");

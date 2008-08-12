@@ -7,6 +7,10 @@
 class CVertexGenerator
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+private:
+	static CVertexGenerator mSingleInstance;		// CVertexGenerator singleton.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	enum EPredefinedDynamicBufferType
@@ -48,38 +52,40 @@ private:
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static SPredefinedDynamicBufferConfig sDynBufferConfig[ ePDBT_NumPredefinedDynamicBuffers ];
-	static SVertexGeneratorState sVGState;
+	static SPredefinedDynamicBufferConfig m_sDynBufferConfig[ ePDBT_NumPredefinedDynamicBuffers ];
+	SVertexGeneratorState m_sVGState;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void Initialise( );
+	CVertexGenerator();
+	virtual ~CVertexGenerator();
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void GenerateUITexturedVertices( const TEXHANDLE hTexture,
-											const WinRect & rectToDraw,
-											const bool bSetStream );
+	static inline CVertexGenerator * Get() { return &mSingleInstance;	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void GenerateFillVertices(	const WinRect & rectToFill, 
+	void Initialise( );
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	void GenerateUITexturedVertices(	const TEXHANDLE hTexture,
+										const WinRect & rectToDraw,
+										const bool bSetStream );
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	void GenerateFillVertices(	const WinRect & rectToFill, 
+								const bool bSetStream,
+								Color fillColour );
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+	void GenerateFillVerticesD3DColor(	const WinRect & rectToFill,
 										const bool bSetStream,
-										Color fillColour );
+										DWORD d3dColor );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static void GenerateFillVerticesD3DColor(	const WinRect & rectToFill,
-												const bool bSetStream,
-												DWORD d3dColor );
-
-	////////////////////////////////////////////////////////////////////////////////////////////
-//	static inline CVBIBManager::SVBIBHandle * GetUITexVertsVB()		{ return &sVGState.hUITexVertsVB; }
-//	static inline CVBIBManager::SVBIBHandle * GetUIFillVertsVB()	{ return &sVGState.hUIFillVertsVB; }
-//	static inline CVBIBManager::SVBIBHandle * GetUIFontVertsVB()	{ return &sVGState.hUIFontVertsVB; }
-//	static inline CVBIBManager::SVBIBHandle * GetD3DVertexVB()		{ return &sVGState.hD3DVB; }
-//	static inline CVBIBManager::SVBIBHandle * GetD3DLVertexVB()		{ return &sVGState.hD3DLitVB; }
-	static inline CVBIBManager::SVBIBHandle * GetPredefinedDynamicBuffer( EPredefinedDynamicBufferType eBufferType )	
+	inline CVBIBManager::SVBIBHandle * GetPredefinedDynamicBuffer( EPredefinedDynamicBufferType eBufferType )	
 	{ 
-		return &sVGState.hPredefinedDynBuffers[eBufferType]; 
+		return &m_sVGState.hPredefinedDynBuffers[eBufferType]; 
 	}
 };
 

@@ -689,7 +689,7 @@ public:
 
 			if( m_pmodeler->GetUIImageUsageHint() == false )
 			{
-				DWORD dwMaxTextureSize = CD3DDevice9::GetMaxTextureSize();
+				DWORD dwMaxTextureSize = CD3DDevice9::Get()->GetMaxTextureSize();
 				_ASSERT( dwMaxTextureSize >= 256 );
 				while(	( targetSize.x > dwMaxTextureSize ) ||
 						( targetSize.y > dwMaxTextureSize ) )
