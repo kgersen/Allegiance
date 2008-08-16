@@ -14,7 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{CB
 		..\src\Inc\ClubMessages.h = ..\src\Inc\ClubMessages.h
 		..\src\Inc\messagecore.h = ..\src\Inc\messagecore.h
 		..\src\Inc\Messages.h = ..\src\Inc\Messages.h
-		..\src\Inc\Parts.h = ..\src\Inc\Parts.h
 		..\src\Inc\quickchat.h = ..\src\Inc\quickchat.h
 		..\src\Inc\regkey.h = ..\src\Inc\regkey.h
 		..\src\Inc\SlmVer.h = ..\src\Inc\SlmVer.h

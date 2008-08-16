@@ -103,7 +103,8 @@ static void DoEncrypt(int size, char* pdata)
 
 ALLOC_MSG_LIST;
 Global g;
-#include "queries.h"
+// KG- obsolete
+//#include "queries.h"
 
 #if defined(ALLSRV_STANDALONE)
   int GetNextCharacterID()

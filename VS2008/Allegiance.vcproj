@@ -63,7 +63,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="WINTREK;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
 				Culture="1033"
-				AdditionalIncludeDirectories="..\src\Inc;..\src\Lang\NonIntl\allegiance"
+				AdditionalIncludeDirectories="..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -213,6 +213,10 @@
 			</File>
 			<File
 				RelativePath="..\src\Lang\Usa\allegiance\allegiance.rc2"
+				>
+			</File>
+			<File
+				RelativePath="..\src\Lang\Usa\allegiance\resource.h"
 				>
 			</File>
 		</Filter>
@@ -426,14 +430,6 @@
 		</File>
 		<File
 			RelativePath="..\src\WinTrek\radarimage.h"
-			>
-		</File>
-		<File
-			RelativePath="..\src\WinTrek\resource.h"
-			>
-		</File>
-		<File
-			RelativePath="..\src\Lang\Usa\allegiance\resource.h"
 			>
 		</File>
 		<File

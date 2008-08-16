@@ -479,10 +479,6 @@
 			>
 		</File>
 		<File
-			RelativePath="..\src\FedSrv\queries.h"
-			>
-		</File>
-		<File
 			RelativePath="..\src\FedSrv\regini.txt"
 			>
 		</File>

@@ -206,6 +206,10 @@
 				RelativePath="..\src\Lang\Usa\allegiance\allegiance.rc2"
 				>
 			</File>
+			<File
+				RelativePath="..\src\Lang\Usa\allegiance\resource.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Zone"
@@ -417,14 +421,6 @@
 		</File>
 		<File
 			RelativePath="..\src\WinTrek\radarimage.h"
-			>
-		</File>
-		<File
-			RelativePath="..\src\WinTrek\resource.h"
-			>
-		</File>
-		<File
-			RelativePath="..\src\Lang\Usa\allegiance\resource.h"
 			>
 		</File>
 		<File
