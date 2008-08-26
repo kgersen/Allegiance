@@ -103,7 +103,8 @@ static void DoEncrypt(int size, char* pdata)
 
 ALLOC_MSG_LIST;
 Global g;
-#include "queries.h"
+// KG- obsolete
+//#include "queries.h"
 
 #if defined(ALLSRV_STANDALONE)
   int GetNextCharacterID()
@@ -452,8 +453,10 @@ HRESULT pascal FedSrv_Terminate(void)
 
   _AGCModule.TriggerEvent(NULL, AllsrvEventID_Terminate, "", -1, -1, -1, 0);
 
+// eventually remove this
+#ifdef USEAUTH
   g.pzas = NULL;
-
+#endif
   return(S_OK);
 }
 
@@ -785,6 +788,8 @@ if (pfsMission->RequiresInvitation())
   Side Effects:
       Players/teams added to list
  */
+// KG: eventually remove this
+#ifndef ALLSRV_STANDALONE
 void GotInvitationList(CQGetInvitationList * pquery)
 {
   CQGetInvitationListData * pqd = pquery->GetData();
@@ -800,6 +805,7 @@ void GotInvitationList(CQGetInvitationList * pquery)
     }
   }
 }
+#endif
 
 
 /*-------------------------------------------------------------------------
@@ -811,6 +817,8 @@ void GotInvitationList(CQGetInvitationList * pquery)
   Side Effects:
       Tell the players what squads they're in.
  */
+// KG: eventually remove this
+#ifndef ALLSRV_STANDALONE
 void GotCharSquads(CQCharSquads * pquery)
 {
   CQCharSquadsData * pqd = pquery->GetData();
@@ -859,6 +867,7 @@ void GotCharSquads(CQCharSquads * pquery)
 }
 
 
+#endif
 /*-------------------------------------------------------------------------
  * GotLogonDetails
  *-------------------------------------------------------------------------
@@ -4431,6 +4440,8 @@ HRESULT FedSrvSiteBase::OnSysMessage(FedMessaging * pthis)
   return S_OK;
 }
 
+// KG: eventually remove this
+#ifndef ALLSRV_STANDALONE
 void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
   // don't make the event an error event, because this may or may not be fatal.
@@ -4459,7 +4470,7 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
     "HelpFile", VT_BSTR,  bstrHelpFile,
     "Source",   VT_BSTR,  bstrSource);
 }
-
+#endif //ALLSRV_STANDALONE
 
 HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {

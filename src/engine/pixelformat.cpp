@@ -13,14 +13,63 @@ PixelFormat::PixelFormat(
     DWORD blueMask,
     DWORD alphaMask
 ) {
-    m_ddpf.dwSize            = sizeof(DDPIXELFORMAT);
-    m_ddpf.dwFlags           = DDPF_RGB;
-    m_ddpf.dwFourCC          = 0;
-    m_ddpf.dwRGBBitCount     = bits;
-    m_ddpf.dwRBitMask        = redMask;
-    m_ddpf.dwGBitMask        = greenMask;
-    m_ddpf.dwBBitMask        = blueMask;
-    m_ddpf.dwRGBAlphaBitMask = alphaMask;
+	m_d3dFormat					= D3DFMT_UNKNOWN;
+	m_ddpf.dwSize				= sizeof( D3D9PIXELFORMAT );
+	m_ddpf.dwFlags				= 0;
+    m_ddpf.dwRGBBitCount		= bits;
+    m_ddpf.dwRBitMask			= redMask;
+    m_ddpf.dwGBitMask			= greenMask;
+    m_ddpf.dwBBitMask			= blueMask;
+    m_ddpf.dwRGBAlphaBitMask	= alphaMask;
+	m_bSoftwareTexture			= false;
+
+	m_d3dFormat					= GetEquivalentD3DFormat();
+}
+
+PixelFormat::PixelFormat( D3DFORMAT d3dFmt )
+{
+	m_ddpf.dwSize		= sizeof( D3D9PIXELFORMAT );
+	m_ddpf.dwFlags		= 0;
+	m_bSoftwareTexture	= false;
+	m_d3dFormat			= d3dFmt;
+
+	switch( d3dFmt )
+	{
+	case D3DFMT_X8R8G8B8:
+		m_ddpf.dwRGBBitCount		= 32;
+		m_ddpf.dwRBitMask			= 255 << 16;
+		m_ddpf.dwGBitMask			= 255 << 8;
+		m_ddpf.dwBBitMask			= 255;
+		m_ddpf.dwRGBAlphaBitMask	= 0;
+		break;
+
+	case D3DFMT_A8R8G8B8:
+		m_ddpf.dwRGBBitCount		= 32;
+		m_ddpf.dwRBitMask			= 255 << 16;
+		m_ddpf.dwGBitMask			= 255 << 8;
+		m_ddpf.dwBBitMask			= 255;
+		m_ddpf.dwRGBAlphaBitMask	= 255 << 24;
+		break;
+
+	case D3DFMT_A1R5G5B5:
+		m_ddpf.dwRGBBitCount		= 16;
+		m_ddpf.dwRBitMask			= 31 << 10;
+		m_ddpf.dwGBitMask			= 31 << 5;
+		m_ddpf.dwBBitMask			= 31;
+		m_ddpf.dwRGBAlphaBitMask	= 1 << 15;
+		break;
+
+	case D3DFMT_R5G6B5:
+		m_ddpf.dwRGBBitCount		= 16;
+		m_ddpf.dwRBitMask			= 31 << 11;
+		m_ddpf.dwGBitMask			= 63 << 5;
+		m_ddpf.dwBBitMask			= 31;
+		m_ddpf.dwRGBAlphaBitMask	= 0;
+		break;
+
+	default:
+		_ASSERT( false && "Unsupported D3DFORMAT value.");
+	}
 }
 
 DWORD PixelFormat::RedSize()    const { return RedMask()   >> RedShift();   }
@@ -38,7 +87,8 @@ Pixel PixelFormat::MakePixel(DWORD red, DWORD green, DWORD blue) const
     return Pixel::Create(
           ((red   << RedShift()  ) & RedMask()  )
         | ((green << GreenShift()) & GreenMask())
-        | ((blue  << BlueShift() ) & BlueMask() ));
+        | ((blue  << BlueShift() ) & BlueMask() )
+		| AlphaMask() );
 }
 
 Pixel PixelFormat::MakePixel(const Color& color) const
@@ -61,6 +111,13 @@ Pixel PixelFormat::MakePixel(const Color& color) const
             MakeInt(color.GetBlue()  * BlueSize() )
         );
     */
+}
+
+// Added - make color into a 32 bit D3D colour value.
+Pixel PixelFormat::MakeD3DPixel( const Color& color) const
+{
+	PixelFormat tempFmt( D3DFMT_A8R8G8B8 );
+	return tempFmt.MakePixel( color );
 }
 
 Color PixelFormat::MakeColor(Pixel pixel) const
@@ -117,7 +174,8 @@ Color PixelFormat::GetColor(const BYTE* pb) const
 
 bool PixelFormat::ValidGDIFormat() const
 {
-    BitMask mask(m_ddpf.dwFlags);
+	_ASSERT( false );
+/*    BitMask mask(m_ddpf.dwFlags);
 
     //
     // gdi doesn't support alpha
@@ -143,16 +201,14 @@ bool PixelFormat::ValidGDIFormat() const
 
     //
     // less than 8 bpp not supported
-    //
+    //*/
 
     return false;
 }
 
-bool PixelFormat::Equivalent(const DDPIXELFORMAT& ddpf)
+bool PixelFormat::Equivalent(const D3D9PIXELFORMAT& ddpf)
 {
-    return
-           m_ddpf.dwFlags           == ddpf.dwFlags
-        && m_ddpf.dwRGBBitCount     == ddpf.dwRGBBitCount
+    return m_ddpf.dwRGBBitCount     == ddpf.dwRGBBitCount
         && m_ddpf.dwRBitMask        == ddpf.dwRBitMask
         && m_ddpf.dwGBitMask        == ddpf.dwGBitMask
         && m_ddpf.dwGBitMask        == ddpf.dwGBitMask
@@ -166,11 +222,10 @@ bool PixelFormat::Equivalent(const DDPIXELFORMAT& ddpf)
 //////////////////////////////////////////////////////////////////////////////
 
 bool FillDDPF(
-    DDPixelFormat& ddpf,
-    IDirectDrawX* pdd,
+    D3D9PixelFormat& ddpf,
     HDC hdc,
     HBITMAP hbitmap,
-    IDirectDrawPalette** pppalette
+	DWORD * dwPaletteIndex
 ) {
     BYTE        ajBitmapInfo[sizeof(BITMAPINFO) + 3 * sizeof(DWORD)];
     BITMAPINFO* pbmi = (BITMAPINFO*)ajBitmapInfo;
@@ -180,7 +235,6 @@ bool FillDDPF(
     pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     ZVerify(::GetDIBits(hdc, hbitmap, 0, 0, NULL, pbmi, DIB_RGB_COLORS));
 
-    ddpf.dwFlags           = DDPF_RGB;
     ddpf.dwRGBBitCount     = pbmi->bmiHeader.biBitCount;
     ddpf.dwRGBAlphaBitMask = 0;
 
@@ -194,7 +248,8 @@ bool FillDDPF(
                 case 4:
                 case 8:
                 {
-                    ddpf.dwFlags |= ((ddpf.dwRGBBitCount == 4) ? DDPF_PALETTEINDEXED4 : DDPF_PALETTEINDEXED8);
+					_ASSERT( false );		// Need to look at palette conversion if this is used.
+/*                    ddpf.dwFlags |= ((ddpf.dwRGBBitCount == 4) ? DDPF_PALETTEINDEXED4 : DDPF_PALETTEINDEXED8);
 
                     //
                     // Create a palette for the surface
@@ -220,15 +275,17 @@ bool FillDDPF(
                     //
                     // create a DirectDraw palette for the texture.
                     //
+					_ASSERT( false && "TBD" );
+					// Add palette management to CVRAMManager. Should be easy.
+//                    DDCall(pdd->CreatePalette(
+//                        (ddpf.dwRGBBitCount == 4) ? DDPCAPS_4BIT : DDPCAPS_8BIT,
+//                        ppe,
+//                        pppalette,
+//                        NULL
+//                    ));
 
-                    DDCall(pdd->CreatePalette(
-                        (ddpf.dwRGBBitCount == 4) ? DDPCAPS_4BIT : DDPCAPS_8BIT,
-                        ppe,
-                        pppalette,
-                        NULL
-                    ));
-
-                    return true;
+                    return true;*/
+					return false;
                 }
 
                 case 16:
@@ -270,3 +327,46 @@ bool FillDDPF(
 
     return false;
 }
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// GetEquivalentD3DFormat()
+// Temporary function.
+//////////////////////////////////////////////////////////////////////////////
+D3DFORMAT PixelFormat::GetEquivalentD3DFormat( )
+{
+	D3DFORMAT retVal;
+	if( m_ddpf.dwRGBBitCount == 8 ) 
+	{
+		retVal = D3DFMT_P8;
+	}
+	else if( m_ddpf.dwRGBBitCount == 16 )
+	{
+		if( m_ddpf.dwRGBAlphaBitMask != 0 )
+		{
+			retVal = D3DFMT_A1R5G5B5;
+		}
+		else
+		{
+			retVal = D3DFMT_R5G6B5;
+		}
+	}
+	else
+	{
+		if( m_ddpf.dwRGBAlphaBitMask != 0 )
+		{
+			retVal = D3DFMT_A8R8G8B8;
+		}
+		else
+		{
+			retVal = D3DFMT_X8R8G8B8;
+		}
+	}
+	if( m_d3dFormat != D3DFMT_UNKNOWN )
+	{
+		_ASSERT( m_d3dFormat == retVal );
+	}
+	return retVal;
+}
+

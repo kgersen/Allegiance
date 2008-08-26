@@ -57,7 +57,10 @@
 #include "messagesLC.h"
 #include "sharemem.h"
 #include "counters.h"
+// KG - guard with USEAUTH for consistency
+#ifdef USEAUTH
 #include "zauth.h"
+#endif
 #include "broadcast.h"
 #include "zgameinfo.h"
 #include "LobbyApp.h"

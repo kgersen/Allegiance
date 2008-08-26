@@ -61,6 +61,7 @@ public:
 
     MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured);
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown);
+    void MouseEnter(IInputProvider* pprovider, const Point& point);
 };
 
 /////////////////////////////////////////////////////////////////////////////

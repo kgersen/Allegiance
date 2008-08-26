@@ -36,7 +36,11 @@ TRef<Screen> CreateTrainingScreen(Modeler* pmodeler);
 TRef<Screen> CreateTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace, int iMissionIndex);
 TRef<Screen> CreatePostTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace);
 TRef<Screen> CreateGameStartingScreen(Modeler* pmodeler);
-TRef<Screen> CreateVideoScreen(Modeler* pmodeler, bool bIntroOnly);
+
+// BUILD_DX9
+// Taken out of D3D9 build for now, movies not supported at the moment.
+// TRef<Screen> CreateVideoScreen(Modeler* pmodeler, bool bIntroOnly);
+// BUILD_DX9
 
 TRef<IPopup> CreateMissionParametersPopup(Modeler* pmodeler);
 

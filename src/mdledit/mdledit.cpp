@@ -4,6 +4,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+// jul 08 - KG global changes to work with DX9
+
+
+
 #include "pch.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -13,6 +17,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "main.h"
+#include "../Inc/regkey.h"
+
+#include "VideoSettingsDX9.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -76,6 +83,22 @@ public:
     }
 };
 */
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// ModelerSite
+//
+//////////////////////////////////////////////////////////////////////////////
+
+class ModelerSiteImpl : public ModelerSite {
+public:
+    void Error(const ZString& str)
+    {
+        ZError(str);
+        MessageBox(NULL, str, "Error", MB_OK);
+        _exit(0);
+    }
+};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -497,20 +520,43 @@ public:
         const ZString& strCommandLine, 
         bool bImageTest,
         bool bTest, 
-        int initialTest
+        int initialTest,
+		const ZString& strArtPath
     ) :
         EffectWindow(
             papp,
             strCommandLine,
             "MDLEdit",
             false,
-            WinRect(0, 0, 256, 256)
+            WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX, 
+					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Width + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Height + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY)
         ),
         m_bAnimate(false),
         m_bGlow(false),
         m_bClearColor(false)
     {
+
+		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
+		papp->Initialize( strCommandLine, GetHWND() );
+		m_pengine = papp->GetEngine();
+		m_pmodeler = papp->GetModeler();
+
+		// Now set the art path, performed after initialise, else Modeler isn't valid.
+		GetModeler()->SetArtPath(strArtPath);
+
+		// load the fonts
+		TrekResources::Initialize(GetModeler());
+
+		// Perform post window creation initialisation. Initialise the time value.
+		PostWindowCreationInit( );
+		InitialiseTime();
+
         SetEffectWindow(this);
+        GetModeler()->SetSite(new ModelerSiteImpl());
 
         //
         // This app runs in Game Mode
@@ -595,7 +641,7 @@ public:
         // Stars
         //
 
-        m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 1000));
+        m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 5000));
 
         //
         // Background
@@ -645,14 +691,14 @@ public:
         // Test CreateMMLPopup
         //
 
-        /*
+        
         GetPopupContainer()->OpenPopup(
             CreateMMLPopup(
                 GetModeler(),
-                "hlp7a4.mml"
+                "hlp7a4.mml",false
             )
         );
-        */
+        
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -681,6 +727,7 @@ public:
             m_pgroupGeo->AddGeo(m_ptestGeo); 
         }
 
+		//AddBoltTest();
         //AddDebris();
         //AddConeGeoTest();
         //AddIcosahedron();
@@ -1238,7 +1285,7 @@ public:
         {
             m_ppane =
                 new ImagePane(
-                    pmodeler->LoadImage("btncrimsonbmp", false)
+                    pmodeler->LoadImage("btnjoinbmp", false) //"btncrimsonbmp"
                 );
         }
 
@@ -1438,7 +1485,7 @@ public:
         if (m_pscrollPane) {
             if (ks.bDown) {
                 switch(ks.vk) {
-                    /*
+                    
                     case VK_SPACE:
                         {
                             GetPopupContainer()->OpenPopup(
@@ -1449,7 +1496,7 @@ public:
                             m_pscrollPane->SetPos(0);
                         }
                         return true;
-                    */
+                    
 
                     case 0xdb: // '['
                         m_pscrollPane->PageUp();
@@ -1467,22 +1514,6 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// ModelerSite
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class ModelerSiteImpl : public ModelerSite {
-public:
-    void Error(const ZString& str)
-    {
-        ZError(str);
-        MessageBox(NULL, str, "Error", MB_OK);
-        _exit(0);
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//
 // MDLEdit Application
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -1494,8 +1525,17 @@ protected:
 public:
     HRESULT Initialize(const ZString& strCommandLine)
     {
-        EffectApp::Initialize(strCommandLine);
-        GetModeler()->SetSite(new ModelerSiteImpl());
+		PathString pathStr;
+        if (pathStr.IsEmpty()) {
+			pathStr = "C:\\Program Files\\Microsoft Games\\Allegiance\\artwork";
+        }
+		// Ask the user for video settings.
+		if( PromptUserForVideoSettings( GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings") == false )
+		{
+			return E_FAIL;
+		}
+		CD3DDevice9::Get()->UpdateCurrentMode( );
+
 
         //
         // parse for -test
@@ -1533,7 +1573,7 @@ public:
         // Create the window
         //
 
-        m_pwindow = new MDLEditWindow(this, strCommandLine, bImageTest, bTest, initialTest);
+        m_pwindow = new MDLEditWindow(this, strCommandLine, bImageTest, bTest, initialTest, pathStr);
 
         //
         // Parse the command line

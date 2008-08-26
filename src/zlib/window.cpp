@@ -94,13 +94,15 @@ Window::Window(
         m_hwnd = ::CreateWindowEx(
             m_styleEX.GetWord(),
             TEXT(GetTopLevelWindowClassname()),
-#ifdef DREAMCAST
-            TEXT("Title"),
-#else
             strTitle,
-#endif
             m_style.GetWord(),
-            CW_USEDEFAULT, CW_USEDEFAULT,
+
+// BUILD_DX9
+            rect.XMin(), rect.YMin(),
+//#else
+//            CW_USEDEFAULT, CW_USEDEFAULT,
+// BUILD_DX9
+
             //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
             pwindowParent ? pwindowParent->GetHWND() : NULL,
@@ -111,15 +113,16 @@ Window::Window(
     } else {
         m_hwnd = ::CreateWindowEx(
             m_styleEX.GetWord(),
-#ifdef DREAMCAST
-            TEXT("Window"),
-            TEXT("Title"),
-#else
             strClass,
             strTitle,
-#endif
             m_style.GetWord(),
-            CW_USEDEFAULT, CW_USEDEFAULT,
+
+// BUILD_DX9
+            rect.XMin(), rect.YMin(),
+//#else
+//            CW_USEDEFAULT, CW_USEDEFAULT,
+// BUILD_DX9
+
             //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
             pwindowParent ? pwindowParent->GetHWND() : NULL,
@@ -169,13 +172,8 @@ BOOL Window::Create(
     
     m_hwnd = ::CreateWindowEx(
             styleEX.GetWord(),
-#ifdef DREAMCAST
-            TEXT("Window"),
-            TEXT("Title"),
-#else
             szClass ? szClass : "Window",
             szTitle,
-#endif
             m_style.GetWord(),
             m_rect.left, m_rect.top,
             m_rect.XSize(), m_rect.YSize(),
@@ -302,8 +300,12 @@ void Window::SetHasSysMenu(bool bSysMenu)
 
 void Window::UpdateRect()
 {
-    ::GetWindowRect(m_hwnd, &m_rect);
-    ::GetClientRect(m_hwnd, &m_rectClient);
+	BOOL bRetVal;
+    bRetVal = ::GetWindowRect(m_hwnd, &m_rect);
+    _ASSERT( bRetVal != FALSE );
+	bRetVal = ::GetClientRect(m_hwnd, &m_rectClient);
+    _ASSERT( bRetVal != FALSE );
+
     WinPoint pointOffset = ClientToScreen(WinPoint(0, 0));
 
     if (m_pwindowParent) {
@@ -339,7 +341,13 @@ void Window::SetClientRect(const WinRect& rectClient)
 
 void Window::SetPosition(const WinPoint& point)
 {
-    SetWindowPos(m_hwnd, NULL, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+// BUILD_DX9    
+		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+//		SetWindowPos(m_hwnd, HWND_NOTOPMOST, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED);
+//		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+//#else
+//		SetWindowPos(m_hwnd, NULL, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+// BUILD_DX9
 }
 
 void Window::SetSize(const WinPoint& point)
@@ -1023,14 +1031,11 @@ HRESULT Window::StaticInitialize()
     //
     // See if TrackMouseEvent exists
     //
-#ifndef DREAMCAST
     s_pfnTrackMouseEvent = 
         (PFNTrackMouseEvent)GetProcAddress(
             GetModuleHandle("user32"),
             "TrackMouseEvent"
         );
-#endif
-
     return S_OK;
 }
 

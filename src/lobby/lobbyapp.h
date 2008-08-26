@@ -216,7 +216,10 @@ private:
   // *** Perfmon counter stuff ***
   CPerfShare        m_perfshare;
   LOBBY_COUNTERS *  m_pCounters;
+// KG guard with USEAUTH for consistency 
+#ifdef USEAUTH
   TRef<IZoneAuthServer> m_pzas;
+#endif
   Time              m_timeNow;
 
   //ZGameInstanceInfoMsg is important info ZGameServerInfoMsg is trivial wrapper

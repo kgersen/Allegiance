@@ -488,9 +488,6 @@ public:
 
         number = bound(number, 0.0f, 1.0f);
 
-		// KGJV - fix: NaN value to 0
-		if (_isnan(number)) number = 0.0f;
-
         Rect  rect = m_rect;
         Point offset(0, 0);
 
@@ -571,6 +568,15 @@ AnimatedImage::AnimatedImage(Number* ptime, AnimatedImage* pimage) :
 {
 }
 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// AnimatedImage()
+// Create the resources for an animated image.
+// The original source for the animated image in psurfaceSource, which is one large image.
+// The original image is then broken up into square frames, and stored as individual textures, which
+// are then added the m_psurfaces list.
+////////////////////////////////////////////////////////////////////////////////////////////////////
 AnimatedImage::AnimatedImage(Number* ptime, Surface* psurfaceSource, int nRows, int nCols) :
     Image(ptime),
     m_index(0)
@@ -600,17 +606,18 @@ AnimatedImage::AnimatedImage(Number* ptime, Surface* psurfaceSource, int nRows, 
                 TRef<Surface> psurfaceTextureSource =
                     psurfaceSource->CreateCompatibleSurface(WinPoint(size, size), SurfaceType2D());
 
-                ZAssert(size == w && size == h);
-
-                psurfaceTextureSource->FillSurfaceWithColorKey();
-
-                psurfaceTextureSource->BitBlt(
-                    WinPoint(0, 0), 
-                    psurfaceSource, 
-                    WinRect(x, y, x + size, y + size)
-                );
-
+				// Set the colour key, and store in the vector of surfaces.
                 psurfaceTextureSource->SetColorKey(Color(0, 0, 0));
+
+				ZAssert(size == w && size == h);
+
+				// Fill the new texture with the colour key.
+//                psurfaceTextureSource->FillSurfaceWithColorKey();
+
+				// Copy in a portion of the original image into the new texture.
+//				psurfaceTextureSource->BitBlt(	WinPoint(0, 0), psurfaceSource, WinRect(x, y, x + size, y + size) );
+				psurfaceTextureSource->CopySubsetFromSrc( WinPoint(0, 0), psurfaceSource, WinRect(x, y, x + size, y + size) );
+
                 m_psurfaces.Set(index, psurfaceTextureSource);
             }
         }

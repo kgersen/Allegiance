@@ -28,12 +28,7 @@ public:
 // Color Codes
 //
 //////////////////////////////////////////////////////////////////////////////
-#define START_COLOR_CODE    0x81
-#define END_COLOR_CODE      0x82
-#define START_COLOR_STRING  "\x81 %s"
-#define END_COLOR_STRING    "\x82 "
-
-ZString ConvertColorToString (const Color& color);
+// moved to zlib\color.h
 
 //////////////////////////////////////////////////////////////////////////////
 //

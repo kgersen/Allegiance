@@ -50,7 +50,17 @@ HRESULT     CwarpIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
                 SetCluster(cluster);
 
                 SetMass(0.0f);
-                SetName(dataWarp->name);
+				// KG- hack for unmovable alephs (to avoid a IGC file format change)
+				// aleph name with a leading '*' denotes a fixed position aleph
+				// so remove the '*' from the name and set m_bFixedPosition to true
+				if (dataWarp->name[0] == '*')
+				{
+					m_bFixedPosition = true;
+					SetName(&(dataWarp->name[1])); // skip the leading '*'
+				}
+				else
+                	SetName(dataWarp->name);
+
                 SetSignature(dataWarp->signature);
 
                 pMission->AddWarp(this);

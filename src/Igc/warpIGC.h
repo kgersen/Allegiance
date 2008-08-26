@@ -23,7 +23,8 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
     public:
         CwarpIGC(void)
         :
-            m_destination(NULL)
+            m_destination(NULL),
+			m_bFixedPosition(false) // KG- added
         {
         }
 
@@ -165,11 +166,17 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
         {
             return &m_bombs;
         }
+		// KG - added 
+		virtual bool IsFixedPosition()
+		{
+			return m_bFixedPosition;
+		}
 
     private:
         IwarpIGC*           m_destination;
         WarpDef             m_warpDef;
         WarpBombList        m_bombs;
+		bool				m_bFixedPosition; // KG - added to prevent randomization
 };
 
 #endif //__WARPIGC_H_

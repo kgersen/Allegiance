@@ -249,7 +249,10 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
 CLobbyApp::~CLobbyApp()
 {
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_ShuttingDown);
+// KG guard with USEAUTH for consistency 
+#ifdef USEAUTH
   m_pzas = NULL;
+#endif
   m_perfshare.FreeCounters(m_pCounters);
   ZGameInfoClose();
   FreeStaticCoreInfo(); // KGJV #114

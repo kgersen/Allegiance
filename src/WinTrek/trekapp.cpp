@@ -11,6 +11,10 @@
 #include "main.h"
 #include "regkey.h"
 
+// BUILD_DX9
+#include "VideoSettingsDX9.h"
+// BUILD_DX9
+
 extern bool g_bEnableSound = true;
 extern bool g_bCheckFiles;
 extern bool g_fZoneAuth;
@@ -337,7 +341,7 @@ public:
         {
             if (MessageBox(NULL, 
                 "You are low on free memory and/or hard drive space.  "
-                "You may experience proplems running Allegiance.  Run anyway?", 
+                "You may experience problems running Allegiance.  Run anyway?", 
                 "Allegiance",
                 MB_ICONERROR | MB_YESNO
                 ) != IDYES)
@@ -372,7 +376,10 @@ public:
         // Fix success HRESULT
         hr = S_OK;
 
-        EffectApp::Initialize(strCommandLine);
+// BUILD_DX9
+		// For the D3D build, move this to after the window has been created, as we need a valid HWND to create the device.
+//		EffectApp::Initialize(strCommandLine);
+// BUILD_DX9
 
         //
         // get the artpath
@@ -480,13 +487,14 @@ public:
             pathStr = logFileName;
         }
 
-        GetModeler()->SetArtPath(pathStr);
-        UTL::SetArtPath(pathStr);
+// BUILD_DX9
+		// Now set later for D3D build, as modeller isn't valid yet.
+		//GetModeler()->SetArtPath(pathStr);
+// BUILD_DX9
+ 		UTL::SetArtPath(pathStr);
 		
-		// yp your_persona march 25 2006 : Remove EULA.dll dependency patch
-		//
-        /*{
-          HRESULT hr = FirstRunEula(pathStr);
+		/*{
+			HRESULT hr = FirstRunEula(pathStr);
 		
           if (hr == E_FAIL)
           {
@@ -505,11 +513,13 @@ public:
           }
         }*/
 
+// BUILD_DX9
         //
         // load the fonts
         //
 
-        TrekResources::Initialize(GetModeler());
+//        TrekResources::Initialize(GetModeler());
+// BUILD_DX9
 
         //
         // Initialize the runtime
@@ -648,16 +658,37 @@ public:
         // Create the window
         //
 
+// BUILD_DX9
+		// Ask the user for video settings.
+		if( PromptUserForVideoSettings( GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT "\\3DSettings" ) == false )
+		{
+			return E_FAIL;
+		}
+		CD3DDevice9::Get()->UpdateCurrentMode( );
+
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(
                 this, 
-                strCommandLine, 
+                strCommandLine,
+				pathStr,
                 bMovies,
                 bSoftware,
                 bHardware,
                 bPrimary,
                 bSecondary
             );
+// #else
+        //TRef<TrekWindow> pwindow = 
+        //    TrekWindow::Create(
+        //        this, 
+        //        strCommandLine,
+        //        bMovies,
+        //        bSoftware,
+        //        bHardware,
+        //        bPrimary,
+        //        bSecondary
+        //    );
+// BUILD_DX9
 
         if (!pwindow->IsValid()) {
             return E_FAIL;

@@ -3152,7 +3152,11 @@ public:
 
         m_pgroupDisplays = new GroupImage();
 
-        m_pconsoleData   = new ConsoleDataImpl(this->GetViewport(), pszFileName);
+		// BUILD_DX9
+		GetModeler()->SetColorKeyHint( true );
+
+		
+		m_pconsoleData   = new ConsoleDataImpl(this->GetViewport(), pszFileName);
 
         TRef<INameSpace> pnsDisplays = m_pconsoleData->GetNameSpace();
 

@@ -181,7 +181,7 @@ private:
     //////////////////////////////////////////////////////////////////////////////
     
 //    TRef<IDirectInputDevice2>           m_pdid;
-	TRef<IDirectInputDevice7>			m_pdid;					// mdvalley: DInput7
+	TRef<IDirectInputDevice8>			m_pdid;					// kg: DInput8
     TRef<ButtonEvent::SourceImpl>       m_pbuttonEventSource;
     DIDeviceCaps                        m_didc;
     DIDeviceInstance                    m_didi;
@@ -196,6 +196,7 @@ private:
     int                                 m_threshold2;
     int                                 m_acceleration;
     float                               m_sensitivity;
+	HWND								m_hwnd;
 
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -205,8 +206,9 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     
 //    MouseInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
-	MouseInputStreamImpl(IDirectInputDevice7* pdid, HWND hwnd) :		// mdvalley: DInput7
+	MouseInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd) :		// kg: DInput8
         m_pdid(pdid),
+		m_hwnd(hwnd),
         m_rect(0, 0, 0, 0),                                                                         
         m_point(0, 0),
         m_vvalueObject(3),
@@ -566,9 +568,9 @@ public:
             m_bEnabled = bEnabled;
 
             if (m_bEnabled) {
-                //DDCall(m_pdid->SetCooperativeLevel(hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
             } else {
-                //DDCall(m_pdid->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
+//                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
                 DDCall(m_pdid->Unacquire());
             }
         }
@@ -623,7 +625,7 @@ public:
 class JoystickInputStreamImpl : public JoystickInputStream {
 private:
 //    TRef<IDirectInputDevice2>           m_pdid;
-	TRef<IDirectInputDevice7>			m_pdid;		// mdvalley: DInput7
+	TRef<IDirectInputDevice8>			m_pdid;		// kg: DInput8
     DIDeviceCaps                        m_didc;
     DIDeviceInstance                    m_didi;
     TVector<TRef<ValueDDInputObject > > m_vvalueObject;
@@ -713,7 +715,7 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 
 //    JoystickInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
-	JoystickInputStreamImpl(IDirectInputDevice7* pdid, HWND hwnd) :		// mdvalley: DInput7
+	JoystickInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd) :		// kg: DInput8
         m_pdid(pdid),
         m_bFocus(false),
         m_vvalueObject(5)
@@ -1230,14 +1232,14 @@ private:
     {
         TRef<IDirectInputDevice>  pdid;
 //        TRef<IDirectInputDevice2> pdid2;
-		TRef<IDirectInputDevice7> pdid2;		// mdvalley: DInput7
+		TRef<IDirectInputDevice8> pdid2;		// mdvalley: DInput7
 
         DDCall(m_pdi->CreateDevice( pdidi->guidInstance, &pdid, NULL));
 //        DDCall(pdid->QueryInterface(IID_IDirectInputDevice2, (void**)&pdid2));
-		DDCall(pdid->QueryInterface(IID_IDirectInputDevice7, (void**)&pdid2));
+		DDCall(pdid->QueryInterface(IID_IDirectInputDevice8, (void**)&pdid2));
 
         switch (pdidi->dwDevType & 0xff) {
-            case DIDEVTYPE_MOUSE:
+			case DI8DEVTYPE_MOUSE: // kg Di8 DIDEVTYPE_MOUSE:
                 {
                     if (m_pmouseInputStream == NULL) {
                         m_pmouseInputStream = new MouseInputStreamImpl(pdid2, m_hwnd);
@@ -1245,7 +1247,7 @@ private:
                 }
                 break;
 
-            case DIDEVTYPE_JOYSTICK:
+			case DI8DEVTYPE_JOYSTICK: // kg Di8 DIDEVTYPE_JOYSTICK:
                 {
                     TRef<JoystickInputStreamImpl> pjoystickInputStream = 
                         new JoystickInputStreamImpl(pdid2, m_hwnd);
@@ -1323,10 +1325,11 @@ public:
 			g_pdfDIMouse = (DIDATAFORMAT*)::GetProcAddress(m_hdinput, "c_dfDIMouse2");		// mdvalley: Mouse2 for more buttons
             ZAssert(g_pdfDIMouse != NULL);
         #else
-            DDCall(DirectInputCreate(
+            DDCall(DirectInput8Create( // KG - Di8 update
                 GetModuleHandle(NULL), 
-                DIRECTINPUT_VERSION, 
-                &m_pdi, 
+                DIRECTINPUT_VERSION,
+				IID_IDirectInput8,
+                (LPVOID*)&m_pdi, 
                 NULL
             ));
 

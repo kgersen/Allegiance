@@ -1156,6 +1156,10 @@ public:
 
     bool OnButtonCredits()
     {
+		// BUILD_DX9
+		GetModeler()->SetColorKeyHint( true );
+		// BUILD_DX9
+
         TRef<INameSpace> pnsCredits = GetModeler()->GetNameSpace("creditspane");
         m_pcreditsPopup = new CreditsPopup(pnsCredits, this, GetWindow()->GetTime());
         GetWindow()->GetPopupContainer()->OpenPopup(m_pcreditsPopup, false);
