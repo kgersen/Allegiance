@@ -10,8 +10,10 @@
 // warning C4355: 'this' : used in base member initializer list
 #pragma warning(disable:4355)
 
-#define USEASM
-#define FLOATASM
+#ifndef DREAMCAST
+    #define USEASM
+    #define FLOATASM
+#endif
 
 // VS.Net 2003 port: typename is required for template
 #if _MSC_VER >= 1310
@@ -30,6 +32,10 @@
 #include "time.h"
 #include "malloc.h"
 
+#ifdef DREAMCAST
+#include "dreamcast.h"
+#endif
+
 //
 // Required Win32 headers
 //
@@ -41,9 +47,11 @@
 // DirectX Stuff
 //
 
-// KGJV - Removed dependancy from DX
-#include "OldDXDefns.h"	// Older DX definitions included to get the project to build. At some point,
-						// they all become redundant.
+#define DIRECTDRAW_VERSION 0x0700
+#define DIRECT3D_VERSION   0x0700
+
+#include "ddraw.h"
+#include "d3d.h"
 
 //
 // Library Headers

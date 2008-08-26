@@ -10,14 +10,10 @@
 class SurfaceTypeBase {};
 typedef TBitMask<SurfaceTypeBase, DWORD> SurfaceType;
 
-class SurfaceType2D				: public SurfaceType { public: SurfaceType2D			() : SurfaceType(0x01) {} };
-class SurfaceType3D				: public SurfaceType { public: SurfaceType3D			() : SurfaceType(0x02) {} };
-class SurfaceTypeZBuffer		: public SurfaceType { public: SurfaceTypeZBuffer		() : SurfaceType(0x08) {} };
-class SurfaceTypeVideo			: public SurfaceType { public: SurfaceTypeVideo			() : SurfaceType(0x10) {} };
-class SurfaceTypeDummy			: public SurfaceType { public: SurfaceTypeDummy			() : SurfaceType(0x20) {} };
-class SurfaceTypeRenderTarget	: public SurfaceType { public: SurfaceTypeRenderTarget	() : SurfaceType(0x40) {} };
-class SurfaceTypeColorKey		: public SurfaceType { public: SurfaceTypeColorKey		() : SurfaceType(0x80) {} };
-class SurfaceTypeSystemMemory	: public SurfaceType { public: SurfaceTypeSystemMemory	() : SurfaceType(0x100) {} };
+class SurfaceType2D      : public SurfaceType { public: SurfaceType2D     () : SurfaceType(0x01) {} };
+class SurfaceType3D      : public SurfaceType { public: SurfaceType3D     () : SurfaceType(0x02) {} };
+class SurfaceTypeZBuffer : public SurfaceType { public: SurfaceTypeZBuffer() : SurfaceType(0x08) {} };
+class SurfaceTypeVideo   : public SurfaceType { public: SurfaceTypeVideo  () : SurfaceType(0x10) {} };
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -65,12 +61,11 @@ public:
     //
 
     virtual Engine*         GetEngine()      = 0;
-//    virtual Palette*        GetPalette()     = 0;
+    virtual Palette*        GetPalette()     = 0;
     virtual SurfaceType     GetSurfaceType() = 0;
     virtual const WinPoint& GetSize()        = 0;
     virtual PixelFormat*    GetPixelFormat() = 0;
-
-	// KGJV 32B - GetName goes public
+    // KGJV 32B - GetName goes public
     virtual const ZString& GetName()         = 0;
 
     //
@@ -94,10 +89,9 @@ public:
     // Color Keying
     //
 
-    virtual bool         HasColorKey()						= 0;
-    virtual const Color& GetColorKey()						= 0;
-    virtual void         SetColorKey(const Color& color)	= 0;
-    virtual void         SetEnableColorKey(bool bEnable )	= 0;
+    virtual bool         HasColorKey()                   = 0;
+    virtual const Color& GetColorKey()                   = 0;
+    virtual void         SetColorKey(const Color& color) = 0;
 
     //
     // Direct Surface manipulation
@@ -117,19 +111,15 @@ public:
     // KGJV 32B - this is public now
     virtual Surface* GetConvertedSurface(PixelFormat* ppf)            = 0;
 
-	virtual TEXHANDLE		GetTexHandle()							  = 0;
-
     //
     // Drawing
     //
 
-    virtual void BitBlt(const WinPoint& point, Surface* psurfaceSource, bool bLocalCopy = false )  = 0;
+    virtual void BitBlt(const WinPoint& point, Surface* psurfaceSource)                            = 0;
     virtual void BitBlt(const WinPoint& point, Surface* psurfaceSource, const WinRect& rectSource) = 0;
     virtual void BitBlt(const WinRect& point, Surface* psurfaceSource)                             = 0;
     virtual void BitBlt(const WinRect& point, Surface* psurfaceSource, const WinRect& rectSource)  = 0;
     virtual void BitBltFromCenter(const WinPoint& point, Surface* psurfaceSource)                  = 0;
-	virtual void CopySubsetFromSrc(const WinPoint& point, Surface* psurfaceSourceArg, const WinRect& rectSourceArg) = 0;
-  
 
     virtual void FillRect(const WinRect& rect, Pixel pixel)        = 0;
     virtual void FillRect(const WinRect& rect, const Color& color) = 0;

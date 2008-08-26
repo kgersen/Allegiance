@@ -100,35 +100,34 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-EngineWindow::EngineWindow(	EngineApp *			papp,
-							const ZString&		strCommandLine,
-							const ZString&		strTitle,
-							bool				bStartFullscreen,
-							const WinRect&		rect,
-							const WinPoint&		sizeMin,
-							HMENU				hmenu ) :
-				Window(NULL, rect, strTitle, ZString(), 0, hmenu),
-				m_pengine(papp->GetEngine()),
-				m_pmodeler(papp->GetModeler()),
-				m_sizeWindowed(rect.Size()),
-				m_offsetWindowed(rect.Min()),
-				m_bSizeable(true),
-				m_bMinimized(false),
-				m_bMovingWindow(false),
-				m_pimageCursor(Image::GetEmpty()),
-				m_bHideCursor(false),
-				m_bCaptured(false),
-				m_bHit(false),
-				m_bInvalid(true),
-				m_bActive(true),
-				m_bShowCursor(true),
-				m_bMouseEnabled(true),
-				m_bRestore(false),
-				m_bMouseInside(false),
-				m_bMoveOnHide(true),
-				m_bWindowStateMinimised(false),
-				m_bWindowStateRestored(false),
-				m_pEngineApp(papp)
+EngineWindow::EngineWindow(
+          EngineApp*   papp,
+    const ZString&     strCommandLine,
+    const ZString&     strTitle,
+          bool         bStartFullscreen,
+    const WinRect&     rect,
+    const WinPoint&    sizeMin,
+          HMENU        hmenu
+) :
+    Window(NULL, rect, strTitle, ZString(), 0, hmenu),
+    m_pengine(papp->GetEngine()),
+    m_pmodeler(papp->GetModeler()),
+    m_sizeWindowed(rect.Size()),
+    m_offsetWindowed(rect.Min()),
+    m_bSizeable(true),
+    m_bMinimized(false),
+    m_bMovingWindow(false),
+    m_pimageCursor(Image::GetEmpty()),
+    m_bHideCursor(false),
+    m_bCaptured(false),
+    m_bHit(false),
+    m_bInvalid(true),
+    m_bActive(true),
+    m_bShowCursor(true),
+    m_bMouseEnabled(true),
+    m_bRestore(false),
+    m_bMouseInside(false),
+    m_bMoveOnHide(true)
 {
     //
     // Button Event Sink
@@ -142,6 +141,14 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
     m_ppointMouse = new ModifiablePointValue(Point(0, 0));
 
+    //
+    // get time
+    //
+
+    TRef<INameSpace> pnsModel = m_pmodeler->GetNameSpace("model");
+    CastTo(m_pnumberTime, pnsModel->FindMember("time"));
+
+    //
     // Create the input engine
     //
 
@@ -150,15 +157,17 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
     //
     // Should we start fullscreen?
-	CD3DDevice9 * pDev = CD3DDevice9::Get();
-	m_bStartFullScreen = pDev->GetDeviceSetupParams()->bRunWindowed ? false : true;
-    ParseCommandLine( strCommandLine, m_bStartFullScreen );
+    //
 
+    bool bFullscreen = bStartFullscreen;
+    ParseCommandLine(strCommandLine, bFullscreen);
+
+    //
     // Get the mouse
     //
 
     m_pmouse = m_pinputEngine->GetMouse();
-    m_pmouse->SetEnabled(m_bStartFullScreen);
+    m_pmouse->SetEnabled(bFullscreen);
     papp->SetMouse(m_pmouse);
 
     m_pmouse->GetEventSource()->AddSink(m_peventSink = new ButtonEvent::Delegate(this));
@@ -169,57 +178,11 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
     SetMinimumClientSize(sizeMin);
 
-    // Filter all keyboard input
-    m_pkeyboardInput = new EngineWindowKeyboardInput(this);
-    AddKeyboardInputFilter(m_pkeyboardInput);
-
-    // Initialize performance counters
-    m_pszLabel[0]   = '\0';
-    m_bFPS          = false;
-    m_indexFPS      = 0;
-    m_frameCount    = 0;
-    m_frameTotal    = 0;
-    m_timeLastFrame =
-    m_timeLast      =
-    m_timeCurrent   = 
-    m_timeStart     = Time::Now();
-    m_timeLastClick = 0;
-
-    // menu
-    m_pmenuCommandSink  = new MenuCommandSink(this);
-
-    // Start the callback
-    EnableIdleFunction();
-
-	// Create the D3D device.
-	HWND hWindow = GetHWND();
-
-	CLogFile devLog( "DeviceCreation.log" );
-	pDev->Initialise( &devLog );
-	if( pDev->CreateD3D9( &devLog ) != D3D_OK )
-	{
-		_ASSERT( false );
-	}
-	if( pDev->CreateDevice( hWindow, &devLog ) != D3D_OK )
-	{
-		_ASSERT( false );
-	}
-	devLog.OutputString( "Device creation finished.\n" );
-
-	// Initialise the various engine components.
-	CVRAMManager::Get()->Initialise( );
-	CVBIBManager::Get()->Initialise( );
-	CVertexGenerator::Get()->Initialise( );
-}
-
-EngineWindow::~EngineWindow()
-{
-}
-
-void EngineWindow::PostWindowCreationInit()
-{
+    //
     // Tell the engine we are the window
-    GetEngine()->SetFocusWindow(this, m_bStartFullScreen);
+    //
+
+    GetEngine()->SetFocusWindow(this, bFullscreen);
 
     //
     // These rects track the size of the window
@@ -232,7 +195,9 @@ void EngineWindow::PostWindowCreationInit()
 
     //
     // Intialize all the Image stuff
- /*   m_pgroupImage =
+    //
+
+    m_pgroupImage =
         new GroupImage(
             CreateUndetectableImage(
                 m_ptransformImageCursor = new TransformImage(
@@ -243,20 +208,55 @@ void EngineWindow::PostWindowCreationInit()
                 )
             ),
             m_pwrapImage = new WrapImage(Image::GetEmpty())
-        );*/
+        );
 
-	m_ptranslateTransform	= new TranslateTransform2( m_ppointMouse );
-	m_ptransformImageCursor = new TransformImage( Image::GetEmpty(), m_ptranslateTransform );
-	m_pwrapImage			= new WrapImage(Image::GetEmpty());
-    m_pgroupImage			= new GroupImage( CreateUndetectableImage( m_ptransformImageCursor ), m_pwrapImage );
+    //
+    // Filter all keyboard input
+    //
+
+    m_pkeyboardInput = new EngineWindowKeyboardInput(this);
+    AddKeyboardInputFilter(m_pkeyboardInput);
 
     //
     // Setup the popup container
-    m_ppopupContainer = m_pEngineApp->GetPopupContainer();
+    //
+
+    m_ppopupContainer = papp->GetPopupContainer();
     IPopupContainerPrivate* ppcp; CastTo(ppcp, m_ppopupContainer);
     ppcp->Initialize(m_pengine, GetScreenRectValue());
 
-	m_pfontFPS = GetModeler()->GetNameSpace("model")->FindFont("defaultFont");
+    //
+    // Initialize performance counters
+    //
+
+    m_pszLabel[0]   = '\0';
+    m_bFPS          = false;
+    m_indexFPS      = 0;
+    m_frameCount    = 0;
+    m_frameTotal    = 0;
+    m_timeLastFrame =
+    m_timeLast      =
+    m_timeCurrent   = 
+    m_timeStart     = Time::Now();
+    m_timeLastClick = 0;
+
+    m_pfontFPS = GetModeler()->GetNameSpace("model")->FindFont("defaultFont");
+
+    //
+    // menu
+    //
+
+    m_pmenuCommandSink  = new MenuCommandSink(this);
+
+    //
+    // Start the callback
+    //
+
+    EnableIdleFunction();
+}
+
+EngineWindow::~EngineWindow()
+{
 }
 
 void EngineWindow::StartClose()
@@ -286,9 +286,8 @@ void EngineWindow::OnClose()
     Window::OnClose();
 }
 
-// TBD: Switch these flags off.
 bool g_bMDLLog    = false;
-bool g_bWindowLog = true;
+bool g_bWindowLog = false;
 
 void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartFullscreen)
 {
@@ -299,39 +298,19 @@ void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartF
         ZString str;
 
         if (token.IsMinus(str)) {
-// BUILD_DX9
-            if (str == "mdllog") {
+            if (str == "windowed") {
+                bStartFullscreen = false;
+            } else if (str == "fullscreen") {
+                bStartFullscreen = true;
+            } else if (str == "mdllog") {
                 g_bMDLLog = true;
             } else if (str == "windowlog") {
                 g_bWindowLog = true;
             }
-//#else
-//            if (str == "windowed") {
-//                bStartFullscreen = false;
-//            } else if (str == "fullscreen") {
-//                bStartFullscreen = true;
-//            } else if (str == "mdllog") {
-//                g_bMDLLog = true;
-//            } else if (str == "windowlog") {
-//                g_bWindowLog = true;
-//            }
-// BUILD_DX9
         } else {
             token.IsString(str);
         }
     }
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// InitialiseTime()
-//
-//////////////////////////////////////////////////////////////////////////////
-void EngineWindow::InitialiseTime()
-{
-    // get time
-    TRef<INameSpace> pnsModel = m_pmodeler->GetNameSpace("model");
-    CastTo(m_pnumberTime, pnsModel->FindMember("time"));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -342,31 +321,10 @@ void EngineWindow::InitialiseTime()
 
 void EngineWindow::UpdateSurfacePointer()
 {
-	CD3DDevice9 * pDev = CD3DDevice9::Get();
-	if( !m_pengine->IsFullscreen() )
-	{
-		m_psurface = m_pengine->CreateDummySurface( GetClientRect().Size(), NULL );
-		
-		if( pDev->IsDeviceValid() == true )
-		{
-			pDev->ResetDevice(	pDev->IsWindowed(), 
-								GetClientRect().Size().x,
-								GetClientRect().Size().y );
-		}
-	}
-	else
-	{
-		m_psurface = m_pengine->CreateDummySurface( m_pengine->GetFullscreenSize(), NULL );
+    m_psurface = NULL;
 
-		if( pDev->IsDeviceValid() == true )
-		{
-			pDev->ResetDevice(	pDev->IsWindowed(), 
-								m_pengine->GetFullscreenSize().x,
-								m_pengine->GetFullscreenSize().y );
-		}
-	}
-
-/*	if( (!m_pengine->IsFullscreen())
+    if (
+           (!m_pengine->IsFullscreen())
         || (!m_pengine->GetUsing3DAcceleration())
     ) {
         WinPoint size = GetClientRect().Size();
@@ -401,7 +359,7 @@ void EngineWindow::UpdateSurfacePointer()
                 SurfaceType2D() | SurfaceType3D() | SurfaceTypeZBuffer(),
                 NULL
             );
-    }*/
+    }
 }
 
 void EngineWindow::UpdateWindowStyle()
@@ -432,8 +390,7 @@ void EngineWindow::UpdateWindowStyle()
         SetHasMaximize(true);
         SetHasSysMenu(true);
         Window::SetSizeable(m_bSizeable);
-//        SetTopMost(false);
-        SetTopMost(true);
+        SetTopMost(false);
 
         //
         // Win32 doesn't recognize the style change unless we resize the window
@@ -588,7 +545,7 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
         // Release the backbuffer
         //
 
-//        m_psurface = NULL;
+        m_psurface = NULL;
 
         //
         // Switch modes
@@ -621,23 +578,11 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
 
 bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 {
-	//char szBuffer[256];
-	//sprintf( szBuffer, "%d  %d,   %d %d\n", pwp->x, pwp->y, 
-	//	m_bWindowStateMinimised, m_bWindowStateRestored );
-	//OutputDebugString( szBuffer );
-
     if (GetFullscreen()) {
         pwp->x = 0;
         pwp->y = 0;
-    } 
-	else 
-	{
-		// For some reason, when restoring a minimised window, it gets a position of
-		// -32000, -32000.
-		pwp->x = max( 0, pwp->x );
-		pwp->y = max( 0, pwp->y );
-        if (!m_bMovingWindow) 
-		{
+    } else {
+        if (!m_bMovingWindow) {
             return Window::OnWindowPosChanging(pwp);
         }
     }
@@ -736,56 +681,31 @@ void EngineWindow::SetFullscreenSize(const WinPoint& size)
 
 void EngineWindow::ChangeFullscreenSize(bool bLarger)
 {
-    if (m_pengine->IsFullscreen() && m_bSizeable) 
-	{
-/*        WinPoint size = GetFullscreenSize();
+    if (m_pengine->IsFullscreen() && m_bSizeable) {
+        WinPoint size = GetFullscreenSize();
 
-        if (size == WinPoint(640, 480)) 
-		{
-            if (bLarger) 
-			{
-                if (m_modeIndex < s_countModes) 
-				{
+        if (size == WinPoint(640, 480)) {
+            if (bLarger) {
+                if (m_modeIndex < s_countModes) {
                     m_modeIndex++;
-                } 
-				else 
-				{
+                } else {
                     m_pengine->ChangeFullscreenSize(bLarger);
                 }
-            } 
-			else 
-			{
-                if (m_modeIndex > 0) 
-				{
+            } else {
+                if (m_modeIndex > 0) {
                     m_modeIndex--;
                 }
             }
-        } 
-		else 
-		{
+        } else {
             m_pengine->ChangeFullscreenSize(bLarger);
         }
 
         Invalidate();
 
-        RenderSizeChanged(	( size == WinPoint ( 640, 480 ) ) && 
-							( m_modeIndex < s_countModes ) );*/
-
-		CD3DDevice9 * pDev = CD3DDevice9::Get();
-		if( bLarger == true )
-		{
-			pDev->GetDeviceSetupParams()->iCurrentRes ++;
-			pDev->GetDeviceSetupParams()->iCurrentRes %= pDev->GetDeviceSetupParams()->iNumRes;
-		}
-		else
-		{
-			pDev->GetDeviceSetupParams()->iCurrentRes --;
-			pDev->GetDeviceSetupParams()->iCurrentRes %= pDev->GetDeviceSetupParams()->iNumRes;
-		}
-		_ASSERT( ( pDev->GetDeviceSetupParams()->iCurrentRes >= 0 ) &&
-				( pDev->GetDeviceSetupParams()->iCurrentRes < pDev->GetDeviceSetupParams()->iNumRes ) );
-        Invalidate();
-        RenderSizeChanged( false );
+        RenderSizeChanged(
+               (size == WinPoint(640, 480)) 
+            && (m_modeIndex < s_countModes)
+        );
     }
 }
 
@@ -823,12 +743,13 @@ TRef<IPopup> EngineWindow::GetEngineMenu(IEngineFont* pfont)
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
     m_pitemHigherResolution    = pmenu->AddMenuItem(idmHigherResolution   , "Higher Resolution"                               , 'H');
     m_pitemLowerResolution     = pmenu->AddMenuItem(idmLowerResolution    , "Lower Resolution"                                , 'L');
-
-								 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
+    m_pitemAllow3DAcceleration = pmenu->AddMenuItem(idmAllow3DAcceleration, GetAllow3DAccelerationString()                    , 'A');
+    m_pitemAllowSecondary      = pmenu->AddMenuItem(idmAllowSecondary     , GetAllowSecondaryString()                         , 'S');
+                                 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
                                  pmenu->AddMenuItem(0                     , "Current device state"                                 );
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
     m_pitemDevice              = pmenu->AddMenuItem(0                     , GetDeviceString()                                      );
-//    m_pitemRenderer            = pmenu->AddMenuItem(0                     , GetRendererString()                                    );
+    m_pitemRenderer            = pmenu->AddMenuItem(0                     , GetRendererString()                                    );
     m_pitemResolution          = pmenu->AddMenuItem(0                     , GetResolutionString()                                  );
     m_pitemRendering           = pmenu->AddMenuItem(0                     , GetRenderingString()                                   );
     m_pitemBPP                 = pmenu->AddMenuItem(0                     , GetPixelFormatString()                                 ); // KGJV 32B
@@ -893,8 +814,10 @@ ZString EngineWindow::GetAllowSecondaryString()
 void EngineWindow::UpdateMenuStrings()
 {
     if (m_pitemDevice) {
+        m_pitemAllow3DAcceleration->SetString(GetAllow3DAccelerationString());
+        m_pitemAllowSecondary     ->SetString(GetAllowSecondaryString()     );
         m_pitemDevice             ->SetString(GetDeviceString()             );
-//        m_pitemRenderer           ->SetString(GetRendererString()           );
+        m_pitemRenderer           ->SetString(GetRendererString()           );
         m_pitemResolution         ->SetString(GetResolutionString()         );
         m_pitemRendering          ->SetString(GetRenderingString()          );
         m_pitemBPP                ->SetString(GetPixelFormatString()        );
@@ -903,9 +826,8 @@ void EngineWindow::UpdateMenuStrings()
 
 void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
 {
-    switch (pitem->GetID()) 
-	{
-/*       case idmAllowSecondary:
+    switch (pitem->GetID()) {
+        case idmAllowSecondary:
             GetEngine()->SetAllowSecondary(
                 !GetEngine()->GetAllowSecondary()
             );
@@ -917,20 +839,19 @@ void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
             );
             break;
 
-		// DISABLE THE higher/lower resolution option - to be reinstated at some point.
-		case idmHigherResolution:
+        case idmHigherResolution:
             ChangeFullscreenSize(true);
             break;
 
         case idmLowerResolution:
             ChangeFullscreenSize(false);
-            break;*/
+            break;
 
         case idmBrightnessUp:
             GetEngine()->SetGammaLevel(
                 GetEngine()->GetGammaLevel() * 1.01f
             );
-			break;
+            break;
 
         case idmBrightnessDown:
             GetEngine()->SetGammaLevel(
@@ -950,71 +871,49 @@ void EngineWindow::UpdatePerformanceCounters(Context* pcontext, Time timeCurrent
     m_frameTotal++;
     if (m_bFPS) {
         if (m_frameCount == -1) {
-//            pcontext->ResetPerformanceCounters();
-			CD3DDevice9::Get()->ResetPerformanceCounters();
+            pcontext->ResetPerformanceCounters();
             m_frameCount    = 0;
             m_timeLastFrame = timeCurrent;
         }
 
         m_frameCount++;
-		if (m_timeCurrent - m_timeLastFrame > 1.0) 
-		{
-			float fOneOverFrameCount = 1.0f / m_frameCount;
-			float fNumPrims = (float)CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumPrimsRendered );
-			float fPrimsPerFrame = fNumPrims * fOneOverFrameCount;
-			float fPrimsPerSecond = fNumPrims / (timeCurrent - m_timeLastFrame);
-			float fDPsPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumDrawPrims );
-			float fStateChangesPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumStateChanges );
-			float fTextureChangesPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumTextureChanges );
-			float fShaderChangesPerFrame = (float) CD3DDevice9::Get()->GetPerformanceCounter( CD3DDevice9::eD9S_NumShaderChanges );
-			fDPsPerFrame *= fOneOverFrameCount;
-			fStateChangesPerFrame *= fOneOverFrameCount;
-			fTextureChangesPerFrame *= fOneOverFrameCount;
-			fShaderChangesPerFrame *= fOneOverFrameCount;
+        if (m_timeCurrent - m_timeLastFrame > 1.0) {
+            double triangles = (double)pcontext->GetPerformanceCounter(CounterTriangles);
+            double tpf  = triangles / m_frameCount;
+            double ppf  = (double)pcontext->GetPerformanceCounter(CounterPoints)    / m_frameCount;
+            double tps  = triangles / (timeCurrent - m_timeLastFrame);
+            double fps  = m_frameCount / (timeCurrent - m_timeLastFrame);
+            double mspf = 1000.0 * (timeCurrent - m_timeLastFrame) / m_frameCount;
 
-			double fps  = m_frameCount / (timeCurrent - m_timeLastFrame);
-			double mspf = 1000.0 * (timeCurrent - m_timeLastFrame) / m_frameCount;
+            if (m_indexFPS == 0) {
+                m_strPerformance1 =
+                      #ifdef ICAP
+                        ZString("ICAP ")
+                      #elif defined(_DEBUG)
+                        ZString("Debug ")
+                      #else
+                        ZString("Retail ")
+                      #endif
+                    + m_pszLabel
+                    + "mspf: " + ZString(MakeInt(mspf))
+                    + " fps: " + ZString(MakeInt(fps))
+                    + " tmem: (" + ZString(m_pengine->GetAvailableTextureMemory() / 1024)
+                    + ", " + ZString(m_pengine->GetTotalTextureMemory() / 1024)
+                    + ") vmem: (" + ZString(m_pengine->GetAvailableVideoMemory() / 1024)
+                    + ", " + ZString(m_pengine->GetTotalVideoMemory() / 1024)
+                    + ") tpf: " + ZString(MakeInt(tpf))
+                    + " tps: " + ZString(MakeInt(tps))
+                    + " ppf: " + ZString(MakeInt(ppf))
+                    + " gamma: " + ZString(GetEngine()->GetGammaLevel(), 6, 4);
 
-			if (m_indexFPS == 0) 
-			{
-				// Old performance string:
-				// mspf, fps, tmem/maxtmem, vmem/maxvmem, tris/frame, tris/sec, points/frame, gamma
-				//
-				// New performance string:
-				// fps, available tmem, num prims, num dp calls,
-				// num state changes, num tex changes, num shader changes.
-
-				m_strPerformance1 =
-#ifdef ICAP
-					ZString("ICAP: ")
-#elif defined(_DEBUG)
-					ZString("Debug: ")
-#else
-					ZString("Retail: ")
-#endif
-//					+ ZString(CD3DDevice9::GetDeviceSetupString())
-					+ " mspf: " + ZString(MakeInt(mspf))
-					+ " fps: " + ZString(MakeInt(fps))
-//					+ " tmem: (" + ZString(CD3DDevice9::GetPerformanceCounter( CD3DDevice9::eD9S_CurrentTexMem ) )
-//					+ "of " + ZString(CD3DDevice9::GetPerformanceCounter( CD3DDevice9::eD9S_InitialTexMem ) )
-//					+ ") ppf: " + ZString(MakeInt(fPrimsPerFrame))
-					+ " ppf: " + ZString(MakeInt(fPrimsPerFrame))
-					+ " pps: " + ZString(MakeInt(fPrimsPerSecond))
-					+ " #dp: " + ZString(MakeInt(fDPsPerFrame))
-					+ " #sc: " + ZString(MakeInt(fStateChangesPerFrame))
-					+ " #tx: " + ZString(MakeInt(fTextureChangesPerFrame))
-					+ " #shc: " + ZString(MakeInt(fShaderChangesPerFrame));
-				
-				m_strPerformance2 = GetFPSString((float)fps, (float)mspf, pcontext);
-			} 
-			else 
-			{
-				m_strPerformance1 = ZString(MakeInt(mspf)) + "/" + ZString(MakeInt(fps));
-			}
+                m_strPerformance2 = GetFPSString((float)fps, (float)mspf, pcontext);
+            } else {
+                m_strPerformance1 = ZString(MakeInt(mspf)) + "/" + ZString(MakeInt(fps));
+            }
 
             m_frameCount    = 0;
             m_timeLastFrame = timeCurrent;
-			CD3DDevice9::Get()->ResetPerformanceCounters();
+            pcontext->ResetPerformanceCounters();
         }
     }
 }
@@ -1029,29 +928,24 @@ void EngineWindow::OutputPerformanceCounters()
 
 void EngineWindow::RenderPerformanceCounters(Surface* psurface)
 {
-    if (m_bFPS) {
-		
-		// Disable AA.
-		CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE );
+    #ifndef DREAMCAST
+        if (m_bFPS) {
+            int ysize = m_pfontFPS->GetHeight();
+            Color color(1, 0, 0);
 
-        int ysize = m_pfontFPS->GetHeight();
-        Color color(1, 0, 0);
+            psurface->DrawString(m_pfontFPS, color, WinPoint(1, 1 + 0 * ysize), m_strPerformance1);
 
-        psurface->DrawString(m_pfontFPS, color, WinPoint(1, 1 + 0 * ysize), m_strPerformance1);
-
-        if (m_indexFPS == 0) {
-            psurface->DrawString(m_pfontFPS, color, WinPoint(1, 1 + 1 * ysize), m_strPerformance2);
-            psurface->DrawString(m_pfontFPS, color, WinPoint(1, 1 + 2 * ysize), "Frame " + ZString(m_frameTotal));
+            if (m_indexFPS == 0) {
+                psurface->DrawString(m_pfontFPS, color, WinPoint(1, 1 + 1 * ysize), m_strPerformance2);
+                psurface->DrawString(m_pfontFPS, color, WinPoint(1, 1 + 2 * ysize), "Frame " + ZString(m_frameTotal));
+            }
         }
-		
-		// Reenable AA.
-		CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
-	}
 
-    #ifdef ICAP
-        if (IsProfiling()) {
-            psurface->DrawString(m_pfontFPS, Color::White(), WinPoint(1, 1), "Profiling");
-        }
+        #ifdef ICAP
+            if (IsProfiling()) {
+                psurface->DrawString(m_pfontFPS, Color::White(), WinPoint(1, 1), "Profiling");
+            }
+        #endif
     #endif
 }
 
@@ -1068,40 +962,39 @@ void EngineWindow::UpdateFrame()
     m_pgroupImage->Update();
 }
 
-
-// 205 - main background texture index.
-static int iDebugTexCount = 1;
-
 bool EngineWindow::RenderFrame()
 {
     PrivateEngine* pengine; CastTo(pengine, m_pengine);
     TRef<Surface> psurface;
 
-	HRESULT hr = CD3DDevice9::Get()->BeginScene();
-	_ASSERT( hr == D3D_OK );
-	_ASSERT( m_psurface != NULL );
+    if (m_psurface) {
+        psurface = m_psurface;
+    } else {
+        ZAssert(m_pengine->IsFullscreen());
+        psurface = pengine->GetBackBuffer();
+    }
 
-	TRef<Context> pcontext = m_psurface->GetContext();
-	if( pcontext ) 
-	{
-//		pcontext->BeginRendering();
+    if (psurface) {
+        TRef<Context> pcontext = psurface->GetContext();
 
-		ZStartTrace("---------Begin Frame---------------");
+        if (pcontext) {
+            ZStartTrace("---------Begin Frame---------------");
 
-		const Rect& rect = m_pwrapRectValueRender->GetValue();
-		pcontext->Clip(rect);
+            #ifndef DREAMCAST
+                // psurface->FillSurface(Color(0.8f, 1.0f, 0.5f));
+            #endif
 
-		m_pgroupImage->Render( pcontext );
-		UpdatePerformanceCounters(pcontext, m_timeCurrent);
-		m_psurface->ReleaseContext(pcontext);
-		RenderPerformanceCounters(m_psurface);
-	}
-	hr = CD3DDevice9::Get()->EndScene();
+            const Rect& rect = m_pwrapRectValueRender->GetValue();
+            pcontext->Clip(rect);
 
-	if( hr == D3D_OK )
-	{
-		return true;
-	}
+            m_pgroupImage->Render(pcontext);
+            UpdatePerformanceCounters(pcontext, m_timeCurrent);
+            psurface->ReleaseContext(pcontext);
+            RenderPerformanceCounters(psurface);
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -1119,7 +1012,7 @@ void EngineWindow::OnPaint(HDC hdc, const WinRect& rect)
     }
     */
 
- //   ZVerify(::FillRect(hdc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH)));
+    ZVerify(::FillRect(hdc, &rect, (HBRUSH)GetStockObject(BLACK_BRUSH)));
 }
 
 bool EngineWindow::ShouldDrawFrame()
@@ -1152,11 +1045,9 @@ void EngineWindow::DoIdle()
     // Is the device ready
     //
 
-    bool bChanges = false;
-    if (m_pengine->IsDeviceReady(bChanges)) 
-	{
-        if (bChanges || m_bInvalid) 
-		{
+    bool bChanges;
+    if (m_pengine->IsDeviceReady(bChanges)) {
+        if (bChanges || m_bInvalid) {
             m_bInvalid = false;
 
             UpdateWindowStyle();
@@ -1173,18 +1064,35 @@ void EngineWindow::DoIdle()
 
         //
         // Rendering
-        if( ShouldDrawFrame() ) 
-		{
-			CD3DDevice9::Get()->ClearScreen( );
+        //
+    
+        if (ShouldDrawFrame()) {
+            UpdateCursor();
 
-			UpdateCursor();
+            if (RenderFrame()) {
+                //
+                // copy it to the front buffer
+                //
 
-			// Render, and if successful, display.
-			if( RenderFrame() ) 
-			{
-				CD3DDevice9::Get()->RenderFinished( );
-				return;
-			}
+                if (m_pengine->IsFullscreen()) {
+                    if (m_psurface) {
+                        PrivateEngine* pengine; CastTo(pengine, m_pengine);
+                        pengine->GetBackBuffer()->BitBlt(WinPoint(0, 0), m_psurface);
+                    }
+                    m_pengine->Flip();
+                } else {
+                    m_pengine->BltToWindow(
+                        this,
+                        WinPoint(0, 0),
+                        m_psurface,
+                        WinRect(
+                            WinPoint(0, 0),
+                            m_psurface->GetSize()
+                        )
+                    );
+                }
+                return;
+            }
         }
     } else {
         //
@@ -1208,7 +1116,7 @@ void EngineWindow::DoIdle()
 void EngineWindow::SetShowFPS(bool bFPS, const char* pszLabel)
 {
     if (pszLabel)
-        strncpy_s(m_pszLabel, 20, pszLabel, sizeof(m_pszLabel) - 1);
+        strncpy(m_pszLabel, pszLabel, sizeof(m_pszLabel) - 1);
     else
         m_pszLabel[0] = '\0';
 
@@ -1255,11 +1163,6 @@ bool EngineWindow::OnActivateApp(bool bActive)
             m_pmouse->SetEnabled(m_bActive && m_pengine->IsFullscreen());
         }
         m_pinputEngine->SetFocus(m_bActive);
-		
-		if( m_bActive == true )
-		{
-			SetActiveWindow( GetHWND() );
-		}
     }
 
     if (g_bWindowLog) {
@@ -1291,22 +1194,8 @@ bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
             return true;
 
         case SC_MAXIMIZE:
-			m_bWindowStateMinimised = false;
-			m_bWindowStateRestored = false;
             SetFullscreen(true);
             return true;
-
-		case SC_MINIMIZE:
-			m_bWindowStateMinimised = true;
-			break;
-
-		case SC_RESTORE:
-			if( m_bWindowStateMinimised )
-			{
-				m_bWindowStateMinimised = false;
-				m_bWindowStateRestored = true;
-			}
-			break;
 
         case SC_CLOSE:
             StartClose();
@@ -1555,12 +1444,16 @@ void EngineWindow::SetCaption(ICaption* pcaption)
 
 void EngineWindow::OnCaptionMinimize()
 {
-    PostMessage(WM_SYSCOMMAND, SC_MINIMIZE);
+    #ifndef DREAMCAST
+        PostMessage(WM_SYSCOMMAND, SC_MINIMIZE);
+    #endif
 }
 
 void EngineWindow::OnCaptionMaximize()
 {
-    PostMessage(WM_SYSCOMMAND, SC_MAXIMIZE);
+    #ifndef DREAMCAST
+        PostMessage(WM_SYSCOMMAND, SC_MAXIMIZE);
+    #endif
 }
 
 void EngineWindow::OnCaptionFullscreen()
@@ -1573,11 +1466,15 @@ void EngineWindow::OnCaptionRestore()
     if (GetFullscreen()) {
         m_bRestore = true;
     } else {
-        PostMessage(WM_SYSCOMMAND, SC_RESTORE);
+        #ifndef DREAMCAST
+            PostMessage(WM_SYSCOMMAND, SC_RESTORE);
+        #endif
     }
 }
 
 void EngineWindow::OnCaptionClose()
 {
-    StartClose();
+    #ifndef DREAMCAST
+        StartClose();
+    #endif
 }

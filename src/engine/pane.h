@@ -30,117 +30,109 @@ class Pane : public IMouseInput {
     friend class TopPane;
 
 private:
-	// Pane attributes
-	Pane*      m_pparent;      // parent
-	TRef<Pane> m_pchild;       // child
-	TRef<Pane> m_pnext;        // sibling under this pane
+    //
+    // Pane attributes
+    //
 
-	bool       m_bHidden;      // is this pane hidden
-	int        m_index;        // identifier
+    Pane*      m_pparent;      // parent
+    TRef<Pane> m_pchild;       // child
+    TRef<Pane> m_pnext;        // sibling under this pane
 
-	// Added UI vertex storage.
-protected:
-	WinPoint		m_offset;							// offset from parent's origin
-	WinPoint		m_size;								// size of pane
-	UIVERTEX *		m_pPaneVerts;						// Vertices used to render a pane.
-	DWORD			m_dwNumVerts;						// Number of verts in the m_pPaneVerts array.
-	DWORD			m_dwNumPolys;						// Number of polys to render.
-	DWORD			m_dwDataSize;						// Should stop on the fly allocation.
+    WinPoint   m_offset;       // offset from parent's origin
+    WinPoint   m_size;         // size of pane
+    bool       m_bHidden;      // is this pane hidden
+    int        m_index;        // identifier
 
-	// Colour fill vertices.
-//	DWORD					m_dwFillVertsDataSize;	
-//	UICOLOURFILLVERTEX *	m_pFillVerts;			// Colour fill vertices if used.
+    //
+    // Mouse Input
+    //
 
-private:
-	// Mouse Input
-	TRef<Pane> m_ppaneCapture; // child that has capture
-	TRef<Pane> m_ppaneHit;     // child that the mouse is over
+    TRef<Pane> m_ppaneCapture; // child that has capture
+    TRef<Pane> m_ppaneHit;     // child that the mouse is over
 
-	//
-	// Painting
-	//
+    //
+    // Painting
+    //
 
-	WinPoint   m_paintOffset;  // offset at last paint
-	WinPoint   m_paintSize;    // size at last paint
-	bool       m_bHiddenPaint; // Hidden at last paint?
-	bool       m_bSelected;    // is this pane selected
-	bool       m_bNeedPaint;   // true if the pane needs to be partially redrawn
-	bool       m_bPaintAll;    // true if the pane needs to be completely redrawn
-	bool       m_bOpaque;      // is pane compeletely opaque?
+    WinPoint   m_paintOffset;  // offset at last paint
+    WinPoint   m_paintSize;    // size at last paint
+    bool       m_bHiddenPaint; // Hidden at last paint?
+    bool       m_bSelected;    // is this pane selected
+    bool       m_bNeedPaint;   // true if the pane needs to be partially redrawn
+    bool       m_bPaintAll;    // true if the pane needs to be completely redrawn
+    bool       m_bOpaque;      // is pane compeletely opaque?
 
-	//
-	// Layout
-	//
+    //
+    // Layout
+    //
 
-	WinPoint   m_expand;        // size pane should try to fill if possible
-	bool       m_bXExpandable;  // is the pane expandable
-	bool       m_bYExpandable;
+    WinPoint   m_expand;        // size pane should try to fill if possible
+    bool       m_bXExpandable;  // is the pane expandable
+    bool       m_bYExpandable;
 
-	//
-	// SystemColors
-	//
+    //
+    // SystemColors
+    //
 
-	static Color s_colors[SystemColorMax];
+    static Color s_colors[SystemColorMax];
 
-	//
-	// Internal Members
-	//
+    //
+    // Internal Members
+    //
 
-	void TunnelPaint(Surface* psurface, bool bPaintAll);
+            void TunnelPaint(Surface* psurface, bool bPaintAll);
 
 protected:
-	//
-	// Called by TopPane
-	//
+    //
+    // Called by TopPane
+    //
 
-	bool CalcPaint();
-	void InternalPaint(Surface* psurface);
+    bool CalcPaint();
+    void InternalPaint(Surface* psurface);
+    void PaintAll(Surface* psurface);
 
-	void PaintAll(Surface* psurface);
+    //
+    // Called by SubClasses
+    //
 
-public:
-	//
-	// Called by SubClasses
-	//
-protected:
-	void DefaultUpdateLayout();
+    void DefaultUpdateLayout();
 
-	virtual void InternalSetOffset(const WinPoint& point);
-	void InternalSetExpand(const WinPoint& point);
-	void InternalSetSize(const WinPoint& point);
-	void InternalSetHidden(bool bHidden);
+    void InternalSetOffset(const WinPoint& point);
+    void InternalSetExpand(const WinPoint& point);
+    void InternalSetSize(const WinPoint& point);
+    void InternalSetHidden(bool bHidden);
 
-	static void InternalSetOffset(Pane* ppane, const WinPoint& point)
-	{
-		ppane->InternalSetOffset(point);
-	}
+    static void InternalSetOffset(Pane* ppane, const WinPoint& point)
+    {
+        ppane->InternalSetOffset(point);
+    }
 
-	static void InternalSetExpand(Pane* ppane, const WinPoint& point)
-	{
-		ppane->InternalSetExpand(point);
-	}
+    static void InternalSetExpand(Pane* ppane, const WinPoint& point)
+    {
+        ppane->InternalSetExpand(point);
+    }
 
-	static void InternalSetSize(Pane* ppane, const WinPoint& point)
-	{
-		ppane->InternalSetSize(point);
-	}
+    static void InternalSetSize(Pane* ppane, const WinPoint& point)
+    {
+        ppane->InternalSetSize(point);
+    }
 
-	static void InternalSetHidden(Pane* ppane, bool bHidden)
-	{
-		ppane->InternalSetHidden(bHidden);
-	}
+    static void InternalSetHidden(Pane* ppane, bool bHidden)
+    {
+        ppane->InternalSetHidden(bHidden);
+    }
 
-	virtual void NeedPaintInternal();
-	void NeedPaint();
+    virtual void NeedPaintInternal();
+    void NeedPaint();
 
-	//
-	// Called by Pane, Overridden by subclasses
-	//
+    //
+    // Called by Pane, Overridden by subclasses
+    //
 
-	virtual void Paint( Surface * psurface );
+    virtual void Paint(Surface* psurface);
 
-	Pane* GetHitPane();
-	Pane* GetCapturePane();
+    Pane* GetHitPane();
+    Pane* GetCapturePane();
 
 public:
     Pane(Pane* pchild = NULL, const WinPoint& size = WinPoint(0, 0));
@@ -199,7 +191,7 @@ public:
     void SetExpand(const WinPoint& point);
     void SetSize(const WinPoint& point);
     void SetIndex(int index);
-    void SetOpaque(bool bOpaque) {	m_bOpaque = bOpaque; }
+    void SetOpaque(bool bOpaque) { m_bOpaque = bOpaque; }
 
     //
     // Add/Remove children

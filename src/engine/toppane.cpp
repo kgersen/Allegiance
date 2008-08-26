@@ -32,9 +32,7 @@ TopPane::TopPane(Engine* pengine, SurfaceType stype, bool bColorKey, TopPaneSite
     Pane(pchild),
     m_pengine(pengine),
     m_stype(stype),
-//    m_psurface(pengine->CreateSurface(WinPoint(1, 1), stype, new TopPaneSurfaceSite(this))),
-    m_psurface(pengine->CreateDummySurface(WinPoint(1, 1), new TopPaneSurfaceSite(this))),
-//    m_psurface( NULL ),
+    m_psurface(pengine->CreateSurface(WinPoint(1, 1), stype, new TopPaneSurfaceSite(this))),
     m_psite(psite),
     m_bColorKey(bColorKey),
     m_bNeedLayout(true)
@@ -81,29 +79,17 @@ void TopPane::Evaluate()
 
         UpdateLayout();
 
-		WinPoint sizeNew = GetSize();
-
-		// This creates the top level surface. Create a new render target for now.
-        if ( ( sizeNew != sizeOld ) && ( sizeNew != WinPoint(0,0) ) )
-		{
+        if (GetSize() != sizeOld) {
             m_bNeedPaint = true;
-			m_bPaintAll = true;
-
-/*			if( sizeNew == CD3DDevice9::GetCurrentResolution() )
-			{
-				m_psurface = m_pengine->CreateDummySurface( 
-										sizeNew, 
-										new TopPaneSurfaceSite( this ) );
-			}
-			else*/
-			{
-				m_psurface = m_pengine->CreateRenderTargetSurface( 
-										sizeNew,
-										new TopPaneSurfaceSite( this ) );
-			}
-
-            if (m_bColorKey) 
-			{
+            m_bPaintAll = true;
+            m_psurface = NULL;
+            m_psurface =
+                m_pengine->CreateSurface(
+                    GetSize(),
+                    m_stype,
+                    new TopPaneSurfaceSite(this)
+                );
+            if (m_bColorKey) {
                 m_psurface->SetColorKey(Color(0, 0, 0));
             }
         }
@@ -116,12 +102,11 @@ void TopPane::UpdateLayout()
 }
 
 bool g_bPaintAll = false;
-bool g_bUpdateOffset = false;
 
 void TopPane::UpdateBits()
 {
-/* ORIGINAL ALLEGIANCE VERSION.
-	ZEnter("TopPane::UpdateBits()");
+    ZEnter("TopPane::UpdateBits()");
+
     if (m_bNeedPaint) {
         ZTrace("m_bNeedPaint == true");
         if (CalcPaint()) {
@@ -135,78 +120,8 @@ void TopPane::UpdateBits()
         InternalPaint(m_psurface);
         m_bNeedPaint = false;
     }
-    ZExit("TopPane::UpdateBits()");*/
 
-
-    ZEnter("TopPane::UpdateBits()");
-	{
-		HRESULT hr;
-		bool bRenderTargetRequired;
-		PrivateSurface* pprivateSurface; CastTo(pprivateSurface, m_psurface);
-		bRenderTargetRequired = pprivateSurface->GetSurfaceType().Test(SurfaceTypeRenderTarget() ) == true;
-
-		if( bRenderTargetRequired == true )
-		{
-			TEXHANDLE hTexture = pprivateSurface->GetTexHandle( );
-			_ASSERT( hTexture != INVALID_TEX_HANDLE );
-			hr = CVRAMManager::Get()->PushRenderTarget( hTexture );
-		}
-
-		ZTrace("m_bNeedPaint == true");
-        CalcPaint(); 
-        m_bNeedPaint = true;
-        m_bPaintAll = true;
-
-        ZTrace("after CalcPaint() m_bPaintAll  ==" + ZString(m_bPaintAll ));
-
-		WinPoint offset( 0, 0 );
-
-		// Call InternalPaint() with the child offset and parent size as params and create initial clipping rect.
-		WinRect rectClip(	0, 
-							0, 
-							(int) m_psurface->GetSize().X(),
-							(int) m_psurface->GetSize().Y() );
-
-		m_bPaintAll |= g_bPaintAll;
-        InternalPaint( m_psurface );
-        m_bNeedPaint = false;
-
-		if( bRenderTargetRequired == true )
-		{
-			CVRAMManager::Get()->PopRenderTarget( );
-		}
-    }
     ZExit("TopPane::UpdateBits()");
-
-/*	{
-        ZTrace("m_bNeedPaint == true");
-		CalcPaint();
-		m_bNeedPaint = true;
-		m_bPaintAll = true;
-
-        ZTrace("after CalcPaint() m_bNeedPaint ==" + ZString(m_bNeedPaint));
-        ZTrace("after CalcPaint() m_bPaintAll  ==" + ZString(m_bPaintAll ));
-        m_bPaintAll |= g_bPaintAll;
-
-//		localOffset.SetY( localOffset.Y() - (int)m_psurface->GetSize().Y() );
-//		localOffset += globalOffset;
-		WinPoint offset( localOffset );
-
-		// Remove offset now.
-		offset.SetY( offset.Y() - (int)m_psurface->GetSize().Y() );
-
-		// Call InternalPaint() with the child offset and parent size as params and create initial clipping rect.
-		WinRect rectClip(	offset.X(), 
-							offset.Y(), 
-							offset.X() + (int) m_psurface->GetSize().X(),
-							offset.Y() + (int) m_psurface->GetSize().Y() );
-   
-		// m_psurface is a dummy surface. Store the context.
-		InternalPaint( m_psurface, offset, rectClip );
-        m_bNeedPaint = false;
-    }
-
-    ZExit("TopPane::UpdateBits()");*/
 }
 
 const WinPoint& TopPane::GetSurfaceSize()
@@ -240,15 +155,6 @@ Point TopPane::GetPanePoint(const Point& point)
             point.X(),
             (float)GetSize().Y() - 1.0f - point.Y()
         );
-}
-
-void TopPane::MouseEnter(IInputProvider* pprovider, const Point& point)
-{ 
-//	m_bInside = true;
-/*	if( m_psurface->GetSurfaceType().Test( SurfaceTypeDummy() ) == false )
-	{
-		OutputDebugString("MouseEnter\n");
-	}*/
 }
 
 MouseResult TopPane::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)

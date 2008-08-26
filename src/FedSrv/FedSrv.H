@@ -174,13 +174,11 @@ public:
 // Also for ISQLSite
   virtual int  OnMessageBox(const char * strText, const char * strCaption, UINT nType);
 
-// KG: eventually remove this
-#ifndef ALLSRV_STANDALONE
 // ISQLSite2
   virtual void OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError);
   virtual void OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD dwHelpContext, 
                                   BSTR bstrHelpFile,    BSTR bstrSource );
-#endif
+
 //Not part of IIgcSite
   void UpgradeShip(IshipIGC*  pship, const IstationIGC* pstation);
   void UpgradeDrones(IsideIGC* pside);
@@ -287,9 +285,8 @@ struct Global
   ZString             strArtPath;
   char                m_szToken[24]; // sizeof(_ZONETICKET_TOKEN.szToken)
   int                 nUpdatesPerSecond;
-#ifdef USEAUTH
   TRef<IZoneAuthServer> pzas;
-#endif
+
   // *** Game state stuff ***
   Time                timeNow;             // cached value (for very short duration) of timeGetTime()
 

@@ -1,0 +1,34 @@
+HKCR
+{
+  NoRemove AppID
+  {
+    {D0DE3A0E-69B5-4660-937E-97F204ECB7B4} = s 'AllClub'
+    'AllClub.EXE'
+    {
+      val AppID = s {D0DE3A0E-69B5-4660-937E-97F204ECB7B4}
+    }
+  }
+}
+HKLM
+{
+  NoRemove SYSTEM
+  {
+    NoRemove CurrentControlSet
+    {
+      NoRemove Services
+      {
+        NoRemove EventLog
+        {
+          NoRemove Application
+          {
+            'AllClub'
+            {
+              val EventMessageFile = s '%MODULE%'
+              val TypesSupported = d '7'
+            }
+          }
+        }
+      }
+    }
+  }
+}

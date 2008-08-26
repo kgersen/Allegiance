@@ -134,49 +134,47 @@ public:
 
     void NextVideo()
     {
-// BUILD_DX9
-        //ZString str;
+        ZString str;
 
-        //m_indexVideo++;
-        //switch (m_indexVideo) {
-        //    case 0: str = "msr_games.avi"; break;
-        //    case 1: str = "logo1.avi";     break;
-        //    case 2: str = "logo2.avi";     break;
-        //    case 3: str = "intro.avi";     break;
-        //    default: 
-        //        return;
-        //};
+        m_indexVideo++;
+        switch (m_indexVideo) {
+            case 0: str = "msr_games.avi"; break;
+            case 1: str = "logo1.avi";     break;
+            case 2: str = "logo2.avi";     break;
+            case 3: str = "intro.avi";     break;
+            default: 
+                return;
+        };
 
-        ////
-        //// Load from the artpath first
-        ////
+        //
+        // Load from the artpath first
+        //
 
-        //m_pvideoImage = 
-        //    CreateVideoImage(
-        //        m_pengine,
-        //        GetWindow()->GetScreenRectValue(), 
-        //        GetModeler()->GetArtPath() + "/" + str
-        //    );
+        m_pvideoImage = 
+            CreateVideoImage(
+                m_pengine,
+                GetWindow()->GetScreenRectValue(), 
+                GetModeler()->GetArtPath() + "/" + str
+            );
 
-        //if (
-        //       (m_pvideoImage == NULL || (!m_pvideoImage->IsValid()))
-        //    && (!m_strCD.IsEmpty())
-        //) {
-        //    m_pvideoImage = 
-        //        CreateVideoImage(
-        //            m_pengine,
-        //            GetWindow()->GetScreenRectValue(), 
-        //            m_strCD + str
-        //        );
-        //}
+        if (
+               (m_pvideoImage == NULL || (!m_pvideoImage->IsValid()))
+            && (!m_strCD.IsEmpty())
+        ) {
+            m_pvideoImage = 
+                CreateVideoImage(
+                    m_pengine,
+                    GetWindow()->GetScreenRectValue(), 
+                    m_strCD + str
+                );
+        }
 
-        //if (!m_pvideoImage->IsValid()) {
-        //    NextVideo();
-        //} else {
-        //    m_pwrapImageVideo->SetImage(m_pvideoImage);
-        //    m_pvideoImage->GetEventSource()->AddSink(IEventSink::CreateDelegate(this));
-        //}
-// BUILD_DX9
+        if (!m_pvideoImage->IsValid()) {
+            NextVideo();
+        } else {
+            m_pwrapImageVideo->SetImage(m_pvideoImage);
+            m_pvideoImage->GetEventSource()->AddSink(IEventSink::CreateDelegate(this));
+        }
     }
 
     bool OnEvent(IEventSource* pevent)

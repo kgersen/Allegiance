@@ -45,27 +45,14 @@ IEngineFont* TrekResources::HugeBoldFont()
 
 void TrekResources::Initialize(Modeler* pmodeler)
 {
-	// Import pack files here.
-	if( g_DX9Settings.mbUseTexturePackFiles == true )
-	{
-		bool bResult;
-		CDX9PackFile * pPackFile;
+    TRef<INameSpace> pns = pmodeler->GetNameSpace("font");
 
-		pPackFile = new CDX9PackFile( pmodeler->GetArtPath(), "CommonTextures" );
-		bResult = pPackFile->ImportPackFile();
-		_ASSERT( bResult == true );
-
-		CDX9PackFile::AddToPackFileList( pPackFile );
-	}
-
-	TRef<INameSpace> pns = pmodeler->GetNameSpace("font");
-
-	g_pfontSmall     = pns->FindFont("smallFont");
-	g_pfontSmallBold = pns->FindFont("smallBoldFont");
-	g_pfontLarge     = pns->FindFont("largeFont");
-	g_pfontLargeBold = pns->FindFont("largeBoldFont");
-	g_pfontHuge      = pns->FindFont("hugeFont");
-	g_pfontHugeBold  = pns->FindFont("hugeBoldFont");
+    g_pfontSmall     = pns->FindFont("smallFont");
+    g_pfontSmallBold = pns->FindFont("smallBoldFont");
+    g_pfontLarge     = pns->FindFont("largeFont");
+    g_pfontLargeBold = pns->FindFont("largeBoldFont");
+    g_pfontHuge      = pns->FindFont("hugeFont");
+    g_pfontHugeBold  = pns->FindFont("hugeBoldFont");
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -312,9 +299,14 @@ public:
         DWORD count = psite->GetDWORD();
 
         for(DWORD index = 0; index < count; index++) {
+            #ifdef DREAMCAST
+                LightData data; psite->CopyStructure(&data);
+                plights->AddLight(data);
+            #else
                 LightData* pdata = (LightData*)psite->GetPointer();
                 psite->MovePointer(sizeof(LightData));
                 plights->AddLight(*pdata);
+            #endif
         }
 
         return plights;
@@ -367,9 +359,16 @@ public:
         for(DWORD index = 0; index < count; index++) {
             ZString str = psite->GetString();
 
-            Vector* pvecPosition; psite->GetStructure(pvecPosition);
-            Vector* pvecForward;  psite->GetStructure(pvecForward);
-            Vector* pvecUp;       psite->GetStructure(pvecUp);
+            #ifdef DREAMCAST
+                Vector vecPosition, vecForward, vecUp;     
+                Vector* pvecPosition = &vecPosition; psite->CopyStructure(pvecPosition);
+                Vector* pvecForward = &vecForward;   psite->CopyStructure(pvecForward);
+                Vector* pvecUp = &vecUp;             psite->CopyStructure(pvecUp);
+            #else
+                Vector* pvecPosition; psite->GetStructure(pvecPosition);
+                Vector* pvecForward;  psite->GetStructure(pvecForward);
+                Vector* pvecUp;       psite->GetStructure(pvecUp);
+            #endif
 
             plistValue->GetList().PushEnd(
                 FrameData(
@@ -642,10 +641,9 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-HRESULT EffectApp::Initialize(const ZString& strCommandLine, HWND hWindow )
+HRESULT EffectApp::Initialize(const ZString& strCommandLine)
 {
-    if( SUCCEEDED( EngineApp::Initialize( strCommandLine, hWindow ) ) ) 
-	{
+    if (SUCCEEDED(EngineApp::Initialize(strCommandLine))) {
         TRef<INameSpace> pnsModel = GetModeler()->GetNameSpace("model");
         TRef<Number>     pnumberTime; CastTo(pnumberTime,  pnsModel->FindMember("time"));
 
@@ -676,6 +674,22 @@ HRESULT EffectApp::Initialize(const ZString& strCommandLine, HWND hWindow )
         AddPagePaneFactory(m_pns, GetModeler());
         AddNavPaneFactory(m_pns);
 
+        //
+        // Fonts
+        //
+
+        #ifndef DREAMCAST
+            //InitializeTrekResources(GetModeler());
+            /*
+            m_pns->AddMember("smallFont",     new FontValue(TrekResources::SmallFont()    ));
+            m_pns->AddMember("smallBoldFont", new FontValue(TrekResources::SmallBoldFont()));
+            m_pns->AddMember("largeFont",     new FontValue(TrekResources::LargeFont()    ));
+            m_pns->AddMember("largeBoldFont", new FontValue(TrekResources::LargeBoldFont()));
+            m_pns->AddMember("hugeFont",      new FontValue(TrekResources::HugeFont()     ));
+            m_pns->AddMember("hugeBoldFont",  new FontValue(TrekResources::HugeBoldFont() ));
+            */
+        #endif
+
         return S_OK;
     }
 
@@ -685,7 +699,7 @@ HRESULT EffectApp::Initialize(const ZString& strCommandLine, HWND hWindow )
 void EffectApp::Terminate()
 {
     m_pns = NULL;
-    EngineApp::Terminate( );
+    EngineApp::Terminate();
 }
 
 TRef<INameSpace> EffectApp::OptimizeThingGeo(const ZString& str, Geo* pgeo, Number* pnumber)

@@ -124,10 +124,7 @@ public:
 
         m_colorOuter.GetHSB(h, s, b);
         m_colorComplement.SetHSBA(h + 0.5f, s, b);
-
-		bool bOldValue = pmodeler->SetColorKeyHint( false );
         m_psphere = pmodeler->LoadGeo("build");
-		pmodeler->SetColorKeyHint( bOldValue );
     }
 
     //////////////////////////////////////////////////////////////////////////////

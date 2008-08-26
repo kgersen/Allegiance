@@ -29,7 +29,9 @@
 #include <windowsx.h>
 #include <mmsystem.h>
 
+#ifndef DREAMCAST
 #include <urlmon.h>
+#endif
 
 //
 // Wintrek headers
@@ -37,5 +39,5 @@
 #include "guids.h"
 #include "zlib.h"
 #include "utility.h"
-//#include "zauth.h" // KG removed
+#include "zauth.h"
 #endif

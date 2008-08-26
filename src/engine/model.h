@@ -228,25 +228,17 @@ public:
 
     virtual INameSpace*     CreateNameSpace(const ZString& str)                        = 0;
     virtual INameSpace*     CreateNameSpace(const ZString& str, INameSpace* pnsParent) = 0;
-    virtual INameSpace*     GetNameSpace(const ZString& str, bool bError = true, bool bSystemMem = false )       = 0;
+    virtual INameSpace*     GetNameSpace(const ZString& str, bool bError = true)       = 0;
     virtual void            UnloadNameSpace(const ZString& str)                        = 0;
     virtual void            UnloadNameSpace(INameSpace* pns)                           = 0;
 
     virtual TRef<ZFile>     LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError = true)                 = 0;
     virtual HBITMAP         LoadBitmap(const PathString& pathStr, bool bError = true)               = 0;
-    virtual TRef<Image>     LoadImage(const ZString& pathStr, bool bColorKey, bool bError = true, bool bSystemMem = false )   = 0;
-    virtual TRef<Surface>   LoadSurface(const ZString& pathStr, bool bColorKey, bool bError = true, bool bSystemMem = false ) = 0;
+    virtual TRef<Image>     LoadImage(const ZString& pathStr, bool bColorKey, bool bError = true)   = 0;
+    virtual TRef<Surface>   LoadSurface(const ZString& pathStr, bool bColorKey, bool bError = true) = 0;
     virtual TRef<Geo>       LoadGeo(const ZString& pathStr, bool bError = true)                     = 0;
 
     virtual TRef<Geo>       LoadXFile(const PathString& pathStr, Number* pnumberFrame, bool& bAnimation, bool bError = true) = 0;
-
-	// Hint accessor functions.
-	virtual bool			SetColorKeyHint( const bool bColorKey ) = 0;
-	virtual bool 			GetColorKeyHint( ) = 0;
-	virtual bool			SetSystemMemoryHint( const bool bSysMem ) = 0;
-	virtual bool			GetSystemMemoryHint( ) = 0;
-	virtual bool			SetUIImageUsageHint( const bool bUIImageUsage ) = 0;
-	virtual bool			GetUIImageUsageHint( ) = 0;
 };
 
 #endif

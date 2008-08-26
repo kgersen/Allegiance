@@ -2209,10 +2209,8 @@ public:
                     break;
 
                 case ScreenIDSplashScreen:
-// BUILD_DX9
-                    //SetScreen(CreateVideoScreen(GetModeler(), true));
-                    //SetCursorImage(Image::GetEmpty());
-// BUILD_DX9
+                    SetScreen(CreateVideoScreen(GetModeler(), true));
+                    SetCursorImage(Image::GetEmpty());
                     break;
 
                 case ScreenIDTrainScreen:
@@ -2399,37 +2397,19 @@ public:
     TrekWindowImpl(
         EffectApp*     papp, 
         const ZString& strCommandLine, 
-// BUILD_DX9
-		const ZString& strArtPath,
-// BUILD_DX9
         bool           bMovies,
         bool           bSoftware,
         bool           bHardware,
         bool           bPrimary,
         bool           bSecondary
     ) :
-// BUILD_DX9
         TrekWindow(
             papp,
             strCommandLine,
             true,
-			WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX, 
-					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
-					CD3DDevice9::Get()->GetCurrentMode()->mode.Width + 
-									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
-					CD3DDevice9::Get()->GetCurrentMode()->mode.Height + 
-									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
-              WinPoint(800, 600)
+            WinRect(0, 0, 800, 600),
+            WinPoint(640, 480)
         ),
-//#else
-//        TrekWindow(
-//            papp,
-//            strCommandLine,
-//            true,
-//            WinRect(0, 0, 800, 600),
-//            WinPoint(640, 480)
-//        ),
-// BUILD_DX9
         m_screen(ScreenIDSplashScreen),
         m_bShowMeteors(true),
         m_bShowStations(true),
@@ -2476,23 +2456,6 @@ public:
         m_aabmCommand(0)
     {
         HRESULT hr;
-
-// BUILD_DX9
-		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
-		papp->Initialize( strCommandLine, GetHWND() );
-		m_pengine = papp->GetEngine();
-		m_pmodeler = papp->GetModeler();
-
-		// Now set the art path, performed after initialise, else Modeler isn't valid.
-		GetModeler()->SetArtPath(strArtPath);
-
-		// load the fonts
-		TrekResources::Initialize(GetModeler());
-
-		// Perform post window creation initialisation. Initialise the time value.
-		PostWindowCreationInit( );
-		InitialiseTime();
-// BUILD_DX9
 
         if (!IsValid()) {
             return;
@@ -2704,37 +2667,17 @@ public:
 
         m_bCombatSize = false;
 
-// BUILD_DX9
-/*		m_sizeCombat = 
-            WinPoint(	CD3DDevice9::GetCurrentMode()->mode.Width,
-						CD3DDevice9::GetCurrentMode()->mode.Height );
-        m_sizeCombatFullscreen = 
-            WinPoint(	CD3DDevice9::GetCurrentMode()->mode.Width,
-						CD3DDevice9::GetCurrentMode()->mode.Height );*/
-//		m_sizeCombat = 
-//			WinPoint(	CD3DDevice9::sDevSetupParams.sWindowedMode.mode.Width,
-//						CD3DDevice9::sDevSetupParams.sWindowedMode.mode.Height );
-		m_sizeCombat = 
+        m_sizeCombat = 
             WinPoint(
                 int(LoadPreference("CombatXSize", 800)),
                 int(LoadPreference("CombatYSize", 600))
             );
-		m_sizeCombatFullscreen = 
-			WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
-						CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
-//#else
-//		m_sizeCombat = 
-//            WinPoint(
-//                int(LoadPreference("CombatXSize", 800)),
-//                int(LoadPreference("CombatYSize", 600))
-//            );
-//
-//        m_sizeCombatFullscreen = 
-//            WinPoint(
-//                int(LoadPreference("CombatFullscreenXSize", 800)),
-//                int(LoadPreference("CombatFullscreenYSize", 600))
-//            );
-// BUILD_DX9
+
+        m_sizeCombatFullscreen = 
+            WinPoint(
+                int(LoadPreference("CombatFullscreenXSize", 800)),
+                int(LoadPreference("CombatFullscreenYSize", 600))
+            );
 
         //
         // Music toggle
@@ -8107,10 +8050,6 @@ public:
 
         m_phelpPosition = new HelpPosition(GetTime(), m_phelp->GetEventSourceClose());
 
-// BUILD_DX9
-		GetModeler()->SetColorKeyHint( true );
-// BUILD_DX9
-
         m_pwrapImageHelp->SetImage(
             new TransformImage(
                 CreatePaneImage(
@@ -8122,11 +8061,7 @@ public:
                 new TranslateTransform2(m_phelpPosition)
             )
         );
-
-// BUILD_DX9
-		GetModeler()->SetColorKeyHint( false );
-// BUILD_DX9
-	}
+    }
 
     void OnHelp(bool bOn)
     {
@@ -10047,9 +9982,6 @@ TrekWindowImpl::FlagsWinConditionInfo          TrekWindowImpl::s_flagsWinConditi
 TRef<TrekWindow> TrekWindow::Create(
     EffectApp*     papp, 
     const ZString& strCommandLine, 
-// BUILD_DX9
-	const ZString& strArtPath,					// Added for DX9 build, due to reordered startup.
-// BUILD_DX9		
     bool           bMovies,
     bool           bSoftware,
     bool           bHardware,
@@ -10060,9 +9992,6 @@ TRef<TrekWindow> TrekWindow::Create(
         new TrekWindowImpl(
             papp, 
             strCommandLine, 
-// BUILD_DX9
-			strArtPath,
-// BUILD_DX9
             bMovies,
             bSoftware,
             bHardware,

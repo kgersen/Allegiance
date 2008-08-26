@@ -1,27 +1,6 @@
 #ifndef _pixelformat_h_
 #define _pixelformat_h_
 
-#define D3D9PF_ALPHAPIXELS			0x00000001l		// The surface has alpha channel information in the pixel format.
-#define D3D9PF_ALPHA                0x00000002l		// The pixel format contains alpha only information
-#define D3D9PF_PALETTEINDEXED4      0x00000008l		// The surface is 4-bit color indexed.
-#define D3D9PF_PALETTEINDEXED8      0x00000020l		// The surface is 8-bit color indexed.
-
-//
-// D3D9PIXELFORMAT
-//
-typedef struct _D3D9PIXELFORMAT
-{
-	DWORD	dwSize;
-	DWORD	dwFlags;				// See above flags.
-	DWORD   dwRGBBitCount;          // how many bits per pixel
-	DWORD   dwRBitMask;             // mask for red bit
-	DWORD   dwGBitMask;             // mask for green bits
-	DWORD   dwBBitMask;             // mask for blue bits
-	DWORD   dwRGBAlphaBitMask;      // mask for alpha channel
-} D3D9PIXELFORMAT;
-
-typedef D3D9PIXELFORMAT FAR* LPD3D9PIXELFORMAT;
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Pixel Formats
@@ -30,20 +9,19 @@ typedef D3D9PIXELFORMAT FAR* LPD3D9PIXELFORMAT;
 
 class PixelFormat : public IObject {
 private:
-    D3D9PIXELFORMAT	m_ddpf;
-	D3DFORMAT		m_d3dFormat;
-    bool			m_bSoftwareTexture;
+    DDPIXELFORMAT m_ddpf;
+    bool          m_bSoftwareTexture;
 
     void SetSoftwareTexture()
     {
         m_bSoftwareTexture = true;
     }
 
-/*    PixelFormat(const DDPIXELFORMAT& ddpf) :
+    PixelFormat(const DDPIXELFORMAT& ddpf) :
         m_ddpf(ddpf),
         m_bSoftwareTexture(false)
     {
-    }*/
+    }
 
     friend class EngineImpl;
 
@@ -56,9 +34,7 @@ public:
         DWORD alphaMask
     );
 
-	PixelFormat( D3DFORMAT d3dFmt );
-
-    const D3D9PIXELFORMAT& GetDDPF() { return m_ddpf; }
+    const DDPIXELFORMAT& GetDDPF() { return m_ddpf; }
 
     void SetPixelBits(DWORD value) { m_ddpf.dwRGBBitCount = value; }
 
@@ -83,7 +59,6 @@ public:
 
     Pixel MakePixel(DWORD red, DWORD green, DWORD blue) const;
     Pixel MakePixel(const Color& color)                 const;
-	Pixel MakeD3DPixel( const Color& color)				const;
     Color MakeColor(Pixel pixel)                        const;
     void  SetPixel(BYTE* pb, Pixel pixel)               const;
     Pixel GetPixel(const BYTE* pb)                      const;
@@ -91,10 +66,7 @@ public:
     Color GetColor(const BYTE* pb)                      const;
     bool  ValidGDIFormat()                              const;
 
-    bool Equivalent(const D3D9PIXELFORMAT& ddpf);
-
-	D3DFORMAT GetD3DFormat() const { return m_d3dFormat; }
-	D3DFORMAT GetEquivalentD3DFormat( );
+    bool Equivalent(const DDPIXELFORMAT& ddpf);
 };
 
 #endif

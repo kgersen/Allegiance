@@ -29,80 +29,83 @@ public:
     virtual void             WriteToTextFile(int indent, ZFile* pfile)           = 0;
     virtual void             WriteToBinaryFile(ZFile* pfile)                     = 0;
 
-	float FindNumber(const ZString& strName, float valueDefault = 0)
-	{
-		TRef<Number> pnumber; CastTo(pnumber, FindMember(strName));
-		return pnumber->GetValue();
-		//return pnumber ? pnumber->GetValue() : valueDefault;
-	}
+#ifndef DREAMCAST  // these mothods break VC5
 
-	bool FindBoolean(const ZString& strName, bool valueDefault = false)
-	{
-		TRef<Boolean> pvalue; CastTo(pvalue, FindMember(strName));
-		return pvalue->GetValue();
-		//return pvalue ? pvalue->GetValue() : valueDefault;
-	}
+    float FindNumber(const ZString& strName, float valueDefault = 0)
+    {
+        TRef<Number> pnumber; CastTo(pnumber, FindMember(strName));
+        return pnumber->GetValue();
+        //return pnumber ? pnumber->GetValue() : valueDefault;
+    }
 
-	IEngineFont* FindFont(const ZString& strName, IEngineFont* valueDefault = NULL)
-	{
-		TRef<FontValue> pvalue; CastTo(pvalue, FindMember(strName));
-		return pvalue->GetValue();
-		//return pvalue ? pvalue->GetValue() : valueDefault;
-	}
+    bool FindBoolean(const ZString& strName, bool valueDefault = false)
+    {
+        TRef<Boolean> pvalue; CastTo(pvalue, FindMember(strName));
+        return pvalue->GetValue();
+        //return pvalue ? pvalue->GetValue() : valueDefault;
+    }
 
-	IObjectList* FindList(const ZString& strName)
-	{
-		TRef<IObjectList> pvalue; CastTo(pvalue, FindMember(strName));
-		return pvalue;
-	}
+    IEngineFont* FindFont(const ZString& strName, IEngineFont* valueDefault = NULL)
+    {
+        TRef<FontValue> pvalue; CastTo(pvalue, FindMember(strName));
+        return pvalue->GetValue();
+        //return pvalue ? pvalue->GetValue() : valueDefault;
+    }
 
-	const ZString& FindString(const ZString& strName, const ZString& valueDefault = ZString())
-	{
-		TRef<StringValue> pvalue; CastTo(pvalue, FindMember(strName));
-		return pvalue->GetValue();
-		//return pvalue ? pvalue->GetValue() : valueDefault;
-	}
+    IObjectList* FindList(const ZString& strName)
+    {
+        TRef<IObjectList> pvalue; CastTo(pvalue, FindMember(strName));
+        return pvalue;
+    }
 
-	const Color& FindColor(const ZString& strName, const Color& valueDefault = Color::White())
-	{
-		TRef<ColorValue> pvalue; CastTo(pvalue, FindMember(strName));
-		return pvalue->GetValue();
-		//return pvalue ? pvalue->GetValue() : valueDefault;
-	}
+    const ZString& FindString(const ZString& strName, const ZString& valueDefault = ZString())
+    {
+        TRef<StringValue> pvalue; CastTo(pvalue, FindMember(strName));
+        return pvalue->GetValue();
+        //return pvalue ? pvalue->GetValue() : valueDefault;
+    }
 
-	const Point& FindPoint(const ZString& strName, const Point& valueDefault = Point(0, 0))
-	{
-		TRef<PointValue> pvalue; CastTo(pvalue, FindMember(strName));
-		return pvalue->GetValue();
-		//return pvalue ? pvalue->GetValue() : valueDefault;
-	}
+    const Color& FindColor(const ZString& strName, const Color& valueDefault = Color::White())
+    {
+        TRef<ColorValue> pvalue; CastTo(pvalue, FindMember(strName));
+        return pvalue->GetValue();
+        //return pvalue ? pvalue->GetValue() : valueDefault;
+    }
 
-	WinPoint FindWinPoint(const ZString& strName, const WinPoint& valueDefault = WinPoint(0, 0))
-	{
-		TRef<PointValue> pvalue; CastTo(pvalue, FindMember(strName));
-		return WinPoint::Cast(pvalue->GetValue());
-		//return pvalue ? WinPoint::Cast(pvalue->GetValue()) : valueDefault;
-	}
+    const Point& FindPoint(const ZString& strName, const Point& valueDefault = Point(0, 0))
+    {
+        TRef<PointValue> pvalue; CastTo(pvalue, FindMember(strName));
+        return pvalue->GetValue();
+        //return pvalue ? pvalue->GetValue() : valueDefault;
+    }
 
-	const Vector& FindVector(const ZString& strName, const Vector& valueDefault = Vector(0, 0, 0))
-	{
-		TRef<VectorValue> pvalue; CastTo(pvalue, FindMember(strName));
-		return pvalue->GetValue();
-		//return pvalue ? pvalue->GetValue() : valueDefault;
-	}
+    WinPoint FindWinPoint(const ZString& strName, const WinPoint& valueDefault = WinPoint(0, 0))
+    {
+        TRef<PointValue> pvalue; CastTo(pvalue, FindMember(strName));
+        return WinPoint::Cast(pvalue->GetValue());
+        //return pvalue ? WinPoint::Cast(pvalue->GetValue()) : valueDefault;
+    }
 
-	TRef<Image> FindImage(const ZString& strName)
-	{
-		TRef<Image> pvalue; CastTo(pvalue, (Value*)FindMember(strName));
-		return pvalue;
-	}
+    const Vector& FindVector(const ZString& strName, const Vector& valueDefault = Vector(0, 0, 0))
+    {
+        TRef<VectorValue> pvalue; CastTo(pvalue, FindMember(strName));
+        return pvalue->GetValue();
+        //return pvalue ? pvalue->GetValue() : valueDefault;
+    }
 
-	TRef<Geo> FindGeo(const ZString& strName)
-	{
-		TRef<Geo> pvalue; CastTo(pvalue, (Value*)FindMember(strName));
-		return pvalue;
-	}
+    TRef<Image> FindImage(const ZString& strName)
+    {
+        TRef<Image> pvalue; CastTo(pvalue, (Value*)FindMember(strName));
+        return pvalue;
+    }
 
+    TRef<Geo> FindGeo(const ZString& strName)
+    {
+        TRef<Geo> pvalue; CastTo(pvalue, (Value*)FindMember(strName));
+        return pvalue;
+    }
+
+#endif
 };
 
 typedef TList<TRef<INameSpace> > INameSpaceList;

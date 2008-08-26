@@ -13,13 +13,13 @@
 //////////////////////////////////////////////////////////////////////////////
 
 EffectWindow::EffectWindow(
-          EffectApp*	papp,
-    const ZString&		strCommandLine,
-    const ZString&		strTitle,
-          bool			bStartFullscreen,
-    const WinRect&		rect,
-    const WinPoint&		sizeMin,
-          HMENU			hmenu
+          EffectApp*   papp,
+    const ZString&     strCommandLine,
+    const ZString&     strTitle,
+          bool         bStartFullscreen,
+    const WinRect&     rect,
+    const WinPoint&    sizeMin,
+          HMENU        hmenu
 ) :
     EngineWindow(
         papp,

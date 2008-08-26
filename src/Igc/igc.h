@@ -1821,7 +1821,7 @@ struct  DataAsteroidIGC
 
 struct  DataObjectIGC
 {
-    COLORVALUE          color; // was D3DCOLORVALUE
+    D3DCOLORVALUE       color;
     float               radius;
     float               rotation;
     char                modelName[c_cbFileName];
@@ -3537,7 +3537,7 @@ class IprojectileTypeIGC : public ItypeIGC
         virtual float            GetLifespan(void) const = 0;
         virtual float            GetRadius(void) const = 0;
         virtual float            GetRotation(void) const = 0;
-        virtual COLORVALUE       GetColor(void) const = 0; // was D3DCOLORVALUE
+        virtual D3DCOLORVALUE    GetColor(void) const = 0;
         virtual DamageTypeID     GetDamageType(void) const = 0;
         virtual SoundID          GetAmbientSound(void) const = 0;
 };
@@ -3994,7 +3994,6 @@ class IwarpIGC : public ImodelIGC
         virtual void                AddBomb(Time               timeExplode,
                                             ImissileTypeIGC*   pmt) = 0;
         virtual const WarpBombList* GetBombs(void) const = 0;
-		virtual bool                IsFixedPosition()    = 0; // KG- added
 };
 
 class ItreasureIGC : public ImodelIGC

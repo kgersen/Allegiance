@@ -1,0 +1,66 @@
+// VS.Net 2003 port
+
+
+// 2/8/2004 - Kirth Gersen / KGJV / kgersen@hotmail.com
+// 
+// 1st "raw" attempt to get the sources compile under VS.Net 2003
+// created a project for major modules
+// tweaked some includes to accomodate compiler changes 
+
+// 2/12/2004 - Kirth Gersen / KGJV / kgersen@hotmail.com
+//
+// global changes:
+//   added /GR- option
+//   fixed runtime lib model
+// ZLib, Effect, Guids, Engine:
+//   tuned options (for Debug configuration)
+// Utility
+//   fixed error C2475 (see listwrappers.h)
+// mdlc:
+//   fixed code gen mode and linking. 
+//   successful port in Debug configuration. mdlc.exe tested ok.
+
+// 2/13/2004 - Kirth Gersen / KGJV / kgersen@hotmail.com
+// 
+// added xmunge project
+//   problem with d3drm.lib not found in VS.Net lib. Added path to d3drm.lib from DX7 (temporary fix) 
+// Zlib
+//	fixed 2 problems with zlib/zmath.h (FullMark's feedback)
+
+// 2/14/2004 - Kirth Gersen / KGJV / kgersen@hotmail.com
+// 
+// added cvh,mdledit,tc* and other projects
+// changed VS.Net version check to 1310 (VS.Net 2003) instead of 1300 (VS.Net 2002).
+// reintroduced references to the 'Test' dir (was missing initialy)
+// fixed some errors in AGC project
+
+// 2/18/2004 - Kirth Gersen / KGJV / kgersen@hotmail.com
+// major change: 	The solution needs $FEDROOT to be defined now (absolute path, must point to 'src' dir)
+// 			This is a temporary fix to allow MIDL to place its outputs in the correct 'objs' subdirs.
+// General - reworked some files and dependancies
+// AGC     - compiles but doesnt link yet
+// TCObj   - working
+// TCLib   - working
+// WinTrek - compiles and links but with warnings. exe not working (todo: version resource block)
+// Server  - stuck on a problem with AGC (seems the AGC includes doesnt work well with VS.Net 2003 when in ACG_HOST mode)
+// mdlc    - working
+// cvh     - working
+// xmunge  - working
+// zlib    - vector.h needs a better fix for CrossProduct to avoid linker warning in dependant projects.
+// zlib    - 'new' redef (ZAlloc in alloc.h) disabled cause of 'big mess' it causes in the pre-preprocessing of some system includes.
+// igc     - added (in project) chaff & treasureset that were missing in 1st port.
+
+// 2/19/2004 - Kirth Gersen / KGJV / kgersen@hotmail.com
+// AGC     - working
+// Server  - working (except AZ Auth missing stuff)
+
+// 4/3/2004 - Kirth Gersen / KGJV / kgersen@hotmail.com
+// mega cleanup and fixes
+// 'Retail' build fixed - 
+
+
+// TODO
+// finish porting some modules
+// finish porting the various parameters of the makefiles in the projects properties (defines,includes, libs mainly)
+// add dependencies between projects
+// fix precompiled headers settings for some projects.

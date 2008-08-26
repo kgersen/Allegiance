@@ -55,7 +55,11 @@ HRESULT         ChullTypeIGC::Initialize(ImissionIGC* pMission,
         static const Vector z(0.0f, 0.0f, 1.0f);
 
         MultiHullBase*  pmhb = HitTest::Load(m_data->modelName);
+#ifdef DREAMCAST
+        if (pmhb)
+#else
         assert (pmhb);
+#endif    
         {
 
             {
@@ -204,6 +208,15 @@ HRESULT         ChullTypeIGC::Initialize(ImissionIGC* pMission,
                 }
             }
         }
+#ifdef DREAMCAST
+        else
+        {
+            m_cockpit = Vector::GetZero();
+            for (int i = m_data->maxWeapons - 1; (i >= 0); i--)
+                m_positionWeapons[i] = Vector::GetZero();
+
+        }
+#endif    
     }
 
     if (m_data->successorHullID != NA)

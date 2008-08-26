@@ -1,0 +1,251 @@
+/////////////////////////////////////////////////////////////////////////////
+// SymGuard.idl : IDL source for SymGuard.dll
+//
+// This file will be processed by the MIDL tool to
+// produce the type library (SymGuard.tlb) and marshalling code.
+//
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Forward Declarations
+
+interface ISymGuardApp;
+interface ISymGuardVersion;
+interface ISymModule;
+interface ISymInfo;
+
+
+/////////////////////////////////////////////////////////////////////////////
+[
+  object, dual, pointer_default(unique), nonextensible,
+  uuid(56D9D5F3-5C3E-4695-8686-765F1692920F),
+  helpstring("ISymGuardApp Interface")
+]
+interface ISymGuardApp : IDispatch
+{
+  [helpstring("Creates and initializes a module object. The symbol path may contain multiple, semicolon-delimited paths, and may include environment variables (such as %temp%).")]
+  HRESULT LoadModule([in] BSTR bstrSymbolPath, [in] BSTR bstrModuleName,
+    [in, optional] VARIANT* pvarImageBase, [in, optional] VARIANT* pvarImageSize,
+    [out, retval] ISymModule** ppModule);
+
+  [helpstring("Immediately clears the module cache of all objects.")]
+  HRESULT FlushAllModulesFromCache([out, retval] long* pcModulesFlushed);
+
+  [propget, helpstring("Gets the version information of the SymGuard object.")]
+  HRESULT Version([out, retval] ISymGuardVersion** ppVersion);
+
+  [propget, helpstring("Gets the version information of the Debug Help Library (DbgHelp.dll) in use.")]
+  HRESULT DbgHelpVersion([out, retval] ISymGuardVersion** ppVersion);
+
+}; // End: interface ISymGuardApp : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+[
+  object, dual, pointer_default(unique), nonextensible,
+  uuid(FB8CCFE2-8B02-4226-B4F2-A0976CEADB46),
+  helpstring("ISymGuardVersion Interface")
+]
+interface ISymGuardVersion : IDispatch
+{
+  #include "..\TCAtl\VersionInfoImpl.idl"
+
+}; // End: interface ISymGuardVersion : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+[
+  object, dual, pointer_default(unique), nonextensible,
+  uuid(321912CE-C257-434e-BC99-A2AD2FF6BEE4),
+  helpstring("ISymModule Interface")
+]
+interface ISymModule : IDispatch
+{
+  [helpstring("Looks-up information for the symbol at the specified address. The address must be specified as an integer type or the string form of a hex value.")]
+  HRESULT GetSymbolFromAddress([in] VARIANT* pvarAddress,
+    [out, retval] ISymInfo** ppSymInfo);
+
+  [helpstring("Clears this module from the module cache.")]
+  HRESULT FlushModuleFromCache();
+
+  [propput, helpstring("The number of minutes that a module can remain in the module cache after completion of each use. If the module is not used again within the timeout period, it will be flushed from the cache.")]
+  HRESULT Timeout([in] long nMinutes);
+  [propget]
+  HRESULT Timeout([out, retval] long* pnMinutes);
+
+  [propput, helpstring("The base pathname of where the module was built. This will be stripped from the beginning of filenames returned.")]
+  HRESULT BuildPathBase([in] BSTR bstr);
+  [propget]
+  HRESULT BuildPathBase([out, retval] BSTR* pbstr);
+
+  [propput, helpstring("The base pathname of where the source code for this module may be found. This will be prepended to the beginning of filenames returned.")]
+  HRESULT SourcePathBase([in] BSTR bstr);
+  [propget]
+  HRESULT SourcePathBase([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The symbol path(s) used to find the loaded module. Any environment strings specified in LoadModule are expanded.")]
+  HRESULT SymbolPath([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The module name.")]
+  HRESULT ModuleName([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The base virtual address where the image is loaded.")]
+  HRESULT ImageBase([out, retval] VARIANT* pvar);
+
+  [propget, helpstring("The size of the image.")]
+  HRESULT ImageSize([out, retval] VARIANT* pvar);
+
+  [propget, helpstring("The file time stamp.")]
+  HRESULT TimeDateStamp([out, retval] DATE* pd);
+
+  [propget, helpstring("The computed checksum of the image. This value can be zero.")]
+  HRESULT CheckSum([out, retval] VARIANT* pvar);
+
+  [propget, helpstring("The number of symbols in the symbol table.")]
+  HRESULT SymbolCount([out, retval] long* pc);
+
+  [propget, helpstring("The type of symbols that are loaded. This will be one of the following strings: 'SymNone' - No symbols are loaded, 'SymCoff' - COFF symbols, 'SymCv' - CodeView symbols, 'SymPdb' - PDB file, 'SymExport' - Symbols generated f")]
+  HRESULT SymbolType([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The image name. The name may or may not contain a full path.")]
+  HRESULT ImageName([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The full path and file name from which symbols were loaded.")]
+  HRESULT LoadedImageName([out, retval] BSTR* pbstr);
+
+}; // End: interface ISymModule : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+[
+  object, dual, pointer_default(unique), nonextensible,
+  uuid(A9016722-23C6-4e52-9020-28A1B1AC110E),
+  helpstring("ISymInfo Interface")
+]
+interface ISymInfo : IDispatch
+{
+  [propget, helpstring("The virtual address for the symbol.")]
+  HRESULT Address([out, retval] VARIANT* pvar);
+
+  [propget, helpstring("The the undecorated symbol name.")]
+  HRESULT Name([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The the decorated symbol name.")]
+  HRESULT DecoratedName([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The name of the source file from which the symbol was compiled.")]
+  HRESULT SourceFileName([out, retval] BSTR* pbstr);
+
+  [propget, helpstring("The line number in the source file from which the symbol was compiled.")]
+  HRESULT LineNumber([out, retval] long* pn);
+
+  [propget, helpstring("The number of bytes the address is from the beginning of the symbol.")]
+  HRESULT BytesFromSymbol([out, retval] long* pcb);
+
+  [propget, helpstring("The number of bytes the address is from the beginning of the line.")]
+  HRESULT BytesFromLine([out, retval] long* pcb);
+
+}; // End: interface ISymInfo : IDispatch
+
+
+/////////////////////////////////////////////////////////////////////////////
+[
+  uuid(744C0DAF-296D-400b-8640-5A339A368EC4),
+  version(1.0),
+  helpstring("SymGuard 1.0 Type Library")
+]
+library SymGuardLib
+{
+  importlib("stdole32.tlb");
+  importlib("stdole2.tlb");
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(9692382D-3165-451b-9219-26A77F2A04D2),
+    helpstring("SymGuardApp Class")
+  ]
+  coclass SymGuardApp
+  {
+    [default] interface ISymGuardApp;
+
+  }; // End: coclass SymGuardApp
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(69372094-957A-49de-85DA-A87C8181C6F4),
+    helpstring("SymGuardVersion Class")
+  ]
+  coclass SymGuardVersion
+  {
+    [default] interface ISymGuardVersion;
+
+  }; // End: coclass SymGuardVersion
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(857C6872-38D4-45ab-AC00-F43813B82006),
+    helpstring("SymModule Class"),
+    noncreatable
+  ]
+  coclass SymModule
+  {
+    [default] interface ISymModule;
+
+  }; // End: coclass SymModule
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  [
+    uuid(867169DD-F800-452d-B4A3-4DC7398A24A9),
+    helpstring("SymInfo Class"),
+    noncreatable
+  ]
+  coclass SymInfo
+  {
+    [default] interface ISymInfo;
+
+  }; // End: coclass SymInfo
+
+
+}; // End: library SymGuardLib
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+cpp_quote("/////////////////////////////////////////////////////////////////////////////")
+cpp_quote("// CATID Declarations")
+cpp_quote("")
+cpp_quote("#ifdef __cplusplus")
+cpp_quote("  extern \"C\" const __declspec(selectany) GUID CATID_SymGuard =")
+cpp_quote("    {0xFEFB2E63,0x6F70,0x4552,{0x80,0x71,0x93,0x92,0x24,0x11,0x82,0xEE}};")
+cpp_quote("#endif // __cplusplus")
+cpp_quote("")
+cpp_quote("#if defined(__cplusplus) && _MSC_VER >= 1100")
+cpp_quote("  extern \"C++\"")
+cpp_quote("  {")
+cpp_quote("    /////////////////////////////////////////////////////////////////////////")
+cpp_quote("    // Smart Pointer Declarations")
+cpp_quote("")
+cpp_quote("    #include <comdef.h>")
+cpp_quote("")
+cpp_quote("    #ifndef TC_COM_SMARTPTR_TYPEDEF")
+cpp_quote("      #define TC_COM_SMARTPTR_TYPEDEF(Interface) \\")
+cpp_quote("        _COM_SMARTPTR_TYPEDEF(Interface, __uuidof(Interface))")
+cpp_quote("    #endif // TC_COM_SMARTPTR_TYPEDEF")
+cpp_quote("")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(ISymGuardApp);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(ISymGuardVersion);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(ISymModule);")
+cpp_quote("    TC_COM_SMARTPTR_TYPEDEF(ISymInfo);")
+cpp_quote("")
+cpp_quote("  } // extern \"C++\"")
+cpp_quote("#endif // defined(__cplusplus) && _MSC_VER >= 1100")
+cpp_quote("")
+
+

@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+
+<State>
+
+  <Threads>
+
+    <!-- One Thread element for each thread -->
+    <Thread Id="XXXXXXXX" StartAddr="XXXXXXXX" StartModule="abcdefgh.ijk" StartSym="&lt;nosymbols&gt;">
+
+      <Registers
+        EAX="01234567" EBX="89ABCDEF" ECX="01234567" EDX="89ABCDEF" ESI="01234567"
+        EDI="89ABCDEF" EBP="01234567" ESP="89ABCDEF" EIP="01234567" FLG="89ABCDEF"
+        CS="0123" DS="4567" SS="89AB" ES="CDEF" FS="0123" GS="4567"
+
+        /> <!-- TODO: include floating-point registers -->
+
+      <Stack Dump="0000000018431300d261360100000000ffffffff383f13003038130063007300630072006900700074002e006500780065000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000">
+        <!-- One Frm element for each stack frame of thread -->
+        <Frm
+          ProgCnt="XXXXXXXX"
+          FramePtr="XXXXXXXX"
+          RetAddr="XXXXXXXX"
+          Params="XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX"
+          Module="abcdefjh.ijk"
+          SymName="">
+
+          <!-- If a function table entry exists for the stack frame -->
+          <FPO
+            OffStart="XXXXXXXX"
+            ProcSize="XXXXXXXX"
+            Locals="XXXXXXXX"
+            Params="XXXX"
+            Prolog="XX"
+            RegsSaved="XX"
+            HasSEH="1"
+            UseBP="1"
+            Frame="NONFPO"
+            />
+
+        </Frm>
+      </Stack>
+
+    </Thread>
+
+  </Threads>
+
+  <Modules>
+
+    <Module
+      Name="F:\WINNT\system32\ADVAPI32.DLL"
+      LoadAddr="77DB0000"
+      LoadSize="0005A000"
+      FileSize="00057510"
+      FileDate="19991202"
+      FileTime="073000"
+      FileVer="5.0.2191.1"
+      ProdVer="5.0.2191.1"
+      IsDebug="0"
+      Company="Microsoft Corporation"
+      Desc="Advanced Windows 32 Base API"
+      ProdName="Microsoft(R) Windows (R) 2000 Operating System"
+      Copy="Copyright (C) Microsoft Corp. 1981-1999"
+      />
+      <!-- One Module element for each loaded module -->
+
+  </Modules>
+  
+  <Processes>
+    
+    <Process
+      Name="F:\WINNT\system32\notepad.exe"
+      FileSize="0000C710"
+      FileDate="19991130"
+      FileTime="154000"
+      FileVer="5.0.2140.1"
+      ProdVer="5.0.2140.1"
+      IsDebug="0"
+      Company="Microsoft Corporation"
+      Desc="Notepad"
+      ProdName="Microsoft(R) Windows (R) 2000 Operating System"
+      Copy="Copyright (C) Microsoft Corp. 1981-1999"
+      />
+      <!-- One Process element for each loaded module (except for debuggee) -->
+
+  </Processes>
+
+</State>
+

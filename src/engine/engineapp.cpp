@@ -6,11 +6,15 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-HRESULT EngineApp::Initialize(const ZString& strCommandLine, HWND hWindow )
+HRESULT EngineApp::Initialize(const ZString& strCommandLine)
 {
     //
     // Initialize the pane code
     //
+
+    // KGJV 32B - FreeImage Lib
+    FreeImage_Initialise();
+
 
     Pane::Initialize();
 
@@ -25,7 +29,9 @@ HRESULT EngineApp::Initialize(const ZString& strCommandLine, HWND hWindow )
 
     //
     // Create the engine
-    m_pengine = CreateEngine(!bSoftwareOnly, !bPrimaryOnly, dwBPP, hWindow );
+    //
+
+    m_pengine = CreateEngine(!bSoftwareOnly, !bPrimaryOnly, dwBPP);
 
     if (!m_pengine->IsValid()) {
         return E_FAIL;
@@ -51,10 +57,13 @@ void EngineApp::Terminate()
     if (m_pmodeler)
         m_pmodeler->Terminate();
     if (m_pengine)
-        m_pengine->Terminate( true );
+        m_pengine->Terminate();
 
     m_pmodeler = NULL;
     m_pengine = NULL;
+
+    // KGJV 32B - FreeImage
+    FreeImage_DeInitialise();
 
     Win32App::Terminate();
 }
@@ -115,9 +124,3 @@ int EngineApp::OnException(DWORD code, ExceptionData* pdata)
         return Win32App::OnAssert(psz, pszFile, line, pszModule);
     }
 #endif
-
-// KGJV added for Win32App behavior
-bool EngineApp::IsBuildDX9()
-{
-	return true;
-}

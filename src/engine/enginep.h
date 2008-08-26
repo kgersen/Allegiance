@@ -1,6 +1,10 @@
 #ifndef _enginep_h_
 #define _enginep_h_
 
+// KGJV 32 B - FreeImage lib
+//#define FREEIMAGE_LIB 1
+#include "FreeImage/FreeImage.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Global hacks
@@ -21,25 +25,53 @@ extern bool g_bWindowLog;
 //
 
 
-/*typedef IDirectDraw4                 IDirectDrawX;
-typedef IDirectDrawSurface4          IDirectDrawSurfaceX;
 typedef IDirectDrawClipper           IDirectDrawClipperX;
 typedef IDirectDrawPalette           IDirectDrawPaletteX;
-typedef IDirectDrawGammaControl      IDirectDrawGammaControlX;*/
+typedef IDirectDrawGammaControl      IDirectDrawGammaControlX;
+
+#ifdef USEDX7
+
+typedef IDirectDraw7                 IDirectDrawX;
+typedef IDirectDrawSurface7          IDirectDrawSurfaceX;
+
+typedef IDirect3D7                   IDirect3DX;
+typedef IDirect3DDevice7             IDirect3DDeviceX;
+
+typedef IDirectDrawSurface7          IDirect3DTextureX; // with DX7+, tex are surfaces
+typedef LPD3DVIEWPORT7               IDirect3DViewportX;
+typedef IDirect3DMaterial3           IDirect3DMaterialX;
+
+#define IID_IDirectDrawX             IID_IDirectDraw7
+#define IID_IDirectDrawSurfaceX      IID_IDirectDrawSurface7
+#define IID_IDirect3DX               IID_IDirect3D7
+#define IID_IDirect3DTextureX        IID_IDirect3DTexture2
+#define IID_IDirectDrawGammaControlX IID_IDirectDrawGammaControl
+
+#else
+typedef IDirectDraw4                 IDirectDrawX;
+typedef IDirectDrawSurface4          IDirectDrawSurfaceX;
+
+typedef IDirect3D3                   IDirect3DX;
+typedef IDirect3DDevice3             IDirect3DDeviceX;
+
+typedef IDirect3DTexture2            IDirect3DTextureX;
+typedef IDirect3DViewport3           IDirect3DViewportX;
+typedef IDirect3DMaterial3           IDirect3DMaterialX;
+
+#define IID_IDirectDrawX             IID_IDirectDraw4
+#define IID_IDirectDrawSurfaceX      IID_IDirectDrawSurface4
+#define IID_IDirect3DX               IID_IDirect3D3
+#define IID_IDirect3DTextureX        IID_IDirect3DTexture2
+#define IID_IDirectDrawGammaControlX IID_IDirectDrawGammaControl
+
+#endif
+
+typedef IDirect3DLight               IDirect3DLightX;
 
 
-//typedef IDirect3D9						IDirect3DX;
-//typedef IDirect3DDevice9				IDirect3DDeviceX;
-//typedef IDirect3DTexture9				IDirect3DTextureX;
-//#define IID_IDirect3DX					IID_IDirect3D9
-//#define IID_IDirect3DTextureX			IID_IDirect3DTexture9
 
-//#define IID_IDirectDrawX					IID_IDirectDraw4
-//#define IID_IDirectDrawSurfaceX				IID_IDirectDrawSurface4
-//#define IID_IDirectDrawGammaControlX		IID_IDirectDrawGammaControl
-
-//typedef DDSURFACEDESC2               DDSURFACEDESCX;
-//typedef DDSCAPS2                     DDSCAPSX;
+typedef DDSURFACEDESC2               DDSURFACEDESCX;
+typedef DDSCAPS2                     DDSCAPSX;
 
 //
 // DirectX Wrapper Classes
@@ -53,13 +85,13 @@ typedef IDirectDrawGammaControl      IDirectDrawGammaControlX;*/
 //
 //////////////////////////////////////////////////////////////////////////////
 
-/*bool FillDDPF(
-    D3D9PixelFormat&      ppdf,
+bool FillDDPF(
+    DDPixelFormat&        ppdf,
     IDirectDrawX*         pdd,
     HDC                   hdc,
     HBITMAP               hbitmap,
     IDirectDrawPaletteX** pppalette
-);*/
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -86,11 +118,11 @@ typedef IDirectDrawGammaControl      IDirectDrawGammaControlX;*/
 //
 //////////////////////////////////////////////////////////////////////////////
 
-//class PrivatePalette;
+class PrivatePalette;
 class PrivateContext;
 class PrivateSurface;
 class PrivateEngine;
-//class VideoSurface;
+class VideoSurface;
 class DDSurface;
 class Rasterizer;
 class D3DRasterizer;
@@ -101,12 +133,12 @@ class D3DRasterizer;
 //
 //////////////////////////////////////////////////////////////////////////////
 
-/*class PrivatePalette : public Palette {
+class PrivatePalette : public Palette {
 public:
     virtual IDirectDrawPaletteX* GetDDPal() = 0;
 };
 
-TRef<PrivatePalette> CreatePaletteImpl(IDirectDrawPaletteX* pddpal);*/
+TRef<PrivatePalette> CreatePaletteImpl(IDirectDrawPaletteX* pddpal);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -114,19 +146,14 @@ TRef<PrivatePalette> CreatePaletteImpl(IDirectDrawPaletteX* pddpal);*/
 //
 //////////////////////////////////////////////////////////////////////////////
 
-/*class D3DDevice : public IObject {
+class D3DDevice : public IObject {
 public:
     virtual void              Terminate()             = 0;
-//    virtual IDirect3DDeviceX* GetD3DDeviceX()         = 0;
-//    virtual PixelFormat*      GetTextureFormat()      = 0;
+    virtual IDirect3DDeviceX* GetD3DDeviceX()         = 0;
+    virtual PixelFormat*      GetTextureFormat()      = 0;
     virtual WinPoint          GetMinTextureSize()     = 0;
     virtual WinPoint          GetMaxTextureSize(DWORD dwMaxTextureSize) = 0;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
     virtual bool              IsHardwareAccelerated() = 0;
-
-	// DEVICE CREATION
-private:
-//	virtual HRESULT				EnumerateDisplayModes( )							= 0;
-//	virtual HRESULT				EnumerateZBufferModes( )							= 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -134,26 +161,24 @@ private:
 // Direct Draw Device
 //
 //////////////////////////////////////////////////////////////////////////////
-/*
+
 class DDDevice : public IObject {
 public:
     virtual void               Terminate()                                          = 0;
-    virtual void               Reset( )										         = 0;
+    virtual void               Reset(IDirectDrawX* pdd)                             = 0;
     virtual void               FreeEverything()                                     = 0;
 
     virtual HRESULT            TestCooperativeLevel()                               = 0;
     virtual void               AddRasterizer(Rasterizer* praster)                   = 0;
+    virtual void               RemoveD3DDevice(D3DDevice* pd3ddevice)               = 0;
     virtual void               RemoveRasterizer(Rasterizer* praster)                = 0;
     virtual void               RemoveSurface(DDSurface* pddsurface)                 = 0;
-//	virtual HRESULT				EnumerateDisplayModes( )							= 0;
-//	virtual HRESULT				EnumerateZBufferModes( )							= 0;
 
-//    virtual void               SetPrimaryDevice(DDDevice* pdddevice)                = 0;
+    virtual void               SetPrimaryDevice(DDDevice* pdddevice)                = 0;
 
     virtual PrivateEngine*     GetEngine()                                          = 0;
- //   virtual IDirectDrawX*      GetDD()                                              = 0;
+    virtual IDirectDrawX*      GetDD()                                              = 0;
     virtual IDirect3DX*        GetD3D()                                             = 0;
-	virtual D3DDevice *			GetD3DDevice()										= 0;
     virtual bool               Has3DAcceleration()                                  = 0;
     virtual bool               GetAllow3DAcceleration()                             = 0;
     virtual PixelFormat*       GetZBufferPixelFormat()                              = 0;
@@ -173,24 +198,29 @@ public:
 
     virtual void               BeginScene()                           = 0;
     virtual void               EndScene()                             = 0;
-    virtual TRef<D3DDevice>    CreateD3DDevice( HWND hParentWindow) = 0;
+    virtual TRef<D3DDevice>    CreateD3DDevice(DDSurface* pddsurface) = 0;
 
-    virtual TRef<IDirect3DTextureX> CreateSurface(
+    virtual TRef<IDirectDrawSurfaceX> CreateSurface(
         const WinPoint& size,
         DWORD caps,
         PixelFormat* ppf,
         bool  bAllocationCanFail
     ) = 0;
 
-//    virtual TRef<IDirectDrawSurfaceX> CreateMipMapTexture(
-//        const WinPoint& size,
-//        PixelFormat* ppf
-//    ) = 0;
-};*/
+    virtual TRef<IDirectDrawSurfaceX> CreateMipMapTexture(
+        const WinPoint& size,
+        PixelFormat* ppf
+    ) = 0;
+};
 
-//TRef<D3DDevice> CreateD3DDevice( HWND hParentWindow );
+TRef<D3DDevice> CreateD3DDevice(
+    DDDevice*         pdddevice,
+    IDirect3DDeviceX* pd3dd,
+    bool              bHardwareAccelerated,
+    PixelFormat*      ppfPrefered
+);
 
-//TRef<DDDevice> CreateDDDevice(PrivateEngine* pengine, bool bAllow3DAcceleration, HWND hParentWindow );
+TRef<DDDevice> CreateDDDevice(PrivateEngine* pengine, bool bAllow3DAcceleration, IDirectDrawX* pdd);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -239,12 +269,17 @@ public:
     virtual void    DrawPoints(const VertexScreen* pvertex, int vcount)                                 = 0;
 };
 
-/*class D3DRasterizer : public Rasterizer {
+class D3DRasterizer : public Rasterizer {
 public:
     
     virtual TRef<IDirect3DDeviceX>   GetD3DDeviceX()                    = 0;
     virtual TRef<IDirect3DX>         GetD3D()                           = 0;
-    virtual D3DVIEWPORT9 *			GetViewport()                      = 0;
+#ifdef USEDX7
+    virtual IDirect3DViewportX       GetViewport()                      = 0;
+#else
+    virtual TRef<IDirect3DViewportX> GetViewport()                      = 0;
+#endif
+    
     virtual void DrawTrianglesD3D(const D3DLVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
     virtual void     DrawLinesD3D(const D3DLVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
     virtual void    DrawPointsD3D(const D3DLVertex* psource, int count                                ) = 0;
@@ -252,25 +287,10 @@ public:
     virtual void DrawTrianglesD3D(const D3DVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
     virtual void     DrawLinesD3D(const D3DVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
     virtual void    DrawPointsD3D(const D3DVertex* psource, int count                                ) = 0;
-};*/
-
-class D3D9Rasterizer : public Rasterizer 
-{
-public:
-//	virtual TRef<IDirect3DDevice9>   GetD3DDeviceX() = 0;
-//	virtual TRef<IDirect3D9> GetD3D() = 0;
-	virtual D3DVIEWPORT9 * GetViewport() = 0;
-	virtual void DrawTrianglesD3D(const D3DLVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
-	virtual void DrawLinesD3D(const D3DLVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
-	virtual void DrawPointsD3D(const D3DLVertex* psource, int count ) = 0;
-	virtual void DrawTrianglesD3D(const D3DVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
-	virtual void DrawLinesD3D(const D3DVertex* psource, int count, const MeshIndex* pindex, int icount) = 0;
-	virtual void DrawPointsD3D(const D3DVertex* psource, int count ) = 0;
 };
 
-TRef<D3D9Rasterizer> CreateD3D9Rasterizer(PrivateSurface* psurface);
-//TRef<D3DRasterizer> CreateD3DRasterizer(PrivateSurface* psurface, HWND hParentWindow);
-//TRef<Rasterizer>    CreateSoftwareRasterizer(PrivateSurface* psurface);
+TRef<D3DRasterizer> CreateD3DRasterizer(PrivateSurface* psurface);
+TRef<Rasterizer>    CreateSoftwareRasterizer(PrivateSurface* psurface);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -297,9 +317,8 @@ public:
     virtual void AddClipPlane(const Plane& plane)                      = 0;
     virtual void RemoveClipPlane(int indexRemove)                      = 0;
 
-    virtual void SetMatrix(const Matrix& mat, const Matrix& matWorldTM)= 0;
+    virtual void SetMatrix(const Matrix& mat)                          = 0;
     virtual void SetPerspectiveMatrix(const Matrix& mat)               = 0;
-    virtual void SetViewMatrix(const Matrix& mat)                      = 0;
     virtual void SetClipping(bool bClip)                               = 0;
     virtual void SetShadeMode(ShadeMode shadeMode)                     = 0;
     virtual void SetBlendMode(BlendMode blendMode)                     = 0;
@@ -357,15 +376,7 @@ public:
     virtual void     DrawLines(const VertexScreen* pvertex, int vcount, const MeshIndex* pindex, int icount) = 0;
     virtual void    DrawPoints(const VertexScreen* pvertex, int vcount)                                 = 0;
 
-	virtual void DrawTriangles( const D3DPRIMITIVETYPE primType,
-								const CVBIBManager::SVBIBHandle * phVB, 
-								const CVBIBManager::SVBIBHandle * phIB) = 0;
-
-	virtual void DrawTriangles( const D3DPRIMITIVETYPE primType,
-								const DWORD dwNumPrims,
-								const CVBIBManager::SVBIBHandle * phVB) = 0;
-
-	//
+    //
     // Performance Counters
     //
 
@@ -392,8 +403,7 @@ public:
     virtual PrivateSurface* GetSurface()     = 0;
 };
 
-//TRef<PrivateContext> CreateContextImpl(PrivateSurface* psurface);
-TRef<PrivateContext> CreateContextImpl( PrivateSurface* psurface, WinPoint screenRes );
+TRef<PrivateContext> CreateContextImpl(PrivateSurface* psurface);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -412,7 +422,7 @@ public:
     DWORD    m_alphaMask;
     bool     m_bColorKey;
 };
-/*
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // VideoSurface
@@ -443,7 +453,9 @@ public:
 
     //
     // Regular Blts
-    virtual void UnclippedBlt(const WinRect& rectTarget, IDirect3DSurface9* pddsSource, const WinPoint& pointSource, bool bHasColorKey) = 0;
+    //
+
+    virtual void UnclippedBlt(const WinRect& rectTarget, IDirectDrawSurfaceX* pddsSource, const WinPoint& pointSource, bool bHasColorKey) = 0;
     virtual void UnclippedBlt(const WinRect& rectTarget, VideoSurface* pvideoSurfaceSource, const WinPoint& pointSource) = 0;
     virtual void UnclippedFill(const WinRect& rectTarget, Pixel pixel)                                                   = 0;
 
@@ -474,63 +486,12 @@ public:
     virtual const Color&             GetColorKey()                                                = 0;
     virtual bool                     InVideoMemory()                                              = 0;
     virtual DDDevice*                GetDDDevice()                                                = 0;
-    virtual TRef<IDirect3DTexture9> GetDDS()                                                     = 0;
-	virtual IDirect3DTexture9 *     GetDDSX()                                                    = 0;
-    virtual IDirect3DTexture9*     GetDDSX(PixelFormat* ppf)                                    = 0;
-//    virtual IDirect3DSurface9*     GetDDSXZBuffer()                                             = 0;
-    virtual IDirect3DTexture9*       GetTextureX(PixelFormat* ppf, const WinPoint& size, int& id) = 0;
-};*/
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DDSurface
-// Merged VideoSurface and DDSurface interfaces, so that we can get
-// access to the DDDevice for rendering purposes.
-//////////////////////////////////////////////////////////////////////////////
-
-/*class DDSurface : public IObject 
-{
-public:
-	// Original VideoSurface interface functions.
-    // Attributes
-    virtual SurfaceType     GetSurfaceType() = 0;
-    virtual const WinPoint& GetSize()        = 0;
-    virtual int             GetPitch()       = 0;
-    virtual PixelFormat*    GetPixelFormat() = 0;
-    virtual BYTE*           GetPointer()     = 0;
-    virtual void            ReleasePointer() = 0;
-    virtual bool            IsMemoryShared() = 0;
-
-    virtual void            SetColorKey(const Color& color) = 0;
-
-    // Stretch Blt
-    virtual void UnclippedBlt(const WinRect& rectTarget, DDSurface* pvideoSurfaceSource, const WinRect& rectSource, bool bHasColorKey) = 0;
-
-    // Regular Blts
-    virtual void UnclippedBlt(const WinRect& rectTarget, IDirect3DSurface9* pddsSource, const WinPoint& pointSource, bool bHasColorKey) = 0;
-    virtual void UnclippedBlt(const WinRect& rectTarget, DDSurface* pvideoSurfaceSource, const WinPoint& pointSource) = 0;
-    virtual void UnclippedFill(const WinRect& rectTarget, Pixel pixel)                                                   = 0;
-
-    // GDI blts
-    virtual void BitBltFromDC(HDC hdc) = 0;
-
-    // Called from Context
-    virtual void BeginScene() = 0;
-    virtual void EndScene()   = 0;
-
-	// Original DDSurface interface functions.
-    virtual bool						HasZBuffer()                                                 = 0;
-    virtual bool						HasColorKey()                                                = 0;
-    virtual const Color&				GetColorKey()                                                = 0;
-    virtual bool						InVideoMemory()                                              = 0;
-//    virtual DDDevice*					GetDDDevice()                                                = 0;
-    virtual TRef<IDirect3DTexture9>		GetDDS()                                                     = 0;
-	virtual IDirect3DTexture9 *			GetDDSX()                                                    = 0;
-    virtual IDirect3DTexture9*			GetDDSX(PixelFormat* ppf)                                    = 0;
-//	virtual IDirect3DSurface9*			GetDDSXZBuffer()                                             = 0;
-    virtual IDirect3DTexture9*			GetTextureX(PixelFormat* ppf, const WinPoint& size, int& id) = 0;
-};*/
+    virtual TRef<IDirectDrawSurface> GetDDS()                                                     = 0;
+    virtual IDirectDrawSurfaceX*     GetDDSX()                                                    = 0;
+    virtual IDirectDrawSurfaceX*     GetDDSX(PixelFormat* ppf)                                    = 0;
+    virtual IDirectDrawSurfaceX*     GetDDSXZBuffer()                                             = 0;
+    virtual IDirect3DTextureX*       GetTextureX(PixelFormat* ppf, const WinPoint& size, int& id) = 0;
+};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -538,7 +499,7 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-/*TRef<DDSurface> CreateDDSurface(
+TRef<DDSurface> CreateDDSurface(
           DDDevice*       pdddevice,
           SurfaceType     stype,
           PixelFormat*    ppf,
@@ -563,7 +524,7 @@ TRef<DDSurface> CreateDDSurface(
     PixelFormat*         ppf,
     PrivatePalette*      ppalette,
     SurfaceType          stype
-);*/
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -571,26 +532,9 @@ TRef<DDSurface> CreateDDSurface(
 //
 //////////////////////////////////////////////////////////////////////////////
 
-//class DeviceDependant : public IObject {
-//public:
-//    virtual void ClearDevice() = 0;
-//};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// PrivateSurface
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class PrivateSurface : 
-    public Surface
-//    public DeviceDependant
-{
+class DeviceDependant : public IObject {
 public:
-//    virtual DDSurface *		GetVideoSurface()                            = 0;
-//    virtual DDSurface *		GetVideoSurfaceNoAlloc()                     = 0;
-//    virtual void			SetPixelFormat(PixelFormat* ppf)             = 0;
-//    virtual void			BitBltFromDC(HDC hdc)                        = 0;
+    virtual void ClearDevice() = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -599,55 +543,47 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<PrivateSurface> CreatePrivateDummySurface(	PrivateEngine * pengine,
-												const WinPoint & size,
-												SurfaceSite * psite );
+class PrivateSurface : 
+    public Surface,
+    public DeviceDependant
+{
+public:
+    virtual VideoSurface* GetVideoSurface()                            = 0;
+    virtual VideoSurface* GetVideoSurfaceNoAlloc()                     = 0;
+    virtual void          SetPixelFormat(PixelFormat* ppf)             = 0;
+    virtual void          BitBltFromDC(HDC hdc)                        = 0;
+};
 
-TRef<PrivateSurface> CreatePrivateRenderTargetSurface(	PrivateEngine * pengine,
-														const WinPoint & size,
-														SurfaceSite * psite );
+//////////////////////////////////////////////////////////////////////////////
+//
+// PrivateSurface
+//
+//////////////////////////////////////////////////////////////////////////////
 
 TRef<PrivateSurface> CreatePrivateSurface(
     PrivateEngine*  pengine,
     PixelFormat*    ppf,
+    PrivatePalette* ppalette,
     const WinPoint& size,
     SurfaceType     stype,
     SurfaceSite*    psite
 );
 
 TRef<PrivateSurface> CreatePrivateSurface(
-					PrivateEngine*		pengine,
-					PixelFormat*		ppf,
-					const WinPoint&     size,
-					int					pitch,
-					BYTE*				pdata,
-					IObject*			pobjectMemory,
-					const bool			bColorKey,
-					const Color &		cColourKey,
-					const ZString &		szTextureName = "",
-					const bool			bSystemMemory = false );
+          PrivateEngine*  pengine,
+          PixelFormat*    ppf,
+          PrivatePalette* ppalette,
+    const WinPoint&       size,
+          int             pitch,
+          BYTE*           pdata,
+          IObject*        pobjectMemory
+);
 
-TRef<PrivateSurface> CreatePrivateSurface(	
-					PrivateEngine*			pengine,
-					const D3DXIMAGE_INFO *	pImageInfo,
-					const WinPoint *		pTargetSize,
-					IObject *				pobjectMemory,
-					const bool				bColorKey,
-					const Color &			cColorKey,
-					const ZString &			szTextureName = "",
-					const bool				bSystemMemory = false );
-
-/*TRef<PrivateSurface> CreatePrivateSurface(
-    PrivateEngine*	pengine,
-    DDSurface *		pvideoSurface,
-    SurfaceSite*	psite
-);*/
-
-TRef<PrivateSurface> CreatePrivateSurface(	D3DFORMAT	texFormat,
-											DWORD		dwWidth,
-											DWORD		dwHeight,
-											char *		szTexName = NULL );
-
+TRef<PrivateSurface> CreatePrivateSurface(
+    PrivateEngine* pengine,
+    VideoSurface*  pvideoSurface,
+    SurfaceSite*   psite
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -657,35 +593,37 @@ TRef<PrivateSurface> CreatePrivateSurface(	D3DFORMAT	texFormat,
 
 class PrivateEngine : public Engine {
 public:
-    //virtual void AddDeviceDependant(DeviceDependant* pdeviceDependant)    = 0;
-    //virtual void RemoveDeviceDependant(DeviceDependant* pdeviceDependant) = 0;
+    virtual void AddDeviceDependant(DeviceDependant* pdeviceDependant)    = 0;
+    virtual void RemoveDeviceDependant(DeviceDependant* pdeviceDependant) = 0;
     virtual void RemovePrivateSurface(PrivateSurface* psurface)           = 0;
 
-//    virtual DDDevice*       GetCurrentDevice() = 0;
-//    virtual DDDevice*       GetPrimaryDevice() = 0;
-//    virtual DDSDescription  GetPrimaryDDSD()   = 0;
-//    virtual PrivateSurface* GetBackBuffer()    = 0;
+    virtual DDDevice*       GetCurrentDevice() = 0;
+    virtual DDDevice*       GetPrimaryDevice() = 0;
+    virtual DDSDescription  GetPrimaryDDSD()   = 0;
+    virtual PrivateSurface* GetBackBuffer()    = 0;
 
-	virtual TRef<PrivateSurface> CreateCompatibleSurface(
+    virtual TRef<PrivateSurface> CreateCompatibleSurface(
         PrivateSurface* psurface, 
         const WinPoint& size, 
         SurfaceType     stype, 
         SurfaceSite*    psite
     ) = 0;
 
-/*    virtual TRef<DDSurface> CreateVideoSurface(	SurfaceType     stype,
-												PixelFormat*    ppf,
-												PrivatePalette* ppalette,
-												const WinPoint& size,
-												int             pitch,
-												BYTE*           pbits	) = 0;*/
+    virtual TRef<VideoSurface> CreateVideoSurface(
+        SurfaceType     stype,
+        PixelFormat*    ppf,
+        PrivatePalette* ppalette,
+        const WinPoint& size,
+        int             pitch,
+        BYTE*           pbits
+    ) = 0;
 
     //
     // Pixel Formats
     //
 
     virtual PixelFormat*      GetPrimaryPixelFormat() = 0;
-//    virtual TRef<PixelFormat> GetPixelFormat(const DDPixelFormat& ddpf) = 0;
+    virtual TRef<PixelFormat> GetPixelFormat(const DDPixelFormat& ddpf) = 0;
     virtual TRef<PixelFormat> GetPixelFormat(
         int   bits,
         DWORD redMask,
@@ -703,7 +641,6 @@ public:
 
 TRef<IEngineFont> CreateEngineFont(HFONT hfont);
 TRef<IEngineFont> CreateEngineFont(IBinaryReaderSite* psite);
-TRef<IEngineFont> CreateEngineFont( D3DXFONT_DESC * pFontDesc );			// ADDED
 
 //////////////////////////////////////////////////////////////////////////////
 //

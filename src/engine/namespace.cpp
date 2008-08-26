@@ -132,7 +132,7 @@ public:
         //     ok.
         //
 
-        #if defined(_DEBUG)
+        #if defined(_DEBUG) && !defined(DREAMCAST)
             Value* pvalue = dynamic_cast<Value*>(pobject);
 
             if (pvalue != NULL) {

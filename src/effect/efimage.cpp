@@ -511,9 +511,6 @@ public:
         #ifndef FixPermedia
             pcontext->SetShadeMode(ShadeModeCopy);
         #endif
-        pcontext->SetShadeMode(ShadeModeGlobalColor);
-		pcontext->SetGlobalColor( Color::White() );
-		pcontext->SetBlendMode( BlendModeAlphaStampThrough );
 
         TList<PosterData, DefaultNoEquals>::Iterator iter(m_list);
 
@@ -521,7 +518,7 @@ public:
             PosterData& data = iter.Value();
 
             Point point;
-			if (pcontext->TransformDirectionToImage(data.m_vec, point)) {
+            if (pcontext->TransformDirectionToImage(data.m_vec, point)) {
                 pcontext->SetTexture(data.m_pimage->GetSurface());
                 pcontext->PushState();
                 pcontext->Multiply(data.m_mat);
@@ -603,7 +600,7 @@ public:
         LensFlareImage(pviewport),
         m_vec(0, 0, 1)
     {
-/*        m_psurfaces[0] =
+        m_psurfaces[0] =
             pmodeler
                 ->LoadImage(AWF_EFFECT_LENS_FLARE_MID_RING, true)
                 ->GetSurface();
@@ -616,20 +613,6 @@ public:
         m_psurfaces[2] =
             pmodeler
                 ->LoadImage(AWF_EFFECT_LENS_FLARE_END_RING, true)
-                ->GetSurface();*/
-        m_psurfaces[0] =
-            pmodeler
-                ->LoadImage(AWF_EFFECT_LENS_FLARE_MID_RING, false)
-                ->GetSurface();
-
-        m_psurfaces[1] =
-            pmodeler
-                ->LoadImage(AWF_EFFECT_LENS_FLARE_STAR_AURA, false)
-                ->GetSurface();
-
-        m_psurfaces[2] =
-            pmodeler
-                ->LoadImage(AWF_EFFECT_LENS_FLARE_END_RING, false)
                 ->GetSurface();
     }
 
@@ -638,7 +621,7 @@ public:
         m_vec = vec;
     }
 
-/*    void Render(Context* pcontext)
+    void Render(Context* pcontext)
     {
         m_vec = Vector(0, 0, 1);
 
@@ -653,7 +636,7 @@ public:
             if (rect.Inside(pointLight)) {
                 pointLight = pointLight - pointCenter;
 
-				pcontext->SetBlendMode(BlendModeAdd);
+                pcontext->SetBlendMode(BlendModeAdd);
 				pcontext->SetShadeMode(ShadeModeFlat);
                 pcontext->Translate(pointCenter);
 
@@ -674,52 +657,6 @@ public:
 
                     pcontext->DrawImage3D(m_psurfaces[indexSurface], g_lensFlareData[index].m_color, true);
 
-					pcontext->PopState();
-				}
-            }
-		}
-    }*/
-
-	// Updated version of the lens flare render.
-    void Render( Context * pcontext )
-    {
-        m_vec = Vector(0, 0, 1);
-
-        const Rect& rect        = GetViewRect()->GetValue();
-              Point pointCenter = rect.Center();
-              float scale       = rect.XSize() / 800.0f;
-
-        Point pointLight;
-		if( GetCamera()->TransformDirectionToImage( m_vec, pointLight )) 
-		{
-            pointLight = rect.TransformNDCToImage(pointLight);
-
-            if( rect.Inside( pointLight ) ) 
-			{
-                pointLight = pointLight - pointCenter;
-
-				pcontext->SetBlendMode(BlendModeAdd);
-				pcontext->SetShadeMode(ShadeModeFlat);
-                pcontext->Translate(pointCenter);
-
-				int count = ArrayCount(g_lensFlareData);
-
-				for(int index = 0; index < count; index++) 
-				{
-					pcontext->PushState();
-
-					pcontext->Translate(pointLight * g_lensFlareData[index].m_pos);
-                    pcontext->Scale2(scale * g_lensFlareData[index].m_scale);
-
-					float angle = 0;
-					int indexSurface = g_lensFlareData[index].m_index;
-
-					if (indexSurface == 1) 
-					{
-						pcontext->Rotate((pointLight.X() + pointLight.Y()) / 200.0f);
-					}
-
-                    pcontext->DrawImage3D(m_psurfaces[indexSurface], g_lensFlareData[index].m_color, true);
 					pcontext->PopState();
 				}
             }

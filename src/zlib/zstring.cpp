@@ -255,9 +255,16 @@ ZString::ZString(float value, int total, int precision)
 
 ZString::ZString(float value)
 {
+    #ifndef DREAMCAST
         char buf[32];
         sprintf_s(buf, 32, "%g", value);
         m_pdata = new ZStringData(buf);
+    #else
+        int  decimal, sign;
+        char *buffer;
+        buffer = _fcvt( value, 7, &decimal, &sign );
+        m_pdata = new ZStringData(buffer);
+    #endif
 }
 
 ZString::ZString(bool b)
@@ -665,16 +672,22 @@ ZString FilenameString::GetName() const
 //
 //////////////////////////////////////////////////////////////////////////////
 
-
-const char* g_szDirSep = "/";
-
+#ifdef DREAMCAST
+    const char* g_szDirSep = "\\";
+#else
+    const char* g_szDirSep = "/";
+#endif
 
 PathString::PathString(PCC pcc) :
     ZString(pcc)
 {
     //  : make sure str is valid
 
-	ReplaceAll("\\", '/');
+    #ifdef DREAMCAST
+        ReplaceAll("/", '\\');
+    #else
+        ReplaceAll("\\", '/');
+    #endif
 }
 
 PathString PathString::GetCurrentDirectory()

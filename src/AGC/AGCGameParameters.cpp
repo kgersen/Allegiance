@@ -20,8 +20,8 @@
 
 #include "pch.h"
 #include "AGCGameParameters.h"
-#include "MessageVersion.h" // For MSGVER - KGJV: Changed to not depend on DirectPlay include
-//ALLOC_MSG_LIST;       // Since <messages.h> includes an extern to it
+#include <messages.h> // For MSGVER
+ALLOC_MSG_LIST;       // Since <messages.h> includes an extern to it
 
 
 /////////////////////////////////////////////////////////////////////////////

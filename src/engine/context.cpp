@@ -36,7 +36,6 @@ typedef TBitMask<StateChangeBase, DWORD> StateChange;
 
 class StateChangeMatrix                : public StateChange { public: StateChangeMatrix               () : StateChange(0x000001) {} };
 class StateChangePerspectiveMatrix     : public StateChange { public: StateChangePerspectiveMatrix    () : StateChange(0x000002) {} };
-class StateChangeViewMatrix            : public StateChange { public: StateChangeViewMatrix           () : StateChange(0x200000) {} };
 class StateChangeMaterial              : public StateChange { public: StateChangeMaterial             () : StateChange(0x000004) {} };
 class StateChangeTexture               : public StateChange { public: StateChangeTexture              () : StateChange(0x000008) {} };
 class StateChangeShadeMode             : public StateChange { public: StateChangeShadeMode            () : StateChange(0x000010) {} };
@@ -72,9 +71,7 @@ public:
     TRef<Deformation> m_pdeform;
 
     Matrix            m_mat;
-	Matrix            m_matWorldTM;
     Matrix            m_matPerspective;
-	Matrix            m_matView;
     Rect              m_rectClip;
     int               m_countClipPlanes;
     bool              m_bZTest;
@@ -138,10 +135,6 @@ private:
     TRef<State>              m_pstate;
     TRef<State>              m_pstateDevice;
     PrivateSurface*          m_psurface;
-	
-	// ADDED
-	WinPoint				m_ContextRes;			// Current context resolution (800x600)
-//	WinPoint				m_UIOffset;				// Current UI offset.
 
     //
     // Vertex buffers
@@ -260,7 +253,6 @@ private:
     public:
         TRef<IGeoCallback> m_pgeoCallback;
         Matrix             m_mat;
-		Matrix			   m_matWorldTM;
         float              m_distance;
     };
 
@@ -293,8 +285,7 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-//    ContextImpl( PrivateSurface* psurface ) :
-	ContextImpl( PrivateSurface* psurface, WinPoint screenRes ) :
+    ContextImpl(PrivateSurface* psurface) :
         #ifdef EnablePerformanceCounters
             m_countDrawString(0),
             m_countDrawStringChars(0),
@@ -303,35 +294,56 @@ public:
         m_countVertexBuffer(0),
         m_pindexBuffer(NULL),
         m_countIndexBuffer(0),
-        m_psurface( psurface ),
-		m_ContextRes( screenRes ),
-//		m_UIOffset( contextOffset ),
+        m_psurface(psurface),
         m_bRendering(false),
         m_bIn3DLayer(false),
         m_bInScene(false),
         m_bRenderingCallbacks(false)
     {
+        //
+        // Create a rasterizer and a 3D device
+        //
+        
+        if (psurface->GetSurfaceType().Test(SurfaceType3D())) {
+            TRef<Engine> pengine = psurface->GetEngine();
 
-		// Create a rasterizer and a 3D device
-		TRef<Rasterizer> pRasterizer = CreateD3D9Rasterizer(psurface);
-		if( pRasterizer == NULL )
-		{
-			return;
-		}
-		m_pdevice3D = CreateDevice3D( pRasterizer );
+            TRef<Rasterizer> prasterizer;
+            // KGJV 32B : true if 32 bpp only (keep 16bpp unchanged)
+            // reverted - Loadout 3D image needs a fix 1st to handle artwork not in 16bpp
+            bool bAlwaysUseD3D = (pengine->GetPrimaryPixelFormat()->PixelBits() == 32); 
 
+            if (
+                    bAlwaysUseD3D 
+                || (
+                       pengine->GetUsing3DAcceleration() 
+                    && psurface->GetSurfaceType().Test(SurfaceTypeVideo())
+                   )
+            ) {
+                prasterizer = CreateD3DRasterizer(m_psurface);
+            } else {
+                prasterizer = CreateSoftwareRasterizer(m_psurface);
+            }
+
+            if (prasterizer == NULL) {
+                return;
+            }
+
+            m_pdevice3D = CreateDevice3D(prasterizer);
+        }
+
+        //
         // Setup the initial state
+        //
+
         m_pstateDevice = new State();
 
         m_pstateDevice->m_mat.SetIdentity();
-		m_pstateDevice->m_matWorldTM.SetIdentity();
         m_pstateDevice->m_matPerspective.SetIdentity();
-		m_pstateDevice->m_matView.SetIdentity();
         m_pstateDevice->m_pmaterial              = NULL;
         m_pstateDevice->m_bZTest                 = false;
         m_pstateDevice->m_bZWrite                = false;
         m_pstateDevice->m_bPerspectiveCorrection = false;
-        m_pstateDevice->m_bDither                = false; true;
+        m_pstateDevice->m_bDither                = true;
         m_pstateDevice->m_bColorKey              = true;
         m_pstateDevice->m_bLinearFilter          = true;
         m_pstateDevice->m_shadeMode              = ShadeModeGouraud;
@@ -348,14 +360,6 @@ public:
             );
         m_pstateDevice->m_color                  = Color::White();
         m_pstateDevice->m_lineWidth              = 1;
-
-		// Mirror default states with d3d9.
-		CD3DDevice9::Get()->SetRenderState( D3DRS_ZENABLE, FALSE );
-		CD3DDevice9::Get()->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-		CD3DDevice9::Get()->SetRenderState( D3DRS_SHADEMODE, D3DSHADE_GOURAUD );
-		CD3DDevice9::Get()->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
-		CD3DDevice9::Get()->SetRenderState( D3DRS_WRAP0, 0 );
-		CD3DDevice9::Get()->SetRenderState( D3DRS_ALPHABLENDENABLE, false );
     }
 
     bool IsValid()
@@ -540,13 +544,6 @@ public:
 
         ZAssert(!m_bIn3DLayer);
         ZAssert(m_pstateDevice->m_matPerspective.GetType() < TransformRotate);
-		PrivateSurface * pprivateSurfSource;
-		CastTo( pprivateSurfSource, psurface );
-
-		if( pprivateSurfSource->GetSurfaceType().Test(SurfaceTypeDummy() ) == true )
-		{
-			return;
-		}
 
         DD2D();
 
@@ -566,7 +563,7 @@ public:
                 psurface, 
                 WinRect::Cast(rectSource)
             );
-        }
+        };
     }
 
     void DrawImage(
@@ -574,33 +571,15 @@ public:
         bool bCentered,
         const Point& point
     ) {
-		if( psurface != NULL )
-		{
-/*			if ( m_psurface->GetSize() == WinPoint( 800,500 ) )
-			{
-				DrawImage(
-					psurface, 
-    				WinRect(
-        				WinPoint(0, 0),
-        				WinPoint( 700, 400 )
-        			), 
-        			bCentered, 
-        			point
-        		);
-			}
-			else*/
-			{
-				DrawImage(
-					psurface, 
-    				WinRect(
-        				WinPoint(0, 0),
-        				psurface->GetSize()
-        			), 
-        			bCentered, 
-        			point
-        		);
-			}
-        }
+        DrawImage(
+            psurface, 
+            WinRect(
+                WinPoint(0, 0),
+                psurface->GetSize()
+            ), 
+            bCentered, 
+            point
+        );
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -632,19 +611,6 @@ public:
         float ymin = yOffset;
         float ymax = yOffset + rectSource.YSize();
 
-/*		xmin *= m_pstateDevice->m_matPerspective[0][0];
-		xmax *= m_pstateDevice->m_matPerspective[0][0];
-		ymin *= m_pstateDevice->m_matPerspective[1][1];
-		ymax *= m_pstateDevice->m_matPerspective[1][1];
-
-		xmin += m_pstateDevice->m_matPerspective[0][3];
-		xmax += m_pstateDevice->m_matPerspective[0][3];
-		ymin += m_pstateDevice->m_matPerspective[1][3];
-		ymax += m_pstateDevice->m_matPerspective[1][3];
-
-		ymin = m_psurface->GetSize().Y() - ymin;
-		ymax = m_psurface->GetSize().Y() - ymax;*/
-
         float xt;
         float yt;
 
@@ -665,30 +631,18 @@ public:
         float ytmin = yt * (sizeSource.Y() - rectSource.YMin());
         float ytmax = yt * (sizeSource.Y() - rectSource.YMax());
 
-		// Grab the handle of the textured vertex dynamic VB.
-		CVBIBManager::SVBIBHandle * phVB;
-
         static MeshIndex indices[6] = { 0, 2, 1, 0, 3, 2 };
 
         UpdateState();
+        // KGJV 32B
+#ifdef DEBUGOFF //DEBUG
+        if (psurface->GetPixelFormat()->PixelBits() != m_psurface->GetPixelFormat()->PixelBits())
+            debugf ("DrawImage3D ppf mismatch for %s - will convert\n",(const char *)psurface->GetName());
+#endif
+        m_pdevice3D->SetTexture(psurface->GetConvertedSurface(m_psurface->GetPixelFormat()));
+		m_pdevice3D->SetLinearFilter(false); //KGJV 32B fix  turn off linear filter
 
-		CD3DDevice9 * pDev = CD3DDevice9::Get();
-		CVRAMManager::Get()->SetTexture( psurface->GetTexHandle(), 0 );
-
-		// Source mode blends might still want colour keying. If so,
-		// configure it now.
-		if( ( psurface->HasColorKey() == true ) &&
-			( GetBlendMode() == BlendModeSource ) )
-		{
-			pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-			pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-			pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-			pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR );
-			pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR );
-		}
-
-		switch (GetShadeMode()) 
-		{
+        switch (GetShadeMode()) {
             case ShadeModeCopy:
                 {
                     Vertex vertices[4] = {
@@ -697,89 +651,29 @@ public:
                         Vertex(xmax, ymin, 0, 0, 0, 1, xtmax, ytmin),
                         Vertex(xmax, ymax, 0, 0, 0, 1, xtmax, ytmax)
                     };
-//                    m_pdevice3D->DrawTriangles(vertices, 4, indices, 6);
-					_ASSERT( false && "TBD" );
+                    m_pdevice3D->DrawTriangles(vertices, 4, indices, 6);
                 }
                 break;
 
             case ShadeModeFlat:
             case ShadeModeGouraud:
                 {
-					UIFONTVERTEX * pVertexData;
+                    float r = color.R();
+                    float g = color.G();
+                    float b = color.B();
+                    float a = color.A();
 
-					// New dynamic VB path.
-					phVB = CVertexGenerator::Get()->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFontVB );
+                    VertexL vertices[4] = {
+                        VertexL(xmin, ymax, 0, r, g, b, a, xtmin, ytmax),
+                        VertexL(xmin, ymin, 0, r, g, b, a, xtmin, ytmin),
+                        VertexL(xmax, ymin, 0, r, g, b, a, xtmax, ytmin),
+                        VertexL(xmax, ymax, 0, r, g, b, a, xtmax, ytmax)
+                    };
 
-					if( CVBIBManager::Get()->LockDynamicVertexBuffer( phVB, 4, (void**) &pVertexData ) == false )
-					{
-						// Failed to lock the vertex buffer.
-						_ASSERT( false );
-						return;
-					}
-
-					Matrix & matRef = m_pstateDevice->m_matPerspective;
-					yOffset = (float) m_psurface->GetSize().Y();
-
-					// Transform the vertex positions by the values in m_pstateDevice->m_matPerspective.
-					// The y-value is inverted relative to the target surface.
-					pVertexData[0].x = ( xmin * matRef[0][0] ) + ( ymax * matRef[0][1] ) + matRef[0][3];
-					pVertexData[0].y = yOffset - (	( xmin * matRef[1][0] ) + 
-													( ymax * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[0].z = 0.0f;
-					pVertexData[0].rhw = 1.0f;
-					pVertexData[0].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[0].fU = xtmin;
-					pVertexData[0].fV = ytmax;
-
-					pVertexData[1].x = ( xmax * matRef[0][0] ) + ( ymax * matRef[0][1] ) + matRef[0][3];
-					pVertexData[1].y = yOffset - (	( xmax * matRef[1][0] ) + 
-													( ymax * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[1].z = 0.0f;
-					pVertexData[1].rhw = 1.0f;
-					pVertexData[1].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[1].fU = xtmax;
-					pVertexData[1].fV = ytmax;
-
-					pVertexData[2].x = ( xmin * matRef[0][0] ) + ( ymin * matRef[0][1] ) + matRef[0][3];
-					pVertexData[2].y = yOffset - (	( xmin * matRef[1][0] ) + 
-													( ymin * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[2].z = 0.0f;
-					pVertexData[2].rhw = 1.0f;
-					pVertexData[2].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[2].fU = xtmin;
-					pVertexData[2].fV = ytmin;
-
-					pVertexData[3].x = ( xmax * matRef[0][0] ) + ( ymin * matRef[0][1] ) + matRef[0][3];
-					pVertexData[3].y = yOffset - (	( xmax * matRef[1][0] ) + 
-													( ymin * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[3].z = 0.0f;
-					pVertexData[3].rhw = 1.0f;
-					pVertexData[3].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[3].fU = xtmax;
-					pVertexData[3].fV = ytmin;
-
-					// Adjust x and y coordinates for correct texture lookup.
-					pVertexData[0].x -= 0.5f;
-					pVertexData[0].y -= 0.5f;
-					pVertexData[1].x -= 0.5f;
-					pVertexData[1].y -= 0.5f;
-					pVertexData[2].x -= 0.5f;
-					pVertexData[2].y -= 0.5f;
-					pVertexData[3].x -= 0.5f;
-					pVertexData[3].y -= 0.5f;
-
-					// Finished, unlock the buffer, set the stream.
-					CVBIBManager::Get()->UnlockDynamicVertexBuffer( phVB );
-
-					pDev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
                     m_pdevice3D->SetShadeMode(ShadeModeFlat);
-					m_pdevice3D->DrawTriangles( D3DPT_TRIANGLESTRIP, 2, phVB );
+                    m_pdevice3D->DrawTriangles(vertices, 4, indices, 6);
                     m_pdevice3D->SetShadeMode(m_pstateDevice->m_shadeMode);
-				}
+                }
                 break;
 
             default:
@@ -788,6 +682,7 @@ public:
         }
 
         m_pdevice3D->SetTexture(m_pstateDevice->m_psurfaceTexture);
+		m_pdevice3D->SetLinearFilter(m_pstateDevice->m_bLinearFilter); //KGJV 32B fix: reset linear filter
     }
 
     void DrawImage3D(
@@ -814,12 +709,13 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void DrawString(	IEngineFont*   pfont,
-						const Color&   color,
-						const Point&   point,
-						const ZString& str ) 
-	{
-/*        #ifdef EnablePerformanceCounters
+    void DrawString(
+        IEngineFont*   pfont,
+        const Color&   color,
+        const Point&   point,
+        const ZString& str
+    ) {
+        #ifdef EnablePerformanceCounters
             m_countDrawString++;
             m_countDrawStringChars += str.GetLength();
         #endif
@@ -827,70 +723,13 @@ public:
         DD2D();
 
         Point pointImage;
-        if (TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage)) 
-		{
-            WinPoint pointScreen = TransformImageToSurface(pointImage);
-//        	WinPoint pointScreen( pointImage.X(), pointImage.Y() );
-//			WinPoint pointScreen( point.X(), point.Y() );
-
-		    WinPoint size = pfont->GetTextExtent(str);
-
-			// 03.12.05
-			pointScreen.SetY(pointScreen.Y() - size.Y());
-			Point pointOffset;
-			WinRect rectClip(	m_UIOffset.X(), m_UIOffset.Y(),
-								m_UIOffset.X() + m_UISize.X(),
-								m_UIOffset.Y() + m_UISize.Y() );
-			
-			WinRect currRectClip; 
-			GetCurrClipRect( &currRectClip );
-//			pfont->DrawString( NULL, pointScreen + WinPoint( currRectClip.XMin(), currRectClip.YMin() ), rectClip, str, color );
-//			pfont->DrawString( NULL, pointScreen + WinPoint( currRectClip.XMin(), currRectClip.YMin() ), rectClip, str, color );
-//			pfont->DrawString( NULL, pointScreen + m_UIOffset, rectClip, str, color );
-			pfont->DrawString( NULL, pointScreen + WinPoint( currRectClip.XMin(), currRectClip.YMin() ), rectClip, str, color );
-        }*/
-
-/*       if (TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage)) 
-	   {
-			WinPoint pointScreen = TransformImageToSurface(pointImage);
-			WinPoint size        = pfont->GetTextExtent(str);
-
-			pointScreen.SetY(pointScreen.Y() - size.Y());
-			WinRect rectClip(	pointScreen.X(), pointScreen.Y(),
-								pointScreen.X() + m_UISize.X(),
-								pointScreen.Y() + m_UISize.Y() );
-
-			//			m_psurface->DrawString(pfont, color, pointScreen, str);
-			WinRect currRectClip; 
-			GetCurrClipRect( &currRectClip );
-			pfont->DrawString( NULL, pointScreen, rectClip, str, color );
-        }*/
-
-		if( str.GetLength() == 0 )
-		{
-			return;
-		}
-
-       #ifdef EnablePerformanceCounters
-            m_countDrawString++;
-            m_countDrawStringChars += str.GetLength();
-        #endif
-
-        DD2D();
-
-        Point pointImage;
-        if (TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage)) 
-		{
+        if (TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage)) {
             WinPoint pointScreen = TransformImageToSurface(pointImage);
             WinPoint size        = pfont->GetTextExtent(str);
 
-            pointScreen.SetY( pointScreen.Y() - size.Y() );
-//			pointScreen += m_UIOffset;
-
-            //m_psurface->DrawString(pfont, color, pointScreen, str);
-			WinRect rectClip(	0, 0, 800, 600 );
-			pfont->DrawString( NULL, pointScreen, rectClip, str, color );
-        }
+            pointScreen.SetY(pointScreen.Y() - size.Y());
+            m_psurface->DrawString(pfont, color, pointScreen, str);
+        };
     }
 
     void DrawRectangle(const Rect& rect, const Color& color)
@@ -975,46 +814,11 @@ public:
 
         PushState();
 
-		// Configure texture settings.
-		CD3DDevice9 * pDev = CD3DDevice9::Get();
-		CVRAMManager::Get()->SetTexture( INVALID_TEX_HANDLE, 0 );
-		pDev->SetSamplerState( 0, D3DSAMP_MAGFILTER, pDev->GetMagFilter() );
-		pDev->SetSamplerState( 0, D3DSAMP_MINFILTER, pDev->GetMinFilter() );
-		pDev->SetSamplerState( 0, D3DSAMP_MIPFILTER, pDev->GetMipFilter() );
-		if( pDev->IsAntiAliased() == true )
-		{
-			// Use this to view the difference between aa and non-aa.
-			// Switches between the two every few frames.
-/*			static int iCounter = 0;
-			if( iCounter < 100 )
-			{
-				CD3DDevice9::SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
-			}
-			else
-			{
-				CD3DDevice9::SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE );
-			}
-			iCounter ++;
-			if( iCounter >= 200 )
-			{
-				iCounter = 0;
-			}*/
-
-			// Switch AA on for the 3d layer.
-			pDev->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
-		}
-
-		// Wacky scales in the world TM lead to wacky scales and normals.
-		pDev->SetRenderState( D3DRS_NORMALIZENORMALS, TRUE );
-
         //
         // Integrate the 2D transforms up until this point with the 3D transform
         //
 
         pcamera->Update();
-
-		// Store off a copy of the perspective matrix before the software clipping
-		// settings have been applied.
         SetPerspectiveMatrix(pcamera->GetPerspectiveMatrix());
 
         //
@@ -1027,9 +831,7 @@ public:
         // Apply the camera's transform
         //
 
-		// D3D9 update. Separate out the view and world transform matrices.
-        SetViewMatrix(pcamera->GetModelMatrix());
-		SetTransform(pcamera->GetModelMatrix(), Matrix::GetIdentity());
+        SetTransform(pcamera->GetModelMatrix());
 
         //
         // start the 3D Layer
@@ -1094,7 +896,7 @@ public:
             GeoCallbackData& data = iter.Value();
 
             PushState();
-			SetTransform(data.m_mat, data.m_matWorldTM);
+            SetTransform(data.m_mat);
             data.m_pgeoCallback->RenderCallback(this);
             PopState();
 
@@ -1112,20 +914,13 @@ public:
         ZAssert(m_bIn3DLayer);
         ZAssert(m_bInScene);
 
-		CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-		CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
-		if( CD3DDevice9::Get()->IsAntiAliased() == true )
-		{
-			CD3DDevice9::Get()->SetRenderState( D3DRS_ANTIALIASEDLINEENABLE, FALSE );
-		}
-
         //
         // Restore the original state
         //
 
         PopState();
 
-		//
+        //
         // Render any GeoCallbacks
         //
 
@@ -1419,7 +1214,7 @@ public:
 
         if (maskChanges.Test(stCommon)) {
             if (maskChanges.Test(StateChangeMatrix())) {
-				m_pdevice3D->SetMatrix(m_pstateDevice->m_mat, m_pstateDevice->m_matWorldTM);
+                m_pdevice3D->SetMatrix(m_pstateDevice->m_mat);
             }
 
             if (maskChanges.Test(StateChangeMaterial())) {
@@ -1438,10 +1233,6 @@ public:
 
             if (maskChanges.Test(StateChangePerspectiveMatrix())) {
                 m_pdevice3D->SetPerspectiveMatrix(m_pstateDevice->m_matPerspective);
-			}
-
-			if( maskChanges.Test(StateChangeViewMatrix())) {
-				m_pdevice3D->SetViewMatrix(m_pstateDevice->m_matView);
             }
 
             if (maskChanges.Test(StateChangeColor())) {
@@ -1518,7 +1309,6 @@ public:
         if (maskChanges.Test(stCommon)) {
             if (maskChanges.Test(StateChangeMatrix())) {
                 m_pstateDevice->m_mat = m_pstate->m_mat;
-				m_pstateDevice->m_matWorldTM = m_pstate->m_matWorldTM;
             }
 
             if (maskChanges.Test(StateChangeMaterial())) {
@@ -1552,10 +1342,6 @@ public:
 
             if (maskChanges.Test(StateChangePerspectiveMatrix())) {
                 m_pstateDevice->m_matPerspective = m_pstate->m_matPerspective;
-			}
-
-			if (maskChanges.Test(StateChangeViewMatrix())) {
-				m_pstateDevice->m_matView = m_pstate->m_matView;
             }
 
             if (maskChanges.Test(StateChangeShadeMode())) {
@@ -1684,63 +1470,46 @@ public:
 
         if (!m_pstate->m_maskChanges.Test(StateChangeMatrix())) {
             m_pstate->m_mat = m_pstateDevice->m_mat;
-			m_pstate->m_matWorldTM = m_pstateDevice->m_matWorldTM;
             m_pstate->m_maskChanges.Set(StateChangeMatrix());
         }
 
         m_pstateDevice->m_maskChanges.Set(StateChangeMatrix());
     }
 
-    void SetTransform(const Matrix& mat, const Matrix& worldTM)
+    void SetTransform(const Matrix& mat)
     {
         PreMatrixChanged();
         m_pstateDevice->m_mat = mat;
-		m_pstateDevice->m_matWorldTM = worldTM;
     }
-
-	void SetPerspectiveMatrix( Camera * pcamera )
-	{
-        SetPerspectiveMatrix(pcamera->GetPerspectiveMatrix());
-	}
-
-	void SetViewMatrix( Camera * pcamera )
-	{
-		SetViewMatrix(pcamera->GetModelMatrix());
-	}
 
     void Multiply(const Matrix& mat)
     {
         PreMatrixChanged();
         m_pstateDevice->m_mat.PreMultiply(mat);
-        m_pstateDevice->m_matWorldTM.PreMultiply(mat);
     }
 
     void Rotate(const Vector& vec, float angle)
     {
         PreMatrixChanged();
         m_pstateDevice->m_mat.PreRotate(vec, angle);
-        m_pstateDevice->m_matWorldTM.PreRotate(vec, angle);
     }
 
     void Translate(const Vector& vec)
     {
         PreMatrixChanged();
         m_pstateDevice->m_mat.PreTranslate(vec);
-        m_pstateDevice->m_matWorldTM.PreTranslate(vec);
     }
 
     void Scale(const Vector& vec)
     {
         PreMatrixChanged();
         m_pstateDevice->m_mat.PreScale(vec);
-        m_pstateDevice->m_matWorldTM.PreScale(vec);
     }
 
     void Scale3(float scale)
     {
         PreMatrixChanged();
         m_pstateDevice->m_mat.PreScale(scale);
-        m_pstateDevice->m_matWorldTM.PreScale(scale);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1801,16 +1570,6 @@ public:
     {
         PrePerspectiveMatrixChanged();
         m_pstateDevice->m_matPerspective.PreMultiply(mat);
-    }
-
-    void SetViewMatrix(const Matrix& mat)
-    {
-        if (!m_pstate->m_maskChanges.Test(StateChangeViewMatrix())) {
-            m_pstate->m_matView = m_pstateDevice->m_matView;
-            m_pstate->m_maskChanges.Set(StateChangeViewMatrix());
-        }
-        m_pstateDevice->m_maskChanges.Set(StateChangeViewMatrix());
-        m_pstateDevice->m_matView = mat;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1941,7 +1700,6 @@ public:
                 if (bSortObject) {
                     GeoCallbackData dataNew;
                     dataNew.m_mat          = m_pstateDevice->m_mat;
-					dataNew.m_matWorldTM   = m_pstateDevice->m_matWorldTM;
                     dataNew.m_pgeoCallback = pgeoCallback;
                     dataNew.m_distance     = m_pstateDevice->m_mat.GetTranslate().LengthSquared();
 
@@ -1951,7 +1709,6 @@ public:
 
                     GeoCallbackData& data = m_listGeoCallbacks.GetFront();
                     data.m_mat            = m_pstateDevice->m_mat;
-					data.m_matWorldTM     = m_pstateDevice->m_matWorldTM;
                     data.m_pgeoCallback   = pgeoCallback;
                 }
             }
@@ -2210,16 +1967,6 @@ public:
         DrawTriangles(&(vertices[0]), vertices.GetCount(), &(indices[0]), indices.GetCount());
     }
 
-	void DrawTriangles(	const CVBIBManager::SVBIBHandle * phVB, 
-						const CVBIBManager::SVBIBHandle * phIB )
-	{
-		if (phIB->dwNumElements != 0) 
-		{
-            Mode3D();
-            m_pdevice3D->DrawTriangles( D3DPT_TRIANGLELIST, phVB, phIB );
-		}
-	}
-	
     void DrawTriangles(const TVector<VertexL>& vertices, const TVector<MeshIndex>& indices)
     {
         DrawTriangles(&(vertices[0]), vertices.GetCount(), &(indices[0]), indices.GetCount());
@@ -2383,13 +2130,11 @@ public:
         //
 
         int countDecalSets = vdecalSet.GetCount();
-        for(int indexSet = 0; indexSet < countDecalSets; indexSet++) 
-		{
+        for(int indexSet = 0; indexSet < countDecalSets; indexSet++) {
             DecalSet& set = vdecalSet.Get(indexSet);
             int countDecal = set.m_vdecal.GetCount();
 
-            if (countDecal > 0) 
-			{
+            if (countDecal > 0) {
                 SetTexture(set.m_psurface, false);
 
                 VertexL*   pvertex = GetVertexLBuffer(countDecal * 4);
@@ -2397,8 +2142,7 @@ public:
 				// mdvalley: Another moved definition
 				int index;
 
-                for (index = 0; index < countDecal; index++) 
-				{
+                for (index = 0; index < countDecal; index++) {
                     set.m_vdecal[index].GetVertices(pvertex + index * 4);
 
                     pindex[index * 6 + 0] = index * 4 + 0;
@@ -2411,10 +2155,13 @@ public:
 
                 UpdateState();
 
-                m_pdevice3D->DrawTriangles( &pvertex[0],
-						                    index * 4,
-											&pindex[0],
-											index * 6 );
+                m_pdevice3D->DrawTriangles(
+                    &pvertex[0],
+                    index * 4,
+                    &pindex[0],
+                    index * 6
+                );
+
                 set.m_vdecal.SetCount(0);
             }
         }
@@ -2428,7 +2175,7 @@ public:
 
         SetCullMode(CullModeNone, false);
         SetShadeMode(ShadeModeFlat, false);
-        SetTransform(Matrix::GetIdentity(),Matrix::GetIdentity());
+        SetTransform(Matrix::GetIdentity());
 
         //
         // Opaque decals first
@@ -2484,14 +2231,7 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// CreateContextImpl()
-// A particular context used to be associated with a particular surface usually the highest
-// level pane which would be whole window.
-// Now, we just pass in the size of the window to the constructor.
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//TRef<PrivateContext> CreateContextImpl(PrivateSurface* psurface)
-TRef<PrivateContext> CreateContextImpl( PrivateSurface* psurface, WinPoint screenRes )
+TRef<PrivateContext> CreateContextImpl(PrivateSurface* psurface)
 {
-	return new ContextImpl( psurface, screenRes );
+    return new ContextImpl(psurface);
 }

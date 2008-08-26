@@ -36,7 +36,7 @@ public:
     // Win32App methods
     //
 
-    HRESULT Initialize(const ZString& strCommandLine, HWND hWindow);
+    HRESULT Initialize(const ZString& strCommandLine);
     void Terminate();
 
     int OnException(DWORD code, ExceptionData* pdata);
@@ -44,8 +44,6 @@ public:
     #ifdef _DEBUG
         bool OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule);
     #endif
-
-	bool IsBuildDX9(); // KGJV added - see ZLib/Win32App
 };
 
 #endif

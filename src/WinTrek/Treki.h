@@ -71,9 +71,6 @@ public:
     static TRef<TrekWindow> Create(
         EffectApp*     papp, 
         const ZString& strCommandLine, 
-// BUILD_DX9
-		const ZString& strArtPath,					// Added for DX9 build, due to reordered startup.
-// BUILD_DX9
         bool           bMovies,
         bool           bSoftware,
         bool           bHardware,

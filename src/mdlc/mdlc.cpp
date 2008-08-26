@@ -249,7 +249,7 @@ public:
 
     HRESULT Initialize(const ZString& strCommandLine)
     {
-        if (SUCCEEDED(EffectApp::Initialize(strCommandLine + " -software", NULL))) {
+        if (SUCCEEDED(EffectApp::Initialize(strCommandLine + " -software"))) {
             GetModeler()->SetSite(new ModelerSiteImpl());
 
             //

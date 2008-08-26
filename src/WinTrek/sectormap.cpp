@@ -565,11 +565,7 @@ public:
         pvalueMode->Update();
 
         Modeler* pmodeler = GetModeler();
-		// BUILD_DX9
-        m_pimageBkgnd = pmodeler->LoadImage("sectormapbkgndbmp", true);
-
-//        m_pimageBkgnd = pmodeler->LoadImage("sectormapbkgndbmp", false);
-		// BUILD_DX9
+        m_pimageBkgnd = pmodeler->LoadImage("sectormapbkgndbmp", false);
         m_pimageSectorHighlight = pmodeler->LoadImage("sectorhighlightbmp", true);
         m_pimageSectorTargetHighlight = pmodeler->LoadImage("sectortargetbmp", true);
         m_pimageSectorSel = pmodeler->LoadImage("sectorselbmp", true);

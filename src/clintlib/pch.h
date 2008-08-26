@@ -17,7 +17,7 @@
 #include "messagesAll.h"
 #include "messages.h"
 #include "messagesLC.h"
-#include "ClubMessages.h" // KG changed location
+#include "..\Club\ClubMessages.h"
 #include "AutoDownload.h"
 
 #ifdef USEAUTH
@@ -25,5 +25,4 @@
 #endif
 #include "clintlib.h"
 
-// removed engine dep since color codes are in zlib now
-//#include "engine.h"
+#include "engine.h"

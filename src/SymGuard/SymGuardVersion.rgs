@@ -1,0 +1,27 @@
+HKCR
+{
+  SymGuard.Version.1 = s 'Microsoft Research Symbol Version Class'
+  {
+    CLSID = s '{69372094-957A-49de-85DA-A87C8181C6F4}'
+  }
+  SymGuard.Version = s 'Microsoft Research Symbol Version Class'
+  {
+    CLSID = s '{69372094-957A-49de-85DA-A87C8181C6F4}'
+    CurVer = s 'SymGuard.Version.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {69372094-957A-49de-85DA-A87C8181C6F4} = s 'Microsoft Research Symbol Version Class'
+    {
+      ProgID = s 'SymGuard.Version.1'
+      VersionIndependentProgID = s 'SymGuard.Version'
+      ForceRemove 'Programmable'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+      'TypeLib' = s '{744C0DAF-296D-400b-8640-5A339A368EC4}'
+    }
+  }
+}
+

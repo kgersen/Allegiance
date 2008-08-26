@@ -5,8 +5,19 @@
 // DeviceTextureImpl
 //
 //////////////////////////////////////////////////////////////////////////////
+//
+//#define MAX_DX_ZBUF_FMTS 20
+//static int cNumZBufFmts = 0;
+//DDPIXELFORMAT ZBufFmtsArr[MAX_DX_ZBUF_FMTS];
+//HRESULT CALLBACK EnumZBufFmtsCallback(LPDDPIXELFORMAT pddpf, VOID *param1)  {
+//   //DDPIXELFORMAT *ZBufFmtsArr = (DDPIXELFORMAT *) param;
+//   assert(cNumZBufFmts < MAX_DX_ZBUF_FMTS);
+//   memcpy(&(ZBufFmtsArr[cNumZBufFmts]), pddpf, sizeof(DDPIXELFORMAT));
+//   cNumZBufFmts++;
+//   return DDENUMRET_OK;
+//}
 
-/*class DeviceTexture : public IObject {
+class DeviceTexture : public IObject {
 private:
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -39,15 +50,18 @@ public:
         m_ppf(pd3dd->GetTextureFormat()),
         m_bMipMap(false)
     {
-        DWORD dw = DDSCAPS_TEXTURE | DDSCAPS_VIDEOMEMORY | DDSCAPS_ALLOCONLOAD;
+        DWORD dw =
+              DDSCAPS_TEXTURE
+            | DDSCAPS_VIDEOMEMORY;
 
-//        if (m_bMipMap) {
-//            m_pdds = pdddevice->CreateMipMapTexture(size, m_ppf);
-//        } 
-//		else
-		{
-//            m_pdds = pdddevice->CreateSurface(size, dw, m_ppf, true);
-			m_pd3dtexture = pdddevice->CreateSurface(size, dw, m_ppf, true);
+        #ifndef DREAMCAST // this flag can't be specified in order to do our copy instead of load hack
+            dw |= DDSCAPS_ALLOCONLOAD;
+        #endif
+
+        if (m_bMipMap) {
+            m_pdds = pdddevice->CreateMipMapTexture(size, m_ppf);
+        } else {
+            m_pdds = pdddevice->CreateSurface(size, dw, m_ppf, true);
         }
 
         if (m_pdds != NULL) {
@@ -60,14 +74,19 @@ public:
 
                 DDCall(m_pdds->SetColorKey(DDCKEY_SRCBLT, &key));
             }
-
+#ifdef USEDX7
+            m_pd3dtexture = m_pdds;
+#else
             DDCall(m_pdds->QueryInterface(IID_IDirect3DTextureX, (void**)&m_pd3dtexture));
-
+#endif
             //
             // Try to load the surface
             //
-
+#ifdef USEDX7
+            DoLoad(m_pd3dtexture, size, pd3dd->GetD3DDeviceX());
+#else
             DoLoad(m_pd3dtexture, size);
+#endif
         }
     }
 
@@ -81,70 +100,110 @@ public:
     {
         return m_pd3dtexture != NULL;
     }
-
+#ifdef USEDX7
+    bool DoLoad(TRef<IDirect3DTextureX> pd3dtexture, WinPoint size, IDirect3DDeviceX* pd3ddx)
+#else
     bool DoLoad(TRef<IDirect3DTextureX> pd3dtexture, WinPoint size)
+#endif
     {
-        while (pd3dtexture != NULL) 
-		{
-			_ASSERT( false );
-//            /*HRESULT hr;
-//				
-  //              pd3dtexture->Load(
-    //                m_pddsurface->GetTextureX(m_ppf, size, m_idSurface)
-    //        );
-//
-//           if (FAILED(hr)) {
-//                //
-//                // couldn't load it free everything
-//                //
-//
-//                if (
-//                        hr != DDERR_SURFACELOST
-//                    && hr != DDERR_SURFACEBUSY
-//                ) {
-//                    DDCall(hr);
-//                }
-//                m_pd3dtexture = NULL;
-//                m_pdds        = NULL;
-//                return false;
-//            }
+        #ifdef DREAMCAST
+            TRef<IDirectDrawSurfaceX> pddsSrc;
+            DDSDescription ddsdSrc;
+            DDSDescription ddsdDest;
 
-            if (m_bMipMap) {
-                size.SetX(size.X() / 2);
-                size.SetY(size.Y() / 2);
+            DDCall(pd3dtexture->QueryInterface(IID_IDirectDrawSurfaceX, (void**)&pddsSrc));
+            DDCall(pddsSrc->Lock(NULL, &ddsdSrc, DDLOCK_DYNAMIC | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL));
+            DDCall(m_pdds->Lock(NULL, &ddsdDest, DDLOCK_DYNAMIC | DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL));
 
-                TRef<IDirectDrawSurfaceX> pdds;
-                DDCall(pd3dtexture->QueryInterface(IID_IDirectDrawSurfaceX, (void**)&pdds));
+            ZAssert(
+                   ddsdDest.Pitch()  == ddsdSrc.Pitch() 
+                && ddsdDest.dwHeight == ddsdSrc.dwHeight
+            );
 
-                DDSCAPS2 ddsCaps;
-                ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
-                DDCall(pdds->GetAttachedSurface(&ddsCaps, &pdds));
+            memcpy((void*)ddsdDest.Pointer(), (void*)ddsdSrc.Pointer(), ddsdSrc.Pitch() * ddsdSrc.dwHeight);
 
-                DDCall(pdds->QueryInterface(IID_IDirect3DTextureX, (void**)&pd3dtexture));
+            DDCall(pddsSrc->Unlock(NULL));
+            DDCall(m_pdds->Unlock(NULL));
+        #else
+            while (pd3dtexture != NULL) {
+#ifdef USEDX7
+                RECT r = {0,0,0,0};
+                r.right = size.x;
+                r.bottom = size.y;
+                HRESULT hr = pd3ddx->Load(
+                    pd3dtexture,
+                    NULL,
+                    m_pddsurface->GetTextureX(m_ppf, size, m_idSurface),
+                    &r,
+                    0);
+#else
+                HRESULT hr = 
+                    pd3dtexture->Load(
+                        m_pddsurface->GetTextureX(m_ppf, size, m_idSurface)
+                    );
+#endif
+
+                if (FAILED(hr)) {
+                    //
+                    // couldn't load it free everything
+                    //
+
+                    if (
+                           hr != DDERR_SURFACELOST
+                        && hr != DDERR_SURFACEBUSY
+                    ) {
+                        DDCall(hr);
+                    }
+                    m_pd3dtexture = NULL;
+                    m_pdds        = NULL;
+                    return false;
+                }
+
+                if (m_bMipMap) {
+                    size.SetX(size.X() / 2);
+                    size.SetY(size.Y() / 2);
+
+                    TRef<IDirectDrawSurfaceX> pdds;
+                    DDCall(pd3dtexture->QueryInterface(IID_IDirectDrawSurfaceX, (void**)&pdds));
+
+                    DDSCAPS2 ddsCaps;
+                    ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
+                    DDCall(pdds->GetAttachedSurface(&ddsCaps, &pdds));
+
+                    DDCall(pdds->QueryInterface(IID_IDirect3DTextureX, (void**)&pd3dtexture));
+                }
+
+                return true;
             }
-
-            return true;
-        }
+        #endif
 
         return true;
     }
 
-    IDirect3DTextureX* GetTextureX(const WinPoint& size)
+    IDirect3DTextureX* GetTextureX(const WinPoint& size
+#ifdef USEDX7
+        ,IDirect3DDeviceX* pd3ddx
+#endif
+    )
     {
         int idSave = m_idSurface;
         IDirect3DTextureX* pd3dtexture = m_pddsurface->GetTextureX(m_ppf, size, m_idSurface);
 
-        if (idSave != m_idSurface) 
-		{
-            if( !DoLoad( pd3dtexture, size ) ) 
-			{
+        if (idSave != m_idSurface) {
+#ifdef USEDX7
+            if (!DoLoad(pd3dtexture, size,pd3ddx)) 
+
+#else
+            if (!DoLoad(pd3dtexture, size)) 
+#endif
+            {
                 return NULL;
             }
         }
 
         return m_pd3dtexture;
     }
-};*/
+};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -163,8 +222,7 @@ WinPoint g_validModes[] =
 
 const int g_countValidModes = sizeof(g_validModes) / sizeof(g_validModes[0]);
 
-class DDDeviceImpl : public DDDevice 
-{
+class DDDeviceImpl : public DDDevice {
 private:
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -182,122 +240,96 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    TRef<DDDevice>			m_pdddevicePrimary;
-    TRef<IDirectDrawX>		m_pdd;
-    TRef<IDirect3DX>		m_pd3d;
-	TRef<D3DDevice>			m_pD3DDevice;
-	HWND					m_hParentWindow;
-	DeviceTextureMap		m_mapDeviceTextures;
-    ZString					m_strName;
-    bool					m_b3DAcceleration;
-    bool					m_bAllow3DAcceleration;
-	D3DFORMAT				m_zbufFormat;
-	DWORD					m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+    TRef<DDDevice>         m_pdddevicePrimary;
+    TRef<IDirectDrawX>     m_pdd;
+    TRef<IDirect3DX>       m_pd3d;
+    DeviceTextureMap       m_mapDeviceTextures;
+    ZString                m_strName;
+    bool                   m_b3DAcceleration;
+    bool                   m_bAllow3DAcceleration;
+	DWORD				   m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
-    PrivateEngine*			m_pengine;
-//    D3DDeviceList			m_listD3DDevices;
-    RasterizerList			m_listRasterizers;
+    PrivateEngine*         m_pengine;
+    D3DDeviceList          m_listD3DDevices;
+    RasterizerList         m_listRasterizers;
 
-//    DDCaps					m_ddcapsHW;
-//    DDCaps					m_ddcapsSW;
-    DWORD					m_dwTotalVideoMemory;
-    TRef<PixelFormat>		m_ppfZBuffer;
-    TVector<WinPoint>		m_modes;
+    DDCaps                 m_ddcapsHW;
+    DDCaps                 m_ddcapsSW;
+    DWORD                  m_dwTotalVideoMemory;
+    TRef<PixelFormat>      m_ppfZBuffer;
+    TVector<WinPoint>      m_modes;
 
     //////////////////////////////////////////////////////////////////////////////
-	// EnumerateDisplayModes()
-	// Using the D3D9 interface, grab all available display modes and add
-	// to the vector of available modes.
-	// For now, we'll just interrogate the primary device, although this should
-	// be extended to all devices, so the user could select which monitor the game
-	// is displayed on. We are also sticking with 16 bit format for now too,
-	// although we really want to move to 32 bit.
+    //
+    // Display mode enumeration
+    //
     //////////////////////////////////////////////////////////////////////////////
-	HRESULT EnumerateDisplayModes( )
-	{
-		DWORD i;
-		D3DFORMAT			desiredFormat = D3DFMT_R5G6B5;
-		DWORD				dwModeCount = m_pd3d->GetAdapterModeCount( D3DADAPTER_DEFAULT, desiredFormat );
-		D3DDISPLAYMODE		dispMode;
-		WinPoint			winSize;
 
-		for( i=0; i<dwModeCount; i++ )
-		{
-			if( m_pd3d->EnumAdapterModes(	D3DADAPTER_DEFAULT,
-											desiredFormat,
-											i,
-											&dispMode ) != D3D_OK )
-			{
-				OutputDebugString( "Failed to enumerate adapter modes.\n");
-				_ASSERT( false );
-				return E_FAIL;
-			}
-			
-			for( int iIndex=0; iIndex<g_countValidModes; iIndex++ )
-			{
-				if( ( dispMode.Width == g_validModes[iIndex].X() ) &&
-					( dispMode.Height == g_validModes[iIndex].Y() ) )
-				{
-					winSize.SetX( dispMode.Width );
-					winSize.SetY( dispMode.Height );
-					m_modes.PushEnd( winSize );
-					break;
-				}
-			}
-		}
+    static HRESULT WINAPI StaticEnumModes(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID pvoid)
+    {
+        DDDeviceImpl* pthis = (DDDeviceImpl*)pvoid;
+        return pthis->EnumModes(*(DDSDescription*)lpDDSurfaceDesc);
+    }
 
-		return S_OK;
-	}
+    HRESULT EnumModes(const DDSDescription& ddsd)
+    {
+        TRef<PixelFormat> ppf = m_pengine->GetPixelFormat(ddsd.GetPixelFormat());
 
+        int   xsize = ddsd.XSize();
+        int   ysize = ddsd.YSize();
+        DWORD bits  = ppf->PixelBits();
+        DWORD dwNeededVideoMemory = 6 * xsize * ysize;
+
+        if (
+               bits == 16 // KGJV 32B TODO: this works as long as all 16bpp modes are supported in 32bpp too...
+            && xsize >= 640
+            && ysize >= 480
+            // !!! NT doesn't return the right value for TotalVideoMemory
+            //&& dwNeededVideoMemory < m_dwTotalVideoMemory 
+        ) {
+            for (int index = 0; index < g_countValidModes; index++) {
+                if (
+                       xsize == g_validModes[index].X()
+                    && ysize == g_validModes[index].Y()
+                ) {
+                    m_modes.PushEnd(ddsd.Size());
+                    break;
+                }
+            }
+        }
+
+        return D3DENUMRET_OK;
+    }
 
     //////////////////////////////////////////////////////////////////////////////
-	// EnumerateZBufferModes()
-	// Use CheckDeviceFormat() to find available Z buffer modes.
-	// Original Alleg implementation just selected the first mode where the 
-	// bit depth was at least 16 bit. For now, we'll do the same.
+    //
+    // ZBuffer format enumeration
+    //
     //////////////////////////////////////////////////////////////////////////////
-	HRESULT EnumerateZBufferModes( )
-	{
-		// Attempt to get a 32, 24 or 16 bit z buffer.
-		m_zbufFormat = D3DFMT_D32;
-		HRESULT hRes = m_pd3d->CheckDeviceFormat(	D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_R5G6B5,
-													D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, m_zbufFormat );
 
-		if( hRes != D3D_OK )
-		{
-			_ASSERT( hRes == D3DERR_NOTAVAILABLE );
+    static HRESULT WINAPI StaticEnumZBufferFormats(
+        DDPIXELFORMAT* pddpf,
+        VOID* pvoid
+    ) {
+        DDDeviceImpl* pthis = (DDDeviceImpl*)pvoid;
 
-			m_zbufFormat = D3DFMT_D24S8;
-			HRESULT hRes = m_pd3d->CheckDeviceFormat(	D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_R5G6B5,
-														D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, m_zbufFormat );
+        return pthis->EnumZBufferFormats(*(DDPixelFormat*)pddpf);
+    }
+	// KGJV 32B
+	DWORD dwmaxZBufferBD;
+    HRESULT EnumZBufferFormats(const DDPixelFormat& ddpf)
+    {
+        //  , should we always choose the most bits or try to get 16bit?
+		//  KGJV 32B: yes choose the most bits
 
-			if( hRes != D3D_OK )
-			{
-				_ASSERT( hRes == D3DERR_NOTAVAILABLE );
+        if(ddpf.dwZBufferBitDepth > dwmaxZBufferBD) { // KGJV 32B
+			dwmaxZBufferBD = ddpf.dwZBufferBitDepth;   // KGJV 32B
+            m_ppfZBuffer = m_pengine->GetPixelFormat(ddpf);
+            //return D3DENUMRET_CANCEL;
+        }
 
-				m_zbufFormat = D3DFMT_D24X8;
-				HRESULT hRes = m_pd3d->CheckDeviceFormat(	D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_R5G6B5,
-															D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, m_zbufFormat );
-
-				if( hRes != D3D_OK )
-				{
-					_ASSERT( hRes == D3DERR_NOTAVAILABLE );
-	
-					m_zbufFormat = D3DFMT_D16;
-					HRESULT hRes = m_pd3d->CheckDeviceFormat(	D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_R5G6B5,
-															D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, m_zbufFormat );
-
-					if( hRes != D3D_OK )
-					{
-						m_zbufFormat = D3DFMT_UNKNOWN;
-						_ASSERT( hRes == D3DERR_NOTAVAILABLE );
-						return E_FAIL;
-					}
-				}
-			}
-		}
-		return S_OK;
-	}
+        return D3DENUMRET_OK;
+    }
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -305,51 +337,52 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void Initialize( HWND hParentWindow )
+    void Initialize(IDirectDrawX* pdd)
     {
-		// Store the window handle.
-		m_hParentWindow = hParentWindow;
-
-		// Get the D3D pointer
-		m_pd3d = Direct3DCreate9( D3D_SDK_VERSION );
-
-        // Enumerate the display modes
-        EnumerateDisplayModes( );
-
-		// TBD: Enumerate the zbuffer formats properly!
-		EnumerateZBufferModes( );
-
-		// Create the D3D device now.
-		m_pD3DDevice = CreateD3DDevice( hParentWindow );		// Calls CreateD3DDevice in this (dddevice) class().
-		
-/*		if (pdd == NULL) 
-		{
+        if (pdd == NULL) {
             TRef<IDirectDraw> pddPrimary;
 
+#ifdef USEDX7
+            HRESULT hr = DirectDrawCreateEx(NULL, (void **)&pddPrimary, IID_IDirectDraw7, NULL); 
+#else
             HRESULT hr = DirectDrawCreate(NULL, &pddPrimary, NULL);
+#endif
 
-            if (SUCCEEDED(hr)) 
-			{
+            if (SUCCEEDED(hr)) {
                 DDCall(pddPrimary->QueryInterface(IID_IDirectDrawX, (void**)&m_pdd));
             }
-        } 
-		else 
-		{
+        } else {
             m_pdd = pdd;
         }
 
-        if (m_pdd) 
-		{
+        if (m_pdd) {
+
+            //
             // Get Device Info
+            //
+
+#ifdef USEDX7
+            DDDeviceIdentifier2 dddi7;
+            m_pdd->GetDeviceIdentifier(&dddi7,DDGDI_GETHOSTIDENTIFIER);
+            m_strName = dddi7.szDescription;
+#else
             DDDeviceIdentifier dddi;
             m_pdd->GetDeviceIdentifier(&dddi, DDGDI_GETHOSTIDENTIFIER);
-
             m_strName = dddi.szDescription;
+#endif
 
+
+
+            //
             // Get device capabilities.
+            //
+
             DDCall(m_pdd->GetCaps(&m_ddcapsHW, &m_ddcapsSW));
 
+            //
             // Get the amount of video memory
+            //
+
             DWORD dwFree;
             DDSCaps ddsc;
             ddsc.dwCaps = DDSCAPS_VIDEOMEMORY;
@@ -358,26 +391,46 @@ private:
             if (DDERR_NODIRECTDRAWHW != hr)
                 DDCall(hr);
 
+            //
             // Does the driver support 3D with texture mapping and zbuffer?
+            //
+
             DWORD ddsCaps = DDSCAPS_TEXTURE | DDSCAPS_ZBUFFER;
 
             m_b3DAcceleration =
                    ((m_ddcapsHW.dwCaps         & DDCAPS_3D) !=       0)
                 && ((m_ddcapsHW.ddsCaps.dwCaps & ddsCaps  ) == ddsCaps);
 
+            //
             // Set the cooperative level to Normal
-			DDCall(m_pdd->SetCooperativeLevel(NULL, DDSCL_NORMAL));
+            //
 
+            #ifndef DREAMCAST
+                DDCall(m_pdd->SetCooperativeLevel(NULL, DDSCL_NORMAL));
+            #endif
+
+            //
             // Get the D3D pointer
-//            DDCall(m_pdd->QueryInterface(IID_IDirect3DX, (void**)&m_pd3d));
-			m_pd3d = Direct3DCreate9( D3D_SDK_VERSION );
+            //
 
+            DDCall(m_pdd->QueryInterface(IID_IDirect3DX, (void**)&m_pd3d));
+
+            //
             // Enumerate the display modes
+            //
+
             m_pdd->EnumDisplayModes(0, NULL, this, StaticEnumModes);
 
-			// Enumerate the zbuffer formats
-//            m_pd3d->EnumZBufferFormats(GetIID(true), StaticEnumZBufferFormats, this);
-        }*/
+            //
+            // Enumerate the zbuffer formats
+            //
+
+            #ifndef DREAMCAST
+				dwmaxZBufferBD = 0; // KGJV 32B
+                m_pd3d->EnumZBufferFormats(GetIID(true), StaticEnumZBufferFormats, this);
+            #endif
+
+        }
     }
 
 public:
@@ -388,14 +441,14 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 
     DDDeviceImpl(
-        PrivateEngine*	pengine,
-        bool			bAllow3DAcceleration,
-		HWND			hParentWindow
+        PrivateEngine* pengine, 
+        IDirectDrawX*  pdd, 
+        bool           bAllow3DAcceleration
     ) :
         m_pengine(pengine),
         m_bAllow3DAcceleration(bAllow3DAcceleration)
     {
-        Initialize( hParentWindow );
+        Initialize(pdd);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -408,14 +461,14 @@ public:
     {
         m_mapDeviceTextures.SetEmpty();
 
-/*       {
-	         D3DDeviceList::Iterator iter(m_listD3DDevices);
+        {
+            D3DDeviceList::Iterator iter(m_listD3DDevices);
 
             while (!iter.End()) {
                 iter.Value()->Terminate();
                 iter.Next();
             }
-        }*/
+        }
 
         {
             RasterizerList::Iterator iter(m_listRasterizers);
@@ -434,16 +487,16 @@ public:
         m_pdd  = NULL;
     }
 
-    void Reset( )
+    void Reset(IDirectDrawX* pdd)
     {
         Terminate();
-        Initialize( m_hParentWindow );
+        Initialize(pdd);
     }
 
-/*    void RemoveD3DDevice(D3DDevice* pd3ddevice)
+    void RemoveD3DDevice(D3DDevice* pd3ddevice)
     {
         m_listD3DDevices.Remove(pd3ddevice);
-    }*/
+    }
 
     void RemoveRasterizer(Rasterizer* praster)
     {
@@ -463,7 +516,7 @@ public:
 
     bool IsValid()
     {
-        return m_pd3d != NULL;
+        return m_pdd != NULL && m_pd3d != NULL;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -482,25 +535,20 @@ public:
     // Get Methods
     //
     //////////////////////////////////////////////////////////////////////////////
-	D3DDevice *	GetD3DDevice()
-	{
-		return m_pD3DDevice;
-	}
-
 
     HRESULT TestCooperativeLevel()
     {
-		return m_pD3DDevice->GetD3DDeviceX()->TestCooperativeLevel();
+        return m_pdd->TestCooperativeLevel();
     }
 
-/*    const IID& GetIID(bool bAllowHAL)
+    const IID& GetIID(bool bAllowHAL)
     {
         if (m_b3DAcceleration && bAllowHAL) {
             return IID_IDirect3DHALDevice;
         } else {
             return IID_IDirect3DRGBDevice;
         }
-    }*/
+    }
 
     IDirectDrawX* GetDD()     
     { 
@@ -526,7 +574,6 @@ public:
     {
         return m_b3DAcceleration;
     }
-
 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
 	void SetMaxTextureSize(DWORD dwMaxTextureSize)
 	{
@@ -538,7 +585,7 @@ public:
 		return m_dwMaxTextureSize;
 	}
 
-	void SetAllow3DAcceleration(bool bAllow3DAcceleration)
+    void SetAllow3DAcceleration(bool bAllow3DAcceleration)
     {
         m_bAllow3DAcceleration = bAllow3DAcceleration;
     }
@@ -606,47 +653,25 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    TRef<D3DDevice> CreateD3DDevice( HWND hParentWindow )
+    TRef<D3DDevice> CreateD3DDevice(DDSurface* pddsurface)
     {
         TRef<IDirect3DDeviceX> pd3dd;
 
-        bool bAcceleration = m_bAllow3DAcceleration; // && pddsurface->InVideoMemory();
+        bool bAcceleration = m_bAllow3DAcceleration && pddsurface->InVideoMemory();
 
-/*        pddsurface->GetDDSXZBuffer();
+        pddsurface->GetDDSXZBuffer();
 
-//		HRESULT hr = D3D_OK;
+        HRESULT hr = 
             m_pd3d->CreateDevice(
                 GetIID(bAcceleration),
                 pddsurface->GetDDSX(),
                 &pd3dd
+#ifndef USEDX7
                 #ifndef DREAMCAST
                     ,NULL
                 #endif
-            );*/
-		D3DPRESENT_PARAMETERS d3dPresParams;
-		memset( &d3dPresParams, 0, sizeof( D3DPRESENT_PARAMETERS ) );
-		d3dPresParams.AutoDepthStencilFormat		= D3DFMT_D24S8;
-		d3dPresParams.EnableAutoDepthStencil		= TRUE;
-		d3dPresParams.BackBufferCount				= 1;
-		d3dPresParams.hDeviceWindow					= hParentWindow;
-		d3dPresParams.Windowed						= TRUE;
-		d3dPresParams.BackBufferFormat				= D3DFMT_R5G6B5;
-		d3dPresParams.BackBufferWidth				= 800;
-		d3dPresParams.BackBufferHeight				= 600;
-		d3dPresParams.SwapEffect					= D3DSWAPEFFECT_DISCARD;
-		d3dPresParams.FullScreen_RefreshRateInHz	= 0;
-		d3dPresParams.PresentationInterval			= D3DPRESENT_INTERVAL_DEFAULT;
-		d3dPresParams.MultiSampleQuality			= D3DMULTISAMPLE_NONE;
-		d3dPresParams.MultiSampleType				= D3DMULTISAMPLE_NONE;
-		d3dPresParams.Flags							= 0;
-
-		HRESULT hr = m_pd3d->CreateDevice(	D3DADAPTER_DEFAULT,
-											D3DDEVTYPE_HAL,
-											hParentWindow,
-											D3DCREATE_HARDWARE_VERTEXPROCESSING,
-											&d3dPresParams,
-											&pd3dd );
-
+#endif
+            );
 
         if (hr == DDERR_INVALIDPARAMS) {
             // this can happen if the surface is lost
@@ -659,12 +684,17 @@ public:
             return NULL;
         }
 
-        TRef<D3DDevice> pd3ddevice = ::CreateD3DDevice( hParentWindow );		// Calls the CreateD3DDevice in d3ddevice.cpp.
+        TRef<D3DDevice> pd3ddevice =
+            ::CreateD3DDevice(
+                this,
+                pd3dd,
+                m_b3DAcceleration && bAcceleration,
+                m_pengine->GetPrimaryPixelFormat()
+            );
 
-/*        if (pd3ddevice != NULL) 
-		{
+        if (pd3ddevice != NULL) {
             m_listD3DDevices.PushFront(pd3ddevice);
-        }*/
+        }
 
         return pd3ddevice;
     }
@@ -675,26 +705,16 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    TRef<IDirect3DTextureX> CreateSurface(
+    TRef<IDirectDrawSurfaceX> CreateSurface(
         const WinPoint& size,
         DWORD           caps,
         PixelFormat*    ppf,
         bool            bAllocationCanFail
-    ) 
-	{
-		// Create a D3D texture instead of a surface.
-		_ASSERT( false );
-		return NULL;
-/*        if (m_pdddevicePrimary != NULL && (caps & DDSCAPS_VIDEOMEMORY) == 0) {
+    ) {
+        if (m_pdddevicePrimary != NULL && (caps & DDSCAPS_VIDEOMEMORY) == 0) {
             return m_pdddevicePrimary->CreateSurface(size, caps, ppf, bAllocationCanFail);
-        } else 
-		{
+        } else {
             DDSDescription ddsd;
-
-			if( ppf == NULL )
-			{
-				return NULL;
-			}
 
             ddsd.dwFlags         = DDSD_HEIGHT | DDSD_WIDTH | DDSD_CAPS | DDSD_PIXELFORMAT;
             ddsd.dwWidth         = size.X();
@@ -717,7 +737,7 @@ public:
             DDCall(hr);
 
             return pdds;
-        }*/
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -726,7 +746,7 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-/*    TRef<IDirectDrawSurfaceX> CreateMipMapTexture(
+    TRef<IDirectDrawSurfaceX> CreateMipMapTexture(
         const WinPoint& size,
         PixelFormat*    ppf
     ) {
@@ -783,7 +803,7 @@ public:
 
         return pdds;
     }
-*/
+
     //////////////////////////////////////////////////////////////////////////////
     //
     // Texture Cache
@@ -857,7 +877,12 @@ public:
             }
 
             if (ptexture) {
-                TRef<IDirect3DTextureX> pd3dtexture = ptexture->GetTextureX(size);
+                TRef<IDirect3DTextureX> pd3dtexture = 
+#ifdef USEDX7
+                    ptexture->GetTextureX(size,pd3dd->GetD3DDeviceX());
+#else
+                    ptexture->GetTextureX(size);
+#endif
 
                 if (pd3dtexture) {
                     return pd3dtexture;
@@ -886,22 +911,74 @@ public:
 
     int GetTotalTextureMemory()
     {
- 		return CD3DDevice9::Device()->GetAvailableTextureMem();
+        if (m_b3DAcceleration) {
+            DWORD dwTotal;
+            DWORD dwFree;
+
+            DDSCaps ddsc;
+            memset(&ddsc, 0, sizeof(DDSCaps));
+            ddsc.dwCaps = DDSCAPS_TEXTURE;
+
+            DDCall(m_pdd->GetAvailableVidMem(&ddsc, &dwTotal, &dwFree));
+
+            return dwTotal;
+        } else {
+            return 0;
+        }
     }
 
     int GetAvailableTextureMemory()
     {
- 		return CD3DDevice9::Device()->GetAvailableTextureMem();
+        if (m_b3DAcceleration) {
+            DWORD dwTotal;
+            DWORD dwFree;
+
+            DDSCaps ddsc;
+            memset(&ddsc, 0, sizeof(DDSCaps));
+            ddsc.dwCaps = DDSCAPS_TEXTURE;
+
+            DDCall(m_pdd->GetAvailableVidMem(&ddsc, &dwTotal, &dwFree));
+
+            return dwFree;
+        } else {
+            return 0;
+        }
     }
 
     int GetTotalVideoMemory()
     {
-		return CD3DDevice9::Device()->GetAvailableTextureMem();
+        if (m_b3DAcceleration) {
+            DWORD dwTotal;
+            DWORD dwFree;
+
+            DDSCaps ddsc;
+            memset(&ddsc, 0, sizeof(DDSCaps));
+            ddsc.dwCaps = DDSCAPS_VIDEOMEMORY;
+
+            DDCall(m_pdd->GetAvailableVidMem(&ddsc, &dwTotal, &dwFree));
+
+            return dwTotal;
+        } else {
+            return 0;
+        }
     }
 
     int GetAvailableVideoMemory()
     {
-		return CD3DDevice9::Device()->GetAvailableTextureMem();
+        if (m_b3DAcceleration) {
+            DWORD dwTotal;
+            DWORD dwFree;
+
+            DDSCaps ddsc;
+            memset(&ddsc, 0, sizeof(DDSCaps));
+            ddsc.dwCaps = DDSCAPS_VIDEOMEMORY;
+
+            DDCall(m_pdd->GetAvailableVidMem(&ddsc, &dwTotal, &dwFree));
+
+            return dwFree;
+        } else {
+            return 0;
+        }
     }
 };
 
@@ -911,7 +988,7 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<DDDevice> CreateDDDevice( PrivateEngine* pengine, bool bAllow3DAcceleration, HWND hParentWindow )
+TRef<DDDevice> CreateDDDevice(PrivateEngine* pengine, bool bAllow3DAcceleration, IDirectDrawX* pdd)
 {
-    return new DDDeviceImpl(pengine, bAllow3DAcceleration, hParentWindow );
+    return new DDDeviceImpl(pengine, pdd, bAllow3DAcceleration);
 }

@@ -37,7 +37,7 @@ public:
     virtual IEventSource* GetEventSource() = 0;
 };
 
-//TRef<VideoImage> CreateVideoImage(Engine* pengine, RectValue* prect, const ZString& str);
+TRef<VideoImage> CreateVideoImage(Engine* pengine, RectValue* prect, const ZString& str);
 
 //////////////////////////////////////////////////////////////////////////////
 //

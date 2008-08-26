@@ -1528,10 +1528,10 @@ public:
         // Draw the object
         //
 
-		// Statement is never true - always 3d acceleration.
-//        if ((!pcontext->Has3DAcceleration()) && (!m_bShadeAlways)) {
-//            pcontext->SetShadeMode(ShadeModeCopy);
-//        }
+        if ((!pcontext->Has3DAcceleration()) && (!m_bShadeAlways)) {
+            pcontext->SetShadeMode(ShadeModeCopy);
+        }
+
 		// KGJV- fix transparent models
 		bool bColorKey = pcontext->GetColorKey();
 
@@ -1646,10 +1646,7 @@ public:
                     // Draw the object
                     //
 
-					BlendMode oldMode = pcontext->GetBlendMode();
-					pcontext->SetBlendMode( BlendModeSource );
                     RenderGeo(pcontext);
-					pcontext->SetBlendMode( oldMode );
                 }
             }
         }

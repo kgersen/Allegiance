@@ -1,4 +1,4 @@
-import "AGCIDL.idl"; // kg - no relative path; use project settings
+import "..\inc\AGCIDL.idl";
 
 //import "oaidl.idl";  // not needed if including AGCIDL.h
 //import "ocidl.idl";

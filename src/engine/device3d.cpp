@@ -128,24 +128,13 @@ class Device3D : public IDevice3D {
     PFNDraw              m_pfnDrawLines;
 
     Matrix               m_mat;
-	Matrix               m_matWorldTM;
     Matrix               m_matPerspective;
-    Matrix               m_matView;
     Matrix               m_matFull;
     Matrix               m_matInverse;
-	Matrix				 m_matInverseWorld;
-	Matrix				 m_matLight;
-	D3DMATRIX			 m_matPerspectiveD3D;
-	D3DMATRIX			 m_matViewD3D;
-	D3DMATRIX			 m_matWorldD3D;
- 	D3DMATERIAL9		 m_materialD3D;
-	D3DLIGHT9			 m_light0D3D;
-	D3DLIGHT9			 m_light1D3D;
     bool                 m_bUpdateMatFull;
     bool                 m_bUpdateLighting;
     bool                 m_bUpdatePointers;
     bool                 m_bUpdateInverse;
-	bool				 m_bUpdateInverseWorld;
 
     TRef<Material>       m_pmaterial;
     TRef<Deformation>    m_pdeform;
@@ -274,11 +263,7 @@ public:
         #ifdef EnablePerformanceCounters
             ResetPerformanceCounters();
         #endif
-   
-		m_matLight.SetIdentity( );
-		m_matLight.Set( 0, 0, -1.0f );
-		m_matLight.Set( 2, 2, -1.0f );
-	}
+    }
 
     bool IsValid()
     {
@@ -407,35 +392,26 @@ public:
 
     void DirectionalLight(const Vector& vec, const Color& color)
     {
-//		m_vecLightWorld = m_matView.TransformDirection(vec);
-  //      m_vecLightWorld = m_mat.TransformDirection(m_vecLightWorld);
-		m_vecLightWorld  = vec;
-        m_color          = color;
-		m_bBidirectional = false;
-		m_bUpdateLighting = true;
-	}
+        m_vecLightWorld  = m_mat.TransformDirection(vec);
+        m_bBidirectional = false;
+    }
 
     void BidirectionalLight(const Vector& vec, const Color& color, const Color& colorAlt)
     {
-// 		m_vecLightWorld = m_matView.TransformDirection(vec);
-//        m_vecLightWorld = m_mat.TransformDirection(m_vecLightWorld);
-		m_vecLightWorld  = vec;
-		m_color          = color;
+        m_vecLightWorld  = m_mat.TransformDirection(vec);
+        m_color          = color;
         m_colorAlt       = colorAlt;
         m_bBidirectional = true;
-		m_bUpdateLighting = true;
     }
 
     void SetAmbientLevel(float level)
     {
         m_brightAmbient = level;
-		m_bUpdateLighting = true;
     }
 
     void SetGlobalColor(const Color& color)
     {
         m_colorGlobal = color;
-		m_bUpdateLighting = true;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -443,96 +419,6 @@ public:
     //
     //
     //////////////////////////////////////////////////////////////////////////////
-
-	void GenerateProjectionTransform( )
-	{
-		Matrix matD3D;
-
-		matD3D = m_matPerspective;
-		if (m_bClip) 
-		{
-			Point pointCenter = m_rectClip.Center();
-
-			// move view rect into NDC
-			float scalex = 0.5f * m_rectClip.XSize();
-			float scaley = 0.5f * m_rectClip.YSize();
-
-			matD3D.Translate( Vector( -pointCenter.X(), -pointCenter.Y(), 0.0f ) );
-			matD3D.Scale( Vector( 1.0f / scalex, 1.0f / scaley, 1.0f ));
-		} 
-		else 
-		{
-			// Flip the y coordinate
-			_ASSERT( false );		// TODO: check this path.
-			matD3D.Translate(Vector(0, -m_sizeSurface.Y(), 0));
-			matD3D.Scale(Vector(1, -1, 1));
-		}
-
-		// Reorganise the perspective matrix.
-		m_matPerspectiveD3D._11 = matD3D[0][0];
-		m_matPerspectiveD3D._12 = matD3D[1][0];
-		m_matPerspectiveD3D._13 = matD3D[2][0];
-		m_matPerspectiveD3D._14 = matD3D[3][0];
-		m_matPerspectiveD3D._21 = matD3D[0][1];
-		m_matPerspectiveD3D._22 = matD3D[1][1];
-		m_matPerspectiveD3D._23 = matD3D[2][1];
-		m_matPerspectiveD3D._24 = matD3D[3][1];
-		m_matPerspectiveD3D._31 = matD3D[0][2];
-		m_matPerspectiveD3D._32 = matD3D[1][2];
-		m_matPerspectiveD3D._33 = matD3D[2][2];
-		m_matPerspectiveD3D._34 = matD3D[3][2];
-		m_matPerspectiveD3D._41 = matD3D[0][3];
-		m_matPerspectiveD3D._42 = matD3D[1][3];
-		m_matPerspectiveD3D._43 = matD3D[2][3];
-		m_matPerspectiveD3D._44 = matD3D[3][3];
-
-		// Set.
-		CD3DDevice9::Get()->SetTransform( D3DTS_PROJECTION, &m_matPerspectiveD3D);
-	}
-	
-	void GenerateViewTransform( )
-	{
-		// Reorganise the view matrix.
-		m_matViewD3D._11 = m_matView[0][0];			// First version
-		m_matViewD3D._12 = m_matView[1][0];
-		m_matViewD3D._13 = m_matView[2][0];
-		m_matViewD3D._14 = m_matView[3][0];
-		m_matViewD3D._21 = m_matView[0][1];
-		m_matViewD3D._22 = m_matView[1][1];
-		m_matViewD3D._23 = m_matView[2][1];
-		m_matViewD3D._24 = m_matView[3][1];
-		m_matViewD3D._31 = m_matView[0][2];
-		m_matViewD3D._32 = m_matView[1][2];
-		m_matViewD3D._33 = m_matView[2][2];
-		m_matViewD3D._34 = m_matView[3][2];
-		m_matViewD3D._41 = m_matView[0][3];
-		m_matViewD3D._42 = m_matView[1][3];
-		m_matViewD3D._43 = m_matView[2][3];
-		m_matViewD3D._44 = m_matView[3][3];
-
-		CD3DDevice9::Get()->SetTransform( D3DTS_VIEW, &m_matViewD3D );
-	}
-
-	void GenerateWorldTransform( )
-	{
-		// Finally apply the world transform.
-		m_matWorldD3D._11 = m_matWorldTM[0][0];
-		m_matWorldD3D._12 = m_matWorldTM[1][0];
-		m_matWorldD3D._13 = m_matWorldTM[2][0];
-		m_matWorldD3D._14 = m_matWorldTM[3][0];
-		m_matWorldD3D._21 = m_matWorldTM[0][1];
-		m_matWorldD3D._22 = m_matWorldTM[1][1];
-		m_matWorldD3D._23 = m_matWorldTM[2][1];
-		m_matWorldD3D._24 = m_matWorldTM[3][1];
-		m_matWorldD3D._31 = m_matWorldTM[0][2];
-		m_matWorldD3D._32 = m_matWorldTM[1][2];
-		m_matWorldD3D._33 = m_matWorldTM[2][2];
-		m_matWorldD3D._34 = m_matWorldTM[3][2];
-		m_matWorldD3D._41 = m_matWorldTM[0][3];
-		m_matWorldD3D._42 = m_matWorldTM[1][3];
-		m_matWorldD3D._43 = m_matWorldTM[2][3];
-		m_matWorldD3D._44 = m_matWorldTM[3][3];
-	}
 
     const Matrix& GetFullMatrix()
     {
@@ -595,270 +481,11 @@ public:
 
     void UpdateLighting()
     {
-        if (m_bUpdateLighting) 
-//		if( true )
-		{
-			CD3DDevice9 * pDev = CD3DDevice9::Get();
+        if (m_bUpdateLighting) {
             m_bUpdateLighting = false;
-            bool bClip = m_bClip || m_countPlanes > 6;
 
-			// Configure lighting depending on flags.
-            switch (m_shadeMode) 
-			{
-			case ShadeModeNone:
-			case ShadeModeCopy:
-                if (bClip) 
-				{
-					// Copy vertex, set light value to 1, 1, 1, 1.
-					_ASSERT( false );
-//                    m_pfnLightVertex = &Device3D::LightVertexCopy;
-				} 
-				else 
-				{
-					// No lighting or transform. Uses textured screen space coords.
-//                    m_pfnLightVertex = &Device3D::TransformNoClipNoLight;
-					_ASSERT( false );
-                }
-                break;
-
-            case ShadeModeGlobalColor:
-				// Vertex colour set to constant global colour.
-				// Set d3dmaterial diffuse to zero, set ambient to global colour.
-				// Set d3dlight diffuse to zero, ambient to 1.0f.
-
-				// Configure the material. Only interested in diffuse
-				// and ambient settings for now.
-				memset( &m_materialD3D, 0, sizeof( D3DMATERIAL9 ) );
-				m_materialD3D.Ambient.r = m_colorGlobal.R();
-				m_materialD3D.Ambient.g = m_colorGlobal.G();
-				m_materialD3D.Ambient.b = m_colorGlobal.B();
-				m_materialD3D.Ambient.a = m_colorGlobal.A();
-				pDev->SetRenderState( D3DRS_SPECULARENABLE, FALSE );
-				pDev->SetRenderState( D3DRS_AMBIENT, m_colorGlobal.MakeCOLORREF() );
-				pDev->SetMaterial( &m_materialD3D );
-
-				// Configure the single light, light direction irrelevant.
-				memset( &m_light0D3D, 0, sizeof(D3DLIGHT9) );
-				m_light0D3D.Ambient.r = 1.0f;
-				m_light0D3D.Ambient.g = 1.0f;
-				m_light0D3D.Ambient.b = 1.0f;
-				m_light0D3D.Ambient.a = 1.0f;
-				m_light0D3D.Direction.x = 0.0f;
-				m_light0D3D.Direction.y = 0.0f;
-				m_light0D3D.Direction.z = 1.0f;
-				m_light0D3D.Type = D3DLIGHT_DIRECTIONAL;
-
-				pDev->SetLight( 0, &m_light0D3D );
-				pDev->LightEnable( 0, TRUE );
-				pDev->LightEnable( 1, FALSE );
-				pDev->SetRenderState( D3DRS_LIGHTING, TRUE );
-                break;
-
-            case ShadeModeFlat:
-            case ShadeModeGouraud:
-                if (m_pmaterial) 
-				{
-					// Use material as source for colour, single light direction.
-					// Angle of incidence + m_brightAmbient, multiplied
-					// by the diffuse material colour only.
-					// Alpha value taken straight from diffuse alpha setting.
-					// (i + amb) * diff = ( i * diff ) + ( amb * diff ).
-					// Set d3dmaterial diffuse and ambient colour to material diffuse.
-					// Set the light diffuse to 1.0f, light ambient to m_brightambient.
-
-					// Configure the material. Only interested in diffuse
-					// and ambient settings for now.
-					memset( &m_materialD3D, 0, sizeof( D3DMATERIAL9 ) );
-					m_materialD3D.Diffuse.r = m_pmaterial->GetDiffuse().R();
-					m_materialD3D.Diffuse.g = m_pmaterial->GetDiffuse().G();
-					m_materialD3D.Diffuse.b = m_pmaterial->GetDiffuse().B();
-					m_materialD3D.Diffuse.a = m_pmaterial->GetDiffuse().A();
-					m_materialD3D.Ambient.r = m_pmaterial->GetDiffuse().R();
-					m_materialD3D.Ambient.g = m_pmaterial->GetDiffuse().G();
-					m_materialD3D.Ambient.b = m_pmaterial->GetDiffuse().B();
-					m_materialD3D.Ambient.a = m_pmaterial->GetDiffuse().A();
-					pDev->SetRenderState( D3DRS_SPECULARENABLE, FALSE );
-					pDev->SetRenderState( D3DRS_AMBIENT, 0 );
-					pDev->SetMaterial( &m_materialD3D );
-
-					// Configure the single light.
-					m_vecLight = m_matLight.TransformDirection(m_vecLightWorld);
-				    m_vecLight.SetNormalize();
-					memset( &m_light0D3D, 0, sizeof(D3DLIGHT9) );
-
-					m_light0D3D.Diffuse.r = 1.0f;
-					m_light0D3D.Diffuse.g = 1.0f;
-					m_light0D3D.Diffuse.b = 1.0f;
-					m_light0D3D.Diffuse.a = 1.0f;
-					m_light0D3D.Ambient.r = m_brightAmbient;
-					m_light0D3D.Ambient.g = m_brightAmbient;
-					m_light0D3D.Ambient.b = m_brightAmbient;
-					m_light0D3D.Ambient.a = 1.0f;
-					m_light0D3D.Direction.x = m_vecLight.x;
-					m_light0D3D.Direction.y = m_vecLight.y;
-					m_light0D3D.Direction.z = m_vecLight.z;
-					m_light0D3D.Type = D3DLIGHT_DIRECTIONAL;
-
-					pDev->SetLight( 0, &m_light0D3D );
-					pDev->LightEnable( 0, TRUE );
-					pDev->LightEnable( 1, FALSE );
-					pDev->SetRenderState( D3DRS_LIGHTING, TRUE );
-                } 
-				else if (m_bBidirectional) 
-				{
-					// Use bidirectional lighting model. Angle of incidence * 
-					// light colour, plus m_brightAmbient.
-
-					// Set d3dmaterial diffuse to 1.0f, ambient to 1.0f
-					// Set d3dlight diffuse to light colour, ambient to m_brightambient.
-					// Set opposing directions.
-					memset( &m_materialD3D, 0, sizeof( D3DMATERIAL9 ) );
-					m_materialD3D.Diffuse.r = 1.0f;
-					m_materialD3D.Diffuse.g = 1.0f;
-					m_materialD3D.Diffuse.b = 1.0f;
-					m_materialD3D.Diffuse.a = 1.0f;
-					m_materialD3D.Ambient.r = 1.0f;
-					m_materialD3D.Ambient.g = 1.0f;
-					m_materialD3D.Ambient.b = 1.0f;
-					m_materialD3D.Ambient.a = 1.0f;
-					
-					HRESULT hr;
-					hr = pDev->SetRenderState( D3DRS_SPECULARENABLE, FALSE );
-					hr = pDev->SetRenderState( D3DRS_AMBIENT, 0 );
-					hr = pDev->SetMaterial( &m_materialD3D );
-					hr = pDev->SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL );
-
-					// Configure both lights, light direction irrelevant.
-					// Only set m_brightAmbient in one light, otherwise it gets
-					// factored in for each light.
-					m_vecLight = m_matLight.TransformDirection(m_vecLightWorld);
-				    m_vecLight.SetNormalize();
-
-					memset( &m_light0D3D, 0, sizeof(D3DLIGHT9) );
-					memset( &m_light1D3D, 0, sizeof(D3DLIGHT9) );
-					m_light0D3D.Diffuse.r = m_color.R();
-					m_light0D3D.Diffuse.g = m_color.G();
-					m_light0D3D.Diffuse.b = m_color.B();
-					m_light0D3D.Diffuse.a = m_color.A();
-					m_light0D3D.Ambient.r = m_brightAmbient;
-					m_light0D3D.Ambient.g = m_brightAmbient;
-					m_light0D3D.Ambient.b = m_brightAmbient;
-					m_light0D3D.Ambient.a = 1.0f;
-					m_light0D3D.Direction.x = m_vecLight.x;
-					m_light0D3D.Direction.y = m_vecLight.y;
-					m_light0D3D.Direction.z = m_vecLight.z;
-					m_light0D3D.Type = D3DLIGHT_DIRECTIONAL;
-
-					m_light1D3D.Diffuse.r = m_colorAlt.R();
-					m_light1D3D.Diffuse.g = m_colorAlt.G();
-					m_light1D3D.Diffuse.b = m_colorAlt.B();
-					m_light1D3D.Diffuse.a = m_colorAlt.A();
-					m_light1D3D.Ambient.r = 0.0f;
-					m_light1D3D.Ambient.g = 0.0f;
-					m_light1D3D.Ambient.b = 0.0f;
-					m_light1D3D.Ambient.a = 1.0f;
-					m_light1D3D.Direction.x = -m_vecLight.x;
-					m_light1D3D.Direction.y = -m_vecLight.y;
-					m_light1D3D.Direction.z = -m_vecLight.z;
-					m_light1D3D.Type = D3DLIGHT_DIRECTIONAL;
-
-					pDev->SetLight( 0, &m_light0D3D );
-					pDev->SetLight( 1, &m_light1D3D );
-					pDev->LightEnable( 0, TRUE );
-					pDev->LightEnable( 1, TRUE );
-					pDev->SetRenderState( D3DRS_LIGHTING, TRUE );
-	            } 
-				else 
-				{
-/*                    if (bClip) 
-					{
-						// Single light setting.
-						// Uses the angle of incidence to generate a brightness 
-						// value, not including light colour.
-						// Set d3dmaterial diffuse to 1.0f, set d3dlight
-						// diffuse to 1.0f. Everything else to zero.
-
-						// Configure the material. Only interested in diffuse
-						// settings for now.
-						memset( &m_materialD3D, 0, sizeof( D3DMATERIAL9 ) );
-						m_materialD3D.Diffuse.r = 1.0f;
-						m_materialD3D.Diffuse.g = 1.0f;
-						m_materialD3D.Diffuse.b = 1.0f;
-						m_materialD3D.Diffuse.a = 1.0f;
-						CD3DDevice9::SetRenderState( D3DRS_SPECULARENABLE, FALSE );
-						CD3DDevice9::SetRenderState( D3DRS_AMBIENT, 0 );
-						CD3DDevice9::SetMaterial( &m_materialD3D );
-
-						// Configure the single light, light direction irrelevant.
-						m_vecLight = m_matLight.TransformDirection(m_vecLightWorld);
-					    m_vecLight.SetNormalize();
-						memset( &m_light0D3D, 0, sizeof(D3DLIGHT9) );
-						m_light0D3D.Diffuse.r = 1.0f;
-						m_light0D3D.Diffuse.g = 1.0f;
-						m_light0D3D.Diffuse.b = 1.0f;
-						m_light0D3D.Diffuse.a = 1.0f;
-						m_light0D3D.Direction.x = m_vecLight.x;
-						m_light0D3D.Direction.y = m_vecLight.y;
-						m_light0D3D.Direction.z = m_vecLight.z;
-						m_light0D3D.Type = D3DLIGHT_DIRECTIONAL;
-
-						CD3DDevice9::SetLight( 0, &m_light0D3D );
-						CD3DDevice9::LightEnable( 0, TRUE );
-						CD3DDevice9::LightEnable( 1, FALSE );
-						CD3DDevice9::SetRenderState( D3DRS_LIGHTING, TRUE );
-                    } 
-					else */
-					{
-						// Single light setting. Use the angle of incidence to 
-						// generate a brightness value, then adds on the 
-						// m_brightAmbient value. This becomes the grey scale setting
-						// for the object. Light colour not used.
-						// Set d3dmaterial diffuse and ambient to 1.0f.
-						// Set d3dlight diffuse to 1.0f, ambient to m_brightAmbient.
-
- 						// Configure the material. Only interested in diffuse
-						// and ambient settings for now.
-						memset( &m_materialD3D, 0, sizeof( D3DMATERIAL9 ) );
-						m_materialD3D.Diffuse.r = 1.0f;
-						m_materialD3D.Diffuse.g = 1.0f;
-						m_materialD3D.Diffuse.b = 1.0f;
-						m_materialD3D.Diffuse.a = 1.0f;
-						m_materialD3D.Ambient.r = 1.0f;
-						m_materialD3D.Ambient.g = 1.0f;
-						m_materialD3D.Ambient.b = 1.0f;
-						m_materialD3D.Ambient.a = 1.0f;
-						pDev->SetRenderState( D3DRS_SPECULARENABLE, FALSE );
-						pDev->SetRenderState( D3DRS_AMBIENT, 0 );
-						pDev->SetMaterial( &m_materialD3D );
-
-						// Configure the single light.
-						m_vecLight = m_matLight.TransformDirection(m_vecLightWorld);
-						m_vecLight.SetNormalize();
-						memset( &m_light0D3D, 0, sizeof(D3DLIGHT9) );
-
-						m_light0D3D.Diffuse.r = 1.0f;
-						m_light0D3D.Diffuse.g = 1.0f;
-						m_light0D3D.Diffuse.b = 1.0f;
-						m_light0D3D.Diffuse.a = 1.0f;
-						m_light0D3D.Ambient.r = m_brightAmbient;
-						m_light0D3D.Ambient.g = m_brightAmbient;
-						m_light0D3D.Ambient.b = m_brightAmbient;
-						m_light0D3D.Ambient.a = 1.0f;
-						m_light0D3D.Direction.x = m_vecLight.x;
-						m_light0D3D.Direction.y = m_vecLight.y;
-						m_light0D3D.Direction.z = m_vecLight.z;
-						m_light0D3D.Type = D3DLIGHT_DIRECTIONAL;
-
-						pDev->SetLight( 0, &m_light0D3D );
-						pDev->LightEnable( 0, TRUE );
-						pDev->LightEnable( 1, FALSE );
-						pDev->SetRenderState( D3DRS_LIGHTING, TRUE );                   }
-					}
-                break;
-
-            default:
-                ZError("Invalid ShadeMode");
-            }
+            m_vecLight = GetInverseModelMatrix().TransformDirection(m_vecLightWorld);
+            m_vecLight.SetNormalize();
         }
     }
 
@@ -969,46 +596,24 @@ public:
         return m_matInverse;
     }
 
-    const Matrix& GetInverseModelWorldMatrix()
-    {
-		if (m_bUpdateInverseWorld) {
-            m_bUpdateInverseWorld = false;
-			m_matInverseWorld.SetInverse(m_matWorldTM);
-        }
-
-        return m_matInverseWorld;
-    }
-
     //////////////////////////////////////////////////////////////////////////////
     //
     // Set State
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void SetMatrix(const Matrix& mat, const Matrix& matWorldTM )
+    void SetMatrix(const Matrix& mat)
     {
         m_mat             = mat;
-		m_matWorldTM      = matWorldTM;
         m_bUpdateMatFull  = true;
         m_bUpdateLighting = true;
         m_bUpdateInverse  = true;
-		m_bUpdateInverseWorld = true;
     }
 
     void SetPerspectiveMatrix(const Matrix& mat)
     {
         m_matPerspective = mat;
         m_bUpdateMatFull = true;
-
-		GenerateProjectionTransform();
-    }
-
-    void SetViewMatrix(const Matrix& mat)
-    {
-        m_matView = mat;
-        m_bUpdateMatFull = true;
-
-		GenerateViewTransform();
     }
 
     void SetClipping(bool bClip)
@@ -1055,15 +660,13 @@ public:
     {
         m_shadeMode = shadeMode;
         m_bUpdatePointers = true;
-		m_bUpdateLighting = true;
-
         m_prasterizer->SetShadeMode(shadeMode);
     }
 
     void SetMaterial(Material* pmaterial)
     {
         m_pmaterial = pmaterial;
-		m_bUpdateLighting = true;
+        m_bUpdatePointers = true;
     }
 
     void SetBlendMode(BlendMode blendMode)
@@ -2546,7 +2149,6 @@ public:
 
     void DrawPoints(const VertexScreen* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-		// Not called.
         m_prasterizer->DrawPoints(pvertex, vcount);
     }
 
@@ -2577,7 +2179,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Standard unlit, textured polys.
+    //
     //
     //////////////////////////////////////////////////////////////////////////////
 
@@ -2587,70 +2189,9 @@ public:
             m_countTriangles += icount / 3;
         #endif
 
-		UpdatePointers();
+        UpdatePointers();
         (this->*m_pfnLightVertex)(pvertex, vcount, pindex, icount, &Device3D::ClipTriangles, &Device3D::DrawTriangles);
     }
-
-    //////////////////////////////////////////////////////////////////////////////
-	//
-	// New rendering path, using hardware vertex and index buffers to
-	// render indexed primitive lists.
-	// 
-	//////////////////////////////////////////////////////////////////////////////
-	void DrawTriangles( const D3DPRIMITIVETYPE primType,
-						const CVBIBManager::SVBIBHandle * phVB, 
-						const CVBIBManager::SVBIBHandle * phIB)
-	{
-		HRESULT hr;
-
-		// Now we update the light vectors and settings.
-		UpdateLighting( );
-
-		// Get the current world transform from the device state.
-		GenerateWorldTransform( );
-
-		hr = CVBIBManager::Get()->SetVertexAndIndexStreams( phVB, phIB );
-		_ASSERT( hr == D3D_OK );
-		hr = CD3DDevice9::Get()->SetFVF( phVB->dwBufferFormat );
-		_ASSERT( hr == D3D_OK );
-		hr = CD3DDevice9::Get()->SetTransform( D3DTS_WORLD, &m_matWorldD3D );
-		_ASSERT( hr == D3D_OK );
-												
-		hr = CD3DDevice9::Get()->DrawIndexedPrimitive(
-				primType, 0, 0,
-				phVB->dwNumElements,
-				phIB->dwFirstElementOffset / 2,
-				phIB->dwNumElements / 3 );
-		_ASSERT( hr == S_OK );
-	}
-
-    //////////////////////////////////////////////////////////////////////////////
-	//
-	// New rendering path, using hardware vertex buffers to render primitive lists.
-	// 
-	//////////////////////////////////////////////////////////////////////////////
-	void DrawTriangles( const D3DPRIMITIVETYPE primType,
-						const DWORD dwNumPrims,
-						const CVBIBManager::SVBIBHandle * phVB)
-	{
-		HRESULT hr;
-
-		// Now we update the light vectors and settings.
-		UpdateLighting( );
-
-		// Get the current world transform from the device state.
-		GenerateWorldTransform( );
-
-		hr = CVBIBManager::Get()->SetVertexStream( phVB );
-		_ASSERT( hr == D3D_OK );
-		hr = CD3DDevice9::Get()->SetFVF( phVB->dwBufferFormat );
-		_ASSERT( hr == D3D_OK );
-		hr = CD3DDevice9::Get()->SetTransform( D3DTS_WORLD, &m_matWorldD3D );
-		_ASSERT( hr == D3D_OK );			
-		hr = CD3DDevice9::Get()->DrawPrimitive( primType, phVB->dwFirstElementOffset, dwNumPrims );
-		_ASSERT( hr == S_OK );
-	}
-
 
     //////////////////////////////////////////////////////////////////////////////
     //

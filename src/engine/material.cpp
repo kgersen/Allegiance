@@ -47,7 +47,6 @@ public:
     Color GetDiffuse()  const { return GetDiffuseValue()->GetValue();  }
     Color GetSpecular() const { return GetSpecularValue()->GetValue(); }
     Color GetEmissive() const { return GetEmissiveValue()->GetValue(); }
-	float GetPower() const { return GetPowerValue()->GetValue(); }
 
     void SetDiffuse(const Color& color)  {  SetDiffuse(new ColorValue(color));  }
     void SetSpecular(const Color& color) { SetSpecular(new ColorValue(color)); }

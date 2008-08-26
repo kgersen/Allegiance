@@ -1,0 +1,13 @@
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Sentinal]
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Sentinal\Parameters]
+"fTimeout" = dword:00000000
+"fWantInt3" = dword:00000000
+"PingInterval" = dword:000927c0
+"PagerNotificationURL" = "http://www.skytel.com/Paging/page.cgi?pager=1&to=1648326&message=%1!s! - %2!s! - %3!s!"
+"MonitorServers" ="fedtest;fedbuild" 
+
+[hkey_local_machine\system\currentcontrolset\services\Eventlog\Applications\Sentinal]
+"TypesSupported" = dword:00000007
+"EventMessageFile" = "d:\fedsrc\objs\debug\sentinal\sentinal.exe"

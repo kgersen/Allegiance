@@ -778,13 +778,14 @@ void CmissionIGC::Initialize(Time now, IIgcSite* pIgcSite)
 
     m_damageTracks.Initialize(now);
 
+ #ifndef DREAMCAST
     //preload the convex hulls used for the various asteroids
     ZVerify(HitTest::Load("bgrnd50"));
     ZVerify(HitTest::Load("bgrnd51"));
     ZVerify(HitTest::Load("bgrnd52"));
     ZVerify(HitTest::Load("bgrnd53"));
     ZVerify(HitTest::Load("bgrnd03"));
-
+#endif
 
     m_sideTeamLobby = NULL;
 }
@@ -1626,9 +1627,6 @@ void                    CmissionIGC::GenerateMission(Time                   now,
 							//float       r = pwarp->GetPosition().z * majorRadius;
 							float       r = 0.6f * majorRadius;
 							float       angle = bias + offset[index++] * (2.0f * pi) / nWarps;
-							// KG- added. dont move fixed position aleph
-							if (pwarp->IsFixedPosition()) continue;
-
 							Vector      position;
 							position = Vector::RandomPosition(r * displacement);
 							position.x  += cos(angle) * r;

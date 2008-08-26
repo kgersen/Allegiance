@@ -23,7 +23,6 @@ public:
     virtual void     MovePointer(int count) = 0;
     virtual IObject* GetMemoryObject()      = 0;
     virtual IObject* GetObject()            = 0;
-	virtual ZString	 GetCurrentFile()		= 0;
 
     template<class Type>
     void GetStructure(Type*& ptype)

@@ -110,6 +110,9 @@ inline float mod(float x, float limit)
     }
 }
 
+#ifdef DREAMCAST
+    #include "floatmathlib.h"
+#else
 // VS.Net 2003 port
 #if _MSC_VER < 1310
     inline float floor(float x)            { return floorf(x);             }
@@ -138,6 +141,7 @@ inline float mod(float x, float limit)
         ZAssert(x >= -1 && x <= 1);
         return asinf(x);
     }
+#endif
 #endif
 
 

@@ -1,0 +1,21 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// FSMon.RC2 : resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+  #error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+
+/////////////////////////////////////////////////////////////////////////////
+#define SZFILEDESCRIPTION "Allegiance Server Monitor"
+#define SZORIGFILENAME "FSMon.exe"
+#define SZINTERNALNAME "FSMON"
+
+//#include "..\Inc\VerRes.rc"
+

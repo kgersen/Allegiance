@@ -75,9 +75,6 @@ private:
 
     void Construct();
 
-	void ClipOrCenterRectToMonitor(LPRECT prc, UINT flags);
-	void ClipOrCenterWindowToMonitor( const WinRect& rect, UINT flags );
-
 protected:
     DWORD OriginalWndProc(UINT, WPARAM, LPARAM);
     static void DoHitTest();

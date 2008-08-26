@@ -76,7 +76,6 @@ protected:
     TRef<ButtonEvent::Sink>    m_pbuttonEventSink;
     TRef<MouseInputStream>     m_pmouse;
     TRef<ModifiablePointValue> m_ppointMouse;
-	EngineApp *					m_pEngineApp;
 
     TRef<Surface>              m_psurface;
     TRef<ICaption>             m_pcaption;
@@ -107,9 +106,6 @@ protected:
     bool                       m_bRestore;
     bool                       m_bMouseInside;
     bool                       m_bMoveOnHide;
-	bool						m_bStartFullScreen;
-	bool						m_bWindowStateMinimised;
-	bool						m_bWindowStateRestored;
 
     int                        m_modeIndex;
 
@@ -137,12 +133,12 @@ protected:
 
     TRef<IMenuCommandSink>     m_pmenuCommandSink;
     TRef<IMenuItem>            m_pitemDevice;
-//    TRef<IMenuItem>            m_pitemRenderer;
+    TRef<IMenuItem>            m_pitemRenderer;
     TRef<IMenuItem>            m_pitemResolution;
     TRef<IMenuItem>            m_pitemRendering;
     TRef<IMenuItem>            m_pitemBPP; // KGJV 32B
-  //  TRef<IMenuItem>            m_pitemAllowSecondary;
-//    TRef<IMenuItem>            m_pitemAllow3DAcceleration;
+    TRef<IMenuItem>            m_pitemAllowSecondary;
+    TRef<IMenuItem>            m_pitemAllow3DAcceleration;
     TRef<IMenuItem>            m_pitemHigherResolution;
     TRef<IMenuItem>            m_pitemLowerResolution;
 
@@ -234,10 +230,6 @@ public:
     //
     // EngineWindow methods
     //
-
-	// Added so that we could reorganise the device creation order.
-	void			InitialiseTime();
-	void			PostWindowCreationInit();
 
     Number*          GetTime()           { return m_pnumberTime;             }
     Engine*          GetEngine()         { return m_pengine;                 }

@@ -18,7 +18,7 @@ public:
     // Win32App methods
     //
 
-    HRESULT Initialize(const ZString& strCommandLine, HWND hWindow);
+    HRESULT Initialize(const ZString& strCommandLine);
     void Terminate();
 };
 

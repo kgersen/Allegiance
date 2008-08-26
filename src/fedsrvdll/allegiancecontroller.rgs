@@ -1,0 +1,26 @@
+HKCR
+{
+	Allegiance.Controller.1 = s 'Allegiance Server Controller Class'
+	{
+		CLSID = s '{D45E87E0-D731-11D2-B2F0-00A0C9C9CCA4}'
+	}
+	Allegiance.Controller = s 'Allegiance Server Controller Class'
+	{
+		CLSID = s '{D45E87E0-D731-11D2-B2F0-00A0C9C9CCA4}'
+		CurVer = s 'Allegiance.Controller.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {D45E87E0-D731-11D2-B2F0-00A0C9C9CCA4} = s 'Allegiance Server Controller Class'
+		{
+			ProgID = s 'Allegiance.Controller.1'
+			VersionIndependentProgID = s 'Allegiance.Controller'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			'TypeLib' = s '{A0D20FFA-D731-11D2-B2F0-00A0C9C9CCA4}'
+		}
+	}
+}

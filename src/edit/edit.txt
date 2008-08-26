@@ -1,0 +1,154 @@
+//////////////////////////////////////////////////////////////////////////////
+//
+// To Do
+//
+//////////////////////////////////////////////////////////////////////////////
+
+- work items
+    - bugs
+        - handle the rendering case where start is above top
+    - virtual spaces
+    - overwrite mode
+    - undo/redo
+    - cut/copy/paste
+    - scroll window to keep cursor on screen
+    - F2 to switch between files
+    - F8 to close an open file
+    - argument entry
+        - ctrl-o to open a file
+        - ctrl-F typing a search argument
+        - search and replace
+    - ctrl+y
+    - tab, shift-tab (indent)
+    - box selection
+    - ctrl+n insert spaces
+    - low priority
+        - blinking cursor
+        - integrated command line
+        - F7 to build
+        - F6 find next error
+        - F5 to run app
+
+- what about not using C++ as the internal language
+    - provide a C++ importer
+    - provide a C++ exporter
+    - don't edit in C++ syntax
+- how to store
+    - comments
+    - types
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Features
+//
+//////////////////////////////////////////////////////////////////////////////
+
+- features
+    - sections
+        - proportional font text editor for text files, code with syntax errors
+        - auto-word wrap for comments, lists
+        - auto-formated source code
+    - projects
+        - contains all of the files in an entire c++ project
+        - user just edits the project and not the files
+    - file list
+    - integrated command line
+    - macros bound to arbitrary keys
+    - multiple views into same file
+    - run build from within editor, find next error
+    - integration with help
+    - commands
+        - character up, down, left, right, page up, page down
+        - scroll    up, down, left, right, page up, page down
+        - begining/end of file
+        - begining/end of line
+        - start selection
+        - start box selection
+        - search forward/back
+        - search and replace
+        - save file
+        - open file
+        - new file
+        - delete, cut, copy, paste
+        - cut line
+        - undo, redo (local & global)
+        - join lines
+        - insert spaces
+        - indent, unindent
+- architecture
+    -
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Grammer
+//
+//////////////////////////////////////////////////////////////////////////////
+
+File:
+    List of FileObject;
+
+FileObject:
+    DeclarationStatement
+
+ClassSymbol:
+    $name [:: ClassSymbol]
+
+Class:
+    class $(name) [: List of ClassParent,] [{ List of ClassStatement } [List of ObjectDefinition,]] ;
+
+ClassParent:
+    [public|private] ClassSymbol
+
+ClassStatement:
+    private:
+    protected:
+    public:
+    DeclarationStatement;
+
+DeclarationStatement:
+    Class
+    Typedef
+    FunctionDeclaration
+    Definition
+    FunctionDefinition
+
+Typedef:
+    typedef Type $(name)
+
+Type:
+    ClassSymbol
+    Type*
+    Type&
+    (Type)
+
+FunctionDeclaration:
+    Type $(name) (List of Declaration,)
+
+Declaration:
+    Type $(name)
+
+Definition:
+    Type ObjectDefinition
+
+ObjectDefinition:
+    $name [= Expression]
+
+FunctionDefinition:
+    FunctionDeclaration Block
+
+Block:
+    FunctionStatement
+    { List of FunctionStatement }
+
+FunctionStatement:
+    break:
+    continue:
+    DeclarationStatement;
+    Expression;
+    if ( Expression ) Block [ else Block ]
+    while ( Expression ) Block;
+    do Block while (Expression)
+    return Expression;
+
+Expression:

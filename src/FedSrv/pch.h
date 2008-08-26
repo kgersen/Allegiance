@@ -54,8 +54,7 @@
 //extern CServiceModule _Module;
 //#include <atlcom.h>
 
-// KG- removed
-//#include <ZoneAuthDecrypt.h>
+#include <ZoneAuthDecrypt.h>
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "AllSrvModule.h"
@@ -90,13 +89,8 @@
 #include "fsside.h"
 #include "fscluster.h"
 #include "fsmission.h"
-// #include "fedsrvsql.h" KG removed
-
-// KG guard with USEAUTH for consistency 
-#ifdef USEAUTH
-#include "zauth.h" 
-#endif
-
+#include "fedsrvsql.h"
+#include "zauth.h"
 #include "fedsrv.h"
 extern Global g;
 #include "fsship.h"

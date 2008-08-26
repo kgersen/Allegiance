@@ -6,6 +6,14 @@
 
 int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow);
 
+#ifdef DREAMCAST
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpszCmdLine, int nCmdShow)
+{
+    InitAllocs();
+    int result = Win32Main(hInstance, hPrevInstance, "", nCmdShow);
+    return result;
+}
+#else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow)
 {
     _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_WNDW);
@@ -24,6 +32,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     return result;
 }
+#endif
 
 int main( int argc, char *argv[ ])
 {
@@ -43,5 +52,9 @@ int main( int argc, char *argv[ ])
         }
     }
 
+#ifdef DREAMCAST
+    return WinMain(GetModuleHandle(NULL), NULL, NULL, SW_SHOW);
+#else
     return WinMain(GetModuleHandle(NULL), NULL, (char*)(PCC)strCommandLine, SW_SHOW);
+#endif
 }

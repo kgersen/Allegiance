@@ -1,0 +1,132 @@
+
+
+
+rbox(1)							  rbox(1)
+
+
+NAME
+       rbox - generate point distributions for qhull
+
+SYNOPSIS
+       Command "rbox" (w/o arguments) lists the	options.
+
+DESCRIPTION
+       rbox  generates	random or regular points according to the
+       options given, and  outputs  the	 points	 to  stdout.  The
+       points  are  generated in a cube, unless	's' or given. The
+       format of the output is the following: first line contains
+       the dimension and a comment, second line	contains the num-
+       ber of points, and the following	lines contain the points,
+       one  point per line. Points are represented by their coor-
+       dinate values.
+
+OPTIONS
+       n      number of	points
+
+       Dn     dimension	n-d (default 3-d)
+
+       Bn     bounding box coordinates (default	0.5)
+
+       l      spiral distribution, available only in 3-d
+
+       Ln     lens distribution	of radius n.  May  be  used  with
+	      's', 'r',	'G', and 'W'.
+
+       s      cospherical points randomly generated in a cube and
+	      projected	to the unit sphere
+
+       Wn     restrict points to distance n of the surface  of	a
+	      sphere or	a cube
+
+       c      add a unit cube to the output
+
+       c Gm   add  a  cube  with all combinations of +m	and -m to
+	      the output
+
+       d      add a unit diamond to the	output.
+
+       d Gm   add a diamond made of 0, +m and -m to the	output
+
+       Pn,m,r add point	[n,m,r]	to the output first.  Pad coordi-
+	      nates with 0.0.
+
+       n      Remove the command line from the first line of out-
+	      put.
+
+       t      use time in  seconds  as	the  random  number  seed
+	      (default is command line).
+
+       tn     set the random number seed to n.
+
+
+
+
+Geometry Center		   Jan 23, 1995				1
+
+
+
+
+
+rbox(1)							  rbox(1)
+
+
+       z      generate	integer	 coordinates.  Use 'Bn'	to change
+	      the range.  The default  is  'B1e6'  for	six-digit
+	      coordinates.   In	R^4, seven-digit coordinates will
+	      overflow hyperplane normalization.
+
+       Zn s   restrict points to a disk	about the z+ axis and the
+	      sphere (default Z1.0).  Includes the opposite pole.
+	      'Z1e-6' generates	degenerate  points  under  single
+	      precision.
+
+       Zn Gm s
+	      same as Zn with an empty center (default G0.5).
+
+       r s D2 generate a regular polygon
+
+       r s Z1 G0.1
+	      generate a regular cone
+
+BUGS
+       Some combinations of arguments generate odd results.
+
+       Report  bugs  to	 qhull_bug@geom.umn.edu, other correspon-
+       dence to	qhull@geom.umn.edu
+
+SEE ALSO
+       qhull(1)
+
+AUTHOR
+       C. Bradford Barber
+       c/o The Geometry	Center
+       1300 South Second Street, Suite 500
+       Minneapolis, MN 55454
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Geometry Center		   Jan 23, 1995				2
+
+

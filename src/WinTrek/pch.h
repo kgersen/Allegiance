@@ -66,7 +66,7 @@
 #include "messagesAll.h"
 #include "messages.h"
 #include "messagesLC.h"
-#include "ClubMessages.h" // KG - moved in global /Inc
+#include "..\Club\ClubMessages.h"
 #include "clintlib.h"
 #include "AutoDownload.h"
 

@@ -80,8 +80,6 @@ public:
         // Exports
         //
 
-		m_pmodeler->SetColorKeyHint( true );
-
         m_pnsData = pmodeler->CreateNameSpace("helpdata");
 
         //
