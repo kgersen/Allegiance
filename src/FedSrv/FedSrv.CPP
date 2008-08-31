@@ -4269,7 +4269,9 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
 
 HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
-
+    char szRemote[16];
+    pthis->GetIPAddress(cnxn, szRemote);
+    debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
 	return S_OK;
 }
 
