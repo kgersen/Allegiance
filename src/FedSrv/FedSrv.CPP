@@ -8213,6 +8213,12 @@ void StartDefaultGames()
         else
             mp.iMaxRank = mpClean.iMaxRank; // fetch default value
         
+		// KGJV -09/2008, added: Password# game parameter
+		ZString strPassword;
+        wsprintf(cbValueName, "Password%d", iGame);
+        if (LoadRegString(hKey, cbValueName, strPassword) == S_OK)
+			strcpy_s(mp.strGamePassword,sizeof(mp.strGamePassword),PCC(strPassword));
+
         // KGJV #92 - display LockOpen/Min/Maxrank and removed map name
         printf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
 
