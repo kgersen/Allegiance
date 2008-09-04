@@ -80,8 +80,9 @@ inline ValueType bound(ValueType value, ValueType min, ValueType max)
     return value < min ? min : (value > max ? max : value);
 }
 
+// KG- renamed swap to Swap to avoid conflict issue with VC9SP1 and future releases
 template<class Type>
-inline void swap(Type& x, Type& y)
+inline void Swap(Type& x, Type& y)
 {
     Type temp(x);
     x = y;
