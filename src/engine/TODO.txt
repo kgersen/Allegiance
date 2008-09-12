@@ -7,7 +7,6 @@ Remaining TODO list before release:
 
 * Some colour keying issues remain - such as the build sphere texture.
 * The "Higher res", "lower resolution" buttons have no effect anymore (no bug?)
-* Stats panel in F4 is truncated.
 
 * the little jumps are damn annoying, they are not lag related, but rendering problems it 
 	seems. They are in timing with the lighting issues. Only when a base is in the system 
@@ -30,6 +29,7 @@ Remaining TODO list before release:
 
 
 DONE:
+* Stats panel in F4 is truncated.
 * Tidy up code, remove old files. Still some more to do, work in progress.
 * hud bar flicker (after a device reset? resolution or windowed>)
 * Reenable mipmapping - not on environments.
