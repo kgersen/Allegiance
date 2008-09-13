@@ -61,6 +61,9 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="WINTREK;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+				Culture="1033"
+				AdditionalIncludeDirectories="..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -145,6 +148,9 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="WINTREK;FLAVOR=\&quot;$(ConfigurationName)\&quot;"
+				Culture="1033"
+				AdditionalIncludeDirectories="..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -188,6 +194,14 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="Resources"
+			>
+			<File
+				RelativePath="..\src\Lang\Usa\allegiance\allegiance.rc"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\src\mdledit\mdledit.cpp"
 			>

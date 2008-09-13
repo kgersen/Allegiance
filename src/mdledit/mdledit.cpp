@@ -699,6 +699,9 @@ public:
             )
         );
         
+		// user tests here
+		AddMineFieldTest();
+        
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -746,19 +749,27 @@ public:
 
     void AddMineFieldTest()
     {
-        TRef<Surface> psurface = GetModeler()->LoadSurface("minebmp", true);
+        TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
 
-        for (int index = 0; index < 100; index++) {
-            m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1, 100);
-            m_pgroupGeo->AddGeo(
-                new TransformGeo(
-                    CreateCullGeo(m_pmineFieldGeo), 
-                    new TranslateTransform(
-                        Vector::RandomPosition(1000)
-                    )
-                )
-            );
-        }
+		// KG - old version here
+        //for (int index = 0; index < 100; index++) {
+        //    m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1, 100);
+        //    m_pgroupGeo->AddGeo(
+        //        new TransformGeo(
+        //            CreateCullGeo(m_pmineFieldGeo), 
+        //            new TranslateTransform(
+        //                Vector::RandomPosition(1000)
+        //            )
+        //        )
+        //    );
+        //}
+
+		TRef<ThingGeo> pthing = ThingGeo::Create(GetModeler(), GetTime());
+
+         m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1.0f, 200.0f);
+         pthing->Load(0, m_pmineFieldGeo, NULL);
+
+		 m_pgroupGeo->AddGeo(pthing->GetGeo());
     }
 
     //////////////////////////////////////////////////////////////////////////////
