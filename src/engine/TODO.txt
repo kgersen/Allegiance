@@ -20,7 +20,7 @@ Remaining TODO list before release:
 * Lighting inconsistency.
 
 * mini map sector and aleph lines are a bit light
-* some text message colors are off
+* some text message colors are off (partially fixed. Need QA feedback).
 * target box is also rather light (the box that is drawn around a ship when it is targeted, not the aiming reticule) this is especially noticeable when targeting an miner, you get a very pale gray box instead of a yellow box
 
 * slight 'edge' effect on graphics in F3, i.e. there is a black ring around the He icon and aleph icons

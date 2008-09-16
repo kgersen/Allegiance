@@ -538,6 +538,7 @@ public:
 		dwG = (DWORD) ( colour.G() * 255.0f );
 		dwB = (DWORD) ( colour.B() * 255.0f );
 		D3DCOLOR currColour = D3DCOLOR_ARGB( dwA, dwR, dwG, dwB );
+		D3DCOLOR originalColor = currColour; // kg fix: save original color (parameter color)
 		if( str.GetLength() == 0 ) 
 		{
 			return;
@@ -611,6 +612,7 @@ public:
 
 			case END_COLOR_CODE:
 				iChar += 2;
+				currColour = originalColor; // kg fix: currColour ended so we restore original color (parameter)
 				break;
 
 			default:
