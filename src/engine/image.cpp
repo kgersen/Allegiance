@@ -486,6 +486,9 @@ public:
         TRef<Surface> psurface = GetImage()->GetSurface();
         float         number   = GetNumber()->GetValue();
 
+		// kg - fix NaN & infinity to avoid odd rendering
+		if (_isnan(number) || !_finite(number)) number = 0.0f;
+
         number = bound(number, 0.0f, 1.0f);
 
         Rect  rect = m_rect;
