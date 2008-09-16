@@ -177,6 +177,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\src\Igc\buildingeffectigc.h"
+			>
+		</File>
+		<File
 			RelativePath="..\src\Igc\buoyigc.cpp"
 			>
 		</File>
