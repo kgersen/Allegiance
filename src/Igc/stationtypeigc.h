@@ -196,6 +196,13 @@ class       CstationTypeIGC : public IstationTypeIGC
 
             return this;
         }
+		// EF5P
+		// get the direct successor as stored in the core
+		virtual IstationTypeIGC*        GetDirectSuccessorStationType()
+		{
+			if (m_pstSuccessor != NULL) return m_pstSuccessor;
+			return this;
+		}
         virtual AsteroidAbilityBitMask   GetBuildAABM(void) const
         {
             return m_data.aabmBuild;

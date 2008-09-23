@@ -639,6 +639,11 @@ IstationTypeIGC*  MyStationType::GetSuccessorStationType(const IsideIGC*    psid
 {
     return m_pStationType->GetSuccessorStationType(pside);
 }
+// EF5P
+IstationTypeIGC*  MyStationType::GetDirectSuccessorStationType(void)
+{
+    return m_pStationType->GetDirectSuccessorStationType();
+}
 AsteroidAbilityBitMask   MyStationType::GetBuildAABM(void) const
 {
     return m_pStationData->aabmBuild;

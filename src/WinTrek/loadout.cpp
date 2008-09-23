@@ -4,6 +4,11 @@
 #include "limits.h"
 #include "trekmdl.h"
 
+// KG- EF5P - sept2008- 
+// Enhanced F5 panel: added 'show all' and 'hide completed' options
+// all changes related to this have 'EF5P' has comment
+// also added a new member to igcstation (GetDirectSuccessorStationType) for this. see igc project.
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // PartListItem
@@ -24,7 +29,7 @@ private:
     TRef<Image>         m_pImageBkgnd;
     TRef<Image>         m_pImageSelect;
     TRef<Image>         m_pImageBrackets;
-    
+	TList<IbucketIGC*>  m_pDepList; // EF5P
 public:
     
     IbuyableIGC* GetBuyable()
@@ -38,7 +43,7 @@ public:
         m_moneyCost = m_pBuyable->GetPrice();
         Construct();
     }
-    
+
     void Construct()
     {
         assert(m_pBuyable);
@@ -52,10 +57,113 @@ public:
             false
             );
         
-        
+        BuildPrereqList();
     }
     
-    static int CountDronesOfType(IdroneTypeIGC* pDroneType)
+	// EF5P begin
+    ~PartListItem()
+	{
+		m_pDepList.SetEmpty();
+	}
+
+	void BuildPrereqList()
+	{
+		m_pDepList.SetEmpty();
+		IsideIGC* pSide =  trekClient.GetSide();
+		if (!pSide) return;
+		if (pSide->CanBuy(m_pBuyable)) return;
+
+		TechTreeBitMask ttbside = pSide->GetTechs(); //GetDevelopmentTechs();
+		TechTreeBitMask ttbo =  m_pBuyable->GetRequiredTechs();
+		TechTreeBitMask ttdiff = ttbo - ttbside;
+		TechTreeBitMask ttremain = ttdiff;
+		debugf("%s red because:\n",m_pBuyable->GetName());
+
+		const BucketListIGC* pList = pSide->GetBuckets();
+		for (BucketLinkIGC* pBucketNode = pList->first();
+			pBucketNode != NULL; pBucketNode = pBucketNode->next())
+		{
+			IbucketIGC*   pBucket  = pBucketNode->data();
+			if (!pBucket->GetCompleteF())
+			{
+				if (pBucket->GetPredecessor())
+					if (!pBucket->GetPredecessor()->GetCompleteF()) continue;
+				TechTreeBitMask tteff = pBucket->GetEffectTechs();
+				if (!((tteff & ttdiff).GetAllZero()))
+				{
+					ttremain -= tteff;
+					m_pDepList.PushEnd(pBucket);
+					continue;
+					//debugf("  (%d)%s (pred=%s) type=%d\n",
+					//	pBucket->GetBucketType(),
+					//	pBucket->GetName(),
+					//	pBucket->GetPredecessor() ? pBucket->GetPredecessor()->GetName(): "none",
+					//	pBucket->GetBucketType());
+
+				}
+			}
+		} // for
+
+		// 2nd pass: remove prereq hierachy of stations (should we loop this till stable?)
+		for (int i=m_pDepList.GetCount()-1;i>=0;i--)
+		{
+			TechTreeBitMask ttbi = ttbo & m_pDepList[i]->GetEffectTechs(); // reason for @i to be a prereq 
+			if (m_pDepList[i]->GetBucketType() != OT_stationType) continue;
+			for (int j=0;j<m_pDepList.GetCount();j++)
+			{
+				if (m_pDepList[j]->GetBucketType() != OT_stationType) continue;
+				if (i==j) continue;
+
+				TechTreeBitMask ttbj = ttbo & m_pDepList[j]->GetEffectTechs(); // reason for @j to be a prereq
+
+				// is ttbi > ttbj ( '>' == '>=' then '!=')
+				if (ttbi >= ttbj)
+				if (ttbi != ttbj) continue; // @i is here for more reason than @j
+
+				//@i can be removed if it depends on @j
+				IstationTypeIGC* pStationtypeI; CastTo(pStationtypeI, m_pDepList[i]->GetBuyable());
+				IstationTypeIGC* pStationtypeJ; CastTo(pStationtypeJ, m_pDepList[j]->GetBuyable());
+				if (pStationtypeJ->GetDirectSuccessorStationType() != pStationtypeI) continue;
+
+				m_pDepList.Remove(m_pDepList[i]);
+				break;
+			}
+		}
+		// 3rd pass: deplist is empty, some bits remain and bucket isnt a dev
+		// then we're missing some local station bits or it's obsolete
+		IbuyableIGC* b = m_pBucket->GetBuyable(); // get the real buyable object
+		if (!b) return; // shouldnt happen but in case
+		if (m_pDepList.GetCount()==0 && !ttremain.GetAllZero() && b->GetObjectType() != OT_development)
+		{
+			debugf("3rd pass for %s %d\n",b->GetName(),b->GetObjectType());
+			// 1st check if this is an obsolete station
+			if (b->GetObjectType() == OT_stationType)
+			{
+				IstationTypeIGC* pstation;
+				CastTo(pstation,b);
+				if (pstation->GetSuccessorStationType(pSide) != pstation) return; // it has a successor so it's obsoloete
+			}
+			// find prereq stations
+			for (BucketLinkIGC* pBucketNode = pList->first();
+				pBucketNode != NULL; pBucketNode = pBucketNode->next())
+			{
+				IbucketIGC*   pBucket  = pBucketNode->data();
+				if (pBucket == m_pBucket) continue; // skip self
+
+				//only consider stations
+				if (pBucket->GetBucketType() != OT_stationType) continue;
+				// get the station local ttbm
+				TechTreeBitMask ttstation = ((IstationTypeIGC*)(pBucket->GetBuyable()))->GetLocalTechs();
+				if (!((ttstation & ttremain).GetAllZero()))
+				{
+					m_pDepList.PushEnd(pBucket);
+				}
+			}
+		}
+	}
+	// -EF5P
+
+	static int CountDronesOfType(IdroneTypeIGC* pDroneType)
     {
         DroneTypeID dtid = pDroneType->GetObjectID();
         SideID      sid = trekClient.GetSideID();
@@ -242,6 +350,46 @@ public:
             rect.Min() + WinPoint(11,1), 
             strName
         );
+
+		// EF5P
+		if (m_pDepList.GetCount()==0) 
+		{
+			if (!trekClient.GetSide()->CanBuy(m_pBucket->GetBuyable()))
+			{
+				pSurface->DrawStringWithShadow(
+						TrekResources::SmallBoldFont(),
+						Color::White(),
+						colorShadow,
+						rect.Min() + WinPoint(11+5,1+9), 
+						"obsolete" 
+				   );
+			}
+			return;
+		}
+		int y = 1+9;
+		for (int i=0; i < m_pDepList.GetCount() ; i++)
+		{
+			if (i>4) 
+			{
+				pSurface->DrawStringWithShadow(
+                    TrekResources::SmallFont(),
+                    Color::White(),
+                    colorShadow,
+                    rect.Min() + WinPoint(156,y-9), 
+					"......");
+				break;
+			}
+
+			pSurface->DrawStringWithShadow(
+                    TrekResources::SmallFont(),
+					Color::White(),
+                    colorShadow,
+                    rect.Min() + WinPoint(11+5,y), 
+					(m_pDepList[i])->GetName()
+               );
+			y+=9;
+		}
+		// -EF5P
     }
     
     void FillClippedRect(Context* pcontext, const WinRect& rect, const WinRect& rectClip, const Color& color)
@@ -288,7 +436,19 @@ public:
             pcontext->SetBlendMode(BlendModeSourceAlpha);
 
             float bright = 0.5f;
-
+			// EF5P
+			float cantbuy = 0.0f; // overlay color for 'show all'
+			IsideIGC* pSide =  trekClient.GetSide();
+			// if nCompletedShadeWidth isnt 0 then the devel is fully paid (tech pickup)
+			// otherwise we check if we can buy it, if not we shade it in red
+			if (nCompletedShadeWidth == 0 && !pSide->CanBuy(m_pBuyable))
+			{
+				cantbuy = 0.5f;
+				bright = 0.0f;
+				nCompletedShadeWidth = nWidth;
+				nPaidShadeWidth = nWidth;
+			}
+			// end- EF5P
             FillClippedRect(
                 pcontext,
                 WinRect(
@@ -298,7 +458,7 @@ public:
                     size.Y() - offset.Y()
                 ),
                 rectClip,
-                Color(0.0, bright, 0.0, bright)
+                Color(cantbuy, bright, 0.0, bright+cantbuy)// EF5P
             );
 
             Point offsetPaid = offset + Point(nCompletedShadeWidth, 0);
@@ -311,7 +471,7 @@ public:
                     size.Y() - offsetPaid.Y()
                 ),
                 rectClip,
-                Color(bright, bright, 0.0, bright)
+                Color(cantbuy+bright, cantbuy+bright, 0.0, bright+cantbuy)// EF5P
             );
 
             pSurface->ReleaseContext(pcontext);
@@ -330,6 +490,7 @@ public:
     
     bool Update()
     {
+		BuildPrereqList();
         return true;
     }
     
@@ -407,6 +568,8 @@ private:
     TRef<ButtonPane>    m_pButtonTab4;
     TRef<ButtonPane>    m_pButtonTab5;
     TRef<ButtonPane>    m_pButtonClose;
+	TRef<ButtonPane>	m_pButtonShowAll; // EF5P
+	TRef<ButtonPane>	m_pButtonHideCompleted; // EF5P
     Window*             m_pPaneWindow;
     TRef<Pane>          m_pBlankPane;
     TRef<Pane>          m_pBlankPane0;
@@ -549,6 +712,33 @@ public:
           pImagePane->InsertAtBottom(m_pButtonInvest);
           m_pButtonInvest->SetOffset(WinPoint(63,315));
             
+#pragma region EF5P
+          // EF5P new buttons 
+          m_pButtonShowAll = 
+              CreateTrekButton(
+                  CreateButtonFacePane(
+                      GetModeler()->LoadSurface("btnshowallbmp", true),
+                      ButtonNormalCheckBox
+                  ),
+                  true
+              );
+		  m_pButtonShowAll->SetChecked(false);
+		  pImagePane->InsertAtBottom(m_pButtonShowAll);
+		  m_pButtonShowAll->SetOffset(WinPoint(25,370));
+
+		  m_pButtonHideCompleted = 
+              CreateTrekButton(
+                  CreateButtonFacePane(
+                      GetModeler()->LoadSurface("btnhidedonebmp", true),
+                      ButtonNormalCheckBox
+                  ),
+                  true
+              );
+		  m_pButtonHideCompleted->SetChecked(false);
+		  pImagePane->InsertAtBottom(m_pButtonHideCompleted);
+		  m_pButtonHideCompleted->SetOffset(WinPoint(110,370));
+#pragma endregion
+
           pImagePane->InsertAtBottom(pRowPane);
           pRowPane->SetOffset(WinPoint(17,9));
           
@@ -578,6 +768,8 @@ public:
           AddEventTarget(&PurchasesPaneImpl::OnMouseEnterInvestButton, m_pButtonInvest->GetMouseEnterEventSource());
           AddEventTarget(&PurchasesPaneImpl::OnMouseLeaveInvestButton, m_pButtonInvest->GetMouseLeaveEventSource());
           
+		  AddEventTarget(&PurchasesPaneImpl::OnShowAll, m_pButtonShowAll->GetEventSource()); // EF5P
+		  AddEventTarget(&PurchasesPaneImpl::OnHideCompleted, m_pButtonHideCompleted->GetEventSource()); // EF5P
           //m_pTabPaneTeamPurchases->ShowSelPane();
       }
       
@@ -606,6 +798,21 @@ public:
           }
           return true;
       }
+#pragma region EF5P
+	  // EF5P
+      bool OnShowAll()
+	  {
+			m_pListPane->UpdateAll();
+			OnTabSelect0();
+			UpdateSpendButtons();
+			return true;
+	  }
+	  // EF5P
+	  bool OnHideCompleted()
+	  {
+		  return OnShowAll();
+	  }
+#pragma endregion
       
 	  // TE: Added OnPartial method to handle partial-investing
       bool OnPartial()
@@ -650,11 +857,24 @@ public:
       
       void OnBucketChange(BucketChange bc, IbucketIGC* b)
       {
+		  bool updatedeps = false; // EF5P
           if (bc == c_bcTerminated)
+		  {
+			  updatedeps = true; // EF5P
               m_pListPane->RemoveItemByData((long)b);
+		  }
           else
-              m_pListPane->UpdateItemByData((long)b);
-          
+		  {
+			  // EF5P - hide if completed and m_pButtonHideCompleted is checked
+			  if (b->GetCompleteF() && m_pButtonHideCompleted->GetChecked())
+				  m_pListPane->RemoveItemByData((long)b);
+			  else
+				m_pListPane->UpdateItemByData((long)b);
+		  }
+		  // EF5P - update all deps when a bucket is completed or terminated and 'show all'
+		  updatedeps = updatedeps || b->GetCompleteF();
+		  if (updatedeps && m_pButtonShowAll->GetChecked())
+			m_pListPane->UpdateAll();
           UpdateSpendButtons();
       }
       
@@ -697,6 +917,9 @@ public:
       
       void UpdateTechList()
       {
+		  bool bShowAll = m_pButtonShowAll->GetChecked(); // EF5P
+		  bool bHideCompleted = m_pButtonHideCompleted->GetChecked();
+
           // Update the selected tech list
           // HACK: This is currently O(n^2), but it seems to work well enough.  
           int nInsertionIndex = 0;
@@ -713,17 +936,24 @@ public:
 
                   if (pBucket->GetGroupID() == group)
                   {
-                      if (pSide->CanBuy(pBucket))
+					  bool bDisplay = pSide->CanBuy(pBucket) || bShowAll;
+
+					  if (bHideCompleted && pBucket->GetCompleteF()) bDisplay = false;
+                      if (bDisplay)
                       {
                           IbucketIGC*   pbucketPredecessor = pBucket->GetPredecessor();
-                          if ((pbucketPredecessor == NULL) || pbucketPredecessor->GetCompleteF())
+                          if ((pbucketPredecessor == NULL) || pbucketPredecessor->GetCompleteF() || bShowAll) // EF5P
+
                           {
                               int nExistingIndex = m_pListPane->GetItemIdxByData((long)pBucket);
                           
                               if (nExistingIndex == NA)
                                   m_pListPane->InsertItem(nInsertionIndex++, new PartListItem(pBucket));
                               else
+							  {
+								  m_pListPane->GetItemByIdx(nExistingIndex)->Update(); // EF5P - update the prereqs
                                   nInsertionIndex = nExistingIndex + 1;
+							  }
                           }
                       }
                       else
@@ -746,6 +976,23 @@ public:
 
       bool BuyableTechExistsInGroup(BuyableGroupID group)
       {
+		  // EF5P
+		  // dont 'show all' the path(s) not allowed in game settings.
+		  bool bShowAll = m_pButtonShowAll->GetChecked(); 
+		  if (trekClient.MyMission())
+		  {
+			  if (!trekClient.MyMission()->GetMissionParams().bAllowShipyardPath)
+				  if (group == 5) return false;
+			  if (!trekClient.MyMission()->GetMissionParams().bAllowSupremacyPath)
+				  if (group == 2) return false;
+			  if (!trekClient.MyMission()->GetMissionParams().bAllowTacticalPath)
+				  if (group == 3) return false;
+			  if (!trekClient.MyMission()->GetMissionParams().bAllowExpansionPath)
+				  if (group == 4) return false;
+
+		  }
+		  // end- EF5P
+
           IsideIGC* pSide = trekClient.GetSide();
           if (pSide)
           {
@@ -756,10 +1003,10 @@ public:
                   IbucketIGC*  pBucket  = pBucketNode->data();
                   if (pBucket->GetGroupID() == group)
                   {
-                      if (pSide->CanBuy(pBucket))
+                      if (pSide->CanBuy(pBucket) || bShowAll) // EF5P
                       {
                           IbucketIGC*   pbucketPredecessor = pBucket->GetPredecessor();
-                          if ((pbucketPredecessor == NULL) || pbucketPredecessor->GetCompleteF())
+                          if ((pbucketPredecessor == NULL) || pbucketPredecessor->GetCompleteF() || bShowAll) // EF5P
                           {
                               return true;
                           }
@@ -775,6 +1022,7 @@ public:
       {
           if (trekClient.GetSideID() == sid)
           {
+			  debugf("TT Changed\n");
               UpdateTechList();
           }
       }
@@ -788,6 +1036,11 @@ public:
           if (!trekClient.GetSide())
               return false;
 
+		  // EF5P:
+		  IsideIGC* pSide = trekClient.GetSide();
+		  if (!pSide->CanBuy(pBucket)) return false;
+
+		  //if (pside->CanBuy())
           // if this is a drone, make sure that we have less than 
           // 4 of that type of drone.
           if (pBucket->GetBucketType() == OT_droneType)

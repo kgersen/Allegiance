@@ -76,6 +76,7 @@ class       MyStationType : public IstationTypeIGC
         virtual const char*             GetBuilderName(void) const;
         virtual const char*             GetIconName(void) const;
         virtual IstationTypeIGC*        GetSuccessorStationType(const IsideIGC*   pside);
+		virtual IstationTypeIGC*		GetDirectSuccessorStationType(void);
         virtual AsteroidAbilityBitMask  GetBuildAABM(void) const;
 
         virtual int                     GetLaunchSlots(void) const;

@@ -3466,6 +3466,7 @@ class IstationTypeIGC : public IbuyableIGC
         virtual const char*             GetBuilderName(void) const = 0;
 
         virtual  IstationTypeIGC*       GetSuccessorStationType(const IsideIGC*   pside) = 0;
+        virtual  IstationTypeIGC*       GetDirectSuccessorStationType() = 0; // EF5P - see wintrek\loadout.cpp
         virtual AsteroidAbilityBitMask  GetBuildAABM(void) const = 0;
 
         virtual int                     GetLaunchSlots(void) const = 0;

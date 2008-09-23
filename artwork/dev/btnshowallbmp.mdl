@@ -1,0 +1,2 @@
+use "model"; 
+btnshowallbmp = ImportImageFromFile("btnshowall.png", true); 
