@@ -180,8 +180,22 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
+	// KG-
+	// to allow NVidia PerfHUD 
+	D3DDEVTYPE DeviceType = D3DDEVTYPE_HAL;
+
+// - NVidia PerfHUD specific
+	D3DADAPTER_IDENTIFIER9 Identifier;
+	hr = m_sD3DDev9.pD3D9->GetAdapterIdentifier(m_sDevSetupParams.iAdapterID,0,&Identifier);
+	if (strstr(Identifier.Description,"PerfHUD") != 0)
+	{
+		DeviceType=D3DDEVTYPE_REF;
+		pLogFile->OutputString("PerfHUD detected, switching to REF type\n");
+	}
+// - end of NVidia PerfHUD specific
+
 	hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
-											D3DDEVTYPE_HAL,
+											DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
 											hParentWindow,
 											dwCreationFlags,
 											&m_sD3DDev9.d3dPresParams,
@@ -201,7 +215,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 			// No, try a non-pure device.
 			dwCreationFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING;
 			hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
-												D3DDEVTYPE_HAL,
+												DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD,
 												hParentWindow,
 												dwCreationFlags,
 												&m_sD3DDev9.d3dPresParams,
@@ -215,7 +229,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 				{
 					dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 					hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
-														D3DDEVTYPE_HAL,
+														DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD,
 														hParentWindow,
 														dwCreationFlags,
 														&m_sD3DDev9.d3dPresParams,
