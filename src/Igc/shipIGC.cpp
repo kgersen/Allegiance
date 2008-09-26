@@ -3368,7 +3368,7 @@ void    CshipIGC::ResetWaypoint(void)
 
                             float   rMajor;
                             IprojectileTypeIGC* pprojectile = ppt->GetProjectileType();
-                            if (ppt)
+                            if (pprojectile) // KG -bug fix, was: ppt
                                 rMajor = pprojectile->GetLifespan() * pprojectile->GetSpeed() * 0.5f;
                             else
                                 rMajor = ppt->GetScannerRange() * 0.4f;
