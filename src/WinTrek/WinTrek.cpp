@@ -2986,7 +2986,7 @@ public:
         if (LoadPreference("LargeDeadZone", FALSE))
             ToggleLargeDeadZone();
 		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 1)); //TheBored 25-JUN-07: Mute lobby chat patch 
+		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0 
 
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
