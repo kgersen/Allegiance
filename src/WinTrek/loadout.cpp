@@ -275,7 +275,15 @@ public:
         Color colorShadow(0, 0, 33.0f / 256.0f);
 
         char szPrice[20];
-        sprintf(szPrice, "$ %d", m_moneyCost);
+		// EF5P - if partialled, displays residual cost instead of full cost
+		Money cost = m_moneyCost;
+		if (m_pBucket)
+		{
+			if (m_pBucket->GetPercentBought()>0 && m_pBucket->GetPercentBought() <100)
+				cost = cost - m_pBucket->GetMoney();
+		}
+		// -EF5P
+		sprintf(szPrice, "$ %d", cost); // EF5P
 
         pSurface->DrawStringWithShadow(
             TrekResources::SmallFont(),
@@ -363,7 +371,22 @@ public:
 						rect.Min() + WinPoint(11+5,1+9), 
 						"obsolete" 
 				   );
+				return;
 			}
+			// remaining time
+			if (m_pBucket->GetPercentComplete() == 0) return;
+			if (m_pBucket->GetPercentComplete() == 100) return;
+			int seconds = m_pBucket->GetTimeToBuild() - m_pBucket->GetTime()/1000;
+			int minutes = seconds / 60;
+            seconds -= minutes * 60;
+			pSurface->DrawStringWithShadow(
+					TrekResources::SmallFont(),
+					Color::White(),
+					colorShadow,
+					rect.Min() + WinPoint(11+5,1+9+9), 
+					ZString(minutes) + "m:" 
+                    + ((seconds > 9) ? ZString(seconds) : ("0" + ZString(seconds))) +"s"
+			   );
 			return;
 		}
 		int y = 1+9;
@@ -569,7 +592,7 @@ private:
     TRef<ButtonPane>    m_pButtonTab5;
     TRef<ButtonPane>    m_pButtonClose;
 	TRef<ButtonPane>	m_pButtonShowAll; // EF5P
-	TRef<ButtonPane>	m_pButtonHideCompleted; // EF5P
+	TRef<ButtonPane>	m_pButtonShowComplete; // EF5P
     Window*             m_pPaneWindow;
     TRef<Pane>          m_pBlankPane;
     TRef<Pane>          m_pBlankPane0;
@@ -724,19 +747,19 @@ public:
               );
 		  m_pButtonShowAll->SetChecked(false);
 		  pImagePane->InsertAtBottom(m_pButtonShowAll);
-		  m_pButtonShowAll->SetOffset(WinPoint(25,370));
+		  m_pButtonShowAll->SetOffset(WinPoint(30,360)); //25,370
 
-		  m_pButtonHideCompleted = 
+		  m_pButtonShowComplete = 
               CreateTrekButton(
                   CreateButtonFacePane(
-                      GetModeler()->LoadSurface("btnhidedonebmp", true),
+                      GetModeler()->LoadSurface("btnshowcpltbmp", true),
                       ButtonNormalCheckBox
                   ),
                   true
               );
-		  m_pButtonHideCompleted->SetChecked(false);
-		  pImagePane->InsertAtBottom(m_pButtonHideCompleted);
-		  m_pButtonHideCompleted->SetOffset(WinPoint(110,370));
+		  m_pButtonShowComplete->SetChecked(true);
+		  pImagePane->InsertAtBottom(m_pButtonShowComplete);
+		  m_pButtonShowComplete->SetOffset(WinPoint(30,375)); //110,370
 #pragma endregion
 
           pImagePane->InsertAtBottom(pRowPane);
@@ -769,7 +792,7 @@ public:
           AddEventTarget(&PurchasesPaneImpl::OnMouseLeaveInvestButton, m_pButtonInvest->GetMouseLeaveEventSource());
           
 		  AddEventTarget(&PurchasesPaneImpl::OnShowAll, m_pButtonShowAll->GetEventSource()); // EF5P
-		  AddEventTarget(&PurchasesPaneImpl::OnHideCompleted, m_pButtonHideCompleted->GetEventSource()); // EF5P
+		  AddEventTarget(&PurchasesPaneImpl::OnHideCompleted, m_pButtonShowComplete->GetEventSource()); // EF5P
           //m_pTabPaneTeamPurchases->ShowSelPane();
       }
       
@@ -865,8 +888,8 @@ public:
 		  }
           else
 		  {
-			  // EF5P - hide if completed and m_pButtonHideCompleted is checked
-			  if (b->GetCompleteF() && m_pButtonHideCompleted->GetChecked())
+			  // EF5P - hide if completed and m_pButtonShowComplete isnt checked
+			  if (b->GetCompleteF() && !m_pButtonShowComplete->GetChecked())
 				  m_pListPane->RemoveItemByData((long)b);
 			  else
 				m_pListPane->UpdateItemByData((long)b);
@@ -918,7 +941,7 @@ public:
       void UpdateTechList()
       {
 		  bool bShowAll = m_pButtonShowAll->GetChecked(); // EF5P
-		  bool bHideCompleted = m_pButtonHideCompleted->GetChecked();
+		  bool bHideCompleted = !m_pButtonShowComplete->GetChecked();
 
           // Update the selected tech list
           // HACK: This is currently O(n^2), but it seems to work well enough.  
