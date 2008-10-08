@@ -304,6 +304,7 @@ DEFINE_FEDMSG(S, MISSIONDEF, 38) // sent when a mission is created, and when it 
   char      rgfReady        [c_cSidesMax];
   char      rgfForceReady   [c_cSidesMax];
   char      rgfActive       [c_cSidesMax];
+  char		rgfAllies		[c_cSidesMax]; // #ALLY - ally group - NA is no allies
 END_FEDMSG
 
 DEFINE_FEDMSG(C, POSITIONREQ, 39) // client requests position on a side.
@@ -998,6 +999,16 @@ DEFINE_FEDMSG(C, REQPINGDATA, 195)
 END_FEDMSG
 // end w0dk4
 
+// #ALLY
+DEFINE_FEDMSG(C, CHANGE_ALLIANCE, 196) // sent by game owner when changing alliances
+  SideID    sideID;
+  SideID    sideAlly; // side to ally to or NA to clear all alliances
+END_FEDMSG
+
+DEFINE_FEDMSG(S, CHANGE_ALLIANCES, 197) // sent by server when alliances change
+  char      Allies[c_cSidesMax];
+END_FEDMSG
+// end #ALLY
 
 #endif // _MESSAGES_ 
 

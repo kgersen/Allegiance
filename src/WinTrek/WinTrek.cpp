@@ -193,7 +193,7 @@ int   GetSimilarTargetMask(ImodelIGC* pmodel)
 
     int tt = GetTypebits(type);
     if ((type == OT_ship) || (type == OT_station) || (type == OT_probe))
-        tt |= (trekClient.GetShip()->GetSide() == pmodel->GetSide())
+		tt |= IsideIGC::AlliedSides(trekClient.GetShip()->GetSide(), pmodel->GetSide()) // #ALLY -was: ==
               ? c_ttFriendly
               : c_ttEnemy;
     else
@@ -6889,7 +6889,7 @@ public:
                             if (!bAnyEnemyShips)
                             {
                                 //We haven't spotted any enemy ships yet ... see if this is one.
-                                bAnyEnemyShips = pship->GetSide() != psideMe;
+                                bAnyEnemyShips = pship->GetSide() != psideMe; //#ALLYTD
                             }
 
                             bSetVisible = (pmodel != trekClient.GetShip()) &&

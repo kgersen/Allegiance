@@ -326,6 +326,11 @@ public:
   void                  SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv);
   void					SetSideActive(SideID sideid, bool bActive); // KGJV #62
   bool					GetSideActive(SideID sideid);				// KGJV #62
+
+  void					SetSideAllies(SideID sideid, char Allies);      // #ALLY
+  char					GetSideAllies(SideID sideid);                   // #ALLY
+  void                  UpdateAlliances(SideID sideID,SideID sideAlly); // #ALLY
+
   bool					GetAllowEmptyTeams() { return m_misdef.misparms.bAllowEmptyTeams;} // KGJV #62
   void					SetAllowEmptyTeams(bool bValue) { m_misdef.misparms.bAllowEmptyTeams = bValue;} // KGJV #62
   void                  DeactivateSide(IsideIGC * pside);

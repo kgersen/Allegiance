@@ -1,0 +1,57 @@
+Sept 2008 - KGJV
+
+ALLIANCES IMPLEMENTATION OUTLINE
+
+all changes related to alliances are commented with "#ALLY" or "#ALLYTD" keywords
+#ALLYTD indicates either a not yet implemented change or a reserved for future use one
+
+IGC:
+	each side has a new field named 'allies' stored in the DataSideIGC structure
+	if this field is NA then the side has no allies
+	otherwise all sides having the same value are allies.
+	Accessors:
+	The IsideIGC interface has 2 new members to get/set the 'allies' field:
+		void SetAllies(char allies)
+		char GetAllies()
+	these are implemented in CsideIGC.
+	Also, in ImissionIGC, a new member (UpdateAllies(const char  Allies[c_cSidesMax])) can be used
+	to change all sides at the same time.
+
+	To check if 2 teams are allied, a new static function in IsideIGC is used:
+	
+	bool AlliedSides(IsideIGC *side1, IsideIGC *side2)
+	
+	this function is then used everywhere in the game where logic needed to be changed to handle alliances.
+	
+Client
+	client can use the IGC layer to retrieve alliances information but also at the MissionInfo level.
+	this is done in clintlib by adding a new field,(rgfAllies), to MISSIONDEF.
+	this was necessary because IGC sides objects are not transmited. So we use the same logic as for team names and game parameters.
+	2 new accessors for this: MissionInfo::SetSideAllies and MissionInfo::SideAllies 
+
+Server
+	Server uses alliances at the IGC layer but can manipulate them in the CFSMission class using MISSIONDEF too.
+	2 new accessors for this: CFSMission::SetSideAllies and CFSMission::GetSideAllies
+	alliances are set and validated into a new single function: CFSMission::UpdateAlliances
+
+Network C/S:
+	only the game owner can set alliances. This is done in teamscreen.cpp.
+	2 new network messages are introduced:
+		FM_C_CHANGE_ALLIANCE : send by client (game owner) to server 
+		FM_S_CHANGE_ALLIANCES : sent by server to all clients
+	sinks:
+	upon receiving FM_S_CHANGE_ALLIANCES,clients update their MissionInfo and IGC sides objects.
+	Also a new sink (event handler) for IClientEventSource is called : OnTeamAlliancesChange
+	It's not used atm, but reserved for future use (changing alliances while game is running for instance).
+	
+10/8/08: currently implemented:
+
+- no friendly fire between allies unless "allow friendly fire" is on.
+- Mines/Towers always ignore allies.
+- reticle (indicator) and missile lock behavior
+- targetting keys behavior
+- no "eye" given by allied scanners.
+- miners/drones AIs treat allies as same team
+- docking into allied bases do the same as docking in a carrier (rearm and auto launch)
+- alliances are set before game starts. only the game owner can set who is allied with who.
+- alliances are permanent once the game is started and cant be changed.

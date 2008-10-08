@@ -101,6 +101,7 @@ const Color Color::s_colorMagenta(1, 0, 1);
 const Color    Color::s_colorCyan(0, 1, 1);
 const Color   Color::s_colorBlack(0, 0, 0);
 const Color   Color::s_colorGray(0.5f, 0.5f, 0.5f);
+const Color   Color::s_colorOrange(1, 0.447f, 0); // KG- added
 
 // moved from engine/font.cpp
 //////////////////////////////////////////////////////////////////////////////

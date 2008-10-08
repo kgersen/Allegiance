@@ -392,7 +392,7 @@ class ClusterSiteImpl : public ClusterSite
                     {
                         IhullTypeIGC*   pht = trekClient.m_pCoreIGC->GetHullType(ss.GetHullID());
                         assert (pht);
-                        am |= GetAssetMask(pship, pht, pside == pship->GetSide());
+						am |= GetAssetMask(pship, pht, IsideIGC::AlliedSides(pside, pship->GetSide())); // #ALLY -was: pside == pship->GetSide()
                     }
                 }
             }
@@ -411,7 +411,7 @@ class ClusterSiteImpl : public ClusterSite
                  (psl != NULL);
                  psl = psl->next())
             {
-                am |= (psl->data()->GetSide() == pside)
+				am |= IsideIGC::AlliedSides(psl->data()->GetSide(), pside) // #ALLY -was: psl->data()->GetSide() == pside
                       ? c_amStation
                       : c_amEnemyStation;
             }
@@ -5121,7 +5121,7 @@ int WinTrekClient::GetGrooveLevel()
         {
             IshipIGC* pship = psl->data();
 
-            if (pship->GetSide() != GetSide()
+            if (pship->GetSide() != GetSide() //#ALLYTD
                 && pship->SeenBySide(GetSide()))
             {
                 bEnemiesSighted = true;

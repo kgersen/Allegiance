@@ -10,4 +10,16 @@
 - refine all projects dependencies
 - DX9 'todo' : see src/engine/TODO.txt
 
+- remove color codes from string entered by users (team names, game name, chat)
+
 (MAJOR - move tools over to Collada intermediate format for geometry?)
+
+Alliances:
+
+- 2nd pass on "#ALLYTD" comments
+- fix "repair/rearm" when docking into allied base
+- finalize UI interface (teamscreen and teampane)
+- change victory conditions & endgame scores
+- change imbal behavior (1/2/NA/Auto)
+- change defections behavior
+- add common chat channel (orange color but with player names in team color ?)

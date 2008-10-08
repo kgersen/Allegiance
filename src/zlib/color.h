@@ -22,6 +22,7 @@ private:
     static const Color s_colorCyan;
     static const Color s_colorBlack;
     static const Color s_colorGray;
+	static const Color s_colorOrange;
 
 public:
     Color() {}
@@ -50,6 +51,7 @@ public:
     static const Color&    Cyan() { return s_colorCyan;    }
     static const Color&   Black() { return s_colorBlack;   }
     static const Color&    Gray() { return s_colorGray;    }
+	static const Color&  Orange() { return s_colorOrange;  } // KG- added
 
     void SetHSBA(float hue, float saturation, float brightness, float alpha = 1);
     void SetRGBA(float r, float g, float b, float a = 1)

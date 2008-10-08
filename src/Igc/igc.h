@@ -482,6 +482,7 @@ typedef ObjectID        WingID;
 const WingID            c_widMax = 10;
 
 const SideID c_cSidesMax = 6;
+const int c_cAlliancesMax = c_cSidesMax/2; // #ALLY max alliances possible (distinct groups of allied teams)
 
 extern const char*      c_pszWingName[c_widMax];
 
@@ -1981,6 +1982,8 @@ struct  DataSideIGC
 
     unsigned char       conquest;
     unsigned char       territory;
+
+	char				allies; // #ALLY
 };
 
 struct  DataCivilizationIGC
@@ -2829,6 +2832,8 @@ class ImissionIGC : public IstaticIGC
 
         virtual short                   GetReplayCount(void) const = 0;
         virtual const char*             GetContextName(void) = 0;
+		//#ALLY
+		virtual void                    UpdateAllies(const char  Allies[c_cSidesMax]) = 0;
 };
 
 class IbaseIGC : public IObject
@@ -4111,6 +4116,19 @@ class IsideIGC : public IbaseIGC
         virtual void          SetTimeEndured(float fSeconds) = 0;
         virtual long          GetProsperityPercentBought(void) const = 0;
         virtual long          GetProsperityPercentComplete(void) const = 0;
+
+		// ALLIES #ALLY
+		virtual void		  SetAllies(char allies) = 0;
+		virtual char          GetAllies() = 0;
+		static bool           AlliedSides(IsideIGC *side1, IsideIGC *side2)
+		{
+			if( side1==side2) return true;
+			if (side1==NULL) return false;
+			if (side2==NULL) return false;
+			if (side1->GetAllies() == NA) return false;
+			return (side1->GetAllies() == side2->GetAllies());
+		}
+		//
 };
 
 class IcivilizationIGC : public IbaseIGC

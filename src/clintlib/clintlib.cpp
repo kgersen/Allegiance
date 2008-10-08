@@ -138,6 +138,12 @@ public:
         ForEachSink( OnTeamNameChange(pMissionInfo, sideID) )
     }
 
+	// #ALLY
+	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
+	{
+		ForEachSink( OnTeamAlliancesChange(pMissionInfo) )
+	}
+
     void OnPlayerStatusChange(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo)
     {
         ForEachSink( OnPlayerStatusChange(pMissionInfo, sideID, pPlayerInfo) )
@@ -401,6 +407,12 @@ public:
     {
         m_psink->OnTeamNameChange(pMissionInfo, sideID);
     }
+
+	// #ALLY
+	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
+	{
+		m_psink->OnTeamAlliancesChange(pMissionInfo);
+	} 
 
     void OnPlayerStatusChange(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo)
     {
@@ -3857,6 +3869,7 @@ void BaseClient::AddPlayerToMission(PlayerInfo* pPlayerInfo)
     {
         m_pCoreIGC->SetMissionParams(&(m_pMissionInfo->GetMissionParams()));
         m_pCoreIGC->UpdateSides(Time::Now(), &(m_pMissionInfo->GetMissionParams()), m_pMissionInfo->GetMissionDef().rgszName);
+		m_pCoreIGC->UpdateAllies(m_pMissionInfo->GetMissionDef().rgfAllies);//#ALLY
         OnJoinSide();
     }
     m_pMissionInfo->AddPlayer(pPlayerInfo);

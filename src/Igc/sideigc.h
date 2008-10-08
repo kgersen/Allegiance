@@ -552,6 +552,15 @@ class       CsideIGC : public IsideIGC
             m_data.conquest = 0;
         }
 
+		// #ALLY
+		void SetAllies(char allies)
+		{
+			m_data.allies = allies;
+		}
+		char GetAllies()
+		{
+			return m_data.allies;
+		}
     private:
         void    AdjustBuckets(void)
         {

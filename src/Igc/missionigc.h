@@ -778,6 +778,7 @@ class   CmissionIGC : public ImissionIGC
         void                    UpdateSides(Time now,
                                             const MissionParams * pmp,
                                             const char  sideNames[c_cSidesMax][c_cbSideName]);
+		void                    UpdateAllies(const char  Allies[c_cSidesMax]); //#ALLY
         void                    ResetMission();
 
         void                    GenerateMission(Time                   now,

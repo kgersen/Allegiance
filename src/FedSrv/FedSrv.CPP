@@ -3409,7 +3409,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                      psl = psl->next())
                 {
                     IshipIGC*   pship = psl->data();
-                    if (pship->GetSide() == pside)
+                    if (pship->GetSide() == pside) //#ALLYTD: change this to include allies ?
                     {
                         CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
 
@@ -6478,7 +6478,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     END_PFM_CREATE
 
                     if ((pstation == NULL) ||
-                        (pstation->GetSide() != pside) ||
+                        (pstation->GetSide() != pside) || //#ALLYTD ?
                         (!pstation->GetStationType()->HasCapability(c_sabmRestart)))
                     {
                         //Not a legitimate station to start at ... ignore the request
@@ -6758,6 +6758,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		// 4. broadcast both the team activeF and the AET changes
         g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfmSideInactive, FM_GUARANTEED);//broadcast the change
+
+		// #ALLY - also update alliances
+		pfsMission->UpdateAlliances(sid,NA);
 	}
 	break;
 
@@ -6798,6 +6801,22 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       }
     }
     break;
+
+	// #ALLY
+	case FM_C_CHANGE_ALLIANCE:
+	{
+      if (!pfsMission)
+        break;
+
+      if (pfsMission->GetStage() == STAGE_NOTSTARTED) // for now, we can't change alliances when game is running
+	  {
+		  CASTPFM(pfmAlliancesChange, C, CHANGE_ALLIANCE, pfm);
+
+		  pfsMission->UpdateAlliances(pfmAlliancesChange->sideID,pfmAlliancesChange->sideAlly);
+	  }
+	}
+	break;
+	// #ALLY end
 
     case FM_CS_DELPOSITIONREQ:
     {
@@ -11264,7 +11283,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
   IsideIGC* pside = pship->GetSide();
   IsideIGC* psideOld = pstation->GetSide();
 
-  if (pside != psideOld)
+  if (!IsideIGC::AlliedSides(pside,psideOld)) //#ALLY - was: pside != psideOld
   {
       pfsShip->CaptureStation(pstation);
   }
@@ -11276,7 +11295,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
 
   {
       SideID sidFlag = pship->GetFlag();
-      if (sidFlag != NA)
+      if ((sidFlag != NA) && (pside == psideOld)) //#ALLY - was: (sidFlag != NA)
       {
           if (sidFlag == SIDE_TEAMLOBBY)
           {
@@ -11357,7 +11376,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
     }
     else
     {
-        if (pstationOld == NULL)
+        if ((pstationOld == NULL) && (pstationNew->GetSide() == pship->GetSide())) //#ALLY: dont dock tech at allied bases
         {
             //Go over the ship's parts and give the side the tech bits for any equipment onboard
 
@@ -11393,6 +11412,15 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 
         if (!pfsShip->IsPlayer())
             UpgradeShip(pship, pstationNew);
+		// #ALLY
+		// if allied station, relaunch now
+		if (pstationNew->GetSide() != pship->GetSide())
+		{
+			// proper method to launch, this will call ChangeStation again with pstationNew NULL
+			// if this causes issues, another way to do this is in cluster Update like for drones
+			// todo: check why ship isnt rearmed
+			pship->SetStation(NULL);
+		}
     }
 }
 

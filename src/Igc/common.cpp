@@ -264,11 +264,13 @@ bool  FindableModel(ImodelIGC*          m,
     {
         IsideIGC*  pHisSide = m->GetSide();
 
-        int sidebits = (pHisSide == NULL)
+        int sidebits = (pHisSide == NULL) 
                        ? c_ttNeutral
-                       : ((pside == pHisSide)
+					   : ( IsideIGC::AlliedSides(pside,pHisSide) // #ALLY - was: (pside == pHisSide)
                           ? c_ttFriendly
                           : c_ttEnemy);
+
+		bool notsameside = !(pside == pHisSide); // #ALLY
 
         if ((sidebits & ttMask) ||
             ((type == OT_probe) && ((abmAbilities & c_eabmRescueAny) != 0) &&
@@ -292,7 +294,14 @@ bool  FindableModel(ImodelIGC*          m,
 
                     case OT_station:
                     {
-                        okF = ((IstationIGC*)m)->GetStationType()->HasCapability(abmAbilities);
+						//#ALLY : exceptions for c_ttFriendly which include now allies 
+						//dont match allies if we're looking for a friendly station with one of the abilities below
+						AbilityBitMask alliesnotallowed = c_sabmRestart | c_sabmTeleportUnload | c_sabmUnload | c_sabmRipcord;
+						if ((ttMask & c_ttFriendly) &&
+							(abmAbilities & alliesnotallowed) &&
+							notsameside)
+							break;
+						okF = ((IstationIGC*)m)->GetStationType()->HasCapability(abmAbilities);
                     }
                     break;
 
@@ -339,7 +348,7 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
         if ((!ps->GetStationType()->HasCapability(c_sabmPedestal)) &&
             ps->SeenBySide(pside))
         {
-            if (pside != ps->GetSide())
+			if (!IsideIGC::AlliedSides(pside, ps->GetSide()))		// #ALLY - was: pside != ps->GetSide(
                 return false;               //enemy has a station == unfriendly
 
             rc = true;
@@ -373,7 +382,8 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
 			// If our team knows that ship is there or its one of our ships, then we can count it.
             if (pship->SeenBySide(pside) || pship->GetSide() == pside) 
 			{
-				if (pside != pship->GetSide()) // if its not our side then we subtract 1 from our count
+				//if (pside != pship->GetSide()) // if its not our side then we subtract 1 from our count
+				if (!IsideIGC::AlliedSides(pside,pship->GetSide())) //#ALLY -was: line above
 				{// count hostiles in the system.
 					// TODO: Make smarter: Assign differnt ship hulls a differnt amount of points, could also handle drones differntly
 					friendlyShipCount--; 
@@ -1502,7 +1512,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
             ignore = true;
         else
         {
-            if (mySide == hisSide)
+            if (mySide == hisSide) // #ALLYTD : should we extend this to allies?
             {
 
                 if ((pshipHim->GetObjectID() < pship->GetObjectID()) &&                 //he has a lower ship ID
@@ -1527,7 +1537,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
                 ignore = true;                                                          //trucker rules of road: we're heavier
         }
     }
-    else if ((type == OT_mine) && (mySide == hisSide))                                  //We can ignore friendly minefields
+    else if ((type == OT_mine) && IsideIGC::AlliedSides(mySide,hisSide))   //#ALLY                        //We can ignore friendly minefields
     {
         ignore = true;
     }
@@ -2052,7 +2062,7 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                                  pml = pml->next())
                             {
                                 ImodelIGC*  pmodel = pml->data();
-                                if ((pmodel->GetObjectType() == OT_mine) && (pmodel->GetSide() != mySide))
+                                if ((pmodel->GetObjectType() == OT_mine) && !IsideIGC::AlliedSides(pmodel->GetSide(), mySide)) //#ALLY -was : pmodel->GetSide() != mySide
                                 {
                                     //Vector to the center of the object
                                     const Vector&   itsPosition = pmodel->GetPosition();

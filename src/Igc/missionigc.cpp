@@ -1336,6 +1336,7 @@ void                        CmissionIGC::AddSide(IsideIGC*  s)
         sidedata.nKills = sidedata.nEjections = sidedata.nDeaths = sidedata.nBaseKills 
             = sidedata.nBaseCaptures = sidedata.nFlags = sidedata.nArtifacts = 0;
         sidedata.squadID = NA;
+		sidedata.allies = NA; // #ALLY
 
         m_sideTeamLobby = (IsideIGC*)CreateObject(Time::Now(), OT_side, &sidedata, sizeof(sidedata));
         m_sideTeamLobby->SetActiveF(true);
@@ -1472,7 +1473,16 @@ void                        CmissionIGC::UpdateSides(Time now,
 
     assert (GetSides()->n() == pmp->nTeams);
 }
-
+// #ALLY
+void		CmissionIGC::UpdateAllies(const char Allies[c_cSidesMax])
+{
+	for (SideID s = 0; s < GetSides()->n(); s++)
+	{
+		IsideIGC* pside = GetSide(s);
+		if (pside) // shouldnt happen but let's be cautious
+			pside->SetAllies(Allies[s]);
+	}
+}
 void                    CmissionIGC::ResetMission()
 {
     {

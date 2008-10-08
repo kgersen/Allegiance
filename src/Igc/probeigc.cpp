@@ -264,7 +264,7 @@ inline void CprobeIGC::ValidTarget(ImodelIGC*  pmodel,
                         Vector*              pdirectionMin)
 {
     //to something that does not include observers, then the check can be removed.
-    if (pmodel->GetSide() != pside)
+	if (!IsideIGC::AlliedSides(pside,pmodel->GetSide())) //#ALLY -was: if (pmodel->GetSide() != pside) 
     {
         ModelAttributes ma = pmodel->GetAttributes();
 

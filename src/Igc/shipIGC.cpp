@@ -720,7 +720,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 IsideIGC* pside1 = GetSide();
                 IsideIGC* pside2 = pModel->GetSide();
 
-                if (pside1 == pside2)
+				if (IsideIGC::AlliedSides(pside1,pside2)) // #ALLY - was: (pside1 == pside2) 
                 {
                     if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
                     {
@@ -742,7 +742,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             }
             else if (m_myHullType.HasCapability(c_habmLifepod) &&
                      pst->HasCapability(c_sabmRescue) &&
-                     (GetSide() == pModel->GetSide()))
+					 (IsideIGC::AlliedSides(GetSide(), pModel->GetSide()))) // #ALLY - was: GetSide() == pModel->GetSide())
             {
                 if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
                     break;
@@ -784,7 +784,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 ExpendableAbilityBitMask    eabm = ppt->GetCapabilities();
 
                 if ((eabm & c_eabmRescueAny) ||
-                    ((eabm & c_eabmRescue) && (GetSide() == pModel->GetSide())))
+					((eabm & c_eabmRescue) && IsideIGC::AlliedSides(GetSide(), pModel->GetSide()))) // #ALLY -was: GetSide() == pModel->GetSide()
                 {
                     if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
                         break;
@@ -906,7 +906,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
         {
             IIgcSite* igcsite = GetMyMission()->GetIgcSite();
 
-            bool    bFriendly = GetSide() == pModel->GetSide();
+			bool    bFriendly = IsideIGC::AlliedSides(GetSide(), pModel->GetSide()); // #ALLY -was: GetSide() == pModel->GetSide()
             if (bFriendly)
             {
                 HullAbilityBitMask  habmMe = m_myHullType.GetCapabilities();
@@ -926,7 +926,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
 				// if pModel is a drone skip this part (i.e. don't let them dock)
 				// 
                 else if ( (habmHim & c_habmCarrier) && (this->GetPilotType() == c_ptPlayer) )// mmf added && ... tweaked 4/08
-				{
+                {
                     if ((habmMe & c_habmLandOnCarrier) &&
                         ((IshipIGC*)pModel)->InGarage(this, tCollision) &&
                         igcsite->LandOnCarrierEvent((IshipIGC*)pModel, this, tCollision))
@@ -1102,7 +1102,7 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 
     if (launcher &&
         (!GetMyMission()->GetMissionParams()->bAllowFriendlyFire) &&
-        (pside == launcher->GetSide()) &&
+		IsideIGC::AlliedSides(pside,launcher->GetSide()) && // #ALLY - was: pside == launcher->GetSide()
         (amount >= 0.0f))
     {
         return c_drNoDamage;
@@ -1646,7 +1646,9 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                                 {
                                     IsideIGC*   pside = pship->GetSide();
 
-                                    if (pside == psideMe)
+                                    if ((pside == psideMe) ||
+										(CanSee(pship) && SeenBySide(pside) && IsideIGC::AlliedSides(psideMe,pside)) //#ALLY - friendly nearby (seen or can see us)
+										)
                                     {
                                         cFriend++;
                                         float d2 = (positionMe - pship->GetPosition()).LengthSquared();
@@ -1850,12 +1852,12 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         if (((pship->GetStateM() & wantsToMineMaskIGC) != 0) &&
                             (pship->GetCommandTarget(c_cmdPlan) == m_commandTargets[c_cmdPlan]))
                         {
-                            if (pship->GetSide() == pside)
+                            if (pship->GetSide() == pside) 
                             {
                                 //Have a miner on our side that is actively trying to mine this asteroid
                                 nFriendly++;
 
-                                float   fOre = pship->GetOre();
+								float   fOre = pship->GetOre();
                                 if (fOre < fOreMin)
                                 {
                                     fOreMin = fOre;
@@ -1863,7 +1865,9 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                 }
                             }
                             else
-                                nEnemy++;
+								// #ALLY: dont count friendly miners as enemies
+								if (!IsideIGC::AlliedSides(pship->GetSide(),pside))
+									nEnemy++;
                         }
                     }
                 }
@@ -3319,7 +3323,7 @@ void    CshipIGC::ResetWaypoint(void)
                     {
                         if ((m_commandIDs[c_cmdPlan] == c_cidGoto) || (m_commandIDs[c_cmdPlan] == c_cidNone))
                         {
-                            if (m_commandTargets[c_cmdPlan]->GetSide() == GetSide())
+                            if (m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) //#ALLYTD
                             {
                                 const IstationTypeIGC*  pst = ((IstationIGC*)m_commandTargets[c_cmdPlan])->GetStationType();
                                 HullAbilityBitMask  habm = m_myHullType.GetCapabilities();
@@ -3416,7 +3420,7 @@ void    CshipIGC::ResetWaypoint(void)
                         ExpendableAbilityBitMask    eabm = ppt->GetCapabilities();
 
                         if ((eabm & c_eabmRescueAny) ||
-                            ((eabm & c_eabmRescue) && (m_commandTargets[c_cmdPlan]->GetSide() == GetSide())))
+                            ((eabm & c_eabmRescue) && (m_commandTargets[c_cmdPlan]->GetSide() == GetSide()))) //#ALLYTD
                         {
                             o = Waypoint::c_oEnter;
                         }

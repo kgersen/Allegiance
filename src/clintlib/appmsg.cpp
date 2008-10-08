@@ -2366,6 +2366,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 m_pMissionInfo->Update(pfmMissionDef);
                 m_pCoreIGC->SetMissionParams(&pfmMissionDef->misparms);
                 m_pCoreIGC->UpdateSides(Time::Now(), &(m_pMissionInfo->GetMissionParams()), pfmMissionDef->rgszName);
+				m_pCoreIGC->UpdateAllies(pfmMissionDef->rgfAllies); //#ALLY
             }
 
             m_pClientEventSource->OnAddMission(m_pMissionInfo);
@@ -2492,6 +2493,25 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             m_pClientEventSource->OnTeamNameChange(m_pMissionInfo, pfmSetTeamInfo->sideID);
             break;
         }
+
+		// #ALLY
+		case FM_S_CHANGE_ALLIANCES:
+		{
+			// update our local missioninfo, IGC sides and call the sink
+            CASTPFM(pfmChangeAlliances, S, CHANGE_ALLIANCES, pfm);
+			for (SideID i = 0; i < c_cSidesMax ; i++)
+			{
+				// missioninfo
+				m_pMissionInfo->SetSideAllies(i,pfmChangeAlliances->Allies[i]);
+
+				// IGC
+				IsideIGC* pside = m_pCoreIGC->GetSide(i);
+				if (pside)
+					pside->SetAllies(pfmChangeAlliances->Allies[i]);
+			}
+            m_pClientEventSource->OnTeamAlliancesChange(m_pMissionInfo);
+			break;
+		}
 
         case FM_S_TEAM_READY:
         {
@@ -3183,7 +3203,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 {
                     IstationIGC* pstation = GetCore()->GetStation(pfmObjectSpotted->oidObject);
                     assert(pstation);
-                    PostText(GetShip()->GetWingID() == 0, strSpotterName + " discovered an enemy " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName());
+                    PostText(GetShip()->GetWingID() == 0, strSpotterName + " discovered an enemy " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); //#ALLYTD - change enemy to friendly if allied
                 }
                 break;
 
