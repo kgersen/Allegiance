@@ -1405,7 +1405,11 @@ private:
         {
             if (0 == button)
             {
-                if (pClusterFound)
+				// mmf 11/08 Don't allow pilots in a turret to do any of this (as in the below, namely changing viewed cluster).
+				//           This addresses (until a better fix) the bug of eyeing enemy ships when in base, in a turret, and
+				//           bomber pilot swtiches viewed sector
+				//          added && (trekClient.GetShip()->GetParentShip() == NULL)
+                if (pClusterFound && (trekClient.GetShip()->GetParentShip() == NULL))
                 {
                     trekClient.PlaySoundEffect(mouseclickSound);
                     SelectCluster(pClusterFound);
