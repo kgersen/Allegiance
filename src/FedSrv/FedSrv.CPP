@@ -10667,7 +10667,8 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 	  ObjectType LauncherType = plauncher->GetObjectType();
 
 	  // If the launcher is NOT a probe (novabomb) or a missile (aleph res)...
-	  if (LauncherType != OT_probe && LauncherType != OT_missile)
+	  //TheBored 4-MAR-2009: Fixed "Unknown Ship" server crash bug
+	  if (LauncherType && LauncherType != OT_probe && LauncherType != OT_missile)
 	  {
 		  // Safely read the values from the launcher
 		  szLauncherName = plauncher->GetName();
