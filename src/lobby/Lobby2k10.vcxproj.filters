@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{ed336ab2-d0de-4f0e-ae8b-c23f14920794}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="alllobby.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="Lobby.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="lobby.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="alllobby.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AutoUpdate.cpp" />
+    <ClCompile Include="broadcast.cpp" />
+    <ClCompile Include="client.cpp" />
+    <ClCompile Include="Lobby.CPP" />
+    <ClCompile Include="lobbyapp.cpp" />
+    <ClCompile Include="lobbyevents.cpp" />
+    <ClCompile Include="lobqguids.cpp" />
+    <ClCompile Include="mission.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="server.cpp" />
+    <ClCompile Include="zgameinfo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AutoUpdate.h" />
+    <ClInclude Include="broadcast.h" />
+    <ClInclude Include="client.h" />
+    <ClInclude Include="counters.h" />
+    <ClInclude Include="Lobby.H" />
+    <ClInclude Include="lobbyapp.h" />
+    <ClInclude Include="LobbyAppSite.h" />
+    <ClInclude Include="lobbyevents.h" />
+    <ClInclude Include="lobbymodule.h" />
+    <ClInclude Include="lobqueries.h" />
+    <ClInclude Include="messagesall.h" />
+    <ClInclude Include="messageslc.h" />
+    <ClInclude Include="messagesls.h" />
+    <ClInclude Include="mission.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="server.h" />
+    <ClInclude Include="zgameinfo.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="lobbymsg.msg" />
+  </ItemGroup>
+</Project>

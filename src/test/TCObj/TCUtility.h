@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 #include "SrcInc.h"
-#include <TCObj.h>
+#include "TCObj.h"
 #include <objsafe.h>
 
 

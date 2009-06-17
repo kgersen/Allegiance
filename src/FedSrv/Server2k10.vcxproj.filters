@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="excluded">
+      <UniqueIdentifier>{21465285-66fd-4ba2-8715-21e5226f31a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{1d02119f-a536-4c54-ae0c-6363e78161d3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AdminEventLoggerHook.cpp" />
+    <ClCompile Include="AdminGame.cpp" />
+    <ClCompile Include="AdminGames.cpp" />
+    <ClCompile Include="AdminServer.cpp" />
+    <ClCompile Include="AdminSession.cpp" />
+    <ClCompile Include="AdminSessionClass.cpp" />
+    <ClCompile Include="AdminSessionEventSink.cpp" />
+    <ClCompile Include="AdminShip.cpp" />
+    <ClCompile Include="AdminUser.cpp" />
+    <ClCompile Include="AdminUsers.cpp" />
+    <ClCompile Include="allsrvmodule.cpp" />
+    <ClCompile Include="BitArray.cpp" />
+    <ClCompile Include="config.cpp">
+      <Filter>excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="DIALOGS.CPP">
+      <Filter>excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="dirmon.cpp">
+      <Filter>excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="FedSrv.CPP" />
+    <ClCompile Include="fscluster.cpp" />
+    <ClCompile Include="fslobby.cpp" />
+    <ClCompile Include="fsmission.cpp" />
+    <ClCompile Include="fsship.cpp" />
+    <ClCompile Include="fsside.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="sqlhelp.cpp" />
+    <ClCompile Include="srvdbg.cpp">
+      <Filter>excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="srvqguids.cpp" />
+    <ClCompile Include="SWMRG.CPP">
+      <Filter>excluded</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AdminEventLoggerHook.h" />
+    <ClInclude Include="AdminGame.h" />
+    <ClInclude Include="AdminGames.h" />
+    <ClInclude Include="AdminServer.h" />
+    <ClInclude Include="AdminSession.h" />
+    <ClInclude Include="AdminSessionClass.h" />
+    <ClInclude Include="AdminSessionEventSink.h" />
+    <ClInclude Include="AdminSessionSecure.h" />
+    <ClInclude Include="AdminSessionSecureHost.h" />
+    <ClInclude Include="AdminShip.h" />
+    <ClInclude Include="AdminUser.h" />
+    <ClInclude Include="AdminUsers.h" />
+    <ClInclude Include="AdminUtil.h" />
+    <ClInclude Include="allsrvmodule.h" />
+    <ClInclude Include="BitArray.h" />
+    <ClInclude Include="counters.h" />
+    <ClInclude Include="dbgutil.h" />
+    <ClInclude Include="FedSrv.H" />
+    <ClInclude Include="FedSrvApp.h" />
+    <ClInclude Include="fedsrvsql.h" />
+    <ClInclude Include="fscluster.h" />
+    <ClInclude Include="fsmission.h" />
+    <ClInclude Include="fsship.h" />
+    <ClInclude Include="fsside.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="queries.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="srvqueries.h" />
+    <ClInclude Include="_fedsrv.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AdminGame.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AdminGames.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AdminServer.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AdminSession.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AdminShip.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AdminUser.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AdminUsers.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="allsrv.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AllSrv32.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="DPMono.rgs">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="fedsrv.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="fedsrv.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="makefile" />
+    <None Include="regini.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FedSrv.RC">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="AllSrvModuleIDL.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\srvconfig\srvconfig.ico" />
+    <CustomBuild Include="config.h" />
+    <CustomBuild Include="dirmon.h" />
+    <CustomBuild Include="fedmsg.msg">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="srvdbg.h" />
+    <CustomBuild Include="SWMRG.H" />
+  </ItemGroup>
+</Project>

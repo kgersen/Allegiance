@@ -91,7 +91,7 @@ BEGIN
             VALUE "OriginalFilename", SZORIGFILENAME
             VALUE "ProductName",      SZFILEDESCRIPTION
             VALUE "ProductVersion",   SZVERSTR(rmj,rmm,00,buildnum)
-            VALUE "BuildFlavor",      FLAVOR
+            VALUE "BuildFlavor",	  szVerName
 #ifdef DEBUG
             VALUE "PrivateBuild", szVerUser
 #endif

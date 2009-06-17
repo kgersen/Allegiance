@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="in src/FedSrv">
+      <UniqueIdentifier>{3ec5a582-6d07-4bc5-8374-e7a7b8e74cef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="in src/FedSrv\excluded">
+      <UniqueIdentifier>{84674fad-a71d-45e3-aac0-46301b86c61b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="in src/FedSrv\Resources">
+      <UniqueIdentifier>{14bb99c4-0ab6-4f14-9a5d-b3c7a0cdcb7b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\srvconfig\srvconfig.ico">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </None>
+    <None Include="AdminGame.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="AdminGames.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="AdminServer.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="AdminSession.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="AdminShip.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="AdminUser.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="AdminUsers.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="allsrv.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="AllSrv32.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="DPMono.rgs">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="fedmsg.msg">
+      <Filter>in src/FedSrv</Filter>
+    </None>
+    <None Include="fedsrv.ico">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="fedsrv.rc2">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </None>
+    <None Include="makefile">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </None>
+    <None Include="regini.txt">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="FedSrv.RC">
+      <Filter>in src/FedSrv\Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AdminEventLoggerHook.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminGame.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminGames.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminServer.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminSession.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminSessionClass.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminSessionEventSink.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminShip.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminUser.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="AdminUsers.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="allsrvmodule.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="BitArray.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="DIALOGS.CPP">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="dirmon.cpp">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="FedSrv.CPP">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="fscluster.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="fslobby.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="fsmission.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="fsship.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="fsside.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="sqlhelp.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="srvdbg.cpp">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="srvqguids.cpp">
+      <Filter>in src/FedSrv</Filter>
+    </ClCompile>
+    <ClCompile Include="SWMRG.CPP">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AdminEventLoggerHook.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminGame.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminGames.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminServer.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminSession.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminSessionClass.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminSessionEventSink.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminSessionSecure.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminSessionSecureHost.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminShip.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminUser.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminUsers.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="AdminUtil.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="allsrvmodule.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="BitArray.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClInclude>
+    <ClInclude Include="counters.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="dbgutil.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="dirmon.h">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClInclude>
+    <ClInclude Include="FedSrv.H">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="FedSrvApp.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="fedsrvsql.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="fscluster.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="fsmission.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="fsship.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="fsside.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="queries.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="srvdbg.h">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClInclude>
+    <ClInclude Include="srvqueries.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+    <ClInclude Include="SWMRG.H">
+      <Filter>in src/FedSrv\excluded</Filter>
+    </ClInclude>
+    <ClInclude Include="_fedsrv.h">
+      <Filter>in src/FedSrv</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="AllSrvModuleIDL.idl">
+      <Filter>in src/FedSrv</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

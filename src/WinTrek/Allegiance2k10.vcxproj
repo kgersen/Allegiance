@@ -1,0 +1,495 @@
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZDebugDX9|Win32">
+      <Configuration>FZDebugDX9</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetailDX9|Win32">
+      <Configuration>FZRetailDX9</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Retail|Win32">
+      <Configuration>Retail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>Allegiance</ProjectName>
+    <ProjectGUID>{3702DB5A-C966-4133-824F-5958F4BF9BCF}</ProjectGUID>
+    <RootNamespace>Allegiance</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\objs\Debug\WinTrek\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\objs\Debug\WinTrek\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">.\..\..\objs\Retail\WinTrek\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">.\..\..\objs\Retail\WinTrek\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">.\..\..\objs\$(Configuration)\WinTrek\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">.\..\..\objs\$(Configuration)\WinTrek\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.\..\..\objs\$(Configuration)\Wintrek\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.\..\..\objs\$(Configuration)\Wintrek\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">.\..\..\objs\$(Configuration)\WinTrek\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">.\..\..\objs\$(Configuration)\WinTrek\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">$(ProjectName)Debug</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">.exe</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">.\..\..\objs\$(Configuration)\Wintrek\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">.\..\..\objs\$(Configuration)\Wintrek\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">$(ProjectName)R</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">.exe</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;..\..\FreeZoneAuth;$(OutDir)..\AGC;$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USEAUTH;WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\Inc;..\Lang\NonIntl\allegiance;..\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dinput.lib;dplayx.lib;d3dx.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;dxguid.lib;winmm.lib;amstrmid.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;..\..\FreeZoneAuth;$(OutDir)..\AGC;$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USEAUTH;WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\Inc;..\Lang\NonIntl\allegiance;..\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>ddraw.lib;dsound.lib;dinput.lib;dplayx.lib;d3dx.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;dxguid.lib;winmm.lib;amstrmid.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <StripPrivateSymbols>
+      </StripPrivateSymbols>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;$(OutDir)..\AGC;$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\Inc;..\Lang\NonIntl\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>atls.lib;ddraw.lib;dsound.lib;dinput.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\vorbis\vorbis.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;dxguid.lib;winmm.lib;amstrmid.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\Engine\FreeImage\FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;$(OutDir)..\AGC;$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\Inc;..\Lang\NonIntl\allegiance;..\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>atls.lib;ddraw.lib;dsound.lib;dinput.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;$(OutDir)..\vorbis\vorbis.lib;urlmon.lib;dxguid.lib;winmm.lib;amstrmid.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\Engine\FreeImage\FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <StripPrivateSymbols>
+      </StripPrivateSymbols>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\effectDX9_V2;..\engineDX9_V2;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\AGC;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;$(IntDir)..\AGC;$(IntDir)..\FedSrv;$(DXSDK_DIR)Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL;BUILD_DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <BrowseInformation>true</BrowseInformation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\Inc;..\Lang\NonIntl\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>atls.lib;dsound.lib;dinput.lib;$(IntDir)..\zlib\zlib.lib;$(IntDir)..\soundengine\soundengine.lib;$(IntDir)..\_utility\Utility.lib;$(IntDir)..\engineDX9_V2\EngineDX9_V2.lib;$(IntDir)..\effectDX9_V2\EffectDX9_V2.lib;$(IntDir)..\igc\igc.lib;$(IntDir)..\clintlib\clintlib.lib;$(IntDir)..\agc\AGCGuid.lib;$(IntDir)..\Guids\guids.lib;$(IntDir)..\training\training.lib;$(IntDir)..\vorbis\vorbis.lib;urlmon.lib;dxguid.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;d3d9.lib;d3dx9.lib;..\EngineDX9_V2\FreeImage\FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\effectDX9_V2;..\engineDX9_V2;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;$(IntDir)..\AGC;$(IntDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;NDEBUG;_WINDOWS;WIN32;AFXDLL;BUILD_DX9;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>..\Inc;..\Lang\NonIntl\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalOptions>/LTCG %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>atls.lib;dsound.lib;dinput.lib;$(IntDir)..\zlib\zlib.lib;$(IntDir)..\soundengine\soundengine.lib;$(IntDir)..\_utility\Utility.lib;$(IntDir)..\engineDX9_V2\EngineDX9_V2.lib;$(IntDir)..\effectDX9_V2\EffectDX9_V2.lib;$(IntDir)..\igc\igc.lib;$(IntDir)..\clintlib\clintlib.lib;$(IntDir)..\agc\AGCGuid.lib;$(IntDir)..\Guids\guids.lib;$(IntDir)..\training\training.lib;$(IntDir)..\vorbis\vorbis.lib;urlmon.lib;dxguid.lib;winmm.lib;amstrmid.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\EngineDX9_V2\FreeImage\FreeImage.lib;d3d9.lib;d3dx9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Lang\Usa\allegiance\allegiance.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cdkeydialog.cpp" />
+    <ClCompile Include="CharInfoScreen.cpp" />
+    <ClCompile Include="chatpane.cpp" />
+    <ClCompile Include="cmdview.cpp" />
+    <ClCompile Include="console.cpp" />
+    <ClCompile Include="consoledata.cpp" />
+    <ClCompile Include="DeviceModesDX9.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gameoverscreen.cpp" />
+    <ClCompile Include="gamescreen.cpp" />
+    <ClCompile Include="gamesite.cpp" />
+    <ClCompile Include="gamestartingscreen.cpp" />
+    <ClCompile Include="gametypes.cpp" />
+    <ClCompile Include="hangarscreen.cpp" />
+    <ClCompile Include="indicator.cpp" />
+    <ClCompile Include="introscreen.cpp" />
+    <ClCompile Include="inventoryimage.cpp" />
+    <ClCompile Include="leaderboardscreen.cpp" />
+    <ClCompile Include="load.cpp" />
+    <ClCompile Include="loadout.cpp" />
+    <ClCompile Include="logon.cpp" />
+    <ClCompile Include="mappreview.cpp" />
+    <ClCompile Include="mappvmaker.cpp" />
+    <ClCompile Include="netinfo.cpp" />
+    <ClCompile Include="newgamescreen.cpp" />
+    <ClCompile Include="offline.cpp" />
+    <ClCompile Include="passworddialog.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebugDX9|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetailDX9|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="PostTrainingSlideshow.cpp" />
+    <ClCompile Include="radarimage.cpp" />
+    <ClCompile Include="sectormap.cpp" />
+    <ClCompile Include="selpane.cpp" />
+    <ClCompile Include="Slideshow.cpp" />
+    <ClCompile Include="soundinit.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Retail|Win32'">Disabled</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Disabled</Optimization>
+    </ClCompile>
+    <ClCompile Include="splashscreen.cpp" />
+    <ClCompile Include="SquadsScreen.cpp" />
+    <ClCompile Include="teampane.cpp" />
+    <ClCompile Include="teamscreen.cpp" />
+    <ClCompile Include="teleportpane.cpp" />
+    <ClCompile Include="trainingscreen.cpp" />
+    <ClCompile Include="TrainingSlideshow.cpp" />
+    <ClCompile Include="trekapp.cpp" />
+    <ClCompile Include="trekctrls.cpp" />
+    <ClCompile Include="trekigc.cpp" />
+    <ClCompile Include="trekinput.cpp" />
+    <ClCompile Include="trekmdl.cpp" />
+    <ClCompile Include="treksound.cpp" />
+    <ClCompile Include="videoscreen.cpp" />
+    <ClCompile Include="VideoSettingsDX9.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="WinTrek.CPP" />
+    <ClCompile Include="ZoneClubScreen.cpp" />
+    <ClCompile Include="zoneeventsscreen.cpp" />
+    <ClCompile Include="ZoneSquad.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="DeviceModesDX9.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="VideoSettingsDX9.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Lang\Usa\allegiance\allegiance.rc2" />
+    <None Include="..\Lang\Usa\allegiance\trek.ico" />
+    <None Include="makefile" />
+    <None Include="offline.map" />
+    <None Include="offline.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Lang\Usa\allegiance\resource.h" />
+    <ClInclude Include="artwork.h" />
+    <ClInclude Include="cmdview.h" />
+    <ClInclude Include="console.h" />
+    <ClInclude Include="consoledata.h" />
+    <ClInclude Include="gamesite.h" />
+    <ClInclude Include="gametypes.h" />
+    <ClInclude Include="hudimage.h" />
+    <ClInclude Include="indicator.h" />
+    <ClInclude Include="load.h" />
+    <ClInclude Include="loadout.h" />
+    <ClInclude Include="logon.h" />
+    <ClInclude Include="mappreview.h" />
+    <ClInclude Include="mappvmaker.h" />
+    <ClInclude Include="offline.h" />
+    <ClInclude Include="passworddialog.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="radarimage.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="screen.h" />
+    <ClInclude Include="sectorvw.h" />
+    <ClInclude Include="Slideshow.h" />
+    <ClInclude Include="speech.h" />
+    <ClInclude Include="trekctrls.h" />
+    <ClInclude Include="TrekDlgs.h" />
+    <ClInclude Include="Treki.h" />
+    <ClInclude Include="trekinput.h" />
+    <ClInclude Include="trekmdl.h" />
+    <ClInclude Include="treksound.h" />
+    <ClInclude Include="trekspeech.h" />
+    <ClInclude Include="WinTrek.H" />
+    <ClInclude Include="wintrekp.h" />
+    <ClInclude Include="ZoneSquad.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\clintlib\ClintLib2k8.vcxproj">
+      <Project>{557ca42c-aa39-4c44-a998-0452f8c55851}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\effectDX9_V2\effectDX9_V22k8.vcxproj">
+      <Project>{4f83287a-ff3c-4333-ad5f-c00b86cf0895}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\effect\effect2k8.vcxproj">
+      <Project>{d22b6577-79a0-4834-9847-8aec1d4f9bb4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\engineDX9_V2\EngineDX9_V22k8.vcxproj">
+      <Project>{d619b179-7fc4-4db6-9794-1d3c75717d15}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\engine\Engine2k8.vcxproj">
+      <Project>{82807d04-1a0c-4b6b-aa06-525750ef4610}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\FedSrv\Server2k8.vcxproj">
+      <Project>{05ead557-56b0-4070-83f0-8a2b6fb9c54d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\guids\Guids2k8.vcxproj">
+      <Project>{fa223b93-bcfb-48fa-b9dd-db9dbbc8f314}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Igc\Igc2k8.vcxproj">
+      <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\sharemem\sharemem2k8.vcxproj">
+      <Project>{a8e7888a-84ac-485e-9fb2-35382c003e0b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\soundengine\SoundEngine2k8.vcxproj">
+      <Project>{f81bb9ee-dd86-415e-87e3-b60732efd72f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\training\training2k8.vcxproj">
+      <Project>{281f3ac6-fad1-40f4-b798-f634a6162d39}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\zlib\ZLibrary2k8.vcxproj">
+      <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\_Utility\Utility2k8.vcxproj">
+      <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

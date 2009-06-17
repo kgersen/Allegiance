@@ -4,7 +4,7 @@
 
 #include "pch.h"
 #include "SrcInc.h"
-#include <TCObj.h>
+#include "TCObj.h"
 #include <..\TCLib\WinApp.h>
 #include "TCIDL_i.c"
 #include "TCObj_i.c"

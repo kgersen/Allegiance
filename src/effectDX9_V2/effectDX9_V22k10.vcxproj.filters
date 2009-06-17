@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="excluded">
+      <UniqueIdentifier>{c804b3f2-028b-4038-9bb2-8d8485258b66}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="efsound.cpp">
+      <Filter>excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="panes.cpp">
+      <Filter>excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="efsound.h">
+      <Filter>excluded</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

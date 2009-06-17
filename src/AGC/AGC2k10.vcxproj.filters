@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="AGCEvents">
+      <UniqueIdentifier>{0f85aa8e-eab4-440c-88cf-5756f4c59ad0}</UniqueIdentifier>
+      <Extensions>xml;xsl;js;htm</Extensions>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{601007bc-b000-4d76-ac2a-0133347f6457}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Registration scripts">
+      <UniqueIdentifier>{662d483a-b14f-458a-bff9-41ee0d2b7450}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\test\Scripts\EventViewer.htm">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="AdminSessionHelper.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGC.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="AGCAleph.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCAlephs.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCAsteroid.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCAsteroids.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCCommand.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCDBParams.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="agcevent.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCEventIDRange.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCEventIDRanges.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCEventLogger.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCEvents.xml">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="AGCEventsCPP.xsl">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="AGCEventsIDL.xsl">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="AGCEventsMC.xsl">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="AGCEventsRC2.xsl">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="AGCEventsRCH.xsl">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="AGCGame.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCGameParameters.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCGlobal.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCHullType.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCHullTypes.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCModel.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCModels.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCOrientation.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCProbe.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCProbes.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCSector.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCSectors.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCShip.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCShips.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCStation.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCStations.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCTeam.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCTeams.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCVector.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="AGCVersionInfo.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="EventBrowser.xsl">
+      <Filter>AGCEvents</Filter>
+    </None>
+    <None Include="TCMarshalByValue.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="TCNullStream.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="TCStrings.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="TCUtility.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="XMLXForm.js">
+      <Filter>AGCEvents</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AGCGuid.c" />
+    <ClCompile Include="dlldatax.c" />
+    <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AGC.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

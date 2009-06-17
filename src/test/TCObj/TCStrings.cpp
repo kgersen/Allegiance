@@ -93,7 +93,7 @@ STDMETHODIMP CTCStrings::get_Item(VARIANT* pvIndex, BSTR* pbstr)
     return E_INVALIDARG;
 
   // Copy the item at the specified index into the vector
-  *pbstr = m_vecStrings[V_I4(&var)].Copy();
+  *pbstr = m_vecStrings[V_I4(&var)].m_T.Copy();
 
   // Indicate success
   return S_OK;
@@ -105,7 +105,7 @@ STDMETHODIMP CTCStrings::Add(BSTR bstr)
   CLock lock(this);
 
   // Add the string to the vector
-  m_vecStrings.push_back(bstr);
+  m_vecStrings.push_back(CComBSTR(bstr));
 
   // Indicate success
   return S_OK;
@@ -194,7 +194,7 @@ STDMETHODIMP CTCStrings::get_DelimitedItems(BSTR bstrDelimiter,
   {
     if (i)
       cchTotal += cchDelim;
-    cchTotal += m_vecStrings[i].Length();
+    cchTotal += m_vecStrings[i].m_T.Length();
   }
 
   // Allocate a buffer for the entire array
@@ -207,8 +207,8 @@ STDMETHODIMP CTCStrings::get_DelimitedItems(BSTR bstrDelimiter,
   {
     if (i)
       wcscat(psz, bstrDelimiter);
-    if (m_vecStrings[i].Length())
-      wcscat(psz, m_vecStrings[i]);     
+    if (m_vecStrings[i].m_T.Length())
+       m_vecStrings[i].m_T.Append(CComBSTR(psz));     
   }
 
   // Allocate a BSTR and assign it to the [out] parameter
@@ -355,7 +355,7 @@ STDMETHODIMP CTCStrings::get_Collection1(VARIANT* pvarSafeArray)
 
       // Copy each BSTR to the safe array
       for (long i = 0; i < nCount; ++i)
-        SafeArrayPutElement(psa, &i, m_vecStrings[i].Copy());
+        SafeArrayPutElement(psa, &i, m_vecStrings[i].m_T.Copy());
     }
   }
   __except(1)

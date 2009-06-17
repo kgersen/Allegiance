@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ZAuth">
+      <UniqueIdentifier>{625cccbb-b9a0-4572-a8ed-8278ed16bbe7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="zauth.cpp">
+      <Filter>ZAuth</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Zone\zauth.h">
+      <Filter>ZAuth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Zone\Zone.h">
+      <Filter>ZAuth</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Zone\ZoneAuth.h">
+      <Filter>ZAuth</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

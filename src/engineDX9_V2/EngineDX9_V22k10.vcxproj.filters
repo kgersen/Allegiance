@@ -1,0 +1,259 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{c3e177cf-f219-4416-bc70-56f02cea9eb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Font">
+      <UniqueIdentifier>{dc947492-3c30-4b49-b593-664ad33b82a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{5a174041-82dc-4425-be74-758fe9c2bbae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{b25fb54a-104b-43a9-977f-1a47ed3f6728}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LowLevel">
+      <UniqueIdentifier>{dcd31cf1-e404-4e2d-b566-5c8791770379}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MDL">
+      <UniqueIdentifier>{e773547d-40ad-4c29-9521-3af35a6eb566}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="New Code">
+      <UniqueIdentifier>{280cd3e7-ec2e-4815-b520-4ebc11b6e43a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{4d53b99c-c56b-4b1c-ae1a-9f9d055b6c30}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bounds.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="bspgeo.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="button.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>LowLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="caption.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="context.cpp">
+      <Filter>LowLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="controls.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DDevice9.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="dderror.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="device3d.cpp">
+      <Filter>LowLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="dinput.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="font.cpp">
+      <Filter>Font</Filter>
+    </ClCompile>
+    <ClCompile Include="frameimage.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="image.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageTransfer.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="keyframe.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="LogFile.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="material.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="mdl.cpp">
+      <Filter>MDL</Filter>
+    </ClCompile>
+    <ClCompile Include="mdlbin.cpp">
+      <Filter>MDL</Filter>
+    </ClCompile>
+    <ClCompile Include="menu.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="namespace.cpp">
+      <Filter>MDL</Filter>
+    </ClCompile>
+    <ClCompile Include="pane.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="paneimage.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="pixelformat.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="popup.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="RasterD3D9.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="surface.cpp">
+      <Filter>LowLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="toppane.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="transform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="transform2.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="value.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="VBIBManager.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="VertexGenerator.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="viewport.cpp">
+      <Filter>LowLevel</Filter>
+    </ClCompile>
+    <ClCompile Include="VRAMManager.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="xfile.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bounds.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="bspgeo.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="button.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>LowLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="caption.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="context.h">
+      <Filter>LowLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="controls.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DDevice9.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="ddstruct.h">
+      <Filter>LowLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="EngineSettings.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="font.h">
+      <Filter>Font</Filter>
+    </ClInclude>
+    <ClInclude Include="frameimage.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageTransfer.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="inputengine.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="keyframe.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="LogFile.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="material.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="mdl.h">
+      <Filter>MDL</Filter>
+    </ClInclude>
+    <ClInclude Include="menu.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="namespace.h">
+      <Filter>MDL</Filter>
+    </ClInclude>
+    <ClInclude Include="pane.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="paneimage.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="pixelformat.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="popup.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="surface.h">
+      <Filter>LowLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="toppane.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="transform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="UIVertexDefn.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="value.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="VBIBManager.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexGenerator.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="viewport.h">
+      <Filter>LowLevel</Filter>
+    </ClInclude>
+    <ClInclude Include="VRAMManager.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="xfile.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

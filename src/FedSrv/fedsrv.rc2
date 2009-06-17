@@ -29,7 +29,3 @@
 
 
 #include "..\Inc\VerRes.rc"
-
-#include FEDMSG
-
-

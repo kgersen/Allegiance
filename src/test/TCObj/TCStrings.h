@@ -7,7 +7,7 @@
 
 #include "resource.h"       // main symbols
 #include "SrcInc.h"
-#include <TCObj.h>
+#include "TCObj.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ public:
 
 // Types
 protected:
-  typedef std::vector<CComBSTR> CStringVector;
+  typedef std::vector<ZAdapt<CComBSTR>> CStringVector;
   typedef CStringVector::iterator CStringIterator;
 
 // Data Members

@@ -47,8 +47,7 @@ public:
     COM_INTERFACE_ENTRY(IPersistPropertyBag)
     COM_INTERFACE_ENTRY(IPersistStorage)
     COM_INTERFACE_ENTRY(IPersistStreamInit)
-// KGJV - to check: original was 'IPersistStream', changed to 'IPersistStreamInit'
-    COM_INTERFACE_ENTRY2(IPersistStreamInit, TCPersistStreamInitImplBase)
+    COM_INTERFACE_ENTRY2(IPersistStream, TCPersistStreamInitImplBase)
     COM_INTERFACE_ENTRY(IObjectSafety)
     COM_INTERFACE_ENTRY_AUTOAGGREGATE(IID_IMarshal, m_punkMBV.p,
       CLSID_TCMarshalByValue)
@@ -87,8 +86,8 @@ public:
 
 // Types
 protected:
-  typedef std::vector<CComBSTR> CStringVector;
-  typedef CStringVector::iterator CStringIterator;
+	typedef std::vector<ZAdapt<CComBSTR>> CStringVector;
+  	typedef CStringVector::iterator CStringIterator;
 
 // Data Members
 public:

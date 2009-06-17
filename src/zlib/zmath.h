@@ -34,7 +34,7 @@ inline const float DegreesFromRadians(float value) { return value * 180.0f / pi;
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Return the next larger multiple of size.  
+// Return the next larger multiple of size.
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -69,8 +69,8 @@ inline DWORD MakeMask(int bits, int shift)
 //
 //////////////////////////////////////////////////////////////////////////////
 
-inline bool odd(int value) 
-{ 
+inline bool odd(int value)
+{
     return value >= 0 ? value & 1 : !(value & 1);
 }
 
@@ -81,7 +81,7 @@ inline ValueType bound(ValueType value, ValueType min, ValueType max)
 }
 
 template<class Type>
-inline void swap(Type& x, Type& y)
+inline void Swap(Type& x, Type& y)
 {
     Type temp(x);
     x = y;
@@ -101,12 +101,12 @@ inline ValueType sign(ValueType x) { return x >= (ValueType)0 ? (ValueType)1 : (
 #if _MSC_VER < 1310
 inline float abs(float x)              { return x < 0 ? -x : x;        }
 #endif
-inline float mod(float x, float limit) 
-{ 
+inline float mod(float x, float limit)
+{
     if (limit == 0) {
         return 0;
     } else {
-        return (float)fmod(x, limit); 
+        return (float)fmod(x, limit);
     }
 }
 
