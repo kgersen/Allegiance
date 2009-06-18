@@ -198,7 +198,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\$(OutDir)..\AGC;.\$(TargetDir);.\AGC;..\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>

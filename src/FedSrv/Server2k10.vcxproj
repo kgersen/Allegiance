@@ -156,14 +156,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\$(OutDir)..\AGC;..\AGC;.\$(TargetDir);..\Inc;.\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;$(IntDir)..\Igc;$(IntDir)..\FedSrv;$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\$(outdir)..\AGC;..\AGC;.\$(OutDir)AGC;.\FedSrv;.\AGC;.\Inc;..\guids;..\zlib;..\_Utility;..\Igc;..\Inc;..\test\Inc;..\lobby;..\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(OutDir);.\$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG;_DEBUG;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;WIN;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -392,22 +392,22 @@
     <Midl Include="AllSrvModuleIDL.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AGC\AGC2k8.vcxproj">
+    <ProjectReference Include="..\AGC\AGC2k10.vcxproj">
       <Project>{1cbf6569-f71c-422a-81dd-8d30a736db21}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\engine\Engine2k8.vcxproj">
+    <ProjectReference Include="..\engine\Engine2k10.vcxproj">
       <Project>{82807d04-1a0c-4b6b-aa06-525750ef4610}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Igc\Igc2k8.vcxproj">
+    <ProjectReference Include="..\Igc\Igc2k10.vcxproj">
       <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\sharemem\sharemem2k8.vcxproj">
+    <ProjectReference Include="..\sharemem\sharemem2k10.vcxproj">
       <Project>{a8e7888a-84ac-485e-9fb2-35382c003e0b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\zlib\ZLibrary2k8.vcxproj">
+    <ProjectReference Include="..\zlib\ZLibrary2k10.vcxproj">
       <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\_Utility\Utility2k8.vcxproj">
+    <ProjectReference Include="..\_Utility\Utility2k10.vcxproj">
       <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
     </ProjectReference>
   </ItemGroup>

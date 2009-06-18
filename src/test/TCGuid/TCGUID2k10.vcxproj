@@ -1,4 +1,4 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -120,7 +120,7 @@
     <ClCompile Include="TCGUID.c" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TCObj\TCObj2k8.vcxproj">
+    <ProjectReference Include="..\TCObj\TCObj2k10.vcxproj">
       <Project>{caffb3db-eadd-46a1-abae-3a341011b0a6}</Project>
     </ProjectReference>
   </ItemGroup>

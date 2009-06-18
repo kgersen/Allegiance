@@ -12,9 +12,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\srvconfig\srvconfig.ico">
-      <Filter>in src/FedSrv\excluded</Filter>
-    </None>
     <None Include="AdminGame.rgs">
       <Filter>in src/FedSrv\Resources</Filter>
     </None>
@@ -45,20 +42,11 @@
     <None Include="DPMono.rgs">
       <Filter>in src/FedSrv\Resources</Filter>
     </None>
-    <None Include="fedmsg.msg">
-      <Filter>in src/FedSrv</Filter>
-    </None>
     <None Include="fedsrv.ico">
       <Filter>in src/FedSrv\Resources</Filter>
     </None>
     <None Include="fedsrv.rc2">
       <Filter>in src/FedSrv\Resources</Filter>
-    </None>
-    <None Include="makefile">
-      <Filter>in src/FedSrv\excluded</Filter>
-    </None>
-    <None Include="regini.txt">
-      <Filter>in src/FedSrv\excluded</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -192,17 +180,11 @@
     <ClInclude Include="BitArray.h">
       <Filter>in src/FedSrv</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>in src/FedSrv\excluded</Filter>
-    </ClInclude>
     <ClInclude Include="counters.h">
       <Filter>in src/FedSrv</Filter>
     </ClInclude>
     <ClInclude Include="dbgutil.h">
       <Filter>in src/FedSrv</Filter>
-    </ClInclude>
-    <ClInclude Include="dirmon.h">
-      <Filter>in src/FedSrv\excluded</Filter>
     </ClInclude>
     <ClInclude Include="FedSrv.H">
       <Filter>in src/FedSrv</Filter>
@@ -234,14 +216,8 @@
     <ClInclude Include="resource.h">
       <Filter>in src/FedSrv</Filter>
     </ClInclude>
-    <ClInclude Include="srvdbg.h">
-      <Filter>in src/FedSrv\excluded</Filter>
-    </ClInclude>
     <ClInclude Include="srvqueries.h">
       <Filter>in src/FedSrv</Filter>
-    </ClInclude>
-    <ClInclude Include="SWMRG.H">
-      <Filter>in src/FedSrv\excluded</Filter>
     </ClInclude>
     <ClInclude Include="_fedsrv.h">
       <Filter>in src/FedSrv</Filter>
@@ -251,5 +227,15 @@
     <Midl Include="AllSrvModuleIDL.idl">
       <Filter>in src/FedSrv</Filter>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\srvconfig\srvconfig.ico" />
+    <CustomBuild Include="config.h" />
+    <CustomBuild Include="dirmon.h" />
+    <CustomBuild Include="fedmsg.msg" />
+    <CustomBuild Include="makefile" />
+    <CustomBuild Include="regini.txt" />
+    <CustomBuild Include="srvdbg.h" />
+    <CustomBuild Include="SWMRG.H" />
   </ItemGroup>
 </Project>

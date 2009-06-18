@@ -129,7 +129,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\test\Inc;..\Inc;..\AGC;.\$(OutDir)..\Test\TCObj;.\$(OutDir)..\FedSrv;.\$(OutDir)..\AGC;..\zlib;..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\test\TCLib;.\AGC;.\FedSrv;..\test\Inc;..\Inc;..\AGC;.\$(OutDir)..\Test\TCObj;.\$(OutDir)..\FedSrv;.\$(OutDir)..\AGC;..\zlib;.\$(OutDir)FedSrv;..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;WINVER=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -245,7 +245,7 @@
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FedSrv\Server2k8.vcxproj">
+    <ProjectReference Include="..\FedSrv\Server2k10.vcxproj">
       <Project>{05ead557-56b0-4070-83f0-8a2b6fb9c54d}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -94,7 +94,7 @@ const FloatConstantID    c_fcidPlayerCost           = 36;
 const FloatConstantID    c_fcidBaseClusterCost      = 37;
 const FloatConstantID    c_fcidClusterDivisor       = 38;
 
-const FloatConstantID    c_fcidMax                  = 39; //imago changed, was 40 - 7/30/08
+const FloatConstantID    c_fcidMax                  = 40;
 
 //
 // Note: if you add or change any new ObjectTypes, then please notify

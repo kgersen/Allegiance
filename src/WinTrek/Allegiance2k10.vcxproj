@@ -166,7 +166,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\Effect;..\Engine;..\ZLib;..\_Utility;..\Igc;..\clintlib;..\SoundEngine;..\agc;..\FedSrv;..\Training;..\lobby;..\Inc;..\guids;..\Zone;$(OutDir)..\AGC;$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FedSrv;.\AGC;.\FedSrv;..\effect;..\engine;..\zlib;..\_Utility;..\Igc;..\clintlib;..\soundengine;..\AGC;..\training;..\lobby;..\Inc;..\guids;..\Zone;.\$(OutDir)..\AGC;.\$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0700;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
@@ -449,43 +449,43 @@
     <ClInclude Include="ZoneSquad.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\clintlib\ClintLib2k8.vcxproj">
+    <ProjectReference Include="..\clintlib\ClintLib2k10.vcxproj">
       <Project>{557ca42c-aa39-4c44-a998-0452f8c55851}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\effectDX9_V2\effectDX9_V22k8.vcxproj">
+    <ProjectReference Include="..\effectDX9_V2\effectDX9_V22k10.vcxproj">
       <Project>{4f83287a-ff3c-4333-ad5f-c00b86cf0895}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\effect\effect2k8.vcxproj">
+    <ProjectReference Include="..\effect\effect2k10.vcxproj">
       <Project>{d22b6577-79a0-4834-9847-8aec1d4f9bb4}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\engineDX9_V2\EngineDX9_V22k8.vcxproj">
+    <ProjectReference Include="..\engineDX9_V2\EngineDX9_V22k10.vcxproj">
       <Project>{d619b179-7fc4-4db6-9794-1d3c75717d15}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\engine\Engine2k8.vcxproj">
+    <ProjectReference Include="..\engine\Engine2k10.vcxproj">
       <Project>{82807d04-1a0c-4b6b-aa06-525750ef4610}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\FedSrv\Server2k8.vcxproj">
+    <ProjectReference Include="..\FedSrv\Server2k10.vcxproj">
       <Project>{05ead557-56b0-4070-83f0-8a2b6fb9c54d}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\guids\Guids2k8.vcxproj">
+    <ProjectReference Include="..\guids\Guids2k10.vcxproj">
       <Project>{fa223b93-bcfb-48fa-b9dd-db9dbbc8f314}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Igc\Igc2k8.vcxproj">
+    <ProjectReference Include="..\Igc\Igc2k10.vcxproj">
       <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\sharemem\sharemem2k8.vcxproj">
+    <ProjectReference Include="..\sharemem\sharemem2k10.vcxproj">
       <Project>{a8e7888a-84ac-485e-9fb2-35382c003e0b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\soundengine\SoundEngine2k8.vcxproj">
+    <ProjectReference Include="..\soundengine\SoundEngine2k10.vcxproj">
       <Project>{f81bb9ee-dd86-415e-87e3-b60732efd72f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\training\training2k8.vcxproj">
+    <ProjectReference Include="..\training\training2k10.vcxproj">
       <Project>{281f3ac6-fad1-40f4-b798-f634a6162d39}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\zlib\ZLibrary2k8.vcxproj">
+    <ProjectReference Include="..\zlib\ZLibrary2k10.vcxproj">
       <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\_Utility\Utility2k8.vcxproj">
+    <ProjectReference Include="..\_Utility\Utility2k10.vcxproj">
       <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
     </ProjectReference>
   </ItemGroup>

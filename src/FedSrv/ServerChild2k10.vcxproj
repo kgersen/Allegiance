@@ -202,7 +202,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\$(OutDir)..\AGC;.\$(TargetDir);.\AGC;..\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
@@ -404,7 +404,7 @@
     <Midl Include="AllSrvModuleIDL.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="ServerParent2k8.vcxproj">
+    <ProjectReference Include="ServerParent2k10.vcxproj">
       <Project>{3513c746-7341-4b11-96d1-9e86b8d43b25}</Project>
     </ProjectReference>
   </ItemGroup>

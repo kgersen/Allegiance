@@ -89,7 +89,7 @@ STDMETHODIMP CTCStrings::get_Item(VARIANT* pvIndex, BSTR* pbstr)
   CLock lock(this);
 
   // Ensure that the specified index is in range
-  if (V_I4(&var) < 0 || V_I4(&var) >= (long)m_vecStrings.size())
+  if (V_I4(&var) < 0 || V_I4(&var) >= (int)m_vecStrings.size())
     return E_INVALIDARG;
 
   // Copy the item at the specified index into the vector
@@ -121,7 +121,7 @@ STDMETHODIMP CTCStrings::Remove(VARIANT* pvIndex)
   CLock lock(this);
 
   // Ensure that the specified index is in range
-  if (V_I4(&var) < 0 || V_I4(&var) >= (long)m_vecStrings.size())
+  if (V_I4(&var) < 0 || V_I4(&var) >= (int)m_vecStrings.size())
     return E_INVALIDARG;
 
   // Use the long as an index into the vector
@@ -207,7 +207,7 @@ STDMETHODIMP CTCStrings::get_DelimitedItems(BSTR bstrDelimiter,
     if (i)
       wcscat(psz, bstrDelimiter);
     if (m_vecStrings[i].m_T.Length())
-     m_vecStrings[i].m_T.Append(CComBSTR(psz));     
+      wcscat(psz, CComBSTR(m_vecStrings[i]));     
   }
 
   // Allocate a BSTR and assign it to the [out] parameter

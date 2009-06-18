@@ -1,4 +1,4 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -225,7 +225,7 @@
     <ClInclude Include="soundutil.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Vorbis\Vorbis2k8.vcxproj">
+    <ProjectReference Include="..\Vorbis\Vorbis2k10.vcxproj">
       <Project>{d4369894-f7ef-4937-91c5-5d4c67a29ef9}</Project>
     </ProjectReference>
   </ItemGroup>
