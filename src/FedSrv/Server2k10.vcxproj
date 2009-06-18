@@ -198,20 +198,19 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\inc;.\$(TargetDir);.\AGC;..\src\Inc;..\src\AGC;.\$(OutDir)..\AGC;..\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
     </Midl>
     <ClCompile>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\guids;..\ZLib;..\_Utility;..\Igc;..\inc;..\AGC;..\Test\Inc;..\lobby;..\Zone;$(IntDir)..\Igc;$(IntDir)..\FedSrv;$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\$(Outdir)..\agc;..\Inc;.\Inc;..\guids;..\zlib;..\_Utility;..\Igc;..\AGC;..\test\Inc;..\lobby;..\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;WIN;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <OmitDefaultLibName>false</OmitDefaultLibName>
@@ -268,7 +267,9 @@
     <ClCompile Include="fsmission.cpp" />
     <ClCompile Include="fsship.cpp" />
     <ClCompile Include="fsside.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="sqlhelp.cpp" />
     <ClCompile Include="srvdbg.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

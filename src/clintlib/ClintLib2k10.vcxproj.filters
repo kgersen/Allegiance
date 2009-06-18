@@ -6,9 +6,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="appmsg.cpp" />
+    <ClCompile Include="AutoDownload.cpp" />
+    <ClCompile Include="badwords.cpp" />
+    <ClCompile Include="clintlib.cpp" />
     <ClCompile Include="networkgame.cpp">
       <Filter>Excluded</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AutoDownload.h" />
+    <ClInclude Include="badwords.h" />
+    <ClInclude Include="clintlib.h" />
+    <ClInclude Include="pch.h" />
   </ItemGroup>
 </Project>

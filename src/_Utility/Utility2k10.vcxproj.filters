@@ -6,12 +6,24 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="allegdb.cpp" />
+    <ClCompile Include="CollisionEntry.cpp" />
+    <ClCompile Include="CollisionQueue.cpp" />
+    <ClCompile Include="CRC.cpp" />
+    <ClCompile Include="Endpoint.cpp" />
+    <ClCompile Include="HitTest.cpp" />
+    <ClCompile Include="KDnode.cpp" />
+    <ClCompile Include="KDroot.cpp" />
+    <ClCompile Include="Messages.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Utility.cpp" />
     <ClCompile Include="zauth.cpp">
       <Filter>ZAuth</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Inc\messagecore.h" />
+    <ClInclude Include="..\Inc\Messages.h" />
     <ClInclude Include="..\Zone\zauth.h">
       <Filter>ZAuth</Filter>
     </ClInclude>
@@ -21,5 +33,9 @@
     <ClInclude Include="..\Zone\ZoneAuth.h">
       <Filter>ZAuth</Filter>
     </ClInclude>
+    <ClInclude Include="CRC.h" />
+    <ClInclude Include="listwrappers.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Utility.h" />
   </ItemGroup>
 </Project>
