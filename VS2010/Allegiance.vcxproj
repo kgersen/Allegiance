@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="FZDebug|Win32">
       <Configuration>FZDebug</Configuration>
@@ -68,7 +68,7 @@
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
-      <PreprocessorDefinitions>FLAVOR=\&quot;$(ConfigurationName)\&quot;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ProjectReference>
@@ -104,7 +104,7 @@
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
-      <PreprocessorDefinitions>FLAVOR=\&quot;$(ConfigurationName)\&quot;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ProjectReference>
@@ -113,8 +113,7 @@
     <Link>
       <AdditionalDependencies>atls.lib;d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;$(OutDir)..\vorbis\vorbis.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <UACExecutionLevel>
-      </UACExecutionLevel>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>false</GenerateDebugInformation>
