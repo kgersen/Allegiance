@@ -3152,9 +3152,9 @@ public:
 
         m_pgroupDisplays = new GroupImage();
 
-#ifdef BUILD_DX9
+		// BUILD_DX9
 		GetModeler()->SetColorKeyHint( true );
-#endif // BUILD_DX9
+
 		
 		m_pconsoleData   = new ConsoleDataImpl(this->GetViewport(), pszFileName);
 

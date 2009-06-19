@@ -90,7 +90,7 @@ class CprojectileTypeIGC : public IprojectileTypeIGC
         {
             return m_data.rotation;
         }
-        virtual D3DCOLORVALUE   GetColor(void) const
+        virtual COLORVALUE   GetColor(void) const // was D3DCOLORVALUE
         {
             return m_data.color;
         }

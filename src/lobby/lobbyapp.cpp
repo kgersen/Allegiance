@@ -253,8 +253,12 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
 CLobbyApp::~CLobbyApp()
 {
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_ShuttingDown);
+// KG guard with USEAUTH for consistency 
+#ifdef USEAUTH
   m_pzas = NULL;
+#endif
   m_perfshare.FreeCounters(m_pCounters);
+  ZGameInfoClose();
   FreeStaticCoreInfo(); // KGJV #114
   
   //imago, only if we have gameinfoservers to report to
@@ -284,7 +288,6 @@ HRESULT CLobbyApp::Init()
     return hr;
   }
 #endif
-
 
   // TODO: Make keep-alives an option
   if (FAILED(hr = m_fmServers.HostSession(m_fFreeLobby ? FEDFREELOBBYSERVERS_GUID : FEDLOBBYSERVERS_GUID, false, 0, m_fProtocol, m_sPort + 1)) ||	// Mdvalley: I don't know what happens if you try to host 2 servers on one port. Let's not find out.

@@ -3,8 +3,8 @@
  *	@brief 	MPR Universal Variable Type
  *	@copy	default.m
  *	
- *	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
- *	Copyright (c) Michael O'Brien, 1994-2007. All Rights Reserved.
+ *	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+ *	Copyright (c) Michael O'Brien, 1994-1995. All Rights Reserved.
  *	
  *	This software is distributed under commercial and open source licenses.
  *	You may use the GPL open source license described below or you may acquire 
@@ -56,7 +56,7 @@
 
 /********************************* Includes ***********************************/
 
-#include	"buildConfig.h"
+#include	"config.h"
 #include	"miniMpr.h"
 
 /********************************** Defines ***********************************/
@@ -157,7 +157,7 @@ typedef BLD_FEATURE_NUM_TYPE MprNum;
 /*
  *	Function signatures
  */
-typedef void* MprVarHandle;
+typedef int	MprVarHandle;
 typedef int (*MprCFunction)(MprVarHandle userHandle, int argc, 
 	struct MprVar **argv);
 typedef int (*MprStringCFunction)(MprVarHandle userHandle, int argc, 
@@ -294,7 +294,7 @@ typedef struct MprVar {
 	 *	Union of primitive types. When debugging on Linux, don't use unions 
 	 *	as the gdb debugger can't display them.
 	 */
-#if (!BLD_DEBUG && !VXWORKS) || WIN
+#if !BLD_DEBUG && !LINUX && !VXWORKS
 	union {
 #endif
 		int				boolean;				/* Use int for speed */
@@ -302,7 +302,9 @@ typedef struct MprVar {
 		double			floating;
 #endif
 		int				integer;
+#if BLD_FEATURE_INT64
 		int64			integer64;
+#endif
 		struct {								/* Javascript functions */
 			MprArray	*args;					/* Null terminated */
 			char		*body;
@@ -316,7 +318,7 @@ typedef struct MprVar {
 			void		*thisPtr;
 		} cFunctionWithStrings;
 		MprStr			string;					/* Allocated string */
-#if (!BLD_DEBUG && !VXWORKS) || WIN
+#if !BLD_DEBUG && !LINUX && !VXWORKS
 	};
 #endif
 } MprVar;
@@ -351,7 +353,9 @@ extern MprVar 	mprCreateCFunctionVar(MprCFunction fn, void *thisPtr,
 extern MprVar 	mprCreateFloatVar(double value);
 #endif
 extern MprVar 	mprCreateIntegerVar(int value);
+#if BLD_FEATURE_INT64
 extern MprVar 	mprCreateInteger64Var(int64 value);
+#endif
 extern MprVar 	mprCreateFunctionVar(char *args, char *body, int flags);
 extern MprVar	mprCreateNullVar();
 extern MprVar 	mprCreateNumberVar(MprNumber value);
@@ -428,7 +432,9 @@ extern int		mprGetPropertyCount(MprVar *obj, int includeFlags);
 extern MprVar 	mprParseVar(char *str, MprType prefType);
 extern MprNum 	mprVarToNumber(MprVar *vp);
 extern int	 	mprVarToInteger(MprVar *vp);
+#if BLD_FEATURE_INT64
 extern int64 	mprVarToInteger64(MprVar *vp);
+#endif
 extern bool 	mprVarToBool(MprVar *vp);
 #if BLD_FEATURE_FLOATING_POINT
 extern double 	mprVarToFloat(MprVar *vp);
@@ -441,7 +447,9 @@ extern void 	mprVarToString(char** buf, int size, char *fmt, MprVar *vp);
 extern MprNum 	mprParseNumber(char *str);
 extern int	 	mprParseInteger(char *str);
 
+#if BLD_FEATURE_INT64
 extern int64 	mprParseInteger64(char *str);
+#endif
 
 #if BLD_FEATURE_FLOATING_POINT
 extern double 	mprParseFloat(char *str);
@@ -466,5 +474,7 @@ extern void 	mprPrintObjRefCount(MprVar *vp);
  * tab-width: 4
  * c-basic-offset: 4
  * End:
- * vim: sw=4 ts=4 
+ * vim:tw=78
+ * vim600: sw=4 ts=4 fdm=marker
+ * vim<600: sw=4 ts=4
  */

@@ -192,7 +192,6 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     case FM_S_HEARTBEAT:
       // don't boot for missing roll call until we get one from them
       pServer->SetHere();
-	  //printf("heartbeat- remote port: %d server/mission id:%x running missions:%i\n",pServer->GetServerPort(),pServer->GetCurrentGamesCount());
     break;
     
     case FM_S_PLAYER_JOINED:
@@ -340,7 +339,6 @@ CFLServer::CFLServer(CFMConnection * pcnxn) :
   m_iMaxGames(20),		   // KGJV #114
   m_iCurGames(0)	// Imago
 {
-
   assert(m_pcnxn);
   m_pcnxn->SetPrivateData((DWORD) this); // set up two-way link between connection and this
 

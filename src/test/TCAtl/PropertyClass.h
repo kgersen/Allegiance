@@ -454,7 +454,7 @@ STDMETHODIMP TCPersistStreamInitImpl<T>::Load(IStream* pStm)
 {
   _TRACE0("TCPersistStreamInitImpl<T>::Load\n");
   T* pT = static_cast<T*>(this);
-  return pT->TCPersistStreamInit_Load(pStm, (ATL_PROPMAP_ENTRY*)T::GetPropertyMap(), pT,
+  return pT->TCPersistStreamInit_Load(pStm, (ATL_PROPMAP_ENTRY*) T::GetPropertyMap(), pT, // kg - cast to keep VC9 happy
     pT->GetUnknown());
 }
 
@@ -463,7 +463,7 @@ STDMETHODIMP TCPersistStreamInitImpl<T>::Save(IStream* pStm, BOOL fClearDirty)
 {
   T* pT = static_cast<T*>(this);
   _TRACE0("TCPersistStreamInitImpl<T>::Save\n");
-  return pT->TCPersistStreamInit_Save(pStm, fClearDirty, (ATL_PROPMAP_ENTRY*)T::GetPropertyMap(),
+  return pT->TCPersistStreamInit_Save(pStm, fClearDirty, (ATL_PROPMAP_ENTRY*) T::GetPropertyMap(),// kg - cast to keep VC9 happy
     pT, pT->GetUnknown());
 }
 
@@ -579,7 +579,7 @@ STDMETHODIMP TCPersistPropertyBagImpl<T>::Load(IPropertyBag* pPropBag,
 {
   _TRACE0("IPersistPropertyBagImpl::Load\n");
   T* pT = static_cast<T*>(this);
-  ATL_PROPMAP_ENTRY* pMap = (ATL_PROPMAP_ENTRY*)T::GetPropertyMap();
+  ATL_PROPMAP_ENTRY* pMap = (ATL_PROPMAP_ENTRY*) T::GetPropertyMap(); // kg - cast to keep VC9 happy
   ATLASSERT(pMap != NULL);
   return pT->TCPersistPropertyBag_Load(pPropBag, pErrorLog, pMap, pT,
     pT->GetUnknown());
@@ -591,7 +591,7 @@ STDMETHODIMP TCPersistPropertyBagImpl<T>::Save(IPropertyBag* pPropBag,
 {
   _TRACE0("IPersistPropertyBagImpl::Save\n");
   T* pT = static_cast<T*>(this);
-  ATL_PROPMAP_ENTRY* pMap = (ATL_PROPMAP_ENTRY*)T::GetPropertyMap();
+  ATL_PROPMAP_ENTRY* pMap = (ATL_PROPMAP_ENTRY*) T::GetPropertyMap(); // kg - cast to keep VC9 happy
   ATLASSERT(pMap != NULL);
   return pT->TCPersistPropertyBag_Save(pPropBag, fClearDirty,
     fSaveAllProperties, pMap, pT, pT->GetUnknown());

@@ -755,7 +755,7 @@ BOOL CServiceModule::RemoveService(void)
         return FALSE;
     }
 
-	schSvc = OpenService(schMgr, c_szSvcName, SERVICE_ALL_ACCESS);
+    schSvc = OpenService(schMgr, c_szSvcName, SERVICE_ALL_ACCESS);
 
     if (!schSvc)
     {
@@ -856,8 +856,6 @@ void RunAsWindow()
 }
 
 
-
-
 ////////////////////////////////////////////////////////////////////////
 // RunAsExecutable - for debugging, this service can be run from the
 //                   command-line.
@@ -919,8 +917,6 @@ VOID CServiceModule::RunAsExecutable()
 #if defined(SRV_PARENT)
 		g.bRestarting = false;
 #endif
-
-
 
         HANDLE hEventArray[] = { g.hKillReceiveEvent, hConsole };
 
@@ -1282,6 +1278,7 @@ void CServiceModule::StopAllsrv()
   }
 #endif
 }
+
 
 /*-------------------------------------------------------------------------
  * MTAKeepAliveThunk

@@ -214,7 +214,20 @@ public:
         pcontext->SetBlendMode(BlendModeAdd);
         pcontext->SetShadeMode(ShadeModeGouraud);
         pcontext->SetZWrite(false);
-        pcontext->SetTexture(m_psurfaceTexture);
+		pcontext->SetTexture(m_psurfaceTexture);
+
+/*		if( m_psurfaceTexture->HasColorKey() == true )
+		{
+			CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
+			CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+			CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+			CD3DDevice9::SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+			CD3DDevice9::SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+		}
+		else
+		{
+			CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+		}*/
 
         pcontext->DrawTriangles(
             &m_vertices[0],

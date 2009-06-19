@@ -382,11 +382,11 @@ public:
         if (bIcon)
         {
             pcontext->Translate(positionIcon);
-#ifdef BUILD_DX9
+			// BUILD_DX9
 			pcontext->SetBlendMode(BlendModeAlphaStampThrough);
-#else
-			pcontext->SetBlendMode(BlendModeSourceAlpha);
-#endif // BUILD_DX9
+			//pcontext->SetBlendMode(BlendModeSourceAlpha);
+			// BUILD_DX9
+
             pcontext->DrawImage3D(psurfaceIcon, colorIcon, true);
         }
 

@@ -87,8 +87,7 @@ public:
         // The footer
         //
 
-
-        TRef<Pane> ppaneFooter = new ImagePane(pmodeler->LoadImage("gamestatefooterbmp", false));
+        TRef<Pane> ppaneFooter = new ImagePane(pmodeler->LoadImage("gamestatefooterbmp", true));
 
         m_pstringPaneTime = new StringPane(ZString("2:00"), pfontTime);
         m_pstringPaneTime->SetOffset(WinPoint(50, 3));
@@ -101,7 +100,7 @@ public:
 
         TRef<ColumnPane> pcol = new ColumnPane();
 		
-        pcol->InsertAtBottom(new ImagePane(pmodeler->LoadImage("gamestateheaderbmp", false)));
+        pcol->InsertAtBottom(new ImagePane(pmodeler->LoadImage("gamestateheaderbmp", true)));
 		pcol->InsertAtBottom(new FillPane(WinPoint(0, 1), s_colorLight));
         pcol->InsertAtBottom(ppaneInfo);
         pcol->InsertAtBottom(ppaneFooter);
@@ -131,15 +130,13 @@ public:
     ) {
         TRef<StringPane> pstringPane = new StringPane(ZString(), m_pfontTitles);
 
-		
-
         m_pcolTiles->InsertAtBottom(
             new BorderPane(
                 0, 
                 1,
                 s_colorBackground,
                 new ColumnPane(
-                    new ImagePane(m_pmodeler->LoadImage(strTitle, false)),
+                    new ImagePane(m_pmodeler->LoadImage(strTitle, true)),
 					new BorderPane(
 						3,
 						1,
@@ -154,7 +151,6 @@ public:
         );
 
         m_pcolTiles->InsertAtBottom(new FillPane(WinPoint(0, 1), s_colorLight));
-
         return pstringPane;
     }
 

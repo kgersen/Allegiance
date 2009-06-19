@@ -143,10 +143,9 @@ static void DoEncrypt(int size, char* pdata)
 
 ALLOC_MSG_LIST;
 Global g;
-#include "queries.h"
+// KG- obsolete
+//#include "queries.h"
 
-
-// Pook, give us charecter ID's to tie into the persistant player objects - Imago
 #if defined(ALLSRV_STANDALONE)
   int GetNextCharacterID()
   {
@@ -169,7 +168,7 @@ void LoadTechBits()
       assert(TechBitsAll_BitID < cTechs);
       SqlStrCpy(g.rgTechs[TechBitsAll_BitID], TechBitsAll_Name, sizeof(TechBitsAll_Name));
     }
-  #endif
+  #endif // !defined(ALLSRV_STANDALONE)
 }
 
 
@@ -383,15 +382,14 @@ void SetSessionDetails()
  */
 void UnloadDbCache()
 {
-	//Imago commented out defines 6/26/08
-  //#if !defined(ALLSRV_STANDALONE)
+  #if !defined(ALLSRV_STANDALONE)
     if (g.trekCore)
     {
       g.trekCore->Terminate();
       delete g.trekCore;
       g.trekCore = NULL;
     }
- // #endif // !defined(ALLSRV_STANDALONE)
+  #endif // !defined(ALLSRV_STANDALONE)
 }
 
 
@@ -428,7 +426,7 @@ HRESULT pascal FedSrv_Terminate(void)
     g.hPlayerEvent = NULL;
   }
 
-  //SWMRGDelete(&g.swmrg);  Imago: removed, not using 6/25/08
+  SWMRGDelete(&g.swmrg);
 
   // Turn everything off
   g.fm.Shutdown();
@@ -448,7 +446,9 @@ HRESULT pascal FedSrv_Terminate(void)
 
   _AGCModule.TriggerEvent(NULL, AllsrvEventID_Terminate, "", -1, -1, -1, 0);
 
+#ifdef USEAUTH
   g.pzas = NULL;
+#endif
 
   //clean up the pid file we dropped for parent -Imago 6/25/08
 #if defined(SRV_CHILD)
@@ -789,6 +789,8 @@ if (pfsMission->RequiresInvitation())
   Side Effects:
       Players/teams added to list
  */
+// KG: eventually remove this
+#ifndef ALLSRV_STANDALONE
 void GotInvitationList(CQGetInvitationList * pquery)
 {
   CQGetInvitationListData * pqd = pquery->GetData();
@@ -804,6 +806,7 @@ void GotInvitationList(CQGetInvitationList * pquery)
     }
   }
 }
+#endif
 
 
 /*-------------------------------------------------------------------------
@@ -815,6 +818,8 @@ void GotInvitationList(CQGetInvitationList * pquery)
   Side Effects:
       Tell the players what squads they're in.
  */
+// KG: eventually remove this
+#ifndef ALLSRV_STANDALONE
 void GotCharSquads(CQCharSquads * pquery)
 {
   CQCharSquadsData * pqd = pquery->GetData();
@@ -863,8 +868,9 @@ void GotCharSquads(CQCharSquads * pquery)
 }
 
 
+#endif
 /*-------------------------------------------------------------------------
- * GotLogonDetails		Imago updated 6/25/08 7/5/08
+ * GotLogonDetails
  *-------------------------------------------------------------------------
   Purpose:
       Callback from GetLogonStats query. Logon finishes here
@@ -909,9 +915,11 @@ void GotLogonDetails(CQLogonStats * pquery)
     dataship.hullID = NA;
     //dataship.wingID = 1;
 
-    #ifdef  _ALLEGIANCE_DEV_ //Imago put this back 
+/*
+    #ifdef  _ALLEGIANCE_DEV_
     pqd->fCanCheat = true;
     #endif
+*/
 
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
     dataship.abmOrders = 0;
@@ -983,6 +991,23 @@ void GotLogonDetails(CQLogonStats * pquery)
     END_PFM_CREATE
     pfmRankInfo->cRanks = g.cRankInfo;
 
+#if !defined(ALLSRV_STANDALONE)
+
+    // Get their squad memberships, but whether we need it b4 joining depends on whether it's a squad game
+    CQCharSquads * pqueryCharSquads = new CQCharSquads(GotCharSquads);
+    CQCharSquadsData * pqdSquads = pqueryCharSquads->GetData();
+    pqdSquads->characterID = pqd->characterID;
+    pqdSquads->dwConnectionID = pqd->dwConnectionID;
+    CFSMission * pfsMission = CFSMission::GetMission(pqd->dwCookie);
+    if (pfsMission) // it MAY have gone away in the meantime
+    {
+      pqdSquads->fJoin = pfsMission->IsSquadGame();
+      fJoinNow = !pqdSquads->fJoin; // we EITHER join now, or later, not both
+      pqdSquads->dwCookie = pqd->dwCookie;
+      lstrcpy(pqdSquads->szPassword, pqd->szPassword);
+      g.sql.PostQuery(pqueryCharSquads);
+    }
+#endif
   }
 
   g.fm.SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
@@ -3286,7 +3311,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                      psl = psl->next())
                 {
                     IshipIGC*   pship = psl->data();
-                    if (pship->GetSide() == pside)
+                    if (pship->GetSide() == pside) //#ALLYTD: change this to include allies ?
                     {
                         CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
 
@@ -4211,6 +4236,86 @@ ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, IpartIGC* p, IpartTypeI
     return CreateTreasure(now, pship, amount, ppt, position, dv, lifespan);
 }
 
+
+
+/*-------------------------------------------------------------------------
+ * ExportStaticIGCObjs
+ *-------------------------------------------------------------------------
+  Purpose:
+      Send the client all the static IGC objects. A default recipient must be already set.
+
+  Not being used. Keep it around for a while just in case we want to resurrect it.
+ */
+void ExportStaticIGCObjs()
+{
+  //g.fm.SetPriority(c_mcpLogonPrelim);
+
+  // Export station types
+  {
+    const StationTypeListIGC * pstlist = g.trekCore->GetStationTypes();
+    StationTypeLinkIGC * pstlink = NULL;
+    for (pstlink = pstlist->first(); pstlink; pstlink = pstlink->next())
+      ExportObj(pstlink->data(), OT_stationType, NULL);
+  }
+
+  // Export projectiles
+  {
+    const ProjectileTypeListIGC * pptlist = g.trekCore->GetProjectileTypes();
+    ProjectileTypeLinkIGC * pptlink = NULL;
+    for (pptlink = pptlist->first(); pptlink; pptlink = pptlink->next())
+      ExportObj(pptlink->data(), OT_projectileType, NULL);
+  }
+
+  // Export missile types
+  {
+    const ExpendableTypeListIGC* petlist = g.trekCore->GetExpendableTypes();
+    ExpendableTypeLinkIGC* petlink;
+    for (petlink = petlist->first(); petlink; petlink = petlink->next())
+      ExportObj(petlink->data(), petlink->data()->GetObjectType(), NULL);
+  }
+
+  // Export parts
+  {
+    const PartTypeListIGC * pptlist = g.trekCore->GetPartTypes();
+    PartTypeLinkIGC * pptlink = NULL;
+    for (pptlink = pptlist->first(); pptlink; pptlink = pptlink->next())
+      ExportObj(pptlink->data(), OT_partType, NULL);
+  }
+
+  // Export hull types
+  {
+    const HullTypeListIGC * phtlist = g.trekCore->GetHullTypes();
+    HullTypeLinkIGC * phtlink = NULL;
+    for (phtlink = phtlist->first(); phtlink; phtlink = phtlink->next())
+      ExportObj(phtlink->data(), OT_hullType, NULL);
+  }
+
+  // Export developments
+  {
+    const DevelopmentListIGC * pdtlist = g.trekCore->GetDevelopments();
+    DevelopmentLinkIGC * pdtlink = NULL;
+    for (pdtlink = pdtlist->first(); pdtlink; pdtlink = pdtlink->next())
+      ExportObj(pdtlink->data(), OT_development, NULL);
+  }
+
+  // Export drones types
+  {
+    const DroneTypeListIGC * pdtlist = g.trekCore->GetDroneTypes();
+    DroneTypeLinkIGC * pdtlink = NULL;
+    for (pdtlink = pdtlist->first(); pdtlink; pdtlink = pdtlink->next())
+      ExportObj(pdtlink->data(), OT_droneType, NULL);
+  }
+
+  // Export civilizations
+  {
+    const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+    CivilizationLinkIGC * pctlink = NULL;
+    for (pctlink = pctlist->first(); pctlink; pctlink = pctlink->next())
+      ExportObj(pctlink->data(), OT_civilization, NULL);
+  }
+}
+
+
 int FedSrvSiteBase::OnMessageBox(FedMessaging * pthis, const char * strText, const char * strCaption, UINT nType)
 {
   return OnMessageBox(strText, strCaption, nType);
@@ -4237,6 +4342,8 @@ HRESULT FedSrvSiteBase::OnSysMessage(FedMessaging * pthis)
   return S_OK;
 }
 
+// KG: eventually remove this
+#ifndef ALLSRV_STANDALONE
 void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
   // don't make the event an error event, because this may or may not be fatal.
@@ -4265,14 +4372,18 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
     "HelpFile", VT_BSTR,  bstrHelpFile,
     "Source",   VT_BSTR,  bstrSource);
 }
-
+#endif //ALLSRV_STANDALONE
 
 HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
-    char szRemote[16];
-    pthis->GetIPAddress(cnxn, szRemote);
-    debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
-	return S_OK;
+  // we don't do anything until they login
+
+  // mmf 10/08 Log ip address (code provided by Imago)
+  char szRemote[16];
+  pthis->GetIPAddress(cnxn, szRemote);
+  debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
+
+  return S_OK;
 }
 
 
@@ -6281,7 +6392,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     END_PFM_CREATE
 
                     if ((pstation == NULL) ||
-                        (pstation->GetSide() != pside) ||
+                        (pstation->GetSide() != pside) || //#ALLYTD ?
                         (!pstation->GetStationType()->HasCapability(c_sabmRestart)))
                     {
                         //Not a legitimate station to start at ... ignore the request
@@ -6561,6 +6672,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		// 4. broadcast both the team activeF and the AET changes
         g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfmSideInactive, FM_GUARANTEED);//broadcast the change
+
+		// #ALLY - also update alliances
+		pfsMission->UpdateAlliances(sid,NA);
 	}
 	break;
 
@@ -6601,6 +6715,22 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       }
     }
     break;
+
+	// #ALLY
+	case FM_C_CHANGE_ALLIANCE:
+	{
+      if (!pfsMission)
+        break;
+
+      if (pfsMission->GetStage() == STAGE_NOTSTARTED) // for now, we can't change alliances when game is running
+	  {
+		  CASTPFM(pfmAlliancesChange, C, CHANGE_ALLIANCE, pfm);
+
+		  pfsMission->UpdateAlliances(pfmAlliancesChange->sideID,pfmAlliancesChange->sideAlly);
+	  }
+	}
+	break;
+	// #ALLY end
 
     case FM_CS_DELPOSITIONREQ:
     {
@@ -6922,8 +7052,6 @@ void CheckForNoShows()
 {
 //KGJV #114 reactivated
 //#if !defined(ALLSRV_STANDALONE)
-
-
 
   const ListFSMission * plistMission = CFSMission::GetMissions();
   for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
@@ -7427,7 +7555,6 @@ IHTTPSession * BeginConfigDownload()
   DeleteFile(".\\temp.cfg") ;  // WLP 2006 - yell invalid if not found
 #endif
 
-
   if (ZString(szConfig).Find("http://") == -1)
   {
     CopyFile(szConfig, ".\\temp.cfg", FALSE);    // copy to current folder
@@ -7591,7 +7718,7 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 
     char szFilelistCRC[50];
 
-    //Imago -- over-ride ASGS server address /w this
+    
 #ifdef USEAUTH
 	// Extract auth server from code and update our auth subsystem to use it.
 	// We share the client's field for this.  Probably not the right thing to do,
@@ -7817,7 +7944,7 @@ void RestartPausedMissions()
 }
 
 
-HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* Imago can use now */)
+HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not override */)
 {
   // Disconnect from current lobby, if any
   DisconnectFromLobby();
@@ -7857,6 +7984,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* Imago can use now */
     "", -1, -1, -1, 1,
     "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
 
+    // mdvalley: Discover listening port
   DWORD dwPort = 0;						// Passing a port of 0 informs the lobby of the error.
 
   // mdvalley: Discover listening port
@@ -7907,7 +8035,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* Imago can use now */
   AnnouncePause();
 //#endif
 
-  // ok, now let's re-advertize our games 
+  // ok, now let's re-advertize our games
   const ListFSMission * plistMission = CFSMission::GetMissions();
   for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
   {
@@ -8012,7 +8140,7 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
             _Module.StopAllsrv();
             break;
 
-		  default:
+          default:
             DispatchMessage(&msg);
         }
         timerSingleMsg.Stop();
@@ -8178,9 +8306,15 @@ void StartDefaultGames()
         else
             mp.iMaxRank = mpClean.iMaxRank; // fetch default value
         
+		// KGJV -09/2008, added: Password# game parameter
+		ZString strPassword;
+        wsprintf(cbValueName, "Password%d", iGame);
+        if (LoadRegString(hKey, cbValueName, strPassword) == S_OK)
+			strcpy_s(mp.strGamePassword,sizeof(mp.strGamePassword),PCC(strPassword));
+
         // KGJV #92 - display LockOpen/Min/Maxrank and removed map name
         printf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
-		debugf("Starting game \"%s\"(%s) with core: %s - minrank=%d - maxrank=%d\n", mp.strGameName, (mp.bLockGameOpen == 1) ? "LockOpen":"Not LockOpen",mp.szIGCStaticFile,mp.iMinRank,mp.iMaxRank);
+
 #if !defined(SRV_PARENT)
         // Create the new mission
         FedSrvSite * psiteFedSrv = new FedSrvSite();
@@ -8315,7 +8449,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   g.trekCore = CreateMission(); // this isn't a *real* mission, just a gateway to static stuff
   g.trekCore->Initialize (Time::Now(), &g.siteFedSrv);
   debugf("trekCore completed\n");
-  
+  // until the server loads the appropriate igc static file based on mission params
+  // and only has one game per exe
   int   iStaticCoreVersion;
 #if !defined(ALLSRV_STANDALONE)
   iStaticCoreVersion = LoadIGCStaticCore (IGC_ENCRYPT_CORE_FILENAME, g.trekCore, false, DoDecrypt);
@@ -8350,7 +8485,6 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     g.strLobbyServer="?"; // this will be overrided by cfg file download; needs to be non-blank so ConnectToLobby() is called
     pServer->put_PublicLobby(true); // true means use public dplay session, and connect to lobby is g.strLobbyServer is not empty
   }
-
 #else
   //non-standalone servers always should connect to a lobby
   pServer->put_PublicLobby(true); // true means use public dplay session, and connect to lobby is g.strLobbyServer is not empty
@@ -8391,9 +8525,10 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     g.timeNow = timeStartIteration;
 
     ProcessNetworkMessages();
+
     UpdateMissions(timeStartIteration, timeEndIteration);
 
-	//Sleep an amount of time appropriate to total time will be dwUpdateInterval
+    //Sleep an amount of time appropriate to total time will be dwUpdateInterval
     DWORD   dwIteration = (Time::Now().clock() - timeStartIteration.clock());
     DWORD   dwSleep = dwIteration < dwUpdateInterval
                       ? (dwUpdateInterval - dwIteration)
@@ -8401,7 +8536,6 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
     dwWait = ProcessMsgPump(dwSleep, 1, rgeventHandles);
   }
-
 
   HAGCLISTENERS hListeners = GetAGCGlobal()->EventListeners(
     EventID_ServerShutdown, -1, -1, -1);
@@ -9167,10 +9301,6 @@ void UnregisterAllSrv(char *szServerName)
 //
 int __cdecl main(int argc, char *argv[])
 {
-//Imago 6/25/08
-#if defined(SRV_PARENT)
-	//SetPriorityClass(GetCurrentProcess(),ABOVE_NORMAL_PRIORITY_CLASS); //we're set out to do wonderful things
-#endif
     // Load the global settings from the registry
     LoadSettings();
 
@@ -9202,7 +9332,7 @@ int __cdecl main(int argc, char *argv[])
     if (init.Failed())
       return (HRESULT)init;
 
-	// Set the process-wide COM security
+    // Set the process-wide COM security
     // This provides a NULL DACL which will allow access to everyone.
     PSECURITY_DESCRIPTOR psd = NULL;
     CSecurityDescriptor sd;
@@ -9211,7 +9341,6 @@ int __cdecl main(int argc, char *argv[])
       sd.InitializeFromThreadToken();
       psd = sd;
     }
-
     HRESULT hr;
     hr = CoInitializeSecurity(psd, -1, NULL, NULL,
         RPC_C_AUTHN_LEVEL_PKT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL);
@@ -9511,7 +9640,7 @@ int __cdecl main(int argc, char *argv[])
     }
 #endif // Imago
 
-	 // Terminate AGC
+    // Terminate AGC
     _Module.TermAGC();
 
 	//appweb
@@ -9582,8 +9711,8 @@ HRESULT pascal FedSrv_Init()
 
   LoadTechBits(); // only for the IfYouBuildIt cheat
 
-  //bool fSWMRGInit = FSWMRGInitialize(&g.swmrg, "FedSrv"); //Imago - change for multi proc
-  //ZAssert(fSWMRGInit);
+  bool fSWMRGInit = FSWMRGInitialize(&g.swmrg, "FedSrv");
+  ZAssert(fSWMRGInit);
 
   // Initialize COM library
   // ZSucceeded(CoInitialize(NULL));
@@ -11440,7 +11569,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
   IsideIGC* pside = pship->GetSide();
   IsideIGC* psideOld = pstation->GetSide();
 
-  if (pside != psideOld)
+  if (!IsideIGC::AlliedSides(pside,psideOld)) //#ALLY - was: pside != psideOld
   {
       pfsShip->CaptureStation(pstation);
   }
@@ -11452,7 +11581,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
 
   {
       SideID sidFlag = pship->GetFlag();
-      if (sidFlag != NA)
+      if ((sidFlag != NA) && (pside == psideOld)) //#ALLY - was: (sidFlag != NA)
       {
           if (sidFlag == SIDE_TEAMLOBBY)
           {
@@ -11533,7 +11662,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
     }
     else
     {
-        if (pstationOld == NULL)
+        if ((pstationOld == NULL) && (pstationNew->GetSide() == pship->GetSide())) //#ALLY: dont dock tech at allied bases
         {
             //Go over the ship's parts and give the side the tech bits for any equipment onboard
 
@@ -11569,6 +11698,15 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 
         if (!pfsShip->IsPlayer())
             UpgradeShip(pship, pstationNew);
+		// #ALLY
+		// if allied station, relaunch now
+		if (pstationNew->GetSide() != pship->GetSide())
+		{
+			// proper method to launch, this will call ChangeStation again with pstationNew NULL
+			// if this causes issues, another way to do this is in cluster Update like for drones
+			// todo: check why ship isnt rearmed
+			pship->SetStation(NULL);
+		}
     }
 }
 

@@ -2,6 +2,15 @@
 #ifndef _OLDDXDEFNS_H_
 #define _OLDDXDEFNS_H_
 
+// KGJV: D3DCOLORVALUE renamned to COLORVALUE and defined here so it becomes independent of DirectX
+
+typedef struct COLORVALUE {
+    float r;
+    float g;
+    float b;
+    float a;
+} COLORVALUE;
+
 // Older DX definitions included to get the project to build. At some point,
 // they all become redundant.
 

@@ -3,7 +3,7 @@
 /// @brief 	Header for the egiHandler
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -42,7 +42,7 @@ class MaEgiHandlerService;
 
 extern "C" {
 	extern int mprEgiInit(void *handle);
-}
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// MaEgiModule ////////////////////////////////
@@ -85,7 +85,7 @@ class MaEgiForm : public MprHashEntry {
 	///	@param formName Name to publish the form as. This appears in the URL. 
 	///		Names must therefore only contain valid URL characters.
 	/// @stability Evolving.
-	/// @library libappweb
+	/// @library libappWeb
 	///	@see MaEgiForm
 					MaEgiForm(char *formName);
 					MaEgiForm(MaServer *server, MaHost *host, char *formName);
@@ -189,5 +189,7 @@ extern int 		maDefineEgiForm(char *name, MaEgiCb fn);
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim: sw=4 ts=4 
+// vim:tw=78
+// vim600: sw=4 ts=4 fdm=marker
+// vim<600: sw=4 ts=4
 //

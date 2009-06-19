@@ -334,16 +334,22 @@ public:
               
               WinRect rectClipOld = psurface->GetClipRect();
               psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(105, 20))); // clip name to fit in column // yp: changed from 105 to 90 //AEM to 130
+
               // draw the team name
 			  ZString name;
 			  if ( pitem->GetSideID()== SIDE_TEAMLOBBY ) 
 			  {
-					name="Not On A Team";
+					name="Not On A Team";// #ALLYTD
 			  }
 			  else
 			  {
-					name=CensorBadWords (m_pMission->SideName(pitem->GetSideID()));
+					name=CensorBadWords (m_pMission->SideName(pitem->GetSideID()));// #ALLYTD
 			  }
+			  // #ALLYTD - temporary ui: prefix team name with alliance group number
+			  char allies = m_pMission->SideAllies(pitem->GetSideID());
+			  if (allies!=NA)
+				  name = ZString((int)allies+1)+" " + name;
+			  //
               psurface->DrawString(
                   TrekResources::SmallFont(),
                   Color::White(),

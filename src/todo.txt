@@ -1,0 +1,25 @@
+- wintrek: move 3D settings dialog resource ('picker' resource) in engine
+	doofus - don't move the dialog resource into the engine as this is app specific.
+- lobby/client.cpp can't use PCH setting because of appweb
+- do something with Vorbis (remove or use as a lib (.h/.lib and no source))
+- fix mdlc (todo)
+- move stuff in 'Test' directory to a more logical location then delete 'Test'
+- remove unneeded libs in "linker/input/add. dep." setting of all projects
+- perform 2nd pass on cleaning .vcproj files
+- perform cleaning on ..\standby
+- refine all projects dependencies
+- DX9 'todo' : see src/engine/TODO.txt
+
+- remove color codes from string entered by users (team names, game name, chat)
+
+(MAJOR - move tools over to Collada intermediate format for geometry?)
+
+Alliances:
+
+- 2nd pass on "#ALLYTD" comments
+- fix "repair/rearm" when docking into allied base
+- finalize UI interface (teamscreen and teampane)
+- change victory conditions & endgame scores
+- change imbal behavior (1/2/NA/Auto)
+- change defections behavior
+- add common chat channel (orange color but with player names in team color ?)

@@ -1560,7 +1560,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             else
             {
                 ObjectType  type = pmodel->GetObjectType();
-                bool        bFriendly = pmodel->GetSide() == GetSide();
+				bool        bFriendly = IsideIGC::AlliedSides(pmodel->GetSide(), GetSide()); // #ALLY -was: pmodel->GetSide() == GetSide()
 
                 switch (cid)
                 {
@@ -1817,7 +1817,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         {
                             IsideIGC*   pside = pship->GetSide();
 
-                            if (pside == psideMe)
+                            if (pside == psideMe) //#ALLYTD
                             {
                                 cFriend++;
                                 float d2 = (positionMe - pship->GetPosition()).LengthSquared();

@@ -9,7 +9,7 @@
 //
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -132,7 +132,6 @@ class MaClient : public MprLink {
 	int				timestamp;			// Timeout timestamp for last I/O 
 	int				userFlags;			// User flags (same set as flags)
 	MprStr			user;				// User account name
-	MprStr			userHeaders;		// User headers
 
 #if BLD_FEATURE_MULTITHREAD
 	MprCond			*completeCond;		// Signalled when request is complete
@@ -173,7 +172,6 @@ class MaClient : public MprLink {
 	void			setProxy(char *host, int port);
 	void			setRetries(int count);
 	void			setTimeout(int timeout);
-	void			setUserHeaders(char *headers);
 	int				traceRequest(char *url);
 
 #if BLD_FEATURE_MULTITHREAD
@@ -222,5 +220,7 @@ class MaClient : public MprLink {
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim: sw=4 ts=4 
+// vim:tw=78
+// vim600: sw=4 ts=4 fdm=marker
+// vim<600: sw=4 ts=4
 //

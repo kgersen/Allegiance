@@ -192,7 +192,9 @@ public:
                 // Only show the indicator if we have a weapon, and it is a healing weapon on a friendly or a non-healing weapon on an enemy
                 // or it is the external chase view or missile view
                 IsideIGC*   pside = trekClient.GetSide();
-                if (w && ((GetWindow ()->GetCameraMode () == TrekWindow::cmExternalChase) || (GetWindow ()->GetCameraMode () == TrekWindow::cmExternalMissile) || ((targetModel->GetSide() == pside) == (w->GetProjectileType()->GetPower() < 0.0f))))
+                if (w && ((GetWindow ()->GetCameraMode () == TrekWindow::cmExternalChase) ||
+					(GetWindow ()->GetCameraMode () == TrekWindow::cmExternalMissile) ||
+					(IsideIGC::AlliedSides(targetModel->GetSide(), pside) == (w->GetProjectileType()->GetPower() < 0.0f)))) // #ALLY -was: (targetModel->GetSide() == pside)
                 {
                     Vector      vecLeadPosition;
                     float       t                   = solveForLead(pship, targetModel, w, &vecLeadPosition);
@@ -289,7 +291,7 @@ public:
                                     for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next())
                                     {
                                         IshipIGC*   ps = psl->data();
-                                        if ((ps->GetSide() == pside) &&
+                                        if ((ps->GetSide() == pside) && //#ALLYTD: change this if allies should relay lead ind
                                             (ps->GetParentShip() == NULL) &&
                                             ps->GetBaseHullType()->HasCapability(c_habmRemoteLeadIndicator) &&
                                             ps->InScannerRange(targetModel))

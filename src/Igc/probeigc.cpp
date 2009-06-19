@@ -151,12 +151,51 @@ HRESULT CprobeIGC::Initialize(ImissionIGC* pMission, Time now, const void* data,
         {
             pMission->GetIgcSite()->ActivateTeleportProbe(this);
         }
+		// mmf 04/08 destroy any probe near aleph (warp) tip as this is viewed as an exploit as the enemy 
+		//           often cannot delete it
+		// 
+		// if (experimental game type) mmf
+		const MissionParams* pmp = pMission->GetMissionParams();
+
+		if (pmp->bExperimental) {
+			Vector dV, probeV, warpV, tipdistV;
+			Vector bV, tipV;
+			float warp_rad, distance;
+			Orientation warp_orient;
+			Rotation warp_rot;
+			// loop through list of warps
+            for (WarpLinkIGC*   pwl = pcluster->GetWarps()->first(); (pwl != NULL); pwl = pwl->next())
+                {
+					IwarpIGC*   pwarp = pwl->data();
+					warp_rad = pwarp->GetRadius();
+					warp_orient = pwarp->GetOrientation();
+					warpV = pwarp->GetPosition();
+					probeV = this->GetPosition();
+					dV= warpV-probeV;
+					distance = dV.Length();
+					warp_rot = pwarp->GetRotation();
+
+					// if rotating (i.e. rotation is other than 0 0 1 0) abort check
+					if (!((warp_rot.x()==0) && (warp_rot.y()==0) && (warp_rot.z()==1) && (warp_rot.angle()==0)))
+						break;
+					if (distance < (warp_rad * 2) ) {  // only check if close to tip if reasonably close to warp center
+						bV = warp_orient.GetBackward();
+						tipV = warpV + (bV*warp_rad);
+						tipdistV = tipV-probeV;
+						distance = tipdistV.Length();
+						if (distance < 30) {
+							debugf("Destroying probe as it was dropped too close (within 30) of aleph(warp) tip. dist = $f\n",distance);
+							return S_FALSE; // this will destroy the probe
+						}
+					}
+				}
+		}		
+		// mmf end	
 
 		// mmf added code to detect tp drop near asteroid and if too close destroy it
-		// is this a tp
-		if (dataProbeType->dtRipcord >= 0.0f)
+		//     leave ActivateTeleProbe code above so enemy is alerted to the drop even though it may be destroyed
+		if (dataProbeType->dtRipcord >= 0.0f)  // check to see if this is a teleprobe
 		{
-			debugf("mmf checking if tp is too close to any asteroids\n");
 			Vector dV;
 			float asteroid_rad, distance;
 			// loop through list of asteroids
@@ -166,11 +205,10 @@ HRESULT CprobeIGC::Initialize(ImissionIGC* pMission, Time now, const void* data,
                     dV=this->GetPosition() - pal->data()->GetPosition();
 					distance = dV.Length();
 					if (distance < (asteroid_rad-5)) {
-						debugf("mmf tp dropped too close to asteroid (within -5) destroying probe. dist = %f, asteroid rad = %f\n",
+						debugf("Teleprobe dropped too close to asteroid (within -5) destroying probe. dist = %f, asteroid rad = %f\n",
 							distance,asteroid_rad);
 						// this->Terminate(); should be terminated when missionigc processes S_FALSE
 						return S_FALSE; 
-						// break; don't look for more asteroids as the probe has already been destroyed
 					}
 				}
 		}		
@@ -226,7 +264,7 @@ inline void CprobeIGC::ValidTarget(ImodelIGC*  pmodel,
                         Vector*              pdirectionMin)
 {
     //to something that does not include observers, then the check can be removed.
-    if (pmodel->GetSide() != pside)
+	if (!IsideIGC::AlliedSides(pside,pmodel->GetSide())) //#ALLY -was: if (pmodel->GetSide() != pside) 
     {
         ModelAttributes ma = pmodel->GetAttributes();
 

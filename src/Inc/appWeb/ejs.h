@@ -13,7 +13,7 @@
 /*
  *	@copy	default.g
  *	
- *	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+ *	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
  *	Portions Copyright (c) GoAhead Software, 1995-2000. All Rights Reserved.
  *	
  *	This software is distributed under commercial and open source licenses.
@@ -44,7 +44,7 @@
 #ifndef _h_EJS
 #define _h_EJS 1
 
-#include	"buildConfig.h"
+#include	"config.h"
 #include	"miniMpr.h"
 #include	"var.h"
 
@@ -54,7 +54,7 @@ extern "C" {
 
 /********************************* Prototypes *********************************/
 
-typedef long		 	EjsId;
+typedef MprVarHandle 	EjsId;
 typedef MprVarHandle 	EjsHandle;
 
 /*
@@ -113,11 +113,6 @@ extern int 		ejsParseArgs(int argc, char **argv, char *fmt, ...);
 extern void 	ejsSetErrorMsg(EjsId eid, char* fmt, ...);
 extern void		ejsSetReturnValue(EjsId eid, MprVar value);
 extern void		ejsSetReturnString(EjsId eid, char *str);
-extern void 	ejsSetExitStatus(int eid, int status);
-
-#if BLD_FEATURE_FLOATING_POINT
-extern double 	ejsValue(double d);
-#endif
 
 #ifdef __cplusplus
 }
@@ -131,5 +126,7 @@ extern double 	ejsValue(double d);
  * tab-width: 4
  * c-basic-offset: 4
  * End:
- * vim: sw=4 ts=4 
+ * vim:tw=78
+ * vim600: sw=4 ts=4 fdm=marker
+ * vim<600: sw=4 ts=4
  */

@@ -1,1 +1,0 @@
-\\curtc1\public\4nt\4nt /c %fedroot%\src\database\NoComment.btm

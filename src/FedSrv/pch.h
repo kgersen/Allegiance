@@ -54,7 +54,8 @@
 //extern CServiceModule _Module;
 //#include <atlcom.h>
 
-#include <ZoneAuthDecrypt.h>
+// KG- removed
+//#include <ZoneAuthDecrypt.h>
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "AllSrvModule.h"
@@ -74,7 +75,7 @@
 #include <Messages.h>
 #include <MessagesLS.h>
 
-//#include "SWMRG.h"
+#include "SWMRG.h"
 #include "BitArray.h"
 #include "point.h"
 //#include "srvdbg.h"
@@ -89,8 +90,13 @@
 #include "fsside.h"
 #include "fscluster.h"
 #include "fsmission.h"
-#include "fedsrvsql.h"
-#include "zauth.h"
+// #include "fedsrvsql.h" KG removed
+
+// KG guard with USEAUTH for consistency 
+#ifdef USEAUTH
+#include "zauth.h" 
+#endif
+
 #include "fedsrv.h"
 extern Global g;
 #include "fsship.h"
@@ -110,11 +116,13 @@ extern Global g;
 
 #include "regkey.h"
 
+
 /////////////////////////////////////////////////////////////////////////////
 // This is included very last since it conflicts with <atlwin.h>, included
 // indirectly by <TCAtl.h>.
 //
 #include <windowsx.h> // For GlobalAllocPtr and GlobalFreePtr
+
 
 /////////////////////////////////////////////////////////////////////////////
 

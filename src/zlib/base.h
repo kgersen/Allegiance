@@ -55,9 +55,8 @@ protected:
     HANDLE m_hfileMapping;
 
 public:
-#ifdef BUILD_DX9
-	ZFile();
-#endif // BUILD_DX9
+	ZFile(); // BUILD_DX9: added for DX9 but can stay for DX7 as well
+
     ZFile(const PathString& strPath, DWORD how = OF_READ | OF_SHARE_DENY_WRITE);
     virtual ~ZFile();
 

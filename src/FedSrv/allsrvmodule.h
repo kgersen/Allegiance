@@ -122,6 +122,7 @@ void WINAPI MPServiceMain(DWORD dwArgc, LPTSTR* lpszArgv);
 void WINAPI _ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv);
 #endif
 
+
 extern const GUID APPID_AllSrv;
 extern const char *c_szAPPID_AllSrv; // string form of APPID_AllSrv
 extern const CATID CATID_AllegianceAdmin;

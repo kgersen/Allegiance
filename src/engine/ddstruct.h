@@ -25,87 +25,11 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Missing DirectX 5 declarations
-//
-//////////////////////////////////////////////////////////////////////////////
-
-#define DDSCL_SETFOCUSWINDOW                    0x00000080l
-#define DDSCL_SETDEVICEWINDOW                   0x00000100l
-#define DDSCL_CREATEDEVICEWINDOW                0x00000200l
-
-//////////////////////////////////////////////////////////////////////////////
-//
 // 
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class DDPixelFormat      : public TZeroFillWithSize<DDPIXELFORMAT> {};
-
-class DDDeviceIdentifier : public TZeroFill<DDDEVICEIDENTIFIER> {};
-#ifdef USEDX7
-class DDDeviceIdentifier2 : public TZeroFill<DDDEVICEIDENTIFIER2> {};
-#endif
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DDSurface Description
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class DDSDescription : public TZeroFillWithSize<DDSURFACEDESCX> {
-public:
-    DDSDescription()
-    {
-        ddpfPixelFormat.dwSize = sizeof(DDPixelFormat);
-    }
-
-    DDPixelFormat& GetPixelFormat()
-    {
-        return *(DDPixelFormat*)&ddpfPixelFormat;
-    }
-
-    const DDPixelFormat& GetPixelFormat() const
-    {
-        return *(DDPixelFormat*)&ddpfPixelFormat;
-    }
-
-    BYTE* Pointer() const { return (BYTE*)lpSurface; }
-
-    BYTE* Pointer(const WinPoint& point) const
-    {
-        return 
-              Pointer() 
-            + point.Y() * Pitch() 
-            + point.X() * ddpfPixelFormat.dwRGBBitCount / 8;
-    }
-
-    int XSize() const { return (int)dwWidth;  }
-    int YSize() const { return (int)dwHeight; }
-    WinPoint Size() const { return WinPoint(dwWidth, dwHeight); }
-
-    WinRect Rect() const 
-    { 
-        return WinRect(0, 0, dwWidth, dwHeight); 
-    }
-
-    DWORD Pitch() const { return lPitch; }
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DD Device Caps
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class DDSCaps : public TZeroFill<DDSCAPSX> {};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DD Device Caps
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class DDCaps : public TZeroFillWithSize<DDCAPS> {};
+class D3D9PixelFormat      : public TZeroFillWithSize<D3D9PIXELFORMAT> {};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -113,15 +37,7 @@ class DDCaps : public TZeroFillWithSize<DDCAPS> {};
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class D3DDeviceDescription : public TZeroFillWithSize<D3DDEVICEDESC> {};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// D3D Device Description
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class DDBltFX : public TZeroFillWithSize<DDBLTFX> {};
+class D3DDeviceDescription : public TZeroFill<D3DCAPS9> {};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -141,7 +57,7 @@ public:
     }
 };
 
-class D3DColorValue : public D3DCOLORVALUE {
+class D3DColorValue : public COLORVALUE { // was D3DCOLORVALUE
 public:
     D3DColorValue() {}
     D3DColorValue(const Color& Color)
@@ -161,7 +77,10 @@ public:
             && c1.a == c2.a;
     }
 
-    D3DCOLOR MakeD3DCOLOR()
+#define D3DRGBA(r, g, b, a)		(   (((long)((a) * 255)) << 24) | (((long)((r) * 255)) << 16) \
+								|   (((long)((g) * 255)) << 8) | (long)((b) * 255) )
+
+	D3DCOLOR MakeD3DCOLOR()
     {
         return D3DRGBA(r, g, b, a);
     }

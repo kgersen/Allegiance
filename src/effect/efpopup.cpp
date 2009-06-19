@@ -35,7 +35,8 @@ public:
     {
         m_pwrapImage = new WrapImage(Image::GetEmpty());
 
-        m_ppane = new ImagePane(pmodeler->LoadImage("dialogbkgndbmp", false));
+		// Need a background with colour key.
+        m_ppane = new ImagePane(pmodeler->LoadImage("dialogbkgndbmp", true ));
 
         TRef<Image> pstringImage =
             CreateStringImage(

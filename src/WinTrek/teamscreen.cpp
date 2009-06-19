@@ -29,7 +29,8 @@ class TeamScreen :
     public IEventSink,
     public TEvent<ZString>::Sink,
     public EventTargetContainer<TeamScreen>,
-    public TrekClientEventSink
+    public TrekClientEventSink,
+	public IMenuCommandSink // #ALLY RMB sink
 {
 private:
     TRef<Pane>       m_ppane;
@@ -98,6 +99,10 @@ private:
     TRef<TEvent<ZString>::Source> m_peventChatEdit;
 
     TRef<IMessageBox> m_pmsgBox;
+
+	// #ALLY - RMB menu
+	TRef<IMenuCommandSink>     m_pmenuCommandSink;
+	TRef<IMenu>                m_pmenu;
 
     float m_fColorIntensity;
     float m_fColorBrightness;
@@ -230,19 +235,27 @@ private:
                 }
             
 
-            if (!pside)
+			// #ALLY - temporary UI
+			Color AllianceColors[3] = { Color::Orange(), Color::Green(), Color::Red() };
+
+			if (!pside)
                 color = m_fColorBrightness * 0.75 * Color::White() * m_fColorIntensity + 0.5 * Color::White() * (1 - m_fColorIntensity);
             else
+			{
                 color = m_fColorBrightness * pside->GetColor() * m_fColorIntensity + 0.5 * Color::White() * (1 - m_fColorIntensity);
-
+			}
             if (bSelected) 
             {
                 // draw the selected tab outline
+				if (pside->GetAllies()!=NA) // #ALLY
+					psurface->FillRect(WinRect::Cast(m_pimageSelectedTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
                 psurface->BitBlt(WinPoint(0,0), m_pimageSelectedTab->GetSurface());
             }
             else
             {
                 // draw the selected tab outline
+				if (pside->GetAllies()!=NA) // #ALLY
+					psurface->FillRect(WinRect::Cast(m_pimageTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
                 psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
             }
 
@@ -252,7 +265,22 @@ private:
                 psurface->BitBlt(WinPoint(-2,-4), m_pimageArrow->GetSurface());
             }
 
+			// #ALLY - debug display
+#if 1
+			if (pitem->GetSideID() != SIDE_TEAMLOBBY)
+			{
+				ZString strAllies("Solo");
+				if (m_pMission->SideAllies(pitem->GetSideID()) != NA)
+						strAllies = "G"+ZString(m_pMission->SideAllies(pitem->GetSideID()));
 
+				psurface->DrawString(
+                    TrekResources::LargeBoldFont(),
+                    Color::White(),
+                    WinPoint(m_viColumns[0] + 55, m_nHeight * 1/2 - 8),
+                    ZString(trekClient.GetCore()->GetSide(pitem->GetSideID())->GetAllies()) + strAllies
+                );
+			}
+#endif
             // if this team is empty...
             if (m_pMission->SideNumPlayers(pitem->GetSideID()) == 0 
                 && pitem->GetSideID() != SIDE_TEAMLOBBY)
@@ -885,6 +913,12 @@ private:
             }
         }
 
+		// #ALLY - not used atm (but the sink chain is ready for future use, see IClientEventSink)
+		void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
+		{
+			debugf("got OnTeamAlliancesChange\n");	
+		}
+
         void UpdateControls()
         {
             m_peditPaneTeamName->SetHidden(trekClient.MyMission()->GetMissionParams().bSquadGame);
@@ -1224,6 +1258,12 @@ public:
         AddEventTarget(&TeamScreen::OnTeamDoubleClicked, m_plistPaneTeams->GetDoubleClickEventSource());
         AddEventTarget(&TeamScreen::OnTeamClicked, m_plistPaneTeams->GetSingleClickEventSource());
 
+		// #ALLY
+		//   RMB popup menu on team
+		AddEventTarget(&TeamScreen::OnTeamRightClicked, m_plistPaneTeams->GetSingleRightClickEventSource());
+		//   RMB sink
+		m_pmenuCommandSink  = IMenuCommandSink::CreateDelegate(this);
+
         // WLP 2005 - added line below to trap click on player
         AddEventTarget(&TeamScreen::OnPlayerClicked, m_plistPanePlayers->GetSingleClickEventSource()); // WLP - click selects
 		AddEventTarget(&TeamScreen::OnPlayerRightClicked, m_plistPanePlayers->GetSingleRightClickEventSource()); // yp
@@ -1504,7 +1544,6 @@ public:
             m_ptextPrompt->SetString(ZString(trekClient.GetShip()->GetName()).ToUpper() 
                 + ZString(" -- you need to pick a team"));
     }
-
     void OnFrame()
     {
         UpdateCountdownText();
@@ -2053,6 +2092,112 @@ public:
         return true;
     }
 
+	// #ALLY
+	// RMB trigger
+    bool OnTeamRightClicked()
+	{
+		if (!trekClient.MyPlayerInfo()->IsMissionOwner()) return true;// only game owner can activate the team context menu
+
+		debugf("RMB team: side current = %d\n",m_sideCurrent);
+		// count active teams
+		int activeteams = 0;
+		for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
+		{
+			if (m_pMission->SideActive(i)) activeteams++;
+		}
+		debugf("RMB team: active teams = %d\n",activeteams);
+		if (activeteams < 3) return true; // no alliance if 2 or less teams
+		
+		// create the menu
+		m_pmenu =
+            CreateMenu(
+                GetModeler(),
+                TrekResources::SmallFont(),
+                m_pmenuCommandSink
+            );
+
+		char allies = m_pMission->SideAllies(m_sideCurrent);
+		if (allies!=NA)
+			m_pmenu->AddMenuItem(0 , "Remove allies");
+		else
+		{
+			bool groups[c_cAlliancesMax]; for(int g=0;g<c_cAlliancesMax;g++) groups[g]=false;
+			// add solo teams
+			for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
+			{
+				if (i == m_sideCurrent) continue;
+				if (!m_pMission->SideActive(i)) continue;
+				if (m_pMission->SideAllies(i) != NA)
+				{
+					groups[m_pMission->SideAllies(i)] = true;
+				}
+				else
+					m_pmenu->AddMenuItem(i+1 , ZString("Ally with Team ")+ZString(i+1));
+			}
+			// add groups
+			for(int g=0;g<c_cAlliancesMax;g++)
+			{
+				if (groups[g]==false) continue;
+				ZString groupname("");
+				SideID oneteamofthegroup;
+				for (SideID i = 0; i < m_plistSides->GetCount() ; i++)
+				{
+					if (m_pMission->SideAllies(i) == g)
+					{
+						oneteamofthegroup = i;
+						if (groupname != "")
+							groupname += ",";
+						groupname += ZString(i+1);
+					}
+				}
+				m_pmenu->AddMenuItem(oneteamofthegroup+1 , ZString("Ally with Teams ")+groupname);
+			}
+		}
+        m_pmenu->AddMenuItem(NA , "Cancel");
+
+		Point popupPosition = GetWindow()->GetMousePosition();
+		
+		TRef<Pane> ppane = m_pmenu->GetPane();
+		ppane->UpdateLayout();
+		Point p = Point::Cast(ppane->GetSize());
+
+		popupPosition.SetY(popupPosition.Y() - p.Y());  
+        GetWindow()->GetPopupContainer()->OpenPopup(m_pmenu,	popupPosition);
+
+		return true;
+	}
+
+	// menu handlers - made to process only team RMB commands (alliances)
+	void OnMenuCommand(IMenuItem* pitem)
+	{
+		debugf("menu %s-%d\n",PCC(pitem->GetString()),pitem->GetID());
+		int menucmd = pitem->GetID();
+		CloseMenu();
+		if (m_sideCurrent == SIDE_TEAMLOBBY) return;
+
+		if (menucmd == NA) return; // NA = cancel menu
+
+		SideID ally = NA;
+		if (menucmd != 0) // 0 = "remove all allies" from current team, otherwise it's a sideid+1
+			ally = menucmd-1;
+
+		// send this to server and let it handle the changes
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeAlliance, C, CHANGE_ALLIANCE)
+		END_PFM_CREATE
+		pfmChangeAlliance->sideID = m_sideCurrent;
+		pfmChangeAlliance->sideAlly = ally;
+
+	}
+
+    void CloseMenu()
+	{
+		debugf("menu close\n");
+        GetWindow()->GetPopupContainer()->ClosePopup(m_pmenu);
+        m_pmenu = NULL;
+    }
+
+	//#ALLY -end
 
 	bool OnPlayerRightClicked()
     {			

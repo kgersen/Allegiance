@@ -119,6 +119,7 @@ public:
   StaticCoreInfo* GetvStaticCoreInfo() {return m_vStaticCoreInfo;}
   void SetStaticCoreMask(DWORD dwStaticCoreMask) { m_dwStaticCoreMask = dwStaticCoreMask; }
   DWORD GetStaticCoreMask() { return m_dwStaticCoreMask; }
+ 
   //Imago - allow setting of Current Games w/o effecting normal usage
   int GetCurrentGamesCount() { if (m_iCurGames != m_missions.GetCount() && m_iCurGames != 0) {return m_iCurGames;} else {return m_missions.GetCount();}}
   void SetCurrentGamesCount(int CurGames) {m_iCurGames = CurGames;}

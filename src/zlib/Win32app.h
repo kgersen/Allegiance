@@ -29,6 +29,9 @@ public:
     virtual void    DebugOutput(const char *psz);
     virtual bool    OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule);
     virtual void    OnAssertBreak();
+
+	// KGJV - added for DX9 behavior
+	virtual bool    IsBuildDX9();
 };
 
 #endif

@@ -1,12 +1,12 @@
 ///
-///	@file 	appweb.h
-/// @brief 	Primary header for the Mbedthis Appweb Library
+///	@file 	appWeb.h
+/// @brief 	Primary header for the Mbedthis AppWeb Library
 //
 /////////////////////////////////// Copyright //////////////////////////////////
 //
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -41,7 +41,7 @@
 //	C includes
 //
 #include	"capi.h"
-#if BLD_FEATURE_GACOMPAT_MODULE
+#if BLD_FEATURE_COMPAT_MODULE
 #include	"compatApi.h"
 #endif
 #if BLD_FEATURE_ESP_MODULE
@@ -78,9 +78,6 @@
 #if BLD_FEATURE_CGI_MODULE
 #include	"cgiHandler.h"
 #endif
-#if BLD_FEATURE_DIR_MODULE
-#include	"dirHandler.h"
-#endif
 #if BLD_FEATURE_EGI_MODULE
 #include	"egiHandler.h"
 #endif
@@ -93,26 +90,19 @@
 #if BLD_FEATURE_UPLOAD_MODULE
 #include	"uploadHandler.h"
 #endif
-#if BLD_FEATURE_PUT_MODULE
-#include	"putHandler.h"
+#if BLD_FEATURE_COMPAT_MODULE
+#include	"compatModule.h"
 #endif
 #if BLD_FEATURE_C_API_MODULE
 #include	"capi.h"
 #endif
 
-#if BLD_FEATURE_GACOMPAT_MODULE
-	#include	"gaCompatModule.h"
-#endif
 //
-//	Internal use only by appweb.cpp
+//	Internal use only by appWeb.cpp
 //
 void maLoadStaticModules();
 void maUnloadStaticModules();
 
-extern "C" 
-{
-    int appWebMain(int argc, char *argv[]);
-}
 #endif // __cplusplus
 
 #endif // _h_HTTP 
@@ -122,5 +112,7 @@ extern "C"
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim: sw=4 ts=4 
+// vim:tw=78
+// vim600: sw=4 ts=4 fdm=marker
+// vim<600: sw=4 ts=4
 //

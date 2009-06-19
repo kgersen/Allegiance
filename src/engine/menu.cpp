@@ -97,7 +97,15 @@ public:
     {
         const Color color(74.0f / 255.0f, 124.0f / 255.0f, 88.0f / 255.0f);
 
-        psurface->FillSurface(Color::Black());
+        PrivateSurface * psurfaceSource = (PrivateSurface*)psurface;
+		if( psurfaceSource->GetPixelFormat()->AlphaMask() != 0 )
+		{
+			psurfaceSource->SetColorKey( Color(0.0f, 0.0f, 0.0f ) );
+		}
+
+//        psurface->FillSurface(Color::Black());
+		PixelFormat * pixelFmt = psurfaceSource->GetEngine()->GetPrimaryPixelFormat();
+		psurface->FillSurface( Pixel::Create( 0 ) );
         psurface->FillRect(WinRect(1, 1, 2, 8), color);
         psurface->FillRect(WinRect(2, 2, 3, 7), color);
         psurface->FillRect(WinRect(3, 2, 4, 7), color);
@@ -220,7 +228,7 @@ public:
         TRef<Surface> psurfacePopup = 
             pmodeler->GetEngine()->CreateSurface(
                 WinPoint(9, 9),
-                SurfaceType2D(),
+                SurfaceType2D() | SurfaceTypeColorKey(),
                 new PopupSurfaceSite()
             );
 

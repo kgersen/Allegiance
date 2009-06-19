@@ -482,6 +482,7 @@ typedef ObjectID        WingID;
 const WingID            c_widMax = 10;
 
 const SideID c_cSidesMax = 6;
+const int c_cAlliancesMax = c_cSidesMax/2; // #ALLY max alliances possible (distinct groups of allied teams)
 
 extern const char*      c_pszWingName[c_widMax];
 
@@ -519,6 +520,7 @@ const AbilityType	  AT_Hull			= 0;
 const AbilityType	  AT_Station		= 1;
 const AbilityType	  AT_Expendable		= 2;
 const AbilityType	  AT_Asteroid		= 3;
+
 
 typedef char     PackType;
 const PackType      c_packAmmo    = 0;
@@ -1844,7 +1846,7 @@ struct  DataAsteroidIGC
 
 struct  DataObjectIGC
 {
-    D3DCOLORVALUE       color;
+    COLORVALUE          color; // was D3DCOLORVALUE
     float               radius;
     float               rotation;
     char                modelName[c_cbFileName];
@@ -2004,6 +2006,8 @@ struct  DataSideIGC
 
     unsigned char       conquest;
     unsigned char       territory;
+
+	char				allies; // #ALLY
 };
 
 struct  DataCivilizationIGC
@@ -2866,6 +2870,8 @@ class ImissionIGC : public IstaticIGC
 
         virtual short                   GetReplayCount(void) const = 0;
         virtual const char*             GetContextName(void) = 0;
+		//#ALLY
+		virtual void                    UpdateAllies(const char  Allies[c_cSidesMax]) = 0;
 };
 
 class IbaseIGC : public IObject
@@ -3503,6 +3509,7 @@ class IstationTypeIGC : public IbuyableIGC
         virtual const char*             GetBuilderName(void) const = 0;
 
         virtual  IstationTypeIGC*       GetSuccessorStationType(const IsideIGC*   pside) = 0;
+        virtual  IstationTypeIGC*       GetDirectSuccessorStationType() = 0; // EF5P - see wintrek\loadout.cpp
         virtual AsteroidAbilityBitMask  GetBuildAABM(void) const = 0;
 
         virtual int                     GetLaunchSlots(void) const = 0;
@@ -3574,7 +3581,7 @@ class IprojectileTypeIGC : public ItypeIGC
         virtual float            GetLifespan(void) const = 0;
         virtual float            GetRadius(void) const = 0;
         virtual float            GetRotation(void) const = 0;
-        virtual D3DCOLORVALUE    GetColor(void) const = 0;
+        virtual COLORVALUE       GetColor(void) const = 0; // was D3DCOLORVALUE
         virtual DamageTypeID     GetDamageType(void) const = 0;
         virtual SoundID          GetAmbientSound(void) const = 0;
 };
@@ -4031,6 +4038,7 @@ class IwarpIGC : public ImodelIGC
         virtual void                AddBomb(Time               timeExplode,
                                             ImissileTypeIGC*   pmt) = 0;
         virtual const WarpBombList* GetBombs(void) const = 0;
+		virtual bool                IsFixedPosition()    = 0; // KG- added
 };
 
 class ItreasureIGC : public ImodelIGC
@@ -4146,6 +4154,19 @@ class IsideIGC : public IbaseIGC
         virtual void          SetTimeEndured(float fSeconds) = 0;
         virtual long          GetProsperityPercentBought(void) const = 0;
         virtual long          GetProsperityPercentComplete(void) const = 0;
+
+		// ALLIES #ALLY
+		virtual void		  SetAllies(char allies) = 0;
+		virtual char          GetAllies() = 0;
+		static bool           AlliedSides(IsideIGC *side1, IsideIGC *side2)
+		{
+			if( side1==side2) return true;
+			if (side1==NULL) return false;
+			if (side2==NULL) return false;
+			if (side1->GetAllies() == NA) return false;
+			return (side1->GetAllies() == side2->GetAllies());
+		}
+		//
 };
 
 class IcivilizationIGC : public IbaseIGC

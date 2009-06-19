@@ -7,7 +7,7 @@
 #ifndef _cast_H_
 #define _cast_H_
 
-#if !defined(_DEBUG) || defined(DREAMCAST)
+#if !defined(_DEBUG)
     template <class DestType, class SourceType>
     void CastTo(DestType*& pdest, SourceType* psource)
     {

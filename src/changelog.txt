@@ -1,0 +1,70 @@
+------------------------------------------------------------------------------------------------------------------------------------
+08/16/08 - KGJV
+  - removed more files:
+		- FedSrv\queries.h
+		- Inc\parts.h
+		- WinTrek\resource.h
+		- Lang\Usa\WinTrek
+		- Lang\NonIntl\WinTrek
+		
+------------------------------------------------------------------------------------------------------------------------------------
+KGJV - july 2008 - major cleanup & DX9 merge :
+
+based on "FAZR5Contrib Rev 192"
+
+prerequisites: VS2005 or VS2008 and latest DXSDK (jun 2008) (just point VS200x to DXSDK include and lib directories)
+
+	-moved all Visual Studio files to specific directories outside 'src'
+	-added VS 2008 projects (no code changes except 4 'cast' in TCLib\PropertyClass.h due to a change of ATL_PROPMAP_ENTRY definition) - builds go in 'objs9' directory
+	-merged DX9 Doofus' work replacing DX7:
+		 - inlined all "#ifdef BUILD_DX9", left a comment however
+		 - moved 'user settings' code from wintrek to engine (DeviceModeDX9, VideoSettingsDX9)
+		 - changed HKLM_3DSETTINGS as parameter instead of symbol
+	-upgraded inputengine to DirectInput8 (to build and link happy with latest DXSDK)
+	-made projects independent of DirectX include except for Engine & Effect
+		-changed zlib.h to fully remove DX include - Added a dynamic check in Win32App class (Win32App::IsBuildDX9())
+		-globally renamed D3DCOLORVALUE to COLORVALUE and defined it in zlib\olddxdefns.h
+		-since DPlay is deprecated and not available in latest DXDSK: added Dplay include and lib files to src/Inc and src/lib
+		-removed DPlay include from AGC by moving MSGVER in its own include file (Inc\MessageVersion.h)
+		-removed <d3dtypes.h> from Inc\messagecore.h
+		-moved 'Color Codes' stuff from engine(font) to zlib(color)
+		-removed DX dep from Clintlib
+	- removed all obsolete files & projects: 
+		- all VS6 files (makefiles, dps)
+		- all VS2K3 project files
+		- techtree
+		- shadowswitcher
+		- club
+		- Allguard
+		- autoupdate
+		- cadet
+		- cliconfig
+		- database, databasepcg
+		- dreamcast
+		- drones
+		- edit
+		- engineapp, engineapptemplate
+		- fedperf, fedsrvdll, fltc, fsmon
+		- mdl, me
+		- mesh2pl
+		- MSRGuard
+		- offline, oggie, patch, qh2mesh,qhull,sentinal
+		- soundtest
+		- srvconfig
+		- srvhost
+		- symguard
+		- tools
+		- zone
+		- test\*pig*, test\tcguid, test\TCDeploy, test\TCObj
+		- in _Utility: removed allegdb.cpp
+		- in Inc: VerRes.h, ZoneAuthDecrypt.h, drones.h, networkgame.h
+		- in clintlib: networkgame.cpp
+		- in server: fedsrvsql.h, sqlhelp.cpp and all previously excluded files (see R4)
+		- in engine: freeimage, exec and scan subdirs
+		- in zlib: dcbase.cpp, dialop.cpp, dialog.h
+		- in wintrek: offline*.*, speech.h, trekspeech.h
+	- global include files added to Solution (Inc, Zone and TCAtl) for easier search
+	- removed all DREAMCAST preprocessor blocks (complete remove, no comment left)
+	- cleaned all configurations from projects - only FZDebug and FZRetail configs remain
+	- corrected a build issue in AGC xls files
+------------------------------------------------------------------------------------------------------------------------------------

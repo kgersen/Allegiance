@@ -3018,14 +3018,13 @@ void CmissionIGC::Initialize(Time now, IIgcSite* pIgcSite)
 
     m_damageTracks.Initialize(now);
 
- #ifndef DREAMCAST
     //preload the convex hulls used for the various asteroids
     ZVerify(HitTest::Load("bgrnd50"));
     ZVerify(HitTest::Load("bgrnd51"));
     ZVerify(HitTest::Load("bgrnd52"));
     ZVerify(HitTest::Load("bgrnd53"));
     ZVerify(HitTest::Load("bgrnd03"));
-#endif
+
 
     m_sideTeamLobby = NULL;
 }
@@ -3183,7 +3182,6 @@ int                 CmissionIGC::Export(__int64  maskTypes,
             memcpy(pdata + sizeof(int) + sizeof(ObjectType), GetConstants(), size);
 
             pdata += sizeof(int) + sizeof(ObjectType) + size;
-
         }
         datasize += size + sizeof(int) + sizeof(ObjectType);
     }
@@ -3578,6 +3576,7 @@ void                        CmissionIGC::AddSide(IsideIGC*  s)
         sidedata.nKills = sidedata.nEjections = sidedata.nDeaths = sidedata.nBaseKills 
             = sidedata.nBaseCaptures = sidedata.nFlags = sidedata.nArtifacts = 0;
         sidedata.squadID = NA;
+		sidedata.allies = NA; // #ALLY
 
         m_sideTeamLobby = (IsideIGC*)CreateObject(Time::Now(), OT_side, &sidedata, sizeof(sidedata));
         m_sideTeamLobby->SetActiveF(true);
@@ -3714,7 +3713,16 @@ void                        CmissionIGC::UpdateSides(Time now,
 
     assert (GetSides()->n() == pmp->nTeams);
 }
-
+// #ALLY
+void		CmissionIGC::UpdateAllies(const char Allies[c_cSidesMax])
+{
+	for (SideID s = 0; s < GetSides()->n(); s++)
+	{
+		IsideIGC* pside = GetSide(s);
+		if (pside) // shouldnt happen but let's be cautious
+			pside->SetAllies(Allies[s]);
+	}
+}
 void                    CmissionIGC::ResetMission()
 {
     {
@@ -3868,6 +3876,9 @@ void                    CmissionIGC::GenerateMission(Time                   now,
 							//float       r = pwarp->GetPosition().z * majorRadius;
 							float       r = 0.6f * majorRadius;
 							float       angle = bias + offset[index++] * (2.0f * pi) / nWarps;
+							// KG- added. dont move fixed position aleph
+							if (pwarp->IsFixedPosition()) continue;
+
 							Vector      position;
 							position = Vector::RandomPosition(r * displacement);
 							position.x  += cos(angle) * r;

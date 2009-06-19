@@ -17,8 +17,11 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <mmsystem.h> // wlp 2006 added = somehow appweb.h excludes timegetTime in this module 
-						// Imago - appweb.h defines "extra lean" so we've got to be more explicit
+
+
 //#include <dplobby.h>
+
+
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "LobbyModule.h"
@@ -55,7 +58,10 @@
 #include "messagesLC.h"
 #include "sharemem.h"
 #include "counters.h"
+// KG - guard with USEAUTH for consistency
+#ifdef USEAUTH
 #include "zauth.h"
+#endif
 #include "broadcast.h"
 #include "zgameinfo.h"
 #include "LobbyApp.h"

@@ -3,7 +3,7 @@
 ///	@brief	Header for the uploadHandler
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -34,39 +34,16 @@
 #ifndef _h_UPLOAD_HANDLER
 #define _h_UPLOAD_HANDLER 1
 
+#include	"http.h"
+
 /////////////////////////////// Forward Definitions ////////////////////////////
 
-#ifndef __cplusplus
-
-	#include	"capi.h"
-#else
-	#include	"http.h"
-
 class MaUploadHandler;
 class MaUploadHandlerService;
 
-#include	"http.h"
 extern "C" {
-#endif
-
-	extern int mprUploadInit(void *handler);
-
-#if __cplusplus
-}
-#endif
-
-/*
- *	User callback type. Called to process post data
- */
-typedef void (*MaUploadCallback)(MaRequest *rq, void *handler, void *data,
-	MprVar *file);
-
-/***************************** C++ Language Internals *************************/
-
-#ifdef __cplusplus
-
-class MaUploadHandler;
-class MaUploadHandlerService;
+	extern int mprUploadInit(void *handle);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// MaUploadModule ////////////////////////////////
@@ -85,8 +62,6 @@ class MaUploadModule:public MaModule {
 
 class MaUploadHandlerService:public MaHandlerService {
   private:
-	MaUploadCallback callback;			/* User fn to process upload data */
-	void			*callbackData;		/* User fn callback data */
 	MprList 		handlerHeaders;	 	// List of handler headers
 	MprLogModule 	*log;
 	MprStr			uploadDir;			// Default upload directory
@@ -99,11 +74,8 @@ class MaUploadHandlerService:public MaHandlerService {
 					MaUploadHandlerService();
 					~MaUploadHandlerService();
 	MaHandler 		*newHandler(MaServer * server, MaHost * host, char *ex);
-	MaUploadCallback getCallback() { return callback; };
-	void 			*getCallbackData() { return callbackData; };
 	char			*getUploadDir() { return uploadDir; };
 	void			setUploadDir(char *dir);
-	MaUploadCallback setUserCallback(MaUploadCallback callback, void *data);
 
 #if BLD_FEATURE_MULTITHREAD
 	inline void 	lock() { mutex->lock(); };
@@ -148,16 +120,12 @@ class MaUploadHandler:public MaHandler {
 	MprFile 		*upfile;			// Incoming file object
 	MprVar			currentFile;		// Currently uploading file variable
 	char 			*uploadDir;			// Upload dir
-	MaLocation 		*location;			// Upload URL location prefix
-	MaUploadCallback callback;			/* User fn to process upload data */
-	void			*callbackData;		/* User fn callback data */
 
   public:
 					MaUploadHandler(char *ext, MprLogModule * log);
 					~MaUploadHandler();
 	MaHandler 		*cloneHandler();
-	int 			matchRequest(MaRequest *rq, char *uri, int uriLen);
-	void 			postData(MaRequest *rq, char *buf, int buflen);
+	void 			postData(MaRequest * rq, char *buf, int buflen);
 	int 			run(MaRequest * rq);
 	int 			setup(MaRequest * rq);
 
@@ -166,34 +134,16 @@ class MaUploadHandler:public MaHandler {
 	char 			*getParameter(char *key);
 
 #if BLD_FEATURE_CONFIG_PARSE
-	int 			parseConfig(char *key, char *value, MaServer *server, 
-						MaHost *host, MaAuth *auth, MaDir *dir, 
-						MaLocation *location);
+	int 			parseConfig(char *key, char *value, MaServer * server, 
+						MaHost * host, MaAuth * auth, MaDir * dir, 
+						MaLocation * location);
 #endif
 
 private:
-	int 			processContentBoundary(MaRequest *rq, char *line);
-	int 			processContentHeader(MaRequest *rq, char *line);
-	int 			processContentData(MaRequest *rq);
+	int 			processContentBoundary(MaRequest * rq, char *line);
+	int 			processContentHeader(MaRequest * rq, char *line);
+	int 			processContentData(MaRequest * rq);
 };
-
-#endif /* __cplusplus */
-/******************************************************************************/
-/******************************** C Language API ******************************/
-/******************************************************************************/
-
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
-#define MA_UPLOAD_DONT_SAVE_DATA	0x1	/* Don't save upload data to a file */
-
-extern MaUploadCallback maUploadSetUserCallback(MaUploadCallback callback,
-	void *data);
-
-#ifdef __cplusplus
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif // _h_UPLOAD__HANDLER
@@ -203,5 +153,7 @@ extern MaUploadCallback maUploadSetUserCallback(MaUploadCallback callback,
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim: sw=4 ts=4 
+// vim:tw=78
+// vim600: sw=4 ts=4 fdm=marker
+// vim<600: sw=4 ts=4
 //

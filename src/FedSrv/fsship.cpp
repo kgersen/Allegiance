@@ -255,7 +255,7 @@ void CFSShip::ShipStatusSpotted(IsideIGC* pside)
     //Flag that we have been detected as well
     IsideIGC*   mySide = GetSide();
     SideID  mySideID = mySide->GetObjectID();
-    if (mySide != pside)
+	if (!IsideIGC::AlliedSides(mySide, pside)) //#ALLY -was: mySide != pside
         m_rgShipStatus[mySideID].SetDetected(true);
 
     //Adjust the ship status for all of the children as well
@@ -273,7 +273,7 @@ void CFSShip::ShipStatusSpotted(IsideIGC* pside)
             pss->SetSectorID(sectorID);
             pss->SetParentID(GetShipID());
 
-            if (mySide != pside)
+			if (!IsideIGC::AlliedSides(mySide, pside)) //#ALLY -was !=
                 pfsship->GetShipStatus(mySideID)->SetDetected(true);
         }
     }
@@ -296,7 +296,7 @@ void          CFSShip::ShipStatusHidden(IsideIGC* pside)
                  (psl != NULL);
                  psl = psl->next())
             {
-                if (psl->data() != mySide)
+				if (!IsideIGC::AlliedSides(psl->data(), mySide)) //#ALLY -was: !=
                 {
                     ShipStatus* pss = GetShipStatus(psl->data()->GetObjectID());
                     if (!pss->GetUnknown())

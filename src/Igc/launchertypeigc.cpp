@@ -42,6 +42,7 @@ HRESULT         ClauncherTypeIGC::Initialize(ImissionIGC*   pMission,
             {
                 m_pptSuccessor = pMission->GetPartType(m_data.successorPartID);
 				if (m_data.successorPartID != 238) // mmf splat added this so debug build will run with dn 04.50 until Noir fixes it
+					                               // 238 is assault expansion, it looks like all the assault ships are missing a Def = (in ICE)
                 assert (m_pptSuccessor);
             }
 

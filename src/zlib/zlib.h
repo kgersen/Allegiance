@@ -10,10 +10,8 @@
 // warning C4355: 'this' : used in base member initializer list
 #pragma warning(disable:4355)
 
-#ifndef DREAMCAST
-    #define USEASM
-    #define FLOATASM
-#endif
+#define USEASM
+#define FLOATASM
 
 // VS.Net 2003 port: typename is required for template
 #if _MSC_VER >= 1310
@@ -32,10 +30,6 @@
 #include "time.h"
 #include "malloc.h"
 
-#ifdef DREAMCAST
-#include "dreamcast.h"
-#endif
-
 //
 // Required Win32 headers
 //
@@ -47,19 +41,9 @@
 // DirectX Stuff
 //
 
-#ifdef BUILD_DX9					// Defined in project settings.
-	#define DIRECT3D_VERSION   0x0900
-	#include "d3d9.h"
-	#include "d3dx9.h"
-	#include "DxErr9.h"
-	#include "OldDXDefns.h"			// Older DX definitions included to get the project to build. At some point,
-									// they all become redundant.
-#else
-	#define DIRECTDRAW_VERSION 0x0700
-	#define DIRECT3D_VERSION   0x0700
-	#include "ddraw.h"
-	#include "d3d.h"
-#endif // BUILD_DX9
+// KGJV - Removed dependancy from DX
+#include "OldDXDefns.h"	// Older DX definitions included to get the project to build. At some point,
+						// they all become redundant.
 
 //
 // Library Headers

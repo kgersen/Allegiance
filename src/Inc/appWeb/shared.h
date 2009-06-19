@@ -6,7 +6,7 @@
 //
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -51,8 +51,8 @@ class MaHttpError {
 ///////////////////////////////////// Crypt ////////////////////////////////////
 
 typedef struct {
-	uint state[4];
-	uint count[2];
+	ulong state[4];
+	ulong count[2];
 	uchar buffer[64];
 } MD5_CONTEXT;
 
@@ -70,7 +70,7 @@ typedef struct {
 #define MPR_HTTP_MAX_RESPONSE_BODY (8 * 1024)	// Max buffer for generated data
 #define MPR_HTTP_MAX_SCRIPT_SIZE (8 * 1024)		// Max script size
 #else
-#define MPR_HTTP_MAX_BODY		 (1024 * 1024)	// Total request size 
+#define MPR_HTTP_MAX_BODY		 (64 * 1024)	// Total request size 
 #define MPR_HTTP_MAX_URL		 (4096)			// Max URL size
 #define MPR_HTTP_MAX_FIRST_LINE	 (4096)			// Max first line of request
 #define MPR_HTTP_MAX_HEADER		 (8 * 1024)		// Max size of the header
@@ -112,7 +112,7 @@ typedef struct {
 #define MPR_HTTP_BOT_STACK		 (16 * 1024)
 #define MPR_HTTP_TOP_SEND_BUFFER (1024 * 32)
 #define MPR_HTTP_BOT_SEND_BUFFER (512)
-#define MPR_HTTP_TOP_BODY		 (0x7fffffff)		// 2 GB
+#define MPR_HTTP_TOP_BODY		 (0x1fffffff)		// 0.5 GB
 #define MPR_HTTP_BOT_BODY	 	 (0)
 #define MPR_HTTP_TOP_NUM_HEADER	 (4 * 1024)
 #define MPR_HTTP_BOT_NUM_HEADER	 (64)
@@ -122,11 +122,11 @@ typedef struct {
 #define MPR_HTTP_BOT_FIRST_LINE	 (160)
 #define MPR_HTTP_TOP_URL		 (255 * 1024)
 #define MPR_HTTP_BOT_URL		 (80)
-#define MPR_HTTP_TOP_RESPONSE_BODY (0x7fffffff)		// 2 GB
+#define MPR_HTTP_TOP_RESPONSE_BODY (0x1fffffff)		// 0.5 GB
 #define MPR_HTTP_BOT_RESPONSE_BODY (512)
-#define MPR_HTTP_TOP_SCRIPT_SIZE (0x7fffffff)		// 2 GB
+#define MPR_HTTP_TOP_SCRIPT_SIZE (0x1fffffff)		// 0.5 GB
 #define MPR_HTTP_BOT_SCRIPT_SIZE (512)
-#define MPR_HTTP_TOP_UPLOAD_SIZE (0x7fffffff)		// 2 GB
+#define MPR_HTTP_TOP_UPLOAD_SIZE (0x2fffffff)		// 1 GB
 #define MPR_HTTP_BOT_UPLOAD_SIZE (1)
 #define MPR_HTTP_MAX_UPLOAD_SIZE MPR_HTTP_TOP_UPLOAD_SIZE 
 
@@ -151,11 +151,6 @@ typedef struct {
 //
 #define	MPR_HTTP_CONTINUE				100
 #define MPR_HTTP_OK						200
-#define MPR_HTTP_CREATED				201
-#define MPR_HTTP_ACCEPTED				202
-#define MPR_HTTP_NO_CONTENT				204
-#define MPR_HTTP_RESET_CONTENT			205
-#define MPR_HTTP_PARTIAL_CONTENT		206
 #define	MPR_HTTP_MOVED_PERMANENTLY		301
 #define	MPR_HTTP_MOVED_TEMPORARILY		302
 #define	MPR_HTTP_NOT_MODIFIED			304
@@ -243,5 +238,7 @@ extern int	maDateParse(char *cmd);
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim: sw=4 ts=4 
+// vim:tw=78
+// vim600: sw=4 ts=4 fdm=marker
+// vim<600: sw=4 ts=4
 //

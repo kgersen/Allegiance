@@ -61,15 +61,13 @@ void CFLMission::SetLobbyInfo(FMD_LS_LOBBYMISSIONINFO * plmi)
   plmi->dwStartTime += Time::Now().clock();
 
   CFLMission * pMission = CFLMission::FromCookie(plmi->dwCookie);
-
   if (pMission)
   {
     debugf("!!! Got FMD_LS_LOBBYMISSIONINFO for mission (cookie=%x) that I don't know about\n", plmi->dwCookie);
     // we could just pass the server in to this function, but this seems like a reasonable and cheap check & balance to make sure the mission maps back to the server
     CFLServer * pServer = pMission->GetServer();  
-	assert(pServer);
-
-	m_plmi = (FMD_LS_LOBBYMISSIONINFO*) HeapAlloc(hHeap, 0, plmi->cbmsg);
+    assert(pServer);
+    m_plmi = (FMD_LS_LOBBYMISSIONINFO*) HeapAlloc(hHeap, 0, plmi->cbmsg);
     CopyMemory(m_plmi, plmi, plmi->cbmsg);
 	if (m_plmi->dwPort != pServer->GetServerPort() && m_plmi->dwPort != 0) {
 		pServer->SetServerPort(m_plmi->dwPort); //Imago 6/23/08 override port

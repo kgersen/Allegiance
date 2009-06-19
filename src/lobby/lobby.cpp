@@ -515,7 +515,6 @@ void CServiceModule::Run()
     CoUninitialize();
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 int __cdecl main(int argc, char *argv[])

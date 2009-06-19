@@ -8,18 +8,13 @@
 
 class D3DRasterizerImpl : public D3DRasterizer {
 private:
-    TRef<DDDevice>           m_pdddevice;
-    TRef<D3DDevice>          m_pd3ddevice;
-    TRef<IDirect3DDeviceX>   m_pd3dd;
-#ifdef USEDX7
-    IDirect3DViewportX       m_pd3dview;
-    D3DVIEWPORT7             m_pd3dview_data;
-#else
-    TRef<IDirect3DViewportX> m_pd3dview;
-#endif
-
+//    TRef<DDDevice>			m_pdddevice;
+    TRef<D3DDevice>			m_pd3ddevice;
+    TRef<IDirect3DDeviceX>	m_pd3dd;
+    D3DVIEWPORT9			m_Viewport;
+	HWND					m_hParentWindow;
+	Point					m_Size;
     PrivateSurface*          m_psurface;
-    DDSurface*               m_pddsurface;
 
     DWORD                    m_dwDrawPrimitiveFlags;
     Rect                     m_rectGuard;
@@ -40,7 +35,7 @@ private:
             } else {
                 if (
                        hr == DDERR_SURFACELOST
-                    || hr == D3DERR_SCENE_BEGIN_FAILED
+            //        || hr == D3DERR_SCENE_BEGIN_FAILED
                 ) {
                     m_bSurfaceLost = true;
                 } else {
@@ -62,81 +57,62 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    D3DRasterizerImpl(PrivateSurface* psurface) :
-        m_psurface(psurface),
-        m_dwDrawPrimitiveFlags(
-              D3DDP_DONOTUPDATEEXTENTS
-            | D3DDP_DONOTCLIP
-        )
+    D3DRasterizerImpl( PrivateSurface* psurface, HWND hParentWindow ) :
+								m_psurface(psurface),
+								m_dwDrawPrimitiveFlags( 0 ),
+								m_hParentWindow( hParentWindow ) //D3DDP_DONOTUPDATEEXTENTS | D3DDP_DONOTCLIP
     {
-        CastTo(m_pddsurface, psurface->GetVideoSurface());
+//        CastTo(m_pddsurface, psurface->GetVideoSurface());
         InitializeD3DCall();
 
-        //
+		m_pd3dd = CD3DDevice9::Device();
+
         // Tell the device about this rasterizer
-        //
+//		m_pdddevice = ((DDSurface* )psurface->GetVideoSurface())->GetDDDevice();
+//		m_pdddevice->AddRasterizer(this);
+//		m_pd3ddevice = m_pdddevice->GetD3DDevice();;
 
-        m_pdddevice = m_pddsurface->GetDDDevice();
-        m_pdddevice->AddRasterizer(this);
-
-        //
-        // Create a D3D device
-        //
-
-        m_pd3ddevice = m_pdddevice->CreateD3DDevice(m_pddsurface);
-        if (m_pd3ddevice == NULL) {
+/*        // Create a D3D device
+        m_pd3ddevice = m_pdddevice->CreateD3DDevice( m_hParentWindow );
+        if (m_pd3ddevice == NULL) 
+		{
             return;
-        }
+        }*/
 
-        m_pd3dd      = m_pd3ddevice->GetD3DDeviceX();
-        D3DDeviceDescription d3dddHW;
+  //      m_pd3dd = m_pd3ddevice->GetD3DDeviceX();
+		m_Size.SetX( psurface->GetSize().X() );
+		m_Size.SetY( psurface->GetSize().Y() );
 
-#ifdef USEDX7
-        D3DDEVICEDESC7 d3dddHX7;
-        D3DCall(m_pd3dd->GetCaps(&d3dddHX7));
-        d3dddHW.dvGuardBandBottom = d3dddHX7.dvGuardBandBottom;
-        d3dddHW.dvGuardBandLeft = d3dddHX7.dvGuardBandLeft;
-        d3dddHW.dvGuardBandRight = d3dddHX7.dvGuardBandRight;
-        d3dddHW.dvGuardBandTop = d3dddHX7.dvGuardBandTop;
+        //D3DDeviceDescription d3dddSW;
+   //     D3DDeviceDescription d3dddHW;
 
-#else
-        D3DDeviceDescription d3dddSW;
+     //   D3DCall(m_pd3dd->GetDeviceCaps( &d3dddHW ) );
 
-        D3DCall(m_pd3dd->GetCaps(&d3dddHW, &d3dddSW));
-#endif
+   /*     m_rectGuard =
+            Rect(
+                d3dddHW.GuardBandLeft,
+                d3dddHW.GuardBandTop,
+                d3dddHW.GuardBandRight,
+                d3dddHW.GuardBandBottom
+            );*/
 
-        #ifndef DREAMCAST
-            m_rectGuard =
-                Rect(
-                    d3dddHW.dvGuardBandLeft,
-                    d3dddHW.dvGuardBandTop,
-                    d3dddHW.dvGuardBandRight,
-                    d3dddHW.dvGuardBandBottom
-                );
-        #endif
-
-        //
         // Create the D3D viewport
-        //
-#ifdef USEDX7
-        // nothing to do
-        m_pd3dview = &m_pd3dview_data; 
-#else
-        D3DCall(m_pdddevice->GetD3D()->CreateViewport(&m_pd3dview, NULL));
-        D3DCall(m_pd3dd->AddViewport(m_pd3dview));
-#endif
+		memset( &m_Viewport, 0, sizeof( D3DVIEWPORT9 ) );
+//        D3DCall(m_pdddevice->GetD3D()->CreateViewport(&m_pd3dview, NULL));
+//        D3DCall(m_pd3dd->AddViewport(m_pd3dview));
         UpdateViewport();
 
         //
         // default rendering states
         //
 
-        D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_ZFUNC, D3DCMP_LESSEQUAL));
+        D3DCall(m_pd3dd->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL));
     }
 
     bool IsValid()
     {
-        return m_pd3ddevice != NULL;
+		return m_pd3dd != NULL;
+//        return m_pd3ddevice != NULL;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -147,7 +123,7 @@ public:
 
     ~D3DRasterizerImpl()
     {
-        m_pdddevice->RemoveRasterizer(this);
+//        m_pdddevice->RemoveRasterizer(this);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -158,7 +134,6 @@ public:
 
     void Terminate()
     {
-        m_pd3dview = NULL;
         m_pd3dd    = NULL;
     }
 
@@ -172,13 +147,9 @@ public:
         return m_pdddevice->GetD3D();
     }
 
-#ifdef USEDX7
-    IDirect3DViewportX GetViewport()
-#else
-    TRef<IDirect3DViewportX> GetViewport()
-#endif
+    D3DVIEWPORT9 * GetViewport()
     {
-        return m_pd3dview;
+        return &m_Viewport;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -204,14 +175,14 @@ public:
 
     void BeginScene()
     {
-        m_pddsurface->BeginScene();
+  //      m_pddsurface->BeginScene();
         m_pdddevice->BeginScene();
         D3DCall(m_pd3dd->BeginScene());
     }
 
     void EndScene()
     {
-        m_pddsurface->EndScene();
+//        m_pddsurface->EndScene();
 
         //
         //   11/16/99 not checking return codes here since the Permedia 2
@@ -234,34 +205,14 @@ public:
         const WinPoint& size = m_psurface->GetSize();
         float aspect = (float)size.X() / (float)size.Y();
 
-#ifdef USEDX7
-        m_pd3dview->dwX = 0;
-        m_pd3dview->dwY = 0;
-        m_pd3dview->dwWidth = (int)size.X();
-        m_pd3dview->dwHeight = (int)size.Y();
-        m_pd3dview->dvMinZ = 0;
-        m_pd3dview->dvMaxZ = 1;
-        D3DCall(m_pd3dd->SetViewport(m_pd3dview));
-#else
-        D3DVIEWPORT2 view;
+		m_Viewport.X		= 0;
+		m_Viewport.Y		= 0;
+		m_Viewport.Width	= (int) size.X();
+		m_Viewport.Height	= (int) size.Y();
+		m_Viewport.MinZ		= 0.0f;
+		m_Viewport.MaxZ		= 1.0f;
 
-        view.dwSize   = sizeof(D3DVIEWPORT2);
-        view.dwX      = 0;
-        view.dwY      = 0;
-        view.dwWidth  = (int)size.X();
-        view.dwHeight = (int)size.Y();
-
-        view.dvClipX      = -1;
-        view.dvClipWidth  = 2;
-
-        view.dvClipY      =     aspect;
-        view.dvClipHeight = 2 * aspect;
-
-        view.dvMinZ       = 0;
-        view.dvMaxZ       = 1;
-        D3DCall(m_pd3dview->SetViewport2(&view));
-        D3DCall(m_pd3dd->SetCurrentViewport(m_pd3dview));
-#endif
+		m_pd3dd->SetViewport( &m_Viewport );
     }
 
     void SetClipRect(const Rect& rectClip)
@@ -271,7 +222,7 @@ public:
 
     void ClearZBuffer()
     {
-        ZTrace(
+ /*       ZTrace(
               "Clearing ZBuffer (" 
             + ZString(m_rectClip.XMin()) + ", "
             + ZString(m_rectClip.YMin()) + ", "
@@ -285,19 +236,14 @@ public:
             (int)m_rectClip.XMax(),
             (int)m_rectClip.YMax()
         );
-#ifdef USEDX7
-        HRESULT hr = m_pd3dd->Clear(1,&rect,D3DCLEAR_ZBUFFER,0,1,0);
-#else
-        HRESULT hr = m_pd3dview->Clear(1, &rect, D3DCLEAR_ZBUFFER);
-#endif
 
-        //
-        // This is actually a DDraw call so it's possible it can fail.
-        //
+		HRESULT hr = m_pd3ddevice->GetD3DDeviceX()->Clear( 1, &rect, D3DCLEAR_ZBUFFER, 0, 1.0f, 0 );
 
-        if (hr != DDERR_UNSUPPORTED) {
+		// This is actually a DDraw call so it's possible it can fail.
+        if( hr != D3D_OK ) 
+		{
             D3DCall(hr);
-        }
+        }*/
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -308,17 +254,12 @@ public:
 
     bool HasZBuffer()
     {
-        return m_pddsurface->HasZBuffer();
-    }
-
-    bool Has3DAcceleration()
-    {
-        return m_pdddevice->GetAllow3DAcceleration();
+        return true;
     }
 
     Point GetSurfaceSize()
     {
-        return Point::Cast(m_pddsurface->GetSize());
+        return m_Size;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -334,17 +275,10 @@ public:
         if (psurfaceTexture != NULL) {
             DDSurface* pddsurfaceTexture; CastTo(pddsurfaceTexture, psurfaceTexture->GetVideoSurface());
 
-#ifdef USEDX7
             D3DCall(m_pd3dd->SetTexture(
-                0,
+                0, 
                 m_pdddevice->GetTextureX(m_pd3ddevice, pddsurfaceTexture)
             ));
-#else
-            D3DCall(m_pd3dd->SetTexture(
-                0,
-                m_pdddevice->GetTextureX(m_pd3ddevice, pddsurfaceTexture)
-            ));
-#endif
         } else {
             D3DCall(m_pd3dd->SetTexture(0, NULL));
         }
@@ -352,50 +286,27 @@ public:
 
     void SetShadeMode(ShadeMode shadeMode)
     {
-        switch (shadeMode) {
+        switch (shadeMode) 
+		{
             case ShadeModeNone:
             case ShadeModeCopy:
-#ifdef USEDX7
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_DISABLE ));
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE ));
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_CURRENT ));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_CURRENT));
-#else
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMAPBLEND, D3DTBLEND_DECAL));
-#endif
+				// Outdated call to SetRenderState.
+//                D3DCall(m_pd3dd->SetRenderState(D3DRS_TEXTUREMAPBLEND, D3DTBLEND_DECAL));
                 break;
 
             case ShadeModeFlat:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_FLAT));
-#ifdef USEDX7
-                // USEDX7 TODO
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE ));
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE ));
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_CURRENT ));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_CURRENT));
-         
-#else
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMAPBLEND, D3DTBLEND_MODULATE));
-#endif
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT));
+
+				// Outdated call to SetRenderState.
+//                D3DCall(m_pd3dd->SetRenderState(D3DRS_TEXTUREMAPBLEND, D3DTBLEND_MODULATE));
                 break;
 
             case ShadeModeGlobalColor:
             case ShadeModeGouraud:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD));
-#ifdef USEDX7
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE ));
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE ));
-                D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_CURRENT ));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-				D3DCall(m_pd3dd->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_CURRENT));
-#else
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMAPBLEND, D3DTBLEND_MODULATE));
-#endif
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
+
+				// Outdated call to SetRenderState.
+//                D3DCall(m_pd3dd->SetRenderState(D3DRS_TEXTUREMAPBLEND, D3DTBLEND_MODULATE));
                 break;
 
             default:
@@ -407,19 +318,19 @@ public:
     {
         switch (blendMode) {
             case BlendModeSource:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, false));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
                 break;
 
             case BlendModeAdd:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_SRCBLEND, D3DBLEND_ONE));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_ONE));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
                 break;
 
             case BlendModeSourceAlpha:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, true));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_SRCBLEND,  D3DBLEND_ONE));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_DESTBLEND, D3DBLEND_INVSRCALPHA));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
                 break;
 
             default:
@@ -430,43 +341,22 @@ public:
     void SetWrapMode(WrapMode wrapMode)
     {
         switch (wrapMode) {
-#ifdef USEDX7
             case WrapModeNone:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAP0, 0));
+				D3DCall(m_pd3dd->SetRenderState( D3DRS_WRAP0, 0 ) );
                 break;
 
             case WrapModeUCylinder:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAP0, D3DWRAP_U));
+				D3DCall(m_pd3dd->SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_0 ) );
                 break;
 
             case WrapModeVCylinder:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAP0, D3DWRAP_V));
+				D3DCall(m_pd3dd->SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_1 ) );
                 break;
 
             case WrapModeTorus:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAP0, D3DWRAP_U | D3DWRAP_V));
-                break;
-#else
-            case WrapModeNone:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPU, false));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPV, false));
+				D3DCall(m_pd3dd->SetRenderState( D3DRS_WRAP0, D3DWRAPCOORD_0 | D3DWRAPCOORD_1 ) );
                 break;
 
-            case WrapModeUCylinder:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPU, true));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPV, false));
-                break;
-
-            case WrapModeVCylinder:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPU, false));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPV, true));
-                break;
-
-            case WrapModeTorus:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPU, true));
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_WRAPV, true));
-                break;
-#endif
             default:
                 ZError("Invalid WrapMode");
         }
@@ -476,15 +366,15 @@ public:
     {
         switch (cullMode) {
             case CullModeNone:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
                 break;
 
             case CullModeCW:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CW));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW));
                 break;
 
             case CullModeCCW:
-                D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW));
+                D3DCall(m_pd3dd->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
                 break;
 
             case CullModeBoth:
@@ -496,10 +386,15 @@ public:
         }
     }
 
+	bool Has3DAcceleration( )
+	{
+		return true;
+	}
+
     void SetZTest(bool bZTest)
     {
         D3DCall(m_pd3dd->SetRenderState(
-             D3DRENDERSTATE_ZENABLE,
+             D3DRS_ZENABLE,
              HasZBuffer() && bZTest
          ));
     }
@@ -507,53 +402,50 @@ public:
     void SetZWrite(bool bZWrite)
     {
         D3DCall(m_pd3dd->SetRenderState(
-            D3DRENDERSTATE_ZWRITEENABLE,
+            D3DRS_ZWRITEENABLE,
             HasZBuffer() && bZWrite
         ));
     }
 
     void SetLinearFilter(bool bLinearFilter)
     {
-#ifdef USEDX7
-        if (bLinearFilter && Has3DAcceleration()) {
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MAGFILTER, D3DTFG_LINEAR));
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MINFILTER, D3DTFN_LINEAR));
-			D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MIPFILTER, D3DTFP_NONE));
-        } else {
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MAGFILTER, D3DTFG_POINT));
-            D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MINFILTER, D3DTFN_POINT));
-			D3DCall(m_pd3dd->SetTextureStageState(0,D3DTSS_MIPFILTER, D3DTFP_NONE));
-		}
-#else
-        if (bLinearFilter && Has3DAcceleration()) {
-            D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMAG, D3DFILTER_LINEAR));
-            D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMIN, D3DFILTER_LINEAR));
-        } else {
-            D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMAG, D3DFILTER_NEAREST));
-            D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_TEXTUREMIN, D3DFILTER_NEAREST));
+        if( bLinearFilter ) 
+		{
+//            D3DCall(m_pd3dd->SetRenderState(D3DRS_TEXTUREMAG, D3DFILTER_LINEAR));
+//            D3DCall(m_pd3dd->SetRenderState(D3DRS_TEXTUREMIN, D3DFILTER_LINEAR));
+			D3DCall( m_pd3dd->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR ) );
+			D3DCall( m_pd3dd->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR ) );
+        } 
+		else 
+		{
+//            D3DCall(m_pd3dd->SetRenderState(D3DRS_TEXTUREMAG, D3DFILTER_NEAREST));
+  //          D3DCall(m_pd3dd->SetRenderState(D3DRS_TEXTUREMIN, D3DFILTER_NEAREST));
+			D3DCall( m_pd3dd->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT ) );
+			D3DCall( m_pd3dd->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT ) );
         }
-#endif
     }
 
     void SetPerspectiveCorrection(bool bPerspectiveCorrection)
     {
-        D3DCall(m_pd3dd->SetRenderState(
-            D3DRENDERSTATE_TEXTUREPERSPECTIVE,
-            bPerspectiveCorrection || Has3DAcceleration()
-        ));
+		// Now automagically supplied by D3D - ie, all hardware must support it.
+//        D3DCall(m_pd3dd->SetRenderState(
+  //          D3DRS_TEXTUREPERSPECTIVE,
+    //        bPerspectiveCorrection
+      //  ));
     }
 
     void SetDither(bool bDither)
     {
         D3DCall(m_pd3dd->SetRenderState(
-            D3DRENDERSTATE_DITHERENABLE,
-            false //bDither || Has3DAcceleration()
+            D3DRS_DITHERENABLE,
+            true
         ));
     }
 
     void SetColorKey(bool bColorKey)
-    {
-        D3DCall(m_pd3dd->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, bColorKey));
+	{
+		// No longer supported - I think it's configured as part of a texture now.
+//        D3DCall(m_pd3dd->SetRenderState(D3DRS_COLORKEYENABLE, bColorKey));
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -624,7 +516,17 @@ public:
 
     void DrawTrianglesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-        D3DCall(m_pd3dd->DrawIndexedPrimitive(
+		D3DCall( m_pd3dd->SetFVF( D3DFVF_LVERTEX ) );
+		D3DCall( m_pd3dd->DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
+													0,
+													vcount,
+													icount / 3,
+													pindex,
+													D3DFMT_INDEX16,
+													pvertex,
+													sizeof( D3DLVertex ) ) );
+
+/*        D3DCall(m_pd3dd->DrawIndexedPrimitive(
             D3DPT_TRIANGLELIST,
             D3DFVF_LVERTEX,
             (void*)pvertex,
@@ -632,12 +534,21 @@ public:
             (MeshIndex*)pindex,
             icount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
     void DrawLinesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-        D3DCall(m_pd3dd->DrawIndexedPrimitive(
+ 		D3DCall( m_pd3dd->SetFVF( D3DFVF_LVERTEX ) );
+		D3DCall( m_pd3dd->DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
+													0,
+													vcount,
+													icount / 2,
+													pindex,
+													D3DFMT_INDEX16,
+													pvertex,
+													sizeof( D3DLVertex ) ) );
+/*		D3DCall(m_pd3dd->DrawIndexedPrimitive(
             D3DPT_LINELIST,
             D3DFVF_LVERTEX,
             (void*)pvertex,
@@ -645,23 +556,37 @@ public:
             (MeshIndex*)pindex,
             icount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
     void DrawPointsD3D(const D3DLVertex* pvertex, int vcount)
     {
-        D3DCall(m_pd3dd->DrawPrimitive(
+ 		D3DCall( m_pd3dd->SetFVF( D3DFVF_LVERTEX ) );
+		D3DCall( m_pd3dd->DrawPrimitiveUP(	D3DPT_POINTLIST,
+											vcount,
+											pvertex,
+											sizeof( D3DLVertex ) ) );
+/*        D3DCall(m_pd3dd->DrawPrimitive(
             D3DPT_POINTLIST,
             D3DFVF_LVERTEX,
             (void*)pvertex,
             vcount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
     void DrawTrianglesD3D(const D3DVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-        D3DCall(m_pd3dd->DrawIndexedPrimitive(
+  		D3DCall( m_pd3dd->SetFVF( D3DFVF_VERTEX ) );
+		D3DCall( m_pd3dd->DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
+													0,
+													vcount,
+													icount / 3,
+													pindex,
+													D3DFMT_INDEX16,
+													pvertex,
+													sizeof( D3DVertex ) ) );
+/*		D3DCall(m_pd3dd->DrawIndexedPrimitive(
             D3DPT_TRIANGLELIST,
             D3DFVF_VERTEX,
             (void*)pvertex,
@@ -669,12 +594,21 @@ public:
             (MeshIndex*)pindex,
             icount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
     void DrawLinesD3D(const D3DVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-        D3DCall(m_pd3dd->DrawIndexedPrimitive(
+ 		D3DCall( m_pd3dd->SetFVF( D3DFVF_VERTEX ) );
+		D3DCall( m_pd3dd->DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
+													0,
+													vcount,
+													icount / 2,
+													pindex,
+													D3DFMT_INDEX16,
+													pvertex,
+													sizeof( D3DVertex ) ) );
+/*		D3DCall(m_pd3dd->DrawIndexedPrimitive(
             D3DPT_LINELIST,
             D3DFVF_VERTEX,
             (void*)pvertex,
@@ -682,18 +616,23 @@ public:
             (MeshIndex*)pindex,
             icount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
     void DrawPointsD3D(const D3DVertex* pvertex, int vcount)
     {
-        D3DCall(m_pd3dd->DrawPrimitive(
+ 		D3DCall( m_pd3dd->SetFVF( D3DFVF_VERTEX ) );
+		D3DCall( m_pd3dd->DrawPrimitiveUP(	D3DPT_POINTLIST,
+											vcount,
+											pvertex,
+											sizeof( D3DVertex ) ) );
+/*		D3DCall(m_pd3dd->DrawPrimitive(
             D3DPT_POINTLIST,
             D3DFVF_VERTEX,
             (void*)pvertex,
             vcount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
 
@@ -702,7 +641,16 @@ public:
         CheckVertices(pvertex, vcount);
         CheckIndices(pindex, icount, vcount);
 
-        D3DCall(m_pd3dd->DrawIndexedPrimitive(
+  		D3DCall( m_pd3dd->SetFVF( D3DFVF_TLVERTEX ) );
+		D3DCall( m_pd3dd->DrawIndexedPrimitiveUP(	D3DPT_TRIANGLELIST,
+													0,
+													vcount,
+													icount / 3,
+													pindex,
+													D3DFMT_INDEX16,
+													pvertex,
+													sizeof( VertexScreen ) ) );
+/*		D3DCall(m_pd3dd->DrawIndexedPrimitive(
             D3DPT_TRIANGLELIST,
             D3DFVF_TLVERTEX,
             (void*)pvertex,
@@ -710,7 +658,7 @@ public:
             (MeshIndex*)pindex,
             icount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
     void DrawLines(const VertexScreen* pvertex, int vcount, const MeshIndex* pindex, int icount)
@@ -718,7 +666,16 @@ public:
         CheckVertices(pvertex, vcount);
         CheckIndices(pindex, icount, vcount);
 
-        D3DCall(m_pd3dd->DrawIndexedPrimitive(
+ 		D3DCall( m_pd3dd->SetFVF( D3DFVF_TLVERTEX ) );
+		D3DCall( m_pd3dd->DrawIndexedPrimitiveUP(	D3DPT_LINELIST,
+													0,
+													vcount,
+													icount / 2,
+													pindex,
+													D3DFMT_INDEX16,
+													pvertex,
+													sizeof( VertexScreen ) ) );
+/*		D3DCall(m_pd3dd->DrawIndexedPrimitive(
             D3DPT_LINELIST,
             D3DFVF_TLVERTEX,
             (void*)pvertex,
@@ -726,14 +683,13 @@ public:
             (MeshIndex*)pindex,
             icount,
             m_dwDrawPrimitiveFlags
-        ));
+        ));*/
     }
 
     void DrawPoints(const VertexScreen* pvertex, int vcount)
     {
-        PixelFormat* ppf   = m_psurface->GetPixelFormat();
-        if (ppf->PixelBytes() == 2) { // KGJV 32B
-
+/*        if (true) {
+            PixelFormat* ppf   = m_psurface->GetPixelFormat();
             int          pitch = m_psurface->GetPitch();
             BYTE*        pdata = m_psurface->GetWritablePointer();
 
@@ -783,23 +739,27 @@ public:
             }
 
             m_psurface->ReleasePointer();
-        } else {
+        } else {*/
             CheckVertices(pvertex, vcount);
-
-            D3DCall(m_pd3dd->DrawPrimitive(
+ 			D3DCall( m_pd3dd->SetFVF( D3DFVF_TLVERTEX ) );
+			D3DCall( m_pd3dd->DrawPrimitiveUP(	D3DPT_POINTLIST,
+												vcount,
+												pvertex,
+												sizeof( VertexScreen ) ) );
+/*            D3DCall(m_pd3dd->DrawPrimitive(
                 D3DPT_POINTLIST,
                 D3DFVF_TLVERTEX,
                 (void*)pvertex,
                 vcount,
                 m_dwDrawPrimitiveFlags
-            ));
-        }
+            ));*/
+ //       }
     }
 };
 
-TRef<D3DRasterizer> CreateD3DRasterizer(PrivateSurface* psurface)
+TRef<D3DRasterizer> CreateD3DRasterizer(PrivateSurface* psurface, HWND hParentWindow )
 {
-    TRef<D3DRasterizer> prasterizer = new D3DRasterizerImpl(psurface);
+    TRef<D3DRasterizer> prasterizer = new D3DRasterizerImpl( psurface, hParentWindow );
 
     return prasterizer->IsValid() ? prasterizer : NULL;
 }

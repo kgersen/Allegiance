@@ -3,7 +3,7 @@
  *	@brief 	Mini Mbedthis Portable Runtime (MPR) Environment.
  *	@copy	default
  *	
- *	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
+ *	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
  *	
  *	This software is distributed under commercial and open source licenses.
  *	You may use the GPL open source license described below or you may acquire 
@@ -35,11 +35,11 @@
 /*
  *	Find out about our configuration
  */
-	#include 	"buildConfig.h"
+	#include 	"config.h"
 
 #if BLD_APPWEB
 	/*
-	 *	If building within Appweb, use the full MPR
+	 *	If building within AppWeb, use the full MPR
 	 */
 	#include 	"mpr.h"
 #else
@@ -188,9 +188,7 @@ typedef int 			bool;
 	typedef __int64 			int64;
 	typedef unsigned __int64 	uint64;
 #else
-#if !CYGWIN
 	#define O_BINARY 0
-#endif
 	__extension__ typedef long long int int64;
 	__extension__ typedef unsigned long long int uint64;
 #endif
@@ -216,6 +214,21 @@ typedef struct {
  *	equivalents.
  */
 
+#if BLD_GOAHEAD_WEBSERVER
+#include "uemf.h"
+#define mprMalloc(size) balloc(B_L, size)
+#define mprFree(ptr) bfreeSafe(B_L, ptr)
+#define mprRealloc(ptr, size) brealloc(B_L, ptr, size)
+#define mprStrdup(ptr) bstrdup(B_L, ptr)
+#define mprAllocSprintf fmtAlloc
+#define mprAllocVsprintf fmtValloc
+#define mprSprintf fmtStatic
+#define mprItoa stritoa
+#define mprLog trace
+#define mprBreakpoint(file, line, cond) \
+	error(file, line, E_BLD_FEATURE_ASSERT, T("%s"), cond)
+
+#else /* !BLD_GOAHEAD_WEBSERVER */
 #define mprMalloc malloc
 #define mprSprintf snprintf
 #define mtVsprintf vsnprintf
@@ -228,6 +241,7 @@ extern int 		mprAllocSprintf(char **msgbuf, int maxSize, char *fmt, ...);
 extern char 	*mprItoa(int num, char *buf, int width);
 extern void		mprLog(int level, char *fmt, ...);
 extern void		mprBreakpoint(char *file, int line, char *msg);
+#endif /* BLD_GOAHEAD_WEBSERVER */
 
 extern MprArray	*mprCreateArray();
 extern void 	mprDestroyArray(MprArray *array);
@@ -254,5 +268,7 @@ extern int 		mprMemcpy(char *dest, int destMax, const char *src, int nbytes);
  * tab-width: 4
  * c-basic-offset: 4
  * End:
- * vim: sw=4 ts=4 
+ * vim:tw=78
+ * vim600: sw=4 ts=4 fdm=marker
+ * vim<600: sw=4 ts=4
  */

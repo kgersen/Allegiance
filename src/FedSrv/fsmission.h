@@ -326,6 +326,11 @@ public:
   void                  SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv);
   void					SetSideActive(SideID sideid, bool bActive); // KGJV #62
   bool					GetSideActive(SideID sideid);				// KGJV #62
+
+  void					SetSideAllies(SideID sideid, char Allies);      // #ALLY
+  char					GetSideAllies(SideID sideid);                   // #ALLY
+  void                  UpdateAlliances(SideID sideID,SideID sideAlly); // #ALLY
+
   bool					GetAllowEmptyTeams() { return m_misdef.misparms.bAllowEmptyTeams;} // KGJV #62
   void					SetAllowEmptyTeams(bool bValue) { m_misdef.misparms.bAllowEmptyTeams = bValue;} // KGJV #62
   void                  DeactivateSide(IsideIGC * pside);
@@ -421,7 +426,7 @@ public:
   {
     return m_strDetailsFiles;
   }
-  void SetDetailsFiles(const ZString& strDetailsFiles) //Imago: (AllSrvModule) Sets mml file(s) to display when user clicks 'details' in games list. Files seperated by spaces, must be in the directory specified by ZoneEventDetailsURL in config file.  The mml file should be  last list.
+  void SetDetailsFiles(const ZString& strDetailsFiles)
   {
     m_strDetailsFiles = strDetailsFiles;
     SetLobbyIsDirty();

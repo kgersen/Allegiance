@@ -23,7 +23,8 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
     public:
         CwarpIGC(void)
         :
-            m_destination(NULL)
+            m_destination(NULL),
+			m_bFixedPosition(false) // KG- added
         {
         }
 
@@ -145,18 +146,16 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
             p->data().timeExplosion = timeExplosion;
             p->data().pmt = pmt;
 
-            // add the pulse effects  Imago added to warp rez enhancment by KGJV 7/23/08
+            // add the pulse effects
             Color       blastColor (0.6f, 0.8f, 1.0f);
             float       fExplodeTime = timeExplosion - Time::Now ();
-            if (pmt->HasCapability(c_eabmWarpBombDual))
-				GetCluster ()->GetClusterSite ()->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
+            GetCluster ()->GetClusterSite ()->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
             IwarpIGC*   pDestination = GetDestination();
             pDestination->GetCluster ()->GetClusterSite ()->AddPulse (fExplodeTime, m_destination->GetPosition (), pmt->GetBlastRadius (), blastColor);
 
             // this should tell the aleph rendering site about the pulse
             ThingSite*  pThingSite = GetThingSite ();
-            if (pmt->HasCapability(c_eabmWarpBombDual))
-				pThingSite->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
+            pThingSite->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
             pThingSite = pDestination->GetThingSite ();
             pThingSite->AddPulse (fExplodeTime, GetPosition (), pmt->GetBlastRadius (), blastColor);
 
@@ -167,11 +166,17 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
         {
             return &m_bombs;
         }
+		// KG - added 
+		virtual bool IsFixedPosition()
+		{
+			return m_bFixedPosition;
+		}
 
     private:
         IwarpIGC*           m_destination;
         WarpDef             m_warpDef;
         WarpBombList        m_bombs;
+		bool				m_bFixedPosition; // KG - added to prevent randomization
 };
 
 #endif //__WARPIGC_H_

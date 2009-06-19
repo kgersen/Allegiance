@@ -34,7 +34,7 @@ inline const float DegreesFromRadians(float value) { return value * 180.0f / pi;
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Return the next larger multiple of size.
+// Return the next larger multiple of size.  
 //
 //////////////////////////////////////////////////////////////////////////////
 
@@ -69,8 +69,8 @@ inline DWORD MakeMask(int bits, int shift)
 //
 //////////////////////////////////////////////////////////////////////////////
 
-inline bool odd(int value)
-{
+inline bool odd(int value) 
+{ 
     return value >= 0 ? value & 1 : !(value & 1);
 }
 
@@ -80,6 +80,7 @@ inline ValueType bound(ValueType value, ValueType min, ValueType max)
     return value < min ? min : (value > max ? max : value);
 }
 
+// KG- renamed swap to Swap to avoid conflict issue with VC9SP1 and future releases
 template<class Type>
 inline void Swap(Type& x, Type& y)
 {
@@ -101,18 +102,15 @@ inline ValueType sign(ValueType x) { return x >= (ValueType)0 ? (ValueType)1 : (
 #if _MSC_VER < 1310
 inline float abs(float x)              { return x < 0 ? -x : x;        }
 #endif
-inline float mod(float x, float limit)
-{
+inline float mod(float x, float limit) 
+{ 
     if (limit == 0) {
         return 0;
     } else {
-        return (float)fmod(x, limit);
+        return (float)fmod(x, limit); 
     }
 }
 
-#ifdef DREAMCAST
-    #include "floatmathlib.h"
-#else
 // VS.Net 2003 port
 #if _MSC_VER < 1310
     inline float floor(float x)            { return floorf(x);             }
@@ -141,7 +139,6 @@ inline float mod(float x, float limit)
         ZAssert(x >= -1 && x <= 1);
         return asinf(x);
     }
-#endif
 #endif
 
 

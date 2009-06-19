@@ -150,7 +150,6 @@ void retailf(const char* format, ...)
 {
     if (g_bOutput)
     {
-#ifndef DREAMCAST        
         const size_t size = 2048; //Avalance: Changed to log longer messages. (From 512)
         char         bfr[size];
 
@@ -160,9 +159,6 @@ void retailf(const char* format, ...)
         va_end(vl);
 
         ZDebugOutputImpl(bfr);
-#else
-        ZDebugOutputImpl(format);
-#endif
     }
 }
 
@@ -246,7 +242,6 @@ extern bool g_bOutput = true;
     {
         if (g_bOutput)
         {
-#ifndef DREAMCAST        
             const size_t size = 2048; //Avalanche: Changed to handle longer messages (from 512)
             char         bfr[size];
 
@@ -256,15 +251,11 @@ extern bool g_bOutput = true;
             va_end(vl);
 
             ZDebugOutputImpl(bfr);
-#else
-            ZDebugOutputImpl(format);
-#endif
         }
     }
 
     void InitializeDebugf()
     {
-#ifndef DREAMCAST        
         HKEY hKey;
         DWORD dwType;
         char  szValue[20];
@@ -327,17 +318,14 @@ extern bool g_bOutput = true;
                     NULL
                 );
         }
-#endif
     }
 
     void TerminateDebugf()
     {
-#ifndef DREAMCAST        
         if (g_logfile) {
             CloseHandle(g_logfile);
             g_logfile = NULL;
         }
-#endif
     }
 #endif  // SRVLOG or _DEBUG
 
@@ -437,6 +425,11 @@ void Win32App::OnAssertBreak()
     (*(int*)0) = 0;
 }
 
+// KGJV - added for DX9 behavior - default is false. override in parent to change this
+bool Win32App::IsBuildDX9()
+{
+	return false;
+}
 //////////////////////////////////////////////////////////////////////////////
 //
 // Win Main
@@ -467,12 +460,17 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
             BreakOnError(hr = Window::StaticInitialize());
 
-#ifndef BUILD_DX9
-            BreakOnError(hr = g_papp->Initialize(lpszCmdLine));
-#else
-			// Don't throw an error, if the user selects cancel it can return E_FAIL.
-            hr = g_papp->Initialize(lpszCmdLine);
-#endif // BUILD_DX9
+// BUILD_DX9 - KGJV use runtime dynamic instead at preprocessor level
+			if (g_papp->IsBuildDX9())
+			{
+				BreakOnError(hr = g_papp->Initialize(lpszCmdLine));
+			}
+			else
+			{
+				// Don't throw an error, if the user selects cancel it can return E_FAIL.
+				hr = g_papp->Initialize(lpszCmdLine);
+			}
+// BUILD_DX9
 
             //
             // Win32App::Initialize() return S_FALSE if this is a command line app and

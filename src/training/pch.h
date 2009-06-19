@@ -52,7 +52,7 @@
 #include "effect.h"
 #include "utility.h"
 #include "Zone.h"
-#include "zauth.h"
+//#include "zauth.h" KG removed
 #include "igc.h"
 
 #include "trekinput.h"

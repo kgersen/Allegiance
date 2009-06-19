@@ -11,9 +11,9 @@
 #include "main.h"
 #include "regkey.h"
 
-#ifdef BUILD_DX9
+// BUILD_DX9
 #include "VideoSettingsDX9.h"
-#endif //BUILD_DX9
+// BUILD_DX9
 
 extern bool g_bEnableSound = true;
 extern bool g_bCheckFiles;
@@ -376,10 +376,10 @@ public:
         // Fix success HRESULT
         hr = S_OK;
 
-#ifndef BUILD_DX9
+// BUILD_DX9
 		// For the D3D build, move this to after the window has been created, as we need a valid HWND to create the device.
-		EffectApp::Initialize(strCommandLine);
-#endif // BUILD_DX9
+//		EffectApp::Initialize(strCommandLine);
+// BUILD_DX9
 
         //
         // get the artpath
@@ -487,38 +487,39 @@ public:
             pathStr = logFileName;
         }
 
-#ifndef BUILD_DX9
+// BUILD_DX9
 		// Now set later for D3D build, as modeller isn't valid yet.
-		GetModeler()->SetArtPath(pathStr);
-#endif // BUILD_DX9
+		//GetModeler()->SetArtPath(pathStr);
+// BUILD_DX9
  		UTL::SetArtPath(pathStr);
 		
 		/*{
 			HRESULT hr = FirstRunEula(pathStr);
 		
-			if (hr == E_FAIL)
-			{
-				::MessageBox(NULL, "Error while trying to load ebueula.dll. Please reboot and retry.  If it still fails, reinstall Allegiance", "Initialization Error", MB_OK);
-				return S_FALSE;
-			}
-			else if (hr == S_FALSE) 
-			{
-				::MessageBox(NULL, "You must accept the End User License Agreement before playing the Allegiance", "Allegiance", MB_OK);
-				return S_FALSE;
-			}
-			else
-			{
-				assert(hr == S_OK);
-			}
-		}*/
+          if (hr == E_FAIL)
+          {
+              ::MessageBox(NULL, "Error while trying to load ebueula.dll. Please reboot and retry.  If it still fails, reinstall Allegiance", "Initialization Error", MB_OK);
+              return S_FALSE;
+          }
+          else
+          if (hr == S_FALSE) 
+          {
+              ::MessageBox(NULL, "You must accept the End User License Agreement before playing the Allegiance", "Allegiance", MB_OK);
+              return S_FALSE;
+          }
+          else
+          {
+            assert(hr == S_OK);
+          }
+        }*/
 
-#ifndef BUILD_DX9
+// BUILD_DX9
         //
         // load the fonts
         //
 
-        TrekResources::Initialize(GetModeler());
-#endif // BUILD_DX9
+//        TrekResources::Initialize(GetModeler());
+// BUILD_DX9
 
         //
         // Initialize the runtime
@@ -657,13 +658,13 @@ public:
         // Create the window
         //
 
-#ifdef BUILD_DX9
+// BUILD_DX9
 		// Ask the user for video settings.
-		if( PromptUserForVideoSettings( GetModuleHandle(NULL), pathStr ) == false )
+		if( PromptUserForVideoSettings( GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT "\\3DSettings" ) == false )
 		{
 			return E_FAIL;
 		}
-		CD3DDevice9::UpdateCurrentMode( );
+		CD3DDevice9::Get()->UpdateCurrentMode( );
 
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(
@@ -676,18 +677,18 @@ public:
                 bPrimary,
                 bSecondary
             );
-#else
-        TRef<TrekWindow> pwindow = 
-            TrekWindow::Create(
-                this, 
-                strCommandLine,
-                bMovies,
-                bSoftware,
-                bHardware,
-                bPrimary,
-                bSecondary
-            );
-#endif // BUILD_DX9
+// #else
+        //TRef<TrekWindow> pwindow = 
+        //    TrekWindow::Create(
+        //        this, 
+        //        strCommandLine,
+        //        bMovies,
+        //        bSoftware,
+        //        bHardware,
+        //        bPrimary,
+        //        bSecondary
+        //    );
+// BUILD_DX9
 
         if (!pwindow->IsValid()) {
             return E_FAIL;
