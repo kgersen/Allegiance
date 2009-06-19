@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ZAuth">
+      <UniqueIdentifier>{11e96b58-2725-401d-8df0-ca4e732ffdf5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\_Utility\CollisionEntry.cpp" />
+    <ClCompile Include="..\src\_Utility\CollisionQueue.cpp" />
+    <ClCompile Include="..\src\_Utility\CRC.cpp" />
+    <ClCompile Include="..\src\_Utility\Endpoint.cpp" />
+    <ClCompile Include="..\src\_Utility\HitTest.cpp" />
+    <ClCompile Include="..\src\_Utility\KDnode.cpp" />
+    <ClCompile Include="..\src\_Utility\KDroot.cpp" />
+    <ClCompile Include="..\src\_Utility\Messages.cpp" />
+    <ClCompile Include="..\src\_Utility\pch.cpp" />
+    <ClCompile Include="..\src\_Utility\Utility.cpp" />
+    <ClCompile Include="..\src\_Utility\zauth.cpp">
+      <Filter>ZAuth</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Inc\MessageVersion.h" />
+    <ClInclude Include="..\src\_Utility\CRC.h" />
+    <ClInclude Include="..\src\_Utility\listwrappers.h" />
+    <ClInclude Include="..\src\_Utility\pch.h" />
+    <ClInclude Include="..\src\_Utility\Utility.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\Zone\zauth.h" />
+    <CustomBuild Include="..\src\Zone\Zone.h" />
+    <CustomBuild Include="..\src\Zone\ZoneAuth.h" />
+  </ItemGroup>
+</Project>

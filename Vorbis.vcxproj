@@ -1,0 +1,128 @@
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{D4369894-F7EF-4937-91C5-5D4C67A29EF9}</ProjectGUID>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\Vorbis\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\Vorbis\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\Vorbis\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\Vorbis\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>vorbis_static.pch</PrecompiledHeaderOutputFile>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>vorbis_static.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Vorbis\analysis.c" />
+    <ClCompile Include="..\src\Vorbis\bitrate.c" />
+    <ClCompile Include="..\src\Vorbis\bitwise.c" />
+    <ClCompile Include="..\src\Vorbis\block.c" />
+    <ClCompile Include="..\src\Vorbis\codebook.c" />
+    <ClCompile Include="..\src\Vorbis\envelope.c" />
+    <ClCompile Include="..\src\Vorbis\floor0.c" />
+    <ClCompile Include="..\src\Vorbis\floor1.c" />
+    <ClCompile Include="..\src\Vorbis\framing.c" />
+    <ClCompile Include="..\src\Vorbis\info.c" />
+    <ClCompile Include="..\src\Vorbis\lookup.c" />
+    <ClCompile Include="..\src\Vorbis\lpc.c" />
+    <ClCompile Include="..\src\Vorbis\lsp.c" />
+    <ClCompile Include="..\src\Vorbis\mapping0.c" />
+    <ClCompile Include="..\src\Vorbis\mdct.c" />
+    <ClCompile Include="..\src\Vorbis\psy.c" />
+    <ClCompile Include="..\src\Vorbis\registry.c" />
+    <ClCompile Include="..\src\Vorbis\res0.c" />
+    <ClCompile Include="..\src\Vorbis\sharedbook.c" />
+    <ClCompile Include="..\src\Vorbis\smallft.c" />
+    <ClCompile Include="..\src\Vorbis\synthesis.c" />
+    <ClCompile Include="..\src\Vorbis\vorbisfile.c" />
+    <ClCompile Include="..\src\Vorbis\window.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Inc\vorbis\codec.h" />
+    <ClInclude Include="..\src\Inc\ogg\ogg.h" />
+    <ClInclude Include="..\src\Inc\ogg\os_types.h" />
+    <ClInclude Include="..\src\Vorbis\backends.h" />
+    <ClInclude Include="..\src\Vorbis\bitrate.h" />
+    <ClInclude Include="..\src\Vorbis\codebook.h" />
+    <ClInclude Include="..\src\Vorbis\codec_internal.h" />
+    <ClInclude Include="..\src\Vorbis\envelope.h" />
+    <ClInclude Include="..\src\Vorbis\highlevel.h" />
+    <ClInclude Include="..\src\Vorbis\lookup.h" />
+    <ClInclude Include="..\src\Vorbis\lookup_data.h" />
+    <ClInclude Include="..\src\Vorbis\lpc.h" />
+    <ClInclude Include="..\src\Vorbis\lsp.h" />
+    <ClInclude Include="..\src\Vorbis\masking.h" />
+    <ClInclude Include="..\src\Vorbis\mdct.h" />
+    <ClInclude Include="..\src\Vorbis\misc.h" />
+    <ClInclude Include="..\src\Vorbis\os.h" />
+    <ClInclude Include="..\src\Vorbis\psy.h" />
+    <ClInclude Include="..\src\Vorbis\registry.h" />
+    <ClInclude Include="..\src\Vorbis\scales.h" />
+    <ClInclude Include="..\src\Vorbis\smallft.h" />
+    <ClInclude Include="..\src\Vorbis\window.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
