@@ -4039,6 +4039,7 @@ class IwarpIGC : public ImodelIGC
                                             ImissileTypeIGC*   pmt) = 0;
         virtual const WarpBombList* GetBombs(void) const = 0;
 		virtual bool                IsFixedPosition()    = 0; // KG- added
+		virtual double				MassLimit()			 = 0; // Andon - Added for Mass Limted Alephs
 };
 
 class ItreasureIGC : public ImodelIGC

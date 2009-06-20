@@ -171,12 +171,18 @@ class CwarpIGC : public TmodelIGC<IwarpIGC>
 		{
 			return m_bFixedPosition;
 		}
+		//Andon: Added for aleph mass limits
+		virtual double MassLimit()
+		{
+			return m_MassLimit;
+		}
 
     private:
         IwarpIGC*           m_destination;
         WarpDef             m_warpDef;
         WarpBombList        m_bombs;
 		bool				m_bFixedPosition; // KG - added to prevent randomization
+		double				m_MassLimit; //Andon: Added for aleph mass limts
 };
 
 #endif //__WARPIGC_H_

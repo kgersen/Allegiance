@@ -107,6 +107,22 @@ TRef<Image> ModelData::GetSideIcon()
     return Image::GetEmpty();
 }
 
+//Andon: Added for retrieving aleph mass limits
+float ModelData::GetMassLimit()
+{
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot)
+    {
+    case OT_warp:
+		{
+			IwarpIGC * pwarp;
+			return pwarp->GetMass();
+		}
+    default:
+        return 0.f;
+    }
+}
+
 float ModelData::GetSpeed()
 {
     float   speed = 0.0f;
