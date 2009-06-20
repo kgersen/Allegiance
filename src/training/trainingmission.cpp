@@ -552,8 +552,6 @@ namespace Training
             ds.squadID = NA;
             IsideIGC*           pSide = static_cast<IsideIGC*> (pCore->CreateObject(now, OT_side, &ds, sizeof(ds)));
 
-			pSide->SetAllies(NA); //Training AI alliances fix --Imago
-
             // make sure the player's side has all the tech bits
             if (sid == 0)
             {
@@ -587,6 +585,7 @@ namespace Training
             fmMissionDef.rgfReady[q] = true;
             fmMissionDef.rgfForceReady[q] = true;
             fmMissionDef.rgfActive[q] = true;
+			fmMissionDef.rgfAllies[q] = NA; //Imago 6/20/09 fix training AI for allies
         }
         MissionInfo* pMissionInfo = trekClient.MyMission();
         ZAssert (pMissionInfo);
