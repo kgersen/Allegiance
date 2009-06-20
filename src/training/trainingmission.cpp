@@ -532,7 +532,7 @@ namespace Training
             civs[iSideIndex] = civs[iSideIndex % iCivCount];
         */
 
-        // set up the sides
+        // set up the sides  
         for (SideID sid = 0; sid < c_cSidesMax; sid++)
         {
             IcivilizationIGC*   pCiv = pCore->GetCivilization (civs[sid]);
@@ -551,6 +551,8 @@ namespace Training
             ds.nKills = ds.nDeaths = ds.nBaseKills = ds.nBaseCaptures = ds.nFlags = ds.nArtifacts = 0;
             ds.squadID = NA;
             IsideIGC*           pSide = static_cast<IsideIGC*> (pCore->CreateObject(now, OT_side, &ds, sizeof(ds)));
+
+			pSide->SetAllies(NA); //Training AI alliances fix --Imago
 
             // make sure the player's side has all the tech bits
             if (sid == 0)
