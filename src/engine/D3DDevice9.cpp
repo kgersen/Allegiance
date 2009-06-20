@@ -444,7 +444,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 	// Configure the back buffer width setting.
 	if( bWindowed == true )
 	{
-		if( m_sD3DDev9.d3dPresParams.BackBufferWidth != dwWidth )
+		if( m_sD3DDev9.d3dPresParams.BackBufferWidth != dwWidth || m_sD3DDev9.d3dPresParams.BackBufferHeight != dwHeight)
 		{
 			m_sD3DDev9.d3dPresParams.BackBufferWidth = dwWidth;
 			m_sD3DDev9.d3dPresParams.BackBufferHeight = dwHeight;
@@ -456,7 +456,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 	}
 	else
 	{
-		if( m_sD3DDev9.d3dPresParams.BackBufferWidth != dwWidth )
+		if( m_sD3DDev9.d3dPresParams.BackBufferWidth != dwWidth || m_sD3DDev9.d3dPresParams.BackBufferHeight != dwHeight)
 		{
 			m_sD3DDev9.d3dPresParams.BackBufferWidth = dwWidth;
 			m_sD3DDev9.d3dPresParams.BackBufferHeight = dwHeight;
@@ -467,9 +467,13 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		m_sD3DDev9.dwCurrentFullscreenHeight = dwHeight;
 	}
 
-	debugf( "CD3DDevice9: switching to %s, size %d x %d\n", + bWindowed ? "windowed" : "fullscreen", 
+#ifdef _DEBUG
+		char szBuffer[256];
+		sprintf_s( szBuffer, 256, "CD3DDevice9: switching to %s, size %d x %d\n", + bWindowed ? "windowed" : "fullscreen", 
 				m_sD3DDev9.d3dPresParams.BackBufferWidth, 
-				m_sD3DDev9.d3dPresParams.BackBufferHeight );
+				m_sD3DDev9.d3dPresParams.BackBufferHeight);
+		OutputDebugString( szBuffer );
+#endif
 
 	if( bResetRequired == true )
 	{
@@ -496,6 +500,14 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 		// Perform the reset.
 		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams );
+
+		// lots of crashes here...
+#ifdef _DEBUG
+		char szBuffer[256];
+		sprintf_s( szBuffer, 256, "Reset device got %d\n",
+		hr );
+		OutputDebugString( szBuffer );
+#endif
 		_ASSERT( hr == D3D_OK );
 
 		// Initialise the caches.
@@ -1380,6 +1392,7 @@ HRESULT CD3DDevice9::BeginScene()
 #ifdef EnablePerformanceCounters
 	m_pPerformanceCounters[ eD9S_CurrentTexMem ] = (int)m_sD3DDev9.pD3DDevice->GetAvailableTextureMem();
 #endif // EnablePerformanceCounters
+
 
 	_ASSERT( hr == D3D_OK );
 	return hr;
