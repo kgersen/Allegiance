@@ -441,7 +441,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		}
 	}
 
-	// Configure the back buffer width setting.
+	// Configure the back buffer width setting.  Imago changed on 6/20/09 to look at height as well.
 	if( bWindowed == true )
 	{
 		if( m_sD3DDev9.d3dPresParams.BackBufferWidth != dwWidth || m_sD3DDev9.d3dPresParams.BackBufferHeight != dwHeight)
@@ -500,14 +500,6 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 		// Perform the reset.
 		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams );
-
-		// lots of crashes here...
-#ifdef _DEBUG
-		char szBuffer[256];
-		sprintf_s( szBuffer, 256, "Reset device got %d\n",
-		hr );
-		OutputDebugString( szBuffer );
-#endif
 		_ASSERT( hr == D3D_OK );
 
 		// Initialise the caches.
