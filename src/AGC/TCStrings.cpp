@@ -52,7 +52,7 @@ STDMETHODIMP CTCStrings::get__NewEnum(IUnknown** ppunkEnum)
   // Copy the elements of stored vector to a temporary CComVariant vector
   std::vector<CComVariant> vecTemp(m_vecStrings.size(), CComVariant());
   for (UINT i = 0; i < m_vecStrings.size(); ++i)
-    vecTemp[i] = m_vecStrings[i];
+    vecTemp[i] = m_vecStrings[i].m_T.Copy();
 
   // Initialize enumerator object with the temporary CComVariant vector
   // VS.Net 2003 port - accomodate change in iterators under VC.Net 200x (see 'breaking changes' in vsnet doc)
