@@ -127,22 +127,6 @@ float ModelData::IsFriendly()
 	}
 	return 3;
 }
-//Andon: Added for retrieving aleph mass limits
-float ModelData::GetMassLimit()
-{
-    ObjectType ot = GetModelTypeInternal();
-    switch (ot)
-    {
-    case OT_warp:
-		{
-			IwarpIGC * pwarp = (IwarpIGC *)ot; // Imago 6/21/09
-			return pwarp->GetMass();
-		}
-    default:
-        return 0.f;
-    }
-}
-
 float ModelData::GetSpeed()
 {
     float   speed = 0.0f;

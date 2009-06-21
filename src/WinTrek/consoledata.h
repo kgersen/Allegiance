@@ -166,7 +166,6 @@ public:
     ZString     GetSideName();
     Color       GetSideColor();
     TRef<Image> GetSideIcon();
-	float		GetMassLimit(); //Andon: Added for GetMassLimit usage
 	float		GetX(); //Andon: Added for GetX
 	float		GetY(); //Andon: Added for GetY
 	float		GetZ(); //Andon: Added for GetZ
@@ -234,9 +233,6 @@ public:
         pns->AddMember("GetSideName",  new TMemberSnapshotValueFactory<ModelData, ZString>(&ModelData::GetSideName, ""));
         pns->AddMember("GetSideColor",  new TMemberSnapshotValueFactory<ModelData, Color>(&ModelData::GetSideColor, Color(255,255,255)));
 //        pns->AddMember("GetSideIcon",  new TMemberSnapshotValueFactory<ModelData, TRef<Image> >(GetSideIcon));
-		//pns->AddMember("GetMass",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMass, 0.0f)); // Imago removed (Andon)
-        pns->AddMember("GetMassLimit",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMassLimit, 0.0f)); //Andon: Added for GetMassLimit usage
-		//pns->AddMember("GetSpeed",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetSpeed, 0.0f)); // Imago removed (Andon)
         pns->AddMember("GetMass",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMass, 0.0f));
         pns->AddMember("GetX",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetX, 0.0f)); //Andon: Added for GetX
         pns->AddMember("GetY",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetY, 0.0f)); //Andon: Added for GetY
@@ -395,6 +391,7 @@ public:
     }
 
 };
+
 
 
 
