@@ -66,6 +66,10 @@
     <ClCompile Include="..\src\engine\dinput.cpp">
       <Filter>Input</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\engine\DX9PackFile.cpp" />
+    <ClCompile Include="..\src\engine\engine.cpp" />
+    <ClCompile Include="..\src\engine\engineapp.cpp" />
+    <ClCompile Include="..\src\engine\enginewindow.cpp" />
     <ClCompile Include="..\src\engine\font.cpp">
       <Filter>Font</Filter>
     </ClCompile>
@@ -75,6 +79,7 @@
     <ClCompile Include="..\src\engine\geometry.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\engine\HashTable.cpp" />
     <ClCompile Include="..\src\engine\image.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
@@ -99,6 +104,7 @@
     <ClCompile Include="..\src\engine\menu.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\engine\modeler.cpp" />
     <ClCompile Include="..\src\engine\namespace.cpp">
       <Filter>MDL</Filter>
     </ClCompile>
@@ -183,9 +189,14 @@
     <ClInclude Include="..\src\engine\DeviceModesDX9.h">
       <Filter>Settings</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\engine\DX9PackFile.h" />
+    <ClInclude Include="..\src\engine\engine.h" />
+    <ClInclude Include="..\src\engine\engineapp.h" />
+    <ClInclude Include="..\src\engine\enginep.h" />
     <ClInclude Include="..\src\engine\EngineSettings.h">
       <Filter>New Code</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\engine\enginewindow.h" />
     <ClInclude Include="..\src\engine\font.h">
       <Filter>Font</Filter>
     </ClInclude>
@@ -195,6 +206,7 @@
     <ClInclude Include="..\src\engine\geometry.h">
       <Filter>Resource</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\engine\HashTable.h" />
     <ClInclude Include="..\src\engine\image.h">
       <Filter>GUI</Filter>
     </ClInclude>
@@ -231,6 +243,7 @@
     <ClInclude Include="..\src\engine\paneimage.h">
       <Filter>GUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\engine\pch.h" />
     <ClInclude Include="..\src\engine\pixelformat.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -270,5 +283,8 @@
     <ClInclude Include="..\src\engine\xfile.h">
       <Filter>Resource</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\engine\TODO.txt" />
   </ItemGroup>
 </Project>

@@ -194,7 +194,7 @@ public:
     {
         TRef<StringPane> pstringPane = 
             new StringPane(
-                ZString(pcc, pccEnd - pcc) + " ",
+                ZString(pcc, (int)(pccEnd - pcc)) + " ",   //imago 6/20/09
                 m_pfont
             );
         pstringPane->SetTextColor(m_color);
@@ -402,7 +402,7 @@ public:
             return Error("Expected '>'");
         }
 
-        str = ZString(pccSymbol, pcc - pccSymbol);
+        str = ZString(pccSymbol, (int)(pcc - pccSymbol)); //imago 6/20/09
         pcc++;
         return true;
     }

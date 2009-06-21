@@ -133,8 +133,8 @@ Window::Window(
 
         s_mapWindow.Set(m_hwnd, this);
 
-        m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWL_WNDPROC);
-        ::SetWindowLong(m_hwnd, GWL_WNDPROC, (DWORD)Win32WndProc);
+        m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
+        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (DWORD)Win32WndProc);  //x64 Imago 6/20/09
     }
 
     m_styleEX.SetWord(::GetWindowLong(m_hwnd, GWL_EXSTYLE));
@@ -183,10 +183,10 @@ BOOL Window::Create(
             this);
     
     s_mapWindow.Set(m_hwnd, this);
-    m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWL_WNDPROC);
+    m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
 
     if ((WNDPROC)m_pfnWndProc != (WNDPROC)Win32WndProc) {
-        ::SetWindowLong(m_hwnd, GWL_WNDPROC, (DWORD)Win32WndProc);
+        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (DWORD)Win32WndProc); //x64 Imago 6/20/09
     } else {
         m_pfnWndProc = DefWindowProc;
     }

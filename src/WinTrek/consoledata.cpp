@@ -135,7 +135,7 @@ float ModelData::GetMassLimit()
     {
     case OT_warp:
 		{
-			IwarpIGC * pwarp;
+			IwarpIGC * pwarp = (IwarpIGC *)ot; // Imago 6/21/09
 			return pwarp->GetMass();
 		}
     default:

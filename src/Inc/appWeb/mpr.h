@@ -3,7 +3,7 @@
 /// @brief 	Header for the Mbedthis Portable Runtime (MPR)
 //	@copy	default
 //	
-//	Copyright (c) Mbedthis Software LLC, 2003-2005. All Rights Reserved.
+//	Copyright (c) Mbedthis Software LLC, 2003-2007. All Rights Reserved.
 //	
 //	This software is distributed under commercial and open source licenses.
 //	You may use the GPL open source license described below or you may acquire 
@@ -37,7 +37,7 @@
 #define _h_MPR 1
 /////////////////////////////////// Includes ///////////////////////////////////
 
-#include "config.h"
+#include "buildConfig.h"
 #include "mprOs.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,9 @@
 #ifdef __cplusplus
 extern "C" {
 #else
+#if !MACOSX
 typedef int bool;
+#endif
 #endif
 
 extern void mprBreakpoint(char *file, int line, char *msg);
@@ -115,18 +117,38 @@ extern void mprBreakpoint(char *file, int line, char *msg);
 #define MPR_TIMEOUT_STOP		5000		// Wait when stopping resources
 #define MPR_NUM_DIALOG			5			// Maximum number of user dialogs 
 #define MPR_MAX_LOG_SIZE		5			// Default size of a log file (MB)
+
+#if BLD_FEATURE_IPV6
+#define MPR_MAX_IP_NAME			NI_MAXHOST  // Max size of an IP name
+#define MPR_MAX_IP_ADDR			128  		// Max size of an IP string addr 
+#define MPR_MAX_IP_PORT         6  			// Max size of a port number 
+#define MPR_MAX_IP_ADDR_PORT	(MPR_MAX_IP_ADDR + NI_MAXSERV)  
+											// Max size of IP with port
+#else
 #define MPR_MAX_IP_NAME			128			// Max size of an IP name
 #define MPR_MAX_IP_ADDR			16			// Max size of an IP string addr
+#define MPR_MAX_IP_PORT         6          	// Max size of a port number 
 #define MPR_MAX_IP_ADDR_PORT	32			// Max size of IP with port
+#endif
+
+#define MPR_MAX_TIME_SYNC		(10 * 1000)	// Time sync adjustments
 
 #define	MPR_TEST_TIMEOUT		10000		// Ten seconds 
 #define MPR_TEST_LONG_TIMEOUT	300000		// 5 minutes 
 #define MPR_TEST_SHORT_TIMEOUT	200			// 1/5 sec
 #define	MPR_TEST_NAP			50			// When we must not block 
 
+/*
+ *	NOTE: max threads is a runtime maximum and may be modified by the program.
+ */
 #if BLD_FEATURE_MULTITHREAD
 #define MPR_DEFAULT_MIN_THREADS	0			// Default min threads (0)
 #define MPR_DEFAULT_MAX_THREADS	10			// Default max threads (10)
+#if BLD_FEATURE_SQUEEZE
+#define MPR_MAX_SPINLOCK		64			// Max spin locks
+#else
+#define MPR_MAX_SPINLOCK		256			// Max spin locks
+#endif
 #else
 #define MPR_DEFAULT_MIN_THREADS	0			// Default min threads
 #define MPR_DEFAULT_MAX_THREADS	0			// Default max threads 
@@ -142,7 +164,8 @@ extern void mprBreakpoint(char *file, int line, char *msg);
 #define MPR_CRITICAL_PRIORITY	99			// May not yield
 
 #define MPR_SELECT_PRIORITY		75			// Run select at higher priority
-#define MPR_POOL_PRIORITY		50			// Normal
+#define MPR_POOL_PRIORITY		60			// Slightly elevated priority
+#define MPR_REQUEST_PRIORITY	50			// Normal priority
 
 //
 //	Debug control
@@ -172,6 +195,7 @@ extern void mprBreakpoint(char *file, int line, char *msg);
 #define MPR_ASYNC_SELECT		0x1		// Using async select in windows
 #define MPR_BREAK_REQUESTED		0x2		// Breakout of a select wait
 #define MPR_WAITING_FOR_SELECT	0x4		// Waiting for select to complete
+#define MPR_SOCKET_LINGER		2000	// Default to linger for 2 sec on close
 
 ///////////////////////////////// Error Codes //////////////////////////////////
 
@@ -310,7 +334,7 @@ extern void mprBreakpoint(char *file, int line, char *msg);
 //
 struct MprFileInfo {
 	uint			size;					// File length 
-	uint			mtime;					// Modified time 
+	uint64			mtime;					// Modified time 
 	uint			inode;					// Inode number
 	bool			isDir;					// Set if directory 
 	bool			isReg;					// Set if a regular file 
@@ -442,12 +466,12 @@ class MprList : public MprLink {
 						inlineAssert(item->head == 0);
 						if (item->head == 0) {
 							numItems++;
+							item->head = this;
+							item->next = head;
+							item->prev = head->prev;
+							prev->next = item;
+							prev = item;
 						}
-						item->head = this;
-						item->next = head;
-						item->prev = head->prev;
-						prev->next = item;
-						prev = item;
 					};
 	inline MprLink	*remove(MprLink *item) {	/// Remove this item
 						inlineAssert(item->head == this);
@@ -502,7 +526,7 @@ inline void	MprLink::insertAfter(MprLink *item) {
 					item->next = next;
 					next = item;
 					head->numItems++;
-				};
+				}
 inline void	MprLink::insertPrior(MprLink *item) {
 					inlineAssert(item->head == 0);
 					item->head = head;
@@ -511,7 +535,7 @@ inline void	MprLink::insertPrior(MprLink *item) {
 					item->prev = prev;
 					prev = item;
 					head->numItems++;
-				};
+				}
 
 //////////////////////////////// MprStringList /////////////////////////////////
 
@@ -576,7 +600,7 @@ class MprCond {
 		//
 		MprLink		link;				// Cond-var leak monitoring
 	#endif
-	#if LINUX || MACOSX || SOLARIS
+	#if CYGWIN || LINUX || MACOSX || SOLARIS || FREEBSD
 		pthread_cond_t 
 					cv;					// Pthreads condition variable 
 	#endif
@@ -663,7 +687,7 @@ class MprMutex {
 	#if WIN
 		CRITICAL_SECTION cs;			// O/S critical section
 	#endif
-	#if LINUX || MACOSX || SOLARIS
+	#if CYGWIN || LINUX || MACOSX || SOLARIS || FREEBSD
 		pthread_mutex_t	 cs;			// O/S critical section
 	#endif
 	#if VXWORKS
@@ -677,10 +701,10 @@ class MprMutex {
 
 	//	FUTURE -- should do Windows inline also.
 
-	#if LINUX || MACOSX || SOLARIS
+	#if CYGWIN || LINUX || MACOSX || SOLARIS || FREEBSD
 		inline void	lock() { pthread_mutex_lock(&cs); };
 		inline void	unlock() { pthread_mutex_unlock(&cs); };
-	#elif VXWORKS && 0
+	#elif VXWORKS && NOT_USED
 		inline void	lock() { semTake(cs, WAIT_FOREVER); };
 		inline void	unlock() { semGive(cs); };
 	#else
@@ -725,6 +749,7 @@ class Mpr {
 	MprStr			os;					// Operating system
 	MprStr			serverName;			// Server name portion (no domain)
 	MprStr			version;			// Application version number (x.y.z)
+	int				ticksPerSec;		// Clock ticks per second
 
 	//
 	//	FUTURE -- Convert to flags
@@ -787,6 +812,7 @@ class Mpr {
 	int				stop(bool immediateStop);
 	void			terminate(bool graceful = 1);
 #if WIN
+	void 			serviceWinEvents(bool loopOnce, int maxTimeout);
 	void			setHwnd(HWND appHwnd);
 	void			setSocketHwnd(HWND socketHwnd);
 	void			setSocketMessage(int msgId);
@@ -829,6 +855,9 @@ class Mpr {
 	void			setInstallDir(char *dir);
 	void			setOs(char *os);
 	void			setPriority(int pri);
+	void			setRunningEventsThread(bool isRunning) { 
+						eventsThread = isRunning; 
+					}
 	void			setServerName(char *host);
 	void			setService(bool service);
 	void			setVersion(char *version);
@@ -893,10 +922,6 @@ class Mpr {
 	int				platformStart(int startFlags);
 	int				platformStop();
 };
-
-#if MPR_IN_MPR
-extern Mpr			*mpr;					// Default global Mpr class
-#endif
 
 extern Mpr			*mprGetMpr();
 
@@ -1256,6 +1281,15 @@ class MprBuf {
 #define MPR_CMD_BACKGROUND	0x1			// Continue running if MPR exits 
 #define MPR_CMD_REAP_MAX	24
 
+/*
+ * 	Child status structure. Designed to be async-thread safe.
+ */
+typedef struct MprCmdChild {
+	ulong			pid;				//	Process ID
+	int				exitStatus;			//	Exit status
+} MprCmdChild;
+
+
 //
 //	Cmd service control
 //
@@ -1264,9 +1298,13 @@ class MprCmdService {
   private:
 	MprList			cmdList;			// List of commands
 	MprMutex		*mutex;				// Multi-thread sync
-	ulong			completedCmds[MPR_CMD_REAP_MAX];
-	int				exitStatus[MPR_CMD_REAP_MAX];
 	MprTimer		*timer;				// Timer to poll for child completion
+
+	/*
+	 * 	Dual-list of pids and their exit status. Must be async-thread-safe
+	 * 	for signal level access.
+	 */
+	MprCmdChild		children[MPR_CMD_REAP_MAX];
 
   public:
 					MprCmdService();
@@ -1279,8 +1317,8 @@ class MprCmdService {
 	void			startWatcher();
 	int				stop();
 
-#if LINUX || SOLARIS || VXWORKS
-	void			processStatus(int pid, int status);
+#if CYGWIN || LINUX || MACOSX || SOLARIS || VXWORKS || FREEBSD
+	void			processStatus(ulong pid, int status);
 	void			initSignals();
 #endif
 
@@ -1347,6 +1385,7 @@ class MprCmd : public MprLink {
 	int				flags;				// Control flags (userFlags not here)
 	MprCmdFiles		files;				// Stdin, stdout for the command
 	int				inUse;				// Used by dispose()
+	int				reapIndex;			// Index into MprCmdService->children[]
 	MprLogModule	*log;
 	MprCmdProc		cmdDoneProc;		// Handler for client completion
 
@@ -1372,6 +1411,7 @@ class MprCmd : public MprLink {
 	int				dispose();
 	int				getExitCode(int *code = 0);
 	int				getWriteFd();
+	int				getFlags() { return flags; };
 	int				getReadFd();
 	void			invokeCallback(MprMutex *callerMutex);
 	bool			isRunning();
@@ -1447,8 +1487,12 @@ class MprSelectService {
 	//
 					MprSelectService();
 					~MprSelectService();
+	int				doSelect(int maxFds, fd_set *readInterest, 
+						fd_set *writeInterest, fd_set *exceptInterest, 
+						int timeout);
 	int				getFds(fd_set *readInterest, fd_set *writeInterest, 
 						fd_set *exceptInterest, int *maxFd, int *lastGet);
+	void			repairFds();
 	void			serviceIO(int readyFds, fd_set *readFds, fd_set *writeFds, 
 						fd_set *exceptFds);
 	void			serviceIO(int sockFd, int winMask);
@@ -1493,7 +1537,8 @@ class MprSelectService {
 #define MPR_SELECT_DISPOSED			0x1
 #define MPR_SELECT_RUNNING			0x2
 #define MPR_SELECT_CLOSEFD			0x4
-#define MPR_SELECT_CLIENT_CLOSED	0x8	// Client disconnection received
+#define MPR_SELECT_CLIENT_CLOSED	0x8		// Client disconnection received
+#define MPR_SELECT_FAILED			0x10	// Bad file handle
 
 class MprSelectHandler : public MprLink {
   private:
@@ -1566,6 +1611,7 @@ class MprSocketService {
 	MprList			socketList;			// List of all sockets
 	MprList			ipList;				// List of ip addresses 
 	MprLogModule	*log;
+	int				maxClients;
 
 #if BLD_FEATURE_MULTITHREAD
 	MprMutex		*mutex;
@@ -1577,9 +1623,15 @@ class MprSocketService {
 #if BLD_FEATURE_LOG
 	MprLogModule	*getLogModule() { return log; };
 #endif
+#if DEPRECATED
 	MprList			*getInterfaceList();
+#endif
+	int				canAcceptClient(int *numClients);
+	int				getMaxClients() { return maxClients; };
+	int				getNumClients();
 	void			insertMprSocket(MprSocket *sp);
 	void			removeMprSocket(MprSocket *sp);
+	void			setMaxClients(int max) { maxClients = max; };
 	int				start();
 	int				stop();
 
@@ -1592,7 +1644,16 @@ class MprSocketService {
 #endif
 
   private:
+#if DEPRECATED
 	int				getInterfaces();
+	int				getInterfacesIPv4();
+#if BLD_FEATURE_IPV6
+	int				getInterfacesIPv6();
+	int				getInterfacesLinuxIPv6();
+#endif
+    char            *genIPv6Netmask(int prefix_len);
+#endif
+    
 };
 
 ////////////////////////////////// MprSocket ///////////////////////////////////
@@ -1642,6 +1703,10 @@ class MprSocket : public MprLink
 	int				port;				// Port to listen on 
 	int				selectEvents;		// Events being selected 
 
+#if BLD_FEATURE_IPV6
+	int				ipv6;				// Socket uses IPv6
+#endif
+
 #if BLD_FEATURE_MULTITHREAD
 	MprMutex		*mutex;				// Multi-thread sync
 #endif
@@ -1649,6 +1714,8 @@ class MprSocket : public MprLink
   protected:
 	int				sock;				// Actual socket handle 
 	int				flags;				// Current state flags 
+
+	//	TODO - not used
 	bool			secure;				// MprSocket is using SSL
 
   public:
@@ -1665,6 +1732,7 @@ class MprSocket : public MprLink
 	void			getAcceptCallback(MprSocketAcceptProc *fn, void **data);
 	void			getCallback(MprSocketIoProc *fn, void **data, 
 						void **data2, int *mask);
+	//	TODO - not used
 	bool			isSecure() { return secure; };
 	int				openServer(char *ipAddr, int portNum, 
 						MprSocketAcceptProc acceptFn, void *data, int flags);
@@ -1677,7 +1745,7 @@ class MprSocket : public MprLink
 	int				write(char *s);
 
 	virtual 		~MprSocket();
-	virtual void	close(int how);
+	virtual void	close(int timeout);
 	virtual bool	dispose();
 	virtual void	ioProc(int mask, int isMprPoolThread);
 	virtual MprSocket	
@@ -1822,7 +1890,7 @@ class MprPoolThread : public MprLink {
 	void			start();
 	void			setTask(MprTask *tp);
 	void			threadMain();
-	void			wakeup();
+	void			wakeupThread();
 };
 
 #endif
@@ -1886,6 +1954,7 @@ class MprThreadService {
 					MprThreadService();
 					~MprThreadService();
 	MprThread		*getCurrentThread();
+	int				getCurrentThreadId();
 	void			insertThread(MprThread *tp);
 	void			removeThread(MprThread *tp);
 	int				start();
@@ -1904,19 +1973,26 @@ class MprThreadService {
 };
 
 /////////////////////////////////// MprThread //////////////////////////////////
+/*
+ *	Thread ID type
+ */
+#if CYGWIN || LINUX || MACOSX || SOLARIS || FREEBSD
+	typedef pthread_t	MprOsThread;
+#elif X86_64
+	typedef int64		MprOsThread;
+#else
+	typedef int			MprOsThread;
+#endif
+
 
 class MprThread : public MprLink {
   private:
+	MprOsThread		osThreadId;			// O/S thread id
+
 	#if WIN
-		int			osThreadId;			// O/S thread id
 		handle		threadHandle;		// Threads OS handle 
 	#endif
-	#if LINUX || MACOSX || SOLARIS
-		pthread_t	osThreadId;			// O/S thread id 
-	#endif
-	#if VXWORKS
-		int			osThreadId;			// O/S thread id (same as pid)
-	#endif
+
 	void			*data;				// Data argument
 	MprThreadProc	entry;				// Users thread entry point
 	MprStr			name;				// Name of thead for trace
@@ -1924,6 +2000,7 @@ class MprThread : public MprLink {
 	int				pid;				// Owning process id
 	int				priority;			// Current priority 
 	int				stackSize;			// Only VxWorks implements
+	int				id;					// Mpr thread ID
 
   public:
 					MprThread(int pri, char *name);
@@ -1931,11 +2008,13 @@ class MprThread : public MprLink {
 					MprThread(MprThreadProc proc, int pri, void *data, 
 						char *name, int stackSize = 0);
 					~MprThread();
-	int				getId() { return (int) osThreadId; };
 	char			*getName() { return name; };
+	int				getId() { return id; };
+	MprOsThread		getOsThread() { return osThreadId; };
 	int				getPriority() { return priority; };
 	void			lock() { mutex->lock(); };
-	void			setId(int id);
+	void			setId(int id) { this->id = id; };
+	void			setOsThread(MprOsThread osThread);
 	void			setPriority(int priority);
 	void			setStackSize(int size);
 	int				start();
@@ -1948,7 +2027,19 @@ class MprThread : public MprLink {
 };
 
 extern MprThread	*mprGetCurrentThread();
+extern int			mprGetCurrentThreadId();
 extern int			mprGetMaxPoolThreads();
+
+/*
+ * 	Spin lock support. Async thread safe
+ */
+typedef volatile int MprSpinLock;
+
+extern void mprSpinInit(MprSpinLock *lock);
+extern void mprSpinDestroy(MprSpinLock *lock);
+extern void mprSpinLock(MprSpinLock *lock);
+extern void mprSpinUnlock(MprSpinLock *lock);
+
 
 #endif // BLD_FEATURE_MULTITHREAD
 /////////////////////////////// MprTimerService ////////////////////////////////
@@ -2059,7 +2150,7 @@ class MprWinService {
 /////////////////////////////////// Other C++ Stuff ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 #if BLD_DEBUG && UNUSED
-#if LINUX || MACOSX
+#if CYGWIN || LINUX || MACOSX || FREEBSD
 #if MPR_CPU_IX86
 	inline int64 mprGetHiResTime() {
 		int64	now;
@@ -2198,6 +2289,7 @@ extern int		mprGetRandomBytes(uchar *buf, int size, int block);
 extern char		*mprGetCurrentThreadName();
 extern void		mprLock();
 extern void		mprUnlock();
+
 #else
 #if __cplusplus
 inline void		mprLock() {};
@@ -2212,13 +2304,18 @@ extern bool		mprGetDebugMode();
 extern void		mprSetDebugMode(bool on);
 
 extern int		mprGetOsError();
+#if UNUSED
 extern char		*mprGetErrorMsg(int errCode);
+#endif
 extern char		*mprMakeTempFileName(char *buf, int bufsize, char *tempDir);
 extern void		mprNextFds(char *msg);
 extern char		*mprGetFullPathName(char *buf, int buflen, char *path);
+extern char 	*mprGetNativePathName(char *buf, int buflen, char *path);
+extern void 	mprSetModuleSearchPath(char *dirs);
 
 extern void		mprError(char *file, int line, int flags, char *fmt, ...);
 
+extern char 	*mprGetIpAddrPort(char *ipSpec, int *port, int default_port);
 
 #if BLD_FEATURE_LOG || !__cplusplus
 extern void		mprLog(int level, char *fmt, ...);
@@ -2291,7 +2388,5 @@ extern int mprDecrypt(uchar *output, int outputSize, uchar *input, int
 // tab-width: 4
 // c-basic-offset: 4
 // End:
-// vim:tw=78
-// vim600: sw=4 ts=4 fdm=marker
-// vim<600: sw=4 ts=4
+// vim: sw=4 ts=4 
 //

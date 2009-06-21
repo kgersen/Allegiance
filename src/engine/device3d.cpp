@@ -1926,7 +1926,7 @@ public:
                             + m_brightAmbient
                         );
 
-                    int bright = MakeInt(fbrigth);
+                    int bright = MakeInt(fbright); //imago 6/20/09 fix typo 
 
                     if (bright > 255) {
                         bright = 255;

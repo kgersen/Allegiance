@@ -75,7 +75,7 @@ protected:
   virtual BOOL OnInitDialog();
   afx_msg void OnEndDragPlayerList(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnEndTrackPlayerList(NMHDR* pNMHDR, LRESULT* pResult);
-  afx_msg void OnTimer(UINT nIDEvent);
+  afx_msg void OnTimer(UINT_PTR nIDEvent);
   afx_msg void OnItemChangedPlayerList(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnDeleteItemPlayerList(NMHDR* pNMHDR, LRESULT* pResult);
   afx_msg void OnBootPlayers();

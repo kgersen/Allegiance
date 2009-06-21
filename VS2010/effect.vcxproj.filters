@@ -6,17 +6,57 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\effect\alephgeo.cpp" />
+    <ClCompile Include="..\src\effect\combopane.cpp" />
+    <ClCompile Include="..\src\effect\conegeo.cpp" />
+    <ClCompile Include="..\src\effect\debrisgeo.cpp" />
+    <ClCompile Include="..\src\effect\efapp.cpp" />
+    <ClCompile Include="..\src\effect\efgeo.cpp" />
+    <ClCompile Include="..\src\effect\efimage.cpp" />
+    <ClCompile Include="..\src\effect\efpane.cpp" />
+    <ClCompile Include="..\src\effect\efpopup.cpp" />
     <ClCompile Include="..\src\effect\efsound.cpp">
       <Filter>excluded</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\effect\efwindow.cpp" />
+    <ClCompile Include="..\src\effect\explosion.cpp" />
+    <ClCompile Include="..\src\effect\framedata.cpp" />
+    <ClCompile Include="..\src\effect\gamestate.cpp" />
+    <ClCompile Include="..\src\effect\help.cpp" />
+    <ClCompile Include="..\src\effect\listpane.cpp" />
+    <ClCompile Include="..\src\effect\mmlpopup.cpp" />
+    <ClCompile Include="..\src\effect\navpane.cpp" />
+    <ClCompile Include="..\src\effect\pagepane.cpp" />
     <ClCompile Include="..\src\effect\panes.cpp">
       <Filter>excluded</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\effect\particlegeo.cpp" />
     <ClCompile Include="..\src\effect\pch.cpp" />
+    <ClCompile Include="..\src\effect\starimage.cpp" />
+    <ClCompile Include="..\src\effect\thinggeo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\effect\efsound.h">
-      <Filter>excluded</Filter>
-    </ClInclude>
+    <ClInclude Include="..\src\effect\combopane.h" />
+    <ClInclude Include="..\src\effect\debrisgeo.h" />
+    <ClInclude Include="..\src\effect\efapp.h" />
+    <ClInclude Include="..\src\effect\efart.h" />
+    <ClInclude Include="..\src\effect\effect.h" />
+    <ClInclude Include="..\src\effect\efgeo.h" />
+    <ClInclude Include="..\src\effect\efimage.h" />
+    <ClInclude Include="..\src\effect\efpane.h" />
+    <ClInclude Include="..\src\effect\efpopup.h" />
+    <ClInclude Include="..\src\effect\efwindow.h" />
+    <ClInclude Include="..\src\effect\explosion.h" />
+    <ClInclude Include="..\src\effect\framedata.h" />
+    <ClInclude Include="..\src\effect\gamestate.h" />
+    <ClInclude Include="..\src\effect\help.h" />
+    <ClInclude Include="..\src\effect\listpane.h" />
+    <ClInclude Include="..\src\effect\particlegeo.h" />
+    <ClInclude Include="..\src\effect\pch.h" />
+    <ClInclude Include="..\src\effect\starimage.h" />
+    <ClInclude Include="..\src\effect\thinggeo.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\effect\efsound.h" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,14 @@
 #include "commctrl.h"
 #include "winstyles.h"
 
+
+// x64: GWL is GWLP in x64 SDK Imago 6/20/09
+#if defined (_WIN64) 
+	#define GWLx_WNDPROC GWLP_WNDPROC
+#else
+	#define GWLx_WNDPROC GWL_WNDPROC
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Window

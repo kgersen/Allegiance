@@ -10,8 +10,10 @@
 // warning C4355: 'this' : used in base member initializer list
 #pragma warning(disable:4355)
 
-#define USEASM
-#define FLOATASM
+#if !defined (_WIN64) 
+	#define FLOATASM //Imago guarded from x64 compilers on 6/20/09
+	#define USEASM
+#endif
 
 // VS.Net 2003 port: typename is required for template
 #if _MSC_VER >= 1310

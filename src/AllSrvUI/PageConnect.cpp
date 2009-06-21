@@ -190,7 +190,7 @@ BOOL CPageConnect::OnInitDialog()
   return false;
 }
 
-void CPageConnect::OnTimer(UINT nIDEvent) 
+void CPageConnect::OnTimer(UINT_PTR nIDEvent) 
 {
   int nPos = m_progress.GetPos();
   m_progress.SetPos(nPos += 5);

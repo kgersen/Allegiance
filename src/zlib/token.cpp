@@ -252,7 +252,7 @@ bool TextTokenImpl::ReadString(char chEnd)
             m_string += ZString(buf, 256);
             pccDest = buf;
         } else if (m_pcc[0] == '"') {
-            m_string += ZString(buf, pccDest - buf);
+            m_string += ZString(buf, (int)(pccDest - buf));  //imago x64
             
             //
             // See if there is another string
@@ -529,9 +529,9 @@ bool CommandLineToken::IsString(ZString& str)
 
         if (m_pcc < m_pccEnd) {
             m_pcc++;
-            str = ZString(pccStart + 1, m_pcc - pccStart - 2);
+            str = ZString(pccStart + 1, (int)(m_pcc - pccStart - 2));  //imago x64 
         } else {
-            str = ZString(pccStart + 1, m_pcc - pccStart - 1);
+            str = ZString(pccStart + 1, (int)(m_pcc - pccStart - 1)); //imago x64 
         }
     } else {
         while (m_pcc < m_pccEnd && m_pcc[0] != ' ') {
@@ -539,7 +539,7 @@ bool CommandLineToken::IsString(ZString& str)
         }
 
         if (m_pcc - pccStart != 0) {
-            str = ZString(pccStart, m_pcc - pccStart);
+            str = ZString(pccStart, (int)(m_pcc - pccStart));  //imago x64
         } else {
             return false;
         }
