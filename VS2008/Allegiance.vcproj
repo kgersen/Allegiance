@@ -156,7 +156,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="d3d9.lib d3dx9.lib dsound.lib dinput8.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib $(OutDir)\..\vorbis\vorbis.lib urlmon.lib winmm.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\DirectPlay\dxguid.lib"
+				AdditionalDependencies="d3d9.lib d3dx9.lib dsound.lib dinput8.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib $(OutDir)\..\vorbis\vorbis.lib urlmon.lib winmm.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\DirectPlay\dxguid.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				UACExecutionLevel="0"
