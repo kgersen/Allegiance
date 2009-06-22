@@ -3198,9 +3198,10 @@ public:
 
         trekClient.Terminate();
 
+		//imago removed for Visual Studio 2008 Express users (lacks ATL/COM) - we're not using TM7 anyways 6/22/09
         // clean up after the training mission if we need to
-        extern  void KillTrainingStandaloneGame (void);
-        KillTrainingStandaloneGame ();
+        //extern  void KillTrainingStandaloneGame (void);
+        //KillTrainingStandaloneGame ();
 
         m_mapAnimatedImages.SetEmpty();
 
