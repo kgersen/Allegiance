@@ -111,7 +111,6 @@ TRef<Image> ModelData::GetSideIcon()
 //Returns a 3 if it is an enemy
 float ModelData::IsFriendly()
 {
-	float f = 0.0f;
 	if (m_pmodel)
 	{
 		IsideIGC*   pside = m_pmodel->GetSide();
@@ -144,46 +143,49 @@ float ModelData::GetSpeed()
     return speed;
 }
 
-//Andon: Gets the ship's X position
-//Only works on self.
+//Andon: Gets the Target's X position
 float ModelData::GetX()
 {
-    float   f = 0.0f;
-
     ImodelIGC*      pmodel = GetModel();
-    if (pmodel == trekClient.GetShip())
+
+    float   f = 0.0f;
+    if (pmodel)
     {
-		f = pmodel->GetPosition().X();
+        IclusterIGC*    pcluster = pmodel->GetCluster();
+        if (pcluster && trekClient.GetShip()->CanSee(pmodel))
+			 f = pmodel->GetPosition().X();
     }
 
     return f;
 }
 
-//Andon: Gets the ship's Y position
-//Only works on self.
+//Andon: Gets the target's Y position
 float ModelData::GetY()
 {
-    float   f = 0.0f;
-
     ImodelIGC*      pmodel = GetModel();
-    if (pmodel == trekClient.GetShip())
+
+    float   f = 0.0f;
+    if (pmodel)
     {
-		f = pmodel->GetPosition().Y();
+        IclusterIGC*    pcluster = pmodel->GetCluster();
+        if (pcluster && trekClient.GetShip()->CanSee(pmodel))
+			 f = pmodel->GetPosition().Y();
     }
 
     return f;
 }
 
-//Andon: Gets the ship's Z position
-//Only works on self.
+//Andon: Gets the Target's Z position
 float ModelData::GetZ()
 {
-    float   f = 0.0f;
-
     ImodelIGC*      pmodel = GetModel();
-    if (pmodel == trekClient.GetShip())
+
+    float   f = 0.0f;
+    if (pmodel)
     {
-		f = pmodel->GetPosition().Z();
+        IclusterIGC*    pcluster = pmodel->GetCluster();
+        if (pcluster && trekClient.GetShip()->CanSee(pmodel))
+			 f = pmodel->GetPosition().Z();
     }
 
     return f;
