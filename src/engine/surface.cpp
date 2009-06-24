@@ -2163,7 +2163,7 @@ TRef<PrivateSurface> CreatePrivateSurface(	PrivateEngine*  pengine,
 											const ZString & szTextureName /*=""*/,
 											const bool		bSystemMemory /*=false*/) 
 {
-	return new PrivateSurfaceImpl( pengine, ppf, size, pitch, pdata, pobjectMemory, bColorKey, cColorKey, szTextureName, bSystemMemory );
+	return new PrivateSurfaceImpl( pengine, ppf, size, pitch, pdata, pobjectMemory, bColorKey, Color(0,0,0), szTextureName, bSystemMemory );
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2182,7 +2182,9 @@ TRef<PrivateSurface> CreatePrivateSurface(
 					const ZString &			szTextureName /*= ""*/,
 					const bool				bSystemMemory /*= false*/ )
 {
-	return new PrivateSurfaceImpl( pengine, pImageInfo, pTargetSize, pobjectMemory, bColorKey, bColorKey, szTextureName, bSystemMemory );
+	//imago 6/24/09 - fixed typo?
+	return new PrivateSurfaceImpl( pengine, pImageInfo, pTargetSize, pobjectMemory, bColorKey, Color(0,0,0), szTextureName, bSystemMemory );
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////
