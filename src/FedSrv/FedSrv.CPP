@@ -10201,7 +10201,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
           {
             ImodelIGC*  pAssist = pblAssist->data()->model();
             if ((pAssist->GetObjectType() == OT_ship) &&
-                (pAssist->GetSide() != pside) &&
+                (pAssist->GetSide() != pside) && // #ALLYTD
                 (pAssist->GetMission() == pmission))
             {
                 CFSShip* pfsAssist = (CFSShip*)( ((IshipIGC*)pAssist)->GetPrivateData() );
@@ -10363,7 +10363,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 
                     PlayerScoreObject::AdjustCombatRating(pmission, pfsshipCredit->GetPlayerScoreObject(), pfsShip->GetPlayerScoreObject());
 
-                    if (pside != psideCredit)
+                    if (pside != psideCredit) // #ALLYTD: dont up KB when FF is on
                         ((IshipIGC*)pcredit)->AddExperience();
 
                     if (pdmglink)
@@ -10383,7 +10383,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
                             {
                                 ImodelIGC*    pmodel = l->data()->model();
                                 if ((pmodel->GetObjectType() == OT_ship) &&
-                                    (pmodel->GetSide() != pside) &&
+                                    (pmodel->GetSide() != pside) && // #ALLYTD
                                     (pmodel->GetMission() == pmission))
                                 {
                                     IshipIGC*   pshipCredit = (IshipIGC*)pmodel;

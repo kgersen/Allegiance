@@ -1,0 +1,2 @@
+use "model";
+greensel_edgebmp = ImportImageFromFile("greensel_edge.png", true);

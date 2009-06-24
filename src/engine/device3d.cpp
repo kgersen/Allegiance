@@ -635,6 +635,12 @@ public:
 				m_materialD3D.Ambient.a = m_colorGlobal.A();
 				pDev->SetRenderState( D3DRS_SPECULARENABLE, FALSE );
 				pDev->SetRenderState( D3DRS_AMBIENT, m_colorGlobal.MakeCOLORREF() );
+				// KG- DX9 ShadeModeGlobalColor fix
+				// also set the material diffuse color as the D3DTOP_BLENDFACTORALPHA value
+				pDev->SetRenderState( 
+					D3DRS_TEXTUREFACTOR , 
+					D3DCOLOR_COLORVALUE(m_colorGlobal.R(),m_colorGlobal.B(),m_colorGlobal.B(),m_colorGlobal.A())
+				);
 				pDev->SetMaterial( &m_materialD3D );
 
 				// Configure the single light, light direction irrelevant.

@@ -1,0 +1,2 @@
+use "model";
+pinksel_edgebmp = ImportImageFromFile("pinksel_edge.png", true);

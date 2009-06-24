@@ -250,6 +250,14 @@ public:
                 break;
 
             case ShadeModeGlobalColor:
+				// KG- dx9 fix
+				// DX7 globalcolor mode uses the material diffuse color to blend but DX9 doesnt
+				// instead we use D3DTOP_BLENDFACTORALPHA to set the origin of the alpha.
+				// That value is set in Device3D::UpdateLighting() and is the same as
+				// the current material diffuse color.
+				// TODO: check that D3DTSS_ALPHAOP is reset to default value if not ShadeModeGlobalColor ?
+				D3DCall(CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_BLENDFACTORALPHA));
+					
             case ShadeModeGouraud:
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
                 break;

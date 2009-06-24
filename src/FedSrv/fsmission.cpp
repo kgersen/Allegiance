@@ -2580,7 +2580,7 @@ void CFSMission::SaveAsOldPlayer(CFSPlayer* pfsplayer, bool bBooted)
     if (bBooted)
       opi.bannedSideMask = 0xff;
     else if (opi.sideID >= 0)
-      opi.bannedSideMask = ~SideMask(opi.sideID);
+      opi.bannedSideMask = ~SideMask(opi.sideID); // #ALLYTD: remove allied teams from mask
     else
       opi.bannedSideMask = pfsplayer->GetBannedSideMask();
   }
@@ -3008,7 +3008,7 @@ void CFSMission::ProcessGameOver()
                 bool  bCount = (ppso->GetTimePlayed() > 180.0f) && !m_bDraw;
                 ppso->EndGame(m_pMission,
                               (pside == m_psideWon) && bCount && (ppso->GetTimePlayed() > GetGameDuration() / 2.0f),
-                              (pside != m_psideWon) && bCount);
+                              (pside != m_psideWon) && bCount); //#ALLYTD: allies share victory
 
                 SideID  sid = pside->GetObjectID();
                 if (sid >= 0)
@@ -3041,7 +3041,7 @@ void CFSMission::ProcessGameOver()
 
         opi.pso.EndGame(m_pMission,
                       (opi.sideID == sidWin) && bCount && (opi.pso.GetTimePlayed() > GetGameDuration() / 2.0f),
-                      (opi.sideID != sidWin) && bCount);
+                      (opi.sideID != sidWin) && bCount); //#ALLYTD: allies share victory
         if (opi.sideID >= 0)
         {
             float   e = opi.pso.GetTimePlayed() * opi.pso.GetPersist().GetScore();
@@ -3285,7 +3285,7 @@ void CFSMission::ProcessGameOver()
 
 
 /*-------------------------------------------------------------------------
- * CheckForVictory
+ * CheckForVictory #ALLYTD
  *-------------------------------------------------------------------------
  * Purpose:
  *    See if a side has won and handle it if they have
