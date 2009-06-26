@@ -307,6 +307,7 @@ HRESULT CVRAMManager::CreateTexture(	TEXHANDLE	texHandle,
 			dwUsageFlags |= D3DUSAGE_AUTOGENMIPMAP;
 		}
 
+		// imago 6/26/09
 		hr = CD3DDevice9::Get()->Device()->CreateTexture(	pTexture->dwOriginalWidth,
 															pTexture->dwOriginalHeight,
 															uiNumLevels,
@@ -388,6 +389,8 @@ HRESULT CVRAMManager::CreateTextureD3DX(	TEXHANDLE				texHandle,
 	}
 
 	ZFile * pFile = (ZFile*) pobjectMemory;
+
+	//imago 6/26/09 (force system memory when device uses software processing)
 	hr = D3DXCreateTextureFromFileInMemoryEx(
 		CD3DDevice9::Get()->Device(),
 		pFile->GetPointer(),

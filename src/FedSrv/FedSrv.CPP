@@ -50,65 +50,71 @@ static void doASGS(void* data, MprThread *threadp) {
 	// add the name to the url
 	strcat(szURL,szName);
 
-	// the beast
-	MaClient* client = new MaClient();
-	
-	// max wait 5 seconds
-	client->setTimeout(2500);
-	client->setRetries(2);
-	client->setKeepAlive(0);
-
-	// finally
-	client->getRequest(szURL);
-
-	// Imago check for HTTP OK 8/3/08  (this wont hang either)
-	if (client->getResponseCode() == 200)
-		content = client->getResponseContent(&contentLen);
-
-	if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
-		ZString strContent = content;
-		strContent = strContent.RightOf(88);
-		strContent = strContent.LeftOf("<");
-		Strcpy(szResponse,(PCC)strContent);
+	//Imago check only if connected to a lobby - 6/26/09
+	if (g.fmLobby.IsConnected()) {
+		// the beast
+		MaClient* client = new MaClient();
 		
-		// the only explicit error known, Pook?
-		if (strcmp(strtok(szResponse,"|"),"0") != 0 ) {
-				myRank = -1;
-		} else {
-				myRank = atoi(strtok(NULL,"|"));
-		}
+		// max wait 5 seconds
+		client->setTimeout(2500);
+		client->setRetries(2);
+		client->setKeepAlive(0);
 
-		// sanity check
-		if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
+		// finally
+		client->getRequest(szURL);
+
+		// Imago check for HTTP OK 8/3/08  (this wont hang either)
+		if (client->getResponseCode() == 200)
+			content = client->getResponseContent(&contentLen);
+
+		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
+			ZString strContent = content;
+			strContent = strContent.RightOf(88);
+			strContent = strContent.LeftOf("<");
+			Strcpy(szResponse,(PCC)strContent);
+			
+			// the only explicit error known, Pook?
+			if (strcmp(strtok(szResponse,"|"),"0") != 0 ) {
+					myRank = -1;
+			} else {
+					myRank = atoi(strtok(NULL,"|"));
+			}
+
+			// sanity check
+			if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
+				mutex->lock();
+				pqd->rank = myRank;
+				mutex->unlock();
+			} else { // insanity
+				mutex->lock();
+				pqd->rank = -2;
+				mutex->unlock();
+			}
+		} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
+			int strLen = strName.GetLength();
+			int leftParen = strName.ReverseFind('(',0);
+			if (leftParen>=1) { //rank in the name
+				char szRank[3];
+				Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
+				myRank = atoi(szRank);
+				if (!((myRank>0) && (myRank<100))) { //more insanity
+					myRank=-2; // you are the wrong rank for all missions!
+				}
+			} else { //no rank in name
+				myRank = 0; 
+			}
 			mutex->lock();
 			pqd->rank = myRank;
 			mutex->unlock();
-		} else { // insanity
-			mutex->lock();
-			pqd->rank = -2;
-			mutex->unlock();
 		}
-	} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
-		int strLen = strName.GetLength();
-		int leftParen = strName.ReverseFind('(',0);
-		if (leftParen>=1) { //rank in the name
-			char szRank[3];
-			Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
-			myRank = atoi(szRank);
-			if (!((myRank>0) && (myRank<100))) { //more insanity
-				myRank=-2; // you are the wrong rank for all missions!
-			}
-		} else { //no rank in name
-			myRank = 0; 
-		}
-		mutex->lock();
-		pqd->rank = myRank;
-		mutex->unlock();
+		delete client;
+	} else { //not connected to a lobby, just set rank to 0 - imago 6/26/09
+		myRank = 0; 
 	}
 
 	// tell the main thread we've finished using the existing thread msg for AZ SQL 
 	PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
-	delete client;
+	
 }
 
 #if !defined(ALLSRV_STANDALONE)
@@ -10482,7 +10488,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
           {
             ImodelIGC*  pAssist = pblAssist->data()->model();
             if ((pAssist->GetObjectType() == OT_ship) &&
-                (pAssist->GetSide() != pside) &&
+                (pAssist->GetSide() != pside) && // #ALLYTD kgjv
                 (pAssist->GetMission() == pmission))
             {
                 CFSShip* pfsAssist = (CFSShip*)( ((IshipIGC*)pAssist)->GetPrivateData() );
@@ -10644,7 +10650,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 
                     PlayerScoreObject::AdjustCombatRating(pmission, pfsshipCredit->GetPlayerScoreObject(), pfsShip->GetPlayerScoreObject());
 
-                    if (pside != psideCredit)
+                    if (pside != psideCredit) // #ALLYTD: kgjv dont up KB when FF is on
                         ((IshipIGC*)pcredit)->AddExperience();
 
                     if (pdmglink)
@@ -10664,7 +10670,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
                             {
                                 ImodelIGC*    pmodel = l->data()->model();
                                 if ((pmodel->GetObjectType() == OT_ship) &&
-                                    (pmodel->GetSide() != pside) &&
+                                    (pmodel->GetSide() != pside) && // #ALLYTD kgjv
                                     (pmodel->GetMission() == pmission))
                                 {
                                     IshipIGC*   pshipCredit = (IshipIGC*)pmodel;

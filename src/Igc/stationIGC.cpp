@@ -126,7 +126,7 @@ DamageResult    CstationIGC::ReceiveDamage(DamageTypeID            type,
         (m_myStationType.HasCapability(c_sabmPedestal)) ||
         (launcher && (amount >= 0.0f) &&
          (!GetMyMission()->GetMissionParams()->bAllowFriendlyFire) &&
-         (pside == launcher->GetSide())))
+         (IsideIGC::AlliedSides(pside,launcher->GetSide())))) //Andon: #Ally - Fixes Friendly Fire bug with stations
     {
         return c_drNoDamage;
     }
@@ -745,4 +745,5 @@ IdroneTypeIGC*          MyStationType::GetConstructionDroneType(void) const
 {
     return m_pStationType->GetConstructionDroneType();
 }
+
 

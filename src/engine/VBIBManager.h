@@ -42,10 +42,11 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static const int c_iMaxNumBuffers = 256;
-	static const int c_iDefaultBufferSize = 65535;
-	static const D3DPOOL c_iDefaultBufferPool = D3DPOOL_MANAGED;
-	static const D3DPOOL c_iDynamicBufferPool = D3DPOOL_DEFAULT;
+	//removed memory / size constants for hardware/software modes Imago 6/26/09
+	int m_iMaxNumBuffers;
+	int m_iDefaultBufferSize;
+	D3DPOOL m_iDefaultBufferPool;
+	D3DPOOL m_iDynamicBufferPool;
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	struct SD3DBuffer
@@ -84,7 +85,7 @@ private:
 		};
 
 		DWORD dwNumBuffersAllocated;
-		SD3DBuffer * pBufferArray[ c_iMaxNumBuffers ];
+		SD3DBuffer * pBufferArray[256]; //m_iMaxNumBuffers --imago 6/26/09 changed for < 128MB RAM
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////

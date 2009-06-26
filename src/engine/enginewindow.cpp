@@ -342,6 +342,42 @@ void EngineWindow::InitialiseTime()
 
 void EngineWindow::UpdateSurfacePointer()
 {
+	//Imago 6/26/09
+
+    CD3DDevice9 * pDev = CD3DDevice9::Get();
+
+    if (!m_pengine->IsFullscreen()) 
+	{
+		WinPoint size = GetClientRect().Size();
+
+		if (size.X() == 0) {
+		    size.SetX(1);
+		}
+
+		if (size.Y() == 0) {
+		    size.SetY(1);
+		}
+		
+		m_psurface = m_pengine->CreateDummySurface( size, NULL );
+		ZAssert(m_psurface != NULL && m_psurface->IsValid());
+		if(pDev->IsDeviceValid())
+			DDCall(pDev->ResetDevice(true,size.X(),size.Y()));
+
+	} else {
+
+		//NYI: Expose these so we can step up / down full screen resolutions again
+		int x = pDev->GetDeviceSetupParams()->pFullScreenResArray->iWidth;
+		int y = pDev->GetDeviceSetupParams()->pFullScreenResArray->iHeight;
+
+		m_psurface = m_pengine->CreateDummySurface(WinPoint(x,y), NULL );
+		ZAssert(m_psurface != NULL && m_psurface->IsValid());
+		if(pDev->IsDeviceValid())
+			DDCall(pDev->ResetDevice(false,x,y));
+	}
+}
+
+/* OLD ROUTINES FOR ABOVE FUNCTION COMBINED
+
 	CD3DDevice9 * pDev = CD3DDevice9::Get();
 	if( !m_pengine->IsFullscreen() )
 	{
@@ -365,6 +401,8 @@ void EngineWindow::UpdateSurfacePointer()
 								m_pengine->GetFullscreenSize().y );
 		}
 	}
+	*/
+
 
 /*	if( (!m_pengine->IsFullscreen())
         || (!m_pengine->GetUsing3DAcceleration())
@@ -402,7 +440,6 @@ void EngineWindow::UpdateSurfacePointer()
                 NULL
             );
     }*/
-}
 
 void EngineWindow::UpdateWindowStyle()
 {
@@ -432,8 +469,8 @@ void EngineWindow::UpdateWindowStyle()
         SetHasMaximize(true);
         SetHasSysMenu(true);
         Window::SetSizeable(m_bSizeable);
-//        SetTopMost(false);
-        SetTopMost(true);
+        SetTopMost(false);
+        //SetTopMost(true);  Imago 6/25/09 - removed this undocumented change
 
         //
         // Win32 doesn't recognize the style change unless we resize the window
@@ -621,10 +658,10 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
 
 bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 {
-	//char szBuffer[256];
-	//sprintf( szBuffer, "%d  %d,   %d %d\n", pwp->x, pwp->y, 
-	//	m_bWindowStateMinimised, m_bWindowStateRestored );
-	//OutputDebugString( szBuffer );
+	char szBuffer[256];
+	sprintf( szBuffer, "%d  %d,   %d %d\n", pwp->x, pwp->y, 
+		m_bWindowStateMinimised, m_bWindowStateRestored );
+	OutputDebugString( szBuffer );
 
     if (GetFullscreen()) {
         pwp->x = 0;

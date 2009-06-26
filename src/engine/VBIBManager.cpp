@@ -31,11 +31,26 @@ void CVBIBManager::Initialise( )
 {
 	if( m_sVBIB.bInitialised == false )
 	{
+
 		// Clear out the struct.
 		memset( &m_sVBIB, 0, sizeof( CVBIBManager::SVBIBManagerState ) );
 
 		// Flag that its now valid and ready to use.
 		m_sVBIB.bInitialised = true;
+
+		//Imago 6/26/09
+		if ((CD3DDevice9::Get()->IsHardwareVP())) {
+			m_iMaxNumBuffers = 256;
+			m_iDefaultBufferSize = 65536;
+			m_iDefaultBufferPool = D3DPOOL_MANAGED;
+			m_iDynamicBufferPool = D3DPOOL_DEFAULT;
+		} else {
+			m_iMaxNumBuffers = 4;
+			m_iDefaultBufferSize = 8192;
+			m_iDefaultBufferPool = D3DPOOL_SYSTEMMEM;
+			m_iDynamicBufferPool = D3DPOOL_DEFAULT;
+		}
+
 	}
 }
 
@@ -171,16 +186,16 @@ bool CVBIBManager::AllocateVertexRegion(	SVBIBHandle * pResult,
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
 		pBuffer->dwElementSize	= dwVertexSize;
-		pBuffer->dwBufferSize	= c_iDefaultBufferSize * dwVertexSize;
+		pBuffer->dwBufferSize	= m_iDefaultBufferSize * dwVertexSize;
 		pBuffer->eBufferType	= eBT_Vertex;
 		pBuffer->dwBufferOffset = 0;
 
-		// Create the resource.
+		// Create the resource. // Imago 6/26/09
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
-					c_iDefaultBufferSize * pBuffer->dwElementSize,
-					D3DUSAGE_WRITEONLY,
+					m_iDefaultBufferSize * pBuffer->dwElementSize,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? D3DUSAGE_WRITEONLY : D3DUSAGE_WRITEONLY | D3DUSAGE_SOFTWAREPROCESSING,
 					dwFVF,
-					c_iDefaultBufferPool,
+					m_iDefaultBufferPool,
 					&pBuffer->pVertexBuffer,
 					NULL );
 
@@ -254,16 +269,16 @@ bool CVBIBManager::AllocateIndexRegion(	SVBIBHandle * pResult,
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= d3dIndexFormat;
 		pBuffer->dwElementSize	= dwIndexValueSize;
-		pBuffer->dwBufferSize	= c_iDefaultBufferSize * dwIndexValueSize;
+		pBuffer->dwBufferSize	= m_iDefaultBufferSize * dwIndexValueSize;
 		pBuffer->eBufferType	= eBT_Index;
 		pBuffer->dwBufferOffset = 0;
 
-		// Create the resource.
+		// Create the resource. // Imago 6/26/09
 		hr = CD3DDevice9::Get()->Device()->CreateIndexBuffer(
-					c_iDefaultBufferSize * pBuffer->dwElementSize,
-					D3DUSAGE_WRITEONLY,
+					m_iDefaultBufferSize * pBuffer->dwElementSize,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? D3DUSAGE_WRITEONLY : D3DUSAGE_WRITEONLY | D3DUSAGE_SOFTWAREPROCESSING,
 					d3dIndexFormat,
-					c_iDefaultBufferPool,
+					m_iDefaultBufferPool,
 					&pBuffer->pIndexBuffer,
 					NULL );
 
@@ -372,16 +387,16 @@ bool CVBIBManager::AddVerticesToBuffer(	SVBIBHandle * pResult,
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
 		pBuffer->dwElementSize	= dwVertexSize;
-		pBuffer->dwBufferSize	= c_iDefaultBufferSize * dwVertexSize;
+		pBuffer->dwBufferSize	= m_iDefaultBufferSize * dwVertexSize;
 		pBuffer->eBufferType	= eBT_Vertex;
 		pBuffer->dwBufferOffset = 0;
 
-		// Create the resource.
+		// Create the resource. // Imago 6/26/09
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
-					c_iDefaultBufferSize * pBuffer->dwElementSize,
-					D3DUSAGE_WRITEONLY,
+					m_iDefaultBufferSize * pBuffer->dwElementSize,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? D3DUSAGE_WRITEONLY : D3DUSAGE_WRITEONLY | D3DUSAGE_SOFTWAREPROCESSING,
 					dwFVF,
-					c_iDefaultBufferPool,
+					m_iDefaultBufferPool,
 					&pBuffer->pVertexBuffer,
 					NULL );
 
@@ -458,16 +473,16 @@ bool CVBIBManager::AddIndicesToBuffer(	SVBIBHandle * pResult,
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= d3dIndexFormat;
 		pBuffer->dwElementSize	= dwIndexValueSize;
-		pBuffer->dwBufferSize	= c_iDefaultBufferSize * dwIndexValueSize;
+		pBuffer->dwBufferSize	= m_iDefaultBufferSize * dwIndexValueSize;
 		pBuffer->eBufferType	= eBT_Index;
 		pBuffer->dwBufferOffset = 0;
 
-		// Create the resource.
+		// Create the resource. // Imago 6/26/09
 		hr = CD3DDevice9::Get()->Device()->CreateIndexBuffer(
-					c_iDefaultBufferSize * pBuffer->dwElementSize,
-					D3DUSAGE_WRITEONLY,
+					m_iDefaultBufferSize * pBuffer->dwElementSize,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? D3DUSAGE_WRITEONLY : D3DUSAGE_WRITEONLY | D3DUSAGE_SOFTWAREPROCESSING,
 					d3dIndexFormat,
-					c_iDefaultBufferPool,
+					m_iDefaultBufferPool,
 					&pBuffer->pIndexBuffer,
 					NULL );
 
@@ -673,16 +688,16 @@ bool CVBIBManager::AddLegacyVerticesToBuffer(	SVBIBHandle * pResult,
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
 		pBuffer->dwElementSize	= dwVertexSize;
-		pBuffer->dwBufferSize	= c_iDefaultBufferSize * dwVertexSize;
+		pBuffer->dwBufferSize	= m_iDefaultBufferSize * dwVertexSize;
 		pBuffer->eBufferType	= eBT_Vertex;
 		pBuffer->dwBufferOffset = 0;
 
-		// Create the resource.
+		// Create the resource. // Imago 6/26/09
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
-					c_iDefaultBufferSize * pBuffer->dwElementSize,
-					D3DUSAGE_WRITEONLY,
+					m_iDefaultBufferSize * pBuffer->dwElementSize,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? D3DUSAGE_WRITEONLY : D3DUSAGE_WRITEONLY | D3DUSAGE_SOFTWAREPROCESSING,
 					dwFVF,
-					c_iDefaultBufferPool,
+					m_iDefaultBufferPool,
 					&pBuffer->pVertexBuffer,
 					NULL );
 
@@ -776,16 +791,16 @@ bool CVBIBManager::AddLegacyLitVerticesToBuffer(	SVBIBHandle * pResult,
 		// Configure the new buffer.
 		pBuffer->dwBufferFormat	= dwFVF;
 		pBuffer->dwElementSize	= dwFVFVertexSize;
-		pBuffer->dwBufferSize	= c_iDefaultBufferSize * dwFVFVertexSize;
+		pBuffer->dwBufferSize	= m_iDefaultBufferSize * dwFVFVertexSize;
 		pBuffer->eBufferType	= eBT_Vertex;
 		pBuffer->dwBufferOffset = 0;
 
-		// Create the resource.
+		// Create the resource. // Imago 6/26/09
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
-					c_iDefaultBufferSize * pBuffer->dwElementSize,
-					D3DUSAGE_WRITEONLY,
+					m_iDefaultBufferSize * pBuffer->dwElementSize,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? D3DUSAGE_WRITEONLY : D3DUSAGE_WRITEONLY | D3DUSAGE_SOFTWAREPROCESSING,
 					dwFVF,
-					c_iDefaultBufferPool,
+					m_iDefaultBufferPool,
 					&pBuffer->pVertexBuffer,
 					NULL );
 
@@ -879,14 +894,16 @@ bool CVBIBManager::AllocateDynamicVertexBuffer(	SVBIBHandle * pResult,
 		pBuffer->eBufferType	= eBT_VertexDynamic;
 		pBuffer->dwBufferOffset = 0;
 		pBuffer->bLocked		= false;
-		pBuffer->bDefaultPool	= ( c_iDynamicBufferPool == D3DPOOL_DEFAULT ) ? true : false;
+		pBuffer->bDefaultPool	= ( m_iDynamicBufferPool == D3DPOOL_DEFAULT ) ? true : false;
 
 		// Create the resource.
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					dwMaxVertices * pBuffer->dwElementSize,
-					D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
+						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC :
+						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING,
 					dwFVF,
-					c_iDynamicBufferPool,
+					m_iDynamicBufferPool,
 					&pBuffer->pVertexBuffer,
 					NULL );
 		_ASSERT( hr == D3D_OK );
@@ -927,12 +944,14 @@ bool CVBIBManager::LockDynamicVertexBuffer(	SVBIBHandle * pHandle,
 	{
 		_ASSERT( pVB->pVertexBuffer == NULL );
 
-		// Recreate the resource.
+		// Recreate the resource. 
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					pVB->dwBufferSize,
-					D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
+					(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
+						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC :
+						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING,
 					pVB->dwBufferFormat,
-					c_iDynamicBufferPool,
+					m_iDynamicBufferPool,
 					&pVB->pVertexBuffer,
 					NULL );
 		_ASSERT( hr == D3D_OK );

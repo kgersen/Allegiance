@@ -138,6 +138,8 @@ private:
         TRef<Image> m_pimageArrow;
         TRef<Image> m_pimageTab;
         TRef<Image> m_pimageSelectedTab;
+		TRef<Image> m_pimageTabEdges[c_cAlliancesMax]; //#ALLY
+        TRef<Image> m_pimageSelectedTabEdges[c_cAlliancesMax];//#ALLY
 
 
         float m_fColorIntensity;
@@ -159,8 +161,14 @@ private:
             
             m_pimageArrow = GetModeler()->LoadImage(AWF_TEAMROOM_PLAYERS_TEAM_ARROW, true);
             //m_pimageTab = GetModeler()->LoadImage(AWF_TEAMROOM_TAB_MASK, true);
-            
-            
+
+			// #ALLY
+			m_pimageTabEdges[0] = GetModeler()->LoadImage("green_edgebmp",true);
+            m_pimageSelectedTabEdges[0]= GetModeler()->LoadImage("greensel_edgebmp",true);
+            m_pimageTabEdges[1] = GetModeler()->LoadImage("orange_edgebmp",true);
+            m_pimageSelectedTabEdges[1]= GetModeler()->LoadImage("orangesel_edgebmp",true);
+            m_pimageTabEdges[2] = GetModeler()->LoadImage("pink_edgebmp",true);
+            m_pimageSelectedTabEdges[2]= GetModeler()->LoadImage("pinksel_edgebmp",true);
             
             //m_pimageSelectedTab = GetModeler()->LoadImage(AWF_TEAMROOM_SELECTED_TAB_MASK, true);
         };
@@ -248,14 +256,16 @@ private:
             {
                 // draw the selected tab outline
 				if (pside->GetAllies()!=NA) // #ALLY
-					psurface->FillRect(WinRect::Cast(m_pimageSelectedTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
+					//psurface->FillRect(WinRect::Cast(m_pimageSelectedTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
+					psurface->BitBlt(WinPoint(0,0), m_pimageSelectedTabEdges[pside->GetAllies()]->GetSurface());
                 psurface->BitBlt(WinPoint(0,0), m_pimageSelectedTab->GetSurface());
             }
             else
             {
                 // draw the selected tab outline
 				if (pside->GetAllies()!=NA) // #ALLY
-					psurface->FillRect(WinRect::Cast(m_pimageTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
+					//psurface->FillRect(WinRect::Cast(m_pimageTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
+					psurface->BitBlt(WinPoint(0,0), m_pimageTabEdges[pside->GetAllies()]->GetSurface());
                 psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
             }
 
@@ -266,7 +276,7 @@ private:
             }
 
 			// #ALLY - debug display
-#if 1
+#if 0
 			if (pitem->GetSideID() != SIDE_TEAMLOBBY)
 			{
 				ZString strAllies("Solo");
@@ -912,12 +922,6 @@ private:
                 UpdateNameAndSquad();
             }
         }
-
-		// #ALLY - not used atm (but the sink chain is ready for future use, see IClientEventSink)
-		void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
-		{
-			debugf("got OnTeamAlliancesChange\n");	
-		}
 
         void UpdateControls()
         {
@@ -2197,6 +2201,14 @@ public:
         m_pmenu = NULL;
     }
 
+	// not used atm (but the sink chain is ready for future use, see IClientEventSink)
+	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
+	{
+		//#ALLYTD: set comms afk (except the game owner) or do this server side?
+		// or just do it when sending/receiving a FM_S_CHANGE_ALLIANCES msg
+
+		debugf("got OnTeamAlliancesChange\n");	
+	}
 	//#ALLY -end
 
 	bool OnPlayerRightClicked()
