@@ -2970,7 +2970,7 @@ public:
             ToggleBounds();
         if (!LoadPreference("TransparentObjects", TRUE))
             ToggleTransparentObjects();
-        SetSmoke (LoadPreference ("SmokeEffects", 3));
+        SetSmoke (LoadPreference ("SmokeEffects", 5)); // imago default to 5 particles - 6/29/09 NYI allow a toggle
         if (!LoadPreference("Lens Flare", TRUE))
             ToggleLensFlare();
         if (!LoadPreference("BidirectionalLighting", TRUE))
