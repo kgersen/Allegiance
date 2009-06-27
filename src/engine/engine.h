@@ -120,6 +120,10 @@ public:
     virtual void SetFullscreenSize(const WinPoint& point)                  = 0;
     virtual void ChangeFullscreenSize(bool bLarger)                        = 0;
     virtual void SetGammaLevel(float value)                                = 0;
+		// imago refactor enginep 6/26/09
+	virtual WinPoint           NextMode(const WinPoint& size)                       = 0;
+	virtual WinPoint           PreviousMode(const WinPoint& size)                   = 0;
+	virtual void               EliminateModes(const WinPoint& size)                 = 0;
 
     virtual bool            IsFullscreen()                                 = 0;
     virtual bool            PrimaryHas3DAcceleration()                     = 0;

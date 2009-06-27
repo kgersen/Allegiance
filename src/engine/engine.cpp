@@ -21,6 +21,7 @@ private:
 
     typedef TList<PrivateSurface*>  SurfaceList;
     //typedef TList<DeviceDependant*> DeviceDependantList;
+	TVector<WinPoint>   m_modes; //imago 6/24/09
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -158,6 +159,19 @@ public:
             m_ppf = new PixelFormat(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
         if (m_dwBPP == 16)
             m_ppf = new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000);
+
+		//imago 6/24/09
+		m_modes.PushEnd(WinPoint(640,480));
+		m_modes.PushEnd(WinPoint(800,600));
+		m_modes.PushEnd(WinPoint(1024,768));
+		m_modes.PushEnd(WinPoint(1280,1024));
+
+
+		/* checkdevice and see if we can add these as well, play with strech (true) for non 4:3
+		ModeData(WinPoint(1400, 1050), false),
+		ModeData(WinPoint(1600, 1200), false),
+		ModeData(WinPoint(1920, 1440), false)
+		*/
     }
 
 private:
@@ -192,7 +206,7 @@ private:
 //            SurfaceList::Iterator iter(m_listSurfaces);
 //
 //            while (!iter.End()) {
-//                iter.Value()->ClearDevice();
+//                iter.Value()->ClearDevice();   //IMAGO NYI PUT BACK VIDEOSSCREEN
 //                iter.Next();
 //            }
 //        }
@@ -336,6 +350,7 @@ private:
     {
         return m_gamma;
     }
+
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -892,19 +907,69 @@ private:
         }
     }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Re-used full screen mode change functions
+// Imago 6/24/09
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    WinPoint NextMode(const WinPoint& size)
+    {
+        int count = m_modes.GetCount();
+
+        for(int index = 0; index < count; index++) {
+            if (
+                   m_modes[index].X() > size.X() 
+                || m_modes[index].Y() > size.Y() 
+            ) {
+                return m_modes[index];
+            }
+        }
+
+        return m_modes[count - 1];
+    }
+
+    WinPoint PreviousMode(const WinPoint& size)
+    {
+        int count = m_modes.GetCount();
+
+        for(int index = count - 1 ; index > 0; index--) {
+            if (
+                   m_modes[index].X() < size.X() 
+                || m_modes[index].Y() < size.Y() 
+            ) {
+                return m_modes[index];
+            }
+        }
+
+        return m_modes[0];
+    }
+
+    void EliminateModes(const WinPoint& size)
+    {
+        int count = m_modes.GetCount();
+
+        for(int index = 0; index < count; index++) {
+            if (
+                   m_modes[index].X() >= size.X() 
+                && m_modes[index].Y() >= size.Y() 
+            ) {
+                m_modes.SetCount(index);
+                return;
+            }
+        }
+    }
+
     void ChangeFullscreenSize(bool bLarger)
     {
-        WinPoint point;
-
-/*        if (bLarger) {
-            point = m_pdddevice->NextMode(m_pointFullscreen);
+		//Imago restored 6/29/09
+   		WinPoint point;
+        if (bLarger) {
+			point = NextMode(m_pointFullscreen);
         } else {
-            point = m_pdddevice->PreviousMode(m_pointFullscreen);
-        }*/
+			point = PreviousMode(m_pointFullscreen);
+		}          
+		SetFullscreenSize(point);
 
-		_ASSERT( false );
-
-        SetFullscreenSize(point);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1575,3 +1640,5 @@ TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD
 {
     return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP, hWindow );
 }
+
+

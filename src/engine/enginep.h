@@ -161,9 +161,7 @@ public:
     virtual void               SetAllow3DAcceleration(bool bAllow3DAcceleration)    = 0;
 	virtual void			   SetMaxTextureSize(DWORD bMaxTextureSize)		= 0;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
-    virtual WinPoint           NextMode(const WinPoint& size)                       = 0;
-    virtual WinPoint           PreviousMode(const WinPoint& size)                   = 0;
-    virtual void               EliminateModes(const WinPoint& size)                 = 0;
+
 
     virtual int                GetTotalTextureMemory()                              = 0;
     virtual int                GetAvailableTextureMemory()                          = 0;
@@ -191,6 +189,10 @@ public:
 //TRef<D3DDevice> CreateD3DDevice( HWND hParentWindow );
 
 //TRef<DDDevice> CreateDDDevice(PrivateEngine* pengine, bool bAllow3DAcceleration, HWND hParentWindow );
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -371,7 +373,7 @@ public:
 
     virtual int GetPerformanceCounter(Counter counter) = 0;
     virtual void ResetPerformanceCounters() = 0;
-};
+	};
 
 TRef<IDevice3D> CreateDevice3D(Rasterizer* prasterizer);
 

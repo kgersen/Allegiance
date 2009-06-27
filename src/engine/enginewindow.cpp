@@ -17,15 +17,16 @@ void EngineWindow::MenuCommandSink::OnMenuCommand(IMenuItem* pitem)
 //
 //////////////////////////////////////////////////////////////////////////////
 
+//imago updated 6/29/09
 EngineWindow::ModeData EngineWindow::s_pmodes[] =
     {
-        ModeData(WinPoint(320, 200), false),
-        ModeData(WinPoint(480, 360), false)
-        //ModeData(WinPoint(320, 200), true),
-        //ModeData(WinPoint(480, 360), true)
+		ModeData(WinPoint(640, 480), true),
+		ModeData(WinPoint(800, 600), false),
+		ModeData(WinPoint(1024, 768), false),
+		ModeData(WinPoint(1280, 1024), false)
     };
 
-int EngineWindow::s_countModes = 2;
+int EngineWindow::s_countModes = 3;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -306,10 +307,12 @@ void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartF
                 g_bWindowLog = true;
             }
 //#else
-//            if (str == "windowed") {
-//                bStartFullscreen = false;
-//            } else if (str == "fullscreen") {
-//                bStartFullscreen = true;
+            if (str == "windowed") {
+                bStartFullscreen = false;
+            } else if (str == "fullscreen") {
+                bStartFullscreen = true;
+			}
+//IMAGO remove build_dx9  6/26/09
 //            } else if (str == "mdllog") {
 //                g_bMDLLog = true;
 //            } else if (str == "windowlog") {
@@ -365,14 +368,11 @@ void EngineWindow::UpdateSurfacePointer()
 
 	} else {
 
-		//NYI: Expose these so we can step up / down full screen resolutions again
-		int x = pDev->GetDeviceSetupParams()->pFullScreenResArray->iWidth;
-		int y = pDev->GetDeviceSetupParams()->pFullScreenResArray->iHeight;
-
-		m_psurface = m_pengine->CreateDummySurface(WinPoint(x,y), NULL );
+		WinPoint point = m_pengine->GetFullscreenSize();
+		m_psurface = m_pengine->CreateDummySurface(point, NULL );
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
 		if(pDev->IsDeviceValid())
-			DDCall(pDev->ResetDevice(false,x,y));
+			DDCall(pDev->ResetDevice(false,point.X(),point.Y()));
 	}
 }
 
@@ -658,10 +658,12 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
 
 bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 {
+	/*
 	char szBuffer[256];
 	sprintf( szBuffer, "%d  %d,   %d %d\n", pwp->x, pwp->y, 
 		m_bWindowStateMinimised, m_bWindowStateRestored );
 	OutputDebugString( szBuffer );
+	*/
 
     if (GetFullscreen()) {
         pwp->x = 0;
@@ -775,9 +777,9 @@ void EngineWindow::ChangeFullscreenSize(bool bLarger)
 {
     if (m_pengine->IsFullscreen() && m_bSizeable) 
 	{
-/*        WinPoint size = GetFullscreenSize();
+        WinPoint size = GetFullscreenSize();
 
-        if (size == WinPoint(640, 480)) 
+        if (size == WinPoint(640, 600)) 
 		{
             if (bLarger) 
 			{
@@ -804,25 +806,10 @@ void EngineWindow::ChangeFullscreenSize(bool bLarger)
         }
 
         Invalidate();
+		// Imago 6/29/09 
 
         RenderSizeChanged(	( size == WinPoint ( 640, 480 ) ) && 
-							( m_modeIndex < s_countModes ) );*/
-
-		CD3DDevice9 * pDev = CD3DDevice9::Get();
-		if( bLarger == true )
-		{
-			pDev->GetDeviceSetupParams()->iCurrentRes ++;
-			pDev->GetDeviceSetupParams()->iCurrentRes %= pDev->GetDeviceSetupParams()->iNumRes;
-		}
-		else
-		{
-			pDev->GetDeviceSetupParams()->iCurrentRes --;
-			pDev->GetDeviceSetupParams()->iCurrentRes %= pDev->GetDeviceSetupParams()->iNumRes;
-		}
-		_ASSERT( ( pDev->GetDeviceSetupParams()->iCurrentRes >= 0 ) &&
-				( pDev->GetDeviceSetupParams()->iCurrentRes < pDev->GetDeviceSetupParams()->iNumRes ) );
-        Invalidate();
-        RenderSizeChanged( false );
+							( m_modeIndex < s_countModes ) );
     }
 }
 
@@ -953,15 +940,16 @@ void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
                 !GetEngine()->GetAllow3DAcceleration()
             );
             break;
-
+*/
 		// DISABLE THE higher/lower resolution option - to be reinstated at some point.
+		//Imago reinstated 6/26/09
 		case idmHigherResolution:
             ChangeFullscreenSize(true);
             break;
 
         case idmLowerResolution:
             ChangeFullscreenSize(false);
-            break;*/
+            break;
 
         case idmBrightnessUp:
             GetEngine()->SetGammaLevel(
