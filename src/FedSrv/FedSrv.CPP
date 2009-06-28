@@ -109,7 +109,7 @@ static void doASGS(void* data, MprThread *threadp) {
 		}
 		delete client;
 	} else { //not connected to a lobby, just set rank to 0 - imago 6/26/09
-		myRank = 0; 
+		pqd->rank = 0; 
 	}
 
 	// tell the main thread we've finished using the existing thread msg for AZ SQL 
