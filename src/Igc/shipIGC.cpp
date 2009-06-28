@@ -1852,7 +1852,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         if (((pship->GetStateM() & wantsToMineMaskIGC) != 0) &&
                             (pship->GetCommandTarget(c_cmdPlan) == m_commandTargets[c_cmdPlan]))
                         {
-                            if (pship->GetSide() == pside) 
+                            if (IsideIGC::AlliedSides(pside,pship->GetSide())) // ALLY imago 6/28/09 (TheRock@RT)
                             {
                                 //Have a miner on our side that is actively trying to mine this asteroid
                                 nFriendly++;
