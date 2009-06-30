@@ -1,6 +1,7 @@
 #ifndef _VIDEOSETTINGS_H_
 #define _VIDEOSETTINGS_H_
 
-bool PromptUserForVideoSettings( HINSTANCE hInstance, PathString & szArtPath, LPCSTR lpSubKey );
+//Imago added bool bStartFullscreen, bool bRaise 6/29/09, only prompts when "Safe Mode" and restored the -windowed command line switch
+bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter, HINSTANCE hInstance, PathString & szArtPath, LPCSTR lpSubKey );
 
 #endif // _VIDEOSETTINGS_H_

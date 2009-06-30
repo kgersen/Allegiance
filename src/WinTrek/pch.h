@@ -51,6 +51,7 @@
 //
 // WinTrek headers
 //
+#include "ddvideo.h" //Imago 6/28/09 re-write
 
 #include "engine.h"
 #include "effect.h"

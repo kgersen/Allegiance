@@ -35,6 +35,9 @@ const int c_nMinGain = -60;
 extern bool g_bActivity = true;
 extern bool g_bAFKToggled = false;
 
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Stuff that was moved out of this file
@@ -1267,6 +1270,11 @@ public:
     TRef<IMenuItem>            m_pitemToggleBandwidth; // w0dk4 June 2007: Bandwith Patch
     TRef<IMenuItem>            m_pitemMuteFilter;			//TheBored 30-JUL-07: Filter Unknown Chat patch
     TRef<IMenuItem>            m_pitemFilterUnknownChats;	//TheBored 30-JUL-07: Filter Unknown Chat patch
+	//imago added -- 6/29/09
+	TRef<IMenuItem>            m_pitemMip;
+	TRef<IMenuItem>            m_pitemPack;
+	TRef<IMenuItem>            m_pitemAA;
+	TRef<IMenuItem>            m_pitemVsync;
 
     bool                       m_bLensFlare;
     bool                       m_bMusic;
@@ -2208,12 +2216,57 @@ public:
                     SetScreen(CreateIntroScreen(GetModeler()));
                     break;
 
-                case ScreenIDSplashScreen:
+				case ScreenIDSplashScreen: 
+					{
 // BUILD_DX9
-                    //SetScreen(CreateVideoScreen(GetModeler(), true));
-                    //SetCursorImage(Image::GetEmpty());
-// BUILD_DX9
-                    break;
+						//Imago 6/29/09 many codecs will crash the app when being debugged
+						if (!IsDebuggerPresent()) {		
+							::ShowWindow( GetHWND(), SW_MINIMIZE );
+											   
+						   HWND hWND = ::CreateWindow("static", "Allegiance", WS_VISIBLE|WS_POPUP, 0, 0,
+							   GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL, 
+								::GetModuleHandle(NULL), NULL);
+				   
+						   ::ShowCursor(FALSE);
+							//this window will have our "intro" in it...
+							DDVideo *DDVid = new DDVideo();
+
+							if (hWND == NULL)
+								ZDebugBreak();
+
+							DDVid->m_hWnd = hWND;
+							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file 
+							if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
+						    { 
+								while( DDVid->m_Running )
+						        {
+									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE))
+									{
+										DDVid->m_Running = FALSE;
+										DDVid->m_pVideo->Stop();
+									} else	{
+								    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);			
+										DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT); 	  
+									}					
+						        }
+								DDVid->DestroyDDVid();
+							} else {
+								DDVid->DestroyDirectDraw();
+							}
+							::ShowCursor(TRUE);
+							::DestroyWindow(hWND);
+							::ShowWindow( GetHWND(), SW_RESTORE );
+							::UpdateWindow(  GetHWND() );	
+						}
+
+	                    //SetScreen(CreateVideoScreen(GetModeler(), true));
+	                    //SetCursorImage(Image::GetEmpty());
+	// BUILD_DX9
+						GetWindow()->screen(ScreenIDIntroScreen);
+						SetScreen(CreateIntroScreen(GetModeler()));
+	                    break;
+					}
+					
 
                 case ScreenIDTrainScreen:
                     SetScreen(CreateTrainingScreen(GetModeler()));
@@ -2704,36 +2757,22 @@ public:
 
         m_bCombatSize = false;
 
-// BUILD_DX9
-/*		m_sizeCombat =
-            WinPoint(	CD3DDevice9::GetCurrentMode()->mode.Width,
-						CD3DDevice9::GetCurrentMode()->mode.Height );
-        m_sizeCombatFullscreen =
-            WinPoint(	CD3DDevice9::GetCurrentMode()->mode.Width,
-						CD3DDevice9::GetCurrentMode()->mode.Height );*/
-//		m_sizeCombat =
-//			WinPoint(	CD3DDevice9::sDevSetupParams.sWindowedMode.mode.Width,
-//						CD3DDevice9::sDevSetupParams.sWindowedMode.mode.Height );
+//imago restored original functionality 6/28/09
 		m_sizeCombat =
             WinPoint(
                 int(LoadPreference("CombatXSize", 800)),
                 int(LoadPreference("CombatYSize", 600))
             );
-		m_sizeCombatFullscreen =
-			WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
-						CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
-//#else
-//		m_sizeCombat =
-//            WinPoint(
-//                int(LoadPreference("CombatXSize", 800)),
-//                int(LoadPreference("CombatYSize", 600))
-//            );
-//
-//        m_sizeCombatFullscreen =
-//            WinPoint(
-//                int(LoadPreference("CombatFullscreenXSize", 800)),
-//                int(LoadPreference("CombatFullscreenYSize", 600))
-//            );
+		//m_sizeCombatFullscreen =
+		//	WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
+		//				CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
+
+       m_sizeCombatFullscreen =
+           WinPoint(
+                int(LoadPreference("CombatFullscreenXSize", 800)),
+                int(LoadPreference("CombatFullscreenYSize", 600))
+            );
+
 // BUILD_DX9
 
         //
@@ -3663,6 +3702,14 @@ public:
 	#define idmContextMakeLeader	803
 	#define idmContextMutePlayer	804
 
+	//imago 6/30/09
+	#define idmDeviceOptions		805
+	#define idmAA					806
+	#define idmMip					807
+	#define idmPack					808
+	#define idmTex					809
+	#define idmVsync				810
+
 
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -3910,13 +3957,12 @@ public:
                     m_pitemToggleBounds                = pmenu->AddMenuItem(idmToggleBounds,                GetBoundsMenuString()               , 'N');
                     m_pitemToggleTransparentObjects    = pmenu->AddMenuItem(idmToggleTransparentObjects,    GetTransparentObjectsMenuString()   , 'O');
                 #endif
-                m_pitemToggleSmoke                 = pmenu->AddMenuItem(idmToggleSmoke,                 GetSmokeMenuString()                , 'A');
+                m_pitemToggleSmoke                 = pmenu->AddMenuItem(idmToggleSmoke,                 GetSmokeMenuString()                , 'P');
                 m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            , 'F');
                 m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(), 'B');
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             , 'H');
-                // yp Your_Persona August 2 2006 : MaxTextureSize Patch
-                m_pitemMaxTextureSize              = pmenu->AddMenuItem(idmMaxTextureSize,            GetMaxTextureSizeMenuString(),    'X');
-
+ 				//Imago 6/30/09 adjust new dx9 settings in game
+                		       		 				 pmenu->AddMenuItem(idmDeviceOptions,					"Advanced Options",				  'A', m_psubmenuEventSink);
 				break;
 
             case idmGameOptions:
@@ -3962,6 +4008,19 @@ public:
 				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
 				break;
+			//imago 6/30/09: new graphics options dx9
+			case idmDeviceOptions:
+				pmenu->AddMenuItem(0                     , "Options require game to be restarted            "     );
+				pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
+			    
+				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
+			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
+				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V');				
+				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
+				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
+				break;
+
 			//End TB 30-JUL-07
         }
 
@@ -4944,6 +5003,27 @@ public:
 
         return strResult;
     }
+
+	//imago WIP 6/30/09 NYI
+	ZString GetAAString()
+	{
+		int aa = 2 * CD3DDevice9::Get()->GetCurrentMode()->d3dMultiSampleSetting;
+		return "Antialiasing (" + ZString(aa) + "x)";
+	}
+	ZString GetMipString()
+	{
+		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap) ? "Yes" : "No";
+	    return "Auto. Mipmaps ("+ strResult +")";
+	}
+	ZString GetPackString()
+	{
+	    return "Use Texture Pack (No)";
+	}
+	ZString GetVsyncString()
+	{
+		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bWaitForVSync) ? "On" : "Off";
+	    return "Vertical Sync (On)";
+	}
 
     void DoInputConfigure()
     {

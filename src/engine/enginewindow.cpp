@@ -17,16 +17,23 @@ void EngineWindow::MenuCommandSink::OnMenuCommand(IMenuItem* pitem)
 //
 //////////////////////////////////////////////////////////////////////////////
 
-//imago updated 6/29/09
-EngineWindow::ModeData EngineWindow::s_pmodes[] =
+
+
+//FROM engine.cpp EngineImpl:
+EngineWindow::ModeData EngineWindow::s_pmodes[] = //imago updated 6/29/09 NYI letterbox/strech non 4:3
     {
-		ModeData(WinPoint(640, 480), true),
+		ModeData(WinPoint(640, 480), false),
 		ModeData(WinPoint(800, 600), false),
 		ModeData(WinPoint(1024, 768), false),
-		ModeData(WinPoint(1280, 1024), false)
+		ModeData(WinPoint(1280, 1024), false),
+		ModeData(WinPoint(1400, 1050), false),		
+		ModeData(WinPoint(1440, 900),  false),
+		ModeData(WinPoint(1600, 1200), false),
+		ModeData(WinPoint(1680, 1050), false),
+		ModeData(WinPoint(1920, 1080), false)
     };
 
-int EngineWindow::s_countModes = 3;
+int EngineWindow::s_countModes = 8;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -188,6 +195,7 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
     // menu
     m_pmenuCommandSink  = new MenuCommandSink(this);
+	
 
     // Start the callback
     EnableIdleFunction();
@@ -289,7 +297,7 @@ void EngineWindow::OnClose()
 
 // TBD: Switch these flags off.
 bool g_bMDLLog    = false;
-bool g_bWindowLog = true;
+bool g_bWindowLog = false;
 
 void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartFullscreen)
 {
@@ -658,12 +666,12 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
 
 bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 {
-	/*
+/*	
 	char szBuffer[256];
 	sprintf( szBuffer, "%d  %d,   %d %d\n", pwp->x, pwp->y, 
 		m_bWindowStateMinimised, m_bWindowStateRestored );
 	OutputDebugString( szBuffer );
-	*/
+*/	
 
     if (GetFullscreen()) {
         pwp->x = 0;
@@ -843,14 +851,13 @@ TRef<IPopup> EngineWindow::GetEngineMenu(IEngineFont* pfont)
                                  pmenu->AddMenuItem(idmBrightnessUp       , "Brightness Up"                                   , 'U');
                                  pmenu->AddMenuItem(idmBrightnessDown     , "Brightness Down"                                 , 'D');
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-                                 pmenu->AddMenuItem(0                     , "The following options are only valid when flying"     );
+                                 pmenu->AddMenuItem(0                     , "Options are only valid when flying in fullscreen"     );
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
     m_pitemHigherResolution    = pmenu->AddMenuItem(idmHigherResolution   , "Higher Resolution"                               , 'H');
     m_pitemLowerResolution     = pmenu->AddMenuItem(idmLowerResolution    , "Lower Resolution"                                , 'L');
-
 								 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-                                 pmenu->AddMenuItem(0                     , "Current device state"                                 );
-                                 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
+                                 pmenu->AddMenuItem(0                     , "Current device state                            ", 'C');
+                                 pmenu->AddMenuItem(0	                  , "------------------------------------------------"     );
     m_pitemDevice              = pmenu->AddMenuItem(0                     , GetDeviceString()                                      );
 //    m_pitemRenderer            = pmenu->AddMenuItem(0                     , GetRendererString()                                    );
     m_pitemResolution          = pmenu->AddMenuItem(0                     , GetResolutionString()                                  );
@@ -859,6 +866,7 @@ TRef<IPopup> EngineWindow::GetEngineMenu(IEngineFont* pfont)
 
     return pmenu;
 }
+
 
 ZString EngineWindow::GetResolutionString()
 {
@@ -914,6 +922,7 @@ ZString EngineWindow::GetAllowSecondaryString()
         : "Never use secondary device";
 }
 
+
 void EngineWindow::UpdateMenuStrings()
 {
     if (m_pitemDevice) {
@@ -929,6 +938,7 @@ void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
 {
     switch (pitem->GetID()) 
 	{
+
 /*       case idmAllowSecondary:
             GetEngine()->SetAllowSecondary(
                 !GetEngine()->GetAllowSecondary()

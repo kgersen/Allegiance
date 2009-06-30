@@ -43,6 +43,10 @@ bool g_bAskForCallSign = true ; // wlp 2006
 
 typedef DWORD (*EBUPROC) (LPCTSTR lpRegKeyLocation, LPCTSTR lpEULAFileName, LPCSTR lpWarrantyFileName, BOOL fCheckForFirstRun);
 
+
+
+
+
 //
 // EULA related files should be in the artwork folder so that they may be autoupdated
 //
@@ -540,7 +544,9 @@ public:
         bool bHardware        = false;
         bool bPrimary         = false;
         bool bSecondary       = false;
+		bool bStartFullscreen = true;
         ZString strMap;
+		ZString strAdapter; int iUseAdapter = 0;
 
         PCC pcc = strCommandLine;
         CommandLineToken token(pcc, strCommandLine.GetLength());
@@ -614,7 +620,16 @@ public:
                 } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
                     trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
                     g_bAskForCallSign = false ; // wlp callsign was entered on commandline
-                }                 
+                } else if (str == "windowed") {  //imago sucked these in here to accommidate the way we now create the D3DDevice
+	                bStartFullscreen = false;
+	            } else if (str == "fullscreen") {
+	                bStartFullscreen = true;
+				} else if (str == "adapter") { //imago added for the needy
+                    if (token.IsString(strAdapter))
+                    {
+                        iUseAdapter = strAdapter.GetInteger();
+                    }
+				}
             }
             else // wlp 2006 - adapted this string featture to add ASGS Ticket to cdKey field
             if (token.IsString(str)){} ;
@@ -659,12 +674,52 @@ public:
         //
 
 // BUILD_DX9
-		// Ask the user for video settings.
-		if( PromptUserForVideoSettings( GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT "\\3DSettings" ) == false )
+		// Ask the user for video settings. -- 
+		//   -adapter switch added for the needy
+		//   Raise dialog only if "Safe Mode" activated (any software/hardware/primary/secondary switches sent) imago 6/29/09
+		bool bRaise = (bSoftware || bPrimary || bSecondary || bHardware) ? true : false;
+		if( PromptUserForVideoSettings(bStartFullscreen, bRaise, iUseAdapter, GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT "\\3DSettings" ) == false )
 		{
 			return E_FAIL;
 		}
+
 		CD3DDevice9::Get()->UpdateCurrentMode( );
+		
+		//Imago 6/29/09 many codecs will crash the app when being debugged, 
+		// so skip the new intro video, also if starting windowed, or anything else...
+		if (!IsDebuggerPresent() && !CD3DDevice9::Get()->GetDeviceSetupParams()->bRunWindowed
+			&& !g_bQuickstart && bMovies  && !g_bReloaded 
+			&& CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID == 0) {
+
+			DDVideo *DDVid = new DDVideo();
+			ShowCursor(FALSE);
+
+			//this window will have our "intro" in it...
+		    HWND hWND = ::CreateWindow("static", "Allegiance", WS_VISIBLE|WS_POPUP, 0, 0,
+				GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN), NULL, NULL, 
+				::GetModuleHandle(NULL), NULL);
+			DDVid->m_hWnd = hWND;
+			ZString strPath = "/intro.avi"; //this can be any kind of AV file 
+			if( SUCCEEDED( DDVid->Play(ZString(pathStr) + strPath))) //(WMV is good as most machines read it)
+		    { 
+				while( DDVid->m_Running ) // NYI, load up the sounds & quickchat in another thread
+		        {
+					if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE))
+					{
+						DDVid->m_Running = FALSE;
+						DDVid->m_pVideo->Stop();
+					} else	{
+				    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);			
+						DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT); 	  
+					}					
+		        }
+				DDVid->DestroyDDVid();
+			} else {
+				DDVid->DestroyDirectDraw();
+			}
+			::DestroyWindow(hWND);
+			ShowCursor(TRUE);
+		}
 
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(

@@ -134,7 +134,7 @@ public:
         // Create a default pixel format
         //
 
-        // KGJV 32B - set PixelFormat according to bpp
+        // KGJV 32B - set PixelFormat according to bpp - imago, force 32? would make things simpler...
         
 /*        if (m_dwBPP == 0)
         {
@@ -160,18 +160,30 @@ public:
         if (m_dwBPP == 16)
             m_ppf = new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000);
 
-		//imago 6/24/09
-		m_modes.PushEnd(WinPoint(640,480));
-		m_modes.PushEnd(WinPoint(800,600));
-		m_modes.PushEnd(WinPoint(1024,768));
-		m_modes.PushEnd(WinPoint(1280,1024));
-
-
-		/* checkdevice and see if we can add these as well, play with strech (true) for non 4:3
-		ModeData(WinPoint(1400, 1050), false),
-		ModeData(WinPoint(1600, 1200), false),
-		ModeData(WinPoint(1920, 1440), false)
-		*/
+		//imago 6/24/09 - 6/29/09
+		m_modes.PushEnd(WinPoint(640,480)); //VGA
+		m_modes.PushEnd(WinPoint(800,600)); //SVGA (default)
+	
+		int i;
+		for( i=0; i<CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++ )
+		{
+			int width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
+			int height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
+			if (width == 1024 && height == 768)
+				m_modes.PushEnd(WinPoint(1024,768)); //XGA
+			if (width == 1280 && height == 1024)
+				m_modes.PushEnd(WinPoint(1280,1024)); //SXGA
+			if (width == 1400 && height == 1050)
+				m_modes.PushEnd(WinPoint(1400,1050)); //SXGA+
+			if (width == 1440 && height == 900)
+				m_modes.PushEnd(WinPoint(1440,900)); //WSXGA+ (widescreen)
+			if (width == 1600 && height == 1200)
+				m_modes.PushEnd(WinPoint(1600,1200)); //UXGA
+			if (width == 1680 && height == 1050)
+				m_modes.PushEnd(WinPoint(1680,1050)); //WSXGA+ (widescreen)
+			if (width == 1920 && height == 1080)
+				m_modes.PushEnd(WinPoint(1920,1080)); //1080p
+		}
     }
 
 private:
@@ -206,7 +218,7 @@ private:
 //            SurfaceList::Iterator iter(m_listSurfaces);
 //
 //            while (!iter.End()) {
-//                iter.Value()->ClearDevice();   //IMAGO NYI PUT BACK VIDEOSSCREEN
+//                iter.Value()->ClearDevice();
 //                iter.Next();
 //            }
 //        }
@@ -214,7 +226,7 @@ private:
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Device Termination
+    // Device Termination  this function apparently DOES NOTHING --imago 6/29/09
     //
     //////////////////////////////////////////////////////////////////////////////
 
@@ -222,7 +234,7 @@ private:
     {
         //ClearDependants();
 
-        m_hwndClip     = NULL;
+ //       m_hwndClip     = NULL;
 //        m_psurfaceBack = NULL;
 //        m_pddClipper   = NULL;
 //        m_pdds         = NULL;
@@ -709,11 +721,20 @@ private:
         // Everything worked.  Update any device format surfaces.
         //
         
-        UpdateSurfacesPixelFormat();*/
+        UpdateSurfacesPixelFormat();
+		
+*/
 
 		// TBD: SET TRUE TO FALSE.
 //		CD3DDevice9::ResetDevice( TRUE, size.X(), size.Y() );
-		CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y() );
+
+		//imago added eliminate modes, does nothing ATM. 6/29/09
+		if (CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y() ) != D3D_OK) {
+			EliminateModes(size);
+			if (g_bWindowLog) {
+				ZDebugOutput("Invalid resolution\n");
+			}
+		}
 
         if (g_bWindowLog) {
             ZDebugOutput("SwitchToFullscreenDevice exiting\n");

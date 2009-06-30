@@ -9,7 +9,8 @@
 // Add registry keys to store the video settings.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//#define USE_DEFAULT_SETTINGS			// For PIX...
+// Imago activated this, we choose suitable defaults and let pilots change options in-game
+#define USE_DEFAULT_SETTINGS			// For PIX...
 
 // NEEDS TO BE LANGUAGE DEPENDENT IF WE GET THAT FAR.
 #include "..\Lang\USA\allegiance\Resource.h"
@@ -95,7 +96,7 @@ SVideoSettingsData g_VideoSettings;
 // PromptUserForVideoSettings()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool PromptUserForVideoSettings( HINSTANCE hInstance, PathString & szArtPath, LPCSTR lpSubKey )
+bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter, HINSTANCE hInstance, PathString & szArtPath, LPCSTR lpSubKey )
 {
 	CLogFile logFile( "VideoSettings.log" );
 
@@ -108,99 +109,98 @@ bool PromptUserForVideoSettings( HINSTANCE hInstance, PathString & szArtPath, LP
 	g_VideoSettings.bWindowed			= true;
 	g_VideoSettings.bWaitForVSync		= false;
 
-#ifdef USE_DEFAULT_SETTINGS
-	int iRetVal = 1;
-	g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 );	// Mininum width/height allowed.
-	g_VideoSettings.iCurrentDevice		= 0;
-	g_VideoSettings.iCurrentMode		= 0;
-	g_VideoSettings.iSelectedWidth		= 800;
-	g_VideoSettings.iSelectedHeight		= 600;
-	g_VideoSettings.iCurrentAASetting	= 3;
-	g_VideoSettings.d3dBackBufferFormat = D3DFMT_X8R8G8B8;
-	g_VideoSettings.iMonitorFrequency	= 60;
-	g_VideoSettings.bWindowed			= true;
-	g_VideoSettings.bWaitForVSync		= false;
-	g_VideoSettings.d3dDeviceFormat		= D3DFMT_X8R8G8B8;
-	g_VideoSettings.hSelectedMonitor	= (HMONITOR) 0x00010001;
+	// DEFAULT SETTINGS imago 6/29/09
+	if (bRaise == false) {
+		int iRetVal = 1;
+		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum width/height allowed.
+		g_VideoSettings.iCurrentDevice		= iAdapter;  //users can change this in thier Display Properties or send -adapter 1
+		g_VideoSettings.iCurrentMode		= 0;  
+		g_VideoSettings.iCurrentAASetting	= g_VideoSettings.pDevData->GetNumAASettings(iAdapter,0,false) - 1;
+		g_VideoSettings.d3dBackBufferFormat = D3DFMT_X8R8G8B8;
+		g_VideoSettings.bWindowed			= !bStartFullscreen;
+		g_VideoSettings.bWaitForVSync		= true; //users can change this in thier Display Properties
+		g_VideoSettings.d3dDeviceFormat		= D3DFMT_X8R8G8B8;
+		g_VideoSettings.hSelectedMonitor	= (HMONITOR) 0x00010001;
+		
 
-#else
-	SAdditional3DRegistryData sExtraRegData;
+	} else {
+		SAdditional3DRegistryData sExtraRegData;
 
-	g_VideoSettings.pDevData = new CD3DDeviceModeData( 800, 600, &logFile );	// Mininum width/height allowed.
+		g_VideoSettings.pDevData = new CD3DDeviceModeData( 800, 600, &logFile );	// Mininum width/height allowed.
 
-	// If default device has no available modes, can't run the game.
-	if( g_VideoSettings.pDevData->GetTotalResolutionCount( 0 ) == 0 )
-	{
-		logFile.OutputString( "Primary device has no modes that support Allegiance.\n" );
-		MessageBox( NULL, "Primary device has no modes that support Allegiance.",
-						"Error", MB_OK );
-		return false;
-	}
-
-	int iRetVal;
-	bool bValid = true;
-
-	// Load in the registry settings.
-	iRetVal = Read3DRegistrySettings( &sExtraRegData, lpSubKey, &logFile );
-	if( iRetVal == 1 )
-	{
-		// Values were loaded from the registry key, validate them.
-		// Loaded settings: iCurrentDevice, szDeviceName, iCurrentMode, szResolutionName
-		// bWindowed, bWaitForVSync, szAASettingName, iCurrentAASetting, magFilter, 
-		// minFilter, mipFilter.
-		// Assumption, if current device, device name, current mode and resolution name
-		// are valid, assume the rest of the settings must be ok.
-		if( ( g_VideoSettings.iCurrentDevice >= 0 ) &&
-			( g_VideoSettings.iCurrentDevice < g_VideoSettings.pDevData->GetDeviceCount() ) )
+		// If default device has no available modes, can't run the game.
+		if( g_VideoSettings.pDevData->GetTotalResolutionCount( 0 ) == 0 )
 		{
-			char szBuffer[256];
-			g_VideoSettings.pDevData->GetDeviceNameByIndex( 
-						g_VideoSettings.iCurrentDevice,
-						szBuffer,
-						256 );
-			if( strcmp( sExtraRegData.szDeviceName, szBuffer ) != 0 )
+			logFile.OutputString( "Primary device has no modes that support Allegiance.\n" );
+			MessageBox( NULL, "Primary device has no modes that support Allegiance.",
+							"Error", MB_OK );
+			return false;
+		}
+
+		int iRetVal;
+		bool bValid = true;
+
+		// Load in the registry settings.
+		iRetVal = Read3DRegistrySettings( &sExtraRegData, lpSubKey, &logFile );
+		if( iRetVal == 1 )
+		{
+			// Values were loaded from the registry key, validate them.
+			// Loaded settings: iCurrentDevice, szDeviceName, iCurrentMode, szResolutionName
+			// bWindowed, bWaitForVSync, szAASettingName, iCurrentAASetting, magFilter, 
+			// minFilter, mipFilter.
+			// Assumption, if current device, device name, current mode and resolution name
+			// are valid, assume the rest of the settings must be ok.
+			if( ( g_VideoSettings.iCurrentDevice >= 0 ) &&
+				( g_VideoSettings.iCurrentDevice < g_VideoSettings.pDevData->GetDeviceCount() ) )
 			{
-				bValid = false;
-			}
-			else if(	( g_VideoSettings.iCurrentMode >= 0 ) &&
-						( g_VideoSettings.iCurrentMode < 
-								g_VideoSettings.pDevData->GetTotalResolutionCount( 
-										g_VideoSettings.iCurrentDevice ) ) )
-			{
-				g_VideoSettings.pDevData->GetResolutionStringByIndex( 
-					g_VideoSettings.iCurrentDevice,
-					g_VideoSettings.iCurrentMode, 
-					szBuffer, 256 );
-				if( strcmp( sExtraRegData.szResolutionName, szBuffer ) != 0 )
+				char szBuffer[256];
+				g_VideoSettings.pDevData->GetDeviceNameByIndex( 
+							g_VideoSettings.iCurrentDevice,
+							szBuffer,
+							256 );
+				if( strcmp( sExtraRegData.szDeviceName, szBuffer ) != 0 )
 				{
 					bValid = false;
 				}
+				else if(	( g_VideoSettings.iCurrentMode >= 0 ) &&
+							( g_VideoSettings.iCurrentMode < 
+									g_VideoSettings.pDevData->GetTotalResolutionCount( 
+											g_VideoSettings.iCurrentDevice ) ) )
+				{
+					g_VideoSettings.pDevData->GetResolutionStringByIndex( 
+						g_VideoSettings.iCurrentDevice,
+						g_VideoSettings.iCurrentMode, 
+						szBuffer, 256 );
+					if( strcmp( sExtraRegData.szResolutionName, szBuffer ) != 0 )
+					{
+						bValid = false;
+					}
+				}
+			}
+			else
+			{
+				bValid = false;
 			}
 		}
-		else
+
+		if( bValid == false )
 		{
-			bValid = false;
+			CD3DDeviceModeData * pTemp = g_VideoSettings.pDevData;
+			memset( &g_VideoSettings, 0, sizeof( SVideoSettingsData ) );
+			g_VideoSettings.pDevData = pTemp;
 		}
-	}
 
-	if( bValid == false )
-	{
-		CD3DDeviceModeData * pTemp = g_VideoSettings.pDevData;
-		memset( &g_VideoSettings, 0, sizeof( SVideoSettingsData ) );
-		g_VideoSettings.pDevData = pTemp;
-	}
-
-	// Create Dialog box, then populate with video settings.
-	iRetVal = DialogBox(	hInstance, 
-							MAKEINTRESOURCE( IDD_RESPICKER ), 
-							GetDesktopWindow(), 
-							ResPickerDialogProc );
-	if( iRetVal == IDCANCEL ) 
-	{
-		// User selected quit.
-		return false;
-	}
-#endif // USE_DEFAULT_SETTINGS
+		// Create Dialog box, then populate with video settings.
+		iRetVal = DialogBox(	hInstance, 
+								MAKEINTRESOURCE( IDD_RESPICKER ), 
+								GetDesktopWindow(), 
+								ResPickerDialogProc );
+		if( iRetVal == IDCANCEL ) 
+		{
+			// User selected quit.
+			return false;
+		}
+	} // USE_DEFAULT_SETTINGS
 
 	logFile.OutputString("\nUser selected values:\n");
 	logFile.OutputStringV( "AD %d   MON 0x%08x   WIN %d   VSYNC %d\n", 
@@ -236,6 +236,16 @@ bool PromptUserForVideoSettings( HINSTANCE hInstance, PathString & szArtPath, LP
 	pParams->iWindowOffsetY	= pParams->monitorInfo.rcMonitor.top;
 	logFile.OutputStringV( "Window offset: %d  %d\n", pParams->iWindowOffsetX,
 								pParams->iWindowOffsetY );
+
+	if (bRaise == false) {
+		//build the default adapter res array  (imago)
+		g_VideoSettings.pDevData->GetRelatedResolutions(
+											0,
+											0,
+											&g_VideoSettings.iNumResolutions,
+											&g_VideoSettings.iSelectedResolution,
+											&g_VideoSettings.pResolutionSet );
+	}
 
 	// Copy over the resolution array.
 	pParams->iNumRes = g_VideoSettings.iNumResolutions;

@@ -500,16 +500,18 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 		// Perform the reset.
 		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams );
-		_ASSERT( hr == D3D_OK );
+//imago changed 6/29/09 to fall thru
+		if(hr == D3D_OK ) {
 
-		// Initialise the caches.
-		InitialiseDeviceStateCache( &m_sD3DDev9.sDeviceStateCache );
-		InitialiseTransformCache( &m_sD3DDev9.sTransformCache );
-		InitialiseMaterialCache( &m_sD3DDev9.sMaterialCache );
-		InitialiseLightCache( &m_sD3DDev9.sLightCache );
+			// Initialise the caches.
+			InitialiseDeviceStateCache( &m_sD3DDev9.sDeviceStateCache );
+			InitialiseTransformCache( &m_sD3DDev9.sTransformCache );
+			InitialiseMaterialCache( &m_sD3DDev9.sMaterialCache );
+			InitialiseLightCache( &m_sD3DDev9.sLightCache );
 
-		// Recreate the AA depth stencil buffer, if required.
-		CreateAADepthStencilBuffer( );
+			// Recreate the AA depth stencil buffer, if required.
+			CreateAADepthStencilBuffer( );
+		}
 	}
 
 	return hr;
