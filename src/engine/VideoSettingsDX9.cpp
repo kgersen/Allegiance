@@ -120,7 +120,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		g_VideoSettings.bWindowed			= !bStartFullscreen;
 		g_VideoSettings.bWaitForVSync		= true; //users can change this in thier Display Properties
 		g_VideoSettings.d3dDeviceFormat		= D3DFMT_X8R8G8B8;
-		g_VideoSettings.hSelectedMonitor	= (HMONITOR) 0x00010001;
+		g_VideoSettings.hSelectedMonitor	= MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTONEAREST);
 		
 
 	} else {
