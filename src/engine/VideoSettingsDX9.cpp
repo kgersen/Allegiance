@@ -115,7 +115,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum width/height allowed.
 		g_VideoSettings.iCurrentDevice		= iAdapter;  //users can change this in thier Display Properties or send -adapter 1
 		g_VideoSettings.iCurrentMode		= 0;  
-		g_VideoSettings.iCurrentAASetting	= g_VideoSettings.pDevData->GetNumAASettings(iAdapter,0,false) - 1;
+		g_VideoSettings.iCurrentAASetting	= 0; //g_VideoSettings.pDevData->GetNumAASettings(iAdapter,0,false) - 1;
 		g_VideoSettings.d3dBackBufferFormat = D3DFMT_X8R8G8B8;
 		g_VideoSettings.bWindowed			= !bStartFullscreen;
 		g_VideoSettings.bWaitForVSync		= true; //users can change this in thier Display Properties
