@@ -533,9 +533,21 @@
 			>
 		</File>
 		<File
-			RelativePath="..\src\WinTrek\videoscreen.cpp"
+			RelativePath="..\src\WinTrek\ddstream.cpp"
 			>
 		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddstream.h"
+			>
+		</File>		
+		<File
+			RelativePath="..\src\WinTrek\ddvideo.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddvideo.h"
+			>
+		</File>			
 		<File
 			RelativePath="..\src\WinTrek\WinTrek.CPP"
 			>
