@@ -149,12 +149,12 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	memset( &m_sD3DDev9.d3dPresParams, 0, sizeof( D3DPRESENT_PARAMETERS ) );
 	m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat		= m_sD3DDev9.pCurrentMode->fmtDepthStencil;
 	m_sD3DDev9.d3dPresParams.EnableAutoDepthStencil		= TRUE;
-	m_sD3DDev9.d3dPresParams.BackBufferCount				= 1;
+	m_sD3DDev9.d3dPresParams.BackBufferCount			= 1;
 	m_sD3DDev9.d3dPresParams.hDeviceWindow				= hParentWindow;
-	m_sD3DDev9.d3dPresParams.Windowed						= m_sDevSetupParams.bRunWindowed;
-	m_sD3DDev9.d3dPresParams.BackBufferFormat				= m_sD3DDev9.pCurrentMode->mode.Format;
-	m_sD3DDev9.d3dPresParams.BackBufferWidth				= m_sD3DDev9.pCurrentMode->mode.Width;
-	m_sD3DDev9.d3dPresParams.BackBufferHeight				= m_sD3DDev9.pCurrentMode->mode.Height;
+	m_sD3DDev9.d3dPresParams.Windowed					= m_sDevSetupParams.bRunWindowed;
+	m_sD3DDev9.d3dPresParams.BackBufferFormat			= m_sD3DDev9.pCurrentMode->mode.Format;
+	m_sD3DDev9.d3dPresParams.BackBufferWidth			= m_sD3DDev9.pCurrentMode->mode.Width;
+	m_sD3DDev9.d3dPresParams.BackBufferHeight			= m_sD3DDev9.pCurrentMode->mode.Height;
 	m_sD3DDev9.d3dPresParams.SwapEffect					= D3DSWAPEFFECT_DISCARD;
 
 	if( m_sDevSetupParams.bRunWindowed == true )
@@ -174,9 +174,11 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	{
 		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_IMMEDIATE;
 	}
-	m_sD3DDev9.d3dPresParams.MultiSampleQuality			= D3DMULTISAMPLE_NONE;
+
+	//imago 7/1/09 NYI test for multisample maskable optons (CSAA, etc) and set accordingly
+	m_sD3DDev9.d3dPresParams.MultiSampleQuality				= 0; //<-- here --^
 	m_sD3DDev9.d3dPresParams.MultiSampleType				= m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting;
-	m_sD3DDev9.d3dPresParams.Flags						= 0;
+	m_sD3DDev9.d3dPresParams.Flags							= 0;
 
 	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
 

@@ -78,6 +78,7 @@ const float c_fVolumeDelta = 1;
 
 const float g_hudBright = 0.85f;
 
+const float g_fJoystickDeadZoneOff = 0.0f; //imago added 7/1/09 NYI
 const float g_fJoystickDeadZoneSmall = 0.1f;
 const float g_fJoystickDeadZoneLarge = 0.3f;
 
@@ -3009,7 +3010,7 @@ public:
             ToggleBounds();
         if (!LoadPreference("TransparentObjects", TRUE))
             ToggleTransparentObjects();
-        SetSmoke (LoadPreference ("SmokeEffects", 5)); // imago default to 5 particles - 6/29/09 NYI allow a toggle
+        SetSmoke (LoadPreference ("SmokeEffects", 3)); 
         if (!LoadPreference("Lens Flare", TRUE))
             ToggleLensFlare();
         if (!LoadPreference("BidirectionalLighting", TRUE))
@@ -4015,8 +4016,8 @@ public:
 			    
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
 			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
+				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V');
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V');				
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
 				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
 				break;
@@ -5007,7 +5008,7 @@ public:
 	//imago WIP 6/30/09 NYI
 	ZString GetAAString()
 	{
-		int aa = 2 * CD3DDevice9::Get()->GetCurrentMode()->d3dMultiSampleSetting;
+		int aa = CD3DDevice9::Get()->GetCurrentMode()->d3dMultiSampleSetting;
 		return "Antialiasing (" + ZString(aa) + "x)";
 	}
 	ZString GetMipString()
@@ -5022,7 +5023,7 @@ public:
 	ZString GetVsyncString()
 	{
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bWaitForVSync) ? "On" : "Off";
-	    return "Vertical Sync (On)";
+	    return "Vertical Sync ("+ strResult +")";
 	}
 
     void DoInputConfigure()

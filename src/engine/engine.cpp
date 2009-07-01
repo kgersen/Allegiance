@@ -164,11 +164,11 @@ public:
 		m_modes.PushEnd(WinPoint(640,480)); //VGA
 		m_modes.PushEnd(WinPoint(800,600)); //SVGA (default)
 	
-		int i;
-		for( i=0; i<CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++ )
+		int i; int width; int height;
+		for( i=0; i<=CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++ )
 		{
-			int width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
-			int height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
+			width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
+			height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
 			if (width == 1024 && height == 768)
 				m_modes.PushEnd(WinPoint(1024,768)); //XGA
 			if (width == 1280 && height == 1024)

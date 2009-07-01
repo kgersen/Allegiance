@@ -109,19 +109,38 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	g_VideoSettings.bWindowed			= true;
 	g_VideoSettings.bWaitForVSync		= false;
 
-	// DEFAULT SETTINGS imago 6/29/09
+	// DEFAULT SETTINGS imago 6/29/09 WIP - when launching for the first time, use these safe values:
 	if (bRaise == false) {
 		int iRetVal = 1;
 		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum width/height allowed.
-		g_VideoSettings.iCurrentDevice		= iAdapter;  //users can change this in thier Display Properties or send -adapter 1
+		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.iCurrentMode		= 0;  
-		g_VideoSettings.iCurrentAASetting	= 0; //g_VideoSettings.pDevData->GetNumAASettings(iAdapter,0,false) - 1;
+		g_VideoSettings.iCurrentAASetting	= 0;
 		g_VideoSettings.d3dBackBufferFormat = D3DFMT_X8R8G8B8;
 		g_VideoSettings.bWindowed			= !bStartFullscreen;
-		g_VideoSettings.bWaitForVSync		= true; //users can change this in thier Display Properties
 		g_VideoSettings.d3dDeviceFormat		= D3DFMT_X8R8G8B8;
-		g_VideoSettings.hSelectedMonitor	= MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTONEAREST);
-		
+		g_VideoSettings.hSelectedMonitor	= MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTOPRIMARY); //for now always use primary
+
+//NYI multimon: we still need to enum monitors and support a -monitor <n> command line switch for the needy (like me)
+/*
+EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
+BOOL CALLBACK MonitorEnumProc(
+  HMONITOR hMonitor,
+  HDC hdcMonitor,
+  LPRECT lprcMonitor,
+  LPARAM dwData
+);*/
+
+		g_VideoSettings.bWaitForVSync		= false;
+		g_VideoSettings.bAutoGenMipmaps 	= 0;
+		g_VideoSettings.bUseTexturePackFile = 0;
+		g_VideoSettings.multiSampleType 	= D3DMULTISAMPLE_NONE;
+		g_VideoSettings.magFilter 			= D3DTEXF_LINEAR;
+		g_VideoSettings.minFilter 			= D3DTEXF_LINEAR;
+		g_VideoSettings.mipFilter 			= D3DTEXF_LINEAR;
+		g_VideoSettings.iMaxTextureSize 	= 0;
+
+		// NYI overwrite the above settings with any others we have laying around from LoadPreferences()
 
 	} else {
 		SAdditional3DRegistryData sExtraRegData;
@@ -201,6 +220,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			return false;
 		}
 	} // USE_DEFAULT_SETTINGS
+	////////////////////////
 
 	logFile.OutputString("\nUser selected values:\n");
 	logFile.OutputStringV( "AD %d   MON 0x%08x   WIN %d   VSYNC %d\n", 
@@ -238,9 +258,9 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 								pParams->iWindowOffsetY );
 
 	if (bRaise == false) {
-		//build the default adapter res array  (imago)
+		//build the adapter res array  (imago)
 		g_VideoSettings.pDevData->GetRelatedResolutions(
-											0,
+											iAdapter,
 											0,
 											&g_VideoSettings.iNumResolutions,
 											&g_VideoSettings.iSelectedResolution,
@@ -260,7 +280,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		pParams->pFullScreenResArray[i].iFreq = g_VideoSettings.pResolutionSet[i].iFreq;
 	}
 
-	// Store filter details.
+	// Store filter details. 
 	g_VideoSettings.minFilter = pParams->d3dMinFilter;
 	g_VideoSettings.magFilter = pParams->d3dMagFilter;
 	g_VideoSettings.mipFilter = pParams->d3dMipFilter;
