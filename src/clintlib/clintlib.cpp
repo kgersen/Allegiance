@@ -3803,7 +3803,7 @@ void BaseClient::RemovePlayerFromSide(PlayerInfo* pPlayerInfo, QuitSideReason re
                 };
             }
             else
-            {
+            { //#ALLYTD: imago wants this sound to be corrected for allies, salQuit, split INSIDE this else
                 msg = pPlayerInfo->CharacterName() + ZString(" has left ") 
                     + GetCore()->GetSide(sideOld)->GetName() + ZString(".");
                 ReceiveChat(NULL, CHAT_TEAM, NA, salEnemyLeavesSound, msg, c_cidNone, NA, NA);
@@ -3943,7 +3943,7 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
     if (pPlayerInfo->IsHuman() && m_pMissionInfo->GetStage() == STAGE_STARTED && m_fm.IsConnected())
     {
         // tell the players that someone has just joined their team
-        if ((m_pPlayerInfo != pPlayerInfo) && (m_pPlayerInfo->SideID() == pPlayerInfo->SideID()))
+        if ((m_pPlayerInfo != pPlayerInfo) && (m_pPlayerInfo->SideID() == pPlayerInfo->SideID())) //#ALLYTD
         {
             ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
 
@@ -3953,7 +3953,6 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
         {
             ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ")
                 + pside->GetName() + ZString(".");
-
             ReceiveChat(NULL, CHAT_TEAM, NA, salEnemyJoinersSound, msg, c_cidNone, NA, NA);
         }
     }

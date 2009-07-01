@@ -10970,7 +10970,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
             {
                 IsideIGC*   pside = station->GetSide();
 
-                if (pside != psideLauncher)
+				if (!IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY used to be (pside != psideLauncher) (TheRock)
                 {
                     if (station->GetFraction() < 0.30)
                     {
@@ -11116,7 +11116,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   if (psideWin)
   {
       static char szReason[100];     //Make this static so we only need to keep a pointer to it around
-      if ((otLauncher == OT_ship) && (psideLauncher == psideWin))
+	  if ((otLauncher == OT_ship) && IsideIGC::AlliedSides(psideLauncher, psideWin)) //#ALLY (TheRock)
       {
 		//joeld - added 4th %s and pstation->GetCluster()->GetName() in next line.
           sprintf(szReason, "%s has destroyed %s's %s in %s.", psideLauncher->GetName(), pside->GetName(), pstation->GetName(), pstation->GetCluster()->GetName());

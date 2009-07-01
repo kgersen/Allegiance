@@ -1512,7 +1512,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
             ignore = true;
         else
         {
-            if (mySide == hisSide) // #ALLYTD : should we extend this to allies?
+			if (IsideIGC::AlliedSides(mySide, hisSide)) // #ALLY TheRock : was if (mySide == hisSide)
             {
 
                 if ((pshipHim->GetObjectID() < pship->GetObjectID()) &&                 //he has a lower ship ID

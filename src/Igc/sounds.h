@@ -394,8 +394,8 @@ DEFSOUND(minerCritical)
 DEFSOUND(droneTooCrowded)       //Enemy miners preventing me from mining
 DEFSOUND(constructorRunning)
 
-DEFSOUND(teleportProbeActive)
-DEFSOUND(teleportProbeSpotted)
+DEFSOUND(teleportProbeActive)  //Teleportation probe deployed (unused) 		ALLYTD play when ally deploys a tp probe?
+DEFSOUND(teleportProbeSpotted)												  //	and display the sector name it was dropped in
 
 DEFSOUND(minerThreatened)
 DEFSOUND(constructorThreatened)

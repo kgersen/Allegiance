@@ -3029,8 +3029,8 @@ void CFSMission::ProcessGameOver()
 
                 bool  bCount = (ppso->GetTimePlayed() > 180.0f) && !m_bDraw;
                 ppso->EndGame(m_pMission,
-                              (pside == m_psideWon) && bCount && (ppso->GetTimePlayed() > GetGameDuration() / 2.0f),
-                              (pside != m_psideWon) && bCount); //#ALLYTD: allies share victory - kgjv
+					IsideIGC::AlliedSides(pside, m_psideWon) && bCount && (ppso->GetTimePlayed() > GetGameDuration() / 2.0f),
+                              !IsideIGC::AlliedSides(pside, m_psideWon) && bCount); //#ALLY TheRock sharing victory
 
                 SideID  sid = pside->GetObjectID();
                 if (sid >= 0)
@@ -3060,10 +3060,9 @@ void CFSMission::ProcessGameOver()
     {
         OldPlayerInfo & opi = popl->data();
         bool  bCount = (opi.pso.GetTimePlayed() > 180.0f);
-
         opi.pso.EndGame(m_pMission,
-                      (opi.sideID == sidWin) && bCount && (opi.pso.GetTimePlayed() > GetGameDuration() / 2.0f),
-                      (opi.sideID != sidWin) && bCount); //#ALLYTD: allies share victory - kgjv
+			IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon) && bCount && (opi.pso.GetTimePlayed() > GetGameDuration() / 2.0f),
+                      !IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon) && bCount); //#ALLY TheRock sharing victory, was: opi.sideID == sidWin
         if (opi.sideID >= 0)
         {
             float   e = opi.pso.GetTimePlayed() * opi.pso.GetPersist().GetScore();
@@ -3350,6 +3349,13 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                 {
                     nStationsTotal++;
                     nStationsPerSide[pstation->GetSide()->GetObjectID()]++;
+					
+					for (SideID i=0; i < c_cSidesMax ; i++) //#ALLY TheRock allies get the same base added to them, only one of the teams has to win
+					{
+						if (IsideIGC::AlliedSides(pstation->GetSide(),m_pMission->GetSide(i)) && (pstation->GetSide() != m_pMission->GetSide(i)) ) {
+							nStationsPerSide[i]++;
+						}
+					}
                 }
             }
         }
@@ -3375,7 +3381,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                     pside->SetConquestPercent(conquest);
 
                     if (conquest >= pmp->iGoalConquestPercentage)
-                        psideWon = pside;
+                        psideWon = pside; //#ALLYTD: with alliances, this will get called multiple times, break? (TheRock added)
                 }
             }
 			// KGJV #62 - no winner if bAllowEmptyTeam and one active team is left
@@ -3404,7 +3410,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                     IsideIGC*   pside = psl->data()->GetSide();
                     if (psideOwner == NULL)
                         psideOwner = pside;
-                    else if (psideOwner != pside)
+					else if (!IsideIGC::AlliedSides(psideOwner, pside)) //#ALLYTD: needs looking over (TheRock)
                         break;
                 }
             }
@@ -3502,7 +3508,7 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
     {
       bAllSidesInactive = false;
 
-      if (pSideWin)
+	  if (pSideWin && !IsideIGC::AlliedSides(pSideWin, pside)) //#ALLY (TheRock)
       {
         pSideWin = NULL;
         break;
@@ -3552,7 +3558,7 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
   return pSideWin;
 }
 
-
+//#ALLYTD: Fix CTF for alliances
 IsideIGC*   CFSMission::CheckForVictoryByFlags(IsideIGC*    psideTest, SideID sidFlag)
 {
   if ((STAGE_STARTED == GetStage()) && (m_psideWon == NULL))
@@ -5786,6 +5792,7 @@ void AcceptDrawBallot::OnPassed()
   Ballot::OnPassed();
   m_pmission->GameOver(NULL, "The game was declared a draw");
 }
+
 
 
 

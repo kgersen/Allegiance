@@ -418,7 +418,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         if (pafter)
                             pafter->Deactivate();   //The station is a no smoking area
 
-                        if ((m_fOre > 0.0f) && (s->GetStationType()->HasCapability(c_sabmUnload)))
+                        if ((m_fOre > 0.0f) && (s->GetStationType()->HasCapability(c_sabmUnload) && (GetSide() == s->GetSide()))) //#ALLY: Only offload at your own bases (TheRock)
                         {
                             IsideIGC*   pside = GetSide();
 

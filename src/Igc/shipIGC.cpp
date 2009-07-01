@@ -722,11 +722,23 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
 
 				if (IsideIGC::AlliedSides(pside1,pside2)) // #ALLY - was: (pside1 == pside2) 
                 {
-                    if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
-                    {
-                        if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
-                            break;
-                    }
+					if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
+					{
+						if (pside1 == pside2) //own side
+						{
+							if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
+								break;
+						} 
+						else //Ally
+						{
+							if (m_myHullType.HasCapability(c_habmLifepod)) //#ALLY pod needs to be rescued (TheRock)
+								if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
+									break;
+							if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
+								break;
+						}
+						
+					}
                 }
                 else if (m_myHullType.HasCapability(c_habmBoard) && 
                          (!GetMyMission()->GetMissionParams()->bInvulnerableStations) &&
@@ -3323,7 +3335,7 @@ void    CshipIGC::ResetWaypoint(void)
                     {
                         if ((m_commandIDs[c_cmdPlan] == c_cidGoto) || (m_commandIDs[c_cmdPlan] == c_cidNone))
                         {
-                            if (m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) //#ALLYTD
+							if (IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(), GetSide())) //#ALLY (TheRock) we can still dock here
                             {
                                 const IstationTypeIGC*  pst = ((IstationIGC*)m_commandTargets[c_cmdPlan])->GetStationType();
                                 HullAbilityBitMask  habm = m_myHullType.GetCapabilities();

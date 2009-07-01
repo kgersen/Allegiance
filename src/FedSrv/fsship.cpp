@@ -364,7 +364,7 @@ void          CFSShip::ShipStatusDocked(IstationIGC*   pstation)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if ((pside == psideMe) ||
+        if ((IsideIGC::AlliedSides(pside,psideMe)) || // #ALLY TheRock used to be (pside == psideMe)
             ((GetIGCShip()->SeenBySide(pside)) && (pstation->SeenBySide(pside))))
         {
             SideID      sideID = pside->GetObjectID();
@@ -1414,5 +1414,6 @@ void CFSDrone::Dock(IstationIGC * pstation)
     //Drones always instantly undock
     //CFSShip::Dock(pstation);
 }
+
 
 
