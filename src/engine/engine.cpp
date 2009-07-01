@@ -176,8 +176,10 @@ public:
 			if (width == 1024 && height == 768)
 				m_modes.PushEnd((Vector(width,height,rate))); //XGA
 			if (width == 1280 && height == 1024)
-				m_modes.PushEnd((Vector(width,height,rate))); //SXGA
-			if (width == 1400 && height == 1050)
+				m_modes.PushEnd((Vector(width,height,rate))); //SXGA			
+			if (width == 1366 && height == 768)
+				m_modes.PushEnd((Vector(width,height,rate))); //WXGA (720p widescreen mode)
+			if (width == 1440 && height == 900)
 				m_modes.PushEnd((Vector(width,height,rate))); //SXGA+
 			if (width == 1440 && height == 900)
 				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
@@ -186,7 +188,7 @@ public:
 			if (width == 1680 && height == 1050)
 				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
 			if (width == 1920 && height == 1080)
-				m_modes.PushEnd((Vector(width,height,rate))); //1080p
+				m_modes.PushEnd((Vector(width,height,rate))); //WUXGA (1080p widescreen mode)
 		}
 #pragma warning(default:4244)
     }
@@ -921,7 +923,7 @@ private:
     void SetFullscreenSize(const Vector& point)
     {
         if (g_bWindowLog) {
-            ZDebugOutput("Engine::SetFullscreenSize(" + GetString(point) + ")\n");
+            ZDebugOutput("Engine::SetFullscreenSize(" + ZString(point.X()) + "x" + ZString(point.Y()) + " @ " + ZString(point.Z()) +")\n");
         }
 
         if (m_pointFullscreen != WinPoint(point.X(),point.Y())) {

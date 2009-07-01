@@ -19,13 +19,14 @@ void EngineWindow::MenuCommandSink::OnMenuCommand(IMenuItem* pitem)
 
 
 
-//FROM engine.cpp EngineImpl:
+//See also engine.cpp(180) if changing this list.
 EngineWindow::ModeData EngineWindow::s_pmodes[] = //imago updated 6/29/09 NYI letterbox/strech non 4:3
     {
 		ModeData(WinPoint(640, 480), false),
 		ModeData(WinPoint(800, 600), false),
 		ModeData(WinPoint(1024, 768), false),
 		ModeData(WinPoint(1280, 1024), false),
+		ModeData(WinPoint(1366, 768), false), //720p thanks to badpazzword 7/1/09
 		ModeData(WinPoint(1400, 1050), false),		
 		ModeData(WinPoint(1440, 900),  false),
 		ModeData(WinPoint(1600, 1200), false),
@@ -33,7 +34,7 @@ EngineWindow::ModeData EngineWindow::s_pmodes[] = //imago updated 6/29/09 NYI le
 		ModeData(WinPoint(1920, 1080), false)
     };
 
-int EngineWindow::s_countModes = 8;
+int EngineWindow::s_countModes = 9;
 
 //////////////////////////////////////////////////////////////////////////////
 //
