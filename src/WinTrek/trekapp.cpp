@@ -676,8 +676,9 @@ public:
 // BUILD_DX9
 		// Ask the user for video settings. -- 
 		//   -adapter switch added for the needy
-		//   Raise dialog only if "Safe Mode" activated (any software/hardware/primary/secondary switches sent) imago 6/29/09
-		bool bRaise = (bSoftware || bPrimary || bSecondary || bHardware) ? true : false;
+		//   Raise dialog only if "Safe Mode" activated (any software/primary/secondary switches sent) 
+		// imago 6/29/09 7/1/09 removed hardware, asgs sends this under normal conditions
+		bool bRaise = (bSoftware || bPrimary || bSecondary) ? true : false;
 		if( PromptUserForVideoSettings(bStartFullscreen, bRaise, iUseAdapter, GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT "\\3DSettings" ) == false )
 		{
 			return E_FAIL;
