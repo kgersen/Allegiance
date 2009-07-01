@@ -124,8 +124,9 @@ void QueueMissions(FedMessaging * pfm)
         while (!iterMissions.End())
         {
           FMD_LS_LOBBYMISSIONINFO * plmi = iterMissions.Value()->GetMissionInfo();
-          if (plmi && (fIsFreeLobby || plmi->nNumPlayers > 0 || plmi->fMSArena
-			  || (!fIsFreeLobby && strcmp(FM_VAR_REF(plmi,szIGCStaticFile),"zone_core")))) //-KGJV: advertize custom core game 
+		  //imago 7/1/09 removed old checks
+          if (plmi)// && (fIsFreeLobby || plmi->nNumPlayers > 0 || plmi->fMSArena
+			  //|| (!fIsFreeLobby && strcmp(FM_VAR_REF(plmi,szIGCStaticFile),"zone_core")))) //-KGJV: advertize custom core game 
             pfm->QueueExistingMsg(plmi);
           iterMissions.Next();
         }

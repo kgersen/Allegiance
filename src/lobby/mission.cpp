@@ -73,10 +73,11 @@ void CFLMission::SetLobbyInfo(FMD_LS_LOBBYMISSIONINFO * plmi)
 		pServer->SetServerPort(m_plmi->dwPort); //Imago 6/23/08 override port
 	}
 
-    if (!pServer->GetPaused() && // never advertize paused games
-        (g_pLobbyApp->EnforceCDKey() || m_plmi->nNumPlayers > 0 || m_plmi->fMSArena ||
-		(!g_pLobbyApp->IsFreeLobby() && strcmp(FM_VAR_REF(m_plmi,szIGCStaticFile),"zone_core"))  // -KGJV - advertise custom core game on FAZ
-		))
+	// never advertize paused games - imago 7/1/09 removed old checks
+    if (!pServer->GetPaused()) //&& 
+        //(g_pLobbyApp->EnforceCDKey() || m_plmi->nNumPlayers > 0 || m_plmi->fMSArena ||
+		//(!g_pLobbyApp->IsFreeLobby() && strcmp(FM_VAR_REF(m_plmi,szIGCStaticFile),"zone_core"))  // -KGJV - advertise custom core game on FAZ
+		//))
     { // don't advertize Allegiance Zone games until someone is actually in it unless it's admin created.
       FedMessaging & fmClients = g_pLobbyApp->GetFMClients();
       fmClients.ForwardMessage(fmClients.Everyone(), plmi, FM_GUARANTEED);

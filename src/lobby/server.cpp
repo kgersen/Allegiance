@@ -163,13 +163,13 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		  //Moved this code inside the mission check
 		  //now the lobby does not crash trying to find a disconnected server's IP
 
-		//KGJV #114 - server didnt fill szServerAddr but only reserved the bits. We fill it here.
-		debugf("FM_LS_LOBBYMISSIONINFO:%d (pmission:%x cookie:%x) sent cookie:%x connected?%i\n",pfmLobbyMissionInfo->dwPort,pMission,pfmLobbyMissionInfo->dwCookie,pfmLobbyMissionInfo->dwCookie,(pthis->IsConnected()) ? 1 : 0);  
-		char szAddr[16];
-		pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
-		debugf("\tFM_LS_LOBBYMISSIONINFO:%s sent port %d\n",&szAddr,pfmLobbyMissionInfo->dwPort);		
-		char *pfmdata = FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr); // get the addr in the message	  
-		strcpy(pfmdata,szAddr); // overwrite with the real addr
+			//KGJV #114 - server didnt fill szServerAddr but only reserved the bits. We fill it here.
+			debugf("FM_LS_LOBBYMISSIONINFO:%d (pmission:%x cookie:%x) sent cookie:%x connected?%i\n",pfmLobbyMissionInfo->dwPort,pMission,pfmLobbyMissionInfo->dwCookie,pfmLobbyMissionInfo->dwCookie,(pthis->IsConnected()) ? 1 : 0);  
+			char szAddr[16];
+			pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
+			debugf("\tFM_LS_LOBBYMISSIONINFO:%s sent port %d\n",&szAddr,pfmLobbyMissionInfo->dwPort);		
+			char *pfmdata = FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr); // get the addr in the message	  
+			strcpy(pfmdata,szAddr); // overwrite with the real addr
 
 			//end move code
 
