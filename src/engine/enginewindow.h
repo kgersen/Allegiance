@@ -258,7 +258,7 @@ public:
     void SetFullscreen(bool bFullscreen);
     void SetSizeable(bool bSizeable);
     void SetWindowedSize(const WinPoint& point);
-    void SetFullscreenSize(const WinPoint& point);
+    void SetFullscreenSize(const Vector& point);
     void ChangeFullscreenSize(bool bLarger);
     void Set3DAccelerationImportant(bool b3DAccelerationImportant);
     void SetMouseEnabled(bool bEnable);

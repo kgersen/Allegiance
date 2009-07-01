@@ -776,7 +776,7 @@ void EngineWindow::Set3DAccelerationImportant(bool b3DAccelerationImportant)
     m_pengine->Set3DAccelerationImportant(b3DAccelerationImportant);
 }
 
-void EngineWindow::SetFullscreenSize(const WinPoint& size)
+void EngineWindow::SetFullscreenSize(const Vector& size)
 {
     m_pengine->SetFullscreenSize(size);
 }

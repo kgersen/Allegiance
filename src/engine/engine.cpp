@@ -21,7 +21,7 @@ private:
 
     typedef TList<PrivateSurface*>  SurfaceList;
     //typedef TList<DeviceDependant*> DeviceDependantList;
-	TVector<WinPoint>   m_modes; //imago 6/24/09
+	TVector<Vector>   m_modes; //imago 6/24/09 7/1/09 added refresh rate
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -56,6 +56,7 @@ private:
     WinPoint                  m_pointFullscreenCurrent;
 //    TRef<PrivateSurface>      m_psurfaceBack;
     float                     m_gamma;
+	int						  m_refreshrate;
 
     //
     // Surface Cache
@@ -160,30 +161,34 @@ public:
         if (m_dwBPP == 16)
             m_ppf = new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000);
 
-		//imago 6/24/09 - 6/29/09
-		m_modes.PushEnd(WinPoint(640,480)); //VGA
-		m_modes.PushEnd(WinPoint(800,600)); //SVGA (default)
-	
-		int i; int width; int height;
+		//imago 6/24/09 - 6/29/09 - 7/1/09
+#pragma warning(disable:4244)
+		int i; int width; int height; int rate;
 		for( i=0; i<=CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++ )
 		{
 			width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
 			height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
+			rate = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iFreq;
+			if (width == 640 && height == 480)
+				m_modes.PushEnd((Vector(width,height,rate))); //VGA				
+			if (width == 800 && height == 600)
+				m_modes.PushEnd((Vector(width,height,rate))); //SVGA (default)	
 			if (width == 1024 && height == 768)
-				m_modes.PushEnd(WinPoint(1024,768)); //XGA
+				m_modes.PushEnd((Vector(width,height,rate))); //XGA
 			if (width == 1280 && height == 1024)
-				m_modes.PushEnd(WinPoint(1280,1024)); //SXGA
+				m_modes.PushEnd((Vector(width,height,rate))); //SXGA
 			if (width == 1400 && height == 1050)
-				m_modes.PushEnd(WinPoint(1400,1050)); //SXGA+
+				m_modes.PushEnd((Vector(width,height,rate))); //SXGA+
 			if (width == 1440 && height == 900)
-				m_modes.PushEnd(WinPoint(1440,900)); //WSXGA+ (widescreen)
+				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
 			if (width == 1600 && height == 1200)
-				m_modes.PushEnd(WinPoint(1600,1200)); //UXGA
+				m_modes.PushEnd((Vector(width,height,rate))); //UXGA
 			if (width == 1680 && height == 1050)
-				m_modes.PushEnd(WinPoint(1680,1050)); //WSXGA+ (widescreen)
+				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
 			if (width == 1920 && height == 1080)
-				m_modes.PushEnd(WinPoint(1920,1080)); //1080p
+				m_modes.PushEnd((Vector(width,height,rate))); //1080p
 		}
+#pragma warning(default:4244)
     }
 
 private:
@@ -618,7 +623,7 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    bool SwitchToFullscreenDevice(void * pRemoveMe, const WinPoint& size, bool& bError)
+    bool SwitchToFullscreenDevice(int iRate, const WinPoint& size, bool& bError)  //imago is iRate ;-) 7/1/09
     {
         bError = false;
 
@@ -728,12 +733,13 @@ private:
 		// TBD: SET TRUE TO FALSE.
 //		CD3DDevice9::ResetDevice( TRUE, size.X(), size.Y() );
 
-		//imago added eliminate modes, does nothing ATM. 6/29/09
-		if (CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y() ) != D3D_OK) {
-			EliminateModes(size);
+		//imago added eliminate modes
+		if (CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y(), m_refreshrate ) != D3D_OK) {
+			EliminateModes(Vector(size.X(),size.Y(),m_refreshrate));
 			if (g_bWindowLog) {
 				ZDebugOutput("Invalid resolution\n");
 			}
+			//auto retry next mode untill end of list NYI
 		}
 
         if (g_bWindowLog) {
@@ -912,16 +918,20 @@ private:
         }
     }
 
-    void SetFullscreenSize(const WinPoint& point)
+    void SetFullscreenSize(const Vector& point)
     {
         if (g_bWindowLog) {
             ZDebugOutput("Engine::SetFullscreenSize(" + GetString(point) + ")\n");
         }
 
-        if (m_pointFullscreen != point) {
-            m_pointFullscreen = point;
+        if (m_pointFullscreen != WinPoint(point.X(),point.Y())) {
+            m_pointFullscreen = WinPoint(point.X(), point.Y());
             m_bValid          = false;
         }
+		if (m_refreshrate != point.Z()) {
+			m_refreshrate = int(point.Z());
+			m_bValid = false;
+		}
 
         if (g_bWindowLog) {
             ZDebugOutput("Engine::SetFullscreenSize() Exiting\n");
@@ -930,10 +940,10 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Re-used full screen mode change functions
-// Imago 6/24/09
+// Imago 6/24/09  7/1/09 enhanced to use vector and include Refresh Rate Hz
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    WinPoint NextMode(const WinPoint& size)
+    Vector NextMode(const WinPoint& size)
     {
         int count = m_modes.GetCount();
 
@@ -949,7 +959,7 @@ private:
         return m_modes[count - 1];
     }
 
-    WinPoint PreviousMode(const WinPoint& size)
+    Vector PreviousMode(const WinPoint& size)
     {
         int count = m_modes.GetCount();
 
@@ -965,7 +975,7 @@ private:
         return m_modes[0];
     }
 
-    void EliminateModes(const WinPoint& size)
+    void EliminateModes(const Vector& size)
     {
         int count = m_modes.GetCount();
 
@@ -983,13 +993,13 @@ private:
     void ChangeFullscreenSize(bool bLarger)
     {
 		//Imago restored 6/29/09
-   		WinPoint point;
+   		Vector whr; //changed w,h to w,h,r  (width, hieght, refreshrate)
         if (bLarger) {
-			point = NextMode(m_pointFullscreen);
+			whr = NextMode(m_pointFullscreen);
         } else {
-			point = PreviousMode(m_pointFullscreen);
+			whr = PreviousMode(m_pointFullscreen);
 		}          
-		SetFullscreenSize(point);
+		SetFullscreenSize(whr);
 
     }
 

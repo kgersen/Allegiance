@@ -2061,7 +2061,8 @@ public:
 
         m_pwrapImageTop->SetImage(m_pimageScreen);
         SetWindowedSize(pscreen->GetSize());
-        SetFullscreenSize(pscreen->GetSize());
+        SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),CD3DDevice9::Get()->GetCurrentMode()->mode.RefreshRate));
+		
         SetSizeable(false);
 
         //
@@ -2161,7 +2162,8 @@ public:
                     // Switch to combat resolution
                     //
 
-					SetFullscreenSize(m_sizeCombatFullscreen);  //AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
+					//imago add refresh rate 7/1/09
+					SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),CD3DDevice9::Get()->GetCurrentMode()->mode.RefreshRate));  //AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
 
                     SetFocus();
                     m_frameID = 0;
@@ -5596,7 +5598,7 @@ public:
 			// -KGJV - resolution fix - test
             Set3DAccelerationImportant(false);
             SetWindowedSize(m_sizeCombat);
-            SetFullscreenSize(m_sizeCombatFullscreen);
+            SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),CD3DDevice9::Get()->GetCurrentMode()->mode.RefreshRate));
             SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
             //SetWindowedSize(WinPoint(800, 600));
             //SetFullscreenSize(WinPoint(800, 600));
@@ -5609,7 +5611,7 @@ public:
             //
 
             SetWindowedSize(m_sizeCombat);
-            SetFullscreenSize(m_sizeCombatFullscreen);
+            SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),CD3DDevice9::Get()->GetCurrentMode()->mode.RefreshRate));
             Set3DAccelerationImportant(true);
             SetSizeable(true);
         }

@@ -404,7 +404,8 @@ void CD3DDevice9::CreateAADepthStencilBuffer()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed, 
 									DWORD	dwWidth /*=0*/, 
-									DWORD	dwHeight /*=0*/ )
+									DWORD	dwHeight /*=0*/, 
+									int 	iRate) //imago added iRate 7/1/09
 {
 	HRESULT hr				= D3D_OK;
 	bool bResetRequired		= false;
@@ -462,11 +463,12 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		{
 			m_sD3DDev9.d3dPresParams.BackBufferWidth = dwWidth;
 			m_sD3DDev9.d3dPresParams.BackBufferHeight = dwHeight;
-			m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz = m_sD3DDev9.pCurrentMode->mode.RefreshRate;
+			m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz = iRate; //m_sD3DDev9.pCurrentMode->mode.RefreshRate; //imago made dynamic 7/1/09
 			bResetRequired = true;
 		}
 		m_sD3DDev9.dwCurrentFullscreenWidth = dwWidth;
 		m_sD3DDev9.dwCurrentFullscreenHeight = dwHeight;
+
 	}
 
 #ifdef _DEBUG
@@ -501,8 +503,8 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		}
 
 		// Perform the reset.
-		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams );
-//imago changed 6/29/09 to fall thru
+		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams ); //imago changed 6/29/09 to fall thru
+
 		if(hr == D3D_OK ) {
 
 			// Initialise the caches.

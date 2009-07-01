@@ -112,6 +112,8 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	// DEFAULT SETTINGS imago 6/29/09 WIP - when launching for the first time, use these safe values:
 	if (bRaise == false) {
 		int iRetVal = 1;
+
+		//change the 800x600 here to whatever is CombatFullsize values NYI Imago 7/1/09
 		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum width/height allowed.
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.iCurrentMode		= 0;  

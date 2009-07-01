@@ -117,13 +117,13 @@ public:
 	virtual void SetEnableMipMapGeneration(bool bEnable)					= 0;
 	virtual void Set3DAccelerationImportant(bool b3DAccelerationImportant) = 0;
     virtual void SetFullscreen(bool bFullscreen)                           = 0;
-    virtual void SetFullscreenSize(const WinPoint& point)                  = 0;
+    virtual void SetFullscreenSize(const Vector& point)                  = 0;  //imago enhanced to include refresh rate 7/1/09
     virtual void ChangeFullscreenSize(bool bLarger)                        = 0;
     virtual void SetGammaLevel(float value)                                = 0;
-		// imago refactor enginep 6/26/09
-	virtual WinPoint           NextMode(const WinPoint& size)                       = 0;
-	virtual WinPoint           PreviousMode(const WinPoint& size)                   = 0;
-	virtual void               EliminateModes(const WinPoint& size)                 = 0;
+		// imago refactor enginep 6/26/09 - 7/1/09
+	virtual Vector           NextMode(const WinPoint& size)                       = 0;
+	virtual Vector           PreviousMode(const WinPoint& size)                   = 0;
+	virtual void             EliminateModes(const Vector& size)                   = 0; //imago enhanced to include refresh rate 7/1/90
 
     virtual bool            IsFullscreen()                                 = 0;
     virtual bool            PrimaryHas3DAcceleration()                     = 0;
