@@ -56,7 +56,6 @@ private:
     WinPoint                  m_pointFullscreenCurrent;
 //    TRef<PrivateSurface>      m_psurfaceBack;
     float                     m_gamma;
-	int						  m_refreshrate;
 
     //
     // Surface Cache
@@ -442,6 +441,7 @@ private:
 //        UpdateSurfacesPixelFormat();
 
 		// Reset the device for windowed mode.
+
 		CD3DDevice9::Get()->ResetDevice( true, 800, 600 );
 
         if (g_bWindowLog) {
@@ -737,8 +737,8 @@ private:
 //		CD3DDevice9::ResetDevice( TRUE, size.X(), size.Y() );
 
 		//imago added eliminate modes
-		if (CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y(), m_refreshrate ) != D3D_OK) {
-			EliminateModes(Vector(size.X(),size.Y(),m_refreshrate));
+		if (CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y(), g_DX9Settings.m_refreshrate ) != D3D_OK) {
+			EliminateModes(Vector(size.X(),size.Y(),g_DX9Settings.m_refreshrate));
 			if (g_bWindowLog) {
 				ZDebugOutput("Invalid resolution\n");
 			}
@@ -931,8 +931,8 @@ private:
             m_pointFullscreen = WinPoint(int(point.X()), int(point.Y()));
             m_bValid          = false;
         }
-		if (m_refreshrate != int(point.Z())) {
-			m_refreshrate = int(point.Z());
+		if (g_DX9Settings.m_refreshrate != int(point.Z())) {
+			g_DX9Settings.m_refreshrate = int(point.Z());
 			m_bValid = false;
 		}
 

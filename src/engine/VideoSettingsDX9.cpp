@@ -106,16 +106,22 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	g_VideoSettings.iCurrentDevice		= 0;			// Set to 1 for multi-monitor debugging.
 	g_VideoSettings.iCurrentMode		= 0;
 	g_VideoSettings.iCurrentAASetting	= 0;
-	g_VideoSettings.bWindowed			= true;
+	g_VideoSettings.bWindowed			= !!bStartFullscreen;
 	g_VideoSettings.bWaitForVSync		= false;
 
+	
 	// DEFAULT SETTINGS imago 6/29/09 - 7/2/09
+	int iRate = 60;
+	HMONITOR hMon = MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTOPRIMARY);
+    int x = 800;
+	int y = 600;
+//////////////////////////////////////////
 	if (bRaise == false) {
 		int iRetVal = 1;
 
         HKEY hKey;
-        int x = 800;
-		int y = 600;
+		int idummy = 0;
+		D3DFORMAT fdummy = D3DFMT_UNKNOWN;
 
 		if (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
         {
@@ -128,15 +134,19 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
         }
 
-		//change the 800x600 here to whatever is CombatFullscreen X/Y values Imago 7/1/09
+
+		//changed the 800x600 here to whatever is CombatFullscreen X/Y values Imago 7/1/09
 		g_VideoSettings.pDevData			= new CD3DDeviceModeData( x, y , &logFile);	// Mininum width/height allowed.
+		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&fdummy,&fdummy,&hMon); //imago use this function!
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.iCurrentMode		= 0;  
 		g_VideoSettings.iCurrentAASetting	= 0;
 		g_VideoSettings.d3dBackBufferFormat = D3DFMT_X8R8G8B8;
 		g_VideoSettings.bWindowed			= !bStartFullscreen;
 		g_VideoSettings.d3dDeviceFormat		= D3DFMT_X8R8G8B8;
-		g_VideoSettings.hSelectedMonitor	= MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTOPRIMARY); //for now always use primary
+		g_VideoSettings.hSelectedMonitor	= hMon; //use primary monitor on speicfied adapter
+
+		
 
 //NYI multimon: we still need to enum monitors and support a -monitor <n> command line switch for the needy (like me)
 /*
@@ -147,7 +157,6 @@ BOOL CALLBACK MonitorEnumProc(
   LPRECT lprcMonitor,
   LPARAM dwData
 );*/
-
 		g_VideoSettings.bWaitForVSync		= false;
 		g_VideoSettings.bAutoGenMipmaps 	= 0;
 		g_VideoSettings.bUseTexturePackFile = 0;
@@ -157,8 +166,17 @@ BOOL CALLBACK MonitorEnumProc(
 		g_VideoSettings.mipFilter 			= D3DTEXF_LINEAR;
 		g_VideoSettings.iMaxTextureSize 	= 0;
 
-		// NYI overwrite the above settings with any others we have laying around from LoadPreferences()
+		//build the adapter res array  (imago)
+		g_VideoSettings.pDevData->GetRelatedResolutions(
+											iAdapter,
+											0,
+											&g_VideoSettings.iNumResolutions,
+											&g_VideoSettings.iSelectedResolution,
+											&g_VideoSettings.pResolutionSet );
 
+
+		// NYI overwrite the above settings with any others we have laying around from LoadPreferences()
+////////////////
 	} else {
 		SAdditional3DRegistryData sExtraRegData;
 
@@ -237,7 +255,7 @@ BOOL CALLBACK MonitorEnumProc(
 			return false;
 		}
 	} // USE_DEFAULT_SETTINGS
-	////////////////////////
+/////////////////////////////
 
 	logFile.OutputString("\nUser selected values:\n");
 	logFile.OutputStringV( "AD %d   MON 0x%08x   WIN %d   VSYNC %d\n", 
@@ -260,6 +278,10 @@ BOOL CALLBACK MonitorEnumProc(
 												g_VideoSettings.iCurrentMode,
 												g_VideoSettings.iCurrentAASetting,
 												&logFile );
+
+	// Imago's huge refresh rate hack 7/2/09
+	if (!bRaise)
+		pParams->sFullScreenMode.mode.RefreshRate = g_DX9Settings.m_refreshrate;
 	
 	if( GetMonitorInfo( g_VideoSettings.hSelectedMonitor, &pParams->monitorInfo ) == FALSE )
 	{
@@ -268,21 +290,11 @@ BOOL CALLBACK MonitorEnumProc(
 		return false;
 	}
 
-	// Offset for windowed mode.
+	// Offset for windowed mode. - let's not
 	pParams->iWindowOffsetX	= pParams->monitorInfo.rcMonitor.left;
 	pParams->iWindowOffsetY	= pParams->monitorInfo.rcMonitor.top;
 	logFile.OutputStringV( "Window offset: %d  %d\n", pParams->iWindowOffsetX,
 								pParams->iWindowOffsetY );
-
-	if (bRaise == false) {
-		//build the adapter res array  (imago)
-		g_VideoSettings.pDevData->GetRelatedResolutions(
-											iAdapter,
-											0,
-											&g_VideoSettings.iNumResolutions,
-											&g_VideoSettings.iSelectedResolution,
-											&g_VideoSettings.pResolutionSet );
-	}
 
 	// Copy over the resolution array.
 	pParams->iNumRes = g_VideoSettings.iNumResolutions;
@@ -325,6 +337,7 @@ BOOL CALLBACK MonitorEnumProc(
 		delete g_VideoSettings.pDevData;
 		g_VideoSettings.pDevData = NULL;
 	}
+	OutputDebugString("Starting with refresh rate: " + ZString(g_DX9Settings.m_refreshrate) + "\n");  
 
 	return true;			// Success.
 }

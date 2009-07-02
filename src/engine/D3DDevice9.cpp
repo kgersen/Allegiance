@@ -163,7 +163,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	}
 	else
 	{
-		m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz	= m_sD3DDev9.pCurrentMode->mode.RefreshRate;
+		m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz	= g_DX9Settings.m_refreshrate; //m_sD3DDev9.pCurrentMode->mode.RefreshRate;
 	}
 
 	if( m_sDevSetupParams.bWaitForVSync == true )
@@ -405,7 +405,7 @@ void CD3DDevice9::CreateAADepthStencilBuffer()
 HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed, 
 									DWORD	dwWidth /*=0*/, 
 									DWORD	dwHeight /*=0*/, 
-									int 	iRate) //imago added iRate 7/1/09
+									int 	iRate) // =60 imago added iRate 7/1/09
 {
 	HRESULT hr				= D3D_OK;
 	bool bResetRequired		= false;
@@ -473,9 +473,10 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 #ifdef _DEBUG
 		char szBuffer[256];
-		sprintf_s( szBuffer, 256, "CD3DDevice9: switching to %s, size %d x %d\n", + bWindowed ? "windowed" : "fullscreen", 
+		sprintf_s( szBuffer, 256, "CD3DDevice9: switching to %s, size %d x %d @ %dHz\n", + bWindowed ? "windowed" : "fullscreen", 
 				m_sD3DDev9.d3dPresParams.BackBufferWidth, 
-				m_sD3DDev9.d3dPresParams.BackBufferHeight);
+				m_sD3DDev9.d3dPresParams.BackBufferHeight,
+				m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz);
 		OutputDebugString( szBuffer );
 #endif
 

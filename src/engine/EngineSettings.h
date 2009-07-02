@@ -13,8 +13,10 @@ public:
 	CDX9EngineSettings()
 	{
 		mbUseTexturePackFiles = false;
+		m_refreshrate = -1; //imago added ;-/
 	}
 	bool			mbUseTexturePackFiles;
+	int				m_refreshrate;
 };
 
 extern CDX9EngineSettings g_DX9Settings;

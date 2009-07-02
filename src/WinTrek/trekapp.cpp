@@ -685,6 +685,18 @@ public:
 		}
 
 		CD3DDevice9::Get()->UpdateCurrentMode( );
+
+		//imago's huge 'n' nasty refresh rate hack 7/2/09
+		int wantX = CD3DDevice9::Get()->GetCurrentResolution().X();
+		int wantY = CD3DDevice9::Get()->GetCurrentResolution().Y();
+		for( int i=0; i<=CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++ )
+		{
+			int width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
+			int height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
+			int rate = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iFreq;
+			if (wantX == width && wantY == height)
+				g_DX9Settings.m_refreshrate = rate;
+		}
 		
 		//Imago 6/29/09 many codecs will crash the app when being debugged, 
 		// so skip the new intro video, also if starting windowed, or anything else...

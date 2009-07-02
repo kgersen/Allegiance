@@ -24,7 +24,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         DWORD dwError = GetLastError();
 
         if (!g_papp) {
-            ZDebugBreak(); // Imago removed asm (x64)
+           (*(int*)0) = 0; // Imago removed asm (x64)
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
             g_papp->OnAssertBreak();
         }

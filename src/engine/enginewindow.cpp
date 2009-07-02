@@ -381,7 +381,7 @@ void EngineWindow::UpdateSurfacePointer()
 		m_psurface = m_pengine->CreateDummySurface(point, NULL );
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
 		if(pDev->IsDeviceValid())
-			DDCall(pDev->ResetDevice(false,point.X(),point.Y()));
+			DDCall(pDev->ResetDevice(false,point.X(),point.Y(),g_DX9Settings.m_refreshrate));
 	}
 }
 
