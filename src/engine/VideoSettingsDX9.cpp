@@ -109,12 +109,27 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	g_VideoSettings.bWindowed			= true;
 	g_VideoSettings.bWaitForVSync		= false;
 
-	// DEFAULT SETTINGS imago 6/29/09 WIP - when launching for the first time, use these safe values:
+	// DEFAULT SETTINGS imago 6/29/09 - 7/2/09
 	if (bRaise == false) {
 		int iRetVal = 1;
 
-		//change the 800x600 here to whatever is CombatFullsize values NYI Imago 7/1/09
-		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum width/height allowed.
+        HKEY hKey;
+        DWORD x = 800;
+		DWORD y = 600;
+
+		if (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
+        {
+            DWORD dwSize = sizeof(x);
+            DWORD dwType = REG_DWORD;
+
+            ::RegQueryValueEx(hKey, "CombatFullscreenXSize", NULL, &dwType, (BYTE*)&x, &dwSize);
+			::RegQueryValueEx(hKey, "CombatFullscreenYSize", NULL, &dwType, (BYTE*)&y, &dwSize);
+            ::RegCloseKey(hKey);
+
+        }
+
+		//change the 800x600 here to whatever is CombatFullscreen X/Y values Imago 7/1/09
+		g_VideoSettings.pDevData			= new CD3DDeviceModeData( x, y , &logFile);	// Mininum width/height allowed.
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.iCurrentMode		= 0;  
 		g_VideoSettings.iCurrentAASetting	= 0;
