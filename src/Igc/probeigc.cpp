@@ -441,7 +441,7 @@ void    CprobeIGC::Update(Time now)
                                 //Does this side have any scanners in the sector?
                                 ClusterSite*    pcs = pcluster->GetClusterSite();
                                 const ScannerListIGC*   psl = pcs->GetScanners(psideOther->GetObjectID());
-                                if (psl->n() != 0)
+                                if (psl->n() != 0) //ALLYTD
                                     SetSideVisibility(psideOther, true);
                                 else
                                     m_bSeenByAll = false;

@@ -169,6 +169,7 @@ public:
 			width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
 			height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
 			rate = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iFreq;
+			//OutputDebugString("Found valid full screen rez: "+ZString(width)+"x"+ZString(height)+" @ "+ZString(rate));
 			if (width == 640 && height == 480)
 				m_modes.PushEnd((Vector(width,height,rate))); //VGA				
 			if (width == 800 && height == 600)
@@ -179,7 +180,7 @@ public:
 				m_modes.PushEnd((Vector(width,height,rate))); //SXGA			
 			if (width == 1366 && height == 768)
 				m_modes.PushEnd((Vector(width,height,rate))); //WXGA (720p widescreen mode)
-			if (width == 1440 && height == 900)
+			if (width == 1400 && height == 1050)
 				m_modes.PushEnd((Vector(width,height,rate))); //SXGA+
 			if (width == 1440 && height == 900)
 				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
@@ -952,7 +953,7 @@ private:
         for(int index = 0; index < count; index++) {
             if (
                    m_modes[index].X() > size.X() 
-                || m_modes[index].Y() > size.Y() 
+                //|| m_modes[index].Y() > size.Y() // Imago - look at X only due to widescreens 7/2/09
             ) {
                 return m_modes[index];
             }
@@ -968,7 +969,7 @@ private:
         for(int index = count - 1 ; index > 0; index--) {
             if (
                    m_modes[index].X() < size.X() 
-                || m_modes[index].Y() < size.Y() 
+                //|| m_modes[index].Y() < size.Y() // Imago - look at X only due to widescreens 7/2/09
             ) {
                 return m_modes[index];
             }
@@ -984,7 +985,7 @@ private:
         for(int index = 0; index < count; index++) {
             if (
                    m_modes[index].X() >= size.X() 
-                && m_modes[index].Y() >= size.Y() 
+                //&& m_modes[index].Y() >= size.Y() // Imago - look at X only due to widescreens 7/2/09
             ) {
                 m_modes.SetCount(index);
                 return;
