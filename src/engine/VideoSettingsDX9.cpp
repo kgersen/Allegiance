@@ -174,6 +174,22 @@ BOOL CALLBACK MonitorEnumProc(
 											&g_VideoSettings.iSelectedResolution,
 											&g_VideoSettings.pResolutionSet );
 
+		//imago's "huge 'n' nasty" refresh rate hack 7/2/09  
+		//	it's huge and nasty becasue i don't have the harware to reproduce it, 
+		//	so i've bastardized the code a bit in the process of fixing the issue
+		for( int i=0; i<=g_VideoSettings.iNumResolutions; i++ )
+		{
+			OutputDebugString("Looking for a resolution match to pull refresh rate...");
+			int width = g_VideoSettings.pResolutionSet[i].iWidth;
+			int height = g_VideoSettings.pResolutionSet[i].iHeight;
+			int rate = g_VideoSettings.pResolutionSet[i].iFreq;
+			if (x == width && y == height) {
+				g_DX9Settings.m_refreshrate = rate;
+				OutputDebugString("Match found! Rate set to: "+ZString(rate)+"\n");
+
+			}
+		}
+
 
 		// NYI overwrite the above settings with any others we have laying around from LoadPreferences()
 ////////////////
