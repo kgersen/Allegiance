@@ -927,11 +927,11 @@ private:
             ZDebugOutput("Engine::SetFullscreenSize(" + ZString(point.X()) + "x" + ZString(point.Y()) + " @ " + ZString(point.Z()) +")\n");
         }
 
-        if (m_pointFullscreen != WinPoint(point.X(),point.Y())) {
-            m_pointFullscreen = WinPoint(point.X(), point.Y());
+        if (m_pointFullscreen != WinPoint(int(point.X()),int(point.Y()))) {
+            m_pointFullscreen = WinPoint(int(point.X()), int(point.Y()));
             m_bValid          = false;
         }
-		if (m_refreshrate != point.Z()) {
+		if (m_refreshrate != int(point.Z())) {
 			m_refreshrate = int(point.Z());
 			m_bValid = false;
 		}

@@ -114,8 +114,8 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		int iRetVal = 1;
 
         HKEY hKey;
-        DWORD x = 800;
-		DWORD y = 600;
+        int x = 800;
+		int y = 600;
 
 		if (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
         {
