@@ -927,6 +927,7 @@ void GotLogonDetails(CQLogonStats * pquery)
     #endif
 */
 
+
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
     dataship.abmOrders = 0;
     dataship.baseObjectID = NA;
@@ -3317,7 +3318,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                      psl = psl->next())
                 {
                     IshipIGC*   pship = psl->data();
-                    if (pship->GetSide() == pside) //#ALLYTD: change this to include allies ?
+                    if (pship->GetSide() == pside) //#ALLYTD: change this to include allies ?  I don't know if this is the right spot..
                     {
                         CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
 
@@ -6398,7 +6399,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     END_PFM_CREATE
 
                     if ((pstation == NULL) ||
-                        (pstation->GetSide() != pside) || //#ALLYTD ?
+                        (pstation->GetSide() != pside) || //#ALLYTD ?  naaa, we dont want to start at allied bases
                         (!pstation->GetStationType()->HasCapability(c_sabmRestart)))
                     {
                         //Not a legitimate station to start at ... ignore the request
@@ -10488,7 +10489,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
           {
             ImodelIGC*  pAssist = pblAssist->data()->model();
             if ((pAssist->GetObjectType() == OT_ship) &&
-                (pAssist->GetSide() != pside) && // #ALLYTD kgjv
+                ( (pAssist->GetSide() != pside) && (!pside->AlliedSides(pside,pAssist->GetSide()) ) ) && // #ALLY -imago 7/3/09 kgjv
                 (pAssist->GetMission() == pmission))
             {
                 CFSShip* pfsAssist = (CFSShip*)( ((IshipIGC*)pAssist)->GetPrivateData() );
@@ -10650,7 +10651,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 
                     PlayerScoreObject::AdjustCombatRating(pmission, pfsshipCredit->GetPlayerScoreObject(), pfsShip->GetPlayerScoreObject());
 
-                    if (pside != psideCredit) // #ALLYTD: kgjv dont up KB when FF is on
+                    if ( (pside != psideCredit) && (!pside->AlliedSides(pside,psideCredit) ) ) // #ALLY: kgjv dont up KB when FF is on - Imago 7/3/09
                         ((IshipIGC*)pcredit)->AddExperience();
 
                     if (pdmglink)
@@ -10661,7 +10662,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
                             for (DamageBucketLink* l = pdmglink; (l != NULL); l = l->next())
                             {
                                 if (l->data()->model()->GetSide() != pside)
-                                    totalDamage += l->data()->totalDamage();
+                                    totalDamage += l->data()->totalDamage();  
                             }
                         }
                         if (totalDamage != 0.0f)
@@ -10670,7 +10671,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
                             {
                                 ImodelIGC*    pmodel = l->data()->model();
                                 if ((pmodel->GetObjectType() == OT_ship) &&
-                                    (pmodel->GetSide() != pside) && // #ALLYTD kgjv
+                                    ( (pmodel->GetSide() != pside) && (!pside->AlliedSides(pside,pmodel->GetSide()) ) ) && // #ALLY -imago 7/3/09 kgjv
                                     (pmodel->GetMission() == pmission))
                                 {
                                     IshipIGC*   pshipCredit = (IshipIGC*)pmodel;
@@ -10911,7 +10912,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                     IsideIGC*   pside = ship->GetSide();
                     assert (pside);
 
-                    if (pside != psideLauncher)
+                    if (pside != psideLauncher && !pside->AlliedSides(pside,psideLauncher))  //ALLY -imago 7/3/09
                     {
                         SoundID underAttackSound;
 
@@ -11575,7 +11576,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
   IsideIGC* pside = pship->GetSide();
   IsideIGC* psideOld = pstation->GetSide();
 
-  if (!IsideIGC::AlliedSides(pside,psideOld)) //#ALLY - was: pside != psideOld
+  if (!IsideIGC::AlliedSides(pside,psideOld) && (pside != psideOld)) //#ALLY - was: pside != psideOld  imago fixed to prevent case of FF 7/3/09
   {
       pfsShip->CaptureStation(pstation);
   }
@@ -11637,7 +11638,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
           RespawnFlag(sidFlag,pside);  // mmf 11/07 added second argument pside
       }
   }
-
+  pstation->RepairAndRefuel(pship);
   pship->SetStation(pstation);
   {
       //Move the children of this ship to the station as well
@@ -11699,18 +11700,19 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
             assert (pside);
             if (pside->ApplyDevelopmentTechs(ttbm))
                 pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
-        }
+		}
         pfsShip->Dock(pstationNew);
 
         if (!pfsShip->IsPlayer())
             UpgradeShip(pship, pstationNew);
-		// #ALLY
+		// #ALLY  -imago 7/3/09 added allied check and repair/refuel
 		// if allied station, relaunch now
-		if (pstationNew->GetSide() != pship->GetSide())
+		if ( (pstationNew->GetSide() != pship->GetSide()) || pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
 		{
 			// proper method to launch, this will call ChangeStation again with pstationNew NULL
 			// if this causes issues, another way to do this is in cluster Update like for drones
 			// todo: check why ship isnt rearmed
+			pstationNew->RepairAndRefuel(pship);
 			pship->SetStation(NULL);
 		}
     }

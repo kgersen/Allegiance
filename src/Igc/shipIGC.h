@@ -1817,7 +1817,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         {
                             IsideIGC*   pside = pship->GetSide();
 
-                            if (pside == psideMe) //#ALLYTD
+                            if (pside == psideMe || pside->AlliedSides(psideMe,pside)) //#ALLY - imago 7/3/09
                             {
                                 cFriend++;
                                 float d2 = (positionMe - pship->GetPosition()).LengthSquared();

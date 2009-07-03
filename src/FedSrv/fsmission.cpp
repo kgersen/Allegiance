@@ -2602,7 +2602,7 @@ void CFSMission::SaveAsOldPlayer(CFSPlayer* pfsplayer, bool bBooted)
     if (bBooted)
       opi.bannedSideMask = 0xff;
     else if (opi.sideID >= 0)
-      opi.bannedSideMask = ~SideMask(opi.sideID); // #ALLYTD: kgvj - remove allied teams from mask
+      opi.bannedSideMask = ~SideMask(opi.sideID); // #ALLYTD: kgvj - remove allied teams from mask?  IMAGO REVIEW
     else
       opi.bannedSideMask = pfsplayer->GetBannedSideMask();
   }
@@ -3306,7 +3306,7 @@ void CFSMission::ProcessGameOver()
 
 
 /*-------------------------------------------------------------------------
- * CheckForVictory #ALLYTD kgjv
+ * CheckForVictory
  *-------------------------------------------------------------------------
  * Purpose:
  *    See if a side has won and handle it if they have
@@ -3382,6 +3382,8 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
 
                     if (conquest >= pmp->iGoalConquestPercentage)
                         psideWon = pside; //#ALLYTD: with alliances, this will get called multiple times, break? (TheRock added)
+					//IMAGO REVIEW - psideWon will need to be a list we can push winning sideid's onto, and the stats?... 
+					//					...will need to account for more than winning team!
                 }
             }
 			// KGJV #62 - no winner if bAllowEmptyTeam and one active team is left

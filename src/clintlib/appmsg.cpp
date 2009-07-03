@@ -3202,8 +3202,13 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             case OT_station:
                 {
                     IstationIGC* pstation = GetCore()->GetStation(pfmObjectSpotted->oidObject);
+					IsideIGC* myside = GetSide();
                     assert(pstation);
-                    PostText(GetShip()->GetWingID() == 0, strSpotterName + " discovered an enemy " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); //#ALLYTD - change enemy to friendly if allied
+					if (myside->AlliedSides(myside,pstation->GetSide())) {
+						PostText(false, strSpotterName + " discovered an allied " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); //#ALLY imago changed enemy to friendly if allied 7/3/09
+					} else {
+                    	PostText(GetShip()->GetWingID() == 0, strSpotterName + " discovered an enemy " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); 
+					}
                 }
                 break;
 

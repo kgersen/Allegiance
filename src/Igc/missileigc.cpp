@@ -491,7 +491,7 @@ void                 CmissileIGC::HandleCollision(Time       timeCollision,
                                 (!pstation->GetStationType()->HasCapability(c_sabmPedestal)) &&
                                 (pstation->GetShieldFraction() < GetMyMission()->GetFloatConstant(c_fcidDownedShield)))
                             {
-                                pigc->CaptureStationEvent(m_launcher, pstation); // #ALLYTD found BUG- check side!!!!
+                                pigc->CaptureStationEvent(m_launcher, pstation); // #ALLYTD found BUG- check side!!!! what?
                             }
                         }
                     }

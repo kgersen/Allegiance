@@ -1072,7 +1072,7 @@ public:
         }
     }
     
-    bool OnButtonDonate()
+    bool OnButtonDonate() //ALLYTD  donate to allies! -Imago 7/3/09 NYI
     {
         if (m_plistPanePlayers->GetSelection() != NULL)
         {

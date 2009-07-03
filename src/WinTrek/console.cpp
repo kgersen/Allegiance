@@ -262,6 +262,9 @@ struct ChatSubject
         }
     }
 
+	//ALLYTD here, is this the right place?  --Imago
+	//	Allow team leader to see all allied team leaders' chat.  
+	//	Allow command wing to see all allied command wings' chat (except drones).
     void SetRecipient(ChatTarget            ct,
                       ObjectID              oidRecipient,
                       IbaseIGC*             pbaseRecipient,
@@ -2042,7 +2045,7 @@ public:
                         for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next())
                         {
                             IshipIGC*   pship = psl->data();
-                            if ((pship->GetSide() == pside) && pship->GetVisibleF())
+                            if ( (pship->GetSide() == pside || pside->AlliedSides(pside,pship->GetSide())) && pship->GetVisibleF() ) //ALLY - imago 7/3/09
                             {
                                 ThingSite*  psite = pship->GetThingSite();
                                 if (psite)
@@ -2194,7 +2197,7 @@ public:
                     if (pmodelPick)
                     {
                         IsideIGC*   psidePick = pmodelPick->GetSide();
-                        bool        bFriendly = (psidePick == trekClient.GetSide());
+                        bool        bFriendly = ( (psidePick == trekClient.GetSide()) || (psidePick->AlliedSides(psidePick,trekClient.GetSide())) ); //ALLY - imaog 7/3/09
 
                         if (bFriendly && (pmodelPick->GetObjectType() == OT_ship))
                         {

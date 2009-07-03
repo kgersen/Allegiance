@@ -3431,8 +3431,9 @@ void    CshipIGC::ResetWaypoint(void)
                         IprobeTypeIGC*  ppt = ((IprobeIGC*)(m_commandTargets[c_cmdPlan]))->GetProbeType();
                         ExpendableAbilityBitMask    eabm = ppt->GetCapabilities();
 
-                        if ((eabm & c_eabmRescueAny) ||
-                            ((eabm & c_eabmRescue) && (m_commandTargets[c_cmdPlan]->GetSide() == GetSide()))) //#ALLYTD
+                        if ( (eabm & c_eabmRescueAny) ||
+                            ((eabm & c_eabmRescue) && 
+							((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || (IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(),GetSide()))))) //#ALLY - imago 7/3/09
                         {
                             o = Waypoint::c_oEnter;
                         }

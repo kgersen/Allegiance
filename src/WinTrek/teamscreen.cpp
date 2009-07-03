@@ -2204,9 +2204,17 @@ public:
 	// not used atm (but the sink chain is ready for future use, see IClientEventSink)
 	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
 	{
-		//#ALLYTD: set comms afk (except the game owner) or do this server side?
-		// or just do it when sending/receiving a FM_S_CHANGE_ALLIANCES msg
-
+		//#ALLY: set comms afk (except the game owner) Imago 7/3/09 (KGJV)
+		if (trekClient.MyPlayerInfo()->IsTeamLeader()       // wlp - is a comm
+			&& !trekClient.MyPlayerInfo()->IsMissionOwner()	// wlp - not in control
+			&& !m_pbuttonAwayFromKeyboard->GetChecked())    // mmf 9/07 don't do anything if afk already checked
+		{
+			m_pbuttonTeamReady->SetChecked(false) ; // wlp - turn off team ready
+			OnButtonTeamReady();// wlp - send to server
+			m_pbuttonAwayFromKeyboard->SetChecked(true) ;// wlp - set comm afk
+			// g_bAFKToggled = false; // mmf set this otherwise if afk was on it would get turned off  // mmf 9/07 may not need this anymore given above change
+			OnButtonAwayFromKeyboard() ;// wlp - tell the world ( server ) about it
+		} ;
 		debugf("got OnTeamAlliancesChange\n");	
 	}
 	//#ALLY -end

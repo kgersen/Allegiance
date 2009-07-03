@@ -1985,7 +1985,7 @@ class ThingSiteImpl : public ThingSitePrivate
                             {
                                 IsideIGC* pside = pmodel->GetSide();
 
-                                if (pside != trekClient.GetSide())
+                                if ( (pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide())) ) //ALLY - imago 7/3/09
                                 {
                                     assert (pside);
                                     ClusterSite*    pcs = pcluster->GetClusterSite();
@@ -2035,7 +2035,8 @@ class ThingSiteImpl : public ThingSitePrivate
                             {
                                 IsideIGC* pside = pmodel->GetSide();
 
-                                if (pside != trekClient.GetSide())
+								//this is where you would put in rate limiting for the sound effects if someone "eye" spams };-) -imago
+                                if ((pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide()))) //ALLY Imago 7/3/09
                                 {
                                     trekClient.PlaySoundEffect(newShipSound, pmodel);
                                 }
@@ -2625,7 +2626,7 @@ void WinTrekClient::ChangeCluster(IshipIGC*  pship, IclusterIGC* pclusterOld, Ic
 void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, IstationIGC* pstationNew)
 {
     if (pship == GetShip() && trekClient.MyMission()->GetStage() == STAGE_STARTED)
-    {
+	{
         if (pstationNew)
         {
             if (pstationOld == NULL)
@@ -2815,7 +2816,7 @@ void WinTrekClient::ActivateTeleportProbe(IprobeIGC* pprobe)
     IsideIGC*       pside = pprobe->GetSide();
     IclusterIGC*    pcluster = pprobe->GetCluster();
 
-    if (pside != trekClient.GetSide())
+    if ( (pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide())) ) //ALLY - imago 7/3/09
     {
         assert (pside);
         PostText(true, START_COLOR_STRING "%s %s" END_COLOR_STRING " active in %s",
@@ -2833,7 +2834,7 @@ void WinTrekClient::DestroyTeleportProbe(IprobeIGC* pprobe)
     IsideIGC*       psideMe = trekClient.GetSide();
     IclusterIGC*    pcluster = pprobe->GetCluster();
 
-    if (pside != psideMe)
+	if ( (pside != psideMe) && (!pside->AlliedSides(pside,psideMe)) ) //ALLY - imago 7/3/09
     {
         assert (pside);
         ClusterSite*    pcs = pcluster->GetClusterSite();
@@ -5121,8 +5122,9 @@ int WinTrekClient::GetGrooveLevel()
         {
             IshipIGC* pship = psl->data();
 
-            if (pship->GetSide() != GetSide() //#ALLYTD
-                && pship->SeenBySide(GetSide()))
+            if (pship->GetSide() != GetSide() //#ALLY - imago 7/3/09
+                && pship->SeenBySide(GetSide()) 
+				&& !pship->GetSide()->AlliedSides(pship->GetSide(),GetSide()))
             {
                 bEnemiesSighted = true;
                 

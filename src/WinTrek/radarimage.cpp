@@ -383,7 +383,7 @@ public:
         {
             pcontext->Translate(positionIcon);
 			// BUILD_DX9
-			pcontext->SetBlendMode(BlendModeAlphaStampThrough);
+			pcontext->SetBlendMode(BlendModeAlphaStampThrough); //IMAGO REVIEW
 			//pcontext->SetBlendMode(BlendModeSourceAlpha);
 			// BUILD_DX9
 
@@ -625,8 +625,12 @@ public:
                     if (psubjects && (type == OT_ship) && psubjects->find((IshipIGC*)pmodel))
                         maskBrackets |= c_maskSubject;
 
-                    if (pmodel == pmodelEnemy)
-                        maskBrackets |= c_maskEnemy;
+					IsideIGC* sthis = pmodel->GetSide();
+					if (pmodelEnemy) {
+						IsideIGC* sthat = pmodelEnemy->GetSide();
+                    	if (pmodel == pmodelEnemy && !sthis->AlliedSides(sthis,sthat))  //ALLY - imago 7/3/09
+                        	maskBrackets |= c_maskEnemy;
+					}
 
                     {
                         const DamageBucketList* b = pmodel->GetDamageBuckets();
@@ -723,7 +727,7 @@ public:
                                         break;
                                         case c_rlTarget:
                                         {
-                                            if (pside == psideMine)
+                                            if ( (pside == psideMine) || pside->AlliedSides(pside,psideMine) ) //ALLY - Imago 7/3/09
                                             {
                                                 if (pmodel != pshipSource)
                                                 {
@@ -773,7 +777,7 @@ public:
                                             case c_rlTarget:
                                             {
                                                 range = 0;
-                                                if ((pside == psideMine) && (ucRadarState == c_ucRadarOffScreen))
+                                                if ( ((pside == psideMine) || pside->AlliedSides(pside,psideMine)) && (ucRadarState == c_ucRadarOffScreen) ) //ALLY imag0 7/3/09
                                                     bIcon = false;
                                             }
                                             break;
@@ -804,7 +808,7 @@ public:
                                     {
                                         case c_rlAll:
                                         {
-                                            if (pside == psideMine)
+                                            if ((pside == psideMine) || pside->AlliedSides(pside,psideMine) ) //ALLY imago 7/3/09
                                             {
                                                 if ((ucRadarState == c_ucRadarOffScreen) && (separation >= rangeClipLabels))
                                                     range = 0;
@@ -820,7 +824,7 @@ public:
                                         break;
                                         case c_rlDefault:
                                         {
-                                            if (pside == psideMine)
+                                            if ((pside == psideMine) || pside->AlliedSides(pside,psideMine) ) //ALLY imago 7/3/09
                                             {
                                                 if (separation >= rangeClipLabels)
                                                     range = 0;
@@ -829,7 +833,7 @@ public:
                                         break;
                                         case c_rlTarget:
                                         {
-                                            if ((pside == psideMine) || (separation >= rangeClipLabels))
+                                            if ((pside == psideMine) || (separation >= rangeClipLabels) || (pside->AlliedSides(pside,psideMine))) //ALLY imago 7/3/09
                                             {
                                                 bIcon = false;
                                                 range = 0;

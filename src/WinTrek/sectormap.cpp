@@ -117,7 +117,7 @@ static void AddIcon(IObject*    psurfaceIcon,
     for (IconLink*  pil = picons->first(); (pil != NULL); pil = pil->next())
     {
         if ((pil->data().psurfaceIcon == (Surface*)psurfaceIcon) &&
-            (pil->data().pside == pside))
+            (pil->data().pside == pside))  //ALLYTD? naaaa
         {
             pil->data().count++;
             return;
@@ -390,7 +390,7 @@ public:
                         {
                             IsideIGC*   pside = psl->data()->GetSide();
                             AddIcon(psl->data()->GetIcon(), pside, NA,
-                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);
+                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);  //ALLYTD? naaa
                         }
                     }
                 }
@@ -411,7 +411,7 @@ public:
                                 IsideIGC*   pside = psl->data()->GetSide();
 
                                 AddIcon(pht->GetIcon(), pside, hid, 
-                                    (pside == psideMe) ? c_cSidesMax : pside->GetObjectID(), &icons);
+                                    (pside == psideMe) ? c_cSidesMax : pside->GetObjectID(), &icons); //ALLYTD? naaa
                             }
                         }
                     }
@@ -792,7 +792,7 @@ public:
             IstationIGC* pstation = stationLink->data();
             
             if (pstation->GetStationType()->HasCapability(c_sabmRipcord) &&
-                (pstation->GetSide() == pside))
+                (pstation->GetSide() == pside)) //ALLYTD? allow rip to allies ...naaa
             {
                 return c_iClusterHasStationRipcord;
             }
@@ -809,7 +809,7 @@ public:
         for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
         {
             IprobeIGC*  pprobe = ppl->data();
-            if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed))
+            if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLYTD? allow rip to allies..naaa
                 return c_iClusterHasStationRipcord;
         }
 
@@ -826,7 +826,7 @@ public:
             IstationIGC* pstation = stationLink->data();
             
             if (pstation->GetStationType()->HasCapability(c_sabmRestart) &&
-                (pstation->GetSide() == pside))
+                (pstation->GetSide() == pside)) //ALLYTD?  naaa....
             {
                 return pstation;
             }

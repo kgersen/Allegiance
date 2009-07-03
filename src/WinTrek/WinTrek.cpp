@@ -6742,8 +6742,8 @@ public:
 
             IsideIGC*   psideMe;
             bool        bAnyEnemyShips;
-            if (pmodelTarget)
-                bAnyEnemyShips = true;
+            if (pmodelTarget && !trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pmodelTarget->GetSide()))
+                bAnyEnemyShips = true;  //ALLY - imago 7/3/09
             else
             {
                 bAnyEnemyShips = false;
@@ -6979,7 +6979,7 @@ public:
                             if (!bAnyEnemyShips)
                             {
                                 //We haven't spotted any enemy ships yet ... see if this is one.
-                                bAnyEnemyShips = pship->GetSide() != psideMe; //#ALLYTD
+                                bAnyEnemyShips = ( (pship->GetSide() != psideMe) && (!psideMe->AlliedSides(psideMe,pship->GetSide())) ); //#ALLY -imago 7/3/09
                             }
 
                             bSetVisible = (pmodel != trekClient.GetShip()) &&
