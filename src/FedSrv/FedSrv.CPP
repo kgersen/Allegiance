@@ -921,11 +921,11 @@ void GotLogonDetails(CQLogonStats * pquery)
     dataship.hullID = NA;
     //dataship.wingID = 1;
 
-/*
-    #ifdef  _ALLEGIANCE_DEV_
+
+   // #ifdef  _ALLEGIANCE_DEV_
     pqd->fCanCheat = true;
-    #endif
-*/
+   // #endif
+
 
 
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
@@ -3238,6 +3238,63 @@ bool CommandToDrone(CFSMission*         pfsMission,
     return bAccepted;
 }
 
+//ALLY - imago 7/3/09
+void ForwardChatMessageToAllies(CFSMission*       pfsMission,
+                                CFSShip*          pfsSender,
+                                FEDMESSAGE*       pfm,
+							    bool			  bCommandOnly)
+{
+	//Send the message only from a commander to commanders that are allies...
+	if (bCommandOnly) {
+		if (psfSender && pfsSender->IsPlayer()) {
+			CFSPlayer * pfsSendLeader = pfsMission->GetLeader(pfsSender->GetSide()->GetObjectID());
+			//Not a commander, we're done
+			if (!pfsSendLeader || (pfsSendLeader->GetCharacterID() != pfsSender->GetPlayer()->GetCharacterID()))
+				return;
+			//lets get a list of allied sideIDs
+	        for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first(); 
+				(psidelink != NULL); 
+				psidelink = psidelink->next())
+	        {
+				IsideIGC*   pside = psidelink->data();
+				//this side is ally...let's get comm
+				if (pside->AlliedSides(pside,pfsSender->GetSide())) {
+					CFSPlayer * pfsToLeader = pfsMission->GetLeader(pside->GetObjectID());
+					//if its legit, send it!
+		            if (pfsToLeader->IsPlayer())
+						g.fm.ForwardMessage(pfsToLeader->GetConnection(), pfm, FM_GUARANTEED);
+				}
+			}
+		}
+	//Send the message to allied command wings...
+	} else {
+		//lets get a list of allied sideIDs
+        for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first(); 
+			(psidelink != NULL); 
+			psidelink = psidelink->next())
+		{
+			IsideIGC*   pside = psidelink->data();
+			//this side is ally...
+			if (pside->AlliedSides(pside,pfsSender->GetSide())) {
+				// lets get a list of ships on the allied side
+	            for (ShipLinkIGC*   pshiplink = pside->GetShips()->first();
+	                 (pshiplink != NULL);
+	                 pshiplink = pshiplink->next())
+	            {
+	                IshipIGC*   pship = pshiplink->data();
+					//they are on command wing...
+					if (pship->GetWingID() == 0) {
+			            CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
+						//if its legit and not to our team (they arleady got the wing chat), then send it!
+			            if (pfsShipTo->IsPlayer() && (pfsShipTo->GetSide()->GetObjectID() != pfsSender->GetSide()->GetObjectID()))
+			              g.fm.ForwardMessage(pfsShipTo->GetPlayer()->GetConnection(), pfm, FM_GUARANTEED);
+					}
+				}
+			}
+		}
+	}
+}
+
 void ForwardChatMessageToWing(CFSMission*         pfsMission,
                               CFSShip*            pfsSender,
                               FEDMESSAGE*         pfm,
@@ -3246,7 +3303,7 @@ void ForwardChatMessageToWing(CFSMission*         pfsMission,
 {
 
     //Send the message to everyone on the specified wing
-    for (ShipLinkIGC*   psl = pfsSender->GetIGCShip()->GetSide()->GetShips()->first();
+    for (ShipLinkIGC*   psl = pfsSender->GetIGCShip()->GetSide()->GetShips()->first();  
          (psl != NULL);
          psl = psl->next())
     {
@@ -3261,6 +3318,9 @@ void ForwardChatMessageToWing(CFSMission*         pfsMission,
             }
         }
     }
+	// send allies if command wing and not a drone command HACK: we use shipskip as a boolean--imago 7/3/09
+	if (wid == 0 && !pshipSkip)
+		ForwardChatMessageToAllies(pfsMission,pfsSender,pfm,false);
 }
 
 void ForwardChatMessage(CFSMission*         pfsMission,
@@ -3318,7 +3378,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                      psl = psl->next())
                 {
                     IshipIGC*   pship = psl->data();
-                    if (pship->GetSide() == pside) //#ALLYTD: change this to include allies ?  I don't know if this is the right spot..
+                    if (pship->GetSide() == pside) 
                     {
                         CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
 
@@ -3411,6 +3471,9 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                 g.fm.ForwardMessage(CFSSide::FromIGC(pside)->GetGroup(),
                                     pfm, FM_GUARANTEED);
             }
+			//relay commander's team chat to the allied commanders - imago 7/3/09
+			ForwardChatMessageToAllies(pfsMission,pfsSender,pfm,true);
+
         }
         break;
 
@@ -11707,7 +11770,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
             UpgradeShip(pship, pstationNew);
 		// #ALLY  -imago 7/3/09 added allied check and repair/refuel
 		// if allied station, relaunch now
-		if ( (pstationNew->GetSide() != pship->GetSide()) || pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
+		if ( (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
 		{
 			// proper method to launch, this will call ChangeStation again with pstationNew NULL
 			// if this causes issues, another way to do this is in cluster Update like for drones
