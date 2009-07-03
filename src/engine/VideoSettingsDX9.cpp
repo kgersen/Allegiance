@@ -96,7 +96,7 @@ SVideoSettingsData g_VideoSettings;
 // PromptUserForVideoSettings()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter, HINSTANCE hInstance, PathString & szArtPath, LPCSTR lpSubKey )
+bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter, HINSTANCE hInstance, PathString & szArtPath, ZString lpSubKey )
 {
 	CLogFile logFile( "VideoSettings.log" );
 
@@ -106,7 +106,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	g_VideoSettings.iCurrentDevice		= 0;			// Set to 1 for multi-monitor debugging.
 	g_VideoSettings.iCurrentMode		= 0;
 	g_VideoSettings.iCurrentAASetting	= 0;
-	g_VideoSettings.bWindowed			= !!bStartFullscreen;
+	g_VideoSettings.bWindowed			= !bStartFullscreen;
 	g_VideoSettings.bWaitForVSync		= false;
 
 	
@@ -123,18 +123,19 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		int idummy = 0;
 		D3DFORMAT fdummy = D3DFMT_UNKNOWN;
 
-		if (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
         {
-            DWORD dwSize = sizeof(x);
+            DWORD dwSize = 4;
             DWORD dwType = REG_DWORD;
 
             ::RegQueryValueEx(hKey, "CombatFullscreenXSize", NULL, &dwType, (BYTE*)&x, &dwSize);
 			::RegQueryValueEx(hKey, "CombatFullscreenYSize", NULL, &dwType, (BYTE*)&y, &dwSize);
             ::RegCloseKey(hKey);
-
+			OutputDebugString("Using res: "+ZString(x)+"x"+ZString(y)+"\n");
         }
 
-
+		lpSubKey += ZString("\\3DSettings");
+		
 		//changed the 800x600 here to whatever is CombatFullscreen X/Y values Imago 7/1/09
 		g_VideoSettings.pDevData			= new CD3DDeviceModeData( x, y , &logFile);	// Mininum width/height allowed.
 		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&fdummy,&fdummy,&hMon); //imago use this function!
@@ -186,7 +187,7 @@ BOOL CALLBACK MonitorEnumProc(
 			if (x == width && y == height) {
 				g_DX9Settings.m_refreshrate = rate;
 				OutputDebugString("Match found! Rate set to: "+ZString(rate)+"\n");
-
+				break;
 			}
 		}
 
