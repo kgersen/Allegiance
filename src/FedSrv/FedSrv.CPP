@@ -3119,6 +3119,7 @@ void HandleCOMChatEvents(const char *szMessage, const char *szDest, ShipID shipi
   static char* s_szChatTypes[CHAT_MAX] =
   {
     "EVERYONE",              // CHAT_EVERYONE            in igc.h
+	"ALLIES",                // CHAT_ALLIES              in igc.h Imago 7/4/09
     "LEADERS",               // CHAT_LEADERS             in igc.h
     "ADMIN",                 // CHAT_ADMIN               in igc.h
     "SHIP",                  // CHAT_SHIP                in igc.h
