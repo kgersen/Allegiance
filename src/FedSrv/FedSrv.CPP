@@ -921,9 +921,9 @@ void GotLogonDetails(CQLogonStats * pquery)
     dataship.hullID = NA;
     //dataship.wingID = 1;
 
-
+	// Imago use cheat 7/4/09 for testing alliances
    // #ifdef  _ALLEGIANCE_DEV_
-    pqd->fCanCheat = true;
+   // pqd->fCanCheat = true;
    // #endif
 
 
@@ -3241,54 +3241,29 @@ bool CommandToDrone(CFSMission*         pfsMission,
 //ALLY - imago 7/3/09
 void ForwardChatMessageToAllies(CFSMission*       pfsMission,
                                 CFSShip*          pfsSender,
-                                FEDMESSAGE*       pfm,
-							    bool			  bCommandOnly)
+                                FEDMESSAGE*       pfm)
 {
-	//Send the message only from a commander to commanders that are allies...
-	if (bCommandOnly) {
-		if (psfSender && pfsSender->IsPlayer()) {
-			CFSPlayer * pfsSendLeader = pfsMission->GetLeader(pfsSender->GetSide()->GetObjectID());
-			//Not a commander, we're done
-			if (!pfsSendLeader || (pfsSendLeader->GetCharacterID() != pfsSender->GetPlayer()->GetCharacterID()))
-				return;
-			//lets get a list of allied sideIDs
-	        for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first(); 
-				(psidelink != NULL); 
-				psidelink = psidelink->next())
-	        {
-				IsideIGC*   pside = psidelink->data();
-				//this side is ally...let's get comm
-				if (pside->AlliedSides(pside,pfsSender->GetSide())) {
-					CFSPlayer * pfsToLeader = pfsMission->GetLeader(pside->GetObjectID());
-					//if its legit, send it!
-		            if (pfsToLeader->IsPlayer())
-						g.fm.ForwardMessage(pfsToLeader->GetConnection(), pfm, FM_GUARANTEED);
-				}
-			}
-		}
 	//Send the message to allied command wings...
-	} else {
-		//lets get a list of allied sideIDs
-        for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first(); 
-			(psidelink != NULL); 
-			psidelink = psidelink->next())
-		{
-			IsideIGC*   pside = psidelink->data();
-			//this side is ally...
-			if (pside->AlliedSides(pside,pfsSender->GetSide())) {
-				// lets get a list of ships on the allied side
-	            for (ShipLinkIGC*   pshiplink = pside->GetShips()->first();
-	                 (pshiplink != NULL);
-	                 pshiplink = pshiplink->next())
-	            {
-	                IshipIGC*   pship = pshiplink->data();
-					//they are on command wing...
-					if (pship->GetWingID() == 0) {
-			            CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
-						//if its legit and not to our team (they arleady got the wing chat), then send it!
-			            if (pfsShipTo->IsPlayer() && (pfsShipTo->GetSide()->GetObjectID() != pfsSender->GetSide()->GetObjectID()))
-			              g.fm.ForwardMessage(pfsShipTo->GetPlayer()->GetConnection(), pfm, FM_GUARANTEED);
-					}
+	//lets get a list of allied sideIDs
+    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first(); 
+		(psidelink != NULL); 
+		psidelink = psidelink->next())
+	{
+		IsideIGC*   pside = psidelink->data();
+		//this side is ally...
+		if (pside->AlliedSides(pside,pfsSender->GetSide())) {
+			// lets get a list of ships on the allied side
+            for (ShipLinkIGC*   pshiplink = pside->GetShips()->first();
+                 (pshiplink != NULL);
+                 pshiplink = pshiplink->next())
+            {
+                IshipIGC*   pship = pshiplink->data();
+				//they are on command wing...
+				if (pship->GetWingID() == 0) {
+		            CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
+					//if its legit and not to our team (they arleady got the wing chat), then send it!
+		            if (pfsShipTo->IsPlayer() && (pfsShipTo->GetSide()->GetObjectID() != pfsSender->GetSide()->GetObjectID()))
+		              g.fm.ForwardMessage(pfsShipTo->GetPlayer()->GetConnection(), pfm, FM_GUARANTEED);
 				}
 			}
 		}
@@ -3319,8 +3294,8 @@ void ForwardChatMessageToWing(CFSMission*         pfsMission,
         }
     }
 	// send allies if command wing and not a drone command HACK: we use shipskip as a boolean--imago 7/3/09
-	if (wid == 0 && !pshipSkip)
-		ForwardChatMessageToAllies(pfsMission,pfsSender,pfm,false);
+//	if (wid == 0 && !pshipSkip)
+//		ForwardChatMessageToAllies(pfsMission,pfsSender,pfm);
 }
 
 void ForwardChatMessage(CFSMission*         pfsMission,
@@ -3472,7 +3447,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                                     pfm, FM_GUARANTEED);
             }
 			//relay commander's team chat to the allied commanders - imago 7/3/09
-			ForwardChatMessageToAllies(pfsMission,pfsSender,pfm,true);
+			//ForwardChatMessageToAllies(pfsMission,pfsSender,pfm,true);
 
         }
         break;
