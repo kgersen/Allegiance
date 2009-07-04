@@ -450,6 +450,7 @@ typedef [v1_enum] enum AGCTreasureType    // IGC's TreasureCode
 typedef [v1_enum] enum AGCChatTarget      // IGC's ChatTarget
 {
   AGCChat_Everyone = 0,                   // IGC's CHAT_EVERYONE
+  AGCChat_Allies,						  // IGC's CHAT_ALLIES ALLY -imago 7/3/09
   AGCChat_Leaders,                        // IGC's CHAT_LEADERS
   AGCChat_Admin,                          // IGC's CHAT_ADMIN
   AGCChat_Ship,                           // IGC's CHAT_SHIP

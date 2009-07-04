@@ -45,8 +45,8 @@ void CVBIBManager::Initialise( )
 			m_iDefaultBufferPool = D3DPOOL_MANAGED;
 			m_iDynamicBufferPool = D3DPOOL_DEFAULT;
 		} else {
-			m_iMaxNumBuffers = 4;
-			m_iDefaultBufferSize = 8192;
+			m_iMaxNumBuffers = 128;
+			m_iDefaultBufferSize = 32768;
 			m_iDefaultBufferPool = D3DPOOL_SYSTEMMEM;
 			m_iDynamicBufferPool = D3DPOOL_DEFAULT;
 		}
