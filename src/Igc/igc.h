@@ -248,7 +248,7 @@ const TrekKey TK_ViewTurret                 = 35;  // View from the ship's turre
 const TrekKey TK_ViewBase                   = 36;  // View from the base
 const TrekKey TK_ViewSector                 = 37;  // View the sector map
 const TrekKey TK_ViewCommand                = 38;  // Display a tactical view of the sector
-const TrekKey TK_CycleChatMsgs              = 39;  // Currently does nothing
+const TrekKey TK_CycleChatMsgs              = 39;  // Currently does nothing  //NYI IMAGO use to scroll chat window up and down  REVIEW: default MOUSEWHEELUP MOUSEWHEELDOWN or PGUP PGDOWN
 const TrekKey TK_AcceptCommand              = 40;  // Accept pending command
 const TrekKey TK_ClearCommand               = 41;  // Clear current command
 const TrekKey TK_RejectCommand              = 42;  // current target == current command
@@ -2659,8 +2659,8 @@ struct  ExplosionData
 //
 enum ChatTarget // if you change this please update AGCChatTarget in AGCIDL.idl
 {
-    CHAT_EVERYONE = 0, CHAT_ALLIES, CHAT_LEADERS, CHAT_ADMIN, CHAT_SHIP,  //imago added allies 7/3/09
-    
+    CHAT_EVERYONE = 0, CHAT_LEADERS, CHAT_ADMIN, CHAT_SHIP,  
+    CHAT_ALLIES, //imago added allies 7/3/09 ALLY
     CHAT_TEAM, CHAT_INDIVIDUAL, CHAT_INDIVIDUAL_NOFILTER, CHAT_WING, CHAT_INDIVIDUAL_ECHO,     //require objectID to be set
     CHAT_ALL_SECTOR, CHAT_FRIENDLY_SECTOR,                      //ditto
     CHAT_GROUP, CHAT_GROUP_NOECHO,                               //client only ... get translated into multiple sends

@@ -4178,6 +4178,14 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
             }
             break;
 
+            case CHAT_ALLIES: //ALLY imago 7/4/09
+            {
+                static const ZString c_strAllies = "allies";
+                strRecipient = c_strAllies;
+                bForMe = true;    
+            }
+            break;
+
             case CHAT_LEADERS:
             {
                 static const ZString c_strLeaders = "leaders";

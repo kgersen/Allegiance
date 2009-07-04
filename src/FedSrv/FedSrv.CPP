@@ -921,12 +921,11 @@ void GotLogonDetails(CQLogonStats * pquery)
     dataship.hullID = NA;
     //dataship.wingID = 1;
 
-	// Imago use cheat 7/4/09 for testing alliances
-   // #ifdef  _ALLEGIANCE_DEV_
-   // pqd->fCanCheat = true;
-   // #endif
-
-
+	// Imago use cheat 7/4/09 for testing, 
+	// this ensures it's off for retail builds.
+    #ifdef  _DEBUG
+    pqd->fCanCheat = true;
+    #endif
 
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
     dataship.abmOrders = 0;
@@ -3119,10 +3118,10 @@ void HandleCOMChatEvents(const char *szMessage, const char *szDest, ShipID shipi
   static char* s_szChatTypes[CHAT_MAX] =
   {
     "EVERYONE",              // CHAT_EVERYONE            in igc.h
-	"ALLIES",                // CHAT_ALLIES              in igc.h Imago 7/4/09
     "LEADERS",               // CHAT_LEADERS             in igc.h
     "ADMIN",                 // CHAT_ADMIN               in igc.h
     "SHIP",                  // CHAT_SHIP                in igc.h
+	"ALLIES",                // CHAT_ALLIES              in igc.h Imago 7/4/09 ALLY
     "TEAM",                  // CHAT_TEAM                in igc.h
     "INDIVIDUAL",            // CHAT_INDIVIDUAL          in igc.h
     "INDIVIDUAL_NOFILTER"    // CHAT_INDIVIDUAL_NOFILTER in igc.h
@@ -3386,6 +3385,22 @@ void ForwardChatMessage(CFSMission*         pfsMission,
             }
         }
         break;
+
+		case CHAT_ALLIES:
+        {
+            pszDest = "ALLIES";
+            pszDest = pfsMission->GetMissionDef()->rgszName[pcd->oidRecipient];
+            IsideIGC*   pside = pfsMission->GetIGCMission()->GetSide(pcd->oidRecipient);
+            if (pside && ((pcd->commandID == c_cidNone) || (pfsSender == NULL) || (pside == pfsSender->GetSide())))
+            {
+                g.fm.ForwardMessage(CFSSide::FromIGC(pside)->GetGroup(),
+                                    pfm, FM_GUARANTEED);
+            }
+			ForwardChatMessageToAllies(pfsMission,pfsSender,pfm);
+			//Imago ALLY 7/4/09
+		break;
+		}
+
 
         case CHAT_LEADERS:
         {

@@ -9,9 +9,10 @@
 const int   c_iRecipientOther   = -1;
 const int   c_iRecipientMe      =  0;
 const int   c_iRecipientSector  =  1;
-const int   c_iRecipientTeam    =  2;
-const int   c_iRecipientAll     =  3;
-const int   c_iRecipientWing0   =  4;       //with subsequent wings following
+const int   c_iRecipientAllies  =  2;		//ALLY imago 7/4/09
+const int   c_iRecipientTeam    =  3;
+const int   c_iRecipientAll     =  4;
+const int   c_iRecipientWing0   =  5;       //with subsequent wings following
 
 const int c_badMatch = 100000;
 
@@ -262,9 +263,6 @@ struct ChatSubject
         }
     }
 
-	//ALLYTD here, is this the right place?  --Imago
-	//	Allow team leader to see all allied team leaders' chat.  
-	//	Allow command wing to see all allied command wings' chat (except drones).
     void SetRecipient(ChatTarget            ct,
                       ObjectID              oidRecipient,
                       IbaseIGC*             pbaseRecipient,
@@ -331,6 +329,7 @@ struct ChatSubject
                 IsideIGC*           psideFriendly = trekClient.GetShip()->GetSide();
                 WingID              wid;
                 const ShipListIGC*  pships = psideFriendly->GetShips();
+				OutputDebugString("In SetRecipient() switch ct="+ZString(ct)+"\n");
                 switch (ct)
                 {
                     case CHAT_TEAM:
@@ -340,7 +339,7 @@ struct ChatSubject
                         oidRecipient = pbaseRecipient->GetObjectID();
                     }
                     break;
-
+                 
                     case CHAT_FRIENDLY_SECTOR:
                     {
                         if (!pbaseRecipient)
@@ -372,6 +371,8 @@ struct ChatSubject
                             wid = oidRecipient;
                     }
                     break;
+
+					case CHAT_ALLIES: //imago 7/4/09 ALLY
                     case CHAT_EVERYONE:
                     {
                         pships = trekClient.m_pCoreIGC->GetShips();
@@ -389,6 +390,7 @@ struct ChatSubject
 
                     switch (ct)
                     {
+						case CHAT_ALLIES: //Imago 7/4/09 ALLY
                         case CHAT_EVERYONE:
                         {
                             bSubject = true;
@@ -1154,6 +1156,12 @@ public:
                     oid = NA;
                 break;
 
+                case c_iRecipientAllies: //ALLY 7/4/09 imago
+                    ct = CHAT_ALLIES;
+                    pbase = NULL;
+                    oid = NA;
+                break;
+
                 case c_iRecipientAll:
                     ct = CHAT_EVERYONE;
                     pbase = NULL;
@@ -1309,6 +1317,7 @@ public:
             {
                 //Fill in the recipient
                 static const char*  pszEveryone = "All";
+				static const char*  pszAllies = "Allies";
                 static const char*  pszLeaders = "Leaders";
                 static const char*  pszShip  = "ship";
                 static const char*  pszGroup = "Group";
@@ -1318,14 +1327,13 @@ public:
                 const char* pszRecipient;
                 switch (m_pchsCurrent->m_ctRecipient)
                 {
+					OutputDebugString("In UpdateComposedChat() switch m_pchsCurrent->m_ctRecipient="+ZString(m_pchsCurrent->m_ctRecipient)+"\n");
                     case CHAT_NOSELECTION:
                         pszRecipient = pszNone;
-                    break;
-                
+                    break;          
                     case CHAT_EVERYONE:
                         pszRecipient = pszEveryone;
                     break;
-                
                     case CHAT_GROUP:
                         pszRecipient = pszGroup;
 
@@ -1343,6 +1351,7 @@ public:
                         }
                     break;
                 
+
                     case CHAT_LEADERS:
                         pszRecipient = pszLeaders;
                     break;
@@ -1389,6 +1398,10 @@ public:
                     }
                     break;
 
+					case CHAT_ALLIES: //imago 7/4/09 ALLY
+						pszRecipient = pszAllies;
+					break;   
+
                     case CHAT_ALL_SECTOR:
                     {
                         //NYI Need to distunguish between all and friendly
@@ -1409,7 +1422,7 @@ public:
                         else
                             pszRecipient = ((IclusterIGC*)((IbaseIGC*)m_pchsCurrent->m_pbaseRecipient))->GetName();
 
-                    }
+                    }  
                 }
                 m_pstringChatRecipient->SetValue(CensorBadWords (pszRecipient));
             }
@@ -2289,7 +2302,7 @@ public:
                         }
                     break;
 
-                    case VK_ESCAPE:
+                    case VK_ESCAPE:  //NYI Imago save the typed text to a buffer as noted 7/4/09
                         if (m_csComposeState == c_csComposeCommand)
                         {
                             m_strTypedText.SetEmpty();
@@ -2536,55 +2549,117 @@ public:
 
     void CycleChatTarget(void)
     {
+
+
         if (m_csComposeState != c_csNotComposing)
         {
-            switch (m_pchsCurrent->m_ctRecipient)
-            {
-                case CHAT_WING:
-                {
-                    if (m_csComposeState != c_csComposeChat)
-                    {
-                        m_pchsCurrent->SetRecipient(CHAT_INDIVIDUAL, NA, trekClient.GetShip());
-                        break;
-                    }
-                }
-                //no break ... cant compose a chat to yourself so fall through to 
 
-                case CHAT_INDIVIDUAL:
-                {
-                    if (trekClient.GetShip()->GetSourceShip()->GetChildShips()->n() != 0)
-                    {
-                        m_pchsCurrent->SetRecipient(CHAT_SHIP, NA, NULL);
-                        break;
-                    }
-                }
-                //no break ... alone in ship
+			//Imago 7/4/09 ALLY
+			OutputDebugString("In CycleChatTarget() switch m_pchsCurrent->m_ctRecipient="+ZString(m_pchsCurrent->m_ctRecipient)+"\n");
+            if (trekClient.GetSide()->GetAllies() == NA) {
+				switch (m_pchsCurrent->m_ctRecipient)
+	            {
+	                case CHAT_WING:
+	                {
+	                    if (m_csComposeState != c_csComposeChat)
+	                    {
+	                        m_pchsCurrent->SetRecipient(CHAT_INDIVIDUAL, NA, trekClient.GetShip());
+	                        break;
+	                    }
+	                }
+	                //no break ... cant compose a chat to yourself so fall through to 
 
-                case CHAT_SHIP:
-                {
-                    m_pchsCurrent->SetRecipient(CHAT_FRIENDLY_SECTOR, NA, NULL);
-                    if (m_pchsCurrent->m_shipsSubject.n() != 0)
-                        break;
-                }
-                //no break ... no one in the sector, so skip over it.
+	                case CHAT_INDIVIDUAL:
+	                {
+	                    if (trekClient.GetShip()->GetSourceShip()->GetChildShips()->n() != 0)
+	                    {
+	                        m_pchsCurrent->SetRecipient(CHAT_SHIP, NA, NULL);
+	                        break;
+	                    }
+	                }
+	                //no break ... alone in ship
 
-                case CHAT_FRIENDLY_SECTOR:
-                {
-                    m_pchsCurrent->SetRecipient(CHAT_TEAM, NA, NULL);
-                }
-                break;
+					case CHAT_SHIP:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_FRIENDLY_SECTOR, NA, NULL);
+	                    if (m_pchsCurrent->m_shipsSubject.n() != 0)
+	                        break;
+	                }
+					
+					//no break ... no one in the sector, so skip over it.
 
-                case CHAT_TEAM:
-                {
-                    m_pchsCurrent->SetRecipient(CHAT_EVERYONE, NA, NULL);
-                }
-                break;           
+	                case CHAT_FRIENDLY_SECTOR:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_TEAM, NA, NULL);
+	                }
+	                break;
+	   
+	                case CHAT_TEAM:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_EVERYONE, NA, NULL);
+	                }
+	                break;      
 
-                default:
-                {
-                    m_pchsCurrent->SetRecipient(CHAT_WING, NA, NULL);
-                }
-            }
+	                default:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_WING, NA, NULL);
+	                }
+	            }
+			} else { //ALLY
+				switch (m_pchsCurrent->m_ctRecipient)
+	            {
+					case CHAT_ALLIES:
+					{
+						m_pchsCurrent->SetRecipient(CHAT_WING, NA, NULL);
+					}
+					break;
+	                case CHAT_WING:
+	                {
+	                    if (m_csComposeState != c_csComposeChat)
+	                    {
+	                        m_pchsCurrent->SetRecipient(CHAT_INDIVIDUAL, NA, trekClient.GetShip());
+	                        break;
+	                    }
+	                }
+	                //no break ... cant compose a chat to yourself so fall through to 
+
+	                case CHAT_INDIVIDUAL:
+	                {
+	                    if (trekClient.GetShip()->GetSourceShip()->GetChildShips()->n() != 0)
+	                    {
+	                        m_pchsCurrent->SetRecipient(CHAT_SHIP, NA, NULL);
+	                        break;
+	                    }
+	                }
+	                //no break ... alone in ship
+
+					case CHAT_SHIP:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_FRIENDLY_SECTOR, NA, NULL);
+	                    if (m_pchsCurrent->m_shipsSubject.n() != 0)
+	                        break;
+	                }
+					
+					//no break ... no one in the sector, so skip over it.
+
+	                case CHAT_FRIENDLY_SECTOR:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_TEAM, NA, NULL);
+	                }
+	                break;
+	   
+	                case CHAT_TEAM:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_EVERYONE, NA, NULL);
+	                }
+	                break;      
+
+	                default:
+	                {
+	                    m_pchsCurrent->SetRecipient(CHAT_ALLIES, NA, NULL);
+	                }
+	            }
+			}
         }
     }
 
@@ -2609,7 +2684,7 @@ public:
             else
             {
                 int         scoreBest = c_badMatch;
-
+				OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                 ChatTarget    ct = CHAT_NOSELECTION;
                 ObjectID      oidRecipient;
                 IbaseIGC*     pbaseRecipient;
@@ -2624,6 +2699,7 @@ public:
                         if (score < scoreBest)
                         {
                             scoreBest = score;
+							OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
 
                             ct = CHAT_WING;
                             oidRecipient = i;
@@ -2644,7 +2720,7 @@ public:
                         if (score < scoreBest)
                         {
                             scoreBest = score;
-
+							OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                             ct = CHAT_FRIENDLY_SECTOR;
                             oidRecipient = pcluster->GetObjectID();
                             pbaseRecipient = pcluster;
@@ -2660,7 +2736,7 @@ public:
                         if (score < scoreBest)
                         {
                             scoreBest = score;
-
+							OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                             ct = CHAT_TEAM;
                             oidRecipient = pside->GetObjectID();
                             pbaseRecipient = pside;
@@ -2672,19 +2748,21 @@ public:
                             if (score < scoreBest)
                             {
                                 scoreBest = score;
-
+								OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                                 ct = CHAT_INDIVIDUAL;
                                 oidRecipient = trekClient.GetShipID();
                                 pbaseRecipient = trekClient.GetShip();
                             }
-
                             if (scoreBest > 0)
                             {
                                 int score = MatchName(pcc, "all");
+								//hard fix for this "logic" ALLY 7/4/09 imago
+								ZString allstr = ZString(pcc).RightOf("all");
+								score = (allstr.GetLength()) ? score : 0;
                                 if (score < scoreBest)
                                 {
                                     scoreBest = score;
-
+									OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                                     ct = CHAT_EVERYONE;
                                     oidRecipient = NA;
                                     pbaseRecipient = NULL;
@@ -2698,105 +2776,121 @@ public:
                                         if (score < scoreBest)
                                         {
                                             scoreBest = score;
-
+											OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                                             ct = CHAT_SHIP;
                                             oidRecipient = NA;
                                             pbaseRecipient = NULL;
                                         }
                                     }
+		                            if (scoreBest > 0)  //imago ALLY 7/4/09
+		                            {
+										if (trekClient.GetSide()->GetAllies() != NA) {
+		                               		int score = MatchName(pcc, "allies");
+			                                if (score < scoreBest)
+			                                {
+			                                    scoreBest = score;
+												OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+			                                    ct = CHAT_ALLIES;
+			                                    oidRecipient = NA;
+			                                    pbaseRecipient = NULL;
+			                                }
+										}
+	                                    if (scoreBest > 0)
+	                                    {
+	                                        //Try to match against an individual on our side
+	                                        IsideIGC*   pside = trekClient.GetSide();
 
-                                    if (scoreBest > 0)
-                                    {
-                                        //Try to match against an individual on our side
-                                        IsideIGC*   pside = trekClient.GetSide();
+	                                        for (ShipLinkIGC*   psl = pside->GetShips()->first();
+	                                             (psl != NULL);
+	                                             psl = psl->next())
+	                                        {
+	                                            IshipIGC*   pship = psl->data();
 
-                                        for (ShipLinkIGC*   psl = pside->GetShips()->first();
-                                             (psl != NULL);
-                                             psl = psl->next())
-                                        {
-                                            IshipIGC*   pship = psl->data();
+	                                            int score = MatchName(pcc, pship->GetName());
+	                                            if (score < scoreBest)
+	                                            {
+	                                                scoreBest = score;
+													OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+	                                                ct = CHAT_INDIVIDUAL;
+	                                                oidRecipient = pship->GetObjectID();
+	                                                pbaseRecipient = pship;
+	                                            }
+	                                        }
 
-                                            int score = MatchName(pcc, pship->GetName());
-                                            if (score < scoreBest)
-                                            {
-                                                scoreBest = score;
+	                                        // try to match against everyone else
+	                                        if (scoreBest > 0)
+	                                        {
+	                                            IsideIGC* psideMine = trekClient.GetSide();
 
-                                                ct = CHAT_INDIVIDUAL;
-                                                oidRecipient = pship->GetObjectID();
-                                                pbaseRecipient = pship;
-                                            }
-                                        }
+	                                            for (ShipLinkIGC*   psl = trekClient.m_pCoreIGC->GetShips()->first();
+	                                                 (psl != NULL);
+	                                                 psl = psl->next())
+	                                            {
+	                                                IshipIGC*   pship = psl->data();
 
-                                        // try to match against everyone else
-                                        if (scoreBest > 0)
-                                        {
-                                            IsideIGC* psideMine = trekClient.GetSide();
+													// WLP 2005 - Only talk to enemy pilots - not cons
+													// I added the pilot check to enforce this
+													//
+	                                                if ((pship->GetSide() != psideMine)&& (pship->GetPilotType()== c_ptPlayer ))
+	                                                {
+	                                                    int score = MatchName(pcc, pship->GetName());
+	                                                    if ((ct == CHAT_INDIVIDUAL)
+	                                                        ? (score == 0)
+	                                                        : (score < scoreBest))
+	                                                    {
+	                                                        scoreBest = score;
+															OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+	                                                        ct = CHAT_INDIVIDUAL;
+	                                                        oidRecipient = pship->GetObjectID();
+	                                                        pbaseRecipient = pship;
+	                                                    }
+	                                                }
+	                                            }
+											}
 
-                                            for (ShipLinkIGC*   psl = trekClient.m_pCoreIGC->GetShips()->first();
-                                                 (psl != NULL);
-                                                 psl = psl->next())
-                                            {
-                                                IshipIGC*   pship = psl->data();
+	                                        if (scoreBest > 0)
+	                                        {
+	                                            //Did not have a perfect match ... try a verb
+	                                            //Try to match against one of the verbs (but don't match default)
+	                                            for (CommandID  cid = c_cidAttack; (cid < c_cidMax); cid++)
+	                                            {
+	                                                if (MatchName(pcc, c_cdAllCommands[cid].szVerb) == 0)
+	                                                {
+	                                                    SetComposeState(c_csComposeCommand);
+	                                                    SetVerb(cid);
+														OutputDebugString("In OnTab() Calling SetVerb() and returning scoreBest= "+ZString(scoreBest)+"\n");
+	                                                    SetChatObject(NULL);
+	                                                    m_strTypedText.SetEmpty();
+	                                                    UpdateComposedChat();
 
-												// WLP 2005 - Only talk to enemy pilots - not cons
-												// I added the pilot check to enforce this
-												//
-                                                if ((pship->GetSide() != psideMine)&& (pship->GetPilotType()== c_ptPlayer ))
-                                                {
-                                                    int score = MatchName(pcc, pship->GetName());
-                                                    if ((ct == CHAT_INDIVIDUAL)
-                                                        ? (score == 0)
-                                                        : (score < scoreBest))
-                                                    {
-                                                        scoreBest = score;
-
-                                                        ct = CHAT_INDIVIDUAL;
-                                                        oidRecipient = pship->GetObjectID();
-                                                        pbaseRecipient = pship;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        if (scoreBest > 0)
-                                        {
-                                            //Did not have a perfect match ... try a verb
-                                            //Try to match against one of the verbs (but don't match default)
-                                            for (CommandID  cid = c_cidAttack; (cid < c_cidMax); cid++)
-                                            {
-                                                if (MatchName(pcc, c_cdAllCommands[cid].szVerb) == 0)
-                                                {
-                                                    SetComposeState(c_csComposeCommand);
-                                                    SetVerb(cid);
-
-                                                    SetChatObject(NULL);
-                                                    m_strTypedText.SetEmpty();
-                                                    UpdateComposedChat();
-
-                                                    return;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+	                                                    return;
+	                                                }
+	                                            }
+	                                        }
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    }
+					}
+				}
 
                 if (scoreBest != c_badMatch)
                 {
                     SetChatObject(NULL);
                     m_strTypedText.SetEmpty();
                     m_pchsCurrent->SetRecipient(ct, oidRecipient, pbaseRecipient);
+					OutputDebugString("In OnTab() Calling SetRecipient() scoreBest= "+ZString(scoreBest)+"\n");
                 }
                 else
                 {
                     CycleChatTarget();
+					OutputDebugString("In OnTab() Calling CylceTarget() scoreBest= "+ZString(scoreBest)+"\n");
                 }
             }
         }
         UpdateComposedChat();
+		OutputDebugString("UpdateCompsedChat returning OnTab()\n");
     }
 
     void OnPrintable(char ch)

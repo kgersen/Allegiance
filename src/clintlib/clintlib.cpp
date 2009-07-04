@@ -2186,6 +2186,8 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
         //Convert from NA to an actual ID based on the player's ship
         switch (ctRecipient)
         {
+//			case CHAT_ALLIES: //7/4/09 imago ALLY
+
             case CHAT_INDIVIDUAL:
                 oidRecipient = m_ship->GetObjectID();
             break;

@@ -740,6 +740,10 @@ public:
             // Grab the tab so we can change the chat target
             //
 
+			// Imago NYI-  VK_ESC should close the chat compose window, saving any text
+			//				in the chat entry box to a buffer to later redsiplay in the chat box
+			//				as highlighted text.
+
             m_pconsoleImage->CycleChatTarget();
 
             return true;
