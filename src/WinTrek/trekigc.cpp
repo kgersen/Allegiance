@@ -3284,9 +3284,11 @@ void WinTrekClient::CreateMissionReq()
 // KGJV #114
 void WinTrekClient::ServerListReq()
 {
-    GetWindow()->SetWaitCursor();
-    TRef<IMessageBox> pmsgBox = CreateMessageBox("Asking about servers and cores...", NULL, false);
-    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	//if (!g_bQuickstart) {
+    	GetWindow()->SetWaitCursor();
+    	TRef<IMessageBox> pmsgBox = CreateMessageBox("Asking about servers and cores...", NULL, false);
+    	GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	//}
 	BaseClient::ServerListReq();
 }
 void WinTrekClient::CreateMissionReq(const char *szServer,const char *szAddr, const char *szIGCStaticFile, const char *szGameName)
@@ -4774,8 +4776,13 @@ HRESULT WinTrekClient::ConnectToLobby(BaseClient::ConnectInfo * pci)
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Failed to connect to the lobby.");
         Point point(c_PopupX, c_PopupY);
         Rect rect(point, point);
-        GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false);
-        g_bQuickstart = false;
+        GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, g_bQuickstart);
+		if (g_bQuickstart) {
+			g_bQuickstart = false;
+			GetWindow()->screen(ScreenIDIntroScreen);  //imago 7/4/09 this will make users able
+														//  to retry and see the MOTD for outage info
+		}
+        
     }
     else
     {

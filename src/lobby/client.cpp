@@ -399,6 +399,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 			{
 				char szRemoteAddress[16];
 				g_pLobbyApp->GetFMServers().GetIPAddress(*iterCnxn.Value(), szRemoteAddress);
+				//IMAGO REVIEW: Sanity check on szAddr first
 				if (strcmp(szRemoteAddress,szAddr)==0) // IPs match
 				{
 					if (strcmp(iterCnxn.Value()->GetName(),szServer)==0) // names match

@@ -745,7 +745,11 @@ public:
 
     bool OnQuickstart()
     {
+#ifdef USEAZ //Imago 7/4/09 #78
         OnButtonZoneClub();
+#else
+		OnButtonInternet();
+#endif
         return false;
     }
 

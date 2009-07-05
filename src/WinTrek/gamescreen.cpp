@@ -598,8 +598,7 @@ private:
 					memcpy(&(m_pServers[i].mStatic),&(pservers[i]),sizeof(ServerCoreInfo));
 					m_pServers[i].ping = -1;
 					m_pServers[i].bOfficial = trekClient.CfgIsOfficialServer(m_pServers[i].mStatic.szName,m_pServers[i].mStatic.szRemoteAddress);
-				}
-				
+				}	
 			}
 		}
 
@@ -1668,6 +1667,30 @@ public:
 
         }
 
+		if (g_bQuickstart) {
+        // close the "connecting..." popup
+       		if (GetWindow()->GetPopupContainer() && !GetWindow()->GetPopupContainer()->IsEmpty())
+            	GetWindow()->GetPopupContainer()->ClosePopup(NULL);
+       	 	GetWindow()->RestoreCursor();
+
+			//imago 7/5/09
+			//if there are players in the lobby join the most populated server...
+			OutputDebugString("GetCountInLobby(plist) returned "+ ZString(cPlayers) +"\n");
+			if (cPlayers) {
+				 plist = SortingList(plist, MaxPlayerCompare, false);
+				 MissionInfo* game = (MissionInfo*)plist->GetItem(0);
+				 //.. it's not a newb server and not our own game we're actually trying to insta create
+				 if ( (ZString(game->Name()).Find("newbie") == -1) && 
+					  (ZString(game->Name()).Find(trekClient.GetNameLogonZoneServer()) == -1) ) {
+					 OutputDebugString("Insta join: "+ ZString(game->Name()) + "\n");					 
+					 g_bQuickstart = false; //we're done with all that!
+					 JoinMission(game);
+				 }
+
+			}
+			//no other players? ;(  ...if you build it they will come!
+			//trekClient.ServerListReq(); //quickstart keeps following into the new callback...
+		}
         return cPlayers;
     }
 
@@ -1772,6 +1795,7 @@ public:
 
 		StaticCoreInfo *pcores   = (StaticCoreInfo*)Cores;
 		ServerCoreInfo *pservers = (ServerCoreInfo*)Servers;
+
 #ifdef _DEBUG
 		debugf("got OnServersList: %d, %d\n",cCores,cServers);
 		for (int i=0; i<cCores; i++)
@@ -1789,9 +1813,30 @@ public:
 			debugf("    mask = %x\n",pservers[i].dwCoreMask);
 		}
 #endif
-		m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
-		GetWindow()->GetPopupContainer()->OpenPopup(m_pcreateDialog, false);
+		//Imago #78 7/5/09 only automatically create games on the #1 server & core 
+		if (g_bQuickstart) {
+			if(cServers !=0 && cCores !=0) {
+				// KGJV's adaption for game name reused
+				ZString szPlayerName = ZString(trekClient.GetNameLogonZoneServer());
+				int leftParen = szPlayerName.ReverseFind('(',0);
+				if (leftParen > 1)
+					szPlayerName = szPlayerName.Left(leftParen);
+	        	szPlayerName += ZString("'s game");
 
+				OutputDebugString("Insta game: new mission requested!\n");
+				trekClient.CreateMissionReq(pservers[0].szName,
+				pservers[0].szRemoteAddress,
+				pcores[0].cbIGCFile,szPlayerName);
+				return;  //follow quickstart into teamscreen..preferably we're going on a server that's SRVLOG or DEBUG
+			} else {
+				g_bQuickstart = false; //fine, can't create a game? just let them 
+				return;					//sit at the empty lobby list
+			}
+		} else {
+			//do the normal thing and raise the create game server/core dialog
+			m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
+			GetWindow()->GetPopupContainer()->OpenPopup(m_pcreateDialog, false);
+		}
 	}
     void OnMissionEnded(MissionInfo* pmission)
     {

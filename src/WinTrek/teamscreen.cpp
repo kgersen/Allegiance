@@ -1276,7 +1276,7 @@ public:
         // Chat pane
         //
 
-        if (trekClient.GetSideID() == SIDE_TEAMLOBBY)
+        if (trekClient.GetSideID() == SIDE_TEAMLOBBY )
         {
             m_pbuttonbarChat->SetSelection(0);
             OnButtonBarChat(0);
@@ -1302,8 +1302,28 @@ public:
 
         s_nLastSelectedChatTab = NA;
 
-        if (g_bQuickstart) {
-            SendChat("fourteen");
+		if (g_bQuickstart) {
+#ifdef DEBUG //Imago 7/5/09 quick start /w new public game, insta launch is debug only
+			m_sideCurrent = 0;
+		   if (m_sideCurrent != trekClient.GetSideID() 
+		            && m_sideCurrent != SIDE_TEAMLOBBY
+		            && m_pMission->SideAvailablePositions(m_sideCurrent) > 0
+					&& m_pMission->SideActive(m_sideCurrent))
+		   {
+	            // try to join the current side
+	            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+	            BEGIN_PFM_CREATE(trekClient.m_fm, pfmPositionReq, C, POSITIONREQ)
+	            END_PFM_CREATE
+	            pfmPositionReq->iSide = m_sideCurrent; 
+
+	            m_sideToJoin = m_sideCurrent;
+	            m_lastToJoinSend = m_sideToJoin;
+	            UpdateButtonStates();
+	            UpdatePromptText();
+		   }
+
+			SendChat("fourteen");
+#endif
             g_bQuickstart = false;
         }
 

@@ -721,7 +721,17 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
     HRESULT hr = m_pDirectPlayServer->GetClientInfo( lp->dpnidPlayer, pPlayerInfo,
                                           &dwSize, 0);
 
-    assert( hr == DPNERR_BUFFERTOOSMALL );
+    //IMAGO - REVIEW 7/5/09 sanitize pPlayerInfo
+	/*
+		HRESULT: 0x80158420 (2148893728)
+		Name: Unknown
+		Description: n/a
+		Severity code: Failed
+		Facility Code: FACILITY_DPLAY (21)
+		Error Code: 0x8420 (33824)
+	*/
+	assert( hr == DPNERR_BUFFERTOOSMALL );
+
     pPlayerInfo = (DPN_PLAYER_INFO*) new BYTE[dwSize];
     ZeroMemory( pPlayerInfo, dwSize );
     pPlayerInfo->dwSize = sizeof( DPN_PLAYER_INFO );

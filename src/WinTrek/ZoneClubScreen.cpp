@@ -316,14 +316,15 @@ public:
 
     bool OnButtonGames()
     {
-//        if (trekClient.LoggedOnToLobby())
-//        {
-//            GetWindow()->screen(ScreenIDGameScreen);
-//        }
-//        else
-//        {
+		//imago 7/4/09 - uncommented the code here that was commented out by ? on ?   
+        if (trekClient.LoggedOnToLobby())
+        {
+            GetWindow()->screen(ScreenIDGameScreen);
+        }
+        else
+        {
             ConnectToZone(true, ScreenIDGameScreen);
-//        }
+        }
 
         return true;
     }
@@ -379,14 +380,8 @@ public:
 
     void BeginConfigDownload() 
     {
-        if (!g_bDownloadNewConfig)
-        {
-            debugf("Skipping download of config file due to command-line switch.\n");
-            OnConfigDownloadDone(true, false);
-            return;
-        }
 
-        lstrcpy(m_szConfig, "http://Allegiance.zone.com/Allegiance.cfg");
+        lstrcpy(m_szConfig, "http://autoupdate.alleg.net/allegiance.cfg");  //imago updated 7/4/09
 
         HKEY hKey;
 
@@ -399,6 +394,13 @@ public:
             // if it didn't succeed, we'll just use the default above
             if (lstrlen(szConfig) > 0)
               lstrcpy(m_szConfig, szConfig);
+        }
+
+        if (!g_bDownloadNewConfig || g_bQuickstart)  //imago added quickstart and reordered 7/4/09
+        {
+            debugf("Skipping download of config file due to command-line switch.\n");
+            OnConfigDownloadDone(true, false);
+            return;
         }
 
         if (ZString(m_szConfig).Find("http://") == -1) 
@@ -433,7 +435,7 @@ public:
 
     void BeginMessageOfDayDownload()
     {
-        if (!g_bDownloadZoneMessage)
+        if (!g_bDownloadZoneMessage || g_bQuickstart) //imago 7/4/09
         {
             debugf("Skipping download of Message Of the Day due to command-line switch.\n");
             OnMessageOfDayDone(false);
@@ -608,7 +610,7 @@ public:
             trekClient.GetCfgInfo().Load(m_szConfig);
         }
 
-        if (!m_bErrorOccured)
+        if (!m_bErrorOccured || g_bQuickstart) //imago 7/4/09
         {
             if(!g_bSkipAutoUpdate)
             {
