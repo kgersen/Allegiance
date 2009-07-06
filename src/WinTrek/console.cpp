@@ -2756,9 +2756,7 @@ public:
                             if (scoreBest > 0)
                             {
                                 int score = MatchName(pcc, "all");
-								//hard fix for this "logic" ALLY 7/4/09 imago
 								ZString allstr = ZString(pcc).RightOf("all");
-								//score = (allstr.GetLength()) ? score : 0;
                                 if (score < scoreBest)
                                 {
                                     scoreBest = score;
@@ -2796,26 +2794,54 @@ public:
 			                                }
 										}
 	                                    if (scoreBest > 0)
-	                                    {
-	                                        //Try to match against an individual on our side
-	                                        IsideIGC*   pside = trekClient.GetSide();
+										{
+											if (trekClient.GetSide()->GetAllies() != NA) //Imago 7/6/09 ALLY
+											{ //allied way, try to match our side AND allied sides
+		                                        for (SideLinkIGC*  palliedside = trekClient.GetCore()->GetSides()->first();
+		                                             (palliedside != NULL);
+		                                             palliedside = palliedside->next())
+		                                        {
+		                                            IsideIGC*   pside = palliedside->data();
+													if (pside->AlliedSides(pside,trekClient.GetSide()) 
+														|| pside->GetObjectID() == trekClient.GetSideID()) {
 
-	                                        for (ShipLinkIGC*   psl = pside->GetShips()->first();
-	                                             (psl != NULL);
-	                                             psl = psl->next())
-	                                        {
-	                                            IshipIGC*   pship = psl->data();
+				                                        for (ShipLinkIGC*   psl = pside->GetShips()->first();
+				                                             (psl != NULL);
+				                                             psl = psl->next())
+				                                        {
+															IshipIGC*   pship = psl->data();
+				                                            int score = MatchName(pcc, pship->GetName());
+				                                            if (score < scoreBest)
+				                                            {
+				                                                scoreBest = score;
+																OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+				                                                ct = CHAT_INDIVIDUAL;
+				                                                oidRecipient = pship->GetObjectID();
+				                                                pbaseRecipient = pship;
+				                                            }
+														}
+													}
+		                                        }
+											} else { //non-allied way
+	                                        	//Try to match against an individual on our side
+	                                        	IsideIGC*   pside = trekClient.GetSide();
+		                                        for (ShipLinkIGC*   psl = pside->GetShips()->first();
+		                                             (psl != NULL);
+		                                             psl = psl->next())
+		                                        {
+		                                            IshipIGC*   pship = psl->data();
 
-	                                            int score = MatchName(pcc, pship->GetName());
-	                                            if (score < scoreBest)
-	                                            {
-	                                                scoreBest = score;
-													OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
-	                                                ct = CHAT_INDIVIDUAL;
-	                                                oidRecipient = pship->GetObjectID();
-	                                                pbaseRecipient = pship;
-	                                            }
-	                                        }
+		                                            int score = MatchName(pcc, pship->GetName());
+		                                            if (score < scoreBest)
+		                                            {
+		                                                scoreBest = score;
+														OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+		                                                ct = CHAT_INDIVIDUAL;
+		                                                oidRecipient = pship->GetObjectID();
+		                                                pbaseRecipient = pship;
+		                                            }
+		                                        }
+											}
 
 	                                        // try to match against everyone else
 	                                        if (scoreBest > 0)

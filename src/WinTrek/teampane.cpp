@@ -195,9 +195,12 @@ public:
             //    SectorName(pplayer->LastSeenSector())
             //);
             
-            // draw their money
+            // draw their money  
             
-            if (pplayer->IsHuman() && pplayer->SideID() == trekClient.GetSideID())
+			IsideIGC* pside = pplayer->GetShip()->GetSide();
+            if (pplayer->IsHuman() && 
+				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 Ally 
+				pside->AlliedSides(pside,trekClient.GetSide()) ))
             {
                 char cbTemp[256];
                 wsprintf(cbTemp, "%d", pplayer->GetMoney());
@@ -465,7 +468,7 @@ public:
         
         return (pplayer->IsHuman() 
             || pplayer->LastSeenShipType() != NA 
-            || pplayer->SideID() == trekClient.GetSideID());
+            || pplayer->SideID() == trekClient.GetSideID());  //Imago ALLYTD Visibility 7/6/09
     }
 
     static Color GetSideUIColor(SideID sideID)
@@ -543,6 +546,7 @@ public:
             {
                 m_pbuttonDonate->SetRepeat(0.1f, 0.5f);
                 AddEventTarget(&TeamPane::OnButtonDonate, m_pbuttonDonate->GetEventSource());
+				AddEventTarget(&TeamPane::OnRightButtonDonate, m_pbuttonDonate->GetRightEventSource());
             }
             
             if (m_pbuttonAutoDonate)
@@ -747,9 +751,9 @@ public:
         bool bHideAccept = true;
         
         if (pitem != NULL)
-        {
+		{
             PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
-            if (m_sideCurrent == trekClient.GetSideID()) // my side
+            if ( m_sideCurrent == trekClient.GetSideID())	// my side
             {
                 bHideBoot = !trekClient.GetPlayerInfo()->IsTeamLeader();
                 
@@ -812,7 +816,7 @@ public:
 					bHideStopDonate = true;
                     bEnableStopDonate = false; //trekClient.GetShip()->GetAutoDonate() != NULL;
                 }
-            }
+			}
             else
             {
                 bEnableTakeMeTo = true;
@@ -825,6 +829,13 @@ public:
             && pplayer->GetShipStatus().GetSectorID() == trekClient.GetCluster()->GetObjectID())
             );
             */
+
+			// or allied side Imago ALLY 7/6/09
+			if (trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pplayer->GetShip()->GetSide()) )  {
+				bEnableTakeMeTo = false; //NYI TakeMeTo
+				bEnableDonate = (trekClient.GetMoney() > 0);
+				
+			}
         }
         
         if (m_pbuttonBoot)
@@ -1072,7 +1083,7 @@ public:
         }
     }
     
-    bool OnButtonDonate() //ALLYTD  donate to allies! -Imago 7/3/09 NYI
+    bool OnButtonDonate()
     {
         if (m_plistPanePlayers->GetSelection() != NULL)
         {
@@ -1082,6 +1093,25 @@ public:
             {
                 trekClient.DonateMoney(trekClient.FindPlayer(shipID), 
                     (trekClient.GetMoney() >= 100) ? 100 : trekClient.GetMoney());
+            }                    
+        }
+        
+        return true;
+    }
+
+	//Imago 7/6/09 large donations /w right click
+    bool OnRightButtonDonate()
+    {
+        if (m_plistPanePlayers->GetSelection() != NULL)
+        {
+            ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
+            
+            if (shipID != trekClient.GetShipID() && trekClient.GetMoney() > 0)
+            {
+
+				//Imago 7/6/09 large donations /w right click
+                trekClient.DonateMoney(trekClient.FindPlayer(shipID), 
+                    (trekClient.GetMoney() >= 500) ? 500 : trekClient.GetMoney());
             }                    
         }
         

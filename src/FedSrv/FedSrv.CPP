@@ -6619,14 +6619,22 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           BEGIN_PFM_CREATE(g.fm, pfmMoneyChange, S, MONEY_CHANGE)
           END_PFM_CREATE
           pfmMoneyChange->dMoney  = pfmPlayerDonate->moneyGiven;
-          if (pfssTo && (pfsPlayer->GetSide() == pfssTo->GetSide()) && (pfsPlayer->GetMoney() >= pfmPlayerDonate->moneyGiven))
+
+		  bool bAllied = IsideIGC::AlliedSides(pfsPlayer->GetSide(),pfssTo->GetSide());
+          if (pfssTo && ( pfsPlayer->GetSide() == pfssTo->GetSide()
+			  || bAllied ) // Imago ALLY 7/6/09
+			  && (pfsPlayer->GetMoney() >= pfmPlayerDonate->moneyGiven))
           {
             pfmMoneyChange->sidTo   = pfmPlayerDonate->shipID;
             pfmMoneyChange->sidFrom = pfsPlayer->GetShipID();
 
             pfsPlayer->SetMoney(pfsPlayer->GetMoney() - pfmMoneyChange->dMoney);
             pfssTo->SetMoney(pfssTo->GetMoney() + pfmMoneyChange->dMoney);
-            prcp = CFSSide::FromIGC(pfsPlayer->GetSide())->GetGroup();
+			
+			if (bAllied) // Imago ALLY 7/6/09	
+				g.fm.SendMessages(CFSSide::FromIGC(pfssTo->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+
+			prcp = CFSSide::FromIGC(pfsPlayer->GetSide())->GetGroup();
           }
           else
           {
@@ -6639,6 +6647,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
             prcp = pfsPlayer->GetConnection();
           }
           g.fm.SendMessages(prcp, FM_GUARANTEED, FM_FLUSH);
+		  
+
       }
     }
     break;
