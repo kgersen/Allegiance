@@ -162,7 +162,7 @@ private:
             m_pimageArrow = GetModeler()->LoadImage(AWF_TEAMROOM_PLAYERS_TEAM_ARROW, true);
             //m_pimageTab = GetModeler()->LoadImage(AWF_TEAMROOM_TAB_MASK, true);
 
-			// #ALLY
+			// #ALLY  IMAGO REVIEW
 			m_pimageTabEdges[0] = GetModeler()->LoadImage("green_edgebmp",true);
             m_pimageSelectedTabEdges[0]= GetModeler()->LoadImage("greensel_edgebmp",true);
             m_pimageTabEdges[1] = GetModeler()->LoadImage("orange_edgebmp",true);
@@ -2212,6 +2212,32 @@ public:
 		pfmChangeAlliance->sideID = m_sideCurrent;
 		pfmChangeAlliance->sideAlly = ally;
 
+		//imago 7/6/09 ALLY force Defections on when allies (Autobalance NYI)
+		bool bAllies = true;
+		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
+			if (trekClient.MyMission()->SideAllies(i) == NA && bAllies) 
+				bAllies = false;
+		}
+		bool bDefections = ((ally != NA) || bAllies) ? true : false;
+		if(bDefections != trekClient.MyMission()->GetMissionParams().bAllowDefections) {
+			//bug, defections persist with 3 team scenarino...
+			OutputDebugString("ALLY: Setting defections to: "+ZString(bDefections)+"\n");
+			m_pMission->SetDefections(bDefections);
+			trekClient.MyMission()->SetDefections(bDefections);
+			trekClient.MyMission()->SetSideAllies(m_sideCurrent,ally);
+		
+			OnTeamAlliancesChange(m_pMission); //hack this in while we're here
+		
+			//make the button flash and defection (autobalance NYI) settings stick
+			BEGIN_PFM_CREATE_ALLOC(trekClient.m_fm, pfmMissionParams, CS, MISSIONPARAMS)
+	        END_PFM_CREATE
+			pfmMissionParams->missionparams = trekClient.MyMission()->GetMissionDef().misparms;
+	        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+	        trekClient.m_fm.QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
+			PFM_DEALLOC(pfmMissionParams);
+		}
+		//
+
 	}
 
     void CloseMenu()
@@ -2222,6 +2248,8 @@ public:
     }
 
 	// not used atm (but the sink chain is ready for future use, see IClientEventSink)
+	// imago won't go so far as to adapt this into clintlib, for now we'll just hack 7/5/09
+	// into the new right click
 	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
 	{
 		//#ALLY: set comms afk (except the game owner) Imago 7/3/09 (KGJV)

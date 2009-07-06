@@ -1148,7 +1148,16 @@ public:
         m_pbuttonEjectPods->SetEnabled(bEnable);
         m_pbuttonFriendlyFire->SetEnabled(bEnable);
         //m_pbuttonStatsCount->SetEnabled(bEnable); // TE: Show the StatsCount checkbox - KGJV #62 removed
-        m_pbuttonDefections->SetEnabled(bEnable);
+		
+		//imago 7/6/09 ALLY force Defections on when allies (Autobalance NYI)
+		bool bAllies = false;
+		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
+			if (trekClient.MyMission()->SideAllies(i) != NA && !bAllies) 
+				bAllies = true;
+		}
+		m_pbuttonDefections->SetEnabled(!bAllies && bEnable);
+		//
+
         m_pbuttonJoiners->SetEnabled(bEnable);
         m_pbuttonSquadGame->SetEnabled(bEnable && m_bIsZoneClub);
         m_pbuttonInvulnerableStations->SetEnabled(bEnable);

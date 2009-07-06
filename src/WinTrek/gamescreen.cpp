@@ -1680,8 +1680,13 @@ public:
 				 plist = SortingList(plist, MaxPlayerCompare, false);
 				 MissionInfo* game = (MissionInfo*)plist->GetItem(0);
 				 //.. it's not a newb server and not our own game we're actually trying to insta create
+				 ZString szPlayerName = ZString(trekClient.GetNameLogonZoneServer());
+				 int leftParen = szPlayerName.ReverseFind('(',0);
+				 if (leftParen > 1)
+					szPlayerName = szPlayerName.Left(leftParen);
+	        	 szPlayerName += ZString("'s game"); //reuse exact matches via. kgjv's adaptation
 				 if ( (ZString(game->Name()).Find("newbie") == -1) && 
-					  (ZString(game->Name()).Find(trekClient.GetNameLogonZoneServer()) == -1) ) {
+					  (ZString(game->Name()).Find(szPlayerName) == -1) ) {
 					 OutputDebugString("Insta join: "+ ZString(game->Name()) + "\n");					 
 					 g_bQuickstart = false; //we're done with all that!
 					 JoinMission(game);
