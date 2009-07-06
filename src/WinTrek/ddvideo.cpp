@@ -56,6 +56,7 @@ HRESULT DDVideo::InitDirectDraw()
 
 	//Let's keep it simple and roll on primary adapter... 32-bits start fullscreen on 800x600
 	hRet = m_lpDD->SetDisplayMode(800,600,32,0,0);
+	Sleep(1000); //wait a sec for monitor to sync 7/6/09 imago
 
 	ZeroMemory(&ddsd, sizeof(ddsd));
 	ddsd.dwSize = sizeof(ddsd);

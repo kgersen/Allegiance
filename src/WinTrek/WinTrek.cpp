@@ -2228,7 +2228,7 @@ public:
 // BUILD_DX9
 						//Imago 6/29/09 many codecs will crash the app when being debugged
 						if (!IsDebuggerPresent()) {		
-							::ShowWindow( GetHWND(), SW_MINIMIZE );
+							//::ShowWindow( GetHWND(), SW_MINIMIZE );
 											   
 						   HWND hWND = ::CreateWindow("static", "Allegiance", WS_VISIBLE|WS_POPUP, 0, 0,
 							   GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL, 
@@ -2260,10 +2260,10 @@ public:
 							} else {
 								DDVid->DestroyDirectDraw();
 							}
-							::ShowCursor(TRUE);
+							//::ShowCursor(TRUE);
 							::DestroyWindow(hWND);
-							::ShowWindow( GetHWND(), SW_RESTORE );
-							::UpdateWindow(  GetHWND() );	
+							//::ShowWindow( GetHWND(), SW_RESTORE );
+							//::UpdateWindow(  GetHWND() );	
 						}
 
 	                    //SetScreen(CreateVideoScreen(GetModeler(), true));
