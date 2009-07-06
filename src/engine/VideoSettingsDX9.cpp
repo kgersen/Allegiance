@@ -136,8 +136,8 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
 		lpSubKey += ZString("\\3DSettings");
 		
-		//changed the 800x600 here to whatever is CombatFullscreen X/Y values Imago 7/1/09
-		g_VideoSettings.pDevData			= new CD3DDeviceModeData( x, y , &logFile);	// Mininum width/height allowed.
+		
+		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum width/height allowed.
 		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&fdummy,&fdummy,&hMon); //imago use this function!
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.iCurrentMode		= 0;  
@@ -174,6 +174,7 @@ BOOL CALLBACK MonitorEnumProc(
 											&g_VideoSettings.iNumResolutions,
 											&g_VideoSettings.iSelectedResolution,
 											&g_VideoSettings.pResolutionSet );
+
 
 		//imago's "huge 'n' nasty" refresh rate hack 7/2/09  
 		//	it's huge and nasty becasue i don't have the harware to reproduce it, 

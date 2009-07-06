@@ -2758,7 +2758,7 @@ public:
                                 int score = MatchName(pcc, "all");
 								//hard fix for this "logic" ALLY 7/4/09 imago
 								ZString allstr = ZString(pcc).RightOf("all");
-								score = (allstr.GetLength()) ? score : 0;
+								//score = (allstr.GetLength()) ? score : 0;
                                 if (score < scoreBest)
                                 {
                                     scoreBest = score;

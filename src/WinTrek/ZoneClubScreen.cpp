@@ -179,14 +179,15 @@ public:
             {
                 if (trekClient.GetCfgInfo().strPublicLobby.IsEmpty())
                 {
-                    TRef<IMessageBox> pmsgBox = CreateMessageBox(
-                        "The free lobby is not available at the moment.  "
-                        + ZString(trekClient.GetCfgInfo().strClubLobby.IsEmpty()
-                            ? "Please try again later."
-                            : "Please try the Allegiance Zone instead.")
-                        );
-                    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
-                    return;
+
+                	TRef<IMessageBox> pmsgBox = CreateMessageBox(
+                    	"The free lobby is not available at the moment.  "
+                    	+ ZString(trekClient.GetCfgInfo().strClubLobby.IsEmpty()
+                    	    ? "Please try again later."
+                    	    : "Please try the Allegiance Zone instead.")
+                   	 );
+                	GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+                	return;			
                 }
             }
         }
@@ -323,7 +324,20 @@ public:
         }
         else
         {
-            ConnectToZone(true, ScreenIDGameScreen);
+			if (g_bQuickstart) { //imago 7/5/09
+				if (trekClient.GetCfgInfo().strPublicLobby.GetLength()) {
+					ConnectToZone(true, ScreenIDGameScreen);
+				} else {
+					m_pbuttonMainMenu->SetEnabled(false); // force download to finish before leaving this screen
+        			m_pbuttonGames->SetEnabled(false);
+        			m_pbuttonGamesBig->SetEnabled(false);
+					g_bQuickstart = false;
+					GetWindow()->screen(ScreenIDGameScreen);  // if they don't have a cfg file yet
+					return false;								// this will now be handled gracefully
+				}
+			} else {
+				ConnectToZone(true, ScreenIDGameScreen);
+			}
         }
 
         return true;
