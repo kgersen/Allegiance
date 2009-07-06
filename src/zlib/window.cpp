@@ -342,11 +342,11 @@ void Window::SetClientRect(const WinRect& rectClient)
 void Window::SetPosition(const WinPoint& point)
 {
 // BUILD_DX9    
-		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+//		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 //		SetWindowPos(m_hwnd, HWND_NOTOPMOST, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED);
 //		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-//#else
-//		SetWindowPos(m_hwnd, NULL, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+//#else  //Imago put this back 7/6/09
+		SetWindowPos(m_hwnd, NULL, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 // BUILD_DX9
 }
 
@@ -1022,7 +1022,7 @@ HRESULT Window::StaticInitialize()
     wc.hInstance     = GetModuleHandle(NULL);
     wc.hIcon         = LoadIcon(NULL, ID_APP_ICON);
     wc.hCursor       = NULL;
-    wc.hbrBackground = NULL;
+    wc.hbrBackground = NULL;//(HBRUSH)GetStockObject(WHITE_BRUSH); //imago test
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = GetTopLevelWindowClassname();
 

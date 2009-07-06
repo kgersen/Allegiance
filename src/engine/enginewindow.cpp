@@ -369,16 +369,19 @@ void EngineWindow::UpdateSurfacePointer()
 		if (size.Y() == 0) {
 		    size.SetY(1);
 		}
-		
+
 		m_psurface = m_pengine->CreateDummySurface( size, NULL );
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
-		if(pDev->IsDeviceValid())
+		if(pDev->IsDeviceValid()) {
+			//imago 7/6/09
+			SetWindowPos(GetHWND(), HWND_NOTOPMOST, 0,0,0,0, SWP_NOMOVE|SWP_NOSIZE);
 			DDCall(pDev->ResetDevice(true,size.X(),size.Y()));
+		}
 
 	} else {
-
 		WinPoint point = m_pengine->GetFullscreenSize();
 		m_psurface = m_pengine->CreateDummySurface(point, NULL );
+		OutputDebugString("creating dummy srface: "+point.GetString()+"\n");
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
 		if(pDev->IsDeviceValid())
 			DDCall(pDev->ResetDevice(false,point.X(),point.Y(),g_DX9Settings.m_refreshrate));
@@ -465,6 +468,9 @@ void EngineWindow::UpdateWindowStyle()
         //
 
         WinRect rect = GetRect();
+		WinPoint size = m_pengine->GetFullscreenSize();
+		OutputDebugString("!!!! uws: SIZE:"+ZString(rect.XSize())+"x"+ZString(rect.YSize())+" MIN:"+rect.Min().GetString()+" MAX:"+rect.Max().GetString()+"\n");
+		OutputDebugString("!!!!!! size:"+size.GetString()+"\n");
         SetClientRect(
             WinRect(
                 rect.Min(),
@@ -666,13 +672,11 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
 }
 
 bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
-{
-/*	
+{	
 	char szBuffer[256];
-	sprintf( szBuffer, "%d  %d,   %d %d\n", pwp->x, pwp->y, 
+	sprintf( szBuffer, "%d  %d flags %d,   %d %d\n", pwp->x, pwp->y, pwp->flags,
 		m_bWindowStateMinimised, m_bWindowStateRestored );
 	OutputDebugString( szBuffer );
-*/	
 
     if (GetFullscreen()) {
         pwp->x = 0;
