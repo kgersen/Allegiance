@@ -118,7 +118,6 @@ public:
 	virtual void Set3DAccelerationImportant(bool b3DAccelerationImportant) = 0;
     virtual void SetFullscreen(bool bFullscreen)                           = 0;
     virtual void SetFullscreenSize(const WinPoint& point)                  = 0;
-    virtual void ChangeFullscreenSize(bool bLarger)                        = 0;
     virtual void SetGammaLevel(float value)                                = 0;
 
     virtual bool            IsFullscreen()                                 = 0;
@@ -139,13 +138,6 @@ public:
     //
 
     virtual void DebugSetWindowed() = 0;
-
-    //
-    // Screen access
-    //
-
-    virtual void BltToWindow(Window* pwindow, const WinPoint& point, Surface* psurface, const WinRect& rect) = 0;
-    virtual void Flip()  = 0;
 
     //
     // Surface Constructors

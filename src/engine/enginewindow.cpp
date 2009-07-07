@@ -59,16 +59,6 @@ public:
                     m_pwindow->ToggleShowFPS();
                     return true;
 
-                #ifdef ICAP
-                    case 'P':
-                        m_pwindow->ToggleProfiling(-1);
-                        return true;
-
-                    case 'O':
-                        m_pwindow->ToggleProfiling(1);
-                        return true;
-                #endif
-
                 #ifdef _DEBUG
                     case VK_F9:
                         if (ks.bShift) {
@@ -232,18 +222,6 @@ void EngineWindow::PostWindowCreationInit()
 
     //
     // Intialize all the Image stuff
- /*   m_pgroupImage =
-        new GroupImage(
-            CreateUndetectableImage(
-                m_ptransformImageCursor = new TransformImage(
-                    Image::GetEmpty(),
-                    m_ptranslateTransform = new TranslateTransform2(
-                        m_ppointMouse
-                    )
-                )
-            ),
-            m_pwrapImage = new WrapImage(Image::GetEmpty())
-        );*/
 
 	m_ptranslateTransform	= new TranslateTransform2( m_ppointMouse );
 	m_ptransformImageCursor = new TransformImage( Image::GetEmpty(), m_ptranslateTransform );
@@ -305,17 +283,6 @@ void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartF
             } else if (str == "windowlog") {
                 g_bWindowLog = true;
             }
-//#else
-//            if (str == "windowed") {
-//                bStartFullscreen = false;
-//            } else if (str == "fullscreen") {
-//                bStartFullscreen = true;
-//            } else if (str == "mdllog") {
-//                g_bMDLLog = true;
-//            } else if (str == "windowlog") {
-//                g_bWindowLog = true;
-//            }
-// BUILD_DX9
         } else {
             token.IsString(str);
         }
@@ -365,43 +332,6 @@ void EngineWindow::UpdateSurfacePointer()
 								m_pengine->GetFullscreenSize().y );
 		}
 	}
-
-/*	if( (!m_pengine->IsFullscreen())
-        || (!m_pengine->GetUsing3DAcceleration())
-    ) {
-        WinPoint size = GetClientRect().Size();
-
-        if (size.X() == 0) {
-            size.SetX(1);
-        }
-
-        if (size.Y() == 0) {
-            size.SetY(1);
-        }
-
-        if (
-               m_pengine->PrimaryHas3DAcceleration()
-            && m_pengine->GetAllow3DAcceleration()
-        ) {
-            m_psurface =
-                m_pengine->CreateSurface(
-                    size,
-                    SurfaceType2D() | SurfaceType3D() | SurfaceTypeZBuffer() | SurfaceTypeVideo(),
-                    NULL
-                );
-
-            if (m_psurface != NULL && m_psurface->IsValid()) {
-                return;
-            }
-        }
-
-        m_psurface =
-            m_pengine->CreateSurface(
-                size,
-                SurfaceType2D() | SurfaceType3D() | SurfaceTypeZBuffer(),
-                NULL
-            );
-    }*/
 }
 
 void EngineWindow::UpdateWindowStyle()
@@ -432,7 +362,6 @@ void EngineWindow::UpdateWindowStyle()
         SetHasMaximize(true);
         SetHasSysMenu(true);
         Window::SetSizeable(m_bSizeable);
-//        SetTopMost(false);
         SetTopMost(true);
 
         //
@@ -738,39 +667,6 @@ void EngineWindow::ChangeFullscreenSize(bool bLarger)
 {
     if (m_pengine->IsFullscreen() && m_bSizeable) 
 	{
-/*        WinPoint size = GetFullscreenSize();
-
-        if (size == WinPoint(640, 480)) 
-		{
-            if (bLarger) 
-			{
-                if (m_modeIndex < s_countModes) 
-				{
-                    m_modeIndex++;
-                } 
-				else 
-				{
-                    m_pengine->ChangeFullscreenSize(bLarger);
-                }
-            } 
-			else 
-			{
-                if (m_modeIndex > 0) 
-				{
-                    m_modeIndex--;
-                }
-            }
-        } 
-		else 
-		{
-            m_pengine->ChangeFullscreenSize(bLarger);
-        }
-
-        Invalidate();
-
-        RenderSizeChanged(	( size == WinPoint ( 640, 480 ) ) && 
-							( m_modeIndex < s_countModes ) );*/
-
 		CD3DDevice9 * pDev = CD3DDevice9::Get();
 		if( bLarger == true )
 		{
@@ -917,14 +813,14 @@ void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
             );
             break;
 
-		// DISABLE THE higher/lower resolution option - to be reinstated at some point.
+*/
 		case idmHigherResolution:
             ChangeFullscreenSize(true);
             break;
 
         case idmLowerResolution:
             ChangeFullscreenSize(false);
-            break;*/
+            break;
 
         case idmBrightnessUp:
             GetEngine()->SetGammaLevel(
