@@ -295,6 +295,7 @@ private:
 
         ZAssert(m_hwndFocus == NULL && pwindow->GetHWND() != NULL);
         ZAssert(!m_bValid);
+		OutputDebugString("\n\nCalling SetFocusWindow() ONLY SUPPOSED TO HAPPEN ONCE!\n");
 
         m_hwndFocus			= pwindow->GetHWND();
         m_bFullscreen		= bStartFullscreen;
@@ -813,8 +814,8 @@ private:
             //
 
             bool bError;
-//            if (SwitchToFullscreenDevice(pdddevice, m_pointFullscreen, bError)) {
-            if (SwitchToFullscreenDevice(NULL, m_pointFullscreen, bError)) {
+//            if (SwitchToFullscreenDevice(pdddevice, m_pointFullscreen, bError)) {  imago 7/6/09
+            if (SwitchToFullscreenDevice(g_DX9Settings.m_refreshrate, m_pointFullscreen, bError)) {
                 m_pointFullscreenCurrent = m_pointFullscreen;
                 return true;
             }

@@ -385,6 +385,7 @@ void EngineWindow::UpdateSurfacePointer()
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
 		if(pDev->IsDeviceValid())
 			DDCall(pDev->ResetDevice(false,point.X(),point.Y(),g_DX9Settings.m_refreshrate));
+
 	}
 }
 
@@ -468,9 +469,6 @@ void EngineWindow::UpdateWindowStyle()
         //
 
         WinRect rect = GetRect();
-		WinPoint size = m_pengine->GetFullscreenSize();
-		OutputDebugString("!!!! uws: SIZE:"+ZString(rect.XSize())+"x"+ZString(rect.YSize())+" MIN:"+rect.Min().GetString()+" MAX:"+rect.Max().GetString()+"\n");
-		OutputDebugString("!!!!!! size:"+size.GetString()+"\n");
         SetClientRect(
             WinRect(
                 rect.Min(),
@@ -674,11 +672,11 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
 bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 {	
 	char szBuffer[256];
-	sprintf( szBuffer, "%d  %d flags %d,   %d %d\n", pwp->x, pwp->y, pwp->flags,
+	sprintf( szBuffer, "ONWNDPOSCHANGE: X:%d  y:%d flags:%d,   StateMinimized:%d StateRestored:%d\n", pwp->x, pwp->y, pwp->flags,
 		m_bWindowStateMinimised, m_bWindowStateRestored );
 	OutputDebugString( szBuffer );
 
-    if (GetFullscreen()) {
+    if ((pwp->x != 0 && pwp->y !=0) && GetFullscreen()) { //imago fixed crash 7/6/09
         pwp->x = 0;
         pwp->y = 0;
     } 
@@ -688,6 +686,7 @@ bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 		// -32000, -32000.
 		pwp->x = max( 0, pwp->x );
 		pwp->y = max( 0, pwp->y );
+
         if (!m_bMovingWindow) 
 		{
             return Window::OnWindowPosChanging(pwp);
@@ -792,7 +791,7 @@ void EngineWindow::ChangeFullscreenSize(bool bLarger)
 	{
         WinPoint size = GetFullscreenSize();
 
-        if (size == WinPoint(640, 600)) 
+        if (size == WinPoint(640, 480)) 
 		{
             if (bLarger) 
 			{
@@ -1334,10 +1333,13 @@ bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
 			m_bWindowStateMinimised = false;
 			m_bWindowStateRestored = false;
             SetFullscreen(true);
+			m_bInvalid = true; //imago 7/6/09
             return true;
 
 		case SC_MINIMIZE:
 			m_bWindowStateMinimised = true;
+			m_bInvalid = true;
+			m_bMovingWindow = true;
 			break;
 
 		case SC_RESTORE:
@@ -1345,6 +1347,8 @@ bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
 			{
 				m_bWindowStateMinimised = false;
 				m_bWindowStateRestored = true;
+				m_bInvalid = true; //imago 7/6/09
+				m_bMovingWindow = true;
 			}
 			break;
 
