@@ -118,6 +118,7 @@ public:
 	virtual void Set3DAccelerationImportant(bool b3DAccelerationImportant) = 0;
     virtual void SetFullscreen(bool bFullscreen)                           = 0;
     virtual void SetFullscreenSize(const Vector& point)                  = 0;  //imago enhanced to include refresh rate 7/1/09
+	virtual void SetFullscreenChanged(bool bChanged)                         = 0; //7/7/09
     virtual void ChangeFullscreenSize(bool bLarger)                        = 0;
     virtual void SetGammaLevel(float value)                                = 0;
 		// imago refactor enginep 6/26/09 - 7/1/09
@@ -126,6 +127,7 @@ public:
 	virtual void             EliminateModes(const Vector& size)                   = 0; //imago enhanced to include refresh rate 7/1/90
 
     virtual bool            IsFullscreen()                                 = 0;
+	virtual bool            GetFullScreenChanged()                         = 0; //imago 7/7/09
     virtual bool            PrimaryHas3DAcceleration()                     = 0;
     virtual bool            GetAllowSecondary()                            = 0;
     virtual bool            GetAllow3DAcceleration()                       = 0;

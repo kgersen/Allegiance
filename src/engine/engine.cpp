@@ -36,6 +36,7 @@ private:
     bool                      m_bValid;
     bool                      m_bValidDevice;
     bool                      m_bFullscreen;
+	bool					  m_bChanged; //imago 7/7/09
     bool                      m_bAllowSecondary;
     bool                      m_bAllow3DAcceleration;
 	DWORD					  m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
@@ -942,6 +943,11 @@ private:
         }
     }
 
+	//NYI, use for aa/vsync/texture filters setting changes  imago 7/7/09
+	void SetFullscreenChanged(bool bChanged) {
+		m_bChanged = bChanged;
+	}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Re-used full screen mode change functions
 // Imago 6/24/09  7/1/09 enhanced to use vector and include Refresh Rate Hz
@@ -997,14 +1003,14 @@ private:
     void ChangeFullscreenSize(bool bLarger)
     {
 		//Imago restored 6/29/09
-   		Vector whr; //changed w,h to w,h,r  (width, hieght, refreshrate)
+   		Vector whr; //changed w,h to w,h,r  (width, height, refreshrate)
         if (bLarger) {
 			whr = NextMode(m_pointFullscreen);
         } else {
 			whr = PreviousMode(m_pointFullscreen);
 		}          
+		m_bChanged = true; //7/7/09
 		SetFullscreenSize(whr);
-
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1013,17 +1019,22 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    bool GetAllowSecondary()
+    bool GetAllowSecondary()  //REVIEW IMAGO REMOVE
     {
         return m_bAllowSecondary;
     }
 
-    bool GetAllow3DAcceleration()
+    bool GetFullScreenChanged() //Imago added 7/7/09
+    {
+        return m_bChanged;
+    }
+
+    bool GetAllow3DAcceleration() //REVIEW IMAGO (RESTORE?)
     {
         return m_bAllow3DAcceleration;
     }
 
-    bool Get3DAccelerationImportant()
+    bool Get3DAccelerationImportant()  //REVIEW IMAGO REMOVE
     {
         return m_b3DAccelerationImportant;
     }
@@ -1038,7 +1049,7 @@ private:
         return m_bFullscreen;
     }
 
-    bool PrimaryHas3DAcceleration()
+    bool PrimaryHas3DAcceleration()  //REVIEW IMAGO (RESTORE?)
     {
         return true;
     }
@@ -1048,7 +1059,7 @@ private:
 		return CD3DDevice9::Get()->GetDeviceSetupString();
     }
 
-    bool GetUsing3DAcceleration()
+    bool GetUsing3DAcceleration()  //REVIEW IMAGO (RESTORE?)
     {
 		return true;
     }

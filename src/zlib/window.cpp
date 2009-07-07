@@ -1022,7 +1022,11 @@ HRESULT Window::StaticInitialize()
     wc.hInstance     = GetModuleHandle(NULL);
     wc.hIcon         = LoadIcon(NULL, ID_APP_ICON);
     wc.hCursor       = NULL;
-    wc.hbrBackground = NULL;//(HBRUSH)GetStockObject(WHITE_BRUSH); //imago test
+#ifdef DEBUG
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH); //imago test 7/7/09 (NYI final multimon issue, see enginewindow.cpp(386))
+#else
+	wc.hbrBackground = NULL; //imago test
+#endif
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = GetTopLevelWindowClassname();
 
