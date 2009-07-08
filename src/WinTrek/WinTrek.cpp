@@ -3032,8 +3032,14 @@ public:
         if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
             CycleStyleHUD();
         SetDeadzone(LoadPreference("DeadZone", 3)); //ToggleLargeDeadZone(); //Imago updated 7/8/09
+		SetRadarLOD(LoadPreference("RadarLOD", 1)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
+		if (LoadPreference("ShowGrid", FALSE))
+			ToggleShowGrid();
+		SetGamma(LoadPreference("Gamma", "1.13")); 
 	    if (LoadPreference("VirtualJoystick", FALSE))
 			ToggleVirtualJoystick();
+
+
 
 		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 		
@@ -3043,15 +3049,6 @@ public:
 
 		ToggleBandwidth(LoadPreference("Bandwidth",2)); // w0dk4 June 2007: Bandwith Patch
 
-
-		/* Imago #24 NYI 7/8/09
-	    if (LoadPreference("ShowGrid", FALSE)) //use m_bCommandGrid
-			ToggleShowGrid();
-	    if (LoadPreference("RadarLOD", 1))   // use GetRadarMode() SetRadarMode()
-			ToggleRadarLOD();
-	    if (LoadPreference("Gamma", 1)) // use  GetEngine()->SetGammaLevel() GetEngine()->GetGammaLevel() 
-			ToggleGamma();
-		*/
 
         bool bAllow3DAcceleration;
 
@@ -3236,6 +3233,8 @@ public:
 
         SavePreference("Allow3DAcceleration", GetEngine()->GetAllow3DAcceleration());
         SavePreference("AllowSecondary"     , GetEngine()->GetAllowSecondary     ());
+
+		SetGamma(ZString(GetEngine()->GetGammaLevel())); //imago 7/8/09 #24
 
         //
         // Terminate VT.
@@ -4618,6 +4617,30 @@ public:
             m_pitemToggleVirtualJoystick->SetString(GetVirtualJoystickMenuString());
         }
     }
+
+	//Imago 7/8/09 #24
+    void ToggleShowGrid()
+    {
+		//only do this when loading, save is in the cycle
+		m_bCommandGrid = !m_bCommandGrid;
+    }
+
+    void SetRadarLOD(DWORD value)
+    {
+		//only do this when loading, save is in the cycle
+		m_radarCockpit = value;
+    }
+
+	//Imago 7/8/09 #24
+    void SetGamma(ZString& value)
+    {
+       //we save only when loading non-default or terminate()
+		GetEngine()->SetGammaLevel(atof(ZString(value)));
+        SavePreference("Gamma", value);
+    }
+
+
+
 
     void ToggleFlipY()
     {
@@ -8934,23 +8957,25 @@ public:
             }
             break;
 
-            case TK_CycleRadar:
+            case TK_CycleRadar: //imago updated 7/8/09
             {
                 extern const char* c_szRadarLODs[];
+				DWORD value = 0;
                 if (m_cm == cmCockpit && GetViewMode() == vmCombat)
                 {
-                    m_radarCockpit = (m_radarCockpit + 1) % (int(RadarImage::c_rlMax) + 1);
+                    value = m_radarCockpit = (m_radarCockpit + 1) % (int(RadarImage::c_rlMax) + 1);
                     m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCockpit);
 
                     trekClient.PostText(false, "%s", c_szRadarLODs[m_radarCockpit]);
                 }
                 else if (GetViewMode() == vmCommand)
                 {
-                    m_radarCommand = (m_radarCommand + 1) % (int(RadarImage::c_rlMax) + 1);
+                    value = m_radarCommand = (m_radarCommand + 1) % (int(RadarImage::c_rlMax) + 1);
                     m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCommand);
 
                     trekClient.PostText(false, "%s", c_szRadarLODs[m_radarCommand]);
                 }
+				SavePreference("RadarLOD", value); //imago 7/8/09
             }
             break;
 
@@ -9379,6 +9404,7 @@ public:
             case TK_ToggleGrid:
             {
                 m_bCommandGrid = !m_bCommandGrid;
+				SavePreference("ShowGrid", m_bCommandGrid); //imago 7/8/09 #24
             }
             break;
 
