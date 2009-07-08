@@ -1520,6 +1520,14 @@ public:
 
         return pgame1->MaxPlayersPerTeam() > pgame2->MaxPlayersPerTeam();
     }
+	//Imago 7/8/09
+    static bool NumPlayerCompare(ItemID pitem1, ItemID pitem2)
+    {
+        MissionInfo* pgame1 = (MissionInfo*)pitem1;
+        MissionInfo* pgame2 = (MissionInfo*)pitem2;
+
+        return pgame1->NumPlayers() > pgame2->NumPlayers();
+    }
 	// KGJV #114
     static bool ServerCompare(ItemID pitem1, ItemID pitem2)
     {
@@ -1677,7 +1685,7 @@ public:
 			//if there are players in the lobby join the most populated server...
 			OutputDebugString("GetCountInLobby(plist) returned "+ ZString(cPlayers) +"\n");
 			if (cPlayers) {
-				 plist = SortingList(plist, MaxPlayerCompare, false);
+				 plist = SortingList(plist, NumPlayerCompare, true);
 				 MissionInfo* game = (MissionInfo*)plist->GetItem(0);
 				 //.. it's not a newb server and not our own game we're actually trying to insta create
 				 ZString szPlayerName = ZString(trekClient.GetNameLogonZoneServer());

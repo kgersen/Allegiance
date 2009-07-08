@@ -4628,7 +4628,7 @@ public:
     void SetRadarLOD(DWORD value)
     {
 		//only do this when loading, save is in the cycle
-		m_radarCockpit = value;
+		m_radarCockpit = m_radarCommand = value;
     }
 
 	//Imago 7/8/09 #24
