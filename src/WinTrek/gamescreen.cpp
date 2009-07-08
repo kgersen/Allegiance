@@ -1827,12 +1827,22 @@ public:
 				if (leftParen > 1)
 					szPlayerName = szPlayerName.Left(leftParen);
 	        	szPlayerName += ZString("'s game");
-
-				OutputDebugString("Insta game: new mission requested!\n");
-				trekClient.CreateMissionReq(pservers[0].szName,
-				pservers[0].szRemoteAddress,
-				pcores[0].cbIGCFile,szPlayerName);
-				return;  //follow quickstart into teamscreen..preferably we're going on a server that's SRVLOG or DEBUG
+				//7/7/09 use official only -Imago
+				for (int i=0; i<cServers; i++)
+				{
+					for (int i2=0; i2<cCores; i2++)
+					{
+						if (trekClient.CfgIsOfficialServer(pservers[i].szName,pservers[i].szRemoteAddress) &&
+							trekClient.CfgIsOfficialCore(pcores[i2].cbIGCFile)) 
+						{	
+							OutputDebugString("Insta new game: on "+ZString(pservers[i].szName,pservers[i].szName)+" core "+ pcores[i2].cbIGCFile+"\n");
+							trekClient.CreateMissionReq(pservers[i].szName,
+							pservers[i].szRemoteAddress,
+							pcores[i2].cbIGCFile,szPlayerName);
+							return;  //follow quickstart into teamscreen..preferably we're going on a server that's SRVLOG or DEBUG
+						}
+					}
+				}
 			} else {
 				g_bQuickstart = false; //fine, can't create a game? just let them 
 				return;					//sit at the empty lobby list

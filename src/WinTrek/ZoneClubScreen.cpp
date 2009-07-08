@@ -327,6 +327,7 @@ public:
 			if (g_bQuickstart) { //imago 7/5/09
 				if (trekClient.GetCfgInfo().strPublicLobby.GetLength()) {
 					ConnectToZone(true, ScreenIDGameScreen);
+					Sleep(1000); //woah, retail is fast!  wait a sec socket to be created
 				} else {
 					m_pbuttonMainMenu->SetEnabled(false); // force download to finish before leaving this screen
         			m_pbuttonGames->SetEnabled(false);
