@@ -2105,7 +2105,7 @@ void SendPlayerInfo(CFSPlayer * pfsPlayer, CFSShip * pfsShip, CFSMission* pfsMis
   //pfmPlayerInfo->wingID     = pfsShip->GetIGCShip()->GetWingID();
   pfmPlayerInfo->rankID     = 0; //NYI
   pfmPlayerInfo->fReady     = pfsShip->IsPlayer() ? pfsShip->GetPlayer()->GetReady() : true; // drones always ready
-  pfmPlayerInfo->money      = 0; //Do not tell them how much money the player has ...
+  pfmPlayerInfo->money      = 0; //Do not tell them how much money the player has ...  //ALLYTD imago
 
   if (pfsShip->IsPlayer() && pfsMission && pside && pfmPlayerInfo->iSide != SIDE_TEAMLOBBY)
   {
@@ -6453,12 +6453,12 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     END_PFM_CREATE
 
                     if ((pstation == NULL) ||
-                        (pstation->GetSide() != pside) || //#ALLYTD ?  naaa, we dont want to start at allied bases
+                        (pstation->GetSide() != pside) || //#ALLYTD ?  naaa, we dont want to start at allied bases MAY HAVE TO DO THIS FOR REARM? 7/8/09
                         (!pstation->GetStationType()->HasCapability(c_sabmRestart)))
                     {
                         //Not a legitimate station to start at ... ignore the request
                         pfmAck->stationID = NA;
-                        pfmAck->bNewHull = false;
+                        pfmAck->bNewHull = false; //ALLYTD MORE REPAIR/REARM HACKERY?? 
 
                         g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
                         break;
@@ -6521,6 +6521,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     psl->data()->SetStation(pstation);
                 }
                 pfsPlayer->GetIGCShip()->SetStation(pstation);
+
+				//ALLYTD? now if it's an allied station kick them out.....7/8/09
             }
         }
     }
@@ -9904,9 +9906,9 @@ class ThingSiteImpl : public ThingSite
                     // this is called when a stream of messages to a different recipient is in process of being queued-up
                     // so we will use the secondary (smaller 1k) outbox so as to not interrupt the main message stream
                     g.fm.UseMainOutBox(false);
-                    g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED);
+                    g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED); //ALLYTD Visibility 7/8/09 imago
 
-                    //Tell everyone on the side about the newly visible static object
+                    //Tell everyone on the side (ALLYTD) about the newly visible static object
                     bSent = true;
                     ExportObj(pmodel, type, NULL);
 
@@ -9956,7 +9958,7 @@ class ThingSiteImpl : public ThingSite
                         if (pbe)
                             ExportObj(pbe, OT_buildingEffect, NULL);
                     }
-                    g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+                    g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09
                 }
             }
             else if (type == OT_ship)
@@ -10006,9 +10008,9 @@ class ThingSiteImpl : public ThingSite
                     //Update the visibility for everything except visible static objects
                     if (!(m_bPredictable && sv.fVisible()))
                     {
-                        if (pside == pmodel->GetSide())
+                        if (pside == pmodel->GetSide()) //ALLYTD imago 7/7/09 Visibility
                         {
-                            //Always see object on your own side (& call ShowObject() to export new stations, etc.)
+                            //Always see object on your own side (ALLYTD) (& call ShowObject() to export new stations, etc.)
                             sv.fVisible(true);
                             ShowObject(pside, pmodel);
                         }
@@ -10058,7 +10060,7 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
 
-                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09 a bunch of messages need the allied side DP group added
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -10095,7 +10097,7 @@ class ThingSiteImpl : public ThingSite
                 }
             }
         }
-        virtual bool    GetSideVisibility(IsideIGC* pside)
+        virtual bool    GetSideVisibility(IsideIGC* pside) //ALLYTD this low? Imago 7/7/09
         {
             assert (pside != NULL);
             return m_bSideVisibility ? m_rgSideVisibility[pside->GetObjectID()].fVisible() : true;

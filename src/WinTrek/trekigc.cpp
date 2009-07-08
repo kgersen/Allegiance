@@ -2074,7 +2074,7 @@ class ThingSiteImpl : public ThingSitePrivate
             }
         }
 
-        bool GetSideVisibility(IsideIGC* side)
+        bool GetSideVisibility(IsideIGC* side) //ALLYTD Imago 7/7/09
         {
             assert (side);
 
