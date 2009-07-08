@@ -9958,7 +9958,7 @@ class ThingSiteImpl : public ThingSite
                         if (pbe)
                             ExportObj(pbe, OT_buildingEffect, NULL);
                     }
-                    g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09
+                    g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago VISIBILITY 7/8/09
                 }
             }
             else if (type == OT_ship)
@@ -10060,7 +10060,7 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
 
-                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09 a bunch of messages need the allied side DP group added
+                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09 VISIBILITY
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -11858,24 +11858,50 @@ void FedSrvSiteBase::RequestRipcord(IshipIGC* pship, IclusterIGC* pcluster)
 bool FedSrvSiteBase::ContinueRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 {
     bool    rc;
-    if ((pship->GetFlag() != NA) ||
-        (pship->GetSide() != pmodel->GetSide()) ||
-        (pmodel->GetCluster() == NULL))
-    {
-        rc = false;
-    }
-    else if (pmodel->GetObjectType() == OT_ship)
-    {
-        IshipIGC*   ps = (IshipIGC*)pmodel;
+	
+	//ally
+    CFSShip*    pfsShip = (CFSShip *)pship->GetPrivateData();
+    CFSMission* pfsMission = pfsShip->GetMission();
 
-        IhullTypeIGC*   pht = ps->GetBaseHullType();
-        rc = pht &&
-             pht->HasCapability(pship->GetBaseHullType()->HasCapability(c_habmCanLtRipcord)
-                                ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
-                                : c_habmIsRipcordTarget);
-    }
-    else
-        rc = true;
+	if (pfsMission->GetMissionDef()->misparms.bAllowAlliedRip) {
+	    if ((pship->GetFlag() != NA) ||
+	        (pship->GetSide() != pmodel->GetSide()) || //ALLY: RIPCORD imago 7/8/0
+	        (pmodel->GetCluster() == NULL))
+	    {
+	        rc = false;
+	    }
+	    else if (pmodel->GetObjectType() == OT_ship)
+	    {
+	        IshipIGC*   ps = (IshipIGC*)pmodel;
+
+	        IhullTypeIGC*   pht = ps->GetBaseHullType();
+	        rc = pht &&
+	             pht->HasCapability(pship->GetBaseHullType()->HasCapability(c_habmCanLtRipcord)
+	                                ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
+	                                : c_habmIsRipcordTarget);
+	    }
+	    else
+	        rc = true;
+	} else { //regular
+	    if ((pship->GetFlag() != NA) ||
+	        (pship->GetSide() != pmodel->GetSide()) ||
+	        (pmodel->GetCluster() == NULL))
+	    {
+	        rc = false;
+	    }
+	    else if (pmodel->GetObjectType() == OT_ship)
+	    {
+	        IshipIGC*   ps = (IshipIGC*)pmodel;
+
+	        IhullTypeIGC*   pht = ps->GetBaseHullType();
+	        rc = pht &&
+	             pht->HasCapability(pship->GetBaseHullType()->HasCapability(c_habmCanLtRipcord)
+	                                ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
+	                                : c_habmIsRipcordTarget);
+	    }
+	    else
+	        rc = true;
+	}
 
     if (!rc)
     {

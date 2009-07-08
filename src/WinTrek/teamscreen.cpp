@@ -254,19 +254,23 @@ private:
 			}
             if (bSelected) 
             {
+				//Imago 7/8/09 reordered draw order
+				psurface->BitBlt(WinPoint(0,0), m_pimageSelectedTab->GetSurface());
                 // draw the selected tab outline
 				if (pside->GetAllies()!=NA) // #ALLY
 					//psurface->FillRect(WinRect::Cast(m_pimageSelectedTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
 					psurface->BitBlt(WinPoint(0,0), m_pimageSelectedTabEdges[pside->GetAllies()]->GetSurface());
-                psurface->BitBlt(WinPoint(0,0), m_pimageSelectedTab->GetSurface());
+                
             }
             else
             {
+				//Imago 7/8/09 reordered draw order
+				psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
                 // draw the selected tab outline
 				if (pside->GetAllies()!=NA) // #ALLY
 					//psurface->FillRect(WinRect::Cast(m_pimageTab->GetBounds().GetRect()), AllianceColors[pside->GetAllies()]*0.75);
 					psurface->BitBlt(WinPoint(0,0), m_pimageTabEdges[pside->GetAllies()]->GetSurface());
-                psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
+                
             }
 
             // KGJV #104 - paint the arrow if we request to join this team

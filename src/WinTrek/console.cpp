@@ -2555,7 +2555,7 @@ public:
         {
 
 			//Imago 7/4/09 ALLY
-			OutputDebugString("In CycleChatTarget() switch m_pchsCurrent->m_ctRecipient="+ZString(m_pchsCurrent->m_ctRecipient)+"\n");
+			//OutputDebugString("In CycleChatTarget() switch m_pchsCurrent->m_ctRecipient="+ZString(m_pchsCurrent->m_ctRecipient)+"\n");
             if (trekClient.GetSide()->GetAllies() == NA) {
 				switch (m_pchsCurrent->m_ctRecipient)
 	            {
@@ -2684,7 +2684,7 @@ public:
             else
             {
                 int         scoreBest = c_badMatch;
-				OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+				//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                 ChatTarget    ct = CHAT_NOSELECTION;
                 ObjectID      oidRecipient;
                 IbaseIGC*     pbaseRecipient;
@@ -2699,7 +2699,7 @@ public:
                         if (score < scoreBest)
                         {
                             scoreBest = score;
-							OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+							//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
 
                             ct = CHAT_WING;
                             oidRecipient = i;
@@ -2720,7 +2720,7 @@ public:
                         if (score < scoreBest)
                         {
                             scoreBest = score;
-							OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+							//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                             ct = CHAT_FRIENDLY_SECTOR;
                             oidRecipient = pcluster->GetObjectID();
                             pbaseRecipient = pcluster;
@@ -2736,7 +2736,7 @@ public:
                         if (score < scoreBest)
                         {
                             scoreBest = score;
-							OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+							//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                             ct = CHAT_TEAM;
                             oidRecipient = pside->GetObjectID();
                             pbaseRecipient = pside;
@@ -2748,7 +2748,7 @@ public:
                             if (score < scoreBest)
                             {
                                 scoreBest = score;
-								OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+								//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                                 ct = CHAT_INDIVIDUAL;
                                 oidRecipient = trekClient.GetShipID();
                                 pbaseRecipient = trekClient.GetShip();
@@ -2760,7 +2760,7 @@ public:
                                 if (score < scoreBest)
                                 {
                                     scoreBest = score;
-									OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+									//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                                     ct = CHAT_EVERYONE;
                                     oidRecipient = NA;
                                     pbaseRecipient = NULL;
@@ -2774,7 +2774,7 @@ public:
                                         if (score < scoreBest)
                                         {
                                             scoreBest = score;
-											OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+											//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
                                             ct = CHAT_SHIP;
                                             oidRecipient = NA;
                                             pbaseRecipient = NULL;
@@ -2835,7 +2835,7 @@ public:
 		                                            if (score < scoreBest)
 		                                            {
 		                                                scoreBest = score;
-														OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+														//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
 		                                                ct = CHAT_INDIVIDUAL;
 		                                                oidRecipient = pship->GetObjectID();
 		                                                pbaseRecipient = pship;
@@ -2865,7 +2865,7 @@ public:
 	                                                        : (score < scoreBest))
 	                                                    {
 	                                                        scoreBest = score;
-															OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+															//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
 	                                                        ct = CHAT_INDIVIDUAL;
 	                                                        oidRecipient = pship->GetObjectID();
 	                                                        pbaseRecipient = pship;
@@ -2884,7 +2884,7 @@ public:
 	                                                {
 	                                                    SetComposeState(c_csComposeCommand);
 	                                                    SetVerb(cid);
-														OutputDebugString("In OnTab() Calling SetVerb() and returning scoreBest= "+ZString(scoreBest)+"\n");
+														//OutputDebugString("In OnTab() Calling SetVerb() and returning scoreBest= "+ZString(scoreBest)+"\n");
 	                                                    SetChatObject(NULL);
 	                                                    m_strTypedText.SetEmpty();
 	                                                    UpdateComposedChat();
@@ -2906,17 +2906,17 @@ public:
                     SetChatObject(NULL);
                     m_strTypedText.SetEmpty();
                     m_pchsCurrent->SetRecipient(ct, oidRecipient, pbaseRecipient);
-					OutputDebugString("In OnTab() Calling SetRecipient() scoreBest= "+ZString(scoreBest)+"\n");
+					//OutputDebugString("In OnTab() Calling SetRecipient() scoreBest= "+ZString(scoreBest)+"\n");
                 }
                 else
                 {
                     CycleChatTarget();
-					OutputDebugString("In OnTab() Calling CylceTarget() scoreBest= "+ZString(scoreBest)+"\n");
+					//OutputDebugString("In OnTab() Calling CylceTarget() scoreBest= "+ZString(scoreBest)+"\n");
                 }
             }
         }
         UpdateComposedChat();
-		OutputDebugString("UpdateCompsedChat returning OnTab()\n");
+		//OutputDebugString("UpdateCompsedChat returning OnTab()\n");
     }
 
     void OnPrintable(char ch)

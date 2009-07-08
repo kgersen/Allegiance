@@ -2602,7 +2602,7 @@ void CFSMission::SaveAsOldPlayer(CFSPlayer* pfsplayer, bool bBooted)
     if (bBooted)
       opi.bannedSideMask = 0xff;
     else if (opi.sideID >= 0)
-      opi.bannedSideMask = ~SideMask(opi.sideID); // #ALLYTD: kgvj - remove allied teams from mask?  IMAGO REVIEW
+      opi.bannedSideMask = ~SideMask(opi.sideID); // #ALLYTD: kgvj - remove allied teams from mask?  IMAGO turned off defections 7/8/09
     else
       opi.bannedSideMask = pfsplayer->GetBannedSideMask();
   }

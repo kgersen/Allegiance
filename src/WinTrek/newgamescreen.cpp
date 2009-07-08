@@ -38,7 +38,8 @@ private:
     TRef<ButtonPane>     m_pbuttonAllowTactical;
     TRef<ButtonPane>     m_pbuttonAllowExpansion;
     TRef<ButtonPane>     m_pbuttonAllowSupremacy;
-    TRef<ButtonPane>     m_pbuttonAllowEmptyTeams;
+    //TRef<ButtonPane>     m_pbuttonAllowEmptyTeams;
+	TRef<ButtonPane>     m_pbuttonAllowAlliedRip;
     
 	TRef<ComboPane>      m_pcomboMapSize;
     TRef<ComboPane>      m_pcomboTreasures;
@@ -134,7 +135,8 @@ private:
         m_pbuttonAllowTactical       ->SetChecked(missionparams.bAllowTacticalPath);
         m_pbuttonAllowExpansion      ->SetChecked(missionparams.bAllowExpansionPath);
         m_pbuttonAllowSupremacy      ->SetChecked(missionparams.bAllowSupremacyPath);
-        m_pbuttonAllowEmptyTeams     ->SetChecked(missionparams.bAllowEmptyTeams);
+    //    m_pbuttonAllowEmptyTeams     ->SetChecked(missionparams.bAllowEmptyTeams);  //Imago ALLY 7/8/09
+		m_pbuttonAllowAlliedRip      ->SetChecked(missionparams.bAllowAlliedRip);
 
         m_pbuttonShowMap             ->SetChecked(missionparams.bShowMap);
 
@@ -422,7 +424,8 @@ public:
         CastTo(m_pbuttonAllowTactical       , m_pns->FindMember("allowTacticalCheckboxPane"));
         CastTo(m_pbuttonAllowExpansion      , m_pns->FindMember("allowExpansionCheckboxPane"));
         CastTo(m_pbuttonAllowSupremacy      , m_pns->FindMember("allowSupremacyCheckboxPane"));
-        CastTo(m_pbuttonAllowEmptyTeams     , m_pns->FindMember("allowEmptyTeamsCheckboxPane"));
+        //CastTo(m_pbuttonAllowEmptyTeams     , m_pns->FindMember("allowEmptyTeamsCheckboxPane"));
+		CastTo(m_pbuttonAllowAlliedRip     , m_pns->FindMember("allowAlliedRipCheckboxPane")); //imago 7/8/09 ALLY
 		CastTo(m_pbuttonNextMap             , m_pns->FindMember("mapPreviewNextButtonPane"));
 		CastTo(m_pbuttonPrevMap				, m_pns->FindMember("mapPreviewPrevButtonPane"));
 
@@ -969,8 +972,8 @@ public:
 		misparams.bAllowTacticalPath = m_pbuttonAllowTactical->GetChecked();
 		misparams.bAllowExpansionPath = m_pbuttonAllowExpansion->GetChecked();
 		misparams.bAllowSupremacyPath = m_pbuttonAllowSupremacy->GetChecked();
-		misparams.bAllowEmptyTeams = m_pbuttonAllowEmptyTeams->GetChecked();
-
+		//misparams.bAllowEmptyTeams = m_pbuttonAllowEmptyTeams->GetChecked();
+		misparams.bAllowAlliedRip = m_pbuttonAllowAlliedRip->GetChecked(); //imago 7/8/09 ALLY
         misparams.bShowMap = m_pbuttonShowMap->GetChecked();
 
         misparams.nTeams = FindValue(m_pcomboTeamCount->GetSelection(), "TeamCountValues");
@@ -1167,7 +1170,8 @@ public:
 		m_pbuttonAllowTactical->SetEnabled(bEnable);
         m_pbuttonAllowExpansion->SetEnabled(bEnable);
         m_pbuttonAllowSupremacy->SetEnabled(bEnable);
-		m_pbuttonAllowEmptyTeams->SetEnabled(false);//bEnable && m_bIsZoneClub); // KGJV #62
+		//m_pbuttonAllowEmptyTeams->SetEnabled(false);//bEnable && m_bIsZoneClub); // KGJV #62
+		m_pbuttonAllowAlliedRip->SetEnabled(bAllies && bEnable); //imago 7/8/09 ALLY
 
 		m_pbuttonShowMap->SetEnabled(bEnable);
 

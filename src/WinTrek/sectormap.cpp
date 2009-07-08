@@ -792,7 +792,9 @@ public:
             IstationIGC* pstation = stationLink->data();
             
             if (pstation->GetStationType()->HasCapability(c_sabmRipcord) &&
-                (pstation->GetSide() == pside)) //ALLYTD? allow rip to allies ...naaa RIPCORD TOGGLE 7/7/09
+                ( (pstation->GetSide() == pside) || 
+					(pstation->GetSide()->AlliedSides(pside,pstation->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) ) ) //ALLY allow rip to allies 7/7/09 imago
+				
             {
                 return c_iClusterHasStationRipcord;
             }
@@ -809,7 +811,8 @@ public:
         for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
         {
             IprobeIGC*  pprobe = ppl->data();
-            if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLYTD? allow rip to allies..naaa RIPCORD TOGGLE 7/7/09
+            if ( ( (pprobe->GetSide() == pside) || (pprobe->GetSide()->AlliedSides(pside,pprobe->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) ) && 
+				pprobe->GetCanRipcord(ripcordSpeed)) //ALLY allow rip to allies.. 7/7/09
                 return c_iClusterHasStationRipcord;
         }
 

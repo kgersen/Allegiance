@@ -1864,7 +1864,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         if (((pship->GetStateM() & wantsToMineMaskIGC) != 0) &&
                             (pship->GetCommandTarget(c_cmdPlan) == m_commandTargets[c_cmdPlan]))
                         {
-                            if (IsideIGC::AlliedSides(pside,pship->GetSide())) // ALLY imago 6/28/09 (TheRock@RT)
+                            if (pship->GetSide() == pside || IsideIGC::AlliedSides(pside,pship->GetSide()))  //ALLY imago 7/9/09
                             {
                                 //Have a miner on our side that is actively trying to mine this asteroid
                                 nFriendly++;
@@ -1877,8 +1877,6 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                 }
                             }
                             else
-								// #ALLY: dont count friendly miners as enemies
-								if (!IsideIGC::AlliedSides(pship->GetSide(),pside))
 									nEnemy++;
                         }
                     }
@@ -3135,24 +3133,47 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
                                    ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
                                    : c_habmIsRipcordTarget;
 
-        //Make a list of undocked ships that are ripcord targets as well
-        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
-        {
-            IshipIGC*       pship = psl->data();
-            if (pship != GetSourceShip())
-            {
-                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
-                if (pc)
-                {
-                    ShipPairLink*   spl = new ShipPairLink;
-                    spl->data().pship = pship;
-                    spl->data().pcluster = pc;
+		//ALLY ripcord is on 7/8/09 imago
+		if (GetMyMission()->GetMissionParams()->bAllowAlliedRip) {
+       		 //Make a list of undocked ships (on our side and allied sides) that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = GetMyMission()->GetShips()->first(); (psl != NULL); psl = psl->next()) //ALLY RIPCORD 7/8/09 imago
+	        {
+	            IshipIGC*       pship = psl->data();
+	            if (pship != GetSourceShip() &&
+					(pside->AlliedSides(pside,pship->GetSide()) || pside->GetObjectID() == pship->GetSide()->GetObjectID()) ) 
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
+	                if (pc)
+	                {
+	                    ShipPairLink*   spl = new ShipPairLink;
+	                    spl->data().pship = pship;
+	                    spl->data().pcluster = pc;
 
 
-                    pairs.last(spl);
-                }
-            }
-        }
+	                    pairs.last(spl);
+	                }
+	            }
+			}
+		} else {
+       		 //Make a list of undocked ships (on only our side) that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next()) 
+	        {
+	            IshipIGC*       pship = psl->data();
+	            if (pship != GetSourceShip())
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
+	                if (pc)
+	                {
+	                    ShipPairLink*   spl = new ShipPairLink;
+	                    spl->data().pship = pship;
+	                    spl->data().pcluster = pc;
+
+
+	                    pairs.last(spl);
+	                }
+	            }
+			}
+		}
     }
 
     const Vector*   positionGoal = NULL;
@@ -3189,7 +3210,32 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
         {
             float   d2Goal = FLT_MAX;
 
-            {
+            if (GetMission()->GetMissionParams()->bAllowAlliedRip) {
+                //No station in the cluster to ripcord to ... try allied  and our probes
+                //Search backwords so that we'll get the most recently dropped probe
+                //if multiple probes without a target
+                for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->last(); (ppl != NULL); ppl = ppl->txen())
+                {
+                    IprobeIGC*  pprobe = ppl->data();
+                    if ((pprobe->GetSide() == pside || pside->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY RIPCORD imago 7/8/09
+                    {
+                        if (positionGoal)
+                        {
+                            float   d2 = (pprobe->GetPosition() - *positionGoal).LengthSquared();
+                            if (d2 < d2Goal)
+                            {
+                                pmodelRipcord = pprobe;
+                                d2Goal = d2;
+                            }
+                        }
+                        else
+                        {
+                            pmodelRipcord = pprobe;
+                            break;
+                        }
+                    }
+                }
+			} else {
                 //No station in the cluster to ripcord to ... try probes
                 //Search backwords so that we'll get the most recently dropped probe
                 //if multiple probes without a target
@@ -3214,6 +3260,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
                         }
                     }
                 }
+
             }
 
             if (pmodelRipcord == NULL)
@@ -3534,23 +3581,44 @@ bool    CshipIGC::bShouldUseRipcord(IclusterIGC*  pcluster)
                                    ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
                                    : c_habmIsRipcordTarget;
 
-        //Make a list of undocked ships that are ripcord targets as well
-        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
-        {
-            IshipIGC*       ps = psl->data();
-            if (ps != this)
-            {
-                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
-                if (pc)
-                {
-                    if (pcluster == pc)
-                        return true;
+		if (GetMission()->GetMissionParams()->bAllowAlliedRip) {
+	        //Make a list of undocked ships on our team and allied teams that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = GetMission()->GetShips()->first(); (psl != NULL); psl = psl->next()) //ALLY ripcord 7/8/09 was pside
+	        {
+	            IshipIGC*       ps = psl->data();
+	            if (ps != this &&
+					(ps->GetSide() == pside || pside->AlliedSides(pside,ps->GetSide()))) //ALLY
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                if (pc)
+	                {
+	                    if (pcluster == pc)
+	                        return true;
 
-                    if (shipRipcords.find(pc) == NULL)
-                        shipRipcords.last(pc);
-                }
-            }
-        }
+	                    if (shipRipcords.find(pc) == NULL)
+	                        shipRipcords.last(pc);
+	                }
+	            }
+	        }
+		} else {
+	        //Make a list of undocked ships that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
+	        {
+	            IshipIGC*       ps = psl->data();
+	            if (ps != this)
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                if (pc)
+	                {
+	                    if (pcluster == pc)
+	                        return true;
+
+	                    if (shipRipcords.find(pc) == NULL)
+	                        shipRipcords.last(pc);
+	                }
+	            }
+	        }
+		}
     }
 
     //Search adjacent clusters for an appropriate target
@@ -3583,8 +3651,13 @@ bool    CshipIGC::bShouldUseRipcord(IclusterIGC*  pcluster)
             for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
             {
                 IprobeIGC*  pprobe = ppl->data();
-                if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed))
-                    return true;
+				if (GetMission()->GetMissionParams()->bAllowAlliedRip) { //ALLY ripcord imago 7/8/09
+                	if ((pprobe->GetSide() == pside || pside->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY ripcord imago 7/8/09
+                    	return true;
+				} else {
+                	if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed)) 
+                    	return true;
+				}
             }
         }
         clustersVisited.first(pcluster);

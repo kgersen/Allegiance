@@ -1112,8 +1112,10 @@ public:
         ZAssert(m_bIn3DLayer);
         ZAssert(m_bInScene);
 
-		CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
-		CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+		//w0dka removed 7/8/09
+		//CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
+		//CD3DDevice9::Get()->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
+
 		if( CD3DDevice9::Get()->IsAntiAliased() == true )
 		{
 			CD3DDevice9::Get()->SetRenderState( D3DRS_ANTIALIASEDLINEENABLE, FALSE );
@@ -2382,6 +2384,8 @@ public:
         // Iterate through the decal sets
         //
 
+		//m_pdevice3D->SetLinearFilter(true); //7/8/09 w0dk4
+
         int countDecalSets = vdecalSet.GetCount();
         for(int indexSet = 0; indexSet < countDecalSets; indexSet++) 
 		{
@@ -2418,6 +2422,8 @@ public:
                 set.m_vdecal.SetCount(0);
             }
         }
+
+		//m_pdevice3D->SetLinearFilter(false); //7/8/09 w0dk4
     }
 
     void DrawCachedDecals()
