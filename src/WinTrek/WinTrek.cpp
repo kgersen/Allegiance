@@ -78,7 +78,7 @@ const float c_fVolumeDelta = 1;
 
 const float g_hudBright = 0.85f;
 
-const float g_fJoystickDeadZoneOff = 0.0f; //imago added 7/1/09 NYI
+const float g_fJoystickDeadZoneNone = 0.0f; //imago added 7/1/09 NYI
 const float g_fJoystickDeadZoneSmall = 0.1f;
 const float g_fJoystickDeadZoneLarge = 0.3f;
 
@@ -3031,14 +3031,27 @@ public:
             ToggleTargetHUD();
         if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
             CycleStyleHUD();
-        if (LoadPreference("LargeDeadZone", FALSE))
-            ToggleLargeDeadZone();
+        SetDeadzone(LoadPreference("DeadZone", 3)); //ToggleLargeDeadZone(); //Imago updated 7/8/09
+	    if (LoadPreference("VirtualJoystick", FALSE))
+			ToggleVirtualJoystick();
+
 		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+		
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 
 		ToggleBandwidth(LoadPreference("Bandwidth",2)); // w0dk4 June 2007: Bandwith Patch
+
+
+		/* Imago #24 NYI 7/8/09
+	    if (LoadPreference("ShowGrid", FALSE)) //use m_bCommandGrid
+			ToggleShowGrid();
+	    if (LoadPreference("RadarLOD", 1))   // use GetRadarMode() SetRadarMode()
+			ToggleRadarLOD();
+	    if (LoadPreference("Gamma", 1)) // use  GetEngine()->SetGammaLevel() GetEngine()->GetGammaLevel() 
+			ToggleGamma();
+		*/
 
         bool bAllow3DAcceleration;
 
@@ -3978,7 +3991,7 @@ public:
                 m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,					"Mute/Filter",						'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
                 m_pitemToggleLinearControls        = pmenu->AddMenuItem(idmToggleLinearControls,        GetLinearControlsMenuString(),      'L');
-                m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetLargeDeadZoneMenuString(),       'Z');
+                m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetDeadzoneMenuString(),       'Z'); //imago updated 7/8/09
                 m_pitemToggleVirtualJoystick       = pmenu->AddMenuItem(idmToggleVirtualJoystick,       GetVirtualJoystickMenuString(),     'J');
                 m_pitemToggleFlipY                 = pmenu->AddMenuItem(idmToggleFlipY,                 GetFlipYMenuString(),               'Y');
                 m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E');
@@ -4569,15 +4582,30 @@ public:
             m_pitemStyleHUD->SetString(GetStyleHUDMenuString());
     }
 
-    void ToggleLargeDeadZone(void)
+	//Imago 7/8/09
+    void SetDeadzone(DWORD value)
     {
-        g_fJoystickDeadZone = g_fJoystickDeadZoneSmall + g_fJoystickDeadZoneLarge - g_fJoystickDeadZone;
-        g_fInverseJoystickDeadZone = g_fJoystickDeadZone - 1.0f;
-
-        SavePreference("LargeDeadZone", g_fJoystickDeadZone > (g_fJoystickDeadZoneSmall + g_fJoystickDeadZoneLarge)/2.0f);
-
-        if (m_pitemToggleLargeDeadZone != NULL)
-            m_pitemToggleLargeDeadZone->SetString(GetLargeDeadZoneMenuString());
+        switch (value)
+        {
+            case 0:
+			case 4:
+				g_fJoystickDeadZone = g_fJoystickDeadZoneNone;
+				break;
+			case 1:
+				g_fJoystickDeadZone = g_fJoystickDeadZoneSmall;
+				break;
+			case 2:
+			case 3:
+				g_fJoystickDeadZone = g_fJoystickDeadZoneLarge;
+				break;
+            default:
+                g_fJoystickDeadZone = g_fJoystickDeadZoneLarge;
+        }
+		g_fInverseJoystickDeadZone = (g_fJoystickDeadZone == 0) ? 0 : g_fJoystickDeadZone - 1.0f;
+        SavePreference("DeadZone", (DWORD) value);
+        if (m_pitemToggleLargeDeadZone != NULL) {
+           m_pitemToggleLargeDeadZone->SetString(GetDeadzoneMenuString());
+        }
     }
 
     void ToggleVirtualJoystick()
@@ -4971,12 +4999,24 @@ public:
         return (m_pnumberStyleHUD->GetValue()) ? c_strSoftware : c_strNormal;
     }
 
-    const ZString& GetLargeDeadZoneMenuString()
+    const ZString& GetDeadzoneMenuString()
     {
-        static const ZString    c_strNormal("Normal dead zone");
-        static const ZString    c_strLarge("Large dead zone");
-
-        return (g_fJoystickDeadZone > (g_fJoystickDeadZoneSmall + g_fJoystickDeadZoneLarge)/2.0f) ? c_strLarge : c_strNormal;
+		static const ZString    strLarge = "Large dead zone";
+		static const ZString    strNone = "No dead zone";
+		static const ZString    strSmall = "Small dead zone";
+		static const ZString    strInvalid = "Invalid dead zone";
+		int     iDZ = int(g_fJoystickDeadZone * 10);
+        switch (iDZ)
+        {
+            case 0:
+				return strNone;
+			case 1:
+				return strSmall;
+			case 3:
+				return strLarge;
+            default:
+				return strInvalid;
+        }
     }
 
     ZString GetVirtualJoystickMenuString()
@@ -5293,7 +5333,7 @@ public:
                 break;
 
             case idmToggleLargeDeadZone:
-                ToggleLargeDeadZone();
+                SetDeadzone( (g_fJoystickDeadZone * 10) + 1 ); //Imago 7/8/09 //ToggleLargeDeadZone();
                 break;
 
             case idmToggleVirtualJoystick:
