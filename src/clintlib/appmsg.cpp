@@ -1107,7 +1107,6 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         s->SetCluster(NULL);
                 }
             }
-
             m_ship->SetStation(m_pCoreIGC->GetStation(pfmDocked->stationID));
             assert (m_ship->GetCluster() == NULL);
         }
@@ -1328,10 +1327,10 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 
             CASTPFM(pfmMoney, S, MONEY_CHANGE, pfm);
 
-            //Ignore any transactions we initiated.
+            //Ignore any transactions we initiated.  UNLESS ALLIED FOR UI PURPOSES ALLY --imago 7/9/09
             ShipID  sid = GetShipID();
             if (sid != pfmMoney->sidFrom)
-            {
+			{
                 IshipIGC*  pshipTo   = m_pCoreIGC->GetShip(pfmMoney->sidTo);
                 assert (pshipTo);
 
@@ -1352,13 +1351,18 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         ppiFrom->SetMoney(ppiFrom->GetMoney() - pfmMoney->dMoney);
                         m_pClientEventSource->OnMoneyChange(ppiFrom);
 
-                        if (pfmMoney->sidTo == sid)
+						if (pfmMoney->sidTo == sid) {
                             PostText(false, "%s gave you $%d. You now have $%d.",
                                      ppiFrom->CharacterName(), pfmMoney->dMoney, MyPlayerInfo()->GetMoney());
+						}
                     }
                 }
                 m_pMissionInfo->GetSideInfo(GetSide()->GetObjectID())->GetMembers().GetSink()();
-            }
+			} else { //IMAGO ALLY 7/9/09 because we can't see our $ when on another team
+				if (GetSide()->AlliedSides(GetSide(),m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide()) && (GetSide() != m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide()))
+					PostText(false, "You gave %s $%d. You now have $%d.",
+                      ZString(((PlayerInfo*)m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetPrivateData())->CharacterName()), pfmMoney->dMoney, MyPlayerInfo()->GetMoney());
+			}
         }
         break;
         case FM_S_SET_MONEY:

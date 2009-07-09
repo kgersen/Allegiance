@@ -2186,8 +2186,6 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
         //Convert from NA to an actual ID based on the player's ship
         switch (ctRecipient)
         {
-//			case CHAT_ALLIES: //7/4/09 imago ALLY
-
             case CHAT_INDIVIDUAL:
                 oidRecipient = m_ship->GetObjectID();
             break;
@@ -3948,11 +3946,15 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
     {
         // tell the players that someone has just joined their team
 		IsideIGC* otherside = GetCore()->GetSide(pPlayerInfo->SideID());
-        if ( (m_pPlayerInfo != pPlayerInfo) && ( (m_pPlayerInfo->SideID() == pPlayerInfo->SideID()) || (otherside->AlliedSides(otherside,GetSide())) ) ) //#ALLY -imago 7/3/09
+        if ( (m_pPlayerInfo != pPlayerInfo) && (((m_pPlayerInfo->SideID() == pPlayerInfo->SideID()) || otherside->AlliedSides(otherside,GetSide())) )) //#ALLY -imago 7/3/09
         {
-            ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
-
-            ReceiveChat(NULL, CHAT_TEAM, NA, salRecruitsArrivedSound, msg, c_cidNone, NA, NA);
+			if (otherside->AlliedSides(otherside,GetSide())) {
+            	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ") + pside->GetName() + ZString(" (allied).");
+	            ReceiveChat(NULL, CHAT_TEAM, NA, NULL, msg, c_cidNone, NA, NA);
+			} else {
+            	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
+	            ReceiveChat(NULL, CHAT_TEAM, NA, salRecruitsArrivedSound, msg, c_cidNone, NA, NA);
+			}
         }
         else if (m_pPlayerInfo && GetSide() && GetSideID() != SIDE_TEAMLOBBY)
         {

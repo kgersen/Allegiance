@@ -429,6 +429,7 @@ bool    CstationIGC::InGarage(IshipIGC* pship, const Vector& position)
 
 void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
 {
+	OutputDebugString("in repair and refuel! !!!!!!!!!!!!!!!!!!!!!!\n");
     assert ((pship->GetParentShip() == NULL) && (pship->GetBaseHullType() != NULL));
 
     //Fully mount all parts
@@ -465,7 +466,7 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
 
     //Give a full load of fuel and ammo
     const IhullTypeIGC* pht = pship->GetHullType();
-    if (m_myStationType.HasCapability(c_sabmReload))
+    if (m_myStationType.HasCapability(c_sabmReload) || pship->GetSide()->AlliedSides(pship->GetSide(),GetSide())) //IMAGO ALLY 7/8/09 REARM
     {
         short   maxAmmo = pht->GetMaxAmmo();
         short   maxFuel = short(pht->GetMaxFuel());
@@ -485,6 +486,7 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
                 ppack->SetAmount(ppack->GetPackType() == c_packAmmo ?  maxAmmo : maxFuel);
             }
         }
+		OutputDebugString("added packs !!!!!!!!!!!!!!!!!!!!!!\n");
     }
 
     pship->SetEnergy(pht->GetMaxEnergy());

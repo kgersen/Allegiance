@@ -922,8 +922,8 @@ void GotLogonDetails(CQLogonStats * pquery)
     //dataship.wingID = 1;
 
 	// Imago use cheat 7/4/09 for testing, 
-	// this ensures it's off for retail builds.
-    #ifdef  _DEBUG
+	// this ensures it's off for regular builds.
+    #ifdef  _TEST
     pqd->fCanCheat = true;
     #endif
 
@@ -3243,7 +3243,6 @@ void ForwardChatMessageToAllies(CFSMission*       pfsMission,
                                 CFSShip*          pfsSender,
                                 FEDMESSAGE*       pfm)
 {
-	//Send the message to allied command wings...
 	//lets get a list of allied sideIDs
     for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first(); 
 		(psidelink != NULL); 
@@ -3258,13 +3257,13 @@ void ForwardChatMessageToAllies(CFSMission*       pfsMission,
                  pshiplink = pshiplink->next())
             {
                 IshipIGC*   pship = pshiplink->data();
-				//they are on command wing...
-				if (pship->GetWingID() == 0) {
+				//they are on command wing... removed 7/8/09
+				//if (pship->GetWingID() == 0) {
 		            CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
 					//if its legit and not to our team (they arleady got the wing chat), then send it!
 		            if (pfsShipTo->IsPlayer() && (pfsShipTo->GetSide()->GetObjectID() != pfsSender->GetSide()->GetObjectID()))
 		              g.fm.ForwardMessage(pfsShipTo->GetPlayer()->GetConnection(), pfm, FM_GUARANTEED);
-				}
+				//}
 			}
 		}
 	}
@@ -3353,7 +3352,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                      psl = psl->next())
                 {
                     IshipIGC*   pship = psl->data();
-                    if (pship->GetSide() == pside) 
+                    if (pship->GetSide() == pside) //ALLYTD imago 7/9/09
                     {
                         CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
 
@@ -3487,7 +3486,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
                 if (pfsShipTo->IsPlayer())
                 {
                     if ((pcd->commandID == c_cidNone) || (pfsSender == NULL) ||
-                        (pfsShipTo->GetSide() == pfsSender->GetSide()))
+                        (pfsShipTo->GetSide() == pfsSender->GetSide())) //ALLYTD? imago 7/9/09
                     {
                         CFSPlayer *pfsPlayer = pfsShipTo->GetPlayer();
                         assert(pfsPlayer);
@@ -4858,8 +4857,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
-		 // beta feature only
-#ifdef FAZBETA
+		 // beta feature only  imago made one less define 7/8/09
+#ifdef DEBUG
 		  else
 		  {
 			  if (pfsMission->GetOwner() == pfsPlayer && (_strnicmp(FM_VAR_REF(pfmChat, Message), "#start", strlen("#start")) == 0))
@@ -6453,12 +6452,12 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     END_PFM_CREATE
 
                     if ((pstation == NULL) ||
-                        (pstation->GetSide() != pside) || //#ALLYTD ?  naaa, we dont want to start at allied bases MAY HAVE TO DO THIS FOR REARM? 7/8/09
+                        ( pstation->GetSide() != pside && !pside->AlliedSides(pside,pstation->GetSide()) ) || //#ALLY REARM? 7/8/09
                         (!pstation->GetStationType()->HasCapability(c_sabmRestart)))
                     {
                         //Not a legitimate station to start at ... ignore the request
                         pfmAck->stationID = NA;
-                        pfmAck->bNewHull = false; //ALLYTD MORE REPAIR/REARM HACKERY?? 
+                        pfmAck->bNewHull = false; 
 
                         g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
                         break;
@@ -10555,7 +10554,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
           {
             ImodelIGC*  pAssist = pblAssist->data()->model();
             if ((pAssist->GetObjectType() == OT_ship) &&
-                ( (pAssist->GetSide() != pside) && (!pside->AlliedSides(pside,pAssist->GetSide()) ) ) && // #ALLY -imago 7/3/09 kgjv
+                ( (pAssist->GetSide() != pside) && !pside->AlliedSides(pside,pAssist->GetSide()) ) && // #ALLY -imago 7/3/09 kgjv
                 (pAssist->GetMission() == pmission))
             {
                 CFSShip* pfsAssist = (CFSShip*)( ((IshipIGC*)pAssist)->GetPrivateData() );
@@ -10717,7 +10716,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 
                     PlayerScoreObject::AdjustCombatRating(pmission, pfsshipCredit->GetPlayerScoreObject(), pfsShip->GetPlayerScoreObject());
 
-                    if ( (pside != psideCredit) && (!pside->AlliedSides(pside,psideCredit) ) ) // #ALLY: kgjv dont up KB when FF is on - Imago 7/3/09
+                    if ( (pside != psideCredit) && !pside->AlliedSides(pside,psideCredit) ) // #ALLY: kgjv dont up KB when FF is on - Imago 7/3/09
                         ((IshipIGC*)pcredit)->AddExperience();
 
                     if (pdmglink)
@@ -10737,7 +10736,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
                             {
                                 ImodelIGC*    pmodel = l->data()->model();
                                 if ((pmodel->GetObjectType() == OT_ship) &&
-                                    ( (pmodel->GetSide() != pside) && (!pside->AlliedSides(pside,pmodel->GetSide()) ) ) && // #ALLY -imago 7/3/09 kgjv
+                                    ( (pmodel->GetSide() != pside) && !pside->AlliedSides(pside,pmodel->GetSide()) ) && // #ALLY -imago 7/3/09 kgjv
                                     (pmodel->GetMission() == pmission))
                                 {
                                     IshipIGC*   pshipCredit = (IshipIGC*)pmodel;
@@ -10978,7 +10977,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                     IsideIGC*   pside = ship->GetSide();
                     assert (pside);
 
-                    if (pside != psideLauncher && !pside->AlliedSides(pside,psideLauncher))  //ALLY -imago 7/3/09
+                    if ((pside != psideLauncher) && !pside->AlliedSides(pside,psideLauncher))  //ALLY -imago 7/3/09
                     {
                         SoundID underAttackSound;
 
@@ -11006,6 +11005,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                 underAttackSound = droneUnderAttackSound;
                                 break;
                         }
+						//ALLYTD Imago 7/9/09 CHAT_ALLIES
                         SendChatf(ship, CHAT_TEAM, ship->GetSide()->GetObjectID(),
                                   underAttackSound, "Under attack by %s in %s",
                                   GetModelName(launcher), ship->GetCluster()->GetName());
@@ -11037,7 +11037,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
             {
                 IsideIGC*   pside = station->GetSide();
 
-				if (!IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY used to be (pside != psideLauncher) (TheRock)
+				if ((pside != psideLauncher) && !IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY (Imago)
                 {
                     if (station->GetFraction() < 0.30)
                     {
@@ -11059,6 +11059,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
                     CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                     if (pfsLauncher->IsPlayer())
                     {
+						//CHAT ALLIES ALLYTD imago 7/9/09
                         SendChat(NULL, CHAT_INDIVIDUAL, launcher->GetObjectID(),
                                  droneWatchFireSound, "Watch your fire");
                     }
@@ -11188,7 +11189,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   if (psideWin)
   {
       static char szReason[100];     //Make this static so we only need to keep a pointer to it around
-	  if ((otLauncher == OT_ship) && IsideIGC::AlliedSides(psideLauncher, psideWin)) //#ALLY (TheRock)
+	  if ((otLauncher == OT_ship) && ((psideLauncher == psideWin) || IsideIGC::AlliedSides(psideLauncher, psideWin))) //#ALLY (Imago) 7/8/09
       {
 		//joeld - added 4th %s and pstation->GetCluster()->GetName() in next line.
           sprintf(szReason, "%s has destroyed %s's %s in %s.", psideLauncher->GetName(), pside->GetName(), pstation->GetName(), pstation->GetCluster()->GetName());
@@ -11709,7 +11710,7 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
           RespawnFlag(sidFlag,pside);  // mmf 11/07 added second argument pside
       }
   }
-  pstation->RepairAndRefuel(pship);
+  
   pship->SetStation(pstation);
   {
       //Move the children of this ship to the station as well
@@ -11741,7 +11742,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
     else
     {
         if ((pstationOld == NULL) && (pstationNew->GetSide() == pship->GetSide())) //#ALLY: dont dock tech at allied bases
-        {
+		{
             //Go over the ship's parts and give the side the tech bits for any equipment onboard
 
             TechTreeBitMask ttbm;
@@ -11776,17 +11777,16 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 
         if (!pfsShip->IsPlayer())
             UpgradeShip(pship, pstationNew);
-		// #ALLY  -imago 7/3/09 added allied check and repair/refuel
+		// #ALLY  -imago 7/3/09 added allied check and repair/refuel REARM
 		// if allied station, relaunch now
-		if ( (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
-		{
+	//	if ( (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
+	//	{
 			// proper method to launch, this will call ChangeStation again with pstationNew NULL
 			// if this causes issues, another way to do this is in cluster Update like for drones
-			// todo: check why ship isnt rearmed
-			pstationNew->RepairAndRefuel(pship);
-			pship->SetStation(NULL);
-		}
-    }
+			// todo: check why ship isnt rearmed REARM kgjv
+			//pstationNew->RepairAndRefuel(pship);
+	//		pship->SetStation(NULL);
+	}
 }
 
 void * FedSrvSiteBase::GetDroneFromShip(IshipIGC * pship) // return value is really a Drone*
@@ -11865,7 +11865,7 @@ bool FedSrvSiteBase::ContinueRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 
 	if (pfsMission->GetMissionDef()->misparms.bAllowAlliedRip) {
 	    if ((pship->GetFlag() != NA) ||
-	        (pship->GetSide() != pmodel->GetSide()) || //ALLY: RIPCORD imago 7/8/0
+	        (pship->GetSide() != pmodel->GetSide()) || //ALLYTD: RIPCORD imago 7/8/0
 	        (pmodel->GetCluster() == NULL))
 	    {
 	        rc = false;

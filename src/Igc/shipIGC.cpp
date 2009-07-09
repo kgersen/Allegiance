@@ -720,7 +720,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 IsideIGC* pside1 = GetSide();
                 IsideIGC* pside2 = pModel->GetSide();
 
-				if (IsideIGC::AlliedSides(pside1,pside2)) // #ALLY - was: (pside1 == pside2) 
+				if ((pside1 == pside2) || IsideIGC::AlliedSides(pside1,pside2)) // #ALLY - was: (pside1 == pside2)  IMAGO 7/8/09
                 {
 					if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
 					{
@@ -754,7 +754,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             }
             else if (m_myHullType.HasCapability(c_habmLifepod) &&
                      pst->HasCapability(c_sabmRescue) &&
-					 (IsideIGC::AlliedSides(GetSide(), pModel->GetSide()))) // #ALLY - was: GetSide() == pModel->GetSide())
+					 ((GetSide() == pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(), pModel->GetSide()))) // #ALLY - was: GetSide() == pModel->GetSide()) imago fixed 7/8/09
             {
                 if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
                     break;
@@ -796,7 +796,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 ExpendableAbilityBitMask    eabm = ppt->GetCapabilities();
 
                 if ((eabm & c_eabmRescueAny) ||
-					((eabm & c_eabmRescue) && IsideIGC::AlliedSides(GetSide(), pModel->GetSide()))) // #ALLY -was: GetSide() == pModel->GetSide()
+					((eabm & c_eabmRescue) && ((GetSide() == pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(), pModel->GetSide())))) // #ALLY -was: GetSide() == pModel->GetSide()
                 {
                     if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
                         break;
@@ -918,7 +918,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
         {
             IIgcSite* igcsite = GetMyMission()->GetIgcSite();
 
-			bool    bFriendly = IsideIGC::AlliedSides(GetSide(), pModel->GetSide()); // #ALLY -was: GetSide() == pModel->GetSide()
+			bool    bFriendly = ( (GetSide() == pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(), pModel->GetSide())); // #ALLY -was: GetSide() == pModel->GetSide() imago fixed 7/8/09
             if (bFriendly)
             {
                 HullAbilityBitMask  habmMe = m_myHullType.GetCapabilities();
@@ -1114,7 +1114,7 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 
     if (launcher &&
         (!GetMyMission()->GetMissionParams()->bAllowFriendlyFire) &&
-		IsideIGC::AlliedSides(pside,launcher->GetSide()) && // #ALLY - was: pside == launcher->GetSide()
+		((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside,launcher->GetSide())) && // #ALLY - Imago fixed 7/8/09
         (amount >= 0.0f))
     {
         return c_drNoDamage;
@@ -1864,7 +1864,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         if (((pship->GetStateM() & wantsToMineMaskIGC) != 0) &&
                             (pship->GetCommandTarget(c_cmdPlan) == m_commandTargets[c_cmdPlan]))
                         {
-                            if (pship->GetSide() == pside || IsideIGC::AlliedSides(pside,pship->GetSide()))  //ALLY imago 7/9/09
+                            if ((pship->GetSide() == pside) || IsideIGC::AlliedSides(pside,pship->GetSide()))  //ALLY imago 7/9/09
                             {
                                 //Have a miner on our side that is actively trying to mine this asteroid
                                 nFriendly++;
@@ -3140,7 +3140,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 	        {
 	            IshipIGC*       pship = psl->data();
 	            if (pship != GetSourceShip() &&
-					(pside->AlliedSides(pside,pship->GetSide()) || pside->GetObjectID() == pship->GetSide()->GetObjectID()) ) 
+					(pside->AlliedSides(pside,pship->GetSide()) || (pside->GetObjectID() == pship->GetSide()->GetObjectID())) ) 
 	            {
 	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
 	                if (pc)
@@ -3382,7 +3382,7 @@ void    CshipIGC::ResetWaypoint(void)
                     {
                         if ((m_commandIDs[c_cmdPlan] == c_cidGoto) || (m_commandIDs[c_cmdPlan] == c_cidNone))
                         {
-							if (IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(), GetSide())) //#ALLY (TheRock) we can still dock here
+							if ((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(), GetSide())) //#ALLY (TheRock) we can still dock here (Imago) 7/8/09
                             {
                                 const IstationTypeIGC*  pst = ((IstationIGC*)m_commandTargets[c_cmdPlan])->GetStationType();
                                 HullAbilityBitMask  habm = m_myHullType.GetCapabilities();
@@ -3480,7 +3480,7 @@ void    CshipIGC::ResetWaypoint(void)
 
                         if ( (eabm & c_eabmRescueAny) ||
                             ((eabm & c_eabmRescue) && 
-							((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || (IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(),GetSide()))))) //#ALLY - imago 7/3/09
+							((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(),GetSide())))) //#ALLY - imago 7/3/09
                         {
                             o = Waypoint::c_oEnter;
                         }

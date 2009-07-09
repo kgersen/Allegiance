@@ -192,9 +192,10 @@ public:
                 // Only show the indicator if we have a weapon, and it is a healing weapon on a friendly or a non-healing weapon on an enemy
                 // or it is the external chase view or missile view
                 IsideIGC*   pside = trekClient.GetSide();
-                if (w && ((GetWindow ()->GetCameraMode () == TrekWindow::cmExternalChase) ||
-					(GetWindow ()->GetCameraMode () == TrekWindow::cmExternalMissile) ||
-					(IsideIGC::AlliedSides(targetModel->GetSide(), pside) == (w->GetProjectileType()->GetPower() < 0.0f)))) // #ALLY -was: (targetModel->GetSide() == pside)
+				//Imago fixed 7/8/09 ALLY
+				if (w && ((GetWindow ()->GetCameraMode () == TrekWindow::cmExternalChase) || 
+					(GetWindow ()->GetCameraMode () == TrekWindow::cmExternalMissile) || 
+					( ((targetModel->GetSide() == pside) || IsideIGC::AlliedSides(targetModel->GetSide(), pside)) == (w->GetProjectileType()->GetPower() < 0.0f)) ))
                 {
                     Vector      vecLeadPosition;
                     float       t                   = solveForLead(pship, targetModel, w, &vecLeadPosition);

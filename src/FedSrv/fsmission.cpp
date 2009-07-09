@@ -3024,15 +3024,20 @@ void CFSMission::ProcessGameOver()
             PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
             if (ppso->Connected())
             {
-                ppso->Disconnect(g.timeNow);
+                
                 IsideIGC*   pside = pfsShip->GetSide();
 
+				ppso->Disconnect(g.timeNow);
+
                 bool  bCount = (ppso->GetTimePlayed() > 180.0f) && !m_bDraw;
+
                 ppso->EndGame(m_pMission,
-					IsideIGC::AlliedSides(pside, m_psideWon) && bCount && (ppso->GetTimePlayed() > GetGameDuration() / 2.0f),
-                              !IsideIGC::AlliedSides(pside, m_psideWon) && bCount); //#ALLY TheRock sharing victory
+                              ((pside == m_psideWon) || IsideIGC::AlliedSides(pside, m_psideWon)) && bCount && (ppso->GetTimePlayed() > GetGameDuration() / 2.0f),
+                              ((pside != m_psideWon) && !IsideIGC::AlliedSides(pside, m_psideWon)) && bCount); //Imago ALLY 7/8/09
 
                 SideID  sid = pside->GetObjectID();
+
+
                 if (sid >= 0)
                 {
                     float   e = ppso->GetTimePlayed() * ppso->GetPersist().GetScore();
@@ -3049,6 +3054,7 @@ void CFSMission::ProcessGameOver()
                 {
                     commander[sid] = ppso;
                 }
+
             }
         }
       }
@@ -3057,13 +3063,14 @@ void CFSMission::ProcessGameOver()
   {
     SideID  sidWin = m_psideWon ? m_psideWon->GetObjectID() : NA;
     for (OldPlayerLink* popl = m_oldPlayers.first(); (popl != NULL); popl = popl->next())
-    {
+	{
         OldPlayerInfo & opi = popl->data();
         bool  bCount = (opi.pso.GetTimePlayed() > 180.0f);
         opi.pso.EndGame(m_pMission,
-			IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon) && bCount && (opi.pso.GetTimePlayed() > GetGameDuration() / 2.0f),
-                      !IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon) && bCount); //#ALLY TheRock sharing victory, was: opi.sideID == sidWin
-        if (opi.sideID >= 0)
+                      ((opi.sideID == sidWin) || IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon)) && bCount && (opi.pso.GetTimePlayed() > GetGameDuration() / 2.0f),
+                      ((opi.sideID != sidWin) || !IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon)) && bCount); //Imago ALLY 7/8/09
+
+      if (opi.sideID >= 0)
         {
             float   e = opi.pso.GetTimePlayed() * opi.pso.GetPersist().GetScore();
 
@@ -3356,6 +3363,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
 							nStationsPerSide[i]++;
 						}
 					}
+					
                 }
             }
         }
@@ -3412,7 +3420,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                     IsideIGC*   pside = psl->data()->GetSide();
                     if (psideOwner == NULL)
                         psideOwner = pside;
-					else if (!IsideIGC::AlliedSides(psideOwner, pside)) //#ALLYTD: needs looking over (TheRock)
+					else if (!IsideIGC::AlliedSides(psideOwner, pside)) //#ALLYTD: needs looking over (TheRock)  IMAGO REVIEW causing crash
                         break;
                 }
             }

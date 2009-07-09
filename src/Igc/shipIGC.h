@@ -1560,7 +1560,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             else
             {
                 ObjectType  type = pmodel->GetObjectType();
-				bool        bFriendly = IsideIGC::AlliedSides(pmodel->GetSide(), GetSide()); // #ALLY -was: pmodel->GetSide() == GetSide()
+				bool        bFriendly = ((pmodel->GetSide() == GetSide()) || IsideIGC::AlliedSides(pmodel->GetSide(), GetSide())); // #ALLY IMAGO 7/8/09
 
                 switch (cid)
                 {

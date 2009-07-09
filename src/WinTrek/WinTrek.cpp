@@ -197,7 +197,7 @@ int   GetSimilarTargetMask(ImodelIGC* pmodel)
 
     int tt = GetTypebits(type);
     if ((type == OT_ship) || (type == OT_station) || (type == OT_probe))
-		tt |= IsideIGC::AlliedSides(trekClient.GetShip()->GetSide(), pmodel->GetSide()) // #ALLY -was: ==
+		tt |= ((trekClient.GetShip()->GetSide() == pmodel->GetSide()) || IsideIGC::AlliedSides(trekClient.GetShip()->GetSide(), pmodel->GetSide())) // #ALLY -was: == imago fixed 7/8/09
               ? c_ttFriendly
               : c_ttEnemy;
     else
@@ -6809,8 +6809,8 @@ public:
 
             IsideIGC*   psideMe;
             bool        bAnyEnemyShips;
-            if (pmodelTarget && !trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pmodelTarget->GetSide()))
-                bAnyEnemyShips = true;  //ALLY - imago 7/3/09
+            if (pmodelTarget)
+                bAnyEnemyShips = true;  //ALLYTD?  - imago 7/3/09 7/9/09 removed
             else
             {
                 bAnyEnemyShips = false;
@@ -7046,7 +7046,7 @@ public:
                             if (!bAnyEnemyShips)
                             {
                                 //We haven't spotted any enemy ships yet ... see if this is one.
-                                bAnyEnemyShips = ( (pship->GetSide() != psideMe) && (!psideMe->AlliedSides(psideMe,pship->GetSide())) ); //#ALLY -imago 7/3/09
+                                bAnyEnemyShips = ( (pship->GetSide() != psideMe) && !psideMe->AlliedSides(psideMe,pship->GetSide()) ); //#ALLY -imago 7/3/09
                             }
 
                             bSetVisible = (pmodel != trekClient.GetShip()) &&

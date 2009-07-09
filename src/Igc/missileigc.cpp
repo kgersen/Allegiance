@@ -438,7 +438,7 @@ void                 CmissileIGC::HandleCollision(Time       timeCollision,
 				ImineIGC*    pmine = (ImineIGC*)pModel;
 				if(!pmine->GetMineType()->HasCapability(c_eabmShootMissiles)) 
 					return;             //Ignore collisions with minefields
-				if (IsideIGC::AlliedSides(GetSide(),pModel->GetSide())) // #ALLY -was: GetSide()==pModel->GetSide()
+				if ((GetSide()==pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(),pModel->GetSide())) // #ALLY -was: GetSide()==pModel->GetSide() imago fixed 7/8/09
 					return;             // ignore if same side
 			}
 		} // experimental

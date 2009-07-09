@@ -392,7 +392,7 @@ class ClusterSiteImpl : public ClusterSite
                     {
                         IhullTypeIGC*   pht = trekClient.m_pCoreIGC->GetHullType(ss.GetHullID());
                         assert (pht);
-						am |= GetAssetMask(pship, pht, IsideIGC::AlliedSides(pside, pship->GetSide())); // #ALLY -was: pside == pship->GetSide()
+						am |= GetAssetMask(pship, pht, ( (pside == pship->GetSide()) || IsideIGC::AlliedSides(pside, pship->GetSide()) )); // #ALLY -was: pside == pship->GetSide() IMAGO FIXED 7/8/09
                     }
                 }
             }
@@ -411,7 +411,7 @@ class ClusterSiteImpl : public ClusterSite
                  (psl != NULL);
                  psl = psl->next())
             {
-				am |= IsideIGC::AlliedSides(psl->data()->GetSide(), pside) // #ALLY -was: psl->data()->GetSide() == pside
+				am |= ((psl->data()->GetSide() == pside) || IsideIGC::AlliedSides(psl->data()->GetSide(), pside)) // #ALLY -was: psl->data()->GetSide() == pside
                       ? c_amStation
                       : c_amEnemyStation;
             }
@@ -2625,12 +2625,13 @@ void WinTrekClient::ChangeCluster(IshipIGC*  pship, IclusterIGC* pclusterOld, Ic
 
 void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, IstationIGC* pstationNew)
 {
+	OutputDebugString("!!!!!!!!In Change Station\n");
     if (pship == GetShip() && trekClient.MyMission()->GetStage() == STAGE_STARTED)
 	{
         if (pstationNew)
-        {
+		{
             if (pstationOld == NULL)
-            {
+			{
                 ConsoleImage*   pconsole = GetWindow()->GetConsoleImage();
                 if (pconsole)
                 {
@@ -2662,7 +2663,7 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
             {
                 //NYI do anything appropriate for switching stations
             }
-        }
+		}
         else
         {
             assert (pstationOld);
@@ -2675,7 +2676,15 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
             IhullTypeIGC*   pht = pshipSource->GetBaseHullType();
             assert (pht);
 
-            pstationOld->RepairAndRefuel(pshipSource);
+			//IMAGO ALLY 7/9/09 REARM
+			pstationOld->RepairAndRefuel(pshipSource);
+
+			//if ((GetSide() != pstationOld->GetSide() && pstationOld->GetSide()->AlliedSides(pstationOld->GetSide(),GetSide()))
+			//	&& ((trekClient.GetShip()->GetParentShip() == NULL) && !trekClient.GetShip()->IsGhost()))
+				
+
+            
+			OutputDebugString("!!! called Repair&Refuel from Change Station\n");
 
             /*
             const char* pszDisplayMDL;
@@ -2816,7 +2825,7 @@ void WinTrekClient::ActivateTeleportProbe(IprobeIGC* pprobe)
     IsideIGC*       pside = pprobe->GetSide();
     IclusterIGC*    pcluster = pprobe->GetCluster();
 
-    if ( (pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide())) ) //ALLY - imago 7/3/09
+    if ( (pside != trekClient.GetSide()) && !pside->AlliedSides(pside,trekClient.GetSide()) ) //ALLY - imago 7/3/09
     {
         assert (pside);
         PostText(true, START_COLOR_STRING "%s %s" END_COLOR_STRING " active in %s",
@@ -2834,7 +2843,7 @@ void WinTrekClient::DestroyTeleportProbe(IprobeIGC* pprobe)
     IsideIGC*       psideMe = trekClient.GetSide();
     IclusterIGC*    pcluster = pprobe->GetCluster();
 
-	if ( (pside != psideMe) && (!pside->AlliedSides(pside,psideMe)) ) //ALLY - imago 7/3/09
+	if ( (pside != psideMe) && !pside->AlliedSides(pside,psideMe) ) //ALLY - imago 7/3/09
     {
         assert (pside);
         ClusterSite*    pcs = pcluster->GetClusterSite();
@@ -3882,6 +3891,7 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
     if (!m_fm.IsConnected())
     {
         // full fuel and ammo
+		OutputDebugString("In DockWithStation!!!!!!!!!!!!!!!!!!!!!!!!\n");
         pStation->RepairAndRefuel (pShip);
 
         if ((pShip != GetShip ()) || Training::ShipLanded ())
@@ -3893,7 +3903,14 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
 
             // now send the ship back out the other side
             pStation->Launch (pShip);
-        }
+		} else { //ALLY Imago 7/9/09 docking with an allied station
+			if (GetShip()->GetSide()->AlliedSides(GetShip()->GetSide(),pStation->GetSide())) {
+	            IstationIGC*    pOldStation = pShip->GetStation ();
+	            pShip->SetStation (pStation);
+	            pShip->SetStation (pOldStation);
+				pStation->Launch (pShip);
+			}
+		}
     }
     return true;
 }
@@ -4931,7 +4948,7 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
 void WinTrekClient::SetGameoverInfo(FMD_S_GAME_OVER* pfmGameOver)
 {
     m_sideidLastWinner = pfmGameOver->iSideWinner;
-	m_bWonLastGame = (MyMission()->SideAllies(GetSideID()) == MyMission()->SideAllies(pfmGameOver->iSideWinner)); //#ALLY (TheRock)
+	m_bWonLastGame = ((pfmGameOver->iSideWinner == GetSideID()) || (MyMission()->SideAllies(GetSideID()) == MyMission()->SideAllies(pfmGameOver->iSideWinner))); //#ALLY (Imago) 7/8/09
     m_bLostLastGame = !m_bWonLastGame && (GetSideID() != SIDE_TEAMLOBBY) && pfmGameOver->iSideWinner != NA;
     m_strGameOverMessage = FM_VAR_REF(pfmGameOver, szGameoverMessage);
     m_nNumEndgamePlayers = 0;
@@ -5137,9 +5154,8 @@ int WinTrekClient::GetGrooveLevel()
         {
             IshipIGC* pship = psl->data();
 
-            if (pship->GetSide() != GetSide() //#ALLY - imago 7/3/09
-                && pship->SeenBySide(GetSide()) 
-				&& !pship->GetSide()->AlliedSides(pship->GetSide(),GetSide()))
+            if ( ( (pship->GetSide() != GetSide()) && !pship->GetSide()->AlliedSides(pship->GetSide(),GetSide()) ) //#ALLY - imago 7/3/09 7/8/09
+                && pship->SeenBySide(GetSide()) )
             {
                 bEnemiesSighted = true;
                 

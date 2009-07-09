@@ -5423,7 +5423,7 @@ class PlayerScoreObject
                         bool            bLose)
         {
             assert (!m_bConnected);
-            assert (!(bWin && bLose));
+            assert (!(bWin && bLose)); //CRASH HERE WITH ALLIES imago ALLYTD 7/9/09
 
             m_bWin = bWin;
             m_bLose = bLose;

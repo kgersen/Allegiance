@@ -830,8 +830,8 @@ public:
             );
             */
 
-			// or allied side Imago ALLY 7/6/09
-			if (trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pplayer->GetShip()->GetSide()) )  {
+			// or allied side Imago ALLY 7/6/09 7/8/09 ## not drones
+			if (trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pplayer->GetShip()->GetSide()) && pplayer->IsHuman())  {
 				//bEnableTakeMeTo = false; //NYI TakeMeTo 7/8/09
 				bEnableDonate = (trekClient.GetMoney() > 0);
 				

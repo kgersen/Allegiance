@@ -72,7 +72,7 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 
             if (launcher &&
                 (!GetMyMission()->GetMissionParams()->bAllowFriendlyFire) &&
-				(IsideIGC::AlliedSides(pside, launcher->GetSide())) && // #ALLY was: pside == launcher->GetSide()
+				((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide())) && // #ALLY was: pside == launcher->GetSide()
                 (amount >= 0.0f) &&
                 !m_probeType->HasCapability(c_eabmRescueAny))
             {

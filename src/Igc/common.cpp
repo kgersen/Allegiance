@@ -266,7 +266,7 @@ bool  FindableModel(ImodelIGC*          m,
 
         int sidebits = (pHisSide == NULL) 
                        ? c_ttNeutral
-					   : ( IsideIGC::AlliedSides(pside,pHisSide) // #ALLY - was: (pside == pHisSide)
+					   : ((pside == pHisSide) || IsideIGC::AlliedSides(pside,pHisSide) // #ALLY - was: (pside == pHisSide) FIXED
                           ? c_ttFriendly
                           : c_ttEnemy);
 
@@ -348,7 +348,7 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
         if ((!ps->GetStationType()->HasCapability(c_sabmPedestal)) &&
             ps->SeenBySide(pside))
         {
-			if (!IsideIGC::AlliedSides(pside, ps->GetSide()))		// #ALLY - was: pside != ps->GetSide(
+			if ((pside != ps->GetSide()) && !IsideIGC::AlliedSides(pside, ps->GetSide()))		// #ALLY FIXED imago - was: pside != ps->GetSide(
                 return false;               //enemy has a station == unfriendly
 
             rc = true;
@@ -383,7 +383,7 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
             if (pship->SeenBySide(pside) || pship->GetSide() == pside) 
 			{
 				//if (pside != pship->GetSide()) // if its not our side then we subtract 1 from our count
-				if (!IsideIGC::AlliedSides(pside,pship->GetSide())) //#ALLY -was: line above
+				if ((pside != pship->GetSide()) && !IsideIGC::AlliedSides(pside,pship->GetSide())) //#ALLY -was: line above IMAGO FIXED LIKE THIS ALL OVER 7/8/09
 				{// count hostiles in the system.
 					// TODO: Make smarter: Assign differnt ship hulls a differnt amount of points, could also handle drones differntly
 					friendlyShipCount--; 
@@ -539,17 +539,19 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 
                         n = 0;
                         {
-                            //Count the number of drones on this side building or mining this asteroid  (ALLYTD ROCK FIX?)
-                            for (ShipLinkIGC*   psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
+                            //Count the number of drones on this side and allied sides building or mining this asteroid  (ALLYTD ROCK FIX?)
+                            for (ShipLinkIGC*   psl = pside->GetMission()->GetShips()->first(); (psl != NULL); psl = psl->next()) //imago changed mission wide not side wide
                             {
                                 IshipIGC*   ps = psl->data();
                                 if (ps->GetPilotType() < c_ptPlayer)
                                 {
-                                    if ((ps->GetCommandTarget(c_cmdAccepted) == m) &&
-                                        (ps->GetCommandID(c_cmdAccepted) >= c_cidMine))
-                                    {
-                                        n++;
-                                    }
+									if ((ps->GetSide() == pside || pside->AlliedSides(pside,ps->GetSide()))) {  //imago added extra if
+                                    	if ((ps->GetCommandTarget(c_cmdAccepted) == m) &&
+                                        	(ps->GetCommandID(c_cmdAccepted) >= c_cidMine))
+                                    	{
+                                        	n++;
+                                    	}
+									}
                                 }
                             }
                         }
@@ -1554,7 +1556,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
             ignore = true;
         else
         {
-			if (IsideIGC::AlliedSides(mySide, hisSide)) // #ALLY TheRock : was if (mySide == hisSide)
+			if ((mySide == hisSide) || IsideIGC::AlliedSides(mySide, hisSide)) // #ALLY Imago 7/8/09
             {
 
                 if ((pshipHim->GetObjectID() < pship->GetObjectID()) &&                 //he has a lower ship ID
@@ -1579,7 +1581,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
                 ignore = true;                                                          //trucker rules of road: we're heavier
         }
     }
-    else if ((type == OT_mine) && IsideIGC::AlliedSides(mySide,hisSide))   //#ALLY                        //We can ignore friendly minefields
+    else if ((type == OT_mine) && ((mySide == hisSide) || IsideIGC::AlliedSides(mySide,hisSide)))   //#ALLY    FIXED IMAGO 7/8/09                    //We can ignore friendly minefields
     {
         ignore = true;
     }
@@ -2104,7 +2106,7 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                                  pml = pml->next())
                             {
                                 ImodelIGC*  pmodel = pml->data();
-                                if ((pmodel->GetObjectType() == OT_mine) && !IsideIGC::AlliedSides(pmodel->GetSide(), mySide)) //#ALLY -was : pmodel->GetSide() != mySide
+                                if ((pmodel->GetObjectType() == OT_mine) && ((pmodel->GetSide() != mySide) && !IsideIGC::AlliedSides(pmodel->GetSide(), mySide))) //#ALLY -was : pmodel->GetSide() != mySide  FIXED imago 7/8/09
                                 {
                                     //Vector to the center of the object
                                     const Vector&   itsPosition = pmodel->GetPosition();
