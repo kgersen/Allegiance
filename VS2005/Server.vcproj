@@ -168,7 +168,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib ..\src\Lib\DirectPlay\dxguid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\appweb\appweb.lib
+				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib winmm.lib version.lib urlmon.lib ..\src\Lib\DirectPlay\dxguid.lib comctl32.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\appweb\appweb.lib"
 				OutputFile="$(OutDir)/AllSrv.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\src\Inc\appWeb"
