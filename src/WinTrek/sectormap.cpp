@@ -829,7 +829,7 @@ public:
             IstationIGC* pstation = stationLink->data();
             
             if (pstation->GetStationType()->HasCapability(c_sabmRestart) &&
-                ((pstation->GetSide() == pside) || (pstation->GetSide()->AlliedSides(pside,pstation->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip)) ) //ALLY rip 7/9/09 imago
+                (pstation->GetSide() == pside)) //|| (pstation->GetSide()->AlliedSides(pside,pstation->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip)) ) //ALLY rip 7/9/09 imago
             {
                 return pstation;
             }

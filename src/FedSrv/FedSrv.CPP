@@ -11740,7 +11740,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
         }
     }
     else
-    {
+	{
         if ((pstationOld == NULL) && (pstationNew->GetSide() == pship->GetSide())) //#ALLY: dont dock tech at allied bases
 		{
             //Go over the ship's parts and give the side the tech bits for any equipment onboard
@@ -11779,13 +11779,14 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
             UpgradeShip(pship, pstationNew);
 		// #ALLY  -imago 7/3/09 added allied check and repair/refuel REARM
 		// if allied station, relaunch now
-	//	if ( (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
-	//	{
+		if ( (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
+		{
 			// proper method to launch, this will call ChangeStation again with pstationNew NULL
 			// if this causes issues, another way to do this is in cluster Update like for drones
 			// todo: check why ship isnt rearmed REARM kgjv
 			//pstationNew->RepairAndRefuel(pship);
-	//		pship->SetStation(NULL);
+			pship->SetStation(NULL);
+		}
 	}
 }
 

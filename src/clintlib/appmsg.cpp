@@ -1321,7 +1321,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         break;
 
         case FM_S_MONEY_CHANGE:
-		{
+        {
             if (!IsInGame())
                 break;
 
@@ -1350,19 +1350,30 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         PlayerInfo* ppiFrom = (PlayerInfo*)(pshipFrom->GetPrivateData());
                         ppiFrom->SetMoney(ppiFrom->GetMoney() - pfmMoney->dMoney);
                         m_pClientEventSource->OnMoneyChange(ppiFrom);
-
+						m_pMissionInfo->GetSideInfo(GetSide()->GetObjectID())->GetMembers().GetSink()();
 						if (pfmMoney->sidTo == sid) {
                             PostText(false, "%s gave you $%d. You now have $%d.",
                                      ppiFrom->CharacterName(), pfmMoney->dMoney, MyPlayerInfo()->GetMoney());
+							
+						} else if (pfmMoney->sidFrom == sid && GetSide()->AlliedSides(GetSide(),m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide())) {
+							PostText(false, "You gave %s $%d. You now have $%d.",
+                      			ZString(((PlayerInfo*)m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetPrivateData())->CharacterName()), pfmMoney->dMoney, MyPlayerInfo()->GetMoney());
 						}
                     }
                 }
-			} else { //IMAGO ALLY 7/9/09 because we can't see our $ when on another team
+               
+			/* Imago 7/9/09 ALLY
 				if (GetSide()->AlliedSides(GetSide(),m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide()) && (GetSide() != m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide()))
+				{
+					IshipIGC*  pshipTo   = m_pCoreIGC->GetShip(pfmMoney->sidTo);
+					PlayerInfo* ppiTo = (PlayerInfo*)(pshipTo->GetPrivateData());
+					m_pClientEventSource->OnMoneyChange(ppiTo);
+					m_pMissionInfo->GetSideInfo(m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide()->GetObjectID())->GetMembers().GetSink()();
 					PostText(false, "You gave %s $%d. You now have $%d.",
                       ZString(((PlayerInfo*)m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetPrivateData())->CharacterName()), pfmMoney->dMoney, MyPlayerInfo()->GetMoney());
+				}
+				*/
 			}
-			m_pMissionInfo->GetSideInfo(GetSide()->GetObjectID())->GetMembers().GetSink()();
         }
         break;
         case FM_S_SET_MONEY:

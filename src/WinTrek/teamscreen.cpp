@@ -162,7 +162,7 @@ private:
             m_pimageArrow = GetModeler()->LoadImage(AWF_TEAMROOM_PLAYERS_TEAM_ARROW, true);
             //m_pimageTab = GetModeler()->LoadImage(AWF_TEAMROOM_TAB_MASK, true);
 
-			// #ALLY  IMAGO REVIEW
+			// #ALLY 
 			m_pimageTabEdges[0] = GetModeler()->LoadImage("green_edgebmp",true);
             m_pimageSelectedTabEdges[0]= GetModeler()->LoadImage("greensel_edgebmp",true);
             m_pimageTabEdges[1] = GetModeler()->LoadImage("orange_edgebmp",true);
@@ -2223,6 +2223,9 @@ public:
 				bAllies = false;
 		}
 		bool bDefections = ((ally != NA) || bAllies) ? true : false;
+		bool bAllowAlliedRip = ((ally != NA) || bAllies) ? true : false; //7/9/09 imago aLLY
+		trekClient.MyMission()->SetAllowAlliedRip(bAllowAlliedRip);
+
 		if(bDefections != trekClient.MyMission()->GetMissionParams().bAllowDefections) {
 			//bug, defections persist with 3 team scenarino...
 			OutputDebugString("ALLY: Setting defections to: "+ZString(bDefections)+"\n");

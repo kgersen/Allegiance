@@ -557,6 +557,7 @@ public:
 	void			SetAllowEmptyTeams(bool bValue)	{ m_pfmMissionDef->misparms.bAllowEmptyTeams = bValue;}
 	// IMAGO ALLY 7/5/09
 	void			SetDefections(bool bValue)	{ m_pfmMissionDef->misparms.bAllowDefections = bValue;}
+	void			SetAllowAlliedRip(bool bValue)	{ m_pfmMissionDef->misparms.bAllowAlliedRip = bValue;}
     
     // Team Accessors
     LPCSTR          SideName(SideID sideID)         { return (sideID == SIDE_TEAMLOBBY) ? "Not on a team" : m_pfmMissionDef->rgszName[sideID]; }

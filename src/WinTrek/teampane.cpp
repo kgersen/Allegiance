@@ -233,6 +233,7 @@ public:
         
         TRef<Image> m_pimageArrow;
         TRef<Image> m_pimageTab;
+		TRef<Image> m_pimageAllies;
         
         int m_nWidth;
         int m_nHeight;
@@ -333,8 +334,7 @@ public:
                       // draw the selected tab arrow
                       psurface->BitBlt(WinPoint(157,0), m_pimageArrow->GetSurface());  //AEM 7.21.07 Expanded to X of 160 from 130 
                   }
-              }
-              
+              }            
               WinRect rectClipOld = psurface->GetClipRect();
               psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(105, 20))); // clip name to fit in column // yp: changed from 105 to 90 //AEM to 130
 
