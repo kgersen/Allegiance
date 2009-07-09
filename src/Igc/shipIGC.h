@@ -1978,7 +1978,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                 case c_ptPlayer:
                 case c_ptCheatPlayer:
                 {
-                    if (psideHim == GetSide())
+                    if ((psideHim == GetSide()) || GetSide()->AlliedSides(GetSide(),psideHim)) //ALLY imago 7/9/09
                     {
                         cid = c_cidDefend;
                         if (m_pshipParent == NULL)

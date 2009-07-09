@@ -1321,7 +1321,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         break;
 
         case FM_S_MONEY_CHANGE:
-        {
+		{
             if (!IsInGame())
                 break;
 
@@ -1357,12 +1357,12 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 						}
                     }
                 }
-                m_pMissionInfo->GetSideInfo(GetSide()->GetObjectID())->GetMembers().GetSink()();
 			} else { //IMAGO ALLY 7/9/09 because we can't see our $ when on another team
 				if (GetSide()->AlliedSides(GetSide(),m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide()) && (GetSide() != m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetSide()))
 					PostText(false, "You gave %s $%d. You now have $%d.",
                       ZString(((PlayerInfo*)m_pCoreIGC->GetShip(pfmMoney->sidTo)->GetPrivateData())->CharacterName()), pfmMoney->dMoney, MyPlayerInfo()->GetMoney());
 			}
+			m_pMissionInfo->GetSideInfo(GetSide()->GetObjectID())->GetMembers().GetSink()();
         }
         break;
         case FM_S_SET_MONEY:

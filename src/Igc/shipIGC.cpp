@@ -720,25 +720,13 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 IsideIGC* pside1 = GetSide();
                 IsideIGC* pside2 = pModel->GetSide();
 
-				if ((pside1 == pside2) || IsideIGC::AlliedSides(pside1,pside2)) // #ALLY - was: (pside1 == pside2)  IMAGO 7/8/09
+                if ((pside1 == pside2) || pside1->AlliedSides(pside1,pside2)) //Imago 7/9/09 ALLY
                 {
-					if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
-					{
-						if (pside1 == pside2) //own side
-						{
-							if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
-								break;
-						} 
-						else //Ally
-						{
-							if (m_myHullType.HasCapability(c_habmLifepod)) //#ALLY pod needs to be rescued (TheRock)
-								if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
-									break;
-							if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
-								break;
-						}
-						
-					}
+                    if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
+                    {
+                        if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
+                            break;
+                    }
                 }
                 else if (m_myHullType.HasCapability(c_habmBoard) && 
                          (!GetMyMission()->GetMissionParams()->bInvulnerableStations) &&

@@ -294,9 +294,16 @@ bool  FindableModel(ImodelIGC*          m,
 
                     case OT_station:
                     {
-						//#ALLY : exceptions for c_ttFriendly which include now allies RIPCORD ALLYTD?
+						//#ALLY : exceptions for c_ttFriendly which include now allies 
 						//dont match allies if we're looking for a friendly station with one of the abilities below
-						AbilityBitMask alliesnotallowed = c_sabmRestart | c_sabmTeleportUnload | c_sabmUnload | c_sabmRipcord;
+					
+						ImissionIGC*         pmission = pside->GetMission();  
+					    const MissionParams* pmp = pmission->GetMissionParams();
+
+						AbilityBitMask alliesnotallowed = (pmp->bAllowAlliedRip) ? 
+							c_sabmRestart | c_sabmTeleportUnload | c_sabmUnload : 
+							c_sabmRestart | c_sabmTeleportUnload | c_sabmUnload | c_sabmRipcord;  //imago 7/9/09
+
 						if ((ttMask & c_ttFriendly) &&
 							(abmAbilities & alliesnotallowed) &&
 							notsameside)

@@ -7049,7 +7049,7 @@ public:
                                 bAnyEnemyShips = ( (pship->GetSide() != psideMe) && !psideMe->AlliedSides(psideMe,pship->GetSide()) ); //#ALLY -imago 7/3/09
                             }
 
-                            bSetVisible = (pmodel != trekClient.GetShip()) &&
+                            bSetVisible = (pmodel != trekClient.GetShip()) && //ALLYTD VISIBILITY 7/9/09 imago
                                           (pmodel != pshipParent);
 
                             TRef<ThingGeo> pthing = psite->GetThingGeo();

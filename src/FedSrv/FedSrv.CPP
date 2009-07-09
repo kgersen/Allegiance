@@ -11865,7 +11865,7 @@ bool FedSrvSiteBase::ContinueRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 
 	if (pfsMission->GetMissionDef()->misparms.bAllowAlliedRip) {
 	    if ((pship->GetFlag() != NA) ||
-	        (pship->GetSide() != pmodel->GetSide()) || //ALLYTD: RIPCORD imago 7/8/0
+	        ((pship->GetSide() != pmodel->GetSide()) && (!pship->GetSide()->AlliedSides(pship->GetSide(),pmodel->GetSide()))) || //ALLYTD: RIPCORD imago 7/8/0
 	        (pmodel->GetCluster() == NULL))
 	    {
 	        rc = false;
