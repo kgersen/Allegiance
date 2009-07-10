@@ -1851,8 +1851,10 @@ public:
 						}
 					}
 				}
+				g_bQuickstart = false; //fine, no official server? just let them 
+				return;					//sit at the empty lobby list, maybe they will create a non official game 7/9/09
 			} else {
-				g_bQuickstart = false; //fine, can't create a game? just let them 
+				g_bQuickstart = false; //fine, can't create a game? (no servers or cores) just let them 
 				return;					//sit at the empty lobby list
 			}
 		} else {

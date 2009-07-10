@@ -199,7 +199,7 @@ public:
             
 			IsideIGC* pside = pplayer->GetShip()->GetSide();
             if (pplayer->IsHuman() && 
-				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 Ally 
+				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 ally
 				pside->AlliedSides(pside,trekClient.GetSide()) ))
             {
                 char cbTemp[256];
@@ -233,7 +233,7 @@ public:
         
         TRef<Image> m_pimageArrow;
         TRef<Image> m_pimageTab;
-		TRef<Image> m_pimageAllies;
+		TRef<Image> m_pimageAllies[c_cAlliancesMax]; //Imago ALLY 7/9/09
         
         int m_nWidth;
         int m_nHeight;
@@ -296,7 +296,7 @@ public:
               switch (pnumberside)
               {
               case 0:
-                  m_pimageTab = GetModeler()->LoadImage("btnteamyellowbmp", true);
+				  m_pimageTab = GetModeler()->LoadImage("btnteamyellowbmp", true);
                   break;
                   
               case 1:
@@ -322,19 +322,20 @@ public:
               // WLP 2005 - added default for NOAT lobby team display
               //
               default:                                                                // WLP 2005 - view lobby
-                  m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
+				  m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
+				  
 
              }
               if (m_pimageTab)
 			  {
-              psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
-              if (!m_bSingle){
-                  if (bSelected) 
-                  {
+             	psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
+              	if (!m_bSingle){
+                	if (bSelected) 
+                  	{
                       // draw the selected tab arrow
                       psurface->BitBlt(WinPoint(157,0), m_pimageArrow->GetSurface());  //AEM 7.21.07 Expanded to X of 160 from 130 
-                  }
-              }            
+                  	}
+              	}            
               WinRect rectClipOld = psurface->GetClipRect();
               psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(105, 20))); // clip name to fit in column // yp: changed from 105 to 90 //AEM to 130
 
@@ -342,16 +343,19 @@ public:
 			  ZString name;
 			  if ( pitem->GetSideID()== SIDE_TEAMLOBBY ) 
 			  {
-					name="Not On A Team";// #ALLYTD
+					name="Not On A Team";
 			  }
 			  else
 			  {
-					name=CensorBadWords (m_pMission->SideName(pitem->GetSideID()));// #ALLYTD
+					name=CensorBadWords (m_pMission->SideName(pitem->GetSideID()));
 			  }
-			  // #ALLYTD - temporary ui: prefix team name with alliance group number
+			  // #ALLY - temporary ui: prefix team name with alliance group number
 			  char allies = m_pMission->SideAllies(pitem->GetSideID());
-			  if (allies!=NA)
+			  if (allies!=NA) { //imago added ally  color 7/9/09
+				  Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
+				  psurface->FillRect(WinRect(WinPoint(0, 0), WinPoint(9, 20)), AllianceColors[pside->GetAllies()]*0.75);
 				  name = ZString((int)allies+1)+" " + name;
+			  }
 			  //
               psurface->DrawString(
                   TrekResources::SmallFont(),
@@ -832,7 +836,6 @@ public:
 
 			// or allied side Imago ALLY 7/6/09 7/8/09 ## not drones
 			if (trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pplayer->GetShip()->GetSide()) && pplayer->IsHuman())  {
-				//bEnableTakeMeTo = false; //NYI TakeMeTo 7/8/09
 				bEnableDonate = (trekClient.GetMoney() > 0);
 				
 			}

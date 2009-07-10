@@ -4745,9 +4745,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       if (pfmChat->cbMessage > 0)
       {
+#ifdef DEBUG
         //If you are going to cheat ... make it a public cheat
-        if (pfsPlayer->CanCheat() &&
-            DoCheatCode(pfsPlayer, FM_VAR_REF(pfmChat, Message)))
+        if (DoCheatCode(pfsPlayer, FM_VAR_REF(pfmChat, Message)))  //Imago 7/8/09 only link this in debug builds
         {
           if (!lstrcmpi(FM_VAR_REF(pfmChat, Message), "bootme"))
             break;
@@ -4755,6 +4755,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         }
         else
         {
+#endif
           //NYI hack to allow misison owner to boot people from the lobby
           if (pfmChat->cbMessage > 5 && pfsMission->GetOwner() == pfsPlayer)
           {

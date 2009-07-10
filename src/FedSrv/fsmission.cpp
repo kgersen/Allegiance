@@ -3550,7 +3550,12 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
       
       if (pfsShip->IsPlayer() && !pfsShip->GetPlayer()->CanCheat())
       {
+		  //imago 7/9/09 REMOVE REVIEW TEST
+#ifdef DEBUG
+		bFoundNormalPlayer = false;
+#else
         bFoundNormalPlayer = true;
+#endif
         break;
       }
     }
