@@ -329,7 +329,7 @@ struct ChatSubject
                 IsideIGC*           psideFriendly = trekClient.GetShip()->GetSide();
                 WingID              wid;
                 const ShipListIGC*  pships = psideFriendly->GetShips();
-				OutputDebugString("In SetRecipient() switch ct="+ZString(ct)+"\n");
+				//OutputDebugString("In SetRecipient() switch ct="+ZString(ct)+"\n");
                 switch (ct)
                 {
                     case CHAT_TEAM:
@@ -1327,7 +1327,7 @@ public:
                 const char* pszRecipient;
                 switch (m_pchsCurrent->m_ctRecipient)
                 {
-					OutputDebugString("In UpdateComposedChat() switch m_pchsCurrent->m_ctRecipient="+ZString(m_pchsCurrent->m_ctRecipient)+"\n");
+					//OutputDebugString("In UpdateComposedChat() switch m_pchsCurrent->m_ctRecipient="+ZString(m_pchsCurrent->m_ctRecipient)+"\n");
                     case CHAT_NOSELECTION:
                         pszRecipient = pszNone;
                     break;          
@@ -2814,7 +2814,7 @@ public:
 				                                            if (score < scoreBest)
 				                                            {
 				                                                scoreBest = score;
-																OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+																//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
 				                                                ct = CHAT_INDIVIDUAL;
 				                                                oidRecipient = pship->GetObjectID();
 				                                                pbaseRecipient = pship;

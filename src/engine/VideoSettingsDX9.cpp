@@ -131,7 +131,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
             ::RegQueryValueEx(hKey, "CombatFullscreenXSize", NULL, &dwType, (BYTE*)&x, &dwSize);
 			::RegQueryValueEx(hKey, "CombatFullscreenYSize", NULL, &dwType, (BYTE*)&y, &dwSize);
             ::RegCloseKey(hKey);
-			OutputDebugString("Using res: "+ZString(x)+"x"+ZString(y)+"\n");
+			//OutputDebugString("Using res: "+ZString(x)+"x"+ZString(y)+"\n");
         }
 
 		lpSubKey += ZString("\\3DSettings");
@@ -181,13 +181,13 @@ BOOL CALLBACK MonitorEnumProc(
 		//	so i've bastardized the code a bit in the process of fixing the issue
 		for( int i=0; i<=g_VideoSettings.iNumResolutions; i++ )
 		{
-			OutputDebugString("Looking for a resolution match to pull refresh rate...");
+			//OutputDebugString("Looking for a resolution match to pull refresh rate...");
 			int width = g_VideoSettings.pResolutionSet[i].iWidth;
 			int height = g_VideoSettings.pResolutionSet[i].iHeight;
 			int rate = g_VideoSettings.pResolutionSet[i].iFreq;
 			if (x == width && y == height) {
 				g_DX9Settings.m_refreshrate = rate;
-				OutputDebugString("Match found! Rate set to: "+ZString(rate)+"\n");
+				//OutputDebugString("Match found! Rate set to: "+ZString(rate)+"\n");
 				break;
 			}
 		}
@@ -355,7 +355,7 @@ BOOL CALLBACK MonitorEnumProc(
 		delete g_VideoSettings.pDevData;
 		g_VideoSettings.pDevData = NULL;
 	}
-	OutputDebugString("Starting with refresh rate: " + ZString(g_DX9Settings.m_refreshrate) + "\n");  
+	//OutputDebugString("Starting with refresh rate: " + ZString(g_DX9Settings.m_refreshrate) + "\n");  
 
 	return true;			// Success.
 }

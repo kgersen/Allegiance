@@ -296,7 +296,7 @@ private:
 
         ZAssert(m_hwndFocus == NULL && pwindow->GetHWND() != NULL);
         ZAssert(!m_bValid);
-		OutputDebugString("\n\nCalling SetFocusWindow() ONLY SUPPOSED TO HAPPEN ONCE!\n");
+		//OutputDebugString("\n\nCalling SetFocusWindow() ONLY SUPPOSED TO HAPPEN ONCE!\n");
 
         m_hwndFocus			= pwindow->GetHWND();
         m_bFullscreen		= bStartFullscreen;

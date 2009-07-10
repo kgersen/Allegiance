@@ -2228,7 +2228,7 @@ public:
 
 		if(bDefections != trekClient.MyMission()->GetMissionParams().bAllowDefections) {
 			//bug, defections persist with 3 team scenarino...
-			OutputDebugString("ALLY: Setting defections to: "+ZString(bDefections)+"\n");
+			//OutputDebugString("ALLY: Setting defections to: "+ZString(bDefections)+"\n");
 			m_pMission->SetDefections(bDefections);
 			trekClient.MyMission()->SetDefections(bDefections);
 			trekClient.MyMission()->SetSideAllies(m_sideCurrent,ally);

@@ -1683,7 +1683,7 @@ public:
 
 			//imago 7/5/09
 			//if there are players in the lobby join the most populated server...
-			OutputDebugString("GetCountInLobby(plist) returned "+ ZString(cPlayers) +"\n");
+			//OutputDebugString("GetCountInLobby(plist) returned "+ ZString(cPlayers) +"\n");
 			if (cPlayers) {
 				 plist = SortingList(plist, NumPlayerCompare, true);
 				 MissionInfo* game = (MissionInfo*)plist->GetItem(0);

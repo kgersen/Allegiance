@@ -2625,7 +2625,6 @@ void WinTrekClient::ChangeCluster(IshipIGC*  pship, IclusterIGC* pclusterOld, Ic
 
 void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, IstationIGC* pstationNew)
 {
-	OutputDebugString("!!!!!!!!In Change Station\n");
     if (pship == GetShip() && trekClient.MyMission()->GetStage() == STAGE_STARTED)
 	{
         if (pstationNew)
@@ -2676,15 +2675,11 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
             IhullTypeIGC*   pht = pshipSource->GetBaseHullType();
             assert (pht);
 
-			//IMAGO ALLY 7/9/09 REARM
 			pstationOld->RepairAndRefuel(pshipSource);
 
 			//if ((GetSide() != pstationOld->GetSide() && pstationOld->GetSide()->AlliedSides(pstationOld->GetSide(),GetSide()))
 			//	&& ((trekClient.GetShip()->GetParentShip() == NULL) && !trekClient.GetShip()->IsGhost()))
 				
-
-            
-			OutputDebugString("!!! called Repair&Refuel from Change Station\n");
 
             /*
             const char* pszDisplayMDL;
@@ -3891,9 +3886,7 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
     if (!m_fm.IsConnected())
     {
         // full fuel and ammo
-		OutputDebugString("In DockWithStation!!!!!!!!!!!!!!!!!!!!!!!!\n");
         pStation->RepairAndRefuel (pShip);
-
         if ((pShip != GetShip ()) || Training::ShipLanded ())
         {
             // how to make the miners empty out and reset their mission
@@ -3903,13 +3896,6 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
 
             // now send the ship back out the other side
             pStation->Launch (pShip);
-		} else { //ALLY Imago 7/9/09 docking with an allied station
-			if (GetShip()->GetSide()->AlliedSides(GetShip()->GetSide(),pStation->GetSide())) {
-	            IstationIGC*    pOldStation = pShip->GetStation ();
-	            pShip->SetStation (pStation);
-	            pShip->SetStation (pOldStation);
-				pStation->Launch (pShip);
-			}
 		}
     }
     return true;

@@ -679,10 +679,12 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
 
 bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 {	
+	/*
 	char szBuffer[256];
 	sprintf( szBuffer, "ONWNDPOSCHANGE: X:%d  y:%d flags:%d,   StateMinimized:%d StateRestored:%d\n", pwp->x, pwp->y, pwp->flags,
 		m_bWindowStateMinimised, m_bWindowStateRestored );
 	OutputDebugString( szBuffer );
+	*/
 
     if ((pwp->x != 0 && pwp->y !=0) && GetFullscreen()) { //imago fixed crash 7/6/09
         pwp->x = 0;
