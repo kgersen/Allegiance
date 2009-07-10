@@ -199,7 +199,7 @@ public:
             
 			IsideIGC* pside = pplayer->GetShip()->GetSide();
             if (pplayer->IsHuman() && 
-				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 ally
+				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 allyTD VISIBLITY
 				pside->AlliedSides(pside,trekClient.GetSide()) ))
             {
                 char cbTemp[256];
@@ -233,7 +233,7 @@ public:
         
         TRef<Image> m_pimageArrow;
         TRef<Image> m_pimageTab;
-		TRef<Image> m_pimageAllies[c_cAlliancesMax]; //Imago ALLY 7/9/09
+		TRef<Image> m_pimageAllies[c_cAlliancesMax]; //Imago ALLYTD 7/9/09
         
         int m_nWidth;
         int m_nHeight;
@@ -1094,8 +1094,17 @@ public:
             
             if (shipID != trekClient.GetShipID() && trekClient.GetMoney() > 0)
             {
+
+				//imago 7/10/09
+				if (trekClient.FindPlayer(shipID)->GetShip()->GetSide() != trekClient.GetSide())
+					trekClient.PostText(false, "You gave %s $%d. You now have $%d.",
+                    	  trekClient.FindPlayer(shipID)->CharacterName(), 
+						  (trekClient.GetMoney() >= 100) ? 100 : trekClient.GetMoney(), 
+						  (trekClient.GetMoney() >= 100) ? (trekClient.GetMoney() - 100) : 0);
+
                 trekClient.DonateMoney(trekClient.FindPlayer(shipID), 
                     (trekClient.GetMoney() >= 100) ? 100 : trekClient.GetMoney());
+
             }                    
         }
         
@@ -1112,9 +1121,21 @@ public:
             if (shipID != trekClient.GetShipID() && trekClient.GetMoney() > 0)
             {
 
+				//hack the sfx in, see NYI in trekmdl.cpp
+				trekClient.PlaySoundEffect(positiveButtonClickSound);
+
+				//imago 7/10/09
+				if (trekClient.FindPlayer(shipID)->GetShip()->GetSide() != trekClient.GetSide())
+					trekClient.PostText(false, "You gave %s $%d. You now have $%d.",
+                    	 trekClient.FindPlayer(shipID)->CharacterName(), 
+						  (trekClient.GetMoney() >= 500) ? 500 : trekClient.GetMoney(), 
+						  (trekClient.GetMoney() >= 500) ? (trekClient.GetMoney() - 500) : 0);
+
 				//Imago 7/6/09 large donations /w right click
                 trekClient.DonateMoney(trekClient.FindPlayer(shipID), 
                     (trekClient.GetMoney() >= 500) ? 500 : trekClient.GetMoney());
+
+
             }                    
         }
         
