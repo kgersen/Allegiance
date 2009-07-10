@@ -45,7 +45,7 @@ static void GetClusterOwners(IclusterIGC*    pcluster, SideID& sideOwner, SideID
             sideSecondaryOwner = sideID;
             nStationsSecondaryOwner = nStations[sideID];
         }
-    }    
+    }
 }
 
 static int GetClusterPopulation(IclusterIGC*   pcluster, IsideIGC*  pside)
@@ -68,7 +68,7 @@ static int GetClusterPopulation(IclusterIGC*   pcluster, IsideIGC*  pside)
                     if (ppi->LastSeenState() != c_ssObserver && ppi->LastSeenState() != c_ssTurret)
                     {
                         IhullTypeIGC* pht = trekClient.GetCore()->GetHullType(ppi->LastSeenShipType());
-            
+
                         if (pht != NULL && !(pht->GetCapabilities() & c_habmLifepod))
                             n++;
                     }
@@ -109,7 +109,7 @@ typedef Slist_utl<StoredIcon>   IconList;
 typedef Slink_utl<StoredIcon>   IconLink;
 
 static void AddIcon(IObject*    psurfaceIcon,
-                    IsideIGC*   pside, 
+                    IsideIGC*   pside,
                     int         sortOrder,
                     int         sideID,
                     IconList*   picons)
@@ -117,7 +117,7 @@ static void AddIcon(IObject*    psurfaceIcon,
     for (IconLink*  pil = picons->first(); (pil != NULL); pil = pil->next())
     {
         if ((pil->data().psurfaceIcon == (Surface*)psurfaceIcon) &&
-            (pil->data().pside == pside))  //ALLYTD? naaaa
+            (pil->data().pside == pside))  //ALLYTD? VISIBILITY?
         {
             pil->data().count++;
             return;
@@ -196,7 +196,7 @@ public:
         WinPoint pntButton = psurfaceBackground->GetSize() - psurfaceExpand->GetSize();
         pntButton = pntButton - WinPoint(16, 4);
         if (point.X() > pntButton.X() && point.Y() > pntButton.Y()
-            && point.X() < psurfaceBackground->GetSize().X() 
+            && point.X() < psurfaceBackground->GetSize().X()
             && point.Y() < psurfaceBackground->GetSize().Y())
         {
             return MouseResultHit();
@@ -238,22 +238,22 @@ public:
     }
 
     /*
-    void DrawStationIconsOfClass(Context* pcontext, IclusterIGC* pcluster, 
+    void DrawStationIconsOfClass(Context* pcontext, IclusterIGC* pcluster,
         Point& ptNext, StationClassID classID)
     {
         const StationListIGC* stationList = pcluster->GetStations();
-        
-        for (StationLinkIGC* stationLink = (stationList ? stationList->first() : NULL); 
+
+        for (StationLinkIGC* stationLink = (stationList ? stationList->first() : NULL);
             stationLink; stationLink=stationLink->next())
         {
             IstationIGC* pstation = stationLink->data();
-            
+
             // if this station is in the correct class of station
             if (pstation->GetBaseStationType()->GetClassID() == classID)
-            {   
+            {
                 // draw this station icon
                 Surface* psurfaceIcon = (Surface*)(pstation->GetIcon());
-                
+
                 if (ptNext.X() < GetButtonOffset().X())
                 {
                     pcontext->DrawImage3D(psurfaceIcon, pstation->GetSide()->GetColor(), false, ptNext);
@@ -263,11 +263,11 @@ public:
         }
     }
 
-    void DrawStationIcons(Context* pcontext, IclusterIGC* pcluster, 
+    void DrawStationIcons(Context* pcontext, IclusterIGC* pcluster,
         const Point& ptStations)
     {
         Point ptNext = ptStations;
-        
+
         // draw the station icons in order of importance
         DrawStationIconsOfClass(pcontext, pcluster, ptNext, c_scStarbase);
         DrawStationIconsOfClass(pcontext, pcluster, ptNext, c_scGarrison);
@@ -280,21 +280,21 @@ public:
     }
     */
 
-    void DrawAsteroidIcons(Context* pcontext, IEngineFont* pfont, IclusterIGC* pcluster, 
+    void DrawAsteroidIcons(Context* pcontext, IEngineFont* pfont, IclusterIGC* pcluster,
         const Point& ptAsteroids)
     {
         Point ptNext = ptAsteroids;
 
-        // Count the asteroids 
+        // Count the asteroids
 
         TMap<AsteroidAbilityBitMask, int> mapSpecialAsteroids;
         TMap<AsteroidAbilityBitMask, Surface*> mapSpecialAsteroidIcons;
 
-        for (AsteroidLinkIGC* asteroidLink = pcluster->GetAsteroids()->first(); 
+        for (AsteroidLinkIGC* asteroidLink = pcluster->GetAsteroids()->first();
             asteroidLink != NULL; asteroidLink = asteroidLink->next())
         {
             AsteroidAbilityBitMask aabm = asteroidLink->data()->GetCapabilities();
-            
+
             // if this asteroid has any special capabilities besides being buildable
             if ((aabm & ~c_aabmBuildable) != 0)
             {
@@ -317,7 +317,7 @@ public:
         {
             pcontext->DrawImage3D(iterIcon.Value(), Color::White(), false, ptNext);
             pcontext->DrawString(
-                pfont, 
+                pfont,
                 Color::White(),
                 ptNext + Point(iterIcon.Value()->GetSize().X() + 4, 0),
                 ZString(iterCount.Value())
@@ -326,18 +326,18 @@ public:
             ptNext = ptNext - Point(0, iterIcon.Value()->GetSize().Y());
             iterCount.Next();
             iterIcon.Next();
-        }        
+        }
     }
 
 
     float GetHeliumInCluster(IclusterIGC* pcluster)
     {
         float fOre = 0;
-        for (AsteroidLinkIGC* asteriodLink = pcluster->GetAsteroids()->first(); 
+        for (AsteroidLinkIGC* asteriodLink = pcluster->GetAsteroids()->first();
             asteriodLink != NULL; asteriodLink = asteriodLink->next())
         {
             AsteroidAbilityBitMask aabm = asteriodLink->data()->GetCapabilities();
-            
+
             // if we can mine helium at this asteroid
             if ((aabm & c_aabmMineHe3) != 0)
             {
@@ -361,7 +361,7 @@ public:
 
         // draw the resize button
         Surface* psurfaceExpand = m_pimageExpand->GetSurface();
-        pcontext->DrawImage(psurfaceExpand, false, 
+        pcontext->DrawImage(psurfaceExpand, false,
             Point::Cast(psurfaceBackground->GetSize() - psurfaceExpand->GetSize() - WinPoint(16, 4)));
 
         if (m_pClusterSel)
@@ -373,9 +373,9 @@ public:
 
             // draw sectorname
             pcontext->DrawString(
-                pfont, 
-                Color::White(), 
-                ptSectorName, 
+                pfont,
+                Color::White(),
+                ptSectorName,
                 ZString(m_pClusterSel->GetName()) + " Sector"
             );
 
@@ -390,7 +390,7 @@ public:
                         {
                             IsideIGC*   pside = psl->data()->GetSide();
                             AddIcon(psl->data()->GetIcon(), pside, NA,
-                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);  //ALLYTD? naaa
+                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);  //ALLYTD? VISIBILITY
                         }
                     }
                 }
@@ -410,8 +410,8 @@ public:
                             {
                                 IsideIGC*   pside = psl->data()->GetSide();
 
-                                AddIcon(pht->GetIcon(), pside, hid, 
-                                    (pside == psideMe) ? c_cSidesMax : pside->GetObjectID(), &icons); //ALLYTD? naaa
+                                AddIcon(pht->GetIcon(), pside, hid,
+                                    (pside == psideMe) ? c_cSidesMax : pside->GetObjectID(), &icons); //ALLYTD? VISIBLITY
                             }
                         }
                     }
@@ -421,22 +421,22 @@ public:
                     Point ptNext = ptStations;
 
                     for (IconLink*  pil = icons.first(); (pil != NULL); pil = pil->next())
-                    {   
+                    {
                         if (ptNext.X() < GetButtonOffset().X())
                         {
                             const Color&  color = pil->data().pside->GetColor();
-                            pcontext->DrawImage3D(pil->data().psurfaceIcon, 
+                            pcontext->DrawImage3D(pil->data().psurfaceIcon,
                                                   color,
                                                   false, ptNext);
                             ptNext += Point(pil->data().psurfaceIcon->GetSize().X(), 0);
-                            
+
                             if (pil->data().count > 1)
                             {
                                 TRef<IEngineFont> pfont = TrekResources::SmallFont();
                                 ZString strCount = pil->data().count;
                                 WinPoint pt = pfont->GetTextExtent(strCount);
-                                pcontext->DrawString(pfont, Color::White(), 
-                                    ptNext + Point(0, (pil->data().psurfaceIcon->GetSize().Y() - pt.Y())/2), 
+                                pcontext->DrawString(pfont, Color::White(),
+                                    ptNext + Point(0, (pil->data().psurfaceIcon->GetSize().Y() - pt.Y())/2),
                                     strCount);
                                 ptNext += Point(pt.X() + 2, 0);
                             }
@@ -454,8 +454,8 @@ public:
 
                 // draw the helium count
                 pcontext->DrawString(
-                    pfont, 
-                    Color::White(), 
+                    pfont,
+                    Color::White(),
                     ptHelium,
                     "He3: " + ZString(int(GetHeliumInCluster(m_pClusterSel)))
                 );
@@ -470,15 +470,15 @@ public:
 
                 // draw the cluster warning
                 AssetMask am = m_pClusterMouseOver->GetClusterSite()->GetClusterAssetMask();
-                ClusterWarning cw = GetClusterWarning(am, 
+                ClusterWarning cw = GetClusterWarning(am,
                     trekClient.MyMission()->GetMissionParams().bInvulnerableStations);
 
                 if (cw > c_cwNoThreat)
                 {
                     pcontext->DrawString(
-                        pfont, 
-                        Color::White(), 
-                        Point(0,0), 
+                        pfont,
+                        Color::White(),
+                        Point(0,0),
                         GetClusterWarningText(cw)
                     );
                 }
@@ -545,7 +545,7 @@ private:
     WinRect                 m_rectMap;
 
     bool                    m_bFlashFrame;
-    
+
 public:
 
     enum { c_nXBorder = 4, c_nYBorder = 4 };
@@ -576,7 +576,7 @@ public:
 
         m_peventSinkTimer = IEventSink::CreateDelegate(this);
         //GetWindow()->GetTimer()->AddSink(m_peventSinkTimer, 1.0f);
-    
+
         m_rectMap = WinRect::Cast(m_pimageBkgnd->GetBounds().GetRect());
 
         m_pimageSectorEmpty = pmodeler->LoadImage("sectoremptybmp", true);
@@ -621,7 +621,7 @@ public:
 //        m_pClusterSel = NULL;
 //        m_pSectorInfoPane->ClearCluster();
 //    }
-    
+
     void OnDelPlayer(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo, QuitSideReason reason, const char* szMessageParam)
     {
         if (pPlayerInfo == trekClient.GetPlayerInfo())
@@ -675,7 +675,7 @@ public:
             }
         }
     }
-    
+
     bool OnEvent(IEventSource* pevent)
     {
         Changed();
@@ -724,8 +724,8 @@ public:
             }
         }
 
-        const   float   c_bfr = 0.1f * 
-            max(0.0001, max(m_xClusterMax - m_xClusterMin, 
+        const   float   c_bfr = 0.1f *
+            max(0.0001, max(m_xClusterMax - m_xClusterMin,
                 m_yClusterMax - m_yClusterMin));
         m_xClusterMin -= c_bfr;
         m_xClusterMax += c_bfr;
@@ -785,16 +785,16 @@ public:
     int ClusterHasFriendlyRipcord(IclusterIGC* pcluster, IsideIGC* pside, const ClusterListIGC&    clustersRipcord)
     {
         const StationListIGC* stationList = pcluster->GetStations();
-        
-        for (StationLinkIGC* stationLink = stationList->first(); 
+
+        for (StationLinkIGC* stationLink = stationList->first();
             stationLink; stationLink=stationLink->next())
         {
             IstationIGC* pstation = stationLink->data();
-            
+
             if (pstation->GetStationType()->HasCapability(c_sabmRipcord) &&
-                ( (pstation->GetSide() == pside) || 
+                ( (pstation->GetSide() == pside) ||
 					(pstation->GetSide()->AlliedSides(pside,pstation->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) ) ) //ALLY allow rip to allies 7/7/09 imago
-				
+
             {
                 return c_iClusterHasStationRipcord;
             }
@@ -811,7 +811,7 @@ public:
         for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
         {
             IprobeIGC*  pprobe = ppl->data();
-            if ( ( (pprobe->GetSide() == pside) || (pprobe->GetSide()->AlliedSides(pside,pprobe->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) ) && 
+            if ( ( (pprobe->GetSide() == pside) || (pprobe->GetSide()->AlliedSides(pside,pprobe->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) ) &&
 				pprobe->GetCanRipcord(ripcordSpeed)) //ALLY allow rip to allies.. 7/7/09
                 return c_iClusterHasStationRipcord;
         }
@@ -822,12 +822,12 @@ public:
     IstationIGC* FindFriendlyStation(IclusterIGC* pcluster, IsideIGC* pside)
     {
         const StationListIGC* stationList = pcluster->GetStations();
-        
-        for (StationLinkIGC* stationLink = stationList->first(); 
+
+        for (StationLinkIGC* stationLink = stationList->first();
             stationLink; stationLink=stationLink->next())
         {
             IstationIGC* pstation = stationLink->data();
-            
+
             if (pstation->GetStationType()->HasCapability(c_sabmRestart) &&
                 (pstation->GetSide() == pside)) //|| (pstation->GetSide()->AlliedSides(pside,pstation->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip)) ) //ALLY rip 7/9/09 imago
             {
@@ -868,7 +868,7 @@ public:
 
     bool HasCommandTarget(IclusterIGC* pCluster, Command cmd)
     {
-        ImodelIGC* ptarget = trekClient.GetShip()->GetCommandTarget(cmd); 
+        ImodelIGC* ptarget = trekClient.GetShip()->GetCommandTarget(cmd);
 
         if (ptarget)
         {
@@ -921,7 +921,7 @@ public:
                     vertices.PushEnd(VertexL(Vector(point2.x, point2.y, 0), colorWarp));
                 }
             }
-            
+
             if (vertices.GetCount() != 0)
             {
                 pcontext->SetLineWidth(1.0f);
@@ -983,7 +983,7 @@ public:
 
                 // draw the conflict state
                 AssetMask am = pCluster->GetClusterSite()->GetClusterAssetMask();
-                ClusterWarning warn = GetClusterWarning(am, 
+                ClusterWarning warn = GetClusterWarning(am,
                     trekClient.MyMission()->GetMissionParams().bInvulnerableStations);
 
                 if (warn >= c_cwStationThreatened)
@@ -1021,7 +1021,7 @@ public:
                     pcontext->DrawImage3D(m_pimageSectorEnemy->GetSurface(), Color::White(), true, xy);
                 }
                 */
-                
+
                 // highlight it if it is ours
                 if (trekClient.GetChatCluster() == pCluster)
                     pcontext->DrawImage3D(m_pimageSectorHighlight->GetSurface(), Color::White(), true, xy);
@@ -1046,7 +1046,7 @@ public:
                         {
                             if (m_bFlashFrame)
                                 pcontext->DrawImage3D(m_pimageSectorPickTarget->GetSurface(), Color::White(), true, xy);
-                            else 
+                            else
                                 pcontext->DrawImage3D(m_pimageSectorPickable->GetSurface(), Color::White(), true, xy);
                         }
                         else
@@ -1067,7 +1067,7 @@ public:
                         {
                             if (m_bFlashFrame)
                                 pcontext->DrawImage3D(m_pimageSectorPickStationTarget->GetSurface(), Color::White(), true, xy);
-                            else 
+                            else
                                 pcontext->DrawImage3D(m_pimageSectorPickableStation->GetSurface(), Color::White(), true, xy);
                         }
                         else
@@ -1093,7 +1093,7 @@ public:
                     }
                 }
                 else if (HasBuildableAsteroid(pCluster,
-                                              GetWindow()->GetCommandAsteroid(), 
+                                              GetWindow()->GetCommandAsteroid(),
                                               GetWindow()->GetInvestAsteroid()))
                 {
                     pcontext->DrawImage3D(m_pimageSectorPickable->GetSurface(), Color::White(), true, xy);
@@ -1102,22 +1102,22 @@ public:
                 if (sideOwner != NA)
                 {
                     pcontext->DrawImage3D(
-                        m_pimageOwnerHighlight->GetSurface(), 
+                        m_pimageOwnerHighlight->GetSurface(),
                         trekClient.GetCore()->GetSide(sideOwner)->GetColor(),
-                        true, 
+                        true,
                         xy
                     );
-                }                
+                }
 
                 if (sideSecondaryOwner != NA)
                 {
                     pcontext->DrawImage3D(
-                        m_pimageSecondaryOwnerHighlight->GetSurface(), 
+                        m_pimageSecondaryOwnerHighlight->GetSurface(),
                         trekClient.GetCore()->GetSide(sideSecondaryOwner)->GetColor(),
-                        true, 
+                        true,
                         xy
                     );
-                }                
+                }
 
                 // draw the dots for the ships
                 {
@@ -1133,7 +1133,7 @@ public:
                             SideID sideID = psl->data()->GetObjectID();
 
                             vnSidePopCount[sideID] = GetClusterPopulation(pCluster, psl->data());
-                        
+
                             if (vnSidePopCount[sideID] != 0)
                                 ++nSidesPresent;
                         }
@@ -1167,9 +1167,9 @@ public:
 
                                     pcontext->FillRect(
                                         WinRect(
-                                            nX, 
-                                            nY, 
-                                            nX + nDotPopulation * nShipWidth, 
+                                            nX,
+                                            nY,
+                                            nX + nDotPopulation * nShipWidth,
                                             nY + nDotHeight
                                         ),
                                         psl->data()->GetColor()
@@ -1202,14 +1202,14 @@ public:
                         if (nPopulation > 0)
                         {
                             // draw bars for ships
-                            int nBarHeight = min(min(nPopulation, nMaxBarHeight), max(1, 
+                            int nBarHeight = min(min(nPopulation, nMaxBarHeight), max(1,
                                 (int)((nMaxBarHeight - 1) * log((float)nPopulation)/log((float)nMaxPlayers))+ 1));
-                        
+
                             pcontext->FillRect(
                                 WinRect(
-                                    nX, 
-                                    xy.Y() - nMaxBarHeight/2, 
-                                    nX + nBarWidth, 
+                                    nX,
+                                    xy.Y() - nMaxBarHeight/2,
+                                    nX + nBarWidth,
                                     xy.Y() - nMaxBarHeight/2 + nBarHeight
                                 ),
                                 pside->GetColor()
@@ -1230,7 +1230,7 @@ private:
     WinPoint GetClusterPoint(IclusterIGC* pcluster)
     {
         WinPoint pt = WinPoint(
-            (int)(m_rectMap.XMin() + ((pcluster->GetScreenX() - m_xMin)/(m_xMax - m_xMin))*(m_rectMap.XSize() - 2*c_nXBorder) + c_nXBorder), 
+            (int)(m_rectMap.XMin() + ((pcluster->GetScreenX() - m_xMin)/(m_xMax - m_xMin))*(m_rectMap.XSize() - 2*c_nXBorder) + c_nXBorder),
             (int)(m_rectMap.YMin() + ((pcluster->GetScreenY() - m_yMin)/(m_yMax - m_yMin))*(m_rectMap.YSize() - 2*c_nYBorder) + c_nYBorder)
             );
 
@@ -1289,7 +1289,7 @@ private:
         else if (trekClient.GetShip()->GetParentShip() != NULL)
         {
             trekClient.DisembarkAndTeleport(pstation);
-            
+
             GetWindow()->TurnOffOverlayFlags(ofTeleportPane);
         }
         else
@@ -1301,7 +1301,7 @@ private:
             pfmDocked->stationID = pstation->GetObjectID();
 
             trekClient.StartLockDown(
-                "Teleporting to " + ZString(pstation->GetName()) + "....", 
+                "Teleporting to " + ZString(pstation->GetName()) + "....",
                 BaseClient::lockdownTeleporting);
 
             GetWindow()->TurnOffOverlayFlags(ofTeleportPane);
@@ -1325,7 +1325,7 @@ private:
         else if (GetWindow()->GetConsoleImage()->GetConsoleData()->IsComposingCommand()
                 || trekClient.GetShip()->GetCluster() != NULL)
             return "goto";
-        else 
+        else
             return AWF_CURSOR_DEFAULT;
     }
 
@@ -1363,10 +1363,10 @@ private:
 
                 SelectCluster(pClusterFound);
                 GetWindow()->SetCursor(GetClusterCursor());
-                
+
                 /*
                 AssetMask am = pClusterFound->GetClusterSite()->GetClusterAssetMask();
-                ClusterWarning cw = GetClusterWarning(am, 
+                ClusterWarning cw = GetClusterWarning(am,
                     trekClient.MyMission()->GetMissionParams().bInvulnerableStations);
                 trekClient.PostText(false, GetClusterWarningText(cw));
                 */
@@ -1375,7 +1375,7 @@ private:
             {
                 m_bHovering = false;
                 SelectCluster(trekClient.GetChatCluster());
-                
+
                 if (m_bCanDrag)
                 {
                     GetWindow()->SetCursor(AWF_CURSOR_DRAG);
@@ -1391,9 +1391,9 @@ private:
     }
 
     virtual void MouseLeave(IInputProvider* pprovider)
-    { 
+    {
         m_bHovering = false;
-        SelectCluster(trekClient.GetChatCluster()); 
+        SelectCluster(trekClient.GetChatCluster());
         m_pSectorInfoPane->SelectMouseOverCluster(NULL);
 
         if (!m_bDragging)
@@ -1424,13 +1424,13 @@ private:
                     {
                         trekClient.RequestRipcord(trekClient.GetShip(), pClusterFound);
                     }
-                    // if we are teleporting, try to teleport to a station in 
+                    // if we are teleporting, try to teleport to a station in
                     // the selected station.
                     else if (GetWindow()->GetOverlayFlags() & ofTeleportPane)
                     {
                         AttemptTeleportTo(pClusterFound);
                     }
-                    else 
+                    else
                     {
                         // if we are in a station, change the view cluster
                         if (trekClient.GetShip()->GetCluster() == NULL)
@@ -1456,9 +1456,9 @@ private:
                             assert (b);
                             b->AddConsumer();
 
-                            trekClient.SendChat(trekClient.GetShip(), 
+                            trekClient.SendChat(trekClient.GetShip(),
                                 CHAT_INDIVIDUAL, trekClient.GetShipID(),
-                                NA, NULL, 
+                                NA, NULL,
                                 c_cidGoto, OT_buoy, b->GetObjectID(), b);
 
                             b->ReleaseConsumer();
@@ -1508,7 +1508,7 @@ private:
                 return MouseResultRelease();
             }
         }
-    
+
         Changed();
         return MouseResult();
     }

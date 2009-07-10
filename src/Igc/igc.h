@@ -3,7 +3,7 @@
 **
 **  File:    igc.h
 **
-**  Author: 
+**  Author:
 **
 **  Description:
 **      Interface decriptions for the igc library. This file was created by the ATL wizard.
@@ -159,25 +159,25 @@ const ObjectType    OT_constants        = 34;
 const ObjectType    OT_allsrvUser       = 35; // used by the admin object model
 const ObjectType    OT_Max              = 36;// don't put anything after this
                                              // OT_Max should be less then 256 for
-                                             // AGC event firing. 
+                                             // AGC event firing.
 
-const   __int64         c_maskStaticTypes = (__int64(1) << __int64(OT_projectileType)) | 
-                                            (__int64(1) << __int64(OT_treasureSet)) | 
-                                            (__int64(1) << __int64(OT_hullType)) | 
-                                            (__int64(1) << __int64(OT_partType)) | 
-                                            (__int64(1) << __int64(OT_missileType)) | 
-                                            (__int64(1) << __int64(OT_mineType)) | 
-                                            (__int64(1) << __int64(OT_probeType)) | 
-                                            (__int64(1) << __int64(OT_civilization)) | 
-                                            (__int64(1) << __int64(OT_stationType)) | 
-                                            (__int64(1) << __int64(OT_development)) | 
-                                            (__int64(1) << __int64(OT_droneType)) | 
-                                            (__int64(1) << __int64(OT_chaffType)) | 
-                                            (__int64(1) << __int64(OT_constants)); 
+const   __int64         c_maskStaticTypes = (__int64(1) << __int64(OT_projectileType)) |
+                                            (__int64(1) << __int64(OT_treasureSet)) |
+                                            (__int64(1) << __int64(OT_hullType)) |
+                                            (__int64(1) << __int64(OT_partType)) |
+                                            (__int64(1) << __int64(OT_missileType)) |
+                                            (__int64(1) << __int64(OT_mineType)) |
+                                            (__int64(1) << __int64(OT_probeType)) |
+                                            (__int64(1) << __int64(OT_civilization)) |
+                                            (__int64(1) << __int64(OT_stationType)) |
+                                            (__int64(1) << __int64(OT_development)) |
+                                            (__int64(1) << __int64(OT_droneType)) |
+                                            (__int64(1) << __int64(OT_chaffType)) |
+                                            (__int64(1) << __int64(OT_constants));
 
-const   __int64         c_maskMapTypes =    (__int64(1) << __int64(OT_asteroid)) | 
-                                            (__int64(1) << __int64(OT_station))  | 
-                                            (__int64(1) << __int64(OT_cluster))  | 
+const   __int64         c_maskMapTypes =    (__int64(1) << __int64(OT_asteroid)) |
+                                            (__int64(1) << __int64(OT_station))  |
+                                            (__int64(1) << __int64(OT_cluster))  |
                                             (__int64(1) << __int64(OT_mine))     |
                                             (__int64(1) << __int64(OT_probe))    |
                                             (__int64(1) << __int64(OT_treasure)) |
@@ -304,14 +304,14 @@ const TrekKey TK_TargetHostile              = 91;  // Target the ship causing mo
 const TrekKey TK_Suicide                    = 92;  // Kill yourself
 const TrekKey TK_ToggleGrid                 = 93;  // Toggle visible grid in combat view
 const TrekKey TK_ToggleCloak                = 94;  // Toggle cloaking
-const TrekKey TK_DropMine                   = 95;  // Drop a minefield 
-const TrekKey TK_Ripcord                    = 96;  // Ripcord         
+const TrekKey TK_DropMine                   = 95;  // Drop a minefield
+const TrekKey TK_Ripcord                    = 96;  // Ripcord
 const TrekKey TK_ViewRearLeft               = 97;  // Look back and to the left
 const TrekKey TK_ViewRearRight              = 99;  // Look back and to the right
 const TrekKey TK_Obsolete1                  = 99;  // Not used - feel free to reuse
 const TrekKey TK_TargetSelf                 =100;  // Target myself
 const TrekKey TK_ToggleCollisions	        =101;  // Toggle collision detection
-const TrekKey TK_OccupyNextTurret           =102;  // Occupy the next available turret position 
+const TrekKey TK_OccupyNextTurret           =102;  // Occupy the next available turret position
 const TrekKey TK_TargetNothing              =103;  // Reset target so that nothing is targeted
 const TrekKey TK_MatchSpeed                 =104;  // Match speed with target
 const TrekKey TK_ChatPageUp                 =105;  // Scroll the chat pane one page up
@@ -448,7 +448,7 @@ enum {
 //Redefined data types (so we can change them later)
 const int NA = -1; // meaning unspecified, none, or all.
 const float fNA = -1; // To support supression of compiler warnings.  Floats should probably all be doubles anyways, but hey.  --Dhauzimmer, 8/14/04
- 
+
 typedef long            MissionID;
 
 //*ID are unique IDs for something
@@ -616,7 +616,7 @@ const WarningMask   c_wmCrowdedSector = 0x02;
 typedef char BuyableGroupID;
 
 /*
-� Max Speed: Up the sides maximum speed 
+� Max Speed: Up the sides maximum speed
 � Rate of Yaw: Increase angle of turn per sec
 � Rate of Pitch: Increase angle of turn per sec
 � Rate of acceleration: Increase your acceleration
@@ -833,9 +833,9 @@ struct  CommandData
     Match   MatchCommand(const char*    szString) const
     {
         assert (szString);
-        const char* p1 = szString; 
+        const char* p1 = szString;
         const char* p2 = szVerb;
-        
+
         while ((*p1 != '\0') && (*p2 != '\0'))
         {
             if (tolower(*p1) != tolower(*p2))
@@ -876,7 +876,7 @@ struct GlobalAttributeSet
         {
             //Initialize();
         }
-        
+
         void    Initialize(void)
         {
             for (int i = 0; (i < c_gaMax); i++)
@@ -1059,9 +1059,9 @@ class ImapMakerIGC
 struct MissionParams
 {
     //------------------------------------------------------------------------------
-    // If you add or remove properties, please update 
+    // If you add or remove properties, please update
     // AGCGameParameters.cpp, AGCGameParameters.h, and AGCIDL.h.
-    // 
+    //
     //------------------------------------------------------------------------------
     char        strGameName[c_cbGameName];              //Name of game
     char        szIGCStaticFile[c_cbFileName];          //Name of static IGC file
@@ -1075,7 +1075,7 @@ struct MissionParams
 	bool		bAllowAlliedRip		: 1;				//Imago 7/8/09 ALLY
     bool        bAllowDevelopments  : 1;                //Allow investment in tech
     bool        bAllowShipyardPath  : 1;                //Allow building Shipyards
-    bool        bAllowTacticalPath  : 1;                //Allow building Tactical Labs  
+    bool        bAllowTacticalPath  : 1;                //Allow building Tactical Labs
     bool        bAllowSupremacyPath : 1;                //Allow building Supremacy Centers
     bool        bAllowExpansionPath : 1;                //Allow building Expansion Complexes
     bool        bPowerUps           : 1;                //Create treasure when a ship is destroyed
@@ -1223,14 +1223,14 @@ struct MissionParams
         //
         // Assign to NA for now, this cues the mission maker to reset it later
         //
-        for (int iSide = 0; iSide < c_cSidesMax; iSide++) 
+        for (int iSide = 0; iSide < c_cSidesMax; iSide++)
         {
             rgCivID[iSide] = NA;
         }
 
         fHe3Density                     = 1.0f;
         fStartingMoney                  = 1.0f;
-        fGoalTeamMoney                  = 0; 
+        fGoalTeamMoney                  = 0;
         tsiPlayerStart                  = 1;
         tsiNeutralStart                 = 1;
         tsiPlayerRegenerate             = 1;
@@ -1351,7 +1351,7 @@ struct MissionParams
         else if (nPlayerSectorAsteroids > 40)
         {
             return "PlayerSectorAsteroids must be less than 40.";
-        }            
+        }
         else if ((nGoalArtifactsCount < 0) || (nGoalArtifactsCount > 100))
         {
             return "GoalArtifactsCount must be between 0% and 100%.";
@@ -1523,7 +1523,7 @@ struct MissionParams
     {
         return iGoalArtifactsPercentage;
     }
-}; 
+};
 
 //Utility data structures
 typedef  Slist_utl<IpartIGC*>           PartListIGC;
@@ -1960,7 +1960,7 @@ struct  DataProbeTypeIGC : public DataExpendableTypeIGC
     float               dtRipcord;
 };
 
-struct  DataPartIGC  
+struct  DataPartIGC
 {
     IpartTypeIGC*       partType;
 };
@@ -2400,7 +2400,7 @@ class   ClientShipUpdate                                //33 bytes
         BytePercentage      power;                      //1
 };
 
-class ClientActiveTurretUpdate                                      //12 bytes          
+class ClientActiveTurretUpdate                                      //12 bytes
 {
     public:
         Time                time;                       //4
@@ -2661,7 +2661,7 @@ struct  ExplosionData
 //
 enum ChatTarget // if you change this please update AGCChatTarget in AGCIDL.idl
 {
-    CHAT_EVERYONE = 0, CHAT_LEADERS, CHAT_ADMIN, CHAT_SHIP,  
+    CHAT_EVERYONE = 0, CHAT_LEADERS, CHAT_ADMIN, CHAT_SHIP,
     CHAT_ALLIES, //imago added allies 7/3/09 ALLY
     CHAT_TEAM, CHAT_INDIVIDUAL, CHAT_INDIVIDUAL_NOFILTER, CHAT_WING, CHAT_INDIVIDUAL_ECHO,     //require objectID to be set
     CHAT_ALL_SECTOR, CHAT_FRIENDLY_SECTOR,                      //ditto
@@ -2755,10 +2755,10 @@ class ImissionIGC : public IstaticIGC
 		virtual ZString					BitsToPartsList(PartMask & pm, EquipmentType et) = 0;
 		virtual PartMask				PartMaskFromToken(const char * szToken, EquipmentType et) = 0;
 		virtual PartMask				PartsListToMask(const char * szParts, EquipmentType et) = 0;
-		
+
 		virtual bool					LoadTechBitsList(void) = 0;
 		virtual bool					LoadPartsBitsList(void) = 0;
-		
+
 		virtual void					ExportStaticIGCObjs(void) = 0;
 		virtual void					ImportStaticIGCObjs(void) = 0;
 		// Imago ^
@@ -2924,7 +2924,7 @@ class ThingSite : public AttachSite
         virtual void        AddHullHit(const Vector& vecPosition, const Vector& vecNormal) {}
         virtual void        AddFlare(Time ptime, const Vector& vecPosition, int id, const Vector* ellipseEquation) {}
         virtual void        AddMuzzleFlare(const Vector& vecEmissionPoint, float duration) {}
-    
+
         virtual void        SetVisible(unsigned char render)  {}
 
         virtual void        SetAfterburnerThrust (const Vector& direction, float power) {}
@@ -3684,8 +3684,8 @@ class IhullTypeIGC : public IbuyableIGC
         virtual short                GetCapacity(EquipmentType et) const = 0;
         virtual Mount                GetMaxWeapons(void) const = 0;
         virtual Mount                GetMaxFixedWeapons(void) const = 0;
-        virtual const HardpointData& GetHardpointData(Mount hardpointID) const = 0; 
-        virtual bool                 CanMount(IpartTypeIGC* ppt, Mount  mountID) const = 0;                      
+        virtual const HardpointData& GetHardpointData(Mount hardpointID) const = 0;
+        virtual bool                 CanMount(IpartTypeIGC* ppt, Mount  mountID) const = 0;
 
         virtual const char*          GetTextureName(void) const = 0;
 
@@ -3854,7 +3854,7 @@ class IafterburnerIGC : public IpartIGC
 
         virtual float    GetPower(void) const = 0;
         virtual void     SetPower(float p) = 0;
-        
+
         virtual SoundID  GetInteriorSound(void) const = 0;
         virtual SoundID  GetExteriorSound(void) const = 0;
 };
@@ -3942,7 +3942,7 @@ class IclusterIGC : public IbaseIGC
         virtual float                   GetScreenY(void) const = 0;
 
         virtual void                    SetActive(bool bActive) = 0;
-        
+
         virtual void                    AddStation(IstationIGC* stationNew) = 0;
         virtual void                    DeleteStation(IstationIGC* stationOld) = 0;
         virtual IstationIGC*            GetStation(StationID stationID) const = 0;
@@ -4073,7 +4073,7 @@ class IsideIGC : public IbaseIGC
         virtual void                        SetSquadID(SquadID squadID) = 0;
 
         virtual const TechTreeBitMask       GetTechs(void) const = 0;
-        
+
         virtual const TechTreeBitMask&      GetBuildingTechs(void) const = 0;
         virtual void                        ResetBuildingTechs(void) = 0;
         virtual void                        SetBuildingTechs(const TechTreeBitMask& ttbm) = 0;
@@ -4758,7 +4758,7 @@ class   DamageTrack
         void    SwitchSlots(void);
 
         void    ApplyDamage(Time        timeNow,
-                            ImodelIGC*  pmodel,                            
+                            ImodelIGC*  pmodel,
                             float       damage);
 
         void    Reset(void);
@@ -5002,7 +5002,7 @@ class   Waypoint
             c_oEnter,       //dock for starbases, warp for alephs
             c_oGoto,        //get to within m_fOffset and stop
             c_oNothing
-        };          
+        };
 
         Waypoint(void)
         :
@@ -5072,7 +5072,7 @@ class   Waypoint
                                             Vector*             pvectorFacing);
 
         ImodelIGC*  m_pmodelTarget;
-        
+
         Objective   m_objective;
 
         friend class GotoPlan;
@@ -5129,7 +5129,7 @@ class   GotoPlan
             m_pvOldCluster = m_pship->GetCluster();
             m_pvOldClusterTarget = pmodelTarget->GetCluster();
         }
-        
+
         int     GetMaskWaypoints(void) const
         {
             return m_maskWaypoints;
@@ -5210,7 +5210,7 @@ IshipIGC*   CreateDrone(ImissionIGC*     pmission,
                         IsideIGC*        pside,
                         AbilityBitMask   abmOrders = 0,
                         float            shootSkill = 1.0f,
-                        float            moveSkill  = 1.0f,        
+                        float            moveSkill  = 1.0f,
                         float            bravery    = 1.0f);
 
 
@@ -5266,7 +5266,7 @@ class PersistPlayerScoreObject
         {
           m_civID = civID;
         }
-        
+
         CivID GetCivID() const
         {
           return m_civID;
@@ -5423,7 +5423,7 @@ class PlayerScoreObject
                         bool            bLose)
         {
             assert (!m_bConnected);
-            assert (!(bWin && bLose)); //CRASH HERE WITH ALLIES imago ALLYTD 7/9/09
+            assert (!(bWin && bLose)); //CRASH HERE WITH ALLIES imago ALLYTD 7/9/09 (/w cheats only)
 
             m_bWin = bWin;
             m_bLose = bLose;
@@ -5818,7 +5818,7 @@ class GameOverScoreObject
         {
             return m_cTotalBaseCaptures;
         }
-        
+
         short   GetFlags(void) const
         {
             return m_cFlags;
@@ -5833,7 +5833,7 @@ class GameOverScoreObject
         {
             return m_cRescues;
         }
-        
+
         short   GetTotalKills(void) const
         {
             return m_cTotalKills;
@@ -5874,7 +5874,7 @@ class GameOverScoreObject
         {
             return m_fCombatRating;
         }
-        
+
         bool    GetWinner(void) const
         {
             return m_bWinner;
@@ -5937,13 +5937,13 @@ class GameOverScoreObject
 // normal igc files, i.e. missions can be dumped and loaded using these two
 // functions. They return true if successful.
 //------------------------------------------------------------------------------
-bool    DumpIGCFile (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes, 
+bool    DumpIGCFile (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes,
                      void (*munge)(int size, char* data) = NULL);
 bool    LoadIGCFile (const char* name, ImissionIGC* pMission, void (*munge)(int size, char* data) = NULL);
 
 //------------------------------------------------------------------------------
 // static data core files are dealt with by these functions. They are
-// almost identical to the normal igc file loaders, but there is a version 
+// almost identical to the normal igc file loaders, but there is a version
 // number in the file, and it is returned by the LoadIGCStaticCore function.
 // if the load function fails, it returns NA.
 //------------------------------------------------------------------------------

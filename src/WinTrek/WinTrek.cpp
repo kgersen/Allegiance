@@ -2066,7 +2066,7 @@ public:
         m_pwrapImageTop->SetImage(m_pimageScreen);
         SetWindowedSize(pscreen->GetSize());
         SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
-		
+
         SetSizeable(false);
 
         //
@@ -2223,17 +2223,17 @@ public:
                     SetScreen(CreateIntroScreen(GetModeler()));
                     break;
 
-				case ScreenIDSplashScreen: 
+				case ScreenIDSplashScreen:
 					{
 // BUILD_DX9
 						//Imago 6/29/09 many codecs will crash the app when being debugged
-						if (!IsDebuggerPresent()) {		
+						if (!IsDebuggerPresent()) {
 							//::ShowWindow( GetHWND(), SW_MINIMIZE );
-											   
+
 						   HWND hWND = ::CreateWindow("static", "Allegiance", WS_VISIBLE|WS_POPUP, 0, 0,
-							   GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL, 
+							   GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
 								::GetModuleHandle(NULL), NULL);
-				   
+
 						   ::ShowCursor(FALSE);
 							//this window will have our "intro" in it...
 							DDVideo *DDVid = new DDVideo();
@@ -2242,9 +2242,9 @@ public:
 								ZDebugBreak();
 
 							DDVid->m_hWnd = hWND;
-							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file 
+							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
 							if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
-						    { 
+						    {
 								while( DDVid->m_Running )
 						        {
 									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE))
@@ -2252,9 +2252,9 @@ public:
 										DDVid->m_Running = FALSE;
 										DDVid->m_pVideo->Stop();
 									} else	{
-								    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);			
-										DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT); 	  
-									}					
+								    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+										DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+									}
 						        }
 								DDVid->DestroyDDVid();
 							} else {
@@ -2263,7 +2263,7 @@ public:
 							//::ShowCursor(TRUE);
 							::DestroyWindow(hWND);
 							//::ShowWindow( GetHWND(), SW_RESTORE );
-							//::UpdateWindow(  GetHWND() );	
+							//::UpdateWindow(  GetHWND() );
 						}
 
 	                    //SetScreen(CreateVideoScreen(GetModeler(), true));
@@ -2273,7 +2273,7 @@ public:
 						SetScreen(CreateIntroScreen(GetModeler()));
 	                    break;
 					}
-					
+
 
                 case ScreenIDTrainScreen:
                     SetScreen(CreateTrainingScreen(GetModeler()));
@@ -3018,7 +3018,7 @@ public:
             ToggleBounds();
         if (!LoadPreference("TransparentObjects", TRUE))
             ToggleTransparentObjects();
-        SetSmoke (LoadPreference ("SmokeEffects", 3)); 
+        SetSmoke (LoadPreference ("SmokeEffects", 3));
         if (!LoadPreference("Lens Flare", TRUE))
             ToggleLensFlare();
         if (!LoadPreference("BidirectionalLighting", TRUE))
@@ -3035,14 +3035,14 @@ public:
 		SetRadarLOD(LoadPreference("RadarLOD", 1)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
 			ToggleShowGrid();
-		SetGamma(LoadPreference("Gamma", "1.13")); 
+		SetGamma(LoadPreference("Gamma", "1.13"));
 	    if (LoadPreference("VirtualJoystick", FALSE))
 			ToggleVirtualJoystick();
 
 
 
 		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-		
+
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
@@ -4033,7 +4033,7 @@ public:
 			case idmDeviceOptions:
 				pmenu->AddMenuItem(0                     , "Options require game to be restarted            "     );
 				pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-			    
+
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
 			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V');
@@ -6810,7 +6810,7 @@ public:
             IsideIGC*   psideMe;
             bool        bAnyEnemyShips;
             if (pmodelTarget)
-                bAnyEnemyShips = true;  //ALLYTD?  - imago 7/3/09 7/9/09 removed
+                bAnyEnemyShips = true;
             else
             {
                 bAnyEnemyShips = false;
