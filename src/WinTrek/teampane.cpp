@@ -472,7 +472,7 @@ public:
         
         return (pplayer->IsHuman() 
             || pplayer->LastSeenShipType() != NA 
-            || pplayer->SideID() == trekClient.GetSideID());  //Imago ALLYTD Visibility 7/6/09
+            || pplayer->SideID() == trekClient.GetSideID() || (trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pplayer->GetShip()->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz));  //Imago ALLY Visibility 7/6/09 7/11/09
     }
 
     static Color GetSideUIColor(SideID sideID)

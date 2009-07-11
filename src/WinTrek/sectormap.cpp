@@ -908,7 +908,12 @@ public:
             {
                 IwarpIGC* pWarp = warpLink->data();
                 IwarpIGC* pwarpDestination = pWarp->GetDestination();
-                assert (pwarpDestination != NULL);
+				if (trekClient.MyMission()->GetMissionParams().bAllowAlliedViz && pwarpDestination == NULL) {  //ally VISIBILITY 7/11/09 imago
+					continue;
+				} else {
+					assert (pwarpDestination != NULL);
+				}
+
                 if (pWarp->GetObjectID() > pwarpDestination->GetObjectID())
                 {
                     Color colorWarp = 0.5f * Color::White();

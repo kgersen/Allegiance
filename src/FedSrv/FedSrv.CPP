@@ -2105,7 +2105,7 @@ void SendPlayerInfo(CFSPlayer * pfsPlayer, CFSShip * pfsShip, CFSMission* pfsMis
   //pfmPlayerInfo->wingID     = pfsShip->GetIGCShip()->GetWingID();
   pfmPlayerInfo->rankID     = 0; //NYI
   pfmPlayerInfo->fReady     = pfsShip->IsPlayer() ? pfsShip->GetPlayer()->GetReady() : true; // drones always ready
-  pfmPlayerInfo->money      = 0; //Do not tell them how much money the player has ...  //ALLYTD imago VISIBILITY
+  pfmPlayerInfo->money      = 0; //pfsShip->GetMoney() //Do not tell them how much money the player has ...  //ALLYTD imago VISIBILITY
 
   if (pfsShip->IsPlayer() && pfsMission && pside && pfmPlayerInfo->iSide != SIDE_TEAMLOBBY)
   {
@@ -9867,7 +9867,7 @@ class ThingSiteImpl : public ThingSite
                         IsideIGC*   pside = l->data();
 
                         //You always lose contact when a non-static object switches sectors
-                        if (pside != psideModel)
+                        if (pside != psideModel && (pside->AlliedSides(pside,psideModel) && psideModel->GetMission()->GetMissionParams()->bAllowAlliedViz)) //ALLY VISIBILITY
                         {
                             m_rgSideVisibility[pside->GetObjectID()].fVisible(false);
                             HideObject(pside, pmodel);
@@ -9904,7 +9904,26 @@ class ThingSiteImpl : public ThingSite
                     // this is called when a stream of messages to a different recipient is in process of being queued-up
                     // so we will use the secondary (smaller 1k) outbox so as to not interrupt the main message stream
                     g.fm.UseMainOutBox(false);
-                    g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED); //ALLYTD Visibility 7/8/09 imago
+/*
+					if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
+					{
+						//lets get a list of allied sideIDs
+					    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
+							(psidelink != NULL);
+							psidelink = psidelink->next())
+						{
+							IsideIGC*   otherside = psidelink->data();
+							//this side is ally...and not ours
+							if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+								g.fm.SetDefaultRecipient(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED);
+			                    bSent = true;
+			                    ExportObj(pmodel, type, NULL);
+								g.fm.SendMessages(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLY imago VISIBILITY 7/8/09
+							}
+						}
+					}
+*/
+                    
 
                     //Tell everyone on the side about the newly visible static object
                     bSent = true;
@@ -9948,7 +9967,7 @@ class ThingSiteImpl : public ThingSite
                                 pfmWB->expendableidMissile = p->data().pmt->GetObjectID();
                             }
                         }
-                    }
+					}
                     else if (type == OT_asteroid)
                     {
                         //if under construction, send the building effect
@@ -9956,7 +9975,7 @@ class ThingSiteImpl : public ThingSite
                         if (pbe)
                             ExportObj(pbe, OT_buildingEffect, NULL);
                     }
-                    g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago VISIBILITY 7/8/09
+                    g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
                 }
             }
             else if (type == OT_ship)
@@ -9964,6 +9983,20 @@ class ThingSiteImpl : public ThingSite
                 CFSShip* pfsShip = (CFSShip *)(((IshipIGC*)pmodel)->GetPrivateData());
                 assert (pfsShip);
                 pfsShip->ShipStatusSpotted(pside);
+				if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
+				{
+					//lets get a list of allied sideIDs
+				    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
+						(psidelink != NULL);
+						psidelink = psidelink->next())
+					{
+						IsideIGC*   otherside = psidelink->data();
+						//this side is ally...and not ours
+						if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+							pfsShip->ShipStatusSpotted(otherside); //ALLY imago VISIBILITY 7/8/09
+						}
+					}
+				}
             }
             g.fm.UseMainOutBox(true);
 
@@ -10006,7 +10039,7 @@ class ThingSiteImpl : public ThingSite
                     //Update the visibility for everything except visible static objects
                     if (!(m_bPredictable && sv.fVisible()))
                     {
-                        if (pside == pmodel->GetSide()) //ALLYTD imago 7/7/09 Visibility
+                        if (pside == pmodel->GetSide() || (pside->AlliedSides(pside,pmodel->GetSide()) && pmodel->GetMission()->GetMissionParams()->bAllowAlliedViz)) //ALLYTD imago 7/7/09 Visibility
                         {
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
                             sv.fVisible(true);
@@ -10058,7 +10091,26 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
 
-                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09 VISIBILITY
+                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); 
+
+											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());
+										
+											/*
+											if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
+											{
+												//lets get a list of allied sideIDs
+											    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
+													(psidelink != NULL);
+													psidelink = psidelink->next())
+												{
+													IsideIGC*   otherside = psidelink->data();
+													//this side is ally...and not ours
+													if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+														g.fm.SendMessages(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09 VISIBILITY
+													}
+												}
+											}
+											*/
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -10095,7 +10147,7 @@ class ThingSiteImpl : public ThingSite
                 }
             }
         }
-        virtual bool    GetSideVisibility(IsideIGC* pside) //ALLYTD this low? Imago 7/7/09
+        virtual bool    GetSideVisibility(IsideIGC* pside)
         {
             assert (pside != NULL);
             return m_bSideVisibility ? m_rgSideVisibility[pside->GetObjectID()].fVisible() : true;

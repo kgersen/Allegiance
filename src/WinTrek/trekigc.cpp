@@ -2021,10 +2021,10 @@ class ThingSiteImpl : public ThingSitePrivate
                 //(visibile static objects stay visible)
                 if (!(m_sideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable)))
                 {
-                    //We, trivially, see anything on our side. beyond that ...
+                    //We, trivially, see anything on our side. beyond that ...  Imago ALLY VISIBILITY 7/11/09
                     //does the ship that saw the object last still see it
                     //(if such a ship exists)
-                    if ((trekClient.GetSide() == pmodel->GetSide()) ||
+                    if ((trekClient.GetSide() == pmodel->GetSide() || (trekClient.GetSide()->AlliedSides(pmodel->GetSide(),trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ||
                         (m_sideVisibility.pLastSpotter() &&
                          m_sideVisibility.pLastSpotter()->InScannerRange(pmodel)))
                     {
@@ -2074,7 +2074,7 @@ class ThingSiteImpl : public ThingSitePrivate
             }
         }
 
-        bool GetSideVisibility(IsideIGC* side) //ALLYTD Imago 7/7/09
+        bool GetSideVisibility(IsideIGC* side)
         {
             assert (side);
 
@@ -2088,7 +2088,8 @@ class ThingSiteImpl : public ThingSitePrivate
 
         void SetSideVisibility(IsideIGC* side, bool fVisible)
         {
-            if (m_bSideVisibility && (side == trekClient.GetSide()))
+            if (m_bSideVisibility && 
+				(side == trekClient.GetSide() || (side->AlliedSides(side,trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ) //imago viz ALLY VISIBILITY 7/11/09
                 m_sideVisibility.fVisible(fVisible);
 
             if (fVisible)

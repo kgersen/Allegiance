@@ -1073,6 +1073,7 @@ struct MissionParams
     bool        bAllowPrivateTeams  : 1;
     bool        bAllowEmptyTeams    : 1;                //Allow teams without players
 	bool		bAllowAlliedRip		: 1;				//Imago 7/8/09 ALLY
+	bool		bAllowAlliedViz		: 1;				//Imago 7/11/09 ALLY
     bool        bAllowDevelopments  : 1;                //Allow investment in tech
     bool        bAllowShipyardPath  : 1;                //Allow building Shipyards
     bool        bAllowTacticalPath  : 1;                //Allow building Tactical Labs
@@ -1187,6 +1188,7 @@ struct MissionParams
         bAllowPrivateTeams              = true ;
         bAllowEmptyTeams                = false;
 		bAllowAlliedRip	                = false; //imago 7/8/09 ALLY
+		bAllowAlliedViz	                = true; //imago 7/8/09 ALLY
         bShowMap                        = false;
         bAllowDevelopments              = true ;
         bAllowShipyardPath              = true ;

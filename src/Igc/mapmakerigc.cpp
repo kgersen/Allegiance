@@ -986,6 +986,22 @@ VOID CmapMakerIGC::RevealHomeClusters(ImissionIGC * pMission)
                 pml = pml->next())
             {
                 pml->data()->SetSideVisibility(pside, true);
+				/*
+				if (pMission->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
+				{
+					//lets get a list of allied sideIDs
+				    for (SideLinkIGC* psidelink = pMission->GetSides()->first();
+						(psidelink != NULL);
+						psidelink = psidelink->next())
+					{
+						IsideIGC*   otherside = psidelink->data();
+						//this side is ally...and not ours
+						if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+							pml->data()->SetSideVisibility(otherside, true);
+						}
+					}
+				}
+				*/
             }
         }
     }
@@ -1007,6 +1023,7 @@ VOID CmapMakerIGC::RevealMap(ImissionIGC * pMission)
             psl = psl->next())
         {
             pwarp->SetSideVisibility(psl->data(), true);
+
         }
     }
 }

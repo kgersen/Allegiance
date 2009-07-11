@@ -441,7 +441,7 @@ void    CprobeIGC::Update(Time now)
                                 //Does this side have any scanners in the sector?
                                 ClusterSite*    pcs = pcluster->GetClusterSite();
                                 const ScannerListIGC*   psl = pcs->GetScanners(psideOther->GetObjectID());
-                                if (psl->n() != 0) //ALLYTD? naaa -Imago not messing with this 7/3/09 VISIBILITY 7/7/09
+                                if ((psl->n() != 0) || (m_pMission->GetMissionParams()->bAllowAlliedViz && psideOther->AlliedSides(psideOther,pside))) //ALLY 7/3/09 VISIBILITY 7/11/09 imago
                                     SetSideVisibility(psideOther, true);
                                 else
                                     m_bSeenByAll = false;

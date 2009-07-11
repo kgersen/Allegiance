@@ -727,7 +727,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 	            if (ps->GetStationType()->HasCapability(c_sabmRipcord) &&
 					(ps->GetSide()->AlliedSides(pside,ps->GetSide()) || pside->GetObjectID() == ps->GetSide()->GetObjectID()) )  //ALLY imago 7/8/09
 	            {
-					if (ps->SeenBySide(pside)) { //Imago VISIBILITY RIPCORD 7/10/09 ALLY
+					if (ps->SeenBySide(pside) || pmp->bAllowAlliedViz) { //Imago VISIBILITY RIPCORD 7/10/09 ALLY
 	                	IclusterIGC*    pc = ps->GetCluster();
 	                	if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
 	                    	(((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
@@ -766,7 +766,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 	            if (ps != pship &&
 					(ps->GetSide()->AlliedSides(pside,ps->GetSide()) || pside->GetObjectID() == ps->GetSide()->GetObjectID()) )  //ALLY imago 7/8/09
 	            {
-					if (ps->SeenBySide(pside)) { //Imago VISIBILITY RIPCORD 7/10/09 ALLYTD
+					if (ps->SeenBySide(pside) || pmp->bAllowAlliedViz) { //Imago VISIBILITY RIPCORD 7/10/09 ALLY
 	                	IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
 	                	if (pc && (pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
 	                    	(((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
@@ -2854,7 +2854,7 @@ void        PopulateCluster(ImissionIGC*            pmission,
 
             for (SideLinkIGC*   p = psides->first(); (p != NULL); p = p->next())
             {
-                if (p->data() != pside)  //Imago ALLYTD VISIBILITY 7/11/09
+                if (p->data() != pside && (!pside->AlliedSides(pside,p->data()) && !pmission->GetMissionParams()->bAllowAlliedViz))  //Imago ALLY VISIBILITY 7/11/09
                     pstation->SetSideVisibility(p->data(),
                                                 false);
             }
