@@ -294,7 +294,7 @@ bool  FindableModel(ImodelIGC*          m,
 
                     case OT_station:
                     {
-						//#ALLY : exceptions for c_ttFriendly which include now allies 
+						//#ALLY : exceptions for c_ttFriendly which include now allies
 						//dont match allies if we're looking for a friendly station with one of the abilities below
 
 						ImissionIGC*         pmission = pside->GetMission();
@@ -355,7 +355,7 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
         if ((!ps->GetStationType()->HasCapability(c_sabmPedestal)) &&
             ps->SeenBySide(pside))
         {
-			if ((pside != ps->GetSide()) && !IsideIGC::AlliedSides(pside, ps->GetSide()))		// #ALLY FIXED imago - was: pside != ps->GetSide(
+			if ((pside != ps->GetSide()) && !IsideIGC::AlliedSides(pside, ps->GetSide()))		// #ALLY FIXED 7/10/09 imago - was: pside != ps->GetSide(
                 return false;               //enemy has a station == unfriendly
 
             rc = true;
@@ -720,17 +720,19 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 	const MissionParams* pmp = pmission->GetMissionParams(); //
 
     {
-		if (pmp->bAllowAlliedRip) { //if allied record allowed game
+		if (pmp->bAllowAlliedRip) { //if allied record allowed game ALLY RIPCORD
 	        for (StationLinkIGC*    psl = pmission->GetStations()->first(); (psl != NULL); psl = psl->next())  //ALLY: pmission instead of pside
 	        {
 	            IstationIGC*    ps = psl->data();
 	            if (ps->GetStationType()->HasCapability(c_sabmRipcord) &&
 					(ps->GetSide()->AlliedSides(pside,ps->GetSide()) || pside->GetObjectID() == ps->GetSide()->GetObjectID()) )  //ALLY imago 7/8/09
 	            {
-	                IclusterIGC*    pc = ps->GetCluster();
-	                if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
-	                    (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
-	                    NewCP(&clustersRipcord, ps->GetCluster(), &(ps->GetPosition()));
+					if (ps->SeenBySide(pside)) { //Imago VISIBILITY RIPCORD 7/10/09 ALLY
+	                	IclusterIGC*    pc = ps->GetCluster();
+	                	if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
+	                    	(((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
+	                    	NewCP(&clustersRipcord, ps->GetCluster(), &(ps->GetPosition()));
+					}
 	            }
 	        }
 		} else { //regular situation, a no allies ripcord game
@@ -757,24 +759,26 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
         ImissionIGC*        pmission = pship->GetMission();
         IIgcSite*           pigc = pmission->GetIgcSite();
 
-		if (pmp->bAllowAlliedRip) { //if allied record allowed game
+		if (pmp->bAllowAlliedRip) { //if allied ripcord allowed game
 	        for (ShipLinkIGC*    psl = pmission->GetShips()->first(); (psl != NULL); psl = psl->next())  //ALLY 7/8/09 was pside iterator
 	        {
 	            IshipIGC*    ps = psl->data();
 	            if (ps != pship &&
 					(ps->GetSide()->AlliedSides(pside,ps->GetSide()) || pside->GetObjectID() == ps->GetSide()->GetObjectID()) )  //ALLY imago 7/8/09
 	            {
-	                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
-	                if (pc && (pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
-	                    (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
-	                    NewCP(&clustersRipcord, pc, NULL);
+					if (ps->SeenBySide(pside)) { //Imago VISIBILITY RIPCORD 7/10/09 ALLYTD
+	                	IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                	if (pc && (pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
+	                    	(((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
+	                    	NewCP(&clustersRipcord, pc, NULL);
+					}
 	            }
 	        }
 		} else { //normal no allied ripcord
 	        for (ShipLinkIGC*    psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
 	        {
 	            IshipIGC*    ps = psl->data();
-	            if (ps != pship && (ps->GetSide()->AlliedSides(pside,ps->GetSide()) || pside->GetObjectID() == ps->GetSide()->GetObjectID()) )  //ALLY imago 7/8/09
+	            if (ps != pship && pside->GetObjectID() == ps->GetSide()->GetObjectID())  //ALLY imago 7/8/09
 	            {
 	                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
 	                if (pc && (pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
@@ -2850,7 +2854,7 @@ void        PopulateCluster(ImissionIGC*            pmission,
 
             for (SideLinkIGC*   p = psides->first(); (p != NULL); p = p->next())
             {
-                if (p->data() != pside)
+                if (p->data() != pside)  //Imago ALLYTD VISIBILITY 7/11/09
                     pstation->SetSideVisibility(p->data(),
                                                 false);
             }

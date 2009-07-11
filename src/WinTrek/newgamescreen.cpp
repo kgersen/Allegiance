@@ -334,7 +334,7 @@ public:
 			  )
 			+ trekClient.CfgGetCoreName(szCoreName)     + "<Color|white><p>" // KGJV: added
 			+ "<p>"
-            + "Lives: "                 + GetLives(mp)                    + "<p>"
+			+ "Lives: "                 + GetLives(mp)                    + "<p>"
             + "Map Type: "              + GetMapType(mp)                  + "<p>"
 			+ "Map Connectivity: "      + GetConnectivityString(mp)       + "<p>" // KGJV: added
             + "Resources: "             + GetResourceString(mp)           + "<p>"
@@ -353,6 +353,8 @@ public:
             + "Allow Expansion: "       + YesNo(mp.bAllowExpansionPath)   + "<p>"
             + "Allow Supremacy: "       + YesNo(mp.bAllowSupremacyPath)   + "<p>"
 			+ "Allow Empty Teams: "     + YesNo(mp.bAllowEmptyTeams)      + "<p>"
+			+ "Allow Allied Ripcord: "  + YesNo(mp.bAllowAlliedRip)       + "<p>" //imago 7/10/09 ALLY
+			+ "Experimental: "          + YesNo(mp.bExperimental)         + "<p>" //imago 7/10/09
             + "<p>"
             ;
     }

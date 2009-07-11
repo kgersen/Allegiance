@@ -2676,10 +2676,7 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
             assert (pht);
 
 			pstationOld->RepairAndRefuel(pshipSource);
-
-			//if ((GetSide() != pstationOld->GetSide() && pstationOld->GetSide()->AlliedSides(pstationOld->GetSide(),GetSide()))
-			//	&& ((trekClient.GetShip()->GetParentShip() == NULL) && !trekClient.GetShip()->IsGhost()))
-				
+	
 
             /*
             const char* pszDisplayMDL;

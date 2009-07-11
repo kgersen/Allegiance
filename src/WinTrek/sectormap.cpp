@@ -812,7 +812,7 @@ public:
         {
             IprobeIGC*  pprobe = ppl->data();
             if ( ( (pprobe->GetSide() == pside) || (pprobe->GetSide()->AlliedSides(pside,pprobe->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) ) &&
-				pprobe->GetCanRipcord(ripcordSpeed)) //ALLY allow rip to allies.. 7/7/09
+				pprobe->GetCanRipcord(ripcordSpeed)) //ALLY allow rip to allies.. 7/7/09 ALLYTD VISIBILITY?
                 return c_iClusterHasStationRipcord;
         }
 
@@ -942,17 +942,29 @@ public:
                 HullAbilityBitMask  habm = (phtSource && phtSource->HasCapability(c_habmCanLtRipcord))
                                            ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
                                            : c_habmIsRipcordTarget;
-
-                for (ShipLinkIGC*   psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
-                {
-                    IshipIGC*   pship = psl->data();
-                    if (pship != pshipSource)
-                    {
-                        IclusterIGC*    pc = trekClient.GetRipcordCluster(pship, habm);
-                        if (pc)
-                            clustersRipcord.last(pc);
-                    }
-                }
+				if (trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) { 
+	                for (ShipLinkIGC*   psl = trekClient.m_pCoreIGC->GetShips()->first(); (psl != NULL); psl = psl->next())  //ALLY RIPCORD 7/10/09
+					{
+	                    IshipIGC*   pship = psl->data();
+	                    if (pship != pshipSource && pship->GetSide()->AlliedSides(pside,pship->GetSide()))
+	                    {
+	                        IclusterIGC*    pc = trekClient.GetRipcordCluster(pship, habm);
+	                        if (pc)
+	                            clustersRipcord.last(pc);
+	                    }
+	                }
+				} else {
+	                for (ShipLinkIGC*   psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())  //not ally ripcord
+					{
+	                    IshipIGC*   pship = psl->data();
+	                    if (pship != pshipSource)
+	                    {
+	                        IclusterIGC*    pc = trekClient.GetRipcordCluster(pship, habm);
+	                        if (pc)
+	                            clustersRipcord.last(pc);
+	                    }
+	                }
+				}
             }
 
             pclusterRipcord = pmodelRipcord->GetCluster();

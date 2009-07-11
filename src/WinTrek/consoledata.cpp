@@ -107,7 +107,7 @@ TRef<Image> ModelData::GetSideIcon()
 }
 //Andon: Flag for friendly targets.
 //Returns a 1 if it is on your team
-//Returns a 2 if it is an ally
+//Returns a 2 if it is an ally  //IMAGO REVIEW - THIS IS BROKEN use AlliedSide()! 7/10/09
 //Returns a 3 if it is an enemy
 float ModelData::IsFriendly()
 {

@@ -2605,7 +2605,7 @@ public:
 	                    m_pchsCurrent->SetRecipient(CHAT_WING, NA, NULL);
 	                }
 	            }
-			} else { //ALLY
+			} else { //no ALLY
 				switch (m_pchsCurrent->m_ctRecipient)
 	            {
 					case CHAT_ALLIES:
@@ -2787,7 +2787,7 @@ public:
 			                                if (score < scoreBest)
 			                                {
 			                                    scoreBest = score;
-												OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
+												//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
 			                                    ct = CHAT_ALLIES;
 			                                    oidRecipient = NA;
 			                                    pbaseRecipient = NULL;

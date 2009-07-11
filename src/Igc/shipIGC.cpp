@@ -1646,8 +1646,8 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                                 {
                                     IsideIGC*   pside = pship->GetSide();
 
-                                    if ((pside == psideMe) ||
-										(CanSee(pship) && SeenBySide(pside) && IsideIGC::AlliedSides(psideMe,pside)) //#ALLY - friendly nearby (seen or can see us)
+                                    if (((pside == psideMe) || pside->AlliedSides(pside,psideMe)) ||
+										(CanSee(pship) && SeenBySide(pside)) //#ALLY - friendly nearby (seen or can see us) IMAGO FIXED 7/10/09
 										)
                                     {
                                         cFriend++;
@@ -3128,10 +3128,11 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 	        {
 	            IshipIGC*       pship = psl->data();
 	            if (pship != GetSourceShip() &&
-					(pside->AlliedSides(pside,pship->GetSide()) || (pside->GetObjectID() == pship->GetSide()->GetObjectID())) ) 
+					(pside->AlliedSides(pside,pship->GetSide()) || (pside == pship->GetSide()))) //&&
+					//pship->SeenBySide(pside)) //Imago VISIBILITY RIPCORD 7/10/09 ALLYTD
 	            {
 	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
-	                if (pc)
+	                if (pc) 
 	                {
 	                    ShipPairLink*   spl = new ShipPairLink;
 	                    spl->data().pship = pship;
@@ -3577,15 +3578,17 @@ bool    CshipIGC::bShouldUseRipcord(IclusterIGC*  pcluster)
 	            if (ps != this &&
 					(ps->GetSide() == pside || pside->AlliedSides(pside,ps->GetSide()))) //ALLY
 	            {
-	                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
-	                if (pc)
-	                {
-	                    if (pcluster == pc)
-	                        return true;
+					//if (ps->SeenBySide(pside)) {  //Imago VISIBILITY RIPCORD 7/10/09
+	                	IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                	if (pc)
+	                	{
+	                    	if (pcluster == pc)
+	                        	return true;
 
-	                    if (shipRipcords.find(pc) == NULL)
-	                        shipRipcords.last(pc);
-	                }
+	                    	if (shipRipcords.find(pc) == NULL)
+	                        	shipRipcords.last(pc);
+						}
+	              //  }
 	            }
 	        }
 		} else {
@@ -3639,7 +3642,7 @@ bool    CshipIGC::bShouldUseRipcord(IclusterIGC*  pcluster)
             for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
             {
                 IprobeIGC*  pprobe = ppl->data();
-				if (GetMission()->GetMissionParams()->bAllowAlliedRip) { //ALLY ripcord imago 7/8/09
+				if (GetMission()->GetMissionParams()->bAllowAlliedRip) { //ALLY RIPCORD imago 7/8/09
                 	if ((pprobe->GetSide() == pside || pside->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY ripcord imago 7/8/09
                     	return true;
 				} else {

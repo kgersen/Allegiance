@@ -11780,7 +11780,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
             UpgradeShip(pship, pstationNew);
 		// #ALLY  -imago 7/3/09 added allied check and repair/refuel REARM
 		// if allied station, relaunch now
-		if ( (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
+		if (pfsShip->IsPlayer() && (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
 		{
 			//RIPPED FROM LAND ON CARRIER EVENT 7/9/09
 		    CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
@@ -12017,7 +12017,7 @@ bool FedSrvSiteBase::ContinueRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 
 	if (pfsMission->GetMissionDef()->misparms.bAllowAlliedRip) {
 	    if ((pship->GetFlag() != NA) ||
-	        ((pship->GetSide() != pmodel->GetSide()) && (!pship->GetSide()->AlliedSides(pship->GetSide(),pmodel->GetSide()))) || //ALLY RIPCORD imago 7/8/0
+	        ((pship->GetSide() != pmodel->GetSide()) && (!pship->GetSide()->AlliedSides(pship->GetSide(),pmodel->GetSide()))) || //ALLY RIPCORD imago 7/8/09
 	        (pmodel->GetCluster() == NULL))
 	    {
 	        rc = false;

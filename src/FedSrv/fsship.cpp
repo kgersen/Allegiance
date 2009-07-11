@@ -364,7 +364,7 @@ void          CFSShip::ShipStatusDocked(IstationIGC*   pstation)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if (((pside == psideMe) || IsideIGC::AlliedSides(pside,psideMe)) || // #ALLY Imago 7/8/09
+        if (((pside == psideMe) || IsideIGC::AlliedSides(pside,psideMe)) || // #ALLY Imago 7/8/09 VISIBILITY?
             ((GetIGCShip()->SeenBySide(pside)) && (pstation->SeenBySide(pside))))
         {
             SideID      sideID = pside->GetObjectID();

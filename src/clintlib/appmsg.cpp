@@ -920,10 +920,10 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     assert (pmodelRipcord->GetObjectType() == OT_ship);
 
                     PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)pmodelRipcord)->GetPrivateData());
-                    assert (ppi->StatusIsCurrent());
-                    pclusterRipcord = m_pCoreIGC->GetCluster(ppi->LastSeenSector());
-
-                    assert (pclusterRipcord);
+                    			
+					assert (ppi->StatusIsCurrent());
+					pclusterRipcord = m_pCoreIGC->GetCluster(ppi->LastSeenSector());
+   	                assert (pclusterRipcord); 
                 }
 
                 const char*     name = pclusterRipcord->GetName();
