@@ -9904,6 +9904,7 @@ class ThingSiteImpl : public ThingSite
                     // this is called when a stream of messages to a different recipient is in process of being queued-up
                     // so we will use the secondary (smaller 1k) outbox so as to not interrupt the main message stream
                     g.fm.UseMainOutBox(false);
+					g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED);
 /*
 					if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
 					{
@@ -9929,6 +9930,8 @@ class ThingSiteImpl : public ThingSite
                     bSent = true;
                     ExportObj(pmodel, type, NULL);
 
+
+
                     //perform a hack here: if a aleph becomes visible, make its corresponding aleph visible
                     if (type == OT_warp)
                     {
@@ -9936,15 +9939,18 @@ class ThingSiteImpl : public ThingSite
                         assert (pwarpOther);
                         ExportObj(pwarpOther, OT_warp, NULL);
 
-                        assert (!pwarpOther->SeenBySide(pside));
-                        {
-                            //Force the visibility of this warp wrt the side to true without going through
-                            //SetSideVisibility ... do it via a ugly forced upcast
-                            ThingSiteImpl*  pts = (ThingSiteImpl*)(pwarpOther->GetThingSite());
+						if (!pside->GetMission()->GetMissionParams()->bAllowAlliedViz) { //ALLY VISIBILITY Imago 7/11/09
+	                        assert (!pwarpOther->SeenBySide(pside));
 
-                            SideVisibility& sv = pts->m_rgSideVisibility[sideID];
-                            sv.fVisible(true);
-                        }
+	                        {
+	                            //Force the visibility of this warp wrt the side to true without going through
+	                            //SetSideVisibility ... do it via a ugly forced upcast
+	                            ThingSiteImpl*  pts = (ThingSiteImpl*)(pwarpOther->GetThingSite());
+
+	                            SideVisibility& sv = pts->m_rgSideVisibility[sideID];
+	                            sv.fVisible(true);
+	                        }
+						}
 
                         {
                             for (WarpBombLink* p = ((IwarpIGC*)pmodel)->GetBombs()->first(); (p != NULL); p = p->next())
@@ -9975,6 +9981,7 @@ class ThingSiteImpl : public ThingSite
                         if (pbe)
                             ExportObj(pbe, OT_buildingEffect, NULL);
                     }
+				
                     g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
                 }
             }
@@ -10036,17 +10043,32 @@ class ThingSiteImpl : public ThingSite
 
                     SideVisibility& sv = m_rgSideVisibility[sid];
 
+
                     //Update the visibility for everything except visible static objects
                     if (!(m_bPredictable && sv.fVisible()))
-                    {
-                        if (pside == pmodel->GetSide() || (pside->AlliedSides(pside,pmodel->GetSide()) && pmodel->GetMission()->GetMissionParams()->bAllowAlliedViz)) //ALLYTD imago 7/7/09 Visibility
+					{
+                        if (pside == pmodel->GetSide()) //ALLYTD imago 7/7/09 Visibility
                         {
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
                             sv.fVisible(true);
                             ShowObject(pside, pmodel);
 
-							if (pside != pmodel->GetSide()) {
-								if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
+
+						} else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
+										printf("show object to ally via model's side\n");
+										//Allies See it
+                            			sv.fVisible(true);
+										ShowObject(pside, pmodel);
+			
+						} else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel)) //GET SIDE ALLYTD SCAN 7/11/09 Imago
+						{						
+	                            if (!sv.fVisible())
+	                            {
+	                                //See it
+	                                sv.fVisible(true);
+	                                ShowObject(pside, pmodel);
+	                            }
+								if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !sv.fVisible()) //ALLY SCAN Imago 7/11/09
 								{
 									//lets get a list of allied sideIDs
 								    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
@@ -10055,27 +10077,17 @@ class ThingSiteImpl : public ThingSite
 									{
 										IsideIGC*   otherside = psidelink->data();
 										//this side is ally...and not ours
-										if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+										if (pside->AlliedSides(sv.pLastSpotter()->GetSide(),otherside)) {
+											printf("show object to ally via spotter in scan range\n");
 											//See it
                                 			sv.fVisible(true);
                                 			ShowObject(otherside, pmodel);
 										}
 									}
 								}
-							}
-
-                        }
-                        else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel)) //GET SIDE ALLYTD SCAN 7/11/09 Imago
-                        {
-                            if (!sv.fVisible())
-                            {
-                                //See it
-                                sv.fVisible(true);
-                                ShowObject(pside, pmodel);
-                            }
                         }
                         else
-                        {
+						{
                             //Not trivially seen ... loop over everything that could see it
                             sv.fVisible(false);
                             for (ScannerLinkIGC*   l = pcs->GetScanners(sid)->first();
@@ -10086,12 +10098,13 @@ class ThingSiteImpl : public ThingSite
                                 assert (s->GetCluster() == pcluster);
 
                                 if (s->InScannerRange(pmodel))
-                                {
+								{
                                     //See it
                                     sv.fVisible(true);
-                                    bool    bSent = ShowObject(pside, pmodel);
-
+                                    bool bSent = ShowObject(pside, pmodel);
+									
 									//ALLIES SEE IT ALLYTD SCAN imago 7/11/09 Or maybe use AddScanner()
+
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
 									{
 										//lets get a list of allied sideIDs
@@ -10101,13 +10114,16 @@ class ThingSiteImpl : public ThingSite
 										{
 											IsideIGC*   otherside = psidelink->data();
 											//this side is ally...and not ours
-											if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+											if (pside->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside) {
+												printf("telling ally about object spotted /w allied scanner\n");
 												//See it
                                     			sv.fVisible(true);
-                                    			bool    bSent = ShowObject(otherside, pmodel);
+                                    			ShowObject(otherside, pmodel);
 											}
 										}
 									}
+									
+
 
                                     //Keep track of who spotted it
                                     sv.pLastSpotter(s);
@@ -10119,7 +10135,7 @@ class ThingSiteImpl : public ThingSite
                                         if (otModel == OT_station || otModel == OT_warp ||
                                             (otModel == OT_asteroid &&
                                              (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
-                                        {
+										{
                                             ObjectType  otSpotter = s->GetObjectType();
                                             // tell the side who spotted it
                                             BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
@@ -10134,7 +10150,7 @@ class ThingSiteImpl : public ThingSite
 											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());
 										
 											
-											if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
+											if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
 											{
 												//lets get a list of allied sideIDs
 											    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
@@ -10142,8 +10158,15 @@ class ThingSiteImpl : public ThingSite
 													psidelink = psidelink->next())
 												{
 													IsideIGC*   otherside = psidelink->data();
-													//this side is ally...and not ours
-													if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+													//this spotter's side is ally...and not ours
+													if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside) {
+			                                            BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
+			                                            END_PFM_CREATE
+			                                            pfmObjectSpotted->otObject = otModel;
+			                                            pfmObjectSpotted->oidObject = pmodel->GetObjectID();
+			                                            pfmObjectSpotted->otSpotter = otSpotter;
+			                                            pfmObjectSpotted->oidSpotter = s->GetObjectID();														
+														printf("sending object spotted message to ally\n");
 														g.fm.SendMessages(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09 VISIBILITY
 													}
 												}
@@ -10168,7 +10191,7 @@ class ThingSiteImpl : public ThingSite
                                                 }
                                             }
                                         }
-                                    }
+									}
 
                                     break;
                                 }
@@ -10184,7 +10207,7 @@ class ThingSiteImpl : public ThingSite
                     }
                 }
             }
-        }
+		}
         virtual bool    GetSideVisibility(IsideIGC* pside)
         {
             assert (pside != NULL);

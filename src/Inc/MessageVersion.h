@@ -18,6 +18,6 @@
    one server, and many clients, the server is always up to date by definition.
    ***Also gets incremented for changes to parts.h***
 */
-const int MSGVER = 202; // KGJV updated for R5 - 202 Imago R5Contrib 7/8/09 (missionparam.bAllowAlliedRipcord)
+const int MSGVER = 203; // KGJV updated for R5 - 203 Imago R5Contrib 7/11/09 (missionparam.bAllowAllied*)
 
 #endif

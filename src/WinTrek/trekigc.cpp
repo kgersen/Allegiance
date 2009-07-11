@@ -2059,15 +2059,36 @@ class ThingSiteImpl : public ThingSitePrivate
                             IscannerIGC*   s = l->data();
                             assert (s->GetCluster() == pcluster);
 
-                            if (s->InScannerRange(pmodel)) //ALLYTD SCAN 7/11/09
+                            if (s->InScannerRange(pmodel))
                             {
                                 //Ship s's side does not see the ship but this ship does
                                 if (m_bIsShip)
                                     trekClient.PlaySoundEffect(newShipSound, pmodel);
                                 m_sideVisibility.fVisible(true);
                                 m_sideVisibility.pLastSpotter(s);
+				
+								IsideIGC* pside = pmodel->GetSide();
+				
+								if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
+								{
+									//lets get a list of allied sideIDs
+								    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
+										(psidelink != NULL);
+										psidelink = psidelink->next())
+									{
+										IsideIGC*   otherside = psidelink->data();
+										//this side is ally...and not ours
+										if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && s->GetSide() != pside) {
+                               				 m_sideVisibility.fVisible(true);
+                                			 m_sideVisibility.pLastSpotter(s);
+											 break;
+										}
+									}
+									
+								}
+								
                                 break;
-                            }
+							}
                         }
                     }
                 }
