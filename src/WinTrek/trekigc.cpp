@@ -2052,14 +2052,14 @@ class ThingSiteImpl : public ThingSitePrivate
                     {
                         //do it the hard way
                         m_sideVisibility.fVisible(false);
-                        for (ScannerLinkIGC*   l = pcluster->GetClusterSite()->GetScanners(0)->first();
+                        for (ScannerLinkIGC*   l = pcluster->GetClusterSite()->GetScanners(trekClient.GetSideID())->first();  //Imago, why was this side id set to 0? 7/11/09
                              (l != NULL);
                              l = l->next())
                         {
                             IscannerIGC*   s = l->data();
                             assert (s->GetCluster() == pcluster);
 
-                            if (s->InScannerRange(pmodel))
+                            if (s->InScannerRange(pmodel)) //ALLYTD SCAN 7/11/09
                             {
                                 //Ship s's side does not see the ship but this ship does
                                 if (m_bIsShip)

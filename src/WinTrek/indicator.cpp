@@ -292,7 +292,7 @@ public:
                                     for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next())
                                     {
                                         IshipIGC*   ps = psl->data();
-                                        if ((ps->GetSide() == pside) && //#ALLYTD: change this if allies should relay lead ind VISIBILITY
+                                        if ((ps->GetSide() == pside) && //#ALLYTD: change this if allies should relay lead ind SCAN
                                             (ps->GetParentShip() == NULL) &&
                                             ps->GetBaseHullType()->HasCapability(c_habmRemoteLeadIndicator) &&
                                             ps->InScannerRange(targetModel))

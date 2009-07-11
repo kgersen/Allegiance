@@ -3172,7 +3172,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 
             ZString strSpotterName;
 
-            switch (pfmObjectSpotted->otSpotter)
+            switch (pfmObjectSpotted->otSpotter) //ALLYTD SCAN imago 7/11/09
             {
             case OT_station:
                 strSpotterName = ZString("Your ") 

@@ -10044,8 +10044,28 @@ class ThingSiteImpl : public ThingSite
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
                             sv.fVisible(true);
                             ShowObject(pside, pmodel);
+
+							if (pside != pmodel->GetSide()) {
+								if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
+								{
+									//lets get a list of allied sideIDs
+								    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
+										(psidelink != NULL);
+										psidelink = psidelink->next())
+									{
+										IsideIGC*   otherside = psidelink->data();
+										//this side is ally...and not ours
+										if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+											//See it
+                                			sv.fVisible(true);
+                                			ShowObject(otherside, pmodel);
+										}
+									}
+								}
+							}
+
                         }
-                        else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel))
+                        else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel)) //GET SIDE ALLYTD SCAN 7/11/09 Imago
                         {
                             if (!sv.fVisible())
                             {
@@ -10071,6 +10091,24 @@ class ThingSiteImpl : public ThingSite
                                     sv.fVisible(true);
                                     bool    bSent = ShowObject(pside, pmodel);
 
+									//ALLIES SEE IT ALLYTD SCAN imago 7/11/09 Or maybe use AddScanner()
+									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
+									{
+										//lets get a list of allied sideIDs
+									    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
+											(psidelink != NULL);
+											psidelink = psidelink->next())
+										{
+											IsideIGC*   otherside = psidelink->data();
+											//this side is ally...and not ours
+											if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+												//See it
+                                    			sv.fVisible(true);
+                                    			bool    bSent = ShowObject(otherside, pmodel);
+											}
+										}
+									}
+
                                     //Keep track of who spotted it
                                     sv.pLastSpotter(s);
 
@@ -10095,8 +10133,8 @@ class ThingSiteImpl : public ThingSite
 
 											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());
 										
-											/*
-											if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
+											
+											if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
 											{
 												//lets get a list of allied sideIDs
 											    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
@@ -10110,7 +10148,7 @@ class ThingSiteImpl : public ThingSite
 													}
 												}
 											}
-											*/
+											
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
