@@ -9939,7 +9939,7 @@ class ThingSiteImpl : public ThingSite
                         assert (pwarpOther);
                         ExportObj(pwarpOther, OT_warp, NULL);
 
-						if (!pside->GetMission()->GetMissionParams()->bAllowAlliedViz) { //ALLY VISIBILITY Imago 7/11/09
+						if (!pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
 	                        assert (!pwarpOther->SeenBySide(pside));
 
 	                        {
@@ -9950,7 +9950,6 @@ class ThingSiteImpl : public ThingSite
 	                            SideVisibility& sv = pts->m_rgSideVisibility[sideID];
 	                            sv.fVisible(true);
 	                        }
-						}
 
                         {
                             for (WarpBombLink* p = ((IwarpIGC*)pmodel)->GetBombs()->first(); (p != NULL); p = p->next())
@@ -10017,7 +10016,11 @@ class ThingSiteImpl : public ThingSite
             {
                 CFSShip*    pfsShip = (CFSShip *)(((IshipIGC*)pmodel)->GetPrivateData());
                 assert (pfsShip);
-                pfsShip->ShipStatusHidden(pside);
+
+				//dont hide allies ships, ever
+				if (!pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pside->AlliedSides(pside,pmodel->GetSide())) {
+                	pfsShip->ShipStatusHidden(pside);
+				}
             }
         }
 
@@ -10047,20 +10050,20 @@ class ThingSiteImpl : public ThingSite
                     //Update the visibility for everything except visible static objects
                     if (!(m_bPredictable && sv.fVisible()))
 					{
-                        if (pside == pmodel->GetSide()) //ALLYTD imago 7/7/09 Visibility
+                        if (pside == pmodel->GetSide() && !pmodel->SeenBySide(pside)) //ALLY imago 7/7/09 Visibility 7/11/09
                         {
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
                             sv.fVisible(true);
                             ShowObject(pside, pmodel);
 
 
-						} else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
-										printf("show object to ally via model's side\n");
+						} else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pmodel->SeenBySide(pside)) {
+										//printf("show object to ally via model's side\n");
 										//Allies See it
                             			sv.fVisible(true);
 										ShowObject(pside, pmodel);
 			
-						} else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel)) //GET SIDE ALLYTD SCAN 7/11/09 Imago
+						} else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel) && !pmodel->SeenBySide(pside)) // ALLY SCAN 7/11/09 Imago
 						{						
 	                            if (!sv.fVisible())
 	                            {
@@ -10069,11 +10072,11 @@ class ThingSiteImpl : public ThingSite
 	                                ShowObject(pside, pmodel);
 	                            }
 
-						} else if (sv.pLastSpotter() && pside->AlliedSides(pside,sv.pLastSpotter()->GetSide()) && sv.pLastSpotter()->InScannerRange(pmodel) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
+						} else if (sv.pLastSpotter() && pside->AlliedSides(pside,sv.pLastSpotter()->GetSide()) && sv.pLastSpotter()->InScannerRange(pmodel) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pmodel->SeenBySide(pside)) {
 	                            if (!sv.fVisible())
 	                            {
 	                                //Allies See it
-									printf("show object to ally via last spotter's side\n");
+									//printf("show object to ally via last spotter's side\n");
 	                                sv.fVisible(true);
 	                                ShowObject(pside, pmodel);
 	                            }
@@ -10089,45 +10092,14 @@ class ThingSiteImpl : public ThingSite
                                 IscannerIGC*   s = l->data();
                                 assert (s->GetCluster() == pcluster);
 
-								if (!s->InScannerRange(pmodel)) {
-								/*
-									//ALLIES SEE IT ALLYTD SCAN imago 7/11/09 Or maybe use AddScanner()
-
-									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
-									{
-										//lets get a list of allied sideIDs
-									    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
-											(psidelink != NULL);
-											psidelink = psidelink->next())
-										{
-											IsideIGC*   otherside = psidelink->data();
-				                            for (ScannerLinkIGC*   l = pcs->GetScanners(otherside->GetObjectID())->first();
-				                                 (l != NULL);
-				                                 l = l->next())
-				                            {
-				                                IscannerIGC*   s2 = l->data();
-
-												if (s2->InScannerRange(pmodel) && s2->GetSide()->AlliedSides(pside,s2->GetSide()) && s2->GetSide() != pside)
-												{
-													printf("telling ally about object spotted /w allied scanner\n");
-													if (pmodel->SeenBySide(otherside)) {
-														printf("!! technically ally already sees object (wtf)\n");
-													} else {
-														//Ally See it
-	                                    				sv.fVisible(true);
-	                                    				ShowObject(pside, pmodel);
-													}
-												}
-											}
-			
-										}
-									}
-									*/
-
-								}else {
+								if (s->InScannerRange(pmodel)) {
+									bool bSent = false;
                                     //See it
-                                    sv.fVisible(true);
-                                    bool bSent = ShowObject(pside, pmodel);
+									if (!pmodel->SeenBySide(pside)) {
+                                    	sv.fVisible(true);
+                                    	bSent = ShowObject(pside, pmodel);
+									}
+									
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
 									{
 										//lets get a list of allied sideIDs
@@ -10137,10 +10109,31 @@ class ThingSiteImpl : public ThingSite
 										{
 											IsideIGC*   otherside = psidelink->data();
 											//this spotter's side is ally...and not ours
-											if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && !pmodel->SeenBySide(otherside)) {
-												printf("show object to ally via allied scanner\n");
-												ShowObject(otherside, pmodel);
+											if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && !pmodel->SeenBySide(otherside) && bSent) {
+												//printf("show object to ally via allied scanner\n");
 												
+												SideVisibility& sv2 = m_rgSideVisibility[otherside->GetObjectID()];
+												sv2.fVisible(true);
+												bool bAllySent = ShowObject(otherside, pmodel);
+                                    			sv2.pLastSpotter(s);	
+
+												ObjectType otModel = pmodel->GetObjectType();
+												ObjectType  otSpotter = s->GetObjectType();
+		                                        if ((bAllySent) && otModel == OT_station || otModel == OT_warp ||
+		                                            (otModel == OT_asteroid &&
+		                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
+												{
+
+	                                           		ObjectType  otSpotter = s->GetObjectType();
+		                                            BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
+		                                            END_PFM_CREATE
+		                                            pfmObjectSpotted->otObject = otModel;
+		                                            pfmObjectSpotted->oidObject = pmodel->GetObjectID();
+		                                            pfmObjectSpotted->otSpotter = otSpotter;
+		                                            pfmObjectSpotted->oidSpotter = s->GetObjectID();														
+													//printf("sending object spotted message to ally\n");
+													g.fm.SendMessages(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+												}
 											}
 										}
 									}									
@@ -10166,31 +10159,7 @@ class ThingSiteImpl : public ThingSite
 
                                             g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); 
 
-											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());
-										
-											
-											if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
-											{
-												//lets get a list of allied sideIDs
-											    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
-													(psidelink != NULL);
-													psidelink = psidelink->next())
-												{
-													IsideIGC*   otherside = psidelink->data();
-													//this spotter's side is ally...and not ours
-													if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && !pmodel->SeenBySide(otherside)) {
-			                                            BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
-			                                            END_PFM_CREATE
-			                                            pfmObjectSpotted->otObject = otModel;
-			                                            pfmObjectSpotted->oidObject = pmodel->GetObjectID();
-			                                            pfmObjectSpotted->otSpotter = otSpotter;
-			                                            pfmObjectSpotted->oidSpotter = s->GetObjectID();														
-														printf("sending object spotted message to ally\n");
-														g.fm.SendMessages(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLYTD imago 7/8/09 VISIBILITY
-													}
-												}
-											}
-											
+											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());																		
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -11108,7 +11077,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                     IsideIGC*   pside = ship->GetSide();
                     assert (pside);
 
-                    if ((pside != psideLauncher) && !pside->AlliedSides(pside,psideLauncher))  //ALLY -imago 7/3/09
+                    if (pside != psideLauncher) //&& !pside->AlliedSides(pside,psideLauncher))  //ALLY -imago 7/3/09 reverted
                     {
                         SoundID underAttackSound;
 
@@ -11136,13 +11105,13 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                 underAttackSound = droneUnderAttackSound;
                                 break;
                         }
-                        SendChatf(ship, CHAT_TEAM, ship->GetSide()->GetObjectID(),
+						ChatTarget ct = (pside->GetAllies() == NA) ? CHAT_TEAM : CHAT_ALLIES; //ALLY imago 7/12/09
+                        SendChatf(ship, ct, ship->GetSide()->GetObjectID(),
                                   underAttackSound, "Under attack by %s in %s",
                                   GetModelName(launcher), ship->GetCluster()->GetName());
                     }
                     else if (launcher->GetObjectType() == OT_ship)
                     {
-						//ALLYTD Imago 7/9/09 CHAT_ALLIES
                         CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                         if (pfsLauncher->IsPlayer())
                         {
@@ -11168,18 +11137,19 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
             {
                 IsideIGC*   pside = station->GetSide();
 
-				if ((pside != psideLauncher) && !IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY (Imago)
+				if (pside != psideLauncher) //&& !IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY (Imago) reverted 7/12/09
                 {
+					ChatTarget ct = (station->GetSide()->GetAllies() != NA) ? CHAT_TEAM : CHAT_ALLIES; //ALLY imago 7/12/09
                     if (station->GetFraction() < 0.30)
                     {
-                        SendChatf(NULL, CHAT_TEAM, station->GetSide()->GetObjectID(),
+                        SendChatf(NULL, ct, station->GetSide()->GetObjectID(),
                                   station->GetStationType()->GetCriticalSound(),
                                   "%s in %s critically damaged and under attack by %s", station->GetName(),
                                   station->GetCluster()->GetName(), GetModelName(launcher));
                     }
                     else
                     {
-                        SendChatf(NULL, CHAT_TEAM, station->GetSide()->GetObjectID(),
+                        SendChatf(NULL, ct, station->GetSide()->GetObjectID(),
                                   station->GetStationType()->GetUnderAttackSound(),
                                   "%s in %s under attack by %s", station->GetName(),
                                   station->GetCluster()->GetName(), GetModelName(launcher));
@@ -11190,7 +11160,6 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
                     CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                     if (pfsLauncher->IsPlayer())
                     {
-						//CHAT ALLIES ALLYTD imago 7/9/09
                         SendChat(NULL, CHAT_INDIVIDUAL, launcher->GetObjectID(),
                                  droneWatchFireSound, "Watch your fire");
                     }
@@ -11326,7 +11295,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
           sprintf(szReason, "%s has destroyed %s's %s in %s.", psideLauncher->GetName(), pside->GetName(), pstation->GetName(), pstation->GetCluster()->GetName());
       }
       else
-		  //imago - add team list for allies ALLYTD 7/10/09
+		  //imago - add team list for allies ALLYTD ENDGAME 7/10/09
           sprintf(szReason, "%s won by dominating their opponents", psideWin->GetName());
 
       m_pfsMission->GameOver(psideWin, szReason);

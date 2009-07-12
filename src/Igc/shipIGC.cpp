@@ -3129,7 +3129,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 	            IshipIGC*       pship = psl->data();
 	            if (pship != GetSourceShip() &&
 					(pside->AlliedSides(pside,pship->GetSide()) || (pside == pship->GetSide()))) //&&
-					//pship->SeenBySide(pside)) //Imago VISIBILITY RIPCORD 7/10/09 ALLYTD
+					//pship->SeenBySide(pside)) //Imago - if VISIBILITY ever becomes an option it needs to work with RIPCORD 7/10/09 ALLYTD
 	            {
 	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
 	                if (pc) 

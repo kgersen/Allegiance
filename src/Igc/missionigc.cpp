@@ -3975,7 +3975,7 @@ void                    CmissionIGC::GenerateMission(Time                   now,
             pcluster->SetActive(true);
         }
 
-        if (pmp->bShowMap)  //ALLYTD? SCAN 7/11/09
+        if (pmp->bShowMap) 
         {
             for (WarpLinkIGC * pwl = m_warps.first();
                 (pwl != NULL);

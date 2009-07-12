@@ -1209,7 +1209,6 @@ struct MissionParams
         bResourceAmountsVisible         = true ;
         bRandomWormholes                = true ;
         bNoTeams                        = false;
-        bShowHomeSector                 = false;
         bObjectModelCreated             = false;
         bLobbiedGame                    = false;
         bClubGame                       = false;
@@ -5425,7 +5424,7 @@ class PlayerScoreObject
                         bool            bLose)
         {
             assert (!m_bConnected);
-            assert (!(bWin && bLose)); //CRASH HERE WITH ALLIES imago ALLYTD 7/9/09 (/w cheats only)
+            assert (!(bWin && bLose)); //CRASH HERE WITH ALLIES imago ALLYTD 7/9/09 (when starting a server /w cheat code only?)
 
             m_bWin = bWin;
             m_bLose = bLose;

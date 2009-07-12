@@ -199,7 +199,7 @@ public:
             
 			IsideIGC* pside = pplayer->GetShip()->GetSide();
             if (pplayer->IsHuman() && 
-				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 allyTD VISIBLITY
+				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 ALLYTD VISIBLITY, show allies $$$; That data isn't being sent, should it?
 				pside->AlliedSides(pside,trekClient.GetSide()) ))
             {
                 char cbTemp[256];
@@ -233,7 +233,7 @@ public:
         
         TRef<Image> m_pimageArrow;
         TRef<Image> m_pimageTab;
-		TRef<Image> m_pimageAllies[c_cAlliancesMax]; //Imago ALLYTD 7/9/09
+		TRef<Image> m_pimageAllies[c_cAlliancesMax]; //Imago ALLYTD 7/9/09 come up with something better than a colored number
         
         int m_nWidth;
         int m_nHeight;

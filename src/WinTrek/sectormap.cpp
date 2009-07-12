@@ -117,7 +117,7 @@ static void AddIcon(IObject*    psurfaceIcon,
     for (IconLink*  pil = picons->first(); (pil != NULL); pil = pil->next())
     {
         if ((pil->data().psurfaceIcon == (Surface*)psurfaceIcon) &&
-            (pil->data().pside == pside))  //ALLYTD? VISIBILITY?
+            (pil->data().pside == pside))  //ALLYTD? VISIBILITY change this if we want allied assets shown in the sector info pane
         {
             pil->data().count++;
             return;
@@ -390,7 +390,7 @@ public:
                         {
                             IsideIGC*   pside = psl->data()->GetSide();
                             AddIcon(psl->data()->GetIcon(), pside, NA,
-                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);  //ALLYTD? VISIBILITY
+                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);  //ALLYTD? VISIBILITY Y change this if we want allied assets shown in the sector info pane 
                         }
                     }
                 }
@@ -812,7 +812,7 @@ public:
         {
             IprobeIGC*  pprobe = ppl->data();
             if ( ( (pprobe->GetSide() == pside) || (pprobe->GetSide()->AlliedSides(pside,pprobe->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) ) &&
-				pprobe->GetCanRipcord(ripcordSpeed)) //ALLY allow rip to allies.. 7/7/09 ALLYTD VISIBILITY?
+				pprobe->GetCanRipcord(ripcordSpeed)) //ALLY allow rip to ally TP via. sector map imago 7/9/09
                 return c_iClusterHasStationRipcord;
         }
 

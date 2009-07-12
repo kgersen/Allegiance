@@ -3163,7 +3163,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         }
         break;
 
-        case FM_S_OBJECT_SPOTTED:
+        case FM_S_OBJECT_SPOTTED: //ALLY imago 7/12/09
         {
             if (!IsInGame())
                 break;
@@ -3171,24 +3171,30 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmObjectSpotted, S, OBJECT_SPOTTED, pfm);
 
             ZString strSpotterName;
+			ZString strAllies;
+			IsideIGC* myside = GetSide();
 
-            switch (pfmObjectSpotted->otSpotter) //ALLYTD SCAN imago 7/11/09
+            switch (pfmObjectSpotted->otSpotter)
             {
             case OT_station:
-                strSpotterName = ZString("Your ") 
+				
+				strAllies = (!myside->AlliedSides(GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide(),myside)) ? "Your " : "Allied " ; 
+                strSpotterName = strAllies 
                     + GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetName()
                     + " has";
                 break;
 
             case OT_probe:
-                strSpotterName = "One of your team's probes has";
+				strAllies =  (!myside->AlliedSides(GetCore()->GetProbe(pfmObjectSpotted->oidSpotter)->GetSide(),myside)) ? "team's" : "ally's" ; 
+                strSpotterName = "One of your "+ZString(strAllies)+" probes has";
                 break;
 
             case OT_ship:
+				strAllies =  (!myside->AlliedSides(GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetSide(),myside)) ? " has" : " (Ally) has" ; 
                 if (pfmObjectSpotted->oidSpotter == GetShipID())
                     strSpotterName = "You've";
                 else
-                    strSpotterName = GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetName() + ZString(" has");
+                    strSpotterName = GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetName() + ZString(strAllies);
                 break;
 
             default:
@@ -3204,7 +3210,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     IstationIGC* pstation = GetCore()->GetStation(pfmObjectSpotted->oidObject);
 					IsideIGC* myside = GetSide();
                     assert(pstation);
-					if (myside->AlliedSides(myside,pstation->GetSide())) {
+					if (myside->AlliedSides(myside,pstation->GetSide())) { //ALLY imago for when VIS is OFF
 						PostText(false, strSpotterName + " discovered an allied " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); //#ALLY imago changed enemy to friendly if allied 7/3/09
 					} else {
                     	PostText(GetShip()->GetWingID() == 0, strSpotterName + " discovered an enemy " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); 
