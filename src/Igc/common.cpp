@@ -2854,7 +2854,7 @@ void        PopulateCluster(ImissionIGC*            pmission,
 
             for (SideLinkIGC*   p = psides->first(); (p != NULL); p = p->next())
             {
-                if (p->data() != pside && (!pside->AlliedSides(pside,p->data()) && !pmission->GetMissionParams()->bAllowAlliedViz))  //Imago ALLY VISIBILITY 7/11/09
+                if (p->data() != pside)  //Imago ALLY VISIBILITY 7/11/09 reverted
                     pstation->SetSideVisibility(p->data(),
                                                 false);
             }

@@ -10068,24 +10068,16 @@ class ThingSiteImpl : public ThingSite
 	                                sv.fVisible(true);
 	                                ShowObject(pside, pmodel);
 	                            }
-								if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !sv.fVisible()) //ALLY SCAN Imago 7/11/09
-								{
-									//lets get a list of allied sideIDs
-								    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
-										(psidelink != NULL);
-										psidelink = psidelink->next())
-									{
-										IsideIGC*   otherside = psidelink->data();
-										//this side is ally...and not ours
-										if (pside->AlliedSides(sv.pLastSpotter()->GetSide(),otherside)) {
-											printf("show object to ally via spotter in scan range\n");
-											//See it
-                                			sv.fVisible(true);
-                                			ShowObject(otherside, pmodel);
-										}
-									}
-								}
-                        }
+
+						} else if (sv.pLastSpotter() && pside->AlliedSides(pside,sv.pLastSpotter()->GetSide()) && sv.pLastSpotter()->InScannerRange(pmodel) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
+	                            if (!sv.fVisible())
+	                            {
+	                                //Allies See it
+									printf("show object to ally via last spotter's side\n");
+	                                sv.fVisible(true);
+	                                ShowObject(pside, pmodel);
+	                            }
+						}
                         else
 						{
                             //Not trivially seen ... loop over everything that could see it
@@ -10105,7 +10097,7 @@ class ThingSiteImpl : public ThingSite
 									
 									//ALLIES SEE IT ALLYTD SCAN imago 7/11/09 Or maybe use AddScanner()
 
-									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
+									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz && bSent) //ALLY SCAN Imago 7/11/09
 									{
 										//lets get a list of allied sideIDs
 									    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
@@ -10116,15 +10108,17 @@ class ThingSiteImpl : public ThingSite
 											//this side is ally...and not ours
 											if (pside->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside) {
 												printf("telling ally about object spotted /w allied scanner\n");
-												//See it
-                                    			sv.fVisible(true);
-                                    			ShowObject(otherside, pmodel);
+												if (pmodel->SeenBySide(otherside)) {
+													printf("!! technically ally already sees object (wtf)\n");
+												} else {
+													//Ally See it
+                                    				//sv.fVisible(true);
+                                    				ShowObject(otherside, pmodel);
+												}
 											}
 										}
 									}
 									
-
-
                                     //Keep track of who spotted it
                                     sv.pLastSpotter(s);
 
@@ -10159,7 +10153,7 @@ class ThingSiteImpl : public ThingSite
 												{
 													IsideIGC*   otherside = psidelink->data();
 													//this spotter's side is ally...and not ours
-													if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside) {
+													if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && !pmodel->SeenBySide(otherside)) {
 			                                            BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
 			                                            END_PFM_CREATE
 			                                            pfmObjectSpotted->otObject = otModel;

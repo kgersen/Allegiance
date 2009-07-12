@@ -964,59 +964,66 @@ VOID CmapMakerIGC::PopulateClusters(CMapData* pMapData)
 
 VOID CmapMakerIGC::RevealHomeClusters(ImissionIGC * pMission)
 {
-    //
-    // Show every side everything about its home
-    //
-    for (SideLinkIGC * psl = pMission->GetSides()->first();
-        (psl != NULL);
-        psl = psl->next())
-    {
-        IsideIGC*   pside = psl->data();
+	if (pMission->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
+	{
+		//dont do this, let the server do it so our allies get it correctly
+	} else {
 
-        for (StationLinkIGC * pstnl = pside->GetStations()->first();
-            (pstnl != NULL);
-            pstnl = pstnl->next())
-		{
-            //
-            // Make every model in the station's cluster visible to the side
-            //
-            for (ModelLinkIGC * pml =
-                    pstnl->data()->GetCluster()->GetModels()->first();
-                (pml != NULL);
-                pml = pml->next())
-            {
-                pml->data()->SetSideVisibility(pside, true);
-				
-				if (pMission->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
-				{
-					//lets get a list of allied sideIDs
-				    for (SideLinkIGC* psidelink = pMission->GetSides()->first();
-						(psidelink != NULL);
-						psidelink = psidelink->next())
+	    //
+	    // Show every side everything about its home
+	    //
+	    for (SideLinkIGC * psl = pMission->GetSides()->first();
+	        (psl != NULL);
+	        psl = psl->next())
+	    {
+	        IsideIGC*   pside = psl->data();
+
+	        for (StationLinkIGC * pstnl = pside->GetStations()->first();
+	            (pstnl != NULL);
+	            pstnl = pstnl->next())
+			{
+	            //
+	            // Make every model in the station's cluster visible to the side
+	            //
+	            for (ModelLinkIGC * pml =
+	                    pstnl->data()->GetCluster()->GetModels()->first();
+	                (pml != NULL);
+	                pml = pml->next())
+	            {
+	                pml->data()->SetSideVisibility(pside, true);
+					/*
+					if (pMission->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
 					{
-						IsideIGC*   otherside = psidelink->data();
-						//this side is ally...and not ours
-						if (pside->AlliedSides(otherside,pml->data()->GetSide()) && otherside != pml->data()->GetSide()) {
-							pml->data()->SetSideVisibility(otherside, true);
+						//lets get a list of allied sideIDs
+					    for (SideLinkIGC* psidelink = pMission->GetSides()->first();
+							(psidelink != NULL);
+							psidelink = psidelink->next())
+						{
+							IsideIGC*   otherside = psidelink->data();
+							//this side is ally...and not ours
+							if (pside->AlliedSides(otherside,pml->data()->GetSide()) && otherside != pml->data()->GetSide()) {
+								pml->data()->SetSideVisibility(otherside, true);
+							}
 						}
 					}
-				}
-            }
-        }
-/*
-	    //
-	    // Show allied sides warps
-	    //
-	    for (WarpLinkIGC * pwl = pMission->GetWarps()->first();
-	        (pwl != NULL);
-	        pwl = pwl->next())
-	    {
-	        IwarpIGC*   pwarp = pwl->data();
-			if (pwarp->GetSide()->AlliedSides(pwarp->GetSide(),pside) && pMission->GetMissionParams()->bAllowAlliedViz && pwarp->GetSide() != pside)
-				pwarp->SetSideVisibility(pside, true);
-		}
-		*/
-    }
+					*/
+	            }
+	        }
+	/*
+		    //
+		    // Show allied sides warps
+		    //
+		    for (WarpLinkIGC * pwl = pMission->GetWarps()->first();
+		        (pwl != NULL);
+		        pwl = pwl->next())
+		    {
+		        IwarpIGC*   pwarp = pwl->data();
+				if (pwarp->GetSide()->AlliedSides(pwarp->GetSide(),pside) && pMission->GetMissionParams()->bAllowAlliedViz && pwarp->GetSide() != pside)
+					pwarp->SetSideVisibility(pside, true);
+			}
+			*/
+	    }
+	}
 	
 }
 
