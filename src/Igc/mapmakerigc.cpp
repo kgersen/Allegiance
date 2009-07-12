@@ -964,10 +964,6 @@ VOID CmapMakerIGC::PopulateClusters(CMapData* pMapData)
 
 VOID CmapMakerIGC::RevealHomeClusters(ImissionIGC * pMission)
 {
-	if (pMission->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
-	{
-		//dont do this, let the server do it so our allies get it correctly
-	} else {
 
 	    //
 	    // Show every side everything about its home
@@ -991,6 +987,8 @@ VOID CmapMakerIGC::RevealHomeClusters(ImissionIGC * pMission)
 	                pml = pml->next())
 	            {
 	                pml->data()->SetSideVisibility(pside, true);
+					
+					
 					/*
 					if (pMission->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
 					{
@@ -1023,8 +1021,6 @@ VOID CmapMakerIGC::RevealHomeClusters(ImissionIGC * pMission)
 			}
 			*/
 	    }
-	}
-	
 }
 
 VOID CmapMakerIGC::RevealMap(ImissionIGC * pMission)

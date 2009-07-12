@@ -2024,11 +2024,10 @@ class ThingSiteImpl : public ThingSitePrivate
                     //We, trivially, see anything on our side. beyond that ...  Imago ALLY VISIBILITY 7/11/09
                     //does the ship that saw the object last still see it
                     //(if such a ship exists)
-                    if ((trekClient.GetSide() == pmodel->GetSide() || 
-						(trekClient.GetSide()->AlliedSides(pmodel->GetSide(),trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ||
-                        (m_sideVisibility.pLastSpotter() && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel)) ||
-						(trekClient.GetSide()->AlliedSides(m_sideVisibility.pLastSpotter()->GetSide(),trekClient.GetSide()) && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz)
-						)
+                    if ( (trekClient.GetSide() == pmodel->GetSide() || (trekClient.GetSide()->AlliedSides(pmodel->GetSide(),trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ||
+                         (m_sideVisibility.pLastSpotter() && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel)) ||
+						 (m_sideVisibility.pLastSpotter() && trekClient.GetSide()->AlliedSides(m_sideVisibility.pLastSpotter()->GetSide(),trekClient.GetSide()) && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz)
+					   )
                     {
                         //yes
                         if (!m_sideVisibility.fVisible())
@@ -2068,28 +2067,6 @@ class ThingSiteImpl : public ThingSitePrivate
                                     trekClient.PlaySoundEffect(newShipSound, pmodel);
                                 m_sideVisibility.fVisible(true);
                                 m_sideVisibility.pLastSpotter(s);
-				
-								IsideIGC* pside = pmodel->GetSide();
-				
-								if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY SCAN Imago 7/11/09
-								{
-									//lets get a list of allied sideIDs
-								    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
-										(psidelink != NULL);
-										psidelink = psidelink->next())
-									{
-										IsideIGC*   otherside = psidelink->data();
-										//this side is ally...and not ours
-										if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside) {
-                               				 m_sideVisibility.fVisible(true);
-                                			 m_sideVisibility.pLastSpotter(s);
-											 break;
-										}
-									}
-									
-								}
-								
-                                break;
 							}
                         }
                     }
@@ -2112,7 +2089,7 @@ class ThingSiteImpl : public ThingSitePrivate
         void SetSideVisibility(IsideIGC* side, bool fVisible)
         {
             if (m_bSideVisibility && 
-				(side == trekClient.GetSide() || (side->AlliedSides(side,trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ) //imago viz ALLY VISIBILITY 7/11/09
+				(side == trekClient.GetSide()))// || (side->AlliedSides(side,trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ) //imago viz ALLY VISIBILITY 7/11/09
                 m_sideVisibility.fVisible(fVisible);
 
             if (fVisible)
