@@ -121,7 +121,8 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
         HKEY hKey;
 		int idummy = 0;
-		D3DFORMAT fdummy = D3DFMT_UNKNOWN;
+		D3DFORMAT bbf = D3DFMT_UNKNOWN;
+		D3DFORMAT df = D3DFMT_UNKNOWN;
 
 		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
         {
@@ -137,14 +138,14 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		lpSubKey += ZString("\\3DSettings");
 		
 		
-		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum width/height allowed.
-		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&fdummy,&fdummy,&hMon); //imago use this function!
+		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 640, 480 , &logFile);	// Mininum width/height allowed.
+		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&bbf,&df,&hMon); //imago use this function!
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.iCurrentMode		= 0;  
 		g_VideoSettings.iCurrentAASetting	= 0;
-		g_VideoSettings.d3dBackBufferFormat = D3DFMT_X8R8G8B8;
+		g_VideoSettings.d3dBackBufferFormat = (bbf == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : bbf;
 		g_VideoSettings.bWindowed			= !bStartFullscreen;
-		g_VideoSettings.d3dDeviceFormat		= D3DFMT_X8R8G8B8;
+		g_VideoSettings.d3dDeviceFormat		= (df == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : df;
 		g_VideoSettings.hSelectedMonitor	= hMon; //use primary monitor on speicfied adapter
 
 		
@@ -158,14 +159,14 @@ BOOL CALLBACK MonitorEnumProc(
   LPRECT lprcMonitor,
   LPARAM dwData
 );*/
-		g_VideoSettings.bWaitForVSync		= false;
-		g_VideoSettings.bAutoGenMipmaps 	= 0;
-		g_VideoSettings.bUseTexturePackFile = 0;
-		g_VideoSettings.multiSampleType 	= D3DMULTISAMPLE_NONE;
-		g_VideoSettings.magFilter 			= D3DTEXF_LINEAR;
+		g_VideoSettings.bWaitForVSync		= false; //LoadPreferences()
+		g_VideoSettings.bAutoGenMipmaps 	= 0; //LoadPreferences()
+		g_VideoSettings.bUseTexturePackFile = 0; //LoadPreferences()
+		g_VideoSettings.multiSampleType 	= D3DMULTISAMPLE_NONE; //LoadPreferences()
+		g_VideoSettings.magFilter 			= D3DTEXF_LINEAR; 
 		g_VideoSettings.minFilter 			= D3DTEXF_LINEAR;
 		g_VideoSettings.mipFilter 			= D3DTEXF_LINEAR;
-		g_VideoSettings.iMaxTextureSize 	= 0;
+		g_VideoSettings.iMaxTextureSize 	= 0; //LoadPreferences()
 
 		//build the adapter res array  (imago)
 		g_VideoSettings.pDevData->GetRelatedResolutions(

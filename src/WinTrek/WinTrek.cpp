@@ -78,7 +78,7 @@ const float c_fVolumeDelta = 1;
 
 const float g_hudBright = 0.85f;
 
-const float g_fJoystickDeadZoneNone = 0.0f; //imago added 7/1/09 NYI
+const float g_fJoystickDeadZoneNone = 0.0f; //imago added 7/1/09
 const float g_fJoystickDeadZoneSmall = 0.1f;
 const float g_fJoystickDeadZoneLarge = 0.3f;
 

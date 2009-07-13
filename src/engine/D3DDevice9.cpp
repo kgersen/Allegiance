@@ -145,6 +145,10 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		m_sD3DDev9.pCurrentMode = &m_sDevSetupParams.sFullScreenMode;
 	}
 
+	// Can the GFX card do alpha blending when flipping? Imago 7/12/09
+	D3DSWAPEFFECT SwapEffect = (( m_sD3DDev9.sD3DDevCaps.Caps3 & D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD ) != 0 ) 
+		? D3DSWAPEFFECT_FLIP : D3DSWAPEFFECT_COPY;  //we're bound for full screen so use flipmode anyways
+
 	// Create a new 3D device.
 	memset( &m_sD3DDev9.d3dPresParams, 0, sizeof( D3DPRESENT_PARAMETERS ) );
 	m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat		= m_sD3DDev9.pCurrentMode->fmtDepthStencil;
@@ -155,7 +159,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	m_sD3DDev9.d3dPresParams.BackBufferFormat			= m_sD3DDev9.pCurrentMode->mode.Format;
 	m_sD3DDev9.d3dPresParams.BackBufferWidth			= m_sD3DDev9.pCurrentMode->mode.Width;
 	m_sD3DDev9.d3dPresParams.BackBufferHeight			= m_sD3DDev9.pCurrentMode->mode.Height;
-	m_sD3DDev9.d3dPresParams.SwapEffect					= D3DSWAPEFFECT_DISCARD;
+	m_sD3DDev9.d3dPresParams.SwapEffect					= SwapEffect;
 
 	if( m_sDevSetupParams.bRunWindowed == true )
 	{
@@ -178,7 +182,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	//imago 7/1/09 NYI test for multisample maskable optons (CSAA, etc) and set accordingly
 	m_sD3DDev9.d3dPresParams.MultiSampleQuality				= 0; //<-- here --^
 	m_sD3DDev9.d3dPresParams.MultiSampleType				= m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting;
-	m_sD3DDev9.d3dPresParams.Flags							= 0;
+	m_sD3DDev9.d3dPresParams.Flags							= D3DPRESENTFLAG_DEVICECLIP | D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled
 
 	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
