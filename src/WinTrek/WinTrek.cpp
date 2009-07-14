@@ -2653,7 +2653,7 @@ public:
         pnsGamePanes->AddMember("MusicGain", m_pnumMusicGain =
             new ModifiableNumber(-(float)LoadPreference("MusicGain", 30)));
         pnsGamePanes->AddMember("VoiceOverGain", m_pnumVoiceOverGain =
-            new ModifiableNumber(-(float)LoadPreference("VoiceOverGain", 3)));
+            new ModifiableNumber(-(float)LoadPreference("VoiceOverGain", 10))); //Imago 7/13/09 made default voice over volume lower than sfx volume
         pnsGamePanes->AddMember("AllegianceCD", m_pDiskPlayer);
         pnsGamePanes->AddMember("MutexSal", m_psoundmutexSal);
         pnsGamePanes->AddMember("MutexVO", m_psoundmutexVO);
@@ -7238,7 +7238,7 @@ public:
                       Time  now,
                       float dt,
                       bool  activeControlsF)
-    {
+	{
 		// - Imago: Only set AFK from inactivity when logged on
 		if (trekClient.m_fLoggedOn) {
 			Time timeLastMouseMove;
@@ -7274,7 +7274,7 @@ public:
 		}
 
         if (trekClient.GetCluster() && GetWindow()->screen() == ScreenIDCombat)
-        {
+		{
             //For now, leave joystick specific code here.
             //Only process joystick if we have focus
             if (GetFocus())
@@ -7730,8 +7730,16 @@ public:
             //------------------------------------------------------------------------------
             // End interception for training missions
             //------------------------------------------------------------------------------
-        }
+		
+		} else { 
 
+			// //-Imago 7/13/09 we're not actually in a sector playing the game...
+			// this is the right time & place place to rest our CPU. We can also give it more of a break now.
+			if (!GetFullscreen())
+				Sleep(5);  
+			else
+				Sleep(1);
+		}
         //
         // Handle sending network messages
         //
@@ -7754,7 +7762,7 @@ public:
             OpenPopup(pmsgBox);
         }
         */
-    }
+	}
 
     bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& bForceTranslate)
     {

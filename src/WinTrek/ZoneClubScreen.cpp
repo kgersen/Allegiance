@@ -870,6 +870,7 @@ public:
         }
         else
         {
+			g_bQuickstart = false; //imago stop quickstart race 7/13/09
             TRef<IMessageBox> pmsgBox = CreateMessageBox(szReason);
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
         }

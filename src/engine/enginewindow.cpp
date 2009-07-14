@@ -1251,7 +1251,11 @@ void EngineWindow::DoIdle()
     // so sleep for a while so we don't eat up too much processor time
     //
 
-    ::Sleep(30);
+	if (m_bMinimized && !bChanges && !m_bInvalid) //Imago doubled when we we know we're minimized 7/13/09
+    	::Sleep(60);
+	else
+		::Sleep(30);
+
 }
 
 void EngineWindow::SetShowFPS(bool bFPS, const char* pszLabel)

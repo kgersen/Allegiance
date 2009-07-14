@@ -3172,24 +3172,41 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 
             ZString strSpotterName;
 			ZString strAllies;
+			Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
 			IsideIGC* myside = GetSide();
 
             switch (pfmObjectSpotted->otSpotter)
             {
             case OT_station:
-				strAllies = (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() == myside) ? "Your " : "Allied " ; 
+				if (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
+					
+
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "Allied\x82  " ;
+				} else {
+					strAllies = "Your "; 
+				}
                 strSpotterName = strAllies 
                     + GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetName()
                     + " has";
                 break;
 
             case OT_probe:
-				strAllies =  (GetCore()->GetProbe(pfmObjectSpotted->oidSpotter)->GetSide() == myside) ? "team's" : "ally's" ; 
+				if (GetCore()->GetProbe(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
+					
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "ally's\x82  " ;
+				} else {
+					strAllies = "team's"; 
+				}
                 strSpotterName = "One of your "+ZString(strAllies)+" probes has";
                 break;
 
             case OT_ship:
-				strAllies =  (GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetSide() == myside) ? " has" : " (Ally) has" ; 
+				if (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
+					
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + " (Ally)\x82  has" ;
+				} else {
+					strAllies = " has"; 
+				}
 
                 if (pfmObjectSpotted->oidSpotter == GetShipID())
                     strSpotterName = "You've";

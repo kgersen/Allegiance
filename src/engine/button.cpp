@@ -714,14 +714,16 @@ public:
 							m_peventSource->Trigger();
 						}
 
-                        if (m_repeatDelay != 0) {
+                        if (m_repeatDelay != 0 && button == 0) {
                             m_bFirstEvent = true;
                             m_pprovider = pprovider;
                             pprovider->GetTimer()->AddSink(m_peventSinkDelegate, m_repeatDelay);
                         } else {
-                            m_bFirstEvent = false;
-                            m_pprovider = pprovider;
-                            pprovider->GetTimer()->AddSink(m_peventSinkDelegate, m_repeatRate);
+							if (button == 0) {
+                            	m_bFirstEvent = false;
+                            	m_pprovider = pprovider;
+                            	pprovider->GetTimer()->AddSink(m_peventSinkDelegate, m_repeatRate);
+							}
                         }
                     }
 

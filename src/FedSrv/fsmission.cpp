@@ -5033,11 +5033,29 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
           if (GetStage() == STAGE_STARTING)
             StartGame();
 
-		  //make the allies team name list Imago ALLYTD 7/10/09
+          static char szReason[256];     //Make this static so we only need to keep a pointer to it around
 
-          static char szReason[100];     //Make this static so we only need to keep a pointer to it around
-          sprintf(szReason, "%s won by outlasting all other sides.", psideWin->GetName());
-          GameOver(psideWin, szReason);
+		  //make the allies team name list Imago ALLY 7/13/09
+		  if (psideWin->GetAllies() != NA) {
+			  ZString strWinningTeams;
+
+				//lets get a list of allied sideIDs
+			    for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first();
+					(psidelink != NULL);
+					psidelink = psidelink->next())
+				{
+					IsideIGC*   otherside = psidelink->data();
+					//this side is ally...and not ours
+					if (pside->AlliedSides(pside,otherside) && otherside != pside)
+						strWinningTeams += " & " + ZString(otherside->GetName());
+				}
+				strWinningTeams = psideWin->GetName() + strWinningTeams;
+				sprintf(szReason, "%s won by outlasting all other sides.", strWinningTeams);
+				GameOver(psideWin, szReason);
+		  } else {
+	          sprintf(szReason, "%s won by outlasting all other sides.", psideWin->GetName());
+			  GameOver(psideWin, szReason);
+		  }
       }
       else if ((m_psideWon == NULL) && pships->n())
       {
