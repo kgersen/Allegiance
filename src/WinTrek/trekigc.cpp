@@ -280,7 +280,8 @@ class ClusterSiteImpl : public ClusterSite
             assert (sid < c_cSidesMax);
             assert (scannerNew);
 
-            if (sid == trekClient.GetSideID())
+            if (sid == trekClient.GetSideID() ||
+				trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid),trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
                 AddIbaseIGC((BaseListIGC*)&(m_scanners), scannerNew);
         }
         virtual void                    DeleteScanner(SideID   sid, IscannerIGC* scannerOld)
@@ -288,7 +289,8 @@ class ClusterSiteImpl : public ClusterSite
             assert (sid >= 0);
             assert (sid < c_cSidesMax);
             assert (scannerOld);
-            if (sid == trekClient.GetSideID())
+            if (sid == trekClient.GetSideID() || 
+				trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid),trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
                 DeleteIbaseIGC((BaseListIGC*)&(m_scanners), scannerOld);
         }
         virtual const ScannerListIGC*      GetScanners(SideID   sid) const
@@ -2053,7 +2055,7 @@ class ThingSiteImpl : public ThingSitePrivate
                     {
                         //do it the hard way
                         m_sideVisibility.fVisible(false);
-                        for (ScannerLinkIGC*   l = pcluster->GetClusterSite()->GetScanners(trekClient.GetSideID())->first();  //Imago, why was this side id set to 0? 7/11/09
+                        for (ScannerLinkIGC*   l = pcluster->GetClusterSite()->GetScanners(0)->first(); 
                              (l != NULL);
                              l = l->next())
                         {
@@ -2061,12 +2063,26 @@ class ThingSiteImpl : public ThingSitePrivate
                             assert (s->GetCluster() == pcluster);
 
                             if (s->InScannerRange(pmodel))
-                            {
+							{
                                 //Ship s's side does not see the ship but this ship does
                                 if (m_bIsShip)
                                     trekClient.PlaySoundEffect(newShipSound, pmodel);
+
                                 m_sideVisibility.fVisible(true);
-                                m_sideVisibility.pLastSpotter(s);
+                                m_sideVisibility.pLastSpotter(s);								
+								if (trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) //ALLY should be SCAN Imago 7/13/09
+								{
+									//lets get a list of allied sideIDs
+								    for (SideLinkIGC* psidelink = trekClient.GetCore()->GetSides()->first();
+										(psidelink != NULL);
+										psidelink = psidelink->next())
+									{
+										IsideIGC*   otherside = psidelink->data();
+										//this spotter's side is ally...and not ours...and we dont already see it
+										if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && !pmodel->SeenBySide(otherside))
+		                                	pmodel->SetSideVisibility(otherside,true);
+									}
+								}		
 							}
                         }
                     }

@@ -3163,8 +3163,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         }
         break;
 
-        case FM_S_OBJECT_SPOTTED: //ALLY imago 7/12/09
-        {
+        case FM_S_OBJECT_SPOTTED: //ALLY imago 7/12/09 					
+        {							//we can safely assume if an object is spotted by somone not on our team it's an ally 7/13/09
             if (!IsInGame())
                 break;
 
@@ -3177,20 +3177,20 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             switch (pfmObjectSpotted->otSpotter)
             {
             case OT_station:
-				
-				strAllies = (!myside->AlliedSides(GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide(),myside)) ? "Your " : "Allied " ; 
+				strAllies = (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() == myside) ? "Your " : "Allied " ; 
                 strSpotterName = strAllies 
                     + GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetName()
                     + " has";
                 break;
 
             case OT_probe:
-				strAllies =  (!myside->AlliedSides(GetCore()->GetProbe(pfmObjectSpotted->oidSpotter)->GetSide(),myside)) ? "team's" : "ally's" ; 
+				strAllies =  (GetCore()->GetProbe(pfmObjectSpotted->oidSpotter)->GetSide() == myside) ? "team's" : "ally's" ; 
                 strSpotterName = "One of your "+ZString(strAllies)+" probes has";
                 break;
 
             case OT_ship:
-				strAllies =  (!myside->AlliedSides(GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetSide(),myside)) ? " has" : " (Ally) has" ; 
+				strAllies =  (GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetSide() == myside) ? " has" : " (Ally) has" ; 
+
                 if (pfmObjectSpotted->oidSpotter == GetShipID())
                     strSpotterName = "You've";
                 else

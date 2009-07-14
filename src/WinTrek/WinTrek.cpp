@@ -79,6 +79,7 @@ const float c_fVolumeDelta = 1;
 const float g_hudBright = 0.85f;
 
 const float g_fJoystickDeadZoneNone = 0.0f; //imago added 7/1/09
+const float g_fJoystickDeadZoneSmallest = 0.04f; //imago added 7/13/09
 const float g_fJoystickDeadZoneSmall = 0.1f;
 const float g_fJoystickDeadZoneLarge = 0.3f;
 
@@ -3031,7 +3032,7 @@ public:
             ToggleTargetHUD();
         if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
             CycleStyleHUD();
-        SetDeadzone(LoadPreference("DeadZone", 3)); //ToggleLargeDeadZone(); //Imago updated 7/8/09
+        SetDeadzone(LoadPreference("DeadZone", 30)); //ToggleLargeDeadZone(); //Imago updated 7/8/09
 		SetRadarLOD(LoadPreference("RadarLOD", 1)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
 			ToggleShowGrid();
@@ -4581,20 +4582,25 @@ public:
             m_pitemStyleHUD->SetString(GetStyleHUDMenuString());
     }
 
-	//Imago 7/8/09
+	//Imago 7/8/09 7/13/09
     void SetDeadzone(DWORD value)
     {
         switch (value)
         {
             case 0:
-			case 4:
+			case 31:
 				g_fJoystickDeadZone = g_fJoystickDeadZoneNone;
 				break;
+			case 4:
 			case 1:
+				g_fJoystickDeadZone = g_fJoystickDeadZoneSmallest;
+				break;
+			case 10:
+			case 5:
 				g_fJoystickDeadZone = g_fJoystickDeadZoneSmall;
 				break;
-			case 2:
-			case 3:
+			case 30:
+			case 11:
 				g_fJoystickDeadZone = g_fJoystickDeadZoneLarge;
 				break;
             default:
@@ -5027,15 +5033,18 @@ public:
 		static const ZString    strLarge = "Large dead zone";
 		static const ZString    strNone = "No dead zone";
 		static const ZString    strSmall = "Small dead zone";
+		static const ZString    strSmallest = "Smallest dead zone";
 		static const ZString    strInvalid = "Invalid dead zone";
-		int     iDZ = int(g_fJoystickDeadZone * 10);
+		int     iDZ = int(g_fJoystickDeadZone * 100);
         switch (iDZ)
         {
             case 0:
 				return strNone;
-			case 1:
+			case 4:
+				return strSmallest;
+			case 10:
 				return strSmall;
-			case 3:
+			case 30:
 				return strLarge;
             default:
 				return strInvalid;
@@ -5356,7 +5365,7 @@ public:
                 break;
 
             case idmToggleLargeDeadZone:
-                SetDeadzone( (g_fJoystickDeadZone * 10) + 1 ); //Imago 7/8/09 //ToggleLargeDeadZone();
+                SetDeadzone( (g_fJoystickDeadZone * 100) + 1 ); //Imago 7/8/09 //ToggleLargeDeadZone(); 7/13/09
                 break;
 
             case idmToggleVirtualJoystick:

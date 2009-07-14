@@ -9904,27 +9904,7 @@ class ThingSiteImpl : public ThingSite
                     // this is called when a stream of messages to a different recipient is in process of being queued-up
                     // so we will use the secondary (smaller 1k) outbox so as to not interrupt the main message stream
                     g.fm.UseMainOutBox(false);
-					g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED);
-/*
-					if (pfsMission->GetIGCMission()->GetMissionParams()->bAllowAlliedViz) //ALLY VISIBILITY Imago 7/11/09
-					{
-						//lets get a list of allied sideIDs
-					    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
-							(psidelink != NULL);
-							psidelink = psidelink->next())
-						{
-							IsideIGC*   otherside = psidelink->data();
-							//this side is ally...and not ours
-							if (pside->AlliedSides(pside,otherside) && pside != otherside) {
-								g.fm.SetDefaultRecipient(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED);
-			                    bSent = true;
-			                    ExportObj(pmodel, type, NULL);
-								g.fm.SendMessages(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); //ALLY imago VISIBILITY 7/8/09
-							}
-						}
-					}
-*/
-                    
+					g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED);                  
 
                     //Tell everyone on the side about the newly visible static object
                     bSent = true;
@@ -9998,7 +9978,7 @@ class ThingSiteImpl : public ThingSite
 					{
 						IsideIGC*   otherside = psidelink->data();
 						//this side is ally...and not ours
-						if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+						if (pside->AlliedSides(pside,otherside) && !otherside->AlliedSides(pmodel->GetSide(),otherside) && !pmodel->SeenBySide(otherside)) {
 							pfsShip->ShipStatusSpotted(otherside); //ALLY imago VISIBILITY 7/8/09
 						}
 					}
@@ -10017,8 +9997,8 @@ class ThingSiteImpl : public ThingSite
                 CFSShip*    pfsShip = (CFSShip *)(((IshipIGC*)pmodel)->GetPrivateData());
                 assert (pfsShip);
 
-				//dont hide allies ships, ever
-				if (!pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pside->AlliedSides(pside,pmodel->GetSide())) {
+				//dont hide allies ships, ever, fixed 7/13/09 was && (oops)
+				if (!pside->GetMission()->GetMissionParams()->bAllowAlliedViz || !pside->AlliedSides(pside,pmodel->GetSide())) {
                 	pfsShip->ShipStatusHidden(pside);
 				}
             }
