@@ -9,10 +9,10 @@
 const int   c_iRecipientOther   = -1;
 const int   c_iRecipientMe      =  0;
 const int   c_iRecipientSector  =  1;
-const int   c_iRecipientAllies  =  2;		//ALLY imago 7/4/09
-const int   c_iRecipientTeam    =  3;
-const int   c_iRecipientAll     =  4;
-const int   c_iRecipientWing0   =  5;       //with subsequent wings following
+//const int   c_iRecipientAllies  =  2;		//ALLY imago 7/4/09 NYI
+const int   c_iRecipientTeam    =  2;
+const int   c_iRecipientAll     =  3;
+const int   c_iRecipientWing0   =  4;       //with subsequent wings following
 
 const int c_badMatch = 100000;
 
@@ -1155,13 +1155,13 @@ public:
                     pbase = NULL;
                     oid = NA;
                 break;
-
-                case c_iRecipientAllies: //ALLY 7/4/09 imago
+/*
+                case c_iRecipientAllies: //ALLY 7/4/09 imago NYI
                     ct = CHAT_ALLIES;
                     pbase = NULL;
                     oid = NA;
                 break;
-
+*/
                 case c_iRecipientAll:
                     ct = CHAT_EVERYONE;
                     pbase = NULL;
