@@ -11289,7 +11289,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 						strWinningTeams += " & " + ZString(otherside->GetName());
 				}
 				strWinningTeams = psideWin->GetName() + strWinningTeams;
-          		sprintf(szReason, "%s won by dominating their opponents", strWinningTeams);
+          		sprintf(szReason, "%s won by dominating their opponents", (PCC)strWinningTeams);
 		  		m_pfsMission->GameOver(psideWin, szReason);
 		  } else {
           	sprintf(szReason, "%s won by dominating their opponents", psideWin->GetName());
@@ -11718,10 +11718,16 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
 
   ((CFSShip*)(pshipRescued->GetPrivateData()))->ResetWarpState();
 
-  //Find the closest space station and put the rescued ship there
+  //Find the closest space station and put the rescued ship there  
   IstationIGC*    pstation = (IstationIGC*)FindTarget(pshipRescued,
                                                       (c_ttStation | c_ttFriendly | c_ttAnyCluster | c_ttNearest),
                                                       NULL, NULL, NULL, NULL, c_sabmRestart);
+  //imago ALLY 7/13/09
+  if (pstation == NULL)
+	  pstation = m_pfsMission->GetBase(((CFSShip*)(pshipRescued->GetPrivateData()))->GetPlayer()->GetSide());
+  else if (pstation->GetSide() != ((CFSShip*)(pshipRescued->GetPrivateData()))->GetPlayer()->GetSide())
+	  pstation = m_pfsMission->GetBase(((CFSShip*)(pshipRescued->GetPrivateData()))->GetPlayer()->GetSide());
+
 
   return pstation ? DockWithStationEvent(pshipRescued, pstation) : false;
 }
@@ -11871,7 +11877,11 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
             if (pside->ApplyDevelopmentTechs(ttbm))
                 pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
 		}
-        pfsShip->Dock(pstationNew);
+		if (pship->GetBaseHullType()->HasCapability(c_habmLifepod) && pstationNew->GetSide() != pship->GetSide()) {
+			//dont dock here in a lifepod....
+		} else {
+        	pfsShip->Dock(pstationNew);
+		}
 
         if (!pfsShip->IsPlayer())
             UpgradeShip(pship, pstationNew);
@@ -11879,18 +11889,53 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 		// if allied station, relaunch now, unless we're in a pod, then delete ourselves and goto our last base
 		if (pfsShip->IsPlayer() && (pstationNew->GetSide() != pship->GetSide()) && pship->GetSide()->AlliedSides(pstationNew->GetSide(),pship->GetSide()))
 		{
+			CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
 			if ((pship->GetParentShip() == NULL) && pship->GetBaseHullType()->HasCapability(c_habmLifepod)) {
-				//Fixed lifepods 7/13/09 imago
-  				pfsShip->ResetWarpState();
-  				IstationIGC*    pstation = (IstationIGC*)FindTarget(pship,
-                                                      (c_ttStation | c_ttFriendly | c_ttAnyCluster | c_ttNearest),
-                                                      NULL, NULL, NULL, NULL, c_sabmRestart);
- 				if (pstation)
-					DockWithStationEvent(pship, pstation);
+
+				//Fixed lifepods, we can't use DockWithStation() 
+				//   'cause FindTarget will return allied base if closer 7/13/09 
+				// imago NYI move all this #ALLY in changestation ugly to a pretty DockWithAlliedStation() handler
+  				pfsShip->ResetWarpState();				
+				
+				//Find the LAST space station for this pilot and put the rescued ship there  //Imago 7/13/09
+				 IstationIGC* pstation = m_pfsMission->GetIGCMission()->GetStation(pfsShip->GetOldShipStatus(pship->GetSide()->GetObjectID())->GetStationID());
+				if (pstation == NULL)
+					pstation = m_pfsMission->GetBase(pship->GetSide());
+
+				  //Find the LAST ship type we used
+				  IhullTypeIGC* pht = m_pfsMission->GetIGCMission()->GetHullType(pfsShip->GetOldShipStatus(pship->GetSide()->GetObjectID())->GetHullID());
+
+		            //No saved hull (in non lifepod group)
+				if ((pht && pht->GetGroupID() < 0) || (pht == NULL)) {
+		            HullTypeLinkIGC*   phtl = m_pfsMission->GetIGCMission()->GetHullTypes()->last();
+		            while (true)
+		            {
+		                assert (phtl != NULL);
+		                pht = phtl->data();
+		                if ((pht->GetGroupID() >= 0) && pstation->CanBuy(pht) && (pht->GetPrice() <= 0))
+		                {
+		                    pht = (IhullTypeIGC*)(pstation->GetSuccessor(pht));
+		                    break;
+		                }
+						phtl = phtl->txen();
+					}
+
+				}
+				pfsPlayer->GetIGCShip()->SetBaseHullType(pht);
+				pfsShip->Dock(pstation);
+
+				BEGIN_PFM_CREATE(g.fm, pfmShipDelete, S, SHIP_DELETE)
+				  END_PFM_CREATE
+				  pfmShipDelete->shipID = pship->GetObjectID();
+				  pfmShipDelete->sdr = SDR_DOCKED;
+				  g.fm.SendMessages(m_pfsMission->GetGroupMission(), FM_GUARANTEED, FM_FLUSH); //HACK: announce we docked to the whole mission, this should be cluster.
+
+				pfsPlayer->GetIGCShip()->SetStation(pstation);
+  				pfsShip->ShipStatusDocked(pstation);
+				pfsPlayer->ForceLoadoutChange();
 
 			} else {
 				//RIPPED FROM LAND ON CARRIER EVENT 7/9/09 
-			    CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
 
 			    ImissionIGC*    pMission = pship->GetMission();
 			    TechTreeBitMask  ttbm = pship->GetSide()->GetDevelopmentTechs() | pship->GetSide()->GetBuildingTechs();

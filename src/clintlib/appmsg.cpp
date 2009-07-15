@@ -1962,6 +1962,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             assert (pship);
             //debugf("Loadout change for %s/%d\n", pship->GetName(), pfmLC->sidShip);
 
+		
+
             //If the ship was a passenger, now it is not
             pship->SetParentShip(NULL);
             m_pClientEventSource->OnBoardShip(pship, NULL);
@@ -1979,12 +1981,14 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 }
             }
 
-            //Ignore most part changes for ourselves
+            //Ignore most part changes for ourselves  ALLY Imago docking lifepods at allied bases hack 7/13/09
             if (pfmLC->sidShip != GetShipID())
             {
                 pship->ProcessShipLoadout(pfmLC->cbloadout,
                                           (const ShipLoadout*)(FM_VAR_REF(pfmLC, loadout)), (pship->GetCluster() == NULL));
-            }
+			} else if (pship->GetBaseHullType()->HasCapability(c_habmLifepod)) {
+				RestoreLoadout(pship->GetStation());
+			}
 
             //But always process the passenger data (even for ourself)
             {

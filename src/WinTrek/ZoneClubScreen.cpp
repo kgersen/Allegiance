@@ -863,6 +863,13 @@ public:
 
     void OnLogonLobbyFailed(bool bRetry, const char* szReason)
     {
+
+		if (g_bQuickstart) {
+			g_bQuickstart = false;
+			GetWindow()->screen(ScreenIDIntroScreen);  //imago 7/13/09 this will make users able
+														//  to retry and see the MOTD for outage info
+		}
+
         if (bRetry)
         {
             s_bWasAuthenticated = false;
@@ -870,9 +877,9 @@ public:
         }
         else
         {
-			g_bQuickstart = false; //imago stop quickstart race 7/13/09
             TRef<IMessageBox> pmsgBox = CreateMessageBox(szReason);
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+
         }
     }
     

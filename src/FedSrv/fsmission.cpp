@@ -5046,11 +5046,11 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
 				{
 					IsideIGC*   otherside = psidelink->data();
 					//this side is ally...and not ours
-					if (pside->AlliedSides(pside,otherside) && otherside != pside)
+					if (pside->AlliedSides(psideWin,otherside) && otherside != psideWin)
 						strWinningTeams += " & " + ZString(otherside->GetName());
 				}
 				strWinningTeams = psideWin->GetName() + strWinningTeams;
-				sprintf(szReason, "%s won by outlasting all other sides.", strWinningTeams);
+				sprintf(szReason, "%s won by outlasting all other sides.", (PCC)strWinningTeams);
 				GameOver(psideWin, szReason);
 		  } else {
 	          sprintf(szReason, "%s won by outlasting all other sides.", psideWin->GetName());

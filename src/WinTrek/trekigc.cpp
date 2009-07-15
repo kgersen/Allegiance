@@ -4790,16 +4790,19 @@ HRESULT WinTrekClient::ConnectToLobby(BaseClient::ConnectInfo * pci)
 
     if (!m_fmLobby.IsConnected()) 
     {
-        TRef<IMessageBox> pmsgBox = CreateMessageBox("Failed to connect to the lobby.");
-        Point point(c_PopupX, c_PopupY);
-        Rect rect(point, point);
-        GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, g_bQuickstart);
+		bool bPos = true;
 		if (g_bQuickstart) {
-			g_bQuickstart = false;
+			g_bQuickstart = false;	
+			bPos = false;
 			GetWindow()->screen(ScreenIDIntroScreen);  //imago 7/4/09 this will make users able
 														//  to retry and see the MOTD for outage info
 		}
-        
+        TRef<IMessageBox> pmsgBox = CreateMessageBox("Failed to connect to the lobby.");
+        Point point(c_PopupX, c_PopupY);
+        Rect rect(point, point);
+		(bPos) ? GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false) : 
+			GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+
     }
     else
     {
