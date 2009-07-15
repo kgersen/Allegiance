@@ -3238,37 +3238,6 @@ bool CommandToDrone(CFSMission*         pfsMission,
     return bAccepted;
 }
 
-//ALLY - imago 7/3/09
-void ForwardChatMessageToAllies(CFSMission*       pfsMission,
-                                CFSShip*          pfsSender,
-                                FEDMESSAGE*       pfm)
-{
-	//lets get a list of allied sideIDs
-    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
-		(psidelink != NULL);
-		psidelink = psidelink->next())
-	{
-		IsideIGC*   pside = psidelink->data();
-		//this side is ally...
-		if (pside->AlliedSides(pside,pfsSender->GetSide())) {
-			// lets get a list of ships on the allied side
-            for (ShipLinkIGC*   pshiplink = pside->GetShips()->first();
-                 (pshiplink != NULL);
-                 pshiplink = pshiplink->next())
-            {
-                IshipIGC*   pship = pshiplink->data();
-				//they are on command wing... removed 7/8/09
-				//if (pship->GetWingID() == 0) {
-		            CFSShip* pfsShipTo = (CFSShip*)(pship->GetPrivateData());
-					//if its legit and not to our team (they arleady got the wing chat), then send it!
-		            if (pfsShipTo->IsPlayer() && (pfsShipTo->GetSide()->GetObjectID() != pfsSender->GetSide()->GetObjectID()))
-		              g.fm.ForwardMessage(pfsShipTo->GetPlayer()->GetConnection(), pfm, FM_GUARANTEED);
-				//}
-			}
-		}
-	}
-}
-
 void ForwardChatMessageToWing(CFSMission*         pfsMission,
                               CFSShip*            pfsSender,
                               FEDMESSAGE*         pfm,
@@ -3390,13 +3359,24 @@ void ForwardChatMessage(CFSMission*         pfsMission,
             pszDest = "ALLIES";
             pszDest = pfsMission->GetMissionDef()->rgszName[pcd->oidRecipient];
             IsideIGC*   pside = pfsMission->GetIGCMission()->GetSide(pcd->oidRecipient);
-            if (pside && ((pcd->commandID == c_cidNone) || (pfsSender == NULL) || (pside == pfsSender->GetSide())))
+            if (pside && ((pcd->commandID == c_cidNone) || (pfsSender == NULL) || (pside == pfsSender->GetSide()) || (pside->AlliedSides(pside,pfsSender->GetSide()))))
             {
                 g.fm.ForwardMessage(CFSSide::FromIGC(pside)->GetGroup(),
                                     pfm, FM_GUARANTEED);
-            }
-			ForwardChatMessageToAllies(pfsMission,pfsSender,pfm);
-			//Imago ALLY 7/4/09
+
+				//lets get a list of allied sideIDs imago fixed 7/13/09 removing FwdChatMsgToAllies ALLY
+			    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
+					(psidelink != NULL);
+					psidelink = psidelink->next())
+				{
+					IsideIGC*   otherside = psidelink->data();
+					if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+                		g.fm.ForwardMessage(CFSSide::FromIGC(otherside)->GetGroup(),
+                                    pfm, FM_GUARANTEED);
+					}
+
+				}
+			}
 		break;
 		}
 

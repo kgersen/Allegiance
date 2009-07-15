@@ -715,13 +715,20 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             if (pst->HasCapability(m_myHullType.HasCapability(c_habmFighter)
                                    ? c_sabmLand
                                    : c_sabmCapLand))
-            {
+			{
                 //Get the ship's state ... see if it is in landing mode
                 IsideIGC* pside1 = GetSide();
                 IsideIGC* pside2 = pModel->GetSide();
 
                 if ((pside1 == pside2) || pside1->AlliedSides(pside1,pside2)) //Imago 7/9/09 ALLY
                 {
+					//Imago 7/13/09 don't allow pods to rescue in allied ahipyard ;-p
+ 					if (pside1 != pside2 && pst->HasCapability(c_sabmCapLand) && m_myHullType.HasCapability(c_habmLifepod))
+						break;
+					//Imago 7/13/09 don't allow AI carriers to dock in allied stations
+ 					if (pside1 != pside2 && m_myHullType.HasCapability(c_habmCarrier) && m_pilotType != c_ptPlayer)
+						break;
+
                     if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
                     {
                         if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
