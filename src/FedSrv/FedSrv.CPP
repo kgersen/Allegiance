@@ -6008,7 +6008,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                       pfsPlayer->GetIGCShip()->SetAmmo(pfsPlayer->GetIGCShip()->GetAmmo() + amount);
 
-                      disable all mounted weapons that use ammo
+                      //disable all mounted weapons that use ammo
                       Mount   maxWeapons = pfsPlayer->GetIGCShip()->GetHullType()->GetMaxWeapons();
                       for (Mount i = 0; (i < maxWeapons); i++)
                       {
