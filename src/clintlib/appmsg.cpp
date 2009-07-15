@@ -3205,7 +3205,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 break;
 
             case OT_ship:
-				if (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
+				if (GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
 					
  					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + " (Ally)\x82  has" ;
 				} else {
