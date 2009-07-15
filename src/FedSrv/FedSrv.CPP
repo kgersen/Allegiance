@@ -4719,7 +4719,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       TrapHackBoot(pfmChat->ibMessage == sizeof(FMD_CS_CHATMESSAGE));
 
       if (pfmChat->cbMessage > 0)
-      {
+	  {
 #ifdef DEBUG
         //If you are going to cheat ... make it a public cheat
         if (DoCheatCode(pfsPlayer, FM_VAR_REF(pfmChat, Message)))  //Imago 7/8/09 only link this in debug builds
@@ -4729,8 +4729,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           bForward = false;
         }
         else
-        {
 #endif
+		{
+
           //NYI hack to allow misison owner to boot people from the lobby
           if (pfmChat->cbMessage > 5 && pfsMission->GetOwner() == pfsPlayer)
           {
@@ -4833,18 +4834,20 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
-		 // beta feature only  imago made one less define 7/8/09
-#ifdef DEBUG
+		 // beta feature only  imago made one less define 7/8/09 and fixed for non-debug
+
 		  else
 		  {
+#ifdef DEBUG
 			  if (pfsMission->GetOwner() == pfsPlayer && (_strnicmp(FM_VAR_REF(pfmChat, Message), "#start", strlen("#start")) == 0))
 			  {
 			    CFSMission * pfsMission = pfsPlayer->GetMission();
 				if (STAGE_NOTSTARTED == pfsMission->GetStage() || STAGE_STARTING == pfsMission->GetStage())
 					pfsMission->StartCountdown(15);
 			  }
-		  }
 #endif
+		  }
+
         }
       }
       pfmChat->cd.sidSender = pfsPlayer->GetIGCShip()->GetObjectID();
@@ -4890,7 +4893,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                              pfmChat->otTarget,
                              pfmChat->oidTarget,
                              NULL);
-    }
+	}
     break;
 
     case FM_CS_CHATBUOY:
@@ -5964,6 +5967,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           {
               if ((prlNext->mount >= 0) || (prlNext->mount < -c_maxCargo))
               {
+				  debugf("(prlNext->mount >= 0) || (prlNext->mount < -c_maxCargo)\n"); //imago 7/14/09
                   bBoot = true;
                   break;
               }
@@ -5971,6 +5975,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               IpartIGC*     ppart = pfsPlayer->GetIGCShip()->GetMountedPart(NA, prlNext->mount);
               if (!ppart)
               {
+				  debugf("! ppart = pfsPlayer->GetIGCShip()->GetMountedPart(NA, prlNext->mount)\n"); //imago 7/14/09
                   bBoot = true;
                   break;
               }
@@ -5990,6 +5995,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                       if ((prlNext->amountTransfered < 0) || (prlNext->amountTransfered >= amount))
                       {
+						  debugf("(prlNext->amountTransfered < 0) || (prlNext->amountTransfered >= amount)\n"); //Imago 7/14/09
                           bBoot = true;
                           break;
                       }
@@ -6002,7 +6008,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   {
                       pfsPlayer->GetIGCShip()->SetAmmo(pfsPlayer->GetIGCShip()->GetAmmo() + amount);
 
-                      //disable all mounted weapons that use ammo
+                      disable all mounted weapons that use ammo
                       Mount   maxWeapons = pfsPlayer->GetIGCShip()->GetHullType()->GetMaxWeapons();
                       for (Mount i = 0; (i < maxWeapons); i++)
                       {
@@ -6025,6 +6031,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               {
                   if (!IlauncherIGC::IsLauncher(type))
                   {
+					  debugf("(!IlauncherIGC::IsLauncher(type))\n"); //Imago 7/13/09
                       bBoot = true;
                       break;
                   }
@@ -6053,6 +6060,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                           (prlNext->amountTransfered <= 0) ||
                           (prlNext->amountTransfered > amount))
                       {
+						  debugf("((!plauncherMounted) || (prlNext->amountTransfered <= 0) || (prlNext->amountTransfered > amount))\n");
                           bBoot = true;
                           break;
                       }
