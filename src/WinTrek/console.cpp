@@ -332,6 +332,7 @@ struct ChatSubject
 				//OutputDebugString("In SetRecipient() switch ct="+ZString(ct)+"\n");
                 switch (ct)
                 {
+					case CHAT_ALLIES: //imago 7/4/09 ALLY
                     case CHAT_TEAM:
                     {
                         pbaseRecipient = psideFriendly;
@@ -372,7 +373,6 @@ struct ChatSubject
                     }
                     break;
 
-					case CHAT_ALLIES: //imago 7/4/09 ALLY
                     case CHAT_EVERYONE:
                     {
                         pships = trekClient.m_pCoreIGC->GetShips();
@@ -2789,8 +2789,8 @@ public:
 			                                    scoreBest = score;
 												//OutputDebugString("In OnTab() scoreBest= "+ZString(scoreBest)+"\n");
 			                                    ct = CHAT_ALLIES;
-			                                    oidRecipient = NA;
-			                                    pbaseRecipient = NULL;
+                           						oidRecipient = pside->GetObjectID();
+                            					pbaseRecipient = pside;
 			                                }
 										}
 	                                    if (scoreBest > 0)

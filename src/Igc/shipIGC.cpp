@@ -723,13 +723,112 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 if ((pside1 == pside2) || pside1->AlliedSides(pside1,pside2)) //Imago 7/9/09 ALLY
                 {
 					//Imago 7/13/09 don't allow pods to rescue in allied ahipyard ;-p
- 					if (pside1 != pside2 && pst->HasCapability(c_sabmCapLand) && m_myHullType.HasCapability(c_habmLifepod))
-						break;
-					//Imago 7/13/09 don't allow AI carriers to dock in allied stations
- 					if (pside1 != pside2 && m_myHullType.HasCapability(c_habmCarrier) && m_pilotType != c_ptPlayer)
-						break;
+					// don't allow AI carriers to dock in allied stations
+ 					if ((pside1 != pside2 && pst->HasCapability(c_sabmCapLand) && m_myHullType.HasCapability(c_habmLifepod))
+						|| (pside1 != pside2 && m_myHullType.HasCapability(c_habmCarrier) && m_pilotType != c_ptPlayer))
+					{
+						if (((IdamageIGC*)pModel)->GetFraction() > 0.0f)
+			            {
+			                //At the time of the collision, the objects should be exactly radius apart ...
+			                //but they may not be due to round-off errors. Make sure they are exactly
+			                //radius + epsilon apart
+			                const Vector& velocity1 = GetVelocity();
 
-                    if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
+			                Vector        position1;
+			                Vector        position2;
+			                Vector        normal;
+			                Separate(entry, false,
+			                         &position1, &position2, &normal);
+
+			                IclusterIGC*    cluster = GetCluster(); //Get the cluster now, before doing damage (and, maybe, terminating the model)
+
+			                AddRef();
+			                pModel->AddRef();
+
+			                const float cElasticity = 0.75;      //Coefficient of elasticity
+			                //Determine the new velocity as some combination of a
+			                //perfectly inelastic and a perfectly elastic collision.
+			                //Same basic algorithm as below, but the ship has a mass of 0 and the station has a mass of infinity
+
+			                //Inelastic collision: inelastic velocity is 0, 0, 0 (ship sticks to the station)
+
+			                //Elastic collision: velocity component along the perpendicular is reflected.
+
+			                //Get the speed along the normal vector
+			                float   oldSpeed1 = velocity1 * normal;
+
+			                //Get the velocities perpendicular to the normal vector.
+			                Vector  perpendicular1 = velocity1 - oldSpeed1 * normal;
+
+			                //invert the parallel component
+			                Vector  vElastic1 = perpendicular1 - (oldSpeed1 * normal);
+
+			                Vector  newVelocity1 = vElastic1 * cElasticity;
+
+			                //verify the velocities are valid
+							// mmf replaced assert with log msg
+					        if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
+							  debugf("mmf Igc shipIGC.cpp ~835 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+					          newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
+							}
+			                // assert (newVelocity1 * newVelocity1 >= 0.0f);
+
+			                //velocity1 is a reference, so calculate the damage before setting the velocity
+			                float   damage2 = (velocity1 - newVelocity1).LengthSquared() * c_impactDamageCoefficient;
+			                float   damage1 = 2.0f * damage2;
+
+			                float   hp1 = GetHitPoints();
+			                if (m_mountedOthers[ET_Shield])
+			                    hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
+			                          ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetMaxStrength();
+			                float   hp2 = ((IdamageIGC*)pModel)->GetHitPoints();
+
+
+			                IIgcSite* igcsite = GetMyMission()->GetIgcSite();
+
+			                DamageResult    dr1 = c_drNoDamage;
+			                DamageResult    dr2 = c_drNoDamage;
+			                if (!m_myHullType.HasCapability(c_habmLifepod))
+			                {
+			                    if (hp2 > 0.0f)
+			                    {
+			                        dr1 = ReceiveDamage(c_dmgidCollision,
+			                                            (hp2 * damage1 / (hp2 + damage1)),
+			                                            timeCollision,
+			                                            position1, position2,
+			                                            (type == OT_buildingEffect) ? ((IbuildingEffectIGC*)pModel)->GetAsteroid() : pModel);
+			                    }
+
+			                    assert (pModel->GetAttributes() & c_mtDamagable);
+			                    if (hp1 > 0.0f)
+			                    {
+			                        dr2 = ((IdamageIGC*)pModel)->ReceiveDamage(c_dmgidCollision,
+			                                                                   hp1 * damage2 / (hp1 + damage2),
+			                                                                   timeCollision,
+			                                                                   position2, position1,
+			                                                                   this);
+			                    }
+			                }
+
+			                if ((dr1 != c_drKilled) && (dr2 != c_drKilled))
+			                {
+			                    SetPosition(position1);
+			                    SetVelocity(newVelocity1);
+
+			                    cluster->RecalculateCollisions(tCollision, this, pModel);
+			                }
+
+			                // play the collision effects...
+			                igcsite->PlaySoundEffect(collisionSound, this);
+			                igcsite->PlayFFEffect(effectBounce, this);
+			                igcsite->PlayVisualEffect(effectJiggle, this, 2.0f * damage1 * c_impactJiggleCoefficient);
+
+			                pModel->Release();
+			                Release();
+			            }
+					}
+
+					if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
                     {
                         if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
                             break;
@@ -897,7 +996,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 pModel->Release();
                 Release();
             }
-        }
+		}
         break;
 
         case OT_treasure:
@@ -3392,6 +3491,10 @@ void    CshipIGC::ResetWaypoint(void)
                                 {
                                     if (pst->HasCapability(c_sabmLand | c_sabmRescue))
                                         o = Waypoint::c_oEnter;
+									//Imago 7/13/09 part of the fix for not allowing pod rescue at allied ahipyard.
+									if (m_commandTargets[c_cmdPlan]->GetSide() != GetSide() && pst->HasCapability(c_sabmCapLand))
+										o = Waypoint::c_oGoto;
+
                                 }
                                 else if (pst->HasCapability(c_sabmLand))
                                     o = Waypoint::c_oEnter;

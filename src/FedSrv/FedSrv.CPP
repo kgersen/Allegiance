@@ -3357,24 +3357,21 @@ void ForwardChatMessage(CFSMission*         pfsMission,
 		case CHAT_ALLIES:
         {
             pszDest = "ALLIES";
-            pszDest = pfsMission->GetMissionDef()->rgszName[pcd->oidRecipient];
             IsideIGC*   pside = pfsMission->GetIGCMission()->GetSide(pcd->oidRecipient);
-            if (pside && ((pcd->commandID == c_cidNone) || (pfsSender == NULL) || (pside == pfsSender->GetSide()) || (pside->AlliedSides(pside,pfsSender->GetSide()))))
+            if (pside && (pcd->commandID == c_cidNone))
             {
                 g.fm.ForwardMessage(CFSSide::FromIGC(pside)->GetGroup(),
                                     pfm, FM_GUARANTEED);
 
-				//lets get a list of allied sideIDs imago fixed 7/13/09 removing FwdChatMsgToAllies ALLY
+				//imago fixed crash 7/13/09 removing FwdChatMsgToAllies ALLY
 			    for (SideLinkIGC* psidelink = pfsMission->GetIGCMission()->GetSides()->first();
 					(psidelink != NULL);
 					psidelink = psidelink->next())
 				{
 					IsideIGC*   otherside = psidelink->data();
-					if (pside->AlliedSides(pside,otherside) && pside != otherside) {
+					if (pside->AlliedSides(pside,otherside) && pside != otherside)
                 		g.fm.ForwardMessage(CFSSide::FromIGC(otherside)->GetGroup(),
                                     pfm, FM_GUARANTEED);
-					}
-
 				}
 			}
 		break;
@@ -11099,7 +11096,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
 
 				if (pside != psideLauncher) //&& !IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY (Imago) reverted 7/12/09
                 {
-					ChatTarget ct = (station->GetSide()->GetAllies() != NA) ? CHAT_TEAM : CHAT_ALLIES; //ALLY imago 7/12/09
+					ChatTarget ct = (station->GetSide()->GetAllies() != NA) ? CHAT_ALLIES : CHAT_TEAM; //ALLY imago 7/12/09
                     if (station->GetFraction() < 0.30)
                     {
                         SendChatf(NULL, ct, station->GetSide()->GetObjectID(),
