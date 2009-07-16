@@ -111,7 +111,7 @@ void CFLMission::NotifyCreator()
     char szServer[16];
     g_pLobbyApp->GetFMServers().GetIPAddress(*GetServer()->GetConnection(), szServer);
     assert(lstrlen(szServer) < sizeof(pfmJoinMission->szServer)); // as long as szServer is fixed length
-    lstrcpy(pfmJoinMission->szServer, szServer);
+    Strcpy(pfmJoinMission->szServer, szServer);
     pfmJoinMission->dwCookie = GetCookie();
 	pfmJoinMission->dwPort = GetServer()->GetServerPort();	// KGJV #114: pass the port to the client
     g_pLobbyApp->GetFMClients().SendMessages(GetCreator()->GetConnection(), FM_GUARANTEED, FM_FLUSH);

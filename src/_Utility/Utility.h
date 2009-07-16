@@ -1366,6 +1366,12 @@ static int Strcmp(const char * szDst, const char * szSrc)
   return lstrcmpA(szDst ? szDst : "", szSrc ? szSrc : "");
 }
 
+// safe strcat //Imago 7/15/09
+static char * Strcat(const char * szDst, const char * szSrc)
+{
+  return lstrcatA(szDst ? szDst : "", szSrc ? szSrc : "");
+}
+
 #define IMPLIES(x, y) (!(x) || (y))
 #define IFF(x, y) (!!(x) == !!(y))
 

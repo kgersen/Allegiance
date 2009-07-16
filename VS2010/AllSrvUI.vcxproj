@@ -32,14 +32,6 @@
       <Configuration>FZRetail</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="FZTest|Win32">
-      <Configuration>FZTest</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="FZTest|X64">
-      <Configuration>FZTest</Configuration>
-      <Platform>X64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGUID>{97B8370B-16BC-4A2F-A0FE-4BEEF2EAED42}</ProjectGUID>
@@ -71,10 +63,6 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZTest|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>Dynamic</UseOfMfc>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
@@ -84,10 +72,6 @@
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>Dynamic</UseOfMfc>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZTest|X64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
@@ -123,35 +107,27 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">.exe</TargetExt>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\AllSrvUI\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZTest|Win32'">..\objs10\$(Configuration)\AllSrvUI\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\$(Configuration)\AllSrvUI\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\$(Configuration)\AllSrvUI\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\AllSrvUI\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\AllSrvUI\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZTest|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\AllSrvUI\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZTest|Win32'">..\objs10\$(Configuration)\AllSrvUI\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\$(Configuration)\AllSrvUI\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\$(Configuration)\AllSrvUI\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\AllSrvUI\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\AllSrvUI\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZTest|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\AllSrvUI\x64\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(ProjectName)</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZTest|Win32'">$(ProjectName)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(ProjectName)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(ProjectName)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">$(ProjectName)</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZTest|X64'">$(ProjectName)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">$(ProjectName)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">$(ProjectName)</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.exe</TargetExt>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZTest|Win32'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">.exe</TargetExt>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZTest|X64'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">.exe</TargetExt>
   </PropertyGroup>
@@ -246,38 +222,6 @@
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZTest|Win32'">
-    <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;..\src\Inc;..\src\zlib;..\src\test\Inc;..\AGC;.\$(OutDir)..\FedSrv;.\$(OutDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level2</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalOptions>/GL</AdditionalOptions>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\AGC\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <GenerateMapFile>false</GenerateMapFile>
-      <SubSystem>Windows</SubSystem>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <TargetMachine>MachineX86</TargetMachine>
-      <ProfileGuidedDatabase>AllUI.pgd</ProfileGuidedDatabase>
-      <LinkTimeCodeGeneration>PGInstrument</LinkTimeCodeGeneration>
-    </Link>
-    <ResourceCompile>
-      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ResourceCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
@@ -291,12 +235,13 @@
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalOptions>/GL</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\AGC\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>false</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -305,9 +250,11 @@
       <TargetMachine>MachineX86</TargetMachine>
       <ProfileGuidedDatabase>AllsrvUI.pgd</ProfileGuidedDatabase>
       <LinkTimeCodeGeneration>PGOptimization</LinkTimeCodeGeneration>
+      <ManifestFile>$(Outdir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
     </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ResourceOutputFileName>$(OutDir)%(Filename).res</ResourceOutputFileName>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">
@@ -323,12 +270,13 @@
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalOptions>/GL</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\AGC\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>false</GenerateMapFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -337,41 +285,14 @@
       <TargetMachine>MachineX86</TargetMachine>
       <ProfileGuidedDatabase>AllsrvUI.pgd</ProfileGuidedDatabase>
       <LinkTimeCodeGeneration>PGInstrument</LinkTimeCodeGeneration>
+      <ManifestFile>$(Outdir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
     </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ResourceOutputFileName>$(OutDir)%(Filename).res</ResourceOutputFileName>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
-    <ClCompile>
-      <Optimization>MaxSpeed</Optimization>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;..\src\Inc;..\src\zlib;..\src\test\Inc;..\AGC;.\$(OutDir)..\FedSrv;.\$(OutDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level2</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>$(OutDir)..\..\zlib\x64\zlib.lib;$(OutDir)..\..\_Utility\x64\Utility.lib;$(OutDir)..\..\AGC\x64\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <GenerateMapFile>false</GenerateMapFile>
-      <SubSystem>Windows</SubSystem>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <TargetMachine>MachineX64</TargetMachine>
-    </Link>
-    <ResourceCompile>
-      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ResourceCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZTest|X64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -479,11 +400,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZTest|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZTest|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Create</PrecompiledHeader>
     </ClCompile>

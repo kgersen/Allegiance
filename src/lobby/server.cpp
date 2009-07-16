@@ -169,7 +169,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 			pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
 			debugf("\tFM_LS_LOBBYMISSIONINFO:%s sent port %d\n",&szAddr,pfmLobbyMissionInfo->dwPort);		
 			char *pfmdata = FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr); // get the addr in the message	  
-			strcpy(pfmdata,szAddr); // overwrite with the real addr
+			Strcpy(pfmdata,szAddr); // overwrite with the real addr
 
 			//end move code
 
@@ -344,7 +344,7 @@ CFLServer::CFLServer(CFMConnection * pcnxn) :
 
   m_pCounters = g_pLobbyApp->AllocatePerServerCounters(pcnxn->GetName());  
 
-  strcpy(m_szLocation,"unknown"); // KGJV #114 - default location
+  Strcpy(m_szLocation,"unknown"); // KGJV #114 - default location
 }
 
 CFLServer::~CFLServer()

@@ -111,14 +111,14 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\AGC\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\AGC\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\$(Configuration)\AGC\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\$(Configuration)\AGC\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\AGC\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\AGC\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\AGC\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\$(Configuration)\AGC\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\$(Configuration)\AGC\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\AGC\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\AGC\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
@@ -283,7 +283,8 @@
       <TreatWarningAsError>false</TreatWarningAsError>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalOptions>/GL</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -342,7 +343,8 @@
       <TreatWarningAsError>false</TreatWarningAsError>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalOptions>/GL</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>

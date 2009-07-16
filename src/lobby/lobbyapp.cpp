@@ -311,7 +311,7 @@ HRESULT CLobbyApp::Init()
     {
       char szFileName[MAX_PATH+16];
       strcpy(szFileName, _Module.GetModulePath());
-      strcat(szFileName, "FileList.txt");
+      Strcat(szFileName, "FileList.txt");
       CreateAutoUpdate(hk, szFileName);
     }
     else 
@@ -443,10 +443,10 @@ int CLobbyApp::OnMessageBox(const char * strText, const char * strCaption, UINT 
   char sz[256];
   if (strCaption && *strCaption)
   {
-    lstrcpy(sz, strCaption);
-    lstrcat(sz, ": ");
+    Strcpy(sz, strCaption);
+    Strcat(sz, ": ");
   }
-  lstrcat(sz, strText);
+  Strcat(sz, strText);
   return m_plas->LogEvent(EVENTLOG_ERROR_TYPE, LE_ODBC_Error, strText);
 }
 
@@ -768,7 +768,7 @@ void CLobbyApp::BuildStaticCoreInfo()
     // 4. transform the TList into an array
 
 	for (int i = 0; i < m_cStaticCoreInfo; i++)
-		strcpy(m_vStaticCoreInfo[i].cbIGCFile,CoreList[i]->cbIGCFile);
+		Strcpy(m_vStaticCoreInfo[i].cbIGCFile,CoreList[i]->cbIGCFile);
 	CoreList.SetEmpty();
 
 	// 5. loop thru unpaused servers and build the coremask

@@ -54,22 +54,22 @@ static void doASGS(void* data, MprThread *threadp) {
 	// ignore "tokens" in player name
 	ZString strName = szName;
 	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
-		strcpy(szName,strName.RightOf(1));
+		Strcpy(szName,strName.RightOf(1));
 
 	// add the name to the url
-	strcat(szURL,szName);
+	Strcat(szURL,szName);
 	
 	// add the IP to the url
     char szAddress[16];
 	fm.GetIPAddress(*pcnxn,szAddress);
-	strcat(szURL,"&IP=");
-	strcat(szURL,szAddress);
+	Strcat(szURL,"&IP=");
+	Strcat(szURL,szAddress);
 
 	// add the ticket to the url
-	strcat(szURL,"&Ticket=");
+	Strcat(szURL,"&Ticket=");
 	char escaped[2048];
 	maUrlEncode(escaped, sizeof(escaped), pqd->szCDKey, 1);
-	strcat(szURL,escaped);
+	Strcat(szURL,escaped);
 
 	// the beast
 	MaClient* client = new MaClient();
@@ -284,7 +284,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	  // Imago make the SQL stuff we're using for asgs happy
 	  pqd->dTime = pfmLogon->dwTime - Time::Now().clock();
 	  const char * strCDKey = (const char*) FM_VAR_REF(pfmLogon, ASGS_Ticket); //ASGS_Ticket, CDKey, whatever
-	  strcpy(pqd->szCDKey,strCDKey);
+	  Strcpy(pqd->szCDKey,strCDKey);
 	  pqd->fValid = fValid;
 	  pqd->fRetry = fRetry;
 
@@ -468,7 +468,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         char szServer[16];
         g_pLobbyApp->GetFMServers().GetIPAddress(*pMission->GetServer()->GetConnection(), szServer);
         assert(lstrlen(szServer) < sizeof(pfmJoinMission->szServer)); // as long as szServer is fixed length
-        lstrcpy(pfmJoinMission->szServer, szServer);
+        Strcpy(pfmJoinMission->szServer, szServer);
 		pfmJoinMission->dwPort = pMission->GetServer()->GetServerPort();	// mdvalley: pass the port to the client
         pfmJoinMission->dwCookie = pfmJoinGameReq->dwCookie;
         pfmJoinMission->guidInstance = GUID_NULL; // until we have separate sessions for each game -Imago: REVISIT

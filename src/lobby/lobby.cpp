@@ -137,7 +137,7 @@ bool CServiceModule::ReadFromRegistry(HKEY & hk, bool bIsString, const char * sz
         {
             if (dwDefault)
             {
-                strcpy((char*)pValue, (char*)dwDefault);
+                Strcpy((char*)pValue, (char*)dwDefault);
                 if(bWarnIfMissing)
                     LogEvent(EVENTLOG_INFORMATION_TYPE, LE_RegStrMissingDef, szItem, dwDefault);
                 return true;
@@ -153,7 +153,7 @@ bool CServiceModule::ReadFromRegistry(HKEY & hk, bool bIsString, const char * sz
     }
 
     if (bIsString)
-        strcpy((char*)pValue, psz);
+        Strcpy((char*)pValue, psz);
     else
         *(DWORD*)pValue = *(DWORD*)psz;
 
