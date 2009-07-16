@@ -74,7 +74,7 @@ public:
                     Vector::GetZero(),
                     1,
                     0,
-                    BlendModeSource
+                    BlendModeSource //this actually uses BlendModeSourceAlpha now - imago 7/16/09
                 );
             }
         }

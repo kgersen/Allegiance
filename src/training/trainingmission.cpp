@@ -78,7 +78,9 @@ namespace Training
             pWindow->SetHUDStyle (0.0f);
 
         // load the existing key map Imago 6/20/09 (TheRock@RT)
-        pWindow->GetInput ()->LoadMap (INPUTMAP_FILE);
+		if (!GetWindow()->GetInput()->LoadMap(INPUTMAP_FILE)) 
+				GetWindow()->GetInput()->LoadMap(DEFAULTINPUTMAP_FILE);
+        
     }
 
     //------------------------------------------------------------------------------

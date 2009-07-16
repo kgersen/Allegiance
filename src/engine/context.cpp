@@ -331,7 +331,7 @@ public:
         m_pstateDevice->m_bZTest                 = false;
         m_pstateDevice->m_bZWrite                = false;
         m_pstateDevice->m_bPerspectiveCorrection = false;
-        m_pstateDevice->m_bDither                = false; true;
+        m_pstateDevice->m_bDither                = false; //true;
         m_pstateDevice->m_bColorKey              = true;
         m_pstateDevice->m_bLinearFilter          = true;
         m_pstateDevice->m_shadeMode              = ShadeModeGouraud;
@@ -2332,7 +2332,7 @@ public:
         if (position.Z() < 0) {
             Decal& decal =
                 AddDecal(
-                      blendMode == BlendModeSource
+                      (blendMode == BlendModeSource)
                     ? m_vdecalSetOpaque
                     : m_vdecalSet,
                     psurface
@@ -2384,8 +2384,6 @@ public:
         // Iterate through the decal sets
         //
 
-		//m_pdevice3D->SetLinearFilter(true); //7/8/09 w0dk4
-
         int countDecalSets = vdecalSet.GetCount();
         for(int indexSet = 0; indexSet < countDecalSets; indexSet++) 
 		{
@@ -2394,6 +2392,8 @@ public:
 
             if (countDecal > 0) 
 			{
+
+
                 SetTexture(set.m_psurface, false);
 
                 VertexL*   pvertex = GetVertexLBuffer(countDecal * 4);
@@ -2422,8 +2422,6 @@ public:
                 set.m_vdecal.SetCount(0);
             }
         }
-
-		//m_pdevice3D->SetLinearFilter(false); //7/8/09 w0dk4
     }
 
     void DrawCachedDecals()
@@ -2440,7 +2438,7 @@ public:
         // Opaque decals first
         //
 
-        SetBlendMode(BlendModeSource, false);
+        SetBlendMode(BlendModeSourceAlpha, false); //Imago 7/16/09
         SetZWrite(true, false);
 
         DrawVDecalSet(m_vdecalSetOpaque);
