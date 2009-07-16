@@ -351,6 +351,8 @@ public:
 
     void Render(Context* pcontext)
     {
+		pcontext->SetBlendMode(BlendModeAdd); //Imago 7/15/09
+
         // draw the background
         Surface* psurfaceBackground = m_pimageBkgnd->GetSurface();
         pcontext->DrawImage(psurfaceBackground);
@@ -566,9 +568,9 @@ public:
 
         Modeler* pmodeler = GetModeler();
 		// BUILD_DX9
-        m_pimageBkgnd = pmodeler->LoadImage("sectormapbkgndbmp", true);
+        //m_pimageBkgnd = pmodeler->LoadImage("sectormapbkgndbmp", true);  //imago 7/15/09
 
-//        m_pimageBkgnd = pmodeler->LoadImage("sectormapbkgndbmp", false);
+        m_pimageBkgnd = pmodeler->LoadImage("sectormapbkgndbmp", false);
 		// BUILD_DX9
         m_pimageSectorHighlight = pmodeler->LoadImage("sectorhighlightbmp", true);
         m_pimageSectorTargetHighlight = pmodeler->LoadImage("sectortargetbmp", true);
@@ -889,6 +891,7 @@ public:
     void Render(Context* pcontext)
     {
         pcontext->SetShadeMode(ShadeModeFlat);
+		pcontext->SetBlendMode(BlendModeAdd); //imago 7/15/09
 
         Rect rectClip = m_bounds.GetRect();
         rectClip.Expand(-1);

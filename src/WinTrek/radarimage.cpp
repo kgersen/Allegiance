@@ -251,6 +251,7 @@ public:
                 delta = m;
         }
 
+		pcontext->SetBlendMode(BlendModeAdd); //imago 7/15/09
         pcontext->DrawImage3D(psurface, Rect(       0,        0, xsizeMid, ysizeMid), color, true, Point(-delta, -delta));
         pcontext->DrawImage3D(psurface, Rect(xsizeMid,        0,    xsize, ysizeMid), color, true, Point( delta, -delta));
         pcontext->DrawImage3D(psurface, Rect(xsizeMid, ysizeMid,    xsize,    ysize), color, true, Point( delta,  delta));
@@ -299,6 +300,7 @@ public:
         const Point&    positionObject = pts->GetScreenPosition();
 
         {
+
             //Draw the brackets around the "object"
             pcontext->Translate(positionObject);
             if (lock != 0.0f)
@@ -323,8 +325,9 @@ public:
             else if (maskBrackets & c_maskArtifact)
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceArtifact, colorOther);
 
-            if (maskBrackets & c_maskTarget)
+			if (maskBrackets & c_maskTarget) {
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceTargeted, colorOther);
+			}
 
             if (maskBrackets & c_maskThreat)
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceLastFired, colorOther);
@@ -383,8 +386,8 @@ public:
         {
             pcontext->Translate(positionIcon);
 			// BUILD_DX9
-			pcontext->SetBlendMode(BlendModeAlphaStampThrough); //IMAGO REVIEW
-			//pcontext->SetBlendMode(BlendModeSourceAlpha);
+			//pcontext->SetBlendMode(BlendModeAlphaStampThrough); // changed back 7/16/09 imago
+			pcontext->SetBlendMode(BlendModeSourceAlpha);
 			// BUILD_DX9
 
             pcontext->DrawImage3D(psurfaceIcon, colorIcon, true);
@@ -655,6 +658,8 @@ public:
                     Color color = pside
                                   ? ((maskBrackets & c_maskFlash) ? Color::Red() : pside->GetColor())
                                   : s_colorNeutral;
+
+					
 
                     /* 
                     static const int    closeRange = 100;
