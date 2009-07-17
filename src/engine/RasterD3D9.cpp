@@ -382,11 +382,11 @@ public:
 
     void SetDither(bool bDither)
     {
-		// Dither disabled. Looks rubbish anyway.
-//        D3DCall(CD3DDevice9::Get()->SetRenderState(
-  //          D3DRS_DITHERENABLE,
-    //        true
-     //   ));
+		// Dither disabled. Looks rubbish anyway. //imago restored 7/16/09
+        D3DCall(CD3DDevice9::Get()->SetRenderState(
+            D3DRS_DITHERENABLE,
+            bDither
+        ));
     }
 
     void SetColorKey(bool bColorKey)
