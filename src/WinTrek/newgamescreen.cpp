@@ -38,7 +38,7 @@ private:
     TRef<ButtonPane>     m_pbuttonAllowTactical;
     TRef<ButtonPane>     m_pbuttonAllowExpansion;
     TRef<ButtonPane>     m_pbuttonAllowSupremacy;
-    //TRef<ButtonPane>     m_pbuttonAllowEmptyTeams;
+    //TRef<ButtonPane>     m_pbuttonAllowEmptyTeams; Removed AET setting  can't change anyways (use the space for ALLY ripcord option) Imago
 	TRef<ButtonPane>     m_pbuttonAllowAlliedRip;
     
 	TRef<ComboPane>      m_pcomboMapSize;
@@ -1130,6 +1130,23 @@ public:
 
         PFM_DEALLOC(pfmMissionParams);
 
+		//Imago 7/18/09 turn off allies if these are set ALLY
+		if (pfmMissionParams->missionparams.IsArtifactsGame() || pfmMissionParams->missionparams.IsDeathMatchGame() ||
+		pfmMissionParams->missionparams.IsProsperityGame() || pfmMissionParams->missionparams.IsFlagsGame() ||
+		pfmMissionParams->missionparams.IsTerritoryGame()) {
+			pfmMissionParams->missionparams.bAllowAlliedRip = false;
+			pfmMissionParams->missionparams.bAllowAlliedViz = false;
+			for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) { 
+				trekClient.MyMission()->SetSideAllies(i,NA);
+				trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+				BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeAlliance, C, CHANGE_ALLIANCE)
+				END_PFM_CREATE
+				pfmChangeAlliance->sideID = i;
+				pfmChangeAlliance->sideAlly = NA;
+	            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+	            trekClient.m_fm.QueueExistingMsg((FEDMESSAGE *)pfmChangeAlliance);
+			}
+		}
         return true;
     }
 

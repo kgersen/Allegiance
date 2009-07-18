@@ -1188,7 +1188,7 @@ struct MissionParams
         bAllowPrivateTeams              = true ;
         bAllowEmptyTeams                = false;
 		bAllowAlliedRip	                = false; //imago 7/8/09 ALLY
-		bAllowAlliedViz	                = true; //imago 7/8/09 ALLY
+		bAllowAlliedViz	                = false; //imago 7/8/09 ALLY 7/17/09 done testing, defaults off unless allies
         bShowMap                        = false;
         bAllowDevelopments              = true ;
         bAllowShipyardPath              = true ;

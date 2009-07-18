@@ -2126,6 +2126,13 @@ public:
 	{
 		if (!trekClient.MyPlayerInfo()->IsMissionOwner()) return true;// only game owner can activate the team context menu
 
+		// allies only for conquest untill KGJV decides to finish what he started. Imago 7/18/09
+		if (trekClient.MyMission()->GoalArtifacts()	|| trekClient.MyMission()->GoalDeathMatch() || 
+			trekClient.MyMission()->GoalFlags() 	|| trekClient.MyMission()->GoalProsperity() || 
+			trekClient.MyMission()->GoalTerritory()) 
+			return true; 
+
+
 		debugf("RMB team: side current = %d\n",m_sideCurrent);
 		// count active teams
 		int activeteams = 0;
@@ -2223,8 +2230,10 @@ public:
 				bAllies = false;
 		}
 		bool bDefections = ((ally != NA) || bAllies) ? true : false;
-		bool bAllowAlliedRip = ((ally != NA) || bAllies) ? true : false; //7/9/09 imago aLLY
+		bool bAllowAlliedRip = ((ally != NA) || bAllies) ? true : false; //7/9/09 imago ALLY
+		bool bAllowAlliedViz = ((ally != NA) || bAllies) ? true : false; //7/17/09 imago ALLY
 		trekClient.MyMission()->SetAllowAlliedRip(bAllowAlliedRip);
+		trekClient.MyMission()->SetAllowAlliedViz(bAllowAlliedViz);
 
 		if(bDefections != trekClient.MyMission()->GetMissionParams().bAllowDefections) {
 			//bug, defections persist with 3 team scenarino...

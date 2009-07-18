@@ -558,6 +558,7 @@ public:
 	// IMAGO ALLY 7/5/09
 	void			SetDefections(bool bValue)	{ m_pfmMissionDef->misparms.bAllowDefections = bValue;}
 	void			SetAllowAlliedRip(bool bValue)	{ m_pfmMissionDef->misparms.bAllowAlliedRip = bValue;}
+	void			SetAllowAlliedViz(bool bValue)	{ m_pfmMissionDef->misparms.bAllowAlliedViz = bValue;}
     
     // Team Accessors
     LPCSTR          SideName(SideID sideID)         { return (sideID == SIDE_TEAMLOBBY) ? "Not on a team" : m_pfmMissionDef->rgszName[sideID]; }
