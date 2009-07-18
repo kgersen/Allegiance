@@ -11258,6 +11258,7 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
       {
 		//joeld - added 4th %s and pstation->GetCluster()->GetName() in next line.
           sprintf(szReason, "%s has destroyed %s's %s in %s.", psideLauncher->GetName(), pside->GetName(), pstation->GetName(), pstation->GetCluster()->GetName());
+		  m_pfsMission->GameOver(psideWin, szReason);
       }
 	  else {
 		  //make the allies team name list Imago ALLY 7/13/09

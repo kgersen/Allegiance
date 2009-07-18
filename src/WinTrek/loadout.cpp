@@ -826,7 +826,46 @@ public:
       bool OnShowAll()
 	  {
 			m_pListPane->UpdateAll();
-			OnTabSelect0();
+			UpdateTechList(); //Imago limit the amount of tab switching when you hit the new buttons 7/17/09
+			switch (m_nTabSel) {
+			case 0: 
+				OnTabSelect0();
+				break;
+			case 1:
+				OnTabSelect1();
+				break;
+			case 2: {
+				if (m_pButtonTab2->GetEnabled())
+					OnTabSelect2();
+				else 
+					OnTabSelect0();
+				break;
+					}
+			case 3: {
+				if (m_pButtonTab3->GetEnabled())
+					OnTabSelect3();
+				else 
+					OnTabSelect0();
+				break;
+					}
+			case 4: {
+				if (m_pButtonTab4->GetEnabled())
+					OnTabSelect4();
+				else 
+					OnTabSelect0();
+				break;
+					}
+			case 5: {
+				if (m_pButtonTab5->GetEnabled())
+					OnTabSelect5();
+				else 
+					OnTabSelect0();
+				break;
+					}
+				default:
+					OnTabSelect0();
+					break;
+			}
 			UpdateSpendButtons();
 			return true;
 	  }
@@ -1196,7 +1235,7 @@ public:
           m_pListPane->RemoveAll();
           m_nTabSel = 1;
           m_pButtonTab0->SetChecked(false);
-          m_pButtonTab1->SetChecked(true);
+          m_pButtonTab1->SetChecked(true); 
           m_pButtonTab2->SetChecked(false);
           m_pButtonTab3->SetChecked(false);
           m_pButtonTab4->SetChecked(false);

@@ -4951,8 +4951,8 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
 void WinTrekClient::SetGameoverInfo(FMD_S_GAME_OVER* pfmGameOver)
 {
     m_sideidLastWinner = pfmGameOver->iSideWinner;
-	m_bWonLastGame = ((pfmGameOver->iSideWinner == GetSideID()) || (MyMission()->SideAllies(GetSideID()) == MyMission()->SideAllies(pfmGameOver->iSideWinner))); //#ALLY (Imago) 7/8/09
-    m_bLostLastGame = !m_bWonLastGame && (GetSideID() != SIDE_TEAMLOBBY) && pfmGameOver->iSideWinner != NA;
+	m_bWonLastGame = (pfmGameOver->iSideWinner == GetSideID() || GetSide()->AlliedSides(GetCore()->GetSide(pfmGameOver->iSideWinner),GetSide())); //#ALLY (Imago) 7/8/09
+    m_bLostLastGame = (!m_bWonLastGame && GetSideID() != SIDE_TEAMLOBBY && (pfmGameOver->iSideWinner != NA || GetSide()->GetAllies() == NA || !GetSide()->AlliedSides(GetCore()->GetSide(pfmGameOver->iSideWinner),GetSide())));
     m_strGameOverMessage = FM_VAR_REF(pfmGameOver, szGameoverMessage);
     m_nNumEndgamePlayers = 0;
     m_nNumEndgameSides = pfmGameOver->nNumSides;

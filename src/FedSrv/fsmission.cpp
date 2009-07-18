@@ -3358,30 +3358,26 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                 {
                     nStationsTotal++;
                     nStationsPerSide[pstation->GetSide()->GetObjectID()]++;
-
-					for (SideID i=0; i < c_cSidesMax ; i++) //#ALLY TheRock allies get the same base added to them, only one of the teams has to win
-					{
-						if (IsideIGC::AlliedSides(pstation->GetSide(),m_pMission->GetSide(i)) && (pstation->GetSide() != m_pMission->GetSide(i)) ) {
-							nStationsPerSide[i]++;
-						}
-					}
-
                 }
             }
         }
 
 		// KGJV #62 count active teams
 		int nActiveTeams = 0;
+		// Imago account for allies 7/17/09
+		bool bAllies = false;
 
         if (nStationsTotal != 0)
         {
             const SideListIGC*  psides = m_pMission->GetSides();
+			
 
             for (SideLinkIGC* l = psides->first(); (l != NULL); l = l->next())
             {
                 IsideIGC*       pside = l->data();
 				// KGJV #62 count active team
 				if (pside->GetActiveF()) nActiveTeams++;
+				if (pside->GetAllies() != NA) bAllies = true;
 
                 unsigned char   conquest = (unsigned char)(100 * nStationsPerSide[pside->GetObjectID()] / nStationsTotal);
 
@@ -3391,17 +3387,17 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                     pside->SetConquestPercent(conquest);
 
                     if (conquest >= pmp->iGoalConquestPercentage)
-                        psideWon = pside; //#ALLYTD END GAME: with alliances, this will get called multiple times, break? (TheRock added)
+                        psideWon = pside;
                 }
             }
-			// KGJV #62 - no winner if bAllowEmptyTeam and one active team is left
-			if (pmp->bAllowEmptyTeams && (nActiveTeams == 1))
+			// KGJV #62 - no winner if bAllowEmptyTeam and one active team is left - Imago: allies overrides to prevent "issues"?
+			if (pmp->bAllowEmptyTeams && (nActiveTeams == 1) && !bAllies)
 				psideWon = NULL;
         }
     }
 
     if (pmp->IsTerritoryGame() && (psideWon == NULL))
-    {
+	{
         assert (c_cSidesMax == 6);
         unsigned char nTerritoriesPerSide[c_cSidesMax] = {0, 0, 0, 0, 0, 0};
 
@@ -3420,7 +3416,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                     IsideIGC*   pside = psl->data()->GetSide();
                     if (psideOwner == NULL)
                         psideOwner = pside;
-					else if (!IsideIGC::AlliedSides(psideOwner, pside)) //#ALLYTD: needs looking over (TheRock)  IMAGO REVIEW causing crash (only with cheats)
+                    else if (psideOwner != pside)
                         break;
                 }
             }
@@ -3484,6 +3480,32 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
     }
   }
 
+
+	bool bAllAllies = true;
+	IsideIGC*   allywinside = NULL;
+	//lets get a list of allied sideIDs  Imago ALLY 7/17/09
+	for (SideLinkIGC* psidelink = m_pMission->GetSides()->first();
+		(psidelink != NULL);
+		psidelink = psidelink->next())
+	{
+		IsideIGC* otherside = psidelink->data();
+		//the only active sides are all allied...game is over.
+		if (!otherside->GetActiveF()) continue;
+		for (SideLinkIGC* psl = m_pMission->GetSides()->first();
+			(psl != NULL);
+			psl = psl->next())
+		{
+			IsideIGC*   thisside = psl->data();
+			if (!thisside->GetActiveF()) continue;
+			if (!thisside->AlliedSides(otherside,thisside) && otherside != thisside)
+				bAllAllies = false;
+			else 
+				allywinside = thisside;
+		}
+	}
+	psideWon = (bAllAllies) ? allywinside : psideWon;
+
+
   return psideWon;
 }
 
@@ -3518,7 +3540,7 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
     {
       bAllSidesInactive = false;
 
-	  if (pSideWin && !IsideIGC::AlliedSides(pSideWin, pside)) //#ALLY (TheRock)
+	  if (pSideWin)
       {
         pSideWin = NULL;
         break;
@@ -3551,11 +3573,11 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
       if (pfsShip->IsPlayer() && !pfsShip->GetPlayer()->CanCheat())
       {
 		  //imago 7/9/09 REMOVE REVIEW TEST
-#ifdef DEBUG
-		bFoundNormalPlayer = false;
-#else
+//#ifdef DEBUG
+//		bFoundNormalPlayer = false;
+//#else
         bFoundNormalPlayer = true;
-#endif
+//#endif
         break;
       }
     }
@@ -3570,6 +3592,31 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
   {
       pSideWin = NULL;
   }
+
+	bool bAllAllies = true;
+	IsideIGC*   allywinside = NULL;
+	//lets get a list of allied sideIDs  Imago Ally 7/17/09
+	for (SideLinkIGC* psidelink = m_pMission->GetSides()->first();
+		(psidelink != NULL);
+		psidelink = psidelink->next())
+	{
+		IsideIGC* otherside = psidelink->data();
+		//the only active sides are all allied...game is over.
+		if (!otherside->GetActiveF()) continue;
+		for (SideLinkIGC* psl = m_pMission->GetSides()->first();
+			(psl != NULL);
+			psl = psl->next())
+		{
+			IsideIGC*   thisside = psl->data();
+			if (!thisside->GetActiveF()) continue;
+			if (!thisside->AlliedSides(otherside,thisside) && otherside != thisside)
+				bAllAllies = false;
+			else 
+				allywinside = thisside;
+		}
+	}
+	pSideWin = (bAllAllies) ? allywinside : pSideWin;
+
   return pSideWin;
 }
 
