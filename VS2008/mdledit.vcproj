@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="mdledit"
 	ProjectGUID="{F150276A-D7D8-4C24-AA41-170A6F3D4CF9}"
 	RootNamespace="mdledit"

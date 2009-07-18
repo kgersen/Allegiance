@@ -162,7 +162,7 @@
 				UACExecutionLevel="0"
 				IgnoreDefaultLibraryNames=""
 				DelayLoadDLLs=""
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				StripPrivateSymbols=""
 				GenerateMapFile="true"
 				SubSystem="2"
@@ -286,6 +286,22 @@
 		</File>
 		<File
 			RelativePath="..\src\WinTrek\consoledata.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddstream.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddstream.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddvideo.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddvideo.h"
 			>
 		</File>
 		<File
@@ -532,22 +548,6 @@
 			RelativePath="..\src\WinTrek\treksound.h"
 			>
 		</File>
-		<File
-			RelativePath="..\src\WinTrek\ddstream.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\src\WinTrek\ddstream.h"
-			>
-		</File>		
-		<File
-			RelativePath="..\src\WinTrek\ddvideo.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\src\WinTrek\ddvideo.h"
-			>
-		</File>			
 		<File
 			RelativePath="..\src\WinTrek\WinTrek.CPP"
 			>

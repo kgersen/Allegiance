@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="ClintLib"
 	ProjectGUID="{557CA42C-AA39-4C44-A998-0452F8C55851}"
 	RootNamespace="ClintLib"
@@ -119,6 +119,7 @@
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="pch.h"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool

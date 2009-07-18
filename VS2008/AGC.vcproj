@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="AGC"
 	ProjectGUID="{1CBF6569-F71C-422A-81DD-8D30A736DB21}"
 	RootNamespace="AGC"
@@ -158,6 +158,7 @@
 				WarningLevel="3"
 				WarnAsError="false"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 				ShowIncludes="false"
 			/>
@@ -180,6 +181,7 @@
 				SuppressStartupBanner="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
 				ModuleDefinitionFile="..\src\AGC\AGC.def"
+				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"

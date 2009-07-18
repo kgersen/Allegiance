@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Engine"
 	ProjectGUID="{D619B179-7FC4-4DB6-9794-1D3C75717D15}"
 	Keyword="Win32Proj"
@@ -123,7 +123,7 @@
 				BrowseInformation="0"
 				BrowseInformationFile=""
 				WarningLevel="3"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

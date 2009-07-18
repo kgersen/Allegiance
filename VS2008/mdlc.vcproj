@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="mdlc"
 	ProjectGUID="{9F998B06-078F-4D01-BE26-0302B4772FE3}"
 	RootNamespace="mdlc"

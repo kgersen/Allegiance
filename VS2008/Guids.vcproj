@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Guids"
 	ProjectGUID="{FA223B93-BCFB-48FA-B9DD-DB9DBBC8F314}"
 	Keyword="MakeFileProj"
@@ -115,6 +115,7 @@
 				BufferSecurityCheck="true"
 				RuntimeTypeInfo="true"
 				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool

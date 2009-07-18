@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Vorbis"
 	ProjectGUID="{D4369894-F7EF-4937-91C5-5D4C67A29EF9}"
 	TargetFrameworkVersion="131072"
@@ -50,7 +50,7 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool
@@ -113,7 +113,7 @@
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile="vorbis_static.pch"
 				WarningLevel="3"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4996"
 			/>
 			<Tool
