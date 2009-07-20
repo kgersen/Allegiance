@@ -2,7 +2,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pch.h"
-#include "Utility.h" //imago added for easy fetching of artpath 7/19/09
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Class implemented as a singleton (mSingleInstance).
@@ -487,15 +486,12 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		OutputDebugString( szBuffer );
 #endif
 
-		ZString strArtwork = ZString(UTL::artworkPath()); //duh
-		CDX9PackFile textures(strArtwork , "CommonTextures" );
-
 	if( bResetRequired == true || //mode changes
 		g_DX9Settings.m_dwAA != (DWORD)m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting || //any multisample changes
 		g_DX9Settings.m_bAutoGenMipmaps != m_sDevSetupParams.bAutoGenMipmap || //any mip map changes
 		g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //aby vsync changes
-		g_DX9Settings.m_iMaxTextureSize != (int)m_sDevSetupParams.maxTextureSize || //any texture size changes
-		(textures.Exists() && g_DX9Settings.mbUseTexturePackFiles || textures.Exists() && !g_DX9Settings.mbUseTexturePackFiles)) //tex pack changes (when it exists)
+		g_DX9Settings.m_iMaxTextureSize != (int)m_sDevSetupParams.maxTextureSize) //any texture size changes
+
 	{
 		// Prepare the d3dPresParams.
 		m_sD3DDev9.d3dPresParams.BackBufferFormat	= m_sD3DDev9.pCurrentMode->mode.Format;
