@@ -27,7 +27,8 @@ static D3DMULTISAMPLE_TYPE pMultiSampleTypes[] =
 	D3DMULTISAMPLE_2_SAMPLES,
 	D3DMULTISAMPLE_4_SAMPLES,
 	D3DMULTISAMPLE_6_SAMPLES,
-	D3DMULTISAMPLE_8_SAMPLES
+	D3DMULTISAMPLE_8_SAMPLES,
+	D3DMULTISAMPLE_16_SAMPLES
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

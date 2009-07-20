@@ -296,7 +296,7 @@ void EngineWindow::OnClose()
     Window::OnClose();
 }
 
-// TBD: Switch these flags off.
+// 
 bool g_bMDLLog    = false;
 bool g_bWindowLog = false;
 

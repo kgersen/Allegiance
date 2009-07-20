@@ -39,10 +39,8 @@ private:
 	bool					  m_bChanged; //imago 7/7/09
     bool                      m_bAllowSecondary;
     bool                      m_bAllow3DAcceleration;
-	DWORD					  m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
     bool                      m_b3DAccelerationImportant;
 	bool					  m_bMipMapGenerationEnabled;
-
     DWORD                     m_dwBPP; // KGJV 32B - user choosen bpp or desktop bbp
 
 	//
@@ -87,8 +85,7 @@ public:
         m_hwndClip(NULL),
         m_gamma(1.0f),
         m_dwBPP(dwBPP), // KGJV 32B
-		m_bMipMapGenerationEnabled( false ),
-		m_dwMaxTextureSize( 0 )
+		m_bMipMapGenerationEnabled( false )
     {
 		// Create the D3D device first up.
 /*		m_pD3DDevice = CreateD3DDevice( hWindow );
@@ -883,21 +880,171 @@ private:
             m_bValidDevice = false;
         }
     }
-// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-	void SetMaxTextureSize(DWORD dwMaxTextureSize)
+// yp Your_Persona August 2 2006 : MaxTextureSize Patch  //Imago 7/18/09 (DX9)
+	void SetMaxTextureSize(int iMaxTextureSize)
 	{
-		if (m_dwMaxTextureSize != dwMaxTextureSize)
+		if (g_DX9Settings.m_iMaxTextureSize != iMaxTextureSize)
 		{
-			m_dwMaxTextureSize = dwMaxTextureSize;
-			m_bValid		= false;
-			m_bValidDevice	= false;
+			if (iMaxTextureSize > 3) 
+				iMaxTextureSize = 0;
+			g_DX9Settings.m_iMaxTextureSize = iMaxTextureSize;
+
+			if (CD3DDevice9::Get()->IsInScene())
+				CD3DDevice9::Get()->EndScene();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
+			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
 		}
 	}
 
-	DWORD GetMaxTextureSize(void)
+	// Imago 7/18/09
+	void SetVSync(bool bVsync)
 	{
-		return m_dwMaxTextureSize;
+		if (g_DX9Settings.m_bVSync != bVsync) {
+			g_DX9Settings.m_bVSync = bVsync;
+
+			if (CD3DDevice9::Get()->IsInScene())
+				CD3DDevice9::Get()->EndScene();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
+			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+		}
 	}
+
+	void SetAA(DWORD dwAA)
+	{
+		if (g_DX9Settings.m_dwAA != dwAA)
+		{
+			switch(dwAA) {
+			case 10:
+			case 17:
+			case 0:
+				strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"No AA");
+				g_DX9Settings.m_dwAA = 0;
+				break;
+			case 2:
+			case 1:
+				strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"2xFSAA");
+				g_DX9Settings.m_dwAA = 2;
+				break;
+			case 3:
+			case 4:
+				strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"4xFSAA");
+				g_DX9Settings.m_dwAA = 4;
+				break;
+			case 5:
+			case 6:
+				strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"6xFSAA");
+				g_DX9Settings.m_dwAA = 6;
+				break;
+			case 7:
+			case 8:
+				strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"8xFSAA");
+				g_DX9Settings.m_dwAA = 8;
+				break;
+			case 9:
+			case 16:
+				strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"16xFSAA");
+				g_DX9Settings.m_dwAA = 16;
+				break;
+			default:
+				g_DX9Settings.m_dwAA = 0;
+				break;
+			}
+
+			//lets make sure we don't crash when we try changing AA settings
+			LPDIRECT3D9 pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
+			if (g_DX9Settings.m_dwAA) {
+				if (pD3D9->CheckDeviceMultiSampleType(CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID, D3DDEVTYPE_HAL, 
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Format, CD3DDevice9::Get()->IsWindowed(), D3DMULTISAMPLE_2_SAMPLES, NULL) != D3D_OK) {
+					g_DX9Settings.m_dwAA = 0;
+					strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"No AA");
+				}
+			}
+			if (g_DX9Settings.m_dwAA == 4) {
+				if (pD3D9->CheckDeviceMultiSampleType(CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID, D3DDEVTYPE_HAL, 
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Format, CD3DDevice9::Get()->IsWindowed(), D3DMULTISAMPLE_4_SAMPLES, NULL) != D3D_OK) {
+					g_DX9Settings.m_dwAA = 0;
+					strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"No AA");
+				}
+			}
+			if (g_DX9Settings.m_dwAA == 6) {
+				if (pD3D9->CheckDeviceMultiSampleType(CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID, D3DDEVTYPE_HAL, 
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Format, CD3DDevice9::Get()->IsWindowed(), D3DMULTISAMPLE_6_SAMPLES, NULL) != D3D_OK) {
+					g_DX9Settings.m_dwAA = 0;
+					strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"No AA");
+				}
+			}
+			if (g_DX9Settings.m_dwAA == 8) {
+				if (pD3D9->CheckDeviceMultiSampleType(CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID, D3DDEVTYPE_HAL, 
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Format, CD3DDevice9::Get()->IsWindowed(), D3DMULTISAMPLE_8_SAMPLES, NULL) != D3D_OK) {
+					g_DX9Settings.m_dwAA = 0;
+					strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"No AA");
+				}
+			}
+			if (g_DX9Settings.m_dwAA == 16) {
+				if (pD3D9->CheckDeviceMultiSampleType(CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID, D3DDEVTYPE_HAL, 
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Format, CD3DDevice9::Get()->IsWindowed(), D3DMULTISAMPLE_16_SAMPLES, NULL) != D3D_OK) {
+					g_DX9Settings.m_dwAA = 0;
+					strcpy_s(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType,64,"No AA");
+				}
+			}
+			pD3D9->Release();
+
+			//this is all very magical....
+			if (CD3DDevice9::Get()->IsInScene())
+				CD3DDevice9::Get()->EndScene();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
+			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+		}
+	}
+
+	void SetUsePack(bool bUsePack)
+	{
+		if (g_DX9Settings.mbUseTexturePackFiles != bUsePack)
+		{
+			g_DX9Settings.mbUseTexturePackFiles = bUsePack;
+
+			//this is all very magical....
+			if (CD3DDevice9::Get()->IsInScene())
+				CD3DDevice9::Get()->EndScene();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
+			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+		}
+	}
+
+	void SetAutoGenMipMaps(bool bUseAutoGenMipMaps)
+	{
+		if (g_DX9Settings.m_bAutoGenMipmaps != bUseAutoGenMipMaps)
+		{
+			g_DX9Settings.m_bAutoGenMipmaps = bUseAutoGenMipMaps;
+			//CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap = bUseAutoGenMipMaps;
+			//this is all very magical....
+			if (CD3DDevice9::Get()->IsInScene())
+				CD3DDevice9::Get()->EndScene();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			CD3DDevice9::Get()->ClearScreen();
+			CD3DDevice9::Get()->RenderFinished();
+			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
+			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+		}
+	}
+	//
 
 	void SetEnableMipMapGeneration(bool bEnable)
 	{
@@ -943,10 +1090,11 @@ private:
         }
     }
 
-	//NYI, use for aa/vsync/texture filters setting changes  imago 7/7/09
+	//imago 7/7/09
 	void SetFullscreenChanged(bool bChanged) {
 		m_bChanged = bChanged;
 	}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Re-used full screen mode change functions

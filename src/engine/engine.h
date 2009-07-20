@@ -112,13 +112,16 @@ public:
 
     virtual void SetAllowSecondary(bool bAllowSecondary)                   = 0;
     virtual void SetAllow3DAcceleration(bool bAllow3DAcceleration)         = 0;
-	virtual void SetMaxTextureSize(DWORD dwMaxTextureSize)					= 0;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-	virtual DWORD GetMaxTextureSize(void)									= 0;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 	virtual void SetEnableMipMapGeneration(bool bEnable)					= 0;
+	virtual void SetMaxTextureSize(int dwMaxTextureSize)					= 0; //yp / imago 7/18/09
+	virtual void SetVSync(bool bEnable)										= 0; //Imago 7/18/09
+	virtual void SetAA(DWORD dwEnable)										= 0; //Imago 7/18/09
+	virtual void SetUsePack(bool bEnable)									= 0; //Imago 7/18/09
+	virtual void SetAutoGenMipMaps(bool bEnable)							= 0; //Imago 7/18/09
 	virtual void Set3DAccelerationImportant(bool b3DAccelerationImportant) = 0;
     virtual void SetFullscreen(bool bFullscreen)                           = 0;
     virtual void SetFullscreenSize(const Vector& point)                  = 0;  //imago enhanced to include refresh rate 7/1/09
-	virtual void SetFullscreenChanged(bool bChanged)                         = 0; //7/7/09
+	virtual void SetFullscreenChanged(bool bChanged)                           = 0;
     virtual void ChangeFullscreenSize(bool bLarger)                        = 0;
     virtual void SetGammaLevel(float value)                                = 0;
 		// imago refactor enginep 6/26/09 - 7/1/09

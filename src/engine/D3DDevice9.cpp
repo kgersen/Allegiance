@@ -2,6 +2,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pch.h"
+#include "Utility.h" //imago added for easy fetching of artpath 7/19/09
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Class implemented as a singleton (mSingleInstance).
@@ -145,10 +146,6 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		m_sD3DDev9.pCurrentMode = &m_sDevSetupParams.sFullScreenMode;
 	}
 
-	// Can the GFX card do alpha blending when flipping? Imago 7/12/09
-	D3DSWAPEFFECT SwapEffect = (( m_sD3DDev9.sD3DDevCaps.Caps3 & D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD ) != 0 ) 
-		? D3DSWAPEFFECT_FLIP : D3DSWAPEFFECT_COPY;  //we're bound for full screen so use flipmode anyways
-
 	// Create a new 3D device.
 	memset( &m_sD3DDev9.d3dPresParams, 0, sizeof( D3DPRESENT_PARAMETERS ) );
 	m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat		= m_sD3DDev9.pCurrentMode->fmtDepthStencil;
@@ -159,7 +156,13 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	m_sD3DDev9.d3dPresParams.BackBufferFormat			= m_sD3DDev9.pCurrentMode->mode.Format;
 	m_sD3DDev9.d3dPresParams.BackBufferWidth			= m_sD3DDev9.pCurrentMode->mode.Width;
 	m_sD3DDev9.d3dPresParams.BackBufferHeight			= m_sD3DDev9.pCurrentMode->mode.Height;
-	m_sD3DDev9.d3dPresParams.SwapEffect					= SwapEffect;
+	if (m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting == D3DMULTISAMPLE_NONE) {
+		m_sD3DDev9.d3dPresParams.SwapEffect = D3DSWAPEFFECT_FLIP;
+		m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP | D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled
+	} else {
+		m_sD3DDev9.d3dPresParams.SwapEffect	= D3DSWAPEFFECT_DISCARD;
+		m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP; //Imago 7/12/09 enabled
+	}
 
 	if( m_sDevSetupParams.bRunWindowed == true )
 	{
@@ -182,7 +185,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	//imago 7/1/09 NYI test for multisample maskable optons (CSAA, etc) and set accordingly
 	m_sD3DDev9.d3dPresParams.MultiSampleQuality				= 0; //<-- here --^
 	m_sD3DDev9.d3dPresParams.MultiSampleType				= m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting;
-	m_sD3DDev9.d3dPresParams.Flags							= D3DPRESENTFLAG_DEVICECLIP | D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled
+
 
 	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
@@ -381,7 +384,7 @@ void CD3DDevice9::CreateAADepthStencilBuffer()
 		HRESULT hr = m_sD3DDev9.pD3DDevice->GetDepthStencilSurface( &m_sD3DDev9.pBackBufferDepthStencilSurface );
 		_ASSERT( hr == D3D_OK );
 		
-		// If these fire, need to look at how we create these.
+		// If these fire, need to look at how we create these.  Imago commented out, only supporting FSAA at this time
 		_ASSERT( m_sDevSetupParams.sFullScreenMode.mode.Width >= m_sDevSetupParams.sWindowedMode.mode.Width );
 		_ASSERT( m_sDevSetupParams.sFullScreenMode.mode.Height >= m_sDevSetupParams.sWindowedMode.mode.Height );
 		_ASSERT( m_sDevSetupParams.sFullScreenMode.fmtDepthStencil == m_sDevSetupParams.sWindowedMode.fmtDepthStencil );
@@ -484,11 +487,19 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		OutputDebugString( szBuffer );
 #endif
 
-	if( bResetRequired == true )
+		ZString strArtwork = ZString(UTL::artworkPath()); //duh
+		CDX9PackFile textures(strArtwork , "CommonTextures" );
+
+	if( bResetRequired == true || //mode changes
+		g_DX9Settings.m_dwAA != (DWORD)m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting || //any multisample changes
+		g_DX9Settings.m_bAutoGenMipmaps != m_sDevSetupParams.bAutoGenMipmap || //any mip map changes
+		g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //aby vsync changes
+		g_DX9Settings.m_iMaxTextureSize != (int)m_sDevSetupParams.maxTextureSize || //any texture size changes
+		(textures.Exists() && g_DX9Settings.mbUseTexturePackFiles || textures.Exists() && !g_DX9Settings.mbUseTexturePackFiles)) //tex pack changes (when it exists)
 	{
 		// Prepare the d3dPresParams.
 		m_sD3DDev9.d3dPresParams.BackBufferFormat	= m_sD3DDev9.pCurrentMode->mode.Format;
-		m_sD3DDev9.d3dPresParams.MultiSampleType = m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting;
+		m_sD3DDev9.d3dPresParams.MultiSampleType = (D3DMULTISAMPLE_TYPE)g_DX9Settings.m_dwAA;
 		m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = m_sD3DDev9.pCurrentMode->fmtDepthStencil;
 
 		ResetReferencedResources( );
@@ -507,6 +518,47 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 			m_sD3DDev9.pBackBufferDepthStencilSurface = NULL;
 		}
 
+		//Imago 7/19/09
+		if (g_DX9Settings.m_dwAA) {
+			m_sDevSetupParams.bAntiAliased = true;
+			m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting = (D3DMULTISAMPLE_TYPE)g_DX9Settings.m_dwAA;
+			UpdateCurrentMode();
+		} else {
+			m_sDevSetupParams.bAntiAliased = false;
+			m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting = D3DMULTISAMPLE_NONE;
+			UpdateCurrentMode();
+		}
+
+		if (m_sDevSetupParams.bAntiAliased == false) {
+			m_sD3DDev9.d3dPresParams.SwapEffect = D3DSWAPEFFECT_FLIP;
+			m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP | D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled
+		} else {
+			m_sD3DDev9.d3dPresParams.SwapEffect	= D3DSWAPEFFECT_DISCARD;
+			m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP; //Imago 7/12/09 enabled
+		}
+
+		//imago 7/18/09
+		if (g_DX9Settings.m_bVSync) {
+			m_sDevSetupParams.bWaitForVSync = true;
+			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+		} else {
+			m_sDevSetupParams.bWaitForVSync = false;
+			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+		}
+
+		if ((m_sD3DDev9.sD3DDevCaps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP ) && g_DX9Settings.m_bAutoGenMipmaps)
+		{
+			CVRAMManager::Get()->SetEnableMipMapGeneration(true);
+			m_sDevSetupParams.bAutoGenMipmap = true;
+		} else {
+			CVRAMManager::Get()->SetEnableMipMapGeneration(false);
+			m_sDevSetupParams.bAutoGenMipmap = false;
+		}
+
+		m_sDevSetupParams.dwMaxTextureSize = 256 << g_DX9Settings.m_iMaxTextureSize;
+		m_sDevSetupParams.maxTextureSize = (CD3DDevice9::EMaxTextureSize) g_DX9Settings.m_iMaxTextureSize;
+		//
+
 		// Perform the reset.
 		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams ); //imago changed 6/29/09 to fall thru
 
@@ -520,6 +572,12 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 			// Recreate the AA depth stencil buffer, if required.
 			CreateAADepthStencilBuffer( );
+
+			// UIpdate this Imago 7/19/09
+			sprintf_s( m_sD3DDev9.pszDevSetupString, 256,
+				"%s [%s, %s]", m_sD3DDev9.d3dAdapterID.Description,
+				m_sDevSetupParams.szDevType,
+				m_sDevSetupParams.szAAType );
 		}
 	}
 

@@ -13,10 +13,22 @@ public:
 	CDX9EngineSettings()
 	{
 		mbUseTexturePackFiles = false;
-		m_refreshrate = -1; //imago added ;-/
+		m_bVSync = true;
+		m_dwAA = 0;
+		m_iMaxTextureSize = 0;
+		m_bAutoGenMipmaps = false;
+		m_bDither = false;
+		m_refreshrate = -1;
+		m_dwAAQual = 0;
 	}
-	bool			mbUseTexturePackFiles;
 	int				m_refreshrate;
+	int 			m_iMaxTextureSize; //Imago 7/18/09
+	bool			mbUseTexturePackFiles;
+	bool 			m_bAutoGenMipmaps; //Imago 7/18/09
+	bool		    m_bDither; //Imago 7/18/09
+	bool		    m_bVSync; //Imago 7/18/09
+	DWORD		    m_dwAA; //Imago 7/18/09
+	DWORD			m_dwAAQual; //Imago 7/18/09
 };
 
 extern CDX9EngineSettings g_DX9Settings;

@@ -128,6 +128,23 @@ float   GetThrottle(ImodelIGC*  pmodel)
 // Misc Helpers
 //
 //////////////////////////////////////////////////////////////////////////////
+//Imago 7/20/09
+TRef<IMessageBox> pmsgBoxPack;
+void DummyPackCreateCallback( int iCurrentFileIndex, int iMaxFileIndex )
+{
+	if (iCurrentFileIndex == -1 && iMaxFileIndex == -1) {
+		GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxPack);
+		GetWindow()->RestoreCursor();
+	}
+}
+DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
+{
+	ZString strArtwork = ZString(UTL::artworkPath()); //duh
+	CDX9PackFile textures(strArtwork , "CommonTextures" );
+	textures.Create( DummyPackCreateCallback );
+	return 0;
+}
+//
 
 TRef<IMessageBox> CreateMessageBox(
     const ZString& str,
@@ -3040,16 +3057,9 @@ public:
 	    if (LoadPreference("VirtualJoystick", FALSE))
 			ToggleVirtualJoystick();
 
-
-
-		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
-		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-
 		ToggleBandwidth(LoadPreference("Bandwidth",2)); // w0dk4 June 2007: Bandwith Patch
-
 
         bool bAllow3DAcceleration;
 
@@ -3729,7 +3739,6 @@ public:
 	#define idmAA					806
 	#define idmMip					807
 	#define idmPack					808
-	#define idmTex					809
 	#define idmVsync				810
 
 
@@ -3969,6 +3978,7 @@ public:
                 return GetEngineMenu(TrekResources::SmallFont());
 
             case idmOptions:
+                		       		 				 pmenu->AddMenuItem(idmDeviceOptions,					"Advanced Options",				  'A', m_psubmenuEventSink);
                 m_pitemToggleEnvironment           = pmenu->AddMenuItem(idmToggleEnvironment,           GetEnvironmentMenuString()          , 'E');
                 m_pitemTogglePosters               = pmenu->AddMenuItem(idmTogglePosters,               GetPostersMenuString()              , 'P');
                 m_pitemToggleDebris                = pmenu->AddMenuItem(idmToggleDebris,                GetDebrisMenuString()               , 'D');
@@ -3984,7 +3994,6 @@ public:
                 m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(), 'B');
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             , 'H');
  				//Imago 6/30/09 adjust new dx9 settings in game
-                		       		 				 pmenu->AddMenuItem(idmDeviceOptions,					"Advanced Options",				  'A', m_psubmenuEventSink);
 				break;
 
             case idmGameOptions:
@@ -4030,11 +4039,9 @@ public:
 				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
 				break;
+			//End TB 30-JUL-07
 			//imago 6/30/09: new graphics options dx9
 			case idmDeviceOptions:
-				pmenu->AddMenuItem(0                     , "Options require game to be restarted            "     );
-				pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
 			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V');
@@ -4043,7 +4050,7 @@ public:
 				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
 				break;
 
-			//End TB 30-JUL-07
+			
         }
 
         return pmenu;
@@ -4299,11 +4306,12 @@ public:
         }
     }
 
-	// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+	// yp Your_Persona August 2 2006 : MaxTextureSize Patch  //Imago OBSOLOETE REMOVE REVIEW 7/20/09
 	void ToggleMaxTextureSize(DWORD dwNewMaxSize)
 	{
 		if(dwNewMaxSize > 3){dwNewMaxSize =0;}
-        trekClient.MaxTextureSize(dwNewMaxSize);
+        trekClient.MaxTextureSize(dwNewMaxSize); //? Imago REVIEW we use g_DX9Settings.m_iMaxTextureSize now
+		g_DX9Settings.m_iMaxTextureSize = dwNewMaxSize;
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());
         SavePreference("MaxTextureSize", trekClient.MaxTextureSize());
 
@@ -4832,12 +4840,12 @@ public:
         return (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment) ? "Environment On " : "Environment Off ";
     }
 
-// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+// yp Your_Persona August 2 2006 : MaxTextureSize Patch //Imago 7/18/09
 	ZString GetMaxTextureSizeMenuString()
     {
 		int i = 0;
 		int j = 2;
-		i = 8 + trekClient.MaxTextureSize();
+		i = 8 + g_DX9Settings.m_iMaxTextureSize; //trekClient.MaxTextureSize();
 		j = pow((float)j,(float)i);
         return "Max Texture Size ("  + ZString( j)  + ") ";
     }
@@ -5085,20 +5093,22 @@ public:
         return strResult;
     }
 
-	//imago WIP 6/30/09 NYI
+	//imago WIP 6/30/09 NYI 7/18/09
 	ZString GetAAString()
 	{
-		int aa = CD3DDevice9::Get()->GetCurrentMode()->d3dMultiSampleSetting;
-		return "Antialiasing (" + ZString(aa) + "x)";
+		return "Antialiasing (" + ZString(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType) + ")";
 	}
 	ZString GetMipString()
 	{
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap) ? "Yes" : "No";
-	    return "Auto. Mipmaps ("+ strResult +")";
+	    return "Auto Mipmap ("+ strResult +")";
 	}
 	ZString GetPackString()
 	{
-	    return "Use Texture Pack (No)";
+		if (g_DX9Settings.mbUseTexturePackFiles)
+			return "Use Texture Pack (Yes)";
+		else
+	    	return "Use Texture Pack (No)";
 	}
 	ZString GetVsyncString()
 	{
@@ -5313,10 +5323,7 @@ public:
                 ToggleEnvironment();
                 break;
 
-			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-            case idmMaxTextureSize:
-                ToggleMaxTextureSize(trekClient.MaxTextureSize()+1);
-                break;
+
 
 			// w0dk4 June 2007: Bandwith Patch
 			case idmBandwidth:
@@ -5329,6 +5336,59 @@ public:
 					pfmBandwidth->value = trekClient.MaxBandwidth();
 				}
                 break;
+
+			//Imago 7/18/09
+			// yp Your_Persona August 2 2006 : MaxTextureSize Patch 
+            case idmMaxTextureSize:
+                //ToggleMaxTextureSize(trekClient.MaxTextureSize()+1); Obsolete REMOVE REVIEW, extra, unneeded functions
+				GetEngine()->SetMaxTextureSize(g_DX9Settings.m_iMaxTextureSize+1);
+				SavePreference("MaxTextureSize", g_DX9Settings.m_iMaxTextureSize);
+		        if (m_pitemMaxTextureSize != NULL) {
+		            m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
+		        }
+				break;
+
+			case idmAA:
+				GetEngine()->SetAA(g_DX9Settings.m_dwAA+1);
+				SavePreference("UseAntialiasing", g_DX9Settings.m_dwAA);
+		        if (m_pitemAA != NULL) {
+		            m_pitemAA->SetString(GetAAString());
+		        }
+				break;
+			case idmMip:
+				GetEngine()->SetAutoGenMipMaps(!g_DX9Settings.m_bAutoGenMipmaps);
+				SavePreference("UseAutoMipMaps", g_DX9Settings.m_bAutoGenMipmaps);
+		        if (m_pitemMip != NULL) {
+		            m_pitemMip->SetString(GetMipString());
+		        }
+				break;
+
+			case idmPack: { //this apparently doesn't even do anything yet....but we'll let them push it anyways.
+				ZString strArtwork = ZString(UTL::artworkPath()); //duh
+				CDX9PackFile textures(strArtwork , "CommonTextures" );
+				if (!textures.Exists() && !g_DX9Settings.mbUseTexturePackFiles) {
+					GetWindow()->SetWaitCursor();
+		            pmsgBoxPack = CreateMessageBox("Please wait while the texture pack file is being created.", NULL, false, false);
+		            GetPopupContainer()->OpenPopup(pmsgBoxPack, true);
+					CreateThread(NULL,0,DummyPackCreateThreadProc,NULL,THREAD_PRIORITY_HIGHEST,0);
+				}
+				GetEngine()->SetUsePack(!g_DX9Settings.mbUseTexturePackFiles);
+				SavePreference("UseTexturePack",g_DX9Settings.mbUseTexturePackFiles);
+		        if (m_pitemPack != NULL) {
+		            m_pitemPack->SetString(GetPackString());
+		        }
+				break;
+						  }
+
+			case idmVsync:
+				//only does anything if the device is fullscreen...but we'll let them push it anyways.
+				GetEngine()->SetVSync(!g_DX9Settings.m_bVSync);
+				SavePreference("UseVSync", g_DX9Settings.m_bVSync);
+		        if (m_pitemVsync != NULL) {
+		            m_pitemVsync->SetString(GetVsyncString());
+		        }
+				break;
+			//
 
             case idmToggleRoundRadar:
                 ToggleRoundRadar ();

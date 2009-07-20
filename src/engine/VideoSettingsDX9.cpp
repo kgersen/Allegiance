@@ -104,26 +104,35 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
 	// Obtain mode information for this system.
 	g_VideoSettings.iCurrentDevice		= 0;			// Set to 1 for multi-monitor debugging.
-	g_VideoSettings.iCurrentMode		= 0;
 	g_VideoSettings.iCurrentAASetting	= 0;
 	g_VideoSettings.bWindowed			= !bStartFullscreen;
-	g_VideoSettings.bWaitForVSync		= false;
-
+	g_VideoSettings.iCurrentMode		= g_VideoSettings.bWindowed;
+	g_VideoSettings.bWaitForVSync		= true;
 	
-	// DEFAULT SETTINGS imago 6/29/09 - 7/2/09
-	int iRate = 60;
-	HMONITOR hMon = MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTOPRIMARY);
-    int x = 800;
-	int y = 600;
+// DEFAULT SETTINGS W/O DIALOG imago 6/29/09 - 7/2/09 - 7/19/09
 //////////////////////////////////////////
 	if (bRaise == false) {
 		int iRetVal = 1;
-
-        HKEY hKey;
 		int idummy = 0;
+    	int x = 800;
+		int y = 600;
+		g_VideoSettings.bWaitForVSync		= true;
+		g_VideoSettings.bAutoGenMipmaps 	= false;
+		g_VideoSettings.bUseTexturePackFile = false;
+		g_VideoSettings.multiSampleType 	= D3DMULTISAMPLE_NONE;
+		g_VideoSettings.iMaxTextureSize		= 0;
+
+		//NYI have a texture filter toggle for D3DTEXF_ANISOTROPIC/LINEAR, check if D3DPTFILTERCAPS_*FANISOTROPIC is set
+		g_VideoSettings.magFilter 			= D3DTEXF_LINEAR; 
+		g_VideoSettings.minFilter 			= D3DTEXF_LINEAR;
+		g_VideoSettings.mipFilter 			= D3DTEXF_LINEAR;
+
 		D3DFORMAT bbf = D3DFMT_UNKNOWN;
 		D3DFORMAT df = D3DFMT_UNKNOWN;
-
+		
+		HMONITOR hMon = MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTOPRIMARY);
+		HKEY hKey;
+		//load preferences when not using dialog
 		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
         {
             DWORD dwSize = 4;
@@ -131,44 +140,35 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
             ::RegQueryValueEx(hKey, "CombatFullscreenXSize", NULL, &dwType, (BYTE*)&x, &dwSize);
 			::RegQueryValueEx(hKey, "CombatFullscreenYSize", NULL, &dwType, (BYTE*)&y, &dwSize);
+			::RegQueryValueEx(hKey, "UseAntialiasing", NULL, &dwType, (BYTE*)&g_DX9Settings.m_dwAA, &dwSize);
+			::RegQueryValueEx(hKey, "UseAutoMipMaps", NULL, &dwType, (BYTE*)&g_VideoSettings.bAutoGenMipmaps, &dwSize);
+			::RegQueryValueEx(hKey, "UseTexturePack", NULL, &dwType, (BYTE*)&g_VideoSettings.bUseTexturePackFile, &dwSize);
+			::RegQueryValueEx(hKey, "UseVSync", NULL, &dwType, (BYTE*)&g_VideoSettings.bWaitForVSync, &dwSize);
+			::RegQueryValueEx(hKey, "MaxTextureSize", NULL, &dwType, (BYTE*)&g_VideoSettings.iMaxTextureSize, &dwSize);
+			//::RegQueryValueEx(hKey, "UseAnisotropic", NULL, &dwType, (BYTE*)&idummy, &dwSize); NYI
+			//::RegQueryValueEx(hKey, "AAQuality", NULL, &dwType, (BYTE*)&idummy, &dwSize); NYI
             ::RegCloseKey(hKey);
-			//OutputDebugString("Using res: "+ZString(x)+"x"+ZString(y)+"\n");
         }
 
 		lpSubKey += ZString("\\3DSettings");
-		
-		
-		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 640, 480 , &logFile);	// Mininum width/height allowed.
-		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&bbf,&df,&hMon); //imago use this function!
+		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum ENGINE width/height allowed.
+		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,g_VideoSettings.bWindowed,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&bbf,&df,&hMon); //imago use this function!
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
-		g_VideoSettings.iCurrentMode		= 0;  
-		g_VideoSettings.iCurrentAASetting	= 0;
-		g_VideoSettings.d3dBackBufferFormat = (bbf == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : bbf;
-		g_VideoSettings.bWindowed			= !bStartFullscreen;
-		g_VideoSettings.d3dDeviceFormat		= (df == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : df;
+		g_VideoSettings.d3dBackBufferFormat = (!bbf || bbf == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : bbf;
+		g_VideoSettings.d3dDeviceFormat		= (!df || df == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : df;
 		g_VideoSettings.hSelectedMonitor	= hMon; //use primary monitor on speicfied adapter
 
-		
+			//NYI multimon: we still need to enum monitors and support a -monitor <n> command line switch for the needy (like me)
+			/*
+			EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
+			BOOL CALLBACK MonitorEnumProc(
+			  HMONITOR hMonitor,
+			  HDC hdcMonitor,
+			  LPRECT lprcMonitor,
+			  LPARAM dwData
+			);*/
 
-//NYI multimon: we still need to enum monitors and support a -monitor <n> command line switch for the needy (like me)
-/*
-EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
-BOOL CALLBACK MonitorEnumProc(
-  HMONITOR hMonitor,
-  HDC hdcMonitor,
-  LPRECT lprcMonitor,
-  LPARAM dwData
-);*/
-		g_VideoSettings.bWaitForVSync		= false; //LoadPreferences()
-		g_VideoSettings.bAutoGenMipmaps 	= 0; //LoadPreferences()
-		g_VideoSettings.bUseTexturePackFile = 0; //LoadPreferences()
-		g_VideoSettings.multiSampleType 	= D3DMULTISAMPLE_NONE; //LoadPreferences()
-		g_VideoSettings.magFilter 			= D3DTEXF_LINEAR; 
-		g_VideoSettings.minFilter 			= D3DTEXF_LINEAR;
-		g_VideoSettings.mipFilter 			= D3DTEXF_LINEAR;
-		g_VideoSettings.iMaxTextureSize 	= 0; //LoadPreferences()
-
-		//build the adapter res array  (imago)
+		//imago build the adapter res array for in-game switching
 		g_VideoSettings.pDevData->GetRelatedResolutions(
 											iAdapter,
 											0,
@@ -176,27 +176,65 @@ BOOL CALLBACK MonitorEnumProc(
 											&g_VideoSettings.iSelectedResolution,
 											&g_VideoSettings.pResolutionSet );
 
-
-		//imago's "huge 'n' nasty" refresh rate hack 7/2/09  
-		//	it's huge and nasty becasue i don't have the harware to reproduce it, 
-		//	so i've bastardized the code a bit in the process of fixing the issue
+		//imago fix for monitors that have < 60Hz
+		x = (x) ? x : 800; y = (y) ? y : 600;
 		for( int i=0; i<=g_VideoSettings.iNumResolutions; i++ )
 		{
-			//OutputDebugString("Looking for a resolution match to pull refresh rate...");
 			int width = g_VideoSettings.pResolutionSet[i].iWidth;
 			int height = g_VideoSettings.pResolutionSet[i].iHeight;
 			int rate = g_VideoSettings.pResolutionSet[i].iFreq;
 			if (x == width && y == height) {
 				g_DX9Settings.m_refreshrate = rate;
-				//OutputDebugString("Match found! Rate set to: "+ZString(rate)+"\n");
 				break;
 			}
 		}
 
+		//lets make extra sure we don't crash when we autoload AA settings
+		LPDIRECT3D9 pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
+		if (g_DX9Settings.m_dwAA)
+			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
+				g_VideoSettings.bWindowed, D3DMULTISAMPLE_2_SAMPLES, NULL) == D3D_OK) {
+				g_VideoSettings.iCurrentAASetting = 1;
+			} else {
+				g_DX9Settings.m_dwAA = 0;
+			}
+		if (g_DX9Settings.m_dwAA >= 4)
+			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
+				g_VideoSettings.bWindowed, D3DMULTISAMPLE_4_SAMPLES, NULL) == D3D_OK) {
+				g_VideoSettings.iCurrentAASetting = 2;
+			} else {
+				g_VideoSettings.iCurrentAASetting = 1;
+				g_DX9Settings.m_dwAA = 2;
+			}
+		if (g_DX9Settings.m_dwAA >= 6)
+			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
+				g_VideoSettings.bWindowed, D3DMULTISAMPLE_6_SAMPLES, NULL) == D3D_OK) {
+				g_VideoSettings.iCurrentAASetting = 3;
+			} else {
+				g_VideoSettings.iCurrentAASetting = 2;
+				g_DX9Settings.m_dwAA = 4;
+			}
+		if (g_DX9Settings.m_dwAA >= 8)
+			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
+				g_VideoSettings.bWindowed, D3DMULTISAMPLE_8_SAMPLES, NULL) == D3D_OK) {
+				g_VideoSettings.iCurrentAASetting = 4;
+			} else {
+				g_VideoSettings.iCurrentAASetting = 3;
+				g_DX9Settings.m_dwAA = 6;
+			}
+		if (g_DX9Settings.m_dwAA >= 16)
+			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
+				g_VideoSettings.bWindowed, D3DMULTISAMPLE_16_SAMPLES, NULL) == D3D_OK) {
+				g_VideoSettings.iCurrentAASetting = 5;
+			} else {
+				g_VideoSettings.iCurrentAASetting = 4;
+				g_DX9Settings.m_dwAA = 8;
+			}
+		pD3D9->Release();
 
-		// NYI overwrite the above settings with any others we have laying around from LoadPreferences()
-////////////////
-	} else {
+//////////////////////////////////////////
+	} else { // BEGIN USE_DIALOG_SETTINGS
+		lpSubKey += ZString("\\3DSettings");
 		SAdditional3DRegistryData sExtraRegData;
 
 		g_VideoSettings.pDevData = new CD3DDeviceModeData( 800, 600, &logFile );	// Mininum width/height allowed.
@@ -273,8 +311,8 @@ BOOL CALLBACK MonitorEnumProc(
 			// User selected quit.
 			return false;
 		}
-	} // USE_DEFAULT_SETTINGS
-/////////////////////////////
+	} // END USE_DIALOG_SETTINGS
+//////////////////////////////////////////
 
 	logFile.OutputString("\nUser selected values:\n");
 	logFile.OutputStringV( "AD %d   MON 0x%08x   WIN %d   VSYNC %d\n", 
@@ -298,9 +336,11 @@ BOOL CALLBACK MonitorEnumProc(
 												g_VideoSettings.iCurrentAASetting,
 												&logFile );
 
-	// Imago's huge refresh rate hack 7/2/09
+	//this is where we override Refresh Rate, AA and Texture Filter (NYI) settings when not using the dialog (Imago)
 	if (!bRaise)
-		pParams->sFullScreenMode.mode.RefreshRate = g_DX9Settings.m_refreshrate;
+		pParams->sFullScreenMode.mode.RefreshRate = g_DX9Settings.m_refreshrate; //refresh rate hack 7/2/09
+	//
+
 	
 	if( GetMonitorInfo( g_VideoSettings.hSelectedMonitor, &pParams->monitorInfo ) == FALSE )
 	{
@@ -309,7 +349,7 @@ BOOL CALLBACK MonitorEnumProc(
 		return false;
 	}
 
-	// Offset for windowed mode. - let's not
+	// Offset for windowed mode. - (multimon NYI)
 	pParams->iWindowOffsetX	= pParams->monitorInfo.rcMonitor.left;
 	pParams->iWindowOffsetY	= pParams->monitorInfo.rcMonitor.top;
 	logFile.OutputStringV( "Window offset: %d  %d\n", pParams->iWindowOffsetX,
@@ -340,6 +380,10 @@ BOOL CALLBACK MonitorEnumProc(
 
 	// Data settings go into the engine settings object.
 	g_DX9Settings.mbUseTexturePackFiles = g_VideoSettings.bUseTexturePackFile;
+	g_DX9Settings.m_bVSync = g_VideoSettings.bWaitForVSync; //imago 7/18/09
+	g_DX9Settings.m_iMaxTextureSize = g_VideoSettings.iMaxTextureSize; //imago 7/18/09
+	g_DX9Settings.m_bAutoGenMipmaps = g_VideoSettings.bAutoGenMipmaps; //imago 7/18/09
+
 
 	// Update the registry settings.
 	Write3DRegistrySettings( lpSubKey);
@@ -356,8 +400,6 @@ BOOL CALLBACK MonitorEnumProc(
 		delete g_VideoSettings.pDevData;
 		g_VideoSettings.pDevData = NULL;
 	}
-	//OutputDebugString("Starting with refresh rate: " + ZString(g_DX9Settings.m_refreshrate) + "\n");  
-
 	return true;			// Success.
 }
 
