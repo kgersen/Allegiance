@@ -571,7 +571,9 @@ public:
                 } else if (str == "nooutput") {
                     g_bOutput = false;
                 } else if (str == "quickstart") {
-                    g_bQuickstart = true;
+					ZString strName = trekClient.GetSavedCharacterName(); //Imago dont quickstart if no saved name 7/21/09
+					if (strName.GetLength())
+                    	g_bQuickstart = true;
                     float civStart;
                     if (token.IsNumber(civStart)) 
                         g_civStart = (int)civStart;

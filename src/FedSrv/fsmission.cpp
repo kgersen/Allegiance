@@ -3334,6 +3334,8 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
 {
   IsideIGC*   psideWon = NULL;
   const MissionParams* pmp = m_pMission->GetMissionParams();
+  // Imago account for allies 7/17/09
+  bool bAllies = false;
 
   if ( (STAGE_STARTED == GetStage()) || ((STAGE_STARTING == GetStage()) && pmp->bAllowEmptyTeams) && (m_psideWon == NULL))
   {
@@ -3364,8 +3366,6 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
 
 		// KGJV #62 count active teams
 		int nActiveTeams = 0;
-		// Imago account for allies 7/17/09
-		bool bAllies = false;
 
         if (nStationsTotal != 0)
         {
@@ -3391,7 +3391,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
                 }
             }
 			// KGJV #62 - no winner if bAllowEmptyTeam and one active team is left - Imago: allies overrides to prevent "issues"?
-			if (pmp->bAllowEmptyTeams && (nActiveTeams == 1) && !bAllies)
+			if (pmp->bAllowEmptyTeams && (nActiveTeams == 1))
 				psideWon = NULL;
         }
     }
@@ -3481,6 +3481,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
   }
 
 
+  if (bAllies) { //Imago 7/21/09
 	bool bAllAllies = true;
 	IsideIGC*   allywinside = NULL;
 	//lets get a list of allied sideIDs  Imago ALLY 7/17/09
@@ -3504,6 +3505,7 @@ IsideIGC*   CFSMission::CheckForVictoryByStationKill(IstationIGC* pstationKilled
 		}
 	}
 	psideWon = (bAllAllies) ? allywinside : psideWon;
+  }
 
 
   return psideWon;
@@ -3590,7 +3592,7 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
   // don't end game during STAGE_STARTING if bAllowEmptyTeams
   if ((GetStage() == STAGE_STARTING) && m_misdef.misparms.bAllowEmptyTeams)
   {
-      pSideWin = NULL;
+      return NULL; //Imago 7/21/09
   }
 
 	bool bAllAllies = true;

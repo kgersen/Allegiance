@@ -147,16 +147,15 @@ public:
 			( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_X8B8G8R8 ) ||
 			( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_X8R8G8B8 ) )
 		{
+			m_ppf = new PixelFormat(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
 			m_dwBPP = 32;
 		}
 		else
 		{
+			m_ppf = new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000);
 			m_dwBPP = 16;
 		}
-        if (m_dwBPP == 32)
-            m_ppf = new PixelFormat(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-        if (m_dwBPP == 16)
-            m_ppf = new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000);
+           
 
 		//imago 6/24/09 - 6/29/09 - 7/1/09
 #pragma warning(disable:4244)
