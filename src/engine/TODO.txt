@@ -1,13 +1,24 @@
-
-Remaining TODO list before release:
+TODO:
 
 * Add support for other types of rendering with buffers and HW TnL.
 
+* Add more pixel formats to UnclippedBlt, for surfaces outside of Begin/EndScene pairs.
+	- Finish ImageTransfer 24bit->32bit (to restore mdlc on the original artwork)
+
+* Fix user clipping planes when video hardware doesn't support any, intel issue?  
+	Is this really a show stopper?  http://www.kludx.com/capability.php?capability=28
+	The problem has been minimized by forcing the extra layers off.
+
+
+
+
+
+DONE:
+* Fix lighting inconsistency.  fixed?
 * Add software texture copy to UnclippedBlt, for surfaces outside of Begin/EndScene pairs.
 
 * Some colour keying issues remain - such as the build sphere texture.
-* The "Higher res", "lower resolution" buttons have no effect anymore (no bug?)
-
+* The "Higher res", "lower resolution" buttons have no effect anymore (fixed)
 * the little jumps are damn annoying, they are not lag related, but rendering problems it 
 	seems. They are in timing with the lighting issues. Only when a base is in the system 
 	it seems.
@@ -17,26 +28,16 @@ Remaining TODO list before release:
 * caltrops have black squad behind it like the icons did - colour key.
 * jumping of the rendered stuff. Move between flight and f3 view, you will notice little 
 	jumps in and out of command view while switching.
-* Lighting inconsistency.
-
+* slight 'edge' effect on graphics in F3, i.e. there is a black ring around the He icon and aleph icons
 * mini map sector and aleph lines are a bit light
 * some text message colors are off (partially fixed. Need QA feedback).
 * target box is also rather light (the box that is drawn around a ship when it is targeted, not the aiming reticule) this is especially noticeable when targeting an miner, you get a very pale gray box instead of a yellow box
-
-* slight 'edge' effect on graphics in F3, i.e. there is a black ring around the He icon and aleph icons
-
-
-
-
-DONE:
 * Stats panel in F4 is truncated.
 * Tidy up code, remove old files. Still some more to do, work in progress.
 * hud bar flicker (after a device reset? resolution or windowed>)
 * Reenable mipmapping - not on environments.
 * the high asteroids look tranparent and flicker. a new issue, as far as I can tell, at 
 	least it is not in the R4 build.
-
-
 * inbase screen has no hangar door, just a black rectangle - fixup RLE image playback.
 * Game state image headers missing colour key - ARTWORK FIX REQUIRED.
 * fix up texture > 2048 size problem for older hw (9700pro), use plain memory surface - TEST.
