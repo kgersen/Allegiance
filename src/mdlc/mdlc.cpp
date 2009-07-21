@@ -13,6 +13,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "main.h"
+#include "../Inc/regkey.h"
+
+#include "VideoSettingsDX9.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -162,28 +165,36 @@ public:
         // Load the bitmap
         //
 
-        HBITMAP hbitmap = GetModeler()->LoadBitmap(strInput);
-        TRef<Surface> psurface = GetEngine()->CreateSurface(hbitmap);
-        ZVerify(::DeleteObject(hbitmap));
+        //HBITMAP hbitmap = GetModeler()->LoadBitmap(strInput);
+       // TRef<Surface> psurface = GetEngine()->CreateSurface(hbitmap);
+        //ZVerify(::DeleteObject(hbitmap));
+		
+		TRef<ZFile> zf = GetModeler()->GetFile(strInput,"",false);
+		ZFile * pFile = (ZFile*) zf;
+		D3DXIMAGE_INFO fileInfo;
+		D3DXGetImageInfoFromFileInMemory(pFile->GetPointer(),pFile->GetLength(),&fileInfo );
+		WinPoint targetSize( fileInfo.Width, fileInfo.Height );
+
+		TRef<Surface> psurface = GetEngine()->CreateSurfaceD3DX(&fileInfo,&targetSize,zf,false,Color(0,0,0),strName);
 
         //
         // Convert the bitmap to 16bpp
         //
-
+/*
         TRef<Surface> psurface16 =
             GetEngine()->CreateSurface(
-                psurface->GetSize(),
+                targetSize,
                 new PixelFormat(16, 0xf800, 0x07e0, 0x001f, 0x0000)
             );
 
-        psurface16->BitBlt(WinPoint(0, 0), psurface);
-
+       psurface16->BitBlt(WinPoint(0, 0), psurface);
+*/
         //
         // Create a namespace with the bitmap in it
         //
 
         TRef<INameSpace> pns = GetModeler()->CreateNameSpace(strOutputName, GetModeler()->GetNameSpace("model"));
-        pns->AddMember(strOutputName, (Value*)new ConstantImage(psurface16, strName));
+        pns->AddMember(strOutputName, (Value*)new ConstantImage(psurface, strName));
 
         //
         // Write out the namespace
@@ -215,11 +226,12 @@ public:
         //
 
         TRef<Number> pnumberFrame = new ModifiableNumber(0);
+		TRef<Surface> psurface = GetModeler()->LoadSurface(strInput, false);
 
         TRef<Image> pimageFrame =
             CreateFrameImage(
                 pnumberFrame,
-                GetModeler()->LoadSurface(strInput, false),
+                psurface,
                 xframes,
                 yframes
             );
@@ -249,7 +261,31 @@ public:
 
     HRESULT Initialize(const ZString& strCommandLine)
     {
-        if (SUCCEEDED(EffectApp::Initialize(strCommandLine + " -software", NULL))) {
+
+		
+		//Imago set the modeler up to work in the CWD
+		PathString pathStr = pathStr.GetCurrentDirectoryA();
+		printf(pathStr);
+        
+		// Imago DX9 junk
+		if( PromptUserForVideoSettings(false, false, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLC3DSettings") == false )
+		{
+			return E_FAIL;
+		}
+		CD3DDevice9::Get()->UpdateCurrentMode( );
+
+		CLogFile devLog( "DeviceCreation.log" );
+		CD3DDevice9::Get()->Initialise( &devLog );
+		CD3DDevice9::Get()->CreateD3D9( &devLog );
+		CD3DDevice9::Get()->CreateDevice( ::GetForegroundWindow(), &devLog );
+		
+		// Initialise the various engine components.
+		CVRAMManager::Get()->Initialise( );
+		CVBIBManager::Get()->Initialise( );
+		CVertexGenerator::Get()->Initialise( );
+
+		if (SUCCEEDED(EffectApp::Initialize(strCommandLine, ::GetForegroundWindow()))) {
+			GetModeler()->SetArtPath(pathStr);
             GetModeler()->SetSite(new ModelerSiteImpl());
 
             //
@@ -325,7 +361,7 @@ public:
                     return E_FAIL;                        
                 }
             }
-        }
+       }
 
         return E_FAIL;
     }
