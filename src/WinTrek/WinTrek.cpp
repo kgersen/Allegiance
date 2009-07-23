@@ -78,7 +78,7 @@ const float c_fVolumeDelta = 1;
 
 const float g_hudBright = 0.85f;
 
-const float g_fJoystickDeadZoneNone = 0.0f; //imago added 7/1/09
+//const float g_fJoystickDeadZoneNone = 0.0f; //imago added 7/1/09 removed 7/23/09 causes crashes /w joysticks
 const float g_fJoystickDeadZoneSmallest = 0.04f; //imago added 7/13/09
 const float g_fJoystickDeadZoneSmall = 0.1f;
 const float g_fJoystickDeadZoneLarge = 0.3f;
@@ -4597,8 +4597,8 @@ public:
         {
             case 0:
 			case 31:
-				g_fJoystickDeadZone = g_fJoystickDeadZoneNone;
-				break;
+				//g_fJoystickDeadZone = g_fJoystickDeadZoneNone;  removed 7/23/09 causes crash imago
+				//break;
 			case 4:
 			case 1:
 				g_fJoystickDeadZone = g_fJoystickDeadZoneSmallest;
@@ -5039,15 +5039,15 @@ public:
     const ZString& GetDeadzoneMenuString()
     {
 		static const ZString    strLarge = "Large dead zone";
-		static const ZString    strNone = "No dead zone";
+		//static const ZString    strNone = "No dead zone";
 		static const ZString    strSmall = "Small dead zone";
 		static const ZString    strSmallest = "Smallest dead zone";
 		static const ZString    strInvalid = "Invalid dead zone";
 		int     iDZ = int(g_fJoystickDeadZone * 100);
         switch (iDZ)
         {
-            case 0:
-				return strNone;
+           // case 0:
+			//	return strNone;
 			case 4:
 				return strSmallest;
 			case 10:
