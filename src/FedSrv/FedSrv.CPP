@@ -9851,12 +9851,21 @@ class ThingSiteImpl : public ThingSite
                     {
                         IsideIGC*   pside = l->data();
 
-                        //You always lose contact when a non-static object switches sectors
-                        if (pside != psideModel && (pside->AlliedSides(pside,psideModel) && psideModel->GetMission()->GetMissionParams()->bAllowAlliedViz)) //ALLY VISIBILITY
-                        {
-                            m_rgSideVisibility[pside->GetObjectID()].fVisible(false);
-                            HideObject(pside, pmodel);
-                        }
+						//imago ALLY 7/23/09
+						if (psideModel->GetMission()->GetMissionParams()->bAllowAlliedViz) {
+							 //You always lose contact when a non-static, non-allied object switches sectors
+							if (pside != psideModel && !pside->AlliedSides(pside,psideModel)) {
+                            	m_rgSideVisibility[pside->GetObjectID()].fVisible(false);
+                            	HideObject(pside, pmodel);
+							}
+						} else {
+							 //You always lose contact when a non-static object switches sectors
+							if (pside != psideModel) {
+                            	m_rgSideVisibility[pside->GetObjectID()].fVisible(false);
+                            	HideObject(pside, pmodel);
+							}
+
+						}
                     }
                 }
 
@@ -9982,9 +9991,13 @@ class ThingSiteImpl : public ThingSite
                 CFSShip*    pfsShip = (CFSShip *)(((IshipIGC*)pmodel)->GetPrivateData());
                 assert (pfsShip);
 
-				//dont hide allies ships, ever, fixed 7/13/09 was && (oops)
-				if (!pside->GetMission()->GetMissionParams()->bAllowAlliedViz || !pside->AlliedSides(pside,pmodel->GetSide())) {
-                	pfsShip->ShipStatusHidden(pside);
+				//dont hide allies ships, ever, fixed 7/13/09 was && (oops) fixed for real 7/23/09
+				if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
+					if (!pside->AlliedSides(pside,pmodel->GetSide()) && pside != pmodel->GetSide()) {
+                		pfsShip->ShipStatusHidden(pside);
+					}
+				} else {
+					pfsShip->ShipStatusHidden(pside);
 				}
             }
         }

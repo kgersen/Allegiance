@@ -259,7 +259,7 @@ void CFSShip::ShipStatusSpotted(IsideIGC* pside)
     //Flag that we have been detected as well
     IsideIGC*   mySide = GetSide();
     SideID  mySideID = mySide->GetObjectID();
-	if ((mySide != pside) && !IsideIGC::AlliedSides(mySide, pside)) //#ALLY -was: mySide != pside (Imago fixed 7/8/09)
+	if (mySide != pside && !mySide->AlliedSides(mySide, pside)) //#ALLY -was: mySide != pside (Imago fixed 7/8/09)
         m_rgShipStatus[mySideID].SetDetected(true);
 
     //Adjust the ship status for all of the children as well
@@ -277,7 +277,7 @@ void CFSShip::ShipStatusSpotted(IsideIGC* pside)
             pss->SetSectorID(sectorID);
             pss->SetParentID(GetShipID());
 
-			if ((mySide != pside) && !IsideIGC::AlliedSides(mySide, pside)) //#ALLY -was != (Imago fixed 7/8/09)
+			if (mySide != pside && !mySide->AlliedSides(mySide, pside)) //#ALLY -was != (Imago fixed 7/8/09)
                 pfsship->GetShipStatus(mySideID)->SetDetected(true);
         }
     }
@@ -300,7 +300,7 @@ void          CFSShip::ShipStatusHidden(IsideIGC* pside)
                  (psl != NULL);
                  psl = psl->next())
             {
-				if ((psl->data() != mySide) && !IsideIGC::AlliedSides(psl->data(), mySide)) //#ALLY -was: != (Imago fixed 7/8/09)
+				if (psl->data() != mySide && !mySide->AlliedSides(psl->data(), mySide)) //#ALLY -was: != (Imago fixed 7/8/09)
                 {
                     ShipStatus* pss = GetShipStatus(psl->data()->GetObjectID());
                     if (!pss->GetUnknown())
@@ -341,7 +341,7 @@ void          CFSShip::ShipStatusHullChange(IhullTypeIGC*    pht)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if ((psideMe == pside) || GetIGCShip()->SeenBySide(pside))
+        if ((psideMe == pside || psideMe->AlliedSides(psideMe,pside)) || GetIGCShip()->SeenBySide(pside)) // #ALLY Imago 7/23/09 VISIBILITY?
         {
             m_rgShipStatus[pside->GetObjectID()].SetHullID(hid);
         }
@@ -364,8 +364,8 @@ void          CFSShip::ShipStatusDocked(IstationIGC*   pstation)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if (((pside == psideMe) || IsideIGC::AlliedSides(pside,psideMe)) || // #ALLY Imago 7/8/09 VISIBILITY?
-            ((GetIGCShip()->SeenBySide(pside)) && (pstation->SeenBySide(pside))))
+        if ((pside == psideMe || pside->AlliedSides(pside,psideMe)) || // #ALLY Imago 7/8/09 VISIBILITY?
+            (GetIGCShip()->SeenBySide(pside) && pstation->SeenBySide(pside)))
         {
             SideID      sideID = pside->GetObjectID();
             ShipStatus* pss = &(m_rgShipStatus[sideID]);
@@ -411,7 +411,7 @@ void          CFSShip::ShipStatusRecalculate(void)
         {
             IsideIGC*   pside = psl->data();
             SideID      sid = pside->GetObjectID();
-            if ((pside == psideMe) || (m_rgShipStatus[sid].GetState() >= c_ssFlying))
+            if ((pside == psideMe || pside->AlliedSides(pside,psideMe)) || (m_rgShipStatus[sid].GetState() >= c_ssFlying)) //ALLY IMAGO 7/23/09
                 ShipStatusSpotted(pside);
         }
     }
@@ -462,7 +462,7 @@ void          CFSShip::ShipStatusRestart(IstationIGC*   pstation)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if ((pside == psideShip) || (GetIGCShip()->SeenBySide(pside)))
+        if ((pside == psideShip || pside->AlliedSides(pside,psideShip)) || (GetIGCShip()->SeenBySide(pside))) //ALLY imago 7/23/09
         {
             ShipStatus* pss = &(m_rgShipStatus[pside->GetObjectID()]);
 
@@ -668,7 +668,7 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
       sprintf(szReason, "%s won because %s captured %s", psideWin->GetName(), GetIGCShip()->GetName(), pstation->GetName());
       m_pfsMission->GameOver(psideWin, szReason);
   }
-  else if (psideOld->GetActiveF())
+  else if (psideOld->GetActiveF())						//RESET OUR EYE HERE?  IMAGO CAPTURE EYE BUG FIX?  REVIEW 7/23/09
       m_pfsMission->VacateStation(pstation);
 }
 

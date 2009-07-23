@@ -3034,8 +3034,8 @@ void CFSMission::ProcessGameOver()
                 bool  bCount = (ppso->GetTimePlayed() > 180.0f) && !m_bDraw;
 
                 ppso->EndGame(m_pMission,
-                              ((pside == m_psideWon) || IsideIGC::AlliedSides(pside, m_psideWon)) && bCount && (ppso->GetTimePlayed() > GetGameDuration() / 2.0f),
-                              ((pside != m_psideWon) && !IsideIGC::AlliedSides(pside, m_psideWon)) && bCount); //Imago ALLY 7/8/09
+                              (pside == m_psideWon || m_psideWon->AlliedSides(m_psideWon,pside)) && bCount && (ppso->GetTimePlayed() > GetGameDuration() / 2.0f),
+                              (pside != m_psideWon && !m_psideWon->AlliedSides(m_psideWon,pside)) && bCount);
 
                 SideID  sid = pside->GetObjectID();
 
@@ -3068,9 +3068,10 @@ void CFSMission::ProcessGameOver()
 	{
         OldPlayerInfo & opi = popl->data();
         bool  bCount = (opi.pso.GetTimePlayed() > 180.0f);
-        opi.pso.EndGame(m_pMission,
-                      ((opi.sideID == sidWin) || IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon)) && bCount && (opi.pso.GetTimePlayed() > GetGameDuration() / 2.0f),
-                      ((opi.sideID != sidWin) || !IsideIGC::AlliedSides(m_pMission->GetSide(opi.sideID), m_psideWon)) && bCount); //Imago ALLY 7/8/09
+
+         opi.pso.EndGame(m_pMission,
+                      (opi.sideID == sidWin || m_psideWon->AlliedSides(m_psideWon,m_pMission->GetSide(opi.sideID))) && bCount && (opi.pso.GetTimePlayed() > GetGameDuration() / 2.0f),
+                      (opi.sideID != sidWin && !m_psideWon->AlliedSides(m_psideWon,m_pMission->GetSide(opi.sideID))) && bCount);
 
       if (opi.sideID >= 0)
         {
