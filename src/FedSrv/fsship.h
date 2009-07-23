@@ -267,6 +267,19 @@ public:
   {
       return m_ucLastUpdate;
   }
+
+  //imago 7/22/09 ALLY ff pvp
+  void  SetLastDamageReport(Time t)
+  {
+    m_timeLastDamageReport = t;
+  }
+
+  Time  GetLastDamageReport(void) const
+  {
+    return m_timeLastDamageReport;
+  }
+  //
+
   void              ResetLastUpdate(void)
   {
       m_ucLastUpdate = c_ucNone;
@@ -531,7 +544,7 @@ private:
   ClientActiveTurretUpdate  m_atu;
   ClientShipUpdate          m_su;
   Time                      m_timeUpdate;
-
+  Time						m_timeLastDamageReport; //imago 7/22/09 ally FF pvp
   Time                  m_dwStartTime;
   int                   m_characterId;  // character id in the database--constant over sessions
   CFMGroup *            m_pgrp;         // the *location* group I'm a member of--can only be one of:

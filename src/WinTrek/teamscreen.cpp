@@ -2223,7 +2223,7 @@ public:
 		pfmChangeAlliance->sideID = m_sideCurrent;
 		pfmChangeAlliance->sideAlly = ally;
 
-		//imago 7/6/09 ALLY force Defections on when allies (Autobalance NYI)
+		//imago 7/6/09 ALLY force Defections on when allies (Autobalance NYI)  IMAGO REVIEW  FIX!!!!!!!!!!!!!!
 		bool bAllies = true;
 		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
 			if (trekClient.MyMission()->SideAllies(i) == NA && bAllies) 

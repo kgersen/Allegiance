@@ -11033,7 +11033,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
         {
             CFSShip*    pcfs = (CFSShip *)(ship->GetPrivateData());
             if (!pcfs->IsPlayer())
-            {
+			{
                 CFSDrone*   pd = (CFSDrone*)pcfs;
 
                 //Never report more than once every 10 seconds
@@ -11043,7 +11043,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                     assert (pside);
 
                     if (pside != psideLauncher) //&& !pside->AlliedSides(pside,psideLauncher))  //ALLY -imago 7/3/09 reverted
-                    {
+					{
                         SoundID underAttackSound;
 
                         switch (ship->GetPilotType())
@@ -11070,10 +11070,21 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                 underAttackSound = droneUnderAttackSound;
                                 break;
                         }
-						ChatTarget ct = (pside->GetAllies() == NA) ? CHAT_TEAM : CHAT_ALLIES; //ALLY imago 7/12/09
-                        SendChatf(ship, ct, ship->GetSide()->GetObjectID(),
-                                  underAttackSound, "Under attack by %s in %s",
-                                  GetModelName(launcher), ship->GetCluster()->GetName());
+						
+						//ChatTarget ct = (pside->GetAllies() == NA) ? CHAT_TEAM : CHAT_ALLIES; //ALLY imago 7/12/09 reverted 7/22/09
+						Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };						
+						ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)\x82  " : "";
+						SendChatf(ship, CHAT_TEAM, ship->GetSide()->GetObjectID(),
+                                  underAttackSound, "Under attack by %s%s in %s",
+                                  (PCC)strAllies, GetModelName(launcher), ship->GetCluster()->GetName());
+						
+						//7/22/09 ALLY FF
+						CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
+						if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside,psideLauncher))
+                        {
+                            SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
+                                     droneWatchFireSound, "Watch your fire");
+                        }
                     }
                     else if (launcher->GetObjectType() == OT_ship)
                     {
@@ -11086,7 +11097,20 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                     }
                     pd->SetLastDamageReport(now);
                 }
-            }
+			} else { //Imago ally FF PvP 7/22/09
+				CFSPlayer*   pp = (CFSPlayer*)pcfs;
+                //Never report more than once every 10 seconds
+                if ((now - pp->GetLastDamageReport()) > 10.0f)
+                {
+                    IsideIGC*   pside = ship->GetSide();
+					if (pside != psideLauncher && pside->AlliedSides(pside,psideLauncher)) {
+						SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
+                                     droneWatchFireSound, "Watch your fire");
+						pp->SetLastDamageReport(now);
+					}
+
+				}
+			}
         }
     }
 }
@@ -11104,20 +11128,29 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
 
 				if (pside != psideLauncher) //&& !IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY (Imago) reverted 7/12/09
                 {
+					Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };						
+					ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)\x82  " : "";
 					ChatTarget ct = (station->GetSide()->GetAllies() != NA) ? CHAT_ALLIES : CHAT_TEAM; //ALLY imago 7/12/09
                     if (station->GetFraction() < 0.30)
                     {
                         SendChatf(NULL, ct, station->GetSide()->GetObjectID(),
                                   station->GetStationType()->GetCriticalSound(),
-                                  "%s in %s critically damaged and under attack by %s", station->GetName(),
-                                  station->GetCluster()->GetName(), GetModelName(launcher));
+                                  "%s in %s critically damaged and under attack by %s%s", station->GetName(),
+                                  station->GetCluster()->GetName(), (PCC)strAllies, GetModelName(launcher));
                     }
                     else
                     {
                         SendChatf(NULL, ct, station->GetSide()->GetObjectID(),
                                   station->GetStationType()->GetUnderAttackSound(),
-                                  "%s in %s under attack by %s", station->GetName(),
-                                  station->GetCluster()->GetName(), GetModelName(launcher));
+                                  "%s in %s under attack by %s%s", station->GetName(),
+                                  station->GetCluster()->GetName(), strAllies,GetModelName(launcher));
+                    }
+					//7/22/09 ALLY FF
+					CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
+					if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside,psideLauncher))
+                    {
+                        SendChat(NULL, CHAT_INDIVIDUAL, launcher->GetObjectID(),
+                                 droneWatchFireSound, "Watch your fire");
                     }
                 }
                 else if (launcher->GetObjectType() == OT_ship)
@@ -11863,7 +11896,9 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
             if (pside->ApplyDevelopmentTechs(ttbm))
                 pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
 		}
-		if (pship->GetBaseHullType()->HasCapability(c_habmLifepod) && pstationNew->GetSide() != pship->GetSide()) {
+		
+		if (pstationNew && pship && !pship->GetParentShip() && pship->GetBaseHullType() && //imago fix crash when boarding turret 7/22/09
+			pship->GetBaseHullType()->HasCapability(c_habmLifepod) && pstationNew->GetSide() != pship->GetSide()) {
 			//dont dock here in a lifepod....
 		} else {
         	pfsShip->Dock(pstationNew);
@@ -11885,7 +11920,8 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 				
 				//Find the LAST space station for this pilot and put the rescued ship there  //Imago 7/13/09
 				 IstationIGC* pstation = m_pfsMission->GetIGCMission()->GetStation(pfsShip->GetOldShipStatus(pship->GetSide()->GetObjectID())->GetStationID());
-				if (pstation == NULL)
+				if (pstation == NULL || 
+					pstation->GetSide() != pship->GetSide()) //Imago 7/22/09 fix restart in ally base after a rearm
 					pstation = m_pfsMission->GetBase(pship->GetSide());
 
 				  //Find the LAST ship type we used
