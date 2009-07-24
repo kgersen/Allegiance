@@ -118,7 +118,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>D3D_DEBUG_INFO;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>
       </ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
