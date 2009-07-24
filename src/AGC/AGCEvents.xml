@@ -422,7 +422,7 @@
 
         <Event id="2034" Name="DisconnectingLobby"
             Description="Fired when game server prepares to disconnect from a lobby."
-            Format="Game server disconnecting from lobby.\nLobby = %LobbServer%"
+            Format="Game server disconnecting from lobby.\nLobby = %LobbyServer%"
             Severity="Info"
             LogAsNTEvent="1"
             LogAsDBEvent="0"
@@ -430,7 +430,7 @@
 
         <Event id="2035" Name="DisconnectedLobby"
             Description="Fired when game server successfully disconnects from a lobby."
-            Format="Game server disconnected from lobby.\nLobby = %LobbServer%"
+            Format="Game server disconnected from lobby.\nLobby = %LobbyServer%"
             Severity="Warning"
             LogAsNTEvent="1"
             LogAsDBEvent="0"
