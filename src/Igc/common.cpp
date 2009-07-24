@@ -301,8 +301,8 @@ bool  FindableModel(ImodelIGC*          m,
 					    const MissionParams* pmp = pmission->GetMissionParams();
 
 						AbilityBitMask alliesnotallowed = (pmp->bAllowAlliedRip) ?
-							c_sabmRestart | c_sabmTeleportUnload | c_sabmUnload :
-							c_sabmRestart | c_sabmTeleportUnload | c_sabmUnload | c_sabmRipcord;  //imago 7/9/09
+							c_sabmRestart | c_sabmUnload :
+							c_sabmRestart | c_sabmUnload | c_sabmRipcord;  //imago 7/9/09 c_sabmTeleportUnload removed 7/23/09
 
 						if ((ttMask & c_ttFriendly) &&
 							(abmAbilities & alliesnotallowed) &&

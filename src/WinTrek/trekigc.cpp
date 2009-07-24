@@ -3565,9 +3565,11 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
 		if (pfm->fmid == FM_S_MISSIONDEF)
 		{
 			CASTPFM(pfmMissionDef, S, MISSIONDEF, pfm);
-			char szAddr[16];
-			pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
-			strcpy_s(pfmMissionDef->szServerAddr,16,szAddr);
+			//char szAddr[16];
+			pthis->GetIPAddress(cnxnFrom, pfmMissionDef->szServerAddr); // get the real addr 
+			//Strncpy(pfmMissionDef->szServerAddr,szAddr,16);
+			//strcpy_s(pfmMissionDef->szServerAddr,16,szAddr); // IMAGO REVIEW CRASH 7/24/09
+			//OutputDebugString("Connection from "+ZString(pfmMissionDef->szServerAddr)+"\n");
 		}
 		// KGJV: end
 
