@@ -1248,6 +1248,8 @@ private:
                 break;
 
 			case DI8DEVTYPE_JOYSTICK: // kg Di8 DIDEVTYPE_JOYSTICK:
+			case DI8DEVTYPE_GAMEPAD: //Imago 7/23/09
+			case DI8DEVTYPE_FLIGHT: // --^
                 {
                     TRef<JoystickInputStreamImpl> pjoystickInputStream = 
                         new JoystickInputStreamImpl(pdid2, m_hwnd);
