@@ -28,6 +28,8 @@ struct SAdditional3DRegistryData
 	char szAASettingName[256];
 };
 
+int GetMaxRate(int index); //imago 7/27/09
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 INT_PTR CALLBACK ResPickerDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
@@ -116,6 +118,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		int idummy = 0;
     	int x = 800;
 		int y = 600;
+
 		g_VideoSettings.bWaitForVSync		= true;
 		g_VideoSettings.bAutoGenMipmaps 	= false;
 		g_VideoSettings.bUseTexturePackFile = false;
@@ -149,67 +152,58 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			//::RegQueryValueEx(hKey, "AAQuality", NULL, &dwType, (BYTE*)&idummy, &dwSize); NYI
             ::RegCloseKey(hKey);
         }
+		x = (x != 0) ? x : 800; y = (y != 0) ? y : 600; //in case Windows7 wrote 0's before this bug was caught
 
 		lpSubKey += ZString("\\3DSettings");
 		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum ENGINE width/height allowed.
-		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,g_VideoSettings.bWindowed,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&bbf,&df,&hMon); //imago use this function!
+		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&bbf,&df,&hMon); //imago use this function!
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.d3dBackBufferFormat = (!bbf || bbf == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : bbf;
 		g_VideoSettings.d3dDeviceFormat		= (!df || df == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : df;
 		g_VideoSettings.hSelectedMonitor	= hMon; //use primary monitor on speicfied adapter
 
-			//NYI multimon: we still need to enum monitors and support a -monitor <n> command line switch for the needy (like me)
-			/*
-			EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
-			BOOL CALLBACK MonitorEnumProc(
-			  HMONITOR hMonitor,
-			  HDC hdcMonitor,
-			  LPRECT lprcMonitor,
-			  LPARAM dwData
-			);*/
 
-			//NYI multimon: zlib/window is causing issues, moving our window incorrectly when
-			//the multimon layout is not Left to Right or Top to Bottom
-			//	(i.e.  [1] [2] works fine,  [2] [1] does not
-			//  [1]				[2]
-			//	[2] works fine,	[1] does not)
+		//NYI multimon: zlib/window is causing issues, moving our window incorrectly when
+		//the multimon layout is not Left to Right or Top to Bottom
+		//	(i.e.  [1] [2] works fine,  [2] [1] does not
+		//  [1]				[2]
+		//	[2] works fine,	[1] does not)
 
-/*		
-			// NYI refresh rate: check to see if we can use the desktop's currently set rate for 800x600
-			BOOL EnumDisplayDevices(
-			  LPCTSTR lpDevice, 
-			  DWORD iDevNum, 
-			  PDISPLAY_DEVICE lpDisplayDevice, 
-			  DWORD dwFlags 
-			);			
+		//NYI -monitor <n> for "Multi-Head" adapters
 
-			BOOL EnumDisplaySettings(
-			  LPCTSTR lpszDeviceName,
-			  DWORD iModeNum,
-			  LPDEVMODE lpDevMode
-			);
-*/
+		// Find the optimal mode index using the highest, sane refresh rate 7/27/09 (Imago, Sgt_Baker)
+		int iBestMode = 0;
+		int maxrate = GetMaxRate(iAdapter);
+		int iModeCount = g_VideoSettings.pDevData->GetResolutionCount(iAdapter,g_VideoSettings.d3dDeviceFormat);
+		for( int i=0; i<iModeCount; i++ ) {
+			int myx, myy, myrate;
+			D3DFORMAT mybbf, mydf; 
+			HMONITOR mymon;
+			g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,i,&myx,&myy,&myrate,&mybbf,&mydf,&mymon);
+			if (g_VideoSettings.d3dDeviceFormat == mydf && g_VideoSettings.d3dBackBufferFormat == mybbf) {
+				if (800 == myx && 600 == myy) { //intentional 800x600
+					if (myrate > g_DX9Settings.m_refreshrate && myrate <= maxrate)
+						iBestMode = i;
+				}
+			}
+		}
 
 		//imago build the adapter res array for in-game switching
 		g_VideoSettings.pDevData->GetRelatedResolutions(
 											iAdapter,
-											0,
+											iBestMode,
 											&g_VideoSettings.iNumResolutions,
 											&g_VideoSettings.iSelectedResolution,
 											&g_VideoSettings.pResolutionSet );
 
-		//imago fix for monitors that have < 60Hz
-		x = (x != 0) ? x : 800; y = (y != 0) ? y : 600;
-		for( int i=0; i<=g_VideoSettings.iNumResolutions; i++ )
-		{
-			int width = g_VideoSettings.pResolutionSet[i].iWidth;
-			int height = g_VideoSettings.pResolutionSet[i].iHeight;
-			int rate = g_VideoSettings.pResolutionSet[i].iFreq;
-			if (x == width && y == height) {
-				g_DX9Settings.m_refreshrate = rate;
-				break;
-			}
+		debugf("FOUND RESOLUTIONS:\n");
+		for (int i=0;i<g_VideoSettings.iNumResolutions;i++) {
+			debugf("\t%i) %ix%i @ %i\n",i,g_VideoSettings.pResolutionSet[i].iWidth,g_VideoSettings.pResolutionSet[i].iHeight,
+				g_VideoSettings.pResolutionSet[i].iFreq);
+			if (g_VideoSettings.pResolutionSet[i].iWidth == x && g_VideoSettings.pResolutionSet[i].iHeight == y)
+				g_DX9Settings.m_refreshrate = g_VideoSettings.pResolutionSet[i].iFreq;
 		}
+		debugf("CURRENT IN-GAME RESOLUTION: %ix%i @ %i\n",x,y,g_DX9Settings.m_refreshrate);
 
 		//lets make extra sure we don't crash when we autoload AA settings
 		LPDIRECT3D9 pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
@@ -1021,6 +1015,49 @@ INT_PTR CALLBACK ProgressBarDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, 
 	}
 	return FALSE;
 }
+
+
+//Imago - 7/28/09 this function will return the adapter's Windows desktop refresh rate setting
+				// used to set the maximum refresh rate and avoid any PnP issues (thanks Sgt_Baker)
+int GetMaxRate(int index = 0)
+{
+    DISPLAY_DEVICE dd;
+    dd.cb = sizeof(DISPLAY_DEVICE);
+    if (!EnumDisplayDevices(NULL, index, &dd, 0))
+    {
+		debugf("1: EnumDisplayDevices failed:%d\n", GetLastError());
+        return 60;
+    }
+ 
+    DISPLAY_DEVICE monitor;
+    monitor.cb = sizeof(DISPLAY_DEVICE);
+    if (!EnumDisplayDevices(dd.DeviceName, 0, &monitor, 0))
+    {
+		debugf("2: EnumDisplayDevices failed:%d\n", GetLastError());
+        return 60;
+    }
+ 
+    DEVMODE dm;
+    dm.dmSize = sizeof(DEVMODE);
+ 
+    if (!EnumDisplaySettings(dd.DeviceName, ENUM_CURRENT_SETTINGS, &dm))
+    {
+		debugf("3: EnumDisplaySettings failed:%d\n", GetLastError());
+        return 60;
+    }
+ 
+	debugf("Device string: %s\n", dd.DeviceString);
+    debugf("Monitor ID: %s\n", monitor.DeviceID);
+	debugf("Monitor name: %s\n", monitor.DeviceName);
+	debugf("Monitor string: %s\n", monitor.DeviceString);
+    debugf("Refresh rate, in hertz: %d\n", dm.dmDisplayFrequency);
+    debugf("Color depth: %d\n", dm.dmBitsPerPel);
+    debugf("Screen resolution, in pixels: %d x %d\n", 
+        dm.dmPelsWidth, dm.dmPelsHeight);
+
+	return dm.dmDisplayFrequency;
+}
+
 
 // BUILD_DX9
 

@@ -174,7 +174,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	if( m_sDevSetupParams.bWaitForVSync == true )
 	{
-		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_DEFAULT;
+		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_ONE;
 	}
 	else
 	{
