@@ -545,7 +545,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         station->GetName(), 
                         station->GetCluster()->GetName());
 
-                if (station->GetSide() == GetSide())
+                if (station->GetSide() == GetSide() || GetSide()->AlliedSides(GetSide(),station->GetSide())) //AllY Imago/Rock 7/27/09 
                     PlaySoundEffect(station->GetStationType()->GetDestroyedSound());
                 else
                     PlaySoundEffect(station->GetStationType()->GetEnemyDestroyedSound());
@@ -671,9 +671,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     station->GetCluster()->GetName()
                     );
 
-                if (pfmStationCapture->sidOld == GetSideID())
+                if (pfmStationCapture->sidOld == GetSideID() || GetSide()->AlliedSides(GetCore()->GetSide(pfmStationCapture->sidOld),GetSide()))  //ALLY Rock/Imago 7/27/09
                     PlaySoundEffect(station->GetStationType()->GetCapturedSound());
-                else if (pfmStationCapture->sidNew == GetSideID())
+                else if (pfmStationCapture->sidNew == GetSideID() || GetSide()->AlliedSides(GetCore()->GetSide(pfmStationCapture->sidNew),GetSide())) //ALLY Rock/Imago 7/27/09
                     PlaySoundEffect(station->GetStationType()->GetEnemyCapturedSound());
 
                 station->SetSide(psideNew);
@@ -2755,7 +2755,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 if (pfmKillShip->bKillCredit)
                 {
                     pLauncherInfo->AddKill();
-                    if (pLauncherInfo->GetShip()->GetSide() != pship->GetSide())
+                    if (pLauncherInfo->GetShip()->GetSide() != pship->GetSide() && !pship->GetSide()->AlliedSides(pLauncherInfo->GetShip()->GetSide(),pship->GetSide())) //ALLY 7/27/09 rock imago
                         pLauncherInfo->GetShip()->AddExperience();
                 }
 
@@ -2807,7 +2807,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             // for drones, play the drone destruction sound
             if (!pPlayerInfo->IsHuman())
             {
-                if (sideID == pPlayerInfo->SideID())
+                if (sideID == pPlayerInfo->SideID()) //ALLYTD too much spam?  rock imago
                 {
                     SoundID destroyedSound;
 
