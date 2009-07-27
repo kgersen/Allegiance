@@ -168,6 +168,28 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			  LPARAM dwData
 			);*/
 
+			//NYI multimon: zlib/window is causing issues, moving our window incorrectly when
+			//the multimon layout is not Left to Right or Top to Bottom
+			//	(i.e.  [1] [2] works fine,  [2] [1] does not
+			//  [1]				[2]
+			//	[2] works fine,	[1] does not)
+
+/*		
+			// NYI refresh rate: check to see if we can use the desktop's currently set rate for 800x600
+			BOOL EnumDisplayDevices(
+			  LPCTSTR lpDevice, 
+			  DWORD iDevNum, 
+			  PDISPLAY_DEVICE lpDisplayDevice, 
+			  DWORD dwFlags 
+			);			
+
+			BOOL EnumDisplaySettings(
+			  LPCTSTR lpszDeviceName,
+			  DWORD iModeNum,
+			  LPDEVMODE lpDevMode
+			);
+*/
+
 		//imago build the adapter res array for in-game switching
 		g_VideoSettings.pDevData->GetRelatedResolutions(
 											iAdapter,
@@ -177,7 +199,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 											&g_VideoSettings.pResolutionSet );
 
 		//imago fix for monitors that have < 60Hz
-		x = (x) ? x : 800; y = (y) ? y : 600;
+		x = (x != 0) ? x : 800; y = (y != 0) ? y : 600;
 		for( int i=0; i<=g_VideoSettings.iNumResolutions; i++ )
 		{
 			int width = g_VideoSettings.pResolutionSet[i].iWidth;

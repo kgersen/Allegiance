@@ -2800,6 +2800,10 @@ public:
                 int(LoadPreference("CombatFullscreenYSize", 600))
             );
 
+	   //Imago 7/27/09 Win7
+	   if (m_sizeCombatFullscreen ==  WinPoint(0,0))
+		   m_sizeCombatFullscreen = WinPoint(800,600);
+
 // BUILD_DX9
 
         //
@@ -3239,8 +3243,11 @@ public:
         SavePreference("CombatXSize", m_sizeCombat.X());
         SavePreference("CombatYSize", m_sizeCombat.Y());
 
-        SavePreference("CombatFullscreenXSize", m_sizeCombatFullscreen.X());
-        SavePreference("CombatFullscreenYSize", m_sizeCombatFullscreen.Y());
+		//Imago 7/27/09 Win7
+		if (m_sizeCombatFullscreen.X() != 0)
+        	SavePreference("CombatFullscreenXSize", m_sizeCombatFullscreen.X());
+		if (m_sizeCombatFullscreen.Y() != 0)
+        	SavePreference("CombatFullscreenYSize", m_sizeCombatFullscreen.Y());
 
         SavePreference("Allow3DAcceleration", GetEngine()->GetAllow3DAcceleration());
         SavePreference("AllowSecondary"     , GetEngine()->GetAllowSecondary     ());
