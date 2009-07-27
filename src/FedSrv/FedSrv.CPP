@@ -11156,7 +11156,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
                         SendChatf(NULL, ct, station->GetSide()->GetObjectID(),
                                   station->GetStationType()->GetUnderAttackSound(),
                                   "%s in %s under attack by %s%s", station->GetName(),
-                                  station->GetCluster()->GetName(), strAllies,GetModelName(launcher));
+                                  station->GetCluster()->GetName(), (PCC)strAllies,GetModelName(launcher));
                     }
 					//7/22/09 ALLY FF
 					CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
