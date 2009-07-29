@@ -3185,7 +3185,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 				if (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
 					
 
- 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "Allied\x82  " ;
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "Allied" + END_COLOR_STRING + " " ;
 				} else {
 					strAllies = "Your "; 
 				}
@@ -3197,7 +3197,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             case OT_probe:
 				if (GetCore()->GetProbe(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
 					
- 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "ally's\x82  " ;
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "ally's" + END_COLOR_STRING+" " ;
 				} else {
 					strAllies = "team's"; 
 				}
@@ -3207,7 +3207,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             case OT_ship:
 				if (GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
 					
- 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + " (Ally)\x82  has" ;
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + " (Ally)" + END_COLOR_STRING +" has" ;
 				} else {
 					strAllies = " has"; 
 				}

@@ -185,12 +185,10 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	m_sD3DDev9.d3dPresParams.MultiSampleQuality				= 0; //<-- here --^
 	m_sD3DDev9.d3dPresParams.MultiSampleType				= m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting;
 
-
-	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
-
 	// KG-
 	// to allow NVidia PerfHUD 
 	D3DDEVTYPE DeviceType = D3DDEVTYPE_HAL;
+	bool bForceSWVP = false; //Imago 7/28/09
 
 // - NVidia PerfHUD specific
 	D3DADAPTER_IDENTIFIER9 Identifier;
@@ -201,6 +199,15 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		pLogFile->OutputString("PerfHUD detected, switching to REF type\n");
 	}
 // - end of NVidia PerfHUD specific
+
+	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
+
+	// ATI Radeon 9600 specific, find out why the TMeshGeo DrawTriangles are failing completley, 
+	// I gather this is (related to) the Intel 8xx issue.  --Imago 7/28/09
+	if (Identifier.VendorId == 0x1002 && Identifier.DeviceId == 0x4151 ) {
+		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		bForceSWVP = true;
+	}
 
 	hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
 											DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
@@ -264,11 +271,16 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	}
 	else
 	{
-		// Valid pure hw device.
-		m_sD3DDev9.bHardwareVP = true;
-		m_sD3DDev9.bPureDevice = true;
-
-		pLogFile->OutputString( "Pure HWVP device created.\n" );
+		if (bForceSWVP) {
+			m_sD3DDev9.bHardwareVP = false;
+			m_sD3DDev9.bPureDevice = false;
+			pLogFile->OutputString( "Forced SWVP device created.\n" );
+		} else {
+			// Valid pure hw device.
+			m_sD3DDev9.bHardwareVP = true;
+			m_sD3DDev9.bPureDevice = true;
+			pLogFile->OutputString( "Pure HWVP device created.\n" );
+		}
 	}
 
 	if( hr != D3D_OK )
@@ -298,7 +310,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	m_sD3DDev9.bIsWindowed = m_sDevSetupParams.bRunWindowed;
 
 	// Get flags and caps.
-	HRESULT hTemp = m_sD3DDev9.pD3D9->CheckDeviceFormat(	D3DADAPTER_DEFAULT, 
+	HRESULT hTemp = m_sD3DDev9.pD3D9->CheckDeviceFormat(m_sDevSetupParams.iAdapterID, //Imago was D3DADAPTER_DEFAULT 7/28/09
 														D3DDEVTYPE_HAL,
 														m_sD3DDev9.pCurrentMode->mode.Format,
 														0,

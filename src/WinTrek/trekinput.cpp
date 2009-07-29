@@ -230,7 +230,7 @@ public:
         pnsCommands->AddMember("CommandTargetEnemyBaseNearest"   , new Number((float)TK_TargetEnemyBaseNearest   ));
         pnsCommands->AddMember("CommandTargetEnemyBasePrev"      , new Number((float)TK_TargetEnemyBasePrev      ));
         pnsCommands->AddMember("CommandTargetFriendlyBase"       , new Number((float)TK_TargetFriendlyBase       ));
-        pnsCommands->AddMember("CommandTargetFriendlyBaseNearest", new Number((float)TK_TargetFriendlyBaseNearest));
+        pnsCommands->AddMember("CommandTargetFriendlyBaseNearest", new Number((float)TK_TargetFriendlyBaseNearest)); //ALLYTD 
         pnsCommands->AddMember("CommandTargetFriendlyBasePrev"   , new Number((float)TK_TargetFriendlyBasePrev   ));
         pnsCommands->AddMember("CommandTargetCommand"            , new Number((float)TK_TargetCommand            ));
         pnsCommands->AddMember("CommandTargetCenter"             , new Number((float)TK_TargetCenter             ));
@@ -1458,7 +1458,7 @@ CommandInfo g_pCommandInfo[] =
     { TK_TargetFriendlyNearest           , "Target Friendly Nearest"               },
     { TK_TargetFriendlyPrev              , "Target Friendly Previous"              },
     { TK_TargetFriendlyBase              , "Target Friendly Base"                  },
-    { TK_TargetFriendlyBaseNearest       , "Target Friendly Base Nearest"          },
+    { TK_TargetFriendlyBaseNearest       , "Target Friendly Base Nearest"          }, //ALLYTD
     { TK_TargetFriendlyBasePrev          , "Target Friendly Base Previous"         },
     { TK_TargetFriendlyBomber            , "Target Friendly Bomber"                },
     { TK_TargetFriendlyFighter           , "Target Friendly Fighter"               },

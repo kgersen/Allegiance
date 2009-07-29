@@ -105,7 +105,13 @@ class       CsideIGC : public IsideIGC
 
         void                SetName(const char* newVal)
         {
-            UTL::putName(m_data.name, newVal);
+			//Rock / Imago 7/28/09
+			ZString strName = newVal;
+			int istart = strName.ReverseFind("\x81");
+			int iend = strName.ReverseFind("\x82");
+			if ( (istart != -1 && iend == -1) || iend < istart)
+				strName += END_COLOR_STRING;
+			UTL::putName(m_data.name, (PCC)strName);
         }
 
         virtual const char*             GetName(void) const

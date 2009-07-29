@@ -2243,50 +2243,31 @@ public:
 
 				case ScreenIDSplashScreen:
 					{
-// BUILD_DX9
-						//Imago 6/29/09 many codecs will crash the app when being debugged
-						if (!IsDebuggerPresent()) {
-							//::ShowWindow( GetHWND(), SW_MINIMIZE );
-
-						   HWND hWND = ::CreateWindow("static", "Allegiance", WS_VISIBLE|WS_POPUP, 0, 0,
-							   GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
-								::GetModuleHandle(NULL), NULL);
-
-						   ::ShowCursor(FALSE);
-							//this window will have our "intro" in it...
-							DDVideo *DDVid = new DDVideo();
-
-							if (hWND == NULL)
-								ZDebugBreak();
-
-							DDVid->m_hWnd = hWND;
-							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
-							if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
-						    {
-								while( DDVid->m_Running )
-						        {
-									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE))
-									{
-										DDVid->m_Running = FALSE;
-										DDVid->m_pVideo->Stop();
-									} else	{
-								    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-										DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
-									}
-						        }
-								DDVid->DestroyDDVid();
-							} else {
-								DDVid->DestroyDirectDraw();
+						//Imago 6/29/09 7/28/09
+						DDVideo *DDVid = new DDVideo();
+						DDVid->m_hWnd = GetHWND();
+						ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
+						if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
+						{
+							::ShowCursor(FALSE);
+							while( DDVid->m_Running )
+							{
+								if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
+								GetAsyncKeyState(VK_RETURN))
+								{
+									DDVid->m_Running = FALSE;
+									DDVid->m_pVideo->Stop();
+								} else	{
+									DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+									DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+								}
 							}
-							//::ShowCursor(TRUE);
-							::DestroyWindow(hWND);
-							//::ShowWindow( GetHWND(), SW_RESTORE );
-							//::UpdateWindow(  GetHWND() );
+							::ShowCursor(TRUE);
+							DDVid->DestroyDDVid();
+						} else {
+							DDVid->DestroyDirectDraw();
 						}
-
-	                    //SetScreen(CreateVideoScreen(GetModeler(), true));
-	                    //SetCursorImage(Image::GetEmpty());
-	// BUILD_DX9
+						
 						GetWindow()->screen(ScreenIDIntroScreen);
 						SetScreen(CreateIntroScreen(GetModeler()));
 	                    break;
@@ -3102,14 +3083,51 @@ public:
         // Show the intro videos
         //
 
-        // KGJV 32B - byebye video for now
-        //if (!g_bQuickstart && bMovies  && !g_bReloaded) {
-        //    SetScreen(CreateVideoScreen(GetModeler(), false));
-        //} else {
-            SetScreen(CreateIntroScreen(GetModeler()));
-            m_screen = ScreenIDIntroScreen;
-            RestoreCursor();
-        //}
+		//Imago 6/29/09 7/28/09
+		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
+		if (!g_bQuickstart && bMovies && !g_bReloaded && 
+			::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES) {
+
+			DDVideo *DDVid = new DDVideo();
+			
+			//this window will have our "intro" in it...
+			HWND hWND = NULL;
+			if (!GetFullscreen()) {
+				hWND = ::CreateWindow("static", "Allegiance", WS_VISIBLE|WS_POPUP, 0, 0,
+				GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),GetHWND(), NULL,
+				::GetModuleHandle(NULL), NULL);
+				DDVid->m_hWnd = hWND;
+			} else {
+				DDVid->m_hWnd = GetHWND();
+			}
+			if( SUCCEEDED( DDVid->Play(pathStr)) ) //(WMV2 is good as most machines read it)
+		    {
+				::ShowCursor(FALSE);
+				while( DDVid->m_Running ) // NYI, play this video in another thread as the sounds/quickchats load (~5seconds)
+		        {
+					if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
+						GetAsyncKeyState(VK_RETURN))
+					{
+						DDVid->m_Running = FALSE;
+						DDVid->m_pVideo->Stop();
+					} else	{
+				    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+						DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+					}
+		        }
+				::ShowCursor(TRUE);
+				DDVid->DestroyDDVid();
+			} else {
+				DDVid->DestroyDirectDraw();
+			}
+
+			if (hWND)
+				::DestroyWindow(hWND);
+		}
+
+        SetScreen(CreateIntroScreen(GetModeler()));
+        m_screen = ScreenIDIntroScreen;
+        RestoreCursor();
     }
 
     void InitializeImages()
@@ -4057,7 +4075,7 @@ public:
 				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
 				break;
 
-			
+
         }
 
         return pmenu;
@@ -5345,7 +5363,7 @@ public:
                 break;
 
 			//Imago 7/18/09
-			// yp Your_Persona August 2 2006 : MaxTextureSize Patch 
+			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
             case idmMaxTextureSize:
                 //ToggleMaxTextureSize(trekClient.MaxTextureSize()+1); Obsolete REMOVE REVIEW, extra, unneeded functions
 				GetEngine()->SetMaxTextureSize(g_DX9Settings.m_iMaxTextureSize+1);
@@ -7797,13 +7815,13 @@ public:
             //------------------------------------------------------------------------------
             // End interception for training missions
             //------------------------------------------------------------------------------
-		
-		} else { 
+
+		} else {
 
 			// //-Imago 7/13/09 we're not actually in a sector playing the game...
 			// this is the right time & place place to rest our CPU. We can also give it more of a break now.
 			if (!GetFullscreen())
-				Sleep(5);  
+				Sleep(5);
 			else
 				Sleep(1);
 		}
@@ -9312,7 +9330,7 @@ public:
                     }
                 }
 
-                TrekFindTarget(ttMask, tk, TK_TargetFriendlyBaseNearest, TK_TargetFriendlyBasePrev,
+                TrekFindTarget(ttMask, tk, TK_TargetFriendlyBaseNearest, TK_TargetFriendlyBasePrev, //ALLYTD
                                abm);
             }
             break;

@@ -20,11 +20,8 @@ HRESULT DDVideo::Play(ZString& strPath)
 
 	m_pVideo=new CDShow();
 
-	// Pop up a message and return FALSE if failed.
 	if (m_pVideo==NULL) 
-	{
-		return FALSE;	
-	}                                    
+		return FALSE;	                 
     	
 	if(!( m_pVideo->Open(strPath,m_lpDD) ))
 		{
@@ -52,11 +49,7 @@ HRESULT DDVideo::InitDirectDraw()
     hRet = pDD->QueryInterface(IID_IDirectDraw7, (LPVOID *) & m_lpDD);
       
 	//Set cooperative level
-	hRet = m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN |DDSCL_ALLOWREBOOT| DDSCL_ALLOWMODEX);
-
-	//Let's keep it simple and roll on primary adapter... 32-bits start fullscreen on 800x600
-	hRet = m_lpDD->SetDisplayMode(800,600,32,0,0);
-	Sleep(1000); //wait a sec for monitor to sync 7/6/09 imago
+	hRet = m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_EXCLUSIVE |DDSCL_ALLOWREBOOT| DDSCL_ALLOWMODEX | DDSCL_FULLSCREEN);
 
 	ZeroMemory(&ddsd, sizeof(ddsd));
 	ddsd.dwSize = sizeof(ddsd);

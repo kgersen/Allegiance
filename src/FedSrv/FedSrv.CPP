@@ -11086,7 +11086,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
 						
 						//ChatTarget ct = (pside->GetAllies() == NA) ? CHAT_TEAM : CHAT_ALLIES; //ALLY imago 7/12/09 reverted 7/22/09
 						Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };						
-						ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)\x82  " : "";
+						ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)" + END_COLOR_STRING + " " : "";
 						SendChatf(ship, CHAT_TEAM, ship->GetSide()->GetObjectID(),
                                   underAttackSound, "Under attack by %s%s in %s",
                                   (PCC)strAllies, GetModelName(launcher), ship->GetCluster()->GetName());
@@ -11142,7 +11142,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
 				if (pside != psideLauncher) //&& !IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY (Imago) reverted 7/12/09
                 {
 					Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };						
-					ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)\x82  " : "";
+					ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)" + END_COLOR_STRING +" " : "";
 					ChatTarget ct = (station->GetSide()->GetAllies() != NA) ? CHAT_ALLIES : CHAT_TEAM; //ALLY imago 7/12/09
                     if (station->GetFraction() < 0.30)
                     {

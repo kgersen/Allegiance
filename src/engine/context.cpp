@@ -2212,6 +2212,7 @@ public:
         DrawTriangles(&(vertices[0]), vertices.GetCount(), &(indices[0]), indices.GetCount());
     }
 
+	//NEW RENDER PATH
 	void DrawTriangles(	const CVBIBManager::SVBIBHandle * phVB, 
 						const CVBIBManager::SVBIBHandle * phIB )
 	{

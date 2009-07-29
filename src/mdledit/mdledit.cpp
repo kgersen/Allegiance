@@ -565,7 +565,7 @@ public:
         //SetFullscreen(true);
         //GetEngine()->SetDebugFullscreen(true);
         GetEngine()->Set3DAccelerationImportant(true);
-        SetShowFPS(false);
+        SetShowFPS(true);
 
         //
         // Create the sound engine
@@ -634,14 +634,14 @@ public:
         // Image Layers
         //
 
-        Add3DTests(bTest, initialTest);
-        Add2DTests(bImageTest);
+        //Add3DTests(bTest, initialTest);
+        //Add2DTests(bImageTest);
 
         //
         // Stars
         //
 
-        m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 5000));
+        //m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 5000));
 
         //
         // Background
@@ -691,16 +691,19 @@ public:
         // Test CreateMMLPopup
         //
 
-        
+        /*
         GetPopupContainer()->OpenPopup(
             CreateMMLPopup(
                 GetModeler(),
                 "hlp7a4.mml",false
             )
         );
+		*/
+		
         
 		// user tests here
-		AddMineFieldTest();
+		//AddMineFieldTest(); fixed
+		AddIcosahedron(); //for testing "Intel SWVP clipping issue" -Imago 
         
     }
 

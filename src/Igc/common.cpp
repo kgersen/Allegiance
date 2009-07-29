@@ -457,7 +457,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
     if (!pcluster)
         return NULL;
 
-    IsideIGC*   pside = pship ? pship->GetSide() : NULL;
+    IsideIGC*   pside = pship ? pship->GetSide() : NULL; //ALLYTD
 
     if (pmodelCurrent && ((pmodelCurrent == pship) ||
                           (!FindableModel(pmodelCurrent, pside, ttMask, abmAbilities)) ||

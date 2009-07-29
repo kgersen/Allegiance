@@ -304,7 +304,7 @@ public:
     void Render(Context* pcontext)
     {
 //        pcontext->DrawTriangles(m_vertices, m_indices);
-		pcontext->DrawTriangles( &m_hVB, &m_hIB );
+		pcontext->DrawTriangles( &m_hVB, &m_hIB ); //NEW RENDER PATH
     }
 
     void CallGroupGeoCallback(const Matrix& mat, GroupGeoCallback* pcallback)

@@ -797,7 +797,7 @@ public:
                                     {
                                         ImodelIGC*  pmodelTarget = ((ImissileIGC*)pmodel)->GetTarget();
 
-                                        if ((pmodelTarget == NULL) || (pmodelTarget->GetSide() != psideMine))
+                                        if ((pmodelTarget == NULL) || (pmodelTarget->GetSide() != psideMine)) //ALLYTD?
                                         {
                                             bIcon = false;
                                             range = 0;

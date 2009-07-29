@@ -383,14 +383,10 @@ void EngineWindow::UpdateSurfacePointer()
 		m_psurface = m_pengine->CreateDummySurface(point, NULL );
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
 		if(pDev->IsDeviceValid()) {
-			//-192  y:768
-			// pDev->GetDeviceSetupParams()->iWindowOffsetX pDev->GetDeviceSetupParams()->iWindowOffsetY
-			// NYI fix for multimon too (workarea not just 0,0)
+			//Imago 7/28/09
 			SetWindowPos(GetHWND(),HWND_TOP,0,0,point.X(),point.Y(),NULL);
 			DDCall(pDev->ResetDevice(false,point.X(),point.Y(),g_DX9Settings.m_refreshrate));
 			if (m_pengine->GetFullScreenChanged()) {
-				::ShowWindow(GetHWND(),SW_MINIMIZE);	 //blame imago for the cheap hacks 7/7/09 (works on multimon!)
-				::ShowWindow(GetHWND(),SW_MAXIMIZE);
 				m_pengine->SetFullscreenChanged(false);
 			}
 		}
