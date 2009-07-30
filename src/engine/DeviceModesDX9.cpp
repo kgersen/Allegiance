@@ -921,6 +921,8 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 			pParams->sWindowedMode.d3dMultiSampleSetting = pMultiSampleTypes[ iCount ];
 		}
 	}
+	//Imago - Bug:  the AA selection box is populated only with your primary adapter's caps
+	//a fix would be to populate the AA select list with each adapter, and change the options when you change adapter
 	_ASSERT( pParams->sWindowedMode.d3dMultiSampleSetting == pParams->sFullScreenMode.d3dMultiSampleSetting );
 	pParams->bAntiAliased = pParams->sFullScreenMode.d3dMultiSampleSetting == D3DMULTISAMPLE_NONE ? false : true;
 

@@ -144,6 +144,43 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 	textures.Create( DummyPackCreateCallback );
 	return 0;
 }
+//Imago 7/29/09
+DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
+	
+	char * pData = (char *)param;
+	DDVideo *DDVid = new DDVideo();
+	
+	//this window will have our "intro" in it...
+	HWND hWND = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
+		GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
+	::GetModuleHandle(NULL), NULL);
+	DDVid->m_hWnd = hWND;
+
+	if( SUCCEEDED( DDVid->Play(ZString(pData))) ) //(WMV2 is good as most machines read it)
+    {
+		::ShowCursor(FALSE);
+		while( DDVid->m_Running ) //we can now do other stuff while playing
+        {
+			if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
+				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) || 
+				GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
+			{
+				DDVid->m_Running = FALSE;
+				DDVid->m_pVideo->Stop();
+			} else	{
+		    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+				DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+			}
+		}
+		::ShowCursor(TRUE);
+		DDVid->DestroyDDVid();
+	} else {
+		DDVid->DestroyDirectDraw();
+	}
+	
+	::DestroyWindow(hWND);
+	return 0;
+}
 //
 
 TRef<IMessageBox> CreateMessageBox(
@@ -2243,31 +2280,56 @@ public:
 
 				case ScreenIDSplashScreen:
 					{
-						//Imago 6/29/09 7/28/09
-						DDVideo *DDVid = new DDVideo();
-						DDVid->m_hWnd = GetHWND();
-						ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
-						if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
-						{
-							::ShowCursor(FALSE);
-							while( DDVid->m_Running )
-							{
-								if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
-								GetAsyncKeyState(VK_RETURN))
-								{
-									DDVid->m_Running = FALSE;
-									DDVid->m_pVideo->Stop();
-								} else	{
-									DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-									DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
-								}
-							}
-							::ShowCursor(TRUE);
-							DDVid->DestroyDDVid();
-						} else {
-							DDVid->DestroyDirectDraw();
-						}
+						//Imago 6/29/09 7/28/09 dont allow intro vid on nonprimary
+						if (!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
 						
+							//dont' check for intro.avi, 
+							// let the screen flash so they at least know this works
+							DDVideo *DDVid = new DDVideo();
+							bool bHide = false;
+
+							HWND hWND = NULL;
+							if (m_pengine->IsFullscreen()) {
+								bHide = true;
+								::ShowWindow(GetHWND(),SW_HIDE);
+								//this window will have our "intro" in it...
+								hWND = ::CreateWindow("MS_Zlib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
+									GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
+									::GetModuleHandle(NULL), NULL);
+							} else {
+								hWND = GetHWND();
+							}
+
+							DDVid->m_hWnd = hWND;
+
+							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
+							if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
+							{ 
+								GetAsyncKeyState(VK_LBUTTON); GetAsyncKeyState(VK_RBUTTON);
+								::ShowCursor(FALSE);
+								while( DDVid->m_Running )
+								{
+									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
+										GetAsyncKeyState(VK_RETURN) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
+									{
+										DDVid->m_Running = FALSE;
+										DDVid->m_pVideo->Stop();
+									} else	{
+										DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+										DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+									}
+								}
+								::ShowCursor(TRUE);
+								DDVid->DestroyDDVid();
+							} else {
+								DDVid->DestroyDirectDraw();
+							}
+
+							if (bHide) {
+								::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
+								::DestroyWindow(hWND);
+							}
+						}
 						GetWindow()->screen(ScreenIDIntroScreen);
 						SetScreen(CreateIntroScreen(GetModeler()));
 	                    break;
@@ -2547,6 +2609,23 @@ public:
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
 
+		//Imago 6/29/09 7/28/09 now plays video in thread while load continues
+		HANDLE hDDVidThread = NULL;
+		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
+
+		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware &&
+		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
+		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
+
+			if (!CD3DDevice9::Get()->IsWindowed()) {
+				::ShowWindow(GetHWND(),SW_HIDE);
+				::ShowCursor(FALSE);
+			}
+
+			const char * pData = (PCC)pathStr;
+			hDDVidThread = CreateThread(NULL,0,DDVidCreateThreadProc,(void *)pData,THREAD_PRIORITY_HIGHEST,0);
+		}
+
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
 
@@ -2713,6 +2792,15 @@ public:
         //
 
         InitializeImages();
+
+		if (hDDVidThread != NULL) { //imago 7/29/09 intro.avi
+			if (CD3DDevice9::Get()->IsWindowed()) {
+				CD3DDevice9::Get()->ResetDevice(true,800,600,0);
+			} else {
+				CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
+			}
+		}
+
 
         //
         // initialize the sound engine (for the intro music if nothing else)
@@ -3080,52 +3168,18 @@ public:
         m_pmissileLast = 0;
 
         //
-        // Show the intro videos
+        // intro.avi video moved up
         //
-
-		//Imago 6/29/09 7/28/09
-		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
-		if (!g_bQuickstart && bMovies && !g_bReloaded && 
-			::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES) {
-
-			DDVideo *DDVid = new DDVideo();
-			
-			//this window will have our "intro" in it...
-			HWND hWND = NULL;
-			if (!GetFullscreen()) {
-				hWND = ::CreateWindow("static", "Allegiance", WS_VISIBLE|WS_POPUP, 0, 0,
-				GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),GetHWND(), NULL,
-				::GetModuleHandle(NULL), NULL);
-				DDVid->m_hWnd = hWND;
-			} else {
-				DDVid->m_hWnd = GetHWND();
-			}
-			if( SUCCEEDED( DDVid->Play(pathStr)) ) //(WMV2 is good as most machines read it)
-		    {
-				::ShowCursor(FALSE);
-				while( DDVid->m_Running ) // NYI, play this video in another thread as the sounds/quickchats load (~5seconds)
-		        {
-					if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
-						GetAsyncKeyState(VK_RETURN))
-					{
-						DDVid->m_Running = FALSE;
-						DDVid->m_pVideo->Stop();
-					} else	{
-				    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-						DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
-					}
-		        }
+		TRef<Screen> introscr = CreateIntroScreen(GetModeler());
+    	if (hDDVidThread != NULL) {
+			WaitForSingleObject(hDDVidThread,INFINITE);
+			if (!CD3DDevice9::Get()->IsWindowed()) {
 				::ShowCursor(TRUE);
-				DDVid->DestroyDDVid();
-			} else {
-				DDVid->DestroyDirectDraw();
+				::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
 			}
-
-			if (hWND)
-				::DestroyWindow(hWND);
-		}
-
-        SetScreen(CreateIntroScreen(GetModeler()));
+			CloseHandle(hDDVidThread);
+		}    
+		SetScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
     }

@@ -31,11 +31,15 @@ BOOL CDShow::Open(ZString& pFileName, IDirectDraw7 *pDD)
 	// Multimedia stream pointer
 	IAMMultiMediaStream *pAMStream;
     
+	//7/29/09 we can now do stuff while the video plays
+	CoInitializeEx(NULL,COINIT_MULTITHREADED); 
+	
+
     // Create Multimedia stream object
 	if (FAILED(CoCreateInstance(CLSID_AMMultiMediaStream, NULL, CLSCTX_INPROC_SERVER,
 				 IID_IAMMultiMediaStream, (void **)&pAMStream)))
 	{		
-		// Return FALSE to let caller know we failed.		
+		// Return FALSE to let caller know we failed.	
 		return FALSE; 
 	}
     
@@ -55,7 +59,7 @@ BOOL CDShow::Open(ZString& pFileName, IDirectDraw7 *pDD)
     // Add default sound render to primary video stream,
 	// so sound will be played back automatically.
 	if (FAILED(pAMStream->AddMediaStream(NULL, &MSPID_PrimaryAudio, AMMSF_ADDDEFAULTRENDERER, NULL)))
-	{	
+	{
 		// Return FALSE to let caller know we failed.		
 		return FALSE; 
 	}
@@ -98,14 +102,14 @@ BOOL CDShow::Open(ZString& pFileName, IDirectDraw7 *pDD)
 	
 	// Get DirectDraw surface interface from Sample.
 	if (FAILED(m_pSample->GetSurface(&m_pDDSurface,&m_rSrcRect)))
-	{				
+	{			
+
 		return FALSE;
 	}	
 	
 	// Get DirectDraw surface7 interface
 	if (FAILED(m_pDDSurface->QueryInterface(IID_IDirectDrawSurface7,(void**)&m_pDDSurface7)))
 	{		
-		
 		return FALSE;
 	}	
 	
@@ -140,12 +144,17 @@ void CDShow::CleanUp()
 BOOL CDShow::Draw(LPDIRECTDRAWSURFACE7 lpDDSurface7)
 {
 	// Return FALSE if media was not open
-	if (!m_bMediaOpen) return FALSE;
+	if (!m_bMediaOpen) {
+		return FALSE;
+	}
 
 
 	// Update media stream. 
 	// If it does not return S_OK, we are not playing.
-	if (m_pSample->Update(0,NULL,NULL,0)!=S_OK) m_bPlaying=FALSE;
+	if (m_pSample->Update(0,NULL,NULL,0)!=S_OK) {
+		m_bPlaying=FALSE;
+
+	}
 	
 	// Now blit video to specified surface and rect.
 	// Restore surface if lost.
@@ -160,7 +169,9 @@ BOOL CDShow::Draw(LPDIRECTDRAWSURFACE7 lpDDSurface7)
 BOOL CDShow::Start()
 {
 	// Return FALSE if media was not open
-	if (!m_bMediaOpen) return FALSE;
+	if (!m_bMediaOpen) {
+		return FALSE;
+	}
 
 	// Set stream position to zero
 	m_pMMStream->Seek(0);

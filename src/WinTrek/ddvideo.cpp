@@ -15,8 +15,10 @@ DDVideo::DDVideo()
 HRESULT DDVideo::Play(ZString& strPath)
 {
     HRESULT hr;  
-	if( FAILED( hr = InitDirectDraw() ) )
+	if( FAILED( hr = InitDirectDraw() ) ) {
+		OutputDebugString("InitDirectDraw() failed\n");
 		return hr;
+	}
 
 	m_pVideo=new CDShow();
 
@@ -28,6 +30,7 @@ HRESULT DDVideo::Play(ZString& strPath)
 	
 		// remember to destroy DShow (pVideo) object to clean up after us.
 		// Return FALSE to let caller know we failed.
+			OutputDebugString("m_pVideo->Open failed\n");
 		return FALSE;
 		}			
 	else
@@ -45,12 +48,12 @@ HRESULT DDVideo::InitDirectDraw()
     //Create the main DirectDraw object
     LPDIRECTDRAW pDD;
 
-    hRet = DirectDrawCreate(NULL,&pDD, NULL);
+	hRet = DirectDrawCreate(NULL,&pDD, NULL);
     hRet = pDD->QueryInterface(IID_IDirectDraw7, (LPVOID *) & m_lpDD);
       
 	//Set cooperative level
-	hRet = m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_EXCLUSIVE |DDSCL_ALLOWREBOOT| DDSCL_ALLOWMODEX | DDSCL_FULLSCREEN);
-
+	hRet = m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_EXCLUSIVE |DDSCL_ALLOWREBOOT| DDSCL_ALLOWMODEX | DDSCL_FULLSCREEN | DDSCL_MULTITHREADED);
+	m_lpDD->SetDisplayMode(800,600,32,g_DX9Settings.m_refreshrate,0);
 	ZeroMemory(&ddsd, sizeof(ddsd));
 	ddsd.dwSize = sizeof(ddsd);
 	ddsd.dwFlags = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
@@ -65,7 +68,7 @@ HRESULT DDVideo::InitDirectDraw()
 	hRet = m_lpDDSPrimary->GetAttachedSurface(&ddscaps,&m_lpDDSBack);
 
 	pDD->Release();
-return hRet;
+	return hRet;
 }
 
 void DDVideo::DestroyDirectDraw()
