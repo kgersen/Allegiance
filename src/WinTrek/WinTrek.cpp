@@ -3093,9 +3093,9 @@ public:
             ToggleFilterUnknownChats(); //TheBored 30-JUL-07: Filter Unknown Chat patch
         if (!LoadPreference("LinearControlResponse", TRUE))
             ToggleLinearControls();
-        if (!LoadPreference("Environment", TRUE) || CD3DDevice9::Get()->IsHardwareVP() == false)
+        if (!LoadPreference("Environment", TRUE)) //|| CD3DDevice9::Get()->IsHardwareVP() == false)
             ToggleEnvironment(); //imago 9/19/09 force env/posters off if not harrdware (for now)
-        if (!LoadPreference("Posters", TRUE) || CD3DDevice9::Get()->IsHardwareVP() == false)
+        if (!LoadPreference("Posters", TRUE)) // || CD3DDevice9::Get()->IsHardwareVP() == false)
             TogglePosters();
         if (!LoadPreference("Debris", TRUE))
             ToggleDebris();
@@ -4153,7 +4153,7 @@ public:
     void ToggleEnvironment()
     {
 		// imago: software dx environment broke for now
-        if (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment || CD3DDevice9::Get()->IsHardwareVP() == false) {
+		if (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment) { //|| CD3DDevice9::Get()->IsHardwareVP() == false) {
             m_pwrapImageEnvironment->SetImage(Image::GetEmpty());
             SavePreference("Environment", FALSE);
         } else {
@@ -4328,10 +4328,10 @@ public:
     {
         if (m_pwrapImagePosters->GetImage() == Image::GetEmpty()) {
 			// imago: software dx posters broke for now
-			if(CD3DDevice9::Get()->IsHardwareVP()) {
+			//if(CD3DDevice9::Get()->IsHardwareVP()) {
 				m_pwrapImagePosters->SetImage(m_pwrapImagePostersInside);
 				SavePreference("Posters", TRUE);
-			}
+			//}
         } else {
             m_pwrapImagePosters->SetImage(Image::GetEmpty());
             SavePreference("Posters", FALSE);
