@@ -7629,8 +7629,17 @@ public:
                     trekClient.GetShip()->SetStateBits(buttonsMaskIGC | weaponsMaskIGC | selectedWeaponMaskIGC |
                                                        missileFireIGC | mineFireIGC | chaffFireIGC, buttonsM);
 
-                    if ((m_cm == cmCockpit) || (m_cm == cmExternalChase))
-                        m_cameraControl.SetHeadOrientation(js.hat);
+					if ((m_cm == cmCockpit) || (m_cm == cmExternalChase)) { 
+						if (!m_ptrekInput->IsTrekKeyDown(TK_ViewRearLeft,bAllowKeyboardMovement) //TheRock 31-7-2009 Allow keyboard users to look around
+							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRearRight,bAllowKeyboardMovement) 
+							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontLeft,bAllowKeyboardMovement)
+							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontRight,bAllowKeyboardMovement)
+							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRear,bAllowKeyboardMovement)
+							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewLeft,bAllowKeyboardMovement)
+							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRight,bAllowKeyboardMovement))
+
+							m_cameraControl.SetHeadOrientation(js.hat);
+					}
                     else
                         m_cameraControl.SetHeadOrientation(0.0f);
 
