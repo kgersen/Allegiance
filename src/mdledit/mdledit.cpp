@@ -641,7 +641,7 @@ public:
         // Stars
         //
 
-        //m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 5000));
+        m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 5000));
 
         //
         // Background
@@ -702,7 +702,7 @@ public:
 		
         
 		// user tests here
-		//AddMineFieldTest(); fixed
+		AddMineFieldTest();
 		AddIcosahedron(); //for testing "Intel SWVP clipping issue" -Imago 
         
     }
@@ -749,6 +749,9 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 
     TRef<MineFieldGeo> m_pmineFieldGeo;
+	TRef<Geo> m_alephGeo;
+	TRef<ExplosionGeo> m_expGeo;
+	TRef<TEvent<float>::SourceImpl> m_peventSourceAleph;
 
     void AddMineFieldTest()
     {
@@ -767,12 +770,61 @@ public:
         //    );
         //}
 
+		//aleph
 		TRef<ThingGeo> pthing = ThingGeo::Create(GetModeler(), GetTime());
+		TRef<Image> pimageAleph = GetModeler()->LoadImage("plnt19bmp", false);
+		
+		m_peventSourceAleph = new TEvent<float>::SourceImpl;
+		m_alephGeo = CreateAlephGeo(GetModeler(), m_peventSourceAleph, GetTime());
+        pthing->Load(0, m_alephGeo, pimageAleph);
 
-         m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1.0f, 200.0f);
-         pthing->Load(0, m_pmineFieldGeo, NULL);
+		m_pgroupGeo->AddGeo(pthing->GetGeo());
 
-		 m_pgroupGeo->AddGeo(pthing->GetGeo());
+		//explosion
+		
+		TRef<Image> m_pimageShockWave = GetModeler()->LoadImage("fx18bmp", true);
+		TVector<TRef<AnimatedImage> > m_vpimageExplosion[8];
+
+		TRef<AnimatedImage> img1 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp20bmp", true, true, true));
+		TRef<AnimatedImage> img2 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp22bmp", true, true, true));
+		TRef<AnimatedImage> img3 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp23bmp", true, true, true));
+		TRef<AnimatedImage> img4 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp24bmp", true, true, true));
+		TRef<AnimatedImage> img5 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp25bmp", true, true, true));
+	    m_vpimageExplosion[0].SetCount(5);
+	    m_vpimageExplosion[0].Set(0, img1);
+	    m_vpimageExplosion[0].Set(1, img2);
+	    m_vpimageExplosion[0].Set(2, img3);
+	    m_vpimageExplosion[0].Set(3, img4);
+	    m_vpimageExplosion[0].Set(4, img5);
+
+ 		for (int index = 0; index < 100; index++) {
+			pthing = ThingGeo::Create(GetModeler(), GetTime());
+			m_expGeo = CreateExplosionGeo(GetTime());
+			m_expGeo->AddExplosion(
+	                Vector::RandomPosition(500),
+	                Vector(0, 1, 0),
+	                Vector(1, 0, 0),
+	                Vector(0, 0, 0),
+					350,
+	                1000,
+	                Color(200.0f / 255.0f, 130.0f / 255.0f, 50.0f / 255.0f),
+					24,
+					m_vpimageExplosion[0],
+					m_pimageShockWave);
+
+			m_pgroupGeo->AddGeo(m_expGeo);
+		}
+
+		//minefield
+		pthing = ThingGeo::Create(GetModeler(), GetTime());
+
+        m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1.0f, 200.0f);
+        pthing->Load(0, m_pmineFieldGeo, NULL);
+
+		m_pgroupGeo->AddGeo(pthing->GetGeo());
+
+
+
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1540,9 +1592,31 @@ public:
     HRESULT Initialize(const ZString& strCommandLine)
     {
 		PathString pathStr;
-        if (pathStr.IsEmpty()) {
-			pathStr = "C:\\Program Files\\Microsoft Games\\Allegiance\\artwork";
-        }
+        HKEY hKey;
+        DWORD dwType;
+        char  szValue[MAX_PATH];
+        DWORD cbValue = MAX_PATH;
+
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        {
+            // Get the art path from the registry
+            if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
+            {
+                // Set ArtPath to be relative to the application path
+                GetModuleFileNameA(NULL, szValue, MAX_PATH);
+                char*   p = strrchr(szValue, '\\');
+                if (!p)
+                    p = szValue;
+                else
+                    p++;
+
+                strcpy(p, "artwork");
+
+                //Create a subdirectory for the artwork (nothing will happen if it already there)
+                CreateDirectoryA(szValue, NULL);
+            }
+            pathStr = szValue;
+		}
 		// Ask the user for video settings.
 		if( PromptUserForVideoSettings(false, true, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings") == false )
 		{
