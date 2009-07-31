@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\src\Effect;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\SoundEngine;..\src\agc;..\src\FedSrv;..\src\Training;..\src\lobby;..\src\Inc;..\src\guids;..\src\Zone;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
-				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL"
+				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL;_WIN32_DCOM"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="1"
 				RuntimeLibrary="3"
