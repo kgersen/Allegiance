@@ -1127,15 +1127,14 @@ public:
             );
             m_fQuitting = true;
         }
-
-        PFM_DEALLOC(pfmMissionParams);
-
-		//Imago 7/18/09 turn off allies if these are set ALLY
+		//Imago 7/18/09 turn off allies if these are set ALLY 
+		//Imago 7/31/09 fixed heap corruption trying to access pfmMissionParams while being deallocated
 		if (pfmMissionParams->missionparams.IsArtifactsGame() || pfmMissionParams->missionparams.IsDeathMatchGame() ||
 		pfmMissionParams->missionparams.IsProsperityGame() || pfmMissionParams->missionparams.IsFlagsGame() ||
 		pfmMissionParams->missionparams.IsTerritoryGame()) {
 			pfmMissionParams->missionparams.bAllowAlliedRip = false;
 			pfmMissionParams->missionparams.bAllowAlliedViz = false;
+			PFM_DEALLOC(pfmMissionParams);
 			for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) { 
 				trekClient.MyMission()->SetSideAllies(i,NA);
 				trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
@@ -1146,8 +1145,10 @@ public:
 	            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
 	            trekClient.m_fm.QueueExistingMsg((FEDMESSAGE *)pfmChangeAlliance);
 			}
+		} else {
+        	PFM_DEALLOC(pfmMissionParams);
 		}
-        return true;
+		return true;
     }
 
     bool CanEdit()
