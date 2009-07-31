@@ -703,7 +703,7 @@ public:
         
 		// user tests here
 		AddMineFieldTest();
-		AddIcosahedron(); //for testing "Intel SWVP clipping issue" -Imago 
+		//AddIcosahedron(); //for testing "Intel SWVP clipping issue" -Imago 
         
     }
 
@@ -755,7 +755,30 @@ public:
 
     void AddMineFieldTest()
     {
-        TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
+        //TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
+
+		TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true);
+
+	ZFile * pFile = (ZFile*) zf;
+		
+		D3DXIMAGE_INFO fileInfo;
+		D3DXGetImageInfoFromFileInMemory(	pFile->GetPointer(),
+												pFile->GetLength(),
+												&fileInfo );
+		
+		WinPoint targetSize( fileInfo.Width, fileInfo.Height );
+		TRef<Surface> psurface =
+			m_pengine->CreateSurfaceD3DX(
+				&fileInfo,
+				&targetSize,
+				zf,
+				true,
+				Color( 0, 0, 0 ),
+				"fxmine", true );
+		psurface->SetColorKey(Color(0, 0, 0));
+		psurface->SetEnableColorKey(true);
+
+
 
 		// KG - old version here
         //for (int index = 0; index < 100; index++) {
@@ -797,11 +820,11 @@ public:
 	    m_vpimageExplosion[0].Set(3, img4);
 	    m_vpimageExplosion[0].Set(4, img5);
 
- 		for (int index = 0; index < 100; index++) {
-			pthing = ThingGeo::Create(GetModeler(), GetTime());
+ 		for (int index = 0; index < 200; index++) {
+			pthing = ThingGeo::Create(GetModeler(), (GetTime()));
 			m_expGeo = CreateExplosionGeo(GetTime());
 			m_expGeo->AddExplosion(
-	                Vector::RandomPosition(500),
+	                Vector::RandomPosition(4000),
 	                Vector(0, 1, 0),
 	                Vector(1, 0, 0),
 	                Vector(0, 0, 0),
@@ -816,15 +839,37 @@ public:
 		}
 
 		//minefield
+
+
+
 		pthing = ThingGeo::Create(GetModeler(), GetTime());
 
-        m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1.0f, 200.0f);
+        m_pmineFieldGeo = CreateMineFieldGeo(psurface, 2.0f, 100.0f);
         pthing->Load(0, m_pmineFieldGeo, NULL);
 
 		m_pgroupGeo->AddGeo(pthing->GetGeo());
 
 
 
+
+
+ 		for (int index = 0; index < 200; index++) {
+			pthing = ThingGeo::Create(GetModeler(), (GetTime()));
+			m_expGeo = CreateExplosionGeo(GetTime());
+			m_expGeo->AddExplosion(
+	                Vector::RandomPosition(4000),
+	                Vector(0, 1, 0),
+	                Vector(1, 0, 0),
+	                Vector(0, 0, 0),
+					350,
+	                1000,
+	                Color(200.0f / 255.0f, 130.0f / 255.0f, 50.0f / 255.0f),
+					24,
+					m_vpimageExplosion[0],
+					m_pimageShockWave);
+
+			m_pgroupGeo->AddGeo(m_expGeo);
+		}
     }
 
     //////////////////////////////////////////////////////////////////////////////

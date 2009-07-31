@@ -2414,12 +2414,13 @@ public:
                     pindex[index * 6 + 5] = index * 4 + 2;
                 }
 
-                UpdateState();
+               	UpdateState();
 
                 m_pdevice3D->DrawTriangles( &pvertex[0],
 						                    index * 4,
 											&pindex[0],
 											index * 6 );
+
                 set.m_vdecal.SetCount(0);
             }
         }
@@ -2445,14 +2446,13 @@ public:
         DrawVDecalSet(m_vdecalSet);
 
         //
-        // Opaque decals first
+        // Opaque decals last
         //
 
-        SetBlendMode(BlendModeSourceAlpha, false); //Imago 7/16/09
+        SetBlendMode(BlendModeSourceAlphaTest, false); //Imago 7/16/09 7/31/09
         SetZWrite(true, false);
 
         DrawVDecalSet(m_vdecalSetOpaque);
-
 
     }
 

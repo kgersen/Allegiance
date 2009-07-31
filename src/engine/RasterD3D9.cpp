@@ -274,6 +274,7 @@ public:
     void SetBlendMode(BlendMode blendMode)
     {
         switch (blendMode) {
+ 
             case BlendModeSource:
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
                 break;
@@ -289,6 +290,15 @@ public:
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
                 break;
+
+			case BlendModeSourceAlphaTest:
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAREF, (DWORD)8));
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE)); 
+				break;
 
             case BlendModeAlphaStampThrough:
 				CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );

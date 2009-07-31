@@ -644,6 +644,7 @@ enum BlendMode {
     BlendModeSource,
     BlendModeAdd,
     BlendModeSourceAlpha,
+	BlendModeSourceAlphaTest,
 	BlendModeAlphaStampThrough
 };
 
