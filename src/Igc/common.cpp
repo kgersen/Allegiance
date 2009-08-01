@@ -253,7 +253,8 @@ float    turnToFace(const Vector&       deltaTarget,
 bool  FindableModel(ImodelIGC*          m,
                     IsideIGC*           pside,
                     int                 ttMask,
-                    AbilityBitMask      abmAbilities)
+                    AbilityBitMask      abmAbilities,
+					int					iAllies)
 {
     bool    okF = false;
 
@@ -266,9 +267,15 @@ bool  FindableModel(ImodelIGC*          m,
 
         int sidebits = (pHisSide == NULL)
                        ? c_ttNeutral
-					   : ((pside == pHisSide) || IsideIGC::AlliedSides(pside,pHisSide) // #ALLY - was: (pside == pHisSide) FIXED
+					   : ( (pside == pHisSide) || (IsideIGC::AlliedSides(pside,pHisSide) && iAllies == 1) // #ALLY Imago 7/31/09
                           ? c_ttFriendly
-                          : c_ttEnemy);
+                          : c_ttEnemy );
+
+		if (iAllies == 2)
+			sidebits = (IsideIGC::AlliedSides(pside,pHisSide) && pside != pHisSide) //ALLY
+				? c_ttFriendly
+				: c_ttEnemy;
+
 
 		bool notsameside = !(pside == pHisSide); // #ALLY
 
@@ -297,17 +304,19 @@ bool  FindableModel(ImodelIGC*          m,
 						//#ALLY : exceptions for c_ttFriendly which include now allies
 						//dont match allies if we're looking for a friendly station with one of the abilities below
 
-						ImissionIGC*         pmission = pside->GetMission();
-					    const MissionParams* pmp = pmission->GetMissionParams();
+						if (iAllies == 1) { //imago 7/31/09
+							ImissionIGC*         pmission = pside->GetMission();
+						    const MissionParams* pmp = pmission->GetMissionParams();
 
-						AbilityBitMask alliesnotallowed = (pmp->bAllowAlliedRip) ?
-							c_sabmRestart | c_sabmUnload :
-							c_sabmRestart | c_sabmUnload | c_sabmRipcord;  //imago 7/9/09 c_sabmTeleportUnload removed 7/23/09
+							AbilityBitMask alliesnotallowed = (pmp->bAllowAlliedRip) ?
+								c_sabmRestart | c_sabmUnload :
+								c_sabmRestart | c_sabmUnload | c_sabmRipcord;  //imago 7/9/09 c_sabmTeleportUnload removed 7/23/09
 
-						if ((ttMask & c_ttFriendly) &&
-							(abmAbilities & alliesnotallowed) &&
-							notsameside)
-							break;
+							if ((ttMask & c_ttFriendly) &&
+								(abmAbilities & alliesnotallowed) &&
+								notsameside)
+								break;
+						}
 						okF = ((IstationIGC*)m)->GetStationType()->HasCapability(abmAbilities);
                     }
                     break;
@@ -450,17 +459,18 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
                        const Vector*       pposition,
                        const Orientation*  porientation,
                        AbilityBitMask      abmAbilities,
-                       int                 maxDistance)
+                       int                 maxDistance,
+					   int				   iAllies) //Imago 8/1/09
 {
     if (!pcluster)
         pcluster = pship->GetCluster();
     if (!pcluster)
         return NULL;
 
-    IsideIGC*   pside = pship ? pship->GetSide() : NULL; //ALLYTD
+    IsideIGC*   pside = pship ? pship->GetSide() : NULL;
 
     if (pmodelCurrent && ((pmodelCurrent == pship) ||
-                          (!FindableModel(pmodelCurrent, pside, ttMask, abmAbilities)) ||
+                          (!FindableModel(pmodelCurrent, pside, ttMask, abmAbilities,iAllies)) ||
                           (!pship->CanSee(pmodelCurrent))))
         pmodelCurrent = NULL;
 
@@ -522,7 +532,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
             ImodelIGC*  m = l->data();
 
 			//You never target yourself or something marked as hidden
-            if ((m != pship) && ((!pship) || pship->CanSee(m)) && FindableModel(m, pside, ttMask, abmAbilities))
+            if ((m != pship) && ((!pship) || pship->CanSee(m)) && FindableModel(m, pside, ttMask, abmAbilities,iAllies))
             {
                 if (ttBest)
                 {

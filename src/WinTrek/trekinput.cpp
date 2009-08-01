@@ -230,8 +230,11 @@ public:
         pnsCommands->AddMember("CommandTargetEnemyBaseNearest"   , new Number((float)TK_TargetEnemyBaseNearest   ));
         pnsCommands->AddMember("CommandTargetEnemyBasePrev"      , new Number((float)TK_TargetEnemyBasePrev      ));
         pnsCommands->AddMember("CommandTargetFriendlyBase"       , new Number((float)TK_TargetFriendlyBase       ));
-        pnsCommands->AddMember("CommandTargetFriendlyBaseNearest", new Number((float)TK_TargetFriendlyBaseNearest)); //ALLYTD 
+        pnsCommands->AddMember("CommandTargetFriendlyBaseNearest", new Number((float)TK_TargetFriendlyBaseNearest)); 
         pnsCommands->AddMember("CommandTargetFriendlyBasePrev"   , new Number((float)TK_TargetFriendlyBasePrev   ));
+        pnsCommands->AddMember("CommandTargetAlliedBase"         , new Number((float)TK_TargetAlliedBase         )); //imago 8/1/09
+        pnsCommands->AddMember("CommandTargetAlliedBaseNearest"  , new Number((float)TK_TargetAlliedBaseNearest  )); 
+        pnsCommands->AddMember("CommandTargetAlliedBasePrev"     , new Number((float)TK_TargetAlliedBasePrev     ));
         pnsCommands->AddMember("CommandTargetCommand"            , new Number((float)TK_TargetCommand            ));
         pnsCommands->AddMember("CommandTargetCenter"             , new Number((float)TK_TargetCenter             ));
         pnsCommands->AddMember("CommandTargetHostile"            , new Number((float)TK_TargetHostile            ));
@@ -1454,11 +1457,14 @@ CommandInfo g_pCommandInfo[] =
     { TK_TargetEnemyMinerPrev            , "Target Previous Enemy Miner"           },
     { TK_TargetEnemyMajorBasePrev        , "Target Previous Enemy Major Base"      },
     { TK_NoKeyMapping                    , ""                                      },
+ 	{ TK_TargetAlliedBase                , "Target Allied Base"                    }, //Imago 8/1/09
+    { TK_TargetAlliedBaseNearest         , "Target Allied Base Nearest"            },
+    { TK_TargetAlliedBasePrev            , "Target Allied Base Previous"           },
     { TK_TargetFriendly                  , "Target Friendly"                       },
     { TK_TargetFriendlyNearest           , "Target Friendly Nearest"               },
     { TK_TargetFriendlyPrev              , "Target Friendly Previous"              },
     { TK_TargetFriendlyBase              , "Target Friendly Base"                  },
-    { TK_TargetFriendlyBaseNearest       , "Target Friendly Base Nearest"          }, //ALLYTD
+    { TK_TargetFriendlyBaseNearest       , "Target Friendly Base Nearest"          },
     { TK_TargetFriendlyBasePrev          , "Target Friendly Base Previous"         },
     { TK_TargetFriendlyBomber            , "Target Friendly Bomber"                },
     { TK_TargetFriendlyFighter           , "Target Friendly Fighter"               },

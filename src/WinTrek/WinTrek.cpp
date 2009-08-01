@@ -8131,10 +8131,9 @@ public:
                            AbilityBitMask   abm = 0)
     {
         assert ((ttMask & c_ttFront) == 0);
-
-        if (tk == tkNearest)
+		if (tk == tkNearest)
             ttMask |= c_ttNearest;
-        else if (tk == tkPrevious)
+		else if (tk == tkPrevious) 
             ttMask |= c_ttPrevious;
 
         const Vector*   pposition;
@@ -8146,16 +8145,53 @@ public:
             else
                 pposition = &(Vector::GetZero());
         }
-        else
-            pposition = &(trekClient.GetShip()->GetPosition());
+		else
+			pposition = &(trekClient.GetShip()->GetPosition());
 
-        ImodelIGC*  m = FindTarget(trekClient.GetShip()->GetSourceShip(),
-                                   ttMask,
-                                   trekClient.GetShip()->GetCommandTarget(c_cmdCurrent),
-                                   trekClient.GetCluster(),
-                                   pposition, NULL, abm);
+		ImodelIGC*  m = NULL; //Imago 7/31/09 ALLY 
 
-        SetTarget(m, c_cidDefault);
+		if (trekClient.GetSide()->GetAllies() != NA) { 
+
+			//only target our sides bases unless in a pod
+			if (tkNearest == TK_TargetFriendlyBaseNearest) {
+
+				//determine if we're in a pod or not
+				bool bLifepod = false;
+				IhullTypeIGC*   pht = trekClient.GetShip()->GetSourceShip()->GetBaseHullType();
+				if (pht) {
+					HullAbilityBitMask  habm = pht->GetCapabilities();
+					if (habm & c_habmLifepod)
+						bLifepod = true;
+				}
+
+				if (!bLifepod)
+					m = FindTarget(trekClient.GetShip()->GetSourceShip(), ttMask, trekClient.GetShip()->GetCommandTarget(c_cmdCurrent),
+						trekClient.GetCluster(), pposition, NULL, abm, 0x7fffffff, 0); // false = don't search allied bases
+				else
+					m = FindTarget(trekClient.GetShip()->GetSourceShip(), ttMask, trekClient.GetShip()->GetCommandTarget(c_cmdCurrent),
+						trekClient.GetCluster(), pposition, NULL, abm); // true = (default) search allied bases/rescue probes
+
+			//targets allied bases only
+			} else if (tkNearest == TK_TargetAlliedBaseNearest) {
+				m = FindTarget(trekClient.GetShip()->GetSourceShip(), ttMask, trekClient.GetShip()->GetCommandTarget(c_cmdCurrent),
+					trekClient.GetCluster(), pposition, NULL, abm, 0x7fffffff, 2); // 2 = (hack) search allied bases/rescue probes only
+
+			} else {
+				//not after a friendly/allied base, do our regular thing (default)
+				m = FindTarget(trekClient.GetShip()->GetSourceShip(), ttMask, trekClient.GetShip()->GetCommandTarget(c_cmdCurrent),
+					trekClient.GetCluster(), pposition, NULL, abm);
+			}
+
+		} else { // team has no allies, do our regular thing
+
+			m = FindTarget(trekClient.GetShip()->GetSourceShip(),
+				ttMask,
+				trekClient.GetShip()->GetCommandTarget(c_cmdCurrent),
+				trekClient.GetCluster(),
+				pposition, NULL, abm);
+		}
+
+		SetTarget(m, c_cidDefault);
     }
 
     void ToggleWeapon(Mount mount)
@@ -9393,7 +9429,35 @@ public:
                     }
                 }
 
-                TrekFindTarget(ttMask, tk, TK_TargetFriendlyBaseNearest, TK_TargetFriendlyBasePrev, //ALLYTD
+                TrekFindTarget(ttMask, tk, TK_TargetFriendlyBaseNearest, TK_TargetFriendlyBasePrev,
+                               abm);
+            }
+            break;
+
+            case TK_TargetAlliedBase:
+            case TK_TargetAlliedBaseNearest:
+            case TK_TargetAlliedBasePrev:
+            {
+                int             ttMask = (c_ttStation | c_ttFriendly | c_ttAnyCluster);
+                AbilityBitMask  abm = c_sabmLand;
+
+                {
+                    IhullTypeIGC*   pht = trekClient.GetShip()->GetSourceShip()->GetBaseHullType();
+                    if (pht)
+                    {
+                        HullAbilityBitMask  habm = pht->GetCapabilities();
+
+                        if (habm & c_habmLifepod)
+                        {
+                            abm = c_sabmRescue | c_sabmRescueAny | c_sabmLand;
+                            ttMask |= c_ttProbe;
+                        }
+                        else if ((habm & c_habmFighter) == 0)
+                            abm = c_sabmCapLand;
+                    }
+                }
+
+                TrekFindTarget(ttMask, tk, TK_TargetAlliedBaseNearest, TK_TargetAlliedBasePrev,
                                abm);
             }
             break;

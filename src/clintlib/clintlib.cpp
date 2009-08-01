@@ -1262,31 +1262,31 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
         hr = m_fm.JoinSessionInstance(ci.guidSession, ci.szName);
     }
     else
-    {
+	{
 		if (bStandalonePrivate) {
 			hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);		  
 		}
 		else {
-			hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
-
-            //Imago 6/23/08  8/3/08 retry address from reg only if fail
-            if(FAILED(hr)) {
-                HKEY hKey;
-                DWORD cbValue = c_cbName;
-                char szServer[c_cbName];
-                szServer[0] = '\0';
-                if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
-	                ::RegQueryValueEx(hKey,"ServerAddress", NULL, NULL, (unsigned char*)&szServer, &cbValue);
-	                ::RegCloseKey(hKey);
-                }
-                if (szServer[0] != '\0') {
-                    ci.strServer = ZString(szServer).LeftOf(":");
-                    ci.dwPort = ZString(szServer).RightOf(":").GetInteger();
-
-                    hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
-
-                }
+			//imago moved this up first 8/1/09 due to longer timeout
+            HKEY hKey;
+            DWORD cbValue = c_cbName;
+            char szServer[c_cbName];
+            szServer[0] = '\0';
+            if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
+                ::RegQueryValueEx(hKey,"ServerAddress", NULL, NULL, (unsigned char*)&szServer, &cbValue);
+                ::RegCloseKey(hKey);
             }
+            if (szServer[0] != '\0') {
+                ci.strServer = ZString(szServer).LeftOf(":");
+                ci.dwPort = ZString(szServer).RightOf(":").GetInteger();
+
+                hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
+			} else {
+				hr = -1;
+			}
+
+			if(FAILED(hr)) 
+				hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
 
         }
     }

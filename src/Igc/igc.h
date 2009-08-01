@@ -296,7 +296,7 @@ const TrekKey TK_TargetEnemyBase            = 83;  // Targets the nearest enemy 
 const TrekKey TK_TargetEnemyBaseNearest     = 84;  // Targets the nearest (any) object
 const TrekKey TK_TargetEnemyBasePrev        = 85;  // Targets the nearest enemy ship
 const TrekKey TK_TargetFriendlyBase         = 86;  // Targets the nearest friendly ship
-const TrekKey TK_TargetFriendlyBaseNearest  = 87;  // Targets the nearest object within a cone ahead   ALLYTD
+const TrekKey TK_TargetFriendlyBaseNearest  = 87;  // Targets the nearest object within a cone ahead
 const TrekKey TK_TargetFriendlyBasePrev     = 88;  // Target previous friendly base
 const TrekKey TK_TargetCommand              = 89;  // Target the object of current command
 const TrekKey TK_TargetCenter               = 90;  // Target ship straight ahead
@@ -433,7 +433,11 @@ const TrekKey TK_VoteNo                         = 217; // Vote No on the current
 
 const TrekKey TK_ScrnShot                       = 218; // Take a screen shot
 
-const TrekKey TK_Max                            = 219; // Must be last trekkey
+const TrekKey TK_TargetAlliedBase				= 219; //Imago 8/1/09
+const TrekKey TK_TargetAlliedBaseNearest		= 220;
+const TrekKey TK_TargetAlliedBasePrev			= 221;
+
+const TrekKey TK_Max                            = 222; // Must be last trekkey
 
 typedef short   SoundID;
 typedef short   VoiceID;
@@ -4471,10 +4475,11 @@ inline int GetTypebits(ObjectType  ot)
     return c_ttTypebits[ot];
 }
 
-bool  FindableModel(ImodelIGC*    m,
-                    IsideIGC*     pside,
+bool  FindableModel(ImodelIGC*    		m,
+                    IsideIGC*     		pside,
                     int                 ttMask,
-                    AbilityBitMask      abmAbilities);
+                    AbilityBitMask      abmAbilities,
+					int 				iAllies = 1);  //Imago 7/31/09 e.g. 1 = normal (your side + allies) 0 = your side only 2 = allies only
 
 ImodelIGC*  FindTarget(IshipIGC*            pShip,
                        int                  ttMask,
@@ -4483,7 +4488,8 @@ ImodelIGC*  FindTarget(IshipIGC*            pShip,
                        const Vector*        pposition = NULL,
                        const Orientation*   porientation = NULL,
                        AbilityBitMask       abmAbilities = 0,                   //e.g. anything
-                       int                  maxDistance = 0x7fffffff);          //e.g. anywhere
+                       int                  maxDistance = 0x7fffffff,			//e.g. anywhere
+					   int 					bAllies = 1);  //Imago 7/31/09        e.g. pass-thru to FindableModel --^
 
 int         GetDistance(IshipIGC*       pship,
                         IclusterIGC*    pclusterOne,
@@ -5424,7 +5430,7 @@ class PlayerScoreObject
                         bool            bLose)
         {
             assert (!m_bConnected);
-            assert (!(bWin && bLose)); //CRASH HERE WITH ALLIES imago ALLYTD 7/9/09 (when starting a server /w cheat code only?)
+            assert (!(bWin && bLose)); 
 
             m_bWin = bWin;
             m_bLose = bLose;
