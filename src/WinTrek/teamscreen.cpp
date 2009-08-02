@@ -35,6 +35,7 @@ class TeamScreen :
 private:
     TRef<Pane>       m_ppane;
 
+	bool m_bRipChecked;
     SideID m_sideCurrent;
     SideID m_sideToJoin;
     SideID m_lastToJoinSend; // KGKV #104: last m_sideToJoin send to server (extra control).
@@ -1076,7 +1077,8 @@ public:
         m_bTeamSettingsPopupOpen(false),
         m_bShowingRandomizeWarning(false),
         m_sideToJoin(NA),
-        m_lastToJoinSend(NA)//KGJV #104
+        m_lastToJoinSend(NA),//KGJV #104
+		m_bRipChecked(false) 
     {
         TRef<IObject> pobjPlayerColumns;
         TRef<IObject> pobjTeamColumns;
@@ -1200,6 +1202,26 @@ public:
         //
         // Buttons
         //
+
+		// prevent allow allied rip from being checked if it was explicitly changed
+
+		bool bAllies = false;
+		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
+			if (trekClient.MyMission()->SideAllies(i) != NA) {
+				bAllies = true;
+				break;
+			}
+		}
+
+		if (bAllies && !trekClient.MyMission()->GetMissionParams().bAllowAlliedRip)
+			m_bRipChecked = true;
+
+		if (!bAllies)
+			m_bRipChecked = false;
+
+		OutputDebugString("MAX IMBALANCE VALUE =");
+		OutputDebugString(ZString(trekClient.MyMission()->GetMissionParams().iMaxImbalance));
+		OutputDebugString("\n");
 
         AddEventTarget(&TeamScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
         AddEventTarget(&TeamScreen::OnButtonGameOver, m_pbuttonGameOver->GetEventSource());
@@ -1614,6 +1636,7 @@ public:
 
     void UpdateStatusText()
     {
+
         if (m_pMission->InProgress())
         {
             m_ptextStatus->SetString("GAME IN PROGRESS");
@@ -2223,7 +2246,7 @@ public:
 		pfmChangeAlliance->sideID = m_sideCurrent;
 		pfmChangeAlliance->sideAlly = ally;
 
-		//imago 7/6/09 ALLY force Defections on when allies (Autobalance NYI)  IMAGO REVIEW  FIX!!!!!!!!!!!!!!
+		//imago 7/6/09 ALLY force Defections on when allies
 		bool bAllies = true;
 		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
 			if (trekClient.MyMission()->SideAllies(i) == NA && bAllies) 
@@ -2232,26 +2255,28 @@ public:
 		bool bDefections = ((ally != NA) || bAllies) ? true : false;
 		bool bAllowAlliedRip = ((ally != NA) || bAllies) ? true : false; //7/9/09 imago ALLY
 		bool bAllowAlliedViz = ((ally != NA) || bAllies) ? true : false; //7/17/09 imago ALLY
-		trekClient.MyMission()->SetAllowAlliedRip(bAllowAlliedRip);
-		trekClient.MyMission()->SetAllowAlliedViz(bAllowAlliedViz);
+		trekClient.MyMission()->SetAllowAlliedRip(bAllowAlliedRip && !m_bRipChecked);
+		trekClient.MyMission()->SetAllowAlliedViz(bAllowAlliedViz); //always on when allies (for now)
+		trekClient.MyMission()->SetDefections(bDefections);
 
-		if(bDefections != trekClient.MyMission()->GetMissionParams().bAllowDefections) {
-			//bug, defections persist with 3 team scenarino...
-			//OutputDebugString("ALLY: Setting defections to: "+ZString(bDefections)+"\n");
-			m_pMission->SetDefections(bDefections);
-			trekClient.MyMission()->SetDefections(bDefections);
-			trekClient.MyMission()->SetSideAllies(m_sideCurrent,ally);
-		
-			OnTeamAlliancesChange(m_pMission); //hack this in while we're here
-		
-			//make the button flash and defection (autobalance NYI) settings stick
-			BEGIN_PFM_CREATE_ALLOC(trekClient.m_fm, pfmMissionParams, CS, MISSIONPARAMS)
-	        END_PFM_CREATE
-			pfmMissionParams->missionparams = trekClient.MyMission()->GetMissionDef().misparms;
-	        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-	        trekClient.m_fm.QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
-			PFM_DEALLOC(pfmMissionParams);
-		}
+		//because imbalance impelemtation is now FUBAR even w/o allies... we'll disable it -Imago 8/1/09
+		if ((ally != NA) || bAllies)
+			trekClient.MyMission()->SetMaxImbalance(0x7fff);
+		else
+			trekClient.MyMission()->SetMaxImbalance(0x7ffe);
+
+		trekClient.MyMission()->SetSideAllies(m_sideCurrent,ally);
+	
+		OnTeamAlliancesChange(m_pMission); //hack this in while we're here
+	
+		//make the button flash and settings stick
+		BEGIN_PFM_CREATE_ALLOC(trekClient.m_fm, pfmMissionParams, CS, MISSIONPARAMS)
+        END_PFM_CREATE
+		pfmMissionParams->missionparams = trekClient.MyMission()->GetMissionDef().misparms;
+        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+        trekClient.m_fm.QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
+		PFM_DEALLOC(pfmMissionParams);
+
 		//
 
 	}
@@ -2268,6 +2293,20 @@ public:
 	// into the new right click
 	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
 	{
+		bool bAllies = false;
+		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
+			if (trekClient.MyMission()->SideAllies(i) != NA) {
+				bAllies = true;
+				break;
+			}
+		}
+		if (!bAllies) {
+				trekClient.MyMission()->SetAllowAlliedRip(false);
+				trekClient.MyMission()->SetDefections(false);
+				trekClient.MyMission()->SetAllowAlliedViz(false);
+				trekClient.MyMission()->SetMaxImbalance(0x7ffe);
+		}
+
 		//#ALLY: set comms afk (except the game owner) Imago 7/3/09 (KGJV)
 		if (trekClient.MyPlayerInfo()->IsTeamLeader()       // wlp - is a comm
 			&& !trekClient.MyPlayerInfo()->IsMissionOwner()	// wlp - not in control
@@ -3064,6 +3103,7 @@ public:
         
         if (pMissionDef == trekClient.MyMission())
         {
+
             // if the side that we were looking at was nuked, switch back 
             // to our team.
             if (m_sideCurrent >= pMissionDef->GetMissionParams().nTeams)

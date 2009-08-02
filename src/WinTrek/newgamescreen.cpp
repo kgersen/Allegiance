@@ -1129,11 +1129,21 @@ public:
         }
 		//Imago 7/18/09 turn off allies if these are set ALLY 
 		//Imago 7/31/09 fixed heap corruption trying to access pfmMissionParams while being deallocated
-		if (pfmMissionParams->missionparams.IsArtifactsGame() || pfmMissionParams->missionparams.IsDeathMatchGame() ||
+		//imago 7/6/09 ALLY force Defections on when allies
+		bool bAllies = false;
+		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
+			if (trekClient.MyMission()->SideAllies(i) != NA)  {
+				bAllies = true;
+				break;
+			}
+		}
+		if (bAllies && (pfmMissionParams->missionparams.IsArtifactsGame() || pfmMissionParams->missionparams.IsDeathMatchGame() ||
 		pfmMissionParams->missionparams.IsProsperityGame() || pfmMissionParams->missionparams.IsFlagsGame() ||
-		pfmMissionParams->missionparams.IsTerritoryGame()) {
+		pfmMissionParams->missionparams.IsTerritoryGame() || pfmMissionParams->missionparams.nTeams <= 2)) {
 			pfmMissionParams->missionparams.bAllowAlliedRip = false;
 			pfmMissionParams->missionparams.bAllowAlliedViz = false;
+			pfmMissionParams->missionparams.bAllowDefections = false;
+			pfmMissionParams->missionparams.iMaxImbalance = 0x7ffe;
 			PFM_DEALLOC(pfmMissionParams);
 			for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) { 
 				trekClient.MyMission()->SetSideAllies(i,NA);
@@ -1172,7 +1182,7 @@ public:
         m_pbuttonFriendlyFire->SetEnabled(bEnable);
         //m_pbuttonStatsCount->SetEnabled(bEnable); // TE: Show the StatsCount checkbox - KGJV #62 removed
 		
-		//imago 7/6/09 ALLY force Defections on when allies (Autobalance NYI)
+		//imago 7/6/09 ALLY force Defections on when allies
 		bool bAllies = false;
 		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
 			if (trekClient.MyMission()->SideAllies(i) != NA && !bAllies) 
@@ -1191,13 +1201,15 @@ public:
         m_pbuttonAllowExpansion->SetEnabled(bEnable);
         m_pbuttonAllowSupremacy->SetEnabled(bEnable);
 		//m_pbuttonAllowEmptyTeams->SetEnabled(false);//bEnable && m_bIsZoneClub); // KGJV #62
+		
 		m_pbuttonAllowAlliedRip->SetEnabled(bAllies && bEnable); //imago 7/8/09 ALLY
+
 
 		m_pbuttonShowMap->SetEnabled(bEnable);
 
         m_pcomboTeamCount->SetEnabled(bEnable);
         m_pcomboMaxPlayers->SetEnabled(bEnable && !m_bLockGameOpen);
-        m_pcomboMaxImbalance->SetEnabled(bEnable);
+        m_pcomboMaxImbalance->SetEnabled(!bAllies && bEnable); //because imbalance impelemtation is now FUBAR even w/o allies... we'll disable it -Imago 8/1/09
         m_pcomboSkillLevel->SetEnabled(bEnable && !m_bLockGameOpen); // KGJV #92
         m_pcomboMapType->SetEnabled(bEnable);
         m_pcomboConnectivity->SetEnabled(bEnable);
