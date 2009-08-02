@@ -2281,8 +2281,11 @@ public:
 				case ScreenIDSplashScreen:
 					{
 						//Imago 6/29/09 7/28/09 dont allow intro vid on nonprimary
-						if (!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
-						
+						HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
+						HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
+						bool bWMP = (hVidTest && hAudTest) ? true : false;
+						::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
+						if (!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID && bWMP) {					
 							//dont' check for intro.avi, 
 							// let the screen flash so they at least know this works
 							DDVideo *DDVid = new DDVideo();
@@ -2612,10 +2615,14 @@ public:
 		//Imago 6/29/09 7/28/09 now plays video in thread while load continues
 		HANDLE hDDVidThread = NULL;
 		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
+		HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
+		HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
+		bool bWMP = (hVidTest && hAudTest) ? true : false;
+		::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
 
 		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware &&
 		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
-		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
+		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID && bWMP) {
 
 			if (!CD3DDevice9::Get()->IsWindowed()) {
 				::ShowWindow(GetHWND(),SW_HIDE);
