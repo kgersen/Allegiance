@@ -9459,7 +9459,7 @@ int __cdecl main(int argc, char *argv[])
     {
 		//multi-process setup can only be debugged /w console windows - Imago
 		//NYI: should be released as service module only
-#if defined(SRV_PARENT) || defined(SRV_CHILD)
+#if defined(SRV_PARENT) || defined(SRV_CHILD) || defined(_CONSOLE)
 		_Module.RunAsExecutable();
 #else
       printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
