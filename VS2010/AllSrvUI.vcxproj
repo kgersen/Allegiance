@@ -237,6 +237,7 @@
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalOptions>
       </AdditionalOptions>
+      <FloatingPointModel>Precise</FloatingPointModel>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\AGC\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -272,6 +273,7 @@
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalOptions>
       </AdditionalOptions>
+      <FloatingPointModel>Precise</FloatingPointModel>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\AGC\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
