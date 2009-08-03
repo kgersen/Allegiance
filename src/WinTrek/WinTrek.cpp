@@ -174,6 +174,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 		}
 		::ShowCursor(TRUE);
 		DDVid->DestroyDDVid();
+        DDVid->DestroyDirectDraw();
 	} else {
 		DDVid->DestroyDirectDraw();
 	}

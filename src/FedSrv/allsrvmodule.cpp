@@ -536,7 +536,6 @@ HRESULT CServiceModule::RegisterServer(BOOL bReRegister, BOOL bRegTypeLib, BOOL 
     if (IsWin9x())
       bService = false; // Windows 9x doesn't support services
 
-#if !defined(_CONSOLE)
     // Remove any previous service since it may point to
     // the incorrect file
     if (IsInServiceControlManager() && !bReRegister)
@@ -545,7 +544,6 @@ HRESULT CServiceModule::RegisterServer(BOOL bReRegister, BOOL bRegTypeLib, BOOL 
     // Add service entries
     _Module.UpdateRegistryFromResource(IDR_AllSrv, true,
       _AGCModule.GetRegMapEntries());
-#endif
 
     #ifdef MONOLITHIC_DPLAY
       // Register custom dplay bits

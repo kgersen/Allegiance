@@ -9459,8 +9459,7 @@ int __cdecl main(int argc, char *argv[])
     {
 		//multi-process setup can only be debugged /w console windows - Imago
 		//NYI: should be released as service module only
-#if defined(SRV_PARENT) || defined(SRV_CHILD) || defined(_CONSOLE)
-		 RegisterAllSrv(FALSE, FALSE, argc, argv); // FALSE == register as EXE
+#if defined(SRV_PARENT) || defined(SRV_CHILD)
 		_Module.RunAsExecutable();
 #else
       printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
@@ -9488,19 +9487,6 @@ int __cdecl main(int argc, char *argv[])
 		return 0;
 	}
 #else // run multiple games on a single process
-#if defined(_CONSOLE)
-
-     RegisterAllSrv(FALSE, FALSE, argc, argv); // FALSE == register as EXE
-  
-	_Module.RunAsExecutable();
-
-		// Terminate AGC
-		_Module.TermAGC();
-
-		// Indicate success
-		return 0;
-#endif
-
     if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') && !_Module.WasCOMStarted())
     {
       BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1);

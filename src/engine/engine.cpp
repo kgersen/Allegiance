@@ -160,7 +160,7 @@ public:
 		//imago 6/24/09 - 6/29/09 - 7/1/09
 #pragma warning(disable:4244)
 		int i; int width; int height; int rate;
-		for( i=0; i<=CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++ )
+		for( i=0; i<CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++ ) //8/2/09 fixed invalid memory access
 		{
 			width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
 			height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
