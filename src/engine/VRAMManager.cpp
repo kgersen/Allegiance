@@ -315,7 +315,7 @@ HRESULT CVRAMManager::CreateTexture(	TEXHANDLE	texHandle,
 															texFormat,
 															texPool,
 															&pTexture->pTexture,
-															NULL );
+															NULL );  //Fix memory leak -Imago 8/2/09
 
 		D3DSURFACE_DESC surfDesc;
 		pTexture->pTexture->GetLevelDesc( 0, &surfDesc );

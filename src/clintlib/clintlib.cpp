@@ -957,7 +957,7 @@ List* MissionInfo::GetSideList()
         GetSideInfo(id);
     GetSideInfo(SIDE_TEAMLOBBY);
 
-    return new ListDelegate(&m_mapSideInfo);
+    return new ListDelegate(&m_mapSideInfo); //Fix memory leak -Imago 8/2/09
 }
 
 /////////////////////////////////////////////////////////////////////////////

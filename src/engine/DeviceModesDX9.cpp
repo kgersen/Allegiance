@@ -650,7 +650,7 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 						pAdapter->adapterID.Description );
 
 	pAdapter->hMonitor = m_pD3D9->GetAdapterMonitor( iAdapter );
-	pAdapter->pModeCount = new int[ eDMD_NumModes ];
+	pAdapter->pModeCount = new int[ eDMD_NumModes ]; //Fix memory leak -Imago 8/2/09
 	pAdapter->ppAvailableModes = new SAdapterMode *[ eDMD_NumModes ];
 	pAdapter->iTotalModeCount = 0;
 	hr = m_pD3D9->GetDeviceCaps( iAdapter, D3DDEVTYPE_HAL, &pAdapter->devCaps );

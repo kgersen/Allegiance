@@ -219,7 +219,7 @@ public:
 
 		if( m_stype.Test( SurfaceTypeDummy() ) == true )
 		{
-			m_ppf = new PixelFormat( CD3DDevice9::Get()->GetCurrentMode()->mode.Format );
+			m_ppf = new PixelFormat( CD3DDevice9::Get()->GetCurrentMode()->mode.Format ); //Fix memory leak -Imago 8/2/09
 		}
 		else
 		{
@@ -1736,7 +1736,7 @@ public:
 		{
 			_ASSERT( m_pbits == NULL );
 			m_pitch = psurfaceSource->GetPitch();
-			m_pbits = new BYTE[ psurfaceSource->GetSize().Y() * m_pitch ];
+			m_pbits = new BYTE[ psurfaceSource->GetSize().Y() * m_pitch ]; //Fix memory leak -Imago 8/2/09
 			memcpy( m_pbits, psurfaceSource->GetWritablePointer(), m_size.Y() * m_pitch );
 		}
     }
@@ -2120,7 +2120,7 @@ TRef<PrivateSurface> CreatePrivateDummySurface(	PrivateEngine * pengine,
 												const WinPoint & size,
 												SurfaceSite * psite )
 {
-	return new PrivateSurfaceImpl( pengine, size, psite, SurfaceTypeDummy() );
+	return new PrivateSurfaceImpl( pengine, size, psite, SurfaceTypeDummy() ); //Fix memory leak -Imago 8/2/09
 }
 
 TRef<PrivateSurface> CreatePrivateRenderTargetSurface(	PrivateEngine * pengine,
@@ -2143,7 +2143,7 @@ TRef<PrivateSurface> CreatePrivateSurface(
     SurfaceType     stype,
     SurfaceSite*    psite
 ) {
-    return new PrivateSurfaceImpl(pengine, ppf, size, stype, psite);
+    return new PrivateSurfaceImpl(pengine, ppf, size, stype, psite); //Fix memory leak -Imago 8/2/09
 }
 
 //////////////////////////////////////////////////////////////////////////////

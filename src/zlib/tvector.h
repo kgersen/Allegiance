@@ -86,7 +86,7 @@ public:
         if (m_countAlloc == 0) {
             m_pvalue = NULL;
         } else {
-            m_pvalue = new TValue[m_countAlloc];
+            m_pvalue = new TValue[m_countAlloc]; //Fix memory leak -Imago 8/2/09
         }
     }
 
@@ -136,7 +136,7 @@ public:
             if (count > m_count) {
                 m_countAlloc = count;
 
-                TValue* m_pvalueNew = new TValue[m_countAlloc];
+                TValue* m_pvalueNew = new TValue[m_countAlloc]; //Fix memory leak -Imago 8/2/09
 
                 for(int index = 0; index < m_count; index++) {
                     m_pvalueNew[index] = m_pvalue[index];
@@ -147,7 +147,7 @@ public:
         } else if (count > m_countAlloc) {
             while (m_countAlloc < count) m_countAlloc *= 2;
 
-            TValue* m_pvalueNew = new TValue[m_countAlloc];
+            TValue* m_pvalueNew = new TValue[m_countAlloc]; //Fix memory leak -Imago 8/2/09
 
             for(int index = 0; index < m_count; index++) {
                 m_pvalueNew[index] = m_pvalue[index];

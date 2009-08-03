@@ -48,7 +48,7 @@ public:
 
 		pSrcCopy = new BYTE[pprivateSurface->GetPixelFormat()->PixelBytes() * 
 							pprivateSurface->GetSize().x * pprivateSurface->GetSize().y];
-		m_ppsurface = new TRef<Surface> [ m_nFrame ];
+		m_ppsurface = new TRef<Surface> [ m_nFrame ]; //Fix memory leak -Imago 8/2/09
 
 		for( i=0; i<m_nFrame; i++ )
 		{

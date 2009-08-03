@@ -65,7 +65,7 @@ public:
                 bColorKey,
                 new ImageTopPaneSiteImpl(this),
                 ppane
-            );
+            ); //Fix memory leak -Imago 8/2/09
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -177,5 +177,5 @@ public:
 
 TRef<Image> CreatePaneImage(Engine* pengine, SurfaceType stype, bool bColorKey, Pane* ppane)
 {
-    return new PaneImage(pengine, stype, bColorKey, ppane);
+    return new PaneImage(pengine, stype, bColorKey, ppane); //Fix memory leak -Imago 8/2/09
 }

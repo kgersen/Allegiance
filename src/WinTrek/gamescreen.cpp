@@ -581,7 +581,7 @@ private:
 			m_cServers = cServers;
 			if (cCores)
 			{
-				m_pCores = new CoreInfo[cCores];
+				m_pCores = new CoreInfo[cCores]; //Fix memory leak -Imago 8/2/09
 				for (int i=0; i < cCores; i++)
 				{
 					memcpy(&(m_pCores[i].mStatic),&(pcores[i]),sizeof(StaticCoreInfo));
@@ -592,7 +592,7 @@ private:
 			}
 			if (cServers)
 			{
-				m_pServers = new ServerInfo[cServers];
+				m_pServers = new ServerInfo[cServers]; //Fix memory leak -Imago 8/2/09
 				for (int i=0; i < cServers; i++)
 				{
 					memcpy(&(m_pServers[i].mStatic),&(pservers[i]),sizeof(ServerCoreInfo));

@@ -93,7 +93,7 @@ void CD3DDevice9::ResetReferencedResources( )
 	{
 		// Clear out a bunch of state. Anything assigned to the device will keep a reference
 		// until released. D3D9 won't shut down properly until all references released.
-		m_sD3DDev9.pD3DDevice->SetFVF( 0 );
+		m_sD3DDev9.pD3DDevice->SetFVF( 0 );  //Fix memory leak -Imago 8/2/09
 		m_sD3DDev9.pD3DDevice->SetIndices( NULL );
 		m_sD3DDev9.pD3DDevice->SetStreamSource( 0, NULL, 0, 0 );
 		m_sD3DDev9.pD3DDevice->SetPixelShader( NULL );
@@ -112,7 +112,7 @@ void CD3DDevice9::ResetReferencedResources( )
 HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 {
 	// Create the D3D9 interface.
-	m_sD3DDev9.pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
+	m_sD3DDev9.pD3D9 = Direct3DCreate9( D3D_SDK_VERSION ); //Fix memory leak -Imago 8/2/09
 
 	_ASSERT( m_sD3DDev9.pD3D9 != NULL );
 	if( m_sD3DDev9.pD3D9 == NULL )
@@ -214,7 +214,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 											hParentWindow,
 											dwCreationFlags,
 											&m_sD3DDev9.d3dPresParams,
-											&m_sD3DDev9.pD3DDevice );
+											&m_sD3DDev9.pD3DDevice );  //Fix memory leak -Imago 8/2/09
 
 	// Did we create a valid device?
 	// 29.07.08 - Courtesy of Imago, it appears that some device drivers (such as Intel Integrated chipset)
@@ -568,7 +568,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		//
 
 		// Perform the reset.
-		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams ); //imago changed 6/29/09 to fall thru
+		hr = m_sD3DDev9.pD3DDevice->Reset( &m_sD3DDev9.d3dPresParams ); //imago changed 6/29/09 to fall thru  //Fix memory leak -Imago 8/2/09
 
 		if(hr == D3D_OK ) {
 
@@ -631,7 +631,7 @@ HRESULT CD3DDevice9::TestCooperativeLevel( )
 HRESULT CD3DDevice9::RenderFinished( )
 {
 	HRESULT hr;
-	hr = m_sD3DDev9.pD3DDevice->Present( NULL, NULL, NULL, NULL );
+	hr = m_sD3DDev9.pD3DDevice->Present( NULL, NULL, NULL, NULL );  //Fix memory leak -Imago 8/2/09
 	return hr;
 }
 
@@ -740,11 +740,11 @@ void CD3DDevice9::InitialiseDeviceStateCache( SD3D9DeviceStateCache * pCache )
 
 	// Reset the sampler states.
 	pCache->dwNumSamplers = m_sD3DDev9.sD3DDevCaps.MaxSimultaneousTextures;
-	pCache->pSamplerState = new DWORD* [ pCache->dwNumSamplers ];
+	pCache->pSamplerState = new DWORD* [ pCache->dwNumSamplers ]; //Fix memory leak -Imago 8/2/09
 
 	for( i=0; i<pCache->dwNumSamplers; i++ )
 	{
-		pCache->pSamplerState[i] = new DWORD[ dwMaxSamplerStatesAllowed ];
+		pCache->pSamplerState[i] = new DWORD[ dwMaxSamplerStatesAllowed ]; //Fix memory leak -Imago 8/2/09
 		InitialiseSamplerStateCache( i, pCache->pSamplerState[i] );
 	}
 
@@ -979,8 +979,8 @@ void CD3DDevice9::InitialiseLightCache( SD3D9LightCache * pCache )
 		pCache->dwNumLights = 8;
 	}
 
-	pCache->pLightsActive = new BOOL[ pCache->dwNumLights ];
-	pCache->pLights = new D3DLIGHT9[ pCache->dwNumLights ];
+	pCache->pLightsActive = new BOOL[ pCache->dwNumLights ]; //Fix memory leak -Imago 8/2/09
+	pCache->pLights = new D3DLIGHT9[ pCache->dwNumLights ]; //Fix memory leak -Imago 8/2/09
 
 	memset( pCache->pLightsActive, 0, pCache->dwNumLights * sizeof( BOOL ) );
 	memset( pCache->pLights, 0, pCache->dwNumLights * sizeof( D3DLIGHT9 ) );
@@ -1313,7 +1313,7 @@ HRESULT	CD3DDevice9::SetFVF( DWORD FVF )
 #endif // EnablePerformanceCounters
 
 	m_sD3DDev9.sDeviceStateCache.dwFVF = FVF;
-	return m_sD3DDev9.pD3DDevice->SetFVF( FVF );
+	return m_sD3DDev9.pD3DDevice->SetFVF( FVF );  //Fix memory leak -Imago 8/2/09
 }
 
 
@@ -1560,7 +1560,7 @@ HRESULT	CD3DDevice9::DrawIndexedPrimitiveUP( D3DPRIMITIVETYPE PrimitiveType,
 
 	return m_sD3DDev9.pD3DDevice->DrawIndexedPrimitiveUP( 
 				PrimitiveType, MinVertexIndex, NumVertices, PrimitiveCount, 
-				pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride );
+				pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride );  //Fix memory leak -Imago 8/2/09
 }
 
 

@@ -2212,7 +2212,7 @@ public:
         // built in values
         //
 
-        TRef<Number> ptime = new ModifiableNumber(0);
+        TRef<Number> ptime = new ModifiableNumber(0); //Fix memory leak -Imago 8/2/09
 
         pns->AddMember("emptyGeo",           Geo::GetEmpty()                 );
         pns->AddMember("emptyImage",         (Value*)Image::GetEmpty()       );

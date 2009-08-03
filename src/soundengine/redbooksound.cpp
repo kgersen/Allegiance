@@ -36,7 +36,7 @@ public:
 
     CDVolume()
     {
-        UINT uMaxDevices = mixerGetNumDevs();
+        UINT uMaxDevices = mixerGetNumDevs();  //Fix memory leak -Imago 8/2/09
         
         // find all of the CD line controls and store their ID and starting volume
         for (UINT uDeviceID = 0; uDeviceID < uMaxDevices; ++uDeviceID)
@@ -243,7 +243,7 @@ public:
         }
 
         // try opening it to make sure it exists
-        dwError = mciSendCommand(NULL, MCI_OPEN, dwFlags, (UINT_PTR)&mciOpenParms);
+        dwError = mciSendCommand(NULL, MCI_OPEN, dwFlags, (UINT_PTR)&mciOpenParms);  //Fix memory leak -Imago 8/2/09
         if (dwError)
         {
             char cbError[256];

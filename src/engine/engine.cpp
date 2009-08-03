@@ -147,7 +147,7 @@ public:
 			( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_X8B8G8R8 ) ||
 			( CD3DDevice9::Get()->GetCurrentMode()->mode.Format == D3DFMT_X8R8G8B8 ) )
 		{
-			m_ppf = new PixelFormat(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+			m_ppf = new PixelFormat(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000); //Fix memory leak -Imago 8/2/09
 			m_dwBPP = 32;
 		}
 		else
@@ -1407,7 +1407,7 @@ private:
 												ddpf.dwRBitMask, 
 												ddpf.dwGBitMask, 
 												ddpf.dwBBitMask, 
-												ddpf.dwRGBAlphaBitMask );
+												ddpf.dwRGBAlphaBitMask ); //Fix memory leak -Imago 8/2/09
 
         m_ppfs.PushEnd(ppf);
 
@@ -1831,7 +1831,7 @@ private:
 
 TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow )
 {
-    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP, hWindow );
+    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP, hWindow ); //Fix memory leak -Imago 8/2/09
 }
 
 

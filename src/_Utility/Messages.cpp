@@ -872,7 +872,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 
 template< class T > T* allocAndCopyStruct( const T& data )
 {
-  return new T(data);
+  return new T(data); //Fix memory leak -Imago 8/2/09
 }
 
 //  <NKM> 09-Aug-2004
@@ -1550,7 +1550,7 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
                                      NULL, 0,            // User data & its size
                                      NULL,               // Asynchronous connection context (returned with DPNMSG_CONNECT_COMPLETE in async handshaking)
                                      NULL,               // Asynchronous connection handle (used to cancel connection process)
-                                     DPNOP_SYNC );       // Connect synchronously
+                                     DPNOP_SYNC );       // Connect synchronously  //Fix memory leak -Imago 8/2/09
 
   delete[] playerInfo.pwszName;
   if (FAILED(hr))
@@ -1732,7 +1732,7 @@ hr = InitDPlayClient();
   // Create the local device address object
   if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
                                      CLSCTX_ALL, IID_IDirectPlay8Address,
-                                     (LPVOID*) &pDP8AddressLocal ) ) )
+                                     (LPVOID*) &pDP8AddressLocal ) ) )  //Fix memory leak -Imago 8/2/09
   {
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay client local address", "Allegiance", MB_OK );
     return hr;
@@ -1758,14 +1758,14 @@ hr = InitDPlayClient();
 
   SafeReleaser<IDirectPlay8Address> r2( pDP8AddressHost );
   // Set IP service provider
-  if( FAILED( hr = pDP8AddressHost->SetSP( &CLSID_DP8SP_TCPIP ) ) )
+  if( FAILED( hr = pDP8AddressHost->SetSP( &CLSID_DP8SP_TCPIP ) ) )  //Fix memory leak -Imago 8/2/09
   {
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay remote SP", "Allegiance", MB_OK );
     return hr;
   }
 
   // Set the remote port
-  if(dwPort != 6073 && FAILED(hr = pDP8AddressHost->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
+  if(dwPort != 6073 && FAILED(hr = pDP8AddressHost->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))  //Fix memory leak -Imago 8/2/09
   {
 	  m_pfmSite->OnMessageBox( this, "Failed to set DPlay client remote port", "Allegiance", MB_OK );
 	  return hr;
@@ -1779,7 +1779,7 @@ hr = InitDPlayClient();
 
     hr = pDP8AddressHost->AddComponent( DPNA_KEY_HOSTNAME, wszHostName,
                                         (wcslen(wszHostName)+1)*sizeof(WCHAR),
-                                        DPNA_DATATYPE_STRING );
+                                        DPNA_DATATYPE_STRING );  //Fix memory leak -Imago 8/2/09
 
     delete[] wszHostName;
 
@@ -1814,7 +1814,7 @@ hr = InitDPlayClient();
      hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
                                           pDP8AddressLocal, NULL,
                                           0, INFINITE, 0, 0, NULL,
-                                          &fillerHandle, 0 );
+                                          &fillerHandle, 0 );  //Fix memory leak -Imago 8/2/09
   }
 
 // WLP - DPLAY8 def = STDMETHOD(EnumHosts)

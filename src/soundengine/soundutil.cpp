@@ -316,7 +316,7 @@ private:
 		unsigned int monoSize = m_uSize / m_uChannels;
 		unsigned int numSamples = monoSize / bytePerSample;
 
-		void* monoData = malloc(monoSize);
+		void* monoData = malloc(monoSize); //Fix memory leak -Imago 8/2/09
 
 		BYTE* writePtr = (BYTE*)monoData;
 		BYTE* readPtr = (BYTE*)m_pvData;

@@ -25,7 +25,7 @@ public:
 
 TRef<INameSpaceInfo> CreateNameSpaceInfo(INameSpace* pns, const ZString& str)
 {
-    return new NameSpaceInfo(pns, str);
+    return new NameSpaceInfo(pns, str); //Fix memory leak -Imago 8/2/09
 }
 
 //////////////////////////////////////////////////////////////////////////////

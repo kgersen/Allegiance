@@ -39,7 +39,7 @@ private:
 		DWORD i, dwVertOffset;
 
 		m_dwTotalVerts		= m_countFaces * m_iNumVertsPerButton;
-		m_pButtonVertices	= new UIVERTEX[ m_dwTotalVerts ];
+		m_pButtonVertices	= new UIVERTEX[ m_dwTotalVerts ]; //Fix memory leak -Imago 8/2/09
 
 		// Blt area defined by. Buttons arranged vertically on the surface.
 		PrivateSurface * pprivateSurfSource;

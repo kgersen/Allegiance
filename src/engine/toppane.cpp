@@ -38,7 +38,7 @@ TopPane::TopPane(Engine* pengine, SurfaceType stype, bool bColorKey, TopPaneSite
     m_psite(psite),
     m_bColorKey(bColorKey),
     m_bNeedLayout(true)
-{
+{ //Fix memory leak -Imago 8/2/09
     if (m_bColorKey) {
         m_psurface->SetColorKey(Color(0, 0, 0));
     }

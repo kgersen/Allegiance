@@ -9,7 +9,7 @@
 ZString::ZStringData::ZStringData(PCC pcc)
 {
     m_length = pcc ? strlen(pcc) : 0;
-    m_pch    = new char[m_length + 1];
+    m_pch    = new char[m_length + 1]; //Fix memory leak -Imago 8/2/09
     m_pcc    = m_pch;
     memcpy(m_pch, pcc ? pcc : "", m_length + 1);
 }
@@ -187,7 +187,7 @@ ZString::ZString() :
 }
 
 ZString::ZString(PCC pcc) :
-    m_pdata(new ZStringData(pcc))
+    m_pdata(new ZStringData(pcc)) //Fix memory leak -Imago 8/2/09
 {
 }
 
