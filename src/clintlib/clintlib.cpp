@@ -3948,8 +3948,9 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 		IsideIGC* otherside = GetCore()->GetSide(pPlayerInfo->SideID());
         if ( (m_pPlayerInfo != pPlayerInfo) && (((m_pPlayerInfo->SideID() == pPlayerInfo->SideID()) || otherside->AlliedSides(otherside,GetSide())) )) //#ALLY -imago 7/3/09
         {
-			if (otherside->AlliedSides(otherside,GetSide())) {
-            	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ") + pside->GetName() + ZString(" (allied).");
+			if (otherside != GetSide() && otherside->AlliedSides(otherside,GetSide())) {
+                Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
+            	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ") + pside->GetName() + ZString(" \x81 ") + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(allied)" + END_COLOR_STRING + ".";
 	            ReceiveChat(NULL, CHAT_TEAM, NA, NULL, msg, c_cidNone, NA, NA);
 			} else {
             	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
