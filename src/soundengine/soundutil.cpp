@@ -307,7 +307,7 @@ private:
 		return S_OK;
 	}
 
-	void ToMono()
+void ToMono()
 	{
 		if(m_uChannels == 1)
 			return;
@@ -316,7 +316,7 @@ private:
 		unsigned int monoSize = m_uSize / m_uChannels;
 		unsigned int numSamples = monoSize / bytePerSample;
 
-		void* monoData = malloc(monoSize); //Fix memory leak -Imago 8/2/09
+		void* monoData = malloc(monoSize);
 
 		BYTE* writePtr = (BYTE*)monoData;
 		BYTE* readPtr = (BYTE*)m_pvData;
@@ -327,6 +327,10 @@ private:
 			writePtr += bytePerSample;
 			readPtr += bytePerSample * m_uChannels;
 		}
+
+		//The contents of the memory cuurently allocated are copied to monoData in the above for loop.  
+		//Allocated m_pvData memory is now of no use since m_pvData pointer is changed below. (m_pvData = monoData;)
+		free(m_pvData); //Fix memory leak 8/3/09 Sgt_Baker
 
 		m_uChannels = 1;
 		m_uSize = monoSize;

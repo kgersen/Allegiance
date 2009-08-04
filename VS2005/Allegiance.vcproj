@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="Allegiance"
 	ProjectGUID="{3702DB5A-C966-4133-824F-5958F4BF9BCF}"
 	RootNamespace="Allegiance"
@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\src\Effect;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\SoundEngine;..\src\AGC;..\src\FedSrv;..\src\Training;..\src\Lobby;..\src\Inc;..\src\guids;..\src\Zone;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
-				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL"
+				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;_WINDOWS;WIN32;AFXDLL;_WIN32_DCOM"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="1"
 				RuntimeLibrary="3"
@@ -70,7 +70,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="d3d9.lib d3dx9.lib dsound.lib dinput8.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib $(OutDir)\..\vorbis\vorbis.lib urlmon.lib dxguid.lib winmm.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\DirectPlay\dxguid.lib"
+				AdditionalDependencies="d3d9.lib d3dx9.lib dsound.lib dinput8.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib urlmon.lib dxguid.lib winmm.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\DirectPlay\dxguid.lib ..\src\Lib\OggVorbis\vorbis.lib ..\src\Lib\OggVorbis\ogg.lib ..\src\Lib\OggVorbis\file.lib"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				SubSystem="2"
@@ -129,7 +129,7 @@
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\src\Effect;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\SoundEngine;..\src\AGC;..\src\FedSrv;..\src\Training;..\src\Lobby;..\src\Inc;..\src\guids;..\src\Zone;&quot;$(OutDir)\..\AGC&quot;;&quot;$(OutDir)\..\FedSrv&quot;"
-				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL"
+				PreprocessorDefinitions="WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;_WIN32_DCOM"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
 				RuntimeTypeInfo="true"
@@ -155,7 +155,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="atls.lib d3d9.lib d3dx9.lib dsound.lib dinput8.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib $(OutDir)\..\vorbis\vorbis.lib urlmon.lib dxguid.lib winmm.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\DirectPlay\dxguid.lib"
+				AdditionalDependencies="d3d9.lib d3dx9.lib dsound.lib dinput8.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\soundengine\soundengine.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\engine\Engine.lib $(OutDir)\..\effect\Effect.lib $(OutDir)\..\igc\igc.lib $(OutDir)\..\clintlib\clintlib.lib $(OutDir)\..\agc\AGCGuid.lib $(OutDir)\..\Guids\guids.lib $(OutDir)\..\training\training.lib urlmon.lib dxguid.lib winmm.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib ..\src\Lib\DirectPlay\dxguid.lib ..\src\Lib\OggVorbis\vorbis.lib ..\src\Lib\OggVorbis\ogg.lib ..\src\Lib\OggVorbis\file.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreDefaultLibraryNames=""
@@ -277,6 +277,22 @@
 		</File>
 		<File
 			RelativePath="..\src\WinTrek\consoledata.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddstream.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddstream.h"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddvideo.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\WinTrek\ddvideo.h"
 			>
 		</File>
 		<File
@@ -539,22 +555,6 @@
 			RelativePath="..\src\WinTrek\wintrekp.h"
 			>
 		</File>
-		<File
-			RelativePath="..\src\WinTrek\ddstream.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\src\WinTrek\ddstream.h"
-			>
-		</File>		
-		<File
-			RelativePath="..\src\WinTrek\ddvideo.cpp"
-			>
-		</File>
-		<File
-			RelativePath="..\src\WinTrek\ddvideo.h"
-			>
-		</File>			
 	</Files>
 	<Globals>
 	</Globals>

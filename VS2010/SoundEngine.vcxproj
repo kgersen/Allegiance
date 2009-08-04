@@ -306,11 +306,6 @@
     <ClInclude Include="..\src\soundengine\soundtemplates.h" />
     <ClInclude Include="..\src\soundengine\soundutil.h" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Vorbis.vcxproj">
-      <Project>{d4369894-f7ef-4937-91c5-5d4c67a29ef9}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

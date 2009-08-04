@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="Server"
 	ProjectGUID="{05EAD557-56B0-4070-83F0-8A2B6FB9C54D}"
 	RootNamespace="Server"
@@ -28,6 +28,8 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				Description=""
+				CommandLine="mc ../src/FedSrv/FedMsg.msg -r $(IntDir) -h  $(IntDir)"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -124,6 +126,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="mc ../src/FedSrv/FedMsg.msg -r $(IntDir) -h  $(IntDir)"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -385,28 +388,6 @@
 		<File
 			RelativePath="..\src\FedSrv\dbgutil.h"
 			>
-		</File>
-		<File
-			RelativePath="..\src\FedSrv\fedmsg.msg"
-			>
-			<FileConfiguration
-				Name="FZDebug|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
-					Outputs="$(IntDir)\$(InputName).rc"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="FZRetail|Win32"
-				>
-				<Tool
-					Name="VCCustomBuildTool"
-					CommandLine="mc $(InputPath) -r $(IntDir) -h $(IntDir)&#x0D;&#x0A;"
-					Outputs="$(IntDir)\$(InputName).rc"
-				/>
-			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\src\FedSrv\FedSrv.CPP"
