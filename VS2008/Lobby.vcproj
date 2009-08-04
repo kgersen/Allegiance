@@ -229,7 +229,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="mc \"$(InputPath)\" -r \"$(IntDir)\" -h $\"(IntDir)\""
+						CommandLine="mc &quot;$(InputPath)&quot; -r &quot;$(IntDir)&quot; -h &quot;$(IntDir)&quot;"
 						Outputs="$(IntDir)\$(InputName).rc"
 					/>
 				</FileConfiguration>
@@ -238,7 +238,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="mc \"$(InputPath)\" -r \"$(IntDir)\" -h \"$(IntDir)\""
+						CommandLine="mc &quot;$(InputPath)&quot; -r &quot;$(IntDir)&quot; -h &quot;$(IntDir)&quot;"
 						Outputs="$(IntDir)\$(InputName).rc"
 					/>
 				</FileConfiguration>
