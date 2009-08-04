@@ -93,6 +93,7 @@
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -111,11 +112,16 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\src\Training;..\src\Effect;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\clintlib;..\src\SoundEngine;..\src\wintrek;..\src\lobby;..\src\Zone"
 				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="pch.h"

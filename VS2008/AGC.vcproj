@@ -121,6 +121,7 @@
 			UseOfMFC="0"
 			UseOfATL="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -145,12 +146,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\src\AGC;..\src\ZLib;..\src\Igc;..\src\Inc;..\src\Test\Inc;&quot;$(OutDir)&quot;"
 				PreprocessorDefinitions="SRVLOG;_ATL_STATIC_REGISTRY; _USRDLL;STRICT;_WINDOWS;WIN32;_AFXDLL"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
+				EnableEnhancedInstructionSet="2"
 				TreatWChar_tAsBuiltInType="true"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"

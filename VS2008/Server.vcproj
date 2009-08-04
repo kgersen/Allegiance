@@ -80,6 +80,7 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="false"
 				AdditionalLibraryDirectories="..\src\Inc\appWeb"
+				IgnoreDefaultLibraryNames="MSVCRTD"
 				DelayLoadDLLs="netapi32.dll;advapi32.dll"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
@@ -119,6 +120,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -141,11 +143,16 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\src\guids;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\inc;..\src\AGC;..\src\Test\Inc;..\src\lobby;..\src\Zone;&quot;$(IntDir)\..\Igc&quot;;&quot;$(IntDir)\..\FedSrv&quot;;&quot;$(IntDir)\..\AGC&quot;"
 				PreprocessorDefinitions="ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0400;WIN"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="pch.h"

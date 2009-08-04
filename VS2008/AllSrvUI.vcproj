@@ -108,6 +108,7 @@
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -127,11 +128,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\src\Inc;..\src\ZLib;..\src\Test\Inc;..\AGC;&quot;$(OutDir)/../FedSrv&quot;;&quot;$(OutDir)/../AGC&quot;"
 				PreprocessorDefinitions="WIN32;WINVER=0x0500"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"
+				EnableEnhancedInstructionSet="2"
 				TreatWChar_tAsBuiltInType="false"
 				UsePrecompiledHeader="2"
 				WarningLevel="2"

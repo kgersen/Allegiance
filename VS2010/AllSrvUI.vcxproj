@@ -62,6 +62,7 @@
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -206,6 +207,9 @@
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\AGC\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
