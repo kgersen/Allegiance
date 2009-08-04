@@ -48,7 +48,7 @@ void CGameParamsSheet::InitButtons()
   CRect rectUnits(0, 0, 0, 7);
 
   //mmf vc8 does not like two arguments, below was commented out, I uncommented it - Imago made them co-exist
-#if _MSC_VER >= 1500
+#if _MSC_VER >= 1400
   MapDialogRect(rectUnits);
 #else
   MapDialogRect(GetSafeHwnd(), rectUnits); 
