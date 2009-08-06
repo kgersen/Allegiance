@@ -1078,6 +1078,9 @@ public:
             //
             pcontext->SetShadeMode(ShadeModeFlat);
             pcontext->SetLinearFilter(false, true);
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
 
 			//
 			// Shrink the rect size by half the size of the gauge bitmap
@@ -1271,6 +1274,9 @@ public:
             }
 
             m_listTextData.SetEmpty();
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP );
         }
     }
 };
