@@ -108,6 +108,9 @@ public:
 
     // Initialize enumerator object with the temporary CComVariant vector
 // VS.Net 2003 port
+
+    //Imago 8/5/09 Is this code even used?  If so it may be incorrect...
+    // see IAGCCollectionImpl.h(81)
 #if _MSC_VER >= 1310
 	RETURN_FAILED(pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy));
 #else

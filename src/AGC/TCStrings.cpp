@@ -56,6 +56,9 @@ STDMETHODIMP CTCStrings::get__NewEnum(IUnknown** ppunkEnum)
 
   // Initialize enumerator object with the temporary CComVariant vector
   // VS.Net 2003 port - accomodate change in iterators under VC.Net 200x (see 'breaking changes' in vsnet doc)
+
+   //Imago 8/5/09 Is this code even used?  If so it may be incorrect...
+   // see IAGCCollectionImpl.h(81)
 #if _MSC_VER >= 1310
   HRESULT hr = pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy);
 #else

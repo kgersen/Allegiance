@@ -57,23 +57,32 @@ public:
     long cTotal = GetIGC()->n();
     
     // Create a temporary array of variants
-    std::vector<CComVariant> vecTemp(cTotal);
+    //std::vector<CComVariant> vecTemp(cTotal);  //Imago replaced /w below line 8/5/09
+    CComVariant* pargTemp = new CComVariant[cTotal];
 
     // Get the IDispatch of each item of the collection
+    long l2 = 0;
     for (CComVariant i(0L); V_I4(&i) < cTotal; ++V_I4(&i))
     {
       CComPtr<ITEMITF> spItem;
       RETURN_FAILED(get_Item(&i, &spItem));
-      vecTemp[V_I4(&i)] = (IDispatch*)spItem;
+      //vecTemp[V_I4(&i)] = (IDispatch*)spItem; //Imago replaced /w below line 8/5/09
+      pargTemp[l2] = (IDispatch*)spItem;
+      l2++;
     }
 
     // Initialize enumerator object with the temporary CComVariant vector
 // VS.Net 2003 port - accomodate change in iterators under VC.Net 200x (see 'breaking changes' in vsnet doc)
-#if _MSC_VER >= 1300
-    HRESULT hr = pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy);
-#else
-    HRESULT hr = pEnum->Init(vecTemp.begin(), vecTemp.end(), NULL, AtlFlagCopy);
-#endif
+   
+    // Imago removed this 2003 port (kgjv), VS.Net 2003 projects were removed anyways.
+    // The reason I'm here: we can't dereference iterators with invalid pointers, so this code has been redone
+    // to not use iterators and this fixes server crashes for anything that used this collection! 8/5/09
+
+    HRESULT hr = pEnum->Init(&pargTemp[0], &pargTemp[cTotal], NULL, AtlFlagCopy);
+
+    delete [] pargTemp;
+
+//#endif
     if (SUCCEEDED(hr))
       hr = pEnum->QueryInterface(IID_IEnumVARIANT, (void**)ppunkEnum);
     if (FAILED(hr))
