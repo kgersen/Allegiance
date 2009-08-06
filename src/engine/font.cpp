@@ -566,6 +566,8 @@ public:
 		pDev->SetRenderState( D3DRS_COLORVERTEX, TRUE );
 		pDev->SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1 );
 
+        pDev->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE ); //imago 8/6/09
+
 		// Generate the geometry for rendering the text.
 		int iChar = 0;
 		int iCurrVert = 0;
@@ -690,6 +692,7 @@ public:
 									iCurrVert / 3 );
 
 		// Reset the texture unit setup.
+        pDev->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE ); //imago 8/6/09
 	}
 	
 
