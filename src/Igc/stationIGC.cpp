@@ -307,33 +307,37 @@ void CstationIGC::Launch(IshipIGC* pship)
     int nLaunchSlots = m_myStationType.GetLaunchSlots();
     if (nLaunchSlots == 0)
     {
-        switch (m_undockPosition++)
-        {
-            case 4:
+        if ((pship->GetPilotType() < c_ptPlayer) && m_myStationType.HasCapability(c_sabmRipcord)) { //imago 8/7/09
+            forward = Vector::RandomDirection();
+        } else { //do the regular thing
+            switch (m_undockPosition++)
             {
-                m_undockPosition = 0;
+                case 4:
+                {
+                    m_undockPosition = 0;
+                }
+                //No break
+                case 0:
+                {
+                    forward = o.GetRight();
+                }
+                break;
+                case 1:
+                {
+                    forward = o.GetUp();
+                }
+                break;
+                case 2:
+                {
+                    forward = -o.GetRight();
+                }
+                break;
+                case 3:
+                {
+                    forward = -o.GetUp();
+                }
+                break;
             }
-            //No break
-            case 0:
-            {
-                forward = o.GetRight();
-            }
-            break;
-            case 1:
-            {
-                forward = o.GetUp();
-            }
-            break;
-            case 2:
-            {
-                forward = -o.GetRight();
-            }
-            break;
-            case 3:
-            {
-                forward = -o.GetUp();
-            }
-            break;
         }
 
         position += forward * (GetRadius() + pship->GetRadius() + vLaunch * 0.5f);
