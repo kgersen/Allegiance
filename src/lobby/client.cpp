@@ -32,6 +32,7 @@ static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
   {
     _Module.ReadFromRegistry(hk, false, szKey, &dwResult, dwDefault);
   }
+  RegCloseKey(hk); //Imago 8/6/09 Fixes lobby leaving a handle open
 
   return dwResult;
 }
@@ -82,39 +83,26 @@ static void doASGS(void* data, MprThread *threadp) {
 	// finally
 	client->getRequest(szURL);
 
-    // check registry to see is ASGS is on or off
+	// Imago check for HTTP OK 8/3/08  (this wont hang either)
+	if (client->getResponseCode() == 200) {
+		content = client->getResponseContent(&contentLen);
 
-    DWORD dw; // Gets result of whether it opened or created... - we only read
-    HKEY  hk;
-    if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hk, &dw) == ERROR_SUCCESS)
-    {
-        // read ASGS is on or off in registry
-        DWORD dwASGS_ON=0;
-        bool bSuccess = _Module.ReadFromRegistry(hk, false, "ASGS_ON", &dwASGS_ON, 0);
-        RegCloseKey(hk);
-		if (bSuccess && dwASGS_ON) { // ASGS is on 
-        	// Imago check for HTTP OK 8/3/08  (this wont hang either)
-    	    if (client->getResponseCode() == 200) {
-    		    content = client->getResponseContent(&contentLen);
+		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
+			ZString strContent = content;
+			strContent = strContent.RightOf(85);
+			strContent = strContent.LeftOf("<");
+			Strcpy(szResponse,(PCC)strContent);
 
-    		    if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
-    			    ZString strContent = content;
-    			    strContent = strContent.RightOf(85);
-    			    strContent = strContent.LeftOf("<");
-    			    Strcpy(szResponse,(PCC)strContent);
-
-    			    if (strcmp(szResponse,"-1") == 0) {
-    				    mutex->lock();
-    				    pqd->fValid = false;
-    				    pqd->fRetry = false;
-    				    char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
-	    			    pqd->szReason = new char[lstrlen(szReason) + 1];
-    				    Strcpy(pqd->szReason,szReason);
-    				    mutex->unlock();
-			        }
-		        } 
-	        }
-		}
+			if (strcmp(szResponse,"-1") == 0) {
+				mutex->lock();
+				pqd->fValid = false;
+				pqd->fRetry = false;
+				char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
+				pqd->szReason = new char[lstrlen(szReason) + 1];
+				Strcpy(pqd->szReason,szReason);
+				mutex->unlock();
+			}
+		} 
 	}
 
 	// tell the main thread we've finished, use the existing thread msg for AZ SQL 
@@ -326,10 +314,29 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		  Strcpy(pqd->szReason, szReason);
 	  }
 
-      char mprthname[9]; 
-	  mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
-	  MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
-	  threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08  
+      //Imago added NACK for verson back in 8/6/09 
+      if (!fValid) {
+          BEGIN_PFM_CREATE(*pthis, pfmLogonNack, L, LOGON_NACK)
+          FM_VAR_PARM(szReason, CB_ZTS)
+          END_PFM_CREATE
+          pfmLogonNack->fRetry = false;
+          g_pLobbyApp->GetFMClients().SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
+          break;
+      }
+
+      //Imago - Dogbones's ASGS_ON AllSrv registry entry fiasco... 8/6/09
+      if (g_pLobbyApp->EnforceASGS()) {
+	      char mprthname[9]; 
+	      mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
+	      MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
+	      threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
+      } else {
+          BEGIN_PFM_CREATE(*pthis, pfmLogonAck, L, LOGON_ACK)
+          END_PFM_CREATE
+          pfmLogonAck->dwTimeOffset = pfmLogon->dwTime - Time::Now().clock();
+          QueueMissions(pthis);
+          g_pLobbyApp->GetFMClients().SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
+      }
     }
     break;
 

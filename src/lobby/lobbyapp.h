@@ -130,6 +130,12 @@ public:
     return m_fFreeLobby && m_fCheckCDKey;
   }
 
+  //Imago added 8/6/09
+  bool EnforceASGS()
+  {
+      return (m_dwASGS) ? true : false;
+  }
+
   // -KGJV: added
   bool IsFreeLobby()
   {
@@ -234,6 +240,7 @@ private:
   bool              m_fFreeLobby;
   bool              m_fCheckCDKey;
   char              m_szToken[24]; // sizeof(_ZONETICKET_TOKEN.szToken)
+  DWORD             m_dwASGS;
 
   // Player list stuff
   typedef std::multimap<ZString, PlayerLocInfo, StringCmpLess> PlayerByCDKey;

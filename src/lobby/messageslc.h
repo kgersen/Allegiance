@@ -12,7 +12,7 @@
 #define _MESSAGES_LC_H_ 
 
 #include "MessageCore.h"
-#define LOBBYVER 10 // KGJV updated for R4
+#define LOBBYVER 11 //Imago updated for R5 8/6/09
 
  /*
   *************************************************

@@ -13,8 +13,8 @@
 
 #include "MessageCore.h"
 
-// KGJV updated for R4
-#define LOBBYVER_LS 8 // If you change this file, increment this
+// Imago updated for R5 8/6/09
+#define LOBBYVER_LS 9 // If you change this file, increment this
 
 
 /*

@@ -142,7 +142,8 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   m_sGameInfoInterval(0), // doesn't really matter, but...
   m_fProtocol(true),
   m_cStaticCoreInfo(0),
-  m_vStaticCoreInfo(NULL)
+  m_vStaticCoreInfo(NULL),
+  m_dwASGS(0)
 #ifdef USECLUB
   ,
   m_csqlSilentThreads(0),
@@ -317,6 +318,16 @@ HRESULT CLobbyApp::Init()
     else 
       g_pAutoUpdate = NULL;
 
+    RegCloseKey(hk);
+
+    //Imago 8/6/09 We can't use any of these other handy registry functions
+    // because we have to be different and read from Allsrv's registry key ;-/
+    HKEY  hk;
+    if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", 
+      REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hk, NULL) == ERROR_SUCCESS)
+    {
+        _Module.ReadFromRegistry(hk, false, "ASGS_ON", &m_dwASGS, 0, true);
+    }
     RegCloseKey(hk);
   }
 
