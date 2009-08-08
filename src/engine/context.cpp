@@ -331,7 +331,7 @@ public:
         m_pstateDevice->m_bZTest                 = false;
         m_pstateDevice->m_bZWrite                = false;
         m_pstateDevice->m_bPerspectiveCorrection = false;
-        m_pstateDevice->m_bDither                = true; //false; //true;
+        m_pstateDevice->m_bDither                = false; //true;
         m_pstateDevice->m_bColorKey              = true;
         m_pstateDevice->m_bLinearFilter          = true;
         m_pstateDevice->m_shadeMode              = ShadeModeGouraud;
