@@ -1220,6 +1220,7 @@ public:
 
                 if ((data.m_hull <= 1.0f) || (data.m_fill <= 1.0f))
                 {
+                    CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE ); //8/8/09 Imago
                     const float c_width = 16.0f;
 
                     float   xOffset = float(floor(offset.X()));
@@ -1268,6 +1269,7 @@ public:
                             pcontext->FillRect(rectHull, Color(1.0f, 0.0f, 0.0f));
                         }
                     }
+                    CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE ); //8/8/09 Imago
                 }
 
                 iter.Next();

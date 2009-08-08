@@ -2437,6 +2437,16 @@ public:
         SetTransform(Matrix::GetIdentity(),Matrix::GetIdentity());
 
         //
+        // Opaque decals
+        //
+
+        SetBlendMode(BlendModeSourceAlphaTest, false); //Imago 7/16/09 7/31/09
+        SetZWrite(true, false);
+
+        DrawVDecalSet(m_vdecalSetOpaque);
+
+
+        //
         // Emissive Transparent decals
         //
 
@@ -2445,14 +2455,7 @@ public:
 
         DrawVDecalSet(m_vdecalSet);
 
-        //
-        // Opaque decals last
-        //
 
-        SetBlendMode(BlendModeSourceAlphaTest, false); //Imago 7/16/09 7/31/09
-        SetZWrite(true, false);
-
-        DrawVDecalSet(m_vdecalSetOpaque);
 
     }
 
