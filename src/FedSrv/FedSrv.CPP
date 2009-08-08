@@ -11969,119 +11969,120 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
   				pfsShip->ShipStatusDocked(pstation);
 				pfsPlayer->ForceLoadoutChange();
 
-			} else {
+            } else { //not a pod --
 				//RIPPED FROM LAND ON CARRIER EVENT 7/9/09 
+                if (pship->GetParentShip() == NULL) { //8/8/09 Imago fix server crash rearming at allied base /w children (turrets)
+			        ImissionIGC*    pMission = pship->GetMission();
+			        TechTreeBitMask  ttbm = pship->GetSide()->GetDevelopmentTechs() | pship->GetSide()->GetBuildingTechs();
 
-			    ImissionIGC*    pMission = pship->GetMission();
-			    TechTreeBitMask  ttbm = pship->GetSide()->GetDevelopmentTechs() | pship->GetSide()->GetBuildingTechs();
-
-			    //Now ... go through the players ship and restore the expendables that are
-			    //free and partially gone
-			    {
-			        //refill parts backwards so that newly added parts will not be revisited
-			        PartLinkIGC*    ppl = pship->GetParts()->last();
-			        while (ppl)
+			        //Now ... go through the players ship and restore the expendables that are
+			        //free and partially gone
 			        {
-			            IpartIGC*   ppart = ppl->data();
-			            ppl = ppl->txen();
-
-			            if (ppart)
-			                RefillPart(pship, ppart, ttbm);
-			        }
-			    }
-
-			    //Copy the list of desired parts
-			    IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
-			    memcpy(ptDesired, pfsPlayer->GetDesiredLoadout(), sizeof(ptDesired));
-
-			    //Go through and fill any holes with the desired parts
-			    {
-			        ErasePart(pship, ET_Magazine, 0, ptDesired);
-			        ErasePart(pship, ET_Dispenser, 0, ptDesired);
-			        ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
-			        for (Mount i = 0; (i < c_maxCargo); i++)
-			            ErasePart(pship, NA, -1 - i, ptDesired);
-			    }
-
-			    {
-			        IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
-			                                 ? pMission->GetFuelPack()
-			                                 : NULL;
-
-			        IpartTypeIGC*   ptAmmo = NULL;
-			        {
-			            for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
+			            //refill parts backwards so that newly added parts will not be revisited
+			            PartLinkIGC*    ppl = pship->GetParts()->last();
+			            while (ppl)
 			            {
-			                IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
-			                if (pw && (pw->GetAmmoPerShot() != 0))
-			                {
-			                    ptAmmo = pMission->GetAmmoPack();
-			                    break;
-			                }
+			                IpartIGC*   ppart = ppl->data();
+			                ppl = ppl->txen();
+
+			                if (ppart)
+			                    RefillPart(pship, ppart, ttbm);
 			            }
 			        }
 
-			        bool    bBuyFuel = true;
+			        //Copy the list of desired parts
+			        IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
+			        memcpy(ptDesired, pfsPlayer->GetDesiredLoadout(), sizeof(ptDesired));
 
-
-			        int     iDesired = 0;
-			        for (Mount i = 0; (i < c_maxCargo); i++)
+			        //Go through and fill any holes with the desired parts
 			        {
-			            IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
-			            if (ppart == NULL)
+			            ErasePart(pship, ET_Magazine, 0, ptDesired);
+			            ErasePart(pship, ET_Dispenser, 0, ptDesired);
+			            ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
+			            for (Mount i = 0; (i < c_maxCargo); i++)
+			                ErasePart(pship, NA, -1 - i, ptDesired);
+			        }
+
+			        {
+			            IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
+			                                     ? pMission->GetFuelPack()
+			                                     : NULL;
+
+			            IpartTypeIGC*   ptAmmo = NULL;
 			            {
-			                //Shove an instance of the first part left in the
-			                //desired part list into the slot
-			                while (iDesired < c_maxCargo + 3)
+			                for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
 			                {
-			                    IpartTypeIGC*   pt = ptDesired[iDesired++];
-
-			                    if (pt && (pt->GetRequiredTechs() <= ttbm))
+			                    IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
+			                    if (pw && (pw->GetAmmoPerShot() != 0))
 			                    {
-			                        while (true)
-			                        {
-			                            IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
-			                            if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
-			                                pt = ptNext;
-			                            else
-			                                break;
-			                        }
-
-			                        ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
-			                        assert (ppart->GetPrice() == 0);
+			                        ptAmmo = pMission->GetAmmoPack();
 			                        break;
 			                    }
 			                }
+			            }
 
+			            bool    bBuyFuel = true;
+
+
+			            int     iDesired = 0;
+			            for (Mount i = 0; (i < c_maxCargo); i++)
+			            {
+			                IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
 			                if (ppart == NULL)
 			                {
-			                    if (bBuyFuel && ptFuel)
+			                    //Shove an instance of the first part left in the
+			                    //desired part list into the slot
+			                    while (iDesired < c_maxCargo + 3)
 			                    {
-			                        pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
-			                        bBuyFuel = (ptAmmo == NULL);
+			                        IpartTypeIGC*   pt = ptDesired[iDesired++];
+
+			                        if (pt && (pt->GetRequiredTechs() <= ttbm))
+			                        {
+			                            while (true)
+			                            {
+			                                IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
+			                                if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
+			                                    pt = ptNext;
+			                                else
+			                                    break;
+			                            }
+
+			                            ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
+			                            assert (ppart->GetPrice() == 0);
+			                            break;
+			                        }
 			                    }
-			                    else if (ptAmmo)
+
+			                    if (ppart == NULL)
 			                    {
-			                        pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
-			                        bBuyFuel = true;
+			                        if (bBuyFuel && ptFuel)
+			                        {
+			                            pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
+			                            bBuyFuel = (ptAmmo == NULL);
+			                        }
+			                        else if (ptAmmo)
+			                        {
+			                            pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
+			                            bBuyFuel = true;
+			                        }
 			                    }
 			                }
 			            }
 			        }
-			    }
 
-			    pship->SetAmmo(SHRT_MAX);
-			    pship->SetFuel(FLT_MAX);
-			    pship->SetEnergy(pship->GetHullType()->GetMaxEnergy());
-			    pship->SetFraction(1.0f);
-			    {
-			        IshieldIGC* pshield = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
-			        if (pshield)
-			            pshield->SetFraction(1.0f);
-			    }
-
-				//IMAGO ALLY 7/10/09 REARM
-	     	  // tell the client what happened
+			        pship->SetAmmo(SHRT_MAX);
+			        pship->SetFuel(FLT_MAX);
+			        pship->SetEnergy(pship->GetHullType()->GetMaxEnergy());
+			        pship->SetFraction(1.0f);
+			        {
+			            IshieldIGC* pshield = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
+			            if (pshield)
+			                pshield->SetFraction(1.0f);
+			        }
+                } // END not done for turrets
+                
+                //IMAGO ALLY 7/10/09 REARM
+                // tell the client what happened
 		      BEGIN_PFM_CREATE(g.fm, pfmBuyLoadoutAck, S, BUY_LOADOUT_ACK)
 		        FM_VAR_PARM(NULL, pfsPlayer->GetIGCShip()->ExportShipLoadout(NULL))
 		      END_PFM_CREATE

@@ -71,10 +71,6 @@ public:
 
         // default rendering states
 		D3DCall( CD3DDevice9::Get()->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL ) );
-		
-		//Imago 7/31/09
-		if (!CD3DDevice9::Get()->IsHardwareVP())
-			D3DCall( CD3DDevice9::Get()->SetRenderState( D3DRS_CLIPPING, TRUE ) );
 
 		m_bValid = true;
     }
