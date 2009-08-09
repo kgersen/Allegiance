@@ -196,14 +196,18 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 											&g_VideoSettings.iSelectedResolution,
 											&g_VideoSettings.pResolutionSet );
 
-		debugf("FOUND RESOLUTIONS:\n");
+		debugf("FOUND RESOLUTIONS (MODE %i):\n",iBestMode);
+        logFile.OutputStringV("\n\nFOUND RESOLUTIONS (MODE %i):\n",iBestMode);
 		for (int i=0;i<g_VideoSettings.iNumResolutions;i++) {
 			debugf("\t%i) %ix%i @ %i\n",i,g_VideoSettings.pResolutionSet[i].iWidth,g_VideoSettings.pResolutionSet[i].iHeight,
+				g_VideoSettings.pResolutionSet[i].iFreq);
+            logFile.OutputStringV("\t%i) %ix%i @ %i\n",i,g_VideoSettings.pResolutionSet[i].iWidth,g_VideoSettings.pResolutionSet[i].iHeight,
 				g_VideoSettings.pResolutionSet[i].iFreq);
 			if (g_VideoSettings.pResolutionSet[i].iWidth == x && g_VideoSettings.pResolutionSet[i].iHeight == y)
 				g_DX9Settings.m_refreshrate = g_VideoSettings.pResolutionSet[i].iFreq;
 		}
 		debugf("CURRENT IN-GAME RESOLUTION: %ix%i @ %i\n",x,y,g_DX9Settings.m_refreshrate);
+        logFile.OutputStringV("CURRENT IN-GAME RESOLUTION: %ix%i @ %i\n",x,y,g_DX9Settings.m_refreshrate);
 
 		//lets make extra sure we don't crash when we autoload AA settings
 		LPDIRECT3D9 pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
