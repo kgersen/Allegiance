@@ -11952,7 +11952,10 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
   IsideIGC* pside = pship->GetSide();
   IsideIGC* psideOld = pstation->GetSide();
 
-  if (!IsideIGC::AlliedSides(pside,psideOld) && (pside != psideOld)) //#ALLY - was: pside != psideOld  imago fixed to prevent case of FF 7/3/09
+  
+  if ((pside != psideOld) && (pship->GetHullType() && pship->GetHullType()->HasCapability(c_habmBoard)) && 
+      (!pside->AlliedSides(pside,psideOld) || 
+      pship->GetMission()->GetMissionParams()->bAllowFriendlyFire)) //#ALLY 7/3/09 8/10/09 imago
   {
       pfsShip->CaptureStation(pstation);
   }
