@@ -2663,7 +2663,18 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
                 {
                     trekClient.wmOld = 0;
 
-                    if (GetWindow()->GetCameraMode() != TrekWindow::cmExternalOverride)
+                    //imago 8/10/09 turreted ship rearms @ allied base fix ALLY
+                    if ((pstationNew->GetSide() != trekClient.GetSide()) && 
+                        (trekClient.GetShip()->GetParentShip() == NULL) && 
+                        (trekClient.GetShip()->GetChildShips()->n() != 0) &&
+                        (pstationNew->GetSide()->AlliedSides(pstationNew->GetSide(),trekClient.GetSide()))) {
+                        if (IsLockedDown())
+                            EndLockDown(lockdownDonating | lockdownLoadout | lockdownTeleporting);
+                        trekClient.BuyLoadout(trekClient.GetShip(), true);
+                        return;
+                    }
+
+                    if (GetWindow()->GetCameraMode() != TrekWindow::cmExternalOverride && (pstationNew->GetSide() == trekClient.GetSide()))
                     {
                         if ((!Training::IsTraining ()) || (Training::GetTrainingMissionID () != Training::c_TM_5_Command_View))
                         {

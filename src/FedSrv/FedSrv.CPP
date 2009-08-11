@@ -5626,6 +5626,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (pside->GetObjectID() < 0)
           break;
 
+      //Imago ALLY 8/10/09 turreted ship @ allied base fix
+      if ((pfsPlayer->GetIGCShip()->GetStation()->GetSide() != pside) &&
+          (pside->AlliedSides(pside,pfsPlayer->GetIGCShip()->GetStation()->GetSide())) &&
+          (pfsPlayer->GetIGCShip()->GetParentShip() == NULL) && (pfsPlayer->GetIGCShip()->GetChildShips()->n() != 0))
+      {
+          AlliedRearm(pfsPlayer->GetIGCShip(),true);
+          break;
+      }
+
       TrapHackBoot(pfsPlayer->GetIGCShip()->GetParentShip() == NULL);
 
       CASTPFM(pfmBuyLoadout, C, BUY_LOADOUT, pfm);
@@ -5681,7 +5690,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           }
       }
 
-      bool bLaunch = pfmBuyLoadout->fLaunch && bBoughtEverything;
+      bool bLaunch = pfmBuyLoadout->fLaunch && bBoughtEverything;        
 
       // tell the client what happened
       BEGIN_PFM_CREATE(g.fm, pfmBuyLoadoutAck, S, BUY_LOADOUT_ACK)
@@ -11553,6 +11562,165 @@ static void ErasePart(IshipIGC* pship, EquipmentType et, Mount mount, IpartTypeI
     }
 }
 
+void FedSrvSiteBase::AlliedRearm(IshipIGC* pship, bool bLaunch) { //Imago 8/10/09 ALLY
+    //RIPPED FROM LAND ON CARRIER EVENT 7/9/09 
+
+    CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
+    ImissionIGC*    pMission = pship->GetMission();
+    TechTreeBitMask  ttbm = pship->GetSide()->GetDevelopmentTechs() | pship->GetSide()->GetBuildingTechs();
+
+    //Now ... go through the players ship and restore the expendables that are
+    //free and partially gone
+    {
+        //refill parts backwards so that newly added parts will not be revisited
+        PartLinkIGC*    ppl = pship->GetParts()->last();
+        while (ppl)
+        {
+            IpartIGC*   ppart = ppl->data();
+            ppl = ppl->txen();
+
+            if (ppart)
+                RefillPart(pship, ppart, ttbm);
+        }
+    }
+
+    //Copy the list of desired parts
+    IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
+    memcpy(ptDesired, pfsPlayer->GetDesiredLoadout(), sizeof(ptDesired));
+
+    //Go through and fill any holes with the desired parts
+    {
+        ErasePart(pship, ET_Magazine, 0, ptDesired);
+        ErasePart(pship, ET_Dispenser, 0, ptDesired);
+        ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
+        for (Mount i = 0; (i < c_maxCargo); i++)
+            ErasePart(pship, NA, -1 - i, ptDesired);
+    }
+
+    {
+        IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
+                                 ? pMission->GetFuelPack()
+                                 : NULL;
+
+        IpartTypeIGC*   ptAmmo = NULL;
+        {
+            for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
+            {
+                IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
+                if (pw && (pw->GetAmmoPerShot() != 0))
+                {
+                    ptAmmo = pMission->GetAmmoPack();
+                    break;
+                }
+            }
+        }
+
+        bool    bBuyFuel = true;
+
+        int     iDesired = 0;
+        for (Mount i = 0; (i < c_maxCargo); i++)
+        {
+            IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
+            if (ppart == NULL)
+            {
+                //Shove an instance of the first part left in the
+                //desired part list into the slot
+                while (iDesired < c_maxCargo + 3)
+                {
+                    IpartTypeIGC*   pt = ptDesired[iDesired++];
+
+                    if (pt && (pt->GetRequiredTechs() <= ttbm))
+                    {
+                        while (true)
+                        {
+                            IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
+                            if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
+                                pt = ptNext;
+                            else
+                                break;
+                        }
+
+                        ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
+                        assert (ppart->GetPrice() == 0);
+                        break;
+                    }
+                }
+
+                if (ppart == NULL)
+                {
+                    if (bBuyFuel && ptFuel)
+                    {
+                        pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
+                        bBuyFuel = (ptAmmo == NULL);
+                    }
+                    else if (ptAmmo)
+                    {
+                        pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
+                        bBuyFuel = true;
+                    }
+                }
+            }
+        }
+    }
+
+    pship->SetAmmo(SHRT_MAX);
+    pship->SetFuel(FLT_MAX);
+    pship->SetEnergy(pship->GetHullType()->GetMaxEnergy());
+    pship->SetFraction(1.0f);
+    {
+        IshieldIGC* pshield = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
+        if (pshield)
+            pshield->SetFraction(1.0f);
+    }
+
+    //IMAGO ALLY 7/10/09 REARM
+    // tell the client what happened
+    BEGIN_PFM_CREATE(g.fm, pfmBuyLoadoutAck, S, BUY_LOADOUT_ACK)
+        FM_VAR_PARM(NULL, pfsPlayer->GetIGCShip()->ExportShipLoadout(NULL))
+    END_PFM_CREATE
+
+    pfsPlayer->GetIGCShip()->ExportShipLoadout((ShipLoadout*)(FM_VAR_REF(pfmBuyLoadoutAck, loadout)));
+
+    pfsPlayer->SaveDesiredLoadout();
+
+    pfmBuyLoadoutAck->fBoughtEverything = true;
+    pfmBuyLoadoutAck->fLaunch = bLaunch;
+
+    g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+
+    //Tell the surviving kids about dad's new toys
+    const ShipListIGC*    pshipsChildren = pfsPlayer->GetIGCShip()->GetChildShips();
+
+    pfsPlayer->QueueLoadoutChange();
+
+    {
+      SideID    sid = pfsPlayer->GetSide()->GetObjectID();
+      pfsPlayer->GetShipStatus(sid)->SetHullID(pfsPlayer->GetIGCShip()->GetBaseHullType()->GetObjectID());
+
+      for (ShipLinkIGC* psl = pshipsChildren->first(); (psl != NULL); psl = psl->next())
+      {
+          CFSShip*  pfsChild = (CFSShip*)(psl->data()->GetPrivateData());
+
+          //Since it might have changed ... reset the stored turret ID as well
+          pfsChild->GetShipStatus(sid)->SetState(psl->data()->GetTurretID() == NA ? c_ssObserver : c_ssTurret);
+
+          g.fm.SendMessages(pfsChild->GetPlayer()->GetConnection(), FM_GUARANTEED, FM_DONT_FLUSH);
+      }
+    }
+    g.fm.PurgeOutBox();
+
+    if (bLaunch) {
+        //Move the children of this ship to space as well
+        for (ShipLinkIGC*   psl = pshipsChildren->first();
+             (psl != NULL);
+             psl = psl->next())
+        {
+          psl->data()->SetStation(NULL);
+        }
+        pfsPlayer->GetIGCShip()->SetStation(NULL);
+    }
+}
+
 bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship, float tCollision)
 {
     CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
@@ -11913,6 +12081,8 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 		if (pstationNew && pship && !pship->GetParentShip() && pship->GetBaseHullType() && //imago fix crash when boarding turret 7/22/09
 			pship->GetBaseHullType()->HasCapability(c_habmLifepod) && pstationNew->GetSide() != pship->GetSide()) {
 			//dont dock here in a lifepod....
+        } else if (pstationNew && pship && pstationNew->GetSide() != pship->GetSide() && (pship->GetChildShips()->n() != 0 || pship->GetParentShip() != NULL)) {
+            //dont dock here with turrets....
 		} else {
         	pfsShip->Dock(pstationNew);
 		}
@@ -11970,161 +12140,20 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 				pfsPlayer->ForceLoadoutChange();
 
             } else { //not a pod --
-				//RIPPED FROM LAND ON CARRIER EVENT 7/9/09 
-                if (pship->GetParentShip() == NULL) { //8/8/09 Imago fix server crash rearming at allied base /w children (turrets)
-			        ImissionIGC*    pMission = pship->GetMission();
-			        TechTreeBitMask  ttbm = pship->GetSide()->GetDevelopmentTechs() | pship->GetSide()->GetBuildingTechs();
 
-			        //Now ... go through the players ship and restore the expendables that are
-			        //free and partially gone
-			        {
-			            //refill parts backwards so that newly added parts will not be revisited
-			            PartLinkIGC*    ppl = pship->GetParts()->last();
-			            while (ppl)
-			            {
-			                IpartIGC*   ppart = ppl->data();
-			                ppl = ppl->txen();
-
-			                if (ppart)
-			                    RefillPart(pship, ppart, ttbm);
-			            }
-			        }
-
-			        //Copy the list of desired parts
-			        IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
-			        memcpy(ptDesired, pfsPlayer->GetDesiredLoadout(), sizeof(ptDesired));
-
-			        //Go through and fill any holes with the desired parts
-			        {
-			            ErasePart(pship, ET_Magazine, 0, ptDesired);
-			            ErasePart(pship, ET_Dispenser, 0, ptDesired);
-			            ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
-			            for (Mount i = 0; (i < c_maxCargo); i++)
-			                ErasePart(pship, NA, -1 - i, ptDesired);
-			        }
-
-			        {
-			            IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
-			                                     ? pMission->GetFuelPack()
-			                                     : NULL;
-
-			            IpartTypeIGC*   ptAmmo = NULL;
-			            {
-			                for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
-			                {
-			                    IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
-			                    if (pw && (pw->GetAmmoPerShot() != 0))
-			                    {
-			                        ptAmmo = pMission->GetAmmoPack();
-			                        break;
-			                    }
-			                }
-			            }
-
-			            bool    bBuyFuel = true;
-
-
-			            int     iDesired = 0;
-			            for (Mount i = 0; (i < c_maxCargo); i++)
-			            {
-			                IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
-			                if (ppart == NULL)
-			                {
-			                    //Shove an instance of the first part left in the
-			                    //desired part list into the slot
-			                    while (iDesired < c_maxCargo + 3)
-			                    {
-			                        IpartTypeIGC*   pt = ptDesired[iDesired++];
-
-			                        if (pt && (pt->GetRequiredTechs() <= ttbm))
-			                        {
-			                            while (true)
-			                            {
-			                                IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
-			                                if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
-			                                    pt = ptNext;
-			                                else
-			                                    break;
-			                            }
-
-			                            ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
-			                            assert (ppart->GetPrice() == 0);
-			                            break;
-			                        }
-			                    }
-
-			                    if (ppart == NULL)
-			                    {
-			                        if (bBuyFuel && ptFuel)
-			                        {
-			                            pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
-			                            bBuyFuel = (ptAmmo == NULL);
-			                        }
-			                        else if (ptAmmo)
-			                        {
-			                            pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
-			                            bBuyFuel = true;
-			                        }
-			                    }
-			                }
-			            }
-			        }
-
-			        pship->SetAmmo(SHRT_MAX);
-			        pship->SetFuel(FLT_MAX);
-			        pship->SetEnergy(pship->GetHullType()->GetMaxEnergy());
-			        pship->SetFraction(1.0f);
-			        {
-			            IshieldIGC* pshield = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
-			            if (pshield)
-			                pshield->SetFraction(1.0f);
-			        }
-                } // END not done for turrets
+                if (pship->GetChildShips()->n() != 0 && pship->GetParentShip() == NULL) { //imago 8/10/09 rearm @ ALLY base /w turret fix
+                    for (ShipLinkIGC*   psl = pship->GetChildShips()->first();
+                         (psl != NULL);
+                         psl = psl->next())
+                    {
+                        CFSPlayer*  pfscPlayer = ((CFSShip*)(psl->data()->GetPrivateData()))->GetPlayer();
+                        pfscPlayer->Dock(pstationNew);
+                    }
+                    pfsPlayer->Dock(pstationNew);
                 
-                //IMAGO ALLY 7/10/09 REARM
-                // tell the client what happened
-		      BEGIN_PFM_CREATE(g.fm, pfmBuyLoadoutAck, S, BUY_LOADOUT_ACK)
-		        FM_VAR_PARM(NULL, pfsPlayer->GetIGCShip()->ExportShipLoadout(NULL))
-		      END_PFM_CREATE
-
-		      pfsPlayer->GetIGCShip()->ExportShipLoadout((ShipLoadout*)(FM_VAR_REF(pfmBuyLoadoutAck, loadout)));
-
-		      pfsPlayer->SaveDesiredLoadout();
-
-		      pfmBuyLoadoutAck->fBoughtEverything = true;
-		      pfmBuyLoadoutAck->fLaunch = true;
-
-		      g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
-
-		      //Tell the surviving kids about dad's new toys
-			  const ShipListIGC*    pshipsChildren = pfsPlayer->GetIGCShip()->GetChildShips();
-
-		      pfsPlayer->QueueLoadoutChange();
-
-		      {
-		          SideID    sid = pfsPlayer->GetSide()->GetObjectID();
-		          pfsPlayer->GetShipStatus(sid)->SetHullID(pfsPlayer->GetIGCShip()->GetBaseHullType()->GetObjectID());
-
-		          for (ShipLinkIGC* psl = pshipsChildren->first(); (psl != NULL); psl = psl->next())
-		          {
-		              CFSShip*  pfsChild = (CFSShip*)(psl->data()->GetPrivateData());
-
-		              //Since it might have changed ... reset the stored turret ID as well
-		              pfsChild->GetShipStatus(sid)->SetState(psl->data()->GetTurretID() == NA ? c_ssObserver : c_ssTurret);
-
-		              g.fm.SendMessages(pfsChild->GetPlayer()->GetConnection(), FM_GUARANTEED, FM_DONT_FLUSH);
-		          }
-		      }
-		      g.fm.PurgeOutBox();
-
-		        //Move the children of this ship to space as well
-		        for (ShipLinkIGC*   psl = pshipsChildren->first();
-		             (psl != NULL);
-		             psl = psl->next())
-		        {
-		          psl->data()->SetStation(NULL);
-		        }
-		        pfsPlayer->GetIGCShip()->SetStation(NULL);
+                } else if (pship->GetParentShip() == NULL) { //not a turret --
+                    AlliedRearm(pship,true); 
+                }
 			}
 		}
 	}

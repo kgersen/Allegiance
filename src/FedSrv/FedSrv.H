@@ -109,6 +109,7 @@ public:
   void CaptureStationEvent(IshipIGC* pship, IstationIGC* pstation);
   void WarpBombEvent(IwarpIGC* pwarp, ImissileIGC* pmissile);
   bool RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipRescuer);
+  void AlliedRearm(IshipIGC* pship, bool bLaunch); //imago 8/10/09 ALLY
   bool LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship, float tCollision);
   void ChangeStation(IshipIGC* pship, IstationIGC* pstationOld, IstationIGC* pstationNew);
   void * GetDroneFromShip(IshipIGC * pship);
