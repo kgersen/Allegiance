@@ -633,6 +633,7 @@ private:
     BYTE*                               m_pbyteData;
     DWORD                               m_sizeData;
     bool                                m_bFocus;
+	CLogFile * 							m_pLogFile; //Imago 8/12/09
 
     TRef<IDirectInputEffect> m_peffectBounce;
     TRef<IDirectInputEffect> m_peffectFire;
@@ -648,6 +649,15 @@ public:
     BOOL EnumObjectsCallback(
         LPCDIDEVICEOBJECTINSTANCE pddoi
     ) {
+		LPOLESTR szGUID = new WCHAR [39];
+		char chGUID[39];
+		StringFromGUID2(pddoi->guidType,szGUID,39);
+		WideCharToMultiByte( CP_ACP, 0, szGUID, -1, chGUID, 39, 0, 0 );
+		m_pLogFile->OutputStringV("\t\tpddoi->guidType: %s\n",chGUID);
+		m_pLogFile->OutputStringV("\t\tpddoi->tszName: %s\n",pddoi->tszName);
+		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",pddoi->dwType, DIDFT_GETINSTANCE(pddoi->dwType));
+		m_pLogFile->OutputStringV("\t\tpddoi->wUsage: %x (page: %x)\n",pddoi->wUsage,pddoi->wUsagePage);
+
         if (
                pddoi->dwType & DIDFT_AXIS
             || pddoi->dwType & DIDFT_POV
@@ -658,7 +668,8 @@ public:
                 index = 0;                           
             } else if (pddoi->guidType == GUID_YAxis ) {
                 index = 1;
-            } else if (pddoi->guidType == GUID_Slider) {
+            } else if (pddoi->guidType == GUID_Slider && 
+				pddoi->wUsage != 0x0037) { //Imago 8/12/09 fixes "buged" Saitek X45 Flight Control Stick driver
                 index = 2;
             } else if (pddoi->guidType == GUID_RzAxis) {
                 index = 3;
@@ -705,6 +716,7 @@ public:
         LPVOID                    pvRef
     ) {
         JoystickInputStreamImpl* pthis = (JoystickInputStreamImpl*)pvRef;
+		pthis->m_pLogFile->OutputString("\tStaticEnumObjectsCallback:\n");
         return pthis->EnumObjectsCallback(lpddoi);
     }
  
@@ -715,13 +727,17 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 
 //    JoystickInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
-	JoystickInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd) :		// kg: DInput8
+	JoystickInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd, CLogFile * pLogFile) :		// kg: DInput8  Imago 8/12/09
         m_pdid(pdid),
         m_bFocus(false),
-        m_vvalueObject(5)
+        m_vvalueObject(5),
+		m_pLogFile(pLogFile)
     {
         DDCall(m_pdid->GetCapabilities(&m_didc));
         DDCall(m_pdid->GetDeviceInfo(&m_didi));
+
+		m_pLogFile->OutputStringV("\tInitialized joystick stream - Axes: %d, Buttons: %d, POVs: %d\n",
+			m_didc.dwAxes,m_didc.dwButtons,m_didc.dwPOVs);
 
         //
         // Enumerate the buttons and values
@@ -736,6 +752,8 @@ public:
         int index;
         int countValues = m_vvalueObject.GetCount();
 
+		m_pLogFile->OutputStringV("\tInitial value count: %i\n",countValues);
+
         index = 0;
         while (index < countValues) {
             if (m_vvalueObject[index] == NULL) {
@@ -749,6 +767,8 @@ public:
                 index++;
             }
         }
+
+		m_pLogFile->OutputStringV("\tFinal value count: %i\n",countValues);
 
         //
         // Build the data format
@@ -1237,6 +1257,9 @@ private:
         DDCall(m_pdi->CreateDevice( pdidi->guidInstance, &pdid, NULL));
 //        DDCall(pdid->QueryInterface(IID_IDirectInputDevice2, (void**)&pdid2));
 		DDCall(pdid->QueryInterface(IID_IDirectInputDevice8, (void**)&pdid2));
+        m_joylog.OutputStringV("\tpdidi->dwDevType: %x (subtype: %x)\n",GET_DIDEVICE_TYPE(pdidi->dwDevType),GET_DIDEVICE_SUBTYPE(pdidi->dwDevType));
+        m_joylog.OutputStringV("\tpdidi->tszProductName: %s\n",pdidi->tszProductName);
+        
 
         switch (pdidi->dwDevType & 0xff) {
 			case DI8DEVTYPE_MOUSE: // kg Di8 DIDEVTYPE_MOUSE:
@@ -1252,7 +1275,7 @@ private:
 			case DI8DEVTYPE_FLIGHT: // --^
                 {
                     TRef<JoystickInputStreamImpl> pjoystickInputStream = 
-                        new JoystickInputStreamImpl(pdid2, m_hwnd);
+                        new JoystickInputStreamImpl(pdid2, m_hwnd, &m_joylog);
 
                     m_vjoystickInputStream.PushEnd(pjoystickInputStream);
                 }
@@ -1271,6 +1294,7 @@ private:
     static BOOL CALLBACK StaticEnumDeviceCallback(LPDIDEVICEINSTANCE pdidi, LPVOID pv)
     {
         InputEngineImpl* pthis = (InputEngineImpl*)pv;
+        pthis->m_joylog.OutputString("StaticEnumDeviceCallback:\n");
 
         return pthis->EnumDeviceCallback(pdidi);
     }
@@ -1287,6 +1311,7 @@ private:
     TVector<TRef<JoystickInputStreamImpl> > m_vjoystickInputStream;
     TRef<MouseInputStreamImpl>              m_pmouseInputStream;
     HINSTANCE                               m_hdinput;
+    CLogFile                                m_joylog; //Imago 8/12/09
 
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -1299,7 +1324,8 @@ public:
 
     InputEngineImpl(HWND hwnd) :
         m_hwnd(hwnd),
-        m_bFocus(false)
+        m_bFocus(false),
+        m_joylog("DirectInput.log")
     {
         //
         // Create the direct input object
@@ -1352,7 +1378,9 @@ public:
         // Enumerate the devices
         //
 
+        m_joylog.OutputString("Initialized DirectInput\n");
         EnumerateJoysticks();
+        m_joylog.CloseLogFile();
     }
 
     //////////////////////////////////////////////////////////////////////////////
