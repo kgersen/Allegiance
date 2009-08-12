@@ -3020,7 +3020,7 @@ void BaseClient::FireMissile(IshipIGC* pShip,
 
         missileLaunchData[i].vecVelocity = vecLaunchVelocity + (dataMissile.pmissiletype->GetInitialSpeed() * missileLaunchData[i].vecForward);
         ZRetailAssert(missileLaunchData[i].vecVelocity * missileLaunchData[i].vecVelocity >= 0.0f);
-        ZRetailAssert(missileLaunchData[i].vecVelocity * missileLaunchData[i].vecVelocity <= 1.0e6);
+        //ZRetailAssert(missileLaunchData[i].vecVelocity * missileLaunchData[i].vecVelocity <= 1.0e6); //Imago 8/12/09
     }
 
     if (!m_fm.IsConnected())
