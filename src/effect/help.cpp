@@ -166,7 +166,7 @@ public:
 
         CastTo(m_pscrollMain,      (Pane*)m_pns->FindMember("mainPageScrollBar"));
         CastTo(m_pscrollSecondary, (Pane*)m_pns->FindMember("secondaryPageScrollBar"));
-
+        
         //
         // Sink topic event
         //
@@ -274,6 +274,27 @@ public:
     void Paint(Surface* psurface)
     {
         HelpPane::Paint(psurface);
+    }
+    //
+    // IMouseInput added by Imago 8/14/09 mouse wheel
+    //
+
+    MouseResult Button(
+        IInputProvider* pprovider,
+        const Point& point,
+        int button,
+        bool bCaptured,
+        bool bInside,
+        bool bDown
+    ) {
+        if(button == 8 && bDown) { //Imago 8/14/09 mouse wheel
+            m_pscrollMain->LineDown(); //pagedown is too much and just one line doesn't seem enough
+            m_pscrollMain->LineDown();
+        } else if (button == 9 && bDown) { 
+            m_pscrollMain->LineUp(); //intentional duplication
+            m_pscrollMain->LineUp();
+        }
+        return Pane::Button(pprovider, point, button, bCaptured, bInside, bDown);
     }
 };
 

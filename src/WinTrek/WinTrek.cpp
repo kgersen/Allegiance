@@ -7614,7 +7614,7 @@ public:
                                 static const float  c_minRate = RadiansFromDegrees(7.5f);
                                 static const float  c_maxRate = RadiansFromDegrees(75.0f);
                                 float   maxSlewRate = c_minRate +
-                                                      (c_maxRate - c_minRate) * fov / s_fMaxFOV;
+                                                      (c_maxRate - c_minRate) * m_cameraControl.GetFOV() / s_fMaxFOV; //Imago 8/14/09
 
                                 const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
                                 {
@@ -8619,19 +8619,19 @@ public:
 
         switch(tk)
         {
-            /*
-            case TK_ChatPageUp:
+            
+            case TK_ChatPageUp: // Imago uncommented for mouse wheel / xbuttons 8/14/09
                 if (m_pchatListPane != NULL) {
                     m_pchatListPane->PageUp();
                 }
                 break;
 
-            case TK_ChatPageDown:
+            case TK_ChatPageDown: // Imago uncommented for mouse wheel / xbuttons 8/14/09
                 if (m_pchatListPane != NULL) {
                     m_pchatListPane->PageDown();
                 }
                 break;
-
+            /*
             case TK_QuickChatMenu:
                 if (
                        trekClient.MyMission()
@@ -9670,6 +9670,68 @@ public:
             }
             break;
 
+            //begin imago 8/14/09 mouse wheel / xbuttons
+            case TK_ZoomOut:
+            case TK_ZoomIn:
+            {
+                float dt = 0.1f; //?
+                if (CommandCamera(m_cm) && !m_pconsoleImage->DrawSelectionBox()) {
+                    float delta = dt * m_distanceCommandCamera;
+                    if (tk == TK_ZoomIn) {
+                        m_distanceCommandCamera -= delta * 2.0f;
+                        if (m_distanceCommandCamera < s_fCommandViewDistanceMin)
+                            m_distanceCommandCamera = s_fCommandViewDistanceMin;
+                    } else {
+                        m_distanceCommandCamera += delta * 2.0f;
+                        if (m_distanceCommandCamera > s_fCommandViewDistanceMax)
+                            m_distanceCommandCamera = s_fCommandViewDistanceMax;
+                    }
+                } else if (m_cm == cmExternalChase) {
+                    if (tk == TK_ZoomIn) {
+                        m_distanceExternalCamera -= dt * m_distanceExternalCamera;
+                        if (m_distanceExternalCamera < s_fExternalViewDistanceMin)
+                            m_distanceExternalCamera = s_fExternalViewDistanceMin;
+                    } else {
+                        m_distanceExternalCamera += dt * m_distanceExternalCamera;
+                        if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
+                            m_distanceExternalCamera = s_fExternalViewDistanceMax;
+                    }
+                } else if (m_cm == cmCockpit) {
+                    float   fov = m_cameraControl.GetFOV();
+                    if (tk == TK_ZoomIn) {
+                        fov -= dt;
+                        if (fov < s_fMinFOV)
+                            fov = s_fMinFOV;
+                        m_cameraControl.SetFOV(fov);
+                    } else {
+                        fov += dt;
+                        if (fov > s_fMaxFOV)
+                            fov = s_fMaxFOV;
+                        m_cameraControl.SetFOV(fov);
+                    }
+                }
+            }
+            break;
+
+            case TK_ThrottleUp:
+            {
+                if (trekClient.GetShip() && !trekClient.GetShip()->GetParentShip()) {
+                    trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;
+                    trekClient.joyThrottle = false;
+                }
+            }
+            break;
+
+            case TK_ThrottleDown:
+            {
+                if (trekClient.GetShip() && !trekClient.GetShip()->GetParentShip()) {
+                    trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f;
+                    trekClient.joyThrottle = false;
+                }
+            }
+            break;
+            // end imago
+
             case TK_DebugTest1:
             case TK_DebugTest2:
             case TK_DebugTest3:
@@ -10115,6 +10177,7 @@ public:
         //static bool oldButton4 = false;
         //static bool oldButton5 = false;
         static bool oldButton6 = false;
+
 
         js->button1 = (newButton1 ? buttonDown : 0x00) | (newButton1 != oldButton1 ? buttonChanged : 0x00);
         js->button2 = (newButton2 ? buttonDown : 0x00) | (newButton2 != oldButton2 ? buttonChanged : 0x00);

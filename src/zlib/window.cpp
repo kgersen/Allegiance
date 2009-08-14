@@ -862,10 +862,9 @@ DWORD Window::WndProc(
             break;
 		
 		case WM_MOUSEWHEEL: //imago 8/13/09
-		case WM_XBUTTONDOWN: // imago
-		case WM_XBUTTONUP: // imago
-        case 0: //imago
-        case WM_MOUSEHOVER:
+		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP: 
+        case WM_MOUSEHOVER: // imago --^
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -918,10 +917,6 @@ DWORD Window::WndProc(
                     //
                     // Handle the mouse message
                     //
-                   // OutputDebugString("PointMouse: " + pointMouse.GetString() +"\n");
-                   // WORD x = LOWORD(lParam);
-                   // WORD y = HIWORD(lParam);
-                    //OutputDebugString("lparam x: " + ZString(x) + " y:" + ZString(y) + "\n");
 
                     DWORD ret = 
                           OnMouseMessage(message, wParam, pointMouse)

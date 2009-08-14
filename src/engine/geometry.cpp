@@ -1549,7 +1549,6 @@ public:
         bool bInside,
         bool bDown
     ) {
-        OutputDebugString("GroupGeo button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         MouseResult mouseResult;
 
         if (m_pgeoCapture) {

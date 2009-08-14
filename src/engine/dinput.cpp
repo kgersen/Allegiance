@@ -397,28 +397,25 @@ public:
 
     void DeltaWheel(int dz)
     {
-        if (dz != 0 ) {
-            m_z += float(dz);
+        m_z += float(dz);
 
-            if (m_vvalueObject.GetCount() >= 3) {
-                m_vvalueObject[2]->GetValue()->SetValue(m_z); //imago 8/12/09 use z axis
-                if (dz < 0) {
-				    //OutputDebugString("DI: MOUSEWHEEL_DOWN\n");
-                    ButtonChanged(8,true);
+        if (m_vvalueObject.GetCount() >= 3) {
+            m_vvalueObject[2]->GetValue()->SetValue(m_z); //imago 8/12/09 use z axis
+            if (dz < 0) {
+                ButtonChanged(8,true);
+            } else if (dz > 0) {
+                ButtonChanged(9,true);
+            } else { //imago 8/13/09 use dz == 0 for button up
+                if (m_vbuttonObject[8]->GetValue()->GetValue())
                     ButtonChanged(8,false);
-                } else {
-				    //OutputDebugString("DI: MOUSEWHEEL_UP\n");
-                    ButtonChanged(9,true);
+                if (m_vbuttonObject[9]->GetValue()->GetValue())
                     ButtonChanged(9,false);
-                }
             }
         }
     }
 
     void ButtonChanged(int index, bool bDown)
     {
-        ZDebugOutput("ButtonChanged: " + ZString(index) + (bDown ? " down" : " up") + "\n");
-
         m_vbuttonObject[index]->GetValue()->SetValue(bDown);
         m_pbuttonEventSource->Trigger(ButtonEventData(index, bDown));
     }
@@ -433,6 +430,7 @@ public:
         DWORD count = 1;
         int dx = 0;
         int dy = 0;
+        int dz = 0;
 
         while (count == 1) {
             HRESULT hr = m_pdid->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), &didod, &count, 0);
@@ -491,7 +489,7 @@ public:
                         break;
 
                     case DIMOFS_Z:
-                        DeltaWheel(int(didod.dwData));
+                        dz += int(didod.dwData);
                         break;
                 }
             }
@@ -502,6 +500,8 @@ public:
 
             DeltaPosition(dx, dy);
         }
+
+        DeltaWheel(dz);
     }
 
     void UpdatePolled()

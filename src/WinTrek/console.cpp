@@ -1966,10 +1966,18 @@ public:
     }                
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
-    {
-        OutputDebugString("ConsoleData button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
-        if (button > 1)
+    {       
+        if (button > 1) {
+            TRef<TrekInput> pinput = GetWindow()->GetInput();
+            //NYI button 2 & 3-7 (XBUTTONs)
+            // Do whatever key is mapped for wheel
+            if (button == 8 && bDown)
+                pinput->GetInputSite()->OnTrekKey(pinput->OnWheelDown());
+            else if (button == 9 && bDown)
+                pinput->GetInputSite()->OnTrekKey(pinput->OnWheelUp());
+
             return MouseResultRelease();
+        }
 
         MouseResult rc = MouseResultHit();
 

@@ -747,7 +747,6 @@ void WrapImage::MouseLeave(IInputProvider* pprovider)
 
 MouseResult WrapImage::Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
 {
-    OutputDebugString("WrapImage button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
     TRef<WrapImage> pthis  = this;
     TRef<Image>     pimage = GetImage();
 
@@ -1117,7 +1116,6 @@ MouseResult GroupImage::Button(
     bool bDown
 ) {
     MouseResult mouseResult;
-    OutputDebugString("GroupImage button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
 
     if (m_pimageCapture) {
         mouseResult =
@@ -1456,7 +1454,6 @@ public:
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
-        OutputDebugString("PickImage button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         if (button == 0 && bDown) {
             m_peventSource->Trigger();
         }

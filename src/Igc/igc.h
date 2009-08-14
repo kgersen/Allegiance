@@ -248,7 +248,7 @@ const TrekKey TK_ViewTurret                 = 35;  // View from the ship's turre
 const TrekKey TK_ViewBase                   = 36;  // View from the base
 const TrekKey TK_ViewSector                 = 37;  // View the sector map
 const TrekKey TK_ViewCommand                = 38;  // Display a tactical view of the sector
-const TrekKey TK_CycleChatMsgs              = 39;  // Currently does nothing  //NYI IMAGO use to scroll chat window up and down  REVIEW: default MOUSEWHEELUP MOUSEWHEELDOWN or PGUP PGDOWN
+const TrekKey TK_CycleChatMsgs              = 39;  // Currently does nothing
 const TrekKey TK_AcceptCommand              = 40;  // Accept pending command
 const TrekKey TK_ClearCommand               = 41;  // Clear current command
 const TrekKey TK_RejectCommand              = 42;  // current target == current command

@@ -670,7 +670,7 @@ public:
         if (point.X() < m_pBlankPane->GetSize().X())
             {
             if (button == 0 || button == 1) // TE: Allowed rightclicks to trigger button event
-                {
+            {
                 if (bDown) 
                     {
                     int iItem = PointToIdx(point);
@@ -694,6 +694,13 @@ public:
                     }
                 }
             }
+        
+        if (button == 8 && bDown) { //Imago 8/14/09 mouse wheel
+            ScrollPageDown();
+        } else if (button == 9 && bDown) { 
+            ScrollPageUp();
+        }
+
         return Pane::Button(pprovider, point, button, bCaptured, bInside, bDown);
     }
 

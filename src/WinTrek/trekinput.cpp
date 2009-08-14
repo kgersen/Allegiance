@@ -37,6 +37,7 @@ public:
     TRef<InputEngine>                       m_pinputEngine;
     TRef<JoystickImage>                     m_pjoystickImage;
     TArray<TRef<Number>, countAxis>         m_ppnumberAxis;
+    TRef<TrekInputSite>                     m_psite;
 
     //
     // Joystick mapping
@@ -46,6 +47,10 @@ public:
     TArray<bool         , TK_Max>           m_boolTrekKeyButtonDown;
 
     TArray<TRef<ModifiableBoolean>, 4>      m_ppboolHatButton;
+
+    // Mouse mapping Imago 8/14/09 (special buttons / mouse wheel)
+    TrekKey                                 m_wheeldownTK;
+    TrekKey                                 m_wheelupTK;
 
     //
     // Keyboard mapping
@@ -586,6 +591,13 @@ public:
 
                     int index = (int)GetNumber(ppair->GetFirst() );
                     int tk    = (int)GetNumber(ppair->GetSecond());
+                    
+                    //Imago save special buttons for use outside virtual joystick 8/14/09
+                    //NYI XBUTTONS
+                    if (index == 8) //mouse wheel down
+                        m_wheeldownTK = tk;
+                    if (index == 9) //mouse wheel up
+                        m_wheelupTK = tk;
 
                     //
                     // Get the button
@@ -894,6 +906,10 @@ public:
 
     void GetButtonTrekKeys(TrekInputSite* psite)
     {
+
+        //Imago 8/14/09 save the input site
+        m_psite = psite;
+
         //
         // Update hat buttons
         //
@@ -931,6 +947,7 @@ public:
         //
 
         for (int index = 0; index < TK_Max; index++) {
+
             if (
                    m_ppboolTrekKeyButtonDown[index] != NULL
                 && m_ppboolTrekKeyButtonDown[index]->GetValue() != m_boolTrekKeyButtonDown[index]
@@ -942,6 +959,20 @@ public:
                 }
             }
         }        
+    }
+
+    //Imago 8/14/09 allow OnTrekKey usage outside of trekinput
+    TRef<TrekInputSite> GetInputSite() {
+        return m_psite;
+    }
+
+    //Imago 8/14/09 expose mappings for use outside virtual joystick
+    TrekKey OnWheelDown() {
+        return m_wheeldownTK;
+    }
+
+    TrekKey OnWheelUp() {
+        return m_wheelupTK;
     }
 
     TRef<IPopup> CreateInputMapPopup(Modeler* pmodeler, IEngineFont* pfont, Number* ptime)
@@ -1717,7 +1748,12 @@ private:
                     }
 
                     if (map.m_indexJoystick == -1) {
-                        str += "Mouse Btn " + ZString(map.m_indexButton + 1);
+                        if (map.m_indexButton == 8) //Imago 8/14/09 mouse wheel
+                            str += "Wheel Down";
+                        else if (map.m_indexButton == 9)
+                            str += "Wheel Up";
+                        else
+                            str += "Mouse Btn " + ZString(map.m_indexButton + 1);
                     } else {
                         str += "Joy " + ZString(map.m_indexJoystick);
 

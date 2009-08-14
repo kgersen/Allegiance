@@ -1504,15 +1504,12 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
         if (m_bMouseEnabled) {    
             switch (message) {
                 case WM_LBUTTONDOWN: 
-                    OutputDebugString("EngineWin: WM_LBUTTONDOWN " + ZString(m_bCaptured) + " " + ZString(m_bHit) + " " + point.GetString() +"\n");
                     mouseResult = pimage->Button(this, point, 0, m_bCaptured, m_bHit, true );
-                    OutputDebugString("\tResult down: "+ZString((int)mouseResult.GetWord()) + "\n");
                     m_timeLastClick = m_timeCurrent;
                     break;
 
                 case WM_LBUTTONUP:   
                     mouseResult = pimage->Button(this, point, 0, m_bCaptured, m_bHit, false);
-                    OutputDebugString("\tResult up: "+ZString((int)mouseResult.GetWord()) + "\n");
                     break;
 
                 case WM_RBUTTONDOWN: 
@@ -1534,19 +1531,13 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                 case WM_MOUSEWHEEL:  //imago 8/13/09
                     if (nFlags >2) {
                         if (GET_WHEEL_DELTA_WPARAM(nFlags) < 0) {
-                            OutputDebugString("EngineWin: WM_MOUSEWHEEL DOWN " + ZString(m_bCaptured) + " " + ZString(m_bHit)  + " " + point.GetString() + "\n");
                             mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, true );
-                            OutputDebugString("\tResult down: "+ZString((int)mouseResult.GetWord()) + "\n");
-                            mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
-                            OutputDebugString("\tResult up: "+ZString((int)mouseResult.GetWord()) + "\n");
-                            //if (mouseResult == MouseResult(0x04))
-                                //mouseResult = MouseResult(0x08);
+                            if (!GetFullscreen())
+                                mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
                         } else {
-                            //OutputDebugString("EngineWin: WM_MOUSEWHEEL UP\n");
-                            mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, true );
-                            mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, false );
-                           // if (mouseResult == MouseResult(0x04))
-                               // mouseResult = MouseResult(0x08);
+                                mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, true );
+                                if (!GetFullscreen())
+                                    mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, false );
                         }
                     } else if (nFlags == 1) {
                         mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
@@ -1556,11 +1547,11 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                     //m_bCaptured = false;
                     break;
 
-		        case WM_XBUTTONDOWN:
+		        case WM_XBUTTONDOWN: //NYI
                     OutputDebugString("XBUTTON DOWN: " + ZString(GET_XBUTTON_WPARAM(nFlags)) + "\n");
                     break;
 
-		        case WM_XBUTTONUP:
+		        case WM_XBUTTONUP: //NYI
                     OutputDebugString("XBUTTON UP: " + ZString(GET_XBUTTON_WPARAM(nFlags)) + "\n");
                     break;
             }
@@ -1592,7 +1583,7 @@ bool EngineWindow::OnEvent(ButtonEvent::Source* pevent, ButtonEventData be)
     //
     // button state change
     //
-    OutputDebugString("OnEvent button: "+ZString(be.GetButton()) + (be.IsDown() ? " down" : " up") + "\n");
+
     if (be.GetButton() == 0) {
         if (be.IsDown()) {
             HandleMouseMessage(WM_LBUTTONDOWN, m_pmouse->GetPosition());
@@ -1611,6 +1602,9 @@ bool EngineWindow::OnEvent(ButtonEvent::Source* pevent, ButtonEventData be)
         } else {
             HandleMouseMessage(WM_MBUTTONUP,   m_pmouse->GetPosition());
         }
+
+    //XBUTTON 3-7 NYI
+
     } else if (be.GetButton() == 8) {
         if (be.IsDown()) {
             HandleMouseMessage(WM_MOUSEWHEEL, m_pmouse->GetPosition(), -WHEEL_DELTA);

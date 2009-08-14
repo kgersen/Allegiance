@@ -795,7 +795,6 @@ MouseResult Pane::Button(
     bool bInside,
     bool bDown
 ) {
-    OutputDebugString("Pane button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
     MouseResult mouseResult;
     TRef<Pane> pthis = this;
 

@@ -115,7 +115,6 @@ private:
 
         MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
         {
-            OutputDebugString("NavPane button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
             if (button == 0 && bDown) {
                 m_peventSource->Trigger(m_strMain);
             }
