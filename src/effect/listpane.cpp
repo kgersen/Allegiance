@@ -593,6 +593,7 @@ public:
         bool bInside,
         bool bDown
     ) {
+        OutputDebugString("ListPane button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         VerifyScrollPos();
 
         if (button == 0 && bDown) {

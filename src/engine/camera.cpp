@@ -426,6 +426,7 @@ public:
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
+        OutputDebugString("MotionCamera button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         switch (button) {
             case 0:
                 if (bDown) {

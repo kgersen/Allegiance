@@ -2363,6 +2363,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
         assert (dT > 0.0f);
 
         float   thrust = m_myHullType.GetThrust();
+		float   thrust_noga = ((DataHullTypeIGC*)m_myHullType.GetData())->thrust;
         float   thrust2 = thrust * thrust;
 
         //Conversion factor ... Newtons to deltaV

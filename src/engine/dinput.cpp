@@ -118,6 +118,15 @@ private:
     BOOL EnumObjectsCallback(
         LPCDIDEVICEOBJECTINSTANCE pddoi
     ) {
+		LPOLESTR szGUID = new WCHAR [39];
+		char chGUID[39];
+		StringFromGUID2(pddoi->guidType,szGUID,39);
+		WideCharToMultiByte( CP_ACP, 0, szGUID, -1, chGUID, 39, 0, 0 );
+		m_pLogFile->OutputStringV("\t\tpddoi->guidType: %s\n",chGUID);
+		m_pLogFile->OutputStringV("\t\tpddoi->tszName: %s\n",pddoi->tszName);
+		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",pddoi->dwType, DIDFT_GETINSTANCE(pddoi->dwType));
+		m_pLogFile->OutputStringV("\t\tpddoi->wUsage: %x (page: %x)\n",pddoi->wUsage,pddoi->wUsagePage);
+
         if (
                pddoi->dwType & DIDFT_AXIS
             || pddoi->dwType & DIDFT_POV
@@ -129,7 +138,7 @@ private:
             } else if (pddoi->guidType == GUID_YAxis) {
                 index = 1;
             } else if (pddoi->guidType == GUID_ZAxis) {
-                index = 2;
+                index = 2; //Imago 8/13/09
             } else {
                 index = -1;
             }
@@ -171,6 +180,7 @@ private:
         LPVOID                    pvRef
     ) {
         MouseInputStreamImpl* pthis = (MouseInputStreamImpl*)pvRef;
+		pthis->m_pLogFile->OutputString("\tStaticEnumObjectsCallback:\n");
         return pthis->EnumObjectsCallback(lpddoi);
     }
  
@@ -197,6 +207,7 @@ private:
     int                                 m_acceleration;
     float                               m_sensitivity;
 	HWND								m_hwnd;
+	CLogFile *							m_pLogFile; //Imago 8/12/09
 
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -206,15 +217,18 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     
 //    MouseInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
-	MouseInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd) :		// kg: DInput8
+	MouseInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd, CLogFile * pLogFile) :		// kg: DInput8
         m_pdid(pdid),
 		m_hwnd(hwnd),
         m_rect(0, 0, 0, 0),                                                                         
         m_point(0, 0),
         m_vvalueObject(3),
+       // m_vbuttonObject(10), //imago 8/12/09
         m_bEnabled(false),
         m_bBuffered(true),
-        m_pbuttonEventSource(ButtonEvent::Source::Create())
+        m_pbuttonEventSource(ButtonEvent::Source::Create()),
+		m_pLogFile(pLogFile),
+		m_z(0) //Imago 8/12/09
     {
         //
         // Are we running on NT
@@ -229,6 +243,11 @@ public:
         }
         */
 
+        DDCall(m_pdid->GetCapabilities(&m_didc));
+
+		m_pLogFile->OutputStringV("\tInitialized mouse stream - Axes: %d, Buttons: %d, POVs: %d\n",
+			m_didc.dwAxes,m_didc.dwButtons,m_didc.dwPOVs);
+
         //
         // Enumerate the buttons and values
         //
@@ -238,6 +257,14 @@ public:
         //
         // Setup the device
         //
+
+        if (m_vvalueObject[2] != NULL) {
+            m_vbuttonObject.SetCount(10);
+            ButtonDDInputObject* pobject = new ButtonDDInputObject("Wheel Up",0x00000301UL,GUID_ZAxis);
+            m_vbuttonObject.Set(8,pobject);
+            pobject = new ButtonDDInputObject("Wheel Down",0x00000401UL,GUID_ZAxis);
+            m_vbuttonObject.Set(9,pobject);
+        }
 
         SetupDevice();
 
@@ -371,18 +398,26 @@ public:
     void DeltaWheel(int dz)
     {
         if (dz != 0 ) {
-            //ZDebugOutput("MouseDZ: " + ZString(dz) + "\n");
             m_z += float(dz);
 
             if (m_vvalueObject.GetCount() >= 3) {
-                m_vvalueObject[0]->GetValue()->SetValue(m_z);
+                m_vvalueObject[2]->GetValue()->SetValue(m_z); //imago 8/12/09 use z axis
+                if (dz < 0) {
+				    //OutputDebugString("DI: MOUSEWHEEL_DOWN\n");
+                    ButtonChanged(8,true);
+                    ButtonChanged(8,false);
+                } else {
+				    //OutputDebugString("DI: MOUSEWHEEL_UP\n");
+                    ButtonChanged(9,true);
+                    ButtonChanged(9,false);
+                }
             }
         }
     }
 
     void ButtonChanged(int index, bool bDown)
     {
-        //ZDebugOutput("MouseButton: " + ZString(index) + (bDown ? " down" : " up") + "\n");
+        ZDebugOutput("ButtonChanged: " + ZString(index) + (bDown ? " down" : " up") + "\n");
 
         m_vbuttonObject[index]->GetValue()->SetValue(bDown);
         m_pbuttonEventSource->Trigger(ButtonEventData(index, bDown));
@@ -511,8 +546,6 @@ public:
 
     void Update()
     {
-        //ZDebugOutput("Mouse Update\n");
-
         if (m_bEnabled) {
             //ZDebugOutput("Mouse Enabled\n");
             HRESULT hr = m_pdid->Acquire();
@@ -555,6 +588,11 @@ public:
     void SetWheelPosition(float pos)
     {
         m_z = pos;
+    }
+
+    float GetWheelPosition()
+    {
+        return m_z;
     }
 
     const Point& GetPosition()
@@ -752,8 +790,6 @@ public:
         int index;
         int countValues = m_vvalueObject.GetCount();
 
-		m_pLogFile->OutputStringV("\tInitial value count: %i\n",countValues);
-
         index = 0;
         while (index < countValues) {
             if (m_vvalueObject[index] == NULL) {
@@ -767,8 +803,6 @@ public:
                 index++;
             }
         }
-
-		m_pLogFile->OutputStringV("\tFinal value count: %i\n",countValues);
 
         //
         // Build the data format
@@ -1265,7 +1299,7 @@ private:
 			case DI8DEVTYPE_MOUSE: // kg Di8 DIDEVTYPE_MOUSE:
                 {
                     if (m_pmouseInputStream == NULL) {
-                        m_pmouseInputStream = new MouseInputStreamImpl(pdid2, m_hwnd);
+                        m_pmouseInputStream = new MouseInputStreamImpl(pdid2, m_hwnd, &m_joylog);
                     }
                 }
                 break;

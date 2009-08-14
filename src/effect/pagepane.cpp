@@ -70,6 +70,7 @@ public:
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     { 
+        OutputDebugString("LinkPAne button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         if (button == 0 && bDown) {
             m_peventSource->Trigger(m_strTopic);
         }
@@ -131,6 +132,7 @@ public:
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     { 
+        OutputDebugString("Hyperlink Pane button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         if (button == 0 && bDown) {
 			if (m_strName!="INVALID URL ") {
 				ShowWebPage(m_strURL);

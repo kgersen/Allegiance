@@ -688,7 +688,7 @@ public:
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
-		if (button == 0 || button == 1) { //imago 7/6/09 added single right mouse button click trigger
+        if (button == 0 || button == 1) { //imago 7/6/09 added single right mouse button click trigger
 			m_button = button;
 			if (bDown) {
                 if (m_pprovider != NULL && button == 0) { //imago 7/10/09
@@ -699,7 +699,7 @@ public:
                 if (pprovider->IsDoubleClick()) {
                     m_peventSourceDoubleClick->Trigger();
                 } else if (m_bDownTrigger) {
-					if (button) {
+					if (button == 1) {
 						m_peventRightSource->Trigger();  //imago 7/6/09
 					} else {
 						m_peventSource->Trigger();
@@ -708,7 +708,7 @@ public:
                     SetDown(true);
 
                     if (m_repeatRate != 0 && m_bEnabled) {
-						if (button) {
+						if (button == 1) {
 							m_peventRightSource->Trigger(); //imago 7/6/09
 						} else {
 							m_peventSource->Trigger();
@@ -740,7 +740,7 @@ public:
                             if (m_bToggle) {
                                 SetChecked(!m_bChecked);
                             }
-							if (button) {
+							if (button == 1) {
 								m_peventRightSource->Trigger();
 							} else {
 								m_peventSource->Trigger();
@@ -772,7 +772,7 @@ public:
     bool OnEvent(IEventSource* pevent)
     {
         if (m_bDown) {
-			if (m_button) { //imago 7/6/09
+			if (m_button == 1) { //imago 7/6/09
 				m_peventRightSource->Trigger();
 			} else {
 				m_peventSource->Trigger();

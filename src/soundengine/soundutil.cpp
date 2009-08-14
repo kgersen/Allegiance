@@ -330,7 +330,7 @@ void ToMono()
 
 		//The contents of the memory cuurently allocated are copied to monoData in the above for loop.  
 		//Allocated m_pvData memory is now of no use since m_pvData pointer is changed below. (m_pvData = monoData;)
-		free(m_pvData); //Fix memory leak 8/3/09 Sgt_Baker
+		//free(m_pvData); //Fix memory leak 8/3/09 Sgt_Baker
 
 		m_uChannels = 1;
 		m_uSize = monoSize;

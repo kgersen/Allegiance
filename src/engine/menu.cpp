@@ -169,6 +169,7 @@ private:
             bool bInside,
             bool bDown
         ) {
+            OutputDebugString("MenuItem button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
             if (button == 0 && !bDown) {
                 m_pmenu->MouseClick(m_pitem);
             }

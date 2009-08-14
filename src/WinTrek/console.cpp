@@ -1967,6 +1967,10 @@ public:
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
+        OutputDebugString("ConsoleData button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
+        if (button > 1)
+            return MouseResultRelease();
+
         MouseResult rc = MouseResultHit();
 
         IclusterIGC*    pcluster = trekClient.GetCluster();
@@ -1996,20 +2000,20 @@ public:
                     }
                 }
 
-                if (button)
+                if (button == 1)
                     m_maskMouseState |= c_maskMouseRightDown;
-                else
+                else if (button == 0)
                     m_maskMouseState |= c_maskMouseLeftDown;
             }
             else if ((m_maskMouseState & (c_maskMouseLeftDown << button)) != 0)
             {
-                if (button)
+                if (button == 1)
                 {
                     m_maskMouseState &= ~c_maskMouseRightDown;
 
                     PickObject(pcluster, point, 1);
                 }
-                else
+                else if (button == 0)
                 {
                     m_maskMouseState &= ~c_maskMouseLeftDown;
 

@@ -730,6 +730,7 @@ public:
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
+        OutputDebugString("FrameImage button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         if (button == 0) {
             if (bDown) {
                 m_peventSource->Trigger();

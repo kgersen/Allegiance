@@ -65,7 +65,8 @@ Window::Window(
     m_bHasSysMenu(false),
     m_bTopMost(false),
     m_bHasMinimize(true),
-    m_bHasMaximize(true)
+    m_bHasMaximize(true),
+    m_lastPointMouse(0,0)
 {
     Construct();
 
@@ -859,7 +860,12 @@ DWORD Window::WndProc(
                 return !OnKey(ks);
             }
             break;
-
+		
+		case WM_MOUSEWHEEL: //imago 8/13/09
+		case WM_XBUTTONDOWN: // imago
+		case WM_XBUTTONUP: // imago
+        case 0: //imago
+        case WM_MOUSEHOVER:
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -868,13 +874,16 @@ DWORD Window::WndProc(
         case WM_MBUTTONUP:
         case WM_MOUSEMOVE:
         case WM_MOUSELEAVE:
+        
             {
-                WinPoint point(MakePoint(lParam));
-                WinPoint 
-                    pointMouse(
-                        point.X(),
-                        m_rectClient.YSize() - 1 - point.Y()
-                    );
+                WinPoint pointMouse;
+                if (message != WM_MOUSEWHEEL) {
+                    WinPoint point(MakePoint(lParam));
+                    pointMouse = WinPoint(point.X(),m_rectClient.YSize() - 1 - point.Y());
+                    m_lastPointMouse = pointMouse;
+                } else {
+                    pointMouse = m_lastPointMouse;
+                }
 
                 //
                 // Handle mouse leave
@@ -909,6 +918,10 @@ DWORD Window::WndProc(
                     //
                     // Handle the mouse message
                     //
+                   // OutputDebugString("PointMouse: " + pointMouse.GetString() +"\n");
+                   // WORD x = LOWORD(lParam);
+                   // WORD y = HIWORD(lParam);
+                    //OutputDebugString("lparam x: " + ZString(x) + " y:" + ZString(y) + "\n");
 
                     DWORD ret = 
                           OnMouseMessage(message, wParam, pointMouse)

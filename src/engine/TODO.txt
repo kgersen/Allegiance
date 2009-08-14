@@ -5,15 +5,11 @@ TODO:
 * Add more pixel formats to UnclippedBlt, for surfaces outside of Begin/EndScene pairs.
 	- Finish ImageTransfer 24bit->32bit (to restore mdlc on the original artwork)
 
-* Fix user clipping planes when video hardware doesn't support any, intel issue?  
-	Is this really a show stopper?  http://www.kludx.com/capability.php?capability=28
-	The problem has been minimized by forcing the extra layers off.
-
-
 
 
 
 DONE:
+* Fix clipping, intel issue.
 * Fix lighting inconsistency.  fixed?
 * Add software texture copy to UnclippedBlt, for surfaces outside of Begin/EndScene pairs.
 

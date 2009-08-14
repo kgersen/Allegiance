@@ -56,6 +56,7 @@ private:
     bool     m_bHit;
     bool     m_bShowMouse;
     bool     m_bMouseInside;
+    WinPoint m_lastPointMouse;
 
     Window* m_pwindowParent;
 

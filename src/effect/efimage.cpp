@@ -8,8 +8,8 @@
 
 class JoystickImageImpl : public JoystickImage {
 private:
-    TArray<TRef<ModifiableNumber> , 2> m_ppnumber;
-    TArray<TRef<ModifiableBoolean>, 3> m_ppboolButton;
+    TArray<TRef<ModifiableNumber> , 3> m_ppnumber; //imago increased 8/12/09
+    TArray<TRef<ModifiableBoolean>, 10> m_ppboolButton; //imago increased 8/12/09
     bool                               m_bJoystickEnabled;
     bool                               m_bButtonsEnabled;
     bool                               m_bJustEnabled;
@@ -24,6 +24,7 @@ public:
     {
         m_ppnumber[0] = new ModifiableNumber(0);
         m_ppnumber[1] = new ModifiableNumber(0);
+        m_ppnumber[2] = new ModifiableNumber(0);
 
         for (int index = 0; index < m_ppboolButton.GetCount(); index++) {
             m_ppboolButton[index] = new ModifiableBoolean(false);
@@ -46,6 +47,7 @@ public:
             } else {
                 m_ppnumber[0]->SetValue(0);
                 m_ppnumber[1]->SetValue(0);
+                m_ppnumber[2]->SetValue(0);
             }
         }
 
@@ -110,6 +112,13 @@ public:
             case 0: return "Left";
             case 1: return "Right";
             case 2: return "Middle";
+            case 3: return "XButton1";
+            case 4: return "XButton2";
+            case 5: return "XButton3";
+            case 6: return "XButton4";
+            case 7: return "XButton5";
+            case 8: return "Wheel Up";
+            case 9: return "Wheel Down";
         }
 
         return ZString();
@@ -123,12 +132,12 @@ public:
 
     int GetValueCount()
     {
-        return 2;
+        return 3; //Imago 8/13/09 was 2
     }
 
     int GetButtonCount()
     {
-        return 3;
+        return 10; //Imago 8/13/09 was 3
     }
 
     Boolean* IsDown(int id)
@@ -187,11 +196,14 @@ public:
         }
     }
 
+    //NYI WheelMove Imago m_ppnumber[2]
+
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
         if (m_bButtonsEnabled) {
-            if (button <= 3) {
+            if (button <= 10) { //was 3 Imago 8/13/09
                 m_ppboolButton[button]->SetValue(bDown);
+                ZDebugOutput("Virtual Joy Button: " + ZString(button) + (bDown ? " down" : " up") + "\n");
             }
         }
 

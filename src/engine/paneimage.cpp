@@ -165,6 +165,7 @@ public:
 
     MouseResult PaneImage::Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
+        OutputDebugString("PaneImage button: "+ZString(button) + (bDown ? " down" : " up") + "\n");
         return m_ptopPane->Button(pprovider, point, button, bCaptured, bInside, bDown);
     }
 };
