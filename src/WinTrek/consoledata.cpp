@@ -589,7 +589,7 @@ float PartWrapper::GetAfterburnerTopSpeed()
         IafterburnerIGC* pa = (IafterburnerIGC*)(IpartIGC*)m_ppart;
         const IhullTypeIGC* pht = trekClient.GetShip()->GetSourceShip()->GetHullType();
         
-        float maxAfterburnerThrust = pa->GetMaxThrust();
+        float maxAfterburnerThrust = pa->GetMaxThrustWithGA(); //TheRock 15-8-2009
         float thrust = pht->GetThrust();
 
         return pht->GetMaxSpeed() * (1.0f + (maxAfterburnerThrust / thrust));

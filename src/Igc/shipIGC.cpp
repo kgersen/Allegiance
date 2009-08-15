@@ -2350,7 +2350,6 @@ void    CshipIGC::ExecuteShipMove(Time          timeStop)
     SetVelocity(v);
     SetOrientation(o);
 }
-
 void    CshipIGC::ExecuteShipMove(Time          timeStart,
                                   Time          timeStop,
                                   Vector*       pVelocity,
@@ -2441,14 +2440,16 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 
         bool    afterF = (m_stateM & afterburnerButtonIGC) != 0;
         float   thrustRatio = 0.0f;
+        float   thrustRatio_noga = 0.0f;
         {
             IafterburnerIGC*    afterburner = (IafterburnerIGC*)(m_mountedOthers[ET_Afterburner]);
 
             if (afterburner)
             {
-                float   abThrust = afterburner->GetMaxThrust();
+                float   abThrust = afterburner->GetMaxThrustWithGA(); //TheRock 15-8-2009
 				if (afterF) {
                     thrustRatio = abThrust / thrust;
+                    thrustRatio_noga = abThrust / thrust_noga;
 				}
                 afterburner->IncrementalUpdate(timeStart, timeStop, false);
 
@@ -2462,9 +2463,17 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
         }
 
         //no maneuvering while ripcording
+        float   negDesiredSpeed = 0.0f;
+        Vector  localThrust = Vector::GetZero();;
+        bool    bClipped = false;
+        bool    bManual = false;
+        bool    bCoast = false;
+        Vector  desiredVelocity = Vector::GetZero();;
+        Vector  desiredVelocityDifference = Vector::GetZero();;
+        Vector  scaledThrust = Vector::GetZero();;
         if (!m_pmodelRipcord)
         {
-            Vector  localThrust;
+            
             if (m_stateM & (leftButtonIGC | rightButtonIGC |
                             upButtonIGC | downButtonIGC |
                             forwardButtonIGC | backwardButtonIGC))   
@@ -2481,29 +2490,38 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                     localThrust.x = (thrust * (float)x);
                     localThrust.y = (thrust * (float)y);
                     localThrust.z = (thrust * (float)z);
+                    bManual = true;
                 }
                 else
                     localThrust = Vector::GetZero();
             }
             else
             {
-                if ((m_stateM & coastButtonIGC) && !afterF)
+                if ((m_stateM & coastButtonIGC) && !afterF) {
                     localThrust = pOrientation->TimesInverse(drag);
-                else
+                    bCoast = true;
+                } else
                 {
-                    float   negDesiredSpeed;
-                    if (afterF)
+                    if (afterF) {
                         negDesiredSpeed = maxSpeed * (-1.0f - thrustRatio);
-                    else
+                        desiredVelocity = myBackward * negDesiredSpeed;
+                        negDesiredSpeed = maxSpeed * (-1.0f - thrustRatio_noga);
+                        desiredVelocityDifference = myBackward * negDesiredSpeed - desiredVelocity;
+                    }
+                    else {
                         negDesiredSpeed = (-0.5f * (1.0f + m_controls.jsValues[c_axisThrottle])) *
                                           ((speed > maxSpeed) ? speed : maxSpeed);
+                        desiredVelocity = myBackward * negDesiredSpeed;
+                    }
 
-                    Vector  desiredVelocity = myBackward * negDesiredSpeed;
-
+                    
+ 
                     //Find out how much thrust is required to obtain our desired velocity,
                     //accounting for drag
 					// mmf added zero check and debugf
-					if (thrustToVelocity == 0.0f) debugf("shipIGC.cpp ~2394 thrustToVelocity = 0 about to devide by zero\n");
+					if (thrustToVelocity == 0.0f) 
+                        debugf("shipIGC.cpp ~2394 thrustToVelocity = 0 about to devide by zero\n");
+
                     localThrust = pOrientation->TimesInverse((desiredVelocity - *pVelocity) / thrustToVelocity + drag);
                 }
             }
@@ -2515,7 +2533,8 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 				if (sm == 0.0f) debugf("shipIGC.cpp ~2403 sm = 0 about to devide by zero\n");
 				if ((m_myHullType.GetBackMultiplier()==0.0f)&&(localThrust.z<=0.0f)) 
 					debugf("shipIGC.cpp ~2405 backmultip = 0 about to devide by zero\n");
-				Vector  scaledThrust(localThrust.x / sm,
+				
+                scaledThrust = Vector(localThrust.x / sm,
                                      localThrust.y / sm,
                                      localThrust.z <= 0.0f ? localThrust.z : (localThrust.z / m_myHullType.GetBackMultiplier()));
 
@@ -2530,6 +2549,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                 }
                 else
                 {
+                    bClipped = true;
                     //Trying to thrust too much ... clip it back.
 					m_engineVector = (localThrust * *pOrientation) * (thrust / (float)sqrt(r2));
                 }
@@ -2538,6 +2558,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 
 
         *pVelocity += thrustToVelocity * (m_engineVector - drag);
+        Vector vChange = thrustToVelocity * (m_engineVector - drag);
 		// mmf added log msg for large velocity^2, mmf 10/07 increased threshold to 800^2 as some cores commonly have ships with speeds in the 500's
 		if ((*pVelocity * *pVelocity) > 640000.0f) {
 			debugf("mmf pVelocity^2 = %g ship = %s\n",(*pVelocity * *pVelocity),GetName());
@@ -2553,6 +2574,23 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 			// (*(int*)0) = 0;
 		}
         // assert (*pVelocity * *pVelocity >= 0.0f); // mmf commented out 
+        /*
+        if (GetPilotType() == c_ptPlayer) {
+            OutputDebugString("Velocity: " +ZString(speed)+
+                " NewVelocity: " +ZString(pVelocity->Length())+ " Drag: "+ZString(drag.Length()) + 
+                " localThrust: "+ZString(localThrust.Length()) + " DesiredVelocity: " + ZString(desiredVelocity.Length()) +
+                " DVDiff: " + ZString(desiredVelocityDifference.Length()) +
+                " m_engineVector: " + ZString(m_engineVector.Length()) + " afterF: " + ZString(afterF) +
+                "\n\tthrottle: " + ZString(m_controls.jsValues[c_axisThrottle]) + " cManual: " +ZString(bManual) + 
+                " bCoast " +ZString(bCoast)+ " bClipped: " +ZString(bClipped) + " ThrustRatio: " +ZString(thrustRatio) + 
+                " Change: " + ZString(vChange.Length()) + " ScaledThrust: " + ZString(scaledThrust.Length()) + 
+                "\n");
+                s_cyclecount = 0;
+            }
+        }
+        */
+                
+
     }
 }
 

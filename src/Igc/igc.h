@@ -3851,6 +3851,7 @@ class IafterburnerIGC : public IpartIGC
 {
     public:
         virtual float    GetFuelConsumption(void) const = 0;
+		virtual float    GetMaxThrustWithGA(void) const = 0; //TheRock 15-8-2009
         virtual float    GetMaxThrust(void) const = 0;
         virtual float    GetOnRate(void) const = 0;
         virtual float    GetOffRate(void) const = 0;
