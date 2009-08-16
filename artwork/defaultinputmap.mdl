@@ -164,7 +164,14 @@ mouseButtonCommandMap =
     [   // (button #, command)
         (0, CommandFireWeapon ),
         (1, CommandFireMissile),
-        (2, CommandFireBooster)
+        (2, CommandFireBooster),
+        (3, CommandTargetFriendlyBase),
+        (4, CommandToggleAutoPilot),
+        (5, CommandTargetCenter),
+        (6, CommandTargetNearest),
+        (7, CommandRipcord),
+        (8, CommandChatPageDown),
+        (9, CommandChatPageUp)
     ];
 
 //////////////////////////////////////////////////////////////////////////////
