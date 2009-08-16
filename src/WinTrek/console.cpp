@@ -1991,18 +1991,18 @@ public:
                         pinput->GetInputSite()->OnTrekKey(pinput->OnXButton5());
                         break;
                     case 8:
-                        if ( GetWindow()->CommandCamera(GetWindow()->GetCameraMode()) || 
-                            (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA) ) {
-                                OutputDebugString("console overide zoom in!\n");
-                                pinput->GetInputSite()->OnTrekKey(TK_ZoomIn);
-                        }
+                        if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()))
+                            pinput->GetInputSite()->OnTrekKey(TK_ZoomIn);
+                        else if (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA)
+                            pinput->GetInputSite()->OnTrekKey(TK_ThrottleUp);
                         else
                             pinput->GetInputSite()->OnTrekKey(pinput->OnWheelDown());
                         break;
                     case 9:
-                        if ( GetWindow()->CommandCamera(GetWindow()->GetCameraMode()) || 
-                            (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA) )
+                        if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()))
                             pinput->GetInputSite()->OnTrekKey(TK_ZoomOut);
+                        else if (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA)
+                            pinput->GetInputSite()->OnTrekKey(TK_ThrottleDown);
                         else
                             pinput->GetInputSite()->OnTrekKey(pinput->OnWheelUp());
                         break;

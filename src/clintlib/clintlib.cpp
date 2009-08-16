@@ -1277,10 +1277,10 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
                 ::RegCloseKey(hKey);
             }
             if (szServer[0] != '\0') {
-                ci.strServer = ZString(szServer).LeftOf(":");
-                ci.dwPort = ZString(szServer).RightOf(":").GetInteger();
+                ZString strServer = ZString(szServer).LeftOf(":");
+                DWORD dwPort = ZString(szServer).RightOf(":").GetInteger();
 
-                hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
+                hr = m_fm.JoinSession(FEDSRV_GUID, strServer, ci.szName, dwPort);
 			} else {
 				hr = -1;
 			}

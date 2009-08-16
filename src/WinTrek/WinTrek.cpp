@@ -7616,7 +7616,7 @@ public:
                                 static const float  c_minRate = RadiansFromDegrees(7.5f);
                                 static const float  c_maxRate = RadiansFromDegrees(75.0f);
                                 float   maxSlewRate = c_minRate +
-                                                      (c_maxRate - c_minRate) * m_cameraControl.GetFOV() / s_fMaxFOV; //Imago 8/14/09
+                                                      (c_maxRate - c_minRate) * fov / s_fMaxFOV;
 
                                 const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
                                 {
@@ -9699,7 +9699,6 @@ public:
                             m_distanceExternalCamera = s_fExternalViewDistanceMax;
                     }
                 } else if (m_cm == cmCockpit) {
-                    OutputDebugString("Setitng cam control!\n");
                     float   fov = m_cameraControl.GetFOV();
                     if (tk == TK_ZoomIn) {
                         fov -= dt;
@@ -9721,6 +9720,12 @@ public:
                 if (trekClient.GetShip() && !trekClient.GetShip()->GetParentShip()) {
                     trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;
                     trekClient.joyThrottle = false;
+                } else if (trekClient.GetShip() && trekClient.GetShip()->GetTurretID() != NA) {
+                    ControlData cd = trekClient.GetShip()->GetControls();
+                    cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.8f) ? (cd.jsValues[c_axisThrottle] + 0.2f) : 1.0f;
+                    trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
+                    trekClient.joyThrottle = false;
+                    trekClient.GetShip()->SetControls(cd);
                 }
             }
             break;
@@ -9730,6 +9735,12 @@ public:
                 if (trekClient.GetShip() && !trekClient.GetShip()->GetParentShip()) {
                     trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f;
                     trekClient.joyThrottle = false;
+                } else if (trekClient.GetShip() && trekClient.GetShip()->GetTurretID() != NA) {
+                    ControlData cd = trekClient.GetShip()->GetControls();
+                    cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.8f) ? (cd.jsValues[c_axisThrottle] - 0.2f) : -1.0f;
+                    trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
+                    trekClient.joyThrottle = false;
+                    trekClient.GetShip()->SetControls(cd);
                 }
             }
             break;

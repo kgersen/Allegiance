@@ -1473,7 +1473,7 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
   // Sure, it'll freeze for 15 secs if there's no connection, but it did that under dplay4, too.
 
   int i = 0;
-  while(IsEqualGUID(GUID_NULL, m_guidInstance) && i < 600)	// 60 second timeout //was 15 seconds 8/1/09 Imago
+  while(IsEqualGUID(GUID_NULL, m_guidInstance) && i < 300)	// 30 second timeout //was 15 seconds 8/1/09 Imago
   {
      Sleep(100);	// check every 100 ms
      i++;

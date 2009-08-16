@@ -203,7 +203,6 @@ public:
         if (m_bButtonsEnabled) {
             if (button <= 10) { //was 3 Imago 8/13/09
                 m_ppboolButton[button]->SetValue(bDown);
-                ZDebugOutput("Virtual Joy Button: " + ZString(button) + (bDown ? " down" : " up") + "\n");
             }
         }
 
