@@ -4334,11 +4334,8 @@ public:
     void TogglePosters()
     {
         if (m_pwrapImagePosters->GetImage() == Image::GetEmpty()) {
-			// imago: software dx posters broke for now
-			//if(CD3DDevice9::Get()->IsHardwareVP()) {
-				m_pwrapImagePosters->SetImage(m_pwrapImagePostersInside);
-				SavePreference("Posters", TRUE);
-			//}
+			m_pwrapImagePosters->SetImage(m_pwrapImagePostersInside);
+			SavePreference("Posters", TRUE);
         } else {
             m_pwrapImagePosters->SetImage(Image::GetEmpty());
             SavePreference("Posters", FALSE);

@@ -124,7 +124,7 @@ private:
 		WideCharToMultiByte( CP_ACP, 0, szGUID, -1, chGUID, 39, 0, 0 );
 		m_pLogFile->OutputStringV("\t\tpddoi->guidType: %s\n",chGUID);
 		m_pLogFile->OutputStringV("\t\tpddoi->tszName: %s\n",pddoi->tszName);
-		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",pddoi->dwType, DIDFT_GETINSTANCE(pddoi->dwType));
+		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",DIDFT_GETTYPE(pddoi->dwType), DIDFT_GETINSTANCE(pddoi->dwType));
 		m_pLogFile->OutputStringV("\t\tpddoi->wUsage: %x (page: %x)\n",pddoi->wUsage,pddoi->wUsagePage);
 
         if (
@@ -138,7 +138,7 @@ private:
             } else if (pddoi->guidType == GUID_YAxis) {
                 index = 1;
             } else if (pddoi->guidType == GUID_ZAxis) {
-                index = 2; //Imago 8/13/09
+                index = 2;
             } else {
                 index = -1;
             }
@@ -223,7 +223,6 @@ public:
         m_rect(0, 0, 0, 0),                                                                         
         m_point(0, 0),
         m_vvalueObject(3),
-       // m_vbuttonObject(10), //imago 8/12/09
         m_bEnabled(false),
         m_bBuffered(true),
         m_pbuttonEventSource(ButtonEvent::Source::Create()),
@@ -258,12 +257,14 @@ public:
         // Setup the device
         //
 
+        //Imago 8/14/09
         if (m_vvalueObject[2] != NULL) {
             m_vbuttonObject.SetCount(10);
             ButtonDDInputObject* pobject = new ButtonDDInputObject("Wheel Up",0x00000301UL,GUID_ZAxis);
             m_vbuttonObject.Set(8,pobject);
             pobject = new ButtonDDInputObject("Wheel Down",0x00000401UL,GUID_ZAxis);
             m_vbuttonObject.Set(9,pobject);
+           
         }
 
         SetupDevice();
@@ -693,7 +694,7 @@ public:
 		WideCharToMultiByte( CP_ACP, 0, szGUID, -1, chGUID, 39, 0, 0 );
 		m_pLogFile->OutputStringV("\t\tpddoi->guidType: %s\n",chGUID);
 		m_pLogFile->OutputStringV("\t\tpddoi->tszName: %s\n",pddoi->tszName);
-		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",pddoi->dwType, DIDFT_GETINSTANCE(pddoi->dwType));
+		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",DIDFT_GETTYPE(pddoi->dwType), DIDFT_GETINSTANCE(pddoi->dwType));
 		m_pLogFile->OutputStringV("\t\tpddoi->wUsage: %x (page: %x)\n",pddoi->wUsage,pddoi->wUsagePage);
 
         if (

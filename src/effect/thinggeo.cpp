@@ -278,8 +278,7 @@ public:
 
         // here, check the registry for a private key - if set, use a different
         // afterburner effect, more like a rocket - one that won't drown performance
-		// Imago defaults on for software devices 6/26/09
-        m_bUsePrivateAfterburners = LoadPreference ("PrivateAfterburners", (CD3DDevice9::Get()->IsHardwareVP()) ? 0 : 1);
+        m_bUsePrivateAfterburners = LoadPreference ("PrivateAfterburners", 0);
         if (m_bUsePrivateAfterburners)
         {
             m_sizeSmoke = 2.0f;
@@ -1717,10 +1716,6 @@ int  ThingGeo::GetShowSmoke()
 void ThingGeo::SetShowSmoke(int iShowSmoke)
 {
 	 s_iShowSmoke = iShowSmoke;
-
-	//imago force only 1 smoke particle for software devices 6/26/09
-	if (!CD3DDevice9::Get()->IsHardwareVP())
-		s_iShowSmoke = 1;
 }
 
 bool ThingGeo::GetShowTrails()

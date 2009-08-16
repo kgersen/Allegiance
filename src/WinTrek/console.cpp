@@ -1970,7 +1970,7 @@ public:
         //Imago 8/15/09
         if (button > 1) {
             TRef<TrekInput> pinput = GetWindow()->GetInput();
-            TRef<ModifiableBoolean> pboolDown = new ModifiableBoolean(bDown);
+            TRef<Boolean> pboolDown = new Boolean(bDown);
             switch(button) {
                 case 2:
                     pinput->SetTrekKey(pinput->OnWheelClick(),pboolDown);

@@ -831,7 +831,7 @@ public:
 
     //Imago 8/16/09
     void SetTrekKey(TrekKey tk, Boolean* pboolDown) {
-        m_ppboolTrekKeyButtonDown[tk] = pboolDown;
+        m_pboolTrekKeyDown[tk] = pboolDown;
     }
 
     void SetFocus(bool bFocus)
