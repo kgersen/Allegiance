@@ -1547,10 +1547,12 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                     break;
 
 		        case WM_XBUTTONDOWN: //imago 8/15/09
+                    OutputDebugString("WM_XBUTTONDOWN: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
                     mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, true );
                     break;
 
 		        case WM_XBUTTONUP:
+                    OutputDebugString("WM_XBUTTONUP: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
                     mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, false );
                     break;
             }
@@ -1605,33 +1607,33 @@ bool EngineWindow::OnEvent(ButtonEvent::Source* pevent, ButtonEventData be)
     //Imago 8/15/09
     } else if (be.GetButton() == 3) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000001UL);
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,1));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000001UL);
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,1));
         }
     } else if (be.GetButton() == 4) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000002UL);
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,2));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000002UL);
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,2));
         }
     } else if (be.GetButton() == 5) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000004UL);
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,3));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000004UL);
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,3));
         }
     } else if (be.GetButton() == 6) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000008UL);
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,4));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000008UL);
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,4));
         }
     } else if (be.GetButton() == 7) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000010UL);
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,5));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000010UL);
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,5));
         }
 
     } else if (be.GetButton() == 8) {
