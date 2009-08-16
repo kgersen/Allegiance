@@ -386,8 +386,9 @@ void EngineWindow::UpdateSurfacePointer()
 			//Imago 7/28/09
 			SetWindowPos(GetHWND(),HWND_TOP,0,0,point.X(),point.Y(),NULL);
 			DDCall(pDev->ResetDevice(false,point.X(),point.Y(),g_DX9Settings.m_refreshrate));
-			if (m_pengine->GetFullScreenChanged()) {
-				m_pengine->SetFullscreenChanged(false);
+			if (pDev->GetDeviceSetupParams()->iAdapterID) {
+				    ::ShowWindow(GetHWND(),SW_MINIMIZE);	 //imago 7/7/09 (workaround for one of the multimon bugs)
+				    ::ShowWindow(GetHWND(),SW_MAXIMIZE);
 			}
 		}
 	}

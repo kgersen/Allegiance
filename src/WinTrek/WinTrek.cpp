@@ -7495,6 +7495,7 @@ public:
                                                  (js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  c_fAutopilotDisengage) ||
                                                  (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -c_fAutopilotDisengage) ||
                                                  (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  c_fAutopilotDisengage);
+                                //IMAGO REVIEW NYI THROTTLE? c_axisThrottle 8/16/09 (aarmstrong's issue)
                             }
 
                             if (bControlsInUse)
@@ -9717,30 +9718,34 @@ public:
 
             case TK_ThrottleUp:
             {
-                if (trekClient.GetShip() && !trekClient.GetShip()->GetParentShip()) {
-                    trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;
-                    trekClient.joyThrottle = false;
-                } else if (trekClient.GetShip() && trekClient.GetShip()->GetTurretID() != NA) {
-                    ControlData cd = trekClient.GetShip()->GetControls();
-                    cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.8f) ? (cd.jsValues[c_axisThrottle] + 0.2f) : 1.0f;
-                    trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
-                    trekClient.joyThrottle = false;
-                    trekClient.GetShip()->SetControls(cd);
+                if (trekClient.flyingF() && trekClient.GetShip()) {
+                    if (!trekClient.GetShip()->GetParentShip()) {
+                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;
+                        trekClient.joyThrottle = false;
+                    } else if (trekClient.GetShip()->GetTurretID() != NA) {
+                        ControlData cd = trekClient.GetShip()->GetControls();
+                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.8f) ? (cd.jsValues[c_axisThrottle] + 0.2f) : 1.0f;
+                        trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
+                        trekClient.joyThrottle = false;
+                        trekClient.GetShip()->SetControls(cd);
+                    }
                 }
             }
             break;
 
             case TK_ThrottleDown:
             {
-                if (trekClient.GetShip() && !trekClient.GetShip()->GetParentShip()) {
-                    trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f;
-                    trekClient.joyThrottle = false;
-                } else if (trekClient.GetShip() && trekClient.GetShip()->GetTurretID() != NA) {
-                    ControlData cd = trekClient.GetShip()->GetControls();
-                    cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.8f) ? (cd.jsValues[c_axisThrottle] - 0.2f) : -1.0f;
-                    trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
-                    trekClient.joyThrottle = false;
-                    trekClient.GetShip()->SetControls(cd);
+                if (trekClient.flyingF() && trekClient.GetShip()) {
+                    if (!trekClient.GetShip()->GetParentShip()) {
+                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f;
+                        trekClient.joyThrottle = false;
+                    } else if (trekClient.GetShip()->GetTurretID() != NA) {
+                        ControlData cd = trekClient.GetShip()->GetControls();
+                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.8f) ? (cd.jsValues[c_axisThrottle] - 0.2f) : -1.0f;
+                        trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
+                        trekClient.joyThrottle = false;
+                        trekClient.GetShip()->SetControls(cd);
+                    }
                 }
             }
             break;

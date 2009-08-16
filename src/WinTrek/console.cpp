@@ -1969,51 +1969,54 @@ public:
     {     
         //Imago 8/15/09
         if (button > 1) {
-            if (bDown) {
-                TRef<TrekInput> pinput = GetWindow()->GetInput();
-                switch(button) {
-                    case 2:
-                        pinput->GetInputSite()->OnTrekKey(pinput->OnWheelClick());
-                        break;
-                    case 3:
-                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton1());
-                        break;
-                    case 4:
-                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton2());
-                        break;
-                    case 5:
-                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton3());
-                        break;
-                    case 6:
-                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton4());
-                        break;
-                    case 7:
-                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton5());
-                        break;
-                    case 8:
+            TRef<TrekInput> pinput = GetWindow()->GetInput();
+            TRef<ModifiableBoolean> pboolDown = new ModifiableBoolean(bDown);
+            switch(button) {
+                case 2:
+                    pinput->SetTrekKey(pinput->OnWheelClick(),pboolDown);
+                    break;
+                case 3:
+                    pinput->SetTrekKey(pinput->OnXButton1(),pboolDown);
+                    break;
+                case 4:
+                    pinput->SetTrekKey(pinput->OnXButton2(),pboolDown);
+                    break;
+                case 5:
+                    pinput->SetTrekKey(pinput->OnXButton3(),pboolDown);
+                    break;
+                case 6:
+                    pinput->SetTrekKey(pinput->OnXButton4(),pboolDown);
+                    break;
+                case 7:
+                    pinput->SetTrekKey(pinput->OnXButton5(),pboolDown);
+                    break;
+                case 8:
+                    if (bDown) {
                         if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()))
                             pinput->GetInputSite()->OnTrekKey(TK_ZoomIn);
                         else if (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA)
                             pinput->GetInputSite()->OnTrekKey(TK_ThrottleUp);
                         else
                             pinput->GetInputSite()->OnTrekKey(pinput->OnWheelDown());
-                        break;
-                    case 9:
+                    }
+                    break;
+                case 9:
+                    if (bDown) {
                         if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()))
                             pinput->GetInputSite()->OnTrekKey(TK_ZoomOut);
                         else if (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA)
                             pinput->GetInputSite()->OnTrekKey(TK_ThrottleDown);
                         else
                             pinput->GetInputSite()->OnTrekKey(pinput->OnWheelUp());
-                        break;
+                    }
+                    break;
 
-                    default:
-                        break;
-                }
+                default:
+                    break;
             }
-            return MouseResultRelease();
-        } 
 
+            return MouseResultRelease();
+        }
 
         MouseResult rc = MouseResultHit();
 

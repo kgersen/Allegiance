@@ -99,14 +99,14 @@ public:
     ) :
         m_pinputEngine(pinputEngine),
         m_pjoystickImage(pjoystickImage),
-        m_wheelupTK(TK_NoKeyMapping), //Imago 8/15/09
-        m_wheeldownTK(TK_NoKeyMapping),
-        m_wheelclickTK(TK_NoKeyMapping),
-        m_xbutton1TK(TK_NoKeyMapping),
-        m_xbutton2TK(TK_NoKeyMapping),
-        m_xbutton3TK(TK_NoKeyMapping),
-        m_xbutton4TK(TK_NoKeyMapping),
-        m_xbutton5TK(TK_NoKeyMapping) // --^
+        m_wheelupTK(TK_ChatPageUp), //Imago 8/15/09
+        m_wheeldownTK(TK_ChatPageDown),
+        m_wheelclickTK(TK_FireBooster),
+        m_xbutton1TK(TK_TargetFriendlyBase),
+        m_xbutton2TK(TK_ToggleAutoPilot),
+        m_xbutton3TK(TK_TargetCenter),
+        m_xbutton4TK(TK_TargetNearest),
+        m_xbutton5TK(TK_Ripcord) // --^
 
     {
         InitializeCommandsMDL();
@@ -609,7 +609,6 @@ public:
                     
                     //Imago save special buttons for use outside virtual joystick 8/14/09
                     switch(index) {
-                            break;
                         case 2:
                             m_wheelclickTK = tk;
                             break;
@@ -828,6 +827,11 @@ public:
         }
 
         return bDown;
+    }
+
+    //Imago 8/16/09
+    void SetTrekKey(TrekKey tk, Boolean* pboolDown) {
+        m_ppboolTrekKeyButtonDown[tk] = pboolDown;
     }
 
     void SetFocus(bool bFocus)

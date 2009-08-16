@@ -30,6 +30,7 @@ public:
     // Imago 8/14/09 expose trek input site
     virtual TRef<TrekInputSite> GetInputSite()                                                     = 0;
     virtual void                SetInputSite(TrekInputSite* psite)                                 = 0;
+    virtual void                SetTrekKey(TrekKey tk, Boolean* pboolDown)                         = 0;
 
     // Imago 8/14/09 mouse mappings for use outside virtual joystick
     virtual TrekKey      OnWheelClick()                                                            = 0;
