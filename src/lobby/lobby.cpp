@@ -9,7 +9,9 @@
 
 //appweb -Imago
 static Mpr *mpr;
-//static MprLogModule *tMod;
+#ifdef _DEBUG
+static MprLogModule *tMod;
+#endif
 
 CServiceModule _Module;
 
@@ -520,13 +522,17 @@ void CServiceModule::Run()
 int __cdecl main(int argc, char *argv[])
 { 
 	// start the appweb service thread w/log Imago 7/3/08
-	//MprLogToFile *logger;
+#ifdef _DEBUG
+    MprLogToFile *logger;
+#endif
 	char *programName = mprGetBaseName(argv[0]);
 	mpr = new Mpr(programName);
-	//tMod = new MprLogModule(programName);
-	//logger = new MprLogToFile();
-	//mpr->addListener(logger);
-	//mpr->setLogSpec("stdout:9");
+#ifdef _DEBUG
+	tMod = new MprLogModule(programName);
+	logger = new MprLogToFile();
+	mpr->addListener(logger);
+	mpr->setLogSpec("alllobby_appweb.log:9");
+#endif
 	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
 
@@ -587,9 +593,13 @@ int __cdecl main(int argc, char *argv[])
 
 	//appweb
 	mpr->stop(0);
-	//delete tMod;
+#ifdef _DEBUG
+	delete tMod;
+#endif
 	delete mpr;
-	//delete logger;
+#ifdef _DEBUG
+	delete logger;
+#endif
 	mprMemClose();
 
     // When we get here, the service has been stopped

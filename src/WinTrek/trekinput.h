@@ -26,19 +26,20 @@ public:
     virtual void         GetButtonTrekKeys(TrekInputSite* psite)                                   = 0;
     virtual ZString      GetFPSString()                                                            = 0;
     virtual TRef<IPopup> CreateInputMapPopup(Modeler* pmodeler, IEngineFont* pfont, Number* ptime) = 0;
+   
     // Imago 8/14/09 expose trek input site
     virtual TRef<TrekInputSite> GetInputSite()                                                     = 0;
+    virtual void                SetInputSite(TrekInputSite* psite)                                 = 0;
 
-    // Imago 8/14/09 expose special mouse mappings for use outside virtual joystick
+    // Imago 8/14/09 mouse mappings for use outside virtual joystick
+    virtual TrekKey      OnWheelClick()                                                            = 0;
     virtual TrekKey      OnWheelDown()                                                             = 0;
     virtual TrekKey      OnWheelUp()                                                               = 0;
-  //NYI
-  //virtual TrekKey      OnXButton1()                                                              = 0;
-  //virtual TrekKey      OnXButton2()                                                              = 0;
-  //virtual TrekKey      OnXButton3()                                                              = 0;
-  //virtual TrekKey      OnXButton4()                                                              = 0;
-  //virtual TrekKey      OnXButton5()                                                              = 0;
-
+    virtual TrekKey      OnXButton1()                                                              = 0;
+    virtual TrekKey      OnXButton2()                                                              = 0;
+    virtual TrekKey      OnXButton3()                                                              = 0;
+    virtual TrekKey      OnXButton4()                                                              = 0;
+    virtual TrekKey      OnXButton5()                                                              = 0;
 };
 
 TRef<TrekInput> CreateTrekInput(HINSTANCE hInst, HWND hwnd, InputEngine* pinputEngine, JoystickImage* pjoystickImage);

@@ -1966,18 +1966,54 @@ public:
     }                
 
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
-    {       
+    {     
+        //Imago 8/15/09
         if (button > 1) {
-            TRef<TrekInput> pinput = GetWindow()->GetInput();
-            //NYI button 2 & 3-7 (XBUTTONs)
-            // Do whatever key is mapped for wheel
-            if (button == 8 && bDown)
-                pinput->GetInputSite()->OnTrekKey(pinput->OnWheelDown());
-            else if (button == 9 && bDown)
-                pinput->GetInputSite()->OnTrekKey(pinput->OnWheelUp());
+            if (bDown) {
+                TRef<TrekInput> pinput = GetWindow()->GetInput();
+                switch(button) {
+                    case 2:
+                        pinput->GetInputSite()->OnTrekKey(pinput->OnWheelClick());
+                        break;
+                    case 3:
+                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton1());
+                        break;
+                    case 4:
+                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton2());
+                        break;
+                    case 5:
+                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton3());
+                        break;
+                    case 6:
+                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton4());
+                        break;
+                    case 7:
+                        pinput->GetInputSite()->OnTrekKey(pinput->OnXButton5());
+                        break;
+                    case 8:
+                        if ( GetWindow()->CommandCamera(GetWindow()->GetCameraMode()) || 
+                            (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA) ) {
+                                OutputDebugString("console overide zoom in!\n");
+                                pinput->GetInputSite()->OnTrekKey(TK_ZoomIn);
+                        }
+                        else
+                            pinput->GetInputSite()->OnTrekKey(pinput->OnWheelDown());
+                        break;
+                    case 9:
+                        if ( GetWindow()->CommandCamera(GetWindow()->GetCameraMode()) || 
+                            (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA) )
+                            pinput->GetInputSite()->OnTrekKey(TK_ZoomOut);
+                        else
+                            pinput->GetInputSite()->OnTrekKey(pinput->OnWheelUp());
+                        break;
 
+                    default:
+                        break;
+                }
+            }
             return MouseResultRelease();
-        }
+        } 
+
 
         MouseResult rc = MouseResultHit();
 

@@ -21,6 +21,35 @@ bool g_fLogonCRC = true;
 //appweb
 static MprMutex* mutex = new MprMutex();
 
+void encodeURL( char * url,char * token) // url = output, token gets append to url
+{
+    // wlp - we will do brute force URL encoding - it's normal alphaNumeric or it's URL encoded
+    // we will URL encode everything that is in data areas
+   
+	url = url + strlen(url) ;       // point past any existing data
+	
+	char* tokenEnd = ( token + strlen(token)); // this is where we end                    
+	for( ; token < tokenEnd ;)
+	{
+	//  filter out special characters 
+	// IF it is not (a to z) or (A to Z) or (0 to 9) then filter it
+    	if ( ((*token >= 'a') && (*token <= 'z'))     
+           | ((*token >= 'A') && (*token <= 'Z')) 
+           | ((*token >= '0') && (*token <= '9'))
+		   )
+		{
+        *(url++) = *(token++) ;   // unfiltered straight transfer
+		}
+		else // ok this needs URL encoding with percent sign followed by ascii hex value %22
+		{
+        *(url++) = '%' ;  // paste in percent sign then the 2 hex bytes
+		*(url++) = (( *token / 16 ) < 10) ? ( *token / 16) + '0' : ( *token /16 ) + ('a'-10) ;
+        *(url++) = (( *token & 0x0F ) < 10) ? ( *(token++) & 0x0F ) + '0' : ( *(token++) & 0x0F ) + ('a'-10) ;
+		}
+   }
+	*url = 0 ;  // terminate the string - should always be at the end
+}
+
 // mdvalley: 2005 needs to specify dword
 static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
 {
@@ -69,41 +98,43 @@ static void doASGS(void* data, MprThread *threadp) {
 	// add the ticket to the url
 	Strcat(szURL,"&Ticket=");
 	char escaped[2048];
-	maUrlEncode(escaped, sizeof(escaped), pqd->szCDKey, 1);
+	//maUrlEncode(escaped, sizeof(escaped), pqd->szCDKey, true);  This stopped working after update? Imago 8/15/09
+    encodeURL(escaped,pqd->szCDKey); //use Radar's function
 	Strcat(szURL,escaped);
 
-	// the beast
-	MaClient* client = new MaClient();
-	
-	// max wait 5 seconds
-	client->setTimeout(2500);
-	client->setRetries(2);
-	client->setKeepAlive(0);
+    // First make sure we can write to a socket
+    MprSocket* socket = new MprSocket();
+    socket->openClient("asgs.alleg.net",80,0);
+    int iwrite = socket->_write("GET /\r\n");
+    delete socket;
 
-	// finally
-	client->getRequest(szURL);
+    MaClient* client = new MaClient();
+    client->setTimeout(3000);
+    client->setRetries(1);
+    client->setKeepAlive(0);
 
-	// Imago check for HTTP OK 8/3/08  (this wont hang either)
-	if (client->getResponseCode() == 200) {
-		content = client->getResponseContent(&contentLen);
+    if (iwrite == 7) { // make sure we wrote 7 bytes
+        client->getRequest(szURL);
+        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
+	        content = client->getResponseContent(&contentLen);
+    }
 
-		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
-			ZString strContent = content;
-			strContent = strContent.RightOf(85);
-			strContent = strContent.LeftOf("<");
-			Strcpy(szResponse,(PCC)strContent);
+	if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
+		ZString strContent = content;
+		strContent = strContent.RightOf(85);
+		strContent = strContent.LeftOf("<");
+		Strcpy(szResponse,(PCC)strContent);
 
-			if (strcmp(szResponse,"-1") == 0) {
-				mutex->lock();
-				pqd->fValid = false;
-				pqd->fRetry = false;
-				char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
-				pqd->szReason = new char[lstrlen(szReason) + 1];
-				Strcpy(pqd->szReason,szReason);
-				mutex->unlock();
-			}
-		} 
-	}
+		if (strcmp(szResponse,"-1") == 0) {
+			mutex->lock();
+			pqd->fValid = false;
+			pqd->fRetry = false;
+			char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
+			pqd->szReason = new char[lstrlen(szReason) + 1];
+			Strcpy(pqd->szReason,szReason);
+			mutex->unlock();
+		}
+	} 
 
 	// tell the main thread we've finished, use the existing thread msg for AZ SQL 
 	PostThreadMessage(_Module.dwThreadID, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);

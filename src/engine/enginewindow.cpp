@@ -1535,24 +1535,23 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                             if (!GetFullscreen())
                                 mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
                         } else {
-                                mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, true );
-                                if (!GetFullscreen())
-                                    mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, false );
+                            mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, true );
+                            if (!GetFullscreen())
+                                mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, false );
                         }
                     } else if (nFlags == 1) {
                         mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
                     } else if (nFlags == 0) {
                         mouseResult = pimage->Button(this,point, 9, m_bCaptured, m_bHit, false );
                     }
-                    //m_bCaptured = false;
                     break;
 
-		        case WM_XBUTTONDOWN: //NYI
-                    OutputDebugString("XBUTTON DOWN: " + ZString(GET_XBUTTON_WPARAM(nFlags)) + "\n");
+		        case WM_XBUTTONDOWN: //imago 8/15/09
+                    mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, true );
                     break;
 
-		        case WM_XBUTTONUP: //NYI
-                    OutputDebugString("XBUTTON UP: " + ZString(GET_XBUTTON_WPARAM(nFlags)) + "\n");
+		        case WM_XBUTTONUP:
+                    mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, false );
                     break;
             }
         }
@@ -1603,7 +1602,37 @@ bool EngineWindow::OnEvent(ButtonEvent::Source* pevent, ButtonEventData be)
             HandleMouseMessage(WM_MBUTTONUP,   m_pmouse->GetPosition());
         }
 
-    //XBUTTON 3-7 NYI
+    //Imago 8/15/09
+    } else if (be.GetButton() == 3) {
+        if (be.IsDown()) {
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000001UL);
+        } else {
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000001UL);
+        }
+    } else if (be.GetButton() == 4) {
+        if (be.IsDown()) {
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000002UL);
+        } else {
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000002UL);
+        }
+    } else if (be.GetButton() == 5) {
+        if (be.IsDown()) {
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000004UL);
+        } else {
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000004UL);
+        }
+    } else if (be.GetButton() == 6) {
+        if (be.IsDown()) {
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000008UL);
+        } else {
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000008UL);
+        }
+    } else if (be.GetButton() == 7) {
+        if (be.IsDown()) {
+            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), 0x00000010UL);
+        } else {
+            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), 0x00000010UL);
+        }
 
     } else if (be.GetButton() == 8) {
         if (be.IsDown()) {

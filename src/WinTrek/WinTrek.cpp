@@ -6819,6 +6819,8 @@ public:
 
         if (bFirstFrame)
         {
+            m_ptrekInput->SetInputSite(this); //Imago 8/15/09
+
             // allow the splash screen to draw itself before we do
             // any other initialization
             bFirstFrame = false;
@@ -9697,6 +9699,7 @@ public:
                             m_distanceExternalCamera = s_fExternalViewDistanceMax;
                     }
                 } else if (m_cm == cmCockpit) {
+                    OutputDebugString("Setitng cam control!\n");
                     float   fov = m_cameraControl.GetFOV();
                     if (tk == TK_ZoomIn) {
                         fov -= dt;

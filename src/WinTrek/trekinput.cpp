@@ -51,6 +51,12 @@ public:
     // Mouse mapping Imago 8/14/09 (special buttons / mouse wheel)
     TrekKey                                 m_wheeldownTK;
     TrekKey                                 m_wheelupTK;
+    TrekKey                                 m_wheelclickTK;
+    TrekKey                                 m_xbutton1TK;
+    TrekKey                                 m_xbutton2TK;
+    TrekKey                                 m_xbutton3TK;
+    TrekKey                                 m_xbutton4TK;
+    TrekKey                                 m_xbutton5TK;
 
     //
     // Keyboard mapping
@@ -92,7 +98,16 @@ public:
         JoystickImage* pjoystickImage
     ) :
         m_pinputEngine(pinputEngine),
-        m_pjoystickImage(pjoystickImage)
+        m_pjoystickImage(pjoystickImage),
+        m_wheelupTK(TK_NoKeyMapping), //Imago 8/15/09
+        m_wheeldownTK(TK_NoKeyMapping),
+        m_wheelclickTK(TK_NoKeyMapping),
+        m_xbutton1TK(TK_NoKeyMapping),
+        m_xbutton2TK(TK_NoKeyMapping),
+        m_xbutton3TK(TK_NoKeyMapping),
+        m_xbutton4TK(TK_NoKeyMapping),
+        m_xbutton5TK(TK_NoKeyMapping) // --^
+
     {
         InitializeCommandsMDL();
 
@@ -593,11 +608,36 @@ public:
                     int tk    = (int)GetNumber(ppair->GetSecond());
                     
                     //Imago save special buttons for use outside virtual joystick 8/14/09
-                    //NYI XBUTTONS
-                    if (index == 8) //mouse wheel down
-                        m_wheeldownTK = tk;
-                    if (index == 9) //mouse wheel up
-                        m_wheelupTK = tk;
+                    switch(index) {
+                            break;
+                        case 2:
+                            m_wheelclickTK = tk;
+                            break;
+                        case 3:
+                            m_xbutton1TK = tk;
+                            break;
+                        case 4:
+                            m_xbutton2TK = tk;
+                            break;
+                        case 5:
+                            m_xbutton3TK = tk;
+                            break;
+                        case 6:
+                            m_xbutton4TK = tk;
+                            break;
+                        case 7:
+                            m_xbutton5TK = tk;
+                            break;
+                        case 8:
+                            m_wheeldownTK = tk;
+                            break;
+                        case 9:
+                            m_wheelupTK = tk;
+                            break;
+
+                        default:
+                            break;
+                    }
 
                     //
                     // Get the button
@@ -906,10 +946,6 @@ public:
 
     void GetButtonTrekKeys(TrekInputSite* psite)
     {
-
-        //Imago 8/14/09 save the input site
-        m_psite = psite;
-
         //
         // Update hat buttons
         //
@@ -966,6 +1002,10 @@ public:
         return m_psite;
     }
 
+    void SetInputSite(TrekInputSite* psite) {
+        m_psite = psite;
+    }
+
     //Imago 8/14/09 expose mappings for use outside virtual joystick
     TrekKey OnWheelDown() {
         return m_wheeldownTK;
@@ -973,6 +1013,30 @@ public:
 
     TrekKey OnWheelUp() {
         return m_wheelupTK;
+    }
+
+   TrekKey OnWheelClick() {
+        return m_wheelclickTK;
+    }
+
+   TrekKey OnXButton1() {
+        return m_xbutton1TK;
+    }
+
+   TrekKey OnXButton2() {
+        return m_xbutton2TK;
+    }
+
+   TrekKey OnXButton3() {
+        return m_xbutton3TK;
+    }
+
+   TrekKey OnXButton4() {
+        return m_xbutton4TK;
+    }
+
+   TrekKey OnXButton5() {
+        return m_xbutton5TK;
     }
 
     TRef<IPopup> CreateInputMapPopup(Modeler* pmodeler, IEngineFont* pfont, Number* ptime)

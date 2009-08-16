@@ -26,7 +26,9 @@
 
 //appweb -Imago
 static Mpr *mpr;
-//static MprLogModule *tMod;
+#ifdef _DEBUG
+static MprLogModule *tMod;
+#endif
 static MprMutex	*mutex;
 
 static void doASGS(void* data, MprThread *threadp) {
@@ -45,27 +47,30 @@ static void doASGS(void* data, MprThread *threadp) {
 	// ignore "tokens" in player name
 	ZString strName = szName;
 	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
-		strcpy(szName,strName.RightOf(1));
+		Strcpy(szName,strName.RightOf(1));
 
 	// add the name to the url
-	strcat(szURL,szName);
+	Strcat(szURL,szName);
 
 	//Imago check only if connected to a lobby - 6/26/09
 	if (g.fmLobby.IsConnected()) {
-		// the beast
-		MaClient* client = new MaClient();
 
-		// max wait 5 seconds
-		client->setTimeout(2500);
-		client->setRetries(2);
-		client->setKeepAlive(0);
+        // First make sure we can write to a socket
+        MprSocket* socket = new MprSocket();
+        socket->openClient("asgs.alleg.net",80,0);
+        int iwrite = socket->_write("GET /\r\n");
+        delete socket;
 
-		// finally
-		client->getRequest(szURL);
+        MaClient* client = new MaClient();
+	    client->setTimeout(3000);
+	    client->setRetries(1);
+	    client->setKeepAlive(0);
 
-		// Imago check for HTTP OK 8/3/08  (this wont hang either)
-		if (client->getResponseCode() == 200)
-			content = client->getResponseContent(&contentLen);
+        if (iwrite == 7) { // make sure we wrote 7 bytes
+	        client->getRequest(szURL);
+	        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
+		        content = client->getResponseContent(&contentLen);
+        }
 
 		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
 			ZString strContent = content;
@@ -74,7 +79,7 @@ static void doASGS(void* data, MprThread *threadp) {
 			Strcpy(szResponse,(PCC)strContent);
 
 			// the only explicit error known, Pook?
-			if (strcmp(strtok(szResponse,"|"),"0") != 0 ) {
+			if (Strcmp(strtok(szResponse,"|"),"0") != 0 ) {
 					myRank = -1;
 			} else {
 					myRank = atoi(strtok(NULL,"|"));
@@ -107,14 +112,13 @@ static void doASGS(void* data, MprThread *threadp) {
 			pqd->rank = myRank;
 			mutex->unlock();
 		}
-		delete client;
+        delete client;
 	} else { //not connected to a lobby, just set rank to 0 - imago 6/26/09
 		pqd->rank = 0;
 	}
 
 	// tell the main thread we've finished using the existing thread msg for AZ SQL
 	PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
-
 }
 
 #if !defined(ALLSRV_STANDALONE)
@@ -9380,16 +9384,19 @@ int __cdecl main(int argc, char *argv[])
     srand(GetTickCount() + time(NULL));
 
 	// start the appweb service thread w/log Imago 7/3/08
-	//MprLogToFile *logger;
 	char *programName = mprGetBaseName(argv[0]);
 	mutex = new MprMutex();
 	mpr = new Mpr(programName);
-	//tMod = new MprLogModule(programName);
-	//logger = new MprLogToFile();
-	//mpr->addListener(logger);
-	//mpr->setLogSpec("stdout:9");
+#ifdef _DEBUG
+    MprLogToFile *logger;
+	tMod = new MprLogModule(programName);
+	logger = new MprLogToFile();
+	mpr->addListener(logger);
+    mpr->setLogSpec("allsrv_appweb.log:9");
+#endif
 	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
+
 
     // Enter this thread into the COM MTA
     TCCoInit init(COINIT_MULTITHREADED);
@@ -9711,9 +9718,13 @@ int __cdecl main(int argc, char *argv[])
 	//appweb
 	mpr->stop(0);
 	delete mutex;
-//	delete tMod;
+#ifdef _DEBUG
+	delete tMod;
+#endif
 	delete mpr;
-//	delete logger;
+#ifdef _DEBUG
+    delete logger;
+#endif
 	mprMemClose();
 
 	// Indicate success

@@ -312,6 +312,8 @@ void ToMono()
 		if(m_uChannels == 1)
 			return;
 
+		OutputDebugString("ToMono() called on stereo sound file.");
+
 		BYTE bytePerSample = m_uBitsPerSample / 8;
 		unsigned int monoSize = m_uSize / m_uChannels;
 		unsigned int numSamples = monoSize / bytePerSample;
@@ -330,7 +332,24 @@ void ToMono()
 
 		//The contents of the memory cuurently allocated are copied to monoData in the above for loop.  
 		//Allocated m_pvData memory is now of no use since m_pvData pointer is changed below. (m_pvData = monoData;)
-		//free(m_pvData); //Fix memory leak 8/3/09 Sgt_Baker
+		
+		//Sgt_Baker attempting to fix memory leak 15 Aug 2009
+		if(m_bIsOgg)
+		{
+			//Oggs use manually allocated memory. Free it. Sgt_Baker.
+			free(m_pvData); //Fix memory leak 8/3/09 Sgt_Baker
+		}
+		else
+		{
+			if (m_pvFileContents)
+			{
+				//Sgt_Baker 15 Aug 2009
+				//Wavs use mapped files.  Since m_pvData is pointed elsewhere, we no longer need the mapping.
+				//WILL THIS BREAK STREAMED FILES?
+				// close the file
+				UnmapViewOfFile(m_pvFileContents);
+			}
+		}
 
 		m_uChannels = 1;
 		m_uSize = monoSize;

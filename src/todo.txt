@@ -5,9 +5,6 @@
 	what?  works fine for me with pre-compiled headers... 
 	...the server uses PCH and appweb and you didn't have a problem with that?!
 	
-- do something with Vorbis (remove or use as a lib (.h/.lib and no source))
-	Remove the Vorbis project and set it up like appweb.
-
 - fix mdlc (todo)
 	-convert works again for engine supported formats only.
 	- need 24bpp -> 32bpp support and CreateCompatibleSurface enhancments 
@@ -35,6 +32,8 @@ Alliances:
 - change imbal behavior (1/2/NA/Auto)
 	One method would be to force autobalance when alliances are on then have
 	player counts based on ally group instead of side.
+	
+	Imbal is seriosuly bugged!  Consider reverting back to msoriginal and starting over.
 	
 - Game types other than conquest?
 - "Nerf" options, if necessary:
