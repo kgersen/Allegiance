@@ -647,14 +647,18 @@ bool CDX9PackFile::ImportPackFile( )
 
 	if( memcmp( m_header.szID, "AllegPak", 8 ) != 0 )
 	{
-		_ASSERT( false );
+		// 8/17/09 remove corrupt .pack file and carry on
+        m_pFile->Release();
+        delete m_pFile;
+        m_pFile = NULL;
+        DeleteFile((PCC)m_szOutputFileName);
+        g_DX9Settings.mbUseTexturePackFiles = false;
 		memset( &m_header, 0, sizeof( SHashTableEntry ) );
-		delete m_pPackFile;
-		delete m_pFile;
+		delete[] m_pPackFile;
 		m_pHashEntryArray = NULL;
 		m_pRawFileData = NULL;
 		m_pPackFile = NULL;
-		m_pFile = NULL;
+		
 		return false;
 	}
 

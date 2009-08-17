@@ -53,9 +53,14 @@ void TrekResources::Initialize(Modeler* pmodeler)
 
 		pPackFile = new CDX9PackFile( pmodeler->GetArtPath(), "CommonTextures" );
 		bResult = pPackFile->ImportPackFile();
-		_ASSERT( bResult == true );
-
-		CDX9PackFile::AddToPackFileList( pPackFile );
+		//_ASSERT( bResult == true ); Imago 8/16/09
+        if (bResult)
+            CDX9PackFile::AddToPackFileList( pPackFile );
+        else {
+            pPackFile->SetUserCancelled(true);
+            delete pPackFile;
+            pPackFile = NULL;
+        }
 	}
 
 	TRef<INameSpace> pns = pmodeler->GetNameSpace("font");

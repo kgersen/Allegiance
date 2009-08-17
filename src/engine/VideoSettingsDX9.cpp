@@ -109,7 +109,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	g_VideoSettings.iCurrentAASetting	= 0;
 	g_VideoSettings.bWindowed			= !bStartFullscreen;
 	g_VideoSettings.iCurrentMode		= g_VideoSettings.bWindowed;
-	g_VideoSettings.bWaitForVSync		= true;
+	g_VideoSettings.bWaitForVSync		= false;
 	
 // DEFAULT SETTINGS W/O DIALOG imago 6/29/09 - 7/2/09 - 7/19/09
 //////////////////////////////////////////
@@ -119,7 +119,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
     	int x = 800;
 		int y = 600;
 
-		g_VideoSettings.bWaitForVSync		= true;
+		g_VideoSettings.bWaitForVSync		= false;
 		g_VideoSettings.bAutoGenMipmaps 	= false;
 		g_VideoSettings.bUseTexturePackFile = false;
 		g_VideoSettings.multiSampleType 	= D3DMULTISAMPLE_NONE;
@@ -207,10 +207,11 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
 		//lets make extra sure we don't crash when we autoload AA settings
 		LPDIRECT3D9 pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
-		if (g_DX9Settings.m_dwAA)
+		if (g_DX9Settings.m_dwAA >= 1)
 			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
 				g_VideoSettings.bWindowed, D3DMULTISAMPLE_2_SAMPLES, NULL) == D3D_OK) {
 				g_VideoSettings.iCurrentAASetting = 1;
+                g_DX9Settings.m_dwAA = 2;
 			} else {
 				g_DX9Settings.m_dwAA = 0;
 			}
@@ -218,6 +219,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
 				g_VideoSettings.bWindowed, D3DMULTISAMPLE_4_SAMPLES, NULL) == D3D_OK) {
 				g_VideoSettings.iCurrentAASetting = 2;
+                g_DX9Settings.m_dwAA = 4;
 			} else {
 				g_VideoSettings.iCurrentAASetting = 1;
 				g_DX9Settings.m_dwAA = 2;
@@ -226,6 +228,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
 				g_VideoSettings.bWindowed, D3DMULTISAMPLE_6_SAMPLES, NULL) == D3D_OK) {
 				g_VideoSettings.iCurrentAASetting = 3;
+                g_DX9Settings.m_dwAA = 6;
 			} else {
 				g_VideoSettings.iCurrentAASetting = 2;
 				g_DX9Settings.m_dwAA = 4;
@@ -234,6 +237,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
 				g_VideoSettings.bWindowed, D3DMULTISAMPLE_8_SAMPLES, NULL) == D3D_OK) {
 				g_VideoSettings.iCurrentAASetting = 4;
+                g_DX9Settings.m_dwAA = 8;
 			} else {
 				g_VideoSettings.iCurrentAASetting = 3;
 				g_DX9Settings.m_dwAA = 6;
@@ -242,6 +246,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
 				g_VideoSettings.bWindowed, D3DMULTISAMPLE_16_SAMPLES, NULL) == D3D_OK) {
 				g_VideoSettings.iCurrentAASetting = 5;
+                g_DX9Settings.m_dwAA = 16;
 			} else {
 				g_VideoSettings.iCurrentAASetting = 4;
 				g_DX9Settings.m_dwAA = 8;

@@ -487,10 +487,11 @@ bool CLobbyApp::OnAssert(const char* psz, const char* pszFile, int line, const c
 
 void CLobbyApp::DebugOutput(const char *psz)
 {
+    //Imago had to modify this because of the debugging changes in Win32App by mmf/radar
+#ifdef _DEBUG
   ::OutputDebugString("AllLobby: ");
-  #ifdef _DEBUG
-    Win32App::DebugOutput(psz);
-  #endif
+  ::OutputDebugString(psz);
+#endif
 }
 
 void CLobbyApp::BootPlayersByName(const ZString& strName)
