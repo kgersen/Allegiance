@@ -4606,14 +4606,28 @@ public:
 
     void SetSmoke (DWORD value)
     {
-        ThingGeo::SetShowSmoke (int (value));
+        if (value == 2) { //imago 8/16/09
+            ThingGeo::SetPerformance(true);
+            ThingGeo::SetShowSmoke (1);
+        } else {
+            ThingGeo::SetShowSmoke (int (value));
+           }
     }
 
     void ToggleSmoke()
     {
         int     iSmoke = ThingGeo::GetShowSmoke();
+        if (iSmoke == 0) 
+            iSmoke = 2;
+        else if (iSmoke == 2) 
+            iSmoke = 0;
+        bool bPerformance = false;
         switch (iSmoke)
         {
+            case 2: //Imago 8/16/09
+                bPerformance = true;
+                iSmoke = 1;
+                break;
             case 0:
                 iSmoke = 1;
                 break;
@@ -4626,8 +4640,9 @@ public:
             default:
                 iSmoke = 0;
         }
+        ThingGeo::SetPerformance(bPerformance);
         ThingGeo::SetShowSmoke(iSmoke);
-        SavePreference("SmokeEffects", (DWORD) iSmoke);
+        SavePreference("SmokeEffects", (DWORD) (bPerformance) ? 2 : iSmoke);
 
         if (m_pitemToggleSmoke != NULL) {
             m_pitemToggleSmoke->SetString(GetSmokeMenuString());
@@ -5042,6 +5057,9 @@ public:
         {
             case 0:
                 return ZString ("Particles Off");
+                break;
+            case 2: //Imago 8/16/09
+                return ZString ("Particles On - Performance");
                 break;
             case 1:
                 return ZString ("Particles On - Low Quality");

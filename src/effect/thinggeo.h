@@ -24,6 +24,7 @@ protected:
     static bool  s_bTransparentObjects;
     static int   s_crashCount;
     static int   s_trashCount;
+    static bool  s_bUsePrivateAfterburners;
 
 public:
     static TRef<ThingGeo> Create(Modeler* pmodeler, Number* ptime);
@@ -47,6 +48,7 @@ public:
     static void SetLODBias(float lodBias);
     static int  GetCrashCount();
     static int  GetTrashCount();
+    static void SetPerformance(bool bUse); //imago 8/16/09
 
     //
     // ThingGeo members

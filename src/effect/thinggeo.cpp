@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "pch.h"
-#include "regkey.h"
+//#include "regkey.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -197,7 +197,6 @@ private:
     float                       m_sizeSmoke;
     float                       m_fAfterburnerFireDuration;
     float                       m_fAfterburnerSmokeDuration;
-    bool                        m_bUsePrivateAfterburners;
 
     //
     // Damage
@@ -216,6 +215,7 @@ private:
     float                       m_fTimeUntilAleph;
 
 private:
+    /* Imago removed, now uses Performance 8/16/09
     DWORD LoadPreference(const ZString& szName, DWORD dwDefault)
     {
         HKEY hKey;
@@ -235,6 +235,7 @@ private:
 
         return dwResult;
     }
+    */
 
 public:
     ThingGeoImpl(Modeler* pmodeler, Number* ptime) :
@@ -278,8 +279,9 @@ public:
 
         // here, check the registry for a private key - if set, use a different
         // afterburner effect, more like a rocket - one that won't drown performance
-        m_bUsePrivateAfterburners = LoadPreference ("PrivateAfterburners", 0);
-        if (m_bUsePrivateAfterburners)
+        //Imago 8/16/09 now uses Performance setting
+        //m_bUsePrivateAfterburners = LoadPreference ("PrivateAfterburners", 0);
+        if (s_bUsePrivateAfterburners)
         {
             m_sizeSmoke = 2.0f;
             m_fAfterburnerFireDuration = 0.33f;
@@ -795,7 +797,7 @@ public:
                     iFrameType = 1;
                 else if (frame.m_strName.Find ("smoke") != -1)
                 {
-                    if (m_bUsePrivateAfterburners)
+                    if (s_bUsePrivateAfterburners)
                         iFrameType = 1;
                     else
                         iFrameType = 2;
@@ -1678,15 +1680,16 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-float ThingGeo::s_lodBias             = 1;
-bool  ThingGeo::s_bShowLights         = true;
-bool  ThingGeo::s_bShowHullHits       = true;
-bool  ThingGeo::s_bShowTrails         = true;
-bool  ThingGeo::s_bShowBounds         = false;
-int   ThingGeo::s_iShowSmoke          = 1;
-bool  ThingGeo::s_bTransparentObjects = false;
-int   ThingGeo::s_crashCount          = 0;
-int   ThingGeo::s_trashCount          = 0;
+float ThingGeo::s_lodBias                   = 1;
+bool  ThingGeo::s_bShowLights               = true;
+bool  ThingGeo::s_bShowHullHits             = true;
+bool  ThingGeo::s_bShowTrails               = true;
+bool  ThingGeo::s_bShowBounds               = false;
+int   ThingGeo::s_iShowSmoke                = 1;
+bool  ThingGeo::s_bTransparentObjects       = false;
+int   ThingGeo::s_crashCount                = 0;
+int   ThingGeo::s_trashCount                = 0;
+bool  ThingGeo::s_bUsePrivateAfterburners   = false; //Imago 8/16/09
 
 void ThingGeo::SetTransparentObjects(bool bTransparentObjects)
 {
@@ -1710,7 +1713,12 @@ void ThingGeo::SetShowBounds(bool bShowBounds)
 
 int  ThingGeo::GetShowSmoke()
 {
-    return s_iShowSmoke;
+    return (s_bUsePrivateAfterburners) ? 2 : s_iShowSmoke;
+}
+
+//Imago 8/16/09
+void ThingGeo::SetPerformance(bool bUse) {
+    s_bUsePrivateAfterburners = bUse;
 }
 
 void ThingGeo::SetShowSmoke(int iShowSmoke)
