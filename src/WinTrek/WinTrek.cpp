@@ -9704,7 +9704,7 @@ public:
                         if (m_distanceCommandCamera > s_fCommandViewDistanceMax)
                             m_distanceCommandCamera = s_fCommandViewDistanceMax;
                     }
-                } else if (m_cm == cmExternalChase) {
+                } else if (m_cm == cmExternalChase || !NoCameraControl(m_cm)) {
                     if (tk == TK_ZoomIn) {
                         m_distanceExternalCamera -= dt * m_distanceExternalCamera;
                         if (m_distanceExternalCamera < s_fExternalViewDistanceMin)

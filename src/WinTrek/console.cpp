@@ -1992,20 +1992,20 @@ public:
                     break;
                 case 8:
                     if (bDown) {
-                        if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()))
-                            pinput->GetInputSite()->OnTrekKey(TK_ZoomIn);
+                        if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()) || !GetWindow()->NoCameraControl(GetWindow()->GetCameraMode()))
+                            pinput->GetInputSite()->OnTrekKey((pinput->OnWheelDown() == TK_ZoomIn) ? TK_ZoomIn : TK_ZoomOut);
                         else if (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA)
-                            pinput->GetInputSite()->OnTrekKey(TK_ThrottleUp);
+                            pinput->GetInputSite()->OnTrekKey((pinput->OnWheelDown() == TK_ThrottleDown) ? TK_ThrottleDown : TK_ThrottleUp);
                         else
                             pinput->GetInputSite()->OnTrekKey(pinput->OnWheelDown());
                     }
                     break;
                 case 9:
                     if (bDown) {
-                        if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()))
-                            pinput->GetInputSite()->OnTrekKey(TK_ZoomOut);
+                        if (GetWindow()->CommandCamera(GetWindow()->GetCameraMode()) || !GetWindow()->NoCameraControl(GetWindow()->GetCameraMode()))
+                            pinput->GetInputSite()->OnTrekKey((pinput->OnWheelUp() == TK_ZoomOut) ? TK_ZoomOut : TK_ZoomIn);
                         else if (GetWindow()->GetCameraMode() == TrekWindow::cmCockpit && trekClient.GetShip()->GetTurretID() != NA)
-                            pinput->GetInputSite()->OnTrekKey(TK_ThrottleDown);
+                            pinput->GetInputSite()->OnTrekKey((pinput->OnWheelUp() == TK_ThrottleUp) ? TK_ThrottleUp : TK_ThrottleDown);
                         else
                             pinput->GetInputSite()->OnTrekKey(pinput->OnWheelUp());
                     }
