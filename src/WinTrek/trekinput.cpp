@@ -99,8 +99,8 @@ public:
     ) :
         m_pinputEngine(pinputEngine),
         m_pjoystickImage(pjoystickImage),
-        m_wheelupTK(TK_ChatPageUp), //Imago 8/15/09
-        m_wheeldownTK(TK_ChatPageDown),
+        m_wheelupTK(TK_ThrottleUp), //Imago 8/15/09
+        m_wheeldownTK(TK_ThrottleDown),
         m_wheelclickTK(TK_FireBooster),
         m_xbutton1TK(TK_TargetFriendlyBase),
         m_xbutton2TK(TK_ToggleAutoPilot),
@@ -1777,11 +1777,12 @@ private:
                     char buf[128];
 
                     UINT scan   = ::MapVirtualKey(map.m_vk, 0) << 16;
-
+#pragma warning(disable:4293)
                     if (scan & (1 << 32)) {
                         scan |= (1 << 24);
                         scan &= ~(1 << 23);
                     }
+#pragma warning(default:4293)
 
                     int length = 0;
 

@@ -170,8 +170,8 @@ mouseButtonCommandMap =
         (5, CommandTargetCenter),
         (6, CommandTargetNearest),
         (7, CommandRipcord),
-        (8, CommandChatPageDown),
-        (9, CommandChatPageUp)
+        (8, CommandThrottleDown),
+        (9, CommandThrottleUp)
     ];
 
 //////////////////////////////////////////////////////////////////////////////

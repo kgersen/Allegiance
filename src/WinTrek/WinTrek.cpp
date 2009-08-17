@@ -8638,14 +8638,14 @@ public:
         switch(tk)
         {
             
-            case TK_ChatPageUp: // Imago uncommented for mouse wheel / xbuttons 8/14/09
-                if (m_pchatListPane != NULL) {
+            case TK_ChatPageUp: // Imago uncommented for mouse wheel 8/14/09
+                if (m_pchatListPane != NULL && !m_ptrekInput->IsTrekKeyDown(TK_ChatPageUp, true)) {
                     m_pchatListPane->PageUp();
                 }
                 break;
 
-            case TK_ChatPageDown: // Imago uncommented for mouse wheel / xbuttons 8/14/09
-                if (m_pchatListPane != NULL) {
+            case TK_ChatPageDown: // Imago uncommented for mouse wheel 8/14/09
+                if (m_pchatListPane != NULL && !m_ptrekInput->IsTrekKeyDown(TK_ChatPageDown, true)) {
                     m_pchatListPane->PageDown();
                 }
                 break;
@@ -9688,44 +9688,46 @@ public:
             }
             break;
 
-            //begin imago 8/14/09 mouse wheel / xbuttons
+            //begin imago 8/14/09 mouse wheel
             case TK_ZoomOut:
             case TK_ZoomIn:
             {
-                float dt = 0.1f; //?
-                if (CommandCamera(m_cm) && !m_pconsoleImage->DrawSelectionBox()) {
-                    float delta = dt * m_distanceCommandCamera;
-                    if (tk == TK_ZoomIn) {
-                        m_distanceCommandCamera -= delta * 2.0f;
-                        if (m_distanceCommandCamera < s_fCommandViewDistanceMin)
-                            m_distanceCommandCamera = s_fCommandViewDistanceMin;
-                    } else {
-                        m_distanceCommandCamera += delta * 2.0f;
-                        if (m_distanceCommandCamera > s_fCommandViewDistanceMax)
-                            m_distanceCommandCamera = s_fCommandViewDistanceMax;
-                    }
-                } else if (m_cm == cmExternalChase || !NoCameraControl(m_cm)) {
-                    if (tk == TK_ZoomIn) {
-                        m_distanceExternalCamera -= dt * m_distanceExternalCamera;
-                        if (m_distanceExternalCamera < s_fExternalViewDistanceMin)
-                            m_distanceExternalCamera = s_fExternalViewDistanceMin;
-                    } else {
-                        m_distanceExternalCamera += dt * m_distanceExternalCamera;
-                        if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
-                            m_distanceExternalCamera = s_fExternalViewDistanceMax;
-                    }
-                } else if (m_cm == cmCockpit) {
-                    float   fov = m_cameraControl.GetFOV();
-                    if (tk == TK_ZoomIn) {
-                        fov -= dt;
-                        if (fov < s_fMinFOV)
-                            fov = s_fMinFOV;
-                        m_cameraControl.SetFOV(fov);
-                    } else {
-                        fov += dt;
-                        if (fov > s_fMaxFOV)
-                            fov = s_fMaxFOV;
-                        m_cameraControl.SetFOV(fov);
+                if (!m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, true) && !m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, true)) {
+                    float dt = 0.1f;
+                    if (CommandCamera(m_cm) && !m_pconsoleImage->DrawSelectionBox()) {
+                        float delta = dt * m_distanceCommandCamera;
+                        if (tk == TK_ZoomIn) {
+                            m_distanceCommandCamera -= delta * 2.0f;
+                            if (m_distanceCommandCamera < s_fCommandViewDistanceMin)
+                                m_distanceCommandCamera = s_fCommandViewDistanceMin;
+                        } else {
+                            m_distanceCommandCamera += delta * 2.0f;
+                            if (m_distanceCommandCamera > s_fCommandViewDistanceMax)
+                                m_distanceCommandCamera = s_fCommandViewDistanceMax;
+                        }
+                    } else if (m_cm == cmExternalChase || !NoCameraControl(m_cm)) {
+                        if (tk == TK_ZoomIn) {
+                            m_distanceExternalCamera -= dt * m_distanceExternalCamera;
+                            if (m_distanceExternalCamera < s_fExternalViewDistanceMin)
+                                m_distanceExternalCamera = s_fExternalViewDistanceMin;
+                        } else {
+                            m_distanceExternalCamera += dt * m_distanceExternalCamera;
+                            if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
+                                m_distanceExternalCamera = s_fExternalViewDistanceMax;
+                        }
+                    } else if (m_cm == cmCockpit) {
+                        float   fov = m_cameraControl.GetFOV();
+                        if (tk == TK_ZoomIn) {
+                            fov -= dt;
+                            if (fov < s_fMinFOV)
+                                fov = s_fMinFOV;
+                            m_cameraControl.SetFOV(fov);
+                        } else {
+                            fov += dt;
+                            if (fov > s_fMaxFOV)
+                                fov = s_fMaxFOV;
+                            m_cameraControl.SetFOV(fov);
+                        }
                     }
                 }
             }
@@ -9733,13 +9735,13 @@ public:
 
             case TK_ThrottleUp:
             {
-                if (trekClient.flyingF() && trekClient.GetShip()) {
+                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) {
                     if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;
+                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.7f) ? (trekClient.trekThrottle + 0.3f) : 1.0f;
                         trekClient.joyThrottle = false;
                     } else if (trekClient.GetShip()->GetTurretID() != NA) {
                         ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.8f) ? (cd.jsValues[c_axisThrottle] + 0.2f) : 1.0f;
+                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.7f) ? (cd.jsValues[c_axisThrottle] + 0.3f) : 1.0f;
                         trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
                         trekClient.joyThrottle = false;
                         trekClient.GetShip()->SetControls(cd);
@@ -9750,13 +9752,13 @@ public:
 
             case TK_ThrottleDown:
             {
-                if (trekClient.flyingF() && trekClient.GetShip()) {
+                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true)) {
                     if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f;
+                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.7f) ? (trekClient.trekThrottle - 0.3f) : -1.0f;
                         trekClient.joyThrottle = false;
                     } else if (trekClient.GetShip()->GetTurretID() != NA) {
                         ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.8f) ? (cd.jsValues[c_axisThrottle] - 0.2f) : -1.0f;
+                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.7f) ? (cd.jsValues[c_axisThrottle] - 0.3f) : -1.0f;
                         trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
                         trekClient.joyThrottle = false;
                         trekClient.GetShip()->SetControls(cd);
