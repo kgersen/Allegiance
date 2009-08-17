@@ -3031,7 +3031,7 @@ void CmissionIGC::Initialize(Time now, IIgcSite* pIgcSite)
 
 void    CmissionIGC::Terminate(void)
 {
-    debugf("Terminating mission id=%d, this=%x\n", GetMissionID(), this);
+    debugf("Terminating mission id=%d, this=%x igccount=%x\n", GetMissionID(), this, GetIgcSite()->GetCount());
   
     m_pIgcSite->TerminateMissionEvent(this);
 
@@ -3040,6 +3040,7 @@ void    CmissionIGC::Terminate(void)
         //So do it before nuking the clusters since that would nuke the ships in the
         //cluster.
         ShipLinkIGC*  l;
+        debugf("moving %x ships to NULL mission\n",m_ships.n());
         while ((l = m_ships.first()) != NULL)
         {
             l->data()->SetMission(NULL);
@@ -3047,6 +3048,7 @@ void    CmissionIGC::Terminate(void)
     }
     {
         ClusterLinkIGC*  l;
+        debugf("nuking %x clusters\n",m_clusters.n());
         while ((l = m_clusters.first()) != NULL)
         {
             l->data()->Terminate();
@@ -3054,6 +3056,7 @@ void    CmissionIGC::Terminate(void)
     }
     {
         SideLinkIGC*  l;
+        debugf("nuking %x sides\n",m_sides.n());
         while ((l = m_sides.first()) != NULL)
         {
             l->data()->Terminate();

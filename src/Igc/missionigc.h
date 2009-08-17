@@ -39,10 +39,22 @@ class   CstaticIGC
         }
         void            Terminate(void)
         {
+			//Imago reordered for debugging purposes 8/17/09
+            {
+                TreasureSetLinkIGC*  l;
+				debugf("Nuking %d treasuresets:\n",m_droneTypes.n());
+                while ((l = m_treasureSets.first()) != NULL)
+                {
+					debugf("\t%s (%i)\n",l->data()->GetName(), l->data()->GetObjectID());
+                    l->data()->Terminate();
+                }
+            }
             {
                 DroneTypeLinkIGC*  l;
+				debugf("Nuking %d drone types:\n",m_droneTypes.n());
                 while ((l = m_droneTypes.first()) != NULL)
                 {
+					debugf("\t%s (%i)\n",l->data()->GetName(), l->data()->GetObjectID());
                     l->data()->Terminate();
                 }
             }
@@ -95,13 +107,7 @@ class   CstaticIGC
                     l->data()->Terminate();
                 }
             }
-            {
-                TreasureSetLinkIGC*  l;
-                while ((l = m_treasureSets.first()) != NULL)
-                {
-                    l->data()->Terminate();
-                }
-            }
+
             assert (m_stationTypes.n() == 0);
             assert (m_hullTypes.n() == 0);
             assert (m_partTypes.n() == 0);
