@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="Zlib"
 	ProjectGUID="{21C70CA0-24C5-475B-8C47-6F0226A374B0}"
 	RootNamespace="Zlib"
@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\src\Inc"
-				PreprocessorDefinitions="_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="_WIN32_WINNT=0x500;_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="1"
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\src\Inc"
-				PreprocessorDefinitions="SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;_LIB"
+				PreprocessorDefinitions="_WIN32_WINNT=0x500;SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;_LIB"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="true"

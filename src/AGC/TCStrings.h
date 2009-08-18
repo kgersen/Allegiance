@@ -56,8 +56,11 @@ public:
 // Property Map
 public:
   BEGIN_PROP_MAP(CTCStrings)
-    //PROP_ENTRY_EX("Strings", dispid_Collection1, CLSID_NULL,IID_ITCCollectionPersistHelper) //Imago - MS-SA 973882
+#if _MSC_VER <= 1400
+    PROP_ENTRY_EX("Strings", dispid_Collection1, CLSID_NULL,IID_ITCCollectionPersistHelper) //Imago - MS-SA 973882
+#else
 	PROP_ENTRY_TYPE_EX("Strings",dispid_Collection1,CLSID_NULL,IID_ITCCollectionPersistHelper,VT_BSTR)
+#endif
   END_PROP_MAP()
 
 // Construction / Destruction

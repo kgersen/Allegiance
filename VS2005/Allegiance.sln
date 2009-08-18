@@ -78,7 +78,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "training", "training.vcproj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{A20534F2-783B-48FF-95FE-FCEC104F86EA}"
 	ProjectSection(SolutionItems) = preProject
-		..\src\changelog.txt = ..\src\changelog.txt
 		..\src\license.txt = ..\src\license.txt
 		..\src\SolapReadme.txt = ..\src\SolapReadme.txt
 		..\src\todo.txt = ..\src\todo.txt

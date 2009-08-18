@@ -2450,11 +2450,13 @@ public:
 #if 1
             // KGJV try dev folder 1st
             pfile = new ZFile(strToTryOpenFromDev, OF_READ | OF_SHARE_DENY_WRITE);
-            if (!pfile->IsValid())
+			if (!pfile->IsValid()) {
 			    pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
-            else
-                if (g_bMDLLog)
+			} else {
+				if (g_bMDLLog) {
                     ZDebugOutput("'dev' file found for " + pathStr + "\n");
+				}
+			}
 #else
 			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
 #endif                

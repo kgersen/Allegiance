@@ -28,7 +28,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description=""
 				CommandLine="mc ../src/FedSrv/FedMsg.msg -r $(IntDir) -h  $(IntDir)"
 			/>
 			<Tool
@@ -266,10 +265,6 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\src\FedSrv\_fedsrv.h"
-			>
-		</File>
-		<File
 			RelativePath="..\src\FedSrv\AdminEventLoggerHook.cpp"
 			>
 		</File>
@@ -475,14 +470,6 @@
 		</File>
 		<File
 			RelativePath="..\src\FedSrv\srvqueries.h"
-			>
-		</File>
-		<File
-			RelativePath="..\src\FedSrv\SWMRG.CPP"
-			>
-		</File>
-		<File
-			RelativePath="..\src\FedSrv\SWMRG.H"
 			>
 		</File>
 	</Files>
