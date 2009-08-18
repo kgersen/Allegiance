@@ -135,13 +135,13 @@ public:
     XLock lock(static_cast<T*>(this));
 
     // Validate the specified index
-    if (0 > nIndex || nIndex >= m_ranges.size())
+    if (0 > nIndex || nIndex >= (long)m_ranges.size())
       return E_INVALIDARG;
 
     // Loop from beginning or end, depending on which is closest
     RT value1, value2;
 	// mdvalley: "it" declared earlier.
-    if (nIndex < (m_ranges.size() / 2))
+    if (nIndex < (long)(m_ranges.size() / 2))
     {
 		XRangeIt it;
       for (it = m_ranges.begin(); nIndex; ++it)

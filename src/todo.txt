@@ -1,44 +1,42 @@
-- wintrek: move 3D settings dialog resource ('picker' resource) in engine
-	doofus - don't move the dialog resource into the engine as this is app specific.
+Engine: 
+- Add support for other types of rendering with buffers and HW TnL.
 
-- lobby/client.cpp can't use PCH setting because of appweb
-	what?  works fine for me with pre-compiled headers... 
-	...the server uses PCH and appweb and you didn't have a problem with that?!
-	
-- fix mdlc (todo)
-	-convert works again for engine supported formats only.
+- Add more pixel formats to UnclippedBlt, for surfaces outside of Begin/EndScene pairs.
+
+- Finish ImageTransfer 16/24bit->32bit (to restore mdlc on the original artwork)
+
+- Fix mdlc
+	- convert works again for engine supported formats only.
 	- need 24bpp -> 32bpp support and CreateCompatibleSurface enhancments 
-	(see also incomplete ImageTransfer functions) engine/TODO.txt
-	
-- move stuff in 'Test' directory to a more logical location then delete 'Test'
-- remove unneeded libs in "linker/input/add. dep." setting of all projects
-	See VS2010
-	
-- perform 2nd pass on cleaning .vcproj files
-- perform cleaning on ..\standby
-- refine all projects dependencies
-	See VS2010
-	
-- DX9 'todo' : see src/engine/TODO.txt
-
-- remove color codes from string entered by users (team names, game name, chat)
-	I like colors, why remove this...says who?
-
-(MAJOR - move tools over to Collada intermediate format for geometry?)
 
 
 Alliances:
+- Change imbal behavior (1/2/NA/Auto)
+		One method would be to force autobalance when alliances are on then have
+	player/rank count totals based on ally group instead of side.
+		Imbal is seriosuly bugged!  Consider reverting back to msoriginal and starting over.
 
-- change imbal behavior (1/2/NA/Auto)
-	One method would be to force autobalance when alliances are on then have
-	player counts based on ally group instead of side.
-	
-	Imbal is seriosuly bugged!  Consider reverting back to msoriginal and starting over.
-	
 - Game types other than conquest?
+
 - "Nerf" options, if necessary:
 	- Visibility toggle
 	- Scan toggle
 
 
+Other/Cleanup:
+- Use MSBuild features (VS2010) to stop running the cscript custom tasks unnecessarily.
 
+- Clean linker warnings in ZLib, Utility & IGC.
+
+- Move stuff in 'Test' directory to a more logical location then delete 'Test' (Just TCLib)
+
+- Remove unneeded libs in "linker/input/add. dep." setting of all projects
+	- Done in VS2010 FZRetail
+	
+- Perform 2nd pass on cleaning .vcproj files
+	- Drop VS2005 support to speed this up.
+	
+- Perform cleaning on ..\standby
+
+- Refine all projects dependencies
+	- Done in VS2010 FZRetail

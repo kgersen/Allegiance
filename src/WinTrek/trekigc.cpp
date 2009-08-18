@@ -3202,12 +3202,12 @@ public:
 
     virtual void OnProgress(unsigned long cTotalBytes, const char* szCurrentFile, unsigned long cCurrentFileBytes, unsigned nEstimatedSecondsLeft) 
     {
-        #ifdef DEBUG
-        char sz[80];
+		if (g_outputdebugstring) { //Imago - was DEBUG ifdef 8/16/09
+	        char sz[80];
 
-        sprintf(sz, "%2.2f%%   %i  %s  %i\n", 100.0f*float(cTotalBytes)/float(m_cGrandTotalBytes), cTotalBytes, szCurrentFile, cCurrentFileBytes);
-        OutputDebugString(sz);
-        #endif
+	        sprintf(sz, "%2.2f%%   %i  %s  %i\n", 100.0f*float(cTotalBytes)/float(m_cGrandTotalBytes), cTotalBytes, szCurrentFile, cCurrentFileBytes);
+	        ZDebugOutput(sz);
+		}
 
         //
         // Detect current file change

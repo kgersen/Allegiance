@@ -16,6 +16,14 @@
       <Configuration>FZRetail-Instrumented</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|X64">
+      <Configuration>FZRetail</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="FZRetail-Optimized|Win32">
       <Configuration>FZRetail-Optimized</Configuration>
       <Platform>Win32</Platform>
@@ -24,12 +32,12 @@
       <Configuration>FZRetail-Optimized</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="FZRetail|Win32">
-      <Configuration>FZRetail</Configuration>
+    <ProjectConfiguration Include="FZRetail-SSE2|Win32">
+      <Configuration>FZRetail-SSE2</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="FZRetail|X64">
-      <Configuration>FZRetail</Configuration>
+    <ProjectConfiguration Include="FZRetail-SSE2|X64">
+      <Configuration>FZRetail-SSE2</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -61,16 +69,25 @@
     <UseOfMfc>false</UseOfMfc>
     <UseOfAtl>false</UseOfAtl>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
@@ -95,7 +112,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -111,40 +128,50 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\FedSrv\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\FedSrv\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\FedSrv\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\FedSrv\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\FedSrv\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\FedSrv\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\FedSrv\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\FedSrv\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\FedSrv\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\FedSrv\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\FedSrv\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\FedSrv\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\FedSrv\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\FedSrv\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\FedSrv\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\FedSrv\x64\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">AllSrv</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">AllSrv</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">AllSrv</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">AllSrv</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">AllSrv</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">AllSrv</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">AllSrv</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">AllSrv</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\$(TargetDir);.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
@@ -169,7 +196,7 @@
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";FEDMSG=\"FedMsg.rc\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\_utility\Utility.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\sharemem\sharemem.lib;$(OutDir)..\test\TCLib\TCLib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;winmm.lib;version.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\appweb\appweb.lib;comctl32.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)..\_utility\Utility.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\sharemem\sharemem.lib;$(OutDir)..\test\TCLib\TCLib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;winmm.lib;version.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\appweb\appweb.lib;comctl32.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\src\Inc\appWeb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <DelayLoadDLLs>netapi32.dll;advapi32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
@@ -226,7 +253,7 @@
       <IgnoreSpecificDefaultLibraries>msvcrt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <Midl>
       <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
@@ -265,6 +292,51 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>.\$(TargetDir);.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\AGC;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0403;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";FEDMSG=\"FedMsg.rc\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\_utility\Utility.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\sharemem\sharemem.lib;$(OutDir)..\test\TCLib\TCLib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;winmm.lib;version.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\appweb\appweb.lib;comctl32.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\src\Inc\appWeb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>msvcrtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>netapi32.dll;advapi32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
@@ -375,6 +447,41 @@
       <StripPrivateSymbols>$(OutDir)../Allsrv.pdb</StripPrivateSymbols>
       <GenerateMapFile>true</GenerateMapFile>
       <ManifestFile>$(Outdir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">
+    <Midl>
+      <AdditionalIncludeDirectories>.\$(TargetDir);..\..\AGC;..\..\src\Inc;..\objs10\$(Configuration)\AGC\x64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\AGC\x64;.\x64;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\AGC;..\src\test\Inc;..\src\lobby;..\src\Zone;.\Igc\x64;.\FedSrv\x64;.\$(InputDir);.\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0403;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";FEDMSG=\"FedMsg.rc\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\..\_utility\x64\Utility.lib;$(OutDir)..\..\zlib\x64\zlib.lib;$(OutDir)..\..\igc\x64\igc.lib;$(OutDir)..\..\sharemem\x64\sharemem.lib;$(OutDir)..\..\test\TCLib\x64\TCLib.lib;$(OutDir)..\..\agc\x64\AGCGuid.lib;$(OutDir)..\..\Guids\x64\guids.lib;winmm.lib;version.lib;urlmon.lib;..\src\Lib\DirectPlay\x64\dxguid.lib;..\src\Lib\appweb\x64\appweb.lib;comctl32.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\src\Inc\appWeb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>msvcrtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>netapi32.dll;advapi32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
@@ -490,11 +597,15 @@
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
 </Command>
@@ -502,9 +613,11 @@
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
 </Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
@@ -532,15 +645,16 @@
     <ClCompile Include="..\src\FedSrv\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
-    <ClCompile Include="..\src\FedSrv\SWMRG.CPP" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\FedSrv\AdminGame.rgs" />
@@ -585,19 +699,13 @@
     <ClInclude Include="..\src\FedSrv\fsship.h" />
     <ClInclude Include="..\src\FedSrv\fsside.h" />
     <ClInclude Include="..\src\FedSrv\pch.h" />
-    <ClInclude Include="..\src\FedSrv\queries.h" />
     <ClInclude Include="..\src\FedSrv\resource.h" />
     <ClInclude Include="..\src\FedSrv\srvqueries.h" />
-    <ClInclude Include="..\src\FedSrv\SWMRG.H" />
-    <ClInclude Include="..\src\FedSrv\_fedsrv.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="..\src\FedSrv\AllSrvModuleIDL.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="AGC.vcxproj">
-      <Project>{1cbf6569-f71c-422a-81dd-8d30a736db21}</Project>
-    </ProjectReference>
     <ProjectReference Include="Igc.vcxproj">
       <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
     </ProjectReference>

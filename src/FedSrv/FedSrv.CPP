@@ -436,7 +436,7 @@ HRESULT pascal FedSrv_Terminate(void)
     g.hPlayerEvent = NULL;
   }
 
-  SWMRGDelete(&g.swmrg);
+  //SWMRGDelete(&g.swmrg); Imago removed (again)
 
   // Turn everything off
   g.fm.Shutdown();
@@ -8473,7 +8473,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 {
   HANDLE rgeventHandles[2];
   ZVersionInfo vi;
-  debugf("Running %s %s\n", (PCC) vi.GetInternalName(), (PCC) vi.GetProductVersionString());
+  
+  debugf("Running %s %s\n", (PCC) vi.GetInternalName(), (PCC) vi.GetStringValue("FileVersion"));
 
   debugf("Entering ReceiveThread\n");
   DWORD dwUpdateInterval = g.nUpdatesPerSecond <= 0 ? (1000 / 10) : (1000 / g.nUpdatesPerSecond); // milliseconds
@@ -9787,8 +9788,8 @@ HRESULT pascal FedSrv_Init()
 
   LoadTechBits(); // only for the IfYouBuildIt cheat
 
-  bool fSWMRGInit = FSWMRGInitialize(&g.swmrg, "FedSrv");
-  ZAssert(fSWMRGInit);
+  //bool fSWMRGInit = FSWMRGInitialize(&g.swmrg, "FedSrv"); //Imago removed (again)
+  //ZAssert(fSWMRGInit);
 
   // Initialize COM library
   // ZSucceeded(CoInitialize(NULL));

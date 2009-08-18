@@ -75,7 +75,7 @@
 #include <Messages.h>
 #include <MessagesLS.h>
 
-#include "SWMRG.h"
+//#include "SWMRG.h" Imago removed (again)
 #include "BitArray.h"
 #include "point.h"
 //#include "srvdbg.h"

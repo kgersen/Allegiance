@@ -691,8 +691,8 @@ public:
 			{
 				DWORD dwMaxTextureSize = CD3DDevice9::Get()->GetMaxTextureSize();
 				_ASSERT( dwMaxTextureSize >= 256 );
-				while(	( targetSize.x > dwMaxTextureSize ) ||
-						( targetSize.y > dwMaxTextureSize ) )
+				while(	( targetSize.x > (LONG)dwMaxTextureSize ) ||
+						( targetSize.y > (LONG)dwMaxTextureSize ) )
 				{
 					targetSize.x = targetSize.x >> 1;
 					targetSize.y = targetSize.y >> 1;

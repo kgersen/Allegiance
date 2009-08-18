@@ -99,7 +99,9 @@
     <ClInclude Include="..\src\AllSrvUI\PageDummy.h" />
     <ClInclude Include="..\src\AllSrvUI\PageGameCreate.h" />
     <ClInclude Include="..\src\AllSrvUI\PagePlayers.h" />
-    <ClInclude Include="..\src\AllSrvUI\resource.h" />
+    <ClInclude Include="..\src\AllSrvUI\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\AllSrvUI\StdAfx.h" />
     <ClInclude Include="..\src\FedSrv\AdminSessionSecure.h" />
   </ItemGroup>

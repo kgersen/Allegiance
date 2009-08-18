@@ -472,7 +472,7 @@ int CDX9PackFile::GetFileCount( ZString szDir, ZString szFilter )
 	ZString szSearchDir, szFile;
 	HANDLE hCurrentFile;
 	WIN32_FIND_DATA findData;
-	DWORD dwAmountWritten, dwAmountRead, dwHash;
+	DWORD dwHash;
 	CPackFileHashEntry * pTableEntry;
 
 	dwRet = GetCurrentDirectory( MAX_PATH, szOriginalDir );

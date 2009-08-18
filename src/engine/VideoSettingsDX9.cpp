@@ -986,7 +986,6 @@ bool SetupTexturePackFile( HINSTANCE hInstance, const char * szDataPath, char * 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 INT_PTR CALLBACK ProgressBarDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
-	HWND hControl;
 	switch( uMsg )
 	{
 	case WM_INITDIALOG:

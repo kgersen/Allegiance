@@ -48,55 +48,59 @@ void InitializeLogchat()
 
 	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
-		::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue);		
+		//Imago fixed this but is still confused why it's not a dword.
+		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue))		
+			bLogChat = (strcmp(szValue, "1") == 0);
 		::RegCloseKey(hKey);
-		bLogChat = (strcmp(szValue, "1") == 0);
 	}
+
 
 	if (bLogChat)
 	{
-	time_t longTime;
-	time(&longTime);
-	tm* t = new tm;
-//	tm* t = localtime(&longTime);
-	localtime_s(t, &longTime);
+		time_t longTime;
+		time(&longTime);
+		tm* t = new tm;
+	//	tm* t = localtime(&longTime);
+		localtime_s(t, &longTime);
 
-	// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
-	// turns out this is not needed but leaving it here instead of moving it again
-	GetModuleFileName(NULL, logFileName, MAX_PATH);
-	char* p = strrchr(logFileName, '\\');
-	if (!p)
-		p = logFileName;
-	else
-		p++;
+		// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
+		// turns out this is not needed but leaving it here instead of moving it again
+		GetModuleFileName(NULL, logFileName, MAX_PATH);
+		char* p = strrchr(logFileName, '\\');
+		if (!p)
+			p = logFileName;
+		else
+			p++;
 
-	strcpy(p, "logs\\");
+		strcpy(p, "logs\\");
 
-	if (!CreateDirectory(logFileName, NULL))
-	{
-		if (GetLastError() == ERROR_PATH_NOT_FOUND)
+		if (!CreateDirectory(logFileName, NULL))
 		{
-			debugf("Unable to create chat log directory %s\n",logFileName);
+			if (GetLastError() == ERROR_PATH_NOT_FOUND)
+			{
+				debugf("Unable to create chat log directory %s\n",logFileName);
+			}
 		}
-	}
 
-	// mmf 1/17/08 fixed month
-	sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), (t->tm_mon+1), t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+		// mmf 1/17/08 fixed month
+		sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), (t->tm_mon+1), t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
-	// mmf changed 3 param from 0 to FILE_SHARE_READ
-	chat_logfile =
-		CreateFile(
-			logFileName,
-			GENERIC_WRITE,
-			FILE_SHARE_READ,
-			NULL,
-			OPEN_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-			NULL
-		);
-	delete t;
+		// mmf changed 3 param from 0 to FILE_SHARE_READ
+		chat_logfile =
+			CreateFile(
+				logFileName,
+				GENERIC_WRITE,
+				FILE_SHARE_READ,
+				NULL,
+				OPEN_ALWAYS,
+				FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
+				NULL
+			);
+		delete t;
+
+		//Imago moved inside bLogChat
+		if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
 	}
-	if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
 }
 
 void TerminateLogchat()
@@ -311,7 +315,7 @@ extern bool g_bOutput = true;
                 CreateFile(
                     logFileName, 
                     GENERIC_WRITE, 
-                    0,
+                    FILE_SHARE_READ,
                     NULL, 
                     OPEN_ALWAYS,
                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
@@ -452,7 +456,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
     __try { 
         do {
-            #ifdef _DEBUG
+            #ifdef SRVLOG
                 InitializeDebugf();
             #endif
 
@@ -484,7 +488,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
             g_papp->Terminate();
             Window::StaticTerminate();
 
-            #ifdef _DEBUG
+            #ifdef SRVLOG
                 TerminateDebugf();
             #endif
 

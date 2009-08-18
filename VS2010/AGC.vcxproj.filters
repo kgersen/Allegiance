@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="AGCEvents">
+    <Filter Include="Events">
       <UniqueIdentifier>{c418b326-43e0-4db5-ae2b-ccd3e9f466d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{e105f8c6-ee05-40a6-8634-6e59163406c8}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resources">
       <UniqueIdentifier>{3eb377fb-79ac-402c-aadf-e552b63e29c3}</UniqueIdentifier>
@@ -10,12 +13,17 @@
     <Filter Include="Resources\Registration scripts">
       <UniqueIdentifier>{6c185210-86ea-4065-855a-a65551cb449d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TCLibs">
+      <UniqueIdentifier>{0e28cc1f-ce0a-41ad-8be6-c655ea89ceaf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\AGC\AdminSessionHelper.rgs">
       <Filter>Resources\Registration scripts</Filter>
     </None>
-    <None Include="..\src\AGC\AGC.def" />
+    <None Include="..\src\AGC\AGC.def">
+      <Filter>Resources</Filter>
+    </None>
     <None Include="..\src\AGC\AGC.rc2">
       <Filter>Resources</Filter>
     </None>
@@ -110,7 +118,7 @@
       <Filter>Resources\Registration scripts</Filter>
     </None>
     <None Include="..\src\AGC\EventBrowser.xsl">
-      <Filter>AGCEvents</Filter>
+      <Filter>Events</Filter>
     </None>
     <None Include="..\src\AGC\TCMarshalByValue.rgs">
       <Filter>Resources\Registration scripts</Filter>
@@ -125,7 +133,7 @@
       <Filter>Resources\Registration scripts</Filter>
     </None>
     <None Include="..\src\AGC\XMLXForm.js">
-      <Filter>AGCEvents</Filter>
+      <Filter>Events</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -137,16 +145,27 @@
     <ClCompile Include="..\src\AGC\AGCAsteroids.cpp" />
     <ClCompile Include="..\src\AGC\AGCCommand.cpp" />
     <ClCompile Include="..\src\AGC\AGCDBParams.cpp" />
-    <ClCompile Include="..\src\AGC\agcevent.cpp" />
-    <ClCompile Include="..\src\AGC\AGCEventData.cpp" />
-    <ClCompile Include="..\src\AGC\AGCEventDef.cpp" />
-    <ClCompile Include="..\src\AGC\AGCEventIDRange.cpp" />
-    <ClCompile Include="..\src\AGC\AGCEventIDRanges.cpp" />
-    <ClCompile Include="..\src\AGC\AGCEventLogger.cpp" />
+    <ClCompile Include="..\src\AGC\agcevent.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\AGCEventData.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\AGCEventDef.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\AGCEventIDRange.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\AGCEventIDRanges.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\AGCEventLogger.cpp">
+      <Filter>Events</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\AGC\AGCGame.cpp" />
     <ClCompile Include="..\src\AGC\AGCGameParameters.cpp" />
     <ClCompile Include="..\src\AGC\AGCGlobal.cpp" />
-    <ClCompile Include="..\src\AGC\AGCGuid.c" />
     <ClCompile Include="..\src\AGC\AGCHullType.cpp" />
     <ClCompile Include="..\src\AGC\AGCModel.cpp" />
     <ClCompile Include="..\src\AGC\AGCModels.cpp" />
@@ -165,10 +184,18 @@
     <ClCompile Include="..\src\AGC\AGCVersionInfo.cpp" />
     <ClCompile Include="..\src\AGC\dlldatax.c" />
     <ClCompile Include="..\src\AGC\pch.cpp" />
-    <ClCompile Include="..\src\AGC\TCMarshalByValue.cpp" />
-    <ClCompile Include="..\src\AGC\TCNullStream.cpp" />
-    <ClCompile Include="..\src\AGC\TCStrings.cpp" />
-    <ClCompile Include="..\src\AGC\TCUtility.cpp" />
+    <ClCompile Include="..\src\AGC\TCMarshalByValue.cpp">
+      <Filter>TCLibs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\TCNullStream.cpp">
+      <Filter>TCLibs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\TCStrings.cpp">
+      <Filter>TCLibs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\TCUtility.cpp">
+      <Filter>TCLibs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\AGC\AGC.rc">
@@ -186,13 +213,27 @@
     <ClInclude Include="..\src\AGC\AGCCP.h" />
     <ClInclude Include="..\src\AGC\AGCDBParams.h" />
     <ClInclude Include="..\src\AGC\AGCDebugHook.h" />
-    <ClInclude Include="..\src\AGC\agcevent.h" />
-    <ClInclude Include="..\src\AGC\AGCEventData.h" />
-    <ClInclude Include="..\src\AGC\AGCEventDef.h" />
-    <ClInclude Include="..\src\AGC\AGCEventIDRange.h" />
-    <ClInclude Include="..\src\AGC\AGCEventIDRanges.h" />
-    <ClInclude Include="..\src\AGC\AGCEventLogger.h" />
-    <ClInclude Include="..\src\AGC\AGCEventThread.h" />
+    <ClInclude Include="..\src\AGC\agcevent.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\AGCEventData.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\AGCEventDef.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\AGCEventIDRange.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\AGCEventIDRanges.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\AGCEventLogger.h">
+      <Filter>Events</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\AGCEventThread.h">
+      <Filter>Events</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\AGC\AGCGame.h" />
     <ClInclude Include="..\src\AGC\AGCGameParameters.h" />
     <ClInclude Include="..\src\AGC\AGCGlobal.h" />
@@ -218,40 +259,89 @@
     <ClInclude Include="..\src\AGC\AGCWinApp.h" />
     <ClInclude Include="..\src\AGC\dlldatax.h" />
     <ClInclude Include="..\src\AGC\gameparamdata.h" />
-    <ClInclude Include="..\src\AGC\IAGCAlephImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCAsteroidImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCBaseImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCBuyableImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCCollectionImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCCommonImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCDamageImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCGameImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCModelImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCProbeImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCRangeImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCRangesImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCScannerImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCSectorImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCShipImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCStationImpl.h" />
-    <ClInclude Include="..\src\AGC\IAGCTeamImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCAlephImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCAsteroidImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCBaseImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCBuyableImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCCollectionImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCCommonImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCDamageImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCGameImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCModelImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCProbeImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCRangeImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCRangesImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCScannerImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCSectorImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCShipImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCStationImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\IAGCTeamImpl.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\AGC\pch.h" />
-    <ClInclude Include="..\src\AGC\resource.h" />
-    <ClInclude Include="..\src\AGC\TCMarshalByValue.h" />
-    <ClInclude Include="..\src\AGC\TCNullStream.h" />
-    <ClInclude Include="..\src\AGC\TCStrings.h" />
-    <ClInclude Include="..\src\AGC\TCUtility.h" />
+    <ClInclude Include="..\src\AGC\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\TCMarshalByValue.h">
+      <Filter>TCLibs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\TCNullStream.h">
+      <Filter>TCLibs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\TCStrings.h">
+      <Filter>TCLibs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AGC\TCUtility.h">
+      <Filter>TCLibs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="..\src\AGC\agc.idl" />
-    <Midl Include="..\src\Inc\AGCIDL.idl" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\src\AGC\AGCEvents.xml" />
-    <CustomBuild Include="..\src\AGC\AGCEventsCPP.xsl" />
-    <CustomBuild Include="..\src\AGC\AGCEventsIDL.xsl" />
-    <CustomBuild Include="..\src\AGC\AGCEventsMC.xsl" />
-    <CustomBuild Include="..\src\AGC\AGCEventsRC2.xsl" />
-    <CustomBuild Include="..\src\AGC\AGCEventsRCH.xsl" />
+    <CustomBuild Include="..\src\AGC\AGCEvents.xml">
+      <Filter>Events</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\src\AGC\AGCEventsCPP.xsl">
+      <Filter>Events</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\src\AGC\AGCEventsMC.xsl">
+      <Filter>Events</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\src\AGC\AGCEventsRC2.xsl">
+      <Filter>Events</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\src\AGC\AGCEventsRCH.xsl">
+      <Filter>Events</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

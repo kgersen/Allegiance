@@ -304,8 +304,7 @@ public:
 	void CopyTexture16BitWithColourKey( )
 	{
 		int x, y;
-		WORD wVal, wNewColour, wOriginalVal;
-		WORD pBuffer[16];
+		WORD wVal, wNewColour;
 		int iCount = 0;
 		bool bExtraGreenBit;
 
@@ -867,8 +866,8 @@ public:
 				{
 					WinPoint originalSize = m_size;
 
-					while(	( m_size.x > dwMaxTextureSize ) ||
-							( m_size.y > dwMaxTextureSize ) )
+					while(	( m_size.x > (LONG)dwMaxTextureSize ) ||
+							( m_size.y > (LONG)dwMaxTextureSize ) )
 					{
 						m_size.x = m_size.x >> 1;
 						m_size.y = m_size.y >> 1;

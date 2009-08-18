@@ -1219,10 +1219,6 @@ public:
 		if (!bAllies)
 			m_bRipChecked = false;
 
-		OutputDebugString("MAX IMBALANCE VALUE =");
-		OutputDebugString(ZString(trekClient.MyMission()->GetMissionParams().iMaxImbalance));
-		OutputDebugString("\n");
-
         AddEventTarget(&TeamScreen::OnButtonBack, m_pbuttonBack->GetEventSource());
         AddEventTarget(&TeamScreen::OnButtonGameOver, m_pbuttonGameOver->GetEventSource());
         AddEventTarget(&TeamScreen::OnButtonStart, m_pbuttonStart->GetEventSource());

@@ -16,6 +16,14 @@
       <Configuration>FZRetail-Instrumented</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|X64">
+      <Configuration>FZRetail</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="FZRetail-Optimized|Win32">
       <Configuration>FZRetail-Optimized</Configuration>
       <Platform>Win32</Platform>
@@ -24,12 +32,12 @@
       <Configuration>FZRetail-Optimized</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="FZRetail|Win32">
-      <Configuration>FZRetail</Configuration>
+    <ProjectConfiguration Include="FZRetail-SSE2|Win32">
+      <Configuration>FZRetail-SSE2</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="FZRetail|X64">
-      <Configuration>FZRetail</Configuration>
+    <ProjectConfiguration Include="FZRetail-SSE2|X64">
+      <Configuration>FZRetail-SSE2</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -57,16 +65,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
@@ -91,7 +108,7 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -101,21 +118,27 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\WinTrek\x64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\WinTrek\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\WinTrek\x64\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\Wintrek\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\Wintrek\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\Wintrek\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\Wintrek\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\WinTrek\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\WinTrek\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\WinTrek\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\WinTrek\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\Wintrek\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\Wintrek\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\Wintrek\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\Wintrek\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\WinTrek\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\WinTrek\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\WinTrek\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\WinTrek\x64\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">false</LinkIncremental>
@@ -146,7 +169,7 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\OggVorbis\vorbis.lib;..\src\Lib\OggVorbis\ogg.lib;..\src\Lib\OggVorbis\file.lib;amstrmid.lib;ddraw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\OggVorbis\vorbis.lib;..\src\Lib\OggVorbis\ogg.lib;..\src\Lib\OggVorbis\file.lib;amstrmid.lib;ddraw.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
@@ -195,11 +218,11 @@
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <ClCompile>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;..\src\effect;..\src\engine;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\soundengine;..\src\AGC;..\src\FedSrv;..\src\training;..\src\lobby;..\src\Inc;..\src\guids;..\src\Zone;.\$(OutDir)..\AGC;.\$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SRVLOG;DEBUG;WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -224,6 +247,53 @@
     </ProjectReference>
     <Link>
       <AdditionalDependencies>d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\agc\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\OggVorbis\vorbis.lib;..\src\Lib\OggVorbis\ogg.lib;..\src\Lib\OggVorbis\file.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StripPrivateSymbols>
+      </StripPrivateSymbols>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;..\src\effect;..\src\engine;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\soundengine;..\src\AGC;..\src\FedSrv;..\src\training;..\src\lobby;..\src\Inc;..\src\guids;..\src\Zone;.\$(OutDir)..\AGC;.\$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SRVLOG;DEBUG;WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\OggVorbis\vorbis.lib;..\src\Lib\OggVorbis\ogg.lib;..\src\Lib\OggVorbis\file.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -341,6 +411,48 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ManifestFile>$(Outdir)$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;..\src\effect;..\src\engine;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\soundengine;..\src\AGC;..\src\FedSrv;..\src\training;..\src\lobby;..\src\Inc;..\src\guids;..\src\Zone;.\$(OutDir)..\AGC;.\$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalDependencies>atls.lib;d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\..\zlib\x64\zlib.lib;$(OutDir)..\..\soundengine\x64\soundengine.lib;$(OutDir)..\..\_utility\x64\Utility.lib;$(OutDir)..\..\engine\x64\Engine.lib;$(OutDir)..\..\effect\x64\Effect.lib;$(OutDir)..\..\igc\x64\igc.lib;$(OutDir)..\..\clintlib\x64\clintlib.lib;$(OutDir)..\..\agc\x64\AGCGuid.lib;$(OutDir)..\..\Guids\x64\guids.lib;$(OutDir)..\..\training\x64\training.lib;$(OutDir)..\..\vorbis\x64\vorbis.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\x64\dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <StripPrivateSymbols>
+      </StripPrivateSymbols>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+      <ShowProgress>NotSet</ShowProgress>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
@@ -505,9 +617,11 @@
     <ClCompile Include="..\src\WinTrek\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Create</PrecompiledHeader>
@@ -587,12 +701,6 @@
     </ProjectReference>
     <ProjectReference Include="Igc.vcxproj">
       <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="Server.vcxproj">
-      <Project>{05ead557-56b0-4070-83f0-8a2b6fb9c54d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="sharemem.vcxproj">
-      <Project>{a8e7888a-84ac-485e-9fb2-35382c003e0b}</Project>
     </ProjectReference>
     <ProjectReference Include="SoundEngine.vcxproj">
       <Project>{f81bb9ee-dd86-415e-87e3-b60732efd72f}</Project>

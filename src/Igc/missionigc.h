@@ -42,7 +42,7 @@ class   CstaticIGC
 			//Imago reordered for debugging purposes 8/17/09
             {
                 TreasureSetLinkIGC*  l;
-				debugf("Nuking %d treasuresets:\n",m_droneTypes.n());
+				debugf("Nuking %d treasureset(s):\n",m_treasureSets.n());
                 while ((l = m_treasureSets.first()) != NULL)
                 {
 					debugf("\t%s (%i)\n",l->data()->GetName(), l->data()->GetObjectID());

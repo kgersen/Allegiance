@@ -14,8 +14,7 @@ void CImageTransfer::Transfer16BitTo16BitNoColourKey(	const BYTE * pSrc,
 {
 	int x, y;
 	DWORD dwByteOffset;
-	WORD wVal, wNewColour;
-	bool bExtraGreenBit;
+	WORD wVal;
 
 	// Copy the data over. Need to invert the data in the y direction.
 	for( y=0; y<size.Y(); y++ )

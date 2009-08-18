@@ -71,8 +71,8 @@
 #endif
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION    rmj,rmm,0,buildnum
- PRODUCTVERSION rmj,rmm,0,buildnum
+ FILEVERSION    rmj,rmm,rel,buildnum  // rel added by mmf defined in SlmVer.h
+ PRODUCTVERSION rmj,rmm,rel,buildnum  // rel added by mmf
  FILEFLAGSMASK  FILEFLAGSFLAVOR
  FILEFLAGS      FILEFLAGSFLAVOR
  FILEOS         VOS__WINDOWS32
@@ -85,12 +85,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName",     "Microsoft® Corporation"
             VALUE "FileDescription",  SZFILEDESCRIPTION
-            VALUE "FileVersion",      SZVERSTR(rmj,rmm,00,buildnum)
+            VALUE "FileVersion",      SZVERSTR(rmj,rmm,rel,buildnum) // rel added by mmf
             VALUE "InternalName",     SZINTERNALNAME
             VALUE "LegalCopyright",  "Copyright © 1995-2000. All rights reserved."
             VALUE "OriginalFilename", SZORIGFILENAME
             VALUE "ProductName",      SZFILEDESCRIPTION
-            VALUE "ProductVersion",   SZVERSTR(rmj,rmm,00,buildnum)
+            VALUE "ProductVersion",   SZVERSTR(rmj,rmm,rel,buildnum) // rel added by mmf
             VALUE "BuildFlavor",      FLAVOR
 #ifdef DEBUG
             VALUE "PrivateBuild", szVerUser

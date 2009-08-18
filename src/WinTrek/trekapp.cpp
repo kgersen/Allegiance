@@ -490,6 +490,11 @@ public:
             strcpy(p, "artwork");
             pathStr = logFileName;
         }
+		
+		//Imago 8/16/09
+		ZVersionInfo vi;
+		debugf("Running %s %s\nArtpath: %s\nCommand line: %s\n", (PCC) vi.GetInternalName(), 
+			(PCC) vi.GetStringValue("FileVersion"),(PCC) pathStr, (PCC) strCommandLine);
 
 // BUILD_DX9
 		// Now set later for D3D build, as modeller isn't valid yet.
@@ -571,8 +576,8 @@ public:
                 } else if (str == "nooutput") {
                     g_bOutput = false;
                 } else if (str == "quickstart") {
-					ZString strName = trekClient.GetSavedCharacterName(); //Imago dont quickstart if no saved name 7/21/09
-					if (strName.GetLength())
+					//Imago dont quickstart if no saved name 7/21/09
+					if (trekClient.GetSavedCharacterName().GetLength())
                     	g_bQuickstart = true;
                     float civStart;
                     if (token.IsNumber(civStart)) 

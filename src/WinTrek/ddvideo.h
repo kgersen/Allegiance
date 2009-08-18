@@ -8,11 +8,7 @@
 #pragma comment(lib,"dxguid.lib") 
 #pragma comment(lib,"amstrmid.lib")  
 
-//some nifty macros
 #define SAFE_RELEASE(x)  { if(x) {x->Release(); x = NULL;} }
-//use for debug
-//#define ATTEMPT(Check,Text,Caption)  { if(!Check) { MessageBox(NULL,Text,Caption,MB_OK); DestroyDDVid();} }
-#define ATTEMPT(Check,Text,Caption)  { if(!Check) { OutputDebugString(Text);} }
 
 /* Global variables */
 class DDVideo

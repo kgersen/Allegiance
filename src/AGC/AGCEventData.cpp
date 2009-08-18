@@ -242,7 +242,7 @@ void CAGCEventData::CopyVariableData(LPCSTR pszContext, LPCOLESTR pszSubject,
       case VT_R4:
       {
         // (...) pushes a float argument onto the stack as a double
-        float var = va_arg(argptr, DOUBLE);
+        float var = (float)va_arg(argptr, DOUBLE);
         COPY_VAR(var);
         break;
       }

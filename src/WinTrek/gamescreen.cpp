@@ -1695,7 +1695,7 @@ public:
 	        	 szPlayerName += ZString("'s game"); //reuse exact matches via. kgjv's adaptation
 				 if ( (ZString(game->Name()).Find("newbie") == -1) && 
 					  (ZString(game->Name()).Find(szPlayerName) == -1) ) {
-					 OutputDebugString("Insta join: "+ ZString(game->Name()) + "\n");					 
+					 ZDebugOutput("Insta join: "+ ZString(game->Name()) + "\n");					 
 					 g_bQuickstart = false; //we're done with all that!
 					 JoinMission(game);
 				 }
@@ -1843,7 +1843,7 @@ public:
 						if (trekClient.CfgIsOfficialServer(pservers[i].szName,pservers[i].szRemoteAddress) &&
 							trekClient.CfgIsOfficialCore(pcores[i2].cbIGCFile)) 
 						{	
-							OutputDebugString("Insta new game: on "+ZString(pservers[i].szName,pservers[i].szName)+" core "+ pcores[i2].cbIGCFile+"\n");
+							ZDebugOutput("Insta new game: on "+ZString(pservers[i].szName,pservers[i].szName)+" core "+ pcores[i2].cbIGCFile+"\n");
 							trekClient.CreateMissionReq(pservers[i].szName,
 							pservers[i].szRemoteAddress,
 							pcores[i2].cbIGCFile,szPlayerName);

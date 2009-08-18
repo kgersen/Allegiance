@@ -489,14 +489,14 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 	}
 
-#ifdef _DEBUG
+	if (g_outputdebugstring) {
 		char szBuffer[256];
 		sprintf_s( szBuffer, 256, "CD3DDevice9: switching to %s, size %d x %d @ %dHz\n", + bWindowed ? "windowed" : "fullscreen", 
 				m_sD3DDev9.d3dPresParams.BackBufferWidth, 
 				m_sD3DDev9.d3dPresParams.BackBufferHeight,
 				m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz);
 		OutputDebugString( szBuffer );
-#endif
+	}
 
 	if( bResetRequired == true || //mode changes
 		g_DX9Settings.m_dwAA != (DWORD)m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting || //any multisample changes

@@ -4,4 +4,8 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-debug -windowlog -multi -windowed</LocalDebuggerCommandArguments>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>-debug -mdllog -windowlog -windowed -nomovies</LocalDebuggerCommandArguments>
+  </PropertyGroup>
 </Project>

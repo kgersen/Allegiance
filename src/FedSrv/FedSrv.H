@@ -281,7 +281,7 @@ struct Global
   SERVICE_STATUS_HANDLE ssh;
 
   HINSTANCE           hInst;
-  SWMRG               swmrg;
+  //SWMRG               swmrg; Imago removed (again)
   FedSrvSite          siteFedSrv;
   FedSrvLobbySite     siteFSLobby;
   DPID                dpidEveryone;     // People in the mission lobby and every mission

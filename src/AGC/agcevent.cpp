@@ -264,13 +264,13 @@ HRESULT CAGCEvent::WriteStringToStream(IStream* pStm, BSTR bstr)
       return S_OK;
     case Length1Byte:
     {
-      BYTE cch = cchAnsi;
+      BYTE cch = (BYTE)cchAnsi;
       RETURN_FAILED(pStm->Write(&cch, sizeof(cch), NULL));
       break;
     }
     case Length2Bytes:
     {
-      WORD cch = cchAnsi;
+      WORD cch = (WORD)cchAnsi;
       RETURN_FAILED(pStm->Write(&cch, sizeof(cch), NULL));
       break;
     }

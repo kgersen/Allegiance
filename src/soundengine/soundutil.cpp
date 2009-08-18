@@ -312,7 +312,7 @@ void ToMono()
 		if(m_uChannels == 1)
 			return;
 
-		OutputDebugString("ToMono() called on stereo sound file.\n");
+		ZDebugOutput("ToMono() called on stereo sound file.\n");
 
 		BYTE bytePerSample = m_uBitsPerSample / 8;
 		unsigned int monoSize = m_uSize / m_uChannels;

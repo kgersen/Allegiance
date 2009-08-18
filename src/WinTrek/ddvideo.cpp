@@ -16,7 +16,7 @@ HRESULT DDVideo::Play(ZString& strPath)
 {
     HRESULT hr;  
 	if( FAILED( hr = InitDirectDraw() ) ) {
-		OutputDebugString("InitDirectDraw() failed\n");
+		ZDebugOutput("InitDirectDraw() failed\n");
 		return hr;
 	}
 
@@ -30,7 +30,7 @@ HRESULT DDVideo::Play(ZString& strPath)
 	
 		// remember to destroy DShow (pVideo) object to clean up after us.
 		// Return FALSE to let caller know we failed.
-			OutputDebugString("m_pVideo->Open failed\n");
+			ZDebugOutput("m_pVideo->Open failed\n");
 		return FALSE;
 		}			
 	else

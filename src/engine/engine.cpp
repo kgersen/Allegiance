@@ -736,7 +736,7 @@ private:
 
 		//imago added eliminate modes
 		if (CD3DDevice9::Get()->ResetDevice( false, size.X(), size.Y(), g_DX9Settings.m_refreshrate ) != D3D_OK) {
-			EliminateModes(Vector(size.X(),size.Y(),g_DX9Settings.m_refreshrate));
+			EliminateModes(Vector((float)size.X(),(float)size.Y(),(float)g_DX9Settings.m_refreshrate));
 			if (g_bWindowLog) {
 				ZDebugOutput("Invalid resolution\n");
 			}

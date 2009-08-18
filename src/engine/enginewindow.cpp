@@ -309,25 +309,15 @@ void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartF
         ZString str;
 
         if (token.IsMinus(str)) {
-// BUILD_DX9
             if (str == "mdllog") {
                 g_bMDLLog = true;
             } else if (str == "windowlog") {
                 g_bWindowLog = true;
-            }
-//#else
-            if (str == "windowed") {
+            } else if (str == "windowed") {
                 bStartFullscreen = false;
             } else if (str == "fullscreen") {
                 bStartFullscreen = true;
 			}
-//IMAGO remove build_dx9  6/26/09
-//            } else if (str == "mdllog") {
-//                g_bMDLLog = true;
-//            } else if (str == "windowlog") {
-//                g_bWindowLog = true;
-//            }
-// BUILD_DX9
         } else {
             token.IsString(str);
         }
@@ -1548,12 +1538,12 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                     break;
 
 		        case WM_XBUTTONDOWN: //imago 8/15/09
-                    OutputDebugString("WM_XBUTTONDOWN: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
+                    ZDebugOutput("WM_XBUTTONDOWN: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
                     mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, true );
                     break;
 
 		        case WM_XBUTTONUP:
-                    OutputDebugString("WM_XBUTTONUP: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
+                    ZDebugOutput("WM_XBUTTONUP: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
                     mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, false );
                     break;
             }

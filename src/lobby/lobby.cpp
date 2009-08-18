@@ -582,8 +582,8 @@ int __cdecl main(int argc, char *argv[])
     
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
-	// mdvalley: QueryStringValue? Not on my compiler.
-    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen); //statreg.cpp is obsolete. Please remove it from your project.
+	
+    lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
 
     _Module.m_bService = FALSE;
     if (lRes == ERROR_SUCCESS)

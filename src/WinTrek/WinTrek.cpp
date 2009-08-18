@@ -2615,22 +2615,24 @@ public:
 		//Imago 6/29/09 7/28/09 now plays video in thread while load continues
 		HANDLE hDDVidThread = NULL;
 		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
-		HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
-		HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
-		bool bWMP = (hVidTest && hAudTest) ? true : false;
-		::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
 
 		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware &&
 		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
-		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID && bWMP) {
+		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
+			//Imago only check for these if we have to 8/16/09
+			HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
+			HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
+			bool bWMP = (hVidTest && hAudTest) ? true : false;
+			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
+			if (bWMP) {
+				if (!CD3DDevice9::Get()->IsWindowed()) {
+					::ShowWindow(GetHWND(),SW_HIDE);
+					::ShowCursor(FALSE);
+				}
 
-			if (!CD3DDevice9::Get()->IsWindowed()) {
-				::ShowWindow(GetHWND(),SW_HIDE);
-				::ShowCursor(FALSE);
+				const char * pData = (PCC)pathStr;
+				hDDVidThread = CreateThread(NULL,0,DDVidCreateThreadProc,(void *)pData,THREAD_PRIORITY_HIGHEST,0);
 			}
-
-			const char * pData = (PCC)pathStr;
-			hDDVidThread = CreateThread(NULL,0,DDVidCreateThreadProc,(void *)pData,THREAD_PRIORITY_HIGHEST,0);
 		}
 
 		// load the fonts
@@ -3911,9 +3913,11 @@ public:
 
 		// mmf format octal version (defined in SlmVer.h) to decimal YY.MM.DD
 		int YY,MM,DD;
+		ZString dR;
 		{
 			ZString dVer, dYY, dMM, dDD;
-			dVer = ZString(ZVersionInfo().GetStringValue("FileVersion").Right(6));
+			dVer = ZVersionInfo().GetStringValue("FileVersion").Right(6);
+			dR = ZVersionInfo().GetProductVersionString().Middle(3,1); //Imago good till R10
 			dDD = dVer.Right(2);
 			dMM = dVer.Middle(2,2);
 			dYY = dVer.Middle(0,2);
@@ -3924,10 +3928,10 @@ public:
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
 		// mmf added ifs to zero pad MM and DD
-		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
-		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
-		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
-		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R5 Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
+		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
+		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
+		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
 		//AEM, redesigned ESC menu 7/6/07
 		// mmf 10/07 swapped position of S and G
 		m_pmenu->AddMenuItem(0               , "");

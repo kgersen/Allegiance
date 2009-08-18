@@ -50,11 +50,15 @@
     <ClInclude Include="..\src\Lobby\messagesls.h" />
     <ClInclude Include="..\src\Lobby\mission.h" />
     <ClInclude Include="..\src\Lobby\pch.h" />
-    <ClInclude Include="..\src\Lobby\resource.h" />
+    <ClInclude Include="..\src\Lobby\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\Lobby\server.h" />
     <ClInclude Include="..\src\Lobby\zgameinfo.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\src\Lobby\lobbymsg.msg" />
+    <CustomBuild Include="..\src\Lobby\lobbymsg.msg">
+      <Filter>Resources</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

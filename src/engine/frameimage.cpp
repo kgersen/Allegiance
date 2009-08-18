@@ -33,7 +33,7 @@ public:
         m_pobjectMemory(pobjectMemory)
     {
 		int i;
-		BYTE * pTempSurface, * pSrcCopy;
+		BYTE * pSrcCopy;
 		bool bHasColorKey;
 		HRESULT hResult;
 		D3DLOCKED_RECT lockRect;
