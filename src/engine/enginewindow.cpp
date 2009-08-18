@@ -702,9 +702,10 @@ void EngineWindow::Invalidate()
 
 void EngineWindow::RectChanged()
 {
+	ZDebugOutput("EngineWindow::RectChanged() moving="+ZString(m_bMovingWindow)+"\n");
     if (
            (!m_bMovingWindow)
-        && (!m_pengine->IsFullscreen())
+        && (m_pengine && !m_pengine->IsFullscreen())
     ) {
         WinPoint size = GetClientRect().Size();
 

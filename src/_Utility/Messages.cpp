@@ -1267,11 +1267,12 @@ HRESULT FedMessaging::InitDPlayServer()
   // Create an IDirectPlay interface
   m_pfmSite->OnPreCreate(this);
 
-
+  ZDebugOutput("CoCreateInstance( CLSID_DirectPlay8Server ... )\n");
   if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Server, NULL,
                                      CLSCTX_INPROC_SERVER, IID_IDirectPlay8Server,
                                      (LPVOID*) &m_pDirectPlayServer ) ) )
   {
+	ZDebugOutput("Failed to Create DirectPlaySever in DirectX 8/9 hr="+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox(this, "Failed to Create DirectPlaySever in DirectX 8/9", "Allegiance", MB_OK);
     return hr;
   }
@@ -1281,9 +1282,10 @@ HRESULT FedMessaging::InitDPlayServer()
   // I sugegst we leave it at this
   //  const DWORD dwInitFlags = DPNINITIALIZE_DISABLEPARAMVAL;
   const DWORD dwInitFlags = 0;
-
+  ZDebugOutput("m_pDirectPlayServer->Initialize( ... )\n");
   if( FAILED( hr = m_pDirectPlayServer->Initialize( this, DPlayMsgHandler, dwInitFlags ) ) )
   {
+	ZDebugOutput("Failed to initialize DirectX 8/9 hr="+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox(this, "Failed to initialize DirectX 8/9", "Allegiance", MB_OK);
     return hr;
   }
@@ -1332,6 +1334,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   if( m_pDirectPlayServer == 0 )
   {
     hr = InitDPlayServer();
+	ZDebugOutput("InitDPlayServer() returned "+ZString(hr)+"\n");
     if ( FAILED(hr) )
       return hr;
   }
@@ -1341,10 +1344,12 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   IDirectPlay8Address*   pDP8AddressLocal = 0;
 
   // Create the local device address object
+  ZDebugOutput("CoCreateInstance( CLSID_DirectPlay8Address ... )\n");
   if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
                                      CLSCTX_ALL, IID_IDirectPlay8Address,
                                      (LPVOID*) &pDP8AddressLocal ) ) )
   {
+	ZDebugOutput("CoCreateInstance( CLSID_DirectPlay8Address ... ) returned "+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay server local address", "Allegiance", MB_OK );
     return hr;
   }
@@ -1352,18 +1357,23 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   SafeReleaser<IDirectPlay8Address> r1( pDP8AddressLocal );
 
   // Set IP service provider
+   ZDebugOutput("pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP )\n");
   if( FAILED( hr = pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) ) )
   {
+	ZDebugOutput("pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) returned "+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay server local SP", "Allegiance", MB_OK );
     return hr;
   }
 
-  if( dwPort )
+  if( dwPort ) {
+	  ZDebugOutput("pDP8AddressLocal->AddComponent(DPNA_KEY_PORT ... )\n");
 	  if(FAILED(hr = pDP8AddressLocal->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
 		{
+			ZDebugOutput("Failed to set DPlay server port - returned "+ZString(hr)+"\n");
 		    m_pfmSite->OnMessageBox( this, "Failed to set DPlay server port", "Allegiance", MB_OK );
 		    return hr;
 		}
+  }
 
   ZeroMemory( &dpnAppDesc, sizeof( DPN_APPLICATION_DESC ) );
   dpnAppDesc.dwSize = sizeof( DPN_APPLICATION_DESC );
@@ -1375,7 +1385,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   // Set host player context to non-NULL so we can determine which player indication is
   // the host's.
   hr = m_pDirectPlayServer->Host( &dpnAppDesc, &pDP8AddressLocal, 1, NULL, NULL, (void *) 1, 0  );
-
+  ZDebugOutput(" m_pDirectPlayServer->Host( &dpnAppDesc ... ) - returned "+ZString(hr)+"\n");
   m_guidApplication = guidApplication;
 
   m_fConnected = true;

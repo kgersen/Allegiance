@@ -488,7 +488,7 @@ bool CLobbyApp::OnAssert(const char* psz, const char* pszFile, int line, const c
 void CLobbyApp::DebugOutput(const char *psz)
 {
     //Imago had to modify this because of the debugging changes in Win32App by mmf/radar
-#ifdef _DEBUG
+#ifdef DEBUG
   ::OutputDebugString("AllLobby: ");
   ::OutputDebugString(psz);
 #endif

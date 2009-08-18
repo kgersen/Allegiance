@@ -18,7 +18,7 @@ public:
 		m_iMaxTextureSize = 0;
 		m_bAutoGenMipmaps = false;
 		m_bDither = false;
-		m_refreshrate = -1;
+		m_refreshrate = 60;
 		m_dwAAQual = 0;
 	}
 	int				m_refreshrate;
