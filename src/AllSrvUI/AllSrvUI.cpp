@@ -107,8 +107,8 @@ BOOL CAllSrvUIApp::InitInstance()
   CreateAllSrvUIEvent();
 
   // Initialize COM
-//  m_hrCoInit = CoInitializeEx(NULL, COINIT_MULTITHREADED);
-  m_hrCoInit = CoInitialize(NULL);
+  m_hrCoInit = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+//  m_hrCoInit = CoInitialize(NULL);
 
   // Create the property sheet window
   CAllSrvUISheet* pps = new CAllSrvUISheet;

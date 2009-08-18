@@ -17,7 +17,7 @@
 #endif
 
 //mdvalley: defines good
-#define _WIN32_DCOM
+//#define _WIN32_DCOM //Imago removed
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -98,8 +98,8 @@ UINT CPageConnect::CreateSessionThreadThunk(void* pvParam)
 {
   // Enter this thread into a COM MTA
 	//mdvalley: Use older CoInit
-  CoInitialize(NULL);
-//  CoInitializeEx(NULL, COINIT_MULTITHREADED);
+ // CoInitialize(NULL); //IMago put back
+  CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
   // Reinterpret the specified parameter as a 'this' pointer
   CPageConnect* pThis = reinterpret_cast<CPageConnect*>(pvParam);

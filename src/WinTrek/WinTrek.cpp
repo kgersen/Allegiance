@@ -3102,9 +3102,9 @@ public:
             ToggleFilterUnknownChats(); //TheBored 30-JUL-07: Filter Unknown Chat patch
         if (!LoadPreference("LinearControlResponse", TRUE))
             ToggleLinearControls();
-        if (!LoadPreference("Environment", TRUE)) //|| CD3DDevice9::Get()->IsHardwareVP() == false)
-            ToggleEnvironment(); //imago 9/19/09 force env/posters off if not harrdware (for now)
-        if (!LoadPreference("Posters", TRUE)) // || CD3DDevice9::Get()->IsHardwareVP() == false)
+        if (!LoadPreference("Environment", TRUE) || IsWine())  //imago 9/19/09 force env in wine 8/16/09
+            ToggleEnvironment();
+        if (!LoadPreference("Posters", TRUE))
             TogglePosters();
         if (!LoadPreference("Debris", TRUE))
             ToggleDebris();
@@ -3301,7 +3301,7 @@ public:
             unsigned char cbValue[nMaxStrLen + 1];
 
             ::RegQueryValueEx(hKey, szName, NULL, &dwType, cbValue, &dwSize);
-            ::RegCloseKey(hKey);
+            
 
             cbValue[nMaxStrLen] = '\0';
 
@@ -3311,6 +3311,15 @@ public:
 
         return strResult;
     }
+
+	bool IsWine() { //Imago 8/17/09
+		HKEY hKey;
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Wine", 0, KEY_READ, &hKey)) {
+			::RegCloseKey(hKey);
+			return true;
+		}
+		return false;
+	}
 
     void Terminate()
     {
@@ -4163,8 +4172,7 @@ public:
 
     void ToggleEnvironment()
     {
-		// imago: software dx environment broke for now
-		if (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment) { //|| CD3DDevice9::Get()->IsHardwareVP() == false) {
+		if (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment || IsWine()) { //Imago 8/17/09
             m_pwrapImageEnvironment->SetImage(Image::GetEmpty());
             SavePreference("Environment", FALSE);
         } else {

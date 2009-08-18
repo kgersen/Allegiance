@@ -669,7 +669,7 @@ public:
         // joystick button mapping
         //
 
-        {
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetButtonCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("buttonCommandMap");
 
             plist->GetFirst();
@@ -727,7 +727,7 @@ public:
         // joystick value mapping
         //
 
-        {
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetValueCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("numericValuesNew");
 
             bool bNew = (plist != NULL);
@@ -2245,7 +2245,8 @@ public:
         // joystick button mapping
         //
 
-        {
+
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetButtonCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("buttonCommandMap");
 
             plist->GetFirst();
@@ -2266,7 +2267,7 @@ public:
         // joystick value mapping
         //
 
-        {
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetValueCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("numericValuesNew");
 
             bool bNew = (plist != NULL);

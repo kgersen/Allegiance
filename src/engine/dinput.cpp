@@ -688,6 +688,12 @@ public:
     BOOL EnumObjectsCallback(
         LPCDIDEVICEOBJECTINSTANCE pddoi
     ) {
+		
+		if (!pddoi) {
+			m_pLogFile->OutputString("\t\tLPCDIDEVICEOBJECTINSTANCE=NULL Skipping.");
+			return DIENUM_CONTINUE;
+		}
+
 		LPOLESTR szGUID = new WCHAR [39];
 		char chGUID[39];
 		StringFromGUID2(pddoi->guidType,szGUID,39);
@@ -1285,6 +1291,18 @@ private:
 
     bool EnumDeviceCallback(LPDIDEVICEINSTANCE pdidi)
     {
+		if (!pdidi)  {
+			m_joylog.OutputString("\tLPDIDEVICEINSTANCE=NULL Skipping.\n");
+			 return DIENUM_CONTINUE;
+		}
+		
+		// Imago 8/18/09
+		ZString strName = pdidi->tszProductName;
+		if (strName.ReverseFind("Keyboard") != -1) {
+			m_joylog.OutputString("\tSkipping Keyboard as input.");
+			return DIENUM_CONTINUE;
+		}
+
         TRef<IDirectInputDevice>  pdid;
 //        TRef<IDirectInputDevice2> pdid2;
 		TRef<IDirectInputDevice8> pdid2;		// mdvalley: DInput7
