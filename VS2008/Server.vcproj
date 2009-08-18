@@ -619,14 +619,6 @@
 			RelativePath="..\src\FedSrv\srvqueries.h"
 			>
 		</File>
-		<File
-			RelativePath="..\src\FedSrv\SWMRG.CPP"
-			>
-		</File>
-		<File
-			RelativePath="..\src\FedSrv\SWMRG.H"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
