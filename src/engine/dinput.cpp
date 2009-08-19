@@ -690,7 +690,7 @@ public:
     ) {
 		
 		if (!pddoi) {
-			m_pLogFile->OutputString("\t\tLPCDIDEVICEOBJECTINSTANCE=NULL Skipping.");
+			m_pLogFile->OutputString("\t\tLPCDIDEVICEOBJECTINSTANCE=NULL Skipping.\n");
 			return DIENUM_CONTINUE;
 		}
 
@@ -1299,7 +1299,7 @@ private:
 		// Imago 8/18/09
 		ZString strName = pdidi->tszProductName;
 		if (strName.ReverseFind("Keyboard") != -1) {
-			m_joylog.OutputString("\tSkipping Keyboard as input.");
+			m_joylog.OutputString("\tSkipping keyboard as input.\n");
 			return DIENUM_CONTINUE;
 		}
 
