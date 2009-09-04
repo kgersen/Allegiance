@@ -273,7 +273,7 @@ public:
                             {
                                 //See if a friendly ship can spot the target
                                 bLeadIndicator = false;
-                                /*
+                                /* KGJV- 4/9/9 reactivated this */ 
                                 for (StationLinkIGC*   psl = pcluster->GetStations()->first(); (psl != NULL); psl = psl->next())
                                 {
                                     IstationIGC*   ps = psl->data();
@@ -285,7 +285,7 @@ public:
                                         break;
                                     }
                                 }
-                                */
+                                
 
                                 if (!bLeadIndicator)
                                 {
