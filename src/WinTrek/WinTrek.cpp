@@ -4689,9 +4689,10 @@ public:
     }
 
     //Something of a misnomer since there are only two styles but this may change
+	//Andon: Changed to support up to 5 styles
     void CycleStyleHUD()
     {
-        int style = (int(m_pnumberStyleHUD->GetValue()) + 1) % 2;
+        int style = (int(m_pnumberStyleHUD->GetValue()) + 1) % 5;
         m_pnumberStyleHUD->SetValue(float(style));
 
         SavePreference("SoftwareHUD", (DWORD)style);
@@ -5141,12 +5142,38 @@ public:
         return (m_pboolTargetHUD->GetValue()) ? "Target HUD On " : "Target HUD Off ";
     }
 
-    const ZString& GetStyleHUDMenuString()
+    //Andon: Expanding the number of HUD style switches available
+	const ZString& GetStyleHUDMenuString()
     {
         static const ZString    c_strNormal("Style: Normal");
         static const ZString    c_strSoftware("Style: Software");
+		static const ZString    c_strCust1("Style: Custom Hud 1");//Add in the first custom one
+		static const ZString    c_strCust2("Style: Custom Hud 2");//Add in the second custom one
+		static const ZString    c_strCust3("Style: Custom Hud 3");//Add in the third custom one
+		static const ZString    c_strOops("Style: Error"); //Just in case I goofed
 
-        return (m_pnumberStyleHUD->GetValue()) ? c_strSoftware : c_strNormal;
+		if (m_pnumberStyleHUD->GetValue() == 0)
+		{
+			return c_strNormal;
+		}
+		else if (m_pnumberStyleHUD->GetValue() == 1)
+		{
+			return c_strSoftware;
+		}
+		else if (m_pnumberStyleHUD->GetValue() == 2)
+		{
+			return c_strCust1;
+		}
+		else if (m_pnumberStyleHUD->GetValue() == 3)
+		{
+			return c_strCust2;
+		}
+		else
+		{
+			return c_strCust3;
+		}
+		//Andon: The old version, was simply True/False
+		//return (m_pnumberStyleHUD->GetValue()) ? c_strSoftware : c_strNormal;
     }
 
     const ZString& GetDeadzoneMenuString()
