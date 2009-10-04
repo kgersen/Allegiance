@@ -78,6 +78,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundEngine", "SoundEngine.vcproj", "{F81BB9EE-DD86-415E-87E3-B60732EFD72F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mdlc", "mdlc.vcproj", "{9F998B06-078F-4D01-BE26-0302B4772FE3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4F83287A-FF3C-4333-AD5F-C00B86CF0895} = {4F83287A-FF3C-4333-AD5F-C00B86CF0895}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Igc", "Igc.vcproj", "{BF99DCB8-4127-4403-82C9-72190C6ABF5F}"
 EndProject

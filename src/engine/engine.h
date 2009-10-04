@@ -26,7 +26,7 @@
 #define DIRECT3D_VERSION   0x0900
 #include <d3d9.h>
 #include <d3dx9.h>
-#include <DxErr9.h>
+#include <DxErr.h> 
 
 //////////////////////////////////////////////////////////////////////////////
 //
