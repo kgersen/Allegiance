@@ -1,4 +1,5 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="FZDebug|Win32">
       <Configuration>FZDebug</Configuration>
@@ -354,14 +355,26 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\AGC\AGCEventsIDL.xsl">
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

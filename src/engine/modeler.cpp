@@ -2468,6 +2468,11 @@ public:
 			}
 		}
 
+		//Imago 11/09/09 - Provide a helpful message box for this common error
+		if (bError && !pfile->IsValid() && m_psite) {
+			PostMessage(GetActiveWindow(), WM_SYSCOMMAND, SC_MINIMIZE,0);
+			MessageBox(GetDesktopWindow(), "Could not open the artwork file "+strToOpen, "Allegiance: Fatal modeler error", MB_ICONERROR);
+		}
 		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
 
         return pfile->IsValid() ? pfile : NULL;
