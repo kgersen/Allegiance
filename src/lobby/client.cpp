@@ -74,20 +74,16 @@ static void doASGS(void* data, MprThread *threadp) {
 	FedMessaging & fm = g_pLobbyApp->GetFMClients();
 	CFMConnection * pcnxn = fm.GetConnectionFromId(pqd->dwConnectionID);
 	
-	int contentLen = 0; char *content; char szResponse[MAX_PATH];
-	char szURL[MPR_HTTP_MAX_URL]; char szName[c_cbName]; 
-	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign="); 
+	int contentLen = 0;
+    char *content;
+    char szResponse[MAX_PATH];
+	char szURL[MPR_HTTP_MAX_URL];
+    Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign="); 
 	
-	// one thread per connecting player
-	Strcpy(szName,pqd->szCharacterName);
-	
-	// ignore "tokens" in player name
-	ZString strName = szName;
-	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
-		Strcpy(szName,strName.RightOf(1));
-
-	// add the name to the url
-	Strcat(szURL,szName);
+	// the player callsign has to be urlencoded, because it may contain '+', '?', etc.
+	char callsign[128];
+	encodeURL(callsign, pqd->szCharacterName);
+	Strcat(szURL, callsign);
 	
 	// add the IP to the url
     char szAddress[16];
