@@ -1,2 +1,0 @@
-use "model"; 
-creditboxbmp = ImportImageFromFile("creditbox.png", false); 
