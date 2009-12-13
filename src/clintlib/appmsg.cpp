@@ -1981,14 +1981,16 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 }
             }
 
-            //Ignore most part changes for ourselves  ALLY Imago docking lifepods at allied bases hack 7/13/09
+            //Ignore most part changes for ourselves  ALLY Imago docking lifepods at allied bases hack 7/13/09 & 12/09
             if (pfmLC->sidShip != GetShipID())
             {
-                pship->ProcessShipLoadout(pfmLC->cbloadout,
+                if (pship->GetBaseHullType() && pship->GetBaseHullType()->HasCapability(c_habmLifepod) && pship->GetStation()) {
+                    RestoreLoadout(pship->GetStation());
+                } else {
+                    pship->ProcessShipLoadout(pfmLC->cbloadout,
                                           (const ShipLoadout*)(FM_VAR_REF(pfmLC, loadout)), (pship->GetCluster() == NULL));
-			} else if (pship->GetBaseHullType()->HasCapability(c_habmLifepod)) {
-				RestoreLoadout(pship->GetStation());
-			}
+                }
+            }
 
             //But always process the passenger data (even for ourself)
             {

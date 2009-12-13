@@ -202,9 +202,15 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
-	// ATI Radeon 9600 specific, find out why the TMeshGeo DrawTriangles are failing completley, 
+	// ATI Radeon 9600 (RV350) specific, find out why the TMeshGeo DrawTriangles are failing completley, 
 	// I gather this is (related to) the Intel 8xx issue.  --Imago 7/28/09
 	if (Identifier.VendorId == 0x1002 && Identifier.DeviceId == 0x4151 ) {
+		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		bForceSWVP = true;
+	}
+
+    // SiS 661FX/M661FX/760/741/M760/M741 specific --Imago 11/30/09
+	if (Identifier.VendorId == 0x1039 && Identifier.DeviceId == 0x6330 ) {
 		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 		bForceSWVP = true;
 	}
@@ -297,7 +303,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 													&m_sD3DDev9.d3dAdapterID );
 		_ASSERT( hr == D3D_OK );
 	}
-
+	
 	// Recreate the AA depth stencil buffer, if required.
 	CreateAADepthStencilBuffer();
 
@@ -808,7 +814,7 @@ void CD3DDevice9::InitialiseRenderStateCache( DWORD * pRenderStateCache )
 	RESET_STATE_CACHE_VALUE( D3DRS_WRAP5, 0 );
 	RESET_STATE_CACHE_VALUE( D3DRS_WRAP6, 0 );
 	RESET_STATE_CACHE_VALUE( D3DRS_WRAP7, 0 );
-    if (!CD3DDevice9::Get()->IsHardwareVP()) { //8/8/09 Imago
+    if (m_sD3DDev9.sD3DDevCaps.MaxVertexW < 2) { //8/8/09 11/09 Imago
         RESET_STATE_CACHE_VALUE( D3DRS_CLIPPING, TRUE );
     } else {
 	    RESET_STATE_CACHE_VALUE( D3DRS_CLIPPING, FALSE );

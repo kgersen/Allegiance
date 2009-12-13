@@ -80,6 +80,7 @@ ZString ModelData::GetSectorName()
 
     return s_unknown;
 }
+
 ZString ModelData::GetSideName()
 {
     if (m_pmodel)
@@ -105,6 +106,7 @@ TRef<Image> ModelData::GetSideIcon()
 {
     return Image::GetEmpty();
 }
+
 float ModelData::GetSpeed()
 {
     float   speed = 0.0f;
@@ -122,18 +124,10 @@ float ModelData::GetSpeed()
     return speed;
 }
 
-//Andon: Returns the mass
-//Modified to only work on self
 float ModelData::GetMass()
 {
-	float f = 0.0f;
-
     ImodelIGC* pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = pmodel->GetMass();
-	}
-	return f;
+    return pmodel ? pmodel->GetMass() : 0.f;
 }
 
 float ModelData::GetRange()
@@ -148,8 +142,7 @@ float ModelData::GetRange()
             float   fSeparation = (pmodel->GetPosition() - trekClient.GetShip()->GetSourceShip()->GetPosition()).Length();
             // this is the same code used in radar image. There is something about the rounding mode that
             // keeps me from being able to just use floorf instead of the cast to int...
-            //range = float (int (fSeparation + 0.5f)); //Andon: This makes it an int and give only whole numbers.
-			range = fSeparation; //Andon: This allows it to give decimals
+            range = float (int (fSeparation + 0.5f));
         }
     }
 
@@ -217,45 +210,55 @@ float ModelData::GetPercentShields()
     return f;
 }
 
-//Andon: Grabs the percent of energy.
-//Modified to only work for self.
 float ModelData::GetPercentEnergy()
 {
-	float f = 0.0f;
-    ImodelIGC*      pmodel = GetModel();
-    if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-        f = GetShip()->GetEnergy()/GetShip()->GetHullType()->GetMaxEnergy();
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot)
+    {
+    case OT_ship:
+        return GetShip()->GetEnergy()/GetShip()->GetHullType()->GetMaxEnergy();
+
+    default:
+        return 0.f;
     }
-	return f;
 }
 
-//Andon: Gets the percent of ammo.
-//Modified to only work for self.
 float ModelData::GetAmmo()
 {
-	float f = 0.0f;
-
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = (float)GetShip()->GetAmmo()/(float)GetShip()->GetHullType()->GetMaxAmmo();
-	}
-	return f;
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot) {
+    case OT_ship:
+        {
+            IshipIGC*     pship     = GetShip();
+            const IhullTypeIGC* phullType = pship->GetHullType();
+            
+            return (float)pship->GetAmmo() / (float)phullType->GetMaxAmmo();
+        }
+        break;
+        
+    default:
+        return 0;
+        break;
+    }
 }
-//Andon: Gets percent of fuel of the target
-//Modified to only work on self.
+
 float ModelData::GetFuel()
 {
-	float f = 0.0f;
-
-	IshipIGC*     pship     = GetShip();
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = pship->GetFuel()/pship->GetHullType()->GetMaxFuel();
-	}
-	return f;
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot)
+    {
+    case OT_ship:
+        {
+            IshipIGC*     pship     = GetShip();
+            const IhullTypeIGC* phullType = pship->GetHullType();
+            
+            return (float)pship->GetFuel() / (float)phullType->GetMaxFuel();
+        }
+        break;
+    default:
+        return 0;
+        break;
+    }
 }
 
 float ModelData::GetOre()
@@ -271,35 +274,28 @@ float ModelData::GetOre()
     }
 }
 
-//Andon: Flag for determining if Vector Lock is on or not.
-//If it is 1, then the ship's VL is active. If it is 0, then it is not.
-//Modified to only work on self.
 float ModelData::GetVectorLock()
 {
-	float f = 0.0f;
+    float   vl = 0.0f;
+    if (m_pmodel && m_pmodel->GetObjectType() == OT_ship && 
+        (((IshipIGC*)(ImodelIGC*)m_pmodel)->GetParentShip() == NULL))
+    {
+        vl = ((IshipIGC*)(ImodelIGC*)m_pmodel)->GetVectorLock();
+    }
 
-	IshipIGC*     pship     = GetShip();
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = pship->GetVectorLock();
-	}
-	return f;
+    return vl;
 }
 
-//Andon: Returns the % cloaking. Is not, however, 0.0 to 0.1 - each % is a whole number
-//Modified to only work on self.
 float ModelData::GetCloaking()
 {
-	float f = 0.0f;
+    float   vl = 0.0f;
+    if (m_pmodel && m_pmodel->GetObjectType() == OT_ship && 
+        (((IshipIGC*)(ImodelIGC*)m_pmodel)->GetParentShip() == NULL))
+    {
+        vl = 100.0f * (1.0f - ((IshipIGC*)(ImodelIGC*)m_pmodel)->GetCloaking());
+    }
 
-	IshipIGC*     pship     = GetShip();
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = pship->GetCloaking();
-	}
-	return f;
+    return vl;
 }
 
 float ModelData::GetNumObservers()
@@ -327,64 +323,52 @@ float ModelData::GetNumObservers()
     }
 }
 
-//Andon: Returns the amount of ripcord time left.
-//Modified so it only works for self and can pull a decimal if wanted.
-//Also carried over the +1 for the countdown
 float ModelData::GetRipcordTimeLeft()
 {
-	float f = 0.0f;
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot)
+    {
+    case OT_ship:        
+        if (GetShip()->fRipcordActive())
+            return max(1 + (int)trekClient.GetShip()->GetSourceShip()->GetRipcordTimeLeft(), 0);
+        else
+            return 0.0f;
 
-	IshipIGC*     pship     = GetShip();
-    ImodelIGC*      pmodel = GetModel();
-	if ((pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip()) && pship->fRipcordActive())
-	{
-		f = 1+trekClient.GetShip()->GetSourceShip()->GetRipcordTimeLeft();
-	}
-	return f;
+    default:
+        return 0.0f;
+    }
 }
 
-//Andon: Returns the time left in a lifepod.
-//Modified to only work with self.
 float ModelData::GetEndurance()
 {
-	float f = 0.0f;
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot)
+    {
+    case OT_ship:        
+        return GetShip()->GetEndurance();
 
-	IshipIGC*     pship     = GetShip();
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip())
-	{
-		f = pship->GetEndurance();
-	}
-	return f;
+    default:
+        return 1.0f;
+    }
 }
 
-//Andon: Returns the signature of a ship
-//Modified to only be usable on self.
 float ModelData::GetSignature()
 {
-	float f = 0.0f;
-
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = (pmodel->GetSignature()*100.0f);
-	}
-	return f;
+    ImodelIGC* pmodel = GetModel();
+    return pmodel ? (100.0f * pmodel->GetSignature()) : 100.0f;
 }
 
-//Andon: Flag for if the ship is cloaked. Returns 1 if it is, 0 if it isn't.
-//Modified to only be usable on self.
 float ModelData::IsCloaked()
 {
-	float f = 0.0f;
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot)
+    {
+    case OT_ship:
+        return GetShip()->GetCloaking() < 1.0f ? 1.0f : 0.0f;
 
-	IshipIGC*     pship     = GetShip();
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = pship->GetCloaking() <1.0f ? 1.0f : 0.0f;
-	}
-	return f;
+    default:
+        return 0.0f;
+    }
 }
 
 float ModelData::IsEjectPod()
@@ -404,19 +388,17 @@ float ModelData::IsEjectPod()
     }
 }
 
-//Andon: Flag that shows if the target is ripcording or not. 1 is yes, 0 is no.
-//Modified to only work for self.
 float ModelData::IsRipcording()
 {
-	float f = 0.0f;
+    ObjectType ot = GetModelTypeInternal();
+    switch (ot)
+    {
+        case OT_ship:
+            return (GetShip()->fRipcordActive() ? 1.0f : 0.0f);
 
-	IshipIGC*     pship     = GetShip();
-    ImodelIGC*      pmodel = GetModel();
-	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
-	{
-		f = pship->fRipcordActive() ? 1.0f : 0.0f;
-	}
-	return f;
+        default:
+            return 0.0f;
+    }
 }
 
 bool ModelData::IsNotNull()

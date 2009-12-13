@@ -9,7 +9,7 @@ copy objs10\FZRetail\WinTrek\Allegiance.PDB x86
 copy objs10\FZRetail\AGC\AGC.dll x86
 copy objs10\FZRetail\AGC\AGC.PDB x86
 copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.ATL\atl100.dll" x86
-copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.ATL\mfc100.dll" x86
+copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.MFC\mfc100.dll" x86
 copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.CRT\msvcp100.dll" x86
 copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.CRT\msvcr100.dll" x86
 copy src\license.txt x86
