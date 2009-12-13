@@ -3270,10 +3270,11 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 			}
 		}
     }
-
+	
+	ImodelIGC*      pmodelGoal = NULL;
     const Vector*   positionGoal = NULL;
     {
-        ImodelIGC*      pmodelGoal = m_commandTargets[c_cmdCurrent];
+        pmodelGoal = m_commandTargets[c_cmdCurrent];
         if (!pmodelGoal)
             pmodelGoal = m_commandTargets[c_cmdAccepted];
 
@@ -3297,9 +3298,36 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
     {
         assert (pcluster);
 
-        ImodelIGC*  pmodelRipcord = FindTarget(this, positionGoal ? (c_ttFriendly | c_ttStation | c_ttNearest) : (c_ttFriendly | c_ttStation),
+	ImodelIGC*  pmodelRipcord = NULL;
+	if (pmodelGoal) //TheRock 13-12-2009 Allow ripcording to a probe or ship when a teleport is in the same sector.
+	{
+		if (pmodelGoal->GetObjectType() == OT_probe) 
+		{
+			if (/*pmodelGoal->GetCluster() && */pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip)) 
+			{
+				//IprobeIGC* pProbeSelected = pmodelGoal->GetCluster()->GetProbe(pmodelGoal->GetObjectID());
+				IprobeIGC* pProbeSelected = (IprobeIGC*)pmodelGoal;
+				if (pProbeSelected->GetCanRipcord(ripcordSpeed)) 
+				{
+					pmodelRipcord = pProbeSelected;
+				}	
+			}
+		} 
+		else if (pmodelGoal->GetObjectType() == OT_ship) 
+		{
+			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip)) 
+			{
+				IshipIGC* pShipSelected = (IshipIGC*)pmodelGoal;
+				pmodelRipcord = pShipSelected;
+			}
+		}
+	}
+
+	if (pmodelRipcord == NULL) {
+        	pmodelRipcord = FindTarget(this, positionGoal ? (c_ttFriendly | c_ttStation | c_ttNearest) : (c_ttFriendly | c_ttStation),
                                                NULL, pcluster, positionGoal, NULL,
                                                c_sabmRipcord);
+	}
 
         if ((pmodelRipcord == NULL) && (m_pilotType >= c_ptPlayer))
         {
