@@ -11243,28 +11243,15 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 
   // TE: Added default values for plauncher's members used in StationDeleted event
   const char* szLauncherName = "(unknown)";
-  int iLauncherUniqueID = -1;
-  int iLauncherSideUniqueID = -1;
+  int iLauncherUniqueID = NA;
+  int iLauncherSideUniqueID = NA;
 
-  // If the launcher exists...
-  if (plauncher != NULL)
+  if (plauncher && otLauncher == OT_ship)
   {
-	  // Retrieve the type of object that destroyed this station...
-	  ObjectType LauncherType = plauncher->GetObjectType();
-
-	  // If the launcher is NOT a probe (novabomb) or a missile (aleph res)...
-	  //if (LauncherType != OT_probe && LauncherType != OT_missile)
-	  //TheBored 4-MAR-2009: Fixed "Unknown Ship" server crash bug
-	  if (LauncherType && LauncherType != OT_probe && LauncherType != OT_missile)
- 	  {
- 		  // Safely read the values from the launcher
- 		  szLauncherName = plauncher->GetName();
-
-		  // Safely read the values from the launcher
-		  szLauncherName = plauncher->GetName();
-		  iLauncherUniqueID = plauncher->GetUniqueID();
-		  iLauncherSideUniqueID = plauncher->GetSide()->GetUniqueID();
-	  }
+	  // Safely read the values from the launcher
+	  szLauncherName = plauncher->GetName();
+	  iLauncherUniqueID = plauncher->GetUniqueID();
+	  if (psideLauncher) iLauncherSideUniqueID = psideLauncher->GetUniqueID(); //fix reporting base destruction Fuzz/Imago/Rock/PKK/notjarvis 24-12-09
   }
 
   // TE: fire AGCEvent when base is destroyed
