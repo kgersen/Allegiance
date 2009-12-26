@@ -367,7 +367,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsCPP.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)\AGCEventsCPP.h&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)\AGCEventsCPP.h&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsCPP.h"
 					/>
@@ -378,7 +378,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsCPP.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)\AGCEventsCPP.h&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)\AGCEventsCPP.h&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsCPP.h"
 					/>
@@ -389,7 +389,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsCPP.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)\AGCEventsCPP.h&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)\AGCEventsCPP.h&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsCPP.h"
 					/>
@@ -404,7 +404,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsIDL.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)\AGCEventsIDL.idl&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)\AGCEventsIDL.idl&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsIDL.idl"
 					/>
@@ -415,7 +415,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsIDL.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)\AGCEventsIDL.idl&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)\AGCEventsIDL.idl&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsIDL.idl"
 					/>
@@ -426,7 +426,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsIDL.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)\AGCEventsIDL.idl&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)\AGCEventsIDL.idl&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsIDL.idl"
 					/>
@@ -441,7 +441,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsMC.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsMC.mc"
 					/>
@@ -452,7 +452,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsMC.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsMC.mc"
 					/>
@@ -463,7 +463,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsMC.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)\AGCEventsMC.mc&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsMC.mc"
 					/>
@@ -478,7 +478,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsRC2.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)\AGCEventsRC2.rc2&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)\AGCEventsRC2.rc2&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsRC2.rc2"
 					/>
@@ -489,7 +489,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsRC2.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)\AGCEventsRC2.rc2&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)\AGCEventsRC2.rc2&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsRC2.rc2"
 					/>
@@ -500,7 +500,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsRC2.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)\AGCEventsRC2.rc2&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)\AGCEventsRC2.rc2&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsRC2.rc2"
 					/>
@@ -515,7 +515,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsRCH.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)\AGCEventsRCH.h&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)\AGCEventsRCH.h&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsRCH.h"
 					/>
@@ -526,7 +526,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsRCH.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)\AGCEventsRCH.h&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)\AGCEventsRCH.h&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsRCH.h"
 					/>
@@ -537,7 +537,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Transforming AGCEvents.xml through AGCEventsRCH.xsl"
-						CommandLine="cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)\AGCEventsRCH.h&#x0D;&#x0A;"
+						CommandLine="cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)\AGCEventsRCH.h&#x0D;&#x0A;"
 						AdditionalDependencies="..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml"
 						Outputs="$(OutDir)\AGCEventsRCH.h"
 					/>
