@@ -1434,7 +1434,8 @@ private:
 				//           This addresses (until a better fix) the bug of eyeing enemy ships when in base, in a turret, and
 				//           bomber pilot swtiches viewed sector
 				//          added && (trekClient.GetShip()->GetParentShip() == NULL)
-                if (pClusterFound && (trekClient.GetShip()->GetParentShip() == NULL))
+				//TheRock 4-1-2010 reverted, fixed on the server side.
+                if (pClusterFound)
                 {
                     trekClient.PlaySoundEffect(mouseclickSound);
                     SelectCluster(pClusterFound);
