@@ -3303,9 +3303,8 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 	{
 		if (pmodelGoal->GetObjectType() == OT_probe) 
 		{
-			if (/*pmodelGoal->GetCluster() && */pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip)) 
+			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip)) 
 			{
-				//IprobeIGC* pProbeSelected = pmodelGoal->GetCluster()->GetProbe(pmodelGoal->GetObjectID());
 				IprobeIGC* pProbeSelected = (IprobeIGC*)pmodelGoal;
 				if (pProbeSelected->GetCanRipcord(ripcordSpeed)) 
 				{
@@ -3318,7 +3317,16 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip)) 
 			{
 				IshipIGC* pShipSelected = (IshipIGC*)pmodelGoal;
-				pmodelRipcord = pShipSelected;
+				IhullTypeIGC*   pht = pShipSelected->GetBaseHullType();
+				if (pht) { //TheRock 9-1-2010 fix rev512 (TheRock 13-12-2009)
+					if (GetBaseHullType()->HasCapability(c_habmCanLtRipcord)) {
+						if (pht->HasCapability((c_habmIsRipcordTarget | c_habmIsLtRipcordTarget))) {
+							pmodelRipcord = pShipSelected;
+						} else if (pht->HasCapability(c_habmIsRipcordTarget)) {
+							pmodelRipcord = pShipSelected;
+						}
+					}
+				}
 			}
 		}
 	}
