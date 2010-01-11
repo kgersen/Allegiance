@@ -456,13 +456,14 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		bResetRequired = true;
 		if( bWindowed == true )
 		{
-			_ASSERT( ( m_sD3DDev9.dwCurrentWindowedWidth != 0 ) && ( m_sD3DDev9.dwCurrentWindowedHeight != 0 ) );
+            //Imago - removed 1/10
+			//_ASSERT( ( m_sD3DDev9.dwCurrentWindowedWidth != 0 ) && ( m_sD3DDev9.dwCurrentWindowedHeight != 0 ) );
 			dwWidth = m_sD3DDev9.dwCurrentWindowedWidth;
 			dwHeight = m_sD3DDev9.dwCurrentWindowedHeight; 
 		}
 		else
-		{
-			_ASSERT( ( m_sD3DDev9.dwCurrentFullscreenWidth != 0 ) && ( m_sD3DDev9.dwCurrentFullscreenHeight != 0 ) );
+		{   // Imago Removed - 1/10
+			//_ASSERT( ( m_sD3DDev9.dwCurrentFullscreenWidth != 0 ) && ( m_sD3DDev9.dwCurrentFullscreenHeight != 0 ) );
 			dwWidth = m_sD3DDev9.dwCurrentFullscreenWidth;
 			dwHeight = m_sD3DDev9.dwCurrentFullscreenHeight;
 		}
