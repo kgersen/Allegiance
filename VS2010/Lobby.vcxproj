@@ -1,4 +1,5 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="FZDebug|Win32">
       <Configuration>FZDebug</Configuration>
@@ -520,19 +521,19 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\Lobby\lobbymsg.msg">
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
 </Command>

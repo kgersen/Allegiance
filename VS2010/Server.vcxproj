@@ -172,7 +172,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>.\$(TargetDir);.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
@@ -256,7 +256,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
@@ -297,7 +297,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>.\$(TargetDir);.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
@@ -342,7 +342,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
@@ -397,7 +397,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(TargetDir);$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TargetDir)\..\AGC;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
       <HeaderFileName>%(FileName).h</HeaderFileName>
@@ -592,27 +592,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\FedSrv\fedmsg.msg">
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">mc %(FullPath) -r $(IntDir) -h $(IntDir)
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
