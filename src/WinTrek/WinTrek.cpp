@@ -3936,11 +3936,12 @@ public:
 		}
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
+		// TheBored 05-APR-2010: Removed leading 0 from year, hooray 2010!
 		// mmf added ifs to zero pad MM and DD
-		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
-		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
-		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
-		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
+		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
+		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
+		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
 		//AEM, redesigned ESC menu 7/6/07
 		// mmf 10/07 swapped position of S and G
 		m_pmenu->AddMenuItem(0               , "");
