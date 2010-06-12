@@ -293,17 +293,13 @@ const ShipListIGC*        CstationIGC::GetShips(void) const
 void CstationIGC::Launch(IshipIGC* pship)
 {
     Orientation orientation;
-
-    Vector position;
-    position.x = random(-0.5f, 0.5f);
-    position.y = random(-0.5f, 0.5f);
-    position.z = random(-0.5f, 0.5f);
-
-    Vector  forward;
+    Vector position(random(-0.5f, 0.5f), random(-0.5f, 0.5f), random(-0.5f, 0.5f));
+    Vector forward;
 
     const Orientation&  o = GetOrientation();
-    float   vLaunch = GetMyMission()->GetFloatConstant(c_fcidExitStationSpeed);
+    float   vLaunch = GetMyMission()->GetFloatConstant(c_fcidExitStationSpeed); //imago TODO use m_myLaunchSpeed - this will allow core devs to tweak
 
+	IclusterIGC*    pcluster = GetCluster();
     int nLaunchSlots = m_myStationType.GetLaunchSlots();
     if (nLaunchSlots == 0)
     {
@@ -343,20 +339,24 @@ void CstationIGC::Launch(IshipIGC* pship)
         position += forward * (GetRadius() + pship->GetRadius() + vLaunch * 0.5f);
     }
     else
-    {
+    { 
         position += m_myStationType.GetLaunchPosition(m_undockPosition) * o;
         forward = m_myStationType.GetLaunchDirection(m_undockPosition) * o;
-
         position += forward * (pship->GetRadius() + vLaunch * 0.5f);
+		
+		//Imago TODO finish this 6/10 - need Test mission #16
+		Time    lastUpdate = pcluster->GetLastUpdate();
+		Time    lastLaunch = GetLastLaunch();
+		//space out the launchees a bit if the station is busy....
+		//position = tweaked;
 
         m_undockPosition = (m_undockPosition + 1) % nLaunchSlots;
     }
 
     orientation.Set(forward, o.GetForward());
 
-    IclusterIGC*    pcluster = GetCluster();
-    Time    lastUpdate = pcluster->GetLastUpdate();
 
+    
     pship->SetPosition(position + GetPosition());
     pship->SetOrientation(orientation);
     pship->SetVelocity(forward * vLaunch);
@@ -365,6 +365,7 @@ void CstationIGC::Launch(IshipIGC* pship)
     pship->SetCurrentTurnRate(c_axisRoll, 0.0f);
 
     pship->SetCluster(pcluster);
+	SetLastLaunch(Time());
 }
 
 bool    CstationIGC::InGarage(IshipIGC* pship, const Vector& position)
@@ -530,6 +531,7 @@ const char*          MyStationType::GetModelName(void) const
 {
     return m_pStationData->modelName;
 }
+
 
 const char*          MyStationType::GetName(void) const
 {
