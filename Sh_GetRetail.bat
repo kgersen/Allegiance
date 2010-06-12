@@ -1,15 +1,15 @@
-copy objs10\FZRetail\FedSrv\AllSrv.exe x86
-copy objs10\FZRetail\FedSrv\AllSrv.PDB x86
-copy objs10\FZRetail\AllSrvUI\AllSrvUI.exe x86 
-copy objs10\FZRetail\AllSrvUI\AllSrvUI.PDB x86
-copy objs10\FZRetail\Lobby\AllLobby.exe x86
-copy objs10\FZRetail\Lobby\AllLobby.PDB x86
-copy objs10\FZRetail\WinTrek\Allegiance.exe x86 
-copy objs10\FZRetail\WinTrek\Allegiance.PDB x86
-copy objs10\FZRetail\AGC\AGC.dll x86
-copy objs10\FZRetail\AGC\AGC.PDB x86
-copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.ATL\atl100.dll" x86
-copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.MFC\mfc100.dll" x86
-copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.CRT\msvcp100.dll" x86
-copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.CRT\msvcr100.dll" x86
-copy src\license.txt x86
+copy objs10\FZRetail\FedSrv\AllSrv.exe %1 /Y
+copy objs10\FZRetail\FedSrv\AllSrv.PDB %1 /Y
+copy objs10\FZRetail\AllSrvUI\AllSrvUI.exe %1 /Y
+copy objs10\FZRetail\AllSrvUI\AllSrvUI.PDB %1 /Y
+copy objs10\FZRetail\Lobby\AllLobby.exe %1 /Y
+copy objs10\FZRetail\Lobby\AllLobby.PDB %1 /Y
+copy objs10\FZRetail\WinTrek\Allegiance.exe %1 /Y
+copy objs10\FZRetail\WinTrek\Allegiance.PDB %1 /Y
+copy objs10\FZRetail\AGC\AGC.dll %1 /Y
+copy objs10\FZRetail\AGC\AGC.PDB %1 /Y
+copy "%VS100COMNTOOLS%..\..\VC\redist\%1\Microsoft.VC100.ATL\atl100.dll" %1 /Y
+copy "%VS100COMNTOOLS%..\..\VC\redist\%1\Microsoft.VC100.MFC\mfc100.dll" %1 /Y
+copy "%VS100COMNTOOLS%..\..\VC\redist\%1\Microsoft.VC100.CRT\msvcp100.dll" %1 /Y
+copy "%VS100COMNTOOLS%..\..\VC\redist\%1\Microsoft.VC100.CRT\msvcr100.dll" %1 /Y
+copy src\license.txt %1 /Y
