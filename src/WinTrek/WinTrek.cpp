@@ -9778,13 +9778,13 @@ public:
 
             case TK_ThrottleUp:
             {
-                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) {
+                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) { 
                     if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.7f) ? (trekClient.trekThrottle + 0.3f) : 1.0f;
+                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/11
                         trekClient.joyThrottle = false;
                     } else if (trekClient.GetShip()->GetTurretID() != NA) {
                         ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.7f) ? (cd.jsValues[c_axisThrottle] + 0.3f) : 1.0f;
+                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.8f) ? (cd.jsValues[c_axisThrottle] + 0.2f) : 1.0f;
                         trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
                         trekClient.joyThrottle = false;
                         trekClient.GetShip()->SetControls(cd);
@@ -9797,11 +9797,11 @@ public:
             {
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true)) {
                     if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.7f) ? (trekClient.trekThrottle - 0.3f) : -1.0f;
+                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/11
                         trekClient.joyThrottle = false;
                     } else if (trekClient.GetShip()->GetTurretID() != NA) {
                         ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.7f) ? (cd.jsValues[c_axisThrottle] - 0.3f) : -1.0f;
+                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.8f) ? (cd.jsValues[c_axisThrottle] - 0.2f) : -1.0f;
                         trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
                         trekClient.joyThrottle = false;
                         trekClient.GetShip()->SetControls(cd);
