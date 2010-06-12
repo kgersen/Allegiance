@@ -1,5 +1,4 @@
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pch.h"
 
@@ -113,7 +112,19 @@ HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 {
 	// Create the D3D9 interface.
 	m_sD3DDev9.pD3D9 = Direct3DCreate9( D3D_SDK_VERSION ); //Fix memory leak -Imago 8/2/09
+	char infoBuf[255];
+	GetSystemDirectory( infoBuf, 255 );
+	sprintf(infoBuf,"%s\\rgb9rast.dll",infoBuf);
+	HMODULE hRast = LoadLibrary(infoBuf);
+	if (hRast == 0) {
+		sprintf(infoBuf,"%s\\rgb9rast_1.dll",infoBuf);
+		hRast = LoadLibrary(infoBuf);
+	} else if(hRast != 0) {
+		FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
+		HRESULT hr = m_sD3DDev9.pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+	}
 
+	
 	_ASSERT( m_sD3DDev9.pD3D9 != NULL );
 	if( m_sD3DDev9.pD3D9 == NULL )
 	{
@@ -264,6 +275,18 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 					else
 					{
 						pLogFile->OutputStringV( "SWVP device creation failed: 0x%08x.\n", hr );
+						hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
+														D3DDEVTYPE_SW, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD,
+														hParentWindow,
+														dwCreationFlags,
+														&m_sD3DDev9.d3dPresParams,
+														&m_sD3DDev9.pD3DDevice );
+						if( hr == D3D_OK )
+						{
+							m_sD3DDev9.bHardwareVP = false;
+							m_sD3DDev9.bPureDevice = false;
+							pLogFile->OutputString( "D3DDEVTYPE_SW device created.\n" );
+						}
 					}
 				}
 			}

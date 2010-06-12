@@ -654,7 +654,11 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 	pAdapter->ppAvailableModes = new SAdapterMode *[ eDMD_NumModes ];
 	pAdapter->iTotalModeCount = 0;
 	hr = m_pD3D9->GetDeviceCaps( iAdapter, D3DDEVTYPE_HAL, &pAdapter->devCaps );
-	_ASSERT( hr == D3D_OK );
+	if ( hr != D3D_OK ) {
+		m_pLogFile->OutputString("Using D3DDEVTYPE_SW\n");
+		hr = m_pD3D9->GetDeviceCaps( iAdapter, D3DDEVTYPE_SW, &pAdapter->devCaps );
+	}
+	_ASSERT(hr == D3D_OK);
 
 	for( i=0; i<eDMD_NumModes; i++ )
 	{
@@ -688,7 +692,12 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 											FALSE ) ;
 			if( hr != D3D_OK )
 			{
-				continue;
+				hr = m_pD3D9->CheckDeviceType(	iAdapter,
+								D3DDEVTYPE_SW,
+								dispMode.Format,
+								dispMode.Format, 
+								FALSE ) ;
+				if ( hr != D3D_OK ) continue;
 			}
 			pMode->bHWSupport = true;
 			pMode->bWindowAllowed = false;
@@ -700,6 +709,15 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 			if( hr == D3D_OK )
 			{
 				pMode->bWindowAllowed = true;
+			} else {
+				hr = m_pD3D9->CheckDeviceType(	iAdapter,
+								D3DDEVTYPE_SW,
+								pAdapter->currentDisplayMode.Format,
+								dispMode.Format,
+								TRUE );
+				if( hr == D3D_OK ) {
+					pMode->bWindowAllowed = true;
+				}
 			}
 
 			pMode->d3dDepthStencil = D3DFMT_UNKNOWN;
@@ -717,8 +735,13 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 
 				if( hr != D3D_OK )
 				{
-					// Format not available.
-					continue;
+					hr = m_pD3D9->CheckDeviceFormat(	iAdapter,
+													D3DDEVTYPE_SW,
+													pAdapter->currentDisplayMode.Format,
+													D3DUSAGE_DEPTHSTENCIL,
+													D3DRTYPE_SURFACE,
+													pSupportedDepthStencil[k] );
+					if( hr != D3D_OK ) continue;
 				}
 
 				hr = m_pD3D9->CheckDepthStencilMatch(	iAdapter,
@@ -730,6 +753,16 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 				{
 					pMode->d3dDepthStencil = pSupportedDepthStencil[k];
 					break;
+				} else {
+					hr = m_pD3D9->CheckDepthStencilMatch(	iAdapter,
+														D3DDEVTYPE_SW,
+														pAdapter->currentDisplayMode.Format,
+														dispMode.Format,
+														pSupportedDepthStencil[k] );
+					if( hr == D3D_OK ) {
+						pMode->d3dDepthStencil = pSupportedDepthStencil[k];
+						break;
+					}
 				}
 			}
 			if( pMode->d3dDepthStencil == D3DFMT_UNKNOWN )
