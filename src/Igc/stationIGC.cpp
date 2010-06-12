@@ -347,6 +347,8 @@ void CstationIGC::Launch(IshipIGC* pship)
 		//Imago TODO finish this 6/10 - need Test mission #16
 		Time    lastUpdate = pcluster->GetLastUpdate();
 		Time    lastLaunch = GetLastLaunch();
+		float	m_fDeltaTime = (float)(lastLaunch - lastUpdate);
+		debugf(" *** %s(%i) launch time delta = %f\n", m_myStationType.GetName(), m_myStationType.GetObjectID(), m_fDeltaTime);
 		//space out the launchees a bit if the station is busy....
 		//position = tweaked;
 
@@ -365,7 +367,7 @@ void CstationIGC::Launch(IshipIGC* pship)
     pship->SetCurrentTurnRate(c_axisRoll, 0.0f);
 
     pship->SetCluster(pcluster);
-	SetLastLaunch(Time());
+	SetLastLaunch(Time::Now());
 }
 
 bool    CstationIGC::InGarage(IshipIGC* pship, const Vector& position)

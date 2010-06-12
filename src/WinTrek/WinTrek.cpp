@@ -10281,7 +10281,6 @@ public:
         //oldButton5 = newButton5;
         oldButton6 = newButton6;
 
-		if (bThrottleChange) debugf("******* %f - %f - %f\n",trekClient.trekThrottle, js->controls.jsValues[c_axisThrottle],  trekClient.fOldJoyThrottle);
         return bThrottleChange;
     }
 
