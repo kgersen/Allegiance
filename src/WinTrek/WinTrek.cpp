@@ -6925,15 +6925,21 @@ public:
                 trekClient.HandleAutoDownload(500); // since the mouse is hardware in not full screen, the graphics engine doesn't need much CPU
         }
 
+		if (dtime < 0.017f) //Imago 6/10
+			return;
+
         // receive network messages
         trekClient.m_lastUpdate  = m_timeLastFrame;
         trekClient.m_now         = time;
-        if (FAILED(trekClient.ReceiveMessages()))
-            return;     //bug out
+        if (FAILED(trekClient.ReceiveMessages())) {
+			debugf("*!* frame# %d dropped (net)\n",m_frameID);
+			return;     //bug out
+		}
+            
             // (CRC) Too much spew: ShouldBe ((!trekClient.m_serverOffsetValidF) || (fabs(Time::Now() - trekClient.m_timeLastPing) < 30.0f));
 
         // Update the world
-        DoTrekUpdate(m_timeLastFrame, time, dtime, (m_frameID > 1));
+		DoTrekUpdate(m_timeLastFrame, time, dtime, (m_frameID > 1));
 
         // Update sounds
         m_pSoundEngine->Update();
@@ -7550,7 +7556,6 @@ public:
                                                  (js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  c_fAutopilotDisengage) ||
                                                  (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -c_fAutopilotDisengage) ||
                                                  (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  c_fAutopilotDisengage);
-                                //IMAGO REVIEW NYI THROTTLE? c_axisThrottle 8/16/09 (aarmstrong's issue)
                             }
 
                             if (bControlsInUse)
@@ -9732,6 +9737,7 @@ public:
             break;
 
             //begin imago 8/14/09 mouse wheel
+			
             case TK_ZoomOut:
             case TK_ZoomIn:
             {
@@ -9781,12 +9787,12 @@ public:
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) { 
                     if (!trekClient.GetShip()->GetParentShip()) {
                         trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/11
-                        trekClient.joyThrottle = false;
+                        //trekClient.joyThrottle = false;
                     } else if (trekClient.GetShip()->GetTurretID() != NA) {
                         ControlData cd = trekClient.GetShip()->GetControls();
                         cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.8f) ? (cd.jsValues[c_axisThrottle] + 0.2f) : 1.0f;
                         trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
-                        trekClient.joyThrottle = false;
+                        //trekClient.joyThrottle = false;
                         trekClient.GetShip()->SetControls(cd);
                     }
                 }
@@ -9809,6 +9815,7 @@ public:
                 }
             }
             break;
+			
             // end imago
 
             case TK_DebugTest1:
@@ -10274,6 +10281,7 @@ public:
         //oldButton5 = newButton5;
         oldButton6 = newButton6;
 
+		if (bThrottleChange) debugf("******* %f - %f - %f\n",trekClient.trekThrottle, js->controls.jsValues[c_axisThrottle],  trekClient.fOldJoyThrottle);
         return bThrottleChange;
     }
 
