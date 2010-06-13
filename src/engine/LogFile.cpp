@@ -70,6 +70,7 @@ void CLogFile::OutputString( const char * szString )
 		DWORD nBytes;
 		::WriteFile(m_hLogFile, szString, strlen(szString), &nBytes, NULL);
 	}
+	debugf(szString);
 }
 
 
@@ -87,7 +88,6 @@ void CLogFile::OutputStringV( const char * szFormat, ... )
 		va_start( vl, szFormat );
 		_vsnprintf_s( szTemp, size, (size-1), szFormat, vl );
 		va_end(vl);
-
 		OutputString( szTemp );
 	}
 }

@@ -112,18 +112,24 @@ HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 {
 	// Create the D3D9 interface.
 	m_sD3DDev9.pD3D9 = Direct3DCreate9( D3D_SDK_VERSION ); //Fix memory leak -Imago 8/2/09
-	char infoBuf[255];
-	GetSystemDirectory( infoBuf, 255 );
-	sprintf(infoBuf,"%s\\rgb9rast.dll",infoBuf);
-	HMODULE hRast = LoadLibrary(infoBuf);
+	HMODULE hRast = LoadLibrary("rgb9rast.dll");
 	if (hRast == 0) {
-		sprintf(infoBuf,"%s\\rgb9rast_1.dll",infoBuf);
-		hRast = LoadLibrary(infoBuf);
-	} else if(hRast != 0) {
-		FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
-		HRESULT hr = m_sD3DDev9.pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+		hRast = LoadLibrary("rgb9rast_1.dll");
+		if (hRast == 0) {
+			hRast = LoadLibrary("rgb9rast_2.dll");
+		}
 	}
-
+	if(hRast != 0) {
+			FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
+			HRESULT hr = m_sD3DDev9.pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+			if (hr == D3D_OK) {
+				pLogFile->OutputString( "DX registered the SW Rasterizer.\n" );
+			} else {
+				pLogFile->OutputString( "DX did not register the SW Rasterizer!\n" );
+			}
+	} else {
+		pLogFile->OutputString( "SW Rasterizer failed to load.\n" );
+	}
 	
 	_ASSERT( m_sD3DDev9.pD3D9 != NULL );
 	if( m_sD3DDev9.pD3D9 == NULL )
