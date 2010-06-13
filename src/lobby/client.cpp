@@ -250,50 +250,8 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
   
   switch (pfm->fmid)
   {
-    // TODO: remove this post-beta.
-    case FM_C_LOGON_LOBBY_OLD:
-    {
-#ifndef NO_MSG_CRC
-      bool fCRC = g_fLogonCRC;
-      g_fLogonCRC = true; // assume always yes until we find one via OnBadCRC that is not.
-#endif      
-      CASTPFM(pfmLogon, C, LOGON_LOBBY_OLD, pfm);
-
-      // no need to authenticate - they're out of sync and need to auto-update
-
-
-      if (g_pAutoUpdate && pfmLogon->crcFileList != g_pAutoUpdate->GetFileListCRC())
-      {
-        // they need auto update
-        BEGIN_PFM_CREATE(*pthis, pfmAutoUpdate, L, AUTO_UPDATE_INFO)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPServer(), CB_ZTS)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPInitialDir(), CB_ZTS)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPAccount(), CB_ZTS)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPPassword(), CB_ZTS)
-        END_PFM_CREATE
-        pfmAutoUpdate->crcFileList = g_pAutoUpdate->GetFileListCRC();
-        pfmAutoUpdate->nFileListSize = g_pAutoUpdate->GetFileListSize();
-      }
-      else 
-      {
-        // tell client that his version is wrong
-        char * szReason = "Your game's version did not get auto-updated properly.  Please try again later.";
-        BEGIN_PFM_CREATE(*pthis, pfmLogonNack, L, LOGON_NACK)
-          FM_VAR_PARM((char *)szReason, CB_ZTS)
-        END_PFM_CREATE
-        pfmLogonNack->fRetry = false;
-      }
-
-#ifndef NO_MSG_CRC
-      // Big hack to communicate w/ old non-crc clients. This is the ONLY time we send them any non-crc'd messages 
-      // by increasing the announced size of the message, the client will skip past the crc.
-      if (!fCRC)
-        *(CB*)(pthis->BuffOut()) += sizeof(int);
-#endif      
-      pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
-    }
-    break;
-
+    // Imago removed old LOGIN message handler "post-beta" 6/10
+ 
 	// Imago was here 6/26/08 7/5/08
     case FM_C_LOGON_LOBBY:
     {
