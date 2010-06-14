@@ -1908,7 +1908,7 @@ public:
 		bool goToObject = true;
 		//		Check to see if the mouse moved, allowing some room for error when you are moving the mouse around fast to select a object target 
 		if ( ( ( m_pointMouseStart.X() - m_pointMouseStop.X() ) * ( m_pointMouseStart.X() - m_pointMouseStop.X() ) )+
-			( ( m_pointMouseStart.Y() - m_pointMouseStop.Y() ) * ( m_pointMouseStart.Y() - m_pointMouseStop.Y() ) ) > 6000 )
+			( ( m_pointMouseStart.Y() - m_pointMouseStop.Y() ) * ( m_pointMouseStart.Y() - m_pointMouseStop.Y() ) ) > 100 ) //Imago Reduced 6/10 #33
 			goToObject = false;
 
         if (pmodelMin && goToObject) //was if (pmodelMin)
