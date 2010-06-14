@@ -342,15 +342,19 @@ void CstationIGC::Launch(IshipIGC* pship)
     { 
         position += m_myStationType.GetLaunchPosition(m_undockPosition) * o;
         forward = m_myStationType.GetLaunchDirection(m_undockPosition) * o;
-        position += forward * (pship->GetRadius() + vLaunch * 0.5f);
-		
-		//Imago TODO finish this 6/10 - need Test mission #16
+
+		//Imago 6/10
 		Time    lastUpdate = pcluster->GetLastUpdate();
 		Time    lastLaunch = GetLastLaunch();
-		float	m_fDeltaTime = (float)(lastLaunch - lastUpdate);
-		debugf(" *** %s(%i) launch time delta = %f\n", m_myStationType.GetName(), m_myStationType.GetObjectID(), m_fDeltaTime);
-		//space out the launchees a bit if the station is busy....
-		//position = tweaked;
+		float	m_fDeltaTime = (float)(lastUpdate - lastLaunch);
+		debugf(" *** %s(%i) launch time cluster delta = %f\n\n", m_myStationType.GetName(), m_myStationType.GetObjectID(), m_fDeltaTime);
+		if (m_fDeltaTime <= 0.1f) {
+			 position += forward * (pship->GetRadius() + vLaunch * 0.85f);
+			 debugf("*** %s(%i) position adjusted to ensure smooth take-off\n",pship->GetName(),pship->GetObjectID());
+		} else {
+			 position += forward * (pship->GetRadius() + vLaunch * 0.5f);
+		}
+		//
 
         m_undockPosition = (m_undockPosition + 1) % nLaunchSlots;
     }
