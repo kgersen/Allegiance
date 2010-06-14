@@ -39,7 +39,11 @@ bool g_bAskForCallSign = true ; // wlp 2006
 // Trek Application Implementation
 //
 //////////////////////////////////////////////////////////////////////////////
-#define GAME_REG_KEY        "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0"
+#ifdef _ALLEGIANCE_PROD_
+#define GAME_REG_KEY   "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0
+#else
+#define GAME_REG_KEY        "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.1"
+#endif
 
 typedef DWORD (*EBUPROC) (LPCTSTR lpRegKeyLocation, LPCTSTR lpEULAFileName, LPCSTR lpWarrantyFileName, BOOL fCheckForFirstRun);
 
