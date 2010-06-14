@@ -122,7 +122,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	  char * szReason;
 
 	  // if we got this far we are not on the approved list fall through to reject below
-	  szReason = "Your server IP address is not approved for connection to this Lobby.  Please contact the Lobby Amin.";
+	  szReason = "Your server IP address is not approved for connection to this Lobby.  Please contact the Lobby Admin."; //Imago fix typo 6/10
 	  // end mmf
 	  
       if (pfmLogon->verLobby > LOBBYVER_LS)

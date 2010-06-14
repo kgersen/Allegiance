@@ -157,10 +157,23 @@ Global g;
 //#include "queries.h"
 
 #if defined(ALLSRV_STANDALONE)
+TMap<ZString, int> m_CharMap;
   int GetNextCharacterID()
   {
     static int s_nID;
     return ++s_nID;
+  }
+
+  int GetStateID(ZString CharName) {
+	  int id = -1;
+	  if (m_CharMap.Find(CharName,id)) {
+		  debugf("Existing: %s = %i\n",CharName,id);
+		  return id;
+	  }
+	  id  = GetNextCharacterID();
+	  m_CharMap.Set(CharName,id);
+	  debugf("New: %s = %i\n",CharName,id);
+	  return id;
   }
 #endif // defined(ALLSRV_STANDALONE)
 
@@ -5482,7 +5495,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           {
             fValid = true;
             lstrcpy(pqd->szCharacterName, FM_VAR_REF(pfmLogon, CharacterName));
-            pqd->characterID = GetNextCharacterID();
+            pqd->characterID = GetStateID(pqd->szCharacterName); //Imago 6/10
             pqd->fCanCheat = false;
           }
           else
@@ -7602,7 +7615,11 @@ IHTTPSession * BeginConfigDownload()
   ZString strBuild(vi.GetFileBuildNumber());
 
   char szConfig[MAX_PATH];
-  lstrcpy(szConfig, "http://Allegiance.zone.com/Allegiance.cfg");
+#if defined(_ALLEGIANCE_PROD_)
+  lstrcpy(szConfig, "http://autoupdate.alleg.net/allegiance.cfg"); //Imago 6/10
+#else
+  lstrcpy(szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg"); //Imago 6/10
+#endif
 
   CRegKey key;
   if (ERROR_SUCCESS == key.Open(HKEY_LOCAL_MACHINE, HKLM_FedSrv, KEY_READ))

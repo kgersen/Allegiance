@@ -39,7 +39,7 @@ bool g_bAskForCallSign = true ; // wlp 2006
 // Trek Application Implementation
 //
 //////////////////////////////////////////////////////////////////////////////
-#ifdef _ALLEGIANCE_PROD_
+#if defined(_ALLEGIANCE_PROD_)
 #define GAME_REG_KEY   "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0
 #else
 #define GAME_REG_KEY        "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.1"
