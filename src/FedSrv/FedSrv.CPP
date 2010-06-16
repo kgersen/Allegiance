@@ -164,15 +164,14 @@ TMap<ZString, int> m_CharMap;
     return ++s_nID;
   }
 
+  //Imago 6/10 #35 - Dropped player stats are reset
   int GetStateID(ZString CharName) {
-	  int id = -1;
+	  int id = NA;
 	  if (m_CharMap.Find(CharName,id)) {
-		  debugf("Existing: %s = %i\n",CharName,id);
 		  return id;
 	  }
 	  id  = GetNextCharacterID();
 	  m_CharMap.Set(CharName,id);
-	  debugf("New: %s = %i\n",CharName,id);
 	  return id;
   }
 #endif // defined(ALLSRV_STANDALONE)
