@@ -7614,7 +7614,7 @@ IHTTPSession * BeginConfigDownload()
   ZString strBuild(vi.GetFileBuildNumber());
 
   char szConfig[MAX_PATH];
-#if defined(_ALLEGIANCE_PROD_)
+#ifdef _ALLEGIANCE_PROD_
   lstrcpy(szConfig, "http://autoupdate.alleg.net/allegiance.cfg"); //Imago 6/10
 #else
   lstrcpy(szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg"); //Imago 6/10
