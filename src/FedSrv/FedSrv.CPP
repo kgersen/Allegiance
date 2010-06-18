@@ -31,9 +31,24 @@ static MprLogModule *tMod;
 #endif
 static MprMutex	*mutex;
 
-const int c_iDefaultQServerPort = 25000; //Imago 6/10
-extern SOCKET SetUpListener(const char* pcAddress, int nPort);  //Imago 6/10
-extern void QServerCnxn(SOCKET QServerSocket); //Imago 6/10
+//Imago 6/10
+const int c_iDefaultQServerPort = 25000; 
+extern SOCKET SetUpListener(const char* pcAddress, int nPort); 
+extern void QServerCnxn(SOCKET QServerSocket);
+
+ZString GetLocalComputerName() { 
+  TCHAR chrComputerName[MAX_COMPUTERNAME_LENGTH + 1]; 
+  ZString strRetVal; 
+  DWORD dwBufferSize = MAX_COMPUTERNAME_LENGTH + 1; 
+  
+  if(GetComputerName(chrComputerName,&dwBufferSize)) { 
+    strRetVal = chrComputerName; 
+  } else { 
+    strRetVal = ""; 
+  } 
+
+  return(strRetVal); 
+}
 
 static void doASGS(void* data, MprThread *threadp) {
 	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
@@ -8767,10 +8782,16 @@ void LoadSettings()
         {
           WSADATA WSAData;
           char szHostName[32]; // length of machine name--also long enough for ip address if that's what we get - Imago increased for IPv6 6/10
+		  szHostName[0] = '\0';
           WSAStartup(MAKEWORD(1,1), &WSAData);
           gethostname(szHostName, sizeof(szHostName));
           WSACleanup();
-          g.strLocalAddress = szHostName;
+		  g.strLocalAddress = GetLocalComputerName();
+		  if (szHostName == '\0') {
+			
+		  } else {
+			g.strLocalAddress = szHostName;
+		  }
         }
 
 		// KGJV #114
