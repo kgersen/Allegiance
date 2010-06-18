@@ -1195,7 +1195,10 @@ public:
                 wingID                
             );
         }
-        m_pcomboWing->SetSelection(trekClient.GetShip()->GetWingID());
+		
+        //m_pcomboWing->SetSelection(trekClient.GetShip()->GetWingID());
+		m_pcomboWing->SetSelection(trekClient.GetSavedWingAssignment()); //Imago #91 6/10
+		
         AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
 
 
