@@ -2951,6 +2951,29 @@ void WinTrekClient::SaveCharacterName(ZString strName)
         RegCloseKey(hKey);
     }
 }
+int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
+	HKEY hKey;
+	DWORD dwType = REG_DWORD;
+    DWORD dwWing = 1; // Default Wing Assignment is attack
+    DWORD dwSize = sizeof(DWORD);
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
+    {
+        RegQueryValueEx(hKey, "WingAssignment", NULL, &dwType, (PBYTE)&dwWing, &dwSize);
+        RegCloseKey(hKey);
+    }
+
+    return (int)dwWing;
+}
+void WinTrekClient::SaveWingAssignment(int index){ // kolie 6/10
+	HKEY hKey;
+	DWORD dwWing;
+	dwWing = (DWORD)index;
+	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
+	{
+		RegSetValueEx(hKey, "WingAssignment", NULL, REG_DWORD,  (PBYTE)&dwWing, sizeof(DWORD) );
+		RegCloseKey(hKey);
+	}
+}
 
 // KGJV : added utility functions for cores & server names
 // find the user friendly name of a core - return param if not found

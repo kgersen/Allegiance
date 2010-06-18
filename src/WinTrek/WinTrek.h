@@ -295,6 +295,9 @@ class  WinTrekClient :
         int               GetGrooveLevel();
         ZString           GetSavedCharacterName();
         void              SaveCharacterName(ZString strName);
+
+		int GetSavedWingAssignment(); // kolie 6/10
+		void SaveWingAssignment(int wing); // kolie 6/10
         
 		// KGJV : added utility functions for cores & server names
 		ZString           CfgGetCoreName(const char *s);

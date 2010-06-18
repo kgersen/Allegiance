@@ -2566,6 +2566,7 @@ public:
 
     bool OnWingCombo(int index)
     {
+		trekClient.SaveWingAssignment(index); // kolie 6/10
         trekClient.SetWing(index);
         return true;                
     }
