@@ -269,6 +269,8 @@ struct Global
     strLobbyServer.SetEmpty();
     strAuthServer.SetEmpty();
     strArtPath.SetEmpty();
+	strLocalAddress.SetEmpty(); //Imago 6/10
+    strLocation.SetEmpty(); //Imago 6/10
 #if !defined(ALLSRV_STANDALONE)
     strSQLConfig.Empty();
 #endif    

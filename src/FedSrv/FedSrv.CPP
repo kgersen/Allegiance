@@ -8786,12 +8786,6 @@ void LoadSettings()
           WSAStartup(MAKEWORD(1,1), &WSAData);
           gethostname(szHostName, sizeof(szHostName));
           WSACleanup();
-		  g.strLocalAddress = GetLocalComputerName();
-		  if (szHostName == '\0') {
-			
-		  } else {
-			g.strLocalAddress = szHostName;
-		  }
         }
 
 		// KGJV #114
@@ -9450,7 +9444,9 @@ int __cdecl main(int argc, char *argv[])
         return 255;
     }
 	//printf("Establishing the listener...\n");
-
+	if (g.strLocalAddress.IsEmpty()) {
+        g.strLocalAddress = GetLocalComputerName();
+    }
 
 	g.QServerSocket = SetUpListener(g.strLocalAddress, htons(c_iDefaultQServerPort));
 	if (g.QServerSocket == INVALID_SOCKET) {

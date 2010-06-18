@@ -29,7 +29,7 @@ SOCKET SetUpListener(const char* pcAddress, int nPort)
             return sd;
         }
         else {
-            printf("%s\n",(PCC)WSAGetLastErrorMessage("bind() failed"));
+            printf("%s\n",WSAGetLastErrorMessage("bind() failed"));
         }
     }
 
