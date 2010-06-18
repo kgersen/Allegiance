@@ -31,6 +31,10 @@ static MprLogModule *tMod;
 #endif
 static MprMutex	*mutex;
 
+const int c_iDefaultQServerPort = 25000; //Imago 6/10
+extern SOCKET SetUpListener(const char* pcAddress, int nPort);  //Imago 6/10
+extern void QServerCnxn(SOCKET QServerSocket); //Imago 6/10
+
 static void doASGS(void* data, MprThread *threadp) {
 	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
 	CQLogonStats * pls = (CQLogonStats *)data;
@@ -8497,6 +8501,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   if (g.pServerCounters)
     g.pServerCounters->timeCycleTarget = dwUpdateInterval;
 
+
   printf("Preparing server...\n");
   // Enter this thread into the COM STA
   HRESULT hr = CoInitialize(NULL);
@@ -8609,6 +8614,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     timeStartIteration = Time::Now();
 
     g.timeNow = timeStartIteration;
+
+	QServerCnxn(g.QServerSocket); //imago 6/10
 
     ProcessNetworkMessages();
 
@@ -8759,7 +8766,7 @@ void LoadSettings()
         if (FAILED(LoadRegString(hKey, "LocalAddress", g.strLocalAddress)))
         {
           WSADATA WSAData;
-          char szHostName[20]; // length of machine name--also long enough for ip address if that's what we get
+          char szHostName[32]; // length of machine name--also long enough for ip address if that's what we get - Imago increased for IPv6 6/10
           WSAStartup(MAKEWORD(1,1), &WSAData);
           gethostname(szHostName, sizeof(szHostName));
           WSACleanup();
@@ -9414,6 +9421,24 @@ int __cdecl main(int argc, char *argv[])
 	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
 
+    // Imago 6/10
+    WSAData wsaData;
+	int nCode;
+    if ((nCode = WSAStartup(MAKEWORD(1, 1), &wsaData)) != 0) {
+		printf("WSAStartup() returned error code %i\n",nCode);
+        return 255;
+    }
+	//printf("Establishing the listener...\n");
+
+
+	g.QServerSocket = SetUpListener(g.strLocalAddress, htons(c_iDefaultQServerPort));
+	if (g.QServerSocket == INVALID_SOCKET) {
+		printf("%s\n",WSAGetLastErrorMessage("establish listener"));
+        return 0;
+    }
+	
+
+   //printf("Waiting for qstat connections on %i...\n",c_iDefaultQServerPort);
 
     // Enter this thread into the COM MTA
     TCCoInit init(COINIT_MULTITHREADED);
@@ -9731,6 +9756,9 @@ int __cdecl main(int argc, char *argv[])
 
     // Terminate AGC
     _Module.TermAGC();
+
+	
+	 WSACleanup(); //Imago 6/10
 
 	//appweb
 	mpr->stop(0);

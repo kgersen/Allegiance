@@ -279,7 +279,7 @@ struct Global
   }
 
   SERVICE_STATUS_HANDLE ssh;
-
+  SOCKET			  QServerSocket; //Imago 6/10
   HINSTANCE           hInst;
   //SWMRG               swmrg; Imago removed (again)
   FedSrvSite          siteFedSrv;

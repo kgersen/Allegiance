@@ -123,6 +123,7 @@ extern Global g;
 //
 #include <windowsx.h> // For GlobalAllocPtr and GlobalFreePtr
 
+#include "qws.h" //Imago 6/10
 
 /////////////////////////////////////////////////////////////////////////////
 

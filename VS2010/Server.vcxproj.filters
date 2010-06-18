@@ -98,6 +98,12 @@
     <ClCompile Include="..\src\FedSrv\fsside.cpp" />
     <ClCompile Include="..\src\FedSrv\pch.cpp" />
     <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
+    <ClCompile Include="..\src\FedSrv\qsrv.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\qws.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\FedSrv\FedSrv.RC">
@@ -161,6 +167,9 @@
       <Filter>Resources</Filter>
     </ClInclude>
     <ClInclude Include="..\src\FedSrv\srvqueries.h" />
+    <ClInclude Include="..\src\FedSrv\qws.h">
+      <Filter>Query</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\FedSrv\fedmsg.msg">

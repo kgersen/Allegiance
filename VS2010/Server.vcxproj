@@ -655,6 +655,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\FedSrv\qsrv.cpp" />
+    <ClCompile Include="..\src\FedSrv\qws.cpp" />
     <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -700,6 +702,7 @@
     <ClInclude Include="..\src\FedSrv\fsship.h" />
     <ClInclude Include="..\src\FedSrv\fsside.h" />
     <ClInclude Include="..\src\FedSrv\pch.h" />
+    <ClInclude Include="..\src\FedSrv\qws.h" />
     <ClInclude Include="..\src\FedSrv\resource.h" />
     <ClInclude Include="..\src\FedSrv\srvqueries.h" />
   </ItemGroup>
