@@ -6,7 +6,7 @@ const int kBufferSize = 1024;
         
 SOCKET SetUpListener(const char* pcAddress, int nPort);
 void QServerCnxn(SOCKET ListeningSocket);
-bool EchoIncomingPackets(SOCKET sd);
+bool UNSPackets(SOCKET sd);
 
 SOCKET SetUpListener(const char* pcAddress, int nPort)
 {
@@ -29,7 +29,7 @@ SOCKET SetUpListener(const char* pcAddress, int nPort)
             return sd;
         }
         else {
-            printf("%s\n",WSAGetLastErrorMessage("bind() failed"));
+            printf("%s\n",(PCC)WSAGetLastErrorMessage("bind() failed"));
         }
     }
 
@@ -41,14 +41,14 @@ DWORD WINAPI QueryHandler(void* sd_)
 {
     int nRetval = 0;
     SOCKET sd = (SOCKET)sd_;
-
-	/* TODO
-    if (!TestPackets(sd)) {
-       printf("%s\n",WSAGetLastErrorMessage("test packets failed"));
+	u_long iMode = 0;
+	int ret = ioctlsocket(sd, FIONBIO, &iMode);
+    if (!UNSPackets(sd)) {
+       printf("%s\n",(PCC)WSAGetLastErrorMessage("UNS kilo delivery failed"));
         nRetval = 3;
     }
-	*/
-
+	iMode = 1;
+	ret = ioctlsocket(sd, FIONBIO, &iMode);
     if (ShutdownConnection(sd)) {
       //TODO limits
     }
@@ -76,5 +76,41 @@ DWORD WINAPI QueryHandler(void* sd_)
 		return;
 	}
 }
+
+ bool UNSPackets(SOCKET sd)
+{
+    char acReadBuffer[kBufferSize]; //TODO grow past 1KB for big responses
+    int nReadBytes;
+    do {
+        nReadBytes = recv(sd, acReadBuffer, kBufferSize, 0);
+        if (nReadBytes > 0) {
+            printf("Received %i bytes from client.\n",nReadBytes);
+        
+            int nSentBytes = 0;
+            while (nSentBytes < nReadBytes) {
+                int nTemp = send(sd, acReadBuffer + nSentBytes,
+                        nReadBytes - nSentBytes, 0);
+                if (nTemp > 0) {
+                   printf("Sent %i bytes back to client.\n",nTemp);
+                    nSentBytes += nTemp;
+                }
+                else if (nTemp == SOCKET_ERROR) {
+                    return false;
+                }
+                else {
+                    printf("Peer unexpectedly dropped connection!\n");
+                    return true;
+                }
+            }
+        }
+        else if (nReadBytes == SOCKET_ERROR) {
+            return false;
+        }
+    } while (nReadBytes != 0);
+
+    printf("Connection closed by peer.\n");
+    return true;
+}
+
 
 

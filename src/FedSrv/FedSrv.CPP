@@ -9433,7 +9433,7 @@ int __cdecl main(int argc, char *argv[])
 
 	g.QServerSocket = SetUpListener(g.strLocalAddress, htons(c_iDefaultQServerPort));
 	if (g.QServerSocket == INVALID_SOCKET) {
-		printf("%s\n",WSAGetLastErrorMessage("establish listener"));
+		printf("%s\n",(PCC)WSAGetLastErrorMessage("establish listener"));
         return 0;
     }
 	

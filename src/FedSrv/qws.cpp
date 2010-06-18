@@ -77,8 +77,7 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix,
     int nErrorID /* = 0 */)
 {
     // Build basic error string
-    ZString zErrorBuffer;
-    zErrorBuffer = pcMessagePrefix;
+    ZString zErrorBuffer = new ZString(pcMessagePrefix);
 	zErrorBuffer += ": ";
 
 	ErrorEntry* pEnd = gaErrorList + kNumMessages;
@@ -91,7 +90,8 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix,
         // Didn't find error in list, so make up a generic one
          zErrorBuffer += "unknown error";
     }
-     zErrorBuffer += " (" + Target.nID;
+     zErrorBuffer += " (";
+	 zErrorBuffer += Target.nID;
 	 zErrorBuffer += ")\n";
 
     // Finish error message off and return it.
