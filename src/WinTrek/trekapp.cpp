@@ -40,7 +40,7 @@ bool g_bAskForCallSign = true ; // wlp 2006
 //
 //////////////////////////////////////////////////////////////////////////////
 #ifdef _ALLEGIANCE_PROD_
-#define GAME_REG_KEY   "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0
+#define GAME_REG_KEY   "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0"
 #else
 #define GAME_REG_KEY        "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.1"
 #endif
