@@ -4948,14 +4948,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       break;
     }
 
-    case FM_CS_SET_WINGID:
+    case FM_CS_SET_WINGID: //Imago modified to allow clients to set the starting wing. #91 6/10
     {
       if (!pfsMission)
         break;
 
       IsideIGC* pside = pfsPlayer->GetSide();
-      if (pside->GetObjectID() < 0)
-          break;
+      //if (pside->GetObjectID() < 0)
+          //break; //Imago commented 6/10 #91
 
       CASTPFM(pfmSW, CS, SET_WINGID, pfm);
 

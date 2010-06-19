@@ -42,7 +42,8 @@ CshipIGC::CshipIGC(void)
     m_nDeaths(0),
     m_nEjections(0),
     m_sidFlag(NA),
-    m_ripcordDebt(0.0f)
+    m_ripcordDebt(0.0f),
+	m_wingID(NA) //Imago 6/10 #91
 {
     //Start with a single kill's worth of exp
     SetExperience(1.0f);
@@ -121,7 +122,7 @@ void    CshipIGC::ReInitialize(DataShipIGC * dataShip, Time now)
     SetSide(pside);
 
     m_shipID = dataShip->shipID;
-    m_wingID = 0; //dataShip->wingID;
+    m_wingID = NA; //dataShip->wingID;
 
     m_nDeaths = dataShip->nDeaths;
     m_nEjections = dataShip->nEjections;

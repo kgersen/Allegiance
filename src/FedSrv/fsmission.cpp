@@ -590,7 +590,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   // Set their stuff appropriate for this side
   assert(pfsPlayer->GetMoney() == 0);
 
-  pfsPlayer->GetIGCShip()->SetWingID(1); // TE: Default wing is Attack(1)
+  //pfsPlayer->GetIGCShip()->SetWingID(1); // TE: Default wing is Attack(1)  //Imago removed 6/10 #91
   if (!HasPlayers(pside, true)) // we have a new team leader
   {
     fTeamLeader = true;
@@ -641,13 +641,15 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   pfsPlayer->SetSide(this, pside);
   // pfsPlayer->SetReady(true); Imago commented out so afk not reset
 
-  // set them on their starting wing
-  BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
-  END_PFM_CREATE
-  pfmSetWingID->wingID = pfsPlayer->GetIGCShip()->GetWingID();
-  pfmSetWingID->shipID = shipid;
-  pfmSetWingID->bCommanded = true;
-  g.fm.SendMessages(pfsSide->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+  	//Imago 6/10 we must set server-side default wing to NA! #91
+  if (pfsPlayer->GetIGCShip()->GetWingID() != NA) {
+	BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
+	END_PFM_CREATE
+	pfmSetWingID->wingID = pfsPlayer->GetIGCShip()->GetWingID();
+	pfmSetWingID->shipID = shipid;
+	pfmSetWingID->bCommanded = true;
+	g.fm.SendMessages(pfsSide->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+  }
 
   if (fTeamLeader)
   {
@@ -1048,7 +1050,18 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
 
     if (shipidNewOwner != NA) // somebody's getting promoted
     {
-      // announce new leader
+		if (shipidNewOwner > 0) {
+			//set command wing Imago 6/10
+			BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
+			END_PFM_CREATE
+			pfmSetWingID->wingID = 0;
+			pfmSetWingID->shipID = shipidNewOwner;
+			pfmSetWingID->bCommanded = true;
+			g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+			GetLeader(iSideNewOwner)->GetIGCShip()->SetWingID(0);
+		}
+
+	// announce new leader
       BEGIN_PFM_CREATE(g.fm, pfmSetTeamLeader, CS, SET_TEAM_LEADER)
       END_PFM_CREATE
       pfmSetTeamLeader->shipID = shipidNewOwner;
@@ -1063,6 +1076,8 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
       }
     }
   }
+
+
 
   g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
 
@@ -1463,11 +1478,11 @@ void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
 
   if (pfsOldLeader->GetIGCShip()->GetWingID() == 0)
   {
-    pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing
+    pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing //Imago #91 TODO
 
     BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
     END_PFM_CREATE
-    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing
+    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing  //Imago #91 TODO
     pfmSetWingID->shipID = pfsOldLeader->GetShipID();
     pfmSetWingID->bCommanded = true;
   }
