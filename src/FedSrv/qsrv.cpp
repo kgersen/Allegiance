@@ -79,14 +79,27 @@ DWORD WINAPI QueryHandler(void* sd_)
 
  bool UNSPackets(SOCKET sd)
 {
-    char acReadBuffer[kBufferSize]; //TODO grow past 1KB for big responses
+	ZString zQRequest;
+	zQRequest.SetEmpty();
+	char acReadBuffer[kBufferSize] = {'\0'};
     int nReadBytes;
     do {
         nReadBytes = recv(sd, acReadBuffer, kBufferSize, 0);
         if (nReadBytes > 0) {
-            printf("Received %i bytes from client.\n",nReadBytes);
-        
-            int nSentBytes = 0;
+			zQRequest += acReadBuffer;
+		} else if (nReadBytes == SOCKET_ERROR) {
+            return false;
+        }
+    } while (nReadBytes != 0);
+
+	//ZString zQResponse = GetQResponse(zQRequest); TODO
+
+    printf("Connection closed by peer.\nSent: %s",(PCC)zQRequest);
+    return true;
+}
+
+ /* TODO
+   int nSentBytes = 0;
             while (nSentBytes < nReadBytes) {
                 int nTemp = send(sd, acReadBuffer + nSentBytes,
                         nReadBytes - nSentBytes, 0);
@@ -103,14 +116,5 @@ DWORD WINAPI QueryHandler(void* sd_)
                 }
             }
         }
-        else if (nReadBytes == SOCKET_ERROR) {
-            return false;
-        }
-    } while (nReadBytes != 0);
-
-    printf("Connection closed by peer.\n");
-    return true;
-}
-
-
+		*/
 
