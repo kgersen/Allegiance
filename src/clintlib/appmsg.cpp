@@ -2993,6 +2993,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         case FM_S_ENTER_GAME:
         {
             ClearLoadout ();
+            LoadCustomLoadoutFile (); //AaronMoore 1/10
             OnEnterGame();
         }
         break;

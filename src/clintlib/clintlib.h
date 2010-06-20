@@ -808,6 +808,11 @@ public: //todo: make protected
 
     CachedLoadoutList               m_loadouts;
 
+	//AaronMoore 1/10
+    // An array (0-9) of Loadout Lists, each containing one or more Hull Types
+    static const int                MAX_CUSTOM_LOADOUTS = 10;
+    CachedLoadoutList *             m_customLoadouts;
+
     IAutoDownload *                 m_pAutoDownload;
 
 #ifdef USEAUTH
@@ -1313,11 +1318,24 @@ public:
         SaveLoadout(m_ship);
     }
 
+	//AaronMoore 1/10
+    CachedLoadoutLink*  SaveCustomLoadout(IshipIGC* pship, int num)
+    {
+        assert(num >= 0 && num < MAX_CUSTOM_LOADOUTS);
+        return SaveLoadout(pship, m_customLoadouts[num]);
+    }
+
     CachedLoadoutLink*  SaveLoadout(IshipIGC* pship)
+    {
+        return SaveLoadout(pship, m_loadouts); //AaronMoore 1/10
+    }
+
+	//AaronMoore 1/10
+    CachedLoadoutLink*  SaveLoadout(IshipIGC* pship, CachedLoadoutList & loadoutList)
     {
         IhullTypeIGC*   pht = pship->GetBaseHullType();
 
-        CachedLoadoutLink*  pcll = GetLoadoutLink(pht);
+        CachedLoadoutLink*  pcll = GetLoadoutLink(pht, loadoutList);
         if (pcll)
         {
             pcll->data().cpl.purge();
@@ -1331,7 +1349,7 @@ public:
         }
 
         assert (pcll);
-        m_loadouts.first(pcll);
+        loadoutList.first(pcll);
 
         {
             for (PartLinkIGC*   ppl = pship->GetParts()->first(); (ppl != NULL); ppl = ppl->next())
@@ -1494,9 +1512,9 @@ public:
             }
         }
         else if (phtBase && !phtBase->HasCapability(c_habmLifepod))
-            budget = ReplaceLoadout(pshipSink, pstation, phtBase, budget);
+            budget = ReplaceLoadout(pshipSink, pstation, phtBase, budget, m_loadouts); //AaronMoore 1/10
         else
-            budget = ReplaceLoadout(pshipSink, pstation, (CachedLoadout*)NULL, budget);
+            budget = ReplaceLoadout(pshipSink, pstation, (CachedLoadout*)NULL, budget, m_loadouts); //AaronMoore 1/10
 
         return budget;
     }
@@ -1504,11 +1522,12 @@ public:
     Money    ReplaceLoadout(IshipIGC*       pship,
                             IstationIGC*    pstation,
                             IhullTypeIGC*   phulltype,
-                            Money           budget)
+                            Money           budget,
+                            CachedLoadoutList & loadoutList) //AaronMoore 1/10
     {
-        CachedLoadoutLink*  pcll = GetLoadoutLink(phulltype);
+        CachedLoadoutLink*  pcll = GetLoadoutLink(phulltype, loadoutList); //AaronMoore 1/10
         if (pcll)
-            budget = ReplaceLoadout(pship, pstation, &(pcll->data()), budget);
+            budget = ReplaceLoadout(pship, pstation, &(pcll->data()), budget, loadoutList); //AaronMoore 1/10
         else    //No cached loadout ... 
             BuyDefaultLoadout(pship, pstation, phulltype, &budget);
 
@@ -1517,13 +1536,14 @@ public:
     Money   ReplaceLoadout(IshipIGC*        pship,
                            IstationIGC*     pstation,
                            CachedLoadout*   pcl,
-                           Money            budget)
+                           Money            budget,
+                           CachedLoadoutList & loadoutList) //AaronMoore 1/10
     {
         assert (pship->GetChildShips()->n() == 0);
         assert (pship->GetParts()->n() == 0);
 
         if (pcl == NULL)
-            pcl = m_loadouts.first() ? &(m_loadouts.first()->data()) : NULL;
+            pcl = loadoutList.first() ? &(loadoutList.first()->data()) : NULL; //AaronMoore 1/10
 
         if (pcl && pcl->pht && pstation->CanBuy(pcl->pht) && (pcl->pht->GetPrice() <= budget))
         {
@@ -1544,7 +1564,7 @@ public:
                     ppt = (IpartTypeIGC*)(pstation->GetSuccessor(cpl.ppt));
                 }
                 else
-                    ppt = pstation->GetSimilarPart(ppt);
+                    ppt = pstation->GetSimilarPart(cpl.ppt); //AaronMoore 1/10
 
                 if (ppt)
                 {
@@ -1597,13 +1617,223 @@ public:
     {
         IshipIGC*   pship = CreateEmptyShip(-3);
         assert (pship);
-        ReplaceLoadout(pship, pstation, (CachedLoadout*)NULL, GetMoney());
+        ReplaceLoadout(pship, pstation, (CachedLoadout*)NULL, GetMoney(), m_loadouts); //AaronMoore 1/10
 
         BuyLoadout(pship, bLaunch);
 
         pship->Terminate();
         pship->Release();
     }
+
+	//AaronMoore 1/10
+     bool    LoadCustomLoadoutFile(void)
+    {
+        bool result = false;
+
+        // Retrieve the array of CachedLoadoutLists from an external FILE
+        // Make sure we are using a different file for each core
+
+        ZString strFilename = ZString("loadouts_");
+        strFilename = strFilename + m_pMissionInfo->GetIGCStaticFile() + ".dat";
+
+        FILE* inputFile;
+		    inputFile = fopen((PCC)strFilename,"rb");
+        if (inputFile)
+        {
+            fseek (inputFile, 0, SEEK_END);
+            int size = ftell(inputFile);
+            rewind(inputFile);
+
+            byte * buffer = new byte[size];
+            fread(buffer, size, 1, inputFile);
+
+            if (buffer)
+            {
+                if (m_customLoadouts)
+                    delete [] m_customLoadouts;
+
+                m_customLoadouts = ImportCachedLoadout(buffer);
+
+                delete [] buffer;
+            }
+
+            fclose(inputFile);
+
+            result = true;
+        }
+        else
+        {
+            result = false;
+        }
+
+        return result;
+    }
+
+    bool    SaveCustomLoadoutFile(void)
+    {
+        bool result = false;
+
+        // Save the array of CachedLoadoutLists to an external file
+        // Make sure we are using a different file for each core
+
+        int size = ExportCachedLoadout(m_customLoadouts, MAX_CUSTOM_LOADOUTS, NULL);
+        byte * buffer = new byte[size];
+
+        ExportCachedLoadout(m_customLoadouts, MAX_CUSTOM_LOADOUTS, buffer);
+
+        ZString strFilename = ZString("loadouts_");
+        strFilename = strFilename + m_pMissionInfo->GetIGCStaticFile() + ".dat";
+
+        FILE* outputFile;
+		    outputFile = fopen((PCC)strFilename,"wb");
+        if (outputFile)
+        {
+            fwrite(buffer, size, 1, outputFile);
+            fclose(outputFile);
+            result = true;
+        }
+        else
+        {
+            result = false;
+        }
+
+        delete [] buffer;
+
+        return result;
+    }
+
+    int     ExportCachedLoadout(CachedLoadoutList * loadouts, int num, byte * buffer)
+    {
+        int totalSize = 0;
+        int numShips, numParts;
+        ObjectID shipID, partID;
+        Mount partMount;
+
+        int size = sizeof(num);						                          // The Number of Loadout Lists
+        if (buffer) memcpy ( buffer, &num, size);
+        totalSize += size;
+
+        for (int i = 0; i < num; i++)
+        {
+            numShips = loadouts[i].n();                               // The Number of Ships in this List
+            size = sizeof(numShips);						
+            if (buffer) memcpy(buffer+totalSize, &numShips, size);
+            totalSize += size;
+            
+            if (numShips > 0)
+            {
+                for (CachedLoadoutLink* pcll = loadouts[i].first(); (pcll != NULL); pcll = pcll->next())
+                {
+                    CachedLoadout& pcl = pcll->data();                
+                    {
+                        shipID = pcl.pht->GetObjectID();               // The HullID for this ship
+                        size = sizeof(shipID);				
+                        if (buffer) memcpy(buffer+totalSize, &shipID, size);
+                        totalSize += size;
+
+                        numParts = pcl.cpl.n();                           // The Number of Parts in this Loadout
+                        size = sizeof(numParts);					
+                        if (buffer) memcpy(buffer+totalSize, &numParts, size);
+                        totalSize += size;
+    
+                        for (CachedPartLink* cpl = pcl.cpl.first(); (cpl != NULL); cpl = cpl->next())
+                        {
+                            CachedPart& cp = cpl->data();
+                            {
+                                partID = cp.ppt->GetObjectID();        // The PartID of this part
+                                size = sizeof(partID);				
+                                if (buffer) memcpy(buffer+totalSize, &partID, size);
+                                totalSize += size;
+
+                                partMount = cp.mount;                   // The Mount of this part
+                                size = sizeof(partMount);
+                                if (buffer) memcpy(buffer+totalSize, &partMount, size);
+                                totalSize += size;
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }
+
+        return totalSize;
+    }
+
+    CachedLoadoutList * ImportCachedLoadout(byte * buffer)
+    {
+        assert (buffer);
+        int readCount = 0;
+        int size, numLists, numShips, numParts;
+        ObjectID shipID, partID;
+        Mount partMount;
+
+        size = sizeof(numLists);
+        memcpy(&numLists, buffer, size);                            // Read the Number of Lists
+        readCount += size;
+
+        CachedLoadoutList * loadouts = new CachedLoadoutList[numLists];
+
+        for (int i = 0; i < numLists; i++)
+        {
+            size = sizeof(numShips);
+            memcpy(&numShips, buffer+readCount, size);              // Read the Number of Ships
+            readCount += size;
+
+            for (int j = 0; j < numShips; j++)
+            {
+                size = sizeof(shipID);				
+                memcpy(&shipID, buffer+readCount, size);           // Read this ship's HullID
+                readCount += size;
+
+                size = sizeof(numParts);				                    // The Number of Parts in this Loadout
+                memcpy(&numParts, buffer+readCount, size);
+                readCount+= size;
+
+                // Find this ship and create a new CachedLoadout
+                IhullTypeIGC *pht = m_pCoreIGC->GetHullType(shipID);
+
+                if (pht)
+                {
+                    CachedLoadoutLink * pcll = new CachedLoadoutLink();
+                    pcll->data().pht = pht;
+
+                    // Add it to the end of this list
+                    loadouts[i].last(pcll);
+
+                    for (int k = 0; k < numParts; k++)
+                    {
+                        size = sizeof(partID);				
+                        memcpy(&partID, buffer+readCount, size);       // The PartID of this part
+                        readCount += size;
+                    
+                        size = sizeof(partMount);                      // The Mount of this part
+                        memcpy(&partMount, buffer+readCount, size);
+                        readCount += size;
+
+                        // Find this Part and create a new CachedPart
+                        IpartTypeIGC *ppt = m_pCoreIGC->GetPartType(partID);
+
+                        if (ppt)
+                        {
+                            CachedPartLink* cpl = new CachedPartLink;
+                            cpl->data().ppt = ppt;
+                            cpl->data().mount = partMount;
+
+                            // Add it to the end of this list
+                            pcll->data().cpl.last(cpl);
+                        }
+
+                    }
+                }
+    
+            }
+
+        }
+
+        return loadouts;
+    } // end AaronMoore 1/10
+
 
     void    BuyDefaultLoadout(IshipIGC* pship, IstationIGC* pstation, IhullTypeIGC* pht, Money* pbudget)
     {
@@ -1704,9 +1934,9 @@ public:
         while (cargo < 0);
     }
 
-    CachedLoadoutLink*  GetLoadoutLink(IhullTypeIGC*    pht)
+    CachedLoadoutLink*  GetLoadoutLink(IhullTypeIGC*    pht, CachedLoadoutList & loadoutList) //AaronMoore 1/10
     {
-        for (CachedLoadoutLink* pcll = m_loadouts.first(); (pcll != NULL); pcll = pcll->next())
+        for (CachedLoadoutLink* pcll = loadoutList.first(); (pcll != NULL); pcll = pcll->next()) //AaronMoore 1/10
         {
             if (pcll->data().pht == pht)
                 return pcll;
@@ -1714,7 +1944,44 @@ public:
 
         return NULL;
     }
+//AaronMoore 1/10 removed
+/* 
+    CachedLoadoutLink*  GetObsoleteLoadoutLink(IstationIGC* pst, IhullTypeIGC*    pht, CachedLoadoutList & loadout)
+    {
+        for (CachedLoadoutLink* pcll = loadout.first(); (pcll != NULL); pcll = pcll->next())
+        {
+            IhullTypeIGC*    matchHullType = pcll->data().pht;
+        
+            if (matchHullType == pht)
+            {
+                    return pcll;
+            }
+            
+            else 
+            {
+                // I cant seem to check if this ship could be succeeded (user has saved a loadout on a newer version)
+                // (As the current ship is not obsolete?)
+                //for (IhullTypeIGC * psht = pht->GetSuccessorHullType(); (psht != NULL); psht = psht->GetSuccessorHullType())
+                //{
+                //    if (psht == matchHullType)
+                //        return pcll;
+                //}
 
+                if (pst->IsObsolete(matchHullType))
+                {
+                    // Check each successor for this obsolete ship (user has saved a loadout on a previous version)
+                    for (IhullTypeIGC * psht = matchHullType->GetSuccessorHullType(); (psht != NULL); psht = psht->GetSuccessorHullType())
+                    {
+                        if (psht == pht)
+                            return pcll;
+                    }
+                }
+            }
+        }
+
+        return NULL;
+    }
+*/
     virtual void    DropPart(IpartIGC*  ppart)
     {
         assert (ppart);
