@@ -11836,6 +11836,35 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
 
         bool    bBuyFuel = true;
 
+        // Remount launcher parts if they are depleted AaronMoore 1/10 (Imago)
+        for (int i = 0; i < 3; i++)
+        {
+            if ((i == 0 && pship->GetMountedPart(ET_Magazine, 0) == NULL) ||
+                (i == 1 && pship->GetMountedPart(ET_Dispenser, 0) == NULL) ||
+                (i == 2 && pship->GetMountedPart(ET_ChaffLauncher, 0) == NULL))
+            {
+                IpartTypeIGC*   pt = ptDesired[i];
+ 
+                if (pt)
+                {
+                    // Upgrade part if posible
+                    while (true)
+                    {
+                        IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
+                        if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
+                            pt = ptNext;
+                        else
+                            break;
+                    }
+                    pship->CreateAndAddPart(pt, 0, SHRT_MAX);
+
+                    // Remove this part from the desired list so it is not added again into cargo
+                    ptDesired[i] = NULL;
+                }
+            }
+        }
+		//end AaaronMoore 1/10
+        
 
         int     iDesired = 0;
         for (Mount i = 0; (i < c_maxCargo); i++)
