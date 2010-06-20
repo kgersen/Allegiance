@@ -2092,7 +2092,10 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmSW, CS, SET_WINGID, pfm);
 
             IshipIGC*   pship = m_ship->GetSide()->GetShip(pfmSW->shipID);
-            assert (pship);
+            //assert (pship);
+			if (!pship) {
+				break; //Imago 6/10
+			}
 
             if ((pship != m_ship) || pfmSW->bCommanded)
             {

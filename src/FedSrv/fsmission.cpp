@@ -1478,13 +1478,14 @@ void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
 
   if (pfsOldLeader->GetIGCShip()->GetWingID() == 0)
   {
-    pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing //Imago #91 TODO
-
+    //pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing //Imago #91 removed
+	  /*
     BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
     END_PFM_CREATE
-    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing  //Imago #91 TODO
+    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing  
     pfmSetWingID->shipID = pfsOldLeader->GetShipID();
     pfmSetWingID->bCommanded = true;
+	*/
   }
 
   // put them on the command wing
