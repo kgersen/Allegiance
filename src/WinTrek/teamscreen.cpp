@@ -3071,6 +3071,11 @@ public:
             END_PFM_CREATE
             pfmSetTeamLeader->sideID = trekClient.GetSideID(); 
             pfmSetTeamLeader->shipID = shipID; 
+
+			//Imago 6/10 #91 - server will only set command now
+			if (trekClient.GetShip()->GetWingID() != trekClient.GetSavedWingAssignment()) {// || (trekClient.GetShip()->GetWingID() != 0 || !trekClient.MyPlayerInfo()->IsTeamLeader()) ) {
+				trekClient.SetWing(trekClient.GetSavedWingAssignment());
+			}
         }
         else
         {
