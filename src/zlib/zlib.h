@@ -21,6 +21,7 @@
 #else
 	#define VSNET_TNFIX
 #endif
+
 //
 // Required CRT headers
 //

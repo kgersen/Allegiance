@@ -97,7 +97,7 @@ void EngineApp::SetMouse(MouseInputStream* pmouse)
     m_pmouse = pmouse;
 }
 
-int EngineApp::OnException(DWORD code, ExceptionData* pdata)
+int EngineApp::OnException(DWORD code, EXCEPTION_POINTERS* pdata)
 {
     if (m_pengine && m_pengine->IsFullscreen()) {
         m_pengine->DebugSetWindowed();

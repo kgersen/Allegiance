@@ -183,7 +183,7 @@
       </Command>
     </PreLinkEvent>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Test\TCLib\TCLib.lib;$(OutDir)..\ZLib\ZLib.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\igc\igc.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Test\TCLib\TCLib.lib;$(OutDir)..\ZLib\ZLib.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\igc\igc.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <ModuleDefinitionFile>..\src\AGC\AGC.def</ModuleDefinitionFile>
@@ -343,6 +343,8 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">

@@ -77,7 +77,7 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix,
     int nErrorID /* = 0 */)
 {
     // Build basic error string
-    ZString zErrorBuffer = new ZString(pcMessagePrefix);
+    ZString zErrorBuffer = pcMessagePrefix;
 	zErrorBuffer += ": ";
 
 	ErrorEntry* pEnd = gaErrorList + kNumMessages;

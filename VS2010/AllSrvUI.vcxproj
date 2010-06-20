@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="FZDebug|Win32">
@@ -178,7 +178,7 @@
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>

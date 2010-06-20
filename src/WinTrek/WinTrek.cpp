@@ -9786,7 +9786,7 @@ public:
             {
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) { 
                     if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/11
+                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/10
                         //trekClient.joyThrottle = false;
                     } else if (trekClient.GetShip()->GetTurretID() != NA) {
                         ControlData cd = trekClient.GetShip()->GetControls();
@@ -9803,7 +9803,7 @@ public:
             {
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true)) {
                     if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/11
+                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/10
                         trekClient.joyThrottle = false;
                     } else if (trekClient.GetShip()->GetTurretID() != NA) {
                         ControlData cd = trekClient.GetShip()->GetControls();

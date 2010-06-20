@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="FZDebug|Win32">
@@ -202,7 +202,7 @@
       <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dbghelp.lib;$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)mdledit.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>

@@ -39,7 +39,7 @@ public:
     HRESULT Initialize(const ZString& strCommandLine, HWND hWindow);
     void Terminate();
 
-    int OnException(DWORD code, ExceptionData* pdata);
+    int OnException(DWORD code, EXCEPTION_POINTERS* pdata);
 
     #ifdef _DEBUG
         bool OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule);
