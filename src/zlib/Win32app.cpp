@@ -21,6 +21,45 @@ BYTE OriginalBytes[5] = {0};
 
 
 //Imago 6/10
+int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
+{
+    BOOL bMiniDumpSuccessful;
+    char szPathName[MAX_PATH] = ""; 
+	GetModuleFileName(NULL, szPathName, MAX_PATH);
+	char* p = strrchr(szPathName, '\\');
+	if (!p)
+		p = szPathName;
+	else
+		p++;
+
+    DWORD dwBufferSize = MAX_PATH;
+    HANDLE hDumpFile;
+    SYSTEMTIME stLocalTime;
+    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
+
+    GetLocalTime( &stLocalTime );
+    
+   strcpy(p, "mini");
+	
+   sprintf( p+4,"%04d%02d%02d-%02d%02d%02d-%ld-%ld.dmp",
+               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
+               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
+               GetCurrentProcessId(), GetCurrentThreadId());
+   
+    hDumpFile = CreateFile(szPathName, GENERIC_READ|GENERIC_WRITE, 
+                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+
+    ExpParam.ThreadId = GetCurrentThreadId();
+    ExpParam.ExceptionPointers = pExceptionPointers;
+    ExpParam.ClientPointers = TRUE;
+
+    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
+                    hDumpFile, MiniDumpWithDataSegs, &ExpParam, NULL, NULL);
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+//lazy...
 int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
@@ -59,7 +98,6 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Some assertion functions
@@ -74,9 +112,14 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
 
         DWORD dwError = GetLastError();
 
-        if (!g_papp) {
-			GenerateDump(NULL);
-           (*(int*)0) = 0; // Imago removed asm (x64)
+        if (!g_papp) { 
+			
+			// Imago removed asm (x64) on ?/?, integrated with mini dump on 6/10
+			__try {
+				(*(int*)0) = 0;
+			}
+			__except(GenerateDump(GetExceptionInformation())) {}
+           
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
             g_papp->OnAssertBreak();
         }
@@ -422,7 +465,7 @@ int Win32App::OnException(DWORD code, EXCEPTION_POINTERS* pdata)
 }
 
 //Imago 6/10
-LONG __stdcall ExceptionHandler( EXCEPTION_POINTERS* pep ) 
+LONG __stdcall Win32App::ExceptionHandler( EXCEPTION_POINTERS* pep ) 
 {
 			GenerateDump(pep);
 	
@@ -482,13 +525,12 @@ void Win32App::OnAssertBreak()
             iter.Next();
         }
     #endif
-	GenerateDump(NULL);
-			
-    //
-    // Cause an exception
-    //
 
-    (*(int*)0) = 0;
+	// Imago integrated with mini dump on 6/10
+	__try {
+		(*(int*)0) = 0;
+	}
+	__except(GenerateDump(GetExceptionInformation())) {}
 }
 
 // KGJV - added for DX9 behavior - default is false. override in parent to change this
@@ -501,7 +543,7 @@ bool Win32App::IsBuildDX9()
 // WriteMemory function 
 // 
 
-bool WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
+bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 {
 	DWORD ErrCode = 0;
 
@@ -571,7 +613,7 @@ bool WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 
 
-bool EnforceFilter( bool bEnforce )
+bool Win32App::EnforceFilter( bool bEnforce )
 {
 	DWORD ErrCode = 0;
 
@@ -655,10 +697,10 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-	SetUnhandledExceptionFilter(ExceptionHandler);
-	if( !EnforceFilter( true ) )
+	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); //Imago 6/10
+	if( !g_papp->EnforceFilter( true ) )
 	{
-		_tprintf( _T("EnforceFilter(true) failed.\n") );
+		debugf("EnforceFilter(true) failed.\n");
 		return 0;
 	}
 
@@ -706,6 +748,12 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
     }  
     delete pzSpacer;
+
+	if( !g_papp->EnforceFilter( false ) )
+	{
+		debugf("EnforceFilter(false) failed.\n");
+		return 0;
+	}
 
     return 0;
 }

@@ -14,6 +14,7 @@
 #include <..\TCLib\AutoHandle.h>
 #include <agc.h>
 #include <zreg.h>
+#include <dbghelp.h> //imago 6/10
 
 // mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
@@ -8508,7 +8509,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 {
   HANDLE rgeventHandles[2];
   ZVersionInfo vi;
-  
+ 
   debugf("Running %s %s\n", (PCC) vi.GetInternalName(), (PCC) vi.GetStringValue("FileVersion"));
 
   debugf("Entering ReceiveThread\n");
@@ -9409,6 +9410,7 @@ void UnregisterAllSrv(char *szServerName)
 //
 int __cdecl main(int argc, char *argv[])
 {
+	g_app.OnAssertBreak();
     // Load the global settings from the registry
     LoadSettings();
 
@@ -9421,6 +9423,13 @@ int __cdecl main(int argc, char *argv[])
     // (GetTickCount may be semi-predictable on server startup, so we add the
     // clock time to shake things up a bit)
     srand(GetTickCount() + time(NULL));
+
+	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); //Imago 6/10
+	if( !g_app.EnforceFilter( true ) )
+	{
+		debugf("EnforceFilter(true) failed.\n");
+		return 0;
+	}
 
 	// start the appweb service thread w/log Imago 7/3/08
 	char *programName = mprGetBaseName(argv[0]);
@@ -9788,6 +9797,12 @@ int __cdecl main(int argc, char *argv[])
     delete logger;
 #endif
 	mprMemClose();
+
+	if( !g_app.EnforceFilter( false ) )
+	{
+		debugf("EnforceFilter(true) failed.\n");
+		return 0;
+	}
 
 	// Indicate success
     return 0;
@@ -13046,9 +13061,20 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
             m_hFile = NULL;
         }
 
-        *(DWORD*)0 = 0;
-        //DebugBreak();
-    }
+		// Imago integrated with mini dump on 6/10
+		__try {
+			(*(DWORD*)0) = 0;
+		}
+		__except(GenerateDump(GetExceptionInformation())) {}
+		}
+
+	//Imago 6/10
+	LONG __stdcall FedSrvApp::ServerExceptionHandler( EXCEPTION_POINTERS* pep ) 
+	{
+				GenerateDump(pep);
+	
+		return EXCEPTION_EXECUTE_HANDLER; 
+	}
 
     // Global Initialization
     FedSrvApp g_app;

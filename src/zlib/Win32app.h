@@ -20,7 +20,6 @@ public:
 class Win32App : public IObject {
 protected:
     __declspec(dllexport) Win32App();
-
 public:
     __declspec(dllexport) virtual ~Win32App();
 
@@ -29,7 +28,6 @@ public:
     virtual HRESULT Initialize(const ZString& strCommandLine);
     virtual void    Terminate();
     virtual int     OnException(DWORD code, EXCEPTION_POINTERS* pdata);
-	LONG __stdcall  ExceptionHandler(EXCEPTION_POINTERS* pep); //imago 6/10
     virtual void    DebugOutput(const char *psz);
     virtual bool    OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule);
     virtual void    OnAssertBreak();
@@ -38,8 +36,10 @@ public:
 	virtual bool    IsBuildDX9();
 
 	//imago 6/10
-	bool EnforceFilter( bool bEnforce );
-	bool WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size );
+	virtual bool EnforceFilter( bool bEnforce );
+	virtual bool WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size );
+	static int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers);
+	static LONG __stdcall Win32App::ExceptionHandler( EXCEPTION_POINTERS* pep );
 
 };
 
