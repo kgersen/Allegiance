@@ -79,7 +79,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\AGCGuid.lib $(OutDir)\..\Test\TCLib\TCLib.lib $(OutDir)\..\ZLib\ZLib.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\igc\igc.lib version.lib Winmm.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\AGCGuid.lib $(OutDir)\..\Test\TCLib\TCLib.lib $(OutDir)\..\ZLib\ZLib.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\igc\igc.lib version.lib Winmm.lib"
 				ShowProgress="0"
 				SuppressStartupBanner="false"
 				ModuleDefinitionFile="..\src\AGC\AGC.def"
@@ -181,7 +181,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\AGCGuid.lib $(OutDir)\..\Test\TCLib\TCLib.lib $(OutDir)\..\ZLib\ZLib.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\igc\igc.lib version.lib Winmm.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\AGCGuid.lib $(OutDir)\..\Test\TCLib\TCLib.lib $(OutDir)\..\ZLib\ZLib.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\igc\igc.lib version.lib Winmm.lib"
 				ShowProgress="0"
 				SuppressStartupBanner="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"

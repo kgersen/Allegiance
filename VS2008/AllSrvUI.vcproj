@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib wininet.lib comsupp.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib wininet.lib comsupp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
@@ -156,7 +156,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib wininet.lib comsupp.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\_Utility\Utility.lib $(OutDir)\..\AGC\AGCGuid.lib winmm.lib version.lib netapi32.lib urlmon.lib delayimp.lib ws2_32.lib wininet.lib comsupp.lib"
 				OutputFile="$(OutDir)/$(ProjectName).exe"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"

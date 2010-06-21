@@ -70,7 +70,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib d3d9.lib d3dx9.lib ddraw.lib dsound.lib dxguid.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib d3d9.lib d3dx9.lib ddraw.lib dsound.lib dxguid.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/mdledit.exe"
 				LinkIncremental="0"
 				GenerateDebugInformation="true"
@@ -161,7 +161,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib d3d9.lib d3dx9.lib ddraw.lib dsound.lib dxguid.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib d3d9.lib d3dx9.lib ddraw.lib dsound.lib dxguid.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/mdledit.exe"
 				LinkIncremental="0"
 				GenerateDebugInformation="true"

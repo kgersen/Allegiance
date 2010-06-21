@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib Winmm.lib urlmon.lib ..\src\Lib\DirectPlay\dxguid.lib ..\src\Lib\appweb\appweb.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib Winmm.lib urlmon.lib ..\src\Lib\DirectPlay\dxguid.lib ..\src\Lib\appweb\appweb.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllLobby.exe"
 				AdditionalLibraryDirectories="..\src\Inc\appWeb"
 				GenerateDebugInformation="true"
@@ -158,7 +158,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib Winmm.lib urlmon.lib ..\src\Lib\DirectPlay\dxguid.lib ..\src\Lib\appweb\appweb.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\_utility\Utility.lib $(OutDir)\..\zlib\zlib.lib $(OutDir)\..\test\TCLib\TCLib.lib $(OutDir)\..\sharemem\sharemem.lib $(OutDir)\..\Guids\Guids.lib Winmm.lib urlmon.lib ..\src\Lib\DirectPlay\dxguid.lib ..\src\Lib\appweb\appweb.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/AllLobby.exe"
 				AdditionalLibraryDirectories="..\src\Inc\appWeb"
 				IgnoreAllDefaultLibraries="false"
