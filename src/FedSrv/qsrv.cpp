@@ -138,7 +138,7 @@ DWORD WINAPI QueryHandler(void* sd_)
 
 	int nTemp = send(sd,acSendBuffer,kBufferSize, 0);
 	if (nTemp > 0) {
-		printf("Sent: %s to qstat\n",2);
+		printf("Sent: %s to qstat\n",acSendBuffer);
 	}
 	else if (nTemp == SOCKET_ERROR) {
 		return false;
