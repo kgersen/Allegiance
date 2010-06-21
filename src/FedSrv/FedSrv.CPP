@@ -9448,7 +9448,7 @@ int __cdecl main(int argc, char *argv[])
     WSAData wsaData;
 	int nCode;
     if ((nCode = WSAStartup(MAKEWORD(1, 1), &wsaData)) != 0) {
-		printf("WSAStartup() returned error code %i\n",nCode);
+		printf("Query server WSAStartup() returned error code %i\n",nCode);
         return 255; //fatal winsock issues
     }
 
@@ -9461,6 +9461,7 @@ int __cdecl main(int argc, char *argv[])
 		g.QServerSocket = SetUpListener(g.strLocalAddress, htons(iPortBump));
 		if (g.QServerSocket == INVALID_SOCKET) {
 			if ( (iPortBump - c_iDefaultQServerPort) >= 10) {
+				printf("%s\n",(PCC)WSAGetLastErrorMessage("Query server setup failed"));
 				return 3; // couldn't listen for stats query, tried 25000-25010 ;-(
 			}
 			iPortBump++;
@@ -13071,14 +13072,6 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
 		}
 		__except(GenerateDump(GetExceptionInformation())) {}
 		}
-
-	//Imago 6/10
-	LONG __stdcall FedSrvApp::ServerExceptionHandler( EXCEPTION_POINTERS* pep ) 
-	{
-				GenerateDump(pep);
-	
-		return EXCEPTION_EXECUTE_HANDLER; 
-	}
 
     // Global Initialization
     FedSrvApp g_app;

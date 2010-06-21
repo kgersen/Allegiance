@@ -29,7 +29,7 @@ SOCKET SetUpListener(const char* pcAddress, int nPort)
             return sd;
         }
         else {
-            printf("%s\n",(PCC)WSAGetLastErrorMessage("bind() failed"));
+            //shhhh
         }
     }
 
@@ -44,7 +44,7 @@ DWORD WINAPI QueryHandler(void* sd_)
 	u_long iMode = 0;
 	int ret = ioctlsocket(sd, FIONBIO, &iMode);
     if (!UNSPackets(sd)) {
-       printf("%s\n",(PCC)WSAGetLastErrorMessage("UNS kilo delivery failed"));
+		printf("%s\n",(PCC)WSAGetLastErrorMessage("Query server message delivery failed"));
         nRetval = 3;
     }
 	iMode = 1;
@@ -83,6 +83,42 @@ DWORD WINAPI QueryHandler(void* sd_)
 	zQRequest.SetEmpty();
 	char acReadBuffer[kBufferSize] = {'\0'};
     int nReadBytes;
+
+	// qstat's bfs (BFRIS) is 0 based and wants us to start sending data immediately:
+	//	10 to 18 bytes				server info
+	//		10 bit						latency
+	//		11 bit						messaging ver
+	//		12 bit						max players
+	//		13 bit						1 &15 2 &16
+	//			1High?						game type
+	//			2Low?						autobalance
+	//	19 to a \0 NULL = n bytes		map name
+	//	n+1 to a \0 NULL = n bytes	player info
+	//		every 11 bytes				playername
+	//			+1 bit					ship
+	//			...						ping
+	//									kills
+	//									team
+	//									sector
+	//			6 bit					unused
+	//			7 to 10 bytes			little-endian integer score
+
+	ZString qResponse = "AllegQstatN cz    MapName\0Imago      czczcz1111Imago2     czczcz1111\0";
+	printf("Sending: %s\n",(PCC)qResponse);
+	int nTemp = send(sd, (PCC)qResponse,qResponse.GetLength(), 0); //ping 78, ver 32, players 99,   ?
+
+	if (nTemp > 0) {
+		printf("Sent %i bytes back to client.\n",2);
+	}
+	else if (nTemp == SOCKET_ERROR) {
+		return false;
+	}
+	else {
+		printf("Peer unexpectedly dropped connection!\n");
+		return true;
+	}
+	//
+	/*
     do {
         nReadBytes = recv(sd, acReadBuffer, kBufferSize, 0);
         if (nReadBytes > 0) {
@@ -92,9 +128,10 @@ DWORD WINAPI QueryHandler(void* sd_)
         }
     } while (nReadBytes != 0);
 
+	*/
 	//ZString zQResponse = GetQResponse(zQRequest); TODO
 
-    printf("Connection closed by peer.\nSent: %s",(PCC)zQRequest);
+    printf("Connection closed by peer.\nRequest: %s",(PCC)zQRequest);
     return true;
 }
 

@@ -85,7 +85,6 @@
     virtual void DebugOutput(const char *psz);
     virtual bool OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule);
     virtual void OnAssertBreak();
-	static LONG __stdcall ServerExceptionHandler( EXCEPTION_POINTERS* pep );
 
     void SetDebug(DWORD dw)
     {

@@ -506,11 +506,24 @@ void CServiceModule::Run()
 
     {
       TRef<CLobbyApp> plobbyapp = new CLobbyApp(this);
+
+	  //Imago 6/10
+	  SetUnhandledExceptionFilter(Win32App::ExceptionHandler);
+
+	  if( !plobbyapp->EnforceFilter( true ) ) {
+			debugf("EnforceFilter(true) failed.\n");
+	  }
+
       if SUCCEEDED(plobbyapp->Init())
         plobbyapp->Run();
       else
         LogEvent(EVENTLOG_ERROR_TYPE, LE_StartFailed);
-    }
+
+		//Imago 6/10
+		if( !plobbyapp->EnforceFilter( false ) ) {
+			debugf("EnforceFilter(false) failed.\n");
+		}
+	}
 
     _Module.RevokeClassObjects();
 
@@ -521,13 +534,6 @@ void CServiceModule::Run()
 //
 int __cdecl main(int argc, char *argv[])
 { 
-
-	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); //Imago 6/10
-	if( !g_pLobbyApp->EnforceFilter( true ) )
-	{
-		debugf("EnforceFilter(true) failed.\n");
-		return 0;
-	}
 
 	// start the appweb service thread w/log Imago 7/3/08
 #ifdef _DEBUG
@@ -609,12 +615,6 @@ int __cdecl main(int argc, char *argv[])
 	delete logger;
 #endif
 	mprMemClose();
-
-	if( !g_pLobbyApp->EnforceFilter( false ) )
-	{
-		debugf("EnforceFilter(false) failed.\n");
-		return 0;
-	}
 
     // When we get here, the service has been stopped
     return _Module.m_status.dwWin32ExitCode;
