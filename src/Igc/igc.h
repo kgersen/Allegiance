@@ -3695,6 +3695,7 @@ class IhullTypeIGC : public IbuyableIGC
         virtual const char*          GetTextureName(void) const = 0;
 
         virtual const Vector&        GetCockpit(void) const = 0;
+		virtual const Vector&		 GetChaffPosition(void) const = 0; // TurkeyXIII 11/09 #94
 
         virtual float                GetMass(void) const = 0;
         virtual float                GetSignature(void) const = 0;

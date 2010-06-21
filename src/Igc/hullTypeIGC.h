@@ -249,6 +249,12 @@ class       ChullTypeIGC : public IhullTypeIGC
             return m_cockpit;
         }
 
+		// TurkeyXIII 11/09 #94
+		virtual const Vector&		 GetChaffPosition(void) const
+		{
+			return m_chaff;
+		}
+
         virtual const Vector&        GetWeaponPosition(Mount mount) const
         {
             assert (mount >= 0);
@@ -400,6 +406,7 @@ class       ChullTypeIGC : public IhullTypeIGC
         DataHullTypeIGC*    m_data;
         PartTypeListIGC     m_preferredPartTypes;
         Vector              m_cockpit;
+		Vector				m_chaff;	 // TurkeyXIII 11/09 #94
         Vector              m_positionWeapons[c_maxMountedWeapons];
         Orientation         m_orientationWeapons[c_maxMountedWeapons];
         float               m_scale;

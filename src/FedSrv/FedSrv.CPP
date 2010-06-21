@@ -5290,7 +5290,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   DataChaffIGC   dataChaff;
 
                   dataChaff.time0 = g.timeNow;
-                  dataChaff.p0 = myPosition;
+                  dataChaff.p0 = myPosition + pShip->GetBaseHullType()->GetChaffPosition() * myOrientation; // TurkeyXIII 11/09 #94
                   dataChaff.v0 = myVelocity + myOrientation.GetUp() * 5.0f;
 
                   dataChaff.pcluster = pcluster;

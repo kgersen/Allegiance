@@ -4090,6 +4090,13 @@ const Vector&        MyHullType::GetCockpit(void) const
     return m_pHullType->GetCockpit();
 }
 
+// TurkeyXIII 11/09 #94
+const Vector&        MyHullType::GetChaffPosition(void) const
+{
+    assert (m_pHullType);
+    return m_pHullType->GetChaffPosition();
+}
+
 const Vector&        MyHullType::GetWeaponPosition(Mount mount) const
 {
     assert (m_pHullType);
