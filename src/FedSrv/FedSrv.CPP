@@ -9410,7 +9410,6 @@ void UnregisterAllSrv(char *szServerName)
 //
 int __cdecl main(int argc, char *argv[])
 {
-	g_app.OnAssertBreak();
     // Load the global settings from the registry
     LoadSettings();
 
