@@ -9449,21 +9449,26 @@ int __cdecl main(int argc, char *argv[])
 	int nCode;
     if ((nCode = WSAStartup(MAKEWORD(1, 1), &wsaData)) != 0) {
 		printf("WSAStartup() returned error code %i\n",nCode);
-        return 255;
+        return 255; //fatal winsock issues
     }
-	//printf("Establishing the listener...\n");
+
 	if (g.strLocalAddress.IsEmpty()) {
         g.strLocalAddress = GetLocalComputerName();
     }
 
-	g.QServerSocket = SetUpListener(g.strLocalAddress, htons(c_iDefaultQServerPort));
-	if (g.QServerSocket == INVALID_SOCKET) {
-		printf("%s\n",(PCC)WSAGetLastErrorMessage("establish listener"));
-        return 0;
-    }
-	
-
-   //printf("Waiting for qstat connections on %i...\n",c_iDefaultQServerPort);
+	int iPortBump = c_iDefaultQServerPort;
+	while (1) {
+		g.QServerSocket = SetUpListener(g.strLocalAddress, htons(iPortBump));
+		if (g.QServerSocket == INVALID_SOCKET) {
+			if ( (iPortBump - c_iDefaultQServerPort) >= 10) {
+				return 3; // couldn't listen for stats query, tried 25000-25010 ;-(
+			}
+			iPortBump++;
+		} else {
+			break;
+		}
+	}
+	// end Imago 6/10
 
     // Enter this thread into the COM MTA
     TCCoInit init(COINIT_MULTITHREADED);

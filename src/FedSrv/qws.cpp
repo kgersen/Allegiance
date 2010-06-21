@@ -73,7 +73,7 @@ static struct ErrorEntry {
 const int kNumMessages = sizeof(gaErrorList) / sizeof(ErrorEntry);
 
 
-const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, 
+ZString WSAGetLastErrorMessage(const char* pcMessagePrefix, 
     int nErrorID /* = 0 */)
 {
     // Build basic error string

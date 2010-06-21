@@ -39,7 +39,7 @@ public:
 	virtual bool EnforceFilter( bool bEnforce );
 	virtual bool WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size );
 	static int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers);
-	static LONG __stdcall Win32App::ExceptionHandler( EXCEPTION_POINTERS* pep );
+	static LONG __stdcall ExceptionHandler( EXCEPTION_POINTERS* pep );
 
 };
 
