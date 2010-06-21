@@ -26,12 +26,17 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
 	GetModuleFileName(NULL, szPathName, MAX_PATH);
+	char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
 		p = szPathName;
 	else
 		p++;
-
+	if (!p1)
+		p1 = "mini";
+	else
+		p1++;
+	ZString zApp = p1;
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
@@ -39,9 +44,9 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 
     GetLocalTime( &stLocalTime );
     
-   strcpy(p, "mini");
+   strcpy(p, (PCC)zApp);
 	
-   sprintf( p+4,"%04d%02d%02d-%02d%02d%02d-%ld-%ld.dmp",
+   sprintf( p+zApp.GetLength(),"-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",
                stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
                stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
                GetCurrentProcessId(), GetCurrentThreadId());
@@ -59,18 +64,23 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
-//lazy...
+//lazy...or stupid... is this even hit?
 int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
 	GetModuleFileName(NULL, szPathName, MAX_PATH);
+	char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
 		p = szPathName;
 	else
 		p++;
-
+	if (!p1)
+		p1 = "mini";
+	else
+		p1++;
+	ZString zApp = p1;
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
@@ -78,9 +88,9 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 
     GetLocalTime( &stLocalTime );
     
-   strcpy(p, "mini");
+   strcpy(p, (PCC)zApp);
 	
-   sprintf( p+4,"%04d%02d%02d-%02d%02d%02d-%ld-%ld.dmp",
+   sprintf( p+zApp.GetLength(),"-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",
                stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
                stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
                GetCurrentProcessId(), GetCurrentThreadId());
