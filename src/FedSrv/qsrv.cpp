@@ -125,16 +125,81 @@ DWORD WINAPI QueryHandler(void* sd_)
 
  bool UNSPackets(SOCKET sd)
 {
-
 	char acSendBuffer[kBufferSize] = {'\0'};
-    int nReadBytes;
+    int nBytes = 0;
+	int nPlayers = 0;
+	char szBuffer[8192] = {'\0'};
+	const ListFSMission * lMissions = CFSMission::GetMissions();
+	for (LinkFSMission * plinkFSMis = lMissions->first(); plinkFSMis; plinkFSMis = plinkFSMis->next())
+	{
+		CFSMission * pfsMission = plinkFSMis->data();
+		const ShipListIGC * plistShip = pfsMission->GetIGCMission()->GetShips();
+		for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
+		{
+			if (ISPLAYER(plinkShip->data()) &&  !plinkShip->data()->IsGhost()) {
+				CFSPlayer* pfsPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
+				PlayerScoreObject pso = pfsPlayer->GetPlayerScoreObject();
+				nPlayers++;
 
+				memcpy(szBuffer,&nPlayers,sizeof(char));
+				nBytes++;
+
+				if (pfsPlayer->GetIGCShip() && pfsPlayer->GetIGCShip()->GetHullType()) {
+					ObjectID ship = pfsPlayer->GetIGCShip()->GetHullType()->GetObjectID();
+					memcpy(szBuffer+nBytes,&ship,sizeof(char));
+				} else {
+					memcpy(szBuffer+nBytes,"0",sizeof(char));
+				}
+				nBytes++;
+
+				DWORD lag = pfsPlayer->GetAverageLatency();
+				memcpy(szBuffer+nBytes,&lag,sizeof(char));
+				nBytes++;
+
+				short kills = pso.GetKills();
+				memcpy(szBuffer+nBytes,&kills,sizeof(char));
+				nBytes++;
+
+				if (pfsPlayer->GetSide()) {
+					ObjectID team = pfsPlayer->GetSide()->GetObjectID();
+					memcpy(szBuffer+nBytes,&team,sizeof(char));
+				} else {
+					memcpy(szBuffer+nBytes,"0",sizeof(char));
+				}
+				nBytes++;
+
+				if (pfsPlayer->GetCluster()) {
+					ObjectID cluster = pfsPlayer->GetCluster()->GetObjectID();
+					memcpy(szBuffer+nBytes,&cluster,sizeof(char));
+				} else {
+					memcpy(szBuffer+nBytes,"0",sizeof(char));
+				}
+				nBytes++;
+
+				memcpy(szBuffer+nBytes,"0",sizeof(char));
+				nBytes++;
+
+				unsigned long iScore = (long)pso.GetScore();
+				ZEnd32(&iScore);			
+				memcpy(szBuffer+nBytes,&iScore,sizeof(iScore));
+				nBytes += 4;
+
+				ZString name = pfsPlayer->GetName();
+				name += "\0";
+				memcpy(szBuffer+nBytes,(PCC)name,name.GetLength());
+				nBytes += name.GetLength() + 1;
+			}
+		}
+	}
+	
+	
 	// $> qstat.exe -P -R -bfs 192.168.0.252:25000 192.168.0.252:25001 ...
-	//TODO hook up real data!
+	/*
 	memcpy(acSendBuffer,"AllegQstatN cz    MapName",25);
 	memcpy(acSendBuffer+26,"1zczcz     iMago",16);
 	memcpy(acSendBuffer+26+17,"2zczcz     ImAgo",16);
 	memcpy(acSendBuffer+26+17+17,"3zczcz     ImaGo",16);
+	*/
 
 	int nTemp = send(sd,acSendBuffer,kBufferSize, 0);
 	if (nTemp > 0) {
