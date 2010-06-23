@@ -127,7 +127,7 @@ public:
   void SetMaxGamesAllowed(int max) {m_iMaxGames = max;}
   char *GetLocation() { return m_szLocation; }
   void SetLocation(char *loc) { 
-	  strncpy(m_szLocation,loc,sizeof(m_szLocation));
+	  Strncpy(m_szLocation,loc,sizeof(m_szLocation)); //Imago use Safe string copy 6/10
 	  m_szLocation[sizeof(m_szLocation)-1]='\0';
   };
 
