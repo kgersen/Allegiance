@@ -321,7 +321,8 @@ public:
             "Reloader.exe",
             "msrgbits.inf",
             "msrgtran.dll",
-            "msrgip.dll"
+            "msrgip.dll",
+			"dbghelp.dll", //imago added 6/10
             // the file muse be at least 8 characters (including ext)  For example: fsmon.exe
             // increment g_cEXEFiles, if you add to this
         };
