@@ -8,6 +8,10 @@ copy %2objs10\FZRetail\WinTrek\Allegiance.exe %1 /Y
 copy %2objs10\FZRetail\WinTrek\Allegiance.PDB %1 /Y
 copy %2objs10\FZRetail\AGC\AGC.dll %1 /Y
 copy %2objs10\FZRetail\AGC\AGC.PDB %1 /Y
+copy %2objs10\FZRetail\AutoUpdate\AutoUpdate.exe %1 /Y
+copy %2objs10\FZRetail\AutoUpdate\AutoUpdate.pdb %1 /Y
+copy %2objs10\FZRetail\Reloader\Reloader.exe %1 /Y
+copy %2objs10\FZRetail\Reloader\Reloader.pdb %1 /Y
 copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.ATL\atl100.dll" %1 /Y
 copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.MFC\mfc100.dll" %1 /Y
 copy "%VS100COMNTOOLS%..\..\VC\redist\x86\Microsoft.VC100.CRT\msvcp100.dll" %1 /Y
