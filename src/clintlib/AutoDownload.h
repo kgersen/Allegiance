@@ -326,7 +326,7 @@ public:
             // the file muse be at least 8 characters (including ext)  For example: fsmon.exe
             // increment g_cEXEFiles, if you add to this
         };
-        #define g_cEXEFiles 9
+        #define g_cEXEFiles 10 //imago dur 6/10
 
         return pszEXEFiles[nIndex];
     }
