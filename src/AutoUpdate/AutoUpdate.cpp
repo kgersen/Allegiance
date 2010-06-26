@@ -363,10 +363,10 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
     
     //Imago 6/10
     int argc;
-    TCHAR *argv[ 6 ];
+    TCHAR *argv[ 7 ] = {NULL};
     TCHAR *token;
 
-    argc = 0;
+    argc = 1;
     token = strtok(lpCmdLine, _T(" "));
 
     while (token)
@@ -374,6 +374,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
         argv[ argc ++ ] = token;
         token = strtok(NULL, _T(" "));
     }
+    // ^
 
 
     _Module.Init(NULL, hinst);
@@ -397,6 +398,8 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
     }
 
     nResult = dlg.Run();
+    
+    delete [] *argv;  //Imago cleanup 6/10
 
     _Module.Term();
 
