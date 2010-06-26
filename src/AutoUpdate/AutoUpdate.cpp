@@ -355,12 +355,26 @@ int CAutoUpdate::Run()
 
 /////////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char* argv[])
-//int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
+//int main(int argc, char* argv[])
+int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
 {
     char szModule[_MAX_PATH];
     GetModuleFileName(NULL, szModule, sizeof(szModule));
-    HINSTANCE hinst = GetModuleHandle(szModule);
+    
+    //Imago 6/10
+    int argc;
+    TCHAR *argv[ 6 ];
+    TCHAR *token;
+
+    argc = 0;
+    token = strtok(lpCmdLine, _T(" "));
+
+    while (token)
+    {
+        argv[ argc ++ ] = token;
+        token = strtok(NULL, _T(" "));
+    }
+
 
     _Module.Init(NULL, hinst);
     InitCommonControls();
