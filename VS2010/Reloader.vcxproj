@@ -59,7 +59,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\Inc;..\src\igc;..\src\_Utility;..\src\ZLib;..\src\clintlib;..\src\Zone;..\src\training;..\src\lobby;..\src\guids;..\src\Allelgiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0403;_DEBUG;DEBUG</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -72,8 +72,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>..\src\Inc;..\src\igc;..\src\_Utility;..\src\ZLib;..\src\clintlib;..\src\Zone;..\src\training;..\src\lobby;..\src\guids;..\src\Allelgiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>
-      </PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x0403</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
