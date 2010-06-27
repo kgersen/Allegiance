@@ -659,6 +659,7 @@
     </ClCompile>
     <ClCompile Include="..\src\FedSrv\qsrv.cpp" />
     <ClCompile Include="..\src\FedSrv\qws.cpp" />
+    <ClCompile Include="..\src\FedSrv\sqlhelp.cpp" />
     <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -699,6 +700,7 @@
     <ClInclude Include="..\src\FedSrv\dbgutil.h" />
     <ClInclude Include="..\src\FedSrv\FedSrv.H" />
     <ClInclude Include="..\src\FedSrv\FedSrvApp.h" />
+    <ClInclude Include="..\src\FedSrv\fedsrvsql.h" />
     <ClInclude Include="..\src\FedSrv\fscluster.h" />
     <ClInclude Include="..\src\FedSrv\fsmission.h" />
     <ClInclude Include="..\src\FedSrv\fsship.h" />

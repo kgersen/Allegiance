@@ -4413,8 +4413,8 @@ HRESULT FedSrvSiteBase::OnSysMessage(FedMessaging * pthis)
   return S_OK;
 }
 
-// KG: eventually remove this
-#ifndef ALLSRV_STANDALONE
+// KG: eventually remove this - or notk, Imago 6/10
+//#ifndef ALLSRV_STANDALONE
 void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
   // don't make the event an error event, because this may or may not be fatal.
@@ -4443,7 +4443,7 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
     "HelpFile", VT_BSTR,  bstrHelpFile,
     "Source",   VT_BSTR,  bstrSource);
 }
-#endif //ALLSRV_STANDALONE
+//#endif //ALLSRV_STANDALONE
 
 HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
@@ -8542,14 +8542,16 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
 
   // Setup the database stuff and connect
-#if !defined(ALLSRV_STANDALONE)
+//#if !defined(ALLSRV_STANDALONE) Imago 6/10 commented and fixed up
+  if (g.strSQLConfig.m_str) {
     hr = g.sql.Init(g.strSQLConfig.m_str, g.idReceiveThread, g.csqlSilentThreads, g.csqlNotifyThreads);
 
     if (FAILED(hr))
     {
       return hr;
     }
-#endif
+  }
+//#endif
 
   UTL::SetArtPath(g.strArtPath);
 
@@ -8772,9 +8774,9 @@ void LoadSettings()
 
         // Standalone servers do not need a LobbyServer registry value because
         // they always get it from the CFG file.
-        #if !defined(ALLSRV_STANDALONE)
+        //#if !defined(ALLSRV_STANDALONE)  Imago 6/10
           LoadRegString(hKey, "LobbyServer", g.strLobbyServer);
-        #endif // !defined(ALLSRV_STANDALONE)
+        //#endif // !defined(ALLSRV_STANDALONE)
 
         // Use winsock-provided address for clients, unless overridden (e.g. dual nic)
 		// KGJV #114 localaddress isnt used anymore by DP8 so we use it as public userfriendly server name
@@ -8839,7 +8841,7 @@ void LoadSettings()
             g.fTimeOut = !!dwValue;
         else g.fTimeOut = true;
 
-      #if !defined(ALLSRV_STANDALONE)
+      //#if !defined(ALLSRV_STANDALONE) Imago revived 6/10
         dwValue=0;
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsNotify", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
@@ -8854,7 +8856,7 @@ void LoadSettings()
 
         if (FAILED(LoadRegString(hKey, "SQLConfig", g.strSQLConfig)))
           g.strSQLConfig.Empty(); // default for all developers
-      #endif // !defined(ALLSRV_STANDALONE)
+      //#endif // !defined(ALLSRV_STANDALONE)
 
         ::RegCloseKey(hKey);
     }

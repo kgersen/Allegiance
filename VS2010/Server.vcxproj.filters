@@ -104,6 +104,7 @@
     <ClCompile Include="..\src\FedSrv\qws.cpp">
       <Filter>Query</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\FedSrv\sqlhelp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\FedSrv\FedSrv.RC">
@@ -170,6 +171,7 @@
     <ClInclude Include="..\src\FedSrv\qws.h">
       <Filter>Query</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\FedSrv\fedsrvsql.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\FedSrv\fedmsg.msg">
