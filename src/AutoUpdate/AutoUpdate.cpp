@@ -361,22 +361,6 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
     char szModule[_MAX_PATH];
     GetModuleFileName(NULL, szModule, sizeof(szModule));
     
-    //Imago 6/10
-    int argc;
-    TCHAR *argv[ 7 ] = {NULL};
-    TCHAR *token;
-
-    argc = 1;
-    token = strtok(lpCmdLine, _T(" "));
-
-    while (token)
-    {
-        argv[ argc ++ ] = token;
-        token = strtok(NULL, _T(" "));
-    }
-    // ^
-
-
     _Module.Init(NULL, hinst);
     InitCommonControls();
 
@@ -389,7 +373,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
 
     g_AutoDownloadSink.m_pdlg = &dlg;
 
-    int nResult = dlg.Init(argc, argv);
+    int nResult = dlg.Init(__argc, __argv); //Imago 6/10
     if (nResult != 0)
     {
         MsgBox("AutoUpdate was given an invalid commmand-line.");
@@ -398,8 +382,6 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
     }
 
     nResult = dlg.Run();
-    
-    delete [] *argv;  //Imago cleanup 6/10
 
     _Module.Term();
 
