@@ -276,7 +276,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\;..\src\effect;..\src\engine;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\soundengine;..\src\AGC;..\src\FedSrv;..\src\training;..\src\lobby;..\src\Inc;..\src\guids;..\src\Zone;.\$(OutDir)..\AGC;.\$(OutDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\src\effect;..\src\engine;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\soundengine;..\src\AGC;..\src\FedSrv;..\src\training;..\src\lobby;..\src\Inc;..\src\guids;..\src\Zone;.\$(OutDir)..\AGC;.\$(OutDir)..\FedSrv;.\$(OutDir)..\guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SRVLOG;DEBUG;WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
