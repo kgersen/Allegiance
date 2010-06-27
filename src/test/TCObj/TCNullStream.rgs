@@ -1,0 +1,25 @@
+HKCR
+{
+  TCObj.NullStream.1 = s 'Null IStream Object'
+  {
+    CLSID = s '{8962E248-CD81-11d2-9646-00C04F68DEB0}'
+  }
+  TCObj.NullStream = s 'Null IStream Object'
+  {
+    CLSID = s '{8962E248-CD81-11d2-9646-00C04F68DEB0}'
+    CurVer = s 'TCObj.NullStream.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {8962E248-CD81-11d2-9646-00C04F68DEB0} = s 'Null IStream Object'
+    {
+      TypeLib = s '{8962E243-CD81-11d2-9646-00C04F68DEB0}'
+      ProgID = s 'TCObj.NullStream.1'
+      VersionIndependentProgID = s 'TCObj.NullStream'
+      InprocServer32 = s '%MODULE%'
+      {
+        val ThreadingModel = s 'Both'
+      }
+    }
+  }
+}

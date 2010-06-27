@@ -1178,6 +1178,7 @@ public:
 
     bool OnHoverPlayLan()
     {
+		debugf("************ %s\n",m_pnumberCurrentHover->GetString(0));
         m_pnumberCurrentHover->SetValue(hoverPlayLan);
         return true;
     }

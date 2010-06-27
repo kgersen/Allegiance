@@ -1,0 +1,123 @@
+/////////////////////////////////////////////////////////////////////////////
+// TCObj.idl : IDL source for TCObj.dll
+
+import "TCIDL.idl"; //Imago 6/10 adjusted path
+
+
+/////////////////////////////////////////////////////////////////////////////
+// TCTCObj Library
+[
+  uuid(8962E243-CD81-11d2-9646-00C04F68DEB0),
+  version(1.0),
+  helpstring("TCObj TypeLib")
+]
+library TCObj
+{
+  importlib("stdole32.tlb");
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Reference these (enumerations) so that they get into the typelib
+
+  enum dispid_TCIDL;
+  enum FileAttributes;
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// TCObj CoClass
+	// {secret}
+	[
+		hidden, noncreatable,
+		uuid(8962E249-CD81-11d2-9646-00C04F68DEB0),
+		helpstring("TCObj Category. This is really a CATID, but this way we get the GUID into the type library.")
+	]
+	coclass TCObj
+	{
+		/////////////////////////////////////////////////////////////////////////
+		// Reference these (interfaces) so that they get into the typelib
+    interface ITCCollection;
+    interface ITCStrings;
+    interface ITCPropBagOnRegKey;
+    interface ITCSessionInfo;
+    interface ITCSessionInfos;
+    interface ITCCollectionPersistHelper;
+    interface ITCUtility;
+
+  }; // End: coclass TCObj
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCMarshalByValue CoClass
+  [
+    uuid(8962E244-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCMarshalByValue Class")
+  ]
+  coclass TCMarshalByValue
+  {
+    interface IUnknown;
+
+  }; // End: coclass TCMarshalByValue
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCStrings CoClass
+  [
+    uuid(8962E245-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCStrings Class")
+  ]
+  coclass TCStrings
+  {
+    [default] interface ITCStrings;
+
+  }; // End: coclass TCStrings
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCNullStream CoClass
+  [
+    uuid(8962E248-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCNullStream Class")
+  ]
+  coclass TCNullStream
+  {
+    interface IUnknown;
+
+  }; // End: coclass TCNullStream
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCPropBagOnRegKey
+  [
+    uuid(8962E246-CD81-11d2-9646-00C04F68DEB0),
+    helpstring("TCPropBagOnRegKey Class")
+  ]
+  coclass TCPropBagOnRegKey
+  {
+    [default] interface ITCPropBagOnRegKey;
+
+  }; // End: coclass TCPropBagOnRegKey
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // TCUtility
+  [
+    uuid(E9EE9E82-ED3A-11d2-A50B-00C04F68DEB0),
+    helpstring("TCUtility Class")
+  ]
+  coclass TCUtility
+  {
+    [default] interface ITCUtility;
+
+  }; // End: coclass TCUtility
+
+
+} // END: library TCObj
+
+
+cpp_quote("/////////////////////////////////////////////////////////////////////////////")
+cpp_quote("// CATID Declarations")
+cpp_quote("")
+cpp_quote("extern \"C\" const __declspec(selectany) CATID CATID_TCObj =")
+cpp_quote("  {0x8962e249,0xcd81,0x11d2,{0x96,0x46,0x0,0xc0,0x4f,0x68,0xde,0xb0}};")
+cpp_quote("")
+

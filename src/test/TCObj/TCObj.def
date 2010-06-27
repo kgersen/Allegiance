@@ -1,0 +1,11 @@
+; TCObj.def : Declares the module parameters for the DLL.
+; Imago 6/10 removed ordinal and description warnings
+
+LIBRARY      "TCObj"
+
+EXPORTS
+  DllCanUnloadNow     PRIVATE
+  DllGetClassObject   PRIVATE
+  DllRegisterServer   PRIVATE
+  DllUnregisterServer PRIVATE
+

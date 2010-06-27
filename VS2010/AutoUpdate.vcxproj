@@ -11,7 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\src\AutoUpdate\AutoUpdate.rc2" />
     <None Include="..\src\AutoUpdate\AutoUpdate.rgs" />
+    <None Include="..\src\AutoUpdate\makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\AutoUpdate\AutoUpdate.cpp" />
