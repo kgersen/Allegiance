@@ -195,7 +195,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	}
 	else
 	{
-		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_IMMEDIATE;
+		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_ONE; //imago 6/10 bWaitForVSync rendered useless
 	}
 
 	//imago 7/1/09 NYI test for multisample maskable optons (CSAA, etc) and set accordingly

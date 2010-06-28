@@ -6925,9 +6925,6 @@ public:
                 trekClient.HandleAutoDownload(500); // since the mouse is hardware in not full screen, the graphics engine doesn't need much CPU
         }
 
-		if (dtime < 0.017f) //Imago 6/10
-			return;
-
         // receive network messages
         trekClient.m_lastUpdate  = m_timeLastFrame;
         trekClient.m_now         = time;
