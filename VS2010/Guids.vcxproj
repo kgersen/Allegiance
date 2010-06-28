@@ -196,7 +196,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>..\objs10\FZDebug\Guids\;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Outdir)..\Guids;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <GenerateTypeLibrary>true</GenerateTypeLibrary>
       <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
