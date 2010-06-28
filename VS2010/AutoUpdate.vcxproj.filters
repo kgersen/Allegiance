@@ -18,11 +18,11 @@
     <None Include="..\src\AutoUpdate\AutoUpdate.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\src\AutoUpdate\AutoUpdate.rc2">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\src\AutoUpdate\makefile">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\src\AutoUpdate\AutoUpdate.rc3">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
