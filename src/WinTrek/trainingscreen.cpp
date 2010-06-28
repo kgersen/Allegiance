@@ -282,7 +282,7 @@ public:
                 GetWindow ()->screen (ScreenIDTrainSlideshow);
                 break;
             case Training::c_TM_7_Live:
-               // TrainLive ();  // imago remove 6/22/09
+                TrainLive ();  // imago remove 6/22/09
                 break;
         }
         return true;
@@ -659,7 +659,7 @@ public:
         while (iTryCount-- && (listResults.GetCount () == 0))
         {
             // initiate a query for the local server
-            trekClient.FindStandaloneServersByName ("127.0.0.1", listResults);
+            trekClient.FindStandaloneServersByName ("127.0.0.1", listResults); //Imago REVIEW this hardly works now-a-days 6/10
 
             // now, for 6 seconds, check to see if we found it every half second
             for (int i = 0; (i < 12) && (listResults.GetCount () == 0); i++)

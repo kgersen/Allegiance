@@ -4,6 +4,19 @@
 #include "resource.h"
 #include "AutoUpdate.h"
 
+//imago enhanced /w new operation (Graceful shutdown) 6/10
+#include <agc.h>
+#include <AllSrvModuleIDL.h>
+
+#include "AdminSessionSecure.h"
+#include "AdminSessionSecureHost.h"
+
+
+//imago 6/10
+IAdminGamesPtr  m_spAdminGamesPtr = 0;
+IAdminGamePtr   m_spAdminGamePtr = 0;
+IAdminUsersPtr  m_spAdminUsersPtr = 0;
+
 /////////////////////////////////////////////////////////////////////////////
 
 void MsgBox(const char* format, ...)
@@ -355,14 +368,209 @@ int CAutoUpdate::Run()
 
 /////////////////////////////////////////////////////////////////////////////
 
+
+//Imago 6/10 (adapted from training)
+bool    Error (HRESULT hr)
+{
+    if (FAILED (hr))
+    {
+        IErrorInfoPtr spErr;
+        ::GetErrorInfo(0, &spErr);
+        _com_error e (hr, spErr, true);
+        _bstr_t strError (e.Description().length() ? e.Description() : _bstr_t (e.ErrorMessage()));
+
+        // help trace the problem?
+       MsgBox("Fail Code: %x",hr);
+	   return true;
+	}
+	return false;
+}
+
+//Imago returns the index of the game with the most players in it or -1 if none - 6/10
+long lBigGameIndex (long lGameCount,IAdminSessionPtr spSession,IAdminServerPtr spServer) {
+	long index = -1;
+	long lastCount = 0;
+	for (long l = 0;l <= lGameCount;l++) {
+		m_spAdminGamesPtr->get_Item (& (_variant_t) l, &m_spAdminGamePtr);
+		if (!m_spAdminGamePtr) {
+			continue;
+		}
+		IAGCShipsPtr pAGCShips;
+		m_spAdminGamePtr->get_Ships(&pAGCShips);
+		long lCount;
+		pAGCShips->get_Count(&lCount);
+		if (lCount > lastCount) {
+			index = l;
+			lastCount = lCount;
+		}
+	}
+	return index;
+}
+
 //int main(int argc, char* argv[])
 int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
 {
-    char szModule[_MAX_PATH];
+	char szModule[_MAX_PATH];
     GetModuleFileName(NULL, szModule, sizeof(szModule));
-    
     _Module.Init(NULL, hinst);
     InitCommonControls();
+
+	//Imago 6/10 a graceful shutdown of a server (used to push an update)
+	if (_stricmp(lpCmdLine, "shutdown") == 0) {
+		
+		CoInitialize(NULL);
+
+		HRESULT                 hr;
+		IAdminSessionClassPtr   spClass;
+		hr = CoGetClassObject (__uuidof(AdminSession), CLSCTX_LOCAL_SERVER, NULL, __uuidof(spClass), (void**)&spClass);
+		if (!Error (hr))
+		{
+			AdminSessionSecureHost    xHost;
+			IAdminSessionPtr spSession;
+			hr = spClass->CreateSession(&xHost, &spSession);
+			::CoDisconnectObject(&xHost, 0);
+			if (!Error (hr))
+			{
+				IAdminServerPtr spServer;
+				if (!Error (hr = spSession->get_Server(&spServer)))
+				{
+					if (!Error (hr = spServer->get_Games(&m_spAdminGamesPtr)))
+					{
+						long lGameCount;
+						spServer->get_MissionCount(&lGameCount);
+						long index = lBigGameIndex(lGameCount,spSession,spServer);
+						if (index != -1) {
+							if (lGameCount == 0) {
+								spSession->Stop();
+							} else {
+								if (!Error (hr = spServer->get_Users(&m_spAdminUsersPtr))) {
+									long lUsersCount;
+									m_spAdminUsersPtr->get_Count(&lUsersCount);
+									if (lUsersCount > 0) {
+										m_spAdminGamesPtr->get_Item (& (_variant_t) index, &m_spAdminGamePtr);
+										if (!m_spAdminGamePtr) {
+											index = lBigGameIndex(lGameCount,spSession,spServer);
+											m_spAdminGamesPtr->get_Item (& (_variant_t) index, &m_spAdminGamePtr);
+										}
+										IAGCTeamsPtr pAGCTeams;
+										m_spAdminGamePtr->get_Teams(&pAGCTeams);
+										long lCount;
+										pAGCTeams->get_Count(&lCount);
+										if (lCount >= 2) { 
+											IAGCTeamPtr pAGCTeam;
+											pAGCTeams->get_Item(& (_variant_t) (0L), &pAGCTeam);
+											IAGCStationsPtr pAGCStations;
+											pAGCTeam->get_Stations(&pAGCStations);
+											long lStations;
+											pAGCStations->get_Count(&lStations);
+											if (lStations > 0) {
+												BSTR pBName;
+												m_spAdminGamePtr->get_Name(&pBName);
+												CComBSTR zMessage = L"Shutting down after the ";
+												zMessage += pBName;
+												zMessage += L" is over";
+												spServer->SendMsg(zMessage);
+												int i = 0;
+												while (lStations > 0) {
+													pAGCStations->get_Count(&lStations);
+													Sleep(5 * 1000);
+													i++;
+													if (i >= 2160) {
+														zMessage = L"Aborting shutdown, epic game!";
+														spServer->SendMsg(zMessage);
+														return 1;
+													}
+													if (i % 84 == 0) {
+														spServer->SendMsg(zMessage);
+													}
+												}
+												zMessage = L"Shutting down in four minutes.";
+												spServer->SendMsg(zMessage);
+												Sleep(60 * 1000);
+												zMessage = L"Shutting down in three minutes.";
+												spServer->SendMsg(zMessage);
+												Sleep(60 * 1000);
+												zMessage = L"Shutting down in two minutes.";
+												spServer->SendMsg(zMessage);
+												Sleep(60 * 1000);
+												zMessage = L"Shutting down in 30 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(25 * 1000);
+												zMessage = L"Shutting down in 5 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(2 * 1000);
+												zMessage = L"Shutting down in 3 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(1 * 1000);
+												zMessage = L"Shutting down in 2 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(1 * 1000);
+												zMessage = L"Shutting down in 1 second.";
+												spServer->SendMsg(zMessage);
+												Sleep(1 * 1000);
+												spSession->Stop();
+											} else {
+												CComBSTR zMessage = L"Shutting down in two minutes.";
+												spServer->SendMsg(zMessage);
+												Sleep(90 * 1000);
+												zMessage = L"Shutting down in 30 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(25 * 1000);
+												zMessage = L"Shutting down in 5 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(2 * 1000);
+												zMessage = L"Shutting down in 3 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(1 * 1000);
+												zMessage = L"Shutting down in 2 seconds.";
+												spServer->SendMsg(zMessage);
+												Sleep(1 * 1000);
+												zMessage = L"Shutting down in 1 second.";
+												spServer->SendMsg(zMessage);
+												Sleep(1 * 1000);
+												spSession->Stop();
+											}
+										} else {
+											CComBSTR zMessage = L"Shutting down in one minute.";
+											spServer->SendMsg(zMessage);
+											Sleep(30 * 1000);
+											zMessage = L"Shutting down in 30 seconds.";
+											spServer->SendMsg(zMessage);
+											Sleep(25 * 1000);
+											zMessage = L"Shutting down in 5 seconds.";
+											spServer->SendMsg(zMessage);
+											Sleep(2 * 1000);
+											zMessage = L"Shutting down in 3 seconds.";
+											spServer->SendMsg(zMessage);
+											Sleep(1 * 1000);
+											zMessage = L"Shutting down in 2 seconds.";
+											spServer->SendMsg(zMessage);
+											Sleep(1 * 1000);
+											zMessage = L"Shutting down in 1 second.";
+											spServer->SendMsg(zMessage);
+											Sleep(1 * 1000);
+											spSession->Stop();
+										} 
+									}
+								}
+							}
+						} else {
+							spSession->Stop();
+						}
+					}
+				}
+			}
+		}
+		// and we terminate the entire process here
+		m_spAdminUsersPtr = 0;
+		m_spAdminGamePtr = 0;
+		m_spAdminGamesPtr = 0;
+		spClass = 0;
+
+		CoUninitialize();
+		
+		return 0;
+	}
 
     CAutoUpdate dlg;
 
@@ -378,6 +586,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
     {
         MsgBox("AutoUpdate was given an invalid commmand-line.");
         dlg.DestroyWindow();
+		
         return nResult;
     }
 
@@ -387,3 +596,4 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
 
     return nResult;
 }
+

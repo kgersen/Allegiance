@@ -44,7 +44,7 @@
 
 #define SZVERSTR(a,b,c,d) SZVERSTR0(a,b,c,d)
 
-#ifdef DLL
+#ifdef _USRDLL
   #define MYFILETYPE VFT_DLL
 #else
   #define MYFILETYPE VFT_APP

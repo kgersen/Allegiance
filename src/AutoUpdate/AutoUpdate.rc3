@@ -1,0 +1,21 @@
+//
+// AutoUpdate.RC3 - Imago 6/10 - needed for AdminSession to gracefully shutdown servers
+//
+
+#ifdef APSTUDIO_INVOKED
+	#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+/////////////////////////////////////////////////////////////////////////////
+#define SZFILEDESCRIPTION "Allegiance Auto Update Utility"
+#define SZORIGFILENAME "AutoUpdate.exe"
+#define SZINTERNALNAME "AutoUpdate"
+
+/////////////////////////////////////////////////////////////////////////////
+
+#include "..\Inc\VerRes.rc"
+
