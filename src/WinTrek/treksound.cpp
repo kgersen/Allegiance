@@ -34,19 +34,16 @@ public:
         TRef<ISoundTemplate> pTemplate;
 
 		// mdvalley: Look for files in this order: Soundpack WAV, Soundpack OGG, Artwork WAV, Artwork OGG
-        ZString strFilename = m_pmodeler->GetArtPath() + "\\..\\SoundPack\\" + pstring->GetValue() + ".wav";
-
-		if(!FileExists(strFilename))
-			strFilename = m_pmodeler->GetArtPath() + "\\..\\SoundPack\\" + pstring->GetValue() + ".ogg";
-
-		if(!FileExists(strFilename))
-			strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".wav";
+        // pkk: Removed SoundPack support, Allegiance no longer looking for files in a not existing folder
+		// Load wave from artwork directory
+        ZString strFilename = m_pmodeler->GetArtPath() + "\\..\\" + pstring->GetValue() + ".wav";
 		
-        // if it's not in the soundpac1, look in the artwork directory 
-        if (!FileExists(strFilename))
-//            strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".wav";
+		if (!FileExists(strFilename))
+		{
+		    // Load ogg file, if wave file doesn't exisits
 			strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".ogg";
-
+		}
+		
         if (FAILED(CreateWaveFileSoundTemplate(pTemplate, strFilename)))
         {
             // Fail over to a dummy sound template
