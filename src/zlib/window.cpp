@@ -3,8 +3,6 @@
     #include "..\..\extern\icecap4\include\icecap.h"
 #endif
 
-// This is a test comment, please delete!
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Handy painting function
@@ -720,6 +718,7 @@ WinPoint MakePoint(LPARAM lParam)
 
 void Window::OnClose()
 {
+	UnhookWindowsHookEx(g_hhk); //Imago #73 6/10
     ::PostQuitMessage(0);
 }
 
@@ -990,6 +989,18 @@ void CallIdleFunctions()
 //
 //////////////////////////////////////////////////////////////////////////////
 
+//Imago 6/10 #73
+LRESULT CALLBACK DisableWinKeysProc(int code, WPARAM wParam, LPARAM lParam) {
+	if(code == HC_ACTION) {
+		PKBDLLHOOKSTRUCT pKeyBoard;
+		 pKeyBoard = (PKBDLLHOOKSTRUCT) lParam;
+		if (pKeyBoard->vkCode == VK_LWIN || pKeyBoard->vkCode == VK_RWIN) {
+			return 1;
+		}
+	}
+	return CallNextHookEx(g_hhk,code,wParam,lParam);
+}
+
 TMap<HWND, Window* > Window::s_mapWindow;
 
 DWORD CALLBACK Window::Win32WndProc(
@@ -1004,6 +1015,7 @@ DWORD CALLBACK Window::Win32WndProc(
             NULL != (pwindow = (Window*)(((CREATESTRUCT *)lParam)->lpCreateParams))) {
         pwindow->m_hwnd = hwnd;
         s_mapWindow.Set(hwnd, pwindow);
+		g_hhk = SetWindowsHookEx(WH_KEYBOARD_LL, DisableWinKeysProc,((LPCREATESTRUCT)lParam)->hInstance,0); //Imago #73
     } else {
         if (!s_mapWindow.Find(hwnd, pwindow)) {
             pwindow = NULL;
@@ -1164,8 +1176,10 @@ HRESULT Window::MessageLoop()
                             ks.bDown = (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN || ks.vk == 44); // special exception for PrintScreen key
                             ks.countRepeat = LOWORD(msg.lParam);
 
-                            bool fHandled = false;
+							bool fHandled = false;
                             bool fForceTranslate = false;
+
+							fHandled = (ks.vk == VK_LWIN || ks.vk == VK_RWIN) ? true : false; //Imago 6/10 #73 ks.bWin is avail. for future use
 
                             TList<TRef<IKeyboardInput> >::Iterator iter(g_listKeyboardInputFilters);
                             while (!iter.End() && !fHandled) {
@@ -1192,6 +1206,8 @@ HRESULT Window::MessageLoop()
                             ks.countRepeat = LOWORD(msg.lParam);
 
                             bool fHandled = false;
+
+							fHandled = (ks.vk == VK_LWIN || ks.vk == VK_RWIN) ? true : false; //Imago 6/10 #73 ks.bWin is avail. for future use
 
                             TList<TRef<IKeyboardInput> >::Iterator iter(g_listKeyboardInputFilters);
                             while (!iter.End() && !fHandled) {

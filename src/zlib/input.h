@@ -37,6 +37,7 @@ public:
     bool bControl;
     bool bAlt;
     bool bDown;
+	bool bWin; //Imago 6/10 #73 for future use
     WORD countRepeat;
 };
 
