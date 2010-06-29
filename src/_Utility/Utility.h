@@ -1242,6 +1242,7 @@ class   CollisionQueue
 class UTL
 {
     public:
+		static bool PrivilegedUser(const char* szName); //Imago 6/10
         //Get an artwork file, downloading if needed
         //  S_OK    ... file exists and has a non-zero length
         //  S_FALSE ... file exists, but has a length of zero

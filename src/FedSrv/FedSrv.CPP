@@ -597,7 +597,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   }
 
 
-  if(pfsPlayer->PrivilegedUser()){ //Avalanche: Let admins bypass most checks.
+  if(UTL::PrivilegedUser(pfsPlayer->GetName())){ //Avalanche: Let admins bypass most checks.
   // check to see if the mission is running and whether joiners are allowed
   ImissionIGC * pMission = pfsMission->GetIGCMission();
   OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
@@ -712,7 +712,7 @@ if (pfsMission->RequiresInvitation())
 
   // mmf added check here for special users so they can join any game
 
-  if (!pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
+  if (!pfsPlayer->CanCheat() && !UTL::PrivilegedUser(pfsPlayer->GetName()))
   {
     // make sure the player meets the rank requirements for this mission
     RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();

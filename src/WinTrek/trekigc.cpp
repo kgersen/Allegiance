@@ -4119,7 +4119,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 		//TheBored 25-JUN-07: Checking to see if admin is PMing the user. If so, bypass the filter.
 		bool bPrivilegedUserPM = false;
 		PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
-        if((ctRecipient == CHAT_INDIVIDUAL) && (ppi->PrivilegedUser()))
+        if((ctRecipient == CHAT_INDIVIDUAL) && (UTL::PrivilegedUser(ppi->CharacterName())))
 		{
 			bPrivilegedUserPM = true;
 		}

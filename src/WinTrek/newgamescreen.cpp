@@ -1042,11 +1042,11 @@ public:
         RankID rankOwner = trekClient.MyPlayerInfo()->GetPersistScore(NA).GetRank();
         if (!pszReason)
         {
-			if ( (rankOwner < pfmMissionParams->missionparams.iMinRank) && !trekClient.MyPlayerInfo()->PrivilegedUser() )
+			if ( (rankOwner < pfmMissionParams->missionparams.iMinRank) && !UTL::PrivilegedUser(trekClient.m_szCharName))
             {
                 pszReason = "Skill Level must be set low enough for you to play.";
             }
-			else if ( (rankOwner > pfmMissionParams->missionparams.iMaxRank) && !trekClient.MyPlayerInfo()->PrivilegedUser() )
+			else if ( (rankOwner > pfmMissionParams->missionparams.iMaxRank) && !UTL::PrivilegedUser(trekClient.m_szCharName) )
             {
                 pszReason = "Skill Level must be set high enough for you to play.";
             }

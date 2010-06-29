@@ -17,6 +17,23 @@ const Rotation      c_rotationZero(0.0f, 0.0f, 1.0f, 0.0f);
 char    UTL::s_artworkPath[MAX_PATH] = "";
 char    UTL::s_szUrlRoot[MAX_PATH] = "";
 
+// mmf added member function for use for things like circumventing rank restrictions
+//TheBored 25-JUN-07: Edited function to be case insensitive (@HQ == @hq)
+//Imago centralized and enhanced /w appending admin defined list 6/10
+bool UTL::PrivilegedUser(const char* szName) {
+	size_t nameLen;
+	nameLen=strlen(szName);
+
+	if ( (nameLen>2) && ( ((strncmp(szName,"?",1))==0) || ((strncmp(szName,"+",1))==0) 
+		|| ((strncmp(szName,"$",1))==0) ) ) return true;
+	if ( (nameLen>3) && ( (_stricmp(szName+(nameLen-3),"@HQ"))==0 ) ) return true;
+	if ( (nameLen>4) && ( (_stricmp(szName+(nameLen-4),"@Dev"))==0 ) ) return true;
+	if ( (nameLen>6) && ( (_stricmp(szName+(nameLen-6),"@Alleg"))==0 ) ) return true;
+	//TheBored 25-JUN-07: Added @Zone
+	if ( (nameLen>5) && ( (_stricmp(szName+(nameLen-5),"@Zone"))==0 ) ) return true;
+	return false;
+}
+
 void UTL::SetUrlRoot(const char * szUrlRoot)
 {
     assert (szUrlRoot);
