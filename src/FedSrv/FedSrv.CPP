@@ -5392,7 +5392,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                       dp.time0 = pShip->GetLastUpdate();
 
                       // Potentially unsafe
-                      // DisplaceProbe(pcluster, &position, pet->GetRadius());
+                      DisplaceProbe(pcluster, &position, pet->GetRadius()); //Imago 6/10 I live on the edge of unsafe!
 
                       dp.p0 = position;
                       dp.pprobetype = (IprobeTypeIGC*)pet;
