@@ -4314,13 +4314,11 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 	  && (sideID != pfsPlayer->GetLastSide()) && (pfsPlayer->GetLastSide() != SIDE_TEAMLOBBY))
 	  return DPR_NoDefections;
 
-  if (psideCurrent && psideCurrent->GetObjectID() != SIDE_TEAMLOBBY)
-  {
-    if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED))
+  //Imago #12 6/10
+  if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED) && (psideCurrent && psideCurrent->GetObjectID() != SIDE_TEAMLOBBY))
       return DPR_NoDefections;
-    else if (pmp->bLockSides && sideID != SIDE_TEAMLOBBY) // TE: Added 2nd check to allow them to go to NOAT any time)
+    else if (pmp->bLockSides && sideID != SIDE_TEAMLOBBY) // TE: Added 2nd check to allow them to go to NOAT any time) --did you even try testing this? 
       return DPR_SidesLocked;
-  }
 
   if (sideID != SIDE_TEAMLOBBY)
   {

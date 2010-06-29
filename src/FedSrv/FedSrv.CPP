@@ -6294,7 +6294,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		// TE: Commented this block since locked sides now handle balancing
 		// mmf MaxBalance is now used instead of lock sides so put this back, not that lock sides is that useful
-        if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
+		// #12 Unable to leave a locked team (to NOAT) Imago 6/10 --^ lol
+        if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides && sideID == SIDE_TEAMLOBBY)
         {
           // turn it down because the sides are locked
           BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
