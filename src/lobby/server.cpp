@@ -101,6 +101,9 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		// location
 		char * szLoc =  FM_VAR_REF(pfmLogon, szLocation);
 		pServer->SetLocation(szLoc);
+		//Imago #2 6/10
+		char * szPrivilegedUsers =  FM_VAR_REF(pfmLogon, szPrivilegedUsers);
+		pServer->SetPrivilegedUsers(szPrivilegedUsers);
 		// max games
 		pServer->SetMaxGamesAllowed(pfmLogon->MaxGames);
 		
@@ -162,6 +165,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		  //Imago 6/26/08
 		  //Moved this code inside the mission check
 		  //now the lobby does not crash trying to find a disconnected server's IP
+
 
 			//KGJV #114 - server didnt fill szServerAddr but only reserved the bits. We fill it here.
 			debugf("FM_LS_LOBBYMISSIONINFO:%d (pmission:%x cookie:%x) sent cookie:%x connected?%i\n",pfmLobbyMissionInfo->dwPort,pMission,pfmLobbyMissionInfo->dwCookie,pfmLobbyMissionInfo->dwCookie,(pthis->IsConnected()) ? 1 : 0);  

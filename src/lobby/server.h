@@ -130,6 +130,13 @@ public:
 	  Strncpy(m_szLocation,loc,sizeof(m_szLocation)); //Imago use Safe string copy 6/10
 	  m_szLocation[sizeof(m_szLocation)-1]='\0';
   };
+  
+  //Imago 6/10 #2
+  char *GetPrivilegedUsers() {return m_szPrivilegedUsers;} 
+  void SetPrivilegedUsers(char *szPrivilegedUsers) {
+	  Strncpy(m_szPrivilegedUsers,szPrivilegedUsers,sizeof(m_szPrivilegedUsers));
+	  m_szPrivilegedUsers[sizeof(m_szPrivilegedUsers)-1]='\0';
+  }
 
   void Pause(bool fPause);
 
@@ -151,9 +158,9 @@ private:
   int m_cStaticCoreInfo;
   DWORD m_dwStaticCoreMask;
   int  m_iMaxGames;
-  // Imago
-  int  m_iCurGames;
+  int  m_iCurGames;  // Imago
   char m_szLocation[c_cbFileName]; // it's not a filename but we want it short
+  char m_szPrivilegedUsers[512]; // Imago 6/10 #2
 };
 
 #endif

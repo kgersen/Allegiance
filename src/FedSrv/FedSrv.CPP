@@ -597,7 +597,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   }
 
 
-  if(UTL::PrivilegedUser(pfsPlayer->GetName())){ //Avalanche: Let admins bypass most checks.
+  if(UTL::PrivilegedUser(pfsPlayer->GetName(),-1)){ //Avalanche: Let admins bypass most checks. //Imago 6/10 #2
   // check to see if the mission is running and whether joiners are allowed
   ImissionIGC * pMission = pfsMission->GetIGCMission();
   OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
@@ -712,7 +712,7 @@ if (pfsMission->RequiresInvitation())
 
   // mmf added check here for special users so they can join any game
 
-  if (!pfsPlayer->CanCheat() && !UTL::PrivilegedUser(pfsPlayer->GetName()))
+  if (!pfsPlayer->CanCheat() && !UTL::PrivilegedUser(pfsPlayer->GetName(),-1)) //Imago 6/10 #2
   {
     // make sure the player meets the rank requirements for this mission
     RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
@@ -7379,6 +7379,7 @@ void ProcessNetworkMessages()
 			BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
 			  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
 			  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
+			  FM_VAR_PARM(UTL::GetPrivilegedUsers(-1), CB_ZTS) // Imago #2 6/10
 			END_PFM_CREATE
 			pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
 			//Imago NYI: adjust max games based if we're under load
@@ -8120,6 +8121,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
 	  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
 	  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
+	  FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)), CB_ZTS) // Imago #2 6/10
   END_PFM_CREATE
   pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
   pfmLogon->MaxGames = g.cMaxGames; // KGJV #114
@@ -8746,6 +8748,12 @@ void LoadSettings()
     {
         if (FAILED(LoadRegString(hKey, "AuthServer", g.strAuthServer)))
           g.strAuthServer = "Pointweb01"; // default for all developers
+		
+		ZString zUsers;
+		if (!FAILED(LoadRegString(hKey, "PrivilegedUsers", zUsers))) {
+			ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
+			UTL::SetPrivilegedUsers((PCC)zUsers.Scramble(zInfo),-1); //Imago 6/10
+		}
 
         dwValue=0;
         cbValue = sizeof(dwValue);

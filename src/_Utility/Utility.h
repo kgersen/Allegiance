@@ -1242,7 +1242,11 @@ class   CollisionQueue
 class UTL
 {
     public:
-		static bool PrivilegedUser(const char* szName); //Imago 6/10
+		//Imago 6/10 #2
+		static void SetPrivilegedUsers(const char * szPrivilegedUsers, DWORD dwCookie);
+		static ZString GetPrivilegedUsers(DWORD dwCookie);
+		static bool PrivilegedUser(const char* szName, DWORD dwCookie); 
+
         //Get an artwork file, downloading if needed
         //  S_OK    ... file exists and has a non-zero length
         //  S_FALSE ... file exists, but has a length of zero
@@ -1288,6 +1292,7 @@ class UTL
     private:
         static char     s_artworkPath[MAX_PATH];
         static char     s_szUrlRoot[MAX_PATH];
+		static TMap<DWORD,ZString> m_PrivilegedUsersMap; //Imago 6/10
 };
 
 class   BytePercentage

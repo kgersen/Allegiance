@@ -1830,7 +1830,7 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
 
       RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
 	  // mmf also added check here for special players
-	  if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat() && !UTL::PrivilegedUser(pfsPlayer->GetName()))
+	  if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat() && !UTL::PrivilegedUser(pfsPlayer->GetName(),-1)) //Imago 6/10
       {
         RemovePlayerFromMission(pfsPlayer, QSR_RankLimits);
       }
@@ -3796,7 +3796,7 @@ void CFSMission::QueueLobbyMissionInfo()
   }
 #endif
 
-  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114
+  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)
     FM_VAR_PARM(m_misdef.misparms.strGameName, CB_ZTS)
@@ -3805,6 +3805,7 @@ void CFSMission::QueueLobbyMissionInfo()
 	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
 	FM_VAR_PARM((PCC)(g.strLocalAddress),CB_ZTS) // KGJV #114 - ServerName
 	FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
+	FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)),CB_ZTS) //Imago 6/10
   END_PFM_CREATE
   pfmLobbyMissionInfo->dwPort = dwPort;
   pfmLobbyMissionInfo->dwCookie = GetCookie();

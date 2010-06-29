@@ -15,13 +15,48 @@
 const Rotation      c_rotationZero(0.0f, 0.0f, 1.0f, 0.0f);
 
 char    UTL::s_artworkPath[MAX_PATH] = "";
-char    UTL::s_szUrlRoot[MAX_PATH] = "";
+char    UTL::s_szUrlRoot[MAX_PATH] = ""; // (unused (or ripped out) Imago 6/10)
+TMap<DWORD,ZString> UTL::m_PrivilegedUsersMap;
+
+//Imago centralized and enhanced /w appending admin defined list 6/10
+void UTL::SetPrivilegedUsers(const char * szPrivilegedUsers, DWORD dwCookie) { 
+	m_PrivilegedUsersMap.Set(dwCookie,szPrivilegedUsers);
+}
+ZString UTL::GetPrivilegedUsers(DWORD dwCookie) { 
+	ZString zPrivilegedUsers;
+	zPrivilegedUsers.SetEmpty();
+	m_PrivilegedUsersMap.Find(dwCookie,zPrivilegedUsers); 
+	return zPrivilegedUsers;
+}
 
 // mmf added member function for use for things like circumventing rank restrictions
 //TheBored 25-JUN-07: Edited function to be case insensitive (@HQ == @hq)
-//Imago centralized and enhanced /w appending admin defined list 6/10
-bool UTL::PrivilegedUser(const char* szName) {
-	size_t nameLen;
+bool UTL::PrivilegedUser(const char* szName, DWORD dwCookie) {
+	
+	//Imago 6/10 #2
+	ZString zName = szName;
+	if (m_PrivilegedUsersMap.Count() > 0) {
+		ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
+		ZString zPrivilegedUsers = GetPrivilegedUsers(dwCookie);
+		zPrivilegedUsers = zPrivilegedUsers.Unscramble(zInfo);
+		ZString zPrivilegedUser = zPrivilegedUsers.GetToken();
+		int iChop = 0;
+		iChop = zName.Find('@');
+		if (iChop == -1) {
+			iChop = zName.Find('(') + 1;
+		}
+		while (!zPrivilegedUser.IsEmpty()) {
+			if (zPrivilegedUser.ToUpper() == zName.ToUpper() 
+				|| zPrivilegedUser.ToUpper() == zName.Left(iChop).ToUpper() 
+				|| zPrivilegedUser.ToUpper() == zName.Left(iChop).ToUpper()) {
+				return true;
+			}
+			zPrivilegedUser = zPrivilegedUsers.GetToken();
+		}
+	}
+	// /#2
+
+	size_t nameLen; 
 	nameLen=strlen(szName);
 
 	if ( (nameLen>2) && ( ((strncmp(szName,"?",1))==0) || ((strncmp(szName,"+",1))==0) 
