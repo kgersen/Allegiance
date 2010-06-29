@@ -2,7 +2,7 @@
 
 //Imago 6/10
 
-const int kBufferSize = 1024;
+const int kBufferSize = 8192;
 
 static struct ErrorEntry {
     int nID;

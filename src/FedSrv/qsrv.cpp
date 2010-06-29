@@ -48,7 +48,7 @@
 #define ZEnd32(pData) _ZEnd32(pData)
 #define ZEnd16(pData) _ZEnd16(pData)
 
-const int kBufferSize = 1024;
+const int kBufferSize = 8192;
         
 SOCKET SetUpListener(const char* pcAddress, int nPort);
 void QServerCnxn(SOCKET ListeningSocket);
@@ -90,7 +90,7 @@ DWORD WINAPI QueryHandler(void* sd_)
 	u_long iMode = 0;
 	int ret = ioctlsocket(sd, FIONBIO, &iMode);
     if (!UNSPackets(sd)) {
-		printf("%s\n",(PCC)WSAGetLastErrorMessage("Query server message delivery failed"));
+		debugf("%s\n",(PCC)WSAGetLastErrorMessage("Query server message delivery failed"));
         nRetval = 3;
     }
 	iMode = 1;
@@ -123,17 +123,82 @@ DWORD WINAPI QueryHandler(void* sd_)
 	}
 }
 
- bool UNSPackets(SOCKET sd)
-{
+ bool UNSPackets(SOCKET sd) {
 	char acSendBuffer[kBufferSize] = {'\0'};
-    int nBytes = 0;
+	char szBuffer[kBufferSize] = {'\0'};
+
+	ZString szServer = "No games";	
+	int iMostships = 0;
+	int iTotalships = 0;
+	int iTotallag = 1;
+	int iMaxships = 0;
+	byte iGametype = 0;
 	int nPlayers = 0;
-	char szBuffer[8192] = {'\0'};
+	bool bAutobalance = false;
+
 	const ListFSMission * lMissions = CFSMission::GetMissions();
 	for (LinkFSMission * plinkFSMis = lMissions->first(); plinkFSMis; plinkFSMis = plinkFSMis->next())
 	{
 		CFSMission * pfsMission = plinkFSMis->data();
 		const ShipListIGC * plistShip = pfsMission->GetIGCMission()->GetShips();
+		int iShips = plistShip->n();
+		iTotalships += iShips;
+		if (iShips > iMostships) {
+			szServer = pfsMission->GetMissionDef()->misparms.szIGCStaticFile;
+			bAutobalance = pfsMission->GetMissionDef()->misparms.iMaxImbalance;
+			if (pfsMission->GetMissionDef()->misparms.IsDeathMatchGame()) {
+				iGametype = 0;
+			}
+			if (pfsMission->GetMissionDef()->misparms.IsFlagsGame()) {
+				iGametype = 8;
+			}
+			if (pfsMission->GetMissionDef()->misparms.IsConquestGame()) {
+				iGametype = 6;
+			}
+		}
+		iMaxships += pfsMission->GetMissionDef()->misparms.nTotalMaxPlayersPerGame;
+		for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
+		{
+			if (ISPLAYER(plinkShip->data()) &&  !plinkShip->data()->IsGhost()) {
+				CFSPlayer* pfsPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
+				DWORD lag = pfsPlayer->GetAverageLatency();
+				iTotallag += lag;
+			}
+		}
+
+	}
+	int ilag = (iTotalships > 0) ? iTotallag / iTotalships : 1; //no you lag HPB
+	int iver = MSGVER;
+
+    int nBytes = 10;
+	memcpy(acSendBuffer,"AllegQstat",nBytes);
+	
+	memcpy(acSendBuffer+nBytes,&ilag,sizeof(char));
+	nBytes++;
+
+	memcpy(acSendBuffer+nBytes,&iver,sizeof(char));
+	nBytes++;
+
+	memcpy(acSendBuffer+nBytes," ",sizeof(char));
+	nBytes++;
+
+	memcpy(acSendBuffer+nBytes,&iGametype,sizeof(char)); //TODO fix byte (gametype = bit &15 and imbal = bit &16)
+	nBytes++;
+
+	memcpy(acSendBuffer+nBytes,"    ",sizeof(char) * 4);
+	nBytes += 4;
+
+	memcpy(acSendBuffer+nBytes,(PCC)szServer,szServer.GetLength());
+	nBytes += szServer.GetLength() + 1;
+	int iServerBytes = nBytes;
+	nBytes = 0;
+	//ya, i'm lazy...
+	lMissions = CFSMission::GetMissions();
+	for (LinkFSMission * plinkFSMis = lMissions->first(); plinkFSMis; plinkFSMis = plinkFSMis->next())
+	{
+		CFSMission * pfsMission = plinkFSMis->data();
+		const ShipListIGC * plistShip = pfsMission->GetIGCMission()->GetShips();
+
 		for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
 		{
 			if (ISPLAYER(plinkShip->data()) &&  !plinkShip->data()->IsGhost()) {
@@ -141,7 +206,7 @@ DWORD WINAPI QueryHandler(void* sd_)
 				PlayerScoreObject pso = pfsPlayer->GetPlayerScoreObject();
 				nPlayers++;
 
-				memcpy(szBuffer,&nPlayers,sizeof(char));
+				memcpy(szBuffer+nBytes,&nPlayers,sizeof(char));
 				nBytes++;
 
 				if (pfsPlayer->GetIGCShip() && pfsPlayer->GetIGCShip()->GetHullType()) {
@@ -152,7 +217,7 @@ DWORD WINAPI QueryHandler(void* sd_)
 				}
 				nBytes++;
 
-				DWORD lag = pfsPlayer->GetAverageLatency();
+				DWORD lag = pfsPlayer->GetAverageLatency(); //TODO this should hook up to w0dkas PING
 				memcpy(szBuffer+nBytes,&lag,sizeof(char));
 				nBytes++;
 
@@ -160,7 +225,7 @@ DWORD WINAPI QueryHandler(void* sd_)
 				memcpy(szBuffer+nBytes,&kills,sizeof(char));
 				nBytes++;
 
-				if (pfsPlayer->GetSide()) {
+				if (pfsPlayer->GetSide()) { //TODO match up
 					ObjectID team = pfsPlayer->GetSide()->GetObjectID();
 					memcpy(szBuffer+nBytes,&team,sizeof(char));
 				} else {
@@ -185,34 +250,25 @@ DWORD WINAPI QueryHandler(void* sd_)
 				nBytes += 4;
 
 				ZString name = pfsPlayer->GetName();
-				name += "\0";
 				memcpy(szBuffer+nBytes,(PCC)name,name.GetLength());
-				nBytes += name.GetLength() + 1;
+				nBytes += name.GetLength();
 			}
 		}
 	}
-	
-	
-	// $> qstat.exe -P -R -bfs 192.168.0.252:25000 192.168.0.252:25001 ...
-	/*
-	memcpy(acSendBuffer,"AllegQstatN cz    MapName",25);
-	memcpy(acSendBuffer+26,"1zczcz     iMago",16);
-	memcpy(acSendBuffer+26+17,"2zczcz     ImAgo",16);
-	memcpy(acSendBuffer+26+17+17,"3zczcz     ImaGo",16);
-	*/
+	memcpy(acSendBuffer+iServerBytes,&szBuffer,nBytes);
+	int nSent = 0;
+	int nTemp = 0;
+	do {
+		nTemp = send(sd,acSendBuffer,kBufferSize, 0);
+		if (nTemp == SOCKET_ERROR) {
+			return false;
+		}
+		nSent += nTemp;
+	} while (nSent < kBufferSize && nTemp != 0);
 
-	int nTemp = send(sd,acSendBuffer,kBufferSize, 0);
-	if (nTemp > 0) {
-		printf("Sent: %s to qstat\n",acSendBuffer);
-	}
-	else if (nTemp == SOCKET_ERROR) {
+	if (nTemp == 0 && nSent != kBufferSize) {
 		return false;
 	}
-	else {
-		printf("qstat unexpectedly dropped connection!\n");
-		return true;
-	}
 
-    return true;
+    return true; //Payload delivered!
 }
-
