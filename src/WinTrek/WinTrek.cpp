@@ -7668,27 +7668,24 @@ public:
 
                             if (trekClient.GetShip()->GetBaseHullType() != NULL)
                             {
-                               //What is the maximum desired rate of turn for this field of view?
+                                //What is the maximum desired rate of turn for this field of view?
                                 //Use the same calculation as for turrets.
                                 //Keep in sync with wintrek.cpp's FOV by throttle
                                 static const float  c_minRate = RadiansFromDegrees(7.5f);
-                                //static const float  c_maxRate = RadiansFromDegrees(75.0f);                          // removed
-                                //float   maxSlewRate = c_minRate +                                                   // by			Imago #88 6/11/10
-                                //                      (c_maxRate - c_minRate) * fov / s_fMaxFOV;                    // madpeople
-                                float zoomMod = fov / s_fMaxFOV;
+                                static const float  c_maxRate = RadiansFromDegrees(75.0f);
+                                float   maxSlewRate = c_minRate +
+                                                      (c_maxRate - c_minRate) * fov / s_fMaxFOV;
 
                                 const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
                                 {
                                     float               pitch = pht->GetMaxTurnRate(c_axisPitch);
-                                    float               maxPitchRate = c_minRate + (pitch - c_minRate) * zoomMod;
-                                    if (pitch > maxPitchRate)
-                                        js.controls.jsValues[c_axisPitch] *= maxPitchRate / pitch;
+                                    if (pitch > maxSlewRate)
+                                        js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
                                 }
                                 {
                                     float               yaw = pht->GetMaxTurnRate(c_axisYaw);
-                                    float               maxYawRate = c_minRate + (yaw - c_minRate) * zoomMod;
-                                    if (yaw > maxYawRate)
-                                        js.controls.jsValues[c_axisYaw] *= maxYawRate / yaw;
+                                    if (yaw > maxSlewRate)
+                                        js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
                                 }
                             }
                         }
