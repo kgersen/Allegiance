@@ -3,7 +3,7 @@
 **
 **  File:    shipIGC.cpp
 **
-**  Author: 
+**  Author:
 **
 **  Description:
 **      Implementation of the CshipIGC class. This file was initially created by
@@ -114,7 +114,7 @@ void    CshipIGC::ReInitialize(DataShipIGC * dataShip, Time now)
     else
         assert (false);
 
-    m_turnRates[c_axisYaw] = m_turnRates[c_axisPitch] = m_turnRates[c_axisRoll] = 
+    m_turnRates[c_axisYaw] = m_turnRates[c_axisPitch] = m_turnRates[c_axisRoll] =
                              m_controls.jsValues[c_axisYaw] = m_controls.jsValues[c_axisPitch] = m_controls.jsValues[c_axisRoll] = 0.0f;
     m_controls.jsValues[c_axisThrottle] = -1.0f;
 
@@ -165,7 +165,7 @@ HRESULT     CshipIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
 
     DataShipIGC* dataShip = (DataShipIGC*) data;
 
-    //If the ship already exists ... 
+    //If the ship already exists ...
     IshipIGC* pshipReplace = pMission->GetShip(dataShip->shipID);
     if (pshipReplace)
     {
@@ -282,14 +282,14 @@ void    CshipIGC::Update(Time now)
                 SetRipcordModel(NULL);
         }
         // mmf 03/22/07 fix don't let energy go negative
-        if((m_myHullType.GetRechargeRate() > 0.0f)||(m_energy != 0.0f)) 
-		{  
+        if((m_myHullType.GetRechargeRate() > 0.0f)||(m_energy != 0.0f))
+		{
 			m_energy += m_myHullType.GetRechargeRate() * dt;
-			float   eMax = m_myHullType.GetMaxEnergy(); 
-			if (m_energy > eMax) 
-				m_energy = eMax; 
-			else if (m_energy < 0.0f) 
-				m_energy = 0.0f; 
+			float   eMax = m_myHullType.GetMaxEnergy();
+			if (m_energy > eMax)
+				m_energy = eMax;
+			else if (m_energy < 0.0f)
+				m_energy = 0.0f;
 		}
 
         {
@@ -374,7 +374,7 @@ void    CshipIGC::Update(Time now)
 
                 m_warningMask |= c_wmOutOfBounds;
 
-                float   d = dt * 
+                float   d = dt *
                             (r2 - oob) /
                             (50.0f * oob);      //50 == arbitrary constant to adjust damage received
                 assert (d >= 0.0f);
@@ -436,7 +436,7 @@ int         CshipIGC::Export(void* data) const
 
         dataShip->pilotType = m_pilotType;
         dataShip->abmOrders = m_abmOrders;
-        dataShip->baseObjectID = m_pbaseData 
+        dataShip->baseObjectID = m_pbaseData
                                  ? m_pbaseData->GetObjectID() : NA;
 
         dataShip->nParts = m_parts.n();
@@ -472,17 +472,17 @@ static const float  directions[][3] = {
                                         { 0.0f, -1.0f,  0.0f},
                                         { 0.0f,  0.0f,  1.0f},
                                         { 0.0f,  0.0f, -1.0f},
-                                       
+
                                         { sqrt1o2,  sqrt1o2, 0.0f },
                                         {-sqrt1o2,  sqrt1o2, 0.0f },
                                         { sqrt1o2, -sqrt1o2, 0.0f },
                                         {-sqrt1o2, -sqrt1o2, 0.0f },
-                                       
+
                                         { sqrt1o2, 0.0f,  sqrt1o2 },
                                         {-sqrt1o2, 0.0f,  sqrt1o2 },
                                         { sqrt1o2, 0.0f, -sqrt1o2 },
                                         {-sqrt1o2, 0.0f, -sqrt1o2 },
-                                       
+
                                         { 0.0f,  sqrt1o2,  sqrt1o2 },
                                         { 0.0f, -sqrt1o2,  sqrt1o2 },
                                         { 0.0f,  sqrt1o2, -sqrt1o2 },
@@ -538,7 +538,7 @@ static void Separate(const CollisionEntry&  entry,
         if (entry.m_hts2 >= c_htsConvexHullMin)
             directionBest -= pHitTest2->GetCenter(entry.m_hts2);
         directionBest.SetNormalize();
-            
+
         Vector  eA = pHitTest1->GetMinExtreme(entry.m_hts1, dpLocal,
                                               o, directionBest);
         Vector  eB = pHitTest2->GetMaxExtreme(entry.m_hts2, directionBest);
@@ -589,8 +589,8 @@ static void Separate(const CollisionEntry&  entry,
     }
     while (++attempt < c_maxAttempts);
 
-    *pNormal = directionBest * pHitTest2->GetOrientation();    
-                        
+    *pNormal = directionBest * pHitTest2->GetOrientation();
+
     //How far do we need to displace the objects so their extreme points
     //along the separation vector do not intersect? (plus a fudge factor --
     //s will be negative)
@@ -611,7 +611,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
 {
     const float c_impactDamageCoefficient = 1.0f / 128.0f;
     const float c_impactJiggleCoefficient = 1.0f / 20.0f;
-    
+
     ObjectType  type = pModel->GetObjectType();
     switch (type)
     {
@@ -691,7 +691,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                         ReceiveDamage(c_dtmParticle,
                                       2.0f * damage1,
                                       timeCollision,
-                                      position1, position2, 
+                                      position1, position2,
                                       pModel);
                     }
 
@@ -780,7 +780,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
 
 			                float   hp1 = GetHitPoints();
 			                if (m_mountedOthers[ET_Shield])
-			                    hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
+			                    hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() *
 			                          ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetMaxStrength();
 			                float   hp2 = ((IdamageIGC*)pModel)->GetHitPoints();
 
@@ -835,7 +835,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                             break;
                     }
                 }
-                else if (m_myHullType.HasCapability(c_habmBoard) && 
+                else if (m_myHullType.HasCapability(c_habmBoard) &&
                          (!GetMyMission()->GetMissionParams()->bInvulnerableStations) &&
                          (pStation->GetShieldFraction() < GetMyMission()->GetFloatConstant(c_fcidDownedShield)))
                 {
@@ -950,7 +950,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
 
                 float   hp1 = GetHitPoints();
                 if (m_mountedOthers[ET_Shield])
-                    hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
+                    hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() *
                           ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetMaxStrength();
                 float   hp2 = ((IdamageIGC*)pModel)->GetHitPoints();
 
@@ -1031,7 +1031,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 }
 				// mmf 3/08 drones (like fighter drones) docking at carrier crash the server
 				// if pModel is a drone skip this part (i.e. don't let them dock)
-				// 
+				//
                 else if ( (habmHim & c_habmCarrier) && (this->GetPilotType() == c_ptPlayer) )// mmf added && ... tweaked 4/08
                 {
                     if ((habmMe & c_habmLandOnCarrier) &&
@@ -1136,7 +1136,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             float   hp1 = GetHitPoints();
             if (m_mountedOthers[ET_Shield])
 				// terralthra fix, this was an = should be a +=, comment added by mmf
-                hp1 += ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
+                hp1 += ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() *
                       ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetMaxStrength();
 
             float   hp2 = ((IdamageIGC*)pModel)->GetHitPoints();
@@ -1170,7 +1170,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                     ((IdamageIGC*)pModel)->ReceiveDamage(c_dmgidCollision,
                                                          hp1 * damage2 / (hp1 + damage2),
                                                          timeCollision,
-                                                         position2, position1, 
+                                                         position2, position1,
                                                          this);
                 }
             }
@@ -1296,8 +1296,9 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
             }
         }
     }
-    assert (m_fraction >= 0.0f);
-    assert (m_fraction <= 1.0f);
+    //Imago 6/10
+    //assert (m_fraction >= 0.0f);
+    //assert (m_fraction <= 1.0f);
 
     return dr;
 }
@@ -1320,7 +1321,7 @@ void CshipIGC::SetBaseHullType(IhullTypeIGC* newVal)
         //The ship was in a cluster when it changed hull types
         //(probably an ejecting). Go do almost all the stuff that
         //a SetCluster() would do (but avoid the change cluster callback
-        //and 
+        //and
         positionOld = GetPosition();
 
         pclusterOld->DeleteModel(this);
@@ -1675,9 +1676,9 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
 					// bahdohday&AEM 7.09.07 Added check to allow certain wingmen drones to never run away: if they have a nan in slot 1 or are have a station as their target
 					if ( (m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0 ) || ( m_commandTargets[c_cmdAccepted] && (m_commandTargets[c_cmdAccepted]->GetObjectType() == OT_station) ) )
 					{
-						bRunAway = false; 
-					} 
-					else 
+						bRunAway = false;
+					}
+					else
 					{
 						bRunAway = m_fraction < m_fractionLastOrder; //previously just this line was here
 					}
@@ -1777,7 +1778,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                             else
                             {
                                 static const float  c_d2AlwaysRun = 1000.0f;
-                                if (d2Enemy > c_d2AlwaysRun * c_d2AlwaysRun)                        
+                                if (d2Enemy > c_d2AlwaysRun * c_d2AlwaysRun)
                                     bRunAway = (d2Enemy < d2Friend);
                             }
                         }
@@ -1801,7 +1802,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
 						//  debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), positionMe.x, positionMe.y, positionMe.z);
 						//}
 						//mmf end debugging code
-						
+
 						if (pmodel)
                         {
                             SetCommand(c_cmdPlan, pmodel, c_cidGoto);
@@ -1901,7 +1902,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                     }
                 }
 
-                SetStateBits(miningMaskIGC | wantsToMineMaskIGC, stateM); 
+                SetStateBits(miningMaskIGC | wantsToMineMaskIGC, stateM);
             }
         }
     }
@@ -2009,7 +2010,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                         //If we can't find a place to unload ... stick around here for lack of a better place to go
                                         if (pmodel)
                                         {
-                                            float   capacity = GetMyMission()->GetFloatConstant(c_fcidCapacityHe3) * 
+                                            float   capacity = GetMyMission()->GetFloatConstant(c_fcidCapacityHe3) *
                                                                GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
 
                                             pship->SetCommand(c_cmdPlan, pmodel, c_cidGoto);
@@ -2020,7 +2021,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                         }
 										else { // mmf added debugf and else curly braces
                                             pship->SetCommand(c_cmdAccepted, NULL, c_cidNone);
-											// debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+											// debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n",
 											//	GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
 										}
                                     }
@@ -2067,10 +2068,10 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                                         NULL, NULL, NULL, NULL, c_sabmUnload);
 
                         //If we can't find a place to unload ... stick around here for lack of a better place to go
-                        if (pmodel) 
+                        if (pmodel)
                             SetCommand(c_cmdPlan, pmodel, c_cidGoto);
 						// mmf added else and debugf
-						// else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n", 
+						// else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n",
 						// 						GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
                     }
                 }
@@ -2092,7 +2093,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 m_controls.jsValues[c_axisThrottle] = -1.0f;
 
 		        // Zero the motion & weapon bits
-                SetStateBits(weaponsMaskIGC | (buttonsMaskIGC & ~miningMaskIGC), 0); 
+                SetStateBits(weaponsMaskIGC | (buttonsMaskIGC & ~miningMaskIGC), 0);
 
                 return;
             }
@@ -2216,7 +2217,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     float lifespan = m_mountedWeapons[0]->GetLifespan();
 
                     // commenting this to get strafe behavior from the drones BSW 10/28/1999
-                    /* 
+                    /*
                     if ((!bDodge) && (t <= lifespan * 0.25f))
                     {
                         //We are close and not dodging anything so ...
@@ -2264,7 +2265,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     // make the drone always fly hard - throttle range 0.5 to 1.0, depending on how they are
                     // angled to their target
                     m_controls.jsValues[c_axisThrottle] = 0.5f + ((pi - da) / (2.0f * pi));
-					
+
                     const float c_fMaxOffAngle = 0.10f;
                     float lifespan = m_mountedWeapons[0]->GetLifespan();
 
@@ -2285,7 +2286,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                 state |= forwardButtonIGC;
                         }
                     }
-                  
+
                     SetStateBits(~selectedWeaponMaskIGC,
                                  ((da <= c_fMaxOffAngle) && (t <= lifespan * 0.9f))
                                  ? (state | allWeaponsIGC)
@@ -2467,7 +2468,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
             Vector  localThrust;
             if (m_stateM & (leftButtonIGC | rightButtonIGC |
                             upButtonIGC | downButtonIGC |
-                            forwardButtonIGC | backwardButtonIGC))   
+                            forwardButtonIGC | backwardButtonIGC))
             {
                 //Under manual control: find out which direction to thrust in
                 //get the throttle setting, but ramp between 0.2 and 1.0 (instead of 0.0 & 1.0)
@@ -2513,7 +2514,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
                 float   sm = m_myHullType.GetSideMultiplier();
 				// mmf added zero checks and debugf
 				if (sm == 0.0f) debugf("shipIGC.cpp ~2403 sm = 0 about to devide by zero\n");
-				if ((m_myHullType.GetBackMultiplier()==0.0f)&&(localThrust.z<=0.0f)) 
+				if ((m_myHullType.GetBackMultiplier()==0.0f)&&(localThrust.z<=0.0f))
 					debugf("shipIGC.cpp ~2405 backmultip = 0 about to devide by zero\n");
 				Vector  scaledThrust(localThrust.x / sm,
                                      localThrust.y / sm,
@@ -2552,17 +2553,17 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 			// cause an exception for debugging
 			// (*(int*)0) = 0;
 		}
-        // assert (*pVelocity * *pVelocity >= 0.0f); // mmf commented out 
+        // assert (*pVelocity * *pVelocity >= 0.0f); // mmf commented out
     }
 }
 
 void    CshipIGC::ProcessFractions(const CompactShipFractions& fractions)
 {
     SetFraction(fractions.GetHullFraction());
-    if (m_mountedOthers[ET_Shield])                                                             
-        ((IshieldIGC*)(m_mountedOthers[ET_Shield]))->SetFraction(fractions.GetShieldFraction()); 
-    SetFuel(fractions.GetFuel(m_myHullType.GetMaxFuel()));                                    
-    SetAmmo(fractions.GetAmmo(m_myHullType.GetMaxAmmo()));                                   
+    if (m_mountedOthers[ET_Shield])
+        ((IshieldIGC*)(m_mountedOthers[ET_Shield]))->SetFraction(fractions.GetShieldFraction());
+    SetFuel(fractions.GetFuel(m_myHullType.GetMaxFuel()));
+    SetAmmo(fractions.GetAmmo(m_myHullType.GetMaxAmmo()));
     SetEnergy(fractions.GetEnergy(m_myHullType.GetMaxEnergy()));
 }
 
@@ -2912,7 +2913,7 @@ void CshipIGC::SetSide(IsideIGC* pside)  //override the default SetSide method
         //You can only change sides from inside the neutral zone
         SetCluster(NULL);
         SetParentShip(NULL);
-        
+
         //Blow away the children
         ShipLinkIGC*    psl;
         while (psl = m_shipsChildren.first())   //intentional assignment
@@ -3239,7 +3240,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 					//pship->SeenBySide(pside)) //Imago - if VISIBILITY ever becomes an option it needs to work with RIPCORD 7/10/09 ALLYTD
 	            {
 	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
-	                if (pc) 
+	                if (pc)
 	                {
 	                    ShipPairLink*   spl = new ShipPairLink;
 	                    spl->data().pship = pship;
@@ -3252,7 +3253,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 			}
 		} else {
        		 //Make a list of undocked ships (on only our side) that are ripcord targets as well
-	        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next()) 
+	        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
 	        {
 	            IshipIGC*       pship = psl->data();
 	            if (pship != GetSourceShip())
@@ -3271,7 +3272,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 			}
 		}
     }
-	
+
 	ImodelIGC*      pmodelGoal = NULL;
     const Vector*   positionGoal = NULL;
     {
@@ -3302,20 +3303,20 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 	ImodelIGC*  pmodelRipcord = NULL;
 	if (pmodelGoal) //TheRock 13-12-2009 Allow ripcording to a probe or ship when a teleport is in the same sector.
 	{
-		if (pmodelGoal->GetObjectType() == OT_probe) 
+		if (pmodelGoal->GetObjectType() == OT_probe)
 		{
-			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip)) 
+			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip))
 			{
 				IprobeIGC* pProbeSelected = (IprobeIGC*)pmodelGoal;
-				if (pProbeSelected->GetCanRipcord(ripcordSpeed)) 
+				if (pProbeSelected->GetCanRipcord(ripcordSpeed))
 				{
 					pmodelRipcord = pProbeSelected;
-				}	
+				}
 			}
-		} 
-		else if (pmodelGoal->GetObjectType() == OT_ship) 
+		}
+		else if (pmodelGoal->GetObjectType() == OT_ship)
 		{
-			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip)) 
+			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip))
 			{
 				IshipIGC* pShipSelected = (IshipIGC*)pmodelGoal;
 				IhullTypeIGC*   pht = pShipSelected->GetBaseHullType();
@@ -3435,7 +3436,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 
         clustersVisited.first(pcluster);
 
-        //Push the destinations of the warps in pcluster onto the end the list of 
+        //Push the destinations of the warps in pcluster onto the end the list of
         //warps that are an extra jump away
         {
             for (WarpLinkIGC*   l = pcluster->GetWarps()->first(); (l != NULL); l = l->next())
@@ -3571,7 +3572,7 @@ void    CshipIGC::ResetWaypoint(void)
                                 rMajor = pprojectile->GetLifespan() * pprojectile->GetSpeed() * 0.5f;
                             else
                                 rMajor = ppt->GetScannerRange() * 0.4f;
-                            
+
                             db.position = p -
                                           (orientation.GetBackward() *
                                            rMajor) +
@@ -3615,7 +3616,7 @@ void    CshipIGC::ResetWaypoint(void)
                         ExpendableAbilityBitMask    eabm = ppt->GetCapabilities();
 
                         if ( (eabm & c_eabmRescueAny) ||
-                            ((eabm & c_eabmRescue) && 
+                            ((eabm & c_eabmRescue) &&
 							((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(),GetSide())))) //#ALLY - imago 7/3/09
                         {
                             o = Waypoint::c_oEnter;
@@ -3793,14 +3794,14 @@ bool    CshipIGC::bShouldUseRipcord(IclusterIGC*  pcluster)
                 	if ((pprobe->GetSide() == pside || pside->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY ripcord imago 7/8/09
                     	return true;
 				} else {
-                	if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed)) 
+                	if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed))
                     	return true;
 				}
             }
         }
         clustersVisited.first(pcluster);
 
-        //Push the destinations of the warps in pcluster onto the end the list of 
+        //Push the destinations of the warps in pcluster onto the end the list of
         //warps that are an extra jump away
         {
             for (WarpLinkIGC*   l = pcluster->GetWarps()->first(); (l != NULL); l = l->next())
@@ -4141,13 +4142,13 @@ bool                 MyHullType::CanMount(IpartTypeIGC* ppt, Mount  mountID) con
 {
     assert (m_pHullType);
     return m_pHullType->CanMount(ppt, mountID);
-}            
+}
 
 IhullTypeIGC*        MyHullType::GetSuccessorHullType(void) const
 {
     assert (m_pHullType);
     return m_pHullType->GetSuccessorHullType();
-}            
+}
 
 /*
 const char*          MyHullType::GetPilotHUDName(void) const
