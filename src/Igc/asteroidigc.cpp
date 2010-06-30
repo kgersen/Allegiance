@@ -3,7 +3,7 @@
 **
 **  File:	asteroidIGC.cpp
 **
-**  Author: 
+**  Author:
 **
 **  Description:
 **      Implementation of the CasteroidIGC class. This file was initially created by
@@ -91,7 +91,7 @@ int         CasteroidIGC::Export(void* data) const
         dataAsteroid->signature = GetSignature();
 
         dataAsteroid->fraction = m_fraction;
-        
+
         const char* pszName = GetName();
         if (*pszName == '\0')
             memcpy(dataAsteroid->name, GetName(), sizeof(dataAsteroid->name));
@@ -120,7 +120,7 @@ static const AsteroidTypeRow asteroidTypes[] =  //andon, added more 6/10
     { "asteroid",		"\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd06", "", "meteoricon" } },
     { "asteroid",		"\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd07", "", "meteoricon" } },
     { "asteroid",		"\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd03", "", "meteoricon" } },
-    { "asteroid",		"\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd05", "", "meteoricon" } },	
+    { "asteroid",		"\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd05", "", "meteoricon" } },
     { "asteroid",		"\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd06", "", "meteoricon" } },
     { "asteroid",		"\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd07", "", "meteoricon" } },
     { "Helium 3",		"He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd55", "", "heliumrock" } },
@@ -134,13 +134,13 @@ static const AsteroidTypeRow asteroidTypes[] =  //andon, added more 6/10
 };
 
 const int nFirstHugeType = 0;
-const int nNumHugeTypes = 4; //andon increased, was 2 6/10 
+const int nNumHugeTypes = 4; //andon increased, was 2 6/10
 const int nFirstGenericType = nFirstHugeType + nNumHugeTypes;
-const int nNumGenericTypes = 4; //andon increased, was 2 6/10 
+const int nNumGenericTypes = 4; //andon increased, was 2 6/10
 const int nFirstMinableType = nFirstGenericType + nNumGenericTypes;
 const int nNumMinableTypes = 2;
 const int nFirstSpecialType = nFirstMinableType + nNumMinableTypes;
-const int nNumSpecialTypes = 7; //andon increased, was 3 6/10 - shouldn't we make this be 6? --Imago
+const int nNumSpecialTypes = 6; //andon increased, was 3 6/10 - shouldn't we make this be 6? --Imago CHANGED to 6 6/10
 const int numAsteroidTypes = sizeof(asteroidTypes) / sizeof(AsteroidTypeRow);
 
 static const AsteroidTypeRow& FindAsteroidRow(AsteroidAbilityBitMask aabm)
