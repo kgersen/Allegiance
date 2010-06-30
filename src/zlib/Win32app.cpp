@@ -45,8 +45,9 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     GetLocalTime( &stLocalTime );
     
    strcpy(p, (PCC)zApp);
-	
-   sprintf( p+zApp.GetLength(),"-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",
+   
+   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
+   sprintf( p+zApp.GetLength(),"-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",(PCC)zInfo,
                stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
                stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
                GetCurrentProcessId(), GetCurrentThreadId());
