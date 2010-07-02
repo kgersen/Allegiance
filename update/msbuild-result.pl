@@ -10,7 +10,7 @@ use Win32::AbsPath qw(Relative2Absolute);
 use Data::Dumper;
 
 my $xml = new XML::Simple;
-my $data = $xml->XMLin("C:\\msbuild.xml");
+my $data = $xml->XMLin("C:\\build\\FAZR6\\update\\msbuild.xml");
 my $ignore = "MSB8012|LNK4221";
 #print Dumper(\$data);
 my $basepath = $ARGV[0];

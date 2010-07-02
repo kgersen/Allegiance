@@ -4,118 +4,114 @@
 	  Please keep it in sync with above
 -->
 
-<build 
- xmlns:sh="http://bitten.edgewall.org/tools/sh" 
- xmlns:svn="http://bitten.edgewall.org/tools/svn" 
-
-description="Building FAZR6 Branch">
- <step id="Checkout">
-<sh:exec file="perl" args="C:\\touch.pl 1"/>
-   <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision}"/>
-   <sh:exec file="perl" args="C:\\step.pl"/>
+<build xmlns:sh="http://bitten.edgewall.org/tools/sh" xmlns:svn="http://bitten.edgewall.org/tools/svn" description="Building FAZR6 Branch">
+<step id="Checkout">
+   <sh:exec file="perl" args="${cdn.path}\\update\\touch.pl 1"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision}"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/>
    <sh:exec file="echo" args="Checkout started"/>
-   <sh:exec file="svn" args="revert C:\\build\\FAZR6\\src\\Inc\\slmver.h"/>
-   <sh:exec file="svn" args="revert -R C:\\build\\FAZR6\\VS2010"/>
-   <!-- <sh:exec file="svn" args="revert -R C:\\build\\FAZR6\\VS2008"/> -->
-   <svn:checkout url="http://alleg.scarybugs.net/svn/" path="${path}" revision="${revision}" dir="C:\\build\\FAZR6"/>
+   <sh:exec file="svn" args="revert ${cdn.path}\\src\\Inc\\slmver.h"/>
+   <sh:exec file="svn" args="revert -R ${cdn.path}\\VS2010"/>
+   <!-- <sh:exec file="svn" args="revert -R ${cdn.path}\\VS2008"/> -->
+   <svn:checkout url="http://trac.alleg.net/svn/" path="${path}" revision="${revision}" dir="${cdn.path}"/>
    <sh:exec file="echo" args="Checkout completed"/>
-   <sh:exec file="perl" args="C:\\slmver.pl ${build} 1"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+   <sh:exec file="perl" args="${cdn.path}\\update\\slmver.pl ${build} 1"/>
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
  </step>
 
 
  <step id="Debug Compile">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} Checkout"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} Checkout"/> -->
    <sh:exec file="echo" args="FZDebug build started"/>
-   <sh:exec file="msbuild.exe" args="C:\\build\\FAZR6\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,C:\\logger.dll;C:\\msbuild.xml /noconlog /nologo /p:Configuration=FZDebug /t:build"/>
-   <sh:exec file="C:\\perl\\bin\\perl.exe" args="C:\\msbuild-result.pl ${path} ${build}"/>
+   <sh:exec file="msbuild.exe" args="${cdn.path}\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,${cdn.path}\\update\\logger.dll;${cdn.path}\\update\\msbuild.xml /noconlog /nologo /p:Configuration=FZDebug /t:build"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\msbuild-result.pl ${path} ${build}"/>
    <sh:exec file="echo" args="FZDebug build completed"/>
-  <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+  <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
  </step>
 
 
 <step id="Smoke Test">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Debug Compile&quot;"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Debug Compile&quot;"/> -->
    <sh:exec file="echo" args="Re-register Debug AGC.dll started"/>
- <!--<sh:exec file="regsvr32" args="C:\\build\\FAZR6\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>-->
- <sh:exec file="regsvr32" args="C:\\build\\FAZR6\\objs10\\FZDebug\\AGC\\AGC.dll /s"/>
+   <!--<sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>-->
+   <sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /s"/>
    <sh:exec file="echo" args="Re-register Debug AGC.dll completed"/>
-   <sh:exec file="perl" args="C:\\change_beta_server_artpath.pl C:\\build\\FAZR6\\objs10\\FZDebug\\FedSrv\\Artwork"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork"/>
    <sh:exec file="echo" args="Running Allsrv.exe -Core2Text cc_09b"/>
-   <sh:exec file="perl" args="C:\\test.pl C:\\build\\FAZR6\\objs10\\FZDebug\\FedSrv\\AllSrv.exe &quot;allsrv -Core2Text cc_09b&quot; ."/>
-   <sh:exec file="perl" args="C:\\change_beta_server_artpath.pl C:\\AllegBeta\\Artwork"/>   
+   <sh:exec file="perl" args="${cdn.path}\\update\\test.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\AllSrv.exe &quot;allsrv -Core2Text cc_09b&quot; ."/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl C:\\AllegBeta\\Artwork"/>   
    <sh:exec file="echo" args="Running Allsrv.exe -Core2Text cc_09b completed"/>
-   <sh:exec file="regsvr32" args="C:\\build\\FAZR6\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>
+   <sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>
    
    <sh:exec file="echo" args="Checking core"/>
-   <sh:exec file="copy" args="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\corechecker.pl C:\\build\\FAZR6\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b\\corechecker.pl /Y"/>
-   <sh:exec file="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\runon.bat" args="C:\\build\\FAZR6\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b"/>
+   <sh:exec file="copy" args="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\corechecker.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b\\corechecker.pl /Y"/>
+   <sh:exec file="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\runon.bat" args="${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b"/>
    <sh:exec file="echo" args="Checking core completed"/>
-   <sh:exec file="perl" args="C:\\step.pl"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/>
 </step>
 
  <step id="Release Compile Beta">
-   <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Smoke Test passed!&quot;"/>
-   <sh:exec file="perl" args="C:\\vcxproj.pl 0 1"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Smoke Test passed!&quot;"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\vcxproj.pl 0 1"/>
    <sh:exec file="echo" args="FZRetail 1.1 rebuild started"/>
-   <!-- <sh:exec file="msbuild.exe" args="C:\\build\\FAZR6\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,C:\\logger.dll;C:\\msbuild.xml /v:quiet /noconlog /nologo /p:Configuration=FZRetail /t:clean"/> -->
-   <sh:exec file="msbuild.exe" args="C:\\build\\FAZR6\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,C:\\logger.dll;C:\\msbuild.xml /noconlog /nologo /p:Configuration=FZRetail /t:rebuild"/>
-   <sh:exec file="C:\\perl\\bin\\perl.exe" args="C:\\msbuild-result.pl ${path} ${build}"/>
+   <!-- <sh:exec file="msbuild.exe" args="${cdn.path}\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,${cdn.path}\\update\\logger.dll;${cdn.path}\\update\\msbuild.xml /v:quiet /noconlog /nologo /p:Configuration=FZRetail /t:clean"/> -->
+   <sh:exec file="msbuild.exe" args="${cdn.path}\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,${cdn.path}\\update\\logger.dll;${cdn.path}\\update\\msbuild.xml /noconlog /nologo /p:Configuration=FZRetail /t:rebuild"/>
+   <sh:exec file="perl.exe" args="${cdn.path}\\update\\msbuild-result.pl ${path} ${build}"/>
    <sh:exec file="echo" args="FZRetail 1.1 rebuild completed"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
  </step>
 
 
 
 <step id="Package 1.1">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Release Compile Beta&quot;"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Release Compile Beta&quot;"/> -->
 	<sh:exec file="echo" args="Copying externals"/>
-	<sh:exec file="del" args=" C:\\build\\Package\\External.7z"/>	
-	<sh:exec file="del" args=" C:\\build\\Package\\Release.7z"/>	
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\build\\Package\\External.7z C:\\build\\External\\* -mx9 -x!ASGS*"/>
+	<sh:exec file="del" args=" ${cdn.root}\\Package\\External.7z"/>	
+	<sh:exec file="del" args=" ${cdn.root}\\Package\\Release.7z"/>	
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z ${cdn.root}\\Package\\External.7z ${cdn.root}\\External\\* -mx9 -x!ASGS*"/>
 	<sh:exec file="echo" args="Copying externals completed"/>
 
 	<!-- <sh:exec file="echo" args="Signing objects"/>
-	<sh:exec file="C:\\sign.bat" args="FZRetail"/>
+	<sh:exec file="${cdn.path}\\update\\sign.bat" args="FZRetail"/>
 	<sh:exec file="echo" args="Signing objects completed"/> -->
 
 	<sh:exec file="echo" args="Copying objects"/>
-	<!-- <sh:exec file="C:\\build\\FAZR6\\Sh_GetDebug.bat" args="C:\\build\\FAZR6\\x86 C:\\build\\FAZR6\\"/> <sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a C:\\build\\Package\\Debug.7z C:\\build\\FAZR6\\x86\\* -x!m*.dll -x!atl*.dll -xr!*.svn"/> -->
-	<sh:exec file="C:\\build\\FAZR6\\Sh_GetRetail.bat" args="C:\\build\\FAZR6\\x86 C:\\build\\FAZR6\\"/>
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\inetpub\\wwwroot\\build\\AllegR6PDB_b${build}_r${revision}.exe C:\\build\\FAZR6\\x86\\*.pdb -mx9" />
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\build\\Package\\Release.7z C:\\build\\FAZR6\\x86\\* -x!*.pdb -xr!*.svn -mx9" />
-	<sh:exec file="copy" args="C:\\build\\FAZR6\\x86\\Allegiance.exe C:\\Allegiance.exe /Y" />
-	<sh:exec file="copy" args="C:\\build\\FAZR6\\x86\\Allsrv.exe C:\\Allsrv.exe /Y" />
-	<sh:exec file="copy" args="C:\\build\\FAZR6\\x86\\AllsrvUI.exe C:\\AllsrvUI.exe /Y" />
-	<sh:exec file="copy" args="C:\\build\\FAZR6\\x86\\AGC.dll C:\\AGC.dll /Y" />
-	<sh:exec file="copy" args="C:\\build\\FAZR6\\x86\\Reloader.exe C:\\Reloader.exe /Y" />
-	<sh:exec file="copy" args="C:\\build\\FAZR6\\x86\\AutoUpdate.exe C:\\AutoUpdate.exe /Y" />	
+	<!-- <sh:exec file="${cdn.path}\\Sh_GetDebug.bat" args="${cdn.path}\\x86 ${cdn.path}\\"/> <sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a ${cdn.path}\\Package\\Debug.7z ${cdn.path}\\x86\\* -x!m*.dll -x!atl*.dll -xr!*.svn"/> -->
+	<sh:exec file="${cdn.path}\\Sh_GetRetail.bat" args="${cdn.path}\\x86 ${cdn.path}\\"/>
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\inetpub\\wwwroot\\build\\AllegR6PDB_b${build}_r${revision}.exe ${cdn.path}\\x86\\*.pdb -mx9" />
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z ${cdn.root}\\Package\\Release.7z ${cdn.path}\\x86\\* -x!*.pdb -xr!*.svn -mx9" />
+	<sh:exec file="copy" args="${cdn.path}\\x86\\Allegiance.exe C:\\Allegiance.exe /Y" />
+	<sh:exec file="copy" args="${cdn.path}\\x86\\Allsrv.exe C:\\Allsrv.exe /Y" />
+	<sh:exec file="copy" args="${cdn.path}\\x86\\AllsrvUI.exe C:\\AllsrvUI.exe /Y" />
+	<sh:exec file="copy" args="${cdn.path}\\x86\\AGC.dll C:\\AGC.dll /Y" />
+	<sh:exec file="copy" args="${cdn.path}\\x86\\Reloader.exe C:\\Reloader.exe /Y" />
+	<sh:exec file="copy" args="${cdn.path}\\x86\\AutoUpdate.exe C:\\AutoUpdate.exe /Y" />	
 	<sh:exec file="echo" args="Copying objects completed"/>
 
 	<sh:exec file="echo" args="Copying artwork"/>
-	<sh:exec file="perl" args="C:\\au.pl"/>
-	<sh:exec file="copy" args="C:\\build\\Package\\Artwork.7z C:\\Inetpub\\wwwroot\\build\\AllegR6ART_b${build}_r${revision}.exe /Y"/>
+	<sh:exec file="perl" args="${cdn.path}\\update\\au.pl"/>
+	<sh:exec file="copy" args="${cdn.root}\\Package\\Artwork.7z C:\\Inetpub\\wwwroot\\build\\AllegR6ART_b${build}_r${revision}.exe /Y"/>
 	<sh:exec file="echo" args="Copying artwork completed"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
 
 <step id="Publish 1.1">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Package 1.1&quot;"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Package 1.1&quot;"/> -->
 	<sh:exec file="echo" args="Creating installer"/>
-	<sh:exec file="perl" args="C:\\nsis.pl 1.1 ${build} ${revision} 0"/>
-	<!-- <sh:exec file="C:\\sign-installer.bat" args="R6_b${build}_r${revision}.exe 1"/> -->
+	<sh:exec file="perl" args="${cdn.path}\\update\\nsis.pl 1.1 ${build} ${revision} 0"/>
+	<!-- <sh:exec file="${cdn.path}\\update\\sign-installer.bat" args="R6_b${build}_r${revision}.exe 1"/> -->
 	<sh:exec file="echo" args="Completed creating installer"/>
 
 	<sh:exec file="echo" args="Attaching Lite"/>
 	<attach file="C:\\Inetpub\\wwwroot\\build\\R6_b${build}_r${revision}.exe" resource="build" description="Lite 1.1 version" />
 	<sh:exec file="echo" args="Download: http://alleg.builtbygiants.net/R6_b${build}_r${revision}.exe"/>
-	<sh:exec file="perl" args="C:\\announce-dl.pl ${build} ${revision} &quot;Download: http://alleg.builtbygiants.net/R6_b${build}_r${revision}.exe [Beta (1.1)]&quot;"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://alleg.builtbygiants.net/R6_b${build}_r${revision}.exe [Beta (1.1)]&quot;"/>
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
 <step id="Remote Tests">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Package 1.0&quot;"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Package 1.0&quot;"/> -->
    	<sh:exec file="echo" args="Cleaning up previous install"/>
 	<sh:exec file="echo" args="Deploying to fuzztest.dyndns.org"/>
 	<sh:exec file="echo" args="Waiting for ready"/>
@@ -127,103 +123,103 @@ description="Building FAZR6 Branch">
 	<sh:exec file="echo" args="Test: CortUI 1.75 test started"/>
 	<sh:exec file="echo" args="CortUI 1.75 test FAILED"/>	
 	<sh:exec file="echo" args="Attaching report NYI"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
  <step id="Release Compile Prod">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Publish 1.1&quot;"/> -->
-   <sh:exec file="svn" args="revert -R C:\\build\\FAZR6\\VS2010"/>
-   <sh:exec file="perl" args="C:\\slmver.pl ${build} 0"/>
-   <sh:exec file="perl" args="C:\\vcxproj.pl 1 1"/>
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Publish 1.1&quot;"/> -->
+   <sh:exec file="svn" args="revert -R ${cdn.path}\\VS2010"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\slmver.pl ${build} 0"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\vcxproj.pl 1 1"/>
    <sh:exec file="echo" args="FZRetail 1.0 rebuild started"/>
-   <!-- <sh:exec file="msbuild.exe" args="C:\\build\\FAZR6\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,C:\\logger.dll;C:\\msbuild.xml /v:quiet /noconlog /nologo /p:Configuration=FZRetail /t:clean"/> -->
-   <sh:exec file="msbuild.exe" args="C:\\build\\FAZR6\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,C:\\logger.dll;C:\\msbuild.xml /noconlog /nologo /p:Configuration=FZRetail /t:rebuild"/>
-   <sh:exec file="C:\\perl\\bin\\perl.exe" args="C:\\msbuild-result.pl ${path} ${build}"/>
+   <!-- <sh:exec file="msbuild.exe" args="${cdn.path}\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,${cdn.path}\\update\\logger.dll;${cdn.path}\\update\\msbuild.xml /v:quiet /noconlog /nologo /p:Configuration=FZRetail /t:clean"/> -->
+   <sh:exec file="msbuild.exe" args="${cdn.path}\\VS2010\\Allegiance.sln /logger:Rodemeyer.MsBuildToCCNet.MsBuildToCCNetLogger,${cdn.path}\\update\\logger.dll;${cdn.path}\\update\\msbuild.xml /noconlog /nologo /p:Configuration=FZRetail /t:rebuild"/>
+   <sh:exec file="perl.exe" args="${cdn.path}\\update\\msbuild-result.pl ${path} ${build}"/>
    <sh:exec file="echo" args="FZRetail 1.0 rebuild completed"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
  </step>
 
 <step id="Package 1.0">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Release Compile Prod&quot;"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Release Compile Prod&quot;"/> -->
 	<sh:exec file="echo" args="Copying externals"/>
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\build\\Package\\External.7z C:\\build\\External\\* -mx9"/>
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z ${cdn.root}\\Package\\External.7z ${cdn.root}\\External\\* -mx9"/>
 	<sh:exec file="echo" args="Copying externals completed"/>
-	<sh:exec file="del" args=" C:\\build\\Package\\Release.7z"/>
+	<sh:exec file="del" args=" ${cdn.root}\\Package\\Release.7z"/>
 	
 	<!-- <sh:exec file="echo" args="Signing objects"/>
-	<sh:exec file="C:\\sign.bat" args="FZRetail"/>
+	<sh:exec file="${cdn.path}\\update\\sign.bat" args="FZRetail"/>
 	<sh:exec file="echo" args="Signing objects completed"/> -->
 
 	<sh:exec file="echo" args="Copying objects"/>
-	<sh:exec file="C:\\build\\FAZR6\\Sh_GetRetail.bat" args="C:\\build\\FAZR6\\x86 C:\\build\\FAZR6\\"/>
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\inetpub\\wwwroot\\build\\AllegPDB_b${build}_r${revision}.exe C:\\build\\FAZR6\\x86\\*.pdb -mx9" />
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\build\\Package\\Release.7z C:\\build\\FAZR6\\x86\\* -x!*.pdb -xr!*.svn -mx9" />
+	<sh:exec file="${cdn.path}\\Sh_GetRetail.bat" args="${cdn.path}\\x86 ${cdn.path}\\"/>
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\inetpub\\wwwroot\\build\\AllegPDB_b${build}_r${revision}.exe ${cdn.path}\\x86\\*.pdb -mx9" />
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z ${cdn.root}\\Package\\Release.7z ${cdn.path}\\x86\\* -x!*.pdb -xr!*.svn -mx9" />
 	<sh:exec file="echo" args="Copying objects completed"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
 <step id="Publish 1.0">
-   <!-- <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Package 1.0&quot;"/> -->
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Package 1.0&quot;"/> -->
 	<sh:exec file="echo" args="Creating installer"/>
-	<sh:exec file="perl" args="C:\\nsis.pl 1.0 ${build} ${revision} 1"/>
-	<!-- <sh:exec file="C:\\sign-installer.bat" args="Alleg_b${build}_r${revision}.exe 0"/>  -->
-	<!-- <sh:exec file="perl" args="C:\\nsis.pl 1.0 ${build} ${revision} 0"/> -->
-	<!-- <sh:exec file="C:\\sign-installer.bat" args="Alleg_lite_b${build}_r${revision}.exe 0"/>  -->
+	<sh:exec file="perl" args="${cdn.path}\\update\\nsis.pl 1.0 ${build} ${revision} 1"/>
+	<!-- <sh:exec file="${cdn.path}\\update\\sign-installer.bat" args="Alleg_b${build}_r${revision}.exe 0"/>  -->
+	<!-- <sh:exec file="perl" args="${cdn.path}\\update\\nsis.pl 1.0 ${build} ${revision} 0"/> -->
+	<!-- <sh:exec file="${cdn.path}\\update\\sign-installer.bat" args="Alleg_lite_b${build}_r${revision}.exe 0"/>  -->
 	<sh:exec file="echo" args="Completed creating installer"/>
 
 	<!-- <sh:exec file="echo" args="Attaching Lite"/> -->
-	<!-- <attach file="C:\\Inetpub\\wwwroot\\build\\Alleg_lite_b${build}_r${revision}.exe" resource="build" description="Lite 1.0 version" /> -->
+	<!-- <attach file="${cdn.path}\\update\\Inetpub\\wwwroot\\build\\Alleg_lite_b${build}_r${revision}.exe" resource="build" description="Lite 1.0 version" /> -->
 	<sh:exec file="echo" args="Download: http://alleg.builtbygiants.net/Alleg_b${build}_r${revision}.exe"/>
-	<sh:exec file="perl" args="C:\\announce-dl.pl ${build} ${revision} &quot;Download: http://alleg.builtbygiants.net/Alleg_b${build}_r${revision}.exe [Production (1.0)]&quot;"/>
-   <!-- <sh:exec file="perl" args="C:\\step.pl"/> -->
+	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://alleg.builtbygiants.net/Alleg_b${build}_r${revision}.exe [Production (1.0)]&quot;"/>
+   <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
 <!--
  <step id="Release Compile Prod VC9">
-   <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Publish 1.0&quot;"/>
-   <sh:exec file="perl" args="C:\\vcproj.pl"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Publish 1.0&quot;"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\vcproj.pl"/>
    <sh:exec file="echo" args="FZRetail 1.0 rebuild started"/>
-   <sh:exec file="C:\\build9.bat" args="FZRetail build"/>
+   <sh:exec file="${cdn.path}\\update\\build9.bat" args="FZRetail build"/>
    <sh:exec file="echo" args="FZRetail 1.0 rebuild completed"/>
-   <sh:exec file="perl" args="C:\\step.pl"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/>
  </step>
  
 <step id="Package 1.0 Compat">
-   <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Release Compile Prod VC9&quot;"/>
-	<sh:exec file="del" args=" C:\\build\\Package\\Release.7z"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Release Compile Prod VC9&quot;"/>
+	<sh:exec file="del" args=" ${cdn.path}\\update\\build\\Package\\Release.7z"/>
 	<sh:exec file="echo" args="Copying objects"/>
-	<sh:exec file="C:\\build\\FAZR6\\Sh_Get9.bat" args="C:\\build\\FAZR6\\x86_v90 C:\\build\\FAZR6\\"/>
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\inetpub\\wwwroot\\build\\AllegPDB_b${build}_r${revision}_v90.exe C:\\build\\FAZR6\\x86_v90\\*.pdb -mx9" />
-	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z C:\\build\\Package\\Release.7z C:\\build\\FAZR6\\x86_v90\\* -x!*.pdb -mx9" />
+	<sh:exec file="${cdn.path}\\Sh_Get9.bat" args="${cdn.path}\\x86_v90 ${cdn.path}\\"/>
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z ${cdn.path}\\update\\inetpub\\wwwroot\\build\\AllegPDB_b${build}_r${revision}_v90.exe ${cdn.path}\\x86_v90\\*.pdb -mx9" />
+	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z ${cdn.path}\\update\\build\\Package\\Release.7z ${cdn.path}\\x86_v90\\* -x!*.pdb -mx9" />
 	<sh:exec file="echo" args="Copying objects completed"/>
-   <sh:exec file="perl" args="C:\\step.pl"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/>
 </step>
 
 <step id="Publish 1.0 Compat">
-   <sh:exec file="perl" args="C:\\announce-step.pl ${build} ${revision} &quot;Package 1.0 Compat&quot;"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Package 1.0 Compat&quot;"/>
 	<sh:exec file="echo" args="Creating installer"/>
-	<sh:exec file="perl" args="C:\\nsis.pl 1.0 ${build} ${revision}_v90 1"/>
-	<sh:exec file="C:\\sign-installer.bat" args="Alleg_b${build}_r${revision}_v90.exe 0"/>
+	<sh:exec file="perl" args="${cdn.path}\\update\\nsis.pl 1.0 ${build} ${revision}_v90 1"/>
+	<sh:exec file="${cdn.path}\\update\\sign-installer.bat" args="Alleg_b${build}_r${revision}_v90.exe 0"/>
 	<sh:exec file="echo" args="Completed creating installer"/>
 	<sh:exec file="echo" args="Download: http://alleg.builtbygiants.net/Alleg_b${build}_r${revision}_v90.exe"/>
-	<sh:exec file="perl" args="C:\\announce-dl.pl ${build} ${revision} &quot;Download: http://alleg.builtbygiants.net/Alleg_b${build}_r${revision}_v90.exe [Full/Compat. (1.0 v90)]&quot;"/>
-   <sh:exec file="perl" args="C:\\step.pl"/>
+	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://alleg.builtbygiants.net/Alleg_b${build}_r${revision}_v90.exe [Full/Compat. (1.0 v90)]&quot;"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/>
 </step> 
 -->
 
 <step id="Deploy Beta">
-	<sh:exec file="perl" args="C:\\makelist.pl" />
-	<sh:exec file="perl" args="C:\\makemotd.pl ${build} ${revision}" />
-	<sh:exec file="perl" args="C:\\makecfg.pl" />
-	<sh:exec file="perl" args="C:\\deploy.pl" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\makelist.pl" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\makemotd.pl ${build} ${revision}" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\makecfg.pl" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\deploy.pl" />
 </step>
 
 <step id="Upgrade">
-	<sh:exec file="perl" args="C:\\upgrade.pl" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\upgrade.pl" />
 </step>	
 
 <step id="Finished">
-	<sh:exec file="perl" args="C:\\touch.pl"/>
-	<sh:exec file="perl" args="C:\\announce.pl ${build} ${revision}"/>
+	<sh:exec file="perl" args="${cdn.path}\\update\\touch.pl"/>
+	<sh:exec file="perl" args="${cdn.path}\\update\\announce.pl ${build} ${revision}"/>
 </step>
 </build>

@@ -1,5 +1,6 @@
 Imago <imagotrigger@gmail.com> 6/10
-The update folder contains sources used to build/test/deploy Allegiance under Edgewall's Python based "Trac/Bitten" system.
+ The update folder contains sources used to build/test/deploy Allegiance under Edgewall's Python based "Trac/Bitten" system; Specific for host CDN.
+  Subfolders contain source specific for other hosts
 
 Source relys on the following obtainable externals:
 
