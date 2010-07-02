@@ -59,8 +59,16 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     ExpParam.ExceptionPointers = pExceptionPointers;
     ExpParam.ClientPointers = TRUE;
 
+	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory | 
+		                                    MiniDumpWithDataSegs | 
+		                                    MiniDumpWithHandleData |
+		                                    MiniDumpWithFullMemoryInfo | 
+		                                    MiniDumpWithThreadInfo | 
+		                                    MiniDumpWithUnloadedModules |
+											MiniDumpWithProcessThreadData); 
+
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, MiniDumpWithDataSegs, &ExpParam, NULL, NULL);
+                    hDumpFile, mdt, &ExpParam, NULL, NULL);
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -103,8 +111,16 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     ExpParam.ExceptionPointers = pExceptionPointers;
     ExpParam.ClientPointers = TRUE;
 
+	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory | 
+		                                    MiniDumpWithDataSegs | 
+		                                    MiniDumpWithHandleData |
+		                                    MiniDumpWithFullMemoryInfo | 
+		                                    MiniDumpWithThreadInfo | 
+		                                    MiniDumpWithUnloadedModules |
+											MiniDumpWithProcessThreadData); 
+
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, MiniDumpWithDataSegs, &ExpParam, NULL, NULL);
+                    hDumpFile, mdt, &ExpParam, NULL, NULL);
 
     return EXCEPTION_EXECUTE_HANDLER;
 }

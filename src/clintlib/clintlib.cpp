@@ -1220,7 +1220,7 @@ void BaseClient::FlushGameState()
         m_ship->AddRef();
     //Offline, we need to explicitly terminate all of the ships
     {
-        const ShipListIGC*  ships = m_pCoreIGC->GetShips();
+        const ShipListIGC*  ships = m_pCoreIGC->GetShips(); //IMAGO REVIEW CRASH 6/10
         ShipLinkIGC*  l;
         while ((l = ships->first()) != NULL)
         {

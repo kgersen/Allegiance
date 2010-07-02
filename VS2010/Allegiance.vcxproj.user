@@ -6,6 +6,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-debug -mdllog -windowlog -windowed -nomovies</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-debug -mdllog -windowlog -windowed -nomovies -noautoupdate</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>
