@@ -541,7 +541,7 @@ $betavar
 $nsis
 };
 
-#open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
-open(NSIS,">nsis.nsi");
+open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
+#open(NSIS,">nsis.nsi");
 print NSIS $nsis;
 close NSIS;
