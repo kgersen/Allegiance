@@ -19,7 +19,7 @@ IAdminUsersPtr  m_spAdminUsersPtr = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 
-void MsgBox(const char* format, ...)
+void MsgBox(bool bService, const char* format, ...)
 {
     const size_t size = 256;
     char         bfr[size];
@@ -30,7 +30,18 @@ void MsgBox(const char* format, ...)
     va_end(vl);
 
     OutputDebugString(bfr);
-    MessageBox(NULL, bfr, "AutoUpdate", MB_SERVICE_NOTIFICATION);
+
+	//Imago #105 7/10
+	if (bService) {
+        // write to file
+        char szFileData[sizeof(bfr) + 200];
+        SYSTEMTIME st;
+        GetLocalTime(&st);
+        sprintf(szFileData, "\r\n\r\nUpdate attempt at: %d/%d/%02d at %d:%02d:%02d  (local time)\r\n%s\r\n\r\n", st.wMonth, st.wDay, st.wYear % 100, st.wHour, st.wMinute, st.wSecond, bfr);
+        UTL::AppendFile("UpdateError.txt", szFileData, strlen(szFileData));
+	} else {
+		MessageBox(NULL, bfr, "AutoUpdate", MB_SERVICE_NOTIFICATION);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -74,7 +85,7 @@ public:
 
                   if (bFailed)
                   {
-                    MsgBox("Failed to relaunch %s as a service.", szEXE);
+                    MsgBox(1,"Failed to relaunch %s as a service.", szEXE);
                   }
                 }
                 else
@@ -88,7 +99,7 @@ public:
                                        SW_SHOWNORMAL
                                        ) <= 32)
                   {
-                      MsgBox("After a seemingly successful update, there was an error launching %s", m_pdlg->m_szPostUpdateEXE);
+                      MsgBox(0,"After a seemingly successful update, there was an error launching %s", m_pdlg->m_szPostUpdateEXE);
                   }
                 }
             }
@@ -99,8 +110,14 @@ public:
 
     virtual void OnError(char *szErrorMessage) 
     {
+		char * szEXE = m_pdlg->m_szPostUpdateEXE;
+		bool bService = false;
+		// look for signal that this is an Service
+		if ((szEXE[0] == 'S' || szEXE[0] == 's') && szEXE[1] == ':')
+			bService = true;
+
         debugf("\n\nAutoUpdate Error\n\n%s\n\n", szErrorMessage);
-        MsgBox("\n\nAutoUpdate Error\n\n%s\n\n", szErrorMessage);
+        MsgBox(bService,"\n\nAutoUpdate Error\n\n%s\n\n", szErrorMessage);
     }
 
     virtual void OnBeginRetrievingFileList() 
@@ -195,9 +212,10 @@ public:
 
             sprintf(szMsg, "%s\r\n\r\n\r\n\r\nDo you wish to retry moving the files?", szErrorMessage);
 
-            if (::MessageBox(NULL, szMsg, szTitle, MB_YESNO | MB_SERVICE_NOTIFICATION) == IDYES)
-                return true;
-            else
+			//Imago commented out...7/10 #105
+            //if (::MessageBox(NULL, szMsg, szTitle, MB_YESNO | MB_SERVICE_NOTIFICATION) == IDYES)
+            //    return true;
+            //else
                 return false;
         }
         else
@@ -380,7 +398,7 @@ bool    Error (HRESULT hr)
         _bstr_t strError (e.Description().length() ? e.Description() : _bstr_t (e.ErrorMessage()));
 
         // help trace the problem?
-       MsgBox("Fail Code: %x",hr);
+       MsgBox(1,"Fail Code: %x",hr);
 	   return true;
 	}
 	return false;
@@ -584,7 +602,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
     int nResult = dlg.Init(__argc, __argv); //Imago 6/10
     if (nResult != 0)
     {
-        MsgBox("AutoUpdate was given an invalid commmand-line.");
+        MsgBox(0,"AutoUpdate was given an invalid commmand-line.");
         dlg.DestroyWindow();
 		
         return nResult;
