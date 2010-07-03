@@ -592,13 +592,16 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE; //rendered useless 6/10 Imago
 		}
 
+		//Imago added m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps just to be sure 7/10 #41
 		if ((m_sD3DDev9.sD3DDevCaps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP ) && g_DX9Settings.m_bAutoGenMipmaps)
 		{
 			CVRAMManager::Get()->SetEnableMipMapGeneration(true);
 			m_sDevSetupParams.bAutoGenMipmap = true;
+			m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = true; 
 		} else {
 			CVRAMManager::Get()->SetEnableMipMapGeneration(false);
 			m_sDevSetupParams.bAutoGenMipmap = false;
+			m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = false; 
 		}
 
 		m_sDevSetupParams.dwMaxTextureSize = 256 << g_DX9Settings.m_iMaxTextureSize;
