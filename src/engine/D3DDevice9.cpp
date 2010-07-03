@@ -587,7 +587,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 		} else {
 			m_sDevSetupParams.bWaitForVSync = false;
-			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE; //rendered useless 6/10 Imago
 		}
 
 		if ((m_sD3DDev9.sD3DDevCaps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP ) && g_DX9Settings.m_bAutoGenMipmaps)
