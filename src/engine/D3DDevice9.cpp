@@ -363,6 +363,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	{
 		pLogFile->OutputString( "Device can auto generate mipmaps.\n" );
 		m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = true;
+	} else {
+		m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = false; //Imago 7/10 #41
 	}
 
 	// Initialise the caches.
