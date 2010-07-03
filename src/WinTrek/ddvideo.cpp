@@ -45,10 +45,16 @@ HRESULT DDVideo::InitDirectDraw()
     DDSCAPS2 ddscaps;
 	HRESULT		hRet;
  
-    //Create the main DirectDraw object
+    //Create the main DirectDraw object - updated to do it the hard way.... 7/10
     LPDIRECTDRAW pDD;
 
-	hRet = DirectDrawCreate(NULL,&pDD, NULL);
+	HINSTANCE hInstDDraw;
+    LPDIRECTDRAWCREATE pDDCreate = NULL;
+    hInstDDraw = LoadLibrary("ddraw.dll");
+	pDDCreate = ( LPDIRECTDRAWCREATE )GetProcAddress( hInstDDraw, "DirectDrawCreate" );
+    pDDCreate( NULL, &pDD, NULL );
+	//hRet = DirectDrawCreate(NULL,&pDD, NULL);
+
     hRet = pDD->QueryInterface(IID_IDirectDraw7, (LPVOID *) & m_lpDD);
       
 	//Set cooperative level
