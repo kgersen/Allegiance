@@ -4609,13 +4609,16 @@ static void DisplaceProbe(IclusterIGC* pcluster, Vector* position, float r)
               return;
       }
     }
-    {
+    	
+	/* Xynth - Removing loop through Asteroids from the DisplaceProbe function
+	** This was causing issues with trying to hide TP2 behind rocks 7/10
+	{
       for (AsteroidLinkIGC*   psl = pcluster->GetAsteroids()->first(); (psl != NULL); psl = psl->next())
       {
           if (DisplaceProbe(psl->data(), position, r))
               return;
       }
-    }
+    }*/
 }
 
 /*-------------------------------------------------------------------------
@@ -10537,6 +10540,24 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
     ds.bpHull = pasteroid->GetFraction();
     ds.bpShield = 0.0f;
+
+	if (pcluster->GetProbes()) { //Imago 7/10 - if there are probes in this sector...
+		//Xynth - Begin change to destroy probes too close to rock and would otherwise be lodged in base 7/10
+		for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
+		{
+			IprobeIGC*  pprobe = ppl->data();
+
+			Vector dxy = pprobe->GetEmissionPt() - pasteroid->GetPosition();
+			float l2 = dxy.LengthSquared();
+			float rOffset = pstationtype->GetRadius() + pprobe->GetRadius();
+			if ((l2 < rOffset * rOffset) && (l2 != 0.0f))
+			{
+				KillProbeEvent(pprobe);
+			}
+		}
+		//Xynth - End change
+	}
+
 
     KillAsteroidEvent(pasteroid, false);
 
