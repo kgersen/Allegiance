@@ -3,6 +3,7 @@
 #  2 modes - Upgrade (Beta) / Full (Production)
 
 use strict;
+use POSIX;
 my ($ver, $build, $revision, $bfull) = @ARGV;
 
 my $pdbkey ="";
@@ -12,10 +13,12 @@ my $filen = "Alleg";
 my $shortname = "Alleg_lite";
 my $artwork = "";
 my $bbeta = "";
-my $dlcode = "";
+my $dlcode_art = ""; my $dlcode_pdb = "";
 my $clientbinary = "ASGSClient.exe";
 my $url = "http://alleg.builtbygiants.net"; #can be FTP:// 
 my $cfgfile = "http://autoupdate.alleg.net/allegiance.cfg";
+
+my $now = strftime("%Y/%m/%d %H:%M CDT",localtime(time));
 
 my $asgsreg = qq{
   WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "EXE Path" "\$INSTDIR"
@@ -48,7 +51,7 @@ if ($bfull) {
   GetFunctionAddress \$R9 CallbackTest
   Delete "\$OUTDIR\\Artwork.7z"
 };
-	$dlcode = qq{
+	$dlcode_art = qq{
   WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "CfgFile" "$cfgfile"
   WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "CfgFile" "$cfgfile"
   WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "ArtPath" "\$INSTDIR\\Artwork"
@@ -59,7 +62,7 @@ if ($bfull) {
 };
 } else {
 	$betavar = "Var BetaSetupError";
-	$dlcode = qq{
+	$dlcode_pdb = qq{
  MessageBox MB_YESNO|MB_ICONQUESTION "Download program databases for debugging?\$\\nIf you don't know what this is, click No" /SD IDYES IDNO dontDL
 pdbredl:
     inetc::get /RESUME "Network connection problem.  Please reconnect and click Retry to resume downloading" /CAPTION "Program Database" /POPUP "Program database" "$url/Alleg${bbeta}PDB_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe" "\$INSTDIR\\PDB.7z" /END
@@ -76,7 +79,8 @@ pdbredl:
   GetFunctionAddress \$R9 CallbackTest
   Delete PDB.7z
   dontDL:
-	
+};	
+$dlcode_art = qq{
   MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
   artredl:
     inetc::get /RESUME "Network connection problem.  Please reconnect and click Retry to resume downloading" /CAPTION "Artwork" /POPUP "Artwork" "$url/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe" "\$INSTDIR\\ART.7z" /END
@@ -122,6 +126,7 @@ Delete "betareghlpV3.exe"
 
 
 my $nsis = <<END_NSIS;
+SetCompressor lzma
 !define PRODUCT_NAME "Allegiance"
 !define PRODUCT_VERSION "$ver"
 !define PRODUCT_PUBLISHER "Free Allegiance"
@@ -220,12 +225,19 @@ Function IsSilent
   Push "/S"
   Call StrStr
   Pop \$0
+  StrCpy \$1 \$0
   StrCpy \$0 \$0 3
   StrCmp \$0 "/S" silent
   StrCmp \$0 "/S " silent
     StrCpy \$0 0
     Goto notsilent
   silent: StrCpy \$0 1
+  ;this is a special mode for the build server to setup a symbol path
+	  StrCpy \$1 \$1 6
+	  StrCmp \$1 "/S /D" dump
+	  StrCmp \$1 "/S /D " dump  
+	  Goto notsilent
+	  dump: StrCpy \$0 2
   notsilent: Exch \$0
 FunctionEnd
 
@@ -284,6 +296,7 @@ FunctionEnd
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "\${NSISDIR}\\Contrib\\Graphics\\Wizard\\orange-uninstall.bmp"
 
 !define MUI_WELCOMEPAGE_TITLE 'Welcome to the Allegiance $ver Setup Wizard'
+!define MUI_FINISHPAGE_TITLE 'Completed the Allegiance $ver Setup Wizard'
 ;!define MUI_WELCOMEPAGE_TITLE_3LINES
 
 !insertmacro MUI_PAGE_WELCOME
@@ -317,6 +330,16 @@ Var DirectXSetupError
 var ArtPath
 var bSilent
 
+VIAddVersionKey /LANG=\${LANG_ENGLISH} "ProductName" "Free Allegiance Installer"
+VIAddVersionKey /LANG=\${LANG_ENGLISH} "Comments" "Created by build.alleg.net on $now"
+VIAddVersionKey /LANG=\${LANG_ENGLISH} "CompanyName" "Free Allegiance Organization"
+VIAddVersionKey /LANG=\${LANG_ENGLISH} "LegalTrademarks" "Allegiance is a trademark of Microsoft Corporation"
+VIAddVersionKey /LANG=\${LANG_ENGLISH} "LegalCopyright" "© 1995-2000 Microsoft Corporation.  All rights reserved."
+VIAddVersionKey /LANG=\${LANG_ENGLISH} "FileDescription" "The Microsoft© Allegiance Installer"
+VIAddVersionKey /LANG=\${LANG_ENGLISH} "FileVersion" "1.$ver.\${PRODUCT_BUILD}.0.\${PRODUCT_CHANGE}"
+VIProductVersion "$ver.0.0"
+
+
 InstallDirRegKey HKLM "\${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
@@ -344,21 +367,25 @@ FunctionEnd
 ; The stuff to install
 Section "" ;No components page, name is not important
 
-  SetOutPath \$INSTDIR
-
- LogEx::Init true "${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.log"
-
-nsisos::osversion
-StrCpy \$R0 \$0
-StrCpy \$R1 \$1
-
-  LogEx::Write true true "Windows OSVersion: \$R0.\$R1"
-
   Call IsSilent
   Pop \$0
   StrCpy \$bSilent \$0
 
-LogEx::Write true true "SilentMode: \$bSilent"
+\${If} \$bSilent == 1
+	SetOutPath \$EXEDIR\\${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}
+\${ElseIf} \$bSilent == 2
+	SetOutPath C:\\build\\Dumps\\temp
+\${Else}
+	SetOutPath \$INSTDIR
+\${EndIf}
+
+LogEx::Init true "${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}_install.log"
+ 
+ nsisos::osversion
+StrCpy \$R0 \$0
+StrCpy \$R1 \$1
+LogEx::Write true true "Windows OSVersion: \$R0.\$R1"
+LogEx::Write true true "SilentMode? \$bSilent"
 
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   CreateDirectory "\$SMPROGRAMS\\\$ICONS_GROUP"
@@ -404,10 +431,27 @@ DontDelReg:
 DeleteRegValue HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 DeleteRegValue HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 
-  $dlcode
 
-nsExec::Exec "regsvr32 /s \$INSTDIR\\AGC.dll"
-nsExec::Exec "\$INSTDIR\\AllSrv.exe -RegServer"
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  $dlcode_pdb
+
+\${If} \$bSilent <> 2
+	\${If} \$bSilent == 1
+		IfFileExists "\$OUTDIR\\Artwork\\*.*" SilentSkipArt
+	\${EndIf}
+	$dlcode_art
+SilentSkipArt:
+\${EndIf}
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+\${If} \$bSilent <> 2
+	nsExec::Exec "regsvr32 /s \$INSTDIR\\AGC.dll"
+	nsExec::Exec "\$INSTDIR\\AllSrv.exe -RegServer"
+\${EndIf}
+
 SectionEnd ; end the section
 
 Section -AdditionalIcons
@@ -429,6 +473,7 @@ Section -Post
 SectionEnd
 
 Section "DirectX Install" SEC_DIRECTX
+\${If} \$bSilent == 0
 SectionIn RO
  SetOutPath "\$TEMP"
  File "C:\\dxwebsetup.exe"
@@ -436,7 +481,7 @@ SectionIn RO
  ExecWait '"\$TEMP\\dxwebsetup.exe"' \$DirectXSetupError
  LogEx::Write true true "Finished DirectX Setup"
 Delete "\$TEMP\\dxwebsetup.exe"
-
+\${EndIf}
 LogEx::Close
 
 SectionEnd
@@ -496,7 +541,7 @@ $betavar
 $nsis
 };
 
-open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
-#open(NSIS,">nsis.nsi");
+#open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
+open(NSIS,">nsis.nsi");
 print NSIS $nsis;
 close NSIS;
