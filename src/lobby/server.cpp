@@ -104,6 +104,9 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		//Imago #2 6/10
 		char * szPrivilegedUsers =  FM_VAR_REF(pfmLogon, szPrivilegedUsers);
 		pServer->SetPrivilegedUsers(szPrivilegedUsers);
+		//Imago #62 6/10
+		char * szVersion =  FM_VAR_REF(pfmLogon, szServerVersion);
+		pServer->SetVersion(szVersion);
 		// max games
 		pServer->SetMaxGamesAllowed(pfmLogon->MaxGames);
 		

@@ -17,6 +17,18 @@ const Rotation      c_rotationZero(0.0f, 0.0f, 1.0f, 0.0f);
 char    UTL::s_artworkPath[MAX_PATH] = "";
 char    UTL::s_szUrlRoot[MAX_PATH] = ""; // (unused (or ripped out) Imago 6/10)
 TMap<DWORD,ZString> UTL::m_PrivilegedUsersMap;
+TMap<DWORD,ZString> UTL::m_ServerVersionMap;
+
+//Imago #62
+void UTL::SetServerVersion(const char * szVersion, DWORD dwCookie) { 
+	m_ServerVersionMap.Set(dwCookie,szVersion);
+}
+ZString UTL::GetServerVersion(DWORD dwCookie) { 
+	ZString zVersion;
+	zVersion.SetEmpty();
+	m_ServerVersionMap.Find(dwCookie,zVersion); 
+	return zVersion;
+}
 
 //Imago centralized and enhanced /w appending admin defined list 6/10
 void UTL::SetPrivilegedUsers(const char * szPrivilegedUsers, DWORD dwCookie) { 

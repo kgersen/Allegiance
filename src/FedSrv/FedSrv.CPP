@@ -7379,11 +7379,13 @@ void ProcessNetworkMessages()
 		if ((g.timeNow.clock() - timeLastRelog.clock() > 30000) && (bNotFirstPump == true)) // 1m interval
 		{
 			_Module.InitPIDs();
+			ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
 			// do this to update our current games count/availability
 			BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
 			  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
 			  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
-			  FM_VAR_PARM(UTL::GetPrivilegedUsers(-1), CB_ZTS) // Imago #2 6/10
+			  FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)), CB_ZTS) // Imago #2 6/10
+			  FM_VAR_PARM(PCC(zInfo), CB_ZTS) // Imago 62 7/10
 			END_PFM_CREATE
 			pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
 			//Imago NYI: adjust max games based if we're under load
@@ -8122,10 +8124,12 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 #endif
 
   // Give lobby the version
+  ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
 	  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
 	  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
 	  FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)), CB_ZTS) // Imago #2 6/10
+	  FM_VAR_PARM(PCC(zInfo), CB_ZTS) // Imago #2 6/10
   END_PFM_CREATE
   pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
   pfmLogon->MaxGames = g.cMaxGames; // KGJV #114
