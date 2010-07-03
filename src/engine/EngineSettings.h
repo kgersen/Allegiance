@@ -13,7 +13,7 @@ public:
 	CDX9EngineSettings()
 	{
 		mbUseTexturePackFiles = false;
-		m_bVSync = false;
+		m_bVSync = true; //Imago 7/10
 		m_dwAA = 0;
 		m_iMaxTextureSize = 0;
 		m_bAutoGenMipmaps = false;

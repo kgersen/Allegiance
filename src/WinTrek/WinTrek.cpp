@@ -4140,11 +4140,11 @@ public:
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
 				break;
 			//End TB 30-JUL-07
-			//imago 6/30/09: new graphics options dx9
+			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
 			case idmDeviceOptions:
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
 			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
-				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V');
+				//m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
 				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');

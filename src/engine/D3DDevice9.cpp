@@ -355,6 +355,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	{
 		pLogFile->OutputString( "Device supports A1R5G5B5 format.\n" );
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = true;
+	} else {
+		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = false;
 	}
 
 	// Auto gen mipmaps flag - include user setting.
@@ -363,8 +365,10 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	{
 		pLogFile->OutputString( "Device can auto generate mipmaps.\n" );
 		m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = true;
+		m_sDevSetupParams.bAutoGenMipmap = true;
 	} else {
 		m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = false; //Imago 7/10 #41
+		m_sDevSetupParams.bAutoGenMipmap = false;
 	}
 
 	// Initialise the caches.
@@ -539,7 +543,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 	if( bResetRequired == true || //mode changes
 		g_DX9Settings.m_dwAA != (DWORD)m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting || //any multisample changes
 		g_DX9Settings.m_bAutoGenMipmaps != m_sDevSetupParams.bAutoGenMipmap || //any mip map changes
-		g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //aby vsync changes
+		//g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //Imago 7/10
 		g_DX9Settings.m_iMaxTextureSize != (int)m_sDevSetupParams.maxTextureSize) //any texture size changes
 
 	{

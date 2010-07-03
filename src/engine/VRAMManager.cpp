@@ -376,16 +376,19 @@ HRESULT CVRAMManager::CreateTextureD3DX(	TEXHANDLE				texHandle,
 		strcpy_s( pTexture->szTextureName, 32, szTextureName );
 	}
 
-	// Mipping?
-	if( pImageInfo->ImageFileFormat == D3DXIFF_DDS )
+	// Mipping? //imago 7/10 #14
+	DWORD		dwUsageFlags = 0;
+	if( pImageInfo->ImageFileFormat == D3DXIFF_DDS &&  m_sVRAM.bMipMapGenerationEnabled == true) 
 	{
 		uiNumLevels = D3DX_SKIP_DDS_MIP_LEVELS( pImageInfo->MipLevels, D3DX_FILTER_BOX );
 		pTexture->bMipMappedTexture = true;
+		dwUsageFlags |= D3DUSAGE_AUTOGENMIPMAP;
 	}
 	else if( m_sVRAM.bMipMapGenerationEnabled == true ) 
 	{
-		uiNumLevels = 0;
 		pTexture->bMipMappedTexture = true;
+		uiNumLevels = NUM_MIPMAP_LEVELS;
+		dwUsageFlags |= D3DUSAGE_AUTOGENMIPMAP;
 	}
 
 	ZFile * pFile = (ZFile*) pobjectMemory;
@@ -398,7 +401,7 @@ HRESULT CVRAMManager::CreateTextureD3DX(	TEXHANDLE				texHandle,
 		pTargetSize->x,
 		pTargetSize->y,
 		uiNumLevels,
-		0,
+		dwUsageFlags, //Imago - 7/10 was always 0 even if levels was 0 #41
 		D3DFMT_UNKNOWN,
 		D3DPOOL_MANAGED,
 		D3DX_DEFAULT,

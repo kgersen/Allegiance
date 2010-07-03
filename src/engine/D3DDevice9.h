@@ -106,7 +106,7 @@ private:
 	struct SD3DDevice9FormatFlags
 	{
 		bool		bSupportsA1R5G6B6Format : 1;
-		bool		bCanAutoGenMipMaps : 1;
+		bool		bCanAutoGenMipMaps : 1; 
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////
