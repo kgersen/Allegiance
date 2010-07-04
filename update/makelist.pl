@@ -3,7 +3,6 @@
 #  Archives the list and targets for deploy.pl
 
 use strict;
-use Net::FTP;
 use POSIX qw(strftime);
 use File::Copy;
 
@@ -40,7 +39,7 @@ foreach my $file (@art) {
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
-	if ($size < 2048) {
+	if ($size < 2048 || $file =~ /\.avi|\.ogg/i) {
 		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
 	} else {
 		`$cmd2`;
@@ -61,7 +60,7 @@ foreach my $file (@svn) {
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
-	if ($size < 2048) {
+	if ($size < 2048 || $file =~ /\.avi|\.ogg/i) {
 		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
 	} else {
 		`$cmd2`;
@@ -132,7 +131,7 @@ foreach my $file (@svn) {
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
-	if ($size < 2048) {
+	if ($size < 2048 || $file =~ /\.avi|\.ogg/i) {
 		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
 	} else {
 		`$cmd2`;

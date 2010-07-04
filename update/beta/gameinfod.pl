@@ -10,12 +10,12 @@ use Win32::MMF;
 my $sock = IO::Socket::INET->new(LocalPort => 2000, Proto => 'udp') or die "socket init: $@";      
 my $mem = new Win32::MMF;
 my $c = new Convert::Binary::C;
-$c->parse_file('gameinfod.h');
-$c->parse_file('zgameinfo.h');
+$c->parse_file("Z:\\Deploy\\gameinfod.h");
+$c->parse_file("Z:\\Deploy\\zgameinfo.h");
 $c->configure(ByteOrder => 'BigEndian', LongSize  => 4, ShortSize => 2, UnsignedChars => 1,  Alignment => 4);
 die "Couldn't load structure\n" if (!$c->def('ZGameServerInfoMsg'));
 while (1) {
-	open(LOG,">>gameinfod.log");
+	open(LOG,">>Z:\\Deploy\\gameinfod.log");
 	print LOG (localtime)."> Info: Listening...\n";
 	close LOG;
 	$sock ||= IO::Socket::INET->new(LocalPort => 2000, Proto => 'udp') or die "socket rest: $@";
@@ -27,7 +27,7 @@ while (1) {
 	    my $lobby = $info[0];
 	    $mem->setvar('gameinfod', $lobby);
 	} 
-	open(LOG,">>gameinfod.log");
+	open(LOG,">Z:\\Deploy\\gameinfod.log");
 	print LOG (localtime). "> Error: recv: $!\n";
 	close LOG;
 }
