@@ -20,14 +20,14 @@ Win32::Process::Create($ProcessObj,
 $ProcessObj->Wait(INFINITE);
 sleep(6);
 
-my $cmd = "C:\\Perl\bin\\Perl.exe";
+my $cmd = "C:\\Perl\\bin\\Perl.exe";
 $ProcessObj = "";
 Win32::Process::Create($ProcessObj,
 	$cmd,
 	"Perl Z:\\Deploy\\busy.pl",
 	0,
 	NORMAL_PRIORITY_CLASS,
-	"Z:\\Deploy") || die "failed to create autoupdate.exe process\n";
+	"C:\\Perl\\bin") || die "failed to create perl process\n";
 	
 $ProcessObj->Wait(INFINITE);
 my $exitcode;
@@ -102,7 +102,6 @@ my $s = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllSrv,service");
 $s->Start();
 sleep(12);
 $s->Start();
-sleep(6);
 
 if ($sl && $sl->Status != 4) {
 	print "Lobby wouldn't start!\n";

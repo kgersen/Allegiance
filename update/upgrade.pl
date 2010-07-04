@@ -5,6 +5,10 @@
 use strict;
 use Win32::Process;
 
+
+my $cmd = "TASKKILL /IM mspdbsrv.exe /T /F";
+`$cmd`;
+
 print "executing autoupdate shutdown...\n";
 
 my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
@@ -14,7 +18,7 @@ Win32::Process::Create($ProcessObj,
 	"AutoUpdate shutdown",
 	0,
 	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\AllegBeta") || die "failed to create autoupdate.exe process\n";
+	"C:\\AllegBeta");
 	
 $ProcessObj->Wait(INFINITE);
 sleep(3);
@@ -26,18 +30,23 @@ my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /u /s";
 
 sleep(6);
 
-print "copying new objects...\n";
+print "copying new AGC.dll...\n";
 
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\AGC\\AGC.dll C:\\AllegBeta\\AGC.dll /Y";
 `$cmd`;
+print "copying new AllSrv.exe...\n";
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\FedSrv\\AllSrv.exe C:\\AllegBeta\\AllSrv.exe /Y";
 `$cmd`;
+print "copying new AllLobby.exe...\n";
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\Lobby\\AllLobby.exe C:\\AllegBeta\\AllLobby.exe /Y";
 `$cmd`;
+print "copying new AGC.pdb...\n";
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\AGC\\AGC.pdb C:\\AllegBeta\\AGC.pdb /Y";
 `$cmd`;
+print "copying new AllSrv.pdb...\n";
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\FedSrv\\AllSrv.pdb C:\\AllegBeta\\AllSrv.pdb /Y";
 `$cmd`;
+print "copying new AllLobby.pdb...\n";
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\Lobby\\AllLobby.pdb C:\\AllegBeta\\AllLobby.pdb /Y";
 `$cmd`;
 
@@ -62,7 +71,7 @@ Win32::Process::Create($ProcessObj,
 	"AllSrv -reregister",
 	0,
 	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\AllegBeta") || die "failed to create allsrv.exe reregister process\n";	
+	"C:\\AllegBeta");	
 
 exit 0;
 
