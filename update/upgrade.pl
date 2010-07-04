@@ -8,7 +8,7 @@ use Win32::OLE;
 
 my $cmd = "TASKKILL /IM mspdbsrv.exe /T /F";
 system($cmd);
-sleep(6);
+sleep(3);
 print "executing autoupdate shutdown...\n";
 
 my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
@@ -17,17 +17,17 @@ Win32::Process::Create($ProcessObj,
 	$cmd,
 	"AutoUpdate shutdown",
 	0,
-	NORMAL_PRIORITY_CLASS,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\AllegBeta") || die "failed to create shutdown process\n";
 $ProcessObj->Wait(INFINITE);
-sleep(6);	
+sleep(3);	
 	
 print "executing un regsvr32 AGC.dll...\n";
 
 my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /u /s";
 system($cmd);
 
-sleep(6);
+sleep(3);
 
 print "copying new AGC.dll...\n";
 
@@ -59,7 +59,7 @@ print "executing regsvr32 AGC.dll...\n";
 my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /s";
 system($cmd);	
 
-sleep(6);
+sleep(5);
 
 print "executing allsrv rereg...\n";
 
@@ -67,21 +67,11 @@ my $cmd = "C:\\AllegBeta\\AllSrv.exe";
 my $ProcessObj = "";
 Win32::Process::Create($ProcessObj,
 	$cmd,
-	"AllSrv -service",
+	"AllSrv -reregister",
 	0,
-	NORMAL_PRIORITY_CLASS,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\AllegBeta") || die "failed to create allsrv.exe reregister process\n";
-	
-print "Starting AllSrv service\n";	
-my $s = Win32::OLE->GetObject("WinNT://cdn/AllSrv,service");
-$s->Start();
-sleep(12);
-$s->Start();
-sleep(6);
-if ($s && $s->Status != 4) {
-	print "Server wouldn't start!\n";
-	exit 1;	
-}	
+sleep(3);	
 
 exit 0;
 

@@ -13,7 +13,7 @@ Win32::Process::Create($ProcessObj,
 	$cmd,
 	"AllSrv",
 	0,
-	NORMAL_PRIORITY_CLASS|CREATE_NEW_PROCESS_GROUP|CREATE_DEFAULT_ERROR_MODE|DETACHED_PROCESS,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\AllegBeta") || die "failed to create allsrv.exe process\n";
-	
+
 exit 0;

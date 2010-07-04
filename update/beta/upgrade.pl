@@ -14,7 +14,7 @@ Win32::Process::Create($ProcessObj,
 	$cmd,
 	"AutoUpdate shutdown",
 	0,
-	NORMAL_PRIORITY_CLASS,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\Allegiance\\Server") || die "failed to create autoupdate.exe process\n";
 	
 $ProcessObj->Wait(INFINITE);
@@ -26,7 +26,7 @@ Win32::Process::Create($ProcessObj,
 	$cmd,
 	"Perl Z:\\Deploy\\busy.pl",
 	0,
-	NORMAL_PRIORITY_CLASS,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\Perl\\bin") || die "failed to create perl process\n";
 	
 $ProcessObj->Wait(INFINITE);
@@ -89,7 +89,7 @@ Win32::Process::Create($ProcessObj,
 	$cmd,
 	"AllSrv -service",
 	0,
-	NORMAL_PRIORITY_CLASS,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\Allegiance\\Server") || die "failed to create allsrv.exe reregister process\n";
 
 
