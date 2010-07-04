@@ -1,35 +1,44 @@
 #Imago <imagotrigger@gmail.com>
-#Stops lobby/server, replaces objects, Starts lobby/server
-#BETA
+# Stops Server, Stops Lobby, Replaces, Reregisters, Starts Lobby, Starts Server
+#  This file is for host BETA
 
 use strict;
 use Win32::OLE;
+use Win32::Process;
 
-my $bSstopped = 0;
-my $bLstopped = 0;
+my $cmd = "copy Z:\\wwwroot\\FAZ\\AU\\AutoUpdate.exe C:\\Allegiance\\Server\\AutoUpdate.exe /Y";
+system($cmd);
 
-my $s = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllSrv,service");
-if ($s && $s->Status() == 4) {
-	#TODO block for up to an hour untill no running games
-	print "Stopping AllSrv service\n";	
-	$s->Stop();
-	$bSstopped = 1;
-	sleep(10);
-}
+my $cmd = "C:\\Allegiance\\Server\\AutoUpdate.exe";
+my $ProcessObj = "";
+Win32::Process::Create($ProcessObj,
+	$cmd,
+	"AutoUpdate shutdown",
+	0,
+	NORMAL_PRIORITY_CLASS,
+	"C:\\AllegBeta") || die "failed to create autoupdate.exe process\n";
+	
+$ProcessObj->Wait(INFINITE);
+sleep(1);
+
+#
+# TODO Wait for any OTHER servers still connected to leave!
+#
 
 my $sl = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllLobby,service");
-if ($sl && $sl->Status() == 4 && (!$s || $s->Status() != 4)) {
-	print "Stopping AllLobby service\n";	
-	$sl->Stop();
-	$bLstopped = 1;
-	sleep(6);
-}
+print "Stopping AllLobby service\n";	
+$sl->Stop();
+sleep(6);
 
-if (($s && $s->Status == 4) || ($sl && $sl->Status == 4)) {
-	print "Services wouldn't shut down!\n";
+if ($sl && $sl->Status == 4) {
+	print "Lobby wouldn't stop!\n";
 	exit 1;	
 }
 
+my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /u /s";
+system($cmd);
+
+sleep(3);
 
 my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\AGC.dll C:\\Allegiance\\Server\\AGC.dll";
 system($cmd);
@@ -43,24 +52,35 @@ my $cmd = "copy Z:\\deploy\\AllLobby.exe C:\\Allegiance\\Lobby\\AllLobby.exe /Y"
 system($cmd);
 my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\dbghelp.dll C:\\Allegiance\\Lobby\\dbghelp.dll";
 system($cmd);
-my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /u /s";
-system($cmd);
+
 my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /s";
 system($cmd);
 
+sleep(3);
 
-#if ($bLstopped && $sl) {
-	print "Starting Lobby service\n";	
-	$sl->Start();
-	sleep(6);
-#}
+my $cmd = "C:\\Allegiance\\Server\\AllSrv.exe";
+my $ProcessObj = "";
+Win32::Process::Create($ProcessObj,
+	$cmd,
+	"AllSrv -service",
+	0,
+	NORMAL_PRIORITY_CLASS,
+	"C:\\AllegBeta") || die "failed to create allsrv.exe reregister process\n";
 
 
-#if ($bSstopped && $s) {
-	print "Starting AllSrv service\n";	
-	$s->Start();
-	sleep(10);
-#}
+print "Starting Lobby service\n";	
+$sl->Start();
+sleep(6);
+
+print "Starting AllSrv service\n";	
+my $s = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllSrv,service");
+$s->Start();
+sleep(6);
+
+if ($sl && $sl->Status != 4) {
+	print "Lobby wouldn't start!\n";
+	exit 1;	
+}
 
 exit 0;
 

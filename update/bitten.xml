@@ -207,6 +207,10 @@
 </step> 
 -->
 
+<step id="Upgrade Started">
+	<sh:exec file="perl" args="${cdn.path}\\update\\upgrade.pl" />
+</step>	
+
 <step id="Deploy Beta">
 	<sh:exec file="perl" args="${cdn.path}\\update\\makelist.pl" />
 	<sh:exec file="perl" args="${cdn.path}\\update\\makemotd.pl ${build} ${revision}" />
@@ -214,11 +218,11 @@
 	<sh:exec file="perl" args="${cdn.path}\\update\\deploy.pl" />
 </step>
 
-<step id="Upgrade">
-	<sh:exec file="perl" args="${cdn.path}\\update\\upgrade.pl" />
+<step id="Upgrade Finished">
+	<sh:exec file="perl" args="${cdn.path}\\update\\allsrv.pl" />
 </step>	
 
-<step id="Finished">
+<step id="Done">
 	<sh:exec file="perl" args="${cdn.path}\\update\\touch.pl"/>
 	<sh:exec file="perl" args="${cdn.path}\\update\\announce.pl ${build} ${revision}"/>
 </step>

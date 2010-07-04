@@ -1,9 +1,12 @@
 #Imago <imagotrigger@gmail.com>
-# Stops, Replaces, Reregisters and Starts AllSrv
+# Stops, Replaces, Reregisters AllSrv
 #  This file is for host CDN
 
 use strict;
 use Win32::Process;
+
+my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\AutoUpdate\\AutoUpdate.exe C:\\AllegBeta\\AutoUpdate.exe /Y";
+`$cmd`;
 
 my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
 my $ProcessObj = "";
@@ -14,6 +17,7 @@ Win32::Process::Create($ProcessObj,
 	NORMAL_PRIORITY_CLASS,
 	"C:\\AllegBeta") || die "failed to create autoupdate.exe process\n";
 	
+$ProcessObj->Wait(INFINITE);
 sleep(1);
 
 my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /u /s";
@@ -38,7 +42,6 @@ my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /s";
 sleep(1);
 
 my $cmd = "C:\\AllegBeta\\AllSrv.exe";
-print "Starting AllSrv executable\n";
 my $ProcessObj = "";
 Win32::Process::Create($ProcessObj,
 	$cmd,
@@ -47,18 +50,11 @@ Win32::Process::Create($ProcessObj,
 	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\AllegBeta") || die "failed to create allsrv.exe reregister process\n";	
 
-sleep(1);
+exit 0;
 
-my $cmd = "C:\\AllegBeta\\AllSrv.exe";
-my $ProcessObj = "";
-Win32::Process::Create($ProcessObj,
-	$cmd,
-	"AllSrv",
-	0,
-	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\AllegBeta") || die "failed to create allsrv.exe process\n";
+__END__
 	
 
-exit 0;
+
 
 
