@@ -13,7 +13,7 @@ Win32::Process::Create($ProcessObj,
 	$cmd,
 	"AutoUpdate shutdown",
 	0,
-	NORMAL_PRIORITY_CLASS,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\AllegBeta") || die "failed to create autoupdate.exe process\n";
 	
 $ProcessObj->Wait(INFINITE);

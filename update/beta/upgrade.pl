@@ -18,7 +18,7 @@ Win32::Process::Create($ProcessObj,
 	"C:\\Allegiance\\Server") || die "failed to create autoupdate.exe process\n";
 	
 $ProcessObj->Wait(INFINITE);
-sleep(3);
+sleep(6);
 
 my $cmd = "C:\\Perl\bin\\Perl.exe";
 $ProcessObj = "";
@@ -99,6 +99,8 @@ sleep(6);
 
 print "Starting AllSrv service\n";	
 my $s = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllSrv,service");
+$s->Start();
+sleep(12);
 $s->Start();
 sleep(6);
 
