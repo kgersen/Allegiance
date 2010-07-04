@@ -5,6 +5,8 @@
 use strict;
 use Win32::Process;
 
+print "Starting AllSrv\n";
+
 my $cmd = "C:\\AllegBeta\\AllSrv.exe";
 my $ProcessObj = "";
 Win32::Process::Create($ProcessObj,
