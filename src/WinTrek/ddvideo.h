@@ -21,6 +21,7 @@ public:
 	LPDIRECTDRAW7           m_lpDD;
 	LPDIRECTDRAWSURFACE7    m_lpDDSPrimary;
 	LPDIRECTDRAWSURFACE7    m_lpDDSBack;	
+	HINSTANCE hInstDDraw;
 
 	BOOL   m_Running;
 	// DirectShow object instance

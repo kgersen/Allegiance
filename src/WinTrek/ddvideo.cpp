@@ -9,6 +9,7 @@ DDVideo::DDVideo()
     m_lpDDSPrimary = NULL;
     m_lpDDSBack    = NULL;
 	m_Running      = TRUE; 
+	hInstDDraw = NULL;
 }
 
 // This is it...
@@ -47,8 +48,6 @@ HRESULT DDVideo::InitDirectDraw()
  
     //Create the main DirectDraw object - updated to do it the hard way.... 7/10
     LPDIRECTDRAW pDD;
-
-	HINSTANCE hInstDDraw;
     LPDIRECTDRAWCREATE pDDCreate = NULL;
     hInstDDraw = LoadLibrary("ddraw.dll");
 	pDDCreate = ( LPDIRECTDRAWCREATE )GetProcAddress( hInstDDraw, "DirectDrawCreate" );
@@ -80,10 +79,10 @@ HRESULT DDVideo::InitDirectDraw()
 void DDVideo::DestroyDirectDraw()
 {	
 	m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_NORMAL);
-
 	SAFE_RELEASE(m_lpDDSBack);
 	SAFE_RELEASE(m_lpDDSPrimary);
 	SAFE_RELEASE(m_lpDD);
+	FreeLibrary(hInstDDraw);
 }	  
 
 void DDVideo::DestroyDDVid()

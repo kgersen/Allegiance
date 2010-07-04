@@ -9,6 +9,8 @@ use Win32::Process;
 my $cmd = "copy Z:\\wwwroot\\FAZ\\AU\\AutoUpdate.exe C:\\Allegiance\\Server\\AutoUpdate.exe /Y";
 system($cmd);
 
+sleep(1);
+
 my $cmd = "C:\\Allegiance\\Server\\AutoUpdate.exe";
 my $ProcessObj = "";
 Win32::Process::Create($ProcessObj,

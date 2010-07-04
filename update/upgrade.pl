@@ -8,6 +8,8 @@ use Win32::Process;
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\AutoUpdate\\AutoUpdate.exe C:\\AllegBeta\\AutoUpdate.exe /Y";
 `$cmd`;
 
+sleep(1);
+
 my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
 my $ProcessObj = "";
 Win32::Process::Create($ProcessObj,

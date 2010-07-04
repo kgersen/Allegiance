@@ -1,7 +1,7 @@
 #Imago <imagotrigger@gmail.com>
 # Send files to fazdev FTP /w a ChangeNotiy folder
 #  Waits for remote completion notification
-#   Displays file size and md5 hex. hash of the build's Beta 1.1 Allegiance.exe
+#   IMPORTANT!!!!  NYI: call an external to insert the build's Beta 1.1 Allegiance.exe ASGS token
 
 use strict;
 use Net::FTP;
@@ -77,6 +77,6 @@ if ($bfail) {
 
 $ftp->quit();
 
-print "Allegiance.exe - hash: $hash size: $size\n";
+#print "Allegiance.exe - hash: $hash size: $size\n";
 
 exit 0;
