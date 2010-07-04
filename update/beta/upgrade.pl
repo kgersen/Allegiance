@@ -18,7 +18,7 @@ Win32::Process::Create($ProcessObj,
 	"AutoUpdate shutdown",
 	0,
 	NORMAL_PRIORITY_CLASS,
-	"C:\\AllegBeta") || die "failed to create autoupdate.exe process\n";
+	"C:\\Allegiance\\Server") || die "failed to create autoupdate.exe process\n";
 	
 $ProcessObj->Wait(INFINITE);
 sleep(1);
@@ -67,7 +67,7 @@ Win32::Process::Create($ProcessObj,
 	"AllSrv -service",
 	0,
 	NORMAL_PRIORITY_CLASS,
-	"C:\\AllegBeta") || die "failed to create allsrv.exe reregister process\n";
+	"C:\\Allegiance\\Server") || die "failed to create allsrv.exe reregister process\n";
 
 
 print "Starting Lobby service\n";	
