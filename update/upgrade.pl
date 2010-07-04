@@ -11,16 +11,8 @@ my $cmd = "TASKKILL /IM mspdbsrv.exe /T /F";
 
 print "executing autoupdate shutdown...\n";
 
-my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
-my $ProcessObj = "";
-Win32::Process::Create($ProcessObj,
-	$cmd,
-	"AutoUpdate shutdown",
-	0,
-	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\AllegBeta");
-	
-$ProcessObj->Wait(INFINITE);
+my $cmd = "C:\\AllegBeta\\AutoUpdate.exe shutdown";
+`$cmd`;
 sleep(3);
 
 print "executing un regsvr32 AGC.dll...\n";
@@ -64,14 +56,8 @@ sleep(6);
 
 print "executing allsrv rereg...\n";
 
-my $cmd = "C:\\AllegBeta\\AllSrv.exe";
-my $ProcessObj = "";
-Win32::Process::Create($ProcessObj,
-	$cmd,
-	"AllSrv -reregister",
-	0,
-	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\AllegBeta");	
+my $cmd = "C:\\AllegBeta\\AllSrv.exe -reregister";
+`$cmd`;
 
 exit 0;
 
