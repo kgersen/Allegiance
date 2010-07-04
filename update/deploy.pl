@@ -67,7 +67,8 @@ while (1) {
 		last;
 	}
 	sleep(10);
-	if ($count > 30) {
+	if ($count > 1440) {
+		$ftp->rename("notify/process","notify/ready") or die "notify failed ", $ftp->message;
 		$bfail = 1;
 		last;
 	}
@@ -76,7 +77,7 @@ while (1) {
  $ftp->ascii;     
  
         $ftp->get("process.log","C:\\process.log")
-      or die "put failed ", $ftp->message;      
+      or die "get failed ", $ftp->message;      
 
 if ($bfail) {
 	print "Remote deployment process did not return to a ready state\n";
