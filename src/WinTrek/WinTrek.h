@@ -332,6 +332,13 @@ typedef struct
 } FrameDumpInfo;
 extern FrameDumpInfo g_fdInfo;
 
+//Imago pass windowed mode #112 7/10
+typedef struct 
+{
+    ZString pathStr;
+    bool bWindowed;
+} PlayVideoInfo;
+
 TRef<IMessageBox> CreateMessageBox(
     const ZString& str, 
     ButtonPane*    pbuttonIn         = NULL, 

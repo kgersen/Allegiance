@@ -13,8 +13,9 @@ DDVideo::DDVideo()
 }
 
 // This is it...
-HRESULT DDVideo::Play(ZString& strPath)
+HRESULT DDVideo::Play(ZString& strPath, bool bWindowed)
 {
+	m_bWindowed = bWindowed;
     HRESULT hr;  
 	if( FAILED( hr = InitDirectDraw() ) ) {
 		ZDebugOutput("InitDirectDraw() failed\n");
@@ -57,21 +58,44 @@ HRESULT DDVideo::InitDirectDraw()
     hRet = pDD->QueryInterface(IID_IDirectDraw7, (LPVOID *) & m_lpDD);
       
 	//Set cooperative level
-	hRet = m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_EXCLUSIVE |DDSCL_ALLOWREBOOT| DDSCL_ALLOWMODEX | DDSCL_FULLSCREEN | DDSCL_MULTITHREADED);
-	m_lpDD->SetDisplayMode(800,600,32,g_DX9Settings.m_refreshrate,0);
+	if (m_bWindowed) { //#112
+		m_lpDD->SetCooperativeLevel(m_hWnd, DDSCL_ALLOWREBOOT | DDSCL_NORMAL | DDSCL_MULTITHREADED);
+	} else {
+		hRet = m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_EXCLUSIVE |DDSCL_ALLOWREBOOT| DDSCL_ALLOWMODEX | DDSCL_FULLSCREEN | DDSCL_MULTITHREADED);
+		m_lpDD->SetDisplayMode(800,600,16,g_DX9Settings.m_refreshrate,0);
+	}
+	
 	ZeroMemory(&ddsd, sizeof(ddsd));
 	ddsd.dwSize = sizeof(ddsd);
-	ddsd.dwFlags = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
-	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
+	
+	//#112
+	ddsd.dwFlags = (m_bWindowed) ? DDSD_CAPS : DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
+	ddsd.ddsCaps.dwCaps = (m_bWindowed) ? DDSCAPS_PRIMARYSURFACE : DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
 
-    ddsd.dwBackBufferCount = 1;
-
-	hRet = m_lpDD->CreateSurface(&ddsd, &m_lpDDSPrimary, NULL);
-
+	if (m_bWindowed) {
+		LPDIRECTDRAWCLIPPER lpClipper;
+		hRet = m_lpDD->CreateSurface(&ddsd, &m_lpDDSPrimary, NULL);
+		hRet = m_lpDD->CreateClipper( 0, &lpClipper, NULL );
+		hRet = lpClipper->SetHWnd( 0, m_hWnd );
+		hRet = m_lpDDSPrimary->SetClipper( lpClipper );
+	} else {
+		ddsd.dwBackBufferCount = 1;
+	}
+	
     ZeroMemory( &ddscaps, sizeof( ddscaps ) );
-	ddscaps.dwCaps=DDSCAPS_BACKBUFFER;
-	hRet = m_lpDDSPrimary->GetAttachedSurface(&ddscaps,&m_lpDDSBack);
+	ddsd.dwSize = sizeof( ddsd );
 
+	if (m_bWindowed) {
+		ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+		ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
+		ddsd.dwWidth = 800;
+		ddsd.dwHeight = 600;
+		hRet = m_lpDD->CreateSurface(&ddsd, &m_lpDDSBack, NULL);
+	} else {
+		ddscaps.dwCaps=DDSCAPS_BACKBUFFER;
+		hRet = m_lpDDSPrimary->GetAttachedSurface(&ddscaps,&m_lpDDSBack);
+	}
+	
 	pDD->Release();
 	return hRet;
 }
@@ -89,4 +113,21 @@ void DDVideo::DestroyDDVid()
 {	
 	delete m_pVideo; 
 	DestroyDirectDraw();
+}
+
+//#112
+BOOL DDVideo::Flip()
+{
+    HRESULT ddrval;
+    RECT rcRectSrc;
+    RECT rcRectDest;
+    POINT p;
+    p.x = 0; p.y = 0;
+    ClientToScreen(m_hWnd, &p);
+    GetClientRect(m_hWnd, &rcRectDest);
+    OffsetRect(&rcRectDest, p.x, p.y);
+    SetRect(&rcRectSrc, 0, 0, 800, 600);
+    ddrval = m_lpDDSPrimary->Blt( &rcRectDest, m_lpDDSBack, &rcRectSrc, DDBLT_WAIT, NULL);
+
+    return (ddrval == DD_OK);
 }

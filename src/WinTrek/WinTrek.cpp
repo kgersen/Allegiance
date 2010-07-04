@@ -147,19 +147,26 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	
-	char * pData = (char *)param;
+	//windowed 7/10 #112
+	PlayVideoInfo * pData = (PlayVideoInfo*)param;
 	DDVideo *DDVid = new DDVideo();
+	bool bOk = true;
+	HWND hwndFound = NULL;
+	if (pData->bWindowed) {
+		hwndFound=FindWindow(NULL, "Allegiance");
+	} else {
+		//this window will have our "intro" in it...
+		HWND hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
+			GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
+			::GetModuleHandle(NULL), NULL);
+	}
 	
-	//this window will have our "intro" in it...
-	HWND hWND = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
-		GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
-	::GetModuleHandle(NULL), NULL);
-	DDVid->m_hWnd = hWND;
+	DDVid->m_hWnd = hwndFound;	
 
-	if( SUCCEEDED( DDVid->Play(ZString(pData))) ) //(WMV2 is good as most machines read it)
+	if( SUCCEEDED( DDVid->Play(pData->pathStr,pData->bWindowed))) //(WMV2 is good as most machines read it)
     {
 		::ShowCursor(FALSE);
-		while( DDVid->m_Running ) //we can now do other stuff while playing
+		while( DDVid->m_Running && bOk) //we can now do other stuff while playing
         {
 			if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
 				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) || 
@@ -169,7 +176,11 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 				DDVid->m_pVideo->Stop();
 			} else	{
 		    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-				DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+				if (pData->bWindowed) {
+					bOk = DDVid->Flip(); //windowed #112 Imagooooo
+				} else {
+					DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+				}
 			}
 		}
 		::ShowCursor(TRUE);
@@ -177,8 +188,9 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	} else {
 		DDVid->DestroyDirectDraw();
 	}
-	
-	::DestroyWindow(hWND);
+
+	delete pData;
+	::DestroyWindow(hwndFound);
 	return 0;
 }
 //
@@ -2304,13 +2316,13 @@ public:
 							}
 
 							DDVid->m_hWnd = hWND;
-
+							bool bOk = true;
 							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
-							if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
+							if(SUCCEEDED(DDVid->Play(pathStr,!m_pengine->IsFullscreen()))) //(Type WMV2 is good as most systems will play it)
 							{ 
 								GetAsyncKeyState(VK_LBUTTON); GetAsyncKeyState(VK_RBUTTON);
 								::ShowCursor(FALSE);
-								while( DDVid->m_Running )
+								while( DDVid->m_Running && bOk) //imago windooooow #112 7/10
 								{
 									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
 										GetAsyncKeyState(VK_RETURN) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
@@ -2319,7 +2331,11 @@ public:
 										DDVid->m_pVideo->Stop();
 									} else	{
 										DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-										DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+										if (m_pengine->IsFullscreen()) {
+											DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+										} else {
+											bOk = DDVid->Flip();
+										}
 									}
 								}
 								::ShowCursor(TRUE);
@@ -2630,7 +2646,11 @@ public:
 					::ShowCursor(FALSE);
 				}
 
-				const char * pData = (PCC)pathStr;
+				//#112 windowed 7/10 Imago
+				PlayVideoInfo * pData = new PlayVideoInfo;
+				pData->pathStr = pathStr;
+				pData->bWindowed = CD3DDevice9::Get()->IsWindowed();
+
 				hDDVidThread = CreateThread(NULL,0,DDVidCreateThreadProc,(void *)pData,THREAD_PRIORITY_HIGHEST,0);
 			}
 		}
@@ -7646,7 +7666,7 @@ public:
                     // end training mission hook
 
                     if (m_cm == cmCockpit)
-                    {
+					{
                         if (trekClient.GetShip()->GetTurretID() != NA)
                         {
                             float   fov = (s_fMinFOV + 0.5f * (s_fMaxFOV - s_fMinFOV)) +
@@ -7654,7 +7674,7 @@ public:
                             m_cameraControl.SetFOV(fov);
                         }
                         else
-                        {
+						{
                             float   fov = m_cameraControl.GetFOV();
                             if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, true))
                             {
