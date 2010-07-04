@@ -65,13 +65,11 @@ PC2_019=PookCore II b19
 VoS000090=VoS
 cc_09=CC 9
 cc_09b=CC 9b
+tcor_02=Test Core 2
 
 [OfficialCores]
-cc_09=true
 cc_09b=true
-dn_000460=true
-GoDII_04=true
-VoS000090=true
+tcor_02=true
 
 [OfficialServers]
 FAZDev=12.96.40.28
