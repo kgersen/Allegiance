@@ -30,6 +30,8 @@ my $ftp = Net::FTP->new("fazdev.alleg.net", Debug => 0, Port => 21122)
       or die "put failed ", $ftp->message;      
        $ftp->put("C:\\serverlist.txt")
       or die "put failed ", $ftp->message;      
+       $ftp->put("C:\\build\\FAZR6\\src\\Lobby\\zgameinfo.h")
+      or die "put failed ", $ftp->message;      
        $ftp->binary;     
        $ftp->put("C:\\build\\AutoUpdate\\Filelist.txt")
       or die "put failed ", $ftp->message;
