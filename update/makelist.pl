@@ -40,8 +40,12 @@ foreach my $file (@art) {
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
-	`$cmd2`;
-	move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+	if ($size < 2048) {
+		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+	} else {
+		`$cmd2`;
+		move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+	}
 }
 
 #always include svn artwork on the list
@@ -57,8 +61,12 @@ foreach my $file (@svn) {
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
-	`$cmd2`;
-	move("C:\\build\\FAZR6\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+	if ($size < 2048) {
+		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+	} else {
+		`$cmd2`;
+		move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+	}
 }
 
 #of course the latest build
@@ -124,8 +132,12 @@ foreach my $file (@svn) {
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
-	`$cmd2`;
-	move("C:\\build\\FAZR6\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+	if ($size < 2048) {
+		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+	} else {
+		`$cmd2`;
+		move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+	}
 }
 
 close LIST;
