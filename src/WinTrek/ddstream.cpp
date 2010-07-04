@@ -111,6 +111,7 @@ BOOL CDShow::Open(ZString& pFileName, IDirectDraw7 *pDD)
 					vol = -10000;
 				}
 				pBa->put_Volume(vol);
+				pBa->Release();
 			}
            if (FilterInfo.pGraph != NULL)
                FilterInfo.pGraph->Release();

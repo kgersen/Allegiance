@@ -33,8 +33,6 @@ class CDShow
 
 		// MediaStream interface
 		IMediaStream *m_pPrimaryVideoStream;
-		IMediaStream *m_pPrimaryAudioStream;
-
 
 		// DirectDraw media stream interface
 		IDirectDrawMediaStream *m_pDDStream;
