@@ -25,6 +25,7 @@ while (1) {
 	    my %hash = %$perl;
 	    my @info = @{$hash{info}};
 	    my $lobby = $info[0];
+	    $lobby->{gameinfod} = time;
 	    $mem->setvar('gameinfod', $lobby);
 	} 
 	open(LOG,">Z:\\Deploy\\gameinfod.log");

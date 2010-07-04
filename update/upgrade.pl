@@ -5,13 +5,6 @@
 use strict;
 use Win32::Process;
 
-print "updating autoupdate...\n";
-
-my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\AutoUpdate\\AutoUpdate.exe C:\\AllegBeta\\AutoUpdate.exe /Y";
-`$cmd`;
-
-sleep(3);
-
 print "executing autoupdate shutdown...\n";
 
 my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
@@ -31,7 +24,7 @@ print "executing un regsvr32 AGC.dll...\n";
 my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /u /s";
 `$cmd`;
 
-sleep(3);
+sleep(6);
 
 print "copying new objects...\n";
 
@@ -48,12 +41,17 @@ my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\FedSrv\\AllSrv.pdb C:\\AllegB
 my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\Lobby\\AllLobby.pdb C:\\AllegBeta\\AllLobby.pdb /Y";
 `$cmd`;
 
+print "updating autoupdate...\n";
+
+my $cmd = "copy C:\\build\\FAZR6\\objs10\\FZDebug\\AutoUpdate\\AutoUpdate.exe C:\\AllegBeta\\AutoUpdate.exe /Y";
+`$cmd`;
+
 print "executing regsvr32 AGC.dll...\n";
 
 my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /s";
 `$cmd`;	
 
-sleep(3);
+sleep(6);
 
 print "executing allsrv rereg...\n";
 

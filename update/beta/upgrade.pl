@@ -6,13 +6,6 @@ use strict;
 use Win32::OLE;
 use Win32::Process;
 
-print "updating autoupdate...\n";
-
-my $cmd = "copy Z:\\wwwroot\\FAZ\\AU\\AutoUpdate.exe C:\\Allegiance\\Server\\AutoUpdate.exe /Y";
-system($cmd);
-
-sleep(3);
-
 print "executing autoupdate shutdown...\n";
 
 my $cmd = "C:\\Allegiance\\Server\\AutoUpdate.exe";
@@ -59,7 +52,7 @@ print "executing un regsvr32 AGC.dll...\n";
 my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /u /s";
 system($cmd);
 
-sleep(3);
+sleep(12);
 
 print "copying new objects...\n";
 
@@ -76,12 +69,17 @@ system($cmd);
 my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\dbghelp.dll C:\\Allegiance\\Lobby\\dbghelp.dll";
 system($cmd);
 
+print "updating autoupdate...\n";
+
+my $cmd = "copy Z:\\wwwroot\\FAZ\\AU\\AutoUpdate.exe C:\\Allegiance\\Server\\AutoUpdate.exe /Y";
+system($cmd);
+
 print "executing regsvr32 AGC.dll...\n";
 
 my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /s";
 system($cmd);
 
-sleep(3);
+sleep(12);
 
 print "executing allsrv rereg...\n";
 
