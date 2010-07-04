@@ -612,7 +612,7 @@ public:
                     //
                     // reloaded after an auto-update
                     // 
-                    //g_bReloaded = true;
+                    g_bReloaded = true;
 
                     // TODO: make two types of reloaded: one for internet, one for zone
                     // that way we know how to log on.  Right now there it just relogs on

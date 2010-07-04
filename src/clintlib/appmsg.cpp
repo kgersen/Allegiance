@@ -3355,7 +3355,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             if (m_pAutoDownload == NULL)
                 m_pAutoDownload = CreateAutoDownload();
 
-            IAutoUpdateSink * pAutoUpdateSink = OnBeginAutoUpdate(NULL, true);
+            IAutoUpdateSink * pAutoUpdateSink = OnBeginAutoUpdate(NULL, false); //no relog #111
             assert(pAutoUpdateSink);
 
             CASTPFM(pfmServerInfo, L, AUTO_UPDATE_INFO, pfm);
@@ -3376,7 +3376,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             //
             // Let's do it!
             //
-            m_pAutoDownload->BeginUpdate(pAutoUpdateSink, ShouldCheckFiles(), false);
+			m_pAutoDownload->BeginUpdate(pAutoUpdateSink, true, false); //#111 force check
             // m_pAutoDownload could be NULL at this point, if the autodownload system decided
             // not to do a download after all.  This can happen if there is an error or if
             // the client was already up-to-date.

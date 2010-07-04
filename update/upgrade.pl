@@ -3,16 +3,24 @@
 #  This file is for host CDN
 
 use strict;
+use Win32::Process;
 
 my $cmd = "TASKKILL /IM mspdbsrv.exe /T /F";
 system($cmd);
-sleep(3);
+sleep(6);
 print "executing autoupdate shutdown...\n";
 
-my $cmd = "C:\\AllegBeta\\AutoUpdate.exe shutdown";
-system($cmd);
-sleep(3);
-
+my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
+my $ProcessObj = "";
+Win32::Process::Create($ProcessObj,
+	$cmd,
+	"AutoUpdate shutdown",
+	0,
+	NORMAL_PRIORITY_CLASS|CREATE_NEW_PROCESS_GROUP|CREATE_DEFAULT_ERROR_MODE|DETACHED_PROCESS,
+	"C:\\AllegBeta") || die "failed to create shutdown process\n";
+$ProcessObj->Wait(INFINITE);
+sleep(6);	
+	
 print "executing un regsvr32 AGC.dll...\n";
 
 my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /u /s";
