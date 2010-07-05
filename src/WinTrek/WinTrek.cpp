@@ -9807,18 +9807,22 @@ public:
                 }
             }
             break;
-
+			
             case TK_ThrottleUp:
             {
-                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true))
+                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) {
 					trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
+					trekClient.joyThrottle = false; //#116 7/10 Imago
+				}
             }
             break;
 
             case TK_ThrottleDown:
             {
-                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true))
+                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true)) {
 					trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
+					trekClient.joyThrottle = false; //#116 7/10 Imago
+				}
             }
             break;
 			
