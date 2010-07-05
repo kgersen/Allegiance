@@ -10547,20 +10547,26 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
 	if (pcluster->GetProbes()) { //Imago 7/10 - if there are probes in this sector...
 		//Xynth - Begin change to destroy probes too close to rock and would otherwise be lodged in base 7/10
+		//ticket #10
 		for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
 		{
 			IprobeIGC*  pprobe = ppl->data();
-
-			Vector dxy = pprobe->GetEmissionPt() - pasteroid->GetPosition();
+			Vector newPos = pprobe->GetPosition();
+			Vector dxy = pprobe->GetPosition() - pasteroid->GetPosition();
 			float l2 = dxy.LengthSquared();
 			float rOffset = pstationtype->GetRadius() + pprobe->GetRadius();
+			/*debugf("Probe xyz %f %f %f\n",newPos.X(), newPos.Y(), newPos.Z());
+			debugf("Station vec %f %f %f\n",ds.position.X(), ds.position.Y(), ds.position.Z());
+			debugf("radii %f %f\n", pstationtype->GetRadius(),  pprobe->GetRadius());
+			debugf("l2 rOffset %f %f\n", l2, rOffset);*/
 			if ((l2 < rOffset * rOffset) && (l2 != 0.0f))
-			{
-				KillProbeEvent(pprobe);
+			{				
+				pprobe->SetExpiration(now + 1.0);
+				//debugf("kill probe");							
 			}
 		}
-		//Xynth - End change
-	}
+		
+	} //Xynth/Imago - End change
 
 
     KillAsteroidEvent(pasteroid, false);

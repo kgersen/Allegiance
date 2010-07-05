@@ -331,7 +331,7 @@ inline void  CprobeIGC::GetTarget(const ModelListIGC*  models,
                                
 void    CprobeIGC::Update(Time now)
 {
-    if (now >= m_timeExpire)
+    if (now >= m_timeExpire)	
         GetMyMission()->GetIgcSite()->KillProbeEvent(this);
     else
     {

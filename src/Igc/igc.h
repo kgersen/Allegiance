@@ -3426,6 +3426,8 @@ class IprobeIGC : public IscannerIGC
         virtual SoundID              GetAmbientSound(void) const = 0;
         virtual void                 SetCreateNow (void) = 0;
         virtual float                GetTimeFraction(void) const = 0;
+		//Xynth 7/2010 function to set probe expiration	ticket #10	
+		virtual void				SetExpiration(Time time) = 0;
 };
 
 class IstationIGC : public IscannerIGC
