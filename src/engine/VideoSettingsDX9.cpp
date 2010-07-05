@@ -216,7 +216,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
 		//lets make extra sure we don't crash when we autoload AA settings
 		LPDIRECT3D9 pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
-		if (g_DX9Settings.m_dwAA >= 1)
+		if (g_DX9Settings.m_dwAA >= 1 && g_DX9Settings.m_dwAA < 4) // #113 7/10 Imago
 			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
 				g_VideoSettings.bWindowed, D3DMULTISAMPLE_2_SAMPLES, NULL) == D3D_OK) {
 				g_VideoSettings.iCurrentAASetting = 1;
