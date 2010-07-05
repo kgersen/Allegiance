@@ -2,8 +2,12 @@
 # Stops, Replaces, Reregisters AllSrv
 #  This file is for host CDN
 
+
+# No longer used, dosen't work right from perl on Win 5.2 +
+
 use strict;
 use Win32::Process;
+
 
 my $cmd = "TASKKILL /IM mspdbsrv.exe /T /F";
 system($cmd);
