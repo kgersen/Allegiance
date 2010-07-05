@@ -728,12 +728,23 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
     // tell them about the world
     SendMissionInfo(pfsPlayer, pside);
 
-    //  tell them about the players who have flags
+    //  tell them about the players who have flags AND WINGS - IMAGO #91 7/10
     {
       const ShipListIGC*    pships = m_pMission->GetShips();
       for (ShipLinkIGC* psl = pships->first(); (psl != NULL); psl = psl->next())
       {
         IshipIGC*   pship = psl->data();
+
+		if (pship != pfsPlayer->GetIGCShip() && pship->GetPilotType() >= c_ptPlayer)
+        {
+            ShipID   shipID = pship->GetObjectID(); 
+            BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID) 
+            END_PFM_CREATE
+            pfmSetWingID->wingID = pship->GetWingID(); // AND WINGS - IMAGO #91 7/10
+            pfmSetWingID->shipID = shipID;
+            pfmSetWingID->bCommanded = true;
+        }
+
         SideID  sidFlag = pship->GetFlag();
         if (sidFlag != NA)
         {
