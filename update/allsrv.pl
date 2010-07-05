@@ -14,10 +14,11 @@ sleep(12);
 $s->Start();
 sleep(6);
 if ($s && $s->Status != 4) {
-	print "Lobby wouldn't start!\n";
+	print "Server wouldn't start!\n";
 	exit 1;	
 }
 
+exit 0;
 
 __END__
 my $cmd = "C:\\AllegBeta\\AllSrv.exe";
@@ -29,4 +30,3 @@ Win32::Process::Create($ProcessObj,
 	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\AllegBeta") || die "failed to create allsrv.exe process\n";
 
-exit 0;
