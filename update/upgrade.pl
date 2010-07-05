@@ -10,15 +10,8 @@ system($cmd);
 sleep(3);
 print "executing autoupdate shutdown...\n";
 
-my $cmd = "C:\\AllegBeta\\AutoUpdate.exe";
-my $ProcessObj = "";
-Win32::Process::Create($ProcessObj,
-	$cmd,
-	"AutoUpdate shutdown",
-	0,
-	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\AllegBeta") || die "failed to create shutdown process\n";
-$ProcessObj->Wait(INFINITE);
+my $cmd = "C:\\AllegBeta\\AutoUpdate.exe shutdown";
+system($cmd);
 sleep(3);	
 	
 print "executing un regsvr32 AGC.dll...\n";
@@ -62,15 +55,8 @@ sleep(5);
 
 print "executing allsrv rereg...\n";
 
-my $cmd = "C:\\AllegBeta\\AllSrv.exe";
-my $ProcessObj = "";
-Win32::Process::Create($ProcessObj,
-	$cmd,
-	"AllSrv -service",
-	0,
-	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\AllegBeta") || die "failed to create allsrv.exe reregister process\n";
-sleep(3);	
+my $cmd = "C:\\AllegBeta\\AllSrv.exe -service";
+system($cmd);
 
 exit 0;
 
