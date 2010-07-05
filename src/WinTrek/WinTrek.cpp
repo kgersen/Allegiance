@@ -7695,9 +7695,11 @@ public:
 
                             if (trekClient.GetShip()->GetBaseHullType() != NULL)
                             {
+								//Imago / madpeople - do not limit this view beyond that of the core #88 7/10
                                 //What is the maximum desired rate of turn for this field of view?
                                 //Use the same calculation as for turrets.
                                 //Keep in sync with wintrek.cpp's FOV by throttle
+								/*
                                 static const float  c_minRate = RadiansFromDegrees(7.5f);
                                 static const float  c_maxRate = RadiansFromDegrees(75.0f);
                                 float   maxSlewRate = c_minRate +
@@ -7714,7 +7716,8 @@ public:
                                     if (yaw > maxSlewRate)
                                         js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
                                 }
-                            }
+								*/
+							}
                         }
                     }
 
