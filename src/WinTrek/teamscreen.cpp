@@ -2408,6 +2408,16 @@ public:
 
     void OnTeamCivChange(MissionInfo *pMissionDef, SideID sideID, CivID civID)
     {
+		//Imago #114 7/10
+		if (trekClient.MyPlayerInfo()->IsTeamLeader() && !m_pbuttonAwayFromKeyboard->GetChecked() && trekClient.GetSideID() != sideID)
+		{
+			m_pbuttonTeamReady->SetChecked(false);
+			OnButtonTeamReady();
+			m_pbuttonAwayFromKeyboard->SetChecked(true);
+			OnButtonAwayFromKeyboard() ;
+		}
+		//
+
         UpdateCivBitmap();
 		m_plistPaneTeams->ForceRefresh(); // KGJV #62 fix: force faction names to refresh
     }
