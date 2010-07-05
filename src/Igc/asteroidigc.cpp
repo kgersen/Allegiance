@@ -117,22 +117,43 @@ static const AsteroidTypeRow asteroidTypes[] =
 {
     { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd03", "", "meteoricon" } },
     { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd05", "", "meteoricon" } },
+	//new huge rocks
+    { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd06", "", "meteoricon" } },
+    { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd07", "", "meteoricon" } },
+
     { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd03", "", "meteoricon" } },
     { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd05", "", "meteoricon" } },
+	//new regular rocks (buildable)
+	{ "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd06", "", "meteoricon" } },
+    { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd07", "", "meteoricon" } },
+	
+	{ "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd55", "", "heliumrock" } }, //new he rock 
     { "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd56", "", "heliumrock" } },
+
+    { "Uranium",        "U",    { 0.0f, 0,        (c_aabmSpecial << 0),   0, 25000, 200,  "bgrnd59", "", "hotrock"    } }, //new u rock (duplicate of 51)
     { "Uranium",        "U",    { 0.0f, 0,        (c_aabmSpecial << 0),   0, 25000, 200,  "bgrnd51", "", "hotrock"    } },
-    { "Silicon",        "Si",   { 0.0f, 0,        (c_aabmSpecial << 1),   0, 25000, 200,  "bgrnd52", "", "copperrock" } },
-    { "Carbonaceous",   "C",    { 0.0f, 0,        (c_aabmSpecial << 2),   0, 25000, 200,  "bgrnd53", "", "carbonrock" } }
+    { "Silicon",        "Si",   { 0.0f, 0,        (c_aabmSpecial << 1),   0, 25000, 200,  "bgrnd53", "", "copperrock" } }, //new si rock  (dup of 52)
+	{ "Silicon",        "Si",   { 0.0f, 0,        (c_aabmSpecial << 1),   0, 25000, 200,  "bgrnd52", "", "copperrock" } },
+	{ "Carbonaceous",   "C",    { 0.0f, 0,        (c_aabmSpecial << 2),   0, 25000, 200,  "bgrnd52", "", "carbonrock" } },  
+    { "Carbonaceous",   "C",    { 0.0f, 0,        (c_aabmSpecial << 2),   0, 25000, 200,  "bgrnd53", "", "carbonrock" } }, 
+	
+	//throwback NYrI
+	/*
+	{ "Lava",		    "L",    { 0.0f, 0,        (c_aabmSpecial << 3),   0, 25000, 200,  "bgrnd54", "", "goldrock" } },
+	{ "Lava",		    "L",    { 0.0f, 0,        (c_aabmSpecial << 3),   0, 25000, 200,  "bgrnd54", "", "goldrock" } },
+	{ "Nickel Iron",	"Ni",   { 0.0f, 0,        (c_aabmSpecial << 4),   0, 25000, 200,  "bgrnd58", "", "waterrock" } },
+	{ "Nickel Iron",	"Ni",   { 0.0f, 0,        (c_aabmSpecial << 4),   0, 25000, 200,  "bgrnd50", "", "waterrock" } }
+	*/
 };
 
 const int nFirstHugeType = 0;
-const int nNumHugeTypes = 2;
+const int nNumHugeTypes = 4;
 const int nFirstGenericType = nFirstHugeType + nNumHugeTypes;
-const int nNumGenericTypes = 2;
+const int nNumGenericTypes = 4;
 const int nFirstMinableType = nFirstGenericType + nNumGenericTypes;
-const int nNumMinableTypes = 1;
+const int nNumMinableTypes = 2;
 const int nFirstSpecialType = nFirstMinableType + nNumMinableTypes;
-const int nNumSpecialTypes = 3;
+const int nNumSpecialTypes = 6; //was 3 Imago
 const int numAsteroidTypes = sizeof(asteroidTypes) / sizeof(AsteroidTypeRow);
 
 static const AsteroidTypeRow& FindAsteroidRow(AsteroidAbilityBitMask aabm)
@@ -184,31 +205,47 @@ int IasteroidIGC::GetSpecialAsterioid(const MissionParams*  pmp, int index)
     {
         case 0:
         case 7:
-            n = index % 3;
+            n = (index % 3) * 2; //the normal case, all tech paths allowed
+			if (n != 0)
+				n += randomInt(-2, -1); //Imago #92
+			else
+				n =  randomInt(4, 5);
         break;
 
         case 1:
-            n = 0;
+            n = randomInt(0, 1); //Imago #92
         break;
 
         case 2:
-            n = 1;
+            n = randomInt(2, 3); //Imago #92
         break;
 
         case 3:
-            n = index % 2;
+            n = (index % 2) * 2;
+			if (n != 0)
+				n += randomInt(-2, -1); //Imago #92
+			else
+				n =  randomInt(0, 1);
         break;
 
         case 4:
-            n = 2;
+            n  = randomInt(4, 5); //Imago #92
         break;
 
         case 5:
-            n = ((index % 2) == 0) ? 0 : 2;
+			if ((index % 2) == 0) {
+				 n = randomInt(0, 1); //Imago #92
+			} else {
+				 n  = randomInt(4, 5);
+			}
         break;
 
         case 6:
-            n = 1 + (index % 2);
+            if ((index % 2) == 0) {
+				n = randomInt(2, 3); //Imago #92
+			} else {
+				n  = randomInt(4, 5);
+			}
         break;
     }
 
@@ -222,15 +259,15 @@ int IasteroidIGC::GetRandomType(AsteroidAbilityBitMask aabm)
     switch (aabm)
     {
         case 0:
-            index = nFirstHugeType + randomInt(0, 1);
+            index = nFirstHugeType + randomInt(0, 3); //Imago #92
         break;
 
         case c_aabmBuildable:
-            index = nFirstGenericType + randomInt(0, 1);
+            index = nFirstGenericType + randomInt(0, 3); //Imago #92
         break;
 
         case c_aabmMineHe3:
-            index = nFirstMinableType;
+            index = nFirstMinableType + randomInt(0, 1); //Imago #92
         break;
 
         default:
