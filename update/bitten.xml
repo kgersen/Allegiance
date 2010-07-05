@@ -180,7 +180,7 @@
 	<sh:exec file="echo" args="Killing any zombie build procs" />
 	<sh:exec file="perl" args="${cdn.path}\\update\\msbuild-kill.pl" /> -->
 	<sh:exec file="echo" args="Gracefully stopping CDN AllSrv" /> 
-	<sh:exec file="start" args="&quot;AutoUpdate&quot; /D C:\AllegBeta  /I /WAIT /B autoupdate.exe shutdown" />
+	<sh:exec file="start" args="&quot;AutoUpdate&quot; /D C:\\AllegBeta  /I /WAIT /B autoupdate.exe shutdown" />
 	<sh:exec file="echo" args="Unregistering the AGC.dll" />
 	<sh:exec file="regsvr32" args="C:\\AllegBeta\\AGC.dll /u /s" />
 	<sh:exec file="echo" args="Copying new versions" />
