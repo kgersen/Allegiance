@@ -7695,28 +7695,28 @@ public:
 
                             if (trekClient.GetShip()->GetBaseHullType() != NULL)
                             {
-								//Imago / madpeople - do not limit this view beyond that of the core #88 7/10
                                 //What is the maximum desired rate of turn for this field of view?
                                 //Use the same calculation as for turrets.
                                 //Keep in sync with wintrek.cpp's FOV by throttle
-								/*
+								
                                 static const float  c_minRate = RadiansFromDegrees(7.5f);
                                 static const float  c_maxRate = RadiansFromDegrees(75.0f);
-                                float   maxSlewRate = c_minRate +
-                                                      (c_maxRate - c_minRate) * fov / s_fMaxFOV;
+                                //float   maxSlewRate = c_minRate + (c_maxRate - c_minRate) * fov / s_fMaxFOV;
+								float zoomMod = fov / s_fMaxFOV; //madpeople - ---^ do not limit this view beyond that of the core #88 7/10 
 
                                 const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
-                                {
-                                    float               pitch = pht->GetMaxTurnRate(c_axisPitch);
+								{	
+                                    float pitch = pht->GetMaxTurnRate(c_axisPitch);
+									float maxSlewRate = c_minRate + (pitch - c_minRate) * zoomMod; //madpeople /Imago  #88
                                     if (pitch > maxSlewRate)
                                         js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
                                 }
                                 {
-                                    float               yaw = pht->GetMaxTurnRate(c_axisYaw);
+                                    float yaw = pht->GetMaxTurnRate(c_axisYaw);
+									float maxSlewRate = c_minRate + (yaw - c_minRate) * zoomMod; //madpeople /Imago  #88
                                     if (yaw > maxSlewRate)
                                         js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
                                 }
-								*/
 							}
                         }
                     }
@@ -9788,7 +9788,8 @@ public:
                             if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
                                 m_distanceExternalCamera = s_fExternalViewDistanceMax;
                         }
-                    } else if (m_cm == cmCockpit) {
+                    } 
+					else if (m_cm == cmCockpit) {
                         float   fov = m_cameraControl.GetFOV();
                         if (tk == TK_ZoomIn) {
                             fov -= dt;
@@ -9802,41 +9803,22 @@ public:
                             m_cameraControl.SetFOV(fov);
                         }
                     }
+					
                 }
             }
             break;
 
             case TK_ThrottleUp:
             {
-                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) { 
-                    if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/10
-                        //trekClient.joyThrottle = false;
-                    } else if (trekClient.GetShip()->GetTurretID() != NA) {
-                        ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.8f) ? (cd.jsValues[c_axisThrottle] + 0.2f) : 1.0f;
-                        trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
-                        //trekClient.joyThrottle = false;
-                        trekClient.GetShip()->SetControls(cd);
-                    }
-                }
+                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true))
+					trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
             }
             break;
 
             case TK_ThrottleDown:
             {
-                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true)) {
-                    if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/10
-                        trekClient.joyThrottle = false;
-                    } else if (trekClient.GetShip()->GetTurretID() != NA) {
-                        ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.8f) ? (cd.jsValues[c_axisThrottle] - 0.2f) : -1.0f;
-                        trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
-                        trekClient.joyThrottle = false;
-                        trekClient.GetShip()->SetControls(cd);
-                    }
-                }
+                if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true))
+					trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
             }
             break;
 			
