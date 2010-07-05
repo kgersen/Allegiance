@@ -3,10 +3,23 @@
 #  This file is for host CDN
 
 use strict;
-use Win32::Process;
+#use Win32::Process;
+use Win32::OLE;
 
-print "Starting AllSrv\n";
 
+print "Starting AllSrv service\n";	
+my $s = Win32::OLE->GetObject("WinNT://cdn/AllSrv,service");
+$s->Start();
+sleep(12);
+$s->Start();
+sleep(6);
+if ($s && $s->Status != 4) {
+	print "Lobby wouldn't start!\n";
+	exit 1;	
+}
+
+
+__END__
 my $cmd = "C:\\AllegBeta\\AllSrv.exe";
 my $ProcessObj = "";
 Win32::Process::Create($ProcessObj,

@@ -4,7 +4,6 @@
 
 use strict;
 use Win32::Process;
-use Win32::OLE;
 
 my $cmd = "TASKKILL /IM mspdbsrv.exe /T /F";
 system($cmd);
@@ -67,7 +66,7 @@ my $cmd = "C:\\AllegBeta\\AllSrv.exe";
 my $ProcessObj = "";
 Win32::Process::Create($ProcessObj,
 	$cmd,
-	"AllSrv -reregister",
+	"AllSrv -service",
 	0,
 	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\AllegBeta") || die "failed to create allsrv.exe reregister process\n";

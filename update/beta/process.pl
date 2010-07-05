@@ -34,7 +34,7 @@ system($cmd);
 my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU\\Standalone Z:\\deploy\\Server.7z";
 system($cmd);
 
-my $cmd = "expand Z:\\Deploy\\Filelist.txt C:\\Allegiance\\Lobby\\Filelist.txt");
+my $cmd = "expand Z:\\Deploy\\Filelist.txt C:\\Allegiance\\Lobby\\Filelist.txt";
 system($cmd);
 
 my $cmd = "C:\\Perl\\bin\\perl.exe Z:\\deploy\\upgrade.pl";
