@@ -484,7 +484,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
 											if (lStations > 0) {
 												BSTR pBName;
 												m_spAdminGamePtr->get_Name(&pBName);
-												CComBSTR zMessage = L"Shutting down after the ";
+												CComBSTR zMessage = L"Shutting down after ";
 												zMessage += pBName;
 												zMessage += L" is over";
 												spServer->SendMsg(zMessage);
@@ -504,13 +504,10 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE, LPSTR lpCmdLine, int)
 												}
 												zMessage = L"Shutting down in four minutes.";
 												spServer->SendMsg(zMessage);
-												Sleep(60 * 1000);
-												zMessage = L"Shutting down in three minutes.";
-												spServer->SendMsg(zMessage);
-												Sleep(60 * 1000);
+												Sleep(120 * 1000);
 												zMessage = L"Shutting down in two minutes.";
 												spServer->SendMsg(zMessage);
-												Sleep(60 * 1000);
+												Sleep(90 * 1000);
 												zMessage = L"Shutting down in 30 seconds.";
 												spServer->SendMsg(zMessage);
 												Sleep(25 * 1000);
