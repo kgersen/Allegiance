@@ -43,7 +43,9 @@ CshipIGC::CshipIGC(void)
     m_nEjections(0),
     m_sidFlag(NA),
     m_ripcordDebt(0.0f),
-	m_wingID(NA) //Imago 6/10 #91
+	m_wingID(NA), //Imago 6/10 #91
+	m_lastLaunch(Time::Now()), //Imago 7/10 #7
+	m_lastDock(Time::Now())
 {
     //Start with a single kill's worth of exp
     SetExperience(1.0f);

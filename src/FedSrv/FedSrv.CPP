@@ -2333,6 +2333,7 @@ bool    LeaveShip(CFSShip* pfsShip, IshipIGC*  pshipParent)
 
         ShipStatus* pss = pfsShip->GetShipStatus(pside->GetObjectID());
         pss->SetState(c_ssDocked);
+		pss->SetStateTime(g.timeNow.clock());
         pss->SetParentID(NA);
         pss->SetHullID(pht->GetObjectID());
         assert (pship->GetStation());

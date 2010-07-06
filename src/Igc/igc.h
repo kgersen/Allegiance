@@ -3247,6 +3247,12 @@ class IshipIGC : public IscannerIGC
         virtual ImissileIGC*        GetLastMissileFired(void) const = 0;
         virtual void                SetLastMissileFired(ImissileIGC* pmissile) = 0;
 
+		//Imago #7 7/10
+		virtual Time                GetLastTimeLaunched(void) const = 0;
+		virtual void                SetLastTimeLaunched(Time timeLastLaunch) = 0;
+        virtual void                SetLastTimeDocked(Time timeLastDock) = 0;
+        virtual Time                GetLastTimeDocked(void) const = 0;
+
         virtual void                Promote(void) = 0;
 
         virtual void                SetParentShip(IshipIGC* pship) = 0;
@@ -4276,6 +4282,7 @@ class   ShipStatus
             m_state = c_ssDead;
             m_unknown = true;
             m_detected = false;
+			m_dTime = Time::Now().clock();
         }
 
         bool        operator != (const ShipStatus& ss)
@@ -4351,6 +4358,14 @@ class   ShipStatus
         {
             m_detected = bDetected;
         }
+        DWORD        GetStateTime(void) const
+        {
+            return m_dTime;
+        }
+        void        SetStateTime(DWORD    dTime)
+        {
+            m_dTime = dTime;
+        }
 
     private:
         HullID      m_hullID;
@@ -4360,6 +4375,7 @@ class   ShipStatus
         ShipState   m_state : 6;
         bool        m_unknown : 1;
         bool        m_detected : 1;
+		DWORD		m_dTime;
 };
 
 class ClusterSite : public AttachSite
