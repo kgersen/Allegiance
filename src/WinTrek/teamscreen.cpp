@@ -2857,7 +2857,7 @@ public:
 
         // WLP 2005 – remove highlight from player to prevent chat target
         m_plistPanePlayers->SetSelection(NULL); // WLP – remove as chat target
-        GetWindow()->SetLobbyChatTarget(CHAT_EVERYONE, NA); //#8 Imago 7/10
+        GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA); //#8 Imago 7/10
 
         trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
         BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
@@ -3089,7 +3089,7 @@ public:
         
 		// WLP 2005 - remove highlight from player to prevent chat target
  		m_plistPanePlayers->SetSelection(NULL); // WLP 2005 - remove as chat target
-		GetWindow()->SetLobbyChatTarget(CHAT_EVERYONE, NA); //#8 Imago 7/10
+		GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA); //#8 Imago 7/10
 
         if (pplayer && pplayer->SideID() == trekClient.GetSideID())
         {
