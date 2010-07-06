@@ -4860,6 +4860,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                 pfmChat->cd.chatTarget = CHAT_EVERYONE;
                 pfmChat->cd.oidRecipient = NA;
 				bForward = true;
+				g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfsMission->GetMissionDef(), FM_GUARANTEED); //Imago #4 7/10
 			  }
 			  // mmf 03/22/07 added #list to display all the other # commands
 			  //              keep this at the end of this else if
