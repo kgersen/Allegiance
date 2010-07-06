@@ -1426,8 +1426,11 @@ public:
 
         ShipID shipID_S = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
         PlayerInfo* pplayer_S = trekClient.FindPlayer(shipID_S);
-
-        trekClient.SendChat(trekClient.GetShip(), CHAT_INDIVIDUAL, pplayer_S->ShipID(), NA, (const char*)strChat);
+		//Imago 7/10
+		if (pplayer_S->ShipID() != trekClient.GetShipID())
+			trekClient.SendChat(trekClient.GetShip(), CHAT_INDIVIDUAL, pplayer_S->ShipID(), NA, (const char*)strChat);
+		else
+			trekClient.SendChat(trekClient.GetShip(), m_chattargetChannel, NA, NA, (const char*)strChat);
         }
         // WLP - end of added code for chat to selected player
 
@@ -2110,13 +2113,16 @@ public:
 
     bool OnEvent(IItemEvent::Source *pevent, ItemID pitem)
     {
+		//#8 Imago 7/10
+		if (m_plistPanePlayers->GetSelection() < 0)
+			GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA); 
+
         if (pevent == m_peventPlayers) {
             OnSelPlayer(pitem);
         } else if (pevent = m_peventTeams) {
             OnSelTeam(pitem);
         }
         UpdatePromptText();//KGJV #104 - extra debug
-
         return true;
     }
 
@@ -2129,6 +2135,7 @@ public:
 
     bool OnTeamClicked()
     {
+		GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA); //#8 Imago 7/10
         trekClient.PlaySoundEffect(mouseclickSound);
 
         return true;
@@ -2136,6 +2143,7 @@ public:
 
     bool OnTeamDoubleClicked()
     {
+		GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA); //#8 Imago 7/10
         trekClient.PlaySoundEffect(mouseclickSound);
         OnButtonJoin();
 
@@ -2146,6 +2154,7 @@ public:
 	// RMB trigger
     bool OnTeamRightClicked()
 	{
+		GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA); //#8 Imago 7/10
 		if (!trekClient.MyPlayerInfo()->IsMissionOwner()) return true;// only game owner can activate the team context menu
 
 		// allies only for conquest untill KGJV decides to finish what he started. Imago 7/18/09
@@ -2322,7 +2331,7 @@ public:
 	//#ALLY -end
 
 	bool OnPlayerRightClicked()
-    {			
+    {
 		ItemID pitem = m_plistPanePlayers->GetSelection();
 
         if (pitem != NULL && trekClient.GetPlayerInfo())
@@ -2343,16 +2352,17 @@ public:
     //
     bool OnPlayerClicked()
     {
-        static ShipID CurrentPlayerSelection = NULL ;
+        static ShipID CurrentPlayerSelection = NA; //Imago 7/10 0 vs NA bug
 
         ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
 
-        if ( shipID )
+        if ( shipID != NA ) //Imago 7/10 0 vs NA bug
         {
             if ( shipID == CurrentPlayerSelection )  // WLP - This is second click - turn off highlight
             {
                 CurrentPlayerSelection = NULL ;
                 m_plistPanePlayers->SetSelection(NULL);
+				GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA); //Imago 7/10 #8
             }
             else CurrentPlayerSelection = shipID ;  // WLP - this is first click - leave highlight on
 
@@ -2372,6 +2382,11 @@ public:
         {
             PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
 
+			//Imago #8 7/10
+			GetWindow()->SetLobbyChatTarget(m_chattargetChannel, NA);
+			if (pplayer->ShipID() != trekClient.GetShipID())
+				GetWindow()->SetLobbyChatTarget(CHAT_INDIVIDUAL,pplayer->ShipID());
+			
             if (m_sideCurrent == trekClient.GetSideID() 
                 && trekClient.GetPlayerInfo()->IsTeamLeader())
             {
@@ -2842,7 +2857,8 @@ public:
 
         // WLP 2005 – remove highlight from player to prevent chat target
         m_plistPanePlayers->SetSelection(NULL); // WLP – remove as chat target
-        
+        GetWindow()->SetLobbyChatTarget(CHAT_EVERYONE, NA); //#8 Imago 7/10
+
         trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
         BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
         END_PFM_CREATE
@@ -3073,6 +3089,7 @@ public:
         
 		// WLP 2005 - remove highlight from player to prevent chat target
  		m_plistPanePlayers->SetSelection(NULL); // WLP 2005 - remove as chat target
+		GetWindow()->SetLobbyChatTarget(CHAT_EVERYONE, NA); //#8 Imago 7/10
 
         if (pplayer && pplayer->SideID() == trekClient.GetSideID())
         {
