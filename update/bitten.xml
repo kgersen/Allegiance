@@ -42,13 +42,14 @@
    <sh:exec file="echo" args="Re-register Debug AGC.dll started"/>
    <!--<sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>-->
    <sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /s"/>
-   <sh:exec file="echo" args="Re-register Debug AGC.dll completed"/>
    <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork"/>
    <sh:exec file="echo" args="Running Allsrv.exe -Core2Text cc_09b"/>
    <sh:exec file="perl" args="${cdn.path}\\update\\test.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\AllSrv.exe &quot;allsrv -Core2Text cc_09b&quot; ."/>
    <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl C:\\AllegBeta\\Artwork"/>   
    <sh:exec file="echo" args="Running Allsrv.exe -Core2Text cc_09b completed"/>
    <sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>
+   <sh:exec file="regsvr32" args="C:\\AllegBeta\\AGC.dll /s"/>
+   <sh:exec file="echo" args="Re-register Debug AGC.dll completed"/>
    
    <sh:exec file="echo" args="Checking core"/>
    <sh:exec file="copy" args="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\corechecker.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b\\corechecker.pl /Y"/>
