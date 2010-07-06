@@ -1,0 +1,1572 @@
+use "gamepanes";
+use "quickchatheader";
+use "sounddef";
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Hull Abilities
+//
+//////////////////////////////////////////////////////////////////////////////
+habmBoard   = 0x01;
+habmLifepod = 0x04;
+habmFighter = 0x80;
+habmCapital = 0x100;
+habmMiner   = 0x4000;
+habmBuilder = 0x8000;
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Command ids
+//
+//////////////////////////////////////////////////////////////////////////////
+
+cidDoNothing  = -3;
+cidMyAccepted = -2;
+cidNone       = -1;
+cidDefault    =  0;
+cidAttack     =  1;
+cidCapture    =  2;
+cidDefend     =  3;
+cidPickup     =  4;
+cidGoto       =  5;
+cidRepair     =  6;
+cidJoin       =  7;
+cidMine       =  8;
+cidBuild      =  9;
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Target type ids
+//
+//////////////////////////////////////////////////////////////////////////////
+
+ttSpecial    = 0x80000;
+ttMyAccepted = 0x80000;
+ttMyQueued   = 0x80001;
+ttMyTarget   = 0x80002;
+ttWorstEnemy = 0x80003;
+ttMe         = 0x80004;
+
+ttFriendly   = 0x0001;
+ttEnemy      = 0x0002;
+ttNeutral    = 0x0004;
+
+ttShip       = 0x0008;
+ttStation    = 0x0010;
+ttAsteroid   = 0x0020;
+ttTreasure   = 0x0040;
+ttMissile    = 0x0080;
+ttWarp       = 0x0100;
+ttBuoy       = 0x0200;
+
+ttFront      = 0x0400;
+ttNearest    = 0x0800;
+
+ttAnyCluster = 0x1000;
+ttPrevious   = 0x2000;
+
+ttMine       = 0x4000;
+ttProbe      = 0x8000;
+
+ttShipTypes  = ttShip | ttStation;
+
+ttAllTypes   = ttShip | ttStation | ttAsteroid | ttBuoy | ttWarp | ttTreasure | ttMissile | ttMine | ttProbe;
+ttAllSides   = ttFriendly | ttEnemy | ttNeutral;
+ttAll        = ttAllSides | ttAllTypes;
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Sounds
+//
+//////////////////////////////////////////////////////////////////////////////
+
+defaultSound = newChatMsgSound;
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Sonic Chats
+//
+//////////////////////////////////////////////////////////////////////////////
+
+     gotoAlephSonicChat = SonicChat([ SonicChatVoice(voMeetAtJumpSound, "Goto aleph"                ) ]);
+      gotoBaseSonicChat = SonicChat([ SonicChatVoice(voHeadBackSound, "Head back to base"           ) ]);
+pickupTreasureSonicChat = SonicChat([ SonicChatVoice(vopickuptech, "Pickup tech!"               ) ]);
+ pickupLifepodSonicChat = SonicChat([ SonicChatVoice(voGoGoGoSound, "Pickup lifepod"                ) ]);
+ defendFighterSonicChat = SonicChat([ SonicChatVoice(voDefendSound, "Defend fighter"                ) ]);
+ defendCaptialSonicChat = SonicChat([ SonicChatVoice(voDefendSound, "Defend capital ship"           ) ]);
+    defendBaseSonicChat = SonicChat([ SonicChatVoice(voDefendBaseSound, "Defend base."                   ) ]);
+ attackFighterSonicChat = SonicChat([ SonicChatVoice(voAttackSound, "Attack enemy fighter"          ) ]);
+ attackCapitalSonicChat = SonicChat([ SonicChatVoice(voAttackSound, "Attack enemy capital ship"     ) ]);
+    attackBaseSonicChat = SonicChat([ SonicChatVoice(voAttackSound, "Attack enemy base"             ) ]);
+  attackTargetSonicChat = SonicChat([ SonicChatVoice(voAttackTargetSound, "Attack my target!"          ) ]);
+        helpMeSonicChat = SonicChat([ SonicChatVoice(voNeedHelpSound, "I need help!"                 ) ]);
+      followMeSonicChat = SonicChat([ SonicChatVoice(voFollowSound, "Follow me!"                    ) ]);
+        joinMeSonicChat = SonicChat([ SonicChatVoice(voFollowSound, "Come along"                    ) ]);
+      joinWingSonicChat = SonicChat([ SonicChatVoice(voFormOnMyWingSound, "Form on my wing"         ) ]);
+           YesSonicChat = SonicChat([ SonicChatVoice(voAffirmativeSound, "Affirmative!"              ) ]);
+            NoSonicChat = SonicChat([ SonicChatVoice(voNegativeSound, "Negative!"                    ) ]);
+     objectiveSonicChat = SonicChat([ SonicChatVoice(voObjectiveCompleteSound, "Objective Complete." ) ]); 
+  acknowledgedSonicChat = SonicChat([ SonicChatVoice(voAcknowledgedSound, "Acknowledged!"            ) ]);
+        thanksSonicChat = SonicChat([ SonicChatVoice(voThanksSound, "Thanks"                        ) ]);
+  targetNeededSonicChat = SonicChat([ SonicChatVoice(voTargetNeededSound, "Target needed"           ) ]);
+    needPickupSonicChat = SonicChat([ SonicChatVoice(voNeedPickupSound, "I need a pick up... Help"  ) ]);
+       coverMeSonicChat = SonicChat([ SonicChatVoice(voCoverMeSound, "Cover me"                     ) ]);
+      headBackSonicChat = SonicChat([ SonicChatVoice(voHeadBackSound, "Head back to base"           ) ]);
+ escortBuilderSonicChat = SonicChat([ SonicChatVoice(voEscortBuilderSound, "Escort Builder"         ) ]);
+     findEnemySonicChat = SonicChat([ SonicChatVoice(voFindEnemySound, "Find enemy."                 ) ]);
+        goGoGoSonicChat = SonicChat([ SonicChatVoice(voGoGoGoSound, "Go Go Go!"                ) ]);
+    findHeliumSonicChat = SonicChat([ SonicChatVoice(voFindHeliumSound, "Find helium asteroid."               ) ]);
+ donateCreditsSonicChat = SonicChat([ SonicChatVoice(voDonateCreditsSound, "Donate me your credits." ) ]);
+       regroupSonicChat = SonicChat([ SonicChatVoice(voRegroupSound, "Regroup"                      ) ]);
+       formateSonicChat = SonicChat([ SonicChatVoice(voFormateSound, "Formate"                      ) ]);
+   escortMinerSonicChat = SonicChat([ SonicChatVoice(voEscortMinerSound, "Escort Miner"             ) ]);
+      findIronSonicChat = SonicChat([ SonicChatVoice(voFindIronSound, "Find Nickle Iron"            ) ]);
+    findCarbonSonicChat = SonicChat([ SonicChatVoice(voFindCarbonacousSound, "Find carbonaceous asteroid."     ) ]);
+    findProbesSonicChat = SonicChat([ SonicChatVoice(voFindProbesSound, "Find Probes"               ) ]);
+      findLavaSonicChat = SonicChat([ SonicChatVoice(voFindLavaSound, "Find Lava"                   ) ]);
+       retreatSonicChat = SonicChat([ SonicChatVoice(voRetreatSound, "Retreat!"                      ) ]);
+        holdUpSonicChat = SonicChat([ SonicChatVoice(voHoldUpSound, "Hold up"                       ) ]);
+  stayOnTargetSonicChat = SonicChat([ SonicChatVoice(voStayOnTargetSound, "Stay on target."          ) ]);
+   wait4signalSonicChat = SonicChat([ SonicChatVoice(voWaitForSignalSound, "Wait for signal."        ) ]);
+    meetAtJumpSonicChat = SonicChat([ SonicChatVoice(voMeetAtJumpSound, "Meet you at the jump point") ]);
+  formOnMyWingSonicChat = SonicChat([ SonicChatVoice(voFormOnMyWingSound, "Form on my wing"         ) ]);
+    findAlephsSonicChat = SonicChat([ SonicChatVoice(voFindAlephsSound, "Find alephs."               ) ]);
+      getOffMeSonicChat = SonicChat([ SonicChatVoice(voGetOffMeSound, "Get them off me!"             ) ]);
+       awesomeSonicChat = SonicChat([ SonicChatVoice(voAwsomeSound, "Awesome!"                       ) ]);
+           byeSonicChat = SonicChat([ SonicChatVoice(voByeSound, "Ba-bye."                              ) ]);
+          dangSonicChat = SonicChat([ SonicChatVoice(voDangSound, "Dang!"                            ) ]);
+         yeeHaSonicChat = SonicChat([ SonicChatVoice(voYeeHaSound, "Yee-haaaaaw!"                        ) ]);
+          doahSonicChat = SonicChat([ SonicChatVoice(voDoahSound, "Doah."                            ) ]);
+            hiSonicChat = SonicChat([ SonicChatVoice(voHiSound, "Hey, wassup?"                                ) ]);
+          noooSonicChat = SonicChat([ SonicChatVoice(voNoooSound, "Nooooo!"                        ) ]);
+          phewSonicChat = SonicChat([ SonicChatVoice(voPhewSound, "Phewwww."                         ) ]);
+    ripcordingSonicChat = SonicChat([ SonicChatVoice(voRipcordingSound, "Ripcording!"                ) ]);
+         sweetSonicChat = SonicChat([ SonicChatVoice(voSweetSound, "Sweet!"                          ) ]);
+      niceWorkSonicChat = SonicChat([ SonicChatVoice(voNiceWorkSound, "Nice work."                   ) ]);
+     watchFireSonicChat = SonicChat([ SonicChatVoice(voWatchFireSound, "Watch your fire."            ) ]);
+        ohYeahSonicChat = SonicChat([ SonicChatVoice(voOhYeahSound, "Ahhh Yeah!"                       ) ]);
+ allDefendBaseSonicChat = SonicChat([ SonicChatVoice(voDefendBaseSound, "All pilots defend our base") ]);
+      needAmmoSonicChat = SonicChat([ SonicChatVoice(voNeedAmmoSound, "Need Ammo"                   ) ]);
+stationNeedsRepairsSonicChat =  SonicChat([ SonicChatVoice(voStationNeedsRepairsSound, "Our station needs repairs" ) ]);
+   needCruiserSonicChat = SonicChat([ SonicChatVoice(voNeedCruiserSound, "Need Cruiser support"     ) ]);
+transportOutboundSonicChat = SonicChat([ SonicChatVoice(voTransportOutboundSound, "Transport outbound - need escort" ) ]);
+      needFuelSonicChat = SonicChat([ SonicChatVoice(voNeedFuelSound, "Need fuel."                   ) ]);
+   needFighterSonicChat = SonicChat([ SonicChatVoice(voNeedFighterSound, "Need fighters."     ) ]);
+gimmesomethingSonicChat = SonicChat([ SonicChatVoice(voGimmeSomethingSound, "Gimme something to shoot at" ) ]);
+    needRescueSonicChat = SonicChat([ SonicChatVoice(voNeedRescueSound, "I need rescue. Help!"             ) ]);
+   needRepairsSonicChat = SonicChat([ SonicChatVoice(voNeedRepairsSound, "Need repairs."           ) ]);
+     needScoutSonicChat = SonicChat([ SonicChatVoice(voNeedScoutSound, "Need scouts."         ) ]);
+takingItToThemSonicChat = SonicChat([ SonicChatVoice(voTakingItToThemSound, "Taking it to them..."  ) ]);
+    needBomberSonicChat = SonicChat([ SonicChatVoice(voNeedBomberSound, "Need bombers."       ) ]);
+      completeSonicChat = SonicChat([ SonicChatVoice(voCompleteSound, "Complete"                    ) ]);
+        imbusySonicChat = SonicChat([ SonicChatVoice(voImBusySound, "I'm busy"                      ) ]);
+          coolSonicChat = SonicChat([ SonicChatVoice(voCoolSound, "Cool."                            ) ]);
+        fiestySonicChat = SonicChat([ SonicChatVoice(voFiestySound, "Fiesty!"                       ) ]);
+       inboundSonicChat = SonicChat([ SonicChatVoice(voInboundSound, "Inbound"                      ) ]);
+      youreMadSonicChat = SonicChat([ SonicChatVoice(voYoureMadSound, "You're mad"                  ) ]);
+        imOnItSonicChat = SonicChat([ SonicChatVoice(voImOnItSound, "I'm on it"                     ) ]);
+       onMyWaySonicChat = SonicChat([ SonicChatVoice(voOnMyWaySound, "On my way."                    ) ]);
+    alephMinedSonicChat = SonicChat([ SonicChatVoice(voAlephMinedSound, "Aleph is mined"            ) ]);
+  baseCapturedSonicChat = SonicChat([ SonicChatVoice(voBaseCapturedSound, "Base captured"           ) ]);    
+      enemyCapSonicChat = SonicChat([ SonicChatVoice(voEnemyCapSound, "Inbound enemy cap ship!" ) ]);
+shieldsAreDownSonicChat = SonicChat([ SonicChatVoice(voShieldsAreDownSound, "Their shields are down") ]);
+foundEnemyShipsSonicChat = SonicChat([ SonicChatVoice(voFoundEnemyShipsSound, "Found enemy ships"   ) ]);
+  enemyHasFlagSonicChat = SonicChat([ SonicChatVoice(voEnemyHasFlagSound, "Enemy has a flag"        ) ]);
+ bomberWaitingSonicChat = SonicChat([ SonicChatVoice(voBomberWaitingSound, "Bomber waiting for turret gunners" ) ]);
+   foundHeliumSonicChat = SonicChat([ SonicChatVoice(voFoundHeliumSound, "Found Helium"             ) ]);
+ enemyFightersSonicChat = SonicChat([ SonicChatVoice(voEnemyFightersSound, "Inbound enemy fighters" ) ]);
+  haveCapitolsSonicChat = SonicChat([ SonicChatVoice(voHaveCapsSound, "They have capitols"          ) ]);
+       traitorSonicChat = SonicChat([ SonicChatVoice(voTraitorSound, "We have a traitor in our midst" ) ]);
+   electronicsSonicChat = SonicChat([ SonicChatVoice(voPursuingElectronicsSound, "They are pursuing Electronics" ) ]);
+ minersAreDeadSonicChat = SonicChat([ SonicChatVoice(voMinersAreDeadSound, "Our miners are dead"    ) ]);
+     ordinanceSonicChat = SonicChat([ SonicChatVoice(voPursuingOrdinanceSound, "They are pursuing Ordinance" ) ]);
+   foundCarbonSonicChat = SonicChat([ SonicChatVoice(voFoundCarbonacousSound, "Found Carbonacous"   ) ]);
+  haveShipyardSonicChat = SonicChat([ SonicChatVoice(voHaveShipyardSound, "They have a ahipyard"    ) ]);
+isOurBaseClearSonicChat = SonicChat([ SonicChatVoice(voIsOurBaseClearSound, "Is our base clear?"    ) ]);
+capShipWaitingSonicChat = SonicChat([ SonicChatVoice(voCapShipWaitingSound, "Cap ship waiting for turret gunners" ) ]);
+foundEnemyBaseSonicChat = SonicChat([ SonicChatVoice(voFoundEnemyBaseSound, "I've found their base."      ) ]);
+enemyTransportSonicChat = SonicChat([ SonicChatVoice(voEnemyTransSound, "Inbound enemy transport"   ) ]);
+     foundIronSonicChat = SonicChat([ SonicChatVoice(voFoundIronSound, "Found Nickel Iron"          ) ]);
+    foundAlephSonicChat = SonicChat([ SonicChatVoice(voFoundAlephSound, "Found aleph"               ) ]);
+        energySonicChat = SonicChat([ SonicChatVoice(voPursuingEnergySound, "They are pursuing Energy" ) ]);
+     foundLavaSonicChat = SonicChat([ SonicChatVoice(voFoundLavaSound, "Found Lava"                 ) ]);
+  almostHadYouSonicChat = SonicChat([ SonicChatVoice(voAlmostHadYouSound, "Almost had you."          ) ]);
+     outOfAmmoSonicChat = SonicChat([ SonicChatVoice(voOutOfAmmoSound, "Out of ammo...hmmm, interesting." ) ]);
+      comeBackSonicChat = SonicChat([ SonicChatVoice(voComeBackAndFightSound, "Come back and fight!" ) ]);
+  deathBecomesSonicChat = SonicChat([ SonicChatVoice(voDeathBecomesYouSound, "Death becomes you."    ) ]);
+  shootingFishSonicChat = SonicChat([ SonicChatVoice(voShootingFishSound, "Easier than shooting fish in a barrel." ) ]);
+  howdThatFeelSonicChat = SonicChat([ SonicChatVoice(voHowdThatFeelSound, "How did that feel?"      ) ]);
+  youreGoodButSonicChat = SonicChat([ SonicChatVoice(voYouAreGoodButSound, "You're good but not that good" ) ]);
+       noHonorSonicChat = SonicChat([ SonicChatVoice(voYouHaveNoHonorSound, "You have no honor."     ) ]);
+     likeLambsSonicChat = SonicChat([ SonicChatVoice(voLikeLambsSound, "Like lambs to the slaughter.") ]);
+       payloadSonicChat = SonicChat([ SonicChatVoice(voPayloadDeliveredSound, "Payload delivered!" ) ]);
+   ripcordLastSonicChat = SonicChat([ SonicChatVoice(voRipcordLastResortSound, "Ripcord... Last resort for the desperate." ) ]);
+  youllBeSorrySonicChat = SonicChat([ SonicChatVoice(voYoullBeSorrySound, "You'll be sorry you did that" ) ]);
+   withDignitySonicChat = SonicChat([ SonicChatVoice(voYouDiedWithDignitySound, "You died with dignity." ) ]);
+          yes2SonicChat = SonicChat([ SonicChatVoice(voYesSound, "Yessssss!"                         ) ]);
+
+     shootSonicChat = SonicChat([ SonicChatVoice(voShootSound, "Shhhooot!"                         ) ]);    
+donateInvestorSonicChat = SonicChat([ SonicChatVoice(voDonateInvestorSound, "Donate your money to the investor!") ]);
+    needTurretSonicChat = SonicChat([ SonicChatVoice(voNeedTurretSound, "I need turret gunners NOW!") ]);
+ joiningTurretSonicChat = SonicChat([ SonicChatVoice(voJoiningTurretSound, "I'll be on your turret in a few seconds.") ]);
+          oopsSonicChat = SonicChat([ SonicChatVoice(voOopsSound, "Oops, wrong voice chat....") ]);
+    attackBase2SonicChat = SonicChat([ SonicChatVoice(voAttackBaseSound, "Attack base.") ]);
+      needBaseSonicChat = SonicChat([ SonicChatVoice(voNeedBaseSound, "Need base.") ]); 
+attackConstructorSonicChat = SonicChat([ SonicChatVoice(voAttackConstructorSound, "Attack constructor.") ]);    
+defendConstructorSonicChat = SonicChat([ SonicChatVoice(voDefendConstructorSound, "Defend constructor.") ]);        
+needConstructorSonicChat = SonicChat([ SonicChatVoice(voNeedConstructorSound, "Need constructor.") ]);
+attackDefenderSonicChat = SonicChat([ SonicChatVoice(voAttackDefenderSound, "Attack defenders.") ]);  
+defendDefenderSonicChat = SonicChat([ SonicChatVoice(voDefendDefenderSound, "Defend defenders.") ]);      
+needDefenderSonicChat = SonicChat([ SonicChatVoice(voNeedDefenderSound, "Need defenders.") ]);
+needBetterFightersSonicChat = SonicChat([ SonicChatVoice(voNeedBetterFightersSound, "Need better fighters.") ]);
+attackFighter2SonicChat = SonicChat([ SonicChatVoice(voAttackFighterSound, "Attack fighters.") ]);  
+defendFighter2SonicChat = SonicChat([ SonicChatVoice(voDefendFighterSound, "Defend fighters.") ]);
+attackInterceptorSonicChat = SonicChat([ SonicChatVoice(voAttackInterceptorSound, "Attack Interceptors.") ]);   
+defendInterceptorSonicChat = SonicChat([ SonicChatVoice(voDefendInterceptorSound, "Defend Interceptors.") ]);       
+needInterceptorSonicChat = SonicChat([ SonicChatVoice(voNeedInterceptorSound, "Need Interceptors.") ]);     
+needObjectiveSonicChat = SonicChat([ SonicChatVoice(voNeedObjectiveSound, "Need objective.") ]);
+attackCapital2SonicChat = SonicChat([ SonicChatVoice(voAttackCapitalSound, "Attack capital ship.") ]);  
+defendCapitalSonicChat = SonicChat([ SonicChatVoice(voDefendCapitalSound, "Defend capital ship.") ]);       
+needCapitalSonicChat = SonicChat([ SonicChatVoice(voNeedCapitalSound, "Need capital ship.") ]);
+attackMinerSonicChat = SonicChat([ SonicChatVoice(voAttackMinerSound, "Attack miners.") ]); 
+defendMinerSonicChat = SonicChat([ SonicChatVoice(voDefendMinerSound, "Defend miners.") ]);     
+needMinerSonicChat = SonicChat([ SonicChatVoice(voNeedMinerSound, "Need miners.") ]);       
+attackBomberSonicChat = SonicChat([ SonicChatVoice(voAttackBomberSound, "Attack bombers.") ]);  
+defendBomberSonicChat = SonicChat([ SonicChatVoice(voDefendBomberSound, "Defend bombers.") ]);
+attackRipcordSonicChat = SonicChat([ SonicChatVoice(voAttackRipcordSound, "Attack teleport (ripcord).") ]); 
+defendRipcordSonicChat = SonicChat([ SonicChatVoice(voDefendRipcordSound, "Defend teleport (ripcord).") ]);     
+needRipcordSonicChat = SonicChat([ SonicChatVoice(voNeedRipcordSound, "Need ripcord (teleport).") ]);
+attackStealthSonicChat = SonicChat([ SonicChatVoice(voAttackStealthSound, "Attack Stealths.") ]);   
+defendStealthSonicChat = SonicChat([ SonicChatVoice(voDefendStealthSound, "Defend Stealths.") ]);       
+needStealthSonicChat = SonicChat([ SonicChatVoice(voNeedStealthSound, "Need Stealths.") ]);
+attackTransportSonicChat = SonicChat([ SonicChatVoice(voAttackTransportSound, "Attack transport.") ]);  
+defendTransportSonicChat = SonicChat([ SonicChatVoice(voDefendTransportSound, "Defend transport.") ]);      
+needTransportSonicChat = SonicChat([ SonicChatVoice(voNeedTransportSound, "Need transport.") ]);                
+attackScoutSonicChat = SonicChat([ SonicChatVoice(voAttackScoutSound, "Attack scouts.") ]); 
+defendScoutSonicChat = SonicChat([ SonicChatVoice(voDefendScoutSound, "Defend scouts.") ]);
+attackTowerSonicChat = SonicChat([ SonicChatVoice(voAttackTowerSound, "Attack towers.") ]); 
+defendTowerSonicChat = SonicChat([ SonicChatVoice(voDefendTowerSound, "Defend towers.") ]);     
+needTowerSonicChat = SonicChat([ SonicChatVoice(voNeedTowerSound, "Need towers.") ]);
+needBetterWepSonicChat = SonicChat([ SonicChatVoice(voNeedBetterWepSound, "Need better weapons.") ]);
+needMoneySonicChat = SonicChat([ SonicChatVoice(voNeedMoneySound, "Need money.") ]);            
+    
+scoutAlephSonicChat = SonicChat([ SonicChatVoice(voScoutAlephSound, "We need a scout to find the alephs.") ]);  
+foundEnemyConstructSonicChat = SonicChat([ SonicChatVoice(voFoundEnemyConstructSound, "Found enemy constructor.  Request assistance.") ]);      
+constructorLaunchingSonicChat = SonicChat([ SonicChatVoice(voConstructorLaunchingSound, "Constructor launching now.") ]);
+minersHammeredSonicChat = SonicChat([ SonicChatVoice(voMinersHammeredSound, "Defend our miners.  They are getting hammered.") ]);
+findFreakinBaseSonicChat = SonicChat([ SonicChatVoice(voFindFreakinBaseSound, "Yo, go find their crib.") ]);
+minerHuntSonicChat = SonicChat([ SonicChatVoice(voMinerHuntSound, "Go miner hunting.") ]);
+stayTogetherSonicChat = SonicChat([ SonicChatVoice(voStayTogetherSound, "Stay together.") ]);
+ripcordHomeSonicChat = SonicChat([ SonicChatVoice(voRipcordHomeSound, "Ripcord home.") ]);
+layLowSonicChat = SonicChat([ SonicChatVoice(voLayLowSound, "Lay low and go for constructors.") ]); 
+foundEnemyMinerSonicChat = SonicChat([ SonicChatVoice(voFoundEnemyMinerSound, "Found enemy miners.  Request assistance.") ]);   
+baseUnderAttackSonicChat = SonicChat([ SonicChatVoice(voBaseUnderAttackSound, "Our base in under attack.  Request assistance.") ]); 
+deployProbesSonicChat = SonicChat([ SonicChatVoice(voDeployProbesSound, "Deploy probes.") ]);
+deployMinesSonicChat = SonicChat([ SonicChatVoice(voDeployMinesSound, "Deploy mines.") ]);
+repairStationSonicChat = SonicChat([ SonicChatVoice(voRepairStationSound, "Repair the station.") ]);
+findMinerSonicChat = SonicChat([ SonicChatVoice(voFindMinerSound, "Find their miners.") ]);
+findSiliconSonicChat = SonicChat([ SonicChatVoice(voFindSiliconSound, "Find silicon asteroid.") ]);
+findUraniumSonicChat = SonicChat([ SonicChatVoice(voFindUraniumSound, "Find uranium asteroid.") ]);
+noMoneySonicChat = SonicChat([ SonicChatVoice(voNoMoneySound, "I don't have enough money.") ]); 
+surelyJokingSonicChat = SonicChat([ SonicChatVoice(voSurelyJokingSound, "Surely you're joking.") ]);
+aintNoThinSonicChat = SonicChat([ SonicChatVoice(voAintNoThinSound, "Ain't no thang.") ]);
+hellYeahSonicChat = SonicChat([ SonicChatVoice(voHellYeahSound, "Hell yeah!") ]);
+youreCrazySonicChat = SonicChat([ SonicChatVoice(voYoureCrazySound, "You're crazy!") ]);
+thatHurtSonicChat = SonicChat([ SonicChatVoice(voThatHurtSound, "Oooh ... looked like that hurt!") ]);
+slapInvestorSonicChat = SonicChat([ SonicChatVoice(voSlapInvestorSound, "Someone slap the investor!") ]);
+ooohSorrySonicChat = SonicChat([ SonicChatVoice(voOoohSorrySound, "Oooh ... sorry about that one.") ]);
+wantAPieceSonicChat = SonicChat([ SonicChatVoice(voWantAPieceSound, "You want a piece of me?") ]);
+shootCommanderSonicChat = SonicChat([ SonicChatVoice(voShootCommanderSound, "Someone shoot the commander.") ]);
+
+steadyTigerSonicChat = SonicChat([ SonicChatVoice(voSteadyTigerSound, "Steady tiger.") ]);
+realLifeSonicChat = SonicChat([ SonicChatVoice(voRealLifeSound, "Real life wants me.") ]);  
+makeMeSonicChat = SonicChat([ SonicChatVoice(voMakeMeSound, "Make me commander.") ]);   
+ISPDropSonicChat = SonicChat([ SonicChatVoice(voISPDropSound, "Sorry ya'll, my ISP dropped me.") ]);    
+everyoneReadySonicChat = SonicChat([ SonicChatVoice(voEveryoneReadySound, "Everybody ready?") ]);
+savingUpSonicChat = SonicChat([ SonicChatVoice(voSavingUpSound, "What are you saving up for?") ]);  
+startTheGameSonicChat = SonicChat([ SonicChatVoice(voStartTheGameSound, "Start the game already?") ]);  
+holdYourHorsesSonicChat = SonicChat([ SonicChatVoice(voHoldYourHorsesSound, "Hold your horses....") ]); 
+coupleMinutesSonicChat = SonicChat([ SonicChatVoice(voCoupleMinutesSound, "It'll be a couple more minutes.") ]);    
+justASecSonicChat = SonicChat([ SonicChatVoice(voJustASecSound, "Just a sec ... waiting for a couple more people.") ]);     
+niceWeatherSonicChat = SonicChat([ SonicChatVoice(voNiceWeatherSound, "So, nice weather..how's the youngens? Let's play this thing!") ]);   
+whoCommanderSonicChat = SonicChat([ SonicChatVoice(voWhoCommanderSound, "Who wants to be commander?") ]);
+changeTheMapSonicChat = SonicChat([ SonicChatVoice(voChangeTheMapSound, "Change the map.") ]);      
+imCluelessSonicChat = SonicChat([ SonicChatVoice(voImCluelessSound, "I'm new, and I'm clueless.") ]);   
+itsLateSonicChat = SonicChat([ SonicChatVoice(voItsLateSound, "It's late ... gotta go.  Night ya'll.") ]);  
+pitstopSonicChat = SonicChat([ SonicChatVoice(voPitstopSound, "Gotta take a pit stop ... hold up.") ]); 
+rematchSonicChat = SonicChat([ SonicChatVoice(voRematchSound, "Great game.  How about a rematch?") ]);  
+changedSettingsSonicChat = SonicChat([ SonicChatVoice(voChangedSettingsSound, "Settings have changed.") ]); 
+goToTeamOnlySonicChat = SonicChat([ SonicChatVoice(voGoToTeamOnlySound, "Go to team-only comms.") ]);
+shallWeBeginSonicChat = SonicChat([ SonicChatVoice(voShallWeBeginSound, "Shall we begin?") ]);      
+checkWingSonicChat = SonicChat([ SonicChatVoice(voCheckWingSound, "Check your wing assignment.") ]);    
+arghSonicChat = SonicChat([ SonicChatVoice(voArghSound, "Deeg, dah, dog!") ]);  
+gunnerReadySonicChat = SonicChat([ SonicChatVoice(voGunnerReadySound, "Gunner ready.") ]);
+yowieSonicChat = SonicChat([ SonicChatVoice(voYowieSound, "Oh yeah! Yeah!") ]);   
+inboundBombSonicChat = SonicChat([ SonicChatVoice(voInboundBombSound, "Inbound enemy bomber!") ]);  
+kingUniverseSonicChat = SonicChat([ SonicChatVoice(voKingUniverseSound, "I'm the King of the Hill!") ]);
+turretsAttackSonicChat = SonicChat([ SonicChatVoice(voTurretsAttackSound, "Turrets, attack my target!") ]);
+gotchaSonicChat = SonicChat([ SonicChatVoice(voGotchaSound, "I gotcha.  Hold still (come to me).") ]);
+needFighterSupportSonicChat = SonicChat([ SonicChatVoice(voNeedFighterSupportSound, "Need fighter support.") ]);
+thanksLiftSonicChat = SonicChat([ SonicChatVoice(voThanksLiftSound, "Thanks for the lift!") ]);
+
+// begin new as of 1/28/2000
+comeOnDownSonicChat = SonicChat([ SonicChatVoice(voComeOnDown, "Come on down!") ]);
+heeHeeHeeSonicChat = SonicChat([ SonicChatVoice(voHeeHeeHee, "Heh, heh, heh...") ]);
+howWasThatSonicChat = SonicChat([ SonicChatVoice(voHowWasThat, "How was zat?") ]);
+
+iMissedSonicChat = SonicChat([ SonicChatVoice(voIMissed, "I missed!") ]);
+iQuitSonicChat = SonicChat([ SonicChatVoice(voIQuit, "I quit.") ]);
+misc2SonicChat = SonicChat([ SonicChatVoice(voMisc2, "Kiss my asteroid!") ]);
+misc3SonicChat = SonicChat([ SonicChatVoice(voMisc3, "Danger.") ]);
+misc9SonicChat = SonicChat([ SonicChatVoice(voMisc9, "Givin' it all she's got.") ]);
+misc17SonicChat = SonicChat([ SonicChatVoice(voMisc17, "It's all good.") ]);
+misc20SonicChat = SonicChat([ SonicChatVoice(voMisc20, "Death row, fool.") ]);
+misc21SonicChat = SonicChat([ SonicChatVoice(voMisc21, "How ya like me now?") ]);
+misc25SonicChat = SonicChat([ SonicChatVoice(voMisc25, "Ya'll come back now, ya hear?") ]);
+misc27SonicChat = SonicChat([ SonicChatVoice(voMisc27, "That's the bomb, baby.") ]);
+ooooAaaaSonicChat = SonicChat([ SonicChatVoice(voOoooAaaa, "Ooooaaaah!") ]);
+aaaaOoooSonicChat = SonicChat([ SonicChatVoice(voAaaaOooo, "Aaaaaaahhh!") ]);
+scuseMeSonicChat = SonicChat([ SonicChatVoice(voScuseMe, "Scuse me?") ]);
+whatSonicChat = SonicChat([ SonicChatVoice(voWhat, "What?!") ]);
+whatNowSonicChat = SonicChat([ SonicChatVoice(voWhatNow, "What, now?") ]);
+//youSuckSonicChat = SonicChat([ SonicChatVoice(voYouSuck, "You suck!") ]);
+
+// end new as of 1/28/2000
+
+
+didYouCopySonicChat = SonicChat([ SonicChatVoice(voDidYouCopy, "Did you copy?") ]);
+readTheChatSonicChat = SonicChat([ SonicChatVoice(voReadTheChat, "Read the chat!") ]);
+rogerSonicChat = SonicChat([ SonicChatVoice(voRoger, "Roger.") ]);
+
+//valor's crap
+
+attackSonicChat = SonicChat([ SonicChatVoice(voAttackSound, "Attack!") ]);
+defendSonicChat = SonicChat([ SonicChatVoice(voDefendSound, "Defend!") ]);
+cantHoldEmSonicChat = SonicChat([ SonicChatVoice(voCantHoldEmSound, "I can't hold 'em!") ]);
+
+
+
+//MA/Papsmear community soundpack 5/19/2002
+alephmineddronedSonicChat=SonicChat([SonicChatVoice(voalephmineddroned,"The aleph is mined and droned!")]);
+asseskickedSonicChat=SonicChat([SonicChatVoice(voasseskicked,"Hey maybe you haven't been keeping up on current events: we just got our asses kicked pal!")]);
+attackminefieldSonicChat=SonicChat([SonicChatVoice(voattackminefield,"Attack minefield!")]);
+attacknaniteSonicChat=SonicChat([SonicChatVoice(voattacknanite,"Attack nanites!")]);
+attackprobeSonicChat=SonicChat([SonicChatVoice(voattackprobe,"Attack their probes!")]);
+attackrescueSonicChat=SonicChat([SonicChatVoice(voattackrescue,"Attack rescue probe!")]);
+attackspecialSonicChat=SonicChat([SonicChatVoice(voattackspecial,"Attack special mines!")]);
+bugoutSonicChat=SonicChat([SonicChatVoice(vobugout,"Let's just bug out and call it even, ok?")]);
+campalephSonicChat=SonicChat([SonicChatVoice(vocampaleph,"Camp the aleph!")]);
+campbaseSonicChat=SonicChat([SonicChatVoice(vocampbase,"Camp their base!")]);
+campteleportSonicChat=SonicChat([SonicChatVoice(vocampteleport,"Camp their teleport!")]);
+cantpoddedSonicChat=SonicChat([SonicChatVoice(vocantpodded,"I'd love to, but I'm podded.")]);
+capturingbaseSonicChat=SonicChat([SonicChatVoice(vocapturingbase,"Capturing base, get ready to launch!")]);
+cloakedSonicChat=SonicChat([SonicChatVoice(vocloaked,"He cloaked!")]);
+defenderscloseSonicChat=SonicChat([SonicChatVoice(vodefendersclose,"Defenders, stay close to base!")]);
+defendspecialSonicChat=SonicChat([SonicChatVoice(vodefendspecial,"Defend special mines!")]);
+deployrescueSonicChat=SonicChat([SonicChatVoice(vodeployrescue,"Don't forget to take along your rescue probes!")]);
+dogmeatSonicChat=SonicChat([SonicChatVoice(vodogmeat,"You're dogmeat pal!")]);
+dontdefendSonicChat=SonicChat([SonicChatVoice(vodontdefend,"Don't defend, it's dead.")]);
+dontkillpodsSonicChat=SonicChat([SonicChatVoice(vodontkillpods,"Don't kill pods!")]);
+dontthinksoSonicChat=SonicChat([SonicChatVoice(vodontthinkso,"I dont think so!")]);
+evenupSonicChat=SonicChat([SonicChatVoice(voevenup,"Even up, or I'll even it up.")]);
+findassSonicChat=SonicChat([SonicChatVoice(vofindass,"Find their assault ship!")]);
+findcashSonicChat=SonicChat([SonicChatVoice(vofindcash,"Find cash.")]);
+findconstSonicChat=SonicChat([SonicChatVoice(vofindconst,"Find their constructors.")]);
+findscoutSonicChat=SonicChat([SonicChatVoice(vofindscout,"Find enemy scout.")]);
+gameoverSonicChat=SonicChat([SonicChatVoice(vogameover,"That's it man...Game over man, game over!")]);
+gametimeSonicChat=SonicChat([SonicChatVoice(vogametime,"It's gametime.")]);
+harshlanguageSonicChat=SonicChat([SonicChatVoice(voharshlanguage,"What the hell are we supposed to use man, harsh language?")]);
+helloSonicChat=SonicChat([SonicChatVoice(vohello,"Hello?")]);
+howfarSonicChat=SonicChat([SonicChatVoice(vohowfar,"How far is their base from the aleph?")]);
+iqsSonicChat=SonicChat([SonicChatVoice(voiqs,"Did IQs just drop sharply while I was away?")]);
+isalephminedSonicChat=SonicChat([SonicChatVoice(voisalephmined,"Is the aleph mined?")]);
+letsgoSonicChat=SonicChat([SonicChatVoice(voletsgo,"Let's go people, they ain't paying us by the hour...")]);
+mutinySonicChat=SonicChat([SonicChatVoice(vomutiny,"We have a clueless commander...mutiny!")]);
+naniteslaunchSonicChat=SonicChat([SonicChatVoice(vonaniteslaunch,"Nanites, launch and wait for bomber.")]);
+nanitesripSonicChat=SonicChat([SonicChatVoice(vonanitesrip,"Nanites, ripcord in!")]);
+needdefenseSonicChat=SonicChat([SonicChatVoice(voneeddefense,"Need more help on defense!")]);
+needminesSonicChat=SonicChat([SonicChatVoice(voneedmines,"Need some mines.")]);
+neednanonconstSonicChat=SonicChat([SonicChatVoice(voneednanonconst,"Need nanites on the constructor!")]);
+needoffenseSonicChat=SonicChat([SonicChatVoice(voneedoffense,"Need more pilots on offense!")]);
+needrescueSonicChat=SonicChat([SonicChatVoice(voneedrescue,"Need rescue probe!")]);
+needtpscoutSonicChat=SonicChat([SonicChatVoice(voneedtpscout,"Need a teleport scout!")]);
+noImeanitSonicChat=SonicChat([SonicChatVoice(vonoImeanit,"I said no, and I mean it!")]);
+notenoughSonicChat=SonicChat([SonicChatVoice(vonotenough,"They ain't paying us enough for this man...")]);
+notimeSonicChat=SonicChat([SonicChatVoice(vonotime,"Look, I don't have time for this.")]);
+notseenSonicChat=SonicChat([SonicChatVoice(vonotseen,"They don't see me.")]);
+nowyouseemeSonicChat=SonicChat([SonicChatVoice(vonowyouseeme,"Now you see me, now you don't.")]);
+offturretSonicChat=SonicChat([SonicChatVoice(vooffturret,"Get off my turrets man!")]);
+pickteamsSonicChat=SonicChat([SonicChatVoice(vopickteams,"Can we pick teams?")]);
+pickuppodsSonicChat=SonicChat([SonicChatVoice(vopickuppods,"We need someone to pickup pods.")]);
+pushopSonicChat=SonicChat([SonicChatVoice(vopushop,"They're pushing their op con!")]);
+readySonicChat=SonicChat([SonicChatVoice(voready,"Ready.")]);
+rippedSonicChat=SonicChat([SonicChatVoice(voripped,"He ripped!")]);
+rushSonicChat=SonicChat([SonicChatVoice(vorush,"Rush'em!")]);
+scoutaheadSonicChat=SonicChat([SonicChatVoice(voscoutahead,"Scout ahead for threats!")]);
+settingssuckSonicChat=SonicChat([SonicChatVoice(vosettingssuck,"Settings suck!")]);
+spottedSonicChat=SonicChat([SonicChatVoice(vospotted,"Oh they see me..I've been spotted.")]);
+stayoutofmiddleSonicChat=SonicChat([SonicChatVoice(vostayoutofmiddle,"Stay out of the middle aleph!")]);
+stopgrinSonicChat=SonicChat([SonicChatVoice(vostopgrin,"Stop your grinnin' and drop your linen.")]);
+theyexpSonicChat=SonicChat([SonicChatVoice(votheyexp,"They are pursuing expansion.")]);
+theysupSonicChat=SonicChat([SonicChatVoice(votheysup,"They are pursuing supremacy.")]);
+theytacSonicChat=SonicChat([SonicChatVoice(votheytac,"They are pursuing tactical.")]);
+wonttolerateSonicChat=SonicChat([SonicChatVoice(vowonttolerate,"We will not tolerate this behavior.")]);
+woopieSonicChat=SonicChat([SonicChatVoice(vowoopie,"Whoopee-fuckin'-do..hey I'm impressed!")]);
+leavemarkSonicChat=SonicChat([SonicChatVoice(voleavemark,"Ow, that's gonna leave a mark!")]);
+poddedSonicChat=SonicChat([SonicChatVoice(vopodded,"Damn! I got podded.")]);
+stopspamSonicChat=SonicChat([SonicChatVoice(vostopspam,"Please stop spamming.")]);
+wakeupSonicChat=SonicChat([SonicChatVoice(vowakeup,"Yo! Wake up! You there?")]);
+
+
+
+
+        
+
+//
+// Sonic chat lookup table
+//
+
+sonicChats =
+    [
+         ( 0,      gotoAlephSonicChat),
+         ( 1,       gotoBaseSonicChat),
+         ( 2, pickupTreasureSonicChat),
+         ( 3,  pickupLifepodSonicChat),
+         ( 4,  defendFighterSonicChat),
+         ( 5,  defendCaptialSonicChat),
+         ( 6,     defendBaseSonicChat),
+         ( 7,  attackFighterSonicChat),
+         ( 8,  attackCapitalSonicChat),
+         ( 9,     attackBaseSonicChat),
+         (10,   attackTargetSonicChat),
+         (11,         helpMeSonicChat),
+         (12,       followMeSonicChat),
+         (13,         joinMeSonicChat),
+         (14,       joinWingSonicChat),
+         (15,            YesSonicChat),
+         (16,             NoSonicChat),
+         (17,      objectiveSonicChat),
+         (18,   acknowledgedSonicChat),
+         (19,         thanksSonicChat),
+         (20,   targetNeededSonicChat),
+         (21,     needPickupSonicChat),
+         (22,        coverMeSonicChat),
+         (23,       headBackSonicChat),
+         (24,  escortBuilderSonicChat),
+         (25,      findEnemySonicChat),
+         (26,         goGoGoSonicChat),
+         (27,     findHeliumSonicChat),
+         (28,  donateCreditsSonicChat),
+         (29,        regroupSonicChat),
+         (30,        formateSonicChat),
+         (31,    escortMinerSonicChat),
+         (32,       findIronSonicChat),
+         (33,     findCarbonSonicChat),
+         (34,     findProbesSonicChat),
+         (35,       findLavaSonicChat),
+         (36,        retreatSonicChat),
+         (37,         holdUpSonicChat),
+         (38,   stayOnTargetSonicChat),
+         (39,    wait4signalSonicChat),
+         (40,     meetAtJumpSonicChat),
+         (41,   formOnMyWingSonicChat),
+         (42,     findAlephsSonicChat),
+         (43,       getOffMeSonicChat),
+         (44,        awesomeSonicChat),
+         (45,            byeSonicChat),
+         (46,           dangSonicChat),
+         (47,          yeeHaSonicChat),
+         (48,           doahSonicChat),
+         (49,             hiSonicChat),
+         (50,           noooSonicChat),
+         (51,           phewSonicChat),
+         (52,     ripcordingSonicChat),
+         (53,          sweetSonicChat),
+         (54,       niceWorkSonicChat),
+         (55,      watchFireSonicChat),
+         (56,         ohYeahSonicChat),
+         (57,  allDefendBaseSonicChat),
+         (58,       needAmmoSonicChat),
+         (59, stationNeedsRepairsSonicChat),
+         (60,    needCruiserSonicChat),
+         (61, transportOutboundSonicChat),
+         (62,       needFuelSonicChat),
+         (63,    needFighterSonicChat),
+         (64, gimmesomethingSonicChat),
+         (65,     needRescueSonicChat),
+         (66,    needRepairsSonicChat),
+         (67,      needScoutSonicChat),
+         (68, takingItToThemSonicChat),
+         (69,     needBomberSonicChat),
+         (70,       completeSonicChat),
+         (71,         imbusySonicChat),
+         (72,           coolSonicChat),
+         (73,         fiestySonicChat),
+         (74,        inboundSonicChat),
+         (75,       youreMadSonicChat),
+         (76,         imOnItSonicChat),
+         (77,        onMyWaySonicChat),
+         (78,     alephMinedSonicChat),
+         (79,   baseCapturedSonicChat),
+         (80,       enemyCapSonicChat),
+         (81, shieldsAreDownSonicChat),
+         (82, foundEnemyShipsSonicChat),
+         (83,   enemyHasFlagSonicChat),
+         (84,  bomberWaitingSonicChat),
+         (85,    foundHeliumSonicChat),
+         (86,  enemyFightersSonicChat),
+         (87,   haveCapitolsSonicChat),
+         (88,        traitorSonicChat),
+         (89,    electronicsSonicChat),
+         (90,  minersAreDeadSonicChat),
+         (91,      ordinanceSonicChat),
+         (92,    foundCarbonSonicChat),
+         (93,   haveShipyardSonicChat),
+         (94, isOurBaseClearSonicChat),
+         (95, capShipWaitingSonicChat),
+         (96, foundEnemyBaseSonicChat),
+         (97, enemyTransportSonicChat),
+         (98,      foundIronSonicChat),
+         (99,     foundAlephSonicChat),
+         (100,        energySonicChat),
+         (101,     foundLavaSonicChat),
+         (102,  almostHadYouSonicChat),
+         (103,     outOfAmmoSonicChat),
+         (104,      comeBackSonicChat),
+         (105,  deathBecomesSonicChat),
+         (106,  shootingFishSonicChat),
+         (107,  howdThatFeelSonicChat),
+         (108,  youreGoodButSonicChat),
+         (109,       noHonorSonicChat),
+         (110,     likeLambsSonicChat),
+         (111,       payloadSonicChat),
+         (112,   ripcordLastSonicChat),
+         (113,  youllBeSorrySonicChat),
+         (114,   withDignitySonicChat),
+         (115,          yes2SonicChat),
+     (116, shootSonicChat),
+     (117, donateInvestorSonicChat),
+     (118, needTurretSonicChat),
+     (119, joiningTurretSonicChat),
+     (120, oopsSonicChat),
+         (121, attackBase2SonicChat), 
+         (122, needBaseSonicChat),
+     (123, attackConstructorSonicChat),
+     (124, defendConstructorSonicChat),
+     (125, needConstructorSonicChat),
+  (126, attackDefenderSonicChat),
+  (127, defendDefenderSonicChat),
+  (128, needDefenderSonicChat),
+    (129, needBetterFightersSonicChat),
+    (130, attackFighter2SonicChat),
+    (131, defendFighter2SonicChat),
+    (132, attackInterceptorSonicChat),
+    (133, defendInterceptorSonicChat),
+    (134, needInterceptorSonicChat),
+    (135, needObjectiveSonicChat),
+    (136, attackCapital2SonicChat),
+    (137, defendCapitalSonicChat),
+    (138, needCapitalSonicChat),
+    (139, attackMinerSonicChat),
+    (140, defendMinerSonicChat),
+    (141, needMinerSonicChat),
+    (142, attackBomberSonicChat),
+    (143, defendBomberSonicChat),
+    (144, attackRipcordSonicChat),
+    (145, defendRipcordSonicChat),
+    (146, needRipcordSonicChat),
+    (147, attackStealthSonicChat),
+    (148, defendStealthSonicChat),
+    (149, needStealthSonicChat),
+    (150, attackTransportSonicChat),
+    (151, defendTransportSonicChat),
+    (152, needTransportSonicChat),
+    (153, attackScoutSonicChat),
+    (154, defendScoutSonicChat),
+    (155, attackTowerSonicChat),
+    (156, defendTowerSonicChat),
+    (157, needTowerSonicChat),
+    (158, needBetterWepSonicChat),
+    (159, needMoneySonicChat),
+    (160, scoutAlephSonicChat), 
+    (161, foundEnemyConstructSonicChat),
+    (162, constructorLaunchingSonicChat),
+  (163, minersHammeredSonicChat),
+    (164, findFreakinBaseSonicChat),
+    (165, minerHuntSonicChat),
+    (166, stayTogetherSonicChat),
+    (167, ripcordHomeSonicChat),
+    (168, layLowSonicChat),
+    (169, foundEnemyMinerSonicChat),
+    (170, baseUnderAttackSonicChat),
+    (171, deployProbesSonicChat),
+    (172, deployMinesSonicChat),
+    (173, repairStationSonicChat),
+    (174, findMinerSonicChat),
+    (175, findSiliconSonicChat),
+    (176, findUraniumSonicChat),
+    (177, noMoneySonicChat),
+    (178, surelyJokingSonicChat),
+    (179, aintNoThinSonicChat),
+    (180, hellYeahSonicChat),
+    (181, youreCrazySonicChat),
+    (182, thatHurtSonicChat),
+    (183, slapInvestorSonicChat),
+    (184, ooohSorrySonicChat),
+    (185, wantAPieceSonicChat),
+    (186, shootCommanderSonicChat),
+    (187, steadyTigerSonicChat),
+    (188, realLifeSonicChat),
+    (189, makeMeSonicChat),
+    (190, ISPDropSonicChat),
+    (191, everyoneReadySonicChat),
+    (192, savingUpSonicChat),
+    (193, startTheGameSonicChat),
+    (194, holdYourHorsesSonicChat),
+    (195, coupleMinutesSonicChat),
+    (196, justASecSonicChat),
+    (197, niceWeatherSonicChat),
+    (198, whoCommanderSonicChat),
+    (199, changeTheMapSonicChat),
+    (200, imCluelessSonicChat),
+    (201, itsLateSonicChat),
+    (202, pitstopSonicChat),
+    (203, rematchSonicChat),
+    (204, changedSettingsSonicChat),
+    (205, goToTeamOnlySonicChat),
+    (206, shallWeBeginSonicChat),
+    (207, checkWingSonicChat),
+    (208, arghSonicChat),
+    (209, gunnerReadySonicChat),
+    (210, yowieSonicChat),
+    (211, inboundBombSonicChat),
+    (212, kingUniverseSonicChat),
+    (213, turretsAttackSonicChat),
+    (214, gotchaSonicChat),
+    (215, needFighterSupportSonicChat),
+    (216, thanksLiftSonicChat),
+
+
+// new as of 1/28/2000
+
+    (217, comeOnDownSonicChat),
+    (218, heeHeeHeeSonicChat),
+    (219, howWasThatSonicChat),
+
+    (220, iMissedSonicChat),
+    (221, iQuitSonicChat),
+    (222, misc2SonicChat),
+    (223, misc3SonicChat),
+    (224, misc9SonicChat),
+    (225, misc17SonicChat),
+    (226, misc20SonicChat),
+    (227, misc21SonicChat),
+    (228, misc25SonicChat),
+    (229, misc27SonicChat),
+    (230, ooooAaaaSonicChat),
+    (231, aaaaOoooSonicChat),
+    (232, scuseMeSonicChat),
+    (233, whatSonicChat),
+    (234, whatNowSonicChat),
+    //(235, youSuckSonicChat)
+        (235, didYouCopySonicChat),
+    (236, readTheChatSonicChat),
+    (237, rogerSonicChat),
+
+//valor's crap    
+    	(239, attackSonicChat),
+	(240, defendSonicChat),
+	(241, cantHoldEmSonicChat),
+	
+    
+    //MA/Papsmear community pack 5/19/2002
+(300,	alephmineddronedSonicChat),
+(301,	asseskickedSonicChat),
+(302,	attackminefieldSonicChat),
+(303,	attacknaniteSonicChat),
+(304,	attackprobeSonicChat),
+(305,	attackrescueSonicChat),
+(306,	attackspecialSonicChat),
+(307,	bugoutSonicChat),
+(308,	campalephSonicChat),
+(309,	campbaseSonicChat),
+(310,	campteleportSonicChat),
+(311,	cantpoddedSonicChat),
+(312,	capturingbaseSonicChat),
+(313,	cloakedSonicChat),
+(314,	defenderscloseSonicChat),
+(315,	defendspecialSonicChat),
+(316,	deployrescueSonicChat),
+(317,	dogmeatSonicChat),
+(318,   leavemarkSonicChat),
+(319,	dontdefendSonicChat),
+(320,	dontkillpodsSonicChat),
+(321,	dontthinksoSonicChat),
+(322,	evenupSonicChat),
+(323,	findassSonicChat),
+(324,	findcashSonicChat),
+(325,	findconstSonicChat),
+(326,	findscoutSonicChat),
+(327,	gameoverSonicChat),
+(328,	gametimeSonicChat),
+(329,	harshlanguageSonicChat),
+(330,	helloSonicChat),
+(331,	howfarSonicChat),
+(332,	iqsSonicChat),
+(333,	isalephminedSonicChat),
+(334,	letsgoSonicChat),
+(335,	mutinySonicChat),
+(336,   poddedSonicChat),
+(337,	naniteslaunchSonicChat),
+(338,	nanitesripSonicChat),
+(339,	needdefenseSonicChat),
+(340,   stopspamSonicChat),
+(341,	needminesSonicChat),
+(342,	neednanonconstSonicChat),
+(343,	needoffenseSonicChat),
+(344,	needrescueSonicChat),
+(345,	needtpscoutSonicChat),
+(346,   wakeupSonicChat),
+(347,	noImeanitSonicChat),
+(348,	notenoughSonicChat),
+(349,	notimeSonicChat),
+(350,	notseenSonicChat),
+(351,	nowyouseemeSonicChat),
+(352,	offturretSonicChat),
+(353,	pickteamsSonicChat),
+(354,	pickuppodsSonicChat),
+(355,	pushopSonicChat),
+(356,	readySonicChat),
+(357,	rippedSonicChat),
+(358,	rushSonicChat),
+(359,	scoutaheadSonicChat),
+(360,	settingssuckSonicChat),
+(361,	spottedSonicChat),
+(362,	stayoutofmiddleSonicChat),
+(364,	stopgrinSonicChat),
+(365,	theyexpSonicChat),
+(366,	theysupSonicChat),
+(367,	theytacSonicChat),
+(368,	wonttolerateSonicChat),
+(369,	woopieSonicChat)
+
+
+];   
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Quick chat commands
+// 
+//////////////////////////////////////////////////////////////////////////////
+
+     gotoAlephCommand = QuickChatCommand(     gotoAlephSonicChat, cidGoto      , ttNeutral | ttWarp | ttNearest                   , 0          );
+      gotoBaseCommand = QuickChatCommand(      gotoBaseSonicChat, cidGoto      , ttFriendly | ttStation | ttNearest | ttAnyCluster, 0          );
+pickupTreasureCommand = QuickChatCommand(pickupTreasureSonicChat, cidPickup    , ttNeutral | ttTreasure | ttNearest               , 0          );
+ pickupLifepodCommand = QuickChatCommand( pickupLifepodSonicChat, cidPickup    , ttFriendly | ttShip | ttNearest                  , habmLifepod);
+ defendFighterCommand = QuickChatCommand( defendFighterSonicChat, cidDefend    , ttFriendly | ttShip | ttNearest                  , habmFighter);
+ defendCaptialCommand = QuickChatCommand( defendCaptialSonicChat, cidDefend    , ttFriendly | ttShip | ttNearest                  , habmCapital);
+    defendBaseCommand = QuickChatCommand(    defendBaseSonicChat, cidDefend    , ttFriendly | ttStation | ttNearest               , 0          );
+ attackFighterCommand = QuickChatCommand( attackFighterSonicChat, cidAttack    , ttEnemy | ttShip | ttNearest                     , habmFighter);
+ attackCapitalCommand = QuickChatCommand( attackCapitalSonicChat, cidAttack    , ttEnemy | ttShip | ttNearest                     , habmCapital);
+    attackBaseCommand = QuickChatCommand(    attackBaseSonicChat, cidAttack    , ttEnemy | ttStation | ttNearest                  , 0          );
+  attackTargetCommand = QuickChatCommand(  attackTargetSonicChat, cidAttack    , ttMyTarget                                       , 0          );
+        helpMeCommand = QuickChatCommand(        helpMeSonicChat, cidAttack    , ttWorstEnemy                                     , 0          );
+      followMeCommand = QuickChatCommand(      followMeSonicChat, cidGoto      , ttMe                                             , 0          );
+        joinMeCommand = QuickChatCommand(        joinMeSonicChat, cidMyAccepted, ttMyAccepted                                     , 0          );
+      joinWingCommand = QuickChatCommand(      joinWingSonicChat, cidJoin      , ttMe                                             , 0          );
+           YesCommand = QuickChatCommand(           YesSonicChat, cidNone      , 0                                                , 0          );
+            NoCommand = QuickChatCommand(            NoSonicChat, cidNone      , 0                                                , 0          );
+     objectiveCommand = QuickChatCommand(     objectiveSonicChat, cidNone      , 0                                                , 0          );
+  acknowledgedCommand = QuickChatCommand(  acknowledgedSonicChat, cidNone      , 0                                                , 0          );
+        thanksCommand = QuickChatCommand(        thanksSonicChat, cidNone      , 0                                                , 0          );
+  targetNeededCommand = QuickChatCommand(  targetNeededSonicChat, cidNone      , 0                                                , 0          );
+    needPickupCommand = QuickChatCommand(    needPickupSonicChat, cidPickup    , ttMe                                             , 0          );
+       coverMeCommand = QuickChatCommand(       coverMeSonicChat, cidAttack    , ttWorstEnemy                                     , 0          );
+      headBackCommand = QuickChatCommand(      headBackSonicChat, cidGoto      , ttFriendly | ttStation | ttNearest | ttAnyCluster, 0          );  
+ escortBuilderCommand = QuickChatCommand( escortBuilderSonicChat, cidNone      , 0                                                , 0          );     
+     findEnemyCommand = QuickChatCommand(     findEnemySonicChat, cidAttack    , ttEnemy | ttShip | ttNearest                     , habmFighter);
+        goGoGoCommand = QuickChatCommand(        goGoGoSonicChat, cidNone      , 0                                                , 0          );
+    findHeliumCommand = QuickChatCommand(    findHeliumSonicChat, cidNone      , 0                                                , 0          );
+ donateCreditsCommand = QuickChatCommand( donateCreditsSonicChat, cidNone      , 0                                                , 0          );
+       regroupCommand = QuickChatCommand(       regroupSonicChat, cidNone      , 0                                                , 0          );
+       formateCommand = QuickChatCommand(       formateSonicChat, cidNone      , 0                                                , 0          );
+   escortMinerCommand = QuickChatCommand(   escortMinerSonicChat, cidDefend    , ttFriendly | ttShip | ttNearest                  , habmMiner  );
+      findIronCommand = QuickChatCommand(      findIronSonicChat, cidNone      , 0                                                , 0          );
+    findCarbonCommand = QuickChatCommand(    findCarbonSonicChat, cidNone      , 0                                                , 0          );
+    findProbesCommand = QuickChatCommand(    findProbesSonicChat, cidNone      , 0                                                , 0          );
+      findLavaCommand = QuickChatCommand(      findLavaSonicChat, cidNone      , 0                                                , 0          );
+       retreatCommand = QuickChatCommand(       retreatSonicChat, cidNone      , 0                                                , 0          );
+        holdUpCommand = QuickChatCommand(        holdUpSonicChat, cidNone      , 0                                                , 0          );
+  stayOnTargetCommand = QuickChatCommand(  stayOnTargetSonicChat, cidNone      , 0                                                , 0          );
+   wait4signalCommand = QuickChatCommand(   wait4signalSonicChat, cidNone      , 0                                                , 0          );
+    meetAtJumpCommand = QuickChatCommand(    meetAtJumpSonicChat, cidGoto      , ttNeutral | ttWarp | ttNearest                   , 0          );    
+  formOnMyWingCommand = QuickChatCommand(  formOnMyWingSonicChat, cidJoin      , ttMe                                             , 0          );
+    findAlephsCommand = QuickChatCommand(    findAlephsSonicChat, cidNone      , 0                                                , 0          );
+      getOffMeCommand = QuickChatCommand(      getOffMeSonicChat, cidAttack    , ttWorstEnemy                                     , 0          );
+       awesomeCommand = QuickChatCommand(       awesomeSonicChat, cidNone      , 0                                                , 0          );
+           byeCommand = QuickChatCommand(           byeSonicChat, cidNone      , 0                                                , 0          );
+          dangCommand = QuickChatCommand(          dangSonicChat, cidNone      , 0                                                , 0          );
+         yeeHaCommand = QuickChatCommand(         yeeHaSonicChat, cidNone      , 0                                                , 0          );
+          doahCommand = QuickChatCommand(          doahSonicChat, cidNone      , 0                                                , 0          );
+            hiCommand = QuickChatCommand(            hiSonicChat, cidNone      , 0                                                , 0          );
+          noooCommand = QuickChatCommand(          noooSonicChat, cidNone      , 0                                                , 0          );
+          phewCommand = QuickChatCommand(          phewSonicChat, cidNone      , 0                                                , 0          );
+    ripcordingCommand = QuickChatCommand(    ripcordingSonicChat, cidNone      , 0                                                , 0          );
+         sweetCommand = QuickChatCommand(         sweetSonicChat, cidNone      , 0                                                , 0          );
+      niceWorkCommand = QuickChatCommand(      niceWorkSonicChat, cidNone      , 0                                                , 0          );
+     watchFireCommand = QuickChatCommand(     watchFireSonicChat, cidNone      , 0                                                , 0          );
+        ohYeahCommand = QuickChatCommand(        ohYeahSonicChat, cidNone      , 0                                                , 0          );
+ allDefendBaseCommand = QuickChatCommand( allDefendBaseSonicChat, cidDefend    , ttFriendly | ttStation | ttNearest               , 0          );
+      needAmmoCommand = QuickChatCommand(      needAmmoSonicChat, cidNone      , 0                                                , 0          );
+stationNeedsRepairsCommand = QuickChatCommand(stationNeedsRepairsSonicChat, cidRepair, ttFriendly | ttStation | ttNearest         , 0          );
+   needCruiserCommand = QuickChatCommand(   needCruiserSonicChat, cidNone      , 0                                                , 0          );
+transportOutboundCommand = QuickChatCommand( transportOutboundSonicChat, cidNone , 0                                              , 0          );
+      needFuelCommand = QuickChatCommand(      needFuelSonicChat, cidNone      , 0                                                , 0          );
+   needFighterCommand = QuickChatCommand(   needFighterSonicChat, cidNone      , 0                                                , 0          );
+gimmesomethingCommand = QuickChatCommand(gimmesomethingSonicChat, cidNone      , 0                                                , 0          );
+    needRescueCommand = QuickChatCommand(    needRescueSonicChat, cidPickup    , ttMe                                             , 0          );
+   needRepairsCommand = QuickChatCommand(   needRepairsSonicChat, cidRepair    , ttMe                                             , 0          );
+     needScoutCommand = QuickChatCommand(     needScoutSonicChat, cidNone      , 0                                                , 0          );
+takingItToThemCommand = QuickChatCommand(takingItToThemSonicChat, cidNone      , 0                                                , 0          );
+    needBomberCommand = QuickChatCommand(    needBomberSonicChat, cidNone      , 0                                                , 0          );
+      completeCommand = QuickChatCommand(      completeSonicChat, cidNone      , 0                                                , 0          );
+        imbusyCommand = QuickChatCommand(        imbusySonicChat, cidNone      , 0                                                , 0          );
+          coolCommand = QuickChatCommand(          coolSonicChat, cidNone      , 0                                                , 0          );
+        fiestyCommand = QuickChatCommand(        fiestySonicChat, cidNone      , 0                                                , 0          );
+       inboundCommand = QuickChatCommand(       inboundSonicChat, cidNone      , 0                                                , 0          );
+      youreMadCommand = QuickChatCommand(      youreMadSonicChat, cidNone      , 0                                                , 0          );
+        imOnItCommand = QuickChatCommand(        imOnItSonicChat, cidNone      , 0                                                , 0          );
+       onMyWayCommand = QuickChatCommand(       onMyWaySonicChat, cidNone      , 0                                                , 0          );
+    alephMinedCommand = QuickChatCommand(    alephMinedSonicChat, cidNone      , 0                                                , 0          );
+  baseCapturedCommand = QuickChatCommand(  baseCapturedSonicChat, cidNone      , 0                                                , 0          );
+      enemyCapCommand = QuickChatCommand(      enemyCapSonicChat, cidNone      , 0                                                , 0          );
+shieldsAreDownCommand = QuickChatCommand(shieldsAreDownSonicChat, cidNone      , 0                                                , 0          );
+foundEnemyShipsCommand = QuickChatCommand(foundEnemyShipsSonicChat, cidNone    , 0                                                , 0          );
+  enemyHasFlagCommand = QuickChatCommand(  enemyHasFlagSonicChat, cidNone      , 0                                                , 0          );
+ bomberWaitingCommand = QuickChatCommand( bomberWaitingSonicChat, cidNone      , 0                                                , 0          );
+   foundHeliumCommand = QuickChatCommand(   foundHeliumSonicChat, cidNone      , 0                                                , 0          );
+ enemyFightersCommand = QuickChatCommand( enemyFightersSonicChat, cidNone      , 0                                                , 0          );
+  haveCapitolsCommand = QuickChatCommand(  haveCapitolsSonicChat, cidNone      , 0                                                , 0          );
+       traitorCommand = QuickChatCommand(       traitorSonicChat, cidNone      , 0                                                , 0          );
+   electronicsCommand = QuickChatCommand(   electronicsSonicChat, cidNone      , 0                                                , 0          );
+ minersAreDeadCommand = QuickChatCommand( minersAreDeadSonicChat, cidNone      , 0                                                , 0          );
+     ordinanceCommand = QuickChatCommand(     ordinanceSonicChat, cidNone      , 0                                                , 0          );
+   foundCarbonCommand = QuickChatCommand(   foundCarbonSonicChat, cidNone      , 0                                                , 0          );
+  haveShipyardCommand = QuickChatCommand(  haveShipyardSonicChat, cidNone      , 0                                                , 0          );
+isOurBaseClearCommand = QuickChatCommand(isOurBaseClearSonicChat, cidNone      , 0                                                , 0          );
+capShipWaitingCommand = QuickChatCommand(capShipWaitingSonicChat, cidNone      , 0                                                , 0          );
+foundEnemyBaseCommand = QuickChatCommand(foundEnemyBaseSonicChat, cidNone      , 0                                                , 0          );
+enemyTransportCommand = QuickChatCommand(enemyTransportSonicChat, cidNone      , 0                                                , 0          );
+     foundIronCommand = QuickChatCommand(     foundIronSonicChat, cidNone      , 0                                                , 0          );
+    foundAlephCommand = QuickChatCommand(    foundAlephSonicChat, cidNone      , 0                                                , 0          );
+        energyCommand = QuickChatCommand(        energySonicChat, cidNone      , 0                                                , 0          );
+     foundLavaCommand = QuickChatCommand(     foundLavaSonicChat, cidNone      , 0                                                , 0          );
+  almostHadYouCommand = QuickChatCommand(  almostHadYouSonicChat, cidNone      , 0                                                , 0          );
+     outOfAmmoCommand = QuickChatCommand(     outOfAmmoSonicChat, cidNone      , 0                                                , 0          );
+      comeBackCommand = QuickChatCommand(      comeBackSonicChat, cidNone      , 0                                                , 0          );
+  deathBecomesCommand = QuickChatCommand(  deathBecomesSonicChat, cidNone      , 0                                                , 0          );
+  shootingFishCommand = QuickChatCommand(  shootingFishSonicChat, cidNone      , 0                                                , 0          );
+  howdThatFeelCommand = QuickChatCommand(  howdThatFeelSonicChat, cidNone      , 0                                                , 0          );
+  youreGoodButCommand = QuickChatCommand(  youreGoodButSonicChat, cidNone      , 0                                                , 0          );
+       noHonorCommand = QuickChatCommand(       noHonorSonicChat, cidNone      , 0                                                , 0          );
+     likeLambsCommand = QuickChatCommand(     likeLambsSonicChat, cidNone      , 0                                                , 0          );
+       payloadCommand = QuickChatCommand(       payloadSonicChat, cidNone      , 0                                                , 0          );
+   ripcordLastCommand = QuickChatCommand(   ripcordLastSonicChat, cidNone      , 0                                                , 0          );
+  youllBeSorryCommand = QuickChatCommand(  youllBeSorrySonicChat, cidNone      , 0                                                , 0          );
+   withDignityCommand = QuickChatCommand(   withDignitySonicChat, cidNone      , 0                                                , 0          );
+          yes2COmmand = QuickChatCommand(          yes2SonicChat, cidNone      , 0                                                , 0          );
+
+shootCommand = QuickChatCommand(shootSonicChat, cidNone      , 0                                                , 0          );
+donateInvestorCommand = QuickChatCommand(donateInvestorSonicChat, cidNone      , 0                                                , 0          );
+needTurretCommand = QuickChatCommand(needTurretSonicChat, cidNone      , 0                                                , 0          );
+joiningTurretCommand = QuickChatCommand(joiningTurretSonicChat, cidNone      , 0                                                , 0          );
+oopsCommand = QuickChatCommand(oopsSonicChat, cidNone      , 0                                                , 0          );    
+attackBase2Command = QuickChatCommand(attackBase2SonicChat, cidAttack      , ttEnemy | ttStation | ttNearest                                                , 0          );  
+needBaseCommand = QuickChatCommand(needBaseSonicChat, cidNone      , 0                                                , 0          );    
+attackConstructorCommand = QuickChatCommand(attackConstructorSonicChat, cidNone      , 0                                                , 0          );  
+defendConstructorCommand = QuickChatCommand(defendConstructorSonicChat, cidNone      , 0                                                , 0          );  
+needConstructorCommand = QuickChatCommand(needConstructorSonicChat, cidNone      , 0                                                , 0          );  
+attackDefenderCommand = QuickChatCommand(attackDefenderSonicChat, cidNone      , 0                                                , 0          );  
+defendDefenderCommand = QuickChatCommand(defendDefenderSonicChat, cidNone      , 0                                                , 0          );  
+needDefenderCommand = QuickChatCommand(needDefenderSonicChat, cidNone      , 0                                                , 0          );  
+needBetterFightersCommand = QuickChatCommand(needBetterFightersSonicChat, cidNone      , 0                                                , 0          );    
+ attackFighter2Command = QuickChatCommand( attackFighter2SonicChat, cidAttack    , ttEnemy | ttShip | ttNearest                     , habmFighter);
+defendFighter2Command = QuickChatCommand(defendFighter2SonicChat, cidDefend    , ttFriendly | ttShip | ttNearest                  , habmFighter);
+attackInterceptorCommand = QuickChatCommand(attackInterceptorSonicChat, cidNone      , 0                                                , 0          );  
+defendInterceptorCommand = QuickChatCommand(defendInterceptorSonicChat, cidNone      , 0                                                , 0          );  
+needInterceptorCommand = QuickChatCommand(needInterceptorSonicChat, cidNone      , 0                                                , 0          );  
+needObjectiveCommand = QuickChatCommand(needObjectiveSonicChat, cidNone      , 0                                                , 0          );  
+ attackCapital2Command = QuickChatCommand( attackCapital2SonicChat, cidAttack    , ttEnemy | ttShip | ttNearest                     , habmCapital);
+defendCapital2Command = QuickChatCommand( defendCapitalSonicChat, cidDefend    , ttFriendly | ttShip | ttNearest                     , habmCapital);        
+needCapitalCommand = QuickChatCommand(needCapitalSonicChat, cidNone      , 0                                                , 0          );     
+attackMinerCommand = QuickChatCommand(attackMinerSonicChat, cidNone      , 0                                                , 0          );  
+defendMinerCommand = QuickChatCommand(defendMinerSonicChat, cidNone      , 0                                                , 0          );  
+needMinerCommand = QuickChatCommand(needMinerSonicChat, cidNone      , 0                                                , 0          );
+attackBomberCommand = QuickChatCommand(attackBomberSonicChat, cidNone      , 0                                                , 0          );    
+defendBomberCommand = QuickChatCommand(defendBomberSonicChat, cidNone      , 0                                                , 0          );    
+attackRipcordCommand = QuickChatCommand(attackRipcordSonicChat, cidNone      , 0                                                , 0          );  
+defendRipcordCommand = QuickChatCommand(defendRipcordSonicChat, cidNone      , 0                                                , 0          );  
+needRipcordCommand = QuickChatCommand(needRipcordSonicChat, cidNone      , 0                                                , 0          );
+attackStealthCommand = QuickChatCommand(attackStealthSonicChat, cidNone      , 0                                                , 0          );  
+defendStealthCommand = QuickChatCommand(defendStealthSonicChat, cidNone      , 0                                                , 0          );  
+needStealthCommand = QuickChatCommand(needStealthSonicChat, cidNone      , 0                                                , 0          );
+attackTransportCommand = QuickChatCommand(attackTransportSonicChat, cidNone      , 0                                                , 0          );  
+defendTransportCommand = QuickChatCommand(defendTransportSonicChat, cidNone      , 0                                                , 0          );  
+needTransportCommand = QuickChatCommand(needTransportSonicChat, cidNone      , 0                                                , 0          );
+attackScoutCommand = QuickChatCommand(attackScoutSonicChat, cidNone      , 0                                                , 0          );  
+defendScoutCommand = QuickChatCommand(defendScoutSonicChat, cidNone      , 0                                                , 0          );  
+attackTowerCommand = QuickChatCommand(attackTowerSonicChat, cidNone      , 0                                                , 0          );  
+defendTowerCommand = QuickChatCommand(defendTowerSonicChat, cidNone      , 0                                                , 0          );  
+needTowerCommand = QuickChatCommand(needTowerSonicChat, cidNone      , 0                                                , 0          );
+needBetterWepCommand = QuickChatCommand(needBetterWepSonicChat, cidNone      , 0                                                , 0          );
+needMoneyCommand = QuickChatCommand(needMoneySonicChat, cidNone      , 0                                                , 0          );
+scoutAlephCommand = QuickChatCommand(scoutAlephSonicChat, cidNone      , 0                                                , 0          );
+foundEnemyConstructCommand = QuickChatCommand(foundEnemyConstructSonicChat, cidNone      , 0                                                , 0          );
+constructorLaunchingCommand = QuickChatCommand(constructorLaunchingSonicChat, cidNone      , 0                                                , 0          );
+minersHammeredCommand = QuickChatCommand(minersHammeredSonicChat, cidNone      , 0                                                , 0          );
+findFreakinBaseCommand = QuickChatCommand(findFreakinBaseSonicChat, cidNone      , 0                                                , 0          );
+minerHuntCommand = QuickChatCommand(minerHuntSonicChat, cidNone      , 0                                                , 0          );
+stayTogetherCommand = QuickChatCommand(stayTogetherSonicChat, cidNone      , 0                                                , 0          );
+ripcordHomeCommand = QuickChatCommand(ripcordHomeSonicChat, cidNone      , 0                                                , 0          );
+layLowCommand = QuickChatCommand(layLowSonicChat, cidNone      , 0                                                , 0          );
+foundEnemyMinerCommand = QuickChatCommand(foundEnemyMinerSonicChat, cidNone      , 0                                                , 0          );
+baseUnderAttackCommand = QuickChatCommand(baseUnderAttackSonicChat, cidNone      , 0                                                , 0          );
+deployProbesCommand = QuickChatCommand(deployProbesSonicChat, cidNone      , 0                                                , 0          );
+deployMinesCommand = QuickChatCommand(deployMinesSonicChat, cidNone      , 0                                                , 0          );
+repairStationCommand = QuickChatCommand(repairStationSonicChat, cidNone      , 0                                                , 0          );
+findMinerCommand = QuickChatCommand(findMinerSonicChat, cidNone      , 0                                                , 0          );
+findSiliconCommand = QuickChatCommand(findSiliconSonicChat, cidNone      , 0                                                , 0          );
+findUraniumCommand = QuickChatCommand(findUraniumSonicChat, cidNone      , 0                                                , 0          );
+noMoneyCommand = QuickChatCommand(noMoneySonicChat, cidNone      , 0                                                , 0          );
+surelyJokingCommand = QuickChatCommand(surelyJokingSonicChat, cidNone      , 0                                                , 0          );
+aintNoThinCommand = QuickChatCommand(aintNoThinSonicChat, cidNone      , 0                                                , 0          );
+hellYeahCommand = QuickChatCommand(hellYeahSonicChat, cidNone      , 0                                                , 0          );
+youreCrazyCommand = QuickChatCommand(youreCrazySonicChat, cidNone      , 0                                                , 0          );
+thatHurtCommand = QuickChatCommand(thatHurtSonicChat, cidNone      , 0                                                , 0          );
+slapInvestorCommand = QuickChatCommand(slapInvestorSonicChat, cidNone      , 0                                                , 0          );
+ooohSorryCommand = QuickChatCommand(ooohSorrySonicChat, cidNone      , 0                                                , 0          );
+wantAPieceCommand = QuickChatCommand(wantAPieceSonicChat, cidNone      , 0                                                , 0          );
+shootCommanderCommand = QuickChatCommand(shootCommanderSonicChat, cidNone      , 0                                                , 0          );
+steadyTigerCommand = QuickChatCommand(steadyTigerSonicChat, cidNone      , 0                                                , 0          );
+realLifeCommand = QuickChatCommand(realLifeSonicChat, cidNone      , 0                                                , 0          );
+makeMeCommand = QuickChatCommand(makeMeSonicChat, cidNone      , 0                                                , 0          );
+ISPDropCommand = QuickChatCommand(ISPDropSonicChat, cidNone      , 0                                                , 0          );
+everyoneReadyCommand = QuickChatCommand(everyoneReadySonicChat, cidNone      , 0                                                , 0          );
+savingUpCommand = QuickChatCommand(savingUpSonicChat, cidNone      , 0                                                , 0          );
+startTheGameCommand = QuickChatCommand(startTheGameSonicChat, cidNone      , 0                                                , 0          );
+holdYourHorsesCommand = QuickChatCommand(holdYourHorsesSonicChat, cidNone      , 0                                                , 0          );
+coupleMinutesCommand = QuickChatCommand(coupleMinutesSonicChat, cidNone      , 0                                                , 0          );
+justASecCommand = QuickChatCommand(justASecSonicChat, cidNone      , 0                                                , 0          );
+niceWeatherCommand = QuickChatCommand(niceWeatherSonicChat, cidNone      , 0                                                , 0          );
+whoCommanderCommand = QuickChatCommand(whoCommanderSonicChat, cidNone      , 0                                                , 0          );
+changeTheMapCommand = QuickChatCommand(changeTheMapSonicChat, cidNone      , 0                                                , 0          );
+imCluelessCommand = QuickChatCommand(imCluelessSonicChat, cidNone      , 0                                                , 0          );
+itsLateCommand = QuickChatCommand(itsLateSonicChat, cidNone      , 0                                                , 0          );
+pitstopCommand = QuickChatCommand(pitstopSonicChat, cidNone      , 0                                                , 0          );
+rematchCommand = QuickChatCommand(rematchSonicChat, cidNone      , 0                                                , 0          );
+changedSettingsCommand = QuickChatCommand(changedSettingsSonicChat, cidNone      , 0                                                , 0          );
+goToTeamOnlyCommand = QuickChatCommand(goToTeamOnlySonicChat, cidNone      , 0                                                , 0          );
+shallWeBeginCommand = QuickChatCommand(shallWeBeginSonicChat, cidNone      , 0                                                , 0          );
+checkWingCommand = QuickChatCommand(checkWingSonicChat, cidNone      , 0                                                , 0          );
+arghCommand = QuickChatCommand(arghSonicChat, cidNone      , 0                                                , 0          );
+gunnerReadyCommand = QuickChatCommand(gunnerReadySonicChat, cidNone      , 0                                                , 0          );
+yowieCommand = QuickChatCommand(yowieSonicChat, cidNone      , 0                                                , 0          );
+inboundBombCommand = QuickChatCommand(inboundBombSonicChat, cidNone      , 0                                                , 0          );
+kingUniverseCommand = QuickChatCommand(kingUniverseSonicChat, cidNone      , 0                                                , 0          );
+turretsAttackCommand = QuickChatCommand(turretsAttackSonicChat, cidAttack    , ttMyTarget                                         , 0          );    
+gotchaCommand = QuickChatCommand(gotchaSonicChat, cidPickup   , ttMe                                               , 0          );
+needFighterSupportCommand = QuickChatCommand(needFighterSupportSonicChat, cidNone      , 0                                                , 0          );
+thanksLiftCommand = QuickChatCommand(thanksLiftSonicChat, cidNone      , 0                                                , 0          );
+
+// new as of 1/28/2000
+
+comeOnDownCommand = QuickChatCommand(comeOnDownSonicChat, cidNone      , 0                                                , 0          );
+heeHeeHeeCommand = QuickChatCommand(heeHeeHeeSonicChat, cidNone      , 0                                                , 0          );
+howWasThatCommand = QuickChatCommand(howWasThatSonicChat, cidNone      , 0                                                , 0          );
+
+didYouCopyCommand = QuickChatCommand(didYouCopySonicChat, cidNone, 0, 0);
+readTheChatCommand = QuickChatCommand(readTheChatSonicChat, cidNone, 0, 0);
+rogerCommand = QuickChatCommand(rogerSonicChat, cidNone, 0, 0);
+
+
+iMissedCommand = QuickChatCommand( iMissedSonicChat, cidNone      , 0                                                , 0          );
+iQuitCommand = QuickChatCommand( iQuitSonicChat, cidNone      , 0                                                , 0          );
+misc2Command = QuickChatCommand( misc2SonicChat, cidNone      , 0                                                , 0          );
+misc3Command = QuickChatCommand( misc3SonicChat, cidNone      , 0                                                , 0          );
+misc9Command = QuickChatCommand( misc9SonicChat, cidNone      , 0                                                , 0          );
+misc17Command = QuickChatCommand( misc17SonicChat, cidNone      , 0                                                , 0          );
+misc20Command = QuickChatCommand( misc20SonicChat, cidNone      , 0                                                , 0          );
+misc21Command = QuickChatCommand( misc21SonicChat, cidNone      , 0                                                , 0          );
+misc25Command = QuickChatCommand( misc25SonicChat, cidNone      , 0                                                , 0          );
+misc27Command = QuickChatCommand( misc27SonicChat, cidNone      , 0                                                , 0          );
+ooooAaaaCommand = QuickChatCommand( ooooAaaaSonicChat, cidNone      , 0                                                , 0          );
+aaaaOoooCommand = QuickChatCommand( aaaaOoooSonicChat, cidNone      , 0                                                , 0          );
+scuseMeCommand = QuickChatCommand( scuseMeSonicChat, cidNone      , 0                                                , 0          );
+whatCommand = QuickChatCommand( whatSonicChat, cidNone      , 0                                                , 0          );
+whatNowCommand = QuickChatCommand( whatNowSonicChat, cidNone      , 0                                                , 0          );
+//youSuckCommand = QuickChatCommand( youSuckSonicChat, cidNone      , 0                                                , 0          );
+
+//Valor's crap
+
+attackCommand = QuickChatCommand( attackSonicChat, cidNone      , 0                                                , 0          );
+defendCommand = QuickChatCommand( defendSonicChat, cidNone      , 0                                                , 0          );
+cantHoldEmCommand = QuickChatCommand( cantHoldEmSonicChat, cidNone      , 0                                                , 0          );
+
+//end valor's crap
+
+
+//MA/Papsmear community pack 5/19/2002
+alephmineddronedCommand=QuickChatCommand(alephmineddronedSonicChat, cidNone, 0, 0);
+asseskickedCommand=QuickChatCommand(asseskickedSonicChat, cidNone, 0, 0);
+attackminefieldCommand=QuickChatCommand(attackminefieldSonicChat, cidNone, 0, 0);
+attacknaniteCommand=QuickChatCommand(attacknaniteSonicChat, cidNone, 0, 0);
+attackprobeCommand=QuickChatCommand(attackprobeSonicChat, cidNone, 0, 0);
+attackrescueCommand=QuickChatCommand(attackrescueSonicChat, cidNone, 0, 0);
+attackspecialCommand=QuickChatCommand(attackspecialSonicChat, cidNone, 0, 0);
+bugoutCommand=QuickChatCommand(bugoutSonicChat, cidNone, 0, 0);
+campalephCommand=QuickChatCommand(campalephSonicChat, cidNone, 0, 0);
+campbaseCommand=QuickChatCommand(campbaseSonicChat, cidNone, 0, 0);
+campteleportCommand=QuickChatCommand(campteleportSonicChat, cidNone, 0, 0);
+cantpoddedCommand=QuickChatCommand(cantpoddedSonicChat, cidNone, 0, 0);
+capturingbaseCommand=QuickChatCommand(capturingbaseSonicChat, cidNone, 0, 0);
+cloakedCommand=QuickChatCommand(cloakedSonicChat, cidNone, 0, 0);
+defenderscloseCommand=QuickChatCommand(defenderscloseSonicChat, cidNone, 0, 0);
+defendspecialCommand=QuickChatCommand(defendspecialSonicChat, cidNone, 0, 0);
+deployrescueCommand=QuickChatCommand(deployrescueSonicChat, cidNone, 0, 0);
+dogmeatCommand=QuickChatCommand(dogmeatSonicChat, cidNone, 0, 0);
+dontdefendCommand=QuickChatCommand(dontdefendSonicChat, cidNone, 0, 0);
+dontkillpodsCommand=QuickChatCommand(dontkillpodsSonicChat, cidNone, 0, 0);
+dontthinksoCommand=QuickChatCommand(dontthinksoSonicChat, cidNone, 0, 0);
+evenupCommand=QuickChatCommand(evenupSonicChat, cidNone, 0, 0);
+findassCommand=QuickChatCommand(findassSonicChat, cidNone, 0, 0);
+findcashCommand=QuickChatCommand(findcashSonicChat, cidNone, 0, 0);
+findconstCommand=QuickChatCommand(findconstSonicChat, cidNone, 0, 0);
+findscoutCommand=QuickChatCommand(findscoutSonicChat, cidNone, 0, 0);
+gameoverCommand=QuickChatCommand(gameoverSonicChat, cidNone, 0, 0);
+gametimeCommand=QuickChatCommand(gametimeSonicChat, cidNone, 0, 0);
+harshlanguageCommand=QuickChatCommand(harshlanguageSonicChat, cidNone, 0, 0);
+helloCommand=QuickChatCommand(helloSonicChat, cidNone, 0, 0);
+howfarCommand=QuickChatCommand(howfarSonicChat, cidNone, 0, 0);
+iqsCommand=QuickChatCommand(iqsSonicChat, cidNone, 0, 0);
+isalephminedCommand=QuickChatCommand(isalephminedSonicChat, cidNone, 0, 0);
+letsgoCommand=QuickChatCommand(letsgoSonicChat, cidNone, 0, 0);
+mutinyCommand=QuickChatCommand(mutinySonicChat, cidNone, 0, 0);
+naniteslaunchCommand=QuickChatCommand(naniteslaunchSonicChat, cidNone, 0, 0);
+nanitesripCommand=QuickChatCommand(nanitesripSonicChat, cidNone, 0, 0);
+needdefenseCommand=QuickChatCommand(needdefenseSonicChat, cidNone, 0, 0);
+needminesCommand=QuickChatCommand(needminesSonicChat, cidNone, 0, 0);
+neednanonconstCommand=QuickChatCommand(neednanonconstSonicChat, cidNone, 0, 0);
+needoffenseCommand=QuickChatCommand(needoffenseSonicChat, cidNone, 0, 0);
+needrescueCommand=QuickChatCommand(needrescueSonicChat, cidNone, 0, 0);
+needtpscoutCommand=QuickChatCommand(needtpscoutSonicChat, cidNone, 0, 0);
+noImeanitCommand=QuickChatCommand(noImeanitSonicChat, cidNone, 0, 0);
+notenoughCommand=QuickChatCommand(notenoughSonicChat, cidNone, 0, 0);
+notimeCommand=QuickChatCommand(notimeSonicChat, cidNone, 0, 0);
+notseenCommand=QuickChatCommand(notseenSonicChat, cidNone, 0, 0);
+nowyouseemeCommand=QuickChatCommand(nowyouseemeSonicChat, cidNone, 0, 0);
+offturretCommand=QuickChatCommand(offturretSonicChat, cidNone, 0, 0);
+pickteamsCommand=QuickChatCommand(pickteamsSonicChat, cidNone, 0, 0);
+pickuppodsCommand=QuickChatCommand(pickuppodsSonicChat, cidNone, 0, 0);
+pushopCommand=QuickChatCommand(pushopSonicChat, cidNone, 0, 0);
+readyCommand=QuickChatCommand(readySonicChat, cidNone, 0, 0);
+rippedCommand=QuickChatCommand(rippedSonicChat, cidNone, 0, 0);
+rushCommand=QuickChatCommand(rushSonicChat, cidNone, 0, 0);
+scoutaheadCommand=QuickChatCommand(scoutaheadSonicChat, cidNone, 0, 0);
+settingssuckCommand=QuickChatCommand(settingssuckSonicChat, cidNone, 0, 0);
+spottedCommand=QuickChatCommand(spottedSonicChat, cidNone, 0, 0);
+stayoutofmiddleCommand=QuickChatCommand(stayoutofmiddleSonicChat, cidNone, 0, 0);
+stopgrinCommand=QuickChatCommand(stopgrinSonicChat, cidNone, 0, 0);
+theyexpCommand=QuickChatCommand(theyexpSonicChat, cidNone, 0, 0);
+theysupCommand=QuickChatCommand(theysupSonicChat, cidNone, 0, 0);
+theytacCommand=QuickChatCommand(theytacSonicChat, cidNone, 0, 0);
+wonttolerateCommand=QuickChatCommand(wonttolerateSonicChat, cidNone, 0, 0);
+woopieCommand=QuickChatCommand(woopieSonicChat, cidNone, 0, 0);
+leavemarkCommand=QuickChatCommand(leavemarkSonicChat, cidNone, 0, 0);
+poddedCommand=QuickChatCommand(poddedSonicChat, cidNone, 0, 0);
+stopspamCommand=QuickChatCommand(stopspamSonicChat, cidNone, 0, 0);
+wakeupCommand=QuickChatCommand(wakeupSonicChat, cidNone, 0, 0);
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Quick chat menus
+//
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+attackMenu =
+    QuickChatMenu([
+    QuickChatMenuItem('a', "Need more pilots on offense!",needoffenseCommand),
+    QuickChatMenuItem('b', "Attack base."                   , attackBase2Command),
+    QuickChatMenuItem('c', "Attack constructor."                , attackConstructorCommand),
+//  QuickChatMenuItem('d', "Attack defenders."                  , attackDefenderCommand),
+    QuickChatMenuItem('f', "Attack fighters."                   , attackFighter2Command),
+    QuickChatMenuItem('i', "Attack Interceptors."               , attackInterceptorCommand),
+    QuickChatMenuItem('l', "Attack capital ship."               , attackCapital2Command),
+    QuickChatMenuItem('m', "Attack miners."                 , attackMinerCommand),
+    QuickChatMenuItem('o', "Attack bombers."                , attackBomberCommand),
+    QuickChatMenuItem('r', "Attack teleport (ripcord)."             , attackRipcordCommand),
+    QuickChatMenuItem('s', "Attack Stealths."               , attackStealthCommand),
+    QuickChatMenuItem('t', "Attack transport."              , attackTransportCommand),
+    QuickChatMenuItem('u', "Attack scouts."                 , attackScoutCommand),
+    QuickChatMenuItem('v', "Attack towers."                 , attackTowerCommand),
+    QuickChatMenuItem('n', "Attack minefield!",attackminefieldCommand),
+    QuickChatMenuItem('e', "Attack nanites!",attacknaniteCommand),     
+    QuickChatMenuItem('g', "Attack rescue probe!",attackrescueCommand),
+    QuickChatMenuItem('h', "Attack special mines!",attackspecialCommand),
+    QuickChatMenuItem('p', "Attack their probes!",attackprobeCommand)
+    
+   ]);
+
+defendMenu =
+    QuickChatMenu([
+    QuickChatMenuItem('d', "Need more help on defense!",needdefenseCommand),
+    QuickChatMenuItem('b', "Defend base."                       , defendBaseCommand   ),
+    QuickChatMenuItem('c', "Defend constructor."                , defendConstructorCommand),
+//  QuickChatMenuItem('d', "Defend defenders."                  , defendDefenderCommand),
+    QuickChatMenuItem('f', "Defend fighters."               , defendFighter2Command),
+    QuickChatMenuItem('i', "Defend Interceptors."               , defendInterceptorCommand),
+    QuickChatMenuItem('l', "Defend capital ship."               , defendCapital2Command),        
+    QuickChatMenuItem('m', "Defend miners."                 , defendMinerCommand),
+    QuickChatMenuItem('o', "Defend bombers."                , defendBomberCommand),
+    QuickChatMenuItem('r', "Defend teleport (ripcord)."             , defendRipcordCommand),
+    QuickChatMenuItem('s', "Defend Stealths."               , defendStealthCommand),
+    QuickChatMenuItem('t', "Defend transport."              , defendTransportCommand),
+    QuickChatMenuItem('u', "Defend scouts."                 , defendScoutCommand),        
+    QuickChatMenuItem('v', "Defend towers."                 , defendTowerCommand),
+    QuickChatMenuItem('w', "Need nanites on the constructor!",neednanonconstCommand),
+     QuickChatMenuItem('a', "Defend special mines!",defendspecialCommand),
+     QuickChatMenuItem('e', "Defenders, stay close to base!",defenderscloseCommand),
+    QuickChatMenuItem('j', "Don't defend, it's dead.",dontdefendCommand),
+    QuickChatMenuItem('1', "Inbound enemy bomber!"                          , inboundBombCommand    ),
+    QuickChatMenuItem('2', "Inbound enemy cap ship!"                        , enemyCapCommand   ),  
+    QuickChatMenuItem('3', "Inbound enemy fighters!"                        , enemyFightersCommand  ),  
+    QuickChatMenuItem('4', "Inbound enemy transport!"                        , enemyTransportCommand   )
+
+
+ 
+    ]);
+
+needMenu = 
+    QuickChatMenu([
+    QuickChatMenuItem('a', "Need Ammo!"                            , needAmmoCommand),
+    QuickChatMenuItem('b', "Need base."                     , needBaseCommand   ),
+    QuickChatMenuItem('c', "Need constructor."                  , needConstructorCommand),
+//  QuickChatMenuItem('d', "Need defenders."                    , needDefenderCommand),
+    QuickChatMenuItem('e', "Need better fighters."              , needBetterFightersCommand),
+    QuickChatMenuItem('f', "Need fighters."                     , needFighterCommand    ),
+    QuickChatMenuItem('g', "Need fuel."                             , needFuelCommand       ),
+    QuickChatMenuItem('h', "Need fighter support."              , needFighterSupportCommand),
+    QuickChatMenuItem('i', "Need Interceptors."                 , needInterceptorCommand),
+    QuickChatMenuItem('j', "Need objective."                , needObjectiveCommand),
+    QuickChatMenuItem('l', "Need capital ship."             , needCapitalCommand),
+    QuickChatMenuItem('m', "Need miners."                   , needMinerCommand),
+    QuickChatMenuItem('p', "Need pickup."                   , needPickupCommand),
+    QuickChatMenuItem('o', "Need bombers."                      , needBomberCommand     ),
+    QuickChatMenuItem('r', "Need ripcord."                  , needRipcordCommand),
+    QuickChatMenuItem('s', "Need Stealths."                 , needStealthCommand),
+    QuickChatMenuItem('t', "Need transport."                , needTransportCommand),
+    QuickChatMenuItem('u', "Need scouts."                       , needScoutCommand      ),
+    QuickChatMenuItem('v', "Need towers."                   , needTowerCommand), 
+    QuickChatMenuItem('w', "Need better weapons."               , needBetterWepCommand), 
+    QuickChatMenuItem('x', "Need repairs."                      , needRepairsCommand    ),
+    QuickChatMenuItem('y', "Need money."                    , needMoneyCommand),
+    
+    
+ QuickChatMenuItem('k', "Need rescue probe!",needrescueCommand),
+ QuickChatMenuItem('n', "Need someone to pickup pods.",pickuppodsCommand),
+ QuickChatMenuItem('q', "Need some mines.",needminesCommand),
+ QuickChatMenuItem('z', "Need a teleport scout!",needtpscoutCommand)
+ 
+    ]);
+
+commandsMenu = 
+    QuickChatMenu([
+    // in QRC
+        QuickChatMenuItem('a', "We need a scout to find the alephs."            , scoutAlephCommand),
+        QuickChatMenuItem('b', "Found enemy constructor.  Request assistance."  , foundEnemyConstructCommand),
+        QuickChatMenuItem('c', "Constructor launching now."                 , constructorLaunchingCommand  ),
+        //QuickChatMenuItem('d', "Defend our miners.  They are getting hammered." , minersHammeredCommand),
+        QuickChatMenuItem('f', "Yo, go find their crib."                    , findFreakinBaseCommand),
+        QuickChatMenuItem('g', "Go Go Go!"                          , goGoGoCommand),
+        QuickChatMenuItem('h', "Go miner hunting."                      , minerHuntCommand     ),
+        QuickChatMenuItem('i', "Stay together."                 , stayTogetherCommand  ),
+        QuickChatMenuItem('j', "Ripcord home."                  , ripcordHomeCommand  ),
+        QuickChatMenuItem('l', "Lay low and go for constructors."               , layLowCommand        ),
+        QuickChatMenuItem('m', "Found enemy miners.  Request assistance."       , foundEnemyMinerCommand    ),
+        QuickChatMenuItem('o', "Our base is under attack.   Request assistance.", baseUnderAttackCommand     ),
+        QuickChatMenuItem('p', "Deploy probes"                          , deployProbesCommand     ),
+        QuickChatMenuItem('q', "Wait for signal."                       , wait4signalCommand       ),
+        QuickChatMenuItem('r', "Retreat!"                               , retreatCommand        ),
+        QuickChatMenuItem('t', "Deploy mines."                      , deployMinesCommand   ),
+        QuickChatMenuItem('u', "Repair the station."                    , repairStationCommand    ),
+        QuickChatMenuItem('x', "Follow me."                         , followMeCommand     ),
+        QuickChatMenuItem('y', "Stay on target."                        , stayOnTargetCommand       ),
+    //not in qrc
+        QuickChatMenuItem('s', "I gotcha.  Hold still."                 , gotchaCommand         ),
+        QuickChatMenuItem('e', "Capturing base, get ready to launch!",capturingbaseCommand),
+        QuickChatMenuItem('k', "Don't forget to take along your rescue probes!",deployrescueCommand),
+        QuickChatMenuItem('n', "Don't kill pods!",dontkillpodsCommand),
+ 	QuickChatMenuItem('v', "Get off my turrets man!",offturretCommand),
+ 	QuickChatMenuItem('w', "Stay out of the middle aleph!",stayoutofmiddleCommand),
+    	QuickChatMenuItem('z', "Pickup tech!",pickupTreasureCommand)
+    	
+    	
+
+    ]);
+
+
+
+
+findMenu = 
+    // in QRC
+    QuickChatMenu([
+    QuickChatMenuItem('a', "Find alephs."                   , findAlephsCommand),
+    QuickChatMenuItem('c', "Find carbonaceous asteroid."            , findCarbonCommand),
+    QuickChatMenuItem('e', "Find enemy."                    , findEnemyCommand),
+    QuickChatMenuItem('h', "Find helium asteroid."              , findHeliumCommand),
+    QuickChatMenuItem('m', "Find their miners."             , findMinerCommand),
+    QuickChatMenuItem('s', "Find silicon asteroid."             , findSiliconCommand),
+    QuickChatMenuItem('u', "Find uranium asteroid."             , findUraniumCommand),
+    QuickChatMenuItem('p', "Find their probes."                    , findProbesCommand),
+   
+     QuickChatMenuItem('b', "Find cash.",findcashCommand),
+     QuickChatMenuItem('d', "Find enemy scout.",findscoutCommand),
+     QuickChatMenuItem('g', "Find their assault ship!",findassCommand),
+     QuickChatMenuItem('f', "Find their constructors.",findconstCommand)
+     
+     
+     
+    ]);
+
+respondMenu = 
+    QuickChatMenu([
+    // in QRC
+        QuickChatMenuItem('a', "Acknowledged!"                          , acknowledgedCommand       ),
+        QuickChatMenuItem('c', "Cool."                                  , coolCommand           ),
+        QuickChatMenuItem('f', "Fiesty!"                                , fiestyCommand         ), 
+        QuickChatMenuItem('d', "I don't have enough money."         , noMoneyCommand           ),
+        QuickChatMenuItem('i', "I'm on it."                             , imOnItCommand         ),
+        QuickChatMenuItem('m', "On my way."                             , onMyWayCommand       ),
+        QuickChatMenuItem('2', "Taking it to them!"                     , takingItToThemCommand ),
+        QuickChatMenuItem('o', "Objective complete."                        , objectiveCommand),
+        QuickChatMenuItem('s', "Surely you're joking."                      , surelyJokingCommand),
+        QuickChatMenuItem('y', "Hell yeah!"                         , hellYeahCommand),
+        QuickChatMenuItem('z', "You're crazy."                          , youreCrazyCommand),
+
+    // not in QRC
+
+        QuickChatMenuItem('t', "Ain't no thang."                        , aintNoThinCommand),
+        
+        
+        QuickChatMenuItem('h', "Hold your horses..."                    , holdYourHorsesCommand   ),
+        QuickChatMenuItem('r', "Roger."                                 , rogerCommand),
+
+    // new as of 1/28/00
+        QuickChatMenuItem('e', "Excuse me?"                     , scuseMeCommand),
+        QuickChatMenuItem('w', "What, now?"                     , whatNowCommand),
+        QuickChatMenuItem('b', "I'm busy!!"                              , imbusyCommand          ),
+        QuickChatMenuItem('g', "Givin' it all she's got."       , misc9Command),
+        QuickChatMenuItem('x', "What?!"           , whatCommand),
+        
+        
+	
+	QuickChatMenuItem('v', "Ready.",readyCommand),
+	QuickChatMenuItem('j', "I'd love to, but I'm podded.",cantpoddedCommand),
+	QuickChatMenuItem('k', "I dont think so!",dontthinksoCommand),
+	QuickChatMenuItem('l', "I said no, and I mean it!",noImeanitCommand),
+	QuickChatMenuItem('n', "Let's just bug out and call it even, ok?",bugoutCommand),
+	QuickChatMenuItem('q', "Look, I don't have time for this.",notimeCommand),
+	QuickChatMenuItem('u', "Hey maybe you haven't been keeping up on current events...",asseskickedCommand),
+	QuickChatMenuItem('1', "What the hell are we supposed to use man, harsh language?",harshlanguageCommand)
+	
+
+
+
+    ]);
+
+tauntsMenu = 
+    QuickChatMenu([
+
+    // in QRC
+        QuickChatMenuItem('a', "Almost had you."                        , almostHadYouCommand   ),
+        QuickChatMenuItem('c', "Come back and fight."                   , comeBackCommand       ),
+        QuickChatMenuItem('d', "Death becomes you."                     , deathBecomesCommand   ),
+        QuickChatMenuItem('f', "How did that feel?"                     , howdThatFeelCommand   ),
+        QuickChatMenuItem('h', "Oooh...looked like that hurt!"              , thatHurtCommand   ),
+        QuickChatMenuItem('i', "Someone slap the investor!"                 , slapInvestorCommand   ),
+        QuickChatMenuItem('l', "Like lambs to the slaughter."           , likeLambsCommand      ),        
+        QuickChatMenuItem('n', "You have no honor."                     , noHonorCommand        ),
+        QuickChatMenuItem('o', "Oooh...sorry about that one."           , ooohSorryCommand      ),
+        QuickChatMenuItem('p', "You want a piece of me?"            , wantAPieceCommand        ),
+        QuickChatMenuItem('r', "Ripcord... last resort for the desperate."  , ripcordLastCommand ),
+        QuickChatMenuItem('s', "Someone shoot the commander."               , shootCommanderCommand   ),
+        QuickChatMenuItem('t', "You died with dignity."                 , withDignityCommand    ),
+        QuickChatMenuItem('v', "You'll be sorry you did that"           , youllBeSorryCommand  ),
+        QuickChatMenuItem('y', "Yessssss!"                              , yes2COmmand           ),
+
+
+    // new as of 1/28/2000
+        QuickChatMenuItem('m', "Come on down!"                              , comeOnDownCommand  ),
+        QuickChatMenuItem('z', "How was zat?"                               , howWasThatCommand),
+        //QuickChatMenuItem('u', "You suck!"                            , youSuckCommand),
+        QuickChatMenuItem('k', "Kiss my asteroid!"                              , misc2Command),
+        QuickChatMenuItem('x', "Sending you to death row!"                              , misc20Command),
+        QuickChatMenuItem('w', "How ya like me now?"                            , misc21Command),
+        QuickChatMenuItem('b', "That's the bomb, baby."                             , misc27Command),
+        
+     QuickChatMenuItem('e', "Easer than shooting fish in a barrel!"            , shootingFishCommand   ),
+     QuickChatMenuItem('j', "Ohh.. Yeah! Yeah!"                      , yowieCommand          ),  
+     QuickChatMenuItem('q', "Payload delivered!!"                      , payloadCommand           ), 
+     QuickChatMenuItem('1', "You're good but not that good."                         , youreGoodButCommand     ),
+
+        
+        QuickChatMenuItem('2', "You're dogmeat pal!",dogmeatCommand),
+ 	QuickChatMenuItem('3', "Did IQs just drop sharply while I was away?",iqsCommand),
+ 	QuickChatMenuItem('4', "Now you see me, now you don't.",nowyouseemeCommand),
+ 	QuickChatMenuItem('5', "Ow, that's gonna leave a mark!"                 , leavemarkCommand ),
+ 	QuickChatMenuItem('6', "Stop your grinnin' and drop your linen.",stopgrinCommand),
+ 	QuickChatMenuItem('7', "We will not tolerate this behavior.",wonttolerateCommand),
+ 	QuickChatMenuItem('8', "Whoopee-fuckin'-do..hey I'm impressed!"                 , woopieCommand )
+ 	
+
+
+ 
+    ]);
+
+generalMenu = 
+    QuickChatMenu([
+
+    // not in QRC
+
+        QuickChatMenuItem('a', "Steady tiger."                      , steadyTigerCommand   ),
+        QuickChatMenuItem('b', "Real life wants me."                , realLifeCommand   ),  
+        QuickChatMenuItem('c', "Make me commander."                     , makeMeCommand   ),
+        QuickChatMenuItem('d', "Sorry ya'll, my ISP dropped me."        , ISPDropCommand   ),
+        QuickChatMenuItem('e', "Everybody ready?"                       , everyoneReadyCommand   ),
+        QuickChatMenuItem('f', "What are you saving up for?"                , savingUpCommand   ),
+        QuickChatMenuItem('g', "Start the game already?"                    , startTheGameCommand   ),
+	QuickChatMenuItem('h', "Did you copy?"                          , didYouCopyCommand),
+        QuickChatMenuItem('i', "It'll be a couple more minutes."        , coupleMinutesCommand   ),
+        QuickChatMenuItem('j', "Just a sec...waiting for a couple more people." , justASecCommand   ),
+        QuickChatMenuItem('k', "So, nice weather..how's the youngens? Let's play this thing!", niceWeatherCommand   ),
+        QuickChatMenuItem('l', "Who wants to be commander?"                     , whoCommanderCommand   ),
+        QuickChatMenuItem('m', "Change the map."                        , changeTheMapCommand   ),
+        QuickChatMenuItem('n', "I'm new, and I'm clueless."             , imCluelessCommand   ),
+        QuickChatMenuItem('o', "It's late ... gotta go. Night ya'll."               , itsLateCommand),
+        QuickChatMenuItem('p', "Gotta take a pitstop...hold up."                , pitstopCommand   ),
+        QuickChatMenuItem('r', "Great game. How about a rematch?"               , rematchCommand   ),
+        QuickChatMenuItem('s', "Settings have changed."                     , changedSettingsCommand   ),
+        QuickChatMenuItem('t', "Go to team-only comms."                     , goToTeamOnlyCommand   ),
+        QuickChatMenuItem('v', "Shall we begin?"                        , shallWeBeginCommand   ),
+        QuickChatMenuItem('w', "Check your wing assignment."                , checkWingCommand   ),
+
+    // new as of 1/28/2000
+
+        QuickChatMenuItem('x', "It's all good."                 , misc17Command),
+        QuickChatMenuItem('y', "Ya'll come back now."               , misc25Command),
+        QuickChatMenuItem('z', "Danger."                , misc3Command),
+        QuickChatMenuItem('q', "I quit!"           , iQuitCommand),
+        QuickChatMenuItem('u', "Heh, heh, heh..."                               , heeHeeHeeCommand   ),
+        
+        QuickChatMenuItem('1', "Can we pick teams?",pickteamsCommand),
+        QuickChatMenuItem('2', "Even up, or I'll even it up.",evenupCommand),
+        QuickChatMenuItem('3', "Hello?",helloCommand),
+ 	QuickChatMenuItem('4', "Settings suck!",settingssuckCommand),
+ 	QuickChatMenuItem('5', "Please stop spamming.",stopspamCommand),
+ 	QuickChatMenuItem('6', "Yo! Wake up! You there?",wakeupCommand),
+ 	QuickChatMenuItem('7', "We have a clueless commander...mutiny!",mutinyCommand),
+    	QuickChatMenuItem('8', "Donate me your credits!"                , donateCreditsCommand)
+
+
+    ]);
+    
+
+yellMenu = 
+    QuickChatMenu([
+
+    // not in QRC
+
+        QuickChatMenuItem('a', "Deeg, dag, dog!"                            , arghCommand           ),
+        QuickChatMenuItem('b', "Ba-bye."                                , byeCommand            ),
+        QuickChatMenuItem('c', "Inbound enemy bomber!"                          , inboundBombCommand    ),
+        QuickChatMenuItem('d', "Dang!"                                  , dangCommand           ),
+        QuickChatMenuItem('f', "I've found their base."                         , foundEnemyBaseCommand ),
+        QuickChatMenuItem('g', "Gunner ready."                          , gunnerReadyCommand    ),        
+        QuickChatMenuItem('h', "Hey, wassup?"                                   , hiCommand             ),
+        QuickChatMenuItem('i', "I need rescue help!"                            , needRescueCommand     ),
+        QuickChatMenuItem('k', "I'm the King of the Hill!"                  , kingUniverseCommand   ),
+        QuickChatMenuItem('l', "Inbound enemy cap ship!"                        , enemyCapCommand   ),  
+        QuickChatMenuItem('m', "Nice work."                             , niceWorkCommand       ),
+        QuickChatMenuItem('n', "Nooooo!"                            , noooCommand           ),
+        QuickChatMenuItem('o', "Ahhh Yeah!"                             , ohYeahCommand         ),
+        QuickChatMenuItem('p', "Phewwww."                               , phewCommand           ),
+        QuickChatMenuItem('r', "Ripcording!"                            , ripcordingCommand     ),
+        QuickChatMenuItem('s', "Sweet!"                                 , sweetCommand          ),
+        QuickChatMenuItem('t', "Thanks."                                , thanksCommand         ),
+        QuickChatMenuItem('u', "Turrets attack my target!"                      , turretsAttackCommand  ),
+        QuickChatMenuItem('v', "Thanks for the lift!"                   , thanksLiftCommand     ),
+        QuickChatMenuItem('w', "Watch your fire."                       , watchFireCommand      ),
+        QuickChatMenuItem('x', "Doah"                                   , doahCommand           ),
+        QuickChatMenuItem('z', "Awesome!"                               , awesomeCommand       ),
+
+// new as of 1/28/2000
+        QuickChatMenuItem('j', "I missed!"           , iMissedCommand),
+        QuickChatMenuItem('q', "Oooooooooaaaah!"           , ooooAaaaCommand),
+        QuickChatMenuItem('e', "Aaaaaahhhhhhh!"           , aaaaOoooCommand),
+        QuickChatMenuItem('y', "Read the chat!"           , readTheChatCommand),
+        
+
+        QuickChatMenuItem('1', "That's it man...Game over man, game over!",gameoverCommand),
+	QuickChatMenuItem('2', "It's gametime.",gametimeCommand),
+
+ 	QuickChatMenuItem('3', "Let's go people, they ain't paying us by the hour...",letsgoCommand),
+ 	QuickChatMenuItem('4', "They ain't paying us enough for this man...",notenoughCommand)
+ 	
+
+
+
+
+ 
+
+    ]);     
+
+
+laMenu = 
+QuickChatMenu([
+    QuickChatMenuItem('a', "Capship waiting for turrets."       , capShipWaitingCommand),
+    QuickChatMenuItem('b', "Bomber waiting for turrets!!"                 , bomberWaitingCommand ), 
+    QuickChatMenuItem('c', "Is our base clear?"                     , isOurBaseClearCommand),
+    QuickChatMenuItem('d', "Our miners are dead!"                         , minersAreDeadCommand    ),
+    QuickChatMenuItem('e', "Escort miners!"                         , escortMinerCommand    ),
+    QuickChatMenuItem('f', "Found enemy ships."			   , foundEnemyShipsCommand),
+    QuickChatMenuItem('h', "Enemy has a flag"				   , enemyHasFlagCommand),
+    QuickChatMenuItem('i', "Inbound"                               , inboundCommand),
+      QuickChatMenuItem('j', "Target needed!" , targetNeededCommand), 
+      QuickChatMenuItem('k', "Complete!"                               , completeCommand        ),
+      QuickChatMenuItem('l', "Come along" , joinMeCommand), 
+	QuickChatMenuItem('m', "Escort builder"                        , escortBuilderCommand),
+	QuickChatMenuItem('n', "Need cruiser support!" , needCruiserCommand), 
+	QuickChatMenuItem('o', "Defend our miners,  they are getting hammered!" , minersHammeredCommand),
+	QuickChatMenuItem('p', "Base captured"             , baseCapturedCommand),
+	QuickChatMenuItem('r', "They have capitols!"			   , haveCapitolsCommand),	
+      QuickChatMenuItem('s', "Gimme something to shoot at!"           , gimmesomethingCommand ),
+      QuickChatMenuItem('t', "Their shields are down!"      	        , shieldsAreDownCommand   ),
+      QuickChatMenuItem('u', "You're mad."                               , youreMadCommand        ),
+      QuickChatMenuItem('v', "Cover me!"                              , coverMeCommand        ),
+      QuickChatMenuItem('w', "We have a traitor in our midst."                       , traitorCommand         ),
+      QuickChatMenuItem('x', "I'm out of ammo.. hmm, interesting."       , outOfAmmoCommand      ),
+      QuickChatMenuItem('y', "Transport outbound, please escort"     , transportOutboundCommand),
+      QuickChatMenuItem('z', "Formate!" , formateCommand), 
+      QuickChatMenuItem('1', "Regroup!" , regroupCommand), 
+      QuickChatMenuItem('2', "I can't hold 'em!!" , cantHoldEmCommand),
+       QuickChatMenuItem('3', "Found aleph" , foundAlephCommand), 
+       QuickChatMenuItem('4', "Found enemy ships!" , foundEnemyShipsCommand), 
+     QuickChatMenuItem('5', "Found helium" , foundHeliumCommand),
+	QuickChatMenuItem('6', "Defend!"                        ,defendCommand),
+     QuickChatMenuItem('7', "Attack!"                        ,attackCommand),
+     QuickChatMenuItem('8', "Attack defenders."                  , attackDefenderCommand),
+     QuickChatMenuItem('9', "Defend defenders."                  , defendDefenderCommand),
+     QuickChatMenuItem('0', "Need defenders."                    , needDefenderCommand)
+     
+      
+      
+      
+      
+      
+      
+   
+    
+
+   ]);
+   
+   infoMenu =
+    QuickChatMenu([
+        QuickChatMenuItem('a', "Is the aleph mined?",isalephminedCommand),
+        QuickChatMenuItem('m', "The aleph is mined!"                      , alephMinedCommand       ),
+        QuickChatMenuItem('d', "The aleph is mined and droned!",alephmineddronedCommand),
+        QuickChatMenuItem('h', "How far is their base from the aleph?",howfarCommand),
+        QuickChatMenuItem('i', "It'll be a couple more minutes."        , coupleMinutesCommand   ),
+ 	QuickChatMenuItem('e', "They are pursuing expansion.",theyexpCommand),
+ 	QuickChatMenuItem('s', "They are pursuing supremacy.",theysupCommand),
+ 	QuickChatMenuItem('t', "They are pursuing tactical.",theytacCommand),
+ 	QuickChatMenuItem('y', "They have a shipyard!"                          , haveShipyardCommand     ),  
+ 	QuickChatMenuItem('o', "They're pushing their op con!",pushopCommand),
+ 	QuickChatMenuItem('p', "Damn, I got podded."                , poddedCommand), 	
+ 	QuickChatMenuItem('z', "Danger!"                , misc3Command),
+ 	QuickChatMenuItem('c', "He cloaked!",cloakedCommand),
+ 	QuickChatMenuItem('r', "He ripped!",rippedCommand),
+ 	QuickChatMenuItem('1', "Oh they see me..I've been spotted.",spottedCommand),
+ 	QuickChatMenuItem('2', "They don't see me.",notseenCommand)
+ 	
+ 	
+
+   ]);
+   tacticalMenu=
+    QuickChatMenu([
+
+
+    QuickChatMenuItem('m', "Meet me at the jump point."             , meetAtJumpCommand     ), 
+    //removed join me - doesn't seem to work
+    QuickChatMenuItem('w', "Form on my wing!"				   , joinWingCommand), 
+    QuickChatMenuItem('f', "Follow me!"                         , followMeCommand     ), 
+    QuickChatMenuItem('u', "Hold up."                               , holdUpCommand         ),
+    QuickChatMenuItem('i', "Wait for signal."                       , wait4signalCommand       ),
+    QuickChatMenuItem('g', "Go Go Go!"                          , goGoGoCommand),
+    QuickChatMenuItem('r', "Rush'em!",rushCommand),
+    QuickChatMenuItem('t', "Stay together."                 , stayTogetherCommand  ),
+    QuickChatMenuItem('o', "Stay on target."                        , stayOnTargetCommand       ),
+    QuickChatMenuItem('b', "Head back to base."                , headBackCommand   ),
+    QuickChatMenuItem('s', "Scout ahead for threats!",scoutaheadCommand),
+    QuickChatMenuItem('h', "Get them off me!"                 , getOffMeCommand               ), 
+    QuickChatMenuItem('q', "I gotcha.  Hold still."                 , gotchaCommand         ),
+ QuickChatMenuItem('1', "Nanites, launch and wait for bomber.",naniteslaunchCommand),
+ QuickChatMenuItem('2', "Nanites, ripcord in!",nanitesripCommand),
+  QuickChatMenuItem('3', "Camp the aleph!",campalephCommand),
+ QuickChatMenuItem('4', "Camp their base!",campbaseCommand),
+ QuickChatMenuItem('5', "Camp their teleport!",campteleportCommand),
+ QuickChatMenuItem('6', "Found enemy miners.  Request assistance."       , foundEnemyMinerCommand    ),
+ QuickChatMenuItem('7', "Found enemy constructor.  Request assistance."  , foundEnemyConstructCommand),
+ QuickChatMenuItem('8', "Retreat!"                               , retreatCommand        ),
+ QuickChatMenuItem('9', "Ripcording!"                            , ripcordingCommand     ),
+ QuickChatMenuItem('0', "I'm busy!!"                              , imbusyCommand          )
+ 
+
+]);
+
+
+
+mainMenu =
+    QuickChatMenu([
+        QuickChatMenuItem('1', "Affirmative"                        , YesCommand                ),
+        QuickChatMenuItem('2', "Negative"                           , NoCommand                 ),
+        QuickChatMenuItem('3', "Shhhooot!"                      , shootCommand              ), 
+        QuickChatMenuItem('4', "Yee-haaaaaw!"                       , yeeHaCommand          ), 
+        QuickChatMenuItem('5', "Attack my target"                   , attackTargetCommand       ),
+        QuickChatMenuItem('6', "I need help!"                       , helpMeCommand             ),
+        QuickChatMenuItem('7', "Donate your money to the investor!"         , donateInvestorCommand     ),
+        QuickChatMenuItem('8', "I need turret gunners NOW!"                 , needTurretCommand         ), 
+        QuickChatMenuItem('9', "I'll be on your turret in a few seconds."   , joiningTurretCommand      ),   
+        QuickChatMenuItem('0', "Oops, wrong voice chat...."                 , oopsCommand               ), 
+        QuickChatMenuItem('A', "ATTACK...    "                     , attackMenu                ),
+        QuickChatMenuItem('C', "COMMANDS...  "                   , commandsMenu              ),
+        QuickChatMenuItem('D', "DEFEND...    "                     , defendMenu                ),
+        QuickChatMenuItem('F', "FIND...      "                       , findMenu                  ),  
+        QuickChatMenuItem('G', "GENERAL...   "               , generalMenu               ),
+        QuickChatMenuItem('N', "NEED...      "                       , needMenu                  ),
+        QuickChatMenuItem('R', "RESPOND...   "                  , respondMenu               ),
+        QuickChatMenuItem('T', "TAUNTS...    "               , tauntsMenu                ),
+        QuickChatMenuItem('Y', "YELL...      "               , yellMenu              ),
+        QuickChatMenuItem('I', "INFO..."               , infoMenu              ),
+        QuickChatMenuItem('L', "TACTICAL..."               , tacticalMenu              ),       
+        QuickChatMenuItem('Q', "OTHER... "                     , laMenu                )
+        
+
+    ]);
