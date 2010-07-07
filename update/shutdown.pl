@@ -5,6 +5,11 @@
 use strict;
 use Win32::OLE;
 
+print "Registering local AGC...\n";	
+my $cmd = "regsvr32 C:\\AllegBeta\\AGC.dll /s";
+`$cmd`;
+sleep(3);
+
 my $utl  = Win32::OLE->new("AllSrv.AdminSession");
 my $srv = $utl->Server;
 my $games = $srv->Games;

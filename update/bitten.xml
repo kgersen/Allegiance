@@ -9,6 +9,9 @@
 
 
 
+
+
+
 <build xmlns:sh="http://bitten.edgewall.org/tools/sh" xmlns:svn="http://bitten.edgewall.org/tools/svn" description="Building FAZR6 Branch">
 
 
@@ -40,16 +43,15 @@
 <step id="Smoke Test">
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Debug Compile&quot;"/> -->
    <sh:exec file="echo" args="Re-register Debug AGC.dll started"/>
-   <!--<sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>-->
+   <sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>-->
    <sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /s"/>
+   <sh:exec file="echo" args="Re-register Debug AGC.dll completed"/>
    <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork"/>
    <sh:exec file="echo" args="Running Allsrv.exe -Core2Text cc_09b"/>
    <sh:exec file="perl" args="${cdn.path}\\update\\test.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\AllSrv.exe &quot;allsrv -Core2Text cc_09b&quot; ."/>
    <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl C:\\AllegBeta\\Artwork"/>   
    <sh:exec file="echo" args="Running Allsrv.exe -Core2Text cc_09b completed"/>
    <sh:exec file="regsvr32" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll /u /s"/>
-   <sh:exec file="regsvr32" args="C:\\AllegBeta\\AGC.dll /s"/>
-   <sh:exec file="echo" args="Re-register Debug AGC.dll completed"/>
    
    <sh:exec file="echo" args="Checking core"/>
    <sh:exec file="copy" args="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\corechecker.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b\\corechecker.pl /Y"/>
@@ -187,7 +189,7 @@
 	<sh:exec file="perl" args="${cdn.path}\\update\\msbuild-kill.pl" />
 	<sh:exec file="echo" args="Gracefully stopping CDN AllSrv" /> 
 	<sh:exec file="perl" args="${cdn.path}\\update\\shutdown.pl" />
-	<sh:exec file="echo" args="Unregistering the AGC.dll" />
+	<sh:exec file="echo" args="Unregistering AGC.dll" />
 	<sh:exec file="regsvr32" args="C:\\AllegBeta\\AGC.dll /u /s" />
 	<sh:exec file="echo" args="Copying new versions" />
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.dll C:\\AllegBeta\\AGC.dll /Y" />
@@ -197,18 +199,24 @@
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\FedSrv\\AllSrv.pdb C:\\AllegBeta\\AllSrv.pdb /Y" />
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\Lobby\\AllLobby.pdb C:\\AllegBeta\\AllLobby.pdb /Y" />
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\AutoUpdate\\AutoUpdate.exe C:\\AllegBeta\\AutoUpdate.exe /Y" />
-	<sh:exec file="echo" args="Registering the AGC.dll" />
+	<sh:exec file="echo" args="Registering new AGC.dll" />
 	<sh:exec file="regsvr32" args="C:\\AllegBeta\\AGC.dll /s" />
 	<sh:exec file="echo" args="Re-registering AllSrv.exe as a service" />
 	<sh:exec file="C:\\AllegBeta\\AllSrv.exe" args="-service" />
 </step>	
 
 <step id="Deploy Beta">
+	<sh:exec file="echo" args="Updating AutoUpdate" />
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\AutoUpdate\\AutoUpdate.exe C:\\AllegBeta\\AutoUpdate.exe /Y" />
+	<sh:exec file="echo" args="Making file lists" />
 	<sh:exec file="perl" args="${cdn.path}\\update\\makelist.pl" />
+	<sh:exec file="echo" args="Making MOTD" />
 	<sh:exec file="perl" args="${cdn.path}\\update\\makemotd.pl ${build} ${revision}" />
+	<sh:exec file="echo" args="Making cfg file" />
 	<sh:exec file="perl" args="${cdn.path}\\update\\makecfg.pl" />
+	<sh:exec file="echo" args="Performing remote upgrade..." />
 	<sh:exec file="perl" args="${cdn.path}\\update\\deploy.pl" />
+	<sh:exec file="echo" args="...Done" />
 </step>
 
 <step id="Upgrade Finished">
@@ -219,6 +227,5 @@
 	<sh:exec file="perl" args="${cdn.path}\\update\\touch.pl"/>
 	<sh:exec file="perl" args="${cdn.path}\\update\\announce.pl ${build} ${revision}"/>
 </step>
-
 
 </build>
