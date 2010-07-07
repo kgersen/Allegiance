@@ -10062,8 +10062,14 @@ public:
     void SetLobbyChatTarget(ChatTarget ct, ObjectID recip = NA)
     {
         m_ctLobbyChat = ct;
-		m_ctLobbyChatRecip = recip; //#8 Imago 7/10 added recip
+	//#8 Imago 7/10 added recip
+		m_ctLobbyChatRecip = recip; 
     }
+    ObjectID GetLobbyChatRecip()
+    {
+        return m_ctLobbyChatRecip;
+    }
+	//
 
     ChatTarget GetLobbyChatTarget()
     {

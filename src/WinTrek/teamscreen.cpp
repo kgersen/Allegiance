@@ -1401,7 +1401,6 @@ public:
     void SendChat(const ZString& strChat)
     {
         PlayerInfo* pplayer;
-		ObjectID oRecip = GetWindow()->GetLobbyChatTarget();
         if (trekClient.ParseShellCommand(strChat))
         {
             // nothing more to do
@@ -1419,24 +1418,28 @@ public:
 
         // WLP 2005 - added this to send chat to a highlighted player
         //   This only works when highlighted – when highlight is off it works normal
-        //
-        else if ( m_plistPanePlayers->GetSelection() || oRecip != NA) //Imago 7/10 #8) // if something is selected now //#11 7/10 Imago
+        // Imago 7/10 - it's wasn't entirely true (had issues)  --^
+        else if ( m_plistPanePlayers->GetSelection())  // if something is selected now - 
+														//#11 7/10 Imago ^-- this hits on edge cases even when something is no logner selected 
 		{
+			
+			//Imago #11 7/10
+			ObjectID oRecip = GetWindow()->GetLobbyChatRecip();
 			// convert selected player to a ship id we can use to chat with
-
 			ShipID shipID_S = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
 			PlayerInfo* pplayer_S = trekClient.FindPlayer(shipID_S);
-			//Imago 7/10
+			//if a valid player selection and not ourself (most cases)
 			if (pplayer_S && (pplayer_S->ShipID() != trekClient.GetShipID()) && (pplayer_S->ShipID() != NA))
 				trekClient.SendChat(trekClient.GetShip(), CHAT_INDIVIDUAL, pplayer_S->ShipID(), NA, (const char*)strChat);
-			else if (pplayer_S && pplayer_S->ShipID() != NA) 
-				trekClient.SendChat(trekClient.GetShip(), m_chattargetChannel, NA, NA, (const char*)strChat);
+			//if the LCT is set (edge cases)
+			else if (oRecip != NA)
+				trekClient.SendChat(trekClient.GetShip(), CHAT_INDIVIDUAL, oRecip, NA, (const char*)strChat);
+			//otherwise (unknown cases)
 			else
-				trekClient.SendChat(trekClient.GetShip(), CHAT_INDIVIDUAL, oRecip, NA, (const char*)strChat); //#11 7/10 Imago
+				OnPlayerClicked(); //eat it and reset
 
 		}
         // WLP - end of added code for chat to selected player
-
         else
         {
             trekClient.SendChat(trekClient.GetShip(), m_chattargetChannel, NA,

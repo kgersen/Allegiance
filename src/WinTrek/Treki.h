@@ -231,6 +231,7 @@ public:
     virtual void SetChatListPane(ChatListPane* pchatListPane) = 0;
     virtual void SetLobbyChatTarget(ChatTarget ct, ObjectID recip = NA) = 0;
     virtual ChatTarget GetLobbyChatTarget() = 0;
+	virtual ObjectID GetLobbyChatRecip() = 0;
 
     virtual void StartLockDown(const ZString& strReason) = 0;
     virtual void EndLockDown() = 0;
