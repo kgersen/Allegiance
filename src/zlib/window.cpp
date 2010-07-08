@@ -991,7 +991,6 @@ void CallIdleFunctions()
 
 //Imago 6/10 #73
 LRESULT CALLBACK Window::DisableWinKeysProc(int code, WPARAM wParam, LPARAM lParam) {
-    KeyState ks;
 	if(code == HC_ACTION) {
 		PKBDLLHOOKSTRUCT pKeyBoard;
 		pKeyBoard = (PKBDLLHOOKSTRUCT) lParam;

@@ -2656,6 +2656,21 @@ public:
 			}
 		}
 
+		//ok, here we check dump files if we make it...meanwhile the intro vid plays
+			// yay compressing files and fliping video at the same time.
+/*
+		char * szDump = NULL;
+		int ret = 0;
+		while ((szDump = NextDump()) != NULL) {
+			ret = Create7z(szDump,"dump_uploading.7z");
+			debugf("********* create 7z = %i from %s\n",ret, (PCC)szDump);
+			if (ret == 0) {
+				//NYI read the file into appweb post
+				debugf("********* connecting to build.alleg.net\n",ret);
+			}
+		}
+		(ret < 0) ? DeleteDumps(true) : DeleteDumps(false); //dont ALWAYS delete the dumps for the clients
+*/
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
 

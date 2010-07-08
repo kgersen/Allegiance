@@ -727,10 +727,6 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
 	g_papp->EnforceFilter( true );
 
-	//deal with any .dmp files from last go around
-	//Create7z("C:\\alleg.dmp","test.7z"); //works!
-
-
     __try { 
         do {
             #ifdef SRVLOG

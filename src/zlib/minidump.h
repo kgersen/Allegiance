@@ -3,12 +3,12 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Everything except making the minidump itself - Imago 7/10
+// minidump / 7z wrapper - Imago 7/10
 //
 //////////////////////////////////////////////////////////////////////////////
 
-// NYI void DealWithDumps();
-void Create7z(const char * szFile, const char * sz7z);
-// NYI void Send7z(const char * sz7z);
+char * NextDump();
+int Create7z(const char * szFile, const char * sz7z);
+void DeleteDumps(bool bAll = true);
 
 #endif

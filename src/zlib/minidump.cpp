@@ -43,12 +43,10 @@ static SRes Encode(ISeqOutStream *outStream, ISeqInStream *inStream, UInt64 file
   return res;
 }
 
-void Create7z(const char * szFile, const char * sz7z) {
+int Create7z(const char * szFile, const char * sz7z) {
 	CFileSeqInStream inStream;
 	CFileOutStream outStream;
-	char c;
-	int res;
-	int encodeMode;
+	int res = -1;
 	Bool useOutFile = False;
 	FileSeqInStream_CreateVTable(&inStream);
 	File_Construct(&inStream.file);
@@ -65,4 +63,40 @@ void Create7z(const char * szFile, const char * sz7z) {
 			File_Close(&inStream.file);
 		}
 	}
+	return res;
+}
+
+char * NextDump() {
+	WIN32_FIND_DATA finddata;
+	HANDLE hsearchFiles = 0;
+    
+	char szPathName[MAX_PATH+48] = ""; 
+	char szName[MAX_PATH+48] = "";
+	char szDest[MAX_PATH+54] = "";
+	FILETIME ftTime = {0,0};
+	GetModuleFileName(NULL, szPathName, MAX_PATH);
+	strcat(szPathName, "*.dmp*");
+	hsearchFiles = FindFirstFile(szPathName, &finddata);
+	if (INVALID_HANDLE_VALUE == hsearchFiles)
+		return NULL;
+
+	while (INVALID_HANDLE_VALUE != hsearchFiles) {
+		if (finddata.cFileName[0] != '.') {
+			if (CompareFileTime(&finddata.ftCreationTime, &ftTime) == 1)
+				strcpy(szName, finddata.cFileName);
+		}
+		if (!FindNextFile(hsearchFiles, &finddata))
+		{
+			FindClose(hsearchFiles);
+			hsearchFiles = INVALID_HANDLE_VALUE;
+		}
+	}
+	strcat(szDest,".sent");
+	MoveFile(szName, szDest);
+	return szName;
+}
+
+void DeleteDumps(bool bAll) {
+	//NYI, delete stale dump files
+	//keep the last 3
 }
