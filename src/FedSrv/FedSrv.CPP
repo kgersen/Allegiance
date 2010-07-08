@@ -4839,12 +4839,23 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 					NA, "Mutiny vote already in progress...");
                 bForward = false;
               }
+			  //Imago #124 7/10
+               else if (pfmChat->cbMessage > strlen("#bootiny") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#bootiny", strlen("#bootiny")) == 0)
+              {
+			    if (pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) != pfsPlayer)
+				  if (!pfsMission->HasBallots(BALLOT_BOOTINY))
+				    pfsMission->AddBallot(new BootinyBallot(pfsPlayer));
+				  else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					NA, "Bootiny vote already in progress...");
+                bForward = false;
+              }
 			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006
 			   // mmf changed this from GetOwner to GetLeader
 			  else if(pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) == pfsPlayer && pfmChat->cbMessage > strlen("#autoaccept") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autoaccept", strlen("#autoaccept")) == 0)
               {
 				pfsMission->SetAutoAccept(pfsPlayer->GetSide(),!pfsMission->GetAutoAccept(pfsPlayer->GetSide()));
                 bForward = true;
+				g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfsMission->GetMissionDef(), FM_GUARANTEED); //Imago7/10
 			  }
 			  // mmf added ability to change balance (MaxTeamImbalance) to 1 2 a (for auto) n (for N/A)
 			  else if(pfsMission->GetOwner() == pfsPlayer && pfmChat->cbMessage > strlen("#autobalance  ") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#autobalance", strlen("#autobalance")) == 0)
@@ -4870,7 +4881,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			    // mmf send message to self
 				// KGJV #110 added #mutiny
 				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
-					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny");
+					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny | #bootiny");
 				bForward = false;
 			  }
           }

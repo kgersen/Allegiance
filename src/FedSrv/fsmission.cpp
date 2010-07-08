@@ -5855,6 +5855,63 @@ void MutinyBallot::OnPassed()
    }
 }
 
+// Imago #124 7/10
+BootinyBallot::BootinyBallot(CFSPlayer* pfsInitiator)
+{
+  m_pside = pfsInitiator->GetSide();
+  m_idInitiatorShip = pfsInitiator->GetShipID();
+  m_bHideToLeader = true;
+  m_type = BALLOT_BOOTINY;
+  Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to bootiny"), pfsInitiator->GetName() + ZString(" has proposed to bootiny.  "));
+}
+
+void BootinyBallot::OnPassed()
+{
+  Ballot::OnPassed();
+
+  SideID    sideID = m_pside->GetObjectID();
+  if (sideID >= 0 && STAGE_STARTED == m_pmission->GetStage())
+  {
+	  CFSShip*    pfssNewLeader = CFSShip::GetShipFromID(m_idInitiatorShip);
+      if (pfssNewLeader && pfssNewLeader->IsPlayer() &&
+		  pfssNewLeader->GetSide() == m_pside)
+      {
+		  CFSPlayer * pfspNewLeader = pfssNewLeader->GetPlayer();
+		  if (pfspNewLeader->GetSide() == m_pside)
+		  {
+				CFSPlayer * pfspOldLeader = m_pmission->GetLeader(sideID);
+				assert(pfspOldLeader);
+				if (pfspOldLeader == pfssNewLeader) return;
+				pfspNewLeader->SetAutoDonate(NULL,0,false);
+				m_pmission->SetLeader(pfspNewLeader);
+
+				if (m_pmission->GetMissionDef()->misparms.bAllowDefections)
+					m_pmission->RemovePlayerFromSide(pfspOldLeader ,QSR_BootinyOk);
+				else 
+					m_pmission->RemovePlayerFromMission(pfspOldLeader, QSR_BootinyOk);		
+		  }
+      }
+   }
+}
+
+void BootinyBallot::OnFailed() {
+  SideID    sideID = m_pside->GetObjectID();
+  if (sideID >= 0 && STAGE_STARTED == m_pmission->GetStage())
+  {
+	  CFSShip*    pfssMe = CFSShip::GetShipFromID(m_idInitiatorShip);
+      if (pfssMe && pfssMe->IsPlayer() &&
+		  pfssMe->GetSide() == m_pside)
+      {
+		  CFSPlayer * pfspLeader = m_pmission->GetLeader(sideID);
+		  if (pfspLeader == pfssMe) return;
+		if (m_pmission->GetMissionDef()->misparms.bAllowDefections)
+			m_pmission->RemovePlayerFromSide(pfssMe->GetPlayer() ,QSR_BootinyFail);
+		else 
+			m_pmission->RemovePlayerFromMission(pfssMe->GetPlayer(), QSR_BootinyFail);		
+	  }
+  }
+}
+
 // a ballot used when a player suggests resigning
 ResignBallot::ResignBallot(CFSPlayer* pfsInitiator)
 {

@@ -790,6 +790,8 @@ enum QuitSideReason
 
     QSR_SwitchingSides,
     QSR_RandomizeSides,
+	QSR_BootinyOk, //Imago 7/10 #124
+	QSR_BootinyFail, //Imago 7/10 #124
 	QSR_FlushSides,		// TE: Add this for balance patch
 	QSR_BalanceSides	// TE: Add this for balance patch
 };
