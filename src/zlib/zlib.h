@@ -103,6 +103,8 @@
 #include "win32app.h"
 #include "VersionInfo.h"
 
+#include "minidump.h" //Imago 7/10
+
 //
 // Parser
 //

@@ -1,10 +1,11 @@
 #include "pch.h"
 #include "regkey.h"
 
+//Imago 7/10
 #include <dbghelp.h>
 #include <shellapi.h>
 #include <shlobj.h>
-
+#include "minidump.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -69,6 +70,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
                     hDumpFile, mdt, &ExpParam, NULL, NULL);
+
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -721,12 +723,13 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); //Imago 6/10
-	if( !g_papp->EnforceFilter( true ) )
-	{
-		debugf("EnforceFilter(true) failed.\n");
-		return 0;
-	}
+	//Imago 6/10
+	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
+	g_papp->EnforceFilter( true );
+
+	//deal with any .dmp files from last go around
+	//Create7z("C:\\alleg.dmp","test.7z"); //works!
+
 
     __try { 
         do {
