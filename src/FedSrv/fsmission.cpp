@@ -5883,13 +5883,13 @@ void BootinyBallot::OnPassed()
 				assert(pfspOldLeader);
 				if (pfspOldLeader == pfssNewLeader) return;
 
+				pfspNewLeader->SetAutoDonate(NULL,0,false);
+				m_pmission->SetLeader(pfspNewLeader);
+
 				if (m_pmission->GetMissionDef()->misparms.bAllowDefections)
 					m_pmission->RemovePlayerFromSide(pfspOldLeader ,QSR_BootinyOk);
 				else 
 					m_pmission->RemovePlayerFromMission(pfspOldLeader, QSR_BootinyOk);		
-
-				pfspNewLeader->SetAutoDonate(NULL,0,false);
-				m_pmission->SetLeader(pfspNewLeader);
 		  }
       }
    }
