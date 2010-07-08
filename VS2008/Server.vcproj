@@ -380,6 +380,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Sources"
+			>
+			<File
+				RelativePath="..\src\FedSrv\fedsrvsql.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\FedSrv\sqlhelp.cpp"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\src\FedSrv\_fedsrv.h"
 			>

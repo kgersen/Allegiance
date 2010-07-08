@@ -344,6 +344,14 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
+		<Filter
+			Name="Sources"
+			>
+			<File
+				RelativePath="..\src\_Utility\allegdb.cpp"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\src\_Utility\CollisionEntry.cpp"
 			>
