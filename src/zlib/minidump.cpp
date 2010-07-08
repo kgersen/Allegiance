@@ -7,6 +7,16 @@ static void *SzAlloc(void *p, size_t size) { p = p; return MyAlloc(size); }
 static void SzFree(void *p, void *address) { p = p; MyFree(address); }
 static ISzAlloc g_Alloc = { SzAlloc, SzFree };
 
+
+char * GetAppDir() {
+	char szPathName[MAX_PATH+48] = "";
+	GetModuleFileName(NULL, szPathName, MAX_PATH);
+	char*   p = strrchr(szPathName, '\\');
+	p = (!p) ? szPathName : p+1;
+	strcpy(p,"");
+	return szPathName;
+}
+
 static SRes Encode(ISeqOutStream *outStream, ISeqInStream *inStream, UInt64 fileSize, char *rs)
 {
   CLzmaEncHandle enc;
@@ -66,37 +76,48 @@ int Create7z(const char * szFile, const char * sz7z) {
 	return res;
 }
 
-char * NextDump() {
-	WIN32_FIND_DATA finddata;
-	HANDLE hsearchFiles = 0;
-    
-	char szPathName[MAX_PATH+48] = ""; 
-	char szName[MAX_PATH+48] = "";
-	char szDest[MAX_PATH+54] = "";
-	FILETIME ftTime = {0,0};
-	GetModuleFileName(NULL, szPathName, MAX_PATH);
-	strcat(szPathName, "*.dmp*");
-	hsearchFiles = FindFirstFile(szPathName, &finddata);
-	if (INVALID_HANDLE_VALUE == hsearchFiles)
-		return NULL;
+FileList FindDumps() {
+	FileList tlFiles;
+	tlFiles.SetEmpty();
 
+	WIN32_FIND_DATA finddata;
+	ZeroMemory(&finddata,sizeof(WIN32_FIND_DATA));
+
+	char szPathName[MAX_PATH+48] = "";
+	char szName[MAX_PATH+48] = "";	
+	strcpy(szPathName,GetAppDir());
+	strcpy(szName,szPathName);
+    strcat(szPathName, "*.dmp");
+	
+	HANDLE hsearchFiles = 0;
+	FILETIME ftTime = {0,0};
+	hsearchFiles = FindFirstFile(szPathName, &finddata);
+
+	if (INVALID_HANDLE_VALUE == hsearchFiles)
+		return tlFiles;
+
+	int iKBytes = 0;
 	while (INVALID_HANDLE_VALUE != hsearchFiles) {
 		if (finddata.cFileName[0] != '.') {
-			if (CompareFileTime(&finddata.ftCreationTime, &ftTime) == 1)
-				strcpy(szName, finddata.cFileName);
+			char*   p = strrchr(szName, '\\');
+			p = (!p) ? szName : p+1;
+			strcpy(p, "");
+			strcat(szName, finddata.cFileName);
+			tlFiles.InsertSorted(finddata);
+			iKBytes += (finddata.nFileSizeHigh > 0) ? MAXINT : (finddata.nFileSizeLow / 1024);
+			if (iKBytes >= MAXINT)
+				return tlFiles; 
 		}
-		if (!FindNextFile(hsearchFiles, &finddata))
-		{
+		if (!FindNextFile(hsearchFiles, &finddata)){
 			FindClose(hsearchFiles);
 			hsearchFiles = INVALID_HANDLE_VALUE;
 		}
 	}
-	strcat(szDest,".sent");
-	MoveFile(szName, szDest);
-	return szName;
+	return tlFiles;
 }
 
 void DeleteDumps(bool bAll) {
 	//NYI, delete stale dump files
 	//keep the last 3
 }
+

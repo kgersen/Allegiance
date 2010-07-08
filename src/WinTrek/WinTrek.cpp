@@ -2656,21 +2656,26 @@ public:
 			}
 		}
 
-		//ok, here we check dump files if we make it...meanwhile the intro vid plays
-			// yay compressing files and fliping video at the same time.
-/*
-		char * szDump = NULL;
-		int ret = 0;
-		while ((szDump = NextDump()) != NULL) {
-			ret = Create7z(szDump,"dump_uploading.7z");
-			debugf("********* create 7z = %i from %s\n",ret, (PCC)szDump);
-			if (ret == 0) {
-				//NYI read the file into appweb post
-				debugf("********* connecting to build.alleg.net\n",ret);
+		//Imago 7/10 dump files
+		int iKBMax = 65536; // (*2 ?)
+		int iKBytes = 0;
+		int iLastIndex = 0;
+		char szDir[MAX_PATH+52] = "";
+		strcpy(szDir,GetAppDir());
+		FileList tlFiles = FindDumps();
+		if (!tlFiles.IsEmpty()) {
+			for (FileList::Iterator iterFile(tlFiles);
+				!iterFile.End(); iterFile.Next())
+			{
+				iKBytes += (iterFile.Value().nFileSizeHigh > 0) ? MAXINT : (iterFile.Value().nFileSizeLow / 1024);
+				if (iKBytes >= iKBMax && iLastIndex > 0) 
+					break;
+				ZString zFile = szDir + ZString(iterFile.Value().cFileName);
+				int ret = Create7z((PCC)zFile,zFile+".7z");
+				iLastIndex++;
 			}
 		}
-		(ret < 0) ? DeleteDumps(true) : DeleteDumps(false); //dont ALWAYS delete the dumps for the clients
-*/
+
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
 
