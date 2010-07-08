@@ -1,0 +1,2 @@
+use "model";
+e_boosterbmp = ImportImageFromFile("e_booster.png", true);

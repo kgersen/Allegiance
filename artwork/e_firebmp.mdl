@@ -1,0 +1,2 @@
+use "model";
+e_firebmp = ImportImageFromFile("e_fire.png", true);
