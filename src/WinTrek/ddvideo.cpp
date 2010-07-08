@@ -78,24 +78,19 @@ HRESULT DDVideo::InitDirectDraw()
 		hRet = m_lpDD->CreateClipper( 0, &lpClipper, NULL );
 		hRet = lpClipper->SetHWnd( 0, m_hWnd );
 		hRet = m_lpDDSPrimary->SetClipper( lpClipper );
-	} else {
-		ddsd.dwBackBufferCount = 1;
-	}
-	
-    ZeroMemory( &ddscaps, sizeof( ddscaps ) );
-	ddsd.dwSize = sizeof( ddsd );
-
-	if (m_bWindowed) {
 		ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 		ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
 		ddsd.dwWidth = 800;
 		ddsd.dwHeight = 600;
 		hRet = m_lpDD->CreateSurface(&ddsd, &m_lpDDSBack, NULL);
 	} else {
+		ddsd.dwBackBufferCount = 1;
+		hRet = m_lpDD->CreateSurface(&ddsd, &m_lpDDSPrimary, NULL);
+		ZeroMemory( &ddscaps, sizeof( ddscaps ) );
 		ddscaps.dwCaps=DDSCAPS_BACKBUFFER;
 		hRet = m_lpDDSPrimary->GetAttachedSurface(&ddscaps,&m_lpDDSBack);
 	}
-	
+
 	pDD->Release();
 	return hRet;
 }

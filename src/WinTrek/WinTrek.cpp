@@ -156,7 +156,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 		hwndFound=FindWindow(NULL, "Allegiance");
 	} else {
 		//this window will have our "intro" in it...
-		HWND hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
+		hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
 			GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
 			::GetModuleHandle(NULL), NULL);
 	}
