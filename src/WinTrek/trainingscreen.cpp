@@ -806,11 +806,11 @@ TRef<Screen> CreateTrainingScreen(Modeler* pmodeler)
 }
 
 // destructor
-/* //imago removed 6/22/09
+ //imago removed 6/22/09 - unremoved 7/10
 void    KillTrainingStandaloneGame (void)
 {
     TrainingScreen::KillStandaloneGame ();
 }
-*/
+
 
 

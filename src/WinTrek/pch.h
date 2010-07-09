@@ -4,6 +4,8 @@
 
 #define __MODULE__ "WinTrek"
 
+#include "appweb/appweb.h" //Imago 7/10
+
 //
 // C Headers
 //

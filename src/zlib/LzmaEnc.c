@@ -44,7 +44,7 @@ static int ttt = 0;
 
 void LzmaEncProps_Init(CLzmaEncProps *p)
 {
-  p->level = 5;
+  p->level = 4;
   p->dictSize = p->mc = 0;
   p->lc = p->lp = p->pb = p->algo = p->fb = p->btMode = p->numHashBytes = p->numThreads = -1;
   p->writeEndMark = 0;
@@ -53,7 +53,7 @@ void LzmaEncProps_Init(CLzmaEncProps *p)
 void LzmaEncProps_Normalize(CLzmaEncProps *p)
 {
   int level = p->level;
-  if (level < 0) level = 9;
+  if (level < 0) level = 5;
   p->level = level;
   if (p->dictSize == 0) p->dictSize = (level <= 5 ? (1 << (level * 2 + 14)) : (level == 6 ? (1 << 25) : (1 << 26)));
   if (p->lc < 0) p->lc = 3;

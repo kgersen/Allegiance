@@ -8,13 +8,13 @@ static void SzFree(void *p, void *address) { p = p; MyFree(address); }
 static ISzAlloc g_Alloc = { SzAlloc, SzFree };
 
 
-char * GetAppDir() {
+ZString GetAppDir() {
 	char szPathName[MAX_PATH+48] = "";
 	GetModuleFileName(NULL, szPathName, MAX_PATH);
 	char*   p = strrchr(szPathName, '\\');
 	p = (!p) ? szPathName : p+1;
 	strcpy(p,"");
-	return szPathName;
+	return ZString(szPathName);
 }
 
 static SRes Encode(ISeqOutStream *outStream, ISeqInStream *inStream, UInt64 fileSize, char *rs)
@@ -22,7 +22,6 @@ static SRes Encode(ISeqOutStream *outStream, ISeqInStream *inStream, UInt64 file
   CLzmaEncHandle enc;
   SRes res;
   CLzmaEncProps props;
-
   rs = rs;
 
   enc = LzmaEnc_Create(&g_Alloc);
@@ -85,7 +84,7 @@ FileList FindDumps() {
 
 	char szPathName[MAX_PATH+48] = "";
 	char szName[MAX_PATH+48] = "";	
-	strcpy(szPathName,GetAppDir());
+	strcpy(szPathName,(PCC)GetAppDir());
 	strcpy(szName,szPathName);
     strcat(szPathName, "*.dmp");
 	

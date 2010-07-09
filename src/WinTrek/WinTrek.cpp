@@ -35,7 +35,12 @@ const int c_nMinGain = -60;
 extern bool g_bActivity = true;
 extern bool g_bAFKToggled = false;
 
-
+// To send dumps - Imago 7/10
+static Mpr *mpr;
+#ifdef _DEBUG
+static MprLogModule *tMod;
+MprLogToFile *logger = new MprLogToFile();
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -194,6 +199,68 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	return 0;
 }
 //
+
+//Imago 7/10 - much like doASGS in AllSrv
+static void doDumps(void* data, MprThread *threadp) {
+	ZString * szFiles = (ZString *)data;
+	ZString zaFile = szFiles->GetToken();
+	debugf("Upload thread working on %s\n",(PCC)zaFile);
+    MprSocket* socket = new MprSocket();
+    socket->openClient("alleg.builtbygiants.net",80,0);
+    int iwrite = socket->_write("GET /\r\n");
+    delete socket;
+    MaClient* client = new MaClient();
+	client->setTimeout(300000);
+	client->setRetries(1);
+	client->setKeepAlive(1);
+	HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	unsigned size = GetFileSize(hFile, 0);
+	if (size > 0) {
+		char *buffer = (char*)::VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+		unsigned long cBytesRead;
+		ReadFile(hFile, buffer, size, &cBytesRead, NULL);
+		int contentLen = 0; char *content;
+		if (iwrite == 7) {
+			char sz7zName[MAX_PATH+64] = ""; 
+			Strcpy(sz7zName,(PCC)zaFile);
+			char* p1 = strrchr(sz7zName, '\\');
+			(!p1) ? p1 = "" : p1++;
+			ZString zApp = p1;
+			MprBuf * hdrBuf = new MprBuf(256);
+			hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
+			hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
+			hdrBuf->put("Connection: keep-alive\r\n");
+			hdrBuf->put("Keep-Alive: 115\r\n");
+			hdrBuf->put("User-Agent: Allegiance dump upload thread\r\n");
+			hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
+			
+			ZString zParts1 = "-----------------------------01\r\n";
+			zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
+			zParts1 += zApp;
+			zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
+			ZString zParts0 = "\r\n-----------------------------01\r\nContent-Disposition: form-data; name=\"Submit\"\r\n\r\nSubmit Form\r\n-----------------------------01--\r\n";
+			int iTotal0 = cBytesRead + zParts1.GetLength() + zParts0.GetLength();
+			char * PostData = new char [iTotal0];
+			Strcpy(PostData,(PCC)zParts1);
+			memcpy(PostData+zParts1.GetLength(),buffer,size);
+			memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
+			hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
+			client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
+			debugf("***********sending %iB content\n",iTotal0);
+			if (client->getResponseCode() == 200)
+				content = client->getResponseContent(&contentLen);
+		}
+
+		if (contentLen > 0) {
+			ZString zResponse = content;
+			debugf("%s\n",(PCC)zResponse);
+			//TODO save report
+		}
+
+		::VirtualFree(buffer, 0, MEM_RELEASE);
+	}
+	::CloseHandle(hFile);
+}
 
 TRef<IMessageBox> CreateMessageBox(
     const ZString& str,
@@ -809,7 +876,7 @@ public:
 
 			// Imago NYI-  VK_ESC should close the chat compose window, saving any text
 			//				in the chat entry box to a buffer to later redsiplay in the chat box
-			//				as highlighted text.
+			//				as selected text. depends on the arrow keys doing stuff ticket.
 
             m_pconsoleImage->CycleChatTarget();
 
@@ -2656,14 +2723,29 @@ public:
 			}
 		}
 
-		//Imago 7/10 dump files
-		int iKBMax = 65536; // (*2 ?)
+		//Imago 7/10 dump files WIP
+		int iKBMax = 65536 * 3;
 		int iKBytes = 0;
 		int iLastIndex = 0;
 		char szDir[MAX_PATH+52] = "";
-		strcpy(szDir,GetAppDir());
+		strcpy(szDir,(PCC)GetAppDir());
 		FileList tlFiles = FindDumps();
+		debugf("**** Found:  %i dump files\n",tlFiles.GetCount());
 		if (!tlFiles.IsEmpty()) {
+			ZString zFiles; 
+			zFiles.SetEmpty();
+
+			char szPathName[MAX_PATH+48] = "";
+			GetModuleFileName(NULL, szPathName, MAX_PATH);
+			char *programName = mprGetBaseName(szPathName);
+			mpr = new Mpr(programName);
+#ifdef _DEBUG
+			tMod = new MprLogModule(programName);
+			mpr->addListener(logger);
+			mpr->setLogSpec("allegiance_appweb.log:9");
+#endif
+			mpr->setMaxPoolThreads(1);
+			mpr->start(MPR_SERVICE_THREAD);
 			for (FileList::Iterator iterFile(tlFiles);
 				!iterFile.End(); iterFile.Next())
 			{
@@ -2672,8 +2754,15 @@ public:
 					break;
 				ZString zFile = szDir + ZString(iterFile.Value().cFileName);
 				int ret = Create7z((PCC)zFile,zFile+".7z");
+				debugf("**** Create7z returned: %i for file %s.7z\n",ret,(PCC)zFile);
+				if (ret == 0)
+					zFiles += zFile+".7z ";
+
 				iLastIndex++;
 			}
+			ZString * pzFiles = new ZString(zFiles);
+			MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "Allegiance dump upload thread"); 
+			threadp->start();
 		}
 
 		// load the fonts
@@ -3405,12 +3494,23 @@ public:
         RemoveKeyboardInputFilter(GetPopupContainer());
         RemoveKeyboardInputFilter(m_pkeyboardInputFilter);
 
+		mpr->stop(0);
+#ifdef _DEBUG
+		delete tMod;
+#endif
+		delete mpr;
+#ifdef _DEBUG
+		delete logger;
+#endif
+		mprMemClose();
+
         trekClient.Terminate();
 
 		//imago removed for Visual Studio 2008 Express users (lacks ATL/COM) - we're not using TM7 anyways 6/22/09
+			//unremoved 7/10 - 
         // clean up after the training mission if we need to
-        //extern  void KillTrainingStandaloneGame (void);
-        //KillTrainingStandaloneGame ();
+        extern  void KillTrainingStandaloneGame (void);
+        KillTrainingStandaloneGame ();
 
         m_mapAnimatedImages.SetEmpty();
 
