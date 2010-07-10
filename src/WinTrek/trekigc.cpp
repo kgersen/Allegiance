@@ -1968,6 +1968,7 @@ class ThingSiteImpl : public ThingSitePrivate
                 if (((ma & c_mtPredictable) && trekClient.m_fm.IsConnected()) || !m_bSideVisibility)
                 {
                     m_sideVisibility.fVisible(true);
+					m_sideVisibility.CurrentEyed(true);  //Xynth #100 7/2010
 
                     switch (pmodel->GetObjectType())
                     {
@@ -2016,13 +2017,15 @@ class ThingSiteImpl : public ThingSitePrivate
 
         void UpdateSideVisibility(ImodelIGC* pmodel, IclusterIGC* pcluster)
         {
+			//Xynth #100 7/2010
+			bool currentEye = false;
             //We can only update it if we have one & if the client is actually on a side.
             if (m_bSideVisibility && trekClient.GetSide())
             {
                 //Update the visibility of hidden or non-static objects
                 //(visibile static objects stay visible)
-                if (!(m_sideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable)))
-                {
+                //if (!(m_sideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable))) Xynth #100 we need to run test for static objects
+                //{
                     //We, trivially, see anything on our side. beyond that ...  Imago ALLY VISIBILITY 7/11/09
                     //does the ship that saw the object last still see it
                     //(if such a ship exists)
@@ -2034,6 +2037,7 @@ class ThingSiteImpl : public ThingSitePrivate
 					   )
                     {
                         //yes
+						currentEye = true; //Xynth #100 7/2010
                         if (!m_sideVisibility.fVisible())
                         {
                             if (m_bIsShip)
@@ -2050,13 +2054,13 @@ class ThingSiteImpl : public ThingSitePrivate
                                     trekClient.PlaySoundEffect(newEnemySound, pmodel);
                                 }
                             }
-                            m_sideVisibility.fVisible(true);
+                            //Xynth #100 7/2010 m_sideVisibility.fVisible(true);
                         }
                     }
                     else
                     {
                         //do it the hard way
-                        m_sideVisibility.fVisible(false);
+                        currentEye = false; //Xynth #100 7/2010 m_sideVisibility.fVisible(false);
                         for (ScannerLinkIGC*   l = pcluster->GetClusterSite()->GetScanners(0)->first(); 
                              (l != NULL);
                              l = l->next())
@@ -2070,7 +2074,7 @@ class ThingSiteImpl : public ThingSitePrivate
                                 if (m_bIsShip)
                                     trekClient.PlaySoundEffect(newShipSound, pmodel);
 
-                                m_sideVisibility.fVisible(true);
+                                currentEye = true; //Xynth #100 7/2010 m_sideVisibility.fVisible(true);
                                 m_sideVisibility.pLastSpotter(s);								
 								if (trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) //ALLY should be SCAN Imago 7/13/09
 								{
@@ -2088,8 +2092,12 @@ class ThingSiteImpl : public ThingSitePrivate
 							}
                         }
                     }
-                }
-            }
+                //}
+					m_sideVisibility.CurrentEyed(currentEye);
+					currentEye = currentEye || (m_sideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable));
+					m_sideVisibility.fVisible(currentEye);        
+			
+			}
         }
 
         bool GetSideVisibility(IsideIGC* side)
@@ -2104,12 +2112,20 @@ class ThingSiteImpl : public ThingSitePrivate
             return m_sideVisibility.fVisible();
         }
 
+		bool GetCurrentEye(IsideIGC* side)
+        {
+            assert (side);            
+			return m_sideVisibility.CurrentEyed();
+        }
+
         void SetSideVisibility(IsideIGC* side, bool fVisible)
         {
             if (m_bSideVisibility && 
 				(side == trekClient.GetSide()))// || (side->AlliedSides(side,trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ) //imago viz ALLY VISIBILITY 7/11/09
-                m_sideVisibility.fVisible(fVisible);
-
+			{
+				m_sideVisibility.fVisible(fVisible);
+				m_sideVisibility.CurrentEyed(fVisible);
+			}
             if (fVisible)
             {
                 switch (m_pmodel->GetObjectType())

@@ -984,7 +984,9 @@ public:
                             case OT_asteroid:
                             {
                                 hull = ((IdamageIGC*)pmodel)->GetFraction();
-                                float   ore = ((IasteroidIGC*)pmodel)->GetOre();
+                                //Xynth #100 2010 
+								//float   ore = ((IasteroidIGC*)pmodel)->GetOre();								
+								float   ore = ((IasteroidIGC*)pmodel)->GetOreSeenBySide(psideMine);
                                 if (ore != 0.0f)
                                 {
                                     // this is displaying how many shiploads of ore are on the asteroid.
@@ -992,6 +994,10 @@ public:
                                     fill = ore / (2.0f * capacity);
                                     if (fill > 1.0f)
                                         fill = 1.0f;
+
+									if (((IasteroidIGC*)pmodel)->GetAsteroidCurrentEye(psideMine))
+										color = Color::Green();
+
                                 }
                             }
                             break;

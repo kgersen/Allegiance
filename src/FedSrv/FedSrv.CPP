@@ -10159,12 +10159,14 @@ class ThingSiteImpl : public ThingSite
 
 
                     //Update the visibility for everything except visible static objects
-                    if (!(m_bPredictable && sv.fVisible()))
-					{
+                    //if (!(m_bPredictable && sv.fVisible()))  Xynth #100 We need to check vis on everything to get Currenteye
+					bool staticVisible = m_bPredictable && sv.fVisible(); //Xynth#100 keep track of static visibles
+					//{
                         if (pside == pmodel->GetSide() && !pmodel->SeenBySide(pside)) //ALLY imago 7/7/09 Visibility 7/11/09
                         {
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
                             sv.fVisible(true);
+							sv.CurrentEyed(true); //Xynth #100 7/2010
                             ShowObject(pside, pmodel);
 
 
@@ -10172,6 +10174,7 @@ class ThingSiteImpl : public ThingSite
 										//printf("show object to ally via model's side\n");
 										//Allies See it
                             			sv.fVisible(true);
+										sv.CurrentEyed(true); //Xynth #100 7/2010
 										ShowObject(pside, pmodel);
 			
 						} else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel) && !pmodel->SeenBySide(pside)) // ALLY SCAN 7/11/09 Imago
@@ -10179,23 +10182,26 @@ class ThingSiteImpl : public ThingSite
 	                            if (!sv.fVisible())
 	                            {
 	                                //See it
-	                                sv.fVisible(true);
+	                                sv.fVisible(true);									
 	                                ShowObject(pside, pmodel);
 	                            }
+								sv.CurrentEyed(true); //Xynth #100 7/2010
 
 						} else if (sv.pLastSpotter() && pside->AlliedSides(pside,sv.pLastSpotter()->GetSide()) && sv.pLastSpotter()->InScannerRange(pmodel) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pmodel->SeenBySide(pside)) {
 	                            if (!sv.fVisible())
 	                            {
 	                                //Allies See it
 									//printf("show object to ally via last spotter's side\n");
-	                                sv.fVisible(true);
+	                                sv.fVisible(true);									
 	                                ShowObject(pside, pmodel);
 	                            }
+								sv.CurrentEyed(true); //Xynth #100 7/2010
 						}
                         else
 						{
                             //Not trivially seen ... loop over everything that could see it
                             sv.fVisible(false);
+							sv.CurrentEyed(false); //Xynth #100 7/2010
                             for (ScannerLinkIGC*   l = pcs->GetScanners(sid)->first();
                                  (l != NULL);
                                  l = l->next())
@@ -10208,6 +10214,7 @@ class ThingSiteImpl : public ThingSite
                                     //See it
 									if (!pmodel->SeenBySide(pside)) {
                                     	sv.fVisible(true);
+										sv.CurrentEyed(true); //Xynth #100 7/2010
                                     	bSent = ShowObject(pside, pmodel);
 									}
 									
@@ -10225,6 +10232,7 @@ class ThingSiteImpl : public ThingSite
 												
 												SideVisibility& sv2 = m_rgSideVisibility[otherside->GetObjectID()];
 												sv2.fVisible(true);
+												sv2.CurrentEyed(true); //Xynth #100 7/2010
 												bool bAllySent = ShowObject(otherside, pmodel);
                                     			sv2.pLastSpotter(s);	
 
@@ -10299,11 +10307,14 @@ class ThingSiteImpl : public ThingSite
                             if (!sv.fVisible())
                             {
                                 // hide it
+								sv.CurrentEyed(false); //Xynth #100 7/2010
                                 HideObject(pside, pmodel);
                                 sv.pLastSpotter(NULL);
                             }
-                        }
-                    }
+                        }                    
+					//} Xynth #100 need to make sure static objects are visible once spotted
+						if (staticVisible && !sv.CurrentEyed())
+							sv.fVisible(true);
                 }
             }
 		}
@@ -10330,6 +10341,7 @@ class ThingSiteImpl : public ThingSite
                     else
                         HideObject(pside, m_pmodel);
                 }
+				sv.CurrentEyed(fVisible);  //Xynth #100 7/2010
             }
         }
 

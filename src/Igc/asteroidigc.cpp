@@ -25,7 +25,7 @@ HRESULT     CasteroidIGC::Initialize(ImissionIGC* pMission, Time now, const void
     {
         DataAsteroidIGC*  dataAsteroid = (DataAsteroidIGC*)data;
         m_asteroidDef = dataAsteroid->asteroidDef;
-
+		
         IclusterIGC*    cluster = pMission->GetCluster(dataAsteroid->clusterID);
         ZRetailAssert (cluster);
         {
@@ -54,6 +54,13 @@ HRESULT     CasteroidIGC::Initialize(ImissionIGC* pMission, Time now, const void
                 SetSecondaryName(dataAsteroid->name + 1);
 
             SetCluster(cluster);
+
+			//Xynth #100 7/2010 Need to initialize oreseenbyside for all sides
+			for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
+			{
+				IsideIGC* pside = psl->data();									
+				oreSeenBySide.Set(pside, 0.0);									
+			}
 
 #ifdef DEBUG
             {

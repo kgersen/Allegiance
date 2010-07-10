@@ -53,6 +53,21 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
                 dOre *= (m_asteroidDef.oreMax - m_asteroidDef.ore);
                 m_asteroidDef.ore += dOre;
             }
+			
+			//Xynth #100 7/2010 loop through sides to update the ore they know about
+			if ((m_asteroidDef.aabmCapabilities & c_aabmMineHe3) != 0)
+			{
+				for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
+				{
+					IsideIGC* pside = psl->data();
+					if (this->GetCurrentEye(pside))
+					{						
+						oreSeenBySide.Set(pside, m_asteroidDef.ore);						
+					}
+
+				}
+			}
+
 
             TmodelIGC<IasteroidIGC>::Update(now);
 
@@ -172,8 +187,18 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
                 SetIcon(GetMyMission()->GetIgcSite()->LoadRadarIcon(ad.iconName));
             }
             */
-
+			
             m_asteroidDef.ore = newVal;
+			//Xynth #100 7/2010 Loop through sides to update ore seen by any sides eyeing asteroid
+			for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
+			{
+				IsideIGC* pside = psl->data();
+				if (this->GetCurrentEye(pside))
+				{						
+					oreSeenBySide.Set(pside, m_asteroidDef.ore);						
+				}
+
+			}
         }
         virtual float   MineOre(float    newVal)
         {
@@ -188,6 +213,17 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
             }
             else
                 m_asteroidDef.ore -= newVal;
+			
+			//Xynth #100 7/2010 Loop through sides to update ore seen by any sides eyeing asteroid
+			for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
+			{
+				IsideIGC* pside = psl->data();
+				if (this->GetCurrentEye(pside))
+				{						
+					oreSeenBySide.Set(pside, m_asteroidDef.ore);						
+				}
+
+			}
 
             return newVal;
         }
@@ -216,8 +252,24 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
             m_pbuildingEffect = pbe;
         }
 
+		//Xynth #100 7/2010
+		virtual float GetOreSeenBySide(IsideIGC *side1) const
+		{			
+			float oreSeen;
+			oreSeenBySide.Find(side1, oreSeen);
+			return oreSeen;
+		}
+
+		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const
+		{
+			return this->GetCurrentEye(side1);
+		}
+
+
     private:
         AsteroidDef                 m_asteroidDef;
+		//Xynth #100 7/2010 array to hold what each team knows about ore in this rock		
+		TMap<IsideIGC*, float> oreSeenBySide;
         float                       m_fraction;
         TRef<IbuildingEffectIGC>    m_pbuildingEffect;
 };

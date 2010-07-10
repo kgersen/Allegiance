@@ -1659,7 +1659,7 @@ struct  HardpointData
 struct AsteroidDef
 {
     float                   ore;
-    float                   oreMax;
+    float                   oreMax;	
     AsteroidAbilityBitMask  aabmCapabilities;
     AsteroidID              asteroidID;
     HitPoints               hitpoints;
@@ -2978,7 +2978,9 @@ class ThingSite : public AttachSite
         virtual void        UpdateSideVisibility(ImodelIGC*         pmodel,
                                                  IclusterIGC*       pcluster) {}
         virtual bool        GetSideVisibility(IsideIGC*             side) { return false; }
-        virtual void        SetSideVisibility(IsideIGC*             side,
+        //Xynth #100 7/2010
+		virtual bool        GetCurrentEye(IsideIGC*             side) { return false; }
+		virtual void        SetSideVisibility(IsideIGC*             side,
                                               bool                  fVisible) {}
 
         virtual void             ActivateBolt(void) {}
@@ -4046,6 +4048,9 @@ class IasteroidIGC : public IdamageIGC
         static int                      NumberSpecialAsteroids(const MissionParams*  pmp);
         static int                      GetSpecialAsterioid(const MissionParams*  pmp, int index);
         static int                      GetRandomType(AsteroidAbilityBitMask aabm);
+		//Xynth #100 7/2010
+		virtual float GetOreSeenBySide(IsideIGC *side1) const = 0;
+		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const = 0;
 };
 
 class IwarpIGC : public ImodelIGC
@@ -4573,8 +4578,22 @@ class   SideVisibility
                 s->AddRef();
         }
 
+		//Xynth #100 7/2010
+		void	CurrentEyed(bool v)
+		{
+			m_currentEyed = v;
+		}
+
+		bool	CurrentEyed(void)
+		{			
+			return m_currentEyed;
+		}
+
     private:
         bool            m_fVisible;
+		//Xynth #100 7/2010 if static is it actively eyed by a scanner
+		//for non-static this will always equal m_fVisible
+		bool            m_currentEyed;
         IscannerIGC*    m_pLastSpotter;
 };
 
