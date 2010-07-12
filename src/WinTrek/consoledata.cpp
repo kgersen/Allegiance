@@ -7,6 +7,12 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
+//Andon's Notes:
+//As much information is required by a turret gunner (Especially ammo) and has
+//always been previously known in-game, anything marked as "Only works on self"
+//will actually work on the ship the player is in, regardless of if they are
+//the pilot or turret gunner
+
 ImodelIGC* ModelData::GetModel()
 {
     return (m_pmodel && m_pmodel->GetMission())
@@ -105,6 +111,28 @@ TRef<Image> ModelData::GetSideIcon()
 {
     return Image::GetEmpty();
 }
+//Andon: Flag for IDing targets.
+//Returns a 1 if it is on the same team
+//Returns a 2 if it is an ally
+//Returns a 3 if it is an enemy
+float ModelData::IDTarget()
+{
+	float f = 0.0f;
+	if (m_pmodel)
+	{
+		IsideIGC*   pside = m_pmodel->GetSide();
+		ImodelIGC*	pmodel = GetModel();
+		if (m_pmodel && (pside ? ZString(pside->GetName()) : s_empty) == ZString(trekClient.GetSide()->GetName()))
+		{
+			return 1;
+		}
+		else if ((pside ? ZString(pside->GetAllies()) : s_empty) == ZString(trekClient.GetSide()->GetAllies()))
+		{
+			return 2;
+		}
+	}
+	return 3;
+}
 float ModelData::GetSpeed()
 {
     float   speed = 0.0f;
@@ -122,6 +150,21 @@ float ModelData::GetSpeed()
     return speed;
 }
 
+//Andon: Grabs the maximum thrust the Target can have
+//Only functions on self
+float ModelData::GetMaxThrust()
+{
+    float   f = 0.0f;
+
+    ImodelIGC*      pmodel = GetModel();
+	IshipIGC*		pship = GetShip();
+    if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+    {
+        f = (float) pship->GetHullType()->GetThrust();
+    }
+
+    return f;
+}
 //Andon: Returns the mass
 //Modified to only work on self
 float ModelData::GetMass()
@@ -177,6 +220,35 @@ float ModelData::GetPercentHitPoints()
     return f;
 }
 
+//Andon: Gets the Maximum Hit Points
+//Only works on self
+float ModelData::GetMaxHitPoints()
+{
+    ImodelIGC*      pmodel = GetModel();
+
+    float   f = 0.0f;
+    if ((pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip()) && ((pmodel->GetAttributes() & c_mtDamagable) != 0))
+    {
+            f = (1/((IdamageIGC*)pmodel)->GetFraction())*((IdamageIGC*)pmodel)->GetHitPoints();
+    }
+
+    return f;
+}
+
+//Andon: Grabs the current HitPoints the target has
+//Only works on self.
+float ModelData::GetNumHitPoints()
+{
+    ImodelIGC*      pmodel = GetModel();
+	//IshipIGC*		pship = GetSourceShip();
+    float   f = 0.0f;
+	if ((pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip()) && ((pmodel->GetAttributes() & c_mtDamagable) != 0))
+    {
+            f = ((IdamageIGC*)pmodel)->GetHitPoints();
+    }
+
+    return f;
+}
 float ModelData::GetPercentShields()
 {
     ImodelIGC*      pmodel = GetModel();
@@ -217,6 +289,40 @@ float ModelData::GetPercentShields()
     return f;
 }
 
+//Andon: Grabs the current Hitpoints of the target's shields
+//Only works on self
+float ModelData::GetNumShields()
+{
+    ImodelIGC*      pmodel = GetModel();
+
+    float   f = 0.0f;
+    if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+    {
+		IshipIGC*       pship = GetShip();
+		IshieldIGC* pshield = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
+		if (pshield)
+			f = (pshield->GetFraction()*pshield->GetMaxStrength());
+    }
+
+    return f;
+}
+//Andon: Grabs the maximum hit points the target's shields can have
+//Only works on self
+float ModelData::GetMaxShields()
+{
+    ImodelIGC*      pmodel = GetModel();
+
+    float   f = 0.0f;
+	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+    {
+		IshipIGC*       pship = GetShip();
+		IshieldIGC* pshield = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
+		if (pshield)
+			f = pshield->GetMaxStrength();
+    }
+
+    return f;
+}
 //Andon: Grabs the percent of energy.
 //Modified to only work for self.
 float ModelData::GetPercentEnergy()
@@ -226,6 +332,32 @@ float ModelData::GetPercentEnergy()
     if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
 	{
         f = GetShip()->GetEnergy()/GetShip()->GetHullType()->GetMaxEnergy();
+    }
+	return f;
+}
+
+//Andon: Grabs the max energy.
+//Only works on self
+float ModelData::GetMaxEnergy()
+{
+	float f = 0.0f;
+    ImodelIGC*      pmodel = GetModel();
+    if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	{
+        f = GetShip()->GetHullType()->GetMaxEnergy();
+    }
+	return f;
+}
+
+//Andon: Grabs the percent of energy.
+//Only works on self
+float ModelData::GetNumEnergy()
+{
+	float f = 0.0f;
+    ImodelIGC*      pmodel = GetModel();
+    if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	{
+        f = GetShip()->GetEnergy();
     }
 	return f;
 }
@@ -243,6 +375,32 @@ float ModelData::GetAmmo()
 	}
 	return f;
 }
+//Andon: Gets the max number of ammo.
+//Only works on self.
+float ModelData::GetMaxAmmo()
+{
+	float f = 0.0f;
+
+    ImodelIGC*      pmodel = GetModel();
+	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	{
+		f = (float)GetShip()->GetHullType()->GetMaxAmmo();
+	}
+	return f;
+}
+//Andon: Gets the current number of ammo.
+//Only works on self
+float ModelData::GetNumAmmo()
+{
+	float f = 0.0f;
+
+    ImodelIGC*      pmodel = GetModel();
+	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	{
+		f = (float)GetShip()->GetAmmo();
+	}
+	return f;
+}
 //Andon: Gets percent of fuel of the target
 //Modified to only work on self.
 float ModelData::GetFuel()
@@ -254,6 +412,36 @@ float ModelData::GetFuel()
 	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
 	{
 		f = pship->GetFuel()/pship->GetHullType()->GetMaxFuel();
+	}
+	return f;
+}
+
+//Andon: Gets Max Number of fuel of the target
+//Only works on self.
+float ModelData::GetMaxFuel()
+{
+	float f = 0.0f;
+
+	IshipIGC*     pship     = GetShip();
+    ImodelIGC*      pmodel = GetModel();
+	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	{
+		f = pship->GetHullType()->GetMaxFuel();
+	}
+	return f;
+}
+
+//Andon: Gets Number of fuel of the target
+//Only works on self.
+float ModelData::GetNumFuel()
+{
+	float f = 0.0f;
+
+	IshipIGC*     pship     = GetShip();
+    ImodelIGC*      pmodel = GetModel();
+	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	{
+		f = pship->GetFuel();
 	}
 	return f;
 }
@@ -429,6 +617,64 @@ bool ModelData::IsVisible()
     return pmodel && trekClient.GetShip()->CanSee(pmodel);
 }
 
+//Andon: Gets the Target's X position
+ float ModelData::GetX()
+ {
+    ImodelIGC*      pmodel = GetModel();
+    float   f = 0.0f;
+    if (pmodel)
+     {
+        IclusterIGC*    pcluster = pmodel->GetCluster();
+        if (pcluster && trekClient.GetShip()->CanSee(pmodel))
+			 f = pmodel->GetPosition().X();
+     }
+ 
+     return f;
+ }
+ //Andon: Gets the Target's Y position
+ float ModelData::GetY()
+ {
+    ImodelIGC*      pmodel = GetModel();
+    float   f = 0.0f;
+    if (pmodel)
+     {
+        IclusterIGC*    pcluster = pmodel->GetCluster();
+        if (pcluster && trekClient.GetShip()->CanSee(pmodel))
+			 f = pmodel->GetPosition().Y();
+     }
+ 
+     return f;
+ }
+ //Andon: Gets the Target's Z position
+ float ModelData::GetZ()
+ {
+    ImodelIGC*      pmodel = GetModel();
+    float   f = 0.0f;
+    if (pmodel)
+     {
+        IclusterIGC*    pcluster = pmodel->GetCluster();
+        if (pcluster && trekClient.GetShip()->CanSee(pmodel))
+			 f = pmodel->GetPosition().Z();
+     }
+ 
+     return f;
+ }
+
+//Andon: Gets the Scan Range of the target
+//Only works on self
+float ModelData::GetScanRange()
+{
+	float f=0.0f;
+	
+	ImodelIGC*	pmodel	=	GetModel();
+	IshipIGC*	pship	=	GetShip();
+	if(pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	{
+		f = pship->GetHullType()->GetScannerRange();
+	}
+
+	return f;
+}
 /////////////////////////////////////////////////////////////////////////////
 //
 // PartWrapper
