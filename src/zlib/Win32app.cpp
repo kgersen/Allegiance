@@ -3,9 +3,7 @@
 
 //Imago 7/10
 #include <dbghelp.h>
-#include <shellapi.h>
-#include <shlobj.h>
-#include "minidump.h"
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -60,13 +58,17 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     ExpParam.ExceptionPointers = pExceptionPointers;
     ExpParam.ClientPointers = TRUE;
 
-	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory | 
-		                                    MiniDumpWithDataSegs | 
-		                                    MiniDumpWithHandleData |
-		                                    MiniDumpWithFullMemoryInfo | 
-		                                    MiniDumpWithThreadInfo | 
-		                                    MiniDumpWithUnloadedModules |
-											MiniDumpWithProcessThreadData); 
+	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
+		(MiniDumpWithDataSegs		| 
+		MiniDumpWithHandleData		|
+		MiniDumpWithThreadInfo		| 
+		MiniDumpWithUnloadedModules |
+		MiniDumpWithProcessThreadData); 
+
+	//
+	//MiniDumpWithPrivateReadWriteMemory | 
+	//MiniDumpWithFullMemoryInfo | 
+	//
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
                     hDumpFile, mdt, &ExpParam, NULL, NULL);
@@ -113,13 +115,12 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     ExpParam.ExceptionPointers = pExceptionPointers;
     ExpParam.ClientPointers = TRUE;
 
-	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory | 
-		                                    MiniDumpWithDataSegs | 
-		                                    MiniDumpWithHandleData |
-		                                    MiniDumpWithFullMemoryInfo | 
-		                                    MiniDumpWithThreadInfo | 
-		                                    MiniDumpWithUnloadedModules |
-											MiniDumpWithProcessThreadData); 
+	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
+		(MiniDumpWithDataSegs		| 
+		MiniDumpWithHandleData		|
+		MiniDumpWithThreadInfo		| 
+		MiniDumpWithUnloadedModules |
+		MiniDumpWithProcessThreadData); 
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
                     hDumpFile, mdt, &ExpParam, NULL, NULL);

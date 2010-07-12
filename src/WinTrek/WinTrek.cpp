@@ -203,64 +203,87 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 //Imago 7/10 - much like doASGS in AllSrv
 static void doDumps(void* data, MprThread *threadp) {
 	ZString * szFiles = (ZString *)data;
-	ZString zaFile = szFiles->GetToken();
-	debugf("Upload thread working on %s\n",(PCC)zaFile);
-    MprSocket* socket = new MprSocket();
-    socket->openClient("alleg.builtbygiants.net",80,0);
-    int iwrite = socket->_write("GET /\r\n");
-    delete socket;
-    MaClient* client = new MaClient();
-	client->setTimeout(300000);
-	client->setRetries(1);
-	client->setKeepAlive(1);
-	HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	unsigned size = GetFileSize(hFile, 0);
-	if (size > 0) {
-		char *buffer = (char*)::VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
-		unsigned long cBytesRead;
-		ReadFile(hFile, buffer, size, &cBytesRead, NULL);
-		int contentLen = 0; char *content;
-		if (iwrite == 7) {
-			char sz7zName[MAX_PATH+64] = ""; 
-			Strcpy(sz7zName,(PCC)zaFile);
-			char* p1 = strrchr(sz7zName, '\\');
-			(!p1) ? p1 = "" : p1++;
-			ZString zApp = p1;
-			MprBuf * hdrBuf = new MprBuf(256);
-			hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
-			hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
-			hdrBuf->put("Connection: keep-alive\r\n");
-			hdrBuf->put("Keep-Alive: 115\r\n");
-			hdrBuf->put("User-Agent: Allegiance dump upload thread\r\n");
-			hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
+	ZString zaFile;
+	int iMax = 3 * 1024;
+	int iTotal = 0;
+	while (!(zaFile = szFiles->GetToken()).IsEmpty()) {
+		debugf("**** Dump thread working on %s\n",(PCC)zaFile);
+		int size = Create7z((PCC)zaFile,zaFile+".7z");
+		zaFile+=".7z";
+		iTotal += size;
+		if (iTotal / 1024 > iMax) {
+			DeleteFile((PCC)zaFile);
+			break;
+		}
+		if (size <= 0) {
+			DeleteFile((PCC)zaFile);
+			continue;
+		}
+		debugf("**** Create7z returned: %i for file %s\n",size,(PCC)zaFile);
+		MprSocket* socket = new MprSocket();
+		socket->openClient("alleg.builtbygiants.net",80,0);
+		int iwrite = socket->_write("GET /\r\n");
+		delete socket;
+		MaClient* client = new MaClient();
+		client->setTimeout(300000);
+		client->setRetries(1);
+		client->setKeepAlive(1);
+		HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		size = GetFileSize(hFile, 0);
+		if (size > 0) {
+			char *buffer = (char*)::VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+			unsigned long cBytesRead;
+			ReadFile(hFile, buffer, size, &cBytesRead, NULL);
+			int contentLen = 0; char *content;
+			if (iwrite == 7) {
+				char sz7zName[MAX_PATH+64] = ""; 
+				Strcpy(sz7zName,(PCC)zaFile);
+				char* p1 = strrchr(sz7zName, '\\');
+				(!p1) ? p1 = "" : p1++;
+				ZString zApp = p1;
+				MprBuf * hdrBuf = new MprBuf(256);
+				hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
+				hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
+				hdrBuf->put("Connection: keep-alive\r\n");
+				hdrBuf->put("Keep-Alive: 115\r\n");
+				hdrBuf->put("User-Agent: Allegiance dump thread\r\n");
+				hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
 			
-			ZString zParts1 = "-----------------------------01\r\n";
-			zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
-			zParts1 += zApp;
-			zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
-			ZString zParts0 = "\r\n-----------------------------01\r\nContent-Disposition: form-data; name=\"Submit\"\r\n\r\nSubmit Form\r\n-----------------------------01--\r\n";
-			int iTotal0 = cBytesRead + zParts1.GetLength() + zParts0.GetLength();
-			char * PostData = new char [iTotal0];
-			Strcpy(PostData,(PCC)zParts1);
-			memcpy(PostData+zParts1.GetLength(),buffer,size);
-			memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
-			hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
-			client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
-			debugf("***********sending %iB content\n",iTotal0);
-			if (client->getResponseCode() == 200)
-				content = client->getResponseContent(&contentLen);
-		}
+				ZString zParts1 = "-----------------------------01\r\n";
+				zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
+				zParts1 += zApp;
+				zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
+				ZString zParts0 = "\r\n-----------------------------01--\r\n";
+				int iTotal0 = cBytesRead + zParts1.GetLength() + zParts0.GetLength();
+				char * PostData = new char [iTotal0];
+				Strcpy(PostData,(PCC)zParts1);
+				memcpy(PostData+zParts1.GetLength(),buffer,size);
+				memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
+				hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
+				client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
+				debugf("**** sent %iB of data via HTTP\n",iTotal0);
+				if (client->getResponseCode() == 200)
+					content = client->getResponseContent(&contentLen);
 
-		if (contentLen > 0) {
-			ZString zResponse = content;
-			debugf("%s\n",(PCC)zResponse);
-			//TODO save report
+				delete hdrBuf;
+				delete PostData;
+			}
+			if (contentLen > 0) {
+				ZString zResponse = content;
+				ZFile * pzReport = new ZFile(zaFile+".html", OF_WRITE | OF_CREATE );
+				pzReport->Write(zResponse);
+				delete pzReport;
+			}
+			delete client;
+			::VirtualFree(buffer, 0, MEM_RELEASE);
 		}
-
-		::VirtualFree(buffer, 0, MEM_RELEASE);
+		::CloseHandle(hFile);
+		DeleteFile((PCC)zaFile);
 	}
-	::CloseHandle(hFile);
+	debugf("**** Dump thread finished, xfered %iKB\n",iTotal / 1024);
+	DeleteDumps(false);
 }
+//
 
 TRef<IMessageBox> CreateMessageBox(
     const ZString& str,
@@ -2724,7 +2747,7 @@ public:
 		}
 
 		//Imago 7/10 dump files WIP
-		int iKBMax = 65536 * 3;
+		int iKBMax = 65536;
 		int iKBytes = 0;
 		int iLastIndex = 0;
 		char szDir[MAX_PATH+52] = "";
@@ -2753,15 +2776,11 @@ public:
 				if (iKBytes >= iKBMax && iLastIndex > 0) 
 					break;
 				ZString zFile = szDir + ZString(iterFile.Value().cFileName);
-				int ret = Create7z((PCC)zFile,zFile+".7z");
-				debugf("**** Create7z returned: %i for file %s.7z\n",ret,(PCC)zFile);
-				if (ret == 0)
-					zFiles += zFile+".7z ";
-
+				zFiles += zFile+" ";
 				iLastIndex++;
 			}
 			ZString * pzFiles = new ZString(zFiles);
-			MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "Allegiance dump upload thread"); 
+			MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "Allegiance dump thread"); 
 			threadp->start();
 		}
 

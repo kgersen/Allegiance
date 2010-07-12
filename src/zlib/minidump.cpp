@@ -56,6 +56,8 @@ int Create7z(const char * szFile, const char * sz7z) {
 	CFileSeqInStream inStream;
 	CFileOutStream outStream;
 	int res = -1;
+	int res2 = -1;
+	UInt64 iLength = 0;
 	Bool useOutFile = False;
 	FileSeqInStream_CreateVTable(&inStream);
 	File_Construct(&inStream.file);
@@ -68,11 +70,13 @@ int Create7z(const char * szFile, const char * sz7z) {
 			File_GetLength(&inStream.file, &fileSize);
 			char * rs = NULL;
 			res = Encode(&outStream.s, &inStream.s, fileSize, rs);
+			res2 = File_GetLength(&outStream.file,&iLength);
 			File_Close(&outStream.file);
 			File_Close(&inStream.file);
 		}
 	}
-	return res;
+	
+	return (res != 0 || res2 != 0 || iLength == 0) ? -1 : iLength;
 }
 
 FileList FindDumps() {
@@ -116,7 +120,21 @@ FileList FindDumps() {
 }
 
 void DeleteDumps(bool bAll) {
-	//NYI, delete stale dump files
-	//keep the last 3
+	FileList tlFiles = FindDumps();
+	int iCount = 1;
+	if (!tlFiles.IsEmpty()) {
+		for (FileList::Iterator iterFile(tlFiles);
+			!iterFile.End(); iterFile.Next())
+		{
+			if (bAll == false && iCount <= 3) {
+				iCount++;
+				continue;
+			}
+			else
+				DeleteFile((PCC)ZString(iterFile.Value().cFileName));
+
+			iCount++;
+		}
+	}
 }
 
