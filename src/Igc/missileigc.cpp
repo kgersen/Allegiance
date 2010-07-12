@@ -498,7 +498,11 @@ void                 CmissileIGC::HandleCollision(Time       timeCollision,
                     }
                 }
             }
-            else
+            else if (m_launcher->GetObjectID() == ((ImissileIGC*)pModel)->GetLauncher()->GetObjectID())
+			{
+				return;
+			}
+			else
             {
                 //Missiles hitting missiles are a special case: both die without calling either's receive damage method.
                 //Create explosions for both missiles
