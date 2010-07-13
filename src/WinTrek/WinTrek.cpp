@@ -198,7 +198,83 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	::DestroyWindow(hwndFound);
 	return 0;
 }
-//
+
+//do our best to post a dump Imago 7/10
+bool DumpSend(ZString zaFile, int iTry = 0) {
+	MaClient* client = new MaClient();
+	client->setTimeout(300000);
+	client->setRetries(1);
+	client->setKeepAlive(1);
+	HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	unsigned size = GetFileSize(hFile, 0);
+	if (size > 0) {
+		debugf("**** Preparing POST (try %i)\n",iTry+1);
+		char *buffer = (char*)::VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+		unsigned long cBytesRead;
+		ReadFile(hFile, buffer, size, &cBytesRead, NULL);
+		int contentLen = 0; char *content;
+
+		char sz7zName[MAX_PATH+64] = ""; 
+		Strcpy(sz7zName,(PCC)zaFile);
+		char* p1 = strrchr(sz7zName, '\\');
+		(!p1) ? p1 = "" : p1++;
+		ZString zApp = p1;
+		MprBuf * hdrBuf = new MprBuf(256);
+		hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
+		hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
+		hdrBuf->put("Connection: keep-alive\r\n");
+		hdrBuf->put("Keep-Alive: 115\r\n");
+		hdrBuf->put("User-Agent: Allegiance dump thread\r\n");
+		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
+			
+		ZString zParts1 = "-----------------------------01\r\n";
+		zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
+		zParts1 += zApp;
+		zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
+		ZString zParts0 = "\r\n-----------------------------01--\r\n";
+		int iTotal0 = cBytesRead + zParts1.GetLength() + zParts0.GetLength();
+		char * PostData = new char [iTotal0];
+		Strcpy(PostData,(PCC)zParts1);
+		memcpy(PostData+zParts1.GetLength(),buffer,size);
+		memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
+		hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
+		client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
+		debugf("**** sent %iB of data via HTTP\n",iTotal0);
+		if (client->getResponseCode() == 200)
+			content = client->getResponseContent(&contentLen);
+
+		delete hdrBuf;
+		delete PostData;
+		if (contentLen > 0) {
+			ZString zResponse = content;
+			if (contentLen < 1024 && zResponse.ReverseFindAny("BUSY") != -1) {
+				debugf("**** got BUSY response from dump checker!!! %i %s\n",contentLen,(PCC)zResponse);
+				delete client;
+				::VirtualFree(buffer, 0, MEM_RELEASE);
+				::CloseHandle(hFile);
+				debugf("**** waiting a moment to try again...\n");
+				Sleep(randomInt(3,6));
+				if (iTry < 3) { 
+					return false;
+				} else {
+					DeleteFile((PCC)zaFile);
+					debugf("**** Aborting, was TOO busy!!!\n");
+					return true;
+				}
+			} else {
+				debugf("**** got OK response from dump checker (%iB)\n",contentLen);
+				ZFile * pzReport = new ZFile(zaFile+".html", OF_WRITE | OF_CREATE);
+				pzReport->Write(zResponse);
+				delete pzReport;
+			}
+		}
+		delete client;
+		::VirtualFree(buffer, 0, MEM_RELEASE);
+	}
+	::CloseHandle(hFile);
+	DeleteFile((PCC)zaFile);
+	return true; //even if catastrophic failure
+}
 
 //Imago 7/10 - much like doASGS in AllSrv
 static void doDumps(void* data, MprThread *threadp) {
@@ -224,69 +300,26 @@ static void doDumps(void* data, MprThread *threadp) {
 		socket->openClient("alleg.builtbygiants.net",80,0);
 		int iwrite = socket->_write("GET /\r\n");
 		delete socket;
-		MaClient* client = new MaClient();
-		client->setTimeout(300000);
-		client->setRetries(1);
-		client->setKeepAlive(1);
-		HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		size = GetFileSize(hFile, 0);
-		if (size > 0) {
-			char *buffer = (char*)::VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
-			unsigned long cBytesRead;
-			ReadFile(hFile, buffer, size, &cBytesRead, NULL);
-			int contentLen = 0; char *content;
-			if (iwrite == 7) {
-				char sz7zName[MAX_PATH+64] = ""; 
-				Strcpy(sz7zName,(PCC)zaFile);
-				char* p1 = strrchr(sz7zName, '\\');
-				(!p1) ? p1 = "" : p1++;
-				ZString zApp = p1;
-				MprBuf * hdrBuf = new MprBuf(256);
-				hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
-				hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
-				hdrBuf->put("Connection: keep-alive\r\n");
-				hdrBuf->put("Keep-Alive: 115\r\n");
-				hdrBuf->put("User-Agent: Allegiance dump thread\r\n");
-				hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
-			
-				ZString zParts1 = "-----------------------------01\r\n";
-				zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
-				zParts1 += zApp;
-				zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
-				ZString zParts0 = "\r\n-----------------------------01--\r\n";
-				int iTotal0 = cBytesRead + zParts1.GetLength() + zParts0.GetLength();
-				char * PostData = new char [iTotal0];
-				Strcpy(PostData,(PCC)zParts1);
-				memcpy(PostData+zParts1.GetLength(),buffer,size);
-				memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
-				hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
-				client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
-				debugf("**** sent %iB of data via HTTP\n",iTotal0);
-				if (client->getResponseCode() == 200)
-					content = client->getResponseContent(&contentLen);
 
-				delete hdrBuf;
-				delete PostData;
+		if (iwrite == 7 && size > 0) {
+			int iTry = 0;
+			while (!DumpSend(zaFile,iTry)) {
+				iTry++;
 			}
-			if (contentLen > 0) {
-				ZString zResponse = content;
-				if (zResponse.GetLength() < 128 && zResponse.Find(ZString("BUSY"))) {
-					debugf("**** got BUSY response from dump checker (%iB)\n",contentLen);
-				} else {
-					debugf("**** got OK response from dump checker (%iB)\n",contentLen);
-					ZFile * pzReport = new ZFile(zaFile+".html", OF_WRITE | OF_CREATE );
-					pzReport->Write(zResponse);
-					delete pzReport;
-				}
-			}
-			delete client;
-			::VirtualFree(buffer, 0, MEM_RELEASE);
 		}
-		::CloseHandle(hFile);
-		DeleteFile((PCC)zaFile);
 	}
-	debugf("**** Dump thread finished, xfered %iKB\n",iTotal / 1024);
-	DeleteDumps(false);
+	debugf("**** Dump thread finished, tried sending %iKB\n",iTotal / 1024);
+
+    HKEY hKey;
+    DWORD dwResult = FALSE;
+	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,0, KEY_READ, &hKey))
+    {
+        DWORD dwSize = sizeof(dwResult);
+        DWORD dwType = REG_DWORD;
+        ::RegQueryValueEx(hKey, "SaveDumps", NULL, &dwType, (BYTE*)&dwResult, &dwSize);
+        ::RegCloseKey(hKey);
+    }
+	DeleteDumps(!dwResult);
 }
 //
 
@@ -1221,6 +1254,7 @@ public:
     float               m_fDeltaTime;
 	// -Imago: Last activity timer
 	Time				m_timeLastActivity;
+	bool				m_bSaveDumps;
 
     //
     // Rendering Toggles
@@ -1443,6 +1477,9 @@ public:
 	TRef<IMenuItem>            m_pitemPack;
 	TRef<IMenuItem>            m_pitemAA;
 	TRef<IMenuItem>            m_pitemVsync;
+	// -- 7/10
+	TRef<IMenuItem>            m_pitemToggleNoMovies;
+	TRef<IMenuItem>            m_pitemToggleSaveDumps;
 
     bool                       m_bLensFlare;
     bool                       m_bMusic;
@@ -1469,11 +1506,12 @@ public:
 	PlayerInfo * contextPlayerInfo;
 
     //
-    // Music
+    // Music (& Movies -- Imago 7/10)
     //
 
     SoundID                 m_musicId;
     TRef<ISoundInstance>    m_psoundMusic;
+	bool					m_bNoMovies; //Iamgo 7/10
 
     //
     // Sound support
@@ -2711,7 +2749,9 @@ public:
         m_bFlipY(false),
         m_bEnableFeedback(true),
         m_aabmInvest(0),
-        m_aabmCommand(0)
+        m_aabmCommand(0),
+		m_bNoMovies(false),
+		m_bSaveDumps(false)
     {
         HRESULT hr;
 
@@ -2728,7 +2768,18 @@ public:
 		HANDLE hDDVidThread = NULL;
 		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
 
-		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware &&
+		//Imago 7/10
+		HKEY hKey;
+		DWORD dwNoMovies = FALSE;
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,0, KEY_READ, &hKey))
+		{
+			DWORD dwSize = sizeof(dwNoMovies);
+			DWORD dwType = REG_DWORD;
+			::RegQueryValueEx(hKey, "NoMovies", NULL, &dwType, (BYTE*)&dwNoMovies, &dwSize);
+			::RegCloseKey(hKey);
+		}
+
+		if (!g_bQuickstart && bMovies && !dwNoMovies && !g_bReloaded && !bSoftware &&
 		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
 		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
 			//Imago only check for these if we have to 8/16/09
@@ -3297,6 +3348,13 @@ public:
 
 		ToggleBandwidth(LoadPreference("Bandwidth",2)); // w0dk4 June 2007: Bandwith Patch
 
+		 // Imago 7/10
+		if (LoadPreference("SaveDumps",FALSE))
+			ToggleSaveDumps();
+		if (LoadPreference("NoMovies",FALSE))
+			ToggleNoMovies();
+
+
         bool bAllow3DAcceleration;
 
         if (bSoftware || bHardware) {
@@ -3519,8 +3577,8 @@ public:
         RemoveKeyboardInputFilter(m_pkeyboardInputFilter);
 
 		//Imago 7/10 dump upload
-		if (mpr && mpr->getCurrentThread() != NULL)
-			mpr->stop(0);
+		if (mpr)
+			mpr->stop(true); //true=now, terminate any upload (if we wait it could assert and make another dump!)
 #ifdef _DEBUG
 			delete tMod;
 #endif
@@ -3977,10 +4035,14 @@ public:
     #define idmToggleEnableFeedback        631
     #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
     #define idmPings                       633 // w0dk4 player-pings feature
-    #define idmBandwidth		       634 // w0dk4 June 2007: Bandwith Patch
-    #define	idmMuteFilterOptions		 635 //TheBored 30-JUL-07: Filter Unknown Chat patch
-    #define idmFilterUnknownChats		 636 //TheBored 30-JUL-07: Filter Unknown Chat patch
-
+    #define idmBandwidth				   634 // w0dk4 June 2007: Bandwith Patch
+    #define	idmMuteFilterOptions		   635 //TheBored 30-JUL-07: Filter Unknown Chat patch
+    #define idmFilterUnknownChats		   636 //TheBored 30-JUL-07: Filter Unknown Chat patch
+	
+	//Imago 7/10
+	#define	idmNoMovies			           637 
+    #define idmSaveDumps				   638 
+	
     #define idmResetSound           701
     #define idmSoundQuality         702
     #define idmSoundHardware        703
@@ -4280,6 +4342,11 @@ public:
                 m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E');
 				 // w0dk4 June 2007: Bandwith Patch
 				m_pitemToggleBandwidth			   = pmenu->AddMenuItem(idmBandwidth,					GetBandwidthMenuString(),		    'B');
+
+				//Imago 7/10
+				m_pitemToggleNoMovies			   = pmenu->AddMenuItem(idmNoMovies,					GetNoMoviesMenuString(),		    'V');
+				m_pitemToggleSaveDumps			   = pmenu->AddMenuItem(idmSaveDumps,					GetSaveDumpsMenuString(),		    'D');
+
                                                      pmenu->AddMenuItem(idmConfigure           ,        "Map Keys and Controls"      ,      'C');
                 break;
 
@@ -4602,6 +4669,27 @@ public:
             m_pitemToggleBandwidth->SetString(GetBandwidthMenuString());
         }
 	}
+
+	// Imago 7/10
+	void ToggleSaveDumps()
+	{
+		m_bSaveDumps = !m_bSaveDumps;
+		SavePreference("SaveDumps", m_bSaveDumps);
+
+        if (m_pitemToggleSaveDumps != NULL) {
+            m_pitemToggleSaveDumps->SetString(GetSaveDumpsMenuString());
+        }
+	}
+	void ToggleNoMovies()
+	{
+		m_bNoMovies = !m_bNoMovies;
+		SavePreference("NoMovies", m_bNoMovies);
+
+        if (m_pitemToggleNoMovies != NULL) {
+            m_pitemToggleNoMovies->SetString(GetNoMoviesMenuString());
+        }
+	}
+	//
 
     SoundID GetFlightMusic()
     {
@@ -5153,6 +5241,17 @@ public:
 		return "Error";
 	}
 
+	//Imago 7/10
+    ZString GetSaveDumpsMenuString()
+    {
+        return (m_bSaveDumps) ? "Crash Dump Save On " : "Crash Dump Save Off ";
+    }
+    ZString GetNoMoviesMenuString()
+    {
+        return (m_bNoMovies) ? "Movies Off " : "Movies On ";
+    }
+	//
+
     ZString GetRoundRadarMenuString()
     {
         return (m_bRoundRadar) ? "Round Radar" : "Square Radar";
@@ -5637,8 +5736,14 @@ public:
             case idmToggleEnvironment:
                 ToggleEnvironment();
                 break;
-
-
+				
+			//Imago 7/10
+            case idmNoMovies:
+                ToggleNoMovies();
+                break;
+            case idmSaveDumps:
+                ToggleSaveDumps();
+                break;
 
 			// w0dk4 June 2007: Bandwith Patch
 			case idmBandwidth:
