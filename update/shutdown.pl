@@ -12,6 +12,7 @@ sleep(3);
 
 my $utl  = Win32::OLE->new("AllSrv.AdminSession");
 my $srv = $utl->Server;
+exit 0 if (!$srv);
 my $games = $srv->Games;
 
 my %stats;
