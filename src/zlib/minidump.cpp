@@ -119,21 +119,18 @@ FileList FindDumps() {
 	return tlFiles;
 }
 
-void DeleteDumps(bool bAll) {
+void DeleteDumps(bool bDelete) {
 	FileList tlFiles = FindDumps();
-	int iCount = 1;
 	if (!tlFiles.IsEmpty()) {
 		for (FileList::Iterator iterFile(tlFiles);
 			!iterFile.End(); iterFile.Next())
 		{
-			if (bAll == false && iCount <= 3) {
-				iCount++;
+			if (!bDelete) {
+				MoveFile((PCC)ZString(iterFile.Value().cFileName),(PCC)ZString(iterFile.Value().cFileName)+ZString(".old"));
 				continue;
 			}
 			else
 				DeleteFile((PCC)ZString(iterFile.Value().cFileName));
-
-			iCount++;
 		}
 	}
 }

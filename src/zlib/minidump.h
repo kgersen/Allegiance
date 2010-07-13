@@ -29,7 +29,7 @@ FileList FindDumps();
 
 int Create7z(const char * szFile, const char * sz7z);
 
-void DeleteDumps(bool bAll = true);
+void DeleteDumps(bool bDelete = true);
 
 ZString GetAppDir();
 

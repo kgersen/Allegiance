@@ -270,9 +270,14 @@ static void doDumps(void* data, MprThread *threadp) {
 			}
 			if (contentLen > 0) {
 				ZString zResponse = content;
-				ZFile * pzReport = new ZFile(zaFile+".html", OF_WRITE | OF_CREATE );
-				pzReport->Write(zResponse);
-				delete pzReport;
+				if (zResponse.GetLength() < 128 && zResponse.Find(ZString("BUSY"))) {
+					debugf("**** got BUSY response from dump checker (%iB)\n",contentLen);
+				} else {
+					debugf("**** got OK response from dump checker (%iB)\n",contentLen);
+					ZFile * pzReport = new ZFile(zaFile+".html", OF_WRITE | OF_CREATE );
+					pzReport->Write(zResponse);
+					delete pzReport;
+				}
 			}
 			delete client;
 			::VirtualFree(buffer, 0, MEM_RELEASE);
@@ -2746,7 +2751,7 @@ public:
 			}
 		}
 
-		//Imago 7/10 dump files WIP
+		//Imago 7/10 dump files
 		int iKBMax = 65536;
 		int iKBytes = 0;
 		int iLastIndex = 0;
@@ -3513,15 +3518,17 @@ public:
         RemoveKeyboardInputFilter(GetPopupContainer());
         RemoveKeyboardInputFilter(m_pkeyboardInputFilter);
 
-		mpr->stop(0);
+		//Imago 7/10 dump upload
+		if (mpr && mpr->getCurrentThread() != NULL)
+			mpr->stop(0);
 #ifdef _DEBUG
-		delete tMod;
+			delete tMod;
 #endif
-		delete mpr;
+			delete mpr;
 #ifdef _DEBUG
-		delete logger;
+			delete logger;
 #endif
-		mprMemClose();
+			mprMemClose();
 
         trekClient.Terminate();
 
