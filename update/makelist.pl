@@ -28,7 +28,8 @@ if ($offset =~ /Daylight/i) {
 #client list
 foreach my $file (@art) {
 	next if ($file =~ /^\./);
-	next if ($file !~ /cc_09|tcor_/i); #demonstrates how to target specific client artwork using regexp filter
+	
+	next if ($file !~ /cc_09|tcor_|bgrnd/i); #demonstrates how to target specific client artwork using regexp filter
 	my $cmd = "C:\\crc32.exe C:\\build\\Package\\Artwork\\$file";
 	my $cmd2 = "C:\\mscompress.exe C:\\build\\Package\\Artwork\\$file";
 	my ($modtime,$size)= (stat("C:\\build\\Package\\Artwork\\$file"))[9,7];
