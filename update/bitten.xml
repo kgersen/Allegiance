@@ -12,6 +12,11 @@
 
 
 
+
+
+
+
+
 <build xmlns:sh="http://bitten.edgewall.org/tools/sh" xmlns:svn="http://bitten.edgewall.org/tools/svn" description="Building FAZR6 Branch">
 
 
@@ -42,9 +47,9 @@
 
 <step id="Smoke Test">
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Debug Compile&quot;"/> -->
-   <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork"/>
+   <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_registry.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork ${build} ${revision}"/>
    <sh:exec file="perl" args="${cdn.path}\\update\\test.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\AllSrv.exe &quot;allsrv -Core2Text cc_09b&quot; ."/>
-   <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_artpath.pl C:\\AllegBeta\\Artwork"/>   
+   <sh:exec file="perl" args="${cdn.path}\\update\\change_beta_server_registry.pl C:\\AllegBeta\\Artwork ${build} ${revision}"/>   
    <sh:exec file="echo" args="Running Allsrv.exe -Core2Text cc_09b completed"/>   
    <sh:exec file="copy" args="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\corechecker.pl ${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b\\corechecker.pl /Y"/>
    <sh:exec file="C:\\Inetpub\\wwwroot\\build\\CoreChecker\\runon.bat" args="${cdn.path}\\objs10\\FZDebug\\FedSrv\\Artwork\\cc_09b"/>
@@ -73,8 +78,8 @@
 	<sh:exec file="C:\\Program Files\\7-Zip\\7z.exe" args="a -t7z ${cdn.root}\\Package\\External.7z ${cdn.root}\\External\\* -mx9 -x!ASGS*"/>
 	<sh:exec file="echo" args="Copying externals completed"/>
 
-	<!-- <sh:exec file="echo" args="Signing objects"/>
-	<sh:exec file="${cdn.path}\\update\\sign.bat" args="FZRetail"/>
+	<sh:exec file="echo" args="Not signing objects, no FAO allowed certificate (yet)"/>
+	<!-- <sh:exec file="${cdn.path}\\update\\sign.bat" args="FZRetail"/>
 	<sh:exec file="echo" args="Signing objects completed"/> -->
 
 	<sh:exec file="echo" args="Copying objects"/>
@@ -148,8 +153,8 @@
 	<sh:exec file="echo" args="Copying externals completed"/>
 	<sh:exec file="del" args=" ${cdn.root}\\Package\\Release.7z"/>
 	
-	<!-- <sh:exec file="echo" args="Signing objects"/>
-	<sh:exec file="${cdn.path}\\update\\sign.bat" args="FZRetail"/>
+	<sh:exec file="echo" args="Not signing objects, no FAO allowed certificate (yet)"/>
+	<!-- <sh:exec file="${cdn.path}\\update\\sign.bat" args="FZRetail"/>
 	<sh:exec file="echo" args="Signing objects completed"/> -->
 
 	<sh:exec file="echo" args="Copying objects"/>
