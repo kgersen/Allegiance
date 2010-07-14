@@ -27,9 +27,9 @@ outline = Color(0.6,0.0,0.0);
 logo = ImportImage("nebplnt02bmp", true);
 
 txtBanner = "Welcome to the FAZDEV Server\\n";
-; jacked for bard 7/10 -imago
-;txtUpdated = "Current builds: 10.07.13 (R6_b${build}_r$revision)\\nMake sure you are using the latest: Press Esc and compare with the above\\n\\n";
-txtUpdated = "Current builds: 10.07.13 (Client: R6_bard_r683_1.06.003.12715) (Server: 1.05.1521.5171)\\nMake sure you are using the above: Press Esc to compare also use Product Version of the file properties\\n\\n";
+//jacked for bard 7/10 -imago
+//txtUpdated = "Current builds: $notoctal (R6_b${build}_r$revision)\\nMake sure you are using the latest: Press Esc and compare with the above\\n\\n";
+txtUpdated = "Current builds - Client 10.07.13 R6_b0_r683 (1.06.003.12715) - Server: 1.05.1521.5171\\nMake sure you are using the above: Press Esc to compare also use Product Version of the file properties\\n\\n";
 txtPrimaryHdg = "This message last updated $now\\nFAZ R6 beta has been released";
 txtPrimaryTxt = "\\nWatch this space for FAZ R6 beta updates\\nCC_09 IS OUT!\\n";
 txtSecondaryHdg = "\\nBeta Test Wed's are BACK\\n\\n";
