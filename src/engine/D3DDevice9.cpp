@@ -232,6 +232,14 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		bForceSWVP = true;
 	}
 
+	if (m_sD3DDev9.d3dPresParams.BackBufferWidth == 0) {
+		//uhhh, try this hack Imago 7/10
+		m_sD3DDev9.d3dPresParams.BackBufferWidth = 800;
+		m_sD3DDev9.d3dPresParams.BackBufferHeight = 600;
+		m_sD3DDev9.d3dPresParams.BackBufferFormat = D3DFMT_R5G6B5;
+		m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = D3DFMT_D24X8;
+	}
+
 	hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
 											DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
 											hParentWindow,
@@ -343,6 +351,11 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	// Store state.
 	m_sD3DDev9.bIsWindowed = m_sDevSetupParams.bRunWindowed;
+
+	//try this hack Imago 7/10
+	if (m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_UNKNOWN) {
+		m_sD3DDev9.pCurrentMode->mode.Format = D3DFMT_R5G6B5;
+	}
 
 	// Get flags and caps.
 	HRESULT hTemp = m_sD3DDev9.pD3D9->CheckDeviceFormat(m_sDevSetupParams.iAdapterID, //Imago was D3DADAPTER_DEFAULT 7/28/09
