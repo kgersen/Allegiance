@@ -129,8 +129,10 @@ void DeleteDumps(bool bDelete) {
 				MoveFile((PCC)ZString(iterFile.Value().cFileName),(PCC)ZString(iterFile.Value().cFileName)+ZString(".old"));
 				continue;
 			}
-			else
+			else {
+				debugf("**** Deleting %s\n",(PCC)ZString(iterFile.Value().cFileName));
 				DeleteFile((PCC)ZString(iterFile.Value().cFileName));
+			}
 		}
 	}
 }

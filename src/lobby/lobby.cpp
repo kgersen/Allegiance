@@ -34,6 +34,129 @@ LPCTSTR FindOneOf(LPCTSTR p1, LPCTSTR p2)
     return NULL;
 }
 
+//do our best to post a dump Imago 7/10 (move the appweb to Utility and reuse this)
+bool DumpSend(ZString zaFile, int iTry = 0) {
+	MaClient* client = new MaClient();
+	client->setTimeout(300000);
+	client->setRetries(1);
+	client->setKeepAlive(1);
+	HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	unsigned size = GetFileSize(hFile, 0);
+	if (size > 0) {
+		debugf("**** Preparing POST (try %i)\n",iTry+1);
+		char *buffer = (char*)::VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+		unsigned long cBytesRead;
+		ReadFile(hFile, buffer, size, &cBytesRead, NULL);
+		int contentLen = 0; char *content;
+
+		char sz7zName[MAX_PATH+64] = ""; 
+		Strcpy(sz7zName,(PCC)zaFile);
+		char* p1 = strrchr(sz7zName, '\\');
+		(!p1) ? p1 = "" : p1++;
+		ZString zApp = p1;
+		MprBuf * hdrBuf = new MprBuf(256);
+		hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
+		hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
+		hdrBuf->put("Connection: keep-alive\r\n");
+		hdrBuf->put("Keep-Alive: 115\r\n");
+		hdrBuf->put("User-Agent: AllLobby dump thread\r\n");
+		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
+			
+		ZString zParts1 = "-----------------------------01\r\n";
+		zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
+		zParts1 += zApp;
+		zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
+		ZString zParts0 = "\r\n-----------------------------01--\r\n";
+		int iTotal0 = cBytesRead + zParts1.GetLength() + zParts0.GetLength();
+		char * PostData = new char [iTotal0];
+		Strcpy(PostData,(PCC)zParts1);
+		memcpy(PostData+zParts1.GetLength(),buffer,size);
+		memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
+		hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
+		client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
+		debugf("**** sent %iB of data via HTTP\n",iTotal0);
+		if (client->getResponseCode() == 200)
+			content = client->getResponseContent(&contentLen);
+
+		delete hdrBuf;
+		delete PostData;
+		if (contentLen > 0) {
+			ZString zResponse = content;
+			if (contentLen < 1024 && zResponse.ReverseFindAny("BUSY") != -1) {
+				debugf("**** got BUSY response from dump checker!!! %i %s\n",contentLen,(PCC)zResponse);
+				delete client;
+				::VirtualFree(buffer, 0, MEM_RELEASE);
+				::CloseHandle(hFile);
+				debugf("**** waiting a moment to try again...\n");
+				Sleep(randomInt(3,6));
+				if (iTry < 3) { 
+					return false;
+				} else {
+					DeleteFile((PCC)zaFile);
+					debugf("**** Aborting, was TOO busy!!!\n");
+					return true;
+				}
+			} else {
+				debugf("**** got OK response from dump checker (%iB)\n",contentLen);
+				ZFile * pzReport = new ZFile(zaFile+".html", OF_WRITE | OF_CREATE);
+				pzReport->Write(zResponse);
+				delete pzReport;
+			}
+		}
+		delete client;
+		::VirtualFree(buffer, 0, MEM_RELEASE);
+	}
+	::CloseHandle(hFile);
+	DeleteFile((PCC)zaFile);
+	return true; //even if catastrophic failure
+}
+
+//Imago 7/10 - much like doDumps in Allegiance (move the appweb to Utility and reuse this)
+static void doDumps(void* data, MprThread *threadp) {
+	ZString * szFiles = (ZString *)data;
+	ZString zaFile;
+	int iMax = 6 * 1024;
+	int iTotal = 0;
+	while (!(zaFile = szFiles->GetToken()).IsEmpty()) {
+		debugf("**** Dump thread working on %s\n",(PCC)zaFile);
+		int size = Create7z((PCC)zaFile,zaFile+".7z");
+		zaFile+=".7z";
+		iTotal += size;
+		if (iTotal / 1024 > iMax) {
+			DeleteFile((PCC)zaFile);
+			break;
+		}
+		if (size <= 0) {
+			DeleteFile((PCC)zaFile);
+			continue;
+		}
+		debugf("**** Create7z returned: %i for file %s\n",size,(PCC)zaFile);
+		MprSocket* socket = new MprSocket();
+		socket->openClient("alleg.builtbygiants.net",80,0);
+		int iwrite = socket->_write("GET /\r\n");
+		delete socket;
+
+		if (iwrite == 7 && size > 0) {
+			int iTry = 0;
+			while (!DumpSend(zaFile,iTry)) {
+				iTry++;
+			}
+		}
+	}
+	debugf("**** Dump thread finished, tried sending %iKB\n",iTotal / 1024);
+
+    HKEY hKey;
+    DWORD dwResult = FALSE;
+	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby ,0, KEY_READ, &hKey))
+    {
+        DWORD dwSize = sizeof(dwResult);
+        DWORD dwType = REG_DWORD;
+        ::RegQueryValueEx(hKey, "SaveDumps", NULL, &dwType, (BYTE*)&dwResult, &dwSize);
+        ::RegCloseKey(hKey);
+    }
+	DeleteDumps(!dwResult);
+}
+
 // Although some of these functions are big they are declared inline since they are only used once
 
 inline HRESULT CServiceModule::RegisterServer(BOOL bRegTypeLib, BOOL bService, char * szAccount, char * szPassword)
@@ -549,6 +672,32 @@ int __cdecl main(int argc, char *argv[])
 #endif
 	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
+
+	//Imago 7/10 dump files
+	int iKBMax = 65536;
+	int iKBytes = 0;
+	int iLastIndex = 0;
+	char szDir[MAX_PATH+52] = "";
+	strcpy(szDir,(PCC)GetAppDir());
+	FileList tlFiles = FindDumps();
+	debugf("**** Found:  %i dump files\n",tlFiles.GetCount());
+	if (!tlFiles.IsEmpty()) {
+		ZString zFiles; 
+		zFiles.SetEmpty();
+		for (FileList::Iterator iterFile(tlFiles);
+			!iterFile.End(); iterFile.Next())
+		{
+			iKBytes += (iterFile.Value().nFileSizeHigh > 0) ? MAXINT : (iterFile.Value().nFileSizeLow / 1024);
+			if (iKBytes >= iKBMax && iLastIndex > 0) 
+				break;
+			ZString zFile = szDir + ZString(iterFile.Value().cFileName);
+			zFiles += zFile+" ";
+			iLastIndex++;
+		}
+		ZString * pzFiles = new ZString(zFiles);
+		MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "AllSrv dump thread"); 
+		threadp->start();
+	}
 
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
