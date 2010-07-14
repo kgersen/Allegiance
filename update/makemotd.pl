@@ -27,12 +27,14 @@ outline = Color(0.6,0.0,0.0);
 logo = ImportImage("nebplnt02bmp", true);
 
 txtBanner = "Welcome to the FAZDEV Server\\n";
-txtUpdated = "Current builds: $notoctal (R6_b${build}_r$revision)\\nMake sure you are using the latest: Press Esc and compare with the above\\n\\n";
+; jacked for bard 7/10 -imago
+;txtUpdated = "Current builds: 10.07.13 (R6_b${build}_r$revision)\\nMake sure you are using the latest: Press Esc and compare with the above\\n\\n";
+txtUpdated = "Current builds: 10.07.13 (Client: R6_bard_r683_1.06.003.12715) (Server: 1.05.1521.5171)\\nMake sure you are using the above: Press Esc to compare also use Product Version of the file properties\\n\\n";
 txtPrimaryHdg = "This message last updated $now\\nFAZ R6 beta has been released";
 txtPrimaryTxt = "\\nWatch this space for FAZ R6 beta updates\\nCC_09 IS OUT!\\n";
 txtSecondaryHdg = "\\nBeta Test Wed's are BACK\\n\\n";
 txtSecondaryTxt = "\\nIf you get the need ASGS message use ASGS (in beta mode) to connect to the beta lobby.\\n";
-txtDetails = "Free Allegiance Zone Dev Team\\n--------------------------\\naarmstrong\\nAEM\\nAndon\\nAvalanche\\nbahdohday\\nBard - Team Leader\\nCortex\\ndoofus\\nFactoid\\nFullMark\\nImago\\nJonan\\nKGJV\\nmdvalley\\nPook\\nRadar\\nRock\\nSgt Baker\\nStain_Rat\\nTerralthra\\nThalgor\\nTheBored\\nTigereye\\nTkela\\nYour_Persona\\nZapper\\n---------------------\\nWith special thanks to all previous devs and admins.\\nogg decoder by Xiph.org";
+txtDetails = "Free Allegiance Zone Dev Team\\n--------------------------\\naarmstrong\\nAEM\\nAndon\\nAvalanche\\nbahdohday\\nBard - Team Leader\\nCortex\\ndoofus\\nFactoid\\nFullMark\\nImago\\nJonan\\nKGJV\\nmdvalley\\nPook\\nRadar\\nRock\\nSgt Baker\\nStain_Rat\\nTerralthra\\nThalgor\\nTheBored\\nTigereye\\nTkela\\nYour_Persona\\nZapper\\n---------------------\\nWith special thanks to all previous devs and admins.\\nogg decoder by Xiph.org\\nLZMA encoder by Igor Pavlov";
 txtPadding      = "\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n";
 
 // END PROGRAM GENERATED SECTION
