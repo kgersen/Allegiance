@@ -70,8 +70,7 @@ foreach my $file (@svn) {
 
 #of course the latest build
 #my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe");
-#just the new reloader for now untill we are back to using latest build
-my @objs = ("C:\\Reloader.exe");
+my @objs = ("C:\\Reloader.exe"); #just the new reloader for now untill we are back to using latest build (bard jacked) -Imago 7/10
 foreach my $file (@objs) {
 	my $cmd = "C:\\crc32.exe $file";
 	my $cmd2 = "C:\\mscompress.exe $file";

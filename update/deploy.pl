@@ -57,12 +57,6 @@ my $ftp = Net::FTP->new("fazdev.alleg.net", Debug => 0, Port => 21122)
   
  print "Files uploaded OK\n";
 
-# remove me when no longer jacked from bard - Imago 7/10
-$ftp->quit();
-exit 0;
-## ^ remove ^ ##
-__END__
- 
 $ftp->rename("notify/ready","notify/process") or die "notify failed ", $ftp->message;
 print "Waiting for fazdev to upgrade\n";
 my $count = 0;

@@ -37,10 +37,9 @@ system($cmd);
 my $cmd = "expand Z:\\Deploy\\Filelist.txt C:\\Allegiance\\Lobby\\Filelist.txt";
 system($cmd);
 
-my $cmd = "C:\\Perl\\bin\\perl.exe Z:\\deploy\\upgrade.pl";
-system($cmd);
-
-
+# dont upgrade this go around - bard jacked 7/10 --Imago
+#my $cmd = "C:\\Perl\\bin\\perl.exe Z:\\deploy\\upgrade.pl";
+#system($cmd);
 
 move("Z:\\deploy\\notify\\process", "Z:\\deploy\\notify\\ready");
 unlink 'process.pid';
