@@ -195,8 +195,8 @@ foreach my $file (@tmp) {
 	`$cmd3`;
 	my ($modtime,$size)= (stat("C:\\build\\Package\\tmp\\expand\\$file"))[9,7];
 	next if (!$size);
-	next if ($dupes{client}{$file} == 1);
-	$dupes{client}{$file} = 1;	
+	next if ($dupes{server}{$file} == 1);
+	$dupes{server}{$file} = 1;	
 	my $crc = `$cmd`;
 	chomp $crc;
 	$size = sprintf("%09d",$size);
@@ -204,7 +204,7 @@ foreach my $file (@tmp) {
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
 	} else {
 		`$cmd2`;
 		my $csize = (stat("C:\\build\\Package\\tmp\\expand\\${file}_"))[7];
