@@ -695,14 +695,35 @@ public:
                 }
             }
         
-        if (button == 8 && bDown) { //Imago 8/14/09 mouse wheel
-            ScrollPageDown();
+		//Imago 8/14/09 mouse wheel
+        if (button == 8 && bDown) { 
+            NextItem();
         } else if (button == 9 && bDown) { 
-            ScrollPageUp();
+            PreviousItem();
         }
+		//
 
         return Pane::Button(pprovider, point, button, bCaptured, bInside, bDown);
     }
+
+	//Imago #133 7/10
+    void NextItem()
+    {
+        if (GetSelItemIdx() < m_vItems.GetCount() - 1) {
+			SetSelItemByIdx(GetSelItemIdx()+1);
+			if ((GetScrollPosition() + m_cVisibleItems) <= GetSelItemIdx())
+				ScrollPageDown();
+		}
+    }
+    void PreviousItem()
+    {
+        if (GetSelItemIdx() != 0) {
+			SetSelItemByIdx(GetSelItemIdx()-1);
+			if (GetScrollPosition() > GetSelItemIdx())
+				ScrollPageUp();
+		}
+    }
+	//
 
     void MouseOverPoint(const Point& point)
     {
