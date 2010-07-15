@@ -40,8 +40,7 @@ FilelistSite=http://fazdev.alleg.net
 FilelistDirectory=/FAZ/AU
 FileListCRC = $crc
 FilelistSize = $size
-; jacked for bard 7/10 Imago
-;PublicMessageCRC = $crc2
+PublicMessageCRC = $crc2
 TrainingURL=http://www.freeallegiance.org/FAW/index.php/Learning_guide
 ZoneAuthGUID={00000000-0000-0000-C000-000000000046}
 ZAuth=fazdev.alleg.net
@@ -77,13 +76,12 @@ FAZDev=12.96.40.28
 CDN=216.17.7.9
 
 [AllSrvUI]
-;jacked for bard -Imago 7/10
-;Site=http://fazdev.alleg.net
-;AutoUpdateURL=http://fazdev.alleg.net/FAZ/AU/AutoUpdate.exe
-;AutoUpdateCRC=$crc4
-;Directory=/FAZ/AU
-;FileListCRC = $crc3
-;FilelistSize = $size2
+Site=http://fazdev.alleg.net
+AutoUpdateURL=http://fazdev.alleg.net/FAZ/AU/AutoUpdate.exe
+AutoUpdateCRC=$crc4
+Directory=/FAZ/AU
+FileListCRC = $crc3
+FilelistSize = $size2
 
 
 
