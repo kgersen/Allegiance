@@ -83,9 +83,11 @@ foreach my $file (@art) {
 #include production AU artwork on the list!11!11 
 foreach my $file (@tmp) { 
 	next if ($file =~ /^\./);
-	my $cmd = "C:\\crc32.exe C:\\build\\Package\\tmp\\$file";
-	my $cmd2 = "C:\\mscompress.exe C:\\build\\Package\\tmp\\$file";
-	my ($modtime,$size)= (stat("C:\\build\\Package\\tmp\\$file"))[9,7];
+	my $cmd = "C:\\crc32.exe C:\\build\\Package\\tmp\\expand\\$file";
+	my $cmd2 = "C:\\mscompress.exe C:\\build\\Package\\tmp\\expand\\$file";
+	my $cmd3 = "expand C:\\build\\Package\\tmp\\$file C:\\build\\Package\\tmp\\expand\\$file";
+	`$cmd3`;
+	my ($modtime,$size)= (stat("C:\\build\\Package\\tmp\\expand\\$file"))[9,7];
 	next if (!$size);
 	next if ($dupes{client}{$file} == 1);
 	$dupes{client}{$file} = 1;	
@@ -96,10 +98,15 @@ foreach my $file (@tmp) {
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\Package\\tmp\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
 	} else {
 		`$cmd2`;
-		move("C:\\build\\Package\\tmp\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+		my $csize = (stat("C:\\build\\Package\\tmp\\expand\\${file}_"))[7];
+		if ($csize > $size) {
+			unlink "C:\\build\\Package\\tmp\\expand\\${file}_";
+			copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+		}		
+		move("C:\\build\\Package\\tmp\\expand\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
 	}
 }
 
@@ -180,14 +187,16 @@ foreach my $file (@svn) {
 }
 
 #lastly include whatever is on production AU
-foreach my $file (@svn) { 
+foreach my $file (@tmp) { 
 	next if ($file =~ /^\./);
-	my $cmd = "C:\\crc32.exe C:\\build\\Package\\tmp\\$file";
-	my $cmd2 = "C:\\mscompress.exe C:\\build\\Package\\tmp\\$file";
-	my ($modtime,$size)= (stat("C:\\build\\Package\\tmp\\$file"))[9,7];
+	my $cmd = "C:\\crc32.exe C:\\build\\Package\\tmp\\expand\\$file";
+	my $cmd2 = "C:\\mscompress.exe C:\\build\\Package\\tmp\\expand\\$file";
+	my $cmd3 = "expand C:\\build\\Package\\tmp\\$file C:\\build\\Package\\tmp\\expand\\$file";
+	`$cmd3`;
+	my ($modtime,$size)= (stat("C:\\build\\Package\\tmp\\expand\\$file"))[9,7];
 	next if (!$size);
-	next if ($dupes{server}{$file} == 1);
-	$dupes{server}{$file} = 1;	
+	next if ($dupes{client}{$file} == 1);
+	$dupes{client}{$file} = 1;	
 	my $crc = `$cmd`;
 	chomp $crc;
 	$size = sprintf("%09d",$size);
@@ -195,10 +204,15 @@ foreach my $file (@svn) {
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\Package\\tmp\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
 	} else {
 		`$cmd2`;
-		move("C:\\build\\Package\\tmp\\${file}_","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+		my $csize = (stat("C:\\build\\Package\\tmp\\expand\\${file}_"))[7];
+		if ($csize > $size) {
+			unlink "C:\\build\\Package\\tmp\\expand\\${file}_";
+			copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+		}		
+		move("C:\\build\\Package\\tmp\\expand\\${file}_","C:\\build\\AutoUpdate\\Game\\Server\\$file");
 	}
 }
 
