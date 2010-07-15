@@ -1667,7 +1667,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
         // debugf("%-20s %x %f %f %f\n", GetName(), timeStop.clock(), GetPosition().x, GetPosition().y, GetPosition().z);
 
         //First ... do we need to run away?
-        if (m_pilotType < c_ptCarrier)      //Carriers never run
+        if (m_pilotType < c_ptCarrier && !fRipcordActive())      //Carriers never run //TurkeyXIII added ripcord 7/10 - Imago
         {
             if (m_timeRanAway + c_dtCheckRunaway <= timeStop)
             {
