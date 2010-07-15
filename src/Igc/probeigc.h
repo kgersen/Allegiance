@@ -80,9 +80,11 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 				// make this experimental for now for testing
 				// Only damage 'sensor' probes (ICE projectile type = -1) and not other types of probes like towers
 
-				if ( (!(GetMyMission()->GetMissionParams()->bExperimental)) || (m_probeType->GetProjectileType() != NULL) )
+				//Xynth #98 if ( (!(GetMyMission()->GetMissionParams()->bExperimental)) || (m_probeType->GetProjectileType() != NULL) )
 				// end mmf
-                return c_drNoDamage;
+                //Xynth #98 Allow friendly probes to be damaged
+				if (m_probeType->GetProjectileType() != NULL) 
+					return c_drNoDamage;
             }
 
             DamageResult    dr = c_drHullDamage;
