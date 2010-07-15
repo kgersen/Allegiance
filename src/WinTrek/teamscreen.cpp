@@ -1083,6 +1083,7 @@ public:
         TRef<IObject> pobjPlayerColumns;
         TRef<IObject> pobjTeamColumns;
         TRef<Number>  pnumTeamColorIntensity;
+		TRef<Number>  pnumTeamColorBrightness; //Imago 7/10 #15
 
         //
         // Teamscreen exports
@@ -1112,7 +1113,7 @@ public:
         CastTo(pobjPlayerColumns,          pns->FindMember("playerColumns"       ));
         CastTo(pobjTeamColumns,            pns->FindMember("teamColumns"         ));
         CastTo(pnumTeamColorIntensity,     pns->FindMember("teamColorIntensity"  ));
-        CastTo(pnumTeamColorIntensity,     pns->FindMember("teamColorBrightness"  ));
+        CastTo(pnumTeamColorBrightness,     pns->FindMember("teamColorBrightness"  ));
         CastTo(m_pbuttonBack,              pns->FindMember("backButtonPane"      ));
         CastTo(m_pbuttonGameOver,          pns->FindMember("gameOverButtonPane"  ));
         CastTo(m_pbuttonStart,             pns->FindMember("startButtonPane"      ));
@@ -1163,7 +1164,7 @@ public:
 
         GetWindow()->SetChatListPane(m_pchatPane);
         m_fColorIntensity = pnumTeamColorIntensity->GetValue();
-        m_fColorBrightness = pnumTeamColorIntensity->GetValue();
+        m_fColorBrightness = pnumTeamColorBrightness->GetValue(); //Imago #15 7/10
 
         //
         // Text messages

@@ -1,0 +1,327 @@
+use "gamepanes";
+use "font";
+use "teamscreendata";
+
+//
+// Chat
+//
+
+chatColumns    = [126, 236, 357];
+chatHeader     = ButtonBarPane(ImportImage("headerchatbmp", false), Button3State, chatColumns, true);
+chatEditPane   = EditPane(Point(375, 23), largeFont);
+sendButtonPane = ButtonPane(ImportImage("btnsendbmp", false), ButtonNormal, false);
+chatText       = ChatListPane(Point(407,78));
+
+//
+// Player list
+//
+
+playerColumns   = [110, 138, 163, 249, 319, 398];
+
+playerListHeader = ButtonBarPane(ImportImage("headerplayersbmp", false), Button3State, playerColumns, false);
+playerScrollBar  = ScrollBarPane(Point(14, 330));
+playerListPane   = ListWithScrollBarPane(Point(398, 335), playerScrollBar);
+tableImage       = ImportImage("lobbylistbkgbmp", true);
+
+playerTablePane  = 
+    ImagePane(
+        tableImage,
+        [
+            (playerListPane, Point(0, 0)),
+            (playerScrollBar, Point(407, 0))
+        ]
+    );
+
+waterMarkPane = 
+    ImagePane(
+        PaneImage(
+            BlackPane(
+                AnimatedImagePane(
+                    GroupImage([
+                        TranslateImage(ImportImage("crnrpatchbmp", true), Point(409, -4)),
+                        BlendColorImage(civColor, civImage)
+                    ])
+                )
+            ),
+            false,
+            true
+        ),
+        [ 
+            (playerTablePane, Point(0, 0))
+        ]
+    );
+
+//
+// Team list
+//
+
+// NOTE: the tab shapes are defined by the images "teamscreentabbmp" (unselected) and 
+// "teamscreentabselbmp" (selected), the arrow next to the player's team is from,
+// "teamscreenarrowbmp", and the civ icons are from the icon names in the database.
+
+teamColorBrightness     = 0.50;
+teamColorIntensity      = 0.50;
+teamColumns             = [9, 143, 166, 220, 220]; // = [team name, num players, join button, gradient start, width]
+teamListPane            = ListPane(Point(220, 308));
+
+// R4 
+activeTeamButtonPane1 = ButtonPane(ImportImage("btncheckbmp", true), ButtonNormalCheckBox, true);
+activeTeamButtonPane2 = ButtonPane(ImportImage("btncheckbmp", true), ButtonNormalCheckBox, true);
+activeTeamButtonPane3 = ButtonPane(ImportImage("btncheckbmp", true), ButtonNormalCheckBox, true);
+activeTeamButtonPane4 = ButtonPane(ImportImage("btncheckbmp", true), ButtonNormalCheckBox, true);
+activeTeamButtonPane5 = ButtonPane(ImportImage("btncheckbmp", true), ButtonNormalCheckBox, true);
+activeTeamButtonPane6 = ButtonPane(ImportImage("btncheckbmp", true), ButtonNormalCheckBox, true);
+
+//
+// Normal buttons
+//
+
+backButtonPane      = SoundButtonPane(ImportImage("btnbackbmp",      true), ButtonNormal, false, negativeButtonClickSoundId);
+gameOverButtonPane    = ButtonPane(ImportImage("btngameoverbmp", true), ButtonNormal, false);
+acceptButtonPane    = ButtonPane(ImportImage("btnacceptnewbmp", true), ButtonNormal, false);
+rejectButtonPane    = ButtonPane(ImportImage("btnrejectnewbmp", true), ButtonNormal, false);
+joinButtonPane      = ButtonPane(ImportImage("btnjoin2bmp",      true), ButtonNormal, false);
+randomizeButtonPane = ButtonPane(ImportImage("btnrandomizeteamsbmp", true), ButtonNormal, false);
+
+detailsButtonPane   = ButtonPane(ImportImageFromFile("btnsettings.png",   true), ButtonNormal, false); // R4 changed
+settingsButtonPane  = ButtonPane(ImportImageFromFile("btnsettings.png",  true), ButtonNormal, false); // R4 changed
+makeLeaderButtonPane= ButtonPane(ImportImage("btnmakeleaderbmp",true), ButtonNormal, false); // R4 changed
+startButtonPane     = ButtonPane(ImportImage("btnstartbmp",     true), ButtonNormal, false);
+
+teamSettingsButtonPane = ButtonPane(ImportImageFromFile("btnteamsettings.png",   true), ButtonNormal, false); // R4 changed
+
+//
+// Check boxes
+//
+
+//readyButtonPane      = ButtonPane(ImportImage("btnimreadybmp",    true), ButtonNormalCheckBox, true);
+awayFromKeyboardButtonPane = ButtonPane(ImportImage("btnafkbmp",  true), ButtonNormalCheckBox, true);
+sideReadyButtonPane  = ButtonPane(ImportImage("btnsidereadybmp",  true), ButtonNormalCheckBox, true);
+autoAcceptButtonPane = ButtonPane(ImportImage("btnautoacceptbmp", true), ButtonNormalCheckBox, true);
+lockLobbyButtonPane = ButtonPane(ImportImage("btnlocklobbybmp", true), ButtonNormalCheckBox, true);
+lockSidesButtonPane = ButtonPane(ImportImage("btnlocksidesbmp", true), ButtonNormalCheckBox, true);
+
+//
+// Combo boxes
+//
+
+
+wingComboPane        = ImageComboPane(ImportImage("btnchangewingbmp", true), largeFont);
+
+//
+// Status text
+//
+
+
+TextColor            = Color(1, 1, 1);
+YellowColor          = Color(0.878, 0.573, 0);
+textLobby            = StringPane("TEAM LOBBY", YellowColor,    Point(160, 24), JustifyLeft, titleFont);
+textFor              = StringPane("FOR:  ",         YellowColor,      Point(50, 24),  JustifyLeft, titleFont);
+textTitle            = StringPane("<bug>",          TextColor,      Point(550, 24), JustifyLeft, titleFont);
+textPrompt           = StringPane("<bug>",          TextColor,      Point(400, 20), JustifyLeft, promptFont);
+textStatus           = StringPane("<bug>",          TextColor,      Point(256, 20), JustifyRight, promptFont);
+textStatus2          = StringPane("<bug>",          TextColor,      Point(256, 12), JustifyRight, promptFont);
+textTimer            = StringPane("",               TextColor,      Point( 95, 22), JustifyRight, titleFont);
+textTimerType        = StringPane("",               TextColor,      Point(102, 14), JustifyLeft, promptFont);
+
+stringScoresCount = 
+    SwitchString(statsCount,
+        SwitchString(squadStatsCount,
+            "Stats will not count",
+            [
+                (0, "Squad game, stats will not count"),
+                (1, "<bug>")
+            ]
+        ),
+        [ 
+            (1, 
+                SwitchString(squadStatsCount,
+                    "Stats will count",
+                    [
+                        (0, "Squad game, only player stats will count"),
+                        (1, "Squad and player stats will count")
+                    ]
+                )
+            )
+        ]
+    );
+textScoresCount = StringPane(stringScoresCount, TextColor, Point(290, 20), JustifyRight, promptFont);
+
+
+//
+//  Rollover Help Text
+//
+
+hoverSite = HoverSite(0);
+
+hoverString =
+    SwitchString(
+        HoverSiteGetID(hoverSite),
+        "",
+        [
+            ( 1, "Select this team to view its roster."),
+            
+            ( 2, "Select so all players in the game can see your chat messages."),
+            ( 3, "Select so only your team members can see your chat messages."),
+            ( 4, "Select so only team leaders can see your chat messages."),
+            
+            ( 5, "Shows all chat messages in the selected channel."),
+            ( 6, "Type text, and then click to send your message."),
+            ( 7, "Available openings for qualified players."),
+            ( 8, "Designated Commander."),
+            ( 9, "Designated Investor."),
+            ( 10, "Game Owner."),
+            
+            ( 11, "Shows the player's name."),
+            ( 12, "Checkmark indicates the player is the game owner."),
+            ( 13, "Checkmark indicates the player is the team leader."),
+            ( 14, "The player's current rank by faction, with overall rank in parentheses."),
+            ( 15, "Shows the player's current status."),
+            ( 16, "Shows the player's current wing assignment."),
+            
+            ( 17, "Access details of the game."),
+            ( 18, "Make the selected player the team leader."),
+            ( 19, "Currently selected player is titled as Investor."),
+            ( 20, "Establish ping rate with currently selected player."),
+            ( 21, "Immediately launch the game."),
+            ( 22, "Select to accept automatically all players who join your team."),
+            ( 23, "Shows the ready status of all teams."),
+            ( 24, "Cancel any settings and return to the Games List."),
+            ( 25, "Select to show other players you are away from the keyboard."),
+            ( 26, "Change the faction for your team."),
+            ( 27, "Change your wing assignment."),
+            ( 28, "Join the selected team."),
+            ( 29, "Accept the selected player on your team."),
+            ( 30, "Reject the selected player from your team."),
+            ( 31, "Select to prevent new players from joining the game."),
+            ( 32, "Return to the statistics for the last game."),
+            ( 33, "Select to disallow changes to the teams."),
+	    ( 34, "Select to indicate that your team is ready for the game to launch.")	,
+            ( 35, "Assign everyone except the team leaders to random teams and then lock the sides."),
+            ( 36, "Deactivate or activate this team.")
+        ]
+    );
+
+hoverImage = StringImage(JustifyLeft, 200, medVerdana, white, hoverString);
+hoverPane  = AnimatedImagePaneRect(hoverImage, Rect(0, -25, 200, 0));
+
+// R4
+mapPreviewPane      = MapPreviewPane(ImportImage("sectormapbkgndbmp",false),true,false);
+textServername      = StringPane(strServerName, TextColor, Point(290, 20), JustifyRight, promptFont);
+textCorename        = StringPane(strCoreName, TextColor, Point(290, 20), JustifyRight, promptFont);
+//
+// The background and control positions
+//
+
+screen =
+    ScreenPane(
+        ImportImage("teamscreenbmp", false),
+        [   
+            (textLobby,            Point( 20,   3)),
+            (textFor,              Point(170,   3)), 
+            (textTitle,            Point(230,   3)),
+            (textPrompt,           Point(100,  28)),
+            (textScoresCount,      Point(500,  30)),
+            (textTimerType,        Point(698,  56)),
+            (textTimer,            Point(695,  70)),
+            (textServername,       Point(500,   3)), // R4
+            (textCorename,         Point(500,  15)), // R4
+ 
+            (HoverPane(hoverSite,   1,  teamListPane),              Point( 45,  85)),
+
+            (HoverPaneColumns(hoverSite, 11, playerListHeader, playerColumns),        Point(268,  54)),       
+            (HoverPaneColumns(hoverSite, 11, waterMarkPane,    playerColumns),        Point(268,  71)),
+
+            (HoverPaneColumns(hoverSite,  2, chatHeader,       chatColumns),          Point(268, 420)),
+            (HoverPane(hoverSite,   5,  chatEditPane),              Point(270, 522)),
+            (HoverPane(hoverSite,   6,  sendButtonPane),            Point(643, 525)),
+            (HoverPane(hoverSite,   5,  chatText),                  Point(270, 440)),
+
+            (HoverPane(hoverSite,  24,  backButtonPane),            Point( 20, 560)),
+            (HoverPane(hoverSite,  32,  gameOverButtonPane),        Point(465, 560)),
+
+            (HoverPane(hoverSite,  27,  wingComboPane),             Point(695, 193)),
+            (HoverPane(hoverSite,  34,  sideReadyButtonPane),       Point(695, 219)),
+            (HoverPane(hoverSite,  22,  autoAcceptButtonPane),      Point(695, 245)),
+            (HoverPane(hoverSite,  29,  acceptButtonPane),          Point(695, 271)),
+            (HoverPane(hoverSite,  30,  rejectButtonPane),          Point(695, 297)),
+            (HoverPane(hoverSite,  18,  makeLeaderButtonPane),      Point(695, 323)),
+            (HoverPane(hoverSite,  31,  lockLobbyButtonPane),       Point(695, 349)),
+            (HoverPane(hoverSite,  33,  lockSidesButtonPane),       Point(695, 375)),
+            (HoverPane(hoverSite,  35,  randomizeButtonPane),       Point(695, 401)),
+            
+            (HoverPane(hoverSite,  28,  joinButtonPane),            Point(694, 92)),
+            
+
+            //(readyButtonPane,      Point( 80, 410)),
+            (HoverPane(hoverSite,  25,  awayFromKeyboardButtonPane),Point(624, 420)),
+            
+            
+            //(HoverPane(hoverSite,  17,  detailsButtonPane),       Point( 80, 470)),
+            //(HoverPane(hoverSite,  17,  settingsButtonPane),      Point( 80, 470)),
+            (detailsButtonPane,                                     Point( 5, 420)),
+            (settingsButtonPane,                                    Point( 5, 420)), // moved
+            (teamSettingsButtonPane,                                Point( 5, 470)), // moved to left
+            (mapPreviewPane,                                        Point( 144, 419)), // new in R4
+            
+            (HoverPane(hoverSite,  21,  startButtonPane),           Point(693, 434)),
+
+            (HoverPane(hoverSite,  23,  textStatus),                Point(0, 530)),
+            (HoverPane(hoverSite,  23,  textStatus2),               Point(0, 542)),
+            
+            // new in R4
+            (HoverPane(hoverSite,  36,  activeTeamButtonPane1), Point(15, 97 )),
+            (HoverPane(hoverSite,  36,  activeTeamButtonPane2), Point(15, 141)),
+            (HoverPane(hoverSite,  36,  activeTeamButtonPane3), Point(15, 185)),
+            (HoverPane(hoverSite,  36,  activeTeamButtonPane4), Point(15, 229)),
+            (HoverPane(hoverSite,  36,  activeTeamButtonPane5), Point(15, 273)),
+            (HoverPane(hoverSite,  36,  activeTeamButtonPane6), Point(15, 317)),
+            
+            (hoverPane, Point(600, 575))
+        ]
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+// The Team Settings dialog
+
+okButtonPane     = ButtonPane(ImportImage("btnokbmp",        true), ButtonNormal, false);
+cancelButtonPane = ButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false);
+
+civComboPane     = StringComboPane(Point(317, 22), Point(317, 22), largeFont, TextColor);
+squadComboPane   = StringComboPane(Point(126, 22), Point(126, 22), largeFont, TextColor);
+
+teamNameEditPane = EditPane(Point(317, 22), largeFont);
+
+squadComboImagePane = 
+    ImagePane(
+        ImportImage("teamsettingssquadcombobmp", false),
+        [
+            (squadComboPane, Point( 98,  26))
+        ]
+    );
+
+teamOrSquadPane = 
+    SwitchPane(
+        showSquad,
+        [
+            (squadComboImagePane, 1)
+        ]
+    );  
+
+TeamSettingsDialog =
+        (
+            ImagePane(
+                ImportImage("teamsettingsdialogbmp", false),
+                [   
+                    
+                    (teamOrSquadPane,           Point(  0,  46)),
+                    (teamNameEditPane,          Point( 98,  69)),
+                    (civComboPane,              Point( 98, 157)),
+                    (okButtonPane,              Point(211, 211)),
+                    (cancelButtonPane,          Point(476,   7))
+                    
+                ]
+            )
+        );
+
+
