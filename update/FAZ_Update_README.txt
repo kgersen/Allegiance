@@ -16,7 +16,7 @@ http://svn.alleg.net/svn/AllegThirdParty/CRC/
 makensis
 http://nsis.sourceforge.net/
 
-dxwebsetup
+dxwebsetup & GameUXInstallHelper
 http://www.microsoft.com/directx
 
 md5sums

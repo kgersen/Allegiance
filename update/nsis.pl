@@ -134,17 +134,11 @@ SetCompressor lzma
 !define PRODUCT_DIR_REGKEY "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Allegiance\\$ver"
 !define PRODUCT_UNINST_KEY "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${PRODUCT_PUBLISHER}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define PRODUCT_STARTMENU_REGVAL "NSIS:StartMenuDir"
+!define PRODUCT_STARTMENU_REGVAL "NSIS:AllegStartMenuDir"
+
 !include LogicLib.nsh
-!define CERT_QUERY_OBJECT_FILE 1
-!define CERT_QUERY_CONTENT_FLAG_ALL 16382
-!define CERT_QUERY_FORMAT_FLAG_ALL 14
-!define CERT_STORE_PROV_SYSTEM 10
-!define CERT_STORE_OPEN_EXISTING_FLAG 0x4000
-!define CERT_SYSTEM_STORE_LOCAL_MACHINE 0x20000
-!define CERT_STORE_ADD_ALWAYS 4
- 
- !define StrStr "!insertmacro StrStr"
+
+!define StrStr "!insertmacro StrStr"
  
 !macro StrStr ResultVar String SubString
   Push `\${String}`
@@ -191,34 +185,6 @@ Function StrStr
   Exch \$R0
 FunctionEnd
  
-Function AddCertificateToStore
-  Exch \$0
-  Push \$1
-  Push \$R0
-  System::Call "crypt32::CryptQueryObject(i \${CERT_QUERY_OBJECT_FILE}, w r0, i \${CERT_QUERY_CONTENT_FLAG_ALL}, i \${CERT_QUERY_FORMAT_FLAG_ALL}, i 0, i 0, i 0, i 0, i 0, i 0, *i .r0) i .R0"
-  \${If} \$R0 <> 0
-    System::Call "crypt32::CertOpenStore(i \${CERT_STORE_PROV_SYSTEM}, i 0, i 0, i \${CERT_STORE_OPEN_EXISTING_FLAG}|\${CERT_SYSTEM_STORE_LOCAL_MACHINE}, w 'ROOT') i .r1"
-    \${If} \$1 <> 0
-      System::Call "crypt32::CertAddCertificateContextToStore(i r1, i r0,i \${CERT_STORE_ADD_ALWAYS}, i 0) i .R0"
-      System::Call "crypt32::CertFreeCertificateContext(i r0)"
-      \${If} \$R0 = 0
-        StrCpy \$0 "Unable to add certificate to certificate store"
-      \${Else}
-        StrCpy \$0 "success"
-      \${EndIf}
-      System::Call "crypt32::CertCloseStore(i r1, i 0)"
-    \${Else}
-      System::Call "crypt32::CertFreeCertificateContext(i r0)"
-      StrCpy \$0 "Unable to open certificate store"
-    \${EndIf}
-  \${Else}
-    StrCpy \$0 "Unable to open certificate file"
-  \${EndIf}
-  Pop \$R0
-  Pop \$1
-  Exch \$0
-FunctionEnd
-
 Function IsSilent
   Push \$0
   Push \$CMDLINE
@@ -287,6 +253,164 @@ FunctionEnd
 !macroend
 
 
+
+;begin GameUX 7/10
+Var GameExplorer_ContextId
+!define GAME_EXPLORER_HELPER_PATH "C:\\"
+!define GameExplorer_AddGame "!insertmacro GameExplorer_AddGame"
+!define GameExplorer_AddPlayTask "!insertmacro GameExplorer_AddPlayTask"
+!define GameExplorer_AddSupportTask "!insertmacro GameExplorer_AddSupportTask"
+!define GameExplorer_RemoveGame "!insertmacro GameExplorer_RemoveGame"
+ 
+!macro GameExplorer_AddGame CONTEXT GDF INSTDIR RUNPATH RUNARGS SAVEGAMEEXT
+  Push \$0
+  Push \$1
+  Push \$2
+  Push \$3
+  Push \$4
+  SetOutPath \$PLUGINSDIR
+  !ifndef GAME_EXPLORER_DLL_EXISTS
+    !ifdef GAME_EXPLORER_HELPER_PATH
+      File "/oname=GameuxInstallHelper.dll" "\${GAME_EXPLORER_HELPER_PATH}"
+    !else
+      File "GameuxInstallHelper.dll"
+    !endif
+    !define GAME_EXPLORER_DLL_EXISTS
+  !endif
+  !if "\${CONTEXT}" == "current"
+    StrCpy \$GameExplorer_ContextId 2
+  !else if  "\${CONTEXT}" == "all"
+    StrCpy \$GameExplorer_ContextId 3
+  !else
+    !error 'Context must be "current" or "all"'
+  !endif
+  System::Call 'GameuxInstallHelper::GenerateGUID(g .r0)'
+  !ifndef GAME_EXPLORER_GUID_DECLARED
+    Var /GLOBAL GameExplorer_GUID
+    !define GAME_EXPLORER_GUID_DECLARED
+  !endif
+  \${If} \$0 != "{00000000-0000-0000-0000-000000000000}"
+    StrCpy \$GameExplorer_GUID \$0
+    StrCpy \$1 "\${GDF}"
+    StrCpy \$2 "\${INSTDIR}"
+    System::Call "GameuxInstallHelper::AddToGameExplorerA(t r1, t r2, \
+      i \$GameExplorer_ContextId, g r0)"
+    StrCpy \$3 "\${RUNPATH}"
+    StrCpy \$4 "\${RUNARGS}"
+    !ifndef GAME_EXPLORER_PLAYTASK_NUM_DECLARED
+      Var /GLOBAL GameExplorer_PlaytaskNum
+      !define GAME_EXPLORER_PLAYTASK_NUM_DECLARED
+    !endif
+    StrCpy \$GameExplorer_PlaytaskNum 0
+    !ifndef GAME_EXPLORER_SUPPORTTASK_NUM_DECLARED
+      Var /GLOBAL GameExplorer_SupporttaskNum
+      !define GAME_EXPLORER_SUPPORTTASK_NUM_DECLARED
+    !endif
+    StrCpy \$GameExplorer_SupporttaskNum 0
+    System::Call "GameuxInstallHelper::RegisterWithMediaCenterA(t r1, t r2, \
+      i \$GameExplorer_ContextId, t r3, t r4, i 1)" 
+    !if "\${SAVEGAMEEXT}" != ""
+      StrCpy \$2 "\${SAVEGAMEEXT}"
+      !if "\${RUNARGS}" != ""
+        StrCpy \$4 "\${RUNARGS} \$\"%1\$\""
+      !else
+        StrCpy \$4 '"%1"'
+      !endif
+      System::Call "GameuxInstallHelper::SetupRichSavedGamesA(t r2, t r3, t r4)"
+    !endif
+  \${EndIf}
+  Pop \$4
+  Pop \$3
+  Pop \$2
+  Pop \$1
+  Pop \$0
+!macroend
+ 
+!macro GameExplorer_AddPlayTask TASKNAME RUNPATH RUNARGS
+  Push \$0
+  Push \$1
+  Push \$2
+  StrCpy \$0 "\${TASKNAME}"
+  StrCpy \$1 "\${RUNPATH}"
+  StrCpy \$2 "\${RUNARGS}"
+  !ifndef GAME_EXPLORER_GUID_DECLARED
+    Var /GLOBAL GameExplorer_GUID
+    !define GAME_EXPLORER_GUID_DECLARED
+  !endif
+  !ifndef GAME_EXPLORER_PLAYTASK_NUM_DECLARED
+    Var /GLOBAL GameExplorer_PlaytaskNum
+    !define GAME_EXPLORER_PLAYTASK_NUM_DECLARED
+  !endif
+  System::Call "GameuxInstallHelper::CreateTaskA(i \$GameExplorer_ContextId, \
+    g '\$GameExplorer_GUID', i 0, i \$GameExplorer_PlaytaskNum, t r0, t r1, t r2)"
+  IntOp \$GameExplorer_PlaytaskNum \$GameExplorer_PlaytaskNum + 1
+  Pop \$2
+  Pop \$1
+  Pop \$0
+!macroend
+ 
+!macro GameExplorer_AddSupportTask TASKNAME SUPPORTPATH
+  Push \$0
+  Push \$1
+  StrCpy \$0 "${TASKNAME}"
+  StrCpy \$1 "${SUPPORTPATH}"
+  !ifndef GAME_EXPLORER_GUID_DECLARED
+    Var /GLOBAL GameExplorer_GUID
+    !define GAME_EXPLORER_GUID_DECLARED
+  !endif
+  !ifndef GAME_EXPLORER_SUPPORTTASK_NUM_DECLARED
+    Var /GLOBAL GameExplorer_SupporttaskNum
+    !define GAME_EXPLORER_SUPPORTTASK_NUM_DECLARED
+  !endif
+  System::Call "GameuxInstallHelper::CreateTaskA(i \$GameExplorer_ContextId, \
+    g '\$GameExplorer_GUID', i 0, i \$GameExplorer_SupporttaskNum, t r0, t r1, '')"
+  IntOp \$GameExplorer_SupporttaskNum \$GameExplorer_SupporttaskNum + 1
+  Pop \$1
+  Pop \$0
+!macroend
+ 
+!macro GameExplorer_RemoveGame CONTEXT GDF INSTDIR RUNPATH SAVEGAMEEXT
+  Push \$0
+  Push \$1
+  Push \$2
+  Push \$3
+  !if "\${CONTEXT}" == "current"
+    StrCpy \$GameExplorer_ContextId 2
+  !else if  "\${CONTEXT}" == "all"
+    StrCpy \$GameExplorer_ContextId 3
+  !else
+    !error 'Context must be "current" or "all"'
+  !endif
+  SetOutPath \$PLUGINSDIR
+  !ifndef UNGAME_EXPLORER_DLL_EXISTS
+    !ifdef GAME_EXPLORER_HELPER_PATH
+      File "/oname=GameuxInstallHelper.dll" "\${GAME_EXPLORER_HELPER_PATH}"
+    !else
+      File "GameuxInstallHelper.dll"
+    !endif
+    !define UNGAME_EXPLORER_DLL_EXISTS
+  !endif
+  StrCpy \$1 "\${GDF}"
+  System::Call "GameuxInstallHelper::RetrieveGUIDForApplicationA(t r1, g .r0)"
+  System::Call "GameuxInstallHelper::RemoveTasks(g r0)"
+  System::Call "GameuxInstallHelper::RemoveFromGameExplorer(g r0)"
+  StrCpy \$2 "\${INSTDIR}"
+  StrCpy \$3 "\${RUNPATH}"
+  System::Call "GameuxInstallHelper::UnRegisterWithMediaCenterA(t r2, \
+    i \$GameExplorer_ContextId, t r3, i 0)"
+  !if "\${SAVEGAMEEXT}" != ""
+    StrCpy \$2 "\${SAVEGAMEEXT}"
+    System::Call "GameuxInstallHelper::RemoveRichSavedGamesA(t r2)"
+  !endif
+  Pop \$3
+  Pop \$2
+  Pop \$1
+  Pop \$0
+!macroend
+
+; End GameUX - 7/10
+
+
 !include "MUI2.nsh"
 !define MUI_ABORTWARNING
 !define MUI_ICON "C:\\allegg.ico"
@@ -329,6 +453,7 @@ Name "\${PRODUCT_NAME} \${PRODUCT_VERSION} (b\${PRODUCT_BUILD}_r\${PRODUCT_CHANG
 Var DirectXSetupError
 var ArtPath
 var bSilent
+var OSver
 
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "ProductName" "Free Allegiance Installer"
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "Comments" "Created by build.alleg.net on $now"
@@ -351,6 +476,7 @@ InstallDir "C:\\$filen"
 BrandingText "Free Allegiance - http://www.freeallegiance.org" 
 
 ; Request application privileges for Windows Vista/Win7
+XPStyle On
 RequestExecutionLevel admin
 
 !addplugindir "..\\Release"
@@ -386,7 +512,8 @@ StrCpy \$R0 \$0
 StrCpy \$R1 \$1
 LogEx::Write true true "Windows OSVersion: \$R0.\$R1"
 LogEx::Write true true "SilentMode? \$bSilent"
-
+  StrCpy \$OSver \$R0
+  
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   CreateDirectory "\$SMPROGRAMS\\\$ICONS_GROUP"
   CreateShortCut "\$SMPROGRAMS\\\$ICONS_GROUP\\Free Allegiance.lnk" "\$INSTDIR\\$clientbinary"
@@ -473,6 +600,14 @@ Section -Post
 SectionEnd
 
 Section "DirectX Install" SEC_DIRECTX
+
+\${If} \$OSver >= 5
+\${GameExplorer_AddGame} all "\$INSTDIR\\Allegiance.exe" "\$INSTDIR" "\$INSTDIR\\Allegiance.exe" "" ""
+\${GameExplorer_AddPlayTask} "Safe Mode" "\$INSTDIR\\Allegiance.exe" "-software"
+\${GameExplorer_AddSupportTask} "Home Page" "http://www.alleg.net/"
+; TODO! now add to the GameExplorer_GUID the ApplicationId 354866c5-c0ed-4ecd-981c-17f767aa6265
+\${EndIf}
+
 \${If} \$bSilent == 0
 SectionIn RO
  SetOutPath "\$TEMP"
@@ -528,6 +663,11 @@ skipdel:
 
   DeleteRegKey \${PRODUCT_UNINST_ROOT_KEY} "\${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "\${PRODUCT_DIR_REGKEY}"
+  
+\${If} \$OSver >= 5  
+\${GameExplorer_RemoveGame} all "\$INSTDIR\\Allegiance.exe" "\$INSTDIR" "\$INSTDIR\\Allegiance.exe" ""
+\${EndIf}
+  
   SetAutoClose true
 SectionEnd
 END_NSIS
@@ -541,7 +681,46 @@ $betavar
 $nsis
 };
 
-open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
-#open(NSIS,">nsis.nsi");
+#open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
+open(NSIS,">nsis.nsi");
 print NSIS $nsis;
 close NSIS;
+
+#this was removed for bard untill we get a real cert (so now we won't need it) - Imago 6/10
+__END__
+
+!define CERT_QUERY_OBJECT_FILE 1
+!define CERT_QUERY_CONTENT_FLAG_ALL 16382
+!define CERT_QUERY_FORMAT_FLAG_ALL 14
+!define CERT_STORE_PROV_SYSTEM 10
+!define CERT_STORE_OPEN_EXISTING_FLAG 0x4000
+!define CERT_SYSTEM_STORE_LOCAL_MACHINE 0x20000
+!define CERT_STORE_ADD_ALWAYS 4
+
+Function AddCertificateToStore
+  Exch \$0
+  Push \$1
+  Push \$R0
+  System::Call "crypt32::CryptQueryObject(i \${CERT_QUERY_OBJECT_FILE}, w r0, i \${CERT_QUERY_CONTENT_FLAG_ALL}, i \${CERT_QUERY_FORMAT_FLAG_ALL}, i 0, i 0, i 0, i 0, i 0, i 0, *i .r0) i .R0"
+  \${If} \$R0 <> 0
+    System::Call "crypt32::CertOpenStore(i \${CERT_STORE_PROV_SYSTEM}, i 0, i 0, i \${CERT_STORE_OPEN_EXISTING_FLAG}|\${CERT_SYSTEM_STORE_LOCAL_MACHINE}, w 'ROOT') i .r1"
+    \${If} \$1 <> 0
+      System::Call "crypt32::CertAddCertificateContextToStore(i r1, i r0,i \${CERT_STORE_ADD_ALWAYS}, i 0) i .R0"
+      System::Call "crypt32::CertFreeCertificateContext(i r0)"
+      \${If} \$R0 = 0
+        StrCpy \$0 "Unable to add certificate to certificate store"
+      \${Else}
+        StrCpy \$0 "success"
+      \${EndIf}
+      System::Call "crypt32::CertCloseStore(i r1, i 0)"
+    \${Else}
+      System::Call "crypt32::CertFreeCertificateContext(i r0)"
+      StrCpy \$0 "Unable to open certificate store"
+    \${EndIf}
+  \${Else}
+    StrCpy \$0 "Unable to open certificate file"
+  \${EndIf}
+  Pop \$R0
+  Pop \$1
+  Exch \$0
+FunctionEnd
