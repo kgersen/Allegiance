@@ -4,6 +4,7 @@
 //
 #define IDS_PROJNAME                    100
 #define IDR_WMDMLOGGER                  101
+#define ID_ICON							110 //Imago 7/10
 #define IDS_LOG_SEV_INFO                201
 #define IDD_RESPICKER                   201
 #define IDS_LOG_SEV_WARN                202

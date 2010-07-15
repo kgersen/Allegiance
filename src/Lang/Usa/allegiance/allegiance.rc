@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include "gameux.h" //Imago 7/10
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -14,6 +15,25 @@
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT     //      Compatible with Vista and Other Windows Version
+
+#endif
+#pragma code_page(1252)
+#endif //_WIN32
+
+//Imago 7/10
+ID_GDF_XML           DATA     "Allegiance.gdf"
+ID_GDF_THUMBNAIL     DATA     "boxart.png"
+ID_ICON              ICON     "gameicon.ico"
+
+
 /////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
@@ -22,6 +42,12 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
+
+//Imago 7/10
+ID_GDF_XML           DATA     "Allegiance.gdf"
+ID_GDF_THUMBNAIL     DATA     "boxart.png"
+ID_ICON              ICON     "gameicon.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -67,6 +93,11 @@ END
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 #pragma code_page(1252)
 #endif //_WIN32
+
+//Imago 7/10
+ID_GDF_XML           DATA     "Allegiance.gdf"
+ID_GDF_THUMBNAIL     DATA     "boxart.png"
+ID_ICON              ICON     "gameicon.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
