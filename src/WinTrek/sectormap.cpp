@@ -352,6 +352,26 @@ public:
         return fOre;
     }
 
+	//Xynth #104 7/2010  Returns true if at least one He3 is eyed
+	bool HeliumAsteroidVisibileInCluster(IclusterIGC* pcluster)
+	{
+		bool HeSpotted = false;
+		IsideIGC*   psideMine = trekClient.GetShip()->GetSide();
+        for (AsteroidLinkIGC* asteriodLink = pcluster->GetAsteroids()->first();
+            asteriodLink != NULL; asteriodLink = asteriodLink->next())
+        {
+            AsteroidAbilityBitMask aabm = asteriodLink->data()->GetCapabilities();
+
+            // if we can mine helium at this asteroid
+            if ((aabm & c_aabmMineHe3) != 0)
+            {
+                if (asteriodLink->data()->GetAsteroidCurrentEye(psideMine))
+					HeSpotted = true;
+            }
+        }
+		return HeSpotted;
+	}  //End #104 function
+
     void Render(Context* pcontext)
     {
 		pcontext->SetBlendMode(BlendModeSourceAlpha); //Imago 7/15/09
@@ -457,10 +477,17 @@ public:
                 Point ptHelium(xSecondColumn, yTop - 30);
                 Point ptAsteroids(xSecondColumn, yTop - 45);
 
+				//Xynth #104 7/2010
+				Color color;
+				if (HeliumAsteroidVisibileInCluster(m_pClusterSel))
+					color = Color::White();
+				else
+					color = Color::Gray();
+
                 // draw the helium count
                 pcontext->DrawString(
                     pfont,
-                    Color::White(),
+                    color, //Xynth #104 7/2010 Color::White(),
                     ptHelium,
                     "He3: " + ZString(int(GetHeliumInCluster(m_pClusterSel)))
                 );
