@@ -246,6 +246,25 @@ class       CclusterIGC : public IclusterIGC
         {
             return &m_asteroids;
         }
+		//Xynth #132 New function to get known He3 in a cluster for a side
+		virtual float                   GetHeliumSeen(IsideIGC* pside)
+		{
+			float fOre = 0.0;
+			for (AsteroidLinkIGC* asteriodLink = this->GetAsteroids()->first();
+            asteriodLink != NULL; asteriodLink = asteriodLink->next())
+			{
+				AsteroidAbilityBitMask aabm = asteriodLink->data()->GetCapabilities();
+
+				// if we can mine helium at this asteroid
+				if ((aabm & c_aabmMineHe3) != 0)
+				{
+					// count it.								
+					fOre += asteriodLink->data()->GetOreSeenBySide(pside);
+				}
+			}
+
+			return fOre;
+		}
 
         virtual ClusterSite*            GetClusterSite(void) const
         {

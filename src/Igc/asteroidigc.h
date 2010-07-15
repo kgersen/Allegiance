@@ -224,7 +224,12 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 				}
 
 			}
-
+			//Xynth #132 7/2010  Update asteroid periodically
+			if (abs(m_asteroidDef.ore - m_lastUpdateOre) > 3.0)
+			{
+				GetMyMission()->GetIgcSite()->MineAsteroidEvent(this, m_asteroidDef.ore);
+				m_lastUpdateOre = m_asteroidDef.ore;
+			}
             return newVal;
         }
 
@@ -270,6 +275,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
         AsteroidDef                 m_asteroidDef;
 		//Xynth #100 7/2010 array to hold what each team knows about ore in this rock		
 		TMap<IsideIGC*, float> oreSeenBySide;
+		float                       m_lastUpdateOre;  //Xynth #132 7/2010 ore last time update was sent out
         float                       m_fraction;
         TRef<IbuildingEffectIGC>    m_pbuildingEffect;
 };

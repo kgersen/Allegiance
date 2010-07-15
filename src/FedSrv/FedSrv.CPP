@@ -11681,6 +11681,18 @@ void FedSrvSiteBase::DrainAsteroidEvent(IasteroidIGC* pasteroid)
 
   pasteroid->SetOre(0.0f);
 }
+//Xynth #132 7/2010
+void FedSrvSiteBase::MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre)
+{
+  BEGIN_PFM_CREATE(g.fm, pfmAsteroidMined, S, ASTEROID_MINED)
+  END_PFM_CREATE
+  pfmAsteroidMined->clusterID = pasteroid->GetCluster()->GetObjectID();
+  pfmAsteroidMined->asteroidID = pasteroid->GetObjectID();
+  pfmAsteroidMined->newOre  = newOre;
+  g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
+
+  pasteroid->SetOre(newOre);
+}
 
 void FedSrvSiteBase::KillProbeEvent(IprobeIGC* pprobe)
 {
