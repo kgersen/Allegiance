@@ -509,13 +509,6 @@ LogEx::Write true true "Windows OSVersion: \$R0.\$R1"
 LogEx::Write true true "SilentMode? \$bSilent"
   StrCpy \$OSver \$R0
   
-  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-  CreateDirectory "\$SMPROGRAMS\\\$ICONS_GROUP"
-  CreateShortCut "\$SMPROGRAMS\\\$ICONS_GROUP\\Free Allegiance.lnk" "\$INSTDIR\\$clientbinary"
-  CreateShortCut "\$SMPROGRAMS\\\$ICONS_GROUP\\Allegiance Learning Guide.lnk" "\$INSTDIR\\Allegiance Learning Guide.lnk"
-  CreateShortCut "\$DESKTOP\\Free Allegiance.lnk" "\$INSTDIR\\$clientbinary"
-  !insertmacro MUI_STARTMENU_WRITE_END
-
   SetCompress off
   LogEx::Write true true "Extracting packages..."
   SetDetailsPrint listonly
@@ -531,6 +524,14 @@ LogEx::Write true true "SilentMode? \$bSilent"
   Delete "\$OUTDIR\\External.7z"
   SetCompress auto
   SetDetailsPrint both
+
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+  CreateDirectory "\$SMPROGRAMS\\\$ICONS_GROUP"
+  CreateShortCut "\$SMPROGRAMS\\\$ICONS_GROUP\\Free Allegiance.lnk" "\$INSTDIR\\$clientbinary"
+  CreateShortCut "\$SMPROGRAMS\\\$ICONS_GROUP\\Allegiance Learning Guide.lnk" "\$INSTDIR\\Allegiance Learning Guide.lnk"
+  CreateShortCut "\$DESKTOP\\Free Allegiance.lnk" "\$INSTDIR\\$clientbinary"
+  !insertmacro MUI_STARTMENU_WRITE_END
+
 
 ReadRegStr \$ARTPATH HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" ArtPath
 StrCmp \$ARTPATH "\$INSTDIR\\Artwork" foundok
