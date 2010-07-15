@@ -256,7 +256,7 @@ FunctionEnd
 
 ;begin GameUX 7/10
 Var GameExplorer_ContextId
-!define GAME_EXPLORER_HELPER_PATH "C:\\"
+;!define GAME_EXPLORER_HELPER_PATH "C:\\"
 !define GameExplorer_AddGame "!insertmacro GameExplorer_AddGame"
 !define GameExplorer_AddPlayTask "!insertmacro GameExplorer_AddPlayTask"
 !define GameExplorer_AddSupportTask "!insertmacro GameExplorer_AddSupportTask"
@@ -273,7 +273,7 @@ Var GameExplorer_ContextId
     !ifdef GAME_EXPLORER_HELPER_PATH
       File "/oname=GameuxInstallHelper.dll" "\${GAME_EXPLORER_HELPER_PATH}"
     !else
-      File "GameuxInstallHelper.dll"
+      File "C:\\GameuxInstallHelper.dll"
     !endif
     !define GAME_EXPLORER_DLL_EXISTS
   !endif
@@ -293,8 +293,7 @@ Var GameExplorer_ContextId
     StrCpy \$GameExplorer_GUID \$0
     StrCpy \$1 "\${GDF}"
     StrCpy \$2 "\${INSTDIR}"
-    System::Call "GameuxInstallHelper::AddToGameExplorerA(t r1, t r2, \
-      i \$GameExplorer_ContextId, g r0)"
+    System::Call "GameuxInstallHelper::AddToGameExplorerA(t r1, t r2, i \$GameExplorer_ContextId, g r0)"
     StrCpy \$3 "\${RUNPATH}"
     StrCpy \$4 "\${RUNARGS}"
     !ifndef GAME_EXPLORER_PLAYTASK_NUM_DECLARED
@@ -307,8 +306,7 @@ Var GameExplorer_ContextId
       !define GAME_EXPLORER_SUPPORTTASK_NUM_DECLARED
     !endif
     StrCpy \$GameExplorer_SupporttaskNum 0
-    System::Call "GameuxInstallHelper::RegisterWithMediaCenterA(t r1, t r2, \
-      i \$GameExplorer_ContextId, t r3, t r4, i 1)" 
+    System::Call "GameuxInstallHelper::RegisterWithMediaCenterA(t r1, t r2, i \$GameExplorer_ContextId, t r3, t r4, i 1)" 
     !if "\${SAVEGAMEEXT}" != ""
       StrCpy \$2 "\${SAVEGAMEEXT}"
       !if "\${RUNARGS}" != ""
@@ -341,8 +339,7 @@ Var GameExplorer_ContextId
     Var /GLOBAL GameExplorer_PlaytaskNum
     !define GAME_EXPLORER_PLAYTASK_NUM_DECLARED
   !endif
-  System::Call "GameuxInstallHelper::CreateTaskA(i \$GameExplorer_ContextId, \
-    g '\$GameExplorer_GUID', i 0, i \$GameExplorer_PlaytaskNum, t r0, t r1, t r2)"
+  System::Call "GameuxInstallHelper::CreateTaskA(i \$GameExplorer_ContextId, g '\$GameExplorer_GUID', i 0, i \$GameExplorer_PlaytaskNum, t r0, t r1, t r2)"
   IntOp \$GameExplorer_PlaytaskNum \$GameExplorer_PlaytaskNum + 1
   Pop \$2
   Pop \$1
@@ -352,8 +349,8 @@ Var GameExplorer_ContextId
 !macro GameExplorer_AddSupportTask TASKNAME SUPPORTPATH
   Push \$0
   Push \$1
-  StrCpy \$0 "${TASKNAME}"
-  StrCpy \$1 "${SUPPORTPATH}"
+  StrCpy \$0 "\${TASKNAME}"
+  StrCpy \$1 "\${SUPPORTPATH}"
   !ifndef GAME_EXPLORER_GUID_DECLARED
     Var /GLOBAL GameExplorer_GUID
     !define GAME_EXPLORER_GUID_DECLARED
@@ -362,8 +359,7 @@ Var GameExplorer_ContextId
     Var /GLOBAL GameExplorer_SupporttaskNum
     !define GAME_EXPLORER_SUPPORTTASK_NUM_DECLARED
   !endif
-  System::Call "GameuxInstallHelper::CreateTaskA(i \$GameExplorer_ContextId, \
-    g '\$GameExplorer_GUID', i 0, i \$GameExplorer_SupporttaskNum, t r0, t r1, '')"
+  System::Call "GameuxInstallHelper::CreateTaskA(i \$GameExplorer_ContextId, g '\$GameExplorer_GUID', i 0, i \$GameExplorer_SupporttaskNum, t r0, t r1, '')"
   IntOp \$GameExplorer_SupporttaskNum \$GameExplorer_SupporttaskNum + 1
   Pop \$1
   Pop \$0
@@ -386,7 +382,7 @@ Var GameExplorer_ContextId
     !ifdef GAME_EXPLORER_HELPER_PATH
       File "/oname=GameuxInstallHelper.dll" "\${GAME_EXPLORER_HELPER_PATH}"
     !else
-      File "GameuxInstallHelper.dll"
+      File "C:\\GameuxInstallHelper.dll"
     !endif
     !define UNGAME_EXPLORER_DLL_EXISTS
   !endif
@@ -396,8 +392,7 @@ Var GameExplorer_ContextId
   System::Call "GameuxInstallHelper::RemoveFromGameExplorer(g r0)"
   StrCpy \$2 "\${INSTDIR}"
   StrCpy \$3 "\${RUNPATH}"
-  System::Call "GameuxInstallHelper::UnRegisterWithMediaCenterA(t r2, \
-    i \$GameExplorer_ContextId, t r3, i 0)"
+  System::Call "GameuxInstallHelper::UnRegisterWithMediaCenterA(t r2, i \$GameExplorer_ContextId, t r3, i 0)"
   !if "\${SAVEGAMEEXT}" != ""
     StrCpy \$2 "\${SAVEGAMEEXT}"
     System::Call "GameuxInstallHelper::RemoveRichSavedGamesA(t r2)"
@@ -605,7 +600,6 @@ Section "DirectX Install" SEC_DIRECTX
 \${GameExplorer_AddGame} all "\$INSTDIR\\Allegiance.exe" "\$INSTDIR" "\$INSTDIR\\Allegiance.exe" "" ""
 \${GameExplorer_AddPlayTask} "Safe Mode" "\$INSTDIR\\Allegiance.exe" "-software"
 \${GameExplorer_AddSupportTask} "Home Page" "http://www.alleg.net/"
-; TODO! now add to the GameExplorer_GUID the ApplicationId 354866c5-c0ed-4ecd-981c-17f767aa6265
 \${EndIf}
 
 \${If} \$bSilent == 0
@@ -681,8 +675,8 @@ $betavar
 $nsis
 };
 
-#open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
-open(NSIS,">nsis.nsi");
+open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
+#open(NSIS,">nsis.nsi");
 print NSIS $nsis;
 close NSIS;
 
