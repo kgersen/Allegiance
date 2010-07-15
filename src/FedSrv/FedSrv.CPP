@@ -10362,9 +10362,12 @@ class ThingSiteImpl : public ThingSite
 									bool bSent = false;
                                     //See it
 									if (!pmodel->SeenBySide(pside)) {
-                                    	sv.fVisible(true);
+                                    	if (!staticVisible)  //Xynth #135 7/2010
+										{
+											sv.fVisible(true);											
+                                    		bSent = ShowObject(pside, pmodel);
+										}
 										sv.CurrentEyed(true); //Xynth #100 7/2010
-                                    	bSent = ShowObject(pside, pmodel);
 									}
 									
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
@@ -10387,9 +10390,10 @@ class ThingSiteImpl : public ThingSite
 
 												ObjectType otModel = pmodel->GetObjectType();
 												ObjectType  otSpotter = s->GetObjectType();
-		                                        if ((bAllySent) && otModel == OT_station || otModel == OT_warp ||
+		                                        if (((bAllySent) && otModel == OT_station || otModel == OT_warp ||
 		                                            (otModel == OT_asteroid &&
 		                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
+													 && !staticVisible) //Xynth #135 7/2010
 												{
 
 	                                           		ObjectType  otSpotter = s->GetObjectType();
@@ -10412,9 +10416,10 @@ class ThingSiteImpl : public ThingSite
                                     {
                                         // if it's a station, aleph, special asteroid or helium asteroid...
                                         ObjectType otModel = pmodel->GetObjectType();
-                                        if (otModel == OT_station || otModel == OT_warp ||
+                                        if ((otModel == OT_station || otModel == OT_warp ||
                                             (otModel == OT_asteroid &&
                                              (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
+											 && !staticVisible) //Xynth #135 7/2010
 										{
                                             ObjectType  otSpotter = s->GetObjectType();
                                             // tell the side who spotted it
