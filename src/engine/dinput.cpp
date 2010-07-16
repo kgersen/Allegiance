@@ -288,7 +288,7 @@ public:
         m_acceleration = pvalue[2];
         m_sensitivity  = 1.0f;
 
-        /* !!! this only works on NT50
+        ///* !!! this only works on NT50
         int speed;
         ZVerify(SystemParametersInfo(SPI_GETMOUSESPEED, 0, &speed, 0));
 
@@ -299,7 +299,7 @@ public:
         } else {
            m_sensitivity = float(speed-6) / 4.0f;
         }
-        */
+        
     }
 
     void SetupDevice() 

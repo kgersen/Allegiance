@@ -174,10 +174,10 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	m_sD3DDev9.d3dPresParams.BackBufferHeight			= m_sD3DDev9.pCurrentMode->mode.Height;
 	if (m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting == D3DMULTISAMPLE_NONE) {
 		m_sD3DDev9.d3dPresParams.SwapEffect = D3DSWAPEFFECT_FLIP;
-		m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP | D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled
+		m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled
 	} else {
 		m_sD3DDev9.d3dPresParams.SwapEffect	= D3DSWAPEFFECT_DISCARD;
-		m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP; //Imago 7/12/09 enabled
+		//m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP; //Imago 7/12/09 enabled
 	}
 
 	if( m_sDevSetupParams.bRunWindowed == true )
