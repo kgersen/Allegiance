@@ -16,6 +16,7 @@
 // BUILD_DX9
 
 extern bool g_bEnableSound = true;
+extern bool bStartTraining   = false;
 extern bool g_bCheckFiles;
 extern bool g_fZoneAuth;
 bool    g_bSkipAutoUpdate = false;
@@ -546,7 +547,6 @@ public:
 
         bool bLogonDialog     = true;
         bool bStartOffline    = false;
-        bool bStartTraining   = false;
         bool bMovies          = true;
         bool bSingleInstance  = true;
         bool bSoftware        = false;
