@@ -151,7 +151,7 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 }
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
-	
+
 	//windowed 7/10 #112
 	PlayVideoInfo * pData = (PlayVideoInfo*)param;
 	DDVideo *DDVid = new DDVideo();
@@ -165,8 +165,8 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 			GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
 			::GetModuleHandle(NULL), NULL);
 	}
-	
-	DDVid->m_hWnd = hwndFound;	
+
+	DDVid->m_hWnd = hwndFound;
 
 	if( SUCCEEDED( DDVid->Play(pData->pathStr,pData->bWindowed))) //(WMV2 is good as most machines read it)
     {
@@ -174,7 +174,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 		while( DDVid->m_Running && bOk) //we can now do other stuff while playing
         {
 			if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
-				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) || 
+				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) ||
 				GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
 			{
 				DDVid->m_Running = FALSE;
@@ -214,19 +214,19 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		ReadFile(hFile, buffer, size, &cBytesRead, NULL);
 		int contentLen = 0; char *content;
 
-		char sz7zName[MAX_PATH+64] = ""; 
+		char sz7zName[MAX_PATH+64] = "";
 		Strcpy(sz7zName,(PCC)zaFile);
 		char* p1 = strrchr(sz7zName, '\\');
 		(!p1) ? p1 = "" : p1++;
 		ZString zApp = p1;
 		MprBuf * hdrBuf = new MprBuf(256);
 		hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
-		hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
+		hdrBuf->put("Host: build.alleg.net\r\n");
 		hdrBuf->put("Connection: keep-alive\r\n");
 		hdrBuf->put("Keep-Alive: 115\r\n");
 		hdrBuf->put("User-Agent: Allegiance dump thread\r\n");
 		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
-			
+
 		ZString zParts1 = "-----------------------------01\r\n";
 		zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
 		zParts1 += zApp;
@@ -238,7 +238,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		memcpy(PostData+zParts1.GetLength(),buffer,size);
 		memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
 		hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
-		client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
+		client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
 		debugf("**** sent %iB of data via HTTP\n",iTotal0);
 		if (client->getResponseCode() == 200)
 			content = client->getResponseContent(&contentLen);
@@ -254,7 +254,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 				::CloseHandle(hFile);
 				debugf("**** waiting a moment to try again...\n");
 				Sleep(randomInt(3,6));
-				if (iTry < 3) { 
+				if (iTry < 3) {
 					return false;
 				} else {
 					DeleteFile((PCC)zaFile);
@@ -297,7 +297,7 @@ static void doDumps(void* data, MprThread *threadp) {
 		}
 		debugf("**** Create7z returned: %i for file %s\n",size,(PCC)zaFile);
 		MprSocket* socket = new MprSocket();
-		socket->openClient("alleg.builtbygiants.net",80,0);
+		socket->openClient("build.alleg.net",80,0);
 		int iwrite = socket->_write("GET /\r\n");
 		delete socket;
 
@@ -2430,9 +2430,9 @@ public:
 						HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
 						HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
 						bool bWMP = (hVidTest && hAudTest) ? true : false;
-						::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
-						if (!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID && bWMP) {					
-							//dont' check for intro.avi, 
+						::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
+						if (!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID && bWMP) {
+							//dont' check for intro.avi,
 							// let the screen flash so they at least know this works
 							DDVideo *DDVid = new DDVideo();
 							bool bHide = false;
@@ -2453,12 +2453,12 @@ public:
 							bool bOk = true;
 							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
 							if(SUCCEEDED(DDVid->Play(pathStr,!m_pengine->IsFullscreen()))) //(Type WMV2 is good as most systems will play it)
-							{ 
+							{
 								GetAsyncKeyState(VK_LBUTTON); GetAsyncKeyState(VK_RBUTTON);
 								::ShowCursor(FALSE);
 								while( DDVid->m_Running && bOk) //imago windooooow #112 7/10
 								{
-									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
+									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) ||
 										GetAsyncKeyState(VK_RETURN) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
 									{
 										DDVid->m_Running = FALSE;
@@ -2780,13 +2780,13 @@ public:
 		}
 
 		if (!g_bQuickstart && bMovies && !dwNoMovies && !g_bReloaded && !bSoftware &&
-		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
+		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES &&
 		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
 			//Imago only check for these if we have to 8/16/09
 			HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
 			HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
 			bool bWMP = (hVidTest && hAudTest) ? true : false;
-			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
+			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
 			if (bWMP) {
 				if (!CD3DDevice9::Get()->IsWindowed()) {
 					::ShowWindow(GetHWND(),SW_HIDE);
@@ -2811,7 +2811,7 @@ public:
 		FileList tlFiles = FindDumps();
 		debugf("**** Found:  %i dump files\n",tlFiles.GetCount());
 		if (!tlFiles.IsEmpty()) {
-			ZString zFiles; 
+			ZString zFiles;
 			zFiles.SetEmpty();
 
 			char szPathName[MAX_PATH+48] = "";
@@ -2829,14 +2829,14 @@ public:
 				!iterFile.End(); iterFile.Next())
 			{
 				iKBytes += (iterFile.Value().nFileSizeHigh > 0) ? MAXINT : (iterFile.Value().nFileSizeLow / 1024);
-				if (iKBytes >= iKBMax && iLastIndex > 0) 
+				if (iKBytes >= iKBMax && iLastIndex > 0)
 					break;
 				ZString zFile = szDir + ZString(iterFile.Value().cFileName);
 				zFiles += zFile+" ";
 				iLastIndex++;
 			}
 			ZString * pzFiles = new ZString(zFiles);
-			MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "Allegiance dump thread"); 
+			MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "Allegiance dump thread");
 			threadp->start();
 		}
 
@@ -3399,7 +3399,7 @@ public:
 				::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
 			}
 			CloseHandle(hDDVidThread);
-		}    
+		}
 		SetScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
@@ -3513,7 +3513,7 @@ public:
             unsigned char cbValue[nMaxStrLen + 1];
 
             ::RegQueryValueEx(hKey, szName, NULL, &dwType, cbValue, &dwSize);
-            
+
 
             cbValue[nMaxStrLen] = '\0';
 
@@ -3591,7 +3591,7 @@ public:
         trekClient.Terminate();
 
 		//imago removed for Visual Studio 2008 Express users (lacks ATL/COM) - we're not using TM7 anyways 6/22/09
-			//unremoved 7/10 - 
+			//unremoved 7/10 -
         // clean up after the training mission if we need to
         extern  void KillTrainingStandaloneGame (void);
         KillTrainingStandaloneGame ();
@@ -4038,11 +4038,11 @@ public:
     #define idmBandwidth				   634 // w0dk4 June 2007: Bandwith Patch
     #define	idmMuteFilterOptions		   635 //TheBored 30-JUL-07: Filter Unknown Chat patch
     #define idmFilterUnknownChats		   636 //TheBored 30-JUL-07: Filter Unknown Chat patch
-	
+
 	//Imago 7/10
-	#define	idmNoMovies			           637 
-    #define idmSaveDumps				   638 
-	
+	#define	idmNoMovies			           637
+    #define idmSaveDumps				   638
+
     #define idmResetSound           701
     #define idmSoundQuality         702
     #define idmSoundHardware        703
@@ -4892,9 +4892,9 @@ public:
     void ToggleSmoke()
     {
         int     iSmoke = ThingGeo::GetShowSmoke();
-        if (iSmoke == 0) 
+        if (iSmoke == 0)
             iSmoke = 2;
-        else if (iSmoke == 2) 
+        else if (iSmoke == 2)
             iSmoke = 0;
         bool bPerformance = false;
         switch (iSmoke)
@@ -5736,7 +5736,7 @@ public:
             case idmToggleEnvironment:
                 ToggleEnvironment();
                 break;
-				
+
 			//Imago 7/10
             case idmNoMovies:
                 ToggleNoMovies();
@@ -7211,7 +7211,7 @@ public:
 			debugf("*!* frame# %d dropped (net)\n",m_frameID);
 			return;     //bug out
 		}
-            
+
             // (CRC) Too much spew: ShouldBe ((!trekClient.m_serverOffsetValidF) || (fabs(Time::Now() - trekClient.m_timeLastPing) < 30.0f));
 
         // Update the world
@@ -7950,14 +7950,14 @@ public:
                                 //What is the maximum desired rate of turn for this field of view?
                                 //Use the same calculation as for turrets.
                                 //Keep in sync with wintrek.cpp's FOV by throttle
-								
+
                                 static const float  c_minRate = RadiansFromDegrees(7.5f);
                                 static const float  c_maxRate = RadiansFromDegrees(75.0f);
                                 //float   maxSlewRate = c_minRate + (c_maxRate - c_minRate) * fov / s_fMaxFOV;
-								float zoomMod = fov / s_fMaxFOV; //madpeople - ---^ do not limit this view beyond that of the core #88 7/10 
+								float zoomMod = fov / s_fMaxFOV; //madpeople - ---^ do not limit this view beyond that of the core #88 7/10
 
                                 const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
-								{	
+								{
                                     float pitch = pht->GetMaxTurnRate(c_axisPitch);
 									float maxSlewRate = c_minRate + (pitch - c_minRate) * zoomMod; //madpeople /Imago  #88
                                     if (pitch > maxSlewRate)
@@ -7978,9 +7978,9 @@ public:
                     trekClient.GetShip()->SetStateBits(buttonsMaskIGC | weaponsMaskIGC | selectedWeaponMaskIGC |
                                                        missileFireIGC | mineFireIGC | chaffFireIGC, buttonsM);
 
-					if ((m_cm == cmCockpit) || (m_cm == cmExternalChase)) { 
+					if ((m_cm == cmCockpit) || (m_cm == cmExternalChase)) {
 						if (!m_ptrekInput->IsTrekKeyDown(TK_ViewRearLeft,bAllowKeyboardMovement) //TheRock 31-7-2009 Allow keyboard users to look around
-							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRearRight,bAllowKeyboardMovement) 
+							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRearRight,bAllowKeyboardMovement)
 							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontLeft,bAllowKeyboardMovement)
 							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontRight,bAllowKeyboardMovement)
 							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRear,bAllowKeyboardMovement)
@@ -8482,7 +8482,7 @@ public:
         assert ((ttMask & c_ttFront) == 0);
 		if (tk == tkNearest)
             ttMask |= c_ttNearest;
-		else if (tk == tkPrevious) 
+		else if (tk == tkPrevious)
             ttMask |= c_ttPrevious;
 
         const Vector*   pposition;
@@ -8497,9 +8497,9 @@ public:
 		else
 			pposition = &(trekClient.GetShip()->GetPosition());
 
-		ImodelIGC*  m = NULL; //Imago 7/31/09 ALLY 
+		ImodelIGC*  m = NULL; //Imago 7/31/09 ALLY
 
-		if (trekClient.GetSide()->GetAllies() != NA) { 
+		if (trekClient.GetSide()->GetAllies() != NA) {
 
 			//only target our sides bases unless in a pod
 			if (tkNearest == TK_TargetFriendlyBaseNearest) {
@@ -8961,7 +8961,7 @@ public:
 
         switch(tk)
         {
-            
+
             case TK_ChatPageUp: // Imago uncommented for mouse wheel 8/14/09
                 if (m_pchatListPane != NULL && !m_ptrekInput->IsTrekKeyDown(TK_ChatPageUp, true)) {
                     m_pchatListPane->PageUp();
@@ -10013,7 +10013,7 @@ public:
             break;
 
             //begin imago 8/14/09 mouse wheel
-			
+
             case TK_ZoomOut:
             case TK_ZoomIn:
             {
@@ -10040,7 +10040,7 @@ public:
                             if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
                                 m_distanceExternalCamera = s_fExternalViewDistanceMax;
                         }
-                    } 
+                    }
 					else if (m_cm == cmCockpit) {
                         float   fov = m_cameraControl.GetFOV();
                         if (tk == TK_ZoomIn) {
@@ -10055,15 +10055,16 @@ public:
                             m_cameraControl.SetFOV(fov);
                         }
                     }
-					
+
                 }
             }
             break;
-			
+
+			//imago 7/10
             case TK_ThrottleUp:
             {
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) {
-					trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
+					trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;
 					trekClient.joyThrottle = false; //#116 7/10 Imago
 				}
             }
@@ -10072,12 +10073,11 @@ public:
             case TK_ThrottleDown:
             {
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true)) {
-					trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
+					trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f;
 					trekClient.joyThrottle = false; //#116 7/10 Imago
 				}
             }
             break;
-			
             // end imago
 
             case TK_DebugTest1:
@@ -10314,7 +10314,7 @@ public:
     {
         m_ctLobbyChat = ct;
 	//#8 Imago 7/10 added recip
-		m_ctLobbyChatRecip = recip; 
+		m_ctLobbyChatRecip = recip;
     }
     ObjectID GetLobbyChatRecip()
     {
@@ -10462,6 +10462,7 @@ public:
                     : 1.0f;
                 trekClient.joyThrottle = false;
                 bThrottleChange = true;
+				debugf("!!!!!! sensejoystick throttleupkey %f %f\n",trekClient.trekThrottle,js->controls.jsValues[c_axisThrottle]);
             }
             else if (m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, bReadKeyboard))
             {
@@ -10471,6 +10472,7 @@ public:
                     : -1.0f;
                 trekClient.joyThrottle = false;
                 bThrottleChange = true;
+				debugf("!!!!!! sensejoystick throttledownkey %f %f\n",trekClient.trekThrottle,js->controls.jsValues[c_axisThrottle]);
             }
         }
 

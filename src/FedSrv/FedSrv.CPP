@@ -33,22 +33,22 @@ static MprLogModule *tMod;
 static MprMutex	*mutex;
 
 //Imago 6/10
-const int c_iDefaultQServerPort = 25000; 
-extern SOCKET SetUpListener(const char* pcAddress, int nPort); 
+const int c_iDefaultQServerPort = 25000;
+extern SOCKET SetUpListener(const char* pcAddress, int nPort);
 extern void QServerCnxn(SOCKET QServerSocket);
 
-ZString GetLocalComputerName() { 
-  TCHAR chrComputerName[MAX_COMPUTERNAME_LENGTH + 1]; 
-  ZString strRetVal; 
-  DWORD dwBufferSize = MAX_COMPUTERNAME_LENGTH + 1; 
-  
-  if(GetComputerName(chrComputerName,&dwBufferSize)) { 
-    strRetVal = chrComputerName; 
-  } else { 
-    strRetVal = ""; 
-  } 
+ZString GetLocalComputerName() {
+  TCHAR chrComputerName[MAX_COMPUTERNAME_LENGTH + 1];
+  ZString strRetVal;
+  DWORD dwBufferSize = MAX_COMPUTERNAME_LENGTH + 1;
 
-  return(strRetVal); 
+  if(GetComputerName(chrComputerName,&dwBufferSize)) {
+    strRetVal = chrComputerName;
+  } else {
+    strRetVal = "";
+  }
+
+  return(strRetVal);
 }
 
 //do our best to post a dump Imago 7/10 (move to appweb to Utility and share this?)
@@ -66,19 +66,19 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		ReadFile(hFile, buffer, size, &cBytesRead, NULL);
 		int contentLen = 0; char *content;
 
-		char sz7zName[MAX_PATH+64] = ""; 
+		char sz7zName[MAX_PATH+64] = "";
 		Strcpy(sz7zName,(PCC)zaFile);
 		char* p1 = strrchr(sz7zName, '\\');
 		(!p1) ? p1 = "" : p1++;
 		ZString zApp = p1;
 		MprBuf * hdrBuf = new MprBuf(256);
 		hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
-		hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
+		hdrBuf->put("Host: build.alleg.net\r\n");
 		hdrBuf->put("Connection: keep-alive\r\n");
 		hdrBuf->put("Keep-Alive: 115\r\n");
 		hdrBuf->put("User-Agent: AllSrv dump thread\r\n");
 		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
-			
+
 		ZString zParts1 = "-----------------------------01\r\n";
 		zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
 		zParts1 += zApp;
@@ -90,7 +90,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		memcpy(PostData+zParts1.GetLength(),buffer,size);
 		memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
 		hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
-		client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
+		client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
 		debugf("**** sent %iB of data via HTTP\n",iTotal0);
 		if (client->getResponseCode() == 200)
 			content = client->getResponseContent(&contentLen);
@@ -106,7 +106,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 				::CloseHandle(hFile);
 				debugf("**** waiting a moment to try again...\n");
 				Sleep(randomInt(3,6));
-				if (iTry < 3) { 
+				if (iTry < 3) {
 					return false;
 				} else {
 					DeleteFile((PCC)zaFile);
@@ -149,7 +149,7 @@ static void doDumps(void* data, MprThread *threadp) {
 		}
 		debugf("**** Create7z returned: %i for file %s\n",size,(PCC)zaFile);
 		MprSocket* socket = new MprSocket();
-		socket->openClient("alleg.builtbygiants.net",80,0);
+		socket->openClient("build.alleg.net",80,0);
 		int iwrite = socket->_write("GET /\r\n");
 		delete socket;
 
@@ -4733,7 +4733,7 @@ static void DisplaceProbe(IclusterIGC* pcluster, Vector* position, float r)
               return;
       }
     }
-    	
+
 	/* Xynth - Removing loop through Asteroids from the DisplaceProbe function
 	** This was causing issues with trying to hide TP2 behind rocks 7/10
 	{
@@ -5865,7 +5865,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           }
       }
 
-      bool bLaunch = pfmBuyLoadout->fLaunch && bBoughtEverything;        
+      bool bLaunch = pfmBuyLoadout->fLaunch && bBoughtEverything;
 
       // tell the client what happened
       BEGIN_PFM_CREATE(g.fm, pfmBuyLoadoutAck, S, BUY_LOADOUT_ACK)
@@ -8655,7 +8655,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 {
   HANDLE rgeventHandles[2];
   ZVersionInfo vi;
- 
+
   debugf("Running %s %s\n", (PCC) vi.GetInternalName(), (PCC) vi.GetStringValue("FileVersion"));
 
   debugf("Entering ReceiveThread\n");
@@ -8892,7 +8892,7 @@ void LoadSettings()
     {
         if (FAILED(LoadRegString(hKey, "AuthServer", g.strAuthServer)))
           g.strAuthServer = "Pointweb01"; // default for all developers
-		
+
 		ZString zUsers;
 		if (!FAILED(LoadRegString(hKey, "PrivilegedUsers", zUsers))) {
 			ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
@@ -9607,20 +9607,20 @@ int __cdecl main(int argc, char *argv[])
 	FileList tlFiles = FindDumps();
 	debugf("**** Found:  %i dump files\n",tlFiles.GetCount());
 	if (!tlFiles.IsEmpty()) {
-		ZString zFiles; 
+		ZString zFiles;
 		zFiles.SetEmpty();
 		for (FileList::Iterator iterFile(tlFiles);
 			!iterFile.End(); iterFile.Next())
 		{
 			iKBytes += (iterFile.Value().nFileSizeHigh > 0) ? MAXINT : (iterFile.Value().nFileSizeLow / 1024);
-			if (iKBytes >= iKBMax && iLastIndex > 0) 
+			if (iKBytes >= iKBMax && iLastIndex > 0)
 				break;
 			ZString zFile = szDir + ZString(iterFile.Value().cFileName);
 			zFiles += zFile+" ";
 			iLastIndex++;
 		}
 		ZString * pzFiles = new ZString(zFiles);
-		MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "AllSrv dump thread"); 
+		MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "AllSrv dump thread");
 		threadp->start();
 	}
 
@@ -9968,7 +9968,7 @@ int __cdecl main(int argc, char *argv[])
     // Terminate AGC
     _Module.TermAGC();
 
-	
+
 	 WSACleanup(); //Imago 6/10
 
 	//appweb
@@ -10180,7 +10180,7 @@ class ThingSiteImpl : public ThingSite
                     // this is called when a stream of messages to a different recipient is in process of being queued-up
                     // so we will use the secondary (smaller 1k) outbox so as to not interrupt the main message stream
                     g.fm.UseMainOutBox(false);
-					g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED);                  
+					g.fm.SetDefaultRecipient(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED);
 
                     //Tell everyone on the side about the newly visible static object
                     bSent = true;
@@ -10236,7 +10236,7 @@ class ThingSiteImpl : public ThingSite
                         if (pbe)
                             ExportObj(pbe, OT_buildingEffect, NULL);
                     }
-				
+
                     g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
                 }
             }
@@ -10325,13 +10325,13 @@ class ThingSiteImpl : public ThingSite
                             			sv.fVisible(true);
 										sv.CurrentEyed(true); //Xynth #100 7/2010
 										ShowObject(pside, pmodel);
-			
+
 						} else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel) && !pmodel->SeenBySide(pside)) // ALLY SCAN 7/11/09 Imago
-						{						
+						{
 	                            if (!sv.fVisible())
 	                            {
 	                                //See it
-	                                sv.fVisible(true);									
+	                                sv.fVisible(true);
 	                                ShowObject(pside, pmodel);
 	                            }
 								sv.CurrentEyed(true); //Xynth #100 7/2010
@@ -10341,7 +10341,7 @@ class ThingSiteImpl : public ThingSite
 	                            {
 	                                //Allies See it
 									//printf("show object to ally via last spotter's side\n");
-	                                sv.fVisible(true);									
+	                                sv.fVisible(true);
 	                                ShowObject(pside, pmodel);
 	                            }
 								sv.CurrentEyed(true); //Xynth #100 7/2010
@@ -10364,12 +10364,12 @@ class ThingSiteImpl : public ThingSite
 									if (!pmodel->SeenBySide(pside)) {
                                     	if (!staticVisible)  //Xynth #135 7/2010
 										{
-											sv.fVisible(true);											
+											sv.fVisible(true);
                                     		bSent = ShowObject(pside, pmodel);
 										}
 										sv.CurrentEyed(true); //Xynth #100 7/2010
 									}
-									
+
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
 									{
 										//lets get a list of allied sideIDs
@@ -10381,12 +10381,12 @@ class ThingSiteImpl : public ThingSite
 											//this spotter's side is ally...and not ours
 											if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && !pmodel->SeenBySide(otherside) && bSent) {
 												//printf("show object to ally via allied scanner\n");
-												
+
 												SideVisibility& sv2 = m_rgSideVisibility[otherside->GetObjectID()];
 												sv2.fVisible(true);
 												sv2.CurrentEyed(true); //Xynth #100 7/2010
 												bool bAllySent = ShowObject(otherside, pmodel);
-                                    			sv2.pLastSpotter(s);	
+                                    			sv2.pLastSpotter(s);
 
 												ObjectType otModel = pmodel->GetObjectType();
 												ObjectType  otSpotter = s->GetObjectType();
@@ -10402,13 +10402,13 @@ class ThingSiteImpl : public ThingSite
 		                                            pfmObjectSpotted->otObject = otModel;
 		                                            pfmObjectSpotted->oidObject = pmodel->GetObjectID();
 		                                            pfmObjectSpotted->otSpotter = otSpotter;
-		                                            pfmObjectSpotted->oidSpotter = s->GetObjectID();														
+		                                            pfmObjectSpotted->oidSpotter = s->GetObjectID();
 													//printf("sending object spotted message to ally\n");
 													g.fm.SendMessages(CFSSide::FromIGC(otherside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 												}
 											}
 										}
-									}									
+									}
                                     //Keep track of who spotted it
                                     sv.pLastSpotter(s);
 
@@ -10430,9 +10430,9 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
 
-                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); 
+                                            g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 
-											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());																		
+											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -10465,7 +10465,7 @@ class ThingSiteImpl : public ThingSite
                                 HideObject(pside, pmodel);
                                 sv.pLastSpotter(NULL);
                             }
-                        }                    
+                        }
 					//} Xynth #100 need to make sure static objects are visible once spotted
 						if (staticVisible && !sv.CurrentEyed())
 							sv.fVisible(true);
@@ -10739,12 +10739,12 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 			debugf("radii %f %f\n", pstationtype->GetRadius(),  pprobe->GetRadius());
 			debugf("l2 rOffset %f %f\n", l2, rOffset);*/
 			if ((l2 < rOffset * rOffset) && (l2 != 0.0f))
-			{				
+			{
 				pprobe->SetExpiration(now + 1.0);
-				//debugf("kill probe");							
+				//debugf("kill probe");
 			}
 		}
-		
+
 	} //Xynth/Imago - End change
 
 
@@ -11406,14 +11406,14 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                 underAttackSound = droneUnderAttackSound;
                                 break;
                         }
-						
+
 						//ChatTarget ct = (pside->GetAllies() == NA) ? CHAT_TEAM : CHAT_ALLIES; //ALLY imago 7/12/09 reverted 7/22/09
-						Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };						
+						Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
 						ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)" + END_COLOR_STRING + " " : "";
 						SendChatf(ship, CHAT_TEAM, ship->GetSide()->GetObjectID(),
                                   underAttackSound, "Under attack by %s%s in %s",
                                   (PCC)strAllies, GetModelName(launcher), ship->GetCluster()->GetName());
-						
+
 						//7/22/09 ALLY FF
 						CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
 						if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside,psideLauncher))
@@ -11464,7 +11464,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
 
 				if (pside != psideLauncher) //&& !IsideIGC::AlliedSides(pside,psideLauncher)) //#ALLY (Imago) reverted 7/12/09
                 {
-					Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };						
+					Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
 					ZString strAllies = (pside->AlliedSides(pside,psideLauncher)) ? "\x81 " + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(Ally)" + END_COLOR_STRING +" " : "";
 					ChatTarget ct = (station->GetSide()->GetAllies() != NA) ? CHAT_ALLIES : CHAT_TEAM; //ALLY imago 7/12/09
                     if (station->GetFraction() < 0.30)
@@ -11876,7 +11876,7 @@ static void ErasePart(IshipIGC* pship, EquipmentType et, Mount mount, IpartTypeI
 }
 
 void FedSrvSiteBase::AlliedRearm(IshipIGC* pship, bool bLaunch) { //Imago 8/10/09 ALLY
-    //RIPPED FROM LAND ON CARRIER EVENT 7/9/09 
+    //RIPPED FROM LAND ON CARRIER EVENT 7/9/09
 
     CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
     ImissionIGC*    pMission = pship->GetMission();
@@ -12097,7 +12097,7 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
                 (i == 2 && pship->GetMountedPart(ET_ChaffLauncher, 0) == NULL))
             {
                 IpartTypeIGC*   pt = ptDesired[i];
- 
+
                 if (pt)
                 {
                     // Upgrade part if posible
@@ -12117,7 +12117,7 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
             }
         }
 		//end AaaronMoore 1/10
-        
+
 
         int     iDesired = 0;
         for (Mount i = 0; (i < c_maxCargo); i++)
@@ -12260,7 +12260,7 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
 
   ((CFSShip*)(pshipRescued->GetPrivateData()))->ResetWarpState();
 
-  //Find the closest space station and put the rescued ship there  
+  //Find the closest space station and put the rescued ship there
   IstationIGC*    pstation = (IstationIGC*)FindTarget(pshipRescued,
                                                       (c_ttStation | c_ttFriendly | c_ttAnyCluster | c_ttNearest),
                                                       NULL, NULL, NULL, NULL, c_sabmRestart);
@@ -12294,9 +12294,9 @@ bool FedSrvSiteBase::DockWithStationEvent(IshipIGC* pship, IstationIGC* pstation
   IsideIGC* pside = pship->GetSide();
   IsideIGC* psideOld = pstation->GetSide();
 
-  
-  if ((pside != psideOld) && (pship->GetHullType() && pship->GetHullType()->HasCapability(c_habmBoard)) && 
-      (!pside->AlliedSides(pside,psideOld) || 
+
+  if ((pside != psideOld) && (pship->GetHullType() && pship->GetHullType()->HasCapability(c_habmBoard)) &&
+      (!pside->AlliedSides(pside,psideOld) ||
       pship->GetMission()->GetMissionParams()->bAllowFriendlyFire)) //#ALLY 7/3/09 8/10/09 imago
   {
       pfsShip->CaptureStation(pstation);
@@ -12422,7 +12422,7 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
             if (pside->ApplyDevelopmentTechs(ttbm))
                 pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
 		}
-		
+
 		if (pstationNew && pship && !pship->GetParentShip() && pship->GetBaseHullType() && //imago fix crash when boarding turret 7/22/09
 			pship->GetBaseHullType()->HasCapability(c_habmLifepod) && pstationNew->GetSide() != pship->GetSide()) {
 			//dont dock here in a lifepod....
@@ -12441,14 +12441,14 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 			CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
 			if ((pship->GetParentShip() == NULL) && pship->GetBaseHullType()->HasCapability(c_habmLifepod)) {
 
-				//Fixed lifepods, we can't use DockWithStation() 
-				//   'cause FindTarget will return allied base if closer 7/13/09 
+				//Fixed lifepods, we can't use DockWithStation()
+				//   'cause FindTarget will return allied base if closer 7/13/09
 				// imago NYI move all this #ALLY in changestation ugly to a pretty DockWithAlliedStation() handler
-  				pfsShip->ResetWarpState();				
-				
+  				pfsShip->ResetWarpState();
+
 				//Find the LAST space station for this pilot and put the rescued ship there  //Imago 7/13/09
 				 IstationIGC* pstation = m_pfsMission->GetIGCMission()->GetStation(pfsShip->GetOldShipStatus(pship->GetSide()->GetObjectID())->GetStationID());
-				if (pstation == NULL || 
+				if (pstation == NULL ||
 					pstation->GetSide() != pship->GetSide()) //Imago 7/22/09 fix restart in ally base after a rearm
 					pstation = m_pfsMission->GetBase(pship->GetSide());
 
@@ -12495,9 +12495,9 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
                         pfscPlayer->Dock(pstationNew);
                     }
                     pfsPlayer->Dock(pstationNew);
-                
+
                 } else if (pship->GetParentShip() == NULL) { //not a turret --
-                    AlliedRearm(pship,true); 
+                    AlliedRearm(pship,true);
                 }
 			}
 		}

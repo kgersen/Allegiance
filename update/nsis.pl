@@ -15,7 +15,7 @@ my $artwork = "";
 my $bbeta = "";
 my $dlcode_art = ""; my $dlcode_pdb = "";
 my $clientbinary = "ASGSClient.exe";
-my $url = "http://alleg.builtbygiants.net"; #can be FTP:// 
+my $url = "http://build.alleg.net"; #can be FTP:// 
 my $cfgfile = "http://autoupdate.alleg.net/allegiance.cfg";
 
 my $now = strftime("%Y/%m/%d %H:%M CDT",localtime(time));

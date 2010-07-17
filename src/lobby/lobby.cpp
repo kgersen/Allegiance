@@ -2,7 +2,7 @@
 
 
 // Note: Proxy/Stub Information
-//      To build a separate proxy/stub DLL, 
+//      To build a separate proxy/stub DLL,
 //      run nmake -f Lobbyps.mk in the project directory.
 
 #include "pch.h"
@@ -49,19 +49,19 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		ReadFile(hFile, buffer, size, &cBytesRead, NULL);
 		int contentLen = 0; char *content;
 
-		char sz7zName[MAX_PATH+64] = ""; 
+		char sz7zName[MAX_PATH+64] = "";
 		Strcpy(sz7zName,(PCC)zaFile);
 		char* p1 = strrchr(sz7zName, '\\');
 		(!p1) ? p1 = "" : p1++;
 		ZString zApp = p1;
 		MprBuf * hdrBuf = new MprBuf(256);
 		hdrBuf->put("POST /CoreChecker/nph-Dump.cgi HTTP/1.1\r\n");
-		hdrBuf->put("Host: alleg.builtbygiants.net\r\n");
+		hdrBuf->put("Host: build.alleg.net\r\n");
 		hdrBuf->put("Connection: keep-alive\r\n");
 		hdrBuf->put("Keep-Alive: 115\r\n");
 		hdrBuf->put("User-Agent: AllLobby dump thread\r\n");
 		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
-			
+
 		ZString zParts1 = "-----------------------------01\r\n";
 		zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
 		zParts1 += zApp;
@@ -73,7 +73,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		memcpy(PostData+zParts1.GetLength(),buffer,size);
 		memcpy(PostData+zParts1.GetLength()+size,(PCC)zParts0,zParts0.GetLength());
 		hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
-		client->sendRequest("alleg.builtbygiants.net",80,hdrBuf,PostData,iTotal0);
+		client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
 		debugf("**** sent %iB of data via HTTP\n",iTotal0);
 		if (client->getResponseCode() == 200)
 			content = client->getResponseContent(&contentLen);
@@ -89,7 +89,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 				::CloseHandle(hFile);
 				debugf("**** waiting a moment to try again...\n");
 				Sleep(randomInt(3,6));
-				if (iTry < 3) { 
+				if (iTry < 3) {
 					return false;
 				} else {
 					DeleteFile((PCC)zaFile);
@@ -132,7 +132,7 @@ static void doDumps(void* data, MprThread *threadp) {
 		}
 		debugf("**** Create7z returned: %i for file %s\n",size,(PCC)zaFile);
 		MprSocket* socket = new MprSocket();
-		socket->openClient("alleg.builtbygiants.net",80,0);
+		socket->openClient("build.alleg.net",80,0);
 		int iwrite = socket->_write("GET /\r\n");
 		delete socket;
 
@@ -183,7 +183,7 @@ inline HRESULT CServiceModule::RegisterServer(BOOL bRegTypeLib, BOOL bService, c
     if (lRes != ERROR_SUCCESS)
         return lRes;
     key.DeleteValue(_T("LocalService"));
-    
+
     if (bService)
     {
 		// mdvalley: SetStringValue not in my ATL
@@ -221,7 +221,7 @@ const char * CServiceModule::GetModulePath()
         char*   p = strrchr(szFileName, '\\');
         if (p)
             *(p+1) = 0;
-        else 
+        else
         {
             szFileName[0] = '\\';
             szFileName[1] = 0;
@@ -231,7 +231,7 @@ const char * CServiceModule::GetModulePath()
     }
     return pszLast;
 }
- 
+
 
 
 /*-------------------------------------------------------------------------
@@ -239,7 +239,7 @@ const char * CServiceModule::GetModulePath()
  *-------------------------------------------------------------------------
  * Purpose:
  *    Read info from the registry
- * 
+ *
  * Parameters:
  *    hk:        which key to read from
  *    bIsString: if false, then item is cosnidered to be a DWORD
@@ -313,7 +313,7 @@ inline void CServiceModule::Init(_ATL_OBJMAP_ENTRY* p, HINSTANCE h, UINT nServic
     LoadString(h, nServiceNameID, m_szServiceName, sizeof(m_szServiceName) / sizeof(TCHAR));
     LoadString(h, nServiceDescID, m_szServiceDesc, sizeof(m_szServiceDesc) / sizeof(TCHAR));
 
-    // set up the initial service status 
+    // set up the initial service status
     m_hServiceStatus = NULL;
     m_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
     m_status.dwCurrentState = SERVICE_STOPPED;
@@ -590,7 +590,7 @@ void WINAPI CServiceModule::_ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
 }
 void WINAPI CServiceModule::_Handler(DWORD dwOpcode)
 {
-    _Module.Handler(dwOpcode); 
+    _Module.Handler(dwOpcode);
 }
 
 void CServiceModule::SetServiceStatus(DWORD dwState)
@@ -656,7 +656,7 @@ void CServiceModule::Run()
 /////////////////////////////////////////////////////////////////////////////
 //
 int __cdecl main(int argc, char *argv[])
-{ 
+{
 
 	// start the appweb service thread w/log Imago 7/3/08
 #ifdef _DEBUG
@@ -682,20 +682,20 @@ int __cdecl main(int argc, char *argv[])
 	FileList tlFiles = FindDumps();
 	debugf("**** Found:  %i dump files\n",tlFiles.GetCount());
 	if (!tlFiles.IsEmpty()) {
-		ZString zFiles; 
+		ZString zFiles;
 		zFiles.SetEmpty();
 		for (FileList::Iterator iterFile(tlFiles);
 			!iterFile.End(); iterFile.Next())
 		{
 			iKBytes += (iterFile.Value().nFileSizeHigh > 0) ? MAXINT : (iterFile.Value().nFileSizeLow / 1024);
-			if (iKBytes >= iKBMax && iLastIndex > 0) 
+			if (iKBytes >= iKBMax && iLastIndex > 0)
 				break;
 			ZString zFile = szDir + ZString(iterFile.Value().cFileName);
 			zFiles += zFile+" ";
 			iLastIndex++;
 		}
 		ZString * pzFiles = new ZString(zFiles);
-		MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "AllSrv dump thread"); 
+		MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "AllSrv dump thread");
 		threadp->start();
 	}
 
@@ -704,7 +704,7 @@ int __cdecl main(int argc, char *argv[])
     LPSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
 
     // {5B5BE9E8-F1C7-4b95-960A-542A495CCE20}
-    static const GUID LIBID_LOBBY = 
+    static const GUID LIBID_LOBBY =
         {0x5b5be9e8, 0xf1c7, 0x4b95, {0x96, 0xa, 0x54, 0x2a, 0x49, 0x5c, 0xce, 0x20}};
 
     _Module.Init(ObjectMap, hInstance, IDS_SERVICENAME, IDS_SERVICEDESC, &LIBID_LOBBY);
@@ -716,11 +716,11 @@ int __cdecl main(int argc, char *argv[])
     // Register as Local Server
     if (argc > 1 && lstrcmpi(argv[1], _T("-RegServer"))==0)
         return _Module.RegisterServer(FALSE, FALSE, NULL, NULL);
-    
+
     // Register as Service
     if (argc > 1 && lstrcmpi(argv[1], _T("-Service"))==0)
     {
-        if (argc == 4) 
+        if (argc == 4)
             return _Module.RegisterServer(FALSE, TRUE, argv[2], argv[3]);
         else
             return _Module.RegisterServer(FALSE, TRUE, NULL, NULL);
@@ -742,10 +742,10 @@ int __cdecl main(int argc, char *argv[])
         _Module.LogEvent(EVENTLOG_ERROR_TYPE, LE_NotRegistered);
         return lRes;
     }
-    
+
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
-	
+
     lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
 
     _Module.m_bService = FALSE;
