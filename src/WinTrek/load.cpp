@@ -2209,7 +2209,7 @@ public:
 
     bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
     {
-        if (ks.bDown && m_pship->GetParentShip() == NULL)
+        if (ks.bDown && m_pship->GetParentShip() == NULL && !GetWindow()->GetConsoleImage()->GetConsoleData()->IsTakingKeystrokes()) //imago #118
         {
             int num = (ks.vk - 48);
 
