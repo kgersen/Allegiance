@@ -18,7 +18,6 @@ const BYTE PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
 	// Original bytes at the beginning of SetUnhandledExceptionFilter 
 BYTE OriginalBytes[5] = {0};
 
-
 //Imago 6/10
 int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
@@ -727,6 +726,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 	//Imago 6/10
 	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
 	g_papp->EnforceFilter( true );
+
 
     __try { 
         do {

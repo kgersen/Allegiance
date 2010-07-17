@@ -12,8 +12,6 @@
 	#define GWLx_WNDPROC GWL_WNDPROC
 #endif
 
-static HHOOK g_hhk; //Imago #73 6/10
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Window
@@ -83,7 +81,6 @@ private:
 
     static TMap<HWND, Window* > s_mapWindow;
     static DWORD CALLBACK Win32WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK Window::DisableWinKeysProc(int code, WPARAM wParam, LPARAM lParam);
 
     void Construct();
 
@@ -116,7 +113,7 @@ public:
     static void AddKeyboardInputFilter(IKeyboardInput* pkeyboardInput);
     static void RemoveKeyboardInputFilter(IKeyboardInput* pkeyboardInput);
     static LPCTSTR GetTopLevelWindowClassname() { return TEXT("MS_ZLib_Window"); };
-
+	
     //
     // ITimerEventSource
     //
@@ -172,7 +169,7 @@ public:
     virtual bool OnKey(const KeyState& ks);
     virtual bool OnMouseMessage(UINT message, UINT nFlags, const WinPoint& point);
 	virtual bool OnWindowPosChanging(WINDOWPOS* pwp);
-    
+
     //
     // constructors
     //
