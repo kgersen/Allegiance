@@ -5,6 +5,7 @@
 use strict;
 use Win32::OLE;
 use Win32::Process;
+use File::Copy;
 
 print "executing autoupdate shutdown...\n";
 
