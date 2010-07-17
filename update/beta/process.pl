@@ -15,6 +15,12 @@ open(PID,'>process.pid');
 print PID $$;
 close(PID);
 
+mkdir ("Z:\\deploy\\temp");
+my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\deploy\\temp Z:\\deploy\\Server.7z";
+system($cmd);
+
+my $cmd = "C:\\Perl\\bin\\perl.exe Z:\\deploy\\upgrade.pl";
+system($cmd);
 
 copy("Z:\\Deploy\\FAZBeta.cfg","Z:\\wwwroot\\FAZ\\FAZR6.cfg");
 copy("Z:\\Deploy\\FAZBeta.cfg","Z:\\wwwroot\\FAZ\\FAZBeta.cfg");
@@ -35,9 +41,6 @@ my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU\\Standalone Z:\\deplo
 system($cmd);
 
 my $cmd = "expand Z:\\Deploy\\Filelist.txt C:\\Allegiance\\Lobby\\Filelist.txt";
-system($cmd);
-
-my $cmd = "C:\\Perl\\bin\\perl.exe Z:\\deploy\\upgrade.pl";
 system($cmd);
 
 move("Z:\\deploy\\notify\\process", "Z:\\deploy\\notify\\ready");

@@ -56,22 +56,22 @@ sleep(12);
 
 print "copying new objects...\n";
 
-my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\AGC.dll C:\\Allegiance\\Server\\AGC.dll";
+my $cmd = "expand Z:\\deploy\\temp\\AGC.dll C:\\Allegiance\\Server\\AGC.dll";
 system($cmd);
-my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\AllSrvUI.exe C:\\Allegiance\\Server\\AllSrvUI.exe";
+my $cmd = "expand Z:\\deploy\\temp\\AllSrvUI.exe C:\\Allegiance\\Server\\AllSrvUI.exe";
 system($cmd);
-my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\AllSrv.exe C:\\Allegiance\\Server\\AllSrv.exe";
+my $cmd = "expand Z:\\deploy\\temp\\AllSrv.exe C:\\Allegiance\\Server\\AllSrv.exe";
 system($cmd);
-my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\dbghelp.dll C:\\Allegiance\\Server\\dbghelp.dll";
+my $cmd = "expand Z:\\deploy\\temp\\dbghelp.dll C:\\Allegiance\\Server\\dbghelp.dll";
 system($cmd);
 my $cmd = "copy Z:\\deploy\\AllLobby.exe C:\\Allegiance\\Lobby\\AllLobby.exe /Y";
 system($cmd);
-my $cmd = "expand Z:\\wwwroot\\FAZ\\AU\\dbghelp.dll C:\\Allegiance\\Lobby\\dbghelp.dll";
+my $cmd = "expand Z:\\deploy\\temp\\dbghelp.dll C:\\Allegiance\\Lobby\\dbghelp.dll";
 system($cmd);
 
 print "updating autoupdate...\n";
 
-my $cmd = "copy Z:\\wwwroot\\FAZ\\AU\\AutoUpdate.exe C:\\Allegiance\\Server\\AutoUpdate.exe /Y";
+my $cmd = "copy Z:\\deploy\\temp\\AutoUpdate.exe C:\\Allegiance\\Server\\AutoUpdate.exe /Y";
 system($cmd);
 
 print "executing regsvr32 AGC.dll...\n";
