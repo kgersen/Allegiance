@@ -35,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-  <PlatformToolset>v90</PlatformToolset></PropertyGroup>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -93,7 +93,7 @@
       <AdditionalDependencies>version.lib;dbghelp.lib;WINMM.LIB;$(OutDir)..\zlib\zlib.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-    <AdditionalOptions>/SUBSYSTEM:"windows,5.00"  /OSVERSION:5.00 %(AdditionalOptions)</AdditionalOptions></Link>
+    </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\src\Inc</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\"</PreprocessorDefinitions>
