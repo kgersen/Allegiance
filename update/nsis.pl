@@ -102,7 +102,6 @@ compare:
 	IntOp \$3 \$3 + 1
 	IntCmp 0 \$3 pdbred0 pdbred1 reset
 	Intcmp 1 \$3 pdbred1 reset pdbred0
-	IntCmp @url \$3 reset reset pbred1
 failed:
 	LogEx::Write true true "Done retrying servers. Download of PDB failed..."
 	goto dontDL
