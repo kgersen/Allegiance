@@ -930,7 +930,7 @@ public:
 
 					DDCall(m_pdid->GetProperty( DIPROP_AXISMODE, &dipdw.diph )); 
 					ZDebugOutput("Axis mode: " + ZString((int)dipdw.dwData) + "\n");
-
+/*
 					DIPROPDWORD dipdw2;
 					dipdw2.diph.dwSize       = sizeof(DIPROPDWORD); 
 					dipdw2.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
@@ -948,7 +948,7 @@ public:
 
 					DDCall(m_pdid->GetProperty( DIPROP_AUTOCENTER, &dipdw22.diph )); 
 					ZDebugOutput("AutoCenter mode2: " + ZString((int)dipdw22.dwData) + "\n");
-
+*/
 					DIPROPDWORD dipdw3;
 					dipdw3.diph.dwSize       = sizeof(DIPROPDWORD); 
 					dipdw3.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
