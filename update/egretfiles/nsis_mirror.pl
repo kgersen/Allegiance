@@ -20,12 +20,12 @@ close PASS;
 
 GetOptions("b=s" => \$build, "r=s" => \$revision, "v=s" => \$version);
 if($version eq "1.1"){
-	$ART .= "$build_r$revision.exe";
-	$PDB .= "R6PDB_b$build_r$revision.exe";
+	$ART .= "${build}_r${revision}.exe";
+	$PDB .= "R6PDB_b${build}_r${revision}.exe";
 }
-else if($version eq "1.0"){
-	$ART .= "$build_r$revision.exe";
-	$PDB .= "PDB_b$build_r$revision.exe";
+elsif($version eq "1.0"){
+	$ART .= "${build}_r${revision}.exe";
+	$PDB .= "PDB_b${build}_r${revision}.exe";
 }
 else{ die "No version specified! Command line switch '-v' either 1.1 or 1.0"; }
 
