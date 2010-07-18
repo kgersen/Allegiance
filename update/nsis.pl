@@ -1,6 +1,7 @@
 #Imago <imagotrigger@gmail.com>
 # NSIS wrapper for allegsetup
 #  2 modes - Upgrade (Beta) / Full (Production)
+#   Supports multipler servers - don't forget to add your mirror to bitten
 
 use strict;
 use POSIX;
@@ -15,10 +16,8 @@ my $artwork = "";
 my $bbeta = "";
 my $dlcode_art = ""; my $dlcode_pdb = "";
 my $clientbinary = "ASGSClient.exe";
-#my $url = "http://build.alleg.net"; #can be FTP:// 
-#my $url = "http://build.egretfiles.com";  #Make this main for now
 my @url = ("http://build.egretfiles.com", "http://build.alleg.net"); #Fuzz 07/18 - Use multiple servers!
-my $retries = 10;
+my $retries = 3;	#Reasonal number of retries, number of servers plus one
 my $cfgfile = "http://autoupdate.alleg.net/allegiance.cfg";
 
 my $now = strftime("%Y/%m/%d %H:%M CDT",localtime(time));
@@ -91,7 +90,7 @@ pdbred1:
     inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[1]\$dir" \$inst /END
 	Pop \$0
 	goto pdbcmp
-pdbcmp
+pdbcmp:
 	md5dll::GetMD5File \$inst
 	Pop \$1
 	LogEx::Write true true "Download returned: \$0 md5: \$1"
