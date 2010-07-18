@@ -103,7 +103,7 @@
 </step>
 
 <step id="Mirror 1.1">
-	<sh:exec file="perl" args="${cdn.path}\\update\\egret\\nsis_mirror.pl -b ${build} -r ${revision} -v 1.1" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\egretfiles\\nsis_mirror.pl -b ${build} -r ${revision} -v 1.1" />
 </step>
 
 <step id="Publish 1.1">
