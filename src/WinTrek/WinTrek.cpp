@@ -10449,7 +10449,6 @@ public:
                     : 1.0f;
                 trekClient.joyThrottle = false;
                 bThrottleChange = true;
-				debugf("!!!!!! sensejoystick throttleupkey %f %f\n",trekClient.trekThrottle,js->controls.jsValues[c_axisThrottle]);
             }
             else if (m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, bReadKeyboard))
             {
@@ -10459,7 +10458,6 @@ public:
                     : -1.0f;
                 trekClient.joyThrottle = false;
                 bThrottleChange = true;
-				debugf("!!!!!! sensejoystick throttledownkey %f %f\n",trekClient.trekThrottle,js->controls.jsValues[c_axisThrottle]);
             }
         }
 
