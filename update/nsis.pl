@@ -137,7 +137,7 @@ artcmp:
 	StrCmp \${PRODUCT_ART_KEY} \$1 artmd5
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL2
 	IntOp \$4 \$4 + 1
-	IntCmp $retries \$4 pdbfail
+	IntCmp $retries \$4 artfail
 	IntOp \$3 \$3 + 1
 	IntCmp 0 \$3 artred0 artred1 artreset
 	Intcmp 1 \$3 artred1 artreset artred0
