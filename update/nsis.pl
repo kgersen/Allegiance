@@ -125,7 +125,7 @@ artred0:
 	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[0]\$dir" \$inst /END
 	Pop \$0
 	goto artcmp
-artredl:
+artred1:
 	LogEx::Write true true "Trying server 1 for ART..."
 	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[1]\$dir" \$inst /END
 	Pop \$0
