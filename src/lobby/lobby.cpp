@@ -760,7 +760,6 @@ int __cdecl main(int argc, char *argv[])
 	delete tMod;
 	delete logger;
 #endif
-	delete mpr;
 	mprMemClose();
 
     // When we get here, the service has been stopped

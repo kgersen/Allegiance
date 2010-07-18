@@ -3570,7 +3570,6 @@ public:
 			delete tMod;
 			delete logger;
 #endif
-			delete mpr;
 			mprMemClose();
 
         trekClient.Terminate();

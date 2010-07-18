@@ -9978,7 +9978,6 @@ int __cdecl main(int argc, char *argv[])
 	delete tMod;
     delete logger;
 #endif
-	delete mpr;
 	mprMemClose();
 
 	if( !g_app.EnforceFilter( false ) )

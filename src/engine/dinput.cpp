@@ -894,8 +894,71 @@ public:
         for (int index = 0; index < countValues; index++) {
             if (m_vvalueObject[index] != NULL) {
                 if ((m_vvalueObject[index]->GetDWType() & DIDFT_POV) == 0) {
-                    DIPROPRANGE dipr;
 
+					DIPROPRANGE dip;
+					dip.diph.dwSize = sizeof( DIPROPRANGE );
+					dip.diph.dwHeaderSize = sizeof( DIPROPHEADER );
+					dip.diph.dwObj =  m_vvalueObject[index]->GetDWType();
+					dip.diph.dwHow = DIPH_BYID;
+
+					DDCall(m_pdid->GetProperty( DIPROP_RANGE, &dip.diph ));
+					ZDebugOutput("Range Before: " + ZString((int)dip.lMin) + "-" +ZString((int)dip.lMax)+"\n");
+
+					DIPROPRANGE dipp;
+					dipp.diph.dwSize = sizeof( DIPROPRANGE );
+					dipp.diph.dwHeaderSize = sizeof( DIPROPHEADER );
+					dipp.diph.dwObj =  m_vvalueObject[index]->GetDWType();
+					dipp.diph.dwHow = DIPH_BYID;
+
+					DDCall(m_pdid->GetProperty( DIPROP_RANGE, &dipp.diph ));
+					ZDebugOutput("Physical Range: " + ZString((int)dipp.lMin) + "-" +ZString((int)dipp.lMax)+"\n");
+
+					DIPROPRANGE dipl;
+					dipl.diph.dwSize = sizeof( DIPROPRANGE );
+					dipl.diph.dwHeaderSize = sizeof( DIPROPHEADER );
+					dipl.diph.dwObj =  m_vvalueObject[index]->GetDWType();
+					dipl.diph.dwHow = DIPH_BYID;
+
+					DDCall(m_pdid->GetProperty( DIPROP_RANGE, &dipl.diph ));
+					ZDebugOutput("Logical Range: " + ZString((int)dipl.lMin) + "-" +ZString((int)dipl.lMax)+"\n");
+
+					DIPROPDWORD dipdw;
+					dipdw.diph.dwSize       = sizeof(DIPROPDWORD); 
+					dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
+					dipdw.diph.dwObj =  0;// m_vvalueObject[index]->GetDWType();
+					dipdw.diph.dwHow = DIPH_DEVICE;
+
+					DDCall(m_pdid->GetProperty( DIPROP_AXISMODE, &dipdw.diph )); 
+					ZDebugOutput("Axis mode: " + ZString((int)dipdw.dwData) + "\n");
+
+					DIPROPDWORD dipdw2;
+					dipdw2.diph.dwSize       = sizeof(DIPROPDWORD); 
+					dipdw2.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
+					dipdw2.diph.dwObj =  0;// m_vvalueObject[index]->GetDWType();
+					dipdw2.diph.dwHow = DIPH_DEVICE;
+
+					DDCall(m_pdid->GetProperty( DIPROP_AUTOCENTER, &dipdw2.diph )); 
+					ZDebugOutput("AutoCenter mode: " + ZString((int)dipdw2.dwData) + "\n");
+
+					DIPROPDWORD dipdw22;
+					dipdw22.diph.dwSize       = sizeof(DIPROPDWORD); 
+					dipdw22.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
+					dipdw22.diph.dwObj =  m_vvalueObject[index]->GetDWType();
+					dipdw22.diph.dwHow = DIPH_BYID;
+
+					DDCall(m_pdid->GetProperty( DIPROP_AUTOCENTER, &dipdw22.diph )); 
+					ZDebugOutput("AutoCenter mode2: " + ZString((int)dipdw22.dwData) + "\n");
+
+					DIPROPDWORD dipdw3;
+					dipdw3.diph.dwSize       = sizeof(DIPROPDWORD); 
+					dipdw3.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
+					dipdw3.diph.dwObj =  m_vvalueObject[index]->GetDWType();
+					dipdw3.diph.dwHow = DIPH_BYID;
+
+					DDCall(m_pdid->GetProperty( DIPROP_DEADZONE, &dipdw3.diph )); 
+					ZDebugOutput("DeadZone mode: " + ZString((int)dipdw3.dwData) + "\n");			
+
+					DIPROPRANGE dipr;
                     dipr.diph.dwSize        = sizeof(dipr);
                     dipr.diph.dwHeaderSize  = sizeof(dipr.diph);
                     dipr.diph.dwHow         = DIPH_BYID;
@@ -904,6 +967,15 @@ public:
                     dipr.lMax               =  100000;   
 
                     DDCall(m_pdid->SetProperty(DIPROP_RANGE, &dipr.diph));
+
+					DIPROPRANGE dip2;
+					dip2.diph.dwSize = sizeof( DIPROPRANGE );
+					dip2.diph.dwHeaderSize = sizeof( DIPROPHEADER );
+					dip2.diph.dwObj =  m_vvalueObject[index]->GetDWType();
+					dip2.diph.dwHow = DIPH_BYID;
+
+					DDCall(m_pdid->GetProperty( DIPROP_RANGE, &dip2.diph ));
+					ZDebugOutput("Range After: " + ZString((int)dip2.lMin) + "-" +ZString((int)dip2.lMax)+"\n");
                 }
 
                 //
@@ -967,15 +1039,18 @@ public:
                             value = float(ivalue) / 18000;
                         }
 
-                        //ZDebugOutput("RawHat: " + ZString(ivalue) + ", " + ZString(value) + "\n");
+                        ZDebugOutput("RawHat("+ZString(index)+"): " + ZString(ivalue) + ", " + ZString(value) + "\n");
 
                         m_vvalueObject[index]->GetValue()->SetValue(value);
                     } else {
                         float value = float(((int*)m_pbyteData)[index]) / 100000;
-
+						int ipre =((int*)m_pbyteData)[index];
                         value = bound(value, -1.0f, 1.0f);
 
+						ZDebugOutput("RawAxis("+ZString(index)+"): " + ZString(value) + " - RawUnbound: "+ + ZString(ipre)+"\n");
+
                         m_vvalueObject[index]->GetValue()->SetValue(value);
+
                     }
                 }
 
