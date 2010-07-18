@@ -97,7 +97,7 @@ compare:
 	LogEx::Write true true "Download returned: \$0 md5: \$1"
 	StrCmp \${PRODUCT_PDB_KEY} \$1 pdbmd5
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL
-	IntOp \$4 \$4 +1
+	IntOp \$4 \$4 + 1
 	IntCmp $retries \$4 failed
 	IntOp \$3 \$3 + 1
 	IntCmp 0 \$3 pdbred0 pdbred1 reset
