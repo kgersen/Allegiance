@@ -68,11 +68,11 @@ if ($bfull) {
 	$betavar = "Var BetaSetupError";
 	$dlcode_pdb = qq{
 	IntFmt \$4 "%hu" 0
-	var err
-	var cap
-	var pop
-	var dir
-	var inst
+	var /GLOBAL err
+	var /GLOBAL cap
+	var /GLOBAL pop
+	var /GLOBAL dir
+	var /GLOBAL inst
 	StrCpy \$err "Network connection problem.  Please reconnect and click Retry to resume downloading"
 	StrCpy \$cap "Program Database"
 	StrCpy \$pop "Program database"
