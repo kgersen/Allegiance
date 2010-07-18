@@ -9976,11 +9976,9 @@ int __cdecl main(int argc, char *argv[])
 	delete mutex;
 #ifdef _DEBUG
 	delete tMod;
-#endif
-	delete mpr;
-#ifdef _DEBUG
     delete logger;
 #endif
+	delete mpr;
 	mprMemClose();
 
 	if( !g_app.EnforceFilter( false ) )

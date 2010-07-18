@@ -3568,11 +3568,9 @@ public:
 			mpr->stop(true); //true=now, terminate any upload (if we wait it could assert and make another dump!)
 #ifdef _DEBUG
 			delete tMod;
-#endif
-			delete mpr;
-#ifdef _DEBUG
 			delete logger;
 #endif
+			delete mpr;
 			mprMemClose();
 
         trekClient.Terminate();

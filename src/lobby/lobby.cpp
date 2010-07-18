@@ -758,11 +758,9 @@ int __cdecl main(int argc, char *argv[])
 	mpr->stop(0);
 #ifdef _DEBUG
 	delete tMod;
-#endif
-	delete mpr;
-#ifdef _DEBUG
 	delete logger;
 #endif
+	delete mpr;
 	mprMemClose();
 
     // When we get here, the service has been stopped

@@ -246,12 +246,12 @@ DWORD WINAPI QueryHandler(void* sd_)
 
 				unsigned long iScore = (long)pso.GetScore();
 				ZEnd32(&iScore);			
-				memcpy(szBuffer+nBytes,&iScore,sizeof(iScore));
+				memcpy(szBuffer+nBytes,&iScore,sizeof(iScore)); //TEST!
 				nBytes += 4;
 
 				ZString name = pfsPlayer->GetName();
 				memcpy(szBuffer+nBytes,(PCC)name,name.GetLength());
-				nBytes += name.GetLength();
+				nBytes += name.GetLength() + 1;
 			}
 		}
 	}
