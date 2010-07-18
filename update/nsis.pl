@@ -90,7 +90,6 @@ pdbcmp:
 	LogEx::Write true true "Download returned: \$0 md5: \$1"
 	StrCmp \${PRODUCT_PDB_KEY} \$1 pdbmd5
 	IntCmp $retries \$3 pdbfail
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION \$9 /SD IDYES IDNO dontDL
 	LogEx::Write true true "Trying server \$3 for PDB..."
 	IntCmp 0 \$3 pdbred0
 	Intcmp 1 \$3 pdbred1 pdbreset pdbreset
@@ -127,7 +126,6 @@ artcmp:
 	LogEx::Write true true "Download returned: \$0 md5: \$1"
 	StrCmp \${PRODUCT_ART_KEY} \$1 artmd5
 	IntCmp $retries \$3 artfail
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION \$9 /SD IDYES IDNO dontDL2
 	LogEx::Write true true "Trying server \$3 for ART..."
 	IntCmp 0 \$3 artred0
 	Intcmp 1 \$3 artred1 artreset artreset
