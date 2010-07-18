@@ -16,7 +16,9 @@ my $bbeta = "";
 my $dlcode_art = ""; my $dlcode_pdb = "";
 my $clientbinary = "ASGSClient.exe";
 #my $url = "http://build.alleg.net"; #can be FTP:// 
-my $url = "http://build.egretfiles.com";  #Make this main for now
+#my $url = "http://build.egretfiles.com";  #Make this main for now
+my @url = ("http://build.egretfiles.com", "http://build.alleg.net"); #Fuzz 07/18 - Use multiple servers!
+my $retries = 10;
 my $cfgfile = "http://autoupdate.alleg.net/allegiance.cfg";
 
 my $now = strftime("%Y/%m/%d %H:%M CDT",localtime(time));
@@ -62,25 +64,55 @@ if ($bfull) {
   $asgsreg
 };
 } else {
+	# Fuzz 07/18 try multiple servers
 	$betavar = "Var BetaSetupError";
 	$dlcode_pdb = qq{
- MessageBox MB_YESNO|MB_ICONQUESTION "Download program databases for debugging?\$\\nIf you don't know what this is, click No" /SD IDYES IDNO dontDL
-pdbredl:
-    inetc::get /RESUME "Network connection problem.  Please reconnect and click Retry to resume downloading" /CAPTION "Program Database" /POPUP "Program database" "$url/Alleg${bbeta}PDB_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe" "\$INSTDIR\\PDB.7z" /END
+	IntFmt \$4 "%hu" 0
+	var err
+	var cap
+	var pop
+	var dir
+	var inst
+	StrCpy \$err "Network connection problem.  Please reconnect and click Retry to resume downloading"
+	StrCpy \$cap "Program Database"
+	StrCpy \$pop "Program database"
+	StrCpy \$dir "/Alleg${bbeta}PDB_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
+	StrCpy \$inst "\$INSTDIR\\PDB.7z"
+	MessageBox MB_YESNO|MB_ICONQUESTION "Download program databases for debugging?\$\\nIf you don't know what this is, click No" /SD IDYES IDNO dontDL
+reset:
+	IntFmt \$3 "%hu" 0
+pdbred0:
+	LogEx::Write true true "Trying server 0..."
+	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[0]\$dir" \$inst /END
 	Pop \$0
-  md5dll::GetMD5File "\$INSTDIR\\PDB.7z"
-  Pop \$1
-  LogEx::Write true true "Download returned: \$0 md5: \$1"
-  StrCmp \${PRODUCT_PDB_KEY} \$1 pdbmd5
-  MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL
-  goto pdbredl
-  pdbmd5:
-  LogEx::Write true true "Extracting PDB package..."
-  Nsis7z::ExtractWithCallback "\$INSTDIR\\PDB.7z" \$R9
-  GetFunctionAddress \$R9 CallbackTest
-  Delete PDB.7z
-  dontDL:
-};	
+	goto compare
+pdbred1:
+	LogEx::Write true true "Trying server 1..."
+    inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[1]\$dir" \$inst /END
+	Pop \$0
+	goto compare
+compare:
+	md5dll::GetMD5File \$inst
+	Pop \$1
+	LogEx::Write true true "Download returned: \$0 md5: \$1"
+	StrCmp \${PRODUCT_PDB_KEY} \$1 pdbmd5
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL
+	IntOp \$4 \$4 +1
+	IntCmp $retries \$4 failed
+	IntOp \$3 \$3 + 1
+	IntCmp 0 \$3 pdbred0 pdbred1 reset
+	Intcmp 1 \$3 pdbred1 reset pdbred0
+	IntCmp @url \$3 reset reset pbred1
+failed:
+	LogEx::Write true true "Done retrying servers. Download of PDB failed..."
+	goto dontDL
+pdbmd5:
+	LogEx::Write true true "Extracting PDB package..."
+	Nsis7z::ExtractWithCallback "\$INSTDIR\\PDB.7z" \$R9
+	GetFunctionAddress \$R9 CallbackTest
+	Delete PDB.7z
+dontDL:
+};
 $dlcode_art = qq{
   MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
   artredl:

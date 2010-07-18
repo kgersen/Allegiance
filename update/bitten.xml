@@ -168,6 +168,10 @@
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
+<step id="Mirror 1.0">
+	<sh:exec file="perl" args="${cdn.path}\\update\\egretfiles\\nsis_mirror.pl -b ${build} -r ${revision} -v 1.0" />
+</step>
+
 <step id="Publish 1.0">
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Package 1.0&quot;"/> -->
 	<sh:exec file="echo" args="Creating installer"/>
