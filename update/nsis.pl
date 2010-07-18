@@ -17,7 +17,7 @@ my $bbeta = "";
 my $dlcode_art = ""; my $dlcode_pdb = "";
 my $clientbinary = "ASGSClient.exe";
 my @url = ("http://build.egretfiles.com", "http://build.alleg.net"); #Fuzz 07/18 - Use multiple servers!
-my $retries = 3;	#Reasonal number of retries, number of servers plus one
+my $retries = 2;	#Reasonal number of retries, number of servers
 my $cfgfile = "http://autoupdate.alleg.net/allegiance.cfg";
 
 my $now = strftime("%Y/%m/%d %H:%M CDT",localtime(time));
@@ -66,41 +66,33 @@ if ($bfull) {
 	# Fuzz 07/18 try multiple servers
 	$betavar = "Var BetaSetupError";
 	$dlcode_pdb = qq{
-	IntFmt \$4 "%hu" 0
-	var /GLOBAL err
-	var /GLOBAL cap
-	var /GLOBAL pop
-	var /GLOBAL dir
-	var /GLOBAL inst
-	StrCpy \$err "Network connection problem.  Please reconnect and click Retry to resume downloading"
-	StrCpy \$cap "Program Database"
-	StrCpy \$pop "Program database"
-	StrCpy \$dir "/Alleg${bbeta}PDB_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
-	StrCpy \$inst "\$INSTDIR\\PDB.7z"
+	StrCpy \$4 "Problem connecting to server.  Please reconnect and click Retry to resume downloading or Cancel to try a different server"
+	StrCpy \$5 "Program Database"
+	StrCpy \$6 "Program database"
+	StrCpy \$7 "/Alleg${bbeta}PDB_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
+	StrCpy \$8 "\$INSTDIR\\PDB.7z"
+	StrCpy \$9 "Corrupted download!\$\\n\$\\nWould you like to retry?"
 	MessageBox MB_YESNO|MB_ICONQUESTION "Download program databases for debugging?\$\\nIf you don't know what this is, click No" /SD IDYES IDNO dontDL
 pdbreset:
 	IntFmt \$3 "%hu" 0
 pdbred0:
-	LogEx::Write true true "Trying server 0 for PDB..."
-	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[0]\$dir" \$inst /END
-	Pop \$0
+	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[0]\$7" \$8 /END
 	goto pdbcmp
 pdbred1:
-	LogEx::Write true true "Trying server 1 for PDB..."
-    inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[1]\$dir" \$inst /END
-	Pop \$0
+    inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[1]\$7" \$8 /END
 	goto pdbcmp
 pdbcmp:
-	md5dll::GetMD5File \$inst
+	Pop \$0
+	IntOp \$3 \$3 + 1
+	md5dll::GetMD5File \$8
 	Pop \$1
 	LogEx::Write true true "Download returned: \$0 md5: \$1"
 	StrCmp \${PRODUCT_PDB_KEY} \$1 pdbmd5
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL
-	IntOp \$4 \$4 + 1
-	IntCmp $retries \$4 pdbfail
-	IntOp \$3 \$3 + 1
-	IntCmp 0 \$3 pdbred0 pdbred1 pdbreset
-	Intcmp 1 \$3 pdbred1 pdbreset pdbred0
+	IntCmp $retries \$3 pdbfail
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION \$9 /SD IDYES IDNO dontDL
+	LogEx::Write true true "Trying server \$3 for PDB..."
+	IntCmp 0 \$3 pdbred0
+	Intcmp 1 \$3 pdbred1 pdbreset pdbreset
 pdbfail:
 	LogEx::Write true true "Done retrying servers. Download of PDB failed..."
 	goto dontDL
@@ -112,35 +104,31 @@ pdbmd5:
 dontDL:
 };
 $dlcode_art = qq{
-	IntFmt \$4 "%hu" 0
-	StrCpy \$cap "Artwork"
-	StrCpy \$pop "Artwork"
-	StrCpy \$dir "/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
-	StrCpy \$inst "\$INSTDIR\\ART.7z"
+	StrCpy \$5 "Artwork"
+	StrCpy \$6 "Artwork"
+	StrCpy \$7 "/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
+	StrCpy \$8 "\$INSTDIR\\ART.7z"
 	MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
 artreset:
 	IntFmt \$3 "%hu" 0
 artred0:
-	LogEx::Write true true "Trying server 0 for ART..."
-	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[0]\$dir" \$inst /END
-	Pop \$0
+	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[0]\$7" \$8 /END
 	goto artcmp
 artred1:
-	LogEx::Write true true "Trying server 1 for ART..."
-	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[1]\$dir" \$inst /END
-	Pop \$0
+	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[1]\$7" \$8 /END
 	goto artcmp
 artcmp:
-	md5dll::GetMD5File "\$INSTDIR\\ART.7z"
+	Pop \$0
+	IntOp \$3 \$3 + 1
+	md5dll::GetMD5File \$8
 	Pop \$1
 	LogEx::Write true true "Download returned: \$0 md5: \$1"
 	StrCmp \${PRODUCT_ART_KEY} \$1 artmd5
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL2
-	IntOp \$4 \$4 + 1
-	IntCmp $retries \$4 artfail
-	IntOp \$3 \$3 + 1
-	IntCmp 0 \$3 artred0 artred1 artreset
-	Intcmp 1 \$3 artred1 artreset artred0
+	IntCmp $retries \$3 artfail
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION \$9 /SD IDYES IDNO dontDL2
+	LogEx::Write true true "Trying server \$3 for ART..."
+	IntCmp 0 \$3 artred0
+	Intcmp 1 \$3 artred1 artreset artreset
 artfail:
 	LogEx::Write true true "Done retrying servers. Download of ART failed..."
 	goto dontDL2
