@@ -75,6 +75,7 @@ if ($bfull) {
 	MessageBox MB_YESNO|MB_ICONQUESTION "Download program databases for debugging?\$\\nIf you don't know what this is, click No" /SD IDYES IDNO dontDL
 pdbreset:
 	IntFmt \$3 "%hu" 0
+	LogEx::Write true true "Trying server \$3 for PDB..."
 pdbred0:
 	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[0]\$7" \$8 /END
 	goto pdbcmp
@@ -111,6 +112,7 @@ $dlcode_art = qq{
 	MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
 artreset:
 	IntFmt \$3 "%hu" 0
+	LogEx::Write true true "Trying server \$3 for ART..."
 artred0:
 	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[0]\$7" \$8 /END
 	goto artcmp
