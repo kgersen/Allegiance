@@ -116,7 +116,7 @@ dontDL:
 $dlcode_art = qq{
   MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
   artredl:
-    inetc::get /RESUME "Network connection problem.  Please reconnect and click Retry to resume downloading" /CAPTION "Artwork" /POPUP "Artwork" "$url/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe" "\$INSTDIR\\ART.7z" /END
+    inetc::get /RESUME "Network connection problem.  Please reconnect and click Retry to resume downloading" /CAPTION "Artwork" /POPUP "Artwork" "@url[1]/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe" "\$INSTDIR\\ART.7z" /END
 	Pop \$0
   md5dll::GetMD5File "\$INSTDIR\\ART.7z"
   Pop \$1
