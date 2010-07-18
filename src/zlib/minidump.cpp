@@ -121,17 +121,20 @@ FileList FindDumps() {
 
 void DeleteDumps(bool bDelete) {
 	FileList tlFiles = FindDumps();
+	char szDir[MAX_PATH+52] = "";
+	strcpy(szDir,(PCC)GetAppDir());
 	if (!tlFiles.IsEmpty()) {
 		for (FileList::Iterator iterFile(tlFiles);
 			!iterFile.End(); iterFile.Next())
 		{
+			ZString zFile = ZString(szDir)+ZString(iterFile.Value().cFileName);
 			if (!bDelete) {
-				MoveFile((PCC)ZString(iterFile.Value().cFileName),(PCC)ZString(iterFile.Value().cFileName)+ZString(".old"));
+				MoveFile((PCC)zFile,zFile+ZString(".old"));
 				continue;
 			}
 			else {
-				debugf("**** Deleting %s\n",(PCC)ZString(iterFile.Value().cFileName));
-				DeleteFile((PCC)ZString(iterFile.Value().cFileName));
+				debugf("**** Deleting %s\n",(PCC)zFile);
+				DeleteFile(zFile);
 			}
 		}
 	}
