@@ -36,10 +36,12 @@ $ftp->login($user,$pass)
 $ftp->binary;
 print "Uploading PDB to $server\n";
 $ftp->put($PDB)
-	or die "Put failed ", $ftp->message;    
-print "Uploading ART to $server\n";
-$ftp->put($ART)
-	or die "Put failed ", $ftp->message; 
+	or die "Put failed ", $ftp->message;
+if($version eq "1.1"){
+	print "Uploading ART to $server\n";
+	$ftp->put($ART)
+		or die "Put failed ", $ftp->message;
+}
 
 print "Files uploaded OK\n";
 $ftp->quit();

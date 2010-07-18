@@ -79,30 +79,30 @@ if ($bfull) {
 	StrCpy \$dir "/Alleg${bbeta}PDB_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
 	StrCpy \$inst "\$INSTDIR\\PDB.7z"
 	MessageBox MB_YESNO|MB_ICONQUESTION "Download program databases for debugging?\$\\nIf you don't know what this is, click No" /SD IDYES IDNO dontDL
-reset:
+pdbreset:
 	IntFmt \$3 "%hu" 0
 pdbred0:
-	LogEx::Write true true "Trying server 0..."
+	LogEx::Write true true "Trying server 0 for PDB..."
 	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[0]\$dir" \$inst /END
 	Pop \$0
-	goto compare
+	goto pdbcmp
 pdbred1:
-	LogEx::Write true true "Trying server 1..."
+	LogEx::Write true true "Trying server 1 for PDB..."
     inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[1]\$dir" \$inst /END
 	Pop \$0
-	goto compare
-compare:
+	goto pdbcmp
+pdbcmp
 	md5dll::GetMD5File \$inst
 	Pop \$1
 	LogEx::Write true true "Download returned: \$0 md5: \$1"
 	StrCmp \${PRODUCT_PDB_KEY} \$1 pdbmd5
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL
 	IntOp \$4 \$4 + 1
-	IntCmp $retries \$4 failed
+	IntCmp $retries \$4 pdbfail
 	IntOp \$3 \$3 + 1
-	IntCmp 0 \$3 pdbred0 pdbred1 reset
-	Intcmp 1 \$3 pdbred1 reset pdbred0
-failed:
+	IntCmp 0 \$3 pdbred0 pdbred1 pdbreset
+	Intcmp 1 \$3 pdbred1 pdbreset pdbred0
+pdbfail:
 	LogEx::Write true true "Done retrying servers. Download of PDB failed..."
 	goto dontDL
 pdbmd5:
@@ -113,44 +113,66 @@ pdbmd5:
 dontDL:
 };
 $dlcode_art = qq{
-  MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
-  artredl:
-    inetc::get /RESUME "Network connection problem.  Please reconnect and click Retry to resume downloading" /CAPTION "Artwork" /POPUP "Artwork" "@url[1]/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe" "\$INSTDIR\\ART.7z" /END
+	IntFmt \$4 "%hu" 0
+	StrCpy \$cap "Artwork"
+	StrCpy \$pop "Artwork"
+	StrCpy \$dir "/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
+	StrCpy \$inst "\$INSTDIR\\ART.7z"
+	MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
+artreset:
+	IntFmt \$3 "%hu" 0
+artred0:
+	LogEx::Write true true "Trying server 0 for ART..."
+	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[0]\$dir" \$inst /END
 	Pop \$0
-  md5dll::GetMD5File "\$INSTDIR\\ART.7z"
-  Pop \$1
-  LogEx::Write true true "Download returned: \$0 md5: \$1"
-  StrCmp \${PRODUCT_ART_KEY} \$1 artmd5
-  MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL2
-  goto artredl
-  artmd5:
-  LogEx::Write true true "Extracting ART package..."
-  Nsis7z::ExtractWithCallback "\$INSTDIR\\ART.7z" \$R9
-  GetFunctionAddress \$R9 CallbackTest
-  Delete ART.7z
-  WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "CfgFile" "http://fazdev.alleg.net/FAZ/FAZR6.cfg"
-  WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "CfgFile" "http://fazdev.alleg.net/FAZ/FAZR6.cfg"
-  WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "ArtPath" "\$INSTDIR\\Artwork"
-  WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "ArtPAth" "\$INSTDIR\\Artwork"
-  WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver\\Server" "ArtPath" "\$INSTDIR\\Artwork"
-  WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver\\Server" "ArtPAth" "\$INSTDIR\\Artwork"  
-  
-  $asgsreg
-  goto DL
-  dontDL2:
-	 File "C:\\betareghlpV3.exe"
-	tryagain:
-	 LogEx::Write true true "Browse for Folder - Set 1.1 ArtPath"
+	goto artcmp
+artredl:
+	LogEx::Write true true "Trying server 1 for ART..."
+	inetc::get /RESUME \$err /CAPTION \$cap /POPUP \$pop "@url[1]\$dir" \$inst /END
+	Pop \$0
+	goto artcmp
+artcmp:
+	md5dll::GetMD5File "\$INSTDIR\\ART.7z"
+	Pop \$1
+	LogEx::Write true true "Download returned: \$0 md5: \$1"
+	StrCmp \${PRODUCT_ART_KEY} \$1 artmd5
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION "Corrupted download!\$\\n\$\\nWould you like to retry?" /SD IDYES IDNO dontDL2
+	IntOp \$4 \$4 + 1
+	IntCmp $retries \$4 pdbfail
+	IntOp \$3 \$3 + 1
+	IntCmp 0 \$3 artred0 artred1 artreset
+	Intcmp 1 \$3 artred1 artreset artred0
+artfail:
+	LogEx::Write true true "Done retrying servers. Download of ART failed..."
+	goto dontDL2
+artmd5:
+	LogEx::Write true true "Extracting ART package..."
+	Nsis7z::ExtractWithCallback "\$INSTDIR\\ART.7z" \$R9
+	GetFunctionAddress \$R9 CallbackTest
+	Delete ART.7z
+	WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "CfgFile" "http://fazdev.alleg.net/FAZ/FAZR6.cfg"
+	WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "CfgFile" "http://fazdev.alleg.net/FAZ/FAZR6.cfg"
+	WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "ArtPath" "\$INSTDIR\\Artwork"
+	WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "ArtPAth" "\$INSTDIR\\Artwork"
+	WriteRegStr HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver\\Server" "ArtPath" "\$INSTDIR\\Artwork"
+	WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver\\Server" "ArtPAth" "\$INSTDIR\\Artwork"  
+
+	$asgsreg
+	goto DL
+dontDL2:
+	File "C:\\betareghlpV3.exe"
+tryagain:
+	LogEx::Write true true "Browse for Folder - Set 1.1 ArtPath"
 	ExecWait '"betareghlpV3.exe"' \$BetaSetupError
 	ReadRegStr \$ARTPATH HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" ArtPath
 	StrCmp \$ARTPATH "" nextone
 	goto DL
-	nextone:
+nextone:
 	ReadRegStr \$ARTPATH HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" ArtPath
 	StrCmp \$ARTPATH "" tryagain
 	LogEx::Write true true "Using \$ARTPATH"
- DL:
-Delete "betareghlpV3.exe"
+DL:
+	Delete "betareghlpV3.exe"
 };
 }
 
