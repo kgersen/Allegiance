@@ -1039,7 +1039,7 @@ public:
                             value = float(ivalue) / 18000;
                         }
 
-                        ZDebugOutput("RawHat("+ZString(index)+"): " + ZString(ivalue) + ", " + ZString(value) + "\n");
+                        //ZDebugOutput("RawHat("+ZString(index)+"): " + ZString(ivalue) + ", " + ZString(value) + "\n");
 
                         m_vvalueObject[index]->GetValue()->SetValue(value);
                     } else {
@@ -1047,7 +1047,7 @@ public:
 						int ipre =((int*)m_pbyteData)[index];
                         value = bound(value, -1.0f, 1.0f);
 
-						ZDebugOutput("RawAxis("+ZString(index)+"): " + ZString(value) + " - RawUnbound: "+ + ZString(ipre)+"\n");
+						//ZDebugOutput("RawAxis("+ZString(index)+"): " + ZString(value) + " - RawUnbound: "+ + ZString(ipre)+"\n");
 
                         m_vvalueObject[index]->GetValue()->SetValue(value);
 

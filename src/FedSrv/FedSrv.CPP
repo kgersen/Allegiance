@@ -12934,15 +12934,18 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
                                                      pshipBuilder->GetPosition() - pshipBuilder->GetOrientation().GetBackward() * pshipBuilder->GetRadius(),
                                                      pasteroid->GetPosition());
 
-    //Export the building effect to all sides that could see the asteroid
+    //Export the building effect to all sides that could see the asteroid - Imago changed, see below
     for (SideLinkIGC*   psl = m_pfsMission->GetIGCMission()->GetSides()->first();
          (psl != NULL);
          psl = psl->next())
      {
          if (pasteroid->SeenBySide(psl->data()))
          {
-            ExportObj(pbe, OT_buildingEffect, NULL);
-            g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+			 //Imago 7/10 #120  - REVIEW ALLIES should see friendly build spheres? VIZ
+			 if (pshipBuilder->SeenBySide(psl->data()) || pshipBuilder->GetSide() == psl->data()) {
+				ExportObj(pbe, OT_buildingEffect, NULL);
+				g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+			 }
          }
      }
 }
