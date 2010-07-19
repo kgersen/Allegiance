@@ -16,6 +16,15 @@ print "Uploading files to fuzztest.dyndns.org\n";
 my $ftp = Net::FTP->new("fuzztest.dyndns.org", Debug => 1, Port => 5903, Passive => 1) or die "Cannot connect to test0 $@";
 
 $ftp->login("deploy",$pass);   
+
+print "Uploading latest scripts\n";
+$ftp->put("C:\\build\\FAZR6\\update\\test0\\service.pl") or die "put failed ", $ftp->message;  
+$ftp->put("C:\\build\\FAZR6\\update\\test0\\process.pl") or die "put failed ", $ftp->message;  
+$ftp->put("C:\\build\\FAZR6\\update\\test0\\test_installer.pl") or die "put failed ", $ftp->message;  
+$ftp->put("C:\\build\\FAZR6\\update\\test0\\test_sanity.pl") or die "put failed ", $ftp->message;  
+$ftp->put("C:\\build\\FAZR6\\update\\test0\\test_launch.pl") or die "put failed ", $ftp->message;  
+$ftp->put("C:\\build\\FAZR6\\update\\test0\\test_uimod.pl") or die "put failed ", $ftp->message;  
+
 print "Uploading R6_b${build}_r${rev}.exe\n";
 $ftp->binary;
 $ftp->put("C:\\Inetpub\\wwwroot\\build\\R6_b${build}_r${rev}.exe") or die "put failed ", $ftp->message;       
