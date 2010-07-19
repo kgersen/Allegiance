@@ -595,7 +595,6 @@ DontDelReg:
 DeleteRegValue HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 DeleteRegValue HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   $dlcode_pdb
@@ -634,6 +633,7 @@ Section -Post
   WriteRegStr \${PRODUCT_UNINST_ROOT_KEY} "\${PRODUCT_UNINST_KEY}" "DisplayVersion" "\${PRODUCT_VERSION}"
   WriteRegStr \${PRODUCT_UNINST_ROOT_KEY} "\${PRODUCT_UNINST_KEY}" "URLInfoAbout" "\${PRODUCT_WEB_SITE}"
   WriteRegStr \${PRODUCT_UNINST_ROOT_KEY} "\${PRODUCT_UNINST_KEY}" "Publisher" "\${PRODUCT_PUBLISHER}"
+   
 SectionEnd
 
 Section "DirectX Install" SEC_DIRECTX
@@ -643,6 +643,13 @@ Section "DirectX Install" SEC_DIRECTX
 \${GameExplorer_AddPlayTask} "Safe Mode" "\$INSTDIR\\Allegiance.exe" "-software"
 \${GameExplorer_AddSupportTask} "Home Page" "http://www.alleg.net/"
 \${EndIf}
+
+  ; set file permissions to install dir and reg (thanks pkk)
+  AccessControl::GrantOnFile "\$INSTDIR" "(BU)" "GenericRead + GenericWrite"
+  AccessControl::GrantOnFile "\$INSTDIR\\Artwork" "(BU)" "GenericRead + GenericWrite"
+  AccessControl::GrantOnFile "\$ARTPATH" "(BU)" "GenericRead + GenericWrite"
+  AccessControl::GrantOnRegKey HKLM "Software\\Microsoft\\Microsoft Games\\Allegiance" "(BU)" "FullAccess"
+  AccessControl::GrantOnRegKey HKLM "Software\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance" "(BU)" "FullAccess"
 
 \${If} \$bSilent == 0
 SectionIn RO
