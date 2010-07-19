@@ -3448,6 +3448,11 @@ class IstationIGC : public IscannerIGC
         virtual void                    RepairAndRefuel(IshipIGC*   pship) const = 0;
         virtual void                    Launch(IshipIGC* pship) = 0;
         virtual bool                    InGarage(IshipIGC*  pship, const Vector& position) = 0;
+		
+		//Imago #121
+		virtual ObjectID				GetRoidID() const = 0;
+		virtual void					SetRoidID(ObjectID id) = 0;
+		//
 
         virtual float                   GetShieldFraction(void) const = 0;
         virtual void                    SetShieldFraction(float sf) = 0;
