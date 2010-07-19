@@ -71,7 +71,6 @@ if ($bfull) {
 	StrCpy \$6 "Program database"
 	StrCpy \$7 "/Alleg${bbeta}PDB_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
 	StrCpy \$8 "\$INSTDIR\\PDB.7z"
-	StrCpy \$9 "Corrupted download!\$\\n\$\\nWould you like to retry?"
 	MessageBox MB_YESNO|MB_ICONQUESTION "Download program databases for debugging?\$\\nIf you don't know what this is, click No" /SD IDYES IDNO dontDL
 pdbreset:
 	IntFmt \$3 "%hu" 0
