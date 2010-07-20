@@ -16,8 +16,8 @@ my $artwork = "";
 my $bbeta = "";
 my $dlcode_art = ""; my $dlcode_pdb = "";
 my $clientbinary = "ASGSClient.exe";
-my @url = ("http://build.egretfiles.com", "http://build.alleg.net"); #Fuzz 07/18 - Use multiple servers!
-my $retries = 2;	#Reasonal number of retries, number of servers
+my @url = ("http://services.nirvanix.com/1-Planet/C70595-1/Shared", "http://build.alleg.net"); #Fuzz 07/18 - Use multiple servers!
+my $retries = 2;	#Reasonable number of retries, number of servers
 my $cfgfile = "http://autoupdate.alleg.net/allegiance.cfg";
 
 my $now = strftime("%Y/%m/%d %H:%M CDT",localtime(time));

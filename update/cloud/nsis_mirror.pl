@@ -1,5 +1,6 @@
 #Fuh-zz <fuzzylunkinz@gmail.com>
 # Send ART and PDB installer components to egretfiles FTP as a mirror
+#Imago 7/10 - Changed to FTP to the trac server via the virtual network which is rooted to Nirvanix's cloudNAS
 
 use strict;
 use Getopt::Long;
@@ -10,10 +11,10 @@ my $revision = "";
 my $version = "";
 my $ART = "C:\\inetpub\\wwwroot\\build\\AllegR6ART_b";
 my $PDB = "C:\\inetpub\\wwwroot\\build\\Alleg";
-my $server = "ftp.egretfiles.com";
-my $user = "build\@egretfiles.com";
+my $server = "10.0.0.5";
+my $user = "cloudnas";
 
-open(PASS,"C:\\egretfiles.passwd");
+open(PASS,"C:\\trac.passwd");
 my $pass = <PASS>;
 close PASS;
 
@@ -28,7 +29,7 @@ elsif($version eq "1.0"){	# Fuzz 07/18 ART is already pushed in 1.1
 }
 else{ die "No version specified! Command line switch '-v' either 1.1 or 1.0"; }
 
-my $ftp = Net::FTP->new($server, Debug => 0, Port => 21, Passive => 1)
+my $ftp = Net::FTP->new($server, Debug => 0, Port => 21, Passive => 0)
 	or die "Cannot connect to '$server' $@";
 
 $ftp->login($user,$pass)
