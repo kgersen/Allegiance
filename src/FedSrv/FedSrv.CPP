@@ -2529,9 +2529,19 @@ bool    BoardShip(CFSShip* pfsShip, IshipIGC*  pshipBoard)
                                     break;
                             }
 
-                            if (psl == NULL)
+							//Is this position equipped? Turkey 07/10 #145
+							PartLinkIGC*   ppl;
+                            for (ppl = pshipBoard->GetParts()->first();
+                                 (ppl != NULL);
+                                 ppl = ppl->next())
                             {
-                                //Not occupied
+                                if (ppl->data()->GetMountID() == turret)
+                                    break;
+                            }
+
+                            if (psl == NULL && ppl != NULL) //end #145
+                            {
+                                //Not occupied, is equipped
                                 break;
                             }
 
@@ -5863,9 +5873,29 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               if (psl->data()->GetTurretID() < 0)
                 LeaveShip(((CFSShip*)(psl->data()->GetPrivateData()))->GetPlayer(), pfsPlayer->GetIGCShip());
           }
-      }
+      } 
+	  else if (phtNew->GetMaxWeapons() > phtNew->GetMaxFixedWeapons()) //Turkey 07/10 #145
+	  {
+		  ShipLinkIGC*  pslNext;
+          for (ShipLinkIGC* psl = pshipsChildren->first(); (psl != NULL); psl = pslNext)
+          {
+              pslNext = psl->next();
 
-      bool bLaunch = pfmBuyLoadout->fLaunch && bBoughtEverything;
+			  PartLinkIGC*   ppl;
+              for (ppl = pfsPlayer->GetIGCShip()->GetParts()->first();
+              (ppl != NULL);
+              ppl = ppl->next())
+              {
+				  if (ppl->data()->GetMountID() == psl->data()->GetTurretID())
+					  break;
+              }
+
+              if (ppl == NULL)
+                LeaveShip(((CFSShip*)(psl->data()->GetPrivateData()))->GetPlayer(), pfsPlayer->GetIGCShip());
+          }
+	  }//end #145
+
+      bool bLaunch = pfmBuyLoadout->fLaunch && bBoughtEverything;        
 
       // tell the client what happened
       BEGIN_PFM_CREATE(g.fm, pfmBuyLoadoutAck, S, BUY_LOADOUT_ACK)
