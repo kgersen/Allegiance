@@ -327,6 +327,23 @@ public:
             iterCount.Next();
             iterIcon.Next();
         }
+
+		//Xynth #129 7/2010 Number of probes in sector
+		int probeCount = 0;
+		for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
+        {
+            IprobeIGC*  pprobe = ppl->data();			
+            if (pprobe->GetSide() == trekClient.GetShip()->GetSide())
+				probeCount++;
+		}
+		pcontext->DrawString(
+                pfont,
+                Color::White(),
+                ptNext,
+                "Probes: " + ZString(probeCount)
+				);
+
+
     }
 
 
