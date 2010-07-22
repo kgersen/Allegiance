@@ -76,7 +76,7 @@ print "executing un regsvr32 AGC.dll...\n";
 my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /u /s";
 system($cmd);
 
-sleep(12);
+sleep(3);
 
 print "copying new objects...\n";
 
@@ -103,23 +103,10 @@ print "executing regsvr32 AGC.dll...\n";
 my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /s";
 system($cmd);
 
-sleep(12);
-
-print "executing allsrv rereg...\n";
-
-my $cmd = "C:\\Allegiance\\Server\\AllSrv.exe";
-my $ProcessObj = "";
-Win32::Process::Create($ProcessObj,
-	$cmd,
-	"AllSrv -service",
-	0,
-	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
-	"C:\\Allegiance\\Server") || die "failed to create allsrv.exe reregister process\n";
-
 
 print "Starting Lobby service\n";	
 $sl->Start();
-sleep(6);
+sleep(12);
 
 print "Starting AllSrv service\n";	
 my $s = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllSrv,service");
