@@ -102,10 +102,6 @@
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
-<step id="Mirror 1.1">
-	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\nsis_mirror.pl -b ${build} -r ${revision} -v 1.1" />
-</step>
-
 <step id="Publish 1.1">
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Package 1.1&quot;"/> -->
 	<sh:exec file="echo" args="Creating installer"/>
@@ -118,6 +114,10 @@
 	<sh:exec file="echo" args="Download: http://build.alleg.net/R6_b${build}_r${revision}.exe"/>
 	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://build.alleg.net/R6_b${build}_r${revision}.exe [Beta (1.1)]&quot;"/>
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
+</step>
+
+<step id="Mirror 1.1">
+	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\nsis_mirror.pl -b ${build} -r ${revision} -v 1.1" />
 </step>
 
 <step id="Remote Tests">
@@ -168,10 +168,6 @@
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
-<step id="Mirror 1.0">
-	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\nsis_mirror.pl -b ${build} -r ${revision} -v 1.0" />
-</step>
-
 <step id="Publish 1.0">
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-step.pl ${build} ${revision} &quot;Package 1.0&quot;"/> -->
 	<sh:exec file="echo" args="Creating installer"/>
@@ -186,6 +182,10 @@
 	<sh:exec file="echo" args="Download: http://build.alleg.net/Alleg_b${build}_r${revision}.exe"/>
 	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://build.alleg.net/Alleg_b${build}_r${revision}.exe [Production (1.0)]&quot;"/>
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
+</step>
+
+<step id="Mirror 1.0">
+	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\nsis_mirror.pl -b ${build} -r ${revision} -v 1.0" />
 </step>
 
 <step id="Upgrade Started">
