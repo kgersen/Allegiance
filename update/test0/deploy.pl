@@ -13,7 +13,7 @@ my $pass = <PASS>;
 close PASS;
 
 print "Uploading files to fuzztest.dyndns.org\n";
-my $ftp = Net::FTP->new("fuzztest.dyndns.org", Debug => 1, Port => 5903, Passive => 1) or die "Cannot connect to test0 $@";
+my $ftp = Net::FTP->new("fuzztest.dyndns.org", Debug => 0, Port => 5903, Passive => 1) or die "Cannot connect to test0 $@";
 
 $ftp->login("deploy",$pass);   
 

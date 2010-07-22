@@ -8,6 +8,8 @@ use Win32::Process;
 use File::Copy;
 
 print "executing autoupdate shutdown...\n";
+my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /s";
+system($cmd);
 
 my $cmd = "C:\\Allegiance\\Server\\AutoUpdate.exe";
 my $ProcessObj = "";
@@ -30,7 +32,7 @@ Win32::Process::Create($ProcessObj,
 	NORMAL_PRIORITY_CLASS|CREATE_NEW_CONSOLE,
 	"C:\\Perl\\bin") || die "failed to create perl process\n";
 	
-$ProcessObj->Wait(INFINITE);
+$ProcessObj->Wait(INFINITE); #TODO change to wait 4 hours
 my $exitcode;
 $ProcessObj->GetExitCode($exitcode);
 if ($exitcode == 1) {
