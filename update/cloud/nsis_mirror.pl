@@ -11,7 +11,7 @@ my $revision = "";
 my $version = "";
 my $ART = "C:\\inetpub\\wwwroot\\build\\AllegR6ART_b";
 my $PDB = "C:\\inetpub\\wwwroot\\build\\Alleg";
-my $installer = "C:\\inetpub\\wwwroot\\build\\" #Imago 7/10
+my $installer = "C:\\inetpub\\wwwroot\\build\\"; #Imago 7/10
 my $server = "10.0.0.5";
 my $user = "cloudnas";
 
