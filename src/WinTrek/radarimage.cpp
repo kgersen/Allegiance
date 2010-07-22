@@ -963,14 +963,14 @@ public:
                                 // the information. We would have to add a new message type
                                 // for that to happen, so for now I'm just commenting it out and
                                 // moving on.
-                                /*
-                                if (pship->GetPilotType () == c_ptMiner)
+                                //Xynth #156 7/2010 Uncomment and add condition for only own team to see
+								if ((pship->GetPilotType () == c_ptMiner) && (pship->GetSide() == psideMine))
                                 {
                                     fill = pship->GetOre () / capacity;
                                     if (fill > 1.0f)
                                         fill = 1.0f;
                                 }
-                                */
+                                
                             }
                             break;
 

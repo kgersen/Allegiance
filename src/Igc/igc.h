@@ -2298,7 +2298,7 @@ class   CompactControlData      //4 bytes
         }
 };
 
-class   CompactShipFractions         //5 bytes
+class   CompactShipFractions         //6 bytes  
 {
     private:
         BytePercentage      m_bpHullFraction;       //1
@@ -2306,6 +2306,7 @@ class   CompactShipFractions         //5 bytes
         BytePercentage      m_bpAmmo;               //1
         BytePercentage      m_bpFuel;               //1
         BytePercentage      m_bpEnergy;             //1
+		BytePercentage      m_bpOre;                //1  //Xynth #156 7/2010
 
     public:
         void        SetHullFraction(float hf)
@@ -2356,6 +2357,16 @@ class   CompactShipFractions         //5 bytes
         {
             return m_bpEnergy * maxEnergy;
         }
+		//Xynth #156 7/2010 new functions for new m_bpOre data
+		float        GetOre(float maxOre) const
+        {
+            return m_bpOre * maxOre;
+        }
+
+		void        SetOre(float maxOre, float   ore)
+        {
+            m_bpOre = maxOre == 0.0f ? 0.0f : (ore / maxOre);
+        }        
 };
 
 class   ServerLightShipUpdate                           //8 bytes

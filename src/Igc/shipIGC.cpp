@@ -2567,6 +2567,7 @@ void    CshipIGC::ProcessFractions(const CompactShipFractions& fractions)
     SetFuel(fractions.GetFuel(m_myHullType.GetMaxFuel()));
     SetAmmo(fractions.GetAmmo(m_myHullType.GetMaxAmmo()));
     SetEnergy(fractions.GetEnergy(m_myHullType.GetMaxEnergy()));
+	SetOre(fractions.GetOre(GetOreCapacity()));  //Xynth #156 7/10
 }
 
 #define GetSC           {                                                                                                       \
@@ -2589,7 +2590,8 @@ void    CshipIGC::ProcessFractions(const CompactShipFractions& fractions)
                             ((IshieldIGC*)(m_mountedOthers[ET_Shield]))->SetFraction(shipupdate.fractions.GetShieldFraction()); \
                         SetFuel(shipupdate.fractions.GetFuel(m_myHullType.GetMaxFuel()));                                       \
                         SetAmmo(shipupdate.fractions.GetAmmo(m_myHullType.GetMaxAmmo()));                                       \
-                        SetEnergy(shipupdate.fractions.GetEnergy(m_myHullType.GetMaxEnergy()));
+                        SetEnergy(shipupdate.fractions.GetEnergy(m_myHullType.GetMaxEnergy()));									\
+						SetOre(shipupdate.fractions.GetOre(GetOreCapacity()));  //Xynth #156 7/10
 
 static inline bool  LegalPosition(const Vector& position)
 {
