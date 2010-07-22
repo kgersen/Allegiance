@@ -11741,10 +11741,10 @@ void FedSrvSiteBase::MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre)
   END_PFM_CREATE
   pfmAsteroidMined->clusterID = pasteroid->GetCluster()->GetObjectID();
   pfmAsteroidMined->asteroidID = pasteroid->GetObjectID();
-  pfmAsteroidMined->newOre  = newOre;
+  pfmAsteroidMined->bpOreFraction = newOre;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
-  pasteroid->SetOre(newOre);
+  pasteroid->SetOreWithFraction(newOre);
 }
 
 void FedSrvSiteBase::KillProbeEvent(IprobeIGC* pprobe)

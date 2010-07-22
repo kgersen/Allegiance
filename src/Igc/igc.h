@@ -4056,6 +4056,8 @@ class IasteroidIGC : public IdamageIGC
 		//Xynth #100 7/2010
 		virtual float GetOreSeenBySide(IsideIGC *side1) const = 0;
 		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const = 0;
+		virtual void SetOreWithFraction(float oreFraction) = 0;  //Xynth #163 7/2010
+		virtual float GetOreFraction() const = 0; //Xynth #163
 };
 
 class IwarpIGC : public ImodelIGC

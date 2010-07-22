@@ -227,7 +227,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 			//Xynth #132 7/2010  Update asteroid periodically
 			if (abs(m_asteroidDef.ore - m_lastUpdateOre) > 3.0)
 			{
-				GetMyMission()->GetIgcSite()->MineAsteroidEvent(this, m_asteroidDef.ore);
+				GetMyMission()->GetIgcSite()->MineAsteroidEvent(this, this->GetOreFraction());
 				m_lastUpdateOre = m_asteroidDef.ore;
 			}
             return newVal;
@@ -268,6 +268,28 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const
 		{
 			return this->GetCurrentEye(side1);
+		}
+
+		//Xynth #163 7/2010
+		virtual void SetOreWithFraction(float oreFraction)
+		{
+			m_asteroidDef.ore = oreFraction * m_asteroidDef.oreMax;
+			//Loop through sides to update ore seen by any sides eyeing asteroid
+			for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
+			{
+				IsideIGC* pside = psl->data();
+				if (this->GetCurrentEye(pside))
+				{						
+					oreSeenBySide.Set(pside, m_asteroidDef.ore);						
+				}
+
+			}
+		}
+
+		//Xynth #163 7/2010
+		virtual float GetOreFraction() const
+		{
+			return m_asteroidDef.ore / m_asteroidDef.oreMax;
 		}
 
 
