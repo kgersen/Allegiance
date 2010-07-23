@@ -40,4 +40,3 @@ Other/Cleanup:
 
 - Refine all projects dependencies
 	- Done in VS2010 FZRetail
-	
