@@ -46,7 +46,8 @@ foreach my $file (@dir) {
 	my ($size,$mon,$day,$time,$name) = (split(/\s/,$file))[16,17,18,19,20];
 	($size,$mon,$day,$time,$name) = (split(/\s/,$file))[15,16,17,18,19] if (!$name);
 	if ($name =~ /b(\d+)_/) {
-		$ftp->delete($1) if ($1 < ($revision - 4));
+		$ftp->delete($1) if ($1 < ($build - 4));
+		print "Deleted $1\n";
 	}
 }	
 #	
