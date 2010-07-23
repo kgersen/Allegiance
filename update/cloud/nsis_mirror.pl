@@ -38,6 +38,19 @@ my $ftp = Net::FTP->new($server, Debug => 0, Port => 21, Passive => 0)
 
 $ftp->login($user,$pass)
 	or die "Cannot login ", $ftp->message;
+
+#imago, keep a short tail
+my @dir = $ftp->dir;
+my $totalsize = 0;
+foreach my $file (@dir) {
+	my ($size,$mon,$day,$time,$name) = (split(/\s/,$file))[16,17,18,19,20];
+	($size,$mon,$day,$time,$name) = (split(/\s/,$file))[15,16,17,18,19] if (!$name);
+	if ($name =~ /b(\d+)_/) {
+		$ftp->delete($1) if ($1 < ($revision - 4));
+	}
+}	
+#	
+	
 $ftp->binary;
 print "Uploading PDB to $server\n";
 $ftp->put($PDB)
