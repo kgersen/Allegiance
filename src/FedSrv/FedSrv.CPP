@@ -78,8 +78,12 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		hdrBuf->put("Keep-Alive: 115\r\n");
 		hdrBuf->put("User-Agent: AllSrv dump thread\r\n");
 		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
-
 		ZString zParts1 = "-----------------------------01\r\n";
+#ifdef _DEBUG
+		zParts1 += "Content-Disposition: form-data; name=\"debug\"";
+		zParts1 += "\r\n\r\non\r\n";
+		zParts1 += "-----------------------------01\r\n";
+#endif
 		zParts1 += "Content-Disposition: form-data; name=\"corefile\"; filename=\"";
 		zParts1 += zApp;
 		zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
