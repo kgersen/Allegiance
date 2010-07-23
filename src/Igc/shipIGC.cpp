@@ -1923,6 +1923,8 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 {
                     GetMyMission()->GetIgcSite()->RequestRipcord(this, m_pclusterRequestRipcord);
                     m_pclusterRequestRipcord = NULL;
+					//Xynth #47 7/2010					
+					SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
                 }
                 else
                 {
@@ -3643,7 +3645,11 @@ void    CshipIGC::ResetWaypoint(void)
                 if (pclusterTarget && bShouldUseRipcord(pclusterTarget))
                 {
                     if (IsSafeToRipcord())
+					{
                         pigc->RequestRipcord(this, pclusterTarget);
+						//Xynth #47 7/2010
+						SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
+					}
                     else
                     {
                         m_pclusterRequestRipcord = pclusterTarget;
@@ -3651,7 +3657,11 @@ void    CshipIGC::ResetWaypoint(void)
                     }
                 }
                 else if (m_pmodelRipcord)
+				{
                     pigc->RequestRipcord(this, NULL);
+					//Xynth #47 7/2010					
+					SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
+				}
             }
         }
         else
@@ -3659,7 +3669,11 @@ void    CshipIGC::ResetWaypoint(void)
             m_gotoplan.Reset();
 
             if (m_pmodelRipcord)
+			{
                 GetMyMission()->GetIgcSite()->RequestRipcord(this, NULL);
+				//Xynth #47 7/2010
+				SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
+			}
         }
     }
     else

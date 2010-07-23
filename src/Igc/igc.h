@@ -779,7 +779,7 @@ enum    ShipControlStateIGC
     afterburnerButtonIGC        =  128 * coastButtonIGC,            //       with afterburners
     drillingMaskIGC             =  256 * coastButtonIGC,            //on rails to avoid collisions
     cloakActiveIGC              =  512 * coastButtonIGC,            //Activating the cloak
-    unused0000001IGC            = 1024 * coastButtonIGC,            //no longer used ... reuse?
+    droneRipMaskIGC             = 1024 * coastButtonIGC,            //Xynth #47 7/2010
     miningMaskIGC               = 2048 * coastButtonIGC,            //Play mine effect
     buttonsMaskIGC              = 4095 * coastButtonIGC,            //12 possible state buttons
 

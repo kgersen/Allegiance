@@ -205,6 +205,9 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                 SetRipcordModel(NULL);
 
+				//Xynth #47 7/2010  Reset rip indicator
+				SetStateBits(droneRipMaskIGC, 0);
+
                 if (cluster != pclusterOld)
                 {
                     if (pclusterOld)
