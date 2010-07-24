@@ -62,7 +62,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		hdrBuf->put("User-Agent: AllLobby dump thread\r\n");
 		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
 		ZString zParts1 = "-----------------------------01\r\n";
-#ifdef _DEBUG
+#ifdef DEBUG
 		zParts1 += "Content-Disposition: form-data; name=\"debug\"";
 		zParts1 += "\r\n\r\non\r\n";
 		zParts1 += "-----------------------------01\r\n";

@@ -242,6 +242,7 @@ struct Global
     fm(&siteFedSrv),
     fmLobby(&siteFSLobby),
     dwServerGITCookie(0),
+	fASGS(true), //Imago 7/10 DIE ASGS (still default on, ...for now!!)
     fProtocol(false),
     fPaused(false),
     fDoublePrecision(true)
@@ -342,7 +343,8 @@ struct Global
 
   // w0dk4 Bandwidth Patch
   unsigned int		  cMaxBandwidth;
-
+  
+  bool                fASGS; //Imago 7/10 DIE ASGS!
   bool                fProtocol;
   bool                fPaused;
   bool                fDoublePrecision;

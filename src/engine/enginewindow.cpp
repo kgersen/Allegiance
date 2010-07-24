@@ -1327,6 +1327,9 @@ Image* EngineWindow::GetCursorImage(void) const
 
 bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
 {
+	debugf("OnSysCommand(UINT uCmdType="+ZString((int)uCmdType)+"\n");
+	
+
     switch (uCmdType) {
         case SC_KEYMENU:
             //

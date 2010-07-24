@@ -79,7 +79,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		hdrBuf->put("User-Agent: AllSrv dump thread\r\n");
 		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
 		ZString zParts1 = "-----------------------------01\r\n";
-#ifdef _DEBUG
+#ifdef DEBUG
 		zParts1 += "Content-Disposition: form-data; name=\"debug\"";
 		zParts1 += "\r\n\r\non\r\n";
 		zParts1 += "-----------------------------01\r\n";
@@ -1104,29 +1104,69 @@ void GotLogonDetails(CQLogonStats * pquery)
 	// set bandwidth to standard value, bandwidth packet should arrive soon anyways
 	pfsPlayer->SetBandwidth(2);
 
-	if (pqd->rank == -1) {
-		fValid = false;
-		Strcpy(pqd->szReason,"Your callsign does not exist on this server.");
-	} else {
-		const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
-		PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,NA);  //and NOAT
-		pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
-		for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
-		{
-			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,pcl->data()->GetObjectID());
+	//Imago 7/10 DIE ASGS! DIE!
+	if (g.fASGS) {
+		if (pqd->rank == -1) {
+			fValid = false;
+			Strcpy(pqd->szReason,"Your callsign does not exist on this server.");
+		} else {
+			const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,NA);  //and NOAT
 			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+			for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+			{
+				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,pcl->data()->GetObjectID());
+				pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+			}
 		}
-	}
+		// mmf/Imago remove rank from player name when NotNewb
+		char newName[c_cbName];
+		ZString strName = pship->GetName();
+		int leftParen = strName.ReverseFind('(',0);
+		if (pqd->rank>4 && leftParen>1) {
+			Strncpy(newName,(PCC)strName,leftParen);
+			Strncpy(newName+leftParen,"\0",1); // null terminate
+			pship->SetName(newName);
+		}
+	} else {
+	  // mmf pull rank from callsign (#) for now
+	  char szRank[64];
+	  char newName[64];
+	  int leftParen; int strLen;
+	  ZString strName = pfsPlayer->GetName();
 
-	// mmf/Imago remove rank from player name when NotNewb
-	char newName[c_cbName];
-	ZString strName = pship->GetName();
-	int leftParen = strName.ReverseFind('(',0);
-	if (pqd->rank>4 && leftParen>1) {
-		Strncpy(newName,(PCC)strName,leftParen);
-		Strncpy(newName+leftParen,"\0",1); // null terminate
-		pship->SetName(newName);
+	  strLen = strName.GetLength();
+	  leftParen = strName.ReverseFind('(',0);
+	  if (leftParen>=1) {
+	    Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
+	    RankID myRank = atoi(szRank); 
+		if (!((myRank>0) && (myRank<100))) {
+			debugf("Rank out of range rank=%d\n",myRank);
+			myRank=0; // sanity check
+		}
+        const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
+	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
+		{
+		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
+		}
+		// remove the (#) from callsign
+		// only for ranks above 4 so people can see newbs for boot protection as per the COD
+		if (myRank>4) {
+			Strncpy(newName,(PCC)strName,leftParen);
+			Strncpy(newName+leftParen,"\0",1); // null terminate
+			pship->SetName(newName);
+		}
+	    fValid = true;
+	  } else {
+		fValid = true; // No rank found, Rank not set, should default to 0
+		debugf("No rank found in callsign %s\n",(PCC)strName);
+	  }
+	  // mmf end pull rank from callsign
 	}
+	//Imago 7/10 Pull this ASGS Crap!!
 
   } else { //no soup for you!
 	if (NULL != g.pServerCounters) {
@@ -5689,10 +5729,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
 
-		char mprthname[9];
-		mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
-		MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname);
-		threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
+		//Imago 7/10
+		if (g.fASGS) {
+			char mprthname[9];
+			mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
+			MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname);
+			threadp->start();
+		} else {
+			 pquery->DataReady();
+		}
 
 #if !defined(ALLSRV_STANDALONE)
         if (fValid)
@@ -9008,6 +9053,14 @@ void LoadSettings()
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fWantInt3", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             g.fWantInt3 = !!dwValue;
         else g.fWantInt3 = true;
+
+		//Imago 7/10 DIE ASGS!
+        dwValue=0;
+        cbValue = sizeof(dwValue);
+        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "ASGS_ON", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+            g.fASGS = !!dwValue;
+        else g.fASGS = true;
+		//
 
         dwValue=0;
         cbValue = sizeof(dwValue);
