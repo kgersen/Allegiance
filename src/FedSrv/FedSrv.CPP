@@ -10511,28 +10511,15 @@ class ThingSiteImpl : public ThingSite
 												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
 												//asteroid to silently pop
 												if (roidID != NA) {
-														BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
-														END_PFM_CREATE
-														pfmAsteroidDestroyed->clusterID =  pmodel->GetCluster()->GetObjectID();
-														pfmAsteroidDestroyed->asteroidID = roidID;
-														pfmAsteroidDestroyed->explodeF = false;
-														g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-														//..and finally keep it away
-														bool bSeenByAll = true;
-														for (SideLinkIGC* psidelink = pside->GetMission()->GetSides()->first(); (psidelink != NULL); psidelink = psidelink->next()) {
-															IsideIGC*   potherside = psidelink->data();
-															if (pside == potherside)
-																continue;
-															if (!((IstationIGC*)pmodel)->SeenBySide(potherside))
-																bSeenByAll = false;
-														}
-														if (bSeenByAll) {
-															 pside->GetMission()->GetModel(OT_asteroid,roidID)->Terminate();
-															 ((IstationIGC*)pmodel)->SetRoidID(NA);
-														}
+													BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+													END_PFM_CREATE
+													pfmAsteroidDestroyed->clusterID =  pmodel->GetCluster()->GetObjectID();
+													pfmAsteroidDestroyed->asteroidID = roidID;
+													pfmAsteroidDestroyed->explodeF = false;
+													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+													((IstationIGC*)pmodel)->SetRoidID(NA);
 												}
 											}
-
 
                                             // tell the side who spotted it
                                             BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
@@ -10874,10 +10861,8 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 			bSeenByAll = false;
 		}
 	}
-	if (bSeenByAll) {
-		pasteroid->Terminate();
-	}
 	// Imago
+	pasteroid->Terminate();
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
