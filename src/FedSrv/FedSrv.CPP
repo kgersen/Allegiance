@@ -3379,6 +3379,7 @@ bool CommandToDrone(CFSMission*         pfsMission,
                     ImodelIGC**         ppmodelTarget)
 {
     bool    bAccepted = false;
+	bool	bBarelyLegal = false; //milfs only 
 
     assert (pfsSender);
 
@@ -3386,8 +3387,9 @@ bool CommandToDrone(CFSMission*         pfsMission,
     if ((pcd->commandID != c_cidNone) &&
         (pfsSender->GetIGCShip()->GetSide() == pside))
     {
+
         if (*ppmodelTarget == NULL)
-        {
+		{
             if (pdb)
             {
                 //Create a buoy for this chat message
@@ -3399,15 +3401,40 @@ bool CommandToDrone(CFSMission*         pfsMission,
             else
             {
                 *ppmodelTarget = pfsMission->GetIGCMission()->GetModel(otTarget, oidTarget);
+				
+				//Imago 7/10 keep drones from giving away info
+				if (pshipTo->GetPilotType() == c_ptBuilder && otTarget == OT_asteroid && *ppmodelTarget == NULL) {
+					//not gunna' work 'cause we dont have the asteroid anymore....;-(
+					//const StationListIGC* psl = pfsMission->GetIGCMission()->GetAsteroid(oidTarget)->GetCluster()->GetStations();
+					const StationListIGC* psl = pfsMission->GetIGCMission()->GetStations();
+					StationLinkIGC * pstationLink = NULL;
+					for (pstationLink = psl->first(); pstationLink; pstationLink = pstationLink->next()) {
+						IstationIGC * pStation = pstationLink->data();
+						if (pStation->GetSide() == pshipTo->GetSide()) //REVIEW ALLY VIZ
+							continue;
+						if (oidTarget == pStation->GetRoidID()) {
+							DataBuoyIGC db;
+							db.position = pStation->GetPosition();
+							db.buoyID = pfsMission->GetIGCMission()->GenerateNewBuoyID();
+							db.clusterID = pStation->GetCluster()->GetObjectID();
+							db.type = (pStation->GetCluster() == pshipTo->GetCluster()) ? c_buoyWaypoint : c_buoyCluster;
+							*ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, &db, sizeof(db)));
+							assert (*ppmodelTarget);
+							((IbuoyIGC*)*ppmodelTarget)->AddConsumer();
+							bBarelyLegal = true; //GGW spring break
+							break;
+						}
+					}
+				}
+				//
             }
         }
-
         if ((pcd->commandID == c_cidDefault) && (*ppmodelTarget != NULL))
         {
             pcd->commandID = pshipTo->GetDefaultOrder(*ppmodelTarget);
         }
 
-        if (pshipTo->LegalCommand(pcd->commandID, *ppmodelTarget))
+        if (pshipTo->LegalCommand(pcd->commandID, *ppmodelTarget) || bBarelyLegal) //Imago 7/10 drone build sphere rock info ughh
         {
             bAccepted = true;
             pfsMission->GetSite()->SendChat(pshipTo, CHAT_INDIVIDUAL, pfsSender->GetIGCShip()->GetObjectID(),
