@@ -526,8 +526,7 @@ void EngineWindow::UpdateRectValues()
         m_prectValueScreen->SetValue(rect);
         m_pmouse->SetClipRect(rect);
     } else {
-        WinRect rect(WinPoint(0, 0), m_sizeWindowed);
-
+		WinRect rect(WinPoint(0, 0), m_sizeWindowed);
         if (g_bWindowLog) {
             ZDebugOutput("  Windowed: " + GetString(0, rect) + "\n");
         }
@@ -1211,12 +1210,19 @@ void EngineWindow::DoIdle()
 	{
         if (bChanges || m_bInvalid) 
 		{
-            m_bInvalid = false;
+			
+			//go fullscreen #73 7/10 Imago
+			if ((GetSystemMetrics(SM_CXSCREEN) <= m_sizeWindowed.X() || GetSystemMetrics(SM_CYSCREEN) <= m_sizeWindowed.Y()) && !m_bMovingWindow && !m_pengine->IsFullscreen()) {
+				SetFullscreen(true);
+				m_sizeWindowed.SetX(800);
+				m_sizeWindowed.SetY(600);
+			}
+			m_bInvalid = false;
 
-            UpdateWindowStyle();
-            UpdateRectValues();
-            UpdateMenuStrings();
-            UpdateSurfacePointer();
+			UpdateWindowStyle();
+			UpdateRectValues();
+			UpdateMenuStrings();
+			UpdateSurfacePointer();
         }
 
         //
