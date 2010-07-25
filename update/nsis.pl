@@ -479,7 +479,8 @@ Var ICONS_GROUP
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
-
+!include WordFunc.nsh
+!insertmacro VersionCompare
 ;
 ;******************************************
 ;
@@ -489,6 +490,7 @@ Var DirectXSetupError
 var ArtPath
 var bSilent
 var OSver
+Var InstallDotNET
 
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "ProductName" "Free Allegiance Installer"
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "Comments" "Created by build.alleg.net on $now"
@@ -525,23 +527,68 @@ Function CallbackTest
   SetDetailsPrint both
 FunctionEnd
 
+
+Function GetDotNETVersion
+	Push \$0
+	Push \$1
+
+	System::Call "mscoree::GetCORVersion(w .r0, i \${NSIS_MAX_STRLEN}, *i) i .r1"
+	StrCmp \$1 "error" 0 +2
+	StrCpy \$0 "not found"
+
+	Pop \$1
+	Exch \$0
+FunctionEnd
+
+Function .onInit
+
+FunctionEnd
+
+
 ; The stuff to install
 Section "" ;No components page, name is not important
+
+
+  !insertmacro MUI_LANGDLL_DISPLAY
+  
+  ; Check .NET version
+  StrCpy \$InstallDotNET "No"
+  Call GetDotNETVersion
+  Pop \$R0
+  
+  \${If} \$0 == "not found"
+        StrCpy \$InstallDotNET "Yes"
+  	MessageBox MB_OK|MB_ICONINFORMATION "\${PRODUCT_NAME} requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of \${PRODUCT_NAME}."
+   	Return
+  \${EndIf}
+
+  StrCpy \$0 \$0 "" 1 # skip "v"
+
+  \${VersionCompare} \$0 "2.0" \$1
+  \${If} \$1 == 2
+        StrCpy \$InstallDotNET "Yes"
+  	MessageBox MB_OK|MB_ICONINFORMATION "\${PRODUCT_NAME} requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of \${PRODUCT_NAME}."
+   	Return
+  \${EndIf}
+
+
 
   Call IsSilent
   Pop \$0
   StrCpy \$bSilent \$0
 
 \${If} \$bSilent == 1
+	StrCpy \$InstallDotNET "No"
 	SetOutPath \$EXEDIR\\${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}
 \${ElseIf} \$bSilent == 2
+	StrCpy \$InstallDotNET "No"
 	SetOutPath C:\\build\\Dumps\\temp
 \${Else}
 	SetOutPath \$INSTDIR
 \${EndIf}
-
+LogEx::Write true true ".NET Version: \$R0"
 LogEx::Init true "${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}_install.log"
- 
+
  nsisos::osversion
 StrCpy \$R0 \$0
 StrCpy \$R1 \$1
@@ -593,6 +640,54 @@ DontDelReg:
 
 DeleteRegValue HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 DeleteRegValue HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
+
+
+
+ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
+StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
+ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
+StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
+
+ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9A25302D-30C0-39D9-BD6F-21E6EC160475}" Publisher
+StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
+ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9A25302D-30C0-39D9-BD6F-21E6EC160475}" Publisher
+StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
+
+
+SetDetailsView hide
+inetc::get /caption "Downloading Visual C++ 2008 Redistributable" /canceltext "Cancel" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
+Pop \$1
+
+\${If} \$1 != "OK"
+   Delete "\$INSTDIR\\vcredist_x86.exe"
+   Abort "Auto installation failed, install manually from http://microsoft.com/downloads."
+   ;LogEx::Write true true "Download error: \$1"
+\${EndIf}
+
+ExecWait "\$INSTDIR\\vcredist_x86.exe"
+Delete "\$INSTDIR\\vcredist_x86.exe"
+
+SetDetailsView show
+
+VCOK:
+
+\${If} \$InstallDotNET == "Yes"
+SetDetailsView hide
+inetc::get /caption "Downloading .NET Framework 2.0" /canceltext "Cancel" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
+Pop \$1
+
+\${If} \$1 != "OK"
+   Delete "\$INSTDIR\\NetFx20SP2_x86.exe"
+   Abort "Auto installation failed, install manually from http://microsoft.com/downloads."
+   ;LogEx::Write true true "Download error: \$1"
+\${EndIf}
+
+ExecWait "\$INSTDIR\\NetFx20SP2_x86.exe"
+Delete "\$INSTDIR\\NetFx20SP2_x86.exe"
+
+SetDetailsView show
+\${EndIf} 
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -651,6 +746,11 @@ Section "DirectX Install" SEC_DIRECTX
   AccessControl::GrantOnRegKey HKLM "Software\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance" "(BU)" "FullAccess"
 
 \${If} \$bSilent == 0
+
+IfFileExists "\$SYSDIR\\D3DX9_43.dll" DXOK
+IfFileExists "\$%SystemRoot%\\System32\\D3DX9_43.dll" DXOK
+IfFileExists "\$%windir%\\System32\\D3DX9_43.dll" DXOK
+
 SectionIn RO
  SetOutPath "\$TEMP"
  File "C:\\dxwebsetup.exe"
@@ -659,6 +759,7 @@ SectionIn RO
  LogEx::Write true true "Finished DirectX Setup"
 Delete "\$TEMP\\dxwebsetup.exe"
 \${EndIf}
+DXOK:
 LogEx::Close
 
 SectionEnd
