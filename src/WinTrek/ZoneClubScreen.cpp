@@ -640,6 +640,7 @@ public:
 
                     if (bForceFileCheck || trekClient.GetCfgInfo().crcFileList != FileCRC("Filelist.txt", NULL))
                     {
+						DeleteFile(trekClient.GetArtPath() + ZString("/CommonTextures.Pack")); //#142 Imago 7/10
                         if (trekClient.m_pAutoDownload == NULL)
                             trekClient.m_pAutoDownload = CreateAutoDownload();
 
