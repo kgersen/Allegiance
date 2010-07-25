@@ -5886,6 +5886,8 @@ void BootinyBallot::OnPassed()
 				if (pfspOldLeader == pfssNewLeader) return;
 
 				pfspNewLeader->SetAutoDonate(NULL,0,false);
+				Money money = pfspOldLeader->GetMoney();
+				pfspOldLeader->SetAutoDonate(pfspNewLeader,money,true);  //#161 Imago whoosh 7/10
 				m_pmission->SetLeader(pfspNewLeader);
 
 				if (m_pmission->GetMissionDef()->misparms.bAllowDefections)
