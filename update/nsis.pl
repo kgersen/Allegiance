@@ -146,10 +146,10 @@ artmd5:
 	$asgsreg
 	goto DL
 dontDL2:
-	File "C:\\betareghlpV3.exe"
+	File "C:\\betareghlpV4.exe"
 tryagain:
 	LogEx::Write true true "Browse for Folder - Set 1.1 ArtPath"
-	ExecWait '"betareghlpV3.exe"' \$BetaSetupError
+	ExecWait '"betareghlpV4.exe"' \$BetaSetupError
 	ReadRegStr \$ARTPATH HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" ArtPath
 	StrCmp \$ARTPATH "" nextone
 	goto DL
@@ -158,7 +158,7 @@ nextone:
 	StrCmp \$ARTPATH "" tryagain
 	LogEx::Write true true "Using \$ARTPATH"
 DL:
-	Delete "betareghlpV3.exe"
+	Delete "betareghlpV4.exe"
 };
 }
 
@@ -246,6 +246,45 @@ Function IsSilent
 	  dump: StrCpy \$0 2
   notsilent: Exch \$0
 FunctionEnd
+
+!macro SPLIT_STRING INPUT PART
+Push \$R0
+Push \$R1
+ 
+ StrCpy \$R0 0
+ StrCmp \${PART} 1 getpart1_loop_\${PART}
+ StrCmp \${PART} 2 getpart2_top_\${PART}
+Goto error_\${PART}
+ 
+getpart1_loop_\${PART}:
+ IntOp \$R0 \$R0 - 1
+ StrCpy \$R1 \${INPUT} 1 \$R0
+  StrCmp \$R1 "" error_\${PART}
+  StrCmp \$R1 "|" 0 getpart1_loop_\${PART}
+ 
+ IntOp \$R0 \$R0 + 1
+ StrCpy \$R0 \${INPUT} "" \$R0
+Goto done_\${PART}
+ 
+getpart2_top_\${PART}:
+ StrLen \$R0 \${INPUT}
+getpart2_loop_\${PART}:
+ IntOp \$R0 \$R0 - 1
+ StrCpy \$R1 \${INPUT} 1 -\$R0
+  StrCmp \$R1 "" error_\${PART}
+  StrCmp \$R1 " " 0 getpart2_loop_\${PART}
+ 
+ StrCpy \$R0 \${INPUT} -\$R0
+Goto done_\${PART}
+ 
+error_\${PART}:
+ StrCpy \$R0 error
+ 
+done_\${PART}:
+ 
+Pop \$R1
+Exch \$R0
+!macroend
 
 !macro GetCleanDir INPUTDIR
   !define Index_GetCleanDir 'GetCleanDir_Line\${__LINE__}'
@@ -691,7 +730,7 @@ SetDetailsView show
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  $dlcode_pdb
+;;; removed $dlcode_pdb ;;;
 
 \${If} \$bSilent <> 2
 	\${If} \$bSilent == 1
