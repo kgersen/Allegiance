@@ -1513,10 +1513,13 @@ public:
             pfmRequest->amount = cost;
             pfmRequest->hidFor = m_pship->GetBaseHullType()->GetObjectID();
         }
-        else if (trekClient.GetShip()->GetParentShip() != NULL)
+        else if (trekClient.GetShip()->GetParentShip() != NULL) {
             trekClient.DisembarkAndBuy(m_pship, false);
-        else
+			trekClient.SaveCustomLoadout(m_pship, 0); //#158 Imago 7/10                
+		} else {
             trekClient.BuyLoadout(m_pship, false);
+			trekClient.SaveCustomLoadout(m_pship, 0); //#158 Imago 7/10 ...lazy
+		}
 
         return true;
     }
@@ -1631,6 +1634,7 @@ public:
     {
         Money budget = moneyLots;
         trekClient.BuyDefaultLoadout (m_pship, trekClient.GetShip()->GetStation(), m_phullTypeBase, &budget);
+		trekClient.SaveCustomLoadout(m_pship, 0); //#158 Imago 7/10
 
         UpdateHullType();
 
