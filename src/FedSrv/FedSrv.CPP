@@ -10529,7 +10529,6 @@ class ThingSiteImpl : public ThingSite
 														if (bSeenByAll) {
 															 pside->GetMission()->GetModel(OT_asteroid,roidID)->Terminate();
 															 ((IstationIGC*)pmodel)->SetRoidID(NA);
-															 printf("terminiating rock, finally all sides see the station\n");
 														}
 												}
 											}
@@ -10870,7 +10869,6 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		if (pside == potherside)
 			continue;
 		if (pasteroid->GetAsteroidCurrentEye(potherside)) {
-			printf("popping roid for enemy side, they saw it when the station went up\n");
 			KillAsteroidEvent(pasteroid, potherside, false);
 		} else {
 			bSeenByAll = false;
@@ -10878,7 +10876,6 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	}
 	if (bSeenByAll) {
 		pasteroid->Terminate();
-		printf("terminiating rock, all sides saw it the moment the station went up\n");
 	}
 	// Imago
 
@@ -13097,17 +13094,14 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
 				if (pmodel->GetObjectType() == OT_ship)
 					if (((IshipIGC*)pmodel)->CanSee(pmodelBuilder)) {
 						bTeamSees = true;
-						printf("enemy ship can see the builder, export building effect to side\n");
 					}
 				if (pmodel->GetObjectType() == OT_station)
 					if (((IstationIGC*)pmodel)->CanSee(pmodelBuilder)) {
 						bTeamSees = true;
-						printf("enemy station can see the builder, export building effect to side\n");
 					}
 				if (pmodel->GetObjectType() == OT_probe)
 					if (((IprobeIGC*)pmodel)->CanSee(pmodelBuilder)) {
 						bTeamSees = true;
-						printf("enemy probe can see the builder, export building effect to side\n");
 					}
 				if (bTeamSees)
 					break;
