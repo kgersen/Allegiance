@@ -228,8 +228,8 @@
 </step>	
 
 <step id="Mirror Beta Update">
-    <sh:exec file="perl" args="${cdn.path}\\update\\cloud\\au_mirror.pl ${build} ${revision} 1" />
 	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\makelist.pl ${build} ${revision} 1" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\au_mirror.pl ${build} ${revision} 1" />
 </step>
 
 <step id="Done">
