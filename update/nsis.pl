@@ -236,7 +236,8 @@ StrLen \$2 \$1
 
 LogEx::Write true true "Downloading \$R9 files...!"
 \${If} \$R9 <> 0
-	inetc::get /RESUME "Press OK to resume download of the Auto update. - If the error persists, check your internet connection and try again." /CAPTION "Allegiance Update"
+	MessageBox MB_OK|MB_ICONINFORMATION "Allegiance Update has determined some of your files are out of date.\$\\nIf you've customized any of your Artwork, this is your chance to make a backup.  Click OK to begin the downloads you need."
+	inetc::get /RESUME "Click OK to resume download of the Auto update. - If the error persists, check your internet connection and try again." /CAPTION "Allegiance Update"
 	Pop \$1
 	\${If} \$1 != "OK"
 	      MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$1 - Please try running the installer again in a few moments, If the error persists, check http://freeallegiance.org for details."
@@ -846,7 +847,7 @@ LogEx::Write true true "Downloading VC9..."
 ;
 \${If} \$bSilent == 0
 	SetDetailsView hide
-	inetc::get /RESUME "Press OK to resume download of the Visual C++ 2008 Redistributable. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION "Visual C++ 2008 Redistributable" /POPUP "Visual C++ 2008 Redistributable" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
+	inetc::get /RESUME "Click OK to resume download of the Visual C++ 2008 Redistributable. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION "Visual C++ 2008 Redistributable" /POPUP "Visual C++ 2008 Redistributable" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
 	Pop \$1
 
 	\${If} \$1 != "OK"
@@ -865,7 +866,7 @@ VCOK:
 	\${If} \$InstallDotNET == "Yes"
 	LogEx::Write true true "Downloading .NET..."
 	SetDetailsView hide
-	inetc::get /RESUME "Press OK to resume download of the .NET Framework 2.0. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION ".NET Framework 2.0" /POPUP ".NET Framework 2.0" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
+	inetc::get /RESUME "Click OK to resume download of the .NET Framework 2.0. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION ".NET Framework 2.0" /POPUP ".NET Framework 2.0" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
 	Pop \$1
 
 	\${If} \$1 != "OK"
