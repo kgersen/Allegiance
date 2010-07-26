@@ -214,6 +214,7 @@ LogEx::Write true true "Analysing local files..."
      Pop \$3
      StrCpy \$myArtName \$3
      StrCpy \$myArt7z \$3
+	 StrCpy \$myArtLocal \$3
 
      !insertmacro SPLIT_STRING \$1 2
      Pop \$3
@@ -223,6 +224,7 @@ LogEx::Write true true "Analysing local files..."
      StrCpy \$myArtName \$4
      
    \${StrStrip} ".zip" "\$myArtName" "\$myArt7z"
+   \${StrStrip} ".gz" "\$myArtName" "\$myArtLocal"
 
    ; Non-artwork files kept in sync /w src /clintlib/AutoDownload.h
    StrCmp \$myArt7z "Allegiance.exe" DozDir
@@ -247,7 +249,7 @@ LogEx::Write true true "Analysing local files..."
 ; 3) Add mismatches to an inetc url array for download
 
      LogEx::Write true true "Intending to download \$myArtName..."     
-     Push \$ARTPATH\\\$myArtName
+     Push \$ARTPATH\\\$myArtLocal
      Push "http://services.nirvanix.com/1-Planet/C70595-1/Update/\$myArtName"
      \${FileList->Write} \$R9 \$myArtName
      IntOp \$R9 \$R9 + 1
@@ -857,6 +859,7 @@ Var InstallDotNET
 var myArtName
 var myArtCRC
 var myArt7z
+var myArtLocal
 
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "ProductName" "Free Allegiance Installer"
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "Comments" "Created by build.alleg.net on $now"
