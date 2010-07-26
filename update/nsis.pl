@@ -102,12 +102,28 @@ pdbmd5:
 	Delete PDB.7z
 dontDL:
 };
+
+########################  PDB
+######################
+########################  ART
+
 $dlcode_art = qq{
+	StrCpy \$4 "Problem connecting to server.  Please reconnect and click Retry to resume downloading or Cancel to try a different server"
 	StrCpy \$5 "Artwork"
 	StrCpy \$6 "Artwork"
 	StrCpy \$7 "/AllegR6ART_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}.exe"
 	StrCpy \$8 "\$INSTDIR\\ART.7z"
-	MessageBox MB_YESNO|MB_ICONQUESTION "Download build Artwork?\$\\nThis release contains new artwork files! Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
+	
+	ReadRegStr \$ARTPATH HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" ArtPath
+	StrCmp \$ARTPATH "" GotDLNoArt0
+	goto GotDLArt
+GotDLNoArt0:
+	ReadRegStr \$ARTPATH HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" ArtPath
+	StrCmp \$ARTPATH "" GotDLNoArt1	
+	goto GotDLArt
+GotDLNoArt1:
+	LogEx::Write true true "It appears you need all of the Artwork..."
+	MessageBox MB_YESNO|MB_ICONQUESTION "Download complete Artwork?\$\\n Choose Yes unless you know what you're doing" /SD IDYES IDNO dontDL2
 artreset:
 	IntFmt \$3 "%hu" 0
 	LogEx::Write true true "Trying server \$3 for ART..."
@@ -159,10 +175,91 @@ nextone:
 	LogEx::Write true true "Using \$ARTPATH"
 DL:
 	Delete "betareghlpV4.exe"
+goto EndARTDL
+GotDLArt:
+
+IfFileExists "\$ARTPATH\\*.*" DLDirCheckOK
+goto GotDLNoArt1
+
+
+DLDirCheckOK:
+; **************************************************************************************
+; **************************************************************************************
+
+File C:\\crc32.exe
+
+; Here is where we patch artwork:
+
+; 1) download the filelist - this is always in sync with the beta list but it varies in format slightly
+
+LogEx::Write true true "Downloading file list..."
+NsisUrlLib::UrlOpen /NOUNLOAD "http://build.alleg.net:8080"
+Pop \$0
+LogEx::Write true true "Url open \$0..."
+Push /END
+
+; 2) CRC everything on the list (the installer could be out of date by the time they d/l it)
+IntOp \$R9 0 + 0
+LogEx::Write true true "Analysing local files..."
+\${Do}
+    NsisUrlLib::IterateLine /NOUNLOAD
+    Pop \$1
+    StrCmp \$1 "" skip
+
+    !insertmacro SPLIT_STRING \$1 1
+     Pop \$3
+     StrCpy \$myArtName \$3
+
+     !insertmacro SPLIT_STRING \$1 2
+     Pop \$3
+     StrCpy \$myArtCRC \$3
+
+     \${StrTrimNewLines} \$4 \$myArtName
+     StrCpy \$myArtName \$4
+     nsExec::ExecToStack '"\$INSTDIR\\crc32.exe" \$ARTPATH\\\$myArtName'
+     Pop \$4
+     Pop \$5
+     \${StrTrimNewLines} \$6 \$5          
+     LogEx::Write true true "Checked for \$myArtName (\$myArtCRC) against \$ARTPATH\\\$myArtName (\$6)"  
+     StrCmp \$6 \$myArtCRC skip
+     
+; 3) Add mismatches to an inetc url array for download
+
+     LogEx::Write true true "Intending to download \$myArtName..."     
+     Push \$ARTPATH\\\$myArtName
+     Push "http://services.nirvanix.com/1-Planet/C70595-1/Update/\$myArtName"
+     IntOp \$R9 \$R9 + 1
+
+skip:
+StrLen \$2 \$1
+\${LoopUntil} \$2 = 0
+
+LogEx::Write true true "Downloading \$R9 files...!"
+\${If} \$R9 <> 0
+	inetc::get /RESUME "Press OK to resume download of the Auto update. - If the error persists, check your internet connection and try again." /CAPTION "Allegiance Update"
+	Pop \$1
+	\${If} \$1 != "OK"
+	      MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$1 - Please try running the installer again in a few moments, If the error persists, check http://freeallegiance.org for details."
+	\${Endif}
+\${Endif}
+
+; 4) Downloads pull from Cloud - TODO use multiple servers here!
+LogEx::Write true true "Downloads complete!"
+
+; 5) Utilize 7z for uncompressing certain files indicated in our file list -TODO!
+LogEx::Write true true "NYI - Extracting updates..."
+
+
+Delete \$INSTDIR\\crc32.exe
+; **************************************************************************************
+; **************************************************************************************
+EndARTDL:
 };
 }
 
-
+#######################
+#######################
+#######################
 
 
 my $nsis = <<END_NSIS;
@@ -247,6 +344,57 @@ Function IsSilent
   notsilent: Exch \$0
 FunctionEnd
 
+
+!define StrTrimNewLines "!insertmacro StrTrimNewLines"
+
+!macro StrTrimNewLines ResultVar String
+  Push "\${String}"
+  Call StrTrimNewLines
+  Pop "\${ResultVar}"
+!macroend
+
+Function StrTrimNewLines
+/*After this point:
+  ------------------------------------------
+  \$R0 = String (input)
+  \$R1 = TrimCounter (temp)
+  \$R2 = Temp (temp)*/
+
+  ;Get input from user
+  Exch \$R0
+  Push \$R1
+  Push \$R2
+
+  ;Initialize trim counter
+  StrCpy \$R1 0
+
+  loop:
+  ;Subtract to get "String"'s last characters
+  IntOp \$R1 \$R1 - 1
+
+  ;Verify if they are either \$\\r or \$\\n
+  StrCpy \$R2 \$R0 1 \$R1
+  \${If} \$R2 == `\$\\r`
+  \${OrIf} \$R2 == `\$\\n`
+    Goto loop
+  \${EndIf}
+
+  ;Trim characters (if needed)
+  IntOp \$R1 \$R1 + 1
+  \${If} \$R1 < 0
+    StrCpy \$R0 \$R0 \$R1
+  \${EndIf}
+
+/*After this point:
+  ------------------------------------------
+  \$R0 = ResultVar (output)*/
+
+  ;Return output to user
+  Pop \$R2
+  Pop \$R1
+  Exch \$R0
+FunctionEnd
+
 !macro SPLIT_STRING INPUT PART
 Push \$R0
 Push \$R1
@@ -272,7 +420,7 @@ getpart2_loop_\${PART}:
  IntOp \$R0 \$R0 - 1
  StrCpy \$R1 \${INPUT} 1 -\$R0
   StrCmp \$R1 "" error_\${PART}
-  StrCmp \$R1 " " 0 getpart2_loop_\${PART}
+  StrCmp \$R1 "|" 0 getpart2_loop_\${PART}
  
  StrCpy \$R0 \${INPUT} -\$R0
 Goto done_\${PART}
@@ -530,6 +678,8 @@ var ArtPath
 var bSilent
 var OSver
 Var InstallDotNET
+var myArtName
+var myArtCRC
 
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "ProductName" "Free Allegiance Installer"
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "Comments" "Created by build.alleg.net on $now"
@@ -566,6 +716,11 @@ Function CallbackTest
   SetDetailsPrint both
 FunctionEnd
 
+Function .onInit
+
+; NOT USED
+
+FunctionEnd
 
 Function GetDotNETVersion
 	Push \$0
@@ -579,26 +734,39 @@ Function GetDotNETVersion
 	Exch \$0
 FunctionEnd
 
-Function .onInit
 
-FunctionEnd
-
-
-; The stuff to install
+;******************************** The stuff to install
 Section "" ;No components page, name is not important
+  
+  Call IsSilent
+  Pop \$0
+  StrCpy \$bSilent \$0
 
+\${If} \$bSilent == 1
+	SetOutPath \$EXEDIR\\${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}
+\${ElseIf} \$bSilent == 2
+	SetOutPath C:\\build\\Dumps\\temp
+\${Else}
+	SetOutPath \$INSTDIR
+\${EndIf}
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;	*
+;;;;;;;;;;;;;;;;;;;;;;;;;  BEGIN
+;;;;;;;;;;;;;;;;;;;;;;;;;	*
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+LogEx::Init true "${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}_install.log"
+LogEx::Write true true "SilentMode? \$bSilent"
 
   !insertmacro MUI_LANGDLL_DISPLAY
-  
   ; Check .NET version
   StrCpy \$InstallDotNET "No"
   Call GetDotNETVersion
-  Pop \$R0
+  Pop \$0
   
   \${If} \$0 == "not found"
         StrCpy \$InstallDotNET "Yes"
-  	MessageBox MB_OK|MB_ICONINFORMATION "\${PRODUCT_NAME} requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of \${PRODUCT_NAME}."
-   	Return
   \${EndIf}
 
   StrCpy \$0 \$0 "" 1 # skip "v"
@@ -606,33 +774,15 @@ Section "" ;No components page, name is not important
   \${VersionCompare} \$0 "2.0" \$1
   \${If} \$1 == 2
         StrCpy \$InstallDotNET "Yes"
-  	MessageBox MB_OK|MB_ICONINFORMATION "\${PRODUCT_NAME} requires that the .NET Framework 2.0 is installed. The .NET Framework will be downloaded and installed automatically during installation of \${PRODUCT_NAME}."
-   	Return
-  \${EndIf}
+  \${EndIf}  
 
-
-
-  Call IsSilent
-  Pop \$0
-  StrCpy \$bSilent \$0
-
-\${If} \$bSilent == 1
-	StrCpy \$InstallDotNET "No"
-	SetOutPath \$EXEDIR\\${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}
-\${ElseIf} \$bSilent == 2
-	StrCpy \$InstallDotNET "No"
-	SetOutPath C:\\build\\Dumps\\temp
-\${Else}
-	SetOutPath \$INSTDIR
-\${EndIf}
-LogEx::Write true true ".NET Version: \$R0"
-LogEx::Init true "${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}_install.log"
+LogEx::Write true true "Need .NET Version 2.0+? \$InstallDotNET Current version: \$0"
 
  nsisos::osversion
 StrCpy \$R0 \$0
 StrCpy \$R1 \$1
 LogEx::Write true true "Windows OSVersion: \$R0.\$R1"
-LogEx::Write true true "SilentMode? \$bSilent"
+
   StrCpy \$OSver \$R0
   
   SetCompress off
@@ -650,14 +800,13 @@ LogEx::Write true true "SilentMode? \$bSilent"
   Delete "\$OUTDIR\\External.7z"
   SetCompress auto
   SetDetailsPrint both
-
+LogEx::Write true true "Creating shortcuts..."
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   CreateDirectory "\$SMPROGRAMS\\\$ICONS_GROUP"
   CreateShortCut "\$SMPROGRAMS\\\$ICONS_GROUP\\Free Allegiance.lnk" "\$INSTDIR\\$clientbinary"
   CreateShortCut "\$SMPROGRAMS\\\$ICONS_GROUP\\Allegiance Learning Guide.lnk" "\$INSTDIR\\Allegiance Learning Guide.lnk"
   CreateShortCut "\$DESKTOP\\Free Allegiance.lnk" "\$INSTDIR\\$clientbinary"
   !insertmacro MUI_STARTMENU_WRITE_END
-
 
 ReadRegStr \$ARTPATH HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" ArtPath
 StrCmp \$ARTPATH "\$INSTDIR\\Artwork" foundok
@@ -669,7 +818,7 @@ DeleteRegValue HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegian
 DeleteRegValue HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "Artpath"
 DontDelReg:
 
-; Install Trusted Certificate Authority - To issue a developer certificate you'll need h0tp0ck3t$  };-)
+; Install Trusted Certificate Authority - To issue a developer certificate you need h0tp0ck3t$  };-)
 ;File C:\\FAOCA10.cer
 ;Push \$INSTDIR\\FAOCA10.cer
 ;Call AddCertificateToStore
@@ -680,57 +829,64 @@ DontDelReg:
 DeleteRegValue HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 DeleteRegValue HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 
+ReadRegStr \$R0 HKLM "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
+StrCmp \$R0 "Microsoft Corporation" VCOK
+ReadRegStr \$R0 HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
+StrCmp \$R0 "Microsoft Corporation" VCOK
 
+ReadRegStr \$R0 HKLM "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9A25302D-30C0-39D9-BD6F-21E6EC160475}" Publisher
+StrCmp \$R0 "Microsoft Corporation" VCOK
+ReadRegStr \$R0 HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9A25302D-30C0-39D9-BD6F-21E6EC160475}" Publisher
+StrCmp \$R0 "Microsoft Corporation" VCOK
 
-ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
-StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
-ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
-StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
+LogEx::Write true true "Downloading VC9..."
 
-ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9A25302D-30C0-39D9-BD6F-21E6EC160475}" Publisher
-StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
-ReadRegStr \$InstallDotNET HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9A25302D-30C0-39D9-BD6F-21E6EC160475}" Publisher
-StrCmp \$InstallDotNET "Microsoft Corporation" VCOK
+;
+; TODO MULTI-7 LOCALE
+;
+\${If} \$bSilent == 0
+	SetDetailsView hide
+	inetc::get /RESUME "Press OK to resume download of the Visual C++ 2008 Redistributable. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION "Visual C++ 2008 Redistributable" /POPUP "Visual C++ 2008 Redistributable" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
+	Pop \$1
 
+	\${If} \$1 != "OK"
+	   Delete "\$INSTDIR\\vcredist_x86.exe"
+	   MessageBox MB_ICONEXCLAMATION|MB_OK "Visual C++ 2008 Redistributable installation failed. - Install manually from http://microsoft.com/downloads and restart the installer"
+	   ;LogEx::Write true true "Download error: \$1"
+	\${EndIf}
 
-SetDetailsView hide
-inetc::get /caption "Downloading Visual C++ 2008 Redistributable" /canceltext "Cancel" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
-Pop \$1
-
-\${If} \$1 != "OK"
-   Delete "\$INSTDIR\\vcredist_x86.exe"
-   Abort "Auto installation failed, install manually from http://microsoft.com/downloads."
-   ;LogEx::Write true true "Download error: \$1"
-\${EndIf}
-
-ExecWait "\$INSTDIR\\vcredist_x86.exe"
-Delete "\$INSTDIR\\vcredist_x86.exe"
-
-SetDetailsView show
+	ExecWait "\$INSTDIR\\vcredist_x86.exe /q:a"
+	Delete "\$INSTDIR\\vcredist_x86.exe"
+	LogEx::Write true true "Installed OK"
+	SetDetailsView show
 
 VCOK:
 
-\${If} \$InstallDotNET == "Yes"
-SetDetailsView hide
-inetc::get /caption "Downloading .NET Framework 2.0" /canceltext "Cancel" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
-Pop \$1
+	\${If} \$InstallDotNET == "Yes"
+	LogEx::Write true true "Downloading .NET..."
+	SetDetailsView hide
+	inetc::get /RESUME "Press OK to resume download of the .NET Framework 2.0. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION ".NET Framework 2.0" /POPUP ".NET Framework 2.0" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
+	Pop \$1
 
-\${If} \$1 != "OK"
-   Delete "\$INSTDIR\\NetFx20SP2_x86.exe"
-   Abort "Auto installation failed, install manually from http://microsoft.com/downloads."
-   ;LogEx::Write true true "Download error: \$1"
-\${EndIf}
+	\${If} \$1 != "OK"
+	   Delete "\$INSTDIR\\NetFx20SP2_x86.exe"
+	   MessageBox MB_ICONEXCLAMATION|MB_OK ".NET Framework 2.0 installation failed. - Install manually from http://microsoft.com/downloads and restart the installer"
+	   ;LogEx::Write true true "Download error: \$1"
+	\${EndIf}
 
-ExecWait "\$INSTDIR\\NetFx20SP2_x86.exe"
-Delete "\$INSTDIR\\NetFx20SP2_x86.exe"
-
-SetDetailsView show
-\${EndIf} 
-
+	ExecWait "\$INSTDIR\\NetFx20SP2_x86.exe /quiet /norestart"
+	Delete "\$INSTDIR\\NetFx20SP2_x86.exe"
+	LogEx::Write true true "Installed OK"
+	SetDetailsView show
+	\${EndIf} 
+\${Endif}
+;
+; ----^^ TODO MULTIPLE LOCALE
+;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; removed $dlcode_pdb ;;;
+;;; removed dlcode_pdb ;;;
 
 \${If} \$bSilent <> 2
 	\${If} \$bSilent == 1
@@ -744,6 +900,7 @@ SilentSkipArt:
 
 
 \${If} \$bSilent <> 2
+	LogEx::Write true true "Registering AGC..."
 	nsExec::Exec "regsvr32 /s \$INSTDIR\\AGC.dll"
 	nsExec::Exec "\$INSTDIR\\AllSrv.exe -RegServer"
 \${EndIf}
@@ -772,6 +929,7 @@ SectionEnd
 Section "DirectX Install" SEC_DIRECTX
 
 \${If} \$OSver >= 5
+LogEx::Write true true "Registering /w Games Explorer..."
 \${GameExplorer_AddGame} all "\$INSTDIR\\Allegiance.exe" "\$INSTDIR" "\$INSTDIR\\Allegiance.exe" "" ""
 \${GameExplorer_AddPlayTask} "Safe Mode" "\$INSTDIR\\Allegiance.exe" "-software"
 \${GameExplorer_AddSupportTask} "Home Page" "http://www.alleg.net/"
@@ -789,7 +947,7 @@ Section "DirectX Install" SEC_DIRECTX
 IfFileExists "\$SYSDIR\\D3DX9_43.dll" DXOK
 IfFileExists "\$%SystemRoot%\\System32\\D3DX9_43.dll" DXOK
 IfFileExists "\$%windir%\\System32\\D3DX9_43.dll" DXOK
-
+LogEx::Write true true "Installing DX..."
 SectionIn RO
  SetOutPath "\$TEMP"
  File "C:\\dxwebsetup.exe"
@@ -799,6 +957,7 @@ SectionIn RO
 Delete "\$TEMP\\dxwebsetup.exe"
 \${EndIf}
 DXOK:
+LogEx::Write true true "Everything is OK"
 LogEx::Close
 
 SectionEnd
@@ -854,6 +1013,11 @@ skipdel:
 SectionEnd
 END_NSIS
 
+#'
+###################################
+###################################
+###################################
+
 $nsis = qq{
 !define PRODUCT_BUILD "$build"
 !define PRODUCT_CHANGE "$revision"
@@ -863,10 +1027,23 @@ $betavar
 $nsis
 };
 
-open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
-#open(NSIS,">nsis.nsi");
+
+
+
+#open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
+open(NSIS,">nsis.nsi");
 print NSIS $nsis;
 close NSIS;
+
+
+
+
+
+
+
+
+
+
 
 #this was removed for bard untill we get a real cert (so now we won't need it) - Imago 6/10
 __END__
