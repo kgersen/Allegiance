@@ -49,7 +49,6 @@ foreach my $file (@svn) {
 my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe");
 foreach my $file (@objs) {
 	my $cmd = "C:\\crc32.exe $file";
-	my $cmd2 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\Package\\tmp\\cloud\\$file.zip $file -mx9";
 	my ($size)= (stat("$file"))[7];
 	next if (!$size);
 	next if ($dupes{client}{$file} == 1);
@@ -60,14 +59,10 @@ foreach my $file (@objs) {
 	my $bin = "Gurgle.crap";
 	if ($file =~ /.*\\([^\\]+$)/) {
 		$bin = $1;
-	}		
-	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("$file","C:\\build\\Package\\tmp\\cloud\\$file");
-		print LIST "$crc2|$bin\n";
-	} else {
-		`$cmd2`;
-		print LIST "$crc2|$bin.zip\n";
 	}
+	my $cmd2 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\Package\\tmp\\cloud\\$bin.zip $file -mx9";
+	`$cmd2`;
+	print LIST "$crc2|$bin.zip\n";
 }
 
 #include production AU artwork on the list!11!11 
