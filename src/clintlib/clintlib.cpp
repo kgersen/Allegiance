@@ -783,6 +783,18 @@ void MissionInfo::UpdateStartTime(Time timeStart)
     m_pfmMissionDef->misparms.timeStart = timeStart;
 }
 
+// lexaal: #169 counts number of players 
+int MissionInfo::ActivePlayers()  
+{
+	int activePlayers=0;
+
+	for(int i =0; i<NumSides(); i++)
+
+		{
+						activePlayers+=SideNumPlayers(i);
+        }
+	return activePlayers; }
+
 int MissionInfo::GuaranteedPositions()
 {
     SideID sideID;

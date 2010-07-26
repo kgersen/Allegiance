@@ -292,7 +292,7 @@ private:
             psurface->RestoreClipRect(rectClipOld);
 
             // draw slot info
-            wsprintf(cbTemp, "%d/%d", game->NumPlayers(), game->MaxPlayers());
+            wsprintf(cbTemp, "%d/%d", game->ActivePlayers(), game->NumPlayers());   // lexaal: #169  changed to pteam/ptotal from ptotal/maxp
             psurface->DrawString(pfont, color,
                 WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 3, 6), // KGJV #114 was col7
                 cbTemp);
