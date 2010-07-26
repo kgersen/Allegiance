@@ -32,16 +32,15 @@ foreach my $file (@svn) {
 	next if (!$size);
 	next if ($dupes{client}{$file} == 1);
 	$dupes{client}{$file} = 1;	
-	my $crc = `$cmd`;
+	my $crc = doSum("C:\\build\\FAZR6\\Artwork\\$file");
 	chomp $crc;
-	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
 		copy("C:\\build\\FAZR6\\Artwork\\$file","C:\\build\\Package\\tmp\\cloud\\$file");
-		print LIST "$crc2|$file\n";
+		print LIST "$crc|$file\n";
 	} else {
 		`$cmd2`;
-		print LIST "$crc2|$file.zip\n";
+		print LIST "$crc|$file.zip\n";
 	}
 }
 
@@ -53,37 +52,34 @@ foreach my $file (@objs) {
 	next if (!$size);
 	next if ($dupes{client}{$file} == 1);
 	$dupes{client}{$file} = 1;	
-	my $crc = `$cmd`;
+	my $crc = doSum("$file");
 	chomp $crc;
-	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	my $bin = "Gurgle.crap";
 	if ($file =~ /.*\\([^\\]+$)/) {
 		$bin = $1;
 	}
 	my $cmd2 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\Package\\tmp\\cloud\\$bin.zip $file -mx9";
 	`$cmd2`;
-	print LIST "$crc2|$bin.zip\n";
+	print LIST "$crc|$bin.zip\n";
 }
 
 #include production AU artwork on the list!11!11 
 foreach my $file (@tmp) { 
 	next if ($file =~ /^\./);
-	my $cmd = "C:\\crc32.exe C:\\build\\Package\\tmp\\expand\\$file";
 	my $cmd2 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\Package\\tmp\\cloud\\$file.zip C:\\build\\Package\\tmp\\expand\\$file -mx9";
 	my ($size)= (stat("C:\\build\\Package\\tmp\\expand\\$file"))[7];
 	next if (!$size);
 	next if ($dupes{client}{$file} == 1);
 	$dupes{client}{$file} = 1;	
-	my $crc = `$cmd`;
+	my $crc = doSum("C:\\build\\Package\\tmp\\expand\\$file");
 	chomp $crc;
-	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
-	
+
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
 		copy("C:\\build\\Package\\tmp\\expand\\$file","C:\\build\\Package\\tmp\\cloud\\$file");
-		print LIST "$crc2|$file\n";
+		print LIST "$crc|$file\n";
 	} else {
 		`$cmd2`;
-		print LIST "$crc2|$file.zip\n";
+		print LIST "$crc|$file.zip\n";
 	}
 }
 
@@ -91,22 +87,30 @@ foreach my $file (@tmp) {
 foreach my $file (@art) {
 	next if ($file =~ /^\./);
 	next if ($file !~ /cc_09|tcor_|bgrnd/i); #demonstrates how to target specific client artwork using regexp filter
-	my $cmd = "C:\\crc32.exe C:\\build\\Package\\Artwork\\$file";
 	my $cmd2 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\Package\\tmp\\cloud\\$file.zip C:\\build\\Package\\Artwork\\$file -mx9";
 	my ($size)= (stat("C:\\build\\Package\\Artwork\\$file"))[7];
 	next if (!$size);
 	next if ($dupes{client}{$file} == 1);
 	$dupes{client}{$file} = 1;	
-	my $crc = `$cmd`;
+	my $crc = doSum("C:\\build\\Package\\Artwork\\$file");
 	chomp $crc;
-	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
-	
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
 		copy("C:\\build\\Package\\Artwork\\$file","C:\\build\\Package\\tmp\\cloud\\$file");
-		print LIST "$crc2|$file\n";
+		print LIST "$crc|$file\n";
 	} else {
 		`$cmd2`;
-		print LIST "$crc2|$file.zip\n";
+		print LIST "$crc|$file.zip\n";
+	}
+}
+
+sub doSum {
+	my $file = shift;
+	open(CMD,"C:\\md5sums.exe -up $file |");
+	my @lines = <CMD>;
+	close CMD;
+	foreach my $line (@lines) {
+		my ($md5,$file) = split(/\s/,$line);
+		return $md5;
 	}
 }
 

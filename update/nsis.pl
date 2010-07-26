@@ -186,7 +186,6 @@ DLDirCheckOK:
 ; **************************************************************************************
 ; **************************************************************************************
 
-File C:\\crc32.exe
 \${Array} "FileList" 1024 32
 \${ArrayFunc} Write
 \${ArrayFunc} ReadFirst
@@ -222,15 +221,9 @@ LogEx::Write true true "Analysing local files..."
 
      \${StrTrimNewLines} \$4 \$myArtName
      StrCpy \$myArtName \$4
-     \${StrTrimNewLines} \$4 \$myArt7z
-     StrCpy \$myArt7z \$4	 
      
-   \${StrStr} \$0 \$myArt7z ".zip"
-   StrCmp \$0 ".zip" Do7zRepl
-   goto DontDo7zRepl
-   Do7zRepl:     
    \${StrStrip} ".zip" "\$myArtName" "\$myArt7z"
-   DontDo7zRepl:
+
    ; Non-artwork files kept in sync /w src /clintlib/AutoDownload.h
    StrCmp \$myArt7z "Allegiance.exe" DozDir
    StrCmp \$myArt7z "Reloader.exe" DozDir
@@ -242,23 +235,14 @@ LogEx::Write true true "Analysing local files..."
    goto SkipDozDir
    ;    
    DozDir:
-    nsExec::ExecToStack '"\$INSTDIR\\crc32.exe" "\$INSTDIR\\\$myArt7z"'
-     Pop \$4
-     Pop \$5
-     \${StrTrimNewLines} \$6 \$5          
-     LogEx::Write true true "Checked for \$myArt7z (\$myArtCRC) against:"
-	 LogEx::Write true true "   \$INSTDIR\\\$myArt7z (\$6)" 
-     StrCmp \$6 \$myArtCRC skip   
+   	md5dll::GetMD5File "\$INSTDIR\\\$myArt7z"
+	Pop \$1       
+     StrCmp \$1 \$myArtCRC skip   
    goto DozPush
    SkipDozDir:
-   nsExec::ExecToStack '"\$INSTDIR\\crc32.exe" "\$ARTPATH\\\$myArt7z"'
-     Pop \$4
-     Pop \$5
-     \${StrTrimNewLines} \$6 \$5          
-     LogEx::Write true true "Checked for \$myArt7z (\$myArtCRC) against:"
-	 LogEx::Write true true "   \$ARTPATH\\\$myArt7z (\$6)" 
-     StrCmp \$6 \$myArtCRC skip
-   
+   	md5dll::GetMD5File "\$ARTPATH\\\$myArt7z"
+	Pop \$1            
+     StrCmp \$1 \$myArtCRC skip  
    DozPush:
 ; 3) Add mismatches to an inetc url array for download
 
@@ -333,7 +317,6 @@ SetOutPath \$ARTPATH
 \${FileList->Delete}
 
 SetOutPath \$INSTDIR
-Delete \$INSTDIR\\crc32.exe
 ; **************************************************************************************
 ; **************************************************************************************
 EndARTDL:
