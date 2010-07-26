@@ -974,7 +974,9 @@ public:
                                 }
 
 								//Xynth #47 7/2010
-								if (((pship->GetStateM() & droneRipMaskIGC) != 0) && (pship->GetSide() == psideMine))
+								if (((pship->GetStateM() & droneRipMaskIGC) != 0) &&
+									 (pship->GetSide() == psideMine) &&
+									 (pship->GetPilotType() < c_ptPlayer))  //Xynth #175 7/2010
 									highlightCaption = true;
                                 
                             }
@@ -1033,7 +1035,7 @@ public:
 					//Xynth #47 7/2010
 					Color   colorOther;
 					if (highlightCaption)
-						colorOther = Color::Green();
+						colorOther = Color::Cyan();
 					else
 						colorOther = color;
 
