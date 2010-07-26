@@ -55,29 +55,25 @@ foreach my $file (@svn) {
 	}
 }
 
-
-#client list
-foreach my $file (@art) {
-	next if ($file =~ /^\./);
-	next if ($file !~ /cc_09|tcor_|bgrnd/i); #demonstrates how to target specific client artwork using regexp filter
-	my $cmd = "C:\\crc32.exe C:\\build\\Package\\Artwork\\$file";
-	my $cmd2 = "C:\\mscompress.exe C:\\build\\Package\\Artwork\\$file";
-	my ($modtime,$size)= (stat("C:\\build\\Package\\Artwork\\$file"))[9,7];
+#of course the latest build
+my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe");
+foreach my $file (@objs) {
+	my $cmd = "C:\\crc32.exe $file";
+	my $cmd2 = "C:\\mscompress.exe $file";
+	my ($modtime,$size)= (stat("$file"))[9,7];
 	next if (!$size);
-	next if ($dupes{client}{$file} == 1);
-	$dupes{client}{$file} = 1;	
 	my $crc = `$cmd`;
 	chomp $crc;
 	$size = sprintf("%09d",$size);
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
-	print LIST "$dt $size $crc2 $file\n";
-	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
-	} else {
-		`$cmd2`;
-		move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
-	}
+	my $bin = "Gurgle.crap";
+	if ($file =~ /.*\\([^\\]+$)/) {
+		$bin = $1;
+	}	
+	print LIST "$dt $size $crc2 $bin\n";
+	`$cmd2`;
+	move("${file}_","C:\\build\\AutoUpdate\\Game\\$bin");
 }
 
 #include production AU artwork on the list!11!11 
@@ -110,26 +106,28 @@ foreach my $file (@tmp) {
 	}
 }
 
-
-#of course the latest build
-my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe");
-foreach my $file (@objs) {
-	my $cmd = "C:\\crc32.exe $file";
-	my $cmd2 = "C:\\mscompress.exe $file";
-	my ($modtime,$size)= (stat("$file"))[9,7];
+#client list
+foreach my $file (@art) {
+	next if ($file =~ /^\./);
+	next if ($file !~ /cc_09|tcor_|bgrnd/i); #demonstrates how to target specific client artwork using regexp filter
+	my $cmd = "C:\\crc32.exe C:\\build\\Package\\Artwork\\$file";
+	my $cmd2 = "C:\\mscompress.exe C:\\build\\Package\\Artwork\\$file";
+	my ($modtime,$size)= (stat("C:\\build\\Package\\Artwork\\$file"))[9,7];
 	next if (!$size);
+	next if ($dupes{client}{$file} == 1);
+	$dupes{client}{$file} = 1;	
 	my $crc = `$cmd`;
 	chomp $crc;
 	$size = sprintf("%09d",$size);
 	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
-	my $bin = "Gurgle.crap";
-	if ($file =~ /.*\\([^\\]+$)/) {
-		$bin = $1;
-	}	
-	print LIST "$dt $size $crc2 $bin\n";
-	`$cmd2`;
-	move("${file}_","C:\\build\\AutoUpdate\\Game\\$bin");
+	print LIST "$dt $size $crc2 $file\n";
+	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
+		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+	} else {
+		`$cmd2`;
+		move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+	}
 }
 
 close LIST;

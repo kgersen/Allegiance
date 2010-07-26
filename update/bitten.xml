@@ -227,6 +227,11 @@
 	<sh:exec file="perl" args="${cdn.path}\\update\\allsrv.pl" />
 </step>	
 
+<step id="Mirror Beta Update">
+    <sh:exec file="perl" args="${cdn.path}\\update\\cloud\\au_mirror.pl ${build} ${revision} 1" />
+	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\makelist.pl ${build} ${revision} 1" />
+</step>
+
 <step id="Done">
 	<sh:exec file="perl" args="${cdn.path}\\update\\touch.pl"/>
 	<sh:exec file="perl" args="${cdn.path}\\update\\announce.pl ${build} ${revision}"/>
