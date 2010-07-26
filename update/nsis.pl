@@ -187,7 +187,12 @@ DLDirCheckOK:
 ; **************************************************************************************
 
 File C:\\crc32.exe
-
+\${Array} "FileList" 1024 32
+\${ArrayFunc} Write
+\${ArrayFunc} ReadFirst
+\${ArrayFunc} ReadNext
+\${ArrayFunc} ReadClose
+ \${FileList->Init}
 ; Here is where we patch artwork:
 
 ; 1) download the filelist - this is always in sync with the beta list but it varies in format slightly
@@ -209,6 +214,7 @@ LogEx::Write true true "Analysing local files..."
     !insertmacro SPLIT_STRING \$1 1
      Pop \$3
      StrCpy \$myArtName \$3
+     StrCpy \$myArt7z \$3
 
      !insertmacro SPLIT_STRING \$1 2
      Pop \$3
@@ -216,18 +222,50 @@ LogEx::Write true true "Analysing local files..."
 
      \${StrTrimNewLines} \$4 \$myArtName
      StrCpy \$myArtName \$4
-     nsExec::ExecToStack '"\$INSTDIR\\crc32.exe" \$ARTPATH\\\$myArtName'
+     \${StrTrimNewLines} \$4 \$myArt7z
+     StrCpy \$myArt7z \$4	 
+     
+   \${StrStr} \$0 \$myArt7z ".zip"
+   StrCmp \$0 ".zip" Do7zRepl
+   goto DontDo7zRepl
+   Do7zRepl:     
+   \${StrStrip} ".zip" "\$myArtName" "\$myArt7z"
+   DontDo7zRepl:
+   ; Non-artwork files kept in sync /w src /clintlib/AutoDownload.h
+   StrCmp \$myArt7z "Allegiance.exe" DozDir
+   StrCmp \$myArt7z "Reloader.exe" DozDir
+   StrCmp \$myArt7z "DbgHelp.dll" DozDir
+   StrCmp \$myArt7z "AllSrvUI.exe" DozDir
+   StrCmp \$myArt7z "AllSrv.exe" DozDir
+   StrCmp \$myArt7z "AGC.dll" DozDir
+   StrCmp \$myArt7z "AutoUpdate.exe" DozDir
+   goto SkipDozDir
+   ;    
+   DozDir:
+    nsExec::ExecToStack '"\$INSTDIR\\crc32.exe" "\$INSTDIR\\\$myArt7z"'
      Pop \$4
      Pop \$5
      \${StrTrimNewLines} \$6 \$5          
-     LogEx::Write true true "Checked for \$myArtName (\$myArtCRC) against \$ARTPATH\\\$myArtName (\$6)"  
+     LogEx::Write true true "Checked for \$myArt7z (\$myArtCRC) against:"
+	 LogEx::Write true true "   \$INSTDIR\\\$myArt7z (\$6)" 
+     StrCmp \$6 \$myArtCRC skip   
+   goto DozPush
+   SkipDozDir:
+   nsExec::ExecToStack '"\$INSTDIR\\crc32.exe" "\$ARTPATH\\\$myArt7z"'
+     Pop \$4
+     Pop \$5
+     \${StrTrimNewLines} \$6 \$5          
+     LogEx::Write true true "Checked for \$myArt7z (\$myArtCRC) against:"
+	 LogEx::Write true true "   \$ARTPATH\\\$myArt7z (\$6)" 
      StrCmp \$6 \$myArtCRC skip
-     
+   
+   DozPush:
 ; 3) Add mismatches to an inetc url array for download
 
      LogEx::Write true true "Intending to download \$myArtName..."     
      Push \$ARTPATH\\\$myArtName
      Push "http://services.nirvanix.com/1-Planet/C70595-1/Update/\$myArtName"
+     \${FileList->Write} \$R9 \$myArtName
      IntOp \$R9 \$R9 + 1
 
 skip:
@@ -237,20 +275,64 @@ StrLen \$2 \$1
 LogEx::Write true true "Downloading \$R9 files...!"
 \${If} \$R9 <> 0
 	MessageBox MB_OK|MB_ICONINFORMATION "Allegiance Update has determined some of your files are out of date.\$\\nIf you've customized any of your Artwork, this is your chance to make a backup.  Click OK to begin the downloads you need."
-	inetc::get /RESUME "Click OK to resume download of the Auto update. - If the error persists, check your internet connection and try again." /CAPTION "Allegiance Update"
+	inetc::get /RESUME "Click Retry to resume the download of the Auto update. - If the error persists, check your internet connection and try again." /CAPTION "Allegiance Update"
 	Pop \$1
 	\${If} \$1 != "OK"
+		\${If} \$1 == "Cancelled"
+		  MessageBox MB_ICONEXCLAMATION|MB_OK "You have cancelled the download of files Allegiance Update determined you needed.  Allegiance was not installed correctly!"
+		  LogEx::Write true true "Downloads cancelled!"
+		\${Else}
 	      MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$1 - Please try running the installer again in a few moments, If the error persists, check http://freeallegiance.org for details."
+		  LogEx::Write true true "Downloads error \$1!"
+	   \${Endif}
 	\${Endif}
 \${Endif}
 
 ; 4) Downloads pull from Cloud - TODO use multiple servers here!
 LogEx::Write true true "Downloads complete!"
 
-; 5) Utilize 7z for uncompressing certain files indicated in our file list -TODO!
-LogEx::Write true true "NYI - Extracting updates..."
+; 5) Utilize 7z for uncompressing certain files indicated in our file list
+StrCpy \$switch_overwrite 1
+SetOutPath \$ARTPATH
 
+ ClearErrors
+ \${FileList->ReadFirst} \$R1 \$R2
+ Loop2:
+ IfErrors Done2
+   \${StrStr} \$0 \$R2 ".zip"
+   StrCmp \$0 ".zip" DoExtract
+   goto donext
+   DoExtract:
+    LogEx::Write true true "Extracting \$R2..."
+    Nsis7z::ExtractWithCallback "\$ARTPATH\\\$R2" \$R9
+    GetFunctionAddress \$R9 CallbackTest
+    Delete "\$ARTPATH\\\$R2"
+   donext:
+   
+   ; Non-artwork files kept in sync /w src /clintlib/AutoDownload.h
+   StrCmp \$R2 "Allegiance.exe.zip" DozMove
+   StrCmp \$R2 "Reloader.exe.zip" DozMove
+   StrCmp \$R2 "DbgHelp.dll.zip" DozMove
+   StrCmp \$R2 "AllSrvUI.exe.zip" DozMove
+   StrCmp \$R2 "AllSrv.exe.zip" DozMove
+   StrCmp \$R2 "AGC.dll.zip" DozMove
+   StrCmp \$R2 "AutoUpdate.exe.zip" DozMove
+   ; 
+   goto donext2
+   DozMove:
+   \${StrStrip} ".zip" "\$R2" "\$1"
+   !insertmacro MoveFile "\$ARTPATH\\\$1" "\$INSTDIR\\\$1"
+   LogEx::Write true true "Moved \$ARTPATH\\\$1 to \$INSTDIR\\\$1"
+  donext2:
+  ClearErrors
+  \${FileList->ReadNext} \$R1 \$R2
+ Goto Loop2
+ Done2:
+ \${FileList->ReadClose} \$R1
 
+\${FileList->Delete}
+
+SetOutPath \$INSTDIR
 Delete \$INSTDIR\\crc32.exe
 ; **************************************************************************************
 ; **************************************************************************************
@@ -275,6 +357,44 @@ SetCompressor lzma
 !define PRODUCT_STARTMENU_REGVAL "NSIS:AllegStartMenuDir"
 
 !include LogicLib.nsh
+!include NSISArray.nsh
+ 
+Function StrStrip
+Exch \$R0 #string
+Exch
+Exch \$R1 #in string
+Push \$R2
+Push \$R3
+Push \$R4
+Push \$R5
+ StrLen \$R5 \$R0
+ StrCpy \$R2 -1
+ IntOp \$R2 \$R2 + 1
+ StrCpy \$R3 \$R1 \$R5 \$R2
+ StrCmp \$R3 "" +9
+ StrCmp \$R3 \$R0 0 -3
+  StrCpy \$R3 \$R1 \$R2
+  IntOp \$R2 \$R2 + \$R5
+  StrCpy \$R4 \$R1 "" \$R2
+  StrCpy \$R1 \$R3\$R4
+  IntOp \$R2 \$R2 - \$R5
+  IntOp \$R2 \$R2 - 1
+  Goto -10
+  StrCpy \$R0 \$R1
+Pop \$R5
+Pop \$R4
+Pop \$R3
+Pop \$R2
+Pop \$R1
+Exch \$R0
+FunctionEnd
+!macro StrStrip Str InStr OutVar
+ Push '\${InStr}'
+ Push '\${Str}'
+  Call StrStrip
+ Pop '\${OutVar}'
+!macroend
+!define StrStrip '!insertmacro StrStrip'
 
 !define StrStr "!insertmacro StrStr"
  
@@ -434,6 +554,78 @@ done_\${PART}:
 Pop \$R1
 Exch \$R0
 !macroend
+
+
+!include 'FileFunc.nsh'
+!insertmacro Locate
+ 
+Var /GLOBAL switch_overwrite
+
+!macro MoveFile sourceFile destinationFile
+
+!define MOVEFILE_JUMP \${__LINE__}
+
+; Check source actually exists
+
+    IfFileExists "\${sourceFile}" +3 0
+    SetErrors
+    goto done_\${MOVEFILE_JUMP}
+
+; Add message to details-view/install-log
+
+    DetailPrint "Moving/renaming file: \${sourceFile} to \${destinationFile}"
+
+; If destination does not already exists simply move file
+
+    IfFileExists "\${destinationFile}" +3 0
+    rename "\${sourceFile}" "\${destinationFile}"
+    goto done_\${MOVEFILE_JUMP}
+
+; If overwriting without 'ifnewer' check
+
+    \${If} \$switch_overwrite == 1
+	delete "\${destinationFile}"
+	rename "\${sourceFile}" "\${destinationFile}"
+	delete "\${sourceFile}"
+	goto done_\${MOVEFILE_JUMP}
+    \${EndIf}
+
+; If destination already exists
+
+    Push \$R0
+    Push \$R1
+    Push \$R2
+    push \$R3
+
+    GetFileTime "\${sourceFile}" \$R0 \$R1
+    GetFileTime "\${destinationFile}" \$R2 \$R3
+
+    IntCmp \$R0 \$R2 0 older_\${MOVEFILE_JUMP} newer_\${MOVEFILE_JUMP}
+    IntCmp \$R1 \$R3 older_\${MOVEFILE_JUMP} older_\${MOVEFILE_JUMP} newer_\${MOVEFILE_JUMP}
+
+    older_\${MOVEFILE_JUMP}:
+    delete "\${sourceFile}"
+    goto time_check_done_\${MOVEFILE_JUMP}
+
+    newer_\${MOVEFILE_JUMP}:
+    delete "\${destinationFile}"
+    rename "\${sourceFile}" "\${destinationFile}"
+    delete "\${sourceFile}" ;incase above failed!
+
+    time_check_done_\${MOVEFILE_JUMP}:
+
+    Pop \$R3
+    Pop \$R2
+    Pop \$R1
+    Pop \$R0
+
+done_\${MOVEFILE_JUMP}:
+
+!undef MOVEFILE_JUMP
+
+!macroend
+
+
 
 !macro GetCleanDir INPUTDIR
   !define Index_GetCleanDir 'GetCleanDir_Line\${__LINE__}'
@@ -681,6 +873,7 @@ var OSver
 Var InstallDotNET
 var myArtName
 var myArtCRC
+var myArt7z
 
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "ProductName" "Free Allegiance Installer"
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "Comments" "Created by build.alleg.net on $now"
@@ -847,7 +1040,7 @@ LogEx::Write true true "Downloading VC9..."
 ;
 \${If} \$bSilent == 0
 	SetDetailsView hide
-	inetc::get /RESUME "Click OK to resume download of the Visual C++ 2008 Redistributable. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION "Visual C++ 2008 Redistributable" /POPUP "Visual C++ 2008 Redistributable" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
+	inetc::get /RESUME "Click Retry to resume download of the Visual C++ 2008 Redistributable. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION "Visual C++ 2008 Redistributable" /POPUP "Visual C++ 2008 Redistributable" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
 	Pop \$1
 
 	\${If} \$1 != "OK"
@@ -866,7 +1059,7 @@ VCOK:
 	\${If} \$InstallDotNET == "Yes"
 	LogEx::Write true true "Downloading .NET..."
 	SetDetailsView hide
-	inetc::get /RESUME "Click OK to resume download of the .NET Framework 2.0. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION ".NET Framework 2.0" /POPUP ".NET Framework 2.0" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
+	inetc::get /RESUME "Click Retry to resume download of the .NET Framework 2.0. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION ".NET Framework 2.0" /POPUP ".NET Framework 2.0" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
 	Pop \$1
 
 	\${If} \$1 != "OK"
