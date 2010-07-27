@@ -203,6 +203,7 @@ LogEx::Write true true "Url open \$0..."
 Push /END
 
 ; 2) CRC everything on the list (the installer could be out of date by the time they d/l it)
+
 IntOp \$R9 0 + 0
 LogEx::Write true true "Analyzing local files..."
 \${Do}
@@ -224,6 +225,10 @@ LogEx::Write true true "Analyzing local files..."
      StrCpy \$myArtName \$4
      
    \${StrStrip} ".zip" "\$myArtName" "\$myArt7z"
+
+; UGLY HACK ALERT - everything not compressed (7zip LZMA) is .gz - 
+;   this is to get a Content-Type HTTP header out of CloudNAS (ex. .mdl is not defined)
+   \${StrStrip} ".gz" "\$myArtName" "\$myArt7z"
    \${StrStrip} ".gz" "\$myArtName" "\$myArtLocal"
 
    ; Non-artwork files kept in sync /w src /clintlib/AutoDownload.h
@@ -246,6 +251,7 @@ LogEx::Write true true "Analyzing local files..."
 	Pop \$1            
      StrCmp \$1 \$myArtCRC skip  
    DozPush:
+   
 ; 3) Add mismatches to an inetc url array for download
 
      LogEx::Write true true "Intending to download \$myArtName..."     
@@ -275,9 +281,11 @@ LogEx::Write true true "Downloading \$R9 files...!"
 \${Endif}
 
 ; 4) Downloads pull from Cloud - TODO use multiple servers here!
+
 LogEx::Write true true "Downloads complete!"
 
 ; 5) Utilize 7z for uncompressing certain files indicated in our file list
+
 StrCpy \$switch_overwrite 1
 SetOutPath \$ARTPATH
 
