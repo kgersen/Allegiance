@@ -206,7 +206,18 @@ DLDirCheckOK:
 \${ArrayFunc} ReadFirst
 \${ArrayFunc} ReadNext
 \${ArrayFunc} ReadClose
+
+ \${Array} "UrlList0" 1024 384
+\${ArrayFunc} Write
+\${ArrayFunc} Read
+ 
+ \${Array} "UrlList1" 1024 384
+\${ArrayFunc} Write
+\${ArrayFunc} Read
+
  \${FileList->Init}
+ \${UrlList0->Init}
+ \${UrlList1->Init}
 ; Here is where we patch artwork:
 
 ; 1) download the filelist - this is always in sync with the beta list but it varies in format slightly
@@ -221,14 +232,12 @@ LogEx::Write true true "Url open \$0..."
 	goto EndARTDL
 \${Endif}
 
-Push /END
-
 ; 2) CRC everything on the list (the installer could be out of date by the time they d/l it)
 
 IntOp \$R9 0 + 0
-LogEx::Write true true "Analyzing local files..."
+LogEx::Write true true "Analyzing local files, this may take a moment..."
 \${Do}
-    NsisUrlLib::IterateLine /NOUNLOAD
+    Call GetNextFile
     Pop \$1
     StrCpy \$R8 \$1
     StrCmp \$1 "" skip
@@ -238,16 +247,21 @@ LogEx::Write true true "Analyzing local files..."
 	goto EndARTDL    
     \${Endif}
 
-    !insertmacro SPLIT_STRING \$1 1
-     Pop \$3
-     StrCpy \$myArtName \$3
-     StrCpy \$myArt7z \$3
-	 StrCpy \$myArtLocal \$3
-
-     !insertmacro SPLIT_STRING \$1 2
-     Pop \$3
+     Push 2
+     Push \$R8
+     Call SplitFile
+     Pop \$3   
      StrCpy \$myArtCRC \$3
 
+     Push 1
+     Push \$R8
+     Call SplitFile
+     Pop \$3
+  
+     StrCpy \$myArtName \$3
+     StrCpy \$myArt7z \$3
+     StrCpy \$myArtLocal \$3
+     
      \${StrTrimNewLines} \$4 \$myArtName
      StrCpy \$myArtName \$4
      
@@ -282,15 +296,36 @@ LogEx::Write true true "Analyzing local files..."
 ; 3) Add mismatches to an inetc url array for download
 
      LogEx::Write true true "Queuing \$myArtName (\$myArtCRC) had \$myArtLocal (\$1)"     
-     Push \$ARTPATH\\\$myArtLocal
-     Push "http://services.nirvanix.com/1-Planet/C70595-1/Update/\$myArtName"
+
+     LogEx::Write true true "r: \$myArtName l: \$myArtLocal"
      \${FileList->Write} \$R9 \$myArtName
+	 \${UrlList0->Write} \$R9 "\$ARTPATH\\\$myArtLocal"
+	 \${UrlList1->Write} \$R9 "http://services.nirvanix.com/1-Planet/C70595-1/Update/\$myArtName"
      IntOp \$R9 \$R9 + 1
 
 skip:
 StrLen \$2 \$R8
 \${LoopUntil} \$2 = 0
 
+; rebuild the stack for inetc
+${stack::ns_clear}
+Push /END
+IntOp \$R8 0 + 0
+ClearErrors
+ \${FileList->ReadFirst} \$R1 \$R2
+ Loop3:
+ IfErrors Done3
+  \${UrlList0->Read} \$R3 \$R8
+  \${UrlList1->Read} \$R4 \$R8
+  Push \$R3
+  Push \$R4
+   IntOp \$R8 \$R8 + 1
+  ClearErrors
+  \${FileList->ReadNext} \$R1 \$R2
+ Goto Loop3
+ Done3:
+ \${FileList->ReadClose} \$R1
+ 
 LogEx::Write true true "Downloading \$R9 files...!"
 \${If} \$R9 <> 0
 	MessageBox MB_OK|MB_ICONINFORMATION "Allegiance Update has determined some of your files are out of date.\$\\nIf you've customized any of your Artwork, this is your chance to make a backup.  Click OK to begin the downloads thats you need."
@@ -352,6 +387,8 @@ SetOutPath \$ARTPATH
  \${FileList->ReadClose} \$R1
 
 \${FileList->Delete}
+\${UrlList0->Delete}
+\${UrlList1->Delete}
 
 SetOutPath \$INSTDIR
 ; **************************************************************************************
@@ -378,7 +415,8 @@ SetCompressor lzma
 
 !include LogicLib.nsh
 !include NSISArray.nsh
- 
+!include "Stack.nsh"
+
 Function StrStrip
 Exch \$R0 #string
 Exch
@@ -536,44 +574,55 @@ Function StrTrimNewLines
   Exch \$R0
 FunctionEnd
 
-!macro SPLIT_STRING INPUT PART
+Function GetNextFile
+     NsisUrlLib::IterateLine /NOUNLOAD
+     Pop \$1
+     Exch \$1
+FunctionEnd
+
+Function SplitFile
+Exch \$R2
+Exch
+Exch \$R3
 Push \$R0
 Push \$R1
- 
+
+
  StrCpy \$R0 0
- StrCmp \${PART} 1 getpart1_loop_\${PART}
- StrCmp \${PART} 2 getpart2_top_\${PART}
-Goto error_\${PART}
- 
-getpart1_loop_\${PART}:
+ StrCmp \$R3 1 getpart1_loop_\$R3
+ StrCmp \$R3 2 getpart2_top_\$R3
+Goto error_\$R3
+
+getpart1_loop_\$R3:
  IntOp \$R0 \$R0 - 1
- StrCpy \$R1 \${INPUT} 1 \$R0
-  StrCmp \$R1 "" error_\${PART}
-  StrCmp \$R1 "|" 0 getpart1_loop_\${PART}
- 
+ StrCpy \$R1 \$R2 1 \$R0
+  StrCmp \$R1 "" error_\$R3
+  StrCmp \$R1 "|" 0 getpart1_loop_\$R3
+
  IntOp \$R0 \$R0 + 1
- StrCpy \$R0 \${INPUT} "" \$R0
-Goto done_\${PART}
- 
-getpart2_top_\${PART}:
- StrLen \$R0 \${INPUT}
-getpart2_loop_\${PART}:
+ StrCpy \$R0 \$R2 "" \$R0
+Goto done_\$R3
+
+getpart2_top_\$R3:
+ StrLen \$R0 \$R2
+getpart2_loop_\$R3:
  IntOp \$R0 \$R0 - 1
- StrCpy \$R1 \${INPUT} 1 -\$R0
-  StrCmp \$R1 "" error_\${PART}
-  StrCmp \$R1 "|" 0 getpart2_loop_\${PART}
- 
- StrCpy \$R0 \${INPUT} -\$R0
-Goto done_\${PART}
- 
-error_\${PART}:
+ StrCpy \$R1 \$R2 1 -\$R0
+  StrCmp \$R1 "" error_\$R3
+  StrCmp \$R1 "|" 0 getpart2_loop_\$R3
+
+ StrCpy \$R0 \$R2 -\$R0
+Goto done_\$R3
+
+error_\$R3:
  StrCpy \$R0 error
- 
-done_\${PART}:
- 
+
+done_\$R3:
+
 Pop \$R1
+Pop \$R3
 Exch \$R0
-!macroend
+FunctionEnd
 
 
 !include 'FileFunc.nsh'
