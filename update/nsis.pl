@@ -200,8 +200,10 @@ LogEx::Write true true "Downloading file list..."
 NsisUrlLib::UrlOpen /NOUNLOAD "http://build.alleg.net:8080"
 Pop \$0
 LogEx::Write true true "Url open \$0..."
-\${If} \$0 <> "Succeeded"
-	MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$0 - Unable to contact build server, Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
+\${StrStr} \$1 \$0 "Succeeded"
+
+\${If} \$1 == ""
+	MessageBox MB_ICONEXCLAMATION|MB_OK "\$0 - Unable to contact build server.  Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
 	goto EndARTDL
 \${Endif}
 
@@ -217,7 +219,7 @@ LogEx::Write true true "Analyzing local files..."
     StrCmp \$1 "" skip
     \${StrStr} \$0 \$1 "|"
     \${If} \$0 == ""
-	MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$0 - Unable to contact build server, Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
+	MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$0 - Unable to contact build server.  Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
 	goto EndARTDL    
     \${Endif}
 
