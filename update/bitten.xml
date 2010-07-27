@@ -108,11 +108,7 @@
 	<sh:exec file="perl" args="${cdn.path}\\update\\nsis.pl 1.1 ${build} ${revision} 0"/>
 	<!-- <sh:exec file="${cdn.path}\\update\\sign-installer.bat" args="R6_b${build}_r${revision}.exe 1"/> -->
 	<sh:exec file="echo" args="Completed creating installer"/>
-
-	<sh:exec file="echo" args="Attaching Lite"/>
-	<attach file="C:\\Inetpub\\wwwroot\\build\\R6_b${build}_r${revision}.exe" resource="build" description="Lite 1.1 version" />
 	<sh:exec file="echo" args="Download: http://build.alleg.net/R6_b${build}_r${revision}.exe"/>
-	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://build.alleg.net/R6_b${build}_r${revision}.exe [Beta (1.1)]&quot;"/>
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
@@ -180,7 +176,7 @@
 	<!-- <sh:exec file="echo" args="Attaching Lite"/> -->
 	<!-- <attach file="${cdn.path}\\update\\Inetpub\\wwwroot\\build\\Alleg_lite_b${build}_r${revision}.exe" resource="build" description="Lite 1.0 version" /> -->
 	<sh:exec file="echo" args="Download: http://build.alleg.net/Alleg_b${build}_r${revision}.exe"/>
-	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://build.alleg.net/Alleg_b${build}_r${revision}.exe [Production (1.0)]&quot;"/>
+	<!-- <sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://build.alleg.net/Alleg_b${build}_r${revision}.exe [Production (1.0)]&quot;"/> -->
    <!-- <sh:exec file="perl" args="${cdn.path}\\update\\step.pl"/> -->
 </step>
 
@@ -230,6 +226,9 @@
 <step id="Mirror Beta Update">
 	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\makelist.pl ${build} ${revision} 1" />
 	<sh:exec file="perl" args="${cdn.path}\\update\\cloud\\au_mirror.pl ${build} ${revision} 1" />
+	<sh:exec file="echo" args="Attaching Lite"/>
+	<attach file="C:\\Inetpub\\wwwroot\\build\\R6_b${build}_r${revision}.exe" resource="build" description="Lite 1.1 version" />	
+	<sh:exec file="perl" args="${cdn.path}\\update\\announce-dl.pl ${build} ${revision} &quot;Download: http://build.alleg.net/R6_b${build}_r${revision}.exe [Beta (1.1)]&quot;"/>
 </step>
 
 <step id="Done">

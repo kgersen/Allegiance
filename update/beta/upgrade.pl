@@ -21,7 +21,7 @@ Win32::Process::Create($ProcessObj,
 	"C:\\Allegiance\\Server") || die "failed to create autoupdate.exe process\n";
 	
 $ProcessObj->Wait(INFINITE);
-sleep(6);
+sleep(6); #TODO remove
 
 my $cmd = "C:\\Perl\\bin\\Perl.exe";
 $ProcessObj = "";
@@ -42,7 +42,7 @@ if ($exitcode == 1) {
 
 copy("Z:\\Deploy\\FAZBeta.cfg","Z:\\wwwroot\\FAZ\\FAZR6.cfg");
 copy("Z:\\Deploy\\FAZBeta.cfg","Z:\\wwwroot\\FAZ\\FAZBeta.cfg");
-copy("Z:\\Deploy\\FAZBeta.cfg","Z:\\wwwroot\\FAZ\\FAZR5.cfg");
+copy("Z:\\Deploy\\FAZBeta.cfg","Z:\\wwwroot\\FAZ\\FAZR5.cfg"); #TODO remove
 copy("Z:\\Deploy\\FAZBeta.cfg","Z:\\wwwroot\\FAZ\\FAZ.cfg");
 
 copy("Z:\\Deploy\\Filelist.txt","Z:\\wwwroot\\FAZ\\AU\\Filelist.txt");
@@ -53,10 +53,10 @@ copy("Z:\\Deploy\\motdR6.mdl","Z:\\wwwroot\\FAZ\\motdR6.mdl");
 my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU Z:\\deploy\\Game.7z";
 system($cmd);
 
-my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU Z:\\deploy\\Server.7z";
+my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU Z:\\deploy\\Server.7z"; #TODO make it a copy
 system($cmd);
 
-my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU\\Standalone Z:\\deploy\\Server.7z";
+my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU\\Standalone Z:\\deploy\\Server.7z"; #TODO make it a copy
 system($cmd);
 
 my $cmd = "expand Z:\\Deploy\\Filelist.txt C:\\Allegiance\\Lobby\\Filelist.txt";
@@ -65,7 +65,7 @@ system($cmd);
 my $sl = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllLobby,service");
 print "Stopping AllLobby service\n";	
 $sl->Stop();
-sleep(6);
+sleep(6);  #TODO reduce
 
 if ($sl && $sl->Status == 4) {
 	print "Lobby wouldn't stop!\n";
@@ -77,7 +77,7 @@ print "executing un regsvr32 AGC.dll...\n";
 my $cmd = "regsvr32 C:\\Allegiance\\Server\\AGC.dll /u /s";
 system($cmd);
 
-sleep(3);
+sleep(3);  #TODO reduce
 
 print "copying new objects...\n";
 
@@ -91,7 +91,7 @@ my $cmd = "expand Z:\\deploy\\temp\\dbghelp.dll C:\\Allegiance\\Server\\dbghelp.
 system($cmd);
 my $cmd = "copy Z:\\deploy\\AllLobby.exe C:\\Allegiance\\Lobby\\AllLobby.exe /Y";
 system($cmd);
-my $cmd = "expand Z:\\deploy\\temp\\dbghelp.dll C:\\Allegiance\\Lobby\\dbghelp.dll";
+my $cmd = "expand Z:\\deploy\\temp\\dbghelp.dll C:\\Allegiance\\Lobby\\dbghelp.dll"; #TODO make it a copy
 system($cmd);
 
 print "updating autoupdate...\n";
@@ -107,12 +107,12 @@ system($cmd);
 
 print "Starting Lobby service\n";	
 $sl->Start();
-sleep(12);
+sleep(12); #TODO reduce
 
 print "Starting AllSrv service\n";	
 my $s = Win32::OLE->GetObject("WinNT://beta.alleg.net/AllSrv,service");
 $s->Start();
-sleep(12);
+sleep(12);  #TODO reduce
 $s->Start();
 
 if ($sl && $sl->Status != 4) {

@@ -215,6 +215,7 @@ LogEx::Write true true "Analyzing local files..."
 \${Do}
     NsisUrlLib::IterateLine /NOUNLOAD
     Pop \$1
+    StrCpy \$R8 \$1
     StrCmp \$1 "" skip
     \${StrStr} \$0 \$1 "|"
     \${If} \$0 == ""
@@ -239,7 +240,7 @@ LogEx::Write true true "Analyzing local files..."
 
 ; UGLY HACK ALERT - everything not compressed (7zip LZMA) is .gz - 
 ;   this is to get a Content-Type HTTP header out of CloudNAS (ex. .mdl is not defined)
-   \${StrStrip} ".gz" "\$myArtName" "\$myArt7z"
+   \${StrStrip} ".gz" "\$myArt7z" "\$myArt7z"
    \${StrStrip} ".gz" "\$myArtName" "\$myArtLocal"
 
    ; Non-artwork files kept in sync /w src /clintlib/AutoDownload.h
@@ -272,7 +273,7 @@ LogEx::Write true true "Analyzing local files..."
      IntOp \$R9 \$R9 + 1
 
 skip:
-StrLen \$2 \$1
+StrLen \$2 \$R8
 \${LoopUntil} \$2 = 0
 
 LogEx::Write true true "Downloading \$R9 files...!"
