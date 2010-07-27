@@ -55,11 +55,11 @@ system($cmd);
 my $to =  "Z:\\wwwroot\\FAZ\\AU";
 my $from =  "Z:\\deploy\\temp";
 my $num_of_files_and_dirs = dircopy($from,$to);
-print "Copied $num_of_files_and_dirs items from $from to $to\n"
+print "Copied $num_of_files_and_dirs items from $from to $to\n";
 
 $to =  "Z:\\wwwroot\\FAZ\\AU\\Standalone";
 $num_of_files_and_dirs = dircopy($from,$to);
-print "Copied $num_of_files_and_dirs items from $from to $to\n"
+print "Copied $num_of_files_and_dirs items from $from to $to\n";
 
 my $cmd = "expand Z:\\Deploy\\Filelist.txt C:\\Allegiance\\Lobby\\Filelist.txt";
 system($cmd);
