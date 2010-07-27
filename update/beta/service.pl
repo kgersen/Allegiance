@@ -17,7 +17,7 @@ if( ! $WatchDir )
 
 $WatchDir->reset();
 while (1) {
-	        my $Result = $WatchDir->wait( 120 * 1000 );
+	        my $Result = $WatchDir->wait( 30 * 1000 );
         	if( $Result ) {
 			if (-e $mondir."\\process") {
 				open(LOG,">Z:\\deploy\\process.log");
@@ -30,7 +30,7 @@ while (1) {
 			}
          		$WatchDir->reset();
         	}
-		sleep(60);
+		sleep(30);
 	}
 $WatchDir->close();
 
