@@ -37,7 +37,7 @@ foreach my $file (@svn) {
 	
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
 		copy("C:\\build\\FAZR6\\Artwork\\$file","C:\\build\\Package\\tmp\\cloud\\$file.gz");
-		print LIST "$crc|$file\n";
+		print LIST "$crc|$file.gz\n";
 	} else {
 		`$cmd2`;
 		print LIST "$crc|$file.zip\n";
@@ -76,7 +76,7 @@ foreach my $file (@tmp) {
 
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
 		copy("C:\\build\\Package\\tmp\\expand\\$file","C:\\build\\Package\\tmp\\cloud\\$file.gz");
-		print LIST "$crc|$file\n";
+		print LIST "$crc|$file.gz\n";
 	} else {
 		`$cmd2`;
 		print LIST "$crc|$file.zip\n";
@@ -96,7 +96,7 @@ foreach my $file (@art) {
 	chomp $crc;
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
 		copy("C:\\build\\Package\\Artwork\\$file","C:\\build\\Package\\tmp\\cloud\\$file.gz");
-		print LIST "$crc|$file\n";
+		print LIST "$crc|$file.gz\n";
 	} else {
 		`$cmd2`;
 		print LIST "$crc|$file.zip\n";
