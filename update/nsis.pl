@@ -202,7 +202,7 @@ Pop \$0
 LogEx::Write true true "Url open \$0..."
 \${StrStr} \$1 \$0 "Succeeded"
 
-\${If} \$1 <> ""
+\${If} \$1 != "Succeeded"
 	MessageBox MB_ICONEXCLAMATION|MB_OK "\$0 - Unable to contact build server.  Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
 	goto EndARTDL
 \${Endif}
