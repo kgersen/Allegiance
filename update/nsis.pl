@@ -17,7 +17,7 @@ my $bbeta = "";
 my $dlcode_art = ""; my $dlcode_pdb = "";
 my $clientbinary = "ASGSClient.exe";
 my @url = ("http://services.nirvanix.com/1-Planet/C70595-1/Shared", "http://build.alleg.net"); #Fuzz 07/18 - Use multiple servers!
-my $retries = 2;	#Reasonable number of retries, number of servers
+my $retries = () = @url;	#Get number of elements in @url
 my $cfgfile = "http://autoupdate.alleg.net/allegiance.cfg";
 
 my $now = strftime("%Y/%m/%d %H:%M CDT",localtime(time));
@@ -64,7 +64,22 @@ if ($bfull) {
 };
 } else {
 	# Fuzz 07/18 try multiple servers
+	# Fuzz 07/26 make it so the user doesn't have to change this when they change the servers
 	$betavar = "Var BetaSetupError";
+	my $c = 0;
+	my $pdbred = "";
+	foreach $c(0..$retries-1){
+		$pdbred .= "pdbred${c}:
+	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 \"@url[${c}]\$7\" \$8 /END
+	goto pdbcmp\n";
+	}
+	my $pdbintcmp = "
+	IntCmp 0 \$3 pdbred0";
+	foreach $c(1..$retries-1){
+		$pdbintcmp .= "
+	Intcmp ${c} \$3 pdbred${c}";
+	}
+	$pdbintcmp .= " pdbreset pdbreset";
 	$dlcode_pdb = qq{
 	StrCpy \$4 "Problem connecting to server.  Please reconnect and click Retry to resume downloading or Cancel to try a different server"
 	StrCpy \$5 "Program Database"
@@ -75,12 +90,7 @@ if ($bfull) {
 pdbreset:
 	IntFmt \$3 "%hu" 0
 	LogEx::Write true true "Trying server \$3 for PDB..."
-pdbred0:
-	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[0]\$7" \$8 /END
-	goto pdbcmp
-pdbred1:
-    inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[1]\$7" \$8 /END
-	goto pdbcmp
+$pdbred
 pdbcmp:
 	Pop \$0
 	IntOp \$3 \$3 + 1
@@ -90,8 +100,7 @@ pdbcmp:
 	StrCmp \${PRODUCT_PDB_KEY} \$1 pdbmd5
 	IntCmp $retries \$3 pdbfail
 	LogEx::Write true true "Trying server \$3 for PDB..."
-	IntCmp 0 \$3 pdbred0
-	Intcmp 1 \$3 pdbred1 pdbreset pdbreset
+$pdbintcmp
 pdbfail:
 	LogEx::Write true true "Done retrying servers. Download of PDB failed..."
 	goto dontDL
@@ -106,8 +115,20 @@ dontDL:
 ########################  PDB
 ######################
 ########################  ART
-
-$dlcode_art = qq{
+	my $artred = "";
+	foreach $c(0..$retries-1){
+		$artred .= "artred${c}:
+	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 \"@url[${c}]\$7\" \$8 /END
+	goto artcmp\n";
+	}
+	my $artintcmp = "
+	IntCmp 0 \$3 artred0";
+	foreach $c(1..$retries-1){
+		$artintcmp .= "
+	Intcmp ${c} \$3 artred${c}";
+	}
+	$artintcmp .= " artreset artreset";
+	$dlcode_art = qq{
 	StrCpy \$4 "Problem connecting to server.  Please reconnect and click Retry to resume downloading or Cancel to try a different server"
 	StrCpy \$5 "Artwork"
 	StrCpy \$6 "Artwork"
@@ -127,12 +148,7 @@ GotDLNoArt1:
 artreset:
 	IntFmt \$3 "%hu" 0
 	LogEx::Write true true "Trying server \$3 for ART..."
-artred0:
-	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[0]\$7" \$8 /END
-	goto artcmp
-artred1:
-	inetc::get /RESUME \$4 /CAPTION \$5 /POPUP \$6 "@url[1]\$7" \$8 /END
-	goto artcmp
+$artred
 artcmp:
 	Pop \$0
 	IntOp \$3 \$3 + 1
@@ -142,8 +158,7 @@ artcmp:
 	StrCmp \${PRODUCT_ART_KEY} \$1 artmd5
 	IntCmp $retries \$3 artfail
 	LogEx::Write true true "Trying server \$3 for ART..."
-	IntCmp 0 \$3 artred0
-	Intcmp 1 \$3 artred1 artreset artreset
+$artintcmp
 artfail:
 	LogEx::Write true true "Done retrying servers. Download of ART failed..."
 	goto dontDL2
