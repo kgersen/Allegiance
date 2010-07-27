@@ -31,4 +31,8 @@ foreach (@files) {
 print "Files uploaded OK\n";
 $ftp->quit();
 
+open(LATEST,">C:\\Inetpub\\wwwroot\\build\\latest.txt");
+print LATEST $ARGV[0]."_r".$ARGV[1]
+close LATEST;
+
 exit 0;

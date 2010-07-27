@@ -200,6 +200,11 @@ LogEx::Write true true "Downloading file list..."
 NsisUrlLib::UrlOpen /NOUNLOAD "http://build.alleg.net:8080"
 Pop \$0
 LogEx::Write true true "Url open \$0..."
+\${If} \$0 <> "Succeeded"
+	MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$0 - Unable to contact build server, Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
+	goto EndARTDL
+\${Endif}
+
 Push /END
 
 ; 2) CRC everything on the list (the installer could be out of date by the time they d/l it)
@@ -210,6 +215,11 @@ LogEx::Write true true "Analyzing local files..."
     NsisUrlLib::IterateLine /NOUNLOAD
     Pop \$1
     StrCmp \$1 "" skip
+    \${StrStr} \$0 \$1 "|"
+    \${If} \$0 == ""
+	MessageBox MB_ICONEXCLAMATION|MB_OK "Error \$0 - Unable to contact build server, Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
+	goto EndARTDL    
+    \${Endif}
 
     !insertmacro SPLIT_STRING \$1 1
      Pop \$3
@@ -254,7 +264,7 @@ LogEx::Write true true "Analyzing local files..."
    
 ; 3) Add mismatches to an inetc url array for download
 
-     LogEx::Write true true "Intending to download \$myArtName..."     
+     LogEx::Write true true "Queuing \$myArtName (\$myArtCRC) had \$myArtLocal (\$1)"     
      Push \$ARTPATH\\\$myArtLocal
      Push "http://services.nirvanix.com/1-Planet/C70595-1/Update/\$myArtName"
      \${FileList->Write} \$R9 \$myArtName
@@ -1218,8 +1228,8 @@ $nsis
 
 
 
-open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
-#open(NSIS,">nsis.nsi");
+#open(NSIS,"| C:\\NSIS\\makensis.exe /V2 - ");
+open(NSIS,">nsis.nsi");
 print NSIS $nsis;
 close NSIS;
 
