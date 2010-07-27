@@ -199,10 +199,9 @@ DLDirCheckOK:
 LogEx::Write true true "Downloading file list..."
 NsisUrlLib::UrlOpen /NOUNLOAD "http://build.alleg.net:8080"
 Pop \$0
+\${StrStr} \$R4 \$0 "Succeeded"
 LogEx::Write true true "Url open \$0..."
-\${StrStr} \$1 \$0 "Succeeded"
-
-\${If} \$1 != "Succeeded"
+\${If} \$R4 != "Succeeded"
 	MessageBox MB_ICONEXCLAMATION|MB_OK "\$0 - Unable to contact build server.  Skipping installer's auto updates!  If the error persists, check http://freeallegiance.org for details."
 	goto EndARTDL
 \${Endif}
@@ -1133,6 +1132,7 @@ LogEx::Write true true "Registering /w Games Explorer..."
 \${GameExplorer_AddGame} all "\$INSTDIR\\Allegiance.exe" "\$INSTDIR" "\$INSTDIR\\Allegiance.exe" "" ""
 \${GameExplorer_AddPlayTask} "Safe Mode" "\$INSTDIR\\Allegiance.exe" "-software"
 \${GameExplorer_AddSupportTask} "Home Page" "http://www.alleg.net/"
+Delete \$PLUGINSDIR\\GameuxInstallHelper.dll
 \${EndIf}
 
   ; set file permissions to install dir and reg (thanks pkk)
