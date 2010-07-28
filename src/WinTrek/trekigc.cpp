@@ -2331,6 +2331,7 @@ WinTrekClient::WinTrekClient(void)
     m_strDisconnectReason(""),
     m_bFilterChatsToAll(false),
     m_bFilterQuickComms(false),
+	m_mpr(NULL), //Imago 7/10
 	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
     m_dwFilterLobbyChats(3) //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
 {

@@ -1,0 +1,49 @@
+use "effect";
+use "font";
+use "gamepanes";
+use "inputmappanedata";
+
+//
+// Map list
+//
+
+font           = medVerdana;
+textColor      = Color(1, 1, 1);
+noMappingColor = Color(0.5, 0.5, 0.5);
+selectionColor = Color(1, 0, 0);
+mappingOffset  = 196;
+scrollBar      = ScrollBarPane(Point(12, 185));
+listPane       = ListWithScrollBarPane(Point(434, 182), scrollBar);
+
+//
+// Help text
+//
+
+textPane = StringPane(text, white);
+                                        
+//
+// Buttons
+//
+
+     okButton = ButtonPane(ImportImage("btninputokbmp"     , true), ButtonNormal, false);
+ cancelButton = ButtonPane(ImportImage("btninputcancelbmp" , true), ButtonNormal, false);
+restoreButton = ButtonPane(ImportImage("btninputrestorebmp", true), ButtonNormal, false);
+   loadButton = SoundButtonPane(ImportImage("btnjoin3bmp", true), ButtonNormal, false, negativeButtonClickSoundId);//Imago #176 7/10
+
+//
+// Layout
+//
+
+inputMapPane =
+    ImagePane(
+        ImportImage("inputmappingbkbmp", false),
+        [
+            (    scrollBar, Point(492,  40)),
+            (     listPane, Point( 36,  38)),
+            (     okButton, Point( 93, 240)),
+            ( cancelButton, Point(213, 240)),
+            (restoreButton, Point(333, 240)),
+            (  loadButton,  Point( 42,  240)), //Imago #176 7/10
+            (     textPane, Point( 33,  14)) 
+        ]
+    );

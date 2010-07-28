@@ -409,6 +409,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\src\zlib\LzmaDec.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\src\zlib\LzmaEnc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">NotUsing</PrecompiledHeader>
@@ -462,6 +465,7 @@
     <ClInclude Include="..\src\zlib\LzFind.h" />
     <ClInclude Include="..\src\zlib\LzFindMt.h" />
     <ClInclude Include="..\src\zlib\LzHash.h" />
+    <ClInclude Include="..\src\zlib\LzmaDec.h" />
     <ClInclude Include="..\src\zlib\LzmaEnc.h" />
     <ClInclude Include="..\src\zlib\main.h" />
     <ClInclude Include="..\src\zlib\mask.h" />

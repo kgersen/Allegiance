@@ -39,6 +39,9 @@
       <Filter>7z</Filter>
     </ClCompile>
     <ClCompile Include="..\src\zlib\minidump.cpp" />
+    <ClCompile Include="..\src\zlib\LzmaDec.c">
+      <Filter>7z</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\zlib\alloc.h" />
@@ -107,6 +110,9 @@
       <Filter>7z</Filter>
     </ClInclude>
     <ClInclude Include="..\src\zlib\minidump.h" />
+    <ClInclude Include="..\src\zlib\LzmaDec.h">
+      <Filter>7z</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="7z">

@@ -91,6 +91,9 @@ class  WinTrekClient :
         float                   trekJoyStick[3];
         float                   fOldJoyThrottle;
         virtual void            OverrideThrottle (float fDesiredThrottle);
+		friend class Mpr;
+		Mpr	*				m_mpr; // Imago 7/10 exopsed appweb
+		
 
         // igc site implementation
 
@@ -140,6 +143,7 @@ class  WinTrekClient :
         TRef<AnimatedImage> LoadExplosion(const ZString& str);
         
     public:
+
         virtual void      DevelopmentCompleted(IbucketIGC*  b, IdevelopmentIGC*   d, Time now);
         virtual void      StationTypeCompleted(IbucketIGC*  b, IstationIGC* pstation, IstationTypeIGC*   st, Time now);
         virtual void      DroneTypeCompleted(IbucketIGC*  b, IstationIGC* pstation, IdroneTypeIGC*   dt, Time now);

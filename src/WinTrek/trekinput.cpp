@@ -28,6 +28,10 @@ const int ModifierControl = 2;
 const int ModifierAlt     = 4;
 const int ModifierAny     = 8;
 
+// Imago #176
+TRef<IMessageBox> pmsgBoxLoad; 
+// 7/10
+
 class TrekInputImpl : public TrekInput {
 public:
     //
@@ -2029,6 +2033,7 @@ private:
     TRef<ButtonPane>            m_pbuttonOK;
     TRef<ButtonPane>            m_pbuttonCancel;
     TRef<ButtonPane>            m_pbuttonRestore;
+	TRef<ButtonPane>            m_pbuttonLoad; //Imago #176 7/10
     TRef<ButtonPane>            m_pbuttonClose;
     TRef<ListPane>              m_plistPane;
 
@@ -2108,12 +2113,13 @@ public:
         CastTo(m_pbuttonCancel,   pns->FindMember("cancelButton"));
         CastTo(m_pbuttonRestore,  pns->FindMember("restoreButton"));
         CastTo(m_pbuttonClose,    pns->FindMember("closeButton"));
+		CastTo(m_pbuttonLoad,    pns->FindMember("loadButton")); //#176 Imago 7/10
 
 		// mdvalley: Pointers and class names
         AddEventTarget(&InputMapPopup::OnButtonOK,      m_pbuttonOK->GetEventSource());
         AddEventTarget(&InputMapPopup::OnButtonCancel,  m_pbuttonCancel->GetEventSource());
         AddEventTarget(&InputMapPopup::OnButtonRestore, m_pbuttonRestore->GetEventSource());
-        //AddEventTarget(OnButtonCancel,  m_pbuttonClose->GetEventSource());
+		AddEventTarget(&InputMapPopup::OnButtonLoad,	m_pbuttonLoad->GetEventSource()); //#176 Imago 7/10 
 
         //
         // details
@@ -2431,6 +2437,88 @@ public:
     bool OnButtonCancel()
     {
         Close();
+        return true;
+    }
+
+	//Imago #176 7/10 - Similar to doASGS/doDump
+	static void doInputMap(void* data, MprThread *threadp) {
+		int contentLen = 0; char *content;
+		ZString * szName = (ZString *)data;
+		ZString strName = szName->GetToken();
+		
+		char szURL[MAX_PATH];
+		Strcpy(szURL," http://services.nirvanix.com/1-Planet/C70595-1/InputMap/");
+			
+		if ((isalnum(strName[0]) == 0) && (strName.Left(1) != "_"))
+			strName = strName.RightOf(1);
+
+		if (int leftParen = strName.ReverseFind('(',0))
+			strName = strName.LeftOf(leftParen-1);
+
+		// add the name to the url
+		Strcat(szURL,strName);
+		Strcat(szURL,".7z");
+
+		// First make sure we can write to a socket
+		MprSocket* socket = new MprSocket();
+		socket->openClient("services.nirvanix.com",80,0);
+		int iwrite = socket->_write("GET /\r\n");
+		delete socket;
+
+		MaClient* client = new MaClient();
+		client->setTimeout(3000);
+		client->setRetries(1);
+		client->setKeepAlive(0);
+
+		if (iwrite == 7) { // make sure we wrote 7 bytes
+			OutputDebugString("**************** fetching:\n");
+			OutputDebugString(szURL);
+			OutputDebugString("****************\n");
+			client->getRequest(szURL);
+			if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
+				content = client->getResponseContent(&contentLen);
+		}
+
+		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
+			ZString strContent = content;
+			OutputDebugString("**************** woot:\n");
+			OutputDebugString(strContent);
+
+		}
+		delete client;
+		GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxLoad);
+		GetWindow()->RestoreCursor();
+	}
+
+	//Imago #176 7/10
+	bool OnButtonLoad()
+    {
+		ZString * pzName = new ZString(trekClient.GetNameLogonZoneServer());
+		if (!pzName->IsEmpty()) {
+			GetWindow()->SetWaitCursor();
+			pmsgBoxLoad = CreateMessageBox("Fetching your input map...", NULL, false, false);
+			GetWindow()->GetPopupContainer()->OpenPopup(pmsgBoxLoad, true);
+			char szPathName[MAX_PATH+48] = "";
+			GetModuleFileName(NULL, szPathName, MAX_PATH);
+			char *programName = mprGetBaseName(szPathName);
+			if (!trekClient.m_mpr) {
+				trekClient.m_mpr = new Mpr(programName);
+#ifdef _DEBUG
+				MprLogModule *tMod;
+				tMod = new MprLogModule(programName);
+				MprLogToFile *logger;
+				logger = new MprLogToFile();
+				trekClient.m_mpr->addListener(logger);
+				trekClient.m_mpr->setLogSpec("allegiance_appweb2.log:9");
+#endif
+				trekClient.m_mpr->setMaxPoolThreads(1);
+				trekClient.m_mpr->start(MPR_SERVICE_THREAD);
+			}
+			MprThread* threadp = new MprThread(doInputMap, MPR_NORMAL_PRIORITY, (void*)pzName, "Allegiance inputmap thread");
+			threadp->start();
+			LoadMap("inputmap2");
+			Changed();
+		}
         return true;
     }
 

@@ -35,14 +35,6 @@ const int c_nMinGain = -60;
 extern bool g_bActivity = true;
 extern bool g_bAFKToggled = false;
 
-// To send dumps - Imago 7/10
-static Mpr *mpr;
-#ifdef _DEBUG
-static MprLogModule *tMod;
-MprLogToFile *logger = new MprLogToFile();
-#endif
-
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Stuff that was moved out of this file
@@ -2813,14 +2805,17 @@ public:
 			char szPathName[MAX_PATH+48] = "";
 			GetModuleFileName(NULL, szPathName, MAX_PATH);
 			char *programName = mprGetBaseName(szPathName);
-			mpr = new Mpr(programName);
+			trekClient.m_mpr = new Mpr(programName);
 #ifdef _DEBUG
+			MprLogModule *tMod;
 			tMod = new MprLogModule(programName);
-			mpr->addListener(logger);
-			mpr->setLogSpec("allegiance_appweb.log:9");
+			MprLogToFile *logger;
+			logger = new MprLogToFile();
+			trekClient.m_mpr->addListener(logger);
+			trekClient.m_mpr->setLogSpec("allegiance_appweb.log:9");
 #endif
-			mpr->setMaxPoolThreads(1);
-			mpr->start(MPR_SERVICE_THREAD);
+			trekClient.m_mpr->setMaxPoolThreads(1);
+			trekClient.m_mpr->start(MPR_SERVICE_THREAD);
 			for (FileList::Iterator iterFile(tlFiles);
 				!iterFile.End(); iterFile.Next())
 			{
@@ -3569,13 +3564,10 @@ public:
         RemoveKeyboardInputFilter(m_pkeyboardInputFilter);
 
 		//Imago 7/10 dump upload
-		if (mpr)
-			mpr->stop(true); //true=now, terminate any upload (if we wait it could assert and make another dump!)
-#ifdef _DEBUG
-			delete tMod;
-			delete logger;
-#endif
-			mprMemClose();
+		if (trekClient.m_mpr)
+			trekClient.m_mpr->stop(true); //true=now, terminate any upload (if we wait it could assert and make another dump!)
+
+		mprMemClose();
 
         trekClient.Terminate();
 
