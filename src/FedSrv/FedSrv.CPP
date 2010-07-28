@@ -5180,7 +5180,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       CASTPFM(pfmSW, CS, SET_WINGID, pfm);
 
-      TrapHackBoot(pfmSW->wingID >= 0);
+      //TrapHackBoot(pfmSW->wingID >= 0);  //Imago commented 7/10 #91
       TrapHackBoot(pfmSW->wingID < c_widMax);
 
       CFSShip*  pfsShip = CFSShip::GetShipFromID(pfmSW->shipID);
@@ -10544,7 +10544,6 @@ class ThingSiteImpl : public ThingSite
 													pfmAsteroidDestroyed->asteroidID = roidID;
 													pfmAsteroidDestroyed->explodeF = false;
 													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-													((IstationIGC*)pmodel)->SetRoidID(NA);
 												}
 											}
 
