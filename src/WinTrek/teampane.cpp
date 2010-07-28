@@ -196,7 +196,6 @@ public:
             //);
             
             // draw their money  
-            
 			IsideIGC* pside = pplayer->GetShip()->GetSide();
             if (pplayer->IsHuman() && 
 				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 ALLYTD VISIBLITY, show allies $$$; That data isn't being sent, should it?
@@ -210,7 +209,7 @@ public:
 				} else {
 					if ((GetWindow()->GetOverlayFlags() & ofTeam) && pplayer->LastSeenState() == c_ssDocked ) {
 						char cbTemp[256];
-						DWORD dDelta = Time::Now().clock() - pplayer->LastStateChange();
+						DWORD dDelta = Time::Now().clock() - trekClient.GetCore()->GetIgcSite()->ClientTimeFromServerTime(pplayer->LastStateChange()).clock();
 						int iSecs = (dDelta != 0) ? dDelta / 1000 : 0;
 						if ((iSecs != 0) && iSecs < 60) {
 							wsprintf(cbTemp, "Docked for %isec",iSecs);
@@ -227,6 +226,7 @@ public:
 						psurface->DrawString(TrekResources::SmallFont(),color,WinPoint(19, 14),ZString("$: ") + cbTemp);
 					}
 				}
+				// #7
             }
             
             // draw the deaths
