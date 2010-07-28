@@ -12675,7 +12675,7 @@ void FedSrvSiteBase::RequestRipcord(IshipIGC* pship, IclusterIGC* pcluster)
             assert (pclusterShip);
 
             pship->SetRipcordModel(NULL);
-
+			pship->SetStateBits(droneRipMaskIGC, 0);  //Xynth #188 7/2010
             BEGIN_PFM_CREATE(g.fm, pfmRipcordAborted, S, RIPCORD_ABORTED)
             END_PFM_CREATE
             pfmRipcordAborted->shipidRipcord = pship->GetObjectID();
@@ -12770,10 +12770,12 @@ bool FedSrvSiteBase::ContinueRipcord(IshipIGC* pship, ImodelIGC* pmodel)
 
     if (!rc)
     {
+		pship->SetStateBits(droneRipMaskIGC, 0);  //Xynth #188 7/2010
         BEGIN_PFM_CREATE(g.fm, pfmRipcordAborted, S, RIPCORD_ABORTED)
         END_PFM_CREATE
         pfmRipcordAborted->shipidRipcord = pship->GetObjectID();
         g.fm.SendMessages(GetGroupSectorFlying(pship->GetCluster()), FM_GUARANTEED, FM_FLUSH);
+
     }
 
     return rc;
@@ -12794,6 +12796,7 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
             float   newEnergy = ((IshipIGC*)pmodel)->GetEnergy() - pship->GetBaseHullType()->GetRipcordCost();
             if (newEnergy < 0.0f)
             {
+				pship->SetStateBits(droneRipMaskIGC, 0); //Xynth #188 7/2010
                 //No energy for ripcord
                 BEGIN_PFM_CREATE(g.fm, pfmRipcordAborted, S, RIPCORD_ABORTED)
                 END_PFM_CREATE
