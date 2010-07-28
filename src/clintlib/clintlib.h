@@ -509,8 +509,7 @@ public:
     ShipID          MissionOwnerShipID()    { return SideLeaderShipID( MissionOwnerSideID() ); }
     bool            AutoAcceptLeaders()     { return m_pfmMissionDef->fAutoAcceptLeaders; }
     int             MaxPlayers()            { return m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame; }
-    int             NumPlayers()            { return m_nNumPlayers; }
-	int             ActivePlayers();
+    int             NumPlayers()            { return m_nNumPlayers; };
     int             AvailablePositions()    { return MaxPlayers() - NumPlayers(); }
     int             GuaranteedPositions();
     unsigned char   MinPlayersPerTeam()     { return m_pfmMissionDef->misparms.nMinPlayersPerTeam; }
