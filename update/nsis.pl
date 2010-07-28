@@ -297,7 +297,6 @@ LogEx::Write true true "Analyzing local files, this may take a moment..."
 
      LogEx::Write true true "Queuing \$myArtName (\$myArtCRC) had \$myArtLocal (\$1)"     
 
-     LogEx::Write true true "r: \$myArtName l: \$myArtLocal"
      \${FileList->Write} \$R9 \$myArtName
 	 \${UrlList0->Write} \$R9 "\$ARTPATH\\\$myArtLocal"
 	 \${UrlList1->Write} \$R9 "http://services.nirvanix.com/1-Planet/C70595-1/Update/\$myArtName"
