@@ -733,7 +733,7 @@ BOOL CServiceModule::InstallService(int argc, char * argv[])
 	*/
     SERVICE_FAILURE_ACTIONS failureActions;
 	failureActions.cActions = 2;
-	SC_ACTION actions[1];
+	SC_ACTION actions[2];
 	actions[0].Type = SC_ACTION_RESTART;
 	actions[0].Delay = 15000;
 	actions[1].Type = SC_ACTION_RESTART;
