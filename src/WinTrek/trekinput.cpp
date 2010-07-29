@@ -1,5 +1,7 @@
 #include "pch.h"
 
+static Mpr * mpr;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Forward declaration
@@ -88,6 +90,7 @@ public:
     TRef<Boolean>                           m_pboolJustShiftAlt;
     TRef<Boolean>                           m_pboolJustControlAlt;
     TRef<Boolean>                           m_pboolJustControlShiftAlt;
+
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -1620,6 +1623,7 @@ class InputMapPopup :
     public ItemPainter
 {
 private:
+	bool m_bLoad;
     //////////////////////////////////////////////////////////////////////////////
     //
     // Types
@@ -2085,7 +2089,8 @@ public:
         m_bEditing(false),
         m_bQuestion(false),
         m_bButton(false),
-        m_bAxis(false)
+        m_bAxis(false),
+		m_bLoad(false)
     {
         m_bInternational = IsInternationalKeyboard();
 
@@ -2182,7 +2187,6 @@ public:
         //
         // load the input map
         //
-
         TRef<INameSpace> pns = GetModeler()->GetNameSpace(str, false);
 
         if (pns == NULL) {
@@ -2431,6 +2435,27 @@ public:
     {
         SaveMap(INPUTMAP_FILE);
         Close();
+		ZString * pzName = new ZString(trekClient.GetNameLogonZoneServer());
+		if (pzName->IsEmpty())
+			return true;
+		char szPathName[MAX_PATH+48] = "";
+		GetModuleFileName(NULL, szPathName, MAX_PATH);
+		char *programName = mprGetBaseName(szPathName);
+		if (!trekClient.mpr) {
+			trekClient.mpr = new Mpr(programName);
+#ifdef _DEBUG
+			MprLogModule *tMod;
+			tMod = new MprLogModule(programName);
+			MprLogToFile *logger;
+			logger = new MprLogToFile();
+			trekClient.mpr->addListener(logger);
+			trekClient.mpr->setLogSpec("allegiance_appweb.log:9");
+#endif
+			trekClient.mpr->setMaxPoolThreads(1);
+			trekClient.mpr->start(MPR_SERVICE_THREAD);
+		}
+		MprThread* threadp = new MprThread(doSaveInputMap, MPR_NORMAL_PRIORITY, (void*)pzName, "Allegiance inputmap post thread");
+		threadp->start();
         return true;
     }
 
@@ -2440,14 +2465,14 @@ public:
         return true;
     }
 
-	//Imago #176 7/10 - Similar to doASGS/doDump
-	static void doInputMap(void* data, MprThread *threadp) {
+
+	//Imago #176 7/10
+	static void doLoadInputMap(void* data, MprThread *threadp) {
+
 		int contentLen = 0; char *content;
 		ZString * szName = (ZString *)data;
 		ZString strName = szName->GetToken();
-		
-		char szURL[MAX_PATH];
-		Strcpy(szURL," http://services.nirvanix.com/1-Planet/C70595-1/InputMap/");
+		ZString zUrl = "http://services.nirvanix.com/1-Planet/C70595-1/InputMap/";
 			
 		if ((isalnum(strName[0]) == 0) && (strName.Left(1) != "_"))
 			strName = strName.RightOf(1);
@@ -2456,8 +2481,8 @@ public:
 			strName = strName.LeftOf(leftParen-1);
 
 		// add the name to the url
-		Strcat(szURL,strName);
-		Strcat(szURL,".7z");
+		zUrl += strName;
+		zUrl += ".zip";
 
 		// First make sure we can write to a socket
 		MprSocket* socket = new MprSocket();
@@ -2469,58 +2494,178 @@ public:
 		client->setTimeout(3000);
 		client->setRetries(1);
 		client->setKeepAlive(0);
+		const char * szURL = (PCC)zUrl;
 
 		if (iwrite == 7) { // make sure we wrote 7 bytes
-			OutputDebugString("**************** fetching:\n");
-			OutputDebugString(szURL);
-			OutputDebugString("****************\n");
-			client->getRequest(szURL);
-			if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
+			client->getRequest((char *)szURL);
+			
+			// now we deal with a redirect
+			char * szBuf = client->getResponseHeader();
+			ZString zHeaders = ZString(szBuf);
+			int iStart = zHeaders.Find("Location: ");
+			ZString zRedirect = zHeaders.Middle(iStart+10,zHeaders.FindAny("\n",iStart) - iStart - 10);
+			if (client->getResponseCode() == 302) {
+				client->getRequest((char *)(PCC)zRedirect);
+				if (client->getResponseCode() == 200) 
+					content = client->getResponseContent(&contentLen);
+			// no redirect
+			} else if(client->getResponseCode() == 200)
 				content = client->getResponseContent(&contentLen);
 		}
 
-		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
-			ZString strContent = content;
-			OutputDebugString("**************** woot:\n");
-			OutputDebugString(strContent);
-
+		if (contentLen > 0) {
+			ZFile * pz7z = new ZFile(GetModeler()->GetArtPath() + "/inputmap2.7z", OF_WRITE | OF_CREATE);
+			if (pz7z->Write(content,contentLen)) {
+				delete pz7z;
+				Extract7z(GetModeler()->GetArtPath() + "/inputmap2.7z",GetModeler()->GetArtPath()+"/inputmap2.mdl");
+				DeleteFile(GetModeler()->GetArtPath() + "/inputmap2.7z");
+			}
+			
 		}
-		delete client;
 		GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxLoad);
 		GetWindow()->RestoreCursor();
+		pmsgBoxLoad = NULL;
+		delete client;
 	}
 
-	//Imago #176 7/10
+	//Imago #176 7/10 - Similar to doASGS/doDump
+	static void doSaveInputMap(void* data, MprThread *threadp) {
+		ZString * szName = (ZString *)data;
+		ZString strName = szName->GetToken();
+
+		if ((isalnum(strName[0]) == 0) && (strName.Left(1) != "_"))
+			strName = strName.RightOf(1);
+
+		if (int leftParen = strName.ReverseFind('(',0))
+			strName = strName.LeftOf(leftParen-1);
+
+		MprSocket* socket = new MprSocket();
+		socket->openClient("build.alleg.net",80,0);
+		int iwrite = socket->_write("GET /\r\n");
+		delete socket;
+
+		if (iwrite != 7) return;
+
+		MaClient* client = new MaClient();
+		client->setTimeout(100000);
+		client->setRetries(1);
+		client->setKeepAlive(0);
+		int contentLen = 0; char *content;
+		int iSize = Create7z(GetModeler()->GetArtPath() + "/inputmap1.mdl",GetModeler()->GetArtPath() + "/inputmap1.7z");
+		if (iSize > 0) {
+			char *buffer = (char*)::VirtualAlloc(NULL, iSize, MEM_COMMIT, PAGE_READWRITE);
+			unsigned long cBytesRead;
+			OFSTRUCT rob;
+			HANDLE hfile = (HANDLE)OpenFile(GetModeler()->GetArtPath() + "/inputmap1.7z",&rob,OF_READ);
+			ReadFile(hfile, buffer, iSize, &cBytesRead, NULL);
+			if (cBytesRead == iSize) {
+				OutputDebugString("******* life is good so far\n");
+
+				MprBuf * hdrBuf = new MprBuf(256);
+				hdrBuf->put("POST /nph-InputMap.cgi HTTP/1.1\r\n");
+				hdrBuf->put("Host: build.alleg.net\r\n");
+				hdrBuf->put("Connection: close\r\n");
+				hdrBuf->put("User-Agent: Allegiance inputmap post thread\r\n");
+				hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
+				ZString zParts1 = "-----------------------------01\r\n";
+		#ifdef DEBUG
+				zParts1 += "Content-Disposition: form-data; name=\"debug\"";
+				zParts1 += "\r\n\r\non\r\n";
+				zParts1 += "-----------------------------01\r\n";
+		#endif
+				zParts1 += "Content-Disposition: form-data; name=\"inputmap\"; filename=\"";
+				zParts1 += strName;
+				zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
+				ZString zParts0 = "\r\n-----------------------------01--\r\n";
+				int iTotal0 = cBytesRead + zParts1.GetLength() + zParts0.GetLength();
+				char * PostData = new char [iTotal0];
+				Strcpy(PostData,(PCC)zParts1);
+				memcpy(PostData+zParts1.GetLength(),buffer,iSize);
+				memcpy(PostData+zParts1.GetLength()+iSize,(PCC)zParts0,zParts0.GetLength());
+				hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
+				client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
+				debugf("**** sent %iB of data via HTTP\n",iTotal0);
+				if (client->getResponseCode() == 200) {
+					content = client->getResponseContent(&contentLen);
+					OutputDebugString("************ "+ZString(content) + "\n");
+				} else {
+					OutputDebugString("************ "+ZString(client->getResponseCode()) + "\n");
+				}
+
+				delete hdrBuf;
+				delete PostData;
+			}
+			::VirtualFree(buffer, 0, MEM_RELEASE);
+			CloseHandle(hfile);
+			DeleteFile(GetModeler()->GetArtPath() + "/inputmap1.7z");
+		}
+		/*
+		int contentLen = 0; char *content;
+		ZString * szName = (ZString *)data;
+		ZString strName = szName->GetToken();
+		ZString zUrl = "http://build.alleg.net/nph-InputMap.cgi?name=";
+			
+		if ((isalnum(strName[0]) == 0) && (strName.Left(1) != "_"))
+			strName = strName.RightOf(1);
+
+		if (int leftParen = strName.ReverseFind('(',0))
+			strName = strName.LeftOf(leftParen-1);
+
+		// add the name to the url
+		zUrl += strName;
+		zUrl += ".zip";
+
+		// First make sure we can write to a socket
+		MprSocket* socket = new MprSocket();
+		socket->openClient("build.alleg.net",80,0);
+		int iwrite = socket->_write("GET /\r\n");
+		delete socket;
+
+		MaClient* client = new MaClient();
+		client->setTimeout(3000);
+		client->setRetries(1);
+		client->setKeepAlive(0);
+		const char * szURL = (PCC)zUrl;
+
+		if (iwrite == 7) { // make sure we wrote 7 bytes
+			client->getRequest((char *)szURL);
+			if (client->getResponseCode() == 200) 
+				content = client->getResponseContent(&contentLen);
+		}
+
+		delete client;
+		*/
+	}
+
 	bool OnButtonLoad()
     {
 		ZString * pzName = new ZString(trekClient.GetNameLogonZoneServer());
-		if (!pzName->IsEmpty()) {
-			GetWindow()->SetWaitCursor();
-			pmsgBoxLoad = CreateMessageBox("Fetching your input map...", NULL, false, false);
-			GetWindow()->GetPopupContainer()->OpenPopup(pmsgBoxLoad, true);
-			char szPathName[MAX_PATH+48] = "";
-			GetModuleFileName(NULL, szPathName, MAX_PATH);
-			char *programName = mprGetBaseName(szPathName);
-			if (!trekClient.m_mpr) {
-				trekClient.m_mpr = new Mpr(programName);
+		if (pzName->IsEmpty())
+			return true;
+		pmsgBoxLoad = CreateMessageBox("Fetching your input map...", NULL, false, false);
+		GetWindow()->GetPopupContainer()->OpenPopup(pmsgBoxLoad, true);
+		m_bLoad = true;
+		char szPathName[MAX_PATH+48] = "";
+		GetModuleFileName(NULL, szPathName, MAX_PATH);
+		char *programName = mprGetBaseName(szPathName);
+		if (!trekClient.mpr) {
+			trekClient.mpr = new Mpr(programName);
 #ifdef _DEBUG
-				MprLogModule *tMod;
-				tMod = new MprLogModule(programName);
-				MprLogToFile *logger;
-				logger = new MprLogToFile();
-				trekClient.m_mpr->addListener(logger);
-				trekClient.m_mpr->setLogSpec("allegiance_appweb2.log:9");
+			MprLogModule *tMod;
+			tMod = new MprLogModule(programName);
+			MprLogToFile *logger;
+			logger = new MprLogToFile();
+			trekClient.mpr->addListener(logger);
+			trekClient.mpr->setLogSpec("allegiance_appweb.log:9");
 #endif
-				trekClient.m_mpr->setMaxPoolThreads(1);
-				trekClient.m_mpr->start(MPR_SERVICE_THREAD);
-			}
-			MprThread* threadp = new MprThread(doInputMap, MPR_NORMAL_PRIORITY, (void*)pzName, "Allegiance inputmap thread");
-			threadp->start();
-			LoadMap("inputmap2");
-			Changed();
+			trekClient.mpr->setMaxPoolThreads(1);
+			trekClient.mpr->start(MPR_SERVICE_THREAD);
 		}
-        return true;
+		MprThread* threadp = new MprThread(doLoadInputMap, MPR_NORMAL_PRIORITY, (void*)pzName, "Allegiance inputmap get thread");
+		threadp->start();
+		return true;
     }
+	// End Imago #176
 
     bool OnButtonRestore()
     {
@@ -2921,6 +3066,17 @@ public:
 
     void Paint(ItemID itemID, Surface* psurface, bool bSelected, bool bFocus)
     {
+		//Imago 7/10
+		if (m_bLoad && pmsgBoxLoad == NULL) {
+			ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/inputmap2.mdl",OF_READ);
+			if (pzCheck->GetLength() > 0) {
+				LoadMap("inputmap2");
+				Changed();
+			}
+			delete pzCheck;
+			m_bLoad = false;
+		}
+
         ZString strCommand;
         ZString strMapping;
         int index = GetIndex(itemID);

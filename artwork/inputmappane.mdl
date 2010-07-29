@@ -28,7 +28,7 @@ textPane = StringPane(text, white);
      okButton = ButtonPane(ImportImage("btninputokbmp"     , true), ButtonNormal, false);
  cancelButton = ButtonPane(ImportImage("btninputcancelbmp" , true), ButtonNormal, false);
 restoreButton = ButtonPane(ImportImage("btninputrestorebmp", true), ButtonNormal, false);
-   loadButton = SoundButtonPane(ImportImage("btnjoin3bmp", true), ButtonNormal, false, negativeButtonClickSoundId);//Imago #176 7/10
+   loadButton = ButtonPane(ImportImage("btnjoin3bmp",	     true), ButtonNormal, false);//Imago #176 7/10
 
 //
 // Layout
@@ -40,10 +40,10 @@ inputMapPane =
         [
             (    scrollBar, Point(492,  40)),
             (     listPane, Point( 36,  38)),
-            (     okButton, Point( 93, 240)),
-            ( cancelButton, Point(213, 240)),
-            (restoreButton, Point(333, 240)),
-            (  loadButton,  Point( 42,  240)), //Imago #176 7/10
+            (     okButton, Point( 43, 240)),
+            ( cancelButton, Point(163, 240)),
+            (restoreButton, Point(283, 240)),
+            (  loadButton,  Point(403, 240)), //Imago #176 7/10
             (     textPane, Point( 33,  14)) 
         ]
     );

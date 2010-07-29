@@ -2790,6 +2790,7 @@ public:
 			}
 		}
 
+		
 		//Imago 7/10 dump files
 		int iKBMax = 65536;
 		int iKBytes = 0;
@@ -2805,17 +2806,17 @@ public:
 			char szPathName[MAX_PATH+48] = "";
 			GetModuleFileName(NULL, szPathName, MAX_PATH);
 			char *programName = mprGetBaseName(szPathName);
-			trekClient.m_mpr = new Mpr(programName);
+			trekClient.mpr = new Mpr(programName);
 #ifdef _DEBUG
 			MprLogModule *tMod;
 			tMod = new MprLogModule(programName);
 			MprLogToFile *logger;
 			logger = new MprLogToFile();
-			trekClient.m_mpr->addListener(logger);
-			trekClient.m_mpr->setLogSpec("allegiance_appweb.log:9");
+			trekClient.mpr->addListener(logger);
+			trekClient.mpr->setLogSpec("allegiance_appweb.log:9");
 #endif
-			trekClient.m_mpr->setMaxPoolThreads(1);
-			trekClient.m_mpr->start(MPR_SERVICE_THREAD);
+			trekClient.mpr->setMaxPoolThreads(1);
+			trekClient.mpr->start(MPR_SERVICE_THREAD);
 			for (FileList::Iterator iterFile(tlFiles);
 				!iterFile.End(); iterFile.Next())
 			{
@@ -2830,6 +2831,8 @@ public:
 			MprThread* threadp = new MprThread(doDumps, MPR_NORMAL_PRIORITY, (void*)pzFiles, "Allegiance dump thread");
 			threadp->start();
 		}
+		// end Imago dump files
+		
 
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
@@ -3564,8 +3567,8 @@ public:
         RemoveKeyboardInputFilter(m_pkeyboardInputFilter);
 
 		//Imago 7/10 dump upload
-		if (trekClient.m_mpr)
-			trekClient.m_mpr->stop(true); //true=now, terminate any upload (if we wait it could assert and make another dump!)
+		if (trekClient.mpr)
+			trekClient.mpr->stop(true); //true=now, terminate any upload (if we wait it could assert and make another dump!)
 
 		mprMemClose();
 

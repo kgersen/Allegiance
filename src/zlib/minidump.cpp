@@ -134,6 +134,30 @@ static SRes Encode(ISeqOutStream *outStream, ISeqInStream *inStream, UInt64 file
   return res;
 }
 
+int Extract7z(const char * sz7z, const char * szFile) {
+	CFileSeqInStream inStream;
+	CFileOutStream outStream;
+	int res = -1;
+	int res2 = -1;
+	UInt64 iLength = 0;
+	Bool useOutFile = False;
+	FileSeqInStream_CreateVTable(&inStream);
+	File_Construct(&inStream.file);
+	FileOutStream_CreateVTable(&outStream);
+	File_Construct(&outStream.file);
+
+	if (InFile_Open(&inStream.file, sz7z) == 0) {
+		if (OutFile_Open(&outStream.file, szFile) == 0) {
+			res = Decode(&outStream.s, &inStream.s);
+			res2 = File_GetLength(&outStream.file,&iLength);
+			File_Close(&outStream.file);
+			File_Close(&inStream.file);
+		}
+	}
+	
+	return (res != 0 || res2 != 0 || iLength == 0) ? -1 : (int)iLength;
+}
+
 int Create7z(const char * szFile, const char * sz7z) {
 	CFileSeqInStream inStream;
 	CFileOutStream outStream;
@@ -158,7 +182,7 @@ int Create7z(const char * szFile, const char * sz7z) {
 		}
 	}
 	
-	return (res != 0 || res2 != 0 || iLength == 0) ? -1 : iLength;
+	return (res != 0 || res2 != 0 || iLength == 0) ? -1 : (int)iLength;
 }
 
 FileList FindDumps() {

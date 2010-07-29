@@ -42,6 +42,9 @@
     <ClCompile Include="..\src\zlib\LzmaDec.c">
       <Filter>7z</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\zlib\7zStream.c">
+      <Filter>7z</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\zlib\alloc.h" />

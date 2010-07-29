@@ -29,6 +29,8 @@ FileList FindDumps();
 
 int Create7z(const char * szFile, const char * sz7z);
 
+int Extract7z(const char * sz7z, const char * szFile); //not used for minidumps but included here anyways
+
 void DeleteDumps(bool bDelete = true);
 
 ZString GetAppDir();

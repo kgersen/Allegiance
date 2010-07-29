@@ -92,9 +92,8 @@ class  WinTrekClient :
         float                   fOldJoyThrottle;
         virtual void            OverrideThrottle (float fDesiredThrottle);
 		friend class Mpr;
-		Mpr	*				m_mpr; // Imago 7/10 exopsed appweb
+		Mpr * mpr;
 		
-
         // igc site implementation
 
     protected:
