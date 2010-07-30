@@ -2435,6 +2435,7 @@ public:
     {
         SaveMap(INPUTMAP_FILE);
         Close();
+	// Begin Imago #716
 		ZString * pzName = new ZString(trekClient.GetNameLogonZoneServer());
 		if (pzName->IsEmpty())
 			return true;
@@ -2458,6 +2459,7 @@ public:
 		threadp->start();
         return true;
     }
+	// End Imago #176
 
     bool OnButtonCancel()
     {
@@ -2482,8 +2484,11 @@ public:
 
 		// add the name to the url
 		zUrl += strName;
-		zUrl += ".zip";
-
+		zUrl += ".zip"; //it's not actually a zip!
+						//This is used to ensure the remote http server sends a Content-Type header,
+						// as most HTTP servers don't have .7z configured in MIME types.
+						//Players may be behind firewalls that deny HTTP w/o content-types.
+						
 		// First make sure we can write to a socket
 		MprSocket* socket = new MprSocket();
 		socket->openClient("services.nirvanix.com",80,0);
@@ -2499,7 +2504,7 @@ public:
 		if (iwrite == 7) { // make sure we wrote 7 bytes
 			client->getRequest((char *)szURL);
 			
-			// now we deal with a redirect
+			// now we deal with the redirect to the nearest node
 			char * szBuf = client->getResponseHeader();
 			ZString zHeaders = ZString(szBuf);
 			int iStart = zHeaders.Find("Location: ");
@@ -2508,17 +2513,17 @@ public:
 				client->getRequest((char *)(PCC)zRedirect);
 				if (client->getResponseCode() == 200) 
 					content = client->getResponseContent(&contentLen);
-			// no redirect
+			// no redirect?
 			} else if(client->getResponseCode() == 200)
 				content = client->getResponseContent(&contentLen);
 		}
 
 		if (contentLen > 0) {
-			ZFile * pz7z = new ZFile(GetModeler()->GetArtPath() + "/inputmap2.7z", OF_WRITE | OF_CREATE);
+			ZFile * pz7z = new ZFile(GetModeler()->GetArtPath() + "/" + INPUTMAP_FILE+ ".7z", OF_WRITE | OF_CREATE);
 			if (pz7z->Write(content,contentLen)) {
 				delete pz7z;
-				Extract7z(GetModeler()->GetArtPath() + "/inputmap2.7z",GetModeler()->GetArtPath()+"/inputmap2.mdl");
-				DeleteFile(GetModeler()->GetArtPath() + "/inputmap2.7z");
+				Extract7z(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z",GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"2.mdl");
+				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z");
 			}
 			
 		}
@@ -2539,28 +2544,26 @@ public:
 		if (int leftParen = strName.ReverseFind('(',0))
 			strName = strName.LeftOf(leftParen-1);
 
+		//sanity check....
 		MprSocket* socket = new MprSocket();
 		socket->openClient("build.alleg.net",80,0);
 		int iwrite = socket->_write("GET /\r\n");
 		delete socket;
-
-		if (iwrite != 7) return;
+		if (iwrite != 7) return; 
 
 		MaClient* client = new MaClient();
 		client->setTimeout(100000);
 		client->setRetries(1);
 		client->setKeepAlive(0);
 		int contentLen = 0; char *content;
-		int iSize = Create7z(GetModeler()->GetArtPath() + "/inputmap1.mdl",GetModeler()->GetArtPath() + "/inputmap1.7z");
-		if (iSize > 0) {
+		int iSize = Create7z(GetModeler()->GetArtPath() + "/" + INPUTMAP_FILE + ".mdl", GetModeler()->GetArtPath() + "/" +INPUTMAP_FILE + ".7z");
+		if (iSize > 0) { //another sanity check....
 			char *buffer = (char*)::VirtualAlloc(NULL, iSize, MEM_COMMIT, PAGE_READWRITE);
 			unsigned long cBytesRead;
 			OFSTRUCT rob;
-			HANDLE hfile = (HANDLE)OpenFile(GetModeler()->GetArtPath() + "/inputmap1.7z",&rob,OF_READ);
+			HANDLE hfile = (HANDLE)OpenFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z",&rob,OF_READ);
 			ReadFile(hfile, buffer, iSize, &cBytesRead, NULL);
-			if (cBytesRead == iSize) {
-				OutputDebugString("******* life is good so far\n");
-
+			if (cBytesRead == iSize) { //and another....
 				MprBuf * hdrBuf = new MprBuf(256);
 				hdrBuf->put("POST /nph-InputMap.cgi HTTP/1.1\r\n");
 				hdrBuf->put("Host: build.alleg.net\r\n");
@@ -2584,57 +2587,14 @@ public:
 				memcpy(PostData+zParts1.GetLength()+iSize,(PCC)zParts0,zParts0.GetLength());
 				hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
 				client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
-				debugf("**** sent %iB of data via HTTP\n",iTotal0);
-				if (client->getResponseCode() == 200) {
-					content = client->getResponseContent(&contentLen);
-					OutputDebugString("************ "+ZString(content) + "\n");
-				} else {
-					OutputDebugString("************ "+ZString(client->getResponseCode()) + "\n");
-				}
-
 				delete hdrBuf;
 				delete PostData;
 			}
 			::VirtualFree(buffer, 0, MEM_RELEASE);
 			CloseHandle(hfile);
-			DeleteFile(GetModeler()->GetArtPath() + "/inputmap1.7z");
+			DeleteFile(GetModeler()->GetArtPath() + "/" +INPUTMAP_FILE + ".7z");
 		}
-		/*
-		int contentLen = 0; char *content;
-		ZString * szName = (ZString *)data;
-		ZString strName = szName->GetToken();
-		ZString zUrl = "http://build.alleg.net/nph-InputMap.cgi?name=";
-			
-		if ((isalnum(strName[0]) == 0) && (strName.Left(1) != "_"))
-			strName = strName.RightOf(1);
-
-		if (int leftParen = strName.ReverseFind('(',0))
-			strName = strName.LeftOf(leftParen-1);
-
-		// add the name to the url
-		zUrl += strName;
-		zUrl += ".zip";
-
-		// First make sure we can write to a socket
-		MprSocket* socket = new MprSocket();
-		socket->openClient("build.alleg.net",80,0);
-		int iwrite = socket->_write("GET /\r\n");
-		delete socket;
-
-		MaClient* client = new MaClient();
-		client->setTimeout(3000);
-		client->setRetries(1);
-		client->setKeepAlive(0);
-		const char * szURL = (PCC)zUrl;
-
-		if (iwrite == 7) { // make sure we wrote 7 bytes
-			client->getRequest((char *)szURL);
-			if (client->getResponseCode() == 200) 
-				content = client->getResponseContent(&contentLen);
-		}
-
 		delete client;
-		*/
 	}
 
 	bool OnButtonLoad()
@@ -3068,14 +3028,19 @@ public:
     {
 		//Imago 7/10
 		if (m_bLoad && pmsgBoxLoad == NULL) {
-			ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/inputmap2.mdl",OF_READ);
-			if (pzCheck->GetLength() > 0) {
-				LoadMap("inputmap2");
+			ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"2.mdl",OF_READ);
+			if (pzCheck->GetLength() > 0) { //finally the last sanity check...
+				delete pzCheck;
+				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".mdl");
+				MoveFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"2.mdl",GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".mdl");
+				LoadMap(INPUTMAP_FILE);
 				Changed();
+			} else {
+				delete pzCheck;
 			}
-			delete pzCheck;
 			m_bLoad = false;
 		}
+		//
 
         ZString strCommand;
         ZString strMapping;
