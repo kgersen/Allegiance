@@ -24,6 +24,9 @@ my $ftp = Net::FTP->new("fazdev.alleg.net", Debug => 0, Port => 21122)
 
     $ftp->login("deploy",$pass)
       or die "Cannot login ", $ftp->message;
+      
+      $ftp->binary; 
+      
        $ftp->put("C:\\FAZBeta.cfg")
       or die "put failed ", $ftp->message;
        $ftp->put("C:\\motdR6.mdl")
@@ -44,8 +47,6 @@ my $ftp = Net::FTP->new("fazdev.alleg.net", Debug => 0, Port => 21122)
       or die "put failed ", $ftp->message;         
        $ftp->put("C:\\build\\FAZR6\\update\\beta\\upgrade.pl")
       or die "put failed ", $ftp->message;              
-      
-       $ftp->binary;     
        $ftp->put("C:\\build\\AutoUpdate\\Filelist.txt")
       or die "put failed ", $ftp->message;
        $ftp->put("C:\\build\\AutoUpdate\\FAZ.7z")
