@@ -1,6 +1,8 @@
 #Imago <imagotrigger@gmail.com>
-# Creates client custom file list for and prepares 7z zip files
-#  targets the nsis.pl and use on Nirvanix CloudNAS
+# Creates installer file list and prepares 7z zip files
+#  targets the nsis.pl and use on Nirvanix CloudNAS (see au_mirror.pl)
+
+#  This should be kept in sync with the in-game AU at../makelist.pl
 
 use strict;
 use File::Copy;
@@ -45,7 +47,7 @@ foreach my $file (@svn) {
 }
 
 #of course the latest build
-my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe");
+my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe","C:\\build\\External\\dbghelp.dll");
 foreach my $file (@objs) {
 	my $cmd = "C:\\crc32.exe $file";
 	my ($size)= (stat("$file"))[7];
