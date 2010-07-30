@@ -397,7 +397,7 @@ EndARTDL:
 }
 
 #######################
-#######################
+####################### Begin NSIS
 #######################
 
 
@@ -411,6 +411,18 @@ SetCompressor lzma
 !define PRODUCT_UNINST_KEY "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${PRODUCT_PUBLISHER}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PRODUCT_STARTMENU_REGVAL "NSIS:AllegStartMenuDir"
+
+!define LOCALE_ILANGUAGE '0x1' ;System Language Resource ID     
+!define LOCALE_SLANGUAGE '0x2' ;System Language & Country
+!define LOCALE_SABBREVLANGNAME '0x3' ;System abbreviated language
+!define LOCALE_SNATIVELANGNAME '0x4' ;System native language name
+!define LOCALE_ICOUNTRY '0x5' ;System country code     
+!define LOCALE_SCOUNTRY '0x6' ;System Country
+!define LOCALE_SABBREVCTRYNAME '0x7' ;System abbreviated country name
+!define LOCALE_SNATIVECTRYNAME '0x8' ;System native country name
+!define LOCALE_IDEFAULTLANGUAGE '0x9' ;System default language ID
+!define LOCALE_IDEFAULTCOUNTRY  '0xA' ;System default country code
+!define LOCALE_IDEFAULTCODEPAGE '0xB' ;System default oem code page
 
 !include LogicLib.nsh
 !include NSISArray.nsh
@@ -926,7 +938,63 @@ Var ICONS_GROUP
 !define MUI_FINISHPAGE_LINK_LOCATION '\$INSTDIR'
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_INSTFILES
-!insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "English" ;first language is the default language
+  !insertmacro MUI_LANGUAGE "French"
+  !insertmacro MUI_LANGUAGE "German"
+  !insertmacro MUI_LANGUAGE "Spanish"
+  !insertmacro MUI_LANGUAGE "SpanishInternational"
+  !insertmacro MUI_LANGUAGE "SimpChinese"
+  !insertmacro MUI_LANGUAGE "TradChinese"
+  !insertmacro MUI_LANGUAGE "Japanese"
+  !insertmacro MUI_LANGUAGE "Korean"
+  !insertmacro MUI_LANGUAGE "Italian"
+  !insertmacro MUI_LANGUAGE "Dutch"
+  !insertmacro MUI_LANGUAGE "Danish"
+  !insertmacro MUI_LANGUAGE "Swedish"
+  !insertmacro MUI_LANGUAGE "Norwegian"
+  !insertmacro MUI_LANGUAGE "NorwegianNynorsk"
+  !insertmacro MUI_LANGUAGE "Finnish"
+  !insertmacro MUI_LANGUAGE "Greek"
+  !insertmacro MUI_LANGUAGE "Russian"
+  !insertmacro MUI_LANGUAGE "Portuguese"
+  !insertmacro MUI_LANGUAGE "PortugueseBR"
+  !insertmacro MUI_LANGUAGE "Polish"
+  !insertmacro MUI_LANGUAGE "Ukrainian"
+  !insertmacro MUI_LANGUAGE "Czech"
+  !insertmacro MUI_LANGUAGE "Slovak"
+  !insertmacro MUI_LANGUAGE "Croatian"
+  !insertmacro MUI_LANGUAGE "Bulgarian"
+  !insertmacro MUI_LANGUAGE "Hungarian"
+  !insertmacro MUI_LANGUAGE "Thai"
+  !insertmacro MUI_LANGUAGE "Romanian"
+  !insertmacro MUI_LANGUAGE "Latvian"
+  !insertmacro MUI_LANGUAGE "Macedonian"
+  !insertmacro MUI_LANGUAGE "Estonian"
+  !insertmacro MUI_LANGUAGE "Turkish"
+  !insertmacro MUI_LANGUAGE "Lithuanian"
+  !insertmacro MUI_LANGUAGE "Slovenian"
+  !insertmacro MUI_LANGUAGE "Serbian"
+  !insertmacro MUI_LANGUAGE "SerbianLatin"
+  !insertmacro MUI_LANGUAGE "Arabic"
+  !insertmacro MUI_LANGUAGE "Farsi"
+  !insertmacro MUI_LANGUAGE "Hebrew"
+  !insertmacro MUI_LANGUAGE "Indonesian"
+  !insertmacro MUI_LANGUAGE "Mongolian"
+  !insertmacro MUI_LANGUAGE "Luxembourgish"
+  !insertmacro MUI_LANGUAGE "Albanian"
+  !insertmacro MUI_LANGUAGE "Breton"
+  !insertmacro MUI_LANGUAGE "Belarusian"
+  !insertmacro MUI_LANGUAGE "Icelandic"
+  !insertmacro MUI_LANGUAGE "Malay"
+  !insertmacro MUI_LANGUAGE "Bosnian"
+  !insertmacro MUI_LANGUAGE "Kurdish"
+  !insertmacro MUI_LANGUAGE "Irish"
+  !insertmacro MUI_LANGUAGE "Uzbek"
+  !insertmacro MUI_LANGUAGE "Galician"
+  !insertmacro MUI_LANGUAGE "Afrikaans"
+  !insertmacro MUI_LANGUAGE "Catalan"
+  !insertmacro MUI_LANGUAGE "Esperanto"
+
 !include WordFunc.nsh
 !insertmacro VersionCompare
 ;
@@ -943,6 +1011,9 @@ var myArtName
 var myArtCRC
 var myArt7z
 var myArtLocal
+var VCLink
+var NetLink
+var MyLang
 
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "ProductName" "Free Allegiance Installer"
 VIAddVersionKey /LANG=\${LANG_ENGLISH} "Comments" "Created by build.alleg.net on $now"
@@ -980,9 +1051,20 @@ Function CallbackTest
 FunctionEnd
 
 Function .onInit
-
-; NOT USED
-
+System::Call 'kernel32::GetSystemDefaultLangID() i .r0'
+System::Call 'kernel32::GetLocaleInfoA(i 1024, i \${LOCALE_SNATIVELANGNAME}, t .r1, i \${NSIS_MAX_STRLEN}) i r0'
+StrCpy \$MyLang \$1
+WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "Language" "\$MyLang" 
+!define MUI_LANGDLL_REGISTRY_ROOT HKLM
+!define MUI_LANGDLL_REGISTRY_KEY "Software\\Microsoft\\Microsoft Games\\Allegiance\\$ver"
+!define MUI_LANGDLL_REGISTRY_VALUENAME Language
+!insertmacro MUI_LANGDLL_DISPLAY
+\${If} \$MyLang == "German"
+\${Elseif} \$MyLang == "French"
+\${Else}
+	StrCpy \$VCLink "d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03" 
+	StrCpy \$NetLink "c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38"
+\${Endif}
 FunctionEnd
 
 Function GetDotNETVersion
@@ -1020,9 +1102,11 @@ Section "" ;No components page, name is not important
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 LogEx::Init true "${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE}_install.log"
+LogEx::Write true true "Allegiance ${shortname}_b\${PRODUCT_BUILD}_r\${PRODUCT_CHANGE} $ver installer starting..."
+LogEx::Write true true "Keyed with PDB \${PRODUCT_PDB_KEY} & ART \${PRODUCT_ART_KEY} at $now"
+LogEx::Write true true "Language: \$MyLang"
 LogEx::Write true true "SilentMode? \$bSilent"
 
-  !insertmacro MUI_LANGDLL_DISPLAY
   ; Check .NET version
   StrCpy \$InstallDotNET "No"
   Call GetDotNETVersion
@@ -1092,6 +1176,7 @@ DontDelReg:
 DeleteRegValue HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 DeleteRegValue HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "MoveInProgress"
 
+
 ReadRegStr \$R0 HKLM "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
 StrCmp \$R0 "Microsoft Corporation" VCOK
 ReadRegStr \$R0 HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}}" Publisher
@@ -1109,7 +1194,7 @@ LogEx::Write true true "Downloading VC9..."
 ;
 \${If} \$bSilent == 0
 	SetDetailsView hide
-	inetc::get /RESUME "Click Retry to resume download of the Visual C++ 2008 Redistributable. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION "Visual C++ 2008 Redistributable" /POPUP "Visual C++ 2008 Redistributable" "http://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
+	inetc::get /RESUME "Click Retry to resume download of the Visual C++ 2008 Redistributable. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION "Visual C++ 2008 Redistributable" /POPUP "Visual C++ 2008 Redistributable" "http://download.microsoft.com/download/\$VCLink/vcredist_x86.exe" "\$INSTDIR\\vcredist_x86.exe" /end
 	Pop \$1
 
 	\${If} \$1 != "OK"
@@ -1124,11 +1209,10 @@ LogEx::Write true true "Downloading VC9..."
 	SetDetailsView show
 
 VCOK:
-
 	\${If} \$InstallDotNET == "Yes"
 	LogEx::Write true true "Downloading .NET..."
 	SetDetailsView hide
-	inetc::get /RESUME "Click Retry to resume download of the .NET Framework 2.0. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION ".NET Framework 2.0" /POPUP ".NET Framework 2.0" "http://download.microsoft.com/download/c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
+	inetc::get /RESUME "Click Retry to resume download of the .NET Framework 2.0. - If the error persists, install it from http://microsoft.com/downloads and restart the installer." /CAPTION ".NET Framework 2.0" /POPUP ".NET Framework 2.0" "http://download.microsoft.com/download/\$NetLink/NetFx20SP2_x86.exe" "\$INSTDIR\\NetFx20SP2_x86.exe" /end
 	Pop \$1
 
 	\${If} \$1 != "OK"
@@ -1168,7 +1252,62 @@ SilentSkipArt:
 	nsExec::Exec "\$INSTDIR\\AllSrv.exe -RegServer"
 \${EndIf}
 
+
+\${If} "$ver" == "1.1"
+	ReadRegStr \$R0 HKLM "SOFTWARE\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance\\1.0" ArtPath
+	StrLen \$R1 \$R0
+	\${If} \$R1 <> 0 
+		goto matchedArt2
+	\${Endif}
+	ReadRegStr \$R0 HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\1.0" ArtPath
+	StrLen \$R1 \$R0
+	\${If} \$R1 <> 0 
+		goto matchedArt2
+	\${Endif}
+	goto skipreg2
+	matchedArt2:
+	\${GetTime}  "\$R0\\inputmap1.mdl" "M" \$1 \$2 \$3 \$4 \$5 \$6 \$7
+	\${GetTime}  "\$ARTPATH\\inputmap1.mdl" "M" \$R1 \$R2 \$R3 \$R4 \$R5 \$R6 \$R7
+	\${If} \$3 > \$R3
+		goto CopyInputMap
+	\${Elseif} \$3 == \$R3
+		\${If} \$2 > \$R2
+			goto CopyInputMap
+		\${Elseif} \$2 == \$R2
+			\${If} \$1 > \$R1
+				goto CopyInputMap
+			\${Elseif} \$1 == \$R1
+				\${If} \$5 > \$R5
+					goto CopyInputMap
+				\${Elseif} \$5 == \$R5
+					\${If} \$6 > \$R6
+						goto CopyInputMap
+					\${Elseif} \$6 == \$R6
+						\${If} \$7 > \$R7
+							goto CopyInputMap ;looks pretty neat
+						\${Endif}
+					\${Endif}
+				\${Endif}
+			\${Endif}
+		\${Endif}	
+	\${Endif}
+goto skipreg2
+CopyInputMap:
+	LogEx::Write true true "Found newer 1.0 input map, copying that over for you..."
+	CopyFiles "\$R0\\inputmap1.mdl" "\$ARTPATH\\inputmap1.mdl"
+skipreg2:
+\${Endif}
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;	*
+;;;;;;;;;;;;;;;;;;;;;;;;;  END
+;;;;;;;;;;;;;;;;;;;;;;;;;	*
+;;;;;;;;;;;;;;;;;;;;;;;;;
 SectionEnd ; end the section
+
+
 
 Section -AdditionalIcons
   WriteIniStr "\$INSTDIR\\\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "\${PRODUCT_WEB_SITE}"
@@ -1232,6 +1371,7 @@ Function un.onUninstSuccess
 FunctionEnd
 
 Function un.onInit
+ !insertmacro MUI_UNGETLANGUAGE
   MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove \$(^Name) and all of its components?" IDYES +2
   Abort
 FunctionEnd
