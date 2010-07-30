@@ -236,6 +236,7 @@ LogEx::Write true true "Url open \$0..."
 
 IntOp \$R9 0 + 0
 LogEx::Write true true "Analyzing local files, this may take a moment..."
+SetDetailsPrint textonly
 \${Do}
     Call GetNextFile
     Pop \$1
@@ -295,7 +296,7 @@ LogEx::Write true true "Analyzing local files, this may take a moment..."
    
 ; 3) Add mismatches to an inetc url array for download
 
-     LogEx::Write true true "Queuing \$myArtName (\$myArtCRC) had \$myArtLocal (\$1)"     
+     LogEx::Write false false "Queuing \$myArtName (\$myArtCRC) had \$myArtLocal (\$1)"     
 
      \${FileList->Write} \$R9 \$myArtName
 	 \${UrlList0->Write} \$R9 "\$ARTPATH\\\$myArtLocal"
@@ -305,6 +306,8 @@ LogEx::Write true true "Analyzing local files, this may take a moment..."
 skip:
 StrLen \$2 \$R8
 \${LoopUntil} \$2 = 0
+
+SetDetailsPrint both
 
 ; rebuild the stack for inetc
 ${stack::ns_clear}
@@ -358,7 +361,7 @@ SetOutPath \$ARTPATH
    StrCmp \$0 ".zip" DoExtract
    goto donext
    DoExtract:
-    LogEx::Write true true "Extracting \$R2..."
+    LogEx::Write false false "Extracting \$R2..."
     Nsis7z::ExtractWithCallback "\$ARTPATH\\\$R2" \$R9
     GetFunctionAddress \$R9 CallbackTest
     Delete "\$ARTPATH\\\$R2"
@@ -377,7 +380,7 @@ SetOutPath \$ARTPATH
    DozMove:
    \${StrStrip} ".zip" "\$R2" "\$1"
    !insertmacro MoveFile "\$ARTPATH\\\$1" "\$INSTDIR\\\$1"
-   LogEx::Write true true "Moved \$ARTPATH\\\$1 to \$INSTDIR\\\$1"
+   LogEx::Write false false "Moved \$ARTPATH\\\$1 to \$INSTDIR\\\$1"
   donext2:
   ClearErrors
   \${FileList->ReadNext} \$R1 \$R2
