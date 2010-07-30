@@ -1051,20 +1051,113 @@ Function CallbackTest
 FunctionEnd
 
 Function .onInit
-System::Call 'kernel32::GetSystemDefaultLangID() i .r0'
-System::Call 'kernel32::GetLocaleInfoA(i 1024, i \${LOCALE_SNATIVELANGNAME}, t .r1, i \${NSIS_MAX_STRLEN}) i r0'
-StrCpy \$MyLang \$1
+StrCpy \$MyLang \$LANGUAGE
 WriteRegStr HKLM "SOFTWARE\\Microsoft\\Microsoft Games\\Allegiance\\$ver" "Language" "\$MyLang" 
 !define MUI_LANGDLL_REGISTRY_ROOT HKLM
 !define MUI_LANGDLL_REGISTRY_KEY "Software\\Microsoft\\Microsoft Games\\Allegiance\\$ver"
 !define MUI_LANGDLL_REGISTRY_VALUENAME Language
 !insertmacro MUI_LANGDLL_DISPLAY
-\${If} \$MyLang == "German"
-\${Elseif} \$MyLang == "French"
+
+;TOP 10 HAVE LOCALIZED VC (INCL ENGLISH)
+; http://msdn.microsoft.com/en-us/library/0h88fahh%28VS.85%29.aspx
+
+\${If} \$MyLang == "1031"
+	StrCpy \$VCLink "0/a/5/0a5ce308-1e15-4806-964c-72dbf88de86d" 	;GERMAN
+\${Elseif} \$MyLang == "3079"
+	StrCpy \$VCLink "0/a/5/0a5ce308-1e15-4806-964c-72dbf88de86d" 	;GERMAN
+\${Elseif} \$MyLang == "5127"
+	StrCpy \$VCLink "0/a/5/0a5ce308-1e15-4806-964c-72dbf88de86d" 	;GERMAN
+\${Elseif} \$MyLang == "4103"
+	StrCpy \$VCLink "0/a/5/0a5ce308-1e15-4806-964c-72dbf88de86d" 	;GERMAN
+\${Elseif} \$MyLang == "2055"
+	StrCpy \$VCLink "0/a/5/0a5ce308-1e15-4806-964c-72dbf88de86d" 	;GERMAN
+	
+\${Elseif} \$MyLang == "1036"
+	StrCpy \$VCLink "9/e/d/9edd8390-011b-4c6d-9806-d8dc2b10c0fb" 	;FRENCH
+\${Elseif} \$MyLang == "2060"
+	StrCpy \$VCLink "9/e/d/9edd8390-011b-4c6d-9806-d8dc2b10c0fb" 	;FRENCH
+\${Elseif} \$MyLang == "3084"
+	StrCpy \$VCLink "9/e/d/9edd8390-011b-4c6d-9806-d8dc2b10c0fb" 	;FRENCH
+\${Elseif} \$MyLang == "5132"
+	StrCpy \$VCLink "9/e/d/9edd8390-011b-4c6d-9806-d8dc2b10c0fb" 	;FRENCH
+\${Elseif} \$MyLang == "4108"
+	StrCpy \$VCLink "9/e/d/9edd8390-011b-4c6d-9806-d8dc2b10c0fb" 	;FRENCH
+	
+\${Elseif} \$MyLang == "1034"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "11274"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "16394"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "13322"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "9226"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "5130"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "7178"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "12298"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "4106"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "18442"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "2058"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "19466"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "6154"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "10250"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "20490"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "15370"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "17418"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH	
+\${Elseif} \$MyLang == "14346"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH
+\${Elseif} \$MyLang == "8202"
+	StrCpy \$VCLink "2/e/6/2e6b8e03-59ff-492e-a4fd-b443845379b4" 	;SPANISH	
+	
+
+\${Elseif} \$MyLang == "3076"
+	StrCpy \$VCLink "5/9/e/59e74271-2b59-49a1-b955-96b69cc34f38" 	;GB Chinese 
+\${Elseif} \$MyLang == "5124"
+	StrCpy \$VCLink "5/9/e/59e74271-2b59-49a1-b955-96b69cc34f38" 	;GB Chinese 
+	
+\${Elseif} \$MyLang == "2052"
+	StrCpy \$VCLink "3/7/2/372b298d-0b9d-488f-905e-162f27d93895" 	;BIG5 Chinese 
+\${Elseif} \$MyLang == "4100"
+	StrCpy \$VCLink "3/7/2/372b298d-0b9d-488f-905e-162f27d93895" 	;BIG5 Chinese 
+\${Elseif} \$MyLang == "1028"
+	StrCpy \$VCLink "3/7/2/372b298d-0b9d-488f-905e-162f27d93895" 	;BIG5 Chinese 
+	
+\${Elseif} \$MyLang == "1041"
+	StrCpy \$VCLink "1/b/2/1b2312a1-b2e5-479c-9103-d9616e6761d9" 	;Japanese
+	
+\${Elseif} \$MyLang == "1042"
+	StrCpy \$VCLink "5/6/3/563256db-7faf-440e-839e-c12efe19388d" 	;Korean
+	
+\${Elseif} \$MyLang == "1040"
+	StrCpy \$VCLink "8/7/f874831f-2dbf-45cf-8d8c-c1a442b2fbbb" 	;Italian
+\${Elseif} \$MyLang == "2064"
+	StrCpy \$VCLink "8/7/f874831f-2dbf-45cf-8d8c-c1a442b2fbbb" 	;Italian 	
+
+	
+\${Elseif} \$MyLang == "1049"
+	StrCpy \$VCLink "8/E/F/8EF60E68-2D69-4377-AC1E-3BAF4D701ED1" 	;Russian
+\${Elseif} \$MyLang == "2073"
+	StrCpy \$VCLink "8/E/F/8EF60E68-2D69-4377-AC1E-3BAF4D701ED1" 	;Russian	
+
 \${Else}
-	StrCpy \$VCLink "d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03" 
-	StrCpy \$NetLink "c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38"
+	StrCpy \$VCLink "d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03" 	;English
 \${Endif}
+
+StrCpy \$NetLink "c/6/e/c6e88215-0178-4c6c-b5f3-158ff77b1f38" ;OK 7/10	
+
 FunctionEnd
 
 Function GetDotNETVersion
