@@ -2160,6 +2160,11 @@ public:
         if (!LoadMap(INPUTMAP_FILE)) {
             LoadMap(DEFAULTINPUTMAP_FILE);
         }
+		
+		//Imago #176 7/10
+		ZString * pzName = new ZString(trekClient.GetNameLogonZoneServer());
+		if (pzName->IsEmpty())
+			m_pbuttonLoad->SetEnabled(false);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2482,6 +2487,12 @@ public:
 		if (int leftParen = strName.ReverseFind('(',0))
 			strName = strName.LeftOf(leftParen-1);
 
+		ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
+		strName = strName.Scramble(zInfo);
+		char* p = new char[strName.GetLength()];
+		Strcpy(p,(PCC)strName);
+		strName = UTL::char2hex((const unsigned char*)p, strName.GetLength());
+
 		// add the name to the url
 		zUrl += strName;
 		zUrl += ".zip"; //it's not actually a zip!
@@ -2522,7 +2533,7 @@ public:
 			ZFile * pz7z = new ZFile(GetModeler()->GetArtPath() + "/" + INPUTMAP_FILE+ ".7z", OF_WRITE | OF_CREATE);
 			if (pz7z->Write(content,contentLen)) {
 				delete pz7z;
-				Extract7z(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z",GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"2.mdl");
+				Extract7z(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z",GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"_cloud.mdl");
 				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z");
 			}
 			
@@ -2543,6 +2554,12 @@ public:
 
 		if (int leftParen = strName.ReverseFind('(',0))
 			strName = strName.LeftOf(leftParen-1);
+
+		ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
+		strName = strName.Scramble(zInfo);
+		char* p = new char[strName.GetLength()];
+		Strcpy(p,(PCC)strName);
+		strName = UTL::char2hex((const unsigned char*)p, strName.GetLength());
 
 		//sanity check....
 		MprSocket* socket = new MprSocket();
@@ -3028,12 +3045,11 @@ public:
     {
 		//Imago 7/10
 		if (m_bLoad && pmsgBoxLoad == NULL) {
-			ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"2.mdl",OF_READ);
+			ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl",OF_READ);
 			if (pzCheck->GetLength() > 0) { //finally the last sanity check...
 				delete pzCheck;
-				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".mdl");
-				MoveFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"2.mdl",GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".mdl");
-				LoadMap(INPUTMAP_FILE);
+				LoadMap(INPUTMAP_FILE+ZString("_cloud"));
+				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl");
 				Changed();
 			} else {
 				delete pzCheck;

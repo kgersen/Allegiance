@@ -311,6 +311,30 @@ int UTL::hextoi(const char * pHex)
 }
 
 
+//Imago 7/10
+ZString UTL::char2hex( const unsigned char* _pArray, unsigned int _len )
+{
+	const size_t _h2alen = 256;
+	char _hex2asciiU_value[_h2alen][3];
+	for(int i=0; i<_h2alen; i++) {
+		_snprintf(_hex2asciiU_value[i], 3,"%02X", i);
+	}
+
+    ZString str;
+    str.SetEmpty();
+    const unsigned char* pEnd = _pArray + _len;
+    const char* pHex = _hex2asciiU_value[0];
+	int iUnused = 1;
+    for( const unsigned char* pChar = _pArray; pChar != pEnd; pChar++, iUnused += 2 ) {
+       str+=_hex2asciiU_value[*pChar][0];
+       str+=_hex2asciiU_value[*pChar][1];
+    }
+    return str;
+}
+//
+
+
+
 
 /*-------------------------------------------------------------------------
  * CompareFileVersion

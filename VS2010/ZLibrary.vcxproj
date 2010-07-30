@@ -398,6 +398,7 @@
     </ClCompile>
     <ClCompile Include="..\src\zlib\7zStream.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\zlib\base.cpp" />
     <ClCompile Include="..\src\zlib\color.cpp" />
@@ -414,6 +415,7 @@
     </ClCompile>
     <ClCompile Include="..\src\zlib\LzmaDec.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\zlib\LzmaEnc.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">NotUsing</PrecompiledHeader>
