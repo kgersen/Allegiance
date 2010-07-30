@@ -198,7 +198,6 @@
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\AGC\\AGC.pdb C:\\AllegBeta\\AGC.pdb /Y" />
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\FedSrv\\AllSrv.pdb C:\\AllegBeta\\AllSrv.pdb /Y" />
 	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\Lobby\\AllLobby.pdb C:\\AllegBeta\\AllLobby.pdb /Y" />
-	<sh:exec file="copy" args="${cdn.path}\\objs10\\FZDebug\\AutoUpdate\\AutoUpdate.exe C:\\AllegBeta\\AutoUpdate.exe /Y" />
 	<sh:exec file="echo" args="Registering new AGC.dll" />
 	<sh:exec file="regsvr32" args="C:\\AllegBeta\\AGC.dll /s" />
 	<sh:exec file="echo" args="Re-registering AllSrv.exe as a service" />
