@@ -52,14 +52,14 @@ foreach my $file (@dir) {
 #	
 	
 $ftp->binary;
-print "Uploading PDB to $server\n";
+print "Uploading PDB to CloudNAS\n";
 $ftp->put($PDB)
 	or die "Put failed ", $ftp->message;
-print "Uploading Installer to $server\n";	
+print "Uploading Installer to CloudNAS\n";	
 $ftp->put($installer)
 	or die "Put failed ", $ftp->message;	
 if($version eq "1.1"){
-	print "Uploading ART to $server\n";
+	print "Uploading ART to CloudNAS\n";
 	$ftp->put($ART)
 		or die "Put failed ", $ftp->message;
 }
