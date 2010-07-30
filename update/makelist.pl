@@ -48,15 +48,15 @@ foreach my $file (@svn) {
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\FAZR6\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+		copy("C:\\build\\FAZR6\\Artwork\\${file}","C:\\build\\AutoUpdate\\FAZ\\$file");
 	} else {
 		`$cmd2`;
-		move("C:\\build\\FAZR6\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+		move("C:\\build\\FAZR6\\Artwork\\${file}_","C:\\build\\AutoUpdate\\FAZ\\$file");
 	}
 }
 
 #of course the latest build
-my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe");
+my @objs = ("C:\\Allegiance.exe","C:\\Reloader.exe", "C:\\build\\External\\dbghelp.dll");
 foreach my $file (@objs) {
 	my $cmd = "C:\\crc32.exe $file";
 	my $cmd2 = "C:\\mscompress.exe $file";
@@ -73,7 +73,7 @@ foreach my $file (@objs) {
 	}	
 	print LIST "$dt $size $crc2 $bin\n";
 	`$cmd2`;
-	move("${file}_","C:\\build\\AutoUpdate\\Game\\$bin");
+	move("${file}_","C:\\build\\AutoUpdate\\FAZ\\$bin");
 }
 
 #include production AU artwork on the list!11!11 
@@ -94,15 +94,15 @@ foreach my $file (@tmp) {
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\FAZ\\$file");
 	} else {
 		`$cmd2`;
 		my $csize = (stat("C:\\build\\Package\\tmp\\expand\\${file}_"))[7];
 		if ($csize > $size) {
 			unlink "C:\\build\\Package\\tmp\\expand\\${file}_";
-			copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+			copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\FAZ\\$file");
 		}		
-		move("C:\\build\\Package\\tmp\\expand\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+		move("C:\\build\\Package\\tmp\\expand\\${file}_","C:\\build\\AutoUpdate\\FAZ\\$file");
 	}
 }
 
@@ -123,19 +123,42 @@ foreach my $file (@art) {
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\$file");
+		copy("C:\\build\\Package\\Artwork\\${file}","C:\\build\\AutoUpdate\\FAZ\\$file");
 	} else {
 		`$cmd2`;
-		move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\$file");
+		move("C:\\build\\Package\\Artwork\\${file}_","C:\\build\\AutoUpdate\\FAZ\\$file");
 	}
 }
 
 close LIST;
 
-unlink "C:\\build\\AutoUpdate\\Game.7z";
+#unlink "C:\\build\\AutoUpdate\\Game.7z";
 
-my $cmd3 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\AutoUpdate\\Game.7z C:\\build\\AutoUpdate\\Game\\* -xr!*Server -mx9";
-system($cmd3);
+#my $cmd3 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\AutoUpdate\\Game.7z C:\\build\\AutoUpdate\\Game\\* -xr!*Server -mx9";
+#system($cmd3);
+
+#always include svn artwork on the server list as well
+foreach my $file (@svn) { 
+	next if ($file =~ /^\./);
+	my $cmd = "C:\\crc32.exe C:\\build\\FAZR6\\Artwork\\$file";
+	my $cmd2 = "C:\\mscompress.exe C:\\build\\FAZR6\\Artwork\\$file";
+	my ($modtime,$size)= (stat("C:\\build\\FAZR6\\Artwork\\$file"))[9,7];
+	next if (!$size);
+	next if ($dupes{server}{$file} == 1);
+	$dupes{server}{$file} = 1;		
+	my $crc = `$cmd`;
+	chomp $crc;
+	$size = sprintf("%09d",$size);
+	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
+	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
+	print LIST "$dt $size $crc2 $file\n";
+	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
+		copy("C:\\build\\FAZR6\\Artwork\\${file}","C:\\build\\AutoUpdate\\FAZ\\$file");
+	} else {
+		`$cmd2`;
+		move("C:\\build\\FAZR6\\Artwork\\${file}_","C:\\build\\AutoUpdate\\FAZ\\$file");
+	}
+}
 
 #now the server list, always the build..
 open(LIST,">C:\\serverlist.txt");
@@ -158,30 +181,7 @@ foreach my $file (@objs) {
 	}	
 	print LIST "$dt $size $crc2 $bin\n";
 	`$cmd2`;
-	move("${file}_","C:\\build\\AutoUpdate\\Game\\Server\\$bin");
-}
-
-#always include svn artwork on the server list as well
-foreach my $file (@svn) { 
-	next if ($file =~ /^\./);
-	my $cmd = "C:\\crc32.exe C:\\build\\FAZR6\\Artwork\\$file";
-	my $cmd2 = "C:\\mscompress.exe C:\\build\\FAZR6\\Artwork\\$file";
-	my ($modtime,$size)= (stat("C:\\build\\FAZR6\\Artwork\\$file"))[9,7];
-	next if (!$size);
-	next if ($dupes{server}{$file} == 1);
-	$dupes{server}{$file} = 1;		
-	my $crc = `$cmd`;
-	chomp $crc;
-	$size = sprintf("%09d",$size);
-	my $dt = strftime("%Y/%m/%d %H:%M:%S",localtime($modtime + (3600 * $offset)));
-	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
-	print LIST "$dt $size $crc2 $file\n";
-	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\FAZR6\\Artwork\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
-	} else {
-		`$cmd2`;
-		move("C:\\build\\FAZR6\\Artwork\\${file}_","C:\\build\\AutoUpdate\\Game\\Server\\$file");
-	}
+	move("${file}_","C:\\build\\AutoUpdate\\FAZ\\$bin");
 }
 
 #lastly include whatever is on production AU
@@ -202,27 +202,27 @@ foreach my $file (@tmp) {
 	my $crc2 = "0" x ( 8 - length($crc) ) . $crc; 
 	print LIST "$dt $size $crc2 $file\n";
 	if ($size < 2048 || $file =~ /\.avi|\.ogg|\.png/i) {
-		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+		copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\FAZ\\$file");
 	} else {
 		`$cmd2`;
 		my $csize = (stat("C:\\build\\Package\\tmp\\expand\\${file}_"))[7];
 		if ($csize > $size) {
 			unlink "C:\\build\\Package\\tmp\\expand\\${file}_";
-			copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+			copy("C:\\build\\Package\\tmp\\expand\\${file}","C:\\build\\AutoUpdate\\FAZ\\$file");
 		}		
-		move("C:\\build\\Package\\tmp\\expand\\${file}_","C:\\build\\AutoUpdate\\Game\\Server\\$file");
+		move("C:\\build\\Package\\tmp\\expand\\${file}_","C:\\build\\AutoUpdate\\FAZ\\$file");
 	}
 }
 
 close LIST;
 
 
-my $cmd0 = "C:\\upx.exe -q -9 -f -o C:\\build\\AutoUpdate\\Game\\Server\\AutoUpdate.exe C:\\AutoUpdate.exe";
+my $cmd0 = "C:\\upx.exe -q -9 -f -o C:\\build\\AutoUpdate\\FAZ\\AutoUpdate.exe C:\\AutoUpdate.exe";
 `$cmd0`;
 
-unlink "C:\\build\\AutoUpdate\\Server.7z";
+unlink "C:\\build\\AutoUpdate\\FAZ.7z";
 
-my $cmd3 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\AutoUpdate\\Server.7z C:\\build\\AutoUpdate\\Game\\Server\\* -mx9";
+my $cmd3 = "\"C:\\Program Files\\7-Zip\\7z.exe\" a -t7z C:\\build\\AutoUpdate\\FAZ.7z C:\\build\\AutoUpdate\\FAZ\\* -mx9";
 system($cmd3);
 exit 0;
 

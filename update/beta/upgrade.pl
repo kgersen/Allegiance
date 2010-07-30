@@ -49,8 +49,8 @@ copy("Z:\\Deploy\\serverlist.txt","Z:\\wwwroot\\FAZ\\AU\\Standalone\\Filelist.tx
 
 copy("Z:\\Deploy\\motdR6.mdl","Z:\\wwwroot\\FAZ\\motdR6.mdl");
 
-my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU Z:\\deploy\\Game.7z";
-system($cmd);
+#my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\wwwroot\\FAZ\\AU Z:\\deploy\\Game.7z";
+#system($cmd);
 
 my $to =  "Z:\\wwwroot\\FAZ\\AU";
 my $from =  "Z:\\deploy\\temp";
@@ -91,7 +91,7 @@ my $cmd = "expand Z:\\deploy\\temp\\AllSrv.exe C:\\Allegiance\\Server\\AllSrv.ex
 system($cmd);
 my $cmd = "expand Z:\\deploy\\temp\\dbghelp.dll C:\\Allegiance\\Server\\dbghelp.dll";
 system($cmd);
-my $cmd = "copy Z:\\deploy\\AllLobby.exe C:\\Allegiance\\Lobby\\AllLobby.exe /Y";
+my $cmd = "expand Z:\\deploy\\AllLobby.exe C:\\Allegiance\\Lobby\\AllLobby.exe";
 system($cmd);
 
 copy("C:\\Allegiance\\Server\\dbghelp.dll" ,"Z:\\deploy\\temp\\dbghelp.dll");

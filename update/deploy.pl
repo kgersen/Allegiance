@@ -48,11 +48,15 @@ my $ftp = Net::FTP->new("fazdev.alleg.net", Debug => 0, Port => 21122)
        $ftp->binary;     
        $ftp->put("C:\\build\\AutoUpdate\\Filelist.txt")
       or die "put failed ", $ftp->message;
-       $ftp->put("C:\\build\\AutoUpdate\\Game.7z")
+       $ftp->put("C:\\build\\AutoUpdate\\FAZ.7z")
       or die "put failed ", $ftp->message;     
-       $ftp->put("C:\\build\\AutoUpdate\\Server.7z")
-      or die "put failed ", $ftp->message; 
-       $ftp->put("C:\\build\\FAZR6\\objs10\\FZRetail\\Lobby\\AllLobby.exe")
+     #  $ftp->put("C:\\build\\AutoUpdate\\Server.7z")
+     # or die "put failed ", $ftp->message; 
+     
+    	my $cmd2 = "C:\\build\\FAZR6\\objs10\\FZRetail\\Lobby\\AllLobby.exe";
+	`$cmd2`;
+	move("C:\\build\\FAZR6\\objs10\\FZRetail\\Lobby\\AllLobby.exe_","C:\\build\\FAZR6\\objs10\\FZRetail\\AllLobby.exe");
+       $ftp->put("C:\\build\\FAZR6\\objs10\\FZRetail\\AllLobby.exe")
       or die "put failed ", $ftp->message;       
   
  print "Files uploaded OK\n";

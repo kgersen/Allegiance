@@ -16,7 +16,7 @@ print PID $$;
 close(PID);
 
 mkdir ("Z:\\deploy\\temp");
-my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\deploy\\temp Z:\\deploy\\Server.7z";
+my $cmd = "Z:\\Deploy\\7za.exe x -y -oZ:\\deploy\\temp Z:\\deploy\\FAZ.7z";
 system($cmd);
 
 my $cmd = "C:\\Perl\\bin\\perl.exe Z:\\deploy\\upgrade.pl";
