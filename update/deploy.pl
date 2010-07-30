@@ -53,7 +53,7 @@ my $ftp = Net::FTP->new("fazdev.alleg.net", Debug => 0, Port => 21122)
      #  $ftp->put("C:\\build\\AutoUpdate\\Server.7z")
      # or die "put failed ", $ftp->message; 
      
-    	my $cmd2 = "C:\\build\\FAZR6\\objs10\\FZRetail\\Lobby\\AllLobby.exe";
+    	my $cmd2 = "C:\\mscompress.exe C:\\build\\FAZR6\\objs10\\FZRetail\\Lobby\\AllLobby.exe";
 	`$cmd2`;
 	move("C:\\build\\FAZR6\\objs10\\FZRetail\\Lobby\\AllLobby.exe_","C:\\build\\FAZR6\\objs10\\FZRetail\\AllLobby.exe");
        $ftp->put("C:\\build\\FAZR6\\objs10\\FZRetail\\AllLobby.exe")
