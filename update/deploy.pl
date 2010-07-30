@@ -6,7 +6,7 @@
 use strict;
 use Net::FTP;
 use Digest::MD5;
-
+use File::Copy;
 
 open(PASS,"C:\\fazdev.passwd");
 my $pass = <PASS>;
