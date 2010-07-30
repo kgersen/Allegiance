@@ -25,7 +25,7 @@ my $crc3 = `$cmd3`;
 chomp $crc3;
 my $size2 = (stat("C:\\serverlist.txt"))[7];
 
-$cmd3 = "C:\\crc32.exe C:\\build\\AutoUpdate\\Game\\Server\\AutoUpdate.exe";
+$cmd3 = "C:\\crc32.exe C:\\build\\AutoUpdate\\FAZ\\AutoUpdate.exe";
 my $crc4 = `$cmd3`;
 chomp $crc4;
 
