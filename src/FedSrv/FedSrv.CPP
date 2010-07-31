@@ -1123,7 +1123,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 		char newName[c_cbName];
 		ZString strName = pship->GetName();
 		int leftParen = strName.ReverseFind('(',0);
-		if (pqd->rank>4 && leftParen>1) {
+		if (pqd->rank > g.MaxNewbRank && leftParen>1) {
 			Strncpy(newName,(PCC)strName,leftParen);
 			Strncpy(newName+leftParen,"\0",1); // null terminate
 			pship->SetName(newName);
@@ -1154,7 +1154,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 		}
 		// remove the (#) from callsign
 		// only for ranks above 4 so people can see newbs for boot protection as per the COD
-		if (myRank>4) {
+		if (myRank > g.MaxNewbRank) {
 			Strncpy(newName,(PCC)strName,leftParen);
 			Strncpy(newName+leftParen,"\0",1); // null terminate
 			pship->SetName(newName);
@@ -9087,6 +9087,14 @@ void LoadSettings()
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "ASGS_ON", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             g.fASGS = !!dwValue;
         else g.fASGS = true;
+		//
+
+		//Imago 7/10 DIE TAG/mmf/te AB CODE!
+        dwValue=0;
+        cbValue = sizeof(dwValue);
+        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxNewbRank", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+            g.MaxNewbRank = dwValue;
+        else g.MaxNewbRank = 4;
 		//
 
         dwValue=0;

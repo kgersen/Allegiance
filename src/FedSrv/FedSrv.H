@@ -243,6 +243,7 @@ struct Global
     fmLobby(&siteFSLobby),
     dwServerGITCookie(0),
 	fASGS(true), //Imago 7/10 DIE ASGS (still default on, ...for now!!)
+	MaxNewbRank(4),
     fProtocol(false),
     fPaused(false),
     fDoublePrecision(true)
@@ -345,6 +346,7 @@ struct Global
   unsigned int		  cMaxBandwidth;
   
   bool                fASGS; //Imago 7/10 DIE ASGS!
+  int				  MaxNewbRank; //Imago #174
   bool                fProtocol;
   bool                fPaused;
   bool                fDoublePrecision;
