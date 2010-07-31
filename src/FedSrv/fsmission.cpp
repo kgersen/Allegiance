@@ -4914,8 +4914,17 @@ void CFSMission::RandomizeSides()
         // mdvalley: empty last side masks
         pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
 
-      }
+	  }	  	 	  
     }
+  }
+  
+  //Xynth #13 8/2010  Need to remove all join requests.
+  LinkJoinReq* plinkNext;
+  for (LinkJoinReq* plinkJR = m_listJoinReq.first(); (plinkJR != NULL); plinkJR = plinkNext)
+  {
+      plinkNext = plinkJR->next();
+      JoinRequest * pjr = plinkJR->data();
+	  RemoveJoinRequest(pjr->pfsPlayer, pjr->pSide);
   }
 
   // TE: Assign players to sides
