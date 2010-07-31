@@ -32,7 +32,6 @@ public:
     virtual int      GetButtonCount() = 0;
     virtual Boolean* IsDown(int id)   = 0;
     virtual Number*  GetValue(int id) = 0;
-
     virtual ButtonEvent::Source* GetEventSource() = 0;
 };
 
@@ -61,6 +60,7 @@ public:
 
 class JoystickInputStream : public InputStream {
 public:
+	virtual void	SetRanges()									  = 0; //Imago 7/10 #187
     virtual bool    HasForceFeedback()                            = 0;
     virtual void    CreateEffects()                               = 0;
     virtual void    PlayFFEffect(short effectID, LONG lDirection) = 0;

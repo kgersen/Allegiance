@@ -12,5 +12,6 @@
 #include "guids.h"
 #include "engine.h"
 #include "enginep.h"
-
+#include "regkey.h" //Imago 7/10 
+#include "zreg.h" //Imago 7/10 
 #endif

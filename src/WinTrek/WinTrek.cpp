@@ -30,6 +30,7 @@ const float c_dtFlashingDuration = 2.0f;
 
 const int c_nCountdownMax = 1000000; // just a big number
 const int c_nMinGain = -60;
+const int c_nMinFFGain = 0; //Imago
 
 // -Imago: manual AFK toggle flags for auto-AFK
 extern bool g_bActivity = true;
@@ -72,6 +73,7 @@ const float s_fExteralViewDistanceDefault = 500.0f;
 const float c_dtRejectQueuedCommand = 15.0f;
 
 const float c_fVolumeDelta = 1;
+const float c_fFFGainDelta = 100; //Imago 7/10 #187
 
 const float g_hudBright = 0.85f;
 
@@ -1255,7 +1257,13 @@ public:
     float               m_fDeltaTime;
 	// -Imago: Last activity timer
 	Time				m_timeLastActivity;
-	bool				m_bSaveDumps;
+	
+	//Imago 7/10
+	bool					m_bSaveDumps;
+	bool					m_bFFAutoCenter;
+	TRef<ModifiableNumber>  m_pnumFFGain;
+	//
+
 
     //
     // Rendering Toggles
@@ -1442,7 +1450,12 @@ public:
     TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
     TRef<IMenuItem>            m_pitemToggleVirtualJoystick;
     TRef<IMenuItem>            m_pitemToggleFlipY;
-    TRef<IMenuItem>            m_pitemToggleEnableFeedback;
+	//Imago 7/10
+    TRef<IMenuItem>            m_pitemToggleEnableFeedback; //moved around & fixed up 7/10 #187
+	TRef<IMenuItem>            m_pitemToggleFFAutoCenter; 
+	TRef<IMenuItem>            m_pitemToggleFFGainUp; 
+	TRef<IMenuItem>            m_pitemToggleFFGainDown;
+	 //
     TRef<IMenuItem>            m_pitemToggleStrobes;
     TRef<IMenuItem>            m_pitemToggleTrails;
     TRef<IMenuItem>            m_pitemToggleBounds;
@@ -2739,8 +2752,11 @@ public:
         m_bEnableFeedback(true),
         m_aabmInvest(0),
         m_aabmCommand(0),
+		//Imago 7/10
 		m_bNoMovies(false),
-		m_bSaveDumps(false)
+		m_bSaveDumps(false),
+		m_bFFAutoCenter(false)
+
     {
         HRESULT hr;
 
@@ -2790,6 +2806,7 @@ public:
 			}
 		}
 
+
 		
 		//Imago 7/10 dump files
 		int iKBMax = 65536;
@@ -2833,6 +2850,7 @@ public:
 		}
 		// end Imago dump files
 		
+		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
 
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
@@ -3052,6 +3070,7 @@ public:
         m_bEnableVirtualJoystick = (LoadPreference("EnableVirtualJoystick", 0) != 0);
         m_bFlipY                 = (LoadPreference("FlipY",                 0) != 0);
         m_bEnableFeedback        = (LoadPreference("EnableFeedback",        1) != 0);
+		m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
 
         //
         // Initial screen size
@@ -4051,6 +4070,12 @@ public:
 	#define idmPack					808
 	#define idmVsync				810
 
+	//Imago 7/10
+	#define idmFFOptions		811
+	#define idmFFGainUp			812
+	#define idmFFGainDown		813
+	#define idmFFAutoCenter		814
+
 
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4323,7 +4348,9 @@ public:
                 m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetDeadzoneMenuString(),       'Z'); //imago updated 7/8/09
                 m_pitemToggleVirtualJoystick       = pmenu->AddMenuItem(idmToggleVirtualJoystick,       GetVirtualJoystickMenuString(),     'J');
                 m_pitemToggleFlipY                 = pmenu->AddMenuItem(idmToggleFlipY,                 GetFlipYMenuString(),               'Y');
-                m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E');
+                //m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
+													 pmenu->AddMenuItem(idmFFOptions,					"Force Feedback",				  'E', m_psubmenuEventSink);
+					
 				 // w0dk4 June 2007: Bandwith Patch
 				m_pitemToggleBandwidth			   = pmenu->AddMenuItem(idmBandwidth,					GetBandwidthMenuString(),		    'B');
 
@@ -4374,6 +4401,15 @@ public:
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
 				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
 				break;
+			
+			//Imago 7/10 #187
+			case idmFFOptions:
+				m_pitemToggleEnableFeedback         = pmenu->AddMenuItem(idmToggleEnableFeedback  , GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
+				m_pitemToggleFFGainUp				= pmenu->AddMenuItem(idmFFGainUp			  , GetFFGainMenuString(m_pnumFFGain->GetValue(), c_fFFGainDelta)   , 'U');
+				m_pitemToggleFFGainDown				= pmenu->AddMenuItem(idmFFGainDown			  , GetFFGainMenuString(m_pnumFFGain->GetValue(), -c_fFFGainDelta)  , 'D');
+			    m_pitemToggleFFAutoCenter			= pmenu->AddMenuItem(idmFFAutoCenter		  , GetFFAutoCenterMenuString()                                     , 'C');
+				break;
+
 
 
         }
@@ -5036,6 +5072,19 @@ public:
         }
     }
 
+	//Imago 7/10
+    void ToggleEnableFFAutoCenter()
+    {
+        m_bFFAutoCenter = !m_bFFAutoCenter;
+
+        SavePreference("FFAutoCenter", m_bFFAutoCenter);
+
+        if (m_pitemToggleFFAutoCenter != NULL) {
+            m_pitemToggleFFAutoCenter->SetString(GetFFAutoCenterMenuString());
+        }
+		GetInputEngine()->GetJoystick(0)->SetRanges();
+    }
+
     void RenderSizeChanged(bool bSmaller)
     {
         if (bSmaller && GetFullscreen()) {
@@ -5183,6 +5232,28 @@ public:
         }
     }
 
+	//Imago 7/10 #187
+    void AdjustFFGain(float fDelta)
+    {
+        float fNewValue = min(10000, max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
+        m_pnumFFGain->SetValue(fNewValue);
+
+        SavePreference("FFGain", fNewValue);
+
+        if (m_pitemToggleFFGainUp != NULL)
+        {
+            m_pitemToggleFFGainUp->SetString(
+                GetFFGainMenuString(m_pnumFFGain->GetValue(), c_fFFGainDelta));
+        }
+        if (m_pitemToggleFFGainDown != NULL)
+        {
+            m_pitemToggleFFGainDown->SetString(
+                GetFFGainMenuString(m_pnumFFGain->GetValue(), -c_fFFGainDelta));
+        }
+		GetInputEngine()->GetJoystick(0)->SetRanges();
+    }
+	//Imago
+
     ZString GetPostersMenuString()
     {
         return (m_pwrapImagePosters->GetImage() != Image::GetEmpty()) ? "Posters On " : "Posters Off ";
@@ -5233,6 +5304,13 @@ public:
     ZString GetNoMoviesMenuString()
     {
         return (m_bNoMovies) ? "Movies Off " : "Movies On ";
+    }
+	//
+
+	//Imago 7/10
+    ZString GetFFAutoCenterMenuString()
+    {
+        return (m_bFFAutoCenter) ? "Auto Center On" : "Auto Center Off ";
     }
 	//
 
@@ -5491,7 +5569,27 @@ public:
         return strResult;
     }
 
-	//imago WIP 6/30/09 NYI 7/18/09
+	//Imago 7/10
+    ZString GetFFGainMenuString(float fCurrentGain, float fDelta)
+    {
+        ZString strResult = ((fDelta > 0) ? "Raise " : "Lower ") + ZString("Force Feedback Gain ");
+        if (fCurrentGain >= 10000 && fDelta > 0)
+        {
+            strResult += "(maxed)";
+        }
+        else if (fCurrentGain <= c_nMinFFGain && fDelta < 0)
+        {
+            strResult += "(off)";
+        }
+        else
+        {
+            strResult += "to " + ZString(min(10000, max(c_nMinFFGain, fCurrentGain + fDelta) / 100)) + " %";
+        }
+
+        return strResult;
+    }
+
+	//imago WIP 6/30/09 7/18/09
 	ZString GetAAString()
 	{
 		return "Antialiasing (" + ZString(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType) + ")";
@@ -5946,6 +6044,18 @@ public:
 
 			case idmContextMutePlayer:
 				contextMute();			CloseMenu();
+				break;
+
+			case idmFFAutoCenter:
+				ToggleEnableFFAutoCenter();
+				break;
+
+			case idmFFGainUp:
+				AdjustFFGain(c_fFFGainDelta);
+				break;
+
+			case idmFFGainDown:
+				AdjustFFGain(-c_fFFGainDelta);
 				break;
         }
     }
