@@ -2362,6 +2362,9 @@ public:
         pns->AddMember("BlendModeSource",      new Number(BlendModeSource     ));
         pns->AddMember("BlendModeAdd",         new Number(BlendModeAdd        ));
         pns->AddMember("BlendModeSourceAlpha", new Number(BlendModeSourceAlpha));
+		//Imago exposed 7/10
+		pns->AddMember("BlendModeSourceAlphaTest", new Number(BlendModeSourceAlphaTest));
+		pns->AddMember("BlendModeAlphaStampThrough", new Number(BlendModeAlphaStampThrough));
 
         //
         // Transforms

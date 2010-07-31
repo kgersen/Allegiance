@@ -388,8 +388,8 @@ public:
         {
             pcontext->Translate(positionIcon);
 			// BUILD_DX9
-			pcontext->SetBlendMode(BlendModeAlphaStampThrough);
-			//pcontext->SetBlendMode(BlendModeSourceAlpha);
+			//pcontext->SetBlendMode(BlendModeAlphaStampThrough);
+			pcontext->SetBlendMode(BlendModeSourceAlphaTest); //Imago 7/10 upgraded
 			// BUILD_DX9
 
             pcontext->DrawImage3D(psurfaceIcon, colorIcon, true);
