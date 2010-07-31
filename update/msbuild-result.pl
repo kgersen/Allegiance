@@ -74,7 +74,7 @@ foreach my $project (keys %{$data->{project}}) {
 
 print "Compiled $projcount projects with $data->{error_count} error(s)\n";
 if ($lasterr) {
-	my $cmd = "perl C:\\announce-fail.pl $build $lasterr";
+	my $cmd = "perl C:\\build\\FAZR6\\update\\announce-fail.pl $build $lasterr";
 	`$cmd`;
 }
 exit;
