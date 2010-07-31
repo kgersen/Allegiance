@@ -7140,7 +7140,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       TrapHackBoot(pfmMissionParams->missionparams.nTotalMaxPlayersPerGame
         == pfsMission->GetMissionDef()->misparms.nTotalMaxPlayersPerGame);
 
-      if (pfsMission->GetMissionDef()->misparms.bLockGameOpen)
+	  //Imago 7/10 - only for default games
+      if (pfsMission->GetMissionDef()->misparms.bLockGameOpen && !pfmMissionParams->missionparams.bObjectModelCreated)
       {
         TrapHackBoot(
           pfmMissionParams->missionparams.nMaxPlayersPerTeam

@@ -282,11 +282,11 @@ asteriodsPane =
 TeamCountNames = ["2", "3", "4", "5", "6"];
 TeamCountValues = [2, 3, 4, 5, 6];
 
-// maxPlayers
-// R6 change - Make Teamsizes usefull again
-MaxPlayersNames = ["1 - 5","3 - 10","5 - 15","10-25","20-50","25-100"];
-MaxPlayersValues = [5, 10, 15, 25, 50, 100];
-MinPlayersValues = [1,  3,  5, 10, 20,  25];
+// maxPlayers - Imago unjacked & properly extended to the new 200 limit 7/10
+MaxPlayersNames = ["1 - 6", "4 - 8", "5 - 10", "7 - 15", "10 - 20", "15 - 25", "20 - 30", "25 - 40", "35 - 50", "45 - 60", "55 - 70", "65 - 80", "75 - 90", "85 - 100"];
+MaxPlayersValues = [6, 8, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100];
+MinPlayersValues = [1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,   1];
+
 
 // maxImbalance
 MaxImbalanceNames = ["1", "2", "Auto", "N/A"];
