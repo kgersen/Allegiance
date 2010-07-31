@@ -6,6 +6,8 @@ use strict;
 use Getopt::Long;
 use Net::FTP;
 
+exit 0 if `hostname` ne 'CDN';
+
 my $build = "";
 my $revision = "";
 my $version = "";
