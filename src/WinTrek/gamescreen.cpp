@@ -156,7 +156,7 @@ private:
 
             if (bSelected) {
                 psurface->FillRect(
-                    WinRect(56, 7, GetXSize() - 2, GetYSize() - 8),
+                    WinRect(56, 5, GetXSize() - 2, GetYSize() - 4), //Imago wider #169
                     Color(1, 0, 0)
                 );
             }
@@ -292,10 +292,20 @@ private:
             psurface->RestoreClipRect(rectClipOld);
 
             // draw slot info
-            wsprintf(cbTemp, "%d/%d", game->NumPlayers(), game->MaxPlayers());
+			wsprintf(cbTemp, "%d/%d", game->NumPlayers(), game->MaxPlayers());
+			WinPoint myPoint = WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 3, 3);
             psurface->DrawString(pfont, color,
-                WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 3, 6), // KGJV #114 was col7
+                myPoint, // KGJV #114 was col7 //Imago #169
                 cbTemp);
+
+			// #169
+			wsprintf(cbTemp, "Noat: %d", game->SideNumPlayers(NA));
+			WinPoint myPoint2 = WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 3, 12);
+            psurface->DrawString(pfont,Color::Gray() + 10,
+                myPoint2, // KGJV #114 was col7 //Imago #169
+                cbTemp);
+
+
 
             // find the game type...
             TRef<GameType> pGameType = GameType::FindType(game->GetMissionParams());
@@ -331,12 +341,12 @@ private:
 			bool bOfficial = trekClient.CfgIsOfficialServer(game->GetMissionDef().szServerName,game->GetMissionDef().szServerAddr);
 			bOfficial &= trekClient.CfgIsOfficialCore(game->GetIGCStaticFile());
             if (bOfficial)
-                DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "iconscorescountbmp");
+                DrawIcon(psurface, m_viColumns[6] + 107, GetYSize()/2 - 1, "iconscorescountbmp"); //imago 107 was 115
 
             if (game->AllowDevelopments())
-                DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "icondevelopmentsbmp");
+                DrawIcon(psurface, m_viColumns[6] + 107, GetYSize()/2 - 1, "icondevelopmentsbmp");
             if (game->LimitedLives())
-                DrawIcon(psurface, m_viColumns[6] + 115, GetYSize()/2 - 1, "iconlivesbmp");
+                DrawIcon(psurface, m_viColumns[6] + 107, GetYSize()/2 - 1, "iconlivesbmp");
          }
 
         int DrawIcon(Surface* psurface, int nXLeft, int nYCenter, const char* iconName)
