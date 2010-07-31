@@ -2457,8 +2457,8 @@ public:
 
         if (pitem == NULL)
         {
-            // default the selection to the lobby side
-            m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(SIDE_TEAMLOBBY));
+            // default the selection to the lobby side -Imago #54 commented out
+            //m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(SIDE_TEAMLOBBY)); 
         }
 		else
 		// KGJV #114 cant select destroyed/inactive & empty teams
