@@ -28,7 +28,7 @@ textPane = StringPane(text, white);
      okButton = ButtonPane(ImportImage("btninputokbmp"     , true), ButtonNormal, false);
  cancelButton = ButtonPane(ImportImage("btninputcancelbmp" , true), ButtonNormal, false);
 restoreButton = ButtonPane(ImportImage("btninputrestorebmp", true), ButtonNormal, false);
-   loadButton = ButtonPane(ImportImageFromFile("btnblank.png",true), ButtonNormal, false);//Imago #176 7/10
+   loadButton = ButtonPane(ImportImageFromFile("btnload.png",true), ButtonNormal, false);//Imago #176 7/10
 
 //
 // Layout
