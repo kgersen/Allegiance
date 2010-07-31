@@ -6,7 +6,7 @@ use strict;
 use Getopt::Long;
 use Net::FTP;
 
-exit 0 if `hostname` !~ /CDN/;
+exit 0 if `hostname` !~ /cdn/;
 
 my $build = "";
 my $revision = "";
