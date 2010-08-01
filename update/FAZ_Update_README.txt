@@ -49,3 +49,6 @@ EULA.rtf
 logger.dll is not so easy to get working (and it's not open source) so I committed it (under permission).
 
 Please keep this list up to date if you add a new tool.
+
+
+See also: http://freeallegiance.org/FAW/index.php/Build_slave
