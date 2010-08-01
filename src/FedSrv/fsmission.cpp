@@ -4736,8 +4736,13 @@ void CFSMission::SetAutoAccept(IsideIGC * pside, bool fAccept)
 
         if (pside)
         {
-          // should never add the player back to the list, since autoaccept is on
+          DelPositionReqReason reason = CheckPositionRequest(pfsPlayer, pside);  //Xynth #195 8/2010 Look to see if this request is going to fail
+		  		
+		  // should never add the player back to the list, since autoaccept is on
           RequestPosition(pfsPlayer, pside, false);
+		  
+		  if (reason != NA)  //Xynth #195 8/2010 If rejected do a formal request to join the lobby
+			  RequestPosition(pfsPlayer, pfsPlayer->GetMission()->GetIGCMission()->GetSide(SIDE_TEAMLOBBY), false);
         }
       }
     }
