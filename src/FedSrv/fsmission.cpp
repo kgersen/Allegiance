@@ -3831,6 +3831,7 @@ void CFSMission::QueueLobbyMissionInfo()
   pfmLobbyMissionInfo->fGuaranteedSlotsAvailable       = false;
   pfmLobbyMissionInfo->fAnySlotsAvailable              = false;
   pfmLobbyMissionInfo->nNumPlayers                     = GetCountOfPlayers(NULL, false);
+  pfmLobbyMissionInfo->nNumNoatPlayers                 = GetCountOfPlayers(GetIGCMission()->GetSide(SIDE_TEAMLOBBY), false); //Imago #169
 
   // if there might be a chance a player can join, check the teams to see if they can
   if ((m_misdef.misparms.bAllowJoiners || STAGE_NOTSTARTED == GetStage())

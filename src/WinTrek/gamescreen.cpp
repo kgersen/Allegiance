@@ -298,10 +298,10 @@ private:
                 myPoint, // KGJV #114 was col7 //Imago #169
                 cbTemp);
 
-			// #169
-			wsprintf(cbTemp, "Noat: %d", game->SideNumPlayers(NA));
+			// #169 Imago 7/10
+			wsprintf(cbTemp, "Noat: %d", game->NumNoatPlayers());
 			WinPoint myPoint2 = WinPoint(m_viColumns[6] - pfont->GetTextExtent(cbTemp).X() - 3, 12);
-            psurface->DrawString(pfont,Color::Gray() + 10,
+            psurface->DrawString(pfont,Color::Gray(),
                 myPoint2, // KGJV #114 was col7 //Imago #169
                 cbTemp);
 

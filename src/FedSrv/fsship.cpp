@@ -1094,6 +1094,11 @@ void CFSPlayer::SetSide(CFSMission * pfsMission, IsideIGC * pside)
   //
   if (psideOld  != pside) 
   {
+	  //Imago #169
+	  if ( (psideOld && pside->GetObjectID() == SIDE_TEAMLOBBY) || (pside && pside->GetObjectID() == SIDE_TEAMLOBBY))
+		 if (pfsMission)
+			 pfsMission->SetLobbyIsDirty();
+
     long idShip = (AGC_AdminUser << 16) | CAdminUser::DetermineID(this->GetPlayer());
 
     if (psideOld ) // if leaving a side

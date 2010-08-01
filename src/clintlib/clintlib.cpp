@@ -626,6 +626,7 @@ MissionInfo::MissionInfo(DWORD dwCookie) :
     m_fAnySlotsAvailable = false;
     m_fCountdownStarted = false;
     m_nNumPlayers = 0;
+	m_nNumNoatPlayers = 0; //Imago #169
 }
 
 MissionInfo::~MissionInfo()
@@ -682,10 +683,10 @@ void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
     m_pfmMissionDef->misparms.iMinRank = pfmLobbyMissionInfo->nMinRank;
     m_pfmMissionDef->misparms.iMaxRank = pfmLobbyMissionInfo->nMaxRank;
     m_pfmMissionDef->misparms.timeStart = Time(pfmLobbyMissionInfo->dwStartTime);
-    m_nNumPlayers = pfmLobbyMissionInfo->nNumPlayers;
     m_fGuaranteedSlotsAvailable = pfmLobbyMissionInfo->fGuaranteedSlotsAvailable;
     m_fAnySlotsAvailable = pfmLobbyMissionInfo->fAnySlotsAvailable;
     m_nNumPlayers = pfmLobbyMissionInfo->nNumPlayers;
+	m_nNumNoatPlayers = pfmLobbyMissionInfo->nNumNoatPlayers; //Imago #169
     SetInProgress(pfmLobbyMissionInfo->fInProgress);
     SetCountdownStarted(pfmLobbyMissionInfo->fCountdownStarted);
     m_pfmMissionDef->misparms.bScoresCount = pfmLobbyMissionInfo->fScoresCount;
