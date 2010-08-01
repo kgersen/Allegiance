@@ -2486,12 +2486,13 @@ public:
 
 		if (int leftParen = strName.ReverseFind('(',0))
 			strName = strName.LeftOf(leftParen-1);
-
+		debugf("****** fetching input map for:\n\tBefore: %s\n",(PCC)strName);
 		ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
 		strName = strName.Scramble(zInfo);
 		char* p = new char[strName.GetLength()];
 		Strcpy(p,(PCC)strName);
 		strName = UTL::char2hex((const unsigned char*)p, strName.GetLength());
+		debugf("\tAfter: %s\n",(PCC)strName);
 
 		// add the name to the url
 		zUrl += strName;
@@ -2524,18 +2525,25 @@ public:
 				client->getRequest((char *)(PCC)zRedirect);
 				if (client->getResponseCode() == 200) 
 					content = client->getResponseContent(&contentLen);
+				else
+					debugf("***** fetching input map: not 200 OK after redirect!\n");
 			// no redirect?
-			} else if(client->getResponseCode() == 200)
+			} else if(client->getResponseCode() == 200) 
 				content = client->getResponseContent(&contentLen);
+			else
+				debugf("***** fetching input map: no services redirect!\n");
 		}
 
 		if (contentLen > 0) {
+			debugf("***** fetching input map: retrieved %i bytes\n",contentLen);
 			ZFile * pz7z = new ZFile(GetModeler()->GetArtPath() + "/" + INPUTMAP_FILE+ ".7z", OF_WRITE | OF_CREATE);
 			if (pz7z->Write(content,contentLen)) {
 				delete pz7z;
-				Extract7z(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z",GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"_cloud.mdl");
+				int iBytes = Extract7z(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z",GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"_cloud.mdl");
 				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z");
-			}
+				debugf("***** fetching input map: extracted %i bytes\n",iBytes);
+			} else
+				debugf("***** fetching input map: reponse write error\n");
 			
 		}
 		GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxLoad);
@@ -2555,11 +2563,13 @@ public:
 		if (int leftParen = strName.ReverseFind('(',0))
 			strName = strName.LeftOf(leftParen-1);
 
+		debugf("****** posting input map for:\n\tBefore: %s\n",(PCC)strName);
 		ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
 		strName = strName.Scramble(zInfo);
 		char* p = new char[strName.GetLength()];
 		Strcpy(p,(PCC)strName);
 		strName = UTL::char2hex((const unsigned char*)p, strName.GetLength());
+		debugf("\tAfter: %s\n",(PCC)strName);
 
 		//sanity check....
 		MprSocket* socket = new MprSocket();
@@ -2606,6 +2616,7 @@ public:
 				client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
 				delete hdrBuf;
 				delete PostData;
+				debugf("****** input map posted %i bytes\n",iTotal0);
 			}
 			::VirtualFree(buffer, 0, MEM_RELEASE);
 			CloseHandle(hfile);
