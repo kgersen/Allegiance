@@ -1197,12 +1197,12 @@ public:
             );
         }
 		
-		//Imago 7/10 #149
+		//Imago 7/10 #149 #91
 		int wid = trekClient.GetSavedWingAssignment();
-		if (m_pcomboWing->GetSelection() != 0) {
+		if (m_pcomboWing->GetSelection() != 0 || m_pcomboWing->GetSelection() == NULL) {
 			if (wid == NA) {
-					wid = 1;
-					trekClient.SaveWingAssignment(wid);
+					wid = 1; //default a newbs wing to attack if they dont have one saved
+					trekClient.SaveWingAssignment(wid); //sends it
 			}
 		}
 		m_pcomboWing->SetSelection(wid);
