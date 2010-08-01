@@ -353,7 +353,7 @@ public:
         m_peditPaneCharDescription->SetReadOnly();
 
         CastTo(m_peditPaneCharName, (Pane*)pns->FindMember("characterNameEditPane"));
-        m_peditPaneCharName->SetMaxLength(c_cbNameDB);
+        m_peditPaneCharName->SetMaxLength(32); //Imago #192 7/10
         AddEventTarget(&CharInfoScreen::OnNameClick, m_peditPaneCharName->GetClickEvent());
       
         m_peditPaneCharName->SetString(szDefault);

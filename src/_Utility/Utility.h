@@ -49,7 +49,7 @@ class   Rotation;
 // handled via truncation. DB versions do not include the NULL terminator
 const int c_cbFileNameDB    = 12; // keep in sync with 
 const int c_cbDescriptionDB = 200;
-const int c_cbNameDB        = 24;
+const int c_cbNameDB        = 24; //Imago #192
 const int c_cbLocAbrevDB    = 8;
 const int c_cbFileName      = c_cbFileNameDB    + 1;
 const int c_cbDescription   = c_cbDescriptionDB + 1;
@@ -1281,7 +1281,7 @@ class UTL
         static char*                strdup(const char*  s);
 
         //set allocated on demand strings, file names or names
-        static void  putFileName(char*       name, const char*   newVal);
+        static void  putLongerName(char*       name, const char*   newVal); //was unused, repurposed for #192 Imago
         static void  putName(char*           name, const char*   newVal);
 
         static const char*  artworkPath(void)

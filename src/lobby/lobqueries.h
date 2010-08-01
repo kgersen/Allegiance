@@ -35,7 +35,7 @@ BEGIN_QUERY(CQLobbyLogon, true,
 
   // query parameters
   char  szCDKey[1024]; // Imago changed
-  char  szCharacterName[c_cbName];
+  char  szCharacterName[32]; //Imago #192 
   int   characterID;
   char  fValidCode; // out
   char  fCanCheat;  // out

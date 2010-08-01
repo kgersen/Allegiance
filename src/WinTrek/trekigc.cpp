@@ -2941,8 +2941,8 @@ ZString WinTrekClient::GetSavedCharacterName()
 {
     HKEY hKey;
     DWORD dwType;
-    DWORD cbName = c_cbName;
-    char szName[c_cbName];
+    DWORD cbName = 32; //Imago #192 
+    char szName[32]; //Imago #192 
     szName[0] = '\0';
     
     if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
@@ -2957,8 +2957,8 @@ ZString WinTrekClient::GetSavedCharacterName()
 void WinTrekClient::SaveCharacterName(ZString strName)
 {
     HKEY hKey;
-    DWORD cbName = c_cbName;
-    char szName[c_cbName];
+    DWORD cbName = 32; //Imago #192 
+    char szName[32]; //Imago #192 
     szName[0] = '\0';
     
     if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey)) 

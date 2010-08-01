@@ -434,7 +434,7 @@ int         CshipIGC::Export(void* data) const
         dataShip->nKills = m_nKills;
         dataShip->nDeaths = m_nDeaths;
         dataShip->nEjections = m_nEjections;
-        UTL::putName(dataShip->name, GetName());
+        UTL::putLongerName(dataShip->name, GetName()); //Imago #192
 
         dataShip->pilotType = m_pilotType;
         dataShip->abmOrders = m_abmOrders;

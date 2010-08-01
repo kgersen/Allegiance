@@ -108,7 +108,7 @@ DEFINE_FEDMSG(C, LOGON_LOBBY, 265) // if the lobby is in club mode, everyone has
   short verLobby;    
   int   crcFileList; 
   DWORD dwTime;
-  char  szName[c_cbName];
+  char  szName[32]; //Imago #192 
 END_FEDMSG
 
 // KGJV #114

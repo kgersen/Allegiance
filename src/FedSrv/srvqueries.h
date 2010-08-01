@@ -26,7 +26,7 @@ BEGIN_QUERY(CQLogonStats, true,
   char  szPassword[c_cbGamePassword];   // password entered by user
   char  szCDKey[c_cbCDKey];             // Remember the CD Key that they entered.
 
-  char  szCharacterName[c_cbName];
+  char  szCharacterName[32]; //Imago #192 
   int   characterID;
   char  fCanCheat;
 
@@ -357,7 +357,7 @@ BEGIN_QUERY(CQPlayerResults, false,
 
   char  szGameID[18];
   short nTeamID;
-  char  szName[c_cbName];
+  char  szName[32]; //Imago #192 
   short cPlayerKills;
   short cBuilderKills;
   short cLayerKills;
@@ -419,7 +419,7 @@ BEGIN_QUERY(CQGetInvitationList, true,
   
   // OUT
   char iTeam;
-  char szSubject[c_cbName];  
+  char szSubject[32];   //Imago #192 
 
   // Baggage
   MissionID missionID;

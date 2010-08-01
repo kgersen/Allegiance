@@ -269,11 +269,11 @@ class   CmodelIGC
         }
         void                SetName(const char* newVal)
         {
-            UTL::putName(m_name, newVal);
+            UTL::putLongerName(m_name, newVal); //#192 Imago
         }
         void                SetSecondaryName(const char* newVal)
         {
-            assert (strlen(newVal) < c_cbName-1);
+            assert (strlen(newVal) < 32-1); //Imago #192 
             m_name[0] = '\0';
 
             strcpy(m_name+1, newVal);
@@ -365,7 +365,7 @@ class   CmodelIGC
         float               m_mass;
         float               m_signature;
         HitTest*            m_pHitTest;
-        char                m_name[c_cbName];
+        char                m_name[32]; //Imago #192 
         ModelAttributes     m_attributes;
         bool                m_visibleF;
         bool                m_selectedF;

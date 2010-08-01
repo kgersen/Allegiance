@@ -66,7 +66,7 @@ class OldPlayerInfo
         PlayerScoreObject           pso;
         int                         characterID;
         SideID                      sideID;         //Simply using this as a cookie
-        char                        name[c_cbName];
+        char                        name[32]; //Imago #192 
         IclusterIGC*                pclusterLifepod;
         Vector                      positionLifepod;
         unsigned char               bannedSideMask;

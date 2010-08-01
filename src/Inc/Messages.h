@@ -90,7 +90,7 @@ END_FEDMSG
 DEFINE_FEDMSG(S, PLAYERINFO, 10)
   FM_VAR_ITEM(rgPersistPlayerScores); 
   // PersistPlayerScoreObject rgPersistPlayerScores[pfm->cbrgPersistPlayerScores / sizeof(PersistPlayerScoreObject)] = FM_VAR_REF(pfm, rgPersistPlayerScores);
-  char                      CharacterName[c_cbName];
+  char                      CharacterName[32]; //Imago #192 
   Money                     money;
   bool                      fReady        : 1;
   bool                      fTeamLeader   : 1;
@@ -462,7 +462,7 @@ END_FEDMSG
 
 struct PlayerEndgameInfo
 {
-  char                      characterName[c_cbName];
+  char                      characterName[32]; //Imago #192 
   GameOverScoreObject       scoring;
   PersistPlayerScoreObject  stats;
   SideID                    sideId;
@@ -494,7 +494,7 @@ struct BucketData
 {
   BucketItemType  bucketitemtype;
   Money           cost;
-  char            szName[c_cbName];
+  char            szName[32]; //Imago #192 
   char            szDescription[c_cbDescription];
   union
   {

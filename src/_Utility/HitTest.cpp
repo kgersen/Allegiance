@@ -622,7 +622,7 @@ class   CachedMultiHull
             delete m_pMultiHull;
         }
 
-        char        m_name[c_cbName];
+        char        m_name[32]; //Imago #192 
         MultiHull*  m_pMultiHull;
 
     friend bool operator!=(const CachedMultiHull& r1, const CachedMultiHull& r2)
@@ -812,7 +812,7 @@ MultiHullBase*  HitTest::Load(const char*    pszFileName)
         {
             CachedLink*         pcl = new CachedLink;
             CachedMultiHull&    cmh = pcl->data();
-            assert (strlen(pszFileName) < c_cbName);
+            assert (strlen(pszFileName) < 32); //Imago #192 
             strcpy(cmh.m_name, pszFileName);
             cmh.m_pMultiHull = pMultiHull;
 

@@ -747,9 +747,9 @@ public: //todo: make protected
     float               m_sync;
     Cookie              m_cookie;
     MessageType         m_messageType;
-    char                m_szCharName[c_cbName]; 
-    char                m_szClubCharName[c_cbName]; // name specified when logging into Club server
-    char                m_szLobbyCharName[c_cbName];// name specified when logging into Lobby server
+    char                m_szCharName[32]; //Imago #192 
+    char                m_szClubCharName[32]; // name specified when logging into Club server //Imago #192 
+    char                m_szLobbyCharName[32];// name specified when logging into Lobby server //Imago #192 
     char                m_szIGCStaticFile[30];
     int                 m_nMemberID; // For Zone Club server
 

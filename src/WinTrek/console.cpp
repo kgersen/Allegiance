@@ -1294,7 +1294,7 @@ public:
                     if (m_pmodelTarget)
                     {
                         //Fill in the rest of the chat text with the remainder of the picked name
-                        char    bfr[c_cbName];
+                        char    bfr[32]; //Imago #192 
                         int lenText = m_strTypedText.GetLength();
                         strcpy(bfr, (m_pmodelTarget == trekClient.GetShip()) &&
                                     (lenText <= 2) &&

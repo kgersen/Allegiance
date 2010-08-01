@@ -88,7 +88,7 @@ public:
         m_peditName->SetString(szName);
         m_peditName->SetMaxLength((LogonLAN != lt && trekClient.GetCfgInfo().bUsePassport) 
           ? (c_cbPassportName - 1)
-          : (c_cbName - 1)
+          : (32 - 1) //Imago #192 
           );
 
         if (m_peditName->GetString().IsEmpty()) {

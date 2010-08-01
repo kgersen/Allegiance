@@ -185,7 +185,7 @@ static void doASGS(void* data, MprThread *threadp) {
 
 	int contentLen = 0; char *content; char szResponse[MAX_PATH];
 	RankID myRank = -2; // -3 wait, -2 wrong rank, -1 callsign does not exist, >=0 valid rank
-	char szURL[MAX_PATH]; char szName[c_cbName];
+	char szURL[MAX_PATH]; char szName[32]; //Imago #192 
 	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
 
 	// one thread per connecting player
@@ -1120,7 +1120,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 			}
 		}
 		// mmf/Imago remove rank from player name when NotNewb
-		char newName[c_cbName];
+		char newName[32]; //Imago #192 
 		ZString strName = pship->GetName();
 		int leftParen = strName.ReverseFind('(',0);
 		if (pqd->rank > g.MaxNewbRank && leftParen>1) {
@@ -2440,7 +2440,7 @@ CFSDrone * CreateStockDrone(IdroneTypeIGC * pdronetype, IsideIGC* pSide, IbaseIG
 
 
     {
-        char    bfr[c_cbName + 10];
+        char    bfr[32 + 10]; //Imago #192 
 
         const char* pszName;
         if (pt == c_ptBuilder)
@@ -2453,7 +2453,7 @@ CFSDrone * CreateStockDrone(IdroneTypeIGC * pdronetype, IsideIGC* pSide, IbaseIG
         {
             pszName = pdronetype->GetName();
         }
-        assert (strlen(pszName) < c_cbName - 4);
+        assert (strlen(pszName) < 32 - 4); //Imago #192 
         strcpy(bfr, pszName);
 
         _itoa(pship->GetObjectID(), bfr + strlen(bfr), 10);
@@ -5667,7 +5667,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       // sanity check the message
       TrapHackBootNoPlayer(NULL != FM_VAR_REF(pfmLogon, CharacterName)
-          && NULL != memchr(FM_VAR_REF(pfmLogon, CharacterName), 0, c_cbName));
+          && NULL != memchr(FM_VAR_REF(pfmLogon, CharacterName), 0, 32)); //Imago #192 
       TrapHackBootNoPlayer(NULL == FM_VAR_REF(pfmLogon, MissionPassword)
           || NULL != memchr(FM_VAR_REF(pfmLogon, MissionPassword), 0, c_cbGamePassword));
       TrapHackBootNoPlayer(NULL != FM_VAR_REF(pfmLogon, CDKey)
@@ -5730,7 +5730,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           pqd->characterID = g.pzas->GetAccountID();
 
         #else // defined(USEAUTH) -- was !defined(ALLSRV_STANDALONE)
-          if (0 < pfmLogon->cbCharacterName && pfmLogon->cbCharacterName <= c_cbName)
+          if (0 < pfmLogon->cbCharacterName && pfmLogon->cbCharacterName <= 32) //Imago #192 
           {
             fValid = true;
             lstrcpy(pqd->szCharacterName, FM_VAR_REF(pfmLogon, CharacterName));

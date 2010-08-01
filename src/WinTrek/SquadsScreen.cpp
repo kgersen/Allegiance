@@ -555,7 +555,7 @@ public:
         // Squad Details Area
         //
         CastTo(m_peditPaneSquadName, (Pane*)pns->FindMember("squadNameEditPane"));
-        m_peditPaneSquadName->SetMaxLength(c_cbNameDB);
+        m_peditPaneSquadName->SetMaxLength(32); //Imago #192 7/10
         AddEventTarget(&SquadsScreen::OnSquadNameClick, m_peditPaneSquadName->GetClickEvent());
 
         m_peventNameEdit = m_peditPaneSquadName->GetChangeEvent();
@@ -576,7 +576,7 @@ public:
         m_peventURLEdit->AddSink(m_psinkURLEdit = new TEvent<ZString>::Delegate(this));
 
         CastTo(m_peditPaneFind, (Pane*)pns->FindMember("squadFindPane"));
-        m_peditPaneFind->SetMaxLength(c_cbNameDB);
+        m_peditPaneFind->SetMaxLength(32); //Imago #192
         AddEventTarget(&SquadsScreen::OnFindClick, m_peditPaneFind->GetClickEvent());
 
         m_peventFind = m_peditPaneFind->GetChangeEvent();

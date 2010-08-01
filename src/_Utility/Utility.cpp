@@ -399,14 +399,14 @@ void    UTL::putName(char*         name, const char*   newVal)
         name[0] = '\0';
 }
 
-void    UTL::putFileName(char*         fileName, const char*   newVal)
+void    UTL::putLongerName(char*         fileName, const char*   newVal)
 {
     assert (fileName);
 
     if (newVal)
     {
         strncpy(fileName, newVal, c_cbName - 1);
-        fileName[c_cbName - 1] = '\0';
+        fileName[32 - 1] = '\0'; //Imago #192
     }
     else
         fileName[0] = '\0';

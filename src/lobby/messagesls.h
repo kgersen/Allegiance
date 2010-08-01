@@ -14,7 +14,7 @@
 #include "MessageCore.h"
 
 // Imago updated for R5 8/6/09
-#define LOBBYVER_LS 11 // If you change this file, increment this // #2 6/10 // #62 7/10
+#define LOBBYVER_LS 12 // If you change this file, increment this // #2 6/10 // #62 7/10 //12 - Imago #192 
 
 
 /*
