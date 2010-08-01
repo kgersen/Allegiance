@@ -1095,7 +1095,7 @@ void CFSPlayer::SetSide(CFSMission * pfsMission, IsideIGC * pside)
   if (psideOld  != pside) 
   {
 	  //Imago #169
-	  if ( (psideOld && pside->GetObjectID() == SIDE_TEAMLOBBY) || (pside && pside->GetObjectID() == SIDE_TEAMLOBBY))
+	  if ( (psideOld && psideOld->GetObjectID() == SIDE_TEAMLOBBY) || (pside && pside->GetObjectID() == SIDE_TEAMLOBBY))
 		 if (pfsMission)
 			 pfsMission->SetLobbyIsDirty();
 
