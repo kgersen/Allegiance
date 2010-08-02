@@ -211,8 +211,15 @@ static void doASGS(void* data, MprThread *threadp) {
 	if (g.fmLobby.IsConnected()) {
 
         // First make sure we can write to a socket
+		ZString zAddr;
+		if (g.balance.strBaseURL.IsEmpty()) {
+			zAddr = "asgs.alleg.net";
+		} else {
+			zAddr = g.balance.strBaseURL.RightOf(7);
+			zAddr = zAddr.Left(zAddr.FindAny("/"));
+		}
         MprSocket* socket = new MprSocket();
-        socket->openClient("asgs.alleg.net",80,0);
+        socket->openClient((char *)(PCC)zAddr,80,0);
         int iwrite = socket->_write("GET /\r\n");
         delete socket;
 
@@ -7879,6 +7886,10 @@ void UpdateMissions(Time timeStart, Time timePrevious)
 
       // Then do periodic updates
       pfsMission->UpdateLobby(timeStart);
+	  
+	  //Imago #192 8/10
+	  pfsMission->UpdateMSRInfo(timeStart);
+
       MoveShips(pfsMission, timeStart, timePrevious);
 
       if (pfsMission->GetStage() == STAGE_STARTED)

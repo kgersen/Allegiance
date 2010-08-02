@@ -17,6 +17,7 @@ int           CFSMission::s_iMissionID = 1; // just for igc--this too wil go awa
 const DWORD CFSMission::c_sbtPlayer = 0x00000001;
 const DWORD CFSMission::c_sbtLeader = 0x00000002;
 const float c_flUpdateTimeInterval = 10.0f;
+const float c_fMSRUpdateTimeInterval = 30.0f; //Imago 8/10
 
 static const char* sideNames[c_cSidesMax] =
   {
@@ -86,6 +87,8 @@ CFSMission::CFSMission(
     m_psiteMission(psiteMission),
     m_psiteIGC(psiteIGC),
     m_fLobbyDirty(true),
+	m_fMSRDirty(false), //#192 Imago 8/10
+	m_threadp(NULL), //#192 Imago 8/10
     m_timeLastLobbyMissionInfo(Time::Now() - c_flUpdateTimeInterval), // fudge factor--want to
     m_nFrame(0),
     m_bShouldDelete(false),
@@ -1906,6 +1909,7 @@ void CFSMission::StartCountdown(float fCountdownLength)
 
   if (GetStage() == STAGE_NOTSTARTED)
   {
+	 SetMSRIsDirty(); //Imago #192
     // create the mission
     {
 
@@ -2199,6 +2203,7 @@ void CFSMission::StartGame()
   {
       // transition through the STAGE_STARTING state for consistancy
       StartCountdown(0.0f);
+
   }
 
   if (GetStage() == STAGE_STARTING)
@@ -5203,6 +5208,7 @@ void CFSMission::SetReady(SideID iSide, bool fReady)
     pfmTeamReady->fReady    =
       m_misdef.rgfReady[iSide] = fReady; // dbl assignment
     g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+	SetMSRIsDirty(); //Imago #192 8/10
   }
 }
 
@@ -5350,12 +5356,95 @@ void CFSMission::UpdateLobby(Time now)
     SetSessionDetails();
   }
 }
-
 void CFSMission::SetLobbyIsDirty()
 {
   m_fLobbyDirty = true;
   UpdateLobby(Time::Now());
 }
+
+//Imago 8/10 #192
+void CFSMission::SetMSRIsDirty() {
+  m_fMSRDirty = true;
+  UpdateMSRInfo(Time::Now());
+}
+
+void doMSRInfo(void* data, MprThread *threadp) {
+	bool bPlayers = false;
+	ImissionIGC * pMission = (ImissionIGC*)data;
+	if (pMission == NULL)
+		return;
+	ZString zPlayers; zPlayers.SetEmpty();
+	for (ShipLinkIGC*  psl = pMission->GetShips()->first(); (psl != NULL); psl = psl->next()) {
+	    IshipIGC*       ps = psl->data();
+		if (ps->GetPilotType() >= c_ptPlayer) {
+			ZString strName = ps->GetName();
+			char szName[32]; 
+			Strcpy(szName,(PCC)strName);
+			if ((isalnum(szName[0]) == 0) && strName.Left(1) != "_")
+				strName = strName.RightOf(1);
+			int iTmp = strName.ReverseFind("(");
+			if (iTmp != -1)
+				strName = strName.Left(iTmp);
+
+			bPlayers = true;
+			zPlayers += strName + ZString("+");
+
+		}
+	}
+	if (bPlayers) {
+		printf("going to update MSR for %s\n",(PCC)zPlayers);
+		int contentLen = 0; char *content;
+        MprSocket* socket = new MprSocket();
+		ZString zAddr = g.balance.strBaseURL.RightOf(7);
+		zAddr = zAddr.Left(zAddr.FindAny("/"));
+        socket->openClient((char *)(PCC)zAddr,80,0);
+        int iwrite = socket->_write("GET /\r\n");
+        delete socket;
+
+        MaClient* client = new MaClient();
+	    client->setTimeout(3000);
+	    client->setRetries(1);
+	    client->setKeepAlive(0);
+
+        if (iwrite == 7) { // make sure we wrote 7 bytes
+			ZString zUrl = g.balance.strBaseURL + ZString("?Callsigns=") + zPlayers;
+	        client->getRequest((char*)(PCC)zUrl);
+	        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
+		        content = client->getResponseContent(&contentLen);
+        }
+
+		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
+			//Msr * myMsr = new Msr;
+			//ZString strContent = content;
+			//memcpy(myMsr,content,sizeof(Msr));
+			//printf("im still here!\n");
+		}
+	}
+
+	return;
+}
+
+void CFSMission::UpdateMSRInfo(Time now) //updatelobby
+{
+  if (m_fMSRDirty && (now - m_timeLastMSRInfo >= c_fMSRUpdateTimeInterval)
+      && (GetCookie() != NULL || !g.fmLobby.IsConnected()))
+  {
+    m_fMSRDirty = false;
+    if (g.fmLobby.IsConnected() && !g.balance.strBaseURL.IsEmpty())
+    {
+		  ImissionIGC * pmission = GetIGCMission();
+		  if (pmission && pmission->GetShips()->n() > 0) {
+			  char mprthname[9]; 
+			  mprSprintf(mprthname, sizeof(mprthname), "%d",GetCookie());
+			  m_threadp = new MprThread(doMSRInfo, MPR_NORMAL_PRIORITY, (void*) pmission, mprthname); 
+			  m_threadp->start();
+		  }
+    }
+    m_timeLastMSRInfo = now;
+  }
+}
+// End Imago #192
+
 
 // #ALLY
 // CFSMission::UpdateAlliances

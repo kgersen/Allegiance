@@ -252,10 +252,18 @@ public:
     return m_fLobbyDirty;
   }
   void UpdateLobby(Time now);
+  //Imago #192 8/10
+  void SetMSRIsDirty();
+  bool GetMSRIsDirty()
+  {
+    return m_fMSRDirty;
+  }
+  void UpdateMSRInfo(Time now);
   ImissionIGC *         GetIGCMission()   
   {
     return m_pMission;
   }
+  //
   IIgcSite*             GetSite()         
   {
     return m_psiteIGC;
@@ -494,6 +502,9 @@ private:
   CFMGroup *            m_pgrpMission;   // includes everyone in this mission, including lobby side
   Time                  m_timeLastLobbyMissionInfo;
   bool                  m_fLobbyDirty;
+  Time                  m_timeLastMSRInfo; //#192 Imago 8/10
+  bool                  m_fMSRDirty; //#192 Imago 8/10
+  MprThread*			m_threadp;  //#192 Imago 8/10
   bool                  m_bShouldDelete;
 
   SYSTEMTIME            m_stStartTime; // in UTC not PST

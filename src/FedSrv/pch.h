@@ -125,6 +125,8 @@ extern Global g;
 
 #include "qws.h" //Imago 6/10
 
+#include "msr.h" //Imago #192 8/10
+
 /////////////////////////////////////////////////////////////////////////////
 
 #endif // _FEDSRV_PCH_
