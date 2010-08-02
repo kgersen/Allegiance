@@ -186,6 +186,7 @@ static void doASGS(void* data, MprThread *threadp) {
 	int contentLen = 0; char *content; char szResponse[MAX_PATH];
 	RankID myRank = -2; // -3 wait, -2 wrong rank, -1 callsign does not exist, >=0 valid rank
 	char szURL[MAX_PATH]; char szName[32]; //Imago #192 
+	//TODO NYI use g.balance.strBaseURL #192
 	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
 
 	// one thread per connecting player
@@ -197,11 +198,12 @@ static void doASGS(void* data, MprThread *threadp) {
 		strName = strName.RightOf(1);
 
 	// Imago #192 (TODO revisit the rest of this to use ZString like the InputMap functions)
-	if (strName.ReverseFind(")") != -1)
-		strName = strName.LeftOf(")");
+	int iTmp = strName.ReverseFind(")");
+	if (iTmp != -1)
+		Strcat(szURL,(PCC)strName.Left(iTmp+1));
+	else
+		Strcat(szURL,(PCC)strName);
 
-	// add the name to the url
-	Strcat(szURL,(PCC)strName);
 
 	//Imago check only if connected to a lobby - 6/26/09
 	if (g.fmLobby.IsConnected()) {
@@ -240,8 +242,8 @@ static void doASGS(void* data, MprThread *threadp) {
 			if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
 				mutex->lock();
 				pqd->rank = myRank;
-				pqd->mu = 0.0f; //#192  NYI Imago 7/10 **
-				pqd->sigma = 0.0f; //#192  NYI Imago 7/10 **
+				pqd->mu = 0.0f; //#192  NYI Imago 7/10 ** TODO
+				pqd->sigma = 0.0f; //#192  NYI Imago 7/10 ** TODO
 				mutex->unlock();
 			} else { // insanity
 				mutex->lock();
@@ -253,8 +255,25 @@ static void doASGS(void* data, MprThread *threadp) {
 		} else { // imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
 			int strLen = strName.GetLength();
 			int leftParen = strName.ReverseFind('(',0);
+			float mu = 0.0f;
+			float sigma = 0.0f;
 			if (leftParen>=1) { //rank in the name
 				myRank = strName.Middle(leftParen+1,strName.ReverseFind(')') - leftParen - 1).GetInteger(); //Imago fixed mmf's code 7/10
+				//#192 8/10 Imago
+				int itmp = strName.ReverseFind(')',0);
+				if (strName.GetLength() > itmp + 1) {
+	  					ZString strValues = strName.Right(itmp + 1);
+						ZString zMu = strValues.GetToken();
+						ZString zSigma = strValues.GetToken();
+					if (!zMu.IsEmpty() && !zSigma.IsEmpty()) {
+						ZString zMuFloat = zMu.Middle(0,1) + zMu.Middle(1,1) + "." +  zMu.Middle(2,1) +  zMu.Middle(3,1);
+						ZString zSigmaFloat = zSigma.Middle(0,1) + zSigma.Middle(1,1) + "." +  zSigma.Middle(2,1) +  zSigma.Middle(3,1);
+						if (zMuFloat.GetLength() == 5 && zSigmaFloat.GetLength() == 5) {
+							mu = atof((PCC)zMuFloat);
+							sigma = atof((PCC)zSigmaFloat);
+						}
+					}
+				}
 				if (!((myRank>0) && (myRank<100))) { //more insanity
 					myRank=-2; // you are the wrong rank for all missions!
 					pqd->mu = 0.0f; //#192 Imago 7/10
@@ -267,8 +286,8 @@ static void doASGS(void* data, MprThread *threadp) {
 			}
 			mutex->lock();
 			pqd->rank = myRank;
-			pqd->mu = 0.0f; //#192 NYI Imago 7/10 **
-			pqd->sigma = 0.0f; //#192 NYI Imago 7/10 **
+			pqd->mu = mu; //#192 Imago 7/10
+			pqd->sigma = sigma; //#192 Imago 7/10
 			mutex->unlock();
 		}
         delete client;
@@ -1182,6 +1201,24 @@ void GotLogonDetails(CQLogonStats * pquery)
 	  int leftParen; int strLen;
 	  ZString strName = pfsPlayer->GetName();
 
+	  //#192 handle mu and sigma before this other garbage 8/10 Imago
+	  float mu = 0.0f;
+	  float sigma = 0.0f;
+	  int itmp = strName.ReverseFind(')',0);
+	  if (strName.GetLength() > itmp + 1) {
+	  	 ZString strValues = strName.Right(itmp + 1);
+		 ZString zMu = strValues.GetToken();
+		 ZString zSigma = strValues.GetToken();
+		if (!zMu.IsEmpty() && !zSigma.IsEmpty()) {
+			ZString zMuFloat = zMu.Middle(0,1) + zMu.Middle(1,1) + "." +  zMu.Middle(2,1) +  zMu.Middle(3,1);
+			ZString zSigmaFloat = zSigma.Middle(0,1) + zSigma.Middle(1,1) + "." +  zSigma.Middle(2,1) +  zSigma.Middle(3,1);
+			if (zMuFloat.GetLength() == 5 && zSigmaFloat.GetLength() == 5) {
+				mu = atof((PCC)zMuFloat);
+				sigma = atof((PCC)zSigmaFloat);
+			}
+		}
+	  }
+
 	  strLen = strName.GetLength();
 	  leftParen = strName.ReverseFind('(',0);
 	  if (leftParen>=1) {
@@ -1192,12 +1229,12 @@ void GotLogonDetails(CQLogonStats * pquery)
 		}
         const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
 	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
-		ppso->SetMuAndSigma(99.99f, 99.99f); //#192 NYI Imago 7/10
+		ppso->SetMuAndSigma(mu, sigma); //#192 Imago 7/10
 	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 		{
 		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
-		  ppso->SetMuAndSigma(99.99f, 99.99f); //#192 NYI Imago 7/10
+		  ppso->SetMuAndSigma(mu, sigma); //#192 Imago 7/10
 		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 		}
 
