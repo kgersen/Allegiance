@@ -185,10 +185,13 @@ static void doASGS(void* data, MprThread *threadp) {
 
 	int contentLen = 0; char *content; char szResponse[MAX_PATH];
 	RankID myRank = -2; // -3 wait, -2 wrong rank, -1 callsign does not exist, >=0 valid rank
-	char szURL[MAX_PATH]; char szName[32]; //Imago #192 
-	//TODO NYI use g.balance.strBaseURL #192
-	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
-
+	
+	//Imago #192 
+	char szName[32]; 
+	ZString zUrl = (g.balance.strBaseURL.IsEmpty()) 
+		? "http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=" 
+		: g.balance.strBaseURL + "?Callsign="; //For now we have still lookup by callsign -Imago 8/10
+	
 	// one thread per connecting player
 	Strcpy(szName,pqd->szCharacterName);
 
@@ -197,13 +200,12 @@ static void doASGS(void* data, MprThread *threadp) {
 	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
 		strName = strName.RightOf(1);
 
-	// Imago #192 (TODO revisit the rest of this to use ZString like the InputMap functions)
+	// Imago #192
 	int iTmp = strName.ReverseFind(")");
 	if (iTmp != -1)
-		Strcat(szURL,(PCC)strName.Left(iTmp+1));
+		zUrl += strName.Left(iTmp+1);
 	else
-		Strcat(szURL,(PCC)strName);
-
+		zUrl += strName;
 
 	//Imago check only if connected to a lobby - 6/26/09
 	if (g.fmLobby.IsConnected()) {
@@ -220,36 +222,49 @@ static void doASGS(void* data, MprThread *threadp) {
 	    client->setKeepAlive(0);
 
         if (iwrite == 7) { // make sure we wrote 7 bytes
-	        client->getRequest(szURL);
+			//  Allsrv ASGS thread // We can change this to CSS soon hopefully
+	        client->getRequest((char*)(PCC)zUrl);
 	        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
 		        content = client->getResponseContent(&contentLen);
         }
 
 		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
 			ZString strContent = content;
-			strContent = strContent.RightOf(88);
-			strContent = strContent.LeftOf("<");
-			Strcpy(szResponse,(PCC)strContent);
-
-			// the only explicit error known, Pook?
-			if (Strcmp(strtok(szResponse,"|"),"0") != 0 ) {
-					myRank = -1;
+			// Imago #192 8/10
+			float mu = 0.0f;
+			float sigma = 0.0f;
+			if (strContent.Find("|") == -1) {
+				ZString zMu = strContent.GetToken();
+				mu = atof((PCC)zMu);
+				ZString zSigma = strContent.GetToken();
+				sigma = atof((PCC)zSigma);
+				ZString zRank = strContent.GetToken();
+				float rank = atof((PCC)zRank) + 0.5f;
+				myRank = (RankID)floor(rank);
 			} else {
-					myRank = atoi(strtok(NULL,"|"));
-			}
+				strContent = strContent.RightOf(88);
+				strContent = strContent.LeftOf("<");
+				Strcpy(szResponse,(PCC)strContent);
 
+				// the only explicit error known, Pook?
+				if (Strcmp(strtok(szResponse,"|"),"0") != 0 ) {
+						myRank = -1;
+				} else {
+						myRank = atoi(strtok(NULL,"|"));
+				}
+			}
 			// sanity check
 			if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
 				mutex->lock();
 				pqd->rank = myRank;
-				pqd->mu = 0.0f; //#192  NYI Imago 7/10 ** TODO
-				pqd->sigma = 0.0f; //#192  NYI Imago 7/10 ** TODO
+				pqd->mu = mu; //#192 Imago 7/10 
+				pqd->sigma = sigma; //#192 Imago 7/10
 				mutex->unlock();
 			} else { // insanity
 				mutex->lock();
 				pqd->rank = -2;
-				pqd->mu = 0.0f; //#192 Imago 7/10
-				pqd->sigma = 0.0f; //#192 Imago 7/10
+				pqd->mu = mu; //#192 Imago 7/10
+				pqd->sigma = sigma; //#192 Imago 7/10
 				mutex->unlock();
 			}
 		} else { // imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)

@@ -283,6 +283,11 @@ struct Global
     strArtPath.SetEmpty();
 	strLocalAddress.SetEmpty(); //Imago 6/10
     strLocation.SetEmpty(); //Imago 6/10
+	//Imago 8/10 #192
+	balance.strBaseURL.SetEmpty(); 
+	balance.kFactor = 3;
+	balance.MaxNewbRank = 4;
+	balance.sysVariance = 0; //?
 //#if !defined(ALLSRV_STANDALONE)
     strSQLConfig.Empty();
 //#endif    
