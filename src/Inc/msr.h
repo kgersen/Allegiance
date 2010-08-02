@@ -1,13 +1,9 @@
 //Imago #192 8/10
+// Keep in sync with /AllegSkill/nph-GetMSRFromCallsign.cgi
 
 typedef struct {
- char name[12];
  float mu;
  float sigma;
- int rank;
+ float rank;
+ char name[12];
 } Msr;
-
-typedef struct {
- Msr * msrs;
- int cNum;
-} MsrArray;

@@ -5414,10 +5414,17 @@ void doMSRInfo(void* data, MprThread *threadp) {
         }
 
 		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
-			//Msr * myMsr = new Msr;
-			//ZString strContent = content;
-			//memcpy(myMsr,content,sizeof(Msr));
-			//printf("im still here!\n");
+			Msr myMsr;
+			ZString zRes = content;
+			int iCount = zRes.Left(3).GetInteger();
+			if (iCount > 0)  {
+				ZString zContent = zRes.RightOf(3);
+				for (int i = 0; i < iCount; i++) {
+					memcpy((char *)&myMsr,(PCC)zContent + (sizeof(Msr) * i),sizeof(Msr));
+					ZString zName = ZString(myMsr.name);
+					printf("Setting MSR for %s\n",(PCC)zName);
+				}
+			}
 		}
 	}
 
