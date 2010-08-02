@@ -4377,7 +4377,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 	if (GetCountOfPlayers(pside, false) >= pmp->nMaxPlayersPerTeam)
 		return DPR_TeamFull;
     else if ((nNumPlayers >= maxPlayers) &&//Xynth #166 7/2010 Add condition to let low rank players join stack
-			 !((pfsPlayer->GetPersistPlayerScore(NA)->GetRank() <= g.MaxNewbRank) && (nNumPlayers < (maxPlayers + 2))))
+			 !((pfsPlayer->GetPersistPlayerScore(NA)->GetRank() <= g.balance.MaxNewbRank) && (nNumPlayers < (maxPlayers + 2))))
 			//If the player is low rank (<4) and there aren't more than 2 extra players, let him join (Imago made this configurable #174)
 		return DPR_TeamBalance;
 

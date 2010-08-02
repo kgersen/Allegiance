@@ -1251,6 +1251,7 @@ class UTL
 		static bool PrivilegedUser(const char* szName, DWORD dwCookie); 
 		//Imago 7/10
 		static ZString char2hex( const unsigned char* _pArray, unsigned int _len );
+		static TList<TMap<unsigned short,ZString>> UTL::GetConfig(const char *szSection);
 		//
 
         //Get an artwork file, downloading if needed

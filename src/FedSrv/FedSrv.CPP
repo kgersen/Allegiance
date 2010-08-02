@@ -33,7 +33,6 @@ static MprLogModule *tMod;
 static MprMutex	*mutex;
 
 //Imago 6/10
-const int c_iDefaultQServerPort = 25000;
 extern SOCKET SetUpListener(const char* pcAddress, int nPort);
 extern void QServerCnxn(SOCKET QServerSocket);
 
@@ -50,6 +49,7 @@ ZString GetLocalComputerName() {
 
   return(strRetVal);
 }
+//
 
 //do our best to post a dump Imago 7/10 (move to appweb to Utility and share this?)
 bool DumpSend(ZString zaFile, int iTry = 0) {
@@ -194,10 +194,14 @@ static void doASGS(void* data, MprThread *threadp) {
 	// ignore "tokens" in player name
 	ZString strName = szName;
 	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
-		Strcpy(szName,strName.RightOf(1));
+		strName = strName.RightOf(1);
+
+	// Imago #192 (TODO revisit the rest of this to use ZString like the InputMap functions)
+	if (strName.ReverseFind(")") != -1)
+		strName = strName.LeftOf(")");
 
 	// add the name to the url
-	Strcat(szURL,szName);
+	Strcat(szURL,(PCC)strName);
 
 	//Imago check only if connected to a lobby - 6/26/09
 	if (g.fmLobby.IsConnected()) {
@@ -236,32 +240,42 @@ static void doASGS(void* data, MprThread *threadp) {
 			if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
 				mutex->lock();
 				pqd->rank = myRank;
+				pqd->mu = 0.0f; //#192  NYI Imago 7/10 **
+				pqd->sigma = 0.0f; //#192  NYI Imago 7/10 **
 				mutex->unlock();
 			} else { // insanity
 				mutex->lock();
 				pqd->rank = -2;
+				pqd->mu = 0.0f; //#192 Imago 7/10
+				pqd->sigma = 0.0f; //#192 Imago 7/10
 				mutex->unlock();
 			}
-		} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
+		} else { // imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
 			int strLen = strName.GetLength();
 			int leftParen = strName.ReverseFind('(',0);
 			if (leftParen>=1) { //rank in the name
-				char szRank[3];
-				Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
-				myRank = atoi(szRank);
+				myRank = strName.Middle(leftParen+1,strName.ReverseFind(')') - leftParen - 1).GetInteger(); //Imago fixed mmf's code 7/10
 				if (!((myRank>0) && (myRank<100))) { //more insanity
 					myRank=-2; // you are the wrong rank for all missions!
+					pqd->mu = 0.0f; //#192 Imago 7/10
+					pqd->sigma = 0.0f; //#192 Imago 7/10
 				}
 			} else { //no rank in name
 				myRank = 0;
+				pqd->mu = 0.0f; //#192 Imago 7/10
+				pqd->sigma = 0.0f; //#192 Imago 7/10
 			}
 			mutex->lock();
 			pqd->rank = myRank;
+			pqd->mu = 0.0f; //#192 NYI Imago 7/10 **
+			pqd->sigma = 0.0f; //#192 NYI Imago 7/10 **
 			mutex->unlock();
 		}
         delete client;
 	} else { //not connected to a lobby, just set rank to 0 - imago 6/26/09
 		pqd->rank = 0;
+		pqd->mu = 0.0f; //#192 Imago 7/10
+		pqd->sigma = 0.0f; //#192 Imago 7/10
 	}
 
 	// tell the main thread we've finished using the existing thread msg for AZ SQL
@@ -363,28 +377,53 @@ void LoadRankInfo()
       strcpy(g.vRankInfo[i].RankName, (char*)GetRanks_Name);
     }
   }
-#else //Imago: Changed to load rank_info from <artwork>/ranks.txt
-    char        mapfilename[MAX_PATH + 1];
-    HRESULT     hr = UTL::getFile("ranks", ".txt", mapfilename, true, true);
-    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
-    if (file)
-    {
-      int nbranks;
-      fscanf(file,"%d\n",&nbranks);
-      g.cRankInfo = nbranks;
-      g.vRankInfo = new RankInfo[g.cRankInfo];
-      for (int i=0;i<nbranks;i++)
-      {
-         int rank;
-         fscanf(file,"%d,%[^,\n]\n",&rank,g.vRankInfo[i].RankName);
-         g.vRankInfo[i].rank = rank;
-         g.vRankInfo[i].requiredRanking = 0;
-         g.vRankInfo[i].civ = -1;
-      }
-      fclose(file);
-   }
-   else
-      g.cRankInfo = 0;
+#else 
+	// Imago 7/10 
+	TList<TMap<unsigned short,ZString>> rankList = UTL::GetConfig("ranks");
+	if (rankList.GetCount() > 0) {
+		g.cRankInfo = rankList.GetCount();
+		g.vRankInfo = new RankInfo[g.cRankInfo];
+		TList<TMap<unsigned short,ZString>>::Iterator iter(rankList);
+		int nbranks = 0;
+		while (!iter.End()) {
+			TMap<unsigned short,ZString> mapIni = iter.Value();
+			ZString zKey; ZString zNice; ZString zValue;
+			mapIni.Find(0,zKey); mapIni.Find(1,zNice); mapIni.Find(2,zValue);
+			Strcpy(g.vRankInfo[nbranks].RankName,(PCC)zValue);
+			g.vRankInfo[nbranks].rank = zKey.GetInteger();
+			g.vRankInfo[nbranks].requiredRanking = 0;
+			g.vRankInfo[nbranks].civ = NA;
+			nbranks++;
+			iter.Next();
+		}
+	}
+
+	TList<TMap<unsigned short,ZString>> balanceList = UTL::GetConfig("balance");
+	if (balanceList.GetCount() > 0) {
+		TList<TMap<unsigned short,ZString>>::Iterator iter(balanceList);
+		while (!iter.End()) {
+			TMap<unsigned short,ZString> mapIni = iter.Value();
+			ZString zKey; ZString zNice; ZString zValue;
+			mapIni.Find(0,zKey); mapIni.Find(1,zNice); mapIni.Find(2,zValue);
+			if  (!zValue.IsEmpty()) {
+				if (zKey.ReverseFind("MaxNewbRank") == 0 ) {
+					g.balance.MaxNewbRank = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("kFactor") == 0 ) {
+					g.balance.kFactor = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("sysVariance") == 0 ) {
+					g.balance.sysVariance = atof((PCC)zValue);
+				}
+				if (zKey.ReverseFind("ServiceBaseURL") == 0 ) {
+					g.balance.strBaseURL = zValue;
+				}
+			}
+			iter.Next();
+		}
+	}
+	// End Imago 7/10 #192
+
 #endif // !defined(ALLSRV_STANDALONE)
 }
 
@@ -394,29 +433,30 @@ void UnloadRankInfo()
   g.cRankInfo = 0;
 }
 
-//KGJV #114
-// read <artpath>/cores.txt and fill in g.cStaticCoreInfo (size) and g.vStaticCoreInfo (data)
-// this assumes cores.txt is well formated (no overflow control)
+// KGJV old #114
 void LoadStaticCoreInfo()
 {
-    char        mapfilename[MAX_PATH + 1];
-    HRESULT     hr = UTL::getFile("cores", ".txt", mapfilename, true, true);
-    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
-	g.cStaticCoreInfo = 0;
-	g.vStaticCoreInfo = NULL;
-    if (file)
-    {
-		// 1st line = nb cores
-		fscanf(file,"%d\n",&g.cStaticCoreInfo);
-		g.vStaticCoreInfo = new StaticCoreInfo[g.cStaticCoreInfo];
-		memset(g.vStaticCoreInfo,0,g.cStaticCoreInfo*sizeof(StaticCoreInfo));// mainly for debugging purpose
-		for (int i=0;i<g.cStaticCoreInfo;i++)
-		{
-			// one core per line, no .igc extension, max size = c_cbFileName
-			fscanf(file,"%[^\n]\n",g.vStaticCoreInfo[i].cbIGCFile);
+	// Imago 7/10 
+	TList<TMap<unsigned short,ZString>> coreList = UTL::GetConfig("cores");
+	if (coreList.GetCount() > 0) {
+		StaticCoreInfo * sci = new StaticCoreInfo[coreList.GetCount()];
+		TList<TMap<unsigned short,ZString>>::Iterator iter(coreList);
+		int nbcores = 0;
+		while (!iter.End()) {
+			TMap<unsigned short,ZString> mapIni = iter.Value();
+			ZString zKey; ZString zNice; ZString zValue;
+			mapIni.Find(0,zKey); mapIni.Find(1,zNice); mapIni.Find(2,zValue);
+			if (zValue.GetInteger() > 0) {
+				Strcpy(sci[nbcores].cbIGCFile,(PCC)zKey);
+				nbcores++;
+			}
+			iter.Next();
 		}
-		fclose(file);
+		g.cStaticCoreInfo = nbcores;
+		g.vStaticCoreInfo = new StaticCoreInfo[g.cStaticCoreInfo];
+		memcpy(g.vStaticCoreInfo,sci,sizeof(StaticCoreInfo) * nbcores);
 	}
+
 }
 void UnloadStaticCoreInfo()
 {
@@ -449,26 +489,24 @@ void LoadStaticMapInfo()
     }
   }
 #else
-// --KGJV; FZ/FAZ version: load maps list from a file (<artwork>\maps.txt)
-    char        mapfilename[MAX_PATH + 1];
-    HRESULT     hr = UTL::getFile("maps", ".txt", mapfilename, true, true);
-    FILE*       file = fopen(mapfilename, "rt"); // open in text mode
-    if (file)
-    {
-		int nbmaps;
-		fscanf(file,"%d\n",&nbmaps);
-		g.cStaticMapInfo = nbmaps;
+// Imago 7/10 
+	TList<TMap<unsigned short,ZString>> mapList = UTL::GetConfig("maps");
+	if (mapList.GetCount() > 0) {
+		g.cStaticMapInfo = mapList.GetCount();
 		g.vStaticMapInfo = new StaticMapInfo[g.cStaticMapInfo];
-		for (int i=0;i<nbmaps;i++)
-		{
-			int nbteams;
-			fscanf(file,"%d,%[^,],%[^,\n]\n",&nbteams,g.vStaticMapInfo[i].cbFriendlyName,g.vStaticMapInfo[i].cbIGCFile);
-			g.vStaticMapInfo[i].nNumTeams = nbteams;
+		TList<TMap<unsigned short,ZString>>::Iterator iter(mapList);
+		int nbmaps = 0;
+		while (!iter.End()) {
+			TMap<unsigned short,ZString> mapIni = iter.Value();
+			ZString zKey; ZString zNice; ZString zValue;
+			mapIni.Find(0,zKey); mapIni.Find(1,zNice); mapIni.Find(2,zValue);
+			g.vStaticMapInfo[nbmaps].nNumTeams = zValue.GetInteger();
+			Strcpy(g.vStaticMapInfo[nbmaps].cbFriendlyName,(PCC)zNice);
+			Strcpy(g.vStaticMapInfo[nbmaps].cbIGCFile,(PCC)zKey);
+			nbmaps++;
+			iter.Next();
 		}
-		fclose(file);
 	}
-	else
-		g.cStaticMapInfo = 0;
 #endif
 }
 
@@ -1112,10 +1150,12 @@ void GotLogonDetails(CQLogonStats * pquery)
 		} else {
 			const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
 			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,NA);  //and NOAT
+			ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 NYI Imago 7/10
 			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 			for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 			{
 				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,pcl->data()->GetObjectID());
+				ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 NYI Imago 7/10
 				pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 			}
 		}
@@ -1123,13 +1163,20 @@ void GotLogonDetails(CQLogonStats * pquery)
 		char newName[32]; //Imago #192 
 		ZString strName = pship->GetName();
 		int leftParen = strName.ReverseFind('(',0);
-		if (pqd->rank > g.MaxNewbRank && leftParen>1) {
+		if (pqd->rank > g.balance.MaxNewbRank && leftParen>1) {
 			Strncpy(newName,(PCC)strName,leftParen);
 			Strncpy(newName+leftParen,"\0",1); // null terminate
 			pship->SetName(newName);
+		} else {
+			// Imago #192 (TODO revisit the rest of this to use ZString where mmf didnt)
+			ZString zName = pfsPlayer->GetName();
+			int itmp = zName.ReverseFind(')',0);
+			if (itmp != -1)
+				strName = strName.Left(itmp+1);
+				pship->SetName((PCC)strName);
 		}
 	} else {
-	  // mmf pull rank from callsign (#) for now
+	  // pull rank from callsign (#) for now
 	  char szRank[64];
 	  char newName[64];
 	  int leftParen; int strLen;
@@ -1138,27 +1185,37 @@ void GotLogonDetails(CQLogonStats * pquery)
 	  strLen = strName.GetLength();
 	  leftParen = strName.ReverseFind('(',0);
 	  if (leftParen>=1) {
-	    Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
-	    RankID myRank = atoi(szRank); 
+		RankID myRank = strName.Middle(leftParen+1,strName.ReverseFind(')') - leftParen - 1).GetInteger(); //Imago fixed mmf's code 7/10
 		if (!((myRank>0) && (myRank<100))) {
 			debugf("Rank out of range rank=%d\n",myRank);
 			myRank=0; // sanity check
 		}
         const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
 	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+		ppso->SetMuAndSigma(99.99f, 99.99f); //#192 NYI Imago 7/10
 	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 		{
 		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+		  ppso->SetMuAndSigma(99.99f, 99.99f); //#192 NYI Imago 7/10
 		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 		}
+
 		// remove the (#) from callsign
 		// only for ranks above 4 so people can see newbs for boot protection as per the COD
-		if (myRank > g.MaxNewbRank) {
+		if (myRank > g.balance.MaxNewbRank) {
 			Strncpy(newName,(PCC)strName,leftParen);
 			Strncpy(newName+leftParen,"\0",1); // null terminate
 			pship->SetName(newName);
+		} else {
+			// Imago #192 (TODO revisit the rest of this to use ZString where mmf didnt)
+			ZString zName = pfsPlayer->GetName();
+			int itmp = zName.ReverseFind(')',0);
+			if (itmp != -1)
+				strName = strName.Left(itmp+1);
+				pship->SetName((PCC)strName);
 		}
+
 	    fValid = true;
 	  } else {
 		fValid = true; // No rank found, Rank not set, should default to 0
@@ -8960,6 +9017,75 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   return 0;
 }
 
+//Imago 7/10
+void LoadConfig() {
+	TList<TMap<unsigned short,ZString>> globalList = UTL::GetConfig("global");
+	if (globalList.GetCount() > 0) {
+		TList<TMap<unsigned short,ZString>>::Iterator iter(globalList);
+		while (!iter.End()) {
+			TMap<unsigned short,ZString> mapIni = iter.Value();
+			ZString zKey; ZString zNice; ZString zValue;
+			mapIni.Find(0,zKey); mapIni.Find(1,zNice); mapIni.Find(2,zValue);
+			if (!zValue.IsEmpty()) {
+				if (zKey.ReverseFind("ArtPath") == 0) {
+					g.strArtPath = zValue;
+					UTL::SetArtPath(zValue);
+				}
+				if (zKey.ReverseFind("nUpdatesPerSecond") == 0) {
+					g.nUpdatesPerSecond = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("nDebugMask") == 0) {
+					 g_app.SetDebug(zValue.GetInteger());
+				}
+				if (zKey.ReverseFind("LobbyServer") == 0) {
+					 g.strLobbyServer = zValue;
+				}
+				if (zKey.ReverseFind("LocalAddress") == 0) {
+					g.strLocalAddress = zValue;
+				}
+				if (zKey.ReverseFind("Location") == 0) {
+					g.strLocation = zValue;
+				}
+				if (zKey.ReverseFind("MaxGames") == 0) {
+					g.cMaxGames = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("MaxBandwidth") == 0) {
+					g.cMaxBandwidth = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("QueryPort") == 0) {
+					g.cQServerPort = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("fWantInt3") == 0) {
+					g.fWantInt3 = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("ASGS_ON") == 0) {
+					g.fASGS = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("fDoublePrecision") == 0) {
+					g.fDoublePrecision = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("fTimeout") == 0) {
+					g.fTimeOut = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("SQLThreadsNotify") == 0) {
+					g.csqlNotifyThreads = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("SQLThreadsSilent") == 0) {
+					g.csqlSilentThreads = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("SQLConfig") == 0) {
+					 g.strSQLConfig = zValue.MakeBSTR();
+				}
+				if (zKey.ReverseFind("PrivilegedUsers") == 0) {
+					ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
+					UTL::SetPrivilegedUsers((PCC)zValue.Scramble(zInfo),-1); //Imago 6/10
+				}
+			}
+			iter.Next();
+		}
+	}
+}
+
 /*-------------------------------------------------------------------------
  * LoadSettings
  *-------------------------------------------------------------------------
@@ -9094,8 +9220,8 @@ void LoadSettings()
         dwValue=0;
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxNewbRank", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.MaxNewbRank = dwValue;
-        else g.MaxNewbRank = 4;
+            g.balance.MaxNewbRank = dwValue;
+        else g.balance.MaxNewbRank = 4;
 		//
 
         dwValue=0;
@@ -9690,6 +9816,9 @@ int __cdecl main(int argc, char *argv[])
     // Load the global settings from the registry
     LoadSettings();
 
+	// Imago 7/10
+	LoadConfig();
+
     // set the FPU to double precision, instead of long double
     // (this makes FP compares a little safer)
     if (g.fDoublePrecision)
@@ -9716,7 +9845,8 @@ int __cdecl main(int argc, char *argv[])
 	tMod = new MprLogModule(programName);
 	logger = new MprLogToFile();
 	mpr->addListener(logger);
-    mpr->setLogSpec("allsrv_appweb.log:9");
+	ZString zWebLog = GetAppDir() + "/allsrv_appweb.log:9";
+    mpr->setLogSpec((char*)(PCC)zWebLog);
 #endif
 	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
@@ -9759,11 +9889,11 @@ int __cdecl main(int argc, char *argv[])
         g.strLocalAddress = GetLocalComputerName();
     }
 
-	int iPortBump = c_iDefaultQServerPort;
+	int iPortBump = g.cQServerPort;
 	while (1) {
-		g.QServerSocket = SetUpListener(g.strLocalAddress, htons(iPortBump));
+		g.QServerSocket = SetUpListener(GetLocalComputerName(), htons(iPortBump));
 		if (g.QServerSocket == INVALID_SOCKET) {
-			if ( (iPortBump - c_iDefaultQServerPort) >= 10) {
+			if ( (iPortBump - g.cQServerPort) >= 10) {
 				printf("%s\n",(PCC)WSAGetLastErrorMessage("Query server setup failed"));
 				return 3; // couldn't listen for stats query, tried 25000-25010 ;-(
 			}

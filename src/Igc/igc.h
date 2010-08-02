@@ -5314,6 +5314,8 @@ class PersistPlayerScoreObject
             m_fCombatRating = 0.0f;
             m_rank = 0;
             m_civID = NA;
+			m_mu = 0.0f; //Imago #192 7/10
+			m_sigma = 0.0f; //Imago #192 7/10
         }
 
         short   GetRank(void) const
@@ -5325,6 +5327,23 @@ class PersistPlayerScoreObject
         {
             return m_totalScore;
         }
+
+		//Imago #192 7/10
+        float   GetMu(void) const
+        {
+            return m_mu;
+        }
+
+        float   GetSigma(void) const
+        {
+            return m_sigma;
+        }
+		
+		void SetMuAndSigma(float mu, float sigma) {
+			m_sigma = sigma;
+			m_mu = mu;
+		}
+		//
 
 
         void  SetCivID(CivID civID)
@@ -5353,7 +5372,8 @@ class PersistPlayerScoreObject
         RankID              m_rank;
 
         CivID               m_civID;
-
+		float m_mu; //Imago #192 7/10
+		float m_sigma; //Imago #192 7/10
         friend class PlayerScoreObject;
 };
 

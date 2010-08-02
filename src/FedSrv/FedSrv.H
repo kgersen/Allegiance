@@ -212,6 +212,14 @@ public:
 };
 
 
+//Imago 7/10 #192
+struct BalanceInfo {
+	RankID  MaxNewbRank;
+	short	kFactor;
+	float	sysVariance;
+	ZString strBaseURL;
+};
+
 struct FedTechBit
 {
 public:
@@ -243,10 +251,10 @@ struct Global
     fmLobby(&siteFSLobby),
     dwServerGITCookie(0),
 	fASGS(true), //Imago 7/10 DIE ASGS (still default on, ...for now!!)
-	MaxNewbRank(4),
     fProtocol(false),
     fPaused(false),
-    fDoublePrecision(true)
+    fDoublePrecision(true),
+	cQServerPort(25000) //Imago 7/10
 //#if !defined(ALLSRV_STANDALONE) Imago commented 6/10
     ,
     csqlSilentThreads(0),
@@ -346,7 +354,8 @@ struct Global
   unsigned int		  cMaxBandwidth;
   
   bool                fASGS; //Imago 7/10 DIE ASGS!
-  int				  MaxNewbRank; //Imago #174
+  BalanceInfo		  balance; //Imago #174
+  int				  cQServerPort; //Imago 7/10
   bool                fProtocol;
   bool                fPaused;
   bool                fDoublePrecision;
@@ -367,7 +376,6 @@ struct Global
   bool				bRestarting;
 #endif
 };
-
 
 // ******* Functions/Declarations that need prototypes *********
 class CFSShip;

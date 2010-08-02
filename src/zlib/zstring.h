@@ -15,6 +15,7 @@ class StringMDLType;
 class ZString {
 private:
     friend class StringMDLType;
+
     class ZStringData : public IObjectSingle {
     protected:
         PCC   m_pcc;
@@ -46,7 +47,7 @@ private:
         int        FindAny(const ZStringData* pdata, int index) const;
         int ReverseFindAny(const ZStringData* pdata, int index) const;
 
-        //BSTR MakeBSTR() const;
+        BSTR MakeBSTR() const;
     };
 
     static TRef<ZStringData> s_pemptyData;

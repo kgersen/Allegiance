@@ -81,6 +81,34 @@ bool UTL::PrivilegedUser(const char* szName, DWORD dwCookie) {
 	return false;
 }
 
+//Imago 7/10
+TList<TMap<unsigned short,ZString>> UTL::GetConfig(const char *szSection) {
+	char cbIniBuffer[32767]; //max allowed by the Win32 API
+	GetPrivateProfileSection(szSection, cbIniBuffer, sizeof(cbIniBuffer), GetAppDir() +"/allsrv.ini" );
+	char* cpKey = cbIniBuffer;
+	TMap<unsigned short,ZString> mapIni;
+	TList<TMap<unsigned short,ZString>> listIniMaps;
+	while( *cpKey )
+	{
+		mapIni.SetEmpty();
+		ZString zLine = ZString(cpKey);
+		ZString zName = zLine.LeftOf("\t");
+		if (zName.IsEmpty() || zName == "\t")
+			zName = zLine.LeftOf("=");
+		ZString zValue = zLine.RightOf("=");
+		zName.RemoveAll(' ');
+		ZString zNiceName = zLine.RightOf("\t").LeftOf("=");
+		if (zNiceName[0] == ' ')
+			zNiceName = zNiceName.RightOf(zNiceName.ReverseFindAny(" ") + 1);
+		cpKey += strlen( cpKey ) + 1;
+		mapIni.Set(0,zName);
+		mapIni.Set(1,zNiceName);
+		mapIni.Set(2,zValue);
+		listIniMaps.PushEnd(mapIni);
+	}
+	return listIniMaps;
+}
+
 void UTL::SetUrlRoot(const char * szUrlRoot)
 {
     assert (szUrlRoot);

@@ -31,6 +31,8 @@ BEGIN_QUERY(CQLogonStats, true,
   char  fCanCheat;
 
   // CharStats
+  float	  mu; //Imago #192 7/10
+  float   sigma; //Imago #192 7/10
   CivID   civID;
   RankID  rank;
   float   score;
