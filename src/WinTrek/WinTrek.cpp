@@ -3872,6 +3872,39 @@ public:
 	{
 		contextPlayerInfo->SetMute(!contextPlayerInfo->GetMute());
 	}
+	//Xynth #48 8/2010
+	void contextDockDrone()
+	{
+		ImodelIGC*  pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+			NULL, NULL, NULL, NULL, c_sabmRepair);
+
+		if (pmodel)
+		{
+			contextPlayerInfo->GetShip()->SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
+			contextPlayerInfo->GetShip()->SetStayDocked(true);
+		}
+
+		if (trekClient.m_fm.IsConnected())
+        {
+            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+            BEGIN_PFM_CREATE(trekClient.m_fm, pfmOC, CS, ORDER_CHANGE)
+            END_PFM_CREATE
+
+            pfmOC->shipID = contextPlayerInfo->GetShip()->GetObjectID();			
+            pfmOC->command = c_cmdAccepted;
+            pfmOC->commandID = c_cidGoto;
+            if (pmodel)
+            {
+                pfmOC->objectType = pmodel->GetObjectType();
+                pfmOC->objectID = pmodel->GetObjectID();
+            }
+            else
+            {
+                pfmOC->objectType = OT_invalid;
+                pfmOC->objectID = NA;
+            }
+		}
+	}
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -4075,6 +4108,9 @@ public:
 	#define idmFFGainUp			812
 	#define idmFFGainDown		813
 	#define idmFFAutoCenter		814
+	
+	//Xynth #48 8/2010
+	#define idmContextDockDrone		815
 
 
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
@@ -4279,8 +4315,45 @@ public:
         if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str1 , 'A');
         if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str2 , 'R');
         if(bEnableMakeLeader)	m_pmenu->AddMenuItem(idmContextMakeLeader , str3 , 'L');
-        if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');
+        if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');		
+		
+		Point popupPosition = GetMousePosition();
 
+
+		TRef<Pane> ppane = m_pmenu->GetPane();
+		ppane->UpdateLayout();
+		Point p = Point::Cast(ppane->GetSize());
+
+		popupPosition.SetY(popupPosition.Y() - p.Y());
+        OpenPopup(m_pmenu,	popupPosition);
+	}
+
+	//Xynth #48 8/2010 Add for player pane right click (initially miner dock)
+	void ShowPlayerPaneContextMenu(PlayerInfo * playerInfo)
+	{
+		contextPlayerInfo = playerInfo;
+
+		char str1[30];
+		
+		//Xynth #48 8/2010 Add Dock menu item
+		bool bEnableDock = false;
+		if (trekClient.MyMission()->InProgress() && trekClient.GetPlayerInfo()->IsTeamLeader())
+		{
+			bEnableDock = playerInfo->GetShip()->GetPilotType() == c_ptMiner ? true : false;
+
+			sprintf(str1,"Dock       ");
+		}
+
+		m_pmenu =
+            CreateMenu(
+                GetModeler(),
+                TrekResources::SmallFont(),
+                m_pmenuCommandSink
+            );
+
+
+       if(bEnableDock)			m_pmenu->AddMenuItem(idmContextDockDrone , str1 , 'D'); //Xynth #48 8/2010
+		
 		Point popupPosition = GetMousePosition();
 
 
@@ -6044,6 +6117,10 @@ public:
 
 			case idmContextMutePlayer:
 				contextMute();			CloseMenu();
+				break;
+			//Xynth #48 8/2010
+			case idmContextDockDrone:
+				contextDockDrone();		CloseMenu();
 				break;
 
 			case idmFFAutoCenter:

@@ -1835,11 +1835,20 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         {
             m_ripcordDebt += delta;
         }
+		//Xynth #48 8/2010
+		virtual void				SetStayDocked(bool stayDock)
+		{
+			m_stayDocked = stayDock;
+		}
+		virtual bool				GetStayDocked(void) const
+		{
+			return m_stayDocked;
+		}
 
         virtual bool                OkToLaunch(Time now)
         {
             //Spend 10 seconds docked (MyLastUpdate is not being updated while docked)
-            if (now > GetMyLastUpdate() + 10.0f)
+            if ((now > GetMyLastUpdate() + 10.0f) && !m_stayDocked) //Xynth #48 8/10 add staydocked bool
             {
                 IclusterIGC*    pcluster   = m_station->GetCluster();
                 const Vector&   positionMe = m_station->GetPosition();
@@ -2399,6 +2408,8 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         bool                m_bAutopilot;
         bool                m_bRunningAway;
         WarningMask         m_warningMask;
+
+		bool				m_stayDocked;  //Xynth #48 8/10
 };
 
 #endif //__SHIPIGC_H_

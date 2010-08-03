@@ -243,6 +243,7 @@ public:
 	virtual void ShowOptionsMenu() = 0;
 
 	virtual void ShowPlayerContextMenu(PlayerInfo * playerInfo) = 0;
+	virtual void ShowPlayerPaneContextMenu(PlayerInfo * playerInfo) = 0;  //Xynth #48 8/2010
 
     virtual void RejectQueuedCommand(bool    bClear = true,
                                      bool    bNegative = false) = 0;
