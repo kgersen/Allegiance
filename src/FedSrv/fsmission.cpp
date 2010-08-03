@@ -5369,30 +5369,37 @@ void CFSMission::SetMSRIsDirty() {
 }
 
 void doMSRInfo(void* data, MprThread *threadp) {
+	TMap<ZString,ShipID> mapNames;
+	mapNames.SetEmpty();
 	bool bPlayers = false;
 	ImissionIGC * pMission = (ImissionIGC*)data;
+
 	if (pMission == NULL)
 		return;
+
 	ZString zPlayers; zPlayers.SetEmpty();
 	for (ShipLinkIGC*  psl = pMission->GetShips()->first(); (psl != NULL); psl = psl->next()) {
 	    IshipIGC*       ps = psl->data();
+
 		if (ps->GetPilotType() >= c_ptPlayer) {
 			ZString strName = ps->GetName();
 			char szName[32]; 
 			Strcpy(szName,(PCC)strName);
+
 			if ((isalnum(szName[0]) == 0) && strName.Left(1) != "_")
 				strName = strName.RightOf(1);
+
 			int iTmp = strName.ReverseFind("(");
 			if (iTmp != -1)
 				strName = strName.Left(iTmp);
 
-			bPlayers = true;
+			mapNames.Set(strName,ps->GetObjectID());
 			zPlayers += strName + ZString("+");
-
+			bPlayers = true;
 		}
 	}
+
 	if (bPlayers) {
-		printf("going to update MSR for %s\n",(PCC)zPlayers);
 		int contentLen = 0; char *content;
         MprSocket* socket = new MprSocket();
 		ZString zAddr = g.balance.strBaseURL.RightOf(7);
@@ -5407,7 +5414,7 @@ void doMSRInfo(void* data, MprThread *threadp) {
 	    client->setKeepAlive(0);
 
         if (iwrite == 7) { // make sure we wrote 7 bytes
-			ZString zUrl = g.balance.strBaseURL + ZString("?Callsigns=") + zPlayers;
+			ZString zUrl = g.balance.strBaseURL + ZString("?Callsigns=") + zPlayers; // Tested on IIS6.0 with non-parsed header Perl OK to at least 1000 CharecterNames
 	        client->getRequest((char*)(PCC)zUrl);
 	        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
 		        content = client->getResponseContent(&contentLen);
@@ -5415,23 +5422,45 @@ void doMSRInfo(void* data, MprThread *threadp) {
 
 		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
 			Msr myMsr;
+			ZeroMemory(&myMsr,sizeof(Msr));
 			ZString zRes = content;
 			int iCount = zRes.Left(3).GetInteger();
-			if (iCount > 0)  {
-				ZString zContent = zRes.RightOf(3);
+			ZString zContent = zRes.RightOf(3);
+			if (iCount > 0 && zContent.GetLength() % 24 == 0)  { //sanity checking the whole way -- we get MSRInfo in 24byte chucks (per player - 12 for name, 4 * 3 for floats: Mu Sigma Rank)
 				for (int i = 0; i < iCount; i++) {
 					memcpy((char *)&myMsr,(PCC)zContent + (sizeof(Msr) * i),sizeof(Msr));
-					ZString zName = ZString(myMsr.name);
-					printf("Setting MSR for %s\n",(PCC)zName);
+					ZString zName = ZString(myMsr.name).Left(12);
+					zName.RemoveAll(' ');
+					ShipID sid = NA;
+					if (mapNames.Find(zName,sid)) {
+						IshipIGC * pship = pMission->GetShip(sid);
+						if (pship && pship->IsValid()) {
+							CFSShip* pplayer = (CFSShip*)(pship->GetPrivateData());
+							if (pplayer != NULL && pplayer->GetPlayerScoreObject() != NULL) {
+								// just reuse these old values for now (i'm sure they are always 0, a shame)
+								float rating = pplayer->GetPlayerScoreObject()->GetPersist().GetCombatRating();
+								float score = pplayer->GetPlayerScoreObject()->GetPersist().GetScore();
+								//
+								float mu = pplayer->GetPlayerScoreObject()->GetPersist().GetMu();
+								float sigma = pplayer->GetPlayerScoreObject()->GetPersist().GetSigma();
+								RankID rank = (RankID)floor(myMsr.rank + 0.5f); 
+								if (mu != myMsr.mu || myMsr.sigma != sigma) {
+									pplayer->GetPlayerScoreObject()->GetPersist().Set(score,rating,rank); //but use the new rank
+									pplayer->GetPlayerScoreObject()->GetPersist().SetMuAndSigma(myMsr.mu,myMsr.sigma); //and mu & sigma
+									debugf("Updating new mu %f and sigma %f for %s was mu %f - sigma %f\n",myMsr.mu, myMsr.sigma, (PCC)zName, mu, sigma);
+								}
+							}
+						}
+					}
 				}
-			}
+			} else
+				debugf("**** Bad response [%s]\n\t - from %s in doMSRInfo\n",(PCC)zContent,(PCC)zAddr);
 		}
 	}
-
 	return;
 }
 
-void CFSMission::UpdateMSRInfo(Time now) //updatelobby
+void CFSMission::UpdateMSRInfo(Time now)
 {
   if (m_fMSRDirty && (now - m_timeLastMSRInfo >= c_fMSRUpdateTimeInterval)
       && (GetCookie() != NULL || !g.fmLobby.IsConnected()))
