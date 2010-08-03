@@ -7062,15 +7062,22 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  if (pside->GetShip(pfmOC->shipID))  //Xynth #48 8/2010 This msg handler is normally used for 
 	  {									 //ownship commands.  Tagging on miner commands from playerpane
       	  pship = pside->GetShip(pfmOC->shipID);		 
-	  }//Xynth end #48 change
-      
+	  }
+      if (pship->GetPilotType() == c_ptMiner)
+	  {
+			  pship->SetStayDocked(true);
+			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
+                                            voAffirmativeSound, "Affirmative.");
+			  pfsMission->GetSite()->SendChat(pship, CHAT_TEAM, pship->GetSide()->GetObjectID(),
+                                            NA, "Heading back to base. I'll sit tight.");
+	  }//Xynth #48 End Changes
+
       if (pside->GetObjectID() >= 0)
       {
         ImodelIGC*  pmodel = pMission->GetModel(pfmOC->objectType, pfmOC->objectID);
         pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
       }
-	  if (pship->GetPilotType() == c_ptMiner)
-			  pship->SetStayDocked(true);
+	  
     }
     break;
 

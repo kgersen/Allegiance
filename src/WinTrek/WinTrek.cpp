@@ -4337,7 +4337,7 @@ public:
 		
 		//Xynth #48 8/2010 Add Dock menu item
 		bool bEnableDock = false;
-		if (trekClient.MyMission()->InProgress() && trekClient.GetPlayerInfo()->IsTeamLeader())
+		if (trekClient.MyMission()->InProgress())
 		{
 			bEnableDock = playerInfo->GetShip()->GetPilotType() == c_ptMiner ? true : false;
 
