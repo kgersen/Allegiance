@@ -189,6 +189,7 @@ HRESULT     CshipIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
     m_timeReloadFuel = now;
 
     m_bRunningAway = false;
+	m_stayDocked = false;  //Xynth #48 8/2010
 
     return S_OK;
 }
