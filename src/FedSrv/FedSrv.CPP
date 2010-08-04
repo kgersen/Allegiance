@@ -1191,12 +1191,12 @@ void GotLogonDetails(CQLogonStats * pquery)
 		} else {
 			const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
 			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,NA);  //and NOAT
-			ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 NYI Imago 7/10
+			ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 Imago 7/10
 			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 			for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 			{
 				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,pcl->data()->GetObjectID());
-				ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 NYI Imago 7/10
+				ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 Imago 7/10
 				pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 			}
 		}

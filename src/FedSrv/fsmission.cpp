@@ -1346,10 +1346,10 @@ int CFSMission::GetCountOfPlayers(IsideIGC * pside, bool bCountGhosts)
  * Returns:
  *    sum of all players' ranks on side
  */
-int CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
+float CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
 {
-  int iRankSum = 0;
-  int iTempRank = 0;
+  float iRankSum = 0;
+  float iTempRank = 0;
   const ShipListIGC * plistShip = pside ? pside->GetShips() : m_pMission->GetShips();
   CFSPlayer* pfsPlayer = NULL;
   for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next())
@@ -1357,7 +1357,10 @@ int CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
     if (ISPLAYER(plinkShip->data()) && (bCountGhosts || !plinkShip->data()->IsGhost()))
 	{
 		pfsPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
-		iTempRank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
+		// Imago improved if possible
+		float fRank = ((pfsPlayer->GetPersistPlayerScore(NA)->GetMu() - (pfsPlayer->GetPersistPlayerScore(NA)->GetSigma() * g.balance.kFactor)) * g.balance.RankScaleFactor); //Bob?
+		iTempRank = (fRank == 0.0f) ? pfsPlayer->GetPersistPlayerScore(NA)->GetRank() : fRank;
+		//iTempRank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
 		iRankSum += (iTempRank < 1) ? 1 : iTempRank;
 	}
   }
@@ -1365,7 +1368,7 @@ int CFSMission::GetSideRankSum(IsideIGC * pside, bool bCountGhosts)
 }
 
  /*-------------------------------------------------------------------------
- * TE: GetRankThreshold
+ * TE: GetRankThreshold - ONLY USE THIS IF SIMPLE - NYI //Imago
  *-------------------------------------------------------------------------
  * Purpose:
  *    Retrieves the threshold to be used for rank balancing
@@ -4129,8 +4132,8 @@ bool CFSMission::FAllReady()
         //Not everyone is ready if sides are imbalanced
         int   minPlayers;
         int   maxPlayers;
-		int   minTeamRank = 1000000; // TE: Added for rank balancing
-		int   maxTeamRank = 1;       // TE: Added for rank balancing
+		float   minTeamRank = 1000000.0f; // TE: Added for rank balancing
+		float   maxTeamRank = 1.0f;       // TE: Added for rank balancing
 
         SideLinkIGC*   psl = m_pMission->GetSides()->first();
         assert (psl);
@@ -4157,7 +4160,7 @@ bool CFSMission::FAllReady()
                 maxPlayers = n;
 
 			// TE: Remember highest/lowest rank
-			int r = GetSideRankSum(psl->data(), false);
+			float r = GetSideRankSum(psl->data(), false);
 
 			if (r < minTeamRank)
 				minTeamRank = r;
@@ -4211,9 +4214,9 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
   IsideIGC * psideFewestPlayers = NULL;
   IsideIGC * psideLowestRank = NULL;
   int nFewestPlayers = 2147483646; // TE: Records the #players on the smallest team; Initialize to very high number
-  int nLowestRank = 2147483646;	// TE: Records the lowest rank of a team; Initialize to very high number
+  float nLowestRank = 2147483646.0f;	// TE: Records the lowest rank of a team; Initialize to very high number
   int nNumPlayers = -1;
-  int nRankSum = -1;
+  float nRankSum = -1.0f;
 
   // find the side with the most positions free that will automatically accept the player
   const SideListIGC * plistSide = m_pMission->GetSides();
@@ -4254,9 +4257,10 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
 
   // TE: If player imbalance is on, enforce it as necessary
   // mmf added check for nImbalance of 7fffe for auto (balance)
+  // Imago: fixed one.
   //
   int nImbalance = m_misdef.misparms.iMaxImbalance;
-  if (nImbalance != 0x7fff && nImbalance != 0x7fff && psideNewSide != NULL)
+  if (nImbalance != 0x7ffe && nImbalance != 0x7fff && psideNewSide != NULL)
   {
 	  int nRankedTeamPlayers = GetCountOfPlayers(psideNewSide, false);
 
@@ -4272,6 +4276,195 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
          : SIDE_TEAMLOBBY;
 }
 
+DelPositionReqReason CFSMission::CheckAllegSkillPR(CFSPlayer * pfsPlayer, IsideIGC * pside, float fRank) {  //Is our current side or rank info ever needed?
+	
+	// first create the current mission's teams' muSum and sigmaSum view (before I join the team and before i leave my current one, if any)
+	TArray<SideMsr,6> SideMsrs;
+	ZeroMemory(&SideMsrs,sizeof(TArray<SideMsr,6>));
+	bool bOnASide = false; //Needed?
+	for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next()) {
+		IsideIGC*   pTempSide = psl->data();
+		SideMsr msr;
+		ZeroMemory(&msr,sizeof(SideMsr));
+		msr.muSum = 0.0f;
+		msr.sigmaSum = 0.0f;
+		bool bHasPlayers = false;
+		if (pTempSide->GetActiveF() && pTempSide->GetShips() && pTempSide->GetShips()->n() > 0) {
+			const ShipListIGC * plistShip = pTempSide->GetShips();
+			for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next()) {
+				if (ISPLAYER(plinkShip->data())) {
+					CFSPlayer * pfsTempPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
+					float mu = pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
+					float sigma = pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
+					float cr = mu - g.balance.kFactor * sigma; // Needed?
+					if ( pfsTempPlayer->GetShipID() == pfsTempPlayer->GetShipID())
+						bOnASide = true;
+					msr.muSum += mu;
+					msr.sigmaSum += sigma * sigma;
+					bHasPlayers = true;
+				}
+			}
+			if (bHasPlayers)
+				SideMsrs[pTempSide->GetObjectID()] = msr;
+		}
+	}
+	//TODO
+
+	return (DelPositionReqReason)NA;	
+}
+
+//Imago functionalized and improved accuracy if possible from new handler 8/10 for #192
+DelPositionReqReason CFSMission::CheckWeightedPR(CFSPlayer * pfsPlayer, SideID sideID, float fRank) {
+	float PlayerRank = (fRank == 0.0f) ? pfsPlayer->GetPersistPlayerScore(NA)->GetRank() : fRank;
+	//End Imago
+
+	//the.ynik/Turkey 7/10
+	float nHighestTeamRank = 0;
+	float nLowestTeamRank = 2147483646.0f;
+	int nHighestPlayerCount = 0;
+	int nLowestPlayerCount = 2147483646;
+	float nHighestAvgRank = 0;
+	float nLowestAvgRank = 2147483646.0f;
+
+	int nPlayers = 0;
+	int nTeams = 0;
+
+	// Grab lowest and highest team ranks, player counts, etc
+	for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
+	{
+		IsideIGC*   pTempSide = psl->data();
+		if (pTempSide->GetActiveF())
+		{
+			float nTempSideRank = GetSideRankSum(pTempSide, false);
+
+			// Store lowest teamrank
+			if (nTempSideRank < nLowestTeamRank)
+				nLowestTeamRank = nTempSideRank;
+
+			// Store highest teamrank
+			if (nTempSideRank > nHighestTeamRank)
+				nHighestTeamRank = nTempSideRank;
+
+			int nTempPlayerCount = GetCountOfPlayers(pTempSide, false);
+
+			// Store lowest player count
+			if (nTempPlayerCount < nLowestPlayerCount)
+				nLowestPlayerCount = nTempPlayerCount;
+
+			// Store highest player count
+			if (nTempPlayerCount > nHighestPlayerCount)
+				nHighestPlayerCount = nTempPlayerCount;
+
+			nPlayers += nTempPlayerCount;
+			nTeams++;
+
+			float nTempAvgRank = (float)nTempSideRank / (float)nTempPlayerCount;
+
+			// Store lowest avg rank
+			if (nTempAvgRank < nLowestAvgRank)
+				nLowestAvgRank = nTempAvgRank;
+
+			// Store highest avg rank
+			if (nTempAvgRank > nHighestAvgRank)
+				nHighestAvgRank = nTempAvgRank;
+		}
+	}
+
+	float imbalanceAvgRank = (nHighestAvgRank + 1)/(nLowestAvgRank + 1);
+	float imbalanceTotalRank = (float)(nHighestTeamRank + 1)/(float)(nLowestTeamRank + 1);
+	float imbalancePlayerCount = (float)(nHighestPlayerCount)/(float)(nLowestPlayerCount);
+
+	//weighted average imbalance of teams before this player joins
+	float oldImbalance = ((imbalanceAvgRank * g.balance.AvgRankWeight) + (imbalanceTotalRank * g.balance.TotalRankWeight)
+		+ (imbalancePlayerCount * g.balance.PlayerCountWeight)) / 
+		(g.balance.AvgRankWeight+g.balance.TotalRankWeight+g.balance.PlayerCountWeight);
+
+	//initialise this here
+	float newImbalance = 0;
+		
+	//When teams are approximately even, it is useful to allow players to join both sides.
+	float Flexibility = (g.balance.FlexGamePercent / 100) * pow(g.balance.FlexDecay,(1 - oldImbalance - (nPlayers/nTeams/g.balance.AvgPlayerCountDivisor)));
+
+	float lowestNewImbalance = (float)2147483646;
+	//OK this is hideous... need to find the lowest newImbalance of all the sides the player could join
+	//so do the same thing as above only with an extra loop layer.
+	for (SideLinkIGC*  psl1 = m_pMission->GetSides()->first(); (psl1 != NULL); psl1 = psl1->next())
+	{
+		IsideIGC*   pPossibleSide = psl1->data();
+		if (pPossibleSide->GetActiveF())
+		{
+			//running out of names for these variables
+			float nPossibleHighestTeamRank = 0.0f;
+			float nPossibleLowestTeamRank = 2147483646.0f;
+			int nPossibleHighestPlayerCount = 0;
+			int nPossibleLowestPlayerCount = 2147483646;
+			float nPossibleHighestAvgRank = 0;
+			float nPossibleLowestAvgRank = (float)2147483646;
+			for (SideLinkIGC*  psl2 = m_pMission->GetSides()->first(); (psl2 != NULL); psl2 = psl2->next())
+			{
+				IsideIGC*   pTempSide = psl2->data();
+				if (pTempSide->GetActiveF())
+				{
+					float nTempSideRank = GetSideRankSum(pTempSide, false);
+					int nTempPlayerCount = GetCountOfPlayers(pTempSide, false);
+					if (pPossibleSide->GetObjectID() == pTempSide->GetObjectID())
+					{
+						nTempSideRank += PlayerRank;
+						nTempPlayerCount++;
+					}
+
+					// Store lowest teamrank
+					if (nTempSideRank < nPossibleLowestTeamRank)
+						nPossibleLowestTeamRank = nTempSideRank;
+
+					// Store highest teamrank
+					if (nTempSideRank > nPossibleHighestTeamRank)
+						nPossibleHighestTeamRank = nTempSideRank;
+							
+					// Store lowest player count
+					if (nTempPlayerCount < nPossibleLowestPlayerCount)
+						nPossibleLowestPlayerCount = nTempPlayerCount;
+
+					// Store highest player count
+					if (nTempPlayerCount > nPossibleHighestPlayerCount)
+						nPossibleHighestPlayerCount = nTempPlayerCount;
+
+					float nTempAvgRank = (float)nTempSideRank / (float)nTempPlayerCount;
+
+					// Store lowest avg rank
+					if (nTempAvgRank < nPossibleLowestAvgRank)
+						nPossibleLowestAvgRank = nTempAvgRank;
+
+					// Store highest avg rank
+					if (nTempAvgRank > nPossibleHighestAvgRank)
+						nPossibleHighestAvgRank = nTempAvgRank;
+				}
+			}//end nested for loop
+
+			float PossibleImbalanceAvgRank = (nPossibleHighestAvgRank + 1)/(nPossibleLowestAvgRank + 1);
+			float PossibleImbalanceTotalRank = (float)(nPossibleHighestTeamRank + 1)/(float)(nPossibleLowestTeamRank + 1);
+			float PossibleImbalancePlayerCount = (float)(nPossibleHighestPlayerCount)/(float)(nPossibleLowestPlayerCount);
+
+			float PossibleImbalance = ((PossibleImbalanceAvgRank * g.balance.AvgRankWeight) + (PossibleImbalanceTotalRank * g.balance.TotalRankWeight)
+				+ (PossibleImbalancePlayerCount * g.balance.PlayerCountWeight)) / 
+				(g.balance.AvgRankWeight+g.balance.TotalRankWeight+g.balance.PlayerCountWeight);
+
+			//find the minimum imbalance of all join conditions
+			if (PossibleImbalance < lowestNewImbalance)
+				lowestNewImbalance = PossibleImbalance;
+
+			//the imbalance after the player joins the team they want
+			if ((SideID)pPossibleSide->GetObjectID() == sideID)
+				newImbalance = PossibleImbalance;
+		}
+	}//thank God that's over
+		
+	//The fail condition
+	if ((newImbalance >= oldImbalance) && ((newImbalance/lowestNewImbalance) > (1+Flexibility)))//end #192
+		return DPR_TeamBalance;
+
+	return (DelPositionReqReason)NA; //Imago functionalized 8/10
+}
 
 /*-------------------------------------------------------------------------
  * PickNewCiv
@@ -4327,7 +4520,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
   SideID sideID = pside->GetObjectID();
   const MissionParams*  pmp = m_pMission->GetMissionParams();
   IsideIGC* psideCurrent = pfsPlayer->GetSide();
-
+  
   // mdvalley: Check for defects off, and side last flown not requested side.
   if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED)
 	  && (sideID != pfsPlayer->GetLastSide()) && (pfsPlayer->GetLastSide() != SIDE_TEAMLOBBY))
@@ -4386,71 +4579,55 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 			//If the player is low rank (<4) and there aren't more than 2 extra players, let him join (Imago made this configurable #174)
 		return DPR_TeamBalance;
 
-	// TE: Can they join chosen side based on rank? mmf changed to MaxImbalance
-	if ((STAGE_NOTSTARTED != GetStage()) && (pmp->iMaxImbalance == 0x7ffe))
-	{
-		int nRequestedSideRank = GetSideRankSum(pside, false);
-		int nHighestTeamRank = 0;
-		int nLowestTeamRank = 2147483646;
-
-		// Grab lowest and highest teamranks
-		for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
-		{
-			IsideIGC*   pTempSide = psl->data();
-			if (pTempSide->GetActiveF())
+	  //# 192 Imago 8/10
+	  DelPositionReqReason dpr = (DelPositionReqReason)NA;
+	  float fRank = ((pfsPlayer->GetPersistPlayerScore(NA)->GetMu() - (pfsPlayer->GetPersistPlayerScore(NA)->GetSigma() * g.balance.kFactor)) * g.balance.RankScaleFactor); //Bob?
+	  switch (pmp->iMaxImbalance) {
+		case -1: //Simple
+			// TE: Can they join chosen side based on rank? mmf changed to MaxImbalance
+			if (STAGE_NOTSTARTED != GetStage()) //Imago #192 8/10 -- snipped: && (pmp->iMaxImbalance == 0x7ffe)
 			{
-				int nTempSideRank = GetSideRankSum(pTempSide, false);
+				float nRequestedSideRank = GetSideRankSum(pside, false);
+				float nHighestTeamRank = 0.0f;
+				float nLowestTeamRank = 2147483646.0f;
 
-				// Store lowest teamrank
-				if (nTempSideRank < nLowestTeamRank)
-					nLowestTeamRank = nTempSideRank;
+				// Grab lowest and highest teamranks
+				for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
+				{
+					IsideIGC*   pTempSide = psl->data();
+					if (pTempSide->GetActiveF())
+					{
+						float nTempSideRank = GetSideRankSum(pTempSide, false);
 
-				// Store highest teamrank
-				if (nTempSideRank > nHighestTeamRank)
-					nHighestTeamRank = nTempSideRank;
+						// Store lowest teamrank
+						if (nTempSideRank < nLowestTeamRank)
+							nLowestTeamRank = nTempSideRank;
+
+						// Store highest teamrank
+						if (nTempSideRank > nHighestTeamRank)
+							nHighestTeamRank = nTempSideRank;
+					}
+				}
+				// mmf go with simple method of only allowing new players on the side with the lowest rank
+				if (nRequestedSideRank != nLowestTeamRank)
+					return DPR_TeamBalance;
 			}
-		}
-		// mmf go with simple method of only allowing new players on the side with the lowest rank
-		if (nRequestedSideRank != nLowestTeamRank)
-			return DPR_TeamBalance;
-
-		// mmf disable this for now with if 0
-		// TODO: revisit this
-		//   Perhaps just select the team for them when they click join, so instead of rejecting
-		//   them from the selected team stick them on the proper team.
-		//
-		//   The below is bugged in that if the difference between teams gets too large
-		//   no one can join either side.  Also newbstack is too restrictive also frequently resulting
-		//   in players ranked 5,6,7,8 not being able to join either side.
-		//
-		//   Fix the below.  Why? so instead of forcing them on a side they may not want to be
-		//   on allow them on if the ranks are close enough.
-#if 0
-		int nPlayerRank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
-		int nRankThreshold = GetRankThreshold();
-
-		// Prevent joining a team if it will put it over the threshold
-		int nNewSideRank = nRequestedSideRank + nPlayerRank;
-		if (nNewSideRank - nLowestTeamRank > nRankThreshold) {
-			// mmf log this
-			debugf("join blocked would unbalance sides Rank=%d, NewSideRank=%d, RequestedSideRank=%d, LowestTeamRank=%d, RankThreshold=%d\n",
-				nPlayerRank,nNewSideRank,nRequestedSideRank,nLowestTeamRank,nRankThreshold);
-			return DPR_TeamBalance;
-		}
-
-		// Prevent joining a team if a newbie is trying to newbstack
-		if (nPlayerRank <= 8 && nRequestedSideRank == nLowestTeamRank)
-		{
-			int nDifference = nHighestTeamRank - nRequestedSideRank;
-			if (nDifference > nRankThreshold) {
-				// mmf log this
-				debugf("join blocked (newbstack) Rank=%d, Difference=%d, RequestedSideRank=%d, HighestTeamRank=%d, RankThreshold=%d\n",
-				nPlayerRank,nDifference,nRequestedSideRank,nHighestTeamRank,nRankThreshold);
-				return DPR_TeamBalance;
-			}
-		}
-#endif
-	}
+			break;
+		case -2: //Weighted 
+			dpr = CheckWeightedPR(pfsPlayer,sideID,fRank);
+			if (dpr != NA)
+				return dpr;
+			else
+				break;
+		case 32766: //Allegskill
+			dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : CheckAllegSkillPR(pfsPlayer,pside,fRank);
+			if (dpr != NA)
+				return dpr;
+			else
+				break;
+		default:
+			break;
+	  }
 
     if (m_misdef.misparms.bSquadGame)
     {
@@ -5445,7 +5622,7 @@ void doMSRInfo(void* data, MprThread *threadp) {
 								float sigma = pplayer->GetPlayerScoreObject()->GetPersist().GetSigma();
 								RankID rank = (RankID)floor(myMsr.rank + 0.5f); 
 								if (mu != myMsr.mu || myMsr.sigma != sigma) {
-									pplayer->GetPlayerScoreObject()->GetPersist().Set(score,rating,rank); //but use the new rank
+									pplayer->GetPlayerScoreObject()->GetPersist().Set(score,rating,rank); //but use the new rank (Only for ASGS compat.)
 									pplayer->GetPlayerScoreObject()->GetPersist().SetMuAndSigma(myMsr.mu,myMsr.sigma); //and mu & sigma
 									debugf("Updating new mu %f and sigma %f for %s was mu %f - sigma %f\n",myMsr.mu, myMsr.sigma, (PCC)zName, mu, sigma);
 								}

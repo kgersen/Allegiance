@@ -298,7 +298,7 @@ public:
   bool                  RemovePlayerByName(const char* szCharacterName, QuitSideReason reason, const char* szMessageParam = NULL);
   bool                  RemovePlayerByCDKey(const char* szCDKey, QuitSideReason reason, const char* szMessageParam = NULL);
   int                   GetCountOfPlayers(IsideIGC * pside, bool bCountGhosts);
-  int                   GetSideRankSum(IsideIGC * pside, bool bCountGhosts);	// TE: Added for balancing
+  float                  GetSideRankSum(IsideIGC * pside, bool bCountGhosts);	// TE: Added for balancing
   int                   GetRankThreshold();	// TE: Added for balancing
   bool                  HasPlayers(IsideIGC * pside, bool bCountGhosts);
   IstationIGC *         GetBase(IsideIGC * pside);
@@ -329,6 +329,10 @@ public:
   void                  StartGame();
   bool                  FAllReady();
   DelPositionReqReason  CheckPositionRequest(CFSPlayer * pfsPlayer, IsideIGC * pside);
+  //Imago #192
+  DelPositionReqReason  CheckWeightedPR(CFSPlayer * pfsPlayer,SideID sideID, float fRank); 
+  DelPositionReqReason  CheckAllegSkillPR(CFSPlayer * pfsPlayer, IsideIGC * pside, float fRank);
+  //
   void                  RequestPosition(CFSPlayer * pfsPlayer, IsideIGC * pside, bool bRejoin);
   void                  VacateStation(IstationIGC * pstation);
   void                  SetAutoAccept(IsideIGC * pside, bool fAccept);

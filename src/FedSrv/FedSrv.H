@@ -215,9 +215,18 @@ public:
 //Imago 7/10 #192
 struct BalanceInfo {
 	RankID  MaxNewbRank;
+	ZString strBaseURL;
+	//Trueskill stuff (Sgt_Baker, MrChaos et al.)
 	short	kFactor;
 	float	sysVariance;
-	ZString strBaseURL;
+	float	RankScaleFactor;
+	//Weighted stuff (the.ynik / TurkeyXIII)
+	short AvgRankWeight;	
+	short TotalRankWeight;
+	short PlayerCountWeight;
+	short FlexGamePercent;
+	short FlexDecay; 		
+	short AvgPlayerCountDivisor;
 };
 
 struct FedTechBit
@@ -287,7 +296,14 @@ struct Global
 	balance.strBaseURL.SetEmpty(); 
 	balance.kFactor = 3;
 	balance.MaxNewbRank = 4;
-	balance.sysVariance = 0; //?
+	balance.RankScaleFactor = 0.6f;
+	balance.sysVariance = 4.166666f;
+	balance.AvgRankWeight = 4;	
+	balance.TotalRankWeight	= 2;
+	balance.PlayerCountWeight = 1;
+	balance.FlexGamePercent = 10;
+	balance.FlexDecay = 200;
+	balance.AvgPlayerCountDivisor = 133;
 //#if !defined(ALLSRV_STANDALONE)
     strSQLConfig.Empty();
 //#endif    

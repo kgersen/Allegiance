@@ -1252,7 +1252,7 @@ struct MissionParams
         iMinRank                        = -1;
         iMaxRank                        = 1000;
 
-        iMaxImbalance                   = 1;
+        iMaxImbalance                   = 32766; //Imago changed default #192 8/10
 
         dtGameLength                    = 0.0f;
 

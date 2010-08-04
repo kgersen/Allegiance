@@ -289,8 +289,8 @@ MinPlayersValues = [1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,   1];
 
 
 // maxImbalance
-MaxImbalanceNames = ["1", "2", "Auto", "N/A"];
-MaxImbalanceValues = [1,   2, 32766, 32767];
+MaxImbalanceNames = ["1", "2", "AllegSkill", "Weighted", "Simple", "N/A"];
+MaxImbalanceValues = [1,   2, 32766, 32765, 32764, 32767];
 
 // skill level
 GameSkillLevelNames = SkillLevelNames;
