@@ -4583,7 +4583,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 	  DelPositionReqReason dpr = (DelPositionReqReason)NA;
 	  float fRank = ((pfsPlayer->GetPersistPlayerScore(NA)->GetMu() - (pfsPlayer->GetPersistPlayerScore(NA)->GetSigma() * g.balance.kFactor)) * g.balance.RankScaleFactor); //Bob?
 	  switch (pmp->iMaxImbalance) {
-		case -1: //Simple
+		case 32764: //Simple
 			// TE: Can they join chosen side based on rank? mmf changed to MaxImbalance
 			if (STAGE_NOTSTARTED != GetStage()) //Imago #192 8/10 -- snipped: && (pmp->iMaxImbalance == 0x7ffe)
 			{
@@ -4613,7 +4613,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 					return DPR_TeamBalance;
 			}
 			break;
-		case -2: //Weighted 
+		case 32765: //Weighted 
 			dpr = CheckWeightedPR(pfsPlayer,sideID,fRank);
 			if (dpr != NA)
 				return dpr;
