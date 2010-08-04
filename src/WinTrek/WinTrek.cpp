@@ -4344,25 +4344,30 @@ public:
 			sprintf(str1,"Dock       ");
 		}
 
-		m_pmenu =
-            CreateMenu(
-                GetModeler(),
-                TrekResources::SmallFont(),
-                m_pmenuCommandSink
-            );
+		if (bEnableDock)  //Xynth #205 8/2010 Will need || for any other menu options.  
+						  //The point is don't create the menu if nothing is on it
+		{
+
+			m_pmenu =
+				CreateMenu(
+				GetModeler(),
+				TrekResources::SmallFont(),
+				m_pmenuCommandSink
+				);
 
 
-       if(bEnableDock)			m_pmenu->AddMenuItem(idmContextDockDrone , str1 , 'D'); //Xynth #48 8/2010
-		
-		Point popupPosition = GetMousePosition();
+			if(bEnableDock)			m_pmenu->AddMenuItem(idmContextDockDrone , str1 , 'D'); //Xynth #48 8/2010
+
+			Point popupPosition = GetMousePosition();
 
 
-		TRef<Pane> ppane = m_pmenu->GetPane();
-		ppane->UpdateLayout();
-		Point p = Point::Cast(ppane->GetSize());
+			TRef<Pane> ppane = m_pmenu->GetPane();
+			ppane->UpdateLayout();
+			Point p = Point::Cast(ppane->GetSize());
 
-		popupPosition.SetY(popupPosition.Y() - p.Y());
-        OpenPopup(m_pmenu,	popupPosition);
+			popupPosition.SetY(popupPosition.Y() - p.Y());
+			OpenPopup(m_pmenu,	popupPosition);
+		}
 	}
 
     void ShowOptionsMenu()
