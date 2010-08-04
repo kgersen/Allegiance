@@ -3905,6 +3905,12 @@ public:
             }
 		}
 	}
+	//Xynth #197 8/2010
+	void contextChat()
+	{
+		GetWindow()->GetConsoleImage()->GetConsoleData()->PickShip(contextPlayerInfo->GetShip());
+	}
+	
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -4111,8 +4117,9 @@ public:
 	
 	//Xynth #48 8/2010
 	#define idmContextDockDrone		815
-
-
+	//Xynth #197 8/2010
+	#define idmContextChat			816
+	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
 	 * Author: Stain_Rat
@@ -4334,17 +4341,44 @@ public:
 		contextPlayerInfo = playerInfo;
 
 		char str1[30];
-		
+		char str2[30];
+		char str3[30];
+		char str4[30];
+
 		//Xynth #48 8/2010 Add Dock menu item
 		bool bEnableDock = false;
-		if (trekClient.MyMission()->InProgress())
+		bool bEnableChat = false;
+		bool bEnableReject = false;
+		bool bEnableAccept = false;
+		
+		if (playerInfo->SideID() == trekClient.GetSideID())
 		{
 			bEnableDock = playerInfo->GetShip()->GetPilotType() == c_ptMiner ? true : false;
 
 			sprintf(str1,"Dock       ");
 		}
 
-		if (bEnableDock)  //Xynth #205 8/2010 Will need || for any other menu options.  
+		bEnableChat = (playerInfo->ShipID() != trekClient.GetShipID()) &&
+					   (playerInfo->GetShip()->GetPilotType() == c_ptPlayer);
+		sprintf(str2,"Chat       ");
+
+		if (playerInfo->SideID() != trekClient.GetSideID())		
+		{
+			if(trekClient.GetPlayerInfo()->IsTeamLeader())
+			{
+				sprintf(str3,"Accept       ");
+				bEnableAccept = trekClient.MyMission()->SideAvailablePositions(trekClient.GetSideID()) > 0
+					&& trekClient.MyMission()->FindRequest(trekClient.GetSideID(), playerInfo->ShipID());
+
+				sprintf(str4,"Reject       ");
+				bEnableReject = playerInfo->ShipID() != trekClient.GetShipID()
+					&& trekClient.MyMission()->FindRequest(trekClient.GetSideID(), playerInfo->ShipID())
+					&& (!trekClient.MyMission()->GetMissionParams().bLockTeamSettings
+					|| playerInfo->SideID() != trekClient.GetSideID());
+			}
+		}
+
+		if (bEnableDock || bEnableChat ||bEnableReject || bEnableAccept)  //Xynth #205 8/2010 Will need || for any other menu options.  
 						  //The point is don't create the menu if nothing is on it
 		{
 
@@ -4357,6 +4391,10 @@ public:
 
 
 			if(bEnableDock)			m_pmenu->AddMenuItem(idmContextDockDrone , str1 , 'D'); //Xynth #48 8/2010
+			if(bEnableChat)			m_pmenu->AddMenuItem(idmContextChat , str2 , 'C'); //Xynth #197 8/2010
+			if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str3 , 'A');
+			if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str4 , 'R');
+
 
 			Point popupPosition = GetMousePosition();
 
@@ -6127,7 +6165,11 @@ public:
 			case idmContextDockDrone:
 				contextDockDrone();		CloseMenu();
 				break;
-
+			//Xynth #197 8/2010
+			case idmContextChat:
+				contextChat();		CloseMenu();
+				break;	
+			
 			case idmFFAutoCenter:
 				ToggleEnableFFAutoCenter();
 				break;
