@@ -10752,7 +10752,7 @@ class ThingSiteImpl : public ThingSite
 											 && !staticVisible) //Xynth #135 7/2010
 										{
                                             ObjectType  otSpotter = s->GetObjectType();
-											//Imago #121 - ALLY VIZ REVIEW
+											//Imago #12
 											if (otModel == OT_station) {
 												ObjectID roidID = ((IstationIGC*)pmodel)->GetRoidID();
 												IasteroidIGC * proid = pcluster->GetAsteroid(roidID);
@@ -10764,7 +10764,6 @@ class ThingSiteImpl : public ThingSite
 													pfmAsteroidDestroyed->asteroidID = roidID;
 													pfmAsteroidDestroyed->explodeF = false;
 													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-													}
 												}
 											}
 
