@@ -3618,13 +3618,13 @@ void						CmissionIGC::GetSeenSides(ImodelIGC * pmodel, bool (&bseensides)[c_cSi
 			if (pmodel->GetSide() == psl->data() )
 				continue;
 			if (pmodel->GetObjectType() == OT_ship)
-				if (((IshipIGC*)pmodelother)->CanSee(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
+				if (((IshipIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
 			if (pmodel->GetObjectType() == OT_station)
-				if (((IstationIGC*)pmodelother)->CanSee(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
+				if (((IstationIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
 			if (pmodel->GetObjectType() == OT_probe)
-				if (((IprobeIGC*)pmodelother)->CanSee(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
+				if (((IprobeIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
 			if (bseensides[psl->data()->GetObjectID()])
 				break;
