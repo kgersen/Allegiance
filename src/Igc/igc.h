@@ -2800,6 +2800,7 @@ class ImissionIGC : public IstaticIGC
         virtual void                    DeleteSide(IsideIGC* s) = 0;
         virtual IsideIGC*               GetSide(SideID sideID) const = 0;
         virtual const SideListIGC*      GetSides(void) const = 0;
+		virtual void                    GetSeenSides(ImodelIGC * pmodel, bool * pseensides = false, ImodelIGC * poptionalmodel = NULL) = 0; //Imago #120 #121 8/10
 
         virtual void                    AddCluster(IclusterIGC* c) = 0;
         virtual void                    DeleteCluster(IclusterIGC* c) = 0;
