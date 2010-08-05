@@ -4676,7 +4676,7 @@ class IIgcSite : public IObject
         virtual void    BuildStation(IasteroidIGC*      pasteroid,
                                          IsideIGC*          pside,
                                          IstationTypeIGC*   pstationtype,
-                                         Time               now) { }
+										 Time               now, bool bseensides[] = false) { } //Imago #120 #121 8/10
 
         virtual TRef<ThingSite>      CreateThingSite(ImodelIGC* pModel){return new ThingSite;}
         virtual TRef<ClusterSite>    CreateClusterSite(IclusterIGC* pCluster){return new ClusterSite;}

@@ -4292,7 +4292,7 @@ DelPositionReqReason CFSMission::CheckAllegSkillPR(CFSPlayer * pfsPlayer, IsideI
 		if (pTempSide->GetActiveF() && pTempSide->GetShips() && pTempSide->GetShips()->n() > 0) {
 			const ShipListIGC * plistShip = pTempSide->GetShips();
 			for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next()) {
-				if (ISPLAYER(plinkShip->data())) {
+				if (ISPLAYER(plinkShip->data()) && !plinkShip->data()->IsGhost()) {
 					CFSPlayer * pfsTempPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
 					float mu = pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
 					float sigma = pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
