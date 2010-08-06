@@ -345,6 +345,10 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
                 m_pasteroid->SetBuildingEffect(NULL);     //Clear the building effect so it isn't nuked along with the asteroid
                 assert (m_pasteroid == NULL);
 
+				for (SideLinkIGC*   psl = GetMyMission()->GetSides()->first(); (psl != NULL); psl = psl->next())
+					if ( this->SeenBySide(psl->data()) )
+						bseenside[psl->data()->GetObjectID()] = true;
+
                 GetMyMission()->GetIgcSite()->BuildStation(pasteroid,
                                                            m_pside,
                                                            m_pstationType,

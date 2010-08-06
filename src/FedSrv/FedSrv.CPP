@@ -13329,7 +13329,7 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
          (psl != NULL);
          psl = psl->next())
      {
-		if ((bseenside[psl->data()->GetObjectID()]) || pshipBuilder->GetSide()->GetObjectID() == psl->data()->GetObjectID()) {
+		if ((bseenside[psl->data()->GetObjectID()]) || pasteroid->GetAsteroidCurrentEye(psl->data()) || pshipBuilder->GetSide()->GetObjectID() == psl->data()->GetObjectID()) {
 			ExportObj(pbe, OT_buildingEffect, NULL);
 			g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 		}
