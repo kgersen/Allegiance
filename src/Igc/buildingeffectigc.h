@@ -346,7 +346,7 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
                 assert (m_pasteroid == NULL);
 
 				for (SideLinkIGC*   psl = GetMyMission()->GetSides()->first(); (psl != NULL); psl = psl->next())
-					if ( this->SeenBySide(psl->data()) )
+					if ( this->GetCurrentEye(psl->data()) )
 						bseenside[psl->data()->GetObjectID()] = true;
 
                 GetMyMission()->GetIgcSite()->BuildStation(pasteroid,

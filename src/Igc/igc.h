@@ -3998,7 +3998,7 @@ class IclusterIGC : public IbaseIGC
         virtual void                    AddAsteroid(IasteroidIGC* asteroidNew) = 0;
 		//Imago
 		virtual void                    AddAsteroidPosition(Vector vec, ObjectID oid) = 0;
-		virtual TList<RoidInfo>			GetAsteroidPositions(void) = 0;
+		virtual ObjectID				GetAsteroidAtPosition(Vector vec) = 0;
 		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld) = 0;
         virtual IasteroidIGC*           GetAsteroid(AsteroidID asteroidID) const = 0;

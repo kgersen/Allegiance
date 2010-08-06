@@ -236,11 +236,19 @@ class       CclusterIGC : public IclusterIGC
 		//Imago 8/10
 		virtual void					AddAsteroidPosition(Vector vec, ObjectID oid)	{ 
 			RoidInfo ri;
-			ri.vec = vec;
 			ri.oid = oid;
-			m_listRoid.PushEnd(ri);
+			ri.vec = vec;
+			m_listRoid.PushEnd(ri); 
 		} 
-		TList<RoidInfo>	GetAsteroidPositions()							{ return m_listRoid; } 
+		ObjectID						GetAsteroidAtPosition(Vector vec)	{ 
+			ObjectID oid = NA;
+			for (TList<RoidInfo>::Iterator iterRoid(m_listRoid); !iterRoid.End(); iterRoid.Next()) {
+				RoidInfo ri = iterRoid.Value();
+				if (ri.vec == vec)
+					return ri.oid;
+			}
+			return oid; 
+		} 
 		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld)
         {

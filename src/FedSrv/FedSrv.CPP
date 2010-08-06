@@ -10764,18 +10764,15 @@ class ThingSiteImpl : public ThingSite
 													pfmAsteroidDestroyed->explodeF = false;
 													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 												} else {
-													TList<RoidInfo> pos = pmodel->GetCluster()->GetAsteroidPositions();
-													for (TList<RoidInfo>::Iterator iterRoid(pos); !iterRoid.End(); iterRoid.Next()) {
-														RoidInfo ri = iterRoid.Value();
-														if (ri.vec == static_cast<IstationIGC*>(pmodel)->GetPosition()) {
-															BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
-															END_PFM_CREATE
-															pfmAsteroidDestroyed->clusterID =  pmodel->GetCluster()->GetObjectID();
-															pfmAsteroidDestroyed->asteroidID = ri.oid;
-															pfmAsteroidDestroyed->explodeF = false;
-															g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-															break;
-														}
+													roidID = pmodel->GetCluster()->GetAsteroidAtPosition(static_cast<IstationIGC*>(pmodel)->GetPosition());
+													if (roidID != NA) {
+														BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+														END_PFM_CREATE
+														pfmAsteroidDestroyed->clusterID =  pmodel->GetCluster()->GetObjectID();
+														pfmAsteroidDestroyed->asteroidID = roidID;
+														pfmAsteroidDestroyed->explodeF = false;
+														g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+
 													}
 												}
 											}
