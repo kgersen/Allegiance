@@ -259,8 +259,8 @@
     <Link>
       <AdditionalDependencies>dbghelp.lib;d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\OggVorbis\vorbis_nonsse2.lib;..\src\Lib\OggVorbis\ogg_nonsse2.lib;..\src\Lib\OggVorbis\file_nonsse2.lib;..\src\Lib\appweb\appweb.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
+      <IgnoreSpecificDefaultLibraries>msvcrtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <StripPrivateSymbols>
@@ -307,7 +307,7 @@
       <AdditionalDependencies>dbghelp.lib;d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\soundengine\soundengine.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\engine\Engine.lib;$(OutDir)..\effect\Effect.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\clintlib\clintlib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;$(OutDir)..\training\training.lib;urlmon.lib;winmm.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\OggVorbis\vorbis_nonsse2.lib;..\src\Lib\OggVorbis\ogg_nonsse2.lib;..\src\Lib\OggVorbis\file_nonsse2.lib;..\src\Lib\appweb\appweb.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>msvcrtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <StripPrivateSymbols>
