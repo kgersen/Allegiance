@@ -128,7 +128,7 @@ public:
   void DroneTypeCompleted(IbucketIGC*  b, IstationIGC* pstation, IdroneTypeIGC*   dt, Time now);
   void BuildStation(IasteroidIGC*    pasteroid,
                     IsideIGC*        pside,
-					IstationTypeIGC* pstationtype, Time now,  bool bseensides[] = false); //Imago #120 #121
+					IstationTypeIGC* pstationtype, Time now, bool pbseensides[]); //Imago #120 #121
   void SideDevelopmentTechChange(IsideIGC*    pside);
   void SideGlobalAttributeChange(IsideIGC*    pside);
   void ChangeCluster(IshipIGC* pship,

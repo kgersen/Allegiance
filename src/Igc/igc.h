@@ -823,6 +823,13 @@ const Axis c_axisMax       = 4;
 const Mount   c_maxUnmannedWeapons = 4;
 const Mount   c_maxMountedWeapons = 8;
 
+//Imago 8/10
+struct RoidInfo {
+	Vector vec;
+	ObjectID oid;
+};
+//
+
 struct  CommandData
 {
     char            szVerb[c_cbFileName];
@@ -3989,6 +3996,10 @@ class IclusterIGC : public IbaseIGC
         virtual const ShipListIGC*      GetShips(void) const = 0;
 
         virtual void                    AddAsteroid(IasteroidIGC* asteroidNew) = 0;
+		//Imago
+		virtual void                    AddAsteroidPosition(Vector vec, ObjectID oid) = 0;
+		virtual TList<RoidInfo>			GetAsteroidPositions(void) = 0;
+		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld) = 0;
         virtual IasteroidIGC*           GetAsteroid(AsteroidID asteroidID) const = 0;
         virtual const AsteroidListIGC*  GetAsteroids(void) const = 0;
@@ -4677,7 +4688,8 @@ class IIgcSite : public IObject
         virtual void    BuildStation(IasteroidIGC*      pasteroid,
                                          IsideIGC*          pside,
                                          IstationTypeIGC*   pstationtype,
-										 Time               now, bool bseensides[] = false) { } //Imago #120 #121 8/10
+										 Time               now,
+										 bool pbseensides[]) { } //Imago #120 #121 8/10
 
         virtual TRef<ThingSite>      CreateThingSite(ImodelIGC* pModel){return new ThingSite;}
         virtual TRef<ClusterSite>    CreateClusterSite(IclusterIGC* pCluster){return new ClusterSite;}

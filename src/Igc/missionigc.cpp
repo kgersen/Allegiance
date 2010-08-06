@@ -3608,29 +3608,30 @@ const SideListIGC*          CmissionIGC::GetSides(void) const
 //Imago #120 #121 8/10 - 
 	//look at enemy's scanner in pmodel's cluster and sets the entry in the ordered bool array to true if it has eye, 
 	//if you specify poptionalmodel, it has to have been seen by the side as well in order for bseensides[team] = true.
+	//why dont i just get the cluster's scannerlist where this is all happening? which way is "faster"...
 void						CmissionIGC::GetSeenSides(ImodelIGC * pmodel, bool (&bseensides)[c_cSidesMax], ImodelIGC * poptionalmodel)
 {
+
 	for (ModelLinkIGC*  pml = pmodel->GetCluster()->GetModels()->first(); (pml != NULL); pml = pml->next()) {
 		ImodelIGC*  pmodelother = pml->data();
-		if ((pmodelother->GetObjectType() != OT_ship && pmodelother->GetObjectType() != OT_station  && pmodelother->GetObjectType() != OT_probe))
+		if ((pmodelother->GetObjectType() != OT_ship && pmodelother->GetObjectType() != OT_station  && pmodelother->GetObjectType() != OT_probe) || pmodel->GetObjectID() == pmodelother->GetObjectID())
 			continue;
-		for (SideLinkIGC*   psl = GetSides()->first(); (psl != NULL); psl = psl->next()) {
-			if (pmodel->GetSide() == psl->data() )
+		for (SideLinkIGC* psl = GetSides()->first(); (psl != NULL); psl = psl->next()) {
+			if (pmodelother->GetSide()->GetObjectID() != psl->data()->GetObjectID() || psl->data()->GetObjectID() == pmodel->GetSide()->GetObjectID())
 				continue;
-			if (pmodel->GetObjectType() == OT_ship)
+			if (pmodelother->GetObjectType() == OT_ship)
 				if (((IshipIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
-			if (pmodel->GetObjectType() == OT_station)
+			if (pmodelother->GetObjectType() == OT_station)
 				if (((IstationIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
-			if (pmodel->GetObjectType() == OT_probe)
+			if (pmodelother->GetObjectType() == OT_probe)
 				if (((IprobeIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
 			if (bseensides[psl->data()->GetObjectID()])
 				break;
 		}
 	}
-
 }
 
 void                        CmissionIGC::AddCluster(IclusterIGC*    c)

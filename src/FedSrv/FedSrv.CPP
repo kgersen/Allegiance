@@ -79,7 +79,7 @@ bool DumpSend(ZString zaFile, int iTry = 0) {
 		hdrBuf->put("User-Agent: AllSrv dump thread\r\n");
 		hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
 		ZString zParts1 = "-----------------------------01\r\n";
-#ifdef DEBUG
+#ifdef _DEBUG
 		zParts1 += "Content-Disposition: form-data; name=\"debug\"";
 		zParts1 += "\r\n\r\non\r\n";
 		zParts1 += "-----------------------------01\r\n";
@@ -10754,8 +10754,7 @@ class ThingSiteImpl : public ThingSite
                                             ObjectType  otSpotter = s->GetObjectType();
 											//Imago #121
 											if (otModel == OT_station) {
-												ObjectID roidID = ((IstationIGC*)pmodel)->GetRoidID();
-												IasteroidIGC * proid = pcluster->GetAsteroid(roidID);
+												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
 												//asteroid to silently pop
 												if (roidID != NA) {
 													BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
@@ -10764,6 +10763,20 @@ class ThingSiteImpl : public ThingSite
 													pfmAsteroidDestroyed->asteroidID = roidID;
 													pfmAsteroidDestroyed->explodeF = false;
 													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+												} else {
+													TList<RoidInfo> pos = pmodel->GetCluster()->GetAsteroidPositions();
+													for (TList<RoidInfo>::Iterator iterRoid(pos); !iterRoid.End(); iterRoid.Next()) {
+														RoidInfo ri = iterRoid.Value();
+														if (ri.vec == static_cast<IstationIGC*>(pmodel)->GetPosition()) {
+															BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+															END_PFM_CREATE
+															pfmAsteroidDestroyed->clusterID =  pmodel->GetCluster()->GetObjectID();
+															pfmAsteroidDestroyed->asteroidID = ri.oid;
+															pfmAsteroidDestroyed->explodeF = false;
+															g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+															break;
+														}
+													}
 												}
 											}
 
@@ -10791,8 +10804,8 @@ class ThingSiteImpl : public ThingSite
                                                         ppso->SpotWarp();
                                                     else
                                                     {
-                                                        assert (otModel == OT_asteroid);
-                                                        ppso->SpotSpecialAsteroid();
+                                                        assert (otModel == OT_asteroid); 
+                                                        ppso->SpotSpecialAsteroid(); //Review - Changes for visibility of static objects (#135) may now require roid to be checked for abilities! -Imago 8/10
                                                     }
                                                 }
                                             }
@@ -11044,7 +11057,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
                               IsideIGC*         pside,
                               IstationTypeIGC*  pstationtype,
                               Time              now,
-							  bool bseensides[])
+							  bool pbseensides[]) //Imago bool (&bseensides)[c_cSidesMax] #120 8/10
 {
     //Allow for an upgrade to the station being available
     pstationtype = pstationtype->GetSuccessorStationType(pside);
@@ -11097,7 +11110,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	const SideListIGC * plistSide = pmission->GetSides();
 	for (SideLinkIGC * plinkSide = plistSide->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * potherside = plinkSide->data();
-		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || bseensides[potherside->GetObjectID()]) {
+		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pbseensides[potherside->GetObjectID()]) {
 			KillAsteroidEvent(pasteroid, potherside, false);
 		}
 	}
@@ -11107,6 +11120,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
 	//#121 Imago 7/10
 	pstationNew->SetRoidID(pasteroid->GetObjectID());
+	pcluster->AddAsteroidPosition(pasteroid->GetPosition(),pasteroid->GetObjectID());
 	pasteroid->Terminate();
 	//
 	// TE: Fire AGCEvent informing of station created
@@ -13315,7 +13329,7 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
          (psl != NULL);
          psl = psl->next())
      {
-		if (bseenside[psl->data()->GetObjectID()] || pshipBuilder->GetSide() == psl->data()) {
+		if ((bseenside[psl->data()->GetObjectID()]) || pshipBuilder->GetSide()->GetObjectID() == psl->data()->GetObjectID()) {
 			ExportObj(pbe, OT_buildingEffect, NULL);
 			g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 		}

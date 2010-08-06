@@ -233,6 +233,15 @@ class       CclusterIGC : public IclusterIGC
 
             AddModel(asteroidNew);
         }
+		//Imago 8/10
+		virtual void					AddAsteroidPosition(Vector vec, ObjectID oid)	{ 
+			RoidInfo ri;
+			ri.vec = vec;
+			ri.oid = oid;
+			m_listRoid.PushEnd(ri);
+		} 
+		TList<RoidInfo>	GetAsteroidPositions()							{ return m_listRoid; } 
+		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld)
         {
             DeleteModel(asteroidOld);
@@ -500,6 +509,8 @@ class       CclusterIGC : public IclusterIGC
         int                 m_nExplosions;
 
         int                 m_nPass;
+
+		TList<RoidInfo>		m_listRoid; //Imago 8/10
 };
 
 #endif //__CLUSTERIGC_H_

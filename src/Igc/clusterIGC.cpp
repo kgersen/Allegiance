@@ -30,12 +30,13 @@ HRESULT CclusterIGC::Initialize(ImissionIGC* pMission, Time   now, const void* d
     assert (pMission);
     m_pMission = pMission;
 
+
     ZRetailAssert (data && (dataSize == sizeof(m_data)));
     m_data = *((DataClusterIGC*)data);
 
     m_nPass = m_data.clusterID;
     m_lastUpdate = now;
-
+	m_listRoid.SetEmpty(); //Imago 8/10
     pMission->AddCluster(this);
 
     m_pClusterSite = pMission->GetIgcSite()->CreateClusterSite(this);
@@ -71,6 +72,7 @@ void        CclusterIGC::Terminate(void)
         }
     }
 
+	m_listRoid.SetEmpty();
     m_kdrStatic.flush();
     m_kdrMoving.flush();
 
