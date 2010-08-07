@@ -10751,7 +10751,7 @@ class ThingSiteImpl : public ThingSite
                                              (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)) //Imago - Review - what about mineable?! 7/10
 											 && !staticVisible) //Xynth #135 7/2010
 										{
-                                            ObjectType  otSpotter = s->GetObjectType();
+											ObjectType  otSpotter = s->GetObjectType();
 											//Imago #121
 											if (otModel == OT_station) {
 												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
@@ -10764,16 +10764,7 @@ class ThingSiteImpl : public ThingSite
 													pfmAsteroidDestroyed->explodeF = false;
 													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 												} else {
-													roidID = pmodel->GetCluster()->GetAsteroidAtPosition(static_cast<IstationIGC*>(pmodel)->GetPosition());
-													if (roidID != NA) {
-														BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
-														END_PFM_CREATE
-														pfmAsteroidDestroyed->clusterID =  pmodel->GetCluster()->GetObjectID();
-														pfmAsteroidDestroyed->asteroidID = roidID;
-														pfmAsteroidDestroyed->explodeF = false;
-														g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-
-													}
+													break; //REMOVE THIS ONCE IT ALL WORKS BETTER?  NYI Imago
 												}
 											}
 
@@ -11107,7 +11098,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	const SideListIGC * plistSide = pmission->GetSides();
 	for (SideLinkIGC * plinkSide = plistSide->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * potherside = plinkSide->data();
-		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pbseensides[potherside->GetObjectID()]) {
+		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) || pbseensides[potherside->GetObjectID()]) {
 			KillAsteroidEvent(pasteroid, potherside, false);
 		}
 	}
@@ -13327,6 +13318,7 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
          psl = psl->next())
      {
 		if ((bseenside[psl->data()->GetObjectID()]) || pasteroid->GetAsteroidCurrentEye(psl->data()) || pshipBuilder->GetSide()->GetObjectID() == psl->data()->GetObjectID()) {
+			pasteroid->SetBuilderSeenSide(psl->data()->GetObjectID());
 			ExportObj(pbe, OT_buildingEffect, NULL);
 			g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 		}

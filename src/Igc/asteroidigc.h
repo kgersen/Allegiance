@@ -24,7 +24,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
         CasteroidIGC(void)
         :
             m_fraction(1.0f)
-        {
+		{
         }
 
     // IbaseIGC
@@ -292,6 +292,10 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 			return m_asteroidDef.ore / m_asteroidDef.oreMax;
 		}
 
+		//Imago 8/10
+		void SetBuilderSeenSide(ObjectID oid) { m_builderseensides[oid] = true; }
+		bool GetBuilderSeenSide(ObjectID oid) { return m_builderseensides[oid]; }
+		//
 
     private:
         AsteroidDef                 m_asteroidDef;
@@ -300,6 +304,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 		float                       m_lastUpdateOre;  //Xynth #132 7/2010 ore last time update was sent out
         float                       m_fraction;
         TRef<IbuildingEffectIGC>    m_pbuildingEffect;
+		bool						m_builderseensides[c_cSidesMax]; //Imago #120 #121
 };
 
 #endif //__ASTEROIDIGC_H_

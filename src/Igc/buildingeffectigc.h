@@ -63,6 +63,7 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
 
                 m_pshipBuilder = dataBuilding->pshipBuilder;
                 assert (m_pshipBuilder);
+
                 m_pshipBuilder->SetStateM(drillingMaskIGC | buildingMaskIGC);
 
                 m_pside = m_pshipBuilder->GetSide();
@@ -70,7 +71,9 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
 
                 m_pasteroid = dataBuilding->pasteroid;
                 assert (m_pasteroid);
+
                 m_pasteroid->SetBuildingEffect(this);
+
 
                 pcluster = dataBuilding->pcluster;
 
@@ -345,14 +348,10 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
                 m_pasteroid->SetBuildingEffect(NULL);     //Clear the building effect so it isn't nuked along with the asteroid
                 assert (m_pasteroid == NULL);
 
-				for (SideLinkIGC*   psl = GetMyMission()->GetSides()->first(); (psl != NULL); psl = psl->next())
-					if ( this->GetCurrentEye(psl->data()) )
-						bseenside[psl->data()->GetObjectID()] = true;
-
                 GetMyMission()->GetIgcSite()->BuildStation(pasteroid,
                                                            m_pside,
                                                            m_pstationType,
-                                                           now, bseenside);
+                                                           now, bseenside); //Imago #121 - Selective pop rocks
             }
         }
 
