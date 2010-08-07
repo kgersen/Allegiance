@@ -593,7 +593,7 @@ private:
     Point                   m_pointLastDrag;
     WinRect                 m_rectMap;
 
-    bool                    m_bFlashFrame;
+    bool                    m_bFlashFrame;	
 
 public:
 
@@ -642,7 +642,7 @@ public:
         m_pimageSectorWarning = pmodeler->LoadImage("sectorwarningbmp", true);
         m_pimageBomberWarning = pmodeler->LoadImage("sectorbomberbmp", true);
         m_pimageSectorMiner = pmodeler->LoadImage("sectorminerbmp", true);
-        m_pimageSectorEnemy = pmodeler->LoadImage("sectorenemybmp", true);
+        m_pimageSectorEnemy = pmodeler->LoadImage("sectorenemybmp", true);		
     }
 
     ~SectorMapPane()
@@ -1040,9 +1040,12 @@ public:
             {
                 Point    xy = Point::Cast(GetClusterPoint(pCluster));
 
-                // draw the sector outline
-                pcontext->DrawImage3D(m_pimageSectorEmpty->GetSurface(), Color::White(), true, xy);
-
+                // draw the sector outline Xynth #208 Draw in flashing Cyan if highlighted				
+				if (pCluster->GetHighlight() && !m_bFlashFrame)
+					pcontext->DrawImage3D(m_pimageSectorEmpty->GetSurface(), Color::Cyan(), true, xy);
+				else
+					pcontext->DrawImage3D(m_pimageSectorEmpty->GetSurface(), Color::White(), true, xy);
+				
                 // color it by the owner(s), if any
                 SideID sideOwner;
                 SideID sideSecondaryOwner;
@@ -1185,6 +1188,16 @@ public:
                         xy
                     );
                 }
+
+				if (pCluster->GetHighlight() && !m_bFlashFrame)  //Xynth #208 8/2010
+				{  //Color center of circle cyan for highlight effect
+					pcontext->DrawImage3D(
+                        m_pimageSecondaryOwnerHighlight->GetSurface(),
+                        Color::Cyan(),
+                        true,
+                        xy
+                    );
+				}
 
                 // draw the dots for the ships
                 {
@@ -1475,7 +1488,30 @@ private:
 
         if (bDown)
         {
-            if (0 == button)
+			if (((GetKeyState(VK_CONTROL) & 0x8000) !=0) && (1 == button))  //Xynth #208 8/2010  Ctrl-Right click to highlight
+			{
+				if (pClusterFound)
+				{
+					if (trekClient.GetPlayerInfo()->IsTeamLeader())
+					{  //commanders toggle and forward to team
+						pClusterFound->SetHighlight(!pClusterFound->GetHighlight());
+
+						bool newHighlight;
+						newHighlight = pClusterFound->GetHighlight();
+
+						trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmhighlight, CS, HIGHLIGHT_CLUSTER)
+						END_PFM_CREATE
+						pfmhighlight->clusterID = pClusterFound->GetObjectID();
+						pfmhighlight->highlight = newHighlight;            
+						
+					}
+					else
+						pClusterFound->SetHighlight(false);  //Only let players turn off highlight
+
+				}
+			}
+            else if (0 == button)
             {
 				// mmf 11/08 Don't allow pilots in a turret to do any of this (as in the below, namely changing viewed cluster).
 				//           This addresses (until a better fix) the bug of eyeing enemy ships when in base, in a turret, and

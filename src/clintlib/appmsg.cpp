@@ -1745,6 +1745,18 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         }
         break;  //End Xynth #132
 
+		case FM_CS_HIGHLIGHT_CLUSTER:  //Xynth #208 8/2010
+		{
+			if (!IsInGame())
+                break;
+
+			CASTPFM(pfmAD, CS, HIGHLIGHT_CLUSTER, pfm);
+			IclusterIGC*    pcluster = m_pCoreIGC->GetCluster(pfmAD->clusterID);
+			pcluster->SetHighlight(pfmAD->highlight);
+			if (pfmAD->highlight) PlaySoundEffect(newCommandMsgSound); //play sound on activate
+		}
+		break;
+
         case FM_S_PROBE_DESTROYED:
         {
             if (!IsInGame())

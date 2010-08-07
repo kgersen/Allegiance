@@ -306,7 +306,7 @@ class  WinTrekClient :
 		ZString           CfgGetCoreName(const char *s);
 		bool              CfgIsOfficialCore(const char *s);
 		bool              CfgIsOfficialServer(const char *name, const char *addr);
-
+		
     private:
 
     friend class ClusterSiteImpl;

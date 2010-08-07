@@ -4055,6 +4055,8 @@ class IclusterIGC : public IbaseIGC
         virtual float            GetPendingTreasures(void) const = 0;
         virtual void             SetPendingTreasures(float  fpt) = 0;
         virtual float            GetCost(void) const = 0;
+		virtual void			 SetHighlight(bool hl) = 0; //Xynth #208
+		virtual bool			 GetHighlight(void) const = 0;
 };
 
 class IasteroidIGC : public IdamageIGC
@@ -4746,7 +4748,7 @@ class IIgcSite : public IObject
         virtual void KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF) {}
         virtual void DrainAsteroidEvent(IasteroidIGC* pasteroid) {}
 		virtual void MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre) {}  //Xynth #132 7/2010
-        virtual void KillProbeEvent(IprobeIGC* pprobe) {}
+		virtual void KillProbeEvent(IprobeIGC* pprobe) {}
         virtual void KillMissileEvent(ImissileIGC* pmissile, const Vector& position) {}
         virtual void KillBuildingEffectEvent(IbuildingEffectIGC* pbe) {}
         virtual void KillMineEvent(ImineIGC* pmine) {}

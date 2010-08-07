@@ -7106,6 +7106,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	//Xynth #208 8/2010
+	case FM_CS_HIGHLIGHT_CLUSTER:
+	{
+		CASTPFM(pfmHC, CS, HIGHLIGHT_CLUSTER, pfm);
+		
+		g.fm.ForwardMessage(CFSSide::FromIGC(pfsPlayer->GetSide())->GetGroup(),pfmHC, FM_GUARANTEED);
+	}
+	break;
+
 	// KGJV #62
     case FM_CS_SIDE_INACTIVE:
     {
