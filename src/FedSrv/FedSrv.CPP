@@ -10773,8 +10773,6 @@ class ThingSiteImpl : public ThingSite
 													pfmAsteroidDestroyed->asteroidID = roidID;
 													pfmAsteroidDestroyed->explodeF = false;
 													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-												} else {
-													break; //REMOVE THIS ONCE IT ALL WORKS BETTER?  NYI Imago
 												}
 											}
 
@@ -11105,8 +11103,8 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	} //Xynth/Imago - End change
 
 	//Imago #120 #121 
-	const SideListIGC * plistSide = pmission->GetSides();
-	for (SideLinkIGC * plinkSide = plistSide->first(); plinkSide; plinkSide = plinkSide->next()) {
+	const SideListIGC * plistSide0 = pmission->GetSides();
+	for (SideLinkIGC * plinkSide = plistSide0->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * potherside = plinkSide->data();
 		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) || pbseensides[potherside->GetObjectID()]) {
 			KillAsteroidEvent(pasteroid, potherside, false);
@@ -11116,9 +11114,20 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
+	
 	//#121 Imago 7/10
 	pstationNew->SetRoidID(pasteroid->GetObjectID());
 	pcluster->AddAsteroidPosition(pasteroid->GetPosition(),pasteroid->GetObjectID());
+
+	const SideListIGC * plistSide1 = pmission->GetSides();
+	for (SideLinkIGC * plinkSide = plistSide1->first(); plinkSide; plinkSide = plinkSide->next()) {
+		IsideIGC * potherside = plinkSide->data();
+		if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && pstationNew->SeenBySide(plinkSide->data())) {
+			KillAsteroidEvent(pasteroid, potherside, false);
+		}
+	}
+	//
+
 	pasteroid->Terminate();
 	//
 	// TE: Fire AGCEvent informing of station created
