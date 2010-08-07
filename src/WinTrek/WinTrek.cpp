@@ -3875,9 +3875,20 @@ public:
 	//Xynth #48 8/2010
 	void contextDockDrone()
 	{
-		ImodelIGC*  pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-			NULL, NULL, NULL, NULL, c_sabmRepair);
-
+		// pkk #211 08/05/2010 Allow all drones stay docked
+		ImodelIGC*  pmodel;
+		if (contextPlayerInfo->GetShip()->GetPilotType() != c_ptCarrier)
+		{
+			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+				NULL, NULL, NULL, NULL, c_sabmRepair);
+		}
+		else
+		{
+			// Find shipyard
+			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+				NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair);
+		}
+		
 		if (pmodel)
 		{
 			contextPlayerInfo->GetShip()->SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
@@ -4353,9 +4364,21 @@ public:
 		
 		if (playerInfo->SideID() == trekClient.GetSideID())
 		{
-			bEnableDock = playerInfo->GetShip()->GetPilotType() == c_ptMiner ? true : false;
-
-			sprintf(str1,"Dock       ");
+			// pkk #211 08/05/2010 Allow all drones stay docked
+			if (playerInfo->GetShip()->GetPilotType() < c_ptPlayer)
+			{
+				if (playerInfo->GetShip()->GetPilotType() != c_ptCarrier)
+				{
+					bEnableDock  = true;
+					sprintf(str1,"Dock       ");
+				}
+				// Find shipyard
+				else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair) != NULL)
+				{
+					bEnableDock  = true;
+					sprintf(str1,"Dock       ");
+				}
+			}
 		}
 
 		bEnableChat = (playerInfo->ShipID() != trekClient.GetShipID()) &&

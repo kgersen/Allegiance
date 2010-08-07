@@ -7063,7 +7063,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  {									 //ownship commands.  Tagging on miner commands from playerpane
       	  pship = pside->GetShip(pfmOC->shipID);		 
 	  }
-      if (pship->GetPilotType() == c_ptMiner)
+	  // pkk #211 08/05/2010 Allow all drones stay docked
+      if (pship->GetPilotType() < c_ptPlayer)
 	  {
 			  pship->SetStayDocked(true);
 			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
