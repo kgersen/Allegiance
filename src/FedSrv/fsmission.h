@@ -346,6 +346,7 @@ public:
   bool                  GetLockSides();
   void                  FlushSides();	// TE: Added FlushSides function
   void                  RandomizeSides();
+  void                  BalanceSides(); //Imago #192 8/10
 
   void                  SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv);
   void					SetSideActive(SideID sideid, bool bActive); // KGJV #62

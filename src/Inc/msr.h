@@ -12,4 +12,5 @@ typedef struct {
 typedef struct {
  float muSum;
  float sigmaSum;
+ float crSum;
 } SideMsr;

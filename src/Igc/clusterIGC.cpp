@@ -36,7 +36,7 @@ HRESULT CclusterIGC::Initialize(ImissionIGC* pMission, Time   now, const void* d
 
     m_nPass = m_data.clusterID;
     m_lastUpdate = now;
-	m_listRoid.SetEmpty(); //Imago 8/10
+
     pMission->AddCluster(this);
 
     m_pClusterSite = pMission->GetIgcSite()->CreateClusterSite(this);
@@ -74,7 +74,6 @@ void        CclusterIGC::Terminate(void)
         }
     }
 
-	m_listRoid.SetEmpty();
     m_kdrStatic.flush();
     m_kdrMoving.flush();
 
@@ -92,6 +91,7 @@ void        CclusterIGC::Terminate(void)
     assert (m_pClusterSite);
     m_pClusterSite->Terminate();
     m_pClusterSite = NULL;
+
 
     m_pMission->DeleteCluster(this);
 }
@@ -117,7 +117,7 @@ void        CclusterIGC::Update(Time now)
                     for (ShipLinkIGC*   psl = pstation->GetShips()->first();
                          (psl != NULL);
                          psl = pslNext)
-                    {
+					{
                         IshipIGC*   pship = psl->data();
                         pslNext = psl->next();             //Get the next link now since the ship may launch
                         // const MissionParams* pmp = m_pMission->GetMissionParams(); 04/08 commented out as not needed // mmf 10/07 added so we can get at bExperimental game type
@@ -139,6 +139,26 @@ void        CclusterIGC::Update(Time now)
 							
                         }
                     }
+					
+					//Are any ships buzzing around the stations that a side has yet to eye? #121 #120 Imago 8/10
+					if (GetShips()->n() > 0 && pstation->GetRoidID() != NA) {
+						Vector pos = pstation->GetRoidPos();
+						float Sig = pstation->GetRoidSig();
+						float Radius = pstation->GetRoidRadius();
+						if (Sig != 0.0f && Radius != 0.0f) {
+							//check if they have a ship eying where the rock would be
+							for (ShipLinkIGC*   psl1 = GetShips()->first(); (psl1 != NULL); psl1 = psl1->next()) {
+								IshipIGC*   pship = psl1->data();
+								if (pship->GetSide()->GetObjectID() == pstation->GetSide()->GetObjectID() || pstation->SeenBySide(pship->GetSide()) || !pstation->GetRoidSide(pship->GetSide()->GetObjectID()))
+									continue;
+								bool bEye = bSimpleEye(pship->GetHullType()->GetScannerRange(),GetMission()->GetModel(OT_ship,pship->GetObjectID()),Sig,pship->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSignature),Radius,pos);
+								if (bEye) {
+									pstation->SetRoidSide(pship->GetSide()->GetObjectID(),false);
+									GetMission()->GetIgcSite()->KillAsteroidEvent(pstation->GetRoidID(),GetObjectID(),pship->GetSide());
+								}
+							}
+						}
+					}
                 }
             }
             {

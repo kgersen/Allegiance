@@ -4128,6 +4128,7 @@ CFSMission * CFSMission::GetMissionFromIGCMissionID(DWORD dwIGCMissionID)
  */
 bool CFSMission::FAllReady()
 {
+	if (m_misdef.misparms.iMaxImbalance != 32766) //Imago #192 
     {
         //Not everyone is ready if sides are imbalanced
         int   minPlayers;
@@ -4182,7 +4183,33 @@ bool CFSMission::FAllReady()
 			((m_misdef.misparms.iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank) > threshold))	// TE: Add check for rank balancing if it's on
 			// mmf changed to MaxImbalance
             return false;
-    }
+	} else {
+		//AllegSkill Imago #192 8/10
+        int   minPlayers;
+        int   maxPlayers;
+
+        SideLinkIGC*   psl = m_pMission->GetSides()->first();
+        assert (psl);
+        minPlayers = maxPlayers = psl->data()->GetShips()->n();
+        while (true)
+        {
+            psl = psl->next();
+            if (psl == NULL)
+                break;
+
+            int n = psl->data()->GetShips()->n();
+            if (n < minPlayers)
+                minPlayers = n;
+
+            if (n > maxPlayers)
+                maxPlayers = n;
+        }
+
+        if ((minPlayers < m_misdef.misparms.nMinPlayersPerTeam) ||
+            (maxPlayers > m_misdef.misparms.nMaxPlayersPerTeam) ||
+            (minPlayers + 1 < maxPlayers)) //allow +1 Imbal
+            return false;
+	}
 
     SideID iSide = m_misdef.misparms.nTeams;
 
@@ -4296,11 +4323,12 @@ DelPositionReqReason CFSMission::CheckAllegSkillPR(CFSPlayer * pfsPlayer, IsideI
 					CFSPlayer * pfsTempPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
 					float mu = pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
 					float sigma = pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
-					float cr = mu - g.balance.kFactor * sigma; // Needed?
-					if ( pfsTempPlayer->GetShipID() == pfsTempPlayer->GetShipID())
+					float cr = mu - g.balance.kFactor * sigma;
+					if ( pfsPlayer->GetShipID() == pfsTempPlayer->GetShipID())
 						bOnASide = true;
 					msr.muSum += mu;
-					msr.sigmaSum += sigma * sigma;
+					msr.sigmaSum += sigma;
+					msr.crSum += cr;
 					bHasPlayers = true;
 				}
 			}
@@ -4308,7 +4336,9 @@ DelPositionReqReason CFSMission::CheckAllegSkillPR(CFSPlayer * pfsPlayer, IsideI
 				SideMsrs[pTempSide->GetObjectID()] = msr;
 		}
 	}
-	//TODO
+	
+	//TODO - I now have an array of muSums, SigmaSums and CRSums, one for each team.
+	//i.e. SideMsrs[0].crSum would give me Yellow's CRSum
 
 	return (DelPositionReqReason)NA;	
 }
@@ -4620,7 +4650,11 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 			else
 				break;
 		case 32766: //Allegskill
-			dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : CheckAllegSkillPR(pfsPlayer,pside,fRank);
+			if (STAGE_NOTSTARTED != GetStage()) {
+				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : (DelPositionReqReason)NA;
+			} else {
+				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : CheckAllegSkillPR(pfsPlayer,pside,fRank);
+			}
 			if (dpr != NA)
 				return dpr;
 			else
@@ -5184,6 +5218,34 @@ void CFSMission::RandomizeSides()
     //pfmLockSides->fLock = true;
     g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
   }
+}
+
+void CFSMission::BalanceSides() {
+	assert(GetStage() == STAGE_NOTSTARTED);
+
+	//build the list of players not including comms on all sides except lobby
+	TList<CFSPlayer*> listPlayers;
+	listPlayers.SetEmpty();
+	for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next()) {
+		IsideIGC*   pTempSide = psl->data();
+		CFSPlayer * pfsTempPlayerL = GetLeader(pTempSide->GetObjectID());
+		if (pTempSide->GetActiveF() && pTempSide->GetShips() && pTempSide->GetShips()->n() > 0) {
+			const ShipListIGC * plistShip = pTempSide->GetShips();
+			for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next()) {
+				if (ISPLAYER(plinkShip->data()) && !plinkShip->data()->IsGhost()) {
+					CFSPlayer * pfsTempPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
+					if (pfsTempPlayerL != pfsTempPlayer)
+						listPlayers.PushEnd(pfsTempPlayer);
+				}
+			}
+		}
+	}
+
+	/* for later
+	float mu = pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
+	float sigma = pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
+	float cr = mu - g.balance.kFactor * sigma;
+	*/
 }
 
 void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)

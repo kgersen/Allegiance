@@ -40,7 +40,7 @@ class       CclusterIGC : public IclusterIGC
         virtual void                    Terminate(void);
         virtual void                    Update(Time now);
 
-        virtual int                     Export(void* data) const;
+		virtual int                     Export(void* data) const;
         virtual ObjectType              GetObjectType(void) const
         {
             return OT_cluster;
@@ -233,23 +233,6 @@ class       CclusterIGC : public IclusterIGC
 
             AddModel(asteroidNew);
         }
-		//Imago 8/10
-		virtual void					AddAsteroidPosition(Vector vec, ObjectID oid)	{ 
-			RoidInfo ri;
-			ri.oid = oid;
-			ri.vec = vec;
-			m_listRoid.PushEnd(ri); 
-		} 
-		ObjectID						GetAsteroidAtPosition(Vector vec)	{ 
-			ObjectID oid = NA;
-			for (TList<RoidInfo>::Iterator iterRoid(m_listRoid); !iterRoid.End(); iterRoid.Next()) {
-				RoidInfo ri = iterRoid.Value();
-				if (ri.vec == vec)
-					return ri.oid;
-			}
-			return oid; 
-		} 
-		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld)
         {
             DeleteModel(asteroidOld);
@@ -497,6 +480,62 @@ class       CclusterIGC : public IclusterIGC
 			return m_highlight;
 		}
 
+		//Imago 8/10 #121 #120 (adapted from common)
+		virtual bool bSimpleEye(float RangeA, ImodelIGC* pmodelA, float Sig, float SigMod, float Radius, Vector pos) {
+			float   m = RangeA * Sig * pmodelA->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaScanRange);
+            m /= SigMod;
+			float   r = pmodelA->GetRadius() + Radius + m;
+			const Vector&   P1 = pmodelA->GetPosition();
+			const Vector&   P2 = pos;
+
+			Vector          V12 = P2 - P1;
+			float           fLengthSquaredV12 = V12.LengthSquared (),
+							fOverLengthV12 = 1.0f / sqrtf (fLengthSquaredV12);
+			V12 *= fOverLengthV12;
+
+			float           fVisibleAngle = asinf (Radius * fOverLengthV12);
+
+			for (ModelLinkIGC* pml = ((ModelListIGC*)(GetAsteroids()))->first(); (pml != NULL); pml = pml->next())
+			{
+				ImodelIGC*  pmodel = pml->data();
+				if (P1 != P2)
+				{
+					const Vector&   P3 = pmodel->GetPosition();
+
+					Vector          V13 = P3 - P1;
+					float           fLengthSquaredV13 = V13.LengthSquared ();
+
+					if (fLengthSquaredV13 < fLengthSquaredV12)
+					{
+						float   dot = (V12 * V13);
+						if (dot > 0.0f)
+						{
+
+							float   fOverLengthV13 = 1.0f / sqrtf (fLengthSquaredV13);
+							float   fCosineSeparationAngle = dot * fOverLengthV13;
+
+							{
+
+								float   fRadius3 = pmodel->GetRadius () * 0.5f;
+								float   fCoveredAngle = asinf (fRadius3 * fOverLengthV13);
+
+								float   fSeparationAngle = acosf (fCosineSeparationAngle);
+								float   fMaximumSeparationAngle = fSeparationAngle + fVisibleAngle;
+
+								if (fMaximumSeparationAngle < fCoveredAngle) {
+									return false;
+								}
+							}
+						}
+					}
+				}
+			}
+			float t1 = (pmodelA->GetPosition() - pos).LengthSquared();
+			float t2 = r * r;
+			return (t1 <= t2);
+		}
+		// End Imago #121 #120 8/10
+
     private:
         ImissionIGC*        m_pMission;
         DWORD               m_dwPrivate; // private data for consumer
@@ -528,8 +567,6 @@ class       CclusterIGC : public IclusterIGC
         int                 m_nExplosions;
 
         int                 m_nPass;
-
-		TList<RoidInfo>		m_listRoid; //Imago 8/10
 
 		bool				m_highlight;  //Xynth #208 Highlight in minimap
 };

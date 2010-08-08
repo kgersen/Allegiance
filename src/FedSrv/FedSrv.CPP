@@ -6756,11 +6756,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (pfsMission->GetStage() != STAGE_NOTSTARTED)
         break;
 
-      // TE: Balance or Flush depending on the LockSides parameter mmf MaxBalance
-	  if (pfsMission->GetMissionDef()->misparms.iMaxImbalance == 0x7ffe)
+    
+	  if (pfsMission->GetMissionDef()->misparms.iMaxImbalance == 32766)
 	  {
-		// Balance the teams
-		pfsMission->RandomizeSides();
+		// Balance the teams - AllegSkill #192 Imago 8/10
+		pfsMission->BalanceSides();
+		
+		// TE: Balance or Flush depending on the LockSides parameter mmf MaxBalance
+	  } else if(pfsMission->GetMissionDef()->misparms.iMaxImbalance == 32764) {
+		  pfsMission->RandomizeSides();
 	  }
 	  else
 	  {
@@ -11122,6 +11126,12 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		IsideIGC * potherside = plinkSide->data();
 		if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && pstationNew->SeenBySide(plinkSide->data())) {
 			KillAsteroidEvent(pasteroid, potherside, false);
+		} else if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && !pstationNew->SeenBySide(plinkSide->data())) {
+			pstationNew->SetRoidSig(pasteroid->GetSignature());
+			pstationNew->SetRoidPos(pasteroid->GetPosition());
+			pstationNew->SetRoidRadius(pasteroid->GetRadius());
+			pstationNew->SetRoidCaps(pasteroid->GetCapabilities());
+			pstationNew->SetRoidSide(potherside->GetObjectID());
 		}
 	}
 	//
