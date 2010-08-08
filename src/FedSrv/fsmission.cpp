@@ -5342,13 +5342,15 @@ void CFSMission::BalanceSides() {
 		}
 
 		// 3d) Add the players 
-		if (pfsMatchingPlayer == NULL && listPlayers.GetCount() == 1) {
+		if (pfsMatchingPlayer == NULL && listPlayers.GetCount() > 0) {
 			SideID wsid = SortMSRSides(SideMsrs, true); //returns weak team ID
 			if (wsid != NA) {
 				IsideIGC * pweakside = m_pMission->GetSide(wsid);
-				AddPlayerToSide(listPlayers.PopFront(),pweakside); //best
+				AddPlayerToSide(listPlayers.GetEnd(),pweakside); //best
+				listPlayers.Remove(listPlayers.GetEnd());
 			}
-		else if(listPlayers.GetCount() <= 0) break;
+		} else if (pfsBestPlayer == NULL) { 
+			break;
 		} else {
 			// the normal case, above is to handle the straggler
 			SideID ssid = SortMSRSides(SideMsrs); //returns strong team ID
