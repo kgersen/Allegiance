@@ -151,7 +151,7 @@ void        CclusterIGC::Update(Time now)
 								IshipIGC*   pship = psl1->data();
 								if (pship->GetSide()->GetObjectID() == pstation->GetSide()->GetObjectID() || pstation->SeenBySide(pship->GetSide()) || !pstation->GetRoidSide(pship->GetSide()->GetObjectID()))
 									continue;
-								bool bEye = bSimpleEye(pship->GetHullType()->GetScannerRange(),GetMission()->GetModel(OT_ship,pship->GetObjectID()),Sig,pship->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSignature),Radius,pos);
+								bool bEye = bSimpleEye(pship->GetHullType()->GetScannerRange(),GetMission()->GetModel(OT_ship,pship->GetObjectID()),Sig,pstation->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSignature),Radius,pos);
 								if (bEye) {
 									pstation->SetRoidSide(pship->GetSide()->GetObjectID(),false);
 									GetMission()->GetIgcSite()->KillAsteroidEvent(pstation->GetRoidID(),GetObjectID(),pship->GetSide());
