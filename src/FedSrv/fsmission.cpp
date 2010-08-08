@@ -5609,7 +5609,7 @@ void doMSRInfo(void* data, MprThread *threadp) {
 					ZString zName = ZString(myMsr.name).Left(12);
 					zName.RemoveAll(' ');
 					ShipID sid = NA;
-					if (mapNames.Find(zName,sid)) {
+					if (mapNames.Find(zName,sid) && pMission) {
 						IshipIGC * pship = pMission->GetShip(sid);
 						if (pship && pship->IsValid()) {
 							CFSShip* pplayer = (CFSShip*)(pship->GetPrivateData());

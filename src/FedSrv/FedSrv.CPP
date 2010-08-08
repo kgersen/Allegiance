@@ -10775,7 +10775,6 @@ class ThingSiteImpl : public ThingSite
 													g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 												}
 											}
-
                                             // tell the side who spotted it
                                             BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
                                             END_PFM_CREATE
@@ -11117,7 +11116,6 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	
 	//#121 Imago 7/10
 	pstationNew->SetRoidID(pasteroid->GetObjectID());
-	pcluster->AddAsteroidPosition(pasteroid->GetPosition(),pasteroid->GetObjectID());
 
 	const SideListIGC * plistSide1 = pmission->GetSides();
 	for (SideLinkIGC * plinkSide = plistSide1->first(); plinkSide; plinkSide = plinkSide->next()) {
@@ -11127,7 +11125,6 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		}
 	}
 	//
-
 	pasteroid->Terminate();
 	//
 	// TE: Fire AGCEvent informing of station created
@@ -12055,6 +12052,16 @@ void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* side, 
   pfmAsteroidDestroyed->clusterID = pasteroid->GetCluster()->GetObjectID();
   pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
   pfmAsteroidDestroyed->explodeF = explodeF;
+  g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+}
+
+void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side)
+{
+  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+  END_PFM_CREATE
+  pfmAsteroidDestroyed->clusterID = soid;
+  pfmAsteroidDestroyed->asteroidID = roid;
+  pfmAsteroidDestroyed->explodeF = false;
   g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 }
 
