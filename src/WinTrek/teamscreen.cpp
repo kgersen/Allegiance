@@ -1653,11 +1653,7 @@ public:
 
     void UpdateStatusText()
     {
-		//Simple - Imago #192
-		if (m_pMission->GetMissionParams().iMaxImbalance == 32764)
-			return UpdateStatusTextTE();
-
-        if (m_pMission->InProgress())
+	    if (m_pMission->InProgress())
         {
             m_ptextStatus->SetString("GAME IN PROGRESS");
             m_ptextStatus2->SetString("");
@@ -1715,7 +1711,7 @@ public:
                 m_pbuttonStart->SetEnabled(false);
             }
             else
-            {
+			{
                 SideID  idBlockingSide = NA;
                 const char* szBlockingReason = NULL;
 
@@ -1766,111 +1762,84 @@ public:
                     }
                     m_pbuttonStart->SetEnabled(false);
                 }
+
+				//Simple - Imago #192
+				if (m_pMission->GetMissionParams().iMaxImbalance == 32764)
+					return UpdateStatusTextTE();
             }
-        }
+		}
     }
 	
 	// Imago changed to "Simple" ONLY and moved all variables LOCAL #192 8/10
     void UpdateStatusTextTE()
     {
+		int   minPlayers;
+		int   maxPlayers;
 
-        if (m_pMission->InProgress())
-        {
-            m_ptextStatus->SetString("GAME IN PROGRESS");
-            m_ptextStatus2->SetString("");
-            m_pbuttonStart->SetEnabled(false);
-        }
-        else if (m_pMission->GetStage() == STAGE_STARTING 
-            || (m_pMission->GetMissionParams().bAutoRestart && m_pMission->GetStage() == STAGE_NOTSTARTED))
-        {
-            m_ptextStatus->SetString("COUNTDOWN IN PROGRESS");
-            m_ptextStatus2->SetString("");
-            m_pbuttonStart->SetEnabled(false);
-        }
-        else if (m_pMission->GetStage() == STAGE_OVER)
-        {
-            m_ptextStatus->SetString("GAME CANCELED");
-            m_ptextStatus2->SetString("");
-            m_pbuttonStart->SetEnabled(false);
-        }
-        else
-        {
-			int   minPlayers;
-			int   maxPlayers;
-
-			SideLinkIGC*   psl = trekClient.m_pCoreIGC->GetSides()->first();
-			assert (psl);
-			IsideIGC*   psideMin;
-			IsideIGC*   psideMax = psideMin = psl->data();
-			minPlayers = maxPlayers = psl->data()->GetShips()->n();
+		SideLinkIGC*   psl = trekClient.m_pCoreIGC->GetSides()->first();
+		assert (psl);
+		IsideIGC*   psideMin;
+		IsideIGC*   psideMax = psideMin = psl->data();
+		minPlayers = maxPlayers = psl->data()->GetShips()->n();
             
-			// TE: Balance code
-			// Initialize variables
-			IsideIGC*   psideMinRank;
-			IsideIGC*   psideMaxRank = psideMinRank = psl->data();
-			int minTeamRank = 1000000; // Set really high: 1 meellion dollars!!!
-			int maxTeamRank = 1;
-			int tempRank = 0;
-			int threshold = 1;
-			threshold = GetRankThreshold();
+		// TE: Balance code
+		// Initialize variables
+		IsideIGC*   psideMinRank;
+		IsideIGC*   psideMaxRank = psideMinRank = psl->data();
+		int minTeamRank = 1000000; // Set really high: 1 meellion dollars!!!
+		int maxTeamRank = 1;
+		int tempRank = 0;
+		int threshold = 1;
+		threshold = GetRankThreshold();
 
-			// Loop through all teams
-			while (true)
+		// Loop through all teams
+		while (true)
+		{
+			if (psl == NULL)
+				break;
+
+			// KGJV #62 - skip deactivated team
+			if (psl->data()->GetActiveF())
 			{
-				if (psl == NULL)
-					break;
-
-				// KGJV #62 - skip deactivated team
-				if (psl->data()->GetActiveF())
+				// TE: Remember lowest TeamRank
+				tempRank = GetSideRankSum(psl->data(), false);
+				if (tempRank < minTeamRank)
 				{
-					// TE: Remember lowest TeamRank
-					tempRank = GetSideRankSum(psl->data(), false);
-					if (tempRank < minTeamRank)
-					{
-						psideMinRank = psl->data();
-						minTeamRank = tempRank;
-					}
-
-					// TE: Remember highest TeamRank
-					if (tempRank > maxTeamRank)
-					{
-						psideMaxRank = psl->data();
-						maxTeamRank = tempRank;
-					}
-
-					int n = psl->data()->GetShips()->n();
-
-					// TE: Remember smallest side
-					if (n < minPlayers)
-					{
-						psideMin = psl->data();
-						minPlayers = n;
-					}
-
-					// TE: Remember largest side
-					if (n > maxPlayers)
-					{
-						psideMax = psl->data();
-						maxPlayers = n;
-					}
+					psideMinRank = psl->data();
+					minTeamRank = tempRank;
 				}
-				psl = psl->next();
-			}
 
-			// mmf using the below SendChat intermittently crashes the server
-			//SendChat(ZString("Max: ") + ZString(maxTeamRank) + ZString("; Min: ") + ZString(minTeamRank) + "; Diff: " + ZString(maxTeamRank - minTeamRank) + ZString("; Thresh: ") + ZString(threshold));
-			// mmf debugging, these do show up in the client log of the debug build
-			//debugf("maxTR: %d minTR: %d thresh: %d\n",maxTeamRank, minTeamRank, threshold);
+				// TE: Remember highest TeamRank
+				if (tempRank > maxTeamRank)
+				{
+					psideMaxRank = psl->data();
+					maxTeamRank = tempRank;
+				}
 
-			// This section hides/shows the "Launch" button
-			// TE: Added || to check rank balancing mmf changed from locksides to MaxImbalance
-			if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
-			((m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank > threshold)))
-			{
-				m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
-				m_ptextStatus2->SetString("");
-				m_pbuttonStart->SetEnabled(false);
+				int n = psl->data()->GetShips()->n();
+
+				// TE: Remember smallest side
+				if (n < minPlayers)
+				{
+					psideMin = psl->data();
+					minPlayers = n;
+				}
+
+				// TE: Remember largest side
+				if (n > maxPlayers)
+				{
+					psideMax = psl->data();
+					maxPlayers = n;
+				}
 			}
+			psl = psl->next();
+		}
+
+		if (maxTeamRank - minTeamRank > threshold)
+		{
+			m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
+			m_ptextStatus2->SetString("");
+			m_pbuttonStart->SetEnabled(false);
 		}
     }
 
