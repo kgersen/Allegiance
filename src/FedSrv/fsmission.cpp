@@ -4303,43 +4303,35 @@ SideID CFSMission::PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsig
          : SIDE_TEAMLOBBY;
 }
 
-DelPositionReqReason CFSMission::CheckAllegSkillPR(CFSPlayer * pfsPlayer, IsideIGC * pside, float fRank) {  //Is our current side or rank info ever needed?
-	
-	// first create the current mission's teams' muSum and sigmaSum view (before I join the team and before i leave my current one, if any)
-	TArray<SideMsr,6> SideMsrs;
-	ZeroMemory(&SideMsrs,sizeof(TArray<SideMsr,6>));
-	bool bOnASide = false; //Needed?
+DelPositionReqReason CFSMission::CheckAllegSkillPR(CFSPlayer * pfsPlayer, IsideIGC * pside, float fRank) {
+	/*
+	SideMsr SideMsrs[c_cSidesMax];
+	ZeroMemory(&SideMsrs,sizeof(SideMsr) * c_cSidesMax);
+
+	TList<CFSPlayer*> listPlayers;
+	listPlayers.SetEmpty();
+
 	for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next()) {
 		IsideIGC*   pTempSide = psl->data();
 		SideMsr msr;
 		ZeroMemory(&msr,sizeof(SideMsr));
-		msr.muSum = 0.0f;
-		msr.sigmaSum = 0.0f;
-		bool bHasPlayers = false;
 		if (pTempSide->GetActiveF() && pTempSide->GetShips() && pTempSide->GetShips()->n() > 0) {
 			const ShipListIGC * plistShip = pTempSide->GetShips();
 			for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next()) {
 				if (ISPLAYER(plinkShip->data()) && !plinkShip->data()->IsGhost()) {
 					CFSPlayer * pfsTempPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
-					float mu = pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
-					float sigma = pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
-					float cr = mu - g.balance.kFactor * sigma;
-					if ( pfsPlayer->GetShipID() == pfsTempPlayer->GetShipID())
-						bOnASide = true;
-					msr.muSum += mu;
-					msr.sigmaSum += sigma;
-					msr.crSum += cr;
-					bHasPlayers = true;
+					msr.muSum += pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
+					msr.sigmaSum += pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
+					msr.crSum += pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu() - g.balance.kFactor * pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
 				}
 			}
-			if (bHasPlayers)
+			if (msr.crSum != 0.0f)
 				SideMsrs[pTempSide->GetObjectID()] = msr;
 		}
 	}
+	*/
+	//WIP Sgt_Baker / Imago
 	
-	//TODO - I now have an array of muSums, SigmaSums and CRSums, one for each team.
-	//i.e. SideMsrs[0].crSum would give me Yellow's CRSum
-
 	return (DelPositionReqReason)NA;	
 }
 
