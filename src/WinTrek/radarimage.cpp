@@ -387,10 +387,7 @@ public:
         if (bIcon)
         {
             pcontext->Translate(positionIcon);
-			// BUILD_DX9
-			//pcontext->SetBlendMode(BlendModeAlphaStampThrough);
-			pcontext->SetBlendMode(BlendModeSourceAlphaTest); //Imago 7/10 upgraded
-			// BUILD_DX9
+			pcontext->SetBlendMode(BlendModeAdd); //Imago 7/10 upgraded #181
 
             pcontext->DrawImage3D(psurfaceIcon, colorIcon, true);
         }
