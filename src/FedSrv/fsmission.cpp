@@ -4643,15 +4643,15 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 					return DPR_TeamBalance;
 			}
 			break;
-		case 32765: //Weighted 
+		case 32765: //Forced Weighted 
 			dpr = CheckWeightedPR(pfsPlayer,sideID,fRank);
 			if (dpr != NA)
 				return dpr;
 			else
 				break;
-		case 32766: //Allegskill
+		case 32766: //Allegskill /w Weighted fail-over
 			(STAGE_NOTSTARTED == GetStage()) ?
-				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : (DelPositionReqReason)NA :
+				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : (DelPositionReqReason)NA : // Don't check join requests when pre-launch
 				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : CheckAllegSkillPR(pfsPlayer,pside,fRank);
 			if (dpr != NA)
 				return dpr;
@@ -5238,7 +5238,9 @@ void CFSMission::BalanceSides() {
 				if (ISPLAYER(plinkShip->data()) && !plinkShip->data()->IsGhost()) {
 					CFSPlayer * pfsTempPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
 					if (pfsTempPlayerL != pfsTempPlayer)
-						listPlayers.PushEnd(pfsTempPlayer);
+						//1a) don't include pilots whom we couldn't get Mu and Sigma for
+						if (pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu() != 0.0f && pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma() != 0.0f)
+							listPlayers.PushEnd(pfsTempPlayer);
 				}
 			}
 		}
@@ -5266,6 +5268,15 @@ void CFSMission::BalanceSides() {
 			// mdvalley: empty last side masks
 			pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
 		}
+	}
+
+	// 2b) Xynth #13 8/2010  Need to remove all join requests.
+	LinkJoinReq* plinkNext;
+	for (LinkJoinReq* plinkJR = m_listJoinReq.first(); (plinkJR != NULL); plinkJR = plinkNext)
+	{
+		plinkNext = plinkJR->next();
+		JoinRequest * pjr = plinkJR->data();
+		RemoveJoinRequest(pjr->pfsPlayer, pjr->pSide);
 	}
 
 	// 3) iterate thru the pickpool
