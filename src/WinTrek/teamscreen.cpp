@@ -1653,6 +1653,9 @@ public:
 
     void UpdateStatusText()
     {
+		//Simple - Imago #192
+		if (m_pMission->GetMissionParams().iMaxImbalance == 32764)
+			return UpdateStatusTextTE();
 
         if (m_pMission->InProgress())
         {
@@ -1683,74 +1686,29 @@ public:
             IsideIGC*   psideMin;
             IsideIGC*   psideMax = psideMin = psl->data();
             minPlayers = maxPlayers = psl->data()->GetShips()->n();
-            
-			// TE: Balance code
-			// Initialize variables
-			IsideIGC*   psideMinRank;
-			IsideIGC*   psideMaxRank = psideMinRank = psl->data();
-			int minTeamRank = 1000000; // Set really high: 1 meellion dollars!!!
-			int maxTeamRank = 1;
-			int tempRank = 0;
-			int threshold = 1;
+            while (true)
+            {
+                psl = psl->next();
+                if (psl == NULL)
+                    break;
 
-			// If "Enforce Balance" is checked, find the highest and lowest-ranked teams... mmf changed from lock sides to mImbalance
-			if (m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe)
-			{
-				threshold = GetRankThreshold();
+                int n = psl->data()->GetShips()->n();
+                if (n < minPlayers)
+                {
+                    psideMin = psl->data();
+                    minPlayers = n;
+                }
 
-				// Loop through all teams
-				while (true)
-				{
-					if (psl == NULL)
-						break;
+                if (n > maxPlayers)
+                {
+                    psideMax = psl->data();
+                    maxPlayers = n;
+                }
+            }
 
-					// KGJV #62 - skip deactivated team
-					if (psl->data()->GetActiveF())
-					{
-						// TE: Remember lowest TeamRank
-						tempRank = GetSideRankSum(psl->data(), false);
-						if (tempRank < minTeamRank)
-						{
-							psideMinRank = psl->data();
-							minTeamRank = tempRank;
-						}
-
-						// TE: Remember highest TeamRank
-						if (tempRank > maxTeamRank)
-						{
-							psideMaxRank = psl->data();
-							maxTeamRank = tempRank;
-						}
-
-						int n = psl->data()->GetShips()->n();
-
-						// TE: Remember smallest side
-						if (n < minPlayers)
-						{
-							psideMin = psl->data();
-							minPlayers = n;
-						}
-
-						// TE: Remember largest side
-						if (n > maxPlayers)
-						{
-							psideMax = psl->data();
-							maxPlayers = n;
-						}
-					}
-					psl = psl->next();
-				}
-			}
-
-			// mmf using the below SendChat intermittently crashes the server
-			//SendChat(ZString("Max: ") + ZString(maxTeamRank) + ZString("; Min: ") + ZString(minTeamRank) + "; Diff: " + ZString(maxTeamRank - minTeamRank) + ZString("; Thresh: ") + ZString(threshold));
-			// mmf debugging, these do show up in the client log of the debug build
-			//debugf("maxTR: %d minTR: %d thresh: %d\n",maxTeamRank, minTeamRank, threshold);
-
-			// This section hides/shows the "Launch" button
-			// TE: Added || to check rank balancing mmf changed from locksides to MaxImbalance
-            if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
-			((m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank > threshold)))
+            if ( ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) && m_pMission->GetMissionParams().iMaxImbalance != 32766) ||  
+				 ((minPlayers + 1 < maxPlayers) && m_pMission->GetMissionParams().iMaxImbalance == 32766) //Imago #192
+			   )
             {
                 m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
                 m_ptextStatus2->SetString("");
@@ -1764,17 +1722,13 @@ public:
                 for (SideID id = 0; id < m_pMission->NumSides(); id++)
                 {
                     const char* szReason = NULL;
-					// KGJV #62 - logic changed for AllowEmptyTeams 
-					if (m_pMission->SideNumPlayers(id) < ( !m_pMission->SideActive(id) ? 0 : m_pMission->MinPlayersPerTeam()))
+
+                    if (m_pMission->SideNumPlayers(id) < m_pMission->MinPlayersPerTeam())
                         szReason = "BELOW MINIMUM SIZE";
                     else if (m_pMission->SideNumPlayers(id) > m_pMission->MaxPlayersPerTeam())
                         szReason = "ABOVE MAXIMUM SIZE";
-					// EmptyTeams not allowed so check SideReady
-					else if (m_pMission->SideActive(id) && !m_pMission->SideReady(id))
-						szReason = "NOT READY";
-					// EmptyTeams allowed so check SideReady only if it has at least 1 player
-					else if (m_pMission->SideActive(id) && (m_pMission->SideNumPlayers(id) > 0 ) && !m_pMission->SideReady(id))
-						szReason = "NOT READY";
+                    else if (!m_pMission->SideReady(id))
+                        szReason = "NOT READY";
 
                     if (szReason)
                     {
@@ -1782,7 +1736,6 @@ public:
                         {
                             idBlockingSide = id;
                             szBlockingReason = szReason;
-							debugf("%s szBlockingReason set to %s\n",trekClient.GetCore()->GetSide(id)->GetName(),szBlockingReason);
                         }
                         else
                         {
@@ -1815,6 +1768,110 @@ public:
                 }
             }
         }
+    }
+	
+	// Imago changed to "Simple" ONLY and moved all variables LOCAL #192 8/10
+    void UpdateStatusTextTE()
+    {
+
+        if (m_pMission->InProgress())
+        {
+            m_ptextStatus->SetString("GAME IN PROGRESS");
+            m_ptextStatus2->SetString("");
+            m_pbuttonStart->SetEnabled(false);
+        }
+        else if (m_pMission->GetStage() == STAGE_STARTING 
+            || (m_pMission->GetMissionParams().bAutoRestart && m_pMission->GetStage() == STAGE_NOTSTARTED))
+        {
+            m_ptextStatus->SetString("COUNTDOWN IN PROGRESS");
+            m_ptextStatus2->SetString("");
+            m_pbuttonStart->SetEnabled(false);
+        }
+        else if (m_pMission->GetStage() == STAGE_OVER)
+        {
+            m_ptextStatus->SetString("GAME CANCELED");
+            m_ptextStatus2->SetString("");
+            m_pbuttonStart->SetEnabled(false);
+        }
+        else
+        {
+			int   minPlayers;
+			int   maxPlayers;
+
+			SideLinkIGC*   psl = trekClient.m_pCoreIGC->GetSides()->first();
+			assert (psl);
+			IsideIGC*   psideMin;
+			IsideIGC*   psideMax = psideMin = psl->data();
+			minPlayers = maxPlayers = psl->data()->GetShips()->n();
+            
+			// TE: Balance code
+			// Initialize variables
+			IsideIGC*   psideMinRank;
+			IsideIGC*   psideMaxRank = psideMinRank = psl->data();
+			int minTeamRank = 1000000; // Set really high: 1 meellion dollars!!!
+			int maxTeamRank = 1;
+			int tempRank = 0;
+			int threshold = 1;
+			threshold = GetRankThreshold();
+
+			// Loop through all teams
+			while (true)
+			{
+				if (psl == NULL)
+					break;
+
+				// KGJV #62 - skip deactivated team
+				if (psl->data()->GetActiveF())
+				{
+					// TE: Remember lowest TeamRank
+					tempRank = GetSideRankSum(psl->data(), false);
+					if (tempRank < minTeamRank)
+					{
+						psideMinRank = psl->data();
+						minTeamRank = tempRank;
+					}
+
+					// TE: Remember highest TeamRank
+					if (tempRank > maxTeamRank)
+					{
+						psideMaxRank = psl->data();
+						maxTeamRank = tempRank;
+					}
+
+					int n = psl->data()->GetShips()->n();
+
+					// TE: Remember smallest side
+					if (n < minPlayers)
+					{
+						psideMin = psl->data();
+						minPlayers = n;
+					}
+
+					// TE: Remember largest side
+					if (n > maxPlayers)
+					{
+						psideMax = psl->data();
+						maxPlayers = n;
+					}
+				}
+				psl = psl->next();
+			}
+
+			// mmf using the below SendChat intermittently crashes the server
+			//SendChat(ZString("Max: ") + ZString(maxTeamRank) + ZString("; Min: ") + ZString(minTeamRank) + "; Diff: " + ZString(maxTeamRank - minTeamRank) + ZString("; Thresh: ") + ZString(threshold));
+			// mmf debugging, these do show up in the client log of the debug build
+			//debugf("maxTR: %d minTR: %d thresh: %d\n",maxTeamRank, minTeamRank, threshold);
+
+			// This section hides/shows the "Launch" button
+			// TE: Added || to check rank balancing mmf changed from locksides to MaxImbalance
+			if ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) ||
+			((m_pMission->GetMissionParams().iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank > threshold)))
+			{
+				m_ptextStatus->SetString("TEAMS ARE UNBALANCED");
+				m_ptextStatus2->SetString("");
+				m_pbuttonStart->SetEnabled(false);
+			}
+		}
     }
 
 	/*-------------------------------------------------------------------------
