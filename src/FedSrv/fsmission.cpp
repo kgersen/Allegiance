@@ -4650,11 +4650,9 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 			else
 				break;
 		case 32766: //Allegskill
-			if (STAGE_NOTSTARTED != GetStage()) {
-				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : (DelPositionReqReason)NA;
-			} else {
+			(STAGE_NOTSTARTED == GetStage()) ?
+				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : (DelPositionReqReason)NA :
 				dpr = (fRank == 0.0f) ? CheckWeightedPR(pfsPlayer,sideID,fRank) : CheckAllegSkillPR(pfsPlayer,pside,fRank);
-			}
 			if (dpr != NA)
 				return dpr;
 			else
@@ -5220,10 +5218,15 @@ void CFSMission::RandomizeSides()
   }
 }
 
+//Imago #192 8/10
 void CFSMission::BalanceSides() {
 	assert(GetStage() == STAGE_NOTSTARTED);
 
-	//build the list of players not including comms on all sides except lobby
+	//0) Setup the teams running totals
+	SideMsr SideMsrs[c_cSidesMax];
+	ZeroMemory(&SideMsrs,sizeof(SideMsr) * c_cSidesMax);
+
+	//1) build the list of players not including comms on all sides except lobby
 	TList<CFSPlayer*> listPlayers;
 	listPlayers.SetEmpty();
 	for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next()) {
@@ -5241,12 +5244,157 @@ void CFSMission::BalanceSides() {
 		}
 	}
 
-	/* for later
-	float mu = pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
-	float sigma = pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
-	float cr = mu - g.balance.kFactor * sigma;
-	*/
+	// 2) move everyone who's not a team leader to the lobby side.
+	const ShipListIGC*      pships = m_pMission->GetShips();
+	ShipLinkIGC* pshipLinkNext;
+	for (ShipLinkIGC* pshipLink = pships->first();
+			(pshipLink != NULL);
+			pshipLink = pshipLinkNext)
+	{
+		pshipLinkNext = pshipLink->next();
+		CFSPlayer* pfsPlayer = ((CFSShip*)(pshipLink->data()->GetPrivateData()))->GetPlayer();
+
+		SideID sideID = pfsPlayer->GetSide()->GetObjectID();
+
+		// clear their banned side mask (it simplifies life)
+		pfsPlayer->SetBannedSideMask(0);
+
+		// if they are not already on the lobby side and not a team leader
+		if (sideID != SIDE_TEAMLOBBY && GetLeader(sideID) != pfsPlayer)
+		{
+			RemovePlayerFromSide(pfsPlayer, QSR_BalanceSides);
+			// mdvalley: empty last side masks
+			pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
+		}
+	}
+
+	// 3) iterate thru the pickpool
+	TList<CFSPlayer*>::Iterator iterPickPlayers(listPlayers);
+	while(!iterPickPlayers.End()) {
+
+		// 3a) Update the SideMSRs
+		for (SideLinkIGC*  psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next()) {
+			IsideIGC*   pTempSide = psl->data();
+			SideMsr msr;
+			ZeroMemory(&msr,sizeof(SideMsr));
+			if (pTempSide->GetActiveF() && pTempSide->GetShips() && pTempSide->GetShips()->n() > 0) {
+				const ShipListIGC * plistShip = pTempSide->GetShips();
+				for (ShipLinkIGC * plinkShip = plistShip->first(); plinkShip; plinkShip = plinkShip->next()) {
+					if (ISPLAYER(plinkShip->data()) && !plinkShip->data()->IsGhost()) {
+						CFSPlayer * pfsTempPlayer = ((CFSShip*)(plinkShip->data()->GetPrivateData()))->GetPlayer();
+						msr.muSum += pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu();
+						msr.sigmaSum += pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
+						msr.crSum += pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu() - g.balance.kFactor * pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
+					}
+				}
+				if (msr.crSum != 0.0f)
+					SideMsrs[pTempSide->GetObjectID()] = msr;
+			}
+		}
+	
+
+		CFSPlayer* pfsBestPlayer = NULL;
+		CFSPlayer* pfsMatchingPlayer = NULL;
+		{
+			// 3b) Find bestplayer left
+			TList<CFSPlayer*>::Iterator iterPlayers(listPlayers);
+			float HighestCr = FLT_MIN;
+			while(!iterPlayers.End()) {
+				CFSPlayer* pfsTempPlayer = iterPlayers.Value();
+				float Cr = pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu() - g.balance.kFactor * pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma();
+				if (Cr > HighestCr) {
+					pfsBestPlayer = pfsTempPlayer;
+					HighestCr = Cr;
+				}
+				iterPlayers.Next();
+			}
+		}
+
+		{
+			// 3c) Find matchingplayer left
+			TList<CFSPlayer*>::Iterator iterPlayers(listPlayers);
+			float HighestMatch = FLT_MIN;
+			while(!iterPlayers.End()) {
+				CFSPlayer* pfsTempPlayer = iterPlayers.Value();
+				if (pfsTempPlayer == pfsBestPlayer) {
+					iterPlayers.Next();
+					continue; //dont match best player
+				}
+				float matchQuality = MatchQuality(pfsBestPlayer->GetPersistPlayerScore(NA)->GetMu(),pfsBestPlayer->GetPersistPlayerScore(NA)->GetSigma(), 
+					pfsTempPlayer->GetPersistPlayerScore(NA)->GetMu(),pfsTempPlayer->GetPersistPlayerScore(NA)->GetSigma(), g.balance.sysVariance);
+				if (matchQuality > HighestMatch) {
+					pfsMatchingPlayer = pfsTempPlayer;
+					HighestMatch = matchQuality;
+				}
+				iterPlayers.Next();
+			}
+		}
+
+		// 3d) Add the players 
+		if (pfsMatchingPlayer == NULL && listPlayers.GetCount() == 1) {
+			SideID wsid = SortMSRSides(SideMsrs, true); //returns weak team ID
+			if (wsid != NA) {
+				IsideIGC * pweakside = m_pMission->GetSide(wsid);
+				AddPlayerToSide(listPlayers.PopFront(),pweakside); //best
+			}
+		} else {
+			// the normal case, above is to handle the straggler
+			SideID ssid = SortMSRSides(SideMsrs); //returns strong team ID
+			if (ssid != NA) {
+				IsideIGC * pstrongside = m_pMission->GetSide(ssid);
+				AddPlayerToSide(pfsMatchingPlayer,pstrongside); //best match
+			}
+			SideID wsid = SortMSRSides(SideMsrs, true); //returns weak team ID
+			if (wsid != NA) {
+				IsideIGC * pweakside = m_pMission->GetSide(wsid);
+				AddPlayerToSide(pfsBestPlayer,pweakside); //best
+			}
+			// 3e) Remove the players from the list
+			listPlayers.Remove(pfsMatchingPlayer);
+			listPlayers.Remove(pfsBestPlayer);
+		}
+		iterPickPlayers.Next();
+	}
+
+	// 4) Profit
 }
+
+float CFSMission::MatchQuality(double WMu, double WSigma, double LMu, double LSigma, double variance)
+{            
+    double bSq = variance * variance;
+    double csquared = (2 * bSq) + WSigma * WSigma + LSigma * LSigma;
+    double d = (2 * bSq) / csquared;            
+    double expBit = exp(-((WMu - LMu) * (WMu - LMu) / (2 * csquared)));
+    double Match = expBit * sqrt(d);
+    return (float)Match;        
+}
+
+SideID CFSMission::SortMSRSides(SideMsr * SideMsrs, bool bWeakSide) {
+	float SmallCr = FLT_MAX;
+	float BigCr = FLT_MIN;
+	SideMsr msr;
+	SideID sid = NA;
+	ZeroMemory(&msr,sizeof(SideMsr));
+	if (bWeakSide) {
+		for(int i=0;i < c_cSidesMax;i++) {
+			if (SideMsrs[i].crSum < SmallCr && SideMsrs[i].crSum != 0.0f) {
+				SmallCr = SideMsrs[i].crSum;
+				sid = i;
+				msr = SideMsrs[i];
+			}
+		}
+	} else {
+		for(int i=0;i < c_cSidesMax;i++) {
+			if (SideMsrs[i].crSum > BigCr && SideMsrs[i].crSum != 0.0f) {
+				BigCr = SideMsrs[i].crSum;
+				sid = i;
+				msr = SideMsrs[i];
+			}
+		}
+	}
+	return (msr.crSum == 0.0f) ? NA : sid;
+}
+// End Imago #192
 
 void CFSMission::SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv)
 {

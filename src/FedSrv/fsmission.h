@@ -32,6 +32,21 @@ class CAdditionalAGCParamData;
 typedef Slist_utl<CFSMission*> ListFSMission;
 typedef Slink_utl<CFSMission*> LinkFSMission;
 
+//Imago #192
+typedef struct {
+ float mu;
+ float sigma;
+ float rank; //This can be removed from use once ASGS is no longer supported
+ char name[12];
+} Msr;
+
+struct SideMsr {
+ float muSum;
+ float sigmaSum;
+ float crSum;
+};
+//
+
 struct JoinRequest
 {
   CFSPlayer * pfsPlayer;
@@ -347,6 +362,8 @@ public:
   void                  FlushSides();	// TE: Added FlushSides function
   void                  RandomizeSides();
   void                  BalanceSides(); //Imago #192 8/10
+  float					MatchQuality(double WMu, double WSigma, double LMu, double LSigma, double variance); //Imago #192 8/10
+  SideID				SortMSRSides(SideMsr * SideMsrs, bool bWeakSide = false);
 
   void                  SetSideCiv(IsideIGC * pside, IcivilizationIGC * pciv);
   void					SetSideActive(SideID sideid, bool bActive); // KGJV #62
