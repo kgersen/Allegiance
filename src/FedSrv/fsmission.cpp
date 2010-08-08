@@ -5348,6 +5348,7 @@ void CFSMission::BalanceSides() {
 				IsideIGC * pweakside = m_pMission->GetSide(wsid);
 				AddPlayerToSide(listPlayers.PopFront(),pweakside); //best
 			}
+		else if(listPlayers.GetCount() <= 0) break;
 		} else {
 			// the normal case, above is to handle the straggler
 			SideID ssid = SortMSRSides(SideMsrs); //returns strong team ID
