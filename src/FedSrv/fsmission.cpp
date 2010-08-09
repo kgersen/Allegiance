@@ -3213,7 +3213,8 @@ void CFSMission::ProcessGameOver()
       }
   }
 
-  //Save player scores
+  //Save player scores - Imago mothballed
+  /*
   {
       for (pShiplink = pShips->first(); pShiplink; pShiplink = pShiplink->next())
       {
@@ -3229,20 +3230,21 @@ void CFSMission::ProcessGameOver()
         }
       }
   }
-
   {
     for (OldPlayerLink* popl = m_oldPlayers.first(); (popl != NULL); popl = popl->next())
     {
       OldPlayerInfo & opi = popl->data();
 
       if (opi.sideID != SIDE_TEAMLOBBY)
+		  RecordPlayerResults(opi.characterID, opi.name, &opi.pso, opi.sideID,pzReport);
         SetCharStats(opi.characterID, NULL, GetIGCMission()->GetSide(opi.sideID), opi.pso, this);
     }
   }
+  */
 
   // if this was a squads game, record the wins and losses for the squads
   if (m_misdef.misparms.bSquadGame && m_misdef.misparms.bScoresCount && m_psideWon
-      && m_misdef.misparms.nTeams == 2
+      //&& m_misdef.misparms.nTeams == 2 - Imago removed #50
       && m_pMission->GetSide(0)->GetSquadID() != m_pMission->GetSide(1)->GetSquadID())
   {
     RecordSquadGame(m_pMission->GetSides(), m_psideWon);

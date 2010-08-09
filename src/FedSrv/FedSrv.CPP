@@ -1366,6 +1366,7 @@ void GotLogonDetails(CQLogonStats * pquery)
   Parameters:
       PersistPlayerScoreObject
  */
+/* Imago Mothballed #50
 void SetCharStats(int                   characterID,
                   CFSPlayer*            pfsPlayer,
                   IsideIGC *            pSide,
@@ -1470,18 +1471,18 @@ void SetCharStats(int                   characterID,
     debugf("    Minutes=%d, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, RankOld=%d, Score=%.2f.\n",
         pdq->Minutes, pdq->bWin, pdq->bLose, pdq->bWinCmd, pdq->bLoseCmd, pdq->RankOld, pdq->Score);
 
-    /* stress test
-    int i1 = 0;
-    for (i1 = 0; i1 < 10000; i1++)
-    {
-      CQCharStats * pq = (CQCharStats *) pquery->Copy(NULL);
-      g.sql.PostQuery(pq);
-    }
-    */
-	
+   // stress test
+   // int i1 = 0;
+   // for (i1 = 0; i1 < 10000; i1++)
+   // {
+   //   CQCharStats * pq = (CQCharStats *) pquery->Copy(NULL);
+   //   g.sql.PostQuery(pq);
+   // }
+   	
 	// #50 Does nothing here, adapted data to RecordGameResults->Teams->Players
 	pquery->DataReady();
 }
+*/
 
 /*-------------------------------------------------------------------------
  * RecordSquadGame
@@ -1494,7 +1495,6 @@ void SetCharStats(int                   characterID,
  */
 void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
 {
-  #if !defined(ALLSRV_STANDALONE)
     CQReportSquadGame * pquery = new CQReportSquadGame(NULL);
     CQReportSquadGameData * pqd = pquery->GetData();
 
@@ -1592,8 +1592,8 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
 
     assert(linkSide == NULL || linkSide->data() == psideWon && linkSide->next() == NULL);
 
-    g.sql.PostQuery(pquery);
-  #endif // !defined(ALLSRV_STANDALONE)
+	//#50 - TODO - open another ticket detailing how to handle a seperate handler request to record squad match results
+    //g.sql.PostQuery(pquery);
 }
 
 

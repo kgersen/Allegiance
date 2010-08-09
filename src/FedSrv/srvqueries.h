@@ -127,9 +127,11 @@ BEGIN_QUERY(CQCharStats, false,
   float MinerKills;
   float BuilderKills;
   float LayerKills;
+  /*
 #if _MSC_VER >= 1310
   char dummy[100]; // -KGJV : workaround till big bug found
 #endif
+  */
 
   BEGIN_PARAM_MAP(CQCharStatsData)
     COLUMN_ENTRY_TYPE( 1,  DBTYPE_I1, bScoresCount)
@@ -168,9 +170,11 @@ BEGIN_QUERY(CQReportSquadGame, false,
   int squadIDLost3;
   int squadIDLost4;
   int squadIDLost5;
+  /*
 #if _MSC_VER >= 1310
   char dummy[100]; // -KGJV : workaround till big bug found
 #endif
+  */
 
   BEGIN_PARAM_MAP(CQReportSquadGameData)
     COLUMN_ENTRY_TYPE(1, DBTYPE_I4, squadIDWon)
@@ -298,9 +302,11 @@ BEGIN_QUERY(CQTeamResults, false,
   short nProsperityPercentBought;
   short nProsperityPercentComplete;
   long  nTimeEndured;
+  /*
 #if _MSC_VER >= 1310
   char dummy[100]; // -KGJV : workaround till big bug found
 #endif
+  */
 
   BEGIN_PARAM_MAP(CQTeamResultsData)
     COLUMN_ENTRY_TYPE( 1, DBTYPE_STR, szGameID                  )
@@ -391,11 +397,11 @@ BEGIN_QUERY(CQPlayerResults, false,
   bool  bLoseCmd;
   float cr;
   int CharacterID;
-
+/*
 #if _MSC_VER >= 1310
   char dummy[100]; // -KGJV : workaround till big bug found
 #endif
-
+*/
   BEGIN_PARAM_MAP(CQPlayerResultsData)
     COLUMN_ENTRY_TYPE( 1, DBTYPE_STR, szGameID          )
     COLUMN_ENTRY_TYPE( 2, DBTYPE_I2 , nTeamID           )
