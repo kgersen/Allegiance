@@ -7051,17 +7051,30 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  {									 //ownship commands.  Tagging on miner commands from playerpane
       	  pship = pside->GetShip(pfmOC->shipID);		 
 	  }
+	  bool bUndock = false;
 	  // pkk #211 08/05/2010 Allow all drones stay docked
       if (pship->GetPilotType() < c_ptPlayer)
 	  {
+		  if (pship->GetStation() != NULL)
+		  { //if docked, launch
+			  pship->SetStayDocked(false);
+			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
+                                            voAffirmativeSound, "Affirmative. Preparing to launch.");
+			  bUndock = true;
+
+			  pship->PickDefaultOrder(pship->GetStation()->GetCluster(), pship->GetStation()->GetPosition(), true);			  
+		  }
+		  else
+		  {
 			  pship->SetStayDocked(true);
 			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
                                             voAffirmativeSound, "Affirmative.");
 			  pfsMission->GetSite()->SendChat(pship, CHAT_TEAM, pship->GetSide()->GetObjectID(),
                                             NA, "Heading back to base. I'll sit tight.");
+		  }
 	  }//Xynth #48 End Changes
 
-      if (pside->GetObjectID() >= 0)
+      if (pside->GetObjectID() >= 0  && !bUndock)
       {
         ImodelIGC*  pmodel = pMission->GetModel(pfmOC->objectType, pfmOC->objectID);
         pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);

@@ -3872,8 +3872,8 @@ public:
 	{
 		contextPlayerInfo->SetMute(!contextPlayerInfo->GetMute());
 	}
-	//Xynth #48 8/2010
-	void contextDockDrone()
+	
+	void contextDockDrone() //Xynth #48 8/2010
 	{
 		// pkk #211 08/05/2010 Allow all drones stay docked
 		ImodelIGC*  pmodel;
@@ -3891,8 +3891,13 @@ public:
 		
 		if (pmodel)
 		{
-			contextPlayerInfo->GetShip()->SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
-			contextPlayerInfo->GetShip()->SetStayDocked(true);
+			if (contextPlayerInfo->GetShip()->GetStation() != NULL) //if docked, launch
+				contextPlayerInfo->GetShip()->SetStayDocked(false);
+			else
+			{
+				contextPlayerInfo->GetShip()->SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
+				contextPlayerInfo->GetShip()->SetStayDocked(true);
+			}
 		}
 
 		if (trekClient.m_fm.IsConnected())
@@ -4368,16 +4373,22 @@ public:
 			if (playerInfo->GetShip()->GetPilotType() < c_ptPlayer)
 			{
 				if (playerInfo->GetShip()->GetPilotType() != c_ptCarrier)
+				{ 
+					if (playerInfo->LastSeenState() == c_ssDocked)
+						sprintf(str1,"Launch  ");
+					else
+						sprintf(str1,"Stay Docked ");
+					bEnableDock  = true;					
+				}
+				// Find shipyard  Xynth removing carrier, needs work
+				/*else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair) != NULL)
 				{
 					bEnableDock  = true;
-					sprintf(str1,"Dock       ");
-				}
-				// Find shipyard
-				else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair) != NULL)
-				{
-					bEnableDock  = true;
-					sprintf(str1,"Dock       ");
-				}
+					if (playerInfo->GetShip()->GetStation() != NULL)
+						sprintf(str1,"Undock   ");
+					else
+						sprintf(str1,"Stay Docked ");
+				}*/
 			}
 		}
 
