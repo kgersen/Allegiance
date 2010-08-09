@@ -2704,6 +2704,64 @@ void CFSMission::MakeOverrideTechBits()
     }
 }
 
+//Imago #50 8/10 - Similar to do*InputMap
+static void doRecordGame(void* data, MprThread *threadp) {
+	ZString * szName = (ZString *)data;
+	ZString strName = szName->GetToken();
+
+	debugf("****** posting game %s\n",(PCC)strName);
+
+	//sanity check....
+	MprSocket* socket = new MprSocket();
+	socket->openClient("build.alleg.net",80,0);
+	int iwrite = socket->_write("GET /\r\n");
+	delete socket;
+	if (iwrite != 7) return; 
+
+	MaClient* client = new MaClient();
+	client->setTimeout(100000);
+	client->setRetries(1);
+	client->setKeepAlive(0);
+	int contentLen = 0; char *content;
+	
+	strName+=".stats";
+	ZFile * pzFile = new ZFile(GetAppDir() + "/"+strName,OF_READ);
+	char* buffer = new char[pzFile->GetLength()];
+	int iSize = pzFile->Read(buffer, sizeof(char) * pzFile->GetLength());
+	if (iSize != pzFile->GetLength() || iSize <= 0) return; 
+
+	MprBuf * hdrBuf = new MprBuf(256);
+	hdrBuf->put("POST /AllegSkill/nph-PutGameResults.cgi HTTP/1.1\r\n");
+	hdrBuf->put("Host: build.alleg.net\r\n");
+	hdrBuf->put("Connection: close\r\n");
+	hdrBuf->put("User-Agent: AllSrv game post thread\r\n");
+	hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
+	ZString zParts1 = "-----------------------------01\r\n";
+#ifdef DEBUG
+	zParts1 += "Content-Disposition: form-data; name=\"debug\"";
+	zParts1 += "\r\n\r\non\r\n";
+	zParts1 += "-----------------------------01\r\n";
+#endif
+	zParts1 += "Content-Disposition: form-data; name=\"Game\"; filename=\"";
+	zParts1 += strName;
+	zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";  //not compressed - NYI
+	ZString zParts0 = "\r\n-----------------------------01--\r\n";
+	int iTotal0 = iSize + zParts1.GetLength() + zParts0.GetLength();
+	char * PostData = new char [iTotal0];
+	Strcpy(PostData,(PCC)zParts1);
+	memcpy(PostData+zParts1.GetLength(),buffer,iSize);
+	memcpy(PostData+zParts1.GetLength()+iSize,(PCC)zParts0,zParts0.GetLength());
+	hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
+	int code = client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
+	delete hdrBuf;
+	delete PostData;
+	debugf("****** game posted in %i bytes\n",iTotal0);
+
+	//TODO - look at code & resopnse, delete file only if OK - for now, Fire and Forget, just like TAG
+	DeleteFile(GetAppDir() + "/" +strName);
+
+	delete client;
+}
 
 /*-------------------------------------------------------------------------
  * RecordGameResults
@@ -2778,6 +2836,12 @@ void CFSMission::RecordGameResults()
     }
 
 	delete pzReport;
+
+	//#50 - TODO, look for any .stats files when the server first starts (and connects to prod. lobby) to try resending
+	ZString * pzName = new ZString(zName);
+	ZString zTName =  ZString("AllSrv game ")+ZString((int)GetCookie())+ZString(" post thread");
+	MprThread* threadp = new MprThread(doRecordGame, MPR_NORMAL_PRIORITY, (void*)pzName,(char*)(PCC)zTName);
+	threadp->start();
 
 #pragma warning(default: 4244)
 }
@@ -2903,7 +2967,6 @@ void CFSMission::RecordPlayerResults(ObjectID cid, const char* pszName, PlayerSc
     pqd->bLose              = ppso->GetLoser();
     pqd->bWinCmd            = ppso->GetCommandWinner();
     pqd->bLoseCmd           = ppso->GetCommandLoser();
-    pqd->cr					= ppso->GetCombatRating(); //new! a kill/death adjusted conservative rank comparison, oh my!?!
 
     // spew the player results that we're writing...
     debugf("Writing player results: %s %s %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %g %g %d\n",

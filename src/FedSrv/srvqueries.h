@@ -100,12 +100,12 @@ BEGIN_QUERY(CQCharSquads, true,
 END_QUERY(CQCharSquads, true)
 
   
-// Character Stats - KGJV - set type to bool instead of char for b* params
+// Character Stats - KGJV - set type to bool instead of char for b* params --ugh -Imago changed back 8/10
 BEGIN_QUERY(CQCharStats, false, 
   TEXT("{Call SetCharacterStats (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}"))
 
   float Score;
-  bool  bScoresCount;
+  char  bScoresCount;
   int   CharacterID;
   short CivID;
   short Rating;
@@ -116,10 +116,10 @@ BEGIN_QUERY(CQCharStats, false,
   short PilotBaseKills;
   short PilotBaseCaptures;
   int   Minutes;
-  bool  bWin;
-  bool  bLose;
-  bool  bWinCmd;
-  bool  bLoseCmd;
+  char  bWin;
+  char  bLose;
+  char  bWinCmd;
+  char  bLoseCmd;
   short RankOld;
   float WarpsSpotted;
   float AsteroidsSpotted;
@@ -218,12 +218,12 @@ BEGIN_QUERY(CQGameResults, false,
   char  szWinningTeam [21];
   char	szCore		  [21];
   short nWinningTeamID;
-  bool  bIsGoalConquest;
-  bool  bIsGoalCountdown;
-  bool  bIsGoalTeamKills;
-  bool  bIsGoalProsperity;
-  bool  bIsGoalArtifacts;
-  bool  bIsGoalFlags;
+  char  bIsGoalConquest;
+  char  bIsGoalCountdown;
+  char  bIsGoalTeamKills;
+  char  bIsGoalProsperity;
+  char  bIsGoalArtifacts;
+  char  bIsGoalFlags;
   short nGoalConquest;
   long  nGoalCountdown;
   short nGoalTeamKills;
@@ -290,7 +290,7 @@ BEGIN_QUERY(CQTeamResults, false,
   short nTeamID;
   char  szName[c_cbName];
   short nCivID;
-  char  szTechs[(c_ttbMax + 7) / 8 * 2]; // KGJV: warning could overflow the db / sp
+  char  szTechs[(c_ttbMax + 7) / 8 * 2];
   short cPlayerKills;
   short cBaseKills;
   short cBaseCaptures;
@@ -391,11 +391,10 @@ BEGIN_QUERY(CQPlayerResults, false,
   float fScore;
   long  nTimePlayed;
   //#50 added
-  bool  bWin;
-  bool  bLose;
-  bool  bWinCmd;
-  bool  bLoseCmd;
-  float cr;
+  char  bWin;
+  char  bLose;
+  char  bWinCmd;
+  char  bLoseCmd;
   int CharacterID;
 /*
 #if _MSC_VER >= 1310
