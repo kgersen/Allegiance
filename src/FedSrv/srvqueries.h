@@ -391,6 +391,7 @@ BEGIN_QUERY(CQPlayerResults, false,
   float fScore;
   long  nTimePlayed;
   //#50 added
+  long	nTimeCmd;
   char  bWin;
   char  bLose;
   char  bWinCmd;

@@ -2756,9 +2756,14 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	delete hdrBuf;
 	delete PostData;
 	debugf("****** game posted in %i bytes\n",iTotal0);
-
-	//TODO - look at code & resopnse, delete file only if OK - for now, Fire and Forget, just like TAG
-	DeleteFile(GetAppDir() + "/" +strName);
+	delete pzFile;
+	
+	ZString zResponse;
+	zResponse.SetEmpty();
+	if (client->getResponseCode() == 200)
+		zResponse = client->getResponseContent(&contentLen);
+	if (zResponse.ReverseFindAny("POSTED") != -1)
+		DeleteFile(GetAppDir() + "/" +strName);
 
 	delete client;
 }
@@ -2967,6 +2972,7 @@ void CFSMission::RecordPlayerResults(ObjectID cid, const char* pszName, PlayerSc
     pqd->bLose              = ppso->GetLoser();
     pqd->bWinCmd            = ppso->GetCommandWinner();
     pqd->bLoseCmd           = ppso->GetCommandLoser();
+	pqd->nTimeCmd			= ppso->GetTimeCommanded();
 
     // spew the player results that we're writing...
     debugf("Writing player results: %s %s %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %g %g %d\n",

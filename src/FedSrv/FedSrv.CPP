@@ -1592,7 +1592,7 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon)
 
     assert(linkSide == NULL || linkSide->data() == psideWon && linkSide->next() == NULL);
 
-	//#50 - TODO - open another ticket detailing how to handle a seperate handler request to record squad match results
+	//#50 - TODO - open another ticket detailing how to handle a seperate request to record squad match results
     //g.sql.PostQuery(pquery);
 }
 
