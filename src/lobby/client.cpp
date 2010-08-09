@@ -444,6 +444,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
           FM_VAR_PARM(szIGCStaticFile, CB_ZTS) // core name
         END_PFM_CREATE
         pfmNewMissionReq->dwCookie = pMission->GetCookie();
+		pfmNewMissionReq->bScoresCount = true; // user created games always to true until KGJV fixes this bug.
 
         // Tell the player that their mission is on the way
         BEGIN_PFM_CREATE(*pthis, pfmCreateMissionAck, L, CREATE_MISSION_ACK)

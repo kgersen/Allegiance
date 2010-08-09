@@ -1117,6 +1117,13 @@ void GotCharSquads(CQCharSquads * pquery)
 
 
 #endif
+
+// #50 Imago - intentionally does nothing
+void GotCharStats(CQCharStats * pquery)
+{
+	return;
+}
+
 /*-------------------------------------------------------------------------
  * GotLogonDetails
  *-------------------------------------------------------------------------
@@ -1365,7 +1372,7 @@ void SetCharStats(int                   characterID,
                   PlayerScoreObject&    pso,
                   CFSMission*           pfsMission)
 {
-#if !defined(ALLSRV_STANDALONE)  // mmf moved this up from further down
+
 	if (0.0f == pso.GetTimePlayed())
     {
       return;
@@ -1420,10 +1427,11 @@ void SetCharStats(int                   characterID,
             }
         }
     }
+	
 
- // #if !defined(ALLSRV_STANDALONE) mmf moved this further up
-
-    CQCharStats * pquery = new CQCharStats(NULL); // don't need call-back notification
+ 
+    CQCharStats * pquery = new CQCharStats(GotCharStats); // don't need call-back notification 
+		//	-- Imago #50 Changed to DO use call-back notification (a stub) --^ so we dont try to spin up another unecessary SQL thread
     CQCharStatsData * pdq = pquery->GetData();
 
     pdq->CharacterID  = characterID;
@@ -1470,35 +1478,9 @@ void SetCharStats(int                   characterID,
       g.sql.PostQuery(pq);
     }
     */
-
-    g.sql.PostQuery(pquery);
-
-  #endif // !defined(ALLSRV_STANDALONE)
-
-#ifdef DEBUG
-	// mmf have debug build of server log this
-	// mmf converted debug statement from pdq structure
-	//     note pfsPlayer can be NULL so added check for that
-	if (0.0f == pso.GetTimePlayed())
-    {   return;    }
-    assert(pso.GetScore() >= 0.0f);
-	assert(pSide);
-    PersistPlayerScoreObject& ppso = pso.GetPersist();
-    RankID  Rank = ppso.GetRank();
-	if (pfsPlayer != NULL) debugf("PlayerName =%s, ",pfsPlayer->GetName());
-	debugf("CharacterID=%d, Rank=%d, bScoresCount=%d, CivID=%d, Rating=%d,\n",
-        characterID, Rank ,pfsMission->GetScoresCount(), pSide->GetCivilization()->GetObjectID(),
-		RATING_INT2EXT(pso.GetCombatRating()));
-    debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
-        pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
-    debugf("    MinerKills=%.2f, BuilderKills=%.2f, LayerKills=%.2f, PlayerKills=%.2f,\n",
-        pso.GetMinerKills(), pso.GetBuilderKills(), pso.GetLayerKills(), pso.GetPlayerKills());
-    debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
-        pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
-    debugf("    Minutes=%.2f, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
-        (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(),
-		pso.GetScore());
-#endif
+	
+	// #50 Does nothing here, adapted data to RecordGameResults->Teams->Players
+	pquery->DataReady();
 }
 
 /*-------------------------------------------------------------------------

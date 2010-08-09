@@ -1419,12 +1419,13 @@ struct MissionParams
             return "Scores can't be counted for a game where defections are allowed; "
                 "please turn off defections or stats count.";
         }
-		// TE: Confirms that the MaxImbalance = AUTO when scores count
-        else if (bScoresCount && iMaxImbalance != 0x7ffe)
+		// TE: Confirms that the MaxImbalance = AUTO when scores count --- Imago ugh.... 8/10 #192 #50 REVIEW
+        /* else if (bScoresCount && iMaxImbalance != 0x7ffe)
         {
             return "Scores can't be counted for a game where the MaxImbalance setting is not Auto; "
                 "please set the MaxImbalance setting to Auto, or turn off stats count.";
         }
+		*/
         else if (IsConquestGame() && bInvulnerableStations)
         {
             return "You can't play a conquest game with invulnerable stations; "

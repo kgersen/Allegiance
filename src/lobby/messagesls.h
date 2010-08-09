@@ -13,9 +13,15 @@
 
 #include "MessageCore.h"
 
-// Imago updated for R5 8/6/09
-#define LOBBYVER_LS 12 // If you change this file, increment this // #2 6/10 // #62 7/10 //12 - Imago #192 
 
+// If you change this file, increment this:
+
+							// #2 6/10 
+							// #62 7/10 
+							//11 - Imago R5 8/6/09
+							//12 - Imago #192 
+							//13 - Imago #192 - KGJV's old 114
+#define LOBBYVER_LS 13
 
 /*
   *************************************************
@@ -52,6 +58,7 @@ END_FEDMSG
 DEFINE_FEDMSG(L, CREATE_MISSION_REQ, 203)
     FM_VAR_ITEM(GameName);   // KGJV #114 - actually it's game name now
 	FM_VAR_ITEM(IGCStaticFile); // KGJV #114
+	bool bScoresCount; //Imago #50 fixing/finishing another KGJV's old 114
     DWORD dwCookie; // server will return this when mission is created so we know which is which
                     // this is only guaranteed to be unique among currently running missions
                     // Really a CFLServer*

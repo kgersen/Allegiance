@@ -1784,9 +1784,6 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
     misparms.bClubGame = false;
   #endif // !defined(ALLSRV_STANDALONE)
 
-  // TE: Enforce LockSides = on if ScoresCount mmf change to MaxImbalance
-  if (misparms.bScoresCount)
-	  misparms.iMaxImbalance = 0x7ffe;
 
   int numTeamsOld = m_misdef.misparms.nTeams;
 
@@ -2716,8 +2713,7 @@ void CFSMission::MakeOverrideTechBits()
  */
 void CFSMission::RecordGameResults()
 {
-  #if !defined(ALLSRV_STANDALONE)
-
+  
     // Create the database update query
     CQGameResults*  pquery = new CQGameResults(NULL); // don't need call-back notification
     CQGameResultsData* pqd = pquery->GetData();
@@ -2747,7 +2743,9 @@ void CFSMission::RecordGameResults()
     pqd->nDuration            = GetGameDuration();
 
     // Post the query for async completion
-    g.sql.PostQuery(pquery);
+	/// g.sql.PostQuery(pquery); //Imago #192 commented 8/10
+
+	//TODO #50 --Save out...... 
 
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();
@@ -2770,7 +2768,7 @@ void CFSMission::RecordGameResults()
         RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
     }
 
-  #endif // !defined(ALLSRV_STANDALONE)
+	//TODO - Spin up a thread and post out BIN file! #50
 }
 
 
@@ -2782,8 +2780,7 @@ void CFSMission::RecordGameResults()
  */
 void CFSMission::RecordTeamResults(IsideIGC* pside)
 {
-  #if !defined(ALLSRV_STANDALONE)
-
+  
     // Create the database update query
     CQTeamResults*  pquery = new CQTeamResults(NULL);
     CQTeamResultsData* pqd = pquery->GetData();
@@ -2818,7 +2815,9 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
       pqd->nTimeEndured             = pside->GetTimeEndured();
 
     // Post the query for async completion
-    g.sql.PostQuery(pquery);
+    // g.sql.PostQuery(pquery);  #50 commented Imago 8/10
+
+	// #TODO #50 Save out...
 
     // Iterate through each player of the team
     const ShipListIGC* pShips = pside->GetShips();
@@ -2838,8 +2837,6 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
         RecordPlayerResults(pship->GetName(), ppso, pside->GetObjectID());
       }
     }
-
-  #endif // !defined(ALLSRV_STANDALONE)
 }
 
 
@@ -2851,8 +2848,6 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
  */
 void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* ppso, SideID sid)
 {
-  #if !defined(ALLSRV_STANDALONE)
-
     // Create the database update query
     CQPlayerResults*  pquery = new CQPlayerResults(NULL);
     CQPlayerResultsData* pqd = pquery->GetData();
@@ -2885,6 +2880,17 @@ void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* pps
     pqd->fScore             = ppso->GetScore();
     pqd->nTimePlayed        = ppso->GetTimePlayed();
 
+	/* Imago - Add this (again, just like my old statstruct.h, but smarter this time) TODO #50
+	pdq->CharacterID		= characterID;
+    pdq->CivID				= civID;
+    pdq->bWin               = pso.GetWinner();
+    pdq->bLose              = pso.GetLoser();
+    pdq->bWinCmd            = pso.GetCommandWinner();
+    pdq->bLoseCmd           = pso.GetCommandLoser();
+    pdq->Score              = pso.GetScore();
+    pdq->RankOld            = newRank;
+	*/
+
     // spew the player results that we're writing...
     debugf("Writing player results: %s %s %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %g %g %d\n",
       pqd->szGameID,
@@ -2913,9 +2919,9 @@ void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* pps
 
 
     // Post the query for async completion
-    g.sql.PostQuery(pquery);
+    //g.sql.PostQuery(pquery); #50 Imago 8/10
 
-  #endif // !defined(ALLSRV_STANDALONE)
+	//TODO Save out.. Imago
 }
 
 
