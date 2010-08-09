@@ -1684,22 +1684,25 @@ public:
             minPlayers = maxPlayers = psl->data()->GetShips()->n();
             while (true)
             {
-                psl = psl->next();
                 if (psl == NULL)
                     break;
+				// KGJV #62 - skip deactivated team
+				if (psl->data()->GetActiveF())
+				{
+					int n = psl->data()->GetShips()->n();
+					if (n < minPlayers)
+					{
+						psideMin = psl->data();
+						minPlayers = n;
+					}
 
-                int n = psl->data()->GetShips()->n();
-                if (n < minPlayers)
-                {
-                    psideMin = psl->data();
-                    minPlayers = n;
-                }
-
-                if (n > maxPlayers)
-                {
-                    psideMax = psl->data();
-                    maxPlayers = n;
-                }
+					if (n > maxPlayers)
+					{
+						psideMax = psl->data();
+						maxPlayers = n;
+					}
+				}
+				psl = psl->next();
             }
 
             if ( ((minPlayers + m_pMission->MaxImbalance() < maxPlayers) && m_pMission->GetMissionParams().iMaxImbalance != 32766) ||  
@@ -1715,16 +1718,20 @@ public:
                 SideID  idBlockingSide = NA;
                 const char* szBlockingReason = NULL;
 
-                for (SideID id = 0; id < m_pMission->NumSides(); id++)
+                 for (SideID id = 0; id < m_pMission->NumSides(); id++)
                 {
                     const char* szReason = NULL;
-
-                    if (m_pMission->SideNumPlayers(id) < m_pMission->MinPlayersPerTeam())
+					// KGJV #62 - logic changed for AllowEmptyTeams 
+					if (m_pMission->SideNumPlayers(id) < ( !m_pMission->SideActive(id) ? 0 : m_pMission->MinPlayersPerTeam()))
                         szReason = "BELOW MINIMUM SIZE";
                     else if (m_pMission->SideNumPlayers(id) > m_pMission->MaxPlayersPerTeam())
                         szReason = "ABOVE MAXIMUM SIZE";
-                    else if (!m_pMission->SideReady(id))
-                        szReason = "NOT READY";
+					// EmptyTeams not allowed so check SideReady
+					else if (m_pMission->SideActive(id) && !m_pMission->SideReady(id))
+						szReason = "NOT READY";
+					// EmptyTeams allowed so check SideReady only if it has at least 1 player
+					else if (m_pMission->SideActive(id) && (m_pMission->SideNumPlayers(id) > 0 ) && !m_pMission->SideReady(id))
+						szReason = "NOT READY";
 
                     if (szReason)
                     {
@@ -1732,6 +1739,7 @@ public:
                         {
                             idBlockingSide = id;
                             szBlockingReason = szReason;
+							debugf("%s szBlockingReason set to %s\n",trekClient.GetCore()->GetSide(id)->GetName(),szBlockingReason);
                         }
                         else
                         {
