@@ -5830,10 +5830,8 @@ void doMSRInfo(void* data, MprThread *threadp) {
 						if (pship && pship->IsValid()) {
 							CFSShip* pplayer = (CFSShip*)(pship->GetPrivateData());
 							if (pplayer != NULL && pplayer->GetPlayerScoreObject() != NULL) {
-								// just reuse these old values for now (i'm sure they are always 0, a shame)
-								float rating = pplayer->GetPlayerScoreObject()->GetPersist().GetCombatRating();
-								float score = pplayer->GetPlayerScoreObject()->GetPersist().GetScore();
-								//
+								float rating = pplayer->GetPlayerScoreObject()->GetPersist().GetCombatRating(); // actually a Conservative Rank (but it gets modified during the course of a game)
+								float score = pplayer->GetPlayerScoreObject()->GetPersist().GetScore();  // We dont mess with this (Points)
 								float mu = pplayer->GetPlayerScoreObject()->GetPersist().GetMu();
 								float sigma = pplayer->GetPlayerScoreObject()->GetPersist().GetSigma();
 								RankID rank = (RankID)floor(myMsr.rank + 0.5f); 

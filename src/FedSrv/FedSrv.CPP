@@ -1189,13 +1189,14 @@ void GotLogonDetails(CQLogonStats * pquery)
 			fValid = false;
 			Strcpy(pqd->szReason,"Your callsign does not exist on this server.");
 		} else {
+			float Cr = pqd->mu - g.balance.kFactor * pqd->sigma;
 			const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
-			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,NA);  //and NOAT
+			PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,Cr,pqd->rank,NA);  //and NOAT
 			ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 Imago 7/10
 			pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 			for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 			{
-				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,pqd->rank,pcl->data()->GetObjectID());
+				PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,Cr,pqd->rank,pcl->data()->GetObjectID());
 				ppso->SetMuAndSigma(pqd->mu, pqd->sigma); //#192 Imago 7/10
 				pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 			}
@@ -1250,12 +1251,13 @@ void GotLogonDetails(CQLogonStats * pquery)
 			myRank=0; // sanity check
 		}
         const CivilizationListIGC * pctlist = g.trekCore->GetCivilizations();
-	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,NA);  //and NOAT
+		float Cr = mu - g.balance.kFactor * sigma;
+	    PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,Cr,myRank,NA);  //and NOAT
 		ppso->SetMuAndSigma(mu, sigma); //#192 Imago 7/10
 	    pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 	    for (CivilizationLinkIGC * pcl = pctlist->first(); (pcl != NULL); pcl = pcl->next())
 		{
-		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,0.0f,myRank,pcl->data()->GetObjectID());
+		  PersistPlayerScoreObject * ppso = new PersistPlayerScoreObject(0.0f,Cr,myRank,pcl->data()->GetObjectID());
 		  ppso->SetMuAndSigma(mu, sigma); //#192 Imago 7/10
 		  pfsPlayer->GetPersistPlayerScoreObjectList()->last(ppso);
 		}
