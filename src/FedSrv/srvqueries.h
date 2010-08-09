@@ -212,6 +212,7 @@ BEGIN_QUERY(CQGameResults, false,
   char  szGameID      [18];
   char  szName        [65];
   char  szWinningTeam [21];
+  char	szCore		  [21];
   short nWinningTeamID;
   bool  bIsGoalConquest;
   bool  bIsGoalCountdown;
@@ -226,9 +227,13 @@ BEGIN_QUERY(CQGameResults, false,
   short nGoalArtifacts;
   short nGoalFlags;
   long  nDuration;
+  
+  //Imago - lol  what ? #50
+  /*
 #if _MSC_VER >= 1310
   char dummy[100]; // -KGJV : workaround till big bug found
 #endif
+  */
 
   BEGIN_PARAM_MAP(CQGameResultsData)
     COLUMN_ENTRY_TYPE( 1, DBTYPE_STR, szGameID         )
@@ -379,6 +384,14 @@ BEGIN_QUERY(CQPlayerResults, false,
   float fCombatRating;
   float fScore;
   long  nTimePlayed;
+  //#50 added
+  bool  bWin;
+  bool  bLose;
+  bool  bWinCmd;
+  bool  bLoseCmd;
+  float cr;
+  int CharacterID;
+
 #if _MSC_VER >= 1310
   char dummy[100]; // -KGJV : workaround till big bug found
 #endif

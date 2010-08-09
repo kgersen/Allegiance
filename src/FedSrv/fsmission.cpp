@@ -2713,7 +2713,9 @@ void CFSMission::MakeOverrideTechBits()
  */
 void CFSMission::RecordGameResults()
 {
-  
+
+#pragma warning(disable: 4244) //Imago #50 - loss of data here is ok to optimize over-the-wire (select floats to longs and floats to shorts)
+
     // Create the database update query
     CQGameResults*  pquery = new CQGameResults(NULL); // don't need call-back notification
     CQGameResultsData* pqd = pquery->GetData();
@@ -2722,6 +2724,8 @@ void CFSMission::RecordGameResults()
     strncpy(pqd->szGameID     , GetIGCMission()->GetContextName()      , sizeofArray(pqd->szGameID));
     strncpy(pqd->szName       , m_misdef.misparms.strGameName          , sizeofArray(pqd->szName));
     strncpy(pqd->szWinningTeam, m_psideWon ? m_psideWon->GetName() : "", sizeofArray(pqd->szWinningTeam));
+	strncpy(pqd->szCore		  , GetIGCMission()->GetMissionParams()->szIGCStaticFile, sizeofArray(pqd->szCore)); // #50 Imago added
+
     // make SURE they're NULL-terminated
     pqd->szGameID[sizeofArray(pqd->szGameID) - 1] = '\0';
     pqd->szName[sizeofArray(pqd->szName) - 1] = '\0';
@@ -2742,10 +2746,15 @@ void CFSMission::RecordGameResults()
     pqd->nGoalFlags           = m_misdef.misparms.nGoalFlagsCount;
     pqd->nDuration            = GetGameDuration();
 
-    // Post the query for async completion
+	// Post the query for async completion
 	/// g.sql.PostQuery(pquery); //Imago #192 commented 8/10
 
-	//TODO #50 --Save out...... 
+	//#50 --Save out...... 
+    SYSTEMTIME stLocalTime;
+    GetLocalTime( &stLocalTime );
+    ZString zName = ZString(stLocalTime.wYear) + ZString(stLocalTime.wMonth) + ZString(stLocalTime.wDay) +  ZString(stLocalTime.wHour) +  ZString(stLocalTime.wMinute) + ZString(stLocalTime.wSecond) + "-" + ZString((int)GetCurrentProcessId()) + "-" +ZString((int)GetCurrentThreadId());
+	ZFile * pzReport = new ZFile(GetAppDir()+"/"+zName+".stats", OF_WRITE | OF_CREATE);
+	pzReport->Write(pqd,sizeof(CQGameResultsData));
 
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();
@@ -2755,7 +2764,7 @@ void CFSMission::RecordGameResults()
       assert(pside);
 
       // Record the team results
-      RecordTeamResults(pside);
+      RecordTeamResults(pside,pzReport);
     }
 
     // Iterate through each player that left the game before it ended
@@ -2765,10 +2774,12 @@ void CFSMission::RecordGameResults()
 
       // Record the player results (if they played on a real side)
       if (opi.sideID != SIDE_TEAMLOBBY)
-        RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
+        RecordPlayerResults(opi.characterID, opi.name, &opi.pso, opi.sideID, pzReport); // #50 added Char ID (for future support)
     }
 
-	//TODO - Spin up a thread and post out BIN file! #50
+	delete pzReport;
+
+#pragma warning(default: 4244)
 }
 
 
@@ -2778,8 +2789,10 @@ void CFSMission::RecordGameResults()
    Purpose:
      Records the results of the team to the database.
  */
-void CFSMission::RecordTeamResults(IsideIGC* pside)
+void CFSMission::RecordTeamResults(IsideIGC* pside, ZFile * pzReport)
 {
+
+#pragma warning(disable: 4244) //Imago #50 - loss of data here is ok to optimize over-the-wire (select floats to longs and floats to shorts)
   
     // Create the database update query
     CQTeamResults*  pquery = new CQTeamResults(NULL);
@@ -2817,7 +2830,7 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
     // Post the query for async completion
     // g.sql.PostQuery(pquery);  #50 commented Imago 8/10
 
-	// #TODO #50 Save out...
+	pzReport->Write(pqd,sizeof(CQTeamResultsData));
 
     // Iterate through each player of the team
     const ShipListIGC* pShips = pside->GetShips();
@@ -2834,9 +2847,10 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
         PlayerScoreObject* ppso = pfsPlayer->GetPlayerScoreObject();
 
         // Record the player results
-        RecordPlayerResults(pship->GetName(), ppso, pside->GetObjectID());
+        RecordPlayerResults(pfsPlayer->GetCharacterID(), pship->GetName(), ppso, pside->GetObjectID(), pzReport); // #50 added cid
       }
     }
+#pragma warning(default: 4244)
 }
 
 
@@ -2846,8 +2860,11 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
    Purpose:
      Records the results of the player to the database.
  */
-void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* ppso, SideID sid)
+void CFSMission::RecordPlayerResults(ObjectID cid, const char* pszName, PlayerScoreObject* ppso, SideID sid, ZFile * pzReport)
 {
+
+#pragma warning(disable: 4244) //Imago #50 - loss of data here is ok to optimize over-the-wire (select floats to longs and floats to shorts)
+
     // Create the database update query
     CQPlayerResults*  pquery = new CQPlayerResults(NULL);
     CQPlayerResultsData* pqd = pquery->GetData();
@@ -2880,16 +2897,13 @@ void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* pps
     pqd->fScore             = ppso->GetScore();
     pqd->nTimePlayed        = ppso->GetTimePlayed();
 
-	/* Imago - Add this (again, just like my old statstruct.h, but smarter this time) TODO #50
-	pdq->CharacterID		= characterID;
-    pdq->CivID				= civID;
-    pdq->bWin               = pso.GetWinner();
-    pdq->bLose              = pso.GetLoser();
-    pdq->bWinCmd            = pso.GetCommandWinner();
-    pdq->bLoseCmd           = pso.GetCommandLoser();
-    pdq->Score              = pso.GetScore();
-    pdq->RankOld            = newRank;
-	*/
+	// Imago - Add this (again, just like my old statstruct.h, but smarter this time) #50
+	pqd->CharacterID		= cid; //meaningless until integration with user / authentication database
+    pqd->bWin               = ppso->GetWinner();
+    pqd->bLose              = ppso->GetLoser();
+    pqd->bWinCmd            = ppso->GetCommandWinner();
+    pqd->bLoseCmd           = ppso->GetCommandLoser();
+    pqd->cr					= ppso->GetCombatRating(); //new! a kill/death adjusted conservative rank comparison, oh my!?!
 
     // spew the player results that we're writing...
     debugf("Writing player results: %s %s %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %g %g %d\n",
@@ -2921,7 +2935,8 @@ void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* pps
     // Post the query for async completion
     //g.sql.PostQuery(pquery); #50 Imago 8/10
 
-	//TODO Save out.. Imago
+	pzReport->Write(pqd,sizeof(CQPlayerResultsData));
+#pragma warning(default: 4244)
 }
 
 
