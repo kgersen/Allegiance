@@ -3357,7 +3357,7 @@ public:
 
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
-		ToggleBandwidth(LoadPreference("Bandwidth",2)); // w0dk4 June 2007: Bandwith Patch
+		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10
 
 		 // Imago 7/10
 		if (LoadPreference("SaveDumps",FALSE))
