@@ -4699,7 +4699,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 		case 32766: //Allegskill /w Weighted fail-over
 			(STAGE_NOTSTARTED == GetStage()) ? (DelPositionReqReason)NA : // Don't check join requests when pre-launch
 				dpr = (fRank == 0.0f) ? 
-					CheckWeightedPR(pfsPlayer,sideID,fRank) : //post-launch, if they dont have mu/sigma, use weighted mode
+					CheckAllegSkillPR(pfsPlayer,pside,fRank) : // CheckWeightedPR(pfsPlayer,sideID,fRank) : //post-launch, if they dont have mu/sigma, use weighted mode
 					CheckAllegSkillPR(pfsPlayer,pside,fRank);
 			if (dpr != NA)
 				return dpr;
