@@ -4220,99 +4220,60 @@ CFSMission * CFSMission::GetMissionFromIGCMissionID(DWORD dwIGCMissionID)
  */
 bool CFSMission::FAllReady()
 {
-	if (m_misdef.misparms.iMaxImbalance != 32766) //Imago #192 
+    //Not everyone is ready if sides are imbalanced
+    int   minPlayers;
+    int   maxPlayers;
+	float   minTeamRank = 1000000.0f; // TE: Added for rank balancing
+	float   maxTeamRank = 1.0f;       // TE: Added for rank balancing
+
+    SideLinkIGC*   psl = m_pMission->GetSides()->first();
+    assert (psl);
+	// KGJV: fix initial values
+    minPlayers = m_misdef.misparms.nMaxPlayersPerTeam; // or anything 'big' enough
+	maxPlayers = 0;//psl->data()->GetShips()->n();
+    while (true)
     {
-        //Not everyone is ready if sides are imbalanced
-        int   minPlayers;
-        int   maxPlayers;
-		float   minTeamRank = 1000000.0f; // TE: Added for rank balancing
-		float   maxTeamRank = 1.0f;       // TE: Added for rank balancing
+        int n = psl->data()->GetShips()->n();
 
-        SideLinkIGC*   psl = m_pMission->GetSides()->first();
-        assert (psl);
-		// KGJV: fix initial values
-        minPlayers = m_misdef.misparms.nMaxPlayersPerTeam; // or anything 'big' enough
-		maxPlayers = 0;//psl->data()->GetShips()->n();
-        while (true)
-        {
-            int n = psl->data()->GetShips()->n();
+		// KGJV #62 AllowEmptyTeams
+		// KGJV: fix to include 1st team
+		bool bSkipTeam = false;
+		if (m_misdef.misparms.bAllowEmptyTeams)
+			if (n==0 && !m_misdef.rgfActive[psl->data()->GetObjectID()])
+				bSkipTeam = true; // skip inactive & empty teams
 
-			// KGJV #62 AllowEmptyTeams
-			// KGJV: fix to include 1st team
-			bool bSkipTeam = false;
-			if (m_misdef.misparms.bAllowEmptyTeams)
-				if (n==0 && !m_misdef.rgfActive[psl->data()->GetObjectID()])
-					bSkipTeam = true; // skip inactive & empty teams
+		if (!bSkipTeam)
+		{
+        if (n < minPlayers)
+            minPlayers = n;
 
-			if (!bSkipTeam)
-			{
-            if (n < minPlayers)
-                minPlayers = n;
+        if (n > maxPlayers)
+            maxPlayers = n;
 
-            if (n > maxPlayers)
-                maxPlayers = n;
+		// TE: Remember highest/lowest rank
+		float r = GetSideRankSum(psl->data(), false);
 
-			// TE: Remember highest/lowest rank
-			float r = GetSideRankSum(psl->data(), false);
+		if (r < minTeamRank)
+			minTeamRank = r;
 
-			if (r < minTeamRank)
-				minTeamRank = r;
+		if (r > maxTeamRank)
+			maxTeamRank = r;
+		}
+		// KGJV: moved here to include 1st team in the loop
+		psl = psl->next();
+        if (psl == NULL)
+            break;
+    }
 
-			if (r > maxTeamRank)
-				maxTeamRank = r;
-			}
-			// KGJV: moved here to include 1st team in the loop
-			psl = psl->next();
-            if (psl == NULL)
-                break;
-        }
+	int threshold = GetRankThreshold();
 
-		int threshold = GetRankThreshold();
-
-        if ((minPlayers < m_misdef.misparms.nMinPlayersPerTeam) ||
-            (maxPlayers > m_misdef.misparms.nMaxPlayersPerTeam) ||
-            (minPlayers + m_misdef.misparms.iMaxImbalance < maxPlayers) ||
-			((m_misdef.misparms.iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank) > threshold))	// TE: Add check for rank balancing if it's on
-			// mmf changed to MaxImbalance
-            return false;
-	} else {
-		//AllegSkill Imago #192 8/10
-        int   minPlayers;
-        int   maxPlayers;
-
-        SideLinkIGC*   psl = m_pMission->GetSides()->first();
-        assert (psl);
-        minPlayers = maxPlayers = psl->data()->GetShips()->n();
-        while (true)
-        {
-            psl = psl->next();
-            if (psl == NULL)
-                break;
-
-            int n = psl->data()->GetShips()->n();
-            if (n < minPlayers)
-                minPlayers = n;
-
-            if (n > maxPlayers)
-                maxPlayers = n;
-        }
-
-        if ((minPlayers < m_misdef.misparms.nMinPlayersPerTeam) ||
-            (maxPlayers > m_misdef.misparms.nMaxPlayersPerTeam) ||
-            (minPlayers + 1 < maxPlayers)) //allow +1 Imbal
-            return false;
-	}
-
-    SideID iSide = m_misdef.misparms.nTeams;
-
-	// KGJV #62 AllowEmptyTeams - not active + AllowEmptyTeams = team ready
-	while (iSide-- > 0 && (
-		GetReady(iSide) ||
-		(m_misdef.misparms.bAllowEmptyTeams && (!m_misdef.rgfActive[iSide]))
-		));
-    ;
-
-    return iSide < 0;
+    if ((minPlayers < m_misdef.misparms.nMinPlayersPerTeam) ||
+        (maxPlayers > m_misdef.misparms.nMaxPlayersPerTeam) ||
+        (minPlayers + m_misdef.misparms.iMaxImbalance < maxPlayers) ||
+		((m_misdef.misparms.iMaxImbalance == 32764) && (maxTeamRank - minTeamRank) > threshold))	// TE: Add check for rank balancing if it's on
+		// mmf changed to MaxImbalance
+		// Imago changes TE and mmf changes to "Simple" mode
+        return false;
 }
 
 
