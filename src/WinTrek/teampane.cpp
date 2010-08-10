@@ -146,7 +146,7 @@ public:
             
             // draw the name
             
-            if (pplayer->LastSeenState() == c_ssDocked)
+            if (pplayer->LastSeenState() == c_ssDocked || pplayer->LastSeenState() == NULL)
             {
                 psurface->DrawString(
                     TrekResources::SmallBoldFont(),
@@ -207,7 +207,7 @@ public:
 					wsprintf(cbTemp, "%d", pplayer->GetMoney());
 					psurface->DrawString(TrekResources::SmallFont(),color,WinPoint(19, 14),ZString("$: ") + cbTemp);
 				} else {
-					if ((GetWindow()->GetOverlayFlags() & ofTeam) && pplayer->LastSeenState() == c_ssDocked ) {
+					if ((GetWindow()->GetOverlayFlags() & ofTeam) && (pplayer->LastSeenState() == c_ssDocked || pplayer->LastSeenState() == NULL)) {
 						char cbTemp[256];
 						DWORD dDelta = Time::Now().clock() - trekClient.GetCore()->GetIgcSite()->ClientTimeFromServerTime(pplayer->LastStateChange()).clock();
 						int iSecs = (dDelta != 0) ? dDelta / 1000 : 0;
@@ -1778,7 +1778,7 @@ class ExpandedTeamPane : public TeamPane
             TRef<IEngineFont> pfont;
             Color             color;
             
-            if (pplayer->LastSeenState() == c_ssDocked)
+            if (pplayer->LastSeenState() == c_ssDocked || pplayer->LastSeenState() == NULL)
             {
                 pfont = TrekResources::SmallBoldFont();
                 color = Color(0.617f, 0.0f, 0.156f);
