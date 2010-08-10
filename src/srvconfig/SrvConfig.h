@@ -16,7 +16,6 @@
 #include "resource.h"       // main symbols
 
 #include "..\inc\regkey.h"
-#define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"
 
 
 /////////////////////////////////////////////////////////////////////////////
