@@ -3886,7 +3886,7 @@ public:
 		{
 			// Find shipyard
 			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-				NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair);
+				NULL, NULL, NULL, NULL, c_sabmCapLand | c_sabmRepair);
 		}
 		
 		if (pmodel)
@@ -4374,14 +4374,14 @@ public:
 			{
 				if (playerInfo->GetShip()->GetPilotType() != c_ptCarrier)
 				{ 
-					if (playerInfo->LastSeenState() == c_ssDocked)
+					if (playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL)
 						sprintf(str1,"Launch  ");
 					else
 						sprintf(str1,"Stay Docked ");
 					bEnableDock  = true;					
 				}
 				// Find shipyard  Xynth removing carrier, needs work
-				/*else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair) != NULL)
+				/*else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand | c_sabmRepair) != NULL)
 				{
 					bEnableDock  = true;
 					if (playerInfo->GetShip()->GetStation() != NULL)
