@@ -12026,14 +12026,14 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 
 
   //#121 kill the roid I'm on for teams that cant see me  -- Imago 8/10
-  {
-      for (SideLinkIGC* psl = pstation->GetMission()->GetSides()->first(); (psl != NULL); psl->next()) {
-          IsideIGC* pside = psl->data();
-		  if (!pstation->SeenBySide(pside) && pstation->GetRoidID() != NA) {
-			  KillAsteroidEvent(pstation->GetRoidID(),pstation->GetCluster()->GetObjectID(),pside);
-		  }
-      }
-  }  
+	for (SideLinkIGC* psl = pstation->GetMission()->GetSides()->first(); (psl != NULL); ) {
+		IsideIGC* psideother = psl->data();
+		psl->next();
+		if (psideother && !pstation->SeenBySide(psideother) && pstation->GetRoidID() != NA && pstation->GetSide()->GetObjectID() != psideother->GetObjectID()) {
+			KillAsteroidEvent(pstation->GetRoidID(),pstation->GetCluster()->GetObjectID(),psideother);
+		}
+	}
+
 
   pstation->Terminate();
 
