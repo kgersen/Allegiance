@@ -4274,6 +4274,8 @@ bool CFSMission::FAllReady()
 		// mmf changed to MaxImbalance
 		// Imago changes TE and mmf changes to "Simple" mode
         return false;
+
+	return true;
 }
 
 

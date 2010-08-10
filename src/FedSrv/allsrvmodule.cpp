@@ -17,10 +17,8 @@
 #include <..\TCAtl\ObjectMap.h>
 #include <..\TCLib\CoInit.h>
 
-#if !defined(ALLSRV_STANDALONE)
-  #include "AdminEventLoggerHook.h"
-  CComObjectGlobal<CAdminEventLoggerHook> g_DBLoggingHook;
-#endif // !defined(ALLSRV_STANDALONE)
+#include "AdminEventLoggerHook.h"
+CComObjectGlobal<CAdminEventLoggerHook> g_DBLoggingHook;
 
 #ifdef _DEBUG
   #include "FedSrvApp.h"
@@ -278,15 +276,12 @@ HRESULT CServiceModule::InitAGC()
   CComBSTR bstrEventSource(__MODULE__);
   CComBSTR bstrRegKey("HKLM\\" HKLM_FedSrv);
   IAGCEventLoggerPrivatePtr spPrivate(m_spEventLogger);
-  ZSucceeded(hr = spPrivate->Initialize(bstrEventSource, bstrRegKey));
+  hr = spPrivate->Initialize(bstrEventSource, bstrRegKey);
+  ZSucceeded(hr);
   RETURN_FAILED(hr);
 
   // Hook the event logger for DB event logging
-  #if !defined(ALLSRV_STANDALONE)
-  {
-    ZSucceeded(hr = spPrivate->put_HookForDBLogging(&g_DBLoggingHook));
-  }
-  #endif // !defined(ALLSRV_STANDALONE)
+  ZSucceeded(hr = spPrivate->put_HookForDBLogging(&g_DBLoggingHook));
 
   // Indicate success
   return S_OK;
@@ -304,11 +299,9 @@ void CServiceModule::TermAGC()
     ZSucceeded(spPrivate->Terminate());
 
     // Unhook the event logger for DB event logging
-    #if !defined(ALLSRV_STANDALONE)
     {
       ZSucceeded(spPrivate->put_HookForDBLogging(NULL));
     }
-    #endif // !defined(ALLSRV_STANDALONE)
 
     // Release the event logger
     spPrivate = NULL;
