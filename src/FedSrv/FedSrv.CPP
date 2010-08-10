@@ -5067,7 +5067,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       if (pfmChat->cbMessage > 0)
 	  {
-#ifdef DEBUG
+#ifdef _TEST
         //If you are going to cheat ... make it a public cheat
         if (DoCheatCode(pfsPlayer, FM_VAR_REF(pfmChat, Message)))  //Imago 7/8/09 only link this in debug builds
         {
@@ -5197,7 +5197,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		  else
 		  {
-#ifdef DEBUG
+#ifdef _TEST
 			  if (pfsMission->GetOwner() == pfsPlayer && (_strnicmp(FM_VAR_REF(pfmChat, Message), "#start", strlen("#start")) == 0))
 			  {
 			    CFSMission * pfsMission = pfsPlayer->GetMission();
