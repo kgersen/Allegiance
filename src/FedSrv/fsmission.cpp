@@ -4634,7 +4634,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
       {
         if (psl->data()->GetActiveF())
         {
-          int count = GetCountOfPlayers(psl->data(), false) + pmp->iMaxImbalance;
+          int count = (pmp->iMaxImbalance == 32766) ? GetCountOfPlayers(psl->data(), false) + 1 : GetCountOfPlayers(psl->data(), false) + pmp->iMaxImbalance; //Imago #192
           if (count < maxPlayers)
             maxPlayers = count;
         }
