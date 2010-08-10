@@ -12024,6 +12024,17 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
                 NA, "%s has destroyed %s's %s.",
                 psideLauncher->GetName(), pside->GetName(), pstation->GetName());
 
+
+  //#121 kill the roid I'm on for teams that cant see me  -- Imago 8/10
+  {
+      for (SideLinkIGC* psl = pstation->GetMission()->GetSides()->first(); (psl != NULL); psl->next()) {
+          IsideIGC* pside = psl->data();
+		  if (!pstation->SeenBySide(pside) && pstation->GetRoidID() != NA) {
+			  KillAsteroidEvent(pstation->GetRoidID(),pstation->GetCluster()->GetObjectID(),pside);
+		  }
+      }
+  }  
+
   pstation->Terminate();
 
   /*
