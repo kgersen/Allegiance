@@ -224,7 +224,7 @@ static void doASGS(void* data, MprThread *threadp) {
         delete socket;
 
         MaClient* client = new MaClient();
-	    client->setTimeout(3000);
+	    client->setTimeout(10000);
 	    client->setRetries(1);
 	    client->setKeepAlive(0);
 
