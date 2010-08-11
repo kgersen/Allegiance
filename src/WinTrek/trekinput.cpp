@@ -3057,7 +3057,7 @@ public:
 		//Imago 7/10
 		if (m_bLoad && pmsgBoxLoad == NULL) {
 			ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl",OF_READ);
-			if (pzCheck->GetLength() > 0) { //finally the last sanity check...
+			if (pzCheck && pzCheck->GetLength() > 0) { //finally the last sanity check...
 				delete pzCheck;
 				LoadMap(INPUTMAP_FILE+ZString("_cloud"));
 				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl");
