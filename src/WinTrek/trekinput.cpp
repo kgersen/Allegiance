@@ -2536,6 +2536,8 @@ public:
 
 		if (contentLen > 0) {
 			debugf("***** fetching input map: retrieved %i bytes\n",contentLen);
+			DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z");
+			DeleteFile(GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"_cloud.mdl");
 			ZFile * pz7z = new ZFile(GetModeler()->GetArtPath() + "/" + INPUTMAP_FILE+ ".7z", OF_WRITE | OF_CREATE);
 			if (pz7z->Write(content,contentLen)) {
 				delete pz7z;
