@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="dbghelp.lib $(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib ddraw.lib dsound.lib dxguid.lib d3d9.lib d3dx9.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib dsound.lib dxguid.lib d3d9.lib d3dx9.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/mdlc.exe"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
@@ -155,7 +155,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="dbghelp.lib $(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib ddraw.lib dsound.lib dxguid.lib d3d9.lib d3dx9.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="dbghelp.lib $(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib dsound.lib dxguid.lib d3d9.lib d3dx9.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/mdlc.exe"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
@@ -244,7 +244,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib ddraw.lib dsound.lib dxguid.lib d3d9.lib d3dx9.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
+				AdditionalDependencies="$(OutDir)\..\effect\effect.lib $(OutDir)\..\engine\engine.lib $(OutDir)\..\zlib\zlib.lib urlmon.lib dsound.lib dxguid.lib d3d9.lib d3dx9.lib winmm.lib dinput8.lib comctl32.lib version.lib ws2_32.lib delayimp.lib wininet.lib lz32.lib netapi32.lib comsupp.lib oledb.lib"
 				OutputFile="$(OutDir)/mdlc.exe"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
