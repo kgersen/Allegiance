@@ -330,7 +330,7 @@ ClearErrors
  
 LogEx::Write true true "Downloading \$R9 files...!"
 \${If} \$R9 <> 0
-	MessageBox MB_OK|MB_ICONINFORMATION "Allegiance Update has determined some of your files are out of date.\$\\nIf you've customized any of your Artwork, this is your chance to make a backup.  Click OK to begin the downloads thats you need."
+	MessageBox MB_OK|MB_ICONINFORMATION "Allegiance Update has determined some of your files are out of date.\$\\nIf you've customized any of your Artwork, this is your chance to make a backup.  Click OK to begin the downloads that you need."
 	inetc::get /RESUME "Click Retry to resume the download of the Auto update. - If the error persists, check your internet connection and try again." /CAPTION "Allegiance Update"
 	Pop \$1
 	\${If} \$1 != "OK"
