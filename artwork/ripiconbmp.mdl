@@ -1,0 +1,2 @@
+use "model";
+ripiconbmp = ImportImageFromFile("ripicon.png", true);
