@@ -313,7 +313,7 @@ public:
         {
             ::RegQueryValueEx(hKey, "MouseSensitivity", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
 
-            m_sensitivity = (strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 0.83f;
+            m_sensitivity = (float)(strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 0.83f;
 
             ::RegQueryValueEx(hKey, "MouseAcceleration", NULL, &dwType, (unsigned char*)&dwValue, &cwValue);
             ::RegCloseKey(hKey);

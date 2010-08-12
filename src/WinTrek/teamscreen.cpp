@@ -1205,8 +1205,10 @@ public:
 					trekClient.SaveWingAssignment(wid); //sends it
 			}
 		}
-		m_pcomboWing->SetSelection(wid);
-		trekClient.SetWing(wid);	
+		if (!trekClient.GetPlayerInfo()->IsTeamLeader()) { //server will set comm's wings... Imago 8/10
+			m_pcomboWing->SetSelection(wid);
+			trekClient.SetWing(wid);
+		}
 		//
 
 		AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
