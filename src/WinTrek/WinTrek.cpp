@@ -3886,7 +3886,10 @@ public:
 		{
 			// Find shipyard
 			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-				NULL, NULL, NULL, NULL, c_sabmCapLand | c_sabmRepair);
+				NULL, NULL, NULL, NULL, c_sabmCapLand);
+			if (pmodel == NULL) //No shipyard, carrier flees to nearest base for protection
+				pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+							NULL, NULL, NULL, NULL, c_sabmRepair);
 		}
 		
 		if (pmodel)
@@ -4377,18 +4380,17 @@ public:
 					if (playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL)
 						sprintf(str1,"Launch  ");
 					else
-						sprintf(str1,"Stay Docked ");
+						sprintf(str1,"Dock    ");
 					bEnableDock  = true;					
+				}				
+				else  //carrier
+				{					
+					if (!(playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL))
+					{
+						sprintf(str1,"Dock/Flee ");  //if no shipyard, carriers go to nearest base players can launch from
+						bEnableDock  = true;  //no launch, since carriers don't have a default command
+					}
 				}
-				// Find shipyard  Xynth removing carrier, needs work
-				/*else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand | c_sabmRepair) != NULL)
-				{
-					bEnableDock  = true;
-					if (playerInfo->GetShip()->GetStation() != NULL)
-						sprintf(str1,"Undock   ");
-					else
-						sprintf(str1,"Stay Docked ");
-				}*/
 			}
 		}
 
