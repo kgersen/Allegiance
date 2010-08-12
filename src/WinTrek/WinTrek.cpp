@@ -74,6 +74,7 @@ const float c_dtRejectQueuedCommand = 15.0f;
 
 const float c_fVolumeDelta = 1;
 const float c_fFFGainDelta = 100; //Imago 7/10 #187
+const float c_fMouseSensDelta = 0.01f; //Imago 7/10 #187
 
 const float g_hudBright = 0.85f;
 
@@ -1262,6 +1263,9 @@ public:
 	bool					m_bSaveDumps;
 	bool					m_bFFAutoCenter;
 	TRef<ModifiableNumber>  m_pnumFFGain;
+	//8/10
+	int						m_iMouseAccel;
+	TRef<ModifiableNumber>  m_pnumMouseSens;
 	//
 
 
@@ -1455,6 +1459,10 @@ public:
 	TRef<IMenuItem>            m_pitemToggleFFAutoCenter; 
 	TRef<IMenuItem>            m_pitemToggleFFGainUp; 
 	TRef<IMenuItem>            m_pitemToggleFFGainDown;
+	// 8/10 #215
+	TRef<IMenuItem>            m_pitemToggleMouseSensUp;
+	TRef<IMenuItem>            m_pitemToggleMouseSensDown;
+	TRef<IMenuItem>            m_pitemToggleMouseAccel;
 	 //
     TRef<IMenuItem>            m_pitemToggleStrobes;
     TRef<IMenuItem>            m_pitemToggleTrails;
@@ -2755,7 +2763,8 @@ public:
 		//Imago 7/10
 		m_bNoMovies(false),
 		m_bSaveDumps(false),
-		m_bFFAutoCenter(false)
+		m_bFFAutoCenter(false),
+		m_iMouseAccel(0) //#215
 
     {
         HRESULT hr;
@@ -2851,6 +2860,7 @@ public:
 		// end Imago dump files
 		
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
+		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "0.83"))); //Imago #215 8/10
 
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
@@ -3071,6 +3081,7 @@ public:
         m_bFlipY                 = (LoadPreference("FlipY",                 0) != 0);
         m_bEnableFeedback        = (LoadPreference("EnableFeedback",        1) != 0);
 		m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
+		m_iMouseAccel			 = (LoadPreference("MouseAcceleration",     0) != 0); // Imago #215
 
         //
         // Initial screen size
@@ -4138,6 +4149,12 @@ public:
 	#define idmContextDockDrone		815
 	//Xynth #197 8/2010
 	#define idmContextChat			816
+
+	//Imago 8/10 #215
+	#define idmMouseOptions		817
+	#define idmMouseSensUp		818
+	#define idmMouseSensDown	819
+	#define idmMouseAccel		820
 	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4502,6 +4519,7 @@ public:
                 m_pitemToggleFlipY                 = pmenu->AddMenuItem(idmToggleFlipY,                 GetFlipYMenuString(),               'Y');
                 //m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
 													 pmenu->AddMenuItem(idmFFOptions,					"Force Feedback",				  'E', m_psubmenuEventSink);
+													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
 					
 				 // w0dk4 June 2007: Bandwith Patch
 				m_pitemToggleBandwidth			   = pmenu->AddMenuItem(idmBandwidth,					GetBandwidthMenuString(),		    'B');
@@ -4560,6 +4578,16 @@ public:
 				m_pitemToggleFFGainUp				= pmenu->AddMenuItem(idmFFGainUp			  , GetFFGainMenuString(m_pnumFFGain->GetValue(), c_fFFGainDelta)   , 'U');
 				m_pitemToggleFFGainDown				= pmenu->AddMenuItem(idmFFGainDown			  , GetFFGainMenuString(m_pnumFFGain->GetValue(), -c_fFFGainDelta)  , 'D');
 			    m_pitemToggleFFAutoCenter			= pmenu->AddMenuItem(idmFFAutoCenter		  , GetFFAutoCenterMenuString()                                     , 'C');
+				break;
+
+			//Imago 8/10 #215
+			case idmMouseOptions:
+                                 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
+                                 pmenu->AddMenuItem(0                     , "Options are only valid when in fullscreen"     );
+                                 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
+				m_pitemToggleMouseAccel		        = pmenu->AddMenuItem(idmMouseAccel			  , GetMouseAccelMenuString()										, 'A');
+				m_pitemToggleMouseSensUp			= pmenu->AddMenuItem(idmMouseSensUp			  , GetMouseSensMenuString(m_pnumMouseSens->GetValue(), c_fMouseSensDelta)		, 'U');
+				m_pitemToggleMouseSensDown			= pmenu->AddMenuItem(idmMouseSensDown		  , GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta)		, 'D');
 				break;
 
 
@@ -5292,6 +5320,36 @@ public:
             m_pitemSoundQuality->SetString(GetSoundQualityMenuString());
     };
 
+	//Imago #215 8/10
+    void SwitchMouseAccel()
+    {
+        switch (m_iMouseAccel)
+        {
+        case 0:
+            m_iMouseAccel = 1;
+            break;
+
+        case 1:
+            m_iMouseAccel = 2;
+            break;
+
+        case 2:
+            m_iMouseAccel = 0;
+            break;
+
+        default:
+            ZAssert(false);
+            m_iMouseAccel = 0;
+            break;
+        }
+
+        GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
+        SavePreference("MouseAcceleration", (DWORD)m_iMouseAccel);
+
+        if (m_pitemToggleMouseAccel != NULL)
+            m_pitemToggleMouseAccel->SetString(GetMouseAccelMenuString());
+    };
+
     void ToggleSoundHardware()
     {
         m_bEnableSoundHardware = !m_bEnableSoundHardware;
@@ -5404,6 +5462,26 @@ public:
         }
 		GetInputEngine()->GetJoystick(0)->SetRanges();
     }
+
+    void AdjustMouseSens(float fDelta)
+    {
+        float fNewValue = min(2, max(0.1f, m_pnumMouseSens->GetValue() + fDelta));
+        m_pnumMouseSens->SetValue(fNewValue);
+
+        SavePreference("MouseSensitivity", ZString(fNewValue));
+
+        if (m_pitemToggleMouseSensUp != NULL)
+        {
+            m_pitemToggleMouseSensUp->SetString(
+                GetMouseSensMenuString(m_pnumMouseSens->GetValue(), c_fMouseSensDelta));
+        }
+        if (m_pitemToggleMouseSensDown != NULL)
+        {
+            m_pitemToggleMouseSensDown->SetString(
+                GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta));
+        }
+		GetInputEngine()->GetMouse()->SetSensitivity(fNewValue);
+    }
 	//Imago
 
     ZString GetPostersMenuString()
@@ -5444,6 +5522,42 @@ public:
 			return "Bandwidth: Broadband (512k)";
 		if(trekClient.MaxBandwidth() == 32)
 			return "Bandwidth: Broadband (>1mbit)";
+
+		return "Error";
+	}
+
+
+	// Imago #215 8/10
+    ZString GetMouseSensMenuString(float fCurrentSens, float fDelta)
+    {
+        ZString strResult = ((fDelta > 0) ? "Raise " : "Lower ") + ZString("Mouse Sensitivity ");
+        if (fCurrentSens >= 2 && fDelta > 0)
+        {
+            strResult += "(highest)";
+        }
+        else if (fCurrentSens <= 0.1f && fDelta < 0)
+        {
+            strResult += "(lowest)";
+        }
+        else
+        {
+			float value = (min(2, max(0.1f, fCurrentSens + fDelta))) * 100;
+			char szValue[4] = {'\0'};
+			sprintf(szValue,"%.0f",value);
+            strResult += "to " + ZString(szValue) + " %";
+        }
+
+        return strResult;
+    }
+
+	ZString GetMouseAccelMenuString()
+	{
+		if(m_iMouseAccel == 0)
+			return "Mouse Acceleration: Off";
+		if(m_iMouseAccel == 1)
+			return "Mouse Acceleration: Low (2x)";
+		if(m_iMouseAccel == 2)
+			return "Mouse Acceleration: High (4x)";
 
 		return "Error";
 	}
@@ -6206,6 +6320,7 @@ public:
 				contextChat();		CloseMenu();
 				break;	
 			
+			//Imago #187 7/10
 			case idmFFAutoCenter:
 				ToggleEnableFFAutoCenter();
 				break;
@@ -6217,6 +6332,20 @@ public:
 			case idmFFGainDown:
 				AdjustFFGain(-c_fFFGainDelta);
 				break;
+
+			// #215 8/10
+			case idmMouseAccel:
+				SwitchMouseAccel();
+				break;
+
+			case idmMouseSensUp:
+				AdjustMouseSens(c_fMouseSensDelta);
+				break;
+
+			case idmMouseSensDown:
+				AdjustMouseSens(-c_fMouseSensDelta);
+				break;
+			// End Imago
         }
     }
 

@@ -46,6 +46,10 @@ public:
     virtual void SetClipRect(const Rect& rect)       = 0;
     virtual void SetPosition(const Point& point)     = 0;
     virtual float GetWheelPosition()                 = 0; //Imago 8/12/09
+	//Imago #215 8/10
+	virtual void SetSensitivity(const float sens)	 = 0;
+	virtual void SetAccel(const int accel)			 = 0;
+	//
     virtual void SetWheelPosition(float pos)         = 0;
     virtual void SetEnabled(bool bEnabled)           = 0;
 
@@ -83,6 +87,7 @@ public:
     virtual int                  GetJoystickCount()     = 0;
     virtual JoystickInputStream* GetJoystick(int index) = 0;
     virtual MouseInputStream*    GetMouse()             = 0;
+
 };
 
 TRef<InputEngine> CreateInputEngine(HWND hwnd);
