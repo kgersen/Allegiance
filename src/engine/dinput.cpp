@@ -435,16 +435,16 @@ public:
     {
         m_z += float(dz);
 
-        if (m_vvalueObject.GetCount() >= 3) {
+        if (m_vvalueObject.GetCount() >= 3 && m_vvalueObject[2] != NULL) { //#217
             m_vvalueObject[2]->GetValue()->SetValue(m_z); //imago 8/12/09 use z axis
             if (dz < 0) {
                 ButtonChanged(8,true);
             } else if (dz > 0) {
                 ButtonChanged(9,true);
             } else { //imago 8/13/09 use dz == 0 for button up
-                if (m_vbuttonObject[8]->GetValue()->GetValue())
+                if (m_vbuttonObject[8] != NULL && m_vbuttonObject[8]->GetValue()->GetValue()) //#217
                     ButtonChanged(8,false);
-                if (m_vbuttonObject[9]->GetValue()->GetValue())
+                if (m_vbuttonObject[8] != NULL && m_vbuttonObject[9]->GetValue()->GetValue()) //#217
                     ButtonChanged(9,false);
             }
         }
