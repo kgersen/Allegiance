@@ -1435,11 +1435,25 @@ Delete \$PLUGINSDIR\\GameuxInstallHelper.dll
 \${EndIf}
 
   ; set file permissions to install dir and reg (thanks pkk)
+LogEx::Write true true "Setting permissions..."  
   AccessControl::GrantOnFile "\$INSTDIR" "(BU)" "GenericRead + GenericWrite"
   AccessControl::GrantOnFile "\$INSTDIR\\Artwork" "(BU)" "GenericRead + GenericWrite"
   AccessControl::GrantOnFile "\$ARTPATH" "(BU)" "GenericRead + GenericWrite"
   AccessControl::GrantOnRegKey HKLM "Software\\Microsoft\\Microsoft Games\\Allegiance" "(BU)" "FullAccess"
   AccessControl::GrantOnRegKey HKLM "Software\\Wow6432Node\\Microsoft\\Microsoft Games\\Allegiance" "(BU)" "FullAccess"
+  
+  
+; Check if the firewall is enabled
+SimpleFC::IsFirewallEnabled 
+Pop \$0
+Pop \$1
+\${If} \$1 == 1
+SimpleFC::AddApplication "Allegiance" "\$INSTDIR\\Allegiance.exe" 0 2 "" 1
+Pop \$0
+LogEx::Write true true "Adding exception to /w Windows Firewall...\$0"
+\${Endif}
+  
+  
 
 \${If} \$bSilent == 0
 
@@ -1475,6 +1489,10 @@ FunctionEnd
 Section Uninstall
 nsExec::Exec "\$INSTDIR\\AllSrv.exe -UnRegServer"
 nsExec::Exec "regsvr32 /u /s \$INSTDIR\\AGC.dll"
+
+  ; Remove the firewall exception list
+    SimpleFC::RemoveApplication "Allegiance"
+  Pop \$0 ;
 
  !insertmacro MUI_STARTMENU_GETFOLDER "Application" \$ICONS_GROUP
 IfFileExists "\$INSTDIR\\Artwork\\*.*" DeleteReg
