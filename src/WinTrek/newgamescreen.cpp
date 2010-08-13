@@ -1174,7 +1174,7 @@ public:
 
         m_pnumberCanChooseMaxPlayers->SetValue((m_bIsZoneClub && bEnable) ? 1.0f : 0.0f);
 
-        m_peditPaneGameName->SetReadOnly(!bEnable);
+        m_peditPaneGameName->SetReadOnly(!bEnable || !m_bIsZoneClub); // pkk - Gamename not editable in Zonegames
         m_peditPaneGamePassword->SetReadOnly(!bEnable || !m_bIsZoneClub);
         m_peditPaneGamePassword->SetType((bEnable && m_bIsZoneClub) ? EditPane::Normal : EditPane::Password);
         
@@ -1210,7 +1210,7 @@ public:
         m_pcomboTeamCount->SetEnabled(bEnable);
         m_pcomboMaxPlayers->SetEnabled(bEnable && !m_bLockGameOpen);
         m_pcomboMaxImbalance->SetEnabled(!bAllies && bEnable); //because imbalance impelemtation is now FUBAR even w/o allies... we'll disable it -Imago 8/1/09
-        m_pcomboSkillLevel->SetEnabled(bEnable && !m_bLockGameOpen); // KGJV #92
+        m_pcomboSkillLevel->SetEnabled(bEnable && m_bIsZoneClub); // pkk #203
         m_pcomboMapType->SetEnabled(bEnable);
         m_pcomboConnectivity->SetEnabled(bEnable);
         m_pcomboLives->SetEnabled(bEnable);
