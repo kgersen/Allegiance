@@ -4992,10 +4992,10 @@ void Obj2Txt(IbaseIGC * pIGC, ObjectType ot, ImissionIGC * pMission)
 						strPreferredPartsTypes += " ";
 					}
 				}
-				
+				//Fixed copy/paste error on 8/10 thanks to Compellor
 				ZString strPmEquipment = pMission->BitsToPartsList(pdata->pmEquipment[ET_ChaffLauncher],ET_ChaffLauncher) + "\t"
-					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Dispenser],ET_Magazine) + "\t"
-					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Magazine],ET_Dispenser) + "\t"
+					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Dispenser],ET_Dispenser) + "\t"
+					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Magazine],ET_Magazine) + "\t"
 					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Shield],ET_Shield) + "\t"
 					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Cloak],ET_Cloak) + "\t"
 					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Afterburner],ET_Afterburner) + "\t";
