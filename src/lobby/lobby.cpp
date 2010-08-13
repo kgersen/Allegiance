@@ -759,7 +759,7 @@ int __cdecl main(int argc, char *argv[])
     _Module.Start();
 
 	//appweb
-	mpr->stop(0);
+	mpr->stop(true);
 #ifdef _DEBUG
 	delete tMod;
 	delete logger;

@@ -26,7 +26,8 @@ CAGCEventLogger::CAGCEventLogger() :
   m_bstrLogAsNTEvent(L"LogAsNTEvent"),
   m_bstrLogAsDBEvent(L"LogAsDBEvent"),
   m_bLoggingToNTEnabled(true),
-  m_bLoggingToDBEnabled(true)
+  m_bLoggingToDBEnabled(true),
+  m_MMF((PCC)ZString("AGCLogger-")+ZString((int)GetCurrentProcessId()),0x4B00000) // Imago 75MB (max) shared buffer for #50 8/10
 {
   TCZeroMemory(&m_idTable);
 }
@@ -228,6 +229,30 @@ void CAGCEventLogger::LogEvent(IAGCEvent* pEvent, bool bSynchronous)
 
   // Unlock the CritSec
   lock.Unlock();
+
+	//Imago #50 -8/10
+	CComBSTR bstrEvent;
+	if (pEvent != NULL) {
+			pEvent->SaveToString(&bstrEvent);
+		if (bstrEvent.Length() > 0) {
+			char * pszEvent = _com_util::ConvertBSTRToString(bstrEvent);	 
+			long       idSubject;
+			SYSTEMTIME stLocalTime;
+			GetLocalTime( &stLocalTime );
+			CComBSTR   bstrComputerName, bstrSubjectName, bstrContext;
+			pEvent->get_SubjectID	(&idSubject       );
+			pEvent->get_ComputerName(&bstrComputerName);
+			pEvent->get_SubjectName (&bstrSubjectName );
+			pEvent->get_Context     (&bstrContext     );
+			char * pszCom =			(bstrComputerName.Length() > 0)	? _com_util::ConvertBSTRToString(bstrComputerName)	: "(none)";
+			char * pszSub =			(bstrSubjectName.Length() > 0)	? _com_util::ConvertBSTRToString(bstrSubjectName)	: "(none)";
+			char * pszCon =			(bstrContext.Length() > 0)		? _com_util::ConvertBSTRToString(bstrContext)		: "(none)";
+			char szMsg[5120] = {'\0'};
+			sprintf(szMsg,"\n%04d-%02d-%02d %02d:%02d:%02d\t%i\t%i\t%s\t%s\t%s\t%s",stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
+				idEvent,idSubject,pszCom,pszSub,pszCon,pszEvent);
+			Strcat(m_MMF.GetBuffer(), szMsg);
+		}
+	}
 
   // Do nothing if we're not logging this event anywhere
   if (!bLogToNT && !bLogToDB)
@@ -1327,6 +1352,9 @@ STDMETHODIMP CAGCEventLogger::Terminate()
 
   // Close the worker thread
   TCWorkerThread::Close();
+
+  //Imago #50
+  m_MMF.Delete();
 
   // Indicate success
   return S_OK;

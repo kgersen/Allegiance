@@ -1118,12 +1118,6 @@ void GotCharSquads(CQCharSquads * pquery)
 
 #endif
 
-// #50 Imago - intentionally does nothing
-void GotCharStats(CQCharStats * pquery)
-{
-	return;
-}
-
 /*-------------------------------------------------------------------------
  * GotLogonDetails
  *-------------------------------------------------------------------------
@@ -10312,11 +10306,10 @@ int __cdecl main(int argc, char *argv[])
     // Terminate AGC
     _Module.TermAGC();
 
-
 	 WSACleanup(); //Imago 6/10
 
 	//appweb
-	mpr->stop(0);
+	mpr->stop(true);
 	delete mutex;
 #ifdef _DEBUG
 	delete tMod;

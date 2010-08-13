@@ -16,6 +16,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CAGCEventLogger
+
 class ATL_NO_VTABLE CAGCEventLogger : 
   public IAGCEventSink,
   public IAGCEventSinkSynchronous,
@@ -84,6 +85,10 @@ protected:
   HRESULT RemoveStyleSheetPIs(IXMLDOMNode* pNode);
   HRESULT ProcessXMLNode(IXMLDOMNode* pNode, IXMLDOMNode* pNodeParent);
 
+  //Imago #50 8/10
+private:
+	MMF	m_MMF;
+
 // IAGCEventSink Interface Methods
 public:
   STDMETHODIMP OnEventTriggered(IAGCEvent* pEvent);
@@ -142,7 +147,7 @@ protected:
       COLUMN_ENTRY_TYPE(5, DBTYPE_I4 , m_idSubject     )
       COLUMN_ENTRY_TYPE(6, DBTYPE_STR, m_szSubjectName )
       COLUMN_ENTRY_TYPE(7, DBTYPE_STR, m_szContext     )
-    	COLUMN_ENTRY_TYPE(8, DBTYPE_STR, m_szObjRef      )
+      COLUMN_ENTRY_TYPE(8, DBTYPE_STR, m_szObjRef      )
     END_COLUMN_MAP()
 
   // Data Members

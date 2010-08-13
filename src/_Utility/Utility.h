@@ -1303,6 +1303,72 @@ class UTL
 		static TMap<DWORD,ZString> m_ServerVersionMap; //Imago 7/10
 };
 
+
+//Imago 8/10
+class MMF;
+class MMF 
+{
+	public:
+		MMF(const char* szMapName, int iBuffer, bool bCreate = true) : 
+			m_szMapName(new char[strlen(szMapName)+1]), 
+			m_szBuffer(NULL),
+			m_iBuffer(iBuffer),
+			m_MapHandle(NULL),
+			m_bCreate(bCreate)
+		{
+			strcpy(m_szMapName, szMapName);
+			if (bCreate)
+			{
+				m_MapHandle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, m_iBuffer, m_szMapName);
+				if (m_MapHandle != INVALID_HANDLE_VALUE)
+					m_szBuffer = (char*)MapViewOfFile(m_MapHandle, FILE_MAP_ALL_ACCESS, 0, 0, m_iBuffer);
+				else m_MapHandle = NULL;
+			}
+			else
+			{
+				m_MapHandle = OpenFileMapping(FILE_MAP_ALL_ACCESS, TRUE, m_szMapName);
+				if (m_MapHandle != INVALID_HANDLE_VALUE)
+					m_szBuffer = (char*)MapViewOfFile(m_MapHandle, FILE_MAP_ALL_ACCESS, 0, 0, m_iBuffer);
+				else m_MapHandle = NULL;
+			}
+		}
+		~MMF()
+		{
+			if (m_MapHandle && !m_bCreate)
+			{
+				UnmapViewOfFile(m_szBuffer);
+				CloseHandle(m_MapHandle);
+				m_szBuffer = NULL;
+			}
+		}
+
+		//
+		char* GetBuffer() {
+			if (m_MapHandle == NULL || m_MapHandle == INVALID_HANDLE_VALUE) {
+				m_MapHandle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, m_iBuffer, m_szMapName);
+				if (m_MapHandle != INVALID_HANDLE_VALUE)
+					m_szBuffer = (char*)MapViewOfFile(m_MapHandle, FILE_MAP_ALL_ACCESS, 0, 0, m_iBuffer);
+					return m_szBuffer;
+			}
+			return m_szBuffer;
+		}
+
+		void Delete() {
+			UnmapViewOfFile(m_szBuffer);
+			CloseHandle(m_MapHandle);
+			delete m_szMapName;
+		}
+
+	private:
+		char* m_szMapName;
+		char* m_szBuffer;
+		const int m_iBuffer;
+		bool m_bCreate;
+		HANDLE m_MapHandle;
+};
+//End Imago
+
+
 class   BytePercentage
 {
     public:
