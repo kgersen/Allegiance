@@ -396,6 +396,7 @@ END_FEDMSG
 DEFINE_FEDMSG(CS, CHANGE_TEAM_CIV, 51) // sent by team leader to change the civ of the side, and forwarded to everybody
   SideID    iSide;
   CivID     civID;
+  bool		random;  //Xynth #170 8/2010 add random factions
 END_FEDMSG
 
 DEFINE_FEDMSG(CS, AUTO_ACCEPT, 52) // sent by team leader, forwarded to all

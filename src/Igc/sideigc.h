@@ -497,7 +497,14 @@ class       CsideIGC : public IsideIGC
         {
             m_data.nBaseCaptures++;
         }
-
+		bool GetRandomCivilization(void) const
+		{
+			return bRandomCivilization;
+		}
+		void SetRandomCivilization(bool rand)
+		{
+			bRandomCivilization = rand;
+		}
         unsigned char GetConquestPercent(void) const
         {
             return m_data.conquest;
@@ -567,6 +574,7 @@ class       CsideIGC : public IsideIGC
 		{
 			return m_data.allies;
 		}
+		
     private:
         void    AdjustBuckets(void)
         {
@@ -651,7 +659,8 @@ class       CsideIGC : public IsideIGC
 
         Time                m_lastUpdate;
 
-        bool                m_activeF;
+        bool                m_activeF;		
+		bool bRandomCivilization;  //Xynth #170 8/10
 };
 
 #endif //__SIDEIGC_H_
