@@ -54,7 +54,7 @@ ZString GetLocalComputerName() {
 //do our best to post a dump Imago 7/10 (move to appweb to Utility and share this?)
 bool DumpSend(ZString zaFile, int iTry = 0) {
 	MaClient* client = new MaClient();
-	client->setTimeout(300000);
+	client->setTimeout(60000);
 	client->setRetries(1);
 	client->setKeepAlive(1);
 	HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -224,7 +224,7 @@ static void doASGS(void* data, MprThread *threadp) {
         delete socket;
 
         MaClient* client = new MaClient();
-	    client->setTimeout(10000);
+	    client->setTimeout(3000);
 	    client->setRetries(1);
 	    client->setKeepAlive(0);
 

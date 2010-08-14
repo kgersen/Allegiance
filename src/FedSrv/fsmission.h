@@ -323,8 +323,8 @@ public:
     return m_misdef.misparms.nTeams;
   }
   void                  RecordGameResults();
-  void                  RecordTeamResults(IsideIGC* pside, ZFile * pzReport); // Imago #50 added report
-  void                  RecordPlayerResults(ObjectID cid, const char* pszName, PlayerScoreObject* ppso, SideID sid, ZFile * pzReport); // Imago #50 added cid and report
+  void                  RecordTeamResults(IsideIGC* pside, MMF &mmf); // Imago #50 added report
+  void                  RecordPlayerResults(ObjectID cid, const char* pszName, PlayerScoreObject* ppso, SideID sid, MMF &mmf); // Imago #50 added cid and report
   void                  QueueGameoverMessage();
 
   IsideIGC*             CheckForVictoryByStationBuild(IsideIGC* pside);

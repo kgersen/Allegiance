@@ -2581,7 +2581,7 @@ public:
 		if (iwrite != 7) return; 
 
 		MaClient* client = new MaClient();
-		client->setTimeout(100000);
+		client->setTimeout(10000);
 		client->setRetries(1);
 		client->setKeepAlive(0);
 		int contentLen = 0; char *content;

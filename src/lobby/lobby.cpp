@@ -37,7 +37,7 @@ LPCTSTR FindOneOf(LPCTSTR p1, LPCTSTR p2)
 //do our best to post a dump Imago 7/10 (move the appweb to Utility and reuse this)
 bool DumpSend(ZString zaFile, int iTry = 0) {
 	MaClient* client = new MaClient();
-	client->setTimeout(300000);
+	client->setTimeout(60000);
 	client->setRetries(1);
 	client->setKeepAlive(1);
 	HANDLE hFile = CreateFile((PCC)zaFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

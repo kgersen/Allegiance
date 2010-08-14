@@ -2708,6 +2708,7 @@ void CFSMission::MakeOverrideTechBits()
 static void doRecordGame(void* data, MprThread *threadp) {
 	ZString * szName = (ZString *)data;
 	ZString strName = szName->GetToken();
+	int iSize = szName->GetToken().GetInteger();
 
 	debugf("****** posting game %s\n",(PCC)strName);
 
@@ -2719,16 +2720,24 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	if (iwrite != 7) return; 
 
 	MaClient* client = new MaClient();
-	client->setTimeout(100000);
+	client->setTimeout(60000);
 	client->setRetries(1);
 	client->setKeepAlive(0);
 	int contentLen = 0; char *content;
 	
+	ZString zMMF = "AGCLogger-" + ZString((int)GetCurrentProcessId());
+	MMF mmfAGCLog((PCC)zMMF,0x4B00000,false);
+	char* AGCData = mmfAGCLog.GetBuffer();
+
+	MMF mmfResultsPost((PCC)strName,iSize,false);
+	char* ResultData = mmfResultsPost.GetBuffer();
+	char* buffer = new char[iSize + strlen(AGCData)];
+
 	strName+=".stats";
-	ZFile * pzFile = new ZFile(GetAppDir() + "/"+strName,OF_READ);
-	char* buffer = new char[pzFile->GetLength()];
-	int iSize = pzFile->Read(buffer, sizeof(char) * pzFile->GetLength());
-	if (iSize != pzFile->GetLength() || iSize <= 0) return; 
+	if (iSize <= 0) return; 
+	memcpy(buffer,ResultData,iSize);
+	memcpy(buffer+iSize,AGCData,strlen(AGCData));
+	iSize += strlen(AGCData);
 
 	MprBuf * hdrBuf = new MprBuf(256);
 	hdrBuf->put("POST /AllegSkill/nph-PutGameResults.cgi HTTP/1.1\r\n");
@@ -2756,7 +2765,6 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	delete hdrBuf;
 	delete PostData;
 	debugf("****** game posted in %i bytes\n",iTotal0);
-	delete pzFile;
 	
 	ZString zResponse;
 	zResponse.SetEmpty();
@@ -2764,6 +2772,8 @@ static void doRecordGame(void* data, MprThread *threadp) {
 		zResponse = client->getResponseContent(&contentLen);
 	if (zResponse.ReverseFindAny("POSTED") != -1)
 		DeleteFile(GetAppDir() + "/" +strName);
+
+	//TODO Save the send buffer to disk if the POST fails and implement a retry (like how doDump works)
 
 	delete client;
 }
@@ -2815,9 +2825,14 @@ void CFSMission::RecordGameResults()
 	//#50 --Save out...... 
     SYSTEMTIME stLocalTime;
     GetLocalTime( &stLocalTime );
-    ZString zName = ZString(stLocalTime.wYear) + ZString(stLocalTime.wMonth) + ZString(stLocalTime.wDay) +  ZString(stLocalTime.wHour) +  ZString(stLocalTime.wMinute) + ZString(stLocalTime.wSecond) + "-" + ZString((int)GetCurrentProcessId()) + "-" +ZString((int)GetCurrentThreadId());
-	ZFile * pzReport = new ZFile(GetAppDir()+"/"+zName+".stats", OF_WRITE | OF_CREATE);
-	pzReport->Write(pqd,sizeof(CQGameResultsData));
+	char szName[128] = {'\0'};
+	sprintf(szName,"Game-%04d%02d%02d%02d%02d%02d-%ld-%ld",
+               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
+               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
+               GetCurrentProcessId(), GetCurrentThreadId());
+
+	MMF mmfResultsPost(szName,0x400000);
+	mmfResultsPost.PutBuffer((char*)pqd,sizeof(CQGameResultsData));
 
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();
@@ -2827,7 +2842,7 @@ void CFSMission::RecordGameResults()
       assert(pside);
 
       // Record the team results
-      RecordTeamResults(pside,pzReport);
+      RecordTeamResults(pside,mmfResultsPost);
     }
 
     // Iterate through each player that left the game before it ended
@@ -2837,13 +2852,13 @@ void CFSMission::RecordGameResults()
 
       // Record the player results (if they played on a real side)
       if (opi.sideID != SIDE_TEAMLOBBY)
-        RecordPlayerResults(opi.characterID, opi.name, &opi.pso, opi.sideID, pzReport); // #50 added Char ID (for future support)
+        RecordPlayerResults(opi.characterID, opi.name, &opi.pso, opi.sideID, mmfResultsPost); // #50 added Char ID (for future support)
     }
 
-	delete pzReport;
-
-	//#50 - TODO, look for any .stats files when the server first starts (and connects to prod. lobby) to try resending
-	ZString * pzName = new ZString(zName);
+	//#50
+	Strcat(szName," ");
+	Strcat(szName,(PCC)ZString(mmfResultsPost.Size()));
+	ZString * pzName = new ZString(szName);
 	ZString zTName =  ZString("AllSrv game ")+ZString((int)GetCookie())+ZString(" post thread");
 	MprThread* threadp = new MprThread(doRecordGame, MPR_NORMAL_PRIORITY, (void*)pzName,(char*)(PCC)zTName);
 	threadp->start();
@@ -2858,7 +2873,7 @@ void CFSMission::RecordGameResults()
    Purpose:
      Records the results of the team to the database.
  */
-void CFSMission::RecordTeamResults(IsideIGC* pside, ZFile * pzReport)
+void CFSMission::RecordTeamResults(IsideIGC* pside, MMF &mmf)
 {
 
 #pragma warning(disable: 4244) //Imago #50 - loss of data here is ok to optimize over-the-wire (select floats to longs and floats to shorts)
@@ -2899,7 +2914,8 @@ void CFSMission::RecordTeamResults(IsideIGC* pside, ZFile * pzReport)
     // Post the query for async completion
     // g.sql.PostQuery(pquery);  #50 commented Imago 8/10
 
-	pzReport->Write(pqd,sizeof(CQTeamResultsData));
+	//memcpy(ResultData,pqd,sizeof(CQTeamResultsData));
+	mmf.PutBuffer((char*)pqd,sizeof(CQTeamResultsData));
 
     // Iterate through each player of the team
     const ShipListIGC* pShips = pside->GetShips();
@@ -2916,7 +2932,7 @@ void CFSMission::RecordTeamResults(IsideIGC* pside, ZFile * pzReport)
         PlayerScoreObject* ppso = pfsPlayer->GetPlayerScoreObject();
 
         // Record the player results
-        RecordPlayerResults(pfsPlayer->GetCharacterID(), pship->GetName(), ppso, pside->GetObjectID(), pzReport); // #50 added cid
+        RecordPlayerResults(pfsPlayer->GetCharacterID(), pship->GetName(), ppso, pside->GetObjectID(), mmf); // #50 added cid
       }
     }
 #pragma warning(default: 4244)
@@ -2929,7 +2945,7 @@ void CFSMission::RecordTeamResults(IsideIGC* pside, ZFile * pzReport)
    Purpose:
      Records the results of the player to the database.
  */
-void CFSMission::RecordPlayerResults(ObjectID cid, const char* pszName, PlayerScoreObject* ppso, SideID sid, ZFile * pzReport)
+void CFSMission::RecordPlayerResults(ObjectID cid, const char* pszName, PlayerScoreObject* ppso, SideID sid, MMF &mmf)
 {
 
 #pragma warning(disable: 4244) //Imago #50 - loss of data here is ok to optimize over-the-wire (select floats to longs and floats to shorts)
@@ -3004,7 +3020,8 @@ void CFSMission::RecordPlayerResults(ObjectID cid, const char* pszName, PlayerSc
     // Post the query for async completion
     //g.sql.PostQuery(pquery); #50 Imago 8/10
 
-	pzReport->Write(pqd,sizeof(CQPlayerResultsData));
+	//memcpy(ResultData,pqd,sizeof(CQPlayerResultsData));
+	mmf.PutBuffer((char*)pqd,sizeof(CQPlayerResultsData));
 #pragma warning(default: 4244)
 }
 

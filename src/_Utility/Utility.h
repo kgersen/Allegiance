@@ -1314,7 +1314,8 @@ class MMF
 			m_szBuffer(NULL),
 			m_iBuffer(iBuffer),
 			m_MapHandle(NULL),
-			m_bCreate(bCreate)
+			m_bCreate(bCreate),
+			m_uBuffer(0)
 		{
 			strcpy(m_szMapName, szMapName);
 			if (bCreate)
@@ -1336,13 +1337,13 @@ class MMF
 		{
 			if (m_MapHandle && !m_bCreate)
 			{
+				ZeroMemory(m_szBuffer,m_iBuffer);
+				FlushViewOfFile(m_szBuffer,m_iBuffer);
 				UnmapViewOfFile(m_szBuffer);
 				CloseHandle(m_MapHandle);
-				m_szBuffer = NULL;
 			}
 		}
 
-		//
 		char* GetBuffer() {
 			if (m_MapHandle == NULL || m_MapHandle == INVALID_HANDLE_VALUE) {
 				m_MapHandle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, m_iBuffer, m_szMapName);
@@ -1353,17 +1354,25 @@ class MMF
 			return m_szBuffer;
 		}
 
+		void PutBuffer(char * data, int size) {
+			memcpy(m_szBuffer+m_uBuffer,data,size);
+			m_uBuffer += size;
+		}
+
 		void Delete() {
 			UnmapViewOfFile(m_szBuffer);
 			CloseHandle(m_MapHandle);
 			delete m_szMapName;
 		}
 
+		int Size() { return m_uBuffer; }
+
 	private:
 		char* m_szMapName;
 		char* m_szBuffer;
-		const int m_iBuffer;
+		const int m_iBuffer; //inital (max)
 		bool m_bCreate;
+		int	  m_uBuffer; //used
 		HANDLE m_MapHandle;
 };
 //End Imago
