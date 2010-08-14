@@ -2709,7 +2709,7 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	ZString * szName = (ZString *)data;
 	ZString strName = szName->GetToken();
 	int iSize = szName->GetToken().GetInteger();
-
+	if (iSize <= 0) return; 
 	debugf("****** posting game %s\n",(PCC)strName);
 
 	//sanity check....
@@ -2726,19 +2726,20 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	int contentLen = 0; char *content;
 	
 	ZString zMMF = "AGCLogger-" + ZString((int)GetCurrentProcessId());
+	//lots (however much) of text
 	MMF mmfAGCLog((PCC)zMMF,0x4B00000,false);
 	char* AGCData = mmfAGCLog.GetBuffer();
 
+	//a little bit (set amount) of binary
 	MMF mmfResultsPost((PCC)strName,iSize,false);
 	char* ResultData = mmfResultsPost.GetBuffer();
-	char* buffer = new char[iSize + strlen(AGCData)];
 
-	strName+=".stats";
-	if (iSize <= 0) return; 
+	char* buffer = new char[iSize + strlen(AGCData)];
 	memcpy(buffer,ResultData,iSize);
 	memcpy(buffer+iSize,AGCData,strlen(AGCData));
 	iSize += strlen(AGCData);
 
+	strName+=".stats";
 	MprBuf * hdrBuf = new MprBuf(256);
 	hdrBuf->put("POST /AllegSkill/nph-PutGameResults.cgi HTTP/1.1\r\n");
 	hdrBuf->put("Host: build.alleg.net\r\n");
@@ -2797,7 +2798,7 @@ void CFSMission::RecordGameResults()
     strncpy(pqd->szGameID     , GetIGCMission()->GetContextName()      , sizeofArray(pqd->szGameID));
     strncpy(pqd->szName       , m_misdef.misparms.strGameName          , sizeofArray(pqd->szName));
     strncpy(pqd->szWinningTeam, m_psideWon ? m_psideWon->GetName() : "", sizeofArray(pqd->szWinningTeam));
-	strncpy(pqd->szCore		  , GetIGCMission()->GetMissionParams()->szIGCStaticFile, sizeofArray(pqd->szCore)); // #50 Imago added
+	//strncpy(pqd->szCore		  , GetIGCMission()->GetMissionParams()->szIGCStaticFile, sizeofArray(pqd->szCore)); // #50 Imago added
 
     // make SURE they're NULL-terminated
     pqd->szGameID[sizeofArray(pqd->szGameID) - 1] = '\0';
@@ -2833,6 +2834,7 @@ void CFSMission::RecordGameResults()
 
 	MMF mmfResultsPost(szName,0x400000);
 	mmfResultsPost.PutBuffer((char*)pqd,sizeof(CQGameResultsData));
+	mmfResultsPost.PutBuffer((char*)GetIGCMission()->GetMissionParams(),sizeof(MissionParams));
 
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();

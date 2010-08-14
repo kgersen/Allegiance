@@ -215,8 +215,8 @@ BEGIN_QUERY(CQGameResults, false,
 
   char  szGameID      [18];
   char  szName        [65];
-  char  szWinningTeam [21];
-  char	szCore		  [21];
+  char  szWinningTeam [25];
+  //char	szCore		  [21]; //Imago 8/10 #50 we now send a copy of the entire missionparams
   short nWinningTeamID;
   char  bIsGoalConquest;
   char  bIsGoalCountdown;
