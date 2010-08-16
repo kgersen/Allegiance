@@ -702,9 +702,15 @@ public:
 		
         
 		// user tests here
-		AddMineFieldTest();
+		//AddMineFieldTest();
 		//AddIcosahedron(); //for testing "Intel SWVP clipping issue" -Imago 
-        
+		char in[1024] = {'\0'};
+		strcpy(in,"Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello worldHello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world Hello world ");
+		char * out = new char[1024];
+		int i = strlen(in);
+		int wut = Create7z(in,i,out);
+		ZFile * pFile = new ZFile("C:\\test.7z",OF_CREATE|OF_WRITE);
+		pFile->Write(out,wut);        
     }
 
     //////////////////////////////////////////////////////////////////////////////

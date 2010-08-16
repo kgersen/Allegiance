@@ -158,6 +158,7 @@ int Extract7z(const char * sz7z, const char * szFile) {
 	return (res != 0 || res2 != 0 || iLength == 0) ? -1 : (int)iLength;
 }
 
+
 int Create7z(const char * szFile, const char * sz7z) {
 	CFileSeqInStream inStream;
 	CFileOutStream outStream;
@@ -183,6 +184,23 @@ int Create7z(const char * szFile, const char * sz7z) {
 	}
 	
 	return (res != 0 || res2 != 0 || iLength == 0) ? -1 : (int)iLength;
+}
+
+int Create7z(char * in, int srcLen, char * out) {
+
+	CLzmaEncProps props;
+	LzmaEncProps_Init(&props);
+	Byte header[LZMA_PROPS_SIZE + 8];
+    size_t headerSize = LZMA_PROPS_SIZE;
+	size_t destLen = -1;
+	Byte * bout = new Byte[srcLen];
+	ZeroMemory(bout,srcLen);
+	int size = LzmaEncode((Byte*)bout, &destLen, (Byte*)in,  srcLen, &props, header, &headerSize, 1, NULL, &g_Alloc, &g_Alloc);
+	for (int i = 0; i < 8; i++)
+      header[headerSize++] = (Byte)(srcLen >> (8 * i));
+	memcpy(out,header,headerSize);
+	memcpy(out+headerSize,bout,destLen);
+	return destLen + headerSize;
 }
 
 FileList FindDumps() {

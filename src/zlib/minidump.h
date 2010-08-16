@@ -28,7 +28,7 @@ typedef TList<WIN32_FIND_DATA, FileTimeEquals, FileTimeCompare> FileList;
 FileList FindDumps();
 
 int Create7z(const char * szFile, const char * sz7z);
-
+int Create7z(char * in, int srcLen, char * out); //not used for minidumps but included here anyways
 int Extract7z(const char * sz7z, const char * szFile); //not used for minidumps but included here anyways
 
 void DeleteDumps(bool bDelete = true);

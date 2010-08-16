@@ -2738,7 +2738,7 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	memcpy(buffer,ResultData,iSize);
 	memcpy(buffer+iSize,AGCData,strlen(AGCData));
 	iSize += strlen(AGCData);
-
+	iSize = Create7z(buffer,iSize,buffer);
 	strName+=".stats";
 	MprBuf * hdrBuf = new MprBuf(256);
 	hdrBuf->put("POST /AllegSkill/nph-PutGameResults.cgi HTTP/1.1\r\n");
@@ -2823,7 +2823,7 @@ void CFSMission::RecordGameResults()
 	// Post the query for async completion
 	/// g.sql.PostQuery(pquery); //Imago #192 commented 8/10
 
-	//#50 --Save out...... 
+	//#50 --Save out...... Imago use Shared Memory
     SYSTEMTIME stLocalTime;
     GetLocalTime( &stLocalTime );
 	char szName[128] = {'\0'};
@@ -2833,8 +2833,9 @@ void CFSMission::RecordGameResults()
                GetCurrentProcessId(), GetCurrentThreadId());
 
 	MMF mmfResultsPost(szName,0x400000);
-	mmfResultsPost.PutBuffer((char*)pqd,sizeof(CQGameResultsData));
 	mmfResultsPost.PutBuffer((char*)GetIGCMission()->GetMissionParams(),sizeof(MissionParams));
+	mmfResultsPost.PutBuffer((char*)pqd,sizeof(CQGameResultsData));
+	//
 
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();
@@ -3338,11 +3339,12 @@ void CFSMission::ProcessGameOver()
     RecordSquadGame(m_pMission->GetSides(), m_psideWon);
   }
 
+  //Imago commented out -this bScoresCount functionality is all jacked up now...
   // Record the Game Results
-  if (m_misdef.misparms.bScoresCount) // Only if scores count
-  {
+  //if (m_misdef.misparms.bScoresCount) // Only if scores count
+  //{
     RecordGameResults();
-  }
+  //}
 
   // Queue the GameOver message to all connected users
   g.fm.SetDefaultRecipient(GetGroupMission(), FM_GUARANTEED);
