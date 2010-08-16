@@ -778,6 +778,7 @@ enum    ShipControlStateIGC
     upButtonIGC                 =   32 * coastButtonIGC,            //       up
     downButtonIGC               =   64 * coastButtonIGC,            //       down
     afterburnerButtonIGC        =  128 * coastButtonIGC,            //       with afterburners
+	keyMaskIGC					=  (256 * coastButtonIGC - 4),		//Xynth #210 coastButton-afterburnerbutton
     drillingMaskIGC             =  256 * coastButtonIGC,            //on rails to avoid collisions
     cloakActiveIGC              =  512 * coastButtonIGC,            //Activating the cloak
     droneRipMaskIGC             = 1024 * coastButtonIGC,            //Xynth #47 7/2010
