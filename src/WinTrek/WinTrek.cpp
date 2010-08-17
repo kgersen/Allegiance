@@ -8185,7 +8185,8 @@ public:
                             buttonsM |= forwardButtonIGC;
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustBackward, bAllowKeyboardMovement))
                             buttonsM |= backwardButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement))
+						if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement)
+							&& (now - trekClient.GetReloadingFuelTime() >= trekClient.GetCore()->GetFloatConstant(c_fcidMountRate))) // pkk #19 Make a clientside check, if fuel reload is currently active
                             buttonsM |= afterburnerButtonIGC;
 
                         if (fAutoPilot)
@@ -9624,10 +9625,16 @@ public:
                     int stateM = trekClient.GetShip()->GetStateM();
 
                     if ((stateM & (oneWeaponIGC | allWeaponsIGC)) == 0)
+                    {
                         trekClient.Reload(trekClient.GetShip(), NULL, ET_Weapon);
+                        trekClient.SetReloadingAmmoTime(); // pkk #19 - Set Timestamp for last manual ammo reload
+                    }
 
                     if ((stateM & afterburnerButtonIGC) == 0)
+                    {
                         trekClient.Reload(trekClient.GetShip(), NULL, ET_Afterburner);
+                        trekClient.SetReloadingFuelTime(); // pkk #19 - Set Timestamp for last manual fuel reload
+                    }
 
                     if ((stateM & missileFireIGC) == 0)
                         trekClient.Reload(trekClient.GetShip(), (IlauncherIGC*)(trekClient.GetShip()->GetMountedPart(ET_Magazine, 0)), ET_Magazine);
@@ -10796,9 +10803,20 @@ public:
         // Read buttons and keyboard
         //
 
-        bool newButton1 = m_ptrekInput->IsTrekKeyDown(TK_FireWeapon , bReadKeyboard);
+        Time now = Time::Now(); // pkk #19
+
+        // pkk #19 Make a clientside check, if ammo reload is currently active //Imago fixed pkk's syntax errors 8/10
+        bool newButton1 = (now - trekClient.GetReloadingAmmoTime() >= trekClient.GetCore()->GetFloatConstant(c_fcidMountRate))
+			?  m_ptrekInput->IsTrekKeyDown(TK_FireWeapon , bReadKeyboard) 
+			: false;
+
         bool newButton2 = m_ptrekInput->IsTrekKeyDown(TK_FireMissile, bReadKeyboard);
-        bool newButton3 = m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bReadKeyboard);
+
+        // pkk #19 Make a clientside check, if fuel reload is currently active
+        bool newButton3 = (trekClient.GetReloadingFuelTime() - now >= trekClient.GetCore()->GetFloatConstant(c_fcidMountRate))
+			? m_ptrekInput->IsTrekKeyDown(TK_FireBooster , bReadKeyboard) 
+			: false;
+
         //bool newButton4 = m_ptrekInput->GetButton(3); // !!! was next weapon
         //bool newButton5 = m_ptrekInput->GetButton(4); // !!! was vector lock
         bool newButton6 = m_ptrekInput->IsTrekKeyDown(TK_MatchSpeed , bReadKeyboard);

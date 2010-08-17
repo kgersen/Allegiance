@@ -4793,6 +4793,14 @@ class IIgcSite : public IObject
         virtual void CreateSideEvent(IsideIGC * pIsideIGC) {};
         virtual void DestroySideEvent(IsideIGC * pIsideIGC) {};
 
+		// pkk #19 - IGC to Wintrek
+		Time m_ReloadingFuelTime;
+		Time m_ReloadingAmmoTime;
+		virtual void SetReloadingFuelTime(void) { m_ReloadingFuelTime = Time::Now(); };
+		virtual void SetReloadingAmmoTime(void) { m_ReloadingAmmoTime = Time::Now(); };
+		virtual Time GetReloadingFuelTime(void) {return m_ReloadingFuelTime;};
+		virtual Time GetReloadingAmmoTime(void) {return m_ReloadingAmmoTime;};
+
         virtual void ChangeStation(IshipIGC* pship,
                                    IstationIGC* pstationOld,
                                    IstationIGC* pstationNew)  {}    //changing clusters
