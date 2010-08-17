@@ -1120,8 +1120,8 @@ interface IAGCGameParameters : IDispatch
   [propput, helpstring("property DefaultCountdown (in seconds)")] HRESULT DefaultCountdown([in] float newVal);
   [propget, helpstring("property InitialMinersPerTeam")] HRESULT InitialMinersPerTeam([out, retval] BYTE *pVal);
   [propput, helpstring("property InitialMinersPerTeam")] HRESULT InitialMinersPerTeam([in] BYTE newVal);
-  [propget, helpstring("property MaxMinersPerTeam")] HRESULT MaxMinersPerTeam([out, retval] BYTE *pVal);
-  [propput, helpstring("property MaxMinersPerTeam")] HRESULT MaxMinersPerTeam([in] BYTE newVal);
+  [propget, helpstring("property MaxDronesPerTeam")] HRESULT MaxDronesPerTeam([out, retval] BYTE *pVal);
+  [propput, helpstring("property MaxDronesPerTeam")] HRESULT MaxDronesPerTeam([in] BYTE newVal);
   [propget, helpstring("property CustomMap")] HRESULT CustomMap([out, retval] BSTR *pVal);
   [propput, helpstring("property CustomMap")] HRESULT CustomMap([in] BSTR newVal);
   [propget, helpstring("property RestartCountdown (in seconds)")] HRESULT RestartCountdown([out, retval] float *pVal);

@@ -4064,7 +4064,7 @@ void                    CmissionIGC::GenerateMission(Time                   now,
 	debugf("Total money: %f\n",pmp->fHe3Density);
 	debugf("Player Sector He3 rocks: %d\n",pmp->nPlayerSectorMineableAsteroids);
 	debugf("Neutral Sector He3 rocks: %d\n",pmp->nNeutralSectorMineableAsteroids);
-	debugf("Max Miners: %d\n",pmp->nMaxMinersPerTeam);
+	debugf("Max Drones: %d\n",pmp->nMaxDronesPerTeam);
     debugf("Scores Count: %s\n",pmp->bScoresCount ? "yes" : "no");
     debugf("Eject Pods: %s\n",pmp->bEjectPods ? "yes" : "no");
     debugf("Allow Friendly Fire: %s\n",pmp->bAllowFriendlyFire ? "yes" : "no");

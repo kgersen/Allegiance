@@ -263,10 +263,10 @@ initialMinersCountComboPane           = StringComboPane(size, size, smallFont, T
 initialMinersCountPane = 
     ImagePane(initialMinersCountImage, [(initialMinersCountComboPane, Point(xcombo, ycombo))]);
 
-maxMinersCountImage = ImportImageFromFile("combomaxminerscount.png", true);
-maxMinersCountComboPane           = StringComboPane(size, size, smallFont, TextColor);
-maxMinersCountPane = 
-    ImagePane(maxMinersCountImage, [(maxMinersCountComboPane, Point(xcombo, ycombo))]);
+maxDronesCountImage = ImportImageFromFile("combomaxdronescount.png", true);
+maxDronesCountComboPane           = StringComboPane(size, size, smallFont, TextColor);
+maxDronesCountPane = 
+    ImagePane(maxDronesCountImage, [(maxDronesCountComboPane, Point(xcombo, ycombo))]);
     
     
 asteriodsImage = ImportImageFromFile("comboasteriods.png", true);
@@ -367,8 +367,8 @@ MapSizeValues = [0,1];
 initialMinersNames = ["0","1","2","3","4","5","6","7","8","9","10"];
 initialMinersValues = [0,1,2,3,4,5,6,7,8,9,10];
 
-maxMinersNames = ["0","1","2","3","4","5","6","7","8","9","10"];
-maxMinersValues = [0,1,2,3,4,5,6,7,8,9,10];
+maxDronesNames = ["0","1","2","3","4","5","6","7","8","9","10"];
+maxDronesValues = [0,1,2,3,4,5,6,7,8,9,10];
 
 AsteriodsNames         = ["Low", "Normal", "High"];
 AsteriodsHomeValues    = [10,20,40]; // max allowed is 40
@@ -507,7 +507,7 @@ screen =
            (HoverPane(hoverSite, 39, treasuresPane                   ), Point( x2, 436)),
            (HoverPane(hoverSite, 38, mapSizePane                     ), Point( x3, 276)),
            (HoverPane(hoverSite, 40, initialMinersCountPane          ), Point( x3, 476)),
-           (HoverPane(hoverSite, 41, maxMinersCountPane              ), Point( x3, 516)),
+           (HoverPane(hoverSite, 41, maxDronesCountPane              ), Point( x3, 516)),
            
            (HoverPane(hoverSite, 42, asteriodsPane                   ), Point( x2, 516)),
            

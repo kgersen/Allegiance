@@ -1166,7 +1166,7 @@ struct MissionParams
     unsigned char nMaxPlayersPerTeam;                   //Max players on team
 
     char        nInitialMinersPerTeam;                  //Number of miners to start the game with
-    char        nMaxMinersPerTeam;                      //Maximum # of miners a team is allowed to control
+    char        nMaxDronesPerTeam;                      //Maximum # of drones a team is allowed to control
 
     short       nTotalMaxPlayersPerGame;                //Maximum # of players per game (mostly used for StandAlone server)
 
@@ -1282,7 +1282,7 @@ struct MissionParams
         nNeutralSectorSpecialAsteroids  = 1;
 
         nInitialMinersPerTeam           = 1;
-        nMaxMinersPerTeam               = 4;
+        nMaxDronesPerTeam               = 4;
 
         nMinPlayersPerTeam              = 1;   // KGJV #114 changed
         nMaxPlayersPerTeam              = 100; // KGJV #114 changed
@@ -1311,13 +1311,13 @@ struct MissionParams
             }
         }
 
-        if (nInitialMinersPerTeam > nMaxMinersPerTeam)
+        if (nInitialMinersPerTeam > nMaxDronesPerTeam)
         {
             return "Initial miners per team must be less than max miners per team.";
         }
-        else if (nMaxMinersPerTeam > 10)
+        else if (nMaxDronesPerTeam > 10)
         {
-            return "Max miners per team must be less than or equal to 10.";
+            return "Max drones per team must be less than or equal to 10.";
         }
         else if (nNeutralSectorSpecialAsteroids > 9)
         {
