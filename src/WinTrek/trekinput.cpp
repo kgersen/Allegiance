@@ -31,8 +31,9 @@ const int ModifierAlt     = 4;
 const int ModifierAny     = 8;
 
 // Imago #176
-TRef<IMessageBox> pmsgBoxLoad; 
+TRef<IMessageBox> pmsgBoxLoad;
 // 7/10
+
 
 class TrekInputImpl : public TrekInput {
 public:
@@ -1623,7 +1624,9 @@ class InputMapPopup :
     public ItemPainter
 {
 private:
+	//Imago
 	bool m_bLoad;
+	int  m_iLoadThread;
     //////////////////////////////////////////////////////////////////////////////
     //
     // Types
@@ -2090,7 +2093,9 @@ public:
         m_bQuestion(false),
         m_bButton(false),
         m_bAxis(false),
-		m_bLoad(false)
+		//Imago 8/10
+		m_bLoad(false),
+		m_iLoadThread(NA)
     {
         m_bInternational = IsInternationalKeyboard();
 
@@ -2475,7 +2480,6 @@ public:
 
 	//Imago #176 7/10
 	static void doLoadInputMap(void* data, MprThread *threadp) {
-
 		int contentLen = 0; char *content;
 		ZString * szName = (ZString *)data;
 		ZString strName = szName->GetToken();
@@ -2500,6 +2504,9 @@ public:
 						//This is used to ensure the remote http server sends a Content-Type header,
 						// as most HTTP servers don't have .7z configured in MIME types.
 						//Players may be behind firewalls that deny HTTP w/o content-types.
+
+		DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z");
+		DeleteFile(GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"_cloud.mdl");
 						
 		// First make sure we can write to a socket
 		MprSocket* socket = new MprSocket();
@@ -2536,21 +2543,18 @@ public:
 
 		if (contentLen > 0) {
 			debugf("***** fetching input map: retrieved %i bytes\n",contentLen);
-			DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z");
-			DeleteFile(GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"_cloud.mdl");
 			ZFile * pz7z = new ZFile(GetModeler()->GetArtPath() + "/" + INPUTMAP_FILE+ ".7z", OF_WRITE | OF_CREATE);
-			if (pz7z->Write(content,contentLen)) {
+			if (pz7z && pz7z->Write(content,contentLen)) {
 				delete pz7z;
 				int iBytes = Extract7z(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z",GetModeler()->GetArtPath()+"/"+INPUTMAP_FILE+"_cloud.mdl");
 				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+".7z");
 				debugf("***** fetching input map: extracted %i bytes\n",iBytes);
-			} else
-				debugf("***** fetching input map: reponse write error\n");
+			} else {
+				delete pz7z;
+				debugf("***** fetching input map: response write error\n");
+			}
 			
 		}
-		GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxLoad);
-		GetWindow()->RestoreCursor();
-		pmsgBoxLoad = NULL;
 		delete client;
 	}
 
@@ -2653,6 +2657,7 @@ public:
 		}
 		MprThread* threadp = new MprThread(doLoadInputMap, MPR_NORMAL_PRIORITY, (void*)pzName, "Allegiance inputmap get thread");
 		threadp->start();
+		m_iLoadThread = threadp->getOsThread();
 		return true;
     }
 	// End Imago #176
@@ -3057,17 +3062,25 @@ public:
     void Paint(ItemID itemID, Surface* psurface, bool bSelected, bool bFocus)
     {
 		//Imago 7/10
-		if (m_bLoad && pmsgBoxLoad == NULL) {
-			ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl",OF_READ);
-			if (pzCheck && pzCheck->GetLength() > 0) { //finally the last sanity check...
-				delete pzCheck;
-				LoadMap(INPUTMAP_FILE+ZString("_cloud"));
-				DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl");
-				Changed();
-			} else {
-				delete pzCheck;
+		if (m_bLoad && m_iLoadThread != NA) {
+			HANDLE hThread = OpenThread(THREAD_SET_INFORMATION,FALSE,m_iLoadThread);
+			if (hThread == NULL) {
+				ZFile * pzCheck = new ZFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl",OF_READ);
+				if (pzCheck && pzCheck->GetLength() > 0) { //finally the last sanity check...
+					delete pzCheck;
+					LoadMap(INPUTMAP_FILE+ZString("_cloud"));
+					DeleteFile(GetModeler()->GetArtPath() + "/"+INPUTMAP_FILE+"_cloud.mdl");
+					Changed();
+				} else
+					delete pzCheck;
+				if (pmsgBoxLoad != NULL) {
+					GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxLoad);
+					GetWindow()->RestoreCursor();
+					pmsgBoxLoad = NULL;		
+				}
+				m_bLoad = false;
 			}
-			m_bLoad = false;
+			CloseHandle(hThread);
 		}
 		//
 

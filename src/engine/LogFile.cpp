@@ -70,7 +70,7 @@ void CLogFile::OutputString( const char * szString )
 		DWORD nBytes;
 		::WriteFile(m_hLogFile, szString, strlen(szString), &nBytes, NULL);
 	}
-	debugf(szString);
+	//debugf(szString);
 }
 
 
