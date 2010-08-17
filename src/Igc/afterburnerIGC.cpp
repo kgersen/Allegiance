@@ -127,11 +127,8 @@ void    CafterburnerIGC::IncrementalUpdate(Time lastUpdate, Time now, bool bUseF
 
         {
             float   fuel = m_ship->GetFuel();
-           
-			// afterburner button pressed && has fuel && has afterburner mounted (not reloading?)
-			bool    bActivated = (m_ship->GetStateM() & afterburnerButtonIGC) && (fuel > 0.0f) && (m_ship->GetMountedPart(ET_Afterburner, 0) ); // pkk #19
-           
-			if (bActivated)
+            bool    bActivated = (m_ship->GetStateM() & afterburnerButtonIGC) && (fuel != 0.0f);
+            if (bActivated)
                 Activate();
 
             if (m_fActive)
