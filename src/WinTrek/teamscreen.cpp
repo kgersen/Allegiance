@@ -906,7 +906,8 @@ private:
 				}
             }
 
-			m_pcomboCiv->AddItem("Random", RANDOM_ID); //Xynth #170 8/2010
+			//Xynth #170 removed selection until bugs can be worked out
+			//m_pcomboCiv->AddItem("Random", RANDOM_ID); //Xynth #170 8/2010
 
 			m_peditPaneTeamName->SetHidden(true);
         }
