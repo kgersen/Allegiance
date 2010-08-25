@@ -279,6 +279,7 @@ public:
     return m_pMission;
   }
   //
+  void UpdateAGCInfo(Time now); //Imago #50 8/10
   IIgcSite*             GetSite()         
   {
     return m_psiteIGC;
@@ -524,9 +525,9 @@ private:
   CFMGroup *            m_pgrpMission;   // includes everyone in this mission, including lobby side
   Time                  m_timeLastLobbyMissionInfo;
   bool                  m_fLobbyDirty;
+  Time                  m_timeLastAGCInfo; //#50 Imago 8/10
   Time                  m_timeLastMSRInfo; //#192 Imago 8/10
   bool                  m_fMSRDirty; //#192 Imago 8/10
-  MprThread*			m_threadp;  //#192 Imago 8/10
   bool                  m_bShouldDelete;
 
   SYSTEMTIME            m_stStartTime; // in UTC not PST

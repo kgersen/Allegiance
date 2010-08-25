@@ -7912,6 +7912,9 @@ void UpdateMissions(Time timeStart, Time timePrevious)
 	  //Imago #192 8/10
 	  pfsMission->UpdateMSRInfo(timeStart);
 
+	  //Imago #50 8/10
+	  pfsMission->UpdateAGCInfo(timeStart);
+
       MoveShips(pfsMission, timeStart, timePrevious);
 
       if (pfsMission->GetStage() == STAGE_STARTED)

@@ -13,11 +13,12 @@
 //CFSMission statics
 ListFSMission CFSMission::s_list;
 int           CFSMission::s_iMissionID = 1; // just for igc--this too wil go away when we have single exe
-
+bool f_doingAGCLog = false; //Imago 8/10 #50
 const DWORD CFSMission::c_sbtPlayer = 0x00000001;
 const DWORD CFSMission::c_sbtLeader = 0x00000002;
 const float c_flUpdateTimeInterval = 10.0f;
-const float c_fMSRUpdateTimeInterval = 30.0f; //Imago 8/10
+const float c_fMSRUpdateTimeInterval = 30.0f; //Imago 8/10 #192
+const float c_fAGCUpdateTimeInterval = 3.3f; //Imago 8/10 #50
 
 static const char* sideNames[c_cSidesMax] =
   {
@@ -88,7 +89,6 @@ CFSMission::CFSMission(
     m_psiteIGC(psiteIGC),
     m_fLobbyDirty(true),
 	m_fMSRDirty(false), //#192 Imago 8/10
-	m_threadp(NULL), //#192 Imago 8/10
     m_timeLastLobbyMissionInfo(Time::Now() - c_flUpdateTimeInterval), // fudge factor--want to
     m_nFrame(0),
     m_bShouldDelete(false),
@@ -2725,20 +2725,14 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	client->setKeepAlive(0);
 	int contentLen = 0; char *content;
 	
-	ZString zMMF = "AGCLogger-" + ZString((int)GetCurrentProcessId());
-	//lots (however much) of text
-	MMF mmfAGCLog((PCC)zMMF,0x4B00000,false);
-	char* AGCData = mmfAGCLog.GetBuffer();
-
 	//a little bit (set amount) of binary
 	MMF mmfResultsPost((PCC)strName,iSize,false);
 	char* ResultData = mmfResultsPost.GetBuffer();
 
-	char* buffer = new char[iSize + strlen(AGCData)];
+	char* buffer = new char[iSize+1];
 	memcpy(buffer,ResultData,iSize);
-	memcpy(buffer+iSize,AGCData,strlen(AGCData));
-	iSize += strlen(AGCData);
-	iSize = Create7z(buffer,iSize,buffer);
+	memcpy(buffer+1,"\n",1);
+	iSize++;
 	strName+=".stats";
 	MprBuf * hdrBuf = new MprBuf(256);
 	hdrBuf->put("POST /AllegSkill/nph-PutGameResults.cgi HTTP/1.1\r\n");
@@ -2752,9 +2746,15 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	zParts1 += "\r\n\r\non\r\n";
 	zParts1 += "-----------------------------01\r\n";
 #endif
+	if (iSize > 2048) {
+		iSize = Create7z(buffer,iSize,buffer);
+		zParts1 += "Content-Disposition: form-data; name=\"LZMA\"";
+		zParts1 += "\r\n\r\non\r\n";
+		zParts1 += "-----------------------------01\r\n";
+	}
 	zParts1 += "Content-Disposition: form-data; name=\"Game\"; filename=\"";
 	zParts1 += strName;
-	zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";  //not compressed - NYI
+	zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
 	ZString zParts0 = "\r\n-----------------------------01--\r\n";
 	int iTotal0 = iSize + zParts1.GetLength() + zParts0.GetLength();
 	char * PostData = new char [iTotal0];
@@ -2771,10 +2771,9 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	zResponse.SetEmpty();
 	if (client->getResponseCode() == 200)
 		zResponse = client->getResponseContent(&contentLen);
-	if (zResponse.ReverseFindAny("POSTED") != -1)
-		DeleteFile(GetAppDir() + "/" +strName);
-
-	//TODO Save the send buffer to disk if the POST fails and implement a retry (like how doDump works)
+	//if (zResponse.ReverseFindAny("POSTED") != -1)
+		//DeleteFile(GetAppDir() + "/" +strName);
+		//TODO Save the send buffer to disk if the POST fails and implement a retry (like how doDump works)
 
 	delete client;
 }
@@ -5884,7 +5883,7 @@ void doMSRInfo(void* data, MprThread *threadp) {
 	    client->setKeepAlive(0);
 
         if (iwrite == 7) { // make sure we wrote 7 bytes
-			ZString zUrl = g.balance.strBaseURL + ZString("?Callsigns=") + zPlayers; // Tested on IIS6.0 with non-parsed header Perl OK to at least 1000 CharecterNames
+			ZString zUrl = g.balance.strBaseURL + ZString("?Callsigns=") + zPlayers; // Tested on IIS6.0 with non-parsed header Perl OK to at least 1000 Callsigns
 	        client->getRequest((char*)(PCC)zUrl);
 	        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
 		        content = client->getResponseContent(&contentLen);
@@ -5934,20 +5933,111 @@ void CFSMission::UpdateMSRInfo(Time now)
       && (GetCookie() != NULL || !g.fmLobby.IsConnected()))
   {
     m_fMSRDirty = false;
-    if (g.fmLobby.IsConnected() && !g.balance.strBaseURL.IsEmpty())
+    if (!g.balance.strBaseURL.IsEmpty())
     {
 		  ImissionIGC * pmission = GetIGCMission();
 		  if (pmission && pmission->GetShips()->n() > 0) {
-			  char mprthname[9]; 
-			  mprSprintf(mprthname, sizeof(mprthname), "%d",GetCookie());
-			  m_threadp = new MprThread(doMSRInfo, MPR_NORMAL_PRIORITY, (void*) pmission, mprthname); 
-			  m_threadp->start();
+			  char mprthname[32]; 
+			  mprSprintf(mprthname, sizeof(mprthname), "msr %d",GetCookie());
+			  MprThread * threadp = new MprThread(doMSRInfo, MPR_NORMAL_PRIORITY, (void*) pmission, mprthname); 
+			  threadp->start();
 		  }
     }
     m_timeLastMSRInfo = now;
   }
 }
 // End Imago #192
+
+//Imago #50 8/10 - Similar to doRecordGame
+static void doAGCInfo(void* data, MprThread *threadp) {
+	ZString * zAGCData = (ZString *)data;
+	ZString AGCData = zAGCData->RightOf(1);
+	debugf("****** posting agc \n[%s]\n",(PCC)AGCData);
+
+	//sanity check....
+	MprSocket* socket = new MprSocket();
+	socket->openClient("build.alleg.net",80,0);
+	int iwrite = socket->_write("GET /\r\n");
+	delete socket;
+	if (iwrite != 7) return; 
+
+	MaClient* client = new MaClient();
+	client->setTimeout(6000);
+	client->setRetries(1);
+	client->setKeepAlive(0);
+	int contentLen = 0; char *content;
+	int iSize = AGCData.GetLength();
+	char* buffer = new char[iSize];
+	memcpy(buffer,AGCData,iSize);
+	ZString strName = threadp->getName();
+	strName+=".log";
+	MprBuf * hdrBuf = new MprBuf(256);
+	hdrBuf->put("POST /AllegSkill/nph-PutAGCEvents.cgi HTTP/1.1\r\n");
+	hdrBuf->put("Host: build.alleg.net\r\n");
+	hdrBuf->put("Connection: close\r\n");
+	hdrBuf->put("User-Agent: AllSrv agc post thread\r\n");
+	hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
+	ZString zParts1 = "-----------------------------01\r\n";
+#ifdef DEBUG
+	zParts1 += "Content-Disposition: form-data; name=\"debug\"";
+	zParts1 += "\r\n\r\non\r\n";
+	zParts1 += "-----------------------------01\r\n";
+#endif
+	if (iSize > 2048) {
+		iSize = Create7z(buffer,iSize,buffer);
+		zParts1 += "Content-Disposition: form-data; name=\"LZMA\"";
+		zParts1 += "\r\n\r\non\r\n";
+		zParts1 += "-----------------------------01\r\n";
+	}
+	zParts1 += "Content-Disposition: form-data; name=\"AGCEvents\"; filename=\"";
+	zParts1 += strName;
+	zParts1 += "\"\r\nContent-Type: application/x-7z-compressed\r\n\r\n";
+	ZString zParts0 = "\r\n-----------------------------01--\r\n";
+	int iTotal0 = iSize + zParts1.GetLength() + zParts0.GetLength();
+	char * PostData = new char [iTotal0];
+	Strcpy(PostData,(PCC)zParts1);
+	memcpy(PostData+zParts1.GetLength(),buffer,iSize);
+	memcpy(PostData+zParts1.GetLength()+iSize,(PCC)zParts0,zParts0.GetLength());
+	hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
+	int code = client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
+	delete hdrBuf;
+	delete PostData;
+	debugf("****** agc data posted in %i bytes\n",iTotal0);
+	
+	ZString zResponse;
+	zResponse.SetEmpty();
+	if (client->getResponseCode() == 200)
+		zResponse = client->getResponseContent(&contentLen);
+	//if (zResponse.ReverseFindAny("POSTED") != -1)
+		//DeleteFile(GetAppDir() + "/" +strName);
+		//TODO Save the send buffer to disk if the POST fails and implement a retry (like how doDump works)
+
+	delete client;
+	f_doingAGCLog = false;
+}
+
+void CFSMission::UpdateAGCInfo(Time now)
+{
+  if ((now - m_timeLastAGCInfo >= c_fAGCUpdateTimeInterval) && (GetCookie() != NULL || !g.fmLobby.IsConnected()))
+  {
+	  if (!f_doingAGCLog) {
+		ZString zMMF = "AGCLogger-" + ZString((int)GetCurrentProcessId());
+		//lots (however much) of text
+		MMF mmfAGCLog((PCC)zMMF,0x400000,false);
+		char* AGCData = mmfAGCLog.GetBuffer();
+		if (strlen(AGCData) > 0) {
+			char mprthname[64]; 
+			mprSprintf(mprthname, sizeof(mprthname), "AGCevents-%d-%d",GetCookie(),now.clock());
+			ZString * zAGCData = new ZString(AGCData);
+			MprThread * threadp = new MprThread(doAGCInfo, MPR_NORMAL_PRIORITY, (void*) zAGCData, mprthname); 
+			f_doingAGCLog = true;
+			threadp->start();
+		}
+	  }
+    m_timeLastAGCInfo = now;
+  }
+}
+//
 
 
 // #ALLY

@@ -27,7 +27,7 @@ CAGCEventLogger::CAGCEventLogger() :
   m_bstrLogAsDBEvent(L"LogAsDBEvent"),
   m_bLoggingToNTEnabled(true),
   m_bLoggingToDBEnabled(true),
-  m_MMF((PCC)ZString("AGCLogger-")+ZString((int)GetCurrentProcessId()),0x4B00000) // Imago 75MB (max) shared buffer for #50 8/10
+  m_MMF((PCC)ZString("AGCLogger-")+ZString((int)GetCurrentProcessId()),0x400000) // Imago #50 8/10
 {
   TCZeroMemory(&m_idTable);
 }
