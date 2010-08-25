@@ -594,10 +594,10 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 		if (m_sDevSetupParams.bAntiAliased == false) {
 			m_sD3DDev9.d3dPresParams.SwapEffect = D3DSWAPEFFECT_FLIP;
-			m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP | D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled
+			m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; //Imago 7/12/09 enabled  8/10 removed Clip #227
 		} else {
 			m_sD3DDev9.d3dPresParams.SwapEffect	= D3DSWAPEFFECT_DISCARD;
-			m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP; //Imago 7/12/09 enabled
+			//m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP; //Imago 7/12/09 enabled 8/10 disabled #227
 		}
 
 		//imago 7/18/09

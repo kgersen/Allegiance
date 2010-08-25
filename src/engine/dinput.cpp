@@ -313,12 +313,12 @@ public:
         {
             ::RegQueryValueEx(hKey, "MouseSensitivity", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
 
-            m_sensitivity = (float)(strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 0.83f;
+            m_sensitivity = (float)(strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 1.10f;
 
             ::RegQueryValueEx(hKey, "MouseAcceleration", NULL, &dwType, (unsigned char*)&dwValue, &cwValue);
             ::RegCloseKey(hKey);
 
-            m_acceleration = (dwValue != -1 && m_acceleration != dwValue) ?  dwValue : m_acceleration;
+            m_acceleration = (dwValue != -1) ?  dwValue : m_acceleration;
         }
 		//
 		
@@ -647,7 +647,7 @@ public:
             m_bEnabled = bEnabled;
 
             if (m_bEnabled) {
-               // DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND)); //Imago Commented out 8/10
+                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
             } else {
 //                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
                 DDCall(m_pdid->Unacquire());

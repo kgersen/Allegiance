@@ -2860,7 +2860,7 @@ public:
 		// end Imago dump files
 		
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
-		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "0.83"))); //Imago #215 8/10
+		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "1.10"))); //Imago #215 8/10
 
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
