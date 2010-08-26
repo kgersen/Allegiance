@@ -4768,7 +4768,7 @@ HRESULT FedSrvSiteBase::OnDestroyConnection(FedMessaging * pthis, CFMConnection 
     PlaySound("AppGPFault", NULL, SND_ALIAS | SND_PURGE | SND_ASYNC);
     _AGCModule.TriggerEvent(NULL, AllsrvEventID_PlayerDropped, "", -1, -1, -1, 2,
         "PlayerName", VT_LPSTR, pfsPlayer->GetName(),
-        "ConxID", VT_I4, cnxn.GetID());
+        "ConxID", VT_LPSTR, cnxn.GetID()); // pkk - IP address is a string, not float
     if (NULL != g.pServerCounters)
     {
         g.pServerCounters->cTimeouts++;
@@ -4980,8 +4980,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
   if (!pfsPlayer && (pfm->fmid != FM_C_LOGONREQ))
   {
     _AGCModule.TriggerEvent(NULL, AllsrvEventID_MsgFromUnknownPlayer, "", -1, -1, -1, 2,
-        "PlayerID", VT_I4, cnxnFrom.GetID(),
-        "MsgName", VT_LPSTR, g_rgszMsgNames[pfm->fmid]);
+        "DPNID", VT_I4, cnxnFrom.GetID(), // pkk - Returns DPNID (DirectPlay network identifier)
+        "MsgName", VT_LPSTR, g_rgszMsgNames[pfm->fmid]); // pkk - This should return FedSrvMsgID text, but somehow it doesn't
   }
   else
   switch(pfm->fmid)

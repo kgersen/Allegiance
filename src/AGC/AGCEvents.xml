@@ -205,7 +205,7 @@
 
         <Event id="2006" Name="MsgFromUnknownPlayer"
             Description="Fired when message received from unknown player."
-            Format="Message received from unknown player.\nPlayerID = '%PlayerID%'\nMessage = '%MsgName%'."
+            Format="Message received from unknown player.\nDPNID = '%DPNID%'\nMessage = '%MsgName%'."
             Severity="Warning"
             LogAsNTEvent="1"
             LogAsDBEvent="0"
