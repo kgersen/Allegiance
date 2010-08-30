@@ -70,7 +70,7 @@ extern Win32App* g_papp;
     virtual void DebugOutput(const char *psz)
     {
       int cch = strlen(psz);
-      if (cch < (sizeof(m_szModuleName) - (m_cchModuleName + 1)))
+      if (cch < (int)(sizeof(m_szModuleName) - (m_cchModuleName + 1))) //Imago 8/10 added (int)
       {
         strcpy(m_pszModuleNameEnd, psz);
         _CrtDbgReport(_CRT_WARN, NULL, NULL, NULL, m_szModuleName);

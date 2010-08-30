@@ -248,7 +248,7 @@ void CAGCEventLogger::LogEvent(IAGCEvent* pEvent, bool bSynchronous)
 			char * pszSub =			(bstrSubjectName.Length() > 0)	? _com_util::ConvertBSTRToString(bstrSubjectName)	: "(none)";
 			char * pszCon =			(bstrContext.Length() > 0)		? _com_util::ConvertBSTRToString(bstrContext)		: "(none)";
 			char szMsg[5120] = {'\0'};
-			sprintf(szMsg,"\n%04d-%02d-%02d %02d:%02d:%02d\t%i\t%i\t%s\t%s\t%s\t%s",stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
+			sprintf(szMsg,"\n%04d-%02d-%02d %02d:%02d:%02d.%03d\t%i\t%i\t%s\t%s\t%s\t%s",stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,stLocalTime.wMilliseconds,
 				idEvent,idSubject,pszCom,pszSub,pszCon,pszEvent);
 			Strcat(m_MMF.GetBuffer(), szMsg);
 		}

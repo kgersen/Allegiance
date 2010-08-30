@@ -3309,7 +3309,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
                                      NA, "%d chats sent in 3 seconds.", cChats);
 
   }
-#if defined(ALLOW_TESTAGCEVENTS_CHEAT)
+#ifdef _TEST
   else if (!lstrcmpi(strToken, "testagcevents"))
   {
     // Do nothing if no one is listening
@@ -3355,7 +3355,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
       "Source"     , VT_I4      , -1,
       "Source Name", VT_LPSTR   , "Cheater");
   }
-#endif // defined(ALLOW_TESTAGCEVENTS_CHEAT)
+#endif // defined(ALLOW_TESTAGCEVENTS_CHEAT) //Imago made _TEST on 8/10
   else
     fIsCheat = false;
 
