@@ -33,7 +33,7 @@ if ($ver eq "1.1") {
 	$bbeta = "R6";
 	$asgsreg = "";
 	$clientbinary = "Allegiance.exe";
-	$cfgfile = "http://fazdev.alleg.net/FAZ/FAZbeta.cfg";
+	$cfgfile = "http://fazdev.alleg.net/FAZ/FAZBetaStandalone.cfg";
 }
 
 open(CMD,"C:\\md5sums.exe -up C:\\build\\Package\\Artwork.7z C:\\Inetpub\\wwwroot\\build\\Alleg${bbeta}PDB_b${build}_r$revision.exe |");

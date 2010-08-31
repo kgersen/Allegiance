@@ -29,6 +29,8 @@ my $ftp = Net::FTP->new("fazdev.alleg.net", Debug => 0, Port => 21122)
       
        $ftp->put("C:\\FAZBeta.cfg")
       or die "put failed ", $ftp->message;
+       $ftp->put("C:\\FAZBetaStandalone.cfg")
+      or die "put failed ", $ftp->message;
        $ftp->put("C:\\motdR6.mdl")
       or die "put failed ", $ftp->message;      
        $ftp->put("C:\\serverlist.txt")

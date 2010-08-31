@@ -29,7 +29,9 @@ $cmd3 = "C:\\crc32.exe C:\\build\\AutoUpdate\\FAZ\\AutoUpdate.exe";
 my $crc4 = `$cmd3`;
 chomp $crc4;
 
-open(CFG,'>C:\\FAZBeta.cfg');
+# CFG for standalone
+
+open(CFG,'>C:\\FAZBetaStandalone.cfg');
 
 print CFG qq{[Allegiance]
 PublicLobby=fazdev.alleg.net
@@ -63,16 +65,16 @@ rps55=RPS 5.5
 RTc006a=EoR 6.0a
 PC2_019=PookCore II b19
 VoS000090=VoS
-cc_09=CC 9
 cc_09b=CC 9b
+cc_10=CC 10
 tcor_02=Test Core 2
 
 [OfficialCores]
-cc_09b=true
+cc_10=true
 tcor_02=true
 
 [OfficialServers]
-FAZDev=12.96.40.28
+BETA=12.96.40.28
 CDN=216.17.7.9
 
 [AllSrvUI]
@@ -89,4 +91,63 @@ FilelistSize = $size2
 
 };
 close CFG;
+
+# CFG for ASGS (without AU for Clients)
+open(CFG,'>C:\\FAZBeta.cfg');
+
+print CFG qq{[Allegiance]
+PublicLobby=fazdev.alleg.net
+PublicMessageURL=http://fazdev.alleg.net/FAZ/motdR6.mdl
+LobbyClientPort=2302
+LobbyServerPort=2303
+PublicMessageCRC = $crc2
+TrainingURL=http://www.freeallegiance.org/FAW/index.php/Learning_guide
+ZoneAuthGUID={00000000-0000-0000-C000-000000000046}
+ZAuth=fazdev.alleg.net
+UsePassport=0
+PassportUpdateURL=http://www.freeallegiance.org/
+ZoneEventsURL=http://www.freeallegiance.org/
+ZoneEventDetailsURL=http://fazdev.alleg.net/FAZ/motdR6.mdl
+ClubLobby=fazdev.alleg.net
+Club=fazdev.alleg.net
+ClubMessageURL=http://fazdev.alleg.net/FAZ/motdR6.mdl
+ClubMessageCRC=$crc2
+
+
+[Cores]
+zone_core=AZ 1.25
+dn_000460=DN 4.60
+GoDII_04=GoD II 0.4
+sw_a103=Starwars 1.03a
+rps55=RPS 5.5
+RTc006a=EoR 6.0a
+PC2_019=PookCore II b19
+VoS000090=VoS
+cc_09b=CC 9b
+cc_10=CC 10
+tcor_02=Test Core 2
+
+[OfficialCores]
+cc_10=true
+tcor_02=true
+
+[OfficialServers]
+BETA=12.96.40.28
+CDN=216.17.7.9
+
+[AllSrvUI]
+Site=http://fazdev.alleg.net
+AutoUpdateURL=http://fazdev.alleg.net/FAZ/AU/AutoUpdate.exe
+AutoUpdateCRC=$crc4
+Directory=/FAZ/AU
+FileListCRC = $crc3
+FilelistSize = $size2
+
+
+
+; THIS IS A VALID CONFIG FILE
+
+};
+close CFG;
+
 exit 0;
