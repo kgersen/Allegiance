@@ -3048,6 +3048,7 @@ class ImodelIGC : public IbaseIGC
         virtual void                 SetRender(unsigned char render) = 0;
 
         virtual bool                 SeenBySide(IsideIGC* side) const = 0;
+		virtual bool                 GetCurrentEye(IsideIGC* side) const = 0; //Xynth #225
         virtual void                 UpdateSeenBySide(void) = 0;
         virtual void                 SetSideVisibility(IsideIGC* side, bool fVisible) = 0;
 

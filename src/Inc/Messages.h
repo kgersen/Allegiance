@@ -1016,7 +1016,7 @@ END_FEDMSG
 DEFINE_FEDMSG(S, ASTEROID_MINED, 198)  //Xynth #132 7/2010 sent by server when an He3 rock is mined
     SectorID            clusterID;
     AsteroidID          asteroidID;
-	BytePercentage      bpOreFraction;
+	BytePercentage      bpOreFraction;	
 END_FEDMSG
 
 DEFINE_FEDMSG(CS, HIGHLIGHT_CLUSTER, 199)  //Xynth #208 Notify clients of sector highlight

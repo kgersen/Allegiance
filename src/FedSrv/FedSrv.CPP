@@ -12137,14 +12137,22 @@ void FedSrvSiteBase::DrainAsteroidEvent(IasteroidIGC* pasteroid)
 //Xynth #132 7/2010
 void FedSrvSiteBase::MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre)
 {
-  BEGIN_PFM_CREATE(g.fm, pfmAsteroidMined, S, ASTEROID_MINED)
-  END_PFM_CREATE
-  pfmAsteroidMined->clusterID = pasteroid->GetCluster()->GetObjectID();
-  pfmAsteroidMined->asteroidID = pasteroid->GetObjectID();
-  pfmAsteroidMined->bpOreFraction = newOre;
-  g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
-
-  pasteroid->SetOreWithFraction(newOre);
+	//Xynth #225 Loop through the sides and update visibile asteroids
+	for (SideLinkIGC*   psidelink = pasteroid->GetMission()->GetSides()->first();
+		(psidelink != NULL);
+		psidelink = psidelink->next())
+	{
+		if (pasteroid->GetCurrentEye(psidelink->data()))
+		{
+			BEGIN_PFM_CREATE(g.fm, pfmAsteroidMined, S, ASTEROID_MINED)
+				END_PFM_CREATE
+			pfmAsteroidMined->clusterID = pasteroid->GetCluster()->GetObjectID();
+			pfmAsteroidMined->asteroidID = pasteroid->GetObjectID();
+			pfmAsteroidMined->bpOreFraction = newOre;
+			g.fm.SendMessages(CFSSide::FromIGC(psidelink->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+		}
+	}
+	pasteroid->SetOreWithFraction(newOre);
 }
 
 void FedSrvSiteBase::KillProbeEvent(IprobeIGC* pprobe)
