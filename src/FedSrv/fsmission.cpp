@@ -5837,18 +5837,17 @@ void CFSMission::SetMSRIsDirty() {
   UpdateMSRInfo(Time::Now());
 }
 
-typedef struct {
-	ImissionIGC * mission;
-	int count;
-} MSRThreadData;
+
 
 void doMSRInfo(void* data, MprThread *threadp) {
 	TMap<ZString,ShipID> mapNames;
 	mapNames.SetEmpty();
 	bool bPlayers = false;
-	MSRThreadData * pMSRData = (MSRThreadData*)data;
-	int count = pMSRData->count;
-	ImissionIGC * pMission = pMSRData->mission;
+
+	CFSMission * pfsMission = CFSMission::GetMission((DWORD)data);
+	if (pfsMission == NULL)
+		return;
+	ImissionIGC * pMission = pfsMission->GetIGCMission();
 	if (pMission == NULL)
 		return;
 
@@ -5907,7 +5906,8 @@ void doMSRInfo(void* data, MprThread *threadp) {
 					ZString zName = ZString(myMsr.name).Left(12);
 					zName.RemoveAll(' ');
 					ShipID sid = NA;
-					if (mapNames.Find(zName,sid) && pMission && g.siteFedSrv.GetCount() == count) { // Imago 9/10 - Do not attempt to update players if the mission count has changed (they left) 9/10
+
+					if (mapNames.Find(zName,sid) && pfsMission->GetCountSides() > 0 && pMission && pMission->GetMissionID()) { // Imago 9/10 - Do not attempt to update players if the side count has changed (mission gone)
 						IshipIGC * pship = pMission->GetShip(sid);
 						if (pship && pship->IsValid()) {
 							CFSShip* pplayer = (CFSShip*)(pship->GetPrivateData());
@@ -5941,14 +5941,10 @@ void CFSMission::UpdateMSRInfo(Time now)
     m_fMSRDirty = false;
     if (!g.balance.strBaseURL.IsEmpty())
     {
-		  ImissionIGC * pmission = GetIGCMission();
-		  if (pmission && pmission->GetShips()->n() > 0) {
+		  if (GetIGCMission()->GetShips()->n() > 0) {
 			  char mprthname[32]; 
-			  MSRThreadData * data = new MSRThreadData;
-			  data->mission = pmission;
-			  data->count = g.siteFedSrv.GetCount(); //Imago 9/10 - Include this in-case missions disappear while we get our response!
 			  mprSprintf(mprthname, sizeof(mprthname), "msr %d",GetCookie());
-			  MprThread * threadp = new MprThread(doMSRInfo, MPR_NORMAL_PRIORITY, (void*) data, mprthname); 
+			  MprThread * threadp = new MprThread(doMSRInfo, MPR_NORMAL_PRIORITY, (void*)GetCookie(), mprthname);  // 9/10  make it work hard, send thread the cookie only
 			  threadp->start();
 		  }
     }
