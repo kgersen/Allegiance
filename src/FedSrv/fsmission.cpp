@@ -5837,12 +5837,18 @@ void CFSMission::SetMSRIsDirty() {
   UpdateMSRInfo(Time::Now());
 }
 
+typedef struct {
+	ImissionIGC * mission;
+	int count;
+} MSRThreadData;
+
 void doMSRInfo(void* data, MprThread *threadp) {
 	TMap<ZString,ShipID> mapNames;
 	mapNames.SetEmpty();
 	bool bPlayers = false;
-	ImissionIGC * pMission = (ImissionIGC*)data;
-
+	MSRThreadData * pMSRData = (MSRThreadData*)data;
+	int count = pMSRData->count;
+	ImissionIGC * pMission = pMSRData->mission;
 	if (pMission == NULL)
 		return;
 
@@ -5901,7 +5907,7 @@ void doMSRInfo(void* data, MprThread *threadp) {
 					ZString zName = ZString(myMsr.name).Left(12);
 					zName.RemoveAll(' ');
 					ShipID sid = NA;
-					if (mapNames.Find(zName,sid) && pMission) {
+					if (mapNames.Find(zName,sid) && pMission && g.siteFedSrv.GetCount() == count) { // Imago 9/10 - Do not attempt to update players if the mission count has changed (they left) 9/10
 						IshipIGC * pship = pMission->GetShip(sid);
 						if (pship && pship->IsValid()) {
 							CFSShip* pplayer = (CFSShip*)(pship->GetPrivateData());
@@ -5938,8 +5944,11 @@ void CFSMission::UpdateMSRInfo(Time now)
 		  ImissionIGC * pmission = GetIGCMission();
 		  if (pmission && pmission->GetShips()->n() > 0) {
 			  char mprthname[32]; 
+			  MSRThreadData * data = new MSRThreadData;
+			  data->mission = pmission;
+			  data->count = g.siteFedSrv.GetCount(); //Imago 9/10 - Include this in-case missions disappear while we get our response!
 			  mprSprintf(mprthname, sizeof(mprthname), "msr %d",GetCookie());
-			  MprThread * threadp = new MprThread(doMSRInfo, MPR_NORMAL_PRIORITY, (void*) pmission, mprthname); 
+			  MprThread * threadp = new MprThread(doMSRInfo, MPR_NORMAL_PRIORITY, (void*) data, mprthname); 
 			  threadp->start();
 		  }
     }

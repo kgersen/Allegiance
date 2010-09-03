@@ -32,7 +32,7 @@ DEFINE_GUID(FEDFREELOBBYSERVERS_GUID, 0x797ba096, 0x71de, 0x4bcb, 0xa2, 0x6a, 0x
 // {F3E93155-7C62-48be-8CB5-B22700B939A4}
 DEFINE_GUID(FEDLOBBYCLIENTS_GUID, 0xf3e93155, 0x7c62, 0x48be, 0x8c, 0xb5, 0xb2, 0x27, 0x0, 0xb9, 0x39, 0xa4);
 
-// FEDFREELOBBYCLIENTS_GUID. The guid of the dplay session application of the FREE lobby that the clients connect to
+// FEDFREELOBBYCLIENTS_GUID. The guid of the dplay session application of the FREE lobby that the clients cAGonnect to
 // {F5BFFE91-B1C9-4eed-A53E-0AAD8FB526A2}
 DEFINE_GUID(FEDFREELOBBYCLIENTS_GUID, 0xf5bffe91, 0xb1c9, 0x4eed, 0xa5, 0x3e, 0xa, 0xad, 0x8f, 0xb5, 0x26, 0xa2);
 
