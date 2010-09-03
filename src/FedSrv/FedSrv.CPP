@@ -188,9 +188,9 @@ static void doASGS(void* data, MprThread *threadp) {
 	
 	//Imago #192 
 	char szName[32]; 
-	ZString zUrl = (g.balance.strBaseURL.IsEmpty()) 
+	ZString zUrl = (g.appweb.strRanksURL.IsEmpty()) 
 		? "http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=" 
-		: g.balance.strBaseURL + "?Callsign="; //For now we have still lookup by callsign -Imago 8/10
+		: g.appweb.strRanksURL + "?Callsign="; //For now we have still lookup by callsign -Imago 8/10
 	
 	// one thread per connecting player
 	Strcpy(szName,pqd->szCharacterName);
@@ -212,10 +212,10 @@ static void doASGS(void* data, MprThread *threadp) {
 
         // First make sure we can write to a socket
 		ZString zAddr;
-		if (g.balance.strBaseURL.IsEmpty()) {
+		if (g.appweb.strRanksURL.IsEmpty()) {
 			zAddr = "asgs.alleg.net";
 		} else {
-			zAddr = g.balance.strBaseURL.RightOf(7);
+			zAddr = g.appweb.strRanksURL.RightOf(7);
 			zAddr = zAddr.Left(zAddr.FindAny("/"));
 		}
         MprSocket* socket = new MprSocket();
@@ -439,6 +439,7 @@ void LoadRankInfo()
 		}
 	}
 
+
 	TList<TMap<unsigned short,ZString>> balanceList = UTL::GetConfig("balance");
 	if (balanceList.GetCount() > 0) {
 		TList<TMap<unsigned short,ZString>>::Iterator iter(balanceList);
@@ -450,20 +451,65 @@ void LoadRankInfo()
 				if (zKey.ReverseFind("MaxNewbRank") == 0 ) {
 					g.balance.MaxNewbRank = zValue.GetInteger();
 				}
+				//TrueSkill
 				if (zKey.ReverseFind("kFactor") == 0 ) {
 					g.balance.kFactor = zValue.GetInteger();
 				}
 				if (zKey.ReverseFind("sysVariance") == 0 ) {
 					g.balance.sysVariance = atof((PCC)zValue);
 				}
-				if (zKey.ReverseFind("ServiceBaseURL") == 0 ) {
-					g.balance.strBaseURL = zValue;
+				if (zKey.ReverseFind("ScaleFactor") == 0 ) {
+					g.balance.sysVariance = atof((PCC)zValue);
+				}
+				//Weighted
+				if (zKey.ReverseFind("AvgRankWeight") == 0 ) {
+					g.balance.kFactor = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("TotalRankWeight") == 0 ) {
+					g.balance.TotalRankWeight = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("PlayerCountWeight") == 0 ) {
+					g.balance.PlayerCountWeight = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("FlexGamePercent") == 0 ) {
+					g.balance.FlexGamePercent = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("FlexDecay") == 0 ) {
+					g.balance.FlexDecay = zValue.GetInteger();
+				}
+				if (zKey.ReverseFind("AvgPlayerCountDivisor") == 0 ) {
+					g.balance.AvgPlayerCountDivisor = zValue.GetInteger();
 				}
 			}
 			iter.Next();
 		}
 	}
-	// End Imago 7/10 #192
+	
+	// 9/10 #50 #192 these configurable urls are all used for ranks so lets 'shotgun' it! (here for now)
+	// Maybe when my remote cornify.com poster generator buttan is done I'll move it into it's own Load/Unload(), 
+	// ....which is dumb too because I combined it all into this nice Ini code anyways...
+	TList<TMap<unsigned short,ZString>> appwebList = UTL::GetConfig("appweb");
+	if (appwebList.GetCount() > 0) {
+		TList<TMap<unsigned short,ZString>>::Iterator iter(appwebList);
+		while (!iter.End()) {
+			TMap<unsigned short,ZString> mapIni = iter.Value();
+			ZString zKey; ZString zNice; ZString zValue;
+			mapIni.Find(0,zKey); mapIni.Find(1,zNice); mapIni.Find(2,zValue);
+			if  (!zValue.IsEmpty()) {
+				if (zKey.ReverseFind("RanksURL") == 0 ) {
+					g.appweb.strRanksURL = zValue;
+				}
+				if (zKey.ReverseFind("GameURL") == 0 ) {
+					g.appweb.strGameURL = zValue;
+				}
+				if (zKey.ReverseFind("EventsURL") == 0 ) {
+					g.appweb.strEventsURL = zValue;
+				}
+			}
+			iter.Next();
+		}
+	}
+	// End Imago
 
 #endif // !defined(ALLSRV_STANDALONE)
 }

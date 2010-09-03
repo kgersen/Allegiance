@@ -2714,10 +2714,13 @@ static void doRecordGame(void* data, MprThread *threadp) {
 
 	//sanity check....
 	MprSocket* socket = new MprSocket();
-	socket->openClient("build.alleg.net",80,0);
+	ZString zAddr = g.appweb.strGameURL.RightOf(7);
+	zAddr = zAddr.Left(zAddr.FindAny("/"));
+	ZString zPath = g.appweb.strGameURL.RightOf(zAddr.GetLength()+7);
+    socket->openClient((char *)(PCC)zAddr,80,0);
 	int iwrite = socket->_write("GET /\r\n");
 	delete socket;
-	if (iwrite != 7) return; 
+	if (iwrite != 7 || zPath.IsEmpty()) return; 
 
 	MaClient* client = new MaClient();
 	client->setTimeout(60000);
@@ -2731,12 +2734,16 @@ static void doRecordGame(void* data, MprThread *threadp) {
 
 	char* buffer = new char[iSize+1];
 	memcpy(buffer,ResultData,iSize);
-	memcpy(buffer+1,"\n",1);
 	iSize++;
+	memcpy(buffer+iSize,"\n",sizeof(char));
 	strName+=".stats";
 	MprBuf * hdrBuf = new MprBuf(256);
-	hdrBuf->put("POST /AllegSkill/nph-PutGameResults.cgi HTTP/1.1\r\n");
-	hdrBuf->put("Host: build.alleg.net\r\n");
+	hdrBuf->put("POST ");
+	hdrBuf->put((char*)(PCC)zPath);
+	hdrBuf->put(" HTTP/1.1\r\n");
+	hdrBuf->put("Host: ");
+	hdrBuf->put((char*)(PCC)zAddr);
+	hdrBuf->put("\r\n");
 	hdrBuf->put("Connection: close\r\n");
 	hdrBuf->put("User-Agent: AllSrv game post thread\r\n");
 	hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
@@ -2762,7 +2769,7 @@ static void doRecordGame(void* data, MprThread *threadp) {
 	memcpy(PostData+zParts1.GetLength(),buffer,iSize);
 	memcpy(PostData+zParts1.GetLength()+iSize,(PCC)zParts0,zParts0.GetLength());
 	hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
-	int code = client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
+	int code = client->sendRequest((char *)(PCC)zAddr,80,hdrBuf,PostData,iTotal0);
 	delete hdrBuf;
 	delete PostData;
 	debugf("****** game posted in %i bytes\n",iTotal0);
@@ -5876,7 +5883,7 @@ void doMSRInfo(void* data, MprThread *threadp) {
 	if (bPlayers) {
 		int contentLen = 0; char *content;
         MprSocket* socket = new MprSocket();
-		ZString zAddr = g.balance.strBaseURL.RightOf(7);
+		ZString zAddr = g.appweb.strRanksURL.RightOf(7);
 		zAddr = zAddr.Left(zAddr.FindAny("/"));
         socket->openClient((char *)(PCC)zAddr,80,0);
         int iwrite = socket->_write("GET /\r\n");
@@ -5888,7 +5895,7 @@ void doMSRInfo(void* data, MprThread *threadp) {
 	    client->setKeepAlive(0);
 
         if (iwrite == 7) { // make sure we wrote 7 bytes
-			ZString zUrl = g.balance.strBaseURL + ZString("?Callsigns=") + zPlayers; // Tested on IIS6.0 with non-parsed header Perl OK to at least 1000 Callsigns
+			ZString zUrl = g.appweb.strRanksURL + ZString("?Callsigns=") + zPlayers; // Tested on IIS6.0 with non-parsed header Perl OK to at least 1000 Callsigns
 	        client->getRequest((char*)(PCC)zUrl);
 	        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
 		        content = client->getResponseContent(&contentLen);
@@ -5939,7 +5946,7 @@ void CFSMission::UpdateMSRInfo(Time now)
       && (GetCookie() != NULL || !g.fmLobby.IsConnected()))
   {
     m_fMSRDirty = false;
-    if (!g.balance.strBaseURL.IsEmpty())
+    if (!g.appweb.strRanksURL.IsEmpty())
     {
 		  if (GetIGCMission()->GetShips()->n() > 0) {
 			  char mprthname[32]; 
@@ -5961,10 +5968,14 @@ static void doAGCInfo(void* data, MprThread *threadp) {
 
 	//sanity check....
 	MprSocket* socket = new MprSocket();
-	socket->openClient("build.alleg.net",80,0);
+	ZString zAddr = g.appweb.strEventsURL.RightOf(7);
+	zAddr = zAddr.Left(zAddr.FindAny("/"));
+	ZString zPath = g.appweb.strEventsURL.RightOf(zAddr.GetLength()+7);
+    socket->openClient((char *)(PCC)zAddr,80,0);
 	int iwrite = socket->_write("GET /\r\n");
 	delete socket;
-	if (iwrite != 7) return; 
+	if (iwrite != 7 || zPath.IsEmpty()) 
+		return; 
 
 	MaClient* client = new MaClient();
 	client->setTimeout(6000);
@@ -5977,8 +5988,13 @@ static void doAGCInfo(void* data, MprThread *threadp) {
 	ZString strName = threadp->getName();
 	strName+=".log";
 	MprBuf * hdrBuf = new MprBuf(256);
-	hdrBuf->put("POST /AllegSkill/nph-PutAGCEvents.cgi HTTP/1.1\r\n");
-	hdrBuf->put("Host: build.alleg.net\r\n");
+
+    hdrBuf->put("POST ");
+    hdrBuf->put((char*)(PCC)zPath);
+    hdrBuf->put(" HTTP/1.1\r\n");
+    hdrBuf->put("Host: ");
+    hdrBuf->put((char*)(PCC)zAddr);
+	hdrBuf->put("\r\n");
 	hdrBuf->put("Connection: close\r\n");
 	hdrBuf->put("User-Agent: AllSrv agc post thread\r\n");
 	hdrBuf->put("Content-Type: multipart/form-data; boundary=---------------------------01\r\n");
@@ -6004,7 +6020,7 @@ static void doAGCInfo(void* data, MprThread *threadp) {
 	memcpy(PostData+zParts1.GetLength(),buffer,iSize);
 	memcpy(PostData+zParts1.GetLength()+iSize,(PCC)zParts0,zParts0.GetLength());
 	hdrBuf->putFmt("Content-Length: %i\r\n\r\n",iTotal0);
-	int code = client->sendRequest("build.alleg.net",80,hdrBuf,PostData,iTotal0);
+	int code = client->sendRequest((char*)(PCC)zAddr,80,hdrBuf,PostData,iTotal0);
 	delete hdrBuf;
 	delete PostData;
 	debugf("****** agc data posted in %i bytes\n",iTotal0);

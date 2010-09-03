@@ -216,7 +216,6 @@ public:
 //Imago 7/10 #192
 struct BalanceInfo {
 	RankID  MaxNewbRank;
-	ZString strBaseURL;
 	//Trueskill stuff (Sgt_Baker, MrChaos et al.)
 	short	kFactor;
 	float	sysVariance;
@@ -229,6 +228,15 @@ struct BalanceInfo {
 	short FlexDecay; 		
 	short AvgPlayerCountDivisor;
 };
+
+//9/10 #50 #192
+struct AppWebInfo {
+	ZString strRanksURL; // Handler processes doMSRInfo, also doASGS if not empty or commented out and ASGS_ON is true, 
+	ZString strEventsURL; //Handler to perodically doAGCInfo
+	ZString strGameURL; //This handler gets hit when a game is over, used in doRecordGame
+};
+//
+
 
 struct FedTechBit
 {
@@ -294,7 +302,6 @@ struct Global
 	strLocalAddress.SetEmpty(); //Imago 6/10
     strLocation.SetEmpty(); //Imago 6/10
 	//Imago 8/10 #192
-	balance.strBaseURL.SetEmpty(); 
 	balance.kFactor = 3;
 	balance.MaxNewbRank = 4;
 	balance.RankScaleFactor = 0.6f;
@@ -305,6 +312,11 @@ struct Global
 	balance.FlexGamePercent = 10;
 	balance.FlexDecay = 200;
 	balance.AvgPlayerCountDivisor = 133;
+	//9/10 #50 #192
+	appweb.strEventsURL.SetEmpty();
+	appweb.strRanksURL.SetEmpty();
+	appweb.strGameURL.SetEmpty();
+
 //#if !defined(ALLSRV_STANDALONE)
     strSQLConfig.Empty();
 //#endif    
@@ -377,6 +389,7 @@ struct Global
   
   bool                fASGS; //Imago 7/10 DIE ASGS!
   BalanceInfo		  balance; //Imago #174
+  AppWebInfo		  appweb; //Imago #192 -^ & #50
   int				  cQServerPort; //Imago 7/10
   bool                fProtocol;
   bool                fPaused;
