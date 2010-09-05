@@ -5475,7 +5475,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               {
                     Vector  d = position - pMissileLaunchData[i].vecPosition;
                     float   d2 = d * d;
-                    if (d2 > 20.0f)  // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway - Removed debugging - Imago 9/10
+                   // if (d2 > 20.0f)  // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway - Removed debugging - Imago 9/10
                         //debugf("missile position error %f %s\n", d2, pfsPlayer->GetName());
                     if ((d2 < 0.0f) || (d2 > 200.0f * 200.0f))
                         pMissileLaunchData[i].vecPosition = position;
@@ -5483,7 +5483,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               {
                     Vector  d = velocity - pMissileLaunchData[i].vecVelocity;
                     float   d2 = d * d;
-                    if (d2 > 20.0f) // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway - Removed debugging - Imago 9/10
+                    //if (d2 > 20.0f) // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway - Removed debugging - Imago 9/10
                         //debugf("missile velocity error %f\n", d2);
                     if ((d2 < 0.0f) || (d2 > 100.0f * 100.0f))
                         pMissileLaunchData[i].vecVelocity = velocity;
