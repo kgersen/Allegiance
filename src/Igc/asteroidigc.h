@@ -54,13 +54,24 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
                 m_asteroidDef.ore += dOre;
             }
 			
+			//Xynth #225 9/10 Don't update He3 for the first 80 frames you enter a sector
+			if (m_inhibitUpdate)
+			{
+				m_inhibitCounter++;
+				if (m_inhibitCounter > 80)
+				{
+					m_inhibitCounter = -1;
+					m_inhibitUpdate = false;
+				}
+			}
+
 			//Xynth #100 7/2010 loop through sides to update the ore they know about
 			if ((m_asteroidDef.aabmCapabilities & c_aabmMineHe3) != 0)
 			{
 				for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
 				{
 					IsideIGC* pside = psl->data();
-					if (this->GetCurrentEye(pside))
+					if (this->GetCurrentEye(pside) && !m_inhibitUpdate)
 					{						
 						oreSeenBySide.Set(pside, m_asteroidDef.ore);						
 					}
@@ -190,7 +201,8 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 			
             m_asteroidDef.ore = newVal;
 			//Xynth #100 7/2010 Loop through sides to update ore seen by any sides eyeing asteroid
-			for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
+			//Xynth #225 handle updates in Update function
+			/*for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
 			{
 				IsideIGC* pside = psl->data();
 				if (this->GetCurrentEye(pside))
@@ -198,7 +210,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 					oreSeenBySide.Set(pside, m_asteroidDef.ore);						
 				}
 
-			}
+			}*/
         }
         virtual float   MineOre(float    newVal)
         {
@@ -215,7 +227,8 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
                 m_asteroidDef.ore -= newVal;
 			
 			//Xynth #100 7/2010 Loop through sides to update ore seen by any sides eyeing asteroid
-			for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
+			//Xynth #225 Handle updates in Update function
+			/*for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
 			{
 				IsideIGC* pside = psl->data();
 				if (this->GetCurrentEye(pside))
@@ -223,7 +236,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 					oreSeenBySide.Set(pside, m_asteroidDef.ore);						
 				}
 
-			}
+			}*/
 			//Xynth #132 7/2010  Update asteroid periodically
 			if (abs(m_asteroidDef.ore - m_lastUpdateOre) > 3.0)
 			{
@@ -271,19 +284,18 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 		}
 
 		//Xynth #163 7/2010
-		virtual void SetOreWithFraction(float oreFraction)
+		virtual void SetOreWithFraction(float oreFraction, bool clientUpdate)
 		{
 			m_asteroidDef.ore = oreFraction * m_asteroidDef.oreMax;
 			//Loop through sides to update ore seen by any sides eyeing asteroid
 			for (SideLinkIGC* psl = this->GetMission()->GetSides()->first(); psl != NULL; psl = psl->next())
 			{
 				IsideIGC* pside = psl->data();
-				if (this->GetCurrentEye(pside))
+				if (this->GetCurrentEye(pside) || clientUpdate) //Xynth #225 make sure client updates rock
 				{						
 					oreSeenBySide.Set(pside, m_asteroidDef.ore);						
 				}
-
-			}
+			}			
 		}
 
 		//Xynth #163 7/2010
@@ -296,6 +308,8 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 		void SetBuilderSeenSide(ObjectID oid) { m_builderseensides[oid] = true; }
 		bool GetBuilderSeenSide(ObjectID oid) { return m_builderseensides[oid]; }
 		//
+		//Xynth #225 9/10
+		virtual void SetInhibitUpdate(bool inhib) {m_inhibitUpdate = inhib;}
 
     private:
         AsteroidDef                 m_asteroidDef;
@@ -305,6 +319,8 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
         float                       m_fraction;
         TRef<IbuildingEffectIGC>    m_pbuildingEffect;
 		bool						m_builderseensides[c_cSidesMax]; //Imago #120 #121
+		bool                        m_inhibitUpdate; //Xynth #225 bookkeeping variables to prevent illegal or update		
+		int							m_inhibitCounter; //upon entering cluster		
 };
 
 #endif //__ASTEROIDIGC_H_

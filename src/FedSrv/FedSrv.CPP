@@ -12152,7 +12152,7 @@ void FedSrvSiteBase::MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre)
 			g.fm.SendMessages(CFSSide::FromIGC(psidelink->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 		}
 	}
-	pasteroid->SetOreWithFraction(newOre);
+	pasteroid->SetOreWithFraction(newOre, false);
 }
 
 void FedSrvSiteBase::KillProbeEvent(IprobeIGC* pprobe)

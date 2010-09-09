@@ -64,7 +64,8 @@ HRESULT     CasteroidIGC::Initialize(ImissionIGC* pMission, Time now, const void
 			}
 
 			m_lastUpdateOre = 0.0;  //Xynth #132 7/2010 Should update first time this is mined
-
+			m_inhibitUpdate = false; //Xynth #225 9/10 		
+		    m_inhibitCounter = -1;
 #ifdef DEBUG
             {
                 //Verify that there is no pre-existing asteroid with the same ID

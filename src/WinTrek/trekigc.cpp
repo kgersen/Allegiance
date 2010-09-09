@@ -3898,6 +3898,13 @@ void WinTrekClient::SetViewCluster(IclusterIGC* pcluster, const Vector* ppositio
                 pclusterOld->SetActive(false);
         }
 
+		//Xynth #225 Inhibit updates for all asteroids in the new cluster for a few seconds		
+		for (AsteroidLinkIGC* pal = pcluster->GetAsteroids()->first(); (pal != NULL); pal = pal->next())
+		{
+			IasteroidIGC* pAsteroid = pal->data();
+			if ((pAsteroid->GetCapabilities() & c_aabmMineHe3) != 0)
+				pAsteroid->SetInhibitUpdate(true);
+		}
         BaseClient::SetViewCluster(pcluster);
         GetWindow()->SetCluster(pcluster);
         GetWindow()->PositionCommandView(pposition, 0.0f);
