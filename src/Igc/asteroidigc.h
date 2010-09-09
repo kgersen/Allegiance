@@ -54,11 +54,12 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
                 m_asteroidDef.ore += dOre;
             }
 			
-			//Xynth #225 9/10 Don't update He3 for the first 80 frames you enter a sector
+			//Xynth #225 9/10 Don't update He3 for the first 3.0 seconds you enter a sector
 			if (m_inhibitUpdate)
 			{
-				m_inhibitCounter++;
-				if (m_inhibitCounter > 80)
+				if (m_inhibitCounter == -1)
+					m_inhibitCounter = Time::Now();
+				else if (abs(m_inhibitCounter - Time::Now()) > 3.0)
 				{
 					m_inhibitCounter = -1;
 					m_inhibitUpdate = false;
@@ -320,7 +321,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
         TRef<IbuildingEffectIGC>    m_pbuildingEffect;
 		bool						m_builderseensides[c_cSidesMax]; //Imago #120 #121
 		bool                        m_inhibitUpdate; //Xynth #225 bookkeeping variables to prevent illegal or update		
-		int							m_inhibitCounter; //upon entering cluster		
+		Time					    m_inhibitCounter; //upon entering cluster		
 };
 
 #endif //__ASTEROIDIGC_H_
