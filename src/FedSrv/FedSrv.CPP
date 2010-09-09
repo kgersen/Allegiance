@@ -10746,10 +10746,10 @@ class ThingSiteImpl : public ThingSite
                                     //See it
 									if (!pmodel->SeenBySide(pside)) {
                                     	if (!staticVisible)  //Xynth #135 7/2010
-										{
-											sv.fVisible(true);
+										{											
                                     		bSent = ShowObject(pside, pmodel);
 										}
+										sv.fVisible(true);
 										sv.CurrentEyed(true); //Xynth #100 7/2010
 									}
 
@@ -10873,6 +10873,13 @@ class ThingSiteImpl : public ThingSite
             assert (pside != NULL);
             return m_bSideVisibility ? m_rgSideVisibility[pside->GetObjectID()].fVisible() : true;
         }
+
+		//Xynth #225 9/10 GetCurrentEye was not implemented for server side use
+		virtual bool  GetCurrentEye(IsideIGC* pside)
+		{
+			assert (pside != NULL);
+			return m_bSideVisibility ? m_rgSideVisibility[pside->GetObjectID()].CurrentEyed() : false;
+		}
 
         virtual void    SetSideVisibility(IsideIGC* pside,
                                           bool      fVisible)
@@ -12142,7 +12149,7 @@ void FedSrvSiteBase::MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre)
 		(psidelink != NULL);
 		psidelink = psidelink->next())
 	{
-		if (pasteroid->GetCurrentEye(psidelink->data()))
+		if (pasteroid->GetAsteroidCurrentEye(psidelink->data()))
 		{
 			BEGIN_PFM_CREATE(g.fm, pfmAsteroidMined, S, ASTEROID_MINED)
 				END_PFM_CREATE

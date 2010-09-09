@@ -4590,6 +4590,7 @@ class   SideVisibility
         SideVisibility(void)
         :
             m_fVisible(false),
+			m_currentEyed(false),
             m_pLastSpotter(NULL)
         {
         }
