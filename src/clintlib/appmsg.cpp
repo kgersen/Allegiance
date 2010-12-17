@@ -545,7 +545,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         station->GetName(), 
                         station->GetCluster()->GetName());
 
-                if (station->GetSide() == GetSide())
+                if (station->GetSide() == GetSide() || GetSide()->AlliedSides(GetSide(),station->GetSide())) //AllY Imago/Rock 7/27/09 
                     PlaySoundEffect(station->GetStationType()->GetDestroyedSound());
                 else
                     PlaySoundEffect(station->GetStationType()->GetEnemyDestroyedSound());
@@ -671,9 +671,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     station->GetCluster()->GetName()
                     );
 
-                if (pfmStationCapture->sidOld == GetSideID())
+                if (pfmStationCapture->sidOld == GetSideID() || GetSide()->AlliedSides(GetCore()->GetSide(pfmStationCapture->sidOld),GetSide()))  //ALLY Rock/Imago 7/27/09
                     PlaySoundEffect(station->GetStationType()->GetCapturedSound());
-                else if (pfmStationCapture->sidNew == GetSideID())
+                else if (pfmStationCapture->sidNew == GetSideID() || GetSide()->AlliedSides(GetCore()->GetSide(pfmStationCapture->sidNew),GetSide())) //ALLY Rock/Imago 7/27/09
                     PlaySoundEffect(station->GetStationType()->GetEnemyCapturedSound());
 
                 station->SetSide(psideNew);
@@ -920,10 +920,10 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     assert (pmodelRipcord->GetObjectType() == OT_ship);
 
                     PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)pmodelRipcord)->GetPrivateData());
-                    assert (ppi->StatusIsCurrent());
-                    pclusterRipcord = m_pCoreIGC->GetCluster(ppi->LastSeenSector());
-
-                    assert (pclusterRipcord);
+                    			
+					assert (ppi->StatusIsCurrent());
+					pclusterRipcord = m_pCoreIGC->GetCluster(ppi->LastSeenSector());
+   	                assert (pclusterRipcord); 
                 }
 
                 const char*     name = pclusterRipcord->GetName();
@@ -1107,7 +1107,6 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         s->SetCluster(NULL);
                 }
             }
-
             m_ship->SetStation(m_pCoreIGC->GetStation(pfmDocked->stationID));
             assert (m_ship->GetCluster() == NULL);
         }
@@ -1328,10 +1327,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 
             CASTPFM(pfmMoney, S, MONEY_CHANGE, pfm);
 
-            //Ignore any transactions we initiated.
             ShipID  sid = GetShipID();
             if (sid != pfmMoney->sidFrom)
-            {
+			{
                 IshipIGC*  pshipTo   = m_pCoreIGC->GetShip(pfmMoney->sidTo);
                 assert (pshipTo);
 
@@ -1351,14 +1349,16 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         PlayerInfo* ppiFrom = (PlayerInfo*)(pshipFrom->GetPrivateData());
                         ppiFrom->SetMoney(ppiFrom->GetMoney() - pfmMoney->dMoney);
                         m_pClientEventSource->OnMoneyChange(ppiFrom);
-
-                        if (pfmMoney->sidTo == sid)
+						
+						if (pfmMoney->sidTo == sid) {
                             PostText(false, "%s gave you $%d. You now have $%d.",
                                      ppiFrom->CharacterName(), pfmMoney->dMoney, MyPlayerInfo()->GetMoney());
+							
+						}
                     }
                 }
-                m_pMissionInfo->GetSideInfo(GetSide()->GetObjectID())->GetMembers().GetSink()();
-            }
+				m_pMissionInfo->GetSideInfo(GetSide()->GetObjectID())->GetMembers().GetSink()();
+			}
         }
         break;
         case FM_S_SET_MONEY:
@@ -1962,6 +1962,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             assert (pship);
             //debugf("Loadout change for %s/%d\n", pship->GetName(), pfmLC->sidShip);
 
+		
+
             //If the ship was a passenger, now it is not
             pship->SetParentShip(NULL);
             m_pClientEventSource->OnBoardShip(pship, NULL);
@@ -1979,12 +1981,14 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 }
             }
 
-            //Ignore most part changes for ourselves
+            //Ignore most part changes for ourselves  ALLY Imago docking lifepods at allied bases hack 7/13/09
             if (pfmLC->sidShip != GetShipID())
             {
                 pship->ProcessShipLoadout(pfmLC->cbloadout,
                                           (const ShipLoadout*)(FM_VAR_REF(pfmLC, loadout)), (pship->GetCluster() == NULL));
-            }
+			} else if (pship->GetBaseHullType()->HasCapability(c_habmLifepod)) {
+				RestoreLoadout(pship->GetStation());
+			}
 
             //But always process the passenger data (even for ourself)
             {
@@ -2366,6 +2370,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 m_pMissionInfo->Update(pfmMissionDef);
                 m_pCoreIGC->SetMissionParams(&pfmMissionDef->misparms);
                 m_pCoreIGC->UpdateSides(Time::Now(), &(m_pMissionInfo->GetMissionParams()), pfmMissionDef->rgszName);
+				m_pCoreIGC->UpdateAllies(pfmMissionDef->rgfAllies); //#ALLY
             }
 
             m_pClientEventSource->OnAddMission(m_pMissionInfo);
@@ -2492,6 +2497,25 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             m_pClientEventSource->OnTeamNameChange(m_pMissionInfo, pfmSetTeamInfo->sideID);
             break;
         }
+
+		// #ALLY
+		case FM_S_CHANGE_ALLIANCES:
+		{
+			// update our local missioninfo, IGC sides and call the sink
+            CASTPFM(pfmChangeAlliances, S, CHANGE_ALLIANCES, pfm);
+			for (SideID i = 0; i < c_cSidesMax ; i++)
+			{
+				// missioninfo
+				m_pMissionInfo->SetSideAllies(i,pfmChangeAlliances->Allies[i]);
+
+				// IGC
+				IsideIGC* pside = m_pCoreIGC->GetSide(i);
+				if (pside)
+					pside->SetAllies(pfmChangeAlliances->Allies[i]);
+			}
+            m_pClientEventSource->OnTeamAlliancesChange(m_pMissionInfo);
+			break;
+		}
 
         case FM_S_TEAM_READY:
         {
@@ -2731,7 +2755,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 if (pfmKillShip->bKillCredit)
                 {
                     pLauncherInfo->AddKill();
-                    if (pLauncherInfo->GetShip()->GetSide() != pship->GetSide())
+                    if (pLauncherInfo->GetShip()->GetSide() != pship->GetSide() && !pship->GetSide()->AlliedSides(pLauncherInfo->GetShip()->GetSide(),pship->GetSide())) //ALLY 7/27/09 rock imago
                         pLauncherInfo->GetShip()->AddExperience();
                 }
 
@@ -2783,7 +2807,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             // for drones, play the drone destruction sound
             if (!pPlayerInfo->IsHuman())
             {
-                if (sideID == pPlayerInfo->SideID())
+                if (sideID == pPlayerInfo->SideID()) //ALLYTD too much spam?  rock imago
                 {
                     SoundID destroyedSound;
 
@@ -3143,32 +3167,55 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         }
         break;
 
-        case FM_S_OBJECT_SPOTTED:
-        {
+        case FM_S_OBJECT_SPOTTED: //ALLY imago 7/12/09 					
+        {							//we can safely assume if an object is spotted by somone not on our team it's an ally 7/13/09
             if (!IsInGame())
                 break;
 
             CASTPFM(pfmObjectSpotted, S, OBJECT_SPOTTED, pfm);
 
             ZString strSpotterName;
+			ZString strAllies;
+			Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
+			IsideIGC* myside = GetSide();
 
             switch (pfmObjectSpotted->otSpotter)
             {
             case OT_station:
-                strSpotterName = ZString("Your ") 
+				if (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
+					
+
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "Allied" + END_COLOR_STRING + " " ;
+				} else {
+					strAllies = "Your "; 
+				}
+                strSpotterName = strAllies 
                     + GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetName()
                     + " has";
                 break;
 
             case OT_probe:
-                strSpotterName = "One of your team's probes has";
+				if (GetCore()->GetProbe(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
+					
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "ally's" + END_COLOR_STRING+" " ;
+				} else {
+					strAllies = "team's"; 
+				}
+                strSpotterName = "One of your "+ZString(strAllies)+" probes has";
                 break;
 
             case OT_ship:
+				if (GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
+					
+ 					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + " (Ally)" + END_COLOR_STRING +" has" ;
+				} else {
+					strAllies = " has"; 
+				}
+
                 if (pfmObjectSpotted->oidSpotter == GetShipID())
                     strSpotterName = "You've";
                 else
-                    strSpotterName = GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetName() + ZString(" has");
+                    strSpotterName = GetCore()->GetShip(pfmObjectSpotted->oidSpotter)->GetName() + ZString(strAllies);
                 break;
 
             default:
@@ -3182,8 +3229,13 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             case OT_station:
                 {
                     IstationIGC* pstation = GetCore()->GetStation(pfmObjectSpotted->oidObject);
+					IsideIGC* myside = GetSide();
                     assert(pstation);
-                    PostText(GetShip()->GetWingID() == 0, strSpotterName + " discovered an enemy " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName());
+					if (myside->AlliedSides(myside,pstation->GetSide())) { //ALLY imago for when VIS is OFF
+						PostText(false, strSpotterName + " discovered an allied " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); //#ALLY imago changed enemy to friendly if allied 7/3/09
+					} else {
+                    	PostText(GetShip()->GetWingID() == 0, strSpotterName + " discovered an enemy " + pstation->GetName() + " in sector " + pstation->GetCluster()->GetName()); 
+					}
                 }
                 break;
 

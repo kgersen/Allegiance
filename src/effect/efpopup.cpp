@@ -33,9 +33,10 @@ public:
     ) :
         m_pmodeler(pmodeler)
     {
-        m_pwrapImage = new WrapImage(Image::GetEmpty());
+        m_pwrapImage = new WrapImage(Image::GetEmpty()); //Fix memory leak -Imago 8/2/09
 
-        m_ppane = new ImagePane(pmodeler->LoadImage("dialogbkgndbmp", false));
+		// Need a background with colour key.
+        m_ppane = new ImagePane(pmodeler->LoadImage("dialogbkgndbmp", true ));
 
         TRef<Image> pstringImage =
             CreateStringImage(
@@ -111,7 +112,7 @@ public:
             m_ppaneWrapper = m_ppane;
             m_pwrapImage->SetImage(IPopup::GetImage(m_pmodeler->GetEngine()));
         } else {
-            m_ppaneWrapper = new AnimatedImagePane(m_pwrapImage);
+            m_ppaneWrapper = new AnimatedImagePane(m_pwrapImage);  //Fix memory leak -Imago 8/2/09
             m_peventSink = IEventSink::CreateDelegate(this);
             m_ptimerEventSource = ptimerEventSource;
             ptimerEventSource->AddSink(m_peventSink, paintDelay);

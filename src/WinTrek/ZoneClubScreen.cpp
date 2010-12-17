@@ -179,14 +179,15 @@ public:
             {
                 if (trekClient.GetCfgInfo().strPublicLobby.IsEmpty())
                 {
-                    TRef<IMessageBox> pmsgBox = CreateMessageBox(
-                        "The free lobby is not available at the moment.  "
-                        + ZString(trekClient.GetCfgInfo().strClubLobby.IsEmpty()
-                            ? "Please try again later."
-                            : "Please try the Allegiance Zone instead.")
-                        );
-                    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
-                    return;
+
+                	TRef<IMessageBox> pmsgBox = CreateMessageBox(
+                    	"The free lobby is not available at the moment.  "
+                    	+ ZString(trekClient.GetCfgInfo().strClubLobby.IsEmpty()
+                    	    ? "Please try again later."
+                    	    : "Please try the Allegiance Zone instead.")
+                   	 );
+                	GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+                	return;			
                 }
             }
         }
@@ -316,14 +317,29 @@ public:
 
     bool OnButtonGames()
     {
-//        if (trekClient.LoggedOnToLobby())
-//        {
-//            GetWindow()->screen(ScreenIDGameScreen);
-//        }
-//        else
-//        {
-            ConnectToZone(true, ScreenIDGameScreen);
-//        }
+		//imago 7/4/09 - uncommented the code here that was commented out by ? on ?   
+        if (trekClient.LoggedOnToLobby())
+        {
+            GetWindow()->screen(ScreenIDGameScreen);
+        }
+        else
+        {
+			if (g_bQuickstart) { //imago 7/5/09
+				if (trekClient.GetCfgInfo().strPublicLobby.GetLength()) {
+					ConnectToZone(true, ScreenIDGameScreen);
+					Sleep(1000); //woah, retail is fast!  wait a sec socket to be created
+				} else {
+					m_pbuttonMainMenu->SetEnabled(false); // force download to finish before leaving this screen
+        			m_pbuttonGames->SetEnabled(false);
+        			m_pbuttonGamesBig->SetEnabled(false);
+					g_bQuickstart = false;
+					GetWindow()->screen(ScreenIDGameScreen);  // if they don't have a cfg file yet
+					return false;								// this will now be handled gracefully
+				}
+			} else {
+				ConnectToZone(true, ScreenIDGameScreen);
+			}
+        }
 
         return true;
     }
@@ -379,14 +395,8 @@ public:
 
     void BeginConfigDownload() 
     {
-        if (!g_bDownloadNewConfig)
-        {
-            debugf("Skipping download of config file due to command-line switch.\n");
-            OnConfigDownloadDone(true, false);
-            return;
-        }
 
-        lstrcpy(m_szConfig, "http://Allegiance.zone.com/Allegiance.cfg");
+        lstrcpy(m_szConfig, "http://autoupdate.alleg.net/allegiance.cfg");  //imago updated 7/4/09
 
         HKEY hKey;
 
@@ -399,6 +409,13 @@ public:
             // if it didn't succeed, we'll just use the default above
             if (lstrlen(szConfig) > 0)
               lstrcpy(m_szConfig, szConfig);
+        }
+
+        if (!g_bDownloadNewConfig || g_bQuickstart)  //imago added quickstart and reordered 7/4/09
+        {
+            debugf("Skipping download of config file due to command-line switch.\n");
+            OnConfigDownloadDone(true, false);
+            return;
         }
 
         if (ZString(m_szConfig).Find("http://") == -1) 
@@ -433,7 +450,7 @@ public:
 
     void BeginMessageOfDayDownload()
     {
-        if (!g_bDownloadZoneMessage)
+        if (!g_bDownloadZoneMessage || g_bQuickstart) //imago 7/4/09
         {
             debugf("Skipping download of Message Of the Day due to command-line switch.\n");
             OnMessageOfDayDone(false);
@@ -608,7 +625,7 @@ public:
             trekClient.GetCfgInfo().Load(m_szConfig);
         }
 
-        if (!m_bErrorOccured)
+        if (!m_bErrorOccured || g_bQuickstart) //imago 7/4/09
         {
             if(!g_bSkipAutoUpdate)
             {
@@ -846,6 +863,13 @@ public:
 
     void OnLogonLobbyFailed(bool bRetry, const char* szReason)
     {
+
+		if (g_bQuickstart) {
+			g_bQuickstart = false;
+			GetWindow()->screen(ScreenIDIntroScreen);  //imago 7/13/09 this will make users able
+														//  to retry and see the MOTD for outage info
+		}
+
         if (bRetry)
         {
             s_bWasAuthenticated = false;
@@ -855,6 +879,7 @@ public:
         {
             TRef<IMessageBox> pmsgBox = CreateMessageBox(szReason);
             GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+
         }
     }
     

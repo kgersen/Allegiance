@@ -11,7 +11,7 @@
 #ifndef _LOBBY_PCH_
 #define _LOBBY_PCH_
 
-// #include "appWeb.h" //Imago: HTTP Library for ASGS services
+#include "appweb/appweb.h" //Imago 7/5/08 uses version 2.4.2-2 xp
 
 #include <windows.h>
 #include <stdlib.h>
@@ -46,9 +46,10 @@
 #include <..\TCAtl\UserAcct.h>
 #include <..\TCLib\TCThread.h>
 
-#ifdef USEAUTH
+//Imago removed 7/5/08
+//#ifdef USEAUTH
 #include "LobQueries.h" // and allegdb.h
-#endif
+//#endif
 #include <guids.h>
 #include "resource.h"
 #include "messagecore.h"
@@ -57,7 +58,10 @@
 #include "messagesLC.h"
 #include "sharemem.h"
 #include "counters.h"
+// KG - guard with USEAUTH for consistency
+#ifdef USEAUTH
 #include "zauth.h"
+#endif
 #include "broadcast.h"
 #include "zgameinfo.h"
 #include "LobbyApp.h"

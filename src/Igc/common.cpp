@@ -9,9 +9,9 @@ int _matherr( struct _exception *except )
 	// cause an exception not handled to exit
 	// fmod in ThingGeo thows a math exception, skip it
 	// hopefully the miner bug is not an fmod
-	
+
 	if ( strcmp( except->name, "fmod" ) == 0 ) return (0);
-	
+
 	(*(int*)0) = 0;
 
 	return (0);
@@ -87,14 +87,14 @@ float    solveForImpact(const Vector&      deltaP,
         if ((a == 0.0f) || ((a > 0.0f) && (b > 0.0f)) || (b24ac < 0.0f))
         {
             //No valid solution
-            t = (FLT_MAX / 500000000.0f); // mmf podpickup bug added the divisor 
+            t = (FLT_MAX / 500000000.0f); // mmf podpickup bug added the divisor
 			// mmf also note *direction is NOT SET in this case...
         }
         else
         {
 			// mmf added check for negative
 			// revisit what to set b24ac to in this case
-			if (b24ac < 0.0f) { 
+			if (b24ac < 0.0f) {
 				debugf("common.cpp b24ac is less than zero about to sqrt it, it to 0.1f\n");
 				b24ac = 0.1f;
 			}
@@ -197,7 +197,7 @@ float    turnToFace(const Vector&       deltaTarget,
             pitch = acos(myOrientation.CosUp(deltaTarget)) - 0.5f * pi;
 
 			// mmf
-			//{ 
+			//{
 			//	float check = yaw * yaw + pitch * pitch;
 			//	if (check != check) debugf("common.cpp yaw * yaw + pitch * pitch is a nan\n");
 			//	if (check < 0.0f) debugf("common.cpp yaw * yaw + pitch * pitch is a negative about to sqrt it\n");
@@ -253,7 +253,8 @@ float    turnToFace(const Vector&       deltaTarget,
 bool  FindableModel(ImodelIGC*          m,
                     IsideIGC*           pside,
                     int                 ttMask,
-                    AbilityBitMask      abmAbilities)
+                    AbilityBitMask      abmAbilities,
+					int					iAllies)
 {
     bool    okF = false;
 
@@ -266,9 +267,17 @@ bool  FindableModel(ImodelIGC*          m,
 
         int sidebits = (pHisSide == NULL)
                        ? c_ttNeutral
-                       : ((pside == pHisSide)
+					   : ( (pside == pHisSide) || (IsideIGC::AlliedSides(pside,pHisSide) && iAllies == 1) // #ALLY Imago 7/31/09
                           ? c_ttFriendly
-                          : c_ttEnemy);
+                          : c_ttEnemy );
+
+		if (iAllies == 2)
+			sidebits = (IsideIGC::AlliedSides(pside,pHisSide) && pside != pHisSide) //ALLY
+				? c_ttFriendly
+				: c_ttEnemy;
+
+
+		bool notsameside = !(pside == pHisSide); // #ALLY
 
         if ((sidebits & ttMask) ||
             ((type == OT_probe) && ((abmAbilities & c_eabmRescueAny) != 0) &&
@@ -292,7 +301,23 @@ bool  FindableModel(ImodelIGC*          m,
 
                     case OT_station:
                     {
-                        okF = ((IstationIGC*)m)->GetStationType()->HasCapability(abmAbilities);
+						//#ALLY : exceptions for c_ttFriendly which include now allies
+						//dont match allies if we're looking for a friendly station with one of the abilities below
+
+						if (iAllies == 1) { //imago 7/31/09
+							ImissionIGC*         pmission = pside->GetMission();
+						    const MissionParams* pmp = pmission->GetMissionParams();
+
+							AbilityBitMask alliesnotallowed = (pmp->bAllowAlliedRip) ?
+								c_sabmRestart | c_sabmUnload :
+								c_sabmRestart | c_sabmUnload | c_sabmRipcord;  //imago 7/9/09 c_sabmTeleportUnload removed 7/23/09
+
+							if ((ttMask & c_ttFriendly) &&
+								(abmAbilities & alliesnotallowed) &&
+								notsameside)
+								break;
+						}
+						okF = ((IstationIGC*)m)->GetStationType()->HasCapability(abmAbilities);
                     }
                     break;
 
@@ -339,7 +364,7 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
         if ((!ps->GetStationType()->HasCapability(c_sabmPedestal)) &&
             ps->SeenBySide(pside))
         {
-            if (pside != ps->GetSide())
+			if ((pside != ps->GetSide()) && !IsideIGC::AlliedSides(pside, ps->GetSide()))		// #ALLY FIXED 7/10/09 imago - was: pside != ps->GetSide(
                 return false;               //enemy has a station == unfriendly
 
             rc = true;
@@ -359,31 +384,32 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
 	}
     // mmf else if Experimental game type fall through to yp's code
 	// yp: Improving AI: no reason to check further if we already know its a hostile sector
-	if(rc == false) 
+	if(rc == false)
 		return rc;
 	// we should also check to see if there is a lot of enemy in the sector.
 	// we wouldnt want to go somewhere hostile even if we do have a base there.
 	if(pcluster->GetShips() != NULL)
 	{
-		int friendlyShipCount = 0;	
+		int friendlyShipCount = 0;
 
 		for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next()) // mmf changed this to pcluste->GetShips from pside
         {
             IshipIGC*   pship = psl->data();
 			// If our team knows that ship is there or its one of our ships, then we can count it.
-            if (pship->SeenBySide(pside) || pship->GetSide() == pside) 
+            if (pship->SeenBySide(pside) || pship->GetSide() == pside)
 			{
-				if (pside != pship->GetSide()) // if its not our side then we subtract 1 from our count
+				//if (pside != pship->GetSide()) // if its not our side then we subtract 1 from our count
+				if ((pside != pship->GetSide()) && !IsideIGC::AlliedSides(pside,pship->GetSide())) //#ALLY -was: line above IMAGO FIXED LIKE THIS ALL OVER 7/8/09
 				{// count hostiles in the system.
 					// TODO: Make smarter: Assign differnt ship hulls a differnt amount of points, could also handle drones differntly
-					friendlyShipCount--; 
+					friendlyShipCount--;
 				}
 				else//, otherwise we increment it.
-				{// count friendlys in the system.					
-					friendlyShipCount++; 
-				}	
+				{// count friendlys in the system.
+					friendlyShipCount++;
+				}
 			}
-        }	
+        }
 
 		if(friendlyShipCount>=0)// do we have a good chance of being safe?
 		{
@@ -393,9 +419,9 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
 		{
 			rc = false;
 		}
-	}	
+	}
     // yp end
-    
+
     return rc;
 }
 
@@ -433,7 +459,8 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
                        const Vector*       pposition,
                        const Orientation*  porientation,
                        AbilityBitMask      abmAbilities,
-                       int                 maxDistance)
+                       int                 maxDistance,
+					   int				   iAllies) //Imago 8/1/09
 {
     if (!pcluster)
         pcluster = pship->GetCluster();
@@ -443,7 +470,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
     IsideIGC*   pside = pship ? pship->GetSide() : NULL;
 
     if (pmodelCurrent && ((pmodelCurrent == pship) ||
-                          (!FindableModel(pmodelCurrent, pside, ttMask, abmAbilities)) ||
+                          (!FindableModel(pmodelCurrent, pside, ttMask, abmAbilities,iAllies)) ||
                           (!pship->CanSee(pmodelCurrent))))
         pmodelCurrent = NULL;
 
@@ -475,7 +502,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
             if ((ttMask & c_ttFront) && !porientation)
                 porientation = &(pship->GetOrientation());
         }
-    
+
         ModelLinkIGC*    mLink = models->first();
         if (pmodelCurrent)
         {
@@ -505,7 +532,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
             ImodelIGC*  m = l->data();
 
 			//You never target yourself or something marked as hidden
-            if ((m != pship) && ((!pship) || pship->CanSee(m)) && FindableModel(m, pside, ttMask, abmAbilities))
+            if ((m != pship) && ((!pship) || pship->CanSee(m)) && FindableModel(m, pside, ttMask, abmAbilities,iAllies))
             {
                 if (ttBest)
                 {
@@ -529,17 +556,19 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 
                         n = 0;
                         {
-                            //Count the number of drones on this side building or mining this asteroid
-                            for (ShipLinkIGC*   psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
+                            //Count the number of drones on this side and allied sides building or mining this asteroid  (ALLY ROCK FIX)
+                            for (ShipLinkIGC*   psl = pside->GetMission()->GetShips()->first(); (psl != NULL); psl = psl->next()) //imago changed mission wide not side wide
                             {
                                 IshipIGC*   ps = psl->data();
                                 if (ps->GetPilotType() < c_ptPlayer)
                                 {
-                                    if ((ps->GetCommandTarget(c_cmdAccepted) == m) &&
-                                        (ps->GetCommandID(c_cmdAccepted) >= c_cidMine))
-                                    {
-                                        n++;
-                                    }
+									if ((ps->GetSide() == pside || pside->AlliedSides(pside,ps->GetSide()))) {  //imago added extra if
+                                    	if ((ps->GetCommandTarget(c_cmdAccepted) == m) &&
+                                        	(ps->GetCommandID(c_cmdAccepted) >= c_cidMine))
+                                    	{
+                                        	n++;
+                                    	}
+									}
                                 }
                             }
                         }
@@ -613,7 +642,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
         {
             assert (pcluster);
 
-            //Push the destinations of the warps in pcluster onto the end the list of 
+            //Push the destinations of the warps in pcluster onto the end the list of
             //warps that are an extra jump away
             {
                 for (WarpLinkIGC*   l = pcluster->GetWarps()->first(); (l != NULL); l = l->next())
@@ -681,7 +710,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
     }
 
     if (!pship || (ttMask & c_ttNoRipcord) ||
-        (pship->GetBaseHullType() == NULL) || 
+        (pship->GetBaseHullType() == NULL) ||
         (pship->GetFlag() != NA))
     {
         return pmodelTarget;
@@ -697,19 +726,38 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
     //OK ... the ship can rip. See if there is something "closer" via a ripcord.
     //First, make a list of all clusters that contain a ripcord
     CPList  clustersRipcord;
+	ImissionIGC*         pmission = pside->GetMission();  // mmf/Imago 7/8/09 ALLY
+	const MissionParams* pmp = pmission->GetMissionParams(); //
 
     {
-        for (StationLinkIGC*    psl = pside->GetStations()->first(); (psl != NULL); psl = psl->next())
-        {
-            IstationIGC*    ps = psl->data();
-            if (ps->GetStationType()->HasCapability(c_sabmRipcord))
-            {
-                IclusterIGC*    pc = ps->GetCluster();
-                if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
-                    (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
-                    NewCP(&clustersRipcord, ps->GetCluster(), &(ps->GetPosition()));
-            }
-        }
+		if (pmp->bAllowAlliedRip) { //if allied record allowed game ALLY RIPCORD
+	        for (StationLinkIGC*    psl = pmission->GetStations()->first(); (psl != NULL); psl = psl->next())  //ALLY: pmission instead of pside
+	        {
+	            IstationIGC*    ps = psl->data();
+	            if (ps->GetStationType()->HasCapability(c_sabmRipcord) &&
+					(ps->GetSide()->AlliedSides(pside,ps->GetSide()) || pside->GetObjectID() == ps->GetSide()->GetObjectID()) )  //ALLY imago 7/8/09
+	            {
+					if (ps->SeenBySide(pside) || pmp->bAllowAlliedViz) { //Imago VISIBILITY RIPCORD 7/10/09 ALLY
+	                	IclusterIGC*    pc = ps->GetCluster();
+	                	if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
+	                    	(((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
+	                    	NewCP(&clustersRipcord, ps->GetCluster(), &(ps->GetPosition()));
+					}
+	            }
+	        }
+		} else { //regular situation, a no allies ripcord game
+	        for (StationLinkIGC*    psl = pside->GetStations()->first(); (psl != NULL); psl = psl->next())
+	        {
+	            IstationIGC*    ps = psl->data();
+	            if (ps->GetStationType()->HasCapability(c_sabmRipcord))
+	            {
+	                IclusterIGC*    pc = ps->GetCluster();
+	                if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
+	                    (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
+	                    NewCP(&clustersRipcord, ps->GetCluster(), &(ps->GetPosition()));
+	            }
+	        }
+		}
     }
 
     if (pship->GetPilotType() >= c_ptPlayer)   //non-players don't tp to probes or ships
@@ -720,17 +768,36 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 
         ImissionIGC*        pmission = pship->GetMission();
         IIgcSite*           pigc = pmission->GetIgcSite();
-        for (ShipLinkIGC*    psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
-        {
-            IshipIGC*    ps = psl->data();
-            if (ps != pship)
-            {
-                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
-                if (pc && (pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
-                    (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
-                    NewCP(&clustersRipcord, pc, NULL);
-            }
-        }
+
+		if (pmp->bAllowAlliedRip) { //if allied ripcord allowed game
+	        for (ShipLinkIGC*    psl = pmission->GetShips()->first(); (psl != NULL); psl = psl->next())  //ALLY 7/8/09 was pside iterator
+	        {
+	            IshipIGC*    ps = psl->data();
+	            if (ps != pship &&
+					(ps->GetSide()->AlliedSides(pside,ps->GetSide()) || pside->GetObjectID() == ps->GetSide()->GetObjectID()) )  //ALLY imago 7/8/09
+	            {
+					if (ps->SeenBySide(pside) || pmp->bAllowAlliedViz) { //Imago VISIBILITY RIPCORD 7/10/09 ALLY
+	                	IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                	if (pc && (pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
+	                    	(((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
+	                    	NewCP(&clustersRipcord, pc, NULL);
+					}
+	            }
+	        }
+		} else { //normal no allied ripcord
+	        for (ShipLinkIGC*    psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
+	        {
+	            IshipIGC*    ps = psl->data();
+	            if (ps != pship && pside->GetObjectID() == ps->GetSide()->GetObjectID())  //ALLY imago 7/8/09
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                if (pc && (pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) &&
+	                    (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pc, pside)))
+	                    NewCP(&clustersRipcord, pc, NULL);
+	            }
+	        }
+		}
+
 
         for (ClusterLinkIGC*    pcl = pmission->GetClusters()->first(); (pcl != NULL); pcl = pcl->next())
         {
@@ -741,17 +808,25 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
                 for (ProbeLinkIGC*  ppl = pc->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
                 {
                     IprobeIGC*  pprobe = ppl->data();
-                    if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed))
-                    {
-                        NewCP(&clustersRipcord, pc, &(pprobe->GetPosition()));
-                        break;
-                    }
+					if (pmp->bAllowAlliedRip) { //if allied record allowed game
+                    	if ((pprobe->GetSide() == pside || pprobe->GetSide()->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY imago 7/8/09
+                    	{
+                        	NewCP(&clustersRipcord, pc, &(pprobe->GetPosition()));
+                        	break;
+						}
+					} else {
+                    	if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed)) //NO ripcord imago 7/8/09
+                    	{
+                        	NewCP(&clustersRipcord, pc, &(pprobe->GetPosition()));
+                        	break;
+                    	}
+					}
                 }
             }
         }
     }
 
-    //Now ... check each cluster to see if there is something closer 
+    //Now ... check each cluster to see if there is something closer
     ttMask |= c_ttNoRipcord | c_ttAnyCluster;
 
     distance--;
@@ -815,7 +890,7 @@ IwarpIGC* FindPath(IshipIGC*    pship,
             {
                 assert (pwarp->GetDestination());
                 IclusterIGC*    pclusterDestination = pwarp->GetDestination()->GetCluster();
-                if ((!bCowardly) || 
+                if ((!bCowardly) ||
                     (pclusterTarget == pclusterDestination) ||
                     IsFriendlyCluster(pclusterDestination, pside))
                 {
@@ -851,7 +926,7 @@ IwarpIGC* FindPath(IshipIGC*    pship,
 
         if (unexplored.n() == 0)
             return NULL;
-    }   
+    }
 
     while (true)
     {
@@ -1101,9 +1176,9 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
 
 			// mmf added check for negative
 			// revisit what to set t to in this case splat
-			
+
 			float t=0.1f;
-			if ((b*b - c) < 0.0f) { 
+			if ((b*b - c) < 0.0f) {
 				debugf("common.cpp b*b-c is less than zero about to sqrt it, set t to 0.1f\n");
 			} else { t = sqrt(b*b - c) - b; }
 
@@ -1204,9 +1279,10 @@ GotoPositionMask Waypoint::DoApproach(IshipIGC*        pship,
             else
             {
                 //On track and almost stopped ... pivot to face the bay
-                gpm = c_gpmPivot; // yp: We just want to pivot and get in there, we dont want to worry about trying to dodge anytying.
-				// changed to only c_gpmPivot from below.
-				//gpm = c_gpmPivot; | c_gpmDodgeShips; // previous
+                // gpm = c_gpmPivot | c_gpmDodgeShips; // original
+				// gpm = c_gpmPivot; yp: We just want to pivot and get in there, we dont want to worry about trying to dodge anytying.
+				gpm = c_gpmPivot | c_gpmNoDodge; // 04/08 mmf added | c_gpmNoDodge
+				                                 // yp's change resulted in cons dodging missiles on pivot which was undesirable
             }
         }
     }
@@ -1239,7 +1315,7 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
         float   dCenters2 = vCenters.LengthSquared();
 
         float   radius = m_pmodelTarget->GetRadius() + pship->GetRadius();
-        
+
         //First ... is there a danger of colliding with the object?
         float   radiusRest = radius + distanceRest;
         if (dCenters2 <= radiusRest * radiusRest)
@@ -1296,7 +1372,7 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
 				centers[0].z = uniquePosZ;
                 centers[1].x = uniquePosX;
 				centers[1].y = uniquePosY;
-				centers[1].z = uniquePosZ;				
+				centers[1].z = uniquePosZ;
 				// previously
 				//centers[0].x = centers[0].y = centers[0].z = 0.0f;
 				//centers[1].x = centers[1].y = centers[1].z = 0.0f;
@@ -1330,10 +1406,10 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
                 Vector  dp = itsPosition - myPosition;
                 Vector  dv = m_pmodelTarget->GetVelocity();
 
-                float   t = solveForImpact(dp, dv, 
+                float   t = solveForImpact(dp, dv,
                                            pship->GetHullType()->GetMaxSpeed(), 0.0f, &direction);
 
-                
+
                 gpm = c_gpmFast;
                 *pvectorGoto = itsPosition + t * dv;
                 *ppmodelSkip = m_pmodelTarget;
@@ -1350,7 +1426,7 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
 
             case OT_station:
             {
-                //Trying to dock ... 
+                //Trying to dock ...
                 IhullTypeIGC*   pht = pship->GetBaseHullType();
                 assert (pht);
                 const IstationTypeIGC*  pst = ((IstationIGC*)m_pmodelTarget)->GetStationType();
@@ -1418,7 +1494,7 @@ GotoPositionMask Waypoint::GetGotoPosition(IshipIGC*           pship,
  * Purpose:
  *	  Get the button control mask to thrust in a given direction
  */
-static int  getDirection(const Vector&      dP, 
+static int  getDirection(const Vector&      dP,
                          const Orientation& orientation)
 {
     float   z = dP * orientation.GetBackward();
@@ -1493,7 +1569,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
 
     ObjectType  type = pmodel->GetObjectType();
 
-    if (type == OT_ship) 
+    if (type == OT_ship)
     {
         IshipIGC*   pshipHim = (IshipIGC*)pmodel;
         IhullTypeIGC*   phtHim = pshipHim->GetBaseHullType();
@@ -1501,7 +1577,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
             ignore = true;
         else
         {
-            if (mySide == hisSide)
+			if ((mySide == hisSide) || IsideIGC::AlliedSides(mySide, hisSide)) // #ALLY Imago 7/8/09
             {
 
                 if ((pshipHim->GetObjectID() < pship->GetObjectID()) &&                 //he has a lower ship ID
@@ -1526,7 +1602,7 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
                 ignore = true;                                                          //trucker rules of road: we're heavier
         }
     }
-    else if ((type == OT_mine) && (mySide == hisSide))                                  //We can ignore friendly minefields
+    else if ((type == OT_mine) && ((mySide == hisSide) || IsideIGC::AlliedSides(mySide,hisSide)))   //#ALLY    FIXED IMAGO 7/8/09                    //We can ignore friendly minefields
     {
         ignore = true;
     }
@@ -1563,7 +1639,7 @@ bool    Dodge(IshipIGC*     pship,
         if ((pmodel != pship) &&
             (pmodel != pmodelIgnore) &&
             (pmodel->GetHitTest()->GetNoHit() != myHitTest))
-            
+
         {
             //Ignore the appropriate things plus minefields if we are going slowly enough.
             if (!Ignore(pship, pmodel) && ((speed > 50.0f) || (pmodel->GetObjectType() != OT_mine)))
@@ -1658,7 +1734,7 @@ bool    GotoPlan::Execute(Time  now, float  dt, bool bDodge)
     return bDone;
 }
 
-// mmf this is where autopilot does its work 
+// mmf this is where autopilot does its work
 bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, int* pstate)
 {
     bool    bDone;
@@ -1789,8 +1865,8 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
 
                 //S(t) = Integral (0 -> t) (V(t) dt)
                 //     = s0 + Vterminal (t - 0) + (speed - Vterminal) * (1/-k) (exp(-kt) - exp(0))
-                //     = 0  + 
-                //            Vmax * -kt / k    + 
+                //     = 0  +
+                //            Vmax * -kt / k    +
                 //                                (speed + Vmax) * (1.0 - exp(-kt)) / k
                 //
                 // But ... -kt = ln (Vmax / (speed + Vmax)), so
@@ -1809,7 +1885,7 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
 
             assert (m_maskWaypoints & c_wpTarget);
             gpm = ((m_maskWaypoints & c_wpWarp) ? m_wpWarp : m_wpTarget).GetGotoPosition(m_pship,
-                                                                                         distanceRest, 
+                                                                                         distanceRest,
                                                                                          positionRest,
                                                                                          &positionGoto,
                                                                                          &pmodelSkip,
@@ -1996,10 +2072,10 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                         cross = cross.Normalize();
                     else
                         cross = Vector::RandomDirection();
-                    
+
                     double  rpf = myRadius + pmodelDivert->GetRadius() + divertOffset;
                     double  rpf2 = rpf*rpf;
-            
+
                     double  dpLength2 = dp.LengthSquared();
                     double  sinTheta2 = rpf * rpf / dpLength2;
 
@@ -2051,7 +2127,7 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
                                  pml = pml->next())
                             {
                                 ImodelIGC*  pmodel = pml->data();
-                                if ((pmodel->GetObjectType() == OT_mine) && (pmodel->GetSide() != mySide))
+                                if ((pmodel->GetObjectType() == OT_mine) && ((pmodel->GetSide() != mySide) && !IsideIGC::AlliedSides(pmodel->GetSide(), mySide))) //#ALLY -was : pmodel->GetSide() != mySide  FIXED imago 7/8/09
                                 {
                                     //Vector to the center of the object
                                     const Vector&   itsPosition = pmodel->GetPosition();
@@ -2161,12 +2237,12 @@ bool        LineOfSightExist(const IclusterIGC* pcluster,
                     //assert (fCosineSeparationAngle > 0.0f);       //This should be true, but it only takes a little round-off to spoil a day
                     {
                         // Get the radius of the obscuring model, and scale it to simulate a dense core
-                        // or variable geometry. We then compute the coverage angle of the obscuring 
+                        // or variable geometry. We then compute the coverage angle of the obscuring
                         // object.
                         float   fRadius3 = pmodel->GetRadius () * 0.5f;
                         float   fCoveredAngle = asinf (fRadius3 * fOverLengthV13);
 
-                        // Compute the separation angle of the line to the target and the line to the 
+                        // Compute the separation angle of the line to the target and the line to the
                         // obscuring object. The farthest angle from the obscuring object at which the
                         // target can be oscured is the separation angle plus the visible angle.
                         float   fSeparationAngle = acosf (fCosineSeparationAngle);
@@ -2194,7 +2270,7 @@ IshipIGC*   CreateDrone(ImissionIGC*     pmission,
                         IsideIGC*        pside,
                         AbilityBitMask   abmOrders,
                         float            shootSkill,
-                        float            moveSkill,        
+                        float            moveSkill,
                         float            bravery)
 {
     // Do IGC initialization:
@@ -2223,7 +2299,7 @@ IshipIGC*   CreateDrone(ImissionIGC*     pmission,
              psl = psl->next())
         {
         }
- 
+
         if (psl != NULL)
         {
             //Name is not unique ... make it unique
@@ -2372,7 +2448,7 @@ void    DamageTrack::SwitchSlots(void)
 }
 
 void    DamageTrack::ApplyDamage(Time        timeNow,
-                                 ImodelIGC*  pmodel,                            
+                                 ImodelIGC*  pmodel,
                                  float       damage)
 {
     DamageBucketLink*  l;
@@ -2414,7 +2490,7 @@ void DamageTrack::sort(DamageBucketList*  pListBuckets)
             DamageBucketLink*   next = p->next();
             if (!next)
                 break;
-        
+
             if (p->data()->totalDamage() < next->data()->totalDamage())
             {
                 //*p < *next (& therefore either p or next is out of order)
@@ -2452,7 +2528,7 @@ void   PlayerScoreObject::CalculateScore(ImissionIGC*   pmission)
         return;
 
     float   kMax = m_dtPlayed / (15.0f * 60.0f);    //1.0 / 15 minutes
-    
+
 
     m_fScore = float(m_cWarpsSpotted)       * pmission->GetFloatConstant(c_fcidPointsWarp) +
                float(m_cAsteroidsSpotted)   * pmission->GetFloatConstant(c_fcidPointsAsteroid) +
@@ -2487,7 +2563,7 @@ void    PlayerScoreObject::AdjustCombatRating(ImissionIGC*          pmission,
 {
 
     float   k = (pmission->GetFloatConstant(c_fcidRatingAdd) +
-                 ppsoKillee->m_fCombatRating - ppsoKiller->m_fCombatRating) / 
+                 ppsoKillee->m_fCombatRating - ppsoKiller->m_fCombatRating) /
                 pmission->GetFloatConstant(c_fcidRatingDivide);
 
     ppsoKiller->m_fCombatRating = ppsoKiller->m_fCombatRating * (1.0f - k) + k;
@@ -2517,7 +2593,7 @@ int GetDistance(IshipIGC*     pship,
         assert (pcluster);
         clustersVisited.first(pcluster);    //We've already visited this cluster
 
-        //Push the destinations of the warps in pcluster onto the end the list of 
+        //Push the destinations of the warps in pcluster onto the end the list of
         //warps that are an extra jump away
         {
             for (WarpLinkIGC*   l = pcluster->GetWarps()->first(); (l != NULL); l = l->next())
@@ -2788,7 +2864,7 @@ void        PopulateCluster(ImissionIGC*            pmission,
 
             for (SideLinkIGC*   p = psides->first(); (p != NULL); p = p->next())
             {
-                if (p->data() != pside)
+                if (p->data() != pside)  //Imago ALLY VISIBILITY 7/11/09 reverted
                     pstation->SetSideVisibility(p->data(),
                                                 false);
             }

@@ -93,11 +93,15 @@ static const unsigned CRC32_TABLE[256] =
 
 /****************************************************************************/
 
-//
-// DWORD update_crc (DWORD Crc, BYTE Data)
-// {
-//     return CRC32_TABLE[(BYTE)(Crc) ^ Data] ^ (Crc >> 8)
-// }
+// Imago uncommented and adapted for x64 6/20/09
+#if defined (_WIN64)
+DWORD update_crc (DWORD Crc, const void * pData)
+{
+	BYTE Data = (BYTE)pData;
+    return CRC32_TABLE[(BYTE)(Crc) ^ Data] ^ (Crc >> 8);
+}
+#else
+
 //
 // This routine computes the 32 bit CRC used by PKZIP and its derivatives,
 // and by Chuck Forsberg's "ZMODEM" protocol.  The block CRC computation
@@ -139,7 +143,7 @@ crc_end:
     // return value already in eax
 }
 #pragma warning (default:4035)  // restore no return value warning
-
+#endif
 
 
 
@@ -157,7 +161,12 @@ Returns:		checksum of the data (never returns zero)
 ****************************************************************************/
 int MemoryCRC(const void *_data, unsigned size) 
 {
-    int crc = (int)update_crc(0xFFFFFFFF, _data, size);
+
+#if defined (_WIN64) //hack for x64
+    int crc = (int)update_crc(0xFFFFFFFF, _data);
+#else
+	int crc = (int)update_crc(0xFFFFFFFF, _data, size);
+#endif
 
     // shouldn't ever happen, but make sure we never return 0
     if (crc == 0)  

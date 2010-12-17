@@ -195,9 +195,12 @@ public:
             //    SectorName(pplayer->LastSeenSector())
             //);
             
-            // draw their money
+            // draw their money  
             
-            if (pplayer->IsHuman() && pplayer->SideID() == trekClient.GetSideID())
+			IsideIGC* pside = pplayer->GetShip()->GetSide();
+            if (pplayer->IsHuman() && 
+				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 ALLYTD VISIBLITY, show allies $$$; That data isn't being sent, should it?
+				pside->AlliedSides(pside,trekClient.GetSide()) ))
             {
                 char cbTemp[256];
                 wsprintf(cbTemp, "%d", pplayer->GetMoney());
@@ -230,6 +233,7 @@ public:
         
         TRef<Image> m_pimageArrow;
         TRef<Image> m_pimageTab;
+		TRef<Image> m_pimageAllies[c_cAlliancesMax]; //Imago ALLYTD 7/9/09 come up with something better than a colored number
         
         int m_nWidth;
         int m_nHeight;
@@ -292,7 +296,7 @@ public:
               switch (pnumberside)
               {
               case 0:
-                  m_pimageTab = GetModeler()->LoadImage("btnteamyellowbmp", true);
+				  m_pimageTab = GetModeler()->LoadImage("btnteamyellowbmp", true);
                   break;
                   
               case 1:
@@ -318,22 +322,23 @@ public:
               // WLP 2005 - added default for NOAT lobby team display
               //
               default:                                                                // WLP 2005 - view lobby
-                  m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
+				  m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
+				  
 
              }
               if (m_pimageTab)
 			  {
-              psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
-              if (!m_bSingle){
-                  if (bSelected) 
-                  {
+             	psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
+              	if (!m_bSingle){
+                	if (bSelected) 
+                  	{
                       // draw the selected tab arrow
                       psurface->BitBlt(WinPoint(157,0), m_pimageArrow->GetSurface());  //AEM 7.21.07 Expanded to X of 160 from 130 
-                  }
-              }
-              
+                  	}
+              	}            
               WinRect rectClipOld = psurface->GetClipRect();
               psurface->SetClipRect(WinRect(WinPoint(1, 0), WinPoint(105, 20))); // clip name to fit in column // yp: changed from 105 to 90 //AEM to 130
+
               // draw the team name
 			  ZString name;
 			  if ( pitem->GetSideID()== SIDE_TEAMLOBBY ) 
@@ -344,6 +349,14 @@ public:
 			  {
 					name=CensorBadWords (m_pMission->SideName(pitem->GetSideID()));
 			  }
+			  // #ALLY - temporary ui: prefix team name with alliance group number
+			  char allies = m_pMission->SideAllies(pitem->GetSideID());
+			  if (allies!=NA) { //imago added ally  color 7/9/09
+				  Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
+				  psurface->FillRect(WinRect(WinPoint(0, 0), WinPoint(9, 20)), AllianceColors[pside->GetAllies()]*0.75);
+				  name = ZString((int)allies+1)+" " + name;
+			  }
+			  //
               psurface->DrawString(
                   TrekResources::SmallFont(),
                   Color::White(),
@@ -459,7 +472,7 @@ public:
         
         return (pplayer->IsHuman() 
             || pplayer->LastSeenShipType() != NA 
-            || pplayer->SideID() == trekClient.GetSideID());
+            || pplayer->SideID() == trekClient.GetSideID() || (trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pplayer->GetShip()->GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz));  //Imago ALLY Visibility 7/6/09 7/11/09
     }
 
     static Color GetSideUIColor(SideID sideID)
@@ -537,6 +550,7 @@ public:
             {
                 m_pbuttonDonate->SetRepeat(0.1f, 0.5f);
                 AddEventTarget(&TeamPane::OnButtonDonate, m_pbuttonDonate->GetEventSource());
+				AddEventTarget(&TeamPane::OnRightButtonDonate, m_pbuttonDonate->GetRightEventSource());
             }
             
             if (m_pbuttonAutoDonate)
@@ -741,9 +755,9 @@ public:
         bool bHideAccept = true;
         
         if (pitem != NULL)
-        {
+		{
             PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
-            if (m_sideCurrent == trekClient.GetSideID()) // my side
+            if ( m_sideCurrent == trekClient.GetSideID())	// my side
             {
                 bHideBoot = !trekClient.GetPlayerInfo()->IsTeamLeader();
                 
@@ -806,7 +820,7 @@ public:
 					bHideStopDonate = true;
                     bEnableStopDonate = false; //trekClient.GetShip()->GetAutoDonate() != NULL;
                 }
-            }
+			}
             else
             {
                 bEnableTakeMeTo = true;
@@ -819,6 +833,12 @@ public:
             && pplayer->GetShipStatus().GetSectorID() == trekClient.GetCluster()->GetObjectID())
             );
             */
+
+			// or allied side Imago ALLY 7/6/09 7/8/09 ## not drones
+			if (trekClient.GetSide()->AlliedSides(trekClient.GetSide(),pplayer->GetShip()->GetSide()) && pplayer->IsHuman())  {
+				bEnableDonate = (trekClient.GetMoney() > 0);
+				
+			}
         }
         
         if (m_pbuttonBoot)
@@ -995,39 +1015,65 @@ public:
         return true;                
     }
     
+    class BootSink : public IIntegerEventSink {
+    public:
+        ShipID  m_shipID;
+
+        BootSink(ShipID shipID) :
+            m_shipID(shipID)
+        {
+        }
+
+        bool OnEvent(IIntegerEventSource* pevent, int value)
+        {
+			if (value == IDOK) {
+				SideID  sideID = trekClient.GetSideID();
+				trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+				if (trekClient.MyMission()->FindRequest(trekClient.GetSideID(), m_shipID))
+				{
+					BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
+						END_PFM_CREATE
+						pfmPosAck->shipID = m_shipID;
+					pfmPosAck->fAccepted = false;
+					pfmPosAck->iSide = sideID;
+				}
+				else
+				{
+					// if defections are allowed, boot them to the lobby side.
+					if (trekClient.MyMission()->GetMissionParams().bAllowDefections)
+					{
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
+							END_PFM_CREATE
+							pfmQuitSide->shipID = m_shipID;
+						pfmQuitSide->reason = QSR_LeaderBooted;
+					}
+					else
+					{
+						BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitMission, CS, QUIT_MISSION)
+							END_PFM_CREATE
+							pfmQuitMission->shipID = m_shipID;
+						pfmQuitMission->reason = QSR_LeaderBooted;
+					}
+				}
+			} // end OK was hit
+            return false;
+        }
+    };
+
     bool OnButtonBoot()
     {
         ShipID  shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
-        SideID  sideID = trekClient.GetSideID();
-        
-        trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-        if (trekClient.MyMission()->FindRequest(trekClient.GetSideID(), shipID))
-        {
-            BEGIN_PFM_CREATE(trekClient.m_fm, pfmPosAck, C, POSITIONACK)
-                END_PFM_CREATE
-                pfmPosAck->shipID = shipID;
-            pfmPosAck->fAccepted = false;
-            pfmPosAck->iSide = sideID;
-        }
-        else
-        {
-            // if defections are allowed, boot them to the lobby side.
-            if (trekClient.MyMission()->GetMissionParams().bAllowDefections)
-            {
-                BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
-                    END_PFM_CREATE
-                    pfmQuitSide->shipID = shipID;
-                pfmQuitSide->reason = QSR_LeaderBooted;
-            }
-            else
-            {
-                BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitMission, CS, QUIT_MISSION)
-                    END_PFM_CREATE
-                    pfmQuitMission->shipID = shipID;
-                pfmQuitMission->reason = QSR_LeaderBooted;
-            }
-        }
-        
+
+		//Imago sunk the boot into the message box above  7/22/08
+		TRef<IMessageBox> m_pmessageBox;
+		PlayerInfo* pplayer = trekClient.FindPlayer(shipID);
+		ZString strMsg = "Boot " + ZString(pplayer->CharacterName()) + "?";
+		if (m_pmessageBox == NULL) {
+			m_pmessageBox = CreateMessageBox(strMsg, NULL, true, true);
+			m_pmessageBox->GetEventSource()->AddSink(new BootSink(shipID));
+			GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+		}
+
         return true;
     }
     
@@ -1048,8 +1094,48 @@ public:
             
             if (shipID != trekClient.GetShipID() && trekClient.GetMoney() > 0)
             {
+
+				//imago 7/10/09
+				if (trekClient.FindPlayer(shipID)->GetShip()->GetSide() != trekClient.GetSide())
+					trekClient.PostText(false, "You gave %s $%d. You now have $%d.",
+                    	  trekClient.FindPlayer(shipID)->CharacterName(), 
+						  (trekClient.GetMoney() >= 100) ? 100 : trekClient.GetMoney(), 
+						  (trekClient.GetMoney() >= 100) ? (trekClient.GetMoney() - 100) : 0);
+
                 trekClient.DonateMoney(trekClient.FindPlayer(shipID), 
                     (trekClient.GetMoney() >= 100) ? 100 : trekClient.GetMoney());
+
+            }                    
+        }
+        
+        return true;
+    }
+
+	//Imago 7/6/09 large donations /w right click
+    bool OnRightButtonDonate()
+    {
+        if (m_plistPanePlayers->GetSelection() != NULL)
+        {
+            ShipID shipID = IntItemIDWrapper<ShipID>(m_plistPanePlayers->GetSelection());
+            
+            if (shipID != trekClient.GetShipID() && trekClient.GetMoney() > 0)
+            {
+
+				//hack the sfx in, see NYI in trekmdl.cpp
+				trekClient.PlaySoundEffect(positiveButtonClickSound);
+
+				//imago 7/10/09
+				if (trekClient.FindPlayer(shipID)->GetShip()->GetSide() != trekClient.GetSide())
+					trekClient.PostText(false, "You gave %s $%d. You now have $%d.",
+                    	 trekClient.FindPlayer(shipID)->CharacterName(), 
+						  (trekClient.GetMoney() >= 500) ? 500 : trekClient.GetMoney(), 
+						  (trekClient.GetMoney() >= 500) ? (trekClient.GetMoney() - 500) : 0);
+
+				//Imago 7/6/09 large donations /w right click
+                trekClient.DonateMoney(trekClient.FindPlayer(shipID), 
+                    (trekClient.GetMoney() >= 500) ? 500 : trekClient.GetMoney());
+
+
             }                    
         }
         

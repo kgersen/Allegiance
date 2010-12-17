@@ -1,0 +1,294 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{bdf962c4-814a-4cc1-b0b9-bd0dc6e50c5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{57e8acfa-73a5-446d-a084-f6871c1ebfb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI\Input">
+      <UniqueIdentifier>{75f75e5b-a16f-4d18-a937-2cc7a22f32a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modeler">
+      <UniqueIdentifier>{1e9ce095-3d94-4174-8bca-eba0393088ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modeler\Resource">
+      <UniqueIdentifier>{357deea3-1294-4104-87f1-d0a96abf26ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="New Code">
+      <UniqueIdentifier>{b904e549-acc8-4951-af11-dbb8c15394ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="New Code\Settings">
+      <UniqueIdentifier>{1c83f89a-d26d-4ed9-89a4-7e2e35ae60b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="New Code\Texture Pack">
+      <UniqueIdentifier>{387fb46c-63ad-46b7-932d-8d3033f7b0ef}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\engine\bounds.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\bspgeo.cpp">
+      <Filter>Modeler\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\button.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\camera.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\caption.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\context.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\controls.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\D3DDevice9.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\dderror.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\device3d.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\DeviceModesDX9.cpp">
+      <Filter>New Code\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\dinput.cpp">
+      <Filter>GUI\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\DX9PackFile.cpp">
+      <Filter>New Code\Texture Pack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\engine.cpp" />
+    <ClCompile Include="..\src\engine\engineapp.cpp" />
+    <ClCompile Include="..\src\engine\enginewindow.cpp" />
+    <ClCompile Include="..\src\engine\font.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\frameimage.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\geometry.cpp">
+      <Filter>Modeler\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\HashTable.cpp">
+      <Filter>New Code\Texture Pack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\image.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\ImageTransfer.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\keyframe.cpp">
+      <Filter>Modeler\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\LogFile.cpp">
+      <Filter>New Code\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\material.cpp">
+      <Filter>Modeler\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\mdl.cpp">
+      <Filter>Modeler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\mdlbin.cpp">
+      <Filter>Modeler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\menu.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\modeler.cpp">
+      <Filter>Modeler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\namespace.cpp">
+      <Filter>Modeler</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\pane.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\paneimage.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\pch.cpp" />
+    <ClCompile Include="..\src\engine\pixelformat.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\popup.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\RasterD3D9.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\surface.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\toppane.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\transform.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\transform2.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\value.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\VBIBManager.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\VertexGenerator.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\VideoSettingsDX9.cpp">
+      <Filter>New Code\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\viewport.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\VRAMManager.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\engine\xfile.cpp">
+      <Filter>Modeler\Resource</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\engine\bounds.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\bspgeo.h">
+      <Filter>Modeler\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\button.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\camera.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\caption.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\context.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\controls.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\D3DDevice9.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\ddstruct.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\DeviceModesDX9.h">
+      <Filter>New Code\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\DX9PackFile.h">
+      <Filter>New Code\Texture Pack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\engine.h" />
+    <ClInclude Include="..\src\engine\engineapp.h" />
+    <ClInclude Include="..\src\engine\enginep.h" />
+    <ClInclude Include="..\src\engine\EngineSettings.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\enginewindow.h" />
+    <ClInclude Include="..\src\engine\font.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\frameimage.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\geometry.h">
+      <Filter>Modeler\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\HashTable.h">
+      <Filter>New Code\Texture Pack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\image.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\ImageTransfer.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\inputengine.h">
+      <Filter>GUI\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\keyframe.h">
+      <Filter>Modeler\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\LogFile.h">
+      <Filter>New Code\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\material.h">
+      <Filter>Modeler\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\mdl.h">
+      <Filter>Modeler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\menu.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\model.h">
+      <Filter>Modeler\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\namespace.h">
+      <Filter>Modeler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\pane.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\paneimage.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\pch.h" />
+    <ClInclude Include="..\src\engine\pixelformat.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\popup.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\surface.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\toppane.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\transform.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\UIVertexDefn.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\value.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\VBIBManager.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\VertexGenerator.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\VideoSettingsDX9.h">
+      <Filter>New Code\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\viewport.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\VRAMManager.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\engine\xfile.h">
+      <Filter>Modeler\Resource</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

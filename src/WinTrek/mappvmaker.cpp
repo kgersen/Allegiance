@@ -123,7 +123,7 @@ void ImissionPV::DeleteWarp(CwarpPV* pwarp)
 CMapPVCluster* ImissionPV::CreatePVCluster(DataClusterIGC *ds,int dataSize)
 {
 	//debugf("CreatePVCluster: %f %f %d\n",(double)ds->screenX,(double)ds->screenY,dataSize);
-	CMapPVCluster * cluster = new CMapPVCluster(this,ds,dataSize);
+	CMapPVCluster * cluster = new CMapPVCluster(this,ds,dataSize); //Fix memory leak -Imago 8/2/09
 	ZVerify(m_pClusters.last(cluster));
     cluster->AddRef();
     cluster->AddRef();
@@ -132,7 +132,7 @@ CMapPVCluster* ImissionPV::CreatePVCluster(DataClusterIGC *ds,int dataSize)
 }
 CwarpPV* ImissionPV::CreatePVWrap(DataWarpIGC *ds,int dataSize,CMapPVCluster* cluster)
 {
-	CwarpPV *warp = new CwarpPV(this,ds,dataSize);
+	CwarpPV *warp = new CwarpPV(this,ds,dataSize); //Fix memory leak -Imago 8/2/09
 	m_pWarps.last(warp);
 	warp->AddRef();
 	warp->AddRef();

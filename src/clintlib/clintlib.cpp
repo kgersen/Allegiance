@@ -138,6 +138,12 @@ public:
         ForEachSink( OnTeamNameChange(pMissionInfo, sideID) )
     }
 
+	// #ALLY
+	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
+	{
+		ForEachSink( OnTeamAlliancesChange(pMissionInfo) )
+	}
+
     void OnPlayerStatusChange(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo)
     {
         ForEachSink( OnPlayerStatusChange(pMissionInfo, sideID, pPlayerInfo) )
@@ -401,6 +407,12 @@ public:
     {
         m_psink->OnTeamNameChange(pMissionInfo, sideID);
     }
+
+	// #ALLY
+	void OnTeamAlliancesChange(MissionInfo* pMissionInfo)
+	{
+		m_psink->OnTeamAlliancesChange(pMissionInfo);
+	} 
 
     void OnPlayerStatusChange(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo)
     {
@@ -945,7 +957,7 @@ List* MissionInfo::GetSideList()
         GetSideInfo(id);
     GetSideInfo(SIDE_TEAMLOBBY);
 
-    return new ListDelegate(&m_mapSideInfo);
+    return new ListDelegate(&m_mapSideInfo); //Fix memory leak -Imago 8/2/09
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1250,11 +1262,33 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
         hr = m_fm.JoinSessionInstance(ci.guidSession, ci.szName);
     }
     else
-    {
-        if (bStandalonePrivate)
-          hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);
-        else															// Mdvalley: Connecting via the lobby can only lead to this option.
-          hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
+	{
+		if (bStandalonePrivate) {
+			hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);		  
+		}
+		else {
+			//imago moved this up first 8/1/09 due to longer timeout
+            HKEY hKey;
+            DWORD cbValue = c_cbName;
+            char szServer[c_cbName];
+            szServer[0] = '\0';
+            if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
+                ::RegQueryValueEx(hKey,"ServerAddress", NULL, NULL, (unsigned char*)&szServer, &cbValue);
+                ::RegCloseKey(hKey);
+            }
+            if (szServer[0] != '\0') {
+                ZString strServer = ZString(szServer).LeftOf(":");
+                DWORD dwPort = ZString(szServer).RightOf(":").GetInteger();
+
+                hr = m_fm.JoinSession(FEDSRV_GUID, strServer, ci.szName, dwPort);
+			} else {
+				hr = -1;
+			}
+
+			if(FAILED(hr)) 
+				hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
+
+        }
     }
 
     // TODO: Remove this when we are ready to enforce CD Keys
@@ -2986,7 +3020,7 @@ void BaseClient::FireMissile(IshipIGC* pShip,
 
         missileLaunchData[i].vecVelocity = vecLaunchVelocity + (dataMissile.pmissiletype->GetInitialSpeed() * missileLaunchData[i].vecForward);
         ZRetailAssert(missileLaunchData[i].vecVelocity * missileLaunchData[i].vecVelocity >= 0.0f);
-        ZRetailAssert(missileLaunchData[i].vecVelocity * missileLaunchData[i].vecVelocity <= 1.0e6);
+        //ZRetailAssert(missileLaunchData[i].vecVelocity * missileLaunchData[i].vecVelocity <= 1.0e6); //Imago 8/12/09
     }
 
     if (!m_fm.IsConnected())
@@ -3769,10 +3803,12 @@ void BaseClient::RemovePlayerFromSide(PlayerInfo* pPlayerInfo, QuitSideReason re
                 };
             }
             else
-            {
+            { //#ALLY: imago made this sound corrected for allies 7/3/09
+				IsideIGC* otherside = m_pCoreIGC->GetSide(pPlayerInfo->SideID());
+				int sfx = (otherside->AlliedSides(otherside,GetSide())) ? salQuitSound : salEnemyLeavesSound;
                 msg = pPlayerInfo->CharacterName() + ZString(" has left ") 
                     + GetCore()->GetSide(sideOld)->GetName() + ZString(".");
-                ReceiveChat(NULL, CHAT_TEAM, NA, salEnemyLeavesSound, msg, c_cidNone, NA, NA);
+                ReceiveChat(NULL, CHAT_TEAM, NA, sfx, msg, c_cidNone, NA, NA);
             }
         }
     }
@@ -3857,6 +3893,7 @@ void BaseClient::AddPlayerToMission(PlayerInfo* pPlayerInfo)
     {
         m_pCoreIGC->SetMissionParams(&(m_pMissionInfo->GetMissionParams()));
         m_pCoreIGC->UpdateSides(Time::Now(), &(m_pMissionInfo->GetMissionParams()), m_pMissionInfo->GetMissionDef().rgszName);
+		m_pCoreIGC->UpdateAllies(m_pMissionInfo->GetMissionDef().rgfAllies);//#ALLY
         OnJoinSide();
     }
     m_pMissionInfo->AddPlayer(pPlayerInfo);
@@ -3908,17 +3945,22 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
     if (pPlayerInfo->IsHuman() && m_pMissionInfo->GetStage() == STAGE_STARTED && m_fm.IsConnected())
     {
         // tell the players that someone has just joined their team
-        if ((m_pPlayerInfo != pPlayerInfo) && (m_pPlayerInfo->SideID() == pPlayerInfo->SideID()))
+		IsideIGC* otherside = GetCore()->GetSide(pPlayerInfo->SideID());
+        if ( (m_pPlayerInfo != pPlayerInfo) && (((m_pPlayerInfo->SideID() == pPlayerInfo->SideID()) || otherside->AlliedSides(otherside,GetSide())) )) //#ALLY -imago 7/3/09
         {
-            ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
-
-            ReceiveChat(NULL, CHAT_TEAM, NA, salRecruitsArrivedSound, msg, c_cidNone, NA, NA);
+			if (otherside != GetSide() && otherside->AlliedSides(otherside,GetSide())) {
+                Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
+            	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ") + pside->GetName() + ZString(" \x81 ") + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(allied)" + END_COLOR_STRING + ".";
+	            ReceiveChat(NULL, CHAT_TEAM, NA, NULL, msg, c_cidNone, NA, NA);
+			} else {
+            	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
+	            ReceiveChat(NULL, CHAT_TEAM, NA, salRecruitsArrivedSound, msg, c_cidNone, NA, NA);
+			}
         }
         else if (m_pPlayerInfo && GetSide() && GetSideID() != SIDE_TEAMLOBBY)
         {
             ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ")
                 + pside->GetName() + ZString(".");
-
             ReceiveChat(NULL, CHAT_TEAM, NA, salEnemyJoinersSound, msg, c_cidNone, NA, NA);
         }
     }

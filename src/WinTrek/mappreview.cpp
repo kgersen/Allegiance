@@ -454,6 +454,7 @@ private:
 
 		// draw the minimap background
         pcontext->SetShadeMode(ShadeModeFlat);
+		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/17/09
 		pcontext->DrawImage(m_pimageSectorBkgnd->GetSurface());
 
 		if (m_missionpv.GetClusters()->n() == 0) return; // no cluster so no map preview
@@ -477,7 +478,7 @@ private:
 				assert (pwarpDestination != NULL);
 				if (pWarp->GetObjectID() > pwarpDestination->GetObjectID())
 				{
-					Color colorWarp = 0.7f * Color::White(); // upped from 0.5f to 0.7f
+					Color colorWarp = 0.5f * Color::White(); // upped from 0.5f to 0.7f //imago put back to match sectormap.cpp 7/17/09
 					WinPoint point1 = GetClusterPoint(pWarp->GetCluster());
 					WinPoint point2 = GetClusterPoint(pwarpDestination->GetCluster());
 

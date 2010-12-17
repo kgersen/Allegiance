@@ -24,7 +24,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         DWORD dwError = GetLastError();
 
         if (!g_papp) {
-            __asm int 3; // (debug break)
+           (*(int*)0) = 0; // Imago removed asm (x64)
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
             g_papp->OnAssertBreak();
         }
@@ -48,54 +48,59 @@ void InitializeLogchat()
 
 	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
-		::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue);		
+		//Imago fixed this but is still confused why it's not a dword.
+		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue))		
+			bLogChat = (strcmp(szValue, "1") == 0);
 		::RegCloseKey(hKey);
-		bLogChat = (strcmp(szValue, "1") == 0);
 	}
+
 
 	if (bLogChat)
 	{
-	time_t longTime;
-	time(&longTime);
-	tm* t = new tm;
-//	tm* t = localtime(&longTime);
-	localtime_s(t, &longTime);
+		time_t longTime;
+		time(&longTime);
+		tm* t = new tm;
+	//	tm* t = localtime(&longTime);
+		localtime_s(t, &longTime);
 
-	// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
-	// turns out this is not needed but leaving it here instead of moving it again
-	GetModuleFileName(NULL, logFileName, MAX_PATH);
-	char* p = strrchr(logFileName, '\\');
-	if (!p)
-		p = logFileName;
-	else
-		p++;
+		// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
+		// turns out this is not needed but leaving it here instead of moving it again
+		GetModuleFileName(NULL, logFileName, MAX_PATH);
+		char* p = strrchr(logFileName, '\\');
+		if (!p)
+			p = logFileName;
+		else
+			p++;
 
-	strcpy(p, "logs\\");
+		strcpy(p, "logs\\");
 
-	if (!CreateDirectory(logFileName, NULL))
-	{
-		if (GetLastError() == ERROR_PATH_NOT_FOUND)
+		if (!CreateDirectory(logFileName, NULL))
 		{
-			debugf("Unable to create chat log directory %s\n",logFileName);
+			if (GetLastError() == ERROR_PATH_NOT_FOUND)
+			{
+				debugf("Unable to create chat log directory %s\n",logFileName);
+			}
 		}
-	}
 
-	sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+		// mmf 1/17/08 fixed month
+		sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), (t->tm_mon+1), t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
-	// mmf changed 3 param from 0 to FILE_SHARE_READ
-	chat_logfile =
-		CreateFile(
-			logFileName,
-			GENERIC_WRITE,
-			FILE_SHARE_READ,
-			NULL,
-			OPEN_ALWAYS,
-			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-			NULL
-		);
-	delete t;
+		// mmf changed 3 param from 0 to FILE_SHARE_READ
+		chat_logfile =
+			CreateFile(
+				logFileName,
+				GENERIC_WRITE,
+				FILE_SHARE_READ,
+				NULL,
+				OPEN_ALWAYS,
+				FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
+				NULL
+			);
+		delete t;
+
+		//Imago moved inside bLogChat
+		if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
 	}
-	if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
 }
 
 void TerminateLogchat()
@@ -149,7 +154,6 @@ void retailf(const char* format, ...)
 {
     if (g_bOutput)
     {
-#ifndef DREAMCAST        
         const size_t size = 2048; //Avalance: Changed to log longer messages. (From 512)
         char         bfr[size];
 
@@ -159,9 +163,6 @@ void retailf(const char* format, ...)
         va_end(vl);
 
         ZDebugOutputImpl(bfr);
-#else
-        ZDebugOutputImpl(format);
-#endif
     }
 }
 
@@ -245,7 +246,6 @@ extern bool g_bOutput = true;
     {
         if (g_bOutput)
         {
-#ifndef DREAMCAST        
             const size_t size = 2048; //Avalanche: Changed to handle longer messages (from 512)
             char         bfr[size];
 
@@ -255,15 +255,11 @@ extern bool g_bOutput = true;
             va_end(vl);
 
             ZDebugOutputImpl(bfr);
-#else
-            ZDebugOutputImpl(format);
-#endif
         }
     }
 
     void InitializeDebugf()
     {
-#ifndef DREAMCAST        
         HKEY hKey;
         DWORD dwType;
         char  szValue[20];
@@ -319,24 +315,21 @@ extern bool g_bOutput = true;
                 CreateFile(
                     logFileName, 
                     GENERIC_WRITE, 
-                    0,
+                    FILE_SHARE_READ,
                     NULL, 
                     OPEN_ALWAYS,
                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
                     NULL
                 );
         }
-#endif
     }
 
     void TerminateDebugf()
     {
-#ifndef DREAMCAST        
         if (g_logfile) {
             CloseHandle(g_logfile);
             g_logfile = NULL;
         }
-#endif
     }
 #endif  // SRVLOG or _DEBUG
 
@@ -436,6 +429,11 @@ void Win32App::OnAssertBreak()
     (*(int*)0) = 0;
 }
 
+// KGJV - added for DX9 behavior - default is false. override in parent to change this
+bool Win32App::IsBuildDX9()
+{
+	return false;
+}
 //////////////////////////////////////////////////////////////////////////////
 //
 // Win Main
@@ -458,14 +456,25 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
     __try { 
         do {
-            #ifdef _DEBUG
+            #ifdef SRVLOG
                 InitializeDebugf();
             #endif
 
 			InitializeLogchat();  // mmf
 
             BreakOnError(hr = Window::StaticInitialize());
-            BreakOnError(hr = g_papp->Initialize(lpszCmdLine));
+
+// BUILD_DX9 - KGJV use runtime dynamic instead at preprocessor level
+			if (g_papp->IsBuildDX9())
+			{
+				BreakOnError(hr = g_papp->Initialize(lpszCmdLine));
+			}
+			else
+			{
+				// Don't throw an error, if the user selects cancel it can return E_FAIL.
+				hr = g_papp->Initialize(lpszCmdLine);
+			}
+// BUILD_DX9
 
             //
             // Win32App::Initialize() return S_FALSE if this is a command line app and
@@ -479,7 +488,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
             g_papp->Terminate();
             Window::StaticTerminate();
 
-            #ifdef _DEBUG
+            #ifdef SRVLOG
                 TerminateDebugf();
             #endif
 

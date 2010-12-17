@@ -42,11 +42,8 @@ HRESULT         CstationTypeIGC::Initialize(ImissionIGC* pMission,
     m_nLandSlots = 0;
     m_nCapLandSlots = 0;
     m_nLaunchSlots = 0;
-#ifdef DREAMCAST
-    if (pmhb)
-#else
+
     assert (pmhb);
-#endif    
     {
         float   scale = (m_data.radius / pmhb->GetOriginalRadius());
 

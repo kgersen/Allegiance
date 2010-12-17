@@ -1,0 +1,391 @@
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZDebug|X64">
+      <Configuration>FZDebug</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Instrumented|Win32">
+      <Configuration>FZRetail-Instrumented</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Instrumented|X64">
+      <Configuration>FZRetail-Instrumented</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|X64">
+      <Configuration>FZRetail</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Optimized|Win32">
+      <Configuration>FZRetail-Optimized</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Optimized|X64">
+      <Configuration>FZRetail-Optimized</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-SSE2|Win32">
+      <Configuration>FZRetail-SSE2</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-SSE2|X64">
+      <Configuration>FZRetail-SSE2</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{1695996C-F698-4509-BF5C-ADE10ADA67F9}</ProjectGUID>
+    <RootNamespace>TCLib</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\Test\TCLib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\Test\TCLib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\Test\TCLib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\Test\TCLib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\Test\TCLib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\Test\TCLib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\Test\TCLib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\Test\TCLib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\Test\TCLib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\Test\TCLib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\Test\TCLib\x64\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <BrowseInformationFile>
+      </BrowseInformationFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <BrowseInformationFile>
+      </BrowseInformationFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Lib>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <Lib>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <Optimization>Full</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\Test\TCLib;..\src\Test\Inc;..\src\ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Test\TCLib\DynaLib.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\ExcepInfo.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\InvokeArgs.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\Test\TCLib\PropertyPageSite.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\RelPath.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\StrManip.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\TCLib.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\TCThread.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\UtilImpl.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\UtilityThread.cpp" />
+    <ClCompile Include="..\src\Test\TCLib\WorkerThread.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Test\Inc\TCLib.h" />
+    <ClInclude Include="..\src\Test\TCLib\AdviseHolder.h" />
+    <ClInclude Include="..\src\Test\TCLib\AutoCriticalSection.h" />
+    <ClInclude Include="..\src\Test\TCLib\AutoHandle.h" />
+    <ClInclude Include="..\src\Test\TCLib\AutoMutex.h" />
+    <ClInclude Include="..\src\Test\TCLib\BinString.h" />
+    <ClInclude Include="..\src\Test\TCLib\CoInit.h" />
+    <ClInclude Include="..\src\Test\TCLib\CommonControls.h" />
+    <ClInclude Include="..\src\Test\TCLib\CompositeValue.h" />
+    <ClInclude Include="..\src\Test\TCLib\DynaLib.h" />
+    <ClInclude Include="..\src\Test\TCLib\ExcepInfo.h" />
+    <ClInclude Include="..\src\Test\TCLib\InvokeArgs.h" />
+    <ClInclude Include="..\src\Test\TCLib\LookupTable.h" />
+    <ClInclude Include="..\src\Test\TCLib\ObjectLock.h" />
+    <ClInclude Include="..\src\Test\TCLib\pch.h" />
+    <ClInclude Include="..\src\Test\TCLib\PropertyPageSite.h" />
+    <ClInclude Include="..\src\Test\TCLib\Range.h" />
+    <ClInclude Include="..\src\Test\TCLib\RangeSet.h" />
+    <ClInclude Include="..\src\Test\TCLib\RefCountedData.h" />
+    <ClInclude Include="..\src\Test\TCLib\RelPath.h" />
+    <ClInclude Include="..\src\Test\TCLib\StrManip.h" />
+    <ClInclude Include="..\src\Test\TCLib\TCCAUUID.h" />
+    <ClInclude Include="..\src\Test\TCLib\TCThread.h" />
+    <ClInclude Include="..\src\Test\TCLib\TraceScope.h" />
+    <ClInclude Include="..\src\Test\TCLib\tstring.h" />
+    <ClInclude Include="..\src\Test\TCLib\UtilImpl.h" />
+    <ClInclude Include="..\src\Test\TCLib\UtilityThread.h" />
+    <ClInclude Include="..\src\Test\TCLib\WinApp.h" />
+    <ClInclude Include="..\src\Test\TCLib\WindowThreadBase.h" />
+    <ClInclude Include="..\src\Test\TCLib\WindowThreadImpl.h" />
+    <ClInclude Include="..\src\Test\TCLib\WorkerThread.h" />
+    <ClInclude Include="..\src\Test\TCLib\WotLib.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

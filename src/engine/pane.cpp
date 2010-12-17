@@ -52,7 +52,11 @@ Pane::Pane(Pane* pchild, const WinPoint& size) :
     m_bSelected(false),
 	m_bOpaque(false),
     m_bPaintAll(true),
-    m_bNeedPaint(true)
+    m_bNeedPaint(true),
+	m_dwDataSize( 0 ),
+	m_pPaneVerts( NULL )
+//	m_dwFillVertsDataSize( 0 ),
+//	m_pFillVerts( NULL )
 {
     if (pchild) {
         InsertAtBottom(pchild);
@@ -312,6 +316,107 @@ void Pane::InsertAtTop(Pane* ppane)
 //
 /////////////////////////////////////////////////////////////////////////////
 
+
+//////////////////////////////////////////////////////////////////////////////
+// GenerateScreenVertices()
+// Generate the vertex list for surfaces with dimensions greater than 256.
+// pRectScreen points a WinRect containing the coords for displaying at.
+// Inverted pOffset->Y, as origin seems to be bottom left hand corner.
+//////////////////////////////////////////////////////////////////////////////
+/*void Pane::GenerateScreenVertices( TEXHANDLE hTexture, WinPoint * pOffset, WinPoint * pSize )
+{
+	DWORD dwOriginalWidth, dwOriginalHeight, dwNewDataSize;
+	DWORD dwActualWidth, dwActualHeight;
+	float fOriginalWidth, fOriginalHeight;
+	float fActualWidth, fActualHeight;
+
+	// Create the new data set.
+//	CVRAMManager::GetOriginalDimensions( hTexture, &dwOriginalWidth, &dwOriginalHeight );
+	dwOriginalWidth		= pSize->X();
+	dwOriginalHeight	= pSize->Y();
+
+	CVRAMManager::GetActualDimensions( hTexture, &dwActualWidth, &dwActualHeight);
+	fOriginalWidth	= (float) dwOriginalWidth;
+	fOriginalHeight	= (float) dwOriginalHeight;
+	fActualWidth	= (float) dwActualWidth;
+	fActualHeight	= (float) dwActualHeight;
+
+	float fLeft, fRight, fTop, fBottom;
+
+	if( ( m_pPaneVerts == NULL ) || 
+		( m_dwDataSize < 6 * sizeof( UIVERTEX ) ) )
+	{
+		if( m_pPaneVerts != NULL )
+		{
+			delete [] m_pPaneVerts;
+		}
+		m_pPaneVerts = new UIVERTEX[ 6 ];			// 6 verts for a tri list.
+		m_dwDataSize = 6 * sizeof( UIVERTEX );
+	}
+
+	float fOffsetY = pOffset->Y();
+
+	// Generate coords.
+	fLeft	= (float) pOffset->X();
+	fRight	= (float) ( pOffset->X() + pSize->X() );
+	fTop	= (float) pOffset->Y();
+	fBottom = (float) ( pOffset->Y() + pSize->Y() );
+	fTop	= fOffsetY;
+	fBottom = fTop + (float) pSize->Y();
+	
+//		fOriginalWidth	-= 1.0f;
+//		fOriginalHeight -= 1.0f;
+	fActualWidth	-= 1.0f;
+	fActualHeight	-= 1.0f;
+
+	// Top left, top tight, bottom left, bottom left, top tight, bottom right.
+	m_pPaneVerts[0].x	= fLeft;
+	m_pPaneVerts[0].y	= fTop;
+	m_pPaneVerts[0].z	= 0.5f;
+	m_pPaneVerts[0].rhw	= 1.0f;
+	m_pPaneVerts[0].fU	= 0.0f;
+	m_pPaneVerts[0].fV	= 0.0f;
+
+	m_pPaneVerts[1].x	= fRight;
+	m_pPaneVerts[1].y	= fTop;
+	m_pPaneVerts[1].z	= 0.5f;
+	m_pPaneVerts[1].rhw	= 1.0f;
+	m_pPaneVerts[1].fU	= fOriginalWidth / fActualWidth;
+	m_pPaneVerts[1].fV	= 0.0f;
+
+	m_pPaneVerts[2].x	= fLeft;
+	m_pPaneVerts[2].y	= fBottom;
+	m_pPaneVerts[2].z	= 0.5f;
+	m_pPaneVerts[2].rhw	= 1.0f;
+	m_pPaneVerts[2].fU	= 0.0f;
+	m_pPaneVerts[2].fV	= fOriginalHeight / fActualHeight;
+
+	m_pPaneVerts[3].x	= fLeft;
+	m_pPaneVerts[3].y	= fBottom;
+	m_pPaneVerts[3].z	= 0.5f;
+	m_pPaneVerts[3].rhw	= 1.0f;
+	m_pPaneVerts[3].fU	= 0.0f;
+	m_pPaneVerts[3].fV	= fOriginalHeight / fActualHeight;
+
+	m_pPaneVerts[4].x	= fRight;
+	m_pPaneVerts[4].y	= fTop;
+	m_pPaneVerts[4].z	= 0.5f;
+	m_pPaneVerts[4].rhw	= 1.0f;
+	m_pPaneVerts[4].fU	= fOriginalWidth / fActualWidth;
+	m_pPaneVerts[4].fV	= 0.0f;
+
+	m_pPaneVerts[5].x	= fRight;
+	m_pPaneVerts[5].y	= fBottom;
+	m_pPaneVerts[5].z	= 0.5f;
+	m_pPaneVerts[5].rhw	= 1.0f;
+	m_pPaneVerts[5].fU	= fOriginalWidth / fActualWidth;
+	m_pPaneVerts[5].fV	= fOriginalHeight / fActualHeight;
+
+	m_dwNumVerts		= 6;
+	m_dwNumPolys		= 2;
+}*/
+
+
 void Pane::NeedPaint()
 {
     m_bPaintAll = true;
@@ -330,24 +435,71 @@ void Pane::NeedPaintInternal()
 
 void Pane::Paint(Surface* psurface)
 {
+	// If this is firing, track which paint function hasn't been implemented in D3D9 yet.
+	//OutputDebugString( "Default (empty) PANE::PAINT called.\n" );
 }
 
-void Pane::PaintAll(Surface* psurface)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// PaintAll()
+// Paint this panes surface, then paint any children.
+// Note: the function ::Paint(), is overloaded by any class derived from Pane.
+// Added: pass the clip rect round, as with the others, pass by copy, as this can then be modified
+// and passed to child panes.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void Pane::PaintAll(	Surface * psurface )
 {
-    if (!m_bHidden) {
-        Paint(psurface);
+	// Clipping test - TBD: reinstate.
+/*	if( ( rectClip.XMax() <= rectClip.XMin() ) ||
+		( rectClip.YMax() <= rectClip.YMin() ) ||
+		( rectClip.XMax() < 0 ) ||
+		( rectClip.YMax() < 0 ) )
+	{
+		return;
+	}*/
 
-        for(Pane* ppane = m_pchild; ppane != NULL; ppane = ppane->m_pnext) {
+    if( !m_bHidden )
+	{
+		Paint( psurface );
+
+        for(Pane* ppane = m_pchild; ppane != NULL; ppane = ppane->m_pnext) 
+		{
             WinRect rectClipOld = psurface->GetClipRect();
             psurface->Offset(ppane->m_offset);
             psurface->SetClipRect(WinRect(WinPoint(0, 0), ppane->GetSize()));
 
-            ppane->PaintAll(psurface);
+ 			D3DVIEWPORT9 newViewport, oldViewport;
+			CD3DDevice9::Get()->GetViewport( &oldViewport );
+			WinRect surfClip = psurface->GetClipRect();
+			WinPoint surfOffset = psurface->GetOffset();
 
-            psurface->Offset(-ppane->m_offset);
+			newViewport.X = surfClip.XMin() + surfOffset.X();
+			newViewport.Y = surfClip.YMin() + surfOffset.Y();
+			newViewport.Width = surfClip.XMax() - surfClip.XMin();
+			newViewport.Height = surfClip.YMax() - surfClip.YMin();
+			newViewport.MinZ = oldViewport.MinZ;
+			newViewport.MaxZ = oldViewport.MaxZ;
+
+			newViewport.X = (int) newViewport.X < 0 ? 0 : newViewport.X;
+			newViewport.Y = (int) newViewport.Y < 0 ? 0 : newViewport.Y;
+			newViewport.Width = (int) newViewport.Width < 0 ? 0 : newViewport.Width;
+			newViewport.Height = (int) newViewport.Height < 0 ? 0 : newViewport.Height;
+
+			if( ( newViewport.Width > 0 ) &&
+				( newViewport.Height > 0 ) )
+			{
+				CD3DDevice9::Get()->SetViewport( &newViewport );			
+				ppane->PaintAll( psurface );
+			}
+
+			psurface->Offset(-ppane->m_offset);
             psurface->RestoreClipRect(rectClipOld);
-        }
 
+			if( ( newViewport.Width > 0 ) &&
+				( newViewport.Height > 0 ) )
+			{
+				CD3DDevice9::Get()->SetViewport( &oldViewport );
+			}
+       }
         m_bNeedPaint = false;
         m_bPaintAll  = false;
     }

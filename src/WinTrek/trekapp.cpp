@@ -11,6 +11,10 @@
 #include "main.h"
 #include "regkey.h"
 
+// BUILD_DX9
+#include "VideoSettingsDX9.h"
+// BUILD_DX9
+
 extern bool g_bEnableSound = true;
 extern bool g_bCheckFiles;
 extern bool g_fZoneAuth;
@@ -38,6 +42,10 @@ bool g_bAskForCallSign = true ; // wlp 2006
 #define GAME_REG_KEY        "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0"
 
 typedef DWORD (*EBUPROC) (LPCTSTR lpRegKeyLocation, LPCTSTR lpEULAFileName, LPCSTR lpWarrantyFileName, BOOL fCheckForFirstRun);
+
+
+
+
 
 //
 // EULA related files should be in the artwork folder so that they may be autoupdated
@@ -337,7 +345,7 @@ public:
         {
             if (MessageBox(NULL, 
                 "You are low on free memory and/or hard drive space.  "
-                "You may experience proplems running Allegiance.  Run anyway?", 
+                "You may experience problems running Allegiance.  Run anyway?", 
                 "Allegiance",
                 MB_ICONERROR | MB_YESNO
                 ) != IDYES)
@@ -372,7 +380,10 @@ public:
         // Fix success HRESULT
         hr = S_OK;
 
-        EffectApp::Initialize(strCommandLine);
+// BUILD_DX9
+		// For the D3D build, move this to after the window has been created, as we need a valid HWND to create the device.
+//		EffectApp::Initialize(strCommandLine);
+// BUILD_DX9
 
         //
         // get the artpath
@@ -479,14 +490,20 @@ public:
             strcpy(p, "artwork");
             pathStr = logFileName;
         }
-
-        GetModeler()->SetArtPath(pathStr);
-        UTL::SetArtPath(pathStr);
 		
-		// yp your_persona march 25 2006 : Remove EULA.dll dependency patch
-		//
-        /*{
-          HRESULT hr = FirstRunEula(pathStr);
+		//Imago 8/16/09
+		ZVersionInfo vi;
+		debugf("Running %s %s\nArtpath: %s\nCommand line: %s\n", (PCC) vi.GetInternalName(), 
+			(PCC) vi.GetStringValue("FileVersion"),(PCC) pathStr, (PCC) strCommandLine);
+
+// BUILD_DX9
+		// Now set later for D3D build, as modeller isn't valid yet.
+		//GetModeler()->SetArtPath(pathStr);
+// BUILD_DX9
+ 		UTL::SetArtPath(pathStr);
+		
+		/*{
+			HRESULT hr = FirstRunEula(pathStr);
 		
           if (hr == E_FAIL)
           {
@@ -505,11 +522,13 @@ public:
           }
         }*/
 
+// BUILD_DX9
         //
         // load the fonts
         //
 
-        TrekResources::Initialize(GetModeler());
+//        TrekResources::Initialize(GetModeler());
+// BUILD_DX9
 
         //
         // Initialize the runtime
@@ -530,7 +549,9 @@ public:
         bool bHardware        = false;
         bool bPrimary         = false;
         bool bSecondary       = false;
+		bool bStartFullscreen = true;
         ZString strMap;
+		ZString strAdapter; int iUseAdapter = 0;
 
         PCC pcc = strCommandLine;
         CommandLineToken token(pcc, strCommandLine.GetLength());
@@ -555,7 +576,9 @@ public:
                 } else if (str == "nooutput") {
                     g_bOutput = false;
                 } else if (str == "quickstart") {
-                    g_bQuickstart = true;
+					//Imago dont quickstart if no saved name 7/21/09
+					if (trekClient.GetSavedCharacterName().GetLength())
+                    	g_bQuickstart = true;
                     float civStart;
                     if (token.IsNumber(civStart)) 
                         g_civStart = (int)civStart;
@@ -604,7 +627,16 @@ public:
                 } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
                     trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
                     g_bAskForCallSign = false ; // wlp callsign was entered on commandline
-                }                 
+                } else if (str == "windowed") {  //imago sucked these in here to accommidate the way we now create the D3DDevice
+	                bStartFullscreen = false;
+	            } else if (str == "fullscreen") {
+	                bStartFullscreen = true;
+				} else if (str == "adapter") { //imago added for the needy
+                    if (token.IsString(strAdapter))
+                    {
+                        iUseAdapter = strAdapter.GetInteger();
+                    }
+				}
             }
             else // wlp 2006 - adapted this string featture to add ASGS Ticket to cdKey field
             if (token.IsString(str)){} ;
@@ -648,16 +680,42 @@ public:
         // Create the window
         //
 
+// BUILD_DX9
+		// Ask the user for video settings. -- 
+		//   -adapter switch added for the needy
+		//   Raise dialog only if "Safe Mode" activated (any software/primary/secondary switches sent) 
+		// imago 6/29/09 7/1/09 removed hardware, asgs sends this under normal conditions
+		bool bRaise = (bSoftware || bPrimary || bSecondary) ? true : false;
+		if( PromptUserForVideoSettings(bStartFullscreen, bRaise, iUseAdapter, GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT) == false )
+		{
+			return E_FAIL;
+		}
+
+		CD3DDevice9::Get()->UpdateCurrentMode( );
+	
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(
                 this, 
-                strCommandLine, 
+                strCommandLine,
+				pathStr,
                 bMovies,
                 bSoftware,
                 bHardware,
                 bPrimary,
                 bSecondary
             );
+// #else
+        //TRef<TrekWindow> pwindow = 
+        //    TrekWindow::Create(
+        //        this, 
+        //        strCommandLine,
+        //        bMovies,
+        //        bSoftware,
+        //        bHardware,
+        //        bPrimary,
+        //        bSecondary
+        //    );
+// BUILD_DX9
 
         if (!pwindow->IsValid()) {
             return E_FAIL;

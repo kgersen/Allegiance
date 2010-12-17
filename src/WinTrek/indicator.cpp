@@ -145,7 +145,7 @@ public:
                 if (GetCamera()->TransformDirectionToImage(myVelocity, pointImage))
                 {
                     pointImage       = rect.TransformNDCToImage(pointImage);
-                
+
 				    if (rect.Inside(pointImage))
                         pcontext->DrawImage(m_psurfaceDirection, true, pointImage);
 			    }
@@ -168,7 +168,7 @@ public:
             ImodelIGC* targetModel = trekClient.GetShip()->GetCommandTarget(c_cmdCurrent);
             if (targetModel &&
                 (targetModel->GetCluster() == pcluster) &&
-                //(targetModel->GetSide() != trekClient.GetSide()) && 
+                //(targetModel->GetSide() != trekClient.GetSide()) &&
                 pshipSource->CanSee(targetModel))
             {
                 IshipIGC*   pshipParent = trekClient.GetShip()->GetParentShip();
@@ -192,7 +192,10 @@ public:
                 // Only show the indicator if we have a weapon, and it is a healing weapon on a friendly or a non-healing weapon on an enemy
                 // or it is the external chase view or missile view
                 IsideIGC*   pside = trekClient.GetSide();
-                if (w && ((GetWindow ()->GetCameraMode () == TrekWindow::cmExternalChase) || (GetWindow ()->GetCameraMode () == TrekWindow::cmExternalMissile) || ((targetModel->GetSide() == pside) == (w->GetProjectileType()->GetPower() < 0.0f))))
+				//Imago fixed 7/8/09 ALLY
+				if (w && ((GetWindow ()->GetCameraMode () == TrekWindow::cmExternalChase) ||
+					(GetWindow ()->GetCameraMode () == TrekWindow::cmExternalMissile) ||
+					( ((targetModel->GetSide() == pside) || IsideIGC::AlliedSides(targetModel->GetSide(), pside)) == (w->GetProjectileType()->GetPower() < 0.0f)) ))
                 {
                     Vector      vecLeadPosition;
                     float       t                   = solveForLead(pship, targetModel, w, &vecLeadPosition);
@@ -270,7 +273,7 @@ public:
                             {
                                 //See if a friendly ship can spot the target
                                 bLeadIndicator = false;
-                                /*
+                                /* KGJV- 4/9/9 reactivated this */ 
                                 for (StationLinkIGC*   psl = pcluster->GetStations()->first(); (psl != NULL); psl = psl->next())
                                 {
                                     IstationIGC*   ps = psl->data();
@@ -282,14 +285,14 @@ public:
                                         break;
                                     }
                                 }
-                                */
+                                
 
                                 if (!bLeadIndicator)
                                 {
                                     for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next())
                                     {
                                         IshipIGC*   ps = psl->data();
-                                        if ((ps->GetSide() == pside) &&
+                                        if ((ps->GetSide() == pside) && //#ALLYTD: change this if allies should relay lead ind SCAN
                                             (ps->GetParentShip() == NULL) &&
                                             ps->GetBaseHullType()->HasCapability(c_habmRemoteLeadIndicator) &&
                                             ps->InScannerRange(targetModel))
@@ -308,7 +311,7 @@ public:
                                                     pointLead);
                             }
 
-                            
+
                             if (bIisInRange)
                             {
                                 float  dx = (pointCenter.X() - pointLead.X());
@@ -415,11 +418,11 @@ public:
 
                     pcontext->PushState();
                     pcontext->Translate(GetViewRect()->GetValue().Center() + radiusRing * ndx);
-                        
+
                     pcontext->Begin3DLayer(m_pcamera, false);
                     pcontext->DirectionalLight(Vector(0, 0, 1), color);
                     pcontext->SetAmbientLevel(0.25f);
-                    
+
                     pcontext->Multiply(Matrix(orient, Vector(0, 0, 0), 1.0f));
                     pcontext->Rotate(Vector(0, 0, 1), GetTime()->GetValue());
 
@@ -614,7 +617,7 @@ public:
 
         // compute the third vertex from the first two and the width of the description.
         // this is then used to compute where to draw the text
-        
+
         TRef<IEngineFont> pfont = TrekResources::SmallFont();
 
         pointTextSize = Point::Cast(pfont->GetTextExtent(description));

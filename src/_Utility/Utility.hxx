@@ -53,7 +53,7 @@ template<class T, class Sink>       bool               Slist_utl<T, Sink>::first
 }
 template<class T, class Sink>       bool               Slist_utl<T, Sink>::last(const T& t)
 {
-    Slink_utl<T,Sink>*   l = new Slink_utl<T,Sink>(t);
+    Slink_utl<T,Sink>*   l = new Slink_utl<T,Sink>(t); //Fix memory leak -Imago 8/2/09
     if (l)
     {
         last(l);

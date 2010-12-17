@@ -72,10 +72,16 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 
             if (launcher &&
                 (!GetMyMission()->GetMissionParams()->bAllowFriendlyFire) &&
-                (pside == launcher->GetSide()) &&
+				((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide())) && // #ALLY was: pside == launcher->GetSide()
                 (amount >= 0.0f) &&
                 !m_probeType->HasCapability(c_eabmRescueAny))
             {
+				// mmf 04/08 added exception for probes.  Always damage probes.  No more friendly probes blocking base exits and alephs !!!
+				// make this experimental for now for testing
+				// Only damage 'sensor' probes (ICE projectile type = -1) and not other types of probes like towers
+
+				if ( (!(GetMyMission()->GetMissionParams()->bExperimental)) || (m_probeType->GetProjectileType() != NULL) )
+				// end mmf
                 return c_drNoDamage;
             }
 

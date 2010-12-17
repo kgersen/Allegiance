@@ -581,7 +581,7 @@ private:
 			m_cServers = cServers;
 			if (cCores)
 			{
-				m_pCores = new CoreInfo[cCores];
+				m_pCores = new CoreInfo[cCores]; //Fix memory leak -Imago 8/2/09
 				for (int i=0; i < cCores; i++)
 				{
 					memcpy(&(m_pCores[i].mStatic),&(pcores[i]),sizeof(StaticCoreInfo));
@@ -592,14 +592,13 @@ private:
 			}
 			if (cServers)
 			{
-				m_pServers = new ServerInfo[cServers];
+				m_pServers = new ServerInfo[cServers]; //Fix memory leak -Imago 8/2/09
 				for (int i=0; i < cServers; i++)
 				{
 					memcpy(&(m_pServers[i].mStatic),&(pservers[i]),sizeof(ServerCoreInfo));
 					m_pServers[i].ping = -1;
 					m_pServers[i].bOfficial = trekClient.CfgIsOfficialServer(m_pServers[i].mStatic.szName,m_pServers[i].mStatic.szRemoteAddress);
-				}
-				
+				}	
 			}
 		}
 
@@ -1521,6 +1520,14 @@ public:
 
         return pgame1->MaxPlayersPerTeam() > pgame2->MaxPlayersPerTeam();
     }
+	//Imago 7/8/09
+    static bool NumPlayerCompare(ItemID pitem1, ItemID pitem2)
+    {
+        MissionInfo* pgame1 = (MissionInfo*)pitem1;
+        MissionInfo* pgame2 = (MissionInfo*)pitem2;
+
+        return pgame1->NumPlayers() > pgame2->NumPlayers();
+    }
 	// KGJV #114
     static bool ServerCompare(ItemID pitem1, ItemID pitem2)
     {
@@ -1668,6 +1675,35 @@ public:
 
         }
 
+		if (g_bQuickstart) {
+        // close the "connecting..." popup
+       		if (GetWindow()->GetPopupContainer() && !GetWindow()->GetPopupContainer()->IsEmpty())
+            	GetWindow()->GetPopupContainer()->ClosePopup(NULL);
+       	 	GetWindow()->RestoreCursor();
+
+			//imago 7/5/09
+			//if there are players in the lobby join the most populated server...
+			//OutputDebugString("GetCountInLobby(plist) returned "+ ZString(cPlayers) +"\n");
+			if (cPlayers) {
+				 plist = SortingList(plist, NumPlayerCompare, true);
+				 MissionInfo* game = (MissionInfo*)plist->GetItem(0);
+				 //.. it's not a newb server and not our own game we're actually trying to insta create
+				 ZString szPlayerName = ZString(trekClient.GetNameLogonZoneServer());
+				 int leftParen = szPlayerName.ReverseFind('(',0);
+				 if (leftParen > 1)
+					szPlayerName = szPlayerName.Left(leftParen);
+	        	 szPlayerName += ZString("'s game"); //reuse exact matches via. kgjv's adaptation
+				 if ( (ZString(game->Name()).Find("newbie") == -1) && 
+					  (ZString(game->Name()).Find(szPlayerName) == -1) ) {
+					 ZDebugOutput("Insta join: "+ ZString(game->Name()) + "\n");					 
+					 g_bQuickstart = false; //we're done with all that!
+					 JoinMission(game);
+				 }
+
+			}
+			//no other players? ;(  ...if you build it they will come!
+			//trekClient.ServerListReq(); //quickstart keeps following into the new callback...
+		}
         return cPlayers;
     }
 
@@ -1772,6 +1808,7 @@ public:
 
 		StaticCoreInfo *pcores   = (StaticCoreInfo*)Cores;
 		ServerCoreInfo *pservers = (ServerCoreInfo*)Servers;
+
 #ifdef _DEBUG
 		debugf("got OnServersList: %d, %d\n",cCores,cServers);
 		for (int i=0; i<cCores; i++)
@@ -1789,9 +1826,42 @@ public:
 			debugf("    mask = %x\n",pservers[i].dwCoreMask);
 		}
 #endif
-		m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
-		GetWindow()->GetPopupContainer()->OpenPopup(m_pcreateDialog, false);
-
+		//Imago #78 7/5/09 only automatically create games on the #1 server & core 
+		if (g_bQuickstart) {
+			if(cServers !=0 && cCores !=0) {
+				// KGJV's adaption for game name reused
+				ZString szPlayerName = ZString(trekClient.GetNameLogonZoneServer());
+				int leftParen = szPlayerName.ReverseFind('(',0);
+				if (leftParen > 1)
+					szPlayerName = szPlayerName.Left(leftParen);
+	        	szPlayerName += ZString("'s game");
+				//7/7/09 use official only -Imago
+				for (int i=0; i<cServers; i++)
+				{
+					for (int i2=0; i2<cCores; i2++)
+					{
+						if (trekClient.CfgIsOfficialServer(pservers[i].szName,pservers[i].szRemoteAddress) &&
+							trekClient.CfgIsOfficialCore(pcores[i2].cbIGCFile)) 
+						{	
+							ZDebugOutput("Insta new game: on "+ZString(pservers[i].szName,pservers[i].szName)+" core "+ pcores[i2].cbIGCFile+"\n");
+							trekClient.CreateMissionReq(pservers[i].szName,
+							pservers[i].szRemoteAddress,
+							pcores[i2].cbIGCFile,szPlayerName);
+							return;  //follow quickstart into teamscreen..preferably we're going on a server that's SRVLOG or DEBUG
+						}
+					}
+				}
+				g_bQuickstart = false; //fine, no official server? just let them 
+				return;					//sit at the empty lobby list, maybe they will create a non official game 7/9/09
+			} else {
+				g_bQuickstart = false; //fine, can't create a game? (no servers or cores) just let them 
+				return;					//sit at the empty lobby list
+			}
+		} else {
+			//do the normal thing and raise the create game server/core dialog
+			m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
+			GetWindow()->GetPopupContainer()->OpenPopup(m_pcreateDialog, false);
+		}
 	}
     void OnMissionEnded(MissionInfo* pmission)
     {

@@ -10,9 +10,9 @@
 #ifndef _FEDSRV_PCH_
 #define _FEDSRV_PCH_
 
-#define _ATL_STATIC_REGISTRY
+#include "appWeb\appWeb.h" //Imago - updated to 2.4.2-2 XP
 
-#include "appWeb/appWeb.h" //Imago: HTTP Library for ASGS services
+#define _ATL_STATIC_REGISTRY
 
 // browse info overflow warnings for STL objects
 #pragma warning(disable : 4786)
@@ -54,7 +54,8 @@
 //extern CServiceModule _Module;
 //#include <atlcom.h>
 
-#include <ZoneAuthDecrypt.h>
+// KG- removed
+//#include <ZoneAuthDecrypt.h>
 
 // This also includes <atlbase.h> and <atlcom.h>
 #include "AllSrvModule.h"
@@ -74,7 +75,7 @@
 #include <Messages.h>
 #include <MessagesLS.h>
 
-#include "SWMRG.h"
+//#include "SWMRG.h" Imago removed (again)
 #include "BitArray.h"
 #include "point.h"
 //#include "srvdbg.h"
@@ -89,8 +90,13 @@
 #include "fsside.h"
 #include "fscluster.h"
 #include "fsmission.h"
-#include "fedsrvsql.h"
-#include "zauth.h"
+// #include "fedsrvsql.h" KG removed
+
+// KG guard with USEAUTH for consistency 
+#ifdef USEAUTH
+#include "zauth.h" 
+#endif
+
 #include "fedsrv.h"
 extern Global g;
 #include "fsship.h"

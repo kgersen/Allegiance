@@ -614,6 +614,7 @@ public:
     
         pbutton->GetMouseEnterWhileEnabledEventSource()->AddSink(new SoundIDEventSink(mouseoverSound));
         pbutton->GetEventSource()->AddSink(new SoundIDEventSink((SoundID)pnumberClickSoundId->GetValue()));
+		//pbutton->GetRightEventSource()->AddSink(new SoundIDEventSink((SoundID)pnumberClickSoundId->GetValue())); //Imago NYI 7/10/09
 
         return pbutton;
     }

@@ -75,13 +75,24 @@ class CmissileIGC : public TmodelIGC<ImissileIGC>
         */
 
     // IdamageIGC
-        virtual DamageResult        ReceiveDamage(DamageTypeID            type,
+       virtual DamageResult        ReceiveDamage(DamageTypeID            type,
                                                   float                   amount,
                                                   Time                    timeCollision,
                                                   const Vector&           position1,
                                                   const Vector&           position2,
                                                   ImodelIGC*              launcher)
         {
+			IsideIGC*   pside = GetSide();
+
+			if (launcher &&
+				(!GetMyMission()->GetMissionParams()->bAllowFriendlyFire) &&
+				((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside,launcher->GetSide())) && // TheRock 3/8/09 this check wasn't here
+				(amount >= 0.0f))
+			{
+				return c_drNoDamage;
+			}
+
+
             DamageResult dr = c_drHullDamage;
             amount *= GetMyMission()->GetDamageConstant(type, m_missileType->GetDefenseType());
 

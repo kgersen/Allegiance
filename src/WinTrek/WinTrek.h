@@ -128,6 +128,7 @@ class  WinTrekClient :
 		bool                    m_bFilterUnknownChats; //TheBored 30-JUL-07: Filter Unknown Chat patch
         DWORD                   m_dwFilterLobbyChats; //TheBored 25-JUN-07: Changed from bool to dword (Lobby filter patch)
 		DWORD					m_dwMaxTextureSize;// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+		unsigned int			m_nBandwidth; // w0dk4 June 2007: Bandwith Patch
 
         //
         // Explosions
@@ -201,6 +202,8 @@ class  WinTrekClient :
         void              FilterLobbyChats(DWORD dwFilterLobbyChats) { m_dwFilterLobbyChats = dwFilterLobbyChats; }; //TheBored 25-JUN-07: Changed from bool to dword (Lobby filter patch)
 		DWORD             MaxTextureSize() {return m_dwMaxTextureSize; };// yp Your_Persona August 2 2006 : MaxTextureSize Patch
         void              MaxTextureSize(DWORD bMaxTextureSize) {m_dwMaxTextureSize = bMaxTextureSize; };// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+		unsigned int	  MaxBandwidth() {return m_nBandwidth; }; // w0dk4 June 2007: Bandwith Patch
+		void			  MaxBandwidth(unsigned int iBandwidth) {m_nBandwidth = iBandwidth; }; // w0dk4 June 2007: Bandwith Patch
 /*
         virtual void FireMissile(IshipIGC* pship, ImagazineIGC* pmagazine,
                         Time timeFired, ImodelIGC* pTarget, float lock);

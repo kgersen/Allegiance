@@ -24,6 +24,7 @@ public:
     virtual Color GetDiffuse()  const = 0;
     virtual Color GetEmissive() const = 0;
     virtual Color GetSpecular() const = 0;
+	virtual float GetPower() const = 0;
 
     virtual void  SetDiffuse(const Color& color) = 0;
     virtual void SetEmissive(const Color& color) = 0;

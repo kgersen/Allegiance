@@ -74,7 +74,7 @@ public:
                     Vector::GetZero(),
                     1,
                     0,
-                    BlendModeSource
+                    BlendModeSource //this actually uses BlendModeSourceAlpha now - imago 7/16/09
                 );
             }
         }
@@ -124,7 +124,10 @@ public:
 
         m_colorOuter.GetHSB(h, s, b);
         m_colorComplement.SetHSBA(h + 0.5f, s, b);
+
+		bool bOldValue = pmodeler->SetColorKeyHint( false );
         m_psphere = pmodeler->LoadGeo("build");
+		pmodeler->SetColorKeyHint( bOldValue );
     }
 
     //////////////////////////////////////////////////////////////////////////////

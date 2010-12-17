@@ -682,12 +682,13 @@ private:
                         bErrorOccured = true;
                 }
                 else 
-                {
-#ifdef _DEBUG
-                    char sz[40];
-                    sprintf(sz, "Moving Files Error: %d", GetLastError());
-                    ::OutputDebugString(sz);
-#endif
+				{
+					if (g_outputdebugstring) { //Imago changed from _DEBUG ifdef 8/17/09
+	                    char sz[40];
+	                    sprintf(sz, "Moving Files Error: %d", GetLastError());
+	                    ZDebugOutput(sz);
+					}
+
                     bErrorOccured = true;
                 }
             }

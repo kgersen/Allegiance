@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZDebug|X64">
+      <Configuration>FZDebug</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Instrumented|Win32">
+      <Configuration>FZRetail-Instrumented</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Instrumented|X64">
+      <Configuration>FZRetail-Instrumented</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|X64">
+      <Configuration>FZRetail</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Optimized|Win32">
+      <Configuration>FZRetail-Optimized</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-Optimized|X64">
+      <Configuration>FZRetail-Optimized</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-SSE2|Win32">
+      <Configuration>FZRetail-SSE2</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail-SSE2|X64">
+      <Configuration>FZRetail-SSE2</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{F150276A-D7D8-4C24-AA41-170A6F3D4CF9}</ProjectGUID>
+    <RootNamespace>mdledit</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\mdledit\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\mdledit\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs10\$(Configuration)\mdledit\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\mdledit\x64\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">mdledit</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\mdledit\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\mdledit\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\$(Configuration)\mdledit\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\$(Configuration)\mdledit\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\mdledit\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\mdledit\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\mdledit\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\mdledit\x64\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\mdledit\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\mdledit\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\$(Configuration)\mdledit\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\$(Configuration)\mdledit\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\mdledit\x64\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\mdledit\x64\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\mdledit\x64\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\mdledit\x64\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">mdledit</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">mdledit</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">.exe</TargetExt>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">true</LinkIncremental>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)mdledit.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\..\effect\x64\effect.lib;$(OutDir)..\..\engine\x64\engine.lib;$(OutDir)..\..\zlib\x64\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;../src/Lib/DirectPlay/x64/dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)mdledit.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;SRVLOG;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FloatingPointModel>Precise</FloatingPointModel>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <FloatingPointModel>Precise</FloatingPointModel>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\..\effect\x64\effect.lib;$(OutDir)..\..\engine\x64\engine.lib;$(OutDir)..\..\zlib\x64\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;..\src\Lib\DirectPlay\x64\dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\..\effect\x64\effect.lib;$(OutDir)..\..\engine\x64\engine.lib;$(OutDir)..\..\zlib\x64\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;..\src\Lib\DirectPlay\x64\dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\..\effect\x64\effect.lib;$(OutDir)..\..\engine\x64\engine.lib;$(OutDir)..\..\zlib\x64\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;..\src\Lib\DirectPlay\x64\dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>../src/effect;../src/Engine;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\..\effect\x64\effect.lib;$(OutDir)..\..\engine\x64\engine.lib;$(OutDir)..\..\zlib\x64\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;..\src\Lib\DirectPlay\x64\dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Lang\Usa\allegiance\allegiance.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\mdledit\mdledit.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\mdledit\pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="effect.vcxproj">
+      <Project>{4f83287a-ff3c-4333-ad5f-c00b86cf0895}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Engine.vcxproj">
+      <Project>{d619b179-7fc4-4db6-9794-1d3c75717d15}</Project>
+    </ProjectReference>
+    <ProjectReference Include="ZLibrary.vcxproj">
+      <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

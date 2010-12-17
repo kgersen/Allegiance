@@ -7,6 +7,12 @@
 
 #include "pch.h"
 
+//appweb -Imago
+static Mpr *mpr;
+#ifdef _DEBUG
+static MprLogModule *tMod;
+#endif
+
 CServiceModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
@@ -133,7 +139,7 @@ bool CServiceModule::ReadFromRegistry(HKEY & hk, bool bIsString, const char * sz
         {
             if (dwDefault)
             {
-                strcpy((char*)pValue, (char*)dwDefault);
+                Strcpy((char*)pValue, (char*)dwDefault);
                 if(bWarnIfMissing)
                     LogEvent(EVENTLOG_INFORMATION_TYPE, LE_RegStrMissingDef, szItem, dwDefault);
                 return true;
@@ -149,7 +155,7 @@ bool CServiceModule::ReadFromRegistry(HKEY & hk, bool bIsString, const char * sz
     }
 
     if (bIsString)
-        strcpy((char*)pValue, psz);
+        Strcpy((char*)pValue, psz);
     else
         *(DWORD*)pValue = *(DWORD*)psz;
 
@@ -474,11 +480,13 @@ void CServiceModule::Run()
 {
     _Module.dwThreadID = GetCurrentThreadId();
 
-    HRESULT hr = CoInitialize(NULL);
+    //HRESULT hr = CoInitialize(NULL);
 //  If you are running on NT 4.0 or higher you can use the following call
 //  instead to make the EXE free threaded.
 //  This means that calls come in on a random RPC thread
-//  HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
+	//Imago changed 6/25/08
+	HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
     _ASSERTE(SUCCEEDED(hr));
 
@@ -513,6 +521,21 @@ void CServiceModule::Run()
 //
 int __cdecl main(int argc, char *argv[])
 { 
+	// start the appweb service thread w/log Imago 7/3/08
+#ifdef _DEBUG
+    MprLogToFile *logger;
+#endif
+	char *programName = mprGetBaseName(argv[0]);
+	mpr = new Mpr(programName);
+#ifdef _DEBUG
+	tMod = new MprLogModule(programName);
+	logger = new MprLogToFile();
+	mpr->addListener(logger);
+	mpr->setLogSpec("alllobby_appweb.log:9");
+#endif
+	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
+	mpr->start(MPR_SERVICE_THREAD);
+
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
     LPSTR lpCmdLine = GetCommandLine(); //this line necessary for _ATL_MIN_CRT
@@ -559,7 +582,7 @@ int __cdecl main(int argc, char *argv[])
     
     TCHAR szValue[_MAX_PATH];
     DWORD dwLen = _MAX_PATH;
-	// mdvalley: QueryStringValue? Not on my compiler.
+	
     lRes = key.QueryValue(szValue, _T("LocalService"), &dwLen);
 
     _Module.m_bService = FALSE;
@@ -567,6 +590,17 @@ int __cdecl main(int argc, char *argv[])
         _Module.m_bService = TRUE;
 
     _Module.Start();
+
+	//appweb
+	mpr->stop(0);
+#ifdef _DEBUG
+	delete tMod;
+#endif
+	delete mpr;
+#ifdef _DEBUG
+	delete logger;
+#endif
+	mprMemClose();
 
     // When we get here, the service has been stopped
     return _Module.m_status.dwWin32ExitCode;

@@ -77,8 +77,10 @@ namespace Training
         if ((m_fHUDStyle = pWindow->GetHUDStyle ()) != 0.0f)
             pWindow->SetHUDStyle (0.0f);
 
-        // load the default key map
-        pWindow->GetInput ()->LoadMap (DEFAULTINPUTMAP_FILE);
+        // load the existing key map Imago 6/20/09 (TheRock@RT)
+		if (!GetWindow()->GetInput()->LoadMap(INPUTMAP_FILE)) 
+				GetWindow()->GetInput()->LoadMap(DEFAULTINPUTMAP_FILE);
+        
     }
 
     //------------------------------------------------------------------------------
@@ -532,7 +534,7 @@ namespace Training
             civs[iSideIndex] = civs[iSideIndex % iCivCount];
         */
 
-        // set up the sides
+        // set up the sides  
         for (SideID sid = 0; sid < c_cSidesMax; sid++)
         {
             IcivilizationIGC*   pCiv = pCore->GetCivilization (civs[sid]);
@@ -585,6 +587,7 @@ namespace Training
             fmMissionDef.rgfReady[q] = true;
             fmMissionDef.rgfForceReady[q] = true;
             fmMissionDef.rgfActive[q] = true;
+			fmMissionDef.rgfAllies[q] = NA; //Imago 6/20/09 fix training AI for allies
         }
         MissionInfo* pMissionInfo = trekClient.MyMission();
         ZAssert (pMissionInfo);

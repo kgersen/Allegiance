@@ -721,7 +721,17 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
     HRESULT hr = m_pDirectPlayServer->GetClientInfo( lp->dpnidPlayer, pPlayerInfo,
                                           &dwSize, 0);
 
-    assert( hr == DPNERR_BUFFERTOOSMALL );
+    //IMAGO - REVIEW 7/5/09 sanitize pPlayerInfo
+	/*
+		HRESULT: 0x80158420 (2148893728)
+		Name: Unknown
+		Description: n/a
+		Severity code: Failed
+		Facility Code: FACILITY_DPLAY (21)
+		Error Code: 0x8420 (33824)
+	*/
+	assert( hr == DPNERR_BUFFERTOOSMALL );
+
     pPlayerInfo = (DPN_PLAYER_INFO*) new BYTE[dwSize];
     ZeroMemory( pPlayerInfo, dwSize );
     pPlayerInfo->dwSize = sizeof( DPN_PLAYER_INFO );
@@ -740,10 +750,13 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
     // debugf("(FM=%8x %s) Create Player for %s (%u)\n", this, sOrC, name, lp->dpnidPlayer );
 
     CFMConnection * pcnxn = CreateConnection( name, lp->dpnidPlayer );
-    char szRemoteAddress[16];
-    GetIPAddress( *pcnxn, szRemoteAddress );
+   
+	//removed below becasue connections can reset here 
+	//then GetIPAddress breaks the lobby -Imago
 
-    debugf(" ip=%s\n", szRemoteAddress );
+	// char szRemoteAddress[16];
+   // GetIPAddress( *pcnxn, szRemoteAddress );
+   // debugf(" ip=%s\n", szRemoteAddress );
 
     delete[] name;
     delete[] pPlayerInfo;
@@ -787,7 +800,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
     DPNMSG_SEND_COMPLETE* lp = (DPNMSG_SEND_COMPLETE *) msg.pData;
 
     CFMRecipient * prcp = NULL;
-    DPID to;
+    DPID to = 0;
 
     //  <NKM> 22-Aug-2004
     // If this is an Async op we have a handle to, then remove it
@@ -859,7 +872,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 
 template< class T > T* allocAndCopyStruct( const T& data )
 {
-  return new T(data);
+  return new T(data); //Fix memory leak -Imago 8/2/09
 }
 
 //  <NKM> 09-Aug-2004
@@ -1254,11 +1267,12 @@ HRESULT FedMessaging::InitDPlayServer()
   // Create an IDirectPlay interface
   m_pfmSite->OnPreCreate(this);
 
-
+  ZDebugOutput("CoCreateInstance( CLSID_DirectPlay8Server ... )\n");
   if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Server, NULL,
                                      CLSCTX_INPROC_SERVER, IID_IDirectPlay8Server,
                                      (LPVOID*) &m_pDirectPlayServer ) ) )
   {
+	ZDebugOutput("Failed to Create DirectPlaySever in DirectX 8/9 hr="+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox(this, "Failed to Create DirectPlaySever in DirectX 8/9", "Allegiance", MB_OK);
     return hr;
   }
@@ -1268,9 +1282,10 @@ HRESULT FedMessaging::InitDPlayServer()
   // I sugegst we leave it at this
   //  const DWORD dwInitFlags = DPNINITIALIZE_DISABLEPARAMVAL;
   const DWORD dwInitFlags = 0;
-
+  ZDebugOutput("m_pDirectPlayServer->Initialize( ... )\n");
   if( FAILED( hr = m_pDirectPlayServer->Initialize( this, DPlayMsgHandler, dwInitFlags ) ) )
   {
+	ZDebugOutput("Failed to initialize DirectX 8/9 hr="+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox(this, "Failed to initialize DirectX 8/9", "Allegiance", MB_OK);
     return hr;
   }
@@ -1319,6 +1334,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   if( m_pDirectPlayServer == 0 )
   {
     hr = InitDPlayServer();
+	ZDebugOutput("InitDPlayServer() returned "+ZString(hr)+"\n");
     if ( FAILED(hr) )
       return hr;
   }
@@ -1328,10 +1344,12 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   IDirectPlay8Address*   pDP8AddressLocal = 0;
 
   // Create the local device address object
+  ZDebugOutput("CoCreateInstance( CLSID_DirectPlay8Address ... )\n");
   if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
                                      CLSCTX_ALL, IID_IDirectPlay8Address,
                                      (LPVOID*) &pDP8AddressLocal ) ) )
   {
+	ZDebugOutput("CoCreateInstance( CLSID_DirectPlay8Address ... ) returned "+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay server local address", "Allegiance", MB_OK );
     return hr;
   }
@@ -1339,18 +1357,23 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   SafeReleaser<IDirectPlay8Address> r1( pDP8AddressLocal );
 
   // Set IP service provider
+   ZDebugOutput("pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP )\n");
   if( FAILED( hr = pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) ) )
   {
+	ZDebugOutput("pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) returned "+ZString(hr)+"\n");
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay server local SP", "Allegiance", MB_OK );
     return hr;
   }
 
-  if( dwPort )
+  if( dwPort ) {
+	  ZDebugOutput("pDP8AddressLocal->AddComponent(DPNA_KEY_PORT ... )\n");
 	  if(FAILED(hr = pDP8AddressLocal->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
 		{
+			ZDebugOutput("Failed to set DPlay server port - returned "+ZString(hr)+"\n");
 		    m_pfmSite->OnMessageBox( this, "Failed to set DPlay server port", "Allegiance", MB_OK );
 		    return hr;
 		}
+  }
 
   ZeroMemory( &dpnAppDesc, sizeof( DPN_APPLICATION_DESC ) );
   dpnAppDesc.dwSize = sizeof( DPN_APPLICATION_DESC );
@@ -1362,7 +1385,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   // Set host player context to non-NULL so we can determine which player indication is
   // the host's.
   hr = m_pDirectPlayServer->Host( &dpnAppDesc, &pDP8AddressLocal, 1, NULL, NULL, (void *) 1, 0  );
-
+  ZDebugOutput(" m_pDirectPlayServer->Host( &dpnAppDesc ... ) - returned "+ZString(hr)+"\n");
   m_guidApplication = guidApplication;
 
   m_fConnected = true;
@@ -1460,7 +1483,7 @@ HRESULT FedMessaging::JoinSession(GUID guidApplication, const char * szServer, c
   // Sure, it'll freeze for 15 secs if there's no connection, but it did that under dplay4, too.
 
   int i = 0;
-  while(IsEqualGUID(GUID_NULL, m_guidInstance) && i < 150)	// 15 second timeout
+  while(IsEqualGUID(GUID_NULL, m_guidInstance) && i < 300)	// 30 second timeout //was 15 seconds 8/1/09 Imago
   {
      Sleep(100);	// check every 100 ms
      i++;
@@ -1537,7 +1560,7 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
                                      NULL, 0,            // User data & its size
                                      NULL,               // Asynchronous connection context (returned with DPNMSG_CONNECT_COMPLETE in async handshaking)
                                      NULL,               // Asynchronous connection handle (used to cancel connection process)
-                                     DPNOP_SYNC );       // Connect synchronously
+                                     DPNOP_SYNC );       // Connect synchronously  //Fix memory leak -Imago 8/2/09
 
   delete[] playerInfo.pwszName;
   if (FAILED(hr))
@@ -1605,11 +1628,19 @@ HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16
 
   // WLP 2005 - made this server client and server side
   //
-  if (m_pDirectPlayServer)
-  ZSucceeded( m_pDirectPlayServer->GetClientAddress( cnxn.GetDPID(), &pAddress, 0 ) );
 
-  if (m_pDirectPlayClient)
-  ZSucceeded( m_pDirectPlayClient->GetServerAddress(&pAddress, 0 ) );
+  // imago removed ZSucceeded(  );
+  if (m_pDirectPlayServer) {
+	  if(FAILED(m_pDirectPlayServer->GetClientAddress( cnxn.GetDPID(), &pAddress, 0 ))) {
+		return E_FAIL;
+	  }
+  }
+  // imago removed ZSucceeded(  );
+  if (m_pDirectPlayClient) {
+	  if(FAILED(m_pDirectPlayClient->GetServerAddress(&pAddress, 0 ))) {
+		return E_FAIL;
+	  }
+  }
 
   WCHAR add[200];
   DWORD cnt = 200;
@@ -1711,7 +1742,7 @@ hr = InitDPlayClient();
   // Create the local device address object
   if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay8Address, NULL,
                                      CLSCTX_ALL, IID_IDirectPlay8Address,
-                                     (LPVOID*) &pDP8AddressLocal ) ) )
+                                     (LPVOID*) &pDP8AddressLocal ) ) )  //Fix memory leak -Imago 8/2/09
   {
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay client local address", "Allegiance", MB_OK );
     return hr;
@@ -1737,14 +1768,14 @@ hr = InitDPlayClient();
 
   SafeReleaser<IDirectPlay8Address> r2( pDP8AddressHost );
   // Set IP service provider
-  if( FAILED( hr = pDP8AddressHost->SetSP( &CLSID_DP8SP_TCPIP ) ) )
+  if( FAILED( hr = pDP8AddressHost->SetSP( &CLSID_DP8SP_TCPIP ) ) )  //Fix memory leak -Imago 8/2/09
   {
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay remote SP", "Allegiance", MB_OK );
     return hr;
   }
 
   // Set the remote port
-  if(dwPort != 6073 && FAILED(hr = pDP8AddressHost->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
+  if(dwPort != 6073 && FAILED(hr = pDP8AddressHost->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))  //Fix memory leak -Imago 8/2/09
   {
 	  m_pfmSite->OnMessageBox( this, "Failed to set DPlay client remote port", "Allegiance", MB_OK );
 	  return hr;
@@ -1758,7 +1789,7 @@ hr = InitDPlayClient();
 
     hr = pDP8AddressHost->AddComponent( DPNA_KEY_HOSTNAME, wszHostName,
                                         (wcslen(wszHostName)+1)*sizeof(WCHAR),
-                                        DPNA_DATATYPE_STRING );
+                                        DPNA_DATATYPE_STRING );  //Fix memory leak -Imago 8/2/09
 
     delete[] wszHostName;
 
@@ -1793,7 +1824,7 @@ hr = InitDPlayClient();
      hr = m_pDirectPlayClient->EnumHosts( &dpnAppDesc, pDP8AddressHost,
                                           pDP8AddressLocal, NULL,
                                           0, INFINITE, 0, 0, NULL,
-                                          &fillerHandle, 0 );
+                                          &fillerHandle, 0 );  //Fix memory leak -Imago 8/2/09
   }
 
 // WLP - DPLAY8 def = STDMETHOD(EnumHosts)

@@ -119,7 +119,10 @@ public:
   StaticCoreInfo* GetvStaticCoreInfo() {return m_vStaticCoreInfo;}
   void SetStaticCoreMask(DWORD dwStaticCoreMask) { m_dwStaticCoreMask = dwStaticCoreMask; }
   DWORD GetStaticCoreMask() { return m_dwStaticCoreMask; }
-  int GetCurrentGamesCount() { return m_missions.GetCount(); }
+ 
+  //Imago - allow setting of Current Games w/o effecting normal usage
+  int GetCurrentGamesCount() { if (m_iCurGames != m_missions.GetCount() && m_iCurGames != 0) {return m_iCurGames;} else {return m_missions.GetCount();}}
+  void SetCurrentGamesCount(int CurGames) {m_iCurGames = CurGames;}
   int GetMaxGamesAllowed()   { return m_iMaxGames; }
   void SetMaxGamesAllowed(int max) {m_iMaxGames = max;}
   char *GetLocation() { return m_szLocation; }
@@ -148,6 +151,8 @@ private:
   int m_cStaticCoreInfo;
   DWORD m_dwStaticCoreMask;
   int  m_iMaxGames;
+  // Imago
+  int  m_iCurGames;
   char m_szLocation[c_cbFileName]; // it's not a filename but we want it short
 };
 

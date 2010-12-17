@@ -12,7 +12,9 @@ public:
     virtual Image*   GetImage() { return NULL; }
     virtual Pane*    GetPane()  { return NULL; }
     virtual WinPoint GetSize()  { return WinPoint(800, 600); }
-    virtual void     OnFrame()  {}
+    virtual void     OnFrame()  { } //ADDED Sleep to preserve CPU cycles when not in-game 12/23/07 -- Orion 
+										//Imago removed the Sleep(1), it added 1 ms/f, all the time! 7/13/09
+											//See the new, more agressive sleepers at the ends of DoTrekUpdate and and DoIdle
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -36,7 +38,11 @@ TRef<Screen> CreateTrainingScreen(Modeler* pmodeler);
 TRef<Screen> CreateTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace, int iMissionIndex);
 TRef<Screen> CreatePostTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace);
 TRef<Screen> CreateGameStartingScreen(Modeler* pmodeler);
-TRef<Screen> CreateVideoScreen(Modeler* pmodeler, bool bIntroOnly);
+
+// BUILD_DX9
+// Taken out of D3D9 build for now, movies not supported at the moment.  //Imago use DDVideo
+// TRef<Screen> CreateVideoScreen(Modeler* pmodeler, bool bIntroOnly);
+// BUILD_DX9
 
 TRef<IPopup> CreateMissionParametersPopup(Modeler* pmodeler);
 

@@ -50,7 +50,56 @@ HRESULT     CwarpIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
                 SetCluster(cluster);
 
                 SetMass(0.0f);
-                SetName(dataWarp->name);
+				// KG- hack for unmovable alephs (to avoid a IGC file format change)
+				// aleph name with a leading '*' denotes a fixed position aleph
+				// so remove the '*' from the name and set m_bFixedPosition to true
+				// Andon: Added mass limits to alephs. It checks for a leading '+'
+				// and if found it searches for a ':' - It then takes everything after
+				// this and turns it into a number. After that, it replaces the ':' with
+				// a '(' and adds a ')' to the end.
+				if (dataWarp->name[0] == '*')
+				{
+					m_bFixedPosition = true;
+					if (dataWarp->name[1] == '+')//Andon: Added for if the aleph is both unmoved and mass limited
+					{
+						ZString name = dataWarp->name;
+						int MassFind = name.Find(':',0); 
+						char* mass = &(dataWarp->name[MassFind+2]); 
+						m_MassLimit = atoi(mass);
+						name.ReplaceAll(":" ,'('); //Replaces the : with a (
+						const char* alephname = &(name[2]); //Removes the leading '*+'
+						char* newAlephName = new char[25];
+						const char* nameSuffix = ")"; //Adds a ) to the end
+						strncpy(newAlephName, alephname, strlen(alephname)+1);
+						strncat(newAlephName, nameSuffix, strlen(nameSuffix)+1);
+						SetName(newAlephName);
+					}
+					else
+					{
+						SetName(&(dataWarp->name[1])); // skip the leading '*'
+						m_MassLimit = -1;
+					}
+				}
+				else if (dataWarp->name[0] == '+')
+				{
+					ZString name = dataWarp->name;
+					int MassFind = name.Find(':',0);
+					char* mass = &(dataWarp->name[MassFind+1]);
+					m_MassLimit = atoi(mass);
+					name.ReplaceAll(":" ,'('); //Replaces the : with a (
+					const char* alephname = &(name[1]);//Skip the leading '+'
+					char* newAlephName = new char[25];
+					const char* nameSuffix = ")"; //Adds a ) to the end
+					strncpy(newAlephName, alephname, strlen(alephname)+1);
+					strncat(newAlephName, nameSuffix, strlen(nameSuffix)+1);
+					SetName(newAlephName);
+				}
+				else
+				{
+                	SetName(dataWarp->name);
+					m_MassLimit = -1;
+				}
+
                 SetSignature(dataWarp->signature);
 
                 pMission->AddWarp(this);

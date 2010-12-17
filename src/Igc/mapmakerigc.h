@@ -249,6 +249,7 @@ class CmapMakerIGC : public ImapMakerIGC
         virtual VOID        PopulateClusters(CMapData * pMapData);
 
         virtual VOID        RevealHomeClusters(ImissionIGC * pMission);
+		virtual VOID        RevealAlliedClusters(ImissionIGC * pMission); //imago ally visibility 7/11/09
         virtual VOID        RevealMap(ImissionIGC * pMission);
         virtual VOID        ActivateSides(ImissionIGC * pMission);
 } ;

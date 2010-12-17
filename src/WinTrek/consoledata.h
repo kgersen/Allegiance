@@ -198,7 +198,7 @@ public:
         pns->AddMember("GetSideName",  new TMemberSnapshotValueFactory<ModelData, ZString>(&ModelData::GetSideName, ""));
         pns->AddMember("GetSideColor",  new TMemberSnapshotValueFactory<ModelData, Color>(&ModelData::GetSideColor, Color(255,255,255)));
 //        pns->AddMember("GetSideIcon",  new TMemberSnapshotValueFactory<ModelData, TRef<Image> >(GetSideIcon));
-        pns->AddMember("GetSpeed",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetSpeed, 0.0f));
+		pns->AddMember("GetSpeed",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetSpeed, 0.0f));
         pns->AddMember("GetMass",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMass, 0.0f));
         pns->AddMember("GetRange",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetRange, 0.0f));
         pns->AddMember("GetPercentHitPoints",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentHitPoints, 0.0f));
@@ -321,5 +321,7 @@ public:
     }
 
 };
+
+
 
 

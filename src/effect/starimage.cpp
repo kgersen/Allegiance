@@ -181,10 +181,9 @@ public:
             pcontext->SetShadeMode(ShadeModeFlat);
             pcontext->DrawPoints(pvertex + indexPoint, count * 2 - indexPoint);
 
-            if (index != 0) {
-                if (pcontext->Has3DAcceleration()) {
-                    pcontext->SetBlendMode(BlendModeAdd);
-                }
+            if (index != 0) 
+			{
+                pcontext->SetBlendMode(BlendModeAdd);
                 pcontext->DrawLines(pvertex, index * 2, pindex, index * 2);
             }
         }

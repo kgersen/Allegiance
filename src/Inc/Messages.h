@@ -13,15 +13,8 @@
 
 #include "MessageCore.h"
 
-/* this gets incremented for any change to the file. On client startup, we 
-   make sure the client version is equal to the server version. Of course,
-   at a later date, if we decide to allow the server to support out of date 
-   clients, we can leave in the old structure of message(s) and the server can
-   use whichever, depending on the version of client connected. Since we have
-   one server, and many clients, the server is always up to date by definition.
-   ***Also gets incremented for changes to parts.h***
-*/
-const int MSGVER = 199; // KGJV updated for R4
+// KGJV - MSGVER has its own include file now
+#include "MessageVersion.h"
  
 
 /*
@@ -228,7 +221,8 @@ DEFINE_FEDMSG(C, SHIP_UPDATE, 24)
 END_FEDMSG
 
 // ***PARTS***
-#include "parts.h"
+// KG- obsolete
+//#include "parts.h"
 
 // All part definition messages must start with Part, and have a single struct (in parts.h) after that
 // In order to be able to just copy structs without allocating them, all parts are two structs only.
@@ -310,6 +304,7 @@ DEFINE_FEDMSG(S, MISSIONDEF, 38) // sent when a mission is created, and when it 
   char      rgfReady        [c_cSidesMax];
   char      rgfForceReady   [c_cSidesMax];
   char      rgfActive       [c_cSidesMax];
+  char		rgfAllies		[c_cSidesMax]; // #ALLY - ally group - NA is no allies
 END_FEDMSG
 
 DEFINE_FEDMSG(C, POSITIONREQ, 39) // client requests position on a side.
@@ -987,6 +982,12 @@ DEFINE_FEDMSG(S, RELAUNCH_SHIP, 192)
     Cookie              cookie;
 END_FEDMSG
 
+// w0dk4 June 2007: Bandwith Patch
+DEFINE_FEDMSG(C, BANDWIDTH, 193)
+  unsigned int          value;     
+END_FEDMSG
+
+
 // w0dk4 player-pings feature
 DEFINE_FEDMSG(S, PINGDATA, 194)
   ShipID              shipID;
@@ -998,8 +999,19 @@ DEFINE_FEDMSG(C, REQPINGDATA, 195)
 END_FEDMSG
 // end w0dk4
 
+// #ALLY
+DEFINE_FEDMSG(C, CHANGE_ALLIANCE, 196) // sent by game owner when changing alliances
+  SideID    sideID;
+  SideID    sideAlly; // side to ally to or NA to clear all alliances
+END_FEDMSG
+
+DEFINE_FEDMSG(S, CHANGE_ALLIANCES, 197) // sent by server when alliances change
+  char      Allies[c_cSidesMax];
+END_FEDMSG
+// end #ALLY
 
 #endif // _MESSAGES_ 
+
 
 
 

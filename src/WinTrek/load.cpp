@@ -1217,9 +1217,10 @@ public:
 
         float   hullSpeed = m_phullType->GetMaxSpeed();
         float   hullThrust = m_phullType->GetThrust();
+        float   hullThrust_noga = ((DataHullTypeIGC*)m_phullType->GetData())->thrust;
 
-        float   maxSpeed         = hullSpeed * (1.0f + (pdat->maxThrust / hullThrust));
-        float   absoluteMaxSpeed = hullSpeed * (1.0f + (m_maxAfterburnerMaxThrust / hullThrust));
+        float   maxSpeed         = hullSpeed * (1.0f + (pdat->maxThrust / hullThrust_noga)); //Imago 8/14/09
+        float   absoluteMaxSpeed = hullSpeed * (1.0f + (m_maxAfterburnerMaxThrust / hullThrust_noga));
 
         float   endurance    = m_phullType->GetMaxFuel() / (pdat->maxThrust * pdat->fuelConsumption);
         

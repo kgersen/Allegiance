@@ -320,6 +320,71 @@ void CServiceModule::TermAGC()
 }
 
 
+
+#if defined(SRV_PARENT)
+/*-------------------------------------------------------------------------
+ * CServiceModule::xOutgoingPort Imago 6/24/08
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    Gets/Sets the last used outgoing port number.
+ * 
+ */
+DWORD CServiceModule::GetOutgoingPort() {
+	return this->m_dwMPort;
+}
+void CServiceModule::SetOutgoingPort(DWORD dwPort) {
+	this->m_dwMPort = dwPort;
+}
+
+/*-------------------------------------------------------------------------
+ * InitPIDs	Imago 6/25/08
+ *-------------------------------------------------------------------------
+ * Purpose:
+ *    removes stale process identifiers and re-keys the PID array
+ */
+
+void CServiceModule::InitPIDs()
+{ 
+	//NYI first chcek should be the other way, (enum the process list for AllSrv.exe(s), delete any unmatched pid files)
+	//	then do this:
+
+	DWORD dwNewPIDs[98] = {0};
+	int iNewKey = 0;
+	for (int i=0;i < 98;i++) {
+		DWORD pid = this->m_dwPIDs[i];
+		if(pid) {
+ 			char strFilename[10] = "\0";
+			sprintf(strFilename,"%d.pid",pid);
+			HANDLE hFile = (HANDLE)CreateFile(strFilename, 0, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+			DWORD dwError = GetLastError();
+			if (hFile != INVALID_HANDLE_VALUE && dwError != ERROR_FILE_NOT_FOUND) {
+				dwNewPIDs[iNewKey] = pid;
+				iNewKey++;
+			}
+			CloseHandle(hFile);
+		} 
+	}
+	this->m_iPIDID = iNewKey;
+	memcpy(this->m_dwPIDs, dwNewPIDs, sizeof(dwNewPIDs)); 
+
+}
+
+void CServiceModule::BreakChildren()
+{ 
+	debugf("intentionally stopping any games...\n");
+	for (int i=0;i < 98;i++) {
+		DWORD pid = this->m_dwPIDs[i];
+		if(pid) {
+			FreeConsole();
+			AttachConsole(pid);
+			GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT,pid);
+			debugf("bye bye %d...\n",pid);
+		}
+	}
+}
+#endif
+
+
 /*-------------------------------------------------------------------------
  * CServiceModule::get_EventLog
  *-------------------------------------------------------------------------
@@ -732,8 +797,10 @@ BOOL WINAPI HandlerRoutine(
   DWORD dwCtrlType   //  control signal type
 )
 {
-    if (dwCtrlType == CTRL_CLOSE_EVENT)
+    if (dwCtrlType == CTRL_CLOSE_EVENT || dwCtrlType == CTRL_BREAK_EVENT || dwCtrlType == CTRL_SHUTDOWN_EVENT || dwCtrlType == CTRL_C_EVENT) 
+		//imago added 7/3/08
     {
+		debugf("shutting down, got control code:%d\n",dwCtrlType);
         SetEvent(g.hKillReceiveEvent);
         return TRUE;
     }
@@ -797,11 +864,24 @@ void RunAsWindow()
 
 VOID CServiceModule::RunAsExecutable()
 {
-    HRESULT hr;
+	//Imago: we parents needs to keep track of our children
+#if defined(SRV_PARENT)
+	InitPIDs();
+#endif
 
+    HRESULT hr;
+#if defined(SRV_PARENT)
+	if (g.bRestarting == false) {
+		ZVersionInfo vi;
+		printf("%s\n%s\n\n",(LPCSTR)vi.GetFileDescription(), (LPCSTR)vi.GetLegalCopyright());
+	}
+#else
+#if !defined(SRV_CHILD)
     ZVersionInfo vi;
     printf("%s\n%s\n\n",
       (LPCSTR)vi.GetFileDescription(), (LPCSTR)vi.GetLegalCopyright());
+#endif
+#endif
 
     if (IsWinNT())
       printf("Running as an executable.\n");
@@ -833,6 +913,10 @@ VOID CServiceModule::RunAsExecutable()
         SetConsoleCtrlHandler(HandlerRoutine, true);
 
         assert(g.hKillReceiveEvent);
+		//Imago - parents restart everything after tricking the lobby into sending the client to our child
+#if defined(SRV_PARENT)
+		g.bRestarting = false;
+#endif
 
         HANDLE hEventArray[] = { g.hKillReceiveEvent, hConsole };
 
@@ -875,6 +959,13 @@ VOID CServiceModule::RunAsExecutable()
         } while (dwAwaker != WAIT_OBJECT_0);
 
         FedSrv_Terminate();
+
+		// here is a good spot to restart -Imago
+#if defined(SRV_PARENT)
+		if (g.bRestarting)
+			RunAsExecutable();
+#endif
+
     } 
     else
     {
@@ -1029,10 +1120,138 @@ void WINAPI CServiceModule::ServiceMain(
 
 }
 
+
+
+#if defined(SRV_PARENT)
+static SERVICE_STATUS_HANDLE hServiceStatus=NULL;
+static SERVICE_STATUS ServiceStatus;
+static HANDLE hShutdownEvent=NULL;
+static HANDLE hThread=NULL;
+DWORD MainThreadId=0;
+
+void SetServiceStatus(DWORD status)
+{
+	ServiceStatus.dwCurrentState = status;
+	::SetServiceStatus(hServiceStatus,&ServiceStatus);
+}
+
+static void WINAPI ServiceHandler(DWORD dwOpcode)
+{
+    switch (dwOpcode)
+    {
+    case SERVICE_CONTROL_STOP:
+    case SERVICE_CONTROL_SHUTDOWN:
+        SetServiceStatus(SERVICE_STOP_PENDING);
+        PostThreadMessage(MainThreadId, WM_QUIT, 0, 0);
+        break;
+    case SERVICE_CONTROL_PAUSE:
+    case SERVICE_CONTROL_CONTINUE:
+    case SERVICE_CONTROL_INTERROGATE:
+    default:
+        break;
+    }
+}
+
+static DWORD WINAPI EXEThreadProc(LPVOID lpParameter){
+	HRESULT hr;
+	_Module.InitPIDs();
+    debugf("Initializing...\n");
+    hr = FedSrv_Init();
+    if (SUCCEEDED(hr))
+    {
+		g.bRestarting = false;
+		HANDLE hEventArray[] = { g.hKillReceiveEvent, hThread };
+        DWORD dwAwaker;
+
+        do {
+            dwAwaker = MsgWaitForMultipleObjects(2, hEventArray, FALSE, INFINITE, 0);
+            if (dwAwaker == WAIT_OBJECT_0 + 1)
+            {
+				debugf("!!! oh no!\n");
+                break;
+			}
+        } while (dwAwaker != WAIT_OBJECT_0);
+
+        FedSrv_Terminate();
+    } 
+    else
+    {
+        debugf("\rInitialization failed. (%x)\n", hr);
+		return (DWORD)-1;
+    }
+	return (DWORD)0;
+}
+
+static DWORD WINAPI ThreadProc(LPVOID lpParameter)
+{
+	SetServiceStatus(SERVICE_RUNNING);
+RESTART:
+	DWORD EXEThreadId=0;
+	HANDLE hEXEThread = ::CreateThread(NULL,NULL,EXEThreadProc,NULL,NULL,&EXEThreadId);
+	HANDLE events[2];
+	events[0] = hEXEThread;
+	events[1] = hShutdownEvent;
+	DWORD r = ::WaitForMultipleObjects(2,events,FALSE,INFINITE);
+	if (r != WAIT_OBJECT_0)
+	{
+		debugf("sending exe thread a quit message\n");
+		SetEvent(g.hKillReceiveEvent);
+		//::PostThreadMessage(EXEThreadId,WM_QUIT,0,0);
+
+		debugf("scm is still rolling, good!\n");
+		DWORD r1 = ::WaitForSingleObject(hEXEThread,10000);
+		if (r1 == WAIT_TIMEOUT)
+		{
+			debugf("terminating thread abnormally\n");
+			::TerminateThread(hEXEThread,-1);
+		}
+	}
+	if (r != WAIT_OBJECT_0 + 1)
+	{
+		if(g.bRestarting) {
+			CloseHandle(hEXEThread);
+			goto RESTART;
+		}
+		debugf("terminating main thread\n");
+		::PostThreadMessage(MainThreadId, WM_QUIT, 0, 0);
+	}
+	DWORD ec=-1;
+	::GetExitCodeThread(hEXEThread,&ec);
+	CloseHandle(hEXEThread);
+	return ec;
+}
+
+void WINAPI MPServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
+{
+	MainThreadId = ::GetCurrentThreadId();
+	ZeroMemory(&ServiceStatus,sizeof(ServiceStatus));
+    ServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+    ServiceStatus.dwCurrentState = SERVICE_STOPPED;
+    ServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP|SERVICE_ACCEPT_SHUTDOWN;
+	hServiceStatus = RegisterServiceCtrlHandler(c_szSvcName, ServiceHandler);
+	SetServiceStatus(SERVICE_START_PENDING);
+	
+	hShutdownEvent = ::CreateEvent(NULL,TRUE,FALSE,NULL);
+	DWORD ThreadId=0;
+	hThread = ::CreateThread(NULL,NULL,ThreadProc,NULL,NULL,&ThreadId);
+	MSG msg;
+	while (GetMessage(&msg, 0, 0, 0))
+		DispatchMessage(&msg);
+	SetEvent(hShutdownEvent);
+	WaitForSingleObject(hThread,INFINITE);
+	::CloseHandle(hThread);
+	::CloseHandle(hShutdownEvent);
+	SetServiceStatus(SERVICE_STOPPED);
+	_Module.BreakChildren();
+}
+
+
+#else 
 void WINAPI _ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
 {
     _Module.ServiceMain(dwArgc, lpszArgv);
 }
+#endif
 
 
 /*-------------------------------------------------------------------------
@@ -1044,6 +1263,10 @@ void WINAPI _ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
 
 void CServiceModule::StopAllsrv()
 { 
+#if defined(SRV_PARENT) || defined(SRV_CHILD)
+    if(g.hKillReceiveEvent)
+      SetEvent(g.hKillReceiveEvent);
+#else
   if(_Module.IsInstalledAsService())
     _Module.ServiceControl(SERVICE_CONTROL_STOP);
   else
@@ -1053,6 +1276,7 @@ void CServiceModule::StopAllsrv()
 //    if(m_hEventStopRunningAsEXE)
 //        SetEvent(m_hEventStopRunningAsEXE);
   }
+#endif
 }
 
 

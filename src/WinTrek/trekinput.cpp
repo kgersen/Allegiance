@@ -37,6 +37,7 @@ public:
     TRef<InputEngine>                       m_pinputEngine;
     TRef<JoystickImage>                     m_pjoystickImage;
     TArray<TRef<Number>, countAxis>         m_ppnumberAxis;
+    TRef<TrekInputSite>                     m_psite;
 
     //
     // Joystick mapping
@@ -46,6 +47,16 @@ public:
     TArray<bool         , TK_Max>           m_boolTrekKeyButtonDown;
 
     TArray<TRef<ModifiableBoolean>, 4>      m_ppboolHatButton;
+
+    // Mouse mapping Imago 8/14/09 (special buttons / mouse wheel)
+    TrekKey                                 m_wheeldownTK;
+    TrekKey                                 m_wheelupTK;
+    TrekKey                                 m_wheelclickTK;
+    TrekKey                                 m_xbutton1TK;
+    TrekKey                                 m_xbutton2TK;
+    TrekKey                                 m_xbutton3TK;
+    TrekKey                                 m_xbutton4TK;
+    TrekKey                                 m_xbutton5TK;
 
     //
     // Keyboard mapping
@@ -87,7 +98,16 @@ public:
         JoystickImage* pjoystickImage
     ) :
         m_pinputEngine(pinputEngine),
-        m_pjoystickImage(pjoystickImage)
+        m_pjoystickImage(pjoystickImage),
+        m_wheelupTK(TK_ThrottleUp), //Imago 8/15/09
+        m_wheeldownTK(TK_ThrottleDown),
+        m_wheelclickTK(TK_FireBooster),
+        m_xbutton1TK(TK_TargetFriendlyBase),
+        m_xbutton2TK(TK_ToggleAutoPilot),
+        m_xbutton3TK(TK_TargetCenter),
+        m_xbutton4TK(TK_TargetNearest),
+        m_xbutton5TK(TK_Ripcord) // --^
+
     {
         InitializeCommandsMDL();
 
@@ -230,8 +250,11 @@ public:
         pnsCommands->AddMember("CommandTargetEnemyBaseNearest"   , new Number((float)TK_TargetEnemyBaseNearest   ));
         pnsCommands->AddMember("CommandTargetEnemyBasePrev"      , new Number((float)TK_TargetEnemyBasePrev      ));
         pnsCommands->AddMember("CommandTargetFriendlyBase"       , new Number((float)TK_TargetFriendlyBase       ));
-        pnsCommands->AddMember("CommandTargetFriendlyBaseNearest", new Number((float)TK_TargetFriendlyBaseNearest));
+        pnsCommands->AddMember("CommandTargetFriendlyBaseNearest", new Number((float)TK_TargetFriendlyBaseNearest)); 
         pnsCommands->AddMember("CommandTargetFriendlyBasePrev"   , new Number((float)TK_TargetFriendlyBasePrev   ));
+        pnsCommands->AddMember("CommandTargetAlliedBase"         , new Number((float)TK_TargetAlliedBase         )); //imago 8/1/09
+        pnsCommands->AddMember("CommandTargetAlliedBaseNearest"  , new Number((float)TK_TargetAlliedBaseNearest  )); 
+        pnsCommands->AddMember("CommandTargetAlliedBasePrev"     , new Number((float)TK_TargetAlliedBasePrev     ));
         pnsCommands->AddMember("CommandTargetCommand"            , new Number((float)TK_TargetCommand            ));
         pnsCommands->AddMember("CommandTargetCenter"             , new Number((float)TK_TargetCenter             ));
         pnsCommands->AddMember("CommandTargetHostile"            , new Number((float)TK_TargetHostile            ));
@@ -583,6 +606,37 @@ public:
 
                     int index = (int)GetNumber(ppair->GetFirst() );
                     int tk    = (int)GetNumber(ppair->GetSecond());
+                    
+                    //Imago save special buttons for use outside virtual joystick 8/14/09
+                    switch(index) {
+                        case 2:
+                            m_wheelclickTK = tk;
+                            break;
+                        case 3:
+                            m_xbutton1TK = tk;
+                            break;
+                        case 4:
+                            m_xbutton2TK = tk;
+                            break;
+                        case 5:
+                            m_xbutton3TK = tk;
+                            break;
+                        case 6:
+                            m_xbutton4TK = tk;
+                            break;
+                        case 7:
+                            m_xbutton5TK = tk;
+                            break;
+                        case 8:
+                            m_wheeldownTK = tk;
+                            break;
+                        case 9:
+                            m_wheelupTK = tk;
+                            break;
+
+                        default:
+                            break;
+                    }
 
                     //
                     // Get the button
@@ -615,7 +669,7 @@ public:
         // joystick button mapping
         //
 
-        {
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetButtonCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("buttonCommandMap");
 
             plist->GetFirst();
@@ -673,7 +727,7 @@ public:
         // joystick value mapping
         //
 
-        {
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetValueCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("numericValuesNew");
 
             bool bNew = (plist != NULL);
@@ -773,6 +827,11 @@ public:
         }
 
         return bDown;
+    }
+
+    //Imago 8/16/09
+    void SetTrekKey(TrekKey tk, Boolean* pboolDown) {
+        m_pboolTrekKeyDown[tk] = pboolDown;
     }
 
     void SetFocus(bool bFocus)
@@ -928,6 +987,7 @@ public:
         //
 
         for (int index = 0; index < TK_Max; index++) {
+
             if (
                    m_ppboolTrekKeyButtonDown[index] != NULL
                 && m_ppboolTrekKeyButtonDown[index]->GetValue() != m_boolTrekKeyButtonDown[index]
@@ -939,6 +999,48 @@ public:
                 }
             }
         }        
+    }
+
+    //Imago 8/14/09 allow OnTrekKey usage outside of trekinput
+    TRef<TrekInputSite> GetInputSite() {
+        return m_psite;
+    }
+
+    void SetInputSite(TrekInputSite* psite) {
+        m_psite = psite;
+    }
+
+    //Imago 8/14/09 expose mappings for use outside virtual joystick
+    TrekKey OnWheelDown() {
+        return m_wheeldownTK;
+    }
+
+    TrekKey OnWheelUp() {
+        return m_wheelupTK;
+    }
+
+   TrekKey OnWheelClick() {
+        return m_wheelclickTK;
+    }
+
+   TrekKey OnXButton1() {
+        return m_xbutton1TK;
+    }
+
+   TrekKey OnXButton2() {
+        return m_xbutton2TK;
+    }
+
+   TrekKey OnXButton3() {
+        return m_xbutton3TK;
+    }
+
+   TrekKey OnXButton4() {
+        return m_xbutton4TK;
+    }
+
+   TrekKey OnXButton5() {
+        return m_xbutton5TK;
     }
 
     TRef<IPopup> CreateInputMapPopup(Modeler* pmodeler, IEngineFont* pfont, Number* ptime)
@@ -1454,6 +1556,9 @@ CommandInfo g_pCommandInfo[] =
     { TK_TargetEnemyMinerPrev            , "Target Previous Enemy Miner"           },
     { TK_TargetEnemyMajorBasePrev        , "Target Previous Enemy Major Base"      },
     { TK_NoKeyMapping                    , ""                                      },
+ 	{ TK_TargetAlliedBase                , "Target Allied Base"                    }, //Imago 8/1/09
+    { TK_TargetAlliedBaseNearest         , "Target Allied Base Nearest"            },
+    { TK_TargetAlliedBasePrev            , "Target Allied Base Previous"           },
     { TK_TargetFriendly                  , "Target Friendly"                       },
     { TK_TargetFriendlyNearest           , "Target Friendly Nearest"               },
     { TK_TargetFriendlyPrev              , "Target Friendly Previous"              },
@@ -1672,11 +1777,12 @@ private:
                     char buf[128];
 
                     UINT scan   = ::MapVirtualKey(map.m_vk, 0) << 16;
-
+#pragma warning(disable:4293)
                     if (scan & (1 << 32)) {
                         scan |= (1 << 24);
                         scan &= ~(1 << 23);
                     }
+#pragma warning(default:4293)
 
                     int length = 0;
 
@@ -1711,7 +1817,12 @@ private:
                     }
 
                     if (map.m_indexJoystick == -1) {
-                        str += "Mouse Btn " + ZString(map.m_indexButton + 1);
+                        if (map.m_indexButton == 8) //Imago 8/14/09 mouse wheel
+                            str += "Wheel Down";
+                        else if (map.m_indexButton == 9)
+                            str += "Wheel Up";
+                        else
+                            str += "Mouse Btn " + ZString(map.m_indexButton + 1);
                     } else {
                         str += "Joy " + ZString(map.m_indexJoystick);
 
@@ -2134,7 +2245,8 @@ public:
         // joystick button mapping
         //
 
-        {
+
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetButtonCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("buttonCommandMap");
 
             plist->GetFirst();
@@ -2155,7 +2267,7 @@ public:
         // joystick value mapping
         //
 
-        {
+        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetValueCount()) { //Imago 8/18/09
             TRef<IObjectList> plist = pns->FindList("numericValuesNew");
 
             bool bNew = (plist != NULL);

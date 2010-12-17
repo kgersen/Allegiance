@@ -46,6 +46,7 @@ class MouseInputStream : public InputStream {
 public:
     virtual void SetClipRect(const Rect& rect)       = 0;
     virtual void SetPosition(const Point& point)     = 0;
+    virtual float GetWheelPosition()                 = 0; //Imago 8/12/09
     virtual void SetWheelPosition(float pos)         = 0;
     virtual void SetEnabled(bool bEnabled)           = 0;
 

@@ -597,8 +597,8 @@ Matrix& Matrix::SetInverse(const Matrix& mStart)
 
             bSwap = true;
             for (int col = 0; col < size; col++) {
-                swap(m.m_m[row][col], m.m_m[rowMax][col]);
-                swap(  m_m[row][col],   m_m[rowMax][col]);
+                Swap(m.m_m[row][col], m.m_m[rowMax][col]);
+                Swap(  m_m[row][col],   m_m[rowMax][col]);
             }
         }
 

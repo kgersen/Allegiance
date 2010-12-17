@@ -72,62 +72,66 @@ void CFSShip::HitWarp(IwarpIGC * pwarp)
     //Ignore jumps that happen too closely together
     if (m_warpState == warpReady)
     {
-        if (IsPlayer())
-        {
-            m_warpState = warpNoUpdate;
-        }
+		// Andon - Added check for aleph mass limits
+		if (m_pShip->GetMass() <= pwarp->MassLimit() || !IsPlayer() && pwarp->MassLimit() > 0 || pwarp->MassLimit() < 0)
+		{
+			if (IsPlayer())
+			{
+				m_warpState = warpNoUpdate;
+			}
 
-        IwarpIGC *    pwarpDest    = pwarp->GetDestination();
-        assert (pwarpDest);
-        IclusterIGC * pclusterDest = pwarpDest->GetCluster();
+			IwarpIGC *    pwarpDest    = pwarp->GetDestination();
+			assert (pwarpDest);
+			IclusterIGC * pclusterDest = pwarpDest->GetCluster();
 
-        ShipStatusWarped(pwarp);
+			ShipStatusWarped(pwarp);
 
-        Orientation alephOrientation = pwarpDest->GetOrientation();
-        const Vector&   v = m_pShip->GetVelocity();
-        float           speed2 = v.LengthSquared();
-        float           speed  = float(sqrt(speed2));
-        if (speed2 > 0)
-        {
-          float           error;
-          {
-              //How close is the ship coming to the center of the warp?
-              Vector          dp = pwarp->GetPosition() - m_pShip->GetPosition();
-
-              float   t = (dp * v) / speed2;
-              float   d = (dp - t * v).LengthSquared();
-              float   r = pwarp->GetRadius();
-
-              error = (d / (r*r)) + 0.125f;      //Error ranges from 0.125 to 1.125
-			  // yp: to prevent 'spin of death' in massive ships.
-			  // This works and is explained in that the more massive the ship the less effect going through the aleph should have
-			  // on its rotational velocity. The massive amount of inertia should decrease changes in rotational velocity.
-			  if(m_pShip->GetMass() > 300.0f)
+			Orientation alephOrientation = pwarpDest->GetOrientation();
+			const Vector&   v = m_pShip->GetVelocity();
+			float           speed2 = v.LengthSquared();
+			float           speed  = float(sqrt(speed2));
+			if (speed2 > 0)
+			{
+			  float           error;
 			  {
-				error = error * (300.0f / m_pShip->GetMass()); // the greater the mass is above 750 the less error will be applied.
+				  //How close is the ship coming to the center of the warp?
+				  Vector          dp = pwarp->GetPosition() - m_pShip->GetPosition();
+
+				  float   t = (dp * v) / speed2;
+				  float   d = (dp - t * v).LengthSquared();
+				  float   r = pwarp->GetRadius();
+
+				  error = (d / (r*r)) + 0.125f;      //Error ranges from 0.125 to 1.125
+				  // yp: to prevent 'spin of death' in massive ships.
+				  // This works and is explained in that the more massive the ship the less effect going through the aleph should have
+				  // on its rotational velocity. The massive amount of inertia should decrease changes in rotational velocity.
+				  if(m_pShip->GetMass() > 300.0f)
+				  {
+					error = error * (300.0f / m_pShip->GetMass()); // the greater the mass is above 750 the less error will be applied.
+				  }
+				  // yp end
 			  }
-			  // yp end
-          }
 
-          alephOrientation.Pitch(random(-error, error));
-          alephOrientation.Yaw(random(-error, error));
+			  alephOrientation.Pitch(random(-error, error));
+			  alephOrientation.Yaw(random(-error, error));
 
-          m_pShip->SetCurrentTurnRate(c_axisRoll,
-                                      m_pShip->GetCurrentTurnRate(c_axisRoll) +
-                                      random(pi * 0.5f * error, pi * 1.5f * error));  //Must be less than 2.0 * pi
-        }
-        m_pShip->SetOrientation(alephOrientation);
-        const Vector&   backward = alephOrientation.GetBackward();
+			  m_pShip->SetCurrentTurnRate(c_axisRoll,
+										  m_pShip->GetCurrentTurnRate(c_axisRoll) +
+										  random(pi * 0.5f * error, pi * 1.5f * error));  //Must be less than 2.0 * pi
+			}
+			m_pShip->SetOrientation(alephOrientation);
+			const Vector&   backward = alephOrientation.GetBackward();
 
-        speed = -(speed + pwarp->GetMission()->GetFloatConstant(c_fcidExitWarpSpeed));
-        m_pShip->SetVelocity(backward * speed);
+			speed = -(speed + pwarp->GetMission()->GetFloatConstant(c_fcidExitWarpSpeed));
+			m_pShip->SetVelocity(backward * speed);
 
-        m_pShip->SetPosition(pwarpDest->GetPosition() +
-                             (alephOrientation.GetUp() * random(2.0f, 5.0f)) +
-                             (alephOrientation.GetRight() * random(2.0f, 5.0f)) -
-                             (m_pShip->GetRadius() + 5.0f) * backward);
+			m_pShip->SetPosition(pwarpDest->GetPosition() +
+								 (alephOrientation.GetUp() * random(2.0f, 5.0f)) +
+								 (alephOrientation.GetRight() * random(2.0f, 5.0f)) -
+								 (m_pShip->GetRadius() + 5.0f) * backward);
 
-        GetIGCShip()->SetCluster(pclusterDest);
+			GetIGCShip()->SetCluster(pclusterDest);
+		}
     }
 }
 
@@ -255,7 +259,7 @@ void CFSShip::ShipStatusSpotted(IsideIGC* pside)
     //Flag that we have been detected as well
     IsideIGC*   mySide = GetSide();
     SideID  mySideID = mySide->GetObjectID();
-    if (mySide != pside)
+	if (mySide != pside && !mySide->AlliedSides(mySide, pside)) //#ALLY -was: mySide != pside (Imago fixed 7/8/09)
         m_rgShipStatus[mySideID].SetDetected(true);
 
     //Adjust the ship status for all of the children as well
@@ -273,7 +277,7 @@ void CFSShip::ShipStatusSpotted(IsideIGC* pside)
             pss->SetSectorID(sectorID);
             pss->SetParentID(GetShipID());
 
-            if (mySide != pside)
+			if (mySide != pside && !mySide->AlliedSides(mySide, pside)) //#ALLY -was != (Imago fixed 7/8/09)
                 pfsship->GetShipStatus(mySideID)->SetDetected(true);
         }
     }
@@ -296,7 +300,7 @@ void          CFSShip::ShipStatusHidden(IsideIGC* pside)
                  (psl != NULL);
                  psl = psl->next())
             {
-                if (psl->data() != mySide)
+				if (psl->data() != mySide && !mySide->AlliedSides(psl->data(), mySide)) //#ALLY -was: != (Imago fixed 7/8/09)
                 {
                     ShipStatus* pss = GetShipStatus(psl->data()->GetObjectID());
                     if (!pss->GetUnknown())
@@ -337,7 +341,7 @@ void          CFSShip::ShipStatusHullChange(IhullTypeIGC*    pht)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if ((psideMe == pside) || GetIGCShip()->SeenBySide(pside))
+        if ((psideMe == pside || psideMe->AlliedSides(psideMe,pside)) || GetIGCShip()->SeenBySide(pside)) // #ALLY Imago 7/23/09 VISIBILITY?
         {
             m_rgShipStatus[pside->GetObjectID()].SetHullID(hid);
         }
@@ -360,8 +364,8 @@ void          CFSShip::ShipStatusDocked(IstationIGC*   pstation)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if ((pside == psideMe) ||
-            ((GetIGCShip()->SeenBySide(pside)) && (pstation->SeenBySide(pside))))
+        if ((pside == psideMe || pside->AlliedSides(pside,psideMe)) || // #ALLY Imago 7/8/09 VISIBILITY?
+            (GetIGCShip()->SeenBySide(pside) && pstation->SeenBySide(pside)))
         {
             SideID      sideID = pside->GetObjectID();
             ShipStatus* pss = &(m_rgShipStatus[sideID]);
@@ -407,7 +411,7 @@ void          CFSShip::ShipStatusRecalculate(void)
         {
             IsideIGC*   pside = psl->data();
             SideID      sid = pside->GetObjectID();
-            if ((pside == psideMe) || (m_rgShipStatus[sid].GetState() >= c_ssFlying))
+            if ((pside == psideMe || pside->AlliedSides(pside,psideMe)) || (m_rgShipStatus[sid].GetState() >= c_ssFlying)) //ALLY IMAGO 7/23/09
                 ShipStatusSpotted(pside);
         }
     }
@@ -458,7 +462,7 @@ void          CFSShip::ShipStatusRestart(IstationIGC*   pstation)
          psl = psl->next())
     {
         IsideIGC*   pside = psl->data();
-        if ((pside == psideShip) || (GetIGCShip()->SeenBySide(pside)))
+        if ((pside == psideShip || pside->AlliedSides(pside,psideShip)) || (GetIGCShip()->SeenBySide(pside))) //ALLY imago 7/23/09
         {
             ShipStatus* pss = &(m_rgShipStatus[pside->GetObjectID()]);
 
@@ -664,7 +668,7 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
       sprintf(szReason, "%s won because %s captured %s", psideWin->GetName(), GetIGCShip()->GetName(), pstation->GetName());
       m_pfsMission->GameOver(psideWin, szReason);
   }
-  else if (psideOld->GetActiveF())
+  else if (psideOld->GetActiveF())						//RESET OUR EYE HERE?  IMAGO CAPTURE EYE BUG FIX?  REVIEW 7/23/09
       m_pfsMission->VacateStation(pstation);
 }
 
@@ -1410,4 +1414,6 @@ void CFSDrone::Dock(IstationIGC * pstation)
     //Drones always instantly undock
     //CFSShip::Dock(pstation);
 }
+
+
 

@@ -399,7 +399,7 @@ public:
             _vsnprintf(szMsg, sizeof(szMsg), szFormat, pArg);
             va_end(pArg);
 
-            OutputDebugString(szMsg);
+            ZDebugOutput(szMsg);
 
             // write to file
             char szFileData[sizeof(szMsg) + 200];

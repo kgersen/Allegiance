@@ -108,6 +108,9 @@ public:
 
     // Initialize enumerator object with the temporary CComVariant vector
 // VS.Net 2003 port
+
+    //Imago 8/5/09 Is this code even used?  If so it may be incorrect...
+    // see IAGCCollectionImpl.h(81)
 #if _MSC_VER >= 1310
 	RETURN_FAILED(pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy));
 #else
@@ -132,13 +135,13 @@ public:
     XLock lock(static_cast<T*>(this));
 
     // Validate the specified index
-    if (0 > nIndex || nIndex >= m_ranges.size())
+    if (0 > nIndex || nIndex >= (long)m_ranges.size())
       return E_INVALIDARG;
 
     // Loop from beginning or end, depending on which is closest
     RT value1, value2;
 	// mdvalley: "it" declared earlier.
-    if (nIndex < (m_ranges.size() / 2))
+    if (nIndex < (long)(m_ranges.size() / 2))
     {
 		XRangeIt it;
       for (it = m_ranges.begin(); nIndex; ++it)

@@ -175,24 +175,136 @@ class TMeshGeo : public MeshGeo {
     TRef<IObject>       m_pobjectMemory;
     TVector<VertexType> m_vertices;
     TVector<MeshIndex>  m_indices;
+	CVBIBManager::SVBIBHandle m_hVB;
+	CVBIBManager::SVBIBHandle m_hIB;
+	DWORD m_dwFVF;
+	D3DFORMAT m_d3dIndexFormat;
 
 public:
-    TMeshGeo(VertexType* pvertices, int vcount, MeshIndex* pindices, int icount, IObject* pobjectMemory = NULL) :
+	// D3DVertex
+    TMeshGeo(D3DVertex* pvertices, int vcount, MeshIndex* pindices, int icount, DWORD dwFVF = 0, IObject* pobjectMemory = NULL) :
         m_pobjectMemory(pobjectMemory),
         m_vertices(vcount, pvertices, pobjectMemory != NULL),
         m_indices(icount, pindices, pobjectMemory != NULL)
     {
+		CVBIBManager::Get()->AddVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) pvertices,
+					vcount,
+					sizeof( D3DVertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) pindices,
+					icount,
+					D3DFMT_INDEX16 );
+		m_dwFVF = dwFVF;
+		m_d3dIndexFormat = D3DFMT_INDEX16;
     }
 
-    TMeshGeo(const TVector<VertexType>& vertices, const TVector<MeshIndex>& indices) :
+    TMeshGeo(const TVector<D3DVertex>& vertices, const TVector<MeshIndex>& indices, DWORD dwFVF ) :
         m_vertices(vertices),
         m_indices(indices)
     {
+		CVBIBManager::Get()->AddVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) &m_vertices.GetFront(),
+					m_vertices.GetCount(),
+					sizeof( D3DVertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) &m_indices.GetFront(),
+					m_indices.GetCount(),
+					D3DFMT_INDEX16 );
+		m_dwFVF = dwFVF;
+		m_d3dIndexFormat = D3DFMT_INDEX16;
+    }
+
+	// Vertex
+    TMeshGeo(Vertex* pvertices, int vcount, MeshIndex* pindices, int icount, DWORD dwFVF = 0, IObject* pobjectMemory = NULL) :
+        m_pobjectMemory(pobjectMemory),
+        m_vertices(vcount, pvertices, pobjectMemory != NULL),
+        m_indices(icount, pindices, pobjectMemory != NULL)
+    {
+		CVBIBManager::Get()->AddLegacyVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) pvertices,
+					vcount,
+					sizeof( Vertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) pindices,
+					icount,
+					D3DFMT_INDEX16 );
+		m_dwFVF = dwFVF;
+		m_d3dIndexFormat = D3DFMT_INDEX16;
+    }
+
+    TMeshGeo(const TVector<Vertex>& vertices, const TVector<MeshIndex>& indices, DWORD dwFVF ) :
+        m_vertices(vertices),
+        m_indices(indices)
+    {
+		CVBIBManager::Get()->AddLegacyVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) &m_vertices.GetFront(),
+					m_vertices.GetCount(),
+					sizeof( Vertex ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) &m_indices.GetFront(),
+					m_indices.GetCount(),
+					D3DFMT_INDEX16 );
+		m_dwFVF = dwFVF;
+		m_d3dIndexFormat = D3DFMT_INDEX16;
+    }
+
+	// LVertex - prelit vertices.
+    TMeshGeo(VertexL * pvertices, int vcount, MeshIndex* pindices, int icount, DWORD dwFVF = 0, IObject* pobjectMemory = NULL) :
+        m_pobjectMemory(pobjectMemory),
+        m_vertices(vcount, pvertices, pobjectMemory != NULL),
+        m_indices(icount, pindices, pobjectMemory != NULL)
+    {
+		CVBIBManager::Get()->AddLegacyLitVerticesToBuffer(	
+					&m_hVB,
+					(BYTE*) pvertices,
+					vcount,
+					sizeof( VertexL ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(
+					&m_hIB,
+					(BYTE*) pindices,
+					icount,
+					D3DFMT_INDEX16 );
+		m_dwFVF = dwFVF;
+		m_d3dIndexFormat = D3DFMT_INDEX16;
+    }
+
+    TMeshGeo(const TVector<VertexL>& vertices, const TVector<MeshIndex>& indices, DWORD dwFVF ) :
+        m_vertices(vertices),
+        m_indices(indices)
+    {
+		CVBIBManager::Get()->AddLegacyLitVerticesToBuffer(
+					&m_hVB,
+					(BYTE*) &m_vertices.GetFront(),
+					m_vertices.GetCount(),
+					sizeof( VertexL ),
+					dwFVF );
+		CVBIBManager::Get()->AddIndicesToBuffer(	
+					&m_hIB,
+					(BYTE*) &m_indices.GetFront(),
+					m_indices.GetCount(),
+					D3DFMT_INDEX16 );
+		m_dwFVF = dwFVF;
+		m_d3dIndexFormat = D3DFMT_INDEX16;
     }
 
     void Render(Context* pcontext)
     {
-        pcontext->DrawTriangles(m_vertices, m_indices);
+//        pcontext->DrawTriangles(m_vertices, m_indices);
+		pcontext->DrawTriangles( &m_hVB, &m_hIB ); //NEW RENDER PATH
     }
 
     void CallGroupGeoCallback(const Matrix& mat, GroupGeoCallback* pcallback)
@@ -250,7 +362,7 @@ public:
         // Create the new Geo
         //
 
-        return new TMeshGeo(vertices, indices);
+        return new TMeshGeo(vertices, indices, pmesh->m_dwFVF );
     }
 
     TRef<Geo> ApplyTransform(Transform* ptrans)
@@ -278,7 +390,7 @@ public:
             );
         }
 
-        return new TMeshGeo(vertices, m_indices);
+        return new TMeshGeo(vertices, m_indices, m_dwFVF);
     }
 
     int GetTriangleCount()
@@ -372,7 +484,7 @@ TRef<Geo> Geo::CreateMesh(
     IObject* pobjectMemory
 )
 {
-    return new TMeshGeo<Vertex>(pvertices, vcount, pindices, icount, pobjectMemory);
+    return new TMeshGeo<Vertex>(pvertices, vcount, pindices, icount, D3DFVF_VERTEX, pobjectMemory);
 }
 
 TRef<Geo> Geo::CreateMesh(
@@ -383,29 +495,32 @@ TRef<Geo> Geo::CreateMesh(
     IObject* pobjectMemory
 )
 {
-    return new TMeshGeo<D3DVertex>(pvertices, vcount, pindices, icount, pobjectMemory);
+    return new TMeshGeo<D3DVertex>(pvertices, vcount, pindices, icount, D3DFVF_VERTEX, pobjectMemory);
 }
 
 TRef<Geo> Geo::CreateMesh(const TVector<Vertex>& vertices, const TVector<MeshIndex>& indices)
 {
-    return new TMeshGeo<Vertex>(vertices, indices);
+    return new TMeshGeo<Vertex>(vertices, indices, D3DFVF_VERTEX);
 }
 
 TRef<Geo> Geo::CreateMesh(const TVector<VertexL>& vertices, const TVector<MeshIndex>& indices)
 {
-    return new TMeshGeo<VertexL>(vertices, indices);
+    return new TMeshGeo<VertexL>(vertices, indices, D3DFVF_LVERTEX);
 }
 
 TRef<Geo> Geo::CreateMesh(const TVector<D3DVertex>& vertices, const TVector<MeshIndex>& indices)
 {
-    return new TMeshGeo<D3DVertex>(vertices, indices);
+    return new TMeshGeo<D3DVertex>(vertices, indices, D3DFVF_VERTEX);
 }
 
-
-template<class VertexType>
-TRef<Geo> CreateStaticMesh(VertexType* pvertices, int vcount, MeshIndex* pindices, int icount)
+TRef<Geo> CreateStaticMesh(VertexL* pvertices, int vcount, MeshIndex* pindices, int icount)
 {
-    return new TMeshGeo<VertexType>(pvertices, vcount, pindices, icount);
+    return new TMeshGeo<VertexL>(pvertices, vcount, pindices, icount, D3DFVF_LVERTEX);
+}
+
+TRef<Geo> CreateStaticMesh(Vertex* pvertices, int vcount, MeshIndex* pindices, int icount)
+{
+    return new TMeshGeo<Vertex>(pvertices, vcount, pindices, icount, D3DFVF_VERTEX);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -432,7 +547,6 @@ Geo* Geo::GetWhiteEmissiveSquare()
             0, 2, 1, 0, 3, 2,
             0, 1, 2, 0, 2, 3
         };
-
         g_pmeshWhiteEmissiveSquare = CreateStaticMesh(vertices, 4, indices, 12);
     }
 
@@ -454,9 +568,8 @@ Geo* Geo::GetSquare()
             0, 2, 1, 0, 3, 2,
             0, 1, 2, 0, 2, 3
         };
-
-        g_pmeshSquare = CreateStaticMesh(vertices, 4, indices, 12);
-    }
+        g_pmeshSquare = CreateStaticMesh(vertices, 4, indices, 12 );
+      }
 
     return g_pmeshSquare;
 }

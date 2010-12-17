@@ -38,7 +38,8 @@ private:
     TRef<ButtonPane>     m_pbuttonAllowTactical;
     TRef<ButtonPane>     m_pbuttonAllowExpansion;
     TRef<ButtonPane>     m_pbuttonAllowSupremacy;
-    TRef<ButtonPane>     m_pbuttonAllowEmptyTeams;
+    //TRef<ButtonPane>     m_pbuttonAllowEmptyTeams; Removed AET setting  can't change anyways (use the space for ALLY ripcord option) Imago
+	TRef<ButtonPane>     m_pbuttonAllowAlliedRip;
     
 	TRef<ComboPane>      m_pcomboMapSize;
     TRef<ComboPane>      m_pcomboTreasures;
@@ -134,7 +135,8 @@ private:
         m_pbuttonAllowTactical       ->SetChecked(missionparams.bAllowTacticalPath);
         m_pbuttonAllowExpansion      ->SetChecked(missionparams.bAllowExpansionPath);
         m_pbuttonAllowSupremacy      ->SetChecked(missionparams.bAllowSupremacyPath);
-        m_pbuttonAllowEmptyTeams     ->SetChecked(missionparams.bAllowEmptyTeams);
+    //    m_pbuttonAllowEmptyTeams     ->SetChecked(missionparams.bAllowEmptyTeams);  //Imago ALLY 7/8/09
+		m_pbuttonAllowAlliedRip      ->SetChecked(missionparams.bAllowAlliedRip);
 
         m_pbuttonShowMap             ->SetChecked(missionparams.bShowMap);
 
@@ -332,7 +334,7 @@ public:
 			  )
 			+ trekClient.CfgGetCoreName(szCoreName)     + "<Color|white><p>" // KGJV: added
 			+ "<p>"
-            + "Lives: "                 + GetLives(mp)                    + "<p>"
+			+ "Lives: "                 + GetLives(mp)                    + "<p>"
             + "Map Type: "              + GetMapType(mp)                  + "<p>"
 			+ "Map Connectivity: "      + GetConnectivityString(mp)       + "<p>" // KGJV: added
             + "Resources: "             + GetResourceString(mp)           + "<p>"
@@ -351,6 +353,8 @@ public:
             + "Allow Expansion: "       + YesNo(mp.bAllowExpansionPath)   + "<p>"
             + "Allow Supremacy: "       + YesNo(mp.bAllowSupremacyPath)   + "<p>"
 			+ "Allow Empty Teams: "     + YesNo(mp.bAllowEmptyTeams)      + "<p>"
+			+ "Allow Allied Ripcord: "  + YesNo(mp.bAllowAlliedRip)       + "<p>" //imago 7/10/09 ALLY
+			+ "Experimental: "          + YesNo(mp.bExperimental)         + "<p>" //imago 7/10/09
             + "<p>"
             ;
     }
@@ -422,7 +426,8 @@ public:
         CastTo(m_pbuttonAllowTactical       , m_pns->FindMember("allowTacticalCheckboxPane"));
         CastTo(m_pbuttonAllowExpansion      , m_pns->FindMember("allowExpansionCheckboxPane"));
         CastTo(m_pbuttonAllowSupremacy      , m_pns->FindMember("allowSupremacyCheckboxPane"));
-        CastTo(m_pbuttonAllowEmptyTeams     , m_pns->FindMember("allowEmptyTeamsCheckboxPane"));
+        //CastTo(m_pbuttonAllowEmptyTeams     , m_pns->FindMember("allowEmptyTeamsCheckboxPane"));
+		CastTo(m_pbuttonAllowAlliedRip     , m_pns->FindMember("allowAlliedRipCheckboxPane")); //imago 7/8/09 ALLY
 		CastTo(m_pbuttonNextMap             , m_pns->FindMember("mapPreviewNextButtonPane"));
 		CastTo(m_pbuttonPrevMap				, m_pns->FindMember("mapPreviewPrevButtonPane"));
 
@@ -969,8 +974,8 @@ public:
 		misparams.bAllowTacticalPath = m_pbuttonAllowTactical->GetChecked();
 		misparams.bAllowExpansionPath = m_pbuttonAllowExpansion->GetChecked();
 		misparams.bAllowSupremacyPath = m_pbuttonAllowSupremacy->GetChecked();
-		misparams.bAllowEmptyTeams = m_pbuttonAllowEmptyTeams->GetChecked();
-
+		//misparams.bAllowEmptyTeams = m_pbuttonAllowEmptyTeams->GetChecked();
+		misparams.bAllowAlliedRip = m_pbuttonAllowAlliedRip->GetChecked(); //imago 7/8/09 ALLY
         misparams.bShowMap = m_pbuttonShowMap->GetChecked();
 
         misparams.nTeams = FindValue(m_pcomboTeamCount->GetSelection(), "TeamCountValues");
@@ -1122,10 +1127,38 @@ public:
             );
             m_fQuitting = true;
         }
-
-        PFM_DEALLOC(pfmMissionParams);
-
-        return true;
+		//Imago 7/18/09 turn off allies if these are set ALLY 
+		//Imago 7/31/09 fixed heap corruption trying to access pfmMissionParams while being deallocated
+		//imago 7/6/09 ALLY force Defections on when allies
+		bool bAllies = false;
+		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
+			if (trekClient.MyMission()->SideAllies(i) != NA)  {
+				bAllies = true;
+				break;
+			}
+		}
+		if (bAllies && (pfmMissionParams->missionparams.IsArtifactsGame() || pfmMissionParams->missionparams.IsDeathMatchGame() ||
+		pfmMissionParams->missionparams.IsProsperityGame() || pfmMissionParams->missionparams.IsFlagsGame() ||
+		pfmMissionParams->missionparams.IsTerritoryGame() || pfmMissionParams->missionparams.nTeams <= 2)) {
+			pfmMissionParams->missionparams.bAllowAlliedRip = false;
+			pfmMissionParams->missionparams.bAllowAlliedViz = false;
+			pfmMissionParams->missionparams.bAllowDefections = false;
+			pfmMissionParams->missionparams.iMaxImbalance = 0x7ffe;
+			PFM_DEALLOC(pfmMissionParams);
+			for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) { 
+				trekClient.MyMission()->SetSideAllies(i,NA);
+				trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+				BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeAlliance, C, CHANGE_ALLIANCE)
+				END_PFM_CREATE
+				pfmChangeAlliance->sideID = i;
+				pfmChangeAlliance->sideAlly = NA;
+	            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+	            trekClient.m_fm.QueueExistingMsg((FEDMESSAGE *)pfmChangeAlliance);
+			}
+		} else {
+        	PFM_DEALLOC(pfmMissionParams);
+		}
+		return true;
     }
 
     bool CanEdit()
@@ -1148,7 +1181,16 @@ public:
         m_pbuttonEjectPods->SetEnabled(bEnable);
         m_pbuttonFriendlyFire->SetEnabled(bEnable);
         //m_pbuttonStatsCount->SetEnabled(bEnable); // TE: Show the StatsCount checkbox - KGJV #62 removed
-        m_pbuttonDefections->SetEnabled(bEnable);
+		
+		//imago 7/6/09 ALLY force Defections on when allies
+		bool bAllies = false;
+		for (SideID i = 0; i < trekClient.MyMission()->GetSideList()->GetCount() ; i++) {
+			if (trekClient.MyMission()->SideAllies(i) != NA && !bAllies) 
+				bAllies = true;
+		}
+		m_pbuttonDefections->SetEnabled(!bAllies && bEnable);
+		//
+
         m_pbuttonJoiners->SetEnabled(bEnable);
         m_pbuttonSquadGame->SetEnabled(bEnable && m_bIsZoneClub);
         m_pbuttonInvulnerableStations->SetEnabled(bEnable);
@@ -1158,13 +1200,16 @@ public:
 		m_pbuttonAllowTactical->SetEnabled(bEnable);
         m_pbuttonAllowExpansion->SetEnabled(bEnable);
         m_pbuttonAllowSupremacy->SetEnabled(bEnable);
-		m_pbuttonAllowEmptyTeams->SetEnabled(false);//bEnable && m_bIsZoneClub); // KGJV #62
+		//m_pbuttonAllowEmptyTeams->SetEnabled(false);//bEnable && m_bIsZoneClub); // KGJV #62
+		
+		m_pbuttonAllowAlliedRip->SetEnabled(bAllies && bEnable); //imago 7/8/09 ALLY
+
 
 		m_pbuttonShowMap->SetEnabled(bEnable);
 
         m_pcomboTeamCount->SetEnabled(bEnable);
         m_pcomboMaxPlayers->SetEnabled(bEnable && !m_bLockGameOpen);
-        m_pcomboMaxImbalance->SetEnabled(bEnable);
+        m_pcomboMaxImbalance->SetEnabled(!bAllies && bEnable); //because imbalance impelemtation is now FUBAR even w/o allies... we'll disable it -Imago 8/1/09
         m_pcomboSkillLevel->SetEnabled(bEnable && !m_bLockGameOpen); // KGJV #92
         m_pcomboMapType->SetEnabled(bEnable);
         m_pcomboConnectivity->SetEnabled(bEnable);

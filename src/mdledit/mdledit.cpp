@@ -4,6 +4,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+// jul 08 - KG global changes to work with DX9
+
+
+
 #include "pch.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -13,6 +17,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "main.h"
+#include "../Inc/regkey.h"
+
+#include "VideoSettingsDX9.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -76,6 +83,22 @@ public:
     }
 };
 */
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// ModelerSite
+//
+//////////////////////////////////////////////////////////////////////////////
+
+class ModelerSiteImpl : public ModelerSite {
+public:
+    void Error(const ZString& str)
+    {
+        ZError(str);
+        MessageBox(NULL, str, "Error", MB_OK);
+        _exit(0);
+    }
+};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -497,20 +520,43 @@ public:
         const ZString& strCommandLine, 
         bool bImageTest,
         bool bTest, 
-        int initialTest
+        int initialTest,
+		const ZString& strArtPath
     ) :
         EffectWindow(
             papp,
             strCommandLine,
             "MDLEdit",
             false,
-            WinRect(0, 0, 256, 256)
+            WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX, 
+					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Width + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+					CD3DDevice9::Get()->GetCurrentMode()->mode.Height + 
+									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY)
         ),
         m_bAnimate(false),
         m_bGlow(false),
         m_bClearColor(false)
     {
+
+		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
+		papp->Initialize( strCommandLine, GetHWND() );
+		m_pengine = papp->GetEngine();
+		m_pmodeler = papp->GetModeler();
+
+		// Now set the art path, performed after initialise, else Modeler isn't valid.
+		GetModeler()->SetArtPath(strArtPath);
+
+		// load the fonts
+		TrekResources::Initialize(GetModeler());
+
+		// Perform post window creation initialisation. Initialise the time value.
+		PostWindowCreationInit( );
+		InitialiseTime();
+
         SetEffectWindow(this);
+        GetModeler()->SetSite(new ModelerSiteImpl());
 
         //
         // This app runs in Game Mode
@@ -519,7 +565,7 @@ public:
         //SetFullscreen(true);
         //GetEngine()->SetDebugFullscreen(true);
         GetEngine()->Set3DAccelerationImportant(true);
-        SetShowFPS(false);
+        SetShowFPS(true);
 
         //
         // Create the sound engine
@@ -588,14 +634,14 @@ public:
         // Image Layers
         //
 
-        Add3DTests(bTest, initialTest);
-        Add2DTests(bImageTest);
+        //Add3DTests(bTest, initialTest);
+        //Add2DTests(bImageTest);
 
         //
         // Stars
         //
 
-        m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 1000));
+        m_pgroupImage->AddImage(StarImage::Create(m_pviewport, 5000));
 
         //
         // Background
@@ -649,10 +695,16 @@ public:
         GetPopupContainer()->OpenPopup(
             CreateMMLPopup(
                 GetModeler(),
-                "hlp7a4.mml"
+                "hlp7a4.mml",false
             )
         );
-        */
+		*/
+		
+        
+		// user tests here
+		AddMineFieldTest();
+		//AddIcosahedron(); //for testing "Intel SWVP clipping issue" -Imago 
+        
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -681,6 +733,7 @@ public:
             m_pgroupGeo->AddGeo(m_ptestGeo); 
         }
 
+		//AddBoltTest();
         //AddDebris();
         //AddConeGeoTest();
         //AddIcosahedron();
@@ -696,22 +749,127 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 
     TRef<MineFieldGeo> m_pmineFieldGeo;
+	TRef<Geo> m_alephGeo;
+	TRef<ExplosionGeo> m_expGeo;
+	TRef<TEvent<float>::SourceImpl> m_peventSourceAleph;
 
     void AddMineFieldTest()
     {
-        TRef<Surface> psurface = GetModeler()->LoadSurface("minebmp", true);
+        //TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
 
-        for (int index = 0; index < 100; index++) {
-            m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1, 100);
-            m_pgroupGeo->AddGeo(
-                new TransformGeo(
-                    CreateCullGeo(m_pmineFieldGeo), 
-                    new TranslateTransform(
-                        Vector::RandomPosition(1000)
-                    )
-                )
-            );
-        }
+		TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true);
+
+	ZFile * pFile = (ZFile*) zf;
+		
+		D3DXIMAGE_INFO fileInfo;
+		D3DXGetImageInfoFromFileInMemory(	pFile->GetPointer(),
+												pFile->GetLength(),
+												&fileInfo );
+		
+		WinPoint targetSize( fileInfo.Width, fileInfo.Height );
+		TRef<Surface> psurface =
+			m_pengine->CreateSurfaceD3DX(
+				&fileInfo,
+				&targetSize,
+				zf,
+				true,
+				Color( 0, 0, 0 ),
+				"fxmine", true );
+		psurface->SetColorKey(Color(0, 0, 0));
+		psurface->SetEnableColorKey(true);
+
+
+
+		// KG - old version here
+        //for (int index = 0; index < 100; index++) {
+        //    m_pmineFieldGeo = CreateMineFieldGeo(psurface, 1, 100);
+        //    m_pgroupGeo->AddGeo(
+        //        new TransformGeo(
+        //            CreateCullGeo(m_pmineFieldGeo), 
+        //            new TranslateTransform(
+        //                Vector::RandomPosition(1000)
+        //            )
+        //        )
+        //    );
+        //}
+
+		//aleph
+		TRef<ThingGeo> pthing = ThingGeo::Create(GetModeler(), GetTime());
+		TRef<Image> pimageAleph = GetModeler()->LoadImage("plnt19bmp", false);
+		
+		m_peventSourceAleph = new TEvent<float>::SourceImpl;
+		m_alephGeo = CreateAlephGeo(GetModeler(), m_peventSourceAleph, GetTime());
+        pthing->Load(0, m_alephGeo, pimageAleph);
+
+		m_pgroupGeo->AddGeo(pthing->GetGeo());
+
+		//explosion
+		
+		TRef<Image> m_pimageShockWave = GetModeler()->LoadImage("fx18bmp", true);
+		TVector<TRef<AnimatedImage> > m_vpimageExplosion[8];
+
+		TRef<AnimatedImage> img1 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp20bmp", true, true, true));
+		TRef<AnimatedImage> img2 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp22bmp", true, true, true));
+		TRef<AnimatedImage> img3 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp23bmp", true, true, true));
+		TRef<AnimatedImage> img4 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp24bmp", true, true, true));
+		TRef<AnimatedImage> img5 = new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface("exp25bmp", true, true, true));
+	    m_vpimageExplosion[0].SetCount(5);
+	    m_vpimageExplosion[0].Set(0, img1);
+	    m_vpimageExplosion[0].Set(1, img2);
+	    m_vpimageExplosion[0].Set(2, img3);
+	    m_vpimageExplosion[0].Set(3, img4);
+	    m_vpimageExplosion[0].Set(4, img5);
+
+ 		for (int index = 0; index < 200; index++) {
+			pthing = ThingGeo::Create(GetModeler(), (GetTime()));
+			m_expGeo = CreateExplosionGeo(GetTime());
+			m_expGeo->AddExplosion(
+	                Vector::RandomPosition(4000),
+	                Vector(0, 1, 0),
+	                Vector(1, 0, 0),
+	                Vector(0, 0, 0),
+					350,
+	                1000,
+	                Color(200.0f / 255.0f, 130.0f / 255.0f, 50.0f / 255.0f),
+					24,
+					m_vpimageExplosion[0],
+					m_pimageShockWave);
+
+			m_pgroupGeo->AddGeo(m_expGeo);
+		}
+
+		//minefield
+
+
+
+		pthing = ThingGeo::Create(GetModeler(), GetTime());
+
+        m_pmineFieldGeo = CreateMineFieldGeo(psurface, 2.0f, 100.0f);
+        pthing->Load(0, m_pmineFieldGeo, NULL);
+
+		m_pgroupGeo->AddGeo(pthing->GetGeo());
+
+
+
+
+
+ 		for (int index = 0; index < 200; index++) {
+			pthing = ThingGeo::Create(GetModeler(), (GetTime()));
+			m_expGeo = CreateExplosionGeo(GetTime());
+			m_expGeo->AddExplosion(
+	                Vector::RandomPosition(4000),
+	                Vector(0, 1, 0),
+	                Vector(1, 0, 0),
+	                Vector(0, 0, 0),
+					350,
+	                1000,
+	                Color(200.0f / 255.0f, 130.0f / 255.0f, 50.0f / 255.0f),
+					24,
+					m_vpimageExplosion[0],
+					m_pimageShockWave);
+
+			m_pgroupGeo->AddGeo(m_expGeo);
+		}
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1238,7 +1396,7 @@ public:
         {
             m_ppane =
                 new ImagePane(
-                    pmodeler->LoadImage("btncrimsonbmp", false)
+                    pmodeler->LoadImage("btnjoinbmp", false) //"btncrimsonbmp"
                 );
         }
 
@@ -1438,7 +1596,7 @@ public:
         if (m_pscrollPane) {
             if (ks.bDown) {
                 switch(ks.vk) {
-                    /*
+                    
                     case VK_SPACE:
                         {
                             GetPopupContainer()->OpenPopup(
@@ -1449,7 +1607,7 @@ public:
                             m_pscrollPane->SetPos(0);
                         }
                         return true;
-                    */
+                    
 
                     case 0xdb: // '['
                         m_pscrollPane->PageUp();
@@ -1467,22 +1625,6 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// ModelerSite
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class ModelerSiteImpl : public ModelerSite {
-public:
-    void Error(const ZString& str)
-    {
-        ZError(str);
-        MessageBox(NULL, str, "Error", MB_OK);
-        _exit(0);
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//
 // MDLEdit Application
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -1494,8 +1636,39 @@ protected:
 public:
     HRESULT Initialize(const ZString& strCommandLine)
     {
-        EffectApp::Initialize(strCommandLine);
-        GetModeler()->SetSite(new ModelerSiteImpl());
+		PathString pathStr;
+        HKEY hKey;
+        DWORD dwType;
+        char  szValue[MAX_PATH];
+        DWORD cbValue = MAX_PATH;
+
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        {
+            // Get the art path from the registry
+            if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
+            {
+                // Set ArtPath to be relative to the application path
+                GetModuleFileNameA(NULL, szValue, MAX_PATH);
+                char*   p = strrchr(szValue, '\\');
+                if (!p)
+                    p = szValue;
+                else
+                    p++;
+
+                strcpy(p, "artwork");
+
+                //Create a subdirectory for the artwork (nothing will happen if it already there)
+                CreateDirectoryA(szValue, NULL);
+            }
+            pathStr = szValue;
+		}
+		// Ask the user for video settings.
+		if( PromptUserForVideoSettings(false, true, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings") == false )
+		{
+			return E_FAIL;
+		}
+		CD3DDevice9::Get()->UpdateCurrentMode( );
+
 
         //
         // parse for -test
@@ -1533,7 +1706,7 @@ public:
         // Create the window
         //
 
-        m_pwindow = new MDLEditWindow(this, strCommandLine, bImageTest, bTest, initialTest);
+        m_pwindow = new MDLEditWindow(this, strCommandLine, bImageTest, bTest, initialTest, pathStr);
 
         //
         // Parse the command line

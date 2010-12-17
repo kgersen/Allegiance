@@ -300,7 +300,7 @@ HRESULT CAGCEventDef::ExpandFmtString(BSTR bstrFmt, IAGCEvent* pEvent,
   LARGE_INTEGER li = {0};
   ULARGE_INTEGER uli;
   RETURN_FAILED(spStm->Seek(li, STREAM_SEEK_CUR, &uli));
-  UINT cchStream = uli.QuadPart / sizeof(OLECHAR);
+  UINT cchStream = (UINT)uli.QuadPart / sizeof(OLECHAR);
 
   // Get the HGLOBAL underlying the stream
   HGLOBAL hGlobal = NULL;

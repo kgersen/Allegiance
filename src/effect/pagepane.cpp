@@ -194,7 +194,7 @@ public:
     {
         TRef<StringPane> pstringPane = 
             new StringPane(
-                ZString(pcc, pccEnd - pcc) + " ",
+                ZString(pcc, (int)(pccEnd - pcc)) + " ",   //imago 6/20/09
                 m_pfont
             );
         pstringPane->SetTextColor(m_color);
@@ -402,7 +402,7 @@ public:
             return Error("Expected '>'");
         }
 
-        str = ZString(pccSymbol, pcc - pccSymbol);
+        str = ZString(pccSymbol, (int)(pcc - pccSymbol)); //imago 6/20/09
         pcc++;
         return true;
     }
@@ -574,7 +574,7 @@ public:
         } else if (strTag == "Bullet") {
             return ParseBullet(pns, pcc, pccEnd);
         } else if (strTag == "Hyperlink") {
-            return InsertHyperlink(pcc, pccEnd, Color(0,.4,1), m_peventSourceSecondary);
+            return InsertHyperlink(pcc, pccEnd, Color(0,0.4f,1), m_peventSourceSecondary);
         }
 
         return Error("Unknown tag: " + strTag);

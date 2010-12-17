@@ -34,7 +34,7 @@ BEGIN_QUERY(CQLobbyLogon, true,
   DWORD dTime;
 
   // query parameters
-  char  szCDKey[c_cbCDKey];
+  char  szCDKey[1024]; // Imago changed
   char  szCharacterName[c_cbName];
   int   characterID;
   char  fValidCode; // out

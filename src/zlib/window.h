@@ -4,6 +4,14 @@
 #include "commctrl.h"
 #include "winstyles.h"
 
+
+// x64: GWL is GWLP in x64 SDK Imago 6/20/09
+#if defined (_WIN64) 
+	#define GWLx_WNDPROC GWLP_WNDPROC
+#else
+	#define GWLx_WNDPROC GWL_WNDPROC
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Window
@@ -48,6 +56,7 @@ private:
     bool     m_bHit;
     bool     m_bShowMouse;
     bool     m_bMouseInside;
+    WinPoint m_lastPointMouse;
 
     Window* m_pwindowParent;
 
@@ -74,6 +83,9 @@ private:
     static DWORD CALLBACK Win32WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     void Construct();
+
+	void ClipOrCenterRectToMonitor(LPRECT prc, UINT flags);
+	void ClipOrCenterWindowToMonitor( const WinRect& rect, UINT flags );
 
 protected:
     DWORD OriginalWndProc(UINT, WPARAM, LPARAM);

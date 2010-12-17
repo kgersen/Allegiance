@@ -1,5 +1,5 @@
 
-//          
+//
 // sound IDs
 //
 
@@ -144,7 +144,7 @@ DEFSOUND(aleph)
 // General
 DEFSOUND(voAwsome)      // Awesome
 DEFSOUND(voBye)         // Bye
-DEFSOUND(voDang)        // Dang 
+DEFSOUND(voDang)        // Dang
 DEFSOUND(voDoah)        // Doah
 DEFSOUND(voHi)          // Hi
 DEFSOUND(voNiceWork)    // Nice work
@@ -162,10 +162,10 @@ DEFSOUND(voDefendBase)      // All pilots defend our base
 DEFSOUND(voAttackTarget)        // Attack target
 DEFSOUND(voAttack)      // Attack!!
 DEFSOUND(voCoverMe)         // Cover me
-DEFSOUND(voDefend)      // Defend 
+DEFSOUND(voDefend)      // Defend
 DEFSOUND(voDonateCredits)       // Donate me your Credits
 DEFSOUND(voEscortBuilder)       // Escort Builder
-DEFSOUND(voEscortMiner)         // Escort Miner 
+DEFSOUND(voEscortMiner)         // Escort Miner
 DEFSOUND(voFindAlephs)      // Find Alephs
 DEFSOUND(voFindCarbonacous)         // Find Carbonacous
 DEFSOUND(voFindEnemy)       // Find Enemy
@@ -173,7 +173,7 @@ DEFSOUND(voFindHelium)      // Find Helium
 DEFSOUND(voFindLava)        // Find Lava
 DEFSOUND(voFindIron)        // Find Nickle Iron
 DEFSOUND(voFindProbes)      // Find Probes
-DEFSOUND(voFollow)      // Follow 
+DEFSOUND(voFollow)      // Follow
 DEFSOUND(voFormOnMyWing)        // Form on my wing
 DEFSOUND(voFormate)         // Formate
 DEFSOUND(voGetOffMe)        // Get them off me
@@ -182,7 +182,7 @@ DEFSOUND(voHeadBack)        // Head back to base
 DEFSOUND(voHoldUp)      // Hold up
 DEFSOUND(voMeetAtJump)      // Meet you at the Jump point
 DEFSOUND(voRegroup)         // Regroup
-DEFSOUND(voRetreat)         // Retreat 
+DEFSOUND(voRetreat)         // Retreat
 DEFSOUND(voStayOnTarget)        // Stay on target
 DEFSOUND(voWaitForSignal)       // Wait for signal
 
@@ -199,7 +199,7 @@ DEFSOUND(voFoundEnemyBase)      // Found Enemy base
 DEFSOUND(voFoundHelium)         // Found Helium
 DEFSOUND(voFoundLava)       // Found Lave
 DEFSOUND(voFoundIron)       // Found Nickle Iron
-DEFSOUND(voEnemyTrans)      // Inbound  Enemy transport 
+DEFSOUND(voEnemyTrans)      // Inbound  Enemy transport
 DEFSOUND(voEnemyCap)        // Inbound Enemy Capitol ships
 DEFSOUND(voEnemyFighters)       // Inbound Enemy fighters
 DEFSOUND(voIsOurBaseClear)      // Is our base clear?
@@ -229,13 +229,13 @@ DEFSOUND(voYoureMad)        // You're mad
 // Taunts
 DEFSOUND(voPayloadDelivered)        // Payload delivered (he he)
 DEFSOUND(voAlmostHadYou)        // Almost had you
-DEFSOUND(voComeBackAndFight)        // come back and fight 
+DEFSOUND(voComeBackAndFight)        // come back and fight
 DEFSOUND(voDeathBecomesYou)         // Death becomes you
-DEFSOUND(voShootingFish)        // Easier than shooting fish in a barrel. 
+DEFSOUND(voShootingFish)        // Easier than shooting fish in a barrel.
 DEFSOUND(voHowdThatFeel)        // How did that feel?
 DEFSOUND(voLikeLambs)       // Like lambs to the slaughter
 DEFSOUND(voOutOfAmmo)       // out of ammo…hmmm interesting
-DEFSOUND(voRipcordLastResort)       // Ripcord.. Last resort for the desperate… 
+DEFSOUND(voRipcordLastResort)       // Ripcord.. Last resort for the desperate…
 DEFSOUND(voThanks)      // Thanks
 DEFSOUND(voYes)         // Yes!!!!!
 DEFSOUND(voYouDiedWithDignity)      // You died with dignity
@@ -246,7 +246,7 @@ DEFSOUND(voYouAreGoodBut)       // You're good but not that good
 // Need
 DEFSOUND(voGimmeSomething)      // Gimme something to shoot at
 DEFSOUND(voTakingItToThem)      // Taking it to them…
-DEFSOUND(voNeedFuel)        // I  need  fuel 
+DEFSOUND(voNeedFuel)        // I  need  fuel
 DEFSOUND(voNeedHelp)        // I  need  help
 DEFSOUND(voNeedRepairs)         // I  need  repairs
 DEFSOUND(voNeedAmmo)        // I  need ammo
@@ -260,7 +260,7 @@ DEFSOUND(voNeedScout)       // Need Scout support
 DEFSOUND(voStationNeedsRepairs)         // Our Station needs repairs
 DEFSOUND(voTargetNeeded)        // Target Needed
 DEFSOUND(voNeedPickup)      // I need a pick up… Help…
-DEFSOUND(voTransportOutbound)       // Transport outbound --  need escort 
+DEFSOUND(voTransportOutbound)       // Transport outbound --  need escort
 
 //New 12/14/99
 DEFSOUND(voShoot)        // SHoot
@@ -327,7 +327,7 @@ DEFSOUND(voFindUranium) // Find uranium asteroid.
 DEFSOUND(voNoMoney) // I don't have enough money
 DEFSOUND(voSurelyJoking) //Surely you're joking.
 DEFSOUND(voAintNoThin) // Ain't no thin'
-DEFSOUND(voHellYeah) 
+DEFSOUND(voHellYeah)
 DEFSOUND(voYoureCrazy)
 DEFSOUND(voThatHurt) // Oooh...looked like that hurt
 DEFSOUND(voSlapInvestor) //Someone slap the investor
@@ -372,10 +372,10 @@ DEFSOUND(voThanksLift) // Thanks for the lift!
 // Miners
 DEFSOUND(droneReport4Duty)      // Miner Reporting for duty
 //DEFSOUND(droneYeah)       // Yeah?
-DEFSOUND(droneEnemyOnScope)         // Ive got Enemies on my Scope 
+DEFSOUND(droneEnemyOnScope)         // Ive got Enemies on my Scope
 DEFSOUND(droneWatchFire)        // Watch your fire..
 DEFSOUND(droneYouGotIt)         // You got it
-DEFSOUND(droneCantDoThat)       // I can't do that 
+DEFSOUND(droneCantDoThat)       // I can't do that
 DEFSOUND(droneTooMuchDamage)        // I dont get paid enough for this... returning to base
 DEFSOUND(droneWhereTo)      // No Helium in Scan range
 DEFSOUND(droneComingHomeEmpty)      // Coming home w/o a full tank
@@ -390,11 +390,11 @@ DEFSOUND(droneInTransit)        // In transit
 DEFSOUND(droneUnderAttack)      // Under attack
 DEFSOUND(minerUnderAttack)      // Under attack
 DEFSOUND(carrierUnderAttack)      // Under attack
-DEFSOUND(minerCritical)      
+DEFSOUND(minerCritical)
 DEFSOUND(droneTooCrowded)       //Enemy miners preventing me from mining
 DEFSOUND(constructorRunning)
 
-DEFSOUND(teleportProbeActive)
+DEFSOUND(teleportProbeActive)  //Teleportation probe deployed (unused)
 DEFSOUND(teleportProbeSpotted)
 
 DEFSOUND(minerThreatened)
@@ -427,10 +427,10 @@ DEFSOUND(noTurrets)
 // Builders
 //DEFSOUND(droneWhere)      // Where do you want it?
 //DEFSOUND(droneYeah)       // Yeah?
-//DEFSOUND(droneEnemyOnScope)       // Enemies on Scope 
+//DEFSOUND(droneEnemyOnScope)       // Enemies on Scope
 //DEFSOUND(droneCheckFire)      // check your fire..
 //DEFSOUND(droneCommenceBuild)      // Commencing build program
-//DEFSOUND(droneCourseLocked)       // Stand aside,course locked in 
+//DEFSOUND(droneCourseLocked)       // Stand aside,course locked in
 //DEFSOUND(droneCantBuildThere)         // I cant build there
 //DEFSOUND(droneTooMuchDamage)      // I cant make it Ive taken too much damage..
 DEFSOUND(droneAintGonnaWork)        // This aint going to work
@@ -458,14 +458,14 @@ DEFSOUND(turretArgh)        // ahhh….. (unit offline)
 */
 
 // SAL'
-DEFSOUND(salCommenceScan)       // Sensors online commencing scan 
+DEFSOUND(salCommenceScan)       // Sensors online commencing scan
 DEFSOUND(salRixSighted)         // Enemy Rixian Ships sighted
 DEFSOUND(salCrimsonSighted)         // Enemy Crimson Ships sighted
 DEFSOUND(salIronSighted)        // Enemy Iron League ships sighted
 DEFSOUND(salContactsInRange)        //     "Enemy contacts in Range"
 DEFSOUND(salRedAlert)       //     "under attack..going to Red Alert --"
-DEFSOUND(salShieldsOffline)         //     "Shields offline... Hull damage Sustained"  
-DEFSOUND(salEnemyTroops)        //     "Enemy troops have entered the base.. All units...<gunfire> ..<static>"  
+DEFSOUND(salShieldsOffline)         //     "Shields offline... Hull damage Sustained"
+DEFSOUND(salEnemyTroops)        //     "Enemy troops have entered the base.. All units...<gunfire> ..<static>"
 DEFSOUND(salCoreMeltdown)       //     "core Meltdown" --you have 0 seconds to reach minimum saf…..
 DEFSOUND(salCompletedShip)      //     "Weve completed the fabrication system for a new ship type."
 DEFSOUND(salCompletedMods)      //     "Weve completed Modifcations to your ship and have downloaded new Data."
@@ -499,7 +499,7 @@ DEFSOUND(salDispenserEmpty)
 
 DEFSOUND(salPlayerWaiting)
 DEFSOUND(salRecruitsArrived)        //     "Additional recruits have arrived"
-DEFSOUND(salMIA)        
+DEFSOUND(salMIA)
 DEFSOUND(salQuit)
 DEFSOUND(salBooted)
 DEFSOUND(salChangeSides)

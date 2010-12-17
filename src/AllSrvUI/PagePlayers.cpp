@@ -720,7 +720,7 @@ void CPagePlayers::OnEndTrackPlayerList(NMHDR* pNMHDR, LRESULT* pResult)
   *pResult = 0;
 }
 
-void CPagePlayers::OnTimer(UINT nIDEvent) 
+void CPagePlayers::OnTimer(UINT_PTR nIDEvent) 
 {
   switch (nIDEvent)
   {

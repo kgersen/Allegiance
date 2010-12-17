@@ -39,6 +39,8 @@ HRESULT         CsideIGC::Initialize(ImissionIGC*   pMission,
 
     m_pMission->GetIgcSite()->CreateSideEvent(static_cast<IsideIGC*>(this));
 
+	//#ALLY
+	m_data.allies = NA;
     return S_OK;
 }
 

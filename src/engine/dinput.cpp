@@ -118,6 +118,15 @@ private:
     BOOL EnumObjectsCallback(
         LPCDIDEVICEOBJECTINSTANCE pddoi
     ) {
+		LPOLESTR szGUID = new WCHAR [39];
+		char chGUID[39];
+		StringFromGUID2(pddoi->guidType,szGUID,39);
+		WideCharToMultiByte( CP_ACP, 0, szGUID, -1, chGUID, 39, 0, 0 );
+		m_pLogFile->OutputStringV("\t\tpddoi->guidType: %s\n",chGUID);
+		m_pLogFile->OutputStringV("\t\tpddoi->tszName: %s\n",pddoi->tszName);
+		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",DIDFT_GETTYPE(pddoi->dwType), DIDFT_GETINSTANCE(pddoi->dwType));
+		m_pLogFile->OutputStringV("\t\tpddoi->wUsage: %x (page: %x)\n",pddoi->wUsage,pddoi->wUsagePage);
+
         if (
                pddoi->dwType & DIDFT_AXIS
             || pddoi->dwType & DIDFT_POV
@@ -171,6 +180,7 @@ private:
         LPVOID                    pvRef
     ) {
         MouseInputStreamImpl* pthis = (MouseInputStreamImpl*)pvRef;
+		pthis->m_pLogFile->OutputString("\tStaticEnumObjectsCallback:\n");
         return pthis->EnumObjectsCallback(lpddoi);
     }
  
@@ -181,7 +191,7 @@ private:
     //////////////////////////////////////////////////////////////////////////////
     
 //    TRef<IDirectInputDevice2>           m_pdid;
-	TRef<IDirectInputDevice7>			m_pdid;					// mdvalley: DInput7
+	TRef<IDirectInputDevice8>			m_pdid;					// kg: DInput8
     TRef<ButtonEvent::SourceImpl>       m_pbuttonEventSource;
     DIDeviceCaps                        m_didc;
     DIDeviceInstance                    m_didi;
@@ -196,6 +206,8 @@ private:
     int                                 m_threshold2;
     int                                 m_acceleration;
     float                               m_sensitivity;
+	HWND								m_hwnd;
+	CLogFile *							m_pLogFile; //Imago 8/12/09
 
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -205,14 +217,17 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     
 //    MouseInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
-	MouseInputStreamImpl(IDirectInputDevice7* pdid, HWND hwnd) :		// mdvalley: DInput7
+	MouseInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd, CLogFile * pLogFile) :		// kg: DInput8
         m_pdid(pdid),
+		m_hwnd(hwnd),
         m_rect(0, 0, 0, 0),                                                                         
         m_point(0, 0),
         m_vvalueObject(3),
         m_bEnabled(false),
         m_bBuffered(true),
-        m_pbuttonEventSource(ButtonEvent::Source::Create())
+        m_pbuttonEventSource(ButtonEvent::Source::Create()),
+		m_pLogFile(pLogFile),
+		m_z(0) //Imago 8/12/09
     {
         //
         // Are we running on NT
@@ -227,6 +242,11 @@ public:
         }
         */
 
+        DDCall(m_pdid->GetCapabilities(&m_didc));
+
+		m_pLogFile->OutputStringV("\tInitialized mouse stream - Axes: %d, Buttons: %d, POVs: %d\n",
+			m_didc.dwAxes,m_didc.dwButtons,m_didc.dwPOVs);
+
         //
         // Enumerate the buttons and values
         //
@@ -236,6 +256,16 @@ public:
         //
         // Setup the device
         //
+
+        //Imago 8/14/09
+        if (m_vvalueObject[2] != NULL) {
+            m_vbuttonObject.SetCount(10);
+            ButtonDDInputObject* pobject = new ButtonDDInputObject("Wheel Up",0x00000301UL,GUID_ZAxis);
+            m_vbuttonObject.Set(8,pobject);
+            pobject = new ButtonDDInputObject("Wheel Down",0x00000401UL,GUID_ZAxis);
+            m_vbuttonObject.Set(9,pobject);
+           
+        }
 
         SetupDevice();
 
@@ -368,20 +398,25 @@ public:
 
     void DeltaWheel(int dz)
     {
-        if (dz != 0 ) {
-            //ZDebugOutput("MouseDZ: " + ZString(dz) + "\n");
-            m_z += float(dz);
+        m_z += float(dz);
 
-            if (m_vvalueObject.GetCount() >= 3) {
-                m_vvalueObject[0]->GetValue()->SetValue(m_z);
+        if (m_vvalueObject.GetCount() >= 3) {
+            m_vvalueObject[2]->GetValue()->SetValue(m_z); //imago 8/12/09 use z axis
+            if (dz < 0) {
+                ButtonChanged(8,true);
+            } else if (dz > 0) {
+                ButtonChanged(9,true);
+            } else { //imago 8/13/09 use dz == 0 for button up
+                if (m_vbuttonObject[8]->GetValue()->GetValue())
+                    ButtonChanged(8,false);
+                if (m_vbuttonObject[9]->GetValue()->GetValue())
+                    ButtonChanged(9,false);
             }
         }
     }
 
     void ButtonChanged(int index, bool bDown)
     {
-        //ZDebugOutput("MouseButton: " + ZString(index) + (bDown ? " down" : " up") + "\n");
-
         m_vbuttonObject[index]->GetValue()->SetValue(bDown);
         m_pbuttonEventSource->Trigger(ButtonEventData(index, bDown));
     }
@@ -396,6 +431,7 @@ public:
         DWORD count = 1;
         int dx = 0;
         int dy = 0;
+        int dz = 0;
 
         while (count == 1) {
             HRESULT hr = m_pdid->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), &didod, &count, 0);
@@ -454,7 +490,7 @@ public:
                         break;
 
                     case DIMOFS_Z:
-                        DeltaWheel(int(didod.dwData));
+                        dz += int(didod.dwData);
                         break;
                 }
             }
@@ -465,6 +501,8 @@ public:
 
             DeltaPosition(dx, dy);
         }
+
+        DeltaWheel(dz);
     }
 
     void UpdatePolled()
@@ -509,8 +547,6 @@ public:
 
     void Update()
     {
-        //ZDebugOutput("Mouse Update\n");
-
         if (m_bEnabled) {
             //ZDebugOutput("Mouse Enabled\n");
             HRESULT hr = m_pdid->Acquire();
@@ -555,6 +591,11 @@ public:
         m_z = pos;
     }
 
+    float GetWheelPosition()
+    {
+        return m_z;
+    }
+
     const Point& GetPosition()
     {
         return m_point;
@@ -566,9 +607,9 @@ public:
             m_bEnabled = bEnabled;
 
             if (m_bEnabled) {
-                //DDCall(m_pdid->SetCooperativeLevel(hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
             } else {
-                //DDCall(m_pdid->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
+//                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
                 DDCall(m_pdid->Unacquire());
             }
         }
@@ -623,7 +664,7 @@ public:
 class JoystickInputStreamImpl : public JoystickInputStream {
 private:
 //    TRef<IDirectInputDevice2>           m_pdid;
-	TRef<IDirectInputDevice7>			m_pdid;		// mdvalley: DInput7
+	TRef<IDirectInputDevice8>			m_pdid;		// kg: DInput8
     DIDeviceCaps                        m_didc;
     DIDeviceInstance                    m_didi;
     TVector<TRef<ValueDDInputObject > > m_vvalueObject;
@@ -631,6 +672,7 @@ private:
     BYTE*                               m_pbyteData;
     DWORD                               m_sizeData;
     bool                                m_bFocus;
+	CLogFile * 							m_pLogFile; //Imago 8/12/09
 
     TRef<IDirectInputEffect> m_peffectBounce;
     TRef<IDirectInputEffect> m_peffectFire;
@@ -646,6 +688,21 @@ public:
     BOOL EnumObjectsCallback(
         LPCDIDEVICEOBJECTINSTANCE pddoi
     ) {
+		
+		if (!pddoi) {
+			m_pLogFile->OutputString("\t\tLPCDIDEVICEOBJECTINSTANCE=NULL Skipping.\n");
+			return DIENUM_CONTINUE;
+		}
+
+		LPOLESTR szGUID = new WCHAR [39];
+		char chGUID[39];
+		StringFromGUID2(pddoi->guidType,szGUID,39);
+		WideCharToMultiByte( CP_ACP, 0, szGUID, -1, chGUID, 39, 0, 0 );
+		m_pLogFile->OutputStringV("\t\tpddoi->guidType: %s\n",chGUID);
+		m_pLogFile->OutputStringV("\t\tpddoi->tszName: %s\n",pddoi->tszName);
+		m_pLogFile->OutputStringV("\t\tpddoi->dwType: %x (instance: %x)\n",DIDFT_GETTYPE(pddoi->dwType), DIDFT_GETINSTANCE(pddoi->dwType));
+		m_pLogFile->OutputStringV("\t\tpddoi->wUsage: %x (page: %x)\n",pddoi->wUsage,pddoi->wUsagePage);
+
         if (
                pddoi->dwType & DIDFT_AXIS
             || pddoi->dwType & DIDFT_POV
@@ -656,7 +713,8 @@ public:
                 index = 0;                           
             } else if (pddoi->guidType == GUID_YAxis ) {
                 index = 1;
-            } else if (pddoi->guidType == GUID_Slider) {
+            } else if (pddoi->guidType == GUID_Slider && 
+				pddoi->wUsage != 0x0037) { //Imago 8/12/09 fixes "buged" Saitek X45 Flight Control Stick driver
                 index = 2;
             } else if (pddoi->guidType == GUID_RzAxis) {
                 index = 3;
@@ -703,6 +761,7 @@ public:
         LPVOID                    pvRef
     ) {
         JoystickInputStreamImpl* pthis = (JoystickInputStreamImpl*)pvRef;
+		pthis->m_pLogFile->OutputString("\tStaticEnumObjectsCallback:\n");
         return pthis->EnumObjectsCallback(lpddoi);
     }
  
@@ -713,13 +772,17 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 
 //    JoystickInputStreamImpl(IDirectInputDevice2* pdid, HWND hwnd) :
-	JoystickInputStreamImpl(IDirectInputDevice7* pdid, HWND hwnd) :		// mdvalley: DInput7
+	JoystickInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd, CLogFile * pLogFile) :		// kg: DInput8  Imago 8/12/09
         m_pdid(pdid),
         m_bFocus(false),
-        m_vvalueObject(5)
+        m_vvalueObject(5),
+		m_pLogFile(pLogFile)
     {
         DDCall(m_pdid->GetCapabilities(&m_didc));
         DDCall(m_pdid->GetDeviceInfo(&m_didi));
+
+		m_pLogFile->OutputStringV("\tInitialized joystick stream - Axes: %d, Buttons: %d, POVs: %d\n",
+			m_didc.dwAxes,m_didc.dwButtons,m_didc.dwPOVs);
 
         //
         // Enumerate the buttons and values
@@ -1228,27 +1291,44 @@ private:
 
     bool EnumDeviceCallback(LPDIDEVICEINSTANCE pdidi)
     {
+		if (!pdidi)  {
+			m_joylog.OutputString("\tLPDIDEVICEINSTANCE=NULL Skipping.\n");
+			 return DIENUM_CONTINUE;
+		}
+		
+		// Imago 8/18/09
+		ZString strName = pdidi->tszProductName;
+		if (strName.ReverseFind("Keyboard") != -1) {
+			m_joylog.OutputString("\tSkipping keyboard as input.\n");
+			return DIENUM_CONTINUE;
+		}
+
         TRef<IDirectInputDevice>  pdid;
 //        TRef<IDirectInputDevice2> pdid2;
-		TRef<IDirectInputDevice7> pdid2;		// mdvalley: DInput7
+		TRef<IDirectInputDevice8> pdid2;		// mdvalley: DInput7
 
         DDCall(m_pdi->CreateDevice( pdidi->guidInstance, &pdid, NULL));
 //        DDCall(pdid->QueryInterface(IID_IDirectInputDevice2, (void**)&pdid2));
-		DDCall(pdid->QueryInterface(IID_IDirectInputDevice7, (void**)&pdid2));
+		DDCall(pdid->QueryInterface(IID_IDirectInputDevice8, (void**)&pdid2));
+        m_joylog.OutputStringV("\tpdidi->dwDevType: %x (subtype: %x)\n",GET_DIDEVICE_TYPE(pdidi->dwDevType),GET_DIDEVICE_SUBTYPE(pdidi->dwDevType));
+        m_joylog.OutputStringV("\tpdidi->tszProductName: %s\n",pdidi->tszProductName);
+        
 
         switch (pdidi->dwDevType & 0xff) {
-            case DIDEVTYPE_MOUSE:
+			case DI8DEVTYPE_MOUSE: // kg Di8 DIDEVTYPE_MOUSE:
                 {
                     if (m_pmouseInputStream == NULL) {
-                        m_pmouseInputStream = new MouseInputStreamImpl(pdid2, m_hwnd);
+                        m_pmouseInputStream = new MouseInputStreamImpl(pdid2, m_hwnd, &m_joylog);
                     }
                 }
                 break;
 
-            case DIDEVTYPE_JOYSTICK:
+			case DI8DEVTYPE_JOYSTICK: // kg Di8 DIDEVTYPE_JOYSTICK:
+			case DI8DEVTYPE_GAMEPAD: //Imago 7/23/09
+			case DI8DEVTYPE_FLIGHT: // --^
                 {
                     TRef<JoystickInputStreamImpl> pjoystickInputStream = 
-                        new JoystickInputStreamImpl(pdid2, m_hwnd);
+                        new JoystickInputStreamImpl(pdid2, m_hwnd, &m_joylog);
 
                     m_vjoystickInputStream.PushEnd(pjoystickInputStream);
                 }
@@ -1267,6 +1347,7 @@ private:
     static BOOL CALLBACK StaticEnumDeviceCallback(LPDIDEVICEINSTANCE pdidi, LPVOID pv)
     {
         InputEngineImpl* pthis = (InputEngineImpl*)pv;
+        pthis->m_joylog.OutputString("StaticEnumDeviceCallback:\n");
 
         return pthis->EnumDeviceCallback(pdidi);
     }
@@ -1283,6 +1364,7 @@ private:
     TVector<TRef<JoystickInputStreamImpl> > m_vjoystickInputStream;
     TRef<MouseInputStreamImpl>              m_pmouseInputStream;
     HINSTANCE                               m_hdinput;
+    CLogFile                                m_joylog; //Imago 8/12/09
 
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -1295,7 +1377,8 @@ public:
 
     InputEngineImpl(HWND hwnd) :
         m_hwnd(hwnd),
-        m_bFocus(false)
+        m_bFocus(false),
+        m_joylog("DirectInput.log")
     {
         //
         // Create the direct input object
@@ -1323,10 +1406,11 @@ public:
 			g_pdfDIMouse = (DIDATAFORMAT*)::GetProcAddress(m_hdinput, "c_dfDIMouse2");		// mdvalley: Mouse2 for more buttons
             ZAssert(g_pdfDIMouse != NULL);
         #else
-            DDCall(DirectInputCreate(
+            DDCall(DirectInput8Create( // KG - Di8 update
                 GetModuleHandle(NULL), 
-                DIRECTINPUT_VERSION, 
-                &m_pdi, 
+                DIRECTINPUT_VERSION,
+				IID_IDirectInput8,
+                (LPVOID*)&m_pdi, 
                 NULL
             ));
 
@@ -1347,7 +1431,9 @@ public:
         // Enumerate the devices
         //
 
+        m_joylog.OutputString("Initialized DirectInput\n");
         EnumerateJoysticks();
+        m_joylog.CloseLogFile();
     }
 
     //////////////////////////////////////////////////////////////////////////////

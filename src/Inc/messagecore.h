@@ -1,7 +1,11 @@
 #ifndef MessagesCore_h
 #define MessagesCore_h
 #include <dplay8.h>
-#include <d3dtypes.h>
+
+// removed
+//#ifndef BUILD_DX9
+////#include <d3dtypes.h>			// Not to be included when using later versions of the DirectX SDK.
+//#endif // BUILD_DX9
 
 //  <NKM> 09-Aug-2004
 // STL lists for message queue and map for connections

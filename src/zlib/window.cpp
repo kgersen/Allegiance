@@ -65,7 +65,8 @@ Window::Window(
     m_bHasSysMenu(false),
     m_bTopMost(false),
     m_bHasMinimize(true),
-    m_bHasMaximize(true)
+    m_bHasMaximize(true),
+    m_lastPointMouse(0,0)
 {
     Construct();
 
@@ -94,13 +95,15 @@ Window::Window(
         m_hwnd = ::CreateWindowEx(
             m_styleEX.GetWord(),
             TEXT(GetTopLevelWindowClassname()),
-#ifdef DREAMCAST
-            TEXT("Title"),
-#else
             strTitle,
-#endif
             m_style.GetWord(),
-            CW_USEDEFAULT, CW_USEDEFAULT,
+
+// BUILD_DX9
+            rect.XMin(), rect.YMin(),
+//#else
+//            CW_USEDEFAULT, CW_USEDEFAULT,
+// BUILD_DX9
+
             //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
             pwindowParent ? pwindowParent->GetHWND() : NULL,
@@ -111,15 +114,16 @@ Window::Window(
     } else {
         m_hwnd = ::CreateWindowEx(
             m_styleEX.GetWord(),
-#ifdef DREAMCAST
-            TEXT("Window"),
-            TEXT("Title"),
-#else
             strClass,
             strTitle,
-#endif
             m_style.GetWord(),
-            CW_USEDEFAULT, CW_USEDEFAULT,
+
+// BUILD_DX9
+            rect.XMin(), rect.YMin(),
+//#else
+//            CW_USEDEFAULT, CW_USEDEFAULT,
+// BUILD_DX9
+
             //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
             pwindowParent ? pwindowParent->GetHWND() : NULL,
@@ -130,8 +134,8 @@ Window::Window(
 
         s_mapWindow.Set(m_hwnd, this);
 
-        m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWL_WNDPROC);
-        ::SetWindowLong(m_hwnd, GWL_WNDPROC, (DWORD)Win32WndProc);
+        m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
+        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (DWORD)Win32WndProc);  //x64 Imago 6/20/09
     }
 
     m_styleEX.SetWord(::GetWindowLong(m_hwnd, GWL_EXSTYLE));
@@ -169,13 +173,8 @@ BOOL Window::Create(
     
     m_hwnd = ::CreateWindowEx(
             styleEX.GetWord(),
-#ifdef DREAMCAST
-            TEXT("Window"),
-            TEXT("Title"),
-#else
             szClass ? szClass : "Window",
             szTitle,
-#endif
             m_style.GetWord(),
             m_rect.left, m_rect.top,
             m_rect.XSize(), m_rect.YSize(),
@@ -185,10 +184,10 @@ BOOL Window::Create(
             this);
     
     s_mapWindow.Set(m_hwnd, this);
-    m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWL_WNDPROC);
+    m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
 
     if ((WNDPROC)m_pfnWndProc != (WNDPROC)Win32WndProc) {
-        ::SetWindowLong(m_hwnd, GWL_WNDPROC, (DWORD)Win32WndProc);
+        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (DWORD)Win32WndProc); //x64 Imago 6/20/09
     } else {
         m_pfnWndProc = DefWindowProc;
     }
@@ -302,8 +301,12 @@ void Window::SetHasSysMenu(bool bSysMenu)
 
 void Window::UpdateRect()
 {
-    ::GetWindowRect(m_hwnd, &m_rect);
-    ::GetClientRect(m_hwnd, &m_rectClient);
+	BOOL bRetVal;
+    bRetVal = ::GetWindowRect(m_hwnd, &m_rect);
+    _ASSERT( bRetVal != FALSE );
+	bRetVal = ::GetClientRect(m_hwnd, &m_rectClient);
+    _ASSERT( bRetVal != FALSE );
+
     WinPoint pointOffset = ClientToScreen(WinPoint(0, 0));
 
     if (m_pwindowParent) {
@@ -339,7 +342,13 @@ void Window::SetClientRect(const WinRect& rectClient)
 
 void Window::SetPosition(const WinPoint& point)
 {
-    SetWindowPos(m_hwnd, NULL, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+// BUILD_DX9    
+//		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+//		SetWindowPos(m_hwnd, HWND_NOTOPMOST, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED);
+//		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+//#else  //Imago put this back 7/6/09
+		SetWindowPos(m_hwnd, NULL, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+// BUILD_DX9
 }
 
 void Window::SetSize(const WinPoint& point)
@@ -851,7 +860,11 @@ DWORD Window::WndProc(
                 return !OnKey(ks);
             }
             break;
-
+		
+		case WM_MOUSEWHEEL: //imago 8/13/09
+		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP: 
+        case WM_MOUSEHOVER: // imago --^
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -860,13 +873,16 @@ DWORD Window::WndProc(
         case WM_MBUTTONUP:
         case WM_MOUSEMOVE:
         case WM_MOUSELEAVE:
+        
             {
-                WinPoint point(MakePoint(lParam));
-                WinPoint 
-                    pointMouse(
-                        point.X(),
-                        m_rectClient.YSize() - 1 - point.Y()
-                    );
+                WinPoint pointMouse;
+                if (message != WM_MOUSEWHEEL) {
+                    WinPoint point(MakePoint(lParam));
+                    pointMouse = WinPoint(point.X(),m_rectClient.YSize() - 1 - point.Y());
+                    m_lastPointMouse = pointMouse;
+                } else {
+                    pointMouse = m_lastPointMouse;
+                }
 
                 //
                 // Handle mouse leave
@@ -1014,7 +1030,11 @@ HRESULT Window::StaticInitialize()
     wc.hInstance     = GetModuleHandle(NULL);
     wc.hIcon         = LoadIcon(NULL, ID_APP_ICON);
     wc.hCursor       = NULL;
-    wc.hbrBackground = NULL;
+#ifdef DEBUG
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH); //imago test 7/7/09 (NYI final multimon issue, see enginewindow.cpp(386))
+#else
+	wc.hbrBackground = NULL; //imago test
+#endif
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = GetTopLevelWindowClassname();
 
@@ -1023,14 +1043,11 @@ HRESULT Window::StaticInitialize()
     //
     // See if TrackMouseEvent exists
     //
-#ifndef DREAMCAST
     s_pfnTrackMouseEvent = 
         (PFNTrackMouseEvent)GetProcAddress(
             GetModuleHandle("user32"),
             "TrackMouseEvent"
         );
-#endif
-
     return S_OK;
 }
 

@@ -47,8 +47,7 @@ public:
     COM_INTERFACE_ENTRY(IPersistPropertyBag)
     COM_INTERFACE_ENTRY(IPersistStorage)
     COM_INTERFACE_ENTRY(IPersistStreamInit)
-// KGJV - to check: original was 'IPersistStream', changed to 'IPersistStreamInit'
-    COM_INTERFACE_ENTRY2(IPersistStreamInit, TCPersistStreamInitImplBase)
+    COM_INTERFACE_ENTRY2(IPersistStream, TCPersistStreamInitImplBase)
     COM_INTERFACE_ENTRY(IObjectSafety)
     COM_INTERFACE_ENTRY_AUTOAGGREGATE(IID_IMarshal, m_punkMBV.p,
       CLSID_TCMarshalByValue)
@@ -57,8 +56,11 @@ public:
 // Property Map
 public:
   BEGIN_PROP_MAP(CTCStrings)
-    PROP_ENTRY_EX("Strings", dispid_Collection1, CLSID_NULL,
-      IID_ITCCollectionPersistHelper)
+#if _MSC_VER <= 1400
+    PROP_ENTRY_EX("Strings", dispid_Collection1, CLSID_NULL,IID_ITCCollectionPersistHelper) //Imago - MS-SA 973882
+#else
+	PROP_ENTRY_TYPE_EX("Strings",dispid_Collection1,CLSID_NULL,IID_ITCCollectionPersistHelper,VT_BSTR)
+#endif
   END_PROP_MAP()
 
 // Construction / Destruction
@@ -87,8 +89,8 @@ public:
 
 // Types
 protected:
-  typedef std::vector<CComBSTR> CStringVector;
-  typedef CStringVector::iterator CStringIterator;
+	typedef std::vector<ZAdapt<CComBSTR>> CStringVector;
+  	typedef CStringVector::iterator CStringIterator;
 
 // Data Members
 public:

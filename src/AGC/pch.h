@@ -17,9 +17,10 @@
 #ifndef STRICT
   #define STRICT
 #endif
-#ifndef _WIN32_WINNT
-  #define _WIN32_WINNT 0x0400
-#endif
+// Imago removed
+//#ifndef _WIN32_WINNT
+//  #define _WIN32_WINNT 0x0403
+//#endif
 #define _ATL_APARTMENT_THREADED
 
 #pragma warning(disable:4786) // identifier was truncated ... in the debug information

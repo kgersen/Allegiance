@@ -772,7 +772,7 @@ public:
                             INTERNET_OPEN_TYPE_PRECONFIG, //INTERNET_OPEN_TYPE_PROXY,       // access
                             NULL,//"ftp-gw",                       // proxy server
                             NULL,                           // defaults
-                            0);                             // synchronous
+                            0);                             // synchronous  //Fix memory leak -Imago 8/2/09
 
        if (m_hInternetSession == NULL)
            DoError("Failed to initialize HTTP stuff.");
@@ -806,7 +806,7 @@ public:
             //
             // Open file for download
             //
-            while (!(m_hFileConnection = InternetOpenUrl(m_hInternetSession, *m_pszFileList, NULL, 0, INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE, 0)))
+            while (!(m_hFileConnection = InternetOpenUrl(m_hInternetSession, *m_pszFileList, NULL, 0, INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE, 0))) //Fix memory leak -Imago 8/2/09
             {
                 cTries++;
                 debugf("Failed to open URL(%s) for download, try #%d\n", *m_pszFileList, cTries);

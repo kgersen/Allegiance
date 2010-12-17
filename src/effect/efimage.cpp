@@ -8,8 +8,8 @@
 
 class JoystickImageImpl : public JoystickImage {
 private:
-    TArray<TRef<ModifiableNumber> , 2> m_ppnumber;
-    TArray<TRef<ModifiableBoolean>, 3> m_ppboolButton;
+    TArray<TRef<ModifiableNumber> , 3> m_ppnumber; //imago increased 8/12/09
+    TArray<TRef<ModifiableBoolean>, 10> m_ppboolButton; //imago increased 8/12/09
     bool                               m_bJoystickEnabled;
     bool                               m_bButtonsEnabled;
     bool                               m_bJustEnabled;
@@ -24,6 +24,7 @@ public:
     {
         m_ppnumber[0] = new ModifiableNumber(0);
         m_ppnumber[1] = new ModifiableNumber(0);
+        m_ppnumber[2] = new ModifiableNumber(0);
 
         for (int index = 0; index < m_ppboolButton.GetCount(); index++) {
             m_ppboolButton[index] = new ModifiableBoolean(false);
@@ -46,6 +47,7 @@ public:
             } else {
                 m_ppnumber[0]->SetValue(0);
                 m_ppnumber[1]->SetValue(0);
+                m_ppnumber[2]->SetValue(0);
             }
         }
 
@@ -110,6 +112,13 @@ public:
             case 0: return "Left";
             case 1: return "Right";
             case 2: return "Middle";
+            case 3: return "XButton1";
+            case 4: return "XButton2";
+            case 5: return "XButton3";
+            case 6: return "XButton4";
+            case 7: return "XButton5";
+            case 8: return "Wheel Up";
+            case 9: return "Wheel Down";
         }
 
         return ZString();
@@ -123,12 +132,12 @@ public:
 
     int GetValueCount()
     {
-        return 2;
+        return 3; //Imago 8/13/09 was 2
     }
 
     int GetButtonCount()
     {
-        return 3;
+        return 10; //Imago 8/13/09 was 3
     }
 
     Boolean* IsDown(int id)
@@ -187,10 +196,12 @@ public:
         }
     }
 
+    //NYI WheelMove Imago m_ppnumber[2]
+
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
         if (m_bButtonsEnabled) {
-            if (button <= 3) {
+            if (button <= 10) { //was 3 Imago 8/13/09
                 m_ppboolButton[button]->SetValue(bDown);
             }
         }
@@ -511,6 +522,9 @@ public:
         #ifndef FixPermedia
             pcontext->SetShadeMode(ShadeModeCopy);
         #endif
+        pcontext->SetShadeMode(ShadeModeGlobalColor);
+		pcontext->SetGlobalColor( Color::White() );
+		pcontext->SetBlendMode( BlendModeAlphaStampThrough );
 
         TList<PosterData, DefaultNoEquals>::Iterator iter(m_list);
 
@@ -518,7 +532,7 @@ public:
             PosterData& data = iter.Value();
 
             Point point;
-            if (pcontext->TransformDirectionToImage(data.m_vec, point)) {
+			if (pcontext->TransformDirectionToImage(data.m_vec, point)) {
                 pcontext->SetTexture(data.m_pimage->GetSurface());
                 pcontext->PushState();
                 pcontext->Multiply(data.m_mat);
@@ -600,7 +614,7 @@ public:
         LensFlareImage(pviewport),
         m_vec(0, 0, 1)
     {
-        m_psurfaces[0] =
+/*        m_psurfaces[0] =
             pmodeler
                 ->LoadImage(AWF_EFFECT_LENS_FLARE_MID_RING, true)
                 ->GetSurface();
@@ -613,6 +627,20 @@ public:
         m_psurfaces[2] =
             pmodeler
                 ->LoadImage(AWF_EFFECT_LENS_FLARE_END_RING, true)
+                ->GetSurface();*/
+        m_psurfaces[0] =
+            pmodeler
+                ->LoadImage(AWF_EFFECT_LENS_FLARE_MID_RING, false)
+                ->GetSurface();
+
+        m_psurfaces[1] =
+            pmodeler
+                ->LoadImage(AWF_EFFECT_LENS_FLARE_STAR_AURA, false)
+                ->GetSurface();
+
+        m_psurfaces[2] =
+            pmodeler
+                ->LoadImage(AWF_EFFECT_LENS_FLARE_END_RING, false)
                 ->GetSurface();
     }
 
@@ -621,7 +649,7 @@ public:
         m_vec = vec;
     }
 
-    void Render(Context* pcontext)
+/*    void Render(Context* pcontext)
     {
         m_vec = Vector(0, 0, 1);
 
@@ -636,7 +664,7 @@ public:
             if (rect.Inside(pointLight)) {
                 pointLight = pointLight - pointCenter;
 
-                pcontext->SetBlendMode(BlendModeAdd);
+				pcontext->SetBlendMode(BlendModeAdd);
 				pcontext->SetShadeMode(ShadeModeFlat);
                 pcontext->Translate(pointCenter);
 
@@ -657,6 +685,52 @@ public:
 
                     pcontext->DrawImage3D(m_psurfaces[indexSurface], g_lensFlareData[index].m_color, true);
 
+					pcontext->PopState();
+				}
+            }
+		}
+    }*/
+
+	// Updated version of the lens flare render.
+    void Render( Context * pcontext )
+    {
+        m_vec = Vector(0, 0, 1);
+
+        const Rect& rect        = GetViewRect()->GetValue();
+              Point pointCenter = rect.Center();
+              float scale       = rect.XSize() / 800.0f;
+
+        Point pointLight;
+		if( GetCamera()->TransformDirectionToImage( m_vec, pointLight )) 
+		{
+            pointLight = rect.TransformNDCToImage(pointLight);
+
+            if( rect.Inside( pointLight ) ) 
+			{
+                pointLight = pointLight - pointCenter;
+
+				pcontext->SetBlendMode(BlendModeAdd);
+				pcontext->SetShadeMode(ShadeModeFlat);
+                pcontext->Translate(pointCenter);
+
+				int count = ArrayCount(g_lensFlareData);
+
+				for(int index = 0; index < count; index++) 
+				{
+					pcontext->PushState();
+
+					pcontext->Translate(pointLight * g_lensFlareData[index].m_pos);
+                    pcontext->Scale2(scale * g_lensFlareData[index].m_scale);
+
+					float angle = 0;
+					int indexSurface = g_lensFlareData[index].m_index;
+
+					if (indexSurface == 1) 
+					{
+						pcontext->Rotate((pointLight.X() + pointLight.Y()) / 200.0f);
+					}
+
+                    pcontext->DrawImage3D(m_psurfaces[indexSurface], g_lensFlareData[index].m_color, true);
 					pcontext->PopState();
 				}
             }

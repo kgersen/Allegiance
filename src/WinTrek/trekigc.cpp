@@ -280,7 +280,8 @@ class ClusterSiteImpl : public ClusterSite
             assert (sid < c_cSidesMax);
             assert (scannerNew);
 
-            if (sid == trekClient.GetSideID())
+            if (sid == trekClient.GetSideID() ||
+				trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid),trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
                 AddIbaseIGC((BaseListIGC*)&(m_scanners), scannerNew);
         }
         virtual void                    DeleteScanner(SideID   sid, IscannerIGC* scannerOld)
@@ -288,7 +289,8 @@ class ClusterSiteImpl : public ClusterSite
             assert (sid >= 0);
             assert (sid < c_cSidesMax);
             assert (scannerOld);
-            if (sid == trekClient.GetSideID())
+            if (sid == trekClient.GetSideID() || 
+				trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid),trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
                 DeleteIbaseIGC((BaseListIGC*)&(m_scanners), scannerOld);
         }
         virtual const ScannerListIGC*      GetScanners(SideID   sid) const
@@ -392,7 +394,7 @@ class ClusterSiteImpl : public ClusterSite
                     {
                         IhullTypeIGC*   pht = trekClient.m_pCoreIGC->GetHullType(ss.GetHullID());
                         assert (pht);
-                        am |= GetAssetMask(pship, pht, pside == pship->GetSide());
+						am |= GetAssetMask(pship, pht, ( (pside == pship->GetSide()) || IsideIGC::AlliedSides(pside, pship->GetSide()) )); // #ALLY -was: pside == pship->GetSide() IMAGO FIXED 7/8/09
                     }
                 }
             }
@@ -411,7 +413,7 @@ class ClusterSiteImpl : public ClusterSite
                  (psl != NULL);
                  psl = psl->next())
             {
-                am |= (psl->data()->GetSide() == pside)
+				am |= ((psl->data()->GetSide() == pside) || IsideIGC::AlliedSides(psl->data()->GetSide(), pside)) // #ALLY -was: psl->data()->GetSide() == pside
                       ? c_amStation
                       : c_amEnemyStation;
             }
@@ -1733,6 +1735,9 @@ class ThingSiteImpl : public ThingSitePrivate
         HRESULT LoadDecal(const char* textureName, bool bDirectional, float width)
         {
             ZAssert(m_pthing == NULL && m_pdecal == NULL);
+// BUILD_DX9
+			GetEngine()->SetEnableMipMapGeneration( true );
+// BUILD_DX9
 
             Number* ptime = GetWindow()->GetTime();
             TRef<AnimatedImage> pimage = 
@@ -1759,10 +1764,15 @@ class ThingSiteImpl : public ThingSitePrivate
                 if (bDirectional) {
                     m_pdecal->SetForward(Vector(0, 0, -1));
                 }
+// BUILD_DX9
+				GetEngine()->SetEnableMipMapGeneration( false );
+// BUILD_DX9
 
                 return S_OK;
             }
-
+// BUILD_DX9
+			GetEngine()->SetEnableMipMapGeneration( false );
+// BUILD_DX9
             return E_FAIL;
         }
 
@@ -1776,6 +1786,10 @@ class ThingSiteImpl : public ThingSitePrivate
 
             if (modelName)
             {
+// BUILD_DX9
+				bool bOldColorKeyValue = GetModeler()->SetColorKeyHint( false );
+				GetEngine()->SetEnableMipMapGeneration( true );
+// BUILD_DX9
                 m_pthing =
                     ThingGeo::Create(
                         GetWindow()->GetModeler(),
@@ -1799,6 +1813,10 @@ class ThingSiteImpl : public ThingSitePrivate
                 if (pns != NULL) {
                     rc = m_pthing->LoadMDL(options, pns, pimageTexture);
                 } else {
+// BUILD_DX9
+					GetModeler()->SetColorKeyHint( bOldColorKeyValue );
+					GetEngine()->SetEnableMipMapGeneration( false );
+// BUILD_DX9
                     return E_FAIL;
                 }
 
@@ -1823,8 +1841,12 @@ class ThingSiteImpl : public ThingSitePrivate
                         }
                     }
                 #endif
-            }
 
+// BUILD_DX9
+				GetModeler()->SetColorKeyHint( bOldColorKeyValue );
+				GetEngine()->SetEnableMipMapGeneration( false );
+// BUILD_DX9
+			}
             return rc;
         }
 
@@ -1965,7 +1987,7 @@ class ThingSiteImpl : public ThingSitePrivate
                             {
                                 IsideIGC* pside = pmodel->GetSide();
 
-                                if (pside != trekClient.GetSide())
+                                if ( (pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide())) ) //ALLY - imago 7/3/09
                                 {
                                     assert (pside);
                                     ClusterSite*    pcs = pcluster->GetClusterSite();
@@ -2001,12 +2023,13 @@ class ThingSiteImpl : public ThingSitePrivate
                 //(visibile static objects stay visible)
                 if (!(m_sideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable)))
                 {
-                    //We, trivially, see anything on our side. beyond that ...
+                    //We, trivially, see anything on our side. beyond that ...  Imago ALLY VISIBILITY 7/11/09
                     //does the ship that saw the object last still see it
                     //(if such a ship exists)
-                    if ((trekClient.GetSide() == pmodel->GetSide()) ||
-                        (m_sideVisibility.pLastSpotter() &&
-                         m_sideVisibility.pLastSpotter()->InScannerRange(pmodel)))
+                    if ( (trekClient.GetSide() == pmodel->GetSide() || (trekClient.GetSide()->AlliedSides(pmodel->GetSide(),trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ||
+                         (m_sideVisibility.pLastSpotter() && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel)) ||
+						 (m_sideVisibility.pLastSpotter() && trekClient.GetSide()->AlliedSides(m_sideVisibility.pLastSpotter()->GetSide(),trekClient.GetSide()) && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz)
+					   )
                     {
                         //yes
                         if (!m_sideVisibility.fVisible())
@@ -2015,7 +2038,8 @@ class ThingSiteImpl : public ThingSitePrivate
                             {
                                 IsideIGC* pside = pmodel->GetSide();
 
-                                if (pside != trekClient.GetSide())
+								//this is where you would put in rate limiting for the sound effects if someone "eye" spams };-) -imago
+                                if ((pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide()))) //ALLY Imago 7/3/09
                                 {
                                     trekClient.PlaySoundEffect(newShipSound, pmodel);
                                 }
@@ -2031,7 +2055,7 @@ class ThingSiteImpl : public ThingSitePrivate
                     {
                         //do it the hard way
                         m_sideVisibility.fVisible(false);
-                        for (ScannerLinkIGC*   l = pcluster->GetClusterSite()->GetScanners(0)->first();
+                        for (ScannerLinkIGC*   l = pcluster->GetClusterSite()->GetScanners(0)->first(); 
                              (l != NULL);
                              l = l->next())
                         {
@@ -2039,14 +2063,27 @@ class ThingSiteImpl : public ThingSitePrivate
                             assert (s->GetCluster() == pcluster);
 
                             if (s->InScannerRange(pmodel))
-                            {
+							{
                                 //Ship s's side does not see the ship but this ship does
                                 if (m_bIsShip)
                                     trekClient.PlaySoundEffect(newShipSound, pmodel);
+
                                 m_sideVisibility.fVisible(true);
-                                m_sideVisibility.pLastSpotter(s);
-                                break;
-                            }
+                                m_sideVisibility.pLastSpotter(s);								
+								if (trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) //ALLY should be SCAN Imago 7/13/09
+								{
+									//lets get a list of allied sideIDs
+								    for (SideLinkIGC* psidelink = trekClient.GetCore()->GetSides()->first();
+										(psidelink != NULL);
+										psidelink = psidelink->next())
+									{
+										IsideIGC*   otherside = psidelink->data();
+										//this spotter's side is ally...and not ours...and we dont already see it
+										if (s->GetSide()->AlliedSides(s->GetSide(),otherside) && s->GetSide() != otherside && !pmodel->SeenBySide(otherside))
+		                                	pmodel->SetSideVisibility(otherside,true);
+									}
+								}		
+							}
                         }
                     }
                 }
@@ -2067,7 +2104,8 @@ class ThingSiteImpl : public ThingSitePrivate
 
         void SetSideVisibility(IsideIGC* side, bool fVisible)
         {
-            if (m_bSideVisibility && (side == trekClient.GetSide()))
+            if (m_bSideVisibility && 
+				(side == trekClient.GetSide()))// || (side->AlliedSides(side,trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ) //imago viz ALLY VISIBILITY 7/11/09
                 m_sideVisibility.fVisible(fVisible);
 
             if (fVisible)
@@ -2372,7 +2410,12 @@ void WinTrekClient::Initialize(Time timeNow)
 
 TRef<AnimatedImage> WinTrekClient::LoadExplosionImage(const ZString& str)
 {
-    return new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface(str, true));
+// BUILD_DX9
+	// Load source AnimatedImage into system memory rather than VRAM.
+    return new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface(str, true, true, true));
+//#else
+//    return new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface(str, true));
+// BUILD_DX9
 }
 
 void WinTrekClient::Terminate(void)
@@ -2600,11 +2643,11 @@ void WinTrekClient::ChangeCluster(IshipIGC*  pship, IclusterIGC* pclusterOld, Ic
 void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, IstationIGC* pstationNew)
 {
     if (pship == GetShip() && trekClient.MyMission()->GetStage() == STAGE_STARTED)
-    {
+	{
         if (pstationNew)
-        {
+		{
             if (pstationOld == NULL)
-            {
+			{
                 ConsoleImage*   pconsole = GetWindow()->GetConsoleImage();
                 if (pconsole)
                 {
@@ -2620,7 +2663,18 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
                 {
                     trekClient.wmOld = 0;
 
-                    if (GetWindow()->GetCameraMode() != TrekWindow::cmExternalOverride)
+                    //imago 8/10/09 turreted ship rearms @ allied base fix ALLY
+                    if ((pstationNew->GetSide() != trekClient.GetSide()) && 
+                        (trekClient.GetShip()->GetParentShip() == NULL) && 
+                        (trekClient.GetShip()->GetChildShips()->n() != 0) &&
+                        (pstationNew->GetSide()->AlliedSides(pstationNew->GetSide(),trekClient.GetSide()))) {
+                        if (IsLockedDown())
+                            EndLockDown(lockdownDonating | lockdownLoadout | lockdownTeleporting);
+                        trekClient.BuyLoadout(trekClient.GetShip(), true);
+                        return;
+                    }
+
+                    if (GetWindow()->GetCameraMode() != TrekWindow::cmExternalOverride && (pstationNew->GetSide() == trekClient.GetSide()))
                     {
                         if ((!Training::IsTraining ()) || (Training::GetTrainingMissionID () != Training::c_TM_5_Command_View))
                         {
@@ -2636,7 +2690,7 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
             {
                 //NYI do anything appropriate for switching stations
             }
-        }
+		}
         else
         {
             assert (pstationOld);
@@ -2649,7 +2703,8 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
             IhullTypeIGC*   pht = pshipSource->GetBaseHullType();
             assert (pht);
 
-            pstationOld->RepairAndRefuel(pshipSource);
+			pstationOld->RepairAndRefuel(pshipSource);
+	
 
             /*
             const char* pszDisplayMDL;
@@ -2790,7 +2845,7 @@ void WinTrekClient::ActivateTeleportProbe(IprobeIGC* pprobe)
     IsideIGC*       pside = pprobe->GetSide();
     IclusterIGC*    pcluster = pprobe->GetCluster();
 
-    if (pside != trekClient.GetSide())
+    if ( (pside != trekClient.GetSide()) && !pside->AlliedSides(pside,trekClient.GetSide()) ) //ALLY - imago 7/3/09
     {
         assert (pside);
         PostText(true, START_COLOR_STRING "%s %s" END_COLOR_STRING " active in %s",
@@ -2808,7 +2863,7 @@ void WinTrekClient::DestroyTeleportProbe(IprobeIGC* pprobe)
     IsideIGC*       psideMe = trekClient.GetSide();
     IclusterIGC*    pcluster = pprobe->GetCluster();
 
-    if (pside != psideMe)
+	if ( (pside != psideMe) && !pside->AlliedSides(pside,psideMe) ) //ALLY - imago 7/3/09
     {
         assert (pside);
         ClusterSite*    pcs = pcluster->GetClusterSite();
@@ -3147,12 +3202,12 @@ public:
 
     virtual void OnProgress(unsigned long cTotalBytes, const char* szCurrentFile, unsigned long cCurrentFileBytes, unsigned nEstimatedSecondsLeft) 
     {
-        #ifdef DEBUG
-        char sz[80];
+		if (g_outputdebugstring) { //Imago - was DEBUG ifdef 8/16/09
+	        char sz[80];
 
-        sprintf(sz, "%2.2f%%   %i  %s  %i\n", 100.0f*float(cTotalBytes)/float(m_cGrandTotalBytes), cTotalBytes, szCurrentFile, cCurrentFileBytes);
-        OutputDebugString(sz);
-        #endif
+	        sprintf(sz, "%2.2f%%   %i  %s  %i\n", 100.0f*float(cTotalBytes)/float(m_cGrandTotalBytes), cTotalBytes, szCurrentFile, cCurrentFileBytes);
+	        ZDebugOutput(sz);
+		}
 
         //
         // Detect current file change
@@ -3258,9 +3313,11 @@ void WinTrekClient::CreateMissionReq()
 // KGJV #114
 void WinTrekClient::ServerListReq()
 {
-    GetWindow()->SetWaitCursor();
-    TRef<IMessageBox> pmsgBox = CreateMessageBox("Asking about servers and cores...", NULL, false);
-    GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	//if (!g_bQuickstart) {
+    	GetWindow()->SetWaitCursor();
+    	TRef<IMessageBox> pmsgBox = CreateMessageBox("Asking about servers and cores...", NULL, false);
+    	GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+	//}
 	BaseClient::ServerListReq();
 }
 void WinTrekClient::CreateMissionReq(const char *szServer,const char *szAddr, const char *szIGCStaticFile, const char *szGameName)
@@ -3290,6 +3347,11 @@ void WinTrekClient::OnLogonAck(bool fValidated, bool bRetry, LPCSTR szFailureRea
     if (fValidated) 
     {
         GetClientEventSource()->OnLogonGameServer();
+		// w0dk4 June 2007: Bandwith Patch
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(this->m_fm, pfmBandwidth, C, BANDWIDTH)
+		END_PFM_CREATE
+		pfmBandwidth->value = this->m_nBandwidth;
     }
     else
     {
@@ -3514,9 +3576,11 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
 		if (pfm->fmid == FM_S_MISSIONDEF)
 		{
 			CASTPFM(pfmMissionDef, S, MISSIONDEF, pfm);
-			char szAddr[16];
-			pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
-			strcpy_s(pfmMissionDef->szServerAddr,16,szAddr);
+			//char szAddr[16];
+			pthis->GetIPAddress(cnxnFrom, pfmMissionDef->szServerAddr); // get the real addr 
+			//Strncpy(pfmMissionDef->szServerAddr,szAddr,16);
+			//strcpy_s(pfmMissionDef->szServerAddr,16,szAddr); // IMAGO REVIEW CRASH 7/24/09
+			//OutputDebugString("Connection from "+ZString(pfmMissionDef->szServerAddr)+"\n");
 		}
 		// KGJV: end
 
@@ -3850,7 +3914,6 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
     {
         // full fuel and ammo
         pStation->RepairAndRefuel (pShip);
-
         if ((pShip != GetShip ()) || Training::ShipLanded ())
         {
             // how to make the miners empty out and reset their mission
@@ -3860,7 +3923,7 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
 
             // now send the ship back out the other side
             pStation->Launch (pShip);
-        }
+		}
     }
     return true;
 }
@@ -4144,6 +4207,14 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                 static const ZString c_strEveryone = "all";
                 strRecipient = c_strEveryone;
                 bForMe = true;
+            }
+            break;
+
+            case CHAT_ALLIES: //ALLY imago 7/4/09
+            {
+                static const ZString c_strAllies = "allies";
+                strRecipient = c_strAllies;
+                bForMe = true;    
             }
             break;
 
@@ -4437,6 +4508,11 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 void            WinTrekClient::Preload(const char*  pszModelName,
                                        const char*  pszTextureName)
 {
+// BUILD_DX9
+	bool bOldColorKeyValue = GetModeler()->SetColorKeyHint( false );
+	GetEngine()->SetEnableMipMapGeneration( true );
+// BUILD_DX9
+
     if (pszModelName)
         GetModeler()->GetNameSpace(pszModelName);
 
@@ -4448,6 +4524,11 @@ void            WinTrekClient::Preload(const char*  pszModelName,
 
         GetModeler()->GetNameSpace(bfr);
     }
+
+// BUILD_DX9
+	GetModeler()->SetColorKeyHint( bOldColorKeyValue );
+	GetEngine()->SetEnableMipMapGeneration( false );
+// BUILD_DX9
 }
 
 void WinTrekClient::SetCDKey(const ZString& strCDKey)
@@ -4722,11 +4803,19 @@ HRESULT WinTrekClient::ConnectToLobby(BaseClient::ConnectInfo * pci)
 
     if (!m_fmLobby.IsConnected()) 
     {
+		bool bPos = true;
+		if (g_bQuickstart) {
+			g_bQuickstart = false;	
+			bPos = false;
+			GetWindow()->screen(ScreenIDIntroScreen);  //imago 7/4/09 this will make users able
+														//  to retry and see the MOTD for outage info
+		}
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Failed to connect to the lobby.");
         Point point(c_PopupX, c_PopupY);
         Rect rect(point, point);
-        GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false);
-        g_bQuickstart = false;
+		(bPos) ? GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false) : 
+			GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
+
     }
     else
     {
@@ -4875,8 +4964,8 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
 void WinTrekClient::SetGameoverInfo(FMD_S_GAME_OVER* pfmGameOver)
 {
     m_sideidLastWinner = pfmGameOver->iSideWinner;
-    m_bWonLastGame = pfmGameOver->iSideWinner == GetSideID();
-    m_bLostLastGame = !m_bWonLastGame && (GetSideID() != SIDE_TEAMLOBBY) && pfmGameOver->iSideWinner != NA;
+	m_bWonLastGame = (pfmGameOver->iSideWinner == GetSideID() || GetSide()->AlliedSides(GetCore()->GetSide(pfmGameOver->iSideWinner),GetSide())); //#ALLY (Imago) 7/8/09
+    m_bLostLastGame = (!m_bWonLastGame && (GetSideID() != SIDE_TEAMLOBBY) && pfmGameOver->iSideWinner != NA) || (pfmGameOver->iSideWinner != NA && GetSide()->GetAllies() != NA && !GetSide()->AlliedSides(GetCore()->GetSide(pfmGameOver->iSideWinner),GetSide()));
     m_strGameOverMessage = FM_VAR_REF(pfmGameOver, szGameoverMessage);
     m_nNumEndgamePlayers = 0;
     m_nNumEndgameSides = pfmGameOver->nNumSides;
@@ -5081,8 +5170,8 @@ int WinTrekClient::GetGrooveLevel()
         {
             IshipIGC* pship = psl->data();
 
-            if (pship->GetSide() != GetSide()
-                && pship->SeenBySide(GetSide()))
+            if ( ( (pship->GetSide() != GetSide()) && !pship->GetSide()->AlliedSides(pship->GetSide(),GetSide()) ) //#ALLY - imago 7/3/09 7/8/09
+                && pship->SeenBySide(GetSide()) )
             {
                 bEnemiesSighted = true;
                 

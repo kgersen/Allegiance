@@ -73,7 +73,7 @@ class CmineIGC : public TmodelIGC<ImineIGC>
             {
                 const float c_dtArmTime = 1.0f;
 
-                if ((pmodel->GetSide() != GetSide()) && (timeCollision >= m_time0 + c_dtArmTime))
+				if (((pmodel->GetSide() != GetSide()) && !IsideIGC::AlliedSides(pmodel->GetSide(),GetSide())) && (timeCollision >= m_time0 + c_dtArmTime)) // #ALLY - was : (pmodel->GetSide() != GetSide())  Imago fixed!
                 {
                     //Find the length of the ship's path within the minefield
                     const Vector&   dV = pmodel->GetVelocity();

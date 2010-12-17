@@ -1,0 +1,129 @@
+EQUIPMENT TYPE ID	NAME	NOTES (OPTIONAL)
+0	IsECM	1 0x01 1
+0	IsHvyECM	2 0x02 2
+0		3 0x04 4
+0		4 0x08 8
+0		5 0x10 16
+0		6 0x20 32
+0		7 0x40 64
+0		8 0x80 128
+0		9 0x100 256
+0		10 0x200 512
+0		11 0x400 1024
+0		12 0x800 2048
+0		13 0x1000 4096
+0		14 0x2000 8192
+0		15 0x4000 16384
+0		16 0x8000 SHRT_MAX
+1	IsTac	...
+1	IsGatt	These ET_Weapon flags are Hardpoint capabilities
+1	IsGalv	
+1	IsMini	
+1	IsSupport	
+1	IsSkyCap	
+1	IsDis	
+1	IsNan	
+1	IsRipper	
+1	IsLancer	
+1	IsSkyRip	
+1		
+1		
+1		
+1		
+1		
+2	IsSeek	ET_Magazine (Missile rack capabilities)
+2	IsHunt	
+2	IsBomb	
+2	IsNuke	
+2	IsCap	
+2	IsEMP	
+2	IsGas	
+2	IsDumb	
+2	IsKiller	
+2	IsRes	
+2	IsShipAdv
+2		
+2		
+2		
+2		
+2		
+3	IsProxOrProbe	ET_Dispenser (probes and mines)  TODO: (not here) give probes projectiles
+3	IsPulseProbe	
+3	IsAntiFighter	
+3	IsStationPod	
+3	IsCaltropTowerOrHvyStationPod	
+3	IsHvyTroop
+3		
+3	IsMinePack
+3	
+3	IsLarge
+3	
+3		
+3		
+3		
+3		
+3		
+4	IsSmall	ET_Shield
+4	IsMedium	
+4	IsLarge	
+4		
+4	IsMedAssault	
+4		
+4		
+4		
+4		
+4		
+4		
+4		
+4		
+4		
+4		
+4		
+5	IsRegularCloak	ET_Cloak
+5	IsHvyCloak	
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+5		
+6	IsPack	ET_Pack NYI
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+6		
+7	IsBooster	ET_Afterburner
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		
+7		

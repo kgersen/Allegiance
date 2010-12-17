@@ -40,15 +40,15 @@ void Color::GetHSB(float& h, float& s, float& b)
     //
 
     if (c0 > cm) {
-        swap(c0, cm);
+        Swap(c0, cm);
     }
 
     if (cm > c1) {
-        swap(cm, c1);
+        Swap(cm, c1);
     }
 
     if (c0 > cm) {
-        swap(c0, cm);
+        Swap(c0, cm);
     }
 
     //
@@ -101,3 +101,24 @@ const Color Color::s_colorMagenta(1, 0, 1);
 const Color    Color::s_colorCyan(0, 1, 1);
 const Color   Color::s_colorBlack(0, 0, 0);
 const Color   Color::s_colorGray(0.5f, 0.5f, 0.5f);
+const Color   Color::s_colorOrange(1, 0.447f, 0); // KG- added
+
+// moved from engine/font.cpp
+//////////////////////////////////////////////////////////////////////////////
+//
+// Color code utility function
+//
+//////////////////////////////////////////////////////////////////////////////
+
+ZString ConvertColorToString (const Color& color)
+{
+    char    buffer[9] = {0};
+    sprintf (buffer, "%02x%02x%02x%02x",
+        int (color.R () * 255.0f),
+        int (color.G () * 255.0f),
+        int (color.B () * 255.0f),
+        int (color.A () * 255.0f)
+    );
+    return ZString (buffer);
+}
+// move end

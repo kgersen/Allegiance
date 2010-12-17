@@ -17,9 +17,11 @@
 #ifndef STRICT
   #define STRICT
 #endif
-#ifndef _WIN32_WINNT
-  #define _WIN32_WINNT 0x0400
-#endif
+
+// Imago removed
+//#ifndef _WIN32_WINNT
+//  #define _WIN32_WINNT 0x0400
+//#endif
 #define _ATL_APARTMENT_THREADED
 
 #include <atlbase.h>
@@ -35,6 +37,10 @@ class CServiceModule : public CComModule
 public:
   CServiceModule() :
     m_fCOMStarted(false)
+#if defined(SRV_PARENT)
+		,
+		m_iPIDID(0)
+#endif
   {
   }
   HRESULT      Init(HINSTANCE hInst);
@@ -58,6 +64,17 @@ public:
   void         RevokeCOMObjects();
 
   VOID         RunAsExecutable();
+  //imago - parent/child server tracking functions 6/23/08
+#if defined(SRV_PARENT)  
+  void         BreakChildren();
+  DWORD		   GetOutgoingPort(void);													//remember the last port used to 
+  void		   SetOutgoingPort(DWORD dwPort);											//handle game creation requests from lobby
+
+  void		   AddPID(DWORD dwProcessId){ m_dwPIDs[m_iPIDID]=dwProcessId; m_iPIDID++; }
+  
+  void		   InitPIDs();																//also remember children pids for cleanup and
+  int		   GetChildCount(){return m_iPIDID;}										//provide accurate count to the server list 
+#endif 
   BOOL         InstallService(int argc, char * argv[]);
   BOOL         RemoveService(void);
 
@@ -86,6 +103,11 @@ protected:
   TCHandle      m_shevtMTAExit;      // event to sync MTA keep-alive thread
   HRESULT       m_hrMTAKeepAlive;    // HRESULT from MTA keep-alive thread
   IAGCEventLoggerPtr m_spEventLogger;
+#if defined(SRV_PARENT)
+  DWORD			m_dwMPort;				// our outgoing port last used to connect to g.dwLobby -Imago
+  DWORD			m_dwPIDs[98];	     // simple array of process identifiers, we don't use key 0 for simplicity
+  int			m_iPIDID;			// last used pid key, gets re-calculated each hand-off
+#endif
 };
 
 extern CServiceModule _Module;
@@ -94,7 +116,11 @@ extern CServiceModule _Module;
 
 
 void PrintSystemErrorMessage(LPCTSTR szBuf, DWORD dwErrorCode);
+#if defined(SRV_PARENT)
+void WINAPI MPServiceMain(DWORD dwArgc, LPTSTR* lpszArgv);
+#else
 void WINAPI _ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv);
+#endif
 
 
 extern const GUID APPID_AllSrv;

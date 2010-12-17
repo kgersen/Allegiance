@@ -12,7 +12,8 @@
 
 #define SQLGUID(X) GUID X::s_guid = GUID_NULL;
 
-#ifdef USEAUTH
+//Imago removed - 7/5/08
+//#ifdef USEAUTH
 SQLGUID(CQLobbyLogon)
-#endif
+//#endif
 

@@ -243,7 +243,7 @@ void    LoadBadWords (void)
 {
    	// yp your_persona march 24 2006 : Remove dependency on allbad.dll which is a lib we dont have the source code for. 
 	char *pBuffer;
-	pBuffer = (char*)malloc(sizeof(char)*774);
+	pBuffer = (char*)malloc(sizeof(char)*774); //Fix memory leak -Imago 8/2/09
 	// orig list 
 	// memcpy(pBuffer, "zone55|fuckyou|fuck_you|fuck_u|fucku|fucka|fuckit|fuckthis|fuckme|fucker|fuckr|fucking|fuckin|fuckn|motherfucker|motherfuck|mutherfucker|fucked|f_u_c|f_ck|f_k|fahq|fck|fkyou|fu_k|fuc|fuck|fuhk|fuk|fuq|schit|sh1t|shit|shlt|shyt|niger|nigr|niggr|nigger|faggot|phaq|phuc|phuk|phuq|phvc|phvk|phvq|f__c|f__k|f__u|fuh_q|   ", 318);
     // new list provided by BlackViper with a few modifications by mmf

@@ -49,14 +49,15 @@ bool CLobbyApp::ProcessMsgPump()
     TranslateMessage(&msg);
     switch (msg.message)
     {
-#ifdef USECLUB
+//Imago removed
+//#ifdef USECLUB
       case wm_sql_querydone:
       {
         CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
         pQuery->DataReady();
         break;
       }
-#endif
+//#endif
 
       case WM_QUIT:
         fQuit = true;
@@ -141,7 +142,8 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   m_sGameInfoInterval(0), // doesn't really matter, but...
   m_fProtocol(true),
   m_cStaticCoreInfo(0),
-  m_vStaticCoreInfo(NULL)
+  m_vStaticCoreInfo(NULL),
+  m_dwASGS(0)
 #ifdef USECLUB
   ,
   m_csqlSilentThreads(0),
@@ -233,12 +235,15 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   g_pLobbyApp = this;
 
   // stuff for reporting population to zone
-  WSAData data;
-  WSAStartup(MAKEWORD(1,0),&data);
-  //initialize UDP send API
-  ZGameInfoInit(0);
-  //initialize structure
-  SetConstantGameInfo();
+  //imago, only if we have gameinfoservers to report to
+  if (m_cReportServers) {
+	  WSAData data;
+	  WSAStartup(MAKEWORD(1,0),&data);
+	  //initialize UDP send API
+	  ZGameInfoInit(0);
+	  //initialize structure
+	  SetConstantGameInfo();
+  }
 
   // if zone club lobby
 #ifdef USEAUTH  
@@ -249,11 +254,19 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
 CLobbyApp::~CLobbyApp()
 {
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_ShuttingDown);
+// KG guard with USEAUTH for consistency 
+#ifdef USEAUTH
   m_pzas = NULL;
+#endif
   m_perfshare.FreeCounters(m_pCounters);
   ZGameInfoClose();
   FreeStaticCoreInfo(); // KGJV #114
-  WSACleanup();
+  
+  //imago, only if we have gameinfoservers to report to
+  if (m_cReportServers) {
+	  ZGameInfoClose();
+	  WSACleanup();
+  }
 }
 
 
@@ -299,12 +312,22 @@ HRESULT CLobbyApp::Init()
     {
       char szFileName[MAX_PATH+16];
       strcpy(szFileName, _Module.GetModulePath());
-      strcat(szFileName, "FileList.txt");
+      Strcat(szFileName, "FileList.txt");
       CreateAutoUpdate(hk, szFileName);
     }
     else 
       g_pAutoUpdate = NULL;
 
+    RegCloseKey(hk);
+
+    //Imago 8/6/09 We can't use any of these other handy registry functions
+    // because we have to be different and read from Allsrv's registry key ;-/
+    HKEY  hk;
+    if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", 
+      REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hk, NULL) == ERROR_SUCCESS)
+    {
+        _Module.ReadFromRegistry(hk, false, "ASGS_ON", &m_dwASGS, 0, true);
+    }
     RegCloseKey(hk);
   }
 
@@ -431,10 +454,10 @@ int CLobbyApp::OnMessageBox(const char * strText, const char * strCaption, UINT 
   char sz[256];
   if (strCaption && *strCaption)
   {
-    lstrcpy(sz, strCaption);
-    lstrcat(sz, ": ");
+    Strcpy(sz, strCaption);
+    Strcat(sz, ": ");
   }
-  lstrcat(sz, strText);
+  Strcat(sz, strText);
   return m_plas->LogEvent(EVENTLOG_ERROR_TYPE, LE_ODBC_Error, strText);
 }
 
@@ -464,10 +487,11 @@ bool CLobbyApp::OnAssert(const char* psz, const char* pszFile, int line, const c
 
 void CLobbyApp::DebugOutput(const char *psz)
 {
+    //Imago had to modify this because of the debugging changes in Win32App by mmf/radar
+#ifdef DEBUG
   ::OutputDebugString("AllLobby: ");
-  #ifdef _DEBUG
-    Win32App::DebugOutput(psz);
-  #endif
+  ::OutputDebugString(psz);
+#endif
 }
 
 void CLobbyApp::BootPlayersByName(const ZString& strName)
@@ -756,7 +780,7 @@ void CLobbyApp::BuildStaticCoreInfo()
     // 4. transform the TList into an array
 
 	for (int i = 0; i < m_cStaticCoreInfo; i++)
-		strcpy(m_vStaticCoreInfo[i].cbIGCFile,CoreList[i]->cbIGCFile);
+		Strcpy(m_vStaticCoreInfo[i].cbIGCFile,CoreList[i]->cbIGCFile);
 	CoreList.SetEmpty();
 
 	// 5. loop thru unpaused servers and build the coremask

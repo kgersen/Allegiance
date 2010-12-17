@@ -715,14 +715,120 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             if (pst->HasCapability(m_myHullType.HasCapability(c_habmFighter)
                                    ? c_sabmLand
                                    : c_sabmCapLand))
-            {
+			{
                 //Get the ship's state ... see if it is in landing mode
                 IsideIGC* pside1 = GetSide();
                 IsideIGC* pside2 = pModel->GetSide();
 
-                if (pside1 == pside2)
+                if ((pside1 == pside2) || pside1->AlliedSides(pside1,pside2)) //Imago 7/9/09 ALLY
                 {
-                    if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
+					//Imago 7/13/09 don't allow pods to rescue in allied ahipyard ;-p
+					// don't allow AI carriers to dock in allied stations
+ 					if ((pside1 != pside2 && pst->HasCapability(c_sabmCapLand) && m_myHullType.HasCapability(c_habmLifepod))
+						|| (pside1 != pside2 && m_myHullType.HasCapability(c_habmCarrier) && m_pilotType != c_ptPlayer))
+					{
+						if (((IdamageIGC*)pModel)->GetFraction() > 0.0f)
+			            {
+			                //At the time of the collision, the objects should be exactly radius apart ...
+			                //but they may not be due to round-off errors. Make sure they are exactly
+			                //radius + epsilon apart
+			                const Vector& velocity1 = GetVelocity();
+
+			                Vector        position1;
+			                Vector        position2;
+			                Vector        normal;
+			                Separate(entry, false,
+			                         &position1, &position2, &normal);
+
+			                IclusterIGC*    cluster = GetCluster(); //Get the cluster now, before doing damage (and, maybe, terminating the model)
+
+			                AddRef();
+			                pModel->AddRef();
+
+			                const float cElasticity = 0.75;      //Coefficient of elasticity
+			                //Determine the new velocity as some combination of a
+			                //perfectly inelastic and a perfectly elastic collision.
+			                //Same basic algorithm as below, but the ship has a mass of 0 and the station has a mass of infinity
+
+			                //Inelastic collision: inelastic velocity is 0, 0, 0 (ship sticks to the station)
+
+			                //Elastic collision: velocity component along the perpendicular is reflected.
+
+			                //Get the speed along the normal vector
+			                float   oldSpeed1 = velocity1 * normal;
+
+			                //Get the velocities perpendicular to the normal vector.
+			                Vector  perpendicular1 = velocity1 - oldSpeed1 * normal;
+
+			                //invert the parallel component
+			                Vector  vElastic1 = perpendicular1 - (oldSpeed1 * normal);
+
+			                Vector  newVelocity1 = vElastic1 * cElasticity;
+
+			                //verify the velocities are valid
+							// mmf replaced assert with log msg
+					        if (!(newVelocity1 * newVelocity1 >= 0.0f)) {
+							  debugf("mmf Igc shipIGC.cpp ~835 newVelocity1^2 debug build would have called assert and exited, commented out and set to zero for now\n");
+					          newVelocity1.x = 0.0f; newVelocity1.y = 0.0f; newVelocity1.z = 0.0f;
+							}
+			                // assert (newVelocity1 * newVelocity1 >= 0.0f);
+
+			                //velocity1 is a reference, so calculate the damage before setting the velocity
+			                float   damage2 = (velocity1 - newVelocity1).LengthSquared() * c_impactDamageCoefficient;
+			                float   damage1 = 2.0f * damage2;
+
+			                float   hp1 = GetHitPoints();
+			                if (m_mountedOthers[ET_Shield])
+			                    hp1 = ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetFraction() * 
+			                          ((IshieldIGC*)m_mountedOthers[ET_Shield])->GetMaxStrength();
+			                float   hp2 = ((IdamageIGC*)pModel)->GetHitPoints();
+
+
+			                IIgcSite* igcsite = GetMyMission()->GetIgcSite();
+
+			                DamageResult    dr1 = c_drNoDamage;
+			                DamageResult    dr2 = c_drNoDamage;
+			                if (!m_myHullType.HasCapability(c_habmLifepod))
+			                {
+			                    if (hp2 > 0.0f)
+			                    {
+			                        dr1 = ReceiveDamage(c_dmgidCollision,
+			                                            (hp2 * damage1 / (hp2 + damage1)),
+			                                            timeCollision,
+			                                            position1, position2,
+			                                            (type == OT_buildingEffect) ? ((IbuildingEffectIGC*)pModel)->GetAsteroid() : pModel);
+			                    }
+
+			                    assert (pModel->GetAttributes() & c_mtDamagable);
+			                    if (hp1 > 0.0f)
+			                    {
+			                        dr2 = ((IdamageIGC*)pModel)->ReceiveDamage(c_dmgidCollision,
+			                                                                   hp1 * damage2 / (hp1 + damage2),
+			                                                                   timeCollision,
+			                                                                   position2, position1,
+			                                                                   this);
+			                    }
+			                }
+
+			                if ((dr1 != c_drKilled) && (dr2 != c_drKilled))
+			                {
+			                    SetPosition(position1);
+			                    SetVelocity(newVelocity1);
+
+			                    cluster->RecalculateCollisions(tCollision, this, pModel);
+			                }
+
+			                // play the collision effects...
+			                igcsite->PlaySoundEffect(collisionSound, this);
+			                igcsite->PlayFFEffect(effectBounce, this);
+			                igcsite->PlayVisualEffect(effectJiggle, this, 2.0f * damage1 * c_impactJiggleCoefficient);
+
+			                pModel->Release();
+			                Release();
+			            }
+					}
+
+					if (pStation->InGarage(this, GetPosition() + GetVelocity() * tCollision))
                     {
                         if (GetMyMission()->GetIgcSite()->DockWithStationEvent(this, pStation))
                             break;
@@ -742,7 +848,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
             }
             else if (m_myHullType.HasCapability(c_habmLifepod) &&
                      pst->HasCapability(c_sabmRescue) &&
-                     (GetSide() == pModel->GetSide()))
+					 ((GetSide() == pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(), pModel->GetSide()))) // #ALLY - was: GetSide() == pModel->GetSide()) imago fixed 7/8/09
             {
                 if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
                     break;
@@ -784,7 +890,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 ExpendableAbilityBitMask    eabm = ppt->GetCapabilities();
 
                 if ((eabm & c_eabmRescueAny) ||
-                    ((eabm & c_eabmRescue) && (GetSide() == pModel->GetSide())))
+					((eabm & c_eabmRescue) && ((GetSide() == pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(), pModel->GetSide())))) // #ALLY -was: GetSide() == pModel->GetSide()
                 {
                     if (GetMyMission()->GetIgcSite()->RescueShipEvent(this, NULL))
                         break;
@@ -890,7 +996,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                 pModel->Release();
                 Release();
             }
-        }
+		}
         break;
 
         case OT_treasure:
@@ -906,7 +1012,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
         {
             IIgcSite* igcsite = GetMyMission()->GetIgcSite();
 
-            bool    bFriendly = GetSide() == pModel->GetSide();
+			bool    bFriendly = ( (GetSide() == pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(), pModel->GetSide())); // #ALLY -was: GetSide() == pModel->GetSide() imago fixed 7/8/09
             if (bFriendly)
             {
                 HullAbilityBitMask  habmMe = m_myHullType.GetCapabilities();
@@ -922,14 +1028,17 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                     if ((habmHim & c_habmRescue) && igcsite->RescueShipEvent(this, (IshipIGC*)pModel))
                         break;
                 }
-                else if (habmHim & c_habmCarrier)
+				// mmf 3/08 drones (like fighter drones) docking at carrier crash the server
+				// if pModel is a drone skip this part (i.e. don't let them dock)
+				// 
+                else if ( (habmHim & c_habmCarrier) && (this->GetPilotType() == c_ptPlayer) )// mmf added && ... tweaked 4/08
                 {
                     if ((habmMe & c_habmLandOnCarrier) &&
                         ((IshipIGC*)pModel)->InGarage(this, tCollision) &&
                         igcsite->LandOnCarrierEvent((IshipIGC*)pModel, this, tCollision))
                         break;
                 }
-                else if (habmMe & c_habmCarrier)
+                else if ( (habmMe & c_habmCarrier) && (((IshipIGC*)pModel)->GetPilotType() == c_ptPlayer) )// mmf added && ...
                 {
                     if ((habmHim & c_habmLandOnCarrier) &&
                         InGarage((IshipIGC*)pModel, tCollision) &&
@@ -1099,7 +1208,7 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 
     if (launcher &&
         (!GetMyMission()->GetMissionParams()->bAllowFriendlyFire) &&
-        (pside == launcher->GetSide()) &&
+		((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside,launcher->GetSide())) && // #ALLY - Imago fixed 7/8/09
         (amount >= 0.0f))
     {
         return c_drNoDamage;
@@ -1643,7 +1752,9 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                                 {
                                     IsideIGC*   pside = pship->GetSide();
 
-                                    if (pside == psideMe)
+                                    if (((pside == psideMe) || pside->AlliedSides(pside,psideMe)) ||
+										(CanSee(pship) && SeenBySide(pside)) //#ALLY - friendly nearby (seen or can see us) IMAGO FIXED 7/10/09
+										)
                                     {
                                         cFriend++;
                                         float d2 = (positionMe - pship->GetPosition()).LengthSquared();
@@ -1847,12 +1958,12 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         if (((pship->GetStateM() & wantsToMineMaskIGC) != 0) &&
                             (pship->GetCommandTarget(c_cmdPlan) == m_commandTargets[c_cmdPlan]))
                         {
-                            if (pship->GetSide() == pside)
+                            if ((pship->GetSide() == pside) || IsideIGC::AlliedSides(pside,pship->GetSide()))  //ALLY imago 7/9/09
                             {
                                 //Have a miner on our side that is actively trying to mine this asteroid
                                 nFriendly++;
 
-                                float   fOre = pship->GetOre();
+								float   fOre = pship->GetOre();
                                 if (fOre < fOreMin)
                                 {
                                     fOreMin = fOre;
@@ -1860,7 +1971,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                 }
                             }
                             else
-                                nEnemy++;
+									nEnemy++;
                         }
                     }
                 }
@@ -2334,7 +2445,7 @@ void    CshipIGC::ExecuteShipMove(Time          timeStart,
 
             if (afterburner)
             {
-                float   abThrust = afterburner->GetMaxThrust();
+                float   abThrust = afterburner->GetMaxThrustWithGA(); //TheRock 15-8-2009
 				if (afterF) {
                     thrustRatio = abThrust / thrust;
 				}
@@ -3116,24 +3227,48 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
                                    ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
                                    : c_habmIsRipcordTarget;
 
-        //Make a list of undocked ships that are ripcord targets as well
-        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
-        {
-            IshipIGC*       pship = psl->data();
-            if (pship != GetSourceShip())
-            {
-                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
-                if (pc)
-                {
-                    ShipPairLink*   spl = new ShipPairLink;
-                    spl->data().pship = pship;
-                    spl->data().pcluster = pc;
+		//ALLY ripcord is on 7/8/09 imago
+		if (GetMyMission()->GetMissionParams()->bAllowAlliedRip) {
+       		 //Make a list of undocked ships (on our side and allied sides) that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = GetMyMission()->GetShips()->first(); (psl != NULL); psl = psl->next()) //ALLY RIPCORD 7/8/09 imago
+	        {
+	            IshipIGC*       pship = psl->data();
+	            if (pship != GetSourceShip() &&
+					(pside->AlliedSides(pside,pship->GetSide()) || (pside == pship->GetSide()))) //&&
+					//pship->SeenBySide(pside)) //Imago - if VISIBILITY ever becomes an option it needs to work with RIPCORD 7/10/09 ALLYTD
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
+	                if (pc) 
+	                {
+	                    ShipPairLink*   spl = new ShipPairLink;
+	                    spl->data().pship = pship;
+	                    spl->data().pcluster = pc;
 
 
-                    pairs.last(spl);
-                }
-            }
-        }
+	                    pairs.last(spl);
+	                }
+	            }
+			}
+		} else {
+       		 //Make a list of undocked ships (on only our side) that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next()) 
+	        {
+	            IshipIGC*       pship = psl->data();
+	            if (pship != GetSourceShip())
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(pship, habm);
+	                if (pc)
+	                {
+	                    ShipPairLink*   spl = new ShipPairLink;
+	                    spl->data().pship = pship;
+	                    spl->data().pcluster = pc;
+
+
+	                    pairs.last(spl);
+	                }
+	            }
+			}
+		}
     }
 
     const Vector*   positionGoal = NULL;
@@ -3170,7 +3305,32 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
         {
             float   d2Goal = FLT_MAX;
 
-            {
+            if (GetMission()->GetMissionParams()->bAllowAlliedRip) {
+                //No station in the cluster to ripcord to ... try allied  and our probes
+                //Search backwords so that we'll get the most recently dropped probe
+                //if multiple probes without a target
+                for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->last(); (ppl != NULL); ppl = ppl->txen())
+                {
+                    IprobeIGC*  pprobe = ppl->data();
+                    if ((pprobe->GetSide() == pside || pside->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY RIPCORD imago 7/8/09
+                    {
+                        if (positionGoal)
+                        {
+                            float   d2 = (pprobe->GetPosition() - *positionGoal).LengthSquared();
+                            if (d2 < d2Goal)
+                            {
+                                pmodelRipcord = pprobe;
+                                d2Goal = d2;
+                            }
+                        }
+                        else
+                        {
+                            pmodelRipcord = pprobe;
+                            break;
+                        }
+                    }
+                }
+			} else {
                 //No station in the cluster to ripcord to ... try probes
                 //Search backwords so that we'll get the most recently dropped probe
                 //if multiple probes without a target
@@ -3195,6 +3355,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
                         }
                     }
                 }
+
             }
 
             if (pmodelRipcord == NULL)
@@ -3316,7 +3477,7 @@ void    CshipIGC::ResetWaypoint(void)
                     {
                         if ((m_commandIDs[c_cmdPlan] == c_cidGoto) || (m_commandIDs[c_cmdPlan] == c_cidNone))
                         {
-                            if (m_commandTargets[c_cmdPlan]->GetSide() == GetSide())
+							if ((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(), GetSide())) //#ALLY (TheRock) we can still dock here (Imago) 7/8/09
                             {
                                 const IstationTypeIGC*  pst = ((IstationIGC*)m_commandTargets[c_cmdPlan])->GetStationType();
                                 HullAbilityBitMask  habm = m_myHullType.GetCapabilities();
@@ -3330,6 +3491,10 @@ void    CshipIGC::ResetWaypoint(void)
                                 {
                                     if (pst->HasCapability(c_sabmLand | c_sabmRescue))
                                         o = Waypoint::c_oEnter;
+									//Imago 7/13/09 part of the fix for not allowing pod rescue at allied ahipyard.
+									if (m_commandTargets[c_cmdPlan]->GetSide() != GetSide() && pst->HasCapability(c_sabmCapLand))
+										o = Waypoint::c_oGoto;
+
                                 }
                                 else if (pst->HasCapability(c_sabmLand))
                                     o = Waypoint::c_oEnter;
@@ -3365,7 +3530,7 @@ void    CshipIGC::ResetWaypoint(void)
 
                             float   rMajor;
                             IprojectileTypeIGC* pprojectile = ppt->GetProjectileType();
-                            if (ppt)
+                            if (pprojectile) // KG -bug fix, was: ppt
                                 rMajor = pprojectile->GetLifespan() * pprojectile->GetSpeed() * 0.5f;
                             else
                                 rMajor = ppt->GetScannerRange() * 0.4f;
@@ -3412,8 +3577,9 @@ void    CshipIGC::ResetWaypoint(void)
                         IprobeTypeIGC*  ppt = ((IprobeIGC*)(m_commandTargets[c_cmdPlan]))->GetProbeType();
                         ExpendableAbilityBitMask    eabm = ppt->GetCapabilities();
 
-                        if ((eabm & c_eabmRescueAny) ||
-                            ((eabm & c_eabmRescue) && (m_commandTargets[c_cmdPlan]->GetSide() == GetSide())))
+                        if ( (eabm & c_eabmRescueAny) ||
+                            ((eabm & c_eabmRescue) && 
+							((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(),GetSide())))) //#ALLY - imago 7/3/09
                         {
                             o = Waypoint::c_oEnter;
                         }
@@ -3514,23 +3680,46 @@ bool    CshipIGC::bShouldUseRipcord(IclusterIGC*  pcluster)
                                    ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
                                    : c_habmIsRipcordTarget;
 
-        //Make a list of undocked ships that are ripcord targets as well
-        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
-        {
-            IshipIGC*       ps = psl->data();
-            if (ps != this)
-            {
-                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
-                if (pc)
-                {
-                    if (pcluster == pc)
-                        return true;
+		if (GetMission()->GetMissionParams()->bAllowAlliedRip) {
+	        //Make a list of undocked ships on our team and allied teams that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = GetMission()->GetShips()->first(); (psl != NULL); psl = psl->next()) //ALLY ripcord 7/8/09 was pside
+	        {
+	            IshipIGC*       ps = psl->data();
+	            if (ps != this &&
+					(ps->GetSide() == pside || pside->AlliedSides(pside,ps->GetSide()))) //ALLY
+	            {
+					//if (ps->SeenBySide(pside)) {  //Imago VISIBILITY RIPCORD 7/10/09
+	                	IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                	if (pc)
+	                	{
+	                    	if (pcluster == pc)
+	                        	return true;
 
-                    if (shipRipcords.find(pc) == NULL)
-                        shipRipcords.last(pc);
-                }
-            }
-        }
+	                    	if (shipRipcords.find(pc) == NULL)
+	                        	shipRipcords.last(pc);
+						}
+	              //  }
+	            }
+	        }
+		} else {
+	        //Make a list of undocked ships that are ripcord targets as well
+	        for (ShipLinkIGC*  psl = pside->GetShips()->first(); (psl != NULL); psl = psl->next())
+	        {
+	            IshipIGC*       ps = psl->data();
+	            if (ps != this)
+	            {
+	                IclusterIGC*    pc = pigc->GetRipcordCluster(ps, habm);
+	                if (pc)
+	                {
+	                    if (pcluster == pc)
+	                        return true;
+
+	                    if (shipRipcords.find(pc) == NULL)
+	                        shipRipcords.last(pc);
+	                }
+	            }
+	        }
+		}
     }
 
     //Search adjacent clusters for an appropriate target
@@ -3563,8 +3752,13 @@ bool    CshipIGC::bShouldUseRipcord(IclusterIGC*  pcluster)
             for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
             {
                 IprobeIGC*  pprobe = ppl->data();
-                if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed))
-                    return true;
+				if (GetMission()->GetMissionParams()->bAllowAlliedRip) { //ALLY RIPCORD imago 7/8/09
+                	if ((pprobe->GetSide() == pside || pside->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY ripcord imago 7/8/09
+                    	return true;
+				} else {
+                	if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed)) 
+                    	return true;
+				}
             }
         }
         clustersVisited.first(pcluster);

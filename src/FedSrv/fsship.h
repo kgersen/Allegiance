@@ -267,6 +267,19 @@ public:
   {
       return m_ucLastUpdate;
   }
+
+  //imago 7/22/09 ALLY ff pvp
+  void  SetLastDamageReport(Time t)
+  {
+    m_timeLastDamageReport = t;
+  }
+
+  Time  GetLastDamageReport(void) const
+  {
+    return m_timeLastDamageReport;
+  }
+  //
+
   void              ResetLastUpdate(void)
   {
       m_ucLastUpdate = c_ucNone;
@@ -494,6 +507,18 @@ public:
       return m_ptDesiredLoadout;
   }
 
+  // w0dk4 Bandwidth Patch
+  unsigned int	GetBandwidth() {return m_nBandwidth; };
+  void			SetBandwidth(unsigned int iBandwidth)
+  {
+	  if (iBandwidth >= 2 && iBandwidth <= 32) {
+		  m_nBandwidth = iBandwidth;
+		  if(m_nBandwidth > g.cMaxBandwidth && g.cMaxBandwidth >= 2)
+			m_nBandwidth = g.cMaxBandwidth;
+	  } else
+		m_nBandwidth = 2;	  
+  }
+
 // w0dk4  allow more time when joining
 bool			GetJustJoined() {return b_JustJoined; };
 void			SetJustJoined(bool b_joined) {b_JustJoined = b_joined; };
@@ -519,7 +544,7 @@ private:
   ClientActiveTurretUpdate  m_atu;
   ClientShipUpdate          m_su;
   Time                      m_timeUpdate;
-
+  Time						m_timeLastDamageReport; //imago 7/22/09 ally FF pvp
   Time                  m_dwStartTime;
   int                   m_characterId;  // character id in the database--constant over sessions
   CFMGroup *            m_pgrp;         // the *location* group I'm a member of--can only be one of:
@@ -537,6 +562,9 @@ private:
   Vector                m_positionLifepod;
 
   ZString               m_strCDKey;
+
+  // w0dk4
+  unsigned int			m_nBandwidth;
 
   // w0dk4 allow more time when joining
   bool					b_JustJoined;

@@ -61,6 +61,7 @@ public:
     virtual void OnTeamAutoAcceptChange(MissionInfo* pMissionDef, SideID sideID, bool fAutoAccept) = 0;
     virtual void OnTeamCivChange(MissionInfo* pMissionDef, SideID sideID, CivID civID) = 0;
     virtual void OnTeamNameChange(MissionInfo* pMissionDef, SideID sideID) = 0;
+	virtual void OnTeamAlliancesChange(MissionInfo* pMissionDef) = 0; // #ALLY
 
     // player events
     virtual void OnPlayerStatusChange(MissionInfo* pMissionDef, SideID sideID, PlayerInfo* pPlayerInfo) = 0;
@@ -133,6 +134,7 @@ public:
     virtual void OnTeamAutoAcceptChange(MissionInfo* pMissionDef, SideID sideID, bool fAutoAccept) {};
     virtual void OnTeamCivChange(MissionInfo* pMissionDef, SideID sideID, CivID civID) {};
     virtual void OnTeamNameChange(MissionInfo* pMissionDef, SideID sideID) {};
+	virtual void OnTeamAlliancesChange(MissionInfo* pMissionDef) {}; //#ALLY
 
     // player events
     virtual void OnPlayerStatusChange(MissionInfo* pMissionDef, SideID sideID, PlayerInfo* pPlayerInfo) {};
@@ -553,6 +555,12 @@ public:
 
 	// KGJV #62
 	void			SetAllowEmptyTeams(bool bValue)	{ m_pfmMissionDef->misparms.bAllowEmptyTeams = bValue;}
+	
+	// IMAGO ALLY 7/5/09
+	void			SetDefections(bool bValue)	{ m_pfmMissionDef->misparms.bAllowDefections = bValue;}
+	void			SetAllowAlliedRip(bool bValue)	{ m_pfmMissionDef->misparms.bAllowAlliedRip = bValue;}
+	void			SetAllowAlliedViz(bool bValue)	{ m_pfmMissionDef->misparms.bAllowAlliedViz = bValue;}
+	void			SetMaxImbalance(short iMaxImbalance) { m_pfmMissionDef->misparms.iMaxImbalance = iMaxImbalance;} // 8/1/09
     
     // Team Accessors
     LPCSTR          SideName(SideID sideID)         { return (sideID == SIDE_TEAMLOBBY) ? "Not on a team" : m_pfmMissionDef->rgszName[sideID]; }
@@ -567,7 +575,10 @@ public:
     int             SideActive(SideID sideID)       { return (sideID == SIDE_TEAMLOBBY) ? true : (m_pfmMissionDef->rgfActive[sideID] != 0); }
     bool            HasSquad(SquadID squadID);
 
+	char			SideAllies(SideID sideID)       { return (sideID == SIDE_TEAMLOBBY) ? NA : m_pfmMissionDef->rgfAllies[sideID]; } // #ALLY
+
     // Team Operations
+	void			SetSideAllies(SideID sideID, char allies) { assert(sideID != SIDE_TEAMLOBBY); m_pfmMissionDef->rgfAllies[sideID] = allies; } // #ALLY
     void            SetSideActive(SideID sideID, bool fActive) 
                     { assert(sideID != SIDE_TEAMLOBBY); m_pfmMissionDef->rgfActive[sideID] = fActive; }
     void            SetSideAutoAccept(SideID sideID, bool fAutoAccept) 
@@ -588,6 +599,7 @@ public:
 
     SideInfo*       GetSideInfo(SideID sideID);
     List*           GetSideList();
+
     const char *    GetIGCStaticFile()
                     { return m_pfmMissionDef->misparms.szIGCStaticFile; }
     int             GetIGCStaticVer()

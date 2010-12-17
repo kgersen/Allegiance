@@ -745,7 +745,11 @@ public:
 
     bool OnQuickstart()
     {
+#ifdef USEAZ //Imago 7/4/09 #78
         OnButtonZoneClub();
+#else
+		OnButtonInternet();
+#endif
         return false;
     }
 
@@ -1156,6 +1160,10 @@ public:
 
     bool OnButtonCredits()
     {
+		// BUILD_DX9
+		GetModeler()->SetColorKeyHint( true );
+		// BUILD_DX9
+
         TRef<INameSpace> pnsCredits = GetModeler()->GetNameSpace("creditspane");
         m_pcreditsPopup = new CreditsPopup(pnsCredits, this, GetWindow()->GetTime());
         GetWindow()->GetPopupContainer()->OpenPopup(m_pcreditsPopup, false);

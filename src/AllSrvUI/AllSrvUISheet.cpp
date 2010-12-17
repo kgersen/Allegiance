@@ -619,7 +619,7 @@ void CAllSrvUISheet::OnMove(int x, int y)
     SetTimer(c_SizeTimer, c_SizeTimeout, NULL);
 }
 
-void CAllSrvUISheet::OnTimer(UINT nIDEvent)
+void CAllSrvUISheet::OnTimer(UINT_PTR nIDEvent)
 {
   switch (nIDEvent)
   {

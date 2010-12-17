@@ -9,7 +9,7 @@
 ZString::ZStringData::ZStringData(PCC pcc)
 {
     m_length = pcc ? strlen(pcc) : 0;
-    m_pch    = new char[m_length + 1];
+    m_pch    = new char[m_length + 1]; //Fix memory leak -Imago 8/2/09
     m_pcc    = m_pch;
     memcpy(m_pch, pcc ? pcc : "", m_length + 1);
 }
@@ -187,7 +187,7 @@ ZString::ZString() :
 }
 
 ZString::ZString(PCC pcc) :
-    m_pdata(new ZStringData(pcc))
+    m_pdata(new ZStringData(pcc)) //Fix memory leak -Imago 8/2/09
 {
 }
 
@@ -255,16 +255,9 @@ ZString::ZString(float value, int total, int precision)
 
 ZString::ZString(float value)
 {
-    #ifndef DREAMCAST
         char buf[32];
         sprintf_s(buf, 32, "%g", value);
         m_pdata = new ZStringData(buf);
-    #else
-        int  decimal, sign;
-        char *buffer;
-        buffer = _fcvt( value, 7, &decimal, &sign );
-        m_pdata = new ZStringData(buffer);
-    #endif
 }
 
 ZString::ZString(bool b)
@@ -672,22 +665,16 @@ ZString FilenameString::GetName() const
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#ifdef DREAMCAST
-    const char* g_szDirSep = "\\";
-#else
-    const char* g_szDirSep = "/";
-#endif
+
+const char* g_szDirSep = "/";
+
 
 PathString::PathString(PCC pcc) :
     ZString(pcc)
 {
     //  : make sure str is valid
 
-    #ifdef DREAMCAST
-        ReplaceAll("/", '\\');
-    #else
-        ReplaceAll("\\", '/');
-    #endif
+	ReplaceAll("\\", '/');
 }
 
 PathString PathString::GetCurrentDirectory()

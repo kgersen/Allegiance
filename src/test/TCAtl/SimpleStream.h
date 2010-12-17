@@ -191,7 +191,7 @@ public:
       return STG_E_MEDIUMFULL;
 
     // This stream can only shrink, never grow
-    if (libNewSize.LowPart > (m_pbEnd - m_pbBegin))
+    if ((BYTE)libNewSize.LowPart > (m_pbEnd - m_pbBegin))
       return STG_E_MEDIUMFULL;
 
     // Set the new size of the stream

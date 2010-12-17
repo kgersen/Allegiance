@@ -3,7 +3,7 @@
 **
 **  File:    igc.h
 **
-**  Author: 
+**  Author:
 **
 **  Description:
 **      Interface decriptions for the igc library. This file was created by the ATL wizard.
@@ -159,25 +159,25 @@ const ObjectType    OT_constants        = 34;
 const ObjectType    OT_allsrvUser       = 35; // used by the admin object model
 const ObjectType    OT_Max              = 36;// don't put anything after this
                                              // OT_Max should be less then 256 for
-                                             // AGC event firing. 
+                                             // AGC event firing.
 
-const   __int64         c_maskStaticTypes = (__int64(1) << __int64(OT_projectileType)) | 
-                                            (__int64(1) << __int64(OT_treasureSet)) | 
-                                            (__int64(1) << __int64(OT_hullType)) | 
-                                            (__int64(1) << __int64(OT_partType)) | 
-                                            (__int64(1) << __int64(OT_missileType)) | 
-                                            (__int64(1) << __int64(OT_mineType)) | 
-                                            (__int64(1) << __int64(OT_probeType)) | 
-                                            (__int64(1) << __int64(OT_civilization)) | 
-                                            (__int64(1) << __int64(OT_stationType)) | 
-                                            (__int64(1) << __int64(OT_development)) | 
-                                            (__int64(1) << __int64(OT_droneType)) | 
-                                            (__int64(1) << __int64(OT_chaffType)) | 
-                                            (__int64(1) << __int64(OT_constants)); 
+const   __int64         c_maskStaticTypes = (__int64(1) << __int64(OT_projectileType)) |
+                                            (__int64(1) << __int64(OT_treasureSet)) |
+                                            (__int64(1) << __int64(OT_hullType)) |
+                                            (__int64(1) << __int64(OT_partType)) |
+                                            (__int64(1) << __int64(OT_missileType)) |
+                                            (__int64(1) << __int64(OT_mineType)) |
+                                            (__int64(1) << __int64(OT_probeType)) |
+                                            (__int64(1) << __int64(OT_civilization)) |
+                                            (__int64(1) << __int64(OT_stationType)) |
+                                            (__int64(1) << __int64(OT_development)) |
+                                            (__int64(1) << __int64(OT_droneType)) |
+                                            (__int64(1) << __int64(OT_chaffType)) |
+                                            (__int64(1) << __int64(OT_constants));
 
-const   __int64         c_maskMapTypes =    (__int64(1) << __int64(OT_asteroid)) | 
-                                            (__int64(1) << __int64(OT_station))  | 
-                                            (__int64(1) << __int64(OT_cluster))  | 
+const   __int64         c_maskMapTypes =    (__int64(1) << __int64(OT_asteroid)) |
+                                            (__int64(1) << __int64(OT_station))  |
+                                            (__int64(1) << __int64(OT_cluster))  |
                                             (__int64(1) << __int64(OT_mine))     |
                                             (__int64(1) << __int64(OT_probe))    |
                                             (__int64(1) << __int64(OT_treasure)) |
@@ -304,14 +304,14 @@ const TrekKey TK_TargetHostile              = 91;  // Target the ship causing mo
 const TrekKey TK_Suicide                    = 92;  // Kill yourself
 const TrekKey TK_ToggleGrid                 = 93;  // Toggle visible grid in combat view
 const TrekKey TK_ToggleCloak                = 94;  // Toggle cloaking
-const TrekKey TK_DropMine                   = 95;  // Drop a minefield 
-const TrekKey TK_Ripcord                    = 96;  // Ripcord         
+const TrekKey TK_DropMine                   = 95;  // Drop a minefield
+const TrekKey TK_Ripcord                    = 96;  // Ripcord
 const TrekKey TK_ViewRearLeft               = 97;  // Look back and to the left
 const TrekKey TK_ViewRearRight              = 99;  // Look back and to the right
 const TrekKey TK_Obsolete1                  = 99;  // Not used - feel free to reuse
 const TrekKey TK_TargetSelf                 =100;  // Target myself
 const TrekKey TK_ToggleCollisions	        =101;  // Toggle collision detection
-const TrekKey TK_OccupyNextTurret           =102;  // Occupy the next available turret position 
+const TrekKey TK_OccupyNextTurret           =102;  // Occupy the next available turret position
 const TrekKey TK_TargetNothing              =103;  // Reset target so that nothing is targeted
 const TrekKey TK_MatchSpeed                 =104;  // Match speed with target
 const TrekKey TK_ChatPageUp                 =105;  // Scroll the chat pane one page up
@@ -433,7 +433,11 @@ const TrekKey TK_VoteNo                         = 217; // Vote No on the current
 
 const TrekKey TK_ScrnShot                       = 218; // Take a screen shot
 
-const TrekKey TK_Max                            = 219; // Must be last trekkey
+const TrekKey TK_TargetAlliedBase				= 219; //Imago 8/1/09
+const TrekKey TK_TargetAlliedBaseNearest		= 220;
+const TrekKey TK_TargetAlliedBasePrev			= 221;
+
+const TrekKey TK_Max                            = 222; // Must be last trekkey
 
 typedef short   SoundID;
 typedef short   VoiceID;
@@ -448,7 +452,7 @@ enum {
 //Redefined data types (so we can change them later)
 const int NA = -1; // meaning unspecified, none, or all.
 const float fNA = -1; // To support supression of compiler warnings.  Floats should probably all be doubles anyways, but hey.  --Dhauzimmer, 8/14/04
- 
+
 typedef long            MissionID;
 
 //*ID are unique IDs for something
@@ -482,6 +486,7 @@ typedef ObjectID        WingID;
 const WingID            c_widMax = 10;
 
 const SideID c_cSidesMax = 6;
+const int c_cAlliancesMax = c_cSidesMax/2; // #ALLY max alliances possible (distinct groups of allied teams)
 
 extern const char*      c_pszWingName[c_widMax];
 
@@ -514,6 +519,11 @@ const EquipmentType   ET_Pack           = 6;
 const EquipmentType   ET_Afterburner    = 7;
 const EquipmentType   ET_MAX            = 8;
 
+typedef short     AbilityType; // Imago added
+const AbilityType	  AT_Hull			= 0;
+const AbilityType	  AT_Station		= 1;
+const AbilityType	  AT_Expendable		= 2;
+const AbilityType	  AT_Asteroid		= 3;
 
 
 typedef char     PackType;
@@ -610,7 +620,7 @@ const WarningMask   c_wmCrowdedSector = 0x02;
 typedef char BuyableGroupID;
 
 /*
-� Max Speed: Up the sides maximum speed 
+� Max Speed: Up the sides maximum speed
 � Rate of Yaw: Increase angle of turn per sec
 � Rate of Pitch: Increase angle of turn per sec
 � Rate of acceleration: Increase your acceleration
@@ -672,6 +682,25 @@ const unsigned char             c_ucRadarOffScreen = 2;
 
 typedef short                   PartMask;
 
+//Imago has "generic" part mask flags 7/29/08
+typedef PartMask				PartBitMask;
+const PartBitMask				c_pbm1	= 0x01;
+const PartBitMask				c_pbm2  = 0x02;
+const PartBitMask				c_pbm3  = 0x04;
+const PartBitMask				c_pbm4  = 0x08;
+const PartBitMask				c_pbm5  = 0x10;
+const PartBitMask				c_pbm6  = 0x20;
+const PartBitMask				c_pbm7  = 0x40;
+const PartBitMask				c_pbm8  = 0x80;
+const PartBitMask				c_pbm9  = 0x100;
+const PartBitMask				c_pbm10  = 0x200;
+const PartBitMask				c_pbm11  = 0x400;
+const PartBitMask				c_pbm12  = 0x800;
+const PartBitMask				c_pbm13  = 0x1000;
+const PartBitMask				c_pbm14  = 0x2000;
+const PartBitMask				c_pbm15  = 0x4000;
+const PartBitMask				c_pbm16  = (short)0x8000;
+
 typedef short                   AbilityBitMask;
 
 typedef AbilityBitMask          HullAbilityBitMask;
@@ -700,7 +729,7 @@ const StationAbilityBitMask     c_sabmRipcord               = 0x08;      //     
 const StationAbilityBitMask     c_sabmCapture               = 0x10;      //           be captured
 const StationAbilityBitMask     c_sabmLand                  = 0x20;      //           land at
 const StationAbilityBitMask     c_sabmRepair                = 0x40;      //           get repaired
-const StationAbilityBitMask     c_sabmRemoteLeadIndicator   = 0x80;      //           shows up in the loadout menu of stations
+const StationAbilityBitMask     c_sabmRemoteLeadIndicator   = 0x80;      //           relay lead indicator
 const StationAbilityBitMask     c_sabmReload                = 0x100;     //           free fuel and ammo on launch
 const StationAbilityBitMask     c_sabmFlag                  = 0x200;     //           counts for victory
 const StationAbilityBitMask     c_sabmPedestal              = 0x400;     //           be a pedestal for a flag
@@ -808,9 +837,9 @@ struct  CommandData
     Match   MatchCommand(const char*    szString) const
     {
         assert (szString);
-        const char* p1 = szString; 
+        const char* p1 = szString;
         const char* p2 = szVerb;
-        
+
         while ((*p1 != '\0') && (*p2 != '\0'))
         {
             if (tolower(*p1) != tolower(*p2))
@@ -851,7 +880,7 @@ struct GlobalAttributeSet
         {
             //Initialize();
         }
-        
+
         void    Initialize(void)
         {
             for (int i = 0; (i < c_gaMax); i++)
@@ -1034,9 +1063,9 @@ class ImapMakerIGC
 struct MissionParams
 {
     //------------------------------------------------------------------------------
-    // If you add or remove properties, please update 
+    // If you add or remove properties, please update
     // AGCGameParameters.cpp, AGCGameParameters.h, and AGCIDL.h.
-    // 
+    //
     //------------------------------------------------------------------------------
     char        strGameName[c_cbGameName];              //Name of game
     char        szIGCStaticFile[c_cbFileName];          //Name of static IGC file
@@ -1047,9 +1076,11 @@ struct MissionParams
     bool        bShowMap            : 1;                //Show all warps at the start of the game
     bool        bAllowPrivateTeams  : 1;
     bool        bAllowEmptyTeams    : 1;                //Allow teams without players
+	bool		bAllowAlliedRip		: 1;				//Imago 7/8/09 ALLY
+	bool		bAllowAlliedViz		: 1;				//Imago 7/11/09 ALLY
     bool        bAllowDevelopments  : 1;                //Allow investment in tech
     bool        bAllowShipyardPath  : 1;                //Allow building Shipyards
-    bool        bAllowTacticalPath  : 1;                //Allow building Tactical Labs  
+    bool        bAllowTacticalPath  : 1;                //Allow building Tactical Labs
     bool        bAllowSupremacyPath : 1;                //Allow building Supremacy Centers
     bool        bAllowExpansionPath : 1;                //Allow building Expansion Complexes
     bool        bPowerUps           : 1;                //Create treasure when a ship is destroyed
@@ -1160,6 +1191,8 @@ struct MissionParams
         bInvulnerableStations           = false;
         bAllowPrivateTeams              = true ;
         bAllowEmptyTeams                = false;
+		bAllowAlliedRip	                = false; //imago 7/8/09 ALLY
+		bAllowAlliedViz	                = false; //imago 7/8/09 ALLY 7/17/09 done testing, defaults off unless allies
         bShowMap                        = false;
         bAllowDevelopments              = true ;
         bAllowShipyardPath              = true ;
@@ -1180,7 +1213,6 @@ struct MissionParams
         bResourceAmountsVisible         = true ;
         bRandomWormholes                = true ;
         bNoTeams                        = false;
-        bShowHomeSector                 = false;
         bObjectModelCreated             = false;
         bLobbiedGame                    = false;
         bClubGame                       = false;
@@ -1196,14 +1228,14 @@ struct MissionParams
         //
         // Assign to NA for now, this cues the mission maker to reset it later
         //
-        for (int iSide = 0; iSide < c_cSidesMax; iSide++) 
+        for (int iSide = 0; iSide < c_cSidesMax; iSide++)
         {
             rgCivID[iSide] = NA;
         }
 
         fHe3Density                     = 1.0f;
         fStartingMoney                  = 1.0f;
-        fGoalTeamMoney                  = 0; 
+        fGoalTeamMoney                  = 0;
         tsiPlayerStart                  = 1;
         tsiNeutralStart                 = 1;
         tsiPlayerRegenerate             = 1;
@@ -1324,7 +1356,7 @@ struct MissionParams
         else if (nPlayerSectorAsteroids > 40)
         {
             return "PlayerSectorAsteroids must be less than 40.";
-        }            
+        }
         else if ((nGoalArtifactsCount < 0) || (nGoalArtifactsCount > 100))
         {
             return "GoalArtifactsCount must be between 0% and 100%.";
@@ -1496,7 +1528,7 @@ struct MissionParams
     {
         return iGoalArtifactsPercentage;
     }
-}; 
+};
 
 //Utility data structures
 typedef  Slist_utl<IpartIGC*>           PartListIGC;
@@ -1821,7 +1853,7 @@ struct  DataAsteroidIGC
 
 struct  DataObjectIGC
 {
-    D3DCOLORVALUE       color;
+    COLORVALUE          color; // was D3DCOLORVALUE
     float               radius;
     float               rotation;
     char                modelName[c_cbFileName];
@@ -1933,7 +1965,7 @@ struct  DataProbeTypeIGC : public DataExpendableTypeIGC
     float               dtRipcord;
 };
 
-struct  DataPartIGC  
+struct  DataPartIGC
 {
     IpartTypeIGC*       partType;
 };
@@ -1981,6 +2013,8 @@ struct  DataSideIGC
 
     unsigned char       conquest;
     unsigned char       territory;
+
+	char				allies; // #ALLY
 };
 
 struct  DataCivilizationIGC
@@ -2371,7 +2405,7 @@ class   ClientShipUpdate                                //33 bytes
         BytePercentage      power;                      //1
 };
 
-class ClientActiveTurretUpdate                                      //12 bytes          
+class ClientActiveTurretUpdate                                      //12 bytes
 {
     public:
         Time                time;                       //4
@@ -2633,7 +2667,7 @@ struct  ExplosionData
 enum ChatTarget // if you change this please update AGCChatTarget in AGCIDL.idl
 {
     CHAT_EVERYONE = 0, CHAT_LEADERS, CHAT_ADMIN, CHAT_SHIP,
-    
+    CHAT_ALLIES, //imago added allies 7/3/09 ALLY
     CHAT_TEAM, CHAT_INDIVIDUAL, CHAT_INDIVIDUAL_NOFILTER, CHAT_WING, CHAT_INDIVIDUAL_ECHO,     //require objectID to be set
     CHAT_ALL_SECTOR, CHAT_FRIENDLY_SECTOR,                      //ditto
     CHAT_GROUP, CHAT_GROUP_NOECHO,                               //client only ... get translated into multiple sends
@@ -2719,6 +2753,20 @@ class ImissionIGC : public IstaticIGC
                                                __int64   maskTypes,
                                                char*     pdata,
                                                int       datasize) = 0;
+		//Imago added
+		virtual ZString					BitsToTechsList(TechTreeBitMask & ttbm) = 0;
+		virtual void					TechsListToBits(const char * szTechs, TechTreeBitMask & ttbm) = 0;
+
+		virtual ZString					BitsToPartsList(PartMask & pm, EquipmentType et) = 0;
+		virtual PartMask				PartMaskFromToken(const char * szToken, EquipmentType et) = 0;
+		virtual PartMask				PartsListToMask(const char * szParts, EquipmentType et) = 0;
+
+		virtual bool					LoadTechBitsList(void) = 0;
+		virtual bool					LoadPartsBitsList(void) = 0;
+
+		virtual void					ExportStaticIGCObjs(void) = 0;
+		virtual void					ImportStaticIGCObjs(void) = 0;
+		// Imago ^
 
         virtual MissionID               GetMissionID(void) const = 0;
         virtual void                    SetMissionID(MissionID  mid) = 0;
@@ -2829,6 +2877,8 @@ class ImissionIGC : public IstaticIGC
 
         virtual short                   GetReplayCount(void) const = 0;
         virtual const char*             GetContextName(void) = 0;
+		//#ALLY
+		virtual void                    UpdateAllies(const char  Allies[c_cSidesMax]) = 0;
 };
 
 class IbaseIGC : public IObject
@@ -2879,7 +2929,7 @@ class ThingSite : public AttachSite
         virtual void        AddHullHit(const Vector& vecPosition, const Vector& vecNormal) {}
         virtual void        AddFlare(Time ptime, const Vector& vecPosition, int id, const Vector* ellipseEquation) {}
         virtual void        AddMuzzleFlare(const Vector& vecEmissionPoint, float duration) {}
-    
+
         virtual void        SetVisible(unsigned char render)  {}
 
         virtual void        SetAfterburnerThrust (const Vector& direction, float power) {}
@@ -3466,6 +3516,7 @@ class IstationTypeIGC : public IbuyableIGC
         virtual const char*             GetBuilderName(void) const = 0;
 
         virtual  IstationTypeIGC*       GetSuccessorStationType(const IsideIGC*   pside) = 0;
+        virtual  IstationTypeIGC*       GetDirectSuccessorStationType() = 0; // EF5P - see wintrek\loadout.cpp
         virtual AsteroidAbilityBitMask  GetBuildAABM(void) const = 0;
 
         virtual int                     GetLaunchSlots(void) const = 0;
@@ -3537,7 +3588,7 @@ class IprojectileTypeIGC : public ItypeIGC
         virtual float            GetLifespan(void) const = 0;
         virtual float            GetRadius(void) const = 0;
         virtual float            GetRotation(void) const = 0;
-        virtual D3DCOLORVALUE    GetColor(void) const = 0;
+        virtual COLORVALUE       GetColor(void) const = 0; // was D3DCOLORVALUE
         virtual DamageTypeID     GetDamageType(void) const = 0;
         virtual SoundID          GetAmbientSound(void) const = 0;
 };
@@ -3638,8 +3689,8 @@ class IhullTypeIGC : public IbuyableIGC
         virtual short                GetCapacity(EquipmentType et) const = 0;
         virtual Mount                GetMaxWeapons(void) const = 0;
         virtual Mount                GetMaxFixedWeapons(void) const = 0;
-        virtual const HardpointData& GetHardpointData(Mount hardpointID) const = 0; 
-        virtual bool                 CanMount(IpartTypeIGC* ppt, Mount  mountID) const = 0;                      
+        virtual const HardpointData& GetHardpointData(Mount hardpointID) const = 0;
+        virtual bool                 CanMount(IpartTypeIGC* ppt, Mount  mountID) const = 0;
 
         virtual const char*          GetTextureName(void) const = 0;
 
@@ -3800,6 +3851,7 @@ class IafterburnerIGC : public IpartIGC
 {
     public:
         virtual float    GetFuelConsumption(void) const = 0;
+		virtual float    GetMaxThrustWithGA(void) const = 0; //TheRock 15-8-2009
         virtual float    GetMaxThrust(void) const = 0;
         virtual float    GetOnRate(void) const = 0;
         virtual float    GetOffRate(void) const = 0;
@@ -3808,7 +3860,7 @@ class IafterburnerIGC : public IpartIGC
 
         virtual float    GetPower(void) const = 0;
         virtual void     SetPower(float p) = 0;
-        
+
         virtual SoundID  GetInteriorSound(void) const = 0;
         virtual SoundID  GetExteriorSound(void) const = 0;
 };
@@ -3896,7 +3948,7 @@ class IclusterIGC : public IbaseIGC
         virtual float                   GetScreenY(void) const = 0;
 
         virtual void                    SetActive(bool bActive) = 0;
-        
+
         virtual void                    AddStation(IstationIGC* stationNew) = 0;
         virtual void                    DeleteStation(IstationIGC* stationOld) = 0;
         virtual IstationIGC*            GetStation(StationID stationID) const = 0;
@@ -3994,6 +4046,8 @@ class IwarpIGC : public ImodelIGC
         virtual void                AddBomb(Time               timeExplode,
                                             ImissileTypeIGC*   pmt) = 0;
         virtual const WarpBombList* GetBombs(void) const = 0;
+		virtual bool                IsFixedPosition()    = 0; // KG- added
+		virtual double				MassLimit()			 = 0; // Andon - Added for Mass Limted Alephs
 };
 
 class ItreasureIGC : public ImodelIGC
@@ -4025,7 +4079,7 @@ class IsideIGC : public IbaseIGC
         virtual void                        SetSquadID(SquadID squadID) = 0;
 
         virtual const TechTreeBitMask       GetTechs(void) const = 0;
-        
+
         virtual const TechTreeBitMask&      GetBuildingTechs(void) const = 0;
         virtual void                        ResetBuildingTechs(void) = 0;
         virtual void                        SetBuildingTechs(const TechTreeBitMask& ttbm) = 0;
@@ -4109,6 +4163,19 @@ class IsideIGC : public IbaseIGC
         virtual void          SetTimeEndured(float fSeconds) = 0;
         virtual long          GetProsperityPercentBought(void) const = 0;
         virtual long          GetProsperityPercentComplete(void) const = 0;
+
+		// ALLIES #ALLY
+		virtual void		  SetAllies(char allies) = 0;
+		virtual char          GetAllies() = 0;
+		static bool           AlliedSides(IsideIGC *side1, IsideIGC *side2)
+		{
+			if( side1==side2) return true;
+			if (side1==NULL) return false;
+			if (side2==NULL) return false;
+			if (side1->GetAllies() == NA) return false;
+			return (side1->GetAllies() == side2->GetAllies());
+		}
+		//
 };
 
 class IcivilizationIGC : public IbaseIGC
@@ -4135,7 +4202,7 @@ class ItreasureSetIGC : public IbaseIGC
     public:
         virtual const char*                 GetName(void) const = 0;
         virtual bool                        GetZoneOnly(void) const = 0;
-
+		virtual short						GetSize(void) const = 0; //imago added 7/30/08
         virtual void                        AddTreasureData(TreasureCode tc, ObjectID oid, unsigned char chance) = 0;
 
         virtual const TreasureData&         GetRandomTreasureData(void) const = 0;
@@ -4409,10 +4476,11 @@ inline int GetTypebits(ObjectType  ot)
     return c_ttTypebits[ot];
 }
 
-bool  FindableModel(ImodelIGC*    m,
-                    IsideIGC*     pside,
+bool  FindableModel(ImodelIGC*    		m,
+                    IsideIGC*     		pside,
                     int                 ttMask,
-                    AbilityBitMask      abmAbilities);
+                    AbilityBitMask      abmAbilities,
+					int 				iAllies = 1);  //Imago 7/31/09 e.g. 1 = normal (your side + allies) 0 = your side only 2 = allies only
 
 ImodelIGC*  FindTarget(IshipIGC*            pShip,
                        int                  ttMask,
@@ -4421,7 +4489,8 @@ ImodelIGC*  FindTarget(IshipIGC*            pShip,
                        const Vector*        pposition = NULL,
                        const Orientation*   porientation = NULL,
                        AbilityBitMask       abmAbilities = 0,                   //e.g. anything
-                       int                  maxDistance = 0x7fffffff);          //e.g. anywhere
+                       int                  maxDistance = 0x7fffffff,			//e.g. anywhere
+					   int 					bAllies = 1);  //Imago 7/31/09        e.g. pass-thru to FindableModel --^
 
 int         GetDistance(IshipIGC*       pship,
                         IclusterIGC*    pclusterOne,
@@ -4697,7 +4766,7 @@ class   DamageTrack
         void    SwitchSlots(void);
 
         void    ApplyDamage(Time        timeNow,
-                            ImodelIGC*  pmodel,                            
+                            ImodelIGC*  pmodel,
                             float       damage);
 
         void    Reset(void);
@@ -4941,7 +5010,7 @@ class   Waypoint
             c_oEnter,       //dock for starbases, warp for alephs
             c_oGoto,        //get to within m_fOffset and stop
             c_oNothing
-        };          
+        };
 
         Waypoint(void)
         :
@@ -5011,7 +5080,7 @@ class   Waypoint
                                             Vector*             pvectorFacing);
 
         ImodelIGC*  m_pmodelTarget;
-        
+
         Objective   m_objective;
 
         friend class GotoPlan;
@@ -5068,7 +5137,7 @@ class   GotoPlan
             m_pvOldCluster = m_pship->GetCluster();
             m_pvOldClusterTarget = pmodelTarget->GetCluster();
         }
-        
+
         int     GetMaskWaypoints(void) const
         {
             return m_maskWaypoints;
@@ -5149,7 +5218,7 @@ IshipIGC*   CreateDrone(ImissionIGC*     pmission,
                         IsideIGC*        pside,
                         AbilityBitMask   abmOrders = 0,
                         float            shootSkill = 1.0f,
-                        float            moveSkill  = 1.0f,        
+                        float            moveSkill  = 1.0f,
                         float            bravery    = 1.0f);
 
 
@@ -5205,7 +5274,7 @@ class PersistPlayerScoreObject
         {
           m_civID = civID;
         }
-        
+
         CivID GetCivID() const
         {
           return m_civID;
@@ -5362,7 +5431,7 @@ class PlayerScoreObject
                         bool            bLose)
         {
             assert (!m_bConnected);
-            assert (!(bWin && bLose));
+            assert (!(bWin && bLose)); 
 
             m_bWin = bWin;
             m_bLose = bLose;
@@ -5757,7 +5826,7 @@ class GameOverScoreObject
         {
             return m_cTotalBaseCaptures;
         }
-        
+
         short   GetFlags(void) const
         {
             return m_cFlags;
@@ -5772,7 +5841,7 @@ class GameOverScoreObject
         {
             return m_cRescues;
         }
-        
+
         short   GetTotalKills(void) const
         {
             return m_cTotalKills;
@@ -5813,7 +5882,7 @@ class GameOverScoreObject
         {
             return m_fCombatRating;
         }
-        
+
         bool    GetWinner(void) const
         {
             return m_bWinner;
@@ -5876,13 +5945,13 @@ class GameOverScoreObject
 // normal igc files, i.e. missions can be dumped and loaded using these two
 // functions. They return true if successful.
 //------------------------------------------------------------------------------
-bool    DumpIGCFile (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes, 
+bool    DumpIGCFile (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes,
                      void (*munge)(int size, char* data) = NULL);
 bool    LoadIGCFile (const char* name, ImissionIGC* pMission, void (*munge)(int size, char* data) = NULL);
 
 //------------------------------------------------------------------------------
 // static data core files are dealt with by these functions. They are
-// almost identical to the normal igc file loaders, but there is a version 
+// almost identical to the normal igc file loaders, but there is a version
 // number in the file, and it is returned by the LoadIGCStaticCore function.
 // if the load function fails, it returns NA.
 //------------------------------------------------------------------------------

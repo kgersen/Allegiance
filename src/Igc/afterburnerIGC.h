@@ -107,6 +107,10 @@ class CafterburnerIGC : public IafterburnerIGC
         {
             return m_typeData->fuelConsumption;
         }
+		virtual float	 GetMaxThrustWithGA(void) const //TheRock 15-8-2009
+		{
+			return m_typeData->maxThrust * GetShip()->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaThrust);
+		}
         virtual float    GetMaxThrust(void) const
         {
             return m_typeData->maxThrust;

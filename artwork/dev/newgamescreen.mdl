@@ -10,13 +10,13 @@ use "newgamescreendata";
 /////////////////////////////////////////////////////////////////////////////
 
 //
-// Title Text
+// Title Text  - Imago 7/8/09 fixed typo in SELECT
 //
 
 yellowText          = Color(0.878, 0.573, 0);
 whiteText           = Color(1, 1, 1);
 titlePane           = StringPane("SAME SETTINGS", yellowText,  Point(250, 30), JustifyLeft, titleFont);
-captionPane         = StringPane("SSLECT OR REVIEW THE CURRENT GAME SETTINGS", whiteText, Point(800, 30), JustifyLeft, promptFont);
+captionPane         = StringPane("SELECT OR REVIEW THE CURRENT GAME SETTINGS", whiteText, Point(800, 30), JustifyLeft, promptFont);
 
 
 //
@@ -116,10 +116,10 @@ allowSupremacyCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
 allowSupremacyPane = 
     ImagePane(allowSupremacyImage, [(allowSupremacyCheckboxPane, Point(xcheck, ycheck))]);
     
-allowEmptyTeamsImage = ImportImageFromFile("checkallowemptyteams.png", true);
-allowEmptyTeamsCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
-allowEmptyTeamsPane = 
-    ImagePane(allowEmptyTeamsImage, [(allowEmptyTeamsCheckboxPane, Point(xcheck, ycheck))]);        
+allowAlliedRipImage = ImportImageFromFile("checkallowrip24.png", true);
+allowAlliedRipCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+allowAlliedRipPane = 
+    ImagePane(allowAlliedRipImage, [(allowAlliedRipCheckboxPane, Point(xcheck, ycheck))]);        
 
 //
 // Countdown timer
@@ -419,7 +419,8 @@ hoverString =
             (34, "Selects whether or not tactical path (and silicon rocks) is allowed in the game."),
             (35, "Selects whether or not expansion path (and uranium rocks) is allowed in the game."),
             (36, "Selects whether or not supremacy path (and carbonaceous rocks) is allowed in the game."),
-            (37, "Indicates if the game can be started with empty teams"),
+            //(37, "Indicates if the game can be started with empty teams"),
+            (37, "Indicates if players can ripcord to allied teleports."), //Imago 7/8/09 ALLY
 
             (38, "The size of map for the game."),
             (39, "The amount of floating treasures that can be found"),
@@ -494,7 +495,7 @@ screen =
             (HoverPane(hoverSite, 22, invulnerableStationsPane        ), Point( check, 395)),
             (HoverPane(hoverSite, 23, developmentPane                 ), Point( check, 435)),
             (HoverPane(hoverSite, 27, showMapPane                     ), Point( check, 475)),
-            (HoverPane(hoverSite, 37, allowEmptyTeamsPane              ), Point( check, 515)), // R4: shipyard moved, emptyteams here
+            (HoverPane(hoverSite, 37, allowAlliedRipPane              ), Point( check, 515)), //R5 imago 7/7/09 // R4: shipyard moved, emptyteams here
 
 
 	    //  new in R4

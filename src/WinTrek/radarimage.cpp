@@ -251,10 +251,13 @@ public:
                 delta = m;
         }
 
+		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/15/09
+        CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE );
         pcontext->DrawImage3D(psurface, Rect(       0,        0, xsizeMid, ysizeMid), color, true, Point(-delta, -delta));
         pcontext->DrawImage3D(psurface, Rect(xsizeMid,        0,    xsize, ysizeMid), color, true, Point( delta, -delta));
         pcontext->DrawImage3D(psurface, Rect(xsizeMid, ysizeMid,    xsize,    ysize), color, true, Point( delta,  delta));
         pcontext->DrawImage3D(psurface, Rect(       0, ysizeMid, xsizeMid,    ysize), color, true, Point(-delta,  delta));
+        CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE );
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -299,6 +302,7 @@ public:
         const Point&    positionObject = pts->GetScreenPosition();
 
         {
+
             //Draw the brackets around the "object"
             pcontext->Translate(positionObject);
             if (lock != 0.0f)
@@ -323,8 +327,9 @@ public:
             else if (maskBrackets & c_maskArtifact)
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceArtifact, colorOther);
 
-            if (maskBrackets & c_maskTarget)
+			if (maskBrackets & c_maskTarget) {
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceTargeted, colorOther);
+			}
 
             if (maskBrackets & c_maskThreat)
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceLastFired, colorOther);
@@ -382,7 +387,11 @@ public:
         if (bIcon)
         {
             pcontext->Translate(positionIcon);
-            pcontext->SetBlendMode(BlendModeAdd);
+			// BUILD_DX9
+			pcontext->SetBlendMode(BlendModeAlphaStampThrough);
+			//pcontext->SetBlendMode(BlendModeSourceAlpha);
+			// BUILD_DX9
+
             pcontext->DrawImage3D(psurfaceIcon, colorIcon, true);
         }
 
@@ -621,8 +630,12 @@ public:
                     if (psubjects && (type == OT_ship) && psubjects->find((IshipIGC*)pmodel))
                         maskBrackets |= c_maskSubject;
 
-                    if (pmodel == pmodelEnemy)
-                        maskBrackets |= c_maskEnemy;
+					IsideIGC* sthis = pmodel->GetSide();
+					if (pmodelEnemy) {
+						IsideIGC* sthat = pmodelEnemy->GetSide();
+                    	if (pmodel == pmodelEnemy && !sthis->AlliedSides(sthis,sthat))  //ALLY - imago 7/3/09
+                        	maskBrackets |= c_maskEnemy;
+					}
 
                     {
                         const DamageBucketList* b = pmodel->GetDamageBuckets();
@@ -647,6 +660,8 @@ public:
                     Color color = pside
                                   ? ((maskBrackets & c_maskFlash) ? Color::Red() : pside->GetColor())
                                   : s_colorNeutral;
+
+					
 
                     /* 
                     static const int    closeRange = 100;
@@ -719,7 +734,7 @@ public:
                                         break;
                                         case c_rlTarget:
                                         {
-                                            if (pside == psideMine)
+                                            if ( (pside == psideMine) || pside->AlliedSides(pside,psideMine) ) //ALLY - Imago 7/3/09
                                             {
                                                 if (pmodel != pshipSource)
                                                 {
@@ -769,7 +784,7 @@ public:
                                             case c_rlTarget:
                                             {
                                                 range = 0;
-                                                if ((pside == psideMine) && (ucRadarState == c_ucRadarOffScreen))
+                                                if ( ((pside == psideMine) || pside->AlliedSides(pside,psideMine)) && (ucRadarState == c_ucRadarOffScreen) ) //ALLY imag0 7/3/09
                                                     bIcon = false;
                                             }
                                             break;
@@ -784,7 +799,7 @@ public:
                                     {
                                         ImodelIGC*  pmodelTarget = ((ImissileIGC*)pmodel)->GetTarget();
 
-                                        if ((pmodelTarget == NULL) || (pmodelTarget->GetSide() != psideMine))
+                                        if ((pmodelTarget == NULL) || (pmodelTarget->GetSide() != psideMine)) //ALLYTD?
                                         {
                                             bIcon = false;
                                             range = 0;
@@ -800,7 +815,7 @@ public:
                                     {
                                         case c_rlAll:
                                         {
-                                            if (pside == psideMine)
+                                            if ((pside == psideMine) || pside->AlliedSides(pside,psideMine) ) //ALLY imago 7/3/09
                                             {
                                                 if ((ucRadarState == c_ucRadarOffScreen) && (separation >= rangeClipLabels))
                                                     range = 0;
@@ -816,7 +831,7 @@ public:
                                         break;
                                         case c_rlDefault:
                                         {
-                                            if (pside == psideMine)
+                                            if ((pside == psideMine) || pside->AlliedSides(pside,psideMine) ) //ALLY imago 7/3/09
                                             {
                                                 if (separation >= rangeClipLabels)
                                                     range = 0;
@@ -825,7 +840,7 @@ public:
                                         break;
                                         case c_rlTarget:
                                         {
-                                            if ((pside == psideMine) || (separation >= rangeClipLabels))
+                                            if ((pside == psideMine) || (separation >= rangeClipLabels) || (pside->AlliedSides(pside,psideMine))) //ALLY imago 7/3/09
                                             {
                                                 bIcon = false;
                                                 range = 0;
@@ -1063,6 +1078,9 @@ public:
             //
             pcontext->SetShadeMode(ShadeModeFlat);
             pcontext->SetLinearFilter(false, true);
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSW, D3DTADDRESS_CLAMP );
 
 			//
 			// Shrink the rect size by half the size of the gauge bitmap
@@ -1202,6 +1220,7 @@ public:
 
                 if ((data.m_hull <= 1.0f) || (data.m_fill <= 1.0f))
                 {
+                    CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE ); //8/8/09 Imago
                     const float c_width = 16.0f;
 
                     float   xOffset = float(floor(offset.X()));
@@ -1250,12 +1269,16 @@ public:
                             pcontext->FillRect(rectHull, Color(1.0f, 0.0f, 0.0f));
                         }
                     }
+                    CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, TRUE ); //8/8/09 Imago
                 }
 
                 iter.Next();
             }
 
             m_listTextData.SetEmpty();
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP );
+            CD3DDevice9::Get()->SetSamplerState(0, D3DSAMP_ADDRESSW, D3DTADDRESS_WRAP );
         }
     }
 };

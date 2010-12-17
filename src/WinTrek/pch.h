@@ -51,6 +51,7 @@
 //
 // WinTrek headers
 //
+#include "ddvideo.h" //Imago 6/28/09 re-write
 
 #include "engine.h"
 #include "effect.h"
@@ -66,7 +67,7 @@
 #include "messagesAll.h"
 #include "messages.h"
 #include "messagesLC.h"
-#include "..\Club\ClubMessages.h"
+#include "ClubMessages.h" // KG - moved in global /Inc
 #include "clintlib.h"
 #include "AutoDownload.h"
 

@@ -124,7 +124,7 @@ void        CmagazineIGC::Update(Time   now)
             else
             {
                 if (ptarget && (ptarget->GetCluster() == m_ship->GetCluster()) &&   //have a target,
-                    (ptarget->GetSide() != m_ship->GetSide()) &&                    //and on different sides,
+                    ((ptarget->GetSide() != m_ship->GetSide()) && (!IsideIGC::AlliedSides(ptarget->GetSide(),m_ship->GetSide()))) &&  //and not on friendly sides #ALLY mmf 11/08 added !   IMAGO FIXED 7/8/09
                     (m_missileType->HasCapability(c_eabmWarpBomb)                   //is a warp bomb
                      ? (ptarget->GetObjectType() == OT_warp)                        //and target is a warp
                      : (ptarget->GetAttributes() & c_mtDamagable)) &&               //is not a warp bomb and we can do damage to it

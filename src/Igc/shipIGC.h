@@ -418,7 +418,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         if (pafter)
                             pafter->Deactivate();   //The station is a no smoking area
 
-                        if ((m_fOre > 0.0f) && (s->GetStationType()->HasCapability(c_sabmUnload)))
+                        if ((m_fOre > 0.0f) && (s->GetStationType()->HasCapability(c_sabmUnload) && (GetSide() == s->GetSide()))) //#ALLY: Only offload at your own bases (TheRock)
                         {
                             IsideIGC*   pside = GetSide();
 
@@ -1560,7 +1560,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             else
             {
                 ObjectType  type = pmodel->GetObjectType();
-                bool        bFriendly = pmodel->GetSide() == GetSide();
+				bool        bFriendly = ((pmodel->GetSide() == GetSide()) || IsideIGC::AlliedSides(pmodel->GetSide(), GetSide())); // #ALLY IMAGO 7/8/09
 
                 switch (cid)
                 {
@@ -1817,7 +1817,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         {
                             IsideIGC*   pside = pship->GetSide();
 
-                            if (pside == psideMe)
+                            if (pside == psideMe || pside->AlliedSides(psideMe,pside)) //#ALLY - imago 7/3/09
                             {
                                 cFriend++;
                                 float d2 = (positionMe - pship->GetPosition()).LengthSquared();
@@ -1978,7 +1978,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                 case c_ptPlayer:
                 case c_ptCheatPlayer:
                 {
-                    if (psideHim == GetSide())
+                    if ((psideHim == GetSide()) || GetSide()->AlliedSides(GetSide(),psideHim)) //ALLY imago 7/9/09
                     {
                         cid = c_cidDefend;
                         if (m_pshipParent == NULL)

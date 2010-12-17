@@ -29,6 +29,7 @@ DEFINE_FEDMSG(LS, LOBBYMISSIONINFO, 301)
   FM_VAR_ITEM(szIGCStaticFile); // KGJV added
   FM_VAR_ITEM(szServerName); // KGJV #114 added
   FM_VAR_ITEM(szServerAddr); // KGJV #114 added
+  DWORD			dwPort;  //multi port/process servers Imago
   DWORD         dwCookie; // how the mission is identified on the lobby
   unsigned      dwStartTime;
   short         nMinRank;

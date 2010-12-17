@@ -80,8 +80,9 @@ inline ValueType bound(ValueType value, ValueType min, ValueType max)
     return value < min ? min : (value > max ? max : value);
 }
 
+// KG- renamed swap to Swap to avoid conflict issue with VC9SP1 and future releases
 template<class Type>
-inline void swap(Type& x, Type& y)
+inline void Swap(Type& x, Type& y)
 {
     Type temp(x);
     x = y;
@@ -110,9 +111,6 @@ inline float mod(float x, float limit)
     }
 }
 
-#ifdef DREAMCAST
-    #include "floatmathlib.h"
-#else
 // VS.Net 2003 port
 #if _MSC_VER < 1310
     inline float floor(float x)            { return floorf(x);             }
@@ -141,7 +139,6 @@ inline float mod(float x, float limit)
         ZAssert(x >= -1 && x <= 1);
         return asinf(x);
     }
-#endif
 #endif
 
 
@@ -313,14 +310,14 @@ extern float g_Inv255;
     }
 
 #else
-    __forceinline int MakeIntMacro(const float& value, const int& result)
+    __forceinline int MakeIntMacro(const float& value, int& result)
     {
         result = int(value);
     }
 
     __forceinline int MakeInt(float value)
     {
-        return int(Value);
+        return int(value);
     }
 
     __forceinline int MakeInt(double value)

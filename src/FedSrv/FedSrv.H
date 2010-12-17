@@ -35,7 +35,7 @@ HRESULT pascal FedSrv_Continue();
 const bool c_fCheatsOff = false;
 const bool c_fCheatsOn  = true;
 
-const int  c_cShipsPerSectorMax = 110;
+const int  c_cShipsPerSectorMax = 200; // w0dk4
 const int  c_cMissionsMax       = 10; // arbitrary number of how many missions there can be
 const int  c_cMemberListRelloc  = 8; // size of member reallocs, *** keep it a power of two ***
 
@@ -109,6 +109,7 @@ public:
   void CaptureStationEvent(IshipIGC* pship, IstationIGC* pstation);
   void WarpBombEvent(IwarpIGC* pwarp, ImissileIGC* pmissile);
   bool RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipRescuer);
+  void AlliedRearm(IshipIGC* pship, bool bLaunch); //imago 8/10/09 ALLY
   bool LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship, float tCollision);
   void ChangeStation(IshipIGC* pship, IstationIGC* pstationOld, IstationIGC* pstationNew);
   void * GetDroneFromShip(IshipIGC * pship);
@@ -174,11 +175,13 @@ public:
 // Also for ISQLSite
   virtual int  OnMessageBox(const char * strText, const char * strCaption, UINT nType);
 
+// KG: eventually remove this
+#ifndef ALLSRV_STANDALONE
 // ISQLSite2
   virtual void OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError);
   virtual void OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD dwHelpContext, 
                                   BSTR bstrHelpFile,    BSTR bstrSource );
-
+#endif
 //Not part of IIgcSite
   void UpgradeShip(IshipIGC*  pship, const IstationIGC* pstation);
   void UpgradeDrones(IsideIGC* pside);
@@ -245,7 +248,16 @@ struct Global
     csqlSilentThreads(0),
     csqlNotifyThreads(0),
     sql(&siteFedSrv)
-#endif    
+#endif
+	//imagos crap for multi-process servers 6/25/08
+#if defined(SRV_PARENT)
+	,
+	bRestarting(false)
+#endif
+#if defined(SRV_CHILD)
+	,
+	dwArgCookie(0)
+#endif
   {
     ZeroMemory(rgTechs, sizeof(rgTechs));
   }
@@ -260,12 +272,16 @@ struct Global
 #if !defined(ALLSRV_STANDALONE)
     strSQLConfig.Empty();
 #endif    
+#if defined(SRV_CHILD)  //imago -store command line arguments
+	strArgName.SetEmpty();
+	strArgCore.SetEmpty();
+#endif
   }
 
   SERVICE_STATUS_HANDLE ssh;
 
   HINSTANCE           hInst;
-  SWMRG               swmrg;
+  //SWMRG               swmrg; Imago removed (again)
   FedSrvSite          siteFedSrv;
   FedSrvLobbySite     siteFSLobby;
   DPID                dpidEveryone;     // People in the mission lobby and every mission
@@ -285,8 +301,9 @@ struct Global
   ZString             strArtPath;
   char                m_szToken[24]; // sizeof(_ZONETICKET_TOKEN.szToken)
   int                 nUpdatesPerSecond;
+#ifdef USEAUTH
   TRef<IZoneAuthServer> pzas;
-
+#endif
   // *** Game state stuff ***
   Time                timeNow;             // cached value (for very short duration) of timeGetTime()
 
@@ -319,6 +336,9 @@ struct Global
   int				  cMaxGames;	   // max games allowed, reg entry
   ZString			  strLocation;     // Location, reg entry
 
+  // w0dk4 Bandwidth Patch
+  unsigned int		  cMaxBandwidth;
+
   bool                fProtocol;
   bool                fPaused;
   bool                fDoublePrecision;
@@ -328,6 +348,15 @@ struct Global
   DWORD               csqlSilentThreads;
   DWORD               csqlNotifyThreads;
   CComBSTR            strSQLConfig;
+#endif
+  // more of imagos crap for one game per exe
+#if defined(SRV_CHILD)
+  ZString			strArgName;
+  ZString			strArgCore;
+  DWORD				dwArgCookie;
+#endif
+#if defined(SRV_PARENT)
+  bool				bRestarting;
 #endif
 };
 

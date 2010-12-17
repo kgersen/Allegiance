@@ -157,7 +157,8 @@ public:
 
             DDSurface* pddsurface; CastTo(pddsurface, m_psurface->GetVideoSurface());
 
-            m_pddsSample = pddsurface->GetDDSX();
+			_ASSERT( false );
+/*            m_pddsSample = pddsurface->GetDDSX();
 
             //
             // Create a ddsample from the surface
@@ -168,7 +169,7 @@ public:
                 NULL, 
                 DDSFF_PROGRESSIVERENDER, 
                 &m_psample
-            ));
+            ));*/
         }
     }
 

@@ -643,7 +643,6 @@ MultiHullBase*  HitTest::Load(const char*    pszFileName)
 
     MultiHull* pMultiHull = NULL;
 
-#ifndef DREAMCAST
     //Does the name exist in the cache?
     //It could exist but be a non-existant hull
     bool    bFound = false;
@@ -822,7 +821,6 @@ MultiHullBase*  HitTest::Load(const char*    pszFileName)
         }
     }
 
-#endif
     return pMultiHull;
 }
 
@@ -833,7 +831,6 @@ HitTest*    HitTest::Create(const char*   pszFileName,
 {
     HitTest*    pHitTest = NULL;
 
-#ifndef DREAMCAST
     if (pszFileName)
     {
         //An unsafe upcast ... but we know better.
@@ -843,7 +840,6 @@ HitTest*    HitTest::Create(const char*   pszFileName,
             pHitTest = new (pMultiHull) BoundingHull(data, staticF, pMultiHull);
         }
     }
-#endif //dreamcast
 
     if (!pHitTest)
     {

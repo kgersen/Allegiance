@@ -223,7 +223,7 @@ public:
 
     void PushFront(const TValue& value)
     {
-        PushFrontImpl(new ListNode(value, NULL, GetFirst()));
+        PushFrontImpl(new ListNode(value, NULL, GetFirst())); //Fix memory leak -Imago 8/2/09
         m_fnSink();
     }
 
@@ -235,7 +235,7 @@ public:
 
     void PushEnd(const TValue& value)
     {
-        PushEndImpl(new ListNode(value, GetLast(), NULL));
+        PushEndImpl(new ListNode(value, GetLast(), NULL)); //Fix memory leak -Imago 8/2/09
         m_fnSink();
     }
 
