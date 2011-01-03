@@ -1496,7 +1496,7 @@ public:
             }
         }
         else if (phtBase && !phtBase->HasCapability(c_habmLifepod))
-            budget = ReplaceLoadout(pshipSink, pstation, phtBase, budget, m_loadouts); //AaronMoore 1/10
+            budget = ReplaceLoadout(pshipSink, pstation, phtBase, budget, m_customLoadouts[0]); //AaronMoore 1/10 #146 Imago
         else
             budget = ReplaceLoadout(pshipSink, pstation, (CachedLoadout*)NULL, budget, m_loadouts); //AaronMoore 1/10
 
@@ -1601,7 +1601,7 @@ public:
     {
         IshipIGC*   pship = CreateEmptyShip(-3);
         assert (pship);
-        ReplaceLoadout(pship, pstation, (CachedLoadout*)NULL, GetMoney(), m_loadouts); //AaronMoore 1/10
+        ReplaceLoadout(pship, pstation, (CachedLoadout*)NULL, GetMoney(), m_customLoadouts[0]); //AaronMoore 1/10 //Imago #146
 
         BuyLoadout(pship, bLaunch);
 

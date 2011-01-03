@@ -995,8 +995,11 @@ public:
                                     if (fill > 1.0f)
                                         fill = 1.0f;
 
+									//Xynth #104 Color asteroids white/gray to match minimap
 									if (((IasteroidIGC*)pmodel)->GetAsteroidCurrentEye(psideMine))
-										color = Color::Green();
+										color = Color::White();
+									else
+										color = Color::Gray();
 
                                 }
                             }

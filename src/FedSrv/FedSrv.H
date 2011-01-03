@@ -94,6 +94,7 @@ public:
   TRef<ClusterSite>   CreateClusterSite(IclusterIGC* pCluster);
   void KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF);
   void DrainAsteroidEvent(IasteroidIGC* pasteroid);
+  void MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre);  //Xynth #132 7/2010
   void KillProbeEvent(IprobeIGC* pprobe);
   void KillMissileEvent(ImissileIGC* pmissile, const Vector& position);
   void KillTreasureEvent(ItreasureIGC* ptreasure);

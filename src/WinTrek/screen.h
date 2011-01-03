@@ -49,6 +49,7 @@ TRef<IPopup> CreateMissionParametersPopup(Modeler* pmodeler);
 extern bool g_bQuickstart;
 extern bool g_bReloaded;   // as in after AutoUpdate
 extern int  g_civStart;
+extern bool bStartTraining;
 
 extern char g_szCharName[c_cbName];
 extern char g_szCharPW[c_cbName];

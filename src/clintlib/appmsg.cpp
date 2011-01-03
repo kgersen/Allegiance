@@ -1729,6 +1729,22 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             }
         }
         break;
+		case FM_S_ASTEROID_MINED:  //Xynth #132 7/2010
+        {
+            if (!IsInGame())
+                break;
+
+            CASTPFM(pfmAD, S, ASTEROID_MINED, pfm);
+            IclusterIGC*    pcluster = m_pCoreIGC->GetCluster(pfmAD->clusterID);
+            assert (pcluster);
+            IasteroidIGC*   pasteroid = pcluster->GetAsteroid(pfmAD->asteroidID);
+            if (pasteroid)
+            {
+				pasteroid->SetOre(pfmAD->newOre);
+            }
+        }
+        break;  //End Xynth #132
+
         case FM_S_PROBE_DESTROYED:
         {
             if (!IsInGame())

@@ -1142,18 +1142,21 @@ public:
                     ct = CHAT_INDIVIDUAL;
                     pbase = trekClient.GetShip();
                     oid = NA;
+					PickShip(trekClient.GetShip()); //Imago #151
                 break;
 
                 case c_iRecipientTeam:
                     ct = CHAT_TEAM;
                     pbase = NULL;
                     oid = NA;
+					PickShip(trekClient.GetShip()); //Imago #151
                 break;
 
                 case c_iRecipientSector:
                     ct = CHAT_FRIENDLY_SECTOR;
                     pbase = NULL;
                     oid = NA;
+					PickShip(trekClient.GetShip()); //Imago #151
                 break;
 /*
                 case c_iRecipientAllies: //ALLY 7/4/09 imago NYI
@@ -1166,12 +1169,14 @@ public:
                     ct = CHAT_EVERYONE;
                     pbase = NULL;
                     oid = NA;
+					PickShip(trekClient.GetShip()); //Imago #151
                 break;
 
                 default:
                     ct = CHAT_WING;
                     pbase = NULL;
                     oid = nColumn - c_iRecipientWing0;
+					PickShip(trekClient.GetShip()); //Imago #151
             }
 
             if (m_csComposeState == c_csNotComposing)

@@ -1472,7 +1472,7 @@ public:
         trekClient.SaveLoadout(m_pship);
         
         // give it the default loadout for this hull
-        RefreshLoadout(trekClient.m_loadouts, phullType); //AaronMoore 1/10
+        RefreshLoadout(trekClient.m_customLoadouts[0], phullType); //AaronMoore 1/10 Imago #146 7/10
 
         // recalculate the mass and signature of the default loadout
         m_fSpecMass = m_pship->GetMass();
@@ -2209,7 +2209,7 @@ public:
 
     bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
     {
-        if (ks.bDown && m_pship->GetParentShip() == NULL)
+        if (ks.bDown && m_pship->GetParentShip() == NULL && !GetWindow()->GetConsoleImage()->GetConsoleData()->IsTakingKeystrokes()) //imago #118
         {
             int num = (ks.vk - 48);
 

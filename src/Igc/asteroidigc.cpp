@@ -62,6 +62,8 @@ HRESULT     CasteroidIGC::Initialize(ImissionIGC* pMission, Time now, const void
 				oreSeenBySide.Set(pside, 0.0);									
 			}
 
+			m_lastUpdateOre = 0.0;  //Xynth #132 7/2010 Should update first time this is mined
+
 #ifdef DEBUG
             {
                 //Verify that there is no pre-existing asteroid with the same ID

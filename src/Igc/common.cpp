@@ -1781,6 +1781,18 @@ bool    GotoPlan::SetControls(float  dt, bool bDodge, ControlData*  pcontrols, i
 
         IclusterIGC*    pclusterTarget = m_pship->GetMission()->GetIgcSite()->GetCluster(m_pship, m_wpTarget.m_pmodelTarget);
 
+		//Xynth #24 7/2010 Check to see if target entered our cluster 
+		if ((pclusterTarget != m_pvOldClusterTarget)  &&
+			(pclusterTarget == pcluster))
+		{
+			//If so reset the waypoint to start heading toward target
+			//instead of the aleph
+			m_wpWarp.Reset();
+            m_maskWaypoints = c_wpTarget;
+
+			m_pvOldClusterTarget = pclusterTarget;
+		}
+
         //No point in going towards a dead target or a target we can not see
         if (pclusterTarget)
         {

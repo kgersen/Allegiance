@@ -222,6 +222,12 @@ public:
                 break;
         }
         m_pbuttonTrain->SetChecked (true);
+#ifdef _DEBUG
+		if (bStartTraining) {
+			g_pnumberMissionNumber->SetValue(6);
+			OnButtonTrain();
+		}
+#endif
     }
 
     ~TrainingScreen()

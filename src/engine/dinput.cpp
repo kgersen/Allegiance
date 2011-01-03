@@ -288,7 +288,7 @@ public:
         m_acceleration = pvalue[2];
         m_sensitivity  = 1.0f;
 
-        /* !!! this only works on NT50
+        ///* !!! this only works on NT50
         int speed;
         ZVerify(SystemParametersInfo(SPI_GETMOUSESPEED, 0, &speed, 0));
 
@@ -299,7 +299,7 @@ public:
         } else {
            m_sensitivity = float(speed-6) / 4.0f;
         }
-        */
+        
     }
 
     void SetupDevice() 
@@ -713,8 +713,8 @@ public:
                 index = 0;                           
             } else if (pddoi->guidType == GUID_YAxis ) {
                 index = 1;
-            } else if (pddoi->guidType == GUID_Slider && 
-				pddoi->wUsage != 0x0037) { //Imago 8/12/09 fixes "buged" Saitek X45 Flight Control Stick driver
+            } else if ( (pddoi->guidType == GUID_Slider && pddoi->wUsage != 0x0037)  //Imago 8/12/09 fixes "buged" Saitek X45 Flight Control Stick driver
+				|| pddoi->guidType == GUID_ZAxis ) { //Imago 7/10
                 index = 2;
             } else if (pddoi->guidType == GUID_RzAxis) {
                 index = 3;
@@ -775,7 +775,7 @@ public:
 	JoystickInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd, CLogFile * pLogFile) :		// kg: DInput8  Imago 8/12/09
         m_pdid(pdid),
         m_bFocus(false),
-        m_vvalueObject(12), //imago 12/03/09, was 5
+        m_vvalueObject(20), //imago 12/03/09, was 5
 		m_pLogFile(pLogFile)
     {
         DDCall(m_pdid->GetCapabilities(&m_didc));

@@ -24,6 +24,7 @@ public:
     virtual void        PickCluster(IclusterIGC* pcluster, int button) = 0;
     virtual void        PickShip(IshipIGC* pship) = 0;
     virtual bool        IsComposingCommand() = 0;
+	virtual bool        IsTakingKeystrokes() = 0;
     virtual IbaseIGC*   GetPickedObject (void) = 0;
     //virtual void PickModel(ImodelIGC* pmodel, int button) = 0;
 };

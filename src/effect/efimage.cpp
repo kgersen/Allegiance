@@ -8,8 +8,8 @@
 
 class JoystickImageImpl : public JoystickImage {
 private:
-    TArray<TRef<ModifiableNumber> , 3> m_ppnumber; //imago increased 8/12/09
-    TArray<TRef<ModifiableBoolean>, 10> m_ppboolButton; //imago increased 8/12/09
+    TArray<TRef<ModifiableNumber> , 20> m_ppnumber; //imago increased 8/12/09, again 7/10
+    TArray<TRef<ModifiableBoolean>, 20> m_ppboolButton; //imago increased 8/12/09, again 7/10
     bool                               m_bJoystickEnabled;
     bool                               m_bButtonsEnabled;
     bool                               m_bJustEnabled;
@@ -22,9 +22,11 @@ public:
         m_bButtonsEnabled(false),
         m_bJustEnabled(false)
     {
-        m_ppnumber[0] = new ModifiableNumber(0);
-        m_ppnumber[1] = new ModifiableNumber(0);
-        m_ppnumber[2] = new ModifiableNumber(0);
+
+		//Imago 7/10
+        for (int index = 0; index < m_ppboolButton.GetCount(); index++) {
+            m_ppnumber[index] = new ModifiableNumber(false);
+        }
 
         for (int index = 0; index < m_ppboolButton.GetCount(); index++) {
             m_ppboolButton[index] = new ModifiableBoolean(false);
@@ -201,7 +203,7 @@ public:
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
         if (m_bButtonsEnabled) {
-            if (button <= 10) { //was 3 Imago 8/13/09
+            if (button <= 20) { //was 3 Imago 8/13/09, 7/10
                 m_ppboolButton[button]->SetValue(bDown);
             }
         }

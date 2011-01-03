@@ -1334,7 +1334,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   if( m_pDirectPlayServer == 0 )
   {
     hr = InitDPlayServer();
-	ZDebugOutput("InitDPlayServer() returned "+ZString(hr)+"\n");
+	ZDebugOutput(PCC(ZString("InitDPlayServer() returned ")+ZString(hr)+ZString("\n")));
     if ( FAILED(hr) )
       return hr;
   }
@@ -1360,7 +1360,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
    ZDebugOutput("pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP )\n");
   if( FAILED( hr = pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) ) )
   {
-	ZDebugOutput("pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) returned "+ZString(hr)+"\n");
+	ZDebugOutput(PCC(ZString("pDP8AddressLocal->SetSP( &CLSID_DP8SP_TCPIP ) returned ")+ZString(hr)+ZString("\n")));
     m_pfmSite->OnMessageBox( this, "Failed to create DPlay server local SP", "Allegiance", MB_OK );
     return hr;
   }
@@ -1369,7 +1369,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
 	  ZDebugOutput("pDP8AddressLocal->AddComponent(DPNA_KEY_PORT ... )\n");
 	  if(FAILED(hr = pDP8AddressLocal->AddComponent(DPNA_KEY_PORT, &dwPort, sizeof(DWORD), DPNA_DATATYPE_DWORD)))
 		{
-			ZDebugOutput("Failed to set DPlay server port - returned "+ZString(hr)+"\n");
+			ZDebugOutput(PCC(ZString("Failed to set DPlay server port - returned ")+ZString(hr)+ZString("\n")));
 		    m_pfmSite->OnMessageBox( this, "Failed to set DPlay server port", "Allegiance", MB_OK );
 		    return hr;
 		}
@@ -1385,7 +1385,7 @@ HRESULT FedMessaging::HostSession( GUID guidApplication, bool fKeepAlive, HANDLE
   // Set host player context to non-NULL so we can determine which player indication is
   // the host's.
   hr = m_pDirectPlayServer->Host( &dpnAppDesc, &pDP8AddressLocal, 1, NULL, NULL, (void *) 1, 0  );
-  ZDebugOutput(" m_pDirectPlayServer->Host( &dpnAppDesc ... ) - returned "+ZString(hr)+"\n");
+  ZDebugOutput(PCC(ZString("m_pDirectPlayServer->Host( &dpnAppDesc ... ) - returned ")+ZString(hr)+ZString("\n")));
   m_guidApplication = guidApplication;
 
   m_fConnected = true;

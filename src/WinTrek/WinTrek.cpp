@@ -151,6 +151,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	PlayVideoInfo * pData = (PlayVideoInfo*)param;
 	DDVideo *DDVid = new DDVideo();
 	bool bOk = true;
+	bool bHide = false;
 	HWND hwndFound = NULL;
 	if (pData->bWindowed) {
 		hwndFound=FindWindow(NULL, "Allegiance");
@@ -159,6 +160,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 		hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
 			GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
 			::GetModuleHandle(NULL), NULL);
+		bHide = true;
 	}
 	
 	DDVid->m_hWnd = hwndFound;	
@@ -190,7 +192,10 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	}
 
 	delete pData;
-	::DestroyWindow(hwndFound);
+
+	if (bHide)
+		::DestroyWindow(hwndFound);
+
 	return 0;
 }
 //
@@ -2302,24 +2307,13 @@ public:
 							//dont' check for intro.avi, 
 							// let the screen flash so they at least know this works
 							DDVideo *DDVid = new DDVideo();
-							bool bHide = false;
-
-							HWND hWND = NULL;
 							if (m_pengine->IsFullscreen()) {
-								bHide = true;
-								::ShowWindow(GetHWND(),SW_HIDE);
-								//this window will have our "intro" in it...
-								hWND = ::CreateWindow("MS_Zlib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
-									GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
-									::GetModuleHandle(NULL), NULL);
-							} else {
-								hWND = GetHWND();
+								CD3DDevice9::Get()->ResetDevice(true,0,0,0);
 							}
-
-							DDVid->m_hWnd = hWND;
+							DDVid->m_hWnd =  GetHWND();
 							bool bOk = true;
 							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
-							if(SUCCEEDED(DDVid->Play(pathStr,!m_pengine->IsFullscreen()))) //(Type WMV2 is good as most systems will play it)
+							if(SUCCEEDED(DDVid->Play(pathStr,!m_pengine->IsFullscreen()))) //(Type WMV2 is good as most systems will play it)  
 							{ 
 								GetAsyncKeyState(VK_LBUTTON); GetAsyncKeyState(VK_RBUTTON);
 								::ShowCursor(FALSE);
@@ -2345,9 +2339,8 @@ public:
 								DDVid->DestroyDirectDraw();
 							}
 
-							if (bHide) {
-								::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
-								::DestroyWindow(hWND);
+							if (m_pengine->IsFullscreen()) {
+								CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
@@ -2644,7 +2637,6 @@ public:
 			if (bWMP) {
 				if (!CD3DDevice9::Get()->IsWindowed()) {
 					::ShowWindow(GetHWND(),SW_HIDE);
-					::ShowCursor(FALSE);
 				}
 
 				//#112 windowed 7/10 Imago
@@ -2822,15 +2814,13 @@ public:
         //
 
         InitializeImages();
-
+		
 		if (hDDVidThread != NULL) { //imago 7/29/09 intro.avi
-			if (CD3DDevice9::Get()->IsWindowed()) {
-				CD3DDevice9::Get()->ResetDevice(true,800,600,0);
-			} else {
+			if (!CD3DDevice9::Get()->IsWindowed()) {
 				CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
 			}
 		}
-
+		
 
         //
         // initialize the sound engine (for the intro music if nothing else)
@@ -3201,17 +3191,14 @@ public:
         // intro.avi video moved up
         //
 		TRef<Screen> introscr = CreateIntroScreen(GetModeler());
-    	if (hDDVidThread != NULL) {
-			WaitForSingleObject(hDDVidThread,INFINITE);
-			if (!CD3DDevice9::Get()->IsWindowed()) {
-				::ShowCursor(TRUE);
-				::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
-			}
-			CloseHandle(hDDVidThread);
-		}    
 		SetScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
+    	if (hDDVidThread != NULL) {
+			WaitForSingleObject(hDDVidThread,INFINITE);
+			::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
+			CloseHandle(hDDVidThread);
+		}    
     }
 
     void InitializeImages()

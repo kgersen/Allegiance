@@ -1,0 +1,2 @@
+use "model";
+teamwhitebmp = ImportImageFromFile("teamwhite.png", true);

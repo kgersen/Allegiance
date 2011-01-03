@@ -1012,6 +1012,12 @@ DEFINE_FEDMSG(S, CHANGE_ALLIANCES, 197) // sent by server when alliances change
 END_FEDMSG
 // end #ALLY
 
+DEFINE_FEDMSG(S, ASTEROID_MINED, 198)  //Xynth #132 7/2010 sent by server when an He3 rock is mined
+    SectorID            clusterID;
+    AsteroidID          asteroidID;
+	float               newOre;
+END_FEDMSG
+
 #endif // _MESSAGES_ 
 
 

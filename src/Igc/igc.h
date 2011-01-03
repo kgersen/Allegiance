@@ -4710,6 +4710,7 @@ class IIgcSite : public IObject
         virtual void TerminateMissionEvent(ImissionIGC* pMission){}
         virtual void KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF) {}
         virtual void DrainAsteroidEvent(IasteroidIGC* pasteroid) {}
+		virtual void MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre) {}  //Xynth #132 7/2010
         virtual void KillProbeEvent(IprobeIGC* pprobe) {}
         virtual void KillMissileEvent(ImissileIGC* pmissile, const Vector& position) {}
         virtual void KillBuildingEffectEvent(IbuildingEffectIGC* pbe) {}

@@ -454,6 +454,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
+
     __try { 
         do {
             #ifdef SRVLOG

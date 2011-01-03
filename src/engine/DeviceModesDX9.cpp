@@ -348,9 +348,10 @@ void CD3DDeviceModeData::GetResolutionStringByIndex( int iDeviceIndex, int iReso
 		iResolutionIndex -= m_pAdapterArray[ iDeviceIndex ].pModeCount[i];
 		i++;
 	}
-	_ASSERT( i < eDMD_NumModes );
-	_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
-
+	//_ASSERT( i < eDMD_NumModes );
+	//_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
+	if (iResolutionIndex == 0)
+		return; //for now Imago 7/10
 	pDisplayMode = &m_pAdapterArray[ iDeviceIndex ].ppAvailableModes[ i ][ iResolutionIndex ].mode;
 	sprintf_s( pBuffer, iBufferLen, "%d x %d @ %dHz [%d bit]", 
 				pDisplayMode->Width, 
@@ -379,8 +380,12 @@ int CD3DDeviceModeData::GetNumAASettings( int iDeviceIndex, int iResolutionIndex
 		iResolutionIndex -= m_pAdapterArray[ iDeviceIndex ].pModeCount[i];
 		i++;
 	}
-	_ASSERT( i < eDMD_NumModes );
-	_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
+	//_ASSERT( i < eDMD_NumModes );
+	//_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
+	//for now Imago 7/10
+	if (iResolutionIndex == 0) {
+		return 0;
+	}
 
 	if( bWindowed == true )
 	{
@@ -399,7 +404,8 @@ int CD3DDeviceModeData::GetNumAASettings( int iDeviceIndex, int iResolutionIndex
 			iAACount ++;
 		}
 	}
-	_ASSERT( iAACount > 0 );	//Should at least have 'none' as an option.
+	//_ASSERT( iAACount > 0 );	//Should at least have 'none' as an option.
+	//ok Imago 7/10
 	return iAACount;
 }
 
@@ -428,8 +434,10 @@ void CD3DDeviceModeData::GetAASettingString(	int iDeviceIndex,
 		iResolutionIndex -= m_pAdapterArray[ iDeviceIndex ].pModeCount[i];
 		i++;
 	}
-	_ASSERT( i < eDMD_NumModes );
-	_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
+	//_ASSERT( i < eDMD_NumModes );
+	//_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
+	if (iResolutionIndex == 0)
+		return; //for now Imago 7/10
 
 	if( bWindowed == true )
 	{
@@ -623,6 +631,13 @@ void CD3DDeviceModeData::GetRelatedResolutions(	int iDeviceIndex,
 			*pSelectedResolution = i;
 			break;
 		}
+	}
+	//try this hack Imago 7/10
+	if ( *pSelectedResolution == -1) {
+		ppResolutionArray[0]->iFreq = 60;
+		ppResolutionArray[0]->iWidth = 800;
+		ppResolutionArray[0]->iHeight = 600;
+		*pSelectedResolution = 1;
 	}
 	_ASSERT( *pSelectedResolution != -1 );
 }
@@ -902,7 +917,8 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 {
 	_ASSERT( pParams != NULL );
 	_ASSERT( iDeviceIndex < m_iAdapterCount );
-	_ASSERT( iResolutionIndex < m_pAdapterArray[iDeviceIndex].iTotalModeCount );
+	//not so picky for now Imago 7/10
+	//_ASSERT( iResolutionIndex < m_pAdapterArray[iDeviceIndex].iTotalModeCount );
 	_ASSERT( iAAIndex < eDMD_NumAAFormats );
 
 	SAdapterMode * pMode, * pWindowedMode;
@@ -917,13 +933,20 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 		iModeCounter -= m_pAdapterArray[ iDeviceIndex ].pModeCount[i];
 		i ++;
 	}
-
-	_ASSERT( i < eDMD_NumModes );
+//dont sweat it for now Imago 7/10
+//	_ASSERT( i < eDMD_NumModes );
 	if( ( i >= eDMD_NumModes ) ||
 		( iModeCounter >= m_pAdapterArray[iDeviceIndex].pModeCount[i] ) )
 	{
 		// Ended up with dodgy index values.
-		return false;
+		// Prepare the full screen mode first.
+		pParams->bWindowModeValid				= true;
+		pParams->sFullScreenMode.mode.Format		= D3DFMT_R5G6B5;
+		pParams->sFullScreenMode.mode.Width			= 800;
+		pParams->sFullScreenMode.mode.Height		= 600;
+		pParams->sFullScreenMode.mode.RefreshRate	= 60;
+		pParams->sFullScreenMode.fmtDepthStencil	= D3DFMT_UNKNOWN;
+		return true;
 	}
 	
 	// Prepare the full screen mode first.
