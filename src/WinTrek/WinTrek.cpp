@@ -3196,7 +3196,8 @@ public:
         RestoreCursor();
     	if (hDDVidThread != NULL) {
 			WaitForSingleObject(hDDVidThread,INFINITE);
-			::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
+			if (!CD3DDevice9::Get()->IsWindowed()) 
+				::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
 			CloseHandle(hDDVidThread);
 		}    
     }

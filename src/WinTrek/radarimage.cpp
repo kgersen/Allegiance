@@ -949,6 +949,8 @@ public:
                         pszName = GetModelName(pmodel);
                     }
 
+					bool highlightCaption = false;
+
                     if (bStats)
                     {
                         switch(type)
@@ -963,14 +965,18 @@ public:
                                 // the information. We would have to add a new message type
                                 // for that to happen, so for now I'm just commenting it out and
                                 // moving on.
-                                /*
-                                if (pship->GetPilotType () == c_ptMiner)
+                                //Xynth #156 7/2010 Uncomment and add condition for only own team to see
+								if ((pship->GetPilotType () == c_ptMiner) && (pship->GetSide() == psideMine))
                                 {
                                     fill = pship->GetOre () / capacity;
                                     if (fill > 1.0f)
                                         fill = 1.0f;
                                 }
-                                */
+
+								//Xynth #47 7/2010
+								if (((pship->GetStateM() & droneRipMaskIGC) != 0) && (pship->GetSide() == psideMine))
+									highlightCaption = true;
+                                
                             }
                             break;
 
@@ -1024,7 +1030,13 @@ public:
                     // Draw the Blip
                     //
 
-                    Color   colorOther(color);
+					//Xynth #47 7/2010
+					Color   colorOther;
+					if (highlightCaption)
+						colorOther = Color::Green();
+					else
+						colorOther = color;
+
                     if ((maskBrackets & (c_maskTarget | c_maskAccepted | c_maskThreat | c_maskHighlight | c_maskFlag | c_maskArtifact)) == 0)
                         colorOther = (maskBrackets & c_maskQueued)
                                      ? (colorOther * 0.75f)

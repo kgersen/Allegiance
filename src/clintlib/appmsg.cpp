@@ -1740,7 +1740,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             IasteroidIGC*   pasteroid = pcluster->GetAsteroid(pfmAD->asteroidID);
             if (pasteroid)
             {
-				pasteroid->SetOre(pfmAD->newOre);
+				pasteroid->SetOreWithFraction(pfmAD->bpOreFraction);  //Xynth #163 7/2010
             }
         }
         break;  //End Xynth #132

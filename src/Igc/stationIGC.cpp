@@ -273,7 +273,6 @@ void                CstationIGC::SetBaseStationType(IstationTypeIGC*    pst)
 void                CstationIGC::AddShip(IshipIGC*    pship)
 {
     AddIbaseIGC((BaseListIGC*)&m_shipsDocked, pship);
-	pship->SetLastTimeDocked(Time::Now());
     //At a station implies not in a cluster
     pship->SetCluster(NULL);
 }

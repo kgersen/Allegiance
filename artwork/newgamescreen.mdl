@@ -1,0 +1,531 @@
+use "gamepanes";
+use "font";
+use "skilllevels";
+use "newgamescreendata";
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// New Game Screen
+//
+/////////////////////////////////////////////////////////////////////////////
+
+//
+// Title Text  - Imago 7/8/09 fixed typo in SELECT, 7/10 fixed typo in GAME SETTINGS
+//
+
+yellowText          = Color(0.878, 0.573, 0);
+whiteText           = Color(1, 1, 1);
+titlePane           = StringPane("GAME SETTINGS", yellowText,  Point(250, 30), JustifyLeft, titleFont);
+captionPane         = StringPane("SELECT OR REVIEW THE CURRENT GAME SETTINGS", whiteText, Point(800, 30), JustifyLeft, promptFont);
+
+
+//
+// Hover info
+//
+
+hoverSite = HoverSite(0);
+
+//
+// Normal buttons
+//
+
+cancelButtonPane   = SoundButtonPane(ImportImage("btncancelchangesbmp",   true), ButtonNormal, false, negativeButtonClickSoundId);
+backButtonPane  = SoundButtonPane(ImportImage("btnbackbmp",   true), ButtonNormal, false, negativeButtonClickSoundId);
+createButtonPane = ButtonPane(ImportImage("btncreatebmp", false), ButtonNormal, false);
+
+//
+// Edit controls
+//
+
+gameNameEditPane   = EditPane(Point(268, 12), smallFont);
+gamePasswordEditPane   = EditPane(Point(128, 12), smallFont);
+
+//
+// Check boxes
+//
+
+checkImage = ImportImage("btncheckbmp", true);
+
+xcheck = 162;
+ycheck = 12;
+
+statsCountImage = ImportImageFromFile("checkstatscount.png", true);
+statsCountCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+statsCountPane = 
+    ImagePane(statsCountImage, [(statsCountCheckboxPane, Point(xcheck, ycheck))]);
+
+defectionsImage = ImportImageFromFile("checkallowdefections.png",true);
+defectionsCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+defectionsPane = 
+    ImagePane(defectionsImage, [(defectionsCheckboxPane, Point(xcheck, ycheck))]);
+
+joinersImage = ImportImageFromFile("checkallowjoiners.png", true);
+joinersCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+joinersPane = 
+    ImagePane(joinersImage, [(joinersCheckboxPane, Point(xcheck, ycheck))]);
+
+squadGameImage = ImportImageFromFile("checksquadgame.png", true);
+squadGameCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+squadGamePane = 
+    ImagePane(squadGameImage, [(squadGameCheckboxPane, Point(xcheck, ycheck))]);
+
+ejectPodsImage = ImportImageFromFile("checkejectpods.png", true);
+ejectPodsCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+ejectPodsPane = 
+    ImagePane(ejectPodsImage, [(ejectPodsCheckboxPane, Point(xcheck, ycheck))]);
+
+friendlyFireImage = ImportImageFromFile("checkallowfriendlyfire.png", true);
+friendlyFireCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+friendlyFirePane = 
+    ImagePane(friendlyFireImage, [(friendlyFireCheckboxPane, Point(xcheck, ycheck))]);
+
+invulnerableStationsImage = ImportImageFromFile("checkinvulnerblestations.png", true);
+invulnerableStationsCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+invulnerableStationsPane = 
+    ImagePane(invulnerableStationsImage, [(invulnerableStationsCheckboxPane, Point(xcheck, ycheck))]);
+
+developmentImage = ImportImageFromFile("checkdevelopment.png", true);
+developmentCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+developmentPane = 
+    ImagePane(developmentImage, [(developmentCheckboxPane, Point(xcheck, ycheck))]);
+
+allowShipyardsImage = ImportImageFromFile("checkallowshipyards.png", true);
+allowShipyardsCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+allowShipyardsPane = 
+    ImagePane(allowShipyardsImage, [(allowShipyardsCheckboxPane, Point(xcheck, ycheck))]);
+
+showMapImage = ImportImageFromFile("checkrevealmap.png", true);
+showMapCheckboxPane           = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+showMapPane = 
+    ImagePane(showMapImage, [(showMapCheckboxPane, Point(xcheck, ycheck))]);
+
+// new stuff R4
+//
+allowTacticalImage = ImportImageFromFile("checkallowtactical.png", true);
+allowTacticalCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+allowTacticalPane = 
+    ImagePane(allowTacticalImage, [(allowTacticalCheckboxPane, Point(xcheck, ycheck))]);
+    
+allowExpansionImage = ImportImageFromFile("checkallowexpansion.png", true);
+allowExpansionCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+allowExpansionPane = 
+    ImagePane(allowExpansionImage, [(allowExpansionCheckboxPane, Point(xcheck, ycheck))]);
+    
+allowSupremacyImage = ImportImageFromFile("checkallowsupremacy.png", true);
+allowSupremacyCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+allowSupremacyPane = 
+    ImagePane(allowSupremacyImage, [(allowSupremacyCheckboxPane, Point(xcheck, ycheck))]);
+    
+allowAlliedRipImage = ImportImageFromFile("checkallowrip24.png", true);
+allowAlliedRipCheckboxPane = ButtonPane(checkImage, ButtonNormalCheckBox, true);
+allowAlliedRipPane = 
+    ImagePane(allowAlliedRipImage, [(allowAlliedRipCheckboxPane, Point(xcheck, ycheck))]);        
+
+//
+// Countdown timer
+//
+TextColor       = Color(1, 1, 1);
+textCountdown   = StringPane("", TextColor, Point(90, 30), JustifyRight, titleFont);
+
+//
+// Combo boxes
+//
+
+xsize = 100;
+ysize = 20;
+size = Point(xsize, ysize);
+
+xcombo = 100;
+ycombo = 17;
+xcombo2 = 97;
+ycombo2 = 26;
+
+
+teamCountImage = ImportImageFromFile("combonumberofteams.png", true);
+teamCountComboPane           = StringComboPane(size, size, smallFont, TextColor);
+teamCountPane = 
+    ImagePane(teamCountImage, [(teamCountComboPane, Point(xcombo, ycombo))]);
+
+maxPlayersComboImage = ImportImageFromFile("comboplayersperteam.png", true);
+maxPlayersComboPane           = StringComboPane(size, size, smallFont, TextColor);
+maxPlayersCombo = 
+    ImagePane(maxPlayersComboImage, [(maxPlayersComboPane, Point(xcombo, ycombo))]);
+maxPlayersStringImage = ImportImageFromFile("comboplayersperteam.png", true);
+maxPlayersStringPane           = StringPane("", TextColor, size, JustifyLeft, smallFont);
+maxPlayersString = 
+    ImagePane(maxPlayersStringImage, [(maxPlayersStringPane, Point(xcombo, ycombo))]);
+maxPlayersPane = SwitchPane(CanChooseMaxPlayers, [(maxPlayersCombo, 1), (maxPlayersString, 0)]);
+/*
+minPlayersStringImage = ImportImage("stringminplayersbmp", true);
+minPlayersStringPane           = StringPane("", TextColor, size, JustifyLeft, smallFont);
+minPlayersPane = 
+    ImagePane(minPlayersStringImage, [(minPlayersStringPane, Point(xcombo, ycombo))]);
+*/
+maxImbalanceImage = ImportImageFromFile("combomaximbalance.png", true);
+maxImbalanceComboPane           = StringComboPane(size, size, smallFont, TextColor);
+maxImbalancePane = 
+    ImagePane(maxImbalanceImage, [(maxImbalanceComboPane, Point(xcombo, ycombo))]);
+
+connectivityImage = ImportImageFromFile("combomapconnectivity.png", true);
+connectivityComboPane           = StringComboPane(size, size, smallFont, TextColor);
+connectivityPane = 
+    ImagePane(connectivityImage, [(connectivityComboPane, Point(xcombo, ycombo))]);
+
+skillLevelImage = ImportImageFromFile("comboskilllevels.png", true);
+skillLevelComboPane           = StringComboPane(size, size, smallFont, TextColor);
+skillLevelPane = 
+    ImagePane(skillLevelImage, [(skillLevelComboPane, Point(xcombo, ycombo))]);
+
+livesImage = ImportImageFromFile("comboteamlives.png", true);
+livesComboPane           = StringComboPane(size, size, smallFont, TextColor);
+livesPane = 
+    ImagePane(livesImage, [(livesComboPane, Point(xcombo, ycombo))]);
+
+startingMoneyImage = ImportImageFromFile("combostartingmoney.png", true);
+startingMoneyComboPane           = StringComboPane(size, size, smallFont, TextColor);
+startingMoneyPane = 
+    ImagePane(startingMoneyImage, [(startingMoneyComboPane, Point(xcombo, ycombo))]);
+
+totalMoneyImage = ImportImageFromFile("combototalmoney.png", true);
+totalMoneyComboPane           = StringComboPane(size, size, smallFont, TextColor);
+totalMoneyPane = 
+    ImagePane(totalMoneyImage, [(totalMoneyComboPane, Point(xcombo, ycombo))]);
+
+resourcesImage = ImportImageFromFile("comboresources.png", true);
+resourcesComboPane           = StringComboPane(size, size, smallFont, TextColor);
+resourcesPane = 
+    ImagePane(resourcesImage, [(resourcesComboPane, Point(xcombo, ycombo))]);
+
+mapTypeImage = ImportImageFromFile("combomaptype.png", true);
+mapTypeComboPane           = StringComboPane(size, size, smallFont, TextColor);
+mapTypeCombo = 
+    ImagePane(mapTypeImage, [(mapTypeComboPane, Point(xcombo, ycombo))]);
+mapTypeStringImage = ImportImageFromFile("combomaptype.png", true);
+mapTypeStringPane           = StringPane("custom", TextColor, size, JustifyLeft, smallFont);
+mapTypeString = 
+    ImagePane(mapTypeStringImage, [(mapTypeStringPane, Point(xcombo, ycombo))]);
+mapTypePane = SwitchPane(IsCustomMap, [(mapTypeCombo, 0), (mapTypeString, 1)]);
+
+
+gameTypeImage = ImportImageFromFile("combogametype.png", true);
+gameTypeComboPane           = StringComboPane(size, size, smallFont, TextColor);
+gameTypePane = 
+    ImagePane(gameTypeImage, [(gameTypeComboPane, Point(xcombo2, ycombo2))]);
+
+conquestBasesImage = ImportImage("comboconquestbmp", true);
+conquestBasesComboPane           = StringComboPane(size, size, smallFont, TextColor);
+conquestBasesPane = 
+    ImagePane(conquestBasesImage, [(conquestBasesComboPane, Point(xcombo2, ycombo2))]);
+
+territoryImage = ImportImage("comboterritorialbmp", true);
+territoryComboPane           = StringComboPane(size, size, smallFont, TextColor);
+territoryPane = 
+    ImagePane(territoryImage, [(territoryComboPane, Point(xcombo2, ycombo2))]);
+
+prosperityImage = ImportImage("comboprosperitybmp", true);
+prosperityComboPane           = StringComboPane(size, size, smallFont, TextColor);
+prosperityPane = 
+    ImagePane(prosperityImage, [(prosperityComboPane, Point(xcombo2, ycombo2))]);
+
+artifactCountImage = ImportImage("comboartifactcountbmp", true);
+artifactCountComboPane           = StringComboPane(size, size, smallFont, TextColor);
+artifactCountPane = 
+    ImagePane(artifactCountImage, [(artifactCountComboPane, Point(xcombo2, ycombo2))]);
+
+flagCountImage = ImportImage("comboflagcountbmp", true);
+flagCountComboPane           = StringComboPane(size, size, smallFont, TextColor);
+flagCountPane = 
+    ImagePane(flagCountImage, [(flagCountComboPane, Point(xcombo2, ycombo2))]);
+
+deathWatchKillsImage = ImportImage("combodeathwatchkillsbmp", true);
+deathWatchKillsComboPane           = StringComboPane(size, size, smallFont, TextColor);
+deathWatchKillsPane = 
+    ImagePane(deathWatchKillsImage, [(deathWatchKillsComboPane, Point(xcombo2, ycombo2))]);
+
+countdownTimeImage = ImportImage("combocountdowntimebmp", true);
+countdownTimeComboPane           = StringComboPane(size, size, smallFont, TextColor);
+countdownTimePane = 
+    ImagePane(countdownTimeImage, [(countdownTimeComboPane, Point(xcombo2, ycombo2))]);
+
+// new in R4
+treasuresImage = ImportImageFromFile("combotreasures.png", true);
+treasuresComboPane           = StringComboPane(size, size, smallFont, TextColor);
+treasuresPane = 
+    ImagePane(treasuresImage, [(treasuresComboPane, Point(xcombo, ycombo))]);
+
+mapSizeImage = ImportImageFromFile("combomapsize.png", true);
+mapSizeComboPane           = StringComboPane(size, size, smallFont, TextColor);
+mapSizePane = 
+    ImagePane(mapSizeImage, [(mapSizeComboPane, Point(xcombo, ycombo))]);
+
+initialMinersCountImage = ImportImageFromFile("comboinitialminerscount.png", true);
+initialMinersCountComboPane           = StringComboPane(size, size, smallFont, TextColor);
+initialMinersCountPane = 
+    ImagePane(initialMinersCountImage, [(initialMinersCountComboPane, Point(xcombo, ycombo))]);
+
+maxMinersCountImage = ImportImageFromFile("combomaxminerscount.png", true);
+maxMinersCountComboPane           = StringComboPane(size, size, smallFont, TextColor);
+maxMinersCountPane = 
+    ImagePane(maxMinersCountImage, [(maxMinersCountComboPane, Point(xcombo, ycombo))]);
+    
+    
+asteriodsImage = ImportImageFromFile("comboasteriods.png", true);
+asteriodsComboPane           = StringComboPane(size, size, smallFont, TextColor);
+asteriodsPane = 
+    ImagePane(asteriodsImage, [(asteriodsComboPane, Point(xcombo, ycombo))]);    
+
+//
+// combobox contents and mappings to real values
+//
+
+// teamCount
+TeamCountNames = ["2", "3", "4", "5", "6"];
+TeamCountValues = [2, 3, 4, 5, 6];
+
+// maxPlayers
+// R4 changed - keep matching values or client will crash - MaxPerTeam cant go above 100
+MaxPlayersNames = ["1 - 100","10 - 100","30 - 100"];
+MaxPlayersValues = [100, 100, 100];
+MinPlayersValues = [1,   10,  30];
+
+// maxImbalance
+MaxImbalanceNames = ["1", "2", "Auto", "N/A"];
+MaxImbalanceValues = [1,   2, 32766, 32767];
+
+// skill level
+GameSkillLevelNames = SkillLevelNames;
+GameSkillLevelMin = SkillLevelMin;
+GameSkillLevelMax = SkillLevelMax;
+
+// map type
+MapTypeNames = ["Single Ring", "Double Ring", "Pinwheel", "Diamond Ring", "Snowflake", "Split Bases", "Brawl", "Big Ring", "HiLo", "HiHigher", "Star", "InsideOut", "Grid", "EastWest", "LargeSplit"];
+MapTypeValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+
+// connectivity
+ConnectivityNames = ["low", "medium", "high"];
+ConnectivityValues = [7, 2, 0];
+
+// lives
+LivesNames = ["Unlimited", "1", "2", "3", "4", "5", "10"];
+LivesValues = [32767, 0, 1, 2, 3, 4, 9];   //0x7fff == unlimited lives, otherwise == number of deaths before no regeneration
+
+// resources
+ResourcesNames = ["Very Scarce", "Scarce", "Scarce+", "Normal", "N:NoHomeS", "Equal", "Plentiful", "P:NoHomeS"];
+ResourcesNeutralMinable = [2, 2, 2, 4, 4, 2, 4, 4];
+ResourcesPlayerMinable =  [0, 1, 2, 2, 2, 2, 2, 2];
+ResourcesNeutralSpecial = [1, 1, 1, 1, 1, 2, 2, 2];
+ResourcesPlayerSpecial =  [0, 1, 2, 1, 0, 0, 1, 0];
+
+// total money
+TotalMoneyNames = ["Low 0.75", "Med Low 0.85", "Med 1.0", "Med High 1.15", "High 1.25", "Higher 1.35", "Highest 1.5", "BigGame 2.5"];
+TotalMoneyValues = [0.75, 0.85, 1.0, 1.15, 1.25, 1.35, 1.5, 2.5];
+
+// starting money
+StartingMoneyNames = ["Low 0.75", "Med 1.0", "High 1.25", "V. High 1.5",  "Rib 1.65", "Sol 1.75", "Outrageous 9"];
+StartingMoneyValues = [0.75, 1.0, 1.25, 1.5, 1.65, 1.75, 9];
+
+// countdown time
+CountdownTimeNames = ["N/A", "10 min.", "20 min.", "30 min.", "1 hour", "2 hours", "3 hours", "4 hours", "5 hours", "6 hours"];
+CountdownTimeValues = [0, 10, 20, 30, 60, 120, 180, 240, 300, 360];
+
+// kills
+DeathWatchKillsNames = ["N/A", "5", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"];
+DeathWatchKillsValues = [0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+// prosperity target
+ProsperityTargetNames = ["N/A", "Low", "Medium", "High"];
+ProsperityTargetValues = [0.0, 0.5, 0.75, 1.0];
+
+// artifacts to win
+ArtifactCountNames = ["N/A", "5", "10", "25"];
+ArtifactCountValues = [0, 5, 10, 25];
+
+// flags to win
+FlagCountNames = ["N/A", "5", "10", "25"];
+FlagCountValues = [0, 5, 10, 25];
+
+// conquest
+ConquestPercentNames = ["N/A", "80%", "90%", "100%"];
+ConquestPercentValues = [0, 80, 90, 100];
+
+// territorial
+TerritoryNames = ["N/A", "90%", "80%"];
+TerritoryValues = [100, 90, 80];
+
+// new in R4
+
+// treasures
+TreasuresNames = ["None","Normal","High"];
+TreasureHomeValues        = [0,0,1];
+TreasureNeutralValues     = [0,5,10];
+TreasureRateHomeValues    = [0,0.2,0.4]; // per minute rate
+TreasureRateNeutralValues = [0,0.5,0.5999]; // per minute rate - max must be strictly < 0.6
+
+MapSizeNames = ["Small","Large"];
+MapSizeValues = [0,1];
+
+initialMinersNames = ["0","1","2","3","4","5","6","7","8","9","10"];
+initialMinersValues = [0,1,2,3,4,5,6,7,8,9,10];
+
+maxMinersNames = ["0","1","2","3","4","5","6","7","8","9","10"];
+maxMinersValues = [0,1,2,3,4,5,6,7,8,9,10];
+
+AsteriodsNames         = ["Low", "Normal", "High"];
+AsteriodsHomeValues    = [10,20,40]; // max allowed is 40
+AsteriodsNeutralValues = [10,20,40]; // max allowed is 40
+//
+// The hover info
+//
+
+hoverString =
+    SwitchString(
+        HoverSiteGetID(hoverSite),
+        "",
+        [
+            ( 1, "The name of the game."),
+            ( 2, "The number of teams allowed in the game."),
+            ( 3, "The minimum number of players allowed per team."),
+            ( 4, "The minimum and maximum number of players allowed per team."),
+            ( 5, "Skill levels required of players in this game."),
+            ( 6, "The type of map for the game."), // R4 changed
+            ( 7, "The number of lives each player has."),
+            ( 8, "How dense or scarce the universe's resources are."),
+            ( 9, "The amount of money that can be earned from the universe's resources."),
+            (10, "The amount of money each team starts the game with."),
+            (11, "The game has a time restraint, and the team with the most progress toward primary goals wins."),
+            (12, "The game is played until the specified number of kills is reached by one team."),
+            (13, "The game is played until the specified amount of money is reached by one team."),
+            (14, "The game is played until the specified number of artifacts is possessed by one team."),
+            (15, "The game is played until one team controls all of the remaining bases."),
+            (16, "If selected, players can use eject pods if their ship is destroyed."),
+            (17, "If selected, weapon fire will damage friend and foe."),
+            (18, "If selected, all player statistics will be saved in the Allegiance Zone database."),
+            (19, "If selected, players can quit one team and then join another in the same game."),
+            (20, "If selected, players can join a game after it has started."),
+            (21, "If selected, squad results will count in the Allegiance Zone database."),
+            (22, "If selected, outposts can be captured, but not destroyed."),
+            (23, "If selected, the game will have a developable tech tree."),
+            (24, "Cancel all settings and return to the Team Lobby."),
+            (25, "Accept all changes and return to the Team Lobby."),
+            (26, "A password that players need to enter and play the game."),
+            (27, "If selected, all alephs will be visible when the game starts."),
+            (28, "The game is played until the specified number of flags is possessed by one team."),
+            (29, "The general style of gameplay."),
+            (30, "The limit on how unbalanced the teams can be."),
+            (31, "The game is played until one team controls the specified percentage of sectors."),
+            (32, "Selects how well connected the sectors in the map are."),
+            (33, "Selects whether or not shipyards are allowed in the game."),
+            // new R4
+            (34, "Selects whether or not tactical path (and silicon rocks) is allowed in the game."),
+            (35, "Selects whether or not expansion path (and uranium rocks) is allowed in the game."),
+            (36, "Selects whether or not supremacy path (and carbonaceous rocks) is allowed in the game."),
+            //(37, "Indicates if the game can be started with empty teams"),
+            (37, "Indicates if players can ripcord to allied teleports."), //Imago 7/8/09 ALLY
+
+            (38, "The size of map for the game."),
+            (39, "The amount of floating treasures that can be found"),
+            (40, "The number of miners for each team when game starts"),
+            (41, "The maximum numbers of miners, layers and drones allowed for each team"),
+            (42, "The amount of asteriods in sectors"),
+            (43, "This is a preview of the map"),
+            (44, "Select the next map type"),
+            (45, "Select the previous map type")
+            
+        ]
+    );
+
+hoverImage = StringImage(JustifyLeft, 300, smallFont, white, hoverString);
+hoverPane  = AnimatedImagePaneRect(hoverImage, Rect(0, -30, 300, 0));
+
+// R4 - map preview
+mapPreviewPane = MapPreviewPane(ImportImage("sectormapbkgndbmp",false),true,false);
+mapPreviewNextButtonPane = ButtonPane(ImportImage("btnexpandbmp",  true), ButtonNormal, false);
+mapPreviewPrevButtonPane = ButtonPane(ImportImage("btncollapsebmp",true), ButtonNormal, false);
+
+//
+// The background and control positions
+//
+// changed in R4: -70x
+x1 = 7; //77;
+x2 = 222; // 292;
+check =  412; //507;
+// new in R4
+check2 = 580;
+x3 = 600;
+
+screen =
+    ScreenPane(
+        ImportImageFromFile("newgamescreen.png", false),
+        [
+            (textCountdown,                                              Point(700,  30)),
+            (titlePane, Point(5, 5)),
+            (captionPane, Point(30, 35)),
+            (HoverPane(hoverSite,  1, gameNameEditPane                ), Point( 96,  86)),
+            (HoverPane(hoverSite, 26, gamePasswordEditPane            ), Point(382, 86)),
+            (HoverPane(hoverSite, 25, createButtonPane                ), Point(563, 59)),
+            
+
+            (HoverPane(hoverSite, 29, gameTypePane                    ), Point( x1, 152)),
+            (HoverPane(hoverSite, 15, conquestBasesPane               ), Point( x1, 202)),
+            (HoverPane(hoverSite, 31, territoryPane                   ), Point( x1, 252)),
+            (HoverPane(hoverSite, 13, prosperityPane                  ), Point( x1, 302)),          
+            (HoverPane(hoverSite, 14, artifactCountPane               ), Point( x1, 352)),
+            (HoverPane(hoverSite, 28, flagCountPane                   ), Point( x1, 402)),
+            (HoverPane(hoverSite, 12, deathWatchKillsPane             ), Point( x1, 452)),          
+            (HoverPane(hoverSite, 11, countdownTimePane               ), Point( x1, 502)),          
+
+            (HoverPane(hoverSite,  2, teamCountPane                   ), Point( x2, 156)),
+            (HoverPane(hoverSite,  4, maxPlayersPane                  ), Point( x2, 196)),
+            //(HoverPane(hoverSite,  3, minPlayersPane                  ), Point( x2, 236)),
+            (HoverPane(hoverSite,  5, skillLevelPane                  ), Point( x2, 236)),
+            (HoverPane(hoverSite,  7, livesPane                       ), Point( x2, 276)),
+            (HoverPane(hoverSite, 10, startingMoneyPane               ), Point( x2, 316)),
+            (HoverPane(hoverSite,  9, totalMoneyPane                  ), Point( x2, 356)),
+            (HoverPane(hoverSite,  8, resourcesPane                   ), Point( x2, 396)),
+            (HoverPane(hoverSite,  6, mapTypePane                     ), Point( x3, 236)), // R4: moved , treasures here now
+            (HoverPane(hoverSite, 32, connectivityPane                ), Point( x2, 476)),
+            (HoverPane(hoverSite, 30, maxImbalancePane                ), Point( check, 155)), // R4: moved, asteriods here now
+
+            //(HoverPane(hoverSite, 18, statsCountPane                  ), Point( check, 155)), // R4 removed, imbal here now
+            (HoverPane(hoverSite, 19, defectionsPane                  ), Point( check, 195)),
+            (HoverPane(hoverSite, 20, joinersPane                     ), Point( check, 235)),
+            (HoverPane(hoverSite, 21, squadGamePane                   ), Point( check, 275)),
+            (HoverPane(hoverSite, 16, ejectPodsPane                   ), Point( check, 315)),
+            (HoverPane(hoverSite, 17, friendlyFirePane                ), Point( check, 355)),
+            (HoverPane(hoverSite, 22, invulnerableStationsPane        ), Point( check, 395)),
+            (HoverPane(hoverSite, 23, developmentPane                 ), Point( check, 435)),
+            (HoverPane(hoverSite, 27, showMapPane                     ), Point( check, 475)),
+            (HoverPane(hoverSite, 37, allowAlliedRipPane              ), Point( check, 515)), //R5 imago 7/7/09 // R4: shipyard moved, emptyteams here
+
+
+	    //  new in R4
+           (HoverPane(hoverSite, 34, allowTacticalPane               ), Point( check2, 315)),
+           (HoverPane(hoverSite, 35, allowExpansionPane              ), Point( check2, 355)),
+           (HoverPane(hoverSite, 36, allowSupremacyPane              ), Point( check2, 395)),
+           (HoverPane(hoverSite, 33, allowShipyardsPane              ), Point( check2, 435)),
+           
+           (HoverPane(hoverSite, 39, treasuresPane                   ), Point( x2, 436)),
+           (HoverPane(hoverSite, 38, mapSizePane                     ), Point( x3, 276)),
+           (HoverPane(hoverSite, 40, initialMinersCountPane          ), Point( x3, 476)),
+           (HoverPane(hoverSite, 41, maxMinersCountPane              ), Point( x3, 516)),
+           
+           (HoverPane(hoverSite, 42, asteriodsPane                   ), Point( x2, 516)),
+           
+	   (HoverPane(hoverSite, 43, mapPreviewPane                  ), Point( 635, 128)),
+	   (HoverPane(hoverSite, 44, mapPreviewNextButtonPane        ), Point( 756, 170)),
+	   (HoverPane(hoverSite, 45, mapPreviewPrevButtonPane        ), Point( 618, 170)),
+ 
+
+
+           
+            (cancelButtonPane, Point( 17, 562)),
+            (backButtonPane, Point( 17, 562)),
+
+
+            //
+            // hover info
+            //
+
+            (hoverPane, Point(500, 562))
+        ]
+    );

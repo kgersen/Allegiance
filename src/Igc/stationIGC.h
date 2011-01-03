@@ -143,7 +143,8 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
         :
             m_myStationType(this),
             m_hullFraction(1.0f),
-            m_shieldFraction(0.0f)
+            m_shieldFraction(0.0f),
+			m_roidID(NA) //Imago #121 7/10
         {
         }
 
@@ -480,6 +481,14 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
             return m_lastLaunch;
         }
 		//
+		//Imago #121 7/10
+		virtual ObjectID GetRoidID() const {
+			return m_roidID;
+		}
+		virtual void SetRoidID(ObjectID id) {
+			m_roidID = id;
+		}
+		//
         virtual SoundID                 GetInteriorSound() const
         {
             return (GetFraction() > 0.8) ? m_myStationType.GetInteriorSound() 
@@ -502,6 +511,7 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
         StationID                   m_stationID;
         unsigned char               m_undockPosition;
 		Time						m_lastLaunch; //Imago 6/10 #16
+		ObjectID					m_roidID; //Imago #121 7/10
 };
 
 #endif //__STATIONIGC_H_

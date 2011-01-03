@@ -205,6 +205,9 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                 SetRipcordModel(NULL);
 
+				//Xynth #47 7/2010  Reset rip indicator
+				SetStateBits(droneRipMaskIGC, 0);
+
                 if (cluster != pclusterOld)
                 {
                     if (pclusterOld)
@@ -310,6 +313,20 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                 m_fractionLastOrder = newVal;
             GetThingSite ()->RemoveDamage (m_fraction);
         }
+		
+		//Xynth #156 7/2010
+		virtual void				SetOre(float newOre)
+		{
+			m_fOre = newOre;
+		}
+
+		virtual float				GetOreCapacity() const
+		{			
+			float minerCapacity;
+			minerCapacity = GetMyMission()->GetFloatConstant(c_fcidCapacityHe3) *
+                            GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
+			return minerCapacity;
+		}
 
         virtual float               GetHitPoints(void) const
         {
@@ -1085,7 +1102,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             return bComplete;
         }
 
-        virtual void                ExportFractions(CompactShipFractions* pfractions) const
+        virtual void                ExportFractions(CompactShipFractions* pfractions)  const
         {
             pfractions->SetHullFraction(m_fraction);
             {                                                                   
@@ -1095,6 +1112,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             pfractions->SetFuel(m_myHullType.GetMaxFuel(), m_fuel);  
             pfractions->SetAmmo(m_myHullType.GetMaxAmmo(), m_ammo);   
             pfractions->SetEnergy(m_myHullType.GetMaxEnergy(), m_energy);
+			pfractions->SetOre(GetOreCapacity(), m_fOre);  //Xynth #156 7/2010
         }
 
 
@@ -1116,7 +1134,8 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         }                                                                               \
                         pshipupdate->fractions.SetFuel(m_myHullType.GetMaxFuel(), m_fuel);              \
                         pshipupdate->fractions.SetAmmo(m_myHullType.GetMaxAmmo(), m_ammo);              \
-                        pshipupdate->fractions.SetEnergy(m_myHullType.GetMaxEnergy(), m_energy);
+                        pshipupdate->fractions.SetEnergy(m_myHullType.GetMaxEnergy(), m_energy);		\
+						pshipupdate->fractions.SetOre(GetOreCapacity(), m_fOre);  //Xynth #156 7/2010
 
         virtual void                ExportShipUpdate(ServerLightShipUpdate*     pshipupdate) const
         {
@@ -2363,7 +2382,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         ImodelIGC*          m_commandTargets[c_cmdMax];
 
         float               m_dtTimeBetweenComplaints;
-        float               m_fOre;
+        float               m_fOre;		
         AbilityBitMask      m_abmOrders;
 
         WingID              m_wingID;

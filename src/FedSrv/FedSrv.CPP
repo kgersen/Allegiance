@@ -2386,9 +2386,19 @@ bool    BoardShip(CFSShip* pfsShip, IshipIGC*  pshipBoard)
                                     break;
                             }
 
-                            if (psl == NULL)
+							//Is this position equipped? Turkey 07/10 #145
+							PartLinkIGC*   ppl;
+                            for (ppl = pshipBoard->GetParts()->first();
+                                 (ppl != NULL);
+                                 ppl = ppl->next())
                             {
-                                //Not occupied
+                                if (ppl->data()->GetMountID() == turret)
+                                    break;
+                            }
+
+                            if (psl == NULL && ppl != NULL) //end #145
+                            {
+                                //Not occupied, is equipped
                                 break;
                             }
 
@@ -5720,7 +5730,27 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               if (psl->data()->GetTurretID() < 0)
                 LeaveShip(((CFSShip*)(psl->data()->GetPrivateData()))->GetPlayer(), pfsPlayer->GetIGCShip());
           }
-      }
+      } 
+	  else if (phtNew->GetMaxWeapons() > phtNew->GetMaxFixedWeapons()) //Turkey 07/10 #145
+	  {
+		  ShipLinkIGC*  pslNext;
+          for (ShipLinkIGC* psl = pshipsChildren->first(); (psl != NULL); psl = pslNext)
+          {
+              pslNext = psl->next();
+
+			  PartLinkIGC*   ppl;
+              for (ppl = pfsPlayer->GetIGCShip()->GetParts()->first();
+              (ppl != NULL);
+              ppl = ppl->next())
+              {
+				  if (ppl->data()->GetMountID() == psl->data()->GetTurretID())
+					  break;
+              }
+
+              if (ppl == NULL)
+                LeaveShip(((CFSShip*)(psl->data()->GetPrivateData()))->GetPlayer(), pfsPlayer->GetIGCShip());
+          }
+	  }//end #145
 
       bool bLaunch = pfmBuyLoadout->fLaunch && bBoughtEverything;        
 
@@ -9768,9 +9798,6 @@ int __cdecl main(int argc, char *argv[])
 	delete mutex;
 #ifdef _DEBUG
 	delete tMod;
-#endif
-	delete mpr;
-#ifdef _DEBUG
     delete logger;
 #endif
 	mprMemClose();
@@ -10204,10 +10231,26 @@ class ThingSiteImpl : public ThingSite
                                         ObjectType otModel = pmodel->GetObjectType();
                                         if ((otModel == OT_station || otModel == OT_warp ||
                                             (otModel == OT_asteroid &&
-                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
+                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)) //Imago - Review - what about mineable?! 7/10
 											 && !staticVisible) //Xynth #135 7/2010
 										{
                                             ObjectType  otSpotter = s->GetObjectType();
+											//Imago #121 - ALLY VIZ REVIEW
+											if (otModel == OT_station) {
+												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
+												IclusterIGC * pCluster = static_cast<IstationIGC*>(pmodel)->GetCluster();
+												//asteroid to silently pop
+												if (roidID != NA) {
+														BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+														END_PFM_CREATE
+														pfmAsteroidDestroyed->clusterID = pCluster->GetObjectID();
+														pfmAsteroidDestroyed->asteroidID = roidID;
+														pfmAsteroidDestroyed->explodeF = false;
+														g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+														break;
+												}
+											}
+
                                             // tell the side who spotted it
                                             BEGIN_PFM_CREATE(g.fm, pfmObjectSpotted, S, OBJECT_SPOTTED)
                                             END_PFM_CREATE
@@ -10533,12 +10576,11 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		
 	} //Xynth/Imago - End change
 
-
-    KillAsteroidEvent(pasteroid, false);
+    KillAsteroidEvent(pasteroid, pside, false); //Imago #121 7/10 (made it our side only)
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
-
+	pstationNew->SetRoidID(pasteroid->GetObjectID()); //#121 Imago 7/10
 	// TE: Fire AGCEvent informing of station created
 	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL; // this is a timestamp.
 	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
@@ -11457,6 +11499,17 @@ void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF)
   pasteroid->Terminate();
 }
 
+void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* side, bool explodeF)
+{
+  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+  END_PFM_CREATE
+  pfmAsteroidDestroyed->clusterID = pasteroid->GetCluster()->GetObjectID();
+  pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
+  pfmAsteroidDestroyed->explodeF = explodeF;
+  g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+  pasteroid->Terminate();
+}
+
 void FedSrvSiteBase::DrainAsteroidEvent(IasteroidIGC* pasteroid)
 {
   BEGIN_PFM_CREATE(g.fm, pfmAsteroidDrained, S, ASTEROID_DRAINED)
@@ -11474,10 +11527,10 @@ void FedSrvSiteBase::MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre)
   END_PFM_CREATE
   pfmAsteroidMined->clusterID = pasteroid->GetCluster()->GetObjectID();
   pfmAsteroidMined->asteroidID = pasteroid->GetObjectID();
-  pfmAsteroidMined->newOre  = newOre;
+  pfmAsteroidMined->bpOreFraction = newOre;
   g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
 
-  pasteroid->SetOre(newOre);
+  pasteroid->SetOreWithFraction(newOre);
 }
 
 void FedSrvSiteBase::KillProbeEvent(IprobeIGC* pprobe)
@@ -12723,15 +12776,18 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
                                                      pshipBuilder->GetPosition() - pshipBuilder->GetOrientation().GetBackward() * pshipBuilder->GetRadius(),
                                                      pasteroid->GetPosition());
 
-    //Export the building effect to all sides that could see the asteroid
+    //Export the building effect to all sides that could see the asteroid - Imago changed, see below
     for (SideLinkIGC*   psl = m_pfsMission->GetIGCMission()->GetSides()->first();
          (psl != NULL);
          psl = psl->next())
      {
          if (pasteroid->SeenBySide(psl->data()))
          {
-            ExportObj(pbe, OT_buildingEffect, NULL);
-            g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+			 //Imago 7/10 #120  - REVIEW ALLIES should see friendly build spheres? VIZ
+			 if (pshipBuilder->SeenBySide(psl->data()) || pshipBuilder->GetSide() == psl->data()) {
+				ExportObj(pbe, OT_buildingEffect, NULL);
+				g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+			 }
          }
      }
 }
