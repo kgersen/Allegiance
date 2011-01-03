@@ -90,7 +90,7 @@
 #include "fsside.h"
 #include "fscluster.h"
 #include "fsmission.h"
-// #include "fedsrvsql.h" KG removed
+#include "fedsrvsql.h" //KG removed - Imago unremoved 6/10
 
 // KG guard with USEAUTH for consistency 
 #ifdef USEAUTH

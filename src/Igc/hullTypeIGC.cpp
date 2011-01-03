@@ -81,6 +81,11 @@ HRESULT         ChullTypeIGC::Initialize(ImissionIGC* pMission,
                 const FrameDataUTL*   pfd = pmhb->GetFrame("cockpt");
                 m_cockpit = pfd ? (pfd->position * m_scale) : z;
             }
+			{
+				// TurkeyXIII 11/09 #94
+				const FrameDataUTL*   pfd = pmhb->GetFrame("chaff");
+				m_chaff = pfd ? (pfd->position * m_scale) : Vector::GetZero();
+			}
 
             for (Mount i = m_data->maxWeapons - 1; (i >= 0); i--)
             {

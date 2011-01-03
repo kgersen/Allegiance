@@ -1195,7 +1195,10 @@ public:
                 wingID                
             );
         }
-        m_pcomboWing->SetSelection(trekClient.GetShip()->GetWingID());
+		
+		int wid = trekClient.GetSavedWingAssignment();
+        m_pcomboWing->SetSelection(wid);
+		trekClient.SetWing(wid);
         AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
 
 
@@ -2405,6 +2408,16 @@ public:
 
     void OnTeamCivChange(MissionInfo *pMissionDef, SideID sideID, CivID civID)
     {
+		//Imago #114 7/10
+		if (trekClient.MyPlayerInfo()->IsTeamLeader() && !m_pbuttonAwayFromKeyboard->GetChecked() && trekClient.GetSideID() != sideID)
+		{
+			m_pbuttonTeamReady->SetChecked(false);
+			OnButtonTeamReady();
+			m_pbuttonAwayFromKeyboard->SetChecked(true);
+			OnButtonAwayFromKeyboard() ;
+		}
+		//
+
         UpdateCivBitmap();
 		m_plistPaneTeams->ForceRefresh(); // KGJV #62 fix: force faction names to refresh
     }
@@ -2566,6 +2579,7 @@ public:
 
     bool OnWingCombo(int index)
     {
+		trekClient.SaveWingAssignment(index); // kolie 6/10
         trekClient.SetWing(index);
         return true;                
     }
@@ -2755,6 +2769,7 @@ public:
          }
         
         // ZAssert(m_sideCurrent != trekClient.GetSideID());
+
         if (m_sideCurrent == SIDE_TEAMLOBBY
             && trekClient.GetSideID() != SIDE_TEAMLOBBY)
         {
@@ -2782,6 +2797,12 @@ public:
             && m_pMission->SideActive(m_sideCurrent)
             )
         {
+			
+			//Imago 6/10 #91 - server will only set command now
+			if (trekClient.GetShip()->GetWingID() != trekClient.GetSavedWingAssignment()) {// || (trekClient.GetShip()->GetWingID() != 0 || !trekClient.MyPlayerInfo()->IsTeamLeader()) ) {
+				trekClient.SetWing(trekClient.GetSavedWingAssignment());
+			}
+
             // try to join the current side
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmPositionReq, C, POSITIONREQ)
@@ -3060,6 +3081,11 @@ public:
             END_PFM_CREATE
             pfmSetTeamLeader->sideID = trekClient.GetSideID(); 
             pfmSetTeamLeader->shipID = shipID; 
+
+			//Imago 6/10 #91 - server will only set command now
+			if (trekClient.GetShip()->GetWingID() != trekClient.GetSavedWingAssignment()) {// || (trekClient.GetShip()->GetWingID() != 0 || !trekClient.MyPlayerInfo()->IsTeamLeader()) ) {
+				trekClient.SetWing(trekClient.GetSavedWingAssignment());
+			}
         }
         else
         {
@@ -3140,7 +3166,7 @@ public:
         // if this is me...
 
         if (trekClient.MyPlayerInfo()->ShipID() == pPlayerInfo->ShipID())
-        {
+		{
             debugf("TeamScreen::OnAddPlayer: sideID=%d, m_sideToJoin=%d, m_lastToJoinSend=%d \n",sideID,m_sideToJoin,m_lastToJoinSend); // KGJV #104
             if (g_civIDStart != -1 && sideID != SIDE_TEAMLOBBY) {
                 OnCivChosen(g_civIDStart);
@@ -3175,14 +3201,14 @@ public:
             //    && (!trekClient.MyPlayerInfo()->IsTeamLeader())
             //    || (m_chattargetChannel == CHAT_TEAM)
             //    && (trekClient.GetSideID() == SIDE_TEAMLOBBY))
-            {
-                m_pbuttonbarChat->SetSelection(0);
+            {              
+				m_pbuttonbarChat->SetSelection(0);
                 OnButtonBarChat(0);
             }
 
             if (NA == m_sideToJoin || pPlayerInfo->SideID() == m_sideToJoin)
                 m_plistPaneTeams->SetSelection(m_pMission->GetSideInfo(trekClient.GetSideID()));
-
+		
             UpdateButtonStates();
             UpdatePromptText();
         }

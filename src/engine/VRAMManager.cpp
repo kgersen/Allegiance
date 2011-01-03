@@ -376,16 +376,19 @@ HRESULT CVRAMManager::CreateTextureD3DX(	TEXHANDLE				texHandle,
 		strcpy_s( pTexture->szTextureName, 32, szTextureName );
 	}
 
-	// Mipping?
-	if( pImageInfo->ImageFileFormat == D3DXIFF_DDS )
+	// Mipping? //imago 7/10 #14
+	//DWORD		dwUsageFlags = 0;
+	if( pImageInfo->ImageFileFormat == D3DXIFF_DDS &&  m_sVRAM.bMipMapGenerationEnabled == true) 
 	{
 		uiNumLevels = D3DX_SKIP_DDS_MIP_LEVELS( pImageInfo->MipLevels, D3DX_FILTER_BOX );
 		pTexture->bMipMappedTexture = true;
+		//dwUsageFlags |= D3DUSAGE_AUTOGENMIPMAP;
 	}
 	else if( m_sVRAM.bMipMapGenerationEnabled == true ) 
 	{
-		uiNumLevels = 0;
 		pTexture->bMipMappedTexture = true;
+		uiNumLevels = NUM_MIPMAP_LEVELS;
+		//dwUsageFlags |= D3DUSAGE_AUTOGENMIPMAP;
 	}
 
 	ZFile * pFile = (ZFile*) pobjectMemory;
@@ -503,7 +506,7 @@ bool CVRAMManager::ReleaseHandle( TEXHANDLE texHandle )
 			ULONG refCount;
 
 			// Release the texture. Clear out the data when the reference count is zero.
-			refCount = m_sVRAM.ppBankArray[ dwBankIndex ]->pTexArray[ dwTexIndex ].pTexture->Release();
+			refCount = m_sVRAM.ppBankArray[ dwBankIndex ]->pTexArray[ dwTexIndex ].pTexture->Release(); //Imago 6/10 TODO REVIEW DEBUG CRASH HERE
 			if( refCount == 0 )
 			{
 				// Reduce the counts.

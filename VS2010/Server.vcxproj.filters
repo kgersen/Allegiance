@@ -10,6 +10,9 @@
     <Filter Include="Resources\Registration Scripts">
       <UniqueIdentifier>{3f1d574f-a2f2-4d9e-bbdf-7e359eb3adf9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Query">
+      <UniqueIdentifier>{5d807bb8-9591-48be-b3b0-6b0193236ce6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\FedSrv\AdminGame.rgs">
@@ -95,6 +98,7 @@
     <ClCompile Include="..\src\FedSrv\fsside.cpp" />
     <ClCompile Include="..\src\FedSrv\pch.cpp" />
     <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
+    <ClCompile Include="..\src\FedSrv\sqlhelp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\FedSrv\FedSrv.RC">
@@ -158,6 +162,7 @@
       <Filter>Resources</Filter>
     </ClInclude>
     <ClInclude Include="..\src\FedSrv\srvqueries.h" />
+    <ClInclude Include="..\src\FedSrv\fedsrvsql.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\FedSrv\fedmsg.msg">

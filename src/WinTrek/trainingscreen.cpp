@@ -2,11 +2,11 @@
 #include "Training.h"
 
 // AGC and AllSrv Includes -- Imago remove 6/21/09, they were for TM7
-//#include <agc.h>
-//#include <AllSrvModuleIDL.h>
+#include <agc.h>
+#include <AllSrvModuleIDL.h>
 
-//#include "AdminSessionSecure.h"
-//#include "AdminSessionSecureHost.h"
+#include "AdminSessionSecure.h"
+#include "AdminSessionSecureHost.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -36,14 +36,14 @@ private:
     TRef<ButtonPane>                    m_pbuttonTrain;
 
 	// Imago remove 6/22/09 (for Live TM7)
-    //static  IAdminGamesPtr              m_spAdminGamesPtr;
-    //static  IAdminGamePtr               m_spAdminGamePtr;
+    static  IAdminGamesPtr              m_spAdminGamesPtr;
+    static  IAdminGamePtr               m_spAdminGamePtr;
 
     static  int                         m_iMissionNext;
 
 public:
     int                                 m_civID;
-/* Imago remove 6/2/09 (for Live TM7)
+// Imago remove 6/2/09 (for Live TM7)
     class TrainLiveDialogPopup : 
         public IPopup, 
         public EventTargetContainer<TrainLiveDialogPopup>,
@@ -124,13 +124,13 @@ public:
     };
     
     TRef<TrainLiveDialogPopup>          m_pTrainLivePopup;
-*/
+
 
 public:
     TrainingScreen(Modeler* pmodeler)
     {
         // terminate existing training game if there was one
-        //KillStandaloneGame ();  //no more standalone training game Imago 6/22/09
+        KillStandaloneGame ();  //no more standalone training game Imago 6/22/09
 
         //
         // exports
@@ -156,7 +156,7 @@ public:
 		CastTo(m_pbuttonTrainMission8,      pns->FindMember("trainMission8ButtonPane"   )); //TheBored 06-JUL-07: nanite mission
         CastTo(m_pbuttonTrain,              pns->FindMember("trainButtonPane"           ));
 
-//        m_pTrainLivePopup = new TrainLiveDialogPopup(pns, this); //imago 6/22/09
+        m_pTrainLivePopup = new TrainLiveDialogPopup(pns, this); //imago 6/22/09
 
         pmodeler->UnloadNameSpace("TrainingScreen");
 
@@ -282,7 +282,7 @@ public:
                 GetWindow ()->screen (ScreenIDTrainSlideshow);
                 break;
             case Training::c_TM_7_Live:
-               // TrainLive ();  // imago remove 6/22/09
+                TrainLive ();  // imago remove 6/22/09
                 break;
         }
         return true;
@@ -428,7 +428,7 @@ public:
         return m_ppane;
     }
 
-	/* Imago remved - we're not using it anymore and it's breaking the new vs express edition (gotta pay up for atl/mfc)
+	/* Imago remved - we're not using it anymore and it's breaking the new vs express edition (gotta pay up for atl/mfc) */
     //////////////////////////////////////////////////////////////////////////////
     //
     // Game Creation Methods
@@ -535,9 +535,9 @@ public:
             CreateTrainingMissionGame ();
         }
     }
-	*/
+	
     //////////////////////////////////////////////////////////////////////////////
-    /*
+    
     bool    TerminateExistingGames (void)
     {
         // kill every game that exists
@@ -549,8 +549,7 @@ public:
 
         return false;
     }
-    */
-	/*
+
     //////////////////////////////////////////////////////////////////////////////
     HRESULT CreateTrainingMissionGame (void)
     {
@@ -660,7 +659,7 @@ public:
         while (iTryCount-- && (listResults.GetCount () == 0))
         {
             // initiate a query for the local server
-            trekClient.FindStandaloneServersByName ("127.0.0.1", listResults);
+            trekClient.FindStandaloneServersByName ("127.0.0.1", listResults); //Imago REVIEW this hardly works now-a-days 6/10
 
             // now, for 6 seconds, check to see if we found it every half second
             for (int i = 0; (i < 12) && (listResults.GetCount () == 0); i++)
@@ -765,7 +764,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////////////////////
-	*/
+
     void OnEnterMission (void)
     {
         debugf ("Game has started!\n");
@@ -792,8 +791,8 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 int             TrainingScreen::m_iMissionNext = Training::c_TM_1_Introduction;
 //imago removed live training mission 6/22/09
-//IAdminGamesPtr  TrainingScreen::m_spAdminGamesPtr = 0;
-//IAdminGamePtr   TrainingScreen::m_spAdminGamePtr = 0;
+IAdminGamesPtr  TrainingScreen::m_spAdminGamesPtr = 0;
+IAdminGamePtr   TrainingScreen::m_spAdminGamePtr = 0;
 
 //////////////////////////////////////////////////////////////////////////////
 //

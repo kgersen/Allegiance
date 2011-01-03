@@ -92,6 +92,7 @@ class       MyHullType : public IhullTypeIGC
         virtual bool                 HasCapability(HullAbilityBitMask habm) const;
 
         virtual const Vector&        GetCockpit(void) const;
+		virtual const Vector&		 GetChaffPosition(void) const; // TurkeyXIII 11/09 #94
 
         virtual const Vector&        GetWeaponPosition(Mount mount) const;
         virtual const Orientation&   GetWeaponOrientation(Mount mount) const;
@@ -561,6 +562,12 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         {
             return m_cockpit;
         }
+
+		// TurkeyXIII 11/09 #94
+		virtual const Vector&		GetChaffPosition(void) const
+		{
+			return m_chaff;
+		}
 
         virtual short                 GetAmmo(void) const
         {
@@ -2282,6 +2289,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         TRef<IbaseIGC>      m_pbaseData;
 
         Vector              m_cockpit;
+		Vector				m_chaff; 				// TurkeyXIII 11/09 #94
 
         GotoPlan            m_gotoplan;
 

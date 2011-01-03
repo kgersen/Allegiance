@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		{BB44CBB1-9D4D-47C4-9C45-00AA56B13A97} = s 'AutoUpdate'
+		'AutoUpdate.EXE'
+		{
+			val AppID = s {BB44CBB1-9D4D-47C4-9C45-00AA56B13A97}
+		}
+	}
+}

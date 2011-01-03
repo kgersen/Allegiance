@@ -407,9 +407,32 @@ int CLobbyApp::Run()
     timerIterations.Stop();
     timerIterations.Start();
 
-    if (ProcessMsgPump() ||
-       (_kbhit() && toupper(_getch()) == 'Q'))
+    if (ProcessMsgPump() || (_kbhit() && toupper(_getch()) == 'Q')) {
+		//Imago #111 7/10
+		if(g_pAutoUpdate)
+		{ 
+			char szFileName[MAX_PATH+16];
+			strcpy(szFileName, _Module.GetModulePath());
+			Strcat(szFileName, "FileList.txt");
+			g_pAutoUpdate->LoadCRC(szFileName);
+			FedMessaging * pfm = &g_pLobbyApp->GetFMClients();
+			int count = pfm->GetConnectionCount();
+			ListConnections::Iterator iterCnxn(*pfm->GetConnections());
+			while (!iterCnxn.End()) {
+				BEGIN_PFM_CREATE(*pfm, pfmAutoUpdate, L, AUTO_UPDATE_INFO)
+				  FM_VAR_PARM(g_pAutoUpdate->GetFTPServer(), CB_ZTS)
+				  FM_VAR_PARM(g_pAutoUpdate->GetFTPInitialDir(), CB_ZTS)
+				  FM_VAR_PARM(g_pAutoUpdate->GetFTPAccount(), CB_ZTS)
+				  FM_VAR_PARM(g_pAutoUpdate->GetFTPPassword(), CB_ZTS)
+				END_PFM_CREATE
+				pfmAutoUpdate->crcFileList = g_pAutoUpdate->GetFileListCRC();
+				pfmAutoUpdate->nFileListSize = g_pAutoUpdate->GetFileListSize();
+				pfm->SendMessages(iterCnxn.Value(), FM_GUARANTEED, FM_FLUSH);
+				iterCnxn.Next();
+			}
+		}
       return 0;
+	}
 
     SetNow();
 

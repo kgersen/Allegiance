@@ -297,7 +297,7 @@ float ModelData::GetCloaking()
     ImodelIGC*      pmodel = GetModel();
 	if (pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
 	{
-		f = pship->GetCloaking();
+		f = 100.0f * (1.0f - pship->GetCloaking());
 	}
 	return f;
 }
@@ -329,7 +329,7 @@ float ModelData::GetNumObservers()
 
 //Andon: Returns the amount of ripcord time left.
 //Modified so it only works for self and can pull a decimal if wanted.
-//Also carried over the +1 for the countdown
+//Added +0.5 to synch countdown to numbers on screen correctly
 float ModelData::GetRipcordTimeLeft()
 {
 	float f = 0.0f;
@@ -338,7 +338,7 @@ float ModelData::GetRipcordTimeLeft()
     ImodelIGC*      pmodel = GetModel();
 	if ((pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip()) && pship->fRipcordActive())
 	{
-		f = 1+trekClient.GetShip()->GetSourceShip()->GetRipcordTimeLeft();
+		f = 0.5 + trekClient.GetShip()->GetSourceShip()->GetRipcordTimeLeft();
 	}
 	return f;
 }

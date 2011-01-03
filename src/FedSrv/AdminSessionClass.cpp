@@ -29,7 +29,7 @@ bool CAdminSessionClass::IsEqualBSTR(BSTR bstr1, BSTR bstr2)
 STDMETHODIMP CAdminSessionClass::CreateInstance(IUnknown* pUnkOuter,
   REFIID riid, void** ppvObject)
 {
-  #if !defined(ALLSRV_STANDALONE)
+  #if !defined(_ALLEGIANCE_PROD_) //changed to production only Imago 6/10
 
     // Perform default processing
     return CComClassFactory::CreateInstance(pUnkOuter, riid, ppvObject);

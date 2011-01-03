@@ -78,11 +78,11 @@ class MapFileSite : public IMissionSite, public IIgcSite
 class FedSrvSiteBase :
   public IMissionSite,
   public IIgcSite,
-#ifndef ALLSRV_STANDALONE
+//#ifndef ALLSRV_STANDALONE //Imago 6/10
   public IFedMessagingSite, public ISQLSite, public ISQLSite2
-#else // !ALLSRV_STANDALONE
-  public IFedMessagingSite
-#endif // !ALLSRV_STANDALONE
+//#else // !ALLSRV_STANDALONE
+//  public IFedMessagingSite
+//#endif // !ALLSRV_STANDALONE
 {
 public:
   FedSrvSiteBase() :
@@ -175,13 +175,13 @@ public:
 // Also for ISQLSite
   virtual int  OnMessageBox(const char * strText, const char * strCaption, UINT nType);
 
-// KG: eventually remove this
-#ifndef ALLSRV_STANDALONE
+// KG: eventually remove this, not yet, Imago 6/10
+//#ifndef ALLSRV_STANDALONE
 // ISQLSite2
   virtual void OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError);
   virtual void OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD dwHelpContext, 
                                   BSTR bstrHelpFile,    BSTR bstrSource );
-#endif
+//#endif
 //Not part of IIgcSite
   void UpgradeShip(IshipIGC*  pship, const IstationIGC* pstation);
   void UpgradeDrones(IsideIGC* pside);
@@ -243,12 +243,12 @@ struct Global
     fProtocol(false),
     fPaused(false),
     fDoublePrecision(true)
-#if !defined(ALLSRV_STANDALONE)
+//#if !defined(ALLSRV_STANDALONE) Imago commented 6/10
     ,
     csqlSilentThreads(0),
     csqlNotifyThreads(0),
     sql(&siteFedSrv)
-#endif
+//#endif
 	//imagos crap for multi-process servers 6/25/08
 #if defined(SRV_PARENT)
 	,
@@ -269,9 +269,9 @@ struct Global
     strLobbyServer.SetEmpty();
     strAuthServer.SetEmpty();
     strArtPath.SetEmpty();
-#if !defined(ALLSRV_STANDALONE)
+//#if !defined(ALLSRV_STANDALONE)
     strSQLConfig.Empty();
-#endif    
+//#endif    
 #if defined(SRV_CHILD)  //imago -store command line arguments
 	strArgName.SetEmpty();
 	strArgCore.SetEmpty();
@@ -343,12 +343,12 @@ struct Global
   bool                fPaused;
   bool                fDoublePrecision;
   //  CAdminSponsor<CAdminGames>  sponsorGames;
-#if !defined(ALLSRV_STANDALONE)
+//#if !defined(ALLSRV_STANDALONE) Imago commented 6/10
   CSQLCore            sql;
   DWORD               csqlSilentThreads;
   DWORD               csqlNotifyThreads;
   CComBSTR            strSQLConfig;
-#endif
+//#endif
   // more of imagos crap for one game per exe
 #if defined(SRV_CHILD)
   ZString			strArgName;

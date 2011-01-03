@@ -1,5 +1,4 @@
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pch.h"
 
@@ -113,7 +112,25 @@ HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 {
 	// Create the D3D9 interface.
 	m_sD3DDev9.pD3D9 = Direct3DCreate9( D3D_SDK_VERSION ); //Fix memory leak -Imago 8/2/09
-
+	HMODULE hRast = LoadLibrary("rgb9rast.dll");
+	if (hRast == 0) {
+		hRast = LoadLibrary("rgb9rast_1.dll");
+		if (hRast == 0) {
+			hRast = LoadLibrary("rgb9rast_2.dll");
+		}
+	}
+	if(hRast != 0) {
+			FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
+			HRESULT hr = m_sD3DDev9.pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+			if (hr == D3D_OK) {
+				pLogFile->OutputString( "DX registered the SW Rasterizer.\n" );
+			} else {
+				pLogFile->OutputString( "DX did not register the SW Rasterizer!\n" );
+			}
+	} else {
+		pLogFile->OutputString( "SW Rasterizer failed to load.\n" );
+	}
+	
 	_ASSERT( m_sD3DDev9.pD3D9 != NULL );
 	if( m_sD3DDev9.pD3D9 == NULL )
 	{
@@ -178,7 +195,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	}
 	else
 	{
-		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_IMMEDIATE;
+		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_ONE; //imago 6/10 bWaitForVSync rendered useless
 	}
 
 	//imago 7/1/09 NYI test for multisample maskable optons (CSAA, etc) and set accordingly
@@ -202,9 +219,15 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
-	// ATI Radeon 9600 specific, find out why the TMeshGeo DrawTriangles are failing completley, 
+	// ATI Radeon 9600 (RV350) specific, find out why the TMeshGeo DrawTriangles are failing completley, 
 	// I gather this is (related to) the Intel 8xx issue.  --Imago 7/28/09
 	if (Identifier.VendorId == 0x1002 && Identifier.DeviceId == 0x4151 ) {
+		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		bForceSWVP = true;
+	}
+
+    // SiS 661FX/M661FX/760/741/M760/M741 specific --Imago 11/30/09
+	if (Identifier.VendorId == 0x1039 && Identifier.DeviceId == 0x6330 ) {
 		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 		bForceSWVP = true;
 	}
@@ -258,6 +281,18 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 					else
 					{
 						pLogFile->OutputStringV( "SWVP device creation failed: 0x%08x.\n", hr );
+						hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
+														D3DDEVTYPE_SW, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD,
+														hParentWindow,
+														dwCreationFlags,
+														&m_sD3DDev9.d3dPresParams,
+														&m_sD3DDev9.pD3DDevice );
+						if( hr == D3D_OK )
+						{
+							m_sD3DDev9.bHardwareVP = false;
+							m_sD3DDev9.bPureDevice = false;
+							pLogFile->OutputString( "D3DDEVTYPE_SW device created.\n" );
+						}
 					}
 				}
 			}
@@ -297,7 +332,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 													&m_sD3DDev9.d3dAdapterID );
 		_ASSERT( hr == D3D_OK );
 	}
-
+	
 	// Recreate the AA depth stencil buffer, if required.
 	CreateAADepthStencilBuffer();
 
@@ -320,6 +355,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	{
 		pLogFile->OutputString( "Device supports A1R5G5B5 format.\n" );
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = true;
+	} else {
+		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = false;
 	}
 
 	// Auto gen mipmaps flag - include user setting.
@@ -328,6 +365,10 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	{
 		pLogFile->OutputString( "Device can auto generate mipmaps.\n" );
 		m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = true;
+		m_sDevSetupParams.bAutoGenMipmap = true;
+	} else {
+		m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = false; //Imago 7/10 #41
+		m_sDevSetupParams.bAutoGenMipmap = false;
 	}
 
 	// Initialise the caches.
@@ -450,13 +491,14 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		bResetRequired = true;
 		if( bWindowed == true )
 		{
-			_ASSERT( ( m_sD3DDev9.dwCurrentWindowedWidth != 0 ) && ( m_sD3DDev9.dwCurrentWindowedHeight != 0 ) );
+            //Imago - removed 1/10
+			//_ASSERT( ( m_sD3DDev9.dwCurrentWindowedWidth != 0 ) && ( m_sD3DDev9.dwCurrentWindowedHeight != 0 ) );
 			dwWidth = m_sD3DDev9.dwCurrentWindowedWidth;
 			dwHeight = m_sD3DDev9.dwCurrentWindowedHeight; 
 		}
 		else
-		{
-			_ASSERT( ( m_sD3DDev9.dwCurrentFullscreenWidth != 0 ) && ( m_sD3DDev9.dwCurrentFullscreenHeight != 0 ) );
+		{   // Imago Removed - 1/10
+			//_ASSERT( ( m_sD3DDev9.dwCurrentFullscreenWidth != 0 ) && ( m_sD3DDev9.dwCurrentFullscreenHeight != 0 ) );
 			dwWidth = m_sD3DDev9.dwCurrentFullscreenWidth;
 			dwHeight = m_sD3DDev9.dwCurrentFullscreenHeight;
 		}
@@ -501,7 +543,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 	if( bResetRequired == true || //mode changes
 		g_DX9Settings.m_dwAA != (DWORD)m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting || //any multisample changes
 		g_DX9Settings.m_bAutoGenMipmaps != m_sDevSetupParams.bAutoGenMipmap || //any mip map changes
-		g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //aby vsync changes
+		//g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //Imago 7/10
 		g_DX9Settings.m_iMaxTextureSize != (int)m_sDevSetupParams.maxTextureSize) //any texture size changes
 
 	{
@@ -551,16 +593,19 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 		} else {
 			m_sDevSetupParams.bWaitForVSync = false;
-			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE; //rendered useless 6/10 Imago
 		}
 
+		//Imago added m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps just to be sure 7/10 #41
 		if ((m_sD3DDev9.sD3DDevCaps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP ) && g_DX9Settings.m_bAutoGenMipmaps)
 		{
 			CVRAMManager::Get()->SetEnableMipMapGeneration(true);
 			m_sDevSetupParams.bAutoGenMipmap = true;
+			m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = true; 
 		} else {
 			CVRAMManager::Get()->SetEnableMipMapGeneration(false);
 			m_sDevSetupParams.bAutoGenMipmap = false;
+			m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps = false; 
 		}
 
 		m_sDevSetupParams.dwMaxTextureSize = 256 << g_DX9Settings.m_iMaxTextureSize;
@@ -808,7 +853,7 @@ void CD3DDevice9::InitialiseRenderStateCache( DWORD * pRenderStateCache )
 	RESET_STATE_CACHE_VALUE( D3DRS_WRAP5, 0 );
 	RESET_STATE_CACHE_VALUE( D3DRS_WRAP6, 0 );
 	RESET_STATE_CACHE_VALUE( D3DRS_WRAP7, 0 );
-    if (!CD3DDevice9::Get()->IsHardwareVP()) { //8/8/09 Imago
+    if (m_sD3DDev9.sD3DDevCaps.MaxVertexW < 2) { //8/8/09 11/09 Imago
         RESET_STATE_CACHE_VALUE( D3DRS_CLIPPING, TRUE );
     } else {
 	    RESET_STATE_CACHE_VALUE( D3DRS_CLIPPING, FALSE );

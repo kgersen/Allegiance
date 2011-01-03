@@ -147,19 +147,26 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	
-	char * pData = (char *)param;
+	//windowed 7/10 #112
+	PlayVideoInfo * pData = (PlayVideoInfo*)param;
 	DDVideo *DDVid = new DDVideo();
+	bool bOk = true;
+	HWND hwndFound = NULL;
+	if (pData->bWindowed) {
+		hwndFound=FindWindow(NULL, "Allegiance");
+	} else {
+		//this window will have our "intro" in it...
+		HWND hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
+			GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
+			::GetModuleHandle(NULL), NULL);
+	}
 	
-	//this window will have our "intro" in it...
-	HWND hWND = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
-		GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
-	::GetModuleHandle(NULL), NULL);
-	DDVid->m_hWnd = hWND;
+	DDVid->m_hWnd = hwndFound;	
 
-	if( SUCCEEDED( DDVid->Play(ZString(pData))) ) //(WMV2 is good as most machines read it)
+	if( SUCCEEDED( DDVid->Play(pData->pathStr,pData->bWindowed))) //(WMV2 is good as most machines read it)
     {
 		::ShowCursor(FALSE);
-		while( DDVid->m_Running ) //we can now do other stuff while playing
+		while( DDVid->m_Running && bOk) //we can now do other stuff while playing
         {
 			if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
 				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) || 
@@ -169,7 +176,11 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 				DDVid->m_pVideo->Stop();
 			} else	{
 		    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-				DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+				if (pData->bWindowed) {
+					bOk = DDVid->Flip(); //windowed #112 Imagooooo
+				} else {
+					DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+				}
 			}
 		}
 		::ShowCursor(TRUE);
@@ -177,8 +188,9 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	} else {
 		DDVid->DestroyDirectDraw();
 	}
-	
-	::DestroyWindow(hWND);
+
+	delete pData;
+	::DestroyWindow(hwndFound);
 	return 0;
 }
 //
@@ -2304,13 +2316,13 @@ public:
 							}
 
 							DDVid->m_hWnd = hWND;
-
+							bool bOk = true;
 							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
-							if(SUCCEEDED(DDVid->Play(pathStr))) //(Type WMV2 is good as most systems will play it)
+							if(SUCCEEDED(DDVid->Play(pathStr,!m_pengine->IsFullscreen()))) //(Type WMV2 is good as most systems will play it)
 							{ 
 								GetAsyncKeyState(VK_LBUTTON); GetAsyncKeyState(VK_RBUTTON);
 								::ShowCursor(FALSE);
-								while( DDVid->m_Running )
+								while( DDVid->m_Running && bOk) //imago windooooow #112 7/10
 								{
 									if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || 
 										GetAsyncKeyState(VK_RETURN) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
@@ -2319,7 +2331,11 @@ public:
 										DDVid->m_pVideo->Stop();
 									} else	{
 										DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-										DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+										if (m_pengine->IsFullscreen()) {
+											DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+										} else {
+											bOk = DDVid->Flip();
+										}
 									}
 								}
 								::ShowCursor(TRUE);
@@ -2630,7 +2646,11 @@ public:
 					::ShowCursor(FALSE);
 				}
 
-				const char * pData = (PCC)pathStr;
+				//#112 windowed 7/10 Imago
+				PlayVideoInfo * pData = new PlayVideoInfo;
+				pData->pathStr = pathStr;
+				pData->bWindowed = CD3DDevice9::Get()->IsWindowed();
+
 				hDDVidThread = CreateThread(NULL,0,DDVidCreateThreadProc,(void *)pData,THREAD_PRIORITY_HIGHEST,0);
 			}
 		}
@@ -3936,11 +3956,19 @@ public:
 		}
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
+		// TheBored 05-APR-2010: Removed leading 0 from year, hooray 2010!
 		// mmf added ifs to zero pad MM and DD
-		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
-		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
-		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
-		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # 0" + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
+		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
+		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
+		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
+		//#62 Imago 7/10
+		if (trekClient.m_pMissionInfo) {
+			ZString zVer = UTL::GetServerVersion(trekClient.m_pMissionInfo->GetCookie());
+			if (zVer.IsEmpty() == false) {
+				m_pmenu->AddMenuItem(0, PCC("Server v" + zVer));
+			}
+		}
 		//AEM, redesigned ESC menu 7/6/07
 		// mmf 10/07 swapped position of S and G
 		m_pmenu->AddMenuItem(0               , "");
@@ -4139,11 +4167,11 @@ public:
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
 				break;
 			//End TB 30-JUL-07
-			//imago 6/30/09: new graphics options dx9
+			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
 			case idmDeviceOptions:
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
 			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
-				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V');
+				//m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
 				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
@@ -6927,12 +6955,15 @@ public:
         // receive network messages
         trekClient.m_lastUpdate  = m_timeLastFrame;
         trekClient.m_now         = time;
-        if (FAILED(trekClient.ReceiveMessages()))
-            return;     //bug out
+        if (FAILED(trekClient.ReceiveMessages())) {
+			debugf("*!* frame# %d dropped (net)\n",m_frameID);
+			return;     //bug out
+		}
+            
             // (CRC) Too much spew: ShouldBe ((!trekClient.m_serverOffsetValidF) || (fabs(Time::Now() - trekClient.m_timeLastPing) < 30.0f));
 
         // Update the world
-        DoTrekUpdate(m_timeLastFrame, time, dtime, (m_frameID > 1));
+		DoTrekUpdate(m_timeLastFrame, time, dtime, (m_frameID > 1));
 
         // Update sounds
         m_pSoundEngine->Update();
@@ -7549,7 +7580,6 @@ public:
                                                  (js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  c_fAutopilotDisengage) ||
                                                  (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -c_fAutopilotDisengage) ||
                                                  (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  c_fAutopilotDisengage);
-                                //IMAGO REVIEW NYI THROTTLE? c_axisThrottle 8/16/09 (aarmstrong's issue)
                             }
 
                             if (bControlsInUse)
@@ -7636,7 +7666,7 @@ public:
                     // end training mission hook
 
                     if (m_cm == cmCockpit)
-                    {
+					{
                         if (trekClient.GetShip()->GetTurretID() != NA)
                         {
                             float   fov = (s_fMinFOV + 0.5f * (s_fMaxFOV - s_fMinFOV)) +
@@ -7644,7 +7674,7 @@ public:
                             m_cameraControl.SetFOV(fov);
                         }
                         else
-                        {
+						{
                             float   fov = m_cameraControl.GetFOV();
                             if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, true))
                             {
@@ -7668,23 +7698,26 @@ public:
                                 //What is the maximum desired rate of turn for this field of view?
                                 //Use the same calculation as for turrets.
                                 //Keep in sync with wintrek.cpp's FOV by throttle
+								
                                 static const float  c_minRate = RadiansFromDegrees(7.5f);
                                 static const float  c_maxRate = RadiansFromDegrees(75.0f);
-                                float   maxSlewRate = c_minRate +
-                                                      (c_maxRate - c_minRate) * fov / s_fMaxFOV;
+                                //float   maxSlewRate = c_minRate + (c_maxRate - c_minRate) * fov / s_fMaxFOV;
+								float zoomMod = fov / s_fMaxFOV; //madpeople - ---^ do not limit this view beyond that of the core #88 7/10 
 
                                 const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
-                                {
-                                    float               pitch = pht->GetMaxTurnRate(c_axisPitch);
+								{	
+                                    float pitch = pht->GetMaxTurnRate(c_axisPitch);
+									float maxSlewRate = c_minRate + (pitch - c_minRate) * zoomMod; //madpeople /Imago  #88
                                     if (pitch > maxSlewRate)
                                         js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
                                 }
                                 {
-                                    float               yaw = pht->GetMaxTurnRate(c_axisYaw);
+                                    float yaw = pht->GetMaxTurnRate(c_axisYaw);
+									float maxSlewRate = c_minRate + (yaw - c_minRate) * zoomMod; //madpeople /Imago  #88
                                     if (yaw > maxSlewRate)
                                         js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
                                 }
-                            }
+							}
                         }
                     }
 
@@ -9728,6 +9761,7 @@ public:
             break;
 
             //begin imago 8/14/09 mouse wheel
+			
             case TK_ZoomOut:
             case TK_ZoomIn:
             {
@@ -9754,7 +9788,8 @@ public:
                             if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
                                 m_distanceExternalCamera = s_fExternalViewDistanceMax;
                         }
-                    } else if (m_cm == cmCockpit) {
+                    } 
+					else if (m_cm == cmCockpit) {
                         float   fov = m_cameraControl.GetFOV();
                         if (tk == TK_ZoomIn) {
                             fov -= dt;
@@ -9768,43 +9803,29 @@ public:
                             m_cameraControl.SetFOV(fov);
                         }
                     }
+					
                 }
             }
             break;
-
+			
             case TK_ThrottleUp:
             {
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, true)) {
-                    if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle < 0.7f) ? (trekClient.trekThrottle + 0.3f) : 1.0f;
-                        trekClient.joyThrottle = false;
-                    } else if (trekClient.GetShip()->GetTurretID() != NA) {
-                        ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] < 0.7f) ? (cd.jsValues[c_axisThrottle] + 0.3f) : 1.0f;
-                        trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
-                        trekClient.joyThrottle = false;
-                        trekClient.GetShip()->SetControls(cd);
-                    }
-                }
+					trekClient.trekThrottle = (trekClient.trekThrottle < 0.8f) ? (trekClient.trekThrottle + 0.2f) : 1.0f;  //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
+					trekClient.joyThrottle = false; //#116 7/10 Imago
+				}
             }
             break;
 
             case TK_ThrottleDown:
             {
                 if (trekClient.flyingF() && trekClient.GetShip() && !m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, true)) {
-                    if (!trekClient.GetShip()->GetParentShip()) {
-                        trekClient.trekThrottle = (trekClient.trekThrottle > -0.7f) ? (trekClient.trekThrottle - 0.3f) : -1.0f;
-                        trekClient.joyThrottle = false;
-                    } else if (trekClient.GetShip()->GetTurretID() != NA) {
-                        ControlData cd = trekClient.GetShip()->GetControls();
-                        cd.jsValues[c_axisThrottle] = (cd.jsValues[c_axisThrottle] > -0.7f) ? (cd.jsValues[c_axisThrottle] - 0.3f) : -1.0f;
-                        trekClient.trekThrottle = cd.jsValues[c_axisThrottle];
-                        trekClient.joyThrottle = false;
-                        trekClient.GetShip()->SetControls(cd);
-                    }
-                }
+					trekClient.trekThrottle = (trekClient.trekThrottle > -0.8f) ? (trekClient.trekThrottle - 0.2f) : -1.0f; //Imago matched orig values below - was 0.7 - 0.3 6/10 - cleaned up 7/10
+					trekClient.joyThrottle = false; //#116 7/10 Imago
+				}
             }
             break;
+			
             // end imago
 
             case TK_DebugTest1:

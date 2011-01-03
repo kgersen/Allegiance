@@ -109,7 +109,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	g_VideoSettings.iCurrentAASetting	= 0;
 	g_VideoSettings.bWindowed			= !bStartFullscreen;
 	g_VideoSettings.iCurrentMode		= g_VideoSettings.bWindowed;
-	g_VideoSettings.bWaitForVSync		= false;
+	g_VideoSettings.bWaitForVSync		= true; //Imago 7/10
 	
 // DEFAULT SETTINGS W/O DIALOG imago 6/29/09 - 7/2/09 - 7/19/09
 //////////////////////////////////////////
@@ -157,6 +157,14 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		lpSubKey += ZString("\\3DSettings");
 		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum ENGINE width/height allowed.
 		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&bbf,&df,&hMon); //imago use this function!
+		// If default device has no available modes, can't run the game.
+		if( g_VideoSettings.pDevData->GetTotalResolutionCount( 0 ) == 0 )
+		{
+			logFile.OutputString( "Primary device has no modes that support Allegiance.\n" );
+			MessageBox( NULL, "Primary device has no modes that support Allegiance.",
+							"Error", MB_OK );
+			return false;
+		}
 		g_VideoSettings.iCurrentDevice		= iAdapter;  // -adapter <n>     
 		g_VideoSettings.d3dBackBufferFormat = (!bbf || bbf == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : bbf;
 		g_VideoSettings.d3dDeviceFormat		= (!df || df == D3DFMT_UNKNOWN) ? D3DFMT_X8R8G8B8 : df;
@@ -174,6 +182,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		// Find the optimal mode index using the highest, sane refresh rate 7/27/09 (Imago, Sgt_Baker)
 		int iBestMode = 0;
 		int maxrate = GetMaxRate(iAdapter);
+
 		int iModeCount = g_VideoSettings.pDevData->GetResolutionCount(iAdapter,g_VideoSettings.d3dDeviceFormat);
 		for( int i=0; i<iModeCount; i++ ) {
 			int myx, myy, myrate;
@@ -187,7 +196,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 				}
 			}
 		}
-
+		_ASSERT(iModeCount != 0);
 		//imago build the adapter res array for in-game switching
 		g_VideoSettings.pDevData->GetRelatedResolutions(
 											iAdapter,
@@ -207,7 +216,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
 		//lets make extra sure we don't crash when we autoload AA settings
 		LPDIRECT3D9 pD3D9 = Direct3DCreate9( D3D_SDK_VERSION );
-		if (g_DX9Settings.m_dwAA >= 1)
+		if (g_DX9Settings.m_dwAA >= 1 && g_DX9Settings.m_dwAA < 4) // #113 7/10 Imago
 			if (pD3D9->CheckDeviceMultiSampleType(iAdapter, D3DDEVTYPE_HAL, g_VideoSettings.d3dBackBufferFormat, 
 				g_VideoSettings.bWindowed, D3DMULTISAMPLE_2_SAMPLES, NULL) == D3D_OK) {
 				g_VideoSettings.iCurrentAASetting = 1;
@@ -1027,7 +1036,8 @@ int GetMaxRate(int index = 0)
 {
     DISPLAY_DEVICE dd;
     dd.cb = sizeof(DISPLAY_DEVICE);
-    if (!EnumDisplayDevices(NULL, index, &dd, 0))
+
+	if (!EnumDisplayDevices(NULL, index, &dd, 0))
     {
 		debugf("1: EnumDisplayDevices failed:%d\n", GetLastError());
         return 60;
@@ -1038,8 +1048,11 @@ int GetMaxRate(int index = 0)
     if (!EnumDisplayDevices(dd.DeviceName, 0, &monitor, 0))
     {
 		debugf("2: EnumDisplayDevices failed:%d\n", GetLastError());
-        return 60;
-    }
+		if (!EnumDisplayDevices(NULL, 0, &monitor, 0))	{
+			debugf("22: EnumDisplayDevices failed:%d\n", GetLastError());
+			return 60;
+		}
+	}
  
     DEVMODE dm;
     dm.dmSize = sizeof(DEVMODE);

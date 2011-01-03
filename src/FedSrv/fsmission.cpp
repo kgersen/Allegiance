@@ -590,7 +590,7 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   // Set their stuff appropriate for this side
   assert(pfsPlayer->GetMoney() == 0);
 
-  pfsPlayer->GetIGCShip()->SetWingID(1); // TE: Default wing is Attack(1)
+  //pfsPlayer->GetIGCShip()->SetWingID(1); // TE: Default wing is Attack(1)  //Imago removed 6/10 #91
   if (!HasPlayers(pside, true)) // we have a new team leader
   {
     fTeamLeader = true;
@@ -641,13 +641,15 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
   pfsPlayer->SetSide(this, pside);
   // pfsPlayer->SetReady(true); Imago commented out so afk not reset
 
-  // set them on their starting wing
-  BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
-  END_PFM_CREATE
-  pfmSetWingID->wingID = pfsPlayer->GetIGCShip()->GetWingID();
-  pfmSetWingID->shipID = shipid;
-  pfmSetWingID->bCommanded = true;
-  g.fm.SendMessages(pfsSide->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+  	//Imago 6/10 we must set server-side default wing to NA! #91
+  if (pfsPlayer->GetIGCShip()->GetWingID() != NA) {
+	BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
+	END_PFM_CREATE
+	pfmSetWingID->wingID = pfsPlayer->GetIGCShip()->GetWingID();
+	pfmSetWingID->shipID = shipid;
+	pfmSetWingID->bCommanded = true;
+	g.fm.SendMessages(pfsSide->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+  }
 
   if (fTeamLeader)
   {
@@ -726,12 +728,23 @@ void CFSMission::AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside)
     // tell them about the world
     SendMissionInfo(pfsPlayer, pside);
 
-    //  tell them about the players who have flags
+    //  tell them about the players who have flags AND WINGS - IMAGO #91 7/10
     {
       const ShipListIGC*    pships = m_pMission->GetShips();
       for (ShipLinkIGC* psl = pships->first(); (psl != NULL); psl = psl->next())
       {
         IshipIGC*   pship = psl->data();
+
+		if (pship != pfsPlayer->GetIGCShip() && pship->GetPilotType() >= c_ptPlayer)
+        {
+            ShipID   shipID = pship->GetObjectID(); 
+            BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID) 
+            END_PFM_CREATE
+            pfmSetWingID->wingID = pship->GetWingID(); // AND WINGS - IMAGO #91 7/10
+            pfmSetWingID->shipID = shipID;
+            pfmSetWingID->bCommanded = true;
+        }
+
         SideID  sidFlag = pship->GetFlag();
         if (sidFlag != NA)
         {
@@ -1048,7 +1061,18 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
 
     if (shipidNewOwner != NA) // somebody's getting promoted
     {
-      // announce new leader
+		if (shipidNewOwner > 0) {
+			//set command wing Imago 6/10
+			BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
+			END_PFM_CREATE
+			pfmSetWingID->wingID = 0;
+			pfmSetWingID->shipID = shipidNewOwner;
+			pfmSetWingID->bCommanded = true;
+			g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+			GetLeader(iSideNewOwner)->GetIGCShip()->SetWingID(0);
+		}
+
+	// announce new leader
       BEGIN_PFM_CREATE(g.fm, pfmSetTeamLeader, CS, SET_TEAM_LEADER)
       END_PFM_CREATE
       pfmSetTeamLeader->shipID = shipidNewOwner;
@@ -1063,6 +1087,8 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
       }
     }
   }
+
+
 
   g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
 
@@ -1463,13 +1489,14 @@ void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
 
   if (pfsOldLeader->GetIGCShip()->GetWingID() == 0)
   {
-    pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing
-
+    //pfsOldLeader->GetIGCShip()->SetWingID(1);	// TE: Old commander goes to Attack wing //Imago #91 removed
+	  /*
     BEGIN_PFM_CREATE(g.fm, pfmSetWingID, CS, SET_WINGID)
     END_PFM_CREATE
-    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing
+    pfmSetWingID->wingID = 1; // TE: Old comm goes to Attack wing  
     pfmSetWingID->shipID = pfsOldLeader->GetShipID();
     pfmSetWingID->bCommanded = true;
+	*/
   }
 
   // put them on the command wing
@@ -1814,7 +1841,7 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
 
       RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
 	  // mmf also added check here for special players
-	  if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
+	  if ((misparms.iMinRank > rank || misparms.iMaxRank < rank) && !pfsPlayer->CanCheat() && !UTL::PrivilegedUser(pfsPlayer->GetName(),-1)) //Imago 6/10
       {
         RemovePlayerFromMission(pfsPlayer, QSR_RankLimits);
       }
@@ -3780,7 +3807,8 @@ void CFSMission::QueueLobbyMissionInfo()
   }
 #endif
 
-  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114
+  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
+  ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)
     FM_VAR_PARM(m_misdef.misparms.strGameName, CB_ZTS)
@@ -3789,6 +3817,8 @@ void CFSMission::QueueLobbyMissionInfo()
 	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
 	FM_VAR_PARM((PCC)(g.strLocalAddress),CB_ZTS) // KGJV #114 - ServerName
 	FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
+	FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)),CB_ZTS) //Imago 6/10
+	FM_VAR_PARM(PCC(zInfo),CB_ZTS) //Imago 7/10
   END_PFM_CREATE
   pfmLobbyMissionInfo->dwPort = dwPort;
   pfmLobbyMissionInfo->dwCookie = GetCookie();
@@ -4297,13 +4327,11 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 	  && (sideID != pfsPlayer->GetLastSide()) && (pfsPlayer->GetLastSide() != SIDE_TEAMLOBBY))
 	  return DPR_NoDefections;
 
-  if (psideCurrent && psideCurrent->GetObjectID() != SIDE_TEAMLOBBY)
-  {
-    if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED))
+  //Imago #12 6/10
+  if ((!pmp->bAllowDefections) && (GetStage() == STAGE_STARTED) && (psideCurrent && psideCurrent->GetObjectID() != SIDE_TEAMLOBBY))
       return DPR_NoDefections;
-    else if (pmp->bLockSides && sideID != SIDE_TEAMLOBBY) // TE: Added 2nd check to allow them to go to NOAT any time)
+    else if (pmp->bLockSides && sideID != SIDE_TEAMLOBBY) // TE: Added 2nd check to allow them to go to NOAT any time) --did you even try testing this? 
       return DPR_SidesLocked;
-  }
 
   if (sideID != SIDE_TEAMLOBBY)
   {

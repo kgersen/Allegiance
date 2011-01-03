@@ -423,6 +423,17 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
             return pSuccessor;                   
         }
 
+		//Imago 6/10 #14
+        virtual Time                    GetLastUpdate(void) const
+        {
+            return m_lastLaunch;
+        }
+
+        virtual void                    SetLastUpdate(Time now)
+        {
+            m_lastLaunch = now;
+        }
+
         virtual IpartTypeIGC*           GetSimilarPart(IpartTypeIGC* ppt) const
         {
             //Walk through the predecessor parts until one is found that can be bought
@@ -459,7 +470,16 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
         {
             return m_timeLastDamageReport;
         }
-
+		//Imago 6/10 #14
+        virtual void                    SetLastLaunch(Time timeLastLaunch)
+        {
+           m_lastLaunch = timeLastLaunch;
+        }
+        virtual Time                   GetLastLaunch(void) const
+        {
+            return m_lastLaunch;
+        }
+		//
         virtual SoundID                 GetInteriorSound() const
         {
             return (GetFraction() > 0.8) ? m_myStationType.GetInteriorSound() 
@@ -481,6 +501,7 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
         ShipListIGC                 m_shipsDocked;
         StationID                   m_stationID;
         unsigned char               m_undockPosition;
+		Time						m_lastLaunch; //Imago 6/10 #16
 };
 
 #endif //__STATIONIGC_H_

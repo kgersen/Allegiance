@@ -1981,14 +1981,16 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 }
             }
 
-            //Ignore most part changes for ourselves  ALLY Imago docking lifepods at allied bases hack 7/13/09
+            //Ignore most part changes for ourselves  ALLY Imago docking lifepods at allied bases hack 7/13/09 & 12/09
             if (pfmLC->sidShip != GetShipID())
             {
-                pship->ProcessShipLoadout(pfmLC->cbloadout,
+                if (pship->GetBaseHullType() && pship->GetBaseHullType()->HasCapability(c_habmLifepod) && pship->GetStation()) {
+                    RestoreLoadout(pship->GetStation());
+                } else {
+                    pship->ProcessShipLoadout(pfmLC->cbloadout,
                                           (const ShipLoadout*)(FM_VAR_REF(pfmLC, loadout)), (pship->GetCluster() == NULL));
-			} else if (pship->GetBaseHullType()->HasCapability(c_habmLifepod)) {
-				RestoreLoadout(pship->GetStation());
-			}
+                }
+            }
 
             //But always process the passenger data (even for ourself)
             {
@@ -2090,7 +2092,10 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmSW, CS, SET_WINGID, pfm);
 
             IshipIGC*   pship = m_ship->GetSide()->GetShip(pfmSW->shipID);
-            assert (pship);
+            //assert (pship);
+			if (!pship) {
+				break; //Imago 6/10
+			}
 
             if ((pship != m_ship) || pfmSW->bCommanded)
             {
@@ -2988,6 +2993,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         case FM_S_ENTER_GAME:
         {
             ClearLoadout ();
+            LoadCustomLoadoutFile (); //AaronMoore 1/10
             OnEnterGame();
         }
         break;
@@ -3349,7 +3355,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             if (m_pAutoDownload == NULL)
                 m_pAutoDownload = CreateAutoDownload();
 
-            IAutoUpdateSink * pAutoUpdateSink = OnBeginAutoUpdate(NULL, true);
+            IAutoUpdateSink * pAutoUpdateSink = OnBeginAutoUpdate(NULL, false); //no relog #111
             assert(pAutoUpdateSink);
 
             CASTPFM(pfmServerInfo, L, AUTO_UPDATE_INFO, pfm);
@@ -3370,7 +3376,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             //
             // Let's do it!
             //
-            m_pAutoDownload->BeginUpdate(pAutoUpdateSink, ShouldCheckFiles(), false);
+			m_pAutoDownload->BeginUpdate(pAutoUpdateSink, true, false); //#111 force check
             // m_pAutoDownload could be NULL at this point, if the autodownload system decided
             // not to do a download after all.  This can happen if there is an error or if
             // the client was already up-to-date.

@@ -257,6 +257,13 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 
             return f;
         }
+		
+		//Xynth - 7/3/10 adding function to set expiration time ticket #10
+		virtual void				SetExpiration(Time time)
+		{
+			m_timeExpire = time;
+		}
+		//Xynth end new expiration function
 
     private:
         void ValidTarget(ImodelIGC*  pmodel,
@@ -300,7 +307,8 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 
         ProbeID             m_probeID;
         bool                m_bSeenByAll;
-        bool                m_bCreateNow;
+        bool                m_bCreateNow;		
+		
 };
 
 #endif //__PROBEIGC_H_

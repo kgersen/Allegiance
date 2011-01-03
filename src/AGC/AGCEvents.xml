@@ -269,7 +269,7 @@
 
         <Event id="2014" Name="MessageBox"
             Description="Fired when generic message box function called from within the game server."
-            Format="%Caption%\n%Message%"
+            Format="%Caption%\n%Text%"
             Severity="Warning"
             LogAsNTEvent="1"
             LogAsDBEvent="0"

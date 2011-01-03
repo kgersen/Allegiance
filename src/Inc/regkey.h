@@ -3,7 +3,11 @@
 #ifdef  _ALLEGIANCE_DEV_
 #define ALLEGIANCE_REGISTRY_KEY_ROOT   "Software\\Microsoft\\Microsoft Games\\Allegiance\\Dev"
 #else
+#ifdef _ALLEGIANCE_PROD_
+#define ALLEGIANCE_REGISTRY_KEY_ROOT   "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.0"
+#else
 #define ALLEGIANCE_REGISTRY_KEY_ROOT   "Software\\Microsoft\\Microsoft Games\\Allegiance\\1.1"
+#endif
 #endif
 
 // KGJV - added lobby & club

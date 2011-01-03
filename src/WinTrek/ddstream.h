@@ -5,6 +5,7 @@
 #include <mmstream.h> 
 #include <amstream.h>
 #include <ddstream.h> 
+#include <DShow.h>
 
 
 // +-----------------------------------+
@@ -32,7 +33,7 @@ class CDShow
 
 		// MediaStream interface
 		IMediaStream *m_pPrimaryVideoStream;
-		
+
 		// DirectDraw media stream interface
 		IDirectDrawMediaStream *m_pDDStream;
 		

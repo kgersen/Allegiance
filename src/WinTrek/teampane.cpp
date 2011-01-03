@@ -1011,6 +1011,7 @@ public:
     
     bool OnWingCombo(int index)
     {
+		trekClient.SaveWingAssignment(index); // kolie 6/10
         trekClient.SetWing(index);
         return true;                
     }
@@ -1173,6 +1174,7 @@ public:
             m_pbuttonStopDonate->SetEnabled(false);
 
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+			trekClient.SetWing(trekClient.GetSavedWingAssignment()); //Imago 6/10 #91
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmAutoDonate, C, AUTODONATE)
                 END_PFM_CREATE
                 

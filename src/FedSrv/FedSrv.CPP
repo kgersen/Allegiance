@@ -157,10 +157,22 @@ Global g;
 //#include "queries.h"
 
 #if defined(ALLSRV_STANDALONE)
+TMap<ZString, int> m_CharMap;
   int GetNextCharacterID()
   {
     static int s_nID;
     return ++s_nID;
+  }
+
+  //Imago 6/10 #35 - Dropped player stats are reset
+  int GetStateID(ZString CharName) {
+	  int id = NA;
+	  if (m_CharMap.Find(CharName,id)) {
+		  return id;
+	  }
+	  id  = GetNextCharacterID();
+	  m_CharMap.Set(CharName,id);
+	  return id;
   }
 #endif // defined(ALLSRV_STANDALONE)
 
@@ -565,7 +577,7 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
   }
 
 
-  if(pfsPlayer->PrivilegedUser()){ //Avalanche: Let admins bypass most checks.
+  if(UTL::PrivilegedUser(pfsPlayer->GetName(),-1)){ //Avalanche: Let admins bypass most checks. //Imago 6/10 #2
   // check to see if the mission is running and whether joiners are allowed
   ImissionIGC * pMission = pfsMission->GetIGCMission();
   OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
@@ -680,7 +692,7 @@ if (pfsMission->RequiresInvitation())
 
   // mmf added check here for special users so they can join any game
 
-  if (!pfsPlayer->CanCheat() && !pfsPlayer->PrivilegedUser())
+  if (!pfsPlayer->CanCheat() && !UTL::PrivilegedUser(pfsPlayer->GetName(),-1)) //Imago 6/10 #2
   {
     // make sure the player meets the rank requirements for this mission
     RankID rank = pfsPlayer->GetPersistPlayerScore(NA)->GetRank();
@@ -4381,8 +4393,8 @@ HRESULT FedSrvSiteBase::OnSysMessage(FedMessaging * pthis)
   return S_OK;
 }
 
-// KG: eventually remove this
-#ifndef ALLSRV_STANDALONE
+// KG: eventually remove this - or notk, Imago 6/10
+//#ifndef ALLSRV_STANDALONE
 void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
   // don't make the event an error event, because this may or may not be fatal.
@@ -4411,7 +4423,7 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
     "HelpFile", VT_BSTR,  bstrHelpFile,
     "Source",   VT_BSTR,  bstrSource);
 }
-#endif //ALLSRV_STANDALONE
+//#endif //ALLSRV_STANDALONE
 
 HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
@@ -4577,13 +4589,16 @@ static void DisplaceProbe(IclusterIGC* pcluster, Vector* position, float r)
               return;
       }
     }
-    {
+    	
+	/* Xynth - Removing loop through Asteroids from the DisplaceProbe function
+	** This was causing issues with trying to hide TP2 behind rocks 7/10
+	{
       for (AsteroidLinkIGC*   psl = pcluster->GetAsteroids()->first(); (psl != NULL); psl = psl->next())
       {
           if (DisplaceProbe(psl->data(), position, r))
               return;
       }
-    }
+    }*/
 }
 
 /*-------------------------------------------------------------------------
@@ -4917,14 +4932,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       break;
     }
 
-    case FM_CS_SET_WINGID:
+    case FM_CS_SET_WINGID: //Imago modified to allow clients to set the starting wing. #91 6/10:
     {
       if (!pfsMission)
         break;
 
       IsideIGC* pside = pfsPlayer->GetSide();
-      if (pside->GetObjectID() < 0)
-          break;
+      //if (pside->GetObjectID() < 0)
+          //break;
 
       CASTPFM(pfmSW, CS, SET_WINGID, pfm);
 
@@ -5258,7 +5273,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   DataChaffIGC   dataChaff;
 
                   dataChaff.time0 = g.timeNow;
-                  dataChaff.p0 = myPosition;
+                  dataChaff.p0 = myPosition + pShip->GetBaseHullType()->GetChaffPosition() * myOrientation; // TurkeyXIII 11/09 #94
                   dataChaff.v0 = myVelocity + myOrientation.GetUp() * 5.0f;
 
                   dataChaff.pcluster = pcluster;
@@ -5360,7 +5375,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                       dp.time0 = pShip->GetLastUpdate();
 
                       // Potentially unsafe
-                      // DisplaceProbe(pcluster, &position, pet->GetRadius());
+                      DisplaceProbe(pcluster, &position, pet->GetRadius()); //Imago 6/10 I live on the edge of unsafe!
 
                       dp.p0 = position;
                       dp.pprobetype = (IprobeTypeIGC*)pet;
@@ -5482,7 +5497,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           {
             fValid = true;
             lstrcpy(pqd->szCharacterName, FM_VAR_REF(pfmLogon, CharacterName));
-            pqd->characterID = GetNextCharacterID();
+            pqd->characterID = GetStateID(pqd->szCharacterName); //Imago 6/10
             pqd->fCanCheat = false;
           }
           else
@@ -6262,7 +6277,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		// TE: Commented this block since locked sides now handle balancing
 		// mmf MaxBalance is now used instead of lock sides so put this back, not that lock sides is that useful
-        if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides)
+		// #12 Unable to leave a locked team (to NOAT) Imago 6/10 --^ lol
+        if (!bIsBoot && pfsMission->GetMissionDef()->misparms.bLockSides && sideID == SIDE_TEAMLOBBY)
         {
           // turn it down because the sides are locked
           BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
@@ -7343,10 +7359,13 @@ void ProcessNetworkMessages()
 		if ((g.timeNow.clock() - timeLastRelog.clock() > 30000) && (bNotFirstPump == true)) // 1m interval
 		{
 			_Module.InitPIDs();
+			ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
 			// do this to update our current games count/availability
 			BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
 			  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
 			  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
+			  FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)), CB_ZTS) // Imago #2 6/10
+			  FM_VAR_PARM(PCC(zInfo), CB_ZTS) // Imago 62 7/10
 			END_PFM_CREATE
 			pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
 			//Imago NYI: adjust max games based if we're under load
@@ -7602,7 +7621,11 @@ IHTTPSession * BeginConfigDownload()
   ZString strBuild(vi.GetFileBuildNumber());
 
   char szConfig[MAX_PATH];
-  lstrcpy(szConfig, "http://Allegiance.zone.com/Allegiance.cfg");
+#ifdef _ALLEGIANCE_PROD_
+  lstrcpy(szConfig, "http://autoupdate.alleg.net/allegiance.cfg"); //Imago 6/10
+#else
+  lstrcpy(szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg"); //Imago 6/10
+#endif
 
   CRegKey key;
   if (ERROR_SUCCESS == key.Open(HKEY_LOCAL_MACHINE, HKLM_FedSrv, KEY_READ))
@@ -8081,9 +8104,12 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 #endif
 
   // Give lobby the version
+  ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
   BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
 	  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
 	  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
+	  FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)), CB_ZTS) // Imago #2 6/10
+	  FM_VAR_PARM(PCC(zInfo), CB_ZTS) // Imago #2 6/10
   END_PFM_CREATE
   pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
   pfmLogon->MaxGames = g.cMaxGames; // KGJV #114
@@ -8505,14 +8531,16 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
 
   // Setup the database stuff and connect
-#if !defined(ALLSRV_STANDALONE)
+//#if !defined(ALLSRV_STANDALONE) Imago 6/10 commented and fixed up
+  if (g.strSQLConfig.m_str) {
     hr = g.sql.Init(g.strSQLConfig.m_str, g.idReceiveThread, g.csqlSilentThreads, g.csqlNotifyThreads);
 
     if (FAILED(hr))
     {
       return hr;
     }
-#endif
+  }
+//#endif
 
   UTL::SetArtPath(g.strArtPath);
 
@@ -8705,6 +8733,12 @@ void LoadSettings()
     {
         if (FAILED(LoadRegString(hKey, "AuthServer", g.strAuthServer)))
           g.strAuthServer = "Pointweb01"; // default for all developers
+		
+		ZString zUsers;
+		if (!FAILED(LoadRegString(hKey, "PrivilegedUsers", zUsers))) {
+			ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
+			UTL::SetPrivilegedUsers((PCC)zUsers.Scramble(zInfo),-1); //Imago 6/10
+		}
 
         dwValue=0;
         cbValue = sizeof(dwValue);
@@ -8733,9 +8767,9 @@ void LoadSettings()
 
         // Standalone servers do not need a LobbyServer registry value because
         // they always get it from the CFG file.
-        #if !defined(ALLSRV_STANDALONE)
+        //#if !defined(ALLSRV_STANDALONE)  Imago 6/10
           LoadRegString(hKey, "LobbyServer", g.strLobbyServer);
-        #endif // !defined(ALLSRV_STANDALONE)
+        //#endif // !defined(ALLSRV_STANDALONE)
 
         // Use winsock-provided address for clients, unless overridden (e.g. dual nic)
 		// KGJV #114 localaddress isnt used anymore by DP8 so we use it as public userfriendly server name
@@ -8800,7 +8834,7 @@ void LoadSettings()
             g.fTimeOut = !!dwValue;
         else g.fTimeOut = true;
 
-      #if !defined(ALLSRV_STANDALONE)
+      //#if !defined(ALLSRV_STANDALONE) Imago revived 6/10
         dwValue=0;
         cbValue = sizeof(dwValue);
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsNotify", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
@@ -8815,7 +8849,7 @@ void LoadSettings()
 
         if (FAILED(LoadRegString(hKey, "SQLConfig", g.strSQLConfig)))
           g.strSQLConfig.Empty(); // default for all developers
-      #endif // !defined(ALLSRV_STANDALONE)
+      //#endif // !defined(ALLSRV_STANDALONE)
 
         ::RegCloseKey(hKey);
     }
@@ -10446,6 +10480,30 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
     ds.bpHull = pasteroid->GetFraction();
     ds.bpShield = 0.0f;
 
+	if (pcluster->GetProbes()) { //Imago 7/10 - if there are probes in this sector...
+		//Xynth - Begin change to destroy probes too close to rock and would otherwise be lodged in base 7/10
+		//ticket #10
+		for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
+		{
+			IprobeIGC*  pprobe = ppl->data();
+			Vector newPos = pprobe->GetPosition();
+			Vector dxy = pprobe->GetPosition() - pasteroid->GetPosition();
+			float l2 = dxy.LengthSquared();
+			float rOffset = pstationtype->GetRadius() + pprobe->GetRadius();
+			/*debugf("Probe xyz %f %f %f\n",newPos.X(), newPos.Y(), newPos.Z());
+			debugf("Station vec %f %f %f\n",ds.position.X(), ds.position.Y(), ds.position.Z());
+			debugf("radii %f %f\n", pstationtype->GetRadius(),  pprobe->GetRadius());
+			debugf("l2 rOffset %f %f\n", l2, rOffset);*/
+			if ((l2 < rOffset * rOffset) && (l2 != 0.0f))
+			{				
+				pprobe->SetExpiration(now + 1.0);
+				//debugf("kill probe");							
+			}
+		}
+		
+	} //Xynth/Imago - End change
+
+
     KillAsteroidEvent(pasteroid, false);
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
@@ -11243,28 +11301,15 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 
   // TE: Added default values for plauncher's members used in StationDeleted event
   const char* szLauncherName = "(unknown)";
-  int iLauncherUniqueID = -1;
-  int iLauncherSideUniqueID = -1;
+  int iLauncherUniqueID = NA;
+  int iLauncherSideUniqueID = NA;
 
-  // If the launcher exists...
-  if (plauncher != NULL)
+  if (plauncher && otLauncher == OT_ship)
   {
-	  // Retrieve the type of object that destroyed this station...
-	  ObjectType LauncherType = plauncher->GetObjectType();
-
-	  // If the launcher is NOT a probe (novabomb) or a missile (aleph res)...
-	  //if (LauncherType != OT_probe && LauncherType != OT_missile)
-	  //TheBored 4-MAR-2009: Fixed "Unknown Ship" server crash bug
-	  if (LauncherType && LauncherType != OT_probe && LauncherType != OT_missile)
- 	  {
- 		  // Safely read the values from the launcher
- 		  szLauncherName = plauncher->GetName();
-
-		  // Safely read the values from the launcher
-		  szLauncherName = plauncher->GetName();
-		  iLauncherUniqueID = plauncher->GetUniqueID();
-		  iLauncherSideUniqueID = plauncher->GetSide()->GetUniqueID();
-	  }
+	  // Safely read the values from the launcher
+	  szLauncherName = plauncher->GetName();
+	  iLauncherUniqueID = plauncher->GetUniqueID();
+	  if (psideLauncher) iLauncherSideUniqueID = psideLauncher->GetUniqueID(); //fix reporting base destruction Fuzz/Imago/Rock/PKK/notjarvis 24-12-09
   }
 
   // TE: fire AGCEvent when base is destroyed
@@ -11788,6 +11833,35 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
 
         bool    bBuyFuel = true;
 
+        // Remount launcher parts if they are depleted AaronMoore 1/10 (Imago)
+        for (int i = 0; i < 3; i++)
+        {
+            if ((i == 0 && pship->GetMountedPart(ET_Magazine, 0) == NULL) ||
+                (i == 1 && pship->GetMountedPart(ET_Dispenser, 0) == NULL) ||
+                (i == 2 && pship->GetMountedPart(ET_ChaffLauncher, 0) == NULL))
+            {
+                IpartTypeIGC*   pt = ptDesired[i];
+ 
+                if (pt)
+                {
+                    // Upgrade part if posible
+                    while (true)
+                    {
+                        IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
+                        if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
+                            pt = ptNext;
+                        else
+                            break;
+                    }
+                    pship->CreateAndAddPart(pt, 0, SHRT_MAX);
+
+                    // Remove this part from the desired list so it is not added again into cargo
+                    ptDesired[i] = NULL;
+                }
+            }
+        }
+		//end AaaronMoore 1/10
+        
 
         int     iDesired = 0;
         for (Mount i = 0; (i < c_maxCargo); i++)

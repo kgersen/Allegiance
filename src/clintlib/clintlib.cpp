@@ -672,7 +672,6 @@ void MissionInfo::Update(FMD_S_MISSIONDEF* pfmMissionDef)
 void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
 {
     int numSidesOld = NumSides();
-
     Strncpy(m_pfmMissionDef->misparms.strGameName, FM_VAR_REF(pfmLobbyMissionInfo, szGameName), c_cbGameName);
     m_pfmMissionDef->misparms.strGameName[c_cbGameName - 1] = '\0';
     m_strGameDetailsFiles = (FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) != NULL)
@@ -698,7 +697,8 @@ void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
 	// KGJV #114 - fill in server name & ip
 	Strncpy(m_pfmMissionDef->szServerName, FM_VAR_REF(pfmLobbyMissionInfo,szServerName), c_cbName);
 	Strncpy(m_pfmMissionDef->szServerAddr, FM_VAR_REF(pfmLobbyMissionInfo,szServerAddr), 16);
-
+	UTL::SetPrivilegedUsers( ((FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) != NULL) ?  FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) : ""),m_pfmMissionDef->dwCookie); //Imago 6/10 #2
+	UTL::SetServerVersion(FM_VAR_REF(pfmLobbyMissionInfo, szServerVersion),m_pfmMissionDef->dwCookie); //Imago 7/10 #62
     m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
     m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
     m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
@@ -1114,6 +1114,8 @@ BaseClient::BaseClient(void)
     m_szLobbyCharName[0] = '\0';
     m_szIGCStaticFile[0] = '\0';
     m_pMissionInfo = NULL;
+
+    m_customLoadouts = new CachedLoadoutList[MAX_CUSTOM_LOADOUTS]; //AaronMoore 1/10
 }
 
 BaseClient::~BaseClient(void)
@@ -1149,6 +1151,11 @@ BaseClient::~BaseClient(void)
     if (m_vStaticMapInfo)
         delete [] m_vStaticMapInfo;
     m_vStaticMapInfo = NULL;
+	
+	//AaronMoore 1/10
+    if (m_customLoadouts)
+        delete [] m_customLoadouts;
+    m_customLoadouts = NULL;
 }
 
 void    BaseClient::Initialize(Time timeNow)

@@ -5,7 +5,7 @@
 #include "pch.h"
 #include "AdminEventLoggerHook.h"
 
-#if !defined(ALLSRV_STANDALONE)
+//#if !defined(ALLSRV_STANDALONE) Imago enabled 6/10
 
 /////////////////////////////////////////////////////////////////////////////
 // CAdminEventLoggerHook
@@ -98,4 +98,4 @@ STDMETHODIMP CAdminEventLoggerHook::LogEvent(IAGCEvent* pEvent, VARIANT_BOOL bSy
   return S_OK;
 }
 
-#endif // !defined(ALLSRV_STANDALONE)
+//#endif // !defined(ALLSRV_STANDALONE) Imago 6/10

@@ -38,7 +38,8 @@ class LoadoutImpl :
     public EventTargetContainer<LoadoutImpl>,
     public TrekClientEventSink,
     public ISubmenuEventSink,
-    public IMenuCommandSink
+    public IMenuCommandSink,
+    public IKeyboardInput //AaronMoore 1/10
 {
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -274,6 +275,8 @@ public:
     TRef<IMenu>             m_pmenu;
     TRef<IMenu>             m_phullMenu;
     TRef<ISubmenuEventSink> m_psubmenuEventSink;
+
+    TRef<IKeyboardInput> m_keyboardDelegate; //AaronMoore 1/10
 
     //
     // IGC stuff
@@ -534,6 +537,10 @@ public:
         UpdatePartInfo(NULL, NULL, NULL);
         UpdateNextAndPrevButtons();
         m_psubmenuEventSink = ISubmenuEventSink::CreateDelegate(this);
+		
+		//AaronMoore 1/10
+        m_keyboardDelegate = IKeyboardInput::CreateDelegate(this);
+        GetWindow()->AddKeyboardInputFilter(m_keyboardDelegate);
     }
 
     ~LoadoutImpl()
@@ -549,6 +556,9 @@ public:
         m_pmodeler->UnloadNameSpace("loadout");
         m_pmodeler->UnloadNameSpace("loadoutdata");
         m_pmodeler->UnloadNameSpace("loadoutinclude");
+		
+		//AaronMoore 1/10
+        GetWindow()->RemoveKeyboardInputFilter(m_keyboardDelegate);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1433,11 +1443,9 @@ public:
 
         UpdateHullType();
     }
-
-    void BuyHull(IhullTypeIGC* phullType)
-    { 
-        trekClient.SaveLoadout(m_pship);
-
+	//AaronMoore 1/10
+    void RefreshLoadout(CachedLoadoutList & loadoutList, IhullTypeIGC* phullType)
+    {
         // remove all of the current parts
         {
             SlotList::Iterator iter(m_listSlots);
@@ -1455,9 +1463,16 @@ public:
             }
             assert (m_pship->GetParts()->n() == 0);
         }
+	//AaronMoore 1/10
+        trekClient.ReplaceLoadout(m_pship, trekClient.GetShip()->GetStation(), phullType, moneyLots, loadoutList);
+    }
 
+    void BuyHull(IhullTypeIGC* phullType)
+    { 
+        trekClient.SaveLoadout(m_pship);
+        
         // give it the default loadout for this hull
-        trekClient.ReplaceLoadout(m_pship, trekClient.GetShip()->GetStation(), phullType, moneyLots);
+        RefreshLoadout(trekClient.m_loadouts, phullType); //AaronMoore 1/10
 
         // recalculate the mass and signature of the default loadout
         m_fSpecMass = m_pship->GetMass();
@@ -2183,6 +2198,51 @@ public:
         m_pnumberOldShipCost->SetValue(trekClient.GetShip()->GetValue());
 
         UpdateHullType();
+    }
+	
+	//AaronMoore 1/10
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // IKeyboardInput Methods
+    //
+    //////////////////////////////////////////////////////////////////////////////
+
+    bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
+    {
+        if (ks.bDown && m_pship->GetParentShip() == NULL)
+        {
+            int num = (ks.vk - 48);
+
+            if (num >= 0 && num < trekClient.MAX_CUSTOM_LOADOUTS)
+            {
+                if (ks.bControl)
+                {
+                    // Save the current loadout of this ship into the Custom Loadout array
+                    trekClient.SaveCustomLoadout(m_pship, num);
+                    
+                    trekClient.PostText(false, "Saved %s loadout %d", m_pship->GetBaseHullType()->GetName(), num);
+
+                    if (trekClient.SaveCustomLoadoutFile())
+                        trekClient.PlaySoundEffect(positiveButtonClickSound);
+                    
+                }
+                else if (!ks.bShift && !ks.bAlt)
+                {
+                    // Restore the current loadout from the Custom Loadout array
+                    RefreshLoadout(trekClient.m_customLoadouts[num], m_pship->GetBaseHullType());
+
+                    UpdateHullType();
+
+                    trekClient.PostText(false, "Loaded %s loadout %d", m_pship->GetBaseHullType()->GetName(), num);
+
+                    trekClient.PlaySoundEffect(mountSound);
+                }
+            }
+
+        }
+
+        return false;
+        
     }
 };
 

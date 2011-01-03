@@ -775,7 +775,7 @@ public:
 	JoystickInputStreamImpl(IDirectInputDevice8* pdid, HWND hwnd, CLogFile * pLogFile) :		// kg: DInput8  Imago 8/12/09
         m_pdid(pdid),
         m_bFocus(false),
-        m_vvalueObject(5),
+        m_vvalueObject(12), //imago 12/03/09, was 5
 		m_pLogFile(pLogFile)
     {
         DDCall(m_pdid->GetCapabilities(&m_didc));
@@ -810,6 +810,8 @@ public:
                 index++;
             }
         }
+
+        //m_vvalueObject
 
         //
         // Build the data format
@@ -1326,6 +1328,7 @@ private:
 			case DI8DEVTYPE_JOYSTICK: // kg Di8 DIDEVTYPE_JOYSTICK:
 			case DI8DEVTYPE_GAMEPAD: //Imago 7/23/09
 			case DI8DEVTYPE_FLIGHT: // --^
+            case DI8DEVTYPE_1STPERSON: // Imago 11/09
                 {
                     TRef<JoystickInputStreamImpl> pjoystickInputStream = 
                         new JoystickInputStreamImpl(pdid2, m_hwnd, &m_joylog);

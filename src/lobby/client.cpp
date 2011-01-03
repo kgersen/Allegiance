@@ -250,50 +250,8 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
   
   switch (pfm->fmid)
   {
-    // TODO: remove this post-beta.
-    case FM_C_LOGON_LOBBY_OLD:
-    {
-#ifndef NO_MSG_CRC
-      bool fCRC = g_fLogonCRC;
-      g_fLogonCRC = true; // assume always yes until we find one via OnBadCRC that is not.
-#endif      
-      CASTPFM(pfmLogon, C, LOGON_LOBBY_OLD, pfm);
-
-      // no need to authenticate - they're out of sync and need to auto-update
-
-
-      if (g_pAutoUpdate && pfmLogon->crcFileList != g_pAutoUpdate->GetFileListCRC())
-      {
-        // they need auto update
-        BEGIN_PFM_CREATE(*pthis, pfmAutoUpdate, L, AUTO_UPDATE_INFO)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPServer(), CB_ZTS)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPInitialDir(), CB_ZTS)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPAccount(), CB_ZTS)
-          FM_VAR_PARM(g_pAutoUpdate->GetFTPPassword(), CB_ZTS)
-        END_PFM_CREATE
-        pfmAutoUpdate->crcFileList = g_pAutoUpdate->GetFileListCRC();
-        pfmAutoUpdate->nFileListSize = g_pAutoUpdate->GetFileListSize();
-      }
-      else 
-      {
-        // tell client that his version is wrong
-        char * szReason = "Your game's version did not get auto-updated properly.  Please try again later.";
-        BEGIN_PFM_CREATE(*pthis, pfmLogonNack, L, LOGON_NACK)
-          FM_VAR_PARM((char *)szReason, CB_ZTS)
-        END_PFM_CREATE
-        pfmLogonNack->fRetry = false;
-      }
-
-#ifndef NO_MSG_CRC
-      // Big hack to communicate w/ old non-crc clients. This is the ONLY time we send them any non-crc'd messages 
-      // by increasing the announced size of the message, the client will skip past the crc.
-      if (!fCRC)
-        *(CB*)(pthis->BuffOut()) += sizeof(int);
-#endif      
-      pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
-    }
-    break;
-
+    // Imago removed old LOGIN message handler "post-beta" 6/10
+ 
 	// Imago was here 6/26/08 7/5/08
     case FM_C_LOGON_LOBBY:
     {
@@ -376,31 +334,33 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	// KGJV #114
 	case FM_C_GET_SERVERS_REQ:
 	{
-		// construct the servers list
-		ListConnections::Iterator iterCnxn(*g_pLobbyApp->GetFMServers().GetConnections());
 		int  cServers = 20; // fixed max servers (for now)
 		ServerCoreInfo* pSCI = new ServerCoreInfo[cServers];
-		int i=0;
-		while (!iterCnxn.End())
-		{
-			CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn.Value());
-			if (pServerT)
+		if (pClient->IsValid()) { //Imago 6/10 make sure the client is valid or give them empty list
+			// construct the servers list
+			ListConnections::Iterator iterCnxn(*g_pLobbyApp->GetFMServers().GetConnections());
+			int i=0;
+			while (!iterCnxn.End())
 			{
-				if (!pServerT->GetPaused() && (pServerT->GetStaticCoreMask() != 0))// server isnt paused and has at least one core
+				CFLServer * pServerT = CFLServer::FromConnection(*iterCnxn.Value());
+				if (pServerT)
 				{
-					strcpy_s(pSCI[i].szName,sizeof(pSCI[i].szName),iterCnxn.Value()->GetName());
-					g_pLobbyApp->GetFMServers().GetIPAddress(*iterCnxn.Value(), pSCI[i].szRemoteAddress);
-					strcpy_s(pSCI[i].szLocation,sizeof(pSCI[i].szLocation),pServerT->GetLocation());
-					pSCI[i].iCurGames = pServerT->GetCurrentGamesCount();
-					pSCI[i].iMaxGames = pServerT->GetMaxGamesAllowed();
-					pSCI[i].dwCoreMask = pServerT->GetStaticCoreMask();
-					i++;
+					if (!pServerT->GetPaused() && (pServerT->GetStaticCoreMask() != 0))// server isnt paused and has at least one core
+					{
+						strcpy_s(pSCI[i].szName,sizeof(pSCI[i].szName),iterCnxn.Value()->GetName());
+						g_pLobbyApp->GetFMServers().GetIPAddress(*iterCnxn.Value(), pSCI[i].szRemoteAddress);
+						strcpy_s(pSCI[i].szLocation,sizeof(pSCI[i].szLocation),pServerT->GetLocation());
+						pSCI[i].iCurGames = pServerT->GetCurrentGamesCount();
+						pSCI[i].iMaxGames = pServerT->GetMaxGamesAllowed();
+						pSCI[i].dwCoreMask = pServerT->GetStaticCoreMask();
+						i++;
+					}
 				}
+				iterCnxn.Next();
+				if (i>cServers) break; // dont go above max allowed servers
 			}
-			iterCnxn.Next();
-			if (i>cServers) break; // dont go above max allowed servers
+			cServers = i;
 		}
-		cServers = i;
 
 		// construct the message
 		BEGIN_PFM_CREATE(*pthis, pfmServerList, L, SERVERS_LIST)
@@ -575,7 +535,6 @@ void LobbyClientSite::OnMessageNAK(FedMessaging * pthis, DWORD dwTime, CFMRecipi
 
 HRESULT LobbyClientSite::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn) 
 {
-	 //Here is where we want to send an async request for ASGS
   CFLClient * pClient = new CFLClient(&cnxn); 
   debugf("Player %s has connected\n", cnxn.GetName());
   g_pLobbyApp->GetCounters()->cLogins++;

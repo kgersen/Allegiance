@@ -880,7 +880,8 @@ void CFSPlayer::SetCluster(IclusterIGC* pcluster, bool bViewOnly)
             }
         }
     
-        //Also send the identical message to all of the ship's children
+        //Also send the identical message to all of the ship's children]
+		if (!bViewOnly) //TheRock 4-1-2010 fixed ships overlaying in f3 while on a turret
         {
             for (ShipLinkIGC*   psl = GetIGCShip()->GetChildShips()->first(); (psl != NULL); psl = psl->next())
             {

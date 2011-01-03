@@ -326,24 +326,6 @@ public:
     return m_fCanCheat;
   }
 
-  // mmf added member function for use for things like circumventing rank restrictions
-  //     same function also added to PlayerInfo class for the client (clintlib.h)
-  //TheBored 25-JUN-07: Edited function to be case insensitive (@HQ == @hq)
-  bool            PrivilegedUser()            
-  {
-	size_t nameLen;
-	nameLen=strlen(GetName());
-
-	if ( (nameLen>2) && ( ((strncmp(GetName(),"?",1))==0) || ((strncmp(GetName(),"+",1))==0)
-		 || ((strncmp(GetName(),"$",1))==0) ) ) return true;
-	if ( (nameLen>3) && ( (_stricmp(GetName()+(nameLen-3),"@HQ"))==0 ) ) return true;
-	if ( (nameLen>4) && ( (_stricmp(GetName()+(nameLen-4),"@Dev"))==0 ) ) return true;
-	if ( (nameLen>6) && ( (_stricmp(GetName()+(nameLen-6),"@Alleg"))==0 ) ) return true;
-    //TheBored 25-JUN-07: Added @Zone
-	if ( (nameLen>5) && ( (_stricmp(GetName()+(nameLen-5),"@Zone"))==0 ) ) return true;
-    return false;
-  }
-
   CFSPlayer*      GetAutoDonate(void) const
   {
     IshipIGC*   pship = GetIGCShip()->GetAutoDonate();

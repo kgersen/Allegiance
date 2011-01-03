@@ -110,6 +110,8 @@ public:
 
 	char *		GetMaxTextureString( int iIndex );
 
+
+
 private:
 	bool		ExtractAdapterData( int iDeviceIndex );
 	int			GetFormatBitCount( D3DFORMAT fmt );

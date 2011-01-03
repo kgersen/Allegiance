@@ -2026,9 +2026,11 @@ class ThingSiteImpl : public ThingSitePrivate
                     //We, trivially, see anything on our side. beyond that ...  Imago ALLY VISIBILITY 7/11/09
                     //does the ship that saw the object last still see it
                     //(if such a ship exists)
-                    if ( (trekClient.GetSide() == pmodel->GetSide() || (trekClient.GetSide()->AlliedSides(pmodel->GetSide(),trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ||
-                         (m_sideVisibility.pLastSpotter() && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel)) ||
-						 (m_sideVisibility.pLastSpotter() && trekClient.GetSide()->AlliedSides(m_sideVisibility.pLastSpotter()->GetSide(),trekClient.GetSide()) && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz)
+                    if ( 
+						(trekClient.GetSide() == pmodel->GetSide()) || 
+						(trekClient.GetSide()->AlliedSides(pmodel->GetSide(),trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ||
+						(m_sideVisibility.pLastSpotter() && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel) && trekClient.GetSide() == m_sideVisibility.pLastSpotter()->GetSide()) ||
+						(m_sideVisibility.pLastSpotter() && (trekClient.GetSide()->AlliedSides(m_sideVisibility.pLastSpotter()->GetSide(),trekClient.GetSide()) && trekClient.GetSide() != m_sideVisibility.pLastSpotter()->GetSide()) && m_sideVisibility.pLastSpotter()->InScannerRange(pmodel) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz)
 					   )
                     {
                         //yes
@@ -2950,6 +2952,29 @@ void WinTrekClient::SaveCharacterName(ZString strName)
             (const BYTE*)(const char*)strName, strName.GetLength() + 1);
         RegCloseKey(hKey);
     }
+}
+int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
+	HKEY hKey;
+	DWORD dwType = REG_DWORD;
+    DWORD dwWing = 1; // Default Wing Assignment is attack
+    DWORD dwSize = sizeof(DWORD);
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
+    {
+        RegQueryValueEx(hKey, "WingAssignment", NULL, &dwType, (PBYTE)&dwWing, &dwSize);
+        RegCloseKey(hKey);
+    }
+
+    return (int)dwWing;
+}
+void WinTrekClient::SaveWingAssignment(int index){ // kolie 6/10
+	HKEY hKey;
+	DWORD dwWing;
+	dwWing = (DWORD)index;
+	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
+	{
+		RegSetValueEx(hKey, "WingAssignment", NULL, REG_DWORD,  (PBYTE)&dwWing, sizeof(DWORD) );
+		RegCloseKey(hKey);
+	}
 }
 
 // KGJV : added utility functions for cores & server names
@@ -4096,7 +4121,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 		//TheBored 25-JUN-07: Checking to see if admin is PMing the user. If so, bypass the filter.
 		bool bPrivilegedUserPM = false;
 		PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());
-        if((ctRecipient == CHAT_INDIVIDUAL) && (ppi->PrivilegedUser()))
+        if((ctRecipient == CHAT_INDIVIDUAL) && (UTL::PrivilegedUser(ppi->CharacterName(),trekClient.m_pMissionInfo->GetCookie()))) //Imago 6/10 #2
 		{
 			bPrivilegedUserPM = true;
 		}

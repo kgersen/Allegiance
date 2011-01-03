@@ -11,6 +11,7 @@
     <ClCompile Include="..\src\_Utility\Messages.cpp" />
     <ClCompile Include="..\src\_Utility\pch.cpp" />
     <ClCompile Include="..\src\_Utility\Utility.cpp" />
+    <ClCompile Include="..\src\_Utility\allegdb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Inc\MessageVersion.h" />

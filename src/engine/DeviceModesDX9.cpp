@@ -4,6 +4,18 @@
 
 #define OUTPUT_DEVICE_DETAILS
 
+BOOL CALLBACK enumMonitorProc(HMONITOR hMonitor, HDC, LPRECT rect, LPARAM lParam) {
+	HMONITOR *hm = (HMONITOR*) lParam;
+	*hm = hMonitor;
+	return true;
+}
+
+HMONITOR getPrimaryMonitor() {
+	HMONITOR hm;
+	EnumDisplayMonitors(NULL, NULL, enumMonitorProc, (LONG) &hm);
+	return hm;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Buffer formats, in order of preference.
 static D3DFORMAT pSupportedModes[] = 
@@ -119,7 +131,25 @@ CD3DDeviceModeData::CD3DDeviceModeData( int iMinWidth, int iMinHeight, class CLo
 		return;
 	}
 
-	m_pLogFile->OutputStringV( "Created D3D9 interface.\n" );
+	HMODULE hRast = LoadLibrary("rgb9rast.dll");
+	if (hRast == 0) {
+		hRast = LoadLibrary("rgb9rast_1.dll");
+		if (hRast == 0) {
+			hRast = LoadLibrary("rgb9rast_2.dll");
+		}
+	}
+	if(hRast != 0) {
+			FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
+			HRESULT hr = m_pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+			if (hr == D3D_OK) {
+				m_pLogFile->OutputString( "DX registered the SW Rasterizer.\n" );
+			} else {
+				pLogFile->OutputString( "DX did not register the SW Rasterizer!\n" );
+			}
+	} else {
+		m_pLogFile->OutputString( "SW Rasterizer failed to load.\n" );
+	}
+	m_pLogFile->OutputString( "Created D3D9 interface.\n" );
 
 	m_iAdapterCount = m_pD3D9->GetAdapterCount( );
 	m_pAdapterArray = new SAdapter[ m_iAdapterCount ];
@@ -650,11 +680,23 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 						pAdapter->adapterID.Description );
 
 	pAdapter->hMonitor = m_pD3D9->GetAdapterMonitor( iAdapter );
+	MONITORINFO lpmi;
+	if (!GetMonitorInfo(pAdapter->hMonitor,&lpmi)) {
+		m_pLogFile->OutputString("DX GetAdapterMonitor failed!\n");
+		pAdapter->hMonitor = getPrimaryMonitor();
+	}
 	pAdapter->pModeCount = new int[ eDMD_NumModes ]; //Fix memory leak -Imago 8/2/09
 	pAdapter->ppAvailableModes = new SAdapterMode *[ eDMD_NumModes ];
 	pAdapter->iTotalModeCount = 0;
 	hr = m_pD3D9->GetDeviceCaps( iAdapter, D3DDEVTYPE_HAL, &pAdapter->devCaps );
-	_ASSERT( hr == D3D_OK );
+	if ( hr != D3D_OK ) {
+		m_pLogFile->OutputString("Trying D3DDEVTYPE_SW\n");
+		hr = m_pD3D9->GetDeviceCaps( iAdapter, D3DDEVTYPE_SW, &pAdapter->devCaps );
+		if (hr != D3D_OK) {
+			m_pLogFile->OutputString("Trying D3DDEVTYPE_REF\n");
+			hr = m_pD3D9->GetDeviceCaps( iAdapter, D3DDEVTYPE_REF, &pAdapter->devCaps );
+		}
+	}
 
 	for( i=0; i<eDMD_NumModes; i++ )
 	{
@@ -663,6 +705,7 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 		pAdapter->pModeCount[i] = m_pD3D9->GetAdapterModeCount( iAdapter, currMode );
 		pAdapter->ppAvailableModes[i] = new SAdapterMode[ pAdapter->pModeCount[i] ];
 
+		bool bPassed = false;
 		for( j=0; j<pAdapter->pModeCount[i]; j++ )
 		{
 			pMode = &pAdapter->ppAvailableModes[i][iLastAdded];
@@ -681,6 +724,7 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 			pMode->mode.RefreshRate	= dispMode.RefreshRate;
 
 			// Check hardware, then windowed.
+
 			hr = m_pD3D9->CheckDeviceType(	iAdapter,
 											D3DDEVTYPE_HAL,
 											dispMode.Format,
@@ -688,10 +732,35 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 											FALSE ) ;
 			if( hr != D3D_OK )
 			{
-				continue;
+				pMode->bHWSupport = false;
+				hr = m_pD3D9->CheckDeviceType(	iAdapter,
+								D3DDEVTYPE_SW,
+								dispMode.Format,
+								dispMode.Format, 
+								FALSE ) ;
+				if ( hr != D3D_OK )  {
+					m_pLogFile->OutputStringV("SW full-screen device type %d failed\n",dispMode.Format);
+					hr = m_pD3D9->CheckDeviceType(	iAdapter,
+								D3DDEVTYPE_REF,
+								dispMode.Format,
+								dispMode.Format, 
+								FALSE ) ;
+					if ( hr != D3D_OK )  {
+						m_pLogFile->OutputStringV("REF full-screen device type %d failed\n",dispMode.Format);
+						
+						continue;
+					}
+				} else {
+					bPassed = true;
+				}
+			} else {
+				bPassed = true;
 			}
-			pMode->bHWSupport = true;
+
+			_ASSERT(bPassed);
+
 			pMode->bWindowAllowed = false;
+			
 			hr = m_pD3D9->CheckDeviceType(	iAdapter,
 											D3DDEVTYPE_HAL,
 											pAdapter->currentDisplayMode.Format,
@@ -700,6 +769,17 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 			if( hr == D3D_OK )
 			{
 				pMode->bWindowAllowed = true;
+			} else {
+				hr = m_pD3D9->CheckDeviceType(	iAdapter,
+								D3DDEVTYPE_SW,
+								pAdapter->currentDisplayMode.Format,
+								dispMode.Format,
+								TRUE );
+				if( hr == D3D_OK ) {
+					pMode->bWindowAllowed = true;
+				} else {
+					m_pLogFile->OutputStringV("SW windowed device type %d bb %d failed\n",dispMode.Format,pAdapter->currentDisplayMode.Format);
+				}
 			}
 
 			pMode->d3dDepthStencil = D3DFMT_UNKNOWN;
@@ -717,8 +797,13 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 
 				if( hr != D3D_OK )
 				{
-					// Format not available.
-					continue;
+					hr = m_pD3D9->CheckDeviceFormat(	iAdapter,
+													D3DDEVTYPE_SW,
+													pAdapter->currentDisplayMode.Format,
+													D3DUSAGE_DEPTHSTENCIL,
+													D3DRTYPE_SURFACE,
+													pSupportedDepthStencil[k] );
+					if( hr != D3D_OK ) continue;
 				}
 
 				hr = m_pD3D9->CheckDepthStencilMatch(	iAdapter,
@@ -730,6 +815,22 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 				{
 					pMode->d3dDepthStencil = pSupportedDepthStencil[k];
 					break;
+				} else {
+					hr = m_pD3D9->CheckDepthStencilMatch(	iAdapter,
+														D3DDEVTYPE_SW,
+														pAdapter->currentDisplayMode.Format,
+														dispMode.Format,
+														pSupportedDepthStencil[k] );
+					if( hr == D3D_OK ) {
+						pMode->d3dDepthStencil = pSupportedDepthStencil[k];
+						break;
+					} else {
+						hr = m_pD3D9->CheckDepthStencilMatch(	iAdapter,
+														D3DDEVTYPE_REF,
+														pAdapter->currentDisplayMode.Format,
+														dispMode.Format,
+														pSupportedDepthStencil[k] );
+					}
 				}
 			}
 			if( pMode->d3dDepthStencil == D3DFMT_UNKNOWN )

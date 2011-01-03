@@ -14,7 +14,7 @@
 #include "MessageCore.h"
 
 // Imago updated for R5 8/6/09
-#define LOBBYVER_LS 9 // If you change this file, increment this
+#define LOBBYVER_LS 11 // If you change this file, increment this // #2 6/10 // #62 7/10
 
 
 /*
@@ -36,6 +36,8 @@
 DEFINE_FEDMSG(S, LOGON_LOBBY, 201)
   FM_VAR_ITEM(vStaticCoreInfo); // KGJV #114 core list
   FM_VAR_ITEM(szLocation);      // KGJV #114 location string
+  FM_VAR_ITEM(szPrivilegedUsers);      //Imago 6/10 #2
+  FM_VAR_ITEM(szServerVersion);      //Imago 7/10 #62
   int cStaticCoreInfo;          // KGJV #114 size of core list
   int MaxGames;					// KGJV #114 max games allowed on server
   short verLobby;

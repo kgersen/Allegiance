@@ -12,7 +12,7 @@
 #define _MESSAGES_LC_H_ 
 
 #include "MessageCore.h"
-#define LOBBYVER 11 //Imago updated for R5 8/6/09
+#define LOBBYVER 12 //Imago updated for R5 8/6/09 /- #2 6/10
 
  /*
   *************************************************

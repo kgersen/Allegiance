@@ -295,6 +295,9 @@ class  WinTrekClient :
         int               GetGrooveLevel();
         ZString           GetSavedCharacterName();
         void              SaveCharacterName(ZString strName);
+
+		int GetSavedWingAssignment(); // kolie 6/10
+		void SaveWingAssignment(int wing); // kolie 6/10
         
 		// KGJV : added utility functions for cores & server names
 		ZString           CfgGetCoreName(const char *s);
@@ -328,6 +331,13 @@ typedef struct
     int objects_insector[OT_modelEnd+1];
 } FrameDumpInfo;
 extern FrameDumpInfo g_fdInfo;
+
+//Imago pass windowed mode #112 7/10
+typedef struct 
+{
+    ZString pathStr;
+    bool bWindowed;
+} PlayVideoInfo;
 
 TRef<IMessageBox> CreateMessageBox(
     const ZString& str, 
