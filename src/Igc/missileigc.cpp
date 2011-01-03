@@ -491,13 +491,18 @@ void                 CmissileIGC::HandleCollision(Time       timeCollision,
                                 (!pstation->GetStationType()->HasCapability(c_sabmPedestal)) &&
                                 (pstation->GetShieldFraction() < GetMyMission()->GetFloatConstant(c_fcidDownedShield)))
                             {
-                                pigc->CaptureStationEvent(m_launcher, pstation); // #ALLYTD found BUG- check side!!!! what?
+                                if ((GetSide()!=pModel->GetSide()) || IsideIGC::AlliedSides(GetSide(),pModel->GetSide()))
+								  pigc->CaptureStationEvent(m_launcher, pstation); // Andon: Fix nerve gas self-capture bug 7/10
                             }
                         }
                     }
                 }
             }
-            else
+            else if (m_launcher->GetObjectID() == ((ImissileIGC*)pModel)->GetLauncher()->GetObjectID())
+			{
+				return;
+			}
+			else
             {
                 //Missiles hitting missiles are a special case: both die without calling either's receive damage method.
                 //Create explosions for both missiles

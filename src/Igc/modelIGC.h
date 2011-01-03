@@ -122,6 +122,14 @@ class   CmodelIGC
                 return false;
             return m_pThingSite->GetSideVisibility(side);
         }
+		
+		//Xynth #100 7/2010
+		bool            GetCurrentEye(IsideIGC*   side) const
+        {
+            if (!m_pThingSite)
+                return false;
+            return m_pThingSite->GetCurrentEye(side);
+        }
 
         void            UpdateSeenBySide(void)
         {
@@ -468,9 +476,14 @@ template<class T> class TmodelIGC : public T
         }
 
         virtual bool                 GetVisibleF(void) const
-        {
+        {			
             return m_model.GetVisibleF();
         }
+		//Xynth #100 7/2010
+		virtual bool                 GetCurrentEye(IsideIGC*   side) const
+        {
+			return m_model.GetCurrentEye(side);
+		}
         virtual void                 SetVisibleF(bool visibleF)
         {
             m_model.SetVisibleF(visibleF);

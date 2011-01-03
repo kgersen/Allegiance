@@ -156,7 +156,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 		hwndFound=FindWindow(NULL, "Allegiance");
 	} else {
 		//this window will have our "intro" in it...
-		HWND hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
+		hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
 			GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
 			::GetModuleHandle(NULL), NULL);
 	}
@@ -924,6 +924,7 @@ public:
     TRef<QuickChatMenu>       m_pqcmenuMain;
     TRef<MDLType>             m_pmdlTypeMenu;
     ChatTarget                m_ctLobbyChat;
+	ObjectID	              m_ctLobbyChatRecip;
     bool                      m_bQuitComposing;
 
     void OnQuickChatMenuClose(IMenu* pmenu)
@@ -977,9 +978,9 @@ public:
             }
             else
             {
-                // if the console is not around, send it to the lobby chat recipient.
+                // if the console is not around, send it to the lobby chat recipient. //Imago #8 7/10
                 trekClient.SendChat(trekClient.GetShip(), m_ctLobbyChat,
-                    NA, pqcc->GetSonicChat()->GetIndex(), NULL);
+                    m_ctLobbyChatRecip, pqcc->GetSonicChat()->GetIndex(), NULL);
             }
 
             m_pmenuQuickChat = NULL;
@@ -10058,10 +10059,17 @@ public:
         m_pchatListPane = pchatListPane;
     }
 
-    void SetLobbyChatTarget(ChatTarget ct)
+    void SetLobbyChatTarget(ChatTarget ct, ObjectID recip = NA)
     {
         m_ctLobbyChat = ct;
+	//#8 Imago 7/10 added recip
+		m_ctLobbyChatRecip = recip; 
     }
+    ObjectID GetLobbyChatRecip()
+    {
+        return m_ctLobbyChatRecip;
+    }
+	//
 
     ChatTarget GetLobbyChatTarget()
     {

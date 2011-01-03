@@ -733,7 +733,7 @@ const StationAbilityBitMask     c_sabmRemoteLeadIndicator   = 0x80;      //     
 const StationAbilityBitMask     c_sabmReload                = 0x100;     //           free fuel and ammo on launch
 const StationAbilityBitMask     c_sabmFlag                  = 0x200;     //           counts for victory
 const StationAbilityBitMask     c_sabmPedestal              = 0x400;     //           be a pedestal for a flag
-const StationAbilityBitMask     c_sabmTeleportUnload        = 0x800;     //           be a pedestal for a flag
+const StationAbilityBitMask     c_sabmTeleportUnload        = 0x800;     //           offload mined materials without docking
 const StationAbilityBitMask     c_sabmCapLand               = 0x1000;    //           land capital ships
 const StationAbilityBitMask     c_sabmRescue                = 0x2000;    //           rescue pods
 const StationAbilityBitMask     c_sabmRescueAny             = 0x4000;    //           not used (but reserved for pods)
@@ -1659,7 +1659,7 @@ struct  HardpointData
 struct AsteroidDef
 {
     float                   ore;
-    float                   oreMax;
+    float                   oreMax;	
     AsteroidAbilityBitMask  aabmCapabilities;
     AsteroidID              asteroidID;
     HitPoints               hitpoints;
@@ -2978,7 +2978,9 @@ class ThingSite : public AttachSite
         virtual void        UpdateSideVisibility(ImodelIGC*         pmodel,
                                                  IclusterIGC*       pcluster) {}
         virtual bool        GetSideVisibility(IsideIGC*             side) { return false; }
-        virtual void        SetSideVisibility(IsideIGC*             side,
+        //Xynth #100 7/2010
+		virtual bool        GetCurrentEye(IsideIGC*             side) { return false; }
+		virtual void        SetSideVisibility(IsideIGC*             side,
                                               bool                  fVisible) {}
 
         virtual void             ActivateBolt(void) {}
@@ -3246,6 +3248,12 @@ class IshipIGC : public IscannerIGC
 
         virtual ImissileIGC*        GetLastMissileFired(void) const = 0;
         virtual void                SetLastMissileFired(ImissileIGC* pmissile) = 0;
+
+		//Imago #7 7/10
+		virtual Time                GetLastTimeLaunched(void) const = 0;
+		virtual void                SetLastTimeLaunched(Time timeLastLaunch) = 0;
+        virtual void                SetLastTimeDocked(Time timeLastDock) = 0;
+        virtual Time                GetLastTimeDocked(void) const = 0;
 
         virtual void                Promote(void) = 0;
 
@@ -4040,6 +4048,9 @@ class IasteroidIGC : public IdamageIGC
         static int                      NumberSpecialAsteroids(const MissionParams*  pmp);
         static int                      GetSpecialAsterioid(const MissionParams*  pmp, int index);
         static int                      GetRandomType(AsteroidAbilityBitMask aabm);
+		//Xynth #100 7/2010
+		virtual float GetOreSeenBySide(IsideIGC *side1) const = 0;
+		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const = 0;
 };
 
 class IwarpIGC : public ImodelIGC
@@ -4276,6 +4287,7 @@ class   ShipStatus
             m_state = c_ssDead;
             m_unknown = true;
             m_detected = false;
+			m_dTime = Time::Now().clock();
         }
 
         bool        operator != (const ShipStatus& ss)
@@ -4351,6 +4363,14 @@ class   ShipStatus
         {
             m_detected = bDetected;
         }
+        DWORD        GetStateTime(void) const
+        {
+            return m_dTime;
+        }
+        void        SetStateTime(DWORD    dTime)
+        {
+            m_dTime = dTime;
+        }
 
     private:
         HullID      m_hullID;
@@ -4360,6 +4380,7 @@ class   ShipStatus
         ShipState   m_state : 6;
         bool        m_unknown : 1;
         bool        m_detected : 1;
+		DWORD		m_dTime;
 };
 
 class ClusterSite : public AttachSite
@@ -4557,8 +4578,22 @@ class   SideVisibility
                 s->AddRef();
         }
 
+		//Xynth #100 7/2010
+		void	CurrentEyed(bool v)
+		{
+			m_currentEyed = v;
+		}
+
+		bool	CurrentEyed(void)
+		{			
+			return m_currentEyed;
+		}
+
     private:
         bool            m_fVisible;
+		//Xynth #100 7/2010 if static is it actively eyed by a scanner
+		//for non-static this will always equal m_fVisible
+		bool            m_currentEyed;
         IscannerIGC*    m_pLastSpotter;
 };
 

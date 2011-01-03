@@ -186,6 +186,22 @@ public:
     float       IsRipcording();
     bool        IsVisible();
     bool        IsNotNull();
+	float       GetX(); //Andon
+	float       GetY(); //Andon
+	float       GetZ(); //Andon
+	float		IDTarget(); //Andon
+	float		GetMaxThrust(); //Andon
+	float		GetMaxHitPoints(); //Andon
+	float		GetNumHitPoints(); //Andon
+	float		GetMaxShields(); //Andon
+	float		GetNumShields(); //Andon
+	float		GetMaxEnergy(); //Andon
+	float		GetNumEnergy(); //Andon
+	float		GetMaxAmmo(); //Andon
+	float		GetNumAmmo(); //Andon
+	float		GetMaxFuel(); //Andon
+	float		GetNumFuel(); //Andon
+	float		GetScanRange(); //Andon
 
     static void ExportAccessors(INameSpace* pns)
     {
@@ -218,6 +234,22 @@ public:
         pns->AddMember("IsRipcording",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::IsRipcording, 0.0f));
         pns->AddMember("IsVisible", new TMemberSnapshotValueFactory<ModelData, bool>(&ModelData::IsVisible, false));
         pns->AddMember("IsNotNull", new TMemberSnapshotValueFactory<ModelData, bool>(&ModelData::IsNotNull, false));
+		pns->AddMember("GetX",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetX, 0.0f)); //Andon
+        pns->AddMember("GetY",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetY, 0.0f)); //Andon
+        pns->AddMember("GetZ",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetZ, 0.0f)); //Andon
+		pns->AddMember("IDTarget",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::IDTarget, 0.0f)); //Andon
+		pns->AddMember("GetMaxThrust",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMaxThrust, 0.0f)); //Andon
+		pns->AddMember("GetNumEnergy",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetNumEnergy, 0.0f)); //Andon
+		pns->AddMember("GetMaxEnergy",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMaxEnergy, 0.0f)); //Andon
+		pns->AddMember("GetNumHitPoints",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetNumHitPoints, 0.0f)); //Andon
+		pns->AddMember("GetMaxHitPoints",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMaxHitPoints, 0.0f)); //Andon
+		pns->AddMember("GetNumShields",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetNumShields, 0.0f)); //Andon
+		pns->AddMember("GetMaxShields",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMaxShields, 0.0f)); //Andon
+		pns->AddMember("GetNumAmmo",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetNumAmmo, 0.0f)); //Andon
+		pns->AddMember("GetMaxAmmo",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMaxAmmo, 0.0f)); //Andon
+		pns->AddMember("GetNumFuel",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetNumFuel, 0.0f)); //Andon
+		pns->AddMember("GetMaxFuel",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMaxFuel, 0.0f)); //Andon
+		pns->AddMember("GetScanRange",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetScanRange, 0.0f)); //Andon
     }
 
 };

@@ -83,6 +83,7 @@ private:
 
     static TMap<HWND, Window* > s_mapWindow;
     static DWORD CALLBACK Win32WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK Window::DisableWinKeysProc(int code, WPARAM wParam, LPARAM lParam);
 
     void Construct();
 

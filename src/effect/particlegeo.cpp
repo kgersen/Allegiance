@@ -6,11 +6,11 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#define AWF_EFFECT_AFTERBURNER_SMOKE            "f102bmp"
-#define AWF_EFFECT_FIRE                         "firebmp"
-#define AWF_EFFECT_SMOKE                        "f102bmp"
-#define AWF_EFFECT_DAMAGE                       "f102bmp"
-#define AWF_EFFECT_SPARK                        "f17bmp"
+#define AWF_EFFECT_AFTERBURNER_SMOKE            "e_boosterbmp"
+#define AWF_EFFECT_FIRE                         "e_firebmp"
+#define AWF_EFFECT_SMOKE                        "e_smokebmp"
+#define AWF_EFFECT_DAMAGE                       "e_damagebmp"
+#define AWF_EFFECT_SPARK                        "e_telebmp"
 
 //////////////////////////////////////////////////////////////////////////////
 //

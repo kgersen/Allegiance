@@ -417,6 +417,7 @@ public:
     ShipState   LastSeenState() const               { return m_shipStatus.GetState(); };
     bool        StatusIsCurrent() const             { return !m_shipStatus.GetUnknown(); }
     bool        GetDetected() const                 { return !m_shipStatus.GetDetected(); }
+	DWORD       LastStateChange() const             { return m_shipStatus.GetStateTime(); }; //#7 Imago 7/10
 };
 
 typedef Slist_utlListWrapper<PlayerInfo> PlayerList;

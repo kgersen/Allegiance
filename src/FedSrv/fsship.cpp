@@ -251,6 +251,7 @@ void CFSShip::ShipStatusSpotted(IsideIGC* pside)
     }
 
     ShipStatus* pss = &m_rgShipStatus[sideID];
+	pss->SetStateTime(g.timeNow.clock());
     pss->SetState(c_ssFlying);
     pss->SetParentID(NA);
     pss->SetHullID(GetIGCShip()->GetHullType()->GetObjectID());
@@ -369,6 +370,7 @@ void          CFSShip::ShipStatusDocked(IstationIGC*   pstation)
         {
             SideID      sideID = pside->GetObjectID();
             ShipStatus* pss = &(m_rgShipStatus[sideID]);
+			pss->SetStateTime(g.timeNow.clock());
             pss->SetState(c_ssDocked);
             pss->SetParentID(NA);
             pss->SetStationID(stationID);
@@ -424,6 +426,7 @@ void          CFSShip::ShipStatusRecalculate(void)
 void          CFSShip::ShipStatusLaunched(void)
 {
     SideID   sideID = GetIGCShip()->GetSide()->GetObjectID();
+	m_rgShipStatus[sideID].SetStateTime(g.timeNow.clock());
     m_rgShipStatus[sideID].SetState(c_ssFlying);
     m_rgShipStatus[sideID].SetParentID(NA);
     
@@ -433,7 +436,7 @@ void          CFSShip::ShipStatusLaunched(void)
 void          CFSShip::ShipStatusStart(IstationIGC*   pstation)
 {
     SideID   sideID = GetIGCShip()->GetSide()->GetObjectID();
-
+	m_rgShipStatus[sideID].SetStateTime(g.timeNow.clock());
     m_rgShipStatus[sideID].SetState(pstation ? c_ssDocked : c_ssDead);
     m_rgShipStatus[sideID].SetParentID(NA);
     m_rgShipStatus[sideID].SetStationID(pstation ? pstation->GetObjectID() : NA);
@@ -445,6 +448,7 @@ void          CFSShip::ShipStatusExit(void)
 {
     for (SideID i = 0; (i < c_cSidesMax); i++)
     {
+		m_rgShipStatus[i].SetStateTime(g.timeNow.clock());
         m_rgShipStatus[i].SetState(c_ssDead);
         m_rgShipStatus[i].SetParentID(NA);
         m_rgShipStatus[i].SetHullID(NA);
@@ -465,7 +469,7 @@ void          CFSShip::ShipStatusRestart(IstationIGC*   pstation)
         if ((pside == psideShip || pside->AlliedSides(pside,psideShip)) || (GetIGCShip()->SeenBySide(pside))) //ALLY imago 7/23/09
         {
             ShipStatus* pss = &(m_rgShipStatus[pside->GetObjectID()]);
-
+			pss->SetStateTime(g.timeNow.clock());
             pss->SetState(c_ssDead);
             pss->SetParentID(NA);
             pss->SetHullID(NA);

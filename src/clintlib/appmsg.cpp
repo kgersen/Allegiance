@@ -1044,6 +1044,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 if (m_ship->GetStation() != NULL)
                 {
                     assert (m_ship->GetCluster() == NULL);
+					m_ship->SetLastTimeLaunched(Time::Now());
                     m_ship->SetStation(NULL);           //This will call IIgcSite::ChangeStation()
                 }
                 else
@@ -1107,6 +1108,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         s->SetCluster(NULL);
                 }
             }
+			m_ship->SetLastTimeDocked(Time::Now());
             m_ship->SetStation(m_pCoreIGC->GetStation(pfmDocked->stationID));
             assert (m_ship->GetCluster() == NULL);
         }

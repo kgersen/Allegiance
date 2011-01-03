@@ -1,0 +1,2 @@
+use "model";
+e_telebmp = ImportImageFromFile("e_tele.png", true);

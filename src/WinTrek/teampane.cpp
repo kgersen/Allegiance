@@ -202,14 +202,31 @@ public:
 				( pplayer->SideID() == trekClient.GetSideID() || //Imago 7/6/09 ALLYTD VISIBLITY, show allies $$$; That data isn't being sent, should it?
 				pside->AlliedSides(pside,trekClient.GetSide()) ))
             {
-                char cbTemp[256];
-                wsprintf(cbTemp, "%d", pplayer->GetMoney());
-                psurface->DrawString(
-                    TrekResources::SmallFont(),
-                    color,
-                    WinPoint(19, 14),
-                    ZString("$: ") + cbTemp
-                    );
+				//Imago #7 7/10
+				if (pplayer->IsTeamLeader() || !trekClient.MyPlayerInfo()->IsTeamLeader()) {
+					char cbTemp[256];
+					wsprintf(cbTemp, "%d", pplayer->GetMoney());
+					psurface->DrawString(TrekResources::SmallFont(),color,WinPoint(19, 14),ZString("$: ") + cbTemp);
+				} else {
+					if ((GetWindow()->GetOverlayFlags() & ofTeam) && pplayer->LastSeenState() == c_ssDocked ) {
+						char cbTemp[256];
+						DWORD dDelta = Time::Now().clock() - pplayer->LastStateChange();
+						int iSecs = (dDelta != 0) ? dDelta / 1000 : 0;
+						if ((iSecs != 0) && iSecs < 60) {
+							wsprintf(cbTemp, "Docked for %isec",iSecs);
+							psurface->DrawString(TrekResources::SmallFont(),color,WinPoint(19, 14),cbTemp);
+						} else if ((iSecs != 0)) {
+							int iMins = iSecs / 60;
+							iSecs = iSecs % 60;
+							wsprintf(cbTemp, "Docked for %imin %isec",iMins,iSecs);
+							psurface->DrawString(TrekResources::SmallFont(),color,WinPoint(19, 14),cbTemp);
+						}
+					} else {
+						char cbTemp[256];
+						wsprintf(cbTemp, "%d", pplayer->GetMoney());
+						psurface->DrawString(TrekResources::SmallFont(),color,WinPoint(19, 14),ZString("$: ") + cbTemp);
+					}
+				}
             }
             
             // draw the deaths

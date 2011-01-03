@@ -776,6 +776,8 @@ enum QuitSideReason
 {
     QSR_LeaderBooted,
     QSR_OwnerBooted,
+	QSR_BootinyOk, //Imago 7/10 #124
+	QSR_BootinyFail, //Imago 7/10 #124
     QSR_AdminBooted,
     QSR_ServerShutdown,
     QSR_SquadChange,

@@ -273,7 +273,7 @@ void                CstationIGC::SetBaseStationType(IstationTypeIGC*    pst)
 void                CstationIGC::AddShip(IshipIGC*    pship)
 {
     AddIbaseIGC((BaseListIGC*)&m_shipsDocked, pship);
-
+	pship->SetLastTimeDocked(Time::Now());
     //At a station implies not in a cluster
     pship->SetCluster(NULL);
 }
@@ -292,7 +292,7 @@ const ShipListIGC*        CstationIGC::GetShips(void) const
 
 void CstationIGC::Launch(IshipIGC* pship)
 {
-    Orientation orientation;
+	Orientation orientation;
     Vector position(random(-0.5f, 0.5f), random(-0.5f, 0.5f), random(-0.5f, 0.5f));
     Vector forward;
 
@@ -347,10 +347,10 @@ void CstationIGC::Launch(IshipIGC* pship)
 		Time    lastUpdate = pcluster->GetLastUpdate();
 		Time    lastLaunch = GetLastLaunch();
 		float	m_fDeltaTime = (float)(lastUpdate - lastLaunch);
-		debugf(" *** %s(%i) launch time cluster delta = %f\n\n", m_myStationType.GetName(), m_myStationType.GetObjectID(), m_fDeltaTime);
+		//debugf(" *** %s(%i) launch time cluster delta = %f\n\n", m_myStationType.GetName(), m_myStationType.GetObjectID(), m_fDeltaTime);
 		if (m_fDeltaTime <= 0.1f) {
 			 position += forward * (pship->GetRadius() + vLaunch * 0.85f);
-			 debugf("*** %s(%i) position adjusted to ensure smooth take-off\n",pship->GetName(),pship->GetObjectID());
+			 //debugf("*** %s(%i) position adjusted to ensure smooth take-off\n",pship->GetName(),pship->GetObjectID());
 		} else {
 			 position += forward * (pship->GetRadius() + vLaunch * 0.5f);
 		}
@@ -371,6 +371,7 @@ void CstationIGC::Launch(IshipIGC* pship)
     pship->SetCurrentTurnRate(c_axisRoll, 0.0f);
 
     pship->SetCluster(pcluster);
+	pship->SetLastTimeLaunched(Time::Now());
 	SetLastLaunch(Time::Now());
 }
 

@@ -333,6 +333,7 @@ public:
     float GetHeliumInCluster(IclusterIGC* pcluster)
     {
         float fOre = 0;
+		IsideIGC*   psideMine = trekClient.GetShip()->GetSide();
         for (AsteroidLinkIGC* asteriodLink = pcluster->GetAsteroids()->first();
             asteriodLink != NULL; asteriodLink = asteriodLink->next())
         {
@@ -342,7 +343,9 @@ public:
             if ((aabm & c_aabmMineHe3) != 0)
             {
                 // count it.
-                fOre += asteriodLink->data()->GetOre();
+                //Xynth #100 7/2010 
+				//fOre += asteriodLink->data()->GetOre();
+				fOre += asteriodLink->data()->GetOreSeenBySide(psideMine);
             }
         }
 

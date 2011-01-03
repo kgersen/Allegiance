@@ -175,7 +175,6 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             return TmodelIGC<IshipIGC>::Release();
         }
         */
-
     public:
     // IbaseIGC
         virtual HRESULT             Initialize(ImissionIGC* pMission, Time now, const void* data, int length);
@@ -1344,6 +1343,25 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                 pmissile->AddRef();
         }
 
+		//Imago 6/10 #7
+        virtual void                   SetLastTimeLaunched(Time timeLastLaunch)
+        {
+           m_lastLaunch = timeLastLaunch;
+        }
+        virtual Time                  GetLastTimeLaunched(void) const
+        {
+            return m_lastLaunch;
+        }
+        virtual void                   SetLastTimeDocked(Time timeLastDock)
+        {
+           m_lastDock = timeLastDock;
+        }
+        virtual Time                  GetLastTimeDocked(void) const
+        {
+            return m_lastDock;
+        }
+		//
+
         virtual void                Promote(void);
 
         virtual void                SetParentShip(IshipIGC* pship);
@@ -2338,6 +2356,9 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         short               m_ammo;
 
         ImissileIGC*        m_pmissileLast;
+
+		Time				m_lastLaunch; //Imago #7 7/10
+		Time				m_lastDock; //Imago #7 7/10
 
         ImodelIGC*          m_commandTargets[c_cmdMax];
 

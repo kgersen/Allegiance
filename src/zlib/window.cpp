@@ -990,12 +990,15 @@ void CallIdleFunctions()
 //////////////////////////////////////////////////////////////////////////////
 
 //Imago 6/10 #73
-LRESULT CALLBACK DisableWinKeysProc(int code, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK Window::DisableWinKeysProc(int code, WPARAM wParam, LPARAM lParam) {
+    KeyState ks;
 	if(code == HC_ACTION) {
 		PKBDLLHOOKSTRUCT pKeyBoard;
-		 pKeyBoard = (PKBDLLHOOKSTRUCT) lParam;
-		if (pKeyBoard->vkCode == VK_LWIN || pKeyBoard->vkCode == VK_RWIN) {
-			return 1;
+		pKeyBoard = (PKBDLLHOOKSTRUCT) lParam;
+		if(GetAsyncKeyState(VK_RWIN) || GetAsyncKeyState(VK_LWIN)) {
+			if (pKeyBoard->vkCode == VK_UP || pKeyBoard->vkCode == VK_DOWN) {
+				return 1;
+			}
 		}
 	}
 	return CallNextHookEx(g_hhk,code,wParam,lParam);
@@ -1015,7 +1018,7 @@ DWORD CALLBACK Window::Win32WndProc(
             NULL != (pwindow = (Window*)(((CREATESTRUCT *)lParam)->lpCreateParams))) {
         pwindow->m_hwnd = hwnd;
         s_mapWindow.Set(hwnd, pwindow);
-		g_hhk = SetWindowsHookEx(WH_KEYBOARD_LL, DisableWinKeysProc,((LPCREATESTRUCT)lParam)->hInstance,0); //Imago #73
+		g_hhk = SetWindowsHookEx(WH_KEYBOARD_LL,DisableWinKeysProc,((LPCREATESTRUCT)lParam)->hInstance,0); //Imago #73
     } else {
         if (!s_mapWindow.Find(hwnd, pwindow)) {
             pwindow = NULL;

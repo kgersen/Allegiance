@@ -138,12 +138,13 @@ float    solveForLead(ImodelIGC*        shooter,
 
     IprojectileTypeIGC* pt = weapon->GetProjectileType();
     assert (pt);
+	float speed = pt->GetSpeed() * (weapon->GetAmmoPerShot() ? shooter->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSpeedAmmo) : 1);
 
     return solveForImpact(hisPosition - (myPosition + weapon->GetPosition() * myOrientation),
                           pt->GetAbsoluteF()
                           ? hisVelocity
                           : (hisVelocity - myVelocity),
-                          pt->GetSpeed(), target->GetRadius(),
+                          speed, target->GetRadius(),
                           direction);
 }
 
