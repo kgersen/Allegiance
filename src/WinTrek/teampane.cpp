@@ -599,6 +599,8 @@ public:
                 m_peventPlayers->RemoveSink(m_psinkPlayers);
             m_peventPlayers->AddSink(m_psinkPlayers = new IItemEvent::Delegate(this));
             
+            //Xynth #48 8/2010
+			AddEventTarget(&TeamPane::OnPlayerRightClicked, m_plistPanePlayers->GetSingleRightClickEventSource());
             
             
             
@@ -900,6 +902,19 @@ public:
         
         return true;
     }
+
+	//Xynth #48 8/2010 Add rightclick menu
+	bool OnPlayerRightClicked()
+	{
+		ItemID pitem = m_plistPanePlayers->GetSelection();
+
+        if (pitem != NULL && trekClient.GetPlayerInfo())
+        {
+            PlayerInfo* pplayer = trekClient.FindPlayer(IntItemIDWrapper<ShipID>(pitem));
+			GetWindow()->ShowPlayerPaneContextMenu(pplayer);            
+        }		
+        return true;
+	}
     
     bool OnSelTeam(ItemID pitem)
     {

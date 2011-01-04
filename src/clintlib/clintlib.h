@@ -467,6 +467,7 @@ protected:
     TMapListWrapper<SideID, SideInfo*> m_mapSideInfo;
     SideInfo m_sideLobby;
     int m_nNumPlayers;
+	int m_nNumNoatPlayers; //imago #169
     ZString m_strGameDetailsFiles;
     SquadID squadIDs[c_cSidesMax];
     bool m_fGuaranteedSlotsAvailable;
@@ -509,7 +510,8 @@ public:
     ShipID          MissionOwnerShipID()    { return SideLeaderShipID( MissionOwnerSideID() ); }
     bool            AutoAcceptLeaders()     { return m_pfmMissionDef->fAutoAcceptLeaders; }
     int             MaxPlayers()            { return m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame; }
-    int             NumPlayers()            { return m_nNumPlayers; };
+    int             NumPlayers()            { return m_nNumPlayers; }
+	int             NumNoatPlayers()        { return m_nNumNoatPlayers; } //Imago #169
     int             AvailablePositions()    { return MaxPlayers() - NumPlayers(); }
     int             GuaranteedPositions();
     unsigned char   MinPlayersPerTeam()     { return m_pfmMissionDef->misparms.nMinPlayersPerTeam; }

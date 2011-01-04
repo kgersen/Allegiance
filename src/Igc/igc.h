@@ -3328,7 +3328,8 @@ class IshipIGC : public IscannerIGC
 
         virtual float               GetRipcordDebt(void) const = 0;
         virtual void                AdjustRipcordDebt(float delta) = 0;
-
+		virtual void				SetStayDocked(bool stayDock) = 0; //Xynth #48 8/2010
+		virtual bool				GetStayDocked(void) const =0; //Xynth #48
         virtual DamageTrack*        GetDamageTrack(void) = 0;
         virtual void                CreateDamageTrack(void) = 0;
         virtual void                DeleteDamageTrack(void) = 0;

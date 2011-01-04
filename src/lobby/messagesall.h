@@ -37,6 +37,7 @@ DEFINE_FEDMSG(LS, LOBBYMISSIONINFO, 301)
   short         nMinRank;
   short         nMaxRank;
   unsigned      nNumPlayers                     : 11;
+  unsigned      nNumNoatPlayers                 : 11; //Imago #169
   unsigned      nMaxPlayersPerGame              : 11;
   unsigned      nMinPlayersPerTeam              : 8;
   unsigned      nMaxPlayersPerTeam              : 8;

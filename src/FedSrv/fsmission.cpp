@@ -3831,6 +3831,7 @@ void CFSMission::QueueLobbyMissionInfo()
   pfmLobbyMissionInfo->fGuaranteedSlotsAvailable       = false;
   pfmLobbyMissionInfo->fAnySlotsAvailable              = false;
   pfmLobbyMissionInfo->nNumPlayers                     = GetCountOfPlayers(NULL, false);
+  pfmLobbyMissionInfo->nNumNoatPlayers                 = GetCountOfPlayers(GetIGCMission()->GetSide(SIDE_TEAMLOBBY), false); //Imago #169
 
   // if there might be a chance a player can join, check the teams to see if they can
   if ((m_misdef.misparms.bAllowJoiners || STAGE_NOTSTARTED == GetStage())
@@ -4735,8 +4736,13 @@ void CFSMission::SetAutoAccept(IsideIGC * pside, bool fAccept)
 
         if (pside)
         {
-          // should never add the player back to the list, since autoaccept is on
+          DelPositionReqReason reason = CheckPositionRequest(pfsPlayer, pside);  //Xynth #195 8/2010 Look to see if this request is going to fail
+		  		
+		  // should never add the player back to the list, since autoaccept is on
           RequestPosition(pfsPlayer, pside, false);
+		  
+		  if (reason != NA)  //Xynth #195 8/2010 If rejected do a formal request to join the lobby
+			  RequestPosition(pfsPlayer, pfsPlayer->GetMission()->GetIGCMission()->GetSide(SIDE_TEAMLOBBY), false);
         }
       }
     }

@@ -3193,8 +3193,11 @@ bool CommandToDrone(CFSMission*         pfsMission,
 {
     bool    bAccepted = false;
 	bool	bBarelyLegal = false; //milfs only 
-
-    assert (pfsSender);
+	
+	if (pshipTo)
+		pshipTo->SetStayDocked(false);  //Xynth #48 8/2010 reset staydocked on any command
+    
+	assert (pfsSender);
 
     IsideIGC*   pside = pshipTo->GetSide();
     if ((pcd->commandID != c_cidNone) &&
@@ -6747,12 +6750,26 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       IshipIGC*   pship = pfsPlayer->GetIGCShip();
       assert (pship);
 
-      IsideIGC*   pside = pship->GetSide();
+	  IsideIGC*   pside = pship->GetSide();
+	  if (pside->GetShip(pfmOC->shipID))  //Xynth #48 8/2010 This msg handler is normally used for 
+	  {									 //ownship commands.  Tagging on miner commands from playerpane
+      	  pship = pside->GetShip(pfmOC->shipID);		 
+	  }
+      if (pship->GetPilotType() == c_ptMiner)
+	  {
+			  pship->SetStayDocked(true);
+			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
+                                            voAffirmativeSound, "Affirmative.");
+			  pfsMission->GetSite()->SendChat(pship, CHAT_TEAM, pship->GetSide()->GetObjectID(),
+                                            NA, "Heading back to base. I'll sit tight.");
+	  }//Xynth #48 End Changes
+
       if (pside->GetObjectID() >= 0)
       {
         ImodelIGC*  pmodel = pMission->GetModel(pfmOC->objectType, pfmOC->objectID);
         pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
       }
+	  
     }
     break;
 
