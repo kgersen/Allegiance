@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "dinput.h"
 
+#define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
+#define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // DDWrapers
@@ -30,6 +33,17 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 const DIDATAFORMAT* g_pdfDIMouse;
+
+//Imago FFE file support (related kinda to #187)
+struct EFFECTS_NODE
+{
+    LPDIRECTINPUTEFFECT pDIEffect;
+    DWORD               dwPlayRepeatCount;
+    EFFECTS_NODE*       pNext;
+};
+EFFECTS_NODE          g_BounceEffectsList;
+EFFECTS_NODE          g_FireEffectsList;
+EFFECTS_NODE          g_ExplodeEffectsList;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -672,7 +686,11 @@ private:
     BYTE*                               m_pbyteData;
     DWORD                               m_sizeData;
     bool                                m_bFocus;
+	bool                                m_bFFEBounceFile; //Imago 7/10
+	bool                                m_bFFEExplodeFile; //Imago 7/10
+	bool                                m_bFFEFireFile; //Imago 7/10
 	CLogFile * 							m_pLogFile; //Imago 8/12/09
+	ZString								m_zArt; //Imago 7/10
 
     TRef<IDirectInputEffect> m_peffectBounce;
     TRef<IDirectInputEffect> m_peffectFire;
@@ -730,6 +748,10 @@ public:
                     pddoi->dwType,
                     pddoi->guidType
                 );
+				
+			//Imago 7/10
+			if( ( pddoi->dwFlags & DIDOI_FFACTUATOR ) != 0 )
+				m_pLogFile->OutputStringV("\t\t\tHas Forcefeedback!\n",pddoi->wUsage,pddoi->wUsagePage);
 
             if (index == -1) {
                 m_vvalueObject.PushEnd(pobject);
@@ -776,8 +798,16 @@ public:
         m_pdid(pdid),
         m_bFocus(false),
         m_vvalueObject(20), //imago 12/03/09, was 5
-		m_pLogFile(pLogFile)
-    {
+		m_pLogFile(pLogFile),
+		m_bFFEBounceFile(false), // Imago 7/10
+		m_bFFEExplodeFile(false),
+		m_bFFEFireFile(false)
+
+	{
+
+		m_zArt.SetEmpty(); //Imago FFE files
+		 //^
+
         DDCall(m_pdid->GetCapabilities(&m_didc));
         DDCall(m_pdid->GetDeviceInfo(&m_didi));
 
@@ -877,6 +907,16 @@ public:
     ~JoystickInputStreamImpl()
     {
         delete m_pbyteData;
+		//Imago FFE file support
+		if(m_bFFEBounceFile) {
+			EmptyEffectLists(&g_BounceEffectsList); 
+		}
+		if(m_bFFEFireFile) {
+			EmptyEffectLists(&g_FireEffectsList);
+		}
+		if(m_bFFEExplodeFile) {
+			EmptyEffectLists(&g_ExplodeEffectsList);
+		}
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -906,10 +946,6 @@ public:
                     DDCall(m_pdid->SetProperty(DIPROP_RANGE, &dipr.diph));
                 }
 
-                //
-                //
-                //
-
                 DIPROPDWORD dipdw;  
 
                 dipdw.diph.dwSize       = sizeof(DIPROPDWORD); 
@@ -918,6 +954,41 @@ public:
                 dipdw.diph.dwHow        = DIPH_DEVICE; 
 
                 DDCall(m_pdid->GetProperty(DIPROP_BUFFERSIZE, &dipdw.diph));
+
+				//Imago 7/10
+				HKEY hKey;
+				DWORD dwType;
+				DWORD dwAC = 0;
+				DWORD dwGain = 10000;
+				DWORD cbValue;
+				if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+				{
+					 cbValue = sizeof(dwAC);
+					::RegQueryValueEx(hKey, "FFAutoCenter", NULL, &dwType, (unsigned char*)&dwAC, &cbValue);
+
+					 cbValue = sizeof(dwAC);
+					::RegQueryValueEx(hKey, "FFGain", NULL, &dwType, (unsigned char*)&dwGain, &cbValue);
+
+					LoadRegString(hKey, "ArtPAth", m_zArt);
+					RegCloseKey(hKey);
+				}
+				DIPROPDWORD dipdw5;
+				dipdw5.diph.dwSize       = sizeof(DIPROPDWORD);
+				dipdw5.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+				dipdw5.diph.dwObj        = 0;
+				dipdw5.diph.dwHow        = DIPH_DEVICE;
+				dipdw5.dwData            = dwAC;
+				m_pdid->SetProperty( DIPROP_AUTOCENTER, &dipdw5.diph );
+
+				//lazy
+				DIPROPDWORD dipdw6;
+				dipdw6.diph.dwSize       = sizeof(DIPROPDWORD);
+				dipdw6.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+				dipdw6.diph.dwObj        = 0;
+				dipdw6.diph.dwHow        = DIPH_DEVICE;
+				dipdw6.dwData            = dwGain;
+				m_pdid->SetProperty( DIPROP_FFGAIN, &dipdw6.diph );
+				// end Imago
             }
         }
     }
@@ -1026,9 +1097,132 @@ public:
         }
 
         // BUGBUG - look at this some more....
+		//Imago's solution is to allow customizable effect files (from fedit.exe).
 
         return DIENUM_STOP;
     }
+
+	//Imago FFE file suport, adapted from the old DX8.1 SDK
+	static BOOL CALLBACK EnumAndCreateBounceEffectsCallback( LPCDIFILEEFFECT pDIFileEffect, VOID* pvRef )
+	{   
+		JoystickInputStreamImpl* pthis = (JoystickInputStreamImpl*)pvRef;
+		HRESULT hr;
+		LPDIRECTINPUTEFFECT pDIEffect = NULL;
+
+		if( FAILED( hr = pthis->m_pdid->CreateEffect( pDIFileEffect->GuidEffect, 
+													pDIFileEffect->lpDiEffect, 
+													&pDIEffect, NULL ) ) )
+		{
+			return DIENUM_CONTINUE;
+		}
+		// Create a new effect node
+		EFFECTS_NODE* pEffectNode = new EFFECTS_NODE;
+		if( NULL == pEffectNode )
+			return DIENUM_STOP;
+
+		ZeroMemory( pEffectNode, sizeof( EFFECTS_NODE ) );
+		pEffectNode->pDIEffect         = pDIEffect;
+		pEffectNode->dwPlayRepeatCount = 1;
+
+		pEffectNode->pNext  = g_BounceEffectsList.pNext;
+		g_BounceEffectsList.pNext = pEffectNode;
+
+		return DIENUM_CONTINUE;
+	}
+
+	static BOOL CALLBACK EnumAndCreateFireEffectsCallback( LPCDIFILEEFFECT pDIFileEffect, VOID* pvRef )
+	{   
+		JoystickInputStreamImpl* pthis = (JoystickInputStreamImpl*)pvRef;
+		HRESULT hr;
+		LPDIRECTINPUTEFFECT pDIEffect = NULL;
+
+		if( FAILED( hr = pthis->m_pdid->CreateEffect( pDIFileEffect->GuidEffect, 
+													pDIFileEffect->lpDiEffect, 
+													&pDIEffect, NULL ) ) )
+		{
+			return DIENUM_CONTINUE;
+		}
+		// Create a new effect node
+		EFFECTS_NODE* pEffectNode = new EFFECTS_NODE;
+		if( NULL == pEffectNode )
+			return DIENUM_STOP;
+
+		ZeroMemory( pEffectNode, sizeof( EFFECTS_NODE ) );
+		pEffectNode->pDIEffect         = pDIEffect;
+		pEffectNode->dwPlayRepeatCount = 1;
+
+		pEffectNode->pNext  = g_FireEffectsList.pNext;
+		g_FireEffectsList.pNext = pEffectNode;
+
+		return DIENUM_CONTINUE;
+	}
+
+	static BOOL CALLBACK EnumAndCreateExplodeEffectsCallback( LPCDIFILEEFFECT pDIFileEffect, VOID* pvRef )
+	{   
+		JoystickInputStreamImpl* pthis = (JoystickInputStreamImpl*)pvRef;
+		HRESULT hr;
+		LPDIRECTINPUTEFFECT pDIEffect = NULL;
+
+		if( FAILED( hr = pthis->m_pdid->CreateEffect( pDIFileEffect->GuidEffect, 
+													pDIFileEffect->lpDiEffect, 
+													&pDIEffect, NULL ) ) )
+		{
+			return DIENUM_CONTINUE;
+		}
+		// Create a new effect node
+		EFFECTS_NODE* pEffectNode = new EFFECTS_NODE;
+		if( NULL == pEffectNode )
+			return DIENUM_STOP;
+
+		ZeroMemory( pEffectNode, sizeof( EFFECTS_NODE ) );
+		pEffectNode->pDIEffect         = pDIEffect;
+		pEffectNode->dwPlayRepeatCount = 1;
+
+		pEffectNode->pNext  = g_ExplodeEffectsList.pNext;
+		g_ExplodeEffectsList.pNext = pEffectNode;
+
+		return DIENUM_CONTINUE;
+	}
+
+	HRESULT PlayFFEFromFile(EFFECTS_NODE * pEffectsList)
+	{
+		EFFECTS_NODE*       pEffectNode = pEffectsList->pNext;
+		LPDIRECTINPUTEFFECT pDIEffect   = NULL;
+		HRESULT             hr;
+		
+		while ( pEffectNode != pEffectsList )
+		{
+			pDIEffect = pEffectNode->pDIEffect;
+
+			if( NULL != pDIEffect )
+			{
+				if( FAILED( hr = pDIEffect->Start( pEffectNode->dwPlayRepeatCount, 0 ) ) )
+					return hr;
+			}
+
+			pEffectNode = pEffectNode->pNext;
+		}
+
+		return S_OK;
+	}
+
+	VOID EmptyEffectLists(EFFECTS_NODE * pEffectsList)
+	{
+		EFFECTS_NODE* pEffectNode = pEffectsList->pNext;
+		EFFECTS_NODE* pEffectDelete;
+
+		while ( pEffectNode != pEffectsList && pEffectNode != NULL)
+		{
+			pEffectDelete = pEffectNode;       
+			pEffectNode = pEffectNode->pNext;
+
+			SAFE_RELEASE( pEffectDelete->pDIEffect );
+			SAFE_DELETE( pEffectDelete );
+		}
+
+		pEffectsList->pNext = pEffectsList;
+	}
+	//^ Imago 7/10
 
     void CreateEffects()
     {
@@ -1092,6 +1286,10 @@ public:
         diEffect.cbTypeSpecificParams  = sizeof(DICONSTANTFORCE);
         diEffect.lpvTypeSpecificParams = &dicf;
 
+		//Imago 7/10
+		if (!FAILED(m_pdid->EnumEffectsInFile(m_zArt+"/bounce.ffe", EnumAndCreateBounceEffectsCallback, this, DIFEF_MODIFYIFNEEDED ))) {
+			m_bFFEBounceFile = true;
+		} else {
         //DDCall(
             m_pdid->CreateEffect(
                 guidEffect,
@@ -1099,7 +1297,8 @@ public:
                 &m_peffectBounce, 
                 NULL
             //)
-        );
+			);
+		}
 
         //
         // Create the fire effect
@@ -1115,27 +1314,37 @@ public:
         diEffect.cbTypeSpecificParams  = sizeof(DICONSTANTFORCE);
         diEffect.lpvTypeSpecificParams = &dicf;
 
-        //DDCall(
-            m_pdid->CreateEffect(
-                guidEffect,
-                &diEffect, 
-                &m_peffectFire, 
-                NULL
-            //)
-        );
+		//Imago 7/10
+		if (!FAILED(m_pdid->EnumEffectsInFile(m_zArt+"/fire.ffe", EnumAndCreateFireEffectsCallback, this, DIFEF_MODIFYIFNEEDED ))) {
+			m_bFFEFireFile = true;
+		} else {
+			//DDCall(
+				m_pdid->CreateEffect(
+					guidEffect,
+					&diEffect, 
+					&m_peffectFire, 
+					NULL
+				//)
+			);
+		}
 
         //
         // the "explode" effect will be based on the first
         // periodic effect enumerated
         //
 
-        //DDCall(
-            m_pdid->EnumEffects(
-                (LPDIENUMEFFECTSCALLBACK)EnumEffectTypeProc,
-                &guidEffect, 
-                DIEFT_PERIODIC
-            //)
-        );
+		//Imago 7/10
+		if (!FAILED(m_pdid->EnumEffectsInFile(m_zArt+"/explode.ffe", EnumAndCreateExplodeEffectsCallback, this, DIFEF_MODIFYIFNEEDED ))) {
+			m_bFFEExplodeFile = true;
+		} else {
+			//DDCall(
+				m_pdid->EnumEffects(
+					(LPDIENUMEFFECTSCALLBACK)EnumEffectTypeProc,
+					&guidEffect, 
+					DIEFT_PERIODIC
+				//)
+			);
+		}
 
         //
         // Create the explode effect.
@@ -1179,33 +1388,47 @@ public:
 
         switch (effectID) {
             case 0:
-                if (m_peffectFire) {
-                    m_peffectFire->Start(1, 0);
-                }
+				//Imago 7/10
+				if (m_bFFEFireFile) {
+					PlayFFEFromFile(&g_FireEffectsList);
+				} else {
+					if (m_peffectFire) {
+						m_peffectFire->Start(1, 0);
+					}
+				}
                 break;
 
             case 1:
-                if (m_peffectBounce) {
-                    DIEFFECT diEffect;
-                    LONG     rglDirections[2] = { 0, 0 };
-
-                    ZeroMemory(&diEffect, sizeof(DIEFFECT));
-                    diEffect.dwSize = sizeof(DIEFFECT);
-
-                    rglDirections[0]        = lDirection * 100;
-                    diEffect.dwFlags        = DIEFF_OBJECTOFFSETS | DIEFF_POLAR;
-                    diEffect.cAxes          = 2;
-                    diEffect.rglDirection   = rglDirections;
-
-                    m_peffectBounce->SetParameters(&diEffect, DIEP_DIRECTION);
-                    m_peffectBounce->Start(1, 0);
-                }
-                break;
+				//Imago 7/10
+				if (m_bFFEBounceFile) {
+					PlayFFEFromFile(&g_BounceEffectsList); //Imago - TODO - Add Left/Right/Front/Back bounce effect seperation now that we can easily load presets
+				} else {
+					if (m_peffectBounce) {
+						DIEFFECT diEffect;
+						LONG     rglDirections[2] = { 0, 0 };
+ 
+						ZeroMemory(&diEffect, sizeof(DIEFFECT));
+						diEffect.dwSize = sizeof(DIEFFECT);
+ 
+						rglDirections[0]        = lDirection * 100;
+						diEffect.dwFlags        = DIEFF_OBJECTOFFSETS | DIEFF_POLAR;
+						diEffect.cAxes          = 2;
+						diEffect.rglDirection   = rglDirections;
+ 
+						m_peffectBounce->SetParameters(&diEffect, DIEP_DIRECTION);
+						m_peffectBounce->Start(1, 0);
+					}
+				}
 
             case 2:
-                if (m_peffectExplode) {
-                    m_peffectExplode->Start(1, 0);
-                }
+				//Imago 7/10
+				if (m_bFFEExplodeFile) {
+					PlayFFEFromFile(&g_ExplodeEffectsList); //Imago
+				} else {
+					if (m_peffectExplode) {
+						m_peffectExplode->Start(1, 0);
+					}
+				}
                 break;
         }
     }

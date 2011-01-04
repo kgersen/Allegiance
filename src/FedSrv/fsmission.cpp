@@ -4376,7 +4376,7 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
 	if (GetCountOfPlayers(pside, false) >= pmp->nMaxPlayersPerTeam)
 		return DPR_TeamFull;
     else if ((nNumPlayers >= maxPlayers) &&//Xynth #166 7/2010 Add condition to let low rank players join stack
-			 !((pfsPlayer->GetPersistPlayerScore(NA)->GetRank() < g.MaxNewbRank) && (nNumPlayers < (maxPlayers + 2))))
+			 !((pfsPlayer->GetPersistPlayerScore(NA)->GetRank() <= g.MaxNewbRank) && (nNumPlayers < (maxPlayers + 2))))
 			//If the player is low rank (<4) and there aren't more than 2 extra players, let him join (Imago made this configurable #174)
 		return DPR_TeamBalance;
 
@@ -4914,8 +4914,17 @@ void CFSMission::RandomizeSides()
         // mdvalley: empty last side masks
         pfsPlayer->SetLastSide(SIDE_TEAMLOBBY);
 
-      }
+	  }	  	 	  
     }
+  }
+  
+  //Xynth #13 8/2010  Need to remove all join requests.
+  LinkJoinReq* plinkNext;
+  for (LinkJoinReq* plinkJR = m_listJoinReq.first(); (plinkJR != NULL); plinkJR = plinkNext)
+  {
+      plinkNext = plinkJR->next();
+      JoinRequest * pjr = plinkJR->data();
+	  RemoveJoinRequest(pjr->pfsPlayer, pjr->pSide);
   }
 
   // TE: Assign players to sides

@@ -89,7 +89,10 @@ public:
     {
         return false;
     }
+	//Imago 7/10 #187
+	void SetRanges() {
 
+	}
     void CreateEffects()
     {
     }
