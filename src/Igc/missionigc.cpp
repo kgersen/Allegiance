@@ -3607,8 +3607,8 @@ const SideListIGC*          CmissionIGC::GetSides(void) const
 
 //Imago #120 #121 8/10 - 
 	//look at enemy's scanner in pmodel's cluster and sets the entry in the ordered bool array to true if it has eye, 
-	//if you specify poptionalmodel that has to have been seen by the side as well in order for bseensides[team] = true.
-void						CmissionIGC::GetSeenSides(ImodelIGC * pmodel, bool * bseensides, ImodelIGC * poptionalmodel)
+	//if you specify poptionalmodel, it has to have been seen by the side as well in order for bseensides[team] = true.
+void						CmissionIGC::GetSeenSides(ImodelIGC * pmodel, bool (&bseensides)[c_cSidesMax], ImodelIGC * poptionalmodel)
 {
 	for (ModelLinkIGC*  pml = pmodel->GetCluster()->GetModels()->first(); (pml != NULL); pml = pml->next()) {
 		ImodelIGC*  pmodelother = pml->data();
@@ -3618,13 +3618,13 @@ void						CmissionIGC::GetSeenSides(ImodelIGC * pmodel, bool * bseensides, Imode
 			if (pmodel->GetSide() == psl->data() )
 				continue;
 			if (pmodel->GetObjectType() == OT_ship)
-				if (((IshipIGC*)pmodelother)->CanSee(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
+				if (((IshipIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
 			if (pmodel->GetObjectType() == OT_station)
-				if (((IstationIGC*)pmodelother)->CanSee(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
+				if (((IstationIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
 			if (pmodel->GetObjectType() == OT_probe)
-				if (((IprobeIGC*)pmodelother)->CanSee(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
+				if (((IprobeIGC*)pmodelother)->InScannerRange(pmodel) && (!poptionalmodel || (poptionalmodel && poptionalmodel->SeenBySide(psl->data()))))
 					bseensides[psl->data()->GetObjectID()] = true;
 			if (bseensides[psl->data()->GetObjectID()])
 				break;

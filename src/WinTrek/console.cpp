@@ -2472,12 +2472,16 @@ public:
                 IshipIGC*   pship = psl->data();
                 if (m_pchsCurrent->LegalCommand(m_cidVerb, pship))
                 {
-                    int score = MatchName(pszText, pship->GetName());
-                    if (score < scoreBest)
-                    {
-                        pmodelBest = pship;
-                        scoreBest = score;
-                    }
+					if (pship->GetSide() == trekClient.GetSide() ||
+						  pship->SeenBySide(trekClient.GetSide()))
+					{ //Xynth #209 8/2010 make sure I should know about this
+						int score = MatchName(pszText, pship->GetName());
+						if (score < scoreBest)
+						{
+							pmodelBest = pship;
+							scoreBest = score;
+						}
+					}
                 }
             }
         }
@@ -2492,12 +2496,16 @@ public:
                 IstationIGC*   pstation = psl->data();
                 if (m_pchsCurrent->LegalCommand(m_cidVerb, pstation))
                 {
-                    int score = MatchName(pszText, pstation->GetName());
-                    if (score < scoreBest)
-                    {
-                        pmodelBest = pstation;
-                        scoreBest = score;
-                    }
+					if (pstation->GetSide() == trekClient.GetSide() ||
+						  pstation->SeenBySide(trekClient.GetSide()))
+					{ //Xynth #209 8/2010 make sure I should know about this
+						int score = MatchName(pszText, pstation->GetName());
+						if (score < scoreBest)
+						{
+							pmodelBest = pstation;
+							scoreBest = score;
+						}
+					}
                 }
             }
 
@@ -2514,12 +2522,16 @@ public:
                         ImodelIGC*   pmodel = pml->data();
                         if (m_pchsCurrent->LegalCommand(m_cidVerb, pmodel))
                         {
-                            int score = MatchName(pszText, GetModelName(pmodel));
-                            if (score < scoreBest)
-                            {
-                                pmodelBest = pmodel;
-                                scoreBest = score;
-                            }
+                            if (pmodel->GetSide() == trekClient.GetSide() ||
+								pmodel->SeenBySide(trekClient.GetSide()))
+							{ //Xynth #209 8/2010 make sure I should know about this
+								int score = MatchName(pszText, GetModelName(pmodel));
+								if (score < scoreBest)
+								{
+									pmodelBest = pmodel;
+									scoreBest = score;
+								}
+							}
                         }
                     }
                 }
