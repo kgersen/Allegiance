@@ -158,7 +158,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	} else {
 		//this window will have our "intro" in it...
 		hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
-			GetSystemMetrics(SM_CXSCREEN),GetSystemMetrics(SM_CYSCREEN),NULL, NULL,
+			GetSystemMetrics(SM_CXFULLSCREEN),GetSystemMetrics(SM_CYFULLSCREEN),NULL, NULL,
 			::GetModuleHandle(NULL), NULL);
 		bHide = true;
 	}

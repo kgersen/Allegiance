@@ -138,6 +138,7 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 				m_bMoveOnHide(true),
 				m_bWindowStateMinimised(false),
 				m_bWindowStateRestored(false),
+				m_bClickBreak(true), //Imago 7/10 #37
 				m_pEngineApp(papp)
 {
     //
@@ -525,8 +526,7 @@ void EngineWindow::UpdateRectValues()
         m_prectValueScreen->SetValue(rect);
         m_pmouse->SetClipRect(rect);
     } else {
-        WinRect rect(WinPoint(0, 0), m_sizeWindowed);
-
+		WinRect rect(WinPoint(0, 0), m_sizeWindowed);
         if (g_bWindowLog) {
             ZDebugOutput("  Windowed: " + GetString(0, rect) + "\n");
         }
@@ -1183,11 +1183,24 @@ void EngineWindow::DoIdle()
     // Switch fullscreen state if requested
     //
 
-    if (m_bRestore) {
-        m_bRestore = false;
-        SetFullscreen(false);
+	//Imago 7/10 #37 - Added a "clicker breaker outter", a dirty trick to get Win 5+ to give up the mouse?
+    if (m_bRestore || (m_bWindowStateMinimised && !m_bClickBreak && m_pengine->IsFullscreen())) {
+        
+		if (!m_bWindowStateMinimised) {
+			m_bRestore = false;
+			SetFullscreen(false);
+			::SetCursorPos(0,0);
+		}
+		INPUT Inputs[2];
+		ZeroMemory(Inputs,sizeof(INPUT)*2);
+		Inputs[0].type = INPUT_MOUSE;
+		Inputs[0].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+		Inputs[1] = Inputs[0];
+		Inputs[1].mi.dwFlags = MOUSEEVENTF_LEFTUP;
+		SendInput(2,Inputs,sizeof(INPUT));
+		m_bClickBreak = true;
     }
-    
+  
     //
     // Is the device ready
     //
@@ -1197,12 +1210,19 @@ void EngineWindow::DoIdle()
 	{
         if (bChanges || m_bInvalid) 
 		{
-            m_bInvalid = false;
+			
+			//go fullscreen #73 7/10 Imago
+			if ((GetSystemMetrics(SM_CXSCREEN) <= m_sizeWindowed.X() || GetSystemMetrics(SM_CYSCREEN) <= m_sizeWindowed.Y()) && !m_bMovingWindow && !m_pengine->IsFullscreen()) {
+				SetFullscreen(true);
+				m_sizeWindowed.SetX(800);
+				m_sizeWindowed.SetY(600);
+			}
+			m_bInvalid = false;
 
-            UpdateWindowStyle();
-            UpdateRectValues();
-            UpdateMenuStrings();
-            UpdateSurfacePointer();
+			UpdateWindowStyle();
+			UpdateRectValues();
+			UpdateMenuStrings();
+			UpdateSurfacePointer();
         }
 
         //
@@ -1339,12 +1359,14 @@ bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
 			m_bWindowStateRestored = false;
             SetFullscreen(true);
 			m_bInvalid = true; //imago 7/6/09
+			m_bMovingWindow = true; //Imago 7/10 
             return true;
 
 		case SC_MINIMIZE:
 			m_bWindowStateMinimised = true;
 			m_bInvalid = true;
 			m_bMovingWindow = true;
+			m_bClickBreak = false; //Imago 7/10 #37
 			break;
 
 		case SC_RESTORE:
@@ -1355,6 +1377,10 @@ bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
 				m_bInvalid = true; //imago 7/6/09
 				m_bMovingWindow = true;
 			}
+			break;
+
+		case SC_MOVE: //Imago 7/10
+			m_bMovingWindow = true;
 			break;
 
         case SC_CLOSE:
@@ -1430,12 +1456,14 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
 
         switch (message) {
             case WM_MOUSEHOVER:
+			case WM_NCMOUSEHOVER: //Imago 7/10
             case 0: // 0 == WM_MOUSEENTER
                 //pimage->MouseEnter(this, point);
                 m_bMouseInside = true;
                 break;
 
             case WM_MOUSELEAVE:
+			case WM_NCMOUSELEAVE: //Imago 7/10
                 //pimage->MouseLeave(this);
                 m_bMouseInside = false;
                 break;

@@ -95,11 +95,11 @@ Window::Window(
             TEXT(GetTopLevelWindowClassname()),
             strTitle,
             m_style.GetWord(),
-
+			//Imago restored original impl in multimon & topmost effort 7/10
 // BUILD_DX9
-            rect.XMin(), rect.YMin(),
+//            rect.XMin(), rect.YMin(),
 //#else
-//            CW_USEDEFAULT, CW_USEDEFAULT,
+            CW_USEDEFAULT, CW_USEDEFAULT,
 // BUILD_DX9
 
             //m_rect.XMin(), m_rect.YMin(), 
@@ -116,10 +116,11 @@ Window::Window(
             strTitle,
             m_style.GetWord(),
 
+			//Imago restored original impl in multimon & topmost effort 7/10
 // BUILD_DX9
-            rect.XMin(), rect.YMin(),
+ //           rect.XMin(), rect.YMin(),
 //#else
-//            CW_USEDEFAULT, CW_USEDEFAULT,
+            CW_USEDEFAULT, CW_USEDEFAULT,
 // BUILD_DX9
 
             //m_rect.XMin(), m_rect.YMin(), 
@@ -871,7 +872,8 @@ DWORD Window::WndProc(
         case WM_MBUTTONUP:
         case WM_MOUSEMOVE:
         case WM_MOUSELEAVE:
-        
+		case WM_NCMOUSEHOVER: //Imago 7/10
+		case WM_NCMOUSELEAVE: //<--^
             {
                 WinPoint pointMouse;
                 if (message != WM_MOUSEWHEEL) {
@@ -886,7 +888,7 @@ DWORD Window::WndProc(
                 // Handle mouse leave
                 //
 
-                if (message == WM_MOUSELEAVE) {
+                if (message == WM_MOUSELEAVE || message == WM_NCMOUSELEAVE) {
                     if (m_bMouseInside) {
                         m_bMouseInside = false;
                         OnMouseMessage(WM_MOUSELEAVE, 0, pointMouse);
@@ -896,7 +898,7 @@ DWORD Window::WndProc(
                     // Handle mouse enter
                     //
 
-                    if (!m_bMouseInside) {
+                    if (!m_bMouseInside && (message != WM_NCMOUSEHOVER && message != WM_MOUSEHOVER && message != 0)) {
                         m_bMouseInside = true;
                         OnMouseMessage(0, 0, pointMouse);
 

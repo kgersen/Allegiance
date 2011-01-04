@@ -3659,8 +3659,8 @@ void    CshipIGC::ResetWaypoint(void)
                 else if (m_pmodelRipcord)
 				{
                     pigc->RequestRipcord(this, NULL);
-					//Xynth #47 7/2010					
-					SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
+					//Xynth #182 7/2010					
+					SetStateBits(droneRipMaskIGC, 0);
 				}
             }
         }
@@ -3671,8 +3671,8 @@ void    CshipIGC::ResetWaypoint(void)
             if (m_pmodelRipcord)
 			{
                 GetMyMission()->GetIgcSite()->RequestRipcord(this, NULL);
-				//Xynth #47 7/2010
-				SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
+				//Xynth #182 7/2010
+				SetStateBits(droneRipMaskIGC, 0);
 			}
         }
     }

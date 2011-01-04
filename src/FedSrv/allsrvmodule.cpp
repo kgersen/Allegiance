@@ -718,6 +718,43 @@ BOOL CServiceModule::InstallService(int argc, char * argv[])
       return FALSE;
     }
 
+	//Imago #167
+	/*
+    schSvc = OpenService(schMgr, c_szSvcName, SERVICE_CHANGE_CONFIG);  
+    if (!schSvc)
+    {
+      char szBuf[MAX_PATH];
+      DWORD dwErrorCode(GetLastError());
+      sprintf(szBuf, "Unable to open to modify service [0x%08x].  Service not installed corectly.\n", dwErrorCode);
+      PrintSystemErrorMessage(szBuf, dwErrorCode);
+      CloseServiceHandle(schMgr);
+      return FALSE;
+    }
+	*/
+    SERVICE_FAILURE_ACTIONS failureActions;
+	failureActions.cActions = 2;
+	SC_ACTION actions[2];
+	actions[0].Type = SC_ACTION_RESTART;
+	actions[0].Delay = 15000;
+	actions[1].Type = SC_ACTION_RESTART;
+	actions[1].Delay = 15000;
+	//actions[2].Type = SC_ACTION_RESTART;
+	//actions[2].Delay = 15000;
+	failureActions.lpsaActions = actions;
+	failureActions.dwResetPeriod = 120;
+    failureActions.lpRebootMsg = "";
+    failureActions.lpCommand = NULL;
+    if( !ChangeServiceConfig2(schSvc, SERVICE_CONFIG_FAILURE_ACTIONS,&failureActions) )
+    {
+      char szBuf[MAX_PATH];
+      DWORD dwErrorCode(GetLastError());
+      sprintf(szBuf, "Unable to modify service [0x%08x].  Service not installed.\n", dwErrorCode);
+      PrintSystemErrorMessage(szBuf, dwErrorCode);
+
+      CloseServiceHandle(schMgr);
+      return FALSE;
+    }
+
     CloseServiceHandle(schSvc);
     CloseServiceHandle(schMgr);
     printf("%s service installed.\n", c_szSvcName);

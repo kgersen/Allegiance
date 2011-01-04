@@ -1197,11 +1197,19 @@ public:
             );
         }
 		
+		//Imago 7/10 #149
 		int wid = trekClient.GetSavedWingAssignment();
-        m_pcomboWing->SetSelection(wid);
-		trekClient.SetWing(wid);
-        AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
+		if (m_pcomboWing->GetSelection() != 0) {
+			if (wid == NA) {
+					wid = 1;
+					trekClient.SaveWingAssignment(wid);
+			}
+		}
+		m_pcomboWing->SetSelection(wid);
+		trekClient.SetWing(wid);	
+		//
 
+		AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
 
         //
         // Buttons

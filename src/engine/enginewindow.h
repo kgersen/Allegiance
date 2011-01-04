@@ -110,6 +110,7 @@ protected:
 	bool						m_bStartFullScreen;
 	bool						m_bWindowStateMinimised;
 	bool						m_bWindowStateRestored;
+	bool						m_bClickBreak;
 
     int                        m_modeIndex;
 
