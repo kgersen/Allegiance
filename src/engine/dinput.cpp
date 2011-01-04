@@ -1190,7 +1190,7 @@ public:
 		LPDIRECTINPUTEFFECT pDIEffect   = NULL;
 		HRESULT             hr;
 		
-		while ( pEffectNode != pEffectsList )
+		while ( pEffectNode && pEffectNode != pEffectsList )
 		{
 			pDIEffect = pEffectNode->pDIEffect;
 

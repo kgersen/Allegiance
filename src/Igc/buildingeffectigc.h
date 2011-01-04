@@ -321,6 +321,42 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
                                                         m_pstationType->GetCompletionSound(), 
                                                         "Finished building %s", m_pstationType->GetName());
 
+
+				//Imago - #120 #121 8/10 (round 3) before we kill it, let's capture the teams' viz for it and pass it along to BuildStation
+				bool bseenside[c_cSidesMax] = {false};
+				ImodelIGC * pmodelBuilder = GetMyMission()->GetModel(m_pshipBuilder->GetObjectType(),m_pshipBuilder->GetObjectID());
+				for (SideLinkIGC*   psl = GetMyMission()->GetSides()->first();
+					 (psl != NULL);
+					 psl = psl->next())
+				 {
+					 if (m_pasteroid->SeenBySide(psl->data())) {
+						 bool bTeamSees = false;
+						 for (ModelLinkIGC*  pml = m_pshipBuilder->GetCluster()->GetModels()->first(); (pml != NULL); pml = pml->next()) {
+							ImodelIGC*  pmodel = pml->data();
+							if ((pmodel->GetObjectType() != OT_ship && pmodel->GetObjectType() != OT_station  && pmodel->GetObjectType() != OT_probe))
+								continue;
+							if (pmodel->GetObjectType() == OT_ship)
+								if (((IshipIGC*)pmodel)->CanSee(pmodelBuilder)) {
+									bTeamSees = true;
+								}
+							if (pmodel->GetObjectType() == OT_station)
+								if (((IstationIGC*)pmodel)->CanSee(pmodelBuilder)) {
+									bTeamSees = true;
+								}
+							if (pmodel->GetObjectType() == OT_probe)
+								if (((IprobeIGC*)pmodel)->CanSee(pmodelBuilder)) {
+									bTeamSees = true;
+								}
+							if (bTeamSees)
+								break;
+						 }
+						 if (bTeamSees) { 
+							 bseenside[(psl->data())->GetObjectID()] = true;
+						 }
+					 }
+				}
+
+				
                 //Quietly kill the ship (after nuking its parts to prevent treasure from being created)
                 {
                     const PartListIGC*  parts = m_pshipBuilder->GetParts();
@@ -332,6 +368,7 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
                 m_pshipBuilder->SetFuel(0.0f);
 
                 m_pshipBuilder->SetStateM(0);
+
                 GetMyMission()->GetIgcSite()->KillShipEvent(now, m_pshipBuilder, NULL, 0.0f, m_pshipBuilder->GetPosition(), Vector::GetZero());
 
                 m_pshipBuilder = NULL;
@@ -343,7 +380,7 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
                 GetMyMission()->GetIgcSite()->BuildStation(pasteroid,
                                                            m_pside,
                                                            m_pstationType,
-                                                           now);
+                                                           now, bseenside);
             }
         }
 
