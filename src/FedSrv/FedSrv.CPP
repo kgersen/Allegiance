@@ -10288,7 +10288,7 @@ class ThingSiteImpl : public ThingSite
 											 && !staticVisible) //Xynth #135 7/2010
 										{
                                             ObjectType  otSpotter = s->GetObjectType();
-											//Imago #121 - ALLY VIZ REVIEW
+											//Imago #121
 											if (otModel == OT_station) {
 												ObjectID roidID = ((IstationIGC*)pmodel)->GetRoidID();
 												IasteroidIGC * proid = pcluster->GetAsteroid(roidID);
@@ -12842,42 +12842,21 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
                                                      pshipBuilder->GetPosition() - pshipBuilder->GetOrientation().GetBackward() * pshipBuilder->GetRadius(),
                                                      pasteroid->GetPosition());
 
-    //Export the building effect to all sides that could see the asteroid - Imago changedto "see the builder", see below
+    //Export the building effect to all sides that could see the asteroid - Imago changed to "see the builder", see below #120 #121
+	bool bseenside[c_cSidesMax] = {false};
 	ImodelIGC * pmodelBuilder = m_pfsMission->GetIGCMission()->GetModel(pshipBuilder->GetObjectType(),pshipBuilder->GetObjectID());
+	m_pfsMission->GetIGCMission()->GetSeenSides(pmodelBuilder,bseenside);
     for (SideLinkIGC*   psl = m_pfsMission->GetIGCMission()->GetSides()->first();
          (psl != NULL);
          psl = psl->next())
-     {
-         if (pasteroid->SeenBySide(psl->data()))
-		 {
-			 //Imago 7/10 #120
-			 bool bTeamSees = false;
-			 for (ModelLinkIGC*  pml = pshipBuilder->GetCluster()->GetModels()->first(); (pml != NULL); pml = pml->next()) {
-				ImodelIGC*  pmodel = pml->data();
-				if ((pmodel->GetObjectType() != OT_ship && pmodel->GetObjectType() != OT_station  && pmodel->GetObjectType() != OT_probe))
-					continue;
-				if (pmodel->GetObjectType() == OT_ship)
-					if (((IshipIGC*)pmodel)->CanSee(pmodelBuilder)) {
-						bTeamSees = true;
-					}
-				if (pmodel->GetObjectType() == OT_station)
-					if (((IstationIGC*)pmodel)->CanSee(pmodelBuilder)) {
-						bTeamSees = true;
-					}
-				if (pmodel->GetObjectType() == OT_probe)
-					if (((IprobeIGC*)pmodel)->CanSee(pmodelBuilder)) {
-						bTeamSees = true;
-					}
-				if (bTeamSees)
-					break;
-			 }
-			 if (bTeamSees || pshipBuilder->GetSide() == psl->data()) { //REVIEW ALLIES should see friendly build spheres? VIZ
-				ExportObj(pbe, OT_buildingEffect, NULL);
-				g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-			 }
-         }
-     }
+    {
+		if (bseenside[psl->data()->GetObjectID()] || pshipBuilder->GetSide() == psl->data()) {
+			ExportObj(pbe, OT_buildingEffect, NULL);
+			g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+		}
+    }
 }
+
 void        FedSrvSiteBase::LayExpendable(Time                   now,
                                           IexpendableTypeIGC*    pet,
                                           IshipIGC*              pshipLayer)

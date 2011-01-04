@@ -701,6 +701,7 @@ class   CmissionIGC : public ImissionIGC
         virtual void                            DeleteSide(IsideIGC* s);
         virtual IsideIGC*                       GetSide(SideID sideID) const;
         virtual const SideListIGC*              GetSides(void) const;
+		virtual void                            GetSeenSides(ImodelIGC * pmodel, bool * pseensides = false, ImodelIGC * poptionalmodel = NULL); //Imago #120 #121 8/10
 
         //Global list of clusters
         virtual void                            AddCluster(IclusterIGC* c);
