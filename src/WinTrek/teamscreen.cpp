@@ -131,6 +131,10 @@ private:
 
     int             m_nCountdown;
 
+	int CivilizationArray[30]; //Xynth #170 8/2010
+	int numCivilizations;
+	Time	lastRandCivUpdate;
+
     class TeamPainter : public ItemPainter
     {
         MissionInfo* m_pMission;
@@ -348,13 +352,24 @@ private:
                 );
 				// KGJV #62 - draw the faction name under team name
 				// faction name is under team and shifted +4px to the right
+				// Xynth #170 8/2010, Set text to random for random civs
 				if (pitem->GetSideID() >= 0)
+				{
+					if (trekClient.GetCore()->GetSide(pitem->GetSideID())->GetRandomCivilization())
                 psurface->DrawString(
                     TrekResources::SmallFont(),
                     Color::White(),
                     WinPoint(m_viColumns[0]+4, m_nHeight * 1/2 -2),
+						"Random"
+						);
+					else
+						psurface->DrawString(
+						TrekResources::SmallFont(),
+						Color::White(),
+						WinPoint(m_viColumns[0]+4, m_nHeight * 1/2 -2),
                     trekClient.GetCore()->GetSide(pitem->GetSideID())->GetCivilization()->GetName()
                 );
+				}
                 psurface->RestoreClipRect(rectClipOld);
 
                 // draw the available positions
@@ -851,8 +866,9 @@ private:
 
         TeamScreen* m_pparent;
 
-        TRef<IKeyboardInput> m_pkeyboardInputOldFocus;
-
+        TRef<IKeyboardInput> m_pkeyboardInputOldFocus;		
+		int CivilizationArray[30]; //Xynth #170 8/2010
+		int numCivilizations;
     public:
 
         TeamSettingsDialogPopup(TRef<INameSpace> pns, TeamScreen* pparent)
@@ -873,6 +889,7 @@ private:
             m_peditPaneTeamName->SetMaxLength(c_cbName - 1);
 
             int index = g_civStart;
+			numCivilizations = 0;			
             for (CivilizationLinkIGC* linkCiv = trekClient.GetCore()->GetCivilizations()->first(); 
                 linkCiv != NULL; linkCiv = linkCiv->next())
             {
@@ -882,9 +899,15 @@ private:
                 index--;
                 if (trekClient.MyPlayerInfo()->GetShip()->GetPilotType() == c_ptCheatPlayer 
                     || linkCiv->data()->GetObjectID() < 300)        
-
+				{
                     m_pcomboCiv->AddItem(linkCiv->data()->GetName(), linkCiv->data()->GetObjectID());
+					numCivilizations++; //Xynth #170 8/2010 fill an array of faction IDs to pick one at random
+					CivilizationArray[numCivilizations-1] = linkCiv->data()->GetObjectID();					
             }
+            }
+
+			//Xynth #170 removed selection until bugs can be worked out
+			//m_pcomboCiv->AddItem("Random", RANDOM_ID); //Xynth #170 8/2010
 
             m_peditPaneTeamName->SetHidden(true);
         }
@@ -974,6 +997,9 @@ private:
 
             UpdateNameAndSquad();
             UpdateControls();
+			if (trekClient.GetSide()->GetRandomCivilization())
+				m_pcomboCiv->SetSelection(RANDOM_ID);
+			else
             m_pcomboCiv->SetSelection(trekClient.GetSide()->GetCivilization()->GetObjectID());
         }
 
@@ -1024,12 +1050,28 @@ private:
                 pfmSetTeamInfo->squadID = NA;
                 strcpy(pfmSetTeamInfo->SideName, m_peditPaneTeamName->GetString());
             }
+			//Xynth #170 8/2010
+			int civSelection, randIndex;
+			bool bRandomCiv;
+			if (m_pcomboCiv->GetSelection() == RANDOM_ID)
+			{
+				bRandomCiv = true;
+				randIndex = randomInt(0,numCivilizations - 1); //random faction
+				civSelection = CivilizationArray[randIndex];
+			}
+			else
+			{
+				civSelection = m_pcomboCiv->GetSelection();
+				bRandomCiv = false;
+			}
+
 
             trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeCiv, CS, CHANGE_TEAM_CIV)
             END_PFM_CREATE
             pfmChangeCiv->iSide = trekClient.GetSideID(); 
-            pfmChangeCiv->civID = m_pcomboCiv->GetSelection(); 
+            pfmChangeCiv->civID = civSelection;
+			pfmChangeCiv->random = bRandomCiv;
 
             return true;
         }
@@ -1205,8 +1247,10 @@ public:
 					trekClient.SaveWingAssignment(wid); //sends it
 			}
 		}
+		if (!trekClient.GetPlayerInfo()->IsTeamLeader()) { //server will set comm's wings... Imago 8/10
 		m_pcomboWing->SetSelection(wid);
-		trekClient.SetWing(wid);	
+			trekClient.SetWing(wid);
+		}
 		//
 
 		AddEventTarget(&TeamScreen::OnWingCombo, m_pcomboWing->GetEventSource());
@@ -2426,7 +2470,7 @@ public:
         IsideIGC* pside = trekClient.GetCore()->GetSide(m_sideCurrent);
         TRef<Image> pimage;
 
-        if (pside && m_sideCurrent != SIDE_TEAMLOBBY && pside->GetShips()->n() > 0) {
+		if (pside && m_sideCurrent != SIDE_TEAMLOBBY && pside->GetShips()->n() > 0 && !pside->GetRandomCivilization()) { //Xynth #170 8/2010 use default for Random
             ZString str = ZString(pside->GetCivilization()->GetIconName()).ToLower() + "lobbybmp";
 
             m_pwrapImageCiv->SetImage(GetModeler()->LoadImage(str, false)); // KGJV 32B - consistency with defaultwatermark below
@@ -2440,10 +2484,13 @@ public:
 		//Imago #114 7/10
 		if (trekClient.MyPlayerInfo()->IsTeamLeader() && !m_pbuttonAwayFromKeyboard->GetChecked() && trekClient.GetSideID() != sideID)
 		{
+			if (!trekClient.GetShip()->GetSide()->GetRandomCivilization())  //Xynth #170 8/2010
+			{
 			m_pbuttonTeamReady->SetChecked(false);
 			OnButtonTeamReady();
 			m_pbuttonAwayFromKeyboard->SetChecked(true);
 			OnButtonAwayFromKeyboard() ;
+		}
 		}
 		//
 
@@ -2596,7 +2643,42 @@ public:
             
         if (psideinfo->GetRequests().GetCount() > 0)
             m_plistPanePlayers->ForceRefresh();
-
+		//Xynth #170 8/10 Randomize random factions again and resend to all players.  This mitigates joiners
+		//seeing the faction picked randomly
+		if (!trekClient.MyMissionInProgress() && trekClient.MyPlayerInfo()->IsMissionOwner() && (abs(Time::Now() - lastRandCivUpdate)  > 5.0))//only the GC does this
+		{
+			lastRandCivUpdate = Time::Now();
+			numCivilizations = 0;
+			for (CivilizationLinkIGC* linkCiv = trekClient.GetCore()->GetCivilizations()->first(); 
+				linkCiv != NULL; linkCiv = linkCiv->next())
+			{                
+				if (trekClient.MyPlayerInfo()->GetShip()->GetPilotType() == c_ptCheatPlayer 
+					|| linkCiv->data()->GetObjectID() < 300)        
+				{				
+					numCivilizations++; //Xynth #170 8/2010 fill an array of faction IDs to pick one at random
+					CivilizationArray[numCivilizations-1] = linkCiv->data()->GetObjectID();					
+				}
+			}
+			//Loop through the side and randomize anyone w/ random selected
+			for (SideLinkIGC* psidelink = trekClient.GetShip()->GetMission()->GetSides()->first();
+						(psidelink != NULL);
+						psidelink = psidelink->next())
+			{
+				IsideIGC*   pside = psidelink->data();
+				if (pside->GetRandomCivilization())
+				{
+					bool bRandomCiv = true;
+					int randIndex = randomInt(0,numCivilizations - 1); //random faction
+					int civSelection = CivilizationArray[randIndex];
+					trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+					BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeCiv, CS, CHANGE_TEAM_CIV)
+					END_PFM_CREATE
+					pfmChangeCiv->iSide = pside->GetObjectID(); 
+					pfmChangeCiv->civID = civSelection;
+					pfmChangeCiv->random = bRandomCiv;
+				}
+			}
+		}
         return true;
     }
 
@@ -2926,7 +3008,8 @@ public:
             BEGIN_PFM_CREATE(trekClient.m_fm, pfmChangeCiv, CS, CHANGE_TEAM_CIV)
             END_PFM_CREATE
             pfmChangeCiv->iSide = trekClient.GetSideID(); 
-            pfmChangeCiv->civID = civID; 
+            pfmChangeCiv->civID = civID;
+			pfmChangeCiv->random = false;  //Xynth #170 8/10
         }
     }
 

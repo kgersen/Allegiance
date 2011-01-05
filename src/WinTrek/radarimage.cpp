@@ -34,6 +34,7 @@ const int   c_maskQueued        = c_maskOrder << c_cmdQueued;
 const int   c_maskEnemy         = 0x08;
 const int   c_maskThreat        = 0x10;
 const int   c_maskFlash         = 0x20;
+const int   c_maskRip           = 0x40; //Xynth #171 8/10
 const int   c_maskMe            = 0x80;
 const int   c_maskSubject       = 0x100;
 const int   c_maskFlag          = 0x200;
@@ -120,6 +121,7 @@ class RadarImageImpl : public RadarImage {
     TRef<Surface>       m_psurfaceSubject;
     TRef<Surface>       m_psurfaceFlag;
     TRef<Surface>       m_psurfaceArtifact;
+	TRef<Surface>       m_psurfaceRip;  //Xynth #171 8/10
 
     TRef<Surface>       m_psurfaceTechIcon;
 
@@ -205,6 +207,7 @@ public:
         m_psurfaceSubject     = pmodeler->LoadSurface(AWF_FLIGHT_SUBJECT_ICON, true);
         m_psurfaceFlag        = pmodeler->LoadSurface(AWF_FLIGHT_FLAG_ICON, true);
         m_psurfaceArtifact    = pmodeler->LoadSurface(AWF_FLIGHT_ARTIFACT_ICON, true);
+		m_psurfaceRip         = pmodeler->LoadSurface(AWF_FLIGHT_RIP_ICON, true);
 
         m_psurfaceTechIcon    = pmodeler->LoadSurface("icontechbmp", true);
 
@@ -326,6 +329,9 @@ public:
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceFlag, colorOther);
             else if (maskBrackets & c_maskArtifact)
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceArtifact, colorOther);
+
+			if (maskBrackets & c_maskRip)  //Xynth #171 8/10
+                DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceRip, colorIcon);
 
 			if (maskBrackets & c_maskTarget) {
                 DrawExpandedBlip(pcontext, radiusBracket, m_psurfaceTargeted, colorOther);
@@ -945,8 +951,7 @@ public:
                     {
                         pszName = GetModelName(pmodel);
                     }
-
-					bool highlightCaption = false;
+					
 
                     if (bStats)
                     {
@@ -974,7 +979,9 @@ public:
 								if (((pship->GetStateM() & droneRipMaskIGC) != 0) &&
 									 (pship->GetSide() == psideMine) &&
 									 (pship->GetPilotType() < c_ptPlayer))  //Xynth #175 7/2010
-									highlightCaption = true;
+								{									
+									maskBrackets |= c_maskRip; //Xynth #171 8/10
+								}
                                 
                             }
                             break;
@@ -1029,11 +1036,8 @@ public:
                     // Draw the Blip
                     //
 
-					//Xynth #47 7/2010
+					
 					Color   colorOther;
-					if (highlightCaption)
-						colorOther = Color::Cyan();
-					else
 						colorOther = color;
 
                     if ((maskBrackets & (c_maskTarget | c_maskAccepted | c_maskThreat | c_maskHighlight | c_maskFlag | c_maskArtifact)) == 0)

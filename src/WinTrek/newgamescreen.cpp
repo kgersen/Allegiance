@@ -45,7 +45,7 @@ private:
     TRef<ComboPane>      m_pcomboTreasures;
 	TRef<ComboPane>      m_pcomboAsteriods;
     TRef<ComboPane>      m_pcomboInitialMiners;
-    TRef<ComboPane>      m_pcomboMaximumMiners;
+    TRef<ComboPane>      m_pcomboMaximumDrones;
 
 	int					 m_icomboMapTypeCount;
 	int					 m_icomboCustomMapsCount;
@@ -216,7 +216,7 @@ private:
         };
 		m_pcomboTreasures      ->SetSelection(FindClosestValue(vfTreasureValues,vszTreasureNames,4));
 		m_pcomboInitialMiners  ->SetSelection(FindClosestValue(missionparams.nInitialMinersPerTeam, "initialMinersValues"));
-		m_pcomboMaximumMiners  ->SetSelection(FindClosestValue(missionparams.nMaxMinersPerTeam, "maxMinersValues"));
+		m_pcomboMaximumDrones  ->SetSelection(FindClosestValue(missionparams.nMaxDronesPerTeam, "maxDronesValues"));
 
         m_bIsZoneClub = !missionparams.bObjectModelCreated;// KGJV #114   missionparams.bClubGame;
         m_bLockGameOpen = missionparams.bLockGameOpen;
@@ -463,7 +463,7 @@ public:
 		CastTo(m_pcomboAsteriods          , m_pns->FindMember("asteriodsComboPane"));
         CastTo(m_pcomboTreasures          , m_pns->FindMember("treasuresComboPane"));
         CastTo(m_pcomboInitialMiners      , m_pns->FindMember("initialMinersCountComboPane"));
-        CastTo(m_pcomboMaximumMiners      , m_pns->FindMember("maxMinersCountComboPane"));
+        CastTo(m_pcomboMaximumDrones      , m_pns->FindMember("maxDronesCountComboPane"));
 
 		CastTo(m_pimageMapPreview		  , (Pane*)m_pns->FindMember("mapPreviewPane"));
 
@@ -505,7 +505,7 @@ public:
 		FillCombo(m_pcomboAsteriods			 , "AsteriodsNames");
         FillCombo(m_pcomboTreasures          , "TreasuresNames");
         FillCombo(m_pcomboInitialMiners      , "initialMinersNames");
-        FillCombo(m_pcomboMaximumMiners      , "maxMinersNames");
+        FillCombo(m_pcomboMaximumDrones      , "maxDronesNames");
 
         AddEventTarget(&NewGameScreen::OnPickGameType, m_pcomboGameType->GetEventSource());
 
@@ -1021,7 +1021,7 @@ public:
 		misparams.nNeutralSectorTreasures = FindValue(m_pcomboTreasures->GetSelection(), "TreasureNeutralValues");
 		misparams.nNeutralSectorTreasureRate = FindValue(m_pcomboTreasures->GetSelection(), "TreasureRateNeutralValues") / 60.0f;
 		misparams.nInitialMinersPerTeam = FindValue(m_pcomboInitialMiners->GetSelection(), "initialMinersValues");
-		misparams.nMaxMinersPerTeam = FindValue(m_pcomboMaximumMiners->GetSelection(), "maxMinersValues");
+		misparams.nMaxDronesPerTeam = FindValue(m_pcomboMaximumDrones->GetSelection(), "maxDronesValues");
 
 		// mmf 10/07 Experimental game type.  Hard coded this to 5 as GameType is not 'filled' from newgamescreen.mdl like
 		// the others.  The entries are built in VerifyGameTypeInitialization in gametypes.cpp
@@ -1174,7 +1174,7 @@ public:
 
         m_pnumberCanChooseMaxPlayers->SetValue((m_bIsZoneClub && bEnable) ? 1.0f : 0.0f);
 
-        m_peditPaneGameName->SetReadOnly(!bEnable);
+        m_peditPaneGameName->SetReadOnly(!bEnable || !m_bIsZoneClub); // pkk - Gamename not editable in Zonegames
         m_peditPaneGamePassword->SetReadOnly(!bEnable || !m_bIsZoneClub);
         m_peditPaneGamePassword->SetType((bEnable && m_bIsZoneClub) ? EditPane::Normal : EditPane::Password);
         
@@ -1210,7 +1210,7 @@ public:
         m_pcomboTeamCount->SetEnabled(bEnable);
         m_pcomboMaxPlayers->SetEnabled(bEnable && !m_bLockGameOpen);
         m_pcomboMaxImbalance->SetEnabled(!bAllies && bEnable); //because imbalance impelemtation is now FUBAR even w/o allies... we'll disable it -Imago 8/1/09
-        m_pcomboSkillLevel->SetEnabled(bEnable && !m_bLockGameOpen); // KGJV #92
+        m_pcomboSkillLevel->SetEnabled(bEnable && m_bIsZoneClub); // pkk #203
         m_pcomboMapType->SetEnabled(bEnable);
         m_pcomboConnectivity->SetEnabled(bEnable);
         m_pcomboLives->SetEnabled(bEnable);
@@ -1230,7 +1230,7 @@ public:
 		m_pcomboAsteriods->SetEnabled(bEnable);
 		m_pcomboTreasures->SetEnabled(bEnable);
 		m_pcomboInitialMiners->SetEnabled(bEnable);
-		m_pcomboMaximumMiners->SetEnabled(bEnable);
+		m_pcomboMaximumDrones->SetEnabled(bEnable);
 		m_pbuttonNextMap->SetHidden(!bEnable);
 		m_pbuttonPrevMap->SetHidden(!bEnable);
 

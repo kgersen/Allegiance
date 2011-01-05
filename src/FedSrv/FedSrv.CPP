@@ -6800,7 +6800,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       CASTPFM(pfmChangeTeamCiv, CS, CHANGE_TEAM_CIV, pfm);
       TrapHackBoot(NA != pfmChangeTeamCiv->civID);
-      TrapHackBoot(sid == pfmChangeTeamCiv->iSide);
+      //TrapHackBoot(sid == pfmChangeTeamCiv->iSide);  Xynth Had to remove this for random civs #170
 
       if (pfsMission->GetStage() == STAGE_NOTSTARTED)
       {

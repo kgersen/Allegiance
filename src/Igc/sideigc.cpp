@@ -40,7 +40,9 @@ HRESULT         CsideIGC::Initialize(ImissionIGC*   pMission,
     m_pMission->GetIgcSite()->CreateSideEvent(static_cast<IsideIGC*>(this));
 
 	//#ALLY
-	m_data.allies = NA;
+	m_data.allies = NA;	
+
+	bRandomCivilization = false; //Xynth #170 8/10 Initialize new bool
     return S_OK;
 }
 

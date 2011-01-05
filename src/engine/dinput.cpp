@@ -313,12 +313,12 @@ public:
         {
             ::RegQueryValueEx(hKey, "MouseSensitivity", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
 
-            m_sensitivity = (strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 0.83f;
+            m_sensitivity = (float)(strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 1.10f;
 
             ::RegQueryValueEx(hKey, "MouseAcceleration", NULL, &dwType, (unsigned char*)&dwValue, &cwValue);
             ::RegCloseKey(hKey);
 
-            m_acceleration = (dwValue != -1 && m_acceleration != dwValue) ?  dwValue : m_acceleration;
+            m_acceleration = (dwValue != -1) ?  dwValue : m_acceleration;
         }
 		//
 		
@@ -435,16 +435,16 @@ public:
     {
         m_z += float(dz);
 
-        if (m_vvalueObject.GetCount() >= 3) {
+        if (m_vvalueObject.GetCount() >= 3 && m_vvalueObject[2] != NULL) { //#217
             m_vvalueObject[2]->GetValue()->SetValue(m_z); //imago 8/12/09 use z axis
             if (dz < 0) {
                 ButtonChanged(8,true);
             } else if (dz > 0) {
                 ButtonChanged(9,true);
             } else { //imago 8/13/09 use dz == 0 for button up
-                if (m_vbuttonObject[8]->GetValue()->GetValue())
+                if (m_vbuttonObject[8] != NULL && m_vbuttonObject[8]->GetValue()->GetValue()) //#217
                     ButtonChanged(8,false);
-                if (m_vbuttonObject[9]->GetValue()->GetValue())
+                if (m_vbuttonObject[8] != NULL && m_vbuttonObject[9]->GetValue()->GetValue()) //#217
                     ButtonChanged(9,false);
             }
         }
@@ -647,7 +647,7 @@ public:
             m_bEnabled = bEnabled;
 
             if (m_bEnabled) {
-               // DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND)); //Imago Commented out 8/10
+                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
             } else {
 //                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
                 DDCall(m_pdid->Unacquire());

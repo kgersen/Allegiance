@@ -4064,7 +4064,7 @@ void                    CmissionIGC::GenerateMission(Time                   now,
 	debugf("Total money: %f\n",pmp->fHe3Density);
 	debugf("Player Sector He3 rocks: %d\n",pmp->nPlayerSectorMineableAsteroids);
 	debugf("Neutral Sector He3 rocks: %d\n",pmp->nNeutralSectorMineableAsteroids);
-	debugf("Max Miners: %d\n",pmp->nMaxMinersPerTeam);
+	debugf("Max Drones: %d\n",pmp->nMaxDronesPerTeam);
     debugf("Scores Count: %s\n",pmp->bScoresCount ? "yes" : "no");
     debugf("Eject Pods: %s\n",pmp->bEjectPods ? "yes" : "no");
     debugf("Allow Friendly Fire: %s\n",pmp->bAllowFriendlyFire ? "yes" : "no");
@@ -4992,10 +4992,10 @@ void Obj2Txt(IbaseIGC * pIGC, ObjectType ot, ImissionIGC * pMission)
 						strPreferredPartsTypes += " ";
 					}
 				}
-				
+				//Fixed copy/paste error on 8/10 thanks to Compellor
 				ZString strPmEquipment = pMission->BitsToPartsList(pdata->pmEquipment[ET_ChaffLauncher],ET_ChaffLauncher) + "\t"
-					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Dispenser],ET_Magazine) + "\t"
-					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Magazine],ET_Dispenser) + "\t"
+					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Dispenser],ET_Dispenser) + "\t"
+					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Magazine],ET_Magazine) + "\t"
 					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Shield],ET_Shield) + "\t"
 					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Cloak],ET_Cloak) + "\t"
 					+pMission->BitsToPartsList(pdata->pmEquipment[ET_Afterburner],ET_Afterburner) + "\t";

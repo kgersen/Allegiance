@@ -2229,25 +2229,25 @@ STDMETHODIMP CAGCGameParameters::put_InitialMinersPerTeam(unsigned char newVal)
 
 
 /*-------------------------------------------------------------------------
- * get_MaxMinersPerTeam()
+ * get_MaxDronesPerTeam()
  *-------------------------------------------------------------------------
  */
-STDMETHODIMP CAGCGameParameters::get_MaxMinersPerTeam(unsigned char *pVal)
+STDMETHODIMP CAGCGameParameters::get_MaxDronesPerTeam(unsigned char *pVal)
 {
   XLock lock(this);
-  CLEAROUT(pVal, (unsigned char)(m_mp.nMaxMinersPerTeam));
+  CLEAROUT(pVal, (unsigned char)(m_mp.nMaxDronesPerTeam));
   return S_OK;
 }
 
 
 /*-------------------------------------------------------------------------
- * put_MaxMinersPerTeam()
+ * put_MaxDronesPerTeam()
  *-------------------------------------------------------------------------
  */
-STDMETHODIMP CAGCGameParameters::put_MaxMinersPerTeam(unsigned char newVal)
+STDMETHODIMP CAGCGameParameters::put_MaxDronesPerTeam(unsigned char newVal)
 {
   XLock lock(this);
-  m_mp.nMaxMinersPerTeam = newVal;
+  m_mp.nMaxDronesPerTeam = newVal;
   return S_OK;
 }
 

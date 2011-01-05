@@ -223,8 +223,8 @@ public:
   STDMETHODIMP put_DefaultCountdown(float newVal); 
   STDMETHODIMP get_InitialMinersPerTeam(unsigned char *pVal); 
   STDMETHODIMP put_InitialMinersPerTeam(unsigned char newVal); 
-  STDMETHODIMP get_MaxMinersPerTeam(unsigned char *pVal); 
-  STDMETHODIMP put_MaxMinersPerTeam(unsigned char newVal); 
+  STDMETHODIMP get_MaxDronesPerTeam(unsigned char *pVal); 
+  STDMETHODIMP put_MaxDronesPerTeam(unsigned char newVal); 
   STDMETHODIMP get_CustomMap(BSTR* pVal);
   STDMETHODIMP put_CustomMap(BSTR pVal);
   STDMETHODIMP get_RestartCountdown(float *pVal);

@@ -480,6 +480,7 @@ typedef ObjectID        ExpendableTypeID;
 typedef ObjectID        CivID;
 typedef ObjectID        MunitionID;
 typedef ObjectID        TreasureSetID;
+const ObjectID         RANDOM_ID = 9999;  //Xynth #170 8/2010
 typedef int             SquadID;
 
 typedef ObjectID        WingID;
@@ -777,6 +778,7 @@ enum    ShipControlStateIGC
     upButtonIGC                 =   32 * coastButtonIGC,            //       up
     downButtonIGC               =   64 * coastButtonIGC,            //       down
     afterburnerButtonIGC        =  128 * coastButtonIGC,            //       with afterburners
+	keyMaskIGC					=  (256 * coastButtonIGC - 4),		//Xynth #210 coastButton-afterburnerbutton
     drillingMaskIGC             =  256 * coastButtonIGC,            //on rails to avoid collisions
     cloakActiveIGC              =  512 * coastButtonIGC,            //Activating the cloak
     droneRipMaskIGC             = 1024 * coastButtonIGC,            //Xynth #47 7/2010
@@ -1164,7 +1166,7 @@ struct MissionParams
     unsigned char nMaxPlayersPerTeam;                   //Max players on team
 
     char        nInitialMinersPerTeam;                  //Number of miners to start the game with
-    char        nMaxMinersPerTeam;                      //Maximum # of miners a team is allowed to control
+    char        nMaxDronesPerTeam;                      //Maximum # of drones a team is allowed to control
 
     short       nTotalMaxPlayersPerGame;                //Maximum # of players per game (mostly used for StandAlone server)
 
@@ -1280,7 +1282,7 @@ struct MissionParams
         nNeutralSectorSpecialAsteroids  = 1;
 
         nInitialMinersPerTeam           = 1;
-        nMaxMinersPerTeam               = 4;
+        nMaxDronesPerTeam               = 4;
 
         nMinPlayersPerTeam              = 1;   // KGJV #114 changed
         nMaxPlayersPerTeam              = 100; // KGJV #114 changed
@@ -1309,13 +1311,13 @@ struct MissionParams
             }
         }
 
-        if (nInitialMinersPerTeam > nMaxMinersPerTeam)
+        if (nInitialMinersPerTeam > nMaxDronesPerTeam)
         {
             return "Initial miners per team must be less than max miners per team.";
         }
-        else if (nMaxMinersPerTeam > 10)
+        else if (nMaxDronesPerTeam > 10)
         {
-            return "Max miners per team must be less than or equal to 10.";
+            return "Max drones per team must be less than or equal to 10.";
         }
         else if (nNeutralSectorSpecialAsteroids > 9)
         {
@@ -4230,6 +4232,9 @@ class IsideIGC : public IbaseIGC
 			return (side1->GetAllies() == side2->GetAllies());
 		}
 		//
+		//Xynth #170 8/10
+		virtual bool GetRandomCivilization(void) const = 0;
+		virtual void SetRandomCivilization(bool rand) = 0;
 };
 
 class IcivilizationIGC : public IbaseIGC
@@ -4785,6 +4790,14 @@ class IIgcSite : public IObject
         virtual void *GetDroneFromShip(IshipIGC * pship){return NULL;} // return value is really a Drone*
         virtual void CreateSideEvent(IsideIGC * pIsideIGC) {};
         virtual void DestroySideEvent(IsideIGC * pIsideIGC) {};
+
+		// pkk #19 - IGC to Wintrek
+		Time m_ReloadingFuelTime;
+		Time m_ReloadingAmmoTime;
+		virtual void SetReloadingFuelTime(void) { m_ReloadingFuelTime = Time::Now(); };
+		virtual void SetReloadingAmmoTime(void) { m_ReloadingAmmoTime = Time::Now(); };
+		virtual Time GetReloadingFuelTime(void) {return m_ReloadingFuelTime;};
+		virtual Time GetReloadingAmmoTime(void) {return m_ReloadingAmmoTime;};
 
         virtual void ChangeStation(IshipIGC* pship,
                                    IstationIGC* pstationOld,

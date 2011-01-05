@@ -3955,6 +3955,8 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
     {
         // full fuel and ammo
         pStation->RepairAndRefuel (pShip);
+
+		pShip->SetStateBits(keyMaskIGC, 0);  //Xynth #210 8/2010
         if ((pShip != GetShip ()) || Training::ShipLanded ())
         {
             // how to make the miners empty out and reset their mission

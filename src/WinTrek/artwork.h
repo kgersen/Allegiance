@@ -73,6 +73,7 @@
 #define AWF_FLIGHT_SUBJECT_ICON                 "subjectbmp"
 #define AWF_FLIGHT_FLAG_ICON                    "hasflagbmp"
 #define AWF_FLIGHT_ARTIFACT_ICON                "hasartifactbmp"
+#define AWF_FLIGHT_RIP_ICON                     "ripiconbmp"
 #define AWF_FLIGHT_LASTFIRED_ICON               "lastfiredbmp"
 #define AWF_FLIGHT_LEAD_IN_ICON                 "leadinbmp"
 #define AWF_FLIGHT_LEAD_OUT_ICON                "leadoutbmp"
