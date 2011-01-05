@@ -10646,8 +10646,8 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) || pbseensides[potherside->GetObjectID()]) {
 			KillAsteroidEvent(pasteroid, potherside, false);
 		}
-	}
-	//
+ 	}
+ 	//
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
@@ -10660,7 +10660,13 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 		IsideIGC * potherside = plinkSide->data();
 		if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && pstationNew->SeenBySide(plinkSide->data())) {
 			KillAsteroidEvent(pasteroid, potherside, false);
-		}
+		} else if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && !pstationNew->SeenBySide(plinkSide->data())) {
+			pstationNew->SetRoidSig(pasteroid->GetSignature());
+			pstationNew->SetRoidPos(pasteroid->GetPosition());
+			pstationNew->SetRoidRadius(pasteroid->GetRadius());
+			pstationNew->SetRoidCaps(pasteroid->GetCapabilities());
+			pstationNew->SetRoidSide(potherside->GetObjectID());
+ 		}
 	}
 	//
 	pasteroid->Terminate();

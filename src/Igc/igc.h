@@ -823,13 +823,6 @@ const Axis c_axisMax       = 4;
 const Mount   c_maxUnmannedWeapons = 4;
 const Mount   c_maxMountedWeapons = 8;
 
-//Imago 8/10
-struct RoidInfo {
-	Vector vec;
-	ObjectID oid;
-};
-//
-
 struct  CommandData
 {
     char            szVerb[c_cbFileName];
@@ -3471,7 +3464,22 @@ class IstationIGC : public IscannerIGC
 		
 		//Imago #121
 		virtual ObjectID				GetRoidID() const = 0;
-		virtual void					SetRoidID(ObjectID id) = 0;
+		virtual void SetRoidID(ObjectID id) = 0;
+
+		virtual Vector					GetRoidPos() const = 0;
+		virtual void SetRoidPos(Vector pos) = 0;
+
+		virtual float					GetRoidSig() const = 0;
+		virtual void SetRoidSig(float Sig) = 0;
+
+		virtual float					GetRoidRadius() const = 0;
+		virtual void SetRoidRadius(float Radius) = 0;
+		
+		virtual AsteroidAbilityBitMask	GetRoidCaps() const = 0;
+		virtual void SetRoidCaps(AsteroidAbilityBitMask aabm) = 0;
+
+		virtual void SetRoidSide(SideID sid, bool bset = true) = 0;
+		virtual bool GetRoidSide(SideID sid) = 0;
 		//
 
         virtual float                   GetShieldFraction(void) const = 0;
@@ -3996,10 +4004,6 @@ class IclusterIGC : public IbaseIGC
         virtual const ShipListIGC*      GetShips(void) const = 0;
 
         virtual void                    AddAsteroid(IasteroidIGC* asteroidNew) = 0;
-		//Imago
-		virtual void                    AddAsteroidPosition(Vector vec, ObjectID oid) = 0;
-		virtual ObjectID				GetAsteroidAtPosition(Vector vec) = 0;
-		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld) = 0;
         virtual IasteroidIGC*           GetAsteroid(AsteroidID asteroidID) const = 0;
         virtual const AsteroidListIGC*  GetAsteroids(void) const = 0;
@@ -4084,7 +4088,7 @@ class IasteroidIGC : public IdamageIGC
 		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const = 0;
 		virtual void SetOreWithFraction(float oreFraction) = 0;  //Xynth #163 7/2010
 		virtual float GetOreFraction() const = 0; //Xynth #163
-		//Imago 8/10
+		//Imago 8/10 #120 #121
 		virtual void SetBuilderSeenSide(ObjectID oid) = 0;
 		virtual bool GetBuilderSeenSide(ObjectID oid) = 0;
 };
@@ -4746,6 +4750,7 @@ class IIgcSite : public IObject
         virtual void TerminateModelEvent(ImodelIGC* model){}
         virtual void TerminateMissionEvent(ImissionIGC* pMission){}
         virtual void KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF) {}
+		virtual void KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side) {} //Imago #120 #121 8/10
         virtual void DrainAsteroidEvent(IasteroidIGC* pasteroid) {}
 		virtual void MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre) {}  //Xynth #132 7/2010
 		virtual void KillProbeEvent(IprobeIGC* pprobe) {}
