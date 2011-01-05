@@ -300,8 +300,28 @@ public:
         m_threshold1   = pvalue[0];
         m_threshold2   = pvalue[1];
         m_acceleration = pvalue[2];
-        m_sensitivity  = 1.0f;
+        
+		//Imago #215 8/10
+        HKEY hKey;
+        DWORD dwType;
+		char  szValue[20] = {'\0'};
+        DWORD cbValue = sizeof(szValue);
+		DWORD dwValue = -1;
+		DWORD cwValue = sizeof(dwValue);
 
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        {
+            ::RegQueryValueEx(hKey, "MouseSensitivity", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+
+            m_sensitivity = (strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 0.83f;
+
+            ::RegQueryValueEx(hKey, "MouseAcceleration", NULL, &dwType, (unsigned char*)&dwValue, &cwValue);
+            ::RegCloseKey(hKey);
+
+            m_acceleration = (dwValue != -1 && m_acceleration != dwValue) ?  dwValue : m_acceleration;
+        }
+		//
+		
         ///* !!! this only works on NT50
 		/*
         int speed;
@@ -588,7 +608,12 @@ public:
     // MouseInputStream 
     //
     //////////////////////////////////////////////////////////////////////////////
-    
+
+	//Imago #215 8/10
+	void SetSensitivity(const float sens) { m_sensitivity = sens; } 
+	void SetAccel(const int accel) { m_acceleration = accel; } 
+	//
+
     void SetClipRect(const Rect& rect)
     {
         m_rect = rect;
@@ -622,7 +647,7 @@ public:
             m_bEnabled = bEnabled;
 
             if (m_bEnabled) {
-                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+               // DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND)); //Imago Commented out 8/10
             } else {
 //                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
                 DDCall(m_pdid->Unacquire());

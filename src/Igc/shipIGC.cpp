@@ -1926,6 +1926,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     m_pclusterRequestRipcord = NULL;
 					//Xynth #47 7/2010					
 					SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
+					SetStateBits(miningMaskIGC, 0); //stop mining when you rip
                 }
                 else
                 {
@@ -3650,6 +3651,7 @@ void    CshipIGC::ResetWaypoint(void)
                         pigc->RequestRipcord(this, pclusterTarget);
 						//Xynth #47 7/2010
 						SetStateBits(droneRipMaskIGC, droneRipMaskIGC);
+						SetStateBits(miningMaskIGC, 0); //stop mining when you rip
 					}
                     else
                     {

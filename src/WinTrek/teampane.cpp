@@ -146,7 +146,7 @@ public:
             
             // draw the name
             
-            if (pplayer->LastSeenState() == c_ssDocked || pplayer->LastSeenState() == NULL)
+            if (pplayer->LastSeenState() == c_ssDocked)
             {
                 psurface->DrawString(
                     TrekResources::SmallBoldFont(),
@@ -1778,7 +1778,7 @@ class ExpandedTeamPane : public TeamPane
             TRef<IEngineFont> pfont;
             Color             color;
             
-            if (pplayer->LastSeenState() == c_ssDocked || pplayer->LastSeenState() == NULL)
+            if (pplayer->LastSeenState() == c_ssDocked)
             {
                 pfont = TrekResources::SmallBoldFont();
                 color = Color(0.617f, 0.0f, 0.156f);
