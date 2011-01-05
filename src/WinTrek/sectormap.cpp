@@ -155,6 +155,7 @@ private:
 
     TRef<IclusterIGC>       m_pClusterSel;
     TRef<IclusterIGC>       m_pClusterMouseOver;
+	TRef<Surface>			m_pprobeIcon;
 
 public:
 
@@ -164,6 +165,7 @@ public:
         m_pimageLargeBkgnd = GetModeler()->LoadImage("conesectorinfobmp", true);
         m_pimageExpand = GetModeler()->LoadImage("consectorexpandbmp", true);
         m_pimageBkgnd = m_pimageSmallBkgnd;
+		m_pprobeIcon = (Surface *)trekClient.LoadRadarIcon("probe");
     }
 
     void CalcBounds()
@@ -333,14 +335,17 @@ public:
 		for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
         {
             IprobeIGC*  pprobe = ppl->data();			
-            if (pprobe->GetSide() == trekClient.GetShip()->GetSide())
+            if (pprobe->GetSide() == trekClient.GetShip()->GetSide() && 
+				(pprobe->GetProbeType()->GetCapabilities() == 0 || pprobe->GetProbeType()->GetCapabilities() >= c_eabmRescue)) //Imago 8/10
 				probeCount++;
 		}
+		//Imago 8/10
+		pcontext->DrawImage3D(m_pprobeIcon, trekClient.GetSide()->GetColor(), false, ptNext);
 		pcontext->DrawString(
                 pfont,
                 Color::White(),
-                ptNext,
-                "Probes: " + ZString(probeCount)
+                ptNext + Point(m_pprobeIcon->GetSize().X() + 4, 0),
+                ZString(probeCount)
 				);
 
 

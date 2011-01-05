@@ -1380,12 +1380,18 @@ bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
 			break;
 
 		case SC_MOVE: //Imago 7/10
-			m_bMovingWindow = true;
+			if (GetAsyncKeyState(VK_LBUTTON) < 0) {
+				m_bMovingWindow = true;
+			}
 			break;
 
         case SC_CLOSE:
             StartClose();
             return true;
+
+		default:
+			m_bMovingWindow = false;
+			break;
     }
 
     return Window::OnSysCommand(uCmdType, point);

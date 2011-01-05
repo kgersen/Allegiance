@@ -8537,7 +8537,7 @@ public:
     {
         IshipIGC* pship = trekClient.GetShip();
 
-        if (pship->GetParentShip() == NULL)
+        if (pship->GetParentShip() == NULL && (m_viewmode != vmHangar && m_viewmode != vmLoadout)) //#207 - Imago 8/10
         {
             Mount nHardpoints = pship->GetHullType()->GetMaxFixedWeapons();
             IweaponIGC* pweapon = (IweaponIGC*)pship->GetMountedPart(ET_Weapon, mount);
