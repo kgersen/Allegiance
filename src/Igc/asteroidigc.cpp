@@ -19,6 +19,7 @@
 // CasteroidIGC
 HRESULT     CasteroidIGC::Initialize(ImissionIGC* pMission, Time now, const void* data, int dataSize)
 {
+	ZeroMemory(&m_builderseensides, sizeof(bool) * c_cSidesMax); //Imago 8/10
     TmodelIGC<IasteroidIGC>::Initialize(pMission, now, data, dataSize);
 
     ZRetailAssert (data && (dataSize == sizeof(DataAsteroidIGC)));

@@ -159,7 +159,7 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">.exe</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">.exe</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">true</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">true</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">true</LinkIncremental>
@@ -273,7 +273,7 @@
       <AdditionalIncludeDirectories>..\src\Inc;..\src\Lang\NonIntl\allegiance;..\src\Lang\USA\allegiance;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;ddraw.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)..\effect\effect.lib;$(OutDir)..\engine\engine.lib;$(OutDir)..\zlib\zlib.lib;urlmon.lib;d3d9.lib;d3dx9.lib;dsound.lib;dxguid.lib;winmm.lib;dinput8.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>

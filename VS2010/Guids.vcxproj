@@ -176,7 +176,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">
     <ClCompile>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\Inc;.\;.\$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -193,6 +193,15 @@
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
     </Lib>
+    <Midl>
+      <AdditionalIncludeDirectories>$(Outdir)..\Guids;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
+    </Midl>
+    <PreLinkEvent>
+      <Command>lib /out:$(OutDir)AGCGuid.lib $(OutDir)AGCGuid.obj</Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
@@ -346,11 +355,13 @@
       <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)</OutputDirectory>
       <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(FileName).h</HeaderFileName>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)AGC.tlb</TypeLibraryName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">%(FileName).h</HeaderFileName>
     </Midl>
     <Midl Include="..\src\Inc\AGCIDL.idl">
       <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)</OutputDirectory>
       <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(FileName).h</HeaderFileName>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)AGC.tlb</TypeLibraryName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">%(FileName).h</HeaderFileName>
     </Midl>
   </ItemGroup>
   <ItemGroup>

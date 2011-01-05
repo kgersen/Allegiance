@@ -823,6 +823,13 @@ const Axis c_axisMax       = 4;
 const Mount   c_maxUnmannedWeapons = 4;
 const Mount   c_maxMountedWeapons = 8;
 
+//Imago 8/10
+struct RoidInfo {
+	Vector vec;
+	ObjectID oid;
+};
+//
+
 struct  CommandData
 {
     char            szVerb[c_cbFileName];
@@ -3989,6 +3996,10 @@ class IclusterIGC : public IbaseIGC
         virtual const ShipListIGC*      GetShips(void) const = 0;
 
         virtual void                    AddAsteroid(IasteroidIGC* asteroidNew) = 0;
+		//Imago
+		virtual void                    AddAsteroidPosition(Vector vec, ObjectID oid) = 0;
+		virtual ObjectID				GetAsteroidAtPosition(Vector vec) = 0;
+		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld) = 0;
         virtual IasteroidIGC*           GetAsteroid(AsteroidID asteroidID) const = 0;
         virtual const AsteroidListIGC*  GetAsteroids(void) const = 0;
@@ -4044,6 +4055,8 @@ class IclusterIGC : public IbaseIGC
         virtual float            GetPendingTreasures(void) const = 0;
         virtual void             SetPendingTreasures(float  fpt) = 0;
         virtual float            GetCost(void) const = 0;
+		virtual void			 SetHighlight(bool hl) = 0; //Xynth #208
+		virtual bool			 GetHighlight(void) const = 0;
 };
 
 class IasteroidIGC : public IdamageIGC
@@ -4071,6 +4084,9 @@ class IasteroidIGC : public IdamageIGC
 		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const = 0;
 		virtual void SetOreWithFraction(float oreFraction) = 0;  //Xynth #163 7/2010
 		virtual float GetOreFraction() const = 0; //Xynth #163
+		//Imago 8/10
+		virtual void SetBuilderSeenSide(ObjectID oid) = 0;
+		virtual bool GetBuilderSeenSide(ObjectID oid) = 0;
 };
 
 class IwarpIGC : public ImodelIGC
@@ -4677,7 +4693,8 @@ class IIgcSite : public IObject
         virtual void    BuildStation(IasteroidIGC*      pasteroid,
                                          IsideIGC*          pside,
                                          IstationTypeIGC*   pstationtype,
-										 Time               now, bool bseensides[] = false) { } //Imago #120 #121 8/10
+										 Time               now,
+										 bool pbseensides[]) { } //Imago #120 #121 8/10
 
         virtual TRef<ThingSite>      CreateThingSite(ImodelIGC* pModel){return new ThingSite;}
         virtual TRef<ClusterSite>    CreateClusterSite(IclusterIGC* pCluster){return new ClusterSite;}
@@ -4731,7 +4748,7 @@ class IIgcSite : public IObject
         virtual void KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF) {}
         virtual void DrainAsteroidEvent(IasteroidIGC* pasteroid) {}
 		virtual void MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre) {}  //Xynth #132 7/2010
-        virtual void KillProbeEvent(IprobeIGC* pprobe) {}
+		virtual void KillProbeEvent(IprobeIGC* pprobe) {}
         virtual void KillMissileEvent(ImissileIGC* pmissile, const Vector& position) {}
         virtual void KillBuildingEffectEvent(IbuildingEffectIGC* pbe) {}
         virtual void KillMineEvent(ImineIGC* pmine) {}

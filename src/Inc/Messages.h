@@ -1018,6 +1018,11 @@ DEFINE_FEDMSG(S, ASTEROID_MINED, 198)  //Xynth #132 7/2010 sent by server when a
 	BytePercentage      bpOreFraction;
 END_FEDMSG
 
+DEFINE_FEDMSG(CS, HIGHLIGHT_CLUSTER, 199)  //Xynth #208 Notify clients of sector highlight
+    SectorID            clusterID;	
+	bool				highlight;	
+END_FEDMSG
+
 #endif // _MESSAGES_ 
 
 

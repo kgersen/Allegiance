@@ -348,10 +348,10 @@ void CD3DDeviceModeData::GetResolutionStringByIndex( int iDeviceIndex, int iReso
 		iResolutionIndex -= m_pAdapterArray[ iDeviceIndex ].pModeCount[i];
 		i++;
 	}
-	//_ASSERT( i < eDMD_NumModes );
-	//_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
-	if (iResolutionIndex == 0)
-		return; //for now Imago 7/10
+	if ( !(i < eDMD_NumModes) || !(iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i])) {
+		sprintf_s( pBuffer, iBufferLen, "800x600 Compat. Mode" );
+		return; //Imago 8/10
+	}
 	pDisplayMode = &m_pAdapterArray[ iDeviceIndex ].ppAvailableModes[ i ][ iResolutionIndex ].mode;
 	sprintf_s( pBuffer, iBufferLen, "%d x %d @ %dHz [%d bit]", 
 				pDisplayMode->Width, 

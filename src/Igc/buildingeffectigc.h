@@ -348,7 +348,7 @@ class CbuildingEffectIGC : public TmodelIGC<IbuildingEffectIGC>
                 GetMyMission()->GetIgcSite()->BuildStation(pasteroid,
                                                            m_pside,
                                                            m_pstationType,
-                                                           now, bseenside);
+                                                           now, bseenside); //Imago #121 - Selective pop rocks
             }
         }
 

@@ -6755,7 +6755,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  {									 //ownship commands.  Tagging on miner commands from playerpane
       	  pship = pside->GetShip(pfmOC->shipID);		 
 	  }
-      if (pship->GetPilotType() == c_ptMiner)
+	  // pkk #211 08/05/2010 Allow all drones stay docked
+      if (pship->GetPilotType() < c_ptPlayer)
 	  {
 			  pship->SetStayDocked(true);
 			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
@@ -6797,6 +6798,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       }
     }
     break;
+
+	//Xynth #208 8/2010
+	case FM_CS_HIGHLIGHT_CLUSTER:
+	{
+		CASTPFM(pfmHC, CS, HIGHLIGHT_CLUSTER, pfm);
+		
+		g.fm.ForwardMessage(CFSSide::FromIGC(pfsPlayer->GetSide())->GetGroup(),pfmHC, FM_GUARANTEED);
+	}
+	break;
 
 	// KGJV #62
     case FM_CS_SIDE_INACTIVE:
@@ -10290,8 +10300,7 @@ class ThingSiteImpl : public ThingSite
                                             ObjectType  otSpotter = s->GetObjectType();
 											//Imago #121
 											if (otModel == OT_station) {
-												ObjectID roidID = ((IstationIGC*)pmodel)->GetRoidID();
-												IasteroidIGC * proid = pcluster->GetAsteroid(roidID);
+												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
 												//asteroid to silently pop
 												if (roidID != NA) {
 													BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
@@ -10327,8 +10336,9 @@ class ThingSiteImpl : public ThingSite
                                                         ppso->SpotWarp();
                                                     else
                                                     {
-                                                        assert (otModel == OT_asteroid);
-                                                        ppso->SpotSpecialAsteroid();
+                                                        assert (otModel == OT_asteroid); 
+                                                        ppso->SpotSpecialAsteroid(); //Review - Changes for visibility of static objects (#135) may now require roid to be checked for abilities! -Imago 8/10
+
                                                     }
                                                 }
                                             }
@@ -10580,7 +10590,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
                               IsideIGC*         pside,
                               IstationTypeIGC*  pstationtype,
                               Time              now,
-							  bool bseensides[])
+							  bool pbseensides[]) //Imago bool (&bseensides)[c_cSidesMax] #120 8/10
 {
     //Allow for an upgrade to the station being available
     pstationtype = pstationtype->GetSuccessorStationType(pside);
@@ -10630,10 +10640,10 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	} //Xynth/Imago - End change
 
 	//Imago #120 #121 
-	const SideListIGC * plistSide = pmission->GetSides();
-	for (SideLinkIGC * plinkSide = plistSide->first(); plinkSide; plinkSide = plinkSide->next()) {
+	const SideListIGC * plistSide0 = pmission->GetSides();
+	for (SideLinkIGC * plinkSide = plistSide0->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * potherside = plinkSide->data();
-		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || bseensides[potherside->GetObjectID()]) {
+		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) || pbseensides[potherside->GetObjectID()]) {
 			KillAsteroidEvent(pasteroid, potherside, false);
 		}
 	}
@@ -10641,8 +10651,18 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 
     IstationIGC * pstationNew = (IstationIGC *) (pmission->CreateObject(now, OT_station, &ds, sizeof(ds)));
     assert (pstationNew->SeenBySide(pside)); //Sides always see their own station (which will force the export)
+
 	//#121 Imago 7/10
 	pstationNew->SetRoidID(pasteroid->GetObjectID());
+
+	const SideListIGC * plistSide1 = pmission->GetSides();
+	for (SideLinkIGC * plinkSide = plistSide1->first(); plinkSide; plinkSide = plinkSide->next()) {
+		IsideIGC * potherside = plinkSide->data();
+		if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && pstationNew->SeenBySide(plinkSide->data())) {
+			KillAsteroidEvent(pasteroid, potherside, false);
+		}
+	}
+	//
 	pasteroid->Terminate();
 	//
 	// TE: Fire AGCEvent informing of station created
@@ -11570,6 +11590,16 @@ void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* side, 
   pfmAsteroidDestroyed->clusterID = pasteroid->GetCluster()->GetObjectID();
   pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
   pfmAsteroidDestroyed->explodeF = explodeF;
+  g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+}
+
+void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side)
+{
+  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+  END_PFM_CREATE
+  pfmAsteroidDestroyed->clusterID = soid;
+  pfmAsteroidDestroyed->asteroidID = roid;
+  pfmAsteroidDestroyed->explodeF = false;
   g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 }
 
@@ -12851,7 +12881,8 @@ void     FedSrvSiteBase::CreateBuildingEffect(Time           now,
          (psl != NULL);
          psl = psl->next())
     {
-		if (bseenside[psl->data()->GetObjectID()] || pshipBuilder->GetSide() == psl->data()) {
+		if ((bseenside[psl->data()->GetObjectID()]) || pasteroid->GetAsteroidCurrentEye(psl->data()) || pshipBuilder->GetSide()->GetObjectID() == psl->data()->GetObjectID()) {
+			pasteroid->SetBuilderSeenSide(psl->data()->GetObjectID());
 			ExportObj(pbe, OT_buildingEffect, NULL);
 			g.fm.SendMessages(CFSSide::FromIGC(psl->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 		}

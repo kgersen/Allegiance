@@ -233,6 +233,23 @@ class       CclusterIGC : public IclusterIGC
 
             AddModel(asteroidNew);
         }
+		//Imago 8/10
+		virtual void					AddAsteroidPosition(Vector vec, ObjectID oid)	{ 
+			RoidInfo ri;
+			ri.oid = oid;
+			ri.vec = vec;
+			m_listRoid.PushEnd(ri); 
+		} 
+		ObjectID						GetAsteroidAtPosition(Vector vec)	{ 
+			ObjectID oid = NA;
+			for (TList<RoidInfo>::Iterator iterRoid(m_listRoid); !iterRoid.End(); iterRoid.Next()) {
+				RoidInfo ri = iterRoid.Value();
+				if (ri.vec == vec)
+					return ri.oid;
+			}
+			return oid; 
+		} 
+		//
         virtual void                    DeleteAsteroid(IasteroidIGC* asteroidOld)
         {
             DeleteModel(asteroidOld);
@@ -469,6 +486,17 @@ class       CclusterIGC : public IclusterIGC
             return m_fCost;
         }
 
+		//Xynth #208
+		virtual void			SetHighlight(bool hl)
+		{
+			m_highlight = hl;
+		}
+
+		virtual bool			GetHighlight() const
+		{
+			return m_highlight;
+		}
+
     private:
         ImissionIGC*        m_pMission;
         DWORD               m_dwPrivate; // private data for consumer
@@ -500,6 +528,10 @@ class       CclusterIGC : public IclusterIGC
         int                 m_nExplosions;
 
         int                 m_nPass;
+
+		TList<RoidInfo>		m_listRoid; //Imago 8/10
+
+		bool				m_highlight;  //Xynth #208 Highlight in minimap
 };
 
 #endif //__CLUSTERIGC_H_
