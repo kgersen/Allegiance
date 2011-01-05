@@ -461,7 +461,7 @@ HRESULT CVRAMManager::CreateRenderTarget(	TEXHANDLE	texHandle,
 												D3DPOOL_DEFAULT,
 												&pTexture->pTexture,
 												NULL );
-	_ASSERT( hr == D3D_OK );
+//	_ASSERT( hr == D3D_OK ); //imago removed 8/10 multimon glitch? REVIEW
 
 	// If it created ok, update the texture details.
 	if( hr == D3D_OK )

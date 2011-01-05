@@ -4430,7 +4430,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
             }
         }
 
-        if ((cid == c_cidNone) ||
+        if ((cid >= c_cidNone && cid < c_cidMax) || // pkk #85 - Show text of valid quickchat commands, cid doesn't work because of c_cidDefault = 0
             (ctRecipient == CHAT_INDIVIDUAL_ECHO) ||
             ((bForMe && (ctRecipient == CHAT_INDIVIDUAL)) == (pshipSender != trekClient.GetShip())))
         {

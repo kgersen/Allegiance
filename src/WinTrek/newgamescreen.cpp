@@ -148,9 +148,12 @@ private:
 
         m_pcomboMaxImbalance   ->SetSelection(FindClosestValue(missionparams.iMaxImbalance, "MaxImbalanceValues"));
         
-        const char* vszSkillLevelNames[2] = {"GameSkillLevelMin", "GameSkillLevelMax"};
-        float vfSkillLevel[2] = { (float)missionparams.iMinRank, (float)missionparams.iMaxRank };
-        m_pcomboSkillLevel     ->SetSelection(FindClosestValue(vfSkillLevel, vszSkillLevelNames, 2));
+        if (m_bIsZoneClub) //pkk #203 - Ignore clients SkillLevel, if it's a ZG
+		{
+			const char* vszSkillLevelNames[2] = {"GameSkillLevelMin", "GameSkillLevelMax"};
+			float vfSkillLevel[2] = { (float)missionparams.iMinRank, (float)missionparams.iMaxRank };
+			m_pcomboSkillLevel     ->SetSelection(FindClosestValue(vfSkillLevel, vszSkillLevelNames, 2));
+		}
 
         m_pcomboConnectivity   ->SetSelection(FindClosestValue(missionparams.iRandomEncounters, "ConnectivityValues"));
         m_pcomboLives          ->SetSelection(FindClosestValue(missionparams.iLives, "LivesValues"));
@@ -1210,7 +1213,7 @@ public:
         m_pcomboTeamCount->SetEnabled(bEnable);
         m_pcomboMaxPlayers->SetEnabled(bEnable && !m_bLockGameOpen);
         m_pcomboMaxImbalance->SetEnabled(!bAllies && bEnable); //because imbalance impelemtation is now FUBAR even w/o allies... we'll disable it -Imago 8/1/09
-        m_pcomboSkillLevel->SetEnabled(bEnable && m_bIsZoneClub); // pkk #203
+        m_pcomboSkillLevel->SetEnabled(bEnable && m_bIsZoneClub); // pkk #203 - Disable SkillLevel on ZG
         m_pcomboMapType->SetEnabled(bEnable);
         m_pcomboConnectivity->SetEnabled(bEnable);
         m_pcomboLives->SetEnabled(bEnable);
