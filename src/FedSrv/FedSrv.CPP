@@ -4780,7 +4780,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       if (pfmChat->cbMessage > 0)
 	  {
-#ifdef DEBUG
+#ifdef _TEST
         //If you are going to cheat ... make it a public cheat
         if (DoCheatCode(pfsPlayer, FM_VAR_REF(pfmChat, Message)))  //Imago 7/8/09 only link this in debug builds
         {
@@ -4910,7 +4910,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		  else
 		  {
-#ifdef DEBUG
+#ifdef _TEST
 			  if (pfsMission->GetOwner() == pfsPlayer && (_strnicmp(FM_VAR_REF(pfmChat, Message), "#start", strlen("#start")) == 0))
 			  {
 			    CFSMission * pfsMission = pfsPlayer->GetMission();
@@ -6755,17 +6755,30 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  {									 //ownship commands.  Tagging on miner commands from playerpane
       	  pship = pside->GetShip(pfmOC->shipID);		 
 	  }
+	  bool bUndock = false;
 	  // pkk #211 08/05/2010 Allow all drones stay docked
       if (pship->GetPilotType() < c_ptPlayer)
 	  {
+		  if (pship->GetStation() != NULL)
+		  { //if docked, launch
+			  pship->SetStayDocked(false);
+			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
+                                            voAffirmativeSound, "Affirmative. Preparing to launch.");
+			  bUndock = true;
+
+			  pship->PickDefaultOrder(pship->GetStation()->GetCluster(), pship->GetStation()->GetPosition(), true);			  
+		  }
+		  else
+		  {
 			  pship->SetStayDocked(true);
 			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
                                             voAffirmativeSound, "Affirmative.");
 			  pfsMission->GetSite()->SendChat(pship, CHAT_TEAM, pship->GetSide()->GetObjectID(),
                                             NA, "Heading back to base. I'll sit tight.");
+		  }
 	  }//Xynth #48 End Changes
 
-      if (pside->GetObjectID() >= 0)
+      if (pside->GetObjectID() >= 0  && !bUndock)
       {
         ImodelIGC*  pmodel = pMission->GetModel(pfmOC->objectType, pfmOC->objectID);
         pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
@@ -11560,6 +11573,17 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
       SendChatf(NULL, CHAT_EVERYONE, NA,
                 NA, "%s has destroyed %s's %s.",
                 psideLauncher->GetName(), pside->GetName(), pstation->GetName());
+
+
+  //#121 kill the roid I'm on for teams that cant see me  -- Imago 8/10
+	for (SideLinkIGC* psl = pstation->GetMission()->GetSides()->first(); (psl != NULL); ) {
+		IsideIGC* psideother = psl->data();
+		psl->next();
+		if (psideother && !pstation->SeenBySide(psideother) && pstation->GetRoidID() != NA && pstation->GetSide()->GetObjectID() != psideother->GetObjectID()) {
+			KillAsteroidEvent(pstation->GetRoidID(),pstation->GetCluster()->GetObjectID(),psideother);
+		}
+	}
+
 
   pstation->Terminate();
 

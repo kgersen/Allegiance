@@ -3169,7 +3169,7 @@ public:
 
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
-		ToggleBandwidth(LoadPreference("Bandwidth",2)); // w0dk4 June 2007: Bandwith Patch
+		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10
 
         bool bAllow3DAcceleration;
 
@@ -3670,8 +3670,8 @@ public:
 	{
 		contextPlayerInfo->SetMute(!contextPlayerInfo->GetMute());
 	}
-	//Xynth #48 8/2010
-	void contextDockDrone()
+	
+	void contextDockDrone() //Xynth #48 8/2010
 	{
 		// pkk #211 08/05/2010 Allow all drones stay docked
 		ImodelIGC*  pmodel;
@@ -3684,13 +3684,18 @@ public:
 		{
 			// Find shipyard
 			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-				NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair);
+				NULL, NULL, NULL, NULL, c_sabmCapLand | c_sabmRepair);
 		}
 
 		if (pmodel)
 		{
+			if (contextPlayerInfo->GetShip()->GetStation() != NULL) //if docked, launch
+				contextPlayerInfo->GetShip()->SetStayDocked(false);
+			else
+			{
 			contextPlayerInfo->GetShip()->SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
 			contextPlayerInfo->GetShip()->SetStayDocked(true);
+		}
 		}
 
 		if (trekClient.m_fm.IsConnected())
@@ -4162,18 +4167,24 @@ public:
 			if (playerInfo->GetShip()->GetPilotType() < c_ptPlayer)
 			{
 				if (playerInfo->GetShip()->GetPilotType() != c_ptCarrier)
-				{
-					bEnableDock  = true;
-					sprintf(str1,"Dock       ");
+				{ 
+					if (playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL)
+						sprintf(str1,"Launch  ");
+					else
+						sprintf(str1,"Stay Docked ");
+					bEnableDock  = true;					
 				}
-				// Find shipyard
-				else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand & c_sabmRepair) != NULL)
+				// Find shipyard  Xynth removing carrier, needs work
+				/*else if (FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster, NULL, NULL, NULL, NULL, c_sabmCapLand | c_sabmRepair) != NULL)
 				{
 					bEnableDock  = true;
-					sprintf(str1,"Dock       ");
+					if (playerInfo->GetShip()->GetStation() != NULL)
+						sprintf(str1,"Undock   ");
+					else
+						sprintf(str1,"Stay Docked ");
+				}*/
 				}
 			}
-		}
 
 		bEnableChat = (playerInfo->ShipID() != trekClient.GetShipID()) &&
 					   (playerInfo->GetShip()->GetPilotType() == c_ptPlayer);

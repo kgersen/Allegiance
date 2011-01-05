@@ -4174,6 +4174,8 @@ bool CFSMission::FAllReady()
 			((m_misdef.misparms.iMaxImbalance == 0x7ffe) && (maxTeamRank - minTeamRank) > threshold))	// TE: Add check for rank balancing if it's on
 			// mmf changed to MaxImbalance
             return false;
+		
+	return true;
     }
 
     SideID iSide = m_misdef.misparms.nTeams;
