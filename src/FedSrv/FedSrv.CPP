@@ -5148,16 +5148,16 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               {
                     Vector  d = position - pMissileLaunchData[i].vecPosition;
                     float   d2 = d * d;
-                    if (d2 > 20.0f)  // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway
-                        debugf("missile position error %f %s\n", d2, pfsPlayer->GetName());
+                   // if (d2 > 20.0f)  // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway - Removed debugging - Imago 9/10
+                        //debugf("missile position error %f %s\n", d2, pfsPlayer->GetName());
                     if ((d2 < 0.0f) || (d2 > 200.0f * 200.0f))
                         pMissileLaunchData[i].vecPosition = position;
               }
               {
                     Vector  d = velocity - pMissileLaunchData[i].vecVelocity;
                     float   d2 = d * d;
-                    if (d2 > 20.0f) // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway
-                        debugf("missile velocity error %f\n", d2);
+                    //if (d2 > 20.0f) // mmf 10/07 raised threshold from 10 to 20, we are not doing much with this info atm anyway - Removed debugging - Imago 9/10
+                        //debugf("missile velocity error %f\n", d2);
                     if ((d2 < 0.0f) || (d2 > 100.0f * 100.0f))
                         pMissileLaunchData[i].vecVelocity = velocity;
               }
@@ -10252,10 +10252,10 @@ class ThingSiteImpl : public ThingSite
                                     //See it
 									if (!pmodel->SeenBySide(pside)) {
                                     	if (!staticVisible)  //Xynth #135 7/2010
-										{
-											sv.fVisible(true);											
+										{											
                                     		bSent = ShowObject(pside, pmodel);
 										}
+										sv.fVisible(true);
 										sv.CurrentEyed(true); //Xynth #100 7/2010
 									}
 									
@@ -10381,6 +10381,13 @@ class ThingSiteImpl : public ThingSite
             assert (pside != NULL);
             return m_bSideVisibility ? m_rgSideVisibility[pside->GetObjectID()].fVisible() : true;
         }
+
+		//Xynth #225 9/10 GetCurrentEye was not implemented for server side use
+		virtual bool  GetCurrentEye(IsideIGC* pside)
+		{
+			assert (pside != NULL);
+			return m_bSideVisibility ? m_rgSideVisibility[pside->GetObjectID()].CurrentEyed() : false;
+		}
 
         virtual void    SetSideVisibility(IsideIGC* pside,
                                           bool      fVisible)
@@ -11645,14 +11652,22 @@ void FedSrvSiteBase::DrainAsteroidEvent(IasteroidIGC* pasteroid)
 //Xynth #132 7/2010
 void FedSrvSiteBase::MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre)
 {
+	//Xynth #225 Loop through the sides and update visibile asteroids
+	for (SideLinkIGC*   psidelink = pasteroid->GetMission()->GetSides()->first();
+		(psidelink != NULL);
+		psidelink = psidelink->next())
+	{
+		if (pasteroid->GetAsteroidCurrentEye(psidelink->data()))
+		{
   BEGIN_PFM_CREATE(g.fm, pfmAsteroidMined, S, ASTEROID_MINED)
   END_PFM_CREATE
   pfmAsteroidMined->clusterID = pasteroid->GetCluster()->GetObjectID();
   pfmAsteroidMined->asteroidID = pasteroid->GetObjectID();
   pfmAsteroidMined->bpOreFraction = newOre;
-  g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
-
-  pasteroid->SetOreWithFraction(newOre);
+			g.fm.SendMessages(CFSSide::FromIGC(psidelink->data())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+		}
+	}
+	pasteroid->SetOreWithFraction(newOre, false);
 }
 
 void FedSrvSiteBase::KillProbeEvent(IprobeIGC* pprobe)

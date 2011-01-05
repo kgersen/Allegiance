@@ -3047,6 +3047,7 @@ class ImodelIGC : public IbaseIGC
         virtual void                 SetRender(unsigned char render) = 0;
 
         virtual bool                 SeenBySide(IsideIGC* side) const = 0;
+		virtual bool                 GetCurrentEye(IsideIGC* side) const = 0; //Xynth #225
         virtual void                 UpdateSeenBySide(void) = 0;
         virtual void                 SetSideVisibility(IsideIGC* side, bool fVisible) = 0;
 
@@ -4088,11 +4089,12 @@ class IasteroidIGC : public IdamageIGC
 		//Xynth #100 7/2010
 		virtual float GetOreSeenBySide(IsideIGC *side1) const = 0;
 		virtual bool GetAsteroidCurrentEye(IsideIGC *side1) const = 0;
-		virtual void SetOreWithFraction(float oreFraction) = 0;  //Xynth #163 7/2010
+		virtual void SetOreWithFraction(float oreFraction, bool clientUpdate) = 0;  //Xynth #163 7/2010
 		virtual float GetOreFraction() const = 0; //Xynth #163
 		//Imago 8/10 #120 #121
 		virtual void SetBuilderSeenSide(ObjectID oid) = 0;
 		virtual bool GetBuilderSeenSide(ObjectID oid) = 0;
+		virtual void SetInhibitUpdate(bool inhib) = 0; //Xynth #225 9/10
 };
 
 class IwarpIGC : public ImodelIGC
@@ -4587,6 +4589,7 @@ class   SideVisibility
         SideVisibility(void)
         :
             m_fVisible(false),
+			m_currentEyed(false),
             m_pLastSpotter(NULL)
         {
         }
