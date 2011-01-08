@@ -75,6 +75,7 @@ public:
 
     TArray<TRef<ModifiableBoolean>, keyMax> m_pboolKeyDown;
     TArray<TRef<Boolean>,           TK_Max> m_pboolTrekKeyDown;
+    TArray<bool         ,           TK_Max> m_boolMouseTrekKeyDown;	//Turkey added 8/10 #56
 
     TRef<Boolean>                           m_pboolNone;
     TRef<Boolean>                           m_pboolJustShift;
@@ -98,17 +99,9 @@ public:
         JoystickImage* pjoystickImage
     ) :
         m_pinputEngine(pinputEngine),
-        m_pjoystickImage(pjoystickImage),
-        m_wheelupTK(TK_ThrottleUp), //Imago 8/15/09
-        m_wheeldownTK(TK_ThrottleDown),
-        m_wheelclickTK(TK_FireBooster),
-        m_xbutton1TK(TK_TargetFriendlyBase),
-        m_xbutton2TK(TK_ToggleAutoPilot),
-        m_xbutton3TK(TK_TargetCenter),
-        m_xbutton4TK(TK_TargetNearest),
-        m_xbutton5TK(TK_Ripcord) // --^
+        m_pjoystickImage(pjoystickImage)
 
-    {
+	{
         InitializeCommandsMDL();
 
         //
@@ -465,6 +458,15 @@ public:
             m_ControlShiftAltKeyMap[index] = -1;
         }
 
+		m_wheelupTK						   = -1; //Imago 8/15/09 //Turkey changed to -1 and moved down to LoadMap 8/10 #56
+        m_wheeldownTK		  			   = -1;
+        m_wheelclickTK					   = -1;
+        m_xbutton1TK				       = -1;
+        m_xbutton2TK				       = -1;
+        m_xbutton3TK				       = -1;
+        m_xbutton4TK				       = -1;
+        m_xbutton5TK				       = -1; // --^
+
         for (index = 0; index < TK_Max; index++) {
             m_pboolTrekKeyDown[index]       = NULL;
             m_ppboolTrekKeyButtonDown[index] = NULL;
@@ -783,6 +785,7 @@ public:
     {
         for (int index = 0; index < TK_Max; index++) {
 			m_boolTrekKeyButtonDown[index] = false;
+			m_boolMouseTrekKeyDown[index] = false;	//8/10 #56
         // mmf pull yp's changes for now
 			//m_pboolTrekKeyDown[index]       = false; // keyboard // yp - Your_Persona buttons get stuck patch. aug-03-2006
             //m_ppboolTrekKeyButtonDown[index] = false;
@@ -814,6 +817,13 @@ public:
             bDown = pbool->GetValue();
         }
 
+		//
+		// check mouse buttons 8/10 #56
+		// only applies if virtual joystick is off
+		//
+
+		bDown |= m_boolMouseTrekKeyDown[tk];
+
         //
         // check keys
         //
@@ -830,8 +840,13 @@ public:
     }
 
     //Imago 8/16/09
-    void SetTrekKey(TrekKey tk, Boolean* pboolDown) {
-        m_pboolTrekKeyDown[tk] = pboolDown;
+	//Turkey renamed and modified to use bool instead of Tref<boolean> 8/10 #56
+    void SetMouseTrekKey(TrekKey tk, Boolean* pboolDown)
+	{
+		if (tk != TK_NoKeyMapping) {
+			m_boolMouseTrekKeyDown[tk] = pboolDown->GetValue();
+			if (pboolDown->GetValue()) m_psite->OnTrekKey(tk);
+		}
     }
 
     void SetFocus(bool bFocus)

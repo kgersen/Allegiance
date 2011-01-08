@@ -1978,22 +1978,22 @@ public:
             TRef<Boolean> pboolDown = new Boolean(bDown);
             switch(button) {
                 case 2:
-                    pinput->SetTrekKey(pinput->OnWheelClick(),pboolDown);
+                    pinput->SetMouseTrekKey(pinput->OnWheelClick(),pboolDown);
                     break;
                 case 3:
-                    pinput->SetTrekKey(pinput->OnXButton1(),pboolDown);
+                    pinput->SetMouseTrekKey(pinput->OnXButton1(),pboolDown);
                     break;
                 case 4:
-                    pinput->SetTrekKey(pinput->OnXButton2(),pboolDown);
+                    pinput->SetMouseTrekKey(pinput->OnXButton2(),pboolDown);
                     break;
                 case 5:
-                    pinput->SetTrekKey(pinput->OnXButton3(),pboolDown);
+                    pinput->SetMouseTrekKey(pinput->OnXButton3(),pboolDown);
                     break;
                 case 6:
-                    pinput->SetTrekKey(pinput->OnXButton4(),pboolDown);
+                    pinput->SetMouseTrekKey(pinput->OnXButton4(),pboolDown);
                     break;
                 case 7:
-                    pinput->SetTrekKey(pinput->OnXButton5(),pboolDown);
+                    pinput->SetMouseTrekKey(pinput->OnXButton5(),pboolDown);
                     break;
                 case 8:
                     if (bDown) {

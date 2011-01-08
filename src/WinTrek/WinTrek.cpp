@@ -8996,6 +8996,7 @@ public:
 					GetViewMode() == vmOverride &&
 					!trekClient.IsLockedDown()) {
 						m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
+						if(m_bEnableVirtualJoystick) m_ptrekInput->ClearButtonStates();//#56
 						return true;
 					}
 					return false;
