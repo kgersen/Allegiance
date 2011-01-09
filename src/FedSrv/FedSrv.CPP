@@ -4487,7 +4487,7 @@ HRESULT FedSrvSiteBase::OnDestroyConnection(FedMessaging * pthis, CFMConnection 
     PlaySound("AppGPFault", NULL, SND_ALIAS | SND_PURGE | SND_ASYNC);
     _AGCModule.TriggerEvent(NULL, AllsrvEventID_PlayerDropped, "", -1, -1, -1, 2,
         "PlayerName", VT_LPSTR, pfsPlayer->GetName(),
-        "ConxID", VT_LPSTR, cnxn.GetID()); // pkk - IP address is a string, not float
+        "ConxID", VT_I4, cnxn.GetID()); // pkk - IP address
     if (NULL != g.pServerCounters)
     {
         g.pServerCounters->cTimeouts++;
