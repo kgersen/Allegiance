@@ -166,7 +166,7 @@ class RadarImageImpl : public RadarImage {
             m_indices.Set ((j * 2) + 1, (j + 1) % m_vertices.GetCount ());
         }
 
-        {        
+        {
             m_fRoundRadarRadius = ((rectImage.YMax () - rectImage.YMin ()) * 0.48f);
 
             // this recalculates the vertices of the round radar circle
@@ -268,8 +268,8 @@ public:
     // Draw a blip based on passed parameters
     //
     //////////////////////////////////////////////////////////////////////////////
-                        
-    void DrawBlip(Context*      pcontext, 
+
+    void DrawBlip(Context*      pcontext,
                   const Rect&   rectImage,
                   const Color&  colorIcon,
                   const Color&  colorOther,
@@ -362,7 +362,7 @@ public:
                 directionCenter.SetY(directionCenter.Y() * f);
             }
         }
- 
+
         Point   positionIcon;
         if (ucRadarState != c_ucRadarOnScreenLarge)
         {
@@ -371,8 +371,8 @@ public:
         }
         else
         {
-            // the radius bracket is big, and the icon should appear near 
-            // the object instead of off it. Shrinking the radius bracket 
+            // the radius bracket is big, and the icon should appear near
+            // the object instead of off it. Shrinking the radius bracket
             // accomplishes this.
             // XXX difficult to assess for now, Rob is inclined to leave the icon
             // XXX further away to avoid obscuring ships, so we agreed that I could
@@ -664,9 +664,9 @@ public:
                                   ? ((maskBrackets & c_maskFlash) ? Color::Red() : pside->GetColor())
                                   : s_colorNeutral;
 
-					
 
-                    /* 
+
+                    /*
                     static const int    closeRange = 100;
                     static const int    farRange = 1000;
                     static const float  closeAlpha = 0.75f;
@@ -951,7 +951,7 @@ public:
                     {
                         pszName = GetModelName(pmodel);
                     }
-					
+
 
                     if (bStats)
                     {
@@ -979,10 +979,10 @@ public:
 								if (((pship->GetStateM() & droneRipMaskIGC) != 0) &&
 									 (pship->GetSide() == psideMine) &&
 									 (pship->GetPilotType() < c_ptPlayer))  //Xynth #175 7/2010
-								{									
+								{
 									maskBrackets |= c_maskRip; //Xynth #171 8/10
 								}
-                                
+
                             }
                             break;
 
@@ -996,8 +996,8 @@ public:
                             case OT_asteroid:
                             {
                                 hull = ((IdamageIGC*)pmodel)->GetFraction();
-                                //Xynth #100 2010 
-								//float   ore = ((IasteroidIGC*)pmodel)->GetOre();								
+                                //Xynth #100 2010
+								//float   ore = ((IasteroidIGC*)pmodel)->GetOre();
 								float   ore = ((IasteroidIGC*)pmodel)->GetOreSeenBySide(psideMine);
                                 if (ore != 0.0f)
                                 {
@@ -1008,10 +1008,11 @@ public:
                                         fill = 1.0f;
 
 									//Xynth #104 Color asteroids white/gray to match minimap
-									if (((IasteroidIGC*)pmodel)->GetAsteroidCurrentEye(psideMine))
+									//This function not reliable for client graphics
+									//if (((IasteroidIGC*)pmodel)->GetAsteroidCurrentEye(psideMine))
 										color = Color::White();
-									else
-										color = Color::Gray();
+									//else
+									//	color = Color::Gray();
 
                                 }
                             }
@@ -1036,7 +1037,7 @@ public:
                     // Draw the Blip
                     //
 
-					
+
 					Color   colorOther;
 						colorOther = color;
 
@@ -1047,7 +1048,7 @@ public:
 
                     pcontext->PushState();
 
-                    DrawBlip(pcontext, 
+                    DrawBlip(pcontext,
                              rectImage,
                              color,
                              colorOther,
@@ -1204,7 +1205,7 @@ public:
 
                     float   x = data.m_direction.X();
                     float   y = data.m_direction.Y();
-            
+
                     if (x == 0.0f)
                         y = (y < 0.0f) ? -h : h;
                     else if (y == 0.0f)

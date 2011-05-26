@@ -334,8 +334,8 @@ public:
 		int probeCount = 0;
 		for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
         {
-            IprobeIGC*  pprobe = ppl->data();			
-            if (pprobe->GetSide() == trekClient.GetShip()->GetSide() && 
+            IprobeIGC*  pprobe = ppl->data();
+            if (pprobe->GetSide() == trekClient.GetShip()->GetSide() &&
 				(pprobe->GetProbeType()->GetCapabilities() == 0 || pprobe->GetProbeType()->GetCapabilities() >= c_eabmRescue)) //Imago 8/10
 				probeCount++;
 		}
@@ -365,7 +365,7 @@ public:
             if ((aabm & c_aabmMineHe3) != 0)
             {
                 // count it.
-                //Xynth #100 7/2010 
+                //Xynth #100 7/2010
 				//fOre += asteriodLink->data()->GetOre();
 				fOre += asteriodLink->data()->GetOreSeenBySide(psideMine);
             }
@@ -437,7 +437,7 @@ public:
                         {
                             IsideIGC*   pside = psl->data()->GetSide();
                             AddIcon(psl->data()->GetIcon(), pside, NA,
-                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);  //ALLYTD? VISIBILITY Y change this if we want allied assets shown in the sector info pane 
+                                    (pside == psideMe) ? (c_cSidesMax * 2) : (c_cSidesMax + pside->GetObjectID()), &icons);  //ALLYTD? VISIBILITY Y change this if we want allied assets shown in the sector info pane
                         }
                     }
                 }
@@ -500,11 +500,12 @@ public:
                 Point ptAsteroids(xSecondColumn, yTop - 45);
 
 				//Xynth #104 7/2010
+				//Function not reliable for this purpose
 				Color color;
-				if (HeliumAsteroidVisibileInCluster(m_pClusterSel))
+				//if (HeliumAsteroidVisibileInCluster(m_pClusterSel))
 					color = Color::White();
-				else
-					color = Color::Gray();
+				//else
+				//	color = Color::Gray();
 
                 // draw the helium count
                 pcontext->DrawString(
@@ -1002,7 +1003,7 @@ public:
                 HullAbilityBitMask  habm = (phtSource && phtSource->HasCapability(c_habmCanLtRipcord))
                                            ? (c_habmIsRipcordTarget | c_habmIsLtRipcordTarget)
                                            : c_habmIsRipcordTarget;
-				if (trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) { 
+				if (trekClient.MyMission()->GetMissionParams().bAllowAlliedRip) {
 	                for (ShipLinkIGC*   psl = trekClient.m_pCoreIGC->GetShips()->first(); (psl != NULL); psl = psl->next())  //ALLY RIPCORD 7/10/09
 					{
 	                    IshipIGC*   pship = psl->data();
@@ -1045,12 +1046,12 @@ public:
             {
                 Point    xy = Point::Cast(GetClusterPoint(pCluster));
 
-                // draw the sector outline Xynth #208 Draw in flashing Cyan if highlighted				
+                // draw the sector outline Xynth #208 Draw in flashing Cyan if highlighted
 				if (pCluster->GetHighlight() && !m_bFlashFrame)
 					pcontext->DrawImage3D(m_pimageSectorEmpty->GetSurface(), Color::Cyan(), true, xy);
 				else
 					pcontext->DrawImage3D(m_pimageSectorEmpty->GetSurface(), Color::White(), true, xy);
-				
+
                 // color it by the owner(s), if any
                 SideID sideOwner;
                 SideID sideSecondaryOwner;
@@ -1508,8 +1509,8 @@ private:
 						BEGIN_PFM_CREATE(trekClient.m_fm, pfmhighlight, CS, HIGHLIGHT_CLUSTER)
 						END_PFM_CREATE
 						pfmhighlight->clusterID = pClusterFound->GetObjectID();
-						pfmhighlight->highlight = newHighlight;            
-						
+						pfmhighlight->highlight = newHighlight;
+
 					}
 					else
 						pClusterFound->SetHighlight(false);  //Only let players turn off highlight
