@@ -1,0 +1,24 @@
+HKCR
+{
+	Pigs.AccountDispenser.1 = s 'Pig Account Dispenser Class'
+	{
+		CLSID = s '{8D6763CA-E7CB-11d2-A508-00C04F68DEB0}'
+	}
+	Pigs.AccountDispenser = s 'Pig Account Dispenser Class'
+	{
+		CLSID = s '{8D6763CA-E7CB-11d2-A508-00C04F68DEB0}'
+		CurVer = s 'Pigs.AccountDispenser.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {8D6763CA-E7CB-11d2-A508-00C04F68DEB0} = s 'Pig Account Dispenser Class'
+		{
+			ProgID = s 'Pigs.AccountDispenser.1'
+			VersionIndependentProgID = s 'Pigs.AccountDispenser'
+			ForceRemove 'Programmable'
+			LocalServer32 = s '%MODULE%'
+			val AppID = s '{9BA731AE-E7CB-11d2-A508-00C04F68DEB0}'
+			'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+		}
+	}
+}

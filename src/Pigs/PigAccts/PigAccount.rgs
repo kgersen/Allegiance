@@ -1,0 +1,22 @@
+HKCR
+{
+  Pigs.Account.1 = s 'Pig Account Class'
+  {
+    CLSID = s '{9C627DCC-E7DC-11d2-A508-00C04F68DEB0}'
+  }
+  Pigs.Account = s 'Pig Account Class'
+  {
+    CLSID = s '{9C627DCC-E7DC-11d2-A508-00C04F68DEB0}'
+    CurVer = s 'Pigs.Account.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {9C627DCC-E7DC-11d2-A508-00C04F68DEB0} = s 'Pig Account Class'
+    {
+      ProgID = s 'Pigs.Account.1'
+      VersionIndependentProgID = s 'Pigs.Account'
+      val AppID = s '{9BA731AE-E7CB-11d2-A508-00C04F68DEB0}'
+      'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+    }
+  }
+}

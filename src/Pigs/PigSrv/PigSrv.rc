@@ -1,0 +1,224 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""PigSrv.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_PigSrv              REGISTRY MOVEABLE PURE  "PigSrv.rgs"
+IDR_PigSession          REGISTRY DISCARDABLE    "PigSession.rgs"
+IDR_PigBehaviorScript   REGISTRY DISCARDABLE    "PigBehaviorScript.rgs"
+IDR_PigBehaviorHost     REGISTRY DISCARDABLE    "PigBehaviorHost.rgs"
+IDR_PigBehaviorScriptType REGISTRY DISCARDABLE    "PigBehaviorScriptType.rgs"
+IDR_Pig                 REGISTRY DISCARDABLE    "Pig.rgs"
+IDR_Pigs                REGISTRY DISCARDABLE    "Pigs.rgs"
+IDR_PigTimer            REGISTRY DISCARDABLE    "PigTimer.rgs"
+IDR_PigShip             REGISTRY DISCARDABLE    "PigShip.rgs"
+IDR_PigShipEvent        REGISTRY DISCARDABLE    "PigShipEvent.rgs"
+IDR_PigHullTypes        REGISTRY DISCARDABLE    "PigHullTypes.rgs"
+IDR_PigBehaviorStack    REGISTRY DISCARDABLE    "PigBehaviorStack.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// ACCESSPERMISSION
+//
+
+IDR_AccessPermission_9X ACCESSPERMISSION DISCARDABLE 
+BEGIN
+    0x0002, 0x0000, 0x031d, 0x0000, 0x0000, 0x0000, 0x00c0, 0x0000, 0x0000, 
+    0x4600, 0x1001, 0x0008, 0xcccc, 0xcccc, 0x0008, 0x0000, 0x432b, 0xbff8, 
+    0x0001, 0x0000, 0x00b8, 0x0000, 0x1001, 0x0008, 0xcccc, 0xcccc, 0x00a8, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0002, 0x0000, 0x3140, 0x0040, 
+    0x0002, 0x0000, 0x0001, 0x0000, 0x0001, 0x0002, 0x0001, 0x0000, 0x5070, 
+    0x0040, 0x0000, 0x0000, 0x0001, 0x0000, 0x0001, 0x0001, 0x0001, 0x0000, 
+    0x1eec, 0x0040, 0x0000, 0x0000, 0x0019, 0x0000, 0x0000, 0x0000, 0x0019, 
+    0x0000, 0x0052, 0x0045, 0x0044, 0x004d, 0x004f, 0x004e, 0x0044, 0x005c, 
+    0x0044, 0x0065, 0x0070, 0x0061, 0x0072, 0x0074, 0x006d, 0x0065, 0x006e, 
+    0x0074, 0x0020, 0x0031, 0x0034, 0x0030, 0x0032, 0x0038, 0x0000, 0x0000, 
+    0x0010, 0x0000, 0x0000, 0x0000, 0x0010, 0x0000, 0x0052, 0x0045, 0x0044, 
+    0x004d, 0x004f, 0x004e, 0x0044, 0x005c, 0x0066, 0x0065, 0x0064, 0x0065, 
+    0x0072, 0x0061, 0x0074, 0x0000, 0x0000, 0x0000
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "PigSrv.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PROJNAME            "PigSrv"
+    IDS_SYNTAX_9X           "\nUsage:\n\n    PigSrv -RegServer\n    PigSrv -UnregServer\n    PigSrv -NoExit\n    PigSrv -Exit\n    \nRegServer   Registers the module's components\nUnregServer Unregisters the module's components\nNoExit      Launches the PigSrvment component and keeps it from exiting\nExit        Forcibly exits the PigSrvment component\n\n"
+    IDS_SYNTAX_NT           "\nUsage:\n\n    PigSrv -RegServer [domain\\]<user> [<password>]\n    PigSrv -UnregServer\n    PigSrv -Exit\n    \nRegServer   Registers the module's components\n  domain    The domain on which the specified <user> account exists\n  user      The user account under which the components will execute\n  password  The password, if any, for the specified <user> account\nUnregServer Unregisters the module's components\nExit        Forcibly exits the PigSrv component server\n\n"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_E_FILEFMT_BEHAVIOR  "Invalid file format: Script file must begin with the <PigBehavior> XML tag."
+    IDS_E_FILEFMT_MULTIREGS "Invalid file format: Script contains multiple <Registration> XML tags. If specified, only one is allowed."
+    IDS_E_FILEFMT_INVOKECMD "Invalid file format: <InvokeCommand> XML tag cannot contain whitespace."
+    IDS_E_FILEFMT_NOSCRIPTS "Invalid file format: File must contain at least one <script> XML tag."
+    IDS_E_FILEFMT_SCRIPTLANG 
+                            "Invalid file format: <pigbehavior language=>  XML attribute not specified or invalid."
+    IDS_E_FILEFMT_SCRIPTSRCNOTEMPTY 
+                            "Invalid file format: <script src=> XML attribute specified, but <script> body contains text."
+    IDS_E_BEHAVIOR_INVCMD_REUSED 
+                            "An invoke command or behavior name is in conflict with an invoke command or behavior name of another behavior."
+    IDS_E_CREATE_BEHAVIOR_TYPE 
+                            "The specified string is not a recognized behavior name or invoke command."
+    IDS_E_TIMER_EXISTS      "The specified timer (or event) property name already exists in the property dictionary."
+    IDS_E_INVALID_PERSEC    "Number of updates per second must be between 1 and 100, inclusively."
+    IDS_E_TIMER_NONAME      "A timer (or event) name is required but was not specified."
+    IDS_E_TEAMCOUNT         "Number of teams must be between 2 and 6, inclusively."
+    IDS_E_MAXTEAMPLAYERS    "Maximum number of players must be between 1 and 45, inclusively."
+    IDS_E_MINTEAMPLAYERS    "Minimum number of players must be between 1 and 30, inclusively."
+    IDS_E_MINMAXREVERSED    "Minimum number of players must be less than or equal to maximum number of players."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_E_FMT_TOOMANYPARAMS "%s(1) : Piglet Error: '%s' : declares %d parameters, expecting only %d"
+    IDS_E_FMT_TOOFEWPARAMS  "%s(1) : Piglet Error: '%s' : declares only %d parameters, expecting %d"
+    IDS_FMT_TIMER_NAME      "Timer%d"
+    IDS_E_LOGON_NONEXISTANT "The Logon method can only be invoked while the pig is in the NonExistant state."
+    IDS_E_CREATEMISSION_MISSIONLIST 
+                            "The CreateMission method can only be invoked while the pig is in the MissionList state."
+    IDS_E_JOINMISSION_MISSIONLIST 
+                            "The JoinMission method can only be invoked while the pig is in the MissionList state."
+    IDS_E_JOINTEAM_TEAMLIST "The JoinTeam method can only be invoked while the pig is in the TeamList state."
+    IDS_E_QUITMISSION_TEAMLIST 
+                            "The QuitMission method can only be invoked while the pig is in the TeamList state."
+    IDS_E_LAUNCH_DOCKED     "The Launch method can only be invoked while the pig is in the Docked state."
+    IDS_E_JOINMISSION_NONE  "No missions exist on the server."
+    IDS_E_LOGON_NAMEEXISTS  "The Logon method was called with a user name that is already in use by a pig on this machine."
+    IDS_E_THROTTLE_RANGE    "The specified throttle is outside the valid range of 0 to 100."
+    IDS_E_PITCH_RANGE       "The specified pitch is outside the valid range of -100 to 100."
+    IDS_E_YAW_RANGE         "The specified yaw is outside the valid range of -100 to 100."
+    IDS_E_ROLL_RANGE        "The specified roll is outside the valid range of -100 to 100."
+    IDS_SHIP_RESPONSE       "Aye, sir!"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_E_FMT_OBJNAME       """%ls"" is not an object in the current cluster."
+    IDS_E_PROPUT_PIGSEXIST  "This property cannot be changed when pig objects are running."
+    IDS_E_FMT_ACTIONNAME    """%ls"" is not a valid action name."
+    IDS_FMT_SHIPEVENT_NAME  "ShipEvent%d"
+    IDS_SHIP_FACE_RESPONSE  "Aye, sir! Course set in."
+    IDS_E_NO_MISSIONSRV     "Cannot create a Pig until the MissionServer property has been set."
+    IDS_E_TOOMANYPIGS       "Cannot create pig. The maximum pig count has been reached."
+    IDS_E_TOO_POOR          "The pig does not have enough money to buy the ship or part."
+    IDS_E_BUYSELL_DOCKED    "The ship must be docked to buy or sell parts."
+    IDS_E_FMT_INVALID_WEAPON_INDEX 
+                            "%d is an invalid weapon index for this ship's hull type. Valid indices include 0 thru %d, and -1 to select all weapons."
+    IDS_E_FMT_NO_WEAPON_AT_INDEX 
+                            "Cannot select %d as the active weapon. There is no weapon mounted at that index."
+    IDS_E_NO_WEAPONS        "Since this ship has no weapon mounts, this property cannot be set."
+    IDS_E_ACCEPT_COMMAND    "There is no command queued to be accepted."
+    IDS_FMT_OINK            "Oink (from %s)"
+    IDS_E_AUTOPILOT_NOCMD   "Cannot engage AutoPilot when there is no accepted command."
+    IDS_E_EVAL_SYNTAX       "Syntax: EVAL any expression text"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FMT_PIGLETINVOKED   "'%ls' piglet activated."
+    IDS_E_CONNECT_FAILED    "Failed to connect to the server."
+    IDS_E_STARTGAME_MISSIONLIST 
+                            "The StartGame method can only be invoked while the pig is in the WaitingForMission state."
+    IDS_E_STARTGAME_MINPLAYERS 
+                            "The StartGame method cannot be called until the minimum number of players have joined each team."
+    IDS_E_CREATEMISSION_NOSERVERS 
+                            "There are no servers available to this lobby on which to create a game."
+    IDS_E_ZONEAUTH_FAILED   "Zone Club authentication failed."
+    IDS_E_SENDBYTES_NOLOBBY "The SendBytesToLobby method can only be called when the pig is connected to a lobby server."
+    IDS_E_SENDBYTES_NOGAME  "The SendBytesToLobby method can only be called when the pig is connected to a game server."
+    IDS_E_NO_RIPCORD        "No RipCord building available."
+    IDS_E_CANT_RIPCORD      "This ship is not RipCord capable."
+    IDS_E_RIPCORD_ABORTED   "RipCord aborted."
+    IDS_E_LOBBYMODE_UNSUPPORTED 
+                            "Specified LobbyMode is unsupported or invalid."
+    IDS_E_LOBBYMODE_OP_UNSUPPORTED 
+                            "The requested operation is not available for the current LobbyMode."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "PigSrv.rc2"  // non-Microsoft Visual C++ edited resources
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

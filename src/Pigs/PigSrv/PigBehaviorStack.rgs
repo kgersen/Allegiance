@@ -1,0 +1,22 @@
+HKCR
+{
+	Pigs.BehaviorStack.1 = s 'Pig Behavior Stack Class'
+	{
+		CLSID = s '{4E9FF98A-364D-11d3-A51D-00C04F68DEB0}'
+	}
+	Pigs.BehaviorStack = s 'Pig Behavior Stack Class'
+	{
+		CLSID = s '{4E9FF98A-364D-11d3-A51D-00C04F68DEB0}'
+		CurVer = s 'Pigs.BehaviorStack.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {4E9FF98A-364D-11d3-A51D-00C04F68DEB0} = s 'Pig Behavior Stack Class'
+		{
+			ProgID = s 'Pigs.BehaviorStack.1'
+			VersionIndependentProgID = s 'Pigs.BehaviorStack'
+			val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+			'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+		}
+	}
+}

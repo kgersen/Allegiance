@@ -1,0 +1,22 @@
+HKCR
+{
+	Pigs.BehaviorScript.1 = s 'Pig Behavior Script Class'
+	{
+		CLSID = s '{29E0A265-CC16-11d2-9646-00C04F68DEB0}'
+	}
+	Pigs.BehaviorScript = s 'Pig Behavior Script Class'
+	{
+		CLSID = s '{29E0A265-CC16-11d2-9646-00C04F68DEB0}'
+		CurVer = s 'Pigs.BehaviorScript.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {29E0A265-CC16-11d2-9646-00C04F68DEB0} = s 'Pig Behavior Script Class'
+		{
+			ProgID = s 'Pigs.BehaviorScript.1'
+			VersionIndependentProgID = s 'Pigs.BehaviorScript'
+			val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+			'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+		}
+	}
+}

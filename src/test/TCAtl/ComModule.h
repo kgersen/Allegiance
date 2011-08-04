@@ -96,7 +96,7 @@ public:
   static BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType);
   static DWORD WINAPI MonitorThunk(void* pv);
   void MonitorProc();
-  PXCmdLineOption GetCurrentCmdLineOption() const;
+  //PXCmdLineOption GetCurrentCmdLineOption() const;
 
 // Data Members
 protected:
@@ -284,7 +284,8 @@ HRESULT TCComModule<T>::ParseCommandLine(int argc, TCHAR* argv[])
     int     nEaten;
     const XCmdLineOption* pEntries = NULL;
     UINT cEntries = pT->GetCmdLineOptionMap(&pEntries);
-    for (UINT i = 0; i < cEntries; ++i)
+    UINT i;
+	for (i = 0; i < cEntries; ++i)
     {
       if (0 == lstrcmpi(pszOption, pEntries[i].m_pszOption))
       {
@@ -847,7 +848,8 @@ HRESULT TCComModule<T>::GetAccessSecurity(PSECURITY_DESCRIPTOR* psd,
 
   // Create a SID for each Authority/SubAuthorities in the table
   TCSid psids[sizeofArray(auths)];
-  for (UINT i = 0; i < sizeofArray(auths); ++i)
+  UINT i;
+  for (i = 0; i < sizeofArray(auths); ++i)
   {
     // Create a SID for the next Authority/SubAuthorities in the table
     SID_IDENTIFIER_AUTHORITY auth = auths[i].m_auth;
@@ -1275,11 +1277,11 @@ void TCComModule<T>::MonitorProc()
   PostThreadMessage(m_dwThreadID, WM_QUIT, 0, 0);
 }
 
-template <class T>
-inline TCComModule<T>::PXCmdLineOption TCComModule<T>::GetCurrentCmdLineOption() const
-{
-  return m_spfnCmdLineOption;
-}
+//template <class T>
+//inline TCComModule<T>::PXCmdLineOption TCComModule<T>::GetCurrentCmdLineOption() const
+//{
+//  return m_spfnCmdLineOption;
+//}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1302,30 +1304,30 @@ inline TCComModule<T>::PXCmdLineOption TCComModule<T>::GetCurrentCmdLineOption()
       CMDLINE_OPTION_ENTRY("Automation", NULL, NULL, true, false)           \
       CMDLINE_OPTION_ENTRY("Embedding", NULL, NULL, true, false)            
 
-#define CMDLINE_OPTION_RegServer9x()                                        \
+#define CMDLINE_OPTION_RegServer9x(T)                                        \
       CMDLINE_OPTION_ENTRY_EX("RegServer", "Server Registration",           \
-        OnRegServer, 0, 0, false, true, true, false)                        
+        &TCComModule<T>::OnRegServer, 0, 0, false, true, true, false)                        
 
-#define CMDLINE_OPTION_RegServerNT()                                        \
+#define CMDLINE_OPTION_RegServerNT(T)                                        \
       CMDLINE_OPTION_ENTRY_EX("RegServer", "Server Registration",           \
-        OnRegServer, 1, 2, false, true, false, true)                        
+        &TCComModule<T>::OnRegServer, 1, 2, false, true, false, true)                        
 
-#define CMDLINE_OPTION_UnregServer()                                        \
+#define CMDLINE_OPTION_UnregServer(T)                                        \
       CMDLINE_OPTION_ENTRY_EX("UnregServer", "Server Unregistration",       \
-        OnUnregServer, 0, 0, false, true, true, true)                       
+        &TCComModule<T>::OnUnregServer, 0, 0, false, true, true, true)                       
 
-#define CMDLINE_OPTION_NoExit()                                             \
-      CMDLINE_OPTION_ENTRY_EX("NoExit", NULL, OnNoExit, 0, 0, true, false,  \
+#define CMDLINE_OPTION_NoExit(T)                                             \
+      CMDLINE_OPTION_ENTRY_EX("NoExit", NULL, &TCComModule<T>::OnNoExit, 0, 0, true, false,  \
         true, false)                                                        
 
-#define CMDLINE_OPTION_Exit()                                               \
-      CMDLINE_OPTION_ENTRY_EX("Exit", NULL, OnExit, 0, 0, false, false,     \
+#define CMDLINE_OPTION_Exit(T)                                               \
+      CMDLINE_OPTION_ENTRY_EX("Exit", NULL, &TCComModule<T>::OnExit, 0, 0, false, false,     \
         true, true)                                                        
 
-#define CMDLINE_OPTION_Help()                                               \
-      CMDLINE_OPTION_ENTRY_EX("?", NULL, OnHelp, 0, 0, false, false,        \
+#define CMDLINE_OPTION_Help(T)                                               \
+      CMDLINE_OPTION_ENTRY_EX("?", NULL, &TCComModule<T>::OnHelp, 0, 0, false, false,        \
         true, true)                                                         \
-      CMDLINE_OPTION_ENTRY_EX("Help", NULL, OnHelp, 0, 0, false, false,     \
+      CMDLINE_OPTION_ENTRY_EX("Help", NULL, &TCComModule<T>::OnHelp, 0, 0, false, false,     \
         true, true)                                                        
 
 #define END_CMDLINE_OPTION_MAP()                                            \

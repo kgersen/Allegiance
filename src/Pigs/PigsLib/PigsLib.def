@@ -1,0 +1,10 @@
+; PigsLib.def : Declares the module parameters for the DLL.
+
+LIBRARY      "PigsLib"
+
+EXPORTS
+  DllCanUnloadNow     PRIVATE
+  DllGetClassObject   PRIVATE
+  DllRegisterServer   PRIVATE
+  DllUnregisterServer PRIVATE
+

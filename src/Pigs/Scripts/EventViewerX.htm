@@ -1,0 +1,449 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Event Log Database Test Page</title>
+
+<style>
+  label {height:1em;}
+  td {vertical-align: top;}
+</style>
+
+<OBJECT CLASSID = "clsid:5220cb21-c88d-11cf-b347-00aa00a28331" VIEWASTEXT>
+   <PARAM NAME="LPKPath" VALUE="EventViewerX.lpk">
+</OBJECT> 
+
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<font face="Verdana" size="2">
+
+<h1>AGC Event Log Viewer</h1>
+<hr>
+
+<b>Database</b>
+
+<table width="80%" CELLPADDING="0" CELLSPACING="0" BORDER="1" bgcolor="#E0E0E0" bordercolor="#FFFFFF" STYLE="font-family:Verdana;font-size:x-small">
+  <tr>
+    <td width="30%" bgcolor="#00CCCC"><b>SQL Server Computer:</b></td>
+    <td><input type="text" id="SQLSRV" size="50" value="207.46.173.22"></input></td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CC00CC"><b>SQL Database:</td>
+    <td><input type="text" id="SQLDB" size="50" value="EventLogging"></input></td>
+  </tr>
+  <tr style="display:none;">
+    <td width="30%" bgcolor="#CCCC00"><b>SQL Table:</td>
+    <td><input type="text" id="SQLTABLE" size="50" value="Events"></input></td>
+  </tr>
+</table>
+
+<b>Query Filter</b>
+
+<table width="80%" CELLPADDING="0" CELLSPACING="0" BORDER="1" bgcolor="#E0E0E0" bordercolor="#FFFFFF" STYLE="font-family:Verdana;font-size:x-small">
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"><b>Source Computer:</b></td>
+    <td colspan="2"><input type="text" id="EVENTSRV" size="50"></input></td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"><b>Subject Name:</b></td>
+    <td colspan="2"><input type="text" id="SUBJECTNAME" size="50"></input></td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"><b>Date/Time Filter:</b></td>
+    <td colspan="1">
+      <table cellpadding="0" cellspacing="0" border="0" STYLE="font-family:Verdana;font-size:x-small"
+        id="trCustomTime" style="display:inline;">
+        <tr>
+          <td>
+            <label for="btnDateTimeFrom">
+              <INPUT type="checkbox" id="btnDateTimeFrom" checked="">
+                On or After:&nbsp;</INPUT>
+              </label>
+          </td>
+          <td style="padding-left:12px;">
+            <object id="dateFrom" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+              codebase="MSComCt2.CAB#Version=6,0,84,18"
+              height="24px" width="116px">
+              <param name="Format" value="1"></param>
+              </object>
+          </td>
+          <td style="padding-left:12px;">
+            <object id="timeFrom" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+              codebase="MSComCt2.CAB#Version=6,0,84,18"
+              height="24px" width="116px">
+              <param name="Format" value="2"></param>
+              </object>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label for="btnDateTimeTo">
+              <INPUT type="checkbox" id="btnDateTimeTo" checked="">
+                Before:&nbsp;</INPUT>
+              </label>
+          </td>
+          <td style="padding-left:12px;">
+            <object id="dateTo" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+              codebase="MSComCt2.CAB#Version=6,0,84,18"
+              height="24px" width="116px">
+              <param name="Format" value="1"></param>
+              </object>
+          </td>
+          <td style="padding-left:12px;">
+            <object id="timeTo" classid="clsid:20DD1B9E-87C4-11D1-8BE3-0000F8754DA1"
+              codebase="MSComCt2.CAB#Version=6,0,84,18"
+              height="24px" width="116px">
+              <param name="Format" value="2"></param>
+              </object>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"><b>Event Filters:</b></td>
+    <td>
+      <label for="btnAllEvents">
+        <input type="radio" id="btnAllEvents" name="eventFilters">
+          All Events&nbsp;
+          </input>
+        </label>
+    </td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"></td>
+    <td>
+      <label for="btnChatOnly">
+        <input type="radio" id="btnChatOnly" name="eventFilters" onpropertychange="OnChatOnlyClicked();" checked="">
+          Chat Events Only&nbsp;
+          </input>
+        </label>
+      <label id="labelIncludeAdminPages" for="btnIncludeAdminPages" style="height:1em; display:none;">
+        <input type="checkbox" id="btnIncludeAdminPages" CHECKED="true">
+          Include Admin Page Requests also&nbsp;
+          </input>
+        </label>
+    </td>
+  </tr>
+  <tr>
+    <td width="30%" bgcolor="#CCCCCC"></td>
+    <td>
+      <label for="btnDropOnly">
+        <input type="radio" id="btnDropOnly" name="eventFilters">
+          Player Dropped Events Only&nbsp;
+          </input>
+        </label>
+    </td>
+  </tr>
+</table>
+
+
+
+<P>Click the Refresh button to query the event log database.</P>
+<p>
+<input TYPE="button" id="btnRefresh" VALUE="Refresh" onclick="RefreshRows()"></input>
+<!-- <input TYPE="button" VALUE=" Empty " onclick="DeleteRows()"></input> -->
+</p>
+
+<XML id="xmlSource" onreadystatechange="OnReadyStateChange()"></XML>
+
+<XML id="xslEvents" src="EventViewerX.xsl"></XML>
+
+<DIV id="xslTarget">
+</DIV>
+
+<P></P>
+&nbsp;
+
+<hr>
+<h6><a href="mailto:jtasler">John A. Tasler</a>, and the <a href="mailto:fedtest"> Allegiance Test
+Team</a>.<br>
+Copyright © 1999 Microsoft Corporation. All rights reserved.<br>
+</h6>
+
+</font>
+
+<blockquote>
+
+<script language="jscript">
+
+function window.onload()
+{
+  dateFrom.Value = "11/19/1999";
+  timeFrom.Value = "08:00:00 PM";
+  
+  dateTo.Value = "11/20/1999";
+  timeTo.Value = "12:00:00 AM";
+
+  OnChatOnlyClicked();
+}
+
+function DateTimeFormat(objDate, objTime)
+{
+  return "CONVERT(datetime,'"
+    + objDate.Year + "-" + objDate.Month  + "-" + objDate.Day + " "
+    + objTime.Hour + ":" + objTime.Minute + ":" + objTime.Second
+    + "' , 120)";
+}
+
+function CreateWhereClause()
+{
+  // Create the query string
+  var strWhere = "";
+
+  // Evaluate the ComputerName filter
+  if (EVENTSRV.value.length)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += "(ComputerName LIKE '" + EVENTSRV.value + "')";
+  }
+
+  // Evaluate the SubjectName filter
+  if (SUBJECTNAME.value.length)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += "(SubjectName LIKE '" + SUBJECTNAME.value + "')";
+  }
+
+  // Evaluate the Date filter
+  if (btnDateTimeFrom.checked)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += "(DateTime >= " + DateTimeFormat(dateFrom, timeFrom) + ")";
+  }
+
+  // Evaluate the Date filter
+  if (btnDateTimeTo.checked)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += "(DateTime < " + DateTimeFormat(dateTo, timeTo) + ")";
+  }
+
+  // Evaluate the Event Filters
+  if (btnChatOnly.checked)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+
+    if (btnIncludeAdminPages.checked)
+      strWhere += "(Event >= 4030 AND Event <= 4031)";
+    else
+      strWhere += "(Event = 4030)";
+  }
+  if (btnDropOnly.checked)
+  {
+    strWhere += strWhere.length ? " AND " : " WHERE ";
+    strWhere += "(Event = 2004)";
+  }
+
+  // Return the generated clause
+  return strWhere;
+}
+
+function CanonicalizeURL(str)
+{
+  // Convert all '%' characters first
+  var rePercent = /%/g;
+  var strRemain = str.replace(rePercent, "%25");
+  var strResults = "";
+
+  // Change the following variable to debug
+  @set @debugURL = false
+  @if (@debugURL)
+    var strDebug = "";
+  @end
+
+  // Convert all other reserved characters
+  var re = /(.*)([<>"#\{\}\|\\\^~\[\]`\?\:\@\=\&\$\-_\.\+!\*'\(\)\,])(.*)/;
+  while (strRemain.length)
+  {
+    if (!re.exec(strRemain))
+    {
+      strResults = strRemain + strResults;
+      break;
+    }
+
+    @if (@debugURL)
+      strDebug += "$1=" + RegExp.$1 + "\r\n";
+      strDebug += "$2=" + RegExp.$2 + "\r\n";
+      strDebug += "$3=" + RegExp.$3 + "\r\n";
+      strDebug +=                     "\r\n";
+    @end
+
+    strResults = "%" + CharCode(RegExp.$2) + RegExp.$3 + strResults;
+    strRemain = RegExp.$1;
+  }
+
+  @if (@debugURL)
+    debugger;
+  @end
+
+  // Convert all spaces last
+  var reSpace = / /g;
+  return strResults.replace(reSpace, "+");
+}
+
+function CharCode(strChar)
+{
+  var nCode = new Number(strChar.charCodeAt(0));
+  var strCode = "0" + nCode.toString(16).toUpperCase();
+  var cchCode = strCode.length;
+  return strCode.substr(cchCode - 2);
+}
+
+function RefreshRows()
+{
+  if (SQLSRV.value.length && SQLDB.value.length && SQLTABLE.value.length)
+  {
+    try
+    {
+      btnRefresh.disabled = true;
+
+      // Create the query string
+      var strSQL =
+        "SELECT Event,SubjectName,DateTime,ObjectRef from " + SQLTABLE.value
+        + CreateWhereClause()
+        + " ORDER BY IDENTITYCOL FOR XML AUTO";
+
+      // Create the URL string
+      var strQuery = "http://" + SQLSRV.value + "/" + SQLDB.value + "?sql="
+        + CanonicalizeURL(strSQL);
+
+@if (1)
+      // Load the XML from the SQL query
+      xslTarget.innerHTML = "Querying the event log...";
+      xmlSource.XMLDocument.async = true;
+      xmlSource.src = strQuery;
+@else
+      xslTarget.innerHTML = strQuery;
+      btnRefresh.disabled = false;
+@end
+    }
+    catch (e)
+    {
+      // TODO: Report the error
+      btnRefresh.disabled = false;
+    }
+  }
+}
+
+function OnReadyStateChange()
+{
+  if ("complete" == event.srcElement.readyState)
+  {
+    xslTarget.innerHTML = "Formatting the results...";
+    window.setTimeout("FormatTheResults()", 1);
+  }
+}
+
+// Used by FormatTheResults and ResolveDescription
+var g_oEvent;
+
+function FormatTheResults()
+{
+  var strInnerHTML;
+  try
+  {
+    g_oEvent = new ActiveXObject("AGC.AGCEvent");
+
+    // Resolve the description attribute for each event
+    var oEventNodes = xmlSource.XMLDocument.selectNodes("/root/Events");
+    for (var oNode = oEventNodes.nextNode(); oNode; oNode = oEventNodes.nextNode())
+      ResolveDescription(oNode);
+
+    delete g_oEvent;
+
+    // Transform the XML through a style sheet
+    strInnerHTML = xmlSource.transformNode(xslEvents.XMLDocument);
+    if ("" == strInnerHTML)
+      strInnerHTML = "No results."
+  }
+  catch (e)
+  {
+    strInnerHTML = ErrorText(e);
+  }
+  xslTarget.innerHTML = strInnerHTML;
+
+  // Enable the Refresh button
+  btnRefresh.disabled = false;
+}
+
+function ResolveDescription(node)
+{
+  var strDescription;
+  try
+  {
+    var strObjRef = node.getAttribute("ObjectRef");
+    g_oEvent.LoadFromString(strObjRef);
+    strDescription = g_oEvent.Description;
+  }
+  catch (e)
+  {
+    strDescription = ErrorText(e);
+  }
+  node.setAttribute("description", strDescription);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Description: Formats the specified error object into a readable message.
+//
+function ErrorText(e)
+{
+  var sText = "0x" + (e.number + 0x100000000).toString(16) + " - ";
+  sText += ("" == e.description) ? "(no description)" : e.description;
+  return sText;
+}
+
+function OnChatOnlyClicked()
+{
+  labelIncludeAdminPages.style.display = btnChatOnly.checked ? "" : "none";
+}
+
+function OnCustomTimeClicked()
+{
+  trCustomTime.style.display = (customtime.checked ? "" : "none");
+}
+
+function OnSortByDateTime()
+{
+  SortBy("@DateTime");
+}
+
+function OnSortByEvent()
+{
+  SortBy("@Event");
+}
+
+function OnSortBySubjectName()
+{
+  SortBy("@SubjectName");
+}
+
+function OnSortByDescription()
+{
+  SortBy("@description");
+}
+
+function SortBy(strOrderBy)
+{
+  // Get the template match element of the XSL document
+  var matchEvents = xslEvents.XMLDocument.selectSingleNode(
+    "//xsl:apply-templates[@select='Events']");
+
+  // Set the order-by attribute of the element
+  matchEvents.setAttribute("order-by", strOrderBy);
+
+  // Transform the XML through the modified style sheet
+  var strInnerHTML = xmlSource.transformNode(xslEvents.XMLDocument);
+  if ("" == strInnerHTML)
+    strInnerHTML = "No results."
+  xslTarget.innerHTML = strInnerHTML;
+}
+
+</script>
+
+</body>
+

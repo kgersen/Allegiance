@@ -1,0 +1,286 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""PigConfig.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "PigConfig.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_IMAGES              BITMAP  DISCARDABLE     "images.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_EVENTS DIALOGEX 0, 0, 210, 186
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Events"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "By &Group",IDC_BY_GROUP,"Button",BS_AUTORADIOBUTTON | 
+                    NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP,107,6,45,10
+    CONTROL         "&Flat List",IDC_FLAT_LIST,"Button",BS_AUTORADIOBUTTON | 
+                    NOT WS_VISIBLE,163,6,40,10
+    LTEXT           "&Available Events:",IDC_STATIC,7,7,56,8
+    CONTROL         "EventTree",IDC_EVENTS,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | TVS_INFOTIP | TVS_FULLROWSELECT | 
+                    NOT WS_VISIBLE | WS_TABSTOP,7,16,196,80,WS_EX_CLIENTEDGE
+    CONTROL         "EventList",IDC_EVENTS_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | 
+                    NOT WS_VISIBLE | WS_BORDER | WS_TABSTOP,7,16,196,80
+    GROUPBOX        "Event Detail",IDC_STATIC,7,99,196,80
+    LTEXT           "Type:",IDC_STATIC,14,111,38,8
+    RTEXT           "Information",IDC_EVENT_TYPE,56,111,36,8,NOT WS_GROUP
+    LTEXT           "Event ID:",IDC_STATIC,14,121,31,8
+    RTEXT           "99999 - 99999",IDC_EVENT_ID,45,121,47,8,NOT WS_GROUP
+    LTEXT           "Description:",IDC_STATIC,14,131,38,8
+    EDITTEXT        IDC_DESCRIPTION,14,141,182,31,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | NOT WS_TABSTOP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,100,108,1,30
+    CONTROL         "Log to NT &Event Log",IDC_LOG2NT,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,107,111,89,10
+    CONTROL         "Log to Event &Database",IDC_LOG2DB,"Button",
+                    BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,107,125,89,10
+END
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 82
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About PigConfig"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,9,21,20
+    LTEXT           "Allegiance ActivePigs Configuration Wizard, 1.0",
+                    IDC_STATIC,40,10,188,8,SS_NOPREFIX
+    LTEXT           "Copyright © 1998-1999, Microsoft Corporation",
+                    IDC_STATIC,40,20,188,8
+    DEFPUSHBUTTON   "OK",IDOK,92,61,50,14,WS_GROUP
+    LTEXT           "Written By:\nJohn A. Tasler (JTasler)",IDC_STATIC,40,37,
+                    188,16
+END
+
+IDD_GENERAL DIALOG DISCARDABLE  0, 0, 210, 186
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "General"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "File Paths",IDC_STATIC,7,7,196,56
+    LTEXT           "&Artwork:",IDC_STATIC,14,21,27,8
+    EDITTEXT        IDC_ART_PATH,52,19,144,14,ES_AUTOHSCROLL
+    LTEXT           "&Piglets:",IDC_STATIC,14,42,24,8
+    EDITTEXT        IDC_PIGLET_DIR,52,40,144,14,ES_AUTOHSCROLL
+    GROUPBOX        "Settings",IDC_STATIC,7,66,196,45
+    CONTROL         "&Limit number of Pigs that can be created on computer",
+                    IDC_LIMIT_PIGS,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
+                    WS_TABSTOP,14,78,184,10
+    LTEXT           "Allow &no more than:",IDC_MAX_PIGS_CAPTION,25,92,63,8
+    EDITTEXT        IDC_MAX_PIGS,90,90,26,14,ES_RIGHT | ES_NUMBER
+    CONTROL         "Spin1",IDC_MAX_PIGS_SPIN,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,107,90,9,14
+    LTEXT           "PigSrv Version:",IDC_STATIC,7,171,49,8
+    RTEXT           "01.00.00.9999",IDC_PIG_SRV_VERSION,58,171,47,8
+    LTEXT           "BCHECKERD",IDC_PIG_SRV_FLAVOR,107,171,96,8
+END
+
+IDD_DATABASE DIALOG DISCARDABLE  0, 0, 210, 153
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Database"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Game data",IDC_STATIC,7,7,196,75
+    LTEXT           "U&ser Id:",IDC_STATIC,14,21,26,8
+    EDITTEXT        IDC_SQLUSER,52,19,144,14,ES_AUTOHSCROLL
+    LTEXT           "Pass&word:",IDC_STATIC,14,42,34,8
+    EDITTEXT        IDC_SQLPASSWORD,52,40,144,14,ES_AUTOHSCROLL
+    LTEXT           "&DSN:",IDC_STATIC,14,63,18,8
+    EDITTEXT        IDC_SQLSRC,52,61,144,14,ES_AUTOHSCROLL
+    GROUPBOX        "&Event logging",IDC_STATIC,7,85,196,60,WS_GROUP
+    LTEXT           "&Connection String:",IDC_STATIC,14,97,59,8
+    EDITTEXT        IDC_CONNECTIONSTRING,14,107,160,30,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | WS_VSCROLL
+    PUSHBUTTON      "...",IDC_BTNCONNECTIONSTRING,180,123,16,14
+END
+
+IDD_SERVERS DIALOG DISCARDABLE  0, 0, 210, 186
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Servers"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Lobby",-1,7,7,196,48
+    LTEXT           "&Server:",-1,14,21,24,8
+    EDITTEXT        IDC_LOBBYSERVER,52,19,144,14,ES_AUTOHSCROLL
+    CONTROL         "&Lobby is enabled for Zone Club",IDC_ZONELOBBY,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,52,38,114,10
+    GROUPBOX        "Pig Accounts",-1,7,58,196,73
+    CONTROL         "&Get accounts from same computer as the Lobby",
+                    IDC_SAME_AS_LOBBY,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP,21,70,167,10
+    CONTROL         "Get accounts from &my computer",IDC_MY_COMPUTER,"Button",
+                    BS_AUTORADIOBUTTON,21,84,116,10
+    CONTROL         "Get accounts from the &following computer:",
+                    IDC_THIS_COMPUTER,"Button",BS_AUTORADIOBUTTON,21,98,149,
+                    10
+    EDITTEXT        IDC_ACCOUNT_SERVER,35,110,154,14,ES_AUTOHSCROLL | 
+                    WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_EVENTS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 75
+    END
+
+    IDD_GENERAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+
+    IDD_DATABASE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 146
+    END
+
+    IDD_SERVERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PROJNAME            "PigConfig"
+    IDS_ABOUTBOX            "&About PigConfig..."
+    IDS_TITLE               "Allegiance ActivePigs Config"
+    IDS_TYPE_ERROR          "Error"
+    IDS_TYPE_WARNING        "Warning"
+    IDS_TYPE_INFORMATION    "Information"
+    IDS_TYPE_SUCCESS        "Success"
+    IDS_TYPE_GROUP          "Group"
+    IDS_COLUMN_TYPE         "Type"
+    IDS_COLUMN_EVENTID      "ID"
+    IDS_COLUMN_NAME         "Name"
+    IDS_E_CANTCREATESESSION "Error 0x%08X creating Pigs Session:\n%s"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_E_CANTCREATEWINDOW  "Error 0x%08X creating main window:\n%s"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "PigConfig.rc2"  // non-Microsoft Visual C++ edited resources
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,22 @@
+HKCR
+{
+  Pigs.HullTypes.1 = s 'Pig Hull Type Collection Class'
+  {
+    CLSID = s '{E1A2D508-F8FD-11d2-A50F-00C04F68DEB0}'
+  }
+  Pigs.HullTypes = s 'Pig Hull Type Collection Class'
+  {
+    CLSID = s '{E1A2D508-F8FD-11d2-A50F-00C04F68DEB0}'
+    CurVer = s 'Pigs.HullTypes.1'
+  }
+  NoRemove CLSID
+  {
+    ForceRemove {E1A2D508-F8FD-11d2-A50F-00C04F68DEB0} = s 'Pig Hull Type Collection Class'
+    {
+      ProgID = s 'Pigs.HullTypes.1'
+      VersionIndependentProgID = s 'Pigs.HullTypes'
+      val AppID = s '{F132B4E3-C6EF-11D2-85C9-00C04F68DEB0}'
+      'TypeLib' = s '{F132B4E2-C6EF-11D2-85C9-00C04F68DEB0}'
+    }
+  }
+}
