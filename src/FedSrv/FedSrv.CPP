@@ -39,6 +39,7 @@ static void doASGS(void* data, MprThread *threadp) {
 	int contentLen = 0; char *content; char szResponse[MAX_PATH];
 	RankID myRank = -2; // -3 wait, -2 wrong rank, -1 callsign does not exist, >=0 valid rank
 	char szURL[MAX_PATH]; char szName[c_cbName];
+	//KG- todo- this shouldn't be hardcoded here, TODO: use registry entry AuthServer (g.strAuthServer), that's its purpose anyway
 	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
 
 	// one thread per connecting player
@@ -53,16 +54,17 @@ static void doASGS(void* data, MprThread *threadp) {
 	Strcat(szURL,szName);
 
 	//Imago check only if connected to a lobby - 6/26/09
-	if (g.fmLobby.IsConnected()) {
+	//KG- also for debug/pigs and server not using ASGS (for now an "AuthServer" empty means do not use ASGS)
+	if (g.fmLobby.IsConnected() && !g.strAuthServer.IsEmpty()) {
 
         // First make sure we can write to a socket
         MprSocket* socket = new MprSocket();
-        socket->openClient("asgs.alleg.net",80,0);
+        socket->openClient("asgs.alleg.net",80,0); //KG- todo- need to parse this from the single url (szURL). hardcoded values are bad.
         int iwrite = socket->_write("GET /\r\n");
         delete socket;
 
         MaClient* client = new MaClient();
-	    client->setTimeout(3000);
+	    client->setTimeout(3000); //KG- todo- check if consistent with the client timeout 
 	    client->setRetries(1);
 	    client->setKeepAlive(0);
 
@@ -95,7 +97,9 @@ static void doASGS(void* data, MprThread *threadp) {
 				pqd->rank = -2;
 				mutex->unlock();
 			}
-		} else { // mmf/imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
+		} 
+		else 
+		{ // mmf/imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
 			int strLen = strName.GetLength();
 			int leftParen = strName.ReverseFind('(',0);
 			if (leftParen>=1) { //rank in the name
@@ -105,7 +109,10 @@ static void doASGS(void* data, MprThread *threadp) {
 				if (!((myRank>0) && (myRank<100))) { //more insanity
 					myRank=-2; // you are the wrong rank for all missions!
 				}
-			} else { //no rank in name
+			} 
+			else 
+			{
+				//no rank in name
 				myRank = 0;
 			}
 			mutex->lock();
@@ -113,7 +120,10 @@ static void doASGS(void* data, MprThread *threadp) {
 			mutex->unlock();
 		}
         delete client;
-	} else { //not connected to a lobby, just set rank to 0 - imago 6/26/09
+	} 
+	else 
+	{ //not connected to a lobby, just set rank to 0 - imago 6/26/09
+		//KG- todo - get rank from playername(#) too
 		pqd->rank = 0;
 	}
 
@@ -5572,6 +5582,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
 
+		// KG: todo - skip asgs check for debug/pigs purpose or guard it with a configuration setting like for the lobby
+		// for now, will do this in doASGS but spawning a thread when no web async is required is overkill
 		char mprthname[9];
 		mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
 		MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname);

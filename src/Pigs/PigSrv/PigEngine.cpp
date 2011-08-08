@@ -452,7 +452,7 @@ void CPigEngine::ProcessScriptDirChanges()
         if (setNames.end() == setNames.find(pTypeBase->GetBaseBehaviorName()))
         {
           XScriptMapIt itBase = mapGoodBadUgly.find(pTypeBase->GetBaseBehaviorName());
-          if (m_mapBehaviors.end() != itBase)
+          if (mapGoodBadUgly.end() != itBase) // KG- fix debug assert - was : m_mapBehaviors.end() != itBase
           {
             pTypeBase = itBase->second;
             continue;

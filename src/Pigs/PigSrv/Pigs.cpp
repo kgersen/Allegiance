@@ -135,8 +135,13 @@ STDMETHODIMP CPigs::get__NewEnum(IUnknown** ppunkEnum)
   // Copy the elements of 'by name' map to a temporary CComVariant vector
   assert(m_mapByCookie.size() == m_mapByName.size());
   CComVariant var;
-  std::vector<CComVariant> vecTemp(m_mapByName.size(), CComVariant());
-  std::vector<CComVariant>::iterator itVec = vecTemp.begin();
+  // KG- switch to array instead of STL vector
+  // we could keep STL vector and use CComEnumOnSTL later but something asserts at debug doing so.
+  //std::vector<CComVariant> vecTemp(m_mapByName.size(), CComVariant());
+  //std::vector<CComVariant>::iterator itVec = vecTemp.begin();
+  CComVariant* vecTemp = new CComVariant[m_mapByName.size()]; // allocate the array
+  int itVec = 0; // will be the total size at the end
+
   for (XMapByNameIt it = m_mapByName.begin(); it != m_mapByName.end(); ++it)
   {
     // Get an apartment-safe interface pointer for the located object
@@ -148,8 +153,11 @@ STDMETHODIMP CPigs::get__NewEnum(IUnknown** ppunkEnum)
     var = (IDispatch*)spPig;
 
     // Place it into the pre-created slot of the temporary vector
-    *itVec++ = var;
+	// KG- array instead of vector
+    //*itVec++ = var;
+	vecTemp[itVec++] = var;
   }
+  // KG-  assert(itVec == m_mapByName.size());
 
   // Unlock the object after the copy
   lock.Unlock();
@@ -162,11 +170,13 @@ STDMETHODIMP CPigs::get__NewEnum(IUnknown** ppunkEnum)
 
   // Initialize enumerator object with the temporary CComVariant vector
   // VS.Net 2003 port - accomodate change in iterators under VC.Net 200x (see 'breaking changes' in vsnet doc)
-#if _MSC_VER >= 1310
-  HRESULT hr = pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy);
-#else
-  HRESULT hr = pEnum->Init(vecTemp.begin(), vecTemp.end(), NULL, AtlFlagCopy);
-#endif
+  // VS.Net 2010 port - switch to array instead of STL vector
+
+  //HRESULT hr = pEnum->Init(&(*vecTemp.begin()), &(*vecTemp.end()), NULL, AtlFlagCopy);
+  HRESULT hr = pEnum->Init(&vecTemp[0], &vecTemp[itVec], NULL, AtlFlagCopy);
+  
+  // kg- we copied the content, safe to delete
+  delete [] vecTemp;
 
   if (SUCCEEDED(hr))
     hr = pEnum->QueryInterface(IID_IEnumVARIANT, (void**)ppunkEnum);
