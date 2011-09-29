@@ -612,7 +612,6 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     pigc->PlayNotificationSound(salReloadingAmmoSound, this);
                     pigc->PlayNotificationSound(startReloadSound, this);
                     pigc->PostNotificationText(this, false, "Reloading ammo...");
-                    pigc->SetReloadingAmmoTime(); // pkk #19
                 }
             }
         }
@@ -643,7 +642,6 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     pigc->PlayNotificationSound(salReloadingFuelSound, this);
                     pigc->PlayNotificationSound(startReloadSound, this);
                     pigc->PostNotificationText(this, false, "Reloading fuel...");
-                    pigc->SetReloadingFuelTime(); // pkk #19
                 }
             }
         }
