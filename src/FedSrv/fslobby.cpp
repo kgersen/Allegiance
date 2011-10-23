@@ -98,10 +98,28 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	
 #if !defined(SRV_CHILD)
 #if !defined(SRV_PARENT)
-		//Imago - start the mission in this thread as usual 
-        FedSrvSite * psiteFedSrv = new FedSrvSite();
-        CFSMission * pfsMissionNew = new CFSMission(mp, "", psiteFedSrv, psiteFedSrv, NULL, NULL);
-        pfsMissionNew->SetCookie(pfmCreateMissionReq->dwCookie);
+		// pkk 2011-07-24 - Create games only with IGCs from cores.txt
+		bool ValidCore = false;
+		for ( int i = 0; i<g.cStaticCoreInfo; i++ )
+		{
+			if ( !lstrcmpi(mp.szIGCStaticFile, g.vStaticCoreInfo[i].cbIGCFile ) )
+			{
+				ValidCore = true;
+				break; // quit loop
+			}
+		}
+		if ( ValidCore == true )
+		{
+			//Imago - start the mission in this thread as usual 
+			FedSrvSite * psiteFedSrv = new FedSrvSite();
+			CFSMission * pfsMissionNew = new CFSMission(mp, "", psiteFedSrv, psiteFedSrv, NULL, NULL);
+			pfsMissionNew->SetCookie(pfmCreateMissionReq->dwCookie);
+		}
+		else
+		{
+			debugf("Lobby sent invalid core information %s, ignoring message\n", mp.szIGCStaticFile);
+		}
+		// pkk end
 #endif
 #endif
       } //Imago 6/22/08
