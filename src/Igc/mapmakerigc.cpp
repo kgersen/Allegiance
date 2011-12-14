@@ -17,6 +17,7 @@
 //
 // Static members.
 // 08/30/04 -KGJV: added Titty Baby memorial sector name
+// 12/14/11 -pkk: added Tj Butler memorial sector name
 const char * CMapData::smszClusterName[c_NumClusterNames] =
 {
     "Aegis",        "Aeroflex",     "Ahto",         "Aredne",
@@ -35,7 +36,7 @@ const char * CMapData::smszClusterName[c_NumClusterNames] =
     "Raiko",        "Resnik",       "Rib'zki",		"Rimin",  "Sleipener",
     "Solitaire",    "Soron",        "Sri Metsa",    "Surma",
     "Tathlum",      "Tierankeen",   "Tjeerd",       "Torc",
-    "Touni",        "Tauceti",      "Titty Baby"    ,"Turakeen",   /*"Uranus",*/"Udar", "Virkinow",
+    "Touni",        "Tauceti",      "Tj Butler",    "Titty Baby"    ,"Turakeen",   /*"Uranus",*/"Udar", "Virkinow",
   /*"Venus",*/      "Xuping"
 } ;
 
