@@ -780,10 +780,25 @@ namespace Training
 		// can.
         {
             PlaySoundAction*                pPlaySoundAction = new PlaySoundAction (tm_4_29Sound);
-            Goal*                           pGoal = new Goal (new AndCondition (new GetKeyCondition (TK_TargetEnemy), new SoundFinishedCondition (pPlaySoundAction)));
+            //Goal*                           pGoal = new Goal (new AndCondition (new GetKeyCondition (TK_TargetEnemy), new SoundFinishedCondition (pPlaySoundAction)));
+            Goal*                           pGoal = new Goal (new GetKeyCondition (TK_TargetEnemy)); // pkk - Let's start  before sound is finished
             pGoal->AddStartAction (pPlaySoundAction);
             pGoal->AddStartAction (new MessageAction ("Target an enemy miner with the E key, and destroy it if you can."));
             pGoal->AddConstraintCondition (CreateTooLongCondition (20.0f, tm_4_29Sound));
+            pGoalList->AddGoal (pGoal);
+        }
+
+		// pkk - Fix for #246
+		// New Goal to activate controls
+        {
+            Goal*                           pGoal = new Goal (new ElapsedTimeCondition (0.5f));
+            SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
+            pSetControlConstraintsAction->EnableInputAction (0xffffffff);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisThrottle, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisYaw, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisPitch, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisRoll, 1.0f);
+            pGoal->AddStartAction (pSetControlConstraintsAction);
             pGoalList->AddGoal (pGoal);
         }
 
@@ -793,10 +808,6 @@ namespace Training
             OrCondition*                    pOrConditionB = new OrCondition (new GetShipIsDestroyedCondition2 (OT_ship, m_enemyMiner3ID), new GetShipIsDestroyedCondition2 (OT_ship, m_enemyMiner4ID));
             Condition*                      pInSectorCondition = new GetSectorCondition (new CurrentTarget (new PlayerShipTarget), 1031);
             Goal*                           pGoal = new Goal (new OrCondition (new OrCondition (pOrConditionA, pOrConditionB), new NotCondition (pInSectorCondition)));
-            SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
-            pSetControlConstraintsAction->EnableInputAction (0xffffffff);
-            pSetControlConstraintsAction->ScaleInputControl (c_axisThrottle, 1.0f);
-            pGoal->AddStartAction (pSetControlConstraintsAction);
 
             // show the eyeball if it is appropriate
             {
@@ -810,7 +821,8 @@ namespace Training
 
 		    // tm_4_29r
 		    // Destroy the enemy miner if you can.
-            pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_29rSound));
+		    // pkk - Need more time get into firing range, you had no chance to kill one within 30 secs
+            pGoal->AddConstraintCondition (CreateTooLongCondition (120.0f, tm_4_29rSound));
 
             pGoalList->AddGoal (pGoal);
         }
