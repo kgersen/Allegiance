@@ -507,6 +507,14 @@ namespace Training
         {
             Goal*   pGoal = CreatePlaySoundGoal (tm_4_18Sound);
             pGoal->AddStartAction (new MessageAction ("Flying through the aleph to sector 'Mars'..."));
+			// pkk - Disable controls, so can AP take over flying into aleph (mission will not hang)
+            SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
+            pSetControlConstraintsAction->DisableInputAction (0xffffffff);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisYaw, 0.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisPitch, 0.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisRoll, 0.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisThrottle, 0.0f);
+            pGoal->AddStartAction (pSetControlConstraintsAction);
             TurnToAction*           pTurnToAction = new TurnToAction (trekClient.GetShip (), OT_warp, 1030);
             ConditionalAction*      pConditionalAction = new ConditionalAction (new TrueCondition, pTurnToAction);
             pGoal->AddConstraintCondition (pConditionalAction);
@@ -586,7 +594,12 @@ namespace Training
             SetControlsAction*              pSetControlsAction = new SetControlsAction;
             SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
             pSetControlConstraintsAction->DisableInputAction (0xffffffff);
+			// pkk - Allow ship to turn again
+            pSetControlConstraintsAction->ScaleInputControl (c_axisYaw, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisPitch, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl (c_axisRoll, 1.0f);
             pSetControlConstraintsAction->ScaleInputControl (c_axisThrottle, 0.0f);
+            GetWindow()->SetTarget(trekClient.GetShip(), c_cidNone); // pkk - Target nothing
             pGoal->AddStartAction (pSetControlsAction);
             pGoal->AddStartAction (pSetControlConstraintsAction);
             pGoal->AddStartAction (new ShowPaneAction (ofSectorPane));

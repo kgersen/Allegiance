@@ -264,6 +264,7 @@ namespace Training
             case TK_ConModeGameState:
             case TK_ConModeTeleport:
             case TK_ToggleAutoPilot:
+            case TK_RejectCommand: // pkk - Some training missions can't be finished
             return false;
 
             case TK_PauseTM:
