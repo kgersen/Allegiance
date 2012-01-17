@@ -3204,7 +3204,7 @@ bool CommandToDrone(CFSMission*         pfsMission,
     bool    bAccepted = false;
 	bool	bBarelyLegal = false; //milfs only 
 	
-	if (pshipTo)
+	if (pshipTo && pcd->commandID != c_cidNone) // pkk #251 - a text message is not a command
 		pshipTo->SetStayDocked(false);  //Xynth #48 8/2010 reset staydocked on any command
     
 	assert (pfsSender);
@@ -6771,7 +6771,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  // pkk #211 08/05/2010 Allow all drones stay docked
       if (pship->GetPilotType() < c_ptPlayer)
 	  {
-		  if (pship->GetStation() != NULL)
+		  if (pship->GetStation() != NULL && !pship->GetStayDocked())
 		  { //if docked, launch
 			  pship->SetStayDocked(false);
 			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),

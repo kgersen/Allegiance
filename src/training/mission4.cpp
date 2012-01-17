@@ -834,8 +834,7 @@ namespace Training
 
 		    // tm_4_29r
 		    // Destroy the enemy miner if you can.
-		    // pkk - Need more time get into firing range, you had no chance to kill one within 30 secs
-            pGoal->AddConstraintCondition (CreateTooLongCondition (120.0f, tm_4_29rSound));
+            pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_29rSound));
 
             pGoalList->AddGoal (pGoal);
         }
@@ -867,8 +866,8 @@ namespace Training
             pGoal->AddStartAction (pCreateDroneAction);
 
             // command the builder to go to the asteroid on which it will build
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdCurrent, OT_asteroid, 10332, c_cidBuild));
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdAccepted, OT_asteroid, 10332, c_cidBuild));
+            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdCurrent, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
+            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdAccepted, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
 
             // create a waypoint for all of the miners to run to, and send them all there
             BuoyID              buoyID = trekClient.GetCore ()->GenerateNewBuoyID ();
@@ -994,8 +993,8 @@ namespace Training
         // (Wait for building to complete)
         {
             Goal*   pGoal = new Goal (new GetShipIsDestroyedCondition2(OT_ship, m_builderID));
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdCurrent, OT_asteroid, 10332, c_cidBuild));
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdAccepted, OT_asteroid, 10332, c_cidBuild));
+            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdCurrent, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
+            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdAccepted, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
             pGoalList->AddGoal (pGoal);
         }
 

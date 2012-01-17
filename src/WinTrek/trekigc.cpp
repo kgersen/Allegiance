@@ -2655,6 +2655,9 @@ void WinTrekClient::ChangeCluster(IshipIGC*  pship, IclusterIGC* pclusterOld, Ic
         GetWindow()->SetCluster(pclusterNew);
         GetWindow()->PositionCommandView(NULL, 0.0f);
         trekClient.GetClientEventSource()->OnClusterChanged(pclusterNew);
+
+		// pkk - fix for #9 - disable the afterburner on sector change
+		trekClient.GetShip()->SetStateBits(afterburnerButtonIGC, 0);
     }
 }
 
