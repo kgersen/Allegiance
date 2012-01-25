@@ -6771,7 +6771,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  // pkk #211 08/05/2010 Allow all drones stay docked
       if (pship->GetPilotType() < c_ptPlayer)
 	  {
-		  if (pship->GetStation() != NULL && !pship->GetStayDocked())
+		  if (pship->GetStation() != NULL)
 		  { //if docked, launch
 			  pship->SetStayDocked(false);
 			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),

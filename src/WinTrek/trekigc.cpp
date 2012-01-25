@@ -4443,7 +4443,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
             }
         }
 
-        if ((cid >= c_cidNone && cid < c_cidMax) || // pkk #85 - Show text of valid quickchat commands, cid doesn't work because of c_cidDefault = 0
+        if ((cid == c_cidNone) ||
             (ctRecipient == CHAT_INDIVIDUAL_ECHO) ||
             ((bForMe && (ctRecipient == CHAT_INDIVIDUAL)) == (pshipSender != trekClient.GetShip())))
         {
@@ -4958,11 +4958,11 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
         switch (reason)
         {
         case QSR_LeaderBooted:
-            strMessage = "You have been booted by your team leader!";
+            strMessage = "You have been booted by your commander! You can rejoin the game by logging in with a different ASGS callsign."; // TurkeyXIII - #239 
             break;
 
         case QSR_OwnerBooted:
-            strMessage = "You have been booted by the mission owner!";
+            strMessage = "You have been lobby booted by the mission owner!  You can rejoin the game by logging in with a different ASGS callsign."; // pkk - #239 - conform with wiki information
             break;
 
         case QSR_AdminBooted:
