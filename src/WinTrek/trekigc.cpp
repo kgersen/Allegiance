@@ -3710,7 +3710,7 @@ void WinTrekClient::StationTypeCompleted(IbucketIGC * pbucket, IstationIGC* psta
     }
 }
 
-void WinTrekClient::BuildStation(IasteroidIGC* pasteroid, IsideIGC* pside, IstationTypeIGC* pstationtype, Time now)
+void WinTrekClient::BuildStation(IasteroidIGC* pasteroid, IsideIGC* pside, IstationTypeIGC* pstationtype, Time now, bool pbseensides[])
 {
     DataStationIGC  ds;
     strcpy(ds.name, pstationtype->GetName());

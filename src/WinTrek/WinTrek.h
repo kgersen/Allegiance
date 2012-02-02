@@ -143,7 +143,7 @@ class  WinTrekClient :
         virtual void      DevelopmentCompleted(IbucketIGC*  b, IdevelopmentIGC*   d, Time now);
         virtual void      StationTypeCompleted(IbucketIGC*  b, IstationIGC* pstation, IstationTypeIGC*   st, Time now);
         virtual void      DroneTypeCompleted(IbucketIGC*  b, IstationIGC* pstation, IdroneTypeIGC*   dt, Time now);
-        virtual void      BuildStation(IasteroidIGC* pasteroid, IsideIGC* pside, IstationTypeIGC* pstationtype, Time now);
+        virtual void      BuildStation(IasteroidIGC* pasteroid, IsideIGC* pside, IstationTypeIGC* pstationtype, Time now, bool pbseensides[]);
         virtual void      LayExpendable(Time now, IexpendableTypeIGC* pet, IshipIGC* pshipLayer);
         virtual TRef<ThingSite>   CreateThingSite(ImodelIGC* pModel);
         virtual TRef<ClusterSite> CreateClusterSite(IclusterIGC* pCluster);

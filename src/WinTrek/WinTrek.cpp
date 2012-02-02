@@ -3687,19 +3687,22 @@ public:
 	{
 		// pkk #211 08/05/2010 Allow all drones stay docked
 		ImodelIGC*  pmodel;
+		
+		  
+		IclusterIGC* pCluster =trekClient.GetCore()->GetCluster(contextPlayerInfo->GetShipStatus().GetSectorID());
 		if (contextPlayerInfo->GetShip()->GetPilotType() != c_ptCarrier)
 		{
-			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-				NULL, NULL, NULL, NULL, c_sabmRepair);
+			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttAnyCluster,
+				NULL, pCluster,  &(Vector::GetZero()), NULL, c_sabmRepair);
 		}
 		else
 		{
 			// Find shipyard
 			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-				NULL, NULL, NULL, NULL, c_sabmCapLand);
+				NULL, pCluster,  &(Vector::GetZero()), NULL, c_sabmCapLand);
 			if (pmodel == NULL) //No shipyard, carrier flees to nearest base for protection
 				pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-							NULL, NULL, NULL, NULL, c_sabmRepair);
+							NULL, pCluster,  &(Vector::GetZero()), NULL, c_sabmRepair);
 		}
 
 		if (pmodel)

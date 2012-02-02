@@ -496,8 +496,8 @@ public:
             if (m_pimageBkgnd == m_pimageLargeBkgnd)
             {
                 const int xSecondColumn = m_pimageSmallBkgnd->GetBounds().GetRect().XSize() + xBorder - 15;
-                Point ptHelium(xSecondColumn, yTop - 30);
-                Point ptAsteroids(xSecondColumn, yTop - 45);
+                Point ptHelium(xSecondColumn, yTop - 45);
+                Point ptAsteroids(xSecondColumn, yTop - 60);
 
 				//Xynth #104 7/2010
 				//Function not reliable for this purpose
