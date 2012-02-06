@@ -3685,58 +3685,30 @@ public:
 	
 	void contextDockDrone() //Xynth #48 8/2010
 	{
-		// pkk #211 08/05/2010 Allow all drones stay docked
-		ImodelIGC*  pmodel;
-		
-		  
-		IclusterIGC* pCluster =trekClient.GetCore()->GetCluster(contextPlayerInfo->GetShipStatus().GetSectorID());
-		if (contextPlayerInfo->GetShip()->GetPilotType() != c_ptCarrier)
-		{
-			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttAnyCluster,
-				NULL, pCluster,  &(Vector::GetZero()), NULL, c_sabmRepair);
-		}
-		else
-		{
-			// Find shipyard
-			pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-				NULL, pCluster,  &(Vector::GetZero()), NULL, c_sabmCapLand);
-			if (pmodel == NULL) //No shipyard, carrier flees to nearest base for protection
-				pmodel = FindTarget(contextPlayerInfo->GetShip(), c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-							NULL, pCluster,  &(Vector::GetZero()), NULL, c_sabmRepair);
-		}
-
-		if (pmodel)
-		{
-			if (contextPlayerInfo->GetShip()->GetStation() != NULL) //if docked, launch
-				contextPlayerInfo->GetShip()->SetStayDocked(false);
-			else
-			{
-			contextPlayerInfo->GetShip()->SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
+		//Spunky #250 #257
+		bool docked=contextPlayerInfo->LastSeenState() == c_ssDocked; //GetStation() doesn't work here
+		if (docked && !contextPlayerInfo->GetShip()->GetStayDocked() || !docked) 
 			contextPlayerInfo->GetShip()->SetStayDocked(true);
-		}
-		}
-
+ 		else
+			contextPlayerInfo->GetShip()->SetStayDocked(false);
+	
 		if (trekClient.m_fm.IsConnected())
-        {
-            trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-            BEGIN_PFM_CREATE(trekClient.m_fm, pfmOC, CS, ORDER_CHANGE)
-            END_PFM_CREATE
+		{
+			trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+			BEGIN_PFM_CREATE(trekClient.m_fm, pfmOC, CS, ORDER_CHANGE)
+			END_PFM_CREATE
 
-            pfmOC->shipID = contextPlayerInfo->GetShip()->GetObjectID();			
-            pfmOC->command = c_cmdAccepted;
-            pfmOC->commandID = c_cidGoto;
-            if (pmodel)
-            {
-                pfmOC->objectType = pmodel->GetObjectType();
-                pfmOC->objectID = pmodel->GetObjectID();
-            }
-            else
-            {
-                pfmOC->objectType = OT_invalid;
-                pfmOC->objectID = NA;
-            }
+			pfmOC->shipID = contextPlayerInfo->GetShip()->GetObjectID();			
+			pfmOC->command = c_cmdAccepted;
+			if (docked && contextPlayerInfo->GetShip()->GetStayDocked())
+				pfmOC->commandID = c_cidDoNothing;
+			else 
+				pfmOC->commandID = c_cidGoto; 
+			pfmOC->objectType = OT_invalid;
+			pfmOC->objectID = NA;
 		}
 	}
+
 	//Xynth #197 8/2010
 	void contextChat()
 	{
@@ -4192,7 +4164,7 @@ public:
 			{
 				if (playerInfo->GetShip()->GetPilotType() != c_ptCarrier)
 				{ 
-					if (playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL)
+					if ((playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL) && playerInfo->GetShip()->GetStayDocked()) //Spunky #250					
 						sprintf(str1,"Launch  ");
 					else
 						sprintf(str1,"Dock    ");

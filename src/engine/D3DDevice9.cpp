@@ -1,4 +1,4 @@
-
+﻿
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "pch.h"
 
@@ -598,6 +598,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		} else {
 			m_sD3DDev9.d3dPresParams.SwapEffect	= D3DSWAPEFFECT_DISCARD;
 			//m_sD3DDev9.d3dPresParams.Flags	= D3DPRESENTFLAG_DEVICECLIP; //Imago 7/12/09 enabled 8/10 disabled #227
+			m_sD3DDev9.d3dPresParams.Flags = 0; //Spunky #252
 		}
 
 		//imago 7/18/09

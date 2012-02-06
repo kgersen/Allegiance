@@ -1048,7 +1048,7 @@ void CFSMission::RemovePlayerFromSide(CFSPlayer * pfsPlayer, QuitSideReason reas
 			// mmf don't reset skill level if there is a server skill level setting for this server (KGJV added this feature keying off registry)
 			// mmf since there isn't an easy way to check for Min/MaxRank# entries in registry as we don't know the game number
 			//     assume if game is locked open we don't want to change the min and max rank
-			if (!(m_misdef.misparms.bLockGameOpen)) {
+			if (!(m_misdef.misparms.bLockGameOpen) && !m_misdef.misparms.bObjectModelCreated) {//#203 Turkey 6/11
 				m_misdef.misparms.iMinRank = -1;
 				m_misdef.misparms.iMaxRank = 1000;
 			}
@@ -5078,6 +5078,10 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
             pslNext = psl->next();
             IshipIGC*   pship = psl->data();
 
+            // BT - 2/4/2012 - Fixing clint's server crash bug: Game with one player, set to 1 life, eject pods off, launch scout, #resign causes server crash.
+            if(pship == NULL)
+                break;
+
             if (pship->GetBaseHullType())
             {
                 {
@@ -5792,7 +5796,7 @@ bool Ballot::HasPassed()
     if (m_cAbstaining[sideID] + m_cInFavor[sideID] + m_cOpposed[sideID])
     {
       // if it didn't get a majority, it didn't pass.
-      if (m_cInFavor[sideID] <= m_cOpposed[sideID] + m_cAbstaining[sideID])
+      if (m_cInFavor[sideID] <= m_cOpposed[sideID])
       {
         return false;
       }

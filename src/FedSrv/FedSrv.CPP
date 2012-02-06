@@ -3204,9 +3204,6 @@ bool CommandToDrone(CFSMission*         pfsMission,
     bool    bAccepted = false;
 	bool	bBarelyLegal = false; //milfs only 
 	
-	if (pshipTo && pcd->commandID != c_cidNone) // pkk #251 - a text message is not a command
-		pshipTo->SetStayDocked(false);  //Xynth #48 8/2010 reset staydocked on any command
-    
 	assert (pfsSender);
 
     IsideIGC*   pside = pshipTo->GetSide();
@@ -3262,7 +3259,8 @@ bool CommandToDrone(CFSMission*         pfsMission,
 
         if (pshipTo->LegalCommand(pcd->commandID, *ppmodelTarget) || bBarelyLegal) //Imago 7/10 drone build sphere rock info ughh
         {
-            bAccepted = true;
+            pshipTo->SetStayDocked(false);  //Xynth #48 8/2010 reset staydocked on any command
+			bAccepted = true;
             pfsMission->GetSite()->SendChat(pshipTo, CHAT_INDIVIDUAL, pfsSender->GetIGCShip()->GetObjectID(),
                                             voAffirmativeSound, "Affirmative.");
 
@@ -6767,33 +6765,65 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 	  {									 //ownship commands.  Tagging on miner commands from playerpane
       	  pship = pside->GetShip(pfmOC->shipID);		 
 	  }
-	  bool bUndock = false;
+
+	  ImodelIGC*  pmodel;
+
+	  //Spunky #250 #257
+	  bool DoNotExecute = false;
 	  // pkk #211 08/05/2010 Allow all drones stay docked
       if (pship->GetPilotType() < c_ptPlayer)
 	  {
-		  if (pship->GetStation() != NULL)
-		  { //if docked, launch
-			  pship->SetStayDocked(false);
-			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
-                                            voAffirmativeSound, "Affirmative. Preparing to launch.");
-			  bUndock = true;
-
-			  pship->PickDefaultOrder(pship->GetStation()->GetCluster(), pship->GetStation()->GetPosition(), true);			  
-		  }
-		  else
-		  {
-			  pship->SetStayDocked(true);
-			  pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
+			DoNotExecute = true; //don't carry out the sent command later, since we are handling it here
+			if (pship->GetStation() != NULL) //if docked..	
+			{ 
+				if (pfmOC->commandID==c_cidDoNothing) //stay docked
+				{
+					pship->SetStayDocked(true);
+					pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
                                             voAffirmativeSound, "Affirmative.");
-			  pfsMission->GetSite()->SendChat(pship, CHAT_TEAM, pship->GetSide()->GetObjectID(),
+				}
+			    else //launch
+				{
+					pship->SetStayDocked(false);
+					pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
+                                            voAffirmativeSound, "Affirmative. Preparing to launch.");
+					pship->PickDefaultOrder(pship->GetStation()->GetCluster(), pship->GetStation()->GetPosition(), true);			  
+				}
+			}
+			else //we are going back to base
+			{
+				//we find the nearest station server side because the ship's exact location is only available here when we are in a different sector
+				if (pship->GetPilotType() != c_ptCarrier)
+				{
+					pmodel = FindTarget(pship, c_ttFriendly | c_ttStation | c_ttNearest| c_ttAnyCluster,
+						NULL, NULL, NULL, NULL, c_sabmRepair);
+				}
+				else
+				{
+					// Find shipyard
+					pmodel = FindTarget(pship, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+					NULL, NULL,NULL, NULL, c_sabmCapLand);
+					if (pmodel == NULL) //No shipyard, carrier flees to nearest base for protection
+						pmodel = FindTarget(pship, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+								NULL, NULL, NULL, NULL, c_sabmRepair);
+				}
+				pship->SetStayDocked(true);
+				if (pmodel)
+				{
+					pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
+                                            voAffirmativeSound, "Affirmative.");
+											pfsMission->GetSite()->SendChat(pship, CHAT_TEAM, pship->GetSide()->GetObjectID(),
                                             NA, "Heading back to base. I'll sit tight.");
-		  }
-	  }//Xynth #48 End Changes
+		
+					pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
+				}
+			}
+	  }//Xynth #48 Spunky #250 #257 End Changes
 
-      if (pside->GetObjectID() >= 0  && !bUndock)
+      if (pside->GetObjectID() >= 0  && !DoNotExecute)
       {
-        ImodelIGC*  pmodel = pMission->GetModel(pfmOC->objectType, pfmOC->objectID);
-        pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
+		pmodel = pMission->GetModel(pfmOC->objectType, pfmOC->objectID);
+		pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
       }
 	  
     }
