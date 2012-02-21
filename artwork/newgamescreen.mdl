@@ -285,7 +285,7 @@ TeamCountValues = [2, 3, 4, 5, 6];
 // maxPlayers - Imago unjacked & properly extended to the new 200 limit 7/10
 MaxPlayersNames = ["1 - 6", "4 - 8", "5 - 10", "7 - 15", "10 - 20", "15 - 25", "20 - 30", "25 - 40", "35 - 50", "45 - 60", "55 - 70", "65 - 80", "75 - 90", "85 - 100"];
 MaxPlayersValues = [6, 8, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100];
-MinPlayersValues = [1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,   1];
+MinPlayersValues = [1, 4,  5,  7, 10, 15, 20, 25, 35, 45, 55, 65, 75,  85];
 
 
 // maxImbalance
@@ -355,11 +355,11 @@ TerritoryValues = [100, 90, 80];
 // new in R4
 
 // treasures
-TreasuresNames = ["None","Normal","High"];
-TreasureHomeValues        = [0,0,1];
-TreasureNeutralValues     = [0,5,10];
-TreasureRateHomeValues    = [0,0.2,0.4]; // per minute rate
-TreasureRateNeutralValues = [0,0.5,0.5999]; // per minute rate - max must be strictly < 0.6
+TreasuresNames            = ["None","Low","Normal","High","Very High"];
+TreasureHomeValues        = [ 0    , 0   , 0      , 0    , 1         ];
+TreasureNeutralValues     = [ 0    , 2.5 , 5      , 7.5  , 10        ];
+TreasureRateHomeValues    = [ 0    , 0.2 , 0.2    , 0.2  , 0.4       ]; // per minute rate
+TreasureRateNeutralValues = [ 0    , 0.5 , 0.5    , 0.5  , 0.5999    ]; // per minute rate - max must be strictly < 0.6
 
 MapSizeNames = ["Small","Large"];
 MapSizeValues = [0,1];
