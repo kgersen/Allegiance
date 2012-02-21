@@ -2673,7 +2673,7 @@ public:
 		}
 
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
-		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "1.10"))); //Imago #215 8/10
+		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "1.0"))); //Imago #215 8/10
 
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
@@ -4330,7 +4330,7 @@ public:
 			case idmDeviceOptions:
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
 			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
-				//m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Imago 7/10
+				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
 				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
@@ -7314,6 +7314,7 @@ public:
                 trekClient.HandleAutoDownload(500); // since the mouse is hardware in not full screen, the graphics engine doesn't need much CPU
         }
 
+
         // receive network messages
         trekClient.m_lastUpdate  = m_timeLastFrame;
         trekClient.m_now         = time;
@@ -7834,6 +7835,11 @@ public:
                       float dt,
                       bool  activeControlsF)
 	{
+		//Spunky #76 - only update throttle if enough time elapsed
+		const float THROTTLE_UPD_THRESHOLD=0.066f;
+		static float TimeSinceThrottleUpdate;
+		static bool bUpdateThrottle=true;
+
 		// - Imago: Only set AFK from inactivity when logged on
 		if (trekClient.m_fLoggedOn) {
 			Time timeLastMouseMove;
@@ -7897,7 +7903,15 @@ public:
                     bool fAutoPilot = trekClient.autoPilot();
                     if (!GetUI() && activeControlsF)
                     {
-                        bool    bControlsInUse = SenseJoystick(&js, bNoCameraControl, bAllowKeyboardMovement);
+                        //Spunky #76
+						if (!bUpdateThrottle)
+							if ((TimeSinceThrottleUpdate+=dt)>THROTTLE_UPD_THRESHOLD)
+							{
+								bUpdateThrottle=true;
+								TimeSinceThrottleUpdate=0;
+							}
+
+						bool    bControlsInUse = SenseJoystick(&js, bNoCameraControl, bAllowKeyboardMovement, bUpdateThrottle);
                         int     oldButtonsM = buttonsM;
 
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
@@ -10466,7 +10480,7 @@ public:
         }
     }
 
-    bool SenseJoystick(JoystickResults* js, bool bInternalCamera, bool bReadKeyboard)
+    bool SenseJoystick(JoystickResults* js, bool bInternalCamera, bool bReadKeyboard, bool &bHandleThrottle) //Spunky #76
     {
         bool bThrottleChange = false;
 
@@ -10565,7 +10579,7 @@ public:
                 js->controls.jsValues[c_axisPitch] = 1.0f;
             }
 
-            if (m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, bReadKeyboard))
+            if (bHandleThrottle && m_ptrekInput->IsTrekKeyDown(TK_ThrottleUp, bReadKeyboard)) //Spunky #76
             {
                 trekClient.trekThrottle =
                       (trekClient.trekThrottle < 0.8f)
@@ -10573,8 +10587,9 @@ public:
                     : 1.0f;
                 trekClient.joyThrottle = false;
                 bThrottleChange = true;
+				bHandleThrottle=false;
             }
-            else if (m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, bReadKeyboard))
+            else if (bHandleThrottle && m_ptrekInput->IsTrekKeyDown(TK_ThrottleDown, bReadKeyboard)) //Spunky #76
             {
                 trekClient.trekThrottle =
                       (trekClient.trekThrottle > -0.8f)
@@ -10582,6 +10597,7 @@ public:
                     : -1.0f;
                 trekClient.joyThrottle = false;
                 bThrottleChange = true;
+				bHandleThrottle=false;
             }
         }
 

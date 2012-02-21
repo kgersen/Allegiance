@@ -109,7 +109,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	g_VideoSettings.iCurrentAASetting	= 0;
 	g_VideoSettings.bWindowed			= !bStartFullscreen;
 	g_VideoSettings.iCurrentMode		= g_VideoSettings.bWindowed;
-	g_VideoSettings.bWaitForVSync		= true; //Imago 7/10
+	g_VideoSettings.bWaitForVSync		= false; //Spunky #265 backing out //Imago 7/10
 	
 // DEFAULT SETTINGS W/O DIALOG imago 6/29/09 - 7/2/09 - 7/19/09
 //////////////////////////////////////////

@@ -195,7 +195,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	}
 	else
 	{
-		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_ONE; //imago 6/10 bWaitForVSync rendered useless
+		m_sD3DDev9.d3dPresParams.PresentationInterval		= D3DPRESENT_INTERVAL_IMMEDIATE; //Spunky #265 backing out //imago 6/10 bWaitForVSync rendered useless
 	}
 
 	//imago 7/1/09 NYI test for multisample maskable optons (CSAA, etc) and set accordingly
@@ -556,7 +556,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 	if( bResetRequired == true || //mode changes
 		g_DX9Settings.m_dwAA != (DWORD)m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting || //any multisample changes
 		g_DX9Settings.m_bAutoGenMipmaps != m_sDevSetupParams.bAutoGenMipmap || //any mip map changes
-		//g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //Imago 7/10
+		g_DX9Settings.m_bVSync != m_sDevSetupParams.bWaitForVSync || //Spunky #265 backing out //Imago 7/10
 		g_DX9Settings.m_iMaxTextureSize != (int)m_sDevSetupParams.maxTextureSize) //any texture size changes
 
 	{
@@ -607,7 +607,7 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 		} else {
 			m_sDevSetupParams.bWaitForVSync = false;
-			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_ONE; //rendered useless 6/10 Imago
+			m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE; //Spunky #265 backing out //rendered useless 6/10 Imago
 		}
 
 		//Imago added m_sD3DDev9.sFormatFlags.bCanAutoGenMipMaps just to be sure 7/10 #41

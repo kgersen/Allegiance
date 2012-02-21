@@ -147,6 +147,9 @@ private:
         //m_ptextMinPlayers->SetString(ZString(missionparams.nMinPlayersPerTeam));
 
         m_pcomboMaxImbalance   ->SetSelection(FindClosestValue(missionparams.iMaxImbalance, "MaxImbalanceValues"));
+
+		m_bIsZoneClub = !missionparams.bObjectModelCreated;// KGJV #114   missionparams.bClubGame;
+        m_bLockGameOpen = missionparams.bLockGameOpen;
         
         if (m_bIsZoneClub) //pkk #203 - Ignore clients SkillLevel, if it's a ZG
 		{
@@ -220,9 +223,6 @@ private:
 		m_pcomboTreasures      ->SetSelection(FindClosestValue(vfTreasureValues,vszTreasureNames,4));
 		m_pcomboInitialMiners  ->SetSelection(FindClosestValue(missionparams.nInitialMinersPerTeam, "initialMinersValues"));
 		m_pcomboMaximumDrones  ->SetSelection(FindClosestValue(missionparams.nMaxDronesPerTeam, "maxDronesValues"));
-
-        m_bIsZoneClub = !missionparams.bObjectModelCreated;// KGJV #114   missionparams.bClubGame;
-        m_bLockGameOpen = missionparams.bLockGameOpen;
     }
 public:
     ZString YesNo(bool b)
