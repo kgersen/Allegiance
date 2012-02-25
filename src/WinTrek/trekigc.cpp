@@ -4969,16 +4969,6 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
             strMessage = "You have been booted by a server administrator!";
             break;
 
-		//Imago 7/10 #124
-        case QSR_BootinyOk:
-            strMessage = "You have been mutinied and booted by your team!";
-            break;
-
-		case QSR_BootinyFail:
-            strMessage = "You have chosen poorly, the team disagrees!";
-            break;
-		//
-
         case QSR_ServerShutdown:
             strMessage = "The game has been shut down by an administrator.";
             break;

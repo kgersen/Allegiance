@@ -82,7 +82,6 @@ typedef int BallotType;
 #define BALLOT_OFFERDRAW   2
 #define BALLOT_ACCEPTDRAW  3
 #define BALLOT_MUTINY      4
-#define BALLOT_BOOTINY     5 //Imago 7/10 #124
 
 class Ballot
 {
@@ -176,17 +175,6 @@ class MutinyBallot : public Ballot
 public:
   MutinyBallot(CFSPlayer* pfsInitiator);
   virtual void OnPassed();
-};
-
-//#124 Imago
-class BootinyBallot : public Ballot
-{
-  IsideIGC* m_pside;
-  ShipID m_idInitiatorShip;
-public:
-  BootinyBallot(CFSPlayer* pfsInitiator);
-  virtual void OnPassed();
-  virtual void OnFailed();
 };
 
 // a ballot used when a player suggests resigning
