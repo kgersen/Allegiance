@@ -128,43 +128,23 @@ static const AsteroidTypeRow asteroidTypes[] =
 {
     { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd03", "", "meteoricon" } },
     { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd05", "", "meteoricon" } },
-	//new huge rocks
-    { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd06", "", "meteoricon" } },
-    { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd07", "", "meteoricon" } },
-
     { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd03", "", "meteoricon" } },
     { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd05", "", "meteoricon" } },
-	//new regular rocks (buildable)
-	{ "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd06", "", "meteoricon" } },
-    { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd07", "", "meteoricon" } },
-	
-	{ "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd55", "", "heliumrock" } }, //new he rock 
+    { "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd55", "", "heliumrock" } }, //new he rock 
     { "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd56", "", "heliumrock" } },
-
-    { "Uranium",        "U",    { 0.0f, 0,        (c_aabmSpecial << 0),   0, 25000, 200,  "bgrnd59", "", "hotrock"    } }, //new u rock (duplicate of 51)
     { "Uranium",        "U",    { 0.0f, 0,        (c_aabmSpecial << 0),   0, 25000, 200,  "bgrnd51", "", "hotrock"    } },
-    { "Silicon",        "Si",   { 0.0f, 0,        (c_aabmSpecial << 1),   0, 25000, 200,  "bgrnd53", "", "copperrock" } }, //new si rock  (dup of 52)
-	{ "Silicon",        "Si",   { 0.0f, 0,        (c_aabmSpecial << 1),   0, 25000, 200,  "bgrnd52", "", "copperrock" } },
-	{ "Carbonaceous",   "C",    { 0.0f, 0,        (c_aabmSpecial << 2),   0, 25000, 200,  "bgrnd52", "", "carbonrock" } },  
-    { "Carbonaceous",   "C",    { 0.0f, 0,        (c_aabmSpecial << 2),   0, 25000, 200,  "bgrnd53", "", "carbonrock" } }, 
-	
-	//throwback NYrI
-	/*
-	{ "Lava",		    "L",    { 0.0f, 0,        (c_aabmSpecial << 3),   0, 25000, 200,  "bgrnd54", "", "goldrock" } },
-	{ "Lava",		    "L",    { 0.0f, 0,        (c_aabmSpecial << 3),   0, 25000, 200,  "bgrnd54", "", "goldrock" } },
-	{ "Nickel Iron",	"Ni",   { 0.0f, 0,        (c_aabmSpecial << 4),   0, 25000, 200,  "bgrnd58", "", "waterrock" } },
-	{ "Nickel Iron",	"Ni",   { 0.0f, 0,        (c_aabmSpecial << 4),   0, 25000, 200,  "bgrnd50", "", "waterrock" } }
-	*/
+    { "Silicon",        "Si",   { 0.0f, 0,        (c_aabmSpecial << 1),   0, 25000, 200,  "bgrnd52", "", "copperrock" } },
+    { "Carbonaceous",   "C",    { 0.0f, 0,        (c_aabmSpecial << 2),   0, 25000, 200,  "bgrnd53", "", "carbonrock" } }
 };
 
 const int nFirstHugeType = 0;
-const int nNumHugeTypes = 4;
+const int nNumHugeTypes = 2;
 const int nFirstGenericType = nFirstHugeType + nNumHugeTypes;
-const int nNumGenericTypes = 4;
+const int nNumGenericTypes = 2;
 const int nFirstMinableType = nFirstGenericType + nNumGenericTypes;
 const int nNumMinableTypes = 2;
 const int nFirstSpecialType = nFirstMinableType + nNumMinableTypes;
-const int nNumSpecialTypes = 6; //was 3 Imago
+const int nNumSpecialTypes = 3;
 const int numAsteroidTypes = sizeof(asteroidTypes) / sizeof(AsteroidTypeRow);
 
 static const AsteroidTypeRow& FindAsteroidRow(AsteroidAbilityBitMask aabm)
