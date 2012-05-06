@@ -1365,7 +1365,8 @@ public:
     TRef<IMenuItem>            m_pitemVoiceOverVolumeUp;
     TRef<IMenuItem>            m_pitemVoiceOverVolumeDown;
     TRef<IMenuItem>            m_pitemMaxTextureSize;		// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-    TRef<IMenuItem>            m_pitemToggleBandwidth; // w0dk4 June 2007: Bandwith Patch
+    /* pkk May 6th: Disabled bandwidth patch
+    TRef<IMenuItem>            m_pitemToggleBandwidth; // w0dk4 June 2007: Bandwith Patch*/
     TRef<IMenuItem>            m_pitemMuteFilter;			//TheBored 30-JUL-07: Filter Unknown Chat patch
     TRef<IMenuItem>            m_pitemFilterUnknownChats;	//TheBored 30-JUL-07: Filter Unknown Chat patch
 	//imago added -- 6/29/09
@@ -3181,7 +3182,8 @@ public:
 
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
-		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10
+		/* pkk May 6th: Disabled bandwidth patch
+		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
 
         bool bAllow3DAcceleration;
 
@@ -3880,7 +3882,8 @@ public:
     #define idmToggleEnableFeedback        631
     #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
     #define idmPings                       633 // w0dk4 player-pings feature
-    #define idmBandwidth		       634 // w0dk4 June 2007: Bandwith Patch
+    /* pkk May 6th: Disabled bandwidth patch
+    #define idmBandwidth		       634 // w0dk4 June 2007: Bandwith Patch */
     #define	idmMuteFilterOptions		 635 //TheBored 30-JUL-07: Filter Unknown Chat patch
     #define idmFilterUnknownChats		 636 //TheBored 30-JUL-07: Filter Unknown Chat patch
 
@@ -4290,8 +4293,8 @@ public:
 													 pmenu->AddMenuItem(idmFFOptions,					"Force Feedback",				  'E', m_psubmenuEventSink);
 													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
 					
-				 // w0dk4 June 2007: Bandwith Patch
-				m_pitemToggleBandwidth			   = pmenu->AddMenuItem(idmBandwidth,					GetBandwidthMenuString(),		    'B');
+				/* pkk May 6th: Disabled bandwidth patch // w0dk4 June 2007: Bandwith Patch
+				m_pitemToggleBandwidth			   = pmenu->AddMenuItem(idmBandwidth,					GetBandwidthMenuString(),		    'B');*/
                                                      pmenu->AddMenuItem(idmConfigure           ,        "Map Keys and Controls"      ,      'C');
                 break;
 
@@ -4621,6 +4624,7 @@ public:
         }
 	}
 
+	/* pkk May 6th: Disabled bandwidth patch
 	// w0dk4 June 2007: Bandwith Patch
 	void ToggleBandwidth(unsigned int iBandwidth)
 	{
@@ -4632,7 +4636,7 @@ public:
         if (m_pitemToggleBandwidth != NULL) {
             m_pitemToggleBandwidth->SetString(GetBandwidthMenuString());
         }
-	}
+	}*/
 
     SoundID GetFlightMusic()
     {
@@ -5252,6 +5256,7 @@ public:
         return "Max Texture Size ("  + ZString( j)  + ") ";
     }
 
+	/* pkk May 6th: Disabled bandwidth patch
 	// w0dk4 June 2007: Bandwith Patch
 	ZString GetBandwidthMenuString()
 	{
@@ -5267,7 +5272,7 @@ public:
 			return "Bandwidth: Broadband (>1mbit)";
 
 		return "Error";
-	}
+	}*/
 
 
 	// Imago #215 8/10
@@ -5819,7 +5824,7 @@ public:
                 break;
 
 
-
+			/* pkk May 6th: Disabled bandwidth patch
 			// w0dk4 June 2007: Bandwith Patch
 			case idmBandwidth:
 				ToggleBandwidth(trekClient.MaxBandwidth()*2);
@@ -5830,7 +5835,7 @@ public:
 					END_PFM_CREATE
 					pfmBandwidth->value = trekClient.MaxBandwidth();
 				}
-                break;
+                break;*/
 
 			//Imago 7/18/09
 			// yp Your_Persona August 2 2006 : MaxTextureSize Patch

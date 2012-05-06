@@ -3391,11 +3391,12 @@ void WinTrekClient::OnLogonAck(bool fValidated, bool bRetry, LPCSTR szFailureRea
     if (fValidated) 
     {
         GetClientEventSource()->OnLogonGameServer();
+		/* pkk May 6th: Disabled bandwidth patch
 		// w0dk4 June 2007: Bandwith Patch
 		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
 		BEGIN_PFM_CREATE(this->m_fm, pfmBandwidth, C, BANDWIDTH)
 		END_PFM_CREATE
-		pfmBandwidth->value = this->m_nBandwidth;
+		pfmBandwidth->value = this->m_nBandwidth;*/
     }
     else
     {

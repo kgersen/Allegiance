@@ -983,10 +983,11 @@ DEFINE_FEDMSG(S, RELAUNCH_SHIP, 192)
     Cookie              cookie;
 END_FEDMSG
 
+/* pkk May 6th: Disabled bandwidth patch
 // w0dk4 June 2007: Bandwith Patch
 DEFINE_FEDMSG(C, BANDWIDTH, 193)
   unsigned int          value;     
-END_FEDMSG
+END_FEDMSG*/
 
 
 // w0dk4 player-pings feature

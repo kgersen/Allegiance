@@ -489,6 +489,7 @@ public:
       return m_ptDesiredLoadout;
   }
 
+  /* pkk May 6th: Disabled bandwidth patch
   // w0dk4 Bandwidth Patch
   unsigned int	GetBandwidth() {return m_nBandwidth; };
   void			SetBandwidth(unsigned int iBandwidth)
@@ -499,7 +500,7 @@ public:
 			m_nBandwidth = g.cMaxBandwidth;
 	  } else
 		m_nBandwidth = 2;	  
-  }
+  }*/
 
 // w0dk4  allow more time when joining
 bool			GetJustJoined() {return b_JustJoined; };
@@ -545,8 +546,9 @@ private:
 
   ZString               m_strCDKey;
 
+  /* pkk May 6th: Disabled bandwidth patch
   // w0dk4
-  unsigned int			m_nBandwidth;
+  unsigned int			m_nBandwidth;*/
 
   // w0dk4 allow more time when joining
   bool					b_JustJoined;

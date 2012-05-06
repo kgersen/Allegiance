@@ -963,9 +963,10 @@ void GotLogonDetails(CQLogonStats * pquery)
     pfsPlayer = new CFSPlayer(pcnxn, pqd->characterID, pqd->szCDKey, pship, !! pqd->fCanCheat);
     assert(pfsPlayer);
 
+	/* pkk May 6th: Disabled bandwidth patch
 	// w0dk4 Bandwidth Patch
 	// set bandwidth to standard value, bandwidth packet should arrive soon anyways
-	pfsPlayer->SetBandwidth(2);
+	pfsPlayer->SetBandwidth(2);*/
 
 	if (pqd->rank == -1) {
 		fValid = false;
@@ -3785,40 +3786,52 @@ void SendShipUpdates(CFSMission * pfsMission)
             {
 
 
+				/* pkk May 6th: Disabled bandwidth patch
 				for (PlayerLink* pplayerLink = pplayerList->first(); (pplayerLink != NULL); pplayerLink = pplayerLink->next())
                 {
-                    CFSPlayer*  pfsPlayer = pplayerLink->data();
+                    CFSPlayer*  pfsPlayer = pplayerLink->data();*/
 
 
 
                 //Calculate how many heavy ship & active turret updates we can afford to send and still stay within our
                 //bandwidth constraints (where we can afford to send a max of 1500 bytes/second and the clients will send
                 //one update each interval)
-					//const int cbAvailable = int(1600.0f * c_dsecUpdateClient);
+					/* pkk May 6th: Disabled bandwidth patch
+					   Enable line below again */
+					const int cbAvailable = int(1600.0f * c_dsecUpdateClient);
 
                 //This is what we can possibly send and still remain within out constraints
+				/* pkk May 6th: Disabled bandwidth patch
 					// w0dk4 Bandwidth Patch
 					const int cHeavyPerInterval  = pfsPlayer->GetBandwidth();
 					const int cLightPerInterval  = pfsPlayer->GetBandwidth();
-					const int cActivePerInterval = pfsPlayer->GetBandwidth();
+					const int cActivePerInterval = pfsPlayer->GetBandwidth();*/
+					const int cHeavyPerInterval  = 2;
+					const int cLightPerInterval  = 2;
+					const int cActivePerInterval = 2;
 
 
-					/*
+					/* pkk May 6th: Disabled bandwidth patch
+					   This was disabled */
                 assert (cbAvailable > cHeavyPerInterval  * sizeof(ServerHeavyShipUpdate) +
                                       cLightPerInterval  * sizeof(ServerLightShipUpdate) +
                                       cActivePerInterval * sizeof(ServerActiveTurretUpdate));
-										*/
+					/*  End */
 
                 int cLightUpdates;
                 int cHeavyUpdates;
-					if (cShipUpdates <= cHeavyPerInterval)
+					/* pkk May 6th: Disabled bandwidth patch
+					if (cShipUpdates <= cHeavyPerInterval)*/
+					if (cShipUpdates <= 2)
                 {
                     cHeavyUpdates = cShipUpdates;
                     cLightUpdates = 0;
                 }
                 else
                 {
-						cHeavyUpdates = cHeavyPerInterval;
+						/* pkk May 6th: Disabled bandwidth patch
+						cHeavyUpdates = cHeavyPerInterval; */
+						cHeavyUpdates = 2;
                     cLightUpdates = (cShipUpdates * cLightPerInterval) / cShips;
 
                     if (cHeavyUpdates + cLightUpdates > cShipUpdates)
@@ -3826,7 +3839,7 @@ void SendShipUpdates(CFSMission * pfsMission)
                 }
 
                 int cTurretUpdates;
-
+					/* pkk May 6th: Disabled bandwidth patch
 					if (cActiveTurretUpdates < cActivePerInterval)
 					{
 
@@ -3843,6 +3856,7 @@ void SendShipUpdates(CFSMission * pfsMission)
 
 					// w0dk4 Bandwidth Patch
 					/* weird code, replaced with above
+					*/
                 if (cActiveTurretUpdates <= 1)
                 {
                     if ((cLightUpdates > 0) && (cActiveTurretUpdates == 0))
@@ -3857,7 +3871,9 @@ void SendShipUpdates(CFSMission * pfsMission)
                 else
                 {
                     cTurretUpdates = (cActiveTurretUpdates == cTurrets) ? 2 : 1;
-					}*/
+					}
+					/* pkk May 6th: Disabled bandwidth patch
+					   Outcommented code ends here */
 
                 //OK ... given our bandwidth limits ... we think we can send the following this frame
                 //      cTurretUpdates      turret updates (active or inactive)
@@ -3973,6 +3989,14 @@ void SendShipUpdates(CFSMission * pfsMission)
                 pfmLight->ibrgLightShipUpdates = pfmLight->ibrgInactiveTurretUpdates + pfmLight->cbrgInactiveTurretUpdates;
 
                 //Number of light updates depends on the recipients ... so do not fill in the following fields immediately
+					/* pkk May 6th: Disabled bandwidth patch
+					   Old code below */
+					for (PlayerLink* pplayerLink = pplayerList->first(); (pplayerLink != NULL); pplayerLink = pplayerLink->next())
+					{
+						CFSPlayer*  pfsPlayer = pplayerLink->data();
+					/* pkk May 6th: Disabled bandwidth patch
+					   Old code ends */
+					
 
 					// w0dk4 old for-loop starts here
 					// actually, we could rewrite the whole code because we no longer should pre-assemble the first
@@ -7137,6 +7161,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     }
     break;
 
+	/* pkk May 6th: Disabled bandwidth patch
 	// w0dk4 Bandwidth Patch
 	case FM_C_BANDWIDTH:
     {
@@ -7144,7 +7169,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		pfsPlayer->SetBandwidth(pfmBandwidth->value);
 
 	}
-	break;
+	break;*/
 
 	// w0dk4 player-pings feature
 	// send ping data
@@ -8938,11 +8963,12 @@ void LoadSettings()
         cbValue = sizeof(dwValue);
 		RegQueryValueEx(hKey, "MaxGames", NULL, &dwType, (unsigned char*)&g.cMaxGames, &cbValue);
 
+		/* pkk May 6th: Disabled bandwidth patch
 		// w0dk4 Bandwidth Patch
 		g.cMaxBandwidth = 32;
 		dwValue=0;
         cbValue = sizeof(dwValue);
-		RegQueryValueEx(hKey, "MaxBandwidth", NULL, &dwType, (unsigned char*)&g.cMaxBandwidth, &cbValue);
+		RegQueryValueEx(hKey, "MaxBandwidth", NULL, &dwType, (unsigned char*)&g.cMaxBandwidth, &cbValue);*/
 
 
 		ZString strArtPath;

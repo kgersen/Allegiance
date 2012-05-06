@@ -340,8 +340,9 @@ struct Global
   int				  cMaxGames;	   // max games allowed, reg entry
   ZString			  strLocation;     // Location, reg entry
 
+  /* pkk May 6th: Disabled bandwidth patch
   // w0dk4 Bandwidth Patch
-  unsigned int		  cMaxBandwidth;
+  unsigned int		  cMaxBandwidth;*/
   int				  MaxNewbRank; //Imago #174
   bool                fProtocol;
   bool                fPaused;
