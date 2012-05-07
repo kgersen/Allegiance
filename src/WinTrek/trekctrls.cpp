@@ -695,13 +695,13 @@ public:
                 }
             }
         
-		//Imago 8/14/09 mouse wheel
+		//Imago 8/14/09 mouse wheel #286 backing out Spunky
         if (button == 8 && bDown) { 
-            NextItem();
+            ScrollPageDown(); 
         } else if (button == 9 && bDown) { 
-            PreviousItem();
+            ScrollPageUp();
         }
-		//
+	
 
         return Pane::Button(pprovider, point, button, bCaptured, bInside, bDown);
     }

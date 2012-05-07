@@ -1140,6 +1140,7 @@ public:
 	TRef<ModifiableNumber>  m_pnumFFGain;
 	//8/10
 	int						m_iMouseAccel;
+	int						m_iWheelDelay; //Spunky #282
 	TRef<ModifiableNumber>  m_pnumMouseSens;
 	//
 
@@ -1337,6 +1338,7 @@ public:
 	TRef<IMenuItem>            m_pitemToggleMouseSensUp;
 	TRef<IMenuItem>            m_pitemToggleMouseSensDown;
 	TRef<IMenuItem>            m_pitemToggleMouseAccel;
+	TRef<IMenuItem>            m_pitemToggleWheelDelay; //Spunky #282
 	 //
     TRef<IMenuItem>            m_pitemToggleStrobes;
     TRef<IMenuItem>            m_pitemToggleTrails;
@@ -2895,7 +2897,8 @@ public:
         m_bFlipY                 = (LoadPreference("FlipY",                 0) != 0);
         m_bEnableFeedback        = (LoadPreference("EnableFeedback",        1) != 0);
         m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
-		m_iMouseAccel			 = (LoadPreference("MouseAcceleration",     0) != 0); // Imago #215
+		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
+		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
         //
         // Initial screen size
@@ -3928,6 +3931,7 @@ public:
 	#define idmMouseSensUp		818
 	#define idmMouseSensDown	819
 	#define idmMouseAccel		820
+	#define idmWheelDelay		821 //Spunky #282
 	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4353,6 +4357,7 @@ public:
                                  pmenu->AddMenuItem(0                     , "Options are only valid when in fullscreen"     );
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
 				m_pitemToggleMouseAccel		        = pmenu->AddMenuItem(idmMouseAccel			  , GetMouseAccelMenuString()										, 'A');
+				m_pitemToggleWheelDelay				= pmenu->AddMenuItem(idmWheelDelay			  ,	GetWheelDelayMenuString(), 'W'); //Spunky #282
 				m_pitemToggleMouseSensUp			= pmenu->AddMenuItem(idmMouseSensUp			  , GetMouseSensMenuString(m_pnumMouseSens->GetValue(), c_fMouseSensDelta)		, 'U');
 				m_pitemToggleMouseSensDown			= pmenu->AddMenuItem(idmMouseSensDown		  , GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta)		, 'D');
 				break;
@@ -5097,6 +5102,17 @@ public:
             m_pitemToggleMouseAccel->SetString(GetMouseAccelMenuString());
     };
 
+    void SwitchWheelDelay() //Spunky #282
+    {
+		if (++m_iWheelDelay == 5)
+			m_iWheelDelay = 0;
+
+        SavePreference("WheelDelay", (DWORD)m_iWheelDelay);
+
+		if (m_pitemToggleWheelDelay != NULL)
+            m_pitemToggleWheelDelay->SetString(GetWheelDelayMenuString());
+	};
+
     void ToggleSoundHardware()
     {
         m_bEnableSoundHardware = !m_bEnableSoundHardware;
@@ -5307,6 +5323,15 @@ public:
 		if(m_iMouseAccel == 2)
 			return "Mouse Acceleration: High (4x)";
 
+		return "Error";
+	}
+
+	//Spunky #282
+	ZString GetWheelDelayMenuString()
+	{
+		static const ZString str[] = {"Max", "High", "Med", "Min", "None"};
+		if (m_iWheelDelay >= 0 && m_iWheelDelay < 5)
+			return "Wheel & Keyboard Throttle Delay: " + str[m_iWheelDelay];
 		return "Error";
 	}
 
@@ -6068,6 +6093,11 @@ public:
 			// #215 8/10
 			case idmMouseAccel:
 				SwitchMouseAccel();
+				break;
+
+			//Spunky #282
+			case idmWheelDelay: 
+				SwitchWheelDelay();
 				break;
 
 			case idmMouseSensUp:
@@ -7841,9 +7871,9 @@ public:
                       bool  activeControlsF)
 	{
 		//Spunky #76 - only update throttle if enough time elapsed
-		const float THROTTLE_UPD_THRESHOLD=0.066f;
+		static const float delay[] = {0.066f, 0.033f, 0.022f, 0.016f, 0.0f}; //#282
 		static float TimeSinceThrottleUpdate;
-		static bool bUpdateThrottle=true;
+		static bool bUpdateThrottle = true;
 
 		// - Imago: Only set AFK from inactivity when logged on
 		if (trekClient.m_fLoggedOn) {
@@ -7908,12 +7938,12 @@ public:
                     bool fAutoPilot = trekClient.autoPilot();
                     if (!GetUI() && activeControlsF)
                     {
-                        //Spunky #76
+                        //Spunky #76 #282
 						if (!bUpdateThrottle)
-							if ((TimeSinceThrottleUpdate+=dt)>THROTTLE_UPD_THRESHOLD)
+							if ((TimeSinceThrottleUpdate += dt) > delay[m_iWheelDelay])
 							{
-								bUpdateThrottle=true;
-								TimeSinceThrottleUpdate=0;
+								bUpdateThrottle = true;
+								TimeSinceThrottleUpdate = 0;
 							}
 
 						bool    bControlsInUse = SenseJoystick(&js, bNoCameraControl, bAllowKeyboardMovement, bUpdateThrottle);
