@@ -130,13 +130,14 @@ static const AsteroidTypeRow asteroidTypes[] =
     { "asteroid",       "\0a",  { 0.0f, 0,        0,                      0, 25000, 400,  "bgrnd05", "", "meteoricon" } },
     { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd03", "", "meteoricon" } },
     { "asteroid",       "\0a",  { 0.0f, 0,        c_aabmBuildable,        0, 10000, 200,  "bgrnd05", "", "meteoricon" } },
-    { "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd55", "", "heliumrock" } }, //new he rock 
+    { "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd55", "", "heliumrock" } }, //new he rock #92
     { "Helium 3",       "He",   { 1.0f, 1.0f,     c_aabmMineHe3,          0, 25000, 100,  "bgrnd56", "", "heliumrock" } },
     { "Uranium",        "U",    { 0.0f, 0,        (c_aabmSpecial << 0),   0, 25000, 200,  "bgrnd51", "", "hotrock"    } },
     { "Silicon",        "Si",   { 0.0f, 0,        (c_aabmSpecial << 1),   0, 25000, 200,  "bgrnd52", "", "copperrock" } },
     { "Carbonaceous",   "C",    { 0.0f, 0,        (c_aabmSpecial << 2),   0, 25000, 200,  "bgrnd53", "", "carbonrock" } }
 };
 
+// Change number of asteroids below and within functions GetSpecialAsterioid and GetRandomType #92
 const int nFirstHugeType = 0;
 const int nNumHugeTypes = 2;
 const int nFirstGenericType = nFirstHugeType + nNumHugeTypes;
@@ -194,51 +195,36 @@ int IasteroidIGC::GetSpecialAsterioid(const MissionParams*  pmp, int index)
             (pmp->bAllowTacticalPath  ? 2 : 0) +
             (pmp->bAllowExpansionPath ? 1 : 0))
     {
-        case 0:
-        case 7:
-            n = (index % 3) * 2; //the normal case, all tech paths allowed
-			if (n != 0)
-				n += randomInt(-2, -1); //Imago #92
-			else
-				n =  randomInt(4, 5);
-        break;
+        // Number of special asteroids is also hardcoded here, see #92
+        case 0: 
+        case 7: 
+            n = index % 3; 
+        break; 
 
-        case 1:
-            n = randomInt(0, 1); //Imago #92
-        break;
+        case 1: 
+            n = 0; 
+        break; 
 
-        case 2:
-            n = randomInt(2, 3); //Imago #92
-        break;
+        case 2: 
+            n = 1; 
+        break; 
 
-        case 3:
-            n = (index % 2) * 2;
-			if (n != 0)
-				n += randomInt(-2, -1); //Imago #92
-			else
-				n =  randomInt(0, 1);
-        break;
+        case 3: 
+            n = index % 2; 
+        break; 
 
-        case 4:
-            n  = randomInt(4, 5); //Imago #92
-        break;
+        case 4: 
+            n = 2; 
+        break; 
 
-        case 5:
-			if ((index % 2) == 0) {
-				 n = randomInt(0, 1); //Imago #92
-			} else {
-				 n  = randomInt(4, 5);
-			}
-        break;
+        case 5: 
+            n = ((index % 2) == 0) ? 0 : 2; 
+        break; 
 
-        case 6:
-            if ((index % 2) == 0) {
-				n = randomInt(2, 3); //Imago #92
-			} else {
-				n  = randomInt(4, 5);
-			}
-        break;
-    }
+        case 6: 
+            n = 1 + (index % 2); 
+        break; 
+        }
 
     return n + nFirstSpecialType;
 }
@@ -249,16 +235,17 @@ int IasteroidIGC::GetRandomType(AsteroidAbilityBitMask aabm)
 
     switch (aabm)
     {
+	// Number of regular and he3 asteroids is also hardcoded here, see #92
         case 0:
-            index = nFirstHugeType + randomInt(0, 3); //Imago #92
+            index = nFirstHugeType + randomInt(0, 1);
         break;
 
         case c_aabmBuildable:
-            index = nFirstGenericType + randomInt(0, 3); //Imago #92
+            index = nFirstGenericType + randomInt(0, 1);
         break;
 
         case c_aabmMineHe3:
-            index = nFirstMinableType + randomInt(0, 1); //Imago #92
+            index = nFirstMinableType + randomInt(0, 1);
         break;
 
         default:
