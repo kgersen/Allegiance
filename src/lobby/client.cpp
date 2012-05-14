@@ -81,7 +81,7 @@ static void doASGS(void* data, MprThread *threadp) {
     Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign="); 
 	
 	// the player callsign has to be urlencoded, because it may contain '+', '?', etc.
-	char callsign[128];
+	char callsign[128] = "";
 	encodeURL(callsign, pqd->szCharacterName);
 	Strcat(szURL, callsign);
 	
@@ -93,7 +93,7 @@ static void doASGS(void* data, MprThread *threadp) {
 
 	// add the ticket to the url
 	Strcat(szURL,"&Ticket=");
-	char escaped[2048];
+	char escaped[2048] = "";
 	//maUrlEncode(escaped, sizeof(escaped), pqd->szCDKey, true);  This stopped working after update? Imago 8/15/09
     encodeURL(escaped,pqd->szCDKey); //use Radar's function
 	Strcat(szURL,escaped);
