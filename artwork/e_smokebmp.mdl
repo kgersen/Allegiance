@@ -1,2 +1,0 @@
-use "model";
-e_smokebmp = ImportImageFromFile("e_smoke.png", true);

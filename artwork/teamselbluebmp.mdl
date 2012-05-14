@@ -1,2 +1,0 @@
-use "model";
-teamselbluebmp = ImportImageFromFile("teamselblue.png", true);

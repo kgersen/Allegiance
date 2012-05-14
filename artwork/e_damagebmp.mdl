@@ -1,2 +1,0 @@
-use "model";
-e_damagebmp = ImportImageFromFile("e_damage.png", true);
