@@ -66,7 +66,9 @@ static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
   return dwResult;
 }
 
-static void doASGS(void* data, MprThread *threadp) {
+// BT / Orion - 9/11/2010 - Performing validation with new method on LobbyApp to share auth logic.
+static void doAuthentication(void* data, MprThread *threadp) 
+{
 	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
 	CQLobbyLogon * pls = (CQLobbyLogon *)data;
 	CQLobbyLogonData * pqd = pls->GetData();
@@ -74,67 +76,29 @@ static void doASGS(void* data, MprThread *threadp) {
 	FedMessaging & fm = g_pLobbyApp->GetFMClients();
 	CFMConnection * pcnxn = fm.GetConnectionFromId(pqd->dwConnectionID);
 	
-	int contentLen = 0;
-    char *content;
-    char szResponse[MAX_PATH];
-	char szURL[MPR_HTTP_MAX_URL];
-    Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/AuthenticateTicket?Callsign="); 
-	
-	// the player callsign has to be urlencoded, because it may contain '+', '?', etc.
-	char callsign[128];
-	encodeURL(callsign, pqd->szCharacterName);
-	Strcat(szURL, callsign);
-	
-	// add the IP to the url
-    char szAddress[16];
+	char szAddress[16];
+	Strcpy(szAddress, "");
+
 	fm.GetIPAddress(*pcnxn,szAddress);
-	Strcat(szURL,"&IP=");
-	Strcat(szURL,szAddress);
 
-	// add the ticket to the url
-	Strcat(szURL,"&Ticket=");
-	char escaped[2048];
-	//maUrlEncode(escaped, sizeof(escaped), pqd->szCDKey, true);  This stopped working after update? Imago 8/15/09
-    encodeURL(escaped,pqd->szCDKey); //use Radar's function
-	Strcat(szURL,escaped);
-
-    // First make sure we can write to a socket
-    MprSocket* socket = new MprSocket();
-    socket->openClient("asgs.alleg.net",80,0);
-    int iwrite = socket->_write("GET /\r\n");
-    delete socket;
-
-    MaClient* client = new MaClient();
-    client->setTimeout(3000);
-    client->setRetries(1);
-    client->setKeepAlive(0);
-
-    if (iwrite == 7) { // make sure we wrote 7 bytes
-        client->getRequest(szURL);
-        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
-	        content = client->getResponseContent(&contentLen);
-    }
-
-	if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
-		ZString strContent = content;
-		strContent = strContent.RightOf(85);
-		strContent = strContent.LeftOf("<");
-		Strcpy(szResponse,(PCC)strContent);
-
-		if (strcmp(szResponse,"-1") == 0) {
-			mutex->lock();
-			pqd->fValid = false;
-			pqd->fRetry = false;
-			char * szReason = "ASGS Authentication Failure.\n\nPlease restart the game using ASGS.";
-			pqd->szReason = new char[lstrlen(szReason) + 1];
-			Strcpy(pqd->szReason,szReason);
-			mutex->unlock();
-		}
-	} 
+	int resultMessageLength = 1024;
+	char resultMessage[1024];
+	bool succeeded = g_pLobbyApp->CDKeyIsValid(pqd->szCharacterName, pqd->szCDKey, szAddress, resultMessage, resultMessageLength);
+	
+	printf("doAuthentication(): keycheck for: %s, key: %s, address: %s, result: %s, succeeded: %s\r\n", pqd->szCharacterName, pqd->szCDKey, szAddress, resultMessage, (succeeded == true) ? "true" : "false");
+	
+	if(!succeeded)
+	{
+		mutex->lock();
+		pqd->fValid = false;
+		pqd->fRetry = false;
+		pqd->szReason = new char[lstrlen(resultMessage) + 1];
+		Strcpy(pqd->szReason,resultMessage);
+		mutex->unlock();
+	}
 
 	// tell the main thread we've finished, use the existing thread msg for AZ SQL 
 	PostThreadMessage(_Module.dwThreadID, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
-	delete client;
 }
 
 
@@ -237,6 +201,10 @@ void GotLogonInfo(CQLobbyLogon * pquery)
   }
   
   g_pLobbyApp->GetFMClients().SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
+
+  //Xynth 09/15/10 Close connection, don't rely on client to do it
+  if (!pqd->fValid)  
+	  fm.DeleteConnection(*(pcnxn));
 }
 
 const int c_cMaxPlayers = GetRegDWORD("MaxPlayersPerServer", 350);
@@ -301,19 +269,23 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
       //Imago added NACK for verson back in 8/6/09 
       if (!fValid) {
-          BEGIN_PFM_CREATE(*pthis, pfmLogonNack, L, LOGON_NACK)
-          FM_VAR_PARM(szReason, CB_ZTS)
-          END_PFM_CREATE
-          pfmLogonNack->fRetry = false;
-          g_pLobbyApp->GetFMClients().SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
-          break;
+			BEGIN_PFM_CREATE(*pthis, pfmLogonNack, L, LOGON_NACK)
+			FM_VAR_PARM(szReason, CB_ZTS)
+			END_PFM_CREATE
+			pfmLogonNack->fRetry = false;
+			g_pLobbyApp->GetFMClients().SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);          
+
+			//Xynth 9/15/10 Close the connection, don't rely on client to disconnect
+			pthis->DeleteConnection(cnxnFrom);  
+
+			break;
       }
 
       //Imago - Dogbones's ASGS_ON AllSrv registry entry fiasco... 8/6/09
-      if (g_pLobbyApp->EnforceASGS()) {
+      if (g_pLobbyApp->EnforceAuthentication()) {
 	      char mprthname[9]; 
 	      mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
-	      MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
+	      MprThread* threadp = new MprThread(doAuthentication, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
 	      threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
       } else {
           BEGIN_PFM_CREATE(*pthis, pfmLogonAck, L, LOGON_ACK)

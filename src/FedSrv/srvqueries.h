@@ -44,6 +44,13 @@ BEGIN_QUERY(CQLogonStats, true,
   short   cWins;
   short   cLosses;
 
+  // BT - 12/21/2010 - ACSS integration
+  double	sigma;
+  double	mu;
+  RankID	commandRank;
+  double	commandSigma;
+  double	commandMu;
+
   BEGIN_COLUMN_MAP(CQLogonStatsData)
     COLUMN_ENTRY_TYPE(1,  DBTYPE_I2, civID)
     COLUMN_ENTRY_TYPE(2,  DBTYPE_I2, rank)

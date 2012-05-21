@@ -383,6 +383,7 @@ void DisconnectFromLobby();
 void ChangeStationOwners(IstationIGC * pstation, CFSMission * pfsMission, IsideIGC* iSideNew);
 void ExportObj(IbaseIGC * pIGC, ObjectType ot, FMD_S_EXPORT ** ppfmExport);
 void CheatDPGroups(CFSShip * pfsShip);
+void GotLogonDetails(CQLogonStats * pquery); // BT - 9/11/2010 ACSS - needed by fslobby.cpp.
 
 // <NKM> 8-Aug-2004
 // DX 9 doesn't use callbacks for this

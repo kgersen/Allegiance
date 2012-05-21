@@ -10,6 +10,8 @@
 
 #include "pch.h"
 #include <string.h> // mmf added for strncmp used below
+#include "client.h" // BT - 9/11/2010 - Included to use URL functions.
+#include <regex> // BT - 1/27/2012 - using regex to parse rank from callsign when auth is turned off.
 
 const DWORD        CFLServer::c_dwID        = 19680815;
 const CFLMission * CFLServer::c_AllMissions = (CFLMission*) -1;
@@ -207,6 +209,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       CFLMission * pMission = CFLMission::FromCookie(pfmPlayerJoined->dwMissionCookie);
       const char* szCharacterName = FM_VAR_REF(pfmPlayerJoined, szCharacterName);
       const char* szCDKey = FM_VAR_REF(pfmPlayerJoined, szCDKey);
+	  const char* szAddress = FM_VAR_REF(pfmPlayerJoined, szAddress);
 
       if (NULL == szCharacterName || '\0' != szCharacterName[pfmPlayerJoined->cbszCharacterName-1])
           /* || NULL == szCDKey || '\0' != szCDKey[pfmPlayerJoined->cbszCDKey-1]  
@@ -233,7 +236,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
           szCDKey = szUnencryptedCDKey;
         }
 
-        g_pLobbyApp->SetPlayerMission(szCharacterName, szCDKey, pMission);
+        g_pLobbyApp->SetPlayerMission(szCharacterName, szCDKey, pMission, szAddress);
       }
     }
     break;
@@ -262,7 +265,96 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	  // KGJV #114 cant create game on paused server
       g_pLobbyApp->BuildStaticCoreInfo();
       break;
-    }      
+    }    
+
+	// BT - 12/21/2010 - CSS integration
+	case FM_LS_PLAYER_RANK:
+	{
+		CASTPFM(pfmPlayerRankRequest, LS, PLAYER_RANK, pfm);
+
+		const char* szCharacterName = FM_VAR_REF(pfmPlayerRankRequest, szCharacterName);
+		const char* szReason = FM_VAR_REF(pfmPlayerRankRequest, szReason);
+		const char* szPassword = FM_VAR_REF(pfmPlayerRankRequest, szPassword);
+		const char* szCDKey = FM_VAR_REF(pfmPlayerRankRequest, szCDKey);
+
+		char szRankName[50];
+		int rankNameLen = sizeof(szRankName);
+		int rank = 0;
+		double sigma = 0;
+		double mu = 0;
+		int commandRank = 0;
+		double commandSigma = 0;
+		double commandMu = 0;
+		bool rankRetrieved = false;
+
+		if(g_pLobbyApp->EnforceAuthentication() == true)
+		{
+			rankRetrieved = g_pLobbyApp->GetRankForCallsign(
+				szCharacterName, 
+				&rank,
+				&sigma,
+				&mu,
+				&commandRank, 
+				&commandSigma,
+				&commandMu,
+				szRankName,
+				rankNameLen);
+		}
+		else
+		{
+			// BT - 1/27/2012 - Enables lobby to return ranks when ACSS is disabled using old callsign(rank) format.
+			rankRetrieved = true;
+
+			std::tr1::regex rgx("(\\W+)?((?:\\w|@)+)(\\((\\d+)\\))?");
+			std::tr1::smatch result;
+			std::string charName(szCharacterName);
+
+			if(std::tr1::regex_search(charName, result, rgx) == true)
+			{
+				if(result.size() > 2)
+					sprintf((char *) szCharacterName, "%s%s", result[1].str().c_str(), result[2].str().c_str());
+				
+				if(result.size() > 4)
+				{
+					char rankString[50];
+					sprintf(rankString, "%s", result[4].str().c_str());
+					rank = atoi(rankString);
+				}
+			}
+		}
+
+		BEGIN_PFM_CREATE(*pthis, pfmPlayerRankResponse, LS, PLAYER_RANK)
+			FM_VAR_PARM(PCC(szCharacterName), CB_ZTS) 
+			FM_VAR_PARM(PCC(szReason), CB_ZTS) 
+			FM_VAR_PARM(PCC(szPassword), CB_ZTS) 
+			FM_VAR_PARM(PCC(szCDKey), CB_ZTS) 
+			FM_VAR_PARM(PCC(szRankName), CB_ZTS) 
+		END_PFM_CREATE
+
+		pfmPlayerRankResponse->characterID = pfmPlayerRankRequest->characterID;
+		pfmPlayerRankResponse->fCanCheat = pfmPlayerRankRequest->fCanCheat;
+		pfmPlayerRankResponse->fRetry = pfmPlayerRankRequest->fRetry;
+		pfmPlayerRankResponse->dwCookie = pfmPlayerRankRequest->dwCookie;
+		pfmPlayerRankResponse->fValid = pfmPlayerRankRequest->fValid;
+		pfmPlayerRankResponse->dwConnectionID = pfmPlayerRankRequest->dwConnectionID;
+		pfmPlayerRankResponse->rank = rank;
+		pfmPlayerRankResponse->sigma = sigma;
+		pfmPlayerRankResponse->mu = mu;
+		pfmPlayerRankResponse->commandRank = commandRank;
+		pfmPlayerRankResponse->commandSigma = commandSigma;
+		pfmPlayerRankResponse->commandMu = commandMu;
+
+		// Set the rank to be invalid to play on any server if there was any error retrieving the rank.
+		if(rankRetrieved == false)
+			pfmPlayerRankResponse->rank = -2;
+		
+		debugf("Client: %s from <%s> at time %u. Rank: %ld\n", g_rgszMsgNames[pfm->fmid], cnxnFrom.GetName(), Time::Now(), pfmPlayerRankResponse->rank);
+
+		pthis->SendMessages(&cnxnFrom, FM_GUARANTEED, FM_FLUSH);
+
+		break;
+	}
+
 
     default:
       ZError("unknown message\n");

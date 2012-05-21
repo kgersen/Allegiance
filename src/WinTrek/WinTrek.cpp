@@ -4024,9 +4024,15 @@ public:
 			dDD = dVer.Right(2);
 			dMM = dVer.Middle(2,2);
 			dYY = dVer.Middle(0,2);
-			YY = atoi(dYY); 	YY = (YY/10)*8+(YY%10);
-			MM = atoi(dMM); 	MM = (MM/10)*8+(MM%10);
-			DD = atoi(dDD); 	DD = (DD/10)*8+(DD%10);
+
+			YY = atoi(dYY); 	
+			YY = (YY/10)*8+(YY%10);
+			
+			MM = atoi(dMM); 	
+			MM = (MM/10)*8+(MM%10);
+			
+			DD = atoi(dDD); 	
+			DD = (DD/10)*8+(DD%10);
 		}
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
