@@ -2450,7 +2450,11 @@ public:
 		if(!pfile) // if we dont have a file here, then load regularly.
 		{
 			// mmf #if this out for release.  I left the strtoTryOpenFromDev code in above
-#if 1
+
+// pkk - Use same conditional compilation like on registry keys
+#ifdef _ALLEGIANCE_PROD_
+			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
+#else
             // KGJV try dev folder 1st
             pfile = new ZFile(strToTryOpenFromDev, OF_READ | OF_SHARE_DENY_WRITE);
 			if (!pfile->IsValid()) {
@@ -2460,9 +2464,7 @@ public:
                     ZDebugOutput("'dev' file found for " + pathStr + "\n");
 				}
 			}
-#else
-			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
-#endif                
+#endif     
 
 			// mmf added debugf but will still have it call assert
 			if (!pfile->IsValid()) {
