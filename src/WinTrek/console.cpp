@@ -541,6 +541,8 @@ private:
 
     ZString                m_strTypedText;
 
+	int					   m_cursorPosition;
+
     bool                   m_bMouseIn;
 
     TRef<ModifiableNumber> m_pnumberComposeState;
@@ -1287,7 +1289,8 @@ public:
             //Fill in the typed text
             if (m_csComposeState != c_csComposeMouseCommand)
             {
-                ZString displayedChat = m_strTypedText + "|";
+                //Turkey 5/11 #59
+				ZString displayedChat = m_strTypedText.LeftOf(m_strTypedText.GetLength() - m_cursorPosition) + "|" + m_strTypedText.RightOf(m_cursorPosition);
 
                 if (m_csComposeState == c_csComposeCommand)
                 {
@@ -1651,6 +1654,7 @@ public:
 
         SetChatObject(NULL);
         m_strTypedText.SetEmpty();
+		m_cursorPosition = 0; //Turkey 5/11 #59
 
         // set the compose state
         SetComposeState(cs);
@@ -2319,6 +2323,45 @@ public:
                : NULL;
     }
 
+	//Turkey 5/11 #59
+	//Triggered whenever a non-character key is pressed while the chat
+	//box is open. Plays a sound and adjusts cursor position.
+	bool OnKey(const KeyState& ks)
+	{
+		if (m_csComposeState > c_csComposeMouseCommand)
+        {
+			if (!m_strTypedText.IsEmpty()) {
+				trekClient.PlaySoundEffect(chatKeySound);
+				switch (ks.vk) {
+				case VK_HOME:
+					m_cursorPosition = 0;
+					UpdateComposedChat();
+					break;
+				case VK_END:
+					m_cursorPosition = m_strTypedText.GetLength();
+					UpdateComposedChat();
+					break;
+				case VK_RIGHT:
+					if (m_cursorPosition != m_strTypedText.GetLength()) m_cursorPosition++;
+					UpdateComposedChat();
+					break;
+				case VK_LEFT:
+					if (m_cursorPosition != 0) m_cursorPosition--;
+					UpdateComposedChat();
+					break;
+				case VK_DELETE:
+					if (m_cursorPosition < m_strTypedText.GetLength())
+					{
+						m_cursorPosition++;
+						OnBackspace();
+					}
+					break;
+				}
+			}
+		}
+		return true;
+	}
+
     bool OnChar(const KeyState& ks)
     {
         if (m_csComposeState > c_csComposeMouseCommand)
@@ -2386,9 +2429,11 @@ public:
 
                     case '!':
                     {
-                        if ((m_csComposeState == c_csComposeChat) && m_strTypedText.IsEmpty())
+                        //Turkey 5/11 #59 changed to use m_cursorPosition instead of m_strTypedText.GetLength()
+						if ((m_csComposeState == c_csComposeChat) && m_cursorPosition == 0)
                         {
-                            m_strTypedText = ZString("!");
+							m_strTypedText = ZString("!") + m_strTypedText;
+							m_cursorPosition = 1;
                             SetComposeState(c_csComposeShell);
                             UpdateComposedChat();
                             break;
@@ -2593,19 +2638,14 @@ public:
     {
         assert (m_csComposeState > c_csComposeMouseCommand);
 
-        if (m_strTypedText.GetLength() != 0)
+        if (m_cursorPosition != 0) //Turkey 5/11 #59 changed to use m_cursorPosition instead of m_strTypedText.GetLength(), and allowed the compose state to change without deleting the string
         {
-            if ((m_csComposeState == c_csComposeShell) && (m_strTypedText.GetLength() == 1))
-            {
-                m_strTypedText.SetEmpty();
-                SetComposeState(c_csComposeChat);
-            }
-            else
-            {
-                m_strTypedText = m_strTypedText.LeftOf(1);
-                if (m_csComposeState == c_csComposeCommand)
-                    MatchTarget();
-            }
+            if ((m_csComposeState == c_csComposeShell) && (m_cursorPosition == 1)) SetComposeState(c_csComposeChat);
+            
+			m_strTypedText = m_strTypedText.LeftOf(m_strTypedText.GetLength() - m_cursorPosition + 1) + m_strTypedText.RightOf(m_cursorPosition);//Turkey 5/11 #59 delete to the left of the cursor
+			m_cursorPosition--;
+            if (m_csComposeState == c_csComposeCommand)
+				MatchTarget();
             UpdateComposedChat();                
         }
         else if (m_csComposeState == c_csComposeCommand)
@@ -2994,7 +3034,9 @@ public:
 		// yp your_persona march 24 2005: constrain chat messages to always fit in the buffer size 255
 		if (m_strTypedText.GetLength() < 255)
 		{
-			m_strTypedText += ZString(ch, 1);
+			//Turkey 5/11 #59 changed to insert the char to the left of the cursor
+			m_strTypedText = m_strTypedText.LeftOf(m_strTypedText.GetLength() - m_cursorPosition) + ZString(ch, 1) + m_strTypedText.RightOf(m_cursorPosition);
+			m_cursorPosition++;
 		}   
 
         if (m_csComposeState == c_csComposeCommand)
@@ -3300,6 +3342,12 @@ public:
         return m_pconsoleData->IsTakingKeystrokes();
     }
     
+	//Turkey 5/11 #59
+	bool OnKey(const KeyState& ks)
+	{
+		return m_pconsoleData->OnKey(ks);
+	}
+
     bool OnChar(const KeyState& ks)
     {
         return m_pconsoleData->OnChar(ks);

@@ -8422,7 +8422,11 @@ public:
 
     bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& bForceTranslate)
     {
-        if (IsInputEnabled (ks.vk)) {
+        //Turkey 5/11 #59
+		if (m_pconsoleImage && m_pconsoleImage->IsComposing()) {
+			if (ks.bDown) m_pconsoleImage->OnKey(ks);
+		}
+		else if (IsInputEnabled (ks.vk)) {
             m_ptrekInput->SetFocus(true);
             TrekKey tk = m_ptrekInput->HandleKeyMessage(ks);
 
