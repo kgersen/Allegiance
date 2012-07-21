@@ -2945,8 +2945,18 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 }
             }
 
-            if (pplayer == MyPlayerInfo())
+            if (pplayer == MyPlayerInfo()) {
                 PlaySoundEffect(commanderSound);
+				
+				//Turkey #131
+				//Let us know we're not ready, then we can use this flag to sort the rest out later
+				if ((m_pCoreIGC->GetMissionStage() == STAGE_NOTSTARTED) &&
+					!pplayer->IsMissionOwner())
+				{
+					pplayer->SetReady(false);
+				}
+
+			}
 
             m_pClientEventSource->OnPlayerStatusChange(MyMission(), pplayer->SideID(), pplayer);
         }

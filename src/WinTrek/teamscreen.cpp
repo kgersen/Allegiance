@@ -3429,7 +3429,16 @@ public:
     {
         if (trekClient.MyPlayerInfo()->ShipID() == pPlayerInfo->ShipID())
         {
-            UpdateButtonStates();
+			//Turkey #131
+			//If we've flagged ourself as not ready but the button isn't checked, fix it
+			//up and let OnButtonAwayFromKeyboard tell everyone about it.
+			if (!pPlayerInfo->IsReady() && !m_pbuttonAwayFromKeyboard->GetChecked())
+			{
+				m_pbuttonAwayFromKeyboard->SetChecked(true);
+				OnButtonAwayFromKeyboard();
+			}
+			
+			UpdateButtonStates();
         }
         UpdateStatusText();
     }
