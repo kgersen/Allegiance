@@ -2517,8 +2517,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             //m_pMissionInfo->SetSideCivID(pfmChangeCiv->iSide, pfmChangeCiv->civID);
 
             m_pCoreIGC->GetSide(pfmChangeCiv->iSide)->SetCivilization(m_pCoreIGC->GetCivilization(pfmChangeCiv->civID));
-            m_pClientEventSource->OnTeamCivChange(m_pMissionInfo, pfmChangeCiv->iSide, pfmChangeCiv->civID);
-			m_pCoreIGC->GetSide(pfmChangeCiv->iSide)->SetRandomCivilization(pfmChangeCiv->random);
+            m_pCoreIGC->GetSide(pfmChangeCiv->iSide)->SetRandomCivilization(pfmChangeCiv->random);
+			m_pClientEventSource->OnTeamCivChange(m_pMissionInfo, pfmChangeCiv->iSide, pfmChangeCiv->civID);
             break;
         }
 

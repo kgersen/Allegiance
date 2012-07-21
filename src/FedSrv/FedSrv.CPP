@@ -6863,7 +6863,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         IcivilizationIGC * pciv = pMission->GetCivilization(pfmChangeTeamCiv->civID);
         TrapHackBoot(pciv);
         g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfmChangeTeamCiv, FM_GUARANTEED);
-        pfsMission->SetSideCiv(pside, pciv);
+        pfsMission->SetSideCiv(pMission->GetSide(pfmChangeTeamCiv->iSide), pciv);
       }
     }
     break;

@@ -907,7 +907,7 @@ private:
             }
 
 			//Xynth #170 removed selection until bugs can be worked out
-			//m_pcomboCiv->AddItem("Random", RANDOM_ID); //Xynth #170 8/2010
+			m_pcomboCiv->AddItem("Random", RANDOM_ID); //Xynth #170 8/2010
 
             m_peditPaneTeamName->SetHidden(true);
         }
@@ -2645,7 +2645,7 @@ public:
             m_plistPanePlayers->ForceRefresh();
 		//Xynth #170 8/10 Randomize random factions again and resend to all players.  This mitigates joiners
 		//seeing the faction picked randomly
-		if (!trekClient.MyMissionInProgress() && trekClient.MyPlayerInfo()->IsMissionOwner() && (abs(Time::Now() - lastRandCivUpdate)  > 5.0))//only the GC does this
+		if (m_pMission->GetStage() == STAGE_NOTSTARTED && trekClient.MyPlayerInfo()->IsMissionOwner() && (abs(Time::Now() - lastRandCivUpdate)  > 5.0))//only the GC does this
 		{
 			lastRandCivUpdate = Time::Now();
 			numCivilizations = 0;
