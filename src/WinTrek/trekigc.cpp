@@ -2042,17 +2042,26 @@ class ThingSiteImpl : public ThingSitePrivate
                         {
                             if (m_bIsShip)
                             {
-                                IsideIGC* pside = pmodel->GetSide();
+                                //Spunky #275
+								static Time lastVisSndPlayed = 0;
+								Time now = Time::Now();
 
-								//this is where you would put in rate limiting for the sound effects if someone "eye" spams };-) -imago
-                                if ((pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide()))) //ALLY Imago 7/3/09
-                                {
-                                    trekClient.PlaySoundEffect(newShipSound, pmodel);
-                                }
-                                else
-                                {
-                                    trekClient.PlaySoundEffect(newEnemySound, pmodel);
-                                }
+								IsideIGC* pside = pmodel->GetSide();
+
+								if (now - lastVisSndPlayed > 5.0f) //Spunky #275 
+								{
+									if ((pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide()))) //ALLY Imago 7/3/09
+									{
+                                    
+										trekClient.PlaySoundEffect(newShipSound, pmodel);
+									}
+									else
+									{
+										trekClient.PlaySoundEffect(newEnemySound, pmodel);
+									}
+									
+									lastVisSndPlayed = now;
+								}
                             }
                             //Xynth #100 7/2010 m_sideVisibility.fVisible(true);
                         }
