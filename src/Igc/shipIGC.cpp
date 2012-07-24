@@ -3309,11 +3309,11 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
         assert (pcluster);
 
 	ImodelIGC*  pmodelRipcord = NULL;
-	if (pmodelGoal) //TheRock 13-12-2009 Allow ripcording to a probe or ship when a teleport is in the same sector.
+	if (pmodelGoal) //TheRock 13-12-2009 Allow ripcording to a selected target
 	{
-		if (pmodelGoal->GetObjectType() == OT_probe)
+		if (pmodelGoal->GetSide() == pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip))
 		{
-			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip))
+			if (pmodelGoal->GetObjectType() == OT_probe)
 			{
 				IprobeIGC* pProbeSelected = (IprobeIGC*)pmodelGoal;
 				if (pProbeSelected->GetCanRipcord(ripcordSpeed))
@@ -3321,10 +3321,7 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 					pmodelRipcord = pProbeSelected;
 				}
 			}
-		}
-		else if (pmodelGoal->GetObjectType() == OT_ship)
-		{
-			if (pmodelGoal->GetSide()==pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip))
+			else if (pmodelGoal->GetObjectType() == OT_ship)
 			{
 				IshipIGC* pShipSelected = (IshipIGC*)pmodelGoal;
 				IhullTypeIGC*   pht = pShipSelected->GetBaseHullType();
@@ -3338,71 +3335,51 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
 					}
 				}
 			}
+			else if (pmodelGoal->GetObjectType() == OT_station) //Spunky #261 - rip to a selected station even if a probe exists
+			{
+				IstationIGC* pStationSelected = (IstationIGC*)pmodelGoal;
+				if (pStationSelected->GetStationType()->HasCapability(c_sabmRipcord))
+					pmodelRipcord = pStationSelected;
+			}
 		}
 	}
 
-	if (pmodelRipcord == NULL) {
-        	pmodelRipcord = FindTarget(this, positionGoal ? (c_ttFriendly | c_ttStation | c_ttNearest) : (c_ttFriendly | c_ttStation),
-                                               NULL, pcluster, positionGoal, NULL,
-                                               c_sabmRipcord);
-	}
 
-        if ((pmodelRipcord == NULL) && (m_pilotType >= c_ptPlayer))
+        if ((pmodelRipcord == NULL) && (m_pilotType >= c_ptPlayer)) //Spunky #261 - moved up to prioritize probes over stations 
         {
             float   d2Goal = FLT_MAX;
-
-            if (GetMission()->GetMissionParams()->bAllowAlliedRip) {
-                //No station in the cluster to ripcord to ... try allied  and our probes
-                //Search backwords so that we'll get the most recently dropped probe
-                //if multiple probes without a target
-                for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->last(); (ppl != NULL); ppl = ppl->txen())
+            //try allied  and our probes
+            //Search backwards so that we'll get the most recently dropped probe
+            //if multiple probes without a target
+            for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->last(); (ppl != NULL); ppl = ppl->txen())
+            {
+                IprobeIGC*  pprobe = ppl->data();
+                if ((pprobe->GetSide() == pside || pside->AlliedSides(pside, pprobe->GetSide()) 
+					&& GetMission()->GetMissionParams()->bAllowAlliedRip) 
+					&& pprobe->GetCanRipcord(ripcordSpeed)) //ALLY RIPCORD imago 7/8/09
                 {
-                    IprobeIGC*  pprobe = ppl->data();
-                    if ((pprobe->GetSide() == pside || pside->AlliedSides(pside,pprobe->GetSide())) && pprobe->GetCanRipcord(ripcordSpeed)) //ALLY RIPCORD imago 7/8/09
+                    if (positionGoal)
                     {
-                        if (positionGoal)
-                        {
-                            float   d2 = (pprobe->GetPosition() - *positionGoal).LengthSquared();
-                            if (d2 < d2Goal)
-                            {
-                                pmodelRipcord = pprobe;
-                                d2Goal = d2;
-                            }
-                        }
-                        else
+                        float   d2 = (pprobe->GetPosition() - *positionGoal).LengthSquared();
+                        if (d2 < d2Goal)
                         {
                             pmodelRipcord = pprobe;
-                            break;
+                            d2Goal = d2;
                         }
                     }
-                }
-			} else {
-                //No station in the cluster to ripcord to ... try probes
-                //Search backwords so that we'll get the most recently dropped probe
-                //if multiple probes without a target
-                for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->last(); (ppl != NULL); ppl = ppl->txen())
-                {
-                    IprobeIGC*  pprobe = ppl->data();
-                    if ((pprobe->GetSide() == pside) && pprobe->GetCanRipcord(ripcordSpeed))
+                    else
                     {
-                        if (positionGoal)
-                        {
-                            float   d2 = (pprobe->GetPosition() - *positionGoal).LengthSquared();
-                            if (d2 < d2Goal)
-                            {
-                                pmodelRipcord = pprobe;
-                                d2Goal = d2;
-                            }
-                        }
-                        else
-                        {
-                            pmodelRipcord = pprobe;
-                            break;
-                        }
+                        pmodelRipcord = pprobe;
+                        break;
                     }
                 }
-
             }
+			
+
+			if (pmodelRipcord == NULL) 
+        		pmodelRipcord = FindTarget(this, positionGoal ? (c_ttFriendly | c_ttStation | c_ttNearest) : (c_ttFriendly | c_ttStation),
+                                               NULL, pcluster, positionGoal, NULL, c_sabmRipcord);
+	
 
             if (pmodelRipcord == NULL)
             {
