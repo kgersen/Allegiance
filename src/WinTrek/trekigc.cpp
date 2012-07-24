@@ -854,7 +854,9 @@ private:
         return pafterburner 
             && (m_pship->GetStateM() & afterburnerButtonIGC)
             && m_pship->GetFuel() <= 0.0f 
-            && pafterburner->GetMountedFraction() >= 1.0;;
+            && pafterburner->GetMountedFraction() >= 1.0
+			&& pafterburner->GetFuelConsumption() > 0.0f;
+
     }
 
     bool HasMissileLock()

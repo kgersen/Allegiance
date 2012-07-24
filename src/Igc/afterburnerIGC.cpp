@@ -127,7 +127,7 @@ void    CafterburnerIGC::IncrementalUpdate(Time lastUpdate, Time now, bool bUseF
 
         {
             float   fuel = m_ship->GetFuel();
-            bool    bActivated = (m_ship->GetStateM() & afterburnerButtonIGC) && (fuel != 0.0f);
+            bool    bActivated = (m_ship->GetStateM() & afterburnerButtonIGC) && (fuel != 0.0f || m_typeData->fuelConsumption == 0.0f); //Spunky - #271 
             if (bActivated)
                 Activate();
 
