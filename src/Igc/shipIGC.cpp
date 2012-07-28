@@ -3308,46 +3308,45 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
     {
         assert (pcluster);
 
-	ImodelIGC*  pmodelRipcord = NULL;
-	if (pmodelGoal) //TheRock 13-12-2009 Allow ripcording to a selected target
-	{
-		if (pmodelGoal->GetSide() == pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip))
+		ImodelIGC*  pmodelRipcord = NULL;
+		if (pmodelGoal) //TheRock 13-12-2009 Allow ripcording to a selected target
 		{
-			if (pmodelGoal->GetObjectType() == OT_probe)
+			if (pmodelGoal->GetSide() == pside || (pside->AlliedSides(pside,pmodelGoal->GetSide()) && GetMission()->GetMissionParams()->bAllowAlliedRip))
 			{
-				IprobeIGC* pProbeSelected = (IprobeIGC*)pmodelGoal;
-				if (pProbeSelected->GetCanRipcord(ripcordSpeed))
+				if (pmodelGoal->GetObjectType() == OT_probe)
 				{
-					pmodelRipcord = pProbeSelected;
+					IprobeIGC* pProbeSelected = (IprobeIGC*)pmodelGoal;
+					if (pProbeSelected->GetCanRipcord(ripcordSpeed))
+					{
+						pmodelRipcord = pProbeSelected;
+					}
 				}
-			}
-			else if (pmodelGoal->GetObjectType() == OT_ship)
-			{
-				IshipIGC* pShipSelected = (IshipIGC*)pmodelGoal;
-				IhullTypeIGC*   pht = pShipSelected->GetBaseHullType();
-				if (pht) { //TheRock 9-1-2010 fix rev512 (TheRock 13-12-2009)
-					if (GetBaseHullType()->HasCapability(c_habmCanLtRipcord)) {
-						if (pht->HasCapability((c_habmIsRipcordTarget | c_habmIsLtRipcordTarget))) {
-							pmodelRipcord = pShipSelected;
-						} else if (pht->HasCapability(c_habmIsRipcordTarget)) {
-							pmodelRipcord = pShipSelected;
+				else if (pmodelGoal->GetObjectType() == OT_ship)
+				{
+					IshipIGC* pShipSelected = (IshipIGC*)pmodelGoal;
+					IhullTypeIGC*   pht = pShipSelected->GetBaseHullType();
+					if (pht) { //TheRock 9-1-2010 fix rev512 (TheRock 13-12-2009)
+						if (GetBaseHullType()->HasCapability(c_habmCanLtRipcord)) {
+							if (pht->HasCapability((c_habmIsRipcordTarget | c_habmIsLtRipcordTarget))) {
+								pmodelRipcord = pShipSelected;
+							} else if (pht->HasCapability(c_habmIsRipcordTarget)) {
+								pmodelRipcord = pShipSelected;
+							}
 						}
 					}
 				}
-			}
-			else if (pmodelGoal->GetObjectType() == OT_station) //Spunky #261 - rip to a selected station even if a probe exists
-			{
-				IstationIGC* pStationSelected = (IstationIGC*)pmodelGoal;
-				if (pStationSelected->GetStationType()->HasCapability(c_sabmRipcord))
-					pmodelRipcord = pStationSelected;
+				else if (pmodelGoal->GetObjectType() == OT_station) //Spunky #261 - rip to a selected station even if a probe exists
+				{
+					IstationIGC* pStationSelected = (IstationIGC*)pmodelGoal;
+					if (pStationSelected->GetStationType()->HasCapability(c_sabmRipcord))
+						pmodelRipcord = pStationSelected;
+				}
 			}
 		}
-	}
 
-
+		float   d2Goal = FLT_MAX;
         if ((pmodelRipcord == NULL) && (m_pilotType >= c_ptPlayer)) //Spunky #261 - moved up to prioritize probes over stations 
-        {
-            float   d2Goal = FLT_MAX;
+		{
             //try allied  and our probes
             //Search backwards so that we'll get the most recently dropped probe
             //if multiple probes without a target
@@ -3375,45 +3374,46 @@ ImodelIGC*    CshipIGC::FindRipcordModel(IclusterIGC*   pcluster)
                 }
             }
 			
-
-			if (pmodelRipcord == NULL) 
-        		pmodelRipcord = FindTarget(this, positionGoal ? (c_ttFriendly | c_ttStation | c_ttNearest) : (c_ttFriendly | c_ttStation),
+		}
+		
+		if (pmodelRipcord == NULL) 
+        	pmodelRipcord = FindTarget(this, positionGoal ? (c_ttFriendly | c_ttStation | c_ttNearest) : (c_ttFriendly | c_ttStation),
                                                NULL, pcluster, positionGoal, NULL, c_sabmRipcord);
 	
 
-            if (pmodelRipcord == NULL)
+        if ((pmodelRipcord == NULL) && (m_pilotType >= c_ptPlayer))
+        {
+            float   debtMin = FLT_MAX;
+
+            //No station or probe in the cluster to ripcord to ... try ships
+            for (ShipPairLink*   psl = pairs.first(); (psl != NULL); psl = psl->next())
             {
-                float   debtMin = FLT_MAX;
-
-                //No station or probe in the cluster to ripcord to ... try ships
-                for (ShipPairLink*   psl = pairs.first(); (psl != NULL); psl = psl->next())
+                if (psl->data().pcluster == pcluster)
                 {
-                    if (psl->data().pcluster == pcluster)
-                    {
-                        float   debt = psl->data().pship->GetRipcordDebt();
+                    float   debt = psl->data().pship->GetRipcordDebt();
 
-                        if (positionGoal == NULL)
+                    if (positionGoal == NULL)
+                    {
+                        if (debt < debtMin)
                         {
-                            if (debt < debtMin)
-                            {
-                                debtMin = debt;
-                                pmodelRipcord = psl->data().pship;
-                            }
+                            debtMin = debt;
+                            pmodelRipcord = psl->data().pship;
                         }
-                        else
+                    }
+                    else
+                    {
+                        float   d2 = (psl->data().pship->GetPosition() - *positionGoal).LengthSquared();
+                        if ((debt < debtMin) ||
+                            ((debt == debtMin) && (d2 < d2Goal)))
                         {
-                            float   d2 = (psl->data().pship->GetPosition() - *positionGoal).LengthSquared();
-                            if ((debt < debtMin) ||
-                                ((debt == debtMin) && (d2 < d2Goal)))
-                            {
-                                debtMin = debt;
-                                d2Goal = d2;
-                                pmodelRipcord = psl->data().pship;
-                            }
+                            debtMin = debt;
+                            d2Goal = d2;
+                            pmodelRipcord = psl->data().pship;
                         }
                     }
                 }
             }
+          
         }
 
         if (pmodelRipcord)
