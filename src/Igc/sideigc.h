@@ -600,7 +600,7 @@ class       CsideIGC : public IsideIGC
                                 b->SetTimeAndMoney(1000 * b->GetTimeToBuild(),
                                                    b->GetPrice());
                             }
-                            else if ((b->GetMoney() != 0) && !CanBuy(pbuy))
+							else if ((b->GetMoney() != 0 || b->GetTime() != 0) && !CanBuy(pbuy)) //#264 added ||b->GetTime()!=0 to this and the two cases below
                                 b->SetEmpty();
                         }
                         break;
@@ -608,7 +608,8 @@ class       CsideIGC : public IsideIGC
                         case OT_stationType:
                         {
                             Money   money = b->GetMoney();
-                            if ((money != 0) && !CanBuy(pbuy))
+							DWORD time = b->GetTime();
+                            if ((money != 0 || time != 0) && !CanBuy(pbuy))
                             {
                                 IstationTypeIGC*    pstSuccessor = ((IstationTypeIGC*)pbuy)->GetSuccessorStationType(this);
                                 if (pstSuccessor != pbuy)
@@ -621,7 +622,7 @@ class       CsideIGC : public IsideIGC
                                         IbucketIGC* b2 = l2->data();
                                         if (b2->GetBuyable() == pstSuccessor)
                                         {
-                                            b2->SetTimeAndMoney(b->GetTime(), money);
+                                            b2->SetTimeAndMoney(time, money);
                                             break;
                                         }
                                     }
@@ -634,7 +635,7 @@ class       CsideIGC : public IsideIGC
 
                         default:
                         {
-                            if ((b->GetMoney() != 0) && !CanBuy(pbuy))
+							if ((b->GetMoney() != 0 || b->GetTime() != 0) && !CanBuy(pbuy))
                                 b->SetEmpty();
                         }
                     }

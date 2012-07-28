@@ -3606,6 +3606,7 @@ class IbucketIGC : public IbuyableIGC
         virtual int                     GetPercentBought(void) const = 0;
         virtual int                     GetPercentComplete(void) const = 0;
         virtual bool                    GetCompleteF(void) const = 0;
+		virtual bool					IsAvailableForFree(void) const = 0;
         virtual void                    ForceComplete(Time now) = 0;
 
         virtual DWORD                   GetTime(void) const = 0;

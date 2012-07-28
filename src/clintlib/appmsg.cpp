@@ -2300,6 +2300,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmMissionStage, S, MISSION_STAGE, pfm);
 
             m_pMissionInfo->SetStage(pfmMissionStage->stage);
+			m_pCoreIGC->SetMissionStage(pfmMissionStage->stage); //#264 This was only being called in case STAGE_STARTED
 
             switch (pfmMissionStage->stage)
             {
@@ -2326,7 +2327,6 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                                    &m_pMissionInfo->GetMissionParams(),
                                    sizeof(m_pMissionInfo->GetMissionParams())) == 0);
 
-                    m_pCoreIGC->SetMissionStage(STAGE_STARTED);
                     m_pClientEventSource->OnMissionStarted(m_pMissionInfo);
 
                     break;

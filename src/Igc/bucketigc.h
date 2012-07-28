@@ -26,7 +26,8 @@ class       CbucketIGC : public IbucketIGC
             m_investedMilliseconds(0),
             m_investedMoney(0),
             m_lastPercentCompleteNotified(0),
-            m_pbucketPredecessor(NULL)
+            m_pbucketPredecessor(NULL),
+			m_isBuildingForFree(false)
         {
         }
 
@@ -39,7 +40,7 @@ class       CbucketIGC : public IbucketIGC
         {
             assert (now >= m_lastUpdate);
 
-            if (m_investedMoney > 0)
+			if (m_investedMoney > 0 || m_isBuildingForFree) //#264 was if(m_investedMoney > 0)
             {
                 DWORD   ttbms = m_timeToBuild * 1000;
                 if (m_investedMilliseconds < ttbms)
@@ -51,7 +52,7 @@ class       CbucketIGC : public IbucketIGC
                         ForceComplete(now);
                     }
 
-                    assert (m_price > 0);
+                    if (m_price > 0)
                     {
                         DWORD   mim = 1000 * ((m_investedMoney * m_timeToBuild) / m_price);
                         if (m_investedMilliseconds > mim)
@@ -68,6 +69,18 @@ class       CbucketIGC : public IbucketIGC
                     }
                 }
             }
+			//#264 Turkey 07/12
+			//If a free bucket can start, start it. If it shouldn't be, stop.
+			if (m_price == 0 && m_investedMilliseconds < (m_timeToBuild * 1000)) 
+			{
+				if (IsAvailableForFree())  
+				{
+					m_isBuildingForFree = true;
+				} else {
+					m_isBuildingForFree = false;
+					m_investedMilliseconds = 0;
+				}
+			}
             m_lastUpdate = now;
         }
 
@@ -161,8 +174,10 @@ class       CbucketIGC : public IbucketIGC
 
         virtual int                     GetPercentBought(void) const
         {
-            assert (m_price > 0);
-            return ((100 * m_investedMoney) / m_price);
+            if (m_price > 0) { //#264 was assert(m_price > 0)
+				return ((100 * m_investedMoney) / m_price);
+			}
+			return m_isBuildingForFree * 100;
         }
         virtual int                     GetPercentComplete(void) const
         {
@@ -175,9 +190,60 @@ class       CbucketIGC : public IbucketIGC
             return m_investedMilliseconds >= (1000 * m_timeToBuild);
         }
 
+		//#264 Turkey 07/12
+		//make a few checks to find out whether this bucket should be getting researched.
+		virtual bool					IsAvailableForFree() const
+		{
+			if (m_pMission->GetMissionStage() == STAGE_STARTED && m_data.side->CanBuy(m_data.buyable))
+			{
+				
+				switch(m_data.buyable->GetObjectType()) 
+				{
+				case OT_stationType:
+					{
+						//check there isn't already a constructor for this
+						IstationTypeIGC* pStationtype = ((IstationTypeIGC*)(m_data.buyable));
+						for (ShipLinkIGC* shipLink = m_data.side->GetShips()->first(); 
+							shipLink != NULL; shipLink = shipLink->next())
+						{
+							if (shipLink->data()->GetBaseData() == pStationtype)
+								return false;
+						}
+
+						break;
+					}
+				case OT_droneType:
+					{	
+						//check we're not over the max drone limit
+						//can't find a way to to it by DroneTypeID, do it by hull type. 
+						//This will give extra drones if you upgrade the hull type of a free drone.
+
+						HullID hullID = ((IdroneTypeIGC*)(m_data.buyable))->GetHullTypeID();
+						int droneCount = 0;
+						for (ShipLinkIGC* shipLink = m_data.side->GetShips()->first(); 
+							shipLink != NULL; shipLink = shipLink->next())
+						{
+							if (hullID == shipLink->data()->GetHullType()->GetObjectID())
+								droneCount++;
+						}
+						if (droneCount >= m_pMission->GetMissionParams()->nMaxDronesPerTeam) return false;
+
+						break;
+					}
+				}
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
         virtual void                    ForceComplete(Time now)
         {
             assert (m_data.side->CanBuy(m_data.buyable));
+
+			m_isBuildingForFree = false; //#264
 
             switch(m_data.buyable->GetObjectType())
             {
@@ -293,6 +359,7 @@ class       CbucketIGC : public IbucketIGC
         {
             m_investedMoney = 0;
             m_investedMilliseconds = 0;
+			m_isBuildingForFree = false;//#264
 
             m_pMission->GetIgcSite()->BucketChangeEvent(c_bcEmptied, this);
         }
@@ -316,6 +383,7 @@ class       CbucketIGC : public IbucketIGC
         DWORD               m_timeToBuild;
         Money               m_investedMoney;
         Money               m_price;
+		bool				m_isBuildingForFree; //#264
         IbucketIGC*         m_pbucketPredecessor;
 };
 
