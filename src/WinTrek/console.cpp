@@ -1737,7 +1737,7 @@ public:
     {
         if (m_csComposeState == c_csNotComposing)
         {
-            StartComposing(c_csComposeChat, &m_chsChat);
+            StartComposing(c_csComposeMouseCommand, &m_chsCommand);
 
             m_pchsCurrent->SetRecipient(CHAT_FRIENDLY_SECTOR, pcluster->GetObjectID(), pcluster);
 
