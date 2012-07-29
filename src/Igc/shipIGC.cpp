@@ -1658,6 +1658,10 @@ void    CshipIGC::ExecuteTurretMove(Time          timeStart,
     }
 }
 
+/* NOTES: Seems to be for miners and builders only, regularly called from Update.
+Handles running away, mining when close to rock, teleport offloading and executing accepted if no plan.
+Calls PickDefaultOrder after tele offload.
+*/
 void    CshipIGC::PreplotShipMove(Time          timeStop)
 {
     IclusterIGC*    pcluster = GetCluster();
@@ -1674,10 +1678,13 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
             {
                 bool    bDamage = true;
                 bool    bRunAway = true;
-                if (m_pilotType == c_ptWingman)
+                
+				if (m_commandTargets[c_cmdCurrent] && m_commandTargets[c_cmdCurrent]->GetObjectType() == OT_station) //Spunky #267 
+						bRunAway = false;
+				else if (m_pilotType == c_ptWingman)
 				{
 					// bahdohday&AEM 7.09.07 Added check to allow certain wingmen drones to never run away: if they have a nan in slot 1 or are have a station as their target
-					if ( (m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0 ) || ( m_commandTargets[c_cmdAccepted] && (m_commandTargets[c_cmdAccepted]->GetObjectType() == OT_station) ) )
+					if ( (m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0 ) )
 					{
 						bRunAway = false;
 					}
