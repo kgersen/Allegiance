@@ -797,6 +797,17 @@ enum    ShipControlStateIGC
     buildingMaskIGC             =  2 * wantsToMineMaskIGC           //in the process of building at an asteroid
 };
 
+//Spunky #288
+enum ClusterQuality
+{
+	cqNone = 0,
+	cqNoEye = 1,
+	cqPositiveBOP = 2,
+	cqIncludeNeutral = 4,
+	cqNoCheck = 8
+};
+
+
 // No "*Types" please if the VALUE of variable is a not a type of something! :-)
 // ships have a capacity, and mounted parts use up that capacity (drain)
 typedef float HitPoints;
@@ -4065,6 +4076,7 @@ class IclusterIGC : public IbaseIGC
         virtual float            GetCost(void) const = 0;
 		virtual void			 SetHighlight(bool hl) = 0; //Xynth #208
 		virtual bool			 GetHighlight(void) const = 0;
+		virtual bool			 IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty) = 0; //Spunky - #?
 };
 
 class IasteroidIGC : public IdamageIGC
@@ -4519,6 +4531,8 @@ enum TargetType
     c_ttLeastTargeted = 0x10000,
     c_ttNoRipcord     = 0x20000,
     c_ttCowardly      = 0x40000,
+	c_ttPositiveBOP   = 0x80000, //Spunky
+	c_ttNoEye		  = 0x100000, //Spunky
 
     c_ttShipTypes   = c_ttShip | c_ttStation,
 

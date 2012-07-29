@@ -537,6 +537,9 @@ class       CclusterIGC : public IclusterIGC
 		}
 		// End Imago #121 #120 8/10
 
+		virtual bool IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty); //Spunky - #288
+		
+
     private:
         ImissionIGC*        m_pMission;
         DWORD               m_dwPrivate; // private data for consumer

@@ -2123,13 +2123,29 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                        GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
                     if (m_fOre < capacity / 2.0f)
                     {
-                        ImodelIGC*  pmodel = FindTarget(this,
+                        //Spunky #288
+						ImodelIGC*  pmodel = FindTarget(this,
+                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
+                                                        c_ttLeastTargeted | c_ttAnyCluster | c_ttNoEye | c_ttPositiveBOP,
+                                                        NULL, pcluster, &position, NULL,
+                                                        m_abmOrders);
+
+						if (!pmodel)
+							pmodel = FindTarget(this,
+                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
+                                                        c_ttLeastTargeted | c_ttAnyCluster | c_ttPositiveBOP,
+                                                        NULL, pcluster, &position, NULL,
+                                                        m_abmOrders);
+
+						if (!pmodel)
+							pmodel = FindTarget(this,
                                                         c_ttNeutral | c_ttAsteroid | c_ttNearest |
                                                         c_ttLeastTargeted | c_ttAnyCluster | c_ttCowardly,
                                                         NULL, pcluster, &position, NULL,
                                                         m_abmOrders);
-
-                        if (pmodel)
+						
+						
+						if (pmodel)
                         {
                             SetCommand(c_cmdAccepted, pmodel, c_cidMine);
                             fGaveOrder = true;

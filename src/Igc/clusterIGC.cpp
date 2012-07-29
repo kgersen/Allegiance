@@ -735,3 +735,56 @@ IbuildingEffectIGC*      CclusterIGC::CreateBuildingEffect(Time           now,
     return pbe;
 }
 
+
+
+bool CclusterIGC::IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty) //Spunky #?
+{
+	int balanceOfPower = 0;
+	//carrier or ASS in sector = not friendly - Spunky #?
+	ShipLinkIGC* pshipl = GetShips()->first();
+	if (pshipl)
+	{
+		do
+		{
+			IshipIGC* pship = pshipl->data();
+			if (pship->GetSide() != pside && pship->SeenBySide(pside) && !IsideIGC::AlliedSides(pside, pship->GetSide()))
+			{
+				if (pship->GetHullType()->HasCapability(c_habmIsRipcordTarget | c_habmIsLtRipcordTarget))
+					return false;
+				if (pship->GetBaseHullType()->GetScannerRange() > 800 && cqlty & cqNoEye)
+					return false;
+				balanceOfPower--;
+			}
+			else if (pship->GetSide() == pside || IsideIGC::AlliedSides(pside, pship->GetSide()))
+				balanceOfPower++;
+			pshipl = pshipl->next();
+		} while (pshipl);
+	}
+	if (balanceOfPower < 0 && cqlty & cqPositiveBOP)
+		return false;
+		
+	
+	StationLinkIGC* psl = GetStations()->first();
+    if (psl == NULL)
+		if (cqlty & cqIncludeNeutral)
+			return true;
+		else
+			return false;
+	do
+    {
+        IstationIGC*    ps = psl->data();
+        if (!ps->GetStationType()->HasCapability(c_sabmPedestal) && ps->SeenBySide(pside) && pside != ps->GetSide() 
+			&& !IsideIGC::AlliedSides(pside, ps->GetSide())) // #ALLY FIXED 7/10/09 imago
+		{
+			if ((cqlty & cqNoEye) != 0)
+				return false;
+			if (ps->GetStationType()->HasCapability(c_sabmRipcord | c_sabmStart)) //only care about launchable and ripcordable stations
+				return false;
+		}
+        psl = psl->next();
+    }
+    while (psl != NULL);
+
+	return true; 	
+}
+
