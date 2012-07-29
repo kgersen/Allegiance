@@ -749,9 +749,12 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                         ResetWaypoint();
 
-                        m_fractionLastOrder = m_fraction;
-                        m_timeRanAway = GetMyLastUpdate();
-                        m_bRunningAway = false;
+						if (cid != c_cidNone) //Spunky #303 - let idling cons run
+						{
+							m_fractionLastOrder = m_fraction;
+							m_timeRanAway = GetMyLastUpdate();
+							m_bRunningAway = false;
+						}
                     }
                     break;
 

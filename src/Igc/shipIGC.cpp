@@ -1674,7 +1674,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
         //First ... do we need to run away?
         if (m_pilotType < c_ptCarrier && !fRipcordActive())      //Carriers never run //TurkeyXIII added ripcord 7/10 - Imago
         {
-            if (m_timeRanAway + c_dtCheckRunaway <= timeStop)
+			if ((m_timeRanAway + c_dtCheckRunaway) <= timeStop)
             {
                 bool    bDamage = true;
                 bool    bRunAway = true;
@@ -1697,10 +1697,11 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 {
                     if (m_fraction < m_fractionLastOrder)
                     {
-                        if (m_commandIDs[c_cmdAccepted] == c_cidBuild)
+                        if (m_commandIDs[c_cmdAccepted] == c_cidBuild || m_commandIDs[c_cmdAccepted] == c_cidGoto) //Spunky #303
                         {
                             assert ((m_pilotType == c_ptBuilder) || (m_pilotType == c_ptLayer));
 
+							/* Spunky #303
                             //Builders do not run if they are ordered to build & closer to their target than the station
                             //but a station or a target in another cluster is always considered infinitely far away
                             assert (m_commandTargets[c_cmdAccepted]);
@@ -1720,7 +1721,8 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                                 }
                             }
                             else
-                                bRunAway = false;
+							*/ 
+                            bRunAway = false;
                         }
                     }
                     else
