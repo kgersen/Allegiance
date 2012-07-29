@@ -2484,7 +2484,7 @@ public:
 		//Imago #114 7/10
 		if (trekClient.MyPlayerInfo()->IsTeamLeader() && !m_pbuttonAwayFromKeyboard->GetChecked() && trekClient.GetSideID() != sideID)
 		{
-			if (!trekClient.GetShip()->GetSide()->GetRandomCivilization())  //Xynth #170 8/2010
+			if (!trekClient.GetShip()->GetSide()->GetRandomCivilization() && !trekClient.GetCore()->GetSide(sideID)->GetRandomCivilization())  //Xynth #170 8/2010 //Turkey #311 7/12
 			{
 			m_pbuttonTeamReady->SetChecked(false);
 			OnButtonTeamReady();
