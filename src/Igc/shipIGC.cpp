@@ -1817,7 +1817,10 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
 
 						if (pmodel)
                         {
-                            SetCommand(c_cmdPlan, pmodel, c_cidGoto);
+							if (m_pilotType == c_ptMiner) //Spunky #266 
+ 								SetCommand(c_cmdAccepted, NULL, c_cidNone); 
+ 		                     
+ 							SetCommand(c_cmdPlan, pmodel, c_cidGoto); 
 
                             if (m_pilotType == c_ptBuilder)
                                 GetMyMission()->GetIgcSite()->SendChat(this, CHAT_TEAM, GetSide()->GetObjectID(),
@@ -1845,8 +1848,10 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                 {
                     //We want to stop running
                     SetCommand(c_cmdPlan, NULL, c_cidNone);
+					m_fractionLastOrder = m_fraction; //Spunky #303 - need to handle these here instead of SetCommand
+					m_bRunningAway = false;
 					// debugf("mmf %-20s stoped running\n", GetName());
-                    assert (m_bRunningAway == false);   //Set by SetCommand
+                    assert (m_bRunningAway == false);   
                     m_timeRanAway = timeStop;
                 }
             }
