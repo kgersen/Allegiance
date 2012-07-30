@@ -2192,6 +2192,41 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                                 NULL, pcluster, &position, NULL,
                                                 c_sabmLand);
 
+						//Spunky #269 - if we are not almost full, continue mining, but only if asteroid is nearby when we have a base in the sector
+						if (m_fOre < capacity * 0.75f)
+						{				
+							ImodelIGC*  pmodelAsteroid = NULL;
+							pmodelAsteroid = FindTarget(this,
+                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest | c_ttLeastTargeted | c_ttCowardly,
+                                                        NULL, pcluster, &position, NULL,
+                                                        m_abmOrders);
+
+							if (pmodelAsteroid && pmodel)
+							{		
+								bool mineAnother=false;
+								if (pmodel->GetCluster() != pcluster)
+									mineAnother=true;
+								else
+								{
+									const Vector basePosition=pmodel->GetPosition();
+									const Vector asteroidPosition=pmodelAsteroid->GetPosition();
+									const float ourDistanceToBase=(position-basePosition).Length();				
+								
+									if ((asteroidPosition-basePosition).Length() < ourDistanceToBase * 1.5f && (position-asteroidPosition).Length() < ourDistanceToBase)
+										mineAnother=true;
+								}
+								
+								if (mineAnother)
+								{
+										SetCommand(c_cmdAccepted, pmodelAsteroid, c_cidMine);
+										fGaveOrder = true;
+										break;
+								}
+							}
+							else
+								m_miningCluster=NULL;
+							
+						}
 						if (pmodel)
 						{
 							SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
