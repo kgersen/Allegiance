@@ -2243,10 +2243,11 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                 {
                     if ((m_abmOrders == c_aabmBuildable) && !bDocked)
                         break;
-
-                    ImodelIGC*  pmodel = FindTarget(this,
+					
+                    //Spunky #304
+					ImodelIGC*  pmodel = FindTarget(this,
                                                     c_ttNeutral | c_ttAsteroid | c_ttNearest |
-                                                    c_ttLeastTargeted | c_ttAnyCluster | c_ttCowardly,
+                                                    c_ttLeastTargeted,
                                                     NULL, pcluster, &position, NULL,
                                                     m_abmOrders);
 
@@ -2254,7 +2255,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     {
                         assert (m_pbaseData);
 
-                        CommandID   cid = (m_abmOrders != c_aabmBuildable) ? c_cidBuild : c_cidGoto;
+                        CommandID   cid = (m_abmOrders != c_aabmBuildable && !m_doNotBuild) ? c_cidBuild : c_cidGoto;//Spunky #304
 
                         SetCommand(c_cmdAccepted, pmodel, cid);
                         fGaveOrder = true;
@@ -2491,6 +2492,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
 		bool				m_stayDocked;  //Xynth #48 8/10
 		IclusterIGC*		m_miningCluster; //Spunky #268
+		bool				m_doNotBuild; //Spunky #304
 };
 
 #endif //__SHIPIGC_H_

@@ -131,6 +131,7 @@ void    CshipIGC::ReInitialize(DataShipIGC * dataShip, Time now)
     m_nKills = dataShip->nKills;
 
 	m_miningCluster = NULL; //Spunky #268
+	m_doNotBuild = true; //Spunky #304
 
     //Get the ship's hull type
     if (dataShip->hullID == NA)
@@ -3629,7 +3630,10 @@ void    CshipIGC::ResetWaypoint(void)
                 default:
 				{
 					if (m_commandIDs[c_cmdPlan] == c_cidGoto) //Spunky - #268
+					{
 							m_miningCluster = NULL;
+							m_doNotBuild = false; //Spunky #304
+					}
                     o = Waypoint::c_oGoto;
 				}
             }
