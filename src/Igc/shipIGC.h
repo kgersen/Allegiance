@@ -714,7 +714,12 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
             return m_commandIDs[i];
         }
-        virtual void                 SetCommand(Command i, ImodelIGC* target, CommandID cid)
+        //NOTES: creates a new target and buoy. 
+		//If accepted, also sets current and plan. 
+		//If accepted or current sends out the change event. Current doesn't set waypoint.
+		//If plan, sets the waypoint only.
+		
+		virtual void                 SetCommand(Command i, ImodelIGC* target, CommandID cid)
         {
             assert (i >= 0);
             assert (i < c_cmdMax);
@@ -2126,34 +2131,52 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                        GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
                     if (m_fOre < capacity / 2.0f)
                     {
-                        //Spunky #288
-						ImodelIGC*  pmodel = FindTarget(this,
-                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
-                                                        c_ttLeastTargeted | c_ttAnyCluster | c_ttNoEye | c_ttPositiveBOP,
-                                                        NULL, pcluster, &position, NULL,
-                                                        m_abmOrders);
-
+						ImodelIGC*  pmodel = NULL;
+						//Try the mining sector first if still neutral or friendly - Spunky #268
+						if (m_miningCluster)
+						{
+							if (m_miningCluster ->IsFriendlyCluster(GetSide(), cqIncludeNeutral))					
+								pmodel = FindTarget(this,
+															c_ttNeutral | c_ttAsteroid | c_ttNearest |
+															c_ttLeastTargeted,
+															NULL, m_miningCluster, NULL, NULL,
+															m_abmOrders);
+						}
+						//Spunky #288	
 						if (!pmodel)
+						{
+							m_miningCluster = NULL;
 							pmodel = FindTarget(this,
                                                         c_ttNeutral | c_ttAsteroid | c_ttNearest |
                                                         c_ttLeastTargeted | c_ttAnyCluster | c_ttPositiveBOP,
                                                         NULL, pcluster, &position, NULL,
                                                         m_abmOrders);
+						}
 
 						if (!pmodel)
+						{
 							pmodel = FindTarget(this,
-                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
-                                                        c_ttLeastTargeted | c_ttAnyCluster | c_ttCowardly,
-                                                        NULL, pcluster, &position, NULL,
-                                                        m_abmOrders);
-						
-						
+	                                                    c_ttNeutral | c_ttAsteroid | c_ttNearest |
+	                                                    c_ttLeastTargeted | c_ttAnyCluster | c_ttPositiveBOP,
+	                                                    NULL, pcluster, &position, NULL,
+	                                                    m_abmOrders);
+						}
+						if (!pmodel)
+						{
+							pmodel = FindTarget(this,
+	                                                    c_ttNeutral | c_ttAsteroid | c_ttNearest |
+	                                                    c_ttLeastTargeted | c_ttAnyCluster | c_ttCowardly,
+	                                                    NULL, pcluster, &position, NULL,
+	                                                    m_abmOrders);
+							
+							
+						}
 						if (pmodel)
-                        {
-                            SetCommand(c_cmdAccepted, pmodel, c_cidMine);
-                            fGaveOrder = true;
-                        }
-                    }
+						{
+							SetCommand(c_cmdAccepted, pmodel, c_cidMine);
+							fGaveOrder = true;
+						}
+					}
 
                     if ((!m_commandTargets[c_cmdCurrent]) && ((m_fOre > 0.0f) || !bDocked))
                     {
@@ -2169,13 +2192,16 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                                 NULL, pcluster, &position, NULL,
                                                 c_sabmLand);
 
-                        if (pmodel)
-                        {
-                            SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
-                            fGaveOrder = true;
-                        }
+						if (pmodel)
+						{
+							SetCommand(c_cmdAccepted, pmodel, c_cidGoto);
+							fGaveOrder = true;
+						}
+
+						
                     }
                 }
+				
                 break;
 
                 case c_ptBuilder:
@@ -2429,6 +2455,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         WarningMask         m_warningMask;
 
 		bool				m_stayDocked;  //Xynth #48 8/10
+		IclusterIGC*		m_miningCluster; //Spunky #268
 };
 
 #endif //__SHIPIGC_H_

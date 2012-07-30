@@ -130,6 +130,8 @@ void    CshipIGC::ReInitialize(DataShipIGC * dataShip, Time now)
     m_nEjections = dataShip->nEjections;
     m_nKills = dataShip->nKills;
 
+	m_miningCluster = NULL; //Spunky #268
+
     //Get the ship's hull type
     if (dataShip->hullID == NA)
     {
@@ -1925,6 +1927,12 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
     }
 }
 
+
+/*NOTES: Called regularly from Update.
+Handles crowded He3 rocks, actual mining process, unloads when full via SetCommand(plan), calls PickDefaultOrder when rock empty.
+Since PickDefaultOrder resets cmdAccepted, miner re-picks a sector if it wasn't full earlier.
+Also runs the autopilot, and resets command targets and inits building after it's done.
+*/
 void    CshipIGC::PlotShipMove(Time          timeStop)
 {
     if (m_bAutopilot && (m_pshipParent == NULL))
@@ -2083,17 +2091,8 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 if (m_fOre + minedOre >= capacity)
                 {
                     minedOre = capacity - m_fOre;
-                    {
-                        ImodelIGC*  pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
-                                                        NULL, NULL, NULL, NULL, c_sabmUnload);
-
-                        //If we can't find a place to unload ... stick around here for lack of a better place to go
-                        if (pmodel)
-                            SetCommand(c_cmdPlan, pmodel, c_cidGoto);
-						// mmf added else and debugf
-						// else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n",
-						// 						GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
-                    }
+					m_miningCluster = GetCluster(); //Spunky #268 - we wanna come back to the same cluster 
+					PickDefaultOrder(GetCluster(), GetPosition(), false); //Spunky #268 use the pickdefaultorder facility to unload
                 }
 
                 float   actualOre = pasteroid->MineOre(minedOre);
@@ -2102,6 +2101,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 if (actualOre != minedOre)
                 {
                     //Tapped this asteroid out ... pick a new default order.
+					m_miningCluster = GetCluster(); //Spunky - #268 still wanna come back here
                     PickDefaultOrder(GetCluster(), GetPosition(), false);
                 }
 
@@ -3505,6 +3505,8 @@ void    CshipIGC::ResetWaypoint(void)
                     o = (m_commandIDs[c_cmdPlan] == c_cidBuild) && (m_pilotType == c_ptBuilder)
                         ? Waypoint::c_oEnter
                         : Waypoint::c_oGoto;
+					if (m_commandIDs[c_cmdPlan] == c_cidMine) //Spunky #268
+						m_miningCluster = m_commandTargets[c_cmdPlan]->GetCluster(); 
                 }
                 break;
                 case OT_station:
@@ -3625,7 +3627,11 @@ void    CshipIGC::ResetWaypoint(void)
                 break;
 
                 default:
+				{
+					if (m_commandIDs[c_cmdPlan] == c_cidGoto) //Spunky - #268
+							m_miningCluster = NULL;
                     o = Waypoint::c_oGoto;
+				}
             }
 
             m_gotoplan.Set(o, m_commandTargets[c_cmdPlan]);
