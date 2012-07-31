@@ -590,7 +590,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
                                 //No 
                                 if (((ttMask & c_ttCowardly) == 0 || pclusterOther->IsFriendlyCluster(pside, cqNone))
 									&& ((ttMask & c_ttNoEye) == 0 || pclusterOther->IsFriendlyCluster(pside, cqNoEye))
-									&& ((ttMask & c_ttPositiveBOP == 0 || pclusterOther->IsFriendlyCluster(pside, cqPositiveBOP)))) //Spunky #288
+									&& ((ttMask & c_ttPositiveBOP) == 0 || pclusterOther->IsFriendlyCluster(pside, cqPositiveBOP))) //Spunky #288
 
                                     pwlTwoAway->last(pwarpDestination);
                             }
@@ -674,7 +674,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 	                	if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc)  //Spunky #288
 	                    	        && ((ttMask & c_ttCowardly) == 0 || pc->IsFriendlyCluster(pside, cqNone))
 									&& ((ttMask & c_ttNoEye) == 0 || pc->IsFriendlyCluster(pside, cqNoEye))
-									&& ((ttMask & c_ttPositiveBOP == 0 || pc->IsFriendlyCluster(pside, cqPositiveBOP))))
+									&& ((ttMask & c_ttPositiveBOP) == 0 || pc->IsFriendlyCluster(pside, cqPositiveBOP)))
 	                    	NewCP(&clustersRipcord, ps->GetCluster(), &(ps->GetPosition()));
 					}
 	            }
@@ -689,7 +689,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 	                if ((pc != pclusterStart) && UniqueCP(&clustersRipcord, pc) //Spunky #288
    	                    	        && ((ttMask & c_ttCowardly) == 0 || pc->IsFriendlyCluster(pside, cqNone))
 									&& ((ttMask & c_ttNoEye) == 0 || pc->IsFriendlyCluster(pside, cqNoEye))
-									&& ((ttMask & c_ttPositiveBOP == 0 || pc->IsFriendlyCluster(pside, cqPositiveBOP))))
+									&& ((ttMask & c_ttPositiveBOP) == 0 || pc->IsFriendlyCluster(pside, cqPositiveBOP)))
 
 	                    NewCP(&clustersRipcord, ps->GetCluster(), &(ps->GetPosition()));
 	            }
