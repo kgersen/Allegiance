@@ -512,6 +512,7 @@ private:
     TRef<ModifiableNumber>  m_pnumberGotFlag;
     TRef<ModifiableNumber>  m_pnumberGotArtifact;
     TRef<ModifiableNumber>  m_pnumberSignature;
+	TRef<ModifiableString>  m_pstringDetectionRange; //Spunky #302
     
 
     // data for composed chat/cmd
@@ -739,6 +740,10 @@ public:
 
         m_pns->AddMember("Kills",  m_pnumberKills =  new ModifiableNumber(0));
 
+		//detection range - Spunky #302
+
+		m_pns->AddMember("DetectionRange", m_pstringDetectionRange = new ModifiableString("")); 
+
         // Verb & recipient button bars
         m_pnsDisplays = GetModeler()->GetNameSpace(pszFileName);
 
@@ -790,13 +795,30 @@ public:
         m_pnumberRadarMode->SetValue((float)GetWindow()->GetRadarMode());
         m_pnumberMoney->SetValue((float)trekClient.GetMoney());
         m_pnumberAutopilotOn->SetValue(trekClient.autoPilot() ? 1.0f : 0.0f);
-        
-        
-        
+		
+		//Spunky #302
+		IshipIGC* me = trekClient.GetShip();
+		ImodelIGC* target = trekClient.GetShip()->GetCommandTarget(c_cmdCurrent);
+		int targetScannerRange;
 
-        
-        
-        
+		if (target && target->GetSide() && target->GetSide() != me->GetSide())
+		{
+			if (target->GetObjectType() == OT_ship)
+				targetScannerRange = ((IshipIGC*)target)->GetHullType()->GetScannerRange();
+			else if (target->GetObjectType() == OT_station)
+				targetScannerRange = ((IstationIGC*)target)->GetStationType()->GetScannerRange();
+			else if (target->GetObjectType() == OT_probe)
+				targetScannerRange = ((IprobeIGC*)target)->GetProbeType()->GetScannerRange();
+			
+			//don't leak information
+			targetScannerRange /= target->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaScanRange);
+			m_pstringDetectionRange->SetValue((ZString)(int)(me->GetSignature() * targetScannerRange 
+				/ me->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSignature) 
+				+ me->GetRadius() + target->GetRadius()) + "m");			
+		}
+		else
+			m_pstringDetectionRange->SetValue("");
+
 
         if (!pshipParent)
             m_pnumberBoardState->SetValue(0);
