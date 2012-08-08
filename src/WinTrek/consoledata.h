@@ -267,9 +267,12 @@ protected:
     TRef<EventSourceImpl>   m_peventSourceOnChange;
 
 private:
+	Color m_damageColor; //Spunky #314
 
 public:
-    PartWrapper() :
+    Color GetDamageColor() {return m_damageColor;} //Spunky #314
+
+	PartWrapper() :
         m_peventSourceOnChange(new EventSourceImpl())
     {
     }
@@ -326,7 +329,8 @@ public:
     static void ExportAccessors(INameSpace* pns)
     {
 		// mdvalley: like earlier, pointers and class names
-        pns->AddMember("GetPartName",  new TMemberSnapshotValueFactory<PartWrapper, ZString>(&PartWrapper::GetPartName, ""));
+		pns->AddMember("GetDamageColor",  new TMemberSnapshotValueFactory<PartWrapper, Color>(&PartWrapper::GetDamageColor,  Color::White())); //Spunky #314
+		pns->AddMember("GetPartName",  new TMemberSnapshotValueFactory<PartWrapper, ZString>(&PartWrapper::GetPartName, ""));
         pns->AddMember("GetCount",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetCount, 1.0f));
         pns->AddMember("GetWeaponRange",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetRange, 0.0f));
         pns->AddMember("GetDamage",  new TMemberSnapshotValueFactory<PartWrapper, float>(&PartWrapper::GetDamage, 0.0f));

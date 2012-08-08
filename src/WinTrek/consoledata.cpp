@@ -692,7 +692,9 @@ float PartWrapper::GetRange()
         return 0;
 
     EquipmentType et = m_ppart->GetPartType()->GetEquipmentType();
-
+	 //Spunky #314
+	IshipIGC* me = trekClient.GetShip();
+	float forwardSpeed = me->GetVelocity() * me->GetOrientation().GetForward().Normalize();
     if (et == ET_Weapon)
     {
         IprojectileTypeIGC* ppt = ((IweaponIGC*)(IpartIGC*)m_ppart)->GetProjectileType();
@@ -702,13 +704,16 @@ float PartWrapper::GetRange()
         range *= ga.GetAttribute((((IweaponIGC*)(IpartIGC*)m_ppart)->GetAmmoPerShot())
                                  ? c_gaSpeedAmmo
                                  : c_gaLifespanEnergy);
+		if (!ppt->GetAbsoluteF()) //Spunky #314
+			range += forwardSpeed * ppt->GetLifespan();
 
         return range;
     }
     else if (et == ET_Magazine)
     {
-        ImissileTypeIGC* pmt = (ImissileTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType();
-        float range = pmt->GetLifespan()*(pmt->GetInitialSpeed()+0.5f*pmt->GetLifespan()*pmt->GetAcceleration());
+		ImissileTypeIGC* pmt = (ImissileTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType();
+		//Spunky #314
+        float range = pmt->GetLifespan() * (pmt->GetInitialSpeed() + forwardSpeed + 0.5f * pmt->GetLifespan() * pmt->GetAcceleration());
         return range;
     }
     else
@@ -722,26 +727,92 @@ float PartWrapper::GetDamage()
 {
     if (!m_ppart)
         return 0;
-
+	m_damageColor = Color::White();
     EquipmentType et = m_ppart->GetPartType()->GetEquipmentType();
-
+	//Spunky #314;
+	float damage; 
+	DamageTypeID dt;
+	IshipIGC* me = trekClient.GetShip();
     const GlobalAttributeSet&   ga = trekClient.GetSide()->GetGlobalAttributeSet();
 
     if (et == ET_Weapon)
     {
         IprojectileTypeIGC* ppt = ((IweaponIGC*)(IpartIGC*)m_ppart)->GetProjectileType();
-        return (ppt->GetPower() + ppt->GetBlastPower()) * ga.GetAttribute(c_gaDamageGuns);
+        damage = (ppt->GetPower() + ppt->GetBlastPower()) * ga.GetAttribute(c_gaDamageGuns);
+		dt = ppt->GetDamageType();//Spunky #314
     }
     else if (et == ET_Magazine)
     {
         ImissileTypeIGC* pmt = (ImissileTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType();
-        return (pmt->GetPower() + pmt->GetBlastPower()) * ga.GetAttribute(c_gaDamageMissiles);
+        damage = (pmt->GetPower() + pmt->GetBlastPower()) * ga.GetAttribute(c_gaDamageMissiles);
+		dt = pmt->GetDamageType();//Spunky #314
     }
     else
     {
         ZAssert(false);
         return 0;
     }
+	//Spunky #314
+	if (ImodelIGC* target = me->GetCommandTarget(c_cmdCurrent))
+	{
+		
+		float df;
+		float down = me->GetMission()->GetFloatConstant(c_fcidDownedShield);
+		switch (target->GetObjectType())
+		{
+		case OT_ship:
+			{
+				IshieldIGC* shield = (IshieldIGC*)((IshipIGC*)target)->GetMountedPart(ET_Shield, 0);
+				if (shield && shield->GetFraction() > down)
+					df = me->GetMission()->GetDamageConstant(dt, shield->GetDefenseType());
+				else
+					df = me->GetMission()->GetDamageConstant(dt, me->GetHullType()->GetDefenseType());
+				break;
+			}
+		
+		case OT_station:
+			{
+				IstationIGC* targetStation = (IstationIGC*)target;
+				if (targetStation->GetShieldFraction() > down)
+					df = me->GetMission()->GetDamageConstant(dt, targetStation->GetStationType()->GetShieldDefenseType());
+				else
+					df = me->GetMission()->GetDamageConstant(dt, targetStation->GetStationType()->GetArmorDefenseType());
+				break;
+			}
+		
+		case OT_probe:
+			df = me->GetMission()->GetDamageConstant(dt, ((IprobeIGC*)target)->GetProbeType()->GetDefenseType());
+			break;
+		
+		case OT_mine:
+			df = me->GetMission()->GetDamageConstant(dt, ((ImineIGC*)target)->GetMineType()->GetDefenseType());
+			break;
+		
+		case OT_missile:
+			df = me->GetMission()->GetDamageConstant(dt, ((ImissileIGC*)target)->GetMissileType()->GetDefenseType());
+			break;
+		
+		case OT_asteroid:
+			df = me->GetMission()->GetDamageConstant(dt, c_defidAsteroid);
+			break;
+		
+		default:
+			df = 0;
+		}
+		
+		damage *= df;
+		if (df > 0.75)
+			m_damageColor = Color::Green();
+		else if (df > 0.5)
+			m_damageColor = Color::Yellow();
+		else if (df > 0.25)
+			m_damageColor = Color::Red();
+		else
+			m_damageColor = Color::Blue();
+	}
+	return damage;
+		
+
 }
 
 float PartWrapper::GetRate()
