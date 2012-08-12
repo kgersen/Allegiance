@@ -2291,6 +2291,17 @@ void CFSMission::DoPayday(IsideIGC* pside)
         }
     }
 }
+//Spunky #177
+void CFSMission::UpdateAnyPendingBallots(Time &timeNow)
+{
+	for (BallotList::Iterator iter(m_ballots); !iter.End();)
+	{
+		if (iter.Value()->Update(timeNow))
+			iter.Remove();
+		else
+			iter.Next();
+	}
+}
 
 void CFSMission::DoTick(Time timeNow)
 {
@@ -2548,15 +2559,7 @@ void CFSMission::DoTick(Time timeNow)
             }
         }
     }
-
-    // update any pending ballots
-    for (BallotList::Iterator iter(m_ballots); !iter.End();)
-    {
-      if (iter.Value()->Update(timeNow))
-        iter.Remove();
-      else
-        iter.Next();
-    }
+	//Spunky #177 - ballot code here extracted so that it can be called from teamscreen
 }
 
 
@@ -5828,7 +5831,7 @@ MutinyBallot::MutinyBallot(CFSPlayer* pfsInitiator)
   m_idInitiatorShip = pfsInitiator->GetShipID();
   m_bHideToLeader = true;
   m_type = BALLOT_MUTINY; // mmf/KGJV 09/07 allow only one ballot of each type at a time
-  Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to mutiny"), pfsInitiator->GetName() + ZString(" has proposed to munity.  "));
+  Init(pfsInitiator, pfsInitiator->GetName() + ZString("'s proposal to mutiny"), pfsInitiator->GetName() + ZString(" has proposed to mutiny.  "));
 }
 
 void MutinyBallot::OnPassed()
@@ -5836,7 +5839,7 @@ void MutinyBallot::OnPassed()
   Ballot::OnPassed();
 
   SideID    sideID = m_pside->GetObjectID();
-  if (sideID >= 0 && STAGE_STARTED == m_pmission->GetStage())
+  if (sideID >= 0 && (STAGE_STARTED == m_pmission->GetStage() || STAGE_NOTSTARTED == m_pmission->GetStage())) //Spunky #177
   {
 	  CFSShip*    pfssNewLeader = CFSShip::GetShipFromID(m_idInitiatorShip);
       if (pfssNewLeader && pfssNewLeader->IsPlayer() &&

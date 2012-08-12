@@ -33,7 +33,10 @@ class TeamScreen :
 	public IMenuCommandSink // #ALLY RMB sink
 {
 private:
-    TRef<Pane>       m_ppane;
+    TRef<ModifiableString> m_pstringCurrentVote; //Spunky #177
+    TRef<ModifiableNumber> m_pnumberHasVote; //Spunky #177
+	
+	TRef<Pane>       m_ppane;
 
 	bool m_bRipChecked;
     SideID m_sideCurrent;
@@ -1137,6 +1140,9 @@ public:
         pnsTeamScreenData->AddMember("statsCount", m_pnumberStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("squadStatsCount", m_pnumberSquadStatsCount = new ModifiableNumber(0));
         pnsTeamScreenData->AddMember("civColor", m_pcolorCiv = new ModifiableColorValue(Color::Black()));
+		pnsTeamScreenData->AddMember("CurrentVote", m_pstringCurrentVote = new ModifiableString("")); //Spunky #177
+		pnsTeamScreenData->AddMember("HasVote", m_pnumberHasVote = new ModifiableNumber(0)); //Spunky #177 - export so we can hide
+
 		//KGJV added: core name & server name export 
 		// so we can use strServerName and strCoreName in teamscreen.mdl
 		const char* szServerName = trekClient.MyMission()->GetMissionDef().szServerName;
@@ -1446,6 +1452,12 @@ public:
         GetWindow()->SetChatListPane(NULL);
     }
 
+	//Spunky #177 - ugly because only teamscreen uses this
+	virtual bool HasVote()
+	{
+		return m_pnumberHasVote->GetValue();
+	};
+
     SideID GetCurrentSide()
     {
         return m_sideCurrent;
@@ -1657,7 +1669,13 @@ public:
     }
     void OnFrame()
     {
-        UpdateCountdownText();
+        //Spunky #177
+		BallotInfo* pballotinfo = trekClient.GetCurrentBallot();
+        m_pnumberHasVote->SetValue(pballotinfo ? 1.0f : 0.0f);
+        m_pstringCurrentVote->SetValue(pballotinfo ? ZString(pballotinfo->GetBallotText()) : ZString());
+
+		
+		UpdateCountdownText();
 
         // if we should show the mission briefing...
         if (trekClient.GetSideID() != SIDE_TEAMLOBBY 

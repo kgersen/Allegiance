@@ -865,7 +865,22 @@ public:
         if (ks.bDown) {
             TrekKey tk = m_ptrekInput->TranslateKeyMessage(ks);
 
-            if (TK_NoKeyMapping != tk) {
+            if (TK_NoKeyMapping != tk) 
+			{
+				//Spunky #177
+				if (m_pscreen && m_pscreen->HasVote())
+				{
+					if(tk == TK_VoteYes)
+					{
+						trekClient.Vote(true);
+					}
+					else if(tk == TK_VoteNo)
+					{
+						trekClient.Vote(false);
+					}
+					return true;
+				}
+
                 return OnTrekKeyFilter(tk);
 
                 /*!!!

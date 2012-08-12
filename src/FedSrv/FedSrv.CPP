@@ -4859,8 +4859,10 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
             }
           }
 
-          if ((pfsPlayer->GetSide()->GetObjectID() >= 0) && (pfsMission->GetStage() == STAGE_STARTED))
-          {
+          if (pfsPlayer->GetSide()->GetObjectID() >= 0)
+		  {
+			if (pfsMission->GetStage() == STAGE_STARTED) //Spunky #177
+			{
               if (pfmChat->cbMessage > strlen("#resign") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#resign", strlen("#resign")) == 0)
               {
 				// mmf/KGJV 09/07 allow only one ballot of each type at a time
@@ -4877,18 +4879,6 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                   pfsMission->AddBallot(new OfferDrawBallot(pfsPlayer));
 				else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
 					NA, "Draw vote already in progress...");
-                bForward = false;
-              }
-				// KGJV #110
-               else if (pfmChat->cbMessage > strlen("#mutiny") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#mutiny", strlen("#mutiny")) == 0)
-              {
-				// leader cant mutiny
-			    if (pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) != pfsPlayer)
-				  // mmf/KGJV 09/07 allow only one ballot of each type at a time
-				  if (!pfsMission->HasBallots(BALLOT_MUTINY))
-				    pfsMission->AddBallot(new MutinyBallot(pfsPlayer));
-				  else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
-					NA, "Mutiny vote already in progress...");
                 bForward = false;
               }
 			   // yp Your_Persona bug98 (toggle auto accept after game launch) aug-3-2006
@@ -4926,6 +4916,20 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny");
 				bForward = false;
 			  }
+			}
+			// KGJV #110 //Spunky #177
+            if (pfmChat->cbMessage > strlen("#mutiny") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#mutiny", strlen("#mutiny")) == 0
+				&& (pfsMission->GetStage() == STAGE_STARTED || pfsMission->GetStage() == STAGE_NOTSTARTED))
+            {
+			// leader cant mutiny
+			if (pfsMission->GetLeader(pfsPlayer->GetSide()->GetObjectID()) != pfsPlayer)
+				// mmf/KGJV 09/07 allow only one ballot of each type at a time
+				if (!pfsMission->HasBallots(BALLOT_MUTINY))
+				pfsMission->AddBallot(new MutinyBallot(pfsPlayer));
+				else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+				NA, "Mutiny vote already in progress...");
+            bForward = false;
+            }
           }
 		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
 		 // beta feature only  imago made one less define 7/8/09 and fixed for non-debug
@@ -7103,7 +7107,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
 
       // if the mission has not started yet but is ready to start, start the mission
-      if (pfsMission->GetStage() == STAGE_NOTSTARTED)
+	  // also check for any pending votes - Spunky #177
+      if (pfsMission->GetStage() == STAGE_NOTSTARTED && !pfsMission->HasBallots() )
       {
         if (pfsMission->FAllReady())
         {
@@ -7604,6 +7609,9 @@ void UpdateMissions(Time timeStart, Time timePrevious)
     if (pfsMission->GetStage() < STAGE_OVER &&
         pfsMission->GetIGCMission() != g.trekCore) // trekCore is a mission, but not a real one
     {
+	  //Spunky #177
+	  pfsMission->UpdateAnyPendingBallots(timeStart);
+
       // if the game is an auto-restart game and needs to have the countdown started, do so
       float dtTimeTillStart = pfsMission->GetMissionDef()->misparms.timeStart - timeStart;
       float dtPreviousTimeTillStart = pfsMission->GetMissionDef()->misparms.timeStart - timePrevious;
@@ -7664,10 +7672,12 @@ void UpdateMissions(Time timeStart, Time timePrevious)
 
 
       // if the countdown for a game has expired (and someone is in the game), start the game
+	  // also make sure there are no pending votes - Spunky #177
       if (pfsMission->GetStage() == STAGE_STARTING
           && timeStart > pfsMission->GetMissionDef()->misparms.timeStart
           && (pfsMission->HasPlayers(NULL, true)
             || pfsMission->GetMissionDef()->misparms.bAllowEmptyTeams)
+		  && !pfsMission->HasBallots()
           )
       {
         pfsMission->StartGame();

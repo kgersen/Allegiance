@@ -351,6 +351,7 @@ public:
   bool                  RemoveJoinRequest(CFSPlayer * pfsPlayer, IsideIGC * psideDest);
   SideID                PickNewSide(CFSPlayer* pfsPlayer, bool bAllowTeamLobby, unsigned char bannedSideMask);
   void                  DoTick(Time timeNow);
+  void 					UpdateAnyPendingBallots(Time &timeNow);//Spunky #177
   void                  CreateCluster(IclusterIGC * pIclusterIGC);
   void                  DeleteCluster(IclusterIGC * pIclusterIGC);
   const std::vector<CFSCluster*> * GetFSClusters() 
@@ -435,6 +436,7 @@ public:
   void                  AddBallot(Ballot * pBallot);
   void                  TallyVote(CFSPlayer* pfsPlayer, BallotID ballotID, bool bVote);
   bool					HasBallots(BallotType iType); // mmf/KGJV 09/07 allow only one ballot of each type at a time
+  bool					HasBallots() { return !m_ballots.IsEmpty(); } //Spunky #177
 
   void                  MakeOverrideTechBits(); // alloc memory for overriding tech bits as needed
 

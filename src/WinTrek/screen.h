@@ -9,6 +9,9 @@
 
 class Screen : public IObject {
 public:
+	//Spunky #177 - shouldn't really be defining a virtual member here just for teamscreen :(
+	virtual bool 	 HasVote()  { return false; }
+
     virtual Image*   GetImage() { return NULL; }
     virtual Pane*    GetPane()  { return NULL; }
     virtual WinPoint GetSize()  { return WinPoint(800, 600); }
