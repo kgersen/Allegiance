@@ -543,10 +543,15 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
         while (l != mLink);
     }
 
-    if ((pmodelTarget) ||
-        ((ttMask & c_ttAnyCluster) == 0) ||
-        ((ttMask & (c_ttStation | c_ttAsteroid | c_ttTreasure | c_ttWarp)) == 0) ||
-        (maxDistance == 0))
+	//Spunky - check current sector for cowardliness #288, #293
+	if  (ttMask & c_ttCowardly && !pcluster->IsFriendlyCluster(pside, cqNone)
+		|| ttMask & c_ttCowardlyNeutOK && !pcluster->IsFriendlyCluster(pside, cqIncludeNeutral)
+		|| ttMask & c_ttNoEye && !pcluster->IsFriendlyCluster(pside, cqNoEye)
+		|| ttMask & c_ttPositiveBOP && !pcluster->IsFriendlyCluster(pside, cqPositiveBOP))
+		pmodelTarget = NULL; 
+	
+	if (pmodelTarget || (ttMask & c_ttAnyCluster) == 0 ||
+		ttMask & (c_ttStation | c_ttAsteroid | c_ttTreasure | c_ttWarp) == 0 || maxDistance == 0)
         return pmodelTarget;
 
     IclusterIGC*    pclusterStart = pcluster;

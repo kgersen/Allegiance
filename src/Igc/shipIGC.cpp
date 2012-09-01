@@ -131,6 +131,7 @@ void    CshipIGC::ReInitialize(DataShipIGC * dataShip, Time now)
     m_nKills = dataShip->nKills;
 
 	m_miningCluster = NULL; //Spunky #268
+	m_newMiningCluster = false; //Spunky #268
 	m_doNotBuild = true; //Spunky #304
 
     //Get the ship's hull type
@@ -2092,7 +2093,6 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 if (m_fOre + minedOre >= capacity)
                 {
                     minedOre = capacity - m_fOre;
-					m_miningCluster = GetCluster(); //Spunky #268 - we wanna come back to the same cluster 
 					PickDefaultOrder(GetCluster(), GetPosition(), false); //Spunky #268 use the pickdefaultorder facility to unload
                 }
 
@@ -2102,7 +2102,6 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 if (actualOre != minedOre)
                 {
                     //Tapped this asteroid out ... pick a new default order.
-					m_miningCluster = GetCluster(); //Spunky - #268 still wanna come back here
                     PickDefaultOrder(GetCluster(), GetPosition(), false);
                 }
 
@@ -3506,8 +3505,6 @@ void    CshipIGC::ResetWaypoint(void)
                     o = (m_commandIDs[c_cmdPlan] == c_cidBuild) && (m_pilotType == c_ptBuilder)
                         ? Waypoint::c_oEnter
                         : Waypoint::c_oGoto;
-					if (m_commandIDs[c_cmdPlan] == c_cidMine) //Spunky #268
-						m_miningCluster = m_commandTargets[c_cmdPlan]->GetCluster(); 
                 }
                 break;
                 case OT_station:
@@ -3627,13 +3624,22 @@ void    CshipIGC::ResetWaypoint(void)
                 }
                 break;
 
+				case OT_buoy:
+				{
+						if (m_pilotType == c_ptMiner) //Spunky #268
+						{
+							if (((IbuoyIGC*)m_commandTargets[c_cmdPlan])->GetBuoyType() == c_buoyCluster)
+							{
+								m_miningCluster = m_commandTargets[c_cmdPlan]->GetCluster();
+								m_newMiningCluster = true;
+							}
+						}
+				}
+
                 default:
 				{
-					if (m_commandIDs[c_cmdPlan] == c_cidGoto) //Spunky - #268
-					{
-							m_miningCluster = NULL;
-							m_doNotBuild = false; //Spunky #304
-					}
+					if (m_commandIDs[c_cmdPlan] == c_cidGoto)
+						m_doNotBuild = false; //Spunky #304
                     o = Waypoint::c_oGoto;
 				}
             }

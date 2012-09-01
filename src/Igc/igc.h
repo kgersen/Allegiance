@@ -4528,11 +4528,12 @@ enum TargetType
     c_ttMine        = 0x4000,
     c_ttProbe       = 0x8000,
 
-    c_ttLeastTargeted = 0x10000,
-    c_ttNoRipcord     = 0x20000,
-    c_ttCowardly      = 0x40000,
-	c_ttPositiveBOP   = 0x80000, //Spunky
-	c_ttNoEye		  = 0x100000, //Spunky
+    c_ttLeastTargeted  = 0x10000,
+    c_ttNoRipcord      = 0x20000,
+    c_ttCowardly       = 0x40000,
+	c_ttPositiveBOP    = 0x80000, //Spunky #288
+	c_ttNoEye		   = 0x100000, //Spunky #288
+	c_ttCowardlyNeutOK = 0x200000, //Spunky  #293
 
     c_ttShipTypes   = c_ttShip | c_ttStation,
 

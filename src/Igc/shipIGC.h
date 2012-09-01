@@ -2132,20 +2132,39 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     if (m_fOre < capacity / 2.0f)
                     {
 						ImodelIGC*  pmodel = NULL;
-						//Try the mining sector first if still neutral or friendly - Spunky #268
+						//Try the mining sector first
 						if (m_miningCluster)
 						{
-							if (m_miningCluster ->IsFriendlyCluster(GetSide(), cqIncludeNeutral))					
+							if (m_newMiningCluster)
+							{
 								pmodel = FindTarget(this,
 															c_ttNeutral | c_ttAsteroid | c_ttNearest |
-															c_ttLeastTargeted,
+															c_ttLeastTargeted, //not cowardly to allow assault mining
 															NULL, m_miningCluster, NULL, NULL,
 															m_abmOrders);
+								m_newMiningCluster = false;
+							}
+							else
+								pmodel = FindTarget(this,
+															c_ttNeutral | c_ttAsteroid | c_ttNearest |
+															c_ttLeastTargeted | c_ttCowardlyNeutOK,
+															NULL, m_miningCluster, NULL, NULL,
+															m_abmOrders);
+
 						}
 						//Spunky #288	
 						if (!pmodel)
 						{
 							m_miningCluster = NULL;
+							pmodel = FindTarget(this,
+                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
+                                                        c_ttLeastTargeted | c_ttAnyCluster | c_ttPositiveBOP | c_ttNoEye,
+                                                        NULL, pcluster, &position, NULL,
+                                                        m_abmOrders);
+						}
+
+						if (!pmodel)
+						{
 							pmodel = FindTarget(this,
                                                         c_ttNeutral | c_ttAsteroid | c_ttNearest |
                                                         c_ttLeastTargeted | c_ttAnyCluster | c_ttPositiveBOP,
@@ -2157,7 +2176,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 						{
 							pmodel = FindTarget(this,
 	                                                    c_ttNeutral | c_ttAsteroid | c_ttNearest |
-	                                                    c_ttLeastTargeted | c_ttAnyCluster | c_ttPositiveBOP,
+	                                                    c_ttLeastTargeted | c_ttAnyCluster | c_ttNoEye,
 	                                                    NULL, pcluster, &position, NULL,
 	                                                    m_abmOrders);
 						}
@@ -2192,28 +2211,31 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                                 NULL, pcluster, &position, NULL,
                                                 c_sabmLand);
 
-						//Spunky #269 - if we are not almost full, continue mining, but only if asteroid is nearby when we have a base in the sector
+						//Spunky #269 - if we are not almost full, continue mining, but not if a base in sector is closer
+						//than the asteroid
 						if (m_fOre < capacity * 0.75f)
 						{				
 							ImodelIGC*  pmodelAsteroid = NULL;
 							pmodelAsteroid = FindTarget(this,
-                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest | c_ttLeastTargeted | c_ttCowardly,
+                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest | c_ttLeastTargeted | 
+														c_ttPositiveBOP | c_ttNoEye, //very cowardly
                                                         NULL, pcluster, &position, NULL,
                                                         m_abmOrders);
 
 							if (pmodelAsteroid && pmodel)
 							{		
-								bool mineAnother=false;
+								bool mineAnother = false;
 								if (pmodel->GetCluster() != pcluster)
-									mineAnother=true;
+									mineAnother = true;
 								else
 								{
-									const Vector basePosition=pmodel->GetPosition();
-									const Vector asteroidPosition=pmodelAsteroid->GetPosition();
-									const float ourDistanceToBase=(position-basePosition).Length();				
+									const Vector basePosition = pmodel->GetPosition();
+									const Vector asteroidPosition = pmodelAsteroid->GetPosition();
+									const float ourDistanceToBase = (position - basePosition).Length();				
 								
-									if ((asteroidPosition-basePosition).Length() < ourDistanceToBase * 1.5f && (position-asteroidPosition).Length() < ourDistanceToBase)
-										mineAnother=true;
+									if ((asteroidPosition - basePosition).Length() < ourDistanceToBase * 1.5f 
+										&& (position - asteroidPosition).Length() < ourDistanceToBase)
+										mineAnother = true;
 								}
 								
 								if (mineAnother)
@@ -2222,10 +2244,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 										fGaveOrder = true;
 										break;
 								}
-							}
-							else
-								m_miningCluster=NULL;
-							
+							}						
 						}
 						if (pmodel)
 						{
@@ -2492,6 +2511,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
 		bool				m_stayDocked;  //Xynth #48 8/10
 		IclusterIGC*		m_miningCluster; //Spunky #268
+		bool				m_newMiningCluster; //Spunky #268
 		bool				m_doNotBuild; //Spunky #304
 };
 
