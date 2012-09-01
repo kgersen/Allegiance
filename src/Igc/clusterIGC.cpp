@@ -737,10 +737,10 @@ IbuildingEffectIGC*      CclusterIGC::CreateBuildingEffect(Time           now,
 
 
 
-bool CclusterIGC::IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty) //Spunky #?
+bool CclusterIGC::IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty) //Spunky #288
 {
 	int balanceOfPower = 0;
-	//carrier or ASS in sector = not friendly - Spunky #?
+	//carrier or ASS in sector = not friendly - Spunky #290
 	ShipLinkIGC* pshipl = GetShips()->first();
 	if (pshipl)
 	{
@@ -775,12 +775,7 @@ bool CclusterIGC::IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty) //Spu
         IstationIGC*    ps = psl->data();
         if (!ps->GetStationType()->HasCapability(c_sabmPedestal) && ps->SeenBySide(pside) && pside != ps->GetSide() 
 			&& !IsideIGC::AlliedSides(pside, ps->GetSide())) // #ALLY FIXED 7/10/09 imago
-		{
-			if ((cqlty & cqNoEye) != 0)
 				return false;
-			if (ps->GetStationType()->HasCapability(c_sabmRipcord | c_sabmStart)) //only care about launchable and ripcordable stations
-				return false;
-		}
         psl = psl->next();
     }
     while (psl != NULL);
