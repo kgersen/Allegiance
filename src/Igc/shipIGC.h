@@ -2192,7 +2192,17 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 						}
 						if (pmodel)
 						{
-							SetCommand(c_cmdAccepted, pmodel, c_cidMine);
+							//Spunky #334
+							ImodelIGC*  pRefInCluster = NULL;
+							if (m_fOre > capacity * 0.25f && pmodel->GetCluster() != pcluster)
+							//we have significant ore and are going out of the cluster - unload if there is a ref here
+								 pRefInCluster = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest,
+                                                NULL, pcluster, &position, NULL,
+                                                c_sabmTeleportUnload);
+							if (pRefInCluster)
+								SetCommand(c_cmdAccepted, pRefInCluster, c_cidGoto);
+							else
+								SetCommand(c_cmdAccepted, pmodel, c_cidMine);
 							fGaveOrder = true;
 						}
 					}
@@ -2229,13 +2239,18 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 									mineAnother = true;
 								else
 								{
-									const Vector basePosition = pmodel->GetPosition();
-									const Vector asteroidPosition = pmodelAsteroid->GetPosition();
-									const float ourDistanceToBase = (position - basePosition).Length();				
+									//Spunky #334
+									if ((((IstationIGC*)pmodel)->GetBaseStationType()->GetCapabilities() & c_sabmTeleportUnload) == 0)	
+									{
+										const Vector basePosition = pmodel->GetPosition();
+										const Vector asteroidPosition = pmodelAsteroid->GetPosition();
+										const float ourDistanceToBase = (position - basePosition).Length();				
+
 								
-									if ((asteroidPosition - basePosition).Length() < ourDistanceToBase * 1.5f 
-										&& (position - asteroidPosition).Length() < ourDistanceToBase)
-										mineAnother = true;
+										if ((asteroidPosition - basePosition).Length() < ourDistanceToBase * 1.5f 
+											&& (position - asteroidPosition).Length() < ourDistanceToBase)
+											mineAnother = true;
+									}
 								}
 								
 								if (mineAnother)
