@@ -2212,9 +2212,20 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         ImodelIGC*  pmodel = NULL;
 
                         if (m_fOre > 0.0f)
-                            pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+						{
+							//Spunky #331
+							pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest,
                                                 NULL, pcluster, &position, NULL,
                                                 c_sabmUnload);
+							if (!pmodel)
+								pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster | c_ttCowardly,
+                                                NULL, pcluster, &position, NULL,
+                                                c_sabmUnload);
+							if (!pmodel)
+								pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+                                                NULL, pcluster, &position, NULL,
+                                                c_sabmUnload);
+						}
 
                         if (pmodel == NULL)
                             pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
