@@ -210,6 +210,19 @@ class       CbucketIGC : public IbucketIGC
 								return false;
 						}
 
+						//check there's a suitable rock
+						AsteroidAbilityBitMask aabm = pStationtype->GetBuildAABM();
+						bool foundAsteroid = false;
+						for (AsteroidLinkIGC* asteroidLink = m_pMission->GetAsteroids()->first();
+							asteroidLink != NULL; asteroidLink = asteroidLink->next()) 
+						{
+							if (asteroidLink->data()->HasCapability(aabm) && asteroidLink->data()->SeenBySide(m_data.side)) {
+								foundAsteroid = true;
+								break;
+							}
+						}
+						if (!foundAsteroid) return false;
+
 						break;
 					}
 				case OT_droneType:
