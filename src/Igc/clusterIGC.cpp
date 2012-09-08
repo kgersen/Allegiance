@@ -764,22 +764,29 @@ bool CclusterIGC::IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty) //Spu
 		return false;
 		
 	
+	//Spunky #333
 	StationLinkIGC* psl = GetStations()->first();
-    if (psl == NULL)
-		if (cqlty & cqIncludeNeutral)
-			return true;
-		else
-			return false;
-	do
-    {
-        IstationIGC*    ps = psl->data();
-        if (!ps->GetStationType()->HasCapability(c_sabmPedestal) && ps->SeenBySide(pside) && pside != ps->GetSide() 
-			&& !IsideIGC::AlliedSides(pside, ps->GetSide())) // #ALLY FIXED 7/10/09 imago
-				return false;
-        psl = psl->next();
-    }
-    while (psl != NULL);
-
-	return true; 	
+	bool ourBaseInCluster = false;
+    if (psl)
+	{
+		do
+		{
+			IstationIGC*    ps = psl->data();
+			if (!ps->GetStationType()->HasCapability(c_sabmPedestal) && ps->SeenBySide(pside))
+			{
+				if (pside != ps->GetSide() && !IsideIGC::AlliedSides(pside, ps->GetSide())) // #ALLY FIXED 7/10/09 imago
+					return false;
+				else 
+					ourBaseInCluster = true;
+			}
+			psl = psl->next();
+		}
+		while (psl != NULL);
+	}
+	
+	if (cqlty & cqIncludeNeutral || ourBaseInCluster)
+		return true;
+	else
+		return false;
 }
 
