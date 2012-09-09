@@ -52,7 +52,11 @@ HRESULT     CstationIGC::Initialize(ImissionIGC* pMission, Time now, const void*
         {
             m_stationID = dataStation->stationID;
 
-            SetBaseStationType(pMission->GetStationType(dataStation->stationTypeID));
+			if (pMission->GetStationType(dataStation->stationTypeID)) //Turkey 09/12 #335
+				SetBaseStationType(pMission->GetStationType(dataStation->stationTypeID));
+			else
+				SetBaseStationType(pMission->GetSide(dataStation->sideID)->GetCivilization()->GetInitialStationType());
+
             assert (m_myStationType.GetStationType());
 
             SetPosition(dataStation->position);
