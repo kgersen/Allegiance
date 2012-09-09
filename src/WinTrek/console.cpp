@@ -3017,6 +3017,7 @@ public:
 														//OutputDebugString("In OnTab() Calling SetVerb() and returning scoreBest= "+ZString(scoreBest)+"\n");
 	                                                    SetChatObject(NULL);
 	                                                    m_strTypedText.SetEmpty();
+														m_cursorPosition = 0; //09/12 #332
 	                                                    UpdateComposedChat();
 
 	                                                    return;
@@ -3035,6 +3036,7 @@ public:
                 {
                     SetChatObject(NULL);
                     m_strTypedText.SetEmpty();
+					m_cursorPosition = 0; //09/12 #332
                     m_pchsCurrent->SetRecipient(ct, oidRecipient, pbaseRecipient);
 					//OutputDebugString("In OnTab() Calling SetRecipient() scoreBest= "+ZString(scoreBest)+"\n");
                 }
