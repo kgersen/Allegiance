@@ -551,8 +551,8 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
 		pmodelTarget = NULL; 
 	
 	if (pmodelTarget || (ttMask & c_ttAnyCluster) == 0 ||
-		ttMask & (c_ttStation | c_ttAsteroid | c_ttTreasure | c_ttWarp) == 0 || maxDistance == 0)
-        return pmodelTarget;
+	   (ttMask & (c_ttStation | c_ttAsteroid | c_ttTreasure | c_ttWarp)) == 0 || maxDistance == 0)
+		return pmodelTarget;
 
     IclusterIGC*    pclusterStart = pcluster;
     int             distance = 0;
