@@ -26,110 +26,11 @@
 
 //appweb -Imago
 static Mpr *mpr;
-#ifdef _DEBUG
-static MprLogModule *tMod;
-#endif
 static MprMutex	*mutex;
 
-static void doASGS(void* data, MprThread *threadp) {
-	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
-	CQLogonStats * pls = (CQLogonStats *)data;
-	CQLogonStatsData * pqd = pls->GetData();
-
-	int contentLen = 0; char *content; char szResponse[MAX_PATH];
-	RankID myRank = -2; // -3 wait, -2 wrong rank, -1 callsign does not exist, >=0 valid rank
-	char szURL[MAX_PATH]; char szName[c_cbName];
-	//KG- todo- this shouldn't be hardcoded here, TODO: use registry entry AuthServer (g.strAuthServer), that's its purpose anyway
-	Strcpy(szURL,"http://asgs.alleg.net/asgs/services.asmx/GetPlayerRank?Callsign=");
-
-	// one thread per connecting player
-	Strcpy(szName,pqd->szCharacterName);
-
-	// ignore "tokens" in player name
-	ZString strName = szName;
-	if ((isalnum(szName[0]) == 0) && (strName.Left(1) != "_"))
-		Strcpy(szName,strName.RightOf(1));
-
-	// add the name to the url
-	Strcat(szURL,szName);
-
-	//Imago check only if connected to a lobby - 6/26/09
-	//KG- also for debug/pigs and server not using ASGS (for now an "AuthServer" empty means do not use ASGS)
-	if (g.fmLobby.IsConnected() && !g.strAuthServer.IsEmpty()) {
-
-        // First make sure we can write to a socket
-        MprSocket* socket = new MprSocket();
-        socket->openClient("asgs.alleg.net",80,0); //KG- todo- need to parse this from the single url (szURL). hardcoded values are bad.
-        int iwrite = socket->_write("GET /\r\n");
-        delete socket;
-
-        MaClient* client = new MaClient();
-	    client->setTimeout(3000); //KG- todo- check if consistent with the client timeout 
-	    client->setRetries(1);
-	    client->setKeepAlive(0);
-
-        if (iwrite == 7) { // make sure we wrote 7 bytes
-	        client->getRequest(szURL);
-	        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
-		        content = client->getResponseContent(&contentLen);
-        }
-
-		if (contentLen > 0) { // there's POSITIVE content, we excpect it a certain way...
-			ZString strContent = content;
-			strContent = strContent.RightOf(88);
-			strContent = strContent.LeftOf("<");
-			Strcpy(szResponse,(PCC)strContent);
-
-			// the only explicit error known, Pook?
-			if (Strcmp(strtok(szResponse,"|"),"0") != 0 ) {
-					myRank = -1;
-			} else {
-					myRank = atoi(strtok(NULL,"|"));
-			}
-
-			// sanity check
-			if (myRank <= SHRT_MAX && myRank >= SHRT_MIN) {
-				mutex->lock();
-				pqd->rank = myRank;
-				mutex->unlock();
-			} else { // insanity
-				mutex->lock();
-				pqd->rank = -2;
-				mutex->unlock();
-			}
-		} 
-		else 
-		{ // mmf/imago no content failover uses the rank from the playerName(#) or go with 0 (Newbie)
-			int strLen = strName.GetLength();
-			int leftParen = strName.ReverseFind('(',0);
-			if (leftParen>=1) { //rank in the name
-				char szRank[3];
-				Strncpy(szRank,(PCC)strName+leftParen+1,(strLen-leftParen)-1);
-				myRank = atoi(szRank);
-				if (!((myRank>0) && (myRank<100))) { //more insanity
-					myRank=-2; // you are the wrong rank for all missions!
-				}
-			} 
-			else 
-			{
-				//no rank in name
-				myRank = 0;
-			}
-			mutex->lock();
-			pqd->rank = myRank;
-			mutex->unlock();
-		}
-        delete client;
-	} 
-	else 
-	{ //not connected to a lobby, just set rank to 0 - imago 6/26/09
-		//KG- todo - get rank from playername(#) too
-		pqd->rank = 0;
-	}
-
-	// tell the main thread we've finished using the existing thread msg for AZ SQL
-	PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
-}
+#ifdef _DEBUG
+	static MprLogModule *tMod;
+#endif
 
 #if !defined(ALLSRV_STANDALONE)
 void DoDecrypt(int size, char* pdata)
@@ -5594,12 +5495,26 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
 
-		// KG: todo - skip asgs check for debug/pigs purpose or guard it with a configuration setting like for the lobby
-		// for now, will do this in doASGS but spawning a thread when no web async is required is overkill
-		char mprthname[9];
-		mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
-		MprThread* threadp = new MprThread(doASGS, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname);
-		threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
+		// BT - 12/21/2010 ACSS - Use a message to the lobby server to get the player's rank details instead of
+		// direct calls to the lobby web service.
+		BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+			FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS) 
+			FM_VAR_PARM(PCC(pqd->szReason), CB_ZTS) 
+			FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS) 
+			FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS) 
+		END_PFM_CREATE
+
+		pfmPlayerRank->characterID = pqd->characterID;
+		pfmPlayerRank->fCanCheat = pqd->fCanCheat;
+		pfmPlayerRank->fRetry = pqd->fRetry;
+		pfmPlayerRank->dwCookie = pqd->dwCookie;
+		pfmPlayerRank->fValid = pqd->fValid;
+		pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
+
+		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+
+		// Wait for a PLAYER_RANK message to come back from the lobby.
+
 
 #if !defined(ALLSRV_STANDALONE)
         if (fValid)

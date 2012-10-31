@@ -2,10 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-windowed -noautoupdate -nomovies -multi -debug</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-windowed -noautoupdate -nomovies -multi -debug -mdllog -windowlog -callsign=*PorkMuffins@BS</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>-debug -mdllog -windowlog -windowed -nomovies</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-windowed -noautoupdate -nomovies -multi -debug -mdllog -windowlog -callsign=*PorkMuffins@BS</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

@@ -1303,6 +1303,9 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
     if (m_strCDKey.IsEmpty())
         m_strCDKey = ZString(ci.szName).ToUpper();
 
+	char szCdKey[2064];
+	strcpy(szCdKey, (PCC)m_strCDKey);
+
     if (m_fm.IsConnected())
     {
         ZSucceeded(hr);
@@ -1311,9 +1314,10 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
         BEGIN_PFM_CREATE(m_fm, pfmLogon, C, LOGONREQ)
             FM_VAR_PARM(ci.szName, CB_ZTS)
             FM_VAR_PARM(ci.pZoneTicket, ci.cbZoneTicket)
-        // wlp 2006 - this is the ASGS Ticket
-        //     FM_VAR_PARM((PCC)m_strCDKey, CB_ZTS)            
-             FM_VAR_PARM("FERAL-1234567890123456", CB_ZTS)            // wlp 2006 - Don't send ASGS token to game server
+
+			// BT - 9/11/2010 - Sending the token to the server so that the server will also enforce authentication. 
+            FM_VAR_PARM(szCdKey, CB_ZTS)
+
             FM_VAR_PARM(szPassword, CB_ZTS)
         END_PFM_CREATE
         pfmLogon->fedsrvVer = MSGVER;

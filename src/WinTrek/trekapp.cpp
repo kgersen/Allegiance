@@ -271,6 +271,42 @@ bool CheckForAllGuard()
   return false;
 }
 
+ZString ReadAuthPipe()
+{
+	const int LENGTH = 64;
+	HANDLE hWrite;
+	DWORD nDataLength;
+	DWORD nWritten;
+	DWORD *nRead;
+	char buffer[LENGTH];
+	char memoryLocation[LENGTH];
+
+	buffer[0] = '\0';
+
+	sprintf(memoryLocation, "%ld", &buffer);
+	nDataLength = strlen(memoryLocation) + 1;
+
+	debugf("sending memory location: %s\r\n", memoryLocation);
+
+	hWrite = CreateFile(_T("\\\\.\\pipe\\allegqueue"), 
+		FILE_GENERIC_WRITE, 0, NULL, CREATE_NEW, 0, NULL);
+
+	if(WriteFile(hWrite, memoryLocation, nDataLength, &nWritten, NULL) == false || nDataLength != nWritten)
+		debugf("Couldn't write memory address to named pipe for key relay.\r\n");
+
+	CloseHandle(hWrite);
+
+	for(int i = 0; i < 100 && strlen(buffer) == 0; i++)
+		Sleep(100);
+
+	if(strlen(buffer) == 0)
+		debugf("Remote process didn't deliver key to memory location within 10 seconds.\r\n"); 
+	
+	debugf("received key length: %ld, %s\r\n", strlen(buffer), buffer);
+
+	return ZString(buffer);
+};
+
 
 
 class TrekAppImpl : public EffectApp {
@@ -554,6 +590,8 @@ public:
         bool bPrimary         = false;
         bool bSecondary       = false;
 		bool bStartFullscreen = true;
+
+
         ZString strMap;
 		ZString strAdapter; int iUseAdapter = 0;
 
@@ -626,8 +664,6 @@ public:
                 // wlp 2006 - added debug option to turn on debug output
 				} else if (str == "debug") {
                     g_outputdebugstring  = true;           //wlp allow debug outputs
-  				} else if (str.Left(10) == "authtoken=") { // wlp - 2006, added new ASGS tickettoken
-                    trekClient.SetCDKey(str.RightOf(10)) ; // Use CdKey for ASGS storage
                 } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
                     trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
                     g_bAskForCallSign = false ; // wlp callsign was entered on commandline
@@ -645,6 +681,9 @@ public:
             else // wlp 2006 - adapted this string featture to add ASGS Ticket to cdKey field
             if (token.IsString(str)){} ;
             }
+
+		//Orion - 2009 ACSS : check the alleg pipe for the auth token
+		trekClient.SetCDKey(ReadAuthPipe());
 
         // 
         // Check for other running copies of the app

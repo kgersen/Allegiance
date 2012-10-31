@@ -130,18 +130,29 @@ public:
     return m_fFreeLobby && m_fCheckCDKey;
   }
 
-  //Imago added 8/6/09
-  bool EnforceASGS()
+  //Orion ACSS : 2009 - Made more generic
+  bool EnforceAuthentication()
   {
-      return (m_dwASGS) ? true : false;
+      return (m_dwAuthentication) ? true : false;
   }
+
+  char* RetrieveAuthAddress()
+  {
+	  return m_szAuthenticationLocation;
+  }
+
 
   // -KGJV: added
   bool IsFreeLobby()
   {
 	  return m_fFreeLobby;
   }
-  void SetPlayerMission(const char* szPlayerName, const char* szCDKey, CFLMission* pMission);
+
+  // BT - 12/21/2010 - ACSS integration
+  bool CLobbyApp::GetRankForCallsign(const char* szPlayerName, int *rank, double *sigma, double *mu, int *commandRank, double *commandSigma, double *commandMu, char *rankName, int rankNameLen);
+  bool CDKeyIsValid(const char* szPlayerName, const char* szCDKey, const char* szAddress, char *resultMessage, int resultMessageLength);
+
+  void SetPlayerMission(const char* szPlayerName, const char* szCDKey, CFLMission* pMission, const char* szAddress);
   void RemovePlayerFromMission(const char* szPlayerName, CFLMission* pMission);
   void RemoveAllPlayersFromMission(CFLMission* pMission);
   void RemoveAllPlayersFromServer(CFLServer* pServer);
@@ -240,7 +251,8 @@ private:
   bool              m_fFreeLobby;
   bool              m_fCheckCDKey;
   char              m_szToken[24]; // sizeof(_ZONETICKET_TOKEN.szToken)
-  DWORD             m_dwASGS;
+  DWORD             m_dwAuthentication;
+  char				m_szAuthenticationLocation[261];
 
   // Player list stuff
   typedef std::multimap<ZString, PlayerLocInfo, StringCmpLess> PlayerByCDKey;
