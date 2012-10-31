@@ -414,9 +414,14 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
   {
     assert(GetCookie()); // we can't be sending messages w/ cookies unless we have a real cookie
 
+	 // BT - 9/11/2010 ACSS - Supports authentication check of the CD Key.
+	char szAddress[16];
+	g.fm.GetIPAddress(*pfsPlayer->GetConnection(), szAddress);
+
     BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerJoined, S, PLAYER_JOINED)
       FM_VAR_PARM(pfsPlayer->GetName(), CB_ZTS)
       FM_VAR_PARM(pfsPlayer->GetCDKey(), CB_ZTS)
+	  FM_VAR_PARM(szAddress, CB_ZTS) // BT - 9/11/2010 ACSS - Supports authentication check of the CD Key.
     END_PFM_CREATE
     pfmPlayerJoined->dwMissionCookie = GetCookie();
     g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);

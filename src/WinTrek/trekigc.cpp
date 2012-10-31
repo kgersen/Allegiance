@@ -4608,6 +4608,9 @@ void            WinTrekClient::Preload(const char*  pszModelName,
 
 void WinTrekClient::SetCDKey(const ZString& strCDKey)
 {
+	// BT - 5/21/2012 - ACSS - Debugging for the CDKey.
+	//debugf("SetCDKey() strCDKey = %s\r\n", (const unsigned char*)(PCC) strCDKey);
+
     HKEY hKey;
     // wlp 2006 - Cdkey is the ASGS Ticket Now - we don't want to save it
     //

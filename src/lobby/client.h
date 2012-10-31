@@ -51,5 +51,8 @@ private:
   DWORD           m_dwID;
 };
 
+// BT - 9/11/2010 - Making this usable by other classes.
+void encodeURL( char * url, char * token);
+
 #endif
 

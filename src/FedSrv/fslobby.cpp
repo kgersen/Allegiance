@@ -8,6 +8,7 @@
   Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 #include "pch.h"
+#include "FedSrv.H"
 
 HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm)
 {
@@ -197,6 +198,38 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       // TODO: consider firing out an event message
       PostQuitMessage(-1);
     }
+
+	// BT - 12/21/2010 ACSS - The lobby server will relay the rank details back to the game server.
+	case FM_LS_PLAYER_RANK:
+	{
+		CQLogonStats * pquery = new CQLogonStats(GotLogonDetails);
+		CQLogonStatsData * pqd = pquery->GetData();
+
+		CASTPFM(pfmPlayerRank, LS, PLAYER_RANK, pfm);
+
+		lstrcpy(pqd->szCDKey, FM_VAR_REF(pfmPlayerRank, szCDKey));
+		lstrcpy(pqd->szCharacterName, FM_VAR_REF(pfmPlayerRank, szCharacterName));
+		lstrcpy(pqd->szPassword, FM_VAR_REF(pfmPlayerRank, szPassword));
+		lstrcpy(pqd->szReason, FM_VAR_REF(pfmPlayerRank, szReason));
+
+		pqd->characterID = pfmPlayerRank->characterID;
+		pqd->fCanCheat = pfmPlayerRank->fCanCheat;
+		pqd->fRetry = pfmPlayerRank->fRetry;
+		pqd->dwCookie = pfmPlayerRank->dwCookie;
+		pqd->fValid = pfmPlayerRank->fValid;
+		pqd->dwConnectionID = pfmPlayerRank->dwConnectionID;
+
+		pqd->rank = pfmPlayerRank->rank;
+		pqd->sigma = pfmPlayerRank->sigma;
+		pqd->mu = pfmPlayerRank->mu;
+		pqd->commandRank = pfmPlayerRank->commandRank;
+		pqd->commandSigma = pfmPlayerRank->commandSigma;
+		pqd->commandMu = pfmPlayerRank->commandMu;
+
+		PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pquery);
+		break;
+	}
+
     break;
   }
 

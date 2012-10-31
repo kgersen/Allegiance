@@ -273,8 +273,10 @@ protected:
         FILE_COMPLETED,
     };
 
-    static DWORD WINAPI DownloadThread(LPVOID pThreadParameter)
+     static DWORD WINAPI DownloadThread(LPVOID pThreadParameter)
     {
+		debugf("DownloadThread(): thread started.\r\n");
+
         CInternetSessionImpl * pSession = (CInternetSessionImpl *) pThreadParameter;
 
         HANDLE pHandles[] = { pSession->m_eventKillDownload, pSession->m_eventResumeDownload };
@@ -282,43 +284,60 @@ protected:
         //
         // Wait for file download to resume or for abort
         //
+		debugf("DownloadThread(): beginning wait cycle.\r\n");
         while (WaitForMultipleObjects(2, pHandles, FALSE, INFINITE) != WAIT_OBJECT_0)
         {
+			debugf("DownloadThread(): Checking for pSession->m_hFile: %ld\r\n", pSession->m_hFile);
+
             if (pSession->m_hFile == NULL)
             {
+				debugf("DownloadThread(): pSession->m_hFile was null, calling start next file.\r\n");
+
                 if (!pSession->StartNextFile())
                 {
+					debugf("DownloadThread(): pSession->StartNextFile() failed, killing download.\r\n");
                     SetEvent(pSession->m_eventKillDownload);
                     break;
                 }
             }
 
+			debugf("DownloadThread(): checking pSession->m_hFile: %ld\r\n", pSession->m_hFile);
+
             if (pSession->m_hFile != NULL) 
             {
-//                DOWNLOAD_RESULT result = pSession->DownloadFileBlock();
+				debugf("DownloadThread(): pSession->m_hFile was not null, downloading file block.\r\n");
+
                 DOWNLOAD_RESULT result = DOWNLOAD_ERROR; // default to error, until we know better
                 __try
                 {
                     result = pSession->DownloadFileBlock();
+					debugf("DownloadThread(): pSession->DownloadFileBlock() result: %ld.\r\n", result);
                 }
                 __except(1)
                 {
                     result = DOWNLOAD_ERROR;
+					debugf("DownloadThread(): pSession->DownloadFileBlock() = threw exception, DOWNLOAD_ERROR.\r\n");
                 }
 
                 if (result == DOWNLOAD_PROGRESS)
                 {
+					debugf("DownloadThread(): pSession->DownloadFileBlock() returned: DOWNLOAD_PROGRESS\r\n");
                     SetEvent(pSession->m_eventProgress);
+					debugf("DownloadThread(): pSession->m_eventProgress - event set.\r\n");
                 }
                 else
                 if (result == FILE_COMPLETED)
                 {
+					debugf("DownloadThread(): pSession->DownloadFileBlock() returned: FILE_COMPLETED\r\n");
                     SetEvent(pSession->m_eventFileCompleted);
+					debugf("DownloadThread(): pSession->m_eventFileCompleted - event set.\r\n");
                 }
                 else
                 if (result == DOWNLOAD_ERROR)
                 {
+					debugf("DownloadThread(): pSession->DownloadFileBlock() returned: DOWNLOAD_ERROR\r\n");
                     SetEvent(pSession->m_eventKillDownload);
+					debugf("DownloadThread(): pSession->m_eventKillDownload - event set.\r\n");
                     break;
                 }
             }

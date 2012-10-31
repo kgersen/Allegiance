@@ -14,7 +14,7 @@
 #include "MessageCore.h"
 
 // Imago updated for R5 8/6/09
-#define LOBBYVER_LS 11 // If you change this file, increment this // #2 6/10 // #62 7/10
+#define LOBBYVER_LS 12 // If you change this file, increment this // #2 6/10 // #62 7/10 // ACSS 5/2012
 
 
 /*
@@ -83,8 +83,35 @@ END_FEDMSG
 DEFINE_FEDMSG(S, PLAYER_JOINED, 209) // a new player has joined - tell the lobby.
   FM_VAR_ITEM(szCharacterName); 
   FM_VAR_ITEM(szCDKey); // Scrambled using CharacterName
+  FM_VAR_ITEM(szAddress); // BT - 12/21/2010 - ACSS
   DWORD dwMissionCookie;
 END_FEDMSG
+
+// BT - 12/21/2010 - ACSS Integration for player ranks. 
+DEFINE_FEDMSG(LS, PLAYER_RANK, 214)
+  // These items are pass thru.
+  FM_VAR_ITEM(szCharacterName); 
+  FM_VAR_ITEM(szReason);     
+  FM_VAR_ITEM(szPassword);
+  FM_VAR_ITEM(szCDKey);
+  FM_VAR_ITEM(szRankName); // Returned from the server.
+  int characterID;
+  bool fCanCheat;
+  bool fRetry;
+  DWORD dwCookie;
+  bool fValid;
+  DWORD dwConnectionID;
+
+  // These items will also be returned from the lobby server.
+  int rank;
+  double sigma;
+  double mu;
+  int commandRank;
+  double commandSigma;
+  double commandMu;
+
+END_FEDMSG
+
 
 DEFINE_FEDMSG(S, PLAYER_QUIT, 210) // a player quit the game
   FM_VAR_ITEM(szCharacterName); 

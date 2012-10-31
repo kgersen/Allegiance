@@ -11,6 +11,7 @@
 #include "pch.h"
 #include <conio.h>
 #include <zreg.h>
+#include "client.h"
 
 ALLOC_MSG_LIST;
 
@@ -143,7 +144,7 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   m_fProtocol(true),
   m_cStaticCoreInfo(0),
   m_vStaticCoreInfo(NULL),
-  m_dwASGS(0)
+  m_dwAuthentication(0)
 #ifdef USECLUB
   ,
   m_csqlSilentThreads(0),
@@ -323,12 +324,25 @@ HRESULT CLobbyApp::Init()
     //Imago 8/6/09 We can't use any of these other handy registry functions
     // because we have to be different and read from Allsrv's registry key ;-/
     HKEY  hk;
-    if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, "", 
+    if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", 
       REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hk, NULL) == ERROR_SUCCESS)
     {
-        _Module.ReadFromRegistry(hk, false, "ASGS_ON", &m_dwASGS, 0, true);
+		//Orion ACSS : 2009
+        _Module.ReadFromRegistry(hk, false, "AUTH_ON", &m_dwAuthentication, 0, true);
     }
     RegCloseKey(hk);
+
+    //Orion ACSS : 2009 - Retrieve url of auth server from registry
+	if (m_dwAuthentication)
+	{
+		HKEY  hk;
+		if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, "", 
+		  REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hk, NULL) == ERROR_SUCCESS)
+		{
+			_Module.ReadFromRegistry(hk, true, "AUTH_ADDRESS", m_szAuthenticationLocation, NULL);
+		}
+		RegCloseKey(hk);
+	}
   }
 
   return hr;
@@ -575,24 +589,204 @@ bool CLobbyApp::BootPlayersByCDKey(const ZString& strCDKey, const ZString& strNa
   return bBootedSomeone;
 }
 
-void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, CFLMission* pMission)
+// BT - 12/21/2010 - CSS - Get all rank details from the lobby web service
+bool CLobbyApp::GetRankForCallsign(const char* szPlayerName, int *rank, double *sigma, double *mu, int *commandRank, double *commandSigma, double *commandMu, char *rankName, int rankNameLen)
 {
+	char resultMessage[1024];
+	int contentLen = 0; 
+    char *content;
+    char szResponse[MAX_PATH];    
+	char szURL[MPR_HTTP_MAX_URL]; 
+	char szName[c_cbName];
+
+	// the player callsign has to be urlencoded, because it may contain '+', '?', etc.
+	char callsign[128];
+	char playername[128];
+	Strcpy(playername, szPlayerName);
+	strcpy(callsign, "");
+	encodeURL(callsign, playername);
+
+	char* baseUrl = g_pLobbyApp->RetrieveAuthAddress();
+	sprintf(szURL, "%s?Action=GetRank&Callsign=%s", baseUrl, callsign);
+
+	MaUrl maUrl;
+	maUrl.parse(szURL);
+
+	// First make sure we can write to a socket
+    MprSocket* socket = new MprSocket();
+	socket->openClient(maUrl.host, maUrl.port, 0);
+    int iwrite = socket->_write("GET /\r\n");
+    delete socket;
+
+    MaClient* client = new MaClient();
+    client->setTimeout(3000);
+    client->setRetries(1);
+    client->setKeepAlive(0);
+
+	strcpy(resultMessage, "Rank Retrieve Failed.\n\nPlease contact system admin.");
+
+	// make sure we wrote 7 bytes
+    if (iwrite == 7) 
+	{ 
+		debugf("retrieving rank: %s\r\n", szURL);
+
+        client->getRequest(szURL);
+        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
+	        content = client->getResponseContent(&contentLen);
+		else
+		{
+			char msg[1024];
+			sprintf(resultMessage, "Lobby GetRank Service Failed (%i)", client->getResponseCode());
+		}
+    }
+
+	debugf("GetRankForCallsign(): contentLen = %ld, content = %s\r\n", contentLen, content);
+	
+	int resultCode = -1;
+
+	char localRankName[50];
+	if(sscanf(content, "%ld|%ld|%s|%f|%f|%ld|%f|%f", &resultCode, rank, localRankName, sigma, mu, commandRank, commandSigma, commandMu) == EOF)
+		resultCode = -1;
+
+	strncpy(rankName, localRankName, rankNameLen);
+
+	// Delete this only after you are done with the content that came back from client->getResponseContent, or that 
+	// pointer will get fried.
+	delete client;
+
+	if(resultCode == 0)
+		strcpy(resultMessage, "Rank retrieved.");
+
+	debugf(resultMessage);
+
+	return resultCode == 0;
+}
+
+// BT - 9/11/2010 - CD Key check will call back to the lobby service to ensure the authentication token is valid.
+bool CLobbyApp::CDKeyIsValid(const char* szPlayerName, const char* szCDKey, const char* szAddress, char *resultMessage, int resultMessageLength)
+{
+	int contentLen = 0; 
+    char *content;
+    char szResponse[MAX_PATH];    
+	char szURL[MPR_HTTP_MAX_URL]; 
+	char szName[c_cbName];
+
+	//Orion : 2009 - Retrieve base lobby authentication service URL
+	char* baseUrl = g_pLobbyApp->RetrieveAuthAddress();
+
+	Strcpy(szURL, baseUrl);
+ 	
+	Strcat(szURL,"?Callsign=");
+	
+ 	// one thread per connecting player
+ 	Strcpy(szName, szPlayerName);
+
+	
+	// the player callsign has to be urlencoded, because it may contain '+', '?', etc.
+	char callsign[128];
+	char playername[128];
+	Strcpy(playername, szPlayerName);
+	strcpy(callsign, "");
+	encodeURL(callsign, playername);
+	Strcat(szURL, callsign);
+	
+	// add the IP to the url
+	Strcat(szURL,"&IP=");
+	Strcat(szURL,szAddress);
+
+	// add the ticket to the url
+	Strcat(szURL,"&Ticket=");
+
+	char cdkey[2048];
+	char escapedCdKey[2048];
+
+	Strcpy(cdkey, szCDKey);
+	strcpy(escapedCdKey, "");
+    encodeURL(escapedCdKey, cdkey); 
+	Strcat(szURL,escapedCdKey);
+
+	// BT - Get rid of the hardcoded reference to the auth url.
+	MaUrl maUrl;
+	maUrl.parse(szURL);
+
+    // First make sure we can write to a socket
+    MprSocket* socket = new MprSocket();
+	socket->openClient(maUrl.host, maUrl.port, 0); // BT - Get rid of the hardcoded reference to the auth url.
+    int iwrite = socket->_write("GET /\r\n");
+    delete socket;
+
+    MaClient* client = new MaClient();
+    client->setTimeout(3000);
+    client->setRetries(1);
+    client->setKeepAlive(0);
+
+	bool succeeded = false;
+	strcpy(resultMessage, "Authentication Failure.\n\nPlease restart the game using the Authentication System.");
+
+	// make sure we wrote 7 bytes
+    if (iwrite == 7) 
+	{ 
+		debugf("authenticating: %s\r\n", szURL);
+
+        client->getRequest(szURL);
+        if (client->getResponseCode() == 200) // check for HTTP OK 8/3/08
+	        content = client->getResponseContent(&contentLen);
+		else
+		{
+			char msg[1024];
+			sprintf(resultMessage, "Lobby Verification Service Failed (%i)", client->getResponseCode());
+			
+		}
+    }
+
+	debugf("CDKeyIsValid(): contentLen = %ld, content = %s\r\n", contentLen, content);
+	
+	if (contentLen > 0 && (Strcmp(content, "1") == 0)) { // there's POSITIVE content, we expect it a certain way...
+		succeeded = true;
+	}
+
+	// Delete this only after you are done with the content that came back from client->getResponseContent, or that 
+	// pointer will get fried.
+	delete client;
+
+	if(succeeded == true)
+		strcpy(resultMessage, "Authentication Succeeded.");
+
+	return succeeded;
+}
+
+
+void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, CFLMission* pMission, const char* szAddress)
+{
+
+	debugf("SetPlayerMission(): Setting player mission for: %s", szPlayerName);
+
   ZString strPlayerName = szPlayerName;
   ZString strCDKey = szCDKey;
+  ZString strAddress = szAddress;
 
   // boot any old copies of this player
 #ifdef USECLUB
   BootPlayersByName(strPlayerName);
 #endif
-  if (EnforceCDKey())
+
+  if(EnforceAuthentication() == true)
   {
-    // make sure the key requested is valid (since we can't guarantee that 
-    // they reported the correct value to the server).
-/* // we don't have any "instant" way to validate keys, and it's not worth it (now) to go back to db
-    if (!CDKeyIsValid(szCDKey))
+	  // BT - 9/11/2010 - Readding CD Key Auth on player join to the Allegiance server.
+	int resultMessageLength = 1024;
+	char resultMessage[1024];
+
+	debugf("SetPlayerMission(): checking valid key for: %s, cdKey: %s, IP: %s\r\n", szPlayerName, szCDKey, szAddress);
+
+	bool cdKeyIsValid = CDKeyIsValid(szPlayerName, szCDKey, szAddress, resultMessage, resultMessageLength);
+
+	debugf("SetPlayerMission(): keycheck for: %s, key: %s, address: %s, result: %s, succeeded: %s\r\n", szPlayerName, szCDKey, szAddress, resultMessage, (cdKeyIsValid == true) ? "true" : "false");
+
+    if (cdKeyIsValid == false)
     {
       BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
         FM_VAR_PARM(szPlayerName, CB_ZTS)
+		FM_VAR_PARM(resultMessage, CB_ZTS)
       END_PFM_CREATE
       pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
       pfmRemovePlayer->reason = RPR_duplicateCDKey;    
@@ -601,21 +795,22 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
       GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
           pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
     }
-    else 
-*/
-    ZString strOldPlayer;
+    else // BT - 9/11/2010 - End.
+	{
+		ZString strOldPlayer;
 
-    if (BootPlayersByCDKey(strCDKey, szPlayerName, strOldPlayer))
-    {
-      BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
-        FM_VAR_PARM(szPlayerName, CB_ZTS)
-        FM_VAR_PARM((PCC)strOldPlayer, CB_ZTS)
-      END_PFM_CREATE
-      pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
-      pfmRemovePlayer->reason = RPR_duplicateCDKey;    
-      m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
-        FM_GUARANTEED, FM_FLUSH);
-    }
+		if (BootPlayersByCDKey(strCDKey, szPlayerName, strOldPlayer))
+		{
+		  BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
+			FM_VAR_PARM(szPlayerName, CB_ZTS)
+			FM_VAR_PARM((PCC)strOldPlayer, CB_ZTS)
+		  END_PFM_CREATE
+		  pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
+		  pfmRemovePlayer->reason = RPR_duplicateCDKey;    
+		  m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
+			FM_GUARANTEED, FM_FLUSH);
+		}
+	}
   }
 
   // create a new player by creating entries in the maps
