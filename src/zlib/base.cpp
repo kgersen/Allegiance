@@ -62,7 +62,7 @@ ZFile::ZFile(const PathString& strPath, DWORD how) :
 	PathString unicodePath("\\\\?\\");
 
 	// If the path is relative, don't use unicode marker.
-	if(strPath.Left(1) == ZString("."))
+	if(strPath.Left(1) == ZString(".") || strPath.FindAny("//") == -1)
 		unicodePath = strPath;
 	else
 		unicodePath += strPath;
