@@ -264,8 +264,9 @@ namespace Training
 		// Press the SPACEBAR when you are ready to proceed.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
-            pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
-            pGoal->AddStartAction (new PlaySoundAction (tm_4_04rSound));
+	        ZString str = GetKeyName(TK_FireWeapon);
+            pGoal->AddStartAction (new MessageAction ("Press " + str + " when you are ready to proceed."));
+            //pGoal->AddStartAction (new PlaySoundAction (tm_4_04rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_04rSound));
             pGoalList->AddGoal (pGoal);
         }
@@ -298,8 +299,9 @@ namespace Training
 		// comms.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
-            pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
-            pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_06rSound));
+            ZString str = GetKeyName(TK_FireWeapon);
+            pGoal->AddStartAction (new MessageAction ("Press " + str + " when you are ready to proceed."));
+            //pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_06rSound));
             pGoalList->AddGoal (pGoal);
         }
 
@@ -346,7 +348,8 @@ namespace Training
 		// Press the INSERT key to accept this objective. 
         {
             Goal*   pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidGoto));
-            pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
+            ZString str = GetKeyName(TK_ExecuteCommand);
+			pGoal->AddStartAction (new MessageAction ("Press " + str + " to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_08rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_08rSound));
             pGoalList->AddGoal (pGoal);
@@ -447,7 +450,8 @@ namespace Training
         {
             Goal*   pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidGoto));
             pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_warp, 1030, c_cidGoto));
-            pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
+            ZString str = GetKeyName(TK_ExecuteCommand);
+			pGoal->AddStartAction (new MessageAction ("Press " + str + " to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_15Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_15Sound));
             pGoalList->AddGoal (pGoal);
@@ -719,7 +723,8 @@ namespace Training
 		    // Press the K key now to activate your cloak.
             {
                 Goal*   pGoal = new Goal (new ProxyCondition (pGetKeyCondition));
-                pGoal->AddStartAction (new MessageAction ("Press the K key to activate your cloak."));
+                ZString str = GetKeyName(TK_ToggleCloak);
+				pGoal->AddStartAction (new MessageAction ("Press " + str + " to activate your cloak."));
                 pGoal->AddStartAction (new PlaySoundAction (tm_4_26rSound));
                 pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_26rSound));
                 pGoalList2->AddGoal (pGoal);
@@ -796,7 +801,8 @@ namespace Training
             //Goal*                           pGoal = new Goal (new AndCondition (new GetKeyCondition (TK_TargetEnemy), new SoundFinishedCondition (pPlaySoundAction)));
             Goal*                           pGoal = new Goal (new GetKeyCondition (TK_TargetEnemy)); // pkk - Let's start  before sound is finished
             pGoal->AddStartAction (pPlaySoundAction);
-            pGoal->AddStartAction (new MessageAction ("Target an enemy miner with the E key, and destroy it if you can."));
+            ZString str = GetKeyName(TK_TargetEnemy);
+			pGoal->AddStartAction (new MessageAction ("Target an enemy miner with " + str + ", and destroy it if you can."));
             pGoal->AddConstraintCondition (CreateTooLongCondition (20.0f, tm_4_29Sound));
             pGoalList->AddGoal (pGoal);
         }
@@ -899,7 +905,8 @@ namespace Training
         {
             Goal*               pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidGoto));
             pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_ship, m_builderID, c_cidGoto));
-            pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
+            ZString str = GetKeyName(TK_ExecuteCommand);
+			pGoal->AddStartAction (new MessageAction ("Press " + str + " to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_32Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_08rSound));
             pGoalList->AddGoal (pGoal);
@@ -924,7 +931,8 @@ namespace Training
             pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdCurrent, NA, NA, c_cidDoNothing));
             pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdAccepted, NA, NA, c_cidDoNothing));
             pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_ship, m_enemyScoutID, c_cidAttack));
-            pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
+            ZString str = GetKeyName(TK_ExecuteCommand);
+			pGoal->AddStartAction (new MessageAction ("Press " + str + " to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_33Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_33Sound));
             pGoalList->AddGoal (pGoal);
@@ -983,7 +991,8 @@ namespace Training
         {
             Goal*   pGoal = CreatePlaySoundGoal (tm_4_34Sound);
             pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_ship, m_builderID, c_cidGoto));
-            pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
+            ZString str = GetKeyName(TK_ExecuteCommand);
+			pGoal->AddStartAction (new MessageAction ("Press " + str + " to accept the command."));
             pGoalList->AddGoal (pGoal);
         }
 

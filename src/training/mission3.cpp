@@ -447,7 +447,8 @@ namespace Training
 		// your display.
         {
             Goal    *pGoal = new Goal (CreateGotTargetCondition ());
-            pGoal->AddStartAction (new MessageAction ("Press the C key to target the derelict hull nearest the center of your display."));
+            ZString str = GetKeyName(TK_TargetCenter);
+			pGoal->AddStartAction (new MessageAction ("Press " + str + " to target the derelict hull nearest the center of your display."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_11rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_11Sound));
             pGoalList->AddGoal (pGoal);
@@ -477,8 +478,9 @@ namespace Training
 		// to proceed.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
-            pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
-            pGoal->AddStartAction (new PlaySoundAction (tm_3_12rSound));
+			ZString str = GetKeyName(TK_FireWeapon);
+            pGoal->AddStartAction (new MessageAction ("Press " + str + " when you are ready to proceed."));
+            //pGoal->AddStartAction (new PlaySoundAction (tm_3_12rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_12rSound));
             pGoalList->AddGoal (pGoal);
         }
@@ -529,8 +531,9 @@ namespace Training
 		// Press the SPACEBAR when you are ready to proceed.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
-            pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
-            pGoal->AddStartAction (new PlaySoundAction (tm_3_15Sound));
+			ZString str = GetKeyName(TK_FireWeapon);
+            pGoal->AddStartAction (new MessageAction ("Press " + str + " when you are ready to proceed."));
+            //pGoal->AddStartAction (new PlaySoundAction (tm_3_15Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_15Sound));
             pGoalList->AddGoal (pGoal);
         }
@@ -637,9 +640,10 @@ namespace Training
             {
 		        // tm_3_19
 		        // Press the SPACEBAR on the keyboard to fire your main weapon.
-                pGoal->AddStartAction (new PlaySoundAction (tm_3_19Sound));
+                //pGoal->AddStartAction (new PlaySoundAction (tm_3_19Sound));
                 pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_19Sound));
-                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the SPACEBAR."));
+				ZString str = GetKeyName(TK_FireWeapon);
+                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing " + str + "."));
             }
             pGoalList->AddGoal (pGoal);
         }
@@ -766,8 +770,9 @@ namespace Training
 		// Select a new target now using the E key.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_TargetEnemy));
-            pGoal->AddStartAction (new MessageAction ("Target an enemy using the E key."));
-            pGoal->AddStartAction (new PlaySoundAction (tm_3_27Sound));
+			ZString str = GetKeyName (TK_TargetEnemy);
+            pGoal->AddStartAction (new MessageAction ("Target an enemy using the " + str + " key."));
+            //pGoal->AddStartAction (new PlaySoundAction (tm_3_27Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_27Sound));
             pGoalList->AddGoal (pGoal);
         }
@@ -829,10 +834,11 @@ namespace Training
 		// Go ahead and fire.
         {
             Goal*   pGoal = new Goal (new GetStateBitsCondition (trekClient.GetShip(), weaponsMaskIGC));
-            if (GetWindow ()->GetInputEngine ()->GetJoystickCount () > 0)
+            ZString str = GetKeyName(TK_FireWeapon);
+			if (GetWindow ()->GetInputEngine ()->GetJoystickCount () > 0)
                 pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the trigger button on your joystick."));
             else
-                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the SPACEBAR."));
+                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing " + str + "."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_31rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_31rSound));
             pGoalList->AddGoal (pGoal);
@@ -930,7 +936,8 @@ namespace Training
 		        // Fire your missiles by pressing CONTROL plus SPACEBAR on the 
 		        // keyboard.
                 pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_38Sound));
-                pGoal->AddStartAction (new MessageAction ("Fire missiles by pressing CTRL+SPACEBAR."));
+				ZString str = GetKeyName(TK_FireMissile);
+                pGoal->AddStartAction (new MessageAction ("Fire missiles by pressing " + str + "."));
                 pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_38Sound));
             }
             SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
@@ -1009,7 +1016,8 @@ namespace Training
 		// Press the END key when you are ready to proceed.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_CommandFinishTM));
-            pGoal->AddStartAction (new MessageAction ("Press the END key when you are comfortable with the Inventory Display."));
+			ZString str = GetKeyName(TK_CommandFinishTM);
+            pGoal->AddStartAction (new MessageAction ("Press " + str + " when you are comfortable with the Inventory Display."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_42rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_42rSound));
             pGoalList->AddGoal (pGoal);
@@ -1073,7 +1081,8 @@ namespace Training
 		// When you are ready to go home, press the END key.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_CommandFinishTM));
-            pGoal->AddStartAction (new MessageAction ("Press the END key when you are ready to go home."));
+			ZString str = GetKeyName(TK_CommandFinishTM);
+            pGoal->AddStartAction (new MessageAction ("Press " + str + " when you are ready to go home."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_46Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (120.0f, tm_3_46Sound));
             pGoalList->AddGoal (pGoal);
@@ -1103,7 +1112,8 @@ namespace Training
 		// Press the B key to target your nearest base.
         {
             Goal*           pGoal = new Goal (new GetTargetCondition (trekClient.GetShip(), OT_station, 1010));
-            pGoal->AddStartAction (new MessageAction ("Press the B key to target the outpost."));
+            ZString str = GetKeyName(TK_TargetFriendlyBase);
+			pGoal->AddStartAction (new MessageAction ("Press " + str + " to target the outpost."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_48Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_48Sound));
             pGoalList->AddGoal (pGoal);

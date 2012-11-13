@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Training.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -1011,6 +1012,7 @@ public:
 
                 if (m_boolTrekKeyButtonDown[index]) {
                     psite->OnTrekKey(index);
+					Training::RecordKeyPress(index); //Spunky #247
                 }
             }
         }        
@@ -1624,20 +1626,15 @@ const int g_nCommandInfo = ArrayCount(g_pCommandInfo);
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class InputMapPopup :
-    public IPopup,
-    public EventTargetContainer<InputMapPopup>,
-    public List,
-    public ItemPainter
+class InputMapPopupBase
 {
 private:
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Types
-    //
-    //////////////////////////////////////////////////////////////////////////////
-
-    class KeyMapping {
+	 class Axis {
+    public:
+        int   m_indexJoystick;
+        int   m_indexValue;
+    };
+	 class KeyMapping {
     public:
         int m_vk       ;
         int m_modifiers;
@@ -1971,11 +1968,189 @@ private:
         }
     };
 
-    class Axis {
-    public:
-        int   m_indexJoystick;
-        int   m_indexValue;
-    };
+protected:
+	CommandMap                  m_pcommandMap[TK_Max];
+	TRef<InputEngine>           m_pinputEngine;
+	TArray<Axis, countAxis>     m_paxis;
+
+public:
+	//Spunky #241
+	ZString ReturnKeyString(TrekKey tk)
+	{
+		
+		if (!LoadMap(INPUTMAP_FILE) || tk == TK_NoKeyMapping)
+			return "Undefined";
+
+        return m_pcommandMap[tk].GetString(m_pinputEngine, IsInternationalKeyboard());
+	}
+
+	
+
+    bool IsInternationalKeyboard()
+    {
+        HKL hkl = ::GetKeyboardLayout(0);
+
+        return (hkl != (HKL)0x04090409);
+    }
+
+	    bool LoadMap(const ZString& str)
+    {
+        //
+        // load the input map
+        //
+
+        TRef<INameSpace> pns = GetModeler()->GetNameSpace(str, false);
+
+        if (pns == NULL) {
+            return false;
+        }
+
+        //
+        // Redetect the joysticks
+        //
+
+		if (m_pinputEngine)
+			m_pinputEngine->EnumerateJoysticks();
+
+        //
+        // clear the old input map
+        //
+
+        int index;
+        for (index = 0; index < TK_Max; index++) {
+            m_pcommandMap[index].Clear();
+        }
+
+        //
+        // keyboard mapping
+        //
+
+        {
+            TRef<IObjectList> plist = pns->FindList("keyCommandMap");
+
+            plist->GetFirst();
+            while (plist->GetCurrent() != NULL) {
+                TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
+
+                int vk        = (int)GetNumber(ppair->GetNth(0)    );
+                int modifiers = (int)GetNumber(ppair->GetNth(1)    );
+                int tk        = (int)GetNumber(ppair->GetLastNth(2));
+
+                m_pcommandMap[tk].AddKeyMapping(vk, modifiers);
+
+                plist->GetNext();
+            }
+        }
+
+        //
+        // mouse button mapping
+        //
+
+        {
+            TRef<IObjectList> plist = pns->FindList("mouseButtonCommandMap");
+
+            if (plist) {
+                plist->GetFirst();
+                while (plist->GetCurrent() != NULL) {
+                    TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
+
+                    int index = (int)GetNumber(ppair->GetFirst() );
+                    int tk    = (int)GetNumber(ppair->GetSecond());
+
+                    m_pcommandMap[tk].AddButtonMapping(-1, index);
+
+                    plist->GetNext();
+                }
+            }
+        }
+
+        //
+        // joystick button mapping
+        //
+
+
+        if (m_pinputEngine == NULL || m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetButtonCount()) { //Imago 8/18/09
+            TRef<IObjectList> plist = pns->FindList("buttonCommandMap");
+
+            plist->GetFirst();
+            while (plist->GetCurrent() != NULL) {
+                TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
+
+                int indexJoystick = (int)GetNumber(ppair->GetNth(0)    );
+                int indexButton   = (int)GetNumber(ppair->GetNth(1)    );
+                int tk            = (int)GetNumber(ppair->GetLastNth(2));
+
+                m_pcommandMap[tk].AddButtonMapping(indexJoystick, indexButton);
+
+                plist->GetNext();
+            }
+        }
+
+        //
+        // joystick value mapping
+        //
+
+        if (m_pinputEngine == NULL || m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetValueCount()) { //Imago 8/18/09
+            TRef<IObjectList> plist = pns->FindList("numericValuesNew");
+
+            bool bNew = (plist != NULL);
+
+            if (!bNew) {
+                plist = pns->FindList("numericValues");
+            }
+        
+            plist->GetFirst();
+            for (int indexValueOutput = 0; indexValueOutput < m_paxis.GetCount(); indexValueOutput++) {
+                TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
+
+                if (ppair) {
+                    m_paxis[indexValueOutput].m_indexJoystick = (int)GetNumber(ppair->GetFirst() );
+                    m_paxis[indexValueOutput].m_indexValue    = (int)GetNumber(ppair->GetSecond());
+
+                    if (!bNew) {
+                        if (m_paxis[indexValueOutput].m_indexValue == 2) {
+                            m_paxis[indexValueOutput].m_indexValue = 3;
+                        } else if (m_paxis[indexValueOutput].m_indexValue == 3) {
+                            m_paxis[indexValueOutput].m_indexValue = 2;
+                        }
+                    } 
+                } else {
+                    m_paxis[indexValueOutput].m_indexJoystick = -1;
+                    m_paxis[indexValueOutput].m_indexValue    =  0;
+                }
+
+                plist->GetNext();
+            }
+        }
+
+        //
+        // Unload the map
+        //
+
+        GetModeler()->UnloadNameSpace(pns);
+
+        return true;
+    }
+
+
+};
+
+class InputMapPopup :
+    public IPopup,
+    public EventTargetContainer<InputMapPopup>,
+    public List,
+    public ItemPainter,
+	public InputMapPopupBase
+{
+private:
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Types
+    //
+    //////////////////////////////////////////////////////////////////////////////
+
+   
+
 
     class EvaluateImage : public WrapImage {
     private:
@@ -2028,13 +2203,11 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    CommandMap                  m_pcommandMap[TK_Max];
-    TArray<Axis, countAxis>     m_paxis;
+    
     TVector<float>              m_vvalue;
     TArray<bool, 256>           m_pbNoModifiers;
 
     TRef<Modeler>               m_pmodeler;
-    TRef<InputEngine>           m_pinputEngine;
     TRef<TrekInput>             m_ptrekInput;
     TRef<IEngineFont>           m_pfont;
     TRef<Number>                m_ptime;
@@ -2072,12 +2245,6 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    bool IsInternationalKeyboard()
-    {
-        HKL hkl = ::GetKeyboardLayout(0);
-
-        return (hkl != (HKL)0x04090409);
-    }
 
     InputMapPopup(
         Modeler*     pmodeler,
@@ -2087,7 +2254,6 @@ public:
         Number*      ptime
     ) :
         m_pmodeler(pmodeler),
-        m_pinputEngine(pinputEngine),
         m_ptrekInput(ptrekInput),
         m_pfont(pfont),
         m_ptime(ptime),
@@ -2098,6 +2264,7 @@ public:
         m_bAxis(false)
     {
         m_bInternational = IsInternationalKeyboard();
+		m_pinputEngine = pinputEngine;
 
         //
         // Exports
@@ -2186,143 +2353,6 @@ public:
         m_peventSource->Trigger();
     }
 
-    bool LoadMap(const ZString& str)
-    {
-        //
-        // load the input map
-        //
-
-        TRef<INameSpace> pns = GetModeler()->GetNameSpace(str, false);
-
-        if (pns == NULL) {
-            return false;
-        }
-
-        //
-        // Redetect the joysticks
-        //
-
-        m_pinputEngine->EnumerateJoysticks();
-
-        //
-        // clear the old input map
-        //
-
-        int index;
-        for (index = 0; index < TK_Max; index++) {
-            m_pcommandMap[index].Clear();
-        }
-
-        //
-        // keyboard mapping
-        //
-
-        {
-            TRef<IObjectList> plist = pns->FindList("keyCommandMap");
-
-            plist->GetFirst();
-            while (plist->GetCurrent() != NULL) {
-                TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
-
-                int vk        = (int)GetNumber(ppair->GetNth(0)    );
-                int modifiers = (int)GetNumber(ppair->GetNth(1)    );
-                int tk        = (int)GetNumber(ppair->GetLastNth(2));
-
-                m_pcommandMap[tk].AddKeyMapping(vk, modifiers);
-
-                plist->GetNext();
-            }
-        }
-
-        //
-        // mouse button mapping
-        //
-
-        {
-            TRef<IObjectList> plist = pns->FindList("mouseButtonCommandMap");
-
-            if (plist) {
-                plist->GetFirst();
-                while (plist->GetCurrent() != NULL) {
-                    TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
-
-                    int index = (int)GetNumber(ppair->GetFirst() );
-                    int tk    = (int)GetNumber(ppair->GetSecond());
-
-                    m_pcommandMap[tk].AddButtonMapping(-1, index);
-
-                    plist->GetNext();
-                }
-            }
-        }
-
-        //
-        // joystick button mapping
-        //
-
-
-        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetButtonCount()) { //Imago 8/18/09
-            TRef<IObjectList> plist = pns->FindList("buttonCommandMap");
-
-            plist->GetFirst();
-            while (plist->GetCurrent() != NULL) {
-                TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
-
-                int indexJoystick = (int)GetNumber(ppair->GetNth(0)    );
-                int indexButton   = (int)GetNumber(ppair->GetNth(1)    );
-                int tk            = (int)GetNumber(ppair->GetLastNth(2));
-
-                m_pcommandMap[tk].AddButtonMapping(indexJoystick, indexButton);
-
-                plist->GetNext();
-            }
-        }
-
-        //
-        // joystick value mapping
-        //
-
-        if (m_pinputEngine->GetJoystick(0) && m_pinputEngine->GetJoystick(0)->GetValueCount()) { //Imago 8/18/09
-            TRef<IObjectList> plist = pns->FindList("numericValuesNew");
-
-            bool bNew = (plist != NULL);
-
-            if (!bNew) {
-                plist = pns->FindList("numericValues");
-            }
-        
-            plist->GetFirst();
-            for (int indexValueOutput = 0; indexValueOutput < m_paxis.GetCount(); indexValueOutput++) {
-                TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
-
-                if (ppair) {
-                    m_paxis[indexValueOutput].m_indexJoystick = (int)GetNumber(ppair->GetFirst() );
-                    m_paxis[indexValueOutput].m_indexValue    = (int)GetNumber(ppair->GetSecond());
-
-                    if (!bNew) {
-                        if (m_paxis[indexValueOutput].m_indexValue == 2) {
-                            m_paxis[indexValueOutput].m_indexValue = 3;
-                        } else if (m_paxis[indexValueOutput].m_indexValue == 3) {
-                            m_paxis[indexValueOutput].m_indexValue = 2;
-                        }
-                    } 
-                } else {
-                    m_paxis[indexValueOutput].m_indexJoystick = -1;
-                    m_paxis[indexValueOutput].m_indexValue    =  0;
-                }
-
-                plist->GetNext();
-            }
-        }
-
-        //
-        // Unload the map
-        //
-
-        GetModeler()->UnloadNameSpace(pns);
-
-        return true;
-    }
 
     void SaveMap(const ZString& str)
     {
@@ -3036,4 +3066,10 @@ TRef<IPopup> CreateInputMapPopup(
             pfont,
             ptime
         );
+}
+//Spunky #241
+ZString GetKeyName(TrekKey tk)
+{
+	InputMapPopupBase impb;
+	return impb.ReturnKeyString(tk);
 }

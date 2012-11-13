@@ -269,8 +269,9 @@ namespace Training
 		// SPACEBAR when you are ready to proceed.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
-            pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
-            pGoal->AddStartAction (new PlaySoundAction (tm_5_02Sound));
+            ZString str = GetKeyName(TK_FireWeapon);
+            pGoal->AddStartAction (new MessageAction ("Press " + str + " when you are ready to proceed."));
+            //pGoal->AddStartAction (new PlaySoundAction (tm_5_02Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_5_02Sound));
             pGoalList->AddGoal (pGoal);
         }
