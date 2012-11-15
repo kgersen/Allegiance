@@ -104,7 +104,9 @@ public:
 
     virtual void SetFocusWindow(Window* pwindow, bool bStartFullscreen)    = 0;
     virtual void Terminate(bool bEngineAppTerminate = false)               = 0;
-    virtual bool IsDeviceReady(bool& bChanges)                             = 0;
+
+	// BT - 11/4/2012 - Fixing multi-monitor hang on app startup
+    virtual bool IsDeviceReady(bool& bChanges, int screenX, int screenY)   = 0;
 
     //
     // Attributes

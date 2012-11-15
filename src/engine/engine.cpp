@@ -1293,8 +1293,8 @@ private:
         //return false;
     }*/
 
-
-    bool IsDeviceReady(bool& bChanges)
+	// BT - 11/4/2012 - Fixing multi-monitor hang on app startup
+    bool IsDeviceReady(bool& bChanges, int screenX, int screenY)
     {
 		CD3DDevice9 * pDev = CD3DDevice9::Get();
 		if( pDev->IsDeviceValid() )
@@ -1314,7 +1314,9 @@ private:
 				break;
 
 			case D3DERR_DEVICENOTRESET:
-				hr = pDev->ResetDevice( pDev->IsWindowed() );
+
+				// BT - 11/4/2012 - Fixing multi-monitor hang on app startup
+				hr = pDev->ResetDevice( pDev->IsWindowed(), screenX, screenY, g_DX9Settings.m_refreshrate, true );
 				if( hr == D3D_OK )
 				{
 					m_bValid = true;

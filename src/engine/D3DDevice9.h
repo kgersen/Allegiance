@@ -311,7 +311,11 @@ public:
 	void		ResetReferencedResources( );
 	HRESULT	CreateD3D9( class CLogFile * pLogFile );
 	HRESULT	CreateDevice( HWND hParentWindow, class CLogFile * pLogFile );
-	HRESULT	ResetDevice( bool bWindowed, DWORD dwWidth = 0, DWORD dwHeight = 0, int iRate = 60 ); //imago added refresh rate 7/1/09
+
+	//imago added refresh rate 7/1/09
+	// BT - 11/4/2012 - Fixing multi-monitor hang on app startup
+	HRESULT	ResetDevice( bool bWindowed, DWORD dwWidth = 0, DWORD dwHeight = 0, int iRate = 60, bool forceReset = false ); 
+
 	HRESULT	ClearScreen( );
 	HRESULT	RenderFinished( );
 	WinPoint	GetCurrentResolution( );

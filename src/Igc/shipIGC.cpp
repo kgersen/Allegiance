@@ -4051,6 +4051,10 @@ float                MyHullType::GetBackMultiplier(void) const
 }
 float                MyHullType::GetScannerRange(void) const
 {
+	// BT - 10/21/2012 - Fix for server crashing when m_pHullData is null, and bSimpleEye is called.
+	if(m_pHullData == NULL || m_pship == NULL)
+		return 0;
+	
     return m_pHullData->scannerRange * m_pship->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaScanRange);
 }
 

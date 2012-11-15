@@ -1206,7 +1206,24 @@ void EngineWindow::DoIdle()
     //
 
     bool bChanges = false;
-    if (m_pengine->IsDeviceReady(bChanges)) 
+
+	int screenX;
+	int screenY;
+
+	// BT - 11/4/2012 - Fixing multi-monitor hang on app startup
+	if(m_pengine->IsFullscreen() == true)
+	{
+		screenX = m_pengine->GetFullscreenSize().X();
+		screenY = m_pengine->GetFullscreenSize().Y();
+	}
+	else
+	{
+		screenX = m_sizeWindowed.X(); 
+		screenY = m_sizeWindowed.Y();
+	}
+
+	// BT - 11/4/2012 - Fixing multi-monitor hang on app startup
+    if (m_pengine->IsDeviceReady(bChanges, screenX, screenY)) 
 	{
         if (bChanges || m_bInvalid) 
 		{

@@ -477,10 +477,14 @@ void CD3DDevice9::CreateAADepthStencilBuffer()
 HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed, 
 									DWORD	dwWidth /*=0*/, 
 									DWORD	dwHeight /*=0*/, 
-									int 	iRate) // =60 imago added iRate 7/1/09
+									int 	iRate, /* =60 imago added iRate 7/1/09 */
+									bool	forceReset // BT - 11/4/2012 - Fixing multi-monitor hang on app startup */
+									) 
 {
 	HRESULT hr				= D3D_OK;
-	bool bResetRequired		= false;
+
+	// BT - 11/4/2012 - Fixing multi-monitor hang on app startup
+	bool bResetRequired		= forceReset;
 
 	if( bWindowed == true )
 	{

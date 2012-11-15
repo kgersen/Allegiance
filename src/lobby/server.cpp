@@ -24,8 +24,22 @@ bool IsServerAllowed(const char *ip)
 {
 	char    config_dir[MAX_PATH];
 	char    config_file_name[MAX_PATH];
+	char    module_file_name[MAX_PATH];
 
-	GetCurrentDirectory(MAX_PATH,config_dir);
+	// BT - 11/15/2012 - Lobby will now look in the .exe path for the config file!
+	GetModuleFileName(NULL, module_file_name, MAX_PATH);
+
+	strcpy(config_dir, module_file_name);
+	for(int i = strlen(module_file_name) - 1; i >= 0; i--)
+	{
+		if(config_dir[i] == '\\')
+		{
+			config_dir[i] = '\0';
+			break;
+		}
+	}
+
+	// BT - 11/15/2012 - End of change.
 
 	sprintf(config_file_name,"%s\\Allegiance.cfg",config_dir);
 
@@ -57,11 +71,41 @@ bool IsServerAllowed(const char *ip)
 			sprintf(key,"Server%d",i);
 			GetPrivateProfileString(c_szCfgApp, key, "", 
                                   szStr, sizeof(szStr), config_file_name);
-			if (!strncmp(ip,szStr,ipLen)) {
-			// found match in list now figure out if we block it or allow it	
-			   if (bFilterTypeAllow) return true;
-			   else return false;
+
+			// BT - 11/15/2012 -	Enabling IP ranges for dynamic IP servers.
+			//						Servers can be allowed by specifying ips like 10.10.*.*
+			char ipParts[4][10];
+			int counter = 0;
+			for(char *ipPart = strtok((char *) ip, "."); ipPart != NULL; ipPart = strtok(NULL, "."))
+			{
+				strcpy(ipParts[counter++], ipPart);
 			}
+
+			char cfgIpParts[4][10];
+			counter = 0;
+			for(char *ipPart = strtok((char *) szStr, "."); ipPart != NULL; ipPart = strtok(NULL, "."))
+			{
+				strcpy(cfgIpParts[counter++], ipPart);
+			}
+
+			bool ipMatch = true;
+			for(int i = 0; i < 4; i++)
+			{
+				if(strcmp(cfgIpParts[i], "*") == 0)
+					continue;
+
+				if(strcmp(cfgIpParts[i], ipParts[i]) == 0)
+					continue;
+
+				ipMatch = false;
+				break;
+			}
+
+			if(ipMatch == true)
+				return bFilterTypeAllow;
+			
+			// BT - 11/15/2012 - End of change.
+		
 		}
 		// if we got this far we did not find a match
 		if (bFilterTypeAllow) return false;
@@ -236,7 +280,13 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
           szCDKey = szUnencryptedCDKey;
         }
 
-        g_pLobbyApp->SetPlayerMission(szCharacterName, szCDKey, pMission, szAddress);
+		// BT - 11/15/2012 - Guarding against lobby crashing from bad player data.
+		if(szCharacterName != NULL && strlen(szCharacterName) > 0 && strlen(szCharacterName) < 255 
+			&& szCDKey != NULL && strlen(szCDKey) != 0 && strlen(szCDKey) < 2064 
+			&& szAddress != NULL && strlen(szAddress) != 0 && strlen(szAddress) < 255 )
+		{
+			g_pLobbyApp->SetPlayerMission(szCharacterName, szCDKey, pMission, szAddress);
+		}
       }
     }
     break;
