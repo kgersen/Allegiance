@@ -4404,7 +4404,7 @@ HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cn
   // we don't do anything until they login
 
   // mmf 10/08 Log ip address (code provided by Imago)
-  char szRemote[16];
+  char szRemote[52]; //Spunky #341
   pthis->GetIPAddress(cnxn, szRemote);
   debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
 
@@ -5499,26 +5499,36 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
 
-		// BT - 12/21/2010 ACSS - Use a message to the lobby server to get the player's rank details instead of
-		// direct calls to the lobby web service.
-		BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
-			FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS) 
-			FM_VAR_PARM(PCC(pqd->szReason), CB_ZTS) 
-			FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS) 
-			FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS) 
-		END_PFM_CREATE
+		if (g.fmLobby.IsConnected()) //Spunky #340
+		{
+			// BT - 12/21/2010 ACSS - Use a message to the lobby server to get the player's rank details instead of
+			// direct calls to the lobby web service.
+			BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+				FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS) 
+				FM_VAR_PARM(PCC(pqd->szReason), CB_ZTS) 
+				FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS) 
+				FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS) 
+			END_PFM_CREATE
 
-		pfmPlayerRank->characterID = pqd->characterID;
-		pfmPlayerRank->fCanCheat = pqd->fCanCheat;
-		pfmPlayerRank->fRetry = pqd->fRetry;
-		pfmPlayerRank->dwCookie = pqd->dwCookie;
-		pfmPlayerRank->fValid = pqd->fValid;
-		pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
-
-		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
-
-		// Wait for a PLAYER_RANK message to come back from the lobby.
-
+			pfmPlayerRank->characterID = pqd->characterID;
+			pfmPlayerRank->fCanCheat = pqd->fCanCheat;
+			pfmPlayerRank->fRetry = pqd->fRetry;
+			pfmPlayerRank->dwCookie = pqd->dwCookie;
+			pfmPlayerRank->fValid = pqd->fValid;
+			pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
+			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+			// Wait for a PLAYER_RANK message to come back from the lobby.
+		}
+		else
+		{
+			pqd->rank = 0;
+			pqd->sigma = 8.33f;
+			pqd->mu = 25.0;;
+			pqd->commandRank = 0;
+			pqd->commandSigma = 8.33f;
+			pqd->commandMu = 25.0f;
+			PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pquery);
+		}
 
 #if !defined(ALLSRV_STANDALONE)
         if (fValid)
