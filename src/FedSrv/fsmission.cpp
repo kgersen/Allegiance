@@ -5626,12 +5626,22 @@ BallotType Ballot::GetType()
 void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const ZString& strBallotText)
 {
   assert(pfsInitiator);
+  m_pmission = pfsInitiator->GetMission();
 
+  //Spunky #276
+  if (pfsInitiator == m_pmission->GetLastBallotInitiator() && Time::Now() - m_pmission->GetLastBallotTime() < 300.0f)
+  {
+	  m_pmission->GetSite()->SendChat(NULL, CHAT_INDIVIDUAL, pfsInitiator->GetShipID(), NA,
+      "You have to wait five minutes before initating another vote.", c_cidNone, NA, NA, NULL, true);
+	  return;
+  }
+  
+  m_pmission->SetLastBallotInitiator(pfsInitiator);
+  m_pmission->SetLastBallotIime(Time::Now());
+  
   // store some misc. info about the vote
   float c_fVoteDuration = 30.0f;
-
   m_pgroup = CFSSide::FromIGC(pfsInitiator->GetSide())->GetGroup();
-  m_pmission = pfsInitiator->GetMission();
   m_chattarget = CHAT_TEAM;
   m_groupID = pfsInitiator->GetSide()->GetObjectID();
   m_strProposal = strProposalName;

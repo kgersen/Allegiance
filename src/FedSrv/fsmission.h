@@ -447,6 +447,12 @@ public:
 
   const char*           GetStoryText() const {return m_strStoryText;}
   
+  //Spunky #276
+  CFSPlayer*			GetLastBallotInitiator() { return m_lastBallotBy; }
+  void					SetLastBallotInitiator(CFSPlayer* pfsPlayer) { m_lastBallotBy = pfsPlayer; }
+  Time					GetLastBallotTime() { return m_lastBallotTime; }
+  void					SetLastBallotIime(Time time) { m_lastBallotTime = time; }
+
 private:
   void                  InitSide(SideID sid);
   void                  MaintainSquadLeadership(SideID sid);
@@ -503,6 +509,10 @@ private:
   ZString               m_strStoryText;
 
   bool                  m_bDraw;
+
+  //Spunky #276
+  Time					m_lastBallotTime;
+  CFSPlayer*			m_lastBallotBy;
 };
 
 #endif 
