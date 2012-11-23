@@ -42,12 +42,12 @@ public:
     {
         DoCreateButton(pmodeler, m_pbuttonClose,    "btnclosebmp",    WinPoint(780, 5), ppane);
         DoCreateButton(pmodeler, m_pbuttonRestore,  "btnrestorebmp",  WinPoint(761, 5), ppane);
-        DoCreateButton(pmodeler, m_pbuttonMinimize, "btnminimizebmp", WinPoint(744, 5), ppane);
+        //DoCreateButton(pmodeler, m_pbuttonMinimize, "btnminimizebmp", WinPoint(744, 5), ppane); //Spunky #299
 
 		// mdvalley: Three pointers and class names
         AddEventTarget(&CaptionImpl::OnClose,    m_pbuttonClose->GetEventSource());
         AddEventTarget(&CaptionImpl::OnRestore,  m_pbuttonRestore->GetEventSource());
-        AddEventTarget(&CaptionImpl::OnMinimize, m_pbuttonMinimize->GetEventSource());
+        //AddEventTarget(&CaptionImpl::OnMinimize, m_pbuttonMinimize->GetEventSource()); //Spunky #299
     }
 
     bool OnClose()
@@ -72,7 +72,7 @@ public:
     {
         m_pbuttonClose->SetHidden(!bFullscreen);
         m_pbuttonRestore->SetHidden(!bFullscreen);
-        m_pbuttonMinimize->SetHidden(!bFullscreen);
+       //m_pbuttonMinimize->SetHidden(!bFullscreen); //Spunky #299
     }
 };
 
