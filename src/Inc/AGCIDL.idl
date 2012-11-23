@@ -1158,6 +1158,8 @@ interface IAGCGameParameters : IDispatch
   [propput, helpstring("property AllowRestart")] HRESULT AllowRestart([in] VARIANT_BOOL newVal);
   [propget, helpstring("property Experimental")] HRESULT Experimental([out, retval] VARIANT_BOOL *pVal); // mmf 10/07 Experimental game type
   [propput, helpstring("property Experimental")] HRESULT Experimental([in] VARIANT_BOOL newVal);         // mmf 10/07 Experimental game type
+  [propget, helpstring("property KBlevel")] HRESULT KBlevel([out, retval] short *pVal); // Spunky #300
+  [propput, helpstring("property KBlevel")] HRESULT KBlevel([in] short newVal);         // Spunky #300
   [propget, helpstring("property AllowShipyardPath")] HRESULT AllowShipyardPath([out, retval] VARIANT_BOOL *pVal);
   [propput, helpstring("property AllowShipyardPath")] HRESULT AllowShipyardPath([in] VARIANT_BOOL newVal);
   [propget, helpstring("property AllowSupremacyPath")] HRESULT AllowSupremacyPath([out, retval] VARIANT_BOOL *pVal);

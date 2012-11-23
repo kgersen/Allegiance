@@ -88,6 +88,22 @@ private:
     bool                 m_bIgnoreGameTypeComboChanges;
     bool                 m_fQuitting;
 
+	//Spunky #300, #342	
+	bool				m_HiddenExperimental;
+	KB					m_HiddenKBlevel;
+	
+	void SetHiddenParameters(const MissionParams& mp)
+	{
+		m_HiddenExperimental = mp.bExperimental;
+		m_HiddenKBlevel = mp.KBlevel;
+	}
+
+	void GetHiddenParameters(MissionParams& mp)
+	{
+		mp.bExperimental = m_HiddenExperimental;
+		mp.KBlevel = m_HiddenKBlevel;
+	}
+
     int GetResourceLevel(const MissionParams& missionparams)
     {
         int ResourceCount = missionparams.nPlayerSectorMineableAsteroids
@@ -119,7 +135,8 @@ private:
 
     void ApplyMissionParams(const MissionParams& missionparams)
     {
-        m_peditPaneGameName->SetString(missionparams.strGameName);
+        SetHiddenParameters(missionparams); //Spunky #300, #342
+		m_peditPaneGameName->SetString(missionparams.strGameName);
         m_peditPaneGamePassword->SetString(missionparams.strGamePassword);
 
         m_pbuttonEjectPods           ->SetChecked(missionparams.bEjectPods);
@@ -246,6 +263,22 @@ public:
         return GetString(plist->GetCurrent());
     }
 
+	//Spunky #300
+	ZString GetKBlevel(const MissionParams& missionparams)
+	{
+		switch(missionparams.KBlevel)
+		{
+			case c_noKB:
+				return "None";
+			case c_lowKB:
+				return "Low";
+			case c_stdKB:
+				return "Classic";
+			default:
+				return "Uknown";
+		}
+	}
+
     ZString GetLives(const MissionParams& missionparams)
     {
         if (missionparams.iLives == 32767) {
@@ -358,6 +391,7 @@ public:
 			+ "Allow Empty Teams: "     + YesNo(mp.bAllowEmptyTeams)      + "<p>"
 			+ "Allow Allied Ripcord: "  + YesNo(mp.bAllowAlliedRip)       + "<p>" //imago 7/10/09 ALLY
 			+ "Experimental: "          + YesNo(mp.bExperimental)         + "<p>" //imago 7/10/09
+			+ "Kill Bonus: "			+ GetKBlevel(mp)				  + "<p>" //Spunky #300
             + "<p>"
             ;
     }
@@ -911,12 +945,17 @@ public:
                 gameTypesIter.Next();
             }
         
-            if (!gameTypesIter.End())
+            if (!gameTypesIter.End()) //does not fire for the last one, so the last gametype has to be custom
             {
                 MissionParams misparams;
-                ReadControls(misparams);
-                gameTypesIter.Value()->Apply(misparams);
-                ApplyMissionParams(misparams);
+                ReadControls(misparams); //change misparams based on controls so uninvolved controls don't reset to defaults
+				// mmf 10/07 Experimental game type.  Hard coded this to 5 (changed to 6 #300) as GameType is not 'filled' from
+				//newgamescreen.mdl like the others.  The entries are built in VerifyGameTypeInitialization in gametypes.cpp
+				//Spunky #300, #342
+				misparams.bExperimental = (m_pcomboGameType->GetSelection() == 6) ? true : false;
+				misparams.KBlevel = (m_pcomboGameType->GetSelection() == 2) ? c_noKB: c_stdKB; 
+                gameTypesIter.Value()->Apply(misparams); //change misparams based on gametype
+                ApplyMissionParams(misparams); //update screen controls based on misparams - this WILL change the gametype combo
             }
         }
 
@@ -935,10 +974,11 @@ public:
         return true;
     }
 
-    void UpdateGameType()
-    {
-        MissionParams misparams;
-        ReadControls(misparams);
+	void UpdateGameType()
+	{
+	    //Repeatedly called from ApplyMissionParams on each SetSelection
+		MissionParams misparams;
+        ReadControls(misparams); //change misparams
 
         TList<TRef<GameType> >::Iterator gameTypesIter(GameType::GetGameTypes());
 
@@ -960,8 +1000,8 @@ public:
     void ReadControls(MissionParams& misparams)
     {
         misparams = GetBaseMissionParams();
-
-        strcpy(misparams.strGameName, m_peditPaneGameName->GetString());
+		GetHiddenParameters(misparams); //Spunky #342
+		strcpy(misparams.strGameName, m_peditPaneGameName->GetString());
         strcpy(misparams.strGamePassword, m_peditPaneGamePassword->GetString());
 
         misparams.bEjectPods = m_pbuttonEjectPods->GetChecked();
@@ -1025,10 +1065,6 @@ public:
 		misparams.nNeutralSectorTreasureRate = FindValue(m_pcomboTreasures->GetSelection(), "TreasureRateNeutralValues") / 60.0f;
 		misparams.nInitialMinersPerTeam = FindValue(m_pcomboInitialMiners->GetSelection(), "initialMinersValues");
 		misparams.nMaxDronesPerTeam = FindValue(m_pcomboMaximumDrones->GetSelection(), "maxDronesValues");
-
-		// mmf 10/07 Experimental game type.  Hard coded this to 5 as GameType is not 'filled' from newgamescreen.mdl like
-		// the others.  The entries are built in VerifyGameTypeInitialization in gametypes.cpp
-		 misparams.bExperimental = (m_pcomboGameType->GetSelection() == 5) ? true : false;
 	}
 
     bool OnButtonCreate()

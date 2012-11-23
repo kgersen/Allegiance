@@ -2754,6 +2754,31 @@ STDMETHODIMP CAGCGameParameters::put_Experimental(VARIANT_BOOL newVal)
   return S_OK;
 }
 
+
+/*-------------------------------------------------------------------------
+ * get_KBlevel() //Spunky #300
+ *-------------------------------------------------------------------------
+ */
+STDMETHODIMP CAGCGameParameters::get_KBlevel(short *pVal)
+{
+	XLock lock(this);
+	CLEAROUT(pVal, short(m_mp.KBlevel));
+	return S_OK;
+}
+
+
+/*-------------------------------------------------------------------------
+ * put_KBlevel() //Spunky #300
+ *-------------------------------------------------------------------------
+ */
+STDMETHODIMP CAGCGameParameters::put_KBlevel(short newVal)
+{
+  XLock lock(this);
+  m_mp.KBlevel = newVal;
+  return S_OK;
+}
+
+
 /*-------------------------------------------------------------------------
  * get_AllowShipyardPath()
  *-------------------------------------------------------------------------

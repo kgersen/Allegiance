@@ -259,6 +259,8 @@ public:
   STDMETHODIMP put_AllowRestart(VARIANT_BOOL newVal);
   STDMETHODIMP get_Experimental(VARIANT_BOOL *pVal);    // mmf 10/07 Experimental game type
   STDMETHODIMP put_Experimental(VARIANT_BOOL newVal);   // mmf 10/07 Experimental game type
+  STDMETHODIMP get_KBlevel(short *pVal);				//Spunky #300
+  STDMETHODIMP put_KBlevel(short newVal);				//Spunky #300
   STDMETHODIMP get_AllowShipyardPath(VARIANT_BOOL* pVal);
   STDMETHODIMP put_AllowShipyardPath(VARIANT_BOOL pVal);
   STDMETHODIMP get_AllowSupremacyPath(VARIANT_BOOL* pVal);
