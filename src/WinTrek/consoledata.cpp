@@ -742,11 +742,8 @@ float PartWrapper::GetRange()
         float range = pmt->GetLifespan() * (pmt->GetInitialSpeed() + forwardSpeed + 0.5f * pmt->GetLifespan() * pmt->GetAcceleration());
         return range;
     }
-    else
-    {
-        //ZAssert(false);
-        return 0;
-    }
+    //ZAssert(false);
+    return 0;
 }
 
 float PartWrapper::GetDamage()
@@ -865,23 +862,18 @@ float PartWrapper::GetRate()
         DataWeaponTypeIGC*  pdwt = (DataWeaponTypeIGC*)((IpartTypeIGC*)m_ppart->GetPartType())->GetData();
         return (1.0f /pdwt->dtimeBurst);
     }
-	else if (et == ET_Dispenser) //Spunky #316
+	else if (et == ET_Dispenser && 
+		((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType()->GetObjectType() == OT_probeType) //Spunky #316
 	{
 		IprojectileTypeIGC* ppt = 0;
-		if (((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType()->GetObjectType() == OT_probeType)
-		{
-			pprobet = (IprobeTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType();
-			ppt = pprobet->GetProjectileType();
+		pprobet = (IprobeTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType();
+		ppt = pprobet->GetProjectileType();
 		if (!ppt)
 			return 0;
 		return 1.0 / pprobet->GetDtBurst();
-		}
 	}
-    else
-    {
-        //ZAssert(false);
+    //ZAssert(false);
         return 0;
-    }
 }
 
 float PartWrapper::GetCount()
