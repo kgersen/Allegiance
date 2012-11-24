@@ -1798,17 +1798,20 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         virtual float               GetExperienceMultiplier(void) const
         {
             //Spunky #300
-			KB kb = GetMyMission()->GetMissionParams()->KBlevel;
 			float maxBonus = 0.5f;
 			float halfExperience = 4.0f;
-			switch (kb)
+			if (GetPilotType() == c_ptPlayer) //otherwise training will crash
 			{
-			case c_noKB:
-				maxBonus = 0;
-				break;
-			case c_lowKB:
-				halfExperience = 8;
-				break;
+				KB kb = GetMyMission()->GetMissionParams()->KBlevel;	
+				switch (kb)
+				{
+				case c_noKB:
+					maxBonus = 0;
+					break;
+				case c_lowKB:
+					halfExperience = 8;
+					break;
+				};
 			}
 			
             return 1.0f + maxBonus * m_experience / (m_experience + halfExperience);
