@@ -705,19 +705,32 @@ float PartWrapper::GetRange()
         return 0;
 
     EquipmentType et = m_ppart->GetPartType()->GetEquipmentType();
-	 //Spunky #314
+	 //Spunky #314, #316
 	IshipIGC* me = trekClient.GetShip();
 	float forwardSpeed = me->GetVelocity() * me->GetOrientation().GetForward().Normalize();
-    if (et == ET_Weapon)
-    {
-        IprojectileTypeIGC* ppt = ((IweaponIGC*)(IpartIGC*)m_ppart)->GetProjectileType();
-        float               range = ppt->GetSpeed()*ppt->GetLifespan();
+	float rangeMultiplier = 0;
+	const GlobalAttributeSet&   ga = trekClient.GetSide()->GetGlobalAttributeSet();
 
-        const GlobalAttributeSet&   ga = trekClient.GetSide()->GetGlobalAttributeSet();
-        range *= ga.GetAttribute((((IweaponIGC*)(IpartIGC*)m_ppart)->GetAmmoPerShot())
-                                 ? c_gaSpeedAmmo
-                                 : c_gaLifespanEnergy);
-		if (!ppt->GetAbsoluteF()) //Spunky #314
+	if (et == ET_Weapon || et == ET_Dispenser)
+    {
+		IprojectileTypeIGC* ppt = 0;
+		
+		if (et == ET_Weapon)
+		{
+			ppt = ((IweaponIGC*)(IpartIGC*)m_ppart)->GetProjectileType();
+			rangeMultiplier = ga.GetAttribute(((IweaponIGC*)(IpartIGC*)m_ppart)->GetAmmoPerShot() ? c_gaSpeedAmmo : c_gaLifespanEnergy);
+		}
+		else if (((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType()->GetObjectType() == OT_probeType)
+		{
+			ppt = ((IprobeTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType())->GetProjectileType();
+			rangeMultiplier = ga.GetAttribute(c_gaSpeedAmmo);
+		}
+
+		if (!ppt)
+			return 0;
+
+		float range = ppt->GetSpeed()*ppt->GetLifespan() * rangeMultiplier;		
+		if (!ppt->GetAbsoluteF() && et == ET_Weapon)
 			range += forwardSpeed * ppt->GetLifespan();
 
         return range;
@@ -731,7 +744,7 @@ float PartWrapper::GetRange()
     }
     else
     {
-        ZAssert(false);
+        //ZAssert(false);
         return 0;
     }
 }
@@ -742,7 +755,7 @@ float PartWrapper::GetDamage()
         return 0;
 	m_damageColor = Color::White();
     EquipmentType et = m_ppart->GetPartType()->GetEquipmentType();
-	//Spunky #314;
+	//Spunky #314
 	float damage; 
 	DamageTypeID dt;
 	IshipIGC* me = trekClient.GetShip();
@@ -760,9 +773,19 @@ float PartWrapper::GetDamage()
         damage = (pmt->GetPower() + pmt->GetBlastPower()) * ga.GetAttribute(c_gaDamageMissiles);
 		dt = pmt->GetDamageType();//Spunky #314
     }
+	else if (et == ET_Dispenser) //Spunky #316
+	{
+		IprojectileTypeIGC* ppt = 0;
+		if (((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType()->GetObjectType() == OT_probeType)
+			ppt = ((IprobeTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType())->GetProjectileType();
+		if (!ppt)
+			return 0;
+		damage = (ppt->GetPower() + ppt->GetBlastPower()) * ga.GetAttribute(c_gaDamageGuns);
+		dt = ppt->GetDamageType();
+	}
     else
     {
-        ZAssert(false);
+        //ZAssert(false);
         return 0;
     }
 	//Spunky #314
@@ -834,16 +857,29 @@ float PartWrapper::GetRate()
         return 0;
 
 	EquipmentType et = m_ppart->GetPartType()->GetEquipmentType();
+	IprobeTypeIGC* pprobet = 0;
+	
 
 	if (et == ET_Weapon)
     {
         DataWeaponTypeIGC*  pdwt = (DataWeaponTypeIGC*)((IpartTypeIGC*)m_ppart->GetPartType())->GetData();
         return (1.0f /pdwt->dtimeBurst);
     }
-    
+	else if (et == ET_Dispenser) //Spunky #316
+	{
+		IprojectileTypeIGC* ppt = 0;
+		if (((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType()->GetObjectType() == OT_probeType)
+		{
+			pprobet = (IprobeTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType();
+			ppt = pprobet->GetProjectileType();
+		if (!ppt)
+			return 0;
+		return 1.0 / pprobet->GetDtBurst();
+		}
+	}
     else
     {
-        ZAssert(false);
+        //ZAssert(false);
         return 0;
     }
 }
