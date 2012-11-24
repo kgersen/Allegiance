@@ -5790,7 +5790,11 @@ ZString Ballot::GetTallyString()
 // performs the appropriate result when the vote passes
 void Ballot::OnPassed()
 {
-  ZString strMessage = m_strProposal + " has passed.  " + GetTallyString();
+	//reset ballot limiter Spunky #276
+	m_pmission->SetLastBallotIime(0);
+	m_pmission->SetLastBallotInitiator(0);
+	
+	ZString strMessage = m_strProposal + " has passed.  " + GetTallyString();
 
   m_pmission->GetSite()->SendChat(NULL, m_chattarget, m_groupID, NA,
       strMessage, c_cidNone, NA, NA, NULL, true);
