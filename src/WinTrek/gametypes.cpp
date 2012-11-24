@@ -118,6 +118,11 @@ namespace
                 ); // mmf 10/07 added false experimental param Spunky #300
             listGameTypes.PushEnd(pNewGameType);
 
+			pNewGameType = new GameTypeImpl(
+                "Low KB Conquest", true, false, true, c_cUnlimitedLives, 0, 100, 0, 0, 0, 100, 0, false, c_mmHiLo, c_lowKB
+                ); // mmf 10/07 added false experimental param
+            listGameTypes.PushEnd(pNewGameType);
+
             pNewGameType = new GameTypeImpl(
                 "Death Match", false, true, false, c_cUnlimitedLives, 0, 0, 0, 0, 20, 100, 0, false, c_mmBrawl, c_stdKB
                 ); // mmf 10/07 added false experimental param

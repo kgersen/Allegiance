@@ -169,6 +169,7 @@ public:
     float       GetSpeed();
     float       GetMass();
     float       GetRange();
+	ZString		GetRadius(); //Spunky #315
     float       GetPercentHitPoints();
     float       GetPercentShields();
     float       GetPercentEnergy();
@@ -217,7 +218,8 @@ public:
 		pns->AddMember("GetSpeed",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetSpeed, 0.0f));
         pns->AddMember("GetMass",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetMass, 0.0f));
         pns->AddMember("GetRange",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetRange, 0.0f));
-        pns->AddMember("GetPercentHitPoints",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentHitPoints, 0.0f));
+        pns->AddMember("GetRadius",  new TMemberSnapshotValueFactory<ModelData, ZString>(&ModelData::GetRadius, "")); //Spunky #315
+		pns->AddMember("GetPercentHitPoints",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentHitPoints, 0.0f));
         pns->AddMember("GetPercentShields",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentShields, 0.0f));
         pns->AddMember("GetPercentEnergy",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetPercentEnergy, 0.0f));
         pns->AddMember("GetAmmo",  new TMemberSnapshotValueFactory<ModelData, float>(&ModelData::GetAmmo, 0.0f));

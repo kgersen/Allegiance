@@ -179,6 +179,19 @@ float ModelData::GetMass()
 	return f;
 }
 
+//Spunky #315
+ZString ModelData::GetRadius()
+{
+	ImodelIGC*      pmodel = GetModel();
+	if(pmodel && (pmodel->GetObjectType() == OT_station || pmodel->GetObjectType() == OT_asteroid) && pmodel->GetSide() != trekClient.GetSide())
+	{
+		float radius = pmodel->GetRadius();
+		return " r=" + (ZString)radius;
+	}
+	return "";
+}
+
+
 float ModelData::GetRange()
 {
     float   range = -1.0f;

@@ -3,7 +3,7 @@ use "font";
 use "teleportpane";
 use "teampane";
 
-DetectionRange = StringImage(JustifyLeft, 300, medVerdana, targetHudColor, DetectionRange); //Spunky                
+DetectionRange = StringImage(JustifyLeft, 300, medVerdana, targetHudColor, ConcatinatedString(DetectionRange, GetRadius(Target, OnEveryFrame))); //Spunky                
 White = Color(1, 1, 1);
 TextColor = Color(0, 0, 0.0625);
 
@@ -1273,7 +1273,7 @@ TargetRange =
     StringImage(
         JustifyLeft,
         150,
-        smVerdana,
+        medVerdana,
         targetHudColor,
         TargetRangeString
     ); 
@@ -1304,7 +1304,7 @@ TargetSpeed =
     StringImage(
         JustifyRight,
         150,
-        smVerdana,
+        medVerdana,
         targetHudColor,
         ConcatinatedString("SPEED: ", NumberString(GetSpeed(Target, OnEveryFrame)))
     );  
@@ -1409,7 +1409,7 @@ DefaultTargetDisplay =
     VisibleImage(GroupImage(
         [
             
-            TranslateImage(DetectionRange, Point(200,113)), //Spunky
+            TranslateImage(DetectionRange, Point(180,113)), //Spunky
 						TranslateImage(TargetShieldGauge, Point(367, 33)),
             TranslateImage(TargetHullGauge, Point(235, 33)),
             TranslateImage(
