@@ -5547,15 +5547,14 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
         if (pfmLogon->fedsrvVer < MSGVER)
           wsprintf(szVerError, "The server you are trying to play on has a newer version than you.  "
-            "Please go play online to get the latest auto-update.  If this doesn't work, try deleting "
-            "the file 'filelist.txt' from the install directory and restarting the application.");
+            "You need to update your client to be able to join. If this is a beta server, you need to "
+			"switch to the beta client by using the Play Beta option of ACSS.");
         else /* if (pfmLogon->fedsrvVer > MSGVER) */
         {
 #if defined(ALLSRV_STANDALONE)
-          wsprintf(szVerError, "The server you are trying to play on is out-of-date.  Find another server "
-            "or contact the server's owner and tell them to auto-update by connecting to the zone match-making "
-            "service.  If that doesn't work, have the server's owner try deleting "
-            "the file 'filelist.txt' from the install directory and restarting the server.");
+          wsprintf(szVerError, "The server you are trying to play on is out-of-date.  You need to find "
+			  "an up-to-date server to join. If you are running the beta client, then you need to switch "
+			  "back to the production client by using the Play Online option of ACSS.");
 #else
           wsprintf(szVerError, "The server you are trying to play on is out-of-date.  The Zone needs to update their game server(s).  Please try again later.");
 #endif
@@ -10788,7 +10787,7 @@ void FedSrvSiteBase::UpgradeShip(IshipIGC* pship, const IstationIGC*  pstation)
     IhullTypeIGC* pht = pship->GetBaseHullType();
     assert (pht);
     IhullTypeIGC* phtSuccessor = (IhullTypeIGC*)(pstation->GetSuccessor(pht));
-
+	float ore = pship->GetOre();//Spunky #344
     if (pht != phtSuccessor)
     {
         //Nuke all the parts
@@ -10853,6 +10852,7 @@ void FedSrvSiteBase::UpgradeShip(IshipIGC* pship, const IstationIGC*  pstation)
             }
         }
     }
+	pship->SetOre(ore);//Spunky #344
 }
 
 void FedSrvSiteBase::TerminateModelEvent(ImodelIGC*  pmodel)

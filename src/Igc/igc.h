@@ -3394,6 +3394,7 @@ class IshipIGC : public IscannerIGC
 
         //Miners
         virtual float               GetOre(void) const = 0;
+		virtual void				SetOre(float ore) = 0;//Spunky #344
 };
 
 class IbuoyIGC : public ImodelIGC
