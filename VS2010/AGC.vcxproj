@@ -41,6 +41,14 @@
       <Configuration>FZRetail-SSE2</Configuration>
       <Platform>X64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|X64">
+      <Configuration>Release</Configuration>
+      <Platform>X64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGUID>{1CBF6569-F71C-422A-81DD-8D30A736DB21}</ProjectGUID>
@@ -82,6 +90,12 @@
     <UseOfAtl>false</UseOfAtl>
     <WholeProgramOptimization>false</WholeProgramOptimization>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
@@ -98,6 +112,11 @@
     <UseOfAtl>false</UseOfAtl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <UseOfAtl>false</UseOfAtl>
@@ -133,21 +152,26 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\AGC\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\AGC\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\objs10\$(Configuration)\AGC\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\AGC\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\AGC\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\AGC\x64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\objs10\$(Configuration)\AGC\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs10\$(Configuration)\AGC\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\objs10\$(Configuration)\AGC\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\objs10\PGO\AGC\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\objs10\PGO\AGC\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\objs10\$(Configuration)\AGC\x64\</IntDir>
     <PreLinkEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</PreLinkEventUseInBuild>
+    <PreLinkEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</PreLinkEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Midl>
@@ -306,6 +330,60 @@
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;..\src\AGC;..\src\zlib;..\src\Igc;..\src\Inc;..\src\test\Inc;.\$(OutDir);.\$(OutDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG;_ATL_STATIC_REGISTRY;SRVLOG; _USRDLL;STRICT;_WINDOWS;WIN32;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ShowIncludes>false</ShowIncludes>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>.\$(OutDir);.\$(OutDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Test\TCLib\TCLib.lib;$(OutDir)..\ZLib\ZLib.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\igc\igc.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ModuleDefinitionFile>..\src\AGC\AGC.def</ModuleDefinitionFile>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>$(TargetDir);..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;..\src\AGC;..\src\zlib;..\src\Igc;..\src\Inc;..\src\test\Inc;.\$(OutDir);.\$(OutDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_ALLEGIANCE_PROD_;_ATL_STATIC_REGISTRY;SRVLOG; _USRDLL;STRICT;_WINDOWS;WIN32;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -555,6 +633,50 @@
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
+    <Midl>
+      <AdditionalIncludeDirectories>$(TargetDir);..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;..\src\AGC;..\src\zlib;..\src\Igc;..\src\Inc;..\src\test\Inc;.\$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SRVLOG;_ATL_STATIC_REGISTRY; _USRDLL;STRICT;_WINDOWS;WIN32;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Command>lib /out:$(OutDir)AGCGuid.lib $(OutDir)AGCGuid.obj</Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalDependencies>$(OutDir)AGCGuid.lib;$(OutDir)..\..\Test\TCLib\x64\TCLib.lib;$(OutDir)..\..\ZLib\x64\ZLib.lib;$(OutDir)..\..\_utility\x64\Utility.lib;$(OutDir)..\..\igc\x64\igc.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ModuleDefinitionFile>..\src\AGC\AGC.def</ModuleDefinitionFile>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">
     <Midl>
       <AdditionalIncludeDirectories>$(TargetDir);..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -661,6 +783,8 @@
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
       </Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">
@@ -668,6 +792,8 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
+      </Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
       </Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">
       </Message>
@@ -677,6 +803,8 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">
@@ -685,24 +813,30 @@
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">
       </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">
       </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">%(Outputs)</Outputs>
     </CustomBuild>
@@ -721,15 +855,19 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|X64'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
 </Command>
@@ -739,24 +877,30 @@
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
 </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
+</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
     </CustomBuild>
@@ -777,16 +921,21 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|X64'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
 mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
+mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
 mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
@@ -801,6 +950,9 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
 mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
 </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
+mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
+</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
 mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
 </Command>
@@ -809,18 +961,22 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
     </CustomBuild>
@@ -839,15 +995,19 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|X64'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
 </Command>
@@ -857,24 +1017,30 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
 </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
+</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
     </CustomBuild>
@@ -893,15 +1059,19 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|X64'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
 </Command>
@@ -911,24 +1081,30 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
 </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
+</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">cscript //NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
 </Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|X64'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
     </CustomBuild>
@@ -976,6 +1152,8 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
       </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">
@@ -983,6 +1161,8 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">
       </PrecompiledHeader>
@@ -994,10 +1174,12 @@ mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-SSE2|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|X64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Optimized|X64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail-Instrumented|X64'">Create</PrecompiledHeader>
     </ClCompile>
