@@ -723,13 +723,13 @@ float PartWrapper::GetRange()
 		else if (((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType()->GetObjectType() == OT_probeType)
 		{
 			ppt = ((IprobeTypeIGC*)((IlauncherTypeIGC*)m_ppart->GetPartType())->GetExpendableType())->GetProjectileType();
-			rangeMultiplier = ga.GetAttribute(c_gaSpeedAmmo);
+			rangeMultiplier = ga.GetAttribute(c_gaSpeedAmmo) / 1.2f;
 		}
 
 		if (!ppt)
 			return 0;
 
-		float range = ppt->GetSpeed()*ppt->GetLifespan() * rangeMultiplier;		
+		float range = ppt->GetSpeed() * ppt->GetLifespan() * rangeMultiplier;
 		if (!ppt->GetAbsoluteF() && et == ET_Weapon)
 			range += forwardSpeed * ppt->GetLifespan();
 
