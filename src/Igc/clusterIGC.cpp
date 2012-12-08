@@ -747,16 +747,17 @@ bool CclusterIGC::IsFriendlyCluster(IsideIGC* pside, ClusterQuality cqlty) //Spu
 		do
 		{
 			IshipIGC* pship = pshipl->data();
-			if (pship->GetSide() != pside && pship->SeenBySide(pside) && !IsideIGC::AlliedSides(pside, pship->GetSide()))
-			{
-				if (pship->GetHullType()->HasCapability(c_habmIsRipcordTarget | c_habmIsLtRipcordTarget))
-					return false;
-				if (pship->GetBaseHullType()->GetScannerRange() > 800 && cqlty & cqNoEye)
-					return false;
-				balanceOfPower--;
-			}
-			else if (pship->GetSide() == pside || IsideIGC::AlliedSides(pside, pship->GetSide()))
-				balanceOfPower++;
+			if (pship->GetParentShip() == NULL)
+				if (pship->GetSide() != pside && pship->SeenBySide(pside) && !IsideIGC::AlliedSides(pside, pship->GetSide()))
+				{
+					if (pship->GetHullType()->HasCapability(c_habmIsRipcordTarget | c_habmIsLtRipcordTarget))
+						return false;
+					if (pship->GetBaseHullType()->GetScannerRange() > 800 && cqlty & cqNoEye)
+						return false;
+					balanceOfPower--;
+				}
+				else if (pship->GetSide() == pside || IsideIGC::AlliedSides(pside, pship->GetSide()))
+					balanceOfPower++;
 			pshipl = pshipl->next();
 		} while (pshipl);
 	}
