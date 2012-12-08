@@ -799,7 +799,7 @@ float PartWrapper::GetDamage()
 				if (shield && shield->GetFraction() > down)
 					df = me->GetMission()->GetDamageConstant(dt, shield->GetDefenseType());
 				else
-					df = me->GetMission()->GetDamageConstant(dt, me->GetHullType()->GetDefenseType());
+					df = me->GetMission()->GetDamageConstant(dt, ((IshipIGC*)target)->GetHullType()->GetDefenseType());
 				break;
 			}
 		
