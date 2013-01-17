@@ -273,7 +273,7 @@ bool CheckForAllGuard()
 
 ZString ReadAuthPipe()
 {
-	const int LENGTH = 64;
+	const int LENGTH = 2064;
 	HANDLE hWrite;
 	DWORD nDataLength;
 	DWORD nWritten;
@@ -302,7 +302,7 @@ ZString ReadAuthPipe()
 	if(strlen(buffer) == 0)
 		debugf("Remote process didn't deliver key to memory location within 10 seconds.\r\n"); 
 	
-	debugf("received key length: %ld, %s\r\n", strlen(buffer), buffer);
+	debugf("received key length: %ld\r\n", strlen(buffer));
 
 	return ZString(buffer);
 };

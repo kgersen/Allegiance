@@ -1102,6 +1102,8 @@ BaseClient::BaseClient(void)
     m_lobbyServerOffset(0),
     m_plistFindServerResults(NULL),
     m_strCDKey(""),
+	m_launcherPID(0),
+	m_lastLauncherCheck(Time::Now()),
 	// KGJV pigs - extra default init
 	m_sidBoardAfterDisembark(NA),
 	m_sidTeleportAfterDisembark(NA)
@@ -1473,7 +1475,18 @@ void BaseClient::FindStandaloneServersByName(const char* szName, TList<TRef<LANS
 
 void BaseClient::SetCDKey(const ZString& strCDKey)
 {
-    m_strCDKey = strCDKey;
+	// BT - 1/16/2013 - Added launcher check to ensure launcher was not killed.
+	int index = strCDKey.Find("|||");
+	if(index >= 0)
+	{
+		m_strCDKey = strCDKey.Left(index);
+		m_launcherPID = atoi(strCDKey.Right(strCDKey.GetLength() - 3 - index));
+	}
+	else
+	{
+		m_strCDKey = strCDKey;
+		m_launcherPID = 0;
+	}
 }
 
 void BaseClient::HandleAutoDownload(DWORD dwTimeAlloted)
@@ -1983,7 +1996,37 @@ HRESULT BaseClient::ReceiveMessages(void)
             hr = m_fmClub.ReceiveMessages();
     }
 
+	// BT - 1/16/2013 - Added launcher check to ensure launcher was not killed.
+	if(FAILED(hr) == false)
+		hr = CheckLauncher();
+
     return(hr);
+}
+
+// BT - 1/16/2013 - Added launcher check to ensure launcher was not killed.
+HRESULT BaseClient::CheckLauncher()
+{
+	const float launcherCheckInterval = 10.0f;
+	if(m_launcherPID != 0 && this->m_lastLauncherCheck + launcherCheckInterval < m_now)
+	{
+		this->m_lastLauncherCheck = m_now;
+		
+		HANDLE process = OpenProcess(PROCESS_QUERY_INFORMATION, false, m_launcherPID);
+		DWORD exitCode;
+
+		GetExitCodeProcess(process, &exitCode);
+		if(process == NULL || exitCode != STILL_ACTIVE)
+		{
+			// if the launcher is gone, then don't wait around, just die immediatly.
+			debugf("No launcher process found for %ld, exiting immeditaly.\n");
+			exit(-987);
+			return(S_FALSE);
+		}
+
+		CloseHandle(process);
+	}
+
+	return(S_OK);
 }
 
 HRESULT BaseClient::OnSessionLost(char * szReason, FedMessaging * pthis)
