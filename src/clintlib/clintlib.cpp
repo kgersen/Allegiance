@@ -1473,10 +1473,13 @@ void BaseClient::FindStandaloneServersByName(const char* szName, TList<TRef<LANS
     m_plistFindServerResults = NULL;
 };
 
-void BaseClient::SetCDKey(const ZString& strCDKey)
+void BaseClient::SetCDKey(const ZString& strCDKey, int processID)
 {
 	// BT - 1/16/2013 - Added launcher check to ensure launcher was not killed.
-	int index = strCDKey.Find("|||");
+	m_strCDKey = strCDKey;
+	m_launcherPID = processID;
+
+	/*int index = strCDKey.Find("|||");
 	if(index >= 0)
 	{
 		m_strCDKey = strCDKey.Left(index);
@@ -1486,7 +1489,7 @@ void BaseClient::SetCDKey(const ZString& strCDKey)
 	{
 		m_strCDKey = strCDKey;
 		m_launcherPID = 0;
-	}
+	}*/
 }
 
 void BaseClient::HandleAutoDownload(DWORD dwTimeAlloted)

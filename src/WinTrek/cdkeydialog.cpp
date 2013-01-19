@@ -129,7 +129,7 @@ public:
             GetWindow()->SetFocus(m_pkeyboardInputOldFocus);
             m_pkeyboardInputOldFocus = NULL;
 
-            trekClient.SetCDKey(strCDKey);
+            trekClient.SetCDKey(strCDKey, 0);
 
             if (m_ppopupOwner) {
                 m_ppopupOwner->ClosePopup(this);

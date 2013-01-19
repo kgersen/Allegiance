@@ -863,7 +863,7 @@ public:
     {
         return m_strCDKey;
     }
-    virtual void        SetCDKey(const ZString& strCDKey);
+    virtual void        SetCDKey(const ZString& strCDKey, int processID);
 
     virtual void        OnLogonAck(bool fValidated, bool bRetry, LPCSTR szFailureReason) = 0;
     virtual void        OnLogonLobbyAck(bool fValidated, bool bRetry, LPCSTR szFailureReason) = 0;

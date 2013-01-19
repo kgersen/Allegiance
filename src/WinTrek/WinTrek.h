@@ -242,7 +242,7 @@ class  WinTrekClient :
 
         virtual void      OnReload(IpartIGC* ppart, bool bConsumed);
         virtual void      Preload(const char* pszModelName, const char* pszTextureName);
-        virtual void      SetCDKey(const ZString& strCDKey);
+        virtual void      SetCDKey(const ZString& strCDKey, int processID);
         virtual void      ChangeGameState(void) { GetWindow()->UpdateGameStateContainer(); }
 
         virtual IAutoUpdateSink * OnBeginAutoUpdate(IAutoUpdateSink * pSink, bool bConnectToLobby);

@@ -2361,7 +2361,7 @@ WinTrekClient::WinTrekClient(void)
                 (unsigned char*)szCDKey, &dwSize) == ERROR_SUCCESS
             && dwType == REG_SZ && dwSize != 0)
         {
-            BaseClient::SetCDKey(szCDKey);
+            BaseClient::SetCDKey(szCDKey, 0);
         }
         ::RegCloseKey(hKey);
     }
@@ -4606,7 +4606,7 @@ void            WinTrekClient::Preload(const char*  pszModelName,
 // BUILD_DX9
 }
 
-void WinTrekClient::SetCDKey(const ZString& strCDKey)
+void WinTrekClient::SetCDKey(const ZString& strCDKey, int processID)
 {
 	// BT - 5/21/2012 - ACSS - Debugging for the CDKey.
 	//debugf("SetCDKey() strCDKey = %s\r\n", (const unsigned char*)(PCC) strCDKey);
@@ -4627,7 +4627,7 @@ void WinTrekClient::SetCDKey(const ZString& strCDKey)
     //   ::RegCloseKey(hKey);
     // }
     
-    BaseClient::SetCDKey(strCDKey);
+    BaseClient::SetCDKey(strCDKey, processID);
 }
 
 TRef<ThingSite> WinTrekClient::CreateThingSite(ImodelIGC* pModel)

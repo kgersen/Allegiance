@@ -271,7 +271,7 @@ bool CheckForAllGuard()
   return false;
 }
 
-ZString ReadAuthPipe()
+void ReadAuthPipe(ZString &cdKey, int &processID)
 {
 	const int LENGTH = 2064;
 	HANDLE hWrite;
@@ -303,8 +303,12 @@ ZString ReadAuthPipe()
 		debugf("Remote process didn't deliver key to memory location within 10 seconds.\r\n"); 
 	
 	debugf("received key length: %ld\r\n", strlen(buffer));
+	debugf("received PID: %s\r\n", buffer + strlen(buffer) + 1);
 
-	return ZString(buffer);
+	cdKey = ZString(buffer);
+	processID = atoi(buffer + strlen(buffer) + 1);
+
+	//return ZString(buffer);
 };
 
 
@@ -683,7 +687,10 @@ public:
             }
 
 		//Orion - 2009 ACSS : check the alleg pipe for the auth token
-		trekClient.SetCDKey(ReadAuthPipe());
+		ZString cdKey;
+		int processID;
+		ReadAuthPipe(cdKey, processID);
+		trekClient.SetCDKey(cdKey, processID);
 
         // 
         // Check for other running copies of the app
