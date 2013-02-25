@@ -25,6 +25,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
         :
             m_fraction(1.0f)
 		{
+			ZeroMemory(&m_dead, sizeof(bool) * c_cSidesMax); //Turkey #307 02/31
         }
 
     // IbaseIGC
@@ -312,6 +313,24 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 		//Xynth #225 9/10
 		virtual void SetInhibitUpdate(bool inhib) {m_inhibitUpdate = inhib;}
 
+		//Turkey #307 02/13
+		void			Kill(SideID sid)
+		{
+			m_dead[sid] = true;
+		}
+		bool			IsDead(void)
+		{
+			for (SideLinkIGC* psl = GetMission()->GetSides()->first(); psl; psl = psl->next()) 
+			{
+				if (!m_dead[psl->data()->GetObjectID()]) return false;
+			}
+			return true;
+		}
+		bool			IsDead(SideID sid)
+		{
+			return m_dead[sid];
+		}
+
     private:
         AsteroidDef                 m_asteroidDef;
 		//Xynth #100 7/2010 array to hold what each team knows about ore in this rock		
@@ -322,6 +341,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 		bool						m_builderseensides[c_cSidesMax]; //Imago #120 #121
 		bool                        m_inhibitUpdate; //Xynth #225 bookkeeping variables to prevent illegal or update		
 		Time					    m_inhibitCounter; //upon entering cluster		
+		bool						m_dead[c_cSidesMax];	//Turkey #307 02/13 m_dead[sid] is true when side sid knows this is dead
 };
 
 #endif //__ASTEROIDIGC_H_

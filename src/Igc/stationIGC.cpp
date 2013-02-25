@@ -52,6 +52,13 @@ HRESULT     CstationIGC::Initialize(ImissionIGC* pMission, Time now, const void*
         {
             m_stationID = dataStation->stationID;
 
+			//Turkey #307 02/31
+			for (int sid = 0; sid < c_cSidesMax; sid++)
+			{
+				if (dataStation->knownStationTypeID[sid])
+					SetKnownStationType(sid, GetMyMission()->GetStationType(dataStation->knownStationTypeID[sid]));
+			}
+
 			if (pMission->GetStationType(dataStation->stationTypeID)) //Turkey 09/12 #335
 				SetBaseStationType(pMission->GetStationType(dataStation->stationTypeID));
 			else
@@ -81,6 +88,7 @@ HRESULT     CstationIGC::Initialize(ImissionIGC* pMission, Time now, const void*
 
             m_hullFraction = dataStation->bpHull;
             SetShieldFraction(dataStation->bpShield);
+
         }
 
         m_timeLastDamageReport = now;
@@ -112,6 +120,15 @@ int         CstationIGC::Export(void* data) const
 
         dataStation->bpHull = m_hullFraction;
         dataStation->bpShield = m_shieldFraction;
+
+		//Turkey #307 02/31
+		for (int sid = 0; sid < c_cSidesMax; sid++) 
+		{
+			if (m_pKnownStationType[sid])
+				dataStation->knownStationTypeID[sid] = m_pKnownStationType[sid]->GetObjectID();
+			else
+				dataStation->knownStationTypeID[sid] = 0;
+		}
     }
 
     return sizeof(DataStationIGC);
@@ -227,9 +244,11 @@ void                CstationIGC::SetBaseStationType(IstationTypeIGC*    pst)
         SetCluster(NULL);
 
         FreeThingSite();
+
+		m_pKnownStationType[GetSide()->GetObjectID()] = pst;//Turkey #307 02/31
     }
     else
-        assert (!GetSide());
+		assert (!GetSide());
 
     m_myStationType.SetStationType(pst);
 

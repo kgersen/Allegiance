@@ -3957,7 +3957,7 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
         AsteroidLinkIGC * pmdllink;
         for (pmdllink = pmdllist->first(); pmdllink; pmdllink = pmdllink->next())
         {
-          if (pmdllink->data()->SeenBySide(pside))
+			if (pmdllink->data()->SeenBySide(pside) && !pmdllink->data()->IsDead(pside->GetObjectID()))//Turkey excluded rocks that are known to be dead by that side #307 02/31
           {
             ExportObj(pmdllink->data(), OT_asteroid, NULL);
             IbuildingEffectIGC* pbe = pmdllink->data()->GetBuildingEffect();
@@ -3971,8 +3971,10 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
         StationLinkIGC * pstnlink;
         for (pstnlink = pstnlist->first(); pstnlink; pstnlink = pstnlink->next())
         {
-          if (pstnlink->data()->SeenBySide(pside))
-            ExportObj(pstnlink->data(), OT_station, NULL);
+			if (pstnlink->data()->GetKnownStationType(pside->GetObjectID()) != NULL || pstnlink->data()->SeenBySide(pside)) //Turkey included stations with a known type #307 02/31
+			{
+				ExportObj(pstnlink->data(), OT_station, NULL);
+			}
         }
 
         // Export treasure

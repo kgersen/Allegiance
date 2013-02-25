@@ -133,6 +133,7 @@ class       MyStationType : public IstationTypeIGC
         IstationTypeIGC*            m_pStationType;
         const DataStationTypeIGC*   m_pStationData;
 
+
         friend class CstationIGC;
 };
 
@@ -153,6 +154,7 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
 			m_roidPos = Vector(0.0f,0.0f,0.0f);
 			ZeroMemory(&m_roidSides,sizeof(bool) * c_cSidesMax);
 			//end Imago
+			ZeroMemory(&m_pKnownStationType, sizeof(IstationTypeIGC*) * c_cSidesMax); //Turkey #307 02/31
         }
 
         /*
@@ -274,6 +276,8 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
                         pcluster->GetClusterSite()->AddScanner(psideNew->GetObjectID(), this);
 
                     GetHitTest()->SetUseTrueShapeSelf(psideNew);
+
+					SetKnownStationType(psideNew->GetObjectID(), m_myStationType.GetStationType()); //Turkey #307 02/31
                 }
 
                 if (pcluster != NULL)
@@ -529,7 +533,15 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
 		virtual bool GetRoidSide(SideID sid) {
 			return (m_roidSides[sid]);
 		}
- 		//
+ 		//Turkey #307 02/13
+		virtual void SetKnownStationType(SideID sid, IstationTypeIGC* pst)
+		{
+			m_pKnownStationType[sid] = pst;
+		}
+		virtual IstationTypeIGC* GetKnownStationType(SideID sid)
+		{
+			return m_pKnownStationType[sid];
+		}//end #307
 
         virtual SoundID                 GetInteriorSound() const
         {
@@ -560,6 +572,8 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
 		Vector						m_roidPos;
 		AsteroidAbilityBitMask		m_roidAabm;
 		bool						m_roidSides[c_cSidesMax];
+
+		IstationTypeIGC*			m_pKnownStationType[c_cSidesMax]; //correct for server only Turkey #307 02/13
 };
 
 #endif //__STATIONIGC_H_

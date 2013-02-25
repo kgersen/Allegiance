@@ -10112,11 +10112,18 @@ class ThingSiteImpl : public ThingSite
 					}
                     else if (type == OT_asteroid)
                     {
+						if (((IasteroidIGC*)pmodel)->IsDead(pside->GetObjectID())) return false; //Turkey #307 02/13
+
                         //if under construction, send the building effect
                         IbuildingEffectIGC* pbe = ((IasteroidIGC*)pmodel)->GetBuildingEffect();
                         if (pbe)
                             ExportObj(pbe, OT_buildingEffect, NULL);
                     }
+					else if (type == OT_station) //Turkey #307 02/13
+					{
+						IstationIGC* ps = (IstationIGC*)pmodel;
+						ps->SetKnownStationType(pside->GetObjectID(), ps->GetBaseStationType());
+					}
 				
                     g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
                 }
@@ -10681,7 +10688,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
  		}
 	}
 	//
-	pasteroid->Terminate();
+	//pasteroid->Terminate(); //Turkey commented out #307 02/13
 	//
 	// TE: Fire AGCEvent informing of station created
 	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL; // this is a timestamp.
@@ -11620,6 +11627,10 @@ void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* side, 
   pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
   pfmAsteroidDestroyed->explodeF = explodeF;
   g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+
+   //Turkey #307 02/13
+  pasteroid->Kill(side->GetObjectID());
+  if (pasteroid->IsDead()) pasteroid->Terminate();
 }
 
 void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side)
@@ -11630,6 +11641,11 @@ void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC*
   pfmAsteroidDestroyed->asteroidID = roid;
   pfmAsteroidDestroyed->explodeF = false;
   g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+
+  //Turkey #307 02/13
+  IasteroidIGC* pasteroid = m_pfsMission->GetIGCMission()->GetAsteroid(roid);
+  pasteroid->Kill(side->GetObjectID());
+  if (pasteroid->IsDead()) pasteroid->Terminate();
 }
 
 void FedSrvSiteBase::DrainAsteroidEvent(IasteroidIGC* pasteroid)

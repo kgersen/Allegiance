@@ -91,7 +91,27 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 
 
             if (u)
+			{
                 u->Release();
+
+				//Turkey #307 02/31
+				if (pfmExport->objecttype == OT_station) 
+				{
+					
+					IstationIGC* ps = (IstationIGC*)u;
+
+					SideID mySID = GetSideID();
+					if (mySID > -1) {
+						//compare what the station is known as to us, with what the station was exported as. If there's a difference, change it.
+						if (ps->GetBaseStationType() != ps->GetKnownStationType(mySID) && ps->GetKnownStationType(mySID))
+						{
+							ps->SetBaseStationType(ps->GetKnownStationType(mySID));
+							ps->SetName(ps->GetKnownStationType(mySID)->GetName());
+						}
+					}
+
+				}
+			}
             else
             {
                 //Station exports are allowed to "fail" because they may simply update an existing station.

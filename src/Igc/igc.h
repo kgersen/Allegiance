@@ -2616,6 +2616,7 @@ struct  DataStationIGC
     BytePercentage      bpHull;
     BytePercentage      bpShield;
     char                name[c_cbName];
+	StationTypeID		knownStationTypeID[c_cSidesMax]; //Turkey #307 02/31
 };
 
 struct  DataStationTypeIGC : public DataBuyableIGC
@@ -3505,7 +3506,10 @@ class IstationIGC : public IscannerIGC
 
 		virtual void SetRoidSide(SideID sid, bool bset = true) = 0;
 		virtual bool GetRoidSide(SideID sid) = 0;
-		//
+		
+		//Turkey #307 02/13
+		virtual void SetKnownStationType(SideID sid, IstationTypeIGC* pst) = 0;
+		virtual IstationTypeIGC* GetKnownStationType(SideID sid) = 0;
 
         virtual float                   GetShieldFraction(void) const = 0;
         virtual void                    SetShieldFraction(float sf) = 0;
@@ -4119,6 +4123,11 @@ class IasteroidIGC : public IdamageIGC
 		virtual void SetBuilderSeenSide(ObjectID oid) = 0;
 		virtual bool GetBuilderSeenSide(ObjectID oid) = 0;
 		virtual void SetInhibitUpdate(bool inhib) = 0; //Xynth #225 9/10
+
+		//Turkey #307 02/13
+		virtual void					Kill(SideID sid) = 0;
+		virtual bool					IsDead(void) = 0;
+		virtual bool					IsDead(SideID sid) = 0;
 };
 
 class IwarpIGC : public ImodelIGC

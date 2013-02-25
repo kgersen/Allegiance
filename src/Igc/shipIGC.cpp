@@ -616,6 +616,7 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
                                   const CollisionEntry&  entry,
                                   ImodelIGC*             pModel)
 {
+
     const float c_impactDamageCoefficient = 1.0f / 128.0f;
     const float c_impactJiggleCoefficient = 1.0f / 20.0f;
 
@@ -867,7 +868,9 @@ void    CshipIGC::HandleCollision(Time                   timeCollision,
         case OT_buildingEffect:
         case OT_asteroid:
         {
-            //Ignore any collisions between a drilling builder and an asteroid (could get here by fallthrough from OT_station)
+            if (type == OT_asteroid && ((IasteroidIGC*)pModel)->IsDead(GetSide()->GetObjectID())) return; //Turkey dead asteroids can't be collided with #307 02/13
+
+			//Ignore any collisions between a drilling builder and an asteroid (could get here by fallthrough from OT_station)
             if (((m_stateM & drillingMaskIGC) != 0) && (type != OT_station))
             {
                 assert (m_pilotType == c_ptBuilder);
