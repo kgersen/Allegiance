@@ -259,7 +259,8 @@ DS3DSoundEngine::~DS3DSoundEngine()
 
     // release all dsound buffers
 	// mdvalley: Call Release on the primary
-	m_pPrimaryBuffer->Release();
+	// turkey #352 03/13: don't crash if the buffer is null
+	if (m_pPrimaryBuffer) m_pPrimaryBuffer->Release();
 
     m_pPrimaryBuffer = NULL;
     m_pDSListener = NULL;
