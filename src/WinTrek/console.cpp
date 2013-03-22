@@ -1657,6 +1657,7 @@ public:
         // clean up the composing process        
         SetComposeState(c_csNotComposing);
         SetChatObject(NULL);
+		SetVerb(c_cidNone);//#319
 
         // default to the command target
         m_pchsCurrent = &m_chsCommand;
@@ -1767,6 +1768,8 @@ public:
         }
         else
         {
+			bool useDefaultVerb = true;//#319
+
             if (m_csComposeState != c_csComposeCommand)
                 m_csComposeState = c_csComposeCommand;
 
@@ -1792,11 +1795,28 @@ public:
                             SendChat();
                             return;
                         }
-                    }
-                }
+                    }//Turkey #319 3/13: allow build commands to target a sector
+					if (m_cidVerb == c_cidBuild)
+					{
+						useDefaultVerb = false;
+					}
+                }//#320 If you're telling it to run, find a station for it to run to
+				if (m_cidVerb == c_cidHide)
+				{
+					ImodelIGC* pmodel = FindTarget(pship,
+												c_ttFriendly | c_ttStation | c_ttNearest,
+												NULL, pcluster, NULL, NULL, c_sabmRepair);
+					if (pmodel)
+					{
+						SetChatObject(pmodel);
+						SendChat();
+						return;
+					}
+				}
+
             }
 
-            SetVerb(c_cidGoto);
+            if (useDefaultVerb) SetVerb(c_cidGoto);
 
             // create a cluster buoy in that sector
             DataBuoyIGC db;
@@ -1954,8 +1974,16 @@ public:
                 SetVerb(c_cidDefault);
             }
 
-            SetChatObject(pmodelMin);
-            SendChat();
+			//#320: special case, ordering to hide in an aleph changes to hide in station in next sector
+			if (pmodelMin->GetObjectType() == OT_warp && m_cidVerb == c_cidHide)
+			{
+				PickCluster(((IwarpIGC*)pmodelMin)->GetDestination()->GetCluster(), button);
+			} 
+			else
+			{
+				SetChatObject(pmodelMin);
+				SendChat();
+			}
         }
         else if (m_bRecipientVisible)
         {
@@ -2413,7 +2441,7 @@ public:
                 switch (ks.vk)
                 {
                     case VK_RETURN:
-                        if (m_strTypedText.IsEmpty())
+                        if (m_strTypedText.IsEmpty() && (m_cidVerb < c_cidStop)) //#319 added && (m_cidVerb < c_cidStop)
                         {
                             QuitComposing();
                         }
@@ -2674,6 +2702,7 @@ public:
         {
             SetComposeState(c_csComposeChat);
             SetChatObject(NULL);
+			SetVerb(c_cidNone); //#319
         }
     }
 

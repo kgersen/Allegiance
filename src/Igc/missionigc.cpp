@@ -302,8 +302,8 @@ AbilityBitMask AbilitiesListToMask(const char * szAbilities, AbilityType at) {
 					eabm |= c_eabmWarpBombSingle;
 				if(strExpCap.ReverseFind("CanQuickReady") == 0)
 					eabm |= c_eabmQuickReady;
-				if(strExpCap.ReverseFind("CanRipcord") == 0)
-					eabm |= c_eabmRipcord;
+				if(strExpCap.ReverseFind("CanWarn") == 0)
+					eabm |= c_eabmWarn;
 				if(strExpCap.ReverseFind("CanShootStations") == 0)
 					eabm |= c_eabmShootStations;
 				if(strExpCap.ReverseFind("CanShootShips") == 0)
@@ -4486,8 +4486,8 @@ void Obj2Txt(IbaseIGC * pIGC, ObjectType ot, ImissionIGC * pMission)
 					strCapabilities += "CanWarpBombSingle ";
 				if(data2.eabmCapabilities & c_eabmQuickReady)
 					strCapabilities += "CanQuickReady ";
-				if(data2.eabmCapabilities & c_eabmRipcord)
-					strCapabilities += "CanRipcord ";
+				if(data2.eabmCapabilities & c_eabmWarn)
+					strCapabilities += "CanWarn ";
 				if(data2.eabmCapabilities & c_eabmShootStations)
 					strCapabilities += "CanShootStations ";
 				if(data2.eabmCapabilities & c_eabmShootShips)
@@ -4556,8 +4556,8 @@ void Obj2Txt(IbaseIGC * pIGC, ObjectType ot, ImissionIGC * pMission)
 					strCapabilities += "CanWarpBombSingle ";
 				if(data2.eabmCapabilities & c_eabmQuickReady)
 					strCapabilities += "CanQuickReady ";
-				if(data2.eabmCapabilities & c_eabmRipcord)
-					strCapabilities += "CanRipcord ";
+				if(data2.eabmCapabilities & c_eabmWarn)
+					strCapabilities += "CanWarn ";
 				if(data2.eabmCapabilities & c_eabmShootStations)
 					strCapabilities += "CanShootStations ";
 				if(data2.eabmCapabilities & c_eabmShootShips)
@@ -4622,8 +4622,8 @@ void Obj2Txt(IbaseIGC * pIGC, ObjectType ot, ImissionIGC * pMission)
 					strCapabilities += "CanWarpBombSingle ";
 				if(data2.eabmCapabilities & c_eabmQuickReady)
 					strCapabilities += "CanQuickReady ";
-				if(data2.eabmCapabilities & c_eabmRipcord)
-					strCapabilities += "CanRipcord ";
+				if(data2.eabmCapabilities & c_eabmWarn)
+					strCapabilities += "CanWarn ";
 				if(data2.eabmCapabilities & c_eabmShootStations)
 					strCapabilities += "CanShootStations ";
 				if(data2.eabmCapabilities & c_eabmShootShips)
@@ -4695,8 +4695,8 @@ void Obj2Txt(IbaseIGC * pIGC, ObjectType ot, ImissionIGC * pMission)
 					strCapabilities += "CanWarpBombSingle ";
 				if(data2.eabmCapabilities & c_eabmQuickReady)
 					strCapabilities += "CanQuickReady ";
-				if(data2.eabmCapabilities & c_eabmRipcord)
-					strCapabilities += "CanRipcord ";
+				if(data2.eabmCapabilities & c_eabmWarn)
+					strCapabilities += "CanWarn ";
 				if(data2.eabmCapabilities & c_eabmShootStations)
 					strCapabilities += "CanShootStations ";
 				if(data2.eabmCapabilities & c_eabmShootShips)

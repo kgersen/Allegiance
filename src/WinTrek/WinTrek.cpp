@@ -3705,6 +3705,7 @@ public:
 	
 	void contextDockDrone() //Xynth #48 8/2010
 	{
+		/* Turkey #320 3/13 commented out
 		//Spunky #250 #257
 		bool docked=contextPlayerInfo->LastSeenState() == c_ssDocked; //GetStation() doesn't work here
 		if (docked && !contextPlayerInfo->GetShip()->GetStayDocked() || !docked) 
@@ -3727,6 +3728,23 @@ public:
 			pfmOC->objectType = OT_invalid;
 			pfmOC->objectID = NA;
 		}
+		*/
+
+		//#320 use chat instead
+		ObjectID oid = contextPlayerInfo->GetShip()->GetObjectID();
+		bool docked=contextPlayerInfo->LastSeenState() == c_ssDocked; //GetStation() doesn't work here
+		CommandID cid;
+		if (docked && contextPlayerInfo->GetShip()->GetStayDocked())
+				cid = c_cidGoto;
+			else 
+				cid = c_cidHide;
+
+		trekClient.SendChat(trekClient.GetShip(),
+							CHAT_INDIVIDUAL,
+							oid,
+							NA,
+							NULL,
+							cid);
 	}
 
 	//Xynth #197 8/2010
@@ -4195,14 +4213,14 @@ public:
 					if ((playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL) && playerInfo->GetShip()->GetStayDocked()) //Spunky #250					
 						sprintf(str1,"Launch  ");
 					else
-						sprintf(str1,"Dock    ");
+						sprintf(str1,"Hide    ");//#320 turkey changed from Dock
 					bEnableDock  = true;					
 				}				
 				else  //carrier
 				{					
 					if (!(playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL))
 					{
-						sprintf(str1,"Dock/Flee ");  //if no shipyard, carriers go to nearest base players can launch from
+						sprintf(str1,"Hide/Flee ");  //if no shipyard, carriers go to nearest base players can launch from
 						bEnableDock  = true;  //no launch, since carriers don't have a default command
 					}
 				}
@@ -4241,7 +4259,7 @@ public:
 				);
 
 
-			if(bEnableDock)			m_pmenu->AddMenuItem(idmContextDockDrone , str1 , 'D'); //Xynth #48 8/2010
+			if(bEnableDock)			m_pmenu->AddMenuItem(idmContextDockDrone , str1 , 'H'); //Xynth #48 8/2010
 			if(bEnableChat)			m_pmenu->AddMenuItem(idmContextChat , str2 , 'C'); //Xynth #197 8/2010
 			if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str3 , 'A');
 			if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str4 , 'R');
@@ -10386,7 +10404,7 @@ public:
             if (cid != c_cidNone)
             {
                 ImodelIGC*  pmodel = trekClient.GetShip()->GetCommandTarget(c_cmdQueued);
-                if (pmodel && trekClient.GetShip()->LegalCommand(cid, pmodel))
+                if ((pmodel || cid == c_cidStop) && trekClient.GetShip()->LegalCommand(cid, pmodel)) //#321 included c_cidStop
                 {
                     trekClient.PlaySoundEffect(acceptCommandSound);
                     if (cid == c_cidJoin)
@@ -10418,7 +10436,7 @@ public:
                         if (bExecute &&
                             (trekClient.GetShip()->GetStation() == NULL) &&
                             (trekClient.GetShip()->GetParentShip() == NULL) &&
-                            trekClient.GetCluster(trekClient.GetShip(), pmodel))
+                            (cid == c_cidStop || trekClient.GetCluster(trekClient.GetShip(), pmodel))) //#321 included c_cidStop
                         {
                             trekClient.SetAutoPilot(true);
                             trekClient.bInitTrekJoyStick = true;

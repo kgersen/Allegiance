@@ -378,7 +378,7 @@ class ClusterSiteImpl : public ClusterSite
             IsideIGC*       pside = trekClient.GetSide();
 
             AssetMask      am = m_assetmask;
-            am &= (c_amStation | c_amEnemyStation | c_amEnemyTeleport);
+            am &= (c_amStation | c_amEnemyStation | c_amEnemyTeleport | c_amEnemyProbe); //#354 added EnemyProbe
 
             for (ShipLinkIGC*    psl = trekClient.m_pCoreIGC->GetShips()->first();
                  (psl != NULL);
@@ -1986,20 +1986,25 @@ class ThingSiteImpl : public ThingSitePrivate
 
                         case OT_probe:
                         {
-                            if ( ((IprobeIGC*)pmodel)->GetProbeType()->HasCapability(c_eabmRipcord) )
+							IprobeTypeIGC* ppt = ((IprobeIGC*)pmodel)->GetProbeType();
+
+							//Turkey #354 3/13 treat ripcord probes and warn probes differently
+                            if ( ppt->HasCapability(c_eabmWarn) || ppt->GetRipcordDelay() >= 0.0f)
                             {
                                 IsideIGC* pside = pmodel->GetSide();
+
+								AssetMask am = (ppt->GetRipcordDelay() >= 0.0f)? c_amEnemyTeleport : c_amEnemyProbe;
 
                                 if ( (pside != trekClient.GetSide()) && (!pside->AlliedSides(pside,trekClient.GetSide())) ) //ALLY - imago 7/3/09
                                 {
                                     assert (pside);
                                     ClusterSite*    pcs = pcluster->GetClusterSite();
-                                    pcs->SetClusterAssetMask(pcs->GetClusterAssetMask() | c_amEnemyTeleport);
+                                    pcs->SetClusterAssetMask(pcs->GetClusterAssetMask() | am);
 
                                     trekClient.PostText(true, START_COLOR_STRING "%s %s" END_COLOR_STRING " spotted in %s",
                                                         (PCC) ConvertColorToString (pside->GetColor ()), pside->GetName(), GetModelName(pmodel), pcluster->GetName());
                                 }
-                                else
+								else if (ppt->GetRipcordDelay() >= 0.0f)
                                 {
                                     trekClient.PostText(true, "%s deployed in %s", GetModelName(pmodel), pcluster->GetName());
                                 }
@@ -2889,35 +2894,59 @@ void WinTrekClient::ActivateTeleportProbe(IprobeIGC* pprobe)
     }
 }
 
+//also called when a warn probe is destroyed #354 
 void WinTrekClient::DestroyTeleportProbe(IprobeIGC* pprobe)
 {
     IsideIGC*       pside = pprobe->GetSide();
     IsideIGC*       psideMe = trekClient.GetSide();
     IclusterIGC*    pcluster = pprobe->GetCluster();
 
-	if ( (pside != psideMe) && !pside->AlliedSides(pside,psideMe) ) //ALLY - imago 7/3/09
-    {
-        assert (pside);
-        ClusterSite*    pcs = pcluster->GetClusterSite();
+	if (pprobe->GetProbeType()->GetRipcordDelay() >= 0.0f)
+	{
 
-        AssetMask      am = pcs->GetClusterAssetMask() & ~c_amEnemyTeleport;
-        {
-            for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
-            {
-                IprobeIGC*  pp = ppl->data();
-                if ((pp != pprobe) && (pp->GetSide() != psideMe) && pp->GetProbeType()->HasCapability(c_eabmRipcord))
-                    am |= c_amEnemyTeleport;
-            }
-        }
-        pcs->SetClusterAssetMask(am);
+		if ( (pside != psideMe) && !pside->AlliedSides(pside,psideMe) ) //ALLY - imago 7/3/09
+		{
+			assert (pside);
+			ClusterSite*    pcs = pcluster->GetClusterSite();
 
-        PostText(false, START_COLOR_STRING "%s %s" END_COLOR_STRING " in %s was destroyed",
-                 (PCC) ConvertColorToString (pside->GetColor ()), pside->GetName(), GetModelName(pprobe), pcluster->GetName());
-    }
-    else
-    {
-        PostText(true, "%s in %s was destroyed", GetModelName(pprobe), pcluster->GetName());
-    }
+			AssetMask      am = pcs->GetClusterAssetMask() & ~c_amEnemyTeleport;
+			{
+				for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
+				{
+					IprobeIGC*  pp = ppl->data();
+					if ((pp != pprobe) && (pp->GetSide() != psideMe) && (pp->GetProbeType()->GetRipcordDelay() >= 0.0f))
+						am |= c_amEnemyTeleport;
+				}
+			}
+			pcs->SetClusterAssetMask(am);
+
+			PostText(false, START_COLOR_STRING "%s %s" END_COLOR_STRING " in %s was destroyed",
+				(PCC) ConvertColorToString (pside->GetColor ()), pside->GetName(), GetModelName(pprobe), pcluster->GetName());
+		}
+		else
+		{
+			PostText(true, "%s in %s was destroyed", GetModelName(pprobe), pcluster->GetName());
+		}
+	} 
+	else //is a warn probe
+	{
+		if ( (pside != psideMe) && !pside->AlliedSides(pside,psideMe) ) //ALLY - imago 7/3/09
+		{
+			assert (pside);
+			ClusterSite*    pcs = pcluster->GetClusterSite();
+
+			AssetMask      am = pcs->GetClusterAssetMask() & ~c_amEnemyProbe;
+			{
+				for (ProbeLinkIGC*  ppl = pcluster->GetProbes()->first(); (ppl != NULL); ppl = ppl->next())
+				{
+					IprobeIGC*  pp = ppl->data();
+					if ((pp != pprobe) && (pp->GetSide() != psideMe) && pp->GetProbeType()->HasCapability(c_eabmWarn))
+						am |= c_amEnemyProbe;
+				}
+			}
+			pcs->SetClusterAssetMask(am);
+		}
+	}
 }
 
 void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
@@ -4532,7 +4561,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
     //        }
     //    }
 
-        if (pmodelTarget && trekClient.GetShip()->LegalCommand(cid, pmodelTarget))
+        if ((pmodelTarget || cid == c_cidStop) && trekClient.GetShip()->LegalCommand(cid, pmodelTarget))//#321 included c_cidStop
         {
 
             Command cmd = (ctRecipient == CHAT_INDIVIDUAL) && (pshipSender == trekClient.GetShip())
@@ -4546,7 +4575,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 
                 if (trekClient.GetShip()->GetCluster() &&
                     (trekClient.GetShip()->GetParentShip() == NULL) &&
-                    trekClient.GetCluster(trekClient.GetShip(), pmodelTarget))
+                    (cid == c_cidStop || trekClient.GetCluster(trekClient.GetShip(), pmodelTarget)))//#321 included c_cidStop
                 {
                     trekClient.SetAutoPilot(true);
                     trekClient.bInitTrekJoyStick = true;

@@ -48,6 +48,8 @@ const CommandData   c_cdAllCommands[c_cidMax] =
                         { "goto",       "acgotobmp",    "qugotobmp" },
                         { "repair",     "acrepairbmp",  "qurepairbmp" },
                         { "join",       "acjoinbmp",    "qujoinbmp" },
+						{ "stop",		"acstopbmp",	"qustopbmp" }, //#321
+						{ "hide",		"achidebmp",	"quhidebmp" }, //#320
                         { "mine",       "acminebmp",    "quminebmp" },
                         { "build",      "acbuildbmp",   "qubuildbmp" }
                     };
@@ -460,8 +462,8 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
         {
             ImodelIGC*  m = l->data();
 
-			//You never target yourself or something marked as hidden
-            if ((m != pship) && ((!pship) || pship->CanSee(m)) && FindableModel(m, pside, ttMask, abmAbilities,iAllies))
+			//You never target yourself, something marked as hidden, #319 or a dead asteroid
+            if ((m != pship) && ((!pship) || pship->CanSee(m)) && FindableModel(m, pside, ttMask, abmAbilities,iAllies) && !(m->GetObjectType() == OT_asteroid && ((IasteroidIGC*)m)->IsDead(pside->GetObjectID())))
             {
                 if (ttBest)
                 {
@@ -1593,6 +1595,10 @@ bool    Ignore(IshipIGC*   pship, ImodelIGC* pmodel)
     {
         ignore = true;
     }
+	else if ((type == OT_asteroid) && ((IasteroidIGC*)pmodel)->IsDead(mySide->GetObjectID())) //Turkey 3/13 #307 ignore rocks if we know they're dead
+	{
+		ignore = true;
+	}
 
     return ignore;
 }
@@ -2205,7 +2211,7 @@ bool        LineOfSightExist(const IclusterIGC* pcluster,
     for (ModelLinkIGC* pml = ((ModelListIGC*)(pcluster->GetAsteroids()))->first(); (pml != NULL); pml = pml->next())
     {
         ImodelIGC*  pmodel = pml->data();
-        if (pmodel2 != pmodel)
+		if (pmodel2 != pmodel && !(pmodel->GetObjectType() == OT_asteroid && ((IasteroidIGC*)pmodel)->IsDead(pmodel1->GetSide()->GetObjectID()))) //#307 don't consider an asteroid if we know it's dead
         {
             // P3 is the center of the object that might obscure our view of P2
             const Vector&   P3 = pmodel->GetPosition();
@@ -2352,7 +2358,7 @@ ClusterWarning  GetClusterWarning(AssetMask am, bool bInvulnerableStations)
         cw = c_cwStationCaptureThreat;
     else if ((am & (c_amEnemyTeleport | c_amEnemyTeleportShip)) && (am & c_amStation) && !bInvulnerableStations)
         cw = c_cwStationTeleportThreat;
-    else if ((am & c_amEnemyBomber) && (am & c_amStation) && !bInvulnerableStations)
+    else if ((am & (c_amEnemyBomber | c_amEnemyProbe)) && (am & c_amStation) && !bInvulnerableStations)//#354 included EnemyProbe
         cw = c_cwStationThreatened;
     else if ((am & c_amEnemyAPC) && !bInvulnerableStations)
         cw = c_cwTransportInCluster;

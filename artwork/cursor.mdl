@@ -1,0 +1,110 @@
+use "model";
+
+default =
+    TranslateImage(
+        ImportImage("cursorbmp", true),
+        Point(-7, -7)
+    );
+
+drop = 
+    TranslateImage(
+        ImportImage("dropcursorbmp", true),
+        Point(-7, -7)
+    );
+
+drag = 
+    TranslateImage(
+        ImportImage("dragcursorbmp", true),
+        Point(-7, -7)
+    );
+
+select = 
+    TranslateImage(
+        ImportImage("tgcursorbmp", true),
+        Point(-7, -7)
+    );
+
+illegal = 
+    TranslateImage(
+        ImportImage("illegalcursorbmp", true),
+        Point(-7, -7)
+    );
+
+
+//
+// command view cursors:
+//
+
+attack = 
+    TranslateImage(
+        ImportImage("ackillbmp", true),
+        Point(-7, -7)
+    );
+
+capture = 
+    TranslateImage(
+        ImportImage("accptbmp", true),
+        Point(-5, -2)
+    );
+
+defend = 
+    TranslateImage(
+        ImportImage("acdefendbmp", true),
+        Point(-7, -7)
+    );
+
+pickup = 
+    TranslateImage(
+        ImportImage("acpickupbmp", true),
+        Point(-7, -3)
+    );
+
+goto = 
+    TranslateImage(
+        ImportImage("acgotobmp", true),
+        Point(-11, -10)
+    );
+
+repair = 
+    TranslateImage(
+        ImportImage("acrepairbmp", true),
+        Point(-7, -7)
+    );
+
+join =
+    TranslateImage(
+        ImportImage("acjoinbmp", true),
+        Point(-7, -7)
+    );
+
+//#321	
+stop =
+	TranslateImage(
+        ImportImage("acstopbmp", true),
+        Point(-7, -7)
+    );
+
+//#320	
+hide =
+	TranslateImage(
+        ImportImage("achidebmp", true),
+        Point(-7, -7)
+    );
+
+mine = 
+    TranslateImage(
+        ImportImage("acminebmp", true),
+        Point(-7, -7)
+    );
+
+build = 
+    TranslateImage(
+        ImportImage("acbuildbmp", true),
+        Point(-7, -7)
+    );
+
+wait = 
+    TranslateImage(
+        ImportImage("waitcursorbmp", true),
+        Point(-7, -7)
+    );

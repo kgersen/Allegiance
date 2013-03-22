@@ -224,7 +224,7 @@ void    CprobeIGC::Terminate(void)
 
     DataProbeTypeIGC*  dataProbeType = (DataProbeTypeIGC*)(m_probeType->GetData());
 
-    if (dataProbeType->dtRipcord >= 0.0f)
+	if ((dataProbeType->eabmCapabilities & c_eabmWarn) || (dataProbeType->dtRipcord >= 0.0f)) //#354 call for warn probes also
     {
         GetMyMission()->GetIgcSite()->DestroyTeleportProbe(this);
     }

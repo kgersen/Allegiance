@@ -755,7 +755,7 @@ const ExpendableAbilityBitMask  c_eabmWarpBombDual    = 0x02; // KGJV: both side
 const ExpendableAbilityBitMask  c_eabmWarpBombSingle  = 0x04; // KGJV: one side aleph rez
 const ExpendableAbilityBitMask  c_eabmWarpBomb        = c_eabmWarpBombDual | c_eabmWarpBombSingle; // KGJV: both types into one for backward compatibility
 const ExpendableAbilityBitMask  c_eabmQuickReady      = 0x08;
-const ExpendableAbilityBitMask  c_eabmRipcord         = 0x10;
+const ExpendableAbilityBitMask  c_eabmWarn            = 0x10; //Turkey #354 changed all instances from c_eabmRipcord. To check ripcord, use (GetRipcordDelay() >= 0.0f) instead.
 const ExpendableAbilityBitMask  c_eabmShootStations   = 0x20;
 const ExpendableAbilityBitMask  c_eabmShootShips      = 0x40;
 const ExpendableAbilityBitMask  c_eabmShootMissiles   = 0x80;
@@ -880,10 +880,12 @@ const CommandID   c_cidPickup       =  4;
 const CommandID   c_cidGoto         =  5;
 const CommandID   c_cidRepair       =  6;
 const CommandID   c_cidJoin         =  7;
-const CommandID   c_cidMine         =  8;
-const CommandID   c_cidBuild        =  9;
+const CommandID   c_cidStop			=  8; //#321
+const CommandID   c_cidHide			=  9; //#320
+const CommandID   c_cidMine         =  10;
+const CommandID   c_cidBuild        =  11;
 
-const CommandID   c_cidMax = 10;
+const CommandID   c_cidMax = 12; //#321 increased from 10
 extern const CommandData   c_cdAllCommands[c_cidMax];
 
 struct GlobalAttributeSet
@@ -4318,6 +4320,7 @@ const AssetMask     c_amCarrier           = 0x800;
 const AssetMask     c_amEnemyTeleport     = 0x1000;
 const AssetMask     c_amEnemyTeleportShip = 0x2000;
 const AssetMask     c_amEnemyBomber       = 0x4000;
+const AssetMask		c_amEnemyProbe		  = 0x8000; //turkey #354 3/13 set when a warn probe is dropped
 
 typedef short   ClusterWarning;
 const ClusterWarning    c_cwNoThreat                = 0;

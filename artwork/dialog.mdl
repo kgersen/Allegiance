@@ -20,7 +20,7 @@ hudBlendMode = BlendModeAdd;
 RecipientsColumns    = [68, 135, 203, 270]; 
 RecipientsBB = ButtonBarPane(ImportImage("recipientsbmp", true), ButtonNormal, RecipientsColumns, true);
 
-VerbsColumns    = [43, 80, 123, 162, 198, 238, 268, 320, 365];
+VerbsColumns    = [43, 80, 123, 162, 198, 238, 267, 268, 269, 320, 365]; //Turkey needs 11 values instead of 9 #320 #321
 VerbsBB      = ButtonBarPane(ImportImage("verbsbmp", true), ButtonNormal, VerbsColumns, false);
 
 
@@ -46,8 +46,10 @@ hoverString =
             ( 5, "Goto"),
             ( 6, "Repair"),
             ( 7, "Join"),
-            ( 8, "Mine"),
-            ( 9, "Build")
+            ( 8, "Stop"), //#321
+			( 9, "Hide"), //#320
+            ( 10, "Mine"), 
+            ( 11, "Build")
         ]
     );
 
@@ -115,8 +117,10 @@ ComposingCommand = ImagePane(ImportImage("chatcommandbmp", true),
                                            (ImagePane(ImportImage("acgotobmp",    true), []), 5),
                                            (ImagePane(ImportImage("acrepairbmp",  true), []), 6),
                                            (ImagePane(ImportImage("acjoinbmp",    true), []), 7),
-                                           (ImagePane(ImportImage("acminebmp",    true), []), 8),
-                                           (ImagePane(ImportImage("acbuildbmp",   true), []), 9)
+                                           (ImagePane(ImportImage("acstopbmp",    true), []), 8), //#320
+										   (ImagePane(ImportImage("achidebmp",    true), []), 9), //#321
+                                           (ImagePane(ImportImage("acminebmp",    true), []), 10),
+                                           (ImagePane(ImportImage("acbuildbmp",   true), []), 11)
                                        ]),
                              Point(78, 2)
                            ),

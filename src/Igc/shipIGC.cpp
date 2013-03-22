@@ -2160,7 +2160,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 else
                 {
                     //Off-track ... clear the masks and get back into position
-                    assert (m_commandTargets[c_cmdPlan]->GetObjectType() == OT_asteroid);
+                    assert (m_commandTargets[c_cmdPlan]->GetObjectType() == OT_asteroid || m_commandTargets[c_cmdPlan]->GetObjectType() == OT_cluster);
 
                     SetStateM(0);
                 }
@@ -2169,26 +2169,78 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
         if (m_commandTargets[c_cmdPlan] == NULL)
         {
-            if ((m_pilotType < c_ptCarrier) && (m_commandIDs[c_cmdPlan] != c_cidDoNothing))
+			if ((m_pilotType < c_ptCarrier) && (m_commandIDs[c_cmdPlan] != c_cidDoNothing))
             {
                 switch (m_pilotType)
                 {
+					//turkey 2/13 #319: if we have a valid verb without a target, choose a target now
                     case c_ptMiner:
-                        Complain(droneWhereToSound, "Miner requesting He3 asteriod.");
+						if (m_commandIDs[c_cmdPlan] == c_cidMine)
+						{
+							
+							ImodelIGC* pmodel = FindTarget(this, 
+															c_ttAsteroid | c_ttFront | c_ttNearest | c_ttLeastTargeted, 
+															NULL, GetCluster(), &GetPosition(), &GetOrientation(), 
+															c_aabmMineHe3);
+							if (pmodel) 
+							{
+								SetCommand(c_cmdAccepted, pmodel, c_cidMine);
+							}
+							else
+							{
+								PickDefaultOrder(GetCluster(), GetPosition(), false);
+							}
+						} 
+						else
+						{
+							Complain(droneWhereToSound, "Miner requesting He3 asteriod.");
+						}
                         break;
 
                     case c_ptBuilder:
-                        Complain(
-                            ((IstationTypeIGC*)(IbaseIGC*)m_pbaseData)->GetConstructorNeedRockSound(),
-                            "Constructor requesting asteroid.");
+						if (m_commandIDs[c_cmdPlan] == c_cidBuild) 
+						{
+							ImodelIGC* pmodel = FindTarget(this,
+															c_ttNeutral | c_ttAsteroid | c_ttLeastTargeted,
+															NULL, GetCluster(), &(GetPosition()/3), NULL,
+															m_abmOrders);
+							if (pmodel) 
+							{
+								SetCommand(c_cmdAccepted, pmodel, c_cidBuild);
+							}
+							else
+							{
+								PickDefaultOrder(GetCluster(), GetPosition(), false);
+							}
+						}
+						else
+						{
+							Complain(
+								((IstationTypeIGC*)(IbaseIGC*)m_pbaseData)->GetConstructorNeedRockSound(),
+								"Constructor requesting asteroid.");
+						}
+						break;
+
+					case c_ptLayer:
+						if (m_commandIDs[c_cmdPlan] == c_cidBuild)
+						{
+							//build where we are
+							debugf("%s building here\n", GetName());
+
+							GetMyMission()->GetIgcSite()->LayExpendable(timeStart, (IexpendableTypeIGC*)(IbaseIGC*)m_pbaseData, this);
+							//now the ship is destroyed, so skip the rest of this function
+							return;
+						}
+						//end #319
+						else
+						{
+							if (m_pbaseData->GetObjectType() == OT_mineType)
+								Complain(droneWhereToLayMinefieldSound, "Minefield requesting location.");
+							else
+								Complain(droneWhereToLayTowerSound, "Tower requesting location.");
+						}
                         break;
 
-                    case c_ptLayer:
-                        if (m_pbaseData->GetObjectType() == OT_mineType)
-                            Complain(droneWhereToLayMinefieldSound, "Minefield requesting location.");
-                        else
-                            Complain(droneWhereToLayTowerSound, "Tower requesting location.");
-                        break;
                 }
             }
 
@@ -3515,7 +3567,7 @@ void    CshipIGC::ResetWaypoint(void)
                     o = Waypoint::c_oGoto;
                     if (m_myHullType.GetHullType())
                     {
-                        if ((m_commandIDs[c_cmdPlan] == c_cidGoto) || (m_commandIDs[c_cmdPlan] == c_cidNone))
+                        if ((m_commandIDs[c_cmdPlan] == c_cidGoto) || (m_commandIDs[c_cmdPlan] == c_cidNone) || (m_commandIDs[c_cmdPlan] == c_cidHide)) //#320 added c_cidHide
                         {
 							if ((m_commandTargets[c_cmdPlan]->GetSide() == GetSide()) || IsideIGC::AlliedSides(m_commandTargets[c_cmdPlan]->GetSide(), GetSide())) //#ALLY (TheRock) we can still dock here (Imago) 7/8/09
                             {

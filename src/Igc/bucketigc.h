@@ -228,16 +228,17 @@ class       CbucketIGC : public IbucketIGC
 				case OT_droneType:
 					{	
 						//check we're not over the max drone limit
-						//can't find a way to to it by DroneTypeID, do it by hull type. 
-						//This will give extra drones if you upgrade the hull type of a free drone.
+						//can't find a way to to it by DroneTypeID, do it by pilot type. 
+						//This will give fewer than max drones if there are multiple possibilities with the same pt
 
-						HullID hullID = ((IdroneTypeIGC*)(m_data.buyable))->GetHullTypeID();
+						PilotType pt = ((IdroneTypeIGC*)(m_data.buyable))->GetPilotType();
 						int droneCount = 0;
 						for (ShipLinkIGC* shipLink = m_data.side->GetShips()->first(); 
 							shipLink != NULL; shipLink = shipLink->next())
 						{
-							if (hullID == shipLink->data()->GetHullType()->GetObjectID())
+							if (pt == shipLink->data()->GetPilotType())
 								droneCount++;
+
 						}
 						if (droneCount >= m_pMission->GetMissionParams()->nMaxDronesPerTeam) return false;
 

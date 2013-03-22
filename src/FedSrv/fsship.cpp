@@ -558,8 +558,16 @@ void CFSShip::SetCluster(IclusterIGC * pcluster, bool   bViewOnly)
                     && ((IbuoyIGC*)ptarget)->GetBuoyType() == c_buoyCluster
                     && ((IbuoyIGC*)ptarget)->GetCluster() == pcluster)
                 {
-                    // clear the command
-                    m_pShip->SetCommand(i, NULL, c_cidNone);
+                    // clear the command 
+					//#319 if building, keep the verb but null the target so it'll find an autobuild target
+					if (m_pShip->GetCommandID(i) == c_cidBuild)
+					{
+						m_pShip->SetCommand(i, NULL, c_cidBuild);
+					}
+					else
+					{
+						m_pShip->SetCommand(i, NULL, c_cidNone);
+					}
                 }
             }
         }

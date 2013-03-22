@@ -720,13 +720,13 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		//If plan, sets the waypoint only.
 		
 		virtual void                 SetCommand(Command i, ImodelIGC* target, CommandID cid)
-        {
-            assert (i >= 0);
-            assert (i < c_cmdMax);
+		{
+			assert (i >= 0);
+			assert (i < c_cmdMax);
 
-            CommandID cidOld = m_commandIDs[i];
-            ImodelIGC*  pmodelOld = m_commandTargets[i];
-            //if ((target != pmodelOld) || (cid != m_commandIDs[i]))
+			CommandID cidOld = m_commandIDs[i];
+			ImodelIGC*  pmodelOld = m_commandTargets[i];
+			//if ((target != pmodelOld) || (cid != m_commandIDs[i]))
             {
                 m_commandTargets[i] = target;
                 if (target)
@@ -783,7 +783,18 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                 if ((i == c_cmdAccepted || i == c_cmdCurrent) && 
                     (cidOld != cid || pmodelOld != target))
+				{
                     GetMyMission()->GetIgcSite()->CommandChangedEvent(i, this, target, cid);
+					//turkey #320 3/13 move the setting/resetting of stayDocked to here
+					if (cid == c_cidHide)
+					{
+						SetStayDocked(true);
+					}
+					else if (cid > c_cidNone)
+					{
+						SetStayDocked(false);
+					}
+				}
             }
         }
 
@@ -1557,38 +1568,38 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             {
                 case c_ptCarrier:
                 {
-                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing);
+                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing) || (cid == c_cidStop);
                 }
                 break;
                 case c_ptMiner:
                 {
-                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing) || (cid == c_cidMine);
+                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing) || (cid == c_cidMine) || (cid == c_cidStop) || (cid == c_cidHide);
                 }
                 break;
                 case c_ptLayer:
                 {
-                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing) || (cid == c_cidBuild);
+                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing) || (cid == c_cidBuild) || (cid == c_cidStop) || (cid == c_cidHide);
                 }
                 break;
 
                 case c_ptBuilder:
                 {
                     bLegal = ((m_stateM & (drillingMaskIGC | buildingMaskIGC)) == 0) &&
-                             ((cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing) || (cid == c_cidBuild));
+                             ((cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidJoin) || (cid == c_cidDoNothing) || (cid == c_cidBuild) || (cid == c_cidStop) || (cid == c_cidHide));
                 }
                 break;
 
                 case c_ptWingman:
                 {
 					//AEM 7.9.07 Wingman can now be ordered to Repair (no effect if not equipped with nan)
-                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidAttack) || (cid == c_cidPickup) || (cid == c_cidDoNothing) || (cid == c_cidRepair);
+                    bLegal = (cid == c_cidDefault) || (cid == c_cidGoto) || (cid == c_cidAttack) || (cid == c_cidPickup) || (cid == c_cidDoNothing) || (cid == c_cidRepair) || (cid == c_cidStop) || (cid == c_cidHide);
                 }
                 break;
 
                 case c_ptPlayer:
                 case c_ptCheatPlayer:
                 {
-                    bLegal = (cid >= c_cidDefault) && (cid < c_cidMine);
+                    bLegal = (cid >= c_cidDefault) && (cid < c_cidHide);
                 }
             }
 
@@ -1599,8 +1610,43 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                                  ImodelIGC*   pmodel) const
         {
             bool    bLegal = true;
-            if ((pmodel == NULL) || 
-                ((m_stateM & buildingMaskIGC) != 0) ||
+			//Turkey #319 3/13 allowed certain verbs without a target
+            if ((pmodel == NULL) && ((m_stateM & buildingMaskIGC) == 0))
+			{
+				switch (cid)
+				{
+					case c_cidDoNothing:
+					case c_cidStop:
+					{
+						bLegal = true;
+					}
+					break;
+					case c_cidHide:
+					{
+						bLegal = (m_pilotType < c_ptPlayer);
+					}
+					break;
+					case c_cidBuild:
+					{
+						bLegal = (m_pilotType == c_ptBuilder || m_pilotType == c_ptLayer);
+					}
+					break;
+					case c_cidMine:
+					{
+						bLegal = (m_pilotType == c_ptMiner);
+					}
+					break;
+					case c_cidGoto:
+					{
+						bLegal = (m_pilotType < c_ptPlayer);
+					}
+					break;
+					default:
+						bLegal = false;
+				}
+
+			}//end #319
+			else if (((m_stateM & buildingMaskIGC) != 0) ||
                 (pmodel == (ImodelIGC*)this) ||
                 (pmodel->GetMission() != GetMyMission()) ||
                 (pmodel->GetObjectType() == OT_buoy &&
@@ -1616,6 +1662,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                 switch (cid)
                 {
+					case c_cidStop:
                     case c_cidNone:
                     {
                         bLegal = false;
@@ -1688,8 +1735,9 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                             bLegal = (type == OT_buoy) || (type == OT_warp);
                         else if (m_pilotType == c_ptBuilder)
                         {
-                            bLegal = (type == OT_asteroid) &&
-                                     ((IasteroidIGC*)pmodel)->HasCapability(m_abmOrders);
+                            bLegal = ((type == OT_asteroid) &&
+                                     ((IasteroidIGC*)pmodel)->HasCapability(m_abmOrders)) ||
+									 ((type == OT_buoy) && ((IbuoyIGC*)pmodel)->GetBuoyType() == c_buoyCluster); //#319 allow builders to target a sector
                         }
                         else
                             bLegal = false;
@@ -1704,6 +1752,13 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         else
                             bLegal = false;
                     }
+					break;
+
+					case c_cidHide: //#320
+					{
+						bLegal = m_pilotType < c_ptPlayer && 
+							(((type == OT_station) && bFriendly) || ((type == OT_buoy) && ((IbuoyIGC*)pmodel)->GetBuoyType() == c_buoyCluster) || (type == OT_warp));
+					}
                 }
             }
 
