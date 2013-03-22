@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{c61a596c-e673-457c-aa53-28598b1c428d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Lobby\alllobby.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\Lobby\Lobby.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\Lobby\lobby.rgs">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Lobby\AutoUpdate.cpp" />
+    <ClCompile Include="..\src\Lobby\broadcast.cpp" />
+    <ClCompile Include="..\src\Lobby\client.cpp" />
+    <ClCompile Include="..\src\Lobby\Lobby.CPP" />
+    <ClCompile Include="..\src\Lobby\lobbyapp.cpp" />
+    <ClCompile Include="..\src\Lobby\lobbyevents.cpp" />
+    <ClCompile Include="..\src\Lobby\lobqguids.cpp" />
+    <ClCompile Include="..\src\Lobby\mission.cpp" />
+    <ClCompile Include="..\src\Lobby\pch.cpp" />
+    <ClCompile Include="..\src\Lobby\server.cpp" />
+    <ClCompile Include="..\src\Lobby\zgameinfo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Lobby\alllobby.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Lobby\AutoUpdate.h" />
+    <ClInclude Include="..\src\Lobby\broadcast.h" />
+    <ClInclude Include="..\src\Lobby\client.h" />
+    <ClInclude Include="..\src\Lobby\counters.h" />
+    <ClInclude Include="..\src\Lobby\Lobby.H" />
+    <ClInclude Include="..\src\Lobby\lobbyapp.h" />
+    <ClInclude Include="..\src\Lobby\LobbyAppSite.h" />
+    <ClInclude Include="..\src\Lobby\lobbyevents.h" />
+    <ClInclude Include="..\src\Lobby\lobbymodule.h" />
+    <ClInclude Include="..\src\Lobby\lobqueries.h" />
+    <ClInclude Include="..\src\Lobby\messagesall.h" />
+    <ClInclude Include="..\src\Lobby\messageslc.h" />
+    <ClInclude Include="..\src\Lobby\messagesls.h" />
+    <ClInclude Include="..\src\Lobby\mission.h" />
+    <ClInclude Include="..\src\Lobby\pch.h" />
+    <ClInclude Include="..\src\Lobby\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Lobby\server.h" />
+    <ClInclude Include="..\src\Lobby\zgameinfo.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\Lobby\lobbymsg.msg">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

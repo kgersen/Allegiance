@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\_Utility\CollisionEntry.cpp" />
+    <ClCompile Include="..\src\_Utility\CollisionQueue.cpp" />
+    <ClCompile Include="..\src\_Utility\CRC.cpp" />
+    <ClCompile Include="..\src\_Utility\Endpoint.cpp" />
+    <ClCompile Include="..\src\_Utility\HitTest.cpp" />
+    <ClCompile Include="..\src\_Utility\KDnode.cpp" />
+    <ClCompile Include="..\src\_Utility\KDroot.cpp" />
+    <ClCompile Include="..\src\_Utility\Messages.cpp" />
+    <ClCompile Include="..\src\_Utility\pch.cpp" />
+    <ClCompile Include="..\src\_Utility\Utility.cpp" />
+    <ClCompile Include="..\src\_Utility\allegdb.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Inc\MessageVersion.h" />
+    <ClInclude Include="..\src\_Utility\CRC.h" />
+    <ClInclude Include="..\src\_Utility\listwrappers.h" />
+    <ClInclude Include="..\src\_Utility\pch.h" />
+    <ClInclude Include="..\src\_Utility\Utility.h" />
+  </ItemGroup>
+</Project>
