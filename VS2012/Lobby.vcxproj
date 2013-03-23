@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{181139DC-F4E7-446B-B8DD-C195691B34CA}</ProjectGUID>
+    <RootNamespace>Lobby</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\Lobby\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\Lobby\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">AllLobby</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">.exe</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\Lobby\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\Lobby\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">AllLobby</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.exe</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\src\ZLib;..\src\_Utility;..\src\Inc;..\src\Guids;..\src\Zone;..\src\Test\Inc;..\src\Inc\appWeb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ALLSRV_STANDALONE;LOBBY;_WIN32_WINNT=0x0403;_ATL_STATIC_REGISTRY;_DEBUG;WIN;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\src\Inc;$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\_utility\Utility.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\test\TCLib\TCLib.lib;$(OutDir)..\sharemem\sharemem.lib;$(OutDir)..\Guids\Guids.lib;Winmm.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\appweb\appweb.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\src\Inc\appWeb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>..\src\ZLib;..\src\_Utility;..\src\Inc;..\src\Guids;..\src\Zone;..\src\Test\Inc;..\src\Inc\appWeb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SRVLOG;_ATL_STATIC_REGISTRY;DEBUG;ALLSRV_STANDALONE;LOBBY;_WIN32_WINNT=0x0403;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\src\Inc;$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\_utility\Utility.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\test\TCLib\TCLib.lib;$(OutDir)..\sharemem\sharemem.lib;$(OutDir)..\Guids\Guids.lib;Winmm.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\appweb\appweb.lib;comctl32.lib;version.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\src\Inc\appWeb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="Guids.vcxproj">
+      <Project>{fa223b93-bcfb-48fa-b9dd-db9dbbc8f314}</Project>
+    </ProjectReference>
+    <ProjectReference Include="sharemem.vcxproj">
+      <Project>{a8e7888a-84ac-485e-9fb2-35382c003e0b}</Project>
+      <CopyLocalDependencies>True</CopyLocalDependencies>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+      <UseInBuild>True</UseInBuild>
+      <UseDependenciesInBuild>True</UseDependenciesInBuild>
+    </ProjectReference>
+    <ProjectReference Include="TCLib.vcxproj">
+      <Project>{1695996c-f698-4509-bf5c-ade10ada67f9}</Project>
+      <CopyLocalDependencies>True</CopyLocalDependencies>
+      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
+      <UseInBuild>True</UseInBuild>
+      <UseDependenciesInBuild>True</UseDependenciesInBuild>
+    </ProjectReference>
+    <ProjectReference Include="Utility.vcxproj">
+      <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="ZLibrary.vcxproj">
+      <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\Lobby\lobbymsg.msg">
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Lobby\AutoUpdate.cpp" />
+    <ClCompile Include="..\src\Lobby\broadcast.cpp" />
+    <ClCompile Include="..\src\Lobby\client.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\Lobby\Lobby.CPP" />
+    <ClCompile Include="..\src\Lobby\lobbyapp.cpp" />
+    <ClCompile Include="..\src\Lobby\lobbyevents.cpp" />
+    <ClCompile Include="..\src\Lobby\lobqguids.cpp" />
+    <ClCompile Include="..\src\Lobby\mission.cpp" />
+    <ClCompile Include="..\src\Lobby\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\Lobby\server.cpp" />
+    <ClCompile Include="..\src\Lobby\zgameinfo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Lobby\alllobby.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Lobby\alllobby.rc2" />
+    <None Include="..\src\Lobby\Lobby.ico" />
+    <None Include="..\src\Lobby\lobby.rgs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Lobby\AutoUpdate.h" />
+    <ClInclude Include="..\src\Lobby\broadcast.h" />
+    <ClInclude Include="..\src\Lobby\client.h" />
+    <ClInclude Include="..\src\Lobby\counters.h" />
+    <ClInclude Include="..\src\Lobby\Lobby.H" />
+    <ClInclude Include="..\src\Lobby\lobbyapp.h" />
+    <ClInclude Include="..\src\Lobby\LobbyAppSite.h" />
+    <ClInclude Include="..\src\Lobby\lobbyevents.h" />
+    <ClInclude Include="..\src\Lobby\lobbymodule.h" />
+    <ClInclude Include="..\src\Lobby\lobqueries.h" />
+    <ClInclude Include="..\src\Lobby\messagesall.h" />
+    <ClInclude Include="..\src\Lobby\messageslc.h" />
+    <ClInclude Include="..\src\Lobby\messagesls.h" />
+    <ClInclude Include="..\src\Lobby\mission.h" />
+    <ClInclude Include="..\src\Lobby\pch.h" />
+    <ClInclude Include="..\src\Lobby\resource.h" />
+    <ClInclude Include="..\src\Lobby\server.h" />
+    <ClInclude Include="..\src\Lobby\zgameinfo.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

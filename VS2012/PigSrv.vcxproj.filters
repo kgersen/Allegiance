@@ -1,0 +1,311 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Piglets">
+      <UniqueIdentifier>{1e7fb307-c704-4c2f-908f-4f843f1241e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Piglets\Include">
+      <UniqueIdentifier>{246206fb-ffe3-4c42-8ca6-7b66fe4aa9ec}</UniqueIdentifier>
+      <Extensions>js;vbs</Extensions>
+    </Filter>
+    <Filter Include="Piglets\Moldy">
+      <UniqueIdentifier>{f68e8b4f-22c0-4825-adfd-83d054648b7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{9544e30e-bfe7-46ee-b85d-9ce243cfb437}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{d69003af-7ce1-4e61-ace0-277afbfc7219}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Registration scripts">
+      <UniqueIdentifier>{a0916b89-0178-4ca0-b832-88854d21813a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Pigs\Piglets\alephjumper.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\bugman.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\bulldozer.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\colbug-a.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\colbug-p.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\colbug-s.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\Default.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\demo.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\dev.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\docker.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\FaceOutpost.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\framerate-dummy.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\framerate.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\it.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\mark2.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\mark2s.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\mark3.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\marksn1.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\progress.xls">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\scout2.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\stem.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\Teleporter.pig">
+      <Filter>Piglets</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\include\asteroids.js">
+      <Filter>Piglets\Include</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\include\AutoStartGame.js">
+      <Filter>Piglets\Include</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\include\chatcommand.js">
+      <Filter>Piglets\Include</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\include\common.js">
+      <Filter>Piglets\Include</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\include\dijkstra.js">
+      <Filter>Piglets\Include</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\include\eliza.js">
+      <Filter>Piglets\Include</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\include\GetIntoTeam.js">
+      <Filter>Piglets\Include</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\moldy\Mark0.pig">
+      <Filter>Piglets\Moldy</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\moldy\Mark1.pig">
+      <Filter>Piglets\Moldy</Filter>
+    </None>
+    <None Include="..\src\Pigs\Piglets\moldy\scout.pig">
+      <Filter>Piglets\Moldy</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\AccountServer.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\ArtPath.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\create collision test game.vbs">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\create demo game.vbs">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\create scout test game.vbs">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\CreatePig.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\CreatePigs.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\debugger.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\debugger.vbs">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\DeployPigs.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\EventLog.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\EventViewer.htm">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\immed.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\ListAccts.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\listpigs.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\listpigs2.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\LobbyServer.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\MaxPigs.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\RemAccountServer.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\RemCreatePig.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\RemCreatePigs.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\RemListAccts.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\RemListPigs.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\RemLobbyServer.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\remshutdown.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\ScriptDir.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\session.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\shutdown.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\ZoneAuthServer.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\Scripts\ZoneAuthTimeout.js">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigSrv.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigSrv.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\Pig.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigBehaviorHost.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigBehaviorScript.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigBehaviorScriptType.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigBehaviorStack.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigHullTypes.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\Pigs.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigSession.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigShip.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigShipEvent.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigSrv.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+    <None Include="..\src\Pigs\PigSrv\PigTimer.rgs">
+      <Filter>Resources\Registration scripts</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Pigs\PigSrv\PigSrv.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Pigs\PigSrv\Resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Test\Inc\Allegiance.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\IActiveScriptSiteImpl.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\pch.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\Pig.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigBehavior.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigBehaviorHost.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigBehaviorScript.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigBehaviorScriptMethods.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigBehaviorScriptType.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigBehaviorStack.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigBehaviorType.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigDirectPlay.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigEngine.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigEvent.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigEventOwner.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigHullTypes.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigMacro.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\Pigs.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigSession.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigSessionEventSink.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigShip.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigShipEvent.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigSrv.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigStaticSite.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\PigTimer.h" />
+    <ClInclude Include="..\src\Pigs\PigSrv\SrcInc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Pigs\PigSrv\pch.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\Pig.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigBehaviorHost.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigBehaviorScript.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigBehaviorScriptMethods.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigBehaviorScriptType.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigBehaviorStack.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigEngine.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigEvent.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigEventOwner.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigHullTypes.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\Pigs.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigSession.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigSessionEventSink.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigShip.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigShipEvent.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigSrv.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\PigTimer.cpp" />
+    <ClCompile Include="..\src\Pigs\PigSrv\SrcInc.cpp" />
+  </ItemGroup>
+</Project>

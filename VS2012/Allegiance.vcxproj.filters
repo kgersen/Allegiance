@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="New Code">
+      <UniqueIdentifier>{abd318ac-0d1b-4a6f-81b3-5b23197fcace}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{836a0e3c-48fd-4ddc-ae79-a7076c8f024f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Zone">
+      <UniqueIdentifier>{fc46b281-0cd8-48b2-b4b0-1aecc7ed4034}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\Lang\Usa\allegiance\allegiance.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\WinTrek\cdkeydialog.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\CharInfoScreen.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\chatpane.cpp" />
+    <ClCompile Include="..\src\WinTrek\cmdview.cpp" />
+    <ClCompile Include="..\src\WinTrek\console.cpp" />
+    <ClCompile Include="..\src\WinTrek\consoledata.cpp" />
+    <ClCompile Include="..\src\WinTrek\ddstream.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\ddvideo.cpp">
+      <Filter>New Code</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\gameoverscreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\gamescreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\gamesite.cpp" />
+    <ClCompile Include="..\src\WinTrek\gamestartingscreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\gametypes.cpp" />
+    <ClCompile Include="..\src\WinTrek\hangarscreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\indicator.cpp" />
+    <ClCompile Include="..\src\WinTrek\introscreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\inventoryimage.cpp" />
+    <ClCompile Include="..\src\WinTrek\leaderboardscreen.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\load.cpp" />
+    <ClCompile Include="..\src\WinTrek\loadout.cpp" />
+    <ClCompile Include="..\src\WinTrek\logon.cpp" />
+    <ClCompile Include="..\src\WinTrek\mappreview.cpp" />
+    <ClCompile Include="..\src\WinTrek\mappvmaker.cpp" />
+    <ClCompile Include="..\src\WinTrek\netinfo.cpp" />
+    <ClCompile Include="..\src\WinTrek\newgamescreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\passworddialog.cpp" />
+    <ClCompile Include="..\src\WinTrek\pch.cpp" />
+    <ClCompile Include="..\src\WinTrek\PostTrainingSlideshow.cpp" />
+    <ClCompile Include="..\src\WinTrek\radarimage.cpp" />
+    <ClCompile Include="..\src\WinTrek\sectormap.cpp" />
+    <ClCompile Include="..\src\WinTrek\selpane.cpp" />
+    <ClCompile Include="..\src\WinTrek\Slideshow.cpp" />
+    <ClCompile Include="..\src\WinTrek\soundinit.cpp" />
+    <ClCompile Include="..\src\WinTrek\splashscreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\SquadsScreen.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\teampane.cpp" />
+    <ClCompile Include="..\src\WinTrek\teamscreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\teleportpane.cpp" />
+    <ClCompile Include="..\src\WinTrek\trainingscreen.cpp" />
+    <ClCompile Include="..\src\WinTrek\TrainingSlideshow.cpp" />
+    <ClCompile Include="..\src\WinTrek\trekapp.cpp" />
+    <ClCompile Include="..\src\WinTrek\trekctrls.cpp" />
+    <ClCompile Include="..\src\WinTrek\trekigc.cpp" />
+    <ClCompile Include="..\src\WinTrek\trekinput.cpp" />
+    <ClCompile Include="..\src\WinTrek\trekmdl.cpp" />
+    <ClCompile Include="..\src\WinTrek\treksound.cpp" />
+    <ClCompile Include="..\src\WinTrek\WinTrek.CPP" />
+    <ClCompile Include="..\src\WinTrek\ZoneClubScreen.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\zoneeventsscreen.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WinTrek\ZoneSquad.cpp">
+      <Filter>Zone</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Lang\Usa\allegiance\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\WinTrek\artwork.h" />
+    <ClInclude Include="..\src\WinTrek\cmdview.h" />
+    <ClInclude Include="..\src\WinTrek\console.h" />
+    <ClInclude Include="..\src\WinTrek\consoledata.h" />
+    <ClInclude Include="..\src\WinTrek\ddstream.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\WinTrek\ddvideo.h">
+      <Filter>New Code</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\WinTrek\gamesite.h" />
+    <ClInclude Include="..\src\WinTrek\gametypes.h" />
+    <ClInclude Include="..\src\WinTrek\hudimage.h" />
+    <ClInclude Include="..\src\WinTrek\indicator.h" />
+    <ClInclude Include="..\src\WinTrek\load.h" />
+    <ClInclude Include="..\src\WinTrek\loadout.h" />
+    <ClInclude Include="..\src\WinTrek\logon.h" />
+    <ClInclude Include="..\src\WinTrek\mappreview.h" />
+    <ClInclude Include="..\src\WinTrek\mappvmaker.h" />
+    <ClInclude Include="..\src\WinTrek\passworddialog.h" />
+    <ClInclude Include="..\src\WinTrek\pch.h" />
+    <ClInclude Include="..\src\WinTrek\radarimage.h" />
+    <ClInclude Include="..\src\WinTrek\screen.h" />
+    <ClInclude Include="..\src\WinTrek\sectorvw.h" />
+    <ClInclude Include="..\src\WinTrek\Slideshow.h" />
+    <ClInclude Include="..\src\WinTrek\trekctrls.h" />
+    <ClInclude Include="..\src\WinTrek\TrekDlgs.h" />
+    <ClInclude Include="..\src\WinTrek\Treki.h" />
+    <ClInclude Include="..\src\WinTrek\trekinput.h" />
+    <ClInclude Include="..\src\WinTrek\trekmdl.h" />
+    <ClInclude Include="..\src\WinTrek\treksound.h" />
+    <ClInclude Include="..\src\WinTrek\WinTrek.H" />
+    <ClInclude Include="..\src\WinTrek\wintrekp.h" />
+    <ClInclude Include="..\src\WinTrek\ZoneSquad.h">
+      <Filter>Zone</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Lang\Usa\allegiance\allegiance.rc2">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+</Project>

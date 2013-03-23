@@ -216,14 +216,15 @@ public:
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class IEventTarget : public IObject
+//KG- renamed from IEventTarget to fix conflit with VS 2012/Windows 8 SDK
+class IEventTargetAlleg : public IObject
 {
 public:
     virtual void Disconnect() = 0;
 };
 
 template<class ObjectClass>
-class TIntegerEventTarget : public IIntegerEventSink, public IEventTarget
+class TIntegerEventTarget : public IIntegerEventSink, public IEventTargetAlleg
 {
 private:
 
@@ -256,7 +257,7 @@ public:
 };
 
 template<class ObjectClass>
-class TEventTarget : public IEventSink, public IEventTarget
+class TEventTarget : public IEventSink, public IEventTargetAlleg
 {
 private:
 
@@ -310,12 +311,12 @@ private:
     typedef bool (DerivedClass::*PFNOnEventVoidMember)(void);
     typedef TEventTarget<DerivedClass> EventTarget;
     
-    TList<TRef<IEventTarget> > m_lstTargets;
+    TList<TRef<IEventTargetAlleg> > m_lstTargets;
 
 public:
     virtual ~EventTargetContainer()
     {
-        TList<TRef<IEventTarget> >::Iterator iter(m_lstTargets);
+        TList<TRef<IEventTargetAlleg> >::Iterator iter(m_lstTargets);
 
         while (!iter.End()) {
             iter.Value()->Disconnect();

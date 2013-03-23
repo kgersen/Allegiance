@@ -4,8 +4,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <utility.h>
-#include <..\engine\engine.h>
-#include <..\effect\effect.h>
+//#include <..\engine\engine.h>
+//#include <..\effect\effect.h>
 #include <..\igc\igc.h>
 #include <..\Zone\Zone.h>
 //#include <..\zone\zauth.h>

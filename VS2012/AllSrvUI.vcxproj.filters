@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{53481193-86cc-4486-9f7c-32715f6386e4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\AllSrvUI\AdminPageThreadWnd.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\AllSrvUI.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\AllSrvUISheet.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\AutoSizer.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\DlgAbout.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\DlgChatPreferences.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\DlgGameSelect.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GamePageSpecifics.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GamePageTeam.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GamePageWin.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GameParamsSheet.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageChat.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageConnect.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageDummy.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageGameCreate.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PagePlayers.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\StdAfx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\AllSrvUI\AllSrvUI.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\AllSrvUI.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\ArtifactRun.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\Conquest.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\CountDown.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\DeathMatch.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\Flags.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\Inbalance.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\Lives.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\MaxTeam.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\MinTeam.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\Prosperity.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\Skill.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\StartMoney.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\TeamCount.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\TotalMoney.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\AllSrvUI\zone.bmp">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\AllSrvUI\AllSrvUI.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\AllSrvUI\AdminPageThreadWnd.h" />
+    <ClInclude Include="..\src\AllSrvUI\AllSrvUI.h" />
+    <ClInclude Include="..\src\AllSrvUI\AllSrvUISheet.h" />
+    <ClInclude Include="..\src\AllSrvUI\AutoSizer.h" />
+    <ClInclude Include="..\src\AllSrvUI\DlgAbout.h" />
+    <ClInclude Include="..\src\AllSrvUI\DlgChatPreferences.h" />
+    <ClInclude Include="..\src\AllSrvUI\DlgGameSelect.h" />
+    <ClInclude Include="..\src\AllSrvUI\GamePageSpecifics.h" />
+    <ClInclude Include="..\src\AllSrvUI\GamePageTeam.h" />
+    <ClInclude Include="..\src\AllSrvUI\GamePageWin.h" />
+    <ClInclude Include="..\src\AllSrvUI\GameParamsSheet.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageChat.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageConnect.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageDummy.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageGameCreate.h" />
+    <ClInclude Include="..\src\AllSrvUI\PagePlayers.h" />
+    <ClInclude Include="..\src\AllSrvUI\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\AllSrvUI\StdAfx.h" />
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecure.h" />
+  </ItemGroup>
+</Project>

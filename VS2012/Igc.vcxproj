@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{BF99DCB8-4127-4403-82C9-72190C6ABF5F}</ProjectGUID>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\Igc\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\Igc\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\Igc\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\Igc\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../src/ZLib;../src/Guids;../src/_Utility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level1</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>../src/ZLib;../src/Guids;../src/_Utility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;SRVLOG;_LIB;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <Lib>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
+      <Verbose>false</Verbose>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Igc\afterburnerIGC.cpp" />
+    <ClCompile Include="..\src\Igc\asteroidigc.cpp" />
+    <ClCompile Include="..\src\Igc\bucketigc.cpp" />
+    <ClCompile Include="..\src\Igc\buoyigc.cpp" />
+    <ClCompile Include="..\src\Igc\chaffigc.cpp" />
+    <ClCompile Include="..\src\Igc\chafftypeigc.cpp" />
+    <ClCompile Include="..\src\Igc\civilizationigc.cpp" />
+    <ClCompile Include="..\src\Igc\cloakigc.cpp" />
+    <ClCompile Include="..\src\Igc\clusterIGC.cpp" />
+    <ClCompile Include="..\src\Igc\common.cpp" />
+    <ClCompile Include="..\src\Igc\developmentigc.cpp" />
+    <ClCompile Include="..\src\Igc\dispenserigc.cpp" />
+    <ClCompile Include="..\src\Igc\dronetypeigc.cpp" />
+    <ClCompile Include="..\src\Igc\hullTypeIGC.cpp" />
+    <ClCompile Include="..\src\Igc\launchertypeigc.cpp" />
+    <ClCompile Include="..\src\Igc\magazineigc.cpp" />
+    <ClCompile Include="..\src\Igc\mapmakerigc.cpp" />
+    <ClCompile Include="..\src\Igc\mineigc.cpp" />
+    <ClCompile Include="..\src\Igc\minetypeigc.cpp" />
+    <ClCompile Include="..\src\Igc\missileigc.cpp" />
+    <ClCompile Include="..\src\Igc\missiletypeigc.cpp" />
+    <ClCompile Include="..\src\Igc\missionigc.cpp" />
+    <ClCompile Include="..\src\Igc\modelIGC.cpp" />
+    <ClCompile Include="..\src\Igc\packigc.cpp" />
+    <ClCompile Include="..\src\Igc\partTypeIGC.cpp" />
+    <ClCompile Include="..\src\Igc\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\Igc\private.cpp" />
+    <ClCompile Include="..\src\Igc\probeigc.cpp" />
+    <ClCompile Include="..\src\Igc\probetypeigc.cpp" />
+    <ClCompile Include="..\src\Igc\projectileIGC.cpp" />
+    <ClCompile Include="..\src\Igc\projectileTypeIGC.cpp" />
+    <ClCompile Include="..\src\Igc\shieldIGC.cpp" />
+    <ClCompile Include="..\src\Igc\shipIGC.cpp" />
+    <ClCompile Include="..\src\Igc\sideigc.cpp" />
+    <ClCompile Include="..\src\Igc\stationIGC.cpp" />
+    <ClCompile Include="..\src\Igc\stationtypeigc.cpp" />
+    <ClCompile Include="..\src\Igc\treasureIGC.cpp" />
+    <ClCompile Include="..\src\Igc\treasuresetigc.cpp" />
+    <ClCompile Include="..\src\Igc\warpIGC.cpp" />
+    <ClCompile Include="..\src\Igc\weaponIGC.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\Igc\afterburnerIGC.h" />
+    <ClInclude Include="..\src\Igc\asteroidigc.h" />
+    <ClInclude Include="..\src\Igc\bucketigc.h" />
+    <ClInclude Include="..\src\Igc\buildingeffectigc.h" />
+    <ClInclude Include="..\src\Igc\buoyigc.h" />
+    <ClInclude Include="..\src\Igc\chaffigc.h" />
+    <ClInclude Include="..\src\Igc\chafftypeigc.h" />
+    <ClInclude Include="..\src\Igc\civilizationigc.h" />
+    <ClInclude Include="..\src\Igc\cloakigc.h" />
+    <ClInclude Include="..\src\Igc\clusterIGC.h" />
+    <ClInclude Include="..\src\Igc\developmentigc.h" />
+    <ClInclude Include="..\src\Igc\dispenserigc.h" />
+    <ClInclude Include="..\src\Igc\dronetypeigc.h" />
+    <ClInclude Include="..\src\Igc\hullTypeIGC.h" />
+    <ClInclude Include="..\src\Igc\igc.h" />
+    <ClInclude Include="..\src\Igc\launchertypeigc.h" />
+    <ClInclude Include="..\src\Igc\magazineigc.h" />
+    <ClInclude Include="..\src\Igc\mapmakerigc.h" />
+    <ClInclude Include="..\src\Igc\mineigc.h" />
+    <ClInclude Include="..\src\Igc\minetypeigc.h" />
+    <ClInclude Include="..\src\Igc\missileigc.h" />
+    <ClInclude Include="..\src\Igc\missiletypeigc.h" />
+    <ClInclude Include="..\src\Igc\missionigc.h" />
+    <ClInclude Include="..\src\Igc\modelIGC.h" />
+    <ClInclude Include="..\src\Igc\packigc.h" />
+    <ClInclude Include="..\src\Igc\partTypeIGC.h" />
+    <ClInclude Include="..\src\Igc\pch.h" />
+    <ClInclude Include="..\src\Igc\private.h" />
+    <ClInclude Include="..\src\Igc\probeigc.h" />
+    <ClInclude Include="..\src\Igc\probetypeigc.h" />
+    <ClInclude Include="..\src\Igc\projectileIGC.h" />
+    <ClInclude Include="..\src\Igc\projectileTypeIGC.h" />
+    <ClInclude Include="..\src\Igc\shieldIGC.h" />
+    <ClInclude Include="..\src\Igc\shipIGC.h" />
+    <ClInclude Include="..\src\Igc\sideigc.h" />
+    <ClInclude Include="..\src\Igc\sounds.h" />
+    <ClInclude Include="..\src\Igc\stationIGC.h" />
+    <ClInclude Include="..\src\Igc\stationtypeigc.h" />
+    <ClInclude Include="..\src\Igc\treasureIGC.h" />
+    <ClInclude Include="..\src\Igc\treasuresetigc.h" />
+    <ClInclude Include="..\src\Igc\warpIGC.h" />
+    <ClInclude Include="..\src\Igc\weaponIGC.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

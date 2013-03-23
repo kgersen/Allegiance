@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{05EAD557-56B0-4070-83F0-8A2B6FB9C54D}</ProjectGUID>
+    <RootNamespace>Server</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\FedSrv\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\FedSrv\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">AllSrv</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\FedSrv\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\FedSrv\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">AllSrv</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\AGC;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\AGC;.\$(IntDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0403;WIN;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";FEDMSG=\"FedMsg.rc\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\_utility\Utility.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\sharemem\sharemem.lib;$(OutDir)..\test\TCLib\TCLib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;winmm.lib;version.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\appweb\appweb.lib;comctl32.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\src\Inc\appWeb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <DelayLoadDLLs>netapi32.dll;advapi32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Console</SubSystem>
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreSpecificDefaultLibraries>msvcrt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\$(IntDir)..\Guids;.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\AGC;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;_WIN32_WINNT=0x0403;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";FEDMSG=\"FedMsg.rc\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\_utility\Utility.lib;$(OutDir)..\zlib\zlib.lib;$(OutDir)..\igc\igc.lib;$(OutDir)..\sharemem\sharemem.lib;$(OutDir)..\test\TCLib\TCLib.lib;$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Guids\guids.lib;winmm.lib;version.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;..\src\Lib\appweb\appweb.lib;comctl32.lib;ws2_32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib;oledb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\src\Inc\appWeb;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>msvcrtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>netapi32.dll;advapi32.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\FedSrv\fedmsg.msg">
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\FedSrv\AdminEventLoggerHook.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminGame.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminGames.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminServer.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminSession.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminSessionClass.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminSessionEventSink.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminShip.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminUser.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminUsers.cpp" />
+    <ClCompile Include="..\src\FedSrv\allsrvmodule.cpp" />
+    <ClCompile Include="..\src\FedSrv\BitArray.cpp" />
+    <ClCompile Include="..\src\FedSrv\FedSrv.CPP" />
+    <ClCompile Include="..\src\FedSrv\fscluster.cpp" />
+    <ClCompile Include="..\src\FedSrv\fslobby.cpp" />
+    <ClCompile Include="..\src\FedSrv\fsmission.cpp" />
+    <ClCompile Include="..\src\FedSrv\fsship.cpp" />
+    <ClCompile Include="..\src\FedSrv\fsside.cpp" />
+    <ClCompile Include="..\src\FedSrv\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\sqlhelp.cpp" />
+    <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\FedSrv\AdminGame.rgs" />
+    <None Include="..\src\FedSrv\AdminGames.rgs" />
+    <None Include="..\src\FedSrv\AdminServer.rgs" />
+    <None Include="..\src\FedSrv\AdminSession.rgs" />
+    <None Include="..\src\FedSrv\AdminShip.rgs" />
+    <None Include="..\src\FedSrv\AdminUser.rgs" />
+    <None Include="..\src\FedSrv\AdminUsers.rgs" />
+    <None Include="..\src\FedSrv\allsrv.rgs" />
+    <None Include="..\src\FedSrv\AllSrv32.rgs" />
+    <None Include="..\src\FedSrv\DPMono.rgs" />
+    <None Include="..\src\FedSrv\fedsrv.ico" />
+    <None Include="..\src\FedSrv\fedsrv.rc2" />
+    <None Include="..\src\FedSrv\regini.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\FedSrv\FedSrv.RC" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\FedSrv\AdminEventLoggerHook.h" />
+    <ClInclude Include="..\src\FedSrv\AdminGame.h" />
+    <ClInclude Include="..\src\FedSrv\AdminGames.h" />
+    <ClInclude Include="..\src\FedSrv\AdminServer.h" />
+    <ClInclude Include="..\src\FedSrv\AdminSession.h" />
+    <ClInclude Include="..\src\FedSrv\AdminSessionClass.h" />
+    <ClInclude Include="..\src\FedSrv\AdminSessionEventSink.h" />
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecure.h" />
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecureHost.h" />
+    <ClInclude Include="..\src\FedSrv\AdminShip.h" />
+    <ClInclude Include="..\src\FedSrv\AdminUser.h" />
+    <ClInclude Include="..\src\FedSrv\AdminUsers.h" />
+    <ClInclude Include="..\src\FedSrv\AdminUtil.h" />
+    <ClInclude Include="..\src\FedSrv\allsrvmodule.h" />
+    <ClInclude Include="..\src\FedSrv\BitArray.h" />
+    <ClInclude Include="..\src\FedSrv\counters.h" />
+    <ClInclude Include="..\src\FedSrv\dbgutil.h" />
+    <ClInclude Include="..\src\FedSrv\FedSrv.H" />
+    <ClInclude Include="..\src\FedSrv\FedSrvApp.h" />
+    <ClInclude Include="..\src\FedSrv\fedsrvsql.h" />
+    <ClInclude Include="..\src\FedSrv\fscluster.h" />
+    <ClInclude Include="..\src\FedSrv\fsmission.h" />
+    <ClInclude Include="..\src\FedSrv\fsship.h" />
+    <ClInclude Include="..\src\FedSrv\fsside.h" />
+    <ClInclude Include="..\src\FedSrv\pch.h" />
+    <ClInclude Include="..\src\FedSrv\resource.h" />
+    <ClInclude Include="..\src\FedSrv\srvqueries.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\src\FedSrv\AllSrvModuleIDL.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Igc.vcxproj">
+      <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="sharemem.vcxproj">
+      <Project>{a8e7888a-84ac-485e-9fb2-35382c003e0b}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Geo">
+      <UniqueIdentifier>{1e96f0cc-8401-42a0-998a-9b250e3c02d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Image">
+      <UniqueIdentifier>{fada49b9-0d89-43de-af68-8c55aae79f4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pane">
+      <UniqueIdentifier>{cc9a661d-aea4-43ef-b571-fc6e18551bd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Popup">
+      <UniqueIdentifier>{5c5364fb-04ca-4bf0-aa2e-d782593e875c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="_excluded">
+      <UniqueIdentifier>{7a79892c-66ff-431d-992b-7ce02761ce5a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\effect\alephgeo.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\combopane.cpp">
+      <Filter>Pane</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\conegeo.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\debrisgeo.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\efapp.cpp" />
+    <ClCompile Include="..\src\effect\efgeo.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\efimage.cpp">
+      <Filter>Image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\efpane.cpp">
+      <Filter>Pane</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\efpopup.cpp">
+      <Filter>Popup</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\efsound.cpp">
+      <Filter>_excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\efwindow.cpp" />
+    <ClCompile Include="..\src\effect\explosion.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\framedata.cpp" />
+    <ClCompile Include="..\src\effect\gamestate.cpp" />
+    <ClCompile Include="..\src\effect\help.cpp">
+      <Filter>Pane</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\listpane.cpp">
+      <Filter>Pane</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\mmlpopup.cpp">
+      <Filter>Popup</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\navpane.cpp">
+      <Filter>Pane</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\pagepane.cpp">
+      <Filter>Pane</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\panes.cpp">
+      <Filter>_excluded</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\particlegeo.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\pch.cpp" />
+    <ClCompile Include="..\src\effect\starimage.cpp">
+      <Filter>Image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\effect\thinggeo.cpp">
+      <Filter>Geo</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\effect\combopane.h">
+      <Filter>Pane</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\debrisgeo.h">
+      <Filter>Geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\efapp.h" />
+    <ClInclude Include="..\src\effect\efart.h" />
+    <ClInclude Include="..\src\effect\effect.h" />
+    <ClInclude Include="..\src\effect\efgeo.h">
+      <Filter>Geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\efimage.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\efpane.h">
+      <Filter>Pane</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\efpopup.h">
+      <Filter>Popup</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\efwindow.h" />
+    <ClInclude Include="..\src\effect\explosion.h">
+      <Filter>Geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\framedata.h" />
+    <ClInclude Include="..\src\effect\gamestate.h" />
+    <ClInclude Include="..\src\effect\help.h">
+      <Filter>Pane</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\listpane.h">
+      <Filter>Pane</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\particlegeo.h">
+      <Filter>Geo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\pch.h" />
+    <ClInclude Include="..\src\effect\starimage.h">
+      <Filter>Image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\effect\thinggeo.h">
+      <Filter>Geo</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\effect\efsound.h">
+      <Filter>_excluded</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

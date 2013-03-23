@@ -1,0 +1,409 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{1CBF6569-F71C-422A-81DD-8D30A736DB21}</ProjectGUID>
+    <RootNamespace>AGC</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\AGC\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\AGC\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\AGC\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\AGC\</IntDir>
+    <PreLinkEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</PreLinkEventUseInBuild>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>.\$(SolutionDir);.\$(TargetDir);..\src\Inc;..\src\AGC;.\$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\;..\src\AGC;..\src\zlib;..\src\Igc;..\src\Inc;..\src\test\Inc;.\$(OutDir);.\$(OutDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_ATL_STATIC_REGISTRY;_USRDLL;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level2</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>.\$(OutDir);.\$(OutDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Test\TCLib\TCLib.lib;$(OutDir)..\ZLib\ZLib.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\igc\igc.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <ModuleDefinitionFile>..\src\AGC\AGC.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapExports>false</MapExports>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>$(TargetDir);..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
+      <OutputDirectory>$(TargetDir)\</OutputDirectory>
+      <HeaderFileName>%(FileName).h</HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\;..\src\AGC;..\src\zlib;..\src\Igc;..\src\Inc;..\src\test\Inc;.\$(OutDir);.\$(OutDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;_ATL_STATIC_REGISTRY;SRVLOG; _USRDLL;STRICT;_WINDOWS;WIN32;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ShowIncludes>false</ShowIncludes>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>.\$(OutDir);.\$(OutDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\Guids\AGCGuid.lib;$(OutDir)..\Test\TCLib\TCLib.lib;$(OutDir)..\ZLib\ZLib.lib;$(OutDir)..\_utility\Utility.lib;$(OutDir)..\igc\igc.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ModuleDefinitionFile>..\src\AGC\AGC.def</ModuleDefinitionFile>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\AGC\AGCEvents.xml">
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+      </Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+      </Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+      </Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+      </Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\AGC\AGCEventsCPP.xsl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsCPP.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsCPP.xsl $(OutDir)AGCEventsCPP.h
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsCPP.h;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\AGC\AGCEventsMC.xsl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
+mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsMC.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsMC.xsl $(OutDir)AGCEventsMC.mc
+mc.exe -r $(OutDir) -h $(OutDir) $(OutDir)AGCEventsMC.mc
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsMC.mc;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\AGC\AGCEventsRC2.xsl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsRC2.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRC2.xsl $(OutDir)AGCEventsRC2.rc2
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsRC2.rc2;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\AGC\AGCEventsRCH.xsl">
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsRCH.xsl</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsRCH.xsl $(OutDir)AGCEventsRCH.h
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsRCH.h;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\AGC\AdminSessionHelper.cpp" />
+    <ClCompile Include="..\src\AGC\AGC.cpp" />
+    <ClCompile Include="..\src\AGC\AGCAleph.cpp" />
+    <ClCompile Include="..\src\AGC\AGCAlephs.cpp" />
+    <ClCompile Include="..\src\AGC\AGCAsteroid.cpp" />
+    <ClCompile Include="..\src\AGC\AGCAsteroids.cpp" />
+    <ClCompile Include="..\src\AGC\AGCCommand.cpp" />
+    <ClCompile Include="..\src\AGC\AGCDBParams.cpp" />
+    <ClCompile Include="..\src\AGC\agcevent.cpp" />
+    <ClCompile Include="..\src\AGC\AGCEventData.cpp" />
+    <ClCompile Include="..\src\AGC\AGCEventDef.cpp" />
+    <ClCompile Include="..\src\AGC\AGCEventIDRange.cpp" />
+    <ClCompile Include="..\src\AGC\AGCEventIDRanges.cpp" />
+    <ClCompile Include="..\src\AGC\AGCEventLogger.cpp" />
+    <ClCompile Include="..\src\AGC\AGCGame.cpp" />
+    <ClCompile Include="..\src\AGC\AGCGameParameters.cpp" />
+    <ClCompile Include="..\src\AGC\AGCGlobal.cpp" />
+    <ClCompile Include="..\src\AGC\AGCHullType.cpp" />
+    <ClCompile Include="..\src\AGC\AGCModel.cpp" />
+    <ClCompile Include="..\src\AGC\AGCModels.cpp" />
+    <ClCompile Include="..\src\AGC\AGCOrientation.cpp" />
+    <ClCompile Include="..\src\AGC\AGCProbe.cpp" />
+    <ClCompile Include="..\src\AGC\AGCProbes.cpp" />
+    <ClCompile Include="..\src\AGC\AGCSector.cpp" />
+    <ClCompile Include="..\src\AGC\AGCSectors.cpp" />
+    <ClCompile Include="..\src\AGC\AGCShip.cpp" />
+    <ClCompile Include="..\src\AGC\AGCShips.cpp" />
+    <ClCompile Include="..\src\AGC\AGCStation.cpp" />
+    <ClCompile Include="..\src\AGC\AGCStations.cpp" />
+    <ClCompile Include="..\src\AGC\AGCTeam.cpp" />
+    <ClCompile Include="..\src\AGC\AGCTeams.cpp" />
+    <ClCompile Include="..\src\AGC\AGCVector.cpp" />
+    <ClCompile Include="..\src\AGC\AGCVersionInfo.cpp" />
+    <ClCompile Include="..\src\AGC\dlldatax.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\src\AGC\TCMarshalByValue.cpp" />
+    <ClCompile Include="..\src\AGC\TCNullStream.cpp" />
+    <ClCompile Include="..\src\AGC\TCStrings.cpp" />
+    <ClCompile Include="..\src\AGC\TCUtility.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\AGC\AdminSessionHelper.rgs" />
+    <None Include="..\src\AGC\AGC.def" />
+    <None Include="..\src\AGC\AGC.rc2" />
+    <None Include="..\src\AGC\AGCAleph.rgs" />
+    <None Include="..\src\AGC\AGCAlephs.rgs" />
+    <None Include="..\src\AGC\AGCAsteroid.rgs" />
+    <None Include="..\src\AGC\AGCAsteroids.rgs" />
+    <None Include="..\src\AGC\AGCCommand.rgs" />
+    <None Include="..\src\AGC\AGCDBParams.rgs" />
+    <None Include="..\src\AGC\agcevent.rgs" />
+    <None Include="..\src\AGC\AGCEventIDRange.rgs" />
+    <None Include="..\src\AGC\AGCEventIDRanges.rgs" />
+    <None Include="..\src\AGC\AGCEventLogger.rgs" />
+    <None Include="..\src\AGC\AGCGame.rgs" />
+    <None Include="..\src\AGC\AGCGameParameters.rgs" />
+    <None Include="..\src\AGC\AGCGlobal.rgs" />
+    <None Include="..\src\AGC\AGCHullType.rgs" />
+    <None Include="..\src\AGC\AGCHullTypes.rgs" />
+    <None Include="..\src\AGC\AGCModel.rgs" />
+    <None Include="..\src\AGC\AGCModels.rgs" />
+    <None Include="..\src\AGC\AGCOrientation.rgs" />
+    <None Include="..\src\AGC\AGCProbe.rgs" />
+    <None Include="..\src\AGC\AGCProbes.rgs" />
+    <None Include="..\src\AGC\AGCSector.rgs" />
+    <None Include="..\src\AGC\AGCSectors.rgs" />
+    <None Include="..\src\AGC\AGCShip.rgs" />
+    <None Include="..\src\AGC\AGCShips.rgs" />
+    <None Include="..\src\AGC\AGCStation.rgs" />
+    <None Include="..\src\AGC\AGCStations.rgs" />
+    <None Include="..\src\AGC\AGCTeam.rgs" />
+    <None Include="..\src\AGC\AGCTeams.rgs" />
+    <None Include="..\src\AGC\AGCVector.rgs" />
+    <None Include="..\src\AGC\AGCVersionInfo.rgs" />
+    <None Include="..\src\AGC\EventBrowser.xsl" />
+    <None Include="..\src\AGC\TCMarshalByValue.rgs" />
+    <None Include="..\src\AGC\TCNullStream.rgs" />
+    <None Include="..\src\AGC\TCStrings.rgs" />
+    <None Include="..\src\AGC\TCUtility.rgs" />
+    <None Include="..\src\AGC\XMLXForm.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\AGC\AGC.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\AGC\AdminSessionHelper.h" />
+    <ClInclude Include="..\src\AGC\AGCAleph.h" />
+    <ClInclude Include="..\src\AGC\AGCAlephs.h" />
+    <ClInclude Include="..\src\AGC\AGCAsteroid.h" />
+    <ClInclude Include="..\src\AGC\AGCAsteroids.h" />
+    <ClInclude Include="..\src\AGC\AGCChat.h" />
+    <ClInclude Include="..\src\AGC\AGCCommand.h" />
+    <ClInclude Include="..\src\AGC\AGCCP.h" />
+    <ClInclude Include="..\src\AGC\AGCDBParams.h" />
+    <ClInclude Include="..\src\AGC\AGCDebugHook.h" />
+    <ClInclude Include="..\src\AGC\agcevent.h" />
+    <ClInclude Include="..\src\AGC\AGCEventData.h" />
+    <ClInclude Include="..\src\AGC\AGCEventDef.h" />
+    <ClInclude Include="..\src\AGC\AGCEventIDRange.h" />
+    <ClInclude Include="..\src\AGC\AGCEventIDRanges.h" />
+    <ClInclude Include="..\src\AGC\AGCEventLogger.h" />
+    <ClInclude Include="..\src\AGC\AGCEventThread.h" />
+    <ClInclude Include="..\src\AGC\AGCGame.h" />
+    <ClInclude Include="..\src\AGC\AGCGameParameters.h" />
+    <ClInclude Include="..\src\AGC\AGCGlobal.h" />
+    <ClInclude Include="..\src\AGC\AGCHullType.h" />
+    <ClInclude Include="..\src\AGC\AGCModel.h" />
+    <ClInclude Include="..\src\AGC\AGCModels.h" />
+    <ClInclude Include="..\src\AGC\AGCModule.h" />
+    <ClInclude Include="..\src\AGC\AGCOrientation.h" />
+    <ClInclude Include="..\src\AGC\AGCProbe.h" />
+    <ClInclude Include="..\src\AGC\AGCProbes.h" />
+    <ClInclude Include="..\src\AGC\AGCSector.h" />
+    <ClInclude Include="..\src\AGC\AGCSectors.h" />
+    <ClInclude Include="..\src\AGC\AGCShip.h" />
+    <ClInclude Include="..\src\AGC\AGCShips.h" />
+    <ClInclude Include="..\src\AGC\AGCSite.h" />
+    <ClInclude Include="..\src\AGC\AGCStation.h" />
+    <ClInclude Include="..\src\AGC\AGCStations.h" />
+    <ClInclude Include="..\src\AGC\AGCTeam.h" />
+    <ClInclude Include="..\src\AGC\AGCTeams.h" />
+    <ClInclude Include="..\src\AGC\AGCUtil.h" />
+    <ClInclude Include="..\src\AGC\AGCVector.h" />
+    <ClInclude Include="..\src\AGC\AGCVersionInfo.h" />
+    <ClInclude Include="..\src\AGC\AGCWinApp.h" />
+    <ClInclude Include="..\src\AGC\dlldatax.h" />
+    <ClInclude Include="..\src\AGC\gameparamdata.h" />
+    <ClInclude Include="..\src\AGC\IAGCAlephImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCAsteroidImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCBaseImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCBuyableImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCCollectionImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCCommonImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCDamageImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCGameImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCModelImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCProbeImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCRangeImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCRangesImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCScannerImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCSectorImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCShipImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCStationImpl.h" />
+    <ClInclude Include="..\src\AGC\IAGCTeamImpl.h" />
+    <ClInclude Include="..\src\AGC\pch.h" />
+    <ClInclude Include="..\src\AGC\resource.h" />
+    <ClInclude Include="..\src\AGC\TCMarshalByValue.h" />
+    <ClInclude Include="..\src\AGC\TCNullStream.h" />
+    <ClInclude Include="..\src\AGC\TCStrings.h" />
+    <ClInclude Include="..\src\AGC\TCUtility.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Igc.vcxproj">
+      <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="TCLib.vcxproj">
+      <Project>{1695996c-f698-4509-bf5c-ade10ada67f9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Utility.vcxproj">
+      <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="ZLibrary.vcxproj">
+      <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

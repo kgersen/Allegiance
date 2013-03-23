@@ -48,9 +48,9 @@ extern CComModule _Module;  // ATL mandatory symbol
 //                                                                         //
 #include <dplay8.h>                                                         //
 //#include <dplobby.h>                                                       //
-#include <ddraw.h>                                                         //
+//#include <ddraw.h>                                                         //
 //#include <d3d.h>                                                           //
-#include <dsound.h>                                                        //
+//#include <dsound.h>                                                        //
 #include <wininet.h>                                                       //
 #include <shlwapi.h>                                                       //
                                                                            //

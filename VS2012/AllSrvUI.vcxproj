@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug|Win32">
+      <Configuration>FZDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FZRetail|Win32">
+      <Configuration>FZRetail</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGUID>{97B8370B-16BC-4A2F-A0FE-4BEEF2EAED42}</ProjectGUID>
+    <RootNamespace>AllSrvUI</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\AllSrvUI\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs11\$(Configuration)\AllSrvUI\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(ProjectName)</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">.exe</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\AllSrvUI\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs11\$(Configuration)\AllSrvUI\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(ProjectName)</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.exe</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\$(IntDir)..\Guids;.\;..\src\Inc;..\src\zlib;..\src\test\Inc;..\AGC;.\$(OutDir)..\FedSrv;.\$(OutDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>.\$(IntDir)..\Guids;.\;..\src\Inc;..\src\zlib;..\src\test\Inc;..\AGC;.\$(OutDir)..\FedSrv;.\$(OutDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG;SRVLOG;WIN32;WINVER=0x0500;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <OmitFramePointers>false</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ErrorReporting>None</ErrorReporting>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>false</GenerateMapFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\AllSrvUI\AdminPageThreadWnd.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\AllSrvUI.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\AllSrvUISheet.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\AutoSizer.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\DlgAbout.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\DlgChatPreferences.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\DlgGameSelect.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GamePageSpecifics.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GamePageTeam.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GamePageWin.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\GameParamsSheet.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageChat.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageConnect.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageDummy.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PageGameCreate.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\PagePlayers.cpp" />
+    <ClCompile Include="..\src\AllSrvUI\StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\AllSrvUI\AllSrvUI.ico" />
+    <None Include="..\src\AllSrvUI\AllSrvUI.rc2" />
+    <None Include="..\src\AllSrvUI\ArtifactRun.ico" />
+    <None Include="..\src\AllSrvUI\Conquest.ico" />
+    <None Include="..\src\AllSrvUI\CountDown.ico" />
+    <None Include="..\src\AllSrvUI\DeathMatch.ico" />
+    <None Include="..\src\AllSrvUI\Flags.ico" />
+    <None Include="..\src\AllSrvUI\Inbalance.ico" />
+    <None Include="..\src\AllSrvUI\Lives.ico" />
+    <None Include="..\src\AllSrvUI\MaxTeam.ico" />
+    <None Include="..\src\AllSrvUI\MinTeam.ico" />
+    <None Include="..\src\AllSrvUI\Prosperity.ico" />
+    <None Include="..\src\AllSrvUI\Skill.ico" />
+    <None Include="..\src\AllSrvUI\StartMoney.ico" />
+    <None Include="..\src\AllSrvUI\TeamCount.ico" />
+    <None Include="..\src\AllSrvUI\TotalMoney.ico" />
+    <None Include="..\src\AllSrvUI\zone.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\AllSrvUI\AllSrvUI.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\AllSrvUI\AdminPageThreadWnd.h" />
+    <ClInclude Include="..\src\AllSrvUI\AllSrvUI.h" />
+    <ClInclude Include="..\src\AllSrvUI\AllSrvUISheet.h" />
+    <ClInclude Include="..\src\AllSrvUI\AutoSizer.h" />
+    <ClInclude Include="..\src\AllSrvUI\DlgAbout.h" />
+    <ClInclude Include="..\src\AllSrvUI\DlgChatPreferences.h" />
+    <ClInclude Include="..\src\AllSrvUI\DlgGameSelect.h" />
+    <ClInclude Include="..\src\AllSrvUI\GamePageSpecifics.h" />
+    <ClInclude Include="..\src\AllSrvUI\GamePageTeam.h" />
+    <ClInclude Include="..\src\AllSrvUI\GamePageWin.h" />
+    <ClInclude Include="..\src\AllSrvUI\GameParamsSheet.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageChat.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageConnect.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageDummy.h" />
+    <ClInclude Include="..\src\AllSrvUI\PageGameCreate.h" />
+    <ClInclude Include="..\src\AllSrvUI\PagePlayers.h" />
+    <ClInclude Include="..\src\AllSrvUI\resource.h" />
+    <ClInclude Include="..\src\AllSrvUI\StdAfx.h" />
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecure.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Server.vcxproj">
+      <Project>{05ead557-56b0-4070-83f0-8a2b6fb9c54d}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
