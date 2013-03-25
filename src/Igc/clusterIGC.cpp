@@ -152,8 +152,17 @@ void        CclusterIGC::Update(Time now)
 									continue;
 								bool bEye = bSimpleEye(pship->GetHullType()->GetScannerRange(),GetMission()->GetModel(OT_ship,pship->GetObjectID()),Sig,pstation->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSignature),Radius,pos);
 								if (bEye) {
-									pstation->SetRoidSide(pship->GetSide()->GetObjectID(),false);
-									GetMission()->GetIgcSite()->KillAsteroidEvent(pstation->GetRoidID(),GetObjectID(),pship->GetSide());
+									//Turkey 3/13 #353: kill asteroids for all sides in that alliance.
+									IsideIGC* pside1 = pship->GetSide();
+									for (SideLinkIGC* sl = m_pMission->GetSides()->first(); sl != NULL; sl = sl->next())
+									{
+										IsideIGC* pside2 = sl->data();
+										if (pside1->AlliedSides(pside1, pside2))
+										{
+											pstation->SetRoidSide(pside2->GetObjectID(),false);
+											GetMission()->GetIgcSite()->KillAsteroidEvent(pstation->GetRoidID(),GetObjectID(),pside2);
+										}
+									}
 								}
 							}
 						}
