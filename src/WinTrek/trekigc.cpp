@@ -4507,9 +4507,19 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
             assert (l);
 
             static const ZString c_str1(" (");
-            static const ZString c_str2("): ");
+            static const ZString c_str2(")");
+			static const ZString c_str3(": ");
 
-			l->data().SetChat(ctRecipient, strSender + c_str1 + strRecipient + c_str2 + strOrder,
+			//Turkey #357 06/13 add system time to the message if we're in the team lobby
+			ZString timestamp("");
+			if (!IsInGame())
+			{
+				time_t t = time(0);
+				tm* local_tm = localtime(&t);
+				timestamp = " [" + ZString(local_tm->tm_hour) + ":" + ZString(local_tm->tm_min) + "]";
+			}
+
+			l->data().SetChat(ctRecipient, strSender + c_str1 + strRecipient + c_str2 + timestamp + c_str3 + strOrder,
                               c_cidNone, pmodelTarget, color, bFromPlayer, bObjectModel, bIsLeader);
             trekClient.GetChatList()->last(l);
 
