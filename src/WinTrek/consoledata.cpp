@@ -1247,7 +1247,9 @@ float PartWrapper::IsOutOfAmmo()
     
     ObjectType type = m_ppart->GetObjectType();
 
-    if (type == OT_weapon)
+	IpartIGC* ppart = m_ppart;
+
+	if (type == OT_weapon && ((IweaponIGC*)ppart)->GetAmmoPerShot() > 0) //turkey #355 06/13 added ammoPerShot>0
     {
         return (m_ppart->GetShip()->GetAmmo() == 0) ? 1.0f : 0.0f;
     }
