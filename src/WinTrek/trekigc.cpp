@@ -4514,9 +4514,11 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 			ZString timestamp("");
 			if (!IsInGame())
 			{
+				char buff[9];
 				time_t t = time(0);
 				tm* local_tm = localtime(&t);
-				timestamp = " [" + ZString(local_tm->tm_hour) + ":" + ZString(local_tm->tm_min) + "]";
+				sprintf_s(buff, 9, " [%02d:%02d]", local_tm->tm_hour, local_tm->tm_min);
+				timestamp = buff;
 			}
 
 			l->data().SetChat(ctRecipient, strSender + c_str1 + strRecipient + c_str2 + timestamp + c_str3 + strOrder,
