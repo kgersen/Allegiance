@@ -163,7 +163,7 @@ DEFINE_FEDMSG(S, BALLOT, 17)
   ObjectID    oidInitiator;
   BallotID    ballotID;
   Time        timeExpiration;
-  bool		  bHideToLeader; // KGJV #110
+  ShipID	  sidHideFrom; // KGJV #110 //turkey #317
 END_FEDMSG
 
 DEFINE_FEDMSG(S, CANCEL_BALLOT, 18)
@@ -792,7 +792,8 @@ enum QuitSideReason
     QSR_SwitchingSides,
     QSR_RandomizeSides,
 	QSR_FlushSides,		// TE: Add this for balance patch
-	QSR_BalanceSides	// TE: Add this for balance patch
+	QSR_BalanceSides,	// TE: Add this for balance patch
+	QSR_RemovedByBallot // turkey #317
 };
 
 #define QSRIsBoot(reason) ((reason) >= QSR_LeaderBooted && (reason) <= QSR_AdminBooted)

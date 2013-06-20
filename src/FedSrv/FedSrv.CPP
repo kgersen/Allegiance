@@ -4857,16 +4857,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				bForward = true;
 				g.fm.ForwardMessage(pfsMission->GetGroupMission(), pfsMission->GetMissionDef(), FM_GUARANTEED); //Imago #4 7/10
 			  }
-			  // mmf 03/22/07 added #list to display all the other # commands
-			  //              keep this at the end of this else if
-			  else if(pfmChat->cbMessage > strlen("#list") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#list", strlen("#list")) == 0)
-              {
-			    // mmf send message to self
-				// KGJV #110 added #mutiny
-				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
-					NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny");
-				bForward = false;
-			  }
+
 			}
 			// KGJV #110 //Spunky #177
             if (pfmChat->cbMessage > strlen("#mutiny") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#mutiny", strlen("#mutiny")) == 0
@@ -4879,11 +4870,48 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				pfsMission->AddBallot(new MutinyBallot(pfsPlayer));
 				else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
 				NA, "Mutiny vote already in progress...");
-            bForward = false;
-            }
-          }
-		 // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
-		 // beta feature only  imago made one less define 7/8/09 and fixed for non-debug
+			bForward = false;
+			}
+			
+		  }
+		  //turkey #317 6/13
+		  if (pfmChat->cbMessage > strlen("#removecom  ") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#removecom", strlen("#removecom")) == 0
+			  && pfsMission->GetStage() == STAGE_NOTSTARTED)
+		  {
+			  //get the side ID from the end of the chat string
+			  ZString chatString (FM_VAR_REF(pfmChat, Message));
+			  SideID sideID = (SideID)(atoi(&chatString[strlen("#removecom ")]) - 1);
+			  if (sideID < c_cSidesMax && sideID >= 0 && pfsMission->GetLeader(sideID) && pfsMission->GetLeader(sideID) != pfsPlayer)
+			  {
+				  if (!pfsMission->HasBallots(BALLOT_REMOVECOM))
+					  pfsMission->AddBallot(new RemoveComBallot(pfsPlayer, sideID));
+				  else pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					  NA, "Remove com vote already in progress...");
+				  bForward = false;
+			  }
+		  }
+		  // mmf 03/22/07 added #list to display all the other # commands
+		  //              keep this at the end of this else if
+		  // turkey #317 moved down and added list for lobby commands
+		  else if(pfmChat->cbMessage > strlen("#list") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#list", strlen("#list")) == 0)
+		  {
+			  // mmf send message to self
+			  // KGJV #110 added #mutiny
+			  if (pfsMission->GetStage() == STAGE_STARTED)
+			  {
+				  pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					  NA, "#draw | #resign | #autoaccept | #autobalance [1|2|a|n] | #ban | #mutiny");
+				  bForward = false;
+			  }
+			  else if (pfsMission->GetStage() == STAGE_NOTSTARTED)
+			  {
+				  pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+					  NA, "#mutiny | #removecom [1|2|...|6]");
+				  bForward = false;
+			  }
+		  }
+		  // KGJV: added '#start' (equiv to cheat code 'fifteen') for game owner
+		  // beta feature only  imago made one less define 7/8/09 and fixed for non-debug
 
 		  else
 		  {
@@ -5001,8 +5029,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
     case FM_C_VOTE:
     {
-      // you must be on a valid team to vote.
-      if (!pfsMission || pfsPlayer->GetSide()->GetObjectID() < 0)
+      if (!pfsMission)
         break;
 
       CASTPFM(pfmVote, C, VOTE, pfm);

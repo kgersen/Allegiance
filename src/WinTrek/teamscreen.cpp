@@ -3409,6 +3409,10 @@ public:
 				if (!m_bShowingRandomizeWarning)
 					strMessage = "You have been removed from your team and assigned to another because the teams have been balanced.";
 
+			case QSR_RemovedByBallot: //#317
+				strMessage = "You have been removed from command by majority vote.";
+				break;
+
             case QSR_Quit:
             case QSR_LinkDead:
             case QSR_DuplicateLocalLogon:

@@ -82,6 +82,7 @@ typedef int BallotType;
 #define BALLOT_OFFERDRAW   2
 #define BALLOT_ACCEPTDRAW  3
 #define BALLOT_MUTINY      4
+#define BALLOT_REMOVECOM   5
 
 class Ballot
 {
@@ -107,6 +108,8 @@ public:
   virtual ~Ballot() {};
 
 protected:
+  // // initializes the ballot for a given vote proposed by a player about somebody else on the server
+  void Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const ZString& strBallotText, ShipID sidTarget);
 
   // initializes the ballot for a given vote proposed by a player to their team
   void Init(CFSPlayer* pfsInitiator, const ZString& pzProposal, const ZString& strBallotText);
@@ -160,12 +163,24 @@ protected:
   // KGJV #110
   bool m_bHideToLeader;
 
+  //#317
+  bool m_bPollEveryone;
+
   // mmf/KGJV 09/07 allow only one ballot of each type at a time
   BallotType m_type;
 
 };
 
 typedef TList<Ballot*> BallotList;
+
+class RemoveComBallot : public Ballot
+{
+	IsideIGC* m_pside;
+	ShipID m_idTargetShip;
+public:
+	RemoveComBallot(CFSPlayer* pfsInitiator, SideID sideID);
+	virtual void OnPassed();
+};
 
 // KGJV #110
 class MutinyBallot : public Ballot

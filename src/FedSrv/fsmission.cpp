@@ -5595,7 +5595,11 @@ void Ballot::CastVote(CFSPlayer* pfsPlayer, bool bVote)
   // if they are in the list of valid voters
   if (m_vShips.Remove(pfsPlayer->GetShipID()) != -1)
   {
-    SideID sideID = pfsPlayer->GetSide()->GetObjectID();
+	SideID sideID;
+    if (m_bPollEveryone)
+		sideID = 0; // turkey #317
+	else
+		sideID = pfsPlayer->GetSide()->GetObjectID();
 
     assert(sideID >= 0);
 
@@ -5624,6 +5628,86 @@ BallotType Ballot::GetType()
 	return m_type;
 }
 
+// initializes the ballot for a given vote proposed by a player about somebody else on the server
+void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const ZString& strBallotText, ShipID sidTarget)
+{
+  assert(pfsInitiator);
+  m_pmission = pfsInitiator->GetMission();
+
+  //Spunky #276
+  if (pfsInitiator == m_pmission->GetLastBallotInitiator() && Time::Now() - m_pmission->GetLastBallotTime() < 300.0f)
+  {
+	  m_pmission->GetSite()->SendChat(NULL, CHAT_INDIVIDUAL, pfsInitiator->GetShipID(), NA,
+      "You have to wait five minutes before initating another vote.", c_cidNone, NA, NA, NULL, true);
+	  return;
+  }
+  
+  m_pmission->SetLastBallotInitiator(pfsInitiator);
+  m_pmission->SetLastBallotIime(Time::Now());
+  
+  // store some misc. info about the vote
+  float c_fVoteDuration = 30.0f;
+
+
+  m_pgroup = m_pmission->GetGroupMission();
+  m_chattarget = CHAT_EVERYONE;
+  m_groupID = NA;
+  m_strProposal = strProposalName;
+  m_ballotID = s_ballotIDNext++;
+  m_timeExpiration = Time::Now() + c_fVoteDuration;
+  m_bCanceled = false;
+  m_bPollEveryone = true;
+
+  // zero out the counts
+  for (SideID sideID = 0; sideID < c_cSidesMax; ++sideID)
+  {
+    m_cAbstaining[sideID] = 0;
+    m_cInFavor[sideID] = 0;
+    m_cOpposed[sideID] = 0;
+  }
+
+  // add the players
+  const ShipListIGC* shipsList;
+  SideID sideIDInitiator;
+
+  shipsList = m_pmission->GetIGCMission()->GetShips();
+  sideIDInitiator = 0;//tally all votes in the same place
+
+  m_vShips.Reserve(shipsList->n());
+
+  for (ShipLinkIGC* shipLink = shipsList->first(); shipLink; shipLink = shipLink->next())
+  {
+    CFSShip * pfsShip = (CFSShip*)shipLink->data()->GetPrivateData();
+
+    if (pfsShip->IsPlayer())
+    {
+      ++m_cAbstaining[sideIDInitiator];
+      m_vShips.PushEnd(pfsShip->GetShipID());
+    }
+  }
+
+  // tell the clients about the vote
+  BEGIN_PFM_CREATE(g.fm, pfmBallot, S, BALLOT)
+    FM_VAR_PARM((PCC)(strBallotText), CB_ZTS)
+  END_PFM_CREATE
+
+  pfmBallot->ballotID = m_ballotID;
+  pfmBallot->timeExpiration = m_timeExpiration;
+  pfmBallot->otInitiator = OT_ship;
+  pfmBallot->oidInitiator = pfsInitiator->GetShipID();
+
+  if (m_bHideToLeader) 
+	  pfmBallot->sidHideFrom = sidTarget;
+  else
+      pfmBallot->sidHideFrom = NA;
+
+
+  g.fm.SendMessages(m_pgroup, FM_GUARANTEED, FM_FLUSH);
+
+  // tally the vote for the initiator
+  CastVote(pfsInitiator, true);
+}
+
 // initializes the ballot for a given vote proposed by a player to their team
 void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const ZString& strBallotText)
 {
@@ -5650,6 +5734,7 @@ void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const
   m_ballotID = s_ballotIDNext++;
   m_timeExpiration = Time::Now() + c_fVoteDuration;
   m_bCanceled = false;
+  m_bPollEveryone = false;
 
   // zero out the counts
   for (SideID sideID = 0; sideID < c_cSidesMax; ++sideID)
@@ -5685,7 +5770,12 @@ void Ballot::Init(CFSPlayer* pfsInitiator, const ZString& strProposalName, const
   pfmBallot->timeExpiration = m_timeExpiration;
   pfmBallot->otInitiator = OT_ship;
   pfmBallot->oidInitiator = pfsInitiator->GetShipID();
-  pfmBallot->bHideToLeader = m_bHideToLeader;  // KGJV #110
+
+  if (m_bHideToLeader) 
+	  pfmBallot->sidHideFrom = m_pmission->GetLeader(m_groupID)->GetShipID();  // KGJV #110 // turkey #317
+  else
+      pfmBallot->sidHideFrom = NA;
+
 
   g.fm.SendMessages(m_pgroup, FM_GUARANTEED, FM_FLUSH);
 
@@ -5709,6 +5799,7 @@ void Ballot::Init(CFSSide* pfsideInitiator, const ZString& strProposalName, cons
   m_ballotID = s_ballotIDNext++;
   m_timeExpiration = Time::Now() + c_fVoteDuration;
   m_bCanceled = false;
+  m_bPollEveryone = false;
 
   // zero out the counts
   for (SideID sideID = 0; sideID < c_cSidesMax; ++sideID)
@@ -5746,7 +5837,7 @@ void Ballot::Init(CFSSide* pfsideInitiator, const ZString& strProposalName, cons
   pfmBallot->timeExpiration = m_timeExpiration;
   pfmBallot->otInitiator = OT_side;
   pfmBallot->oidInitiator = pfsideInitiator->GetSideIGC()->GetObjectID();
-  pfmBallot->bHideToLeader = false; // KGJV #110
+  pfmBallot->sidHideFrom = NA; // KGJV #110 //turkey #317
 
   g.fm.SendMessages(m_pgroup, FM_GUARANTEED, FM_FLUSH);
 }
@@ -5771,7 +5862,7 @@ ZString Ballot::GetTallyString()
         strMessage += ", ";
 
       // only display the team name if more than one team is voting on the issue
-      if (m_chattarget != CHAT_TEAM)
+      if (m_chattarget != CHAT_TEAM && !m_bPollEveryone)
         strMessage += ZString(m_pmission->GetIGCMission()->GetSide(sideID)->GetName()) + ":" ;
 
       if (m_cInFavor[sideID])
@@ -5843,6 +5934,39 @@ bool Ballot::AllVotesAreIn()
 }
 
 BallotID Ballot::s_ballotIDNext = 0;
+
+// turkey #317 6/13
+// ballot to remove a commander from within the lobby
+RemoveComBallot::RemoveComBallot(CFSPlayer* pfsInitiator, SideID sideID)
+{
+	CFSMission* pmission = pfsInitiator->GetMission();
+	m_pside = pmission->GetIGCMission()->GetSide(sideID);
+	m_idTargetShip = pmission->GetLeader(sideID)->GetShipID();
+	m_bHideToLeader = true;
+	m_type = BALLOT_REMOVECOM;
+	Init(pfsInitiator, 
+		pfsInitiator->GetName() + ZString("'s proposal to remove ") + pmission->GetLeader(sideID)->GetName(),
+		pfsInitiator->GetName() + ZString(" has proposed to remove ") + pmission->GetLeader(sideID)->GetName() + ZString(" from command of ") + m_pside->GetName() + ZString(".  "),
+		m_idTargetShip);
+
+}
+
+void RemoveComBallot::OnPassed()
+{
+	Ballot::OnPassed();
+
+	SideID sideID = m_pside->GetObjectID();
+	if (m_pmission->GetStage() == STAGE_NOTSTARTED && m_pmission->GetLeader(sideID)->GetShipID() == m_idTargetShip)
+	{
+		CFSShip*    pfssTarget = CFSShip::GetShipFromID(m_idTargetShip);
+		if (pfssTarget && pfssTarget->IsPlayer() &&
+			pfssTarget->GetSide() == m_pside)
+		{
+			m_pmission->RemovePlayerFromSide(pfssTarget->GetPlayer(), QSR_RemovedByBallot);
+			//pfssTarget->SetSide(m_pmission, m_pmission->GetIGCMission()->GetSide(SIDE_TEAMLOBBY));
+		}
+	}
+}
 
 // KGJV #110
 // mutiny ballot to change commander

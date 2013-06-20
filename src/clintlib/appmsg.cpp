@@ -370,8 +370,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
               && !(pfmBallot->otInitiator == OT_side && pfmBallot->oidInitiator == GetSideID()))
             {
 				// KGJV #110
-				// if bHideToLeader and i'm the team leader then auto vote no
-				if (pfmBallot->bHideToLeader &&	MyPlayerInfo()->IsTeamLeader())
+				// if I'm who it's hidden from autovote no
+				if (pfmBallot->sidHideFrom == GetShipID())
 				{
 					// auto vote no
 					SetMessageType(c_mtGuaranteed);
