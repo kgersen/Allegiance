@@ -25,7 +25,7 @@ HRESULT     CstationIGC::Initialize(ImissionIGC* pMission, Time now, const void*
     HRESULT rc = S_OK;
 
     debugf("Station initialize %d\n", ((DataStationIGC*)data)->stationID);
-    ZRetailAssert (data && (dataSize == sizeof(DataStationIGC)));
+    ZRetailAssert (data && (dataSize == sizeof(DataStationIGC) || dataSize == (sizeof(DataStationIGC) - sizeof(StationTypeID[c_cSidesMax]))));// #307 for back-compatibility with older station data
     {
         DataStationIGC*  dataStation = (DataStationIGC*)data;
 
@@ -52,11 +52,14 @@ HRESULT     CstationIGC::Initialize(ImissionIGC* pMission, Time now, const void*
         {
             m_stationID = dataStation->stationID;
 
-			//Turkey #307 02/31
-			for (int sid = 0; sid < c_cSidesMax; sid++)
+			//Turkey #307 02/13 only do this if it's station data created post-#307, and therefore has knownStationTypID data
+			if (dataSize == sizeof(DataStationIGC))
 			{
-				if (dataStation->knownStationTypeID[sid])
-					SetKnownStationType(sid, GetMyMission()->GetStationType(dataStation->knownStationTypeID[sid]));
+				for (int sid = 0; sid < c_cSidesMax; sid++)
+				{
+					if (dataStation->knownStationTypeID[sid])
+						SetKnownStationType(sid, GetMyMission()->GetStationType(dataStation->knownStationTypeID[sid]));
+				}
 			}
 
 			if (pMission->GetStationType(dataStation->stationTypeID)) //Turkey 09/12 #335
