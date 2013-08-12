@@ -4304,7 +4304,7 @@ class ItreasureSetIGC : public IbaseIGC
         virtual const TreasureData&         GetRandomTreasureData(void) const = 0;
 };
 
-typedef short   AssetMask;
+typedef unsigned short   AssetMask;
 const AssetMask     c_amFighter           = 0x01;
 const AssetMask     c_amMiner             = 0x02;
 const AssetMask     c_amBuilder           = 0x04;
