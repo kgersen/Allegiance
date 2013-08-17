@@ -1,0 +1,3 @@
+use "model";
+
+inventorylinebkgndbmp = ImportImageFromFile("inventorylinetransparent.png", false);

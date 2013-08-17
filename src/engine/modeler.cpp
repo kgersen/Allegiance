@@ -2150,6 +2150,10 @@ private:
 
     TMap<ZString, TRef<INameSpace> > m_mapNameSpace;
 
+	//#294 
+	TVector<ZString>		m_vStyleHudName;
+	int						m_nStyle;
+
 	// Hints. Modeler flags referenced during resource loading.
 	bool					m_bHintColorKey;			// Surface requires colour keying.
 	bool					m_bHintSystemMemory;
@@ -2176,6 +2180,70 @@ public:
     {
         m_pathStr = pathStr;
     }
+
+	// turkey 8/13 #294
+	// This is the list of hud names that the 'Style' menu option cycles through
+	// 'Default' is the first one on the list, for which the modeler will look for files in artwork only
+	// the rest are taken from folder names in artwork/mods
+	void BuildHudList()
+	{
+		HANDLE hFind;
+		WIN32_FIND_DATA findFileData;
+
+		m_vStyleHudName.PushEnd("Default");
+
+		ZString hudpath = GetArtPath() + "/Mods/*";
+
+		hFind = FindFirstFile(hudpath, &findFileData);
+
+		if (hFind == INVALID_HANDLE_VALUE)
+		{
+			//still have the default in the main directory
+			debugf("Invalid handle value (%d)\n", GetLastError());
+			return;
+		}
+		do
+		{
+			if ((findFileData.dwFileAttributes | FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY
+				&& (findFileData.cFileName[0] != '.'))
+			{
+				ZString name = findFileData.cFileName;
+				m_vStyleHudName.PushEnd(name);
+			}
+
+		} while (FindNextFile(hFind, &findFileData));
+
+	}
+
+	int CycleStyleHud()
+	{
+		int style = (m_nStyle + 1) % m_vStyleHudName.GetCount();
+        SetStyleHud(style);
+		return style;
+	}
+
+	int GetStyleHud()
+	{
+		return m_nStyle;
+	}
+
+	void SetStyleHud(int style)
+	{
+		m_nStyle = 0;
+		if (style < m_vStyleHudName.GetCount() && style > 0)
+			m_nStyle = style;
+	}
+
+	void SetStyleHud(ZString styleName)
+	{
+		SetStyleHud(m_vStyleHudName.Find(styleName));
+	}
+
+	ZString GetStyleHudName()
+	{
+		return m_vStyleHudName[m_nStyle];
+	}
+	// end #294
 
     ZString GetArtPath()
     {
@@ -2406,6 +2474,7 @@ public:
     TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
     {
         ZString strExtension = pathStr.GetExtension();
+		ZString strToTryOpenFromMods; // turkey 8/13 #294 will use subfolders in /mods/ based on styleHud setting
         ZString strToTryOpen;// yp Your_Persona October 7 2006 : TextureFolder Patch
         ZString strToTryOpenFromDev;// KGJV - 'dev' subfolder
 		ZString strPackFile; // doofus - Filename for pack searching.
@@ -2422,11 +2491,14 @@ public:
             strToOpen = m_pathStr + pathStr;
             strToTryOpenFromDev = m_pathStr + "dev/" + pathStr;
 			strToTryOpen = m_pathStr + "Textures/" + pathStr;
+			strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr);
+
         } else {
 			strPackFile = ZString(pathStr) + ( "." + strExtensionArg );
             strToOpen = ZString(m_pathStr + pathStr) + ("." + strExtensionArg);
             strToTryOpenFromDev = ZString(m_pathStr + "dev/" + pathStr) + ("." + strExtensionArg);
 			strToTryOpen = ZString(m_pathStr + "Textures/" + pathStr) + ("." + strExtensionArg);
+			strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr) + ("." + strExtensionArg);
         }
 		DWORD dwFileSize;
 		void * pPackFile;
@@ -2434,6 +2506,14 @@ public:
 		if( ( pPackFile != NULL ) && ( dwFileSize > 0 ) )
 		{
 			pfile = new ZPackFile( strPackFile, pPackFile, dwFileSize );
+		}
+
+		// turkey #294
+		if (pfile == NULL && m_nStyle && 
+			(strToTryOpenFromMods.Right(17) != "newgamescreen.mdl")) //newgamescreen needs to be ACSS-protected, so don't open it from mods
+		{
+			pfile = new ZFile(strToTryOpenFromMods, OF_READ | OF_SHARE_DENY_WRITE);
+			if (!pfile->IsValid()) pfile = NULL;
 		}
 
 		// yp Your_Persona October 7 2006 : TextureFolder Patch

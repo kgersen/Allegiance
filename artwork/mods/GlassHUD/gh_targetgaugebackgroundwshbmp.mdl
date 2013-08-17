@@ -1,0 +1,4 @@
+use "model";
+
+gh_targetgaugebackgroundwshbmp = 
+	ImportImageFromFile("gh_targetgauge_bg_w_sh.png", true);

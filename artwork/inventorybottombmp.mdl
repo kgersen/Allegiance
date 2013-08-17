@@ -1,0 +1,3 @@
+use "model";
+
+inventorybottombmp = ImportImageFromFile("inventorylinetransparent.png", false);

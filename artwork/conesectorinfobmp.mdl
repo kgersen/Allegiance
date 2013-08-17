@@ -1,0 +1,3 @@
+use  "model";
+
+conesectorinfobmp = ImportImageFromFile("conesectorinfo.png", false);

@@ -1173,11 +1173,18 @@ public:
     TRef<ModifiableBoolean> m_pboolChatHistoryHUD;
     TRef<ModifiableBoolean> m_pboolCenterHUD;
     TRef<ModifiableBoolean> m_pboolTargetHUD;
-    TRef<ModifiableNumber>  m_pnumberStyleHUD;
+
     TRef<ModifiableNumber>  m_pnumberIsGhost;
     TRef<ModifiableNumber>  m_pnumberFlash;
     TRef<ModifiableNumber>  m_pnumberTeamPaneCollapsed;
-    TRef<WrapNumber>        m_pwrapNumberStyleHUD;
+	
+	// #294
+	TRef<ModifiableNumber>  m_pnumberChatLinesGlobal;
+	TRef<ModifiableNumber>  m_pnumberChatLinesLoadout;
+	TRef<WrapNumber>		m_pwrapNumberChatLinesGlobal;
+	TRef<WrapNumber>		m_pwrapNumberChatLinesLoadout;
+	TRef<ModifiableNumber>  m_pnumberShowScrollbar;
+	TRef<WrapNumber>		m_pwrapNumberShowScrollbar;
 
     //
     // exports
@@ -1371,6 +1378,9 @@ public:
     TRef<IMenuItem>            m_pitemFilterChatsToAll;
     TRef<IMenuItem>            m_pitemFilterQuickComms;
     TRef<IMenuItem>            m_pitemFilterLobbyChats;
+	TRef<IMenuItem>			   m_pitemIncreaseChatLines;	//
+	TRef<IMenuItem>			   m_pitemReduceChatLines;		// #294
+	TRef<IMenuItem>			   m_pitemScrollbar;			//
     TRef<IMenuItem>            m_pitemSoundQuality;
     TRef<IMenuItem>            m_pitemToggleSoundHardware;
     TRef<IMenuItem>            m_pitemToggleDSound8Usage;
@@ -1543,6 +1553,8 @@ public:
 
     void InitializeGameStateContainer()
     {
+		if (!m_pconsoleImage) return; // #294
+
         m_pgsc = m_pconsoleImage->GetGameStateContainer();
         m_pgameStateCloseSink =
             new GameStateCloseSink(
@@ -2287,7 +2299,7 @@ public:
                         IsideIGC*   pside = trekClient.GetShip()->GetSide();
                         assert (pside);
                         assert (pside->GetObjectID() >= 0);
-                        m_pconsoleImage->SetDisplayMDL(pside->GetCivilization()->GetHUDName());
+						m_pconsoleImage->SetDisplayMDL(pside->GetCivilization()->GetHUDName());
                     }
                     m_pwrapImageConsole->SetImage(m_pconsoleImage);
 
@@ -2664,6 +2676,10 @@ public:
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
 
+		// turkey #294 Build the list of huds; needs to be after the modeler knows the art path
+		GetModeler()->BuildHudList();
+		SetHUDStyle(LoadPreference("SoftwareHUD", 0)); // moved this up because we need to know which mod we're using early
+
 		//Imago 6/29/09 7/28/09 now plays video in thread while load continues
 		HANDLE hDDVidThread = NULL;
 		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
@@ -2776,12 +2792,11 @@ public:
         pnsGamePanes->AddMember("ShowCenterHUD", m_pboolCenterHUD = new ModifiableBoolean(true));
         pnsGamePanes->AddMember("ShowTargetHUD", m_pboolTargetHUD = new ModifiableBoolean(true));
 
-        pnsGamePanes->AddMember(
-            "StyleHUD",
-            m_pwrapNumberStyleHUD = new WrapNumber(
-                m_pnumberStyleHUD = new ModifiableNumber(0)
-            )
-        );
+		// turkey #294 stylehud used to be here but it's obsolete now
+		// we need a couple of chatlist settings though
+		pnsGamePanes->AddMember("NumChatLinesGlobal", m_pwrapNumberChatLinesGlobal = new WrapNumber(m_pnumberChatLinesGlobal = new ModifiableNumber(0)));
+		pnsGamePanes->AddMember("NumChatLinesLoadout", m_pwrapNumberChatLinesLoadout = new WrapNumber(m_pnumberChatLinesLoadout = new ModifiableNumber(0)));
+		pnsGamePanes->AddMember("ShowScrollbarOnCockpitChat", m_pwrapNumberShowScrollbar = new WrapNumber(m_pnumberShowScrollbar = new ModifiableNumber(1)));
 
         pnsGamePanes->AddMember("Flash", m_pnumberFlash = new ModifiableNumber(0));
         pnsGamePanes->AddMember("TeamPaneCollapsed", m_pnumberTeamPaneCollapsed = new ModifiableNumber(0));
@@ -3188,8 +3203,6 @@ public:
             ToggleCenterHUD();
         if (!LoadPreference("TargetHUD", TRUE))
             ToggleTargetHUD();
-        if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
-            CycleStyleHUD();
         SetDeadzone(LoadPreference("DeadZone", 30)); //ToggleLargeDeadZone(); //Imago updated 7/8/09
 		SetRadarLOD(LoadPreference("RadarLOD", 0)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
@@ -3199,6 +3212,10 @@ public:
 			ToggleVirtualJoystick();
 
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
+
+		// #294
+		SetChatLines(LoadPreference("ChatLines", 10));
+		if (!LoadPreference("ShowScrollbar", 1)) ToggleScrollbar();
 
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
@@ -3923,6 +3940,10 @@ public:
     #define	idmMuteFilterOptions		 635 //TheBored 30-JUL-07: Filter Unknown Chat patch
     #define idmFilterUnknownChats		 636 //TheBored 30-JUL-07: Filter Unknown Chat patch
 
+	#define idmScrollbar				 637 // #294
+	#define idmIncreaseChatLines		 638 // #294
+	#define idmReduceChatLines			 639 // #294
+
     #define idmResetSound           701
     #define idmSoundQuality         702
     #define idmSoundHardware        703
@@ -4326,7 +4347,7 @@ public:
 				break;
 
             case idmGameOptions:
-                m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,					"Mute/Filter",						'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
+                m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,			"Mute/Filter/Chat",					'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
                 m_pitemToggleLinearControls        = pmenu->AddMenuItem(idmToggleLinearControls,        GetLinearControlsMenuString(),      'L');
                 m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetDeadzoneMenuString(),       'Z'); //imago updated 7/8/09
@@ -4370,6 +4391,9 @@ public:
                 m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'V');
 				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
+				m_pitemScrollbar				   = pmenu->AddMenuItem(idmScrollbar,					GetToggleScrollbarMenuString(),		'S');
+				m_pitemIncreaseChatLines		   = pmenu->AddMenuItem(idmIncreaseChatLines,			GetIncreaseChatLinesMenuString(),	'I');
+				m_pitemReduceChatLines			   = pmenu->AddMenuItem(idmReduceChatLines,				GetReduceChatLinesMenuString(),		'R');
 				break;
 			//End TB 30-JUL-07
 			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
@@ -4563,6 +4587,54 @@ public:
         }
     }
 	//End TB 25-JUN-07
+
+	// turkey #294 8/13
+	void IncreaseChatLines()
+	{
+		DWORD lines = (DWORD) m_pnumberChatLinesGlobal->GetValue() + 1;
+
+		if (SetChatLines(lines))
+		{
+			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+
+			if (m_pchatListPane)
+			{
+				if (GetViewMode() == vmLoadout) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesLoadout->GetValue());
+				
+				else if (GetViewMode() <= vmOverride) m_pchatListPane->SetChatLines(lines);
+			}
+
+
+			SavePreference("ChatLines", lines);
+		}
+	}
+
+	void ReduceChatLines()
+	{
+		DWORD lines = (DWORD) m_pnumberChatLinesGlobal->GetValue() - 1;
+
+		if (SetChatLines(lines))
+		{
+			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+
+			if (m_pchatListPane)
+			{
+				if (GetViewMode() == vmLoadout) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesLoadout->GetValue());
+				
+				else if (GetViewMode() <= vmOverride) m_pchatListPane->SetChatLines(lines);
+			}
+
+
+			SavePreference("ChatLines", lines);
+		}
+	}
+
+	
+	
+	// end #294
+
     void ToggleLinearControls()
     {
         if (m_bLinearControls)
@@ -4944,10 +5016,11 @@ public:
 
     //Something of a misnomer since there are only two styles but this may change
 	//Andon: Changed to support up to 5 styles
+	//turkey changed to support infinity styles!
     void CycleStyleHUD()
     {
-        int style = (int(m_pnumberStyleHUD->GetValue()) + 1) % 5;
-        m_pnumberStyleHUD->SetValue(float(style));
+		int style = GetModeler()->CycleStyleHud();
+        SetHUDStyle(style);
 
         SavePreference("SoftwareHUD", (DWORD)style);
 
@@ -5018,8 +5091,45 @@ public:
         SavePreference("Gamma", value);
     }
 
+	// #294 returns true if the requested value was within range (1-10), false otherwise
+	bool SetChatLines(DWORD value)
+	{
+		bool bInRange = false;
+		if (value >= 1)
+		{
+			if (value > 10) m_pnumberChatLinesGlobal->SetValue(10.0f);
+			else 
+			{
+				m_pnumberChatLinesGlobal->SetValue((float)value);
+				bInRange = true;
+			}
 
+			if (value > 6) m_pnumberChatLinesLoadout->SetValue(6.0f);
+			else 
+			{
+				m_pnumberChatLinesLoadout->SetValue((float)value);
+				bInRange = true;
+			}
+		}
+		else
+		{
+			m_pnumberChatLinesGlobal->SetValue(1.0f);
+			m_pnumberChatLinesLoadout->SetValue(1.0f);
+		}
 
+		return bInRange;
+	}
+
+	void ToggleScrollbar()
+	{
+		if (m_pnumberShowScrollbar->GetValue() > 0.0f) m_pnumberShowScrollbar->SetValue(0.0f);
+		else m_pnumberShowScrollbar->SetValue(1.0f);
+
+		if (m_pitemScrollbar) {
+			m_pitemScrollbar->SetString(GetToggleScrollbarMenuString());
+			SavePreference("ShowScrollbar", m_pnumberShowScrollbar->GetValue());
+		}
+	}
 
     void ToggleFlipY()
     {
@@ -5059,9 +5169,8 @@ public:
     void RenderSizeChanged(bool bSmaller)
     {
         if (bSmaller && GetFullscreen()) {
-            m_pwrapNumberStyleHUD->SetWrappedValue(new Number(1.0f));
-        } else {
-            m_pwrapNumberStyleHUD->SetWrappedValue(m_pnumberStyleHUD);
+			GetModeler()->SetStyleHud("Software");  // #294 turkey changed to find the Software style
+			SetHUDStyle(GetModeler()->GetStyleHud());
         }
     }
 
@@ -5432,6 +5541,23 @@ public:
         }
     }
 
+	ZString GetToggleScrollbarMenuString()
+	{
+		return (m_pnumberShowScrollbar->GetValue() > 0.0f) ? "Hide cockpit chat scrollbar" : "Show cockpit chat scrollbar";
+	}
+
+	ZString GetIncreaseChatLinesMenuString()
+	{
+		if (m_pnumberChatLinesGlobal->GetValue() > 9.9f) return "Chat lines at maximum";
+		return "Increase to " + ZString((int)m_pnumberChatLinesGlobal->GetValue() + 1) + " chat lines";
+	}
+
+	ZString GetReduceChatLinesMenuString()
+	{
+		if (m_pnumberChatLinesGlobal->GetValue() < 1.1f) return "Chat lines at minimum";
+		return "Reduce to " + ZString((int)m_pnumberChatLinesGlobal->GetValue() - 1) + " chat lines";
+	}
+
     ZString GetLinearControlsMenuString()
     {
         return (m_bLinearControls) ? "Linear Control Response" : "Quadratic Control Response";
@@ -5545,38 +5671,11 @@ public:
         return (m_pboolTargetHUD->GetValue()) ? "Target HUD On " : "Target HUD Off ";
     }
 
-    //Andon: Expanding the number of HUD style switches available
-	const ZString& GetStyleHUDMenuString()
+	ZString GetStyleHUDMenuString()
     {
-        static const ZString    c_strNormal("Style: Normal");
-        static const ZString    c_strSoftware("Style: Software");
-		static const ZString    c_strCust1("Style: Custom Hud 1");//Add in the first custom one
-		static const ZString    c_strCust2("Style: Custom Hud 2");//Add in the second custom one
-		static const ZString    c_strCust3("Style: Custom Hud 3");//Add in the third custom one
-		static const ZString    c_strOops("Style: Error"); //Just in case I goofed
-
-		if (m_pnumberStyleHUD->GetValue() == 0)
-		{
-			return c_strNormal;
-		}
-		else if (m_pnumberStyleHUD->GetValue() == 1)
-		{
-			return c_strSoftware;
-		}
-		else if (m_pnumberStyleHUD->GetValue() == 2)
-		{
-			return c_strCust1;
-		}
-		else if (m_pnumberStyleHUD->GetValue() == 3)
-		{
-			return c_strCust2;
-		}
-		else
-		{
-			return c_strCust3;
-		}
-		//Andon: The old version, was simply True/False
-		//return (m_pnumberStyleHUD->GetValue()) ? c_strSoftware : c_strNormal;
+		// #294: pull the name from the modeler
+		ZString str = ZString("Style: ") + GetModeler()->GetStyleHudName();
+		return str;
     }
 
     const ZString& GetDeadzoneMenuString()
@@ -5983,6 +6082,18 @@ public:
                 //TheBored 25-JUN-07: Lobby filter change.
 				ToggleFilterLobbyChats(trekClient.FilterLobbyChats() + 1);
                 break;
+
+			case idmScrollbar:
+				ToggleScrollbar();
+				break;
+
+			case idmIncreaseChatLines:
+				IncreaseChatLines();
+				break;
+
+			case idmReduceChatLines:
+				ReduceChatLines();
+				break;
 
             case idmToggleLinearControls:
                 ToggleLinearControls ();
@@ -6408,7 +6519,15 @@ public:
 			// clear the keyboard buttons.
 			m_ptrekInput->ClearButtonStates();
 
-            switch (vm)
+			// #294 Use different number of chatlines for the loadout screen cos there's less space
+			if (m_pchatListPane)
+			{
+				if (vm == vmLoadout) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesLoadout->GetValue());
+
+				else if (vm <= vmOverride) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesGlobal->GetValue());
+			}
+
+			switch (vm)
             {
             case vmHangar:
                 m_pscreenBackdrop = CreateHangarScreen(GetModeler(), "hangar");
@@ -6553,14 +6672,15 @@ public:
         SetOverlayFlags(m_voverlaymask[m_viewmode] ^ om);
     }
 
+	// #294 turkey changed sector map to be on everywhere by default, and inventory on during combat
+	// was inventory never and sector map in combat and command only
     void ResetOverlayMask()
     {
         for (int i = 0; i < c_cViewModes; i++)
         {
-            m_voverlaymask[i] = 0;
+            m_voverlaymask[i] = ofSectorPane;
         }
-        m_voverlaymask[vmCombat] = ofSectorPane;
-        m_voverlaymask[vmCommand] = ofSectorPane;
+        m_voverlaymask[vmCombat] |= ofInventory;
     }
 
     void CopyOverlayFlags(OverlayMask om, bool bSet)
@@ -8477,7 +8597,7 @@ public:
                     {
                         if (
                                trekClient.IsInGame()
-                            && ((GetViewMode() != vmOverride) || (tk == TK_StartChat))
+                            && ((GetViewMode() != vmOverride) || CanBePressedDuringOverride(tk))
                             && !trekClient.IsLockedDown()
                         ) {
                             OnTrekKey(tk);
@@ -8491,6 +8611,21 @@ public:
 
         return false;
     }
+
+	// turkey #294 8/13 allow people to add or remove view panes
+	bool CanBePressedDuringOverride(TrekKey tk)
+	{
+		switch (tk)
+		{
+		case TK_StartChat:
+		case TK_ConModeInventory:
+		case TK_ConModeNav:
+		case TK_ViewSector:
+			return true;
+		default:
+			return false;
+		}
+	}
 
     bool OnChar(IInputProvider* pprovider, const KeyState& ks)
     {
@@ -8876,15 +9011,36 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    float   GetHUDStyle (void) const
+	// #294 these were just getters and setters for the styleHud variable
+	// now they pass the new style through to the modeler and fix the display when necessary
+    int     GetHUDStyle (void)
     {
-        return m_pnumberStyleHUD->GetValue ();
+		return GetModeler()->GetStyleHud();
     }
 
-    void    SetHUDStyle (float newStyle)
+    void    SetHUDStyle (int newStyle)
     {
-        m_pnumberStyleHUD->SetValue (newStyle);
-    }
+		GetModeler()->SetStyleHud(newStyle);
+
+	    if (m_pconsoleImage)
+		{
+
+			m_pconsoleImage->SetDisplayMDL(trekClient.GetSide()->GetCivilization()->GetHUDName());
+
+			// Reading the display MDL breaks the loadout and hanger screens, this fixes it.
+			// This will also close excess panes and menus and things, which is annoying.
+			if (m_viewmode == vmHangar)
+			{
+				SetViewMode(vmCommand);
+				SetViewMode(vmHangar);
+			}
+			if (m_viewmode == vmLoadout)
+			{
+				SetViewMode(vmCommand);
+				SetViewMode(vmLoadout);
+			}
+		}
+	}
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -9059,8 +9215,10 @@ public:
 				// SR added ability to toggle virtual joystick during launch animation 8/06
 				case TK_ToggleMouse:
 					if (trekClient.IsInGame() &&
-					GetViewMode() == vmOverride &&
-					!trekClient.IsLockedDown()) {
+						GetViewMode() == vmOverride &&
+						!trekClient.IsLockedDown() &&
+						!(m_pconsoleImage && m_pconsoleImage->IsComposing()))// turkey 8/13
+					{
 						m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
 						if(m_bEnableVirtualJoystick) m_ptrekInput->ClearButtonStates();//#56
 						return true;
@@ -9647,9 +9805,7 @@ public:
             case TK_ConModeNav:
             case TK_ViewSector:
             {
-                if (GetViewMode() != vmOverride) {
-                    ToggleOverlayFlags(ofSectorPane);
-                }
+				ToggleOverlayFlags(ofSectorPane);
             }
             break;
 
@@ -9757,9 +9913,7 @@ public:
 
             case TK_ConModeInventory:
             {
-                if (GetViewMode() == vmOverride) {
-                        // do nothing
-                } else if (trekClient.GetShip()->IsGhost()) {
+                if (trekClient.GetShip()->IsGhost()) {
                     TurnOffOverlayFlags(c_omBanishablePanes);
                 } else if (trekClient.GetShip()->GetStation() != NULL) {
                     if (GetViewMode() != vmLoadout)
@@ -10510,11 +10664,11 @@ public:
 
     void SetChatListPane(ChatListPane* pchatListPane)
     {
-        m_pchatListPane = pchatListPane;
-    }
+		m_pchatListPane = pchatListPane;
+	}
 
-    void SetLobbyChatTarget(ChatTarget ct, ObjectID recip = NA)
-    {
+	void SetLobbyChatTarget(ChatTarget ct, ObjectID recip = NA)
+	{
         m_ctLobbyChat = ct;
 	//#8 Imago 7/10 added recip
 		m_ctLobbyChatRecip = recip; 

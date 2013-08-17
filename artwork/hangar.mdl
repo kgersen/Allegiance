@@ -1,0 +1,104 @@
+use "gamepanes";
+use "hangardata";
+use "console";
+use "font";
+
+//
+// Normal buttons
+//
+
+// format: FrameImageButtonPane(<animation>, <total time per loop>, <loop>, <run to last frame>);
+
+launchButtonPane    = FrameImageButtonPane("animlaunch", .7, false, false);
+//launchButtonPane    = ButtonPane(ImportImage("animradar2bmp", false), 5, false);
+commandButtonPane   = ButtonPane(ImportImage("animradarbmp", false), 5, false);
+loadoutButtonPane   = ButtonPane(ImportImage("animloadoutbmp", false), 5, false);
+investButtonPane    = ButtonPane(ImportImageFromFile("cortui_core_animinvest.png", false), 5, false);
+teleportButtonPane  = ButtonPane(ImportImage("animsectorbmp", false), 5, false);
+teamButtonPane      = ButtonPane(ImportImage("animteambmp", false), 5, false);
+
+helpButtonPane      = ButtonPane(ImportImage("btnquitbmp", false), 5, false);
+//helpButtonPane      = ImagePane(ImportImage("btnquitbmp", false), []);
+exitButtonPane      = ButtonPane(ImportImage("btnexitgamebmp", false), 5, false);
+
+//
+// Info on the button the mouse is currently over
+//
+
+HoverTextColor = Color(0.75, 0.75, 0.75);
+HoverTextSize = Point(600,24);
+HoverTextFont = hugeFont;
+
+hoverInfoPane = 
+    SwitchPane(
+        CurrentHover,
+        [
+            (
+                StringPane("", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverNone
+            ),
+            (
+                StringPane("Launch ship", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverLaunch
+            ),
+            (
+                StringPane("Command screen", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverCommand
+            ),
+            (
+                StringPane("Ship's loadout", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverLoadout
+            ),
+            (
+                StringPane("Team investments", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverInvest
+            ),
+            (
+                StringPane("Help", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverHelp
+            ),
+            (
+                StringPane("Teleport to another station or Board another ship", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverTeleport
+            ),
+            (
+                StringPane("Information about the teams playing", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverTeam
+            ),
+			(
+                StringPane("Exit the game.", HoverTextColor, HoverTextSize, JustifyCenter, HoverTextFont), 
+                hoverExit
+            )
+
+        ]
+    );
+
+InTurretPane =
+	SwitchPane(
+        BoardState,
+        [
+            (ImagePane(ImportImage ("hangarinturretbmp", false), []), 2)
+        ]
+    );
+
+
+//
+// The background and control positions
+//
+
+screen =
+    ScreenPane(
+        ImportImageFromFile("cortui_core_hangar.png", false),
+        [
+            (launchButtonPane,       Point( 367, 162)),
+            (commandButtonPane,      Point(  84, 283)),
+            (loadoutButtonPane,      Point( 526, 247)),
+            (investButtonPane,       Point( 530,  88)),
+//            (helpButtonPane,         Point( 208,  95)),
+            (teleportButtonPane,     Point( 214, 248)),
+            (teamButtonPane,         Point(  43, 102)),
+//			(exitButtonPane,		 Point(  80,  515)),
+            (hoverInfoPane,          Point( 100, 536)),
+			(InTurretPane,			 Point( 320, 450))
+        ]
+    );

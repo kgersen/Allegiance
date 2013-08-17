@@ -1,0 +1,4 @@
+use "model";
+
+gh_energy_backbmp =	
+	ImportImageFromFile("gh_energy_back.png", true);

@@ -674,16 +674,44 @@ bool ModelData::IsVisible()
  }
 
 //Andon: Gets the Scan Range of the target
-//Only works on self
+//Turkey: made work on all
 float ModelData::GetScanRange()
 {
-	float f=0.0f;
-	
+	float f=-1.0f;
+
 	ImodelIGC*	pmodel	=	GetModel();
-	IshipIGC*	pship	=	GetShip();
-	if(pmodel == trekClient.GetShip() || pmodel == trekClient.GetShip()->GetParentShip())
+	if (!pmodel) return f;
+
+	IshipIGC*	pship	=	(pmodel->GetObjectType() == OT_ship) ? GetShip() : NULL;
+	IshipIGC*	pme		=   trekClient.GetShip();
+	
+	if(pmodel == pme || pmodel == pme->GetParentShip())
 	{
 		f = pship->GetHullType()->GetScannerRange();
+	}
+	else if (pmodel->GetSide() != pme->GetSide() && trekClient.GetShip()->CanSee(pmodel))
+	{
+		switch (pmodel->GetObjectType())
+		{
+		case OT_ship:
+			f = pship->GetHullType()->GetScannerRange();
+			break;
+		case OT_station:
+			f = ((IstationIGC*) pmodel)->GetStationType()->GetScannerRange();
+			break;
+		case OT_probe:
+			f = ((IprobeIGC*) pmodel)->GetProbeType()->GetScannerRange();
+			break;
+		default:
+			return -1.0f;
+		}
+
+		//this line un-applies the scan range GA from the result. Uncomment if the SCAN target info is giving too much information about enemy tech levels.
+		//f /= pmodel->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaScanRange);
+
+		f /= pme->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSignature);
+		f *= pme->GetSignature();
+		f += pme->GetRadius() + pmodel->GetRadius();
 	}
 
 	return f;

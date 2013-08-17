@@ -65,7 +65,7 @@ namespace Training
                     std::list<Condition*>   m_KeyConditionList;
                     Condition*              m_pChatCondition;
                     bool                    m_bMusicWasOn;
-                    float                   m_fHUDStyle;
+                    int                     m_fHUDStyle;
                     ObjectID                m_commanderID;
                     SectorID                m_deadSectorID;
                     TrekWindow::ViewMode    m_deadViewMode;

@@ -512,7 +512,7 @@ private:
     TRef<ModifiableNumber>  m_pnumberGotFlag;
     TRef<ModifiableNumber>  m_pnumberGotArtifact;
     TRef<ModifiableNumber>  m_pnumberSignature;
-	TRef<ModifiableString>  m_pstringDetectionRange; //Spunky #302
+//	TRef<ModifiableString>  m_pstringDetectionRange; //Spunky #302 //turkey commented out #294
     
 
     // data for composed chat/cmd
@@ -742,7 +742,7 @@ public:
 
 		//detection range - Spunky #302
 
-		m_pns->AddMember("DetectionRange", m_pstringDetectionRange = new ModifiableString("")); 
+//		m_pns->AddMember("DetectionRange", m_pstringDetectionRange = new ModifiableString("")); 
 
         // Verb & recipient button bars
         m_pnsDisplays = GetModeler()->GetNameSpace(pszFileName);
@@ -797,6 +797,8 @@ public:
         m_pnumberAutopilotOn->SetValue(trekClient.autoPilot() ? 1.0f : 0.0f);
 		
 		//Spunky #302
+		//Turkey made this redundant with #294. It is now done in ModelData::GetScanRange()
+		/*
 		IshipIGC* me = trekClient.GetShip();
 		ImodelIGC* target = trekClient.GetShip()->GetCommandTarget(c_cmdCurrent);
 		int targetScannerRange;
@@ -814,11 +816,11 @@ public:
 			targetScannerRange /= target->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaScanRange);
 			m_pstringDetectionRange->SetValue((ZString)(int)(me->GetSignature() * targetScannerRange 
 				/ me->GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaSignature) 
-				+ me->GetRadius() + target->GetRadius()) + "m");			
+				+ me->GetRadius() + target->GetRadius()));			
 		}
 		else
 			m_pstringDetectionRange->SetValue("");
-
+		*/
 
         if (!pshipParent)
             m_pnumberBoardState->SetValue(0);
@@ -3290,6 +3292,7 @@ private:
     TRef<ConsolePickImage>              m_pickimage;
 
     char                         m_szFileName[c_cbFileName];
+	int							 m_nStyleHud;				// #294
     
 
 public:
@@ -3297,6 +3300,7 @@ public:
         ConsoleImage(pengine, pviewport)
     {
         m_szFileName[0] = '\0';
+		m_nStyleHud = NA;
         SetDisplayMDL("dialog");
     }
 
@@ -3351,7 +3355,7 @@ public:
 
     void SetOverlayFlags(OverlayMask om)
     {
-        if (GetOverlayFlags() != om)
+        if (m_pickimage && GetOverlayFlags() != om) // turkey #294 added check for pickimage to exist
         {
             trekClient.PlaySoundEffect(paneSlideSound);
 
@@ -3424,13 +3428,18 @@ public:
 
     void SetDisplayMDL(const char* pszFileName)
     {
-        if (strcmp(pszFileName, m_szFileName) == 0)
+		int styleHud = GetModeler()->GetStyleHud();
+
+        if (strcmp(pszFileName, m_szFileName) == 0 && styleHud == m_nStyleHud)
             return;
 
         assert (strlen(pszFileName) < c_cbFileName);
         strcpy(m_szFileName, pszFileName);
+		m_nStyleHud = styleHud;
 
         OverlayMask om = GetOverlayFlags();
+
+		SetImage(NULL);
 
         m_pconsoleData            = NULL;
         m_vpdisplayImages         = NULL;
@@ -3528,6 +3537,9 @@ public:
         CastTo(pchatListPane, (Pane*)pnsDisplays->FindMember("chatListPane"));
 
         GetWindow()->SetChatListPane(pchatListPane);
+
+		// #294 calling SetDisplayMDL midgame resets the game state container, so it needs to be reinitialized
+		GetWindow()->InitializeGameStateContainer();
 
         // unload the namespace so that the displays will go away when we are 
         // finished with them.

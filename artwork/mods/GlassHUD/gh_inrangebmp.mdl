@@ -1,0 +1,4 @@
+use "model";
+
+gh_inrangebmp =	
+	ImportImageFromFile("gh_inrange.png", true);

@@ -1,0 +1,4 @@
+use "model";
+
+gh_vectorlockbmp = 
+	ImportImageFromFile("gh_vectorlock.png", true);

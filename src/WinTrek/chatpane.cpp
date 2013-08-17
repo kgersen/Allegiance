@@ -114,6 +114,7 @@ class ChatListPaneImpl :    public ChatListPane,
 private:
     TRef<ListPaneOld>      m_pListPane;
     WinPoint               m_ptItemSize;
+	WinPoint			   m_ptSize;		// #294
     TList<ChatTarget>      m_listChannels;
     TRef<IKeyboardInput>   m_keyboardDelegate;
     TRef<IEventTargetAlleg>     m_targetAutoscrollOn;
@@ -125,10 +126,10 @@ public:
 
 
     ChatListPaneImpl(const WinPoint& ptSize):
-        m_ptItemSize(ptSize.X(), 12), m_bAutoscroll(true), m_bIgnoreScrollingEvents(false)
+        m_ptItemSize(ptSize.X(), 12), m_bAutoscroll(true), m_bIgnoreScrollingEvents(false), m_ptSize(ptSize)
     {
         m_bPlayerChatsOnly = true;
-        m_pListPane = ListPaneOld::Create(ptSize, 12, true, NULL),
+        m_pListPane = ListPaneOld::Create(m_ptSize, 12, true, NULL),
         InsertAtBottom(m_pListPane);
 		//mdvalley: I hate C3867.
         AddEventTarget(&ChatListPaneImpl::OnListSelect, m_pListPane->GetEventSource());
@@ -335,6 +336,13 @@ public:
         DefaultUpdateLayout();
     }
 
+	// #294
+	void SetChatLines(int lines)
+	{
+		m_ptSize.SetY(lines * m_ptItemSize.Y() + 8);
+		m_pListPane->SetListSize(m_ptSize);
+		UpdateContents();
+	}
 };
 
 

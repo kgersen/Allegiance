@@ -1,0 +1,4 @@
+use "model";
+
+gh_gear_backbmp =	
+	ImportImageFromFile("gh_gear_back.png", true);

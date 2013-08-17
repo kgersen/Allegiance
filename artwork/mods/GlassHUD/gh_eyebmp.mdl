@@ -1,0 +1,4 @@
+use "model";
+
+gh_eyebmp = 
+	ImportImageFromFile("gh_eye.png", true);

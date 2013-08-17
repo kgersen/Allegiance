@@ -1,0 +1,59 @@
+use "inventorypart";
+
+StatsBar = 
+    StringPane(
+        ConcatinatedString(
+            ConcatinatedString(
+                ConcatinatedString(
+					NumberString(GetShieldStrength(part, OnEveryFrame)),
+                    " / "
+                ),
+                NumberString(GetRechargeTime(part, OnEveryFrame))
+            ),
+            " sec"
+        ),
+        Color(1,1,1), 
+        Point(83, 12)
+    );
+
+GaugePaneClassic = 
+	GaugePane(
+		ImportImageFromFile("mountingbar.png", false),
+		GetMountedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);
+	
+	
+MountingBar = 
+    ImagePane(ImportImage("mountingbarbkgndbmp", true),
+        [
+            (
+				GaugePaneClassic,
+                Point(0,0)
+            )
+        ]
+    );
+
+InventoryLine = ImagePane(ImportImage("inventorylinebkgndbmp", false),
+    [	
+		(ImagePane(ImportImage("invequipmenticonbmp", true), []), Point(5, 5)), 
+        (StringPane(partkey, Color(1,1,1), Point(12, 12)), Point(23, 5)),
+
+		(StringPane(GetPartName(part, OnEveryFrame), Color(1,1,1), Point(88, 12)), Point(35,5)),
+		
+		
+
+        (
+            SwitchPane(
+                GetReadyState(part, OnEveryFrame),
+                [
+                    (StatsBar,      0),
+                    (MountingBar,   1),
+                    (StatsBar,      3)
+                ]
+            ),
+            Point(130, 5)
+        )
+    ]
+);

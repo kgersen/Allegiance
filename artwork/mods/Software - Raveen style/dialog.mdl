@@ -1,0 +1,2397 @@
+use "console";
+use "font";
+use "teleportpane";
+use "teampane";
+use "cortui_settings";
+
+//Version information
+cortUIVersionString = "CortUI v1.80-dev-r158";
+
+DetectionRange = StringImage(JustifyLeft, 300, medVerdana, targetHudColor, ConcatinatedString(DetectionRange, GetRadius(Target, OnEveryFrame))); //Spunky                
+White = Color(1, 1, 1);
+fp2DarkGrey = Color(.4, .4, .4);
+TextColor = Color(0, 0, 0.0625);
+
+mySideColor = GetSideColor(Me, OnEveryFrame);
+yellowText = Color(0.878, 0.573, 0);
+
+myStationColor = GetSideColor(MyStation, OnEveryFrame);
+
+hudBlendMode = BlendModeAdd;
+
+// Ksero 2005-04-17
+// * New images and corresponding *Columns-values
+
+//Zero for the 1st col so we can have something that corresponds to nothing selected
+
+RecipientsColumns    = [53, 106, 159, 212]; 
+RecipientsBB = ButtonBarPane(ImportImageFromFile("cortui_core_recipients.png", true), ButtonNormal, RecipientsColumns, true);
+
+VerbsColumns    = [32, 62, 92, 122, 152, 182, 211, 212, 213, 242, 268]; //Turkey needs 11 values instead of 9 #320 #321
+VerbsBB      = ButtonBarPane(ImportImageFromFile("cortui_core_verbs.png", true), ButtonNormal, VerbsColumns, false);
+
+WingCombo    = 
+   ImageComboPane(ImportImageFromFile("cortui_core_btnchangewing3.png", true), smallFont);
+
+//
+//  Mouseover Text for Verbs
+//
+
+hoverSite = HoverSite(0);
+
+hoverString =
+    SwitchString(
+        HoverSiteGetID(hoverSite),
+        "",
+        [
+            ( 1, "Attack"),
+            ( 2, "Capture"),
+            ( 3, "Defend"),
+            ( 4, "Pickup"),
+            ( 5, "Goto"),
+            ( 6, "Repair"),
+            ( 7, "Join"),
+            ( 8, "Stop"), //#321
+			( 9, "Hide"), //#320
+            ( 10, "Mine"),
+            ( 11, "Build")
+        ]
+    );
+
+// Ksero 2005-04-17
+// * adjusted some sizes and offsets to accomodate the new commandpane
+
+hoverImage = StringImage(JustifyCenter, 126, promptFont, yellowText, hoverString);
+hoverPane  = AnimatedImagePaneRect(hoverImage, Rect(0, -13, 126, 0));
+
+Classic_CommandPane = 
+    ImagePane(
+        ImportImageFromFile("cortui_core_commandbkgnd.png", false),
+        [
+            (RecipientsBB, Point(4, 8)),
+            (WingCombo, Point(216, 8)),
+            (HoverPaneColumns(hoverSite, 1, VerbsBB, VerbsColumns), Point(2, 38)),
+            (hoverPane, Point(72, 73))
+        ]
+    );
+
+ComposingMouse = ImagePane(ImportImage("chatmousebmp", false),
+                          [
+                            (
+                             StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                             Point(3, 3)
+                            )
+                          ]
+                         );
+
+ComposingText = ImagePane(ImportImage("chattextbmp", false),
+                          [
+                            (
+//                             StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                             StringPane(ChatRecipient, mySideColor, Point(100,17)),
+                             Point(3, 3)
+                            ),
+                            (
+                             StringPane(ChatText, mySideColor, Point(154,17), JustifyLeft, smallFont, true),
+//                             Point(78, 3)
+                             Point(112, 3)
+
+                            )
+                          ]
+                         );
+
+ComposingCommand = ImagePane(ImportImage("chatcommandbmp", true),
+                          [(
+                            StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                            Point(3, 3)
+                           ),
+                           (
+                            SwitchPane(CommandVerb,
+                                       [
+                                           (ImagePane(ImportImage("ackillbmp",    true), []), 1),
+                                           (ImagePane(ImportImage("accptbmp",     true), []), 2),
+                                           (ImagePane(ImportImage("acdefendbmp",  true), []), 3),
+                                           (ImagePane(ImportImage("acpickupbmp",  true), []), 4),
+                                           (ImagePane(ImportImage("acgotobmp",    true), []), 5),
+                                           (ImagePane(ImportImage("acrepairbmp",  true), []), 6),
+                                           (ImagePane(ImportImage("acjoinbmp",    true), []), 7),
+                                           (ImagePane(ImportImage("acstopbmp",    true), []), 8), //#320
+										   (ImagePane(ImportImage("achidebmp",    true), []), 9), //#321
+                                           (ImagePane(ImportImage("acminebmp",    true), []), 10),
+                                           (ImagePane(ImportImage("acbuildbmp",   true), []), 11)
+                                       ]),
+                             Point(78, 2)
+                           ),
+                           (
+                            StringPane(ChatText, mySideColor, Point(128,17), JustifyLeft, smallFont, true),
+                            Point(104, 3)
+                           )
+                          ]);
+
+ComposingShell = ImagePane(ImportImage("chatshellbmp", false),
+                          [
+                            (
+                             StringPane(ChatText, mySideColor, Point(229,17)),
+                             Point(3, 3)
+                            )
+                          ]
+                         );
+
+ComposingQuick = ImagePane(ImportImage("chatmousebmp", false),
+                          [
+                            (
+                             StringPane(ChatRecipient, mySideColor, Point(66,17)),
+                             Point(3, 3)
+                            )
+                          ]
+                         );
+
+ComposingPane =
+    SwitchPane(ComposeState,
+               [
+                   (ComposingMouse, 1),
+                   (ComposingText, 2),
+                   (ComposingCommand, 3),
+                   (ComposingShell, 4),
+                   (ComposingQuick, 5)
+               ]);
+
+
+ChatCompositionImage = PaneImage(ComposingPane, false, true);
+    
+///////////////////////////////////////////////////////
+//
+//          Chat History Pane
+//
+// Ksero 15:28 2005-03-04
+// was ChatListPane(Point(370, 68));
+// the second parameter to Point is the height of the chat area.
+// Should be 8 + 12 * ( number of chat lines)
+//
+// Cortex 2005-03-20
+// * increased ChatListPane-size
+// * changed background graphic to my modified one
+// * changed point(0,0) to point(0,20) (whatever that means)
+//
+// Ksero 2005-04-17
+// * restructured to use NumChatLines
+//
+// Cortex 2005#05#05:
+// + added changable ChatList for the loadout screen
+// * resized ChatListPanes so that scrollbar can be seen
+//
+//////////////////////////////////////////////////////
+
+chatListPane = ChatListPane(Point(355, Add(8,Multiply(12,NumChatLinesGlobal)) ) );
+
+CommPane =
+    ImagePane(
+        ImportImageFromFile("cortui_core_concommdisplay.png", false),
+        [
+            (chatListPane, Point(0,0))
+        ]
+    );
+	
+//////////////////////////////////////////////////////////////
+//
+//  Current sector
+// 
+//////////////////////////////////////////////////////////////	
+	
+// SectorName when in Flight
+	
+DefaultSectorNameImage = 
+	StringImage(
+		JustifyCenter,
+		160,
+		medVerdana,
+		Color(1,0,0),
+		SectorName
+	);
+	
+SectorNameImage = 
+	BlendImage(
+		DefaultSectorNameImage,
+		hudBlendMode);		
+
+// SectorName when in Base
+// (uses MyStation)
+	
+DefaultSectorNameInHangarImage = 
+	StringImage(
+		JustifyCenter,
+		160,
+		medVerdana,
+		Color(1, 1, 1),
+		GetSectorName(MyStation, OnEveryFrame)
+	);
+	
+SectorNameInHangarImage = 
+	BlendImage(
+			DefaultSectorNameInHangarImage,
+			hudBlendMode);	
+  
+LookingAtImage =
+    GroupImage([
+        BlendImage(
+            StringImage(
+                JustifyCenter,
+                160,
+                promptFont,
+                yellowText,
+                "Currently viewing:"
+            ),
+            hudBlendMode),
+        TranslateImage(SectorNameImage, Point(0, -14))
+    ]);
+
+LocationInHangarImage =
+    GroupImage([
+        BlendImage(
+            StringImage(
+                JustifyCenter,
+                160,
+                promptFont,
+                yellowText,
+                "Current location:"
+            ),
+            hudBlendMode),
+        TranslateImage(SectorNameInHangarImage, Point(0, -14))
+    ]);
+
+
+//// In Flight
+	
+LocationInCockpitImage =
+    GroupImage([
+        BlendImage(
+            StringImage(
+                JustifyCenter,
+                160,
+                promptFont,
+                yellowText,
+                "Current location:"
+            ),
+            hudBlendMode),
+        TranslateImage(SectorNameImage, Point(0, -14))
+    ]);
+
+LocationOnMapImage = LocationInCockpitImage;
+
+
+
+/////////////////////////////////
+//////
+//////	TURRETING
+//////
+/////////////////////////////////	
+
+PilotNameImage = 
+    BlendImage(
+		StringImage(
+				JustifyCenter,
+				160,
+				medVerdana,
+				Color(1, 0, 0),
+				GetName(Me, OnEveryFrame)
+			),
+        hudBlendMode
+	);
+
+TurretHeader = 
+	StringImage(
+                JustifyCenter,
+                160,
+                promptFont,
+                yellowText,
+                "Turret of:"
+            );
+		
+BigTurretTextImage =
+    GroupImage([
+        BlendImage(
+            TurretHeader,
+            hudBlendMode),
+        TranslateImage(PilotNameImage, Point(0, -14))
+    ]);
+
+TurretOfImage =
+    SwitchImage(
+        BoardState,
+        emptyImage,
+        [
+            (2, BigTurretTextImage)
+        ]
+    );
+
+InTurretPaneImage =
+    PaneImage(
+        SwitchPane(
+            BoardState,
+            [
+                (ImagePane(ImportImage ("hangarinturretbmp", false), []), 2)
+            ]
+        ),
+        false,
+        true
+    );
+        
+//////////////////////////////////
+//////
+//////	ORDERS
+//////
+/////////////////////////////////	
+			
+AcceptedOrderImage = 
+    GroupImage([
+        TranslateImage(
+            BlendImage(
+                ImportImage3D("comacceptbmp", yellowText, true),
+                hudBlendMode),
+            Point(-16, -13)),
+        BlendImage(        
+            StringImage(
+                JustifyLeft,
+                240,
+                promptFont,
+                yellowText,
+                AcceptedOrder
+            ),
+        hudBlendMode)
+    ]);
+
+	
+QueuedOrderImage = 
+    GroupImage([
+        TranslateImage(
+            BlendImage(
+                ImportImage3D("comqueuedbmp", Color(1,0,0), true),
+                hudBlendMode),
+            Point(-16, -13)),
+        BlendImage(
+            StringImage(
+                JustifyLeft,
+                240,
+                medVerdana,
+                Color(1,0,0),
+                QueuedOrder
+            ),
+        hudBlendMode)
+    ]);	
+	
+
+
+//////////////////////////////////
+//////
+//////	MINIMAP
+//////
+/////////////////////////////////	
+		
+SectorInfoPaneX = SectorInfoPane([]); // these are the icons and data.
+SectorOverviewFlag = 33536;
+SectorPane = SectorMapPane(SectorInfoPaneX, OverlayFlags, SectorOverviewFlag, []); //this is the actual map. 
+
+SectorImagePre =
+    PaneImage(
+        BlackPane(
+            AnimatedImagePane(
+                GroupImage([
+                    TranslateImage(
+                        SectorPane, 
+                        Point(9, 20)
+                    ),
+                    SectorInfoPaneX
+                ])
+            )
+        ),
+        false, 
+        true
+    );
+	
+SectorImageWidth = 
+	PointX(
+		ImageSize(
+			SectorImagePre
+		)
+	);	
+
+SectorMapBG =	
+	ImportImageFromFile("greytones/sectormapbg.png", false);
+
+minimapexpandbtn = 
+	ImportImageFromFile("greytones/minimapexpandbtn.png", false);
+		
+MinimapPanelCollapsed = 
+	GroupImage([
+		TranslateImage(minimapexpandbtn, Point(110,120)),
+		ImportImageFromFile("greytones/minimappanel.png", false)
+	]);
+	
+MinimapPanelExpanded = 
+	GroupImage([
+		TranslateImage(minimapexpandbtn, Point(170,120)),
+		ImportImageFromFile("greytones/minimappanelexpanded.png", false)
+	]);
+	
+MinimapPanel = 
+	SwitchImage(
+		SectorImageWidth,
+		MinimapPanelCollapsed,
+		[(PointX(ImageSize(MinimapPanelExpanded)),MinimapPanelExpanded)]
+	);
+	
+SectorImage = 
+	GroupImage([
+		SectorImagePre,
+		TranslateImage(SectorMapBG,Point(9,20)),
+		MinimapPanel
+		
+	]);
+
+
+////////////////////////////////////////////////
+//
+//          Inventory Pane
+//
+///////////////////////////////////////////////	
+
+InvTopImage = 
+	ImportImageFromFile("greytones/inventorytop.png", false);
+	
+InvLineImage = 
+	ImportImageFromFile("greytones/inventorylinebkgnd.png", false);
+
+InvBottomImage = 
+	ImportImageFromFile("greytones/inventorybottom.png", false);
+	
+InventoryTabImage = 	
+	ImportImageFromFile("greytones/inventorytab.png", false);
+
+ShipNameImage = StringImage(
+                    JustifyCenter,
+                    214,
+                    smallBoldFont, 
+                    Color(1, 1, 1),
+                    GetModelTypeDesc(Me, OnEveryFrame)
+                );
+
+
+// the height of the complete inventory image, as collected by the game engine thingymagoo.	
+InventoryHeight = 
+	PointY(
+		ImageSize(
+			InventoryImage()
+		)
+	);
+
+//debugging
+InventoryHeightStringImage = 
+	StringImage(
+		JustifyLeft,
+		80,
+		Win32Font("Verdana", 12, true, 0),
+		white,
+		NumberString(InventoryHeight)
+	);
+	
+ILH = 18; //the height of each line - must be same as image.
+IL = Divide(Subtract(InventoryHeight,Multiply(ILH,2)),ILH); //the number of lines.
+
+LN1 = SwitchImage(Min(IL,1),emptyImage,[(0, InvTopImage),(1, InvLineImage)]);
+LN2 = SwitchImage(Min(IL,2),emptyImage,[(1, InvTopImage),(2, InvLineImage)]);
+LN3 = SwitchImage(Min(IL,3),emptyImage,[(2, InvTopImage),(3, InvLineImage)]);
+LN4 = SwitchImage(Min(IL,4),emptyImage,[(3, InvTopImage),(4, InvLineImage)]);
+LN5 = SwitchImage(Min(IL,5),emptyImage,[(4, InvTopImage),(5, InvLineImage)]);
+LN6 = SwitchImage(Min(IL,6),emptyImage,[(5, InvTopImage),(6, InvLineImage)]);
+LN7 = SwitchImage(Min(IL,7),emptyImage,[(6, InvTopImage),(7, InvLineImage)]);
+LN8 = SwitchImage(Min(IL,8),emptyImage,[(7, InvTopImage),(8, InvLineImage)]);
+LN9 = SwitchImage(Min(IL,9),emptyImage,[(8, InvTopImage),(9, InvLineImage)]);
+LN10 = SwitchImage(Min(IL,10),emptyImage,[(9, InvTopImage),(10, InvLineImage)]);
+LN11 = SwitchImage(Min(IL,11),emptyImage,[(10, InvTopImage),(11, InvLineImage)]);
+LN12 = SwitchImage(Min(IL,12),emptyImage,[(11, InvTopImage), (12, InvLineImage)]);
+LN13 = SwitchImage(Min(IL,13),emptyImage,[(12, InvTopImage),(13, InvLineImage)]);
+LN14 = SwitchImage(Min(IL,14),emptyImage,[(13, InvTopImage),(14, InvLineImage)]);
+LN15 = SwitchImage(Min(IL,15),emptyImage,[(14, InvTopImage),(15, InvLineImage)]);
+LN16 = SwitchImage(Min(IL,16),emptyImage,[(15, InvTopImage),(16, InvLineImage)]);
+LN17 = SwitchImage(Min(IL,17),emptyImage,[(16, InvTopImage)]);
+
+InvBackgroundLines = 
+	GroupImage([
+		//InventoryHeightStringImage,
+		TranslateImage(InvBottomImage, Point(0,Subtract(ILH,PointY(ImageSize(InvBottomImage))))),
+		TranslateImage(LN1, Point(0,ILH)),
+		TranslateImage(LN2, Point(0,Multiply(2,ILH))),
+		TranslateImage(LN3, Point(0,Multiply(3,ILH))),
+		TranslateImage(LN4, Point(0,Multiply(4,ILH))),
+		TranslateImage(LN5, Point(0,Multiply(5,ILH))),
+		TranslateImage(LN6, Point(0,Multiply(6,ILH))),
+		TranslateImage(LN7, Point(0,Multiply(7,ILH))),
+		TranslateImage(LN8, Point(0,Multiply(8,ILH))),
+		TranslateImage(LN9, Point(0,Multiply(9,ILH))),
+		TranslateImage(LN10, Point(0,Multiply(10,ILH))),
+		TranslateImage(LN11, Point(0,Multiply(11,ILH))),
+		TranslateImage(LN12, Point(0,Multiply(12,ILH))),
+		TranslateImage(LN13, Point(0,Multiply(13,ILH))),
+		TranslateImage(LN14, Point(0,Multiply(14,ILH))),
+		TranslateImage(LN15, Point(0,Multiply(15,ILH))),
+		TranslateImage(LN16, Point(0,Multiply(16,ILH))),
+		TranslateImage(LN17, Point(0,Multiply(17,ILH)))
+	]);
+
+MergedInventoryPaneImage    = 
+	JustifyImage(
+		GroupImage([
+			TranslateImage(ShipNameImage,		Point(-5, Add(14,Subtract(ILH,PointY(ImageSize(InvBottomImage)))))),
+			TranslateImage(InventoryImage(),	Point(   0,  0)),
+			TranslateImage(InvBackgroundLines,  Point(   0, 0)),
+			TranslateImage(InventoryTabImage,	Point( -10,  4))
+		  ]),
+		 JustifyRight
+	);
+	
+////////////////////////////////////////////////
+//
+//          CommandPane Pane
+//
+///////////////////////////////////////////////
+
+CommandPane = 
+		Classic_CommandPane;
+		
+////////////////////////////////////////////////
+//
+//          Investments Pane
+//
+///////////////////////////////////////////////
+
+InvestmentsInfoPane = PartInfoPane();
+InvestmentsPane = PurchasesPane(InvestmentsInfoPane);
+
+moneyPane = ImagePane(ImportImage("creditboxbmp", false),
+                          [ 
+                            (
+                                StringPane( ConcatinatedString(NumberString(Money)," cr"), 
+                                            White, 
+                                            Point(90, 13), 
+                                            JustifyCenter, 
+                                            smallFont, 
+                                            true),
+                                Point(58, 0)
+                            ),
+                            (
+                                StringPane("CURRENT CREDITS", 
+                                            White, 
+                                            Point(160, 13), 
+                                            JustifyCenter, 
+                                            smallBoldFont, 
+                                            true),
+                                Point(31, 13)
+                            ),
+                            (
+                                StringPane( "", 
+                                            White, 
+                                            Point(100, 13), 
+                                            JustifyCenter, 
+                                            smallFont, 
+                                            true),
+                                Point(43, 26)
+                            )
+                          ]
+                         );
+
+						 
+						 
+						 
+////////////////////////////////////////////////
+//
+//          EJECT POD
+//
+///////////////////////////////////////////////
+
+DefaultEjectPodDisplayOn = 
+		GroupImage([ 
+			TranslateImage(
+				GaugeImage(
+					JustifyLeft, 
+					ImportImage("softgaugebmp", true), 
+					GetEndurance(Me, OnEveryFrame)
+				),
+				Point(66,10)
+			),
+			ImportImage("conejectpoddisplaybmp", false)
+		]);
+
+
+EjectPodImage  =
+	SwitchImage(
+		IsEjectPod(Me, OnEveryFrame),
+		emptyImage,
+		[(1, DefaultEjectPodDisplayOn
+		)]
+	);
+
+DeathBannerPane =
+    SwitchPane(
+        IsGhost,
+        [
+            (ImagePane(ImportImage("deathbannerbmp", false), []), 1)
+        ]
+    );
+
+TipTextImage =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medBoldVerdana, 
+        mySideColor, 
+        TipText
+    );
+
+//
+// yp - Your_Persona Bug10 (3 lines for status text) patch Aug-2-2006
+// start
+TipTextImage1 =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medVerdana, 
+        mySideColor, 
+        TipText1
+    );
+
+TipTextImage2 =
+    StringImage(
+        JustifyCenter,
+        600, 
+        smVerdana, 
+        mySideColor, 
+        TipText2
+    );
+//
+// yp - Your_Persona Bug10 (3 lines for status text) patch
+// end
+
+CriticalTip0Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText0
+    );
+CriticalTip1Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText1
+    );
+CriticalTip2Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText2
+    );
+CriticalTip3Image =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 0, 0), 
+        CriticalTipText3
+    );
+
+CriticalTipImage =
+    GroupImage([
+        CriticalTip0Image,
+        TranslateImage(CriticalTip1Image, Point(0, 14)),
+        TranslateImage(CriticalTip2Image, Point(0, 28)),
+        TranslateImage(CriticalTip3Image, Point(0, 42))
+    ]);
+
+LoadoutCriticalTipImage =
+    GroupImage([
+        CriticalTip0Image,
+        TranslateImage(CriticalTip1Image, Point(0, 14))
+    ]);
+
+ObserverTextImage =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medVerdana, 
+        mySideColor,
+        ConcatinatedString("Observer of ", GetName(Me, OnEveryFrame))
+    );
+
+TurretTextImage =
+    StringImage(
+        JustifyCenter,
+        600, 
+        medVerdana, 
+        mySideColor, 
+        ConcatinatedString("Turret of ", GetName(Me, OnEveryFrame))
+    );
+
+BoardTextImage =
+    SwitchImage(
+        BoardState,
+        emptyImage,
+        [
+            (1, ObserverTextImage),
+            (2, TurretTextImage)
+        ]
+    );
+
+VoteTextImage =
+    StringImage(
+        JustifyCenter,
+        620, 
+        medBoldVerdana, 
+        Color(1, 1, 1), 
+        CurrentVote
+    );
+
+backButtonPane = 
+    SoundButtonPane(
+        ImportImage("btnbackbmp", true), 
+        ButtonNormal, 
+        false, 
+        negativeButtonClickSoundId
+    );
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// NEW AUTOPILOT- AND VECTORLOCK-INDICATORS
+//
+// Cortex 2005-04-17:
+// + added imports for the new icons
+// (created a new block because they are used in the normal
+//  HUD and the map-mode)
+//
+//////////////////////////////////////////////////////////////////////////////
+
+cortVectorLockNormal = ImportImageFromFile("cortui_core_convectorlock.png", true);
+
+cortVectorLockOn = 
+    SwitchImage(
+        GetVectorLock(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, cortVectorLockNormal)
+        ]
+    );
+
+cortAutopilotNormal = ImportImageFromFile("cortui_core_conautopilot.png", true);
+
+cortAutopilotOnImage =
+    SwitchImage(
+        AutopilotOn,
+        emptyImage, 
+        [
+            (1, cortAutopilotNormal)
+        ]
+    );
+
+
+//////////////////////////////////////////////////////////////////
+///
+///  SOFTWARE HUD
+///
+//////////////////////////////////////////////////////////////////
+
+softText = Color(0.586, 0.578, 0.680);
+softTeamColor = ImportImage3D("softteamcolorbmp", hudColor, true);
+softExperience = 
+        StringImage(
+            JustifyCenter,
+            80,
+            medBoldVerdana,
+            Color(1, 1, 1),
+            NumberString(Experience));
+
+softThrustGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), playerThrottle);
+
+softThrustGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), playerThrottle);
+
+
+softThrust = 
+    SwitchImage(
+        0, //Flash,
+        softThrustGauge,
+        [
+            (0, softThrustGauge),
+            (1, softThrustGaugeHit)
+        ]
+    );
+
+softFuelGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetFuel(Me, OnEveryFrame));
+    
+softFuelGaugeHit = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetFuel(Me, OnEveryFrame));
+    
+softFuel = 
+    SwitchImage(
+        0, //Flash,
+        softFuelGauge,
+        [
+            (0, softFuelGauge),
+            (1, softFuelGaugeHit)
+        ]
+    );
+
+softAmmoGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetAmmo(Me, OnEveryFrame));
+
+softAmmoGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetAmmo(Me, OnEveryFrame));
+
+softAmmo = 
+    SwitchImage(
+        0, //Flash,
+        softAmmoGauge,
+        [
+            (0, softAmmoGauge),
+            (1, softAmmoGaugeHit)
+        ]
+    );
+
+softEnergyGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentEnergy(Me, OnEveryFrame));    
+
+softEnergyGaugeHit = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetPercentEnergy(Me, OnEveryFrame));    
+
+softEnergy = 
+    SwitchImage(
+        0, //Flash,
+        softEnergyGauge,
+        [
+            (0, softEnergyGauge),
+            (1, softEnergyGaugeHit)
+        ]
+    );
+
+softHullGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(Me, OnEveryFrame));    
+
+softHullGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetPercentHitPoints(Me, OnEveryFrame));
+
+softHull = 
+    SwitchImage(
+        Flash,
+        softHullGauge,
+        [
+            (0, softHullGauge),
+            (1, softHullGaugeHit)
+        ]
+    );
+
+softShieldGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(Me, OnEveryFrame));
+
+softShieldGaugeHit =
+    GaugeImage(JustifyLeft, ImportImage("softgaugehitbmp", true), GetPercentShields(Me, OnEveryFrame));
+
+softShield = 
+    SwitchImage(
+        Flash,
+        softShieldGauge,
+        [
+            (0, softShieldGauge),
+            (1, softShieldGaugeHit)
+        ]
+    );
+
+softSpeed = 
+    StringImage(
+        JustifyCenter,
+        55,
+        medVerdana,
+        softText,
+        ConcatinatedString(NumberString(GetSpeed(Me, OnEveryFrame)), " mps")
+);
+
+
+
+softRadOn = 
+    ImagePane(ImportImage("softrangedbmp", false), []);
+
+
+softRadarDetectPane = 
+    SwitchPane(
+                Detected,
+                [
+                    (softRadOn, 0)
+                ]
+               );
+
+VectorLockSoft   = ImportImage("softvectorbmp", false);
+
+softVectorLockOn = 
+    SwitchImage(
+        GetVectorLock(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, VectorLockSoft)
+        ]
+    );
+
+AutopilotSoft   = ImportImage("softautopilotbmp", false);
+
+softAutopilotOnImage =
+    SwitchImage(
+        AutopilotOn,
+        emptyImage, 
+        [
+            (1, AutopilotSoft)
+        ]
+    );
+
+CloakSoft   = ImportImage("softcloakbmp", false);
+
+softCloakOn = 
+    SwitchImage(
+        IsCloaked(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, CloakSoft)
+        ]
+    );
+
+softArtifactImage   = 
+        ImportImage("captureflaglbmp", true);
+
+softArtifact =
+    SwitchImage(
+        GotArtifact,
+        emptyImage,
+        [
+            (1, softArtifactImage)
+        ]
+    );
+
+softCaptureFlagImage =
+        ImportImage("captureflagrbmp", true);
+
+
+softCaptureFlag = 
+    SwitchImage(
+        GotFlag,
+        emptyImage,
+        [
+            (1, softCaptureFlagImage)
+        ]
+    );
+
+softSignatureImage = 
+    StringImage(
+        JustifyLeft,
+        75,
+        medVerdana,
+        softText,
+        ConcatinatedString("Sig ", NumberString(Signature))
+    );
+
+CenterHudSoftware = 
+    GroupImage([    
+        TranslateImage(softVectorLockOn, Point(150, 0)),
+        TranslateImage(softAutopilotOnImage, Point(49, 0)),
+        TranslateImage(softCloakOn, Point(235, 0)),
+        TranslateImage(softExperience, Point(-20, 22)),
+        TranslateImage(softTeamColor, Point(6, -1)),
+        TranslateImage(softShield, Point(53, 12)),
+        TranslateImage(softHull, Point(112, 12)),
+        TranslateImage(softAmmo, Point(171, 12)),
+        TranslateImage(softThrust, Point(230, 12)),
+        TranslateImage(softEnergy, Point(289, 12)),
+        TranslateImage(softFuel, Point(348, 12)),
+        TranslateImage(softSpeed, Point(405, 26)),
+        TranslateImage(PaneImage(softRadarDetectPane, false, true), Point(292, 0)),
+        TranslateImage(softArtifact, Point(432, 5)),
+        TranslateImage(softCaptureFlag, Point(467, 5)),
+        TranslateImage(softSignatureImage, Point(406, 14)),
+        ImportImage("softhudbgbmp", true)
+    ]);
+
+
+//////////////////////////////////////////////////////////////////
+///
+///  HUD STYLE SWITCH IMAGE
+///
+//////////////////////////////////////////////////////////////////
+
+
+softCenterHudDisplay = CenterHudSoftware;
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Normal Target Hud
+//
+//////////////////////////////////////////////////////////////////////////////
+
+
+TargetName =
+        StringImage(
+            JustifyCenter, 
+            160,
+            medVerdana,
+            targetHudColor,
+            ConcatinatedString( GetName(Target, OnEveryFrame), ConcatinatedString(": ", GetModelTypeDesc(Target, OnEveryFrame)))
+        );
+
+
+TargetRangeString = 
+    SwitchString(
+        GetRange(Target, OnEveryFrame),
+        ConcatinatedString("RANGE: ", NumberString(GetRange(Target, OnEveryFrame))),
+        [
+            (-1, ConcatinatedString("LOCATION:", GetSectorName(Target, OnEveryFrame)))
+        ]
+    );
+
+        
+
+TargetRange =
+    StringImage(
+        JustifyLeft,
+        150,
+        smVerdana,
+        targetHudColor,
+        TargetRangeString
+    ); 
+
+TargetInRangeImage = 
+        ImportImage("turretrangebmp", true);
+
+TargetInRange =     
+    SwitchImage(
+        TargetInRangeFlag,
+        emptyImage,
+        [
+            (1, TargetInRangeImage)
+        ]
+    );
+
+//TargetDesc = 
+//    StringImage(
+//      JustifyRight,
+//      80,
+//      smVerdana,
+//      targetHudColor,
+//      GetModelTypeDesc(Target, OnEveryFrame)
+//    );
+
+
+TargetSpeed =
+    StringImage(
+        JustifyRight,
+        150,
+        smVerdana,
+        targetHudColor,
+        ConcatinatedString("SPEED: ", NumberString(GetSpeed(Target, OnEveryFrame)))
+    );  
+
+TargetArmor = 
+    StringImage(
+        JustifyRight,
+        60,
+        medVerdana,
+        targetHudColor,
+        "ARMOR"
+    );
+
+TargetShield = 
+    StringImage(
+        JustifyLeft,
+        60,
+        medVerdana,
+        targetHudColor,
+        "SHIELD"
+    );
+
+
+TargetShieldGauge =
+    BlendImage(
+            GaugeImageRect(
+                JustifyBottom,
+                ImportImage("targetshieldgaugebmp", true),
+                Rect(45, 26, 84, 101),
+                true,
+                GetPercentShields(Target, OnEveryFrame)
+        ),
+        hudBlendMode
+);
+
+TargetHullGauge =
+    BlendImage(
+            GaugeImageRect(
+                JustifyBottom,
+                ImportImage("targethullgaugebmp", true),
+                Rect(44, 26, 83, 101),
+                true,
+                GetPercentHitPoints(Target, OnEveryFrame)
+        ),
+        hudBlendMode
+);
+
+
+//TargetHud = 
+//        BlendImage(   
+//          ImportImage3D("targethudbmp", targetHudColor, true),
+//          hudBlendMode
+//        );
+    
+TargetOval =
+        BlendImage(
+            ImportImage3D("targetovalbmp", white, true),
+            hudBlendMode
+    );
+
+
+TargetOvalColor = ImportImage3D("targetovalcolorbmp", targetHudColor, true);
+        
+TargetOvalWord1 = 
+  BlendImage(
+            ImportImage3D("targetovalword1bmp", white, true),
+            hudBlendMode
+        );
+
+TargetOvalWord2 = 
+        BlendImage(
+            ImportImage3D("targetovalword2bmp", white, true),
+            hudBlendMode
+        );
+
+//cortTargetOvalColor = ImportImageFromFile3D("cortui_core_targetovalcolor.png", true);
+cortTargetOvalColor = ImportImage3D("targetovalcolorbmp", targetHudColor, true);
+
+cortTargetOvalWord1 = 
+  BlendImage(
+//            ImportImageFromFile3D("cortui_core_targetovalword1.png", true),
+            ImportImage3D("targetovalword1bmp", white, true),
+            hudBlendMode
+        );
+
+cortTargetOvalWord2 = 
+        BlendImage(
+//            ImportImageFromFile3D("cortui_core_targetovalword2.png", true),
+            ImportImage3D("targetovalword2bmp", white, true),
+            hudBlendMode
+        );
+
+TargetExperienceOnImage = 
+    GroupImage([
+            StringImage(
+                JustifyCenter,
+                80,
+                medBoldVerdana,
+                Color(0, 0, 0),
+                NumberString(TargetExperience)),
+            TranslateImage(
+                BlendImage(
+                    ImportImage3D("targetexperiencebmp", white, true),
+                    hudBlendMode),
+                Point(25, -21)
+            )
+            ]);
+
+TargetExperienceImage =
+    SwitchImage(
+        GetModelType(Target, OnEveryFrame),
+        emptyImage,
+        [
+            (0, TargetExperienceOnImage)
+        ]
+    );
+
+DefaultNormalTargetDisplay = 
+    VisibleImage(GroupImage(
+        [
+            
+            TranslateImage(DetectionRange, Point(180,113)), //Spunky
+			TranslateImage(TargetShieldGauge, Point(367, 33)),
+            TranslateImage(TargetHullGauge, Point(235, 33)),
+            TranslateImage(
+                GeoImage(
+                    targetGeo,
+                    Rect(0, 0, 96, 96),
+                    targetCamera,
+                    true
+                ), 
+                Point(270, 9)
+            ),
+            TranslateImage(TargetExperienceImage, Point(280, 110)),
+            TranslateImage(TargetOvalWord1, Point(193, 8)),
+            TranslateImage(TargetOvalWord2, Point(320, 8)),
+            TranslateImage(TargetOval, Point(192, -75)),
+            TranslateImage(TargetOvalColor, Point(256, -2)),
+            TranslateImage(TargetName, Point(240, 125)),
+            TranslateImage(TargetRange, Point(400, 33)),
+            TranslateImage(TargetSpeed, Point(92, 33)),
+            TranslateImage(TargetArmor, Point(168, 73)),
+            TranslateImage(TargetShield, Point(410, 73)),
+            TranslateImage(TargetInRange, Point(200, 90))
+            ]
+    
+    ), IsNotNull(Target, OnEveryFrame));
+
+
+/////////////////////////////////////////////////////////////
+//
+//  SOFTWARE TARGET HUD
+//
+////////////////////////////////////////////////////////////
+
+softTargetTeamColor = ImportImage3D("softtargetteamcolorbmp", targetHudColor, true);
+
+softTargetExperienceOn = 
+        StringImage(
+                JustifyCenter,
+                80,
+                medBoldVerdana,
+                Color(1, 1, 1),
+                NumberString(TargetExperience));
+
+softTargetExperience =
+    SwitchImage(
+        GetModelType(Target, OnEveryFrame),
+        emptyImage,
+        [
+            (0, softTargetExperienceOn)
+        ]
+    );
+
+softTargetName =
+        StringImage(
+            JustifyLeft, 
+            130,
+            medVerdana,
+            softText,
+            GetName(Target, OnEveryFrame)
+        );
+
+SectorPatchImage = ImportImage("sectorpatchbmp", false);
+
+softTargetLocationImage = 
+    SwitchImage(
+        GetRange(Target, OnEveryFrame),
+        emptyImage,
+        [
+            (-1, SectorPatchImage)
+        ]
+    );
+
+softTargetRangeString = 
+    SwitchString(
+        GetRange(Target, OnEveryFrame),
+        NumberString(GetRange(Target, OnEveryFrame)),
+        [
+            (-1, GetSectorName(Target, OnEveryFrame))
+        ]
+    );
+
+softTargetRange =
+    StringImage(
+        JustifyLeft,
+        150,
+        medVerdana,
+        softText,
+        softTargetRangeString
+    );      
+    
+softTargetDesc = 
+    StringImage(
+        JustifyLeft,
+        130,
+        medVerdana,
+        softText,
+        GetModelTypeDesc(Target, OnEveryFrame)
+    );
+
+softTargetSpeed =
+    StringImage(
+        JustifyLeft,
+        150,
+        medVerdana,
+        softText,
+        ConcatinatedString(NumberString(GetSpeed(Target, OnEveryFrame)), " mps" )
+    );  
+
+softTargetShield =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(Target, OnEveryFrame));
+
+softTargetHull =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(Target, OnEveryFrame));
+
+softTargetInRangeImage = 
+        ImportImage("softturretrangebmp", true);
+
+softTargetInRange =     
+    SwitchImage(
+        TargetInRangeFlag,
+        emptyImage,
+        [
+            (1, softTargetInRangeImage)
+        ]
+    );
+
+
+
+/////////////////////////////////////////////////////////////
+//
+//  ADDITIONAL CORTUI SOFTWARE HUD MODES
+//
+////////////////////////////////////////////////////////////
+
+
+ModifiedSoftwareTargetDisplayRaveenStyle = 
+    VisibleImage(
+        TranslateImage(
+            GroupImage(
+                [
+                TranslateImage(softTargetExperience, Point(-10, 82)),
+                TranslateImage(softTargetTeamColor, Point(15, 59)),
+                TranslateImage(softTargetShield, Point(6, 34)),
+                TranslateImage(softTargetHull, Point(6, 14)),
+                TranslateImage(softTargetName, Point(255, 88)),
+                TranslateImage(softTargetDesc, Point(255, 68)),
+                TranslateImage(softTargetRange, Point(287, 48)),
+                TranslateImage(softTargetSpeed, Point(287, 28)),
+                TranslateImage(
+                    GeoImage(
+                        targetGeo,
+                        Rect(0, 0, 96, 96),
+                        targetCamera,
+                        true
+                    ), 
+                    Point(107, 4)
+                ),
+                TranslateImage(cortTargetOvalWord1, Point(28, -6)),
+                TranslateImage(cortTargetOvalWord2, Point(155, -6)),
+                TranslateImage(TargetOval, Point(27, -86)),
+                TranslateImage(cortTargetOvalColor, Point(91, -13)),
+                ImportImageFromFile("cortui_core_softtargetbg.png", true)
+                ]
+            ),
+            Point(125, 30)
+        ),
+        IsNotNull(Target, OnEveryFrame)
+    );
+
+
+
+/////////////////////////////////////////////////////////////
+//
+//  SOFTWARE HUD STYLE SWITCH IMAGE
+//
+////////////////////////////////////////////////////////////
+
+TargetDisplay = ModifiedSoftwareTargetDisplayRaveenStyle;
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// ADDITIONAL WEAPON RANGE INDICATOR
+//
+// Cortex 14:44 CEST 2005-04-20:
+// + added weapon range indicator
+//
+//////////////////////////////////////////////////////////////////////////////
+
+/*
+cortMaxDisplayedTargetDistanceGreen  = 500;
+cortMaxDisplayedTargetDistanceYellow = 1000;
+cortMaxDisplayedTargetDistanceRed    = 5000;
+
+// (x - Green) / (Yellow - Green)
+cortTargetDistanceProcentualYellow = Divide(Subtract(GetRange(Target, OnEveryFrame), cortMaxDisplayedTargetDistanceGreen), Subtract(cortMaxDisplayedTargetDistanceYellow, cortMaxDisplayedTargetDistanceGreen));
+
+// (x - Yellow) / (Red - Yellow)
+cortTargetDistanceProcentualRed = Divide(Subtract(GetRange(Target, OnEveryFrame), cortMaxDisplayedTargetDistanceYellow), Subtract(cortMaxDisplayedTargetDistanceRed, cortMaxDisplayedTargetDistanceYellow));
+
+cortWeaponRangeIndicator =
+	VisibleImage(
+		VisibleImage(
+			GroupImage(
+	    		[
+				ImportImageFromFile("cortui_core_weaponrangeindicatorgauge_green.png", true),
+				TranslateImage(GaugeImage(JustifyLeft, ImportImageFromFile("cortui_core_weaponrangeindicatorgauge_yellow.png", true), cortTargetDistanceProcentualYellow), Point(18, 0)),
+				TranslateImage(GaugeImage(JustifyLeft, ImportImageFromFile("cortui_core_weaponrangeindicatorgauge_red.png", true), cortTargetDistanceProcentualRed), Point(36, 0))
+				]
+			),
+			IsNotNull(Target, OnEveryFrame)
+		),
+		IsNotNull(Max(GetRange(Target, OnEveryFrame), 0), OnEveryFrame)
+	);
+*/
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// CORTUI VERSION INFORMATION
+//
+// Cortex 2005#05#05:
+// + added CortUI version information at the lower right corner of the maps
+//
+//////////////////////////////////////////////////////////////////////////////
+
+cortVersionInformation =
+    StringImage(
+        JustifyRight,
+        400,
+        medVerdana,
+        Color(0.586, 0.578, 0.680),
+        cortUIVersionString
+	);
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// ADDITIONAL DISPLAYS FOR MAP-MODE
+//
+// Ksero 14:22 2005-03-04:
+// + added Autopilot-indicator in in-flight command mode
+//
+// Cortex 2005#04#17:
+// + added various additional displays
+//
+// Cortex 2005#05#05:
+// + appended "(turret)" to the ship type when you're turreting
+//
+// Cortex 2005#07#08:
+// + added speed gauge for current target
+//
+// Cortex 2005#08#16:
+// - removed speed for non-moving targets
+// + added experience display for players 
+//
+//////////////////////////////////////////////////////////////////////////////
+
+cortText = Color(0.586, 0.578, 0.680);
+
+cortTargetExperienceOff =
+    StringImage(
+        JustifyLeft, 
+        200,
+        medBoldVerdana,
+        GetSideColor(Target, OnEveryFrame),
+        GetName(Target, OnEveryFrame)
+    );
+
+cortTargetExperienceOn =
+    StringImage(
+        JustifyLeft, 
+        200,
+        medBoldVerdana,
+        GetSideColor(Target, OnEveryFrame),
+        ConcatinatedString(ConcatinatedString(ConcatinatedString(GetName(Target, OnEveryFrame), " ("), NumberString(TargetExperience)), "%)")
+    );
+
+cortTargetName =
+    SwitchImage(
+        GetModelType(Target, OnEveryFrame),
+        cortTargetExperienceOff,
+        [
+            (0, cortTargetExperienceOn)
+        ]
+    );
+
+cortTargetRangeLabel = 
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Target range:"
+    );
+	
+cortTargetRangeString = 
+    SwitchString(
+        GetRange(Target, OnEveryFrame),
+        ConcatinatedString(NumberString(GetRange(Target, OnEveryFrame)), "m"),
+        [
+            (-1, GetSectorName(Target, OnEveryFrame))
+        ]
+    );
+
+cortTargetRange =
+    StringImage(
+        JustifyLeft,
+        150,
+        medVerdana,
+        cortText,
+        cortTargetRangeString
+    );      
+
+cortTargetSpeedLabel = 
+     SwitchImage(
+        GetModelType(Target, OnEveryFrame),
+        emptyImage,
+        [
+			(0, StringImage(
+					JustifyLeft, 
+					130,
+					medVerdana,
+					cortText,
+					"Target speed:"
+				)
+			)
+		]
+	);
+	
+cortTargetSpeed =
+    SwitchImage(
+        GetModelType(Target, OnEveryFrame),
+        emptyImage,
+        [
+            (0, StringImage(
+			        JustifyLeft,
+			        150,
+			        medVerdana,
+			        cortText,
+			        ConcatinatedString(NumberString(GetSpeed(Target, OnEveryFrame)), " mps")
+   				 )
+			)
+        ]
+    );
+	
+cortTargetShieldsLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Target shields:"
+    );
+
+cortTargetShieldsGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(Target, OnEveryFrame));
+
+cortTargetHullLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Target hull:"
+    );
+
+cortTargetHullGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(Target, OnEveryFrame));
+	
+cortTargetGroup = 	
+	VisibleImage(
+		GroupImage(
+			[
+			TranslateImage(cortTargetName,  Point(0, 22)),
+			TranslateImage(cortTargetShieldsLabel, Point(0,  11)),
+			TranslateImage(cortTargetShieldsGauge, Point(80, 3)),
+			TranslateImage(cortTargetHullLabel,    Point(0,  0)),
+			TranslateImage(cortTargetHullGauge,    Point(80, -8)),
+			TranslateImage(cortTargetRangeLabel, Point(0, -11)),
+			TranslateImage(cortTargetRange, Point(80, -11)),
+			TranslateImage(cortTargetSpeedLabel, Point(0, -22)),
+			TranslateImage(cortTargetSpeed, Point(80,-22))
+			]
+		),
+		IsNotNull(Target, OnEveryFrame)
+	);	
+	
+CommandModeTargetGroup = 
+	cortTargetGroup;
+	
+cortShipLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Ship:"
+    );
+
+cortShipValuePilot = 
+    StringImage(
+        JustifyLeft,
+        300,
+        medVerdana,
+        cortText,
+        GetModelTypeDesc(Me, OnEveryFrame)
+	);
+
+cortShipValueTurret =
+    StringImage(
+        JustifyLeft,
+        300,
+        medVerdana,
+        cortText,
+        ConcatinatedString(GetModelTypeDesc(Me, OnEveryFrame), " (turret)")
+	);
+
+cortShipValue = 
+    SwitchImage(
+        BoardState,
+        emptyImage,
+        [
+        	(0, cortShipValuePilot),
+            (2, cortShipValueTurret)
+        ]
+    );
+
+cortShieldsLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Shields:"
+    );
+
+cortShieldsGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(Me, OnEveryFrame));
+
+cortHullLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Hull:"
+    );
+
+cortHullGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(Me, OnEveryFrame));
+
+cortEnduranceLabel =
+	GroupImage([
+	    TranslateImage(
+			StringImage(
+		        JustifyLeft, 
+		        130,
+		        medVerdana,
+		        cortText,
+		        "O  :"
+			),
+			Point(0, 0)
+		),
+	    TranslateImage(
+		    StringImage(
+		        JustifyLeft, 
+		        130,
+		        medVerdana,
+		        cortText,
+		        "2"
+			),
+			Point(8, -4)
+		)
+	]);
+
+cortEnduranceGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetEndurance(Me, OnEveryFrame));
+
+cortEnergyLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Energy:"
+    );
+
+cortEnergyGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentEnergy(Me, OnEveryFrame));
+
+cortAmmoLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Ammo:"
+    );
+
+cortAmmoGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetAmmo(Me, OnEveryFrame));
+
+cortFuelLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Fuel:"
+    );
+
+cortFuelGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetFuel(Me, OnEveryFrame));
+
+cortThrustLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Thrust:"
+    );
+
+cortThrustGauge =
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), playerThrottle);
+
+cortSpeedLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Speed:"
+    );
+
+cortSpeedValue = 
+    StringImage(
+        JustifyRight,
+        75,
+        medVerdana,
+        cortText,
+        NumberString(GetSpeed(Me, OnEveryFrame))
+	);
+
+cortSpeedPostfix = 
+    StringImage(
+        JustifyLeft,
+        30,
+        medVerdana,
+        cortText,
+        "mps"
+    );
+
+cortSigLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Sig:"
+    );
+
+cortSigValue = 
+    StringImage(
+        JustifyRight,
+        75,
+        medVerdana,
+        cortText,
+        NumberString(Signature)
+    );
+
+cortSigPostfix = 
+    StringImage(
+        JustifyLeft,
+        30,
+        medVerdana,
+        cortText,
+        "%"
+    );
+
+cortKillbonusLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "KB:"
+    );
+
+cortKillbonusValue = 
+    StringImage(
+        JustifyRight,
+        75,
+        medVerdana,
+        cortText,
+        NumberString(Experience)
+    );
+
+cortKillbonusPostfix = 
+    StringImage(
+        JustifyLeft,
+        30,
+        medVerdana,
+        cortText,
+        "%"
+    );
+
+cortKillbonusValueAndPostfixLeftAligned = 
+    StringImage(
+        JustifyLeft,
+        75,
+        medVerdana,
+        cortText,
+        ConcatinatedString(NumberString(Experience), " %")
+    );
+
+cortShipDisplays = 
+	GroupImage([
+		TranslateImage(cortEnergyLabel,      Point(0,  0)),
+		TranslateImage(cortEnergyGauge,      Point(50, -8)),
+		TranslateImage(cortAmmoLabel,        Point(0,  -12)),
+		TranslateImage(cortAmmoGauge,        Point(50, -20)),
+		TranslateImage(cortFuelLabel,        Point(0,  -24)),
+		TranslateImage(cortFuelGauge,        Point(50, -32))
+	]);
+
+cortPodDisplays =
+	GroupImage([
+		TranslateImage(cortEnduranceLabel,      Point(0,  0)),
+		TranslateImage(cortEnduranceGauge,      Point(50, -8))
+	]);
+
+cortCommandModeEyeImage = 
+	SwitchImage(
+			Detected,
+			emptyImage,
+			[
+				(0, ImportImage("radonbmp", false))
+			]
+		);
+		
+cortCommandModeCloakImage = 
+	SwitchImage(
+		IsCloaked(Me, OnEveryFrame),
+		emptyImage,
+		[
+			(1, ImportImage("concloakbmp", true))
+		]
+	);		
+
+cortCommandModeIcons =	
+	GroupImage([
+		TranslateImage(cortAutopilotOnImage, Point(2, 2)), // 32x28
+		TranslateImage(cortVectorLockOn, Point(0, 0)), //32x32
+		TranslateImage(cortCommandModeEyeImage, Point(24, -50)), //128x128
+		TranslateImage(cortCommandModeCloakImage, Point(10, -34)) //96x96
+	]);
+
+CommandModeIcons = 
+	cortCommandModeIcons;
+	
+cortStationShieldsLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Station Shields:"
+    );
+
+cortStationShieldsGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentShields(MyStation, OnEveryFrame));
+
+cortStationHullLabel =
+    StringImage(
+        JustifyLeft, 
+        130,
+        medVerdana,
+        cortText,
+        "Station Hull:"
+    );
+
+cortStationHullGauge = 
+    GaugeImage(JustifyLeft, ImportImage("softgaugebmp", true), GetPercentHitPoints(MyStation, OnEveryFrame));
+
+cortStationName =	
+	StringImage(
+		JustifyLeft,
+		250,
+		medBoldVerdana,
+		GetSideColor(MyStation, OnEveryFrame),
+		ConcatinatedString(GetName(MyStation, OnEveryFrame), (ConcatinatedString(" in ", GetSectorName(MyStation, OnEveryFrame))))
+	);
+	
+cortCommandModeInfo = 
+	GroupImage([
+		TranslateImage(CommandModeIcons, Point(0,-5)),
+		TranslateImage(cortShipLabel,        Point(0,  -10)),
+		TranslateImage(cortShipValue,        Point(49, -10)),
+		TranslateImage(cortShieldsLabel,     Point(0,  -22)),
+		TranslateImage(cortShieldsGauge,     Point(50, -30)),
+		TranslateImage(cortHullLabel,        Point(0,  -34)),
+		TranslateImage(cortHullGauge,        Point(50, -42)),
+		TranslateImage(
+			SwitchImage(
+		        IsEjectPod(Me, OnEveryFrame),
+				emptyImage,
+				[
+					(0, TranslateImage(cortShipDisplays, Point(0, 0))),
+					(1, TranslateImage(cortPodDisplays, Point(0, -12)))
+				]
+			),
+			Point(0, -46)
+		),
+		TranslateImage(cortThrustLabel,      Point(0,  -82)),
+		TranslateImage(cortThrustGauge,      Point(50, -90)),
+		TranslateImage(cortSpeedLabel,       Point(0,  -94)),
+		TranslateImage(cortSpeedValue,       Point(5,  -94)),
+		TranslateImage(cortSpeedPostfix,     Point(82, -94)),
+		TranslateImage(cortSigLabel,         Point(0,  -106)),
+		TranslateImage(cortSigValue,         Point(5,  -106)),
+		TranslateImage(cortSigPostfix,       Point(82, -106)),
+		TranslateImage(cortKillbonusLabel,   Point(0,  -118)),
+		TranslateImage(cortKillbonusValue,   Point(5,  -118)),
+		TranslateImage(cortKillbonusPostfix, Point(82, -118)),
+		TranslateImage(CommandModeTargetGroup, 	 Point(0, -180))
+	]);
+	
+cortCommandModeInfoBase = 
+	GroupImage([
+		TranslateImage(cortStationName,							  Point(0,-50)),	
+		TranslateImage(cortStationShieldsLabel,					  Point(0,-62)),
+		TranslateImage(cortStationShieldsGauge,					  Point(100,-70)),
+		TranslateImage(cortStationHullLabel,					  Point(0,-74)),
+		TranslateImage(cortStationHullGauge,					  Point(100,-82)),
+		TranslateImage(cortShipLabel,                             Point(0,  -90)),
+		TranslateImage(cortShipValue,                             Point(49, -90)),
+		TranslateImage(cortKillbonusLabel,                        Point(0,  -102)),
+		TranslateImage(cortKillbonusValueAndPostfixLeftAligned,   Point(49, -102))
+	]);
+
+/////////////////////////////////////////////////////////////
+//
+//  GAME STATE
+//
+////////////////////////////////////////////////////////////
+
+gameStateCloseButton = SoundButtonPane(ImportImage("btnclosepanebmp", true), ButtonNormal, false, negativeButtonClickSoundId);
+gameStateContainer = GameStateContainer(smallFont, smallFont, gameStateCloseButton);
+gameStateImage     =
+    JustifyImage(
+        GroupImage([
+            TranslateImage(
+                PaneImage(BlackPane(gameStateCloseButton), false, true),
+                Point(-23, -20)
+            ),
+            JustifyImage(GameStateImage(gameStateContainer), JustifyRight | JustifyTop)
+        ]),
+        JustifyLeft | JustifyYCenter
+    );
+
+RecipientsVisibleOM = 6;
+
+//////////////////////////////////////////////////////////////
+//
+//  LIVES COUNTER & COUNTDOWN & KILL COUNTER
+//
+//////////////////////////////////////////////////////////////
+
+LivesOnImage = 
+    GroupImage(
+        [
+            TranslateImage(StringImage(
+                            JustifyCenter,
+                            80,
+                            medBoldVerdana,
+                            Color(1, 1, 1),
+                            ConcatinatedString(NumberString(Lives), " lives")), Point(18, 20)),
+            ImportImage("livesbmp", true)
+        ]);
+
+LivesImage = 
+    SwitchImage(
+        LivesOn,
+        emptyImage,
+        [
+            (1, LivesOnImage)
+        ]
+    );
+
+CountdownOn = ModifiableNumber(0);
+
+CountdownOnImage = 
+                ImportImage("timebmp", true);
+
+
+
+CountdownImage = 
+    SwitchImage(
+        CountdownOn,
+        emptyImage,
+        [
+            (1, CountdownOnImage)
+        ]
+    );
+
+KillsOnImage = 
+    GroupImage(
+        [
+            TranslateImage(
+                StringImage(
+                        JustifyCenter,
+                        80,
+                        medBoldVerdana,
+                        Color(1, 1, 1),
+                        ConcatinatedString(NumberString(Kills), " kills")),
+                Point(15, 20)),
+            ImportImage("hudkillsbmp", true)
+        ]);
+
+
+
+KillsImage = 
+    SwitchImage(
+        KillsOn,
+        emptyImage,
+        [
+            (1, KillsOnImage)
+        ]
+    );
+
+
+//////////////////////////////////////////////////////////////
+//
+//  Ripcord countdown
+//
+//////////////////////////////////////////////////////////////
+
+RipcordCountdownImage = 
+    SwitchImage(
+        IsRipcording(Me, OnEveryFrame),
+        emptyImage,
+        [
+            (1, 
+                StringImage(
+                    JustifyCenter,
+                    150,
+                    lgBoldVerdana,
+                    softText,
+                    ConcatinatedString("Ripcord in: ", NumberString(GetRipcordTimeLeft(Me, OnEveryFrame)))
+                )
+            )
+        ]
+    );
+
+//////////////////////////////////////////////////////////////
+//
+// Actual dialogs
+//
+// Ksero 2005-03:
+// + added documentation
+//
+// Cortex 2005-04-17:
+// * new map-mode UI is used
+// * moved base status display
+// * moved CommPane (chat display)
+// + ripcord time is now shown in map-mode as well
+// * moved the software HUD information display to not overlap
+//   the chat
+// - removed the base status display from the loadout screen
+//
+// Ksero 2005-04-17
+// * restructured to use common parameter NumChatLines
+// * adjusted positions for new, shorter command pane
+//
+// Cortex 2005#05#05:
+// * all panes are now created ahead of the dialogs definition
+//   to improve readability and maintainability
+// * merged the composite images of inventory and investments, they
+//   are now passed to the dialog definition as one pane
+// + improved documentation of console mode flags
+// + added (inactive) code to display console mode flags in the game
+// * reordered and repositioned all windows
+// * changed console mode flags for various windows (for instance
+//   to show various displays during launch animation)
+// * splitted inventory and minimap to display them differently
+//   depending on console mode flags (e.g. to move minimap to the
+//   border at the map, but not in the cockpit)
+// * splitted normal chat display and loadout chat display to show
+//   less lines at the loadout screen than in the cockpit/hangar/map
+// - removed accepted and queued order (I think they're useless)
+// - removed 'back' button at the map (can be done with F3 and is
+//   now obscured by the minimap anyway)
+// + added CortUI version information
+// * improved indentation to improve readability and maintainability
+//
+// Cortex 2005#08#16:
+// * scrollbar for main chat display can now optionally be turned off
+// * moved map info to the left to make room for long callsigns with exp display
+// + base status is now shown on map in base as well
+// + orders are now shown in the hangar and on map in base
+//
+// Cortex 2005#12#27:
+// * the map-mode displays very long names correctly now (text width
+//   155->200, moved 20 to the right)
+// * the minimap has been moved a bit to be symmetrical with the loadout
+//   window
+// * the targeting view has been moved three pixels up for the new software
+//   HUD mode
+//
+//////////////////////////////////////////////////////////////
+
+// General remarks:
+// 	  * StyleHUD==1 ==> software / StyleHUD==0 ==> normal
+//    * height(softcenterhud) = 29
+//    * height(criticaltipimage) = 56
+
+// Position calculations:
+// 	  * SoftCenterHudDisplayOffset = -35 * 12*NumChatLinesGlobal			// if software HUD (normal HUD: unused)
+//    * CriticalTipImageYOffset    = -50 * 12*NumChatLinesGlobal			// if normal HUD
+//			 						 -80 * 12*NumChatLinesGlobal			// if software HUD
+//    * VoteTextImageYOffset       = -85 * 12*NumChatLinesGlobal			// if normal HUD
+//							  	   = -95 * 12*NumChatLinesGlobal			// if software HUD
+
+SoftCenterHudDisplayYOffset				= Subtract(-35, Multiply(12, NumChatLinesGlobal));
+CriticalTipImageYOffset_SoftwareHud		= Subtract(-80, Multiply(12, NumChatLinesGlobal));
+VoteTextImageYOffset_SoftwareHud		= Subtract(-95, Multiply(12, NumChatLinesGlobal));
+
+CriticalTipImage_Adjusted = TranslateImage(CriticalTipImage, Point(   0, CriticalTipImageYOffset_SoftwareHud));
+
+VoteTextImage_Adjusted = TranslateImage(VoteTextImage, Point(   0, VoteTextImageYOffset_SoftwareHud));
+
+CommandPaneImage			      = PaneImage(CommandPane, false, true);
+TeamPaneImage				      = PaneImage(TeamPanePane, false, true);
+TeleportPaneImage			      = PaneImage(TeleportPane, false, true);
+MoneyPaneImage				      = PaneImage(moneyPane, false, true);
+InvestmentsInfoPaneImage	      = PaneImage(InvestmentsInfoPane, false, true);
+InvestmentsPaneImage		      = PaneImage(InvestmentsPane, false, true);
+cortCommPaneImageBasic		      = PaneImage(CommPane, false, true);
+CuttingRect                       = Rect(0, 0, 355, 125);
+cortCommPaneImageWithoutScrollbar = PaneImage(BlackPane(ImagePane(ClipImage(cortCommPaneImageBasic, CuttingRect), [])), false, true);
+cortCommPaneImageWithScrollbar    = cortCommPaneImageBasic;
+cortCommPaneImage			      = SwitchImage(
+								       ShowScrollbarOnCockpitChat,
+								       cortCommPaneImageWithoutScrollbar,
+								       [(1, cortCommPaneImageWithScrollbar)]
+							        );
+DeathBannerPaneImage		      = PaneImage(DeathBannerPane, false, true);
+SoftCenterHudDisplayImage	      = VisibleImage(softCenterHudDisplay, ShowCenterHUD);
+TargetDisplayImage			      = VisibleImage(TargetDisplay, ShowTargetHUD);
+MergedInvestmentsPaneImage  = GroupImage([
+									TranslateImage(MoneyPaneImage,				Point(  33, 0)),
+									TranslateImage(InvestmentsInfoPaneImage,	Point(  17, 122)), 
+									TranslateImage(InvestmentsPaneImage,		Point(   0, 0))
+							  ]);
+LastOrderImage				= SwitchImage(
+        							ShowLastOrders,
+									emptyImage,
+							        [(1, 
+										GroupImage([
+											TranslateImage(AcceptedOrderImage,			Point(   0, 0)),
+											TranslateImage(QueuedOrderImage,			Point(   0, -20))
+										])
+									)]
+							  );
+
+
+
+dialogs =
+    [
+        // entry format:
+        // (image, side, off point, on point, transition time, consoles modes, undetectable)
+        // coordinate origin is at lower left of screen. Positive axii going right and upward.
+        // In the end, when the image is visible, the lower left of the image is located at (sidePoint + OnPoint)
+        // image: the image to display ;)
+        // side: one of the Side* constants. This is an offset to the off and on-points, 
+        // they are defined relative to this point. Possible values:
+        // NOTE: as mentioned, origin is at lower left of screen
+        //      SideLeftOffset = (xmin,  yhalf)
+        //      SideTopLeftOffset = (xmin,  ymax )
+        //      SideTopOffset = (xhalf, ymax )
+        //      SideTopRightOffset = (xmax,  ymax )
+        //      SideRightOffset = (xmax,  yhalf)
+        //      SideBottomRightOffset = (xmax,  ymin )
+        //      SideBottomOffset = (xhalf, ymin )
+        //      SideBottomLeftOffset = (xmin,  ymin )
+        //      SideCenterOffset = (xhalf, yhalf)
+        // off point: where the pane should move when it's becoming not visible (e.g. when moving to a console mode)
+        //            where this image should not be shown
+        // on point:  where the pane should be placed when visible
+        // transition time: how long it should take for the pane to move between on and off points
+        // console mode: a bit field that decides in what contexts to show the specified image:
+        //      ofInHangar          = 0x000001,1
+        //          the hangar image can be seen in the background
+        //      ofInFlightCommand   = 0x000002,2
+        //          map-mode (default F3) during flight
+        //      ofInStationCommand  = 0x000004,4
+        //          map-mode (default F3) in base
+        //      ofInFlight          = 0x000008,8
+        //          in flight (launch animation, cockpit, chase view, map, ...)
+        //      ofInCockpit         = 0x000010,16
+        //          flight-mode, cockpit
+        //      ofInChase           = 0x000020,32
+        //          flight-mode, chase view
+        //      ofInLoadout         = 0x000040,64
+        //          loadout-screen
+        //      ofTeleportPane      = 0x000100,256
+        //          teleport window is opened (default F8)
+        //      ofInvestment        = 0x000200,512
+        //          investment window is opened (default F5)
+        //      ofGameState         = 0x000400,1024
+        //          game state window is opened (default G)
+        //      ofTeam              = 0x000800,2048
+        //          narrow team window is opened (default F6, then click on small arrow)
+        //      ofExpandedTeam      = 0x001000,4096
+        //          expanded team window is opened (default F6)
+        //      ofInventory         = 0x002000,8192
+        //          inventory window is opened (default F4)
+        //      ofCommandPane       = 0x004000,16384
+        //          the command bar is displayed (map)
+        //      ofSectorPane        = 0x008000,32768
+        //          the minimap is displayed (default F7)
+        //      ofGloatCam          = 0x010000,65536
+        //          the camera is overridden (launch sequence, training missions)
+        // undetectable - If a pane is undetectable, then no click events are generated for the pane.
+        //
+        // (image, side, off point, on point, transition time, consoles modes, undetectable
+
+        // to see in every situation which 'console mode' flags are set, uncomment the following lines:
+        /*
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInHangar (1)"),           SideCenter, Point(0,0), Point(0,-12),  .5, 0x000001, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInFlightCommand (2)"),    SideCenter, Point(0,0), Point(0,-24),  .5, 0x000002, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInStationCommand (4)"),   SideCenter, Point(0,0), Point(0,-36),  .5, 0x000004, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInFlight (8)"),           SideCenter, Point(0,0), Point(0,-48),  .5, 0x000008, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInCockpit (16)"),         SideCenter, Point(0,0), Point(0,-60),  .5, 0x000010, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInChase (32)"),           SideCenter, Point(0,0), Point(0,-72),  .5, 0x000020, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInLoadout (64)"),         SideCenter, Point(0,0), Point(0,-84),  .5, 0x000040, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "UNKNOWN (128)"),            SideCenter, Point(0,0), Point(0,-96),  .5, 0x000080, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofTeleportPane (256)"),     SideCenter, Point(0,0), Point(0,-108), .5, 0x000100, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInvestment (512)"),       SideCenter, Point(0,0), Point(0,-120), .5, 0x000200, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofGameState (1024)"),       SideCenter, Point(0,0), Point(0,-132), .5, 0x000400, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofTeam (2048)"),            SideCenter, Point(0,0), Point(0,-144), .5, 0x000800, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofExpandedTeam (4096)"),    SideCenter, Point(0,0), Point(0,-156), .5, 0x001000, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofInventory (8192)"),       SideCenter, Point(0,0), Point(0,-168), .5, 0x002000, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofCommandPane (16384)"),    SideCenter, Point(0,0), Point(0,-180), .5, 0x004000, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofSectorPane (32768)"),     SideCenter, Point(0,0), Point(0,-192), .5, 0x008000, true),
+        (StringImage(JustifyLeft, 150, medVerdana, Color(0.586, 0.578, 0.680), "ofGloatCam (65536)"),       SideCenter, Point(0,0), Point(0,-204), .5, 0x010000, true),
+        */
+
+        // **********************************
+        // * Level 1 (topmost)
+        // **********************************
+
+        // CriticalTipImage: the four red lines in the middle of the screen
+        (CriticalTipImage_Adjusted,     SideTop,            Point( -310, 0), Point(-310, 0), .5,   15, true),
+
+        // LoadoutCriticalTipImage: the four red lines in the middle of the screen, when you're in the loadout-screen
+        (LoadoutCriticalTipImage,       SideCenter,         Point( -310, 0   ), Point(-310,    0), .5,   64, true),
+
+        // TipTextImage: the line with joiners/leavers/money, etc at the bottom of the screen (two additional lines added by YP's patch from 2006-08-02)
+        (TipTextImage2,                 SideBottom,         Point( -300, -180), Point(-300,   34), .5, 65535, true),
+        (TipTextImage1,                 SideBottom,         Point( -300, -190), Point(-300,   25), .5, 65535, true),
+        (TipTextImage,                  SideBottom,         Point( -300, -200), Point(-300,   14), .5, 65535, true),
+
+        // VoteTextImage: the line that is displayed when a vote is called
+        (VoteTextImage_Adjusted,        SideTop,            Point( -310, 0),    Point(-310, 0),    .5, 65535, true),
+
+        // ChatCompositionImage: the chat window (where you enter your messages)
+        (ChatCompositionImage,          SideBottom,         Point( -170,  -78), Point(-150,  148), .5, 65663, false),
+
+        // **********************************
+        // * Level 2
+        // **********************************
+
+        // gameStateImage: the gamestate, your kills, etc.
+        (gameStateImage,                SideLeft,           Point( -500,   33), Point(  10,   33), .5, 1024, false),
+
+        // TeamPaneImage: the information window about the teams (F6)
+        (TeamPaneImage,                 SideRight,          Point(  10, -150),  Point(-750, -150), .5, 6144, false),        //0, -500
+
+        // MergedInvestmentsPaneImage: the investments pane (F5)
+        (MergedInvestmentsPaneImage,    SideCenter,         Point( -192, 2000), Point(-192, -265), .5, 512, false),
+
+        // TeleportPane: the teleport selection window (F8)
+        (TeleportPaneImage,             SideLeft,           Point( -620, -100), Point(  16, -100), .5, 256, false),     //16, -280
+
+        // **********************************
+        // * Level 3
+        // **********************************
+
+        //SectorImage: the minimap (flight mode)
+        (SectorImage,                   SideBottomLeft,     Point(   0, -187), Point(  36,   28), .5, SectorOverviewFlag, false),
+
+        // **********************************
+        // * Level 4
+        // **********************************
+
+        //MergedInventoryImage: the inventory pane (normal mode)
+        (MergedInventoryPaneImage,      SideBottomRight,    Point( -36, -150), Point( -36,  40), .5, 0x002000, true),
+
+        // **********************************
+        // * Level 5 (below everything else)
+        // **********************************
+
+        // cortWeaponRangeIndicator: new feature
+//        (cortWeaponRangeIndicator,        SideCenter,         Point(    0,    0), Point( -53,  100), 0,    48,              true),
+//        (StringImage(JustifyRight, 75, medVerdana, cortText, NumberString(SoftwareHudCriticalTipYOffset)), SideCenter, Point(    0,    0), Point(   0,  -20), .5,    48, true),
+//        (StringImage(JustifyRight, 75, medVerdana, cortText, NumberString(SoftwareHudVoteTextImageYOffset)), SideCenter, Point(    0,    0), Point(   0,  -40), .5,    48, true),
+//        (StringImage(JustifyRight, 75, medVerdana, cortText, NumberString(SoftCenterHudDisplayYOffset)), SideCenter, Point(    0,    0), Point(   0,  -60), .5,    48, true),
+//        (testImage, SideCenter, Point(    0,    0), Point( 0,  -80), .5,    48, true),
+//        (testImage2, SideCenter, Point(    0,    0), Point( 0,  -100), .5,    48, true),
+//        (StringImage(JustifyRight, 75, medVerdana, cortText, NumberString(VoteTextImageYOffset)), SideCenter, Point(    0,    0), Point(   0,  -100), .5,    48, true),
+
+        // CommPane: the chat display
+        (cortCommPaneImage,             SideTop,            Point(-160, -126), Point(-160, -126), 0, 127, false),
+
+        // (soft)CenterHudDisplay: the HUD (either normal or software)
+        (SoftCenterHudDisplayImage,           SideTop,        Point( -320, 1000), Point( -232, SoftCenterHudDisplayYOffset), .5, 48, true ),
+
+        // TargetDisplay: the targeting system
+        (TargetDisplayImage,            SideBottom,         Point(-320, -183), Point(-320,   12), .5,    48, true),
+	   
+        // cortCommandModeInfo: the additional ship status information at the upper left corner of the map
+        (cortCommandModeInfo,           SideTopLeft,        Point(  20,  185), Point(  20,  -105), .5,     2, true),
+        (cortCommandModeInfoBase,       SideTopLeft,        Point(  20,  185), Point(  20,  -100), .5,     69, true), 
+
+        // CommandPane: the command bar at the F3-map
+        (CommandPaneImage,              SideBottom,         Point(-135, -190), Point(-135,   40), .5,     6, false),
+
+        // LocationInCockpitImage: "current location" in cockpit mode
+        (LocationInCockpitImage,        SideTopRight,       Point(-180, 185), Point(-180,  -15), .5, 8, true),
+        // LocationOnMapImage: "current location" in map mode
+        //(LocationOnMapImage,            SideTopRight,       Point(-180, -15), Point(-180,  -15), .5, 0x10002, true),
+		// LocationInHangarImage: "current location" in hangar (SectorName is not set correctly, so it has to be retrieved via GetSectorName(MyStation, OnEveryFrame))
+        (LocationInHangarImage,         SideTopRight,       Point(-180, 185), Point(-180,  -15), .5, 0x00001, true),
+        // LookingAtImage: "currently viewing" in map mode when in base
+        (LookingAtImage,                SideTopRight,       Point(-180, 185), Point(-180,  -15), .5,      4, true),
+  
+        // TurretOfImage: who's turret I'm in, for launch anim, map (both), hangar, cockpit, chase
+        (TurretOfImage,                 SideTopRight,       Point(-180,  185), Point(-180,  -50),  .5, 0x10037, true),
+
+        // RipcordCountdownImage: the ripcord countdown
+        (RipcordCountdownImage,         SideCenter,         Point( -75,   15), Point( -75,   15), .5,     58, true),
+
+        // BoardTextImage: who's turret I'm in, on the loadout screen
+        (InTurretPaneImage,             SideCenter,         Point(-150,   25), Point(-150,   25),   0,    64, true),
+        (BoardTextImage,                SideCenter,         Point(-362,   20), Point(-362,   20),   0,    64, true),
+
+        // EjectPodImage: the eject pod display;   
+		(EjectPodImage,             SideCenter,         Point( -86,  -87), Point( -86,  -87),  .5,    48, true),        
+		
+		// DeathBannerPane: when you're dead???
+       	(DeathBannerPaneImage,          SideCenter,         Point(-105,   15), Point(-105,   15),  .5, 65535, true),
+
+        // LivesImage: your lives
+        (LivesImage,                    SideTopLeft,        Point(  45,  -97), Point(   40,  -97), .5, 48, true),
+
+        // KillsImage: your kills
+        (KillsImage,                    SideTopLeft,        Point(  45, -177), Point(   40, -177), .5, 48, true),
+
+        // CountdownImage: ?????????????
+        (CountdownImage,                SideTopLeft,        Point(  45, -137), Point(   40, -137), .5, 48, true),
+
+        // LastOrderImage: the last two commands you received
+        (LastOrderImage,                SideTopLeft,        Point(  50,  -7), Point(   50,  -37), .5, 55, true),
+
+        // cortVersionInformation: the current version display of CortUI in the map-mode
+        (cortVersionInformation,        SideBottomRight,    Point( -400, 12),    Point( -400,   12), 0, 6, true),
+
+//      //backButtonPane: the back button, that allows to switch from map to hangar when in base        
+        (PaneImage(BlackPane(backButtonPane), false, true), SideBottomLeft, Point( -200,   17), Point(  20,   0), .5,     6, false)
+    ];

@@ -1,0 +1,65 @@
+use "inventorypart";
+
+TimeLeft = SwitchString(
+					GetAfterburnerTimeLeft(part, OnEveryFrame),
+					NumberString(GetAfterburnerTimeLeft(part, OnEveryFrame)),
+					[
+						(-1, "Inf.")
+					]);
+
+StatsBar = 
+    StringPane(
+        ConcatinatedString(
+            ConcatinatedString(
+                NumberString(GetAfterburnerTopSpeed(part, OnEveryFrame)),
+                "mps / "
+            ),
+            TimeLeft
+        ),
+        Color(1,1,1), 
+        Point(83, 12)
+    );
+	
+GaugePaneGreytones = 	
+	GaugePane(
+		ImportImageFromFile("greytones/mountingbar.png", false),
+		GetMountedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);	
+	
+MountingBar = 
+    ImagePane(ImportImage("mountingbarbkgndbmp", true),
+        [
+            (
+				GaugePaneGreytones,
+                Point(0,0)
+            )
+        ]
+    );	
+	
+// also, use IsShipKiller/IsStationKiller/IsAsteroidKiller for special damage type, 
+// IsEnergyDamage for energy/projectile difference.
+
+InventoryLine = ImagePane(ImportImage("inventorylinebkgndbmp", false),
+    [	
+		(ImagePane(ImportImage("invequipmenticonbmp", true), []), Point(5, 5)), 
+        (StringPane(partkey, Color(1,1,1), Point(12, 12)), Point(23, 5)),
+
+		(StringPane(GetPartName(part, OnEveryFrame), Color(1,1,1), Point(88, 12)), Point(35,5)),
+		
+		
+       
+        (
+            SwitchPane(
+                GetReadyState(part, OnEveryFrame),
+                [
+                    (StatsBar,      0),
+                    (MountingBar,   1),
+                    (StatsBar,      3)
+                ]
+            ),
+            Point(130, 5)
+        )
+    ]
+);

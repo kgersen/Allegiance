@@ -1,0 +1,4 @@
+use "model";
+
+gh_fuel_backbmp =	
+	ImportImageFromFile("gh_fuel_back.png", true);

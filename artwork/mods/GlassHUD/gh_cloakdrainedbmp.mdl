@@ -1,0 +1,4 @@
+use "model";
+
+gh_cloakdrainedbmp = 
+	ImportImageFromFile("gh_cloakdrained.png", true);

@@ -20,21 +20,24 @@ StatsBar =
         Point(83, 12)
     );
 
+GaugePaneClassic = 
+	GaugePane(
+		ImportImageFromFile("mountingbar.png", false),
+		GetMountedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);
+		
 MountingBar = 
     ImagePane(ImportImage("mountingbarbkgndbmp", true),
         [
             (
-                GaugePane(
-                    ImportImage("mountingbarbmp", false),
-                    GetMountedFraction(part, OnEveryFrame),
-                    Color(0, 0, 0),
-                    Color(0, 0, 0)
-                ),
+				GaugePaneClassic,
                 Point(0,0)
             )
         ]
     );
-
+	
 // also, use IsShipKiller/IsStationKiller/IsAsteroidKiller for special damage type, 
 // IsEnergyDamage for energy/projectile difference.
 
@@ -82,6 +85,5 @@ InventoryLine = ImagePane(ImportImage("inventorylinebkgndbmp", false),
             ),
             Point(170,5)
         )
-      
     ]
 );

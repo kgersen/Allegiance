@@ -1,0 +1,3 @@
+use "model";
+
+consectorexpandbmp = ImportImageFromFile("consectorexpand.png", false);

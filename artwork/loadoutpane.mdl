@@ -1,0 +1,139 @@
+use "loadoutinclude";
+use "effect";
+use "font";
+use "partinfo";
+use "hullinfo";
+use "console";
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// The title
+//
+//////////////////////////////////////////////////////////////////////////////
+
+width         = 175;
+titleSize     = Point(width, 20);
+titleColor    = Color(1, 1, 1);
+titleImage    = StringImage(JustifyCenter, width, largeBoldFont, titleColor, titleString);
+//!!!titlePane     = AnimatedImagePaneRect(titleImage, Rect(0, -20, width, 0));
+
+//
+// Hover info -- displays player's current money when not currently "moused over" a hot spot
+//
+
+hoverSite = HoverSite(0);
+
+hoverString =
+    SwitchString(
+        HoverSiteGetID(hoverSite),
+        "",
+        [
+            ( 1, "Name of ship"),
+            ( 2, "Part Info"),
+            ( 3, "Ship Statistics"),
+            ( 4, "Buy default loadout"),
+            ( 5, "Go to previous ship"),
+            ( 6, "Go to next ship"),
+            ( 7, "Launch with this loadout"),
+            ( 8, "Confirm changing to new ship"),
+            ( 9, "Choose from a list of ships"),
+            (10, "Buy new ship"),
+			(11, "Return to hangar")
+        ]
+    );
+
+hoverImage = StringImage(JustifyLeft, 150, medBoldVerdana, white, hoverString);
+hoverPane  = AnimatedImagePaneRect(hoverImage, Rect(0, -30, 150, 0));
+
+
+stateString = 
+    SwitchString(
+        loadoutShipState,
+        "This is your current loadout.",
+        [
+            (1, "Press 'confirm change' to select this loadout."),
+            (2, "Press 'buy' to purchase this loadout."),
+            (3, "You can't afford this loadout.")
+        ]
+    );
+stateImage = StringImage(JustifyLeft, 300, medBoldVerdana, white, stateString);
+statePane  = AnimatedImagePaneRect(stateImage, Rect(0, -25, 300, 0));
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Buttons
+//
+//////////////////////////////////////////////////////////////////////////////
+
+defaultButtonPane  = SoundButtonPane(ImportImage("btndefaultbmp",      true), ButtonNormal,    false, changeLoadoutSoundId);
+previousButtonPane = SoundButtonPane(ImportImage("btnpreviousshipbmp", true), ButtonNormal,    false, changeLoadoutSoundId);
+nextButtonPane     = SoundButtonPane(ImportImage("btnnextshipbmp",     true), ButtonNormal,    false, changeLoadoutSoundId);
+launchButtonPane   = ButtonPane(ImportImage("btnlaunch2bmp",      true), ButtonNormal,         false);
+buyButtonPane      = ButtonPane(ImportImage("btnbuybmp",          true), ButtonNormal,         false, investSoundId);
+confirmButtonPane  = ButtonPane(ImportImage("btnconfirmchangebmp",true), ButtonNormal,         false, investSoundId);
+hullListButtonPane = SoundButtonPane(ImportImage("btndrop2bmp",        false), ButtonFaceUp,    false, mouseclickSoundId);
+backButtonPane     = SoundButtonPane(ImportImage("btnbackbmp",    true), ButtonNormal,         false, negativeButtonClickSoundId);
+
+defaultBtnPosition  = Point(482, 318); // original Y-position: 158
+previousBtnPosition = Point(200,  75);
+nextBtnPosition     = Point(500,  75);
+launchBtnPosition   = Point(480, 118); // -22
+buyBtnPosition      = Point(482, 158); // formerly 190
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Put the hull text and the hull button together
+//
+//////////////////////////////////////////////////////////////////////////////
+
+hullListBtnPosition = Point(298, 82);
+
+hullImage = 
+    GroupImage([
+        UndetectableImage(TranslateImage(titleImage, Point(5, 21))),
+        PaneImage(hullListButtonPane, false, true)
+    ]);
+
+hullPane  = AnimatedImagePane(hullImage);
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// The exe creates the geo pane.  Tell it where it should go and how big it
+// should be.
+//
+//////////////////////////////////////////////////////////////////////////////
+
+geoPosition = Point(170, 180);
+geoSize     = Point(310, 185);
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Final loadout
+//
+//////////////////////////////////////////////////////////////////////////////
+
+buyHoverPane     = HoverPane(hoverSite, 10, buyButtonPane    );
+confirmHoverPane = HoverPane(hoverSite,  8, confirmButtonPane);
+
+loadoutPane =
+    ScreenPane(
+        civImage,
+        [
+            (HoverPane(hoverSite,  3, hullDescriptionPane), hullDescriptionPosition),
+            (HoverPane(hoverSite,  4, defaultButtonPane),   defaultBtnPosition     ),
+            (HoverPane(hoverSite,  5, previousButtonPane),  previousBtnPosition    ),
+            (HoverPane(hoverSite,  6, nextButtonPane),      nextBtnPosition        ),
+            (HoverPane(hoverSite,  7, launchButtonPane),    launchBtnPosition      ),
+            (buyHoverPane,                                  buyBtnPosition         ),
+            (confirmHoverPane,                              buyBtnPosition         ),
+            (HoverPane(hoverSite,  9, hullPane),            hullListBtnPosition    ),
+            (creditsPane,                                   creditsPosition        ),
+            
+            (HoverPane(hoverSite,  11, backButtonPane),     Point(76, 565)         ),
+			(HoverPane(hoverSite,  2, partInfoPane),        partInfoPosition       ),
+            (HoverPane(hoverSite,  3, hullInfoPane),        hullInfoPosition       ),
+            (hoverPane, Point(540, 565)),
+            (statePane, Point(150, 565))
+        ]
+    );
+

@@ -1,0 +1,4 @@
+use "model";
+
+gh_throttle_backbmp =	
+	ImportImageFromFile("gh_throttle_back.png", true);

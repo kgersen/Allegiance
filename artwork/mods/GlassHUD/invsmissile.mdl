@@ -1,0 +1,96 @@
+use "inventorypart";
+
+DamageBar = StringPane(
+            NumberString(GetDamage(part, OnEveryFrame)), 
+            GetDamageColor(part, OnEveryFrame), Point(40, 12)
+            );
+
+StatsBar = StringPane(
+            ConcatinatedString(
+                ConcatinatedString(
+                    ConcatinatedString(
+                        NumberString(GetCount(part, OnEveryFrame)),
+                        " "
+                    ),
+                    NumberString(GetWeaponRange(part, OnEveryFrame))
+                ),
+                "m"
+            ),
+        Color(1,1,1), Point(50, 12)
+    );
+
+//these separate declarations seem like overkill, but without them the Switch doesnt work.	
+		
+GaugePaneGlassHUD = 
+	GaugePane(
+		ImportImageFromFile("mountingbar.png", false),
+		GetMountedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);	
+		
+MountingBar = 
+    ImagePane(ImportImage("mountingbarbkgndbmp", true),
+        [
+            (
+				GaugePaneGlassHUD,
+                Point(0,0)
+            )
+        ]
+    );
+
+	
+ArmingGaugePaneGlassHUD = 
+	GaugePane(
+		ImportImageFromFile("armingbar.png", false),
+		GetArmedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);		
+
+	
+ArmingBar = 
+    ImagePane(ImportImage("armingbarbkgndbmp", true),
+        [
+            (
+                ArmingGaugePaneGlassHUD,
+                Point(0,0)
+            )
+        ]
+    );
+
+
+InventoryLine = ImagePane(ImportImage("inventorylinebkgndbmp", false),
+    [	
+		(ImagePane(ImportImage("misslebmp", true), []), Point(5, 5)), 
+        (StringPane(partkey, Color(1,1,1), Point(12, 12)), Point(23, 5)),
+		
+		(StringPane(GetPartName(part, OnEveryFrame), Color(1,1,1), Point(88, 12)), Point(35,5)),
+		
+		
+
+        (
+            SwitchPane(
+                GetReadyState(part, OnEveryFrame),
+                [
+                    (StatsBar,      0),
+                    (MountingBar,   1),
+                    (ArmingBar,     2),
+                    (StatsBar,      3)
+                ]
+            ),
+            Point(130,5)
+        ),
+                (
+            SwitchPane(
+                GetReadyState(part, OnEveryFrame),
+                [
+                    (DamageBar,      0),
+                    (DamageBar,      3)
+
+                ]
+            ),
+            Point(180,5)
+        )
+    ]
+);

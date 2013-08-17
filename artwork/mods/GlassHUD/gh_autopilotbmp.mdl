@@ -1,0 +1,4 @@
+use "model";
+
+gh_autopilotbmp = 
+	ImportImageFromFile("gh_Autopilot.png", true);

@@ -20,33 +20,39 @@ StatsBar =
         Point(83, 12)
     );
 
-//StatsBar = StringPane(NumberString(GetCount(part, OnEveryFrame)), Color(1,1,1), Point(50, 12));
-
+GaugePaneClassic = 
+	GaugePane(
+		ImportImageFromFile("mountingbar.png", false),
+		GetMountedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);
+	
+	
 MountingBar = 
     ImagePane(ImportImage("mountingbarbkgndbmp", true),
         [
             (
-                GaugePane(
-                    ImportImage("mountingbarbmp", false),
-                    GetMountedFraction(part, OnEveryFrame),
-                    Color(0, 0, 0),
-                    Color(0, 0, 0)
-                ),
+				GaugePaneClassic,
                 Point(0,0)
             )
         ]
     );
 
+ArmingGaugePaneClassic = 
+	GaugePane(
+		ImportImageFromFile("armingbar.png", false),
+		GetArmedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);
+	
+	
 ArmingBar = 
     ImagePane(ImportImage("armingbarbkgndbmp", true),
         [
             (
-                GaugePane(
-                    ImportImage("armingbarbmp", false),
-                    GetArmedFraction(part, OnEveryFrame),
-                    Color(0, 0, 0),
-                    Color(0, 0, 0)
-                ),
+                ArmingGaugePaneClassic,
                 Point(0,0)
             )
         ]

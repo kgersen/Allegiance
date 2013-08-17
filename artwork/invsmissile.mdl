@@ -18,33 +18,40 @@ StatsBar = StringPane(
             ),
         Color(1,1,1), Point(50, 12)
     );
-    
 
+//these separate declarations seem like overkill, but without them the Switch doesnt work.	
+	
+GaugePaneClassic = 
+	GaugePane(
+		ImportImageFromFile("mountingbar.png", false),
+		GetMountedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);
+		
 MountingBar = 
     ImagePane(ImportImage("mountingbarbkgndbmp", true),
         [
             (
-                GaugePane(
-                    ImportImage("mountingbarbmp", false),
-                    GetMountedFraction(part, OnEveryFrame),
-                    Color(0, 0, 0),
-                    Color(0, 0, 0)
-                ),
+				GaugePaneClassic,
                 Point(0,0)
             )
         ]
     );
 
+ArmingGaugePaneClassic = 
+	GaugePane(
+		ImportImageFromFile("armingbar.png", false),
+		GetArmedFraction(part, OnEveryFrame),
+		Color(0, 0, 0),
+		Color(0, 0, 0)
+	);
+	
 ArmingBar = 
     ImagePane(ImportImage("armingbarbkgndbmp", true),
         [
             (
-                GaugePane(
-                    ImportImage("armingbarbmp", false),
-                    GetArmedFraction(part, OnEveryFrame),
-                    Color(0, 0, 0),
-                    Color(0, 0, 0)
-                ),
+                ArmingGaugePaneClassic,
                 Point(0,0)
             )
         ]
@@ -68,7 +75,6 @@ InventoryLine = ImagePane(ImportImage("inventorylinebkgndbmp", false),
                     (MountingBar,   1),
                     (ArmingBar,     2),
                     (StatsBar,      3)
-
                 ]
             ),
             Point(130,5)
@@ -84,6 +90,5 @@ InventoryLine = ImagePane(ImportImage("inventorylinebkgndbmp", false),
             ),
             Point(180,5)
         )
-        
     ]
 );

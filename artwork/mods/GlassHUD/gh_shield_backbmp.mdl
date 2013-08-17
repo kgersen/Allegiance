@@ -1,0 +1,4 @@
+use "model";
+
+gh_shield_backbmp =	
+	ImportImageFromFile("gh_shield_back.png", true);

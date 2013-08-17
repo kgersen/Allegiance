@@ -1,0 +1,3 @@
+use "model";
+
+sectormapbkgndbmp = ImportImageFromFile("sectormapbkgnd.png", false);

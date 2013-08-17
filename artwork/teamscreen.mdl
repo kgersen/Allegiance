@@ -1,51 +1,62 @@
 use "gamepanes";
 use "font";
 use "teamscreendata";
+use "cortui_settings";
 
 //
 // Chat
 //
+// Cortex 2005#05#05: added variable line count
 
 chatColumns    = [126, 236, 357];
 chatHeader     = ButtonBarPane(ImportImage("headerchatbmp", false), Button3State, chatColumns, true);
 chatEditPane   = EditPane(Point(375, 23), largeFont);
 sendButtonPane = ButtonPane(ImportImage("btnsendbmp", false), ButtonNormal, false);
-chatText       = ChatListPane(Point(407,78));
+chatText       = ChatListPane(Point(407, Add(6,Multiply(12,NumChatLinesLobby))));
 
 //
 // Player list
 //
+// Cortex 2005#05#05: shrinked player list, changed table line image to modified image, improved scroll bar position
 
 playerColumns   = [110, 138, 163, 249, 319, 398];
 
 playerListHeader = ButtonBarPane(ImportImage("headerplayersbmp", false), Button3State, playerColumns, false);
-playerScrollBar  = ScrollBarPane(Point(14, 330));
-playerListPane   = ListWithScrollBarPane(Point(398, 335), playerScrollBar);
-tableImage       = ImportImage("lobbylistbkgbmp", true);
+playerScrollBar  = ScrollBarPane(Point(14, 282));
+playerListPane   = ListWithScrollBarPane(Point(398, 287), playerScrollBar);
+tableImage       = ImportImageFromFile("cortui_core_lobbylistbkg.png", true);
 
 playerTablePane  = 
     ImagePane(
         tableImage,
         [
             (playerListPane, Point(0, 0)),
-            (playerScrollBar, Point(407, 0))
+            (playerScrollBar, Point(409, 2))
         ]
     );
+
+//
+// Water mark pane
+//
+// Cortex 2005#05#05: resized faction logo, graphics patch removed (no longer necessary, see below)
 
 waterMarkPane = 
     ImagePane(
         PaneImage(
             BlackPane(
                 AnimatedImagePane(
-                    GroupImage([
-                        TranslateImage(ImportImage("crnrpatchbmp", true), Point(409, -4)),
-                        BlendColorImage(civColor, civImage)
-                    ])
+					ClipImage(
+						TranslateImage(
+							BlendColorImage(civColor, civImage),
+							Point(0, 48)
+						),
+						Rect(0, 48, 423, 335)
+					)
                 )
             ),
             false,
             true
-        ),
+		),
         [ 
             (playerTablePane, Point(0, 0))
         ]
@@ -61,7 +72,8 @@ waterMarkPane =
 
 teamColorBrightness     = 0.50;
 teamColorIntensity      = 0.50;
-teamColumns             = [9, 143, 166, 220, 220]; // = [team name, num players, join button, gradient start, width]
+teamColumns             = [9, 120, 166, 220, 220]; // = [team name, num players, join button, gradient start, width]
+//teamColumns             = [9, 143, 166, 220, 220]; // = [team name, num players, join button, gradient start, width]
 teamListPane            = ListPane(Point(220, 308));
 
 // R4 
@@ -85,7 +97,7 @@ randomizeButtonPane = ButtonPane(ImportImage("btnrandomizeteamsbmp", true), Butt
 
 detailsButtonPane   = ButtonPane(ImportImageFromFile("btnsettings.png",   true), ButtonNormal, false); // R4 changed
 settingsButtonPane  = ButtonPane(ImportImageFromFile("btnsettings.png",  true), ButtonNormal, false); // R4 changed
-makeLeaderButtonPane= ButtonPane(ImportImage("btnmakeleaderbmp",true), ButtonNormal, false); // R4 changed
+makeLeaderButtonPane= ButtonPane(ImportImage("btnmakeleaderbmp",true), ButtonNormal, false);
 startButtonPane     = ButtonPane(ImportImage("btnstartbmp",     true), ButtonNormal, false);
 
 teamSettingsButtonPane = ButtonPane(ImportImageFromFile("btnteamsettings.png",   true), ButtonNormal, false); // R4 changed
@@ -145,7 +157,7 @@ stringScoresCount =
             )
         ]
     );
-textScoresCount = StringPane(stringScoresCount, TextColor, Point(290, 20), JustifyRight, promptFont);
+textScoresCount = StringPane(stringScoresCount, TextColor, Point(235, 20), JustifyRight, promptFont);
 
 
 //
@@ -196,7 +208,7 @@ hoverString =
             ( 31, "Select to prevent new players from joining the game."),
             ( 32, "Return to the statistics for the last game."),
             ( 33, "Select to disallow changes to the teams."),
-	    ( 34, "Select to indicate that your team is ready for the game to launch.")	,
+			( 34, "Select to indicate that your team is ready for the game to launch."),
             ( 35, "Assign everyone except the team leaders to random teams and then lock the sides."),
             ( 36, "Deactivate or activate this team.")
         ]
@@ -206,9 +218,9 @@ hoverImage = StringImage(JustifyLeft, 200, medVerdana, white, hoverString);
 hoverPane  = AnimatedImagePaneRect(hoverImage, Rect(0, -25, 200, 0));
 
 // R4
-mapPreviewPane      = MapPreviewPane(ImportImage("sectormapbkgndbmp",false),true,false);
-textServername      = StringPane(strServerName, TextColor, Point(290, 20), JustifyRight, promptFont);
-textCorename        = StringPane(strCoreName, TextColor, Point(290, 20), JustifyRight, promptFont);
+mapPreviewPane      = MapPreviewPane(ImportImageFromFile("sectormapbg_opaque.png",false),true,false);
+textServername      = StringPane(strServerName, TextColor, Point(235, 20), JustifyRight, promptFont);
+textCorename        = StringPane(strCoreName, TextColor, Point(235, 20), JustifyRight, promptFont);
 
 // #177 - ballots in lobby
 VoteText            = BlackPane(StringPane(CurrentVote, yellow, Point(800,20), JustifyCenter, promptFont));
@@ -222,10 +234,11 @@ VoteTextPane        = SwitchPane(
 //
 // The background and control positions
 //
+// Cortex 2005#05#05: changed to modified background image, repositioned various controls
 
 screen =
     ScreenPane(
-        ImportImage("teamscreenbmp", false),
+        ImportImageFromFile("cortui_core_teamscreen.png", false),
         [   
             (textLobby,            Point( 20,   3)),
             (textFor,              Point(170,   3)), 
@@ -236,17 +249,17 @@ screen =
             (textTimer,            Point(695,  70)),
             (textServername,       Point(500,   3)), // R4
             (textCorename,         Point(500,  15)), // R4
-            (VoteTextPane,         Point(0, 550)), // #177 -ballots in lobby
- 
+			(VoteTextPane,         Point(0, 550)), // #177 -ballots in lobby
+
             (HoverPane(hoverSite,   1,  teamListPane),              Point( 45,  85)),
 
             (HoverPaneColumns(hoverSite, 11, playerListHeader, playerColumns),        Point(268,  54)),       
             (HoverPaneColumns(hoverSite, 11, waterMarkPane,    playerColumns),        Point(268,  71)),
 
-            (HoverPaneColumns(hoverSite,  2, chatHeader,       chatColumns),          Point(268, 420)),
+            (HoverPaneColumns(hoverSite,  2, chatHeader,       chatColumns),          Point(268, 372)),
             (HoverPane(hoverSite,   5,  chatEditPane),              Point(270, 522)),
-            (HoverPane(hoverSite,   6,  sendButtonPane),            Point(643, 525)),
-            (HoverPane(hoverSite,   5,  chatText),                  Point(270, 440)),
+            (HoverPane(hoverSite,   6,  sendButtonPane),            Point(644, 525)),
+            (HoverPane(hoverSite,   5,  chatText),                  Point(270, 392)),
 
             (HoverPane(hoverSite,  24,  backButtonPane),            Point( 20, 560)),
             (HoverPane(hoverSite,  32,  gameOverButtonPane),        Point(465, 560)),
@@ -265,7 +278,7 @@ screen =
             
 
             //(readyButtonPane,      Point( 80, 410)),
-            (HoverPane(hoverSite,  25,  awayFromKeyboardButtonPane),Point(624, 420)),
+            (HoverPane(hoverSite,  25,  awayFromKeyboardButtonPane),Point(624, 372)),
             
             
             //(HoverPane(hoverSite,  17,  detailsButtonPane),       Point( 80, 470)),
@@ -274,7 +287,7 @@ screen =
             (settingsButtonPane,                                    Point( 5, 420)), // moved
             (teamSettingsButtonPane,                                Point( 5, 470)), // moved to left
             (mapPreviewPane,                                        Point( 144, 419)), // new in R4
-            
+
             (HoverPane(hoverSite,  21,  startButtonPane),           Point(693, 434)),
 
             (HoverPane(hoverSite,  23,  textStatus),                Point(0, 530)),

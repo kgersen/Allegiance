@@ -1,0 +1,4 @@
+use "model";
+
+gh_inrange_uneyedbmp =	
+	ImportImageFromFile("gh_inrange_uneyed.png", true);

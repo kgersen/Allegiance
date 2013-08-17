@@ -226,8 +226,8 @@ void Value::RemoveParent(Value* pvalue)
 void Value::SetChild(int index, Value* pvalueChild)
 {
     if (m_pchildren[index] != pvalueChild) {
-        m_pchildren[index]->RemoveParent(this);
-        pvalueChild->AddParent(this);
+        if (m_pchildren[index]) m_pchildren[index]->RemoveParent(this);	// #294 turkey allowed children to be null
+        if (pvalueChild) pvalueChild->AddParent(this);					//
         m_pchildren.Set(index, pvalueChild);
         Changed();
     }

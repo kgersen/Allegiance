@@ -74,8 +74,8 @@ namespace Training
             pWindow->SetMusicOn (false);
 
         // check to see what the HUD style is, and set it to hardware
-        if ((m_fHUDStyle = pWindow->GetHUDStyle ()) != 0.0f)
-            pWindow->SetHUDStyle (0.0f);
+        if ((m_fHUDStyle = pWindow->GetHUDStyle ()) != 0)
+            pWindow->SetHUDStyle (0);
 
         // load the existing key map Imago 6/20/09 (TheRock@RT)
 		if (!GetWindow()->GetInput()->LoadMap(INPUTMAP_FILE)) 

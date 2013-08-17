@@ -86,6 +86,7 @@ public:
     virtual TRef<AnimatedImage> LoadAnimatedImage(Number* ptime, const ZString& str) = 0;
 
     virtual void             UpdateGameStateContainer() = 0;
+	virtual void			 InitializeGameStateContainer() = 0;
 
     virtual Camera*             GetCamera()             = 0;
     virtual Orientation         GetCameraOrientation()  = 0;
@@ -102,8 +103,8 @@ public:
 
     virtual float            GetDeltaTime (void) const = 0;
 
-    virtual float            GetHUDStyle (void) const = 0;
-    virtual void             SetHUDStyle (float newStyle) = 0;
+    virtual int              GetHUDStyle (void) = 0;
+    virtual void             SetHUDStyle (int newStyle) = 0;
 
 
     enum CameraMode

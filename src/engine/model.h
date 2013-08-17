@@ -223,6 +223,14 @@ public:
     virtual Engine*         GetEngine() = 0;
     virtual ZString         GetArtPath() = 0;
 
+	// #294
+	virtual void			BuildHudList() = 0;
+	virtual int				CycleStyleHud() = 0; //returns the new style
+	virtual int				GetStyleHud() = 0;
+	virtual void			SetStyleHud(int newStyle) = 0;
+	virtual void			SetStyleHud(ZString styleName) = 0;
+	virtual ZString			GetStyleHudName() = 0;
+
     // KGJV 32B - move this to abstrat class modeler
     virtual TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError) = 0;
 

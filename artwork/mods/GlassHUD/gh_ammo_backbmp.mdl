@@ -1,0 +1,4 @@
+use "model";
+
+gh_ammo_backbmp =	
+	ImportImageFromFile("gh_ammo_back.png", true);

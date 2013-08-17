@@ -1,0 +1,5 @@
+// Parameter: 1 if the last accepted and last queued order should be shown, 0 if not
+ShowLastOrders = 1;
+
+// Parameter: Number of chat lines in the lobby. Keep between 1 and 10.
+NumChatLinesLobby = 10;
