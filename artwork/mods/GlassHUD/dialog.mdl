@@ -7,7 +7,6 @@ use "cortui_settings";
 //Version information
 cortUIVersionString = "CortUI v1.80-dev-r158";
 
-DetectionRange = StringImage(JustifyLeft, 300, medVerdana, targetHudColor, ConcatinatedString(DetectionRange, GetRadius(Target, OnEveryFrame))); //Spunky
 White = Color(1, 1, 1);
 TextColor = Color(0, 0, 0.0625);
 

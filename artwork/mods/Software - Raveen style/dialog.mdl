@@ -7,7 +7,6 @@ use "cortui_settings";
 //Version information
 cortUIVersionString = "CortUI v1.80-dev-r158";
 
-DetectionRange = StringImage(JustifyLeft, 300, medVerdana, targetHudColor, ConcatinatedString(DetectionRange, GetRadius(Target, OnEveryFrame))); //Spunky                
 White = Color(1, 1, 1);
 fp2DarkGrey = Color(.4, .4, .4);
 TextColor = Color(0, 0, 0.0625);
@@ -1220,7 +1219,6 @@ DefaultNormalTargetDisplay =
     VisibleImage(GroupImage(
         [
             
-            TranslateImage(DetectionRange, Point(180,113)), //Spunky
 			TranslateImage(TargetShieldGauge, Point(367, 33)),
             TranslateImage(TargetHullGauge, Point(235, 33)),
             TranslateImage(
