@@ -447,6 +447,9 @@ void                 CmissileIGC::HandleCollision(Time       timeCollision,
         if (ot == OT_mine)
 			return;             //Ignore collisions with minefields
 
+		if (pModel->GetObjectType() == OT_asteroid && ((IasteroidIGC*)pModel)->IsDead(GetSide()->GetObjectID()))
+			return;				//#358: Ignore collisions with dead asteroids
+
         IIgcSite*   pigc = GetMyMission()->GetIgcSite();
         Vector position1;
 

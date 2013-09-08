@@ -170,6 +170,9 @@ void                 CprojectileIGC::HandleCollision(Time       timeCollision,
         return;
     }
 
+	if (pModel->GetObjectType() == OT_asteroid && ((IasteroidIGC*)pModel)->IsDead(GetSide()->GetObjectID()))
+		return;				//#358: Ignore collisions with dead asteroids
+
     //A projectile hit something other than a minefield
     bool    fExplosion;
     Vector position1 = GetPosition() + GetVelocity() * tCollision;
