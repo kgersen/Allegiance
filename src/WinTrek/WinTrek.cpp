@@ -3225,7 +3225,7 @@ public:
 
 		// #294
 		SetChatLines(LoadPreference("ChatLines", 10));
-		if (!LoadPreference("ShowScrollbar", 1)) ToggleScrollbar();
+		if (!LoadPreference("ShowScrollbar", 0)) ToggleScrollbar();
 
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
