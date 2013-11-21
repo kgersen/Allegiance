@@ -2299,7 +2299,7 @@ dialogs =
         (gameStateImage,                SideLeft,           Point( -500,   33), Point(  10,   33), .5, 1024, false),
 
         // TeamPaneImage: the information window about the teams (F6)
-        (TeamPaneImage,                 SideRight,          Point(  10, -150),  Point(-750, -150), .5, 6144, false),        //0, -500
+        (TeamPaneImage,                 SideLeft,          Point(  -620, -150),  Point(50, -150), .5, 6144, false),        //0, -500
 
         // MergedInvestmentsPaneImage: the investments pane (F5)
         (MergedInvestmentsPaneImage,    SideCenter,         Point( -192, 2000), Point(-192, -265), .5, 512, false),
