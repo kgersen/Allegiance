@@ -76,6 +76,7 @@ public:
     virtual void PageUp()                          = 0;
     virtual void PageDown()                        = 0;
 	virtual void SetChatLines(int lines)		   = 0;
+	virtual void UpdateContents()				   = 0; //#360 turkey moved here to be accessible from trekwindow
 };
 
 class ChatListPaneFactory : public IFunction

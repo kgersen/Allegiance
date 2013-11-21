@@ -103,6 +103,8 @@ public:
 
     virtual float            GetDeltaTime (void) const = 0;
 
+	virtual bool			 IsShowingTimestamp(void) const = 0; // #360 tests for whether the timestamp should show
+
     virtual int              GetHUDStyle (void) = 0;
     virtual void             SetHUDStyle (int newStyle) = 0;
 

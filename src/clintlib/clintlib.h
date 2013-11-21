@@ -184,6 +184,7 @@ class  ChatInfo : public IObject
 {
 private:
     ZString             m_strMessage;
+	ZString				m_strTimestamp;
     Color               m_colorMessage;
 
     TRef<ImodelIGC>     m_pmodelTarget;
@@ -207,6 +208,7 @@ public:
     ChatTarget      GetChatTarget(void) const       { return m_ctRecipient; }
 
     const ZString&  GetMessage(void) const          { return m_strMessage; }
+	const ZString&	GetTimestamp(void) const		{ return m_strTimestamp; }
     const Color&    GetColor(void) const            { return m_colorMessage; }
 
     CommandID       GetCommandID(void) const        { return m_cidCommand; }

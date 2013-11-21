@@ -1143,6 +1143,12 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
+	// #360
+	static const WORD	timestamp_never = 0;
+	static const WORD	timestamp_lobby = 1;
+	static const WORD	timestamp_always = 2;
+	WORD				m_timestamp;
+
     unsigned long       m_frameID;
     Time                m_timeLastFrame;
     Time                m_timeLastDamage;
@@ -1378,6 +1384,7 @@ public:
     TRef<IMenuItem>            m_pitemFilterChatsToAll;
     TRef<IMenuItem>            m_pitemFilterQuickComms;
     TRef<IMenuItem>            m_pitemFilterLobbyChats;
+	TRef<IMenuItem>			   m_pitemCycleTimestamp;		// #360
 	TRef<IMenuItem>			   m_pitemIncreaseChatLines;	//
 	TRef<IMenuItem>			   m_pitemReduceChatLines;		// #294
 	TRef<IMenuItem>			   m_pitemScrollbar;			//
@@ -3213,6 +3220,9 @@ public:
 
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
+		// #360 timestamps are off by default
+		m_timestamp = LoadPreference("Timestamp", 0);
+
 		// #294
 		SetChatLines(LoadPreference("ChatLines", 10));
 		if (!LoadPreference("ShowScrollbar", 1)) ToggleScrollbar();
@@ -3943,6 +3953,7 @@ public:
 	#define idmScrollbar				 637 // #294
 	#define idmIncreaseChatLines		 638 // #294
 	#define idmReduceChatLines			 639 // #294
+	#define idmCycleTimestamp			 640 // #360
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -4391,6 +4402,7 @@ public:
                 m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'V');
 				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
+				m_pitemCycleTimestamp			   = pmenu->AddMenuItem(idmCycleTimestamp,				GetCycleTimestampMenuString(),		'T');
 				m_pitemScrollbar				   = pmenu->AddMenuItem(idmScrollbar,					GetToggleScrollbarMenuString(),		'S');
 				m_pitemIncreaseChatLines		   = pmenu->AddMenuItem(idmIncreaseChatLines,			GetIncreaseChatLinesMenuString(),	'I');
 				m_pitemReduceChatLines			   = pmenu->AddMenuItem(idmReduceChatLines,				GetReduceChatLinesMenuString(),		'R');
@@ -4587,6 +4599,36 @@ public:
         }
     }
 	//End TB 25-JUN-07
+
+	// #360
+	bool IsShowingTimestamp() const
+	{
+		switch(m_timestamp)
+		{
+		case timestamp_never:
+			return false;
+		case timestamp_lobby:
+			return !trekClient.IsInGame();
+		case timestamp_always:
+			return true;
+		default:
+			ZAssert(false);
+			return false;
+		}
+	}
+
+	void CycleTimestamp()
+	{
+		m_timestamp++;
+		if (m_timestamp > timestamp_always) m_timestamp = 0;
+
+		//update the active chat pane if applicable
+		if (m_pchatListPane) m_pchatListPane->UpdateContents();
+	
+		m_pitemCycleTimestamp->SetString(GetCycleTimestampMenuString());
+
+		SavePreference("Timestamp", m_timestamp);
+	}
 
 	// turkey #294 8/13
 	void IncreaseChatLines()
@@ -5541,21 +5583,40 @@ public:
         }
     }
 
+	// #360
+	ZString GetCycleTimestampMenuString()
+	{
+		switch (m_timestamp)
+		{
+		case timestamp_never:
+			return "Show Timestamps Never";
+			break;
+		case timestamp_lobby:
+			return "Show Timestamps In Lobby";
+			break;
+		case timestamp_always:
+			return "Show Timestamps Always";
+			break;
+		default:
+			return "Default case";
+		}
+	}
+
 	ZString GetToggleScrollbarMenuString()
 	{
-		return (m_pnumberShowScrollbar->GetValue() > 0.0f) ? "Hide cockpit chat scrollbar" : "Show cockpit chat scrollbar";
+		return (m_pnumberShowScrollbar->GetValue() > 0.0f) ? "Show Cockpit Chat Scrollbar" : "Hide Cockpit Chat Scrollbar";
 	}
 
 	ZString GetIncreaseChatLinesMenuString()
 	{
-		if (m_pnumberChatLinesGlobal->GetValue() > 9.9f) return "Chat lines at maximum";
-		return "Increase to " + ZString((int)m_pnumberChatLinesGlobal->GetValue() + 1) + " chat lines";
+		if (m_pnumberChatLinesGlobal->GetValue() > 9.9f) return "Chat Lines At Maximum";
+		return "Increase To " + ZString((int)m_pnumberChatLinesGlobal->GetValue() + 1) + " Chat Lines";
 	}
 
 	ZString GetReduceChatLinesMenuString()
 	{
-		if (m_pnumberChatLinesGlobal->GetValue() < 1.1f) return "Chat lines at minimum";
-		return "Reduce to " + ZString((int)m_pnumberChatLinesGlobal->GetValue() - 1) + " chat lines";
+		if (m_pnumberChatLinesGlobal->GetValue() < 1.1f) return "Chat Lines At Minimum";
+		return "Reduce To " + ZString((int)m_pnumberChatLinesGlobal->GetValue() - 1) + " Chat Lines";
 	}
 
     ZString GetLinearControlsMenuString()
@@ -6093,6 +6154,10 @@ public:
 
 			case idmReduceChatLines:
 				ReduceChatLines();
+				break;
+
+			case idmCycleTimestamp:
+				CycleTimestamp();
 				break;
 
             case idmToggleLinearControls:

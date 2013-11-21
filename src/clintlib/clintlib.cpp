@@ -589,6 +589,13 @@ void ChatInfo::SetChat(ChatTarget       ctRecipient,
 
 	logchat(strText);  // mmf added log chat
 
+	//Turkey #357/#360 06/13 add system time
+	char buff[9];
+	time_t t = time(0);
+	tm* local_tm = localtime(&t);
+	sprintf_s(buff, 9, "[%02d:%02d] ", local_tm->tm_hour, local_tm->tm_min);
+	m_strTimestamp = buff;
+
     m_ctRecipient = ctRecipient;
 
     m_cidCommand = cid;
