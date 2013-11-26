@@ -178,13 +178,33 @@ ChatCompositionImage = PaneImage(ComposingPane, false, true);
 // + added changable ChatList for the loadout screen
 // * resized ChatListPanes so that scrollbar can be seen
 //
+// Turkey 2013/11/26 #361:
+// + added clipimage to reduce size based on NumChatLines
+//
 //////////////////////////////////////////////////////
 
-chatListPane = ChatListPane(Point(355, Add(8,Multiply(12,NumChatLinesGlobal)) ) );
+chatListPane = ChatListPane(Point(355, Add(8,Multiply(12,NumChatLines)) ) );
+chatBackgroundImage = ImportImageFromFile("cortui_core_concommdisplay.png", false);
+
+chatClipImage = SwitchImage(
+	NumChatLines,
+	chatBackgroundImage,
+	[
+		(1, ClipImage(chatBackgroundImage, Rect(0, 108, 370, 128))),
+		(2, ClipImage(chatBackgroundImage, Rect(0, 96, 370, 128))),
+		(3, ClipImage(chatBackgroundImage, Rect(0, 84, 370, 128))),
+		(4, ClipImage(chatBackgroundImage, Rect(0, 72, 370, 128))),
+		(5, ClipImage(chatBackgroundImage, Rect(0, 60, 370, 128))),
+		(6, ClipImage(chatBackgroundImage, Rect(0, 48, 370, 128))),
+		(7, ClipImage(chatBackgroundImage, Rect(0, 36, 370, 128))),
+		(8, ClipImage(chatBackgroundImage, Rect(0, 24, 370, 128))),
+		(9, ClipImage(chatBackgroundImage, Rect(0, 12, 370, 128)))
+	]
+	);
 
 CommPane =
     ImagePane(
-        ImportImageFromFile("cortui_core_concommdisplay.png", false),
+        chatClipImage,
         [
             (chatListPane, Point(0,0))
         ]
@@ -2011,15 +2031,15 @@ RipcordCountdownImage =
 //    * height(criticaltipimage) = 56
 
 // Position calculations:
-// 	  * SoftCenterHudDisplayOffset = -35 * 12*NumChatLinesGlobal			// if software HUD (normal HUD: unused)
-//    * CriticalTipImageYOffset    = -50 * 12*NumChatLinesGlobal			// if normal HUD
-//			 						 -80 * 12*NumChatLinesGlobal			// if software HUD
-//    * VoteTextImageYOffset       = -85 * 12*NumChatLinesGlobal			// if normal HUD
-//							  	   = -95 * 12*NumChatLinesGlobal			// if software HUD
+// 	  * SoftCenterHudDisplayOffset = -35 * 12*NumChatLines			// if software HUD (normal HUD: unused)
+//    * CriticalTipImageYOffset    = -50 * 12*NumChatLines			// if normal HUD
+//			 						 -80 * 12*NumChatLines			// if software HUD
+//    * VoteTextImageYOffset       = -85 * 12*NumChatLines			// if normal HUD
+//							  	   = -95 * 12*NumChatLines			// if software HUD
 
-SoftCenterHudDisplayYOffset				= Subtract(-35, Multiply(12, NumChatLinesGlobal));
-CriticalTipImageYOffset_SoftwareHud		= Subtract(-80, Multiply(12, NumChatLinesGlobal));
-VoteTextImageYOffset_SoftwareHud		= Subtract(-95, Multiply(12, NumChatLinesGlobal));
+SoftCenterHudDisplayYOffset				= Subtract(-35, Multiply(12, NumChatLines));
+CriticalTipImageYOffset_SoftwareHud		= Subtract(-80, Multiply(12, NumChatLines));
+VoteTextImageYOffset_SoftwareHud		= Subtract(-95, Multiply(12, NumChatLines));
 
 CriticalTipImage_Adjusted = TranslateImage(CriticalTipImage, Point(   0, CriticalTipImageYOffset_SoftwareHud));
 
@@ -2035,11 +2055,35 @@ cortCommPaneImageBasic		      = PaneImage(CommPane, false, true);
 CuttingRect                       = Rect(0, 0, 355, 125);
 cortCommPaneImageWithoutScrollbar = PaneImage(BlackPane(ImagePane(ClipImage(cortCommPaneImageBasic, CuttingRect), [])), false, true);
 cortCommPaneImageWithScrollbar    = cortCommPaneImageBasic;
-cortCommPaneImage			      = SwitchImage(
-								       ShowScrollbarOnCockpitChat,
-								       cortCommPaneImageWithoutScrollbar,
-								       [(1, cortCommPaneImageWithScrollbar)]
+
+// #361 SwitchPoint and TranslateImage added to move chat pane upwards when NumChatLines is reduced.
+CommPanePosition				  = SwitchPoint(
+										NumChatLines,
+										Point(0, 0),
+										[	
+											(1, Point(0, 108)),
+											(2, Point(0, 96)),
+											(3, Point(0, 84)),
+											(4, Point(0, 72)),
+											(5, Point(0, 60)),
+											(6, Point(0, 48)),
+											(7, Point(0, 36)),
+											(8, Point(0, 24)),
+											(9, Point(0, 12))
+										]
+									);
+									
+cortCommPaneImage			      = TranslateImage
+									(
+										SwitchImage
+										(
+											ShowScrollbarOnCockpitChat,
+											cortCommPaneImageWithoutScrollbar,
+											[(1, cortCommPaneImageWithScrollbar)]
+										),
+										CommPanePosition
 							        );
+									
 DeathBannerPaneImage		      = PaneImage(DeathBannerPane, false, true);
 SoftCenterHudDisplayImage	      = VisibleImage(softCenterHudDisplay, ShowCenterHUD);
 TargetDisplayImage			      = VisibleImage(TargetDisplay, ShowTargetHUD);

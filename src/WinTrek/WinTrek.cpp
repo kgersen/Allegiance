@@ -1184,11 +1184,10 @@ public:
     TRef<ModifiableNumber>  m_pnumberFlash;
     TRef<ModifiableNumber>  m_pnumberTeamPaneCollapsed;
 	
-	// #294
-	TRef<ModifiableNumber>  m_pnumberChatLinesGlobal;
-	TRef<ModifiableNumber>  m_pnumberChatLinesLoadout;
-	TRef<WrapNumber>		m_pwrapNumberChatLinesGlobal;
-	TRef<WrapNumber>		m_pwrapNumberChatLinesLoadout;
+	// #294/#361
+	TRef<ModifiableNumber>  m_pnumberChatLinesDesired;
+	TRef<ModifiableNumber>  m_pnumberChatLines;
+	TRef<WrapNumber>		m_pwrapNumberChatLines;
 	TRef<ModifiableNumber>  m_pnumberShowScrollbar;
 	TRef<WrapNumber>		m_pwrapNumberShowScrollbar;
 
@@ -2801,8 +2800,8 @@ public:
 
 		// turkey #294 stylehud used to be here but it's obsolete now
 		// we need a couple of chatlist settings though
-		pnsGamePanes->AddMember("NumChatLinesGlobal", m_pwrapNumberChatLinesGlobal = new WrapNumber(m_pnumberChatLinesGlobal = new ModifiableNumber(0)));
-		pnsGamePanes->AddMember("NumChatLinesLoadout", m_pwrapNumberChatLinesLoadout = new WrapNumber(m_pnumberChatLinesLoadout = new ModifiableNumber(0)));
+		m_pnumberChatLinesDesired = new ModifiableNumber(0);
+		pnsGamePanes->AddMember("NumChatLines", m_pwrapNumberChatLines = new WrapNumber(m_pnumberChatLines = new ModifiableNumber(0)));
 		pnsGamePanes->AddMember("ShowScrollbarOnCockpitChat", m_pwrapNumberShowScrollbar = new WrapNumber(m_pnumberShowScrollbar = new ModifiableNumber(1)));
 
         pnsGamePanes->AddMember("Flash", m_pnumberFlash = new ModifiableNumber(0));
@@ -4633,7 +4632,7 @@ public:
 	// turkey #294 8/13
 	void IncreaseChatLines()
 	{
-		DWORD lines = (DWORD) m_pnumberChatLinesGlobal->GetValue() + 1;
+		DWORD lines = (DWORD) m_pnumberChatLinesDesired->GetValue() + 1;
 
 		if (SetChatLines(lines))
 		{
@@ -4642,11 +4641,17 @@ public:
 
 			if (m_pchatListPane)
 			{
-				if (GetViewMode() == vmLoadout) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesLoadout->GetValue());
-				
-				else if (GetViewMode() <= vmOverride) m_pchatListPane->SetChatLines(lines);
+				if (GetViewMode() == vmLoadout) 
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (GetViewMode() <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
 			}
-
 
 			SavePreference("ChatLines", lines);
 		}
@@ -4654,7 +4659,7 @@ public:
 
 	void ReduceChatLines()
 	{
-		DWORD lines = (DWORD) m_pnumberChatLinesGlobal->GetValue() - 1;
+		DWORD lines = (DWORD) m_pnumberChatLinesDesired->GetValue() - 1;
 
 		if (SetChatLines(lines))
 		{
@@ -4663,9 +4668,16 @@ public:
 
 			if (m_pchatListPane)
 			{
-				if (GetViewMode() == vmLoadout) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesLoadout->GetValue());
-				
-				else if (GetViewMode() <= vmOverride) m_pchatListPane->SetChatLines(lines);
+				if (GetViewMode() == vmLoadout) 
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (GetViewMode() <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
 			}
 
 
@@ -5139,24 +5151,16 @@ public:
 		bool bInRange = false;
 		if (value >= 1)
 		{
-			if (value > 10) m_pnumberChatLinesGlobal->SetValue(10.0f);
+			if (value > 10) m_pnumberChatLinesDesired->SetValue(10.0f);
 			else 
 			{
-				m_pnumberChatLinesGlobal->SetValue((float)value);
-				bInRange = true;
-			}
-
-			if (value > 6) m_pnumberChatLinesLoadout->SetValue(6.0f);
-			else 
-			{
-				m_pnumberChatLinesLoadout->SetValue((float)value);
+				m_pnumberChatLinesDesired->SetValue((float)value);
 				bInRange = true;
 			}
 		}
 		else
 		{
-			m_pnumberChatLinesGlobal->SetValue(1.0f);
-			m_pnumberChatLinesLoadout->SetValue(1.0f);
+			m_pnumberChatLinesDesired->SetValue(1.0f);
 		}
 
 		return bInRange;
@@ -5609,14 +5613,14 @@ public:
 
 	ZString GetIncreaseChatLinesMenuString()
 	{
-		if (m_pnumberChatLinesGlobal->GetValue() > 9.9f) return "Chat Lines At Maximum";
-		return "Increase To " + ZString((int)m_pnumberChatLinesGlobal->GetValue() + 1) + " Chat Lines";
+		if (m_pnumberChatLinesDesired->GetValue() > 9.9f) return "Chat Lines At Maximum";
+		return "Increase To " + ZString((int)m_pnumberChatLinesDesired->GetValue() + 1) + " Chat Lines";
 	}
 
 	ZString GetReduceChatLinesMenuString()
 	{
-		if (m_pnumberChatLinesGlobal->GetValue() < 1.1f) return "Chat Lines At Minimum";
-		return "Reduce To " + ZString((int)m_pnumberChatLinesGlobal->GetValue() - 1) + " Chat Lines";
+		if (m_pnumberChatLinesDesired->GetValue() < 1.1f) return "Chat Lines At Minimum";
+		return "Reduce To " + ZString((int)m_pnumberChatLinesDesired->GetValue() - 1) + " Chat Lines";
 	}
 
     ZString GetLinearControlsMenuString()
@@ -6584,12 +6588,21 @@ public:
 			// clear the keyboard buttons.
 			m_ptrekInput->ClearButtonStates();
 
-			// #294 Use different number of chatlines for the loadout screen cos there's less space
+			// #294 / #361 Use different number of chatlines for the loadout screen cos there's less space
 			if (m_pchatListPane)
 			{
-				if (vm == vmLoadout) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesLoadout->GetValue());
+				int lines = m_pnumberChatLinesDesired->GetValue();
 
-				else if (vm <= vmOverride) m_pchatListPane->SetChatLines((int)m_pwrapNumberChatLinesGlobal->GetValue());
+				if (vm == vmLoadout) 
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (vm <= vmOverride) 
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
 			}
 
 			switch (vm)
