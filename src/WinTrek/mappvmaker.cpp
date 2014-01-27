@@ -2397,8 +2397,8 @@ const char * CmapPVMakerFromIGCFile::GenerateMission(const char * igcfile,	Imiss
 			if (type == OT_station)
 			{
 				nbstations++;
-				assert(size == sizeof(DataStationIGC));
-				DataStationIGC*  p = (DataStationIGC*)(pdata + sizeof(int) + sizeof(ObjectType));
+				assert(size == sizeof(DataStationIGC) || size == (sizeof(DataStationIGC) - sizeof(StationTypeID[c_cSidesMax])));// #307 for back-compatibility with older station data;
+				DataStationIGC*  p = (DataStationIGC*)(pdata + sizeof(int) + sizeof(ObjectType));								// if size < sizeof(DataStationIGC), accessing p->KnownStationTypeID will be BAD
 				// assume all clusters are in file BEFORE stations
 				CMapPVCluster *pcluster = pmission->GetCluster(p->clusterID);
 				if (pcluster)

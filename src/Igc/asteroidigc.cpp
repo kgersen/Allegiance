@@ -43,11 +43,17 @@ HRESULT     CasteroidIGC::Initialize(ImissionIGC* pMission, Time now, const void
                 Orientation o(dataAsteroid->forward, dataAsteroid->up);
                 SetOrientation(o);
             }
-            SetRotation(dataAsteroid->rotation);
+			
+			// Turkey 01/2014 AME is bugged, rotation axis should be a normalized vector
+			Rotation r = dataAsteroid->rotation;
+			Vector axis = r.axis().Normalize();
+			r.axis(axis);
+            SetRotation(r);
 
             SetSignature(dataAsteroid->signature);
 
             m_fraction = dataAsteroid->fraction;
+			if (m_fraction > 1.0f) m_fraction = 1.0f; // Turkey 01/2014 AME is bugged, gives rocks 100.4% hitpoints (241/240)
 
             if (dataAsteroid->name[0] != '\0')
                 SetName(dataAsteroid->name);
