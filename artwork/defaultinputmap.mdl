@@ -133,14 +133,18 @@ mouseButtonCommandMap =
         (2, 90)
     ];
 buttonCommandMap =
-    [
+    [   // (joystick #, button #, command) 
+        (0,  0, CommandFireWeapon ), 
+        (0,  1, CommandFireMissile), 
+	    (0,  2, CommandFireBooster), 
+	    (0,  3, CommandRipcord    ), 
+ 	    (0,  4, CommandDropChaff  ) 
     ];
 numericValuesNew =
-    [
-        (1082130432, -1073741824),
-        (-1063256064, -1073741824),
-        (1084227584, -1073741824),
-        (-1061158912, -1073741824),
-        (1086324736, -1073741824),
-        (1088421888, -1073741824)
+    [   // (joystick #, value #) 
+		(0, 0), 
+		(0, 1), 
+		(0, 3), 
+		(0, 2), 
+		(0, 4) 
     ];
