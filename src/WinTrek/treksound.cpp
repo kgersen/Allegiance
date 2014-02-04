@@ -36,7 +36,7 @@ public:
 		// mdvalley: Look for files in this order: Soundpack WAV, Soundpack OGG, Artwork WAV, Artwork OGG
         // pkk: Removed SoundPack support, Allegiance no longer looking for files in a not existing folder
 		// Load wave from artwork directory
-        ZString strFilename = m_pmodeler->GetArtPath() + "\\..\\" + pstring->GetValue() + ".wav";
+        ZString strFilename = m_pmodeler->GetArtPath() + "\\" + pstring->GetValue() + ".wav";
 		
 		if (!FileExists(strFilename))
 		{
