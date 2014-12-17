@@ -702,7 +702,10 @@ public:
 		
         
 		// user tests here
+		//<Djole date="2014-11-15">
 		AddMineFieldTest();
+
+		//</Djole>
 		//AddIcosahedron(); //for testing "Intel SWVP clipping issue" -Imago 
         
     }
@@ -755,28 +758,35 @@ public:
 
     void AddMineFieldTest()
     {
-        //TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
+		//<Djole date="2014-11-15">
+        TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
 
-		TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true);
+		
+		//TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true);		
+		
+		
 
-	ZFile * pFile = (ZFile*) zf;
-		
-		D3DXIMAGE_INFO fileInfo;
-		D3DXGetImageInfoFromFileInMemory(	pFile->GetPointer(),
-												pFile->GetLength(),
-												&fileInfo );
-		
-		WinPoint targetSize( fileInfo.Width, fileInfo.Height );
-		TRef<Surface> psurface =
-			m_pengine->CreateSurfaceD3DX(
-				&fileInfo,
-				&targetSize,
-				zf,
-				true,
-				Color( 0, 0, 0 ),
-				"fxmine", true );
+	//ZFile * pFile = (ZFile*) zf;
+	//	
+	//	D3DXIMAGE_INFO fileInfo;
+	//	D3DXGetImageInfoFromFileInMemory(	pFile->GetPointer(),
+	//											pFile->GetLength(),
+	//											&fileInfo );
+	//	
+	//	WinPoint targetSize( fileInfo.Width, fileInfo.Height );		
+	//	TRef<Surface> psurface =
+	//		m_pengine->CreateSurfaceD3DX(
+	//			&fileInfo,
+	//			&targetSize,
+	//			zf,
+	//			true,
+	//			Color( 0, 0, 0 ),
+	//			"fxmine", true );
+
+		//</Djole>
+
 		psurface->SetColorKey(Color(0, 0, 0));
-		psurface->SetEnableColorKey(true);
+		psurface->SetEnableColorKey(true);		
 
 
 

@@ -265,7 +265,6 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         {
             return TmodelIGC<IshipIGC>::GetSignature() * m_cloaking;
         }
-
         virtual void                 Move(float t)
         {
             if (m_pshipParent == NULL)
@@ -1132,7 +1131,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             pfractions->SetAmmo(m_myHullType.GetMaxAmmo(), m_ammo);   
             pfractions->SetEnergy(m_myHullType.GetMaxEnergy(), m_energy);
 			pfractions->SetOre(GetOreCapacity(), m_fOre);  //Xynth #156 7/2010
-        }
+		}
 
 
 #define SetSC           pshipupdate->stateM.Set(m_stateM);                  \
@@ -1141,10 +1140,18 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 #define SetOVTP         pshipupdate->orientation.Set(GetOrientation());                                         \
                         pshipupdate->velocity.Set(GetVelocity());                                               \
                         pshipupdate->turnRates.Set(m_turnRates);                                                \
-                        {                                                                                       \
+		                        {                                                                                       \
                             IafterburnerIGC* p = (IafterburnerIGC*)(m_mountedOthers[ET_Afterburner]);           \
                             pshipupdate->power = (p ? BytePercentage(p->GetPower()) : BytePercentage(0.0f));    \
-                        }
+		                        }																						\
+						/*<Djole date="2014-12-16">*/															\
+								{																						\
+							IcloakIGC* p = (IcloakIGC*)(m_mountedOthers[ET_Cloak]);								\
+							pshipupdate->cloakDevice = (p ? BytePercentage(p->getCurrentCloak()) : BytePercentage(0.0f));   \
+							pshipupdate->cloakShip = GetCloaking();															\
+						}
+						/*</Djole>*/
+
 
 #define SetF            pshipupdate->fractions.SetHullFraction(m_fraction);                             \
                         {                                                                               \
@@ -1161,6 +1168,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             pshipupdate->shipID = m_shipID;
 
             SetSC;
+			
         }
         virtual void                ExportShipUpdate(Time                       timeReference,
                                                      const Vector&              positionReference,
@@ -1177,6 +1185,8 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             SetOVTP;
 
             SetF;
+
+
         }
 
         virtual void                ExportShipUpdate(ClientShipUpdate*     pshipupdate) const

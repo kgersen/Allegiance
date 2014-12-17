@@ -3572,7 +3572,10 @@ void    AddUpdate(Time          timeReference,
         pHeavy->stateM      = su.stateM;
         pHeavy->turnRates   = su.turnRates;
         pHeavy->velocity    = su.velocity;
-
+		//<Djole date="2014-12-16">
+		pHeavy->cloakDevice = su.cloakDevice;
+		pHeavy->cloakShip = su.cloakShip;
+		//</Djole>
         pHeavy->power       = su.power;
 
         //The following is not part of the client update ...
@@ -4454,7 +4457,11 @@ HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cn
   // we don't do anything until they login
 
   // mmf 10/08 Log ip address (code provided by Imago)
-  char szRemote[52]; //Spunky #341
+	//<Djole date="2014-10-28">
+	//Stolen from imago	
+  //char szRemote[52]; //Spunky #341
+	char szRemote[INET6_ADDRSTRLEN];
+  //</Djole>
   pthis->GetIPAddress(cnxn, szRemote);
   debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
 
@@ -10643,6 +10650,9 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
     IclusterIGC*    pcluster = pasteroid->GetCluster();
 
     DataStationIGC  ds;
+	//<Djole date="2014-12-17">
+	memset(&ds, 0, sizeof(ds));
+	//</Djole>
     strcpy(ds.name, pstationtype->GetName());
     ds.clusterID  = pcluster->GetObjectID();
     ds.position   = pasteroid->GetPosition();
@@ -10687,7 +10697,7 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	const SideListIGC * plistSide0 = pmission->GetSides();
 	for (SideLinkIGC * plinkSide = plistSide0->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * potherside = plinkSide->data();
-		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) || pbseensides[potherside->GetObjectID()]) {
+		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) || pbseensides[potherside->GetObjectID()]) {		
 			KillAsteroidEvent(pasteroid, potherside, false);
 		}
  	}
@@ -11612,7 +11622,10 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 	for (SideLinkIGC * plinkSide = plistSide1->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * psideother = plinkSide->data();
 		if (psideother && !pstation->SeenBySide(psideother) && pstation->GetRoidID() != NA && pstation->GetSide()->GetObjectID() != psideother->GetObjectID() && pstation->GetRoidSide(psideother->GetObjectID()))
-			KillAsteroidEvent(pstation->GetRoidID(),pstation->GetCluster()->GetObjectID(),psideother);
+			//<Djole date="2014-12-17">
+			//KillAsteroidEvent(pstation->GetRoidID(),pstation->GetCluster()->GetObjectID(),psideother);
+			KillAsteroidEvent(pstation->GetRoidID(), pstation->GetCluster()->GetObjectID(), psideother, false);
+			//</Djole>
 	}
 
 
@@ -11632,46 +11645,77 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
   */
 }
 
-void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF)
-{
-  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
-  END_PFM_CREATE
-  pfmAsteroidDestroyed->clusterID = pasteroid->GetCluster()->GetObjectID();
-  pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
-  pfmAsteroidDestroyed->explodeF = explodeF;
-  g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
+//<Djole date="2014-12-17">
+//void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF)
+//{
+//  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+//  END_PFM_CREATE
+//  pfmAsteroidDestroyed->clusterID = pasteroid->GetCluster()->GetObjectID();
+//  pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
+//  pfmAsteroidDestroyed->explodeF = explodeF;
+//  g.fm.SendMessages(m_pfsMission->GetGroupRealSides(), FM_GUARANTEED, FM_FLUSH);
+//
+//  pasteroid->Terminate();
+//}
+//
+//void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* side, bool explodeF)
+//{
+//  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+//  END_PFM_CREATE
+//  pfmAsteroidDestroyed->clusterID = pasteroid->GetCluster()->GetObjectID();
+//  pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
+//  pfmAsteroidDestroyed->explodeF = explodeF;
+//  g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+//
+//   //Turkey #307 02/13
+//  pasteroid->Kill(side->GetObjectID());
+//  if (pasteroid->IsDead()) pasteroid->Terminate();
+//}
+//
+//void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side)
+//{
+//  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
+//  END_PFM_CREATE
+//  pfmAsteroidDestroyed->clusterID = soid;
+//  pfmAsteroidDestroyed->asteroidID = roid;
+//  pfmAsteroidDestroyed->explodeF = false;
+//  g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
+//
+//  //Turkey #307 02/13
+//  IasteroidIGC* pasteroid = m_pfsMission->GetIGCMission()->GetAsteroid(roid);
+//  pasteroid->Kill(side->GetObjectID());
+//  if (pasteroid->IsDead()) pasteroid->Terminate();
+//}
+void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* pside, bool explodeF){
+	if (pasteroid == NULL || 
+		pside==NULL){
+		return;
+	}
+	ObjectID roid = pasteroid->GetObjectID();
+	IclusterIGC* pCluster = pasteroid->GetCluster();
+	if (pCluster == NULL){
+		return;
+	}
+	ObjectID soid = pCluster->GetObjectID();
 
-  pasteroid->Terminate();
+	KillAsteroidEvent(roid, soid, pside, explodeF);
 }
-
-void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* side, bool explodeF)
-{
-  BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
-  END_PFM_CREATE
-  pfmAsteroidDestroyed->clusterID = pasteroid->GetCluster()->GetObjectID();
-  pfmAsteroidDestroyed->asteroidID = pasteroid->GetObjectID();
-  pfmAsteroidDestroyed->explodeF = explodeF;
-  g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
-
-   //Turkey #307 02/13
-  pasteroid->Kill(side->GetObjectID());
-  if (pasteroid->IsDead()) pasteroid->Terminate();
-}
-
-void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side)
-{
+void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side, bool explodeF){
   BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
   END_PFM_CREATE
   pfmAsteroidDestroyed->clusterID = soid;
   pfmAsteroidDestroyed->asteroidID = roid;
-  pfmAsteroidDestroyed->explodeF = false;
+  pfmAsteroidDestroyed->explodeF = explodeF;
   g.fm.SendMessages(CFSSide::FromIGC(side)->GetGroup(), FM_GUARANTEED, FM_FLUSH);
 
-  //Turkey #307 02/13
   IasteroidIGC* pasteroid = m_pfsMission->GetIGCMission()->GetAsteroid(roid);
-  pasteroid->Kill(side->GetObjectID());
-  if (pasteroid->IsDead()) pasteroid->Terminate();
+  if (pasteroid){
+	  pasteroid->Kill(side->GetObjectID());	  
+	  if (pasteroid->IsDead()) pasteroid->Terminate();
+  }
+ 
 }
+//</Djole>
 
 void FedSrvSiteBase::DrainAsteroidEvent(IasteroidIGC* pasteroid)
 {

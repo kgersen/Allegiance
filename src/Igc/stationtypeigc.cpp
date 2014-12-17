@@ -31,7 +31,6 @@ HRESULT         CstationTypeIGC::Initialize(ImissionIGC* pMission,
     pMission->GetIgcSite()->Preload(m_data.modelName, iswalpha(m_data.textureName[0])
                                                       ? m_data.textureName
                                                       : NULL);
-
     m_pdtConstruction = pMission->GetDroneType(m_data.constructionDroneTypeID);
     assert (m_pdtConstruction);
     m_pdtConstruction->AddRef();

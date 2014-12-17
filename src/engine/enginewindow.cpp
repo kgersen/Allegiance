@@ -282,7 +282,21 @@ bool EngineWindow::IsValid()
 }
 
 void EngineWindow::OnClose()
-{
+{	
+
+	//<Djole date="2014-12-14">
+	//Stolen from Imago
+	 //Imago 10/14
+		int epp = m_pmouse->GetEPP();
+	if (epp) {
+		int pvalue[3];
+		pvalue[0] = m_pmouse->GetThreshold1();
+		pvalue[1] = m_pmouse->GetThreshold2();
+		pvalue[2] = epp;
+		ZVerify(SystemParametersInfo(SPI_SETMOUSE, 0, pvalue, 0));
+		
+	}
+	//</Djole>
     RemoveKeyboardInputFilter(m_pkeyboardInput);
 
     m_pgroupImage           = NULL;

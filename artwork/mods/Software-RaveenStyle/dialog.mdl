@@ -182,26 +182,31 @@ ChatCompositionImage = PaneImage(ComposingPane, false, true);
 // Turkey 2013/11/26 #361:
 // + added clipimage to reduce size based on NumChatLines
 //
+// Djole 2014/09/21
+// + added FontSize
+// * changed ChatListPane construction
+// * changed chatClipImage construction 
 //////////////////////////////////////////////////////
 
-chatListPane = ChatListPane(Point(355, Add(8,Multiply(12,NumChatLines)) ) );
+chatListPane = ChatListPane(Point(355, Add(Multiply(Divide(FontSize,3),2), Multiply(FontSize,NumChatLines)) ) );
 chatBackgroundImage = ImportImageFromFile("cortui_core_concommdisplay.png", false);
 
-chatClipImage = SwitchImage(
+/*chatClipImage = SwitchImage(
 	NumChatLines,
 	chatBackgroundImage,
 	[
-		(1, ClipImage(chatBackgroundImage, Rect(0, 108, 370, 128))),
-		(2, ClipImage(chatBackgroundImage, Rect(0, 96, 370, 128))),
-		(3, ClipImage(chatBackgroundImage, Rect(0, 84, 370, 128))),
-		(4, ClipImage(chatBackgroundImage, Rect(0, 72, 370, 128))),
-		(5, ClipImage(chatBackgroundImage, Rect(0, 60, 370, 128))),
-		(6, ClipImage(chatBackgroundImage, Rect(0, 48, 370, 128))),
-		(7, ClipImage(chatBackgroundImage, Rect(0, 36, 370, 128))),
-		(8, ClipImage(chatBackgroundImage, Rect(0, 24, 370, 128))),
-		(9, ClipImage(chatBackgroundImage, Rect(0, 12, 370, 128)))
+		(1, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,9), 370, 128))),
+		(2, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,8), 370, 128))),
+		(3, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,7), 370, 128))),
+		(4, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,6), 370, 128))),
+		(5, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,5), 370, 128))),
+		(6, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,4), 370, 128))),
+		(7, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,3), 370, 128))),
+		(8, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,2), 370, 128))),
+		(9, ClipImage(chatBackgroundImage, Rect(0, Multiply(FontSize,1), 370, 128)))
 	]
-	);
+	);*/
+	chatClipImage = ClipImage(chatBackgroundImage,Rect(0,0,370,128));
 
 CommPane =
     ImagePane(
@@ -2185,7 +2190,7 @@ cortCommPaneImageWithoutScrollbar = PaneImage(BlackPane(ImagePane(ClipImage(cort
 cortCommPaneImageWithScrollbar    = cortCommPaneImageBasic;
 
 // #361 SwitchPoint and TranslateImage added to move chat pane upwards when NumChatLines is reduced.
-CommPanePosition				  = SwitchPoint(
+/*CommPanePosition				  = SwitchPoint(
 										NumChatLines,
 										Point(0, 0),
 										[	
@@ -2199,7 +2204,8 @@ CommPanePosition				  = SwitchPoint(
 											(8, Point(0, 24)),
 											(9, Point(0, 12))
 										]
-									);
+									);*/
+									CommPanePosition=Point(0,0);
 									
 cortCommPaneImage			      = TranslateImage
 									(

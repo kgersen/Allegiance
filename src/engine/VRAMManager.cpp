@@ -174,6 +174,10 @@ void CVRAMManager::EvictDefaultPoolResources( )
 				}
 			}
 		}
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+		CD3DDevice9::Get()->Device()->EvictManagedResources();
+		//</Djole>
 	}
 }
 
@@ -317,23 +321,60 @@ HRESULT CVRAMManager::CreateTexture(	TEXHANDLE	texHandle,
 															&pTexture->pTexture,
 															NULL );  //Fix memory leak -Imago 8/2/09
 
-		D3DSURFACE_DESC surfDesc;
-		pTexture->pTexture->GetLevelDesc( 0, &surfDesc );
-		pTexture->dwActualWidth		= GetPower2( surfDesc.Width );
-		pTexture->dwActualHeight	= GetPower2( surfDesc.Height );
+		//<Djole date="2014-09-10">dirty fix: try to fit more texture using the system memory,
+		//need to get more ram to test it!
+		//if(FAILED(hr) &&  (hr==D3DERR_OUTOFVIDEOMEMORY || hr==E_OUTOFMEMORY)){			
+		//		hr = CD3DDevice9::Get()->Device()->CreateTexture(	pTexture->dwOriginalWidth,
+		//															pTexture->dwOriginalHeight,
+		//															uiNumLevels,
+		//															dwUsageFlags,
+		//															texFormat,
+		//															D3DPOOL_SYSTEMMEM,
+		//															&pTexture->pTexture,
+		//															NULL );  			
+		//	
+		//}		
+		//</Djole>
+
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+
+		//D3DSURFACE_DESC surfDesc;
+		//pTexture->pTexture->GetLevelDesc( 0, &surfDesc );
+		//pTexture->dwActualWidth		= GetPower2( surfDesc.Width );
+		//pTexture->dwActualHeight	= GetPower2( surfDesc.Height );
+
+		//</Djole>
 
 		// If it created ok, update the texture details.
 		if( hr == D3D_OK )
 		{
+			//<Djole date="2014-12-14">
+			//Stolen from Imago
+			D3DSURFACE_DESC surfDesc;
+			pTexture->pTexture->GetLevelDesc(0, &surfDesc);
+			pTexture->dwActualWidth = GetPower2(surfDesc.Width);
+			pTexture->dwActualHeight = GetPower2(surfDesc.Height);
+			//</Djole>
 			pTexture->texFormat		= texFormat;
 			pTexture->bValid		= true;
 		}
 
 		if( m_sVRAM.bMipMapGenerationEnabled == true )
 		{
-			pTexture->pTexture->SetAutoGenFilterType( CD3DDevice9::Get()->GetMipFilter() );
-			pTexture->bMipMappedTexture = true;
+			//<Djole date="2014-12-14">
+			//Stolen from Imago			
+			pTexture->pTexture->SetAutoGenFilterType(CD3DDevice9::Get()->GetMipFilter());
+			pTexture->bMipMappedTexture = true;			
+			//</Djole>
 		}
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+		else{
+			//debugf("Failed to create texture!\n"); //OUTOFMEMORY imago 9/14
+			debugf("Failed to create texture: \"%s\"!\n", szTextureName);
+		}
+		//</Djole>
 	}
 
 #ifdef _DEBUG
@@ -506,7 +547,20 @@ bool CVRAMManager::ReleaseHandle( TEXHANDLE texHandle )
 			ULONG refCount;
 
 			// Release the texture. Clear out the data when the reference count is zero.
-			refCount = m_sVRAM.ppBankArray[ dwBankIndex ]->pTexArray[ dwTexIndex ].pTexture->Release(); //Imago 6/10 TODO REVIEW DEBUG CRASH HERE
+			//<Djole date="2014-12-14">
+			//Stolen from Imago
+			//refCount = m_sVRAM.ppBankArray[ dwBankIndex ]->pTexArray[ dwTexIndex ].pTexture->Release(); //Imago 6/10 TODO REVIEW DEBUG CRASH HERE			
+				 //Imago fleshed this out 9/14
+			SBank* myBank = m_sVRAM.ppBankArray[dwBankIndex];
+			if (myBank) {
+				LPDIRECT3DTEXTURE9 myTexture = myBank->pTexArray[dwTexIndex].pTexture;
+				if (myTexture) {
+					refCount = myTexture->Release();
+					
+				}
+				
+			}
+			//</Djole>
 			if( refCount == 0 )
 			{
 				// Reduce the counts.

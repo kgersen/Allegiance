@@ -1814,7 +1814,17 @@ class ExpandedTeamPane : public TeamPane
             // draw the player's Wing
             if (pplayer->SideID() == trekClient.GetSideID())
             {
-                psurface->DrawString(pfont, color, WinPoint(m_viColumns[4] + 2, 1), c_pszWingName[pship->GetWingID()]);
+				//<Djole date="2014-12-15">
+                //psurface->DrawString(pfont, color, WinPoint(m_viColumns[4] + 2, 1), c_pszWingName[pship->GetWingID()]);
+				WingID wid = pship->GetWingID();
+				if (wid < 0 ||
+					c_widMax<=wid){
+					psurface->DrawString(pfont, color, WinPoint(m_viColumns[4] + 2, 1), TEXT(""));
+				}
+				else{
+					psurface->DrawString(pfont, color, WinPoint(m_viColumns[4] + 2, 1), c_pszWingName[pship->GetWingID()]);
+				}
+				//</Djole>
             }
 
 			// draw the rank: AEM 7.21.07

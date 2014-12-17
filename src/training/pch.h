@@ -31,6 +31,10 @@
 // Windows headers
 //
 
+//<Djole date="2014-10-28">
+#define _WINSOCKAPI_
+//</Djole>
+
 #include <windows.h>
 #include <windowsx.h>
 #include <mmsystem.h>

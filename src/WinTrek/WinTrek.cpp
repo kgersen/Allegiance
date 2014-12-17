@@ -769,6 +769,7 @@ class TrekWindowImpl :
     public TrekInputSite
 {
 public:
+
     const char*     m_pszCursor;
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1183,13 +1184,19 @@ public:
     TRef<ModifiableNumber>  m_pnumberIsGhost;
     TRef<ModifiableNumber>  m_pnumberFlash;
     TRef<ModifiableNumber>  m_pnumberTeamPaneCollapsed;
-	
+		
 	// #294/#361
 	TRef<ModifiableNumber>  m_pnumberChatLinesDesired;
 	TRef<ModifiableNumber>  m_pnumberChatLines;
 	TRef<WrapNumber>		m_pwrapNumberChatLines;
 	TRef<ModifiableNumber>  m_pnumberShowScrollbar;
 	TRef<WrapNumber>		m_pwrapNumberShowScrollbar;
+	
+
+	//<Djole date="2014-09-20">
+	TRef<ModifiableNumber> m_pnumberFontSize;	
+	TRef<WrapNumber> m_pwrapNumberFontSize;	
+	//</Djole>
 
     //
     // exports
@@ -1356,6 +1363,10 @@ public:
     TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
     TRef<IMenuItem>            m_pitemToggleVirtualJoystick;
     TRef<IMenuItem>            m_pitemToggleFlipY;
+	//<Djole date="2014-09-22">
+	TRef<IMenuItem>			   m_pitemToggleFlipX;
+	TRef<IMenuItem>			   m_pitemToggleFlipZ;
+	//</Djole>
     //Imago 7/10
     TRef<IMenuItem>            m_pitemToggleEnableFeedback; //moved around & fixed up 7/10 #187
 	TRef<IMenuItem>            m_pitemToggleFFAutoCenter; 
@@ -1386,6 +1397,10 @@ public:
 	TRef<IMenuItem>			   m_pitemCycleTimestamp;		// #360
 	TRef<IMenuItem>			   m_pitemIncreaseChatLines;	//
 	TRef<IMenuItem>			   m_pitemReduceChatLines;		// #294
+	//<Djole date="2014-09-20">
+	TRef<IMenuItem>			   m_pitemIncreaseFontSize;
+	TRef<IMenuItem>			   m_pitemDecreaseFontSize;
+	//</Djole>
 	TRef<IMenuItem>			   m_pitemScrollbar;			//
     TRef<IMenuItem>            m_pitemSoundQuality;
     TRef<IMenuItem>            m_pitemToggleSoundHardware;
@@ -1466,6 +1481,10 @@ public:
     TRef<TrekInput> m_ptrekInput;
     bool            m_bEnableVirtualJoystick;
     bool            m_bFlipY;
+	//<Djole date="2014-09-22">
+	bool			m_bFlipX;
+	bool			m_bFlipZ;
+	//</Djole>
     bool            m_bEnableFeedback;
 
     AsteroidAbilityBitMask          m_aabmInvest;
@@ -2259,7 +2278,8 @@ public:
             }
 
             if (s != ScreenIDCombat)
-            {
+            {				
+
                 if (GetViewMode() == vmOverride)
                     EndOverrideCamera();
                 else
@@ -2286,18 +2306,28 @@ public:
             // kill any capture
             m_pwrapImageTop->RemoveCapture();
 
-            // create the new screen
+			//<Djole date="2014-09-22">
+			TrekResources::isCombat(s==ScreenIDCombat);
+			//</Djole>
+
+            // create the new screen						
 
             switch (s) {
                 case ScreenIDCombat:
-                {
+                {				
+					
+					//<Djole date="2014-09-22">					
+					m_pnumberFontSize->SetValue(TrekResources::chatFontSize());
+					m_pnumberChatLines->SetValue(trekClient.m_chatList.n() < m_pnumberChatLinesDesired->GetValue() ? trekClient.m_chatList.n() : m_pnumberChatLinesDesired->GetValue());					
+					//</Djole>
+
                     //
                     // Switch to combat resolution
                     //
-
+					
 					//imago add refresh rate 7/1/09
 					SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));  //AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
-
+					
                     SetFocus();
                     m_frameID = 0;
                     m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
@@ -2321,7 +2351,7 @@ public:
                     //
                     // Fill in the game state dialog
                     //
-
+					
                     InitializeGameStateContainer();
 
                     //
@@ -2329,6 +2359,7 @@ public:
                     //
 
                     TurnOnOverlayFlags(ofGameState);
+
                     break;
                 }
 
@@ -2341,7 +2372,13 @@ public:
                     break;
 
                 case ScreenIDGameOverScreen:
-                    SetScreen(CreateGameOverScreen(GetModeler()));
+					//<Djole date="2014-12-14">
+					//Stolen from Imago
+					 //imago eviction 9/14
+					CVRAMManager::Get()->EvictDefaultPoolResources();
+					CVBIBManager::Get()->EvictDefaultPoolResources();
+					//</Djole>
+                    SetScreen(CreateGameOverScreen(GetModeler()));					
                     break;
 
                 case ScreenIDCreateMission:
@@ -2406,6 +2443,12 @@ public:
 
 
                 case ScreenIDTrainScreen:
+					//<Djole date="2014-12-14">
+					//Stolen from Imago
+					//imago eviction 9/14
+					CVRAMManager::Get()->EvictDefaultPoolResources();
+					CVBIBManager::Get()->EvictDefaultPoolResources();
+					//</Djole>
                     SetScreen(CreateTrainingScreen(GetModeler()));
                     break;
 
@@ -2444,7 +2487,12 @@ public:
 						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
 						"tm_8_nanite", //TheBored 06-JUL-07: Mish #8 pregame panels.
                     };
-
+					//<Djole date="2014-12-14">
+					//Stolen from Imago
+					//imago eviction 9/14
+					CVRAMManager::Get()->EvictDefaultPoolResources();
+					CVBIBManager::Get()->EvictDefaultPoolResources();
+					//</Djole>
                     SetScreen (CreateTrainingSlideshow (GetModeler (), strNamespace[iMission], iMission));
                     break;
                 }
@@ -2492,6 +2540,7 @@ public:
 
         if (s != sNextScreen)
             screen(sNextScreen, NULL);
+
     }
 
     void        CharInfoScreenForPlayer(int idZone)
@@ -2671,6 +2720,7 @@ public:
 		m_iMouseAccel(0) //#215
 
     {
+		
         HRESULT hr;
 
 // BUILD_DX9
@@ -2797,12 +2847,19 @@ public:
         pnsGamePanes->AddMember("ShowChatHistoryHUD", m_pboolChatHistoryHUD = new ModifiableBoolean(true));
         pnsGamePanes->AddMember("ShowCenterHUD", m_pboolCenterHUD = new ModifiableBoolean(true));
         pnsGamePanes->AddMember("ShowTargetHUD", m_pboolTargetHUD = new ModifiableBoolean(true));
-
+		
 		// turkey #294 stylehud used to be here but it's obsolete now
 		// we need a couple of chatlist settings though
-		m_pnumberChatLinesDesired = new ModifiableNumber(0);
+
+				
+		m_pnumberChatLinesDesired = new ModifiableNumber(0);				
 		pnsGamePanes->AddMember("NumChatLines", m_pwrapNumberChatLines = new WrapNumber(m_pnumberChatLines = new ModifiableNumber(0)));
-		pnsGamePanes->AddMember("ShowScrollbarOnCockpitChat", m_pwrapNumberShowScrollbar = new WrapNumber(m_pnumberShowScrollbar = new ModifiableNumber(1)));
+		pnsGamePanes->AddMember("ShowScrollbarOnCockpitChat", m_pwrapNumberShowScrollbar = new WrapNumber(m_pnumberShowScrollbar = new ModifiableNumber(1)));		
+		
+		//<Djole date="2014-09-21">		
+		m_pnumberFontSize = new ModifiableNumber(0);
+		pnsGamePanes->AddMember("FontSize", m_pwrapNumberFontSize = new WrapNumber(m_pnumberFontSize=new ModifiableNumber(0)));		
+		//</Djole>
 
         pnsGamePanes->AddMember("Flash", m_pnumberFlash = new ModifiableNumber(0));
         pnsGamePanes->AddMember("TeamPaneCollapsed", m_pnumberTeamPaneCollapsed = new ModifiableNumber(0));
@@ -2872,8 +2929,12 @@ public:
         //
         // Create the virtual joystick image
         //
-
-        m_pjoystickImage = CreateJoystickImage(1.0f / 512.0f);
+		
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+        //m_pjoystickImage = CreateJoystickImage(1.0f / 512.0f);
+		m_pjoystickImage = CreateJoystickImage(1.0f / 1024.0f);
+		//</Djole>
 
         //
         // Initialize what's needed to show the splash screen
@@ -2931,6 +2992,10 @@ public:
 
         m_bEnableVirtualJoystick = (LoadPreference("EnableVirtualJoystick", 0) != 0);
         m_bFlipY                 = (LoadPreference("FlipY",                 0) != 0);
+		//<Djole date="2014-09-22">
+		m_bFlipX			     = static_cast<bool>(LoadPreference("FlipX", 0));
+		m_bFlipZ				 = static_cast<bool>(LoadPreference("FlipZ", 0));
+		//</Djole>
         m_bEnableFeedback        = (LoadPreference("EnableFeedback",        1) != 0);
         m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
@@ -3222,9 +3287,20 @@ public:
 		// #360 timestamps are off by default
 		m_timestamp = LoadPreference("Timestamp", 0);
 
-		// #294
-		SetChatLines(LoadPreference("ChatLines", 10));
-		if (!LoadPreference("ShowScrollbar", 0)) ToggleScrollbar();
+		//<Djole date="2014-09-23">
+		//m_pnumberFontSize->SetValue(LoadPreference("FontSize",12));
+		//TrekResources::chatFontSize((int)m_pnumberFontSize->GetValue());
+		//</Djole>
+		
+		//<Djole date="2014-10-29">
+		// #294		
+		setChatLines(LoadPreference("ChatLines", 10),LoadPreference("FontSize",12));
+		m_pnumberChatLines->SetValue(10);
+		//SetChatLines(LoadPreference("ChatLines", 10));
+		//</Djole>
+		if (!LoadPreference("ShowScrollbar", 0)) ToggleScrollbar();		
+
+		
 
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
@@ -3939,7 +4015,7 @@ public:
     #define idmFilterLobbyChats            626
     #define idmToggleLargeDeadZone         627
     #define idmToggleVirtualJoystick       628
-    #define idmToggleFlipY                 629
+    #define idmToggleFlipY                 629	
     #define idmToggleStickyChase           630
     #define idmToggleEnableFeedback        631
     #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
@@ -3953,6 +4029,13 @@ public:
 	#define idmIncreaseChatLines		 638 // #294
 	#define idmReduceChatLines			 639 // #294
 	#define idmCycleTimestamp			 640 // #360
+
+	//<Djole date="2014-09-20">
+	#define idmIncreaseFontSize			641
+	#define idmDecreaseFontSize			642
+	#define idmToggleFlipX              643
+	#define idmToggleFlipZ              644
+	//</Djole>
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -4363,7 +4446,11 @@ public:
                 m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetDeadzoneMenuString(),       'Z'); //imago updated 7/8/09
                 m_pitemToggleVirtualJoystick       = pmenu->AddMenuItem(idmToggleVirtualJoystick,       GetVirtualJoystickMenuString(),     'J');
                 m_pitemToggleFlipY                 = pmenu->AddMenuItem(idmToggleFlipY,                 GetFlipYMenuString(),               'Y');
-                //m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
+                //<Djole date="2014-09-22">
+				m_pitemToggleFlipX                 = pmenu->AddMenuItem(idmToggleFlipX,                 GetFlipXMenuString(),               'U');
+				m_pitemToggleFlipZ                 = pmenu->AddMenuItem(idmToggleFlipZ,                 GetFlipZMenuString(),               'I');
+				//</Djole>
+				//m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
 													 pmenu->AddMenuItem(idmFFOptions,					"Force Feedback",				  'E', m_psubmenuEventSink);
 													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
 					
@@ -4403,8 +4490,13 @@ public:
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
 				m_pitemCycleTimestamp			   = pmenu->AddMenuItem(idmCycleTimestamp,				GetCycleTimestampMenuString(),		'T');
 				m_pitemScrollbar				   = pmenu->AddMenuItem(idmScrollbar,					GetToggleScrollbarMenuString(),		'S');
+				
 				m_pitemIncreaseChatLines		   = pmenu->AddMenuItem(idmIncreaseChatLines,			GetIncreaseChatLinesMenuString(),	'I');
-				m_pitemReduceChatLines			   = pmenu->AddMenuItem(idmReduceChatLines,				GetReduceChatLinesMenuString(),		'R');
+				m_pitemReduceChatLines			   = pmenu->AddMenuItem(idmReduceChatLines,				GetReduceChatLinesMenuString(),		'R');				
+				//<Djole date="2014-09-20">
+				m_pitemIncreaseFontSize			   = pmenu->AddMenuItem(idmIncreaseFontSize,			increaseFontSizeString(),		'H');
+				m_pitemDecreaseFontSize            = pmenu->AddMenuItem(idmDecreaseFontSize,			decreaseFontSizeString(),        'J');				
+				//</Djole>
 				break;
 			//End TB 30-JUL-07
 			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
@@ -4629,65 +4721,199 @@ public:
 		SavePreference("Timestamp", m_timestamp);
 	}
 
+	//<Djole date="2014-09-20">	not perfect, size hardcoded, mdl files need to be edited for more than 10 lines!
+	DWORD maxChatLines(DWORD fontSize=TrekResources::chatFontSize()){
+		DWORD r;		
+		r = 120 / fontSize;
+		return min(r,10);
+	}
+	//</Djole>
+
+	//void adjustFont(int op){
+	//	
+	//	bool update=false;
+	//	int size=0;
+	//	switch(op)
+	//	{
+	//	case idmIncreaseFontSize:			
+	//			size = TrekResources::chatFontSize() + 1;
+	//			update = size<=TrekResources::maxChatFontSize();							
+	//		break;
+	//	case idmDecreaseFontSize:			
+	//			size = TrekResources::chatFontSize() - 1;
+	//			update = TrekResources::minChatFontSize()<=size;							
+	//		break;
+	//	}
+
+	//	if(update){
+	//				
+	//		m_pnumberFontSize->SetValue(size);
+	//		TrekResources::chatFontSize(size);
+
+	//		setChatLines(m_pnumberChatLinesDesired->GetValue());
+
+	//		if(m_pitemIncreaseFontSize)
+	//			m_pitemIncreaseFontSize->SetString(increaseFontSizeString());
+	//		if (m_pitemDecreaseFontSize)
+	//			m_pitemDecreaseFontSize->SetString(decreaseFontSizeString());
+	//		
+
+	//		//if (screen()==ScreenIDCombat && m_pconsoleImage)
+	//		//{
+	//			//m_pnumberChatLines->SetValue(m_pnumberChatLinesDesired->GetValue());				
+	//			//m_pconsoleImage = NULL;
+	//			//m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
+ //   //                {
+ //   //                    IsideIGC*   pside = trekClient.GetShip()->GetSide();
+ //   //                    assert (pside);
+ //   //                    assert (pside->GetObjectID() >= 0);
+	//			//		m_pconsoleImage->SetDisplayMDL(pside->GetCivilization()->GetHUDName());
+ //   //                }
+ //   //                m_pwrapImageConsole->SetImage(m_pconsoleImage);
+
+ //   //                ResetOverlayMask();
+
+ //   //                SetViewMode(trekClient.GetShip()->GetStation()
+ //   //                    ? (trekClient.GetShip()->IsGhost() ? vmCommand : vmHangar)
+ //   //                    : vmCombat, true);
+ //   //                PositionCommandView(NULL, 0.0f);
+
+ //   //                VTSetText("Screen=%d", ScreenIDCombat);
+
+ //   //                //
+ //   //                // Fill in the game state dialog
+ //   //                //
+
+ //   //                //InitializeGameStateContainer();
+
+ //   //                //
+ //   //                // Bring up the game state pane by default
+ //   //                //
+
+ //   //                TurnOnOverlayFlags(ofGameState);
+
+	//			////m_pconsoleImage->SetDisplayMDL(trekClient.GetSide()->GetCivilization()->GetHUDName());
+	//			////// Reading the display MDL breaks the loadout and hanger screens, this fixes it.
+	//			////// This will also close excess panes and menus and things, which is annoying.
+	//			////if (m_viewmode == vmHangar)
+	//			////{
+	//			////	SetViewMode(vmCommand);
+	//			////	SetViewMode(vmHangar);
+	//			////}
+	//			////if (m_viewmode == vmLoadout)
+	//			////{
+	//			////	SetViewMode(vmCommand);
+	//			////	SetViewMode(vmLoadout);
+	//			////}
+	//		//}
+	//	}
+	//}	
+	
+	
+	//<Djole date="2014-10-29">
+	void setChatLines(DWORD lines, DWORD fontHeight){
+
+
+		fontHeight = max(TrekResources::minChatFontSize(), fontHeight);
+		fontHeight = min(TrekResources::maxChatFontSize(), fontHeight);
+		m_pnumberFontSize->SetValue(fontHeight);
+
+		lines = max(lines, 1);
+		lines = min(lines, maxChatLines(fontHeight));
+
+		TrekResources::chatFontSize(fontHeight);
+		
+		m_pnumberChatLinesDesired->SetValue(lines);
+		SavePreference("ChatLines", lines);
+		SavePreference("FontSize", fontHeight);
+
+		if (m_pitemIncreaseChatLines)
+			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+		if (m_pitemReduceChatLines)
+			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+
+		if (m_pitemIncreaseFontSize)
+			m_pitemIncreaseFontSize->SetString(increaseFontSizeString());
+		if (m_pitemDecreaseFontSize)
+			m_pitemDecreaseFontSize->SetString(decreaseFontSizeString());
+
+		if (screen() == ScreenIDCombat && m_pchatListPane){			
+			m_pnumberChatLines->SetValue(lines);			
+			m_pchatListPane->SetChatLines(lines, fontHeight);			
+		}
+
+		
+		
+	}		
+	//</Djole>
+
+	//<Djole date="2014-10-29">
 	// turkey #294 8/13
-	void IncreaseChatLines()
-	{
-		DWORD lines = (DWORD) m_pnumberChatLinesDesired->GetValue() + 1;
+	//void IncreaseChatLines()
+	//{
+	//	DWORD lines = (DWORD) m_pnumberChatLinesDesired->GetValue() + 1;
 
-		if (SetChatLines(lines))
-		{
-			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
-			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+	//	if (SetChatLines(lines))
+	//	{
+	//		//<Djole date="2014-09-21">
+	//		applyChatLines(lines);
+	//		
 
-			if (m_pchatListPane)
-			{
-				if (GetViewMode() == vmLoadout) 
-				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
-				}
-				else if (GetViewMode() <= vmOverride)
-				{
-					m_pchatListPane->SetChatLines(lines);
-					m_pnumberChatLines->SetValue(lines);
-				}
-			}
+	//		//m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+	//		//m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
 
-			SavePreference("ChatLines", lines);
-		}
-	}
+	//		//if (m_pchatListPane)
+	//		//{
+	//		//	if (GetViewMode() == vmLoadout) 
+	//		//	{
+	//		//		m_pchatListPane->SetChatLines(min(lines, 6));
+	//		//		m_pnumberChatLines->SetValue(min(lines, 6));
+	//		//	}
+	//		//	else if (GetViewMode() <= vmOverride)
+	//		//	{
+	//		//		m_pchatListPane->SetChatLines(lines);
+	//		//		m_pnumberChatLines->SetValue(lines);
+	//		//	}
+	//		//}
+	//		//</Djole>
+	//		//SavePreference("ChatLines", lines);			
+	//	}
+	//}
 
-	void ReduceChatLines()
-	{
-		DWORD lines = (DWORD) m_pnumberChatLinesDesired->GetValue() - 1;
+	//void ReduceChatLines()
+	//{
+	//	DWORD lines = (DWORD) m_pnumberChatLinesDesired->GetValue() - 1;
 
-		if (SetChatLines(lines))
-		{
-			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
-			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+	//	if (SetChatLines(lines))
+	//	{
+	//		//<Djole date="2014-09-21">
+	//		applyChatLines(lines);
+	//		//m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+	//		//m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
 
-			if (m_pchatListPane)
-			{
-				if (GetViewMode() == vmLoadout) 
-				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
-				}
-				else if (GetViewMode() <= vmOverride)
-				{
-					m_pchatListPane->SetChatLines(lines);
-					m_pnumberChatLines->SetValue(lines);
-				}
-			}
+	//		//if (m_pchatListPane)
+	//		//{
+	//		//	if (GetViewMode() == vmLoadout) 
+	//		//	{
+	//		//		//m_pchatListPane->SetChatLines(min(lines, 6));
+	//		//		//m_pnumberChatLines->SetValue(min(lines, 6));
+	//		//	}
+	//		//	else if (GetViewMode() <= vmOverride)
+	//		//	{
+	//		//		m_pchatListPane->SetChatLines(lines);
+	//		//		m_pnumberChatLines->SetValue(lines);
+	//		//	}
+	//		//}
+	//		//</Djole>
 
-
-			SavePreference("ChatLines", lines);
-		}
-	}
+	//		//SavePreference("ChatLines", lines);			
+	//	}
+	//}
 
 	
 	
 	// end #294
+	//</Djole>
 
     void ToggleLinearControls()
     {
@@ -5145,29 +5371,37 @@ public:
         SavePreference("Gamma", value);
     }
 
+	//<Djole date="2014-09-23">
 	// #294 returns true if the requested value was within range (1-10), false otherwise
-	bool SetChatLines(DWORD value)
-	{
-		bool bInRange = false;
-		if (value >= 1)
-		{
-			if (value > 10) m_pnumberChatLinesDesired->SetValue(10.0f);
-			else 
-			{
-				m_pnumberChatLinesDesired->SetValue((float)value);
-				bInRange = true;
-			}
-		}
-		else
-		{
-			m_pnumberChatLinesDesired->SetValue(1.0f);
-		}
+	//Djole - returns true if the requested value was within range (1-maxChatLines()), false otherwise
+	//</Djole>
+	//bool SetChatLines(DWORD value)
+	//{
+	//	bool bInRange = false;
+	//	if(value >= 1)
+	//	{
+	//		//<Djole date="2014-09-23"> hardcoded 128 not ideal
+	//		//if (value > 10) m_pnumberChatLinesDesired->SetValue(10.0f);			
+	//		int max = maxChatLines();
+	//		if(value > max) m_pnumberChatLinesDesired->SetValue(max);
+	//		//</Djole>
+	//		else 
+	//		{
+	//			m_pnumberChatLinesDesired->SetValue((float)value);
+	//			bInRange = true;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		m_pnumberChatLinesDesired->SetValue(1.0f);
+	//	}
 
-		return bInRange;
-	}
+	//	return bInRange;
+	//}
 
 	void ToggleScrollbar()
-	{
+	{				
+
 		if (m_pnumberShowScrollbar->GetValue() > 0.0f) m_pnumberShowScrollbar->SetValue(0.0f);
 		else m_pnumberShowScrollbar->SetValue(1.0f);
 
@@ -5177,6 +5411,25 @@ public:
 		}
 	}
 
+	//<Djole date="2014-09-22">
+	//could have made just 1 function but whatever...
+	void ToggleFlipX(){
+		m_bFlipX = !m_bFlipX;
+
+        SavePreference("FlipX", m_bFlipX);
+
+        if (m_pitemToggleFlipX != NULL) {
+            m_pitemToggleFlipX->SetString(GetFlipXMenuString());
+        }
+	}
+	void ToggleFlipZ(){
+		m_bFlipZ = !m_bFlipZ;
+        SavePreference("FlipZ", m_bFlipZ);
+        if (m_pitemToggleFlipZ != NULL) {
+            m_pitemToggleFlipZ->SetString(GetFlipZMenuString());
+        }
+	}
+	//</Djole>
     void ToggleFlipY()
     {
         m_bFlipY = !m_bFlipY;
@@ -5607,22 +5860,45 @@ public:
 	}
 
 	ZString GetToggleScrollbarMenuString()
-	{
-		return (m_pnumberShowScrollbar->GetValue() > 0.0f) ? "Show Cockpit Chat Scrollbar" : "Hide Cockpit Chat Scrollbar";
+	{		
+		return (m_pnumberShowScrollbar->GetValue() > 0.0f) ? "Show Cockpit Chat Scrollbar" : "Hide Cockpit Chat Scrollbar";				
 	}
-
+	
 	ZString GetIncreaseChatLinesMenuString()
 	{
-		if (m_pnumberChatLinesDesired->GetValue() > 9.9f) return "Chat Lines At Maximum";
+		//<Djole date="2014-09-20">
+		//if (m_pnumberChatLinesDesired->GetValue() > 9.9f) return "Chat Lines At Maximum";
+		int max = maxChatLines();
+		if (m_pnumberChatLinesDesired->GetValue() >= max) return "Chat Lines At Maximum ("+ ZString(max)+ ")";		
+		//</Djole>
 		return "Increase To " + ZString((int)m_pnumberChatLinesDesired->GetValue() + 1) + " Chat Lines";
 	}
-
+	
+	//<Djole date="2014-09-20">
+	ZString increaseFontSizeString(){
+		int h = TrekResources::chatFontSize();
+		if(TrekResources::maxChatFontSize()<=h) 
+			return "Chat Fontsize at maximum (" + ZString(h) + ")";
+		return "Increase Chat FontSize To " + ZString(h+1);
+	}
+	ZString decreaseFontSizeString(){
+		int h = TrekResources::chatFontSize();
+		if(h<=TrekResources::minChatFontSize())
+			return "Chat FontSize at minimum (" + ZString(h) + ")";
+		return "Decrease Chat FontSize To " + ZString((int)h-1);
+	}	
+	//</Djole>
+	
 	ZString GetReduceChatLinesMenuString()
 	{
-		if (m_pnumberChatLinesDesired->GetValue() < 1.1f) return "Chat Lines At Minimum";
+		//<Djole date="2014-09-20">
+		//if (m_pnumberChatLinesDesired->GetValue() < 1.1f) return "Chat Lines At Minimum";		
+		if (m_pnumberChatLinesDesired->GetValue() < 1.1f) return "Chat Lines At Minimum (1)";	
+		//</Djole>
 		return "Reduce To " + ZString((int)m_pnumberChatLinesDesired->GetValue() - 1) + " Chat Lines";
 	}
 
+	//</Djole>
     ZString GetLinearControlsMenuString()
     {
         return (m_bLinearControls) ? "Linear Control Response" : "Quadratic Control Response";
@@ -5771,6 +6047,16 @@ public:
         return (m_bEnableVirtualJoystick ? "Virtual Joystick On " : "Virtual Joystick Off ");
     }
 
+	//<Djole date="2014-09-22">
+	ZString GetFlipXMenuString()
+    {
+        return (m_bFlipX ? "X Axis Flipped " : "X Axis Not Flipped ");
+    }
+	ZString GetFlipZMenuString()
+    {
+        return (m_bFlipZ ? "Z Axis Flipped " : "Z Axis Not Flipped ");
+    }
+	//</Djole>
     ZString GetFlipYMenuString()
     {
         return (m_bFlipY ? "Y Axis Flipped " : "Y Axis Not Flipped ");
@@ -6152,13 +6438,17 @@ public:
 				ToggleScrollbar();
 				break;
 
-			case idmIncreaseChatLines:
-				IncreaseChatLines();
+				//<Djole date="2014-10-29">				
+			case idmIncreaseChatLines:		
+				setChatLines(m_pnumberChatLinesDesired->GetValue() + 1, m_pnumberFontSize->GetValue());
+				//IncreaseChatLines();				
 				break;
 
-			case idmReduceChatLines:
-				ReduceChatLines();
+			case idmReduceChatLines:				
+				//ReduceChatLines();								
+				setChatLines(m_pnumberChatLinesDesired->GetValue() - 1, m_pnumberFontSize->GetValue());
 				break;
+				//</Djole>
 
 			case idmCycleTimestamp:
 				CycleTimestamp();
@@ -6179,6 +6469,14 @@ public:
             case idmToggleFlipY:
                 ToggleFlipY();
                 break;
+				//<Djole date="2014-09-22">
+			case idmToggleFlipX:
+				ToggleFlipX();
+				break;
+			case idmToggleFlipZ:
+				ToggleFlipZ();
+				break;				
+				//</Djole>
 
             case idmToggleEnableFeedback:
                 ToggleEnableFeedback();
@@ -6326,10 +6624,22 @@ public:
 			case idmMouseSensDown:
 				AdjustMouseSens(-c_fMouseSensDelta);
 				break;
+			//<Djole date="2014-09-20">
+			case idmIncreaseFontSize:
+				setChatLines(m_pnumberChatLinesDesired->GetValue(), m_pnumberFontSize->GetValue() + 1);
+				//adjustFont(idmIncreaseFontSize);
+				break;
+			case idmDecreaseFontSize:
+				setChatLines(m_pnumberChatLinesDesired->GetValue(), m_pnumberFontSize->GetValue() - 1);				
+				//adjustFont(idmDecreaseFontSize);
+				break;
+
+			//</Djole>
 			// End Imago
         }
     }
 
+	//</Djole>
     void SetJiggle(float jiggle)
     {
         m_cameraControl.SetJiggle(jiggle);
@@ -6587,23 +6897,28 @@ public:
 			// yp - Your_Persona buttons get stuck patch. aug-03-2006
 			// clear the keyboard buttons.
 			m_ptrekInput->ClearButtonStates();
-
+			
 			// #294 / #361 Use different number of chatlines for the loadout screen cos there's less space
 			if (m_pchatListPane)
 			{
+				
 				int lines = m_pnumberChatLinesDesired->GetValue();
 
 				if (vm == vmLoadout) 
 				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
+					//<Djole date="2014-10-29">
+					//m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pchatListPane->SetChatLines(min(lines, 6), m_pnumberFontSize->GetValue());
+					//</Djole>
 					m_pnumberChatLines->SetValue(min(lines, 6));
+					
 				}
 				else if (vm <= vmOverride) 
 				{
-					m_pchatListPane->SetChatLines(lines);
+					m_pchatListPane->SetChatLines(lines, m_pnumberFontSize->GetValue());
 					m_pnumberChatLines->SetValue(lines);
 				}
-			}
+			}			
 
 			switch (vm)
             {
@@ -7310,7 +7625,11 @@ public:
 
         int nNumPlayingSoundBuffers;
         ZSucceeded(m_pSoundEngine->GetNumPlayingVirtualBuffers(nNumPlayingSoundBuffers));
-        char szRemoteAddress [16];
+		//<Djole date="2014-10-28">
+		//Stolen from imago
+        //char szRemoteAddress [16];
+		char szRemoteAddress[INET6_ADDRSTRLEN];
+		//</Djole>
         if (trekClient.m_fm.IsConnected())
           trekClient.m_fm.GetIPAddress(*trekClient.m_fm.GetServerConnection(), szRemoteAddress);
         else
@@ -10725,7 +11044,12 @@ public:
         {
             static const ZString c_str1(" has requested $");
             static const ZString c_str2(" to buy a ");
-            static const ZString c_str3("  Press the [Insert] key to approve it.");
+			//<Djole date="2014-12-14">
+			//Stolen from Imago
+            //static const ZString c_str3("  Press the [Insert] key to approve it.");			
+			ZString str = GetKeyName(TK_AcceptCommand);			
+			static const ZString c_str3(" Press the " + str + "key to approve it.");
+			//</Djole>
 
             assert (pshipSender);
             IhullTypeIGC*   pht = trekClient.m_pCoreIGC->GetHullType(hid);
@@ -10803,7 +11127,10 @@ public:
             js->controls.jsValues[c_axisPitch] = m_pjoystickImage->GetValue(1)->GetValue();
             js->controls.jsValues[c_axisRoll ] = 0;
         } else {
-            if (m_ptrekInput->IsTrekKeyDown(TK_RollModifier, bReadKeyboard)) {
+
+			//<Djole date="2014-09-22">
+			
+            /*if (m_ptrekInput->IsTrekKeyDown(TK_RollModifier, bReadKeyboard)) {
                 js->controls.jsValues[c_axisYaw ] = 0;
                 js->controls.jsValues[c_axisRoll] = MapJoystick(m_ptrekInput->GetAxis(0));
             } else {
@@ -10811,7 +11138,36 @@ public:
                 js->controls.jsValues[c_axisRoll] = MapJoystick(m_ptrekInput->GetAxis(2));
             }
 
-            js->controls.jsValues[c_axisPitch   ] =  MapJoystick(m_ptrekInput->GetAxis(1));
+            js->controls.jsValues[c_axisPitch   ] =  MapJoystick(m_ptrekInput->GetAxis(1));*/
+
+			D3DXVECTOR2 dzone;
+			dzone.x = m_ptrekInput->GetAxis(0);
+			dzone.y = m_ptrekInput->GetAxis(1);
+			float dlen = D3DXVec2Length(&dzone);
+			if(dlen<g_fJoystickDeadZone){
+				dzone.x=0;
+				dzone.y=0;
+			} else{
+				D3DXVECTOR2 norm;
+				memset(&norm,0,sizeof(norm));
+				D3DXVec2Normalize(&norm,&dzone);				
+				dzone = norm * ((dlen - g_fJoystickDeadZone) / (1.0f-g_fJoystickDeadZone));				
+			}
+
+			if(!m_bLinearControls){
+				dzone.x *= fabsf(dzone.x);
+				dzone.y *= fabsf(dzone.y);
+			}
+			if(m_ptrekInput->IsTrekKeyDown(TK_RollModifier, bReadKeyboard)){				
+				js->controls.jsValues[c_axisYaw]=0;
+				js->controls.jsValues[c_axisRoll] = dzone.x;
+			} else{
+				js->controls.jsValues[c_axisRoll] = MapJoystick(m_ptrekInput->GetAxis(2));
+				js->controls.jsValues[c_axisYaw] = dzone.x;
+			}
+			
+			js->controls.jsValues[c_axisPitch] = dzone.y;
+			//</Djole>
         }
 
         js->controls.jsValues[c_axisThrottle] = -m_ptrekInput->GetAxis(3);
@@ -10824,6 +11180,15 @@ public:
         if (m_bFlipY) {
             js->controls.jsValues[c_axisPitch] = -js->controls.jsValues[c_axisPitch];
         }
+
+		//<Djole date="2014-09-22>
+		if(m_bFlipX){
+			js->controls.jsValues[c_axisYaw] = -js->controls.jsValues[c_axisYaw];
+		}
+		if(m_bFlipZ){
+			js->controls.jsValues[c_axisRoll] = -js->controls.jsValues[c_axisRoll];
+		}
+		//</Djole>
 
         //
         // If the throttle system needs to be initialized, we do that. Otherwise, if the joystick

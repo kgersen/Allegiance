@@ -12,6 +12,11 @@
 **  History:
 */
 
+#pragma once
+//<Djole date="2014-10-28">
+#define _WINSOCKAPI_
+//</Djole>
+
 #define __MODULE__ "igc"
 
 //

@@ -1,6 +1,9 @@
 #ifndef MessagesCore_h
 #define MessagesCore_h
 #include <dplay8.h>
+//<Djole date="2014-10-28">
+#include <WS2tcpip.h>
+//</Djole>
 
 // removed
 //#ifndef BUILD_DX9
@@ -472,8 +475,11 @@ public:
     pgrp->DeleteConnection(this, pcnxn); 
     tt.Stop();
   }
-
-  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16]);
+  //<Djole date="2014-10-28">
+  //Stolen from imago
+  //HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16]);
+  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[INET6_ADDRSTRLEN]);
+  //</Djole>
   HRESULT         GetListeningPort(DWORD* dwPort);
 
   //  <NKM> 07-Aug-2004

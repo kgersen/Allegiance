@@ -376,7 +376,11 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		{
 			if (!pServerT->GetPaused()) // not paused
 			{
-				char szRemoteAddress[16];
+				//<Djole date="2014-10-28">
+				//Stolen from imago
+				//char szRemoteAddress[16];
+				char szRemoteAddress[INET6_ADDRSTRLEN];
+				//</Djole>
 				g_pLobbyApp->GetFMServers().GetIPAddress(*iterCnxn.Value(), szRemoteAddress);
 				//IMAGO REVIEW: Sanity check on szAddr first
 				if (strcmp(szRemoteAddress,szAddr)==0) // IPs match

@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="AGC">
+      <UniqueIdentifier>{843e6776-f199-4e7d-be14-d5f6972ff251}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{9fd8b032-9f40-466a-8390-d2d36852d58e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\Registration Scripts">
+      <UniqueIdentifier>{3f1d574f-a2f2-4d9e-bbdf-7e359eb3adf9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Query">
+      <UniqueIdentifier>{5d807bb8-9591-48be-b3b0-6b0193236ce6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\FedSrv\AdminGame.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\AdminGames.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\AdminServer.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\AdminSession.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\AdminShip.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\AdminUser.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\AdminUsers.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\allsrv.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\AllSrv32.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\DPMono.rgs">
+      <Filter>Resources\Registration Scripts</Filter>
+    </None>
+    <None Include="..\src\FedSrv\fedsrv.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\FedSrv\fedsrv.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\src\FedSrv\regini.txt">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\FedSrv\AdminEventLoggerHook.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminGame.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminGames.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminServer.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminSession.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminSessionClass.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminSessionEventSink.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminShip.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminUser.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminUsers.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\allsrvmodule.cpp">
+      <Filter>AGC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\BitArray.cpp" />
+    <ClCompile Include="..\src\FedSrv\FedSrv.CPP" />
+    <ClCompile Include="..\src\FedSrv\fscluster.cpp" />
+    <ClCompile Include="..\src\FedSrv\fslobby.cpp" />
+    <ClCompile Include="..\src\FedSrv\fsmission.cpp" />
+    <ClCompile Include="..\src\FedSrv\fsship.cpp" />
+    <ClCompile Include="..\src\FedSrv\fsside.cpp" />
+    <ClCompile Include="..\src\FedSrv\pch.cpp" />
+    <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
+    <ClCompile Include="..\src\FedSrv\sqlhelp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\FedSrv\FedSrv.RC">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\FedSrv\AdminEventLoggerHook.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminGame.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminGames.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminServer.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSession.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionClass.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionEventSink.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecure.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecureHost.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminShip.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUser.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUsers.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUtil.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\allsrvmodule.h">
+      <Filter>AGC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\BitArray.h" />
+    <ClInclude Include="..\src\FedSrv\counters.h" />
+    <ClInclude Include="..\src\FedSrv\dbgutil.h" />
+    <ClInclude Include="..\src\FedSrv\FedSrv.H" />
+    <ClInclude Include="..\src\FedSrv\FedSrvApp.h" />
+    <ClInclude Include="..\src\FedSrv\fscluster.h" />
+    <ClInclude Include="..\src\FedSrv\fsmission.h" />
+    <ClInclude Include="..\src\FedSrv\fsship.h" />
+    <ClInclude Include="..\src\FedSrv\fsside.h" />
+    <ClInclude Include="..\src\FedSrv\pch.h" />
+    <ClInclude Include="..\src\FedSrv\resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\srvqueries.h" />
+    <ClInclude Include="..\src\FedSrv\fedsrvsql.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\src\FedSrv\fedmsg.msg">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="..\src\FedSrv\AllSrvModuleIDL.idl">
+      <Filter>AGC</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

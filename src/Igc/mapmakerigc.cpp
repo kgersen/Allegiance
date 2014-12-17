@@ -902,7 +902,9 @@ VOID CmapMakerIGC::GenerateStarbase(CMapData*       pMapData,
     // the station is created.
     //
     DataStationIGC ds;
-
+	//<Djole date="2014-12-17">
+	memset(&ds, 0, sizeof(ds));
+	//</Djole>
     SideID      sideID = pMapData->GetClusterSide(pcluster->GetObjectID());
     IsideIGC*   pSide = pMapData->GetMission()->GetSide(sideID);
     assert(pSide);
@@ -1744,7 +1746,9 @@ VOID CmapMakerBrawlIGC::PopulateCluster(CMapData*    pMapData,
     for (SideID sideID = 0; (sideID < pMapData->GetTeams()); sideID++)
     {
         DataStationIGC ds;
-
+		//<Djole date="2014-12-17">
+		memset(&ds, 0, sizeof(ds));
+		//</Djole>
         IsideIGC*  pSide = pMapData->GetMission()->GetSide(sideID);
         assert(pSide);
 

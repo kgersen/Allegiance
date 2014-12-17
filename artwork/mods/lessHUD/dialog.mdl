@@ -192,7 +192,7 @@ ChatCompositionImage = PaneImage(ComposingPane, false, true);
 chatListPane = ChatListPane(Point(355, Add(8,Multiply(12,NumChatLines)) ) );
 chatBackgroundImage = ImportImageFromFile("cortui_core_concommdisplay.png", false);
 
-chatClipImage = SwitchImage(
+/*chatClipImage = SwitchImage(
 	NumChatLines,
 	chatBackgroundImage,
 	[
@@ -206,7 +206,8 @@ chatClipImage = SwitchImage(
 		(8, ClipImage(chatBackgroundImage, Rect(0, 24, 370, 128))),
 		(9, ClipImage(chatBackgroundImage, Rect(0, 12, 370, 128)))
 	]
-	);
+	);*/
+	chatClipImage=ClipImage(chatBackgroundImage,Rect(0,0,370,128));
 
 CommPane =
     ImagePane(
@@ -2133,7 +2134,7 @@ cortCommPaneImageWithoutScrollbar = PaneImage(BlackPane(ImagePane(ClipImage(cort
 cortCommPaneImageWithScrollbar    = cortCommPaneImageBasic;
 
 // #361 SwitchPoint and TranslateImage added to move chat pane upwards when NumChatLines is reduced.
-CommPanePosition				  = SwitchPoint(
+/*CommPanePosition				  = SwitchPoint(
 										NumChatLines,
 										Point(0, 0),
 										[	
@@ -2147,7 +2148,8 @@ CommPanePosition				  = SwitchPoint(
 											(8, Point(0, 24)),
 											(9, Point(0, 12))
 										]
-									);
+									);*/
+CommPanePosition=Point(0,0);
 									
 cortCommPaneImage			      = TranslateImage
 									(

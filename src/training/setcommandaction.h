@@ -21,6 +21,11 @@
 #include "AbstractTarget.h"
 #endif  //_ABSTRACT_TARGET_H_
 
+//<Djole date="2014-12-14">
+//Stolen from Imago
+//because we love spaghetti!
+ZString GetKeyName(TrekKey tk);
+//</Djole>
 namespace Training
 {
     //------------------------------------------------------------------------------

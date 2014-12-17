@@ -1,6 +1,10 @@
 #include "pch.h"
 #include    <limits.h>
 
+
+//<Djole date="2014-12-17">
+ZString GetKeyName(TrekKey tk);
+//</Djole>
 //
 // Helper function for handling ship updates.
 //
@@ -383,11 +387,16 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 				else
 				{
 	                // then propose the issue.
+					//<Djole date="2014-12-17">
+					ZString strY = GetKeyName(TK_VoteYes);
+					ZString strN = GetKeyName(TK_VoteNo);
 					m_listBallots.PushEnd(BallotInfo(
-						(char*)(FM_VAR_REF(pfmBallot, BallotText)) + ZString("Press [Y] to vote yes, [N] to vote no."), 
+						//(char*)(FM_VAR_REF(pfmBallot, BallotText)) + ZString("Press [Y] to vote yes, [N] to vote no."), 
+						(char*)(FM_VAR_REF(pfmBallot, BallotText)) + ZString("Press ["+strY+"] to vote yes, ["+strN+"] to vote no."), 
 						pfmBallot->ballotID, 
 						ClientTimeFromServerTime(pfmBallot->timeExpiration)
 						));
+					//</Djole>
 				}
 		
             }
@@ -533,8 +542,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 
         case FM_S_STATION_DESTROYED:
         {
+			
             if (!IsInGame())
-                break;
+                break;			
 
             CASTPFM(pfmStation, S, STATION_DESTROYED, pfm);
 
@@ -542,33 +552,35 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                                                 pfmStation->stationID);
             if (station)
             {
-                station->GetCluster()->GetClusterSite()->AddExplosion(station,
-                                                                      station->GetStationType()->HasCapability(c_sabmFlag)
-                                                                      ? c_etLargeStation
-                                                                      : c_etSmallStation);
-                if (pfmStation->launcher != NA)
-                {
-                    IshipIGC * pship = GetCore()->GetShip(pfmStation->launcher);
-                    PostText(true, START_COLOR_STRING "%s" END_COLOR_STRING " destroyed " START_COLOR_STRING "%s's %s" END_COLOR_STRING " in %s.", 
-                        (PCC) ConvertColorToString (pship ? pship->GetSide ()->GetColor () : Color::White ()),
-                        (pship ? pship->GetName() : "Unknown ship"), 
-                        (PCC) ConvertColorToString (station->GetSide ()->GetColor ()),
-                        station->GetSide()->GetName(), 
-                        station->GetName(), 
-                        station->GetCluster()->GetName()
-                        );
-                }
-                else
-                    PostText(true, START_COLOR_STRING "%s's %s" END_COLOR_STRING " in %s was destroyed.", 
-                        (PCC) ConvertColorToString (station->GetSide()->GetColor ()),
-                        station->GetSide()->GetName(), 
-                        station->GetName(), 
-                        station->GetCluster()->GetName());
+				
+				station->GetCluster()->GetClusterSite()->AddExplosion(station,
+					station->GetStationType()->HasCapability(c_sabmFlag)
+					? c_etLargeStation
+					: c_etSmallStation);
+				if (pfmStation->launcher != NA)
+				{
+					IshipIGC * pship = GetCore()->GetShip(pfmStation->launcher);
+					PostText(true, START_COLOR_STRING "%s" END_COLOR_STRING " destroyed " START_COLOR_STRING "%s's %s" END_COLOR_STRING " in %s.",
+						(PCC)ConvertColorToString(pship ? pship->GetSide()->GetColor() : Color::White()),
+						(pship ? pship->GetName() : "Unknown ship"),
+						(PCC)ConvertColorToString(station->GetSide()->GetColor()),
+						station->GetSide()->GetName(),
+						station->GetName(),
+						station->GetCluster()->GetName()
+						);
+				}
+				else
+					PostText(true, START_COLOR_STRING "%s's %s" END_COLOR_STRING " in %s was destroyed.",
+					(PCC)ConvertColorToString(station->GetSide()->GetColor()),
+					station->GetSide()->GetName(),
+					station->GetName(),
+					station->GetCluster()->GetName());
 
-                if (station->GetSide() == GetSide() || GetSide()->AlliedSides(GetSide(),station->GetSide())) //AllY Imago/Rock 7/27/09 
-                    PlaySoundEffect(station->GetStationType()->GetDestroyedSound());
-                else
-                    PlaySoundEffect(station->GetStationType()->GetEnemyDestroyedSound());
+				if (station->GetSide() == GetSide() || GetSide()->AlliedSides(GetSide(), station->GetSide())) //AllY Imago/Rock 7/27/09 
+					PlaySoundEffect(station->GetStationType()->GetDestroyedSound());
+				else
+					PlaySoundEffect(station->GetStationType()->GetEnemyDestroyedSound());
+				
 
                 station->Terminate();
             }
@@ -576,9 +588,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
         break;
 
         case FM_S_STATIONS_UPDATE:
-        {
+        {			
             if (!IsInGame())
-                break;
+                break;			
 
             CASTPFM(pfmStation, S, STATIONS_UPDATE, pfm);
 

@@ -128,6 +128,10 @@ class CcloakIGC : public IcloakIGC
                    : m_typeData->rateRegen;
             */
         }
+		//<Djole date="2014-12-16">
+		virtual float getCurrentCloak() const;
+		virtual void setCurrentCloak(float val);
+		//</Djole>
         virtual float    GetOnRate(void) const
         {
             return m_typeData->onRate; 

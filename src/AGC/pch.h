@@ -26,6 +26,10 @@
 #pragma warning(disable:4786) // identifier was truncated ... in the debug information
 #pragma warning(disable:4503) // decorated name length exceeded
 
+//<Djole date="2014-10-28">
+#define _WINSOCKAPI_
+//</Djole>
+
 #include <windows.h>
 #include <stdlib.h>
 #include <commctrl.h>

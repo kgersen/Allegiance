@@ -178,8 +178,13 @@ public:
             if (m_bJustEnabled) {
                 m_bJustEnabled = false;
             } else {
-                float dx = (pointMouse.X() - 320) * m_sensitivity;
-                float dy = (pointMouse.Y() - 240) * m_sensitivity;
+				//<Djole date="2014-12-14">
+				//Stolen from Imago
+                //float dx = (pointMouse.X() - 320) * m_sensitivity;
+                //float dy = (pointMouse.Y() - 240) * m_sensitivity;
+				float dx = (pointMouse.X() - 640) * m_sensitivity;
+				float dy = (pointMouse.Y() - 480) * m_sensitivity;
+				//</Djole>
 
                 Point 
                     point(
@@ -196,8 +201,12 @@ public:
                 m_ppnumber[0]->SetValue(point.X());
                 m_ppnumber[1]->SetValue(point.Y());
             }
+			//<Djole date="2014-12-14">
+			//Stolen from Imago
+            //pprovider->SetCursorPos(Point(320, 240));
+			pprovider->SetCursorPos(Point(640, 480));
+			//</Djole>
 
-            pprovider->SetCursorPos(Point(320, 240));
         }
     }
 

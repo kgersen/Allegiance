@@ -283,6 +283,18 @@ class ClusterSiteImpl : public ClusterSite
             if (sid == trekClient.GetSideID() ||
 				trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid),trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
                 AddIbaseIGC((BaseListIGC*)&(m_scanners), scannerNew);
+			
+			
+			//<Djole date="2014-12-17">
+			ZString dbg = ZString("scannerNew=") +
+				ZString(scannerNew->GetName()) +
+				ZString(" type=") +
+				ZString(scannerNew->GetObjectType()) +
+				ZString(" cluster=") +
+				ZString(scannerNew->GetCluster()->GetName());
+			ZDebugOutput(dbg+ZString("\n"));
+			//</Djole>
+			
         }
         virtual void                    DeleteScanner(SideID   sid, IscannerIGC* scannerOld)
         {
@@ -3754,6 +3766,9 @@ void WinTrekClient::StationTypeCompleted(IbucketIGC * pbucket, IstationIGC* psta
 void WinTrekClient::BuildStation(IasteroidIGC* pasteroid, IsideIGC* pside, IstationTypeIGC* pstationtype, Time now, bool pbseensides[])
 {
     DataStationIGC  ds;
+	//<Djole date="2014-12-17">
+	memset(&ds, 0, sizeof(ds));
+	//</Djole>
     strcpy(ds.name, pstationtype->GetName());
     ds.clusterID    = pasteroid->GetCluster()->GetObjectID();
     ds.position     = pasteroid->GetPosition();
@@ -4143,6 +4158,7 @@ void WinTrekClient::HitWarpEvent(IshipIGC* ship, IwarpIGC* warp)
                     Time    t = ship->GetLastUpdate();
                     ship->SetBB(t, t, 0.0f);
                 }
+
             }
         }
     }
@@ -4585,24 +4601,45 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
             else
             {
                 GetWindow()->SetQueuedCommand(pshipSender, cid, pmodelTarget);
+				//<Djole date="2014-12-14">
+				//Stolen from Imago
+				ZString str = GetKeyName(TK_AcceptCommand);
+				//</Djole>
                 if (pshipSender != trekClient.GetShip())
                 {
 					//Xynth #14 7/2010
 					PlayerInfo* ppi = (PlayerInfo*)(pshipSender->GetPrivateData());					
 
+					
                     if ((cid == c_cidPickup) && (pmodelTarget == pshipSender) &&
                         pshipSender->  GetBaseHullType()->HasCapability(c_habmRescue))
                     {
-                        trekClient.PostText(true, "New orders from %s: prepare for recovery. Press [insert] to accept.", 
-                                            (const char*)strSender);
+						//<Djole date="2014-12-14">
+						//Stolen from Imago
+                        //trekClient.PostText(true, "New orders from %s: prepare for recovery. Press [insert] to accept.", 
+                        //                    (const char*)strSender);
+						
+						trekClient.PostText(true, "New orders from %s: prepare for recovery. Press "+str+" to accept.",
+							                    (const char*)strSender);
+						//</Djole>
                     }
                     else
 						if (ppi->IsTeamLeader())  //Xynth #14 7/2010 change color if from comm
-							trekClient.PostText(true, "\x81 " + ConvertColorToString(Color::Orange()) + "New orders from %s to %s: %s. Press [insert] to accept." + END_COLOR_STRING, 
-                                            (const char*)strSender, (const char*)strRecipient, (const char*)strOrder);
+							//<Djole date="2014-12-14">
+							//Stolen from Imago
+							//trekClient.PostText(true, "\x81 " + ConvertColorToString(Color::Orange()) + "New orders from %s to %s: %s. Press [insert] to accept." + END_COLOR_STRING, 
+                            //                (const char*)strSender, (const char*)strRecipient, (const char*)strOrder);
+							trekClient.PostText(true, "\x81 " + ConvertColorToString(Color::Orange()) + "New orders from %s to %s: %s. Press "+str+" to accept." + END_COLOR_STRING,
+											(const char*)strSender, (const char*)strRecipient, (const char*)strOrder);
+							//</Djole>
 						else
-							trekClient.PostText(true, "New orders from %s to %s: %s. Press [insert] to accept.", 
-                                            (const char*)strSender, (const char*)strRecipient, (const char*)strOrder);
+							//<Djole date="2014-12-14">
+							//Stolen from Imago
+							/*trekClient.PostText(true, "New orders from %s to %s: %s. Press [insert] to accept.", 
+                                            (const char*)strSender, (const char*)strRecipient, (const char*)strOrder);*/
+							trekClient.PostText(true, "New orders from %s to %s: %s. Press "+str+" to accept.",
+											(const char*)strSender, (const char*)strRecipient, (const char*)strOrder);
+							//</Djole>
                 }
             }
         }

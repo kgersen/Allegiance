@@ -634,7 +634,10 @@ void CmissionIGC::ImportStaticIGCObjs() //is opposite of ExportStaticIGCObjs()
 		}
 	}
 	file.close();
-	delete file;
+	//<Djole date="2014-10-27">	
+	//delete file;
+	//C2440
+	//</Djole>
 
 	int size = sizeof(Constants);
 	*((ObjectType*)pData) = OT_constants;

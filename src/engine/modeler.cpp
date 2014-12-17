@@ -2492,14 +2492,25 @@ public:
             strToOpen = m_pathStr + pathStr;
             strToTryOpenFromDev = m_pathStr + "dev/" + pathStr;
 			strToTryOpen = m_pathStr + "Textures/" + pathStr;
-			strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr);
+			//<Djole date="2014-11-15">
+			//strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr);
+			if (m_vStyleHudName.GetCount()){
+				strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr);
+			}
+			//</Djole>
+			
 
         } else {
 			strPackFile = ZString(pathStr) + ( "." + strExtensionArg );
             strToOpen = ZString(m_pathStr + pathStr) + ("." + strExtensionArg);
             strToTryOpenFromDev = ZString(m_pathStr + "dev/" + pathStr) + ("." + strExtensionArg);
 			strToTryOpen = ZString(m_pathStr + "Textures/" + pathStr) + ("." + strExtensionArg);
-			strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr) + ("." + strExtensionArg);
+			//<Djole date="2014-11-15">			
+			//strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr) + ("." + strExtensionArg);
+			if (m_vStyleHudName.GetCount()){
+				strToTryOpenFromMods = ZString(m_pathStr + "Mods/") + m_vStyleHudName[m_nStyle] + "/" + ZString(pathStr) + ("." + strExtensionArg);
+			}
+			//</Djole>
         }
 		DWORD dwFileSize;
 		void * pPackFile;
@@ -2741,7 +2752,9 @@ public:
 
         if (pfile != NULL) 
 		{
-			bool bOriginalValue = SetSystemMemoryHint( bSystemMem );
+			//<Djole date="2014-12-14">
+			//Stolen from Imago
+			/*bool bOriginalValue = SetSystemMemoryHint( bSystemMem );
             if (*(DWORD*)pfile->GetPointer(false, false) == MDLMagic) {
                 if (g_bMDLLog) {
                     ZDebugOutput("Reading Binary MDL file '" + str + "'\n");
@@ -2756,7 +2769,36 @@ public:
 
 			SetSystemMemoryHint( bOriginalValue );
             m_mapNameSpace.Set(str, pns);
-            return pns;
+            return pns;*/
+			if (pfile->IsValid()) {
+				bool bOriginalValue = SetSystemMemoryHint(bSystemMem);
+				BYTE* fp = pfile->GetPointer(false, false);
+				if (fp) {
+					if (*(DWORD*)fp == MDLMagic) {
+						if (g_bMDLLog) {
+							ZDebugOutput("Reading Binary MDL file '" + str + "'\n");
+							
+						}
+						pns = CreateBinaryNameSpace(str, this, pfile);
+						
+					}
+					else {
+						if (g_bMDLLog) {
+							ZDebugOutput("Reading Text MDL file '" + str + "'\n");
+							
+						}
+						pns = ::CreateNameSpace(str, this, pfile);
+						
+					}
+					
+					SetSystemMemoryHint(bOriginalValue);
+					m_mapNameSpace.Set(str, pns);
+					return pns;
+					
+				}
+				
+			}
+			//</Djole
         }
 
         return NULL;
@@ -2807,8 +2849,64 @@ public:
 	{
 		return m_bHintUIImage;
 	}
+	
+	//<Djole date="2014-12-14">
+	//Stolen from Imago
+		TRef<Image> LoadImageDX(const ZString& str)
+		 {
+		ZAssert(str.ToLower() == str);
+		
+			TRef<ZFile> zf = GetFile(str, "", true);
+		ZFile * pFile = (ZFile*)zf;
+		
+			if (pFile)
+			if (!pFile->IsValid())
+			 return NULL;
+		
+			D3DXIMAGE_INFO fileInfo;
+		if (D3DXGetImageInfoFromFileInMemory(pFile->GetPointer(),
+			pFile->GetLength(),
+			&fileInfo) == D3D_OK)
+			 {
+			_ASSERT(fileInfo.ResourceType == D3DRTYPE_TEXTURE);
+			
+				 // We can resize non-UI textures.
+				WinPoint targetSize(fileInfo.Width, fileInfo.Height);
+			bool bColourKey = GetColorKeyHint();
+			
+				if (GetUIImageUsageHint() == false)
+				 {
+				DWORD dwMaxTextureSize = CD3DDevice9::Get()->GetMaxTextureSize();
+				_ASSERT(dwMaxTextureSize >= 256);
+				while ((targetSize.x > (LONG)dwMaxTextureSize) ||
+					(targetSize.y > (LONG)dwMaxTextureSize))
+					 {
+					targetSize.x = targetSize.x >> 1;
+					targetSize.y = targetSize.y >> 1;
+					}
+				}
+			 // For D3D9, we only allow black colour keys.
+				TRef<Surface> psurface =
+				m_pengine->CreateSurfaceD3DX(
+				&fileInfo,
+				&targetSize,
+				zf,
+				bColourKey,
+				Color(0, 0, 0),
+				str);
+			
+				TRef<Image> pimage = new ConstantImage(psurface, ZString());
+			return pimage;
+			}
+		else
+			 {
+			debugf("Failed to LoadImageDX(%s)", (PCC)str);
+			return NULL;
+			}
+		}
+	
 };
-
+//</Djole>
 //////////////////////////////////////////////////////////////////////////////
 //
 // Constructor

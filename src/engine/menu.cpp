@@ -446,8 +446,12 @@ public:
 
     void NextItem()
     {
-        if (m_pitemSelection == NULL) {
-            SelectItem(m_listItems.GetFront());
+		//<Djole date="2014-09-10">
+        if (m_pitemSelection == NULL && 
+			m_listItems.GetCount()) {						
+			//</Djole>			
+			SelectItem(m_listItems.GetFront());
+			
         } else {
             MenuItemList::Iterator iter(m_listItems);
 
@@ -468,8 +472,12 @@ public:
 
     void PreviousItem()
     {
-        if (m_pitemSelection == NULL) {
-            SelectItem(m_listItems.GetEnd());
+		//<Djole date="2014-09-10">
+		if (m_pitemSelection == NULL &&
+			m_listItems.GetCount()) {
+			SelectItem(m_listItems.GetEnd());						
+			//The above was causing a crash when rclicking the username and pressing up
+			//</Djole>						
         } else {
             MenuItemList::Iterator iter(m_listItems);
 

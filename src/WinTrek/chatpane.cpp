@@ -32,7 +32,13 @@ public:
 			strMsg = m_pchatInfo->GetTimestamp() + strMsg;
 		}
 
-		IEngineFont* pfont = pchatInfo->IsFromLeader() ? TrekResources::SmallBoldFont() : TrekResources::SmallFont();
+		//<Djole date="2014-09-14">
+		//old IEngineFont* pfont = pchatInfo->IsFromLeader() ? TrekResources::SmallBoldFont() : TrekResources::SmallFont();		
+		IEngineFont* pfont = pchatInfo->IsFromLeader() ? TrekResources::commanderChatFont() : TrekResources::pilotChatFont();
+		//</Djole>
+
+		
+
         int nStrLenLeft = strMsg.GetLength();
         int nStrLenLine;
         while ((nStrLenLine = pfont->GetMaxTextLength(strMsg, ptLineSize.X(), true))
@@ -92,7 +98,12 @@ public:
 
     void DrawItem(Surface* pSurface, const WinRect& rect, bool fSelected, int iFirstSlot)
     {
-        IEngineFont* pfont = m_pchatInfo->IsFromLeader() ? TrekResources::SmallBoldFont() : TrekResources::SmallFont();
+        
+		//<Djole date="2014-09-14">
+		//old IEngineFont* pfont = m_pchatInfo->IsFromLeader() ? TrekResources::SmallBoldFont() : TrekResources::SmallFont();
+		IEngineFont* pfont = m_pchatInfo->IsFromLeader() ? TrekResources::commanderChatFont() : TrekResources::pilotChatFont();
+		//</Djole>
+
         WinPoint pt(rect.Min() + WinPoint(3,3));
         for (
             int i = iFirstSlot; 
@@ -126,16 +137,22 @@ private:
     TRef<IEventTargetAlleg>     m_targetAutoscrollOn;
     bool                   m_bAutoscroll;
     bool                   m_bPlayerChatsOnly;
-    bool                   m_bIgnoreScrollingEvents;
+    bool                   m_bIgnoreScrollingEvents;	
 
 public:
 
 
     ChatListPaneImpl(const WinPoint& ptSize):
-        m_ptItemSize(ptSize.X(), 12), m_bAutoscroll(true), m_bIgnoreScrollingEvents(false), m_ptSize(ptSize)
+		//<Djole date="2014-09-19">
+        //old m_ptItemSize(ptSize.X(), 12), m_bAutoscroll(true), m_bIgnoreScrollingEvents(false), m_ptSize(ptSize)
+		m_ptItemSize(ptSize.X(), TrekResources::pilotChatFont()->GetHeight()), m_bAutoscroll(true), m_bIgnoreScrollingEvents(false), m_ptSize(ptSize)		
+		//</Djole>
     {
         m_bPlayerChatsOnly = true;
-        m_pListPane = ListPaneOld::Create(m_ptSize, 12, true, NULL),
+		//<Djole date="2014-09-19">
+        //old m_pListPane = ListPaneOld::Create(m_ptSize, 12, true, NULL),
+		m_pListPane = ListPaneOld::Create(m_ptSize, m_ptItemSize.Y(), true, NULL); //no need for a comma operator ;)
+		//</Djole>
         InsertAtBottom(m_pListPane);
 		//mdvalley: I hate C3867.
         AddEventTarget(&ChatListPaneImpl::OnListSelect, m_pListPane->GetEventSource());
@@ -144,7 +161,6 @@ public:
         m_keyboardDelegate = IKeyboardInput::CreateDelegate(this);
         GetWindow()->AddKeyboardInputFilter(m_keyboardDelegate);
     }
-
     ~ChatListPaneImpl()
     {
         GetWindow()->RemoveKeyboardInputFilter(m_keyboardDelegate);
@@ -340,25 +356,35 @@ public:
     void UpdateLayout()
     {
         DefaultUpdateLayout();
-    }
-
+    }	
+	//<Djole date="2014-10-29">
 	// #294
-	void SetChatLines(int lines)
-	{
-		m_ptSize.SetY(lines * m_ptItemSize.Y() + 8);
-		m_pListPane->SetListSize(m_ptSize);
+	void SetChatLines(int lines, DWORD fontHeight)
+	{	
+		m_ptItemSize.SetY(fontHeight);
+		//old m_ptSize.SetY(lines * m_ptItemSize.Y() + 8);
+		m_ptSize.SetY(lines * m_ptItemSize.Y() + (m_ptItemSize.Y()*2)/3);		
+
+		m_pListPane->setItemHeight(m_ptItemSize.Y());
+		m_pListPane->SetListSize(m_ptSize);		
+
 		UpdateContents();
+		UpdateLayout();
 	}
+	//</Djole>		
+
 };
 
 
 TRef<IObject> ChatListPaneFactory::Apply(ObjectStack& stack)
 {
     TRef<PointValue>  ppointSize; CastTo(ppointSize, stack.Pop());
+
+	
     return (Pane*)new ChatListPaneImpl(
                 WinPoint(
                     (int)ppointSize->GetValue().X(),
                     (int)ppointSize->GetValue().Y()
                     )
-                );                    
+                );             		
 }

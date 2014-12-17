@@ -2760,6 +2760,9 @@ static IstationIGC* CreatePedestalAndFlag(ImissionIGC*     pmission,
     Time            now = pmission->GetLastUpdate();
 
     DataStationIGC ds;
+	//<Djole date="2014-12-17">
+	memset(&ds, 0, sizeof(ds));
+	//</Djole>
 
     ds.clusterID = clusterID;
     ds.position = position;
@@ -2791,6 +2794,7 @@ static IstationIGC* CreatePedestalAndFlag(ImissionIGC*     pmission,
                                                                      OT_station,
                                                                      &ds,
                                                                      sizeof(ds)));
+
     assert(pstation);
 
     DataTreasureIGC dt;

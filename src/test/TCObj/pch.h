@@ -23,6 +23,10 @@
 #include <set>
 #include <vector>
 
+//<Djole date="2014-10-28">
+#define _WINSOCKAPI_
+//</Djole>
+
 // Win32 headers
 #include <windows.h>        // Win32 declarations
 

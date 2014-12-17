@@ -1,4 +1,7 @@
 #include "pch.h"
+//<Djole date="2014-09-21">
+#include "../Inc/regkey.h"
+//</Djole>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -61,10 +64,10 @@ void TrekResources::Initialize(Modeler* pmodeler)
             delete pPackFile;
             pPackFile = NULL;
         }
-	}
+	}	
 
 	TRef<INameSpace> pns = pmodeler->GetNameSpace("font");
-
+	
 	g_pfontSmall     = pns->FindFont("smallFont");
 	g_pfontSmallBold = pns->FindFont("smallBoldFont");
 	g_pfontLarge     = pns->FindFont("largeFont");
@@ -796,3 +799,86 @@ TRef<INameSpace> EffectApp::OptimizeThingGeo(const ZString& str, Geo* pgeo, Numb
 
     return pns;
 }
+
+//<Djole date="2014-09-19">
+//Added for font adjustments
+TRef<IEngineFont> g_pilotChatFont;
+TRef<IEngineFont> g_commanderChatFont;
+bool g_Combat=0; //false by default
+int g_FontSize=0; //0
+int TrekResources::chatFontSize(){
+	return g_FontSize;
+}
+void TrekResources::chatFontSize(int size){
+
+	g_FontSize = size;
+	HFONT pilotFont = CreateFont(
+		   g_FontSize,//_In_  int nHeight,
+		   0,//auto, _In_  int nWidth,
+		   0,//_In_  int nEscapement,
+		   0, //_In_  int nOrientation,
+		   FW_DONTCARE,//_In_  int fnWeight,
+		   0,//_In_  DWORD fdwItalic,
+		   0,//_In_  DWORD fdwUnderline,
+		   0,//_In_  DWORD fdwStrikeOut,
+		   ANSI_CHARSET,//_In_  DWORD fdwCharSet,
+		   OUT_DEFAULT_PRECIS, //_In_  DWORD fdwOutputPrecision,
+		   CLIP_DEFAULT_PRECIS,//_In_  DWORD fdwClipPrecision,
+		   DEFAULT_QUALITY,//_In_  DWORD fdwQuality,
+		   DEFAULT_PITCH | FF_MODERN,//_In_  DWORD fdwPitchAndFamily,
+		   _T("Verdana")//_In_  LPCTSTR lpszFace
+	);
+	HFONT commanderFont = CreateFont(
+		   g_FontSize,//_In_  int nHeight,
+		   0,//auto _In_  int nWidth,
+		   0,//_In_  int nEscapement,
+		   0, //_In_  int nOrientation,
+		   FW_BOLD,//_In_  int fnWeight,
+		   0,//_In_  DWORD fdwItalic,
+		   0,//_In_  DWORD fdwUnderline,
+		   0,//_In_  DWORD fdwStrikeOut,
+		   ANSI_CHARSET,//_In_  DWORD fdwCharSet,
+		   OUT_DEFAULT_PRECIS, //_In_  DWORD fdwOutputPrecision,
+		   CLIP_DEFAULT_PRECIS,//_In_  DWORD fdwClipPrecision,
+		   DEFAULT_QUALITY,//_In_  DWORD fdwQuality,
+		   DEFAULT_PITCH | FF_MODERN,//_In_  DWORD fdwPitchAndFamily,
+		   _T("Verdana")//_In_  LPCTSTR lpszFace
+	);					
+	initChatFonts(pilotFont,commanderFont);
+}
+void TrekResources::initChatFonts(HFONT pilot, HFONT commander){
+	if(g_pilotChatFont){
+		//g_pilotChatFont->Release();		
+		g_pilotChatFont = NULL;
+	}
+	if(g_commanderChatFont){
+		//g_commanderChatFont->Release();
+		g_commanderChatFont = NULL;
+	}	
+	
+	g_pilotChatFont = CreateEngineFont(pilot);
+	g_commanderChatFont = CreateEngineFont(commander);
+	
+}
+IEngineFont* TrekResources::pilotChatFont(bool combat){
+
+	return combat ? g_pilotChatFont : g_pfontSmall;
+}
+IEngineFont* TrekResources::commanderChatFont(bool combat){
+	return combat ? g_commanderChatFont : g_pfontSmallBold;	
+}
+
+
+int TrekResources::maxChatFontSize(){
+	return 16;
+}
+int TrekResources::minChatFontSize(){
+	return 8;
+}
+bool TrekResources::isCombat(){
+	return g_Combat;
+}
+void TrekResources::isCombat(bool val){
+	g_Combat=val;
+}
+//</Djole>

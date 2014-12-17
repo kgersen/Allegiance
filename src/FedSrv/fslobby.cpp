@@ -97,8 +97,8 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
 #endif 
 	
-#if !defined(SRV_CHILD)
-#if !defined(SRV_PARENT)
+		// Djole 2014-09-09 - && ftw
+#if !defined(SRV_CHILD) && !defined(SRV_PARENT)
 		// pkk 2011-07-24 - Create games only with IGCs from cores.txt
 		bool ValidCore = false;
 		for ( int i = 0; i<g.cStaticCoreInfo; i++ )
@@ -121,8 +121,8 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 			debugf("Lobby sent invalid core information %s, ignoring message\n", mp.szIGCStaticFile);
 		}
 		// pkk end
-#endif
-#endif
+#endif //!defined(SRV_CHILD) && !defined(SRV_PARENT)
+
       } //Imago 6/22/08
       break;
     //#endif -- reactivate create mission

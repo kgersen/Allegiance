@@ -54,6 +54,13 @@ public:
     virtual void SetEnabled(bool bEnabled)           = 0;
 
     virtual const Point& GetPosition()               = 0;
+
+	//<Djole date="2014-12-14">
+	//Stolen from Imago
+	virtual int GetEPP() = 0;
+	virtual int GetThreshold1() = 0;
+	virtual int GetThreshold2() = 0;
+	//</Djole>
 };
 
 //////////////////////////////////////////////////////////////////////////////

@@ -394,7 +394,7 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
       //delete popl;
   }
   else
-  {
+  {	  
       pfsPlayer->GetIGCShip()->SetKills(0);
       pfsPlayer->GetIGCShip()->SetDeaths(0);
       pfsPlayer->GetIGCShip()->SetEjections(0);
@@ -414,8 +414,12 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
   {
     assert(GetCookie()); // we can't be sending messages w/ cookies unless we have a real cookie
 
+	//<Djole date="2014-10-28">
+	//Stolen from imago
 	 // BT - 9/11/2010 ACSS - Supports authentication check of the CD Key.
-	char szAddress[16];
+	//char szAddress[16];
+	char szAddress[INET6_ADDRSTRLEN];
+	//</Djole>
 	g.fm.GetIPAddress(*pfsPlayer->GetConnection(), szAddress);
 
     BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerJoined, S, PLAYER_JOINED)
@@ -3815,7 +3819,11 @@ void CFSMission::QueueLobbyMissionInfo()
   }
 #endif
 
-  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
+  //<Djole date="2014-10-28">
+  //Stolen from imago
+  //char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!  
+  char szAddr[INET6_ADDRSTRLEN];
+  //</Djole>
   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)
@@ -3824,7 +3832,11 @@ void CFSMission::QueueLobbyMissionInfo()
     FM_VAR_PARM((PCC)m_strDetailsFiles, CB_ZTS)
 	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
 	FM_VAR_PARM((PCC)(g.strLocalAddress),CB_ZTS) // KGJV #114 - ServerName
-	FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
+	//<Djole date="2014-10-28">
+	//Stolen from imago
+	//FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
+	FM_VAR_PARM(szAddr, INET6_ADDRSTRLEN)
+	//</Djole>
 	FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)),CB_ZTS) //Imago 6/10
 	FM_VAR_PARM(PCC(zInfo),CB_ZTS) //Imago 7/10
   END_PFM_CREATE
@@ -3917,7 +3929,23 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
 
     SideID  sideID = pside->GetObjectID();
 
-
+	//<Djole date="2014-12-17">
+	const StationListIGC* stations = pMission->GetStations();	
+	for (const StationLinkIGC* station = stations->first(); station; station = station->next()){	
+		ZString dbgstat = ZString(" stationName=") +
+			station->data()->GetName() +
+			ZString(" clusterName=") +
+			station->data()->GetCluster()->GetName() +
+			ZString(" sideName=") +
+			station->data()->GetSide()->GetName();
+		auto sidesList = pMission->GetSides();
+		for (auto side = sidesList->first(); side; side = side->next()){
+			dbgstat += ZString(" ") + ZString(side->data()->GetName()) + ZString(" eye=") + ZString(station->data()->GetCurrentEye(side->data()));			
+		}
+						
+		ZDebugOutput(ZString("sideID=") + ZString(sideID) + dbgstat+ZString("\n"));
+	}	
+	//</Djole>
     // Send all clusters, and what that side sees in them
     const ClusterListIGC * pclstlist = pMission->GetClusters();
     ClusterLinkIGC * pclstlink;
@@ -3971,10 +3999,12 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
         StationLinkIGC * pstnlink;
         for (pstnlink = pstnlist->first(); pstnlink; pstnlink = pstnlink->next())
         {
+			//<Djole> test
 			if (pstnlink->data()->GetKnownStationType(pside->GetObjectID()) != NULL || pstnlink->data()->SeenBySide(pside)) //Turkey included stations with a known type #307 02/31
 			{
 				ExportObj(pstnlink->data(), OT_station, NULL);
 			}
+			//</Djole>
         }
 
         // Export treasure

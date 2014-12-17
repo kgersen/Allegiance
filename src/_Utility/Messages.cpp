@@ -548,8 +548,15 @@ HRESULT FedMessaging::GenericSend(CFMRecipient * precip, const void * pv, CB cb,
   }
   else
   {
-    hr = m_pDirectPlayServer->SendTo( precip->GetID(), &sendBufDesc, 1, dwTimeout, this, &handle, dwFlags );
-
+	  //<Djole date="2014-12-14">
+	  //Stolen from Imago
+    //hr = m_pDirectPlayServer->SendTo( precip->GetID(), &sendBufDesc, 1, dwTimeout, this, &handle, dwFlags );	  
+	   //imago 10/14
+	  if (!precip || !precip->GetName())
+		   hr = DPNERR_GENERIC;
+	  else
+		   hr = m_pDirectPlayServer->SendTo(precip->GetID(), &sendBufDesc, 1, dwTimeout, this, &handle, dwFlags);
+	  //</Djole>
   }
 
   tt.Stop("dpidTo=%8x, guaranteed=%d, hr=%x, 1st message (fmid)=%u", precip->GetID(), fGuaranteed, hr,
@@ -560,8 +567,13 @@ HRESULT FedMessaging::GenericSend(CFMRecipient * precip, const void * pv, CB cb,
 #ifdef DEBUG
   if ( ! ( hr == DPNSUCCESS_PENDING || hr == S_OK ) )
   {
-    debugf("Return code of Send was 0x%x to player with dpid %8x.\n",
-           hr, precip->GetID());
+	  //<Djole date="2014-12-14">
+	  //Stolen from Imago
+    //debugf("Return code of Send was 0x%x to player with dpid %8x.\n",
+    //       hr, precip->GetID());
+	  debugf("Return code of Send was 0x%x to player with dpid %8x.\n",
+		  hr, (precip) ? precip->GetID() : -1);
+	//</Djole>
   }
 #endif // DEBUG
 
@@ -1018,10 +1030,10 @@ HRESULT FedMessaging::ReceiveMessages()
             {
               if(pfm->fmid > 0 && pfm->cbmsg >= sizeof(FEDMESSAGE) && pfm->cbmsg <= PacketSize())
               {
-               // debugf( "(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
-               //         this, sOrC,
-               //         pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
-               //        cb, id, m_dwcbPacket );
+                debugf( "(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
+                        this, sOrC,
+                        pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
+                       cb, id, m_dwcbPacket );
 
                 m_pfmSite->OnAppMessage(this, *pcnxnFrom, pfm);
                 pfm = PfmGetNext(pfm);
@@ -1624,7 +1636,11 @@ CFMGroup * FedMessaging::GetGroupFromDpid(DPID dpid)
 }
 
 
-HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16])
+//<Djole date="2014-10-28">
+//Stolen from imago
+//HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16])
+HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[INET6_ADDRSTRLEN])
+//</Djole>
 {
   //assert( m_pDirectPlayServer != 0 );
 

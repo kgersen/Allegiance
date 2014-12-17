@@ -22,6 +22,13 @@
 
 #include "CRC.h"
 
+//<Djole date="2014-10-28">
+#define _WINSOCKAPI_
+#include <Windows.h>
+#include <winsock2.h>
+#include <WS2tcpip.h>
+//</Djole>
+
 class   UTL;
 
 class   List_utl;

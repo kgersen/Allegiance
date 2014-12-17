@@ -1,3 +1,8 @@
+//<Djole date="2014-10-28">
+#pragma once
+#define _WINSOCKAPI_
+//</Djole>
+
 #include <windows.h>
 #include <windowsx.h>
 #include <mmsystem.h>

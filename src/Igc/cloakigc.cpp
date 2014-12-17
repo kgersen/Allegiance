@@ -23,6 +23,10 @@ CcloakIGC::CcloakIGC(void)
     m_ship(NULL),
     m_mountID(c_mountNA),
     m_fActive(false)
+	//<Djole date="2014-12-16">
+	,
+	m_cloaking(0.0f)
+	//</Djole>
 {
 }
 
@@ -121,6 +125,14 @@ void        CcloakIGC::Update(Time now)
         else
             m_ship->SetCloaking(1.0f - m_cloaking);
     }
+}
+
+float CcloakIGC::getCurrentCloak() const{
+	return m_cloaking;
+}
+void CcloakIGC::setCurrentCloak(float val){
+	m_cloaking = val;
+
 }
 
 void        CcloakIGC::SetShip(IshipIGC*       newVal, Mount mount)

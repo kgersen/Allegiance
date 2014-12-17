@@ -2402,7 +2402,7 @@ class   ServerLightShipUpdate                           //8 bytes
         CompactControlData  controls;                   //4
 };
 
-class  ServerHeavyShipUpdate : public ServerLightShipUpdate  //38 bytes
+class  ServerHeavyShipUpdate : public ServerLightShipUpdate  //38 bytes //40
 {
     public:
         CompactTime             time;                   //2
@@ -2413,9 +2413,13 @@ class  ServerHeavyShipUpdate : public ServerLightShipUpdate  //38 bytes
         CompactTurnRates        turnRates;              //3
         CompactShipFractions    fractions;              //5
         BytePercentage          power;                  //1
+		//<Djole date="2014-12-16">
+		BytePercentage cloakDevice;						//1		
+		BytePercentage cloakShip;						//1	
+		//</Djole>
 };
 
-class  ServerSingleShipUpdate : public ServerLightShipUpdate  //46 bytes
+class  ServerSingleShipUpdate : public ServerLightShipUpdate  //46 bytes //48
 {
     public:
         Time                    time;                   //4
@@ -2425,10 +2429,14 @@ class  ServerSingleShipUpdate : public ServerLightShipUpdate  //46 bytes
         CompactVelocity         velocity;               //5
         CompactTurnRates        turnRates;              //3
         CompactShipFractions    fractions;              //5
-        BytePercentage          power;                  //1
+        BytePercentage          power;                  //1		
+		//<Djole date="2014-12-16">
+		BytePercentage cloakDevice;						//1		
+		BytePercentage cloakShip;						//1
+		//</Djole>
 };
 
-class   ClientShipUpdate                                //33 bytes
+class   ClientShipUpdate                                //33 bytes //35
 {
     public:
         Time                time;                       //4
@@ -2439,6 +2447,10 @@ class   ClientShipUpdate                                //33 bytes
         CompactVelocity     velocity;                   //5
         CompactTurnRates    turnRates;                  //3
         BytePercentage      power;                      //1
+		//<Djole date="2014-12-16">
+		BytePercentage cloakDevice;						//1		
+		BytePercentage cloakShip;						//1		
+		//</Djole>
 };
 
 class ClientActiveTurretUpdate                                      //12 bytes
@@ -3921,6 +3933,11 @@ class IcloakIGC : public IpartIGC
 
         virtual SoundID  GetEngageSound() const = 0;
         virtual SoundID  GetDisengageSound() const = 0;
+
+		//<Djole date="2014-12-16">
+		virtual float getCurrentCloak() const = 0;
+		virtual void setCurrentCloak(float val) = 0;
+		//</Djole>
 };
 
 class IafterburnerIGC : public IpartIGC

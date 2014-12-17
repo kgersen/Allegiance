@@ -219,6 +219,10 @@ private:
     int                                 m_threshold1;
     int                                 m_threshold2;
     int                                 m_acceleration;
+	//<Djole date="2014-12-14">
+	//Stolen from Imago
+	int m_epp; 
+	//</Djole>
     float                               m_sensitivity;
 	HWND								m_hwnd;
 	CLogFile *							m_pLogFile; //Imago 8/12/09
@@ -300,6 +304,11 @@ public:
         m_threshold1   = pvalue[0];
         m_threshold2   = pvalue[1];
         m_acceleration = pvalue[2];
+
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+		m_epp = m_acceleration;
+		//</Djole>
         
 		//Imago #215 8/10
         HKEY hKey;
@@ -309,21 +318,26 @@ public:
 		DWORD dwValue = -1;
 		DWORD cwValue = sizeof(dwValue);
 
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
 		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            ::RegQueryValueEx(hKey, "MouseSensitivity", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
-
-            m_sensitivity = (float)(strlen(szValue) >= 1 && strcmp(szValue,"0") == -1) ?  atof(szValue) : 1.0f;
-
-            ::RegQueryValueEx(hKey, "MouseAcceleration", NULL, &dwType, (unsigned char*)&dwValue, &cwValue);
-            ::RegCloseKey(hKey);
-
-            m_acceleration = (dwValue != -1) ?  dwValue : m_acceleration;
-        }
+		{
+			if (ERROR_SUCCESS == ::RegQueryValueExA(hKey, "MouseSensitivity", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
+				m_sensitivity = atof(szValue);
+			else
+				m_sensitivity = 1.0f;
+			if (ERROR_SUCCESS == ::RegQueryValueExA(hKey, "MouseAcceleration", NULL, &dwType, (unsigned char*)&dwValue, &cwValue))
+				m_acceleration = dwValue;
+			else
+				m_acceleration = 0;
+			::RegCloseKey(hKey);
+		}
+		//</Djole>
 		//
 		
         ///* !!! this only works on NT50
-		/*
+		//<Djole date="2014-12-14">
+			//Stolen from Imago
         int speed;
         ZVerify(SystemParametersInfo(SPI_GETMOUSESPEED, 0, &speed, 0));
 
@@ -334,7 +348,7 @@ public:
         } else {
            m_sensitivity = float(speed-6) / 4.0f;
         }
-        */
+        //</Djole>
     }
 
     void SetupDevice() 
@@ -613,12 +627,19 @@ public:
 	void SetSensitivity(const float sens) { m_sensitivity = sens; } 
 	void SetAccel(const int accel) { m_acceleration = accel; } 
 	//
+	//<Djole date="2014-12-14">
+	//Stolen from Imago
+	int GetEPP() { return m_epp; }
+	int GetThreshold1() { return m_threshold1; }
+	int GetThreshold2() { return m_threshold2; }
+	//</Djole>
 
+	
     void SetClipRect(const Rect& rect)
-    {
+    {		
         m_rect = rect;
-        DoClip();
-    }
+        DoClip();		
+    }	
 
     void SetPosition(const Point& point)
     {
@@ -643,16 +664,49 @@ public:
 
     void SetEnabled(bool bEnabled)
     {
-        if (m_bEnabled != bEnabled) {
-            m_bEnabled = bEnabled;
+	//<Djole date="2014-12-14">
+	//Stolen from Imago
+		if (m_bEnabled != bEnabled) {
+			m_bEnabled = bEnabled;
 
-            if (m_bEnabled) {
-                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
-            } else {
-//                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
-                DDCall(m_pdid->Unacquire());
-            }
-        }
+			if (m_bEnabled) {
+				DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+				//imago 10/14
+				if (m_epp) {
+					int pvalue[3];
+					pvalue[0] = m_threshold1;
+					pvalue[1] = m_threshold2;
+					pvalue[2] = 0;
+					ZVerify(SystemParametersInfo(SPI_SETMOUSE, 0, pvalue, 0));
+
+				}
+			}
+			else {
+				//imago 10/14
+				if (m_epp) {
+					int pvalue[3];
+					pvalue[0] = m_threshold1;
+					pvalue[1] = m_threshold2;
+					pvalue[2] = m_epp;
+					ZVerify(SystemParametersInfo(SPI_SETMOUSE, 0, pvalue, 0));
+
+				}
+				DDCall(m_pdid->Unacquire());
+			}
+
+			//        if (m_bEnabled != bEnabled) {
+			//            m_bEnabled = bEnabled;
+			//
+			//           if (m_bEnabled) {
+			//                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_EXCLUSIVE | DISCL_FOREGROUND));
+			//            } else {
+			////                DDCall(m_pdid->SetCooperativeLevel(m_hwnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND));
+			//                DDCall(m_pdid->Unacquire());
+			//			  }
+			//}
+
+		}
+		//</Djole>
     }
 
     //////////////////////////////////////////////////////////////////////////////

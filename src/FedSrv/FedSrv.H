@@ -92,9 +92,13 @@ public:
   void ClusterUpdateEvent(IclusterIGC* c);
   TRef<ThingSite>   CreateThingSite(ImodelIGC* pModel);
   TRef<ClusterSite>   CreateClusterSite(IclusterIGC* pCluster);
-  void KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF);
-  void KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* pside, bool explodeF); //Imago #121 7/10
-  void KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side); //Imago #120 #121 8/10
+  //<Djole date="2014-12-17"> Because why have 1 function when you can have 3!
+  //void KillAsteroidEvent(IasteroidIGC* pasteroid, bool explodeF);
+  //void KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* pside, bool explodeF); //Imago #121 7/10
+  //void KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side); //Imago #120 #121 8/10
+  void KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* pside, bool explodeF);
+  void KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side, bool explodeF);
+  //</Djole>
   void DrainAsteroidEvent(IasteroidIGC* pasteroid);
   void MineAsteroidEvent(IasteroidIGC* pasteroid, float newOre);  //Xynth #132 7/2010
   void KillProbeEvent(IprobeIGC* pprobe);

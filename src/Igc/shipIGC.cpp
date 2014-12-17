@@ -2656,7 +2656,14 @@ void    CshipIGC::ProcessFractions(const CompactShipFractions& fractions)
                         shipupdate.orientation.Export(&orientation);                                                            \
                         shipupdate.turnRates.Export(m_turnRates);                                                               \
                         if (m_mountedOthers[ET_Afterburner])                                                                    \
-                            ((IafterburnerIGC*)(m_mountedOthers[ET_Afterburner]))->SetPower(shipupdate.power);
+                            ((IafterburnerIGC*)(m_mountedOthers[ET_Afterburner]))->SetPower(shipupdate.power);					\
+							/*<Djole date="2014-12-16">*/																		\
+						if(m_mountedOthers[ET_Cloak]){																			\
+							((IcloakIGC*)(m_mountedOthers[ET_Cloak]))->setCurrentCloak(shipupdate.cloakDevice);						\
+							SetCloaking(shipupdate.cloakShip);																		\
+						}
+
+						//</Djole>
 
 #define GetF            SetFraction(shipupdate.fractions.GetHullFraction());                                                    \
                         if (m_mountedOthers[ET_Shield])                                                                         \

@@ -243,6 +243,10 @@ public:
     virtual TRef<ZFile>     LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError = true)                 = 0;
     virtual HBITMAP         LoadBitmap(const PathString& pathStr, bool bError = true)               = 0;
     virtual TRef<Image>     LoadImage(const ZString& pathStr, bool bColorKey, bool bError = true, bool bSystemMem = false )   = 0;
+	//<Djole date="2014-12-14">
+	//Stolen from Imago
+	virtual TRef<Image> LoadImageDX(const ZString& pathStr) = 0; //Imago 9/14
+	//</Djole>
     virtual TRef<Surface>   LoadSurface(const ZString& pathStr, bool bColorKey, bool bError = true, bool bSystemMem = false ) = 0;
     virtual TRef<Geo>       LoadGeo(const ZString& pathStr, bool bError = true)                     = 0;
 

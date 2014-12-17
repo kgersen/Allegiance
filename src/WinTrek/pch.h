@@ -1,3 +1,7 @@
+//<Djole date="2014-10-28">
+#pragma once
+#define _WINSOCKAPI_
+//</Djole>
 // pch.h : include file for standard system include files,
 //      or project specific include files that are used frequently,
 //      but are changed infrequently
@@ -23,6 +27,9 @@
 #include <commdlg.h>
 #include <commctrl.h>
 
+//<Djole date="2014-10-28">
+#include <WS2tcpip.h>
+//</Djole>
 //
 // STL headers
 //

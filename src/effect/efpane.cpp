@@ -335,15 +335,30 @@ public:
 
         if (m_bHorizontal)
         {
-            if (size.X() < 8) {
-                size.SetX(8);
-            }
+		   //<Djole date="2014-09-20">
+
+           // if (size.X() < 8) {
+           //     size.SetX(8);
+           //}
+
+			//8 is the old 2/3 of height, not width, I'm not willing to experiment ;)
+
+		   if(size.X() < TrekResources::pilotChatFont()->GetHeight()){
+				size.SetX((TrekResources::pilotChatFont()->GetHeight()*2)/3);
+		   }
+		   //</Djole>
         }
         else
         {
-            if (size.Y() < 8) {
-                size.SetY(8);
-            }
+			//<Djole date="2014-09-20">
+            // if (size.Y() < 8) {
+            //     size.SetY(8);
+            // }
+
+			if(size.Y() < TrekResources::pilotChatFont()->GetHeight()){
+				size.SetY((TrekResources::pilotChatFont()->GetHeight()*2)/3);
+			}
+			//</Djole>
         }
 
         InternalSetSize(size);

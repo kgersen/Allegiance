@@ -961,12 +961,21 @@ public:
         if (magazine)
             rMissileLock = magazine->GetLock();
         
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+		ZString str = GetKeyName(TK_FireMissile);
+		//</Djole>
         if (rMissileLock > 0.0f && rMissileLock < 1.0f && 
                 !(m_rPreviousMissileLock > 0.0f && m_rPreviousMissileLock < 1.0f))
             trekClient.PostText(false, "Partial missile lock - center the target on screen to improve the lock.");
         else if (rMissileLock == 1.0f && m_rPreviousMissileLock != 1.0f)
-            trekClient.PostText(false, "%s", (const char*)(ZString("Missile lock acquired - press [Ctrl]-[Space] to fire a ")
-                + magazine->GetMissileType()->GetName() + " missile at the target."));
+			//<Djole date="2014-12-14">
+			//Stolen from Imago
+            //trekClient.PostText(false, "%s", (const char*)(ZString("Missile lock acquired - press [Ctrl]-[Space] to fire a ")
+              //  + magazine->GetMissileType()->GetName() + " missile at the target."));
+			  trekClient.PostText(false, "%s", (const char*)(ZString("Missile lock acquired - press "+ str +" to fire a ")
+			    + magazine->GetMissileType()->GetName() + " missile at the target."));
+			  //</Djole>
         else if (rMissileLock == 0.0f && m_rPreviousMissileLock != 0.0f && !m_fTargetChanged)
             trekClient.PostText(false, "Missile lock lost.");
 

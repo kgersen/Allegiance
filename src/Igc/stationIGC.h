@@ -151,10 +151,15 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
 			m_roidRadius(0.0f),
 			m_roidAabm(0)
         {
+			//<Djole date="2014-12-17">
 			m_roidPos = Vector(0.0f,0.0f,0.0f);
-			ZeroMemory(&m_roidSides,sizeof(bool) * c_cSidesMax);
+			//ZeroMemory(&m_roidSides,sizeof(bool) * c_cSidesMax);			
+			ZeroMemory(m_roidSides, sizeof(bool) * c_cSidesMax);
 			//end Imago
-			ZeroMemory(&m_pKnownStationType, sizeof(IstationTypeIGC*) * c_cSidesMax); //Turkey #307 02/31
+
+			//ZeroMemory(&m_pKnownStationType, sizeof(IstationTypeIGC*) * c_cSidesMax); //Turkey #307 02/31			
+			ZeroMemory(m_pKnownStationType, sizeof(IstationTypeIGC*) * c_cSidesMax);
+			//</Djole>
         }
 
         /*
@@ -276,8 +281,9 @@ class       CstationIGC : public TmodelIGC<IstationIGC>
                         pcluster->GetClusterSite()->AddScanner(psideNew->GetObjectID(), this);
 
                     GetHitTest()->SetUseTrueShapeSelf(psideNew);
-
+					
 					SetKnownStationType(psideNew->GetObjectID(), m_myStationType.GetStationType()); //Turkey #307 02/31
+					
                 }
 
                 if (pcluster != NULL)

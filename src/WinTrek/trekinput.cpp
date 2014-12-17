@@ -29,6 +29,11 @@ const int ModifierControl = 2;
 const int ModifierAlt     = 4;
 const int ModifierAny     = 8;
 
+////<Djole date="2014-12-14">
+//Stolen from Imago
+TMap<TrekKey, ZString> m_KeyStringMap;
+//</Djole>
+
 class TrekInputImpl : public TrekInput {
 public:
     //
@@ -1976,12 +1981,30 @@ protected:
 public:
 	//Spunky #241
 	ZString ReturnKeyString(TrekKey tk)
-	{
+	{		
+		//<Djole date="2014-12-14">
+		//Stolen from imago
+		ZString strValue;
+		strValue.SetEmpty();
+			
+			if (m_KeyStringMap.Find(tk, strValue)) {
+			if (strcmp((PCC)strValue, (PCC)m_pcommandMap[tk].GetString(m_pinputEngine, IsInternationalKeyboard())) != 0) {
+				return strValue;
+					
+			}
+				
+		}
+		//</Djole>
 		
 		if (!LoadMap(INPUTMAP_FILE) || tk == TK_NoKeyMapping)
 			return "Undefined";
-
-        return m_pcommandMap[tk].GetString(m_pinputEngine, IsInternationalKeyboard());
+		//<Djole date="2014-12-14">
+		//Stolen from imago
+		strValue = m_pcommandMap[tk].GetString(m_pinputEngine, IsInternationalKeyboard());
+		m_KeyStringMap.Set(tk, strValue);
+		return strValue;
+        //return m_pcommandMap[tk].GetString(m_pinputEngine, IsInternationalKeyboard());
+		//</Djole>
 	}
 
 	

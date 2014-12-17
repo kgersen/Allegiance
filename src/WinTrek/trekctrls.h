@@ -109,6 +109,10 @@ public:
     virtual bool            IsItemVisible(ListItem* pListItem) = 0;
     virtual bool            IsItemVisibleByIdx(long iItem) = 0;
     virtual bool            IsItemVisibleByData(long lItemData) = 0;
+
+	//<Djole date="2014-09-19">	
+	virtual void setItemHeight(int height)=0;
+	//</Djole>
 };
 
 

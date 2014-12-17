@@ -206,6 +206,9 @@ private:
     int m_nItemHeight;
     int m_nItemWidth;
 
+	//<Djole date="2012-09-20">
+	bool m_bScroll;
+	//</Djole>
     bool m_bMouseSel;
 
     TRef<Image> m_pImageBkgnd;
@@ -219,7 +222,8 @@ public:
         m_iSelItem(-1),
         m_iTopItem(0),
         m_nItemHeight(nItemHeight),
-        m_bMouseSel(false)
+        m_bMouseSel(false),
+		m_bScroll(bScroll)
     {
         m_nItemWidth = size.X();
         m_pEventSource = new IntegerEventSourceImpl();
@@ -274,14 +278,31 @@ public:
             }
 
             pcol->InsertAtBottom(m_pScrollBar);
-            pcol->InsertAtBottom(new Pane(NULL, WinPoint(0, 8)));
+			//<Djole date="2014-09-19">
+            //old pcol->InsertAtBottom(new Pane(NULL, WinPoint(0, 8)));
+			pcol->InsertAtBottom(new Pane(NULL,WinPoint(0,(m_nItemHeight*2)/3)));
+			//</Djole>
 
             pRowPane->InsertAtBottom(pcol);
         }
 
         InsertAtBottom(pRowPane);
     }
+	//<Djole date="2014-09-20">
+	void setItemHeight(int height){
 
+		m_nItemHeight = height;
+		/*WinPoint s1(m_pBlankPane->XSize(),);		
+		m_pBlankPane->SetSize(2);
+
+		m_nItemHeight = height;		
+		m_cVisibleItems = m_pBlankPane->YSize() / m_nItemHeight;
+		 if (m_bScroll) {
+			  m_pScrollPane->SetPageSize(m_cVisibleItems);
+              m_pScrollPane->SetSize(0);
+		 }*/
+	}
+	//</Djole>
     virtual ~ListPaneOldImpl()
     {
     }
@@ -317,11 +338,10 @@ public:
     {
         return m_pEventScroll;
     }
-
     void SetListSize(WinPoint size)
     {
-        m_nItemWidth = size.X();
-        m_cVisibleItems = size.Y()/m_nItemHeight;
+        m_nItemWidth = size.X();		
+        m_cVisibleItems = size.Y()/m_nItemHeight;				
         if (m_pScrollPane) {
             m_pScrollPane->SetPageSize(m_cVisibleItems);
         }
@@ -855,34 +875,34 @@ private:
 	}
 
 #else
-    void Paint(Surface* pSurface)
-    {
+	void Paint(Surface* pSurface)
+	{
 
-        if (m_pImageBkgnd)
-            pSurface->BitBlt(WinPoint(0, 0), 
-                m_pImageBkgnd->GetSurface(),
-                WinRect(m_ptImgOrigin.X(), m_ptImgOrigin.Y(),
-                    m_ptImgOrigin.X() + XSize(), m_ptImgOrigin.Y() + YSize()));
+		if (m_pImageBkgnd)
+			pSurface->BitBlt(WinPoint(0, 0),
+			m_pImageBkgnd->GetSurface(),
+			WinRect(m_ptImgOrigin.X(), m_ptImgOrigin.Y(),
+			m_ptImgOrigin.X() + XSize(), m_ptImgOrigin.Y() + YSize()));
 
-        // calc num Items to draw
-        int iLastVisibleItem = LastVisibleItem();
-        int iLastItem = m_vItems.GetCount() - 1;
-        if (iLastVisibleItem > iLastItem)
-            iLastVisibleItem = iLastItem;
+		// calc num Items to draw
+		int iLastVisibleItem = LastVisibleItem();
+		int iLastItem = m_vItems.GetCount() - 1;
+		if (iLastVisibleItem > iLastItem)
+			iLastVisibleItem = iLastItem;
 
-        // draw each Item
-        WinRect rectPaint = WinRect(0, 0, m_nItemWidth, YSize());
-        WinRect rectItem = rectPaint;
-        rectItem.bottom = rectItem.top;
-        ZAssert(m_iTopItem >= 0);
+		// draw each Item
+		WinRect rectPaint = WinRect(0, 0, m_nItemWidth, YSize());
+		WinRect rectItem = rectPaint;
+		rectItem.bottom = rectItem.top;
+		ZAssert(m_iTopItem >= 0);		
 
         // count the number of slots for the first item which we are not drawing
         int nNumHiddenSlots = 0;
         
         if (m_vItems.GetCount() > 0)
             {
-            while (m_iTopItem - nNumHiddenSlots > 0 
-                && m_vItems[m_iTopItem - (nNumHiddenSlots + 1)] == m_vItems[m_iTopItem])
+            while (m_iTopItem - nNumHiddenSlots > 0 				
+				&& m_vItems[m_iTopItem - (nNumHiddenSlots + 1)] == m_vItems[m_iTopItem])
                 nNumHiddenSlots++;
 
             for (int iItem = m_iTopItem;

@@ -13,9 +13,18 @@ public:
 	CDX9EngineSettings()
 	{
 		mbUseTexturePackFiles = false;
-		m_bVSync = false; //Spunky #265 backing out //Imago 7/10
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+		//I'm personally not sure of the pros or cons of VSync so trusting Imago
+		//m_bVSync = false; //Spunky #265 backing out //Imago 7/10
+		m_bVSync = true;
+		//</Djole>
 		m_dwAA = 0;
-		m_iMaxTextureSize = 0;
+		//<Djole date="2014-12-14">
+		//Stolen from Imago
+		//m_iMaxTextureSize = 0;
+		m_iMaxTextureSize = 3;
+		//</Djole>
 		m_bAutoGenMipmaps = false;
 		m_bDither = false;
 		m_refreshrate = 60;

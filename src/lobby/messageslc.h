@@ -73,7 +73,11 @@ END_FEDMSG
 
 DEFINE_FEDMSG(L, JOIN_MISSION, 260)
   DWORD dwCookie; // client should ignore this message unless it's the cookie for the most recent join/create request 
-  char szServer[16];
+  //<Djole date="2014-10-28">
+  //Stolen from imago
+  //char szServer[16];
+  char szServer[INET6_ADDRSTRLEN];
+  //</Djole>
   DWORD dwPort;			// mdvalley: pass the port to the client
   GUID guidInstance;
 END_FEDMSG    
