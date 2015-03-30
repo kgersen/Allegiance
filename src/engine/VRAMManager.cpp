@@ -547,14 +547,18 @@ bool CVRAMManager::ReleaseHandle( TEXHANDLE texHandle )
 			ULONG refCount;
 
 			// Release the texture. Clear out the data when the reference count is zero.
-			//<Djole date="2014-12-14">
+			//<Djole date="2014-12-14">			
 			//Stolen from Imago
 			//refCount = m_sVRAM.ppBankArray[ dwBankIndex ]->pTexArray[ dwTexIndex ].pTexture->Release(); //Imago 6/10 TODO REVIEW DEBUG CRASH HERE			
 				 //Imago fleshed this out 9/14
 			SBank* myBank = m_sVRAM.ppBankArray[dwBankIndex];
 			if (myBank) {
 				LPDIRECT3DTEXTURE9 myTexture = myBank->pTexArray[dwTexIndex].pTexture;
-				if (myTexture) {
+				//<Djole date="2015-03-30"> again stolen from imago 
+				//if (myTexture) 
+				if(myTexture && 
+					!IsBadReadPtr(myTexture, sizeof(myTexture))) {
+					//</Djole>
 					refCount = myTexture->Release();
 					
 				}
@@ -696,7 +700,10 @@ HRESULT CVRAMManager::SetTexture( TEXHANDLE texHandle, DWORD dwTextureStage )
 #ifdef _DEBUG
 		if( bBreakOnSizeTest == true )
 		{
-			_ASSERT( ( pTexture->dwOriginalWidth != 800 ) && ( pTexture->dwOriginalWidth != 600 ) );
+			//<Djole date="2015-03-24">
+			//_ASSERT( ( pTexture->dwOriginalWidth != 800 ) && ( pTexture->dwOriginalWidth != 600 ) );
+			_ASSERT((pTexture->dwOriginalWidth != ALLEG_GFX_DEFAULT_WIDTH) && (pTexture->dwOriginalWidth != ALLEG_GFX_DEFAULT_HEIGHT));
+			//</Djole>
 		}
 #endif // _DEBUG
 

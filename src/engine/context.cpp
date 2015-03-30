@@ -888,7 +888,10 @@ public:
 //			pointScreen += m_UIOffset;
 
             //m_psurface->DrawString(pfont, color, pointScreen, str);
-			WinRect rectClip(	0, 0, 800, 600 );
+			//<Djole date="2014-03-24"
+			//WinRect rectClip(	0, 0, 800, 600 );
+			WinRect rectClip(0, 0, ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT);
+			//</Djole>
 			pfont->DrawString( NULL, pointScreen, rectClip, str, color );
         }
     }

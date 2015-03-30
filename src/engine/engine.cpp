@@ -73,7 +73,10 @@ private:
 
 public:
     EngineImpl(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow) :
-        m_pointFullscreen(800, 600),
+		//<Djole date="2015-03-24">
+		//m_pointFullscreen(800, 600),		
+		m_pointFullscreen(ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT),
+		//</Djole>
         m_pointFullscreenCurrent(0, 0),
         m_bFullscreen(false),
         m_bAllow3DAcceleration(bAllow3DAcceleration),
@@ -166,10 +169,13 @@ public:
 			height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
 			rate = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iFreq;
 			//OutputDebugString("Found valid full screen rez: "+ZString(width)+"x"+ZString(height)+" @ "+ZString(rate));
-			if (width == 640 && height == 480)
-				m_modes.PushEnd((Vector(width,height,rate))); //VGA				
-			if (width == 800 && height == 600)
-				m_modes.PushEnd((Vector(width,height,rate))); //SVGA (default)	
+
+			//<Djole date="2015-03-24">
+			//if (width == 640 && height == 480)
+			//	m_modes.PushEnd((Vector(width,height,rate))); //VGA				
+			//if (width == 800 && height == 600)
+			//	m_modes.PushEnd((Vector(width,height,rate))); //SVGA (default)	
+			//</Djole>
 			if (width == 1024 && height == 768)
 				m_modes.PushEnd((Vector(width,height,rate))); //XGA
 			if (width == 1280 && height == 1024)
@@ -440,7 +446,10 @@ private:
 
 		// Reset the device for windowed mode.
 
-		CD3DDevice9::Get()->ResetDevice( true, 800, 600 );
+		//<Djole date="2015-03-24"
+		//CD3DDevice9::Get()->ResetDevice( true, 800, 600 );
+		CD3DDevice9::Get()->ResetDevice(true, ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT);
+		//</Djole>
 
         if (g_bWindowLog) {
             ZDebugOutput("InitializeWindowed exiting\n");

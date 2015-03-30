@@ -234,8 +234,12 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	if (m_sD3DDev9.d3dPresParams.BackBufferWidth == 0) {
 		//uhhh, try this hack Imago 7/10
-		m_sD3DDev9.d3dPresParams.BackBufferWidth = 800;
-		m_sD3DDev9.d3dPresParams.BackBufferHeight = 600;
+		//<Djole date="2015-03-24">
+		//m_sD3DDev9.d3dPresParams.BackBufferWidth = 800;
+		//m_sD3DDev9.d3dPresParams.BackBufferHeight = 600;
+		m_sD3DDev9.d3dPresParams.BackBufferWidth = ALLEG_GFX_DEFAULT_WIDTH;
+		m_sD3DDev9.d3dPresParams.BackBufferHeight = ALLEG_GFX_DEFAULT_HEIGHT;
+		//</Djole>
 		m_sD3DDev9.d3dPresParams.BackBufferFormat = D3DFMT_R5G6B5;
 		m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = D3DFMT_D24X8;
 	}

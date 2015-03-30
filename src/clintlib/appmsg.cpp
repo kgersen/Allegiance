@@ -3262,7 +3262,6 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             {
             case OT_station:
 				if (GetCore()->GetStation(pfmObjectSpotted->oidSpotter)->GetSide() != myside) {
-					
 
  					strAllies = "\x81 " + ConvertColorToString(AllianceColors[myside->GetAllies()]*0.75) + "Allied" + END_COLOR_STRING + " " ;
 				} else {
@@ -3308,6 +3307,15 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             case OT_station:
                 {
                     IstationIGC* pstation = GetCore()->GetStation(pfmObjectSpotted->oidObject);
+					//<Djole date="2015-03-29">
+					AsteroidID aid =pstation->GetRoidID();
+					IasteroidIGC* roid = GetCore()->GetAsteroid(aid);
+					if (roid &&
+						!roid->IsDead()){
+						KillAsteroidEvent(roid, false);
+					}
+					//</Djole>
+
 					IsideIGC* myside = GetSide();
                     assert(pstation);
 					if (myside->AlliedSides(myside,pstation->GetSide())) { //ALLY imago for when VIS is OFF

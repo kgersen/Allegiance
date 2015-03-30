@@ -207,10 +207,27 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
 		CASTPFM(pfmPlayerRank, LS, PLAYER_RANK, pfm);
 
-		lstrcpy(pqd->szCDKey, FM_VAR_REF(pfmPlayerRank, szCDKey));
-		lstrcpy(pqd->szCharacterName, FM_VAR_REF(pfmPlayerRank, szCharacterName));
-		lstrcpy(pqd->szPassword, FM_VAR_REF(pfmPlayerRank, szPassword));
-		lstrcpy(pqd->szReason, FM_VAR_REF(pfmPlayerRank, szReason));
+		//<Djole date="2015-03-29">
+		//lstrcpy(pqd->szCDKey, FM_VAR_REF(pfmPlayerRank, szCDKey));
+		//lstrcpy(pqd->szCharacterName, FM_VAR_REF(pfmPlayerRank, szCharacterName));
+		//lstrcpy(pqd->szPassword, FM_VAR_REF(pfmPlayerRank, szPassword));
+		//lstrcpy(pqd->szReason, FM_VAR_REF(pfmPlayerRank, szReason));
+		if (pfmPlayerRank){
+			if (FM_VAR_REF(pfmPlayerRank, szCDKey)){
+				lstrcpy(pqd->szCDKey, FM_VAR_REF(pfmPlayerRank, szCDKey));
+			}
+			if (FM_VAR_REF(pfmPlayerRank, szCharacterName)){
+				lstrcpy(pqd->szCharacterName, FM_VAR_REF(pfmPlayerRank, szCharacterName));
+			}
+			if (FM_VAR_REF(pfmPlayerRank, szPassword)){
+				lstrcpy(pqd->szPassword, FM_VAR_REF(pfmPlayerRank, szPassword));
+			}
+			if (FM_VAR_REF(pfmPlayerRank, szReason)){
+				lstrcpy(pqd->szReason, FM_VAR_REF(pfmPlayerRank, szReason));
+			}
+		}
+		
+		//</Djole>
 
 		pqd->characterID = pfmPlayerRank->characterID;
 		pqd->fCanCheat = pfmPlayerRank->fCanCheat;

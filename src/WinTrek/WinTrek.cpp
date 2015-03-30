@@ -2307,7 +2307,7 @@ public:
             m_pwrapImageTop->RemoveCapture();
 
 			//<Djole date="2014-09-22">
-			TrekResources::isCombat(s==ScreenIDCombat);
+			TrekResources::isCombat(s==ScreenIDCombat);			
 			//</Djole>
 
             // create the new screen						
@@ -2433,7 +2433,10 @@ public:
 							}
 
 							if (m_pengine->IsFullscreen()) {
-								CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
+								//<Djole date="2015-03-24">
+								//CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
+								CD3DDevice9::Get()->ResetDevice(false, ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT, g_DX9Settings.m_refreshrate);
+								//</Djole>
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
@@ -2658,7 +2661,10 @@ public:
 									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
 					CD3DDevice9::Get()->GetCurrentMode()->mode.Height +
 									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
-              WinPoint(800, 600)
+			   //<Djole date="2015-03-24">
+              //WinPoint(800, 600)
+			  WinPoint(ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT)
+			  //</Djole>
         ),
 
 /*
@@ -2944,7 +2950,10 @@ public:
 		
 		if (hDDVidThread != NULL) { //imago 7/29/09 intro.avi
 			if (!CD3DDevice9::Get()->IsWindowed()) {
-				CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
+				//<Djole date="2015-03-24">
+				//CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
+				CD3DDevice9::Get()->ResetDevice(false, ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT, g_DX9Settings.m_refreshrate);
+				//</Djole>
 			}
 		}
 		
@@ -2992,9 +3001,9 @@ public:
 
         m_bEnableVirtualJoystick = (LoadPreference("EnableVirtualJoystick", 0) != 0);
         m_bFlipY                 = (LoadPreference("FlipY",                 0) != 0);
-		//<Djole date="2014-09-22">
-		m_bFlipX			     = static_cast<bool>(LoadPreference("FlipX", 0));
-		m_bFlipZ				 = static_cast<bool>(LoadPreference("FlipZ", 0));
+		//<Djole date="2015-03-28">
+		m_bFlipX			     = static_cast<bool>(LoadPreference("FlipX", 0) != 0);
+		m_bFlipZ				 = static_cast<bool>(LoadPreference("FlipZ", 0) != 0);
 		//</Djole>
         m_bEnableFeedback        = (LoadPreference("EnableFeedback",        1) != 0);
         m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
@@ -3010,22 +3019,49 @@ public:
 //imago restored original functionality 6/28/09
 		m_sizeCombat =
             WinPoint(
-                int(LoadPreference("CombatXSize", 800)),
-                int(LoadPreference("CombatYSize", 600))
+			//<Djole date="2015-03-24">
+                /*int(LoadPreference("CombatXSize", 800)),
+                int(LoadPreference("CombatYSize", 600))*/
+				int(LoadPreference("CombatXSize", ALLEG_GFX_COMBAT_WIDTH)),
+				int(LoadPreference("CombatYSize", ALLEG_GFX_COMBAT_HEIGHT))
+				
             );
+		if (m_sizeCombat.X() < ALLEG_GFX_COMBAT_WIDTH){
+			m_sizeCombat.SetX(ALLEG_GFX_COMBAT_WIDTH);
+		}
+		if (m_sizeCombat.Y() < ALLEG_GFX_COMBAT_HEIGHT){
+			m_sizeCombat.SetY(ALLEG_GFX_COMBAT_HEIGHT);
+		}
+		//</Djole>
 		//m_sizeCombatFullscreen =
 		//	WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
 		//				CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
 
        m_sizeCombatFullscreen =
            WinPoint(
-                int(LoadPreference("CombatFullscreenXSize", 800)),
-                int(LoadPreference("CombatFullscreenYSize", 600))
+		   //<Djole date="2015-03-24">
+                //int(LoadPreference("CombatFullscreenXSize", 800)),
+                //int(LoadPreference("CombatFullscreenYSize", 600))
+				int(LoadPreference("CombatFullscreenXSize", ALLEG_GFX_COMBAT_WIDTH)),
+				int(LoadPreference("CombatFullscreenYSize", ALLEG_GFX_COMBAT_WIDTH))
+			
             );
+	   if (m_sizeCombatFullscreen.X() < ALLEG_GFX_COMBAT_WIDTH){
+		   m_sizeCombatFullscreen.SetX(ALLEG_GFX_COMBAT_WIDTH);
+	   }
+	   if (m_sizeCombatFullscreen.Y() < ALLEG_GFX_COMBAT_HEIGHT){
+		   m_sizeCombatFullscreen.SetY(ALLEG_GFX_COMBAT_HEIGHT);
+	   }
+		   
+
+	   //</Djole>
 
 	   //Imago 7/27/09 Win7
 	   if (m_sizeCombatFullscreen ==  WinPoint(0,0))
-		   m_sizeCombatFullscreen = WinPoint(800,600);
+		   //<Djole date="2015-03-24">
+		   //m_sizeCombatFullscreen = WinPoint(800,600);
+		   m_sizeCombatFullscreen = WinPoint(ALLEG_GFX_COMBAT_WIDTH, ALLEG_GFX_COMBAT_WIDTH);
+		   //</Djole>
 
 // BUILD_DX9
 
@@ -4727,88 +4763,7 @@ public:
 		r = 120 / fontSize;
 		return min(r,10);
 	}
-	//</Djole>
-
-	//void adjustFont(int op){
-	//	
-	//	bool update=false;
-	//	int size=0;
-	//	switch(op)
-	//	{
-	//	case idmIncreaseFontSize:			
-	//			size = TrekResources::chatFontSize() + 1;
-	//			update = size<=TrekResources::maxChatFontSize();							
-	//		break;
-	//	case idmDecreaseFontSize:			
-	//			size = TrekResources::chatFontSize() - 1;
-	//			update = TrekResources::minChatFontSize()<=size;							
-	//		break;
-	//	}
-
-	//	if(update){
-	//				
-	//		m_pnumberFontSize->SetValue(size);
-	//		TrekResources::chatFontSize(size);
-
-	//		setChatLines(m_pnumberChatLinesDesired->GetValue());
-
-	//		if(m_pitemIncreaseFontSize)
-	//			m_pitemIncreaseFontSize->SetString(increaseFontSizeString());
-	//		if (m_pitemDecreaseFontSize)
-	//			m_pitemDecreaseFontSize->SetString(decreaseFontSizeString());
-	//		
-
-	//		//if (screen()==ScreenIDCombat && m_pconsoleImage)
-	//		//{
-	//			//m_pnumberChatLines->SetValue(m_pnumberChatLinesDesired->GetValue());				
-	//			//m_pconsoleImage = NULL;
-	//			//m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
- //   //                {
- //   //                    IsideIGC*   pside = trekClient.GetShip()->GetSide();
- //   //                    assert (pside);
- //   //                    assert (pside->GetObjectID() >= 0);
-	//			//		m_pconsoleImage->SetDisplayMDL(pside->GetCivilization()->GetHUDName());
- //   //                }
- //   //                m_pwrapImageConsole->SetImage(m_pconsoleImage);
-
- //   //                ResetOverlayMask();
-
- //   //                SetViewMode(trekClient.GetShip()->GetStation()
- //   //                    ? (trekClient.GetShip()->IsGhost() ? vmCommand : vmHangar)
- //   //                    : vmCombat, true);
- //   //                PositionCommandView(NULL, 0.0f);
-
- //   //                VTSetText("Screen=%d", ScreenIDCombat);
-
- //   //                //
- //   //                // Fill in the game state dialog
- //   //                //
-
- //   //                //InitializeGameStateContainer();
-
- //   //                //
- //   //                // Bring up the game state pane by default
- //   //                //
-
- //   //                TurnOnOverlayFlags(ofGameState);
-
-	//			////m_pconsoleImage->SetDisplayMDL(trekClient.GetSide()->GetCivilization()->GetHUDName());
-	//			////// Reading the display MDL breaks the loadout and hanger screens, this fixes it.
-	//			////// This will also close excess panes and menus and things, which is annoying.
-	//			////if (m_viewmode == vmHangar)
-	//			////{
-	//			////	SetViewMode(vmCommand);
-	//			////	SetViewMode(vmHangar);
-	//			////}
-	//			////if (m_viewmode == vmLoadout)
-	//			////{
-	//			////	SetViewMode(vmCommand);
-	//			////	SetViewMode(vmLoadout);
-	//			////}
-	//		//}
-	//	}
-	//}	
-	
+	//</Djole>	
 	
 	//<Djole date="2014-10-29">
 	void setChatLines(DWORD lines, DWORD fontHeight){
@@ -6822,7 +6777,11 @@ public:
         SaveCombatSize();
 
         if (vm == vmLoadout) {
-            ZDebugOutput("SetViewMode : 800x600\n");
+
+			//<Djole date="2015-03-24">
+            //ZDebugOutput("SetViewMode : 800x600\n");
+			//Really ^^, Really??????????????
+			//</Djole>
 
             //
             // Hangar or loadout switch to 8x6
@@ -6907,7 +6866,7 @@ public:
 				if (vm == vmLoadout) 
 				{
 					//<Djole date="2014-10-29">
-					//m_pchatListPane->SetChatLines(min(lines, 6));
+					//m_pchatListPane->SetChatLines(min(lines, 6));					
 					m_pchatListPane->SetChatLines(min(lines, 6), m_pnumberFontSize->GetValue());
 					//</Djole>
 					m_pnumberChatLines->SetValue(min(lines, 6));

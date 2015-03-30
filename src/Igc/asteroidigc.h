@@ -38,8 +38,10 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
                 m_pbuildingEffect->Terminate();
                 assert (m_pbuildingEffect == NULL);
             }
-
-            GetMyMission()->DeleteAsteroid(this);
+			ImissionIGC* m = GetMyMission();
+			if (m){
+				m->DeleteAsteroid(this);
+			}
             TmodelIGC<IasteroidIGC>::Terminate();
         }
         virtual int     Export(void*    data) const;

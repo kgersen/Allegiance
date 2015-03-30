@@ -116,8 +116,12 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	if (bRaise == false) {
 		int iRetVal = 1;
 		int idummy = 0;
-    	int x = 800;
-		int y = 600;
+		//<Djole date="2015-03-24">
+    	//int x = 800;
+		//int y = 600;
+		int x = ALLEG_GFX_DEFAULT_WIDTH;
+		int y = ALLEG_GFX_DEFAULT_HEIGHT;
+		//</Djole>
 
 		g_VideoSettings.bWaitForVSync		= false;
 		g_VideoSettings.bAutoGenMipmaps 	= false;
@@ -152,10 +156,16 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			//::RegQueryValueEx(hKey, "AAQuality", NULL, &dwType, (BYTE*)&idummy, &dwSize); NYI
             ::RegCloseKey(hKey);
         }
-		x = (x != 0) ? x : 800; y = (y != 0) ? y : 600; //in case Windows7 wrote 0's before this bug was caught
+		//<Djole date="2015-03-24">
+		//x = (x != 0) ? x : 800; y = (y != 0) ? y : 600; //in case Windows7 wrote 0's before this bug was caught
+		x = (x != 0) ? x : ALLEG_GFX_DEFAULT_WIDTH; y = (y != 0) ? y : ALLEG_GFX_DEFAULT_HEIGHT;
+		//</Djole>
 
 		lpSubKey += ZString("\\3DSettings");
-		g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum ENGINE width/height allowed.
+		//<Djole date="2015-03-24">
+		//g_VideoSettings.pDevData			= new CD3DDeviceModeData( 800, 600 , &logFile);	// Mininum ENGINE width/height allowed.
+		g_VideoSettings.pDevData = new CD3DDeviceModeData(ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT, &logFile);
+		//</Djole>
 		g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,0,&idummy,&idummy,&g_DX9Settings.m_refreshrate,&bbf,&df,&hMon); //imago use this function!
 		// If default device has no available modes, can't run the game.
 		if( g_VideoSettings.pDevData->GetTotalResolutionCount( 0 ) == 0 )
@@ -190,7 +200,10 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			HMONITOR mymon;
 			g_VideoSettings.pDevData->GetResolutionDetails(iAdapter,i,&myx,&myy,&myrate,&mybbf,&mydf,&mymon);
 			if (g_VideoSettings.d3dDeviceFormat == mydf && g_VideoSettings.d3dBackBufferFormat == mybbf) {
-				if (800 == myx && 600 == myy) { //intentional 800x600
+				//<Djole date="2015-03-24">
+				//if (800 == myx && 600 == myy) { //intentional 800x600
+				if (ALLEG_GFX_DEFAULT_WIDTH == myx && ALLEG_GFX_DEFAULT_HEIGHT == myy) { //Djole: intentionaly not hardcoding magic numbers
+				//</Djole>
 					if (myrate > g_DX9Settings.m_refreshrate && myrate <= maxrate)
 						iBestMode = i;
 				}
@@ -266,8 +279,10 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	} else { // BEGIN USE_DIALOG_SETTINGS
 		lpSubKey += ZString("\\3DSettings");
 		SAdditional3DRegistryData sExtraRegData;
-
-		g_VideoSettings.pDevData = new CD3DDeviceModeData( 800, 600, &logFile );	// Mininum width/height allowed.
+		//<Djole date="2015-03-24>
+		//g_VideoSettings.pDevData = new CD3DDeviceModeData( 800, 600, &logFile );	// Mininum width/height allowed.
+		g_VideoSettings.pDevData = new CD3DDeviceModeData(ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT, &logFile);	// Mininum width/height allowed.
+		//</Djole>
 
 		// If default device has no available modes, can't run the game.
 		if( g_VideoSettings.pDevData->GetTotalResolutionCount( 0 ) == 0 )

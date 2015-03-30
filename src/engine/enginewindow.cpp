@@ -22,8 +22,10 @@ void EngineWindow::MenuCommandSink::OnMenuCommand(IMenuItem* pitem)
 //See also engine.cpp(180) if changing this list.
 EngineWindow::ModeData EngineWindow::s_pmodes[] = //imago updated 6/29/09 NYI letterbox/strech non 4:3
     {
-		ModeData(WinPoint(640, 480), false),
-		ModeData(WinPoint(800, 600), false),
+		//<Djole date="2015-03-24">
+		//ModeData(WinPoint(640, 480), false),
+		//ModeData(WinPoint(800, 600), false),
+		//</Djole>
 		ModeData(WinPoint(1024, 768), false),
 		ModeData(WinPoint(1280, 1024), false),
 		ModeData(WinPoint(1366, 768), false), //720p thanks to badpazzword 7/1/09
@@ -1245,8 +1247,12 @@ void EngineWindow::DoIdle()
 			//go fullscreen #73 7/10 Imago
 			if ((GetSystemMetrics(SM_CXSCREEN) <= m_sizeWindowed.X() || GetSystemMetrics(SM_CYSCREEN) <= m_sizeWindowed.Y()) && !m_bMovingWindow && !m_pengine->IsFullscreen()) {
 				SetFullscreen(true);
-				m_sizeWindowed.SetX(800);
-				m_sizeWindowed.SetY(600);
+				//<Djole date="2015-03-24">
+				//m_sizeWindowed.SetX(800);
+				//m_sizeWindowed.SetY(600);
+				m_sizeWindowed.SetX(ALLEG_GFX_DEFAULT_WIDTH);
+				m_sizeWindowed.SetY(ALLEG_GFX_DEFAULT_HEIGHT);
+				//</Djole>
 			}
 			m_bInvalid = false;
 

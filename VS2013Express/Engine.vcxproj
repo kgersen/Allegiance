@@ -162,6 +162,7 @@
     <ClInclude Include="..\src\engine\button.h" />
     <ClInclude Include="..\src\engine\camera.h" />
     <ClInclude Include="..\src\engine\caption.h" />
+    <ClInclude Include="..\src\engine\config.h" />
     <ClInclude Include="..\src\engine\context.h" />
     <ClInclude Include="..\src\engine\controls.h" />
     <ClInclude Include="..\src\engine\D3DDevice9.h" />

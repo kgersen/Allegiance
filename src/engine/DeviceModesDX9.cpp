@@ -349,7 +349,10 @@ void CD3DDeviceModeData::GetResolutionStringByIndex( int iDeviceIndex, int iReso
 		i++;
 	}
 	if ( !(i < eDMD_NumModes) || !(iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i])) {
-		sprintf_s( pBuffer, iBufferLen, "800x600 Compat. Mode" );
+		//<Djole date="2015-03-24">
+		//sprintf_s( pBuffer, iBufferLen, "800x600 Compat. Mode" );		
+		sprintf_s(pBuffer, iBufferLen, "%dx%d Compat. Mode",ALLEG_GFX_DEFAULT_WIDTH,ALLEG_GFX_DEFAULT_HEIGHT);
+		//</Djole>
 		return; //Imago 8/10
 	}
 	pDisplayMode = &m_pAdapterArray[ iDeviceIndex ].ppAvailableModes[ i ][ iResolutionIndex ].mode;
@@ -635,8 +638,12 @@ void CD3DDeviceModeData::GetRelatedResolutions(	int iDeviceIndex,
 	//try this hack Imago 7/10
 	if ( *pSelectedResolution == -1) {
 		ppResolutionArray[0]->iFreq = 60;
-		ppResolutionArray[0]->iWidth = 800;
-		ppResolutionArray[0]->iHeight = 600;
+		//<Djole date="2015-03-24>
+		//ppResolutionArray[0]->iWidth = 800;
+		//ppResolutionArray[0]->iHeight = 600;
+		ppResolutionArray[0]->iWidth = ALLEG_GFX_DEFAULT_WIDTH;
+		ppResolutionArray[0]->iHeight = ALLEG_GFX_DEFAULT_HEIGHT;
+		//</Djole>
 		*pSelectedResolution = 1;
 	}
 	_ASSERT( *pSelectedResolution != -1 );
@@ -942,8 +949,12 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 		// Prepare the full screen mode first.
 		pParams->bWindowModeValid				= true;
 		pParams->sFullScreenMode.mode.Format		= D3DFMT_R5G6B5;
-		pParams->sFullScreenMode.mode.Width			= 800;
-		pParams->sFullScreenMode.mode.Height		= 600;
+		//<Djole date="2015-03-24>
+		//pParams->sFullScreenMode.mode.Width			= 800;
+		//pParams->sFullScreenMode.mode.Height		= 600;
+		pParams->sFullScreenMode.mode.Width			= ALLEG_GFX_DEFAULT_WIDTH;
+		pParams->sFullScreenMode.mode.Height		= ALLEG_GFX_DEFAULT_HEIGHT;
+		//</Djole>
 		pParams->sFullScreenMode.mode.RefreshRate	= 60;
 		pParams->sFullScreenMode.fmtDepthStencil	= D3DFMT_UNKNOWN;
 		return true;
@@ -980,8 +991,12 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 	if( pWindowedMode != NULL )
 	{
 		pParams->sWindowedMode.mode.Format		= pWindowedMode->mode.Format;
-		pParams->sWindowedMode.mode.Width		= 800;		//pWindowedMode->mode.Width;
-		pParams->sWindowedMode.mode.Height		= 600;		//pWindowedMode->mode.Height;
+		//<Djole date="2015-03-24>
+		//pParams->sWindowedMode.mode.Width		= 800;		//pWindowedMode->mode.Width;
+		//pParams->sWindowedMode.mode.Height		= 600;		//pWindowedMode->mode.Height;
+		pParams->sWindowedMode.mode.Width		= ALLEG_GFX_DEFAULT_WIDTH;		
+		pParams->sWindowedMode.mode.Height		= ALLEG_GFX_DEFAULT_HEIGHT;
+		//</Djole>
 		pParams->sWindowedMode.mode.RefreshRate	= pWindowedMode->mode.RefreshRate;
 		pParams->sWindowedMode.fmtDepthStencil	= pWindowedMode->d3dDepthStencil;
 		pParams->bWindowModeValid				= true;

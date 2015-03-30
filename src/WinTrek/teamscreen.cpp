@@ -117,6 +117,38 @@ private:
 
     ChatTarget      m_chattargetChannel;
 
+	//<Djole date="2015-03-24">
+	//HJ's eyes hurt
+	//Probably shouldn't copy the functions but since its not static already for some reason...next time I'll fix this
+	//
+#define ALLEG_DONTBLINK_REGKEY "BLINK"
+	DWORD m_dontBlink;
+	DWORD m_tmpBlink;
+	DWORD LoadPreference(const ZString& szName, DWORD dwDefault)
+	{
+		HKEY hKey;
+		DWORD dwResult = dwDefault;
+
+		// mmf lets actually load it instead of creating it
+		// if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+		//        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+			0, KEY_READ, &hKey))
+		{
+			DWORD dwSize = sizeof(dwResult);
+			DWORD dwType = REG_DWORD;
+
+			::RegQueryValueEx(hKey, szName, NULL, &dwType, (BYTE*)&dwResult, &dwSize);
+			::RegCloseKey(hKey);
+
+			if (dwType != REG_DWORD)
+				dwResult = dwDefault;
+		}
+
+		return dwResult;
+	}
+	//</Djole>
+
     enum PlayerSort
     {
         sortLeader,
@@ -1123,12 +1155,21 @@ public:
         m_bShowingRandomizeWarning(false),
         m_sideToJoin(NA),
         m_lastToJoinSend(NA),//KGJV #104
-		m_bRipChecked(false) 
+		m_bRipChecked(false)
     {
         TRef<IObject> pobjPlayerColumns;
         TRef<IObject> pobjTeamColumns;
         TRef<Number>  pnumTeamColorIntensity;
 		TRef<Number>  pnumTeamColorBrightness; //Imago 7/10 #15
+
+		//<Djole date="2015-03-24">		
+		m_dontBlink = LoadPreference(ALLEG_DONTBLINK_REGKEY,1);
+		//just in case
+		if (m_dontBlink == 0){
+			m_dontBlink = 1;
+		}
+		m_tmpBlink = m_dontBlink;
+		//</Djole>
 
         //
         // Teamscreen exports
@@ -2645,8 +2686,15 @@ public:
     }
 
     bool OnTimer()
-    {
-        s_bFlash = !s_bFlash;
+    {			
+		//<Djole date="2015-03-24">
+		//s_bFlash = !s_bFlash;
+		--m_tmpBlink;
+		if (m_tmpBlink == 0){
+			s_bFlash = !s_bFlash;
+			m_tmpBlink = m_dontBlink;
+		}
+		//</Djole>
 
         for (int i = 0; i < 3; i++)
         {

@@ -4,6 +4,9 @@
 #include <ddraw.h>
 #include "ddstream.h"
 
+//<Djole date="2015-03-24">
+#include "config.h"
+//</Djole>
 
 #pragma comment(lib,"dxguid.lib") 
 #pragma comment(lib,"amstrmid.lib")  

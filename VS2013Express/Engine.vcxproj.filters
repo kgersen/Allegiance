@@ -290,5 +290,6 @@
     <ClInclude Include="..\src\engine\xfile.h">
       <Filter>Modeler\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\engine\config.h" />
   </ItemGroup>
 </Project>

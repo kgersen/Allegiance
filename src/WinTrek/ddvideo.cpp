@@ -62,8 +62,12 @@ HRESULT DDVideo::InitDirectDraw()
 	if (m_bWindowed) { //#112
 		m_lpDD->SetCooperativeLevel(m_hWnd, DDSCL_ALLOWREBOOT | DDSCL_NORMAL | DDSCL_MULTITHREADED);
 	} else {
+		
 		hRet = m_lpDD->SetCooperativeLevel(m_hWnd,DDSCL_EXCLUSIVE |DDSCL_ALLOWREBOOT| DDSCL_ALLOWMODEX | DDSCL_FULLSCREEN | DDSCL_MULTITHREADED);
-		m_lpDD->SetDisplayMode(800,600,16,g_DX9Settings.m_refreshrate,0);
+		//<Djole date="2015-03-24">
+		//m_lpDD->SetDisplayMode(800,600,16,g_DX9Settings.m_refreshrate,0);
+		m_lpDD->SetDisplayMode(ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT, 16, g_DX9Settings.m_refreshrate, 0);
+		//</Djole>
 	}
 	
 	ZeroMemory(&ddsd, sizeof(ddsd));
@@ -81,8 +85,12 @@ HRESULT DDVideo::InitDirectDraw()
 		hRet = m_lpDDSPrimary->SetClipper( lpClipper );
 		ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
 		ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
-		ddsd.dwWidth = 800;
-		ddsd.dwHeight = 600;
+		//<Djole date="2015-03-24">
+		//ddsd.dwWidth = 800;
+		//ddsd.dwHeight = 600;
+		ddsd.dwWidth = ALLEG_GFX_DEFAULT_WIDTH;
+		ddsd.dwHeight = ALLEG_GFX_DEFAULT_HEIGHT;
+		//</Djole>
 		hRet = m_lpDD->CreateSurface(&ddsd, &m_lpDDSBack, NULL);
 	} else {
 		ddsd.dwBackBufferCount = 1;
@@ -122,7 +130,10 @@ BOOL DDVideo::Flip()
     ClientToScreen(m_hWnd, &p);
     GetClientRect(m_hWnd, &rcRectDest);
     OffsetRect(&rcRectDest, p.x, p.y);
-    SetRect(&rcRectSrc, 0, 0, 800, 600);
+	//<Djole date="2015-03-24">
+    //SetRect(&rcRectSrc, 0, 0, 800, 600);
+	SetRect(&rcRectSrc, 0, 0, ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT);
+	//</Djole>
     ddrval = m_lpDDSPrimary->Blt( &rcRectDest, m_lpDDSBack, &rcRectSrc, DDBLT_WAIT, NULL);
 
     return (ddrval == DD_OK);

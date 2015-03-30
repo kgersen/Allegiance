@@ -1,6 +1,7 @@
 #ifndef _screens_h_
 #define _screens_h_
 
+#include "../engine/config.h"
 //////////////////////////////////////////////////////////////////////////////
 //
 // Screen
@@ -14,7 +15,10 @@ public:
 
     virtual Image*   GetImage() { return NULL; }
     virtual Pane*    GetPane()  { return NULL; }
-    virtual WinPoint GetSize()  { return WinPoint(800, 600); }
+	//<Djole date="2015-03-24">
+    //virtual WinPoint GetSize()  { return WinPoint(800, 600); }
+	virtual WinPoint GetSize()  { return WinPoint(ALLEG_GFX_DEFAULT_WIDTH, ALLEG_GFX_DEFAULT_HEIGHT); }
+	//</Djole>
     virtual void     OnFrame()  { } //ADDED Sleep to preserve CPU cycles when not in-game 12/23/07 -- Orion 
 										//Imago removed the Sleep(1), it added 1 ms/f, all the time! 7/13/09
 											//See the new, more agressive sleepers at the ends of DoTrekUpdate and and DoIdle

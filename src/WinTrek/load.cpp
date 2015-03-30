@@ -1836,8 +1836,12 @@ public:
 #endif
         } 
 		// -KGJV: fix ship drop down menu position
-		int dx = (GetWindow()->GetSize().X()-800)/2;
-		int dy = (GetWindow()->GetSize().Y()-600)/2;
+		//<Djole date="2015-03-24">
+		//int dx = (GetWindow()->GetSize().X()-800)/2;
+		//int dy = (GetWindow()->GetSize().Y()-600)/2;
+		int dx = (GetWindow()->GetSize().X() - ALLEG_GFX_DEFAULT_WIDTH) / 2;
+		int dy = (GetWindow()->GetSize().Y() - ALLEG_GFX_DEFAULT_HEIGHT) / 2;
+		//</Djole>
         GetWindow()->GetPopupContainer()->OpenPopup(m_phullMenu, Rect(dx+260, dy+450, dx+340, dy+530), true, false);
     }
             

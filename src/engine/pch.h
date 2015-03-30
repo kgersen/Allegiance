@@ -14,4 +14,7 @@
 #include "enginep.h"
 #include "regkey.h" //Imago 7/10 
 #include "zreg.h" //Imago 7/10 
+//<Djole date="2015-03-24>
+#include "../engine/config.h"
+//</Djole>
 #endif

@@ -10697,7 +10697,10 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	const SideListIGC * plistSide0 = pmission->GetSides();
 	for (SideLinkIGC * plinkSide = plistSide0->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * potherside = plinkSide->data();
-		if (pside == potherside || pasteroid->GetAsteroidCurrentEye(potherside) || pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) || pbseensides[potherside->GetObjectID()]) {		
+		if (pside == potherside ||
+			pasteroid->GetAsteroidCurrentEye(potherside) ||
+			pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) ||
+			pbseensides[potherside->GetObjectID()]) {		
 			KillAsteroidEvent(pasteroid, potherside, false);
 		}
  	}
@@ -10712,9 +10715,20 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	const SideListIGC * plistSide1 = pmission->GetSides();
 	for (SideLinkIGC * plinkSide = plistSide1->first(); plinkSide; plinkSide = plinkSide->next()) {
 		IsideIGC * potherside = plinkSide->data();
-		if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && pstationNew->SeenBySide(plinkSide->data())) {
+		if (pside != potherside &&
+			!pasteroid->GetAsteroidCurrentEye(potherside) &&
+			!pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) &&
+			!pbseensides[potherside->GetObjectID()] &&
+			pstationNew->SeenBySide(plinkSide->data())) {
+
 			KillAsteroidEvent(pasteroid, potherside, false);
-		} else if (pside != potherside && !pasteroid->GetAsteroidCurrentEye(potherside) && !pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) && !pbseensides[potherside->GetObjectID()] && !pstationNew->SeenBySide(plinkSide->data())) {
+
+		} else if (pside != potherside &&
+			!pasteroid->GetAsteroidCurrentEye(potherside) &&
+			!pasteroid->GetBuilderSeenSide(potherside->GetObjectID()) &&
+			!pbseensides[potherside->GetObjectID()] &&
+			!pstationNew->SeenBySide(plinkSide->data())) {
+
 			pstationNew->SetRoidSig(pasteroid->GetSignature());
 			pstationNew->SetRoidPos(pasteroid->GetPosition());
 			pstationNew->SetRoidRadius(pasteroid->GetRadius());
@@ -10722,9 +10736,13 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 			pstationNew->SetRoidSide(potherside->GetObjectID());
  		}
 	}
+	//<Djole date="2015-03-29">
+	//test
+	//KillAsteroidEvent(pasteroid, pside, false);
 	//
-	//pasteroid->Terminate(); //Turkey commented out #307 02/13
+	pasteroid->Terminate(); //Turkey commented out #307 02/13
 	//
+	//</Djole>
 	// TE: Fire AGCEvent informing of station created
 	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL; // this is a timestamp.
 	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
@@ -11687,6 +11705,10 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 //  if (pasteroid->IsDead()) pasteroid->Terminate();
 //}
 void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* pside, bool explodeF){
+#ifdef DEBUG
+	debugf("FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* pside, bool explodeF) called pasteroid=%d, pside=%d", (int)pasteroid, (int)pside);
+#endif
+
 	if (pasteroid == NULL || 
 		pside==NULL){
 		return;
@@ -11701,6 +11723,9 @@ void FedSrvSiteBase::KillAsteroidEvent(IasteroidIGC* pasteroid, IsideIGC* pside,
 	KillAsteroidEvent(roid, soid, pside, explodeF);
 }
 void FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side, bool explodeF){
+#ifdef DEBUG	
+	debugf("FedSrvSiteBase::KillAsteroidEvent(AsteroidID roid, SectorID soid, IsideIGC* side, bool explodeF) called roid=%d, soid=%d", (int)roid, (int)soid);
+#endif
   BEGIN_PFM_CREATE(g.fm, pfmAsteroidDestroyed, S, ASTEROID_DESTROYED)
   END_PFM_CREATE
   pfmAsteroidDestroyed->clusterID = soid;
