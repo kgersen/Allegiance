@@ -113,8 +113,8 @@ public:
                 }
 
                 if (rect.Inside(Point(x, y))) {
-                    float dx     = abs(x - xold);
-                    float dy     = abs(y - yold);
+                    float dx     = fabs(x - xold);
+                    float dy     = fabs(y - yold);
                     float length = dx + dy;
 
                     if (length <= 1.0f) {

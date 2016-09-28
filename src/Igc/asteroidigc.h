@@ -59,7 +59,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 			{
 				if (m_inhibitCounter == -1)
 					m_inhibitCounter = Time::Now();
-				else if (abs(m_inhibitCounter - Time::Now()) > 3.0)
+				else if (fabs(m_inhibitCounter - Time::Now()) > 3.0)
 				{
 					m_inhibitCounter = -1;
 					m_inhibitUpdate = false;
@@ -239,7 +239,7 @@ class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 
 			}*/
 			//Xynth #132 7/2010  Update asteroid periodically
-			if (abs(m_asteroidDef.ore - m_lastUpdateOre) > 3.0)
+			if (fabs(m_asteroidDef.ore - m_lastUpdateOre) > 3.0)
 			{
 				GetMyMission()->GetIgcSite()->MineAsteroidEvent(this, this->GetOreFraction());
 				m_lastUpdateOre = m_asteroidDef.ore;

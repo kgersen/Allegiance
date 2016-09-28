@@ -216,14 +216,14 @@ public:
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class IEventTarget : public IObject
+class IAllegEventTarget : public IObject
 {
 public:
     virtual void Disconnect() = 0;
 };
 
 template<class ObjectClass>
-class TIntegerEventTarget : public IIntegerEventSink, public IEventTarget
+class TIntegerEventTarget : public IIntegerEventSink, public IAllegEventTarget
 {
 private:
 
@@ -256,7 +256,7 @@ public:
 };
 
 template<class ObjectClass>
-class TEventTarget : public IEventSink, public IEventTarget
+class TEventTarget : public IEventSink, public IAllegEventTarget
 {
 private:
 
@@ -310,12 +310,12 @@ private:
     typedef bool (DerivedClass::*PFNOnEventVoidMember)(void);
     typedef TEventTarget<DerivedClass> EventTarget;
     
-    TList<TRef<IEventTarget> > m_lstTargets;
+    TList<TRef<IAllegEventTarget> > m_lstTargets;
 
 public:
     virtual ~EventTargetContainer()
     {
-        TList<TRef<IEventTarget> >::Iterator iter(m_lstTargets);
+        TList<TRef<IAllegEventTarget> >::Iterator iter(m_lstTargets);
 
         while (!iter.End()) {
             iter.Value()->Disconnect();

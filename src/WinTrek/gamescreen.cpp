@@ -2006,7 +2006,8 @@ public:
     // Gets the name for a given min and max skill level
     ZString FindSkillLevelName(MissionInfo* pmission)
     {
-        float fValues[2] = { pmission->GetMinRank(), pmission->GetMaxRank() };
+		// KG- keep compiler happy (C4838) 
+        float fValues[2] = { (float)pmission->GetMinRank(), (float)pmission->GetMaxRank() };
         const char* vszNames[2] = { "SkillLevelMin", "SkillLevelMax" };
 
         return FindStringValue(FindClosestValue(fValues, vszNames, 2), "SkillLevelNames");

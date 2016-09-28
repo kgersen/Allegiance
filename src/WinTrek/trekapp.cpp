@@ -283,7 +283,7 @@ ZString ReadAuthPipe()
 
 	buffer[0] = '\0';
 
-	sprintf(memoryLocation, "%ld", &buffer);
+	sprintf(memoryLocation, "%ld", (long)&buffer);
 	nDataLength = strlen(memoryLocation) + 1;
 
 	debugf("sending memory location: %s\r\n", memoryLocation);

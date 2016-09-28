@@ -116,7 +116,7 @@ private:
     WinPoint               m_ptItemSize;
     TList<ChatTarget>      m_listChannels;
     TRef<IKeyboardInput>   m_keyboardDelegate;
-    TRef<IEventTarget>     m_targetAutoscrollOn;
+    TRef<IAllegEventTarget>     m_targetAutoscrollOn;
     bool                   m_bAutoscroll;
     bool                   m_bPlayerChatsOnly;
     bool                   m_bIgnoreScrollingEvents;

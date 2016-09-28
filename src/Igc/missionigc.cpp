@@ -634,7 +634,7 @@ void CmissionIGC::ImportStaticIGCObjs() //is opposite of ExportStaticIGCObjs()
 		}
 	}
 	file.close();
-	delete file;
+	// delete file; KG- not a pointer anymore
 
 	int size = sizeof(Constants);
 	*((ObjectType*)pData) = OT_constants;

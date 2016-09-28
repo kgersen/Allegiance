@@ -4,9 +4,9 @@ const Vector Vector::s_vectorZero(0.0f, 0.0f, 0.0f);  // mmf changed these to 0.
 
 Vector Vector::GetOrthogonalVector() const
 {
-    float ax = abs(x);
-    float ay = abs(y);
-    float az = abs(z);
+    float ax = fabs(x);
+    float ay = fabs(y);
+    float az = fabs(z);
 
     if (ax > ay) {
         if (ax > az) {
