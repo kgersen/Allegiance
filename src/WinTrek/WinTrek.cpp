@@ -2160,10 +2160,10 @@ public:
         }
 
         m_pwrapImageTop->SetImage(m_pimageScreen);
-        SetWindowedSize(pscreen->GetSize());
-        SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
+        //SetWindowedSize(pscreen->GetSize());
+        //SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
 
-        SetSizeable(false);
+        SetSizeable(true); // kg-: always
 
         //
         // keep a reference to the screen to keep it alive
@@ -6305,7 +6305,7 @@ public:
             // Hangar or loadout switch to 8x6
             //
 			// -KGJV - resolution fix - test
-            Set3DAccelerationImportant(false);
+            Set3DAccelerationImportant(true); // kg- 
             SetWindowedSize(m_sizeCombat);
             SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
             SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
