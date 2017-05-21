@@ -1,0 +1,45 @@
+dev notes
+
+important stuff about screens
+
+main function in game: Wintrepp.cpp TrekWindowImpl::screen
+
+enum ScreenID in treki.h
+enum ViewMode in treki.h
+enum CameraMode in treki.h
+
+TrekWindowImpl::
+ScreenIDCombat -> SetViewMode()
+other -> SetScreen(id)
+layers of miages -> InitializeImages()
+
+todo: examine rendering layers (m_pimageBackdrop, etc) -> see InitializeImages() / examine console stuff too
+
+//code
+
+// this is centered with UpdateBackdropCentering on EvaluateFrame
+// tbmp: m_pimageBackdrop is centered
+loadout:
+                m_pscreenBackdrop = CreateLoadout(GetModeler(), GetWindow()->GetTime());
+                {
+                    m_pimageBackdrop =
+                        new TranslateImage(
+                            CreatePaneImage(
+                                GetEngine(),
+                                SurfaceType3D() | SurfaceTypeZBuffer(),
+                                false,
+                                m_pscreenBackdrop->GetPane()
+                            ),
+                            Point(0,0)
+                        );
+                }
+ui:
+    void SetScreen(Screen* pscreen)
+    {
+        m_pimageScreen = pscreen->GetImage();
+...
+            m_pimageScreen = CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane());
+        }
+        m_pwrapImageTop->SetImage(m_pimageScreen);
+        m_pscreen = pscreen;
+    }
