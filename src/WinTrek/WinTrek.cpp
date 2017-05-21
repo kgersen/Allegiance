@@ -3650,16 +3650,17 @@ public:
 		{
 			// center the pane on the screen
 			const Rect& rectScreen = GetScreenRectValue()->GetValue();
-			const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
-			Point
-				pntOffset(
-				(rectScreen.XSize() - sizePane.X()) / 2,
+			if (m_pscreen->GetPane()) //kg- review
+			{
+				const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
+				Point pntOffset(
+					(rectScreen.XSize() - sizePane.X()) / 2,
 					(rectScreen.YSize() - sizePane.Y()) / 2
 				);
-
-			m_pimageScreen->SetTranslation(
-				pntOffset
-			);
+				m_pimageScreen->SetTranslation(
+					pntOffset
+				);
+			}
 		}
     }
 
