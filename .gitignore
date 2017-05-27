@@ -319,3 +319,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+/VS2017/allsrv_appweb.log.old
+*.old
