@@ -163,7 +163,10 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\FedSrv\AdminEventLoggerHook.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminEventLoggerHook.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\FedSrv\AdminGame.cpp" />
     <ClCompile Include="..\src\FedSrv\AdminGames.cpp" />
     <ClCompile Include="..\src\FedSrv\AdminServer.cpp" />

@@ -11,6 +11,10 @@
 #ifndef _ALLEGDB_H_
 #define _ALLEGDB_H_
 
+//noagc
+//todo: refactor
+#ifdef false
+
 #include <oledb.h>
 #include <sqloledb.h>
 #include <atldbcli.h>
@@ -532,6 +536,7 @@ public: // just so the macro can easily set this
   static GUID   s_guid;
 };
 
+#endif
 
 // ------------- MACROS USED FOR CREATING QUERIES -----------------
 
@@ -549,7 +554,8 @@ struct N##Data \
 
 #define END_QUERY(N, R) \
 }; \
-typedef class CQuery<N##Data, R> N;
+
+//noagc typedef class CQuery<N##Data, R> N;
 
   
 

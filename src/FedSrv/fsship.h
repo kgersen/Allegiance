@@ -241,8 +241,8 @@ const unsigned char c_ucActiveTurretUpdate   = 2;
 const unsigned char c_ucInactiveTurretUpdate = 3;
 
 class CFSPlayer : 
-  public CFSShip,
-  public CAdminSponsor<CAdminUser>
+  public CFSShip
+  // noagc ,public CAdminSponsor<CAdminUser>
 {
 public:
   CFSPlayer(CFMConnection * pcnxn, int characterId, const char * szCDKey,

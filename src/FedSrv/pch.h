@@ -53,7 +53,7 @@
 #include <utility.h>
 #include <igc.h>
 
-#include "..\AGC\GameParamData.h"
+//kg- noagc - #include "..\AGC\GameParamData.h"
 
 //#include <atlbase.h>
 //extern CServiceModule _Module;
@@ -63,16 +63,15 @@
 //#include <ZoneAuthDecrypt.h>
 
 // This also includes <atlbase.h> and <atlcom.h>
-#include "AllSrvModule.h"
+// kg- noagc#include "AllSrvModule.h"
+//#include <TCLib.h>
+//#include <..\TCLib\AutoHandle.h>
 
-#include <TCLib.h>
-#include <..\TCLib\AutoHandle.h>
-
-#include <TCAtl.h>
-#include <..\TCAtl\ObjectMap.h>
-#include <..\TCAtl\UserAcct.h>
-#include <..\TCLib\TCThread.h>
-
+//kg- noagc
+//#include <TCAtl.h>
+//#include <..\TCAtl\ObjectMap.h>
+//#include <..\TCAtl\UserAcct.h>
+//#include <..\TCLib\TCThread.h>
 
 #include "Zone.h"
 
@@ -90,8 +89,8 @@
 #include "counters.h"
 #include "srvqueries.h" // and allegdb.h
 
-#include "AllSrvModuleIDL.h" 
-#include "AdminUtil.h" 
+//kg- noagc #include "AllSrvModuleIDL.h" 
+//#include "AdminUtil.h" 
 #include "fsside.h"
 #include "fscluster.h"
 #include "fsmission.h"
@@ -106,15 +105,16 @@
 extern Global g;
 #include "fsship.h"
 
-#include "AdminGame.h"
-#include "AdminGames.h"
-#include "AdminSession.h"
-
-
-#include "AdminUser.h"
-#include "AdminUsers.h"
-#include "AdminServer.h"
-#include "AdminShip.h"
+// kg- noagc
+//#include "AdminGame.h"
+//#include "AdminGames.h"
+//#include "AdminSession.h"
+//
+//
+//#include "AdminUser.h"
+//#include "AdminUsers.h"
+//#include "AdminServer.h"
+//#include "AdminShip.h"
 
 #include "dbgutil.h"
 
@@ -127,9 +127,8 @@ extern Global g;
 // indirectly by <TCAtl.h>.
 //
 #include <windowsx.h> // For GlobalAllocPtr and GlobalFreePtr
-
-
 /////////////////////////////////////////////////////////////////////////////
+
 
 #endif // _FEDSRV_PCH_
 

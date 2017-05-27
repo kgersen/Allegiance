@@ -10,9 +10,10 @@
 
 
 #include "pch.h"
-#include <..\TCLib\CoInit.h>
-#include <..\TCLib\AutoHandle.h>
-#include <agc.h>
+//noagc
+//#include <..\TCLib\CoInit.h>
+//#include <..\TCLib\AutoHandle.h>
+//#include <agc.h>
 #include <zreg.h>
 
 // mmf log to file on SRVLOG define as well as _DEBUG
@@ -377,7 +378,7 @@ HRESULT pascal FedSrv_Terminate(void)
   }
   g.perfshare.Terminate();  // this puts to rest the server and client instance perf counters
 
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_Terminate, "", -1, -1, -1, 0);
+  // noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_Terminate, "", -1, -1, -1, 0);
 
 #ifdef USEAUTH
   g.pzas = NULL;
@@ -801,7 +802,6 @@ void GotCharSquads(CQCharSquads * pquery)
 }
 
 
-#endif
 /*-------------------------------------------------------------------------
  * GotLogonDetails
  *-------------------------------------------------------------------------
@@ -954,6 +954,7 @@ void GotLogonDetails(CQLogonStats * pquery)
   if (fValid && fJoinNow)
     JoinMission(pfsPlayer, pqd->dwCookie, pqd->szPassword);
 }
+#endif
 
 
 
@@ -2668,56 +2669,63 @@ void CheatJPD(CFSShip * pfsShip)
 }
 
 
-void LogTrapHack(AGCEventID idEvent, CFSPlayer* pfsPlayer,
-  CFMConnection* pcnxnFrom, const char* pExpr, UINT nLine)
+// noagc
+void LogTrapHack(const char* idEvent, CFSPlayer* pfsPlayer,
+	CFMConnection* pcnxnFrom, const char* pExpr, UINT nLine)
 {
-  // Determine the event parameters
-  LPCSTR      pszContext = NULL;
-  const char* pszSubject = NULL;
-  AGCUniqueID idSource   = -1;
-  if (pfsPlayer)
-  {
-    pszContext = pfsPlayer->GetIGCShip() ?
-      pfsPlayer->GetIGCShip()->GetMission()->GetContextName() : NULL;
-    pszSubject = pfsPlayer->GetName();
-    idSource =
-      static_cast<USHORT>(CAdminUser::DetermineID(pfsPlayer))
-        | static_cast<DWORD>(AGC_AdminUser << 16);
-  }
-
-  // Perform special processing for each event type
-  switch (idEvent)
-  {
-    case EventID_HackLog:
-      assert(pfsPlayer);
-      assert(pszSubject);
-      assert(pcnxnFrom);
-      retailf("HackLog %s: %s %d\n", pszSubject, pExpr, nLine);
-      break;
-    case EventID_HackBoot:
-      assert(pfsPlayer);
-      assert(pszSubject);
-      assert(pcnxnFrom);
-      retailf("HackBoot %s: %s %d\n", pszSubject, pExpr, nLine);
-      g.fm.DeleteConnection(*pfsPlayer->GetConnection());
-      break;
-    case EventID_HackBootNoPlayer:
-      assert(!pfsPlayer);
-      assert(!pszSubject);
-      assert(pcnxnFrom);
-      retailf("HackBootNoPlayer %s %d\n", pExpr, nLine);
-      g.fm.DeleteConnection(*pcnxnFrom);
-      break;
-    default:
-      ZError("Unexpected AGCEventID passed to LogTrapHack.");
-  }
-
-  // Trigger the event
-  _AGCModule.TriggerContextEvent(NULL, idEvent, pszContext,
-    pszSubject, idSource, -1, -1, 2,
-    "Expr", VT_LPSTR, pExpr,
-    "Line", VT_I4   , nLine);
+	//todo
+	retailf("FIXME LogTrapHack: %s %d\n", pExpr, nLine);
 }
+//void LogTrapHack(AGCEventID idEvent, CFSPlayer* pfsPlayer,
+//  CFMConnection* pcnxnFrom, const char* pExpr, UINT nLine)
+//{
+//  // Determine the event parameters
+//  LPCSTR      pszContext = NULL;
+//  const char* pszSubject = NULL;
+//  AGCUniqueID idSource   = -1;
+//  if (pfsPlayer)
+//  {
+//    pszContext = pfsPlayer->GetIGCShip() ?
+//      pfsPlayer->GetIGCShip()->GetMission()->GetContextName() : NULL;
+//    pszSubject = pfsPlayer->GetName();
+//    idSource =
+//      static_cast<USHORT>(CAdminUser::DetermineID(pfsPlayer))
+//        | static_cast<DWORD>(AGC_AdminUser << 16);
+//  }
+//
+//  // Perform special processing for each event type
+//  switch (idEvent)
+//  {
+//    case EventID_HackLog:
+//      assert(pfsPlayer);
+//      assert(pszSubject);
+//      assert(pcnxnFrom);
+//      retailf("HackLog %s: %s %d\n", pszSubject, pExpr, nLine);
+//      break;
+//    case EventID_HackBoot:
+//      assert(pfsPlayer);
+//      assert(pszSubject);
+//      assert(pcnxnFrom);
+//      retailf("HackBoot %s: %s %d\n", pszSubject, pExpr, nLine);
+//      g.fm.DeleteConnection(*pfsPlayer->GetConnection());
+//      break;
+//    case EventID_HackBootNoPlayer:
+//      assert(!pfsPlayer);
+//      assert(!pszSubject);
+//      assert(pcnxnFrom);
+//      retailf("HackBootNoPlayer %s %d\n", pExpr, nLine);
+//      g.fm.DeleteConnection(*pcnxnFrom);
+//      break;
+//    default:
+//      ZError("Unexpected AGCEventID passed to LogTrapHack.");
+//  }
+//
+//  // Trigger the event
+//  _AGCModule.TriggerContextEvent(NULL, idEvent, pszContext,
+//    pszSubject, idSource, -1, -1, 2,
+//    "Expr", VT_LPSTR, pExpr,
+//    "Line", VT_I4   , nLine);
+//}
 
 
 /*-------------------------------------------------------------------------
@@ -2744,7 +2752,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
   if (!lstrcmpi(strToken, "bootme"))
   {
     Sleep(1000); // give the client a chance to get some messages into the receive queue--if they're flying that is
-    LogTrapHack(EventID_HackBoot, pfsShip->GetPlayer(), pfsShip->GetPlayer()->GetConnection(), "bootme cheat code", __LINE__);
+    LogTrapHack("EventID_HackBoot", pfsShip->GetPlayer(), pfsShip->GetPlayer()->GetConnection(), "bootme cheat code", __LINE__);
   }
   else if (!lstrcmpi(strToken, "spew"))
   {
@@ -3012,86 +3020,87 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
  *    This was broken off from ForwardChatMessage()
  *
  */
-void HandleCOMChatEvents(const char *szMessage, const char *szDest, ShipID shipidFrom,
-                         CFSMission * pfsMission, int iType, SoundID voiceOver, CommandID commandID)
-{
-  const char * szSource = "Admin";   // source of the chat message
-  AGCUniqueID idSource = -1;
-  AGCUniqueID idTeam   = -1;
-
-  //
-  // Get the GameID
-  //
-  AGCUniqueID idGame = pfsMission->GetIGCMission()->GetMissionID();
-
-
-  //
-  // Figure out source of the message
-  //
-  if (shipidFrom != NA)
-  {
-    CFSShip * pfsShipFrom = CFSShip::GetShipFromID(shipidFrom);
-    if (pfsShipFrom)
-    {
-      IshipIGC *pShipIGC = pfsShipFrom->GetIGCShip();
-      assert(pShipIGC);
-      szSource = pShipIGC->GetName();
-      idSource = -1;
-      if (pfsShipFrom->IsPlayer())
-        idSource = static_cast<USHORT>(CAdminUser::DetermineID(pfsShipFrom->GetPlayer())) | static_cast<DWORD>(AGC_AdminUser << 16);
-
-      idTeam = pShipIGC->GetSide()->GetUniqueID();
-    }
-  }
-
-
-  //
-  // Determine the Event ID to be triggered
-  //
-  AGCEventID idEvent = (CHAT_ADMIN == iType) ?
-    EventID_AdminPage : EventID_ChatMessage;
-
-  //
-  // Define the table of Chat Type strings
-  //
-  static char* s_szChatTypes[CHAT_MAX] =
-  {
-    "EVERYONE",              // CHAT_EVERYONE            in igc.h
-    "LEADERS",               // CHAT_LEADERS             in igc.h
-    "ADMIN",                 // CHAT_ADMIN               in igc.h
-    "SHIP",                  // CHAT_SHIP                in igc.h
-	"ALLIES",                // CHAT_ALLIES              in igc.h Imago 7/4/09 ALLY
-    "TEAM",                  // CHAT_TEAM                in igc.h
-    "INDIVIDUAL",            // CHAT_INDIVIDUAL          in igc.h
-    "INDIVIDUAL_NOFILTER"    // CHAT_INDIVIDUAL_NOFILTER in igc.h
-    "WING",                  // CHAT_WING                in igc.h
-    "INDIVIDUAL_ECHO",       // CHAT_INDIVIDUAL_ECHO     in igc.h
-    "ALL_SECTOR",            // CHAT_ALL_SECTOR          in igc.h
-    "FRIENDLY_SECTOR",       // CHAT_FRIENDLY_SECTOR     in igc.h
-    "GROUP",                 // CHAT_GROUP               in igc.h
-    "GROUP_NOECHO",          // CHAT_GROUP_NOECHO        in igc.h
-    "NOSELECTION",           // CHAT_NOSELECTION         in igc.h
-  };
-
-  // Ensure that addition/deletions to igc's enum ChatTarget are reflected here
-  assert(sizeofArray(s_szChatTypes) == CHAT_MAX);
-  assert(iType >= 0 && iType < sizeofArray(s_szChatTypes));
-  LPCSTR pszType = s_szChatTypes[iType];
-
-  LPCSTR pszContext = pfsMission->GetIGCMission() ?
-    pfsMission->GetIGCMission()->GetContextName() : NULL;
-
-  // Trigger the event if anyone is listening
-  _AGCModule.TriggerContextEvent(NULL, idEvent, pszContext,
-    szSource, idSource, idGame, idTeam, 7,
-    "Message"      , VT_LPSTR, szMessage,
-    "Type"         , VT_LPSTR, pszType,
-    "Target"       , VT_LPSTR, szDest,
-    "GameID"       , VT_I4   , idGame,
-    "TeamID"       , VT_I4   , idTeam,
-    "VoiceID"      , VT_I4   , voiceOver,
-    "CommandID"    , VT_I4   , commandID);
-}
+//noagc
+//void HandleCOMChatEvents(const char *szMessage, const char *szDest, ShipID shipidFrom,
+//                         CFSMission * pfsMission, int iType, SoundID voiceOver, CommandID commandID)
+//{
+//  const char * szSource = "Admin";   // source of the chat message
+//  AGCUniqueID idSource = -1;
+//  AGCUniqueID idTeam   = -1;
+//
+//  //
+//  // Get the GameID
+//  //
+//  AGCUniqueID idGame = pfsMission->GetIGCMission()->GetMissionID();
+//
+//
+//  //
+//  // Figure out source of the message
+//  //
+//  if (shipidFrom != NA)
+//  {
+//    CFSShip * pfsShipFrom = CFSShip::GetShipFromID(shipidFrom);
+//    if (pfsShipFrom)
+//    {
+//      IshipIGC *pShipIGC = pfsShipFrom->GetIGCShip();
+//      assert(pShipIGC);
+//      szSource = pShipIGC->GetName();
+//      idSource = -1;
+//      if (pfsShipFrom->IsPlayer())
+//        idSource = static_cast<USHORT>(CAdminUser::DetermineID(pfsShipFrom->GetPlayer())) | static_cast<DWORD>(AGC_AdminUser << 16);
+//
+//      idTeam = pShipIGC->GetSide()->GetUniqueID();
+//    }
+//  }
+//
+//
+//  //
+//  // Determine the Event ID to be triggered
+//  //
+//  AGCEventID idEvent = (CHAT_ADMIN == iType) ?
+//    EventID_AdminPage : EventID_ChatMessage;
+//
+//  //
+//  // Define the table of Chat Type strings
+//  //
+//  static char* s_szChatTypes[CHAT_MAX] =
+//  {
+//    "EVERYONE",              // CHAT_EVERYONE            in igc.h
+//    "LEADERS",               // CHAT_LEADERS             in igc.h
+//    "ADMIN",                 // CHAT_ADMIN               in igc.h
+//    "SHIP",                  // CHAT_SHIP                in igc.h
+//	"ALLIES",                // CHAT_ALLIES              in igc.h Imago 7/4/09 ALLY
+//    "TEAM",                  // CHAT_TEAM                in igc.h
+//    "INDIVIDUAL",            // CHAT_INDIVIDUAL          in igc.h
+//    "INDIVIDUAL_NOFILTER"    // CHAT_INDIVIDUAL_NOFILTER in igc.h
+//    "WING",                  // CHAT_WING                in igc.h
+//    "INDIVIDUAL_ECHO",       // CHAT_INDIVIDUAL_ECHO     in igc.h
+//    "ALL_SECTOR",            // CHAT_ALL_SECTOR          in igc.h
+//    "FRIENDLY_SECTOR",       // CHAT_FRIENDLY_SECTOR     in igc.h
+//    "GROUP",                 // CHAT_GROUP               in igc.h
+//    "GROUP_NOECHO",          // CHAT_GROUP_NOECHO        in igc.h
+//    "NOSELECTION",           // CHAT_NOSELECTION         in igc.h
+//  };
+//
+//  // Ensure that addition/deletions to igc's enum ChatTarget are reflected here
+//  assert(sizeofArray(s_szChatTypes) == CHAT_MAX);
+//  assert(iType >= 0 && iType < sizeofArray(s_szChatTypes));
+//  LPCSTR pszType = s_szChatTypes[iType];
+//
+//  LPCSTR pszContext = pfsMission->GetIGCMission() ?
+//    pfsMission->GetIGCMission()->GetContextName() : NULL;
+//
+//  // Trigger the event if anyone is listening
+//  _AGCModule.TriggerContextEvent(NULL, idEvent, pszContext,
+//    szSource, idSource, idGame, idTeam, 7,
+//    "Message"      , VT_LPSTR, szMessage,
+//    "Type"         , VT_LPSTR, pszType,
+//    "Target"       , VT_LPSTR, szDest,
+//    "GameID"       , VT_I4   , idGame,
+//    "TeamID"       , VT_I4   , idTeam,
+//    "VoiceID"      , VT_I4   , voiceOver,
+//    "CommandID"    , VT_I4   , commandID);
+//}
 
 
 bool CommandToDrone(CFSMission*         pfsMission,
@@ -3477,7 +3486,7 @@ void ForwardChatMessage(CFSMission*         pfsMission,
         break;
     }
 
-    HandleCOMChatEvents(pszMsg, pszDest, pcd->sidSender, pfsMission, pcd->chatTarget, pcd->voiceOver, pcd->commandID);
+    // noagc HandleCOMChatEvents(pszMsg, pszDest, pcd->sidSender, pfsMission, pcd->chatTarget, pcd->voiceOver, pcd->commandID);
 }
 
 
@@ -4350,9 +4359,9 @@ int FedSrvSiteBase::OnMessageBox(FedMessaging * pthis, const char * strText, con
 int FedSrvSiteBase::OnMessageBox(const char * strText, const char * strCaption, UINT nType)
 {
   printf("%s:\n%s\n\n", strCaption, strText);
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_MessageBox, "", -1, -1, -1, 2,
-      "Caption", VT_LPSTR, strCaption,
-      "Message", VT_LPSTR, strText);
+  //_AGCModule.TriggerEvent(NULL, AllsrvEventID_MessageBox, "", -1, -1, -1, 2,
+  //    "Caption", VT_LPSTR, strCaption,
+  //    "Message", VT_LPSTR, strText);
   return 0; // which is intentionally not actually a valid MessageBox return code, since we're not actually throwing up a message box
 }
 
@@ -4368,7 +4377,7 @@ HRESULT FedSrvSiteBase::OnSysMessage(FedMessaging * pthis)
 }
 
 // KG: eventually remove this - or notk, Imago 6/10
-//#ifndef ALLSRV_STANDALONE
+#ifndef ALLSRV_STANDALONE
 void FedSrvSiteBase::OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError)
 {
   // don't make the event an error event, because this may or may not be fatal.
@@ -4397,7 +4406,7 @@ void FedSrvSiteBase::OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD d
     "HelpFile", VT_BSTR,  bstrHelpFile,
     "Source",   VT_BSTR,  bstrSource);
 }
-//#endif //ALLSRV_STANDALONE
+#endif //ALLSRV_STANDALONE
 
 HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn)
 {
@@ -4418,9 +4427,9 @@ HRESULT FedSrvSiteBase::OnDestroyConnection(FedMessaging * pthis, CFMConnection 
   if (pfsPlayer) // need to clean up after them if they didn't log off
   {
     PlaySound("AppGPFault", NULL, SND_ALIAS | SND_PURGE | SND_ASYNC);
-    _AGCModule.TriggerEvent(NULL, AllsrvEventID_PlayerDropped, "", -1, -1, -1, 2,
-        "PlayerName", VT_LPSTR, pfsPlayer->GetName(),
-        "ConxID", VT_I4, cnxn.GetID()); // pkk - IP address
+    //_AGCModule.TriggerEvent(NULL, AllsrvEventID_PlayerDropped, "", -1, -1, -1, 2,
+    //    "PlayerName", VT_LPSTR, pfsPlayer->GetName(),
+    //    "ConxID", VT_I4, cnxn.GetID()); // pkk - IP address
     if (NULL != g.pServerCounters)
     {
         g.pServerCounters->cTimeouts++;
@@ -4434,8 +4443,8 @@ HRESULT FedSrvSiteBase::OnDestroyConnection(FedMessaging * pthis, CFMConnection 
 
 HRESULT FedSrvSiteBase::OnSessionLost(FedMessaging * pthis)
 {
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_SessionLost, "", -1, -1, -1, 1,
-      "Time", VT_I4, Time::Now().clock());
+  //_AGCModule.TriggerEvent(NULL, AllsrvEventID_SessionLost, "", -1, -1, -1, 1,
+  //    "Time", VT_I4, Time::Now().clock());
   // todo: gracefully shut down
   return S_OK;
 }
@@ -4524,11 +4533,14 @@ void FedSrvSiteBase::OnMessageNAK(FedMessaging * pthis, DWORD dwTime, CFMRecipie
 }
 */
 
-
-#define TrapHackLog(x)          {if (!(x)) { LogTrapHack(EventID_HackLog    , pfsPlayer, &cnxnFrom, #x, __LINE__); break; }}
-#define TrapHackBoot(x)         {if (!(x)) { LogTrapHack(EventID_HackBoot   , pfsPlayer, &cnxnFrom, #x, __LINE__); break; }}
+//noagc
+#define TrapHackLog(x)          {if (!(x)) { LogTrapHack("EventID_HackLog"    , pfsPlayer, &cnxnFrom, #x, __LINE__); break; }}
+#define TrapHackBoot(x)         {if (!(x)) { LogTrapHack("EventID_HackBoot"   , pfsPlayer, &cnxnFrom, #x, __LINE__); break; }}
+//#define TrapHackLog(x)          {if (!(x)) { LogTrapHack(EventID_HackLog    , pfsPlayer, &cnxnFrom, #x, __LINE__); break; }}
+//#define TrapHackBoot(x)         {if (!(x)) { LogTrapHack(EventID_HackBoot   , pfsPlayer, &cnxnFrom, #x, __LINE__); break; }}
 // REVIEW: can we get any info from the connection, like IP address?
-#define TrapHackBootNoPlayer(x) {if (!(x)) { LogTrapHack(EventID_HackBootNoPlayer, NULL, &cnxnFrom, #x, __LINE__); break; }}
+#define TrapHackBootNoPlayer(x) {if (!(x)) { LogTrapHack("EventID_HackBootNoPlayer", NULL, &cnxnFrom, #x, __LINE__); break; }}
+//#define TrapHackBootNoPlayer(x) {if (!(x)) { LogTrapHack(EventID_HackBootNoPlayer, NULL, &cnxnFrom, #x, __LINE__); break; }}
 
 
 static bool DisplaceProbe(ImodelIGC* pmodel, Vector* position, float r)
@@ -4631,9 +4643,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
   if (!pfsPlayer && (pfm->fmid != FM_C_LOGONREQ))
   {
-    _AGCModule.TriggerEvent(NULL, AllsrvEventID_MsgFromUnknownPlayer, "", -1, -1, -1, 2,
-        "DPNID", VT_I4, cnxnFrom.GetID(), // pkk - Returns DPNID (DirectPlay network identifier)
-        "MsgName", VT_LPSTR, g_rgszMsgNames[pfm->fmid]); // pkk - This should return FedSrvMsgID text, but somehow it doesn't
+    //_AGCModule.TriggerEvent(NULL, AllsrvEventID_MsgFromUnknownPlayer, "", -1, -1, -1, 2,
+    //    "DPNID", VT_I4, cnxnFrom.GetID(), // pkk - Returns DPNID (DirectPlay network identifier)
+    //    "MsgName", VT_LPSTR, g_rgszMsgNames[pfm->fmid]); // pkk - This should return FedSrvMsgID text, but somehow it doesn't
   }
   else
   switch(pfm->fmid)
@@ -4741,11 +4753,12 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
                     // send them to the game lobby
                     debugf("#ban: %s banned by %s\n", pfsShip->GetName(), pfsPlayer->GetName());
 					// TE: Fire AGCEvent informing of the ban
-					LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
-					_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
-						pfsShip->GetShipID(), -1, -1, 3, "GameID",   VT_I4,    pfsMission->GetMissionID(),
-						"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
-						"zBooter", VT_LPSTR, pfsPlayer->GetName());
+					// noagc
+					//LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+					//_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
+					//	pfsShip->GetShipID(), -1, -1, 3, "GameID",   VT_I4,    pfsMission->GetMissionID(),
+					//	"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+					//	"zBooter", VT_LPSTR, pfsPlayer->GetName());
 					// This is named zBooter so the parameter appears last in the alphabetical list
 					// TE
                     pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QSR_OwnerBooted);
@@ -4919,7 +4932,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       CASTPFM(pfmSW, CS, SET_WINGID, pfm);
 
-      //TrapHackBoot(pfmSW->wingID >= 0);  //Imago commented 7/10 #91
+      TrapHackBoot(pfmSW->wingID >= 0);  //Imago commented 7/10 #91
       TrapHackBoot(pfmSW->wingID < c_widMax);
 
       CFSShip*  pfsShip = CFSShip::GetShipFromID(pfmSW->shipID);
@@ -4964,7 +4977,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       CASTPFM(pfmRequest, CS, REQUEST_MONEY, pfm);
 
-      TrapHackBoot(pfmRequest->amount > 0);
+	  TrapHackBoot(pfmRequest->amount > 0);
 
       if (!pfsPlayer->DecrementChatBudget(true))
       {
@@ -5014,12 +5027,12 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       DataMissileIGC  dm;
       dm.pLauncher = pfsPlayer->GetIGCShip();
 
-      TrapHackBoot(dm.pLauncher->GetParentShip() == NULL);
+	  TrapHackBoot(dm.pLauncher->GetParentShip() == NULL);
 
       ImagazineIGC*   pmagazine = (ImagazineIGC*)(dm.pLauncher->GetMountedPart(ET_Magazine, 0));
       if (pmagazine)
       {
-          TrapHackBoot(pmagazine->GetAmount() > 0);
+		  TrapHackBoot(pmagazine->GetAmount() > 0);
 
           //Speed hack ... use the player's cluster if appropriate and the cluster from the missile
           //message if not.
@@ -5027,7 +5040,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           if ((!pcluster) || (pcluster->GetObjectID() != pfmFireMissile->clusterID))
             pcluster = pMission->GetCluster(pfmFireMissile->clusterID);
 
-          TrapHackBoot (pcluster);
+		  TrapHackBoot (pcluster);
 
           Time  timeFudge = pfmFireMissile->timeFired + 0.5f;
           pfmFireMissile->bDud = (timeFudge < pmagazine->GetTimeLoaded());
@@ -5119,8 +5132,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       CASTPFM(pfmAutoDonate, C, AUTODONATE, pfm);
 
-      TrapHackBoot(pfmAutoDonate >= 0);
-      TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
+	  TrapHackBoot(pfmAutoDonate >= 0);
+	  TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
 
       IsideIGC* pside = pfsPlayer->GetSide();
 	  SideID    sideID = pside->GetObjectID();

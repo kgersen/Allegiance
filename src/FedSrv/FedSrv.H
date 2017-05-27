@@ -11,7 +11,7 @@
 #ifndef _FEDSRV_H_
 #define _FEDSRV_H_
 
-#include "..\AGC\AGCSite.h"
+//kg- noagc #include "..\AGC\AGCSite.h"
 
 #undef new // because we override it
 
@@ -79,7 +79,7 @@ class FedSrvSiteBase :
   public IMissionSite,
   public IIgcSite,
 //#ifndef ALLSRV_STANDALONE //Imago 6/10
-  public IFedMessagingSite, public ISQLSite, public ISQLSite2
+  public IFedMessagingSite // no agc, public ISQLSite, public ISQLSite2
 //#else // !ALLSRV_STANDALONE
 //  public IFedMessagingSite
 //#endif // !ALLSRV_STANDALONE
@@ -181,9 +181,12 @@ public:
 // KG: eventually remove this, not yet, Imago 6/10
 //#ifndef ALLSRV_STANDALONE
 // ISQLSite2
+// noagc
+/*
   virtual void OnSQLErrorRecord(SSERRORINFO * perror, OLECHAR * postrError);
   virtual void OnOLEDBErrorRecord(BSTR bstrDescription, GUID guid, DWORD dwHelpContext, 
                                   BSTR bstrHelpFile,    BSTR bstrSource );
+*/
 //#endif
 //Not part of IIgcSite
   void UpgradeShip(IshipIGC*  pship, const IstationIGC* pstation);
@@ -195,6 +198,150 @@ protected:
   CFSMission * m_pfsMission;
 };
 
+// noagc
+// noagc - refactor this later
+template <class T>
+class CAGCSite : public T
+{
+public:
+	void DestroySideEvent(IsideIGC* pIsideIGC)
+	{
+		// Destroy any existing AGC object associated with the IGC object
+		//GetAGCGlobal()->RemoveAGCObject(pIsideIGC, true);
+
+		// Allow the server/client site class to terminate the team
+		T::DestroySideEvent(pIsideIGC);
+	}
+
+	/*-------------------------------------------------------------------------
+	* TerminateModelEvent()
+	*-------------------------------------------------------------------------
+	*/
+	void TerminateModelEvent(ImodelIGC* model)
+	{
+		// Destroy any existing AGC object associated with the IGC object
+		//GetAGCGlobal()->RemoveAGCObject(model, true);
+
+		// Allow the server/client site class to terminate the model
+		T::TerminateModelEvent(model);
+	}
+
+	/*-------------------------------------------------------------------------
+	* TerminateMissionEvent()
+	*-------------------------------------------------------------------------
+	*/
+	void TerminateMissionEvent(ImissionIGC* pMission)
+	{
+		// Destroy any existing AGC object associated with the IGC object
+		//GetAGCGlobal()->RemoveAGCObject(pMission, true);
+
+		// Allow the server/client site class to terminate the mission
+		T::TerminateMissionEvent(pMission);
+	}
+
+	/*-------------------------------------------------------------------------
+	* ChangeCluster()
+	*-------------------------------------------------------------------------
+	*/
+	void ChangeCluster(IshipIGC* pship,
+		IclusterIGC* pclusterOld,
+		IclusterIGC* pclusterNew)
+	{
+		//LPCSTR      pszShip = pship ? pship->GetName() : "";
+		//AGCUniqueID shipID = pship ? pship->GetUniqueID() : -1;
+		//AGCUniqueID newClusterID = pclusterOld ? pclusterOld->GetUniqueID() : -1;
+		//AGCUniqueID oldClusterID = pclusterNew ? pclusterNew->GetUniqueID() : -1;
+		//LPCSTR      pszClusterOld = pclusterOld ? pclusterOld->GetName() : "";
+		//LPCSTR      pszClusterNew = pclusterNew ? pclusterNew->GetName() : "";
+
+		//LPCSTR pszContext = pship ? pship->GetMission()->GetContextName() : NULL;
+
+		//_AGCModule.TriggerContextEvent(NULL, EventID_ShipChangesSectors, pszContext,
+		//	pszShip, shipID, newClusterID, oldClusterID, 4,
+		//	"New Sector", VT_I4, newClusterID,
+		//	"Old Sector", VT_I4, oldClusterID,
+		//	"New Sector Name", VT_LPSTR, pszClusterNew,
+		//	"Old Sector Name", VT_LPSTR, pszClusterOld);
+
+		// Allow the server/client site class to invoke event
+		T::ChangeCluster(pship, pclusterOld, pclusterNew);
+	}
+
+	/*-------------------------------------------------------------------------
+	* KillShipEvent()
+	*-------------------------------------------------------------------------
+	*/
+	void KillShipEvent(Time now, IshipIGC* ship, ImodelIGC* launcher,
+		float amount, const Vector& p1, const Vector& p2)
+	{
+		//LPCSTR      pszShip = ship ? ship->GetName() : "";
+		//AGCUniqueID shipID = ship ? ship->GetUniqueID() : -1;
+		//AGCUniqueID launcherID = launcher ? launcher->GetUniqueID() : -1;
+		//LPCSTR      pszLauncher = launcher ? GetModelName(launcher) : "";
+
+		//HAGCLISTENERS hListeners = GetAGCGlobal()->EventListeners(
+		//	EventID_ShipKilled, shipID, -1, -1);
+		//if (hListeners)
+		//{
+		//	// Create AGCVector objects
+		//	IAGCVectorPtr spVector1, spVector2;
+		//	_SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p1, &spVector1));
+		//	_SVERIFYE(GetAGCGlobal()->MakeAGCVector(&p2, &spVector2));
+
+		//	// TE 7 lines added to support added zLifepod below
+		//	int IsLifepod = 0;
+		//	IhullTypeIGC*   pht = ship->GetBaseHullType();
+		//	if (pht != NULL)
+		//	{
+		//		if (pht->HasCapability(c_habmLifepod)) IsLifepod = 1;
+		//	}
+
+		//	LPCSTR pszContext = ship ? ship->GetMission()->GetContextName() : NULL;
+
+		//	// Trigger the event - TE add MissionId and zLifepod
+		//	_AGCModule.TriggerContextEvent(hListeners, EventID_ShipKilled, pszContext,
+		//		pszShip, shipID, -1, -1, 7,                // TE: Added 2 params
+		//		"Launcher", VT_I4, launcherID,
+		//		"LauncherName", VT_LPSTR, pszLauncher,
+		//		"Amount", VT_R4, amount,
+		//		"MissionID", VT_I4, ship->GetMission()->GetMissionID(),  // TE: Add the GameID
+		//		"Vector1", VT_DISPATCH, (IAGCVector*)spVector1,
+		//		"Vector2", VT_DISPATCH, (IAGCVector*)spVector2,
+		//		"zLifepod", VT_I4, IsLifepod);                          // TE: 1 if this ship is a lifepod
+		//}
+
+		// Allow the server/client site class to invoke event
+		T::KillShipEvent(now, ship, launcher, amount, p1, p2);
+	}
+
+	/*-------------------------------------------------------------------------
+	* UseRipcord()
+	*-------------------------------------------------------------------------
+	*/
+	bool UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
+	{
+		//LPCSTR      pszShip = pship ? pship->GetName() : "";
+		//AGCUniqueID shipID = pship ? pship->GetUniqueID() : -1;
+		//AGCUniqueID modelID = pmodel ? pmodel->GetUniqueID() : -1;
+		//LPCSTR      pszModel = pmodel ? GetModelName(pmodel) : "";
+
+		//HAGCLISTENERS hListeners = GetAGCGlobal()->EventListeners(
+		//	EventID_ShipUsesRipcord, shipID, -1, -1);
+		//if (hListeners)
+		//{
+		//	LPCSTR pszContext = pship ? pship->GetMission()->GetContextName() : NULL;
+
+		//	// Trigger the event
+		//	_AGCModule.TriggerContextEvent(hListeners, EventID_ShipUsesRipcord,
+		//		pszContext, pszShip, shipID, -1, -1, 2,
+		//		"Model", VT_I4, modelID,
+		//		"ModelName", VT_LPSTR, pszModel);
+		//}
+
+		// Allow the server/client site class to invoke event
+		return T::UseRipcord(pship, pmodel);
+	}
+};
 
 typedef CAGCSite<FedSrvSiteBase> FedSrvSite;
 
@@ -248,10 +395,11 @@ struct Global
     fPaused(false),
     fDoublePrecision(true)
 //#if !defined(ALLSRV_STANDALONE) Imago commented 6/10
-    ,
-    csqlSilentThreads(0),
-    csqlNotifyThreads(0),
-    sql(&siteFedSrv)
+	// noagc
+    //,
+    //csqlSilentThreads(0),
+    //csqlNotifyThreads(0),
+    //sql(&siteFedSrv)
 //#endif
 	//imagos crap for multi-process servers 6/25/08
 #if defined(SRV_PARENT)
@@ -274,7 +422,8 @@ struct Global
     strAuthServer.SetEmpty();
     strArtPath.SetEmpty();
 //#if !defined(ALLSRV_STANDALONE)
-    strSQLConfig.Empty();
+    // noagc
+	// strSQLConfig.Empty();
 //#endif    
 #if defined(SRV_CHILD)  //imago -store command line arguments
 	strArgName.SetEmpty();
@@ -348,12 +497,13 @@ struct Global
   bool                fPaused;
   bool                fDoublePrecision;
   //  CAdminSponsor<CAdminGames>  sponsorGames;
-//#if !defined(ALLSRV_STANDALONE) Imago commented 6/10
-  CSQLCore            sql;
-  DWORD               csqlSilentThreads;
-  DWORD               csqlNotifyThreads;
-  CComBSTR            strSQLConfig;
-//#endif
+// #if !defined(ALLSRV_STANDALONE) Imago commented 6/10
+  // noagc
+  //CSQLCore            sql;
+  //DWORD               csqlSilentThreads;
+  //DWORD               csqlNotifyThreads;
+  //CComBSTR            strSQLConfig;
+// #endif
   // more of imagos crap for one game per exe
 #if defined(SRV_CHILD)
   ZString			strArgName;
@@ -383,7 +533,7 @@ void DisconnectFromLobby();
 void ChangeStationOwners(IstationIGC * pstation, CFSMission * pfsMission, IsideIGC* iSideNew);
 void ExportObj(IbaseIGC * pIGC, ObjectType ot, FMD_S_EXPORT ** ppfmExport);
 void CheatDPGroups(CFSShip * pfsShip);
-void GotLogonDetails(CQLogonStats * pquery); // BT - 9/11/2010 ACSS - needed by fslobby.cpp.
+// noagc void GotLogonDetails(CQLogonStats * pquery); // BT - 9/11/2010 ACSS - needed by fslobby.cpp.
 
 // <NKM> 8-Aug-2004
 // DX 9 doesn't use callbacks for this
