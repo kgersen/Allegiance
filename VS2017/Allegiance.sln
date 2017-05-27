@@ -1,10 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{A20534F2-783B-48FF-95FE-FCEC104F86EA}"
 	ProjectSection(SolutionItems) = preProject
 		..\src\license.txt = ..\src\license.txt
+		screens.txt = screens.txt
 		..\src\SolapReadme.txt = ..\src\SolapReadme.txt
 		..\src\todo.txt = ..\src\todo.txt
 	EndProjectSection
@@ -101,7 +102,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Allegiance", "Allegiance.vcxproj", "{3702DB5A-C966-4133-824F-5958F4BF9BCF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{557CA42C-AA39-4C44-A998-0452F8C55851} = {557CA42C-AA39-4C44-A998-0452F8C55851}
-		{05EAD557-56B0-4070-83F0-8A2B6FB9C54D} = {05EAD557-56B0-4070-83F0-8A2B6FB9C54D}
 		{D619B179-7FC4-4DB6-9794-1D3C75717D15} = {D619B179-7FC4-4DB6-9794-1D3C75717D15}
 		{4F83287A-FF3C-4333-AD5F-C00B86CF0895} = {4F83287A-FF3C-4333-AD5F-C00B86CF0895}
 		{FA223B93-BCFB-48FA-B9DD-DB9DBBC8F314} = {FA223B93-BCFB-48FA-B9DD-DB9DBBC8F314}

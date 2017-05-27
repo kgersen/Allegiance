@@ -1181,7 +1181,7 @@ public:
     // Screens
     //
 
-    TRef<Image>          m_pimageScreen;
+    TRef<TranslateImage> m_pimageScreen; //kg- #226
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
     TRef<Screen>         m_pscreenBackdrop;
@@ -2141,7 +2141,7 @@ public:
 
     void SetScreen(Screen* pscreen)
     {
-        m_pimageScreen = pscreen->GetImage();
+        m_pimageScreen = (TranslateImage *)pscreen->GetImage(); //kg- #226 - ugly cast. review
 
         if (m_pimageScreen == NULL) {
             TRef<Pane> ppane = pscreen->GetPane();
@@ -2156,14 +2156,18 @@ public:
             // Create the UI Window
             //
 
-            m_pimageScreen = CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane());
+			// kg- #226
+            m_pimageScreen = new TranslateImage(
+				CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane()),
+				Point(0, 0)
+			);
         }
 
         m_pwrapImageTop->SetImage(m_pimageScreen);
-        SetWindowedSize(pscreen->GetSize());
-        SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
+        //SetWindowedSize(pscreen->GetSize());
+        //SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
 
-        SetSizeable(false);
+        SetSizeable(true); // kg-: #226 always
 
         //
         // keep a reference to the screen to keep it alive
@@ -2201,6 +2205,7 @@ public:
 
         bSwitchingScreens = true;
 
+		// kg- #226 main screen stuff here
         debugf("Switched to screen %d\n", s);
         if (s != m_screen)
         {
@@ -3640,6 +3645,23 @@ public:
                 pntOffset
             );
         }
+		//kg- #226 - todo -factorize with above code
+		if (m_pimageScreen)
+		{
+			// center the pane on the screen
+			const Rect& rectScreen = GetScreenRectValue()->GetValue();
+			if (m_pscreen->GetPane()) //kg- review
+			{
+				const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
+				Point pntOffset(
+					(rectScreen.XSize() - sizePane.X()) / 2,
+					(rectScreen.YSize() - sizePane.Y()) / 2
+				);
+				m_pimageScreen->SetTranslation(
+					pntOffset
+				);
+			}
+		}
     }
 
 	void contextAcceptPlayer()
@@ -6305,7 +6327,7 @@ public:
             // Hangar or loadout switch to 8x6
             //
 			// -KGJV - resolution fix - test
-            Set3DAccelerationImportant(false);
+            Set3DAccelerationImportant(true); // kg- 
             SetWindowedSize(m_sizeCombat);
             SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
             SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
