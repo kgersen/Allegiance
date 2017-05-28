@@ -563,6 +563,8 @@ public:
 			*pcRows = (int)m_cRows;
 		return m_pargQueryData;
 	}
+public: // just so the macro can easily set this  
+	static GUID   s_guid;
 };
 // ------------- MACROS USED FOR CREATING QUERIES -----------------
 

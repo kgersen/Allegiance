@@ -33,42 +33,11 @@ static MprMutex	*mutex;
 	static MprLogModule *tMod;
 #endif
 
-#if !defined(ALLSRV_STANDALONE)
-void DoDecrypt(int size, char* pdata)
-{
-    DWORD encrypt = 0;
-    //Do a rolling XOR to demunge the data
-    for (int i = 0; (i < size); i += 4)
-    {
-        DWORD*  p = (DWORD*)(pdata + i);
-
-        encrypt = *p = *p ^ encrypt;
-    }
-}
-static void DoEncrypt(int size, char* pdata)
-{
-    DWORD   encrypt = 0;
-
-    //Do a rolling XOR to munge the data
-    for (int i = 0; (i < size); i += 4)
-    {
-        DWORD*  p = (DWORD*)(pdata + i);
-
-        DWORD   old = *p;
-
-        *p = *p ^ encrypt;
-
-        encrypt = old;
-    }
-}
-#endif // !defined(ALLSRV_STANDALONE)
-
 ALLOC_MSG_LIST;
 Global g;
 // KG- obsolete
 //#include "queries.h"
 
-#if defined(ALLSRV_STANDALONE)
 TMap<ZString, int> m_CharMap;
   int GetNextCharacterID()
   {
@@ -86,7 +55,6 @@ TMap<ZString, int> m_CharMap;
 	  m_CharMap.Set(CharName,id);
 	  return id;
   }
-#endif // defined(ALLSRV_STANDALONE)
 
 
 //removed mothballed MSRG code - Imago
@@ -94,22 +62,21 @@ TMap<ZString, int> m_CharMap;
 
 void LoadTechBits()
 {
-  #if !defined(ALLSRV_STANDALONE)
-    SQL_GO(TechBitsAll);
-    while (SQL_SUCCEEDED(SQL_GETROW(TechBitsAll)))
-    {
-      // database ensures all bit ids are unique
-      assert(TechBitsAll_BitID < cTechs);
-      SqlStrCpy(g.rgTechs[TechBitsAll_BitID], TechBitsAll_Name, sizeof(TechBitsAll_Name));
-    }
-  #endif // !defined(ALLSRV_STANDALONE)
+#pragma message("invesitage")
+    //SQL_GO(TechBitsAll);
+    //while (SQL_SUCCEEDED(SQL_GETROW(TechBitsAll)))
+    //{
+    //  // database ensures all bit ids are unique
+    //  assert(TechBitsAll_BitID < cTechs);
+    //  SqlStrCpy(g.rgTechs[TechBitsAll_BitID], TechBitsAll_Name, sizeof(TechBitsAll_Name));
+    //}
 }
 
 
 void LoadRankInfo()
 {
-
-#if !defined(ALLSRV_STANDALONE)
+#pragma message("get ranks from db")
+ /* SQL version 
   SQL_GO(GetRankCount);
   SQL_GETROW(GetRankCount);
   g.cRankInfo = GetRankCount_Count;
@@ -127,8 +94,9 @@ void LoadRankInfo()
       g.vRankInfo[i].requiredRanking = GetRanks_Requirement;
       strcpy(g.vRankInfo[i].RankName, (char*)GetRanks_Name);
     }
-  }
-#else //Imago: Changed to load rank_info from <artwork>/ranks.txt
+   }
+  */
+    //Imago: Changed to load rank_info from <artwork>/ranks.txt
     char        mapfilename[MAX_PATH + 1];
     HRESULT     hr = UTL::getFile("ranks", ".txt", mapfilename, true, true);
     FILE*       file = fopen(mapfilename, "rt"); // open in text mode
@@ -150,7 +118,6 @@ void LoadRankInfo()
    }
    else
       g.cRankInfo = 0;
-#endif // !defined(ALLSRV_STANDALONE)
 }
 
 void UnloadRankInfo()
@@ -194,26 +161,25 @@ void UnloadStaticCoreInfo()
 
 void LoadStaticMapInfo()
 {
-#if !defined(ALLSRV_STANDALONE)
-  SQL_GO(GetStaticMapCount);
-  SQL_GETROW(GetStaticMapCount);
-  g.cStaticMapInfo = GetStaticMapCount_Count;
+  //SQL version
+  //SQL_GO(GetStaticMapCount);
+  //SQL_GETROW(GetStaticMapCount);
+  //g.cStaticMapInfo = GetStaticMapCount_Count;
 
-  if (g.cStaticMapInfo > 0)
-  {
-    g.vStaticMapInfo = new StaticMapInfo[g.cStaticMapInfo];
+  //if (g.cStaticMapInfo > 0)
+  //{
+  //  g.vStaticMapInfo = new StaticMapInfo[g.cStaticMapInfo];
 
-    SQL_GO(GetStaticMaps);
-    for (int i = 0; i < g.cStaticMapInfo; i++)
-    {
-      ZVerify(SQL_SUCCEEDED(SQL_GETROW(GetStaticMaps)));
-      SQLSTRCPY(g.vStaticMapInfo[i].cbIGCFile, GetStaticMaps_FileName);
-      SQLSTRCPY(g.vStaticMapInfo[i].cbFriendlyName, GetStaticMaps_MapName);
-      g.vStaticMapInfo[i].nNumTeams = GetStaticMaps_NumTeams;
-      assert(GetStaticMaps_NumTeams > 1 && GetStaticMaps_NumTeams <= c_cSidesMax);
-    }
-  }
-#else
+  //  SQL_GO(GetStaticMaps);
+  //  for (int i = 0; i < g.cStaticMapInfo; i++)
+  //  {
+  //    ZVerify(SQL_SUCCEEDED(SQL_GETROW(GetStaticMaps)));
+  //    SQLSTRCPY(g.vStaticMapInfo[i].cbIGCFile, GetStaticMaps_FileName);
+  //    SQLSTRCPY(g.vStaticMapInfo[i].cbFriendlyName, GetStaticMaps_MapName);
+  //    g.vStaticMapInfo[i].nNumTeams = GetStaticMaps_NumTeams;
+  //    assert(GetStaticMaps_NumTeams > 1 && GetStaticMaps_NumTeams <= c_cSidesMax);
+  //  }
+  //}
 // --KGJV; FZ/FAZ version: load maps list from a file (<artwork>\maps.txt)
     char        mapfilename[MAX_PATH + 1];
     HRESULT     hr = UTL::getFile("maps", ".txt", mapfilename, true, true);
@@ -234,7 +200,6 @@ void LoadStaticMapInfo()
 	}
 	else
 		g.cStaticMapInfo = 0;
-#endif
 }
 
 bool VerifyUserMap(const char* szMapFile, int nTeams)
@@ -316,14 +281,14 @@ void SetSessionDetails()
  */
 void UnloadDbCache()
 {
-  #if !defined(ALLSRV_STANDALONE)
+	//noagc
+#pragma message("investigate (this was if not ALLSRV_STANDALONE)")
     if (g.trekCore)
     {
       g.trekCore->Terminate();
       delete g.trekCore;
       g.trekCore = NULL;
     }
-  #endif // !defined(ALLSRV_STANDALONE)
 }
 
 
@@ -366,9 +331,8 @@ HRESULT pascal FedSrv_Terminate(void)
   g.fm.Shutdown();
   DisconnectFromLobby();
 
-  #if !defined(ALLSRV_STANDALONE)
-    ShutDownSQL();
-  #endif // !defined(ALLSRV_STANDALONE)
+#pragma message("noagc")
+  // ShutDownSQL();
   timeEndPeriod(1);
 
   if (NULL != g.pServerCounters)
@@ -383,14 +347,6 @@ HRESULT pascal FedSrv_Terminate(void)
 #ifdef USEAUTH
   g.pzas = NULL;
 #endif
-
-  //clean up the pid file we dropped for parent -Imago 6/25/08
-#if defined(SRV_CHILD)
-	char strFilename[10] = "\0";
-	sprintf(strFilename,"%d.pid",GetCurrentProcessId());
-	DeleteFile(strFilename);
-#endif
-
 
   return(S_OK);
 }
@@ -7188,33 +7144,34 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 }
 
 
-/*-------------------------------------------------------------------------
- * CreateUniqueMutex
- *-------------------------------------------------------------------------
- * Purpose:
- *    Creates a mutex object, with a unique name, to indicate when the
- *    server is running.
- *
- */
-HANDLE CreateUniqueMutex()
-{
-  // Create a NULL dacl to give "everyone" access
-  SECURITY_ATTRIBUTES* psa = NULL;
-  SECURITY_DESCRIPTOR   sd;
-  SECURITY_ATTRIBUTES   sa = {sizeof(sa), &sd, false};
-  if (true) //noagc IsWinNT())
-  {
-    InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
-    SetSecurityDescriptorDacl(&sd, true, NULL, FALSE);
-    psa = &sa;
-  }
-
-  // Create the mutex using the global name first
-  HANDLE hMutex = ::CreateMutex(psa, false, szAllSrvRunningGlobal);
-  if (!hMutex)
-    hMutex = ::CreateMutex(psa, false, szAllSrvRunning);
-  return hMutex;
-}
+//noagc
+///*-------------------------------------------------------------------------
+// * CreateUniqueMutex
+// *-------------------------------------------------------------------------
+// * Purpose:
+// *    Creates a mutex object, with a unique name, to indicate when the
+// *    server is running.
+// *
+// */
+//HANDLE CreateUniqueMutex()
+//{
+//  // Create a NULL dacl to give "everyone" access
+//  SECURITY_ATTRIBUTES* psa = NULL;
+//  SECURITY_DESCRIPTOR   sd;
+//  SECURITY_ATTRIBUTES   sa = {sizeof(sa), &sd, false};
+//  if (true) //noagc IsWinNT())
+//  {
+//    InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+//    SetSecurityDescriptorDacl(&sd, true, NULL, FALSE);
+//    psa = &sa;
+//  }
+//
+//  // Create the mutex using the global name first
+//  HANDLE hMutex = ::CreateMutex(psa, false, szAllSrvRunningGlobal);
+//  if (!hMutex)
+//    hMutex = ::CreateMutex(psa, false, szAllSrvRunning);
+//  return hMutex;
+//}
 
 
 /*-------------------------------------------------------------------------
@@ -8526,28 +8483,18 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   // This is the first place where we can might connect to a lobby
   //
 
-  //Imago - parents & children always host sessions /w public lobby guid
-#if defined(SRV_PARENT) || defined(SRV_CHILD)
-   pServer->put_PublicLobby(true);
-#endif
-#if !defined(SRV_PARENT) && !defined(SRV_CHILD)
-#if defined(ALLSRV_STANDALONE)
   // standalone servers don't connect to lobby by default
-#pragma message("fixme")
-  if (false)//noagc _Module.WasCOMStarted())
+#pragma message("fixme - get config option for lobby")
+  if (false) //noagc _Module.WasCOMStarted())
   {
-    pServer->put_PublicLobby(false); // false == private games mode
+    //pServer->put_PublicLobby(false); // false == private games mode
   }
   else
   {
     g.strLobbyServer="?"; // this will be overrided by cfg file download; needs to be non-blank so ConnectToLobby() is called
-    pServer->put_PublicLobby(true); // true means use public dplay session, and connect to lobby is g.strLobbyServer is not empty
+    //pServer->put_PublicLobby(true); // true means use public dplay session, and connect to lobby is g.strLobbyServer is not empty
   }
-#else
-  //non-standalone servers always should connect to a lobby
-  pServer->put_PublicLobby(true); // true means use public dplay session, and connect to lobby is g.strLobbyServer is not empty
-#endif // !defined(ALLSRV_STANDALONE)
-#endif
+
   rgeventHandles[0] = g.hKillReceiveEvent;
   // rgeventHandles[1] = g.hPlayerEvent;
 
@@ -8595,17 +8542,18 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     dwWait = ProcessMsgPump(dwSleep, 1, rgeventHandles);
   }
 
-  HAGCLISTENERS hListeners = GetAGCGlobal()->EventListeners(
-    EventID_ServerShutdown, -1, -1, -1);
-  if (hListeners)
-  {
-    // Get the computer name
-    char szName[MAX_COMPUTERNAME_LENGTH + 1];
-    DWORD cchName = sizeofArray(szName);
-    GetComputerNameA(szName, &cchName);
+  //noagc
+  //HAGCLISTENERS hListeners = GetAGCGlobal()->EventListeners(
+  //  EventID_ServerShutdown, -1, -1, -1);
+  //if (hListeners)
+  //{
+  //  // Get the computer name
+  //  char szName[MAX_COMPUTERNAME_LENGTH + 1];
+  //  DWORD cchName = sizeofArray(szName);
+  //  GetComputerNameA(szName, &cchName);
 
-    //noagc _AGCModule.TriggerEvent(hListeners, EventID_ServerShutdown, "", -1, -1, -1, 1, "Server", VT_LPSTR, szName);
-  }
+  //  //noagc _AGCModule.TriggerEvent(hListeners, EventID_ServerShutdown, "", -1, -1, -1, 1, "Server", VT_LPSTR, szName);
+  //}
 
   printf("Shutting down server...\n");
 
@@ -8644,10 +8592,10 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   UnloadDbCache();
 
   // Terminate the ATL module
-  _Module.Term();
+  //noagc _Module.Term();
 
   // Remove this thread from the COM STA
-  CoUninitialize();
+  //noagc CoUninitialize();
 
   ExitThread(0);
   return 0;

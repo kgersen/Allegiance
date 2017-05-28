@@ -20,12 +20,7 @@ const int c_cPlayersMax   = 500; // max players allowed on a server
 const int c_cDronesMax    = 500; // max drones  allowed on a server
 const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
 
-#if defined(ALLSRV_STANDALONE)
-  const short c_cMaxPlayersPerGame = 0x7FFF; // KGJV-; changed from 64 to 200. KGJV #114 back to AZ size
-#else // defined(ALLSRV_STANDALONE)
-  const short c_cMaxPlayersPerGame = 0x7FFF;
-#endif // defined(ALLSRV_STANDALONE)
-
+const short c_cMaxPlayersPerGame = 0x7FFF; // KGJV-; changed from 64 to 200. KGJV #114 back to AZ size
 
 HRESULT pascal FedSrv_Init();
 HRESULT pascal FedSrv_Terminate(void);
@@ -69,7 +64,6 @@ struct  MapDescription
     short   mapID;
     char    szFileName[MAX_PATH + 1];
 };
-
 
 class MapFileSite : public IMissionSite, public IIgcSite
 {
@@ -402,14 +396,6 @@ struct Global
     //sql(&siteFedSrv)
 //#endif
 	//imagos crap for multi-process servers 6/25/08
-#if defined(SRV_PARENT)
-	,
-	bRestarting(false)
-#endif
-#if defined(SRV_CHILD)
-	,
-	dwArgCookie(0)
-#endif
   {
     ZeroMemory(rgTechs, sizeof(rgTechs));
   }
@@ -425,10 +411,6 @@ struct Global
     // noagc
 	// strSQLConfig.Empty();
 //#endif    
-#if defined(SRV_CHILD)  //imago -store command line arguments
-	strArgName.SetEmpty();
-	strArgCore.SetEmpty();
-#endif
   }
 
   SERVICE_STATUS_HANDLE ssh;
@@ -504,15 +486,6 @@ struct Global
   //DWORD               csqlNotifyThreads;
   //CComBSTR            strSQLConfig;
 // #endif
-  // more of imagos crap for one game per exe
-#if defined(SRV_CHILD)
-  ZString			strArgName;
-  ZString			strArgCore;
-  DWORD				dwArgCookie;
-#endif
-#if defined(SRV_PARENT)
-  bool				bRestarting;
-#endif
 };
 
 

@@ -11,6 +11,8 @@
 #ifndef _SRVQUERIES_H_
 #define _SRVQUERIES_H_
 
+//noagc we keep these for now but refactor soon
+//todo: merge allegdb.h in here
 #include "allegdb.h"
 
 // Stuff we need to logon
@@ -484,9 +486,7 @@ BEGIN_QUERY(CQLogEvent, false,
 
 END_QUERY(CQLogEvent, false)
 
-
 /*-----------------------------------------------------------------------*/
-
 #endif
 
 

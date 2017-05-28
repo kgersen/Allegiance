@@ -160,6 +160,8 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -167,15 +169,42 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\src\FedSrv\AdminGame.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminGames.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminServer.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminSession.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminSessionClass.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminSessionEventSink.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminShip.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminUser.cpp" />
-    <ClCompile Include="..\src\FedSrv\AdminUsers.cpp" />
+    <ClCompile Include="..\src\FedSrv\AdminGame.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminGames.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminServer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminSession.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminSessionClass.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminSessionEventSink.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminShip.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminUser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminUsers.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\FedSrv\allsrvmodule.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
@@ -191,20 +220,56 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\src\FedSrv\sqlhelp.cpp" />
-    <ClCompile Include="..\src\FedSrv\srvqguids.cpp" />
+    <ClCompile Include="..\src\FedSrv\sqlhelp.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\srvqguids.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\FedSrv\AdminGame.rgs" />
-    <None Include="..\src\FedSrv\AdminGames.rgs" />
-    <None Include="..\src\FedSrv\AdminServer.rgs" />
-    <None Include="..\src\FedSrv\AdminSession.rgs" />
-    <None Include="..\src\FedSrv\AdminShip.rgs" />
-    <None Include="..\src\FedSrv\AdminUser.rgs" />
-    <None Include="..\src\FedSrv\AdminUsers.rgs" />
-    <None Include="..\src\FedSrv\allsrv.rgs" />
-    <None Include="..\src\FedSrv\AllSrv32.rgs" />
-    <None Include="..\src\FedSrv\DPMono.rgs" />
+    <None Include="..\src\FedSrv\AdminGame.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\AdminGames.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\AdminServer.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\AdminSession.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\AdminShip.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\AdminUser.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\AdminUsers.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\allsrv.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\AllSrv32.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\src\FedSrv\DPMono.rgs">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </None>
     <None Include="..\src\FedSrv\fedsrv.ico" />
     <None Include="..\src\FedSrv\fedsrv.rc2" />
     <None Include="..\src\FedSrv\regini.txt" />
@@ -213,23 +278,68 @@
     <ResourceCompile Include="..\src\FedSrv\FedSrv.RC" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\FedSrv\AdminEventLoggerHook.h" />
-    <ClInclude Include="..\src\FedSrv\AdminGame.h" />
-    <ClInclude Include="..\src\FedSrv\AdminGames.h" />
-    <ClInclude Include="..\src\FedSrv\AdminServer.h" />
-    <ClInclude Include="..\src\FedSrv\AdminSession.h" />
-    <ClInclude Include="..\src\FedSrv\AdminSessionClass.h" />
-    <ClInclude Include="..\src\FedSrv\AdminSessionEventSink.h" />
-    <ClInclude Include="..\src\FedSrv\AdminSessionSecure.h" />
-    <ClInclude Include="..\src\FedSrv\AdminSessionSecureHost.h" />
-    <ClInclude Include="..\src\FedSrv\AdminShip.h" />
-    <ClInclude Include="..\src\FedSrv\AdminUser.h" />
-    <ClInclude Include="..\src\FedSrv\AdminUsers.h" />
-    <ClInclude Include="..\src\FedSrv\AdminUtil.h" />
-    <ClInclude Include="..\src\FedSrv\allsrvmodule.h" />
+    <ClInclude Include="..\src\FedSrv\AdminEventLoggerHook.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminGame.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminGames.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminServer.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSession.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionClass.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionEventSink.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecure.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSessionSecureHost.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminShip.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUser.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUsers.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUtil.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\allsrvmodule.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\src\FedSrv\BitArray.h" />
     <ClInclude Include="..\src\FedSrv\counters.h" />
-    <ClInclude Include="..\src\FedSrv\dbgutil.h" />
+    <ClInclude Include="..\src\FedSrv\dbgutil.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\src\FedSrv\FedSrv.H" />
     <ClInclude Include="..\src\FedSrv\FedSrvApp.h" />
     <ClInclude Include="..\src\FedSrv\fedsrvsql.h" />
@@ -242,7 +352,10 @@
     <ClInclude Include="..\src\FedSrv\srvqueries.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="..\src\FedSrv\AllSrvModuleIDL.idl" />
+    <Midl Include="..\src\FedSrv\AllSrvModuleIDL.idl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Igc.vcxproj">

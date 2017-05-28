@@ -1,5 +1,7 @@
 //#ifndef ALLSRV_STANDALONE Imago 6/10 resurrected
 
+//noagc - REVIEW THIS , merge in srvqueries.h (or the other way around)
+
 // fedsrvsql.h
 // curtc
 // sql stuff 
