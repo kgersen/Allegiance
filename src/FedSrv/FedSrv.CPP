@@ -12,7 +12,7 @@
 #include "pch.h"
 //noagc
 //#include <..\TCLib\CoInit.h>
-//#include <..\TCLib\AutoHandle.h>
+#include <..\TCLib\AutoHandle.h>
 //#include <agc.h>
 #include <zreg.h>
 
@@ -753,7 +753,7 @@ void GotInvitationList(CQGetInvitationList * pquery)
       Tell the players what squads they're in.
  */
 // KG: eventually remove this
-#ifndef ALLSRV_STANDALONE
+//noagc #ifndef ALLSRV_STANDALONE
 void GotCharSquads(CQCharSquads * pquery)
 {
   CQCharSquadsData * pqd = pquery->GetData();
@@ -954,7 +954,7 @@ void GotLogonDetails(CQLogonStats * pquery)
   if (fValid && fJoinNow)
     JoinMission(pfsPlayer, pqd->dwCookie, pqd->szPassword);
 }
-#endif
+// no agc#endif
 
 
 
@@ -5491,7 +5491,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           }
           else
           {
-            _AGCModule.TriggerEvent(NULL, AllsrvEventID_NoTicket, "", -1, -1, -1, 0);
+            //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_NoTicket, "", -1, -1, -1, 0);
             szReason = "No player name found.";
             lstrcpy(pqd->szCharacterName, "<invalid>");
           }
@@ -5560,9 +5560,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 #endif
         }
         assert(lstrlen(szVerError) < sizeof(szVerError));
-        _AGCModule.TriggerEvent(NULL, AllsrvEventID_BadClientVersion, "", -1, -1, -1, 2,
-            "ServerVer", VT_I4, MSGVER,
-            "ClientVer", VT_I4, pfmLogon->fedsrvVer);
+        //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_BadClientVersion, "", -1, -1, -1, 2,
+        //    "ServerVer", VT_I4, MSGVER,
+        //    "ClientVer", VT_I4, pfmLogon->fedsrvVer);
         BEGIN_PFM_CREATE(g.fm, pfmLogonAck, S, LOGONACK)
           FM_VAR_PARM(szVerError, CB_ZTS)
           FM_VAR_PARM(NULL, CB_ZTS)
@@ -6254,12 +6254,12 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			 if (bIsBoot)
 			 {
 				LPCSTR pszContext = pfsMission->GetIGCMission() ? pfsMission->GetIGCMission()->GetContextName() : NULL;
-				_AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext,
-					pfssAck->GetName(), pfssAck->GetShipID(), pside->GetObjectID(), pfsPlayer->GetCharacterID(), 4,
-					"MissionID", VT_I4, pfsMission->GetMissionID(),
-					"Team"    , VT_I4   , pside->GetObjectID(),
-					"TeamName", VT_LPSTR, pside->GetName(),
-					"zBooter", VT_LPSTR, pfsPlayer->GetName());
+				//noagc _AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext,
+					//pfssAck->GetName(), pfssAck->GetShipID(), pside->GetObjectID(), pfsPlayer->GetCharacterID(), 4,
+					//"MissionID", VT_I4, pfsMission->GetMissionID(),
+					//"Team"    , VT_I4   , pside->GetObjectID(),
+					//"TeamName", VT_LPSTR, pside->GetName(),
+					//"zBooter", VT_LPSTR, pfsPlayer->GetName());
 			 }
 			// TE
 			pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason);
@@ -6603,11 +6603,11 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
             LPCSTR pszContext = pfsPlayer->GetIGCShip() ?
               pfsPlayer->GetIGCShip()->GetMission()->GetContextName() : NULL;
 
-            _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_MoneyError,
-              pszContext, pfsPlayer->GetName(), -1, -1, -1, 3,
-                "PlayerName", VT_LPSTR, pfsPlayer->GetName(),
-                "MoneyGiven", VT_I4, pfmBucketDonate->moneyGiven,
-                "MoneyLeft", VT_I4, pfsPlayer->GetMoney());
+            //noagc _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_MoneyError,
+            //  pszContext, pfsPlayer->GetName(), -1, -1, -1, 3,
+            //    "PlayerName", VT_LPSTR, pfsPlayer->GetName(),
+            //    "MoneyGiven", VT_I4, pfmBucketDonate->moneyGiven,
+            //    "MoneyLeft", VT_I4, pfsPlayer->GetMoney());
           }
 
           SideID sid = pside->GetObjectID();
@@ -7012,9 +7012,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
 
         // Send an AGC event
-        _AGCModule.TriggerContextEvent(NULL, EventID_GameStateChange, pszContext,
-          pfsMission->GetMissionDef()->misparms.strGameName,
-          pfsMission->GetMissionID(), -1, -1, 0);
+        //noagc _AGCModule.TriggerContextEvent(NULL, EventID_GameStateChange, pszContext,
+        //  pfsMission->GetMissionDef()->misparms.strGameName,
+        //  pfsMission->GetMissionID(), -1, -1, 0);
       }
       else
       {
@@ -7202,7 +7202,7 @@ HANDLE CreateUniqueMutex()
   SECURITY_ATTRIBUTES* psa = NULL;
   SECURITY_DESCRIPTOR   sd;
   SECURITY_ATTRIBUTES   sa = {sizeof(sa), &sd, false};
-  if (IsWinNT())
+  if (true) //noagc IsWinNT())
   {
     InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
     SetSecurityDescriptorDacl(&sd, true, NULL, FALSE);
@@ -7277,15 +7277,15 @@ void DisconnectFromLobby()
   // Disconnect from the lobby server
   if (g.fmLobby.IsConnected())
   {
-    _AGCModule.TriggerEvent(NULL, AllsrvEventID_DisconnectingLobby,
-      "", -1, -1, -1, 1,
-      "LobbyServer", VT_LPSTR, (LPCTSTR)g.strLobbyServer);
+    //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_DisconnectingLobby,
+    //  "", -1, -1, -1, 1,
+    //  "LobbyServer", VT_LPSTR, (LPCTSTR)g.strLobbyServer);
 
     g.fmLobby.Shutdown();
 
-    _AGCModule.TriggerEvent(NULL, AllsrvEventID_DisconnectedLobby,
-      "", -1, -1, -1, 1,
-      "LobbyServer", VT_LPSTR, (LPCTSTR)g.strLobbyServer);
+    //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_DisconnectedLobby,
+    //  "", -1, -1, -1, 1,
+    //  "LobbyServer", VT_LPSTR, (LPCTSTR)g.strLobbyServer);
   }
 }
 
@@ -7404,7 +7404,8 @@ void ProcessNetworkMessages()
   bool bSupposedToConnectToLobby;
   bool bServerStartedByUI = false;
 
-#if defined(ALLSRV_STANDALONE)
+  //noagc
+#if false //defined(ALLSRV_STANDALONE)
     // If standalone, we download the cfg file right before connecting to the lobby
     // if started by command-line, then always try to connect to lobby
     // if not started by command-line (started by UI) then connect to lobby only for public games
@@ -7717,31 +7718,16 @@ IHTTPSession * BeginConfigDownload()
   ZString strBuild(vi.GetFileBuildNumber());
 
   char szConfig[MAX_PATH];
-#ifdef _ALLEGIANCE_PROD_
-  lstrcpy(szConfig, "http://autoupdate.alleg.net/allegiance.cfg"); //Imago 6/10
-#else
-  lstrcpy(szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg"); //Imago 6/10
-#endif
+  //noagc
+  lstrcpy(szConfig, "alephs-server.cfg");
 
-  CRegKey key;
-  if (ERROR_SUCCESS == key.Open(HKEY_LOCAL_MACHINE, HKLM_FedSrv, KEY_READ))
-  {
-    ZString strConfig;
-    if (SUCCEEDED(LoadRegString(key, "cfgfile", strConfig)))
-    {
-      // if reg value exists copy over default
-      strcpy(szConfig, PCC(strConfig));
-    }
-  }
+  //noagc
 
   // WLP 2006 - added next line of code to force server to report invalid config
   // if the new config is not found. It used to just use the old one without an error
   //
-#if defined(SRV_PARENT) || defined(SRV_CHILD)  // parent/child setup allows for httpd failure from cfg file host...
-  MoveFile(".\\temp.cfg",".\\last.cfg"); //still allow using the last known cfg, but always get a new one if we can -Imago 6/26/08
-#else
+#pragma message ("investigate this")
   DeleteFile(".\\temp.cfg") ;  // WLP 2006 - yell invalid if not found
-#endif
 
   if (ZString(szConfig).Find("http://") == -1)
   {
@@ -7759,130 +7745,6 @@ IHTTPSession * BeginConfigDownload()
     return pHTTPSession;
   }
 }
-
-
-
-// returns true only if up-to-date
-bool OnAutoUpdateEXEDownloadDone(const char * szFilelistCRC, int nFilelistCRC, int nFilelistSize, const char * szSite, const char * szDirectory, int nAutoUpdateCRC, const char * szEXEPath)
-{
-    char szPath[MAX_PATH + 16];
-    strcpy(szPath, szEXEPath);
-    strcat(szPath, "AutoUpdate.exe");
-
-    if (nAutoUpdateCRC != FileCRC(szPath, NULL))
-    {
-        // report CRC mismatch error for AutoUpdate.EXE
-        // todo fire event
-        char * szMsg = "ERROR: AutoUpdate was aborted.  CRC for AutoUpdate.exe downloaded did not match CRC found in cfg file.  You will not be able to host a public game.\n";
-        printf(szMsg);
-        MessageBox(NULL, szMsg, "Allegiance Server", MB_SERVICE_NOTIFICATION);
-        debugf("AutoUpdate.exe CRC mismatch\n");
-        return false;
-    }
-
-    //
-    // Decide what will be launched after the update (AllSrv or UI), and how it will be launched (as service or EXE)
-    //
-    char * szLaunchPostUpdate;
-
-    if (_Module.WasCOMStarted())
-    {
-      szLaunchPostUpdate = "AllSrvUI.exe";
-    }
-    else
-    {
-      szLaunchPostUpdate = _Module.IsInstalledAsService() ? "S:AllSrv" : "AllSrv.exe";  // S: is short for "Start as Service"
-    }
-
-    char szCommandLine[MAX_PATH * 10];
-    _snprintf (szCommandLine, sizeof(szCommandLine)-1, "%s %s %d \"%s\" \"%s\" \"%s\"", szLaunchPostUpdate, szFilelistCRC, nFilelistSize, szSite, szDirectory, PCC(g.strArtPath));
-
-    printf("Launching AutoUpdate.exe ... ");
-    // Start the AutoUpdate utility
-    int nErr;
-    if((nErr = (int)ShellExecute(0,
-                         "Open",
-                         szPath,
-                         szCommandLine,
-                         NULL,
-                         SW_SHOWNORMAL)
-                         ) <= 32)
-    {
-        // report launch error
-        // todo fire event
-        printf("failed.\nError launching AutoUpdate.exe (Code = %d).  You will not be able to host a public game.\n", nErr);
-        MessageBox(NULL, "Error launching AutoUpdate.exe.  You will not be able to host a public game.", "Allegiance Server", MB_SERVICE_NOTIFICATION);
-        debugf("Couldn't launch AutoUpdate.exe (Code = %d)\n", nErr);
-        return false;
-    }
-    printf("succeeded.\n");
-
-    // Exit the application
-    PostQuitMessage(0);    // allow proper shutdown to occur so Shutdown event gets fired to AllSRvUI32
-    //SetEvent(g.hKillReceiveEvent);
-    return false;
-}
-
-
-
-bool DownloadAutoUpdateEXE(const char * szFilelistCRC, int nFilelistCRC, int nFilelistSize, const char * szSite, const char * szDirectory, int nAutoUpdateCRC, const char * szAutoUpdateURL)
-{
-    char szEXEPath[MAX_PATH];
-    GetExePath(szEXEPath);
-
-    char szPath[MAX_PATH];
-    strcpy(szPath, szEXEPath);
-    strcat(szPath, "AutoUpdate.exe");
-
-    printf("Server is out-of-date.\n");
-
-    if (nAutoUpdateCRC != FileCRC(szPath, NULL))
-    {
-      // Start the download of AutoUpdate.exe file
-      IHTTPSession * pHTTPSession = CreateHTTPSession(NULL);
-
-      const char * szFileList[] = { szAutoUpdateURL, "AutoUpdate.exe", NULL };
-      pHTTPSession->InitiateDownload(szFileList, szEXEPath);
-
-      debugf("Downloading AutoUpdate.exe file...");
-      printf("Downloading AutoUpdate.exe file ... ");
-
-      // we block as we download the AutoUpdate.exe file; should be okay since we are not connected to the zone.
-      while(pHTTPSession->ContinueDownload())
-      {
-        Sleep(100);
-      }
-
-      debugf("Done\n");
-
-      //
-      // At this point we are done downloading AutoUpdate.exe file
-      //
-
-      bool bErrorOccurred = pHTTPSession->GetLastErrorMessage() ? true : false;
-
-      char szErrorMsg[512];
-      if (bErrorOccurred)
-        _snprintf(szErrorMsg, sizeof(szErrorMsg), "\nError Connecting to Zone.  You will not be able to host a public game. AutoUpdate.exe download failed. \r\n%s", pHTTPSession->GetLastErrorMessage());
-
-      delete pHTTPSession;
-
-      if (bErrorOccurred)
-      {
-          // report AutoUpdate.exe download error
-          // TODO: fire event
-          printf("failed: %s\n", szErrorMsg);
-          MessageBox(NULL, szErrorMsg, "Allegiance Server", MB_SERVICE_NOTIFICATION);
-          debugf("%s\n", szErrorMsg);
-          return false;
-      }
-      else
-      printf("succeeded.\n");
-    }
-
-    return OnAutoUpdateEXEDownloadDone(szFilelistCRC, nFilelistCRC, nFilelistSize, szSite, szDirectory, nAutoUpdateCRC, szEXEPath);
-}
-
 
 bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
 {
@@ -7992,7 +7854,7 @@ bool OnCFGDownloadDone(const char * szConfig) // returns true iff up-to-date
       if (szAutoUpdateCRC[0] == '\0' || nAutoUpdateCRC == 0)
         return true;
 
-      return DownloadAutoUpdateEXE(szFilelistCRC, nFilelistCRC, nFilelistSize, szSite, szDirectory, nAutoUpdateCRC, szAutoUpdateURL);
+	  return false; //noagc DownloadAutoUpdateEXE(szFilelistCRC, nFilelistCRC, nFilelistSize, szSite, szDirectory, nAutoUpdateCRC, szAutoUpdateURL);
     }
     else
     {
@@ -8041,12 +7903,9 @@ bool RetrieveCFGFile() // returns true if cfg was successfully retrieved
 
         printf("%s\n", szErrorMsg);
         debugf("%s\n", szErrorMsg);
-		//Imago 6/26/08 remove this later when parent/child setup is default for service mode installations
-#if !defined(SRV_PARENT) && !defined(SRV_CHILD)
-		if (!_Module.IsInstalledAsService())
-          MessageBox(NULL, szErrorMsg, "Allegiance Server", MB_SERVICE_NOTIFICATION);
+		//if (!_Module.IsInstalledAsService())
+		//   MessageBox(NULL, szErrorMsg, "Allegiance Server", MB_SERVICE_NOTIFICATION);
         return false;
-#endif
     }
   }
 
@@ -8085,8 +7944,8 @@ bool RetrieveCFGFile() // returns true if cfg was successfully retrieved
     debugf("\nInvalid CFG File.\n");
     char * szErrorMsg = "\nError Connecting to Zone.  You will not be able to host a public game. (CFG File is invalid.)\n";
     printf(szErrorMsg);
-    if (!_Module.IsInstalledAsService())
-      MessageBox(NULL, szErrorMsg, "Allegiance Server", MB_SERVICE_NOTIFICATION);
+    //noagc if (!_Module.IsInstalledAsService())
+    //  MessageBox(NULL, szErrorMsg, "Allegiance Server", MB_SERVICE_NOTIFICATION);
     return false;
   }
 }
@@ -8106,8 +7965,8 @@ void AnnouncePause()
   END_PFM_CREATE
   pfmPause->fPause = g.fPaused;
 
-  AGCEventID idEvent = g.fPaused ? AllsrvEventID_Pause : AllsrvEventID_Continue;
-  _AGCModule.TriggerEvent(NULL, idEvent, "", -1, -1, -1, 0);
+  //noagc AGCEventID idEvent = g.fPaused ? AllsrvEventID_Pause : AllsrvEventID_Continue;
+  //noagc _AGCModule.TriggerEvent(NULL, idEvent, "", -1, -1, -1, 0);
   char * szMode = g.fPaused ? "paused." : "continued.";
   printf("Server %s.\n", szMode);
   g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
@@ -8148,8 +8007,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 	  g.strLobbyServer = pszLobby_OverrideCFG;
   }
   printf("Connecting to lobby: %s ... ", PCC(g.strLobbyServer));
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_Connecting, "", -1, -1, -1, 1,
-    "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
+  //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_Connecting, "", -1, -1, -1, 1, "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
   HRESULT hr = g.fmLobby.JoinSession(
 #if defined(ALLSRV_STANDALONE)
         FEDFREELOBBYSERVERS_GUID,
@@ -8168,9 +8026,9 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
   // Save the new LobbyServer value
   g.strLobbyServer = PCC(g.strLobbyServer);
 
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_ConnectedLobby,
-    "", -1, -1, -1, 1,
-    "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
+  //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_ConnectedLobby,
+  //  "", -1, -1, -1, 1,
+  //  "LobbyServer", VT_LPSTR, PCC(g.strLobbyServer));
 
     // mdvalley: Discover listening port
   DWORD dwPort = 0;						// Passing a port of 0 informs the lobby of the error.
@@ -8255,7 +8113,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 		StartDefaultGames();
 #else
 #if defined(ALLSRV_STANDALONE)
-  if (!_Module.WasCOMStarted())
+  // noagc if (!_Module.WasCOMStarted())
 #endif
       StartDefaultGames();
 #endif
@@ -8282,7 +8140,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
  */
 DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
 {
-  static bool s_fWinNT = ::IsWinNT();
+  static bool s_fWinNT = true; // no agc ::IsWinNT();
   Time timeBegin = Time::Now();
   DWORD dwSleep1 = dwSleep;
   DWORD dwEnd = timeBegin.clock() + dwSleep; // don't wanna use Time, because it forces use of floats
@@ -8314,12 +8172,13 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
         TranslateMessage(&msg);
         switch (msg.message)
         {
-          case wm_sql_querydone:
-          {
-            CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
-            pQuery->DataReady();
-            break;
-          }
+		  // noagc
+          //case wm_sql_querydone:
+          //{
+          //  CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
+          //  pQuery->DataReady();
+          //  break;
+          //}
 
           case wm_fs_pause:
             AnnouncePause();
@@ -8328,7 +8187,9 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
             break;
 
           case WM_QUIT:
-            _Module.StopAllsrv();
+            //noagc _Module.StopAllsrv();
+#pragma message ("shutdown")
+			 //toto shutdown properly
             break;
 
           default:
@@ -8604,6 +8465,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     g.pServerCounters->timeCycleTarget = dwUpdateInterval;
 
   printf("Preparing server...\n");
+#ifdef false //noagc
   // Enter this thread into the COM STA
   HRESULT hr = CoInitialize(NULL);
   ZSucceeded(hr);
@@ -8624,18 +8486,19 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   // Register class objects
   _Module.RegisterCOMObjects();
-
+#endif //noagc
 
   // Setup the database stuff and connect
 //#if !defined(ALLSRV_STANDALONE) Imago 6/10 commented and fixed up
-  if (g.strSQLConfig.m_str) {
-    hr = g.sql.Init(g.strSQLConfig.m_str, g.idReceiveThread, g.csqlSilentThreads, g.csqlNotifyThreads);
+  //noagc
+  //if (g.strSQLConfig.m_str) {
+  //  hr = g.sql.Init(g.strSQLConfig.m_str, g.idReceiveThread, g.csqlSilentThreads, g.csqlNotifyThreads);
 
-    if (FAILED(hr))
-    {
-      return hr;
-    }
-  }
+  //  if (FAILED(hr))
+  //  {
+  //    return hr;
+  //  }
+  //}
 //#endif
 
   UTL::SetArtPath(g.strArtPath);
@@ -8670,7 +8533,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 #if !defined(SRV_PARENT) && !defined(SRV_CHILD)
 #if defined(ALLSRV_STANDALONE)
   // standalone servers don't connect to lobby by default
-  if (_Module.WasCOMStarted())
+#pragma message("fixme")
+  if (false)//noagc _Module.WasCOMStarted())
   {
     pServer->put_PublicLobby(false); // false == private games mode
   }
@@ -8740,8 +8604,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     DWORD cchName = sizeofArray(szName);
     GetComputerNameA(szName, &cchName);
 
-    _AGCModule.TriggerEvent(hListeners, EventID_ServerShutdown, "", -1, -1, -1, 1,
-      "Server", VT_LPSTR, szName);
+    //noagc _AGCModule.TriggerEvent(hListeners, EventID_ServerShutdown, "", -1, -1, -1, 1, "Server", VT_LPSTR, szName);
   }
 
   printf("Shutting down server...\n");
@@ -8939,22 +8802,23 @@ void LoadSettings()
             g.fTimeOut = !!dwValue;
         else g.fTimeOut = true;
 
-      //#if !defined(ALLSRV_STANDALONE) Imago revived 6/10
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsNotify", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.csqlNotifyThreads = dwValue;
-        else g.csqlNotifyThreads = 3;
+      //noagc
+      ////#if !defined(ALLSRV_STANDALONE) Imago revived 6/10
+      //  dwValue=0;
+      //  cbValue = sizeof(dwValue);
+      //  if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsNotify", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+      //      g.csqlNotifyThreads = dwValue;
+      //  else g.csqlNotifyThreads = 3;
 
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsSilent", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.csqlSilentThreads = dwValue;
-        else g.csqlSilentThreads = 2;
+      //  dwValue=0;
+      //  cbValue = sizeof(dwValue);
+      //  if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsSilent", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+      //      g.csqlSilentThreads = dwValue;
+      //  else g.csqlSilentThreads = 2;
 
-        if (FAILED(LoadRegString(hKey, "SQLConfig", g.strSQLConfig)))
-          g.strSQLConfig.Empty(); // default for all developers
-      //#endif // !defined(ALLSRV_STANDALONE)
+      //  if (FAILED(LoadRegString(hKey, "SQLConfig", g.strSQLConfig)))
+      //    g.strSQLConfig.Empty(); // default for all developers
+      ////#endif // !defined(ALLSRV_STANDALONE)
 
         ::RegCloseKey(hKey);
     }
@@ -9433,66 +9297,6 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
-
-/*-------------------------------------------------------------------------
- * RegisterAllSrv()
- *-------------------------------------------------------------------------
- * Purpose:
- *    Register AllSrv as an EXE or NT Service, and report any errors
- *
- *  Paramters:
- *    fReRegister:  are we registering after an autoupdate?
- *    fInstallAsService: TRUE if NT service, FALSE for EXE
- */
-void RegisterAllSrv(BOOL fReRegister, BOOL fInstallAsService, int argc, char *argv[])
-{
-  if (fInstallAsService && IsWin9x())
-  {
-    printf("Cannot register as a service on this operating system.\n");
-    return;
-  }
-
-  DWORD dwErrorCode(_Module.RegisterServer(fReRegister, TRUE, fInstallAsService, argc, argv));
-
-  if (FAILED(dwErrorCode))
-  {
-    char szBuf[MAX_PATH];
-    sprintf(szBuf, "Unable to register server [0x%08x].  %s is not properly installed.\n", dwErrorCode, argv[0]);
-    PrintSystemErrorMessage(szBuf, dwErrorCode);
-  }
-  else
-  {
-    // signal success in terms of adding COM related registry stuff
-    printf("Registry Update Successful.\n");
-  }
-}
-
-
-/*-------------------------------------------------------------------------
- * UnregisterSvr()
- *-------------------------------------------------------------------------
- * Purpose:
- *    Unregister AllSrv as an EXE or NT Service, and report any errors
- *
- */
-void UnregisterAllSrv(char *szServerName)
-{
-  DWORD dwErrorCode(_Module.UnregisterServer());
-
-  if (FAILED(dwErrorCode))
-  {
-    char szBuf[MAX_PATH];
-    sprintf(szBuf, "Unable to remove server [0x%08x].  %s is not properly uninstalled.\n", dwErrorCode, szServerName);
-    PrintSystemErrorMessage(szBuf, dwErrorCode);
-  }
-  else
-  {
-    // signal success in terms of removing COM related registry stuff
-    printf("Registry Update Successful.\n");
-  }
-}
-
-
 ////////////////////////////////////////////////////////////////////////
 // main
 //
@@ -9753,21 +9557,21 @@ int __cdecl main(int argc, char *argv[])
             printf ("Please provide a text core IGC folder...\n");
 		  }
       }
-    #if !defined(ALLSRV_STANDALONE)
-      else if (!lstrcmpi ("BuildIGCFiles", argv[1]+1))
+	 // noagc
+     else if (!lstrcmpi ("BuildIGCFiles", argv[1]+1))
       {
         if (argc > 2)
             BuildIGCFiles (argv[2], false, true);
         else
             printf ("Please provide a path for IGC files to get written to...\n");
       }
-      else if (!lstrcmpi ("EncryptIGCFiles", argv[1]+1))
-      {
-        if (argc > 2)
-            BuildIGCFiles (argv[2], true, true);
-        else
-            printf ("Please provide a path for IGC files to get written to...\n");
-      }
+      //else if (!lstrcmpi ("EncryptIGCFiles", argv[1]+1))
+      //{
+      //  if (argc > 2)
+      //      BuildIGCFiles (argv[2], true, true);
+      //  else
+      //      printf ("Please provide a path for IGC files to get written to...\n");
+      //}
       else if (!lstrcmpi ("BuildIGCFilesNM", argv[1]+1))
       {
         if (argc > 2)
@@ -9775,14 +9579,14 @@ int __cdecl main(int argc, char *argv[])
         else
             printf ("Please provide a path for IGC files to get written to...\n");
       }
-      else if (!lstrcmpi ("EncryptIGCFilesNM", argv[1]+1))
-      {
-        if (argc > 2)
-            BuildIGCFiles (argv[2], true, false);
-        else
-            printf ("Please provide a path for IGC files to get written to...\n");
-      }
-    #endif // !defined(ALLSRV_STANDALONE)
+      //else if (!lstrcmpi ("EncryptIGCFilesNM", argv[1]+1))
+      //{
+      //  if (argc > 2)
+      //      BuildIGCFiles (argv[2], true, false);
+      //  else
+      //      printf ("Please provide a path for IGC files to get written to...\n");
+      //}
+      // #endif // !defined(ALLSRV_STANDALONE)
       else
       {
             // if unknown args
@@ -10678,13 +10482,14 @@ void FedSrvSiteBase::BuildStation(IasteroidIGC* pasteroid,
 	pasteroid->Terminate();
 	//
 	// TE: Fire AGCEvent informing of station created
-	 LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL; // this is a timestamp.
-	 _AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
-						pside->GetName(), pside->GetObjectID(), -1, -1, 4,
-						"MissionID", VT_I4, m_pfsMission->GetMissionID(),
-						"TeamID"    , VT_I4   , pside->GetObjectID(),
-						"TeamName", VT_LPSTR, pside->GetName(),
-						"zStationName", VT_LPSTR, pstationNew->GetName());
+	// noagc
+	 //LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL; // this is a timestamp.
+	 //_AGCModule.TriggerContextEvent(NULL, EventID_StationCreated, pszContext,
+		//				pside->GetName(), pside->GetObjectID(), -1, -1, 4,
+		//				"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+		//				"TeamID"    , VT_I4   , pside->GetObjectID(),
+		//				"TeamName", VT_LPSTR, pside->GetName(),
+		//				"zStationName", VT_LPSTR, pstationNew->GetName());
     // TE end
 
     // yp: Add event for players who escorted a constructor
@@ -13253,10 +13058,10 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
 
     bool FedSrvApp::OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule)
     {
-        _AGCModule.TriggerEvent(NULL, EventID_AGCAssert, "", -1, -1, -1, 3,
-            "File", VT_LPSTR, pszFile,
-            "Line", VT_I4, line,
-            "Text", VT_LPSTR, psz);
+        //noagc _AGCModule.TriggerEvent(NULL, EventID_AGCAssert, "", -1, -1, -1, 3,
+        //    "File", VT_LPSTR, pszFile,
+        //    "Line", VT_I4, line,
+        //    "Text", VT_LPSTR, psz);
 
         return g.fWantInt3;
     }

@@ -176,7 +176,10 @@
     <ClCompile Include="..\src\FedSrv\AdminShip.cpp" />
     <ClCompile Include="..\src\FedSrv\AdminUser.cpp" />
     <ClCompile Include="..\src\FedSrv\AdminUsers.cpp" />
-    <ClCompile Include="..\src\FedSrv\allsrvmodule.cpp" />
+    <ClCompile Include="..\src\FedSrv\allsrvmodule.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\FedSrv\BitArray.cpp" />
     <ClCompile Include="..\src\FedSrv\FedSrv.CPP" />
     <ClCompile Include="..\src\FedSrv\fscluster.cpp" />

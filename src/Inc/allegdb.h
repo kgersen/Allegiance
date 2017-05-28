@@ -538,6 +538,32 @@ public: // just so the macro can easily set this
 
 #endif
 
+//noagc
+
+template <class TQueryData, bool TfResultSet>
+class CQuery
+{
+public:
+	CQuery(void (pfDataReady)(CQuery*)) :
+		m_pargQueryData(NULL),
+		m_cRows(0),
+		m_cRowsAlloc(0),
+	{
+	}
+	~CQuery()
+	{
+	}
+	TQueryData * GetData()
+	{
+		return &m_cmd;
+	}
+	TQueryData * GetOutputRows(int * pcRows)
+	{
+		if (pcRows)
+			*pcRows = (int)m_cRows;
+		return m_pargQueryData;
+	}
+};
 // ------------- MACROS USED FOR CREATING QUERIES -----------------
 
 // The queries get memmove'd, so NO objects that require special construction or external storage!
@@ -554,9 +580,14 @@ struct N##Data \
 
 #define END_QUERY(N, R) \
 }; \
+typedef class CQuery<N##Data, R> N;
 
-//noagc typedef class CQuery<N##Data, R> N;
-
-  
+//noagc
+#define BEGIN_COLUMN_MAP(s)
+#define END_COLUMN_MAP()
+#define BEGIN_PARAM_MAP(s)
+#define SET_PARAM_TYPE(s)
+#define END_PARAM_MAP()
+#define COLUMN_ENTRY_TYPE(s1,s2,s3)
 
 #endif 
