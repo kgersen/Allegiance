@@ -366,12 +366,14 @@ private:
   HANDLE      m_hEventDie;
   CSQLCore *  m_psql;
 };
+#endif
 
-
+#pragma message("this must go!")
 #define WM_SQL (WM_APP + 0x2000) // somewhat random, hopefully safe, range
 #define wm_sql_addquery  WM_SQL     // Sent from outside in. LPARAM: CSQLQuery*, WPARAM: unused
 #define wm_sql_querydone WM_SQL + 1 // Sent inside out.      LPARAM: CSQLQuery*, WPARAM: unused 
 
+#if false
 /*-------------------------------------------------------------------------
  * CQuery
  *-------------------------------------------------------------------------

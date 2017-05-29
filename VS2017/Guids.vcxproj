@@ -118,7 +118,10 @@
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\AGC\AGCGuid.c" />
+    <ClCompile Include="..\src\AGC\AGCGuid.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\src\guids\guids.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -129,11 +132,15 @@
       <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)</OutputDirectory>
       <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(FileName).h</HeaderFileName>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)AGC.tlb</TypeLibraryName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
     </Midl>
     <Midl Include="..\src\Inc\AGCIDL.idl">
       <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)</OutputDirectory>
       <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(FileName).h</HeaderFileName>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)AGC.tlb</TypeLibraryName>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
     </Midl>
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +153,8 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

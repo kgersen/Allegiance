@@ -245,7 +245,7 @@ int FedSrvLobbySite::OnMessageBox(FedMessaging * pthis, const char * strText, co
 
 HRESULT FedSrvLobbySite::OnSessionLost(FedMessaging * pthis)
 {
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_LostLobby, "", -1, -1, -1, 0);
+  //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_LostLobby, "", -1, -1, -1, 0);
   // KGJV: close the connexion
   if (pthis)
 	pthis->Shutdown();

@@ -8130,12 +8130,12 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
         switch (msg.message)
         {
 		  // noagc
-          //case wm_sql_querydone:
-          //{
-          //  CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
-          //  pQuery->DataReady();
-          //  break;
-          //}
+          case wm_sql_querydone:
+          {
+            CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
+            pQuery->DataReady();
+            break;
+          }
 
           case wm_fs_pause:
             AnnouncePause();
@@ -8557,6 +8557,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   printf("Shutting down server...\n");
 
+#ifdef false //noagc
   // Suspend creation of any objects
   CoSuspendClassObjects();
 
@@ -8579,6 +8580,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   // Release the CAdminServer instance
   spunkServer = NULL;
+#endif
 
   UnloadRankInfo(); //Imago: LoadRankInfo in all modes
 
@@ -9289,7 +9291,7 @@ int __cdecl main(int argc, char *argv[])
 	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
 
-
+#ifdef false //noagc
     // Enter this thread into the COM MTA
     TCCoInit init(COINIT_MULTITHREADED);
     ZSucceeded((HRESULT)init);
@@ -9314,22 +9316,18 @@ int __cdecl main(int argc, char *argv[])
     // Initialize AGC
     ZSucceeded(hr = _Module.InitAGC()); //dies here if the "Event Log" service is not started -Imago
     RETURN_FAILED(hr);
+#endif
 
     char szSvcName[64];
 	strcpy(szSvcName, c_szSvcName);
-#if defined(SRV_PARENT)
-    SERVICE_TABLE_ENTRY rgSTE[] =
-    {
-        { szSvcName, (LPSERVICE_MAIN_FUNCTION) MPServiceMain },
-        { NULL, NULL }
-    };
-#else
+#if false //noagc
     SERVICE_TABLE_ENTRY rgSTE[] =
     {
         { szSvcName, (LPSERVICE_MAIN_FUNCTION)_ServiceMain },
         { NULL, NULL }
     };
 #endif
+
     bool fShowUsage = false;
 
     g.hInst = GetModuleHandle(NULL);
@@ -9338,79 +9336,68 @@ int __cdecl main(int argc, char *argv[])
     {
       //printf ("Hell has frozen over.\n"); // this should never happen
       // Terminate AGC
-      _Module.TermAGC();
+      //noagc _Module.TermAGC();
       return 0;
     }
 
-    // if registering (after an AutoUpdate)--be sure to keep existing install data intact
-    if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') && !lstrcmpi ("reregister", argv[1]+1))
+	//noagc
+    //// if registering (after an AutoUpdate)--be sure to keep existing install data intact
+    //if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') && !lstrcmpi ("reregister", argv[1]+1))
+    //{
+    //  RegisterAllSrv(TRUE, _Module.IsInstalledAsService(), argc, argv);
+    //  // Terminate AGC
+    //  _Module.TermAGC();
+    //  return 0;
+    //}
+
+	//noagc
+    //// Check for a weird/busted installation...this really can happen
+    //if (_Module.IsInstalledAsService() && !_Module.IsInServiceControlManager())
+    //{
+    //  printf("Incomplete installation detected. Removing incomplete installation...\n");
+
+    //  UnregisterAllSrv(argv[0]);
+    //}
+
+    //_Module.SetCOMStarted(argc == 2 && !lstrcmpi("-Embedding",argv[1]));
+
+//    #if defined(ALLSRV_STANDALONE)
+//    #ifndef DEBUG //Imago changed from _DEBUG to allow DEBUG in retail builds w/o requiring debug run-times
+//    if (argc == 1 && !_Module.IsInstalledAsService() && !_Module.WasCOMStarted())
+//    {
+//		//multi-process setup can only be debugged /w console windows - Imago
+//		//NYI: should be released as service module only
+//#if defined(SRV_PARENT) || defined(SRV_CHILD)
+//		_Module.RunAsExecutable();
+//#else
+//      printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
+//      // Terminate AGC
+//      _Module.TermAGC();
+//#endif
+//      return 0;
+//    }
+//    #endif
+//    #endif
+
+    if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') /*&& !_Module.WasCOMStarted()*/)
     {
-      RegisterAllSrv(TRUE, _Module.IsInstalledAsService(), argc, argv);
-      // Terminate AGC
-      _Module.TermAGC();
-      return 0;
-    }
 
-    // Check for a weird/busted installation...this really can happen
-    if (_Module.IsInstalledAsService() && !_Module.IsInServiceControlManager())
-    {
-      printf("Incomplete installation detected. Removing incomplete installation...\n");
+ //   BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1);
 
-      UnregisterAllSrv(argv[0]);
-    }
+	  //if (fInstallAsService || !lstrcmpi("RegServer", argv[1] + 1))
+	  //{
 
-    _Module.SetCOMStarted(argc == 2 && !lstrcmpi("-Embedding",argv[1]));
+		 // RegisterAllSrv(FALSE, fInstallAsService, argc, argv);
 
-    #if defined(ALLSRV_STANDALONE)
-    #ifndef DEBUG //Imago changed from _DEBUG to allow DEBUG in retail builds w/o requiring debug run-times
-    if (argc == 1 && !_Module.IsInstalledAsService() && !_Module.WasCOMStarted())
-    {
-		//multi-process setup can only be debugged /w console windows - Imago
-		//NYI: should be released as service module only
-#if defined(SRV_PARENT) || defined(SRV_CHILD)
-		_Module.RunAsExecutable();
-#else
-      printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
-      // Terminate AGC
-      _Module.TermAGC();
-#endif
-      return 0;
-    }
-    #endif
-    #endif
+	  //}
+   //   else if (!lstrcmpi("UnregServer",argv[1]+1) || !lstrcmpi("Remove",argv[1]+1))
+   //   {
+   //     UnregisterAllSrv(argv[0]);
+   //   }
 
-	// Imago run a single game on this process
-#if defined(SRV_CHILD)
-	if(argc > 3) {
-		g.strArgName = ZString(argv[1]);
-		g.strArgCore = ZString(argv[2]);
-		g.dwArgCookie = strtoul(argv[3], NULL, 16);
-		_Module.RunAsExecutable();
-	} else {
-		printf("Error: Must be loaded by AllSrvMP.exe\n");
-		// Terminate AGC
-		_Module.TermAGC();
-
-		// Indicate success
-		return 0;
-	}
-#else // run multiple games on a single process
-    if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') && !_Module.WasCOMStarted())
-    {
-      BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1);
-
-      if (fInstallAsService || !lstrcmpi("RegServer",argv[1]+1))
-      {
-
-        RegisterAllSrv(FALSE, fInstallAsService, argc, argv);
-
-      }
-      else if (!lstrcmpi("UnregServer",argv[1]+1) || !lstrcmpi("Remove",argv[1]+1))
-      {
-        UnregisterAllSrv(argv[0]);
-      }
 	  //Imago ressurects the import/export functions (as structured text, not MSSQL)
-      else if (!lstrcmpi ("Core2Text", argv[1]+1))
+      /*else */
+	  if (!lstrcmpi ("Core2Text", argv[1]+1))
       {
 		  char szFilename[MAX_PATH + 1];
 		  UTL::SetArtPath(g.strArtPath);
@@ -9543,25 +9530,26 @@ int __cdecl main(int argc, char *argv[])
     }
     else
     {
-      if (argc == 1 || _Module.WasCOMStarted())
+      if (argc == 1 /*|| _Module.WasCOMStarted()*/)
       {
-        if (_Module.IsInstalledAsService())
-        {
-          printf("Trying to run %s as an NT Service...\nType \"%s -RegServer\" to re-install as EXE.\n", argv[0], argv[0]);
-          //start as service
-          if (!StartServiceCtrlDispatcher(rgSTE))
-            _AGCModule.TriggerEvent(NULL, AllsrvEventID_StartingService, "", -1, -1, -1, 0);
+        //if (_Module.IsInstalledAsService())
+        //{
+        //  printf("Trying to run %s as an NT Service...\nType \"%s -RegServer\" to re-install as EXE.\n", argv[0], argv[0]);
+        //  //start as service
+        //  if (!StartServiceCtrlDispatcher(rgSTE))
+        //    _AGCModule.TriggerEvent(NULL, AllsrvEventID_StartingService, "", -1, -1, -1, 0);
 
-        }
-        else
-        {
-          if (!_Module.IsInstalled())
-          {
-            printf("\nInstalling %s as an EXE...\n", argv[0]);
-            RegisterAllSrv(FALSE, FALSE, argc, argv); // FALSE == register as EXE
-          }
-          _Module.RunAsExecutable();
-        }
+        //}
+        //else
+        //{
+        //  if (!_Module.IsInstalled())
+        //  {
+        //    printf("\nInstalling %s as an EXE...\n", argv[0]);
+        //    RegisterAllSrv(FALSE, FALSE, argc, argv); // FALSE == register as EXE
+        //  }
+        //  _Module.RunAsExecutable();
+        //}
+#pragma message("fixme - run that thing!")
       }
       else // if unknown args
         fShowUsage = true;
@@ -9573,39 +9561,32 @@ int __cdecl main(int argc, char *argv[])
       printf("%s\n%s\n\n",
         (LPCSTR)vi.GetFileDescription(), (LPCSTR)vi.GetLegalCopyright());
 
-      if (!_Module.IsInstalled())
-      {
-        printf("\nThe server needs to be installed before running.\n\n", argv[0]);
-      }
+      //if (!_Module.IsInstalled())
+      //{
+      //  printf("\nThe server needs to be installed before running.\n\n", argv[0]);
+      //}
       //      ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
       printf("usage is ONE of:\n\n");
-      printf("AllSrv                             starts the server if registered as an exe\n");
-      printf("AllSrv -RegServer                  install the server as an EXE\n");
-    if (IsWinNT())
-      printf("AllSrv -Service   [user pw]        install the server as an NT Service\n");
-      printf("AllSrv -UnregServer                uninstall the server\n");
+      printf("AllSrv                             starts the server\n");
 	  printf("AllSrv -Core2Text [core_name]      converts core igc to text\n");
 	  printf("AllSrv -Map2Text  [map_name]       converts map igc to text\n");
 	  printf("AllSrv -Text2Core [core_name]      converts text core to igc\n");
 	  printf("AllSrv -Text2Map  [map_name]       converts text map igc\n");
-    #if !defined(ALLSRV_STANDALONE)
       printf("AllSrv -BuildIGCFiles <artpath>    builds igc files from database\n");
       printf("                                   (see root makefile for required env vars).\n");
-      printf("AllSrv -EncryptIGCFiles <artpath>  builds & encrypts igc files from database\n");
-      printf("                                   (see root makefile for required env vars).\n");
+      //printf("AllSrv -EncryptIGCFiles <artpath>  builds & encrypts igc files from database\n");
+      //printf("                                   (see root makefile for required env vars).\n");
       printf("AllSrv -BuildIGCFilesNM <artpath>  as above, but no maps\n");
       printf("                                   (see root makefile for required env vars).\n");
-      printf("AllSrv -EncryptIGCFilesNM <artpath> as above, but no maps\n");
-      printf("                                   (see root makefile for required env vars).\n");
-    #endif // !defined(ALLSRV_STANDALONE)
-    if (IsWinNT())
-      printf("\nTo start this service (when installed as NT service): net start %s\n",c_szSvcName);
+      //printf("AllSrv -EncryptIGCFilesNM <artpath> as above, but no maps\n");
+      //printf("                                   (see root makefile for required env vars).\n");
+    //if (IsWinNT())
+    //  printf("\nTo start this service (when installed as NT service): net start %s\n",c_szSvcName);
       //      ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
     }
-#endif // Imago
 
     // Terminate AGC
-    _Module.TermAGC();
+    //noagc _Module.TermAGC();
 
 	//appweb
 	mpr->stop(0);
@@ -9658,7 +9639,7 @@ HRESULT pascal FedSrv_Init()
   int iCon = 0;
   HRESULT hr = S_OK;
 
-  _AGCModule.TriggerEvent(NULL, AllsrvEventID_Initialize, "", -1, -1, -1, 0);
+  //noagc _AGCModule.TriggerEvent(NULL, AllsrvEventID_Initialize, "", -1, -1, -1, 0);
 
   // Set cur dir = exe dir
   HMODULE hmod = GetModuleHandle(NULL);
@@ -11235,12 +11216,13 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 
   // TE: fire AGCEvent when base is destroyed
   LPCSTR pszContext = m_pfsMission->GetIGCMission() ? m_pfsMission->GetIGCMission()->GetContextName() : NULL;
-  _AGCModule.TriggerContextEvent(NULL, EventID_StationDeleted, pszContext,
-    szLauncherName, iLauncherUniqueID, iLauncherSideUniqueID, -1, 4,
-	"MissionID", VT_I4, m_pfsMission->GetMissionID(),
-    "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),
-	"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
-    "zStationName", VT_LPSTR, pstation->GetName());
+	//noagc
+	// _AGCModule.TriggerContextEvent(NULL, EventID_StationDeleted, pszContext,
+	//   szLauncherName, iLauncherUniqueID, iLauncherSideUniqueID, -1, 4,
+	//"MissionID", VT_I4, m_pfsMission->GetMissionID(),
+	//   "TeamID", VT_I4, pstation->GetSide()->GetUniqueID(),
+	//"TeamName", VT_LPSTR, pstation->GetSide()->GetName(),
+	//   "zStationName", VT_LPSTR, pstation->GetName());
   // parameter is named zStationName so it appears at end of alphabetical list, keeping compatibility with allsrv1.0
   // End-TE
 
