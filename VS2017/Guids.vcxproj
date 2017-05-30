@@ -73,23 +73,30 @@
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Midl>
-      <AdditionalIncludeDirectories>$(Outdir)..\Guids;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
-      <HeaderFileName>%(FileName).h</HeaderFileName>
-      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
-      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <HeaderFileName>
+      </HeaderFileName>
+      <TypeLibraryName>
+      </TypeLibraryName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
     </Midl>
     <PreLinkEvent>
-      <Command>lib /out:$(OutDir)AGCGuid.lib $(OutDir)AGCGuid.obj</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
-      <AdditionalIncludeDirectories>$(Outdir)..\Guids;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+      <TypeLibraryName>
+      </TypeLibraryName>
       <OutputDirectory>$(TargetDir)\</OutputDirectory>
-      <HeaderFileName>%(FileName).h</HeaderFileName>
-      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <HeaderFileName>
+      </HeaderFileName>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
     </Midl>
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
@@ -114,7 +121,8 @@
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PreLinkEvent>
-      <Command>lib /out:$(OutDir)AGCGuid.lib $(OutDir)AGCGuid.obj</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

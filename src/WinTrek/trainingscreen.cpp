@@ -2,11 +2,11 @@
 #include "Training.h"
 
 // AGC and AllSrv Includes -- Imago remove 6/21/09, they were for TM7
-#include <agc.h>
-#include <AllSrvModuleIDL.h>
-
-#include "AdminSessionSecure.h"
-#include "AdminSessionSecureHost.h"
+//noagc #include <agc.h>
+//#include <AllSrvModuleIDL.h>
+//
+//#include "AdminSessionSecure.h"
+//#include "AdminSessionSecureHost.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -36,8 +36,9 @@ private:
     TRef<ButtonPane>                    m_pbuttonTrain;
 
 	// Imago remove 6/22/09 (for Live TM7)
-    static  IAdminGamesPtr              m_spAdminGamesPtr;
-    static  IAdminGamePtr               m_spAdminGamePtr;
+	// noagc
+    //static  IAdminGamesPtr              m_spAdminGamesPtr;
+    //static  IAdminGamePtr               m_spAdminGamePtr;
 
     static  int                         m_iMissionNext;
 
@@ -448,17 +449,18 @@ public:
     {
         if (FAILED (hr))
         {
-            // get the error codes
-            IErrorInfoPtr spErr;
-            ::GetErrorInfo(0, &spErr);
+			//noagc
+            //// get the error codes
+            //IErrorInfoPtr spErr;
+            //::GetErrorInfo(0, &spErr);
 
-            // convert that to an english message
-            _com_error e (hr, spErr, true);
-            _bstr_t strError (e.Description().length() ? e.Description() : _bstr_t (e.ErrorMessage()));
+            //// convert that to an english message
+            //_com_error e (hr, spErr, true);
+            //_bstr_t strError (e.Description().length() ? e.Description() : _bstr_t (e.ErrorMessage()));
 
             // debug just bail so I can trace the problem
             // assert (0);
-
+			LPCTSTR strError = "not yet implemented";
             // put up a dialog about the error
             TRef<IMessageBox>   pMsgBox = CreateMessageBox (ZString ("Unable to create a game. The home server may not be properly installed. Install the home server from your Allegiance CD.\n\nReason for failure: ") + (LPCTSTR)strError, NULL, true);
             GetWindow()->GetPopupContainer()->OpenPopup (pMsgBox, false);
@@ -522,18 +524,18 @@ public:
     void    CheckForExistingGames (void)
     {
         // try to get a game pointer from the games list
-        m_spAdminGamesPtr->get_Item (& (_variant_t) (0L), &m_spAdminGamePtr);
+        //m_spAdminGamesPtr->get_Item (& (_variant_t) (0L), &m_spAdminGamePtr);
 
         // if we got a valid game
-        if (m_spAdminGamePtr)
+        if (true) // noagc m_spAdminGamePtr)
         {
             // put up a message about the existing game
             TRef<IMessageBox> pMsgBox = CreateMessageBox ("The training mission game could not be created because there is already a server running on this machine with an active game.");
             GetWindow ()->GetPopupContainer ()->OpenPopup (pMsgBox, false);
 
             // and we terminate the entire login process here
-            m_spAdminGamePtr = 0;
-            m_spAdminGamesPtr = 0;
+            //m_spAdminGamePtr = 0;
+            //m_spAdminGamesPtr = 0;
         }
         else
         {
@@ -547,11 +549,11 @@ public:
     bool    TerminateExistingGames (void)
     {
         // kill every game that exists
-        while (m_spAdminGamePtr)
-        {
-            m_spAdminGamePtr->Kill ();
-            m_spAdminGamesPtr->get_Item (& (_variant_t) (0L), &m_spAdminGamePtr);
-        }
+        //while (m_spAdminGamePtr)
+        //{
+        //    m_spAdminGamePtr->Kill ();
+        //    m_spAdminGamesPtr->get_Item (& (_variant_t) (0L), &m_spAdminGamePtr);
+        //}
 
         return false;
     }
@@ -559,48 +561,48 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     HRESULT CreateTrainingMissionGame (void)
     {
-        HRESULT                 hr;
+        HRESULT                 hr = S_OK;
 
-        assert (m_spAdminGamesPtr);
+     //   assert (m_spAdminGamesPtr);
 
-        // Create a GameParameters object
-        IAGCGameParametersPtr spParams;
-        if (!Error (hr = spParams.CreateInstance (CLSID_AGCGameParameters)))
-        {
-            // set up game parameters associated with the training game
-            spParams->put_MinPlayers (1);
-            spParams->put_TotalMaxPlayers (1);
-            spParams->put_CivIDs (0, m_civID);  // default is iron league, but user may pick a different one
-            spParams->put_CivIDs (1, 35);       // bios
-            spParams->put_GameName (_bstr_t (TRAINING_MISSION_7_GAME_NAME));
-            spParams->put_LockTeamSettings (true);
+     //   // Create a GameParameters object
+     //   IAGCGameParametersPtr spParams;
+     //   if (!Error (hr = spParams.CreateInstance (CLSID_AGCGameParameters)))
+     //   {
+     //       // set up game parameters associated with the training game
+     //       spParams->put_MinPlayers (1);
+     //       spParams->put_TotalMaxPlayers (1);
+     //       spParams->put_CivIDs (0, m_civID);  // default is iron league, but user may pick a different one
+     //       spParams->put_CivIDs (1, 35);       // bios
+     //       spParams->put_GameName (_bstr_t (TRAINING_MISSION_7_GAME_NAME));
+     //       spParams->put_LockTeamSettings (true);
 
-            // Create a new game
-            if (!Error (hr = m_spAdminGamesPtr->Add (spParams)))
-            {
-                // get the game
-                if (!Error (hr = m_spAdminGamesPtr->get_Item (& (_variant_t) (0L), &m_spAdminGamePtr)))
-                {
-                    // set up the teams
-                    m_spAdminGamePtr->SetTeamName (0, _bstr_t ("Training Academy"));
-                    m_spAdminGamePtr->SetTeamName (1, _bstr_t ("Bios"));
+     //       // Create a new game
+     //       if (!Error (hr = m_spAdminGamesPtr->Add (spParams)))
+     //       {
+     //           // get the game
+     //           if (!Error (hr = m_spAdminGamesPtr->get_Item (& (_variant_t) (0L), &m_spAdminGamePtr)))
+     //           {
+     //               // set up the teams
+     //               m_spAdminGamePtr->SetTeamName (0, _bstr_t ("Training Academy"));
+     //               m_spAdminGamePtr->SetTeamName (1, _bstr_t ("Bios"));
 
-                    // pop up the Connecting... dialog.   
-                    GetWindow()->SetWaitCursor ();
-                    TRef<IMessageBox> pMsgBox = CreateMessageBox ("Connecting...", NULL, false);
-                    GetWindow ()->GetPopupContainer ()->OpenPopup (pMsgBox, false);
+     //               // pop up the Connecting... dialog.   
+     //               GetWindow()->SetWaitCursor ();
+     //               TRef<IMessageBox> pMsgBox = CreateMessageBox ("Connecting...", NULL, false);
+     //               GetWindow ()->GetPopupContainer ()->OpenPopup (pMsgBox, false);
 
-                    // pause to let the "connecting..." box draw itself
-					// mdvalley: repeat
-                    AddEventTarget(&TrainingScreen::OnTryLogon, GetWindow(), 0.1f);
+     //               // pause to let the "connecting..." box draw itself
+					//// mdvalley: repeat
+     //               AddEventTarget(&TrainingScreen::OnTryLogon, GetWindow(), 0.1f);
 
-                    // this then goes to OnTryLogon
-                }
-            }
-        }
+     //               // this then goes to OnTryLogon
+     //           }
+     //       }
+     //   }
 
         // terminate the games admin pointer
-        m_spAdminGamesPtr = 0;
+       // m_spAdminGamesPtr = 0;
 
         return hr;
     }
@@ -608,35 +610,35 @@ public:
     //////////////////////////////////////////////////////////////////////////////
     HRESULT CreateStandaloneGame (void)
     {
-        HRESULT                 hr;
+        HRESULT                 hr = S_OK;
 
         // Create the AdminSession class object
-        IAdminSessionClassPtr   spClass;
-        if (!Error (hr = CoGetClassObject (__uuidof(AdminSession), CLSCTX_LOCAL_SERVER, NULL, __uuidof(spClass), (void**)&spClass)))
-        {
-            // Create an instance of the host object for an IAdminSessionHost interface
-            AdminSessionSecureHost    xHost;
+        //IAdminSessionClassPtr   spClass;
+        //if (!Error (hr = CoGetClassObject (__uuidof(AdminSession), CLSCTX_LOCAL_SERVER, NULL, __uuidof(spClass), (void**)&spClass)))
+        //{
+        //    // Create an instance of the host object for an IAdminSessionHost interface
+        //    AdminSessionSecureHost    xHost;
 
-            // Create an AdminSession object
-            IAdminSessionPtr spSession;
-            hr = spClass->CreateSession (&xHost, &spSession);
-            ::CoDisconnectObject(&xHost, 0);
-            if (!Error (hr))
-            {
-                // Get the Server property from the session object
-                IAdminServerPtr spServer;
-                if (!Error (hr = spSession->get_Server (&spServer)))
-                {
-                    // Get the Games property from the server object
-                    if (!Error (hr = spServer->get_Games (&m_spAdminGamesPtr)))
-                    {
-                        // check to see if there are existing games
-                        // and proceed only if there aren't
-                        CheckForExistingGames ();
-                    }
-                }
-            }
-        }
+        //    // Create an AdminSession object
+        //    IAdminSessionPtr spSession;
+        //    hr = spClass->CreateSession (&xHost, &spSession);
+        //    ::CoDisconnectObject(&xHost, 0);
+        //    if (!Error (hr))
+        //    {
+        //        // Get the Server property from the session object
+        //        IAdminServerPtr spServer;
+        //        if (!Error (hr = spSession->get_Server (&spServer)))
+        //        {
+        //            // Get the Games property from the server object
+        //            if (!Error (hr = spServer->get_Games (&m_spAdminGamesPtr)))
+        //            {
+        //                // check to see if there are existing games
+        //                // and proceed only if there aren't
+        //                CheckForExistingGames ();
+        //            }
+        //        }
+        //    }
+        //}
         return hr;
     }
 
@@ -645,13 +647,13 @@ public:
     HRESULT KillStandaloneGame (void)
     {
         HRESULT hr = S_OK;
-        m_spAdminGamesPtr = 0;
-        if (m_spAdminGamePtr)
-        {
-            if (CoIsHandlerConnected (m_spAdminGamePtr))
-                hr = m_spAdminGamePtr->Kill ();
-            m_spAdminGamePtr = 0;
-        }
+        //m_spAdminGamesPtr = 0;
+        //if (m_spAdminGamePtr)
+        //{
+        //    if (CoIsHandlerConnected (m_spAdminGamePtr))
+        //        hr = m_spAdminGamePtr->Kill ();
+        //    m_spAdminGamePtr = 0;
+        //}
         return hr;
     }
 
@@ -763,7 +765,7 @@ public:
             debugf ("Player was added, waiting for the game to start\n");
 
             // start the game
-            Error (m_spAdminGamePtr->StartGame ());
+            //noagc Error (m_spAdminGamePtr->StartGame ());
 
             // next will be OnEnterMission if this succeeds
         }
@@ -796,9 +798,9 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 int             TrainingScreen::m_iMissionNext = Training::c_TM_1_Introduction;
-//imago removed live training mission 6/22/09
-IAdminGamesPtr  TrainingScreen::m_spAdminGamesPtr = 0;
-IAdminGamePtr   TrainingScreen::m_spAdminGamePtr = 0;
+//noagc
+//IAdminGamesPtr  TrainingScreen::m_spAdminGamesPtr = 0;
+//IAdminGamePtr   TrainingScreen::m_spAdminGamePtr = 0;
 
 //////////////////////////////////////////////////////////////////////////////
 //
