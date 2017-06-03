@@ -549,7 +549,7 @@ public:
 	CQuery(void (pfDataReady)(CQuery*)) :
 		m_pargQueryData(NULL),
 		m_cRows(0),
-		m_cRowsAlloc(0),
+		m_cRowsAlloc(0)
 	{
 	}
 	~CQuery()
@@ -565,6 +565,12 @@ public:
 			*pcRows = (int)m_cRows;
 		return m_pargQueryData;
 	}
+
+	TQueryData	  m_cmd;
+	TQueryData *  m_pargQueryData;
+	ULONG         m_cRows;
+	ULONG         m_cRowsAlloc;
+
 public: // just so the macro can easily set this  
 	static GUID   s_guid;
 };

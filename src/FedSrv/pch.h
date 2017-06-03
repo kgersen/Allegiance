@@ -72,6 +72,8 @@
 //#include <..\TCAtl\ObjectMap.h>
 //#include <..\TCAtl\UserAcct.h>
 //#include <..\TCLib\TCThread.h>
+#pragma message("fix me later")
+#include <..\TCLib\AutoCriticalSection.h>
 
 #include "Zone.h"
 

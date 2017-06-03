@@ -8130,12 +8130,12 @@ DWORD ProcessMsgPump(int dwSleep, DWORD nCount, LPHANDLE pHandles)
         switch (msg.message)
         {
 		  // noagc
-          case wm_sql_querydone:
-          {
-            CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
-            pQuery->DataReady();
-            break;
-          }
+          //case wm_sql_querydone:
+          //{
+          //  CSQLQuery * pQuery = (CSQLQuery *) msg.lParam;
+          //  pQuery->DataReady();
+          //  break;
+          //}
 
           case wm_fs_pause:
             AnnouncePause();
