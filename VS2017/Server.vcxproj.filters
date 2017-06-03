@@ -176,8 +176,6 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\src\FedSrv\fedmsg.msg">
-      <Filter>toremove</Filter>
-    </CustomBuild>
+    <CustomBuild Include="..\src\FedSrv\fedmsg.msg" />
   </ItemGroup>
 </Project>

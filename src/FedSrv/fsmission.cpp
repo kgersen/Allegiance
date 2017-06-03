@@ -248,8 +248,9 @@ CFSMission::CFSMission(
 
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
-  _AGCModule.TriggerContextEvent(NULL, EventID_GameCreated, pszContext,
-    pszGame, idGame, -1, -1, 0);
+  // noagc
+  //_AGCModule.TriggerContextEvent(NULL, EventID_GameCreated, pszContext,
+  //  pszGame, idGame, -1, -1, 0);
 }
 
 
@@ -263,11 +264,12 @@ CFSMission::~CFSMission()
 
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
-  _AGCModule.TriggerContextEvent(NULL, EventID_GameDestroyed, pszContext,
-    pszGame, idGame, -1, -1, 0);
+  // noagc
+  //_AGCModule.TriggerContextEvent(NULL, EventID_GameDestroyed, pszContext,
+  //  pszGame, idGame, -1, -1, 0);
 
   // Destroy any existing AGC game associated with the IGC mission
-  GetAGCGlobal()->RemoveAGCObject(m_pMission, true);
+  //GetAGCGlobal()->RemoveAGCObject(m_pMission, true);
 
   Vacate();
 
@@ -339,7 +341,9 @@ CFSMission::~CFSMission()
 		g.strLobbyServer.SetEmpty();
 
 		// Shutdown the server if no sessions exist
-		if (0 == CAdminSession::GetSessionCount())
+		// npoagc if (0 == CAdminSession::GetSessionCount())
+#pragma message("fix me -shutdown server")
+		if (true) // noagc fixme
 			PostThreadMessage(g.idReceiveThread, WM_QUIT, 0, 0);
 	}
 
@@ -1565,11 +1569,12 @@ void CFSMission::SetSideName(SideID sid, const char* szName)
 
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
 
-  _AGCModule.TriggerContextEvent(NULL, EventID_TeamInfoChange, pszContext,
-    strNameOld, idTeam, -1, -1, 3,
-    "GameID"     , VT_I4   , idGame,
-    "GameName"   , VT_LPSTR, pszGame,
-    "NewTeamName", VT_LPSTR, szName);
+  //noagc
+  //_AGCModule.TriggerContextEvent(NULL, EventID_TeamInfoChange, pszContext,
+  //  strNameOld, idTeam, -1, -1, 3,
+  //  "GameID"     , VT_I4   , idGame,
+  //  "GameName"   , VT_LPSTR, pszGame,
+  //  "NewTeamName", VT_LPSTR, szName);
 };
 
 /*-------------------------------------------------------------------------
@@ -2243,8 +2248,9 @@ void CFSMission::StartGame()
     // TE, Modify GameStarted AGCEvent to include MissionID.
     //Imago / Sgt_Baker: Include alliances info: <allyid>:<team ids>,<allyid>:<team ids>...  NYI 7/10/09
     	//Note:  Alliances may change in-game (NYI), create your own AGC Event! AllsrvEventID_AlliancesChanged
-	_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameStarted, pszContext,
-		GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 0);
+	//noagc
+	//_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameStarted, pszContext,
+	//	GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 0);
     // Changed "" and -1 to MissionName and MissionID
 	// _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameStarted, pszContext, "", -1, -1, -1, 0);
     DoPayday();
@@ -2674,11 +2680,12 @@ void CFSMission::GameOver(IsideIGC * psideWin, const char* pszReason)
 
   // the game will actually end when we get around to checking whether a team has won
   // TE, Modify GameEnded AGCEvent to include MissionName and MissionID.
-  _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
-      GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 3, // changed "" to MissionName and -1 to MissionID
-      "Reason", VT_LPSTR, pszReason,
-	  "WinningTeamID", VT_I4, iTeamObjectID,	 // TE: Added winning teamID
-	  "WinningTeamName", VT_LPSTR, pszTeamName); // TE: Added winning teamName
+  //noagc
+  //_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameEnded, pszContext,
+  //    GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(), -1, -1, 3, // changed "" to MissionName and -1 to MissionID
+  //    "Reason", VT_LPSTR, pszReason,
+	 // "WinningTeamID", VT_I4, iTeamObjectID,	 // TE: Added winning teamID
+	 // "WinningTeamName", VT_LPSTR, pszTeamName); // TE: Added winning teamName
 
 }
 
@@ -3326,9 +3333,10 @@ void CFSMission::ProcessGameOver()
 
   LPCSTR pszContext = GetIGCMission() ? GetIGCMission()->GetContextName() : NULL;
   // TE, Modify GameOver AGCEvent to include MissionID.
-  _AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameOver, pszContext,
-    GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(),
-   -1, -1, 0); // // Modified "" and -1 to MissionName and MissionID
+  // noagc
+  //_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameOver, pszContext,
+  //  GetIGCMission()->GetMissionParams()->strGameName, GetMissionID(),
+  // -1, -1, 0); // // Modified "" and -1 to MissionName and MissionID
   // old event
   //_AGCModule.TriggerContextEvent(NULL, AllsrvEventID_GameOver, pszContext,
   //  "", -1, -1, -1, 0);

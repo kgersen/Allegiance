@@ -53,7 +53,8 @@
 #include <utility.h>
 #include <igc.h>
 
-//kg- noagc - #include "..\AGC\GameParamData.h"
+//noagc this stays for now - toto: refactor/move out of AGC folder
+#include "..\AGC\GameParamData.h"
 
 //#include <atlbase.h>
 //extern CServiceModule _Module;

@@ -19,25 +19,22 @@
 // Neutral resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
-#ifdef _WIN32
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_ABOUT DIALOG  22, 17, 229, 78
+IDD_ABOUT DIALOG 22, 17, 229, 78
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "About Allegiance Server"
 FONT 8, "MS Sans Serif"
 BEGIN
     CTEXT           "Microsoft Allegiance",-1,4,4,221,8
     CTEXT           "Dedicated Server",-1,4,14,221,8
-    CTEXT           "Copyright (c) 1998, Microsoft Corporation.",-1,4,34,221,
-                    8
+    CTEXT           "Copyright (c) 1998, Microsoft Corporation.",-1,4,34,221,8
     DEFPUSHBUTTON   "OK",IDOK,90,60,52,14,WS_GROUP
     CTEXT           "All Rights Reserved.",-1,4,44,221,8
 END
@@ -49,7 +46,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUT, DIALOG
     BEGIN
@@ -66,20 +63,18 @@ END
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-MNU_FEDSRV MENU 
+MNU_FEDSRV MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -118,7 +113,6 @@ END
 
 3 TEXTINCLUDE 
 BEGIN
-    "1 TYPELIB ""AllSrvModuleIDL.tlb""\r\n"
     "#include ""Fedsrv.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "\0"
 END
@@ -135,25 +129,37 @@ END
 // remains consistent on all systems.
 ICO_FEDSRV              ICON                    "fedsrv.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
 IDR_AllSrv              REGISTRY                "AllSrv.rgs"
+
 IDR_ADMINSESSION        REGISTRY                "AdminSession.rgs"
+
 IDR_ADMINGAME           REGISTRY                "AdminGame.rgs"
+
 IDR_ADMINGAMES          REGISTRY                "AdminGames.rgs"
+
 IDR_ADMINSERVER         REGISTRY                "AdminServer.rgs"
+
 IDR_USER                REGISTRY                "AdminUser.rgs"
+
 IDR_USERS               REGISTRY                "AdminUsers.rgs"
+
 IDR_ADMINSHIP           REGISTRY                "AdminShip.rgs"
+
 IDR_DPMONO              REGISTRY                "DPMono.rgs"
+
 #if defined(APSTUDIO_INVOKED) || defined(ALLSRV_STANDALONE)
 #if defined(APSTUDIO_INVOKED)
 IDR_ALLSRV$(ALLSRV_STANDALONE) REGISTRY                "AllSrv.rgs"
+
 #else
 IDR_ALLSRV              REGISTRY                "AllSrv.rgs"
+
 #endif
 #endif
 
@@ -162,7 +168,7 @@ IDR_ALLSRV              REGISTRY                "AllSrv.rgs"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_LOBBYSERVER_GAMES_EXIST 
                             "LobbyServer property cannot be changed while games exist."
@@ -173,7 +179,7 @@ BEGIN
     IDS_E_CONNECT_LOBBY     "Failed to connect to the specified lobby server."
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -183,7 +189,6 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "AllSrvModuleIDL.tlb"
 #include "Fedsrv.rc2"  // non-Microsoft Visual C++ edited resources
 
 /////////////////////////////////////////////////////////////////////////////
