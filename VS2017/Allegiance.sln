@@ -5,7 +5,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{A20534F2-783B-48FF-95FE-FCEC104F86EA}"
 	ProjectSection(SolutionItems) = preProject
 		..\src\license.txt = ..\src\license.txt
-		screens.txt = screens.txt
+		..\src\screens.txt = ..\src\screens.txt
 		..\src\SolapReadme.txt = ..\src\SolapReadme.txt
 		..\src\todo.txt = ..\src\todo.txt
 	EndProjectSection
