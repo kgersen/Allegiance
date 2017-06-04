@@ -8609,7 +8609,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
  * Purpose:
  *    Load static server settings
  */
-void LoadSettings()
+void LoadSettings(const char *strFile)
 {
     // Explicitly initialize the global data structure
     g.Init();
@@ -8623,8 +8623,20 @@ void LoadSettings()
     TCHAR szModule[_MAX_PATH];
     TCHAR szDrive[_MAX_DRIVE], szDir[_MAX_DIR];
     GetModuleFileName(NULL, szModule, sizeofArray(szModule));
-    _tsplitpath(szModule, szDrive, szDir, NULL, NULL);
-    _makepath(szModule, szDrive, szDir, TEXT("Artwork\\"), NULL);
+
+	if (strFile)
+		g.strConfigFile = ZString(strFile);
+	else
+	{
+		// default config file is <executable>.cfg
+		g.strConfigFile = ZString(szModule) + ".cfg"; //todo put '.cfg' as global somewhere
+	}
+
+	printf("config file = %s\n", PCC(g.strConfigFile));
+
+	// default artwork is <exe path>/artwork
+	_tsplitpath(szModule, szDrive, szDir, NULL, NULL);
+    _makepath(szModule, szDrive, szDir, TEXT("Artwork\\"), NULL); // portability check
     g.strArtPath = szModule;
 
 
@@ -8751,24 +8763,6 @@ void LoadSettings()
         if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fTimeout", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             g.fTimeOut = !!dwValue;
         else g.fTimeOut = true;
-
-      //noagc
-      ////#if !defined(ALLSRV_STANDALONE) Imago revived 6/10
-      //  dwValue=0;
-      //  cbValue = sizeof(dwValue);
-      //  if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsNotify", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-      //      g.csqlNotifyThreads = dwValue;
-      //  else g.csqlNotifyThreads = 3;
-
-      //  dwValue=0;
-      //  cbValue = sizeof(dwValue);
-      //  if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsSilent", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-      //      g.csqlSilentThreads = dwValue;
-      //  else g.csqlSilentThreads = 2;
-
-      //  if (FAILED(LoadRegString(hKey, "SQLConfig", g.strSQLConfig)))
-      //    g.strSQLConfig.Empty(); // default for all developers
-      ////#endif // !defined(ALLSRV_STANDALONE)
 
         ::RegCloseKey(hKey);
     }
@@ -9247,6 +9241,23 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
+
+// for when running as EXE
+BOOL WINAPI HandlerRoutine(
+	DWORD dwCtrlType   //  control signal type
+)
+{
+	if (dwCtrlType == CTRL_CLOSE_EVENT || dwCtrlType == CTRL_BREAK_EVENT || dwCtrlType == CTRL_SHUTDOWN_EVENT || dwCtrlType == CTRL_C_EVENT)
+		//imago added 7/3/08
+	{
+		debugf("shutting down, got control code:%d\n", dwCtrlType);
+		SetEvent(g.hKillReceiveEvent);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // main
 //
@@ -9264,9 +9275,6 @@ void    BuildIGCFiles (char* szArtworkPath, bool bEncrypt = false, bool bMaps = 
 //
 int __cdecl main(int argc, char *argv[])
 {
-    // Load the global settings from the registry
-    LoadSettings();
-
     // set the FPU to double precision, instead of long double
     // (this makes FP compares a little safer)
     if (g.fDoublePrecision)
@@ -9288,7 +9296,7 @@ int __cdecl main(int argc, char *argv[])
 	mpr->addListener(logger);
     mpr->setLogSpec("allsrv_appweb.log:9");
 #endif
-	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
+	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant because it ended up getting reused
 	mpr->start(MPR_SERVICE_THREAD);
 
 #ifdef false //noagc
@@ -9318,86 +9326,20 @@ int __cdecl main(int argc, char *argv[])
     RETURN_FAILED(hr);
 #endif
 
-    char szSvcName[64];
-	strcpy(szSvcName, c_szSvcName);
-#if false //noagc
-    SERVICE_TABLE_ENTRY rgSTE[] =
-    {
-        { szSvcName, (LPSERVICE_MAIN_FUNCTION)_ServiceMain },
-        { NULL, NULL }
-    };
-#endif
-
-    bool fShowUsage = false;
-
     g.hInst = GetModuleHandle(NULL);
 
     if (argc < 1)
     {
       printf ("Hell has frozen over.\n"); // this should never happen
-      // Terminate AGC
-      //noagc _Module.TermAGC();
       return 0;
     }
 
-	//noagc
-    //// if registering (after an AutoUpdate)--be sure to keep existing install data intact
-    //if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') && !lstrcmpi ("reregister", argv[1]+1))
-    //{
-    //  RegisterAllSrv(TRUE, _Module.IsInstalledAsService(), argc, argv);
-    //  // Terminate AGC
-    //  _Module.TermAGC();
-    //  return 0;
-    //}
-
-	//noagc
-    //// Check for a weird/busted installation...this really can happen
-    //if (_Module.IsInstalledAsService() && !_Module.IsInServiceControlManager())
-    //{
-    //  printf("Incomplete installation detected. Removing incomplete installation...\n");
-
-    //  UnregisterAllSrv(argv[0]);
-    //}
-
-    //_Module.SetCOMStarted(argc == 2 && !lstrcmpi("-Embedding",argv[1]));
-
-//    #if defined(ALLSRV_STANDALONE)
-//    #ifndef DEBUG //Imago changed from _DEBUG to allow DEBUG in retail builds w/o requiring debug run-times
-//    if (argc == 1 && !_Module.IsInstalledAsService() && !_Module.WasCOMStarted())
-//    {
-//		//multi-process setup can only be debugged /w console windows - Imago
-//		//NYI: should be released as service module only
-//#if defined(SRV_PARENT) || defined(SRV_CHILD)
-//		_Module.RunAsExecutable();
-//#else
-//      printf("\nUse AllSrvUI.exe to run the Allegiance Server.\n");
-//      // Terminate AGC
-//      _Module.TermAGC();
-//#endif
-//      return 0;
-//    }
-//    #endif
-//    #endif
-
-    if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') /*&& !_Module.WasCOMStarted()*/)
+	// cmd line args parsing
+	bool fShowUsage = false;
+	if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/'))
     {
 
-		//   BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1);
-
-	  //if (fInstallAsService || !lstrcmpi("RegServer", argv[1] + 1))
-	  //{
-
-		 // RegisterAllSrv(FALSE, fInstallAsService, argc, argv);
-
-	  //}
-   //   else if (!lstrcmpi("UnregServer",argv[1]+1) || !lstrcmpi("Remove",argv[1]+1))
-   //   {
-   //     UnregisterAllSrv(argv[0]);
-   //   }
-
-	  //Imago ressurects the import/export functions (as structured text, not MSSQL)
-      /*else */
-	  if (!lstrcmpi ("Core2Text", argv[1]+1))
+	       if (!lstrcmpi ("Core2Text", argv[1]+1))
       {
 		  char szFilename[MAX_PATH + 1];
 		  UTL::SetArtPath(g.strArtPath);
@@ -9528,31 +9470,86 @@ int __cdecl main(int argc, char *argv[])
            fShowUsage = true;
       }
     }
-    else
-    {
-      if (argc == 1 /*|| _Module.WasCOMStarted()*/)
-      {
-        //if (_Module.IsInstalledAsService())
-        //{
-        //  printf("Trying to run %s as an NT Service...\nType \"%s -RegServer\" to re-install as EXE.\n", argv[0], argv[0]);
-        //  //start as service
-        //  if (!StartServiceCtrlDispatcher(rgSTE))
-        //    _AGCModule.TriggerEvent(NULL, AllsrvEventID_StartingService, "", -1, -1, -1, 0);
 
-        //}
-        //else
-        //{
-        //  if (!_Module.IsInstalled())
-        //  {
-        //    printf("\nInstalling %s as an EXE...\n", argv[0]);
-        //    RegisterAllSrv(FALSE, FALSE, argc, argv); // FALSE == register as EXE
-        //  }
-        //  _Module.RunAsExecutable();
-        //}
-#pragma message("fixme - run that thing!")
-      }
-      else // if unknown args
-        fShowUsage = true;
+	if (!fShowUsage)
+	{
+		 // Load the global settings from the config file
+		 LoadSettings(argc > 1 ? argv[1] : NULL);
+
+		  ZVersionInfo vi;
+		  printf("%s\n%s\n\n",
+			  (LPCSTR)vi.GetFileDescription(),
+			  (LPCSTR)vi.GetLegalCopyright());
+
+		  printf("Initializing...\n");
+		  HRESULT hr = FedSrv_Init();
+
+		  if (SUCCEEDED(hr))
+		  {
+			  HANDLE hConsole;
+
+			  printf("\rType 'Q' to Quit.\n");
+			  printf("\rType 'P' to Pause.\n");
+			  printf("\rType 'C' to Continue.\n");
+
+			  hConsole = GetStdHandle(STD_INPUT_HANDLE);
+			  SetConsoleMode(hConsole, 0);
+
+			  SetConsoleCtrlHandler(HandlerRoutine, true);
+
+			  assert(g.hKillReceiveEvent);
+
+			  HANDLE hEventArray[] = { g.hKillReceiveEvent, hConsole };
+
+			  DWORD dwAwaker;
+
+			  //
+			  // Wait until Receive Thread dies; if Q is pressed, kill Receive Thread
+			  //
+			  do
+			  {
+				  dwAwaker = MsgWaitForMultipleObjects(2, hEventArray, FALSE, INFINITE, 0);
+
+				  if (dwAwaker == WAIT_OBJECT_0 + 1)
+				  {
+					  INPUT_RECORD Key;
+					  DWORD dwRead;
+
+					  ReadConsoleInput(hConsole, &Key, 1, &dwRead);
+
+					  if (Key.EventType == KEY_EVENT &&
+						  Key.Event.KeyEvent.wVirtualKeyCode == 'Q')
+					  {
+						  debugf("Q pressed\n");
+						  SetEvent(g.hKillReceiveEvent);
+					  }
+					  if (Key.EventType == KEY_EVENT &&
+						  Key.Event.KeyEvent.wVirtualKeyCode == 'P')
+					  {
+						  debugf("P pressed\n");
+						  FedSrv_Pause();
+					  }
+					  if (Key.EventType == KEY_EVENT &&
+						  Key.Event.KeyEvent.wVirtualKeyCode == 'C')
+					  {
+						  debugf("C pressed\n");
+						  FedSrv_Continue();
+					  }
+				  }
+
+			  } while (dwAwaker != WAIT_OBJECT_0);
+
+			  FedSrv_Terminate();
+
+			  // here is a good spot to restart -Imago
+			  // if (g.bRestarting) RunAsExecutable();
+		  }
+		  else
+		  {
+			  printf("\rInitialization failed. (%x)\n", hr);
+		  }
+
+         //  _Module.RunAsExecutable();
     }
 
     if (fShowUsage)
@@ -9561,10 +9558,6 @@ int __cdecl main(int argc, char *argv[])
       printf("%s\n%s\n\n",
         (LPCSTR)vi.GetFileDescription(), (LPCSTR)vi.GetLegalCopyright());
 
-      //if (!_Module.IsInstalled())
-      //{
-      //  printf("\nThe server needs to be installed before running.\n\n", argv[0]);
-      //}
       //      ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
       printf("usage is ONE of:\n\n");
       printf("AllSrv                             starts the server\n");
@@ -9572,21 +9565,8 @@ int __cdecl main(int argc, char *argv[])
 	  printf("AllSrv -Map2Text  [map_name]       converts map igc to text\n");
 	  printf("AllSrv -Text2Core [core_name]      converts text core to igc\n");
 	  printf("AllSrv -Text2Map  [map_name]       converts text map igc\n");
-      printf("AllSrv -BuildIGCFiles <artpath>    builds igc files from database\n");
-      printf("                                   (see root makefile for required env vars).\n");
-      //printf("AllSrv -EncryptIGCFiles <artpath>  builds & encrypts igc files from database\n");
-      //printf("                                   (see root makefile for required env vars).\n");
-      printf("AllSrv -BuildIGCFilesNM <artpath>  as above, but no maps\n");
-      printf("                                   (see root makefile for required env vars).\n");
-      //printf("AllSrv -EncryptIGCFilesNM <artpath> as above, but no maps\n");
-      //printf("                                   (see root makefile for required env vars).\n");
-    //if (IsWinNT())
-    //  printf("\nTo start this service (when installed as NT service): net start %s\n",c_szSvcName);
-      //      ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
+      //        ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
     }
-
-    // Terminate AGC
-    //noagc _Module.TermAGC();
 
 	//appweb
 	mpr->stop(0);

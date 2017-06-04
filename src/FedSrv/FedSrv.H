@@ -433,7 +433,8 @@ struct Global
   bool                fSecure;
   bool                fTimeOut;
   bool                fWantInt3;
-  ZString             strArtPath;
+  ZString             strArtPath;       // artwork path
+  ZString			  strConfigFile;    // configuration file
   char                m_szToken[24]; // sizeof(_ZONETICKET_TOKEN.szToken)
   int                 nUpdatesPerSecond;
 #ifdef USEAUTH
