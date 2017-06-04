@@ -141,13 +141,6 @@
       <UseInBuild>True</UseInBuild>
       <UseDependenciesInBuild>True</UseDependenciesInBuild>
     </ProjectReference>
-    <ProjectReference Include="TCLib.vcxproj">
-      <Project>{1695996c-f698-4509-bf5c-ade10ada67f9}</Project>
-      <CopyLocalDependencies>True</CopyLocalDependencies>
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-      <UseInBuild>True</UseInBuild>
-      <UseDependenciesInBuild>True</UseDependenciesInBuild>
-    </ProjectReference>
     <ProjectReference Include="Utility.vcxproj">
       <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
     </ProjectReference>

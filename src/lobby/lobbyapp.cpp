@@ -644,7 +644,7 @@ bool CLobbyApp::GetRankForCallsign(const char* szPlayerName, int *rank, double *
 	int resultCode = -1;
 
 	char localRankName[50];
-	if(sscanf(content, "%ld|%ld|%s|%f|%f|%ld|%f|%f", &resultCode, rank, localRankName, sigma, mu, commandRank, commandSigma, commandMu) == EOF)
+	if(sscanf(content, "%ld|%ld|%s|%lf|%lf|%ld|%lf|%lf", &resultCode, rank, localRankName, sigma, mu, commandRank, commandSigma, commandMu) == EOF)
 		resultCode = -1;
 
 	strncpy(rankName, localRankName, rankNameLen);

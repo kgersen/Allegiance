@@ -39,12 +39,12 @@
 #include <zlib.h>
 #include <utility.h>
 
-
-#include <TCLib.h>
-#include <TCAtl.h>
-#include <..\TCAtl\ObjectMap.h>
-#include <..\TCAtl\UserAcct.h>
-#include <..\TCLib\TCThread.h>
+// noagc
+//#include <TCLib.h>
+//#include <TCAtl.h>
+//#include <..\TCAtl\ObjectMap.h>
+//#include <..\TCAtl\UserAcct.h>
+//#include <..\TCLib\TCThread.h>
 
 //Imago removed 7/5/08
 //#ifdef USEAUTH

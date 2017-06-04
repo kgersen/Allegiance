@@ -204,6 +204,12 @@
     <ProjectReference Include="sharemem.vcxproj">
       <Project>{a8e7888a-84ac-485e-9fb2-35382c003e0b}</Project>
     </ProjectReference>
+    <ProjectReference Include="Utility.vcxproj">
+      <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="ZLibrary.vcxproj">
+      <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
