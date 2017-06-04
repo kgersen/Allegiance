@@ -72,7 +72,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\AGC;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\AGC;.\$(IntDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;WIN;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -115,7 +115,7 @@
     </Midl>
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\$(IntDir)..\Guids;.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\AGC;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\$(IntDir)..\Guids;.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>

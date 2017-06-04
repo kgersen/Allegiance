@@ -9334,7 +9334,7 @@ int __cdecl main(int argc, char *argv[])
 
     if (argc < 1)
     {
-      //printf ("Hell has frozen over.\n"); // this should never happen
+      printf ("Hell has frozen over.\n"); // this should never happen
       // Terminate AGC
       //noagc _Module.TermAGC();
       return 0;
@@ -9382,7 +9382,7 @@ int __cdecl main(int argc, char *argv[])
     if (argc > 1 && (*argv[1]=='-' || *argv[1]=='/') /*&& !_Module.WasCOMStarted()*/)
     {
 
- //   BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1);
+		//   BOOL fInstallAsService = !lstrcmpi("Service",argv[1]+1);
 
 	  //if (fInstallAsService || !lstrcmpi("RegServer", argv[1] + 1))
 	  //{
@@ -9445,7 +9445,7 @@ int __cdecl main(int argc, char *argv[])
 			fShowUsage = true;
 		  }
       }
-     else if (!lstrcmpi ("Text2Map", argv[1]+1))
+      else if (!lstrcmpi ("Text2Map", argv[1]+1))
       {
 		  if (argc > 2) {
             //ImportIGCObjs(argv[2]);
@@ -9456,7 +9456,7 @@ int __cdecl main(int argc, char *argv[])
 			fShowUsage = true;
 		  }
       }
-     else if (!lstrcmpi ("Text2Core", argv[1]+1))
+      else if (!lstrcmpi ("Text2Core", argv[1]+1))
       {
 		  char szFilename[MAX_PATH + 1];
 		  UTL::SetArtPath(g.strArtPath);
@@ -9493,13 +9493,13 @@ int __cdecl main(int argc, char *argv[])
 		  }
       }
 	 // noagc
-     else if (!lstrcmpi ("BuildIGCFiles", argv[1]+1))
-      {
-        if (argc > 2)
-            BuildIGCFiles (argv[2], false, true);
-        else
-            printf ("Please provide a path for IGC files to get written to...\n");
-      }
+     //else if (!lstrcmpi ("BuildIGCFiles", argv[1]+1))
+     // {
+     //   if (argc > 2)
+     //       BuildIGCFiles (argv[2], false, true);
+     //   else
+     //       printf ("Please provide a path for IGC files to get written to...\n");
+     // }
       //else if (!lstrcmpi ("EncryptIGCFiles", argv[1]+1))
       //{
       //  if (argc > 2)
@@ -9507,13 +9507,13 @@ int __cdecl main(int argc, char *argv[])
       //  else
       //      printf ("Please provide a path for IGC files to get written to...\n");
       //}
-      else if (!lstrcmpi ("BuildIGCFilesNM", argv[1]+1))
-      {
-        if (argc > 2)
-            BuildIGCFiles (argv[2], false, false);
-        else
-            printf ("Please provide a path for IGC files to get written to...\n");
-      }
+      //else if (!lstrcmpi ("BuildIGCFilesNM", argv[1]+1))
+      //{
+      //  if (argc > 2)
+      //      BuildIGCFiles (argv[2], false, false);
+      //  else
+      //      printf ("Please provide a path for IGC files to get written to...\n");
+      //}
       //else if (!lstrcmpi ("EncryptIGCFilesNM", argv[1]+1))
       //{
       //  if (argc > 2)
