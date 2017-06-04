@@ -11,23 +11,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // Add manually edited resources here...
 
-
-/////////////////////////////////////////////////////////////////////////////
-#if !defined(ALLSRV_STANDALONE)
-
-  #define SZFILEDESCRIPTION "Microsoft (R) Allegiance Game Server NT Service"
-  #define SZORIGFILENAME "AllSrv.exe"
-  #define SZINTERNALNAME "AllSrv"
-
-#else // !defined(ALLSRV_STANDALONE)
-
-  #define SZFILEDESCRIPTION "Microsoft (R) Allegiance Game Server (stand-alone)"
-  #define SZORIGFILENAME "AllSrv.exe"
-  #define SZINTERNALNAME "AllSrv"
-
-#endif // !defined(ALLSRV_STANDALONE)
-
+#define SZFILEDESCRIPTION "Allegiance Game Server"
+#define SZORIGFILENAME "AllSrv.exe"
+#define SZINTERNALNAME "AllSrv"
 
 #include "..\Inc\VerRes.rc"
 
-#include FEDMSG
+// noagc #include FEDMSG

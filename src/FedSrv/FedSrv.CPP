@@ -12,7 +12,7 @@
 #include "pch.h"
 //noagc
 //#include <..\TCLib\CoInit.h>
-#include <..\TCLib\AutoHandle.h>
+#include <AutoHandle.h>
 //#include <agc.h>
 #include <zreg.h>
 
@@ -12961,7 +12961,7 @@ IshipIGC*   PickNewLeader(const ShipListIGC*    pships,
 
     void FedSrvApp::DebugOutput(const char *psz)
     {
-        static TCAutoCriticalSection critsec;
+        static ZAutoCriticalSection critsec; // noagc
         Time    tStart = Time::Now();
         critsec.Lock();
           if (m_dwDebug & FED_DEBUG_FILE)

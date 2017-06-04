@@ -54,7 +54,7 @@
 #include <igc.h>
 
 //noagc this stays for now - toto: refactor/move out of AGC folder
-#include "..\AGC\GameParamData.h"
+#include <GameParamData.h>
 
 //#include <atlbase.h>
 //extern CServiceModule _Module;
@@ -74,7 +74,7 @@
 //#include <..\TCAtl\UserAcct.h>
 //#include <..\TCLib\TCThread.h>
 #pragma message("fix me later")
-#include <..\TCLib\AutoCriticalSection.h>
+#include "..\zlib\AutoCriticalSection.h"
 
 #include "Zone.h"
 
