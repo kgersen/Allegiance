@@ -8650,27 +8650,30 @@ void LoadSettings(const char *strFile)
     DWORD dwType;
     DWORD dwValue;
     DWORD cbValue;
-    if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, KEY_READ, &hKey))
+	//todo: check if file exist or get ride of this if
+    if (true) //(ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, HKLM_FedSrv, 0, KEY_READ, &hKey))
     {
-        if (FAILED(LoadRegString(hKey, "AuthServer", g.strAuthServer)))
-          g.strAuthServer = "Pointweb01"; // default for all developers
+		char szRes[_MAX_PATH * 2];
 		
+		//if (FAILED(LoadRegString(hKey, "AuthServer", g.strAuthServer)))
+        //  g.strAuthServer = "Pointweb01"; // default for all developers
+		GetPrivateProfileString("AllSrv", "AuthServer", "Pointweb01", szRes, sizeofArray(szRes), PCC(g.strConfigFile));
+
 		ZString zUsers;
-		if (!FAILED(LoadRegString(hKey, "PrivilegedUsers", zUsers))) {
+		//if (!FAILED(LoadRegString(hKey, "PrivilegedUsers", zUsers))) {
+		if (GetPrivateProfileString("AllSrv", "PrivilegedUsers", "", szRes, sizeofArray(szRes), PCC(g.strConfigFile))) 
+		{
+			zUsers = szRes;
 			ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetCompanyName(); zInfo += (LPCSTR)vi.GetLegalCopyright();
 			UTL::SetPrivilegedUsers((PCC)zUsers.Scramble(zInfo),-1); //Imago 6/10
 		}
 
-        dwValue=0;
-        cbValue = sizeof(dwValue);
 		// w0dk4 Bandwidth Patch - removed registry-check and set tickrate to 20 so client bandwidth settings are not fooled
 		// g.nUpdatesPerSecond = 20;
 		// mmf leave this in, server admins should have control of this even if clients are not getting the bandwidth
 		//     they expect from the 'rough' data rate w0dk4 added
-		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "nUpdatesPerSecond", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.nUpdatesPerSecond = dwValue;
-        else
-            g.nUpdatesPerSecond = 10;
+		//if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "nUpdatesPerSecond", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+		g.nUpdatesPerSecond = GetPrivateProfileInt("AllSrv", "nUpdatesPerSecond", 10, PCC(g.strConfigFile));
 
 
 // mmf log to file on SRVLOG define as well as _DEBUG
@@ -8679,23 +8682,25 @@ void LoadSettings(const char *strFile)
 #endif
 
 #ifdef SRVLOG // mmf changed this from _DEBUG
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "nDebugMask", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            dwValue=FED_DEBUG_FILE;
+        //if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "nDebugMask", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    dwValue=FED_DEBUG_FILE;
+		DWORD dwValue = GetPrivateProfileInt("AllSrv", "nDebugMask", FED_DEBUG_FILE, PCC(g.strConfigFile));
         g_app.SetDebug(dwValue);
 #endif
 
         // Standalone servers do not need a LobbyServer registry value because
         // they always get it from the CFG file.
         //#if !defined(ALLSRV_STANDALONE)  Imago 6/10
-          LoadRegString(hKey, "LobbyServer", g.strLobbyServer);
+//noagc: todo get this from args or confiug file?  LoadRegString(hKey, "LobbyServer", g.strLobbyServer);
         //#endif // !defined(ALLSRV_STANDALONE)
 
         // Use winsock-provided address for clients, unless overridden (e.g. dual nic)
 		// KGJV #114 localaddress isnt used anymore by DP8 so we use it as public userfriendly server name
 	    // KGJV #114 TODO: eventually rename 'LocalAdresss' to something more appropriate now, PublicName for instance.
-        if (FAILED(LoadRegString(hKey, "LocalAddress", g.strLocalAddress)))
+		if (GetPrivateProfileString("AllSrv", "FriendlyName", "", szRes, sizeofArray(szRes), PCC(g.strConfigFile)))
+			g.strLocalAddress = szRes;
+		//if (FAILED(LoadRegString(hKey, "LocalAddress", g.strLocalAddress)))
+		else
         {
           WSADATA WSAData;
           char szHostName[20]; // length of machine name--also long enough for ip address if that's what we get
@@ -8706,15 +8711,19 @@ void LoadSettings(const char *strFile)
         }
 
 		// KGJV #114
-        if (FAILED(LoadRegString(hKey, "Location", g.strLocation)))
-        {
-			g.strLocation = "unknown";
-		}
+		GetPrivateProfileString("AllSrv", "Location", "unknown", szRes, sizeofArray(szRes), PCC(g.strConfigFile));
+		g.strLocation = szRes;
+  //      if (FAILED(LoadRegString(hKey, "Location", g.strLocation)))
+  //      {
+		//	g.strLocation = "unknown";
+		//}
 
 		// KGJV #114
-		g.cMaxGames = 99; // default max game
-        cbValue = sizeof(dwValue);
-		RegQueryValueEx(hKey, "MaxGames", NULL, &dwType, (unsigned char*)&g.cMaxGames, &cbValue);
+		//g.cMaxGames = 99; // default max game
+        //cbValue = sizeof(dwValue);
+		//RegQueryValueEx(hKey, "MaxGames", NULL, &dwType, (unsigned char*)&g.cMaxGames, &cbValue);
+		g.cMaxGames = GetPrivateProfileInt("AllSrv", "MaxGames", 99, PCC(g.strConfigFile));
+
 
 		/* pkk May 6th: Disabled bandwidth patch
 		// w0dk4 Bandwidth Patch
@@ -8725,46 +8734,50 @@ void LoadSettings(const char *strFile)
 
 
 		ZString strArtPath;
-        if (SUCCEEDED(LoadRegString(hKey, "ArtPath", strArtPath)))
-        {
-          if (strArtPath.Right(1) != "\\")
-            strArtPath += "\\";
-          g.strArtPath = strArtPath;
+        //if (SUCCEEDED(LoadRegString(hKey, "ArtPath", strArtPath)))
+		if (GetPrivateProfileString("AllSrv", "ArtPath", "", szRes, sizeofArray(szRes), PCC(g.strConfigFile)))
+		{
+			strArtPath = szRes;
+			if (strArtPath.Right(1) != "\\")
+				strArtPath += "\\";
+			g.strArtPath = strArtPath;
         }
 
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fWantInt3", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.fWantInt3 = !!dwValue;
-        else g.fWantInt3 = true;
+//TODO
+
+        //dwValue=0;
+        //cbValue = sizeof(dwValue);
+        //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fWantInt3", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    g.fWantInt3 = !!dwValue;
+        //else g.fWantInt3 = true;
 		
-        //Imago 7/10 DIE ASGS DIE
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxNewbRank", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.MaxNewbRank = dwValue;
-        else g.MaxNewbRank = 4;
-        //
+        ////Imago 7/10 DIE ASGS DIE
+        //dwValue=0;
+        //cbValue = sizeof(dwValue);
+        //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxNewbRank", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    g.MaxNewbRank = dwValue;
+        //else g.MaxNewbRank = 4;
+        ////
 
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fProtocol", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.fProtocol = !!dwValue;
-        else g.fProtocol = true;
+        //dwValue=0;
+        //cbValue = sizeof(dwValue);
+        //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fProtocol", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    g.fProtocol = !!dwValue;
+        //else g.fProtocol = true;
 
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fDoublePrecision", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.fDoublePrecision = !!dwValue;
-        else g.fDoublePrecision = true;
+        //dwValue=0;
+        //cbValue = sizeof(dwValue);
+        //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fDoublePrecision", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    g.fDoublePrecision = !!dwValue;
+        //else g.fDoublePrecision = true;
 
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fTimeout", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.fTimeOut = !!dwValue;
-        else g.fTimeOut = true;
+        //dwValue=0;
+        //cbValue = sizeof(dwValue);
+        //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "fTimeout", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    g.fTimeOut = !!dwValue;
+        //else g.fTimeOut = true;
 
-        ::RegCloseKey(hKey);
+        //::RegCloseKey(hKey);
     }
 }
 
