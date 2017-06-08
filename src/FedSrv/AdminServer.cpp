@@ -22,7 +22,7 @@ extern Global g;
 // CAdminServer
 
 #pragma message("todo - instanciate once here or in the 'main' ?")
-//TC_OBJECT_EXTERN_NON_CREATEABLE_IMPL(CAdminServer)
+CAdminServer *gCAdminServer = nullptr;
 
 
 /////////////////////////////////////////////////////////////////////////////

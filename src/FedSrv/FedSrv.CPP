@@ -8422,6 +8422,14 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     g.pServerCounters->timeCycleTarget = dwUpdateInterval;
 
   printf("Preparing server...\n");
+
+  // Create the single instance of the CAdminServer object
+  gCAdminServer = new CAdminServer();
+  
+  // this is required for DirectPlay
+  HRESULT hr = CoInitialize(NULL);
+  ZSucceeded(hr);
+
 #ifdef false //noagc
   // Enter this thread into the COM STA
   HRESULT hr = CoInitialize(NULL);
@@ -8487,12 +8495,12 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 #pragma message("fixme - get config option for lobby")
   if (false) //noagc _Module.WasCOMStarted())
   {
-    //pServer->put_PublicLobby(false); // false == private games mode
+    gCAdminServer->put_PublicLobby(false); // false == private games mode
   }
   else
   {
     g.strLobbyServer="?"; // this will be overrided by cfg file download; needs to be non-blank so ConnectToLobby() is called
-    //pServer->put_PublicLobby(true); // true means use public dplay session, and connect to lobby is g.strLobbyServer is not empty
+	gCAdminServer->put_PublicLobby(true); // true means use public dplay session, and connect to lobby is g.strLobbyServer is not empty
   }
 
   rgeventHandles[0] = g.hKillReceiveEvent;
@@ -8556,7 +8564,7 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   //}
 
   printf("Shutting down server...\n");
-
+  gCAdminServer = nullptr;
 #ifdef false //noagc
   // Suspend creation of any objects
   CoSuspendClassObjects();
@@ -8597,7 +8605,8 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   //noagc _Module.Term();
 
   // Remove this thread from the COM STA
-  //noagc CoUninitialize();
+  // this is required by DirectPlay
+  CoUninitialize();
 
   ExitThread(0);
   return 0;
