@@ -17,6 +17,27 @@
     <ClCompile Include="..\src\FedSrv\fsside.cpp">
       <Filter>IGC</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminServer.cpp">
+      <Filter>API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminGame.cpp">
+      <Filter>API\todo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminGames.cpp">
+      <Filter>API\todo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminSession.cpp">
+      <Filter>API\todo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminShip.cpp">
+      <Filter>API\todo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminUser.cpp">
+      <Filter>API\todo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FedSrv\AdminUsers.cpp">
+      <Filter>API\todo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\FedSrv\BitArray.h" />
@@ -39,6 +60,27 @@
       <Filter>IGC</Filter>
     </ClInclude>
     <ClInclude Include="..\src\FedSrv\fedsrvsql.h" />
+    <ClInclude Include="..\src\FedSrv\AdminServer.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminGame.h">
+      <Filter>API\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminGames.h">
+      <Filter>API\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminSession.h">
+      <Filter>API\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminShip.h">
+      <Filter>API\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUser.h">
+      <Filter>API\todo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FedSrv\AdminUsers.h">
+      <Filter>API\todo</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\src\FedSrv\FedSrv.RC" />
@@ -51,6 +93,12 @@
   <ItemGroup>
     <Filter Include="IGC">
       <UniqueIdentifier>{81f0719b-8806-4483-86dc-1b5e70cb4b44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{12c103e3-c1d8-4b34-8f20-0ee3e4ef9a70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="API\todo">
+      <UniqueIdentifier>{966613c9-e900-4fcc-953f-bc0c11020ca0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

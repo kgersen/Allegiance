@@ -527,7 +527,7 @@ public:
         //m_spAdminGamesPtr->get_Item (& (_variant_t) (0L), &m_spAdminGamePtr);
 
         // if we got a valid game
-        if (true) // noagc m_spAdminGamePtr)
+        if (false) // noagc m_spAdminGamePtr)
         {
             // put up a message about the existing game
             TRef<IMessageBox> pMsgBox = CreateMessageBox ("The training mission game could not be created because there is already a server running on this machine with an active game.");
@@ -562,7 +562,7 @@ public:
     HRESULT CreateTrainingMissionGame (void)
     {
         HRESULT                 hr = S_OK;
-
+		OnTryLogon();
      //   assert (m_spAdminGamesPtr);
 
      //   // Create a GameParameters object
@@ -611,7 +611,8 @@ public:
     HRESULT CreateStandaloneGame (void)
     {
         HRESULT                 hr = S_OK;
-
+		
+		CheckForExistingGames();
         // Create the AdminSession class object
         //IAdminSessionClassPtr   spClass;
         //if (!Error (hr = CoGetClassObject (__uuidof(AdminSession), CLSCTX_LOCAL_SERVER, NULL, __uuidof(spClass), (void**)&spClass)))

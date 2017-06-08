@@ -108,15 +108,13 @@
 extern Global g;
 #include "fsship.h"
 
-// kg- noagc
+// new API: we will revive/rebuild as needed
 //#include "AdminGame.h"
 //#include "AdminGames.h"
 //#include "AdminSession.h"
-//
-//
 //#include "AdminUser.h"
 //#include "AdminUsers.h"
-//#include "AdminServer.h"
+#include "AdminServer.h"
 //#include "AdminShip.h"
 
 //noagc - is this used?
