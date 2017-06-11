@@ -153,16 +153,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\src\FedSrv\fedmsg.msg">
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">mc "%(FullPath)" -r $(IntDir) -h $(IntDir)
-</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(IntDir)%(FileName).rc;%(Outputs)</Outputs>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\src\FedSrv\AdminGame.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
@@ -188,7 +178,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\src\FedSrv\BitArray.cpp" />
     <ClCompile Include="..\src\FedSrv\FedSrv.CPP" />
     <ClCompile Include="..\src\FedSrv\fscluster.cpp" />
     <ClCompile Include="..\src\FedSrv\fslobby.cpp" />
@@ -234,7 +223,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\src\FedSrv\BitArray.h" />
     <ClInclude Include="..\src\FedSrv\counters.h" />
     <ClInclude Include="..\src\FedSrv\FedSrv.H" />
     <ClInclude Include="..\src\FedSrv\FedSrvApp.h" />

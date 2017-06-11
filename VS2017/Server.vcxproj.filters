@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\src\FedSrv\BitArray.cpp" />
     <ClCompile Include="..\src\FedSrv\FedSrv.CPP" />
     <ClCompile Include="..\src\FedSrv\fslobby.cpp" />
     <ClCompile Include="..\src\FedSrv\pch.cpp" />
@@ -40,7 +39,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\FedSrv\BitArray.h" />
     <ClInclude Include="..\src\FedSrv\counters.h" />
     <ClInclude Include="..\src\FedSrv\FedSrv.H" />
     <ClInclude Include="..\src\FedSrv\FedSrvApp.h" />
@@ -100,8 +98,5 @@
     <Filter Include="API\todo">
       <UniqueIdentifier>{966613c9-e900-4fcc-953f-bc0c11020ca0}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\src\FedSrv\fedmsg.msg" />
   </ItemGroup>
 </Project>
