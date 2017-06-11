@@ -407,10 +407,7 @@ struct Global
     strLobbyServer.SetEmpty();
     strAuthServer.SetEmpty();
     strArtPath.SetEmpty();
-//#if !defined(ALLSRV_STANDALONE)
-    // noagc
-	// strSQLConfig.Empty();
-//#endif    
+	// noagc strSQLConfig.Empty();
   }
 
   SERVICE_STATUS_HANDLE ssh;
@@ -527,9 +524,7 @@ void RecordSquadGame(const SideListIGC*  psides, IsideIGC* psideWon);
 void GetInvitations(int nInvitationID, MissionID missionID);
 
 //-KGJV - AZ uses StartDefaultGames now
-//#if defined(ALLSRV_STANDALONE)
 void StartDefaultGames();
-//#endif
 
 ItreasureIGC*  CreateTreasure(Time now, IshipIGC* pship, DataTreasureIGC* pdt, const Vector& position, float dv);
 

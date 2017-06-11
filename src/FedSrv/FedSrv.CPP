@@ -7195,15 +7195,11 @@ void CheckForNoShows()
   for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
   {
     CFSMission * pfsMission = plinkMission->data();
-#if !defined(SRV_CHILD)
 	if (!pfsMission->GetMissionDef()->misparms.bObjectModelCreated &&  // Let admin games break the rules
 		!strcmp(pfsMission->GetMissionDef()->misparms.szIGCStaticFile,IGC_ENCRYPT_CORE_FILENAME) && // KGJV: let custom core games break the rules too
         pfsMission->GetCountOfPlayers(NULL, true) == 0)
 	{
-#else
-    if (pfsMission->GetCountOfPlayers(NULL, true) == 0 && g.dwArgCookie > 99)
-	{
-#endif
+
       // nuke it if it's been around more than 15 seconds
       SYSTEMTIME stNow;
       FILETIME ftNow;
@@ -7359,7 +7355,7 @@ void ProcessNetworkMessages()
 
 
   bool bSupposedToConnectToLobby;
-  bool bServerStartedByUI = false;
+  bool bServerStartedByUI = false; // todo: from cmd line args
 
   //noagc
 #if false //defined(ALLSRV_STANDALONE)
@@ -7377,21 +7373,6 @@ void ProcessNetworkMessages()
 
 	if (bSupposedToConnectToLobby) // are we supposed to be connected to a lobby?
   {
-	// children always connect to the lobby, but if we get disconnected and we're empty, suicide! -Imago 6/25/08
-#if defined(SRV_CHILD)
-	  if(!g.fmLobby.IsConnected()){
-		const ListFSMission * plistMission = CFSMission::GetMissions();
-		for (LinkFSMission * plinkMission = plistMission->first(); plinkMission; plinkMission = plinkMission->next())
-		{
-			CFSMission * pfsMission = plinkMission->data();
-			//NYI wind up another check?
-			if (pfsMission->GetCountOfPlayers(NULL, false) == 0 && iTrys > 4) //added try again
-				PostQuitMessage(0);
-		}
-	  }
-
-#endif
-
     // roll call for lobby
     if (g.fmLobby.IsConnected())
     {
@@ -7403,57 +7384,16 @@ void ProcessNetworkMessages()
 			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
 			timeRollCallLobby = g.timeNow;
 
-#if !defined(SRV_PARENT) //Imago - no need to check missiond for the parent
 			CheckForNoShows(); // kinda of a weird place to be calling it, but since we're already in a perdiodic timer...
-#endif
 		}
-#if defined(SRV_PARENT) //Imago - resend lobby our login info, maybe keep CurGames as the heartbeat?
-		static bool bNotFirstPump = false;
-		static Time timeLastRelog = Time::Now();
-		if ((g.timeNow.clock() - timeLastRelog.clock() > 30000) && (bNotFirstPump == true)) // 1m interval
-		{
-			_Module.InitPIDs();
-			ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
-			// do this to update our current games count/availability
-			BEGIN_PFM_CREATE(g.fmLobby, pfmLogon, S, LOGON_LOBBY)
-			  FM_VAR_PARM(g.cStaticCoreInfo ? g.vStaticCoreInfo : NULL, g.cStaticCoreInfo * c_cbFileName) // KGJV #114
-			  FM_VAR_PARM(PCC(g.strLocation), CB_ZTS) // KGJV #114
-			  FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)), CB_ZTS) // Imago #2 6/10
-			  FM_VAR_PARM(PCC(zInfo), CB_ZTS) // Imago 62 7/10
-			END_PFM_CREATE
-			pfmLogon->cStaticCoreInfo = g.cStaticCoreInfo; // KGJV #114
-			//Imago NYI: adjust max games based if we're under load
-			pfmLogon->MaxGames = g.cMaxGames; // KGJV #114
-			pfmLogon->verLobby = LOBBYVER_LS;
-			pfmLogon->dwPort = _Module.GetOutgoingPort();
-			pfmLogon->CurGames = _Module.GetChildCount();
-			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
-			timeLastRelog = g.timeNow;
-		}
-		bNotFirstPump = true;
-#endif
-
     } else { //lobby is not connected..
       static Time timeLastTry = Time::Now();
 
       // retry once a minute. This will block for a few seconds, so we don't want to do it too often
       if (g.timeNow.clock() - timeLastTry.clock() > 60000)
       {
-#if defined(SRV_CHILD) //imago warn people in game about cnxn issues 6/26/06
-		  CFSMission * pfsMission = CFSMission::GetMissions()->first()->data();
-		  if (iTrys <= 3) {
-			char szMessage[100];
-			sprintf(szMessage,"Warning: Game lost connection with lobby, retrying (%i of 3)",iTrys);
-			pfsMission->GetSite()->SendChat(NULL, CHAT_EVERYONE, NA, NA, szMessage, c_cidNone, NA, NA, NULL, true);
-            ConnectToLobby(g.strLobbyServer);
-		  } else {
-			  bSupposedToConnectToLobby = false;
-			  //give up
-		  }
-		  iTrys++;
-#else
 		  const ListFSMission * plistMission = CFSMission::GetMissions();
-			bool fAnyRunning = false;
+          bool fAnyRunning = false;
 			for (LinkFSMission * plinkMission = plistMission->first(); !fAnyRunning && plinkMission; plinkMission = plinkMission->next())
 			{
 			  CFSMission * pfsMission = plinkMission->data();
@@ -7463,9 +7403,6 @@ void ProcessNetworkMessages()
 
 			if (!fAnyRunning)
 			  ConnectToLobby(NULL);
-#endif
-
-
         timeLastTry = g.timeNow;
       } //retry connect
     } //connected

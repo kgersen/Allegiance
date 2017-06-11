@@ -21,10 +21,8 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
   switch(pfm->fmid)
   {
 	  // KGJV #114 - reactivate create mission
-    //#if !defined(ALLSRV_STANDALONE)
       case FM_L_CREATE_MISSION_REQ:
       {
-#if !defined(SRV_CHILD)
         CASTPFM(pfmCreateMissionReq, L, CREATE_MISSION_REQ, pfm);
         MissionParams mp;
 		lstrcpy(mp.strGameName,    ZString(FM_VAR_REF(pfmCreateMissionReq, GameName)));// + "'s game");
@@ -32,73 +30,7 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         mp.bScoresCount = false;// dont set to true till clients can change this!
 		mp.iMaxImbalance = 0x7ffe;// added
         assert(!mp.Invalid());
-#endif
 
-		//Imago - give birth right here, feed it and off it goes...
-
-#if defined(SRV_PARENT)
-		//start missions as thier own process
-		STARTUPINFO si;
-		PROCESS_INFORMATION pi;
-		ZeroMemory( &si, sizeof(si) );	
-		si.cb = sizeof(si);				
-		ZeroMemory( &pi, sizeof(pi) );	
-		char szCmd[255]; char szName[32]; char szFile[32];
-		ZString strName = mp.strGameName;
-		ZString strFile = mp.szIGCStaticFile;
-		si.lpTitle = mp.strGameName;
-		Strcpy(szName,(PCC)strName);
-		Strcpy(szFile,(PCC)strFile);
-		sprintf(szCmd,"AllSrv.exe \"%s\" %s %x",szName,szFile,pfmCreateMissionReq->dwCookie);
-		
-		// Create a NULL dacl to give "everyone" access
-		SECURITY_DESCRIPTOR sd;
-		SECURITY_ATTRIBUTES sa = {sizeof(sa), &sd, false};
-		InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
-		SetSecurityDescriptorDacl(&sd, true, NULL, FALSE);
-
-		if( !CreateProcess(
-			NULL,                   // No module name (use command line). 
-			szCmd,					
-			NULL,                   
-			NULL,                   
-			FALSE,                  // Set handle inheritance to FALSE. 
-			CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE, // we're destined to do amazing things
-			NULL,                   // Use parent's environment block. 
-			NULL,                   // Use parent's starting directory. 
-			&si,                    // Pointer to STARTUPINFO structure.
-			&pi )                   // Pointer to PROCESS_INFORMATION structure.
-		) 
-		{
-			debugf( "CreateProcess failed (%d).\n", GetLastError() );
-		}
-
-		// check to make sure the child is ready before restart
- 		char strFilename[10] = "\0";
-		sprintf(strFilename,"%d.pid",pi.dwProcessId);
-        HANDLE hFile = (HANDLE)CreateFile(strFilename, 0, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
-		DWORD dwError = GetLastError();
-		int i = 0;
-		while(hFile == INVALID_HANDLE_VALUE || dwError == ERROR_FILE_NOT_FOUND) {	
-			if (i >= 14) //30s
-				break;
-
-			Sleep(2500);
-			hFile = (HANDLE)CreateFile(strFilename, 0, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
-			dwError = GetLastError();
-			i++;
-		}
-		_Module.AddPID(pi.dwProcessId);
-		CloseHandle(hFile);
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		g.bRestarting = true;
-		PostQuitMessage(0);
-
-#endif 
-	
-#if !defined(SRV_CHILD)
-#if !defined(SRV_PARENT)
 		// pkk 2011-07-24 - Create games only with IGCs from cores.txt
 		bool ValidCore = false;
 		for ( int i = 0; i<g.cStaticCoreInfo; i++ )
@@ -121,9 +53,7 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 			debugf("Lobby sent invalid core information %s, ignoring message\n", mp.szIGCStaticFile);
 		}
 		// pkk end
-#endif
-#endif
-      } //Imago 6/22/08
+      } 
       break;
     //#endif -- reactivate create mission
 

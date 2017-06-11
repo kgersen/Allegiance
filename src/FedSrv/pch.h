@@ -41,11 +41,7 @@
 #include <mmsystem.h> 
 
 // ZLib Includes
-#if !defined(ALLSRV_STANDALONE)
-  #define __MODULE__ "AllSrv"
-#else // !defined(ALLSRV_STANDALONE)
-  #define __MODULE__ "AllSrv"
-#endif // !defined(ALLSRV_STANDALONE)
+#define __MODULE__ "AllSrv"
 #include <guids.h>
 #include <zlib.h>
                      

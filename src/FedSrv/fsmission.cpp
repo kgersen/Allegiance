@@ -114,14 +114,6 @@ CFSMission::CFSMission(
 
   // keep track of whether this is a lobbied and/or club game
   m_misdef.misparms.bLobbiedGame = g.fmLobby.IsConnected();
-#if !defined(ALLSRV_STANDALONE)
-  m_misdef.misparms.bClubGame = true;
-  // -KGJV only set core if not defined in game params
-  if (m_misdef.misparms.szIGCStaticFile[0] == '\0')
-  {
-	strcpy(m_misdef.misparms.szIGCStaticFile, IGC_ENCRYPT_CORE_FILENAME);
-  }
-#else // !defined(ALLSRV_STANDALONE)
   m_misdef.misparms.bClubGame = false;
   // -KGJV only set core if not defined in game params
   if (m_misdef.misparms.szIGCStaticFile[0] == '\0')
@@ -130,7 +122,6 @@ CFSMission::CFSMission(
   }
   // hardcode this cap in one more place to make it harder to work around.
   m_misdef.misparms.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, misparms.nTotalMaxPlayersPerGame);
-#endif // !defined(ALLSRV_STANDALONE)
 
   // if this game is an auto-start game, set the start time appropriately
   if (m_misdef.misparms.bAutoRestart)
@@ -157,12 +148,7 @@ CFSMission::CFSMission(
   m_misdef.fAutoAcceptLeaders = true;
   m_misdef.fInProgress = false;
   m_misdef.stage = STAGE_NOTSTARTED;
-#if !defined(ALLSRV_STANDALONE)
-  extern void DoDecrypt(int size, char* pdata);
-  m_misdef.misparms.verIGCcore = LoadIGCStaticCore(m_misdef.misparms.szIGCStaticFile, m_pMission, false,  DoDecrypt);
-#else // !defined(ALLSRV_STANDALONE)
   m_misdef.misparms.verIGCcore = LoadIGCStaticCore(m_misdef.misparms.szIGCStaticFile, m_pMission, false,  NULL);
-#endif // !defined(ALLSRV_STANDALONE)
   m_misdef.dwCookie = NULL;
 
   const CivilizationListIGC*  pcivs = m_pMission->GetCivilizations();
@@ -328,10 +314,8 @@ CFSMission::~CFSMission()
   m_psiteMission->Destroy(this);
   g.fm.DeleteGroup(m_pgrpSidesReal);
 
-#if defined(ALLSRV_STANDALONE)
-// Possibly shutdown the standalone server if no more games
+  // Possibly shutdown the standalone server if no more games
 
-#if !defined(SRV_CHILD)
   // KGJV #114 - if lobbied then dont shutdown if create game allowed on this server
     bool bSupposedToConnectToLobby = !(FEDSRV_GUID != g.fm.GetHostApplicationGuid());
 	if ( (0 == s_list.n()) && (bSupposedToConnectToLobby ? (g.cStaticCoreInfo==0) : true)) {
@@ -347,13 +331,6 @@ CFSMission::~CFSMission()
 			PostThreadMessage(g.idReceiveThread, WM_QUIT, 0, 0);
 	}
 
-#else
-		// Disconnect from the lobby server
-		DisconnectFromLobby();
-		g.strLobbyServer.SetEmpty();
-		PostThreadMessage(g.idReceiveThread, WM_QUIT, 0, 0);
-#endif
-#endif // defined(ALLSRV_STANDALONE)
   // kill any pending ballots
   while (!m_ballots.IsEmpty())
     delete m_ballots.PopFront();
@@ -1782,11 +1759,7 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
   strncpy(misparms.szIGCStaticFile, m_misdef.misparms.szIGCStaticFile, c_cbFileName);
 
   // make sure it's properly marked as a club or non-club game too.
-  #if !defined(ALLSRV_STANDALONE)
-    misparms.bClubGame = true;
-  #else // !defined(ALLSRV_STANDALONE)
-    misparms.bClubGame = false;
-  #endif // !defined(ALLSRV_STANDALONE)
+  misparms.bClubGame = false;
 
   // TE: Enforce LockSides = on if ScoresCount mmf change to MaxImbalance
   if (misparms.bScoresCount)
@@ -3286,11 +3259,9 @@ void CFSMission::ProcessGameOver()
 */
   // Restart the game if the server is not paused.
   bool bRestartable = !g.fPaused && m_misdef.misparms.bAllowRestart;
-  #if defined(ALLSRV_STANDALONE)
-    // HACK: for training missions, end the game and don't let it restart.
-    if (m_misdef.misparms.nTotalMaxPlayersPerGame == 1)
-        bRestartable = false;
-  #endif
+  // HACK: for training missions, end the game and don't let it restart.
+  if (m_misdef.misparms.nTotalMaxPlayersPerGame == 1)
+	bRestartable = false;
 
   SetStage(bRestartable ? STAGE_NOTSTARTED : STAGE_OVER); // set to STAGE_OVER if game should not restart.
 
@@ -3593,14 +3564,12 @@ IsideIGC* CFSMission::CheckForVictoryByInactiveSides(bool& bAllSidesInactive)
     }
   }
 
-  #if defined(ALLSRV_STANDALONE)
     // HACK: for training missions, don't end the game before it starts just
     // because a side is inactive.
     if (m_misdef.misparms.nTotalMaxPlayersPerGame == 1 && GetStage() == STAGE_STARTING)
     {
       pSideWin = NULL;
     }
-  #endif
 
   // HACK: for testing purposes, don't end the game before it's started if
   // everyone still playing can cheat.
