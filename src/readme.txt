@@ -27,7 +27,7 @@
 
   <meta name="viewport" content="width=device-width">
   
-  <title>Allegiance/license.txt at master · FreeAllegiance/Allegiance</title>
+  <title>Allegiance/readme.txt at master · FreeAllegiance/Allegiance</title>
   <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub">
   <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
   <meta property="fb:app_id" content="1401488693436528">
@@ -36,10 +36,10 @@
     <meta content="https://avatars2.githubusercontent.com/u/13786627?v=4&amp;s=400" property="og:image" /><meta content="GitHub" property="og:site_name" /><meta content="object" property="og:type" /><meta content="FreeAllegiance/Allegiance" property="og:title" /><meta content="https://github.com/FreeAllegiance/Allegiance" property="og:url" /><meta content="Allegiance is a multiplayer online game providing a mix of real-time strategy and player piloted space combat gameplay. " property="og:description" />
 
   <link rel="assets" href="https://assets-cdn.github.com/">
-  <link rel="web-socket" href="wss://live.github.com/_sockets/VjI6MTQ0MjE3NzU2OjM3Zjg5YzIwMTAyM2VjZWExYzY5YTgyNGZiOWFjNmRlNTU0ZWU4ZGZiNmYzYTA5MWY2Nzk2MzE4ZWNlODgxYjg=--a7da896e7a85a7dee96af79890113a27e08c0aac">
+  <link rel="web-socket" href="wss://live.github.com/_sockets/VjI6MTQ0MjE3NzU2OjM5YTdjNTE4ZmFmNzI0OWRlNjczNjhjMzk1NTlmZmFlNjM5Njg5YjU2MzgwMjM4YWZlN2I2YWUyYTgxYzliOTI=--99e61388122eca1e27d46d4b2bac7a6cb68e5814">
   <meta name="pjax-timeout" content="1000">
   <link rel="sudo-modal" href="/sessions/sudo_modal">
-  <meta name="request-id" content="CADC:1DA2C:4932F74:7A34CC6:597BA1DD" data-pjax-transient>
+  <meta name="request-id" content="CB3E:1DA2B:36414FC:5B59002:597BA1FD" data-pjax-transient>
   
 
   <meta name="selected-link" value="repo_source" data-pjax-transient>
@@ -48,7 +48,7 @@
 <meta name="google-site-verification" content="ZzhVyEFwb7w3e0-uOTltm8Jsck2F5StVihD0exw2fsA">
     <meta name="google-analytics" content="UA-3769691-2">
 
-<meta content="collector.githubapp.com" name="octolytics-host" /><meta content="github" name="octolytics-app-id" /><meta content="https://collector.githubapp.com/github-external/browser_event" name="octolytics-event-url" /><meta content="CADC:1DA2C:4932F74:7A34CC6:597BA1DD" name="octolytics-dimension-request_id" /><meta content="iad" name="octolytics-dimension-region_edge" /><meta content="iad" name="octolytics-dimension-region_render" /><meta content="1764578" name="octolytics-actor-id" /><meta content="kgersen" name="octolytics-actor-login" /><meta content="929d118f04ec9052fb6bd113b3faf9f2cf4635ca945030b09b400ea98440bf26" name="octolytics-actor-hash" />
+<meta content="collector.githubapp.com" name="octolytics-host" /><meta content="github" name="octolytics-app-id" /><meta content="https://collector.githubapp.com/github-external/browser_event" name="octolytics-event-url" /><meta content="CB3E:1DA2B:36414FC:5B59002:597BA1FD" name="octolytics-dimension-request_id" /><meta content="iad" name="octolytics-dimension-region_edge" /><meta content="iad" name="octolytics-dimension-region_render" /><meta content="1764578" name="octolytics-actor-id" /><meta content="kgersen" name="octolytics-actor-login" /><meta content="929d118f04ec9052fb6bd113b3faf9f2cf4635ca945030b09b400ea98440bf26" name="octolytics-actor-hash" />
 <meta content="/&lt;user-name&gt;/&lt;repo-name&gt;/blob/show" data-pjax-transient="true" name="analytics-location" />
 
 
@@ -63,7 +63,7 @@
   <meta name="user-login" content="kgersen">
 
       <meta name="expected-hostname" content="github.com">
-    <meta name="js-proxy-site-detection-payload" content="ZjlhOWQzNzk1YmI4Mjc5YzJjMDI1MDFjN2Y1MmRlYTEyZDVjN2E5NjgzOWRiNzBhYjgwZDcyYmE2M2VhYzQ2Nnx7InJlbW90ZV9hZGRyZXNzIjoiOTAuOTAuMTgzLjg2IiwicmVxdWVzdF9pZCI6IkNBREM6MURBMkM6NDkzMkY3NDo3QTM0Q0M2OjU5N0JBMUREIiwidGltZXN0YW1wIjoxNTAxMjc0NTk4LCJob3N0IjoiZ2l0aHViLmNvbSJ9">
+    <meta name="js-proxy-site-detection-payload" content="YTMzMmNhYjIxZjVmOTY3ZGI4MzQ1YjgzMjRiM2QzMDgwYWY5ZjRmNmU0MmM5ODM4YWNiOGZjYzY2MjM3Yjc1Znx7InJlbW90ZV9hZGRyZXNzIjoiOTAuOTAuMTgzLjg2IiwicmVxdWVzdF9pZCI6IkNCM0U6MURBMkI6MzY0MTRGQzo1QjU5MDAyOjU5N0JBMUZEIiwidGltZXN0YW1wIjoxNTAxMjc0NjIxLCJob3N0IjoiZ2l0aHViLmNvbSJ9">
 
 
   <meta name="html-safe-nonce" content="f3212e2fade14527299705d28dc7c900e92e15d9">
@@ -79,7 +79,7 @@
   <meta content="13786627" name="octolytics-dimension-user_id" /><meta content="FreeAllegiance" name="octolytics-dimension-user_login" /><meta content="40015917" name="octolytics-dimension-repository_id" /><meta content="FreeAllegiance/Allegiance" name="octolytics-dimension-repository_nwo" /><meta content="true" name="octolytics-dimension-repository_public" /><meta content="true" name="octolytics-dimension-repository_is_fork" /><meta content="20146006" name="octolytics-dimension-repository_parent_id" /><meta content="AllegianceZone/Allegiance" name="octolytics-dimension-repository_parent_nwo" /><meta content="20146006" name="octolytics-dimension-repository_network_root_id" /><meta content="AllegianceZone/Allegiance" name="octolytics-dimension-repository_network_root_nwo" /><meta content="false" name="octolytics-dimension-repository_explore_github_marketplace_ci_cta_shown" />
 
 
-    <link rel="canonical" href="https://github.com/FreeAllegiance/Allegiance/blob/master/src/license.txt" data-pjax-transient>
+    <link rel="canonical" href="https://github.com/FreeAllegiance/Allegiance/blob/master/src/readme.txt" data-pjax-transient>
 
 
   <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
@@ -125,7 +125,7 @@
               <div class="header-search scoped-search site-scoped-search js-site-search" role="search">
   <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/search" class="js-site-search-form" data-scoped-search-url="/FreeAllegiance/Allegiance/search" data-unscoped-search-url="/search" method="get"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /></div>
     <label class="form-control header-search-wrapper js-chromeless-input-container">
-        <a href="/FreeAllegiance/Allegiance/blob/master/src/license.txt" class="header-search-scope no-underline">This repository</a>
+        <a href="/FreeAllegiance/Allegiance/blob/master/src/readme.txt" class="header-search-scope no-underline">This repository</a>
       <input type="text"
         class="form-control header-search-input js-site-search-focus js-site-search-field is-clearable"
         data-hotkey="s"
@@ -252,7 +252,7 @@
           Settings
         </a>
 
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/logout" class="logout-form" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="Cw8NC8tOSZG6uRW6n/vLiX8HAocvAtgsYLwi/xNTY6k+TX0RfmQ1QeMUXngSfyh1tsY1pB2LgdfcmMwkWBUSDA==" /></div>
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/logout" class="logout-form" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="olCMqqzm4yoo7K1ZL14NfjbUfQlcxbxjVtMssHOdbimXEvywGcyf+nFB5pui2u6C/xVKKm5M5Zjq98JrONsfjA==" /></div>
           <button type="submit" class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout">
             Sign out
           </button>
@@ -262,7 +262,7 @@
 </ul>
 
 
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/logout" class="sr-only right-0" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="1Ro9OO1IvuWnDsGr0cV34AzUvlSuBF0kbn0FTVmjNkzgWE0iWGLCNf6jimlcQZQcxRWJd5yNBN/SWeuWEuVH6Q==" /></div>
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/logout" class="sr-only right-0" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="C5Tqux1jfK/0fMzouyYW4v8PwKd4ZbQzhtGQFS8Avts+1pqhqEkAf63Rhyo2ovUeNs73hErs7cg69X7OZEbPfg==" /></div>
           <button type="submit" class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout">
             Sign out
           </button>
@@ -298,7 +298,7 @@
 
         <ul class="pagehead-actions">
   <li>
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/notifications/subscribe" class="js-social-container" data-autosubmit="true" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="ESZWKyIc/MFdqGTLaIZ6EV6Lrc738xESTJlRIhQny5aF5DhnjGuZEXoJ3AjvIs8SluCRend5+yLIHSk338FZAg==" /></div>      <input class="form-control" id="repository_id" name="repository_id" type="hidden" value="40015917" />
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/notifications/subscribe" class="js-social-container" data-autosubmit="true" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="bzL+MM6lSe4tcCql5ojhbRmSdYLZwEQiraiZvctkWm778JB8YNIsPgrRkmZhLFRu0flJNllKrhIpLOGoAILI+g==" /></div>      <input class="form-control" id="repository_id" name="repository_id" type="hidden" value="40015917" />
 
         <div class="select-menu js-menu-container js-select-menu">
           <a href="/FreeAllegiance/Allegiance/subscription"
@@ -378,7 +378,7 @@
   <li>
     
   <div class="js-toggler-container js-social-container starring-container ">
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/unstar" class="starred" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="8wpWeXfUV098i5bTU3lbYVp2mGw4Pn8sFjJ9z24JbvMD1H7Cwku/fxtNQgPruhO8WxmQyElUzbJVhxJNqRiroQ==" /></div>
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/unstar" class="starred" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="yUk0kMyRRV03Iogl1W2wz93xeHsvIZRBo1QVTUza9vg5lxwreQ6tbVDkXPVtrvgS3J5w315LJt/g4XrPi8szqg==" /></div>
       <button
         type="submit"
         class="btn btn-sm btn-with-count js-toggler-target"
@@ -392,7 +392,7 @@
           2
         </a>
 </form>
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/star" class="unstarred" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="gzvfEEFbQdeedQ5TeUsqYNgfYOI0R52IxV5/HGRRxJ4kTmcAsh982pukc6ueLVp4BGp3tzoub0w3EcRC2ErT5A==" /></div>
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/star" class="unstarred" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="OjNBgADTF3eK27crFH74bN3k0vHbTFru8I1YeZxgdPydRvmQ85cqeo8KytPzGIh0AZHFpNUlqCoCwuMnIHtjhg==" /></div>
       <button
         type="submit"
         class="btn btn-sm btn-with-count js-toggler-target"
@@ -410,7 +410,7 @@
   </li>
 
   <li>
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/fork" class="btn-with-count" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="Tw6OnP3AJz0Aa87PcCSiTeJVu3fE8pY1wKP0bWq40NJJtl9/FK6HUJZrC3pDX3deKGYX8dCmcZobUoKnMDkv3g==" /></div>
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/fork" class="btn-with-count" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="M2sCJmtMZUtTaAOErtIcBqTdFsT98KG0FBVSDHpuZyQ109PFgiLFJsVoxjGdqckVbu66QumkRhvP5CTGIO+YKA==" /></div>
             <button
                 type="submit"
                 class="btn btn-sm btn-with-count"
@@ -508,9 +508,9 @@
   <div class="repository-content">
 
     
-  <a href="/FreeAllegiance/Allegiance/blob/02ba8e6671ca5fe83714d2377a8585b4c3b9686b/src/license.txt" class="d-none js-permalink-shortcut" data-hotkey="y">Permalink</a>
+  <a href="/FreeAllegiance/Allegiance/blob/02ba8e6671ca5fe83714d2377a8585b4c3b9686b/src/readme.txt" class="d-none js-permalink-shortcut" data-hotkey="y">Permalink</a>
 
-  <!-- blob contrib key: blob_contributors:v21:1044e9ade1d661f544a6a4091faf2d71 -->
+  <!-- blob contrib key: blob_contributors:v21:a999ee527d3cf2cc905ae8c0edf78781 -->
 
   <div class="file-navigation js-zeroclipboard-container">
     
@@ -552,7 +552,7 @@
 
 
             <a class="select-menu-item js-navigation-item js-navigation-open selected"
-               href="/FreeAllegiance/Allegiance/blob/master/src/license.txt"
+               href="/FreeAllegiance/Allegiance/blob/master/src/readme.txt"
                data-name="master"
                data-skip-pjax="true"
                rel="nofollow">
@@ -571,7 +571,7 @@
 
 
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/FreeAllegiance/Allegiance/tree/v1.3.1-beta.1/src/license.txt"
+              href="/FreeAllegiance/Allegiance/tree/v1.3.1-beta.1/src/readme.txt"
               data-name="v1.3.1-beta.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -599,74 +599,44 @@
       <button aria-label="Copy file path to clipboard" class="js-zeroclipboard btn btn-sm BtnGroup-item tooltipped tooltipped-s" data-copied-hint="Copied!" type="button">Copy path</button>
     </div>
     <div class="breadcrumb js-zeroclipboard-target">
-      <span class="repo-root js-repo-root"><span class="js-path-segment"><a href="/FreeAllegiance/Allegiance"><span>Allegiance</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a href="/FreeAllegiance/Allegiance/tree/master/src"><span>src</span></a></span><span class="separator">/</span><strong class="final-path">license.txt</strong>
+      <span class="repo-root js-repo-root"><span class="js-path-segment"><a href="/FreeAllegiance/Allegiance"><span>Allegiance</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a href="/FreeAllegiance/Allegiance/tree/master/src"><span>src</span></a></span><span class="separator">/</span><strong class="final-path">readme.txt</strong>
     </div>
   </div>
 
 
-  
-  <div class="commit-tease">
-      <span class="float-right">
-        <a class="commit-tease-sha" href="/FreeAllegiance/Allegiance/commit/7e53ee7358d74f9de23bd92d271b39c7a497376a" data-pjax>
-          7e53ee7
-        </a>
-        <relative-time datetime="2017-07-28T04:08:13Z">Jul 27, 2017</relative-time>
-      </span>
-      <div>
-        <img alt="@BackTrak" class="avatar" height="20" src="https://avatars3.githubusercontent.com/u/1970304?v=4&amp;s=40" width="20" />
-        <a href="/BackTrak" class="user-mention" rel="contributor">BackTrak</a>
-          <a href="/FreeAllegiance/Allegiance/commit/7e53ee7358d74f9de23bd92d271b39c7a497376a" class="message" data-pjax="true" title="Relicense from MSR-SSLA to MIT based license.">Relicense from MSR-SSLA to MIT based license.</a>
-      </div>
+  <include-fragment class="commit-tease" src="/FreeAllegiance/Allegiance/contributors/master/src/readme.txt">
+    <div>
+      Fetching contributors&hellip;
+    </div>
 
     <div class="commit-tease-contributors">
-      <button type="button" class="btn-link muted-link contributors-toggle" data-facebox="#blob_contributors_box">
-        <strong>2</strong>
-         contributors
-      </button>
-          <a class="avatar-link tooltipped tooltipped-s" aria-label="BackTrak" href="/FreeAllegiance/Allegiance/commits/master/src/license.txt?author=BackTrak"><img alt="@BackTrak" class="avatar" height="20" src="https://avatars3.githubusercontent.com/u/1970304?v=4&amp;s=40" width="20" /> </a>
-    <a class="avatar-link tooltipped tooltipped-s" aria-label="Astn" href="/FreeAllegiance/Allegiance/commits/master/src/license.txt?author=Astn"><img alt="@Astn" class="avatar" height="20" src="https://avatars3.githubusercontent.com/u/6857743?v=4&amp;s=40" width="20" /> </a>
-
-
+      <img alt="" class="loader-loading float-left" height="16" src="https://assets-cdn.github.com/images/spinners/octocat-spinner-32-EAF2F5.gif" width="16" />
+      <span class="loader-error">Cannot retrieve contributors at this time</span>
     </div>
-
-    <div id="blob_contributors_box" style="display:none">
-      <h2 class="facebox-header" data-facebox-id="facebox-header">Users who have contributed to this file</h2>
-      <ul class="facebox-user-list" data-facebox-id="facebox-description">
-          <li class="facebox-user-list-item">
-            <img alt="@BackTrak" height="24" src="https://avatars1.githubusercontent.com/u/1970304?v=4&amp;s=48" width="24" />
-            <a href="/BackTrak">BackTrak</a>
-          </li>
-          <li class="facebox-user-list-item">
-            <img alt="@Astn" height="24" src="https://avatars1.githubusercontent.com/u/6857743?v=4&amp;s=48" width="24" />
-            <a href="/Astn">Astn</a>
-          </li>
-      </ul>
-    </div>
-  </div>
-
+</include-fragment>
   <div class="file">
     <div class="file-header">
   <div class="file-actions">
 
     <div class="BtnGroup">
-      <a href="/FreeAllegiance/Allegiance/raw/master/src/license.txt" class="btn btn-sm BtnGroup-item" id="raw-url">Raw</a>
-        <a href="/FreeAllegiance/Allegiance/blame/master/src/license.txt" class="btn btn-sm js-update-url-with-hash BtnGroup-item" data-hotkey="b">Blame</a>
-      <a href="/FreeAllegiance/Allegiance/commits/master/src/license.txt" class="btn btn-sm BtnGroup-item" rel="nofollow">History</a>
+      <a href="/FreeAllegiance/Allegiance/raw/master/src/readme.txt" class="btn btn-sm BtnGroup-item" id="raw-url">Raw</a>
+        <a href="/FreeAllegiance/Allegiance/blame/master/src/readme.txt" class="btn btn-sm js-update-url-with-hash BtnGroup-item" data-hotkey="b">Blame</a>
+      <a href="/FreeAllegiance/Allegiance/commits/master/src/readme.txt" class="btn btn-sm BtnGroup-item" rel="nofollow">History</a>
     </div>
 
         <a class="btn-octicon tooltipped tooltipped-nw"
-           href="github-windows://openRepo/https://github.com/FreeAllegiance/Allegiance?branch=master&amp;filepath=src%2Flicense.txt"
+           href="github-windows://openRepo/https://github.com/FreeAllegiance/Allegiance?branch=master&amp;filepath=src%2Freadme.txt"
            aria-label="Open this file in GitHub Desktop"
            data-ga-click="Repository, open with desktop, type:windows">
             <svg aria-hidden="true" class="octicon octicon-device-desktop" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M15 2H1c-.55 0-1 .45-1 1v9c0 .55.45 1 1 1h5.34c-.25.61-.86 1.39-2.34 2h8c-1.48-.61-2.09-1.39-2.34-2H15c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 9H1V3h14v8z"/></svg>
         </a>
 
-        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/edit/master/src/license.txt" class="inline-form js-update-url-with-hash" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="AXNjZDEklWjZHE0+OrKTYFdKsW6kgCWgYv914BecO9tree0yIh4fNBun+EE98sTsMnXRW10Y4ybek+0XUHKcrw==" /></div>
+        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/edit/master/src/readme.txt" class="inline-form js-update-url-with-hash" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="IwHGEQPqKo7bqHiiY2YT9kuZXcFosvdVG0OxP/LkiMs8fHp+59ft/lOGRaQFMVXhAk+cIpNigdPupWoQyklVWA==" /></div>
           <button class="btn-octicon tooltipped tooltipped-nw" type="submit"
             aria-label="Fork this project and edit the file" data-hotkey="e" data-disable-with>
             <svg aria-hidden="true" class="octicon octicon-pencil" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path fill-rule="evenodd" d="M0 12v3h3l8-8-3-3-8 8zm3 2H1v-2h1v1h1v1zm10.3-9.3L12 6 9 3l1.3-1.3a.996.996 0 0 1 1.41 0l1.59 1.59c.39.39.39 1.02 0 1.41z"/></svg>
           </button>
-</form>        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/delete/master/src/license.txt" class="inline-form" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="uQN5Yq57fysf+68H4nlCUKU0SgkQg2CjxySpyvWuFLKHXTWAkA6KXlysPMjBfBZo1dVYURr/iuyR9ZNq2OHQjg==" /></div>
+</form>        <!-- '"` --><!-- </textarea></xmp> --></option></form><form accept-charset="UTF-8" action="/FreeAllegiance/Allegiance/delete/master/src/readme.txt" class="inline-form" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="b6IF/jfMhU1GNCTG+x3P+LY2GPVIpmbFdsQmao9jK6gwX+Hd6lvKRAr+jPTDDF7ZO48cII1TSFakEGLd2uGvHw==" /></div>
           <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
             aria-label="Fork this project and delete the file" data-disable-with>
             <svg aria-hidden="true" class="octicon octicon-trashcan" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path fill-rule="evenodd" d="M11 2H9c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1H2c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1v9c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V5c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 12H3V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9zm1-10H2V3h9v1z"/></svg>
@@ -674,9 +644,9 @@
 </form>  </div>
 
   <div class="file-info">
-      16 lines (13 sloc)
+      47 lines (26 sloc)
       <span class="file-info-divider"></span>
-    1.04 KB
+    2.92 KB
   </div>
 </div>
 
@@ -686,32 +656,31 @@
       <table class="highlight tab-size js-file-line-container" data-tab-size="8">
       <tr>
         <td id="L1" class="blob-num js-line-number" data-line-number="1"></td>
-        <td id="LC1" class="blob-code blob-code-inner js-file-line">Copyright Microsoft Corporation </td>
+        <td id="LC1" class="blob-code blob-code-inner js-file-line">License Update (2017)</td>
       </tr>
       <tr>
         <td id="L2" class="blob-num js-line-number" data-line-number="2"></td>
-        <td id="LC2" class="blob-code blob-code-inner js-file-line">
-</td>
+        <td id="LC2" class="blob-code blob-code-inner js-file-line">------------------------------------------</td>
       </tr>
       <tr>
         <td id="L3" class="blob-num js-line-number" data-line-number="3"></td>
-        <td id="LC3" class="blob-code blob-code-inner js-file-line">Permission is hereby granted, free of charge, to any person obtaining a copy of this software </td>
+        <td id="LC3" class="blob-code blob-code-inner js-file-line">As of 7/27/2017, Microsoft Research has graciously let me change the license.txt file that Allegiance was</td>
       </tr>
       <tr>
         <td id="L4" class="blob-num js-line-number" data-line-number="4"></td>
-        <td id="LC4" class="blob-code blob-code-inner js-file-line">and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, </td>
+        <td id="LC4" class="blob-code blob-code-inner js-file-line">distributed under to an MIT based license which can be found in the included license.txt file. The original </td>
       </tr>
       <tr>
         <td id="L5" class="blob-num js-line-number" data-line-number="5"></td>
-        <td id="LC5" class="blob-code blob-code-inner js-file-line">including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, </td>
+        <td id="LC5" class="blob-code blob-code-inner js-file-line">MSR-SSLA license no longer applies to this software distribution. For proof of this license change, please</td>
       </tr>
       <tr>
         <td id="L6" class="blob-num js-line-number" data-line-number="6"></td>
-        <td id="LC6" class="blob-code blob-code-inner js-file-line">and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, </td>
+        <td id="LC6" class="blob-code blob-code-inner js-file-line">see the included AllegianceRelicenseLetter.pdf. This file contains the specific permissions from Microsoft </td>
       </tr>
       <tr>
         <td id="L7" class="blob-num js-line-number" data-line-number="7"></td>
-        <td id="LC7" class="blob-code blob-code-inner js-file-line">subject to the following conditions: </td>
+        <td id="LC7" class="blob-code blob-code-inner js-file-line">to make this license change. Please contact Nick Pirocanac (nick@zaphop.com) with any additional questions.</td>
       </tr>
       <tr>
         <td id="L8" class="blob-num js-line-number" data-line-number="8"></td>
@@ -720,11 +689,13 @@
       </tr>
       <tr>
         <td id="L9" class="blob-num js-line-number" data-line-number="9"></td>
-        <td id="LC9" class="blob-code blob-code-inner js-file-line">The above copyright notice and this permission notice shall be included in all copies or substantial </td>
+        <td id="LC9" class="blob-code blob-code-inner js-file-line">
+</td>
       </tr>
       <tr>
         <td id="L10" class="blob-num js-line-number" data-line-number="10"></td>
-        <td id="LC10" class="blob-code blob-code-inner js-file-line">portions of the Software. </td>
+        <td id="LC10" class="blob-code blob-code-inner js-file-line">
+</td>
       </tr>
       <tr>
         <td id="L11" class="blob-num js-line-number" data-line-number="11"></td>
@@ -733,23 +704,155 @@
       </tr>
       <tr>
         <td id="L12" class="blob-num js-line-number" data-line-number="12"></td>
-        <td id="LC12" class="blob-code blob-code-inner js-file-line">THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT </td>
+        <td id="LC12" class="blob-code blob-code-inner js-file-line">Version 1.3 Release (2004-2015)</td>
       </tr>
       <tr>
         <td id="L13" class="blob-num js-line-number" data-line-number="13"></td>
-        <td id="LC13" class="blob-code blob-code-inner js-file-line">LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. </td>
+        <td id="LC13" class="blob-code blob-code-inner js-file-line">--------------------------------</td>
       </tr>
       <tr>
         <td id="L14" class="blob-num js-line-number" data-line-number="14"></td>
-        <td id="LC14" class="blob-code blob-code-inner js-file-line">IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, </td>
+        <td id="LC14" class="blob-code blob-code-inner js-file-line">R8 WIP</td>
       </tr>
       <tr>
         <td id="L15" class="blob-num js-line-number" data-line-number="15"></td>
-        <td id="LC15" class="blob-code blob-code-inner js-file-line">WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE </td>
+        <td id="LC15" class="blob-code blob-code-inner js-file-line">
+</td>
       </tr>
       <tr>
         <td id="L16" class="blob-num js-line-number" data-line-number="16"></td>
-        <td id="LC16" class="blob-code blob-code-inner js-file-line">OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </td>
+        <td id="LC16" class="blob-code blob-code-inner js-file-line">Version 1.2 Release (02/26/2004)</td>
+      </tr>
+      <tr>
+        <td id="L17" class="blob-num js-line-number" data-line-number="17"></td>
+        <td id="LC17" class="blob-code blob-code-inner js-file-line">--------------------------------</td>
+      </tr>
+      <tr>
+        <td id="L18" class="blob-num js-line-number" data-line-number="18"></td>
+        <td id="LC18" class="blob-code blob-code-inner js-file-line">The release is a refresh that adds additional files in the \test folder. &quot;Pigs&quot; were the bots the Allegiance team used for testing Allegiance. These are mostly sample scripts which will be helpful in both testing and developing intelligent drones.” </td>
+      </tr>
+      <tr>
+        <td id="L19" class="blob-num js-line-number" data-line-number="19"></td>
+        <td id="LC19" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L20" class="blob-num js-line-number" data-line-number="20"></td>
+        <td id="LC20" class="blob-code blob-code-inner js-file-line">Version 1.1 Release (02/11/2004)</td>
+      </tr>
+      <tr>
+        <td id="L21" class="blob-num js-line-number" data-line-number="21"></td>
+        <td id="LC21" class="blob-code blob-code-inner js-file-line">--------------------------------</td>
+      </tr>
+      <tr>
+        <td id="L22" class="blob-num js-line-number" data-line-number="22"></td>
+        <td id="LC22" class="blob-code blob-code-inner js-file-line">This release is a refresh that adds some additional files need to build the product.</td>
+      </tr>
+      <tr>
+        <td id="L23" class="blob-num js-line-number" data-line-number="23"></td>
+        <td id="LC23" class="blob-code blob-code-inner js-file-line">The additional files can be found under the newly added \test folder.</td>
+      </tr>
+      <tr>
+        <td id="L24" class="blob-num js-line-number" data-line-number="24"></td>
+        <td id="LC24" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L25" class="blob-num js-line-number" data-line-number="25"></td>
+        <td id="LC25" class="blob-code blob-code-inner js-file-line">Version 1.0 Release (02/05/2004)</td>
+      </tr>
+      <tr>
+        <td id="L26" class="blob-num js-line-number" data-line-number="26"></td>
+        <td id="LC26" class="blob-code blob-code-inner js-file-line">--------------------------------</td>
+      </tr>
+      <tr>
+        <td id="L27" class="blob-num js-line-number" data-line-number="27"></td>
+        <td id="LC27" class="blob-code blob-code-inner js-file-line">Allegiance was an incredible experience for the dev team. We were all first-timers, trying our best to create a fun, innovative, challenging game. We think we succeeded there, even if we failed at being commercially successful. Allegiance seemed to die all too soon—for a variety of reasons. But we’ve been amazed at the level to which some of the Allegiance fans have remained hard-core. We’re astounded at the progress that has been made at creating new factions, hosting new servers, replacing authentication, etc. It seems that Allegiance hasn’t really died.</td>
+      </tr>
+      <tr>
+        <td id="L28" class="blob-num js-line-number" data-line-number="28"></td>
+        <td id="LC28" class="blob-code blob-code-inner js-file-line"> </td>
+      </tr>
+      <tr>
+        <td id="L29" class="blob-num js-line-number" data-line-number="29"></td>
+        <td id="LC29" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L30" class="blob-num js-line-number" data-line-number="30"></td>
+        <td id="LC30" class="blob-code blob-code-inner js-file-line">With that in mind, we’re releasing the Allegiance source code to the community. </td>
+      </tr>
+      <tr>
+        <td id="L31" class="blob-num js-line-number" data-line-number="31"></td>
+        <td id="LC31" class="blob-code blob-code-inner js-file-line"> </td>
+      </tr>
+      <tr>
+        <td id="L32" class="blob-num js-line-number" data-line-number="32"></td>
+        <td id="LC32" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L33" class="blob-num js-line-number" data-line-number="33"></td>
+        <td id="LC33" class="blob-code blob-code-inner js-file-line">It took some work to come to this decision. The chief concern was that the dev team (who are all off doing new projects) would have to take too much time to reconstruct the build environment to work with the latest tools, pretty up the code, scrub the comments, etc. Since it was impossible to free up the time for the dev team to do this work, we were left with the choice to release it as is (unsupported) or skip it altogether. Given where the Allegiance community has gone with NO SOURCES WHATSOEVER we decided that it would serve the community better to release the sources unsupported.</td>
+      </tr>
+      <tr>
+        <td id="L34" class="blob-num js-line-number" data-line-number="34"></td>
+        <td id="LC34" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L35" class="blob-num js-line-number" data-line-number="35"></td>
+        <td id="LC35" class="blob-code blob-code-inner js-file-line">Note: The sources are built to point to an authentication service that no longer exists (used to be the one used by the zone). If anyone cares about running the Club version of the Allegiance server, they will have to roll their own authentication solution. But with the sources, it should be pretty straight-forward.</td>
+      </tr>
+      <tr>
+        <td id="L36" class="blob-num js-line-number" data-line-number="36"></td>
+        <td id="LC36" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L37" class="blob-num js-line-number" data-line-number="37"></td>
+        <td id="LC37" class="blob-code blob-code-inner js-file-line">Voila. We hope that in some way this fans the burning embers of Allegiance. </td>
+      </tr>
+      <tr>
+        <td id="L38" class="blob-num js-line-number" data-line-number="38"></td>
+        <td id="LC38" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L39" class="blob-num js-line-number" data-line-number="39"></td>
+        <td id="LC39" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L40" class="blob-num js-line-number" data-line-number="40"></td>
+        <td id="LC40" class="blob-code blob-code-inner js-file-line">Thanks for playing!</td>
+      </tr>
+      <tr>
+        <td id="L41" class="blob-num js-line-number" data-line-number="41"></td>
+        <td id="LC41" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L42" class="blob-num js-line-number" data-line-number="42"></td>
+        <td id="LC42" class="blob-code blob-code-inner js-file-line"> </td>
+      </tr>
+      <tr>
+        <td id="L43" class="blob-num js-line-number" data-line-number="43"></td>
+        <td id="LC43" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L44" class="blob-num js-line-number" data-line-number="44"></td>
+        <td id="LC44" class="blob-code blob-code-inner js-file-line">Joel Dehlin (solap)</td>
+      </tr>
+      <tr>
+        <td id="L45" class="blob-num js-line-number" data-line-number="45"></td>
+        <td id="LC45" class="blob-code blob-code-inner js-file-line">
+</td>
+      </tr>
+      <tr>
+        <td id="L46" class="blob-num js-line-number" data-line-number="46"></td>
+        <td id="LC46" class="blob-code blob-code-inner js-file-line"> </td>
       </tr>
 </table>
 
@@ -791,7 +894,7 @@
       <svg aria-hidden="true" class="octicon octicon-mark-github" height="24" version="1.1" viewBox="0 0 16 16" width="24"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
 </a>
     <ul class="site-footer-links">
-      <li>&copy; 2017 <span title="0.15309s from unicorn-2784807855-lrf7j">GitHub</span>, Inc.</li>
+      <li>&copy; 2017 <span title="0.17713s from unicorn-1965476784-0g3mk">GitHub</span>, Inc.</li>
         <li><a href="https://github.com/site/terms" data-ga-click="Footer, go to terms, text:terms">Terms</a></li>
         <li><a href="https://github.com/site/privacy" data-ga-click="Footer, go to privacy, text:privacy">Privacy</a></li>
         <li><a href="https://github.com/security" data-ga-click="Footer, go to security, text:security">Security</a></li>
