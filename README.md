@@ -1,3 +1,6 @@
+nb: this my own version of the code. The official community code is at https://github.com/FreeAllegiance/Allegiance
+
+
 # Installation
 
 Download and install the lastest "Visual Studio Community Edition" : https://www.visualstudio.com/downloads/
