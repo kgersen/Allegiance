@@ -2658,7 +2658,24 @@ public:
 		HANDLE hDDVidThread = NULL;
 		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
 
-		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware &&
+		// BT - 9/17 - Only try to show the movie the first time the user runs allegiance. For some users, the movie crashes the game. 
+		HKEY    hKey;
+		DWORD   dwHasSeenMovie = 0;
+		DWORD dwDataSize = sizeof(dwHasSeenMovie);
+		if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_ALL_ACCESS, &hKey))
+		{
+			RegQueryValueExA(hKey, "HasSeenMovie", NULL, NULL, (LPBYTE)&dwHasSeenMovie, &dwDataSize);
+
+			if (dwHasSeenMovie == 0)
+			{
+				DWORD   dwNewValue = 1;
+				RegSetValueExA(hKey, "HasSeenMovie", NULL, REG_DWORD, (const BYTE*)&dwNewValue, sizeof(dwNewValue));
+			}
+			RegCloseKey(hKey);
+		}
+
+
+		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware && dwHasSeenMovie == 0 &&
 		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
 		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
 			//Imago only check for these if we have to 8/16/09
