@@ -4,9 +4,9 @@
 
 //#include "Test.cpp"
 
-TVector<ZString> GetWhiteList()
+TVector<ZString, DefaultEquals, DefaultCompare> GetWhiteList()
 {
-	TVector<ZString> returnValue;
+	TVector<ZString, DefaultEquals, DefaultCompare> returnValue;
 
 	// File names should always be lowercase.
 	returnValue.PushEnd(ZString("dialog.mdl"));
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 	{
 		ZFile lastrunFile("artwork_hash_generator_lastrun.txt", OF_WRITE | OF_CREATE);
 		char buffer[256];
-		sprintf(buffer, "%u:%u", mostRecentFileModificationTime.dwHighDateTime, mostRecentFileModificationTime.dwLowDateTime);
+		sprintf_s(buffer, sizeof(buffer), "%u:%u", mostRecentFileModificationTime.dwHighDateTime, mostRecentFileModificationTime.dwLowDateTime);
 		
 		lastrunFile.WriteString(buffer);
 	}
@@ -90,7 +90,7 @@ FileHashTable::FileHashTable()						\n\
 	HANDLE hFind;
 	WIN32_FIND_DATAA findFileData;
 
-	TVector<ZString> whitelist = GetWhiteList();
+	TVector<ZString, DefaultEquals, DefaultCompare> whitelist = GetWhiteList();
 
 	hFind = FindFirstFileA(artworkSearchPath, &findFileData);
 
@@ -118,6 +118,9 @@ FileHashTable::FileHashTable()						\n\
 			continue;
 
 		if (filename.Right(4) == ".ogg")
+			continue;
+
+		if (filename.Right(4) == ".wav")
 			continue;
 
 		if (filename.Right(7) == "bmp.mdl")
