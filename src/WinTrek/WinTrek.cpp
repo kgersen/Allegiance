@@ -8135,30 +8135,30 @@ public:
                                 m_cameraControl.SetFOV(fov);
                             }
 
-                            if (trekClient.GetShip()->GetBaseHullType() != NULL)
-                            {
-                                //What is the maximum desired rate of turn for this field of view?
-                                //Use the same calculation as for turrets.
-                                //Keep in sync with wintrek.cpp's FOV by throttle
-								
-                                static const float  c_minRate = RadiansFromDegrees(7.5f);
-                                static const float  c_maxRate = RadiansFromDegrees(75.0f);
-                                //float   maxSlewRate = c_minRate + (c_maxRate - c_minRate) * fov / s_fMaxFOV;
-								float zoomMod = fov / s_fMaxFOV; //madpeople - ---^ do not limit this view beyond that of the core #88 7/10 
+							// BT 3/13/2016 - Wasp's slew rate fix. 
+							if (trekClient.GetShip()->GetBaseHullType() != NULL)
+							{
+								//What is the maximum desired rate of turn for this field of view?
+								//Use the same calculation as for turrets.
+								//Keep in sync with wintrek.cpp's FOV by throttle
+								static const float  c_minRate = RadiansFromDegrees(7.5f);
+								static const float  c_maxRate = RadiansFromDegrees(75.0f);
+								float   maxSlewRate = c_minRate +
+									(c_maxRate - c_minRate) * fov / s_fMaxFOV;
 
-                                const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
-								{	
-                                    float pitch = pht->GetMaxTurnRate(c_axisPitch);
-									float maxSlewRate = c_minRate + (pitch - c_minRate) * zoomMod; //madpeople /Imago  #88
-                                    if (pitch > maxSlewRate)
-                                        js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
-                                }
-                                {
-                                    float yaw = pht->GetMaxTurnRate(c_axisYaw);
-									float maxSlewRate = c_minRate + (yaw - c_minRate) * zoomMod; //madpeople /Imago  #88
-                                    if (yaw > maxSlewRate)
-                                        js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
-                                }
+								const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
+								{
+									float               pitch = pht->GetMaxTurnRate(c_axisPitch);
+
+									if (pitch > maxSlewRate)
+										js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
+								}
+								{
+									float               yaw = pht->GetMaxTurnRate(c_axisYaw);
+
+									if (yaw > maxSlewRate)
+										js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
+								}
 							}
                         }
                     }
