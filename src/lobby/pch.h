@@ -46,6 +46,8 @@
 #include <..\TCAtl\UserAcct.h>
 #include <..\TCLib\TCThread.h>
 
+#include "steam_gameserver.h"
+
 //Imago removed 7/5/08
 //#ifdef USEAUTH
 #include "LobQueries.h" // and allegdb.h
@@ -70,6 +72,8 @@
 #include "server.h"
 #include "AutoUpdate.h"
 #include "LobbyEvents.h"
+
+#include "CSteamValidation.h" // BT - STEAM
 
 
 /////////////////////////////////////////////////////////////////////////////

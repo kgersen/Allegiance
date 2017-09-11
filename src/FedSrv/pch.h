@@ -40,6 +40,10 @@
 //#include <dplobby.h>
 #include <mmsystem.h> 
 
+// BT - STEAM
+#include "steam_gameserver.h"
+#include "AllegianceSecurity.h"
+
 // ZLib Includes
 #if !defined(ALLSRV_STANDALONE)
   #define __MODULE__ "AllSrv"
@@ -120,6 +124,11 @@ extern Global g;
 
 
 #include "regkey.h"
+
+// BT - STEAM
+#include "CSteamValidation.h"
+#include "CSteamUserGroupStatus.h"
+#include "CSteamAchievements.h"
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -2,6 +2,10 @@
 #include <objbase.h>
 #include <malloc.h>
 
+// BT - STEAM
+#include "atlenc.h"
+#include <inttypes.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Include the main function
@@ -319,6 +323,21 @@ public:
     HRESULT Initialize(const ZString& strCommandLine)
     {
         _controlfp(_PC_53, _MCW_PC);
+
+		// BT - STEAM
+		if (IsDebuggerPresent() == false)
+		{
+			if (SteamAPI_RestartAppIfNecessary(STEAM_APP_ID) == true)
+				::exit(-1);
+		}
+
+		bool steamInitResult = SteamAPI_Init();
+		if (steamInitResult == false)
+		{
+			// If you are debugging locally, then you need to put steam_appid.txt with 700480 in it next to the Allegaince EXE that you are debugging.
+			::MessageBoxA(NULL, "Steam Client is not running. Please launch Steam and try again.", "Error", MB_ICONERROR | MB_OK);
+			::exit(-1);
+		}
 
         //
         // Make sure reloader finished correctly--this must be first before any other files are opened
@@ -683,7 +702,18 @@ public:
             }
 
 		//Orion - 2009 ACSS : check the alleg pipe for the auth token
-		trekClient.SetCDKey(ReadAuthPipe());
+		//trekClient.SetCDKey(ReadAuthPipe());
+
+		// BT - STEAM
+		if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
+		{
+			// STEAM TODO: Figure out how to get the primary clan and get the clan tag. 
+			trekClient.SaveCharacterName(SteamFriends()->GetPersonaName());
+
+			char steamID[64];
+			sprintf(steamID, "%" PRIu64, SteamUser()->GetSteamID().ConvertToUint64());
+			trekClient.SetCDKey(steamID);
+		}
 
         // 
         // Check for other running copies of the app

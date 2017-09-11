@@ -15,6 +15,9 @@
 #include <agc.h>
 #include <zreg.h>
 
+ // BT - STEAM
+#include <inttypes.h>
+
 // mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
 #define SRVLOG
@@ -831,6 +834,9 @@ void GotLogonDetails(CQLogonStats * pquery)
   if (fValid)  // doesn't matter whether we created a new ship, or continued an existing one
   {
     lstrcpy(pqd->szReason, pqd->szCharacterName);
+
+	// BT - STEAM
+	pcnxn->SetSteamID(pqd->steamID);
 
     if (NULL != g.pServerCounters)
     {
@@ -4575,6 +4581,66 @@ static void DisplaceProbe(IclusterIGC* pcluster, Vector* position, float r)
     }*/
 }
 
+
+
+// BT - STEAM
+const char m_lookUpTable[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+'m', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+
+// BT - STEAM
+// https://stackoverflow.com/questions/1235371/fastest-base-conversion-method
+void GetPlayerHandleFromSteamID(CSteamID steamID, char *playerHandle)
+{
+	char* pWritePos = playerHandle;
+	uint64 leftOver = steamID.ConvertToUint64();
+	int counter = 0;
+	while (leftOver)
+	{
+		int value62 = leftOver % 62;
+		*pWritePos = m_lookUpTable[value62];
+		pWritePos++;
+
+		leftOver = floor(leftOver / 62);
+		counter++;
+	}
+	*pWritePos = 0;
+
+	// Reverse the string.
+	for (int i = 0; i < counter / 2; i++)
+	{
+		char temp = playerHandle[i];
+		playerHandle[i] = playerHandle[counter - i - 1];
+		playerHandle[counter - i - 1] = temp;
+	}
+}
+
+// BT - STEAM
+CSteamID GetSteamIDFromPlayerHandle(char *playerHandle)
+{
+	int iterator = strlen(playerHandle);
+	uint64 returnValue = 0;
+	int multiplier = 62;
+
+	for (int index = 0; index < strlen(playerHandle); index++)
+	{
+		for (int i = 0; i < sizeof(m_lookUpTable); i++)
+		{
+			if (m_lookUpTable[i] == playerHandle[index])
+			{
+				returnValue = (returnValue * multiplier) + i;
+				break;
+			}
+		}
+
+		//multiplier *= 62;
+	}
+
+	return CSteamID(returnValue);
+}
+
+
 /*-------------------------------------------------------------------------
  * OnAppMessage
  *-------------------------------------------------------------------------
@@ -4724,6 +4790,102 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         else
 #endif
 		{
+
+			// BT - STEAM - Enable a user that is a member of the MS Allegiance Steam Group to get a list of players and steam IDs 
+			// so that a moderator can kick or ban users from inside the game console.
+			if (pfmChat->cbMessage > strlen("#who") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#who", strlen("#who")) == 0)
+			{
+				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+				{
+					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+					{
+						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+						if (pfsShip->IsPlayer() == true)
+						{
+							char playerData[1024];
+
+							uint64 steamUID = strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0);
+							CSteamID steamID(steamUID);
+
+							char playerHandle[256];
+							GetPlayerHandleFromSteamID(steamID, playerHandle);
+
+							sprintf(playerData, "%s - %s", pfsShip->GetPlayer()->GetName(), playerHandle);
+
+							CSteamID testID = GetSteamIDFromPlayerHandle(playerHandle);
+
+							pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+								NA, playerData);
+						}
+					}
+				}
+			}
+
+			// BT - STEAM
+			if (pfmChat->cbMessage > strlen("#kick") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#kick", strlen("#kick")) == 0)
+			{
+				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+				{
+					char *kickPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#kick ");
+					CSteamID targetSteamID = GetSteamIDFromPlayerHandle(kickPlayerHandle);
+					char kickSteamID[1024];
+					sprintf(kickSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
+
+
+					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+					{
+						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+						if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), kickSteamID) == 0)
+						{
+							pfsMission->RemovePlayerFromSide(pfsShip->GetPlayer(), QuitSideReason::QSR_SwitchingSides, "You have been removed from the team by an admin.");
+
+							// TE: Fire AGCEvent informing of the kick
+							LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+							_AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext, pfsShip->GetName(),
+								pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
+								"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+								"zKicker", VT_LPSTR, pfsPlayer->GetName());
+							// This is named zBooter so the parameter appears last in the alphabetical list
+							// TE
+
+							break;
+						}
+					}
+				}
+			}
+
+
+			// BT - STEAM
+			if (pfmChat->cbMessage > strlen("#ban") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#ban", strlen("#ban")) == 0)
+			{
+				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+				{
+					char *banPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#ban ");
+					CSteamID targetSteamID = GetSteamIDFromPlayerHandle(banPlayerHandle);
+					char banSteamID[1024];
+					sprintf(banSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
+
+					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+					{
+						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+						if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), banSteamID) == 0)
+						{
+							pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QuitSideReason::QSR_AdminBooted, "You have been removed from the game by an admin.");
+
+							// TE: Fire AGCEvent informing of the kick
+							LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+							_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
+								pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
+								"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+								"zBanner", VT_LPSTR, pfsPlayer->GetName());
+							// This is named zBooter so the parameter appears last in the alphabetical list
+							// TE
+
+							break;
+						}
+					}
+				}
+			}
 
           //NYI hack to allow misison owner to boot people from the lobby
           if (pfmChat->cbMessage > 5 && pfsMission->GetOwner() == pfsPlayer)
@@ -5389,6 +5551,10 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           (pfsPlayer->GetSide() ? pfsPlayer->GetSide()->GetObjectID() : NA),
           (pfsPlayer->GetMission() ? pfsPlayer->GetMission()->GetCookie() : NA));
       g.fm.ForwardMessage(pfsPlayer->GetConnection(), pfm, FM_GUARANTEED);
+
+	  // BT - STEAM
+	  SteamGameServer()->EndAuthSession(CSteamID(pfsPlayer->GetConnection()->GetSteamID()));
+
       delete pfsPlayer; //need to delete here, instead of in OnDestroyConnection, so we can tell when we get there whether it was a dropped connection
     }
     break;
@@ -8614,15 +8780,16 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
 
   // Setup the database stuff and connect
+  // BT - 9/17 - No longer used.
 //#if !defined(ALLSRV_STANDALONE) Imago 6/10 commented and fixed up
-  if (g.strSQLConfig.m_str) {
+  /*if (g.strSQLConfig.m_str) {
     hr = g.sql.Init(g.strSQLConfig.m_str, g.idReceiveThread, g.csqlSilentThreads, g.csqlNotifyThreads);
 
     if (FAILED(hr))
     {
       return hr;
     }
-  }
+  }*/
 //#endif
 
   UTL::SetArtPath(g.strArtPath);
@@ -8696,6 +8863,9 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   DWORD dwWait = WAIT_TIMEOUT;
   while (dwWait != WAIT_OBJECT_0)
   {
+	// BT - STEAM
+	SteamGameServer_RunCallbacks();
+
     timerReceiveIterations.Stop();
     timerReceiveIterations.Start();
     if (g.pServerCounters)
@@ -8732,6 +8902,9 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
   }
 
   printf("Shutting down server...\n");
+
+  // BT - STEAM
+  SteamGameServer_Shutdown();
 
   // Suspend creation of any objects
   CoSuspendClassObjects();
@@ -8878,6 +9051,16 @@ void LoadSettings()
         cbValue = sizeof(dwValue);
 		RegQueryValueEx(hKey, "MaxGames", NULL, &dwType, (unsigned char*)&g.cMaxGames, &cbValue);
 
+		// BT - STEAM - Enable a server to decide wheather or not it should allow only offical game clients to connect.
+		g.bEnforceSteamDRM = false;
+		DWORD dwEnforceSteamDRM;
+		DWORD cbEnforceSteamDRM = sizeof(dwEnforceSteamDRM);
+		RegQueryValueExA(hKey, "EnforceSteamDRM", NULL, &dwType, (unsigned char*)&dwEnforceSteamDRM, &cbEnforceSteamDRM);
+
+		if (dwEnforceSteamDRM > 0)
+			g.bEnforceSteamDRM = true;
+
+
 		/* pkk May 6th: Disabled bandwidth patch
 		// w0dk4 Bandwidth Patch
 		g.cMaxBandwidth = 32;
@@ -8926,21 +9109,21 @@ void LoadSettings()
             g.fTimeOut = !!dwValue;
         else g.fTimeOut = true;
 
-      //#if !defined(ALLSRV_STANDALONE) Imago revived 6/10
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsNotify", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.csqlNotifyThreads = dwValue;
-        else g.csqlNotifyThreads = 3;
+      //#if !defined(ALLSRV_STANDALONE) Imago revived 6/10 // BT - 9/17 - No longer used.
+        //dwValue=0;
+        //cbValue = sizeof(dwValue);
+        //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsNotify", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    g.csqlNotifyThreads = dwValue;
+        //else g.csqlNotifyThreads = 3;
 
-        dwValue=0;
-        cbValue = sizeof(dwValue);
-        if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsSilent", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            g.csqlSilentThreads = dwValue;
-        else g.csqlSilentThreads = 2;
+        //dwValue=0;
+        //cbValue = sizeof(dwValue);
+        //if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "SQLThreadsSilent", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
+        //    g.csqlSilentThreads = dwValue;
+        //else g.csqlSilentThreads = 2;
 
-        if (FAILED(LoadRegString(hKey, "SQLConfig", g.strSQLConfig)))
-          g.strSQLConfig.Empty(); // default for all developers
+        //if (FAILED(LoadRegString(hKey, "SQLConfig", g.strSQLConfig)))
+        //  g.strSQLConfig.Empty(); // default for all developers
       //#endif // !defined(ALLSRV_STANDALONE)
 
         ::RegCloseKey(hKey);
@@ -9593,6 +9776,24 @@ int __cdecl main(int argc, char *argv[])
 
       UnregisterAllSrv(argv[0]);
     }
+
+	// BT - STEAM
+	uint32 unIP = INADDR_ANY;
+	uint32 steamAuthenticationPort = 8766;
+	uint32 gamePort = 27115; // We will manage our own network communications with game clients, so this will not be used directly by us.
+	uint32 masterUpdaterPort = 27116;
+	EServerMode eMode = eServerModeAuthenticationAndSecure;
+	const char *lobbyVersion = "1.0.0.4";
+
+	if (SteamGameServer_Init(unIP, steamAuthenticationPort, gamePort, masterUpdaterPort, eMode, lobbyVersion) == false)
+	{
+		printf("failed on steam server init.\n");
+		exit(-1);
+	}
+
+	// Only for SteamAPI, not SteamGameServerAPI.
+	//SteamUtils()->SetWarningMessageHook(&SteamAPIDebugTextHook);
+	SteamGameServer()->LogOnAnonymous();
 
     _Module.SetCOMStarted(argc == 2 && !lstrcmpi("-Embedding",argv[1]));
 

@@ -649,6 +649,9 @@ public:
         //m_pbuttonPlayLan->SetEnabled(false);
         //m_pbuttonPlayInt->SetEnabled(false);
 
+		// BT - Steam - Hiding these irrelevant buttons for now.
+		m_pbuttonPlayLan->SetHidden(true);
+
         m_pfindServerPopup = new FindServerPopup(pns, this);
           
         pmodeler->UnloadNameSpace(pns);

@@ -123,6 +123,10 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
 		  pthis->GetIPAddress(cnxnFrom, szRemote);
 		  debugf("FM_S_LOGON_LOBBY: %s:%d loc:%s #games:%i\n",&szRemote,pfmLogon->dwPort,pServer->GetLocation(),pfmLogon->CurGames);
+		  
+		  // BT - STEAM
+		  g_pLobbyApp->CheckAndUpdateDrmHashes(true);
+
 		  if (!strncmp("127.0.0.1",szRemote,9)) break;  // check for loopback and always allow
 		  if (IsServerAllowed(szRemote)) break;
 	  }

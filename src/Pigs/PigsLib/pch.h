@@ -31,6 +31,10 @@
 extern CComModule _Module;  // ATL mandatory symbol
 #include <atlcom.h>         // ATL component object classes
 
+// BT - STEAM
+#include "steam_api.h"
+
+
 // VS.Net 2003 port - COM_INTERFACE_ENTRY2 is more type strict now, revert it to VS6 version
 #if _MSC_VER >= 1310
 #	undef COM_INTERFACE_ENTRY2

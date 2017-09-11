@@ -138,6 +138,11 @@
   <ItemGroup>
     <ClInclude Include="..\src\mdlc\pch.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Utility.vcxproj">
+      <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

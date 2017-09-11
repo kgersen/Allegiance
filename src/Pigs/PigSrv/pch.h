@@ -55,6 +55,9 @@ extern CExeModule _Module;
 #include <msxml.h>
 //#include <comdef.h>
 
+// BT - STEAM
+#include "steam_api.h"
+
 #pragma warning(disable:4192)
 
 /////////////////////////////////////////////////////////////////////////////

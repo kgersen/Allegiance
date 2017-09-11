@@ -40,6 +40,11 @@ BEGIN_QUERY(CQLobbyLogon, true,
   char  fValidCode; // out
   char  fCanCheat;  // out
 
+  // BT - STEAM
+  int8	steamAuthTicket[1024];
+  int32 steamAuthTicketLength;
+  uint64 steamID;
+
   //squad stuff
   char szSquadName[31]; // constant??? Please???
   int  status;

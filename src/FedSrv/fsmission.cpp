@@ -3055,6 +3055,11 @@ void CFSMission::ProcessGameOver()
         CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
         if (pfsShip->IsPlayer())
         {
+			// BT - STEAM
+			CSteamID steamID(strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0));
+			CSteamAchievements achievementsForPlayer;
+			achievementsForPlayer.AwardBetaParticipation(steamID);
+
             PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
             if (ppso->Connected())
             {

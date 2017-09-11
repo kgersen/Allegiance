@@ -248,10 +248,12 @@ struct Global
     fPaused(false),
     fDoublePrecision(true)
 //#if !defined(ALLSRV_STANDALONE) Imago commented 6/10
-    ,
-    csqlSilentThreads(0),
+    
+
+	  // BT - 9/17 - No longer used.
+    /*, csqlSilentThreads(0),
     csqlNotifyThreads(0),
-    sql(&siteFedSrv)
+    sql(&siteFedSrv)*/
 //#endif
 	//imagos crap for multi-process servers 6/25/08
 #if defined(SRV_PARENT)
@@ -274,7 +276,9 @@ struct Global
     strAuthServer.SetEmpty();
     strArtPath.SetEmpty();
 //#if !defined(ALLSRV_STANDALONE)
-    strSQLConfig.Empty();
+    
+	// BT - 9/17 - No longer used.
+	//strSQLConfig.Empty();
 //#endif    
 #if defined(SRV_CHILD)  //imago -store command line arguments
 	strArgName.SetEmpty();
@@ -295,7 +299,9 @@ struct Global
   // *** Network layer stuff ***
   DWORD               idReceiveThread;
   HANDLE              hReceiveThread;
+  HANDLE			  hSteamCallbackThread; // BT - STEAM
   HANDLE              hKillReceiveEvent;
+  HANDLE			  hKillSteamCallbackEvent; // BT - STEAM
   HANDLE              hPlayerEvent;
   FedMessaging        fm;               // all missions share a session for now
   FedMessaging        fmLobby;
@@ -340,6 +346,9 @@ struct Global
   int				  cMaxGames;	   // max games allowed, reg entry
   ZString			  strLocation;     // Location, reg entry
 
+  // BT - STEAM
+  bool				bEnforceSteamDRM;
+
   /* pkk May 6th: Disabled bandwidth patch
   // w0dk4 Bandwidth Patch
   unsigned int		  cMaxBandwidth;*/
@@ -349,10 +358,12 @@ struct Global
   bool                fDoublePrecision;
   //  CAdminSponsor<CAdminGames>  sponsorGames;
 //#if !defined(ALLSRV_STANDALONE) Imago commented 6/10
-  CSQLCore            sql;
+ 
+// BT - 9/17 - No longer used.
+/* CSQLCore            sql;
   DWORD               csqlSilentThreads;
   DWORD               csqlNotifyThreads;
-  CComBSTR            strSQLConfig;
+  CComBSTR            strSQLConfig;*/
 //#endif
   // more of imagos crap for one game per exe
 #if defined(SRV_CHILD)

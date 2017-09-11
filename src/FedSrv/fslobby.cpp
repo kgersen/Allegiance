@@ -230,6 +230,47 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		break;
 	}
 
+	// BT - STEAM
+	case FM_L_UPDATE_DRM_HASHES:
+	{
+		CASTPFM(pfmUpdateDrmHashes, L, UPDATE_DRM_HASHES, pfm);
+
+		char drmDownloadUrl[MAX_PATH];
+		Strcpy(drmDownloadUrl, FM_VAR_REF(pfmUpdateDrmHashes, DrmDownloadUrl));
+
+		debugf("received drm update request with url: %s\n", drmDownloadUrl);
+
+		IHTTPSession * pHTTPSession = CreateHTTPSession(NULL);
+
+		const char * szFileList[] = { drmDownloadUrl, "drm_hashes.txt",  NULL };
+		pHTTPSession->InitiateDownload(szFileList, "."); // . means current path
+
+		if (pHTTPSession)
+		{
+			debugf("Downloading drm hash file...");
+
+			// we block as we download the cfg file; should be okay since we are not connected to the zone.
+			while (pHTTPSession->ContinueDownload())
+			{
+				Sleep(100);
+			}
+
+			debugf("Done\n");
+
+			//
+			// At this point we are done downloading cfg file
+			//
+			bool bErrorOccurred = pHTTPSession->GetLastErrorMessage() ? true : false;
+			char szErrorMsg[512];
+			if (bErrorOccurred)
+				_snprintf(szErrorMsg, sizeof(szErrorMsg), "\nError Connecting to Zone.  You will not be able to host a public game. \r\n%s", pHTTPSession->GetLastErrorMessage());
+
+			delete pHTTPSession;
+		}
+
+		break;
+	}
+
     break;
   }
 

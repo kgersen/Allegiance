@@ -81,6 +81,10 @@ public:
   DWORD     GetID() {return GetDPID();}
   virtual int GetCountConnections() = 0;
 
+  // BT - STEAM
+  void SetSteamID(uint64 steamID) { m_steamID = steamID; }
+  uint64 GetSteamID() { return m_steamID; }
+
 protected:
   CFMRecipient(const char * szName, DPID dpid) :
     m_dpid(dpid)
@@ -96,6 +100,7 @@ protected:
 
 private:
   char * m_szName;
+  uint64 m_steamID; // BT - STEAM
 
 protected: // groups set their own dpid since they're not pre-created.
   void      SetDPID(DPID dpid) {m_dpid = dpid;}

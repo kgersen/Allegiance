@@ -48,6 +48,9 @@
 
 #include "guids.h"
 
+// BT - STEAM
+#include "steam_api.h"
+
 //
 // WinTrek headers
 //

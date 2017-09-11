@@ -315,7 +315,11 @@ extern "C" {
 //////////////////////////////// General Defines ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#define	MAXINT			INT_MAX
+// BT - 9/17 - Fixing compilier warning.
+#ifndef MAXINT
+	#define	MAXINT			INT_MAX
+#endif
+
 #define BITS(type)		(BITSPERBYTE * (int) sizeof(type))
 
 #ifndef max

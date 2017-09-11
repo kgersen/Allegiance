@@ -32,8 +32,9 @@ void CAdminEventLoggerHook::EventLogged(CQLogEvent* pquery)
 
 STDMETHODIMP CAdminEventLoggerHook::LogEvent(IAGCEvent* pEvent, VARIANT_BOOL bSynchronous)
 {
+	// BT - 9/17 - No longer used.
   // Do nothing if SQLCore has not been initialized
-  if (!g.sql.GetNotifyThreadID())
+  //if (!g.sql.GetNotifyThreadID())
     return S_OK;
 
   // Get the fields of the specified event object
@@ -87,8 +88,9 @@ STDMETHODIMP CAdminEventLoggerHook::LogEvent(IAGCEvent* pEvent, VARIANT_BOOL bSy
     shevt = ::CreateEvent(NULL, false, false, NULL);
   pqd->hevt = shevt.GetHandle();
 
+  // BT - 9/17 - No longer used.
   // Post the query for async completion
-  g.sql.PostQuery(pquery);
+  //g.sql.PostQuery(pquery);
 
   // Wait for the event, if event is synchronous
   if (!shevt.IsNull())

@@ -7898,6 +7898,9 @@ public:
                       float dt,
                       bool  activeControlsF)
 	{
+		// BT - STEAM
+		SteamAPI_RunCallbacks();
+
 		//Spunky #76 - only update throttle if enough time elapsed
 		static const float delay[] = {0.066f, 0.033f, 0.022f, 0.016f, 0.0f}; //#282
 		static float TimeSinceThrottleUpdate;
