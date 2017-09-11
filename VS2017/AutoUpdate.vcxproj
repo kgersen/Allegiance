@@ -32,6 +32,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{20776B9F-8C2D-42F9-8800-386F5DA8A4A4}</ProjectGuid>
     <RootNamespace>AutoUpdate</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'" Label="Configuration">

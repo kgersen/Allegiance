@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGUID>{FA223B93-BCFB-48FA-B9DD-DB9DBBC8F314}</ProjectGUID>
     <Keyword>MakeFileProj</Keyword>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -22,22 +22,18 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -45,19 +41,17 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(LocalAppData)\Microsoft\VisualStudio\10.0\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'" Label="PropertySheets">
     <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\Guids\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\Guids\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs14\$(Configuration)\Guids\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs14\$(Configuration)\Guids\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\Guids\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\Guids\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -74,10 +68,8 @@
     </ClCompile>
     <Midl>
       <AdditionalIncludeDirectories>$(Outdir)..\Guids;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <OutputDirectory>$(TargetDir)\</OutputDirectory>
-      <HeaderFileName>%(FileName).h</HeaderFileName>
-      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
-      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <DllDataFileName>%(Filename)_dlldata.c</DllDataFileName>
+      <TypeLibraryName>$(IntDir)$(ProjectName)_%(Filename).tlb</TypeLibraryName>
     </Midl>
     <PreLinkEvent>
       <Command>lib /out:$(OutDir)AGCGuid.lib $(OutDir)AGCGuid.obj</Command>
@@ -86,10 +78,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
       <AdditionalIncludeDirectories>$(Outdir)..\Guids;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TypeLibraryName>$(TargetDir)/AGC.tlb</TypeLibraryName>
-      <OutputDirectory>$(TargetDir)\</OutputDirectory>
-      <HeaderFileName>%(FileName).h</HeaderFileName>
       <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <TypeLibraryName>$(IntDir)$(ProjectName)_%(Filename).tlb</TypeLibraryName>
+      <OutputDirectory>
+      </OutputDirectory>
+      <HeaderFileName>%(Filename)_h.h</HeaderFileName>
+      <DllDataFileName>%(Filename)_dlldata.c</DllDataFileName>
     </Midl>
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
@@ -109,6 +103,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ErrorReporting>None</ErrorReporting>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
@@ -127,13 +122,23 @@
   <ItemGroup>
     <Midl Include="..\src\AGC\AGC.idl">
       <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)</OutputDirectory>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(FileName).h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)%(FileName).h</HeaderFileName>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)AGC.tlb</TypeLibraryName>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)</OutputDirectory>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)%(FileName).h</HeaderFileName>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)AGC.tlb</TypeLibraryName>
+      <DllDataFileName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)%(Filename)_dlldata.c</DllDataFileName>
+      <DllDataFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)%(Filename)_dlldata.c</DllDataFileName>
     </Midl>
     <Midl Include="..\src\Inc\AGCIDL.idl">
       <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)</OutputDirectory>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">%(FileName).h</HeaderFileName>
-      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)AGC.tlb</TypeLibraryName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)%(FileName).h</HeaderFileName>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)AGCIDL.tlb</TypeLibraryName>
+      <OutputDirectory Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)</OutputDirectory>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)%(FileName).h</HeaderFileName>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)AGCIDL.tlb</TypeLibraryName>
+      <DllDataFileName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(TargetDir)%(Filename)_dlldata.c</DllDataFileName>
+      <DllDataFileName Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(TargetDir)%(Filename)_dlldata.c</DllDataFileName>
     </Midl>
   </ItemGroup>
   <ItemGroup>
@@ -141,11 +146,11 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\AGC\XMLXForm.js;..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">cscript /e:jscript /NoLogo ..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml ..\src\AGC\AGCEventsIDL.xsl $(OutDir)AGCEventsIDL.idl</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Transforming AGCEvents.xml through AGCEventsIDL.xsl</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(OutDir)AGCEventsIDL.idl;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js ..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\AGC\XMLXForm.js;..\src\AGC\AGCEvents.xml;%(AdditionalInputs)</AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

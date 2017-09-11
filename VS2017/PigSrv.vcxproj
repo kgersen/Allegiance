@@ -14,6 +14,7 @@
     <ProjectGuid>{53812B2F-C263-4528-BA9B-C3D87884D52D}</ProjectGuid>
     <RootNamespace>PigSrv</RootNamespace>
     <Keyword>MakeFileProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
