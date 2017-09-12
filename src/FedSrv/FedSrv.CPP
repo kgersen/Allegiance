@@ -5661,9 +5661,53 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->fValid = fValid;
         pqd->dwConnectionID = cnxnFrom.GetID();
 
+		// BT - STEAM
+		if (g.bEnforceSteamDRM == true)
+		{
+			Strcpy(pqd->szDrmHash, pfmLogon->drmHash);
+			pqd->steamID = pfmLogon->steamID;
+			int tokenCRC = MemoryCRC(pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
+
+			DrmVerifier drmVerifier;
+			if (drmVerifier.CheckDrm(tokenCRC, pqd->szDrmHash) == false)
+			{
+				pqd->fValid = false;
+				szReason = "Your client has failed a DRM check. Please go back to your Steam app and reverify your installation. This action has been logged.";
+
+				pqd->fValid = false;
+				pqd->fRetry = false;
+				//pqd->characterID = pfmLogon->CharacterID;
+				Strcpy(pqd->szReason, szReason);
+				PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM)NULL, (LPARAM)pquery);
+				break;
+			}
+		}
+
+		//BT - STEAM
+		// If we are connected to the lobby and using Steam authentication, then we are first going to make an async call to steam to validate that the client
+		// is correct, then, we are going to make an async call to the Lobby to get the player's rank, then the return from that call will finally trigger the 
+		// SQL Done state on the pQuery and let the user login.
+
+		memcpy(pqd->steamAuthTicket, pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
+		pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
+		pqd->steamID = pfmLogon->steamID;
+
+		CSteamValidation steamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
+		steamValidation.BeginSteamAuthentication();
+
+		//DWORD threadID;
+		//CreateThread(NULL, 0, LogonThread, &steamValidation, 0, &threadID);
+
+		// at this point, FedSrv is done with the message, now it's up to CSteamValidation to get
+		// The response from steam, then kick off the player rank message to the lobby
+		// When the lobby returns the rank results, this query will finally be complete with all the appropriate data. 
+
+
+
+
 		// BT - 12/21/2010 ACSS - Use a message to the lobby server to get the player's rank details instead of
 		// direct calls to the lobby web service.
-		BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+		/*BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
 			FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS) 
 			FM_VAR_PARM(PCC(pqd->szReason), CB_ZTS) 
 			FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS) 
@@ -5677,7 +5721,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		pfmPlayerRank->fValid = pqd->fValid;
 		pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
 
-		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);*/
 
 		// Wait for a PLAYER_RANK message to come back from the lobby.
 
