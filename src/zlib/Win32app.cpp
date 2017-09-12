@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "regkey.h"
 
+//Imago 7/10
+#include <dbghelp.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Some assertion functions
@@ -8,6 +11,122 @@
 //////////////////////////////////////////////////////////////////////////////
 
 Win32App *g_papp;
+
+	// Patch for SetUnhandledExceptionFilter 
+const BYTE PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
+
+	// Original bytes at the beginning of SetUnhandledExceptionFilter 
+BYTE OriginalBytes[5] = {0};
+
+//Imago 6/10
+int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
+{
+    BOOL bMiniDumpSuccessful;
+    char szPathName[MAX_PATH] = ""; 
+	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
+	char* p1 = strrchr(szPathName, '\\');
+	char* p = strrchr(szPathName, '\\');
+	if (!p)
+		p = szPathName;
+	else
+		p++;
+	if (!p1)
+		p1 = "mini";
+	else
+		p1++;
+	ZString zApp = p1;
+    DWORD dwBufferSize = MAX_PATH;
+    HANDLE hDumpFile;
+    SYSTEMTIME stLocalTime;
+    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
+
+    GetLocalTime( &stLocalTime );
+    
+   strcpy(p, (PCC)zApp);
+   
+   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
+   sprintf( p+zApp.GetLength(),"-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",(PCC)zInfo,
+               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
+               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
+               GetCurrentProcessId(), GetCurrentThreadId());
+   
+    hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
+                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+
+    ExpParam.ThreadId = GetCurrentThreadId();
+    ExpParam.ExceptionPointers = pExceptionPointers;
+    ExpParam.ClientPointers = TRUE;
+
+	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
+		(MiniDumpWithDataSegs		| 
+		MiniDumpWithHandleData		|
+		MiniDumpWithThreadInfo		| 
+		MiniDumpWithUnloadedModules |
+		MiniDumpWithProcessThreadData); 
+
+	//
+	//MiniDumpWithPrivateReadWriteMemory | 
+	//MiniDumpWithFullMemoryInfo | 
+	//
+
+    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
+                    hDumpFile, mdt, &ExpParam, NULL, NULL);
+
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+//lazy...or stupid... is this even hit?
+int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
+{
+    BOOL bMiniDumpSuccessful;
+    char szPathName[MAX_PATH] = ""; 
+	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
+	char* p1 = strrchr(szPathName, '\\');
+	char* p = strrchr(szPathName, '\\');
+	if (!p)
+		p = szPathName;
+	else
+		p++;
+	if (!p1)
+		p1 = "mini";
+	else
+		p1++;
+	ZString zApp = p1;
+    DWORD dwBufferSize = MAX_PATH;
+    HANDLE hDumpFile;
+    SYSTEMTIME stLocalTime;
+    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
+
+    GetLocalTime( &stLocalTime );
+    
+   strcpy(p, (PCC)zApp);
+   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
+   sprintf( p+zApp.GetLength(),"-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",(PCC)zInfo,
+               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
+               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
+               GetCurrentProcessId(), GetCurrentThreadId());
+   
+    hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
+                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+
+    ExpParam.ThreadId = GetCurrentThreadId();
+    ExpParam.ExceptionPointers = pExceptionPointers;
+    ExpParam.ClientPointers = TRUE;
+
+	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
+		(MiniDumpWithDataSegs		| 
+		MiniDumpWithHandleData		|
+		MiniDumpWithThreadInfo		| 
+		MiniDumpWithUnloadedModules |
+		MiniDumpWithProcessThreadData); 
+
+    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
+                    hDumpFile, mdt, &ExpParam, NULL, NULL);
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -24,7 +143,11 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         DWORD dwError = GetLastError();
 
         if (!g_papp) {
-           (*(int*)0) = 0; // Imago removed asm (x64)
+			// Imago removed asm (x64) on ?/?, integrated with mini dump on 6/10
+			__try {
+				(*(int*)0) = 0;
+			}
+			__except(GenerateDump(GetExceptionInformation())) {}
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
             g_papp->OnAssertBreak();
         }
@@ -363,10 +486,19 @@ void Win32App::Exit(int value)
     _exit(value);
 }
 
-int Win32App::OnException(DWORD code, ExceptionData* pdata)
+int Win32App::OnException(DWORD code, EXCEPTION_POINTERS* pdata)
 {
+			GenerateDump(pdata);
 	return EXCEPTION_CONTINUE_SEARCH;
 }
+//Imago 6/10
+LONG __stdcall Win32App::ExceptionHandler( EXCEPTION_POINTERS* pep ) 
+{
+			GenerateDump(pep);
+	
+	return EXCEPTION_EXECUTE_HANDLER; 
+}
+
 
 
 #ifdef MemoryOutput
@@ -425,8 +557,11 @@ void Win32App::OnAssertBreak()
     //
     // Cause an exception
     //
-
+	// Imago integrated with mini dump on 6/10
+	__try {
     (*(int*)0) = 0;
+}
+	__except(GenerateDump(GetExceptionInformation())) {}
 }
 
 // KGJV - added for DX9 behavior - default is false. override in parent to change this
@@ -434,6 +569,139 @@ bool Win32App::IsBuildDX9()
 {
 	return false;
 }
+
+
+bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
+{
+	DWORD ErrCode = 0;
+
+
+	// Check parameters 
+
+	if( pTarget == 0 )
+	{
+		_ASSERTE( !_T("Target address is null.") );
+		return false;
+	}
+
+	if( pSource == 0 )
+	{
+		_ASSERTE( !_T("Source address is null.") );
+		return false;
+	}
+
+	if( Size == 0 )
+	{
+		_ASSERTE( !_T("Source size is null.") );
+		return false;
+	}
+
+	if( IsBadReadPtr( pSource, Size ) )
+	{
+		_ASSERTE( !_T("Source is unreadable.") );
+		return false;
+	}
+
+
+	// Modify protection attributes of the target memory page 
+
+	DWORD OldProtect = 0;
+
+	if( !VirtualProtect( pTarget, Size, PAGE_EXECUTE_READWRITE, &OldProtect ) )
+	{
+		ErrCode = GetLastError();
+		_ASSERTE( !_T("VirtualProtect() failed.") );
+		return false;
+	}
+
+
+	// Write memory 
+
+	memcpy( pTarget, pSource, Size );
+
+
+	// Restore memory protection attributes of the target memory page 
+
+	DWORD Temp = 0;
+
+	if( !VirtualProtect( pTarget, Size, OldProtect, &Temp ) )
+	{
+		ErrCode = GetLastError();
+		_ASSERTE( !_T("VirtualProtect() failed.") );
+		return false;
+	}
+
+
+	// Success 
+
+	return true;
+
+}
+
+
+
+
+bool Win32App::EnforceFilter( bool bEnforce )
+{
+	DWORD ErrCode = 0;
+
+	
+	// Obtain the address of SetUnhandledExceptionFilter 
+
+	HMODULE hLib = GetModuleHandle( _T("kernel32.dll") );
+
+	if( hLib == NULL )
+	{
+		ErrCode = GetLastError();
+		_ASSERTE( !_T("GetModuleHandle(kernel32.dll) failed.") );
+		return false;
+	}
+
+	BYTE* pTarget = (BYTE*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
+
+	if( pTarget == 0 )
+	{
+		ErrCode = GetLastError();
+		_ASSERTE( !_T("GetProcAddress(SetUnhandledExceptionFilter) failed.") );
+		return false;
+	}
+
+	if( IsBadReadPtr( pTarget, sizeof(OriginalBytes) ) )
+	{
+		_ASSERTE( !_T("Target is unreadable.") );
+		return false;
+	}
+
+
+	if( bEnforce )
+	{
+		// Save the original contents of SetUnhandledExceptionFilter 
+
+		memcpy( OriginalBytes, pTarget, sizeof(OriginalBytes) );
+
+
+		// Patch SetUnhandledExceptionFilter 
+
+		if( !WriteMemory( pTarget, PatchBytes, sizeof(PatchBytes) ) )
+			return false;
+
+	}
+	else
+	{
+		// Restore the original behavior of SetUnhandledExceptionFilter 
+
+		if( !WriteMemory( pTarget, OriginalBytes, sizeof(OriginalBytes) ) )
+			return false;
+
+	}
+
+
+	// Success 
+
+	return true;
+
+}
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Win Main
@@ -454,6 +722,9 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
+	//Imago 6/10
+	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
+	g_papp->EnforceFilter( true );
 
     __try { 
         do {
@@ -496,9 +767,13 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 			TerminateLogchat(); // mmf
 
         } while (false);
-    }  __except (g_papp->OnException(_exception_code(), (ExceptionData*)_exception_info())){
+    }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
     }  
     delete pzSpacer;
-
+	if( !g_papp->EnforceFilter( false ) )
+	{
+		debugf("EnforceFilter(false) failed.\n");
+		return 0;
+	}
     return 0;
 }

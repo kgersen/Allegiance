@@ -2975,7 +2975,8 @@ void WinTrekClient::SaveCharacterName(ZString strName)
 int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
 	HKEY hKey;
 	DWORD dwType = REG_DWORD;
-    DWORD dwWing = NA; // Imago 7/10 #149
+    //DWORD dwWing = NA; // Imago 7/10 #149
+	DWORD dwWing = 0; // BT - 9/17 - Default all new players to the command wing.
     DWORD dwSize = sizeof(DWORD);
     if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
     {

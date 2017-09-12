@@ -2602,19 +2602,37 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
     }
     else
     {
-      if (!GetIsZoneClub()) civ = -1;
-        // 'slow', but probably still fast enough
-        for (int iEntry = 0; iEntry < m_cRankInfo; iEntry++)
-        {
-            if (m_vRankInfo[iEntry].civ == civ 
-                && m_vRankInfo[iEntry].rank <= rank 
-                && m_vRankInfo[iEntry].rank >= nClosestRank)
-            {
-                szRankNameTemplate = m_vRankInfo[iEntry].RankName;
-                nClosestRank = m_vRankInfo[iEntry].rank;
-            }
-        }
-        assert(nClosestRank >= 0);
+		// BT - 7/15 CSS Integration - TODO STEAM: Modify to work with steam ranks.
+		if (rank > 0)
+		{
+			if (rank <= m_cRankInfo)
+			{
+				nClosestRank = rank;
+				szRankNameTemplate = m_vRankInfo[rank].RankName;
+			}
+			else
+			{
+				nClosestRank = m_cRankInfo;
+				szRankNameTemplate = m_vRankInfo[m_cRankInfo].RankName;
+			}
+		}
+
+		// BT - 7/15 - Removing; this was too slow. 
+
+		//  //if (!GetIsZoneClub()) //Imago REVISIT 9/14
+		//civ = -1;
+		//    // 'slow', but probably still fast enough
+		//    for (int iEntry = 0; iEntry < m_cRankInfo; iEntry++)
+		//    {
+		//        if (m_vRankInfo[iEntry].civ == civ 
+		//            && m_vRankInfo[iEntry].rank <= rank 
+		//            && m_vRankInfo[iEntry].rank >= nClosestRank)
+		//        {
+		//            szRankNameTemplate = m_vRankInfo[iEntry].RankName;
+		//            nClosestRank = m_vRankInfo[iEntry].rank;
+		//        }
+		//    }
+		//    assert(nClosestRank >= 0);
     }
 
     char cbTemp[c_cbName + 8];
