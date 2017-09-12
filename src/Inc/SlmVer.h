@@ -3,7 +3,7 @@
 #define rmm		7		// Imago (R#)
 #define rel     0.00       // mmf added to designate release number for a given build
 
-#define rup		141235  // mmf make sure this has 6 digits otherwise version number conversion for esc display may fail,
+#define rup		211410  // mmf make sure this has 6 digits otherwise version number conversion for esc display may fail,
 						// rup is specified in octal, so for instance 11/9/2010 (US format)
 						// Year: 2010 - use last two digits: 10, convert to octal = 12.
 						// Month: 11 - convert to octal = 13
