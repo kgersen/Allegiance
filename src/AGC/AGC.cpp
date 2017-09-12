@@ -24,7 +24,7 @@
 
 #include "pch.h"
 #include "dlldatax.h"
-#include "AGC.h"
+#include <AGC.h>
 #include "AGCWinApp.h"
 #include "AGCGlobal.h"
 
