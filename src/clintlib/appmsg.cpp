@@ -2160,8 +2160,15 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 delete m_pMissionInfo;
                 m_pMissionInfo = NULL;
 
-                OnLogonAck(false, false, "The client and server data files are out of sync. Please restart and go to a games list to auto-update "
-                  "the latest files. If this doesn't work, try deleting the file 'filelist.txt' from the install directory and restarting the application.");
+#ifdef STEAMSECURE
+				// BT - STEAM - If the IGC file is invalid, trigger a reverify of the user's content.
+				SteamApps()->MarkContentCorrupt(false);
+#endif
+
+				// BT - STEAM
+                OnLogonAck(false, false, "The client and server data files are out of sync. Requesting a file reverification from Steam. Please check the Steam app "
+				"for the download status on any updates, and try re-launching the game in a few minutes. If the problem persists, please un-install and re-install again, "
+				"and feel free to reach out to the help line in the forums.");
             }
             else
             {

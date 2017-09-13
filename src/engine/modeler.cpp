@@ -2520,7 +2520,15 @@ public:
 		//Imago 11/09/09 - Provide a helpful message box for this common error
 		if (bError && !pfile->IsValid() && m_psite) {
 			PostMessageA(GetActiveWindow(), WM_SYSCOMMAND, SC_MINIMIZE, 0);
-			MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", please reverify your installation using the Steam app.", "Allegiance: Fatal modeler error", MB_ICONERROR);
+
+#ifdef STEAMSECURE
+			// BT - STEAM - Queue up a full content re-verify in case the user has a corrupted file.
+			if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
+				SteamApps()->MarkContentCorrupt(false);
+#endif 
+
+			// BT - STEAM
+			MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
 
 		}
 		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));

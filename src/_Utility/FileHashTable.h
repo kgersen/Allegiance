@@ -8,7 +8,7 @@
 class FileHashTable
 {
 private:
-	TVector<FileHash> m_filehashes;
+	TVector<FileHash, DefaultEquals, DefaultCompare> m_filehashes;
 
 
 public:

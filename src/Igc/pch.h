@@ -31,3 +31,7 @@
 #include "igc.h"
 
 #include "private.h"
+
+// BT - STEAM
+#include "FileHash.h"
+#include "FileHashTable.h"
