@@ -453,6 +453,8 @@ void CLobbyApp::CheckAndUpdateDrmHashes(bool forceUpdate)
 
 			strcpy(m_szDrmHashFilename, drmHashFilename);
 			strcpy(m_szDrmDownloadUrly, drmDownloadUrl);
+
+			RegCloseKey(hKey);
 		}
 	}
 

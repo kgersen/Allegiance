@@ -78,7 +78,7 @@
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;dbghelp.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
@@ -115,7 +115,7 @@
       <ErrorReporting>None</ErrorReporting>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)..\zlib\zlib.lib;$(OutDir)..\_Utility\Utility.lib;$(OutDir)..\Guids\AGCGuid.lib;dbghelp.lib;winmm.lib;version.lib;netapi32.lib;urlmon.lib;delayimp.lib;ws2_32.lib;wininet.lib;comsupp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>false</GenerateMapFile>
