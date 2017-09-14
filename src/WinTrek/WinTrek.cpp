@@ -147,6 +147,8 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 	textures.Create( DummyPackCreateCallback );
 	return 0;
 }
+
+
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	
@@ -157,7 +159,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	bool bHide = false;
 	HWND hwndFound = NULL;
 	if (pData->bWindowed) {
-		hwndFound=FindWindow(NULL, "Allegiance");
+		hwndFound=FindWindow(NULL, TrekWindow::GetWindowTitle()); // BT - 9/17 - Updated to dynamic value.
 	} else {
 		//this window will have our "intro" in it...
 		hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
@@ -171,23 +173,28 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	if( SUCCEEDED( DDVid->Play(pData->pathStr,pData->bWindowed))) //(WMV2 is good as most machines read it)
     {
 		::ShowCursor(FALSE);
-		while( DDVid->m_Running && bOk) //we can now do other stuff while playing
-        {
-			if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
-				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) || 
+		
+		while (DDVid->m_Running && bOk) //we can now do other stuff while playing
+		{
+			if (!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
+				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) ||
 				GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
 			{
 				DDVid->m_Running = FALSE;
 				DDVid->m_pVideo->Stop();
-			} else	{
-		    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+			}
+			else {
+				DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
 				if (pData->bWindowed) {
 					bOk = DDVid->Flip(); //windowed #112 Imagooooo
-				} else {
-					DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+				}
+				else {
+					DDVid->m_lpDDSPrimary->Flip(0, DDFLIP_WAIT);
 				}
 			}
 		}
+
+
 		::ShowCursor(TRUE);
 		DDVid->DestroyDDVid();
 	} else {
@@ -2332,15 +2339,34 @@ public:
 						bool bWMP = (hVidTest && hAudTest) ? true : false;
 						::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
 						if (!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID && bWMP) {					
+							
 							//dont' check for intro.avi, 
 							// let the screen flash so they at least know this works
 							DDVideo *DDVid = new DDVideo();
 							if (m_pengine->IsFullscreen()) {
-								CD3DDevice9::Get()->ResetDevice(true,0,0,0);
+								CD3DDevice9::Get()->ResetDevice(true, 0, 0, 0);
 							}
-							DDVid->m_hWnd =  GetHWND();
+
+							bool bWindowCreated = false;
+
+							// BT - 9/17 - Fixing the window frame that is shown around the movie when played in the intro screen.
+							if (m_pengine->IsFullscreen() == false) {
+								DDVid->m_hWnd = FindWindow(NULL, TrekWindow::GetWindowTitle());
+							}
+							else {
+								//this window will have our "intro" in it...
+								DDVid->m_hWnd = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE | WS_POPUP, 0, 0,
+									GetSystemMetrics(SM_CXFULLSCREEN), GetSystemMetrics(SM_CYFULLSCREEN), NULL, NULL,
+									::GetModuleHandle(NULL), NULL);
+
+								bWindowCreated = true;
+							}
+
+							// BT - 9/17 - Replaced with the above.
+							//DDVid->m_hWnd =  GetHWND();
+
 							bool bOk = true;
-							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
+							ZString pathStr = GetModeler()->GetArtPath() + "/intro_movie.avi"; //this can be any kind of AV file
 							if(SUCCEEDED(DDVid->Play(pathStr,!m_pengine->IsFullscreen()))) //(Type WMV2 is good as most systems will play it)  
 							{ 
 								GetAsyncKeyState(VK_LBUTTON); GetAsyncKeyState(VK_RBUTTON);
@@ -2361,11 +2387,18 @@ public:
 										}
 									}
 								}
+
 								::ShowCursor(TRUE);
 								DDVid->DestroyDDVid();
+								
 							} else {
 								DDVid->DestroyDirectDraw();
 							}
+
+							// BT - 9/17 - Clean up the movie window.
+							if (bWindowCreated == true)
+								::DestroyWindow(DDVid->m_hWnd);
+
 
 							if (m_pengine->IsFullscreen()) {
 								CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
@@ -2558,6 +2591,37 @@ public:
         return (m_screen != ScreenIDCombat) || IsProbablyNotForChat (vk) || !m_pconsoleImage->IsComposing ();
     }
 
+	// BT - 9/17 - Made this a function to support chaining the opening microsoft splash with the longer classic
+	// allegiance movie. 
+	HANDLE PlayMovieClip(bool playMovies, bool isSoftware, bool isWindowed, ZString moviePath)
+	{
+		HANDLE hDDVidThread;
+
+		if (!g_bQuickstart && playMovies && !g_bReloaded && !isSoftware &&
+			::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
+			!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
+			//Imago only check for these if we have to 8/16/09
+			HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
+			HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
+			bool bWMP = (hVidTest && hAudTest) ? true : false;
+			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
+			if (bWMP) {
+				if (!CD3DDevice9::Get()->IsWindowed()) {
+					::ShowWindow(GetHWND(), SW_HIDE);
+				}
+
+				//#112 windowed 7/10 Imago
+				PlayVideoInfo * pData = new PlayVideoInfo;
+				pData->pathStr = moviePath;
+				pData->bWindowed = CD3DDevice9::Get()->IsWindowed();
+
+				hDDVidThread = CreateThread(NULL, 0, DDVidCreateThreadProc, (void *)pData, THREAD_PRIORITY_HIGHEST, 0);
+			}
+		}
+
+		return hDDVidThread;
+	}
+
     TrekWindowImpl(
         EffectApp*     papp,
         const ZString& strCommandLine,
@@ -2654,48 +2718,16 @@ public:
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
 
-		//Imago 6/29/09 7/28/09 now plays video in thread while load continues
+		//Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
 		HANDLE hDDVidThread = NULL;
-		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
 
-		// BT - 9/17 - Only try to show the movie the first time the user runs allegiance. For some users, the movie crashes the game. 
-		HKEY    hKey;
-		DWORD   dwHasSeenMovie = 0;
-		DWORD dwDataSize = sizeof(dwHasSeenMovie);
-		if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_ALL_ACCESS, &hKey))
-		{
-			RegQueryValueExA(hKey, "HasSeenMovie", NULL, NULL, (LPBYTE)&dwHasSeenMovie, &dwDataSize);
+		// To make a movie that is compatible with the movie player, use this ffmpeg command line: 
+		// ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
+		ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
 
-			if (dwHasSeenMovie == 0)
-			{
-				DWORD   dwNewValue = 1;
-				RegSetValueExA(hKey, "HasSeenMovie", NULL, REG_DWORD, (const BYTE*)&dwNewValue, sizeof(dwNewValue));
-			}
-			RegCloseKey(hKey);
-		}
+		hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
 
-
-		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware && dwHasSeenMovie == 0 &&
-		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
-		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
-			//Imago only check for these if we have to 8/16/09
-			HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
-			HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
-			bool bWMP = (hVidTest && hAudTest) ? true : false;
-			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
-			if (bWMP) {
-				if (!CD3DDevice9::Get()->IsWindowed()) {
-					::ShowWindow(GetHWND(),SW_HIDE);
-				}
-
-				//#112 windowed 7/10 Imago
-				PlayVideoInfo * pData = new PlayVideoInfo;
-				pData->pathStr = pathStr;
-				pData->bWindowed = CD3DDevice9::Get()->IsWindowed();
-
-				hDDVidThread = CreateThread(NULL,0,DDVidCreateThreadProc,(void *)pData,THREAD_PRIORITY_HIGHEST,0);
-			}
-		}
+		
 
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
 		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "1.0"))); //Imago #215 8/10
@@ -3252,9 +3284,44 @@ public:
         RestoreCursor();
     	if (hDDVidThread != NULL) {
 			WaitForSingleObject(hDDVidThread,INFINITE);
-			if (!CD3DDevice9::Get()->IsWindowed()) 
-				::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
 			CloseHandle(hDDVidThread);
+
+			// BT - 9/17 - The return of the original intro movie. Only try to show the movie the first time the user runs allegiance. 
+			HKEY    hKey;
+			DWORD   dwHasSeenMovie = 0;
+			DWORD dwDataSize = sizeof(dwHasSeenMovie);
+			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_ALL_ACCESS, &hKey))
+			{
+				RegQueryValueExA(hKey, "HasSeenMovie", NULL, NULL, (LPBYTE)&dwHasSeenMovie, &dwDataSize);
+
+				if (dwHasSeenMovie == 0)
+				{
+					DWORD   dwNewValue = 1;
+					RegSetValueExA(hKey, "HasSeenMovie", NULL, REG_DWORD, (const BYTE*)&dwNewValue, sizeof(dwNewValue));
+				}
+				RegCloseKey(hKey);
+			}
+			ZString pathMovieStr = "";
+
+			if (dwHasSeenMovie == 0)
+			{
+				// To make a movie that is compatible with the movie player, use this ffmpeg command line: 
+				// ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
+				pathMovieStr = GetModeler()->GetArtPath() + "/intro_movie.avi";
+
+				hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathMovieStr);
+
+				if (hDDVidThread != NULL) 
+				{
+					WaitForSingleObject(hDDVidThread, INFINITE);
+					CloseHandle(hDDVidThread);
+				}
+			}
+
+			// BT - End of movie change.
+
+			if (!CD3DDevice9::Get()->IsWindowed())
+				::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
 		}    
     }
 
