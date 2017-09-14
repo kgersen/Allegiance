@@ -1070,6 +1070,8 @@ FileHashTable::FileHashTable()
 	m_filehashes.PushEnd(FileHash("int01.cvh", "36ad4046fa3b2a435535352bcfd9e67232787470"));
 	m_filehashes.PushEnd(FileHash("int01.mdl", "4300bd2cced3e8c19bbd4f3287c14daf9353d071"));
 	m_filehashes.PushEnd(FileHash("introscreen.mdl", "0241d3207ad3650c41026692751f93718167f161"));
+	m_filehashes.PushEnd(FileHash("intro_microsoft.avi", "fea8351cb096b1c63ca5409a06f1dcc7f7e3bd11"));
+	m_filehashes.PushEnd(FileHash("intro_movie.avi", "5e17317520039c2bb15c57e6d3bcf9adb5bb18e4"));
 	m_filehashes.PushEnd(FileHash("keycode.mdl", "96fc86795f632ff961b661bff9172920c6a1817d"));
 	m_filehashes.PushEnd(FileHash("leaderboardscreen.mdl", "6fb33a4a0da28c9d46c4a34fd21e7ab718e068dc"));
 	m_filehashes.PushEnd(FileHash("lens.mdl", "3c5704ac48c8d48c82dc7863d7728075c6708b4a"));

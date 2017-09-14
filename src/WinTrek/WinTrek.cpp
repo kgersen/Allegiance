@@ -2164,7 +2164,7 @@ public:
             //
 
 			// kg- #226
-            m_pimageScreen = new TranslateImage(
+             m_pimageScreen = new TranslateImage(
 				CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane()),
 				Point(0, 0)
 			);
@@ -2224,6 +2224,9 @@ public:
                 Set3DAccelerationImportant(false);
                 SaveCombatSize();
                 GetConsoleImage()->OnSwitchViewMode();
+
+				// BT - 9/17 - Return to 800x600 resolution so the screens scale correctly when the player returns to the lobby.
+				SetFullscreenSize(Vector(800, 600, 0));
             }
 
             SetHideCursorTimer(s == ScreenIDCombat);
@@ -2595,7 +2598,7 @@ public:
 	// allegiance movie. 
 	HANDLE PlayMovieClip(bool playMovies, bool isSoftware, bool isWindowed, ZString moviePath)
 	{
-		HANDLE hDDVidThread;
+		HANDLE hDDVidThread = 0;
 
 		if (!g_bQuickstart && playMovies && !g_bReloaded && !isSoftware &&
 			::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
