@@ -51,3 +51,18 @@ bool CSteamUserGroupStatus::IsMemberOfModeratorsGroup(const char *strSteamID)
 
 	return isMember;
 }
+
+bool CSteamUserGroupStatus::IsMemberOfDevelopersGroup(CSteamID steamID)
+{
+	// The MSAllegDev Steam Group ID. // TODO - Move this into the config file.
+	CSteamID groupID((uint64)103582791460166537);
+
+	CSteamUserGroupStatus userGroupStatus(steamID, groupID);
+	bool isMember;
+	bool isOfficer;
+	userGroupStatus.GetUserGroupStatus(isMember, isOfficer);
+
+	return isMember;
+}
+
+

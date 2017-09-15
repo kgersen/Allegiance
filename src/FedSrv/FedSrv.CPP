@@ -5668,18 +5668,22 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			pqd->steamID = pfmLogon->steamID;
 			int tokenCRC = MemoryCRC(pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
 
-			DrmVerifier drmVerifier;
-			if (drmVerifier.CheckDrm(tokenCRC, pqd->szDrmHash) == false)
+			// BT - STEAM - Enable anyone in the Microsoft Allegiance - Developer group to connect to the game server with any client.
+			if (CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pqd->steamID) == false)
 			{
-				pqd->fValid = false;
-				szReason = "Your client has failed a DRM check. Please go back to your Steam app and reverify your installation. This action has been logged.";
+				DrmVerifier drmVerifier;
+				if (drmVerifier.CheckDrm(tokenCRC, pqd->szDrmHash) == false)
+				{
+					pqd->fValid = false;
+					szReason = "Your client has failed a DRM check. Please go back to your Steam app and reverify your installation. This action has been logged.";
 
-				pqd->fValid = false;
-				pqd->fRetry = false;
-				//pqd->characterID = pfmLogon->CharacterID;
-				Strcpy(pqd->szReason, szReason);
-				PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM)NULL, (LPARAM)pquery);
-				break;
+					pqd->fValid = false;
+					pqd->fRetry = false;
+					//pqd->characterID = pfmLogon->CharacterID;
+					Strcpy(pqd->szReason, szReason);
+					PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM)NULL, (LPARAM)pquery);
+					break;
+				}
 			}
 		}
 

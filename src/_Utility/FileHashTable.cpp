@@ -1281,6 +1281,7 @@ FileHashTable::FileHashTable()
 	m_filehashes.PushEnd(FileHash("PCore009.igc", "0d1cc972342ee309c1ccf3e2c1e86638d0a26875"));
 	m_filehashes.PushEnd(FileHash("PCore010.igc", "c8b456ace8e80dc275abc76383c6d04dc7b8e0e7"));
 	m_filehashes.PushEnd(FileHash("PCore011.igc", "6d78242338d4dbd4c1f227986c598b5f6aaa0584"));
+	m_filehashes.PushEnd(FileHash("PCore012.igc", "4742da375aaf309f641117afa6a5b8a4c42f3b86"));
 	m_filehashes.PushEnd(FileHash("plus15b7.igc", "12379b53b0ebe4067d9571aeb9591b8a8c63186a"));
 	m_filehashes.PushEnd(FileHash("pointer.mdl", "1eea4c30414c5f44b328a150d7731639eade5f9d"));
 	m_filehashes.PushEnd(FileHash("pointer.x", "8509faa773aab5a18c3e67587e4e9c85412285ee"));

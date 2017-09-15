@@ -18,5 +18,6 @@ public:
 	CSteamUserGroupStatus(CSteamID userID, CSteamID groupID);
 
 	static bool IsMemberOfModeratorsGroup(const char *steamID);
+	static bool IsMemberOfDevelopersGroup(CSteamID steamID);
 
 };
