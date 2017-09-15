@@ -11333,6 +11333,29 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
                     m_pfsMission->GameOver(psideWin, szReason);
                 }
             }
+				//Xynth #8 Check for achievements from ship destruction
+				if (pcredit)
+				{
+					ObjectType  type = pcredit->GetObjectType();
+					if (type == OT_ship)
+					{
+						CFSShip*    pfsshipCredit = (CFSShip*)(((IshipIGC*)pcredit)->GetPrivateData());
+						if (pfsshipCredit->IsPlayer())
+						{
+							if (pcredit->GetSide()->GetNumPlayersOnSide() > 4 && pship->GetSide()->GetNumPlayersOnSide() > 4)
+							{
+								CSteamID steamID(strtoull(pfsshipCredit->GetPlayer()->GetCDKey(), NULL, 0));
+								CSteamAchievements achievementsForPlayer;
+								PilotType pt = pship->GetPilotType();
+
+								//if (pcredit->GetSide()-> > 4 && p
+
+								if (!bLifepod)
+									achievementsForPlayer.AwardKillAchievement(steamID, pt);
+							}
+						}
+					}
+				}
         }
 
         pfmKillShip->typeCredit = type;
