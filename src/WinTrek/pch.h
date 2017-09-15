@@ -93,3 +93,6 @@
 #include "regkey.h"
 #include "treksound.h"
 #include "GameTypes.h"
+
+// BT - STEAM
+#include "CallsignTagInfo.h"

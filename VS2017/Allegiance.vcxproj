@@ -158,6 +158,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\WinTrek\CallsignTagInfo.cpp" />
     <ClCompile Include="..\src\WinTrek\cdkeydialog.cpp" />
     <ClCompile Include="..\src\WinTrek\CharInfoScreen.cpp" />
     <ClCompile Include="..\src\WinTrek\chatpane.cpp" />
@@ -215,6 +216,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
   <ItemGroup>
     <ClInclude Include="..\src\Lang\Usa\allegiance\resource.h" />
     <ClInclude Include="..\src\WinTrek\artwork.h" />
+    <ClInclude Include="..\src\WinTrek\CallsignTagInfo.h" />
     <ClInclude Include="..\src\WinTrek\cmdview.h" />
     <ClInclude Include="..\src\WinTrek\console.h" />
     <ClInclude Include="..\src\WinTrek\consoledata.h" />

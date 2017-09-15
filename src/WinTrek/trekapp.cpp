@@ -707,8 +707,11 @@ public:
 		// BT - STEAM
 		if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
 		{
-			// STEAM TODO: Figure out how to get the primary clan and get the clan tag. 
-			trekClient.SaveCharacterName(SteamFriends()->GetPersonaName());
+			ZString personaName = SteamFriends()->GetPersonaName();
+			if (personaName.Find("@") >= 0)
+				personaName.ReplaceAll("@", 'a');
+
+			trekClient.SaveCharacterName(personaName);
 
 			char steamID[64];
 			sprintf(steamID, "%" PRIu64, SteamUser()->GetSteamID().ConvertToUint64());

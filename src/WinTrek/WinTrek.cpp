@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#include <inttypes.h> // BT - STEAM
 #include <shellapi.h>
 #include "cmdview.h"
 //#include "console.h"
@@ -3938,6 +3939,7 @@ public:
     #define idmExitApp           12
     #define idmGameDetails       13
 	#define idmVersion           14 // TE: Added Version menu
+	#define idmTags				 15 // BT - STEAM - Let the user select thier group tag.
 
     #define idmChannelN          101
     #define idmChannelShow       102
@@ -4041,6 +4043,19 @@ public:
 	#define idmMouseSensDown	819
 	#define idmMouseAccel		820
 	#define idmWheelDelay		821 //Spunky #282
+
+	// BT - STEAM
+	#define idmCallsignTag0		900
+	#define idmCallsignTag1		901
+	#define idmCallsignTag2		902
+	#define idmCallsignTag3		903
+	#define idmCallsignTag4		904
+	#define idmCallsignTag5		905
+	#define idmCallsignTag6		906
+	#define idmCallsignTag7		907
+	#define idmCallsignTag8		908
+	#define idmCallsignTag9		909
+	
 	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4171,6 +4186,34 @@ public:
         m_pmenu->AddMenuItem(idmOptions      , "Graphics", 'O', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
 		m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
+
+
+		// BT - STEAM - Let the user select their steam call sign from a list of options.
+		if (m_selectedCallsignTag.m_steamGroupID == 0)
+			m_selectedCallsignTag.LoadFromRegistry();
+
+		if (m_selectedCallsignTag.m_steamGroupID == 0)
+			m_selectedCallsignTag.m_steamGroupID = -1;
+
+		ZString menuOption = "Squad Tags";
+		if (m_selectedCallsignTag.m_steamGroupID > 0)
+		{
+			ZString currentName = trekClient.GetSavedCharacterName();
+			ZString renderedName = m_selectedCallsignTag.Render(currentName);
+			menuOption = ZString("Squad Tags (") + renderedName + ")   ";
+		}
+
+		if (m_screen == ScreenIDSplashScreen || m_screen == ScreenIDIntroScreen || m_screen == ScreenIDZoneClubScreen)
+		{
+
+			m_pmenu->AddMenuItem(0, "");
+			m_pmenu->AddMenuItem(0, "Only Available Before");
+			m_pmenu->AddMenuItem(0, "Connecting to the Lobby");
+			m_pmenu->AddMenuItem(0, "--------------------------");
+			m_pmenu->AddMenuItem(idmTags, menuOption, 'T', m_psubmenuEventSink);
+		}
+
+		// BT - STEAM - END.
 
 
         if (trekClient.MyMission() != NULL) {
@@ -4369,6 +4412,81 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
+	// BT - STEAM
+	// I guess we just plop globals anywhere in wintrek... it's like someone threw a coding kegger in here. 
+	TVector<CallsignTagInfo, DefaultEquals, DefaultCompare>	m_availableCallsignTags; // BT - STEAM
+	bool loadedCallsignTags = false;
+	CallsignTagInfo m_selectedCallsignTag;
+
+	// BT - STEAM 
+	void AddAvailablePlayerTagsToMenu(TRef<IMenu> pmenu)
+	{
+		int addedItemCount = 0;
+
+		if (loadedCallsignTags == false)
+		{
+			CSteamID currentUser;
+			if (SteamUser() != nullptr)
+				currentUser = SteamUser()->GetSteamID();
+
+			int nGroups = SteamFriends()->GetClanCount();
+			for (int i = 0; i < nGroups; ++i)
+			{
+				CSteamID groupSteamID = SteamFriends()->GetClanByIndex(i);
+				const char *szGroupName = SteamFriends()->GetClanName(groupSteamID);
+				const char *szGroupTag = SteamFriends()->GetClanTag(groupSteamID);
+
+				int nOfficers = SteamFriends()->GetClanOfficerCount(groupSteamID);
+				bool isOfficer = false;
+				for (int j = 0; j < nOfficers; j++)
+				{
+					if (currentUser == SteamFriends()->GetClanOfficerByIndex(groupSteamID, j))
+					{
+						isOfficer = true;
+						break;
+					}
+				}
+
+				CallsignTagInfo callsignInfo(szGroupTag, groupSteamID.ConvertToUint64(), addedItemCount, isOfficer);
+
+				if (callsignInfo.m_callsignTag.GetLength() > 0 && m_availableCallsignTags.Find(callsignInfo) < 0)
+				{
+					m_availableCallsignTags.PushEnd(callsignInfo);
+					addedItemCount++;
+				}
+			}
+		}
+
+		for (int i = 0; i < m_availableCallsignTags.GetCount() && i < 10; i++)
+		{
+			CallsignTagInfo item = m_availableCallsignTags.Get(i);
+			pmenu->AddMenuItem(idmCallsignTag0 + i, item.m_callsignTag, 48 + item.m_index); // 48 = ASCII code for '0'.
+		}
+	}
+
+	// BT - STEAM
+	void SetPlayerCallsign(int playerCallsignIndex)
+	{
+		for (int i = 0; i < m_availableCallsignTags.GetCount(); i++)
+		{
+			CallsignTagInfo callsignTagInfo = m_availableCallsignTags.Get(i);
+
+			if (callsignTagInfo.m_index == playerCallsignIndex - idmCallsignTag0)
+			{
+				m_selectedCallsignTag = callsignTagInfo;
+				break;
+			}
+		}
+
+		if (m_selectedCallsignTag.m_index >= 0)
+		{
+			char steamGroupID[64];
+			sprintf(steamGroupID, "%" PRIu64, m_selectedCallsignTag.m_steamGroupID);
+ 
+			SavePreference("SteamClanID", steamGroupID);
+		}
+	}
+
     TRef<IPopup> GetSubMenu(IMenuItem* pitem)
     {
         TRef<IMenu> pmenu =
@@ -4438,6 +4556,11 @@ public:
                 m_pitemVoiceOverVolumeDown  = pmenu->AddMenuItem(idmVoiceOverVolumeDown,
                     GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), -c_fVolumeDelta), 'C');
                 break;
+
+				// BT - STEAM
+			case idmTags:
+				AddAvailablePlayerTagsToMenu(pmenu);
+				break;
 
 			//TheBored 30-JUL-07: Filter Unknown Chat patch
 			case idmMuteFilterOptions:
@@ -5907,7 +6030,6 @@ public:
 			);
     }
     // end w0dk4 player-pings feature
-
     void OnMenuCommand(IMenuItem* pitem)
     {
         switch (pitem->GetID()) {
@@ -6223,6 +6345,21 @@ public:
 				AdjustMouseSens(-c_fMouseSensDelta);
 				break;
 			// End Imago
+
+				// BT - STEAM
+			case idmCallsignTag0:
+			case idmCallsignTag1:
+			case idmCallsignTag2:
+			case idmCallsignTag3:
+			case idmCallsignTag4:
+			case idmCallsignTag5:
+			case idmCallsignTag6:
+			case idmCallsignTag7:
+			case idmCallsignTag8:
+			case idmCallsignTag9:
+				SetPlayerCallsign(pitem->GetID());
+				CloseMenu();
+				break;
         }
     }
 

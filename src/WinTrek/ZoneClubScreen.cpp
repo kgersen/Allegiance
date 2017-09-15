@@ -282,7 +282,13 @@ public:
 		  // wlp - don't ask for callsign if it was on the command line
           if (!g_bAskForCallSign || isUserLoggedIntoSteamWithValidPlayerName == true) // BT - STEAM
 		  {
-			this->OnLogon(trekClient.GetSavedCharacterName(), "", false);
+			  // BT - STEAM - Add players callsign and token.
+			  CallsignTagInfo callSignTagInfo;
+			  callSignTagInfo.LoadFromRegistry();
+
+			  ZString characterName = callSignTagInfo.Render(m_szName);
+
+			  this->OnLogon(characterName, "", false);
 	      } // wlp - end of dont ask for callsign 
 		  else
 		  {
