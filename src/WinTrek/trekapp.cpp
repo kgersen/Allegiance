@@ -320,6 +320,57 @@ public:
         AddRef();
     }
 
+	// BT - STEAM
+	ZString CleanUpSteamName(ZString &personaName)
+	{
+		char tempBuffer[25];
+		Strncpy(tempBuffer, personaName, 24);
+
+		for (int i = 0; i < personaName.GetLength(); i++)
+		{
+			//  if the character is not within an allowed range, then replace it out. 
+			if (!(		 tempBuffer[i] == '_' 
+					||	(tempBuffer[i] >= '0' && tempBuffer[i] <= '9') 
+					||	(tempBuffer[i] >= 'A' && tempBuffer[i] <= 'Z') 
+					||	(tempBuffer[i] >= 'a' && tempBuffer[i] <= 'z'))
+				)
+			{
+				switch (tempBuffer[i])
+				{
+				case '!':
+					tempBuffer[i] = 'l';
+					break;
+
+				case '@':
+					tempBuffer[i] = 'a';
+					break;
+
+				case '#':
+					tempBuffer[i] = 'H';
+					break;
+
+				case '$':
+					tempBuffer[i] = 'S';
+					break;
+
+				case '%':
+					tempBuffer[i] = 'X';
+					break;
+
+				case '&':
+					tempBuffer[i] = 'n';
+					break;
+
+				default:
+					tempBuffer[i] = ' ';
+					break;
+				}
+			}
+		}
+
+		return ZString(tempBuffer);
+	}
+
     HRESULT Initialize(const ZString& strCommandLine)
     {
         _controlfp(_PC_53, _MCW_PC);
@@ -708,8 +759,8 @@ public:
 		if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
 		{
 			ZString personaName = SteamFriends()->GetPersonaName();
-			if (personaName.Find("@") >= 0)
-				personaName.ReplaceAll("@", 'a');
+
+			personaName = CleanUpSteamName(personaName);
 
 			trekClient.SaveCharacterName(personaName);
 

@@ -6,6 +6,9 @@ class CallsignTagInfo
 private:
 	
 	ZString FixupCallsignTag(ZString callsignTag);
+	void LoadFromRegistry();
+	void SaveToRegistry();
+	void UpdateStringValues(ZString selectedToken);
 
 public:
 	ZString m_callsignTag;
@@ -14,14 +17,13 @@ public:
 	int		m_index;
 	bool	m_isOfficer;
 
-
+	CallsignTagInfo();
 	CallsignTagInfo(ZString callsignTag, uint64 steamGroupID, int index, bool isOfficer);
 
-	CallsignTagInfo(CSteamID steamGroupID);
-
-	CallsignTagInfo();
-
-	void LoadFromRegistry();
+	ZString GetAvailableTokens();
+	
+	void SetSteamGroupID(uint64 steamGroupID, ZString callsignTag);
+	void SetToken(ZString token);
 
 	ZString Render(ZString callsign);
 

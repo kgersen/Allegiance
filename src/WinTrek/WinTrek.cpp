@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include <inttypes.h> // BT - STEAM
+
 #include <shellapi.h>
 #include "cmdview.h"
 //#include "console.h"
@@ -12,6 +12,7 @@
 #include "slideshow.h"
 #include "Training.h"
 #include "CommandAcknowledgedCondition.h"
+#include "SteamClans.h" // BT - STEAM
 
 #include <Delayimp.h>   // For error handling & advanced features
 //#include "..\\icqapi\\ICQAPIInterface.h"
@@ -4055,7 +4056,14 @@ public:
 	#define idmCallsignTag7		907
 	#define idmCallsignTag8		908
 	#define idmCallsignTag9		909
+	#define idmCallsignTagNone	910 
 	
+	// BT - STEAM
+	#define idmToken0			920
+	#define idmToken1			921
+	#define idmToken2			922
+	#define idmToken3			923
+	#define idmToken4			924
 	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4129,6 +4137,10 @@ public:
 		DeleteObject(hCaptureBitmap);
 	}
 
+	// BT - STEAM - TODO Move these to where the other globals are hiding?
+	CallsignTagInfo m_currentCallsignTag;
+	SteamClans m_availableSteamClans;
+
     void ShowMainMenu()
     {
         m_pmenu =
@@ -4187,30 +4199,40 @@ public:
         m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
 		m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
 
-
+		
 		// BT - STEAM - Let the user select their steam call sign from a list of options.
-		if (m_selectedCallsignTag.m_steamGroupID == 0)
-			m_selectedCallsignTag.LoadFromRegistry();
-
-		if (m_selectedCallsignTag.m_steamGroupID == 0)
-			m_selectedCallsignTag.m_steamGroupID = -1;
-
-		ZString menuOption = "Squad Tags";
-		if (m_selectedCallsignTag.m_steamGroupID > 0)
+		if (m_availableSteamClans.GetAvailableCallsignTags()->GetCount() > 0)
 		{
-			ZString currentName = trekClient.GetSavedCharacterName();
-			ZString renderedName = m_selectedCallsignTag.Render(currentName);
-			menuOption = ZString("Squad Tags (") + renderedName + ")   ";
-		}
+			ZString menuOption = "Squad Tags";
+			if (m_currentCallsignTag.m_steamGroupID > 0)
+			{
+				ZString currentName = trekClient.GetSavedCharacterName();
+				ZString renderedName = m_currentCallsignTag.Render(currentName);
+				menuOption = ZString("Squad Tags (") + renderedName + ")   ";
+			}
 
-		if (m_screen == ScreenIDSplashScreen || m_screen == ScreenIDIntroScreen || m_screen == ScreenIDZoneClubScreen)
-		{
+			if (m_screen == ScreenIDSplashScreen || m_screen == ScreenIDIntroScreen || m_screen == ScreenIDZoneClubScreen)
+			{
 
-			m_pmenu->AddMenuItem(0, "");
-			m_pmenu->AddMenuItem(0, "Only Available Before");
-			m_pmenu->AddMenuItem(0, "Connecting to the Lobby");
-			m_pmenu->AddMenuItem(0, "--------------------------");
-			m_pmenu->AddMenuItem(idmTags, menuOption, 'T', m_psubmenuEventSink);
+				m_pmenu->AddMenuItem(0, "");
+				m_pmenu->AddMenuItem(0, "Only Available Before");
+				m_pmenu->AddMenuItem(0, "Connecting to the Lobby");
+				m_pmenu->AddMenuItem(0, "--------------------------");
+				m_pmenu->AddMenuItem(idmTags, menuOption, 'T', m_psubmenuEventSink);
+
+				
+				ZString tokens = m_currentCallsignTag.GetAvailableTokens();
+				if (tokens.GetLength() > 0)
+				{
+					for (int i = 0; i < tokens.GetLength(); i++)
+					{
+						if (tokens[i] == m_currentCallsignTag.m_callsignToken[0])
+							continue;
+
+						m_pmenu->AddMenuItem(idmToken0 + i, "Add Officer Token: ", tokens[i]);
+					}
+				}
+			}
 		}
 
 		// BT - STEAM - END.
@@ -4412,54 +4434,18 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
-	// BT - STEAM
-	// I guess we just plop globals anywhere in wintrek... it's like someone threw a coding kegger in here. 
-	TVector<CallsignTagInfo, DefaultEquals, DefaultCompare>	m_availableCallsignTags; // BT - STEAM
-	bool loadedCallsignTags = false;
-	CallsignTagInfo m_selectedCallsignTag;
 
 	// BT - STEAM 
 	void AddAvailablePlayerTagsToMenu(TRef<IMenu> pmenu)
 	{
-		int addedItemCount = 0;
+		pmenu->AddMenuItem(0, "Squad Tags");
+		pmenu->AddMenuItem(0, "--------------------------");
 
-		if (loadedCallsignTags == false)
+		pmenu->AddMenuItem(idmCallsignTagNone, "<None>", 'X');
+
+		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount() && i < 10; i++)
 		{
-			CSteamID currentUser;
-			if (SteamUser() != nullptr)
-				currentUser = SteamUser()->GetSteamID();
-
-			int nGroups = SteamFriends()->GetClanCount();
-			for (int i = 0; i < nGroups; ++i)
-			{
-				CSteamID groupSteamID = SteamFriends()->GetClanByIndex(i);
-				const char *szGroupName = SteamFriends()->GetClanName(groupSteamID);
-				const char *szGroupTag = SteamFriends()->GetClanTag(groupSteamID);
-
-				int nOfficers = SteamFriends()->GetClanOfficerCount(groupSteamID);
-				bool isOfficer = false;
-				for (int j = 0; j < nOfficers; j++)
-				{
-					if (currentUser == SteamFriends()->GetClanOfficerByIndex(groupSteamID, j))
-					{
-						isOfficer = true;
-						break;
-					}
-				}
-
-				CallsignTagInfo callsignInfo(szGroupTag, groupSteamID.ConvertToUint64(), addedItemCount, isOfficer);
-
-				if (callsignInfo.m_callsignTag.GetLength() > 0 && m_availableCallsignTags.Find(callsignInfo) < 0)
-				{
-					m_availableCallsignTags.PushEnd(callsignInfo);
-					addedItemCount++;
-				}
-			}
-		}
-
-		for (int i = 0; i < m_availableCallsignTags.GetCount() && i < 10; i++)
-		{
-			CallsignTagInfo item = m_availableCallsignTags.Get(i);
+			CallsignTagInfo item = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
 			pmenu->AddMenuItem(idmCallsignTag0 + i, item.m_callsignTag, 48 + item.m_index); // 48 = ASCII code for '0'.
 		}
 	}
@@ -4467,24 +4453,29 @@ public:
 	// BT - STEAM
 	void SetPlayerCallsign(int playerCallsignIndex)
 	{
-		for (int i = 0; i < m_availableCallsignTags.GetCount(); i++)
+		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount(); i++)
 		{
-			CallsignTagInfo callsignTagInfo = m_availableCallsignTags.Get(i);
+			CallsignTagInfo callsignTagInfo = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
 
 			if (callsignTagInfo.m_index == playerCallsignIndex - idmCallsignTag0)
 			{
-				m_selectedCallsignTag = callsignTagInfo;
+				m_currentCallsignTag.SetSteamGroupID(callsignTagInfo.m_steamGroupID, callsignTagInfo.m_callsignTag);
 				break;
 			}
 		}
+	}
 
-		if (m_selectedCallsignTag.m_index >= 0)
-		{
-			char steamGroupID[64];
-			sprintf(steamGroupID, "%" PRIu64, m_selectedCallsignTag.m_steamGroupID);
- 
-			SavePreference("SteamClanID", steamGroupID);
-		}
+	// BT - STEAM
+	void UnsetPlayerCallsign()
+	{
+		m_currentCallsignTag.SetSteamGroupID(0, "");
+	}
+
+	// BT - STEAM
+	void SetPlayerToken(int playerTokenIndex)
+	{
+		ZString tokens = m_currentCallsignTag.GetAvailableTokens();
+		m_currentCallsignTag.SetToken(tokens.Middle(idmToken0 - playerTokenIndex, 1));
 	}
 
     TRef<IPopup> GetSubMenu(IMenuItem* pitem)
@@ -6360,6 +6351,23 @@ public:
 				SetPlayerCallsign(pitem->GetID());
 				CloseMenu();
 				break;
+
+				// BT - STEAM
+			case idmCallsignTagNone:
+				UnsetPlayerCallsign();
+				CloseMenu();
+				break;
+
+				// BT - STEAM
+			case idmToken0:
+			case idmToken1:
+			case idmToken2:
+			case idmToken3:
+			case idmToken4:
+				SetPlayerToken(pitem->GetID());
+				CloseMenu();
+				break;
+
         }
     }
 

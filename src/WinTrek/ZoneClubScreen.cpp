@@ -284,7 +284,6 @@ public:
 		  {
 			  // BT - STEAM - Add players callsign and token.
 			  CallsignTagInfo callSignTagInfo;
-			  callSignTagInfo.LoadFromRegistry();
 
 			  ZString characterName = callSignTagInfo.Render(m_szName);
 
