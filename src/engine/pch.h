@@ -17,5 +17,6 @@
 
 // BT - STEAM 
 #include "steam_api.h"
+#include "AllegianceSecurity.h"
 
 #endif

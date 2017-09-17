@@ -40,10 +40,6 @@
 //#include <dplobby.h>
 #include <mmsystem.h> 
 
-// BT - STEAM
-#include "steam_gameserver.h"
-#include "AllegianceSecurity.h"
-
 // ZLib Includes
 #if !defined(ALLSRV_STANDALONE)
   #define __MODULE__ "AllSrv"
@@ -52,6 +48,10 @@
 #endif // !defined(ALLSRV_STANDALONE)
 #include <guids.h>
 #include <zlib.h>
+
+// BT - STEAM
+#include "steam_gameserver.h"
+#include "AllegianceSecurity.h"
                      
 #include "resource.h"
 #include <utility.h>

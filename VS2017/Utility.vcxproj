@@ -104,7 +104,6 @@
     <ClCompile Include="..\src\_Utility\CollisionQueue.cpp" />
     <ClCompile Include="..\src\_Utility\CRC.cpp" />
     <ClCompile Include="..\src\_Utility\Endpoint.cpp" />
-    <ClCompile Include="..\src\_Utility\FileHashTable.cpp" />
     <ClCompile Include="..\src\_Utility\HitTest.cpp" />
     <ClCompile Include="..\src\_Utility\KDnode.cpp" />
     <ClCompile Include="..\src\_Utility\KDroot.cpp" />
@@ -118,8 +117,6 @@
   <ItemGroup>
     <ClInclude Include="..\src\Inc\MessageVersion.h" />
     <ClInclude Include="..\src\_Utility\CRC.h" />
-    <ClInclude Include="..\src\_Utility\FileHash.h" />
-    <ClInclude Include="..\src\_Utility\FileHashTable.h" />
     <ClInclude Include="..\src\_Utility\listwrappers.h" />
     <ClInclude Include="..\src\_Utility\pch.h" />
     <ClInclude Include="..\src\_Utility\Utility.h" />

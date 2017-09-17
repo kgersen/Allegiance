@@ -33,5 +33,4 @@
 #include "private.h"
 
 // BT - STEAM
-#include "FileHash.h"
-#include "FileHashTable.h"
+#include "AllegianceSecurity.h"
