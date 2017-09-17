@@ -1,6 +1,10 @@
 #ifndef _tref_H_
 #define _tref_H_
 
+// BT - 9/17 - Hunting down mystery fedsrv crashes.
+#include "StackTracer.h"
+//#include <mutex>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Base class for reference counted objects
@@ -9,59 +13,92 @@
 
 class IObjectSingle {
 private:
-    DWORD m_count;
+	DWORD m_count;
+	CRITICAL_SECTION m_criticalSection;
 
 protected:
-    typedef IObjectSingle QIType;
+	typedef IObjectSingle QIType;
 
 
-    void Internal_Release()
-    {
-        --m_count;
-    }
+	void Internal_Release()
+	{
+		--m_count;
+	}
 
 public:
-    IObjectSingle() :
-        m_count(0)
-    {
-    }
+	IObjectSingle() :
+		m_count(0)
+	{
+		InitializeCriticalSectionAndSpinCount(&m_criticalSection, 0x80000400);
+	}
 
-    virtual ~IObjectSingle()
-    {
-    }
-
-
-    DWORD GetCount() const
-    { 
-        return m_count;
-    }
-
-    virtual bool IsValid()
-    {
-        return true;
-    }
+	virtual ~IObjectSingle()
+	{
+	}
 
 
-#ifdef _DEBUG
-    virtual
-#endif
-    DWORD __stdcall AddRef()
-    {
-        return ++m_count;
-    }
+	DWORD GetCount() const
+	{
+		return m_count;
+	}
+
+	virtual bool IsValid()
+	{
+		return true;
+	}
+
 
 #ifdef _DEBUG
-    virtual
+	virtual
 #endif
-    DWORD __stdcall Release()
-    {
-        if (--m_count == 0) {
-            delete this;
-            return 0;
-        }
+		DWORD __stdcall AddRef()
+	{
+		return ++m_count;
+	}
 
-        return m_count;
-    }
+#ifdef _DEBUG
+	virtual
+#endif
+		DWORD __stdcall Release()
+	{
+
+		//if (--m_count == 0) {
+		//	delete this;
+		//	return 0;
+		//}
+
+		//return m_count; 
+
+
+		int returnValue = 0;
+
+		__try 
+		{
+			// BT - 9/17 - Making this operation thread safe... it may be the source of the fedsrv crashes.
+			if (m_count == 1)
+			{
+				EnterCriticalSection(&m_criticalSection);
+
+				if (--m_count == 0) {
+					returnValue = m_count;
+					delete this;
+					return 0;
+				}
+				else
+				{
+					returnValue = m_count;
+				}
+
+				LeaveCriticalSection(&m_criticalSection);
+			}
+		}
+		__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
+		{
+			StackTracer::OutputStackTraceToDebugF();
+		}
+
+		return returnValue;
+	}
 };
 
 //////////////////////////////////////////////////////////////////////////////

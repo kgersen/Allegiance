@@ -127,6 +127,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\zlib\quaternion.cpp" />
+    <ClCompile Include="..\src\zlib\StackTracer.cpp" />
     <ClCompile Include="..\src\zlib\tlist.cpp" />
     <ClCompile Include="..\src\zlib\token.cpp" />
     <ClCompile Include="..\src\zlib\vector.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="..\src\zlib\point.h" />
     <ClInclude Include="..\src\zlib\quaternion.h" />
     <ClInclude Include="..\src\zlib\rect.h" />
+    <ClInclude Include="..\src\zlib\StackTracer.h" />
     <ClInclude Include="..\src\zlib\tcompare.h" />
     <ClInclude Include="..\src\zlib\tlist.h" />
     <ClInclude Include="..\src\zlib\TlsValue.h" />
