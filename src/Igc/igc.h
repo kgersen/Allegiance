@@ -4237,6 +4237,9 @@ class IsideIGC : public IbaseIGC
 		//Xynth #170 8/10
 		virtual bool GetRandomCivilization(void) const = 0;
 		virtual void SetRandomCivilization(bool rand) = 0;
+
+		//Xynth Adding function to return number of players on a side
+		virtual int GetNumPlayersOnSide(void) const = 0;
 };
 
 class IcivilizationIGC : public IbaseIGC
