@@ -505,6 +505,22 @@ class       CsideIGC : public IsideIGC
 		{
 			bRandomCivilization = rand;
 		}
+		
+		//Xynth add funtion to set number of players on a side
+		int CsideIGC::GetNumPlayersOnSide(void) const
+		{
+			int toReturn = 0;
+			for (ShipLinkIGC* psl = m_ships.first(); psl != NULL; psl = psl->next())
+			{
+				IshipIGC*    ps = psl->data();
+				if (ps->GetPilotType() == c_ptPlayer)
+					toReturn++;
+			}
+
+			return toReturn;
+
+		}
+
         unsigned char GetConquestPercent(void) const
         {
             return m_data.conquest;

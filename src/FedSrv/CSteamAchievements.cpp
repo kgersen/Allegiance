@@ -28,6 +28,15 @@ CSteamAchievements::CSteamAchievements() :
 //	return SteamUserStats()->RequestCurrentStats();
 //}
 
+bool CSteamAchievements::GetAchievement(CSteamID &steamID, EAchievements achievement)
+{
+	m_steamID = steamID;
+	m_gotResponse = false;
+	bool toReturn;
+	SteamGameServerStats()->RequestUserStats(steamID);
+	m_gotResponse = SteamGameServerStats()->GetUserAchievement(m_steamID, m_Achievements[achievement], &toReturn);
+	return toReturn;
+}
 bool CSteamAchievements::SetAchievement(CSteamID &steamID, EAchievements achievement)
 {
 	m_steamID = steamID;
@@ -199,4 +208,28 @@ void CSteamAchievements::AwardBetaParticipation(CSteamID &steamID)
 
 	if (timev > startTime && timev < endTime)
 		SetAchievement(steamID, EAchievements::BETA_ACHIEVEMENT_1_0);
+}
+void CSteamAchievements::AwardKillAchievement(CSteamID &steamID, PilotType pt)
+{
+	switch (pt)
+	{
+	case c_ptBuilder:
+	{
+		//if (!GetAchievement(steamID, EAchievements::FIRST_CON_KILL_1_2))
+			SetAchievement(steamID, EAchievements::FIRST_CON_KILL_1_2);
+		break;
+	}
+	case c_ptMiner:
+	{
+		//if (!GetAchievement(steamID, EAchievements::FIRST_MINER_KILL_1_1))
+			SetAchievement(steamID, EAchievements::FIRST_MINER_KILL_1_1);
+		break;
+	}
+	case c_ptPlayer:
+	{
+		//if (!GetAchievement(steamID, EAchievements::FIRST_FORCE_EJECT_1_3))
+			SetAchievement(steamID, EAchievements::FIRST_FORCE_EJECT_1_3);
+		break;
+	}
+	};
 }
