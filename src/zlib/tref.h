@@ -75,22 +75,16 @@ public:
 		__try 
 		{
 			// BT - 9/17 - Making this operation thread safe... it may be the source of the fedsrv crashes.
-			if (m_count == 1)
-			{
-				EnterCriticalSection(&m_criticalSection);
+			EnterCriticalSection(&m_criticalSection);
 
-				if (--m_count == 0) {
-					returnValue = m_count;
-					delete this;
-					return 0;
-				}
-				else
-				{
-					returnValue = m_count;
-				}
-
-				LeaveCriticalSection(&m_criticalSection);
+			if (--m_count == 0) {
+				delete this;
+				return 0;
 			}
+
+			LeaveCriticalSection(&m_criticalSection);
+
+			return m_count;
 		}
 		__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
 		{

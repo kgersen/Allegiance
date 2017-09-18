@@ -326,7 +326,9 @@ public:
 		char tempBuffer[25];
 		Strncpy(tempBuffer, personaName, 24);
 
-		for (int i = 0; i < personaName.GetLength(); i++)
+		tempBuffer[24] = '\0';
+
+		for (int i = 0; i < strlen(tempBuffer); i++)
 		{
 			//  if the character is not within an allowed range, then replace it out. 
 			if (!(		 tempBuffer[i] == '_' 
@@ -755,19 +757,29 @@ public:
 		//Orion - 2009 ACSS : check the alleg pipe for the auth token
 		//trekClient.SetCDKey(ReadAuthPipe());
 
+		debugf("Logging into steam.\n");
+
 		// BT - STEAM
 		if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
 		{
 			ZString personaName = SteamFriends()->GetPersonaName();
 
+			debugf("Steam Persona Name: " + personaName + "\n");
+
 			personaName = CleanUpSteamName(personaName);
 
-			trekClient.SaveCharacterName(personaName);
+			debugf("Cleaned Persona Name: " + personaName + "\n");
+
+			trekClient.SaveCharacterName(personaName + "\n");
+
+			debugf("trekClient - Saved persona name as character name.\n");
 
 			char steamID[64];
 			sprintf(steamID, "%" PRIu64, SteamUser()->GetSteamID().ConvertToUint64());
 			trekClient.SetCDKey(steamID);
 		}
+
+		debugf("Steam login complete.\n");
 
         // 
         // Check for other running copies of the app
