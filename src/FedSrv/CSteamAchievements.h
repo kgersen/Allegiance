@@ -62,7 +62,8 @@ private:
 	bool CSteamAchievements::GetAchievement(CSteamID &steamID, EAchievements achievement);
 	bool SetAchievement(CSteamID &steamID, EAchievements achievement);
 	bool CSteamAchievements::GetStat(CSteamID &steamID, EStats theStat);
-	bool SetStat(CSteamID &steamID, EStats theStat);
+	bool GetStat(CSteamID &steamID, EStats theStat, int * pVal);
+	bool SetStat(CSteamID &steamID, EStats theStat, int val);
 	// Steam Callbacks
 	STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
 
@@ -79,6 +80,8 @@ public:
 	
 	// Steam Call Results
 	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
+
+	void AddUserStats(CSteamID &steamID, int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps);
 	
 };
 

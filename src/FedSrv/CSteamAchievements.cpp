@@ -28,6 +28,29 @@ CSteamAchievements::CSteamAchievements() :
 //	return SteamUserStats()->RequestCurrentStats();
 //}
 
+bool CSteamAchievements::GetStat(CSteamID &steamID, EStats theStat, int * pVal)
+{
+	m_steamID = steamID;
+	m_gotResponse = false;
+	
+	SteamGameServerStats()->RequestUserStats(steamID);
+	m_gotResponse = SteamGameServerStats()->GetUserStat(m_steamID, m_Stats[theStat], pVal);
+	return m_gotResponse;
+}
+
+
+
+
+bool CSteamAchievements::SetStat(CSteamID &steamID, EStats theStat, int val)
+{
+	m_steamID = steamID;
+	m_gotResponse = false;
+
+	SteamGameServerStats()->RequestUserStats(steamID);
+	m_gotResponse = SteamGameServerStats()->SetUserStat(m_steamID, m_Stats[theStat], val);
+	return m_gotResponse;
+}
+
 bool CSteamAchievements::GetAchievement(CSteamID &steamID, EAchievements achievement)
 {
 	m_steamID = steamID;
@@ -232,4 +255,23 @@ void CSteamAchievements::AwardKillAchievement(CSteamID &steamID, PilotType pt)
 		break;
 	}
 	};
+}
+
+void CSteamAchievements::AddUserStats(CSteamID &steamID, int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps)
+{
+	int tempStat;
+	GetStat(steamID, EStats::MINER_KILLS, &tempStat);
+	SetStat(steamID, EStats::MINER_KILLS, tempStat + minerKills);
+
+	GetStat(steamID, EStats::CON_KILLS, &tempStat);
+	SetStat(steamID, EStats::CON_KILLS, tempStat + conKills);
+
+	GetStat(steamID, EStats::FORCE_EJECT, &tempStat);
+	SetStat(steamID, EStats::FORCE_EJECT, tempStat + forceEjects);
+
+	GetStat(steamID, EStats::BASE_KILLS, &tempStat);
+	SetStat(steamID, EStats::BASE_KILLS, tempStat + baseKills);
+
+	GetStat(steamID, EStats::BASE_CAPS, &tempStat);
+	SetStat(steamID, EStats::BASE_CAPS, tempStat + baseCaps);
 }

@@ -3061,7 +3061,10 @@ void CFSMission::ProcessGameOver()
 			achievementsForPlayer.AwardBetaParticipation(steamID);
 
             PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
-            if (ppso->Connected())
+            
+			achievementsForPlayer.AddUserStats(steamID, int(ppso->GetMinerKills()), int(ppso->GetBuilderKills()), int(ppso->GetPlayerKills()), int(ppso->GetBaseKills()), int(ppso->GetBaseCaptures()));
+			
+			if (ppso->Connected())
             {
 
                 IsideIGC*   pside = pfsShip->GetSide();
