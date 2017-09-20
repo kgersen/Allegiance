@@ -2726,11 +2726,12 @@ public:
 		//Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
 		HANDLE hDDVidThread = NULL;
 
+		// BT - 9/17 - If you want to re-add an intro movie, you can uncomment this code, but it was causing some people to crash,
+		// and most didn't like having any intro at all. :(
 		// To make a movie that is compatible with the movie player, use this ffmpeg command line: 
 		// ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
-		ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
-
-		hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
+		//ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
+		//hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
 
 		
 

@@ -190,7 +190,7 @@ void CallsignTagInfo::UpdateStringValues(ZString selectedToken)
 
 ZString CallsignTagInfo::GetAvailableTokens()
 {
-	if (m_callsignTag == "Alleg")
+	if (m_callsignTag == "Alleg" && m_isOfficer == false)
 	{
 		return "?";
 	}
