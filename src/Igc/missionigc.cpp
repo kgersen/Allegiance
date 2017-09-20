@@ -3007,6 +3007,18 @@ CstaticIGC::CstaticIGC(void)
     m_constants.damageConstants[18][14] = 0.50f;       //Lancer vs. lg ship shields
 }
 
+void TerminateStatic(CstaticIGC*  pStatic)
+{
+	// BT - 9/17 - Fixing fedsrv crashes.
+	__try
+	{
+		pStatic->Terminate();
+	}
+	__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
+	{
+		StackTracer::OutputStackTraceToDebugF();
+	}
+}
 
 CmissionIGC::~CmissionIGC(void)
 {
@@ -3018,7 +3030,9 @@ CmissionIGC::~CmissionIGC(void)
             {
                 if ((pcl->data().consumers--) == 1)
                 {
-                    m_pStatic->Terminate();
+					// BT - 9/17 - Fixing fedsrv crashes.
+					TerminateStatic(m_pStatic);
+
                     delete m_pStatic;
                     delete pcl;
                     break;
