@@ -339,6 +339,9 @@ public:
 			{
 				switch (tempBuffer[i])
 				{
+				case ' ':
+					tempBuffer[i] = '_';
+					break;
 				case '!':
 					tempBuffer[i] = 'l';
 					break;
