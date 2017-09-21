@@ -30,12 +30,14 @@ CSteamAchievements::CSteamAchievements() :
 
 bool CSteamAchievements::GetStat(CSteamID &steamID, EStats theStat, int * pVal)
 {
-	m_steamID = steamID;
-	m_gotResponse = false;
-	
+	m_steamID = steamID;		
 	SteamGameServerStats()->RequestUserStats(steamID);
-	m_gotResponse = SteamGameServerStats()->GetUserStat(m_steamID, m_Stats[theStat], pVal);
-	return m_gotResponse;
+	if (SteamGameServerStats()->GetUserStat(m_steamID, m_Stats[theStat], pVal) == false)
+	{
+		ZDebugOutput("SteamGameServerStats()->GetUserStat - response not recieved from Steam Server");
+		return false;
+	}
+	return true;
 }
 
 
@@ -44,21 +46,28 @@ bool CSteamAchievements::GetStat(CSteamID &steamID, EStats theStat, int * pVal)
 bool CSteamAchievements::SetStat(CSteamID &steamID, EStats theStat, int val)
 {
 	m_steamID = steamID;
-	m_gotResponse = false;
-
+	
 	SteamGameServerStats()->RequestUserStats(steamID);
-	m_gotResponse = SteamGameServerStats()->SetUserStat(m_steamID, m_Stats[theStat], val);
-	return m_gotResponse;
+	if (SteamGameServerStats()->SetUserStat(m_steamID, m_Stats[theStat], val) == false)
+	{
+		ZDebugOutput("SteamGameServerStats()->SetUserStat - response not recieved from Steam Server");
+		return false;
+	}
+	return true;
 }
 
 bool CSteamAchievements::GetAchievement(CSteamID &steamID, EAchievements achievement)
 {
 	m_steamID = steamID;
-	m_gotResponse = false;
+
 	bool toReturn;
 	SteamGameServerStats()->RequestUserStats(steamID);
-	m_gotResponse = SteamGameServerStats()->GetUserAchievement(m_steamID, m_Achievements[achievement], &toReturn);
-	return toReturn;
+	if (SteamGameServerStats()->GetUserAchievement(m_steamID, m_Achievements[achievement], &toReturn) == false)
+	{
+		ZDebugOutput("SteamGameServerStats()->GetUserAchievement - response not recieved from Steam Server");
+		return false;
+	}	
+	return true;
 }
 bool CSteamAchievements::SetAchievement(CSteamID &steamID, EAchievements achievement)
 {
@@ -260,18 +269,24 @@ void CSteamAchievements::AwardKillAchievement(CSteamID &steamID, PilotType pt)
 void CSteamAchievements::AddUserStats(CSteamID &steamID, int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps)
 {
 	int tempStat;
-	GetStat(steamID, EStats::MINER_KILLS, &tempStat);
-	SetStat(steamID, EStats::MINER_KILLS, tempStat + minerKills);
+	bool getSucceed;
+	getSucceed = GetStat(steamID, EStats::MINER_KILLS, &tempStat);
+	if (getSucceed) //only set stat if get passes otherwise we risk resetting the stat
+		SetStat(steamID, EStats::MINER_KILLS, tempStat + minerKills);
 
-	GetStat(steamID, EStats::CON_KILLS, &tempStat);
-	SetStat(steamID, EStats::CON_KILLS, tempStat + conKills);
+	getSucceed = GetStat(steamID, EStats::CON_KILLS, &tempStat);
+	if (getSucceed)
+		SetStat(steamID, EStats::CON_KILLS, tempStat + conKills);
 
-	GetStat(steamID, EStats::FORCE_EJECT, &tempStat);
-	SetStat(steamID, EStats::FORCE_EJECT, tempStat + forceEjects);
+	getSucceed = GetStat(steamID, EStats::FORCE_EJECT, &tempStat);
+	if (getSucceed)
+		SetStat(steamID, EStats::FORCE_EJECT, tempStat + forceEjects);
 
-	GetStat(steamID, EStats::BASE_KILLS, &tempStat);
-	SetStat(steamID, EStats::BASE_KILLS, tempStat + baseKills);
+	getSucceed = GetStat(steamID, EStats::BASE_KILLS, &tempStat);
+	if (getSucceed)
+		SetStat(steamID, EStats::BASE_KILLS, tempStat + baseKills);
 
-	GetStat(steamID, EStats::BASE_CAPS, &tempStat);
-	SetStat(steamID, EStats::BASE_CAPS, tempStat + baseCaps);
+	getSucceed = GetStat(steamID, EStats::BASE_CAPS, &tempStat);
+	if (getSucceed)
+		SetStat(steamID, EStats::BASE_CAPS, tempStat + baseCaps);
 }
