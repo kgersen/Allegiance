@@ -2,15 +2,14 @@
 
 // BT - STEAM
 
-CSteamAchievements::CSteamAchievements() :
-	m_gotResponse(false),
-	m_gotSuccessfulResponse(false),
+CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
+	m_steamID(steamID),
+	m_gotRequestStatsResponse(false),
+	m_gotSuccessfulRequestStatsResponse(false),
 	m_gotStatsStoredResponse(false),
 	m_gotSuccessfulStatsStoredResponse(false)
-
 {
 }
-
 
 //bool CSteamAchievements::RequestStats()
 //{
@@ -28,53 +27,106 @@ CSteamAchievements::CSteamAchievements() :
 //	return SteamUserStats()->RequestCurrentStats();
 //}
 
-bool CSteamAchievements::GetAchievement(CSteamID &steamID, EAchievements achievement)
+bool CSteamAchievements::InitiateStatsRequestAndWaitForStatsFromSteamServer()
 {
-	m_steamID = steamID;
-	m_gotResponse = false;
-	bool toReturn;
-	SteamGameServerStats()->RequestUserStats(steamID);
-	m_gotResponse = SteamGameServerStats()->GetUserAchievement(m_steamID, m_Achievements[achievement], &toReturn);
-	return toReturn;
-}
-bool CSteamAchievements::SetAchievement(CSteamID &steamID, EAchievements achievement)
-{
-	m_steamID = steamID;
-	m_gotResponse = false;
+	// We only need to initialize this once per CSteamAchievements object. SteamAPI will track the stats after that.
+	if (m_gotRequestStatsResponse == true)
+		return true;
 
-	SteamGameServerStats()->RequestUserStats(steamID);
+	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->RequestUserStats(m_steamID);
+	m_UserStatsRequestedCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsReceived);
 
-	// Timeout after 10 seconds.
-	for (int i = 0; i < 100 && m_gotResponse == false; i++)
+	// Wait 10 seconds max for stats to come back. This operation will block the thread, so don't want to wait too long.
+	for (int i = 0; i < 100 && m_gotRequestStatsResponse == false; i++)
 	{
 		SteamGameServer_RunCallbacks();
 		Sleep(100);
 	}
 
-	if (m_gotResponse == false)
+	return m_gotRequestStatsResponse && m_gotSuccessfulRequestStatsResponse;
+}
+
+bool CSteamAchievements::GetStat(EStats theStat, int * pVal)
+{
+	// Must block until steam triggers the callback before you can actually use the stats. 
+	InitiateStatsRequestAndWaitForStatsFromSteamServer();
+
+	if (SteamGameServerStats()->GetUserStat(m_steamID, m_Stats[theStat], pVal) == false)
+	{
+		ZDebugOutput("SteamGameServerStats()->GetUserStat - response not recieved from Steam Server");
+		return false;
+	}
+	return true;
+}
+
+
+
+
+bool CSteamAchievements::SetStat(EStats theStat, int val)
+{
+	// Must block until steam triggers the callback before you can actually use the stats. 
+	if (InitiateStatsRequestAndWaitForStatsFromSteamServer() == false)
+	{
+		ZDebugOutput("InitiateStatsRequestAndWaitForStatsFromSteamServer - response not recieved from Steam Server");
+		return false;
+	}
+
+	if (SteamGameServerStats()->SetUserStat(m_steamID, m_Stats[theStat], val) == false)
+	{
+		ZDebugOutput("SteamGameServerStats()->SetUserStat - Failed to set stat.");
+		return false;
+	}
+	return true;
+}
+
+bool CSteamAchievements::GetAchievement(EAchievements achievement)
+{
+	bool toReturn;
+
+	// Must block until steam triggers the callback before you can actually use the stats. 
+	InitiateStatsRequestAndWaitForStatsFromSteamServer();
+
+	if (SteamGameServerStats()->GetUserAchievement(m_steamID, m_Achievements[achievement], &toReturn) == false)
+	{
+		ZDebugOutput("SteamGameServerStats()->GetUserAchievement - response not recieved from Steam Server");
+		return false;
+	}	
+	return true;
+}
+bool CSteamAchievements::SetAchievement(EAchievements achievement)
+{
+	// Must block until steam triggers the callback before you can actually use the stats. 
+	InitiateStatsRequestAndWaitForStatsFromSteamServer();
+
+	if (m_gotRequestStatsResponse == false)
 	{
 		ZDebugOutput("SteamGameServerStats()->RequestUserStats - response not received from Steam server.");
 		return false;
 	}
 
-	if (m_gotSuccessfulResponse == false)
+	if (m_gotSuccessfulRequestStatsResponse == false)
 	{
 		ZDebugOutput("SteamGameServerStats()->RequestUserStats - unsuccessful response getting steam stats for user from steam server.");
 		return false;
 	}
 
 	// Now that we have the stats back from the server, we can update them.
-	if (SteamGameServerStats()->SetUserAchievement(steamID, m_Achievements[achievement]) == false)
+	if (SteamGameServerStats()->SetUserAchievement(m_steamID, m_Achievements[achievement]) == false)
 	{
 		ZDebugOutput("SteamGameServerStats()->SetUserAchievement - Could not set achievement for user..");
 		return false;
 	}
 
-	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->StoreUserStats(steamID);
+	return true;
+}
+
+bool CSteamAchievements::SaveStats()
+{
+	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->StoreUserStats(m_steamID);
 	m_UserStatsStoredCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsStored);
-	
+
 	// Timeout after 10 seconds.
-	for (int i = 0; i < 600 && m_gotStatsStoredResponse == false; i++)
+	for (int i = 0; i < 100 && m_gotStatsStoredResponse == false; i++)
 	{
 		SteamGameServer_RunCallbacks();
 		Sleep(100);
@@ -92,11 +144,10 @@ bool CSteamAchievements::SetAchievement(CSteamID &steamID, EAchievements achieve
 		return false;
 	}
 
-	// If not then we can't set achievements yet
-	return false;
+	return true;
 }
 
-void CSteamAchievements::OnUserStatsReceived(GSStatsReceived_t *pCallback)
+void CSteamAchievements::OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure)
 {
 	// we may get callbacks for other user's stats arriving, ignore them
 	if (m_steamID == pCallback->m_steamIDUser)
@@ -104,7 +155,7 @@ void CSteamAchievements::OnUserStatsReceived(GSStatsReceived_t *pCallback)
 		if (k_EResultOK == pCallback->m_eResult)
 		{
 			OutputDebugStringA("Received stats and achievements from Steam\n");
-			m_gotSuccessfulResponse = true;
+			m_gotSuccessfulRequestStatsResponse = true;
 		}
 		else
 		{
@@ -113,7 +164,7 @@ void CSteamAchievements::OnUserStatsReceived(GSStatsReceived_t *pCallback)
 			OutputDebugStringA(buffer);
 		}
 
-		m_gotResponse = true;
+		m_gotRequestStatsResponse = true;
 	}
 }
 
@@ -138,45 +189,36 @@ void CSteamAchievements::OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOF
 	}
 }
 
-bool CSteamAchievements::RemoveAchievement(char *szSteamID, EAchievements achievement)
+// This is only for testing, and shouldn't be used normally.
+bool CSteamAchievements::RemoveAchievement(EAchievements achievement)
 {
-	CSteamID steamID(strtoull(szSteamID, NULL, 0));
-	m_steamID = steamID;
-	m_gotResponse = false;
+	// Must block until steam triggers the callback before you can actually use the stats. 
+	InitiateStatsRequestAndWaitForStatsFromSteamServer();
 
-	SteamGameServerStats()->RequestUserStats(steamID);
-
-	// Timeout after 10 seconds.
-	for (int i = 0; i < 100 && m_gotResponse == false; i++)
-	{
-		SteamGameServer_RunCallbacks();
-		Sleep(100);
-	}
-
-	if (m_gotResponse == false)
+	if (m_gotRequestStatsResponse == false)
 	{
 		ZDebugOutput("SteamGameServerStats()->RequestUserStats - response not received from Steam server.");
 		return false;
 	}
 
-	if (m_gotSuccessfulResponse == false)
+	if (m_gotSuccessfulRequestStatsResponse == false)
 	{
 		ZDebugOutput("SteamGameServerStats()->RequestUserStats - unsuccessful response getting steam stats for user from steam server.");
 		return false;
 	}
 
 	// Now that we have the stats back from the server, we can update them.
-	if (SteamGameServerStats()->ClearUserAchievement(steamID, m_Achievements[achievement]) == false)
+	if (SteamGameServerStats()->ClearUserAchievement(m_steamID, m_Achievements[achievement]) == false)
 	{
 		ZDebugOutput("SteamGameServerStats()->SetUserAchievement - Could not set achievement for user..");
 		return false;
 	}
 
-	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->StoreUserStats(steamID);
+	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->StoreUserStats(m_steamID);
 	m_UserStatsStoredCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsStored);
 
 	// Timeout after 10 seconds.
-	for (int i = 0; i < 600 && m_gotStatsStoredResponse == false; i++)
+	for (int i = 0; i < 100 && m_gotStatsStoredResponse == false; i++)
 	{
 		SteamGameServer_RunCallbacks();
 		Sleep(100);
@@ -198,38 +240,62 @@ bool CSteamAchievements::RemoveAchievement(char *szSteamID, EAchievements achiev
 	return false;
 }
 
-void CSteamAchievements::AwardBetaParticipation(CSteamID &steamID)
+void CSteamAchievements::AwardBetaParticipation()
 {
 	time_t  timev;
 	time(&timev);
 
 	time_t startTime = 1504567654; // 9/4/2017
-	time_t endTime = 1505537940; // 9/15/2017 23:59:59
+	time_t endTime = 1506729599; // 9/29/2017 23:59:59 UTC
 
 	if (timev > startTime && timev < endTime)
-		SetAchievement(steamID, EAchievements::BETA_ACHIEVEMENT_1_0);
+		SetAchievement(EAchievements::BETA_ACHIEVEMENT_1_0);
 }
-void CSteamAchievements::AwardKillAchievement(CSteamID &steamID, PilotType pt)
+
+void CSteamAchievements::AwardKillAchievement(PilotType pt)
 {
 	switch (pt)
 	{
 	case c_ptBuilder:
 	{
-		//if (!GetAchievement(steamID, EAchievements::FIRST_CON_KILL_1_2))
-			SetAchievement(steamID, EAchievements::FIRST_CON_KILL_1_2);
+		SetAchievement(EAchievements::FIRST_CON_KILL_1_2);
 		break;
 	}
 	case c_ptMiner:
 	{
-		//if (!GetAchievement(steamID, EAchievements::FIRST_MINER_KILL_1_1))
-			SetAchievement(steamID, EAchievements::FIRST_MINER_KILL_1_1);
+		SetAchievement(EAchievements::FIRST_MINER_KILL_1_1);
 		break;
 	}
 	case c_ptPlayer:
 	{
-		//if (!GetAchievement(steamID, EAchievements::FIRST_FORCE_EJECT_1_3))
-			SetAchievement(steamID, EAchievements::FIRST_FORCE_EJECT_1_3);
+		SetAchievement(EAchievements::FIRST_FORCE_EJECT_1_3);
 		break;
 	}
 	};
+}
+
+void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps)
+{
+	int tempStat;
+	bool getSucceed;
+
+	getSucceed = GetStat(EStats::MINER_KILLS, &tempStat);
+	if (getSucceed) //only set stat if get passes otherwise we risk resetting the stat
+		SetStat(EStats::MINER_KILLS, tempStat + minerKills);
+
+	getSucceed = GetStat(EStats::CON_KILLS, &tempStat);
+	if (getSucceed)
+		SetStat(EStats::CON_KILLS, tempStat + conKills);
+
+	getSucceed = GetStat(EStats::FORCE_EJECT, &tempStat);
+	if (getSucceed)
+		SetStat(EStats::FORCE_EJECT, tempStat + forceEjects);
+
+	getSucceed = GetStat(EStats::BASE_KILLS, &tempStat);
+	if (getSucceed)
+		SetStat(EStats::BASE_KILLS, tempStat + baseKills);
+
+	getSucceed = GetStat(EStats::BASE_CAPS, &tempStat);
+	if (getSucceed)
+		SetStat(EStats::BASE_CAPS, tempStat + baseCaps);
 }

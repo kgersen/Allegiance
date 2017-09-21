@@ -31,11 +31,12 @@ class CSteamAchievements
 {
 private:
 	CSteamID m_steamID;
-	bool m_gotResponse;
-	bool m_gotSuccessfulResponse;
+	bool m_gotRequestStatsResponse;
+	bool m_gotSuccessfulRequestStatsResponse;
 	bool m_gotStatsStoredResponse;
 	bool m_gotSuccessfulStatsStoredResponse;
 
+	CCallResult< CSteamAchievements, GSStatsReceived_t > m_UserStatsRequestedCallResult;
 	CCallResult< CSteamAchievements, GSStatsStored_t > m_UserStatsStoredCallResult;
 
 
@@ -59,26 +60,38 @@ private:
 		"BASE_KILLS",
 		"BASE_CAPS"
 	};
-	bool CSteamAchievements::GetAchievement(CSteamID &steamID, EAchievements achievement);
-	bool SetAchievement(CSteamID &steamID, EAchievements achievement);
-	bool CSteamAchievements::GetStat(CSteamID &steamID, EStats theStat);
-	bool SetStat(CSteamID &steamID, EStats theStat);
+
+	
+
+	bool GetAchievement(EAchievements achievement);
+	bool SetAchievement(EAchievements achievement);
+	//bool GetStat(CSteamID &steamID, EStats theStat);
+	bool GetStat(EStats theStat, int * pVal);
+	bool SetStat(EStats theStat, int val);
+	bool InitiateStatsRequestAndWaitForStatsFromSteamServer();
+	
+
 	// Steam Callbacks
-	STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
+	//STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
 
 	
 
 
 public:
-	CSteamAchievements();
+	CSteamAchievements(CSteamID &steamID);
 
-	bool RemoveAchievement(char *szSteamID, EAchievements achievement);
+	bool RemoveAchievement(EAchievements achievement);
 
-	void AwardBetaParticipation(CSteamID &steamID);
-	void AwardKillAchievement(CSteamID &steamID, PilotType pt);
+	void AwardBetaParticipation();
+	void AwardKillAchievement(PilotType pt);
 	
 	// Steam Call Results
 	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
+	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
+
+	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps);
+
+	bool SaveStats();
 	
 };
 
