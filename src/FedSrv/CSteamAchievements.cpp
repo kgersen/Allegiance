@@ -33,7 +33,8 @@ bool CSteamAchievements::InitiateStatsRequestAndWaitForStatsFromSteamServer()
 	if (m_gotRequestStatsResponse == true)
 		return true;
 
-	SteamGameServerStats()->RequestUserStats(m_steamID);
+	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->RequestUserStats(m_steamID);
+	m_UserStatsRequestedCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsReceived);
 
 	// Wait 10 seconds max for stats to come back. This operation will block the thread, so don't want to wait too long.
 	for (int i = 0; i < 100 && m_gotRequestStatsResponse == false; i++)
@@ -146,7 +147,7 @@ bool CSteamAchievements::SaveStats()
 	return true;
 }
 
-void CSteamAchievements::OnUserStatsReceived(GSStatsReceived_t *pCallback)
+void CSteamAchievements::OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure)
 {
 	// we may get callbacks for other user's stats arriving, ignore them
 	if (m_steamID == pCallback->m_steamIDUser)
@@ -217,7 +218,7 @@ bool CSteamAchievements::RemoveAchievement(EAchievements achievement)
 	m_UserStatsStoredCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsStored);
 
 	// Timeout after 10 seconds.
-	for (int i = 0; i < 600 && m_gotStatsStoredResponse == false; i++)
+	for (int i = 0; i < 100 && m_gotStatsStoredResponse == false; i++)
 	{
 		SteamGameServer_RunCallbacks();
 		Sleep(100);
@@ -277,6 +278,7 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 {
 	int tempStat;
 	bool getSucceed;
+
 	getSucceed = GetStat(EStats::MINER_KILLS, &tempStat);
 	if (getSucceed) //only set stat if get passes otherwise we risk resetting the stat
 		SetStat(EStats::MINER_KILLS, tempStat + minerKills);

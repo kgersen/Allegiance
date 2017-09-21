@@ -36,6 +36,7 @@ private:
 	bool m_gotStatsStoredResponse;
 	bool m_gotSuccessfulStatsStoredResponse;
 
+	CCallResult< CSteamAchievements, GSStatsReceived_t > m_UserStatsRequestedCallResult;
 	CCallResult< CSteamAchievements, GSStatsStored_t > m_UserStatsStoredCallResult;
 
 
@@ -71,7 +72,7 @@ private:
 	
 
 	// Steam Callbacks
-	STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
+	//STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
 
 	
 
@@ -86,6 +87,7 @@ public:
 	
 	// Steam Call Results
 	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
+	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
 
 	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps);
 
