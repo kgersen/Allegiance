@@ -11349,13 +11349,16 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 							if (pcredit->GetSide()->GetNumPlayersOnSide() > 4 && pship->GetSide()->GetNumPlayersOnSide() > 4)
 							{
 								CSteamID steamID(strtoull(pfsshipCredit->GetPlayer()->GetCDKey(), NULL, 0));
-								CSteamAchievements achievementsForPlayer;
+								CSteamAchievements achievementsForPlayer(steamID);
 								PilotType pt = pship->GetPilotType();
 
 								//if (pcredit->GetSide()-> > 4 && p
 
 								if (!bLifepod)
-									achievementsForPlayer.AwardKillAchievement(steamID, pt);
+								{
+									achievementsForPlayer.AwardKillAchievement(pt);
+									achievementsForPlayer.SaveStats();
+								}
 							}
 						}
 					}
