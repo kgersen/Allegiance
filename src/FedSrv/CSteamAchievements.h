@@ -67,7 +67,7 @@ private:
 	//bool GetStat(CSteamID &steamID, EStats theStat);
 	bool GetStat(EStats theStat, int * pVal);
 	bool SetStat(EStats theStat, int val);
-	void InitiateStatsRequestAndWaitForStatsFromSteamServer();
+	bool InitiateStatsRequestAndWaitForStatsFromSteamServer();
 	
 
 	// Steam Callbacks

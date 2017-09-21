@@ -27,11 +27,11 @@ CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
 //	return SteamUserStats()->RequestCurrentStats();
 //}
 
-void CSteamAchievements::InitiateStatsRequestAndWaitForStatsFromSteamServer()
+bool CSteamAchievements::InitiateStatsRequestAndWaitForStatsFromSteamServer()
 {
 	// We only need to initialize this once per CSteamAchievements object. SteamAPI will track the stats after that.
 	if (m_gotRequestStatsResponse == true)
-		return;
+		return true;
 
 	SteamGameServerStats()->RequestUserStats(m_steamID);
 
@@ -41,6 +41,8 @@ void CSteamAchievements::InitiateStatsRequestAndWaitForStatsFromSteamServer()
 		SteamGameServer_RunCallbacks();
 		Sleep(100);
 	}
+
+	return m_gotRequestStatsResponse && m_gotSuccessfulRequestStatsResponse;
 }
 
 bool CSteamAchievements::GetStat(EStats theStat, int * pVal)
@@ -62,11 +64,15 @@ bool CSteamAchievements::GetStat(EStats theStat, int * pVal)
 bool CSteamAchievements::SetStat(EStats theStat, int val)
 {
 	// Must block until steam triggers the callback before you can actually use the stats. 
-	InitiateStatsRequestAndWaitForStatsFromSteamServer();
+	if (InitiateStatsRequestAndWaitForStatsFromSteamServer() == false)
+	{
+		ZDebugOutput("InitiateStatsRequestAndWaitForStatsFromSteamServer - response not recieved from Steam Server");
+		return false;
+	}
 
 	if (SteamGameServerStats()->SetUserStat(m_steamID, m_Stats[theStat], val) == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->SetUserStat - response not recieved from Steam Server");
+		ZDebugOutput("SteamGameServerStats()->SetUserStat - Failed to set stat.");
 		return false;
 	}
 	return true;
