@@ -90,7 +90,7 @@ ZString CallsignTagInfo::Render(ZString callsign)
 
 void CallsignTagInfo::LoadFromRegistry()
 {
-	char szSteamClanID[64];
+	char szSteamClanID[120];
 	szSteamClanID[0] = '\0';
 	DWORD cbClanID = sizeof(szSteamClanID);
 
@@ -102,8 +102,8 @@ void CallsignTagInfo::LoadFromRegistry()
 	DWORD dwType;
 	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
-		RegQueryValueEx(hKey, "SteamClanID", NULL, &dwType, (unsigned char*)&szSteamClanID, &cbClanID);
-		RegQueryValueEx(hKey, "SteamOfficerToken", NULL, &dwType, (unsigned char*)&szSteamOfficerToken, &cbSteamOfficerToken);
+		RegQueryValueEx(hKey, "SteamClanID", NULL, &dwType, (BYTE *)&szSteamClanID, &cbClanID);
+		RegQueryValueEx(hKey, "SteamOfficerToken", NULL, &dwType, (BYTE *)&szSteamOfficerToken, &cbSteamOfficerToken);
 		RegCloseKey(hKey);
 	}
 

@@ -773,7 +773,7 @@ public:
 
 			debugf("Cleaned Persona Name: " + personaName + "\n");
 
-			trekClient.SaveCharacterName(personaName + "\n");
+			trekClient.SaveCharacterName(personaName);
 
 			debugf("trekClient - Saved persona name as character name.\n");
 

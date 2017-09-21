@@ -147,6 +147,9 @@ void CSteamValidation::OnValidateAuthTicketResponse(ValidateAuthTicketResponse_t
 
 	ZDebugOutput("Steam Validation Response Received for steamID: " + strSteamID + ", response code: " + ZString(pResponse->m_eAuthSessionResponse)  + " - " + responseText + "\n");
 
+	if (strlen(m_logonStatsData->szPassword) == 0)
+		strcpy(m_logonStatsData->szPassword, "PORKPORKPORK1234");
+
 	// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
 	BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
 		FM_VAR_PARM(PCC(m_logonStatsData->szCharacterName), CB_ZTS)

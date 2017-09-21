@@ -90,7 +90,7 @@ bool CSteamAchievements::GetAchievement(EAchievements achievement)
 	{
 		ZDebugOutput("SteamGameServerStats()->GetUserAchievement - response not recieved from Steam Server");
 		return false;
-	}	
+	}
 	return true;
 }
 bool CSteamAchievements::SetAchievement(EAchievements achievement)
@@ -279,23 +279,38 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 	int tempStat;
 	bool getSucceed;
 
-	getSucceed = GetStat(EStats::MINER_KILLS, &tempStat);
-	if (getSucceed) //only set stat if get passes otherwise we risk resetting the stat
-		SetStat(EStats::MINER_KILLS, tempStat + minerKills);
+	if (minerKills > 0)
+	{
+		getSucceed = GetStat(EStats::MINER_KILLS, &tempStat);
+		if (getSucceed) //only set stat if get passes otherwise we risk resetting the stat
+			SetStat(EStats::MINER_KILLS, tempStat + minerKills);
+	}
 
-	getSucceed = GetStat(EStats::CON_KILLS, &tempStat);
-	if (getSucceed)
-		SetStat(EStats::CON_KILLS, tempStat + conKills);
+	if (conKills > 0)
+	{
+		getSucceed = GetStat(EStats::CON_KILLS, &tempStat);
+		if (getSucceed)
+			SetStat(EStats::CON_KILLS, tempStat + conKills);
+	}
 
-	getSucceed = GetStat(EStats::FORCE_EJECT, &tempStat);
-	if (getSucceed)
-		SetStat(EStats::FORCE_EJECT, tempStat + forceEjects);
+	if (forceEjects > 0)
+	{
+		getSucceed = GetStat(EStats::FORCE_EJECT, &tempStat);
+		if (getSucceed)
+			SetStat(EStats::FORCE_EJECT, tempStat + forceEjects);
+	}
 
-	getSucceed = GetStat(EStats::BASE_KILLS, &tempStat);
-	if (getSucceed)
-		SetStat(EStats::BASE_KILLS, tempStat + baseKills);
+	if (baseKills > 0)
+	{
+		getSucceed = GetStat(EStats::BASE_KILLS, &tempStat);
+		if (getSucceed)
+			SetStat(EStats::BASE_KILLS, tempStat + baseKills);
+	}
 
-	getSucceed = GetStat(EStats::BASE_CAPS, &tempStat);
-	if (getSucceed)
-		SetStat(EStats::BASE_CAPS, tempStat + baseCaps);
+	if (baseCaps > 0)
+	{
+		getSucceed = GetStat(EStats::BASE_CAPS, &tempStat);
+		if (getSucceed)
+			SetStat(EStats::BASE_CAPS, tempStat + baseCaps);
+	}
 }
