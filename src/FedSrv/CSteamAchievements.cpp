@@ -236,7 +236,7 @@ void CSteamAchievements::AwardBetaParticipation(CSteamID &steamID)
 	time(&timev);
 
 	time_t startTime = 1504567654; // 9/4/2017
-	time_t endTime = 1505537940; // 9/15/2017 23:59:59
+	time_t endTime = 1506729599; // 9/29/2017 23:59:59 UTC
 
 	if (timev > startTime && timev < endTime)
 		SetAchievement(steamID, EAchievements::BETA_ACHIEVEMENT_1_0);
