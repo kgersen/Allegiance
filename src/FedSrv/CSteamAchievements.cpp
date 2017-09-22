@@ -274,7 +274,7 @@ void CSteamAchievements::AwardKillAchievement(PilotType pt)
 	};
 }
 
-void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps)
+void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps, int score)
 {
 	int tempStat;
 	bool getSucceed;
@@ -312,5 +312,33 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 		getSucceed = GetStat(EStats::BASE_CAPS, &tempStat);
 		if (getSucceed)
 			SetStat(EStats::BASE_CAPS, tempStat + baseCaps);
+	}
+
+	if (score > 0)
+	{
+		getSucceed = GetStat(EStats::SUM_SCORE, &tempStat);
+		if (getSucceed)
+		{
+			SetStat(EStats::SUM_SCORE, tempStat + score);
+			CheckRank(tempStat + score);
+		}
+	}
+
+}
+
+void CSteamAchievements::CheckRank(int currentScore)
+{
+	int currentRank, earnedRank;
+	bool getSucceed;
+	getSucceed = GetStat(EStats::PLAYER_RANK, &currentRank);
+	//getSucceed = getSucceed && GetStat(EStats::SUM_SCORE, &currentScore);
+	earnedRank = currentRank;
+	if (getSucceed)
+	{
+		if (currentScore > RANK_REQUIREMENTS[earnedRank + 1])
+		{
+			earnedRank++;
+			SetStat(EStats::PLAYER_RANK, earnedRank);
+		} 
 	}
 }

@@ -20,12 +20,18 @@ enum EStats
 	CON_KILLS = 1,
 	FORCE_EJECT = 2,
 	BASE_KILLS = 3,
-	BASE_CAPS = 4
+	BASE_CAPS = 4,
+	SUM_SCORE = 5,
+	PLAYER_RANK = 6
 };
 const int g_nMaximumSteamAchievementCount = 6; // Always keep this in sync with the number of achievments in EAchievements!
-const int g_nMaximumSteamStatCount = 5; // Always keep this in sync with the number of stats in EStats!
+const int g_nMaximumSteamStatCount = 7; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
+                            // 0   1    2    3      4  
+const int RANK_REQUIREMENTS[51] = { 0, 300, 690, 1197, 1856, 2713, 3827, 5275, 7157, 9604, 12786, 16922, 22298, 29288, 38374, 50186, 65542, 85504, 111455, 145192, 189050, 246065, 320184, 416539,
+541801, 704641, 916333, 1191533, 1549293, 2014381, 2618996, 3404994, 4426793, 5755130, 7481970, 9726860, 12645219, 16439084, 21371109, 27782742, 36117865, 46953524, 61039882, 79352146, 103158090,
+134105817, 174337862, 226639520, 294631676, 383021479, 497928223 };
 
 class CSteamAchievements
 {
@@ -58,7 +64,9 @@ private:
 		"CON_KILLS",
 		"FORCE_EJECT",
 		"BASE_KILLS",
-		"BASE_CAPS"
+		"BASE_CAPS",
+		"SUM_SCORE",
+		"PLAYER_RANK"
 	};
 
 	
@@ -89,7 +97,8 @@ public:
 	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
 	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
 
-	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps);
+	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps, int score);
+	void CSteamAchievements::CheckRank(int currentScore);
 
 	bool SaveStats();
 	

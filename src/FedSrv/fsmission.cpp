@@ -3062,9 +3062,10 @@ void CFSMission::ProcessGameOver()
 
             PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
             
-			achievementsForPlayer.AddUserStats(int(ppso->GetMinerKills()), int(ppso->GetBuilderKills()), int(ppso->GetPlayerKills()), int(ppso->GetBaseKills()), int(ppso->GetBaseCaptures()));
+			achievementsForPlayer.AddUserStats(int(ppso->GetMinerKills()), int(ppso->GetBuilderKills()), int(ppso->GetPlayerKills()), int(ppso->GetBaseKills()), int(ppso->GetBaseCaptures()), int(ppso->GetScore()));						
 			
 			achievementsForPlayer.SaveStats();
+			
 
 			if (ppso->Connected())
             {
