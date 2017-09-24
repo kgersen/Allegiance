@@ -2603,7 +2603,7 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
     else
     {
 		// BT - 7/15 CSS Integration - TODO STEAM: Modify to work with steam ranks.
-		if (rank > 0)
+		if (rank >= 0)
 		{
 			if (rank <= m_cRankInfo)
 			{

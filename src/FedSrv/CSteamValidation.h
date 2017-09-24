@@ -16,6 +16,8 @@ public:
 	void BeginSteamAuthentication();
 
 private:
+	RankID GetRankForSteamID(CSteamID steamID);
+
 	// Tells us a client has been authenticated and approved to play by Steam (passes auth, license check, VAC status, etc...)
 	STEAM_GAMESERVER_CALLBACK(CSteamValidation, OnValidateAuthTicketResponse, ValidateAuthTicketResponse_t);
 

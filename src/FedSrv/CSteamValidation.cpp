@@ -147,11 +147,12 @@ void CSteamValidation::OnValidateAuthTicketResponse(ValidateAuthTicketResponse_t
 
 	ZDebugOutput("Steam Validation Response Received for steamID: " + strSteamID + ", response code: " + ZString(pResponse->m_eAuthSessionResponse)  + " - " + responseText + "\n");
 
+	
 	if (strlen(m_logonStatsData->szPassword) == 0)
 		strcpy(m_logonStatsData->szPassword, "PORKPORKPORK1234");
 
 	// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
-	BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+	/*BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
 		FM_VAR_PARM(PCC(m_logonStatsData->szCharacterName), CB_ZTS)
 		FM_VAR_PARM(PCC(responseText), CB_ZTS)
 		FM_VAR_PARM(PCC(m_logonStatsData->szPassword), CB_ZTS)
@@ -164,7 +165,37 @@ void CSteamValidation::OnValidateAuthTicketResponse(ValidateAuthTicketResponse_t
 	pfmPlayerRank->dwCookie = m_logonStatsData->dwCookie;
 	pfmPlayerRank->fValid = pResponse->m_eAuthSessionResponse == k_EAuthSessionResponseOK;
 	pfmPlayerRank->dwConnectionID = m_logonStatsData->dwConnectionID;
-	g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+	g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);*/
+
+	strcpy(m_logonStatsData->szReason, responseText);
+
+	m_logonStatsData->characterID = m_logonStatsData->characterID;
+	m_logonStatsData->fCanCheat = m_logonStatsData->fCanCheat;
+	m_logonStatsData->fRetry = m_logonStatsData->fRetry;
+	m_logonStatsData->dwCookie = m_logonStatsData->dwCookie;
+	m_logonStatsData->fValid = pResponse->m_eAuthSessionResponse == k_EAuthSessionResponseOK;
+	m_logonStatsData->dwConnectionID = m_logonStatsData->dwConnectionID;
+
+	if (pResponse->m_eAuthSessionResponse == k_EAuthSessionResponseOK)
+		m_logonStatsData->rank = GetRankForSteamID(pResponse->m_SteamID);
+	else
+		m_logonStatsData->rank = 0;
+
+	m_logonStatsData->sigma = 0;
+	m_logonStatsData->mu = 0;
+	m_logonStatsData->commandRank = 0;
+	m_logonStatsData->commandSigma = 0;
+	m_logonStatsData->commandMu = 0;
+
+	PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM)NULL, (LPARAM)m_sqlQuery);
 
 	m_bAuthenticationComplete = true;
+}
+
+
+
+RankID CSteamValidation::GetRankForSteamID(CSteamID steamID)
+{
+	// BT - STEAM - Xynth TODO: Please add CSteamAchievements here to return the user's correct rank.
+	return 0; // All users will be nubbins for now! 
 }

@@ -3920,7 +3920,7 @@ public:
 		//  the compare doesn't work anyway
 		//   if (szURL[0] == '\0')
 		if (szURL[0] == '\0')
-			szURL = "http://www.alleg.net";
+			szURL = "https://www.freeallegiance.org/forums"; // BT - 9/17 updated dead link to point to forums instead.
 
         if (!IsWindows9x()) {
             /*
