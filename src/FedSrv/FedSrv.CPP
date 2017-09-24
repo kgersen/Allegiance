@@ -5000,7 +5000,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  {
 			    CFSMission * pfsMission = pfsPlayer->GetMission();
 				if (STAGE_NOTSTARTED == pfsMission->GetStage() || STAGE_STARTING == pfsMission->GetStage())
-					pfsMission->StartCountdown(15);
+					pfsMission->StartCountdown(1);
 			  }
 #endif
 		  }

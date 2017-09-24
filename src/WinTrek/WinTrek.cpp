@@ -2325,6 +2325,9 @@ public:
                     break;
 
                 case ScreenIDGameOverScreen:
+					// BT - 9/17 - Return the screen to 800x600 for game over so that the screen scales correctly for full screen.
+					SetFullscreenSize(Vector(800, 600, 0));
+
                     SetScreen(CreateGameOverScreen(GetModeler()));
                     break;
 
