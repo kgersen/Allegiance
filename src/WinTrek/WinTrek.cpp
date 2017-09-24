@@ -4445,7 +4445,8 @@ public:
 		pmenu->AddMenuItem(idmCallsignTagNone, "<None>", 'X');
 
 		// Allow up to 30 tags to be shown.
-		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount() && i < 30; i++)
+		// Backing this out for now, forgot to add additional idmCallsignTag* slots. 
+		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount() && i < 10; i++)
 		{
 			CallsignTagInfo item = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
 			pmenu->AddMenuItem(idmCallsignTag0 + i, item.m_callsignTag, 48 + item.m_index); // 48 = ASCII code for '0'.

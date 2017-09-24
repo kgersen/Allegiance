@@ -339,7 +339,7 @@ public:
 			{
 				switch (tempBuffer[i])
 				{
-				case ' ':
+				/*case ' ':
 					tempBuffer[i] = '_';
 					break;
 				case '!':
@@ -364,10 +364,10 @@ public:
 
 				case '&':
 					tempBuffer[i] = 'n';
-					break;
+					break;*/
 
 				default:
-					tempBuffer[i] = ' ';
+					tempBuffer[i] = '_';
 					break;
 				}
 			}

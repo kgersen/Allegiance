@@ -5062,21 +5062,8 @@ inline void        AddIbaseIGC(BaseListIGC*        list, IbaseIGC* base)
 
 inline void        DeleteIbaseIGC(BaseListIGC*     list, IbaseIGC* base)
 {
-    assert (list);
-    assert (base);
-
-	//for (BaseLinkIGC*   l = list->first();
-	//	(l != NULL);
-	//	l = l->next())
-	//{
-	//	if (l->data() == base)
-	//	{
-	//		delete l;               //remove it from the list
-	//		base->Release();        //reduce the ref count
-	//		break;                  //all done
-	//	}
-	//}
-
+	assert(list);
+	assert(base);
 
 	// BT - 9/17 - Debugging AllSrv crashes.
 	if (list == nullptr)
@@ -5093,25 +5080,17 @@ inline void        DeleteIbaseIGC(BaseListIGC*     list, IbaseIGC* base)
 
 	__try
 	{
-		BaseLinkIGC* target = nullptr;
 
 		for (BaseLinkIGC*   l = list->first();
 			(l != NULL);
 			l = l->next())
 		{
-
 			if (l->data() == base)
 			{
-				target = l;
-				break;
+				delete l;               //remove it from the list
+				base->Release();        //reduce the ref count
+				break;                  //all done
 			}
-		}
-
-		// BT - 9/17 - Breaking this up a bit more, maybe the stack trace will get more obvious?
-		if (target != nullptr)
-		{
-			delete target;               //remove it from the list
-			base->Release();        //reduce the ref count
 		}
 	}
 	__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
