@@ -328,6 +328,8 @@ public:
 
 		tempBuffer[24] = '\0';
 
+		int underscoreCount = 0;
+
 		for (int i = 0; i < strlen(tempBuffer); i++)
 		{
 			//  if the character is not within an allowed range, then replace it out. 
@@ -339,7 +341,7 @@ public:
 			{
 				switch (tempBuffer[i])
 				{
-				case ' ':
+				/*case ' ':
 					tempBuffer[i] = '_';
 					break;
 				case '!':
@@ -364,14 +366,19 @@ public:
 
 				case '&':
 					tempBuffer[i] = 'n';
-					break;
+					break;*/
 
 				default:
-					tempBuffer[i] = ' ';
+					tempBuffer[i] = '_';
+					underscoreCount++;
 					break;
 				}
 			}
 		}
+
+		// Prevent an all _ character name. (Thanks Door!) 
+		if (underscoreCount == strlen(tempBuffer))
+			strcpy(tempBuffer, "");
 
 		return ZString(tempBuffer);
 	}

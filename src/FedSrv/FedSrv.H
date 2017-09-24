@@ -348,6 +348,7 @@ struct Global
 
   // BT - STEAM
   bool				bEnforceSteamDRM;
+  bool				bUseSteamAuthentication;
 
   /* pkk May 6th: Disabled bandwidth patch
   // w0dk4 Bandwidth Patch

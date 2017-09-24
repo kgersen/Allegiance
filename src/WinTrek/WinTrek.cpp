@@ -2325,6 +2325,9 @@ public:
                     break;
 
                 case ScreenIDGameOverScreen:
+					// BT - 9/17 - Return the screen to 800x600 for game over so that the screen scales correctly for full screen.
+					SetFullscreenSize(Vector(800, 600, 0));
+
                     SetScreen(CreateGameOverScreen(GetModeler()));
                     break;
 
@@ -3917,7 +3920,7 @@ public:
 		//  the compare doesn't work anyway
 		//   if (szURL[0] == '\0')
 		if (szURL[0] == '\0')
-			szURL = "http://www.alleg.net";
+			szURL = "https://www.freeallegiance.org/forums"; // BT - 9/17 updated dead link to point to forums instead.
 
         if (!IsWindows9x()) {
             /*
@@ -4445,7 +4448,8 @@ public:
 		pmenu->AddMenuItem(idmCallsignTagNone, "<None>", 'X');
 
 		// Allow up to 30 tags to be shown.
-		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount() && i < 30; i++)
+		// Backing this out for now, forgot to add additional idmCallsignTag* slots. 
+		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount() && i < 10; i++)
 		{
 			CallsignTagInfo item = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
 			pmenu->AddMenuItem(idmCallsignTag0 + i, item.m_callsignTag, 48 + item.m_index); // 48 = ASCII code for '0'.

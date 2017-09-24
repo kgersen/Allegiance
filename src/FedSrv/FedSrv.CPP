@@ -5000,7 +5000,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  {
 			    CFSMission * pfsMission = pfsPlayer->GetMission();
 				if (STAGE_NOTSTARTED == pfsMission->GetStage() || STAGE_STARTING == pfsMission->GetStage())
-					pfsMission->StartCountdown(15);
+					pfsMission->StartCountdown(1);
 			  }
 #endif
 		  }
@@ -5692,12 +5692,38 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		// is correct, then, we are going to make an async call to the Lobby to get the player's rank, then the return from that call will finally trigger the 
 		// SQL Done state on the pQuery and let the user login.
 
-		memcpy(pqd->steamAuthTicket, pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
-		pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
-		pqd->steamID = pfmLogon->steamID;
+		if (g.bUseSteamAuthentication == true)
+		{
+			memcpy(pqd->steamAuthTicket, pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
+			pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
+			pqd->steamID = pfmLogon->steamID;
 
-		CSteamValidation steamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
-		steamValidation.BeginSteamAuthentication();
+			CSteamValidation steamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
+			steamValidation.BeginSteamAuthentication();
+		}
+		else
+		{
+			if (strlen(pqd->szPassword) == 0)
+				strcpy(pqd->szPassword, "PORKPORKPORK1234");
+
+			ZString responseText("Bypassed Login");
+
+			// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
+			BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+				FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS)
+				FM_VAR_PARM(PCC(responseText), CB_ZTS)
+				FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS)
+				FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS)
+				END_PFM_CREATE
+
+				pfmPlayerRank->characterID = pqd->characterID;
+			pfmPlayerRank->fCanCheat = pqd->fCanCheat;
+			pfmPlayerRank->fRetry = pqd->fRetry;
+			pfmPlayerRank->dwCookie = pqd->dwCookie;
+			pfmPlayerRank->fValid = true;
+			pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
+			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		}
 
 		//DWORD threadID;
 		//CreateThread(NULL, 0, LogonThread, &steamValidation, 0, &threadID);
@@ -9107,6 +9133,14 @@ void LoadSettings()
 
 		if (dwEnforceSteamDRM > 0)
 			g.bEnforceSteamDRM = true;
+
+		g.bUseSteamAuthentication = false;
+		DWORD dwUseSteamAuthentication;
+		DWORD cbUseSteamAuthentication = sizeof(dwUseSteamAuthentication);
+		RegQueryValueExA(hKey, "UseSteamAuthentication", NULL, &dwType, (unsigned char*)&dwUseSteamAuthentication, &cbUseSteamAuthentication);
+
+		if (dwUseSteamAuthentication > 0)
+			g.bUseSteamAuthentication = true;
 
 
 		/* pkk May 6th: Disabled bandwidth patch

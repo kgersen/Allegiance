@@ -81,8 +81,8 @@ ZString CallsignTagInfo::Render(ZString callsign)
 	if (m_callsignTag.GetLength() > 0)
 		returnValue = returnValue + ZString("@") + m_callsignTag;
 
-	if (returnValue.GetLength() > 25)
-		returnValue = returnValue.Left(25);
+	if (returnValue.GetLength() > 24)
+		returnValue = returnValue.Left(24);
 
 	return returnValue;
 }
