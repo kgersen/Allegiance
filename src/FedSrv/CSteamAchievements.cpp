@@ -326,7 +326,7 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 
 }
 
-void CSteamAchievements::CheckRank(int currentScore)
+bool CSteamAchievements::CheckRank(int currentScore)
 {
 	int currentRank, earnedRank;
 	bool getSucceed;
@@ -339,6 +339,19 @@ void CSteamAchievements::CheckRank(int currentScore)
 		{
 			earnedRank++;
 			SetStat(EStats::PLAYER_RANK, earnedRank);
+			return true; //add return for a future level up splash
 		} 
 	}
+	return false;
+}
+
+RankID CSteamAchievements::GetRank()
+{
+	int rank;
+	bool getSucceed;
+	getSucceed = GetStat(EStats::PLAYER_RANK, &rank);
+	if (getSucceed)
+		return RankID(rank);
+	else
+		return 0;
 }

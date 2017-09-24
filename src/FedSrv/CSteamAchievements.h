@@ -98,8 +98,8 @@ public:
 	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
 
 	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps, int score);
-	void CSteamAchievements::CheckRank(int currentScore);
-
+	bool CSteamAchievements::CheckRank(int currentScore);
+	RankID CSteamAchievements::GetRank();
 	bool SaveStats();
 	
 };
