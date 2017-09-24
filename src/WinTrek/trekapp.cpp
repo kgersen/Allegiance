@@ -328,6 +328,8 @@ public:
 
 		tempBuffer[24] = '\0';
 
+		int underscoreCount = 0;
+
 		for (int i = 0; i < strlen(tempBuffer); i++)
 		{
 			//  if the character is not within an allowed range, then replace it out. 
@@ -368,10 +370,15 @@ public:
 
 				default:
 					tempBuffer[i] = '_';
+					underscoreCount++;
 					break;
 				}
 			}
 		}
+
+		// Prevent an all _ character name. (Thanks Door!) 
+		if (underscoreCount == strlen(tempBuffer))
+			strcpy(tempBuffer, "");
 
 		return ZString(tempBuffer);
 	}
