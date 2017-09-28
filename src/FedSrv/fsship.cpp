@@ -929,6 +929,8 @@ CFSPlayer::CFSPlayer(CFMConnection * pcnxn, int characterID, const char * szCDKe
   m_strCDKey(szCDKey),
   m_pSteamAchievements(steamID) // BT - STEAM
 {
+	m_pSteamAchievements.InitiateStatsRequest();
+
   m_pcnxn->SetPrivateData((DWORD) this); // set up two-way link between connection and this
   m_dwStartTime = m_timeUpdate = g.timeNow;
 

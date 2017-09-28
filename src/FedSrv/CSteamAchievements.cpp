@@ -9,12 +9,21 @@ CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
 	m_gotStatsStoredResponse(false),
 	m_gotSuccessfulStatsStoredResponse(false)
 {
+	
+	// Do not call InitiateStatsRequest() from here, the constructor must complete first.
+	
+}
+
+
+void CSteamAchievements::InitiateStatsRequest()
+{
 	// Do not block here. We are going to assume that because the login process takes some time, this call result
 	// should be triggered long before anyone actually tries to hit it. Because this object will be hooked onto
 	// the player object, it will be available anywhere we want to hit stats. 
 	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->RequestUserStats(m_steamID);
 	m_UserStatsRequestedCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsReceived);
 }
+
 
 // Always use this to ensure that stats are available before you try to set anything. Because this should have been loaded
 // when the user logged into the server, this call should always return immediately.

@@ -82,14 +82,13 @@ private:
 	// Steam Callbacks
 	//STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
 
-	// Steam Call Results
-	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
-	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
 	
 
 
 public:
 	CSteamAchievements(CSteamID &steamID);
+
+	void InitiateStatsRequest();
 
 	RankID GetRank();
 
@@ -101,6 +100,11 @@ public:
 	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps, int score);
 	
 	bool SaveStats();
+
+
+	// Steam Call Results
+	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
+	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
 	
 };
 

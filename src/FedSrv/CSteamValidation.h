@@ -9,6 +9,8 @@ private:
 	CQLogonStatsData *	m_logonStatsData;
 	int					m_characterID;
 	bool				m_bAuthenticationComplete = false;
+	ZString				m_responseText;
+	bool				m_isValid;
 
 public:
 	CSteamValidation(DWORD dwThreadID, int characterID, CSQLQuery * pQuery, CQLogonStatsData * pqd);
