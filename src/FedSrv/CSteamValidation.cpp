@@ -196,6 +196,9 @@ void CSteamValidation::OnValidateAuthTicketResponse(ValidateAuthTicketResponse_t
 
 RankID CSteamValidation::GetRankForSteamID(CSteamID steamID)
 {
-	// BT - STEAM - Xynth TODO: Please add CSteamAchievements here to return the user's correct rank.
-	return 0; // All users will be nubbins for now! 
+	CSteamAchievements achievementsForPlayer(steamID);
+	RankID rank;
+	rank = achievementsForPlayer.GetRank();
+	return rank;
+		
 }
