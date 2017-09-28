@@ -867,7 +867,11 @@ void GotLogonDetails(CQLogonStats * pquery)
     TRef<IshipIGC> pship = (IshipIGC *) g.trekCore->CreateObject(g.timeNow,
                           OT_ship, &dataship, sizeof(dataship));
 
-    pfsPlayer = new CFSPlayer(pcnxn, pqd->characterID, pqd->szCDKey, pship, !! pqd->fCanCheat);
+	// BT - STEAM
+	CSteamID steamID;
+	steamID.SetFromUint64(pqd->steamID);
+
+    pfsPlayer = new CFSPlayer(pcnxn, pqd->characterID, pqd->szCDKey, pship, !! pqd->fCanCheat, steamID);
     assert(pfsPlayer);
 
 	/* pkk May 6th: Disabled bandwidth patch
@@ -11454,16 +11458,13 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 						{
 							if (pcredit->GetSide()->GetNumPlayersOnSide() > 4 && pship->GetSide()->GetNumPlayersOnSide() > 4)
 							{
-								CSteamID steamID(strtoull(pfsshipCredit->GetPlayer()->GetCDKey(), NULL, 0));
-								CSteamAchievements achievementsForPlayer(steamID);
-								PilotType pt = pship->GetPilotType();
-
-								//if (pcredit->GetSide()-> > 4 && p
-
 								if (!bLifepod)
 								{
-									achievementsForPlayer.AwardKillAchievement(pt);
-									achievementsForPlayer.SaveStats();
+									PilotType pt = pship->GetPilotType();
+
+									CSteamAchievements *pSteamAchievements = pfsshipCredit->GetPlayer()->GetSteamAchievements();
+									pSteamAchievements->AwardKillAchievement(pt);
+									pSteamAchievements->SaveStats();
 								}
 							}
 						}

@@ -77,29 +77,29 @@ private:
 	bool GetStat(EStats theStat, int * pVal);
 	bool SetStat(EStats theStat, int val);
 	bool InitiateStatsRequestAndWaitForStatsFromSteamServer();
-	
+	bool CheckRank(int currentScore);
 
 	// Steam Callbacks
 	//STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
 
+	// Steam Call Results
+	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
+	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
 	
 
 
 public:
 	CSteamAchievements(CSteamID &steamID);
 
+	RankID GetRank();
+
 	bool RemoveAchievement(EAchievements achievement);
 
 	void AwardBetaParticipation();
 	void AwardKillAchievement(PilotType pt);
 	
-	// Steam Call Results
-	void OnUserStatsStored(GSStatsStored_t *pCallback, bool bIOFailure);
-	void OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure);
-
 	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps, int score);
-	bool CSteamAchievements::CheckRank(int currentScore);
-	RankID CSteamAchievements::GetRank();
+	
 	bool SaveStats();
 	
 };

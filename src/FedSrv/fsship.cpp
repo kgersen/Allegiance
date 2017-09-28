@@ -10,6 +10,7 @@
 
 #include "pch.h"
 
+
 // Statics
 CFSShip * CFSShip::m_rgpfsShip[c_cShipsMax] = {0};
 short     CFSShip::m_shipidNext = 0;
@@ -911,7 +912,7 @@ void CFSPlayer::SetCluster(IclusterIGC* pcluster, bool bViewOnly)
 }
 
 CFSPlayer::CFSPlayer(CFMConnection * pcnxn, int characterID, const char * szCDKey,
-                      TRef<IshipIGC> pShip, bool fCanCheat) :
+                      TRef<IshipIGC> pShip, bool fCanCheat, CSteamID &steamID) :
   CFSShip(pShip, true), // parent
   m_fReady(true),
   m_characterId(characterID),
@@ -925,7 +926,8 @@ CFSPlayer::CFSPlayer(CFMConnection * pcnxn, int characterID, const char * szCDKe
   // mdvalley: add last flown for
   m_lastSide(SIDE_TEAMLOBBY),
   m_chatBudget(c_chatBudgetMax),
-  m_strCDKey(szCDKey)
+  m_strCDKey(szCDKey),
+  m_pSteamAchievements(steamID) // BT - STEAM
 {
   m_pcnxn->SetPrivateData((DWORD) this); // set up two-way link between connection and this
   m_dwStartTime = m_timeUpdate = g.timeNow;

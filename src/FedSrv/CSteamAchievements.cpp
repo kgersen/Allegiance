@@ -9,24 +9,15 @@ CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
 	m_gotStatsStoredResponse(false),
 	m_gotSuccessfulStatsStoredResponse(false)
 {
+	// Do not block here. We are going to assume that because the login process takes some time, this call result
+	// should be triggered long before anyone actually tries to hit it. Because this object will be hooked onto
+	// the player object, it will be available anywhere we want to hit stats. 
+	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->RequestUserStats(m_steamID);
+	m_UserStatsRequestedCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsReceived);
 }
 
-//bool CSteamAchievements::RequestStats()
-//{
-//	// Is Steam loaded? If not we can't get stats.
-//	if (NULL == SteamUserStats() || NULL == SteamUser())
-//	{
-//		return false;
-//	}
-//	// Is the user logged on?  If not we can't get stats.
-//	if (!SteamUser()->BLoggedOn())
-//	{
-//		return false;
-//	}
-//	// Request user stats.
-//	return SteamUserStats()->RequestCurrentStats();
-//}
-
+// Always use this to ensure that stats are available before you try to set anything. Because this should have been loaded
+// when the user logged into the server, this call should always return immediately.
 bool CSteamAchievements::InitiateStatsRequestAndWaitForStatsFromSteamServer()
 {
 	// We only need to initialize this once per CSteamAchievements object. SteamAPI will track the stats after that.
@@ -37,10 +28,11 @@ bool CSteamAchievements::InitiateStatsRequestAndWaitForStatsFromSteamServer()
 	m_UserStatsRequestedCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsReceived);
 
 	// Wait 10 seconds max for stats to come back. This operation will block the thread, so don't want to wait too long.
-	for (int i = 0; i < 100 && m_gotRequestStatsResponse == false; i++)
+	// Setting a very fast spin here so the user isn't waiting too long. 
+	for (int i = 0; i < 10 * 500 && m_gotRequestStatsResponse == false; i++)
 	{
 		SteamGameServer_RunCallbacks();
-		Sleep(100);
+		Sleep(5);
 	}
 
 	return m_gotRequestStatsResponse && m_gotSuccessfulRequestStatsResponse;
@@ -58,9 +50,6 @@ bool CSteamAchievements::GetStat(EStats theStat, int * pVal)
 	}
 	return true;
 }
-
-
-
 
 bool CSteamAchievements::SetStat(EStats theStat, int val)
 {
@@ -125,26 +114,30 @@ bool CSteamAchievements::SaveStats()
 	SteamAPICall_t hSteamApiCall = SteamGameServerStats()->StoreUserStats(m_steamID);
 	m_UserStatsStoredCallResult.Set(hSteamApiCall, this, &CSteamAchievements::OnUserStatsStored);
 
-	// Timeout after 10 seconds.
-	for (int i = 0; i < 100 && m_gotStatsStoredResponse == false; i++)
-	{
-		SteamGameServer_RunCallbacks();
-		Sleep(100);
-	}
-
-	if (m_gotStatsStoredResponse == false)
-	{
-		ZDebugOutput("SteamGameServerStats()->StoreUserStats - response not received from Steam server.");
-		return false;
-	}
-
-	if (m_gotSuccessfulStatsStoredResponse == false)
-	{
-		ZDebugOutput("SteamGameServerStats()->StoreUserStats - unsuccessful response storing steam stats for user to steam.");
-		return false;
-	}
-
 	return true;
+
+	// No Need to block, Steam will guarantee completion after this point.
+
+	//// Timeout after 10 seconds.
+	//for (int i = 0; i < 100 && m_gotStatsStoredResponse == false; i++)
+	//{
+	//	SteamGameServer_RunCallbacks();
+	//	Sleep(100);
+	//}
+
+	//if (m_gotStatsStoredResponse == false)
+	//{
+	//	ZDebugOutput("SteamGameServerStats()->StoreUserStats - response not received from Steam server.");
+	//	return false;
+	//}
+
+	//if (m_gotSuccessfulStatsStoredResponse == false)
+	//{
+	//	ZDebugOutput("SteamGameServerStats()->StoreUserStats - unsuccessful response storing steam stats for user to steam.");
+	//	return false;
+	//}
+
+	//return true;
 }
 
 void CSteamAchievements::OnUserStatsReceived(GSStatsReceived_t *pCallback, bool bIOFailure)
