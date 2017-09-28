@@ -4794,11 +4794,21 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			  case CHAT_INDIVIDUAL:
 				  
 				  targetShip = pfsMission->GetIGCMission()->GetShip(pfmChat->cd.oidRecipient);
-				  if (targetShip != nullptr)
+				  if (targetShip != nullptr && targetShip->GetPilotType() == c_ptPlayer)
 				  {
 					  targetName = targetShip->GetName();
 					  CFSShip*  pfsShip = (CFSShip*)(targetShip->GetPrivateData());
-					  targetSteamID = strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, NULL);
+
+					  if (pfsShip != nullptr)
+					  {
+						  CFSPlayer * pfsPlayer = pfsShip->GetPlayer();
+						  if (pfsPlayer != nullptr)
+						  {
+							  const char * cdKey = pfsShip->GetPlayer()->GetCDKey();
+							  if(cdKey != nullptr)
+								  targetSteamID = strtoull(cdKey, NULL, NULL);
+						  }
+					  }
 				  }
 				  else
 				  {
