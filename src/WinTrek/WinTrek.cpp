@@ -9873,9 +9873,10 @@ public:
             case TK_ConModeNav:
             case TK_ViewSector:
             {
-                if (GetViewMode() != vmOverride) {
+				// BT - 9/17 - CortUI integration - The minimap is now always visible.
+               /* if (GetViewMode() != vmOverride) {
                     ToggleOverlayFlags(ofSectorPane);
-                }
+                }*/
             }
             break;
 
@@ -9995,8 +9996,9 @@ public:
                     else
                         SetViewMode(vmHangar);
                 }
-                else
-                    ToggleOverlayFlags(ofInventory);
+				// BT - 9/17 - CortUI integration - Keep the inventory open, always. 
+                //else
+                 //   ToggleOverlayFlags(ofInventory);
             }
             break;
 
