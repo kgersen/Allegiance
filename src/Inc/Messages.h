@@ -796,7 +796,8 @@ enum QuitSideReason
     QSR_SwitchingSides,
     QSR_RandomizeSides,
 	QSR_FlushSides,		// TE: Add this for balance patch
-	QSR_BalanceSides	// TE: Add this for balance patch
+	QSR_BalanceSides,	// TE: Add this for balance patch
+	QSR_BannedBySteam // BT - STEAM
 };
 
 #define QSRIsBoot(reason) ((reason) >= QSR_LeaderBooted && (reason) <= QSR_AdminBooted)

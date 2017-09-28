@@ -3401,6 +3401,7 @@ public:
             case QSR_DuplicateLocalLogon:
             case QSR_DuplicateRemoteLogon:
             case QSR_DuplicateCDKey:
+			case QSR_BannedBySteam: // BT - STEAM
                 // message box created by OnQuitSide
                 break;
 

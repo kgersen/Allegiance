@@ -4777,6 +4777,78 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       TrapHackBoot(pfmChat->cbMessage >= 0);
       TrapHackBoot(pfmChat->ibMessage == sizeof(FMD_CS_CHATMESSAGE));
 
+	  // BT - STEAM - Send the message up to the lobby for logging.
+	  ZString targetName;
+	  IshipIGC *targetShip;
+	  uint64 sourceSteamID = 0;
+	  uint64 targetSteamID = 0;
+
+	  if (pfmChat->otTarget == -1)
+	  {
+		  switch (pfmChat->cd.chatTarget )
+		  {
+			  case CHAT_INDIVIDUAL:
+				  
+				  targetShip = pfsMission->GetIGCMission()->GetShip(pfmChat->cd.oidRecipient);
+				  if (targetShip != nullptr)
+				  {
+					  targetName = targetShip->GetName();
+					  CFSShip*  pfsShip = (CFSShip*)(targetShip->GetPrivateData());
+					  targetSteamID = strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, NULL);
+				  }
+				  else
+				  {
+					  targetName = "Unknown";
+				  }
+
+				/*  for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+				  {
+					  CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+					  if(pfsShip->GetObjectID
+				  }
+
+				  targetName = pfsMission->GetIGCMission()->GetModel(pfmChat->otTarget, pfmChat->oidTarget)->GetName();*/
+				  break;
+
+			  case CHAT_WING:
+				  targetName = "Wing: " + pfsPlayer->GetIGCShip()->GetWingID();
+				  break;
+
+			  case CHAT_TEAM:
+				  targetName = pfsPlayer->GetSide()->GetName();
+				  break;
+
+			  case CHAT_ALL_SECTOR:
+			  case CHAT_FRIENDLY_SECTOR:
+				  targetName = pfsPlayer->GetCluster()->GetName();
+				  break;
+
+			  case CHAT_LEADERS:
+				  targetName = pfsMission->GetIGCMission()->GetModel(pfmChat->otTarget, pfmChat->oidTarget)->GetName();
+				  break;
+
+			  default:
+				  targetName = "All";
+		  }
+	  }
+
+		ZString senderName = pfsPlayer->GetName();
+		sourceSteamID = strtoull(pfsPlayer->GetCDKey(), NULL, NULL);
+		ZString missionName = pfsMission->GetMissionDef()->szDescription;
+
+		BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
+			FM_VAR_PARM((PCC)missionName, CB_ZTS)
+			FM_VAR_PARM((PCC)senderName, CB_ZTS)
+			FM_VAR_PARM((PCC)targetName, CB_ZTS)
+			FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
+		END_PFM_CREATE
+		  
+		pfmLogChat->sourceSteamID = sourceSteamID;
+		pfmLogChat->targetSteamID = targetSteamID;
+		  
+		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		// BT - STEAN - End of chat logging.
+
       if (pfmChat->cbMessage > 0)
 	  {
 #ifdef _TEST

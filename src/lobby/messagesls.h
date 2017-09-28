@@ -98,7 +98,8 @@ END_FEDMSG
 enum RemovePlayerReason
 {
     RPR_duplicateName,
-    RPR_duplicateCDKey
+    RPR_duplicateCDKey,
+	RPR_bannedBySteam
 };
 
 DEFINE_FEDMSG(L, REMOVE_PLAYER, 211) // this player is joining another game - boot the old copy
@@ -145,6 +146,16 @@ END_FEDMSG
 // BT - STEAM
 DEFINE_FEDMSG(L, UPDATE_DRM_HASHES, 215) // Tell all the servers that the hash file has changed, and it's time to update.
 	FM_VAR_ITEM(DrmDownloadUrl);
+END_FEDMSG
+
+// BT - STEAM
+DEFINE_FEDMSG(S, LOG_CHAT_MESSAGE, 216) // Send the message up to the lobby so it can be logged to the main server.
+	FM_VAR_ITEM(MissionName);
+	FM_VAR_ITEM(SourceName);
+	FM_VAR_ITEM(TargetName);
+	FM_VAR_ITEM(Message);
+	uint64 sourceSteamID;
+	uint64 targetSteamID;
 END_FEDMSG
 
 #endif // _MESSAGES_LS_H_

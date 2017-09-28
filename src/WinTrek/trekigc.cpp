@@ -5005,6 +5005,12 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
                 + " used your CD Key to log into a game!";
             break;
 
+			// BT - STEAM
+		case QSR_BannedBySteam:
+			assert(szMessageParam);
+			strMessage = ZString(szMessageParam);
+			break;
+
         case QSR_SwitchingSides:
         case QSR_RandomizeSides:
             assert(false); // shouldn't get booted off the mission for this

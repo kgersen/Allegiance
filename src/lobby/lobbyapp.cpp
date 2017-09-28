@@ -211,6 +211,16 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
     m_szToken[0] = '\0';
     bSuccess = _Module.ReadFromRegistry(hk, true, "Token", m_szToken, NULL);
 
+	// BT - STEAM - AWeb API urls.
+	m_szChatlogUploadUrl[0] = '\0';
+	bSuccess = _Module.ReadFromRegistry(hk, true, "ChatLogUploadUrl", m_szChatlogUploadUrl, NULL);
+
+	m_szBanCheckUrl[0] = '\0';
+	bSuccess = _Module.ReadFromRegistry(hk, true, "BanCheckUrl", m_szBanCheckUrl, NULL);
+
+	m_szApiKey[0] = '\0';
+	bSuccess = _Module.ReadFromRegistry(hk, true, "ApiKey", m_szApiKey, NULL);
+
     DWORD dwProtocol;
     bSuccess = _Module.ReadFromRegistry(hk, false, "fProtocol", &dwProtocol, (unsigned long) true);
     m_fProtocol = !!dwProtocol;
@@ -937,6 +947,33 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
 #ifdef USECLUB
   BootPlayersByName(strPlayerName);
 #endif
+
+  // BT - STEAM - Check with the AWeb service for any bans on this user's SteamID. 
+  MaClient client;
+
+  ZString url = ZString(g_pLobbyApp->GetBanCheckUrl()) + "?apiKey=" + ZString(g_pLobbyApp->GetApiKey()) + "&steamID=" + ZString(szCDKey);
+
+  int result = client.getRequest((char*) (PCC) url);
+
+  char buffer[2064];
+  int bufferLen = sizeof(buffer);
+  strncpy(buffer, client.getResponseContent(&bufferLen), sizeof(buffer));
+  buffer[bufferLen] = '\0';
+
+  if (strlen(buffer) > 0)
+  {
+		BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
+			FM_VAR_PARM(szPlayerName, CB_ZTS)
+			FM_VAR_PARM(buffer, CB_ZTS)
+		END_PFM_CREATE
+		pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
+		pfmRemovePlayer->reason = RPR_bannedBySteam;    
+		m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
+			FM_GUARANTEED, FM_FLUSH);
+		GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
+			pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
+  }
+
 
   // BT - No more ACSS.
  // if(EnforceAuthentication() == true)

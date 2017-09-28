@@ -168,6 +168,24 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       const char* szCharacterName = FM_VAR_REF(pfmRemovePlayer, szCharacterName);
       const char* szMessageParam = FM_VAR_REF(pfmRemovePlayer, szMessageParam);
       
+	  // BT - STEAM - enable a nice message to be displayed to the banned user.
+	  QuitSideReason quitSideReason;
+
+	  switch (pfmRemovePlayer->reason)
+	  {
+	  case RPR_duplicateCDKey:
+		  quitSideReason = QSR_DuplicateCDKey;
+		  break;
+
+	  case RPR_bannedBySteam:
+		  quitSideReason = QSR_BannedBySteam;
+		  break;
+
+	  default:
+		  quitSideReason = QSR_DuplicateRemoteLogon;
+		  break;
+	  }
+
       // try to find the player in question
       if (!pfsMission)
       {        
@@ -175,9 +193,7 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
           "but the mission was not found.\n", 
           szCharacterName, pfmRemovePlayer->dwMissionCookie);
       }
-      else if (!pfsMission->RemovePlayerByName(szCharacterName, 
-          (pfmRemovePlayer->reason == RPR_duplicateCDKey) ? QSR_DuplicateCDKey : QSR_DuplicateRemoteLogon,
-          szMessageParam))
+      else if (!pfsMission->RemovePlayerByName(szCharacterName, quitSideReason, szMessageParam))
       {
         debugf("Asked to boot character %s from mission %x by lobby, "
           "but the character was not found.\n", 
@@ -270,6 +286,9 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
 		break;
 	}
+
+
+
 
     break;
   }

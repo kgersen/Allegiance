@@ -196,6 +196,21 @@ public:
 
   // BT - STEAM
   void CheckAndUpdateDrmHashes(bool forceUpdate);
+  
+  // BT - STEAM
+  char * GetApiKey() {
+	  return m_szApiKey;
+  }
+
+  // BT - STEAM
+  char * GetChatLogUploadUrl() {
+	  return m_szChatlogUploadUrl;
+  }
+
+  // BT - STEAM
+  char * GetBanCheckUrl() {
+	  return m_szBanCheckUrl;
+  }
 
 private:
   const char *    SzFmMsgHeader(FedMessaging * pthis) {return IsFMServers(pthis) ? "Servers: " : "Clients: ";}
@@ -245,6 +260,9 @@ private:
   FedMessaging      m_fmClients;
   LobbyClientSite   m_psiteClient;
   LobbyServerSite   m_psiteServer;
+  char				m_szChatlogUploadUrl[MAX_PATH];   // BT - STEAM
+  char				m_szBanCheckUrl[MAX_PATH];   // BT - STEAM
+  char				m_szApiKey[MAX_PATH];   // BT - STEAM
 
   // *** Perfmon counter stuff ***
   CPerfShare        m_perfshare;

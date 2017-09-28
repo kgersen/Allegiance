@@ -3882,6 +3882,7 @@ void BaseClient::RemovePlayerFromSide(PlayerInfo* pPlayerInfo, QuitSideReason re
 
                 case QSR_DuplicateLocalLogon:
                 case QSR_DuplicateCDKey:
+				case QSR_BannedBySteam:  // BT - STEAM
                     // don't send a chat in case they were dropped.
                     //msg = pPlayerInfo->CharacterName() + ZString(" has been booted due to a duplicate logon.");
                     //ReceiveChat(NULL, CHAT_TEAM, NA, salQuitSound, msg, c_cidNone, NA, NA);
