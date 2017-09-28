@@ -286,6 +286,11 @@ public:
     {
     }
 
+	void SetScrollbarHidden(bool isHidden)
+	{
+		m_pScrollBar->SetHidden(isHidden);
+	}
+
     int GetCountItems()
     {
         return m_vItems.GetCount();
