@@ -4848,13 +4848,21 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 		ZString senderName = pfsPlayer->GetName();
 		sourceSteamID = strtoull(pfsPlayer->GetCDKey(), NULL, NULL);
-		ZString missionName = pfsMission->GetMissionDef()->szDescription;
+		
+		char szRemote[16];
+		CFMConnection * connection = pfsPlayer->GetConnection();
+		pthis->GetIPAddress(*connection, szRemote);
+		debugf("chat from connection ID: %x IP: %s\n", connection->GetID(), szRemote);
+
+		const FMD_S_MISSIONDEF *missionDef = pfsMission->GetMissionDef();
+		ZString missionName = ZString(missionDef->misparms.strGameName);
 
 		BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
 			FM_VAR_PARM((PCC)missionName, CB_ZTS)
 			FM_VAR_PARM((PCC)senderName, CB_ZTS)
 			FM_VAR_PARM((PCC)targetName, CB_ZTS)
 			FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
+			FM_VAR_PARM(szRemote, CB_ZTS)
 		END_PFM_CREATE
 		  
 		pfmLogChat->sourceSteamID = sourceSteamID;

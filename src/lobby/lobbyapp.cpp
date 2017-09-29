@@ -954,24 +954,31 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
   ZString url = ZString(g_pLobbyApp->GetBanCheckUrl()) + "?apiKey=" + ZString(g_pLobbyApp->GetApiKey()) + "&steamID=" + ZString(szCDKey);
 
   int result = client.getRequest((char*) (PCC) url);
+  int responseCode = client.getResponseCode();
 
-  char buffer[2064];
-  int bufferLen = sizeof(buffer);
-  strncpy(buffer, client.getResponseContent(&bufferLen), sizeof(buffer));
-  buffer[bufferLen] = '\0';
-
-  if (strlen(buffer) > 0)
+  if (responseCode == 200)
   {
-		BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
-			FM_VAR_PARM(szPlayerName, CB_ZTS)
-			FM_VAR_PARM(buffer, CB_ZTS)
-		END_PFM_CREATE
-		pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
-		pfmRemovePlayer->reason = RPR_bannedBySteam;    
-		m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
-			FM_GUARANTEED, FM_FLUSH);
-		GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
-			pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
+	  char buffer[2064];
+	  int bufferLen = sizeof(buffer);
+	  strncpy(buffer, client.getResponseContent(&bufferLen), sizeof(buffer));
+	  if (bufferLen > sizeof(buffer) - 1)
+		  buffer[sizeof(buffer) - 1] = '\0';
+	  else
+		  buffer[bufferLen] = '\0';
+
+	  if (strlen(buffer) > 0)
+	  {
+		  BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
+			  FM_VAR_PARM(szPlayerName, CB_ZTS)
+			  FM_VAR_PARM(buffer, CB_ZTS)
+			  END_PFM_CREATE
+			  pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
+		  pfmRemovePlayer->reason = RPR_bannedBySteam;
+		  m_fmServers.SendMessages(pMission->GetServer()->GetConnection(),
+			  FM_GUARANTEED, FM_FLUSH);
+		  GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
+			  pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
+	  }
   }
 
 

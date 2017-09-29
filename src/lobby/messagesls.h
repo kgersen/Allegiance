@@ -154,6 +154,7 @@ DEFINE_FEDMSG(S, LOG_CHAT_MESSAGE, 216) // Send the message up to the lobby so i
 	FM_VAR_ITEM(SourceName);
 	FM_VAR_ITEM(TargetName);
 	FM_VAR_ITEM(Message);
+	FM_VAR_ITEM(SourceIP);
 	uint64 sourceSteamID;
 	uint64 targetSteamID;
 END_FEDMSG

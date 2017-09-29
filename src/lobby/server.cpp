@@ -370,6 +370,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		ZString sourceName = FM_VAR_REF(pfmLogChatMessage, SourceName);
 		ZString targetName = FM_VAR_REF(pfmLogChatMessage, TargetName);
 		ZString message = FM_VAR_REF(pfmLogChatMessage, Message);
+		ZString sourceIP = FM_VAR_REF(pfmLogChatMessage, SourceIP);
 
 		debugf("%s %s->%s: %s\n", (PCC) missionName, (PCC)sourceName, (PCC)targetName, (PCC)message);
 
@@ -385,6 +386,8 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		postData += "&sourceName=" + ZString(buffer);
 		maUrlEncode(buffer, sizeof(buffer), (char *)(PCC)targetName, true);
 		postData += "&targetName=" + ZString(buffer);
+
+		postData += "&sourceIP=" + sourceIP;
 
 		sprintf(steamID, "%" PRIu64, pfmLogChatMessage->sourceSteamID);
 		postData += "&sourceSteamID=" + ZString(steamID);
