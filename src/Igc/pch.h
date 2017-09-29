@@ -31,3 +31,6 @@
 #include "igc.h"
 
 #include "private.h"
+
+// BT - STEAM
+#include "AllegianceSecurity.h"

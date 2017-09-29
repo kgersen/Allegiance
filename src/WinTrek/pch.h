@@ -48,6 +48,9 @@
 
 #include "guids.h"
 
+// BT - STEAM
+#include "steam_api.h"
+
 //
 // WinTrek headers
 //
@@ -90,3 +93,6 @@
 #include "regkey.h"
 #include "treksound.h"
 #include "GameTypes.h"
+
+// BT - STEAM
+#include "CallsignTagInfo.h"

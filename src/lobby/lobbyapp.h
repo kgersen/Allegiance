@@ -13,6 +13,9 @@
 // mmf added this include so client.cpp has HKLM_FedSrv defined
 #include "regkey.h"
 
+// BT - STEAM
+#include "steam_gameserver.h"
+
 // KGJV moved into regkey.h
 //#define HKLM_AllLobby "SYSTEM\\CurrentControlSet\\Services\\AllLobby"
 
@@ -125,6 +128,12 @@ public:
     return m_szToken;
   }
 
+  // Imago 9/14 // BT - STEAM
+  CRITICAL_SECTION *GetLogonCS()
+  {
+	  return m_logonCS;
+  }
+
   bool EnforceCDKey()
   {
     return m_fFreeLobby && m_fCheckCDKey;
@@ -150,7 +159,12 @@ public:
 
   // BT - 12/21/2010 - ACSS integration
   bool CLobbyApp::GetRankForCallsign(const char* szPlayerName, int *rank, double *sigma, double *mu, int *commandRank, double *commandSigma, double *commandMu, char *rankName, int rankNameLen);
-  bool CDKeyIsValid(const char* szPlayerName, const char* szCDKey, const char* szAddress, char *resultMessage, int resultMessageLength);
+  //bool CDKeyIsValid(const char* szPlayerName, const char* szCDKey, const char* szAddress, char *resultMessage, int resultMessageLength);
+
+  // BT - STEAM
+  bool CDKeyIsValid(const char* szPlayerName, const char* szCDKey, const char* szAddress, char *resultMessage, int resultMessageLength, char *playerIdentifier);
+  
+
 
   void SetPlayerMission(const char* szPlayerName, const char* szCDKey, CFLMission* pMission, const char* szAddress);
   void RemovePlayerFromMission(const char* szPlayerName, CFLMission* pMission);
@@ -180,6 +194,23 @@ public:
 	  m_cStaticCoreInfo = 0;
   }
 
+  // BT - STEAM
+  void CheckAndUpdateDrmHashes(bool forceUpdate);
+  
+  // BT - STEAM
+  char * GetApiKey() {
+	  return m_szApiKey;
+  }
+
+  // BT - STEAM
+  char * GetChatLogUploadUrl() {
+	  return m_szChatlogUploadUrl;
+  }
+
+  // BT - STEAM
+  char * GetBanCheckUrl() {
+	  return m_szBanCheckUrl;
+  }
 
 private:
   const char *    SzFmMsgHeader(FedMessaging * pthis) {return IsFMServers(pthis) ? "Servers: " : "Clients: ";}
@@ -229,6 +260,9 @@ private:
   FedMessaging      m_fmClients;
   LobbyClientSite   m_psiteClient;
   LobbyServerSite   m_psiteServer;
+  char				m_szChatlogUploadUrl[MAX_PATH];   // BT - STEAM
+  char				m_szBanCheckUrl[MAX_PATH];   // BT - STEAM
+  char				m_szApiKey[MAX_PATH];   // BT - STEAM
 
   // *** Perfmon counter stuff ***
   CPerfShare        m_perfshare;
@@ -238,6 +272,11 @@ private:
   TRef<IZoneAuthServer> m_pzas;
 #endif
   Time              m_timeNow;
+
+  // BT - STEAM
+  FILETIME			m_lastDrmHashUpdate;
+  char				m_szDrmHashFilename[MAX_PATH];
+  char				m_szDrmDownloadUrly[MAX_PATH];
 
   //ZGameInstanceInfoMsg is important info ZGameServerInfoMsg is trivial wrapper
   //structure designed with variable size elements and variable number of ZGameInstanceInfoMsg
@@ -263,6 +302,9 @@ private:
   // KGJV #114 - core stuff
   StaticCoreInfo   *m_vStaticCoreInfo;
   int               m_cStaticCoreInfo;
+
+  //imago 9/16
+  CRITICAL_SECTION  *m_logonCS;
 
 #ifdef USECLUB
   // SQL Stuff

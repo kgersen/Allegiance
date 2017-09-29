@@ -321,3 +321,5 @@ $RECYCLE.BIN/
 *.lnk
 /VS2017/allsrv_appweb.log.old
 *.old
+*.idb
+/src/ArtworkHashGenerator/artwork_hash_generator_lastrun.txt

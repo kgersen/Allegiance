@@ -1405,7 +1405,10 @@ bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
 
 bool EngineWindow::IsDoubleClick()
 {
-    return (m_timeCurrent < (m_timeLastClick + 0.25f));
+	// BT - 8/17 - Double click fix. #234 - [url="https://github.com/kgersen/Allegiance/issues/234"]https://github.com/kgersen/Allegiance/issues/234[/url]
+	return (fabs(fabs(m_timeCurrent.clock()) - fabs(m_timeLastClick.clock())) < 250);
+
+	// return (m_timeCurrent < (m_timeLastClick + 0.25f));
 }
 
 void EngineWindow::SetCursorPos(const Point& point)

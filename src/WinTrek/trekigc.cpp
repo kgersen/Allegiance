@@ -2975,7 +2975,8 @@ void WinTrekClient::SaveCharacterName(ZString strName)
 int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
 	HKEY hKey;
 	DWORD dwType = REG_DWORD;
-    DWORD dwWing = NA; // Imago 7/10 #149
+    //DWORD dwWing = NA; // Imago 7/10 #149
+	DWORD dwWing = 0; // BT - 9/17 - Default all new players to the command wing.
     DWORD dwSize = sizeof(DWORD);
     if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
     {
@@ -5003,6 +5004,12 @@ void WinTrekClient::OnQuitMission(QuitSideReason reason, const char* szMessagePa
             strMessage = ZString(szMessageParam ? szMessageParam : "someone") 
                 + " used your CD Key to log into a game!";
             break;
+
+			// BT - STEAM
+		case QSR_BannedBySteam:
+			assert(szMessageParam);
+			strMessage = ZString(szMessageParam);
+			break;
 
         case QSR_SwitchingSides:
         case QSR_RandomizeSides:

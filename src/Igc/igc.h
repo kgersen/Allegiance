@@ -4237,6 +4237,9 @@ class IsideIGC : public IbaseIGC
 		//Xynth #170 8/10
 		virtual bool GetRandomCivilization(void) const = 0;
 		virtual void SetRandomCivilization(bool rand) = 0;
+
+		//Xynth Adding function to return number of players on a side
+		virtual int GetNumPlayersOnSide(void) const = 0;
 };
 
 class IcivilizationIGC : public IbaseIGC
@@ -5055,23 +5058,48 @@ inline void        AddIbaseIGC(BaseListIGC*        list, IbaseIGC* base)
     ZVerify(list->last(base));
     base->AddRef();
 }
+
+
 inline void        DeleteIbaseIGC(BaseListIGC*     list, IbaseIGC* base)
 {
-    assert (list);
-    assert (base);
+	assert(list);
+	assert(base);
 
-    for (BaseLinkIGC*   l = list->first();
-         (l != NULL);
-         l = l->next())
-    {
-        if (l->data() == base)
-        {
-            delete l;               //remove it from the list
-            base->Release();        //reduce the ref count
-            break;                  //all done
-        }
-    }
+	// BT - 9/17 - Debugging AllSrv crashes.
+	if (list == nullptr)
+	{
+		debugf("ERROR: IGC::DeleteIbaseIGC() - list was null.\n");
+		return;
+	}
+
+	if (base == nullptr)
+	{
+		debugf("ERROR: IGC::DeleteIbaseIGC() - base was null.\n");
+		return;
+	}
+
+	__try
+	{
+
+		for (BaseLinkIGC*   l = list->first();
+			(l != NULL);
+			l = l->next())
+		{
+			if (l->data() == base)
+			{
+				delete l;               //remove it from the list
+				base->Release();        //reduce the ref count
+				break;                  //all done
+			}
+		}
+	}
+	__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
+	{
+		StackTracer::OutputStackTraceToDebugF();
+	}
 }
+
+
 inline IbaseIGC*   GetIbaseIGC(const BaseListIGC*  list, ObjectID    id)
 {
     assert (list);

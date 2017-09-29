@@ -12,6 +12,9 @@
 // 
 
 #include "pch.h"
+
+// BT - STEAM
+#include <inttypes.h>
  
 const DWORD CFLClient::c_dwID = 19680815;
 #ifndef NO_MSG_CRC
@@ -67,39 +70,40 @@ static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
 }
 
 // BT / Orion - 9/11/2010 - Performing validation with new method on LobbyApp to share auth logic.
-static void doAuthentication(void* data, MprThread *threadp) 
-{
-	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
-	CQLobbyLogon * pls = (CQLobbyLogon *)data;
-	CQLobbyLogonData * pqd = pls->GetData();
-	
-	FedMessaging & fm = g_pLobbyApp->GetFMClients();
-	CFMConnection * pcnxn = fm.GetConnectionFromId(pqd->dwConnectionID);
-	
-	char szAddress[16];
-	Strcpy(szAddress, "");
-
-	fm.GetIPAddress(*pcnxn,szAddress);
-
-	int resultMessageLength = 1024;
-	char resultMessage[1024];
-	bool succeeded = g_pLobbyApp->CDKeyIsValid(pqd->szCharacterName, pqd->szCDKey, szAddress, resultMessage, resultMessageLength);
-	
-	printf("doAuthentication(): keycheck for: %s, key: %s, address: %s, result: %s, succeeded: %s\r\n", pqd->szCharacterName, pqd->szCDKey, szAddress, resultMessage, (succeeded == true) ? "true" : "false");
-	
-	if(!succeeded)
-	{
-		mutex->lock();
-		pqd->fValid = false;
-		pqd->fRetry = false;
-		pqd->szReason = new char[lstrlen(resultMessage) + 1];
-		Strcpy(pqd->szReason,resultMessage);
-		mutex->unlock();
-	}
-
-	// tell the main thread we've finished, use the existing thread msg for AZ SQL 
-	PostThreadMessage(_Module.dwThreadID, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
-}
+// BT - STEAM - Replaces ACSS.
+//static void doAuthentication(void* data, MprThread *threadp) 
+//{
+//	CSQLQuery * pQuery = (CSQLQuery *)data;  //use the AZ legacy data & callback
+//	CQLobbyLogon * pls = (CQLobbyLogon *)data;
+//	CQLobbyLogonData * pqd = pls->GetData();
+//	
+//	FedMessaging & fm = g_pLobbyApp->GetFMClients();
+//	CFMConnection * pcnxn = fm.GetConnectionFromId(pqd->dwConnectionID);
+//	
+//	char szAddress[16];
+//	Strcpy(szAddress, "");
+//
+//	fm.GetIPAddress(*pcnxn,szAddress);
+//
+//	int resultMessageLength = 1024;
+//	char resultMessage[1024];
+//	bool succeeded = g_pLobbyApp->CDKeyIsValid(pqd->szCharacterName, pqd->szCDKey, szAddress, resultMessage, resultMessageLength);
+//	
+//	printf("doAuthentication(): keycheck for: %s, key: %s, address: %s, result: %s, succeeded: %s\r\n", pqd->szCharacterName, pqd->szCDKey, szAddress, resultMessage, (succeeded == true) ? "true" : "false");
+//	
+//	if(!succeeded)
+//	{
+//		mutex->lock();
+//		pqd->fValid = false;
+//		pqd->fRetry = false;
+//		pqd->szReason = new char[lstrlen(resultMessage) + 1];
+//		Strcpy(pqd->szReason,resultMessage);
+//		mutex->unlock();
+//	}
+//
+//	// tell the main thread we've finished, use the existing thread msg for AZ SQL 
+//	PostThreadMessage(_Module.dwThreadID, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pQuery);
+//}
 
 
 void QueueMissions(FedMessaging * pfm)
@@ -159,6 +163,10 @@ void GotLogonInfo(CQLobbyLogon * pquery)
   if (pqd->fValid)
   {
     fm.SetDefaultRecipient(pcnxn, FM_GUARANTEED);
+
+	// BT - STEAM
+	pcnxn->SetSteamID(pqd->steamID);
+
     BEGIN_PFM_CREATE(fm, pfmLogonAck, L, LOGON_ACK)
     END_PFM_CREATE
     pfmLogonAck->dwTimeOffset = pqd->dTime;
@@ -209,6 +217,21 @@ void GotLogonInfo(CQLobbyLogon * pquery)
 
 const int c_cMaxPlayers = GetRegDWORD("MaxPlayersPerServer", 350);
 
+//imago 9/14 // BT - STEAM
+DWORD WINAPI LogonThread(LPVOID param) {
+	CSQLQuery * pQuery = (CSQLQuery *)param;  //use the AZ legacy data & callback
+	CQLobbyLogon * pls = (CQLobbyLogon *)param;
+	CQLobbyLogonData * pqd = pls->GetData();
+	char szReason[256];
+	int iID = 0;
+	EnterCriticalSection(g_pLobbyApp->GetLogonCS());
+
+	CSteamValidation steamValidation(_Module.dwThreadID, iID, pQuery, pqd);
+	steamValidation.BeginSteamAuthentication();
+
+	return 0;
+}
+
 HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm)
 {
   CFLClient * pClient = CFLClient::FromConnection(cnxnFrom);
@@ -241,6 +264,12 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	  Strcpy(pqd->szCDKey,strCDKey);
 	  pqd->fValid = fValid;
 	  pqd->fRetry = fRetry;
+
+	  // BT - STEAM
+	  ZeroMemory(&pqd->steamAuthTicket, sizeof(pqd->steamAuthTicket));
+	  memcpy(pqd->steamAuthTicket, pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
+	  pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
+	  pqd->steamID = pfmLogon->steamID;
 
       if (g_pAutoUpdate && pfmLogon->crcFileList != g_pAutoUpdate->GetFileListCRC())
       {
@@ -283,10 +312,16 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
       //Imago - Dogbones's ASGS_ON AllSrv registry entry fiasco... 8/6/09
       if (g_pLobbyApp->EnforceAuthentication()) {
-	      char mprthname[9]; 
-	      mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
-	      MprThread* threadp = new MprThread(doAuthentication, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
-	      threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
+	      //char mprthname[9]; 
+	      //mprSprintf(mprthname, sizeof(mprthname), "%d",pqd->dwConnectionID);
+	      //MprThread* threadp = new MprThread(doAuthentication, MPR_NORMAL_PRIORITY, (void*) pquery, mprthname); 
+	      //threadp->start(); //this could fail if a player is trying to login /w the same cnxn at the same time? (NYI TrapHack) - Imago 7/22/08
+
+		  // BT - STEAM
+		  debugf("Creating logon thread.\n");
+		  DWORD dum;
+		  CreateThread(NULL, 0, LogonThread, (void*)pquery, 0, &dum);
+
       } else {
           BEGIN_PFM_CREATE(*pthis, pfmLogonAck, L, LOGON_ACK)
           END_PFM_CREATE
@@ -520,6 +555,10 @@ HRESULT LobbyClientSite::OnDestroyConnection(FedMessaging * pthis, CFMConnection
 {
   debugf("Player %s has left.\n", cnxn.GetName());
   g_pLobbyApp->GetCounters()->cLogoffs++;
+
+  // BT - STEAM
+  SteamGameServer()->EndAuthSession(CSteamID(cnxn.GetSteamID()));
+
   delete CFLClient::FromConnection(cnxn);
   return S_OK;
 }

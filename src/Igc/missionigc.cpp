@@ -2606,6 +2606,24 @@ int     LoadIGCStaticCore (const char* name, ImissionIGC* pMission, bool fGetVer
         }
 
         fclose (file);
+
+		// BT - STEAM - Ensure that the ICG Core files are not tampered with.
+		// Have to let the static core info above load, even if it's no good or the client crashes out becuase it can't find a civ.
+#ifdef STEAMSECURE
+		if (fGetVersionOnly == true)
+		{
+			FileHashTable fileHashTable;
+			if (fileHashTable.DoesFileHaveHash(szFilename) == true)
+			{
+				TRef<ZFile> coreFile = new ZFile(szFilename);
+				if (fileHashTable.IsHashCorrect(szFilename, coreFile) == false)
+				{
+					iStaticCoreVersion = 0;
+				}
+			}
+		}
+#endif
+
         return iStaticCoreVersion;
     }
     else
@@ -2989,6 +3007,18 @@ CstaticIGC::CstaticIGC(void)
     m_constants.damageConstants[18][14] = 0.50f;       //Lancer vs. lg ship shields
 }
 
+void TerminateStatic(CstaticIGC*  pStatic)
+{
+	// BT - 9/17 - Fixing fedsrv crashes.
+	__try
+	{
+		pStatic->Terminate();
+	}
+	__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
+	{
+		StackTracer::OutputStackTraceToDebugF();
+	}
+}
 
 CmissionIGC::~CmissionIGC(void)
 {
@@ -3000,7 +3030,9 @@ CmissionIGC::~CmissionIGC(void)
             {
                 if ((pcl->data().consumers--) == 1)
                 {
-                    m_pStatic->Terminate();
+					// BT - 9/17 - Fixing fedsrv crashes.
+					TerminateStatic(m_pStatic);
+
                     delete m_pStatic;
                     delete pcl;
                     break;

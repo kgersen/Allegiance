@@ -168,6 +168,24 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       const char* szCharacterName = FM_VAR_REF(pfmRemovePlayer, szCharacterName);
       const char* szMessageParam = FM_VAR_REF(pfmRemovePlayer, szMessageParam);
       
+	  // BT - STEAM - enable a nice message to be displayed to the banned user.
+	  QuitSideReason quitSideReason;
+
+	  switch (pfmRemovePlayer->reason)
+	  {
+	  case RPR_duplicateCDKey:
+		  quitSideReason = QSR_DuplicateCDKey;
+		  break;
+
+	  case RPR_bannedBySteam:
+		  quitSideReason = QSR_BannedBySteam;
+		  break;
+
+	  default:
+		  quitSideReason = QSR_DuplicateRemoteLogon;
+		  break;
+	  }
+
       // try to find the player in question
       if (!pfsMission)
       {        
@@ -175,9 +193,7 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
           "but the mission was not found.\n", 
           szCharacterName, pfmRemovePlayer->dwMissionCookie);
       }
-      else if (!pfsMission->RemovePlayerByName(szCharacterName, 
-          (pfmRemovePlayer->reason == RPR_duplicateCDKey) ? QSR_DuplicateCDKey : QSR_DuplicateRemoteLogon,
-          szMessageParam))
+      else if (!pfsMission->RemovePlayerByName(szCharacterName, quitSideReason, szMessageParam))
       {
         debugf("Asked to boot character %s from mission %x by lobby, "
           "but the character was not found.\n", 
@@ -229,6 +245,50 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM) NULL, (LPARAM) pquery);
 		break;
 	}
+
+	// BT - STEAM
+	case FM_L_UPDATE_DRM_HASHES:
+	{
+		CASTPFM(pfmUpdateDrmHashes, L, UPDATE_DRM_HASHES, pfm);
+
+		char drmDownloadUrl[MAX_PATH];
+		Strcpy(drmDownloadUrl, FM_VAR_REF(pfmUpdateDrmHashes, DrmDownloadUrl));
+
+		debugf("received drm update request with url: %s\n", drmDownloadUrl);
+
+		IHTTPSession * pHTTPSession = CreateHTTPSession(NULL);
+
+		const char * szFileList[] = { drmDownloadUrl, "drm_hashes.txt",  NULL };
+		pHTTPSession->InitiateDownload(szFileList, "."); // . means current path
+
+		if (pHTTPSession)
+		{
+			debugf("Downloading drm hash file...");
+
+			// we block as we download the cfg file; should be okay since we are not connected to the zone.
+			while (pHTTPSession->ContinueDownload())
+			{
+				Sleep(100);
+			}
+
+			debugf("Done\n");
+
+			//
+			// At this point we are done downloading cfg file
+			//
+			bool bErrorOccurred = pHTTPSession->GetLastErrorMessage() ? true : false;
+			char szErrorMsg[512];
+			if (bErrorOccurred)
+				_snprintf(szErrorMsg, sizeof(szErrorMsg), "\nError Connecting to Zone.  You will not be able to host a public game. \r\n%s", pHTTPSession->GetLastErrorMessage());
+
+			delete pHTTPSession;
+		}
+
+		break;
+	}
+
+
+
 
     break;
   }

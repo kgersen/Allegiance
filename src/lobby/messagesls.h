@@ -87,30 +87,7 @@ DEFINE_FEDMSG(S, PLAYER_JOINED, 209) // a new player has joined - tell the lobby
   DWORD dwMissionCookie;
 END_FEDMSG
 
-// BT - 12/21/2010 - ACSS Integration for player ranks. 
-DEFINE_FEDMSG(LS, PLAYER_RANK, 214)
-  // These items are pass thru.
-  FM_VAR_ITEM(szCharacterName); 
-  FM_VAR_ITEM(szReason);     
-  FM_VAR_ITEM(szPassword);
-  FM_VAR_ITEM(szCDKey);
-  FM_VAR_ITEM(szRankName); // Returned from the server.
-  int characterID;
-  bool fCanCheat;
-  bool fRetry;
-  DWORD dwCookie;
-  bool fValid;
-  DWORD dwConnectionID;
 
-  // These items will also be returned from the lobby server.
-  int rank;
-  double sigma;
-  double mu;
-  int commandRank;
-  double commandSigma;
-  double commandMu;
-
-END_FEDMSG
 
 
 DEFINE_FEDMSG(S, PLAYER_QUIT, 210) // a player quit the game
@@ -121,7 +98,8 @@ END_FEDMSG
 enum RemovePlayerReason
 {
     RPR_duplicateName,
-    RPR_duplicateCDKey
+    RPR_duplicateCDKey,
+	RPR_bannedBySteam
 };
 
 DEFINE_FEDMSG(L, REMOVE_PLAYER, 211) // this player is joining another game - boot the old copy
@@ -137,6 +115,48 @@ END_FEDMSG
 
 DEFINE_FEDMSG(L, LOGON_SERVER_NACK, 213)  // tells game server that they can't join the lobby.
   FM_VAR_ITEM(Reason);
+END_FEDMSG
+
+// BT - 12/21/2010 - ACSS Integration for player ranks. 
+DEFINE_FEDMSG(LS, PLAYER_RANK, 214)
+// These items are pass thru.
+FM_VAR_ITEM(szCharacterName);
+FM_VAR_ITEM(szReason);
+FM_VAR_ITEM(szPassword);
+FM_VAR_ITEM(szCDKey);
+FM_VAR_ITEM(szRankName); // Returned from the server.
+int characterID;
+bool fCanCheat;
+bool fRetry;
+DWORD dwCookie;
+bool fValid;
+DWORD dwConnectionID;
+
+// These items will also be returned from the lobby server.
+int rank;
+double sigma;
+double mu;
+int commandRank;
+double commandSigma;
+double commandMu;
+
+END_FEDMSG
+
+
+// BT - STEAM
+DEFINE_FEDMSG(L, UPDATE_DRM_HASHES, 215) // Tell all the servers that the hash file has changed, and it's time to update.
+	FM_VAR_ITEM(DrmDownloadUrl);
+END_FEDMSG
+
+// BT - STEAM
+DEFINE_FEDMSG(S, LOG_CHAT_MESSAGE, 216) // Send the message up to the lobby so it can be logged to the main server.
+	FM_VAR_ITEM(MissionName);
+	FM_VAR_ITEM(SourceName);
+	FM_VAR_ITEM(TargetName);
+	FM_VAR_ITEM(Message);
+	FM_VAR_ITEM(SourceIP);
+	uint64 sourceSteamID;
+	uint64 targetSteamID;
 END_FEDMSG
 
 #endif // _MESSAGES_LS_H_

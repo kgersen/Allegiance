@@ -48,10 +48,15 @@
 #endif // !defined(ALLSRV_STANDALONE)
 #include <guids.h>
 #include <zlib.h>
-                     
+         
 #include "resource.h"
 #include <utility.h>
 #include <igc.h>
+
+// BT - STEAM
+#include "steam_gameserver.h"
+#include "AllegianceSecurity.h"
+#include "CSteamAchievements.h"
 
 #include "..\AGC\GameParamData.h"
 
@@ -120,6 +125,10 @@ extern Global g;
 
 
 #include "regkey.h"
+
+// BT - STEAM
+#include "CSteamValidation.h"
+#include "CSteamUserGroupStatus.h"
 
 
 /////////////////////////////////////////////////////////////////////////////

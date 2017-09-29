@@ -1,5 +1,6 @@
 #include "pch.h"
 
+
 #include <shellapi.h>
 #include "cmdview.h"
 //#include "console.h"
@@ -11,6 +12,7 @@
 #include "slideshow.h"
 #include "Training.h"
 #include "CommandAcknowledgedCondition.h"
+#include "SteamClans.h" // BT - STEAM
 
 #include <Delayimp.h>   // For error handling & advanced features
 //#include "..\\icqapi\\ICQAPIInterface.h"
@@ -147,6 +149,8 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 	textures.Create( DummyPackCreateCallback );
 	return 0;
 }
+
+
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	
@@ -157,7 +161,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	bool bHide = false;
 	HWND hwndFound = NULL;
 	if (pData->bWindowed) {
-		hwndFound=FindWindow(NULL, "Allegiance");
+		hwndFound=FindWindow(NULL, TrekWindow::GetWindowTitle()); // BT - 9/17 - Updated to dynamic value.
 	} else {
 		//this window will have our "intro" in it...
 		hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE|WS_POPUP, 0, 0,
@@ -171,23 +175,28 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	if( SUCCEEDED( DDVid->Play(pData->pathStr,pData->bWindowed))) //(WMV2 is good as most machines read it)
     {
 		::ShowCursor(FALSE);
-		while( DDVid->m_Running && bOk) //we can now do other stuff while playing
-        {
-			if(!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
-				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) || 
+		
+		while (DDVid->m_Running && bOk) //we can now do other stuff while playing
+		{
+			if (!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
+				GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) ||
 				GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
 			{
 				DDVid->m_Running = FALSE;
 				DDVid->m_pVideo->Stop();
-			} else	{
-		    	DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+			}
+			else {
+				DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
 				if (pData->bWindowed) {
 					bOk = DDVid->Flip(); //windowed #112 Imagooooo
-				} else {
-					DDVid->m_lpDDSPrimary->Flip(0,DDFLIP_WAIT);
+				}
+				else {
+					DDVid->m_lpDDSPrimary->Flip(0, DDFLIP_WAIT);
 				}
 			}
 		}
+
+
 		::ShowCursor(TRUE);
 		DDVid->DestroyDDVid();
 	} else {
@@ -2157,7 +2166,7 @@ public:
             //
 
 			// kg- #226
-            m_pimageScreen = new TranslateImage(
+             m_pimageScreen = new TranslateImage(
 				CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane()),
 				Point(0, 0)
 			);
@@ -2217,6 +2226,9 @@ public:
                 Set3DAccelerationImportant(false);
                 SaveCombatSize();
                 GetConsoleImage()->OnSwitchViewMode();
+
+				// BT - 9/17 - Return to 800x600 resolution so the screens scale correctly when the player returns to the lobby.
+				SetFullscreenSize(Vector(800, 600, 0));
             }
 
             SetHideCursorTimer(s == ScreenIDCombat);
@@ -2313,6 +2325,9 @@ public:
                     break;
 
                 case ScreenIDGameOverScreen:
+					// BT - 9/17 - Return the screen to 800x600 for game over so that the screen scales correctly for full screen.
+					SetFullscreenSize(Vector(800, 600, 0));
+
                     SetScreen(CreateGameOverScreen(GetModeler()));
                     break;
 
@@ -2332,15 +2347,34 @@ public:
 						bool bWMP = (hVidTest && hAudTest) ? true : false;
 						::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
 						if (!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID && bWMP) {					
+							
 							//dont' check for intro.avi, 
 							// let the screen flash so they at least know this works
 							DDVideo *DDVid = new DDVideo();
 							if (m_pengine->IsFullscreen()) {
-								CD3DDevice9::Get()->ResetDevice(true,0,0,0);
+								CD3DDevice9::Get()->ResetDevice(true, 0, 0, 0);
 							}
-							DDVid->m_hWnd =  GetHWND();
+
+							bool bWindowCreated = false;
+
+							// BT - 9/17 - Fixing the window frame that is shown around the movie when played in the intro screen.
+							if (m_pengine->IsFullscreen() == false) {
+								DDVid->m_hWnd = FindWindow(NULL, TrekWindow::GetWindowTitle());
+							}
+							else {
+								//this window will have our "intro" in it...
+								DDVid->m_hWnd = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE | WS_POPUP, 0, 0,
+									GetSystemMetrics(SM_CXFULLSCREEN), GetSystemMetrics(SM_CYFULLSCREEN), NULL, NULL,
+									::GetModuleHandle(NULL), NULL);
+
+								bWindowCreated = true;
+							}
+
+							// BT - 9/17 - Replaced with the above.
+							//DDVid->m_hWnd =  GetHWND();
+
 							bool bOk = true;
-							ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi"; //this can be any kind of AV file
+							ZString pathStr = GetModeler()->GetArtPath() + "/intro_movie.avi"; //this can be any kind of AV file
 							if(SUCCEEDED(DDVid->Play(pathStr,!m_pengine->IsFullscreen()))) //(Type WMV2 is good as most systems will play it)  
 							{ 
 								GetAsyncKeyState(VK_LBUTTON); GetAsyncKeyState(VK_RBUTTON);
@@ -2361,11 +2395,18 @@ public:
 										}
 									}
 								}
+
 								::ShowCursor(TRUE);
 								DDVid->DestroyDDVid();
+								
 							} else {
 								DDVid->DestroyDirectDraw();
 							}
+
+							// BT - 9/17 - Clean up the movie window.
+							if (bWindowCreated == true)
+								::DestroyWindow(DDVid->m_hWnd);
+
 
 							if (m_pengine->IsFullscreen()) {
 								CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
@@ -2558,6 +2599,37 @@ public:
         return (m_screen != ScreenIDCombat) || IsProbablyNotForChat (vk) || !m_pconsoleImage->IsComposing ();
     }
 
+	// BT - 9/17 - Made this a function to support chaining the opening microsoft splash with the longer classic
+	// allegiance movie. 
+	HANDLE PlayMovieClip(bool playMovies, bool isSoftware, bool isWindowed, ZString moviePath)
+	{
+		HANDLE hDDVidThread = 0;
+
+		if (!g_bQuickstart && playMovies && !g_bReloaded && !isSoftware &&
+			::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
+			!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
+			//Imago only check for these if we have to 8/16/09
+			HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
+			HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
+			bool bWMP = (hVidTest && hAudTest) ? true : false;
+			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
+			if (bWMP) {
+				if (!CD3DDevice9::Get()->IsWindowed()) {
+					::ShowWindow(GetHWND(), SW_HIDE);
+				}
+
+				//#112 windowed 7/10 Imago
+				PlayVideoInfo * pData = new PlayVideoInfo;
+				pData->pathStr = moviePath;
+				pData->bWindowed = CD3DDevice9::Get()->IsWindowed();
+
+				hDDVidThread = CreateThread(NULL, 0, DDVidCreateThreadProc, (void *)pData, THREAD_PRIORITY_HIGHEST, 0);
+			}
+		}
+
+		return hDDVidThread;
+	}
+
     TrekWindowImpl(
         EffectApp*     papp,
         const ZString& strCommandLine,
@@ -2654,31 +2726,17 @@ public:
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
 
-		//Imago 6/29/09 7/28/09 now plays video in thread while load continues
+		//Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
 		HANDLE hDDVidThread = NULL;
-		ZString pathStr = GetModeler()->GetArtPath() + "/intro.avi";
 
-		if (!g_bQuickstart && bMovies && !g_bReloaded && !bSoftware &&
-		::GetFileAttributes(pathStr) != INVALID_FILE_ATTRIBUTES && 
-		!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
-			//Imago only check for these if we have to 8/16/09
-			HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
-			HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
-			bool bWMP = (hVidTest && hAudTest) ? true : false;
-			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest); 
-			if (bWMP) {
-				if (!CD3DDevice9::Get()->IsWindowed()) {
-					::ShowWindow(GetHWND(),SW_HIDE);
-				}
+		// BT - 9/17 - If you want to re-add an intro movie, you can uncomment this code, but it was causing some people to crash,
+		// and most didn't like having any intro at all. :(
+		// To make a movie that is compatible with the movie player, use this ffmpeg command line: 
+		// ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
+		//ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
+		//hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
 
-				//#112 windowed 7/10 Imago
-				PlayVideoInfo * pData = new PlayVideoInfo;
-				pData->pathStr = pathStr;
-				pData->bWindowed = CD3DDevice9::Get()->IsWindowed();
-
-				hDDVidThread = CreateThread(NULL,0,DDVidCreateThreadProc,(void *)pData,THREAD_PRIORITY_HIGHEST,0);
-			}
-		}
+		
 
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
 		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "1.0"))); //Imago #215 8/10
@@ -3235,9 +3293,44 @@ public:
         RestoreCursor();
     	if (hDDVidThread != NULL) {
 			WaitForSingleObject(hDDVidThread,INFINITE);
-			if (!CD3DDevice9::Get()->IsWindowed()) 
-				::ShowWindow(GetHWND(),SW_SHOWMAXIMIZED);
 			CloseHandle(hDDVidThread);
+
+			// BT - 9/17 - The return of the original intro movie. Only try to show the movie the first time the user runs allegiance. 
+			HKEY    hKey;
+			DWORD   dwHasSeenMovie = 0;
+			DWORD dwDataSize = sizeof(dwHasSeenMovie);
+			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_ALL_ACCESS, &hKey))
+			{
+				RegQueryValueExA(hKey, "HasSeenMovie", NULL, NULL, (LPBYTE)&dwHasSeenMovie, &dwDataSize);
+
+				if (dwHasSeenMovie == 0)
+				{
+					DWORD   dwNewValue = 1;
+					RegSetValueExA(hKey, "HasSeenMovie", NULL, REG_DWORD, (const BYTE*)&dwNewValue, sizeof(dwNewValue));
+				}
+				RegCloseKey(hKey);
+			}
+			ZString pathMovieStr = "";
+
+			if (dwHasSeenMovie == 0)
+			{
+				// To make a movie that is compatible with the movie player, use this ffmpeg command line: 
+				// ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
+				pathMovieStr = GetModeler()->GetArtPath() + "/intro_movie.avi";
+
+				hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathMovieStr);
+
+				if (hDDVidThread != NULL) 
+				{
+					WaitForSingleObject(hDDVidThread, INFINITE);
+					CloseHandle(hDDVidThread);
+				}
+			}
+
+			// BT - End of movie change.
+
+			if (!CD3DDevice9::Get()->IsWindowed())
+				::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
 		}    
     }
 
@@ -3827,7 +3920,7 @@ public:
 		//  the compare doesn't work anyway
 		//   if (szURL[0] == '\0')
 		if (szURL[0] == '\0')
-			szURL = "http://www.alleg.net";
+			szURL = "https://www.freeallegiance.org/forums"; // BT - 9/17 updated dead link to point to forums instead.
 
         if (!IsWindows9x()) {
             /*
@@ -3851,6 +3944,7 @@ public:
     #define idmExitApp           12
     #define idmGameDetails       13
 	#define idmVersion           14 // TE: Added Version menu
+	#define idmTags				 15 // BT - STEAM - Let the user select thier group tag.
 
     #define idmChannelN          101
     #define idmChannelShow       102
@@ -3954,6 +4048,26 @@ public:
 	#define idmMouseSensDown	819
 	#define idmMouseAccel		820
 	#define idmWheelDelay		821 //Spunky #282
+
+	// BT - STEAM
+	#define idmCallsignTag0		900
+	#define idmCallsignTag1		901
+	#define idmCallsignTag2		902
+	#define idmCallsignTag3		903
+	#define idmCallsignTag4		904
+	#define idmCallsignTag5		905
+	#define idmCallsignTag6		906
+	#define idmCallsignTag7		907
+	#define idmCallsignTag8		908
+	#define idmCallsignTag9		909
+	#define idmCallsignTagNone	910 
+	
+	// BT - STEAM
+	#define idmToken0			920
+	#define idmToken1			921
+	#define idmToken2			922
+	#define idmToken3			923
+	#define idmToken4			924
 	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4027,6 +4141,10 @@ public:
 		DeleteObject(hCaptureBitmap);
 	}
 
+	// BT - STEAM - TODO Move these to where the other globals are hiding?
+	CallsignTagInfo m_currentCallsignTag;
+	SteamClans m_availableSteamClans;
+
     void ShowMainMenu()
     {
         m_pmenu =
@@ -4084,6 +4202,44 @@ public:
         m_pmenu->AddMenuItem(idmOptions      , "Graphics", 'O', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
 		m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
+
+		
+		// BT - STEAM - Let the user select their steam call sign from a list of options.
+		if (m_availableSteamClans.GetAvailableCallsignTags()->GetCount() > 0)
+		{
+			ZString menuOption = "Squad Tags";
+			if (m_currentCallsignTag.m_steamGroupID > 0)
+			{
+				ZString currentName = trekClient.GetSavedCharacterName();
+				ZString renderedName = m_currentCallsignTag.Render(currentName);
+				menuOption = ZString("Squad Tags (") + renderedName + ")   ";
+			}
+
+			if (m_screen == ScreenIDSplashScreen || m_screen == ScreenIDIntroScreen || m_screen == ScreenIDZoneClubScreen)
+			{
+
+				m_pmenu->AddMenuItem(0, "");
+				m_pmenu->AddMenuItem(0, "Only Available Before");
+				m_pmenu->AddMenuItem(0, "Connecting to the Lobby");
+				m_pmenu->AddMenuItem(0, "--------------------------");
+				m_pmenu->AddMenuItem(idmTags, menuOption, 'T', m_psubmenuEventSink);
+
+				
+				ZString tokens = m_currentCallsignTag.GetAvailableTokens();
+				if (tokens.GetLength() > 0)
+				{
+					for (int i = 0; i < tokens.GetLength(); i++)
+					{
+						if (tokens[i] == m_currentCallsignTag.m_callsignToken[0])
+							continue;
+
+						m_pmenu->AddMenuItem(idmToken0 + i, "Add Officer Token: ", tokens[i]);
+					}
+				}
+			}
+		}
+
+		// BT - STEAM - END.
 
 
         if (trekClient.MyMission() != NULL) {
@@ -4282,6 +4438,52 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
+
+	// BT - STEAM 
+	void AddAvailablePlayerTagsToMenu(TRef<IMenu> pmenu)
+	{
+		pmenu->AddMenuItem(0, "Squad Tags");
+		pmenu->AddMenuItem(0, "--------------------------");
+
+		pmenu->AddMenuItem(idmCallsignTagNone, "<None>", 'X');
+
+		// Allow up to 30 tags to be shown.
+		// Backing this out for now, forgot to add additional idmCallsignTag* slots. 
+		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount() && i < 10; i++)
+		{
+			CallsignTagInfo item = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
+			pmenu->AddMenuItem(idmCallsignTag0 + i, item.m_callsignTag, 48 + item.m_index); // 48 = ASCII code for '0'.
+		}
+	}
+
+	// BT - STEAM
+	void SetPlayerCallsign(int playerCallsignIndex)
+	{
+		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount(); i++)
+		{
+			CallsignTagInfo callsignTagInfo = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
+
+			if (callsignTagInfo.m_index == playerCallsignIndex - idmCallsignTag0)
+			{
+				m_currentCallsignTag.SetSteamGroupID(callsignTagInfo.m_steamGroupID, callsignTagInfo.m_callsignTag);
+				break;
+			}
+		}
+	}
+
+	// BT - STEAM
+	void UnsetPlayerCallsign()
+	{
+		m_currentCallsignTag.SetSteamGroupID(0, "");
+	}
+
+	// BT - STEAM
+	void SetPlayerToken(int playerTokenIndex)
+	{
+		ZString tokens = m_currentCallsignTag.GetAvailableTokens();
+		m_currentCallsignTag.SetToken(tokens.Middle(idmToken0 - playerTokenIndex, 1));
+	}
+
     TRef<IPopup> GetSubMenu(IMenuItem* pitem)
     {
         TRef<IMenu> pmenu =
@@ -4351,6 +4553,11 @@ public:
                 m_pitemVoiceOverVolumeDown  = pmenu->AddMenuItem(idmVoiceOverVolumeDown,
                     GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), -c_fVolumeDelta), 'C');
                 break;
+
+				// BT - STEAM
+			case idmTags:
+				AddAvailablePlayerTagsToMenu(pmenu);
+				break;
 
 			//TheBored 30-JUL-07: Filter Unknown Chat patch
 			case idmMuteFilterOptions:
@@ -5820,7 +6027,6 @@ public:
 			);
     }
     // end w0dk4 player-pings feature
-
     void OnMenuCommand(IMenuItem* pitem)
     {
         switch (pitem->GetID()) {
@@ -6136,6 +6342,38 @@ public:
 				AdjustMouseSens(-c_fMouseSensDelta);
 				break;
 			// End Imago
+
+				// BT - STEAM
+			case idmCallsignTag0:
+			case idmCallsignTag1:
+			case idmCallsignTag2:
+			case idmCallsignTag3:
+			case idmCallsignTag4:
+			case idmCallsignTag5:
+			case idmCallsignTag6:
+			case idmCallsignTag7:
+			case idmCallsignTag8:
+			case idmCallsignTag9:
+				SetPlayerCallsign(pitem->GetID());
+				CloseMenu();
+				break;
+
+				// BT - STEAM
+			case idmCallsignTagNone:
+				UnsetPlayerCallsign();
+				CloseMenu();
+				break;
+
+				// BT - STEAM
+			case idmToken0:
+			case idmToken1:
+			case idmToken2:
+			case idmToken3:
+			case idmToken4:
+				SetPlayerToken(pitem->GetID());
+				CloseMenu();
+				break;
+
         }
     }
 
@@ -7898,6 +8136,9 @@ public:
                       float dt,
                       bool  activeControlsF)
 	{
+		// BT - STEAM
+		SteamAPI_RunCallbacks();
+
 		//Spunky #76 - only update throttle if enough time elapsed
 		static const float delay[] = {0.066f, 0.033f, 0.022f, 0.016f, 0.0f}; //#282
 		static float TimeSinceThrottleUpdate;
@@ -8132,30 +8373,30 @@ public:
                                 m_cameraControl.SetFOV(fov);
                             }
 
-                            if (trekClient.GetShip()->GetBaseHullType() != NULL)
-                            {
-                                //What is the maximum desired rate of turn for this field of view?
-                                //Use the same calculation as for turrets.
-                                //Keep in sync with wintrek.cpp's FOV by throttle
-								
-                                static const float  c_minRate = RadiansFromDegrees(7.5f);
-                                static const float  c_maxRate = RadiansFromDegrees(75.0f);
-                                //float   maxSlewRate = c_minRate + (c_maxRate - c_minRate) * fov / s_fMaxFOV;
-								float zoomMod = fov / s_fMaxFOV; //madpeople - ---^ do not limit this view beyond that of the core #88 7/10 
+							// BT 3/13/2016 - Wasp's slew rate fix. 
+							if (trekClient.GetShip()->GetBaseHullType() != NULL)
+							{
+								//What is the maximum desired rate of turn for this field of view?
+								//Use the same calculation as for turrets.
+								//Keep in sync with wintrek.cpp's FOV by throttle
+								static const float  c_minRate = RadiansFromDegrees(7.5f);
+								static const float  c_maxRate = RadiansFromDegrees(75.0f);
+								float   maxSlewRate = c_minRate +
+									(c_maxRate - c_minRate) * fov / s_fMaxFOV;
 
-                                const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
-								{	
-                                    float pitch = pht->GetMaxTurnRate(c_axisPitch);
-									float maxSlewRate = c_minRate + (pitch - c_minRate) * zoomMod; //madpeople /Imago  #88
-                                    if (pitch > maxSlewRate)
-                                        js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
-                                }
-                                {
-                                    float yaw = pht->GetMaxTurnRate(c_axisYaw);
-									float maxSlewRate = c_minRate + (yaw - c_minRate) * zoomMod; //madpeople /Imago  #88
-                                    if (yaw > maxSlewRate)
-                                        js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
-                                }
+								const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
+								{
+									float               pitch = pht->GetMaxTurnRate(c_axisPitch);
+
+									if (pitch > maxSlewRate)
+										js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
+								}
+								{
+									float               yaw = pht->GetMaxTurnRate(c_axisYaw);
+
+									if (yaw > maxSlewRate)
+										js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
+								}
 							}
                         }
                     }
@@ -9632,9 +9873,10 @@ public:
             case TK_ConModeNav:
             case TK_ViewSector:
             {
-                if (GetViewMode() != vmOverride) {
+				// BT - 9/17 - CortUI integration - The minimap is now always visible.
+               /* if (GetViewMode() != vmOverride) {
                     ToggleOverlayFlags(ofSectorPane);
-                }
+                }*/
             }
             break;
 
@@ -9754,8 +9996,9 @@ public:
                     else
                         SetViewMode(vmHangar);
                 }
-                else
-                    ToggleOverlayFlags(ofInventory);
+				// BT - 9/17 - CortUI integration - Keep the inventory open, always. 
+                //else
+                 //   ToggleOverlayFlags(ofInventory);
             }
             break;
 

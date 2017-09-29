@@ -87,6 +87,11 @@ HRESULT DDVideo::InitDirectDraw()
 	} else {
 		ddsd.dwBackBufferCount = 1;
 		hRet = m_lpDD->CreateSurface(&ddsd, &m_lpDDSPrimary, NULL);
+
+		// BT - 9/17 - Fixing occosional crash on movie playback.
+		if (FAILED(hRet) == true)
+			return hRet;
+
 		ZeroMemory( &ddscaps, sizeof( ddscaps ) );
 		ddscaps.dwCaps=DDSCAPS_BACKBUFFER;
 		hRet = m_lpDDSPrimary->GetAttachedSurface(&ddscaps,&m_lpDDSBack);

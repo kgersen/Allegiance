@@ -9,6 +9,9 @@
 
 #define __MODULE__ "Training"
 
+// BT - STEAM
+#include "steam_api.h"
+
 // C4786: BSC name truncation
 #pragma warning(disable:4786)
 
@@ -60,6 +63,7 @@
 
 #include "messagesAll.h"
 #include "messages.h"
+#include "messagesLC.h"
 #include "clintlib.h"
 
 #include "soundengine.h"

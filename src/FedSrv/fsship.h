@@ -10,6 +10,7 @@
 #ifndef _FSSHIP_H_
 #define _FSSHIP_H_
 
+
 #define GETFSSHIP(pship) ((CFSShip *) (pship)->GetPrivateData())
 #define ISPLAYER(pship) (GETFSSHIP(pship)->IsPlayer())
 
@@ -246,12 +247,17 @@ class CFSPlayer :
 {
 public:
   CFSPlayer(CFMConnection * pcnxn, int characterId, const char * szCDKey,
-            TRef<IshipIGC> pShip, bool fCanCheat);
+            TRef<IshipIGC> pShip, bool fCanCheat, CSteamID &steamID); // BT - STEAM
   virtual ~CFSPlayer();
   CFMGroup *      GetGroup() {return m_pgrp;}
   virtual void    Launch(IstationIGC* pstation);
 
   virtual void    Dock(IstationIGC * pstation);
+
+  // BT - STEAM
+  inline CSteamAchievements * GetSteamAchievements() {
+	  return &m_pSteamAchievements;
+  };
 
   // these are for ship updates only
   static DWORD    GetMaxLatency()     {return m_latencyMax;}
@@ -507,6 +513,7 @@ bool			GetJustJoined() {return b_JustJoined; };
 void			SetJustJoined(bool b_joined) {b_JustJoined = b_joined; };
 
 private:
+	CSteamAchievements	m_pSteamAchievements; // BT - STEAM
   IpartTypeIGC*     m_ptDesiredLoadout[c_maxCargo + 3];
 
   bool              RemoveFromSide(bool fSendSideChange);

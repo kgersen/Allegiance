@@ -13,6 +13,10 @@
 #include <zreg.h>
 #include "client.h"
 
+ // BT - STEAM
+#include "atlenc.h"
+#include <inttypes.h>
+
 ALLOC_MSG_LIST;
 
 CLobbyApp * g_pLobbyApp = NULL;
@@ -41,6 +45,9 @@ bool CLobbyApp::ProcessMsgPump()
   static CTimer timerMsgPump("in message pump", 0.1f);
   timerMsgPump.Start();
   bool fQuit = false;
+
+  // BT - STEAM 
+  SteamGameServer_RunCallbacks();
 
   // Process the message queue, if any messages were received
   MSG msg;
@@ -152,8 +159,16 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
   m_sql(this)
 #endif
 {
+	// BT - STEAM
+	m_lastDrmHashUpdate.dwHighDateTime = 0;
+	m_lastDrmHashUpdate.dwLowDateTime = 0;
+	strcpy(m_szDrmHashFilename, "");
+
   assert(m_plas);
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_Creating);
+
+  // Imago 9/14 // BT - STEAM
+  m_logonCS = new CRITICAL_SECTION;
 
 #ifdef USECLUB
   m_strSQLConfig.Empty();
@@ -195,6 +210,16 @@ CLobbyApp::CLobbyApp(ILobbyAppSite * plas) :
 
     m_szToken[0] = '\0';
     bSuccess = _Module.ReadFromRegistry(hk, true, "Token", m_szToken, NULL);
+
+	// BT - STEAM - AWeb API urls.
+	m_szChatlogUploadUrl[0] = '\0';
+	bSuccess = _Module.ReadFromRegistry(hk, true, "ChatLogUploadUrl", m_szChatlogUploadUrl, NULL);
+
+	m_szBanCheckUrl[0] = '\0';
+	bSuccess = _Module.ReadFromRegistry(hk, true, "BanCheckUrl", m_szBanCheckUrl, NULL);
+
+	m_szApiKey[0] = '\0';
+	bSuccess = _Module.ReadFromRegistry(hk, true, "ApiKey", m_szApiKey, NULL);
 
     DWORD dwProtocol;
     bSuccess = _Module.ReadFromRegistry(hk, false, "fProtocol", &dwProtocol, (unsigned long) true);
@@ -268,6 +293,10 @@ CLobbyApp::~CLobbyApp()
 	  ZGameInfoClose();
 	  WSACleanup();
   }
+
+  // BT - STEAM 
+  SteamGameServer_Shutdown();
+
 }
 
 
@@ -399,12 +428,96 @@ void CLobbyApp::RollCall()
   }
 }
 
+// BT - STEAM
+void CLobbyApp::CheckAndUpdateDrmHashes(bool forceUpdate)
+{
+	if (strlen(m_szDrmHashFilename) == 0)
+	{
+		HKEY hKey;
+		char drmHashFilename[MAX_PATH];
+		char drmDownloadUrl[MAX_PATH];
+
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, HKLM_AllLobby, 0, KEY_READ, &hKey))
+		{
+			DWORD cbValue = MAX_PATH;
+
+			drmHashFilename[0] = '\0';
+			drmDownloadUrl[0] = '\0';
+
+			::RegQueryValueExA(hKey, "DrmHashFile", NULL, NULL, (LPBYTE)&drmHashFilename, &cbValue);
+
+			cbValue = MAX_PATH;
+			::RegQueryValueExA(hKey, "DrmDownloadUrl", NULL, NULL, (LPBYTE)&drmDownloadUrl, &cbValue);
+
+			if (strlen(drmHashFilename) == 0)
+			{
+				ZDebugOutput("The DrmHashFile entry is not set. Drm Hash Files will not be relayed to game servers correctly. If you are not using Steam integration, then it is safe to ignore the message.");
+				strcpy(drmHashFilename, "NOTSET");
+			}
+
+			if (strlen(drmDownloadUrl) == 0)
+			{
+				ZDebugOutput("The DrmDownloadUrl entry is not set. Drm Hash Files will not be relayed to game servers correctly. If you are not using Steam integration, then it is safe to ignore the message.");
+				strcpy(drmDownloadUrl, "NOTSET");
+			}
+
+			strcpy(m_szDrmHashFilename, drmHashFilename);
+			strcpy(m_szDrmDownloadUrly, drmDownloadUrl);
+
+			RegCloseKey(hKey);
+		}
+	}
+
+	if (strcmp(m_szDrmHashFilename, "NOTSET") == 0)
+		return;
+
+	if (strcmp(m_szDrmDownloadUrly, "NOTSET") == 0)
+		return;
+
+	FILETIME lastModifiedTime = ZFile::GetMostRecentFileModificationTime(ZString(m_szDrmHashFilename));
+	if (CompareFileTime(&m_lastDrmHashUpdate, &lastModifiedTime) != 0 || forceUpdate == true)
+	{
+		// Push update message to all servers.
+		FedMessaging * pfm = &g_pLobbyApp->GetFMServers();
+		int count = pfm->GetConnectionCount();
+		ListConnections::Iterator iterCnxn(*pfm->GetConnections());
+		while (!iterCnxn.End()) {
+			BEGIN_PFM_CREATE(*pfm, pfmUpdateDrmHashes, L, UPDATE_DRM_HASHES)
+				FM_VAR_PARM(m_szDrmDownloadUrly, CB_ZTS)
+				END_PFM_CREATE
+
+				pfm->SendMessages(iterCnxn.Value(), FM_GUARANTEED, FM_FLUSH);
+			iterCnxn.Next();
+		}
+
+		m_lastDrmHashUpdate = lastModifiedTime;
+	}
+
+}
 
 int CLobbyApp::Run()
 {
   const DWORD c_dwUpdateInterval = 200; // milliseconds
   DWORD dwSleep = c_dwUpdateInterval;
   DWORD dwWait = WAIT_TIMEOUT;
+
+  // BT - STEAM
+  uint32 unIP = INADDR_ANY;
+  uint32 steamAuthenticationPort = 8766;
+  uint32 gamePort = 27015; // We will manage our own network communications with game clients, so this will not be used directly by us.
+  uint32 masterUpdaterPort = 27016;
+  EServerMode eMode = eServerModeAuthenticationAndSecure;
+  const char *lobbyVersion = "1.0.0.4";
+
+  if (SteamGameServer_Init(unIP, steamAuthenticationPort, gamePort, masterUpdaterPort, eMode, lobbyVersion) == false)
+  {
+	  printf("failed on steam server init.\n");
+	  exit(-1);
+  }
+
+  SteamGameServer()->LogOnAnonymous();
+  // End Steam
+
 
   m_plas->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_Running);
   _putts("---------Press Q to exit---------");
@@ -477,6 +590,7 @@ int CLobbyApp::Run()
       if (GetNow() - timeRollCall >= 5.0f)
       {
         RollCall();
+		CheckAndUpdateDrmHashes(false); // BT - STEAM
         timeRollCall = GetNow();
       }
     }
@@ -663,8 +777,71 @@ bool CLobbyApp::GetRankForCallsign(const char* szPlayerName, int *rank, double *
 }
 
 // BT - 9/11/2010 - CD Key check will call back to the lobby service to ensure the authentication token is valid.
-bool CLobbyApp::CDKeyIsValid(const char* szPlayerName, const char* szCDKey, const char* szAddress, char *resultMessage, int resultMessageLength)
+bool CLobbyApp::CDKeyIsValid(const char* szPlayerName, const char* szCDKey, const char* szAddress, char *resultMessage, int resultMessageLength, char * playerIdentifier)
 {
+	// BT - STEAM
+	ZString combinedKey = szCDKey;
+	ZString steamIDString = combinedKey.LeftOf(":");
+	ZString steamTokenString = combinedKey.RightOf(steamIDString.GetLength() + 1);
+
+	uint64 steamUID = strtoull(steamIDString, NULL, 0);
+	CSteamID steamID = CSteamID(steamUID);
+
+	strcpy(playerIdentifier, steamIDString);
+
+	char steamAuthTicket[1024];
+	int steamAuthTicketLen = sizeof(steamAuthTicket);
+	char steamAuthTicketEncoded[2064];
+	strcpy(steamAuthTicketEncoded, steamTokenString);
+	UUDecode((BYTE *)steamAuthTicketEncoded, steamTokenString.GetLength(), (BYTE *)steamAuthTicket, &steamAuthTicketLen);
+
+
+	EBeginAuthSessionResult result = SteamGameServer()->BeginAuthSession(steamAuthTicket, steamAuthTicketLen, steamID);
+
+	bool returnValue = false;
+
+
+	switch (result)
+	{
+	case k_EBeginAuthSessionResultOK:
+		strcpy(resultMessage, "Authentication In Progress.");
+		returnValue = true;
+		break;
+
+	case k_EBeginAuthSessionResultInvalidTicket:
+		strcpy(resultMessage, "Couldn't begin authorization: Invalid Ticket.");
+		returnValue = false;
+		break;
+
+	case k_EBeginAuthSessionResultDuplicateRequest:
+		strcpy(resultMessage, "Couldn't begin authorization: Duplicate Request.");
+		returnValue = false;
+		break;
+
+	case k_EBeginAuthSessionResultInvalidVersion:
+		strcpy(resultMessage, "Couldn't begin authorization: Invalid Version.");
+		returnValue = false;
+		break;
+
+	case k_EBeginAuthSessionResultGameMismatch:
+		strcpy(resultMessage, "Couldn't begin authorization: Game Mismatch.");
+		returnValue = false;
+		break;
+
+	case k_EBeginAuthSessionResultExpiredTicket:
+		strcpy(resultMessage, "Couldn't begin authorization: Expired Ticket.");
+		returnValue = false;
+		break;
+
+	default:
+		sprintf(resultMessage, "Couldn't begin authorization: unknown error code returned: %ld", result);
+		returnValue = false;
+		break;
+	}
+
+	return returnValue;
+
+	/*
 	int contentLen = 0; 
     char *content;
     char szResponse[MAX_PATH];    
@@ -753,6 +930,7 @@ bool CLobbyApp::CDKeyIsValid(const char* szPlayerName, const char* szCDKey, cons
 		strcpy(resultMessage, "Authentication Succeeded.");
 
 	return succeeded;
+	*/
 }
 
 
@@ -770,34 +948,71 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
   BootPlayersByName(strPlayerName);
 #endif
 
-  if(EnforceAuthentication() == true)
+  // BT - STEAM - Check with the AWeb service for any bans on this user's SteamID. 
+  MaClient client;
+
+  ZString url = ZString(g_pLobbyApp->GetBanCheckUrl()) + "?apiKey=" + ZString(g_pLobbyApp->GetApiKey()) + "&steamID=" + ZString(szCDKey);
+
+  int result = client.getRequest((char*) (PCC) url);
+  int responseCode = client.getResponseCode();
+
+  if (responseCode == 200)
   {
-	  // BT - 9/11/2010 - Readding CD Key Auth on player join to the Allegiance server.
-	int resultMessageLength = 1024;
-	char resultMessage[1024];
+	  char buffer[2064];
+	  int bufferLen = sizeof(buffer);
+	  strncpy(buffer, client.getResponseContent(&bufferLen), sizeof(buffer));
+	  if (bufferLen > sizeof(buffer) - 1)
+		  buffer[sizeof(buffer) - 1] = '\0';
+	  else
+		  buffer[bufferLen] = '\0';
 
-	debugf("SetPlayerMission(): checking valid key for: %s, cdKey: %s, IP: %s\r\n", szPlayerName, szCDKey, szAddress);
+	  if (strlen(buffer) > 0)
+	  {
+		  BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
+			  FM_VAR_PARM(szPlayerName, CB_ZTS)
+			  FM_VAR_PARM(buffer, CB_ZTS)
+			  END_PFM_CREATE
+			  pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
+		  pfmRemovePlayer->reason = RPR_bannedBySteam;
+		  m_fmServers.SendMessages(pMission->GetServer()->GetConnection(),
+			  FM_GUARANTEED, FM_FLUSH);
+		  GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
+			  pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
+	  }
+  }
 
-	bool cdKeyIsValid = CDKeyIsValid(szPlayerName, szCDKey, szAddress, resultMessage, resultMessageLength);
 
-	debugf("SetPlayerMission(): keycheck for: %s, key: %s, address: %s, result: %s, succeeded: %s\r\n", szPlayerName, szCDKey, szAddress, resultMessage, (cdKeyIsValid == true) ? "true" : "false");
+  // BT - No more ACSS.
+ // if(EnforceAuthentication() == true)
+ // {
+	//  // BT - 9/11/2010 - Readding CD Key Auth on player join to the Allegiance server.
+	//int resultMessageLength = 1024;
+	//char resultMessage[1024];
 
-    if (cdKeyIsValid == false)
-    {
-      BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
-        FM_VAR_PARM(szPlayerName, CB_ZTS)
-		FM_VAR_PARM(resultMessage, CB_ZTS)
-      END_PFM_CREATE
-      pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
-      pfmRemovePlayer->reason = RPR_duplicateCDKey;    
-      m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
-        FM_GUARANTEED, FM_FLUSH);
-      GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
-          pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
-    }
-    else // BT - 9/11/2010 - End.
-	{
-		ZString strOldPlayer;
+	//debugf("SetPlayerMission(): checking valid key for: %s, cdKey: %s, IP: %s\r\n", szPlayerName, szCDKey, szAddress);
+	//
+	//// BT - STEAM
+	//char playerIdentifier[64];
+	//bool cdKeyIsValid = CDKeyIsValid(szPlayerName, szCDKey, szAddress, resultMessage, resultMessageLength, playerIdentifier);
+
+	//debugf("SetPlayerMission(): keycheck for: %s, key: %s, address: %s, result: %s, succeeded: %s\r\n", szPlayerName, szCDKey, szAddress, resultMessage, (cdKeyIsValid == true) ? "true" : "false");
+
+ //   if (cdKeyIsValid == false)
+ //   {
+ //     BEGIN_PFM_CREATE(m_fmServers, pfmRemovePlayer, L, REMOVE_PLAYER)
+ //       FM_VAR_PARM(szPlayerName, CB_ZTS)
+	//	FM_VAR_PARM(resultMessage, CB_ZTS)
+ //     END_PFM_CREATE
+ //     pfmRemovePlayer->dwMissionCookie = pMission->GetCookie();
+ //     pfmRemovePlayer->reason = RPR_duplicateCDKey;    
+ //     m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
+ //       FM_GUARANTEED, FM_FLUSH);
+ //     GetSite()->LogEvent(EVENTLOG_WARNING_TYPE, LE_BadCDKey, szCDKey,
+ //         pMission->GetServer()->GetConnection()->GetName(), szPlayerName);
+ //   }
+ //   else // BT - 9/11/2010 - End.
+	//{
+		/*ZString strOldPlayer;
 
 		if (BootPlayersByCDKey(strCDKey, szPlayerName, strOldPlayer))
 		{
@@ -809,9 +1024,9 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
 		  pfmRemovePlayer->reason = RPR_duplicateCDKey;    
 		  m_fmServers.SendMessages(pMission->GetServer()->GetConnection(), 
 			FM_GUARANTEED, FM_FLUSH);
-		}
-	}
-  }
+		}*/
+	//}
+ // }
 
   // create a new player by creating entries in the maps
   PlayerByCDKey::iterator iterPlayerByCDKey = 

@@ -40,6 +40,10 @@ DEFINE_FEDMSG(C, LOGONREQ, 1)   // First message the client sends to the server.
   Time      time;
   DWORD     dwCookie;
   int       crcFileList; 
+  int8		steamAuthTicket[1024]; // BT - STEAM
+  uint32	steamAuthTicketLength; // BT - STEAM
+  uint64	steamID; // BT - STEAM
+  char		drmHash[50]; // BT - STEAM
 END_FEDMSG
 
 DEFINE_FEDMSG(S, LOGONACK, 2) // sent when the server recives FM_C_LOGONREQ
@@ -792,7 +796,8 @@ enum QuitSideReason
     QSR_SwitchingSides,
     QSR_RandomizeSides,
 	QSR_FlushSides,		// TE: Add this for balance patch
-	QSR_BalanceSides	// TE: Add this for balance patch
+	QSR_BalanceSides,	// TE: Add this for balance patch
+	QSR_BannedBySteam // BT - STEAM
 };
 
 #define QSRIsBoot(reason) ((reason) >= QSR_LeaderBooted && (reason) <= QSR_AdminBooted)

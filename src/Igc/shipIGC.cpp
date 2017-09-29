@@ -17,6 +17,8 @@
 #include <math.h>
 #include <limits.h>
 
+#include "StackTracer.h" // BT - 9/17 - Trying to hunt down the mystery damage ship event crash. 
+
 float   c_fRunAway = 0.75f;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1269,35 +1271,45 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
             dr = c_drHullDamage;
         }
 
-        if (m_fraction > 0.0f)
-        {
-            if ((type & c_dmgidNoDebris) == 0)
-                GetThingSite ()->AddDamage (position2 - position1, m_fraction);
-            GetMyMission()->GetIgcSite()->DamageShipEvent(timeCollision, this, launcher, type, amount, leakage, position1, position2);
-        }
-        else
-        {
-            m_fraction = 0.0f;
-            if (oldFraction > 0.0f)  //Only send the death message once.
-            {
-				// TE: Get the player credited for the kill
-				DamageBucketLink* pdmglink = NULL;
-				ImodelIGC* pcredit = launcher;
-				DamageTrack*  pdt = this->GetDamageTrack();
-				if (pdt)
+		// BT - 9/17 - Not sure why this exception is happening here. The stack traces I get from the mini-dumps are not helping much. Maybe this will
+		// show more, and also keep the server from crashing?
+		__try
+		{
+			if (m_fraction > 0.0f)
+			{
+				if ((type & c_dmgidNoDebris) == 0)
+					GetThingSite()->AddDamage(position2 - position1, m_fraction);
+				GetMyMission()->GetIgcSite()->DamageShipEvent(timeCollision, this, launcher, type, amount, leakage, position1, position2);
+			}
+			else
+			{
+				m_fraction = 0.0f;
+				if (oldFraction > 0.0f)  //Only send the death message once.
 				{
-					pdmglink = pdt->GetDamageBuckets()->first();
-					if (pdmglink)
+					// TE: Get the player credited for the kill
+					DamageBucketLink* pdmglink = NULL;
+					ImodelIGC* pcredit = launcher;
+					DamageTrack*  pdt = this->GetDamageTrack();
+					if (pdt)
 					{
-						if (pdmglink->data()->model()->GetMission() == GetMyMission())
-							pcredit = pdmglink->data()->model();
+						pdmglink = pdt->GetDamageBuckets()->first();
+						if (pdmglink)
+						{
+							if (pdmglink->data()->model()->GetMission() == GetMyMission())
+								pcredit = pdmglink->data()->model();
+						}
 					}
+					// TE: end
+					GetMyMission()->GetIgcSite()->KillShipEvent(timeCollision, this, pcredit, amount, position1, position2);
+					dr = c_drKilled;
 				}
-				// TE: end
-                GetMyMission()->GetIgcSite()->KillShipEvent(timeCollision, this, pcredit, amount, position1, position2);
-                dr = c_drKilled;
-            }
-        }
+			}
+		}
+		__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
+		{
+			StackTracer::OutputStackTraceToDebugF();
+		}
+
     }
     //Imago 6/10
     //assert (m_fraction >= 0.0f);

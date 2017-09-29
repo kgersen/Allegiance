@@ -31,6 +31,9 @@
 
 #include <urlmon.h>
 
+// BT - STEAM
+#include "steam_gameserver.h"
+
 //
 // Wintrek headers
 //
@@ -38,4 +41,6 @@
 #include "zlib.h"
 #include "utility.h"
 //#include "zauth.h" // KG removed
+
+
 #endif

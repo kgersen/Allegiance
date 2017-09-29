@@ -513,16 +513,21 @@ private:
             );
             psurface->RestoreClipRect(rectClipOld);
 
-            // if they are on our team, draw the player's wing
-            if (pplayer->SideID() == trekClient.GetSideID() && !bOnLobbySide)
-            {
-                psurface->DrawString(
-                    TrekResources::SmallFont(),
-                    color,
-                    WinPoint(m_viColumns[4] + 2, 0), 
-                    c_pszWingName[pplayer->GetShip()->GetWingID()]
-                );
-            }
+			// if they are on our team, draw the player's wing
+			if (pplayer->SideID() == trekClient.GetSideID() && !bOnLobbySide)
+			{
+				// BT - 7/15 - When the team screen is shown, miners have -1 for the wingID, which causes alleg to crash.
+				int wingID = pplayer->GetShip()->GetWingID();
+				if (wingID != NA)
+				{
+					psurface->DrawString(
+						TrekResources::SmallFont(),
+						color,
+						WinPoint(m_viColumns[4] + 2, 0),
+						c_pszWingName[wingID]
+					);
+				}
+			}
         }
     };
 
@@ -3396,6 +3401,7 @@ public:
             case QSR_DuplicateLocalLogon:
             case QSR_DuplicateRemoteLogon:
             case QSR_DuplicateCDKey:
+			case QSR_BannedBySteam: // BT - STEAM
                 // message box created by OnQuitSide
                 break;
 

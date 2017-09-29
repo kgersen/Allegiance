@@ -24,7 +24,7 @@ public:
 
     virtual HRESULT Initialize(const ZString& strCommandLine);
     virtual void    Terminate();
-    virtual int     OnException(DWORD code, ExceptionData* pdata);
+    virtual int     OnException(DWORD code, EXCEPTION_POINTERS* pdata);
 
     virtual void    DebugOutput(const char *psz);
     virtual bool    OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule);
@@ -32,6 +32,12 @@ public:
 
 	// KGJV - added for DX9 behavior
 	virtual bool    IsBuildDX9();
+
+	//imago 6/10
+	virtual bool EnforceFilter( bool bEnforce );
+	virtual bool WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size );
+	static int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers);
+	static LONG __stdcall ExceptionHandler( EXCEPTION_POINTERS* pep );
 };
 
 #endif

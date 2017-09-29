@@ -9,6 +9,10 @@
 
 #define __MODULE__ "ZLib"
 
+// BT - STEAM
+#include <Windows.h>
+#include <wincrypt.h>
+
 #include "zlib.h"
 
 #endif

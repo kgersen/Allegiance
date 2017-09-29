@@ -145,6 +145,12 @@ public:
             m_targetAutoscrollOn->Disconnect();
     }
 
+	void SetScrollbarHidden(bool isHidden)
+	{
+		m_pListPane->SetScrollbarHidden(isHidden);
+	}
+
+
     void AutoscrollOff()
     {
         m_bAutoscroll = false;
@@ -341,10 +347,16 @@ public:
 TRef<IObject> ChatListPaneFactory::Apply(ObjectStack& stack)
 {
     TRef<PointValue>  ppointSize; CastTo(ppointSize, stack.Pop());
-    return (Pane*)new ChatListPaneImpl(
+	TRef<Boolean> showChatPaneScrollbar; CastTo(showChatPaneScrollbar, stack.Pop());
+
+	ChatListPaneImpl *chatPane = new ChatListPaneImpl(
                 WinPoint(
                     (int)ppointSize->GetValue().X(),
                     (int)ppointSize->GetValue().Y()
                     )
-                );                    
+                );    
+	
+	chatPane->SetScrollbarHidden(showChatPaneScrollbar->GetValue() == false);
+
+	return (Pane*) chatPane;
 }

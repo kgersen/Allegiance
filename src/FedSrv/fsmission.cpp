@@ -3055,8 +3055,20 @@ void CFSMission::ProcessGameOver()
         CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
         if (pfsShip->IsPlayer())
         {
+			// BT - STEAM
+			/*CSteamID steamID(strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0));
+			CSteamAchievements achievementsForPlayer(steamID);*/
+			CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+
+			pSteamAchievements->AwardBetaParticipation();
+
             PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
-            if (ppso->Connected())
+            
+			pSteamAchievements->AddUserStats(int(ppso->GetMinerKills()), int(ppso->GetBuilderKills()), int(ppso->GetPlayerKills()), int(ppso->GetBaseKills()), int(ppso->GetBaseCaptures()), int(ppso->GetScore()));
+			
+			pSteamAchievements->SaveStats();
+			
+			if (ppso->Connected())
             {
 
                 IsideIGC*   pside = pfsShip->GetSide();

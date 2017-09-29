@@ -1,6 +1,9 @@
 #include "pch.h"
 #include <zreg.h>
 
+// BT - STEAM
+#include "atlenc.h"
+#include <inttypes.h>
 
 // #define NO_CLUB_SERVER_CONNECTION 1 // comment out before checkin
 
@@ -269,11 +272,22 @@ public:
             pzac->GetDefaultLogonInfo(m_szName, m_szPWOrig, &m_fRememberPW);
 #else
             lstrcpy(m_szName, trekClient.GetSavedCharacterName());
+
+			// BT - Steam - User is logged into steam, and has a steam profile name
+			// The steam reviewer was somehow launching the game with steam authorization but no persona name. If 
+			// there is an player name, then the server rejects the user as a hacker with a DPlay error. 
+			bool isUserLoggedIntoSteamWithValidPlayerName = SteamUser() != nullptr && strlen(m_szName) > 0;
+
 #endif
 		  // wlp - don't ask for callsign if it was on the command line
-          if (!g_bAskForCallSign) 
+          if (!g_bAskForCallSign || isUserLoggedIntoSteamWithValidPlayerName == true) // BT - STEAM
 		  {
-		  this->OnLogon(trekClient.GetSavedCharacterName(), "", false);
+			  // BT - STEAM - Add players callsign and token.
+			  CallsignTagInfo callSignTagInfo;
+
+			  ZString characterName = callSignTagInfo.Render(m_szName);
+
+			  this->OnLogon(characterName, "", false);
 	      } // wlp - end of dont ask for callsign 
 		  else
 		  {
@@ -396,9 +410,9 @@ public:
     void BeginConfigDownload() 
     {
 #ifdef _ALLEGIANCE_PROD_
-        lstrcpy(m_szConfig, "http://autoupdate.alleg.net/allegiance.cfg");  //imago updated 7/4/09
+        lstrcpy(m_szConfig, "http://allegiance.zaphop.com/allegiance.txt");  //imago updated 7/4/09 // BT - STEAM
 #else
-		lstrcpy(m_szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg");  //imago updated 6/10
+		lstrcpy(m_szConfig, "http://allegiance.zaphop.com/allegiance.txt");  //imago updated 6/10 // BT - STEAM
 #endif
         HKEY hKey;
 
