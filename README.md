@@ -1,3 +1,6 @@
+nb: this my own version of the code. The official community code is at https://github.com/FreeAllegiance/Allegiance
+
+
 # Installation
 
 Download and install the lastest "Visual Studio Community Edition" : https://www.visualstudio.com/downloads/
@@ -22,7 +25,7 @@ Launch Visual Studio and open the main solution `src\VS2017\Allegiance.sln`
 * `soundengine`: sound engine
 * `training`: single player training missions 
 
-# Obsolete (or about to) projects
+# Obsolete (or about to be) projects
 * AGC
 * AllSrvUI
 * AutoUpdate
