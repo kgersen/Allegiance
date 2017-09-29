@@ -820,7 +820,7 @@ public:
 
         unsigned cTries = 0;
 
-        if (*m_pszFileList)
+        if (*m_pszFileList && strlen(*m_pszFileList) > 0)
         {
             //
             // Open file for download
