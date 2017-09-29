@@ -9228,6 +9228,7 @@ void LoadSettings()
 		if (dwEnforceSteamDRM > 0)
 			g.bEnforceSteamDRM = true;
 
+		// BT - STEAM
 		g.bUseSteamAuthentication = false;
 		DWORD dwUseSteamAuthentication;
 		DWORD cbUseSteamAuthentication = sizeof(dwUseSteamAuthentication);
@@ -9235,6 +9236,16 @@ void LoadSettings()
 
 		if (dwUseSteamAuthentication > 0)
 			g.bUseSteamAuthentication = true;
+
+		// BT - STEAM
+		g.szLeaderboardUpdateUrl[0] = '\0';
+		DWORD cbLeaderboardUpdateUrl = sizeof(g.szLeaderboardUpdateUrl);
+		RegQueryValueExA(hKey, "LeaderboardUpdateUrl", NULL, &dwType, (unsigned char*)g.szLeaderboardUpdateUrl, &cbLeaderboardUpdateUrl);
+
+		// BT - STEAM
+		g.szApiKey[0] = '\0';
+		DWORD cbApiKey = sizeof(g.szApiKey);
+		RegQueryValueExA(hKey, "ApiKey", NULL, &dwType, (unsigned char*)g.szApiKey, &cbApiKey);
 
 
 		/* pkk May 6th: Disabled bandwidth patch

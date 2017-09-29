@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include <inttypes.h> // BT - STEAM
+
 // BT - STEAM
 
 CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
@@ -54,7 +56,7 @@ bool CSteamAchievements::GetStat(EStats theStat, int * pVal)
 
 	if (SteamGameServerStats()->GetUserStat(m_steamID, m_Stats[theStat], pVal) == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->GetUserStat - response not recieved from Steam Server");
+		ZDebugOutput("SteamGameServerStats()->GetUserStat - response not recieved from Steam Server\n");
 		return false;
 	}
 	return true;
@@ -65,13 +67,13 @@ bool CSteamAchievements::SetStat(EStats theStat, int val)
 	// Must block until steam triggers the callback before you can actually use the stats. 
 	if (InitiateStatsRequestAndWaitForStatsFromSteamServer() == false)
 	{
-		ZDebugOutput("InitiateStatsRequestAndWaitForStatsFromSteamServer - response not recieved from Steam Server");
+		ZDebugOutput("InitiateStatsRequestAndWaitForStatsFromSteamServer - response not recieved from Steam Server\n");
 		return false;
 	}
 
 	if (SteamGameServerStats()->SetUserStat(m_steamID, m_Stats[theStat], val) == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->SetUserStat - Failed to set stat.");
+		ZDebugOutput("SteamGameServerStats()->SetUserStat - Failed to set stat.\n");
 		return false;
 	}
 	return true;
@@ -86,7 +88,7 @@ bool CSteamAchievements::GetAchievement(EAchievements achievement)
 
 	if (SteamGameServerStats()->GetUserAchievement(m_steamID, m_Achievements[achievement], &toReturn) == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->GetUserAchievement - response not recieved from Steam Server");
+		ZDebugOutput("SteamGameServerStats()->GetUserAchievement - response not recieved from Steam Server\n");
 		return false;
 	}
 	return true;
@@ -98,20 +100,20 @@ bool CSteamAchievements::SetAchievement(EAchievements achievement)
 
 	if (m_gotRequestStatsResponse == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->RequestUserStats - response not received from Steam server.");
+		ZDebugOutput("SteamGameServerStats()->RequestUserStats - response not received from Steam server.\n");
 		return false;
 	}
 
 	if (m_gotSuccessfulRequestStatsResponse == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->RequestUserStats - unsuccessful response getting steam stats for user from steam server.");
+		ZDebugOutput("SteamGameServerStats()->RequestUserStats - unsuccessful response getting steam stats for user from Steam server.\n");
 		return false;
 	}
 
 	// Now that we have the stats back from the server, we can update them.
 	if (SteamGameServerStats()->SetUserAchievement(m_steamID, m_Achievements[achievement]) == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->SetUserAchievement - Could not set achievement for user..");
+		ZDebugOutput("SteamGameServerStats()->SetUserAchievement - Could not set achievement for user.\n");
 		return false;
 	}
 
@@ -136,7 +138,7 @@ bool CSteamAchievements::SaveStats()
 
 	//if (m_gotStatsStoredResponse == false)
 	//{
-	//	ZDebugOutput("SteamGameServerStats()->StoreUserStats - response not received from Steam server.");
+	//	ZDebugOutput("SteamGameServerStats()->StoreUserStats - response not received from Steam server.\n");
 	//	return false;
 	//}
 
@@ -199,20 +201,20 @@ bool CSteamAchievements::RemoveAchievement(EAchievements achievement)
 
 	if (m_gotRequestStatsResponse == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->RequestUserStats - response not received from Steam server.");
+		ZDebugOutput("SteamGameServerStats()->RequestUserStats - response not received from Steam server.\n");
 		return false;
 	}
 
 	if (m_gotSuccessfulRequestStatsResponse == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->RequestUserStats - unsuccessful response getting steam stats for user from steam server.");
+		ZDebugOutput("SteamGameServerStats()->RequestUserStats - unsuccessful response getting steam stats for user from Steam server.\n");
 		return false;
 	}
 
 	// Now that we have the stats back from the server, we can update them.
 	if (SteamGameServerStats()->ClearUserAchievement(m_steamID, m_Achievements[achievement]) == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->SetUserAchievement - Could not set achievement for user..");
+		ZDebugOutput("SteamGameServerStats()->SetUserAchievement - Could not set achievement for user.\n");
 		return false;
 	}
 
@@ -228,13 +230,13 @@ bool CSteamAchievements::RemoveAchievement(EAchievements achievement)
 
 	if (m_gotStatsStoredResponse == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->StoreUserStats - response not received from Steam server.");
+		ZDebugOutput("SteamGameServerStats()->StoreUserStats - response not received from Steam server.\n");
 		return false;
 	}
 
 	if (m_gotSuccessfulStatsStoredResponse == false)
 	{
-		ZDebugOutput("SteamGameServerStats()->StoreUserStats - unsuccessful response storing steam stats for user to steam.");
+		ZDebugOutput("SteamGameServerStats()->StoreUserStats - unsuccessful response storing steam stats for user to steam.\n");
 		return false;
 	}
 
@@ -276,11 +278,13 @@ void CSteamAchievements::AwardKillAchievement(PilotType pt)
 	};
 }
 
-void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps, int score)
+void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso)
 {
 	int tempStat;
 	bool getSucceed;
 
+	
+	int minerKills = ppso->GetMinerKills();
 	if (minerKills > 0)
 	{
 		getSucceed = GetStat(EStats::MINER_KILLS, &tempStat);
@@ -288,6 +292,7 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 			SetStat(EStats::MINER_KILLS, tempStat + minerKills);
 	}
 
+	int conKills = ppso->GetBuilderKills();
 	if (conKills > 0)
 	{
 		getSucceed = GetStat(EStats::CON_KILLS, &tempStat);
@@ -295,6 +300,7 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 			SetStat(EStats::CON_KILLS, tempStat + conKills);
 	}
 
+	int forceEjects = ppso->GetPlayerKills();
 	if (forceEjects > 0)
 	{
 		getSucceed = GetStat(EStats::FORCE_EJECT, &tempStat);
@@ -302,6 +308,7 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 			SetStat(EStats::FORCE_EJECT, tempStat + forceEjects);
 	}
 
+	int baseKills = ppso->GetBaseKills();
 	if (baseKills > 0)
 	{
 		getSucceed = GetStat(EStats::BASE_KILLS, &tempStat);
@@ -309,6 +316,9 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 			SetStat(EStats::BASE_KILLS, tempStat + baseKills);
 	}
 
+	//int(ppso->GetBaseCaptures()), int(ppso->GetScore()), ppso->GetAssists(), ppso->);
+
+	int baseCaps = ppso->GetBaseCaptures();
 	if (baseCaps > 0)
 	{
 		getSucceed = GetStat(EStats::BASE_CAPS, &tempStat);
@@ -316,6 +326,7 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 			SetStat(EStats::BASE_CAPS, tempStat + baseCaps);
 	}
 
+	int score = ppso->GetScore();
 	if (score > 0)
 	{
 		getSucceed = GetStat(EStats::SUM_SCORE, &tempStat);
@@ -325,7 +336,34 @@ void CSteamAchievements::AddUserStats(int minerKills, int conKills, int forceEje
 			CheckRank(tempStat + score);
 		}
 	}
+}
 
+void CSteamAchievements::UpdateLeaderboard(PlayerScoreObject*  ppso)
+{
+	MaClient client;
+
+	char steamID[100];
+	sprintf(steamID, "%" PRIu64, this->m_steamID.ConvertToUint64());
+	
+	char buffer[2064];
+	ZString url = ZString(g.szLeaderboardUpdateUrl) + ZString("?apiKey=") + ZString(g.szApiKey);
+
+	url += "&steamID=" + ZString(steamID);
+	url += "&assists=" + ZString(ppso->GetAssists());
+	url += "&baseCaptures=" + ZString(ppso->GetBaseCaptures());
+	url += "&baseKills=" + ZString(ppso->GetBaseKills());
+	url += "&ejects=" + ZString(ppso->GetEjections());
+	url += "&kills=" + ZString(ppso->GetKills());
+	url += "&score=" + ZString(ppso->GetScore());
+	url += "&playtimeMinutes=" + ZString(int(ppso->GetTimePlayed() / 60));
+	url += "&constructorKills=" + ZString(ppso->GetBuilderKills());
+	url += "&minerKills=" + ZString(ppso->GetMinerKills());
+	url += "&commandTimeMinutes=" + ZString(int(ppso->GetTimeCommanded() / 60));
+
+	int result = client.getRequest((char *) (PCC) url);
+	int response = client.getResponseCode();
+
+	debugf("Leaderboard Update(%ld): %s\n", response, (PCC) url);
 }
 
 bool CSteamAchievements::CheckRank(int currentScore)

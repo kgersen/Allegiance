@@ -289,7 +289,7 @@ public:
   }
   void                  RecordGameResults();
   void                  RecordTeamResults(IsideIGC* pside);
-  void                  RecordPlayerResults(const char* pszName, PlayerScoreObject* ppso, SideID sid);
+  void                  RecordPlayerResults(const char* pszName, CFSPlayer *player, SideID sid); // BT - STEAM - Enable the CSteamAchievements object that is attached to the player to be sent to the stats recording functions.
   void                  QueueGameoverMessage();
 
   IsideIGC*             CheckForVictoryByStationBuild(IsideIGC* pside);

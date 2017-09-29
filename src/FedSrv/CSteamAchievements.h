@@ -97,7 +97,8 @@ public:
 	void AwardBetaParticipation();
 	void AwardKillAchievement(PilotType pt);
 	
-	void AddUserStats(int minerKills, int conKills, int forceEjects, int baseKills, int baseCaps, int score);
+	void AddUserStats(PlayerScoreObject*  ppso);
+	void UpdateLeaderboard(PlayerScoreObject*  ppso);
 	
 	bool SaveStats();
 

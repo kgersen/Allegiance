@@ -2746,6 +2746,10 @@ void CFSMission::RecordGameResults()
     // Post the query for async completion
     g.sql.PostQuery(pquery);
 
+#endif // !defined(ALLSRV_STANDALONE)
+
+	// BT - STEAM - Making this run for all game over scenarios.
+
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();
     for (SideLinkIGC* itSide = pSides->first(); itSide; itSide = itSide->next())
@@ -2757,17 +2761,20 @@ void CFSMission::RecordGameResults()
       RecordTeamResults(pside);
     }
 
+	// BT - STEAM - players who are not currently connected to the mission do not have initialized CSteamAchievement objects
+	// available, so skipping this one for now. Players who disconnect before the end of the game will not get any stats recorded.
+
     // Iterate through each player that left the game before it ended
-    for (OldPlayerLink* itOld = m_oldPlayers.first(); itOld; itOld = itOld->next())
-    {
-      OldPlayerInfo& opi = itOld->data();
+    //for (OldPlayerLink* itOld = m_oldPlayers.first(); itOld; itOld = itOld->next())
+    //{
+    //  OldPlayerInfo& opi = itOld->data();
 
-      // Record the player results (if they played on a real side)
-      if (opi.sideID != SIDE_TEAMLOBBY)
-        RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
-    }
+    //  // Record the player results (if they played on a real side)
+    //  if (opi.sideID != SIDE_TEAMLOBBY)
+    //    RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
+    //}
 
-  #endif // !defined(ALLSRV_STANDALONE)
+
 }
 
 
@@ -2817,6 +2824,10 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
     // Post the query for async completion
     g.sql.PostQuery(pquery);
 
+#endif // !defined(ALLSRV_STANDALONE)
+
+	// BT - STEAM - Making this run for all game over scenarios.
+
     // Iterate through each player of the team
     const ShipListIGC* pShips = pside->GetShips();
     for (ShipLinkIGC* itShip = pShips->first(); itShip; itShip = itShip->next())
@@ -2832,11 +2843,9 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
         PlayerScoreObject* ppso = pfsPlayer->GetPlayerScoreObject();
 
         // Record the player results
-        RecordPlayerResults(pship->GetName(), ppso, pside->GetObjectID());
+        RecordPlayerResults(pship->GetName(), pfsPlayer, pside->GetObjectID());
       }
     }
-
-  #endif // !defined(ALLSRV_STANDALONE)
 }
 
 
@@ -2846,8 +2855,10 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
    Purpose:
      Records the results of the player to the database.
  */
-void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* ppso, SideID sid)
+void CFSMission::RecordPlayerResults(const char* pszName, CFSPlayer *player, SideID sid)
 {
+	PlayerScoreObject*  ppso = player->GetPlayerScoreObject();
+
   #if !defined(ALLSRV_STANDALONE)
 
     // Create the database update query
@@ -2911,6 +2922,18 @@ void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* pps
 
     // Post the query for async completion
     g.sql.PostQuery(pquery);
+
+#else
+
+	// BT - STEAM
+	CSteamAchievements *pSteamAchievements = player->GetSteamAchievements();
+
+	pSteamAchievements->AwardBetaParticipation();
+
+	pSteamAchievements->UpdateLeaderboard(ppso);
+	pSteamAchievements->AddUserStats(ppso);
+
+	pSteamAchievements->SaveStats();
 
   #endif // !defined(ALLSRV_STANDALONE)
 }
@@ -3055,18 +3078,7 @@ void CFSMission::ProcessGameOver()
         CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
         if (pfsShip->IsPlayer())
         {
-			// BT - STEAM
-			/*CSteamID steamID(strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0));
-			CSteamAchievements achievementsForPlayer(steamID);*/
-			CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
-
-			pSteamAchievements->AwardBetaParticipation();
-
-            PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
-            
-			pSteamAchievements->AddUserStats(int(ppso->GetMinerKills()), int(ppso->GetBuilderKills()), int(ppso->GetPlayerKills()), int(ppso->GetBaseKills()), int(ppso->GetBaseCaptures()), int(ppso->GetScore()));
-			
-			pSteamAchievements->SaveStats();
+			PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
 			
 			if (ppso->Connected())
             {
