@@ -5768,6 +5768,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				DrmVerifier drmVerifier;
 				if (drmVerifier.CheckDrm(tokenCRC, pqd->szDrmHash) == false)
 				{
+					debugf("steam DRM check failed: %s\n", pqd->szDrmHash);
+
 					pqd->fValid = false;
 					szReason = "Your client has failed a DRM check. Please go back to your Steam app and reverify your installation. This action has been logged.";
 
