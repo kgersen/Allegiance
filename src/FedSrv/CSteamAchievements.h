@@ -96,6 +96,7 @@ public:
 
 	void AwardBetaParticipation();
 	void AwardKillAchievement(PilotType pt);
+	void AwardBaseKillOrCapture(bool kill);
 	
 	void AddUserStats(PlayerScoreObject*  ppso);
 	void UpdateLeaderboard(PlayerScoreObject*  ppso);
