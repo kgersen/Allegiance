@@ -4350,16 +4350,17 @@ public:
 
 		if (playerInfo->SideID() == trekClient.GetSideID())
 		{
-			// pkk #211 08/05/2010 Allow all drones stay docked
-			if (playerInfo->GetShip()->GetPilotType() < c_ptPlayer)
+			// pkk #211 08/05/2010 Allow all drones stay docked Xynth Only commander can staydock and launch
+			if (playerInfo->GetShip()->GetPilotType() < c_ptPlayer && trekClient.GetPlayerInfo()->IsTeamLeader())
 			{
 				if (playerInfo->GetShip()->GetPilotType() != c_ptCarrier)
-				{ 
+				{ 					 
 					if ((playerInfo->LastSeenState() == c_ssDocked || playerInfo->LastSeenState() == NULL) && playerInfo->GetShip()->GetStayDocked()) //Spunky #250					
 						sprintf(str1,"Launch  ");
 					else
 						sprintf(str1,"Dock    ");
-					bEnableDock  = true;					
+					bEnableDock  = true;
+
 				}				
 				else  //carrier
 				{					
