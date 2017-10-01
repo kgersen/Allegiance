@@ -5243,6 +5243,9 @@ public:
 	//Imago 7/10
     void ToggleEnableFFAutoCenter()
     {
+		if (GetInputEngine() == NULL || GetInputEngine()->GetJoystick(0) == NULL)
+			return;
+
         m_bFFAutoCenter = !m_bFFAutoCenter;
 
         SavePreference("FFAutoCenter", m_bFFAutoCenter);
