@@ -246,8 +246,22 @@ TEXHANDLE CVRAMManager::AllocateHandle( )
 
 	return MAKEHANDLE( dwBankIndex, dwTexIndex );
 }
-	
 
+// BT - 10/17 - Fixing crash on D3D texture load.
+HRESULT CVRAMManager::CreateSystemMemoryTexture(D3DFORMAT texFormat, DWORD dwWidth, DWORD dwHeight, STexture * pTexture)
+{
+	DWORD dwPixelSize, dwImageSize;
+	dwPixelSize = GetPixelSize(texFormat);
+	dwImageSize = dwWidth * dwHeight * dwPixelSize;
+	pTexture->pSystemTexture = new BYTE[dwImageSize];
+	pTexture->dwActualWidth = pTexture->dwOriginalWidth;
+	pTexture->dwActualHeight = pTexture->dwOriginalHeight;
+	pTexture->texFormat = texFormat;
+	pTexture->bSystemMemory = true;
+	pTexture->bValid = true;
+	
+	return D3D_OK;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // CreateTexture()
@@ -283,17 +297,7 @@ HRESULT CVRAMManager::CreateTexture(	TEXHANDLE	texHandle,
 	
 	if( bSystemMemory == true )
 	{
-		// Allocate a system memory texture.
-		DWORD dwPixelSize, dwImageSize;
-		dwPixelSize					= GetPixelSize( texFormat );
-		dwImageSize					= dwWidth * dwHeight * dwPixelSize;
-		pTexture->pSystemTexture	= new BYTE[ dwImageSize ];
-		pTexture->dwActualWidth		= pTexture->dwOriginalWidth;
-		pTexture->dwActualHeight	= pTexture->dwOriginalHeight;
-		pTexture->texFormat			= texFormat;
-		pTexture->bSystemMemory		= true;
-		pTexture->bValid			= true;
-		hr							= D3D_OK;
+		hr = CreateSystemMemoryTexture(texFormat, dwWidth, dwHeight, pTexture);
 	}
 	else
 	{
@@ -317,23 +321,34 @@ HRESULT CVRAMManager::CreateTexture(	TEXHANDLE	texHandle,
 															&pTexture->pTexture,
 															NULL );  //Fix memory leak -Imago 8/2/09
 
-		D3DSURFACE_DESC surfDesc;
-		pTexture->pTexture->GetLevelDesc( 0, &surfDesc );
-		pTexture->dwActualWidth		= GetPower2( surfDesc.Width );
-		pTexture->dwActualHeight	= GetPower2( surfDesc.Height );
-
 		// If it created ok, update the texture details.
 		if( hr == D3D_OK )
 		{
+			// BT - 10/17 - Moved these in here to prevent crash on texture load: 
+			//8961641    allegiance.exe    allegiance.exe    vrammanager.cpp    321    7.692 % 5    0    3    Win32 StructuredException at 00668D05 : UNKNOWN    2017 - 10 - 01 06 : 38 : 39    2117156
+			D3DSURFACE_DESC surfDesc;
+			pTexture->pTexture->GetLevelDesc(0, &surfDesc);
+			pTexture->dwActualWidth = GetPower2(surfDesc.Width);
+			pTexture->dwActualHeight = GetPower2(surfDesc.Height);
+
 			pTexture->texFormat		= texFormat;
 			pTexture->bValid		= true;
+
+			if (m_sVRAM.bMipMapGenerationEnabled == true)
+			{
+				pTexture->pTexture->SetAutoGenFilterType(CD3DDevice9::Get()->GetMipFilter());
+				pTexture->bMipMappedTexture = true;
+			}
+		}
+		else
+		{
+			pTexture->bValid = false;
+
+			// BT - 10/17 - 8961641 - If CD3DDevice9::Get()->Device()->CreateTexture fails, fall back to system memory. 
+			//hr = CreateSystemMemoryTexture(texFormat, dwWidth, dwHeight, pTexture);
 		}
 
-		if( m_sVRAM.bMipMapGenerationEnabled == true )
-		{
-			pTexture->pTexture->SetAutoGenFilterType( CD3DDevice9::Get()->GetMipFilter() );
-			pTexture->bMipMappedTexture = true;
-		}
+		return hr;
 	}
 
 #ifdef _DEBUG
