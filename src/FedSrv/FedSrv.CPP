@@ -11845,7 +11845,13 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
           IshipIGC*     pship = (IshipIGC*)plauncher;
           CFSShip*      pfsship = (CFSShip*)(pship->GetPrivateData());
           pfsship->GetPlayerScoreObject()->KillBase(true);
-          for (ShipLinkIGC* psl = pship->GetChildShips()->first();
+		  if (pfsship->IsPlayer())
+		  {
+			  CSteamAchievements *pSteamAchievements = pfsship->GetPlayer()->GetSteamAchievements();
+			  pSteamAchievements->AwardBaseKillOrCapture(true); //Award Base Kill Achievement
+		  }
+          
+		  for (ShipLinkIGC* psl = pship->GetChildShips()->first();
                (psl != NULL);
                psl = psl->next())
           {

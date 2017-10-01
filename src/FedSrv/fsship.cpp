@@ -587,6 +587,12 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
 
   {
       GetPlayerScoreObject()->CaptureBase(true);
+	  if (IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardBaseKillOrCapture(false); //Award Base Capture Achievement
+	  }
+
       for (ShipLinkIGC* psl = GetIGCShip()->GetChildShips()->first();
            (psl != NULL);
            psl = psl->next())

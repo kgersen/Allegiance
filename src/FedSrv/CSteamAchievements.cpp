@@ -277,6 +277,14 @@ void CSteamAchievements::AwardKillAchievement(PilotType pt)
 	}
 	};
 }
+void CSteamAchievements::AwardBaseKillOrCapture(bool kill)
+{
+	if (kill)
+		SetAchievement(EAchievements::FIRST_BASE_KILL_1_4);
+	else //Capture
+		SetAchievement(EAchievements::FIRST_BASE_CAP_1_5);
+
+}
 
 void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso)
 {
