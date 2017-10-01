@@ -897,6 +897,8 @@ bool CVBIBManager::AllocateDynamicVertexBuffer(	SVBIBHandle * pResult,
 		pBuffer->bDefaultPool	= ( m_iDynamicBufferPool == D3DPOOL_DEFAULT ) ? true : false;
 
 		// Create the resource.
+		if (this->m_sVBIB.bInitialised != true)
+			return false;
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					dwMaxVertices * pBuffer->dwElementSize,
 					(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
