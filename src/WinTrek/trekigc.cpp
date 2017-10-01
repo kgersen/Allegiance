@@ -4362,6 +4362,10 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                     bForMe = false;
                 }
 
+				// BT - 9/17 - Prevent crashes in the Training missions when the pilot is not on any particular wing.
+				if (wid == NA)
+					wid = 0;
+
                 strRecipient = c_pszWingName[wid];
             }
             break;

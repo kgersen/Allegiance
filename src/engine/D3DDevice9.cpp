@@ -573,12 +573,20 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 		if( m_sDevSetupParams.bAntiAliased == true )
 		{
-			m_sD3DDev9.pRTDepthStencilSurface->Release();
-			m_sD3DDev9.pRTDepthStencilSurface = NULL;
+			// BT - 9/17 - Prevent crash on reset device with AA enabled.
+			if (m_sD3DDev9.pRTDepthStencilSurface != NULL)
+			{
+				m_sD3DDev9.pRTDepthStencilSurface->Release();
+				m_sD3DDev9.pRTDepthStencilSurface = NULL;
+			}
 
-			// We also stored a pointer to the main back buffer.
-			m_sD3DDev9.pBackBufferDepthStencilSurface->Release();
-			m_sD3DDev9.pBackBufferDepthStencilSurface = NULL;
+			// BT - 9/17 - Prevent crash on reset device with AA enabled.
+			if (m_sD3DDev9.pBackBufferDepthStencilSurface != NULL)
+			{
+				// We also stored a pointer to the main back buffer.
+				m_sD3DDev9.pBackBufferDepthStencilSurface->Release();
+				m_sD3DDev9.pBackBufferDepthStencilSurface = NULL;
+			}
 		}
 
 		//Imago 7/19/09

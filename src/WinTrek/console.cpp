@@ -1397,7 +1397,11 @@ public:
 
                     case CHAT_WING:
                     {
-                        pszRecipient = c_pszWingName[m_pchsCurrent->m_oidRecipient == NA
+						// BT - 9/17 - Prevent crashes in the trainging missions when the pilot is not on any specific wing. 
+						if (trekClient.GetShip()->GetWingID() == NA && m_pchsCurrent->m_oidRecipient == NA)
+							pszRecipient = c_pszWingName[0];
+						else
+							pszRecipient = c_pszWingName[m_pchsCurrent->m_oidRecipient == NA
                                                      ? trekClient.GetShip()->GetWingID()
                                                      : m_pchsCurrent->m_oidRecipient];
                     }

@@ -4838,7 +4838,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				  break;
 
 			  case CHAT_LEADERS:
-				  targetName = pfsMission->GetIGCMission()->GetModel(pfmChat->otTarget, pfmChat->oidTarget)->GetName();
+				  targetName = "Leaders";
 				  break;
 
 			  default:
