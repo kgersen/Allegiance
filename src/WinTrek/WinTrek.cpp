@@ -5447,7 +5447,10 @@ public:
 	//Imago 7/10 #187
     void AdjustFFGain(float fDelta)
     {
-        float fNewValue = min(10000, max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
+		if (GetInputEngine() == NULL || GetInputEngine()->GetJoystick(0) == NULL)
+			return;
+		
+		float fNewValue = min(10000, max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
         m_pnumFFGain->SetValue(fNewValue);
 
         SavePreference("FFGain", fNewValue);
