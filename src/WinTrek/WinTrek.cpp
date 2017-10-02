@@ -5462,7 +5462,9 @@ public:
             m_pitemToggleFFGainDown->SetString(
                 GetFFGainMenuString(m_pnumFFGain->GetValue(), -c_fFFGainDelta));
         }
-		GetInputEngine()->GetJoystick(0)->SetRanges();
+
+		if (GetInputEngine() != NULL && GetInputEngine()->GetJoystick(0) != NULL)
+			GetInputEngine()->GetJoystick(0)->SetRanges();
     }
 
     void AdjustMouseSens(float fDelta)
