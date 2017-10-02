@@ -220,8 +220,15 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
 	// Initialise the various engine components.
 	CVRAMManager::Get()->Initialise( );
+	devLog.OutputString("CVRAMManager::Get()->Initialise( )\n");
+
 	CVBIBManager::Get()->Initialise( );
+
+	devLog.OutputString("CVBIBManager::Get()->Initialise( );\n");
+
 	CVertexGenerator::Get()->Initialise( );
+
+	devLog.OutputString("CVertexGenerator::Get()->Initialise( );\n");
 }
 
 EngineWindow::~EngineWindow()

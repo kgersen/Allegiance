@@ -366,7 +366,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 														D3DFMT_A1R5G5B5 );
 	if( hTemp == D3D_OK )
 	{
-		pLogFile->OutputString( "Device supports A1R5G5B5 format.\n" );
+		pLogFile->OutputString( "wasit wiDevice supports A1R5G5B5 format.\n" );
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = true;
 	} else {
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = false;
