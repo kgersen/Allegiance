@@ -1220,7 +1220,9 @@ void BaseClient::FlushGameState()
 
     if (m_ship)
         m_ship->AddRef();
+
     //Offline, we need to explicitly terminate all of the ships
+	if(m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
     {
         const ShipListIGC*  ships = m_pCoreIGC->GetShips();
         ShipLinkIGC*  l;
@@ -1232,7 +1234,8 @@ void BaseClient::FlushGameState()
 
     m_listPlayers.purge();
 
-    m_pCoreIGC->Terminate();
+	if (m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
+		m_pCoreIGC->Terminate();
 
     // Destroy the dummy ship
     if (m_ship)
@@ -1242,8 +1245,11 @@ void BaseClient::FlushGameState()
         m_ship = NULL;
     }
 
-    delete m_pCoreIGC;
-    m_pCoreIGC = NULL;
+	if (m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
+	{
+		delete m_pCoreIGC;
+		m_pCoreIGC = NULL;
+	}
 
     m_bInGame = false;
 }

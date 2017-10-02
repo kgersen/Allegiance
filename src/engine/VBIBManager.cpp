@@ -899,17 +899,30 @@ bool CVBIBManager::AllocateDynamicVertexBuffer(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 		pBuffer->bLocked		= false;
 		pBuffer->bDefaultPool	= ( m_iDynamicBufferPool == D3DPOOL_DEFAULT ) ? true : false;
+		
+		// BT - 10/17 - Hunting for the reason CreateVertexBuffer is failing.
+		ZRetailAssert(CD3DDevice9::Get());
+		ZRetailAssert(CD3DDevice9::Get()->Device());
 
 		// Create the resource.
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					dwMaxVertices * pBuffer->dwElementSize,
-					(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
-						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC :
-						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING,
+					0,
+					//(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
+					//	D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC :
+					//	D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING,
 					dwFVF,
 					m_iDynamicBufferPool,
 					&pBuffer->pVertexBuffer,
 					NULL );
+
+		if (hr == D3DERR_INVALIDCALL)
+			ZRetailAssert(false);
+		else if(hr == D3DERR_OUTOFVIDEOMEMORY)
+			ZRetailAssert(false);
+		else if (hr == E_OUTOFMEMORY)
+			ZRetailAssert(false);
+
 		_ASSERT( hr == D3D_OK );
 	}
 
