@@ -98,7 +98,10 @@ public:
 	virtual ~ CVBIBManager();
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static inline CVBIBManager * Get() { return &mSingleInstance;	}
+	static inline CVBIBManager * Get() {
+		mSingleInstance.Initialise(); // BT - 10/17 - Ensure that the singleton is always initialized. There is a case when calls are going into VBIBManager and this is not initialized yet.
+		return &mSingleInstance;	
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	void Initialise( );

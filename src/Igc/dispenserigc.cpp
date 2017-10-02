@@ -46,10 +46,12 @@ HRESULT     CdispenserIGC::Initialize(ImissionIGC* pMission, Time now, const voi
         assert ((m_expendableType->GetObjectType() == OT_mineType) ||
                 (m_expendableType->GetObjectType() == OT_probeType) ||
                 (m_expendableType->GetObjectType() == OT_chaffType));
-		if (m_expendableType != NULL)
-			m_expendableType->AddRef();
-		else
-			return S_FALSE;
+
+		// BT - Removing this one "Fix ot avoid crash 8963864" need to see more DMPs for samples.
+		//if (m_expendableType != NULL)
+		//	m_expendableType->AddRef();
+		//else
+		//	return S_FALSE;
 
         m_amount = 0;
     }
