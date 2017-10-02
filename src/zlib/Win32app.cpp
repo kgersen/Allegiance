@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "regkey.h"
+#include "SlmVer.h"
 
 //Imago 7/10
 #include <dbghelp.h>
@@ -75,7 +76,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	SteamAPI_SetMiniDumpComment(p);
 
 	// The 0 here is a build ID, we don't set it
-	SteamAPI_WriteMiniDump(0, pExceptionPointers, 0);
+	SteamAPI_WriteMiniDump(0, pExceptionPointers, rup);
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -132,7 +133,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	SteamAPI_SetMiniDumpComment(p);
 
 	// The 0 here is a build ID, we don't set it
-	SteamAPI_WriteMiniDump(0, pExceptionPointers, 0);
+	SteamAPI_WriteMiniDump(0, pExceptionPointers, rup);
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
