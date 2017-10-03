@@ -22,10 +22,12 @@ enum EStats
 	BASE_KILLS = 3,
 	BASE_CAPS = 4,
 	SUM_SCORE = 5,
-	PLAYER_RANK = 6
+	PLAYER_RANK = 6,
+	PLAYER_WINS = 7,
+	PLAYER_LOSS = 8
 };
 const int g_nMaximumSteamAchievementCount = 6; // Always keep this in sync with the number of achievments in EAchievements!
-const int g_nMaximumSteamStatCount = 7; // Always keep this in sync with the number of stats in EStats!
+const int g_nMaximumSteamStatCount = 9; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
                             // 0   1    2    3      4  
