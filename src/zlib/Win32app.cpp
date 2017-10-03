@@ -76,7 +76,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	SteamAPI_SetMiniDumpComment(p);
 
 	// The 0 here is a build ID, we don't set it
-	SteamAPI_WriteMiniDump(0, pExceptionPointers, rup * 1000 + rel * 100); // Now including build and release number in steam errors.
+	SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -133,7 +133,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	SteamAPI_SetMiniDumpComment(p);
 
 	// The 0 here is a build ID, we don't set it
-	SteamAPI_WriteMiniDump(0, pExceptionPointers, rup * 1000 + rel * 100); // Now including build and release number in steam errors.
+	SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
 
     return EXCEPTION_EXECUTE_HANDLER;
 }

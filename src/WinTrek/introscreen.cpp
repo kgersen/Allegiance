@@ -650,7 +650,7 @@ public:
         //m_pbuttonPlayInt->SetEnabled(false);
 
 		// BT - Steam - Hiding these irrelevant buttons for now.
-		m_pbuttonPlayLan->SetHidden(true);
+		m_pbuttonPlayLan->SetHidden(false);
 
         m_pfindServerPopup = new FindServerPopup(pns, this);
           
