@@ -2717,11 +2717,15 @@ public:
     {
         HRESULT hr;
 
+		debugf("Setting up TrekWindow\n");
+
 // BUILD_DX9
 		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
 		papp->Initialize( strCommandLine, GetHWND() );
 		m_pengine = papp->GetEngine();
 		m_pmodeler = papp->GetModeler();
+
+		debugf("Setting art path to: %s\n", (PCC) strArtPath);
 
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
@@ -2736,13 +2740,17 @@ public:
 		//ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
 		//hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
 
-		
+		debugf("Reading FFGain, MouseSensitivity\n");
 
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
 		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "1.0"))); //Imago #215 8/10
 
+		debugf("TrekResources::Initialize() - Loading fonts.\n");
+
 		// load the fonts
 		TrekResources::Initialize(GetModeler());
+
+		debugf("performing PostWindowCreationInit.\n");
 
 		// Perform post window creation initialisation. Initialise the time value.
 		PostWindowCreationInit( );
@@ -2753,7 +2761,12 @@ public:
             return;
         }
 
+		debugf("Setting up effects window.\n");
+
         SetEffectWindow(this);
+
+		debugf("Setting up modeler site.\n");
+
         GetModeler()->SetSite(this);
 
         //  , global pointer to the one and only window
@@ -2779,6 +2792,8 @@ public:
         // Event sink delegates
         //
 
+		debugf("Creating event sinks. \n");
+
         m_pClientEventSink  = IClientEventSink::CreateDelegate(this);
         m_pintegerEventSink = IIntegerEventSink::CreateDelegate(this);
         m_pmenuCommandSink  = IMenuCommandSink::CreateDelegate(this);
@@ -2788,6 +2803,8 @@ public:
         // advise us of client notifications
         //
 
+		debugf("Getting event sources. \n");
+
         m_pClientEventSource = trekClient.GetClientEventSource();
         m_pClientEventSource->AddSink(m_pClientEventSink);
 
@@ -2795,10 +2812,15 @@ public:
         // Initialize redbook audio
         //
 
+		debugf("Creating disk player. \n");
+
         hr = CreateDiskPlayer(m_pDiskPlayer, LoadPreference("AudioCD", "Allegiance"));
 
         if (FAILED(hr))
             CreateDummyDiskPlayer(m_pDiskPlayer);
+
+
+		debugf("Creating sound mutexes. \n");
 
         //
         // Initialize some of the basic sound stuff
@@ -3207,7 +3229,7 @@ public:
             ToggleFilterQuickComms();
 		if (!LoadPreference("FilterUnknownChats", TRUE))
             ToggleFilterUnknownChats(); //TheBored 30-JUL-07: Filter Unknown Chat patch
-        if (!LoadPreference("LinearControlResponse", TRUE))
+		if (!LoadPreference("LinearControlResponse", FALSE)) // BT - 8/17 Set to quadratic by default.
             ToggleLinearControls();
         if (!LoadPreference("Environment", TRUE) || IsWine())  //imago 9/19/09 force env in wine 8/16/09
             ToggleEnvironment();
@@ -3238,12 +3260,12 @@ public:
             ToggleTargetHUD();
         if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
             CycleStyleHUD();
-        SetDeadzone(LoadPreference("DeadZone", 30)); //ToggleLargeDeadZone(); //Imago updated 7/8/09
+		SetDeadzone(LoadPreference("DeadZone", 5)); //ToggleLargeDeadZone(); //Imago updated 7/8/09 // BT 8/17 - Small deadzone default.
 		SetRadarLOD(LoadPreference("RadarLOD", 0)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
 			ToggleShowGrid();
 		SetGamma(LoadPreference("Gamma", "1.13"));
-	    if (LoadPreference("VirtualJoystick", FALSE))
+	    if (LoadPreference("VirtualJoystick", TRUE)) // BT - 10/17 - Enable virtual JS by default, not many people have joysticks now-a-days.
 			ToggleVirtualJoystick();
 
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
