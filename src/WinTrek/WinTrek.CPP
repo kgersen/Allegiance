@@ -2725,7 +2725,7 @@ public:
 		m_pengine = papp->GetEngine();
 		m_pmodeler = papp->GetModeler();
 
-		debugf("Setting art path to: %s\n", strArtPath);
+		debugf("Setting art path to: %s\n", (PCC) strArtPath);
 
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
