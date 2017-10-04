@@ -2332,7 +2332,8 @@ WinTrekClient::WinTrekClient(void)
     m_bFilterChatsToAll(false),
     m_bFilterQuickComms(false),
 	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
-    m_dwFilterLobbyChats(3) //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
+    m_dwFilterLobbyChats(3), //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
+	bTrainingFirstClick(false)
 {
     // restore the CD Key from the registry
 
