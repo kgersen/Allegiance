@@ -344,6 +344,20 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso)
 			CheckRank(tempStat + score);
 		}
 	}
+
+	if (ppso->GetWinner())
+	{
+		getSucceed = GetStat(EStats::PLAYER_WINS, &tempStat);
+		if (getSucceed)
+			SetStat(EStats::PLAYER_WINS, tempStat + 1);
+	}
+	if (ppso->GetLoser())
+	{
+		getSucceed = GetStat(EStats::PLAYER_LOSS, &tempStat);
+		if (getSucceed)
+			SetStat(EStats::PLAYER_LOSS, tempStat + 1);
+	}
+
 }
 
 void CSteamAchievements::UpdateLeaderboard(PlayerScoreObject*  ppso)
