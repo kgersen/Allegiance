@@ -91,6 +91,7 @@ class  WinTrekClient :
         float                   trekJoyStick[3];
         float                   fOldJoyThrottle;
         virtual void            OverrideThrottle (float fDesiredThrottle);
+		bool					bTrainingFirstClick;
 
         // igc site implementation
 
