@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{CB
 		..\src\Inc\regkey.h = ..\src\Inc\regkey.h
 		..\src\Inc\SlmVer.h = ..\src\Inc\SlmVer.h
 		..\src\Inc\steam_appid.txt = ..\src\Inc\steam_appid.txt
+		..\src\Inc\VerRes.rc = ..\src\Inc\VerRes.rc
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{29B93072-BF20-474E-B687-39BCF1292357}"

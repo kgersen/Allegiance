@@ -11,9 +11,10 @@ enum EAchievements
 	FIRST_BASE_KILL_1_4 = 4,
 	FIRST_BASE_CAP_1_5 = 5
 
-	// Don't forget to update g_nMaximumSteamAchievementCount!
+	// Don't forget to update g_nMaximumSteamAchievementCount and m_Achievements!
 };
 
+// Keep in sync with m_Stats!
 enum EStats
 {
 	MINER_KILLS = 0,
@@ -25,6 +26,8 @@ enum EStats
 	PLAYER_RANK = 6,
 	PLAYER_WINS = 7,
 	PLAYER_LOSS = 8
+
+	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
 const int g_nMaximumSteamAchievementCount = 6; // Always keep this in sync with the number of achievments in EAchievements!
 const int g_nMaximumSteamStatCount = 9; // Always keep this in sync with the number of stats in EStats!
@@ -47,7 +50,7 @@ private:
 	CCallResult< CSteamAchievements, GSStatsReceived_t > m_UserStatsRequestedCallResult;
 	CCallResult< CSteamAchievements, GSStatsStored_t > m_UserStatsStoredCallResult;
 
-
+	// Keep in sync with EAchievements
 	const char * m_Achievements[g_nMaximumSteamAchievementCount] =
 	{
 		// Never remove an item from this list! (see note above).
@@ -59,6 +62,7 @@ private:
 		"FIRST_BASE_CAP_1_5"
 	};
 
+	// Keep in sync with EStats!
 	const char * m_Stats[g_nMaximumSteamStatCount] =
 	{
 		// Never remove an item from this list! (see note above).
@@ -68,7 +72,9 @@ private:
 		"BASE_KILLS",
 		"BASE_CAPS",
 		"SUM_SCORE",
-		"PLAYER_RANK"
+		"PLAYER_RANK",
+		"PLAYER_WINS",
+		"PLAYER_LOSS"
 	};
 
 	

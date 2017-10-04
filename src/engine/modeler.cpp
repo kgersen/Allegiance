@@ -2526,7 +2526,7 @@ public:
 
 			// BT - STEAM
 			MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
-
+			exit(0);
 		}
 		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
 

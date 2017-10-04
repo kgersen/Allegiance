@@ -650,7 +650,7 @@ public:
         //m_pbuttonPlayInt->SetEnabled(false);
 
 		// BT - Steam - Hiding these irrelevant buttons for now.
-		m_pbuttonPlayLan->SetHidden(true);
+		m_pbuttonPlayLan->SetHidden(false);
 
         m_pfindServerPopup = new FindServerPopup(pns, this);
           
@@ -862,7 +862,14 @@ public:
             // go train, because we have all the training files installed
             trekClient.SetIsLobbied(false);
             trekClient.SetIsZoneClub(false);
-            GetWindow()->screen(ScreenIDTrainScreen);
+            
+			if (trekClient.bTrainingFirstClick)
+				GetWindow()->screen(ScreenIDTrainScreen);
+			else
+			{
+				GetWindow()->ShowWebPage("http://www.freeallegiance.org/FAW/index.php/Begin_playing");
+				trekClient.bTrainingFirstClick = true;
+			}
         }
         else // wlp 2006 - go straight to lobby
         {

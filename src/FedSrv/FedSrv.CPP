@@ -4838,7 +4838,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				  break;
 
 			  case CHAT_LEADERS:
-				  targetName = pfsMission->GetIGCMission()->GetModel(pfmChat->otTarget, pfmChat->oidTarget)->GetName();
+				  targetName = "Leaders";
 				  break;
 
 			  default:
@@ -4868,7 +4868,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		pfmLogChat->sourceSteamID = sourceSteamID;
 		pfmLogChat->targetSteamID = targetSteamID;
 		  
-		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		if (g.fmLobby.IsConnected())
+			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+
 		// BT - STEAN - End of chat logging.
 
       if (pfmChat->cbMessage > 0)
@@ -5818,7 +5820,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			pfmPlayerRank->dwCookie = pqd->dwCookie;
 			pfmPlayerRank->fValid = true;
 			pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
-			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+
+			if (g.fmLobby.IsConnected())
+				g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
 		}
 
 		//DWORD threadID;

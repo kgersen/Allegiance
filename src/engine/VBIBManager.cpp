@@ -13,6 +13,7 @@ CVBIBManager CVBIBManager::mSingleInstance;
 CVBIBManager::CVBIBManager()
 {
 	memset( &m_sVBIB, 0, sizeof( CVBIBManager::SVBIBManagerState ) );
+	m_sVBIB.bInitialised = false; // BT - 10/17 - Making sure this is definitely set to false.
 }
 
 
@@ -867,6 +868,9 @@ bool CVBIBManager::AllocateDynamicVertexBuffer(	SVBIBHandle * pResult,
 	DWORD dwBufferIndex;
 	SD3DBuffer * pBuffer;
 
+	if (this->m_sVBIB.bInitialised != true)
+		this->Initialise(); // BT - 10/17 - Small change to Xynth's patch. If this is not initialized at this point, initialze it! This shouldn't be needed here anymore, but just to be sure...
+
 	// Attempt to locate an existing buffer.
 	dwBufferIndex = FindBuffer( eBT_VertexDynamic,
 								dwFVF,
@@ -895,17 +899,30 @@ bool CVBIBManager::AllocateDynamicVertexBuffer(	SVBIBHandle * pResult,
 		pBuffer->dwBufferOffset = 0;
 		pBuffer->bLocked		= false;
 		pBuffer->bDefaultPool	= ( m_iDynamicBufferPool == D3DPOOL_DEFAULT ) ? true : false;
+		
+		// BT - 10/17 - Hunting for the reason CreateVertexBuffer is failing.
+		ZRetailAssert(CD3DDevice9::Get());
+		ZRetailAssert(CD3DDevice9::Get()->Device());
 
 		// Create the resource.
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					dwMaxVertices * pBuffer->dwElementSize,
-					(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
-						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC :
-						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING,
+					0,
+					//(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
+					//	D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC :
+					//	D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING,
 					dwFVF,
 					m_iDynamicBufferPool,
 					&pBuffer->pVertexBuffer,
 					NULL );
+
+		if (hr == D3DERR_INVALIDCALL)
+			ZRetailAssert(false);
+		else if(hr == D3DERR_OUTOFVIDEOMEMORY)
+			ZRetailAssert(false);
+		else if (hr == E_OUTOFMEMORY)
+			ZRetailAssert(false);
+
 		_ASSERT( hr == D3D_OK );
 	}
 

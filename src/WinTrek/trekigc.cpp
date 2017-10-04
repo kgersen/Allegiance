@@ -2332,7 +2332,8 @@ WinTrekClient::WinTrekClient(void)
     m_bFilterChatsToAll(false),
     m_bFilterQuickComms(false),
 	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
-    m_dwFilterLobbyChats(3) //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
+    m_dwFilterLobbyChats(3), //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
+	bTrainingFirstClick(false)
 {
     // restore the CD Key from the registry
 
@@ -4361,6 +4362,10 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                     wid = oidRecipient;
                     bForMe = false;
                 }
+
+				// BT - 9/17 - Prevent crashes in the Training missions when the pilot is not on any particular wing.
+				if (wid == NA)
+					wid = 0;
 
                 strRecipient = c_pszWingName[wid];
             }

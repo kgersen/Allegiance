@@ -15,4 +15,6 @@
 
 #include "zlib.h"
 
+#include "steam_gameserver.h"
+
 #endif

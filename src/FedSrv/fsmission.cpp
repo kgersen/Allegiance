@@ -1783,9 +1783,10 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
     misparms.bClubGame = false;
   #endif // !defined(ALLSRV_STANDALONE)
 
+	// BT - STEAM - Scores always count in steam!
   // TE: Enforce LockSides = on if ScoresCount mmf change to MaxImbalance
-  if (misparms.bScoresCount)
-	  misparms.iMaxImbalance = 0x7ffe;
+  //if (misparms.bScoresCount) 
+	 // misparms.iMaxImbalance = 0x7ffe;
 
   int numTeamsOld = m_misdef.misparms.nTeams;
 
