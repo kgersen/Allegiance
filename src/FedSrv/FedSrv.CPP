@@ -12791,8 +12791,12 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 
             IsideIGC*   pside = pship->GetSide();
             assert (pside);
-            if (pside->ApplyDevelopmentTechs(ttbm))
-                pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+			if (pside->ApplyDevelopmentTechs(ttbm))
+			{
+				pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+				CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+				pSteamAchievements->AwardRecoverTechAchievement();
+			}
 		}
 		
 		if (pstationNew && pship && !pship->GetParentShip() && pship->GetBaseHullType() && //imago fix crash when boarding turret 7/22/09
