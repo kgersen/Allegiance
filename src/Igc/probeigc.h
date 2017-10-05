@@ -115,16 +115,15 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 
                     if (oldFraction > 0.0f)
                     {
-						//Xynth Find matching cfsShip to IGC ship
+						//Xynth Set flag in IGC ship to later trigger an achievement for destroying a probe
 						
 						if (launcher->GetObjectType() == OT_ship)
 						{
 							ObjectID theID = launcher->GetObjectID();
 							IsideIGC * plSide = launcher->GetSide();
 							IshipIGC * pShip = plSide->GetShip(theID);
-
-							//pShip->
-
+							if (!((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide())))
+								pShip->SetProbeDestroyed(true); //Xynth for enemy probe kill achievement
 						}
 						
 					

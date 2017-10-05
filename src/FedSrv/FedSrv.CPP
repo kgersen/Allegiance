@@ -3589,6 +3589,21 @@ void SendShipUpdates(CFSMission * pfsMission)
                         pfmShipStatus->shipID = pship->GetObjectID();
                         pfmShipStatus->status = *pssOld = *pss;         //Also update the old status
                     }
+
+					//Xynth Add a periodic check for achievements
+					
+					if (ISPLAYER(pship))
+					{
+						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+
+						if (pship->GetProbeDestroyed())
+						{
+							pSteamAchievements->AwardProbeKillAchievement();
+							pship->SetProbeDestroyed(false); //only need to run once per player ever but
+															 //this will at least prevent it from running once per frame
+						}
+					}
+
                 }
             }
 
