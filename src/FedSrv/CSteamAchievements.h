@@ -9,7 +9,12 @@ enum EAchievements
 	FIRST_CON_KILL_1_2 = 2,
 	FIRST_FORCE_EJECT_1_3 = 3,
 	FIRST_BASE_KILL_1_4 = 4,
-	FIRST_BASE_CAP_1_5 = 5
+	FIRST_BASE_CAP_1_5 = 5,
+	RANK_5_1_6 = 6,
+	RANK_10_1_7 = 7,
+	RECOVER_TECH_1_8 = 8,
+	FIRST_PROBE_KILL_1_9 = 9,
+	PROBE_SPOT_1_10 = 10
 
 	// Don't forget to update g_nMaximumSteamAchievementCount and m_Achievements!
 };
@@ -29,7 +34,7 @@ enum EStats
 
 	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
-const int g_nMaximumSteamAchievementCount = 6; // Always keep this in sync with the number of achievments in EAchievements!
+const int g_nMaximumSteamAchievementCount = 11; // Always keep this in sync with the number of achievments in EAchievements!
 const int g_nMaximumSteamStatCount = 9; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
@@ -59,7 +64,12 @@ private:
 		"FIRST_CON_KILL_1_2",
 		"FIRST_FORCE_EJECT_1_3",
 		"FIRST_BASE_KILL_1_4",
-		"FIRST_BASE_CAP_1_5"
+		"FIRST_BASE_CAP_1_5",
+		"RANK_5_1_6",
+		"RANK_10_1_7",
+		"RECOVER_TECH_1_8",
+		"FIRST_PROBE_KILL_1_9",
+		"PROBE_SPOT_1_10"
 	};
 
 	// Keep in sync with EStats!
@@ -105,6 +115,9 @@ public:
 	void AwardBetaParticipation();
 	void AwardKillAchievement(PilotType pt);
 	void AwardBaseKillOrCapture(bool kill);
+	void AwardProbeKillAchievement();
+	void AwardProbeSpotAchievement();
+	void AwardRecoverTechAchievement();
 	
 	void AddUserStats(PlayerScoreObject*  ppso);
 	void UpdateLeaderboard(PlayerScoreObject*  ppso);
