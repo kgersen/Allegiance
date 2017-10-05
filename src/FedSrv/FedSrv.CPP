@@ -4879,19 +4879,22 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		const FMD_S_MISSIONDEF *missionDef = pfsMission->GetMissionDef();
 		ZString missionName = ZString(missionDef->misparms.strGameName);
 
-		BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
-			FM_VAR_PARM((PCC)missionName, CB_ZTS)
-			FM_VAR_PARM((PCC)senderName, CB_ZTS)
-			FM_VAR_PARM((PCC)targetName, CB_ZTS)
-			FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
-			FM_VAR_PARM(szRemote, CB_ZTS)
-		END_PFM_CREATE
-		  
-		pfmLogChat->sourceSteamID = sourceSteamID;
-		pfmLogChat->targetSteamID = targetSteamID;
-		  
-		if (g.fmLobby.IsConnected())
+		// BT - 10/17 - Fixing crash on chat logging when lobby is not connected.
+		if (g.fmLobby.IsConnected() == true)
+		{
+			BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
+				FM_VAR_PARM((PCC)missionName, CB_ZTS)
+				FM_VAR_PARM((PCC)senderName, CB_ZTS)
+				FM_VAR_PARM((PCC)targetName, CB_ZTS)
+				FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
+				FM_VAR_PARM(szRemote, CB_ZTS)
+				END_PFM_CREATE
+
+			pfmLogChat->sourceSteamID = sourceSteamID;
+			pfmLogChat->targetSteamID = targetSteamID;
+
 			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		}
 
 		// BT - STEAN - End of chat logging.
 
