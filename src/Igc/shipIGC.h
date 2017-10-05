@@ -1848,7 +1848,30 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		{
 			return m_stayDocked;
 		}
-
+		virtual void AddRepair(float repair)
+		{
+			m_repair += repair; //Xynth amount of nanning performed by ship
+		}
+		virtual float GetRepair(void) const
+		{
+			return m_repair;
+		}
+		virtual void				SetProbeDestroyed(bool probeDestroyed)
+		{
+			m_bProbeDestroyed = probeDestroyed;
+		}
+		virtual bool				GetProbeDestroyed(void) const
+		{
+			return m_bProbeDestroyed;
+		}
+		virtual void				SetProbeSpot(bool probeSpot)
+		{
+			m_bProbeSpot = probeSpot;
+		}
+		virtual bool				GetProbeSpot(void) const
+		{
+			return m_bProbeSpot;
+		}
         virtual bool                OkToLaunch(Time now)
         {
             //Spend 10 seconds docked (MyLastUpdate is not being updated while docked)
@@ -2414,6 +2437,9 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         WarningMask         m_warningMask;
 
 		bool				m_stayDocked;  //Xynth #48 8/10
+		float				m_repair; //Xynth amount of nanning performed by ship
+		bool				m_bProbeDestroyed; //Xynth if a probe was destroyed
+		bool				m_bProbeSpot; //Xynth if a probe deployed by this ship spots a high value target
 };
 
 #endif //__SHIPIGC_H_
