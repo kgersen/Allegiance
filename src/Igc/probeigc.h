@@ -279,6 +279,13 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 			m_timeExpire = time;
 		}
 		//Xynth end new expiration function
+		
+		virtual IshipIGC * GetProbeLauncherShip() const
+		//Xynth new function to identify who deployed the probe
+		{
+			return m_launcher;
+		}
+
 
     private:
         void ValidTarget(ImodelIGC*  pmodel,
