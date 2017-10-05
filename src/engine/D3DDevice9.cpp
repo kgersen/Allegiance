@@ -162,6 +162,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		m_sD3DDev9.pCurrentMode = &m_sDevSetupParams.sFullScreenMode;
 	}
 
+	m_sD3DDev9.hParentWindow = hParentWindow;
+
 	// Create a new 3D device.
 	memset( &m_sD3DDev9.d3dPresParams, 0, sizeof( D3DPRESENT_PARAMETERS ) );
 	m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat		= m_sD3DDev9.pCurrentMode->fmtDepthStencil;
@@ -772,6 +774,24 @@ HRESULT CD3DDevice9::SetRTDepthStencil( )
 	_ASSERT( m_sD3DDev9.pRTDepthStencilSurface != NULL );
 
 	return m_sD3DDev9.pD3DDevice->SetDepthStencilSurface( m_sD3DDev9.pRTDepthStencilSurface);
+}
+
+// BT - 10/17 - If the D3D device becomes null, re-create it to get it up and rolling again.
+const LPDIRECT3DDEVICE9 CD3DDevice9::Device()
+{ 
+	if (m_sD3DDev9.pD3DDevice == nullptr)
+	{
+		CLogFile logfile("D3DDevice9_Reinitialize.log");
+
+		for (int i = 0; i < 30 && m_sD3DDev9.pD3DDevice == nullptr; i++)
+		{
+			CreateDevice(m_sD3DDev9.hParentWindow, &logfile);
+		}
+
+		logfile.CloseLogFile();
+	}
+
+	return m_sD3DDev9.pD3DDevice; 
 }
 
 
