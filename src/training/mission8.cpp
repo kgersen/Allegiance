@@ -121,7 +121,7 @@ namespace Training
 
 		// Load custom key bindings:
 		// BT - 9/17 - Added a training input map so that the keys match up to the instructor's requests.
-		if (!GetWindow()->GetInput()->LoadMap(TRAINING_INPUTMAP_FILE))
+		//if (!GetWindow()->GetInput()->LoadMap(TRAINING_INPUTMAP_FILE)) // BT - 10/17 - Taking this back out, default input map is now back to the original values.
 			if (!GetWindow()->GetInput()->LoadMap(INPUTMAP_FILE))
 				GetWindow()->GetInput()->LoadMap(DEFAULTINPUTMAP_FILE);
 		
