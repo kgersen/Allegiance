@@ -190,37 +190,7 @@ public:
 		AddEventTarget(&TrainingScreen::OnButtonTrain, m_pbuttonTrainMission8->GetDoubleClickEventSource()); //TheBored 06-JUL-07: nanite mission
 
         // hilite the current mission
-        switch (m_iMissionNext)
-        {
-            // here we will determine which button to hilight
-            case Training::c_TM_1_Introduction:
-                m_pbuttonTrainMission1->SetChecked (true);
-                break;
-            case Training::c_TM_2_Basic_Flight:
-                m_pbuttonTrainMission2->SetChecked (true);
-                break;
-            case Training::c_TM_3_Basic_Weaponry:
-                m_pbuttonTrainMission3->SetChecked (true);
-                break;
-            case Training::c_TM_4_Enemy_Engagement:
-                m_pbuttonTrainMission4->SetChecked (true);
-                break;
-            case Training::c_TM_5_Command_View:
-                m_pbuttonTrainMission5->SetChecked (true);
-                break;
-            case Training::c_TM_6_Practice_Arena:
-                m_pbuttonTrainMission6->SetChecked (true);
-                break;
-			//TheBored 06-JUL-07: nanite mission
-			case Training::c_TM_8_Nanite:
-                m_pbuttonTrainMission8->SetChecked (true);
-                break;
-			//End TB
-            case Training::c_TM_7_Live:
-            default:
-                m_pbuttonTrainMission7->SetChecked (true);
-                break;
-        }
+		CheckButton(m_iMissionNext);
         m_pbuttonTrain->SetChecked (true);
 #ifdef _DEBUG
 		if (bStartTraining) {
@@ -233,6 +203,51 @@ public:
     ~TrainingScreen()
     {
     }
+
+	void CheckButton(const int iMission)
+	{
+		// uncheck everything.
+		m_pbuttonTrainMission1->SetChecked(false);
+		m_pbuttonTrainMission2->SetChecked(false);
+		m_pbuttonTrainMission3->SetChecked(false);
+		m_pbuttonTrainMission4->SetChecked(false);
+		m_pbuttonTrainMission5->SetChecked(false);
+		m_pbuttonTrainMission6->SetChecked(false);
+		m_pbuttonTrainMission7->SetChecked(false);
+		m_pbuttonTrainMission8->SetChecked(false);
+
+		// check the mission
+		switch (iMission)
+		{
+			case Training::c_TM_1_Introduction:
+				m_pbuttonTrainMission1->SetChecked(true);
+				break;
+			case Training::c_TM_2_Basic_Flight:
+				m_pbuttonTrainMission2->SetChecked(true);
+				break;
+			case Training::c_TM_3_Basic_Weaponry:
+				m_pbuttonTrainMission3->SetChecked(true);
+				break;
+			case Training::c_TM_4_Enemy_Engagement:
+				m_pbuttonTrainMission4->SetChecked(true);
+				break;
+			case Training::c_TM_5_Command_View:
+				m_pbuttonTrainMission5->SetChecked(true);
+				break;
+			case Training::c_TM_6_Practice_Arena:
+				m_pbuttonTrainMission6->SetChecked(true);
+				break;
+				//TheBored 06-JUL-07: nanite mission
+			case Training::c_TM_8_Nanite:
+				m_pbuttonTrainMission8->SetChecked(true);
+				break;
+				//End TB
+			case Training::c_TM_7_Live:
+			default:
+				m_pbuttonTrainMission7->SetChecked(true);
+				break;
+		}
+	}
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -293,133 +308,55 @@ public:
         }
         return true;
     }
+
+	bool OnButtonMission(const int iMission)
+	{
+		g_pnumberMissionNumber->SetValue(iMission);
+		CheckButton(iMission);
+		m_pbuttonTrain->SetEnabled(true);
+		m_pbuttonTrain->SetChecked(true);
+		return true;
+	}
+
 	//TheBored 06-JUL-07: nanite mission (Each OnButtonTrainMission#() was edited to add #8)
     bool OnButtonTrainMission1()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_1_Introduction);
-        m_pbuttonTrainMission1->SetChecked (true);
-        m_pbuttonTrainMission2->SetChecked (false);
-        m_pbuttonTrainMission3->SetChecked (false);
-        m_pbuttonTrainMission4->SetChecked (false);
-        m_pbuttonTrainMission5->SetChecked (false);
-        m_pbuttonTrainMission6->SetChecked (false);
-        m_pbuttonTrainMission7->SetChecked (false);
-		m_pbuttonTrainMission8->SetChecked (false);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_1_Introduction);
     }
 
     bool OnButtonTrainMission2()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_2_Basic_Flight);
-        m_pbuttonTrainMission1->SetChecked (false);
-        m_pbuttonTrainMission2->SetChecked (true);
-        m_pbuttonTrainMission3->SetChecked (false);
-        m_pbuttonTrainMission4->SetChecked (false);
-        m_pbuttonTrainMission5->SetChecked (false);
-        m_pbuttonTrainMission6->SetChecked (false);
-        m_pbuttonTrainMission7->SetChecked (false);
-		m_pbuttonTrainMission8->SetChecked (false);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_2_Basic_Flight);
     }
 
     bool OnButtonTrainMission3()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_3_Basic_Weaponry);
-        m_pbuttonTrainMission1->SetChecked (false);
-        m_pbuttonTrainMission2->SetChecked (false);
-        m_pbuttonTrainMission3->SetChecked (true);
-        m_pbuttonTrainMission4->SetChecked (false);
-        m_pbuttonTrainMission5->SetChecked (false);
-        m_pbuttonTrainMission6->SetChecked (false);
-        m_pbuttonTrainMission7->SetChecked (false);
-		m_pbuttonTrainMission8->SetChecked (false);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_3_Basic_Weaponry);
     }
 
     bool OnButtonTrainMission4()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_4_Enemy_Engagement);
-        m_pbuttonTrainMission1->SetChecked (false);
-        m_pbuttonTrainMission2->SetChecked (false);
-        m_pbuttonTrainMission3->SetChecked (false);
-        m_pbuttonTrainMission4->SetChecked (true);
-        m_pbuttonTrainMission5->SetChecked (false);
-        m_pbuttonTrainMission6->SetChecked (false);
-        m_pbuttonTrainMission7->SetChecked (false);
-		m_pbuttonTrainMission8->SetChecked (false);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_4_Enemy_Engagement);
     }
 
     bool OnButtonTrainMission5()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_5_Command_View);
-        m_pbuttonTrainMission1->SetChecked (false);
-        m_pbuttonTrainMission2->SetChecked (false);
-        m_pbuttonTrainMission3->SetChecked (false);
-        m_pbuttonTrainMission4->SetChecked (false);
-        m_pbuttonTrainMission5->SetChecked (true);
-        m_pbuttonTrainMission6->SetChecked (false);
-        m_pbuttonTrainMission7->SetChecked (false);
-		m_pbuttonTrainMission8->SetChecked (false);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_5_Command_View);
     }
 
     bool OnButtonTrainMission6()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_6_Practice_Arena);
-        m_pbuttonTrainMission1->SetChecked (false);
-        m_pbuttonTrainMission2->SetChecked (false);
-        m_pbuttonTrainMission3->SetChecked (false);
-        m_pbuttonTrainMission4->SetChecked (false);
-        m_pbuttonTrainMission5->SetChecked (false);
-        m_pbuttonTrainMission6->SetChecked (true);
-        m_pbuttonTrainMission7->SetChecked (false);
-		m_pbuttonTrainMission8->SetChecked (false);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_6_Practice_Arena);
     }
 
     bool OnButtonTrainMission7()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_7_Live);
-        m_pbuttonTrainMission1->SetChecked (false);
-        m_pbuttonTrainMission2->SetChecked (false);
-        m_pbuttonTrainMission3->SetChecked (false);
-        m_pbuttonTrainMission4->SetChecked (false);
-        m_pbuttonTrainMission5->SetChecked (false);
-        m_pbuttonTrainMission6->SetChecked (false);
-        m_pbuttonTrainMission7->SetChecked (true);
-		m_pbuttonTrainMission8->SetChecked (false);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_7_Live);
     }
 	//TheBored 06-JUL-07: #8 added
 	bool OnButtonTrainMission8()
     {
-        g_pnumberMissionNumber->SetValue (Training::c_TM_8_Nanite);
-        m_pbuttonTrainMission1->SetChecked (false);
-        m_pbuttonTrainMission2->SetChecked (false);
-        m_pbuttonTrainMission3->SetChecked (false);
-        m_pbuttonTrainMission4->SetChecked (false);
-        m_pbuttonTrainMission5->SetChecked (false);
-        m_pbuttonTrainMission6->SetChecked (false);
-        m_pbuttonTrainMission7->SetChecked (false);
-		m_pbuttonTrainMission8->SetChecked (true);
-        m_pbuttonTrain->SetEnabled (true);
-        m_pbuttonTrain->SetChecked (true);
-        return true;
+		return OnButtonMission(Training::c_TM_8_Nanite);
     }
 	//End TB
 
