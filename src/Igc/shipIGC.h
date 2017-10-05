@@ -1487,13 +1487,17 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             IpartIGC*   part = GetMyMission()->CreatePart(GetMyLastUpdate(), ppt);
             assert (part);
 
-            part->SetShip(this, mount);
-            assert (part->GetShip() == this);
-            assert (part->GetMountID() == mount);
+			// Xynth -"Fix to avoid crash 8963864" 
+			if (part)
+			{
+				part->SetShip(this, mount);
+				assert(part->GetShip() == this);
+				assert(part->GetMountID() == mount);
 
-            part->SetAmount(amount);
+				part->SetAmount(amount);
 
-            part->Release();
+				part->Release();
+			}
 
             return part;        //Bad form to return after a release but it is not dead since the ship holds a pointer
         }

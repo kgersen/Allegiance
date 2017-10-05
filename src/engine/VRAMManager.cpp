@@ -272,19 +272,6 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 	_ASSERT(texHandle != INVALID_TEX_HANDLE);
 
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-
-	// BT - 10/17 - On certain video cards, the texture must be a power of two. 
-	// Determine texture size is good. 
-	dwWidth = GetPower2(dwWidth);
-	dwHeight = GetPower2(dwHeight);
-
-	// BT - 10/17 - On some video cards, the texture must be square.
-	// This made some of the text all garbled. Let's see if this is a contributer later?
-	/*if (dwWidth > dwHeight)
-	dwHeight = dwWidth;
-	else if (dwHeight > dwWidth)
-	dwWidth = dwHeight;*/
-
 	pTexture->dwOriginalWidth = dwWidth;
 	pTexture->dwOriginalHeight = dwHeight;
 
@@ -330,12 +317,28 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 			&pTexture->pTexture,
 			NULL);  //Fix memory leak -Imago 8/2/09
 
+		// BT - 10/17 - Tracking down the CreateTexture crashes.
+		if (FAILED(hr))
+		{
+			hr = CD3DDevice9::Get()->Device()->CreateTexture(pTexture->dwOriginalWidth,
+				pTexture->dwOriginalHeight,
+				1, // Try again with only 1 level.
+				0, // Try again without the mipmaps.
+				texFormat,
+				texPool,
+				&pTexture->pTexture,
+				NULL); 
+
+			if (FAILED(hr))
+				(*(int*)0) = 0; // Force exception here.
+		}
+
 		D3DSURFACE_DESC surfDesc;
 		pTexture->pTexture->GetLevelDesc(0, &surfDesc);
-		pTexture->dwActualWidth = surfDesc.Width; // GetPower2(surfDesc.Width);
-		pTexture->dwActualHeight = surfDesc.Height; //  GetPower2(surfDesc.Height);
+		pTexture->dwActualWidth = GetPower2(surfDesc.Width);
+		pTexture->dwActualHeight = GetPower2(surfDesc.Height);
 
-													// If it created ok, update the texture details.
+		// If it created ok, update the texture details.
 		if (hr == D3D_OK)
 		{
 			pTexture->texFormat = texFormat;
@@ -456,22 +459,14 @@ HRESULT CVRAMManager::CreateRenderTarget(TEXHANDLE	texHandle,
 	_ASSERT((dwWidth != 0) && (dwHeight != 0) && "Render target created with zero dimension");
 
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-
-	// BT - 10/17 - On certain video cards, the texture must be a power of two. 
-	// Determine texture size is good. 
-	dwWidth = GetPower2(dwWidth);
-	dwHeight = GetPower2(dwHeight);
-
-	// BT - 10/17 - On some video cards, the texture must be square.
-	/*if (dwWidth > dwHeight)
-	dwHeight = dwWidth;
-	else if (dwHeight > dwWidth)
-	dwWidth = dwHeight;*/
-
 	pTexture->dwOriginalWidth = dwWidth;
 	pTexture->dwOriginalHeight = dwHeight;
-	//pTexture->dwActualWidth = dwWidth; // GetPower2(surfDesc.Width);
-	//pTexture->dwActualHeight = dwHeight; //  GetPower2(surfDesc.Height);
+
+	// Determine texture size is good.
+	dwWidth = GetPower2(dwWidth);
+	dwHeight = GetPower2(dwHeight);
+	pTexture->dwActualWidth = dwWidth;
+	pTexture->dwActualHeight = dwHeight;
 
 	// Fixed format for now. Render targets must go in DEFAULT pool.
 	hr = CD3DDevice9::Get()->Device()->CreateTexture(pTexture->dwOriginalWidth,
@@ -487,12 +482,6 @@ HRESULT CVRAMManager::CreateRenderTarget(TEXHANDLE	texHandle,
 	// If it created ok, update the texture details.
 	if (hr == D3D_OK)
 	{
-		// BT - 10/17 - Get the real actual width and height.
-		D3DSURFACE_DESC surfDesc;
-		pTexture->pTexture->GetLevelDesc(0, &surfDesc);
-		pTexture->dwActualWidth = surfDesc.Width; // GetPower2(surfDesc.Width);
-		pTexture->dwActualHeight = surfDesc.Height; //  GetPower2(surfDesc.Height);
-
 		pTexture->texFormat = D3DFMT_A8R8G8B8;
 		pTexture->bValid = true;
 		pTexture->bRenderTarget = true;
