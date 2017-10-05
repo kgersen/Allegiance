@@ -192,6 +192,9 @@ HRESULT     CshipIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
 
     m_bRunningAway = false;
 	m_stayDocked = false;  //Xynth #48 8/2010
+	m_repair = 0; //Xynth amount of nanning performed by ship
+	m_bProbeDestroyed = false; //Xynth if a probe was destroyed
+	m_bProbeSpot = false; //Xynth if a probe deployed by this ship spots a high value target
 
     return S_OK;
 }

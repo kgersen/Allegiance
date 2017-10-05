@@ -115,6 +115,20 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 
                     if (oldFraction > 0.0f)
                     {
+						//Xynth Find matching cfsShip to IGC ship
+						
+						if (launcher->GetObjectType() == OT_ship)
+						{
+							ObjectID theID = launcher->GetObjectID();
+							IsideIGC * plSide = launcher->GetSide();
+							IshipIGC * pShip = plSide->GetShip(theID);
+
+							//pShip->
+
+						}
+						
+					
+
                         GetMyMission()->GetIgcSite()->KillProbeEvent(this);
                         dr = c_drKilled;
                     }
