@@ -225,7 +225,13 @@ void Value::RemoveParent(Value* pvalue)
 
 void Value::SetChild(int index, Value* pvalueChild)
 {
-    if (m_pchildren[index] != pvalueChild) {
+	// BT - 10/17 - If there are no elements in the list, then just add this element.
+	// Fixing crash: 8975122	211205	allegiance.exe	allegiance.exe	tvector.h	215	4	0	Win32 StructuredException at 0044750A : UNKNOWN	2017-10-05 11:54:01	0x0004750A	10	UNKNOWN
+	if (m_pchildren.GetCount() == 0)
+	{
+		AddChild(pvalueChild);
+	}
+	else if (m_pchildren[index] != pvalueChild) {
         m_pchildren[index]->RemoveParent(this);
         pvalueChild->AddParent(this);
         m_pchildren.Set(index, pvalueChild);

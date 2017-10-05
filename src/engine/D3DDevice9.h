@@ -279,6 +279,7 @@ private:
 		DWORD					dwCurrentWindowedHeight;
 		DWORD					dwCurrentFullscreenWidth;
 		DWORD					dwCurrentFullscreenHeight;
+		HWND					hParentWindow; // BT - 10/17 - If the D3D device becomes null, re-create it to get it up and rolling again.
 
 		SD3DDevice9FormatFlags	sFormatFlags;
 
@@ -421,7 +422,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	// Access functions.
-	inline const LPDIRECT3DDEVICE9 Device() { return m_sD3DDev9.pD3DDevice; }
+	const LPDIRECT3DDEVICE9 Device(); // BT - 10/17 - If the D3D device becomes null, re-create it to get it up and rolling again.
 
 	// State initialisation functions.
 	void		InitialiseDeviceStateCache( SD3D9DeviceStateCache * pCache );

@@ -47,7 +47,7 @@ HRESULT     CdispenserIGC::Initialize(ImissionIGC* pMission, Time now, const voi
                 (m_expendableType->GetObjectType() == OT_probeType) ||
                 (m_expendableType->GetObjectType() == OT_chaffType));
 
-		m_expendableType->AddRef();
+		//m_expendableType->AddRef(); // Xynth -"Fix to avoid crash 8963864" 
 
 		// Xynth -"Fix to avoid crash 8963864" 
 		if (m_expendableType != NULL)
