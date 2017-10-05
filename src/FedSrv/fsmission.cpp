@@ -2844,7 +2844,7 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
         PlayerScoreObject* ppso = pfsPlayer->GetPlayerScoreObject();
 
         // Record the player results
-        RecordPlayerResults(pship->GetName(), pfsPlayer, pside->GetObjectID());
+        RecordPlayerResults(pship, pfsPlayer, pside->GetObjectID());
       }
     }
 }
@@ -2856,9 +2856,10 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
    Purpose:
      Records the results of the player to the database.
  */
-void CFSMission::RecordPlayerResults(const char* pszName, CFSPlayer *player, SideID sid)
+void CFSMission::RecordPlayerResults(IshipIGC* pship, CFSPlayer *player, SideID sid)
 {
 	PlayerScoreObject*  ppso = player->GetPlayerScoreObject();
+	const char * pszName = pship->GetName();
 
   #if !defined(ALLSRV_STANDALONE)
 
@@ -2930,11 +2931,16 @@ void CFSMission::RecordPlayerResults(const char* pszName, CFSPlayer *player, Sid
 	CSteamAchievements *pSteamAchievements = player->GetSteamAchievements();
 
 	pSteamAchievements->AwardBetaParticipation();
-
+	//Go through the player's ship IGC data to see if there are any stat or achievements to award
+//	if (pship->GetProbeDestroyed())
+//		pSteamAchievements->AwardProbeKillAchievement();
+	
 	pSteamAchievements->UpdateLeaderboard(ppso);
 	pSteamAchievements->AddUserStats(ppso);
 
 	pSteamAchievements->SaveStats();
+
+	//player->GetS
 
   #endif // !defined(ALLSRV_STANDALONE)
 }
