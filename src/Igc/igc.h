@@ -3460,6 +3460,7 @@ class IprobeIGC : public IscannerIGC
         virtual float                GetTimeFraction(void) const = 0;
 		//Xynth 7/2010 function to set probe expiration	ticket #10	
 		virtual void				SetExpiration(Time time) = 0;
+		virtual IshipIGC*			GetProbeLauncherShip() const = 0;
 };
 
 class IstationIGC : public IscannerIGC
@@ -5287,7 +5288,7 @@ class   GotoPlan
         void*       m_pvOldClusterTarget;           //ditto for the target
 };
 
-static  AssetMask   GetAssetMask(IshipIGC* pship, IhullTypeIGC* pht, bool bFriendly)
+static  AssetMask   GetAssetMask(IshipIGC* pship, const IhullTypeIGC* pht, bool bFriendly)
 {
     AssetMask   am;
 
