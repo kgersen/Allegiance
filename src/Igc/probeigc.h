@@ -123,7 +123,7 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 							IsideIGC * plSide = launcher->GetSide();
 							IshipIGC * pShip = plSide->GetShip(theID);
 							if (!((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide())))
-								pShip->SetProbeDestroyed(true); //Xynth for enemy probe kill achievement
+								pShip->SetAchievementMask(c_achmProbeKill); //Xynth for enemy probe kill achievement
 						}
 						
 					

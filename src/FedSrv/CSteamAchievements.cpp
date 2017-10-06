@@ -286,14 +286,15 @@ void CSteamAchievements::AwardBaseKillOrCapture(bool kill)
 
 }
 
-void CSteamAchievements::AwardProbeKillAchievement()
+void CSteamAchievements::AwardIGCAchievements(AchievementMask am)
 {
-	SetAchievement(EAchievements::FIRST_PROBE_KILL_1_9);
+	if ((am & c_achmProbeKill) > 0)
+		SetAchievement(EAchievements::FIRST_PROBE_KILL_1_9);
+	if ((am & c_achmProbeSpot) > 0)
+		SetAchievement(EAchievements::PROBE_SPOT_1_10);
+
 }
-void CSteamAchievements::AwardProbeSpotAchievement()
-{
-	SetAchievement(EAchievements::PROBE_SPOT_1_10);
-}
+
 void CSteamAchievements::AwardRecoverTechAchievement()
 {
 	SetAchievement(EAchievements::RECOVER_TECH_1_8);

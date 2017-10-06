@@ -1852,21 +1852,17 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		{
 			return m_repair;
 		}
-		virtual void				SetProbeDestroyed(bool probeDestroyed)
+		virtual void				SetAchievementMask(AchievementMask am)
 		{
-			m_bProbeDestroyed = probeDestroyed;
+			m_achievementMask = m_achievementMask | am;
 		}
-		virtual bool				GetProbeDestroyed(void) const
+		virtual void				ClearAchievementMask(void)
 		{
-			return m_bProbeDestroyed;
+			m_achievementMask = 0;
 		}
-		virtual void				SetProbeSpot(bool probeSpot)
+		virtual AchievementMask		GetAchievementMask(void) const
 		{
-			m_bProbeSpot = probeSpot;
-		}
-		virtual bool				GetProbeSpot(void) const
-		{
-			return m_bProbeSpot;
+			return m_achievementMask;
 		}
         virtual bool                OkToLaunch(Time now)
         {
@@ -2434,8 +2430,8 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
 		bool				m_stayDocked;  //Xynth #48 8/10
 		float				m_repair; //Xynth amount of nanning performed by ship
-		bool				m_bProbeDestroyed; //Xynth if a probe was destroyed
-		bool				m_bProbeSpot; //Xynth if a probe deployed by this ship spots a high value target
+		AchievementMask		m_achievementMask;
+
 };
 
 #endif //__SHIPIGC_H_

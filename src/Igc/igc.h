@@ -763,6 +763,10 @@ const ExpendableAbilityBitMask  c_eabmShootOnlyTarget = 0x1000;
 const ExpendableAbilityBitMask  c_eabmRescue          = c_sabmRescue;     //0x2000 Rescue lifepods that collide with it
 const ExpendableAbilityBitMask  c_eabmRescueAny       = c_sabmRescueAny;  //0x4000 Rescue any lifepod that collide with it
 
+typedef short AchievementMask;
+const AchievementMask c_achmProbeKill = 0x01;
+const AchievementMask c_achmProbeSpot = 0x02;
+
 enum    ShipControlStateIGC
 {
     selectedWeaponOneIGC        =  1,
@@ -3338,10 +3342,9 @@ class IshipIGC : public IscannerIGC
 		virtual bool				GetStayDocked(void) const =0; //Xynth #48
 		virtual void				AddRepair(float repair) = 0;
 		virtual float				GetRepair(void) const = 0;
-		virtual void				SetProbeDestroyed(bool probeDestroyed) = 0;
-		virtual bool				GetProbeDestroyed(void) const = 0;
-		virtual void				SetProbeSpot(bool probeSpot) = 0;
-		virtual bool				GetProbeSpot(void) const = 0;
+		virtual void				SetAchievementMask(AchievementMask am) = 0;
+		virtual void				ClearAchievementMask(void) = 0;
+		virtual AchievementMask		GetAchievementMask(void) const = 0;
         virtual DamageTrack*        GetDamageTrack(void) = 0;
         virtual void                CreateDamageTrack(void) = 0;
         virtual void                DeleteDamageTrack(void) = 0;
