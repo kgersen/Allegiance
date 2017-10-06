@@ -115,8 +115,7 @@ public:
 	void AwardBetaParticipation();
 	void AwardKillAchievement(PilotType pt);
 	void AwardBaseKillOrCapture(bool kill);
-	void AwardProbeKillAchievement();
-	void AwardProbeSpotAchievement();
+	void AwardIGCAchievements(AchievementMask am);
 	void AwardRecoverTechAchievement();
 	
 	void AddUserStats(PlayerScoreObject*  ppso);

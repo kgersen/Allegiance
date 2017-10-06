@@ -3596,18 +3596,8 @@ void SendShipUpdates(CFSMission * pfsMission)
 					{
 						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
 
-						if (pship->GetProbeDestroyed())
-						{
-							pSteamAchievements->AwardProbeKillAchievement();
-							pship->SetProbeDestroyed(false); //only need to run once per player ever but
-															 //this will at least prevent it from running once per frame
-						}
-						if (pship->GetProbeSpot())
-						{
-							pSteamAchievements->AwardProbeSpotAchievement();
-							pship->SetProbeSpot(false); //only need to run once per player ever but
-															 //this will at least prevent it from running once per frame
-						}
+						pSteamAchievements->AwardIGCAchievements(pship->GetAchievementMask());
+						pship->ClearAchievementMask();
 
 					}
 
@@ -10653,7 +10643,7 @@ class ThingSiteImpl : public ThingSite
 											ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
 											IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
 											IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-											pProbingShip->SetProbeSpot(true);
+											pProbingShip->SetAchievementMask(c_achmProbeSpot);
 										}
 									}
 
