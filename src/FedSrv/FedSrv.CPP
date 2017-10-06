@@ -8048,9 +8048,9 @@ IHTTPSession * BeginConfigDownload()
 
   char szConfig[MAX_PATH];
 #ifdef _ALLEGIANCE_PROD_
-  lstrcpy(szConfig, "http://autoupdate.alleg.net/allegiance.cfg"); //Imago 6/10
+  lstrcpy(szConfig, "http://allegiance.zaphop.com/allegiance-server.txt"); //Imago 6/10 // BT - STEAM
 #else
-  lstrcpy(szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg"); //Imago 6/10
+  lstrcpy(szConfig, "http://allegiance.zaphop.com/allegiance-server.txt"); //Imago 6/10 // BT - STEAM
 #endif
 
   CRegKey key;
