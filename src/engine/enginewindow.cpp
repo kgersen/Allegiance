@@ -120,7 +120,6 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 				Window(NULL, rect, strTitle, ZString(), 0, hmenu),
 				m_pengine(papp->GetEngine()),
 				m_pmodeler(papp->GetModeler()),
-				m_sizeWindowed(rect.Size()),
 				m_offsetWindowed(rect.Min()),
 				m_bSizeable(true),
 				m_bMinimized(false),
@@ -493,7 +492,7 @@ void EngineWindow::UpdateWindowStyle()
         // Win32 doesn't recognize the style change unless we resize the window
         //
         
-        WinPoint size = m_sizeWindowed;
+        WinPoint size = m_pengine->GetFullscreenSize();
 
         m_bMovingWindow = true;
         SetClientSize(size + WinPoint(1, 1));
@@ -533,7 +532,7 @@ void EngineWindow::UpdateRectValues()
         m_prectValueScreen->SetValue(rect);
         m_pmouse->SetClipRect(rect);
     } else {
-		WinRect rect(WinPoint(0, 0), m_sizeWindowed);
+		WinRect rect(WinPoint(0, 0), m_pengine->GetFullscreenSize());
         if (g_bWindowLog) {
             ZDebugOutput("  Windowed: " + GetString(0, rect) + "\n");
         }
@@ -719,9 +718,8 @@ void EngineWindow::RectChanged()
 
         if (
                (size           != WinPoint(0, 0))
-            && (m_sizeWindowed != size          )
+            && (m_pengine->GetFullscreenSize() != size          )
         ) {
-            m_sizeWindowed = size;
             Invalidate();
         }
 
@@ -756,7 +754,7 @@ WinPoint EngineWindow::GetSize()
 
 WinPoint EngineWindow::GetWindowedSize()
 {
-    return m_sizeWindowed;
+    return m_pengine->GetFullscreenSize();
 }
 
 WinPoint EngineWindow::GetFullscreenSize()
@@ -770,9 +768,7 @@ void EngineWindow::SetWindowedSize(const WinPoint& size)
         ZDebugOutput("EngineWindow::SetWindowedSize(" + GetString(size) + ")\n");
     }
 
-    if (m_sizeWindowed != size) {
-        m_sizeWindowed = size;
-
+    if (m_pengine->GetFullscreenSize() != size) {
         if (!m_pengine->IsFullscreen()) {
             Invalidate();
         }
@@ -795,7 +791,7 @@ void EngineWindow::SetFullscreenSize(const Vector& size)
 
 void EngineWindow::ChangeFullscreenSize(bool bLarger)
 {
-    if (m_pengine->IsFullscreen() && m_bSizeable) 
+    if (m_bSizeable) 
 	{
         WinPoint size = GetFullscreenSize();
 
@@ -1217,12 +1213,10 @@ void EngineWindow::DoIdle()
 	{
         if (bChanges || m_bInvalid) 
 		{
-			
+			WinPoint size = m_pengine->GetFullscreenSize();
 			//go fullscreen #73 7/10 Imago
-			if ((GetSystemMetrics(SM_CXSCREEN) <= m_sizeWindowed.X() || GetSystemMetrics(SM_CYSCREEN) <= m_sizeWindowed.Y()) && !m_bMovingWindow && !m_pengine->IsFullscreen()) {
+			if ((GetSystemMetrics(SM_CXSCREEN) <= size.X() || GetSystemMetrics(SM_CYSCREEN) <= size.Y()) && !m_bMovingWindow && !m_pengine->IsFullscreen()) {
 				SetFullscreen(true);
-				m_sizeWindowed.SetX(800);
-				m_sizeWindowed.SetY(600);
 			}
 			m_bInvalid = false;
 

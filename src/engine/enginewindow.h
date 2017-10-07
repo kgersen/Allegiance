@@ -91,7 +91,6 @@ protected:
     TRef<Image>                m_pimageCursor;
     TRef<IPopupContainer>      m_ppopupContainer;
 
-    WinPoint                   m_sizeWindowed;
     WinPoint                   m_offsetWindowed;
 
     bool                       m_bMovingWindow;

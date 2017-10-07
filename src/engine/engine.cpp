@@ -73,7 +73,7 @@ private:
 
 public:
     EngineImpl(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow) :
-        m_pointFullscreen(800, 600),
+        m_pointFullscreen(CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width, CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height),
         m_pointFullscreenCurrent(0, 0),
         m_bFullscreen(false),
         m_bAllow3DAcceleration(bAllow3DAcceleration),
@@ -440,7 +440,7 @@ private:
 
 		// Reset the device for windowed mode.
 
-		CD3DDevice9::Get()->ResetDevice( true, 800, 600 );
+		CD3DDevice9::Get()->ResetDevice( true);
 
         if (g_bWindowLog) {
             ZDebugOutput("InitializeWindowed exiting\n");
@@ -1829,9 +1829,9 @@ private:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow )
+TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow)
 {
-    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP, hWindow ); //Fix memory leak -Imago 8/2/09
+    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP, hWindow); //Fix memory leak -Imago 8/2/09
 }
 
 

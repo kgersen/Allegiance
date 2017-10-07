@@ -2218,17 +2218,11 @@ public:
         debugf("Switched to screen %d\n", s);
         if (s != m_screen)
         {
-            //
-            // Save the screen size if we are switching away from combat
-            //
 
             if (m_screen == ScreenIDCombat) {
+				// this used to also save the current resolution. Still keeping the other functions.
                 Set3DAccelerationImportant(false);
-                SaveCombatSize();
                 GetConsoleImage()->OnSwitchViewMode();
-
-				// BT - 9/17 - Return to 800x600 resolution so the screens scale correctly when the player returns to the lobby.
-				SetFullscreenSize(Vector(800, 600, 0));
             }
 
             SetHideCursorTimer(s == ScreenIDCombat);
@@ -2325,9 +2319,6 @@ public:
                     break;
 
                 case ScreenIDGameOverScreen:
-					// BT - 9/17 - Return the screen to 800x600 for game over so that the screen scales correctly for full screen.
-					SetFullscreenSize(Vector(800, 600, 0));
-
                     SetScreen(CreateGameOverScreen(GetModeler()));
                     break;
 
@@ -2409,7 +2400,7 @@ public:
 
 
 							if (m_pengine->IsFullscreen()) {
-								CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
+								CD3DDevice9::Get()->ResetDevice(false);
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
@@ -2997,9 +2988,9 @@ public:
                 int(LoadPreference("CombatXSize", 800)),
                 int(LoadPreference("CombatYSize", 600))
             );
-		//m_sizeCombatFullscreen =
-		//	WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
-		//				CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
+		m_sizeCombatFullscreen =
+			WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
+						CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
 
        m_sizeCombatFullscreen =
            WinPoint(
@@ -3490,8 +3481,7 @@ public:
         // Save the screen resolution
         //
 
-		if ( m_screen == ScreenIDCombat )  //AEM 7.15.07 Don't want to end up saving a non combat resolution (800x600)
-			SaveCombatSize();
+		SaveCombatSize();
 
         SavePreference("CombatXSize", m_sizeCombat.X());
         SavePreference("CombatYSize", m_sizeCombat.Y());
@@ -6575,11 +6565,8 @@ public:
 
     void SaveCombatSize()
     {
-        if (m_bCombatSize) {
-            m_sizeCombat           = GetWindowedSize();
-            m_sizeCombatFullscreen = GetFullscreenSize();
-            m_bCombatSize = false;
-        }
+		m_sizeCombat = GetWindowedSize();
+		m_sizeCombatFullscreen = GetFullscreenSize();
     }
 
     void AdjustCombatSize(ViewMode vm)
