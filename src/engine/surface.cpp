@@ -1378,9 +1378,7 @@ public:
         const ZString& str
     ) {
         pfont->DrawString(
-            this, 
             point + m_pointOffset, 
-            m_rectClip,
             str, 
             color
         );

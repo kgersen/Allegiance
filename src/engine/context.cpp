@@ -888,8 +888,7 @@ public:
 //			pointScreen += m_UIOffset;
 
             //m_psurface->DrawString(pfont, color, pointScreen, str);
-			WinRect rectClip(	0, 0, 800, 600 );
-			pfont->DrawString( NULL, pointScreen, rectClip, str, color );
+			pfont->DrawString(pointScreen, str, color );
         }
     }
 
