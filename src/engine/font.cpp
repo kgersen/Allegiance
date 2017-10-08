@@ -601,10 +601,20 @@ public:
 			{
 			case START_COLOR_CODE:
 				{
+					// Rock: I believe this is actually incorrect for when the code is entered using the client, in which case it has become a single byte representing the number 129.
+					// In that case, a character is ignored.
 					iChar += 2;
 
 					// Read the color, in the form rrggbbaa, where each pair of digits is a hex value.
-					currColour = ReadColourD3D( str, iChar );
+					if (IsValidColourCode(str, iChar) == true)
+					{
+						currColour = ReadColourD3D(str, iChar);
+					}
+					else {
+						//invalid: Skip what is supposed to be the color code
+						iChar += 8;
+					}
+					
 					if( iChar >= str.GetLength() )
 						break;
 				}
@@ -712,9 +722,29 @@ public:
 		  return ((highNibble	<< 4) |	lowNibble);
 	  }
 
+	  bool IsValidColourCode(const ZString& str, int & ichar)
+	  {
+		  int i;
+
+		  if (str.GetLength() < ichar + 8)
+		  {
+			  return false;
+		  }
+
+		  for (i = ichar; i < ichar + 8; ++i)
+		  {
+			  if (HexDigitToInt(str[i]) == -1)
+			  {
+				  return false;
+			  }
+		  }
+		  return true;
+	  }
+
 	  D3DCOLOR ReadColourD3D( const ZString & str, int & ichar )
 	  {
 		  DWORD dwR, dwG, dwB, dwA;
+
 		  dwR = ReadHexPair ( str,	ichar );
 		  dwG = ReadHexPair ( str,	ichar );
 		  dwB = ReadHexPair ( str,	ichar );
