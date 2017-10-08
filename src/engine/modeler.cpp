@@ -2136,6 +2136,31 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
+//
+//
+//////////////////////////////////////////////////////////////////////////////
+
+class GetResolutionFactory : public IFunction {
+private:
+	Engine* m_pengine;
+
+public:
+	GetResolutionFactory(Engine* pengine) :
+		m_pengine(pengine)
+	{
+	}
+
+	TRef<IObject> Apply(ObjectStack& stack)
+	{
+		WinPoint size = m_pengine->GetFullscreenSize();
+		//return PointValue::Cast(new Point(size.X(), size.Y()));
+		return new ModifiablePointValue(Point((int)size.X(), (int)size.Y()));
+		//return new PointValue(PointValue::Cast(Point(size.X, size.Y));
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+//
 // Modeler
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -2394,6 +2419,11 @@ public:
         pns->AddMember("AnimatedImagePaneRect", new AnimatedImagePaneRectFactory());
         pns->AddMember("FrameImageButtonPane",  new FrameImageButtonPaneFactory(this, ptime));
         pns->AddMember("PaneImage",             new PaneImageFactory(this));
+
+		//
+		// Resolution
+		//
+		pns->AddMember("GetResolution", new GetResolutionFactory(m_pengine));
 	}
 
     Engine* GetEngine()
