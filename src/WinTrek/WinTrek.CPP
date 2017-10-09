@@ -2646,7 +2646,7 @@ public:
         TrekWindow(
             papp,
             strCommandLine,
-            false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized.
+            false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized. Trying to find the source of the mystery "crash on launch" issues.
 			WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
 					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
 					CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
