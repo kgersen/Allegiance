@@ -162,8 +162,13 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
     //
     // Should we start fullscreen?
 	CD3DDevice9 * pDev = CD3DDevice9::Get();
-	m_bStartFullScreen = pDev->GetDeviceSetupParams()->bRunWindowed ? false : true;
-    ParseCommandLine( strCommandLine, m_bStartFullScreen );
+	bool startFullscreen = pDev->GetDeviceSetupParams()->bRunWindowed ? false : true;
+	
+    ParseCommandLine( strCommandLine, startFullscreen);
+
+	
+	// BT - 10/17 - Force the client to start windowed first, then we can take it full screen later.
+	m_bStartFullScreen = false;
 
     // Get the mouse
     //
@@ -229,6 +234,9 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 	CVertexGenerator::Get()->Initialise( );
 
 	devLog.OutputString("CVertexGenerator::Get()->Initialise( );\n");
+
+	m_bStartFullScreen = startFullscreen;
+	pDev->ResetDevice(m_bStartFullScreen == false);
 }
 
 EngineWindow::~EngineWindow()
@@ -300,7 +308,7 @@ void EngineWindow::OnClose()
     m_pmodeler->Terminate();
     m_pmodeler = NULL;
 
-    m_pengine->Terminate();
+    m_pengine->TerminateEngine();
 
     Window::OnClose();
 }

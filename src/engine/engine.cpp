@@ -253,7 +253,7 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void Terminate( bool bEngineAppTerminate /*=false*/)
+    void TerminateEngine( bool bEngineAppTerminate /*=false*/)
     {
         //ClearDependants();
 

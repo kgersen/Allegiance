@@ -143,6 +143,156 @@ HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 }
 
 
+// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+D3DFORMAT CD3DDevice9::GetValidBackBufferFormat(class CLogFile * pLogFile)
+{
+	D3DFORMAT BackBufferFormats[] = {
+		D3DFMT_A2R10G10B10, D3DFMT_X8R8G8B8, 
+		D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, // Windowed and fullscreen
+		D3DFMT_A8R8G8B8, D3DFMT_A1R5G5B5, // Windowed only
+		(D3DFORMAT)0 // Terminator.
+	};
+
+	D3DFORMAT *pFormatList = BackBufferFormats;
+
+	while (*pFormatList)
+	{
+		//CheckDeviceType() is used to verify that a Device can support a particular display mode.
+		HRESULT hr = m_sD3DDev9.pD3D9->CheckDeviceType(D3DADAPTER_DEFAULT, //Test the primary display device, this is
+														//necessary because systems can have add-on cards
+														//or multi-monitor setups
+			D3DDEVTYPE_HAL,  //This states that we want support for this mode
+							 //in hardware rather than emulated in software
+			*pFormatList,   //The is the primary (viewable) buffer format
+			*pFormatList,   //This is the back (drawable) buffer format
+			m_sDevSetupParams.bRunWindowed);   //Is this windowed mode? 
+
+		if (SUCCEEDED(hr)) {
+			pLogFile->OutputStringV("GetValidBackBufferFormat: Found format: %x\n", *pFormatList);
+			return *pFormatList;
+		}
+
+		pFormatList++;
+	}
+
+	pLogFile->OutputString("GetValidBackBufferFormat: No valid format found!\n");
+
+	return *pFormatList;
+}
+
+	// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+	// https://www.gamedev.net/forums/topic/135961-what-format-should-i-set-autodepthstencilformat-to/
+D3DFORMAT CD3DDevice9::GetValidDepthStencilFormat(D3DFORMAT backbufferFormat, class CLogFile * pLogFile)
+{
+	D3DFORMAT DepthSetencilFormatList[] = {
+		D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D15S1, D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16,  // 32bit stencil formats first...
+		D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D16, D3DFMT_D15S1, // Then 32bit non-stencil formats...
+		D3DFMT_D15S1, D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D16, D3DFMT_D32, D3DFMT_D24X8, // Then 16bit stencil formats...
+		D3DFMT_D16, D3DFMT_D15S1, D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D24S8, D3DFMT_D24X4S4, // Finally 16bit non-stencil formats.
+		(D3DFORMAT)0 // Terminator.
+	};
+
+	D3DFORMAT *pFormatList = DepthSetencilFormatList;
+
+	while (*pFormatList)
+	{
+		// Does this depth format exist on this card, and can it be used in conjunction with the specified rendertarget format?
+
+		HRESULT hr = m_sD3DDev9.pD3D9->CheckDeviceFormat(m_sDevSetupParams.iAdapterID,
+			D3DDEVTYPE_HAL,
+			backbufferFormat,
+			D3DUSAGE_DEPTHSTENCIL,
+			D3DRTYPE_SURFACE,
+			*pFormatList);
+
+		if (SUCCEEDED(hr))
+		{
+			break;
+
+			/*
+			if (SUCCEEDED(m_sD3DDev9.pD3D9->CheckDepthStencilMatch(m_sDevSetupParams.iAdapterID,
+				g_Engine3D->m_pCurrentCaps->DeviceType,
+				g_pDefaultEngineWindow->m_d3dpp.BackBufferFormat,
+				surface,
+				*pFormatList)))
+				break;*/
+		}
+
+		pFormatList++;
+	}
+
+	if (*pFormatList)
+		pLogFile->OutputStringV("GetValidDepthStencilFormat: Found valid depth stencil format: %x\n", *pFormatList);
+	else
+		pLogFile->OutputString("GetValidDepthStencilFormat: No valid depth stencil format found!\n");
+
+
+	return *pFormatList;
+}
+
+
+
+// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+HRESULT CD3DDevice9::LastChanceCreateDevice(HWND hParentWindow, class CLogFile * pLogFile)
+{
+	HRESULT hr;
+
+	D3DFORMAT backbufferFormat = GetValidBackBufferFormat(pLogFile);
+	D3DFORMAT depthStencilFormat = GetValidDepthStencilFormat(backbufferFormat, pLogFile);
+
+	memset(&m_sD3DDev9.d3dPresParams, 0, sizeof(D3DPRESENT_PARAMETERS));
+	m_sD3DDev9.d3dPresParams.BackBufferWidth = m_sD3DDev9.pCurrentMode->mode.Width;
+	m_sD3DDev9.d3dPresParams.BackBufferHeight = m_sD3DDev9.pCurrentMode->mode.Height;
+	m_sD3DDev9.d3dPresParams.BackBufferFormat = backbufferFormat;
+	m_sD3DDev9.d3dPresParams.BackBufferCount = 1;
+	m_sD3DDev9.d3dPresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
+	m_sD3DDev9.d3dPresParams.MultiSampleQuality = 0;
+	m_sD3DDev9.d3dPresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	m_sD3DDev9.d3dPresParams.hDeviceWindow = hParentWindow;
+	m_sD3DDev9.d3dPresParams.Windowed = m_sDevSetupParams.bRunWindowed;
+	m_sD3DDev9.d3dPresParams.EnableAutoDepthStencil = TRUE;
+	m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = depthStencilFormat;
+	m_sD3DDev9.d3dPresParams.Flags = 0;
+	m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+
+	hr = m_sD3DDev9.pD3D9->CreateDevice(m_sDevSetupParams.iAdapterID,
+		D3DDEVTYPE_HAL, 
+		hParentWindow,
+		D3DCREATE_HARDWARE_VERTEXPROCESSING,
+		&m_sD3DDev9.d3dPresParams,
+		&m_sD3DDev9.pD3DDevice);
+
+	if (SUCCEEDED(hr))
+	{
+		m_sD3DDev9.bHardwareVP = true;
+		m_sD3DDev9.bPureDevice = false;
+		pLogFile->OutputString("LastChanceCreateDevice: HWVP device created.\n");
+	}
+	else
+	{
+		hr = m_sD3DDev9.pD3D9->CreateDevice(m_sDevSetupParams.iAdapterID,
+			D3DDEVTYPE_HAL,
+			hParentWindow,
+			D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+			&m_sD3DDev9.d3dPresParams,
+			&m_sD3DDev9.pD3DDevice);
+	}
+
+	if (SUCCEEDED(hr))
+	{
+		m_sD3DDev9.bHardwareVP = false;
+		m_sD3DDev9.bPureDevice = false;
+		pLogFile->OutputString("LastChanceCreateDevice: SWVP device created.\n");
+	}
+	else
+	{
+		pLogFile->OutputString("LastChanceCreateDevice: Failed!\n");
+	}
+
+	return hr;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // InitialiseDevice()
@@ -242,12 +392,18 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = D3DFMT_D24X8;
 	}
 
-	hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
-											DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
-											hParentWindow,
-											dwCreationFlags,
-											&m_sD3DDev9.d3dPresParams,
-											&m_sD3DDev9.pD3DDevice );  //Fix memory leak -Imago 8/2/09
+	hr = LastChanceCreateDevice(hParentWindow, pLogFile);
+
+
+	//hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
+	//										DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
+	//										hParentWindow,
+	//										dwCreationFlags,
+	//										&m_sD3DDev9.d3dPresParams,
+	//										&m_sD3DDev9.pD3DDevice );  //Fix memory leak -Imago 8/2/09
+
+
+
 
 	// Did we create a valid device?
 	// 29.07.08 - Courtesy of Imago, it appears that some device drivers (such as Intel Integrated chipset)
@@ -330,7 +486,19 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	if( hr != D3D_OK )
 	{
-		return hr;
+		hr = LastChanceCreateDevice(hParentWindow , pLogFile);
+
+		if (FAILED(hr))
+		{
+
+			if (::MessageBox(NULL, "Allegiance couldn't create a valid directX device. We are actively trying to solve this issue, but we need your help. If you encounter this error, please hop onto the Steam community hub, and let us know you saw this message. Would you like to be taken there now?", "Fatal Error", MB_ICONERROR | MB_OKCANCEL) == IDOK)
+				ShellExecute(NULL, NULL, "http://steamcommunity.com/app/700480/discussions/2/", NULL, NULL, SW_SHOWNORMAL);
+
+			// BT - 10/17 - if the D3D device couldn't be created, not much point continuing. 
+			(*(int*)0) = 0; // Force exception here.
+
+			return hr;
+		}
 	}
  
 	if( hr == D3D_OK )
@@ -366,13 +534,15 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 														0,
 														D3DRTYPE_TEXTURE,
 														D3DFMT_A1R5G5B5 );
-	if( hTemp == D3D_OK )
+	if( hTemp == D3D_OK && (m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_X1R5G5B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_R5G6B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_A1R5G5B5))
 	{
 		pLogFile->OutputString( "wasit wiDevice supports A1R5G5B5 format.\n" );
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = true;
 	} else {
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = false;
 	}
+
+	
 
 	// Auto gen mipmaps flag - include user setting.
 	if( ( ( m_sD3DDev9.sD3DDevCaps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP ) != 0 ) &&
@@ -783,11 +953,21 @@ const LPDIRECT3DDEVICE9 CD3DDevice9::Device()
 	{
 		CLogFile logfile("D3DDevice9_Reinitialize.log");
 
-		for (int i = 0; i < 30 && m_sD3DDev9.pD3DDevice == nullptr; i++)
+		for (int i = 0; i < 10 && m_sD3DDev9.pD3DDevice == nullptr; i++)
 		{
 			CreateDevice(m_sD3DDev9.hParentWindow, &logfile);
+			Sleep(100);
 		}
 
+		// If the window couldn't be created in the current mode, try to create it windowed instead.
+		for (int i = 0; i < 10 && m_sD3DDev9.pD3DDevice == nullptr; i++)
+		{
+			m_sD3DDev9.bIsWindowed = true;
+
+			CreateDevice(m_sD3DDev9.hParentWindow, &logfile);
+			Sleep(100);
+		}
+		
 		logfile.CloseLogFile();
 	}
 
