@@ -733,12 +733,15 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-	//Imago 6/10
-	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
+	
+	//Imago 6/10 // BT - STEAM - Replacing this with steam logging.
+	/*SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
 	g_papp->EnforceFilter( true );
 
-    __try { 
+    __try { */
+
         do {
+
             #ifdef SRVLOG
                 InitializeDebugf();
             #endif
@@ -777,14 +780,17 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
 			TerminateLogchat(); // mmf
 
-        } while (false);
-    }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
+			
+     } while (false);
+
+	 // BT - STEAM - Replacing this with steam logging.
+	 /*   }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
     }  
     delete pzSpacer;
 	if( !g_papp->EnforceFilter( false ) )
 	{
 		debugf("EnforceFilter(false) failed.\n");
 		return 0;
-	}
+	}*/
     return 0;
 }
