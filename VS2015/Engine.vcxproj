@@ -54,14 +54,14 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(DXSDK_DIR)\Include;$(IncludePath);</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(DXSDK_DIR)\Include;$(IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;..\src\Lib\steam;..\src\Lib\AllegianceSecurity;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>D3D_DEBUG_INFO;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -77,12 +77,16 @@
       </BrowseInformationFile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>..\src\Lib\AllegianceSecurity</AdditionalLibraryDirectories>
+      <AdditionalDependencies>AllegianceSecurityd.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;..\src\Lib\steam;..\src\Lib\AllegianceSecurity;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;DEBUG;SRVLOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -108,6 +112,8 @@
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>..\src\Lib\AllegianceSecurity</AdditionalLibraryDirectories>
+      <AdditionalDependencies>AllegianceSecurity.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
