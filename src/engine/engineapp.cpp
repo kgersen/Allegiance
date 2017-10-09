@@ -51,7 +51,7 @@ void EngineApp::Terminate()
     if (m_pmodeler)
         m_pmodeler->Terminate();
     if (m_pengine)
-        m_pengine->Terminate( true );
+        m_pengine->TerminateEngine( true );
 
     m_pmodeler = NULL;
     m_pengine = NULL;

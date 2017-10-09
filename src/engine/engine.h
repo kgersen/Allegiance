@@ -103,7 +103,7 @@ public:
     //
 
     virtual void SetFocusWindow(Window* pwindow, bool bStartFullscreen)    = 0;
-    virtual void Terminate(bool bEngineAppTerminate = false)               = 0;
+    virtual void TerminateEngine(bool bEngineAppTerminate = false)               = 0;
     virtual bool IsDeviceReady(bool& bChanges)                             = 0;
 
     //

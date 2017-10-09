@@ -2643,7 +2643,7 @@ public:
         TrekWindow(
             papp,
             strCommandLine,
-            true,
+            false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized.
 			WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
 					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
 					CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
@@ -3300,6 +3300,13 @@ public:
         // initialize the bad words filters
         LoadBadWords ();
 
+		// BT - 10/17 - Check if Allegiance should run windowed or not... This happens after allegiance has 
+		// already initialized to a window and gotten its fonts loaded.
+		bool startFullScreen = true;
+		ParseCommandLine(strCommandLine, startFullScreen);
+
+		SetFullscreen(startFullScreen);
+
         m_pmissileLast = 0;
 
         //
@@ -3537,9 +3544,13 @@ public:
         m_pscreen          = NULL;
         SetCaption(NULL);
 
-        SetImage(Image::GetEmpty());
+		// BT - 10/17 - Fixing 8982261	211206	allegiance.exe	allegiance.exe	tvector.h	362	13	0	Win32 StructuredException at 0058C1DA : UNKNOWN	2017-10-08 14:33:29	0x0018C1DA	10	UNKNOWN
+		// Not sure why we need to set the image to empty when the window is closing down anyway. 
+		// This causes a crash on some machines as the underlying TVector is already gone when this part of the code
+		// is reached. 
+        /*SetImage(Image::GetEmpty());
         m_pwrapImageConsole->SetImage(Image::GetEmpty());
-        m_pwrapImageTop->SetImage(Image::GetEmpty());
+        m_pwrapImageTop->SetImage(Image::GetEmpty());*/
 
         m_pgeoScene          = NULL;
         m_pcamera            = NULL;

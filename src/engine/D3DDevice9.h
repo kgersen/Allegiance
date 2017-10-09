@@ -312,6 +312,13 @@ public:
 	void		ResetReferencedResources( );
 	HRESULT	CreateD3D9( class CLogFile * pLogFile );
 	HRESULT	CreateDevice( HWND hParentWindow, class CLogFile * pLogFile );
+
+	// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+	D3DFORMAT GetValidBackBufferFormat(class CLogFile * pLogFile);
+	D3DFORMAT GetValidDepthStencilFormat(D3DFORMAT backbufferFormat, class CLogFile * pLogFile);
+	HRESULT LastChanceCreateDevice(HWND hParentWindow, class CLogFile * pLogFile);
+	
+	
 	HRESULT	ResetDevice( bool bWindowed, DWORD dwWidth = 0, DWORD dwHeight = 0, int iRate = 60 ); //imago added refresh rate 7/1/09
 	HRESULT	ClearScreen( );
 	HRESULT	RenderFinished( );
