@@ -147,7 +147,13 @@ HRESULT     CmodelIGC::Load(int                options,
 {
     LoadCVH(model, icon, attributes);
 
-    HRESULT rc = m_pThingSite->LoadModel(options, model, texture);
+	HRESULT rc;
+	
+	// BT - 10/17 - Fixing MoGas crash on model load fail.
+	if (m_pThingSite == nullptr)
+		rc = E_FAIL;
+	else
+		rc = m_pThingSite->LoadModel(options, model, texture);
 
     if (SUCCEEDED(rc))
     {
