@@ -201,24 +201,27 @@ void            CsideIGC::CreateBuckets(void)
 
             {
                 //Add all developments that the side could, potentially, produce
-                for (DroneTypeLinkIGC*    l = m_pMission->GetDroneTypes()->first();
-                     (l != NULL);
-                     l = l->next())
-                {
-                    IdroneTypeIGC*    d = l->data();
+				for (DroneTypeLinkIGC*    l = m_pMission->GetDroneTypes()->first();
+					(l != NULL);
+					l = l->next())
+				{
+					IdroneTypeIGC*    d = l->data();
 
-                    if (d->GetRequiredTechs() <= ttbmLocalUltimate)
-                    {
-                        //It is something we might be able to build and it will actually
-                        //do something useful
-                        DataBucketIGC   db = {d, this};
-                        IbucketIGC*     b = (IbucketIGC*)(m_pMission->CreateObject(m_lastUpdate,
-                                                                                   OT_bucket,
-                                                                                   &db,
-                                                                                   sizeof(db)));
-                        assert (b);
-                        b->Release();   //Creating the bucket adds it to the side's list of buckets
-                    }
+					if (d != NULL) //Xynth d->GetRequiredTechs() bombed out 
+					{
+						if (d->GetRequiredTechs() <= ttbmLocalUltimate)
+						{
+							//It is something we might be able to build and it will actually
+							//do something useful
+							DataBucketIGC   db = { d, this };
+							IbucketIGC*     b = (IbucketIGC*)(m_pMission->CreateObject(m_lastUpdate,
+								OT_bucket,
+								&db,
+								sizeof(db)));
+							assert(b);
+							b->Release();   //Creating the bucket adds it to the side's list of buckets
+						}
+					}
                 }
             }
 
