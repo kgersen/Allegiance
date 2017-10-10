@@ -286,6 +286,21 @@ void CSteamAchievements::AwardBaseKillOrCapture(bool kill)
 
 }
 
+void CSteamAchievements::AwardIGCAchievements(AchievementMask am)
+{
+	if ((am & c_achmProbeKill) > 0)
+		SetAchievement(EAchievements::FIRST_PROBE_KILL_1_9);
+	if ((am & c_achmProbeSpot) > 0)
+		SetAchievement(EAchievements::PROBE_SPOT_1_10);
+
+}
+
+void CSteamAchievements::AwardRecoverTechAchievement()
+{
+	SetAchievement(EAchievements::RECOVER_TECH_1_8);
+}
+
+
 void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso)
 {
 	int tempStat;
@@ -393,7 +408,15 @@ bool CSteamAchievements::CheckRank(int currentScore)
 	int currentRank, earnedRank;
 	bool getSucceed;
 	getSucceed = GetStat(EStats::PLAYER_RANK, &currentRank);
-	//getSucceed = getSucceed && GetStat(EStats::SUM_SCORE, &currentScore);
+	if (getSucceed)
+	{
+		if (currentRank >= 5)
+			SetAchievement(EAchievements::RANK_5_1_6);
+		if (currentRank >= 10)
+			SetAchievement(EAchievements::RANK_10_1_7);
+	}
+
+
 	earnedRank = currentRank;
 	if (getSucceed)
 	{

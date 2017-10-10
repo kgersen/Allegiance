@@ -763,6 +763,10 @@ const ExpendableAbilityBitMask  c_eabmShootOnlyTarget = 0x1000;
 const ExpendableAbilityBitMask  c_eabmRescue          = c_sabmRescue;     //0x2000 Rescue lifepods that collide with it
 const ExpendableAbilityBitMask  c_eabmRescueAny       = c_sabmRescueAny;  //0x4000 Rescue any lifepod that collide with it
 
+typedef short AchievementMask;
+const AchievementMask c_achmProbeKill = 0x01;
+const AchievementMask c_achmProbeSpot = 0x02;
+
 enum    ShipControlStateIGC
 {
     selectedWeaponOneIGC        =  1,
@@ -3336,6 +3340,11 @@ class IshipIGC : public IscannerIGC
         virtual void                AdjustRipcordDebt(float delta) = 0;
 		virtual void				SetStayDocked(bool stayDock) = 0; //Xynth #48 8/2010
 		virtual bool				GetStayDocked(void) const =0; //Xynth #48
+		virtual void				AddRepair(float repair) = 0;
+		virtual float				GetRepair(void) const = 0;
+		virtual void				SetAchievementMask(AchievementMask am) = 0;
+		virtual void				ClearAchievementMask(void) = 0;
+		virtual AchievementMask		GetAchievementMask(void) const = 0;
         virtual DamageTrack*        GetDamageTrack(void) = 0;
         virtual void                CreateDamageTrack(void) = 0;
         virtual void                DeleteDamageTrack(void) = 0;
@@ -3454,6 +3463,7 @@ class IprobeIGC : public IscannerIGC
         virtual float                GetTimeFraction(void) const = 0;
 		//Xynth 7/2010 function to set probe expiration	ticket #10	
 		virtual void				SetExpiration(Time time) = 0;
+		virtual IshipIGC*			GetProbeLauncherShip() const = 0;
 };
 
 class IstationIGC : public IscannerIGC
@@ -5281,7 +5291,7 @@ class   GotoPlan
         void*       m_pvOldClusterTarget;           //ditto for the target
 };
 
-static  AssetMask   GetAssetMask(IshipIGC* pship, IhullTypeIGC* pht, bool bFriendly)
+static  AssetMask   GetAssetMask(IshipIGC* pship, const IhullTypeIGC* pht, bool bFriendly)
 {
     AssetMask   am;
 
