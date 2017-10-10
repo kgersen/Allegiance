@@ -3589,6 +3589,18 @@ void SendShipUpdates(CFSMission * pfsMission)
                         pfmShipStatus->shipID = pship->GetObjectID();
                         pfmShipStatus->status = *pssOld = *pss;         //Also update the old status
                     }
+
+					//Xynth Add a periodic check for achievements
+					
+					if (ISPLAYER(pship))
+					{
+						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+
+						pSteamAchievements->AwardIGCAchievements(pship->GetAchievementMask());
+						pship->ClearAchievementMask();
+
+					}
+
                 }
             }
 
@@ -10618,6 +10630,24 @@ class ThingSiteImpl : public ThingSite
                                 assert (s->GetCluster() == pcluster);
 
 								if (s->InScannerRange(pmodel)) {
+									//Xynth something was just seen, I want to know if it was a probe that saw it and if this was high value target
+									if (s->GetObjectType() == OT_probe)
+									{
+										ObjectID spottedID = pmodel->GetObjectID();
+										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);																			
+										AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
+										short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;										
+										if (am & hvMask > 0)
+										{
+											ObjectID probeID = s->GetObjectID();
+											ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
+											IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
+											IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+											pProbingShip->SetAchievementMask(c_achmProbeSpot);
+										}
+									}
+
+									
 									bool bSent = false;
                                     //See it
 									if (!pmodel->SeenBySide(pside)) {
@@ -10674,7 +10704,7 @@ class ThingSiteImpl : public ThingSite
                                     if (bSent)
                                     {
                                         // if it's a station, aleph, special asteroid or helium asteroid...
-                                        ObjectType otModel = pmodel->GetObjectType();
+                                        ObjectType otModel = pmodel->GetObjectType();									
                                         if ((otModel == OT_station || otModel == OT_warp ||
                                             (otModel == OT_asteroid &&
                                              (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)) //Imago - Review - what about mineable?! 7/10
@@ -12794,8 +12824,12 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 
             IsideIGC*   pside = pship->GetSide();
             assert (pside);
-            if (pside->ApplyDevelopmentTechs(ttbm))
-                pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+			if (pside->ApplyDevelopmentTechs(ttbm))
+			{
+				pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+				CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+				pSteamAchievements->AwardRecoverTechAchievement();
+			}
 		}
 		
 		if (pstationNew && pship && !pship->GetParentShip() && pship->GetBaseHullType() && //imago fix crash when boarding turret 7/22/09

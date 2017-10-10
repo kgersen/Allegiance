@@ -95,14 +95,16 @@ HRESULT CprobeIGC::Initialize(ImissionIGC* pMission, Time now, const void* data,
 
         DataProbeTypeIGC*  dataProbeType = (DataProbeTypeIGC*)(m_probeType->GetData());
         m_projectileType = m_probeType->GetProjectileType();
-        if (m_projectileType)
-        {
-            m_projectileType->AddRef();
-            m_bSeenByAll = false;
+		if (m_projectileType)
+		{
+			m_projectileType->AddRef();
+			m_bSeenByAll = false;
 
-            if (pshipLauncher && (dataProbeType->launcherDef.price == 0))
-                m_launcher = pshipLauncher;
-        }
+			if (pshipLauncher && (dataProbeType->launcherDef.price == 0))
+				m_launcher = pshipLauncher;
+		}
+		else
+			m_launcher = pshipLauncher; //Xynth would still like to know who deployed the probe
 
         assert (pcluster);
 

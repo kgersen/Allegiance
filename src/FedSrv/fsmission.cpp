@@ -2844,7 +2844,7 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
         PlayerScoreObject* ppso = pfsPlayer->GetPlayerScoreObject();
 
         // Record the player results
-        RecordPlayerResults(pship->GetName(), pfsPlayer, pside->GetObjectID());
+        RecordPlayerResults(pship, pfsPlayer, pside->GetObjectID());
       }
     }
 }
@@ -2856,9 +2856,11 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
    Purpose:
      Records the results of the player to the database.
  */
-void CFSMission::RecordPlayerResults(const char* pszName, CFSPlayer *player, SideID sid)
+void CFSMission::RecordPlayerResults(IshipIGC* pship, CFSPlayer *player, SideID sid)
 {
 	PlayerScoreObject*  ppso = player->GetPlayerScoreObject();
+	//Xynth I didn't need this change today but I don't think it hurts and will likely be needed down the road
+	const char * pszName = pship->GetName();
 
   #if !defined(ALLSRV_STANDALONE)
 
@@ -2930,11 +2932,12 @@ void CFSMission::RecordPlayerResults(const char* pszName, CFSPlayer *player, Sid
 	CSteamAchievements *pSteamAchievements = player->GetSteamAchievements();
 
 	pSteamAchievements->AwardBetaParticipation();
-
+	
 	pSteamAchievements->UpdateLeaderboard(ppso);
 	pSteamAchievements->AddUserStats(ppso);
 
 	pSteamAchievements->SaveStats();
+
 
   #endif // !defined(ALLSRV_STANDALONE)
 }
