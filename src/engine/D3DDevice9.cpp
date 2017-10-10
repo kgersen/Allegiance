@@ -392,15 +392,16 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = D3DFMT_D24X8;
 	}
 
-	hr = LastChanceCreateDevice(hParentWindow, pLogFile);
+	// BT - Do not ship this one, this is just for Xynth to test!
+	//hr = LastChanceCreateDevice(hParentWindow, pLogFile);
 
 
-	//hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
-	//										DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
-	//										hParentWindow,
-	//										dwCreationFlags,
-	//										&m_sD3DDev9.d3dPresParams,
-	//										&m_sD3DDev9.pD3DDevice );  //Fix memory leak -Imago 8/2/09
+	hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
+											DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
+											hParentWindow,
+											dwCreationFlags,
+											&m_sD3DDev9.d3dPresParams,
+											&m_sD3DDev9.pD3DDevice );  //Fix memory leak -Imago 8/2/09
 
 
 

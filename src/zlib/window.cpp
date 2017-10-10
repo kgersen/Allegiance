@@ -411,6 +411,12 @@ void Window::RemoveKeyboardInputFilter(IKeyboardInput* pkeyboardInput)
     g_listKeyboardInputFilters.Remove(pkeyboardInput);
 }
 
+// BT - 10/17 - Fixing crash when allegiance is exited from the new game screen.
+void Window::RemoveAllKeyboardInputFilters()
+{
+	g_listKeyboardInputFilters.SetEmpty();
+}
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Timers
@@ -1053,6 +1059,9 @@ HRESULT Window::StaticInitialize()
 
 HRESULT Window::StaticTerminate()
 {
+	// BT - 10/17 - Fixing crash when allegiance is exited from the new game screen.
+	RemoveAllKeyboardInputFilters();
+
     g_plistIdle = NULL;
     return S_OK;
 }

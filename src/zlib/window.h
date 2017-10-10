@@ -112,6 +112,7 @@ public:
     static Window* WindowFromHWND(HWND hwnd);
     static void AddKeyboardInputFilter(IKeyboardInput* pkeyboardInput);
     static void RemoveKeyboardInputFilter(IKeyboardInput* pkeyboardInput);
+	static void RemoveAllKeyboardInputFilters(); // BT - 10/17 - Fixing crash when allegiance is exited from the new game screen.
     static LPCTSTR GetTopLevelWindowClassname() { return TEXT("MS_ZLib_Window"); };
 	
     //
