@@ -210,7 +210,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClCompile Include="..\src\WinTrek\trekinput.cpp" />
     <ClCompile Include="..\src\WinTrek\trekmdl.cpp" />
     <ClCompile Include="..\src\WinTrek\treksound.cpp" />
-    <ClCompile Include="..\src\WinTrek\WinTrek.CPP" />
+    <ClCompile Include="..\src\WinTrek\WinTrek.cpp" />
     <ClCompile Include="..\src\WinTrek\ZoneClubScreen.cpp" />
     <ClCompile Include="..\src\WinTrek\zoneeventsscreen.cpp" />
     <ClCompile Include="..\src\WinTrek\ZoneSquad.cpp" />
