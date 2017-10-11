@@ -3554,9 +3554,12 @@ public:
 		// Not sure why we need to set the image to empty when the window is closing down anyway. 
 		// This causes a crash on some machines as the underlying TVector is already gone when this part of the code
 		// is reached. 
-        /*SetImage(Image::GetEmpty());
-        m_pwrapImageConsole->SetImage(Image::GetEmpty());
-        m_pwrapImageTop->SetImage(Image::GetEmpty());*/
+		if (m_screen == ScreenIDCombat)
+		{
+			SetImage(Image::GetEmpty());
+			m_pwrapImageConsole->SetImage(Image::GetEmpty());
+			m_pwrapImageTop->SetImage(Image::GetEmpty());
+		}
 
         m_pgeoScene          = NULL;
         m_pcamera            = NULL;
