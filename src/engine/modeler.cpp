@@ -103,8 +103,6 @@ public:
         return (Value*)
             CreatePaneImage(
                 m_pengine,
-                stype,
-//                pbooleanColorKey->GetValue(),
 				bColorKey,
                 ppane
             );

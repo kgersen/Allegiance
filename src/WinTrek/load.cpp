@@ -894,7 +894,6 @@ public:
             new AnimatedImagePane(
                 CreatePaneImage( 
                     GetEngine(),
-                    SurfaceType3D() | SurfaceTypeZBuffer(),
                     false,
                     new AnimatedImagePane(
                         pimage,

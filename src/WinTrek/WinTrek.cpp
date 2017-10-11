@@ -2168,7 +2168,7 @@ public:
 
 			m_pTransformScreen = new ScaleTransform2(new PointValue(Point(1.0, 1.0)));
             m_pimageScreen = new TransformImage(
-				CreatePaneImage(GetEngine(), SurfaceType3D(), false, ppane),
+				CreatePaneImage(GetEngine(), false, ppane),
 				m_pTransformScreen
 			);
         }
@@ -3129,7 +3129,6 @@ public:
         m_pimageLOD =
             CreatePaneImage(
                 GetEngine(),
-                SurfaceType2D(),
                 false,
                 ppane
             );
@@ -6659,7 +6658,6 @@ public:
                         new TranslateImage(
                             CreatePaneImage(
                                 GetEngine(),
-                                SurfaceType2D(),
                                 false,
                                 m_pscreenBackdrop->GetPane()
                             ),
@@ -6688,7 +6686,6 @@ public:
                         new TranslateImage(
                             CreatePaneImage(
                                 GetEngine(),
-                                SurfaceType3D() | SurfaceTypeZBuffer(),
                                 false,
                                 m_pscreenBackdrop->GetPane()
                             ),
@@ -9264,7 +9261,6 @@ public:
             new TransformImage(
                 CreatePaneImage(
                     GetEngine(),
-                    SurfaceType2D() | SurfaceType3D(),
                     true,
                     m_phelp
                 ),

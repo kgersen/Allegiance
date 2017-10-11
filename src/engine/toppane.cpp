@@ -28,10 +28,9 @@ public:
 //
 /////////////////////////////////////////////////////////////////////////////
 
-TopPane::TopPane(Engine* pengine, SurfaceType stype, bool bColorKey, TopPaneSite* psite, Pane* pchild) :
+TopPane::TopPane(Engine* pengine, bool bColorKey, TopPaneSite* psite, Pane* pchild) :
     Pane(pchild),
     m_pengine(pengine),
-    m_stype(stype),
 //    m_psurface(pengine->CreateSurface(WinPoint(1, 1), stype, new TopPaneSurfaceSite(this))),
     m_psurface(pengine->CreateDummySurface(WinPoint(1, 1), new TopPaneSurfaceSite(this))),
 //    m_psurface( NULL ),

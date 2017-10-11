@@ -56,12 +56,11 @@ public:
     //
     /////////////////////////////////////////////////////////////////////////////
 
-    PaneImage(Engine* pengine, SurfaceType stype, bool bColorKey, Pane* ppane)
+    PaneImage(Engine* pengine, bool bColorKey, Pane* ppane)
     {
         m_ptopPane =
             new TopPane(
                 pengine,
-                stype,
                 bColorKey,
                 new ImageTopPaneSiteImpl(this),
                 ppane
@@ -175,7 +174,7 @@ public:
 //
 /////////////////////////////////////////////////////////////////////////////
 
-TRef<Image> CreatePaneImage(Engine* pengine, SurfaceType stype, bool bColorKey, Pane* ppane)
+TRef<Image> CreatePaneImage(Engine* pengine, bool bColorKey, Pane* ppane)
 {
-    return new PaneImage(pengine, stype, bColorKey, ppane); //Fix memory leak -Imago 8/2/09
+    return new PaneImage(pengine, bColorKey, ppane); //Fix memory leak -Imago 8/2/09
 }
