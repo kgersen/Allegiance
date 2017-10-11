@@ -317,20 +317,24 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 			&pTexture->pTexture,
 			NULL);  //Fix memory leak -Imago 8/2/09
 
-		// BT - 10/17 - Tracking down the CreateTexture crashes.
-		if (FAILED(hr))
+		// BT - 10/17 - Check all available texture formats to see if we can find a match. On some cards, the target texture format cannot be 
+		// created becuase it's not supported. Let's find one that is.
+		for (int i = D3DFMT_R8G8B8; i < D3DFMT_A16B16G16R16 && FAILED(hr); i++)
 		{
 			hr = CD3DDevice9::Get()->Device()->CreateTexture(pTexture->dwOriginalWidth,
 				pTexture->dwOriginalHeight,
 				1, // Try again with only 1 level.
 				0, // Try again without the mipmaps.
-				texFormat,
+				(D3DFORMAT) i,
 				texPool,
 				&pTexture->pTexture,
-				NULL); 
+				NULL);
+		}
 
-			if (FAILED(hr))
-				(*(int*)0) = 0; // Force exception here.
+		// BT - 10/17 - Tracking down the CreateTexture crashes.
+		if (FAILED(hr))
+		{
+			(*(int*)0) = 0; // Force exception here.
 		}
 
 		D3DSURFACE_DESC surfDesc;
