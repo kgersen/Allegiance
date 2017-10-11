@@ -1058,7 +1058,7 @@ void ImagePane::Paint(Surface* psurface)
 {
     TRef<Surface> psurfaceSource = GetImage()->GetSurface();
 
-    psurface->BitBlt(WinPoint(0, 0), psurfaceSource);
+    psurface->BitBlt(psurface->GetClipRect(), psurfaceSource);
 }
 
 /////////////////////////////////////////////////////////////////////////////

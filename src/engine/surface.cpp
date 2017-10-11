@@ -1760,7 +1760,7 @@ public:
         // Calculate the target rectangle
         //
 
-		_ASSERT( false && "Is this called? If not, remove this function." );
+		//_ASSERT( false && "Is this called? If not, remove this function." );
 
         WinRect rectTarget = rectTargetArg;
         rectTarget.Offset(m_pointOffset);

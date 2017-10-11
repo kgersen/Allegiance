@@ -100,7 +100,7 @@ public:
         ZEnter("PaneImage::Render()");
 
         pcontext->TransformLocalToImage(Vector(0, 0, 0), m_pointOrigin);
-        pcontext->DrawImage(m_ptopPane->GetSurface());
+		pcontext->DrawImage3D(m_ptopPane->GetSurface(), Color(1, 1, 1));
 
         ZExit("PaneImage::Render()");
     }

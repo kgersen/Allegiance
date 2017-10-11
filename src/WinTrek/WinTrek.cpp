@@ -1190,7 +1190,7 @@ public:
     // Screens
     //
 
-    TRef<TranslateImage> m_pimageScreen; //kg- #226
+    TRef<Image> m_pimageScreen; //kg- #226
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
     TRef<Screen>         m_pscreenBackdrop;
@@ -1198,6 +1198,7 @@ public:
     WinPoint             m_sizeCombat;
     WinPoint             m_sizeCombatFullscreen;
     bool                 m_bCombatSize;
+	TRef<ScaleTransform2>	 m_pTransformScreen;
 
     //
     // Lighting
@@ -2150,7 +2151,7 @@ public:
 
     void SetScreen(Screen* pscreen)
     {
-        m_pimageScreen = (TranslateImage *)pscreen->GetImage(); //kg- #226 - ugly cast. review
+        m_pimageScreen = pscreen->GetImage(); //kg- #226 - ugly cast. review
 
         if (m_pimageScreen == NULL) {
             TRef<Pane> ppane = pscreen->GetPane();
@@ -2165,10 +2166,10 @@ public:
             // Create the UI Window
             //
 
-			// kg- #226
-             m_pimageScreen = new TranslateImage(
-				CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane()),
-				Point(0, 0)
+			m_pTransformScreen = new ScaleTransform2(new PointValue(Point(1.0, 1.0)));
+            m_pimageScreen = new TransformImage(
+				CreatePaneImage(GetEngine(), SurfaceType3D(), false, ppane),
+				m_pTransformScreen
 			);
         }
 
@@ -3351,12 +3352,13 @@ public:
     {
         m_pwrapImageTop = new WrapImage(Image::GetEmpty());
         m_pwrapImageLOD = new WrapImage(Image::GetEmpty());
+		m_pwrapImageHelp = new WrapImage(Image::GetEmpty());
 
         m_pgroupImage = new GroupImage();
         m_pgroupImage->AddImage(m_pjoystickImage);
         m_pgroupImage->AddImage(m_pwrapImageLOD);
         m_pgroupImage->AddImage(GetPopupContainer()->GetImage());
-        m_pgroupImage->AddImage(m_pwrapImageHelp = new WrapImage(Image::GetEmpty()));
+        m_pgroupImage->AddImage(m_pwrapImageHelp);
         m_pgroupImage->AddImage(m_pwrapImageTop);
         SetImage(m_pgroupImage);
     }
@@ -3758,13 +3760,11 @@ public:
 			if (m_pscreen->GetPane()) //kg- review
 			{
 				const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
-				Point pntOffset(
-					(rectScreen.XSize() - sizePane.X()) / 2,
-					(rectScreen.YSize() - sizePane.Y()) / 2
-				);
-				m_pimageScreen->SetTranslation(
-					pntOffset
-				);
+
+				float scale;
+				scale = min(rectScreen.XSize() / sizePane.X(), rectScreen.YSize() / sizePane.Y());
+
+				m_pTransformScreen->SetScale(Point(scale, scale));
 			}
 		}
     }
