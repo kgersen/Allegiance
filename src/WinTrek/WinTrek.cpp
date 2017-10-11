@@ -1190,11 +1190,9 @@ public:
     // Screens
     //
 
-    TRef<Image> m_pimageScreen; //kg- #226
+    TRef<Image>				m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
-    TRef<Screen>         m_pscreenBackdrop;
-    TRef<TranslateImage> m_pimageBackdrop;
     WinPoint             m_sizeCombat;
     WinPoint             m_sizeCombatFullscreen;
     bool                 m_bCombatSize;
@@ -2149,9 +2147,9 @@ public:
         return m_screen != ScreenIDCombat;
     }
 
-    void SetScreen(Screen* pscreen)
+    void SetScreen(WrapImage* target, Screen* pscreen)
     {
-        m_pimageScreen = pscreen->GetImage(); //kg- #226 - ugly cast. review
+        m_pimageScreen = pscreen->GetImage();
 
         if (m_pimageScreen == NULL) {
             TRef<Pane> ppane = pscreen->GetPane();
@@ -2173,18 +2171,25 @@ public:
 			);
         }
 
-        m_pwrapImageTop->SetImage(m_pimageScreen);
-        //SetWindowedSize(pscreen->GetSize());
-        //SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
-
-        SetSizeable(true); // kg-: #226 always
+		target->SetImage(m_pimageScreen);
+		
+        //SetSizeable(true); // kg-: #226 always
 
         //
         // keep a reference to the screen to keep it alive
         //
-
         m_pscreen = pscreen;
     }
+
+	void SetUiScreen(Screen * pscreen)
+	{
+		SetScreen(m_pwrapImageTop, pscreen);
+	}
+
+	void SetCombatScreen(Screen* pscreen)
+	{
+		SetScreen(m_pwrapImageBackdrop, pscreen);
+	}
 
     ScreenID screen(void) const
     {
@@ -2248,8 +2253,8 @@ public:
                 m_pconsoleImage = NULL;
                 TerminateGameStateContainer();
                 trekClient.RequestViewCluster(NULL);
-                m_pscreenBackdrop = NULL;
-                m_pimageBackdrop = NULL;
+				m_pscreen = NULL;
+				m_pimageScreen = NULL;
                 m_viewmode = vmUI;
             }
 
@@ -2312,23 +2317,23 @@ public:
                 }
 
                 case ScreenIDTeamScreen:
-                    SetScreen(CreateTeamScreen(GetModeler()));
+                    SetUiScreen(CreateTeamScreen(GetModeler()));
                     break;
 
                 case ScreenIDGameScreen:
-                    SetScreen(CreateGameScreen(GetModeler()));
+					SetUiScreen(CreateGameScreen(GetModeler()));
                     break;
 
                 case ScreenIDGameOverScreen:
-                    SetScreen(CreateGameOverScreen(GetModeler()));
+					SetUiScreen(CreateGameOverScreen(GetModeler()));
                     break;
 
                 case ScreenIDCreateMission:
-                    SetScreen(CreateNewGameScreen(GetModeler()));
+					SetUiScreen(CreateNewGameScreen(GetModeler()));
                     break;
 
                 case ScreenIDIntroScreen:
-                    SetScreen(CreateIntroScreen(GetModeler()));
+					SetUiScreen(CreateIntroScreen(GetModeler()));
                     break;
 
 				case ScreenIDSplashScreen:
@@ -2405,31 +2410,31 @@ public:
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
-						SetScreen(CreateIntroScreen(GetModeler()));
+						SetUiScreen(CreateIntroScreen(GetModeler()));
 	                    break;
 					}
 
 
                 case ScreenIDTrainScreen:
-                    SetScreen(CreateTrainingScreen(GetModeler()));
+					SetUiScreen(CreateTrainingScreen(GetModeler()));
                     break;
 
                 case ScreenIDZoneClubScreen:
-                    SetScreen(CreateZoneClubScreen(GetModeler(), GetTime()));
+					SetUiScreen(CreateZoneClubScreen(GetModeler(), GetTime()));
                     break;
 
                 case ScreenIDSquadsScreen:
-                    SetScreen(CreateSquadsScreen(GetModeler(), szPlayerName ? PCC(strPlayerName) : NULL, idPlayer, szOther ? PCC(strOther) : NULL));
+					SetUiScreen(CreateSquadsScreen(GetModeler(), szPlayerName ? PCC(strPlayerName) : NULL, idPlayer, szOther ? PCC(strOther) : NULL));
                     break;
 
                 case ScreenIDGameStarting:
-                    SetScreen(CreateGameStartingScreen(GetModeler()));
+					SetUiScreen(CreateGameStartingScreen(GetModeler()));
                     break;
 
                 case ScreenIDCharInfo:
                     if(idPlayer==-1)
                         idPlayer = trekClient.GetZoneClubID();
-                    SetScreen(CreateCharInfoScreen(GetModeler(), idPlayer));
+					SetUiScreen(CreateCharInfoScreen(GetModeler(), idPlayer));
                     break;
 
                 case ScreenIDTrainSlideshow:
@@ -2450,7 +2455,7 @@ public:
 						"tm_8_nanite", //TheBored 06-JUL-07: Mish #8 pregame panels.
                     };
 
-                    SetScreen (CreateTrainingSlideshow (GetModeler (), strNamespace[iMission], iMission));
+					SetUiScreen(CreateTrainingSlideshow (GetModeler (), strNamespace[iMission], iMission));
                     break;
                 }
 
@@ -2471,16 +2476,16 @@ public:
 						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
 						"tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
                     };
-                    SetScreen (CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
+					SetUiScreen(CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
                     break;
                 }
 
                 case ScreenIDZoneEvents:
-                    SetScreen(CreateZoneEventsScreen(GetModeler()));
+					SetUiScreen(CreateZoneEventsScreen(GetModeler()));
                     break;
 
                 case ScreenIDLeaderBoard:
-                    SetScreen(CreateLeaderBoardScreen(GetModeler(), strPlayerName));
+					SetUiScreen(CreateLeaderBoardScreen(GetModeler(), strPlayerName));
                     break;
 
                 default:
@@ -3301,7 +3306,7 @@ public:
         // intro.avi video moved up
         //
 		TRef<Screen> introscr = CreateIntroScreen(GetModeler());
-		SetScreen(introscr);
+		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
     	if (hDDVidThread != NULL) {
@@ -3528,10 +3533,8 @@ public:
         m_mapAnimatedImages.SetEmpty();
 
         TerminateGameStateContainer();
-        m_pimageBackdrop   = NULL;
         m_pimageScreen     = NULL;
         m_pscreen          = NULL;
-        m_pscreenBackdrop  = NULL;
         SetCaption(NULL);
 
         SetImage(Image::GetEmpty());
@@ -3719,8 +3722,6 @@ public:
 
             // show the 3D view
             m_pwrapImageBackdrop->SetImage(m_pgroupImage3D);
-            m_pscreenBackdrop = NULL;
-            m_pimageBackdrop = NULL;
 
             // if they switched away from command view before the cluster could be displayed...
             if (trekClient.GetViewCluster() && (m_viewmode == vmHangar || m_viewmode == vmLoadout))
@@ -3736,21 +3737,6 @@ public:
 
     void UpdateBackdropCentering()
     {
-        if (m_pimageBackdrop)
-        {
-            // center the pane on the screen
-            const Rect& rectScreen   = GetScreenRectValue()->GetValue();
-            const WinPoint& sizePane = m_pscreenBackdrop->GetPane()->GetSize();
-            Point
-                pntOffset(
-                    (rectScreen.XSize() - sizePane.X()) / 2,
-                    (rectScreen.YSize() - sizePane.Y()) / 2
-                );
-
-            m_pimageBackdrop->SetTranslation(
-                pntOffset
-            );
-        }
 		//kg- #226 - todo -factorize with above code
 		if (m_pimageScreen)
 		{
@@ -6403,8 +6389,8 @@ public:
     {
         m_viewmode = vmOverride;
         m_pwrapImageBackdrop->SetImage(trekClient.GetCluster() ? m_pgroupImage3D : Image::GetEmpty());
-        m_pscreenBackdrop = NULL;
-        m_pimageBackdrop = NULL;
+		m_pscreen = NULL;
+		m_pimageScreen = NULL;
 
         AdjustCombatSize(vmOverride);
         SetCameraMode(cmExternalOverride);
@@ -6652,25 +6638,14 @@ public:
             switch (vm)
             {
             case vmHangar:
-                m_pscreenBackdrop = CreateHangarScreen(GetModeler(), "hangar");
-                {
-                    m_pimageBackdrop =
-                        new TranslateImage(
-                            CreatePaneImage(
-                                GetEngine(),
-                                false,
-                                m_pscreenBackdrop->GetPane()
-                            ),
-                            Point(0,0)
-                        );
-                }
+				SetCombatScreen(CreateHangarScreen(GetModeler(), "hangar"));
 
-                if (m_pwrapImageBackdrop->GetImage() != m_pimageBackdrop)
+                if (m_pwrapImageBackdrop->GetImage() != m_pimageScreen)
                 {
                     trekClient.RequestViewCluster(NULL);
-                    m_pwrapImageBackdrop->SetImage(m_pimageBackdrop);
+                    m_pwrapImageBackdrop->SetImage(m_pimageScreen);
 
-                    m_pscreenBackdrop->GetPane()->UpdateLayout();
+					m_pscreen->GetPane()->UpdateLayout();
                     DoHitTest();
                 }
 
@@ -6680,25 +6655,14 @@ public:
                 break;
 
             case vmLoadout:
-                m_pscreenBackdrop = CreateLoadout(GetModeler(), GetWindow()->GetTime());
-                {
-                    m_pimageBackdrop =
-                        new TranslateImage(
-                            CreatePaneImage(
-                                GetEngine(),
-                                false,
-                                m_pscreenBackdrop->GetPane()
-                            ),
-                            Point(0,0)
-                        );
-                }
+				SetCombatScreen(CreateLoadout(GetModeler(), GetWindow()->GetTime()));
 
-                if (m_pwrapImageBackdrop->GetImage() != m_pimageBackdrop)
+                if (m_pwrapImageBackdrop->GetImage() != m_pimageScreen)
                 {
                     trekClient.RequestViewCluster(NULL);
-                    m_pwrapImageBackdrop->SetImage(m_pimageBackdrop);
+                    m_pwrapImageBackdrop->SetImage(m_pimageScreen);
 
-                    m_pscreenBackdrop->GetPane()->UpdateLayout();
+					m_pscreen->GetPane()->UpdateLayout();
                     DoHitTest();
                 }
 
@@ -6710,16 +6674,16 @@ public:
             case vmCommand:
                 SetCameraMode(m_cmPreviousCommand);
                 m_pwrapImageBackdrop->SetImage(trekClient.GetCluster() ? m_pgroupImage3D : Image::GetEmpty());
-                m_pscreenBackdrop = NULL;
-                m_pimageBackdrop = NULL;
+                m_pscreen = NULL;
+                m_pimageScreen = NULL;
                 break;
 
             case vmCombat:
                 assert (trekClient.GetViewCluster() == NULL);
                 SetCameraMode(cmCockpit);
                 m_pwrapImageBackdrop->SetImage(trekClient.GetCluster() ? m_pgroupImage3D : Image::GetEmpty());
-                m_pscreenBackdrop = NULL;
-                m_pimageBackdrop = NULL;
+				m_pscreen = NULL;
+				m_pimageScreen = NULL;
                 break;
 
             case vmOverride:
@@ -7612,9 +7576,6 @@ public:
 
         if (m_pscreen) {
             m_pscreen->OnFrame();
-        }
-        if (m_pscreenBackdrop) {
-            m_pscreenBackdrop->OnFrame();
         }
         CheckCountdownSound();
 
