@@ -49,14 +49,6 @@ public:
     SurfaceType					m_stype;
 
     //
-    // Format convertion
-    //
-
-    int                       m_idConverted;
-    TRef<PixelFormat>         m_ppfConverted;
-    TRef<PrivateSurfaceImpl>  m_psurfaceConverted;
-
-    //
     // Drawing
     //
 
@@ -108,7 +100,6 @@ public:
         m_colorKey				= Color(0, 0, 0);
 
         m_id					= 0;
-        m_idConverted			= -1;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -214,7 +205,6 @@ public:
 		m_dwNumVerts			= 0;
         m_colorKey				= Color(0, 0, 0);
         m_id					= 0;
-		m_idConverted			= -1;
 
 		if( m_stype.Test( SurfaceTypeDummy() ) == true )
 		{
@@ -1133,10 +1123,6 @@ public:
 //        if (m_pvideoSurface) {
   //          m_pvideoSurface->SetColorKey(color);
     //    }
-
-        if (m_psurfaceConverted) {
-            m_psurfaceConverted->SetColorKey(color);
-        }
     }
 
 	void SetEnableColorKey( bool bEnable )
@@ -1193,52 +1179,6 @@ public:
 
         m_pointOffset = m_pointOffsetSave;
         m_rectClip    = m_rectClipSave;
-    }
-
-    PrivateSurface* GetConvertedSurface(PixelFormat* ppf)
-    {
-//		if (ppf->Equivalent(m_ppf->GetDDPF())) 
-
-		// Does actually mean pointer comparison by the looks of it.
-		if (ppf == m_ppf) 
-		{
-            return this;
-        } 
-		else if (ppf != m_ppfConverted || m_idConverted != m_id) 
-		{
-            if (ppf != m_ppfConverted) 
-			{
-                // Create a surface with the requested pixel format
-                m_ppfConverted = ppf;
-
-                m_psurfaceConverted = new PrivateSurfaceImpl(	m_pengine,
-																ppf,
-//																NULL,
-																m_size,
-																m_stype,
-																NULL );
-                
-			}
-
-            if (HasColorKey()) 
-			{
-                m_psurfaceConverted->SetColorKey(GetColorKey());
-            }
-
-            m_idConverted = m_id - 1;
-        }
-
-        // Do the bits need to be updated?
-        if (m_idConverted != m_id) 
-		{
-            // Do a conversion blt
-            m_psurfaceConverted->BltConvert(	WinPoint(0, 0),
-												this,
-												WinRect(WinPoint(0, 0), m_size) );
-            m_idConverted = m_id;
-        }
-
-        return m_psurfaceConverted;
     }
 
     //////////////////////////////////////////////////////////////////////////////
