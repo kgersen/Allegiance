@@ -10629,21 +10629,26 @@ class ThingSiteImpl : public ThingSite
                                 IscannerIGC*   s = l->data();
                                 assert (s->GetCluster() == pcluster);
 
+								// If the thing is in scanner range
 								if (s->InScannerRange(pmodel)) {
 									//Xynth something was just seen, I want to know if it was a probe that saw it and if this was high value target
-									if (s->GetObjectType() == OT_probe)
+									if (s->GetObjectType() == OT_probe && pmodel->GetSide() != nullptr)
 									{
 										ObjectID spottedID = pmodel->GetObjectID();
-										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);																			
-										AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
-										short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;										
-										if (am & hvMask > 0)
+										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);	
+
+										if (pSpottedShip != nullptr)
 										{
-											ObjectID probeID = s->GetObjectID();
-											ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
-											IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-											IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-											pProbingShip->SetAchievementMask(c_achmProbeSpot);
+											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
+											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
+											if (am & hvMask > 0)
+											{
+												ObjectID probeID = s->GetObjectID();
+												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
+												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
+												IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+												pProbingShip->SetAchievementMask(c_achmProbeSpot);
+											}
 										}
 									}
 
