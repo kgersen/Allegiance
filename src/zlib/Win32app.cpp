@@ -180,7 +180,7 @@ void InitializeLogchat()
 	DWORD cbValue = sizeof(szValue);
 	bool bLogChat = false;
 
-	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
 		//Imago fixed this but is still confused why it's not a dword.
 		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue))		
@@ -401,7 +401,7 @@ extern bool g_bOutput = true;
         bool  bLogToFile = false;
 
 		// mmf added this regkey check 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
             ::RegCloseKey(hKey);
@@ -409,7 +409,7 @@ extern bool g_bOutput = true;
             g_outputdebugstring = (strcmp(szValue, "1") == 0);
         }
 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
             ::RegCloseKey(hKey);

@@ -98,7 +98,7 @@ BOOL CDShow::Open(ZString& pFileName, IDirectDraw7 *pDD)
 				FilterInfo.pGraph->QueryInterface(IID_IBasicAudio,(void**)&pBa);
 				HKEY hKey;
 				DWORD dwResult = 0;
-				if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,0, KEY_READ, &hKey)) {
+				if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,0, KEY_READ, &hKey)) {
 					DWORD dwSize = sizeof(dwResult);
 					DWORD dwType = REG_DWORD;
 					::RegQueryValueEx(hKey, "MusicGain", NULL, &dwType, (BYTE*)&dwResult, &dwSize);

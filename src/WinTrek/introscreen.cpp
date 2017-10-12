@@ -502,7 +502,7 @@ private:
                 // here we mark things as if a training mission has been launched
                 HKEY    hKey;
                 DWORD   dwHasRunTraining = 1;
-                if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey)) 
+                if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
                 {
                     RegSetValueEx (hKey, "HasTrained", NULL, REG_DWORD, (const BYTE*) &dwHasRunTraining, sizeof (dwHasRunTraining));
                     RegCloseKey (hKey);
@@ -669,7 +669,7 @@ public:
             HKEY    hKey;
             DWORD   dwHasRunTraining = 0;
             DWORD   dwDataSize = sizeof (dwHasRunTraining);
-            if (ERROR_SUCCESS == RegOpenKeyEx (HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
+            if (ERROR_SUCCESS == RegOpenKeyEx (HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
             {
                 RegQueryValueEx (hKey, "HasTrained", NULL, NULL, (LPBYTE) &dwHasRunTraining, &dwDataSize);
                 RegCloseKey(hKey);
@@ -917,7 +917,7 @@ public:
 
         // then look to see if there is one in the registry we should use instead
         HKEY hKey;
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             DWORD   cbValue = MAX_PATH;
             char    reg_config_file_name[MAX_PATH] = {0};

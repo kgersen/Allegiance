@@ -68,7 +68,7 @@ public:
 			HKEY hKey;
 			DWORD dwResult = 0;
 
-			if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+			if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
 					0, KEY_READ, &hKey))
 			{
 				DWORD dwSize = sizeof(dwResult);

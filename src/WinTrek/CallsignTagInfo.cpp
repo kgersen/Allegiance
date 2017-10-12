@@ -100,7 +100,7 @@ void CallsignTagInfo::LoadFromRegistry()
 
 	HKEY hKey;
 	DWORD dwType;
-	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
 		RegQueryValueEx(hKey, "SteamClanID", NULL, &dwType, (BYTE *)&szSteamClanID, &cbClanID);
 		RegQueryValueEx(hKey, "SteamOfficerToken", NULL, &dwType, (BYTE *)&szSteamOfficerToken, &cbSteamOfficerToken);
@@ -134,7 +134,7 @@ void CallsignTagInfo::SaveToRegistry()
 
 	HKEY hKey;
 	DWORD dwType;
-	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ | KEY_WRITE, &hKey))
+	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ | KEY_WRITE, &hKey))
 	{
 		RegSetValueEx(hKey, "SteamClanID", 0, REG_SZ, (BYTE * )steamGroupID, sizeof(steamGroupID));
 		RegSetValueEx(hKey, "SteamOfficerToken", 0, REG_SZ, (BYTE *) token, sizeof(token));
