@@ -678,9 +678,9 @@ public:
 		// Source mode blends might still want colour keying. If so,
 		// configure it now.
 		if( ( psurface->HasColorKey() == true ) &&
-			( GetBlendMode() == BlendModeSource ) )
+			( GetBlendMode() == BlendModeSource ) && this->m_psurface->HasColorKey() == true )
 		{
-			pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
+			pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 			pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
 			pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
 			pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR );

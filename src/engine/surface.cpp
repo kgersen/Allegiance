@@ -204,7 +204,6 @@ public:
 		m_psite( psite ),
 		m_bInContext( false ),
 		m_bSurfaceAllocated( false ),
-		m_bColorKey( true ),
 		m_hTexture( INVALID_TEX_HANDLE ),
 		m_pcontext( NULL )
 	{
