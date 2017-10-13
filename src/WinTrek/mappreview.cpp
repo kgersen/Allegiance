@@ -454,7 +454,7 @@ private:
 
 		// draw the minimap background
         pcontext->SetShadeMode(ShadeModeFlat);
-		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/17/09
+		pcontext->SetBlendMode(BlendModeSource); //imago 7/17/09
 		pcontext->DrawImage(m_pimageSectorBkgnd->GetSurface());
 
 		if (m_missionpv.GetClusters()->n() == 0) return; // no cluster so no map preview

@@ -642,10 +642,7 @@ enum ShadeMode {
 
 enum BlendMode {
     BlendModeSource,
-    BlendModeAdd,
-    BlendModeSourceAlpha,
-	BlendModeSourceAlphaTest,
-	BlendModeAlphaStampThrough
+    BlendModeAdd
 };
 
 enum WrapMode {

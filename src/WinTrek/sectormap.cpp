@@ -399,7 +399,7 @@ public:
 
     void Render(Context* pcontext)
     {
-		pcontext->SetBlendMode(BlendModeSourceAlpha); //Imago 7/15/09
+		pcontext->SetBlendMode(BlendModeSource); //Imago 7/15/09
 
         // draw the background
         Surface* psurfaceBackground = m_pimageBkgnd->GetSurface();
@@ -947,7 +947,6 @@ public:
     void Render(Context* pcontext)
     {
         pcontext->SetShadeMode(ShadeModeFlat);
-		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/15/09
 
         Rect rectClip = m_bounds.GetRect();
         rectClip.Expand(-1);

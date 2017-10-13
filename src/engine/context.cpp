@@ -675,16 +675,24 @@ public:
 		CD3DDevice9 * pDev = CD3DDevice9::Get();
 		CVRAMManager::Get()->SetTexture( psurface->GetTexHandle(), 0 );
 
-		// Source mode blends might still want colour keying. If so,
-		// configure it now.
-		if( ( psurface->HasColorKey() == true ) &&
-			( GetBlendMode() == BlendModeSource ) && this->m_psurface->HasColorKey() == true )
+		switch (GetBlendMode())
 		{
-			pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-			pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-			pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-			pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR );
-			pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR );
+			case BlendModeSource:
+				pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+				pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+				pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+				pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+				break;
+			case BlendModeAdd:
+				pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+				pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+				pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+				pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+				break;
+			default:
+				ZError("Invalid blend mode");
 		}
 
 		switch (GetShadeMode()) 
@@ -2439,7 +2447,7 @@ public:
         // Opaque decals
         //
 
-        SetBlendMode(BlendModeSourceAlphaTest, false); //Imago 7/16/09 7/31/09
+        SetBlendMode(BlendModeSource, false); //Imago 7/16/09 7/31/09
         SetZWrite(true, false);
 
         DrawVDecalSet(m_vdecalSetOpaque);

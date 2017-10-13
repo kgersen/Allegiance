@@ -254,7 +254,7 @@ public:
                 delta = m;
         }
 
-		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/15/09
+		pcontext->SetBlendMode(BlendModeSource); //imago 7/15/09
         CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE );
         pcontext->DrawImage3D(psurface, Rect(       0,        0, xsizeMid, ysizeMid), color, true, Point(-delta, -delta));
         pcontext->DrawImage3D(psurface, Rect(xsizeMid,        0,    xsize, ysizeMid), color, true, Point( delta, -delta));
@@ -393,7 +393,6 @@ public:
         if (bIcon)
         {
             pcontext->Translate(positionIcon);
-			pcontext->SetBlendMode(BlendModeAdd); //Imago 7/10 upgraded #181
 
             pcontext->DrawImage3D(psurfaceIcon, colorIcon, true);
         }
@@ -1083,7 +1082,6 @@ public:
     {
         pcontext->PushState ();
         pcontext->SetClipping (false);
-        pcontext->SetBlendMode (BlendModeSourceAlpha);
         pcontext->DrawLines(m_vertices, m_indices);
         pcontext->PopState ();
     }

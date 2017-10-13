@@ -184,7 +184,7 @@ public:
         // Rendering modes
         //
 
-        pcontext->SetBlendMode(BlendModeSourceAlpha);
+        pcontext->SetBlendMode(BlendModeSource);
         pcontext->SetShadeMode(ShadeModeGlobalColor);
 
         //
