@@ -1011,6 +1011,27 @@ public:
     }
 };
 
+class FitImageFactory : public IFunction {
+public:
+	TRef<IObject> Apply(ObjectStack& stack)
+	{
+		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
+		TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
+
+		Point sizeImage = pimage->GetBounds().GetRect().Size();
+
+		Point pointScale = sizeImage / ppoint->GetValue();
+
+		float floatScale = min(pointScale.X(), pointScale.Y());
+
+		return
+			(Value*)new TransformImage(
+				pimage,
+				new ScaleTransform2(Point(floatScale, floatScale))
+			);
+	}
+};
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //
@@ -2369,6 +2390,8 @@ public:
         pns->AddMember("ScaleImage",         new ScaleImageFactory());
         pns->AddMember("RotateImage",        new RotateImageFactory());
         pns->AddMember("BlendImage",         new BlendImageFactory());
+		pns->AddMember("FitImage",			 new FitImageFactory());
+
 
         //
         // Image Attributes

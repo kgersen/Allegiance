@@ -182,6 +182,7 @@ private:
 
 public:
     ScaleTransform2(PointValue* ppoint);
+	ScaleTransform2(const Point& point);
 
     PointValue* GetScale() { return PointValue::Cast(GetChild(0)); }
 
