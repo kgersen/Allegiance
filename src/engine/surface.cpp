@@ -1144,8 +1144,7 @@ public:
 
         if (m_pcontext == NULL) 
 		{
-			m_pcontext = CreateContextImpl( this,
-											WinPoint( m_size.X(), m_size.Y() ) );
+			m_pcontext = CreateContextImpl(this);
         }
 
         if (m_pcontext->IsValid()) {

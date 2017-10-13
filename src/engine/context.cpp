@@ -138,10 +138,6 @@ private:
     TRef<State>              m_pstate;
     TRef<State>              m_pstateDevice;
     PrivateSurface*          m_psurface;
-	
-	// ADDED
-	WinPoint				m_ContextRes;			// Current context resolution (800x600)
-//	WinPoint				m_UIOffset;				// Current UI offset.
 
     //
     // Vertex buffers
@@ -293,8 +289,7 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-//    ContextImpl( PrivateSurface* psurface ) :
-	ContextImpl( PrivateSurface* psurface, WinPoint screenRes ) :
+	ContextImpl( PrivateSurface* psurface ) :
         #ifdef EnablePerformanceCounters
             m_countDrawString(0),
             m_countDrawStringChars(0),
@@ -304,8 +299,6 @@ public:
         m_pindexBuffer(NULL),
         m_countIndexBuffer(0),
         m_psurface( psurface ),
-		m_ContextRes( screenRes ),
-//		m_UIOffset( contextOffset ),
         m_bRendering(false),
         m_bIn3DLayer(false),
         m_bInScene(false),
@@ -2507,8 +2500,7 @@ public:
 // level pane which would be whole window.
 // Now, we just pass in the size of the window to the constructor.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//TRef<PrivateContext> CreateContextImpl(PrivateSurface* psurface)
-TRef<PrivateContext> CreateContextImpl( PrivateSurface* psurface, WinPoint screenRes )
+TRef<PrivateContext> CreateContextImpl( PrivateSurface* psurface )
 {
-	return new ContextImpl( psurface, screenRes );
+	return new ContextImpl( psurface );
 }
