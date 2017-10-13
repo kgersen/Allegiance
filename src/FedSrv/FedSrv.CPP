@@ -4657,6 +4657,22 @@ CSteamID GetSteamIDFromPlayerHandle(char *playerHandle)
 }
 
 
+// BT - STEAM 
+static DWORD WINAPI LogonThread(LPVOID threadData)
+{
+	CSteamValidation *steamValidation = (CSteamValidation *) threadData;
+	steamValidation->BeginSteamAuthentication();
+
+	// BeginSteamAuthentication will block until either 30 seconds goes by, or it gets a login response from steam.
+	// When it completes, it calls PostThreadMessage to complete the login.
+
+	delete steamValidation;
+
+	return 0;
+}
+
+
+
 /*-------------------------------------------------------------------------
  * OnAppMessage
  *-------------------------------------------------------------------------
@@ -5811,8 +5827,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
 			pqd->steamID = pfmLogon->steamID;
 
-			CSteamValidation steamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
-			steamValidation.BeginSteamAuthentication();
+			CSteamValidation *steamValidation = new CSteamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
+			DWORD threadID;
+			CreateThread(NULL, 0, LogonThread, steamValidation, 0, &threadID);
 		}
 		else
 		{

@@ -122,6 +122,10 @@
     <PreBuildEvent>
       <Message>Transforming XML</Message>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy ..\src\lib\steam\steam_api.dll $(OutDir) /s /d /y
+xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <Midl>
@@ -188,6 +192,10 @@
       <Command>..\src\AGC\Pre-build.bat $(OutDir)</Command>
       <Message>Transforming XML</Message>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy ..\src\lib\steam\steam_api.dll $(OutDir) /s /d /y
+xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\src\AGC\AGCEvents.xml">

@@ -1,7 +1,7 @@
 // mmf modified version, these set FileVersion and ProductVersion used by VerRes.rc
 #define rmj		1
 #define rmm		9		// Imago (R#)
-#define rel     1040034.00       // mmf added to designate release number for a given build
+#define rel     1040037.00       // mmf added to designate release number for a given build
 
 #define rup		211214  // mmf make sure this has 6 digits otherwise version number conversion for esc display may fail,
 						// rup is specified in octal, so for instance 11/9/2010 (US format)
