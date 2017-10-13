@@ -1589,6 +1589,11 @@ public:
 			// Lock this texture and copy over.
 			D3DLOCKED_RECT lockRect;
 			hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
+
+			// BT - 10/17 - Fixing VRAMManager crash when a surface that doesn't have a texture is attempted to be painted.
+			if (FAILED(hr))
+				return;
+
 			_ASSERT( hr == D3D_OK );
 
 			switch( psurfaceSource->GetPixelFormat()->GetD3DFormat() )

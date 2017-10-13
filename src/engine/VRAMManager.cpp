@@ -569,6 +569,13 @@ HRESULT	CVRAMManager::LockTexture(TEXHANDLE			texHandle,
 	}
 	else
 	{
+		// BT - 10/17 - Fixing VRAMManager crash when a surface that doesn't have a texture is attempted to be painted.
+		if (pTexture->pTexture == nullptr)
+		{
+			pTexture->bLocked = false;
+			return D3DERR_NOTAVAILABLE;
+		}
+
 		hr = pTexture->pTexture->LockRect(dwLevel, pLockRect, pAreaToLock, dwFlags);
 		if (hr == D3D_OK)
 		{
