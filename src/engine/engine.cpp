@@ -879,6 +879,20 @@ private:
             m_bValidDevice = false;
         }
     }
+
+	void ForceReset()
+	{
+		//I do not know why this code is needed, I expect it to do some kind of reset. Since it was repeated a bunch of times I have collected calls to this code here.
+		if (CD3DDevice9::Get()->IsInScene())
+			CD3DDevice9::Get()->EndScene();
+		CD3DDevice9::Get()->ClearScreen();
+		CD3DDevice9::Get()->RenderFinished();
+		CD3DDevice9::Get()->ClearScreen();
+		CD3DDevice9::Get()->RenderFinished();
+		WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
+		CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(), point.X(), point.Y(), g_DX9Settings.m_refreshrate);
+	}
+
 // yp Your_Persona August 2 2006 : MaxTextureSize Patch  //Imago 7/18/09 (DX9)
 	void SetMaxTextureSize(int iMaxTextureSize)
 	{
@@ -888,14 +902,7 @@ private:
 				iMaxTextureSize = 0;
 			g_DX9Settings.m_iMaxTextureSize = iMaxTextureSize;
 
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+			ForceReset();
 		}
 	}
 
@@ -905,14 +912,7 @@ private:
 		if (g_DX9Settings.m_bVSync != bVsync) {
 			g_DX9Settings.m_bVSync = bVsync;
 
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+			ForceReset();
 		}
 	}
 
@@ -996,15 +996,7 @@ private:
 			}
 			pD3D9->Release();
 
-			//this is all very magical....
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+			ForceReset();
 		}
 	}
 
@@ -1014,15 +1006,7 @@ private:
 		{
 			g_DX9Settings.mbUseTexturePackFiles = bUsePack;
 
-			//this is all very magical....
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+			ForceReset();
 		}
 	}
 
@@ -1032,15 +1016,8 @@ private:
 		{
 			g_DX9Settings.m_bAutoGenMipmaps = bUseAutoGenMipMaps;
 			//CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap = bUseAutoGenMipMaps;
-			//this is all very magical....
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+
+			ForceReset();
 		}
 	}
 	//
