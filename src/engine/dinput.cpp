@@ -1512,7 +1512,8 @@ public:
 
     Number* GetValue(int id)
     {
-        if (id < m_vvalueObject.GetCount()) {
+		// BT - 10/17 - Guarding against a -1 appearing in the input map which then causes a crash.
+        if (id >= 0 && id < m_vvalueObject.GetCount()) {
             return m_vvalueObject[id]->GetValue();
         } else {
             return NULL;
