@@ -1193,9 +1193,6 @@ public:
     TRef<Image>				m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
-    WinPoint             m_sizeCombat;
-    WinPoint             m_sizeCombatFullscreen;
-    bool                 m_bCombatSize;
 	TRef<ScaleTransform2>	 m_pTransformScreen;
 
     //
@@ -2275,13 +2272,6 @@ public:
             switch (s) {
                 case ScreenIDCombat:
                 {
-                    //
-                    // Switch to combat resolution
-                    //
-
-					//imago add refresh rate 7/1/09
-					SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));  //AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
-
                     SetFocus();
                     m_frameID = 0;
                     m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
@@ -2985,28 +2975,30 @@ public:
         //
         // Initial screen size
         //
+		//{
+		//	// BT - 10/17 - Check if Allegiance should run windowed or not... This happens after allegiance has 
+		//	// already initialized to a window and gotten its fonts loaded.
+		//	bool startFullScreen = true;
+		//	ParseCommandLine(strCommandLine, startFullScreen);
+		//	m_bFullScreen = new ModifiableBoolean(startFullScreen);
+		//}
 
-        m_bCombatSize = false;
+		{
+			int x, y;
 
-//imago restored original functionality 6/28/09
-		m_sizeCombat =
-            WinPoint(
-                int(LoadPreference("CombatXSize", 800)),
-                int(LoadPreference("CombatYSize", 600))
-            );
-		m_sizeCombatFullscreen =
-			WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
-						CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
+			//load resolution, default is the clients desktop resolution
+			WinPoint current_resolution = GetEngine()->GetFullscreenSize();
+			x = int(LoadPreference("CombatFullscreenXSize", current_resolution.X()));
+			y = int(LoadPreference("CombatFullscreenYSize", current_resolution.Y()));
 
-       m_sizeCombatFullscreen =
-           WinPoint(
-                int(LoadPreference("CombatFullscreenXSize", 800)),
-                int(LoadPreference("CombatFullscreenYSize", 600))
-            );
+			//Use something reasonable if values are nonsense. I would really like to remove this.
+			if (x == 0)
+				x = 800;
+			if (y == 0)
+				y = 600;
 
-	   //Imago 7/27/09 Win7
-	   if (m_sizeCombatFullscreen ==  WinPoint(0,0))
-		   m_sizeCombatFullscreen = WinPoint(800,600);
+			SetFullscreenSize(Vector(x, y, g_DX9Settings.m_refreshrate));
+		}
 
 // BUILD_DX9
 
@@ -3490,20 +3482,10 @@ public:
 
     void Terminate()
     {
-        //
         // Save the screen resolution
-        //
-
-		SaveCombatSize();
-
-        SavePreference("CombatXSize", m_sizeCombat.X());
-        SavePreference("CombatYSize", m_sizeCombat.Y());
-
-		//Imago 7/27/09 Win7
-		if (m_sizeCombatFullscreen.X() != 0)
-        	SavePreference("CombatFullscreenXSize", m_sizeCombatFullscreen.X());
-		if (m_sizeCombatFullscreen.Y() != 0)
-        	SavePreference("CombatFullscreenYSize", m_sizeCombatFullscreen.Y());
+		WinPoint sizeCurrentResolution = GetEngine()->GetFullscreenSize();
+		SavePreference("CombatFullscreenXSize", sizeCurrentResolution.X());
+		SavePreference("CombatFullscreenYSize", sizeCurrentResolution.Y());
 
         SavePreference("Allow3DAcceleration", GetEngine()->GetAllow3DAcceleration());
         SavePreference("AllowSecondary"     , GetEngine()->GetAllowSecondary     ());
@@ -6406,7 +6388,6 @@ public:
 		m_pscreen = NULL;
 		m_pimageScreen = NULL;
 
-        AdjustCombatSize(vmOverride);
         SetCameraMode(cmExternalOverride);
 
         m_cameraControl.SetAnimatePosition(false);
@@ -6562,48 +6543,6 @@ public:
         return m_viewmode;
     }
 
-    void SaveCombatSize()
-    {
-		m_sizeCombat = GetWindowedSize();
-		m_sizeCombatFullscreen = GetFullscreenSize();
-    }
-
-    void AdjustCombatSize(ViewMode vm)
-    {
-        SaveCombatSize();
-
-        if (vm == vmLoadout) {
-            ZDebugOutput("SetViewMode : 800x600\n");
-
-            //
-            // Hangar or loadout switch to 8x6
-            //
-			// -KGJV - resolution fix - test
-            Set3DAccelerationImportant(true); // kg- 
-            SetWindowedSize(m_sizeCombat);
-            SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
-            SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
-            //SetWindowedSize(WinPoint(800, 600));
-            //SetFullscreenSize(WinPoint(800, 600));
-            //SetSizeable(false);
-        } else {
-            ZDebugOutput("SetViewMode : combat size\n");
-
-            //
-            // a 3D mode switch to the combat resolution
-            //
-
-            SetWindowedSize(m_sizeCombat);
-            SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
-            Set3DAccelerationImportant(true);
-            SetSizeable(true);
-        }
-
-		m_bCombatSize = true;	//AEM 7.16.07	Moved here from inside the else block.  Since the Loadout size
-								//				now = the Combat size we need to allow for adjusting the fullscreen size
-								//				in the Loadout as well
-    }
-
     void SetViewMode(ViewMode vm, bool bForce = false)
     {
         ZDebugOutput("SetViewMode(" + ZString((int)vm) + ")\n");
@@ -6614,14 +6553,6 @@ public:
 
         if (m_cm == cmExternalOverride)
             return;
-
-        //
-        // Adjust the window properties
-        //
-
-        if (bForce || vm != m_viewmode) {
-            AdjustCombatSize(vm);
-        }
 
         //
         // Switch the image

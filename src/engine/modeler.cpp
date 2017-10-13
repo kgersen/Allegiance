@@ -2136,9 +2136,26 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
-//
+// GetResolution
 //
 //////////////////////////////////////////////////////////////////////////////
+
+class PointFromWinPoint : public PointValue {
+private:
+	WinPointValue* GetWinPoint() { return WinPointValue::Cast(GetChild(0)); }
+
+public:
+	PointFromWinPoint(WinPointValue* ppoint)
+		: PointValue(ppoint)
+	{
+	}
+
+	void Evaluate()
+	{
+		WinPoint winpoint = GetWinPoint()->GetValue();
+		GetValueInternal() = Point(winpoint.X(), winpoint.Y());
+	}
+};
 
 class GetResolutionFactory : public IFunction {
 private:
@@ -2152,10 +2169,7 @@ public:
 
 	TRef<IObject> Apply(ObjectStack& stack)
 	{
-		WinPoint size = m_pengine->GetFullscreenSize();
-		//return PointValue::Cast(new Point(size.X(), size.Y()));
-		return new ModifiablePointValue(Point((int)size.X(), (int)size.Y()));
-		//return new PointValue(PointValue::Cast(Point(size.X, size.Y));
+		return new PointFromWinPoint(m_pengine->GetResolutionSizeModifiable());
 	}
 };
 

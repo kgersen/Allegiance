@@ -167,13 +167,13 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
 	
 	// BT - 10/17 - Force the client to start windowed first, then we can take it full screen later.
-	m_bStartFullScreen = false;
+	bool bStartFullScreen = false;
 
     // Get the mouse
     //
 
     m_pmouse = m_pinputEngine->GetMouse();
-    m_pmouse->SetEnabled(m_bStartFullScreen);
+    m_pmouse->SetEnabled(startFullscreen);
     papp->SetMouse(m_pmouse);
 
     m_pmouse->GetEventSource()->AddSink(m_peventSink = new ButtonEvent::Delegate(this));
@@ -235,7 +235,7 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 	devLog.OutputString("CVertexGenerator::Get()->Initialise( );\n");
 
 	m_bStartFullScreen = startFullscreen;
-	pDev->ResetDevice(m_bStartFullScreen == false);
+	pDev->ResetDevice(startFullscreen == false);
 }
 
 EngineWindow::~EngineWindow()

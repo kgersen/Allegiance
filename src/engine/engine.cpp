@@ -35,7 +35,6 @@ private:
 
     bool                      m_bValid;
     bool                      m_bValidDevice;
-    bool                      m_bFullscreen;
 	bool					  m_bChanged; //imago 7/7/09
     bool                      m_bAllowSecondary;
     bool                      m_bAllow3DAcceleration;
@@ -51,8 +50,10 @@ private:
     HWND                      m_hwndClip;
     WinPoint                  m_pointPrimary;
     HWND                      m_hwndFocus;
-    WinPoint                  m_pointFullscreen;
-    WinPoint                  m_pointFullscreenCurrent;
+
+	TRef<ModifiableWinPointValue>	m_sizeResolution;
+	TRef<ModifiableBoolean>		m_bFullscreen;
+	WinPoint					m_pointFullscreenCurrent;
 //    TRef<PrivateSurface>      m_psurfaceBack;
     float                     m_gamma;
 
@@ -73,9 +74,12 @@ private:
 
 public:
     EngineImpl(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow) :
-        m_pointFullscreen(CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width, CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height),
+        m_sizeResolution(new ModifiableWinPointValue(WinPoint(
+			int(CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width), 
+			int(CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height)
+		))),
         m_pointFullscreenCurrent(0, 0),
-        m_bFullscreen(false),
+        m_bFullscreen(new ModifiableBoolean(false)),
         m_bAllow3DAcceleration(bAllow3DAcceleration),
         m_bAllowSecondary(bAllowSecondary),
         m_b3DAccelerationImportant(false),
@@ -295,7 +299,7 @@ private:
 		//OutputDebugString("\n\nCalling SetFocusWindow() ONLY SUPPOSED TO HAPPEN ONCE!\n");
 
         m_hwndFocus			= pwindow->GetHWND();
-        m_bFullscreen		= bStartFullscreen;
+		m_bFullscreen->SetValue(bStartFullscreen);
 		g_hwndMainWindow	= m_hwndFocus;
     }
 
@@ -794,7 +798,7 @@ private:
         }*/
 
 		if( ( CD3DDevice9::Get()->IsDeviceValid() == true ) && 
-			( m_pointFullscreenCurrent == m_pointFullscreen ) )
+			( m_pointFullscreenCurrent == m_sizeResolution->GetValue() ) )
 		{
 			return true;
 		}
@@ -812,8 +816,8 @@ private:
 
             bool bError;
 //            if (SwitchToFullscreenDevice(pdddevice, m_pointFullscreen, bError)) {  imago 7/6/09
-            if (SwitchToFullscreenDevice(g_DX9Settings.m_refreshrate, m_pointFullscreen, bError)) {
-                m_pointFullscreenCurrent = m_pointFullscreen;
+            if (SwitchToFullscreenDevice(g_DX9Settings.m_refreshrate, m_sizeResolution->GetValue(), bError)) {
+                m_pointFullscreenCurrent = m_sizeResolution->GetValue();
                 return true;
             }
 
@@ -1039,8 +1043,8 @@ private:
 
     void SetFullscreen(bool bFullscreen)
     {
-        if (m_bFullscreen != bFullscreen) {
-            m_bFullscreen = bFullscreen;
+        if (m_bFullscreen->GetValue() != bFullscreen) {
+            m_bFullscreen->SetValue(bFullscreen);
             m_bValid       = false;
             m_bValidDevice = false;
         }
@@ -1052,8 +1056,9 @@ private:
             ZDebugOutput("Engine::SetFullscreenSize(" + ZString(point.X()) + "x" + ZString(point.Y()) + " @ " + ZString(point.Z()) +")\n");
         }
 
-        if (m_pointFullscreen != WinPoint(int(point.X()),int(point.Y()))) {
-            m_pointFullscreen = WinPoint(int(point.X()), int(point.Y()));
+		WinPoint next_resolution(int(point.X()), int(point.Y()));
+        if (m_sizeResolution->GetValue() != next_resolution) {
+			m_sizeResolution->SetValue(next_resolution);
             m_bValid          = false;
         }
 		if (g_DX9Settings.m_refreshrate != int(point.Z())) {
@@ -1065,11 +1070,6 @@ private:
             ZDebugOutput("Engine::SetFullscreenSize() Exiting\n");
         }
     }
-
-	//imago 7/7/09
-	void SetFullscreenChanged(bool bChanged) {
-		m_bChanged = bChanged;
-	}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1129,9 +1129,9 @@ private:
 		//Imago restored 6/29/09
    		Vector whr; //changed w,h to w,h,r  (width, height, refreshrate)
         if (bLarger) {
-			whr = NextMode(m_pointFullscreen);
+			whr = NextMode(m_sizeResolution->GetValue());
         } else {
-			whr = PreviousMode(m_pointFullscreen);
+			whr = PreviousMode(m_sizeResolution->GetValue());
 		}          
 		m_bChanged = true; //7/7/09
 		SetFullscreenSize(whr);
@@ -1163,14 +1163,19 @@ private:
         return m_b3DAccelerationImportant;
     }
 
-    const WinPoint& GetFullscreenSize()
+	const TRef<ModifiableWinPointValue> GetResolutionSizeModifiable()
+	{
+		return m_sizeResolution;
+	}
+
+    const WinPoint GetFullscreenSize()
     {
-        return m_pointFullscreen;
+        return m_sizeResolution->GetValue();
     }
 
     bool IsFullscreen()
     {
-        return m_bFullscreen;
+        return m_bFullscreen->GetValue() == true;
     }
 
     bool PrimaryHas3DAcceleration()  //REVIEW IMAGO (RESTORE?)
@@ -1203,7 +1208,7 @@ private:
     {
         if (!m_bValid) 
 		{
-            if (m_bFullscreen) 
+            if (m_bFullscreen->GetValue() == true) 
 			{
                 m_bValid = InitializeFullscreen(bChanges);
 			} 
