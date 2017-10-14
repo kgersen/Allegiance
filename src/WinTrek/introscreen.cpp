@@ -650,7 +650,7 @@ public:
         //m_pbuttonPlayInt->SetEnabled(false);
 
 		// BT - Steam - Hiding these irrelevant buttons for now.
-		m_pbuttonPlayLan->SetHidden(false);
+		m_pbuttonPlayLan->SetHidden(true);
 
         m_pfindServerPopup = new FindServerPopup(pns, this);
           
@@ -867,7 +867,7 @@ public:
 				GetWindow()->screen(ScreenIDTrainScreen);
 			else
 			{
-				GetWindow()->ShowWebPage("http://www.freeallegiance.org/FAW/index.php/Begin_playing");
+				GetWindow()->ShowWebPage("http://www.freeallegiance.org/FAW/index.php/Quick_Crash_Course");
 				trekClient.bTrainingFirstClick = true;
 			}
         }
