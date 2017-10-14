@@ -13,6 +13,8 @@
 //#pragma comment(lib,"ddraw.lib") we use pointers in the DLL now (thanks DX SDK 6/10)
 typedef HRESULT ( WINAPI* LPDIRECTDRAWCREATE )( GUID FAR *lpGUID, LPDIRECTDRAW FAR *lplpDD, IUnknown FAR *pUnkOuter );
 
+#if (DIRECT3D_VERSION >= 0x0800)
+
 /* Global variables */
 class DDVideo
 {
@@ -37,5 +39,7 @@ public:
 	VOID DestroyDDVid();
 	BOOL Flip();
 };
+
+#endif // (DIRECT3D_VERSION >= 0x0800)
 
 #endif

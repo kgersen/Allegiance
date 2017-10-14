@@ -142,6 +142,8 @@ void DummyPackCreateCallback( int iCurrentFileIndex, int iMaxFileIndex )
 		GetWindow()->RestoreCursor();
 	}
 }
+
+#if (DIRECT3D_VERSION >= 0x0800)
 DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 {
 	ZString strArtwork = ZString(UTL::artworkPath()); //duh
@@ -149,11 +151,12 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 	textures.Create( DummyPackCreateCallback );
 	return 0;
 }
-
+#endif
 
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	
+#if (DIRECT3D_VERSION >= 0x0800)
 	//windowed 7/10 #112
 	PlayVideoInfo * pData = (PlayVideoInfo*)param;
 	DDVideo *DDVid = new DDVideo();
@@ -207,6 +210,8 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 
 	if (bHide)
 		::DestroyWindow(hwndFound);
+
+#endif
 
 	return 0;
 }
@@ -1190,7 +1195,7 @@ public:
     // Screens
     //
 
-    TRef<TranslateImage> m_pimageScreen; //kg- #226
+    TRef<Image>          m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
     TRef<Screen>         m_pscreenBackdrop;
@@ -1299,7 +1304,7 @@ public:
     // chase view stuff
     //
 
-    #define ARRAY_OF_SAMPLES_SIZE  128
+    #define ARRAY_OF_SAMPLES_SIZE  4092 // BT - 8/17 - Was 128. Fixing sample under-run issues. Dx9 takes way more samples than Dx7 did, especially when zoomed out. 
     struct  TurnRateSample
     {
         float   fTurnRate[3];
@@ -2150,7 +2155,7 @@ public:
 
     void SetScreen(Screen* pscreen)
     {
-        m_pimageScreen = (TranslateImage *)pscreen->GetImage(); //kg- #226 - ugly cast. review
+        m_pimageScreen = pscreen->GetImage();
 
         if (m_pimageScreen == NULL) {
             TRef<Pane> ppane = pscreen->GetPane();
@@ -2165,18 +2170,19 @@ public:
             // Create the UI Window
             //
 
-			// kg- #226
-             m_pimageScreen = new TranslateImage(
-				CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane()),
-				Point(0, 0)
-			);
+            m_pimageScreen = CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane());
         }
 
-        m_pwrapImageTop->SetImage(m_pimageScreen);
-        //SetWindowedSize(pscreen->GetSize());
-        //SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
+		m_pwrapImageTop->SetImage(m_pimageScreen);
+        SetWindowedSize(pscreen->GetSize());
 
-        SetSizeable(true); // kg-: #226 always
+#if (DIRECT3D_VERSION >= 0x0800)
+        SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
+#else
+		SetFullscreenSize(pscreen->GetSize());
+#endif
+
+        SetSizeable(false);
 
         //
         // keep a reference to the screen to keep it alive
@@ -2228,7 +2234,11 @@ public:
                 GetConsoleImage()->OnSwitchViewMode();
 
 				// BT - 9/17 - Return to 800x600 resolution so the screens scale correctly when the player returns to the lobby.
+#if (DIRECT3D_VERSION >= 0x0800)
 				SetFullscreenSize(Vector(800, 600, 0));
+#else
+				SetFullscreenSize(WinPoint(800, 600));
+#endif
             }
 
             SetHideCursorTimer(s == ScreenIDCombat);
@@ -2279,9 +2289,13 @@ public:
                     // Switch to combat resolution
                     //
 
+					//AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
 					//imago add refresh rate 7/1/09
-					SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));  //AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
-
+#if (DIRECT3D_VERSION >= 0x0800)
+					SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate)); 
+#else
+					SetFullscreenSize(m_sizeCombatFullscreen);
+#endif
                     SetFocus();
                     m_frameID = 0;
                     m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
@@ -2326,7 +2340,11 @@ public:
 
                 case ScreenIDGameOverScreen:
 					// BT - 9/17 - Return the screen to 800x600 for game over so that the screen scales correctly for full screen.
+#if (DIRECT3D_VERSION >= 0x0800)
 					SetFullscreenSize(Vector(800, 600, 0));
+#else
+					SetFullscreenSize(WinPoint(800, 600));
+#endif
 
                     SetScreen(CreateGameOverScreen(GetModeler()));
                     break;
@@ -2340,6 +2358,7 @@ public:
                     break;
 
 				case ScreenIDSplashScreen:
+#if (DIRECT3D_VERSION >= 0x0800)
 					{
 						//Imago 6/29/09 7/28/09 dont allow intro vid on nonprimary
 						HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
@@ -2416,6 +2435,11 @@ public:
 						SetScreen(CreateIntroScreen(GetModeler()));
 	                    break;
 					}
+#else
+					SetScreen(CreateVideoScreen(GetModeler(), true));
+					SetCursorImage(Image::GetEmpty());
+					break;
+#endif
 
 
                 case ScreenIDTrainScreen:
@@ -2605,6 +2629,8 @@ public:
 	{
 		HANDLE hDDVidThread = 0;
 
+#if (DIRECT3D_VERSION >= 0x0800)
+
 		if (!g_bQuickstart && playMovies && !g_bReloaded && !isSoftware &&
 			::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
 			!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
@@ -2627,6 +2653,8 @@ public:
 			}
 		}
 
+#endif
+
 		return hDDVidThread;
 	}
 
@@ -2642,7 +2670,7 @@ public:
         bool           bPrimary,
         bool           bSecondary
     ) :
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
         TrekWindow(
             papp,
             strCommandLine,
@@ -2656,7 +2684,7 @@ public:
               WinPoint(800, 600)
         ),
 
-/*
+#else
         TrekWindow(
             papp,
             strCommandLine,
@@ -2664,8 +2692,8 @@ public:
             WinRect(0, 0, 800, 600),
             WinPoint(640, 480)
         ),
-*/
-// BUILD_DX9
+#endif
+
         m_screen(ScreenIDSplashScreen),
         m_bShowMeteors(true),
         m_bShowStations(true),
@@ -2719,9 +2747,14 @@ public:
 
 		debugf("Setting up TrekWindow\n");
 
-// BUILD_DX9
+		// DXHACKS - Could cause issues...
+#if (DIRECT3D_VERSION >= 0x0800)
 		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
-		papp->Initialize( strCommandLine, GetHWND() );
+		papp->Initialize(strCommandLine, GetHWND());
+#else
+		//papp->Initialize(strCommandLine);
+#endif
+		
 		m_pengine = papp->GetEngine();
 		m_pmodeler = papp->GetModeler();
 
@@ -2752,10 +2785,11 @@ public:
 
 		debugf("performing PostWindowCreationInit.\n");
 
+#if (DIRECT3D_VERSION >= 0x0800)
 		// Perform post window creation initialisation. Initialise the time value.
 		PostWindowCreationInit( );
 		InitialiseTime();
-// BUILD_DX9
+#endif
 
         if (!IsValid()) {
             return;
@@ -2930,12 +2964,13 @@ public:
 
         InitializeImages();
 		
+#if (DIRECT3D_VERSION >= 0x0800)
 		if (hDDVidThread != NULL) { //imago 7/29/09 intro.avi
 			if (!CD3DDevice9::Get()->IsWindowed()) {
 				CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
 			}
 		}
-		
+#endif
 
         //
         // initialize the sound engine (for the intro music if nothing else)
@@ -3268,6 +3303,11 @@ public:
 	    if (LoadPreference("VirtualJoystick", TRUE)) // BT - 10/17 - Enable virtual JS by default, not many people have joysticks now-a-days.
 			ToggleVirtualJoystick();
 
+#if (DIRECT3D_VERSION < 0x0800)
+		// For DX7, we need to preset the max texture size, or the code will go into an infinate loop on some launches.
+		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+#endif 
+
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
 
 		/* pkk May 6th: Disabled bandwidth patch
@@ -3320,6 +3360,8 @@ public:
 		SetScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
+
+#if (DIRECT3D_VERSION >= 0x0800)
     	if (hDDVidThread != NULL) {
 			WaitForSingleObject(hDDVidThread,INFINITE);
 			CloseHandle(hDDVidThread);
@@ -3360,7 +3402,9 @@ public:
 
 			if (!CD3DDevice9::Get()->IsWindowed())
 				::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
-		}    
+		}  
+
+#endif
     }
 
     void InitializeImages()
@@ -3757,41 +3801,24 @@ public:
         UpdateMusic();
     }
 
-    void UpdateBackdropCentering()
-    {
-        if (m_pimageBackdrop)
-        {
-            // center the pane on the screen
-            const Rect& rectScreen   = GetScreenRectValue()->GetValue();
-            const WinPoint& sizePane = m_pscreenBackdrop->GetPane()->GetSize();
-            Point
-                pntOffset(
-                    (rectScreen.XSize() - sizePane.X()) / 2,
-                    (rectScreen.YSize() - sizePane.Y()) / 2
-                );
-
-            m_pimageBackdrop->SetTranslation(
-                pntOffset
-            );
-        }
-		//kg- #226 - todo -factorize with above code
-		if (m_pimageScreen)
+	void UpdateBackdropCentering()
+	{
+		if (m_pimageBackdrop)
 		{
 			// center the pane on the screen
 			const Rect& rectScreen = GetScreenRectValue()->GetValue();
-			if (m_pscreen->GetPane()) //kg- review
-			{
-				const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
-				Point pntOffset(
-					(rectScreen.XSize() - sizePane.X()) / 2,
+			const WinPoint& sizePane = m_pscreenBackdrop->GetPane()->GetSize();
+			Point
+				pntOffset(
+				(rectScreen.XSize() - sizePane.X()) / 2,
 					(rectScreen.YSize() - sizePane.Y()) / 2
 				);
-				m_pimageScreen->SetTranslation(
-					pntOffset
-				);
-			}
+
+			m_pimageBackdrop->SetTranslation(
+				pntOffset
+			);
 		}
-    }
+	}
 
 	void contextAcceptPlayer()
 	{
@@ -4892,7 +4919,11 @@ public:
 	{
 		if(dwNewMaxSize > 3){dwNewMaxSize =0;}
         trekClient.MaxTextureSize(dwNewMaxSize); //? Imago REVIEW we use g_DX9Settings.m_iMaxTextureSize now
+
+#if (DIRECT3D_VERSION >= 0x0800)
 		g_DX9Settings.m_iMaxTextureSize = dwNewMaxSize;
+#endif
+
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());
         SavePreference("MaxTextureSize", trekClient.MaxTextureSize());
 
@@ -5106,7 +5137,9 @@ public:
     void SetSmoke (DWORD value)
     {
         if (value == 2) { //imago 8/16/09
-            ThingGeo::SetPerformance(true);
+#if (DIRECT3D_VERSION >= 0x0800)
+			ThingGeo::SetPerformance(true);
+#endif
             ThingGeo::SetShowSmoke (1);
         } else {
             ThingGeo::SetShowSmoke (int (value));
@@ -5139,7 +5172,11 @@ public:
             default:
                 iSmoke = 0;
         }
-        ThingGeo::SetPerformance(bPerformance);
+        
+#if (DIRECT3D_VERSION >= 0x0800)
+		ThingGeo::SetPerformance(bPerformance);
+#endif
+
         ThingGeo::SetShowSmoke(iSmoke);
         SavePreference("SmokeEffects", (DWORD) (bPerformance) ? 2 : iSmoke);
 
@@ -5279,6 +5316,7 @@ public:
 	//Imago 7/10
     void ToggleEnableFFAutoCenter()
     {
+#if (DIRECT3D_VERSION >= 0x0800)
 		if (GetInputEngine() == NULL || GetInputEngine()->GetJoystick(0) == NULL)
 			return;
 
@@ -5290,6 +5328,7 @@ public:
             m_pitemToggleFFAutoCenter->SetString(GetFFAutoCenterMenuString());
         }
 		GetInputEngine()->GetJoystick(0)->SetRanges();
+#endif
     }
 
     void RenderSizeChanged(bool bSmaller)
@@ -5370,8 +5409,10 @@ public:
             break;
         }
 
-        GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
-        SavePreference("MouseAcceleration", (DWORD)m_iMouseAccel);
+#if (DIRECT3D_VERSION >= 0x0800)
+		GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
+		SavePreference("MouseAcceleration", (DWORD)m_iMouseAccel);
+#endif
 
         if (m_pitemToggleMouseAccel != NULL)
             m_pitemToggleMouseAccel->SetString(GetMouseAccelMenuString());
@@ -5483,6 +5524,7 @@ public:
 	//Imago 7/10 #187
     void AdjustFFGain(float fDelta)
     {
+#if (DIRECT3D_VERSION >= 0x0800)
         float fNewValue = min(10000, max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
         m_pnumFFGain->SetValue(fNewValue);
 
@@ -5501,6 +5543,7 @@ public:
 
 		if (GetInputEngine() != NULL && GetInputEngine()->GetJoystick(0) != NULL)
 			GetInputEngine()->GetJoystick(0)->SetRanges();
+#endif
     }
 
     void AdjustMouseSens(float fDelta)
@@ -5520,7 +5563,10 @@ public:
             m_pitemToggleMouseSensDown->SetString(
                 GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta));
         }
+		
+#if (DIRECT3D_VERSION >= 0x0800)
 		GetInputEngine()->GetMouse()->SetSensitivity(fNewValue);
+#endif
     }
 	//Imago
 
@@ -5544,7 +5590,13 @@ public:
     {
 		int i = 0;
 		int j = 2;
-		i = 8 + g_DX9Settings.m_iMaxTextureSize; //trekClient.MaxTextureSize();
+
+#if (DIRECT3D_VERSION >= 0x0800)
+		i = 8 + g_DX9Settings.m_iMaxTextureSize;
+#else
+		i = 8 + trekClient.MaxTextureSize();
+#endif
+
 		j = pow((float)j,(float)i);
         return "Max Texture Size ("  + ZString( j)  + ") ";
     }
@@ -5898,24 +5950,40 @@ public:
 
 	ZString GetAAString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		return "Antialiasing (" + ZString(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType) + ")";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 	ZString GetMipString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap) ? "Yes" : "No";
-	    return "Auto Mipmap ("+ strResult +")";
+		return "Auto Mipmap (" + strResult + ")";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 	ZString GetPackString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		if (g_DX9Settings.mbUseTexturePackFiles)
 			return "Use Texture Pack (Yes)";
 		else
-	    	return "Use Texture Pack (No)";
+			return "Use Texture Pack (No)";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 	ZString GetVsyncString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bWaitForVSync) ? "On" : "Off";
-	    return "Vertical Sync ("+ strResult +")";
+		return "Vertical Sync (" + strResult + ")";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 
     void DoInputConfigure()
@@ -6141,53 +6209,65 @@ public:
 			//Imago 7/18/09
 			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
             case idmMaxTextureSize:
-                //ToggleMaxTextureSize(trekClient.MaxTextureSize()+1); Obsolete REMOVE REVIEW, extra, unneeded functions
-				GetEngine()->SetMaxTextureSize(g_DX9Settings.m_iMaxTextureSize+1);
+#if (DIRECT3D_VERSION >= 0x0800)
+				//ToggleMaxTextureSize(trekClient.MaxTextureSize()+1); Obsolete REMOVE REVIEW, extra, unneeded functions
+				GetEngine()->SetMaxTextureSize(g_DX9Settings.m_iMaxTextureSize + 1);
 				SavePreference("MaxTextureSize", g_DX9Settings.m_iMaxTextureSize);
-		        if (m_pitemMaxTextureSize != NULL) {
-		            m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
-		        }
+				if (m_pitemMaxTextureSize != NULL) {
+					m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
+				}
+#else
+				ToggleMaxTextureSize(trekClient.MaxTextureSize() + 1);
+#endif
 				break;
 
 			case idmAA:
-				GetEngine()->SetAA(g_DX9Settings.m_dwAA+1);
+#if (DIRECT3D_VERSION >= 0x0800)
+				GetEngine()->SetAA(g_DX9Settings.m_dwAA + 1);
 				SavePreference("UseAntialiasing", g_DX9Settings.m_dwAA);
-		        if (m_pitemAA != NULL) {
-		            m_pitemAA->SetString(GetAAString());
-		        }
+				if (m_pitemAA != NULL) {
+					m_pitemAA->SetString(GetAAString());
+				}
+#endif
 				break;
 			case idmMip:
+#if (DIRECT3D_VERSION >= 0x0800)
 				GetEngine()->SetAutoGenMipMaps(!g_DX9Settings.m_bAutoGenMipmaps);
 				SavePreference("UseAutoMipMaps", g_DX9Settings.m_bAutoGenMipmaps);
-		        if (m_pitemMip != NULL) {
-		            m_pitemMip->SetString(GetMipString());
-		        }
+				if (m_pitemMip != NULL) {
+					m_pitemMip->SetString(GetMipString());
+				}
+#endif
 				break;
 
 			case idmPack: { //this apparently doesn't even do anything yet....but we'll let them push it anyways.
+#if (DIRECT3D_VERSION >= 0x0800)
 				ZString strArtwork = ZString(UTL::artworkPath()); //duh
-				CDX9PackFile textures(strArtwork , "CommonTextures" );
+				CDX9PackFile textures(strArtwork, "CommonTextures");
 				if (!textures.Exists() && !g_DX9Settings.mbUseTexturePackFiles) {
 					GetWindow()->SetWaitCursor();
-		            pmsgBoxPack = CreateMessageBox("Please wait while the texture pack file is being created.", NULL, false, false);
-		            GetPopupContainer()->OpenPopup(pmsgBoxPack, true);
-					CreateThread(NULL,0,DummyPackCreateThreadProc,NULL,THREAD_PRIORITY_HIGHEST,0);
+					pmsgBoxPack = CreateMessageBox("Please wait while the texture pack file is being created.", NULL, false, false);
+					GetPopupContainer()->OpenPopup(pmsgBoxPack, true);
+					CreateThread(NULL, 0, DummyPackCreateThreadProc, NULL, THREAD_PRIORITY_HIGHEST, 0);
 				}
 				GetEngine()->SetUsePack(!g_DX9Settings.mbUseTexturePackFiles);
-				SavePreference("UseTexturePack",g_DX9Settings.mbUseTexturePackFiles);
-		        if (m_pitemPack != NULL) {
-		            m_pitemPack->SetString(GetPackString());
-		        }
+				SavePreference("UseTexturePack", g_DX9Settings.mbUseTexturePackFiles);
+				if (m_pitemPack != NULL) {
+					m_pitemPack->SetString(GetPackString());
+				}
+#endif
 				break;
 						  }
 
 			case idmVsync:
+#if (DIRECT3D_VERSION >= 0x0800)
 				//only does anything if the device is fullscreen...but we'll let them push it anyways.
 				GetEngine()->SetVSync(!g_DX9Settings.m_bVSync);
 				SavePreference("UseVSync", g_DX9Settings.m_bVSync);
-		        if (m_pitemVsync != NULL) {
-		            m_pitemVsync->SetString(GetVsyncString());
-		        }
+				if (m_pitemVsync != NULL) {
+					m_pitemVsync->SetString(GetVsyncString());
+				}
+#endif
 				break;
 			//
 
@@ -6609,7 +6689,14 @@ public:
 			// -KGJV - resolution fix - test
             Set3DAccelerationImportant(true); // kg- 
             SetWindowedSize(m_sizeCombat);
+
+#if (DIRECT3D_VERSION >= 0x0800)
             SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
+#else
+			SetFullscreenSize(WinPoint(m_sizeCombatFullscreen.X(), m_sizeCombatFullscreen.Y()));
+#endif
+
+
             SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
             //SetWindowedSize(WinPoint(800, 600));
             //SetFullscreenSize(WinPoint(800, 600));
@@ -6622,7 +6709,12 @@ public:
             //
 
             SetWindowedSize(m_sizeCombat);
+
+#if (DIRECT3D_VERSION >= 0x0800)
             SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
+#else
+			SetFullscreenSize(WinPoint(m_sizeCombatFullscreen.X(), m_sizeCombatFullscreen.Y()));
+#endif
             Set3DAccelerationImportant(true);
             SetSizeable(true);
         }
@@ -6902,7 +6994,16 @@ public:
 
         // find the sample index to interpolate
         int     iSampleIndex = ((m_turnRateSampleIndex - 1) + ARRAY_OF_SAMPLES_SIZE) % ARRAY_OF_SAMPLES_SIZE;
-        while ((m_turnRateSamples[iSampleIndex].time + fDelayTime) > m_turnRateSamples[m_turnRateSampleIndex].time)
+
+		// BT - 8/17 Fixing DX9 hang when in chase mode, and the camera is zoomed all the way out, this would cause a hang withe Dx9 engine. 
+		// The experiance is still bad (it's jumping all over the place), but at  least it doesn't hang. The Dx7 engine 
+		// works smoothly here, and the ship itself turns a lot nicer under DX7. 
+		// I believe that if you can figure out why this is different between the two engines, you will have solved the issue that was 
+		// introduced with the Dx9 conversion that is causing some players to report aiming issues. 
+		// The issue with the Dx9 version is that the m_turnRateSamples[iSampleIndex].time + fDelayTime) > m_turnRateSamples[m_turnRateSampleIndex].time is always true. 
+		// In the Dx7 engine version, this is NOT always true. 
+		// TODO: Resolve difference between Dx7 and Dx9 versions of the engines. 
+        while ((m_turnRateSamples[iSampleIndex].time + fDelayTime) > m_turnRateSamples[m_turnRateSampleIndex].time && iSampleIndex != 0)
             iSampleIndex = ((iSampleIndex - 1) + ARRAY_OF_SAMPLES_SIZE) % ARRAY_OF_SAMPLES_SIZE;
 
         // find the amount to interpolate
@@ -9283,9 +9384,9 @@ public:
 
         m_phelpPosition = new HelpPosition(GetTime(), m_phelp->GetEventSourceClose());
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 		GetModeler()->SetColorKeyHint( true );
-// BUILD_DX9
+#endif
 
         m_pwrapImageHelp->SetImage(
             new TransformImage(
@@ -9299,9 +9400,9 @@ public:
             )
         );
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 		GetModeler()->SetColorKeyHint( false );
-// BUILD_DX9
+#endif
 	}
 
     void OnHelp(bool bOn)
@@ -10763,7 +10864,7 @@ public:
         {
             static const ZString c_str1(" has requested $");
             static const ZString c_str2(" to buy a ");
-            static const ZString c_str3("  Press the [Insert] key to approve it.");
+			static const ZString c_str3("  Press the [Insert] key to approve it.");
 
             assert (pshipSender);
             IhullTypeIGC*   pht = trekClient.m_pCoreIGC->GetHullType(hid);
