@@ -323,3 +323,4 @@ $RECYCLE.BIN/
 *.old
 *.idb
 /src/ArtworkHashGenerator/artwork_hash_generator_lastrun.txt
+*.bak
