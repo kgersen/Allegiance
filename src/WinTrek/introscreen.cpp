@@ -1170,9 +1170,9 @@ public:
 
     bool OnButtonCredits()
     {
-		// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 		GetModeler()->SetColorKeyHint( true );
-		// BUILD_DX9
+#endif
 
         TRef<INameSpace> pnsCredits = GetModeler()->GetNameSpace("creditspane");
         m_pcreditsPopup = new CreditsPopup(pnsCredits, this, GetWindow()->GetTime());

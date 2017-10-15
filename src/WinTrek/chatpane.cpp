@@ -349,6 +349,7 @@ TRef<IObject> ChatListPaneFactory::Apply(ObjectStack& stack)
     TRef<PointValue>  ppointSize; CastTo(ppointSize, stack.Pop());
 
 	TRef<Boolean> showChatPaneScrollbar = new Boolean(true);
+
 	if(stack.GetCount() > 0)
 		CastTo(showChatPaneScrollbar, stack.Pop());
 

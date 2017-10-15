@@ -1735,9 +1735,9 @@ class ThingSiteImpl : public ThingSitePrivate
         HRESULT LoadDecal(const char* textureName, bool bDirectional, float width)
         {
             ZAssert(m_pthing == NULL && m_pdecal == NULL);
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 			GetEngine()->SetEnableMipMapGeneration( true );
-// BUILD_DX9
+#endif
 
             Number* ptime = GetWindow()->GetTime();
             TRef<AnimatedImage> pimage = 
@@ -1764,15 +1764,15 @@ class ThingSiteImpl : public ThingSitePrivate
                 if (bDirectional) {
                     m_pdecal->SetForward(Vector(0, 0, -1));
                 }
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 				GetEngine()->SetEnableMipMapGeneration( false );
-// BUILD_DX9
+#endif
 
                 return S_OK;
             }
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 			GetEngine()->SetEnableMipMapGeneration( false );
-// BUILD_DX9
+#endif
             return E_FAIL;
         }
 
@@ -1786,10 +1786,10 @@ class ThingSiteImpl : public ThingSitePrivate
 
             if (modelName)
             {
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 				bool bOldColorKeyValue = GetModeler()->SetColorKeyHint( false );
 				GetEngine()->SetEnableMipMapGeneration( true );
-// BUILD_DX9
+#endif
                 m_pthing =
                     ThingGeo::Create(
                         GetWindow()->GetModeler(),
@@ -1813,10 +1813,10 @@ class ThingSiteImpl : public ThingSitePrivate
                 if (pns != NULL) {
                     rc = m_pthing->LoadMDL(options, pns, pimageTexture);
                 } else {
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 					GetModeler()->SetColorKeyHint( bOldColorKeyValue );
 					GetEngine()->SetEnableMipMapGeneration( false );
-// BUILD_DX9
+#endif
                     return E_FAIL;
                 }
 
@@ -1842,10 +1842,10 @@ class ThingSiteImpl : public ThingSitePrivate
                     }
                 #endif
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 				GetModeler()->SetColorKeyHint( bOldColorKeyValue );
 				GetEngine()->SetEnableMipMapGeneration( false );
-// BUILD_DX9
+#endif
 			}
             return rc;
         }
@@ -2429,12 +2429,12 @@ void WinTrekClient::Initialize(Time timeNow)
 
 TRef<AnimatedImage> WinTrekClient::LoadExplosionImage(const ZString& str)
 {
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 	// Load source AnimatedImage into system memory rather than VRAM.
     return new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface(str, true, true, true));
-//#else
-//    return new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface(str, true));
-// BUILD_DX9
+#else
+    return new AnimatedImage(new Number(0.0f), GetModeler()->LoadSurface(str, true));
+#endif
 }
 
 void WinTrekClient::Terminate(void)
@@ -4578,10 +4578,10 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 void            WinTrekClient::Preload(const char*  pszModelName,
                                        const char*  pszTextureName)
 {
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 	bool bOldColorKeyValue = GetModeler()->SetColorKeyHint( false );
 	GetEngine()->SetEnableMipMapGeneration( true );
-// BUILD_DX9
+#endif
 
     if (pszModelName)
         GetModeler()->GetNameSpace(pszModelName);
@@ -4595,10 +4595,10 @@ void            WinTrekClient::Preload(const char*  pszModelName,
         GetModeler()->GetNameSpace(bfr);
     }
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 	GetModeler()->SetColorKeyHint( bOldColorKeyValue );
 	GetEngine()->SetEnableMipMapGeneration( false );
-// BUILD_DX9
+#endif
 }
 
 void WinTrekClient::SetCDKey(const ZString& strCDKey)
