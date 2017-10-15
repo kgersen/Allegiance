@@ -454,9 +454,41 @@ void FetchGlobalAttributeSet(GlobalAttributeID gaid, GlobalAttributeSet& gas)
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
+bool IsAnotherPlayerUsingThisName(const char * playerName, ImissionIGC * pMission)
+{
+	ShipLinkIGC* psl;
+	for (psl = pMission->GetShips()->first(); (psl != NULL); psl = psl->next())
+	{
+		CFSShip* pfsShip = (CFSShip *)(psl->data()->GetPrivateData());
+		if (pfsShip->IsPlayer())
+		{
+			CFSPlayer* pfsPlayerOther = pfsShip->GetPlayer();
+
+			if (_stricmp(playerName, pfsPlayerOther->GetName()) == 0)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
 {
+
+	// BT - STEAM - Rearching some complaints of stats not being logged. It turns out that US East 1 wasn't in the official game sevrer list. Derp.
+	// Leaving this here for now so I can debug some achievement stuff as well. 
+	//CSteamID id(uint64(76561198028193684));
+	//CSteamAchievements ach(id);
+	//int currScore;
+	//for (int i = 0; i < 20; i++)
+	//{
+	//	ach.GetStat(EStats::SUM_SCORE, &currScore);
+	//	ach.SetStat(EStats::SUM_SCORE, 3 + currScore);
+	//}
+	//ach.SaveStats();
+
   // Get the mission in question
   CFSMission * pfsMission;
   if (NA == (int)dwCookie && CFSMission::GetMissions()->n() > 0)
@@ -490,10 +522,41 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
+  ImissionIGC * pMission = pfsMission->GetIGCMission();
+
+  if (IsAnotherPlayerUsingThisName(pfsPlayer->GetName(), pMission) == true)
+  {
+	  for (int nameIndexCounter = 1; nameIndexCounter < 100; nameIndexCounter++)
+	  {
+		  ZString currentPlayerName = pfsPlayer->GetName();
+		  ZString namePart = currentPlayerName;
+		  ZString tagPart = "";
+		  if (currentPlayerName.Find("@") > -1)
+		  {
+			  namePart = currentPlayerName.LeftOf("@");
+			  tagPart = currentPlayerName.RightOf("@");
+		  }
+
+		  if (currentPlayerName.GetLength() > 23)
+			  namePart = namePart.Left(namePart.GetLength() - 2);
+
+		  namePart += nameIndexCounter;
+
+		  if (tagPart.GetLength() > 0)
+			  namePart += "@" + tagPart;
+
+		  if (IsAnotherPlayerUsingThisName((PCC)namePart, pMission) == false)
+		  {
+			  pfsPlayer->SetName((char *)(PCC)namePart);
+			  break;
+		  }
+	  }
+  }
+
 
   if(UTL::PrivilegedUser(pfsPlayer->GetName(),-1)){ //Avalanche: Let admins bypass most checks. //Imago 6/10 #2
   // check to see if the mission is running and whether joiners are allowed
-  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  
   OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
   const MissionParams*    pmp = pMission->GetMissionParams();
   SideID iSide=SIDE_TEAMLOBBY;
@@ -539,7 +602,7 @@ if (pfsMission->RequiresInvitation())
     }
   }
 
-  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  //ImissionIGC * pMission = pfsMission->GetIGCMission();
 
   #if defined(ALLSRV_STANDALONE)
   if (g.fm.GetHostApplicationGuid() == FEDSRV_STANDALONE_PRIVATE_GUID)
@@ -10688,7 +10751,8 @@ class ThingSiteImpl : public ThingSite
 										ObjectID spottedID = pmodel->GetObjectID();
 										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);	
 
-										if (pSpottedShip != nullptr)
+										// Guarding against server crash.
+										if (pSpottedShip != nullptr && pSpottedShip->GetHullType() != nullptr && pSpottedShip->GetHullType()->GetData() != nullptr)
 										{
 											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
 											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
