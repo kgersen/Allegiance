@@ -46,11 +46,12 @@ const int RANK_REQUIREMENTS[51] = { 0, 300, 690, 1197, 1856, 2713, 3827, 5275, 7
 class CSteamAchievements
 {
 private:
-	CSteamID m_steamID;
-	bool m_gotRequestStatsResponse;
-	bool m_gotSuccessfulRequestStatsResponse;
-	bool m_gotStatsStoredResponse;
-	bool m_gotSuccessfulStatsStoredResponse;
+	CSteamID	m_steamID;
+	char		m_szSteamID[64];
+	bool		m_gotRequestStatsResponse;
+	bool		m_gotSuccessfulRequestStatsResponse;
+	bool		m_gotStatsStoredResponse;
+	bool		m_gotSuccessfulStatsStoredResponse;
 
 	CCallResult< CSteamAchievements, GSStatsReceived_t > m_UserStatsRequestedCallResult;
 	CCallResult< CSteamAchievements, GSStatsStored_t > m_UserStatsStoredCallResult;
@@ -87,24 +88,20 @@ private:
 		"PLAYER_LOSS"
 	};
 
-	
-
 	bool GetAchievement(EAchievements achievement);
 	bool SetAchievement(EAchievements achievement);
-	//bool GetStat(CSteamID &steamID, EStats theStat);
+
 	bool GetStat(EStats theStat, int * pVal);
 	bool SetStat(EStats theStat, int val);
+
 	bool InitiateStatsRequestAndWaitForStatsFromSteamServer();
 	bool CheckRank(int currentScore);
 
-	// Steam Callbacks
-	//STEAM_GAMESERVER_CALLBACK(CSteamAchievements, OnUserStatsReceived, GSStatsReceived_t);
-
 	
-
 
 public:
 	CSteamAchievements(CSteamID &steamID);
+
 
 	void InitiateStatsRequest();
 
