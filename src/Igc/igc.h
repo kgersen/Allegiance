@@ -1212,7 +1212,7 @@ struct MissionParams
         bLockTeamSettings               = false;
         bAllowDefections                = false;
         bStations                       = true ;
-        bScoresCount                    = false;
+        bScoresCount                    = true;
         bSquadGame                      = false;
         bDrones                         = true ;
         iResources                      = 0;
