@@ -3865,6 +3865,32 @@ public:
 	{
 		contextPlayerInfo->SetMute(!contextPlayerInfo->GetMute());
 	}
+
+	// BT - STEAM - Enable moderators to ban players by context menu.
+	void contextKickPlayer()
+	{
+		char szMessageParam[CB_ZTS];
+		lstrcpy(szMessageParam, "You have been moved to NOAT by an administrator.");
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
+			FM_VAR_PARM(szMessageParam, CB_ZTS)
+			END_PFM_CREATE
+			pfmQuitSide->shipID = contextPlayerInfo->ShipID();
+		pfmQuitSide->reason = QSR_SwitchingSides;
+	}
+
+	// BT - STEAM - Enable moderators to ban players by context menu.
+	void contextBanPlayer()
+	{
+		char szMessageParam[CB_ZTS];
+		lstrcpy(szMessageParam, "You have been banned from this game an administrator.");
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_MISSION)
+			FM_VAR_PARM(szMessageParam, CB_ZTS)
+			END_PFM_CREATE
+			pfmQuitSide->shipID = contextPlayerInfo->ShipID();
+		pfmQuitSide->reason = QSR_AdminBooted;
+	}
 	
 	void contextDockDrone() //Xynth #48 8/2010
 	{
@@ -4131,6 +4157,10 @@ public:
 	#define idmToken2			922
 	#define idmToken3			923
 	#define idmToken4			924
+
+	// BT - STEAM - New player context menu options
+	#define idmContextKickPlayer	1000
+	#define idmContextBanPlayer		1001
 	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4138,70 +4168,74 @@ public:
 	 */
 	void TakeScreenShot()
 	{
-		//capturing screen size this way (instead of using a native GDI call) will create
-		//windowed screen shots which look like they were taken with the game running
-		//in full screen mode.
-		Point currentResolution = GetRenderRectValue()->GetValue().Size();
-		int screenX = currentResolution.X();
-		int screenY = currentResolution.Y();
+		// BT - STEAM - When the user attempts to take a screen shot inside of Alleg, trigger the steam overlay to do it instead.
+		SteamScreenshots()->TriggerScreenshot();
+		return; 
 
-		HDC hDesktopDC = GetDC();
-		HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
-		void* DIBBitValues;
-		BITMAPINFO bmpInfo = {0};
+		////capturing screen size this way (instead of using a native GDI call) will create
+		////windowed screen shots which look like they were taken with the game running
+		////in full screen mode.
+		//Point currentResolution = GetRenderRectValue()->GetValue().Size();
+		//int screenX = currentResolution.X();
+		//int screenY = currentResolution.Y();
 
-		//build up the BITMAPINFOHEADER
-		bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		bmpInfo.bmiHeader.biWidth = screenX;
-		bmpInfo.bmiHeader.biHeight = screenY;
-		bmpInfo.bmiHeader.biPlanes = 1;
-		bmpInfo.bmiHeader.biBitCount = 24;
-		bmpInfo.bmiHeader.biCompression = BI_RGB;
+		//HDC hDesktopDC = GetDC();
+		//HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
+		//void* DIBBitValues;
+		//BITMAPINFO bmpInfo = {0};
 
-		HBITMAP hCaptureBitmap = CreateDIBSection(hDesktopDC, &bmpInfo, DIB_RGB_COLORS, &DIBBitValues, NULL, NULL);
-		SelectObject(hCaptureDC, hCaptureBitmap);
-		BitBlt(hCaptureDC, 0, 0, screenX, screenY, hDesktopDC, 0, 0, SRCCOPY);
+		////build up the BITMAPINFOHEADER
+		//bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		//bmpInfo.bmiHeader.biWidth = screenX;
+		//bmpInfo.bmiHeader.biHeight = screenY;
+		//bmpInfo.bmiHeader.biPlanes = 1;
+		//bmpInfo.bmiHeader.biBitCount = 24;
+		//bmpInfo.bmiHeader.biCompression = BI_RGB;
 
-		//populates bmpInfo.bmiHeader.biSizeImage with the actual size
-		GetDIBits(hDesktopDC, hCaptureBitmap, 0, 0, NULL, &bmpInfo, DIB_RGB_COLORS);
+		//HBITMAP hCaptureBitmap = CreateDIBSection(hDesktopDC, &bmpInfo, DIB_RGB_COLORS, &DIBBitValues, NULL, NULL);
+		//SelectObject(hCaptureDC, hCaptureBitmap);
+		//BitBlt(hCaptureDC, 0, 0, screenX, screenY, hDesktopDC, 0, 0, SRCCOPY);
 
-		//build up the BITMAPFILEHEADER
-		BITMAPFILEHEADER bmpFileHeader = {0};
-		bmpFileHeader.bfType = 'MB';
-		bmpFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpInfo.bmiHeader.biSizeImage;
-		bmpFileHeader.bfReserved1 = 0;
-		bmpFileHeader.bfReserved2 = 0;
-		bmpFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+		////populates bmpInfo.bmiHeader.biSizeImage with the actual size
+		//GetDIBits(hDesktopDC, hCaptureBitmap, 0, 0, NULL, &bmpInfo, DIB_RGB_COLORS);
 
-		//create a filename for our screenshot using the local time
-		SYSTEMTIME sysTimeForName;
-		GetLocalTime(&sysTimeForName);
-		ZString scrnShotName = sysTimeForName.wYear;
-		scrnShotName += "-";
-		scrnShotName += sysTimeForName.wMonth;
-		scrnShotName += "-";
-		scrnShotName += sysTimeForName.wDay;
-		scrnShotName += "_";
-		scrnShotName += sysTimeForName.wHour;
-		scrnShotName += ".";
-		scrnShotName += sysTimeForName.wMinute;
-		scrnShotName += ".";
-		scrnShotName += sysTimeForName.wSecond;
-		scrnShotName += ".";
-		scrnShotName += sysTimeForName.wMilliseconds;
-		scrnShotName += ".bmp";
+		////build up the BITMAPFILEHEADER
+		//BITMAPFILEHEADER bmpFileHeader = {0};
+		//bmpFileHeader.bfType = 'MB';
+		//bmpFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpInfo.bmiHeader.biSizeImage;
+		//bmpFileHeader.bfReserved1 = 0;
+		//bmpFileHeader.bfReserved2 = 0;
+		//bmpFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
-		FILE* outputFile;
-		outputFile = fopen(scrnShotName,"wb");
-		//write the BITMAPFILEHEADER, BITMAPINFOHEADER, and bimap bit values to create the *.bmp
-		fwrite(&bmpFileHeader, sizeof(BITMAPFILEHEADER), 1, outputFile);
-		fwrite(&bmpInfo.bmiHeader, sizeof(BITMAPINFOHEADER), 1, outputFile);
-		fwrite(DIBBitValues, bmpInfo.bmiHeader.biSizeImage, 1, outputFile);
-		fclose(outputFile);
+		////create a filename for our screenshot using the local time
+		//SYSTEMTIME sysTimeForName;
+		//GetLocalTime(&sysTimeForName);
+		//ZString scrnShotName = sysTimeForName.wYear;
+		//scrnShotName += "-";
+		//scrnShotName += sysTimeForName.wMonth;
+		//scrnShotName += "-";
+		//scrnShotName += sysTimeForName.wDay;
+		//scrnShotName += "_";
+		//scrnShotName += sysTimeForName.wHour;
+		//scrnShotName += ".";
+		//scrnShotName += sysTimeForName.wMinute;
+		//scrnShotName += ".";
+		//scrnShotName += sysTimeForName.wSecond;
+		//scrnShotName += ".";
+		//scrnShotName += sysTimeForName.wMilliseconds;
+		//scrnShotName += ".bmp";
 
-		ReleaseDC(hDesktopDC);
-		DeleteDC(hCaptureDC);
-		DeleteObject(hCaptureBitmap);
+		//FILE* outputFile;
+		//outputFile = fopen(scrnShotName,"wb");
+		////write the BITMAPFILEHEADER, BITMAPINFOHEADER, and bimap bit values to create the *.bmp
+		//fwrite(&bmpFileHeader, sizeof(BITMAPFILEHEADER), 1, outputFile);
+		//fwrite(&bmpInfo.bmiHeader, sizeof(BITMAPINFOHEADER), 1, outputFile);
+		//fwrite(DIBBitValues, bmpInfo.bmiHeader.biSizeImage, 1, outputFile);
+		//fclose(outputFile);
+
+		//ReleaseDC(hDesktopDC);
+		//DeleteDC(hCaptureDC);
+		//DeleteObject(hCaptureBitmap);
 	}
 
 	// BT - STEAM - TODO Move these to where the other globals are hiding?
@@ -4333,6 +4367,20 @@ public:
 		char str3[30];	sprintf(str3, "Make Leader  ",playerInfo->CharacterName());
 		char str4[30];	sprintf(str4, playerInfo->GetMute() == false ?"Mute         " :"UnMute       ",playerInfo->CharacterName());
 
+		// BT - STEAM - Enable moderators to ban players by context menu.
+		// The MSAlleg Steam Group ID.
+		CSteamID moderatorGroupID = ((uint64)103582791460031578);
+		int clanCount = SteamFriends()->GetClanCount();
+		bool isModerator = false;
+		for (int i = 0; i < clanCount; i++)
+		{
+			if (SteamFriends()->GetClanByIndex(i) == moderatorGroupID)
+			{
+				isModerator = true;
+				break;
+			}
+		}
+
         bool bEnableAccept = false;
         bool bEnableReject = false;
         bool bEnableMakeLeader = false;
@@ -4383,6 +4431,13 @@ public:
         if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str2 , 'R');
         if(bEnableMakeLeader)	m_pmenu->AddMenuItem(idmContextMakeLeader , str3 , 'L');
         if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');		
+
+		// BT - STEAM - Enable moderators to ban players by context menu.
+		if (isModerator)
+		{
+			m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
+			m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
+		}
 		
 		Point popupPosition = GetMousePosition();
 
@@ -6424,6 +6479,17 @@ public:
 			case idmContextMutePlayer:
 				contextMute();			CloseMenu();
 				break;
+
+				// BT - STEAM - Enable moderators to ban players by context menu.
+			case idmContextKickPlayer:
+				contextKickPlayer();			CloseMenu();
+				break;
+
+				// BT - STEAM - Enable moderators to ban players by context menu.
+			case idmContextBanPlayer:
+				contextBanPlayer();				CloseMenu();
+				break;
+
 			//Xynth #48 8/2010
 			case idmContextDockDrone:
 				contextDockDrone();		CloseMenu();

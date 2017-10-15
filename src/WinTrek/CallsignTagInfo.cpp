@@ -35,6 +35,14 @@ ZString CallsignTagInfo::FixupCallsignTag(ZString callsignTag)
 {
 	ZString returnValue = callsignTag;
 
+	// It's tradition!
+	if (returnValue == "MsAlleg")
+		return "Alleg";
+
+	// Give our older members a nice badge of honor.
+	if (returnValue == "AllegFAO")
+		return "Vet";
+
 	// Allows us to have some group tags that may have already been claimed.
 	if (returnValue.Find("@") >= 0)
 		returnValue = returnValue.RightOf("@");
@@ -60,13 +68,8 @@ ZString CallsignTagInfo::FixupCallsignTag(ZString callsignTag)
 	if (returnValue.Find("$") >= 0)
 		returnValue = returnValue.RightOf("$");
 
-	// It's tradition!
-	if (returnValue == "MsAlleg")
-		returnValue = "Alleg";
-
-	// Give our older members a nice badge of honor.
-	if (returnValue == "AllegFAO")
-		returnValue = "Vet";
+	if (returnValue == "Alleg" || returnValue == "Vet")
+		return "Fail";
 
 	return returnValue;
 }

@@ -434,6 +434,10 @@ RankID CSteamAchievements::GetRank()
 {
 	int rank;
 	bool getSucceed;
+
+	int currentScore;
+	getSucceed = GetStat(EStats::SUM_SCORE, &currentScore);
+
 	getSucceed = GetStat(EStats::PLAYER_RANK, &rank);
 	if (getSucceed)
 		return RankID(rank);
