@@ -3253,10 +3253,11 @@ void CFSMission::ProcessGameOver()
   }
 
   // Record the Game Results
-  if (m_misdef.misparms.bScoresCount) // Only if scores count
-  {
+  //if (m_misdef.misparms.bScoresCount) // Only if scores count
+  //{
+  // BT - STEAM - Scores always count. 
     RecordGameResults();
-  }
+  //}
 
   // Queue the GameOver message to all connected users
   g.fm.SetDefaultRecipient(GetGroupMission(), FM_GUARANTEED);
