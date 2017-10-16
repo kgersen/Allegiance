@@ -23,6 +23,7 @@ private:
     TRef<Modeler>       m_pmodeler;
     TRef<Pane>          m_ppane;
 
+	TRef<ButtonPane>	m_pbuttonDiscord;
     TRef<ButtonPane>    m_pbuttonPlayLan;
     TRef<ButtonPane>    m_pbuttonPlayInt;
 #ifdef USEAZ
@@ -586,6 +587,8 @@ public:
         CastTo(m_ppane, pns->FindMember("screen"));
         CastTo(m_pbuttonPlayLan,    pns->FindMember("playLanButtonPane"));
         CastTo(m_pbuttonPlayInt,    pns->FindMember("playIntButtonPane"));
+		CastTo(m_pbuttonDiscord, pns->FindMember("discordButtonPane"));
+
 #ifdef USEAZ
         CastTo(m_pbuttonZoneClub,   pns->FindMember("zoneClubButtonPane" ));
 #endif
@@ -602,6 +605,9 @@ public:
 
         //AddEventTarget(OnButtonGames,       m_pbuttonPlayLan->GetEventSource());
         //AddEventTarget(OnButtonTraining,    m_pbuttonTraining->GetEventSource());
+
+		
+		AddEventTarget(&IntroScreen::OnButtonDiscord, m_pbuttonDiscord->GetEventSource());
 		AddEventTarget(&IntroScreen::OnButtonTraining,    m_pbuttonTrainingBig->GetEventSource());
         AddEventTarget(&IntroScreen::OnButtonExit,        m_pbuttonExit->GetEventSource());
         AddEventTarget(&IntroScreen::OnButtonHelp,        m_pbuttonHelp->GetEventSource());
@@ -855,6 +861,53 @@ public:
         return true;
     }
 
+	bool OnButtonDiscord()
+	{
+		// Gonna send them to NOAT for now, maybe put a better channel here later?
+		GetWindow()->ShowWebPage("https://discord.gg/WcEJ9VH");
+		return true;
+	}
+
+	class OpenWikiSink : public IIntegerEventSink {
+	public:
+		TrekWindow* m_pwindow;
+
+		OpenWikiSink(TrekWindow* pwindow) :
+			m_pwindow(pwindow)
+		{
+		}
+
+		bool OnEvent(IIntegerEventSource* pevent, int value)
+		{
+			if (value == IDOK)
+				m_pwindow->ShowWebPage("http://www.freeallegiance.org/FAW/index.php/Quick_Crash_Course");
+			
+			m_pwindow->screen(ScreenIDTrainScreen);
+
+			return false;
+		}
+	};
+
+	TRef<IMessageBox> m_pmessageBox;
+
+	//void StartClose()
+	//{
+	//	if (m_pmessageBox == NULL) {
+	//		m_pmessageBox = CreateMessageBox("Quit Allegiance?", NULL, true, true);
+	//		m_pmessageBox->GetEventSource()->AddSink(new CloseSink(this));
+	//		GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+	//		m_ptrekInput->SetFocus(false);
+	//	}
+
+	//	//
+	//	// Make sure the window isn't minimized
+	//	//
+
+	//	if (!GetFullscreen()) {
+	//		OnCaptionRestore();
+	//	}
+	//}
+
     bool OnButtonTraining()
     {
         if (Training::IsInstalled ())
@@ -863,13 +916,17 @@ public:
             trekClient.SetIsLobbied(false);
             trekClient.SetIsZoneClub(false);
             
-			if (trekClient.bTrainingFirstClick)
+			m_pmessageBox = CreateMessageBox("Welcome to Allegiance training! We recommend that you start with our Crash Course wiki page first.\n\nMinimize Allegiance and go to the Wiki page now?", NULL, true, true);
+			m_pmessageBox->GetEventSource()->AddSink(new OpenWikiSink(GetWindow()));
+			GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+		
+			/*if (trekClient.bTrainingFirstClick)
 				GetWindow()->screen(ScreenIDTrainScreen);
 			else
 			{
 				GetWindow()->ShowWebPage("http://www.freeallegiance.org/FAW/index.php/Quick_Crash_Course");
 				trekClient.bTrainingFirstClick = true;
-			}
+			}*/
         }
         else // wlp 2006 - go straight to lobby
         {
