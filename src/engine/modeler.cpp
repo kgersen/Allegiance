@@ -406,7 +406,7 @@ public:
     TRef<IObject> Apply(ObjectStack& stack)
     {
         TRef<Number> pjustify = Number::Cast((IObject*)stack.Pop());
-        TRef<Image>  pimage   =  Image::Cast((Value*)(IObject*)stack.Pop());
+        TRef<Image>  pimage   = Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<Number> pnumber  = Number::Cast((IObject*)stack.Pop());
 
         Justification justification;
@@ -434,7 +434,7 @@ public:
     TRef<IObject> Apply(ObjectStack& stack)
     {
         TRef<Number>    pjustify =    Number::Cast(        (IObject*)stack.Pop());
-        TRef<Image>     pimage   =     Image::Cast((Value*)(IObject*)stack.Pop());
+        TRef<Image>     pimage   = Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<RectValue> prect    = RectValue::Cast(        (IObject*)stack.Pop());
         TRef<Boolean>   pbool    =   Boolean::Cast(        (IObject*)stack.Pop());
         TRef<Number>    pnumber  =    Number::Cast(        (IObject*)stack.Pop());
@@ -936,6 +936,86 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
+
+
+
+class FillImageFactory : public IFunction{
+private:
+	TRef<Modeler>		m_pmodeler;
+	TRef<PrivateEngine> m_pengine;
+
+public:
+	FillImageFactory(Modeler* pmodeler) :
+		m_pmodeler(pmodeler)
+	{
+		CastTo(m_pengine, m_pmodeler->GetEngine());
+	}
+
+	class FillImage : public WrapImage
+	{
+	private:
+		TRef<Engine> m_pengine;
+	public:
+		FillImage::FillImage(TRef<Engine> pengine, TRef<PointValue> psize, TRef<ColorValue> pcolor)
+			: WrapImage(Image::GetEmpty(), psize, pcolor),
+			m_pengine(pengine)
+		{
+			
+		}
+
+		PointValue* GetSize() { return PointValue::Cast(GetChild(1)); }
+		ColorValue* GetColor() { return ColorValue::Cast(GetChild(2)); }
+
+		void FillImage::Evaluate()
+		{
+			PointValue* psize = GetSize();
+			ColorValue* pcolor = GetColor();
+			WinPoint sizeWinPoint = WinPoint(psize->GetValue().X(), psize->GetValue().Y());
+
+			TRef<Surface> surface = m_pengine->CreateSurface(sizeWinPoint, SurfaceType2D());
+			surface->FillSurface(pcolor->GetValue());
+
+			TRef<Image> pimage = new ConstantImage(surface, "FillImage");
+
+			SetImage(pimage);
+		}
+
+	};
+
+	TRef<IObject> Apply(ObjectStack& stack)
+	{
+		TRef<PointValue> psize = PointValue::Cast((IObject*)stack.Pop());
+		TRef<ColorValue> pcolor = ColorValue::Cast((IObject*)stack.Pop());
+
+		//TRef<PointValue> pixel = new PointValue(Point(1, 1));
+
+		//TRef<FillImage> smallImage = new FillImage(m_pengine, pixel, pcolor);
+
+		//return (Value*)
+		//	new TransformImage(
+		//		smallImage,
+		//		new ScaleTransform2(pixel / psize)
+		//	);
+
+		return (Value*)new FillImage(m_pengine, psize, pcolor);
+
+		WinPoint sizeWinPoint = WinPoint(psize->GetValue().X(), psize->GetValue().Y());
+
+		TRef<Surface> surface = //m_pengine->CreateRenderTargetSurface(sizeWinPoint);
+			m_pengine->CreateSurface(sizeWinPoint, SurfaceType2D());
+		surface->FillSurface(pcolor->GetValue());
+
+		TRef<Image> pimage = new ConstantImage(surface, "FillImage");
+		return (Value*)pimage;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//////////////////////////////////////////////////////////////////////////////
+
 class BlendImageFactory : public IFunction {
 private:
 public:
@@ -1011,23 +1091,92 @@ public:
     }
 };
 
+class PointV : public PointValue {
+public:
+	PointV(Number* px, Number* py) :
+		PointValue(px, py)
+	{
+	}
+
+	Number* Get0() { return Number::Cast(GetChild(0)); }
+	Number* Get1() { return Number::Cast(GetChild(1)); }
+
+	void Evaluate()
+	{
+		GetValueInternal() =
+			Point(
+				Get0()->GetValue(),
+				Get1()->GetValue()
+			);
+	}
+};
+
 class FitImageFactory : public IFunction {
 public:
 	TRef<IObject> Apply(ObjectStack& stack)
 	{
 		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
-		TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
+		TRef<PointValue> ppoint = ModifiablePointValue::Cast((IObject*)stack.Pop());
 
-		Point sizeImage = pimage->GetBounds().GetRect().Size();
+		TRef<ImageSize> sizeImage = new ImageSize(pimage);
 
-		Point pointScale = sizeImage / ppoint->GetValue();
+		TRef<Number> scale = Min(
+			Divide(new PointX(ppoint), new PointX(sizeImage)),
+			Divide(new PointY(ppoint), new PointY(sizeImage))
+		);
 
-		float floatScale = min(pointScale.X(), pointScale.Y());
+		PointV * p_pointVariable = new PointV(scale, scale);
 
 		return
 			(Value*)new TransformImage(
 				pimage,
-				new ScaleTransform2(Point(floatScale, floatScale))
+				new ScaleTransform2(p_pointVariable)
+			);
+	}
+};
+
+class FitImageXFactory : public IFunction {
+public:
+	TRef<IObject> Apply(ObjectStack& stack)
+	{
+		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
+		TRef<Number> pnumber = Number::Cast((IObject*)stack.Pop());
+
+		TRef<ImageSize> sizeImage = new ImageSize(pimage);
+
+		TRef<Number> scale = Divide(pnumber, new PointX(sizeImage));
+
+		PointV * p_pointVariable = new PointV(scale, scale);
+
+		return
+			(Value*)new TransformImage(
+				pimage,
+				new ScaleTransform2(p_pointVariable)
+			);
+	}
+};
+
+class FitImageYFactory : public IFunction {
+public:
+	TRef<IObject> Apply(ObjectStack& stack)
+	{
+		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
+		TRef<Number> pnumber = Number::Cast((IObject*)stack.Pop());
+		//TRef<Number> pjustify = Number::Cast((IObject*)stack.Pop());
+
+		//Justification justification;
+		//justification.SetWord((DWORD)pjustify->GetValue());
+
+		TRef<ImageSize> sizeImage = new ImageSize(pimage);
+
+		TRef<Number> scale = Divide(pnumber, new PointY(sizeImage));
+
+		PointV * p_pointVariable = new PointV(scale, scale);
+
+		return
+			(Value*)new TransformImage(
+				pimage,
+				new ScaleTransform2(p_pointVariable)
 			);
 	}
 };
@@ -1221,26 +1370,6 @@ public:
         float y = GetNumber((IObject*)stack.Pop());
 
         return new PointValue(Point(x, y));
-    }
-};
-
-class PointV : public PointValue {
-public:
-    PointV(Number* px, Number* py) :
-        PointValue(px, py)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = 
-            Point(
-                Get0()->GetValue(), 
-                Get1()->GetValue()
-            );
     }
 };
 
@@ -2356,6 +2485,7 @@ public:
         pns->AddMember("ImportImageFromFile",new ImportImageFromFileFactory(this)); // KGJV 32B
         pns->AddMember("ImportImage3D",      new ImportImage3DFactory(this));
         pns->AddMember("ImportImageLR",      new ImportImageLRFactory(this));
+		pns->AddMember("FillImage",			 new FillImageFactory(this));
 
         pns->AddMember("FrameImage",         CreateFrameImageFactory());
 
@@ -2391,6 +2521,8 @@ public:
         pns->AddMember("RotateImage",        new RotateImageFactory());
         pns->AddMember("BlendImage",         new BlendImageFactory());
 		pns->AddMember("FitImage",			 new FitImageFactory());
+		pns->AddMember("FitImageX",			 new FitImageXFactory());
+		pns->AddMember("FitImageY",			 new FitImageYFactory());
 
 
         //
