@@ -1298,6 +1298,8 @@ public:
     ViewMode            m_viewmode;
     OverlayMask         m_voverlaymask[c_cViewModes];
     bool                m_bOverlaysChanged;
+	bool				m_bShowSectorMapPane;
+	bool				m_bShowInventoryPane;
 
 
     //
@@ -2658,89 +2660,91 @@ public:
 		return hDDVidThread;
 	}
 
-    TrekWindowImpl(
-        EffectApp*     papp,
-        const ZString& strCommandLine,
-// BUILD_DX9
+	TrekWindowImpl(
+		EffectApp*     papp,
+		const ZString& strCommandLine,
+		// BUILD_DX9
 		const ZString& strArtPath,
-// BUILD_DX9
-        bool           bMovies,
-        bool           bSoftware,
-        bool           bHardware,
-        bool           bPrimary,
-        bool           bSecondary
-    ) :
+		// BUILD_DX9
+		bool           bMovies,
+		bool           bSoftware,
+		bool           bHardware,
+		bool           bPrimary,
+		bool           bSecondary
+	) :
 #if (DIRECT3D_VERSION >= 0x0800)
-        TrekWindow(
-            papp,
-            strCommandLine,
-            false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized. Trying to find the source of the mystery "crash on launch" issues.
+		TrekWindow(
+			papp,
+			strCommandLine,
+			false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized. Trying to find the source of the mystery "crash on launch" issues.
 			WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
-					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
-					CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
-									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
-					CD3DDevice9::Get()->GetCurrentMode()->mode.Height +
-									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
-              WinPoint(800, 600)
-        ),
+				0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
+				CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
+				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+				CD3DDevice9::Get()->GetCurrentMode()->mode.Height +
+				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
+			WinPoint(800, 600)
+		),
 
 #else
-        TrekWindow(
-            papp,
-            strCommandLine,
-            true,
-            WinRect(0, 0, 800, 600),
-            WinPoint(640, 480)
-        ),
+		TrekWindow(
+			papp,
+			strCommandLine,
+			true,
+			WinRect(0, 0, 800, 600),
+			WinPoint(640, 480)
+		),
 #endif
 
-        m_screen(ScreenIDSplashScreen),
-        m_bShowMeteors(true),
-        m_bShowStations(true),
-        m_bShowProjectiles(true),
-        m_bShowAlephs(true),
-        m_bShowShips(true),
-        m_bBidirectionalLighting(true),
-        m_color(Color::White()),
-        m_colorAlt(Color::White()),
-        m_ambientLevel(0),
-        m_ambientLevelBidirectional(0),
-        m_frameID(0),
-        m_timeLastFrame(Time::Now()),
-        m_timeLastDamage(Time::Now()),
-        m_cm(cmCockpit),
-        m_cmOld(cmCockpit),
-        m_timeRejectQueuedCommand(0),
-        m_cmPreviousCommand(cmExternalCommandView34),
-        m_bPreferChaseView (false),
-        m_distanceExternalCamera(s_fExteralViewDistanceDefault),
-        m_distanceCommandCamera(s_fCommandViewDistanceDefault),
-        m_rollCommandCamera(0.0f),
-        m_bEnableDisplacementCommandView (true),
-        m_suicideCount(0),
-        m_bLensFlare(true),
-        m_bRoundRadar(false),
-        m_bLinearControls (true),
-        m_bMusic(false),
-        m_bCommandGrid(false),
-        m_radarCockpit(RadarImage::c_rlDefault),
-        m_radarCommand(RadarImage::c_rlAll),
-        m_musicId(NA),
-        m_viewmode(vmUI),
-        m_bOverlaysChanged(false),
-        m_pszCursor(AWF_CURSOR_DEFAULT),
-        m_nLastCountdown(c_nCountdownMax),
-        m_ctLobbyChat(CHAT_EVERYONE),
-        m_bTrackCommandView(false),
-        m_bQuitComposing(true),
-        m_bEnableVirtualJoystick(false),
-        m_bFlipY(false),
-        m_bEnableFeedback(true),
-        m_aabmInvest(0),
-        m_aabmCommand(0),
-        //Imago 7/10
-        m_bFFAutoCenter(false),
-		m_iMouseAccel(0) //#215
+		m_screen(ScreenIDSplashScreen),
+		m_bShowMeteors(true),
+		m_bShowStations(true),
+		m_bShowProjectiles(true),
+		m_bShowAlephs(true),
+		m_bShowShips(true),
+		m_bBidirectionalLighting(true),
+		m_color(Color::White()),
+		m_colorAlt(Color::White()),
+		m_ambientLevel(0),
+		m_ambientLevelBidirectional(0),
+		m_frameID(0),
+		m_timeLastFrame(Time::Now()),
+		m_timeLastDamage(Time::Now()),
+		m_cm(cmCockpit),
+		m_cmOld(cmCockpit),
+		m_timeRejectQueuedCommand(0),
+		m_cmPreviousCommand(cmExternalCommandView34),
+		m_bPreferChaseView(false),
+		m_distanceExternalCamera(s_fExteralViewDistanceDefault),
+		m_distanceCommandCamera(s_fCommandViewDistanceDefault),
+		m_rollCommandCamera(0.0f),
+		m_bEnableDisplacementCommandView(true),
+		m_suicideCount(0),
+		m_bLensFlare(true),
+		m_bRoundRadar(false),
+		m_bLinearControls(true),
+		m_bMusic(false),
+		m_bCommandGrid(false),
+		m_radarCockpit(RadarImage::c_rlDefault),
+		m_radarCommand(RadarImage::c_rlAll),
+		m_musicId(NA),
+		m_viewmode(vmUI),
+		m_bOverlaysChanged(false),
+		m_pszCursor(AWF_CURSOR_DEFAULT),
+		m_nLastCountdown(c_nCountdownMax),
+		m_ctLobbyChat(CHAT_EVERYONE),
+		m_bTrackCommandView(false),
+		m_bQuitComposing(true),
+		m_bEnableVirtualJoystick(false),
+		m_bFlipY(false),
+		m_bEnableFeedback(true),
+		m_aabmInvest(0),
+		m_aabmCommand(0),
+		//Imago 7/10
+		m_bFFAutoCenter(false),
+		m_iMouseAccel(0), //#215
+		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+		m_bShowSectorMapPane(true)  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 
     {
         HRESULT hr;
@@ -6717,9 +6721,17 @@ public:
 
             UpdateOverlayFlags();
 
+			// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+			if (m_bShowInventoryPane == true)
+				TurnOnOverlayFlags(ofInventory);
+
+			// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+			if(m_bShowSectorMapPane == true)
+				TurnOnOverlayFlags(ofSectorPane);
+
             // REVIEW: why not expose this in MDL?
-            if (GetOverlayFlags() & (ofInCockpit | ofInChase))
-                m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCockpit);
+			if (GetOverlayFlags() & (ofInCockpit | ofInChase))
+				m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCockpit);
             else if (GetOverlayFlags() & (ofInFlightCommand | ofInStationCommand))
                 m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCommand);
             else
@@ -10082,10 +10094,13 @@ public:
             case TK_ConModeNav:
             case TK_ViewSector:
             {
-				// BT - 9/17 - CortUI integration - The minimap is now always visible.
-               /* if (GetViewMode() != vmOverride) {
+				
+                if (GetViewMode() != vmOverride) {
                     ToggleOverlayFlags(ofSectorPane);
-                }*/
+
+					// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+					m_bShowSectorMapPane = GetOverlayFlags() & ofSectorPane == ofSectorPane;
+                }
             }
             break;
 
@@ -10205,9 +10220,13 @@ public:
                     else
                         SetViewMode(vmHangar);
                 }
-				// BT - 9/17 - CortUI integration - Keep the inventory open, always. 
-                //else
-                 //   ToggleOverlayFlags(ofInventory);
+				else
+				{
+					ToggleOverlayFlags(ofInventory);
+
+					// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+					m_bShowInventoryPane = GetOverlayFlags() & ofSectorPane == ofSectorPane;
+				}
             }
             break;
 
