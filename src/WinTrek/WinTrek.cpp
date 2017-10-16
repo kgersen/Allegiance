@@ -1178,6 +1178,11 @@ public:
     TRef<ModifiableNumber>  m_pnumberTeamPaneCollapsed;
     TRef<WrapNumber>        m_pwrapNumberStyleHUD;
 
+	// #294 - Turkey
+	TRef<ModifiableNumber>		m_pnumberChatLinesDesired;
+	TRef<ModifiableNumber>		m_pnumberChatLines;
+	TRef<WrapNumber>			m_pwrapNumberChatLines;
+
     //
     // exports
     //
@@ -1372,6 +1377,8 @@ public:
     TRef<IMenuItem>            m_pitemFilterChatsToAll;
     TRef<IMenuItem>            m_pitemFilterQuickComms;
     TRef<IMenuItem>            m_pitemFilterLobbyChats;
+	TRef<IMenuItem>			   m_pitemIncreaseChatLines;	// #294 - Turkey
+	TRef<IMenuItem>			   m_pitemReduceChatLines;		// #294 - Turkey
     TRef<IMenuItem>            m_pitemSoundQuality;
     TRef<IMenuItem>            m_pitemToggleSoundHardware;
     TRef<IMenuItem>            m_pitemToggleDSound8Usage;
@@ -2891,6 +2898,10 @@ public:
             )
         );
 
+		// #294 - Turkey 
+		m_pnumberChatLinesDesired = new ModifiableNumber(0);
+		pnsGamePanes->AddMember("NumChatLines", m_pwrapNumberChatLines = new WrapNumber(m_pnumberChatLines = new ModifiableNumber(0)));
+
         pnsGamePanes->AddMember("Flash", m_pnumberFlash = new ModifiableNumber(0));
         pnsGamePanes->AddMember("TeamPaneCollapsed", m_pnumberTeamPaneCollapsed = new ModifiableNumber(0));
         pnsGamePanes->AddMember("IsGhost", m_pnumberIsGhost = new ModifiableNumber(0));
@@ -3313,6 +3324,9 @@ public:
 #endif 
 
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
+
+		// #294 - Turkey
+		SetChatLines(LoadPreference("ChatLines", 10));
 
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
@@ -4098,6 +4112,10 @@ public:
     #define idmBandwidth		       634 // w0dk4 June 2007: Bandwith Patch */
     #define	idmMuteFilterOptions		 635 //TheBored 30-JUL-07: Filter Unknown Chat patch
     #define idmFilterUnknownChats		 636 //TheBored 30-JUL-07: Filter Unknown Chat patch
+	#define idmScrollbar				 637 // #294 - Turkey
+	#define idmIncreaseChatLines		 638 // #294 - Turkey
+	#define idmReduceChatLines			 639 // #294 - Turkey
+	#define idmCycleTimestamp			 640 // #294 - Turkey
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -4689,6 +4707,10 @@ public:
                 m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'V');
 				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
+				
+				// #294 - Turkey
+				m_pitemIncreaseChatLines		   = pmenu->AddMenuItem(idmIncreaseChatLines,			GetIncreaseChatLinesMenuString(),	'I');
+				m_pitemReduceChatLines			   = pmenu->AddMenuItem(idmReduceChatLines,				GetReduceChatLinesMenuString(),		'R');
 				break;
 			//End TB 30-JUL-07
 			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
@@ -4881,6 +4903,68 @@ public:
             m_pitemFilterLobbyChats->SetString(GetFilterLobbyChatsMenuString());
         }
     }
+
+	// #294 - Turkey 8/13
+	void IncreaseChatLines()
+	{
+		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() + 1;
+
+		if (SetChatLines(lines))
+		{
+			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+
+			if (m_pchatListPane)
+			{
+				if (GetViewMode() == vmLoadout)
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (GetViewMode() <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
+			}
+
+			SavePreference("ChatLines", lines);
+		}
+	}
+
+	void ReduceChatLines()
+	{
+		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() - 1;
+
+		if (SetChatLines(lines))
+		{
+			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+
+			if (m_pchatListPane)
+			{
+				if (GetViewMode() == vmLoadout)
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (GetViewMode() <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
+			}
+
+
+			SavePreference("ChatLines", lines);
+		}
+	}
+
+
+
+	// end #294
+
+
 	//End TB 25-JUN-07
     void ToggleLinearControls()
     {
@@ -5347,7 +5431,26 @@ public:
         SavePreference("Gamma", value);
     }
 
+	// #294 - Turkey returns true if the requested value was within range (1-10), false otherwise
+	bool SetChatLines(DWORD value)
+	{
+		bool bInRange = false;
+		if (value >= 1)
+		{
+			if (value > 10) m_pnumberChatLinesDesired->SetValue(10.0f);
+			else
+			{
+				m_pnumberChatLinesDesired->SetValue((float)value);
+				bInRange = true;
+			}
+		}
+		else
+		{
+			m_pnumberChatLinesDesired->SetValue(1.0f);
+		}
 
+		return bInRange;
+	}
 
 
     void ToggleFlipY()
@@ -5780,6 +5883,20 @@ public:
                 break;
         }
     }
+
+	// #294 - Turkey
+	ZString GetIncreaseChatLinesMenuString()
+	{
+		if (m_pnumberChatLinesDesired->GetValue() > 9.9f) return "Chat Lines At Maximum";
+		return "Increase To " + ZString((int)m_pnumberChatLinesDesired->GetValue() + 1) + " Chat Lines";
+	}
+
+	// #294 - Turkey
+	ZString GetReduceChatLinesMenuString()
+	{
+		if (m_pnumberChatLinesDesired->GetValue() < 1.1f) return "Chat Lines At Minimum";
+		return "Reduce To " + ZString((int)m_pnumberChatLinesDesired->GetValue() - 1) + " Chat Lines";
+	}
 
     ZString GetLinearControlsMenuString()
     {
@@ -6360,6 +6477,16 @@ public:
 				ToggleFilterLobbyChats(trekClient.FilterLobbyChats() + 1);
                 break;
 
+				// #294 - Turkey
+			case idmIncreaseChatLines:
+				IncreaseChatLines();
+				break;
+
+				// #294 - Turkey
+			case idmReduceChatLines:
+				ReduceChatLines();
+				break;
+
             case idmToggleLinearControls:
                 ToggleLinearControls ();
                 break;
@@ -6846,6 +6973,23 @@ public:
 			// yp - Your_Persona buttons get stuck patch. aug-03-2006
 			// clear the keyboard buttons.
 			m_ptrekInput->ClearButtonStates();
+
+			// #294 - Turkey / #361 Use different number of chatlines for the loadout screen cos there's less space
+			if (m_pchatListPane)
+			{
+				int lines = m_pnumberChatLinesDesired->GetValue();
+
+				if (vm == vmLoadout)
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (vm <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
+			}
 
             switch (vm)
             {
