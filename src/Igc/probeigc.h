@@ -117,7 +117,7 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
                     {
 						//Xynth Set flag in IGC ship to later trigger an achievement for destroying a probe
 						
-						if (launcher->GetObjectType() == OT_ship)
+						if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
 						{
 							ObjectID theID = launcher->GetObjectID();
 							IsideIGC * plSide = launcher->GetSide();

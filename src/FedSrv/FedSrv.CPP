@@ -11903,7 +11903,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                      droneWatchFireSound, "Watch your fire");
                         }
                     }
-                    else if (launcher->GetObjectType() == OT_ship)
+                    else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
                     {
                         CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                         if (pfsLauncher->IsPlayer())
@@ -11970,7 +11970,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
                                  droneWatchFireSound, "Watch your fire");
                     }
                 }
-                else if (launcher->GetObjectType() == OT_ship)
+                else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
                 {
                     CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                     if (pfsLauncher->IsPlayer())
