@@ -1193,7 +1193,7 @@ public:
     TRef<Image>				m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
-	TRef<ScaleTransform2>	 m_pTransformScreen;
+	TRef<MatrixTransform2> m_pMatrixTransformScreen;
 
     //
     // Lighting
@@ -2161,10 +2161,11 @@ public:
             // Create the UI Window
             //
 
-			m_pTransformScreen = new ScaleTransform2(new PointValue(Point(1.0, 1.0)));
+			m_pMatrixTransformScreen = new MatrixTransform2(Matrix2::GetIdentity());
+
             m_pimageScreen = new TransformImage(
 				CreatePaneImage(GetEngine(), false, ppane),
-				m_pTransformScreen
+				m_pMatrixTransformScreen
 			);
         }
 
@@ -3745,7 +3746,17 @@ public:
 				float scale;
 				scale = min(rectScreen.XSize() / sizePane.X(), rectScreen.YSize() / sizePane.Y());
 
-				m_pTransformScreen->SetScale(Point(scale, scale));
+				Point pointTranslate;
+				pointTranslate = Point(
+					0.5 * (rectScreen.XSize() - sizePane.X() * scale),
+					0.5 * (rectScreen.YSize() - sizePane.Y() * scale)
+				);
+
+				Matrix2 matrix = Matrix2::GetIdentity();
+				matrix.SetScale(Point(scale, scale));
+				matrix.Translate(pointTranslate);
+
+				m_pMatrixTransformScreen->SetValue(matrix);
 			}
 		}
     }
