@@ -776,6 +776,10 @@ public:
 					// Finished, unlock the buffer, set the stream.
 					CVBIBManager::Get()->UnlockDynamicVertexBuffer( phVB );
 
+					pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, GetLinearFilter() ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+					pDev->SetSamplerState(0, D3DSAMP_MINFILTER, GetLinearFilter() ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+					pDev->SetSamplerState(0, D3DSAMP_MIPFILTER, GetLinearFilter() ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+
 					pDev->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
                     m_pdevice3D->SetShadeMode(ShadeModeFlat);
 					m_pdevice3D->DrawTriangles( D3DPT_TRIANGLESTRIP, 2, phVB );
