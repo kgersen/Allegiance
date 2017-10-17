@@ -198,6 +198,7 @@ public:
 		m_hTexture( INVALID_TEX_HANDLE ),
 		m_pcontext( NULL )
 	{
+		Initialize();
         m_pointOffset			= WinPoint(0, 0);
         m_rectClip				= WinRect(WinPoint(0, 0), m_size);
 		m_pUIVerts				= NULL;
@@ -1869,36 +1870,19 @@ public:
 		{
 			if( pDev->IsInScene() == true )
 			{
-				if( m_bColorKey == true )
+				if (dwPixel != 0)
 				{
-					if( dwPixel != 0 )
-					{
-						pVertGen->GenerateFillVerticesD3DColor( (WinRect&)rect, true, (DWORD) pixel.Value() );
+					pVertGen->GenerateFillVerticesD3DColor((WinRect&)rect, true, (DWORD)pixel.Value());
 
-						pVRAMMan->SetTexture( INVALID_TEX_HANDLE, 0 );
-						pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-						pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
-						pDev->SetFVF( D3DFVF_UICOLOURVERT );
-						pDev->DrawPrimitive( 
-									D3DPT_TRIANGLESTRIP, 
-//									pVertGen->GetUIFillVertsVB()->dwFirstElementOffset,
-									pVertGen->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFillVB )->dwFirstElementOffset,
-									2);
-					}
-				}
-				else
-				{
-					pVertGen->GenerateFillVerticesD3DColor( (WinRect&)rect, true, dwPixel );
-
-					pVRAMMan->SetTexture( INVALID_TEX_HANDLE, 0 );
-					pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-					pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
-					pDev->SetFVF( D3DFVF_UICOLOURVERT );
-					pDev->DrawPrimitive( 
-									D3DPT_TRIANGLESTRIP, 
-//									pVertGen->GetUIFillVertsVB()->dwFirstElementOffset,
-									pVertGen->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFillVB )->dwFirstElementOffset,
-									2 );
+					pVRAMMan->SetTexture(INVALID_TEX_HANDLE, 0);
+					pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+					pDev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+					pDev->SetFVF(D3DFVF_UICOLOURVERT);
+					pDev->DrawPrimitive(
+						D3DPT_TRIANGLESTRIP,
+						//									pVertGen->GetUIFillVertsVB()->dwFirstElementOffset,
+						pVertGen->GetPredefinedDynamicBuffer(CVertexGenerator::ePDBT_UIFillVB)->dwFirstElementOffset,
+						2);
 				}
 			}
 			else
