@@ -695,7 +695,10 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 						pAdapter->adapterID.Description );
 
 	pAdapter->hMonitor = m_pD3D9->GetAdapterMonitor( iAdapter );
-	MONITORINFO lpmi;
+
+	// BT - 10/17 Fixing the DX GetAdapterMonitor failed error. 
+	MONITORINFOEX lpmi;
+	lpmi.cbSize = sizeof(lpmi);
 	if (!GetMonitorInfo(pAdapter->hMonitor,&lpmi)) {
 		m_pLogFile->OutputString("DX GetAdapterMonitor failed!\n");
 		pAdapter->hMonitor = getPrimaryMonitor();
