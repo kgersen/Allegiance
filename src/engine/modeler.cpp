@@ -674,7 +674,8 @@ public:
         ZString  str    = GetString((IObject*)stack.Pop());
         bool     b      = GetBoolean((IObject*)stack.Pop());
 
-        TRef<ZFile> zf = m_pmodeler->GetFile(str,"",true);
+		// BT - 10/17 - HighRes Textures
+        TRef<ZFile> zf = m_pmodeler->GetFile(str,"",true, m_pmodeler->GetUseHighResTextures());
 		ZFile * pFile = (ZFile*) zf;
 		
 		D3DXIMAGE_INFO fileInfo;
@@ -2158,11 +2159,13 @@ private:
 	bool					m_bHintColorKey;			// Surface requires colour keying.
 	bool					m_bHintSystemMemory;
 	bool					m_bHintUIImage;
+	bool					m_bUseHighResTextures;
 
 public:
     ModelerImpl(Engine* pengine) :
         m_pengine(pengine),
-        m_pathStr(".")
+        m_pathStr("."),
+		m_bUseHighResTextures(true) // BT - 10/17 - HighRes Textures
 		{
         m_psite = new ModelerSiteImpl();
         InitializeNameSpace();
@@ -2407,7 +2410,19 @@ public:
         return m_pengine;
 	}
 
-	TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
+	// BT - 10/17 - HighRes Textures
+	void SetHighResTextures(bool bUseHighResTextures)
+	{
+		m_bUseHighResTextures = bUseHighResTextures;
+	}
+
+	// BT - 10/17 - HighRes Textures
+	bool GetUseHighResTextures()
+	{
+		return m_bUseHighResTextures;
+	}
+
+	TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError, bool getHighresVersion)
 	{
 		ZString strExtension = pathStr.GetExtension();
 		ZString strToTryOpen;// yp Your_Persona October 7 2006 : TextureFolder Patch
@@ -2463,7 +2478,8 @@ public:
 		}
 
 		// yp Your_Persona October 7 2006 : TextureFolder Patch
-		if ((pfile == NULL) &&
+		// BT - 10/17 - HighRes Textures
+		if ((pfile == NULL) && getHighresVersion == true &&
 			(strToTryOpen.Right(7) == "bmp.mdl")) // if its a texture, try loading from the strToTryOpen
 		{
 			pfile = new ZFile(strToTryOpen, OF_READ | OF_SHARE_DENY_WRITE);
@@ -2533,9 +2549,10 @@ public:
 		return pfile->IsValid() ? pfile : NULL;
 	}
 
-    TRef<ZFile> LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
+	// BT - 10/17 - HighRes Textures
+    TRef<ZFile> LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError, bool highRes)
     {
-        return GetFile(pathStr, strExtensionArg, bError);
+        return GetFile(pathStr, strExtensionArg, bError, highRes);
     }
 
 
@@ -2572,7 +2589,13 @@ public:
         // Is the image already loaded?
         //
 
-        TRef<INameSpace> pns = GetCachedNameSpace(str);
+		// BT - 10/17 - HighRes Textures
+		ZString namespaceName = str;
+
+		if (m_bUseHighResTextures == true)
+			namespaceName += "-highres";
+
+        TRef<INameSpace> pns = GetCachedNameSpace(namespaceName);
 
         if (pns) {
             TRef<ConstantImage> pimage; CastTo(pimage, (Value*)pns->FindMember(str));
@@ -2659,7 +2682,7 @@ public:
         bool& bAnimation,
         bool bError
     ) {
-        TRef<ZFile> pfile = GetFile(pathStr, "x", bError);
+        TRef<ZFile> pfile = GetFile(pathStr, "x", bError, false); // BT - 10/17 - HighRes Textures
 
         if (pfile) {
             return ::ImportXFile(this, pfile, pnumberFrame, bAnimation);
@@ -2696,39 +2719,62 @@ public:
 
         return NULL;
     }
-
+	
     INameSpace* GetNameSpace(const ZString& str, bool bError, bool bSystemMem)
     {
-        TRef<INameSpace> pns = GetCachedNameSpace(str);
+		// BT - 10/17 - HighRes Textures
+		TRef<INameSpace> pns;
+		
+		ZString namespaceName = str;
 
-        if (pns) {
-            return pns;
-        }
-
-        TRef<ZFile> pfile = GetFile(str, "mdl", bError);
-
-
-        if (pfile != NULL) 
+		// if it's something that could have a high-res version...
+		if (str.Right(3) == "bmp")
 		{
-			bool bOriginalValue = SetSystemMemoryHint( bSystemMem );
-            if (*(DWORD*)pfile->GetPointer(false, false) == MDLMagic) {
-                if (g_bMDLLog) {
-                    ZDebugOutput("Reading Binary MDL file '" + str + "'\n");
-                }
-                pns = CreateBinaryNameSpace(str, this, pfile);
-            } else {
-                if (g_bMDLLog) {
-                    ZDebugOutput("Reading Text MDL file '" + str + "'\n");
-                }
-                pns = ::CreateNameSpace(str, this, pfile);
-            }
+			if (m_bUseHighResTextures == true)
+			{
+				namespaceName += "-highres";
+				pns = GetCachedNameSpace(str + "-highres");
+			}
+			else
+			{
+				pns = GetCachedNameSpace(str);
+			}
+		}
+		else
+		{
+			pns = GetCachedNameSpace(str);
+		}
 
-			SetSystemMemoryHint( bOriginalValue );
-            m_mapNameSpace.Set(str, pns);
-            return pns;
-        }
+		if (pns)
+			return pns;
 
-        return NULL;
+
+		TRef<ZFile> pfile = GetFile(str, "mdl", bError, m_bUseHighResTextures);
+
+
+		if (pfile != NULL)
+		{
+			bool bOriginalValue = SetSystemMemoryHint(bSystemMem);
+			if (*(DWORD*)pfile->GetPointer(false, false) == MDLMagic) {
+				if (g_bMDLLog) {
+					ZDebugOutput("Reading Binary MDL file '" + str + "'\n");
+				}
+				pns = CreateBinaryNameSpace(namespaceName, this, pfile);
+			}
+			else {
+				if (g_bMDLLog) {
+					ZDebugOutput("Reading Text MDL file '" + str + "'\n");
+				}
+				pns = ::CreateNameSpace(namespaceName, this, pfile);
+			}
+
+			SetSystemMemoryHint(bOriginalValue);
+			m_mapNameSpace.Set(namespaceName, pns);
+			return pns;
+		}
+
+		return NULL;
+
     }
 
     void UnloadNameSpace(const ZString& str)
