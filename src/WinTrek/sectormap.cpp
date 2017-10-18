@@ -399,7 +399,7 @@ public:
 
     void Render(Context* pcontext)
     {
-		pcontext->SetBlendMode(BlendModeSource); //Imago 7/15/09
+		pcontext->SetBlendMode(BlendModeSourceAlpha); //Imago 7/15/09
 
         // draw the background
         Surface* psurfaceBackground = m_pimageBkgnd->GetSurface();

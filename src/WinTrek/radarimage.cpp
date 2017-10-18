@@ -255,7 +255,7 @@ public:
         }
 
 #if (DIRECT3D_VERSION >= 0x0800)
-		pcontext->SetBlendMode(BlendModeSource); //imago 7/15/09
+		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/15/09
         CD3DDevice9::Get()->SetRenderState( D3DRS_MULTISAMPLEANTIALIAS, FALSE );
 #endif
         pcontext->DrawImage3D(psurface, Rect(       0,        0, xsizeMid, ysizeMid), color, true, Point(-delta, -delta));
@@ -1094,7 +1094,7 @@ public:
     {
         pcontext->PushState ();
         pcontext->SetClipping (false);
-        pcontext->SetBlendMode (BlendModeSource);
+        pcontext->SetBlendMode (BlendModeSourceAlpha);
         pcontext->DrawLines(m_vertices, m_indices);
         pcontext->PopState ();
     }

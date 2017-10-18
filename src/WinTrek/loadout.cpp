@@ -456,7 +456,7 @@ public:
         TRef<Context> pcontext = pSurface->GetContext();
 
         if (pcontext) {
-            pcontext->SetBlendMode(BlendModeSource);
+            pcontext->SetBlendMode(BlendModeSourceAlpha);
 
             float bright = 0.5f;
 			// EF5P

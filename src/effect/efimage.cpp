@@ -239,7 +239,7 @@ public:
     void Render(Context* pcontext)
     {
         WrapImage::Render(pcontext);
-        pcontext->SetBlendMode(BlendModeSource);
+        pcontext->SetBlendMode(BlendModeSourceAlpha);
         pcontext->FillRect(GetBounds().GetRect(), GetColor()->GetValue());
     }
 };
@@ -529,7 +529,7 @@ public:
         #endif
         pcontext->SetShadeMode(ShadeModeGlobalColor);
 		pcontext->SetGlobalColor( Color::White() );
-		pcontext->SetBlendMode( BlendModeSource );
+		pcontext->SetBlendMode( BlendModeSourceAlpha );
 
         TList<PosterData, DefaultNoEquals>::Iterator iter(m_list);
 

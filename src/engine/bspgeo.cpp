@@ -177,7 +177,7 @@ public:
                 pcontext->TransformEyeToLocal(Vector(0, 0, 0))
             )
         );
-        pcontext->SetBlendMode(BlendModeSource);
+        pcontext->SetBlendMode(BlendModeSourceAlpha);
         pcontext->SetCullMode(CullModeNone);
         pcontext->DrawTriangles(m_vvertex, m_vindex);
     }

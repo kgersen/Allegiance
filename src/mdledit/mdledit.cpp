@@ -424,7 +424,7 @@ public:
             */
 
             pcontext->Translate(Point(50, 50));
-            pcontext->SetBlendMode(BlendModeSource);
+            pcontext->SetBlendMode(BlendModeSourceAlpha);
             pcontext->DrawImage3D(m_psurfaceIcon, Color(1, 0.5f, 0.5f), true);
         }
 
