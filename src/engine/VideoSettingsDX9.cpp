@@ -136,7 +136,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 		HMONITOR hMon = MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTOPRIMARY);
 		HKEY hKey;
 		//load preferences when not using dialog
-		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey))
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, lpSubKey, 0, KEY_READ, &hKey))
         {
             DWORD dwSize = 4;
             DWORD dwType = REG_DWORD;
@@ -761,7 +761,7 @@ int Read3DRegistrySettings( SAdditional3DRegistryData * pRegData, LPCSTR lpSubKe
 	HKEY hKey;
 	int iRetVal = 0;
 	DWORD dwDataSize, dwBoolValue;
-	if( ERROR_SUCCESS == ::RegOpenKeyEx(	HKEY_LOCAL_MACHINE,
+	if( ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER,
 											lpSubKey,
 											0,
 											KEY_READ,
@@ -852,7 +852,7 @@ int Write3DRegistrySettings( LPCSTR lpSubKey )
 	HKEY hKey;
 	int iRetVal = 0;
 	DWORD dwDisposition;
-	if( ERROR_SUCCESS == ::RegCreateKeyEx(	HKEY_LOCAL_MACHINE, 
+	if( ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
 											lpSubKey,
 											0, 
 											"",

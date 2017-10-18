@@ -15,9 +15,9 @@
 #include "main.h"
 #include "regkey.h"
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 #include "VideoSettingsDX9.h"
-// BUILD_DX9
+#endif
 
 extern bool g_bEnableSound = true;
 extern bool bStartTraining   = false;
@@ -244,7 +244,7 @@ bool CheckForAllGuard()
 
   // Get the ArtPath, since that's where AllGuard.exe should be
   HKEY hKey = NULL;
-  if (ERROR_SUCCESS != ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+  if (ERROR_SUCCESS != ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
     return true; // If it can't be read, just keep running
   char szArtPath[_MAX_PATH];
   DWORD cbArtPath = sizeof(szArtPath);
@@ -428,7 +428,7 @@ public:
           DWORD cbValue = MAX_PATH;
 
           // NOTE: please keep reloader.cpp's GetArtPath() in sync with this!!!
-          if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+          if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
           {
               // Get MoveInProgress from registry
               if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MoveInProgress", NULL, &dwType, (unsigned char*)&szValue, &cbValue) &&
@@ -503,10 +503,11 @@ public:
         // Fix success HRESULT
         hr = S_OK;
 
-// BUILD_DX9
+		// DXHACKS - this could cause issues now?
+#if (DIRECT3D_VERSION < 0x0800)
 		// For the D3D build, move this to after the window has been created, as we need a valid HWND to create the device.
-//		EffectApp::Initialize(strCommandLine);
-// BUILD_DX9
+		EffectApp::Initialize(strCommandLine);
+#endif 
 
         //
         // get the artpath
@@ -521,7 +522,7 @@ public:
         DWORD cbValue = MAX_PATH;
 
         // NOTE: please keep reloader.cpp's GetArtPath() in sync with this!!!
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             // Get the art path from the registry
             if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
@@ -619,10 +620,10 @@ public:
 		debugf("Running %s %s\nArtpath: %s\nCommand line: %s\n", (PCC) vi.GetInternalName(), 
 			(PCC) vi.GetStringValue("FileVersion"),(PCC) pathStr, (PCC) strCommandLine);
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION < 0x0800)
 		// Now set later for D3D build, as modeller isn't valid yet.
-		//GetModeler()->SetArtPath(pathStr);
-// BUILD_DX9
+		GetModeler()->SetArtPath(pathStr);
+#endif 
  		UTL::SetArtPath(pathStr);
 		
 		/*{
@@ -645,13 +646,13 @@ public:
           }
         }*/
 
-// BUILD_DX9
-        //
-        // load the fonts
-        //
+#if (DIRECT3D_VERSION < 0x0800)
+		//
+		// load the fonts
+		//
 
-//        TrekResources::Initialize(GetModeler());
-// BUILD_DX9
+		TrekResources::Initialize(GetModeler());
+#endif // BUILD_DX9
 
         //
         // Initialize the runtime
@@ -829,13 +830,14 @@ public:
         // Create the window
         //
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 		// Ask the user for video settings. -- 
 		//   -adapter switch added for the needy
 		//   Raise dialog only if "Safe Mode" activated (any software/primary/secondary switches sent) 
 		// imago 6/29/09 7/1/09 removed hardware, asgs sends this under normal conditions
 		// BT - 10/17 - Force the client to launch windowed, then we'll take it full screen later. 
-		bool bRaise = (bSoftware || bPrimary || bSecondary) ? true : false;
+		//bool bRaise = (bSoftware || bPrimary || bSecondary) ? true : false;
+		bool bRaise = false; // BT - 10/17 - The video picker no longer creates devices that work with the create texture D3D functions. This may be from me forcing it to load windowed and then pulling it full screen. However, starting windowed and then pulling full screen seems to have fixed a whole bunch of start up issues. 
 		if( PromptUserForVideoSettings(false, bRaise, iUseAdapter, GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT) == false )
 		{
 			return E_FAIL;
@@ -854,18 +856,19 @@ public:
                 bPrimary,
                 bSecondary
             );
-// #else
-        //TRef<TrekWindow> pwindow = 
-        //    TrekWindow::Create(
-        //        this, 
-        //        strCommandLine,
-        //        bMovies,
-        //        bSoftware,
-        //        bHardware,
-        //        bPrimary,
-        //        bSecondary
-        //    );
-// BUILD_DX9
+ #else
+        TRef<TrekWindow> pwindow = 
+            TrekWindow::Create(
+                this, 
+                strCommandLine,
+				pathStr,
+                bMovies,
+                bSoftware,
+                bHardware,
+                bPrimary,
+                bSecondary
+            );
+#endif
 
         if (!pwindow->IsValid()) {
             return E_FAIL;

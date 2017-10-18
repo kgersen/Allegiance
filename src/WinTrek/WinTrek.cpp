@@ -142,6 +142,8 @@ void DummyPackCreateCallback( int iCurrentFileIndex, int iMaxFileIndex )
 		GetWindow()->RestoreCursor();
 	}
 }
+
+#if (DIRECT3D_VERSION >= 0x0800)
 DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 {
 	ZString strArtwork = ZString(UTL::artworkPath()); //duh
@@ -149,11 +151,12 @@ DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
 	textures.Create( DummyPackCreateCallback );
 	return 0;
 }
-
+#endif
 
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	
+#if (DIRECT3D_VERSION >= 0x0800)
 	//windowed 7/10 #112
 	PlayVideoInfo * pData = (PlayVideoInfo*)param;
 	DDVideo *DDVid = new DDVideo();
@@ -207,6 +210,8 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 
 	if (bHide)
 		::DestroyWindow(hwndFound);
+
+#endif
 
 	return 0;
 }
@@ -1173,6 +1178,11 @@ public:
     TRef<ModifiableNumber>  m_pnumberTeamPaneCollapsed;
     TRef<WrapNumber>        m_pwrapNumberStyleHUD;
 
+	// #294 - Turkey
+	TRef<ModifiableNumber>		m_pnumberChatLinesDesired;
+	TRef<ModifiableNumber>		m_pnumberChatLines;
+	TRef<WrapNumber>			m_pwrapNumberChatLines;
+
     //
     // exports
     //
@@ -1190,7 +1200,7 @@ public:
     // Screens
     //
 
-    TRef<Image>				m_pimageScreen;
+    TRef<Image>          m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
 	TRef<MatrixTransform2> m_pMatrixTransformScreen;
@@ -1289,13 +1299,15 @@ public:
     ViewMode            m_viewmode;
     OverlayMask         m_voverlaymask[c_cViewModes];
     bool                m_bOverlaysChanged;
+	bool				m_bShowSectorMapPane;
+	bool				m_bShowInventoryPane;
 
 
     //
     // chase view stuff
     //
 
-    #define ARRAY_OF_SAMPLES_SIZE  128
+    #define ARRAY_OF_SAMPLES_SIZE  4092 // BT - 8/17 - Was 128. Fixing sample under-run issues. Dx9 takes way more samples than Dx7 did, especially when zoomed out. 
     struct  TurnRateSample
     {
         float   fTurnRate[3];
@@ -1329,6 +1341,7 @@ public:
     TRef<IMenuItem>            m_pitemToggleDebris;
     TRef<IMenuItem>            m_pitemToggleStars;
     TRef<IMenuItem>            m_pitemToggleEnvironment;
+	TRef<IMenuItem>			   m_pitemToggleHighResTextures; // BT - 10/17 - HighRes Textures
     TRef<IMenuItem>            m_pitemToggleRoundRadar;
     TRef<IMenuItem>            m_pitemToggleLinearControls;
     TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
@@ -1361,6 +1374,8 @@ public:
     TRef<IMenuItem>            m_pitemFilterChatsToAll;
     TRef<IMenuItem>            m_pitemFilterQuickComms;
     TRef<IMenuItem>            m_pitemFilterLobbyChats;
+	TRef<IMenuItem>			   m_pitemIncreaseChatLines;	// #294 - Turkey
+	TRef<IMenuItem>			   m_pitemReduceChatLines;		// #294 - Turkey
     TRef<IMenuItem>            m_pitemSoundQuality;
     TRef<IMenuItem>            m_pitemToggleSoundHardware;
     TRef<IMenuItem>            m_pitemToggleDSound8Usage;
@@ -1432,6 +1447,9 @@ public:
 
     DWORD m_cVTVersion;
     HWND  m_hwndVTEdit;
+
+	// BT - 10/17 - HighRes Textures
+	bool m_bUseHighResTextures;
 
     //
     // Input
@@ -2328,6 +2346,7 @@ public:
                     break;
 
 				case ScreenIDSplashScreen:
+#if (DIRECT3D_VERSION >= 0x0800)
 					{
 						//Imago 6/29/09 7/28/09 dont allow intro vid on nonprimary
 						HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
@@ -2404,6 +2423,11 @@ public:
 						SetUiScreen(CreateIntroScreen(GetModeler()));
 	                    break;
 					}
+#else
+					SetScreen(CreateVideoScreen(GetModeler(), true));
+					SetCursorImage(Image::GetEmpty());
+					break;
+#endif
 
 
                 case ScreenIDTrainScreen:
@@ -2593,6 +2617,8 @@ public:
 	{
 		HANDLE hDDVidThread = 0;
 
+#if (DIRECT3D_VERSION >= 0x0800)
+
 		if (!g_bQuickstart && playMovies && !g_bReloaded && !isSoftware &&
 			::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
 			!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
@@ -2615,101 +2641,111 @@ public:
 			}
 		}
 
+#endif
+
 		return hDDVidThread;
 	}
 
-    TrekWindowImpl(
-        EffectApp*     papp,
-        const ZString& strCommandLine,
-// BUILD_DX9
+	TrekWindowImpl(
+		EffectApp*     papp,
+		const ZString& strCommandLine,
+		// BUILD_DX9
 		const ZString& strArtPath,
-// BUILD_DX9
-        bool           bMovies,
-        bool           bSoftware,
-        bool           bHardware,
-        bool           bPrimary,
-        bool           bSecondary
-    ) :
-// BUILD_DX9
-        TrekWindow(
-            papp,
-            strCommandLine,
-            false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized. Trying to find the source of the mystery "crash on launch" issues.
+		// BUILD_DX9
+		bool           bMovies,
+		bool           bSoftware,
+		bool           bHardware,
+		bool           bPrimary,
+		bool           bSecondary
+	) :
+#if (DIRECT3D_VERSION >= 0x0800)
+		TrekWindow(
+			papp,
+			strCommandLine,
+			false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized. Trying to find the source of the mystery "crash on launch" issues.
 			WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
-					0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
-					CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
-									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
-					CD3DDevice9::Get()->GetCurrentMode()->mode.Height +
-									CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
-              WinPoint(800, 600)
-        ),
+				0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
+				CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
+				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+				CD3DDevice9::Get()->GetCurrentMode()->mode.Height +
+				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
+			WinPoint(800, 600)
+		),
 
-/*
-        TrekWindow(
-            papp,
-            strCommandLine,
-            true,
-            WinRect(0, 0, 800, 600),
-            WinPoint(640, 480)
-        ),
-*/
-// BUILD_DX9
-        m_screen(ScreenIDSplashScreen),
-        m_bShowMeteors(true),
-        m_bShowStations(true),
-        m_bShowProjectiles(true),
-        m_bShowAlephs(true),
-        m_bShowShips(true),
-        m_bBidirectionalLighting(true),
-        m_color(Color::White()),
-        m_colorAlt(Color::White()),
-        m_ambientLevel(0),
-        m_ambientLevelBidirectional(0),
-        m_frameID(0),
-        m_timeLastFrame(Time::Now()),
-        m_timeLastDamage(Time::Now()),
-        m_cm(cmCockpit),
-        m_cmOld(cmCockpit),
-        m_timeRejectQueuedCommand(0),
-        m_cmPreviousCommand(cmExternalCommandView34),
-        m_bPreferChaseView (false),
-        m_distanceExternalCamera(s_fExteralViewDistanceDefault),
-        m_distanceCommandCamera(s_fCommandViewDistanceDefault),
-        m_rollCommandCamera(0.0f),
-        m_bEnableDisplacementCommandView (true),
-        m_suicideCount(0),
-        m_bLensFlare(true),
-        m_bRoundRadar(false),
-        m_bLinearControls (true),
-        m_bMusic(false),
-        m_bCommandGrid(false),
-        m_radarCockpit(RadarImage::c_rlDefault),
-        m_radarCommand(RadarImage::c_rlAll),
-        m_musicId(NA),
-        m_viewmode(vmUI),
-        m_bOverlaysChanged(false),
-        m_pszCursor(AWF_CURSOR_DEFAULT),
-        m_nLastCountdown(c_nCountdownMax),
-        m_ctLobbyChat(CHAT_EVERYONE),
-        m_bTrackCommandView(false),
-        m_bQuitComposing(true),
-        m_bEnableVirtualJoystick(false),
-        m_bFlipY(false),
-        m_bEnableFeedback(true),
-        m_aabmInvest(0),
-        m_aabmCommand(0),
-        //Imago 7/10
-        m_bFFAutoCenter(false),
-		m_iMouseAccel(0) //#215
+#else
+		TrekWindow(
+			papp,
+			strCommandLine,
+			true,
+			WinRect(0, 0, 800, 600),
+			WinPoint(640, 480)
+		),
+#endif
+
+		m_screen(ScreenIDSplashScreen),
+		m_bShowMeteors(true),
+		m_bShowStations(true),
+		m_bShowProjectiles(true),
+		m_bShowAlephs(true),
+		m_bShowShips(true),
+		m_bBidirectionalLighting(true),
+		m_color(Color::White()),
+		m_colorAlt(Color::White()),
+		m_ambientLevel(0),
+		m_ambientLevelBidirectional(0),
+		m_frameID(0),
+		m_timeLastFrame(Time::Now()),
+		m_timeLastDamage(Time::Now()),
+		m_cm(cmCockpit),
+		m_cmOld(cmCockpit),
+		m_timeRejectQueuedCommand(0),
+		m_cmPreviousCommand(cmExternalCommandView34),
+		m_bPreferChaseView(false),
+		m_distanceExternalCamera(s_fExteralViewDistanceDefault),
+		m_distanceCommandCamera(s_fCommandViewDistanceDefault),
+		m_rollCommandCamera(0.0f),
+		m_bEnableDisplacementCommandView(true),
+		m_suicideCount(0),
+		m_bLensFlare(true),
+		m_bRoundRadar(false),
+		m_bLinearControls(true),
+		m_bMusic(false),
+		m_bCommandGrid(false),
+		m_radarCockpit(RadarImage::c_rlDefault),
+		m_radarCommand(RadarImage::c_rlAll),
+		m_musicId(NA),
+		m_viewmode(vmUI),
+		m_bOverlaysChanged(false),
+		m_pszCursor(AWF_CURSOR_DEFAULT),
+		m_nLastCountdown(c_nCountdownMax),
+		m_ctLobbyChat(CHAT_EVERYONE),
+		m_bTrackCommandView(false),
+		m_bQuitComposing(true),
+		m_bEnableVirtualJoystick(false),
+		m_bFlipY(false),
+		m_bEnableFeedback(true),
+		m_aabmInvest(0),
+		m_aabmCommand(0),
+		//Imago 7/10
+		m_bFFAutoCenter(false),
+		m_iMouseAccel(0), //#215
+		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+		m_bUseHighResTextures(true) // BT - 10/17 - HighRes Textures
 
     {
         HRESULT hr;
 
 		debugf("Setting up TrekWindow\n");
 
-// BUILD_DX9
+		// DXHACKS - Could cause issues...
+#if (DIRECT3D_VERSION >= 0x0800)
 		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
-		papp->Initialize( strCommandLine, GetHWND() );
+		papp->Initialize(strCommandLine, GetHWND());
+#else
+		//papp->Initialize(strCommandLine);
+#endif
+		
 		m_pengine = papp->GetEngine();
 		m_pmodeler = papp->GetModeler();
 
@@ -2740,10 +2776,11 @@ public:
 
 		debugf("performing PostWindowCreationInit.\n");
 
+#if (DIRECT3D_VERSION >= 0x0800)
 		// Perform post window creation initialisation. Initialise the time value.
 		PostWindowCreationInit( );
 		InitialiseTime();
-// BUILD_DX9
+#endif
 
         if (!IsValid()) {
             return;
@@ -2841,6 +2878,10 @@ public:
             )
         );
 
+		// #294 - Turkey 
+		m_pnumberChatLinesDesired = new ModifiableNumber(0);
+		pnsGamePanes->AddMember("NumChatLines", m_pwrapNumberChatLines = new WrapNumber(m_pnumberChatLines = new ModifiableNumber(0)));
+
         pnsGamePanes->AddMember("Flash", m_pnumberFlash = new ModifiableNumber(0));
         pnsGamePanes->AddMember("TeamPaneCollapsed", m_pnumberTeamPaneCollapsed = new ModifiableNumber(0));
         pnsGamePanes->AddMember("IsGhost", m_pnumberIsGhost = new ModifiableNumber(0));
@@ -2918,12 +2959,13 @@ public:
 
         InitializeImages();
 		
+#if (DIRECT3D_VERSION >= 0x0800)
 		if (hDDVidThread != NULL) { //imago 7/29/09 intro.avi
 			if (!CD3DDevice9::Get()->IsWindowed()) {
 				CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
 			}
 		}
-		
+#endif
 
         //
         // initialize the sound engine (for the intro music if nothing else)
@@ -2973,16 +3015,14 @@ public:
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
+		// BT - 10/17 - HighRes Textures
+		m_bUseHighResTextures    = (LoadPreference("HighResTextures",		1) != 0);
+
+		m_pmodeler->SetHighResTextures(m_bUseHighResTextures);
+
         //
         // Initial screen size
         //
-		//{
-		//	// BT - 10/17 - Check if Allegiance should run windowed or not... This happens after allegiance has 
-		//	// already initialized to a window and gotten its fonts loaded.
-		//	bool startFullScreen = true;
-		//	ParseCommandLine(strCommandLine, startFullScreen);
-		//	m_bFullScreen = new ModifiableBoolean(startFullScreen);
-		//}
 
 		{
 			int x, y;
@@ -3257,7 +3297,15 @@ public:
 	    if (LoadPreference("VirtualJoystick", TRUE)) // BT - 10/17 - Enable virtual JS by default, not many people have joysticks now-a-days.
 			ToggleVirtualJoystick();
 
+#if (DIRECT3D_VERSION < 0x0800)
+		// For DX7, we need to preset the max texture size, or the code will go into an infinate loop on some launches.
+		ToggleMaxTextureSize(LoadPreference("MaxTextureSize", 1));// yp Your_Persona August 2 2006 : MaxTextureSize Patch
+#endif 
+
 		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
+
+		// #294 - Turkey
+		SetChatLines(LoadPreference("ChatLines", 10));
 
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
@@ -3309,6 +3357,8 @@ public:
 		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
+
+#if (DIRECT3D_VERSION >= 0x0800)
     	if (hDDVidThread != NULL) {
 			WaitForSingleObject(hDDVidThread,INFINITE);
 			CloseHandle(hDDVidThread);
@@ -3317,7 +3367,7 @@ public:
 			HKEY    hKey;
 			DWORD   dwHasSeenMovie = 0;
 			DWORD dwDataSize = sizeof(dwHasSeenMovie);
-			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_ALL_ACCESS, &hKey))
+			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_ALL_ACCESS, &hKey))
 			{
 				RegQueryValueExA(hKey, "HasSeenMovie", NULL, NULL, (LPBYTE)&dwHasSeenMovie, &dwDataSize);
 
@@ -3349,7 +3399,9 @@ public:
 
 			if (!CD3DDevice9::Get()->IsWindowed())
 				::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
-		}    
+		}  
+
+#endif
     }
 
     void InitializeImages()
@@ -3399,7 +3451,7 @@ public:
     {
         HKEY hKey;
 
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
                 0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
         {
             ::RegSetValueEx(hKey, szName, NULL, REG_DWORD, (const BYTE*)&dwValue, sizeof(dwValue));
@@ -3413,9 +3465,9 @@ public:
         DWORD dwResult = dwDefault;
 
 		// mmf lets actually load it instead of creating it
-        // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+        // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
         //        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
-		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
                 0, KEY_READ, &hKey))
         {
             DWORD dwSize = sizeof(dwResult);
@@ -3435,7 +3487,7 @@ public:
     {
         HKEY hKey;
 
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
                 0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
         {
             ::RegSetValueEx(hKey, szName, NULL, REG_SZ,
@@ -3450,9 +3502,9 @@ public:
         ZString strResult = strDefault;
 
 		// mmf lets actually load it instead of creating it
-        //if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+        //if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
         //        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
-		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
                 0, KEY_READ, &hKey))
         {
             const int nMaxStrLen = 2048;
@@ -3732,8 +3784,8 @@ public:
         UpdateMusic();
     }
 
-    void UpdateBackdropCentering()
-    {
+	void UpdateBackdropCentering()
+	{
 		//kg- #226 - todo -factorize with above code
 		if (m_pimageScreen)
 		{
@@ -3759,7 +3811,7 @@ public:
 				m_pMatrixTransformScreen->SetValue(matrix);
 			}
 		}
-    }
+	}
 
 	void contextAcceptPlayer()
 	{
@@ -3805,6 +3857,32 @@ public:
 	void contextMute()
 	{
 		contextPlayerInfo->SetMute(!contextPlayerInfo->GetMute());
+	}
+
+	// BT - STEAM - Enable moderators to ban players by context menu.
+	void contextKickPlayer()
+	{
+		char szMessageParam[CB_ZTS];
+		lstrcpy(szMessageParam, "You have been moved to NOAT by an administrator.");
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_SIDE)
+			FM_VAR_PARM(szMessageParam, CB_ZTS)
+			END_PFM_CREATE
+			pfmQuitSide->shipID = contextPlayerInfo->ShipID();
+		pfmQuitSide->reason = QSR_SwitchingSides;
+	}
+
+	// BT - STEAM - Enable moderators to ban players by context menu.
+	void contextBanPlayer()
+	{
+		char szMessageParam[CB_ZTS];
+		lstrcpy(szMessageParam, "You have been banned from this game an administrator.");
+		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+		BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_MISSION)
+			FM_VAR_PARM(szMessageParam, CB_ZTS)
+			END_PFM_CREATE
+			pfmQuitSide->shipID = contextPlayerInfo->ShipID();
+		pfmQuitSide->reason = QSR_AdminBooted;
 	}
 	
 	void contextDockDrone() //Xynth #48 8/2010
@@ -4009,6 +4087,10 @@ public:
     #define idmBandwidth		       634 // w0dk4 June 2007: Bandwith Patch */
     #define	idmMuteFilterOptions		 635 //TheBored 30-JUL-07: Filter Unknown Chat patch
     #define idmFilterUnknownChats		 636 //TheBored 30-JUL-07: Filter Unknown Chat patch
+	#define idmScrollbar				 637 // #294 - Turkey
+	#define idmIncreaseChatLines		 638 // #294 - Turkey
+	#define idmReduceChatLines			 639 // #294 - Turkey
+	#define idmCycleTimestamp			 640 // #294 - Turkey
 
     #define idmResetSound           701
     #define idmSoundQuality         702
@@ -4053,6 +4135,8 @@ public:
 	#define idmMouseAccel		820
 	#define idmWheelDelay		821 //Spunky #282
 
+	#define idmHighResTextures	822	// BT - 10/17 - HighRes Textures
+
 	// BT - STEAM
 	#define idmCallsignTag0		900
 	#define idmCallsignTag1		901
@@ -4072,6 +4156,10 @@ public:
 	#define idmToken2			922
 	#define idmToken3			923
 	#define idmToken4			924
+
+	// BT - STEAM - New player context menu options
+	#define idmContextKickPlayer	1000
+	#define idmContextBanPlayer		1001
 	
 	/* SR: TakeScreenShot() grabs an image of the screen and saves it as a 24-bit
 	 * bitmap. Filename is determined by the user's local time.
@@ -4079,70 +4167,74 @@ public:
 	 */
 	void TakeScreenShot()
 	{
-		//capturing screen size this way (instead of using a native GDI call) will create
-		//windowed screen shots which look like they were taken with the game running
-		//in full screen mode.
-		Point currentResolution = GetRenderRectValue()->GetValue().Size();
-		int screenX = currentResolution.X();
-		int screenY = currentResolution.Y();
+		// BT - STEAM - When the user attempts to take a screen shot inside of Alleg, trigger the steam overlay to do it instead.
+		SteamScreenshots()->TriggerScreenshot();
+		return; 
 
-		HDC hDesktopDC = GetDC();
-		HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
-		void* DIBBitValues;
-		BITMAPINFO bmpInfo = {0};
+		////capturing screen size this way (instead of using a native GDI call) will create
+		////windowed screen shots which look like they were taken with the game running
+		////in full screen mode.
+		//Point currentResolution = GetRenderRectValue()->GetValue().Size();
+		//int screenX = currentResolution.X();
+		//int screenY = currentResolution.Y();
 
-		//build up the BITMAPINFOHEADER
-		bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		bmpInfo.bmiHeader.biWidth = screenX;
-		bmpInfo.bmiHeader.biHeight = screenY;
-		bmpInfo.bmiHeader.biPlanes = 1;
-		bmpInfo.bmiHeader.biBitCount = 24;
-		bmpInfo.bmiHeader.biCompression = BI_RGB;
+		//HDC hDesktopDC = GetDC();
+		//HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
+		//void* DIBBitValues;
+		//BITMAPINFO bmpInfo = {0};
 
-		HBITMAP hCaptureBitmap = CreateDIBSection(hDesktopDC, &bmpInfo, DIB_RGB_COLORS, &DIBBitValues, NULL, NULL);
-		SelectObject(hCaptureDC, hCaptureBitmap);
-		BitBlt(hCaptureDC, 0, 0, screenX, screenY, hDesktopDC, 0, 0, SRCCOPY);
+		////build up the BITMAPINFOHEADER
+		//bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		//bmpInfo.bmiHeader.biWidth = screenX;
+		//bmpInfo.bmiHeader.biHeight = screenY;
+		//bmpInfo.bmiHeader.biPlanes = 1;
+		//bmpInfo.bmiHeader.biBitCount = 24;
+		//bmpInfo.bmiHeader.biCompression = BI_RGB;
 
-		//populates bmpInfo.bmiHeader.biSizeImage with the actual size
-		GetDIBits(hDesktopDC, hCaptureBitmap, 0, 0, NULL, &bmpInfo, DIB_RGB_COLORS);
+		//HBITMAP hCaptureBitmap = CreateDIBSection(hDesktopDC, &bmpInfo, DIB_RGB_COLORS, &DIBBitValues, NULL, NULL);
+		//SelectObject(hCaptureDC, hCaptureBitmap);
+		//BitBlt(hCaptureDC, 0, 0, screenX, screenY, hDesktopDC, 0, 0, SRCCOPY);
 
-		//build up the BITMAPFILEHEADER
-		BITMAPFILEHEADER bmpFileHeader = {0};
-		bmpFileHeader.bfType = 'MB';
-		bmpFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpInfo.bmiHeader.biSizeImage;
-		bmpFileHeader.bfReserved1 = 0;
-		bmpFileHeader.bfReserved2 = 0;
-		bmpFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+		////populates bmpInfo.bmiHeader.biSizeImage with the actual size
+		//GetDIBits(hDesktopDC, hCaptureBitmap, 0, 0, NULL, &bmpInfo, DIB_RGB_COLORS);
 
-		//create a filename for our screenshot using the local time
-		SYSTEMTIME sysTimeForName;
-		GetLocalTime(&sysTimeForName);
-		ZString scrnShotName = sysTimeForName.wYear;
-		scrnShotName += "-";
-		scrnShotName += sysTimeForName.wMonth;
-		scrnShotName += "-";
-		scrnShotName += sysTimeForName.wDay;
-		scrnShotName += "_";
-		scrnShotName += sysTimeForName.wHour;
-		scrnShotName += ".";
-		scrnShotName += sysTimeForName.wMinute;
-		scrnShotName += ".";
-		scrnShotName += sysTimeForName.wSecond;
-		scrnShotName += ".";
-		scrnShotName += sysTimeForName.wMilliseconds;
-		scrnShotName += ".bmp";
+		////build up the BITMAPFILEHEADER
+		//BITMAPFILEHEADER bmpFileHeader = {0};
+		//bmpFileHeader.bfType = 'MB';
+		//bmpFileHeader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bmpInfo.bmiHeader.biSizeImage;
+		//bmpFileHeader.bfReserved1 = 0;
+		//bmpFileHeader.bfReserved2 = 0;
+		//bmpFileHeader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
-		FILE* outputFile;
-		outputFile = fopen(scrnShotName,"wb");
-		//write the BITMAPFILEHEADER, BITMAPINFOHEADER, and bimap bit values to create the *.bmp
-		fwrite(&bmpFileHeader, sizeof(BITMAPFILEHEADER), 1, outputFile);
-		fwrite(&bmpInfo.bmiHeader, sizeof(BITMAPINFOHEADER), 1, outputFile);
-		fwrite(DIBBitValues, bmpInfo.bmiHeader.biSizeImage, 1, outputFile);
-		fclose(outputFile);
+		////create a filename for our screenshot using the local time
+		//SYSTEMTIME sysTimeForName;
+		//GetLocalTime(&sysTimeForName);
+		//ZString scrnShotName = sysTimeForName.wYear;
+		//scrnShotName += "-";
+		//scrnShotName += sysTimeForName.wMonth;
+		//scrnShotName += "-";
+		//scrnShotName += sysTimeForName.wDay;
+		//scrnShotName += "_";
+		//scrnShotName += sysTimeForName.wHour;
+		//scrnShotName += ".";
+		//scrnShotName += sysTimeForName.wMinute;
+		//scrnShotName += ".";
+		//scrnShotName += sysTimeForName.wSecond;
+		//scrnShotName += ".";
+		//scrnShotName += sysTimeForName.wMilliseconds;
+		//scrnShotName += ".bmp";
 
-		ReleaseDC(hDesktopDC);
-		DeleteDC(hCaptureDC);
-		DeleteObject(hCaptureBitmap);
+		//FILE* outputFile;
+		//outputFile = fopen(scrnShotName,"wb");
+		////write the BITMAPFILEHEADER, BITMAPINFOHEADER, and bimap bit values to create the *.bmp
+		//fwrite(&bmpFileHeader, sizeof(BITMAPFILEHEADER), 1, outputFile);
+		//fwrite(&bmpInfo.bmiHeader, sizeof(BITMAPINFOHEADER), 1, outputFile);
+		//fwrite(DIBBitValues, bmpInfo.bmiHeader.biSizeImage, 1, outputFile);
+		//fclose(outputFile);
+
+		//ReleaseDC(hDesktopDC);
+		//DeleteDC(hCaptureDC);
+		//DeleteObject(hCaptureBitmap);
 	}
 
 	// BT - STEAM - TODO Move these to where the other globals are hiding?
@@ -4264,6 +4356,24 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
+	bool IsPlayerSteamModerator()
+	{
+		// The MSAlleg Steam Group ID.
+		CSteamID moderatorGroupID = ((uint64)103582791460031578);
+		int clanCount = SteamFriends()->GetClanCount();
+		bool isModerator = false;
+		for (int i = 0; i < clanCount; i++)
+		{
+			if (SteamFriends()->GetClanByIndex(i) == moderatorGroupID)
+			{
+				isModerator = true;
+				break;
+			}
+		}
+
+		return isModerator;
+	}
+
 	// YP: Add this for the rightclick lobby patch
 	void ShowPlayerContextMenu(PlayerInfo * playerInfo)
 	{
@@ -4324,6 +4434,13 @@ public:
         if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str2 , 'R');
         if(bEnableMakeLeader)	m_pmenu->AddMenuItem(idmContextMakeLeader , str3 , 'L');
         if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');		
+
+		// BT - STEAM - Enable moderators to ban players by context menu.
+		if (IsPlayerSteamModerator())
+		{
+			m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
+			m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
+		}
 		
 		Point popupPosition = GetMousePosition();
 
@@ -4397,7 +4514,9 @@ public:
 			}
 		}
 
-		if (bEnableDock || bEnableChat ||bEnableReject || bEnableAccept)  //Xynth #205 8/2010 Will need || for any other menu options.  
+		bool bSteamModerator = IsPlayerSteamModerator();
+
+		if (bEnableDock || bEnableChat ||bEnableReject || bEnableAccept || bSteamModerator)  //Xynth #205 8/2010 Will need || for any other menu options.  
 						  //The point is don't create the menu if nothing is on it
 		{
 
@@ -4413,6 +4532,13 @@ public:
 			if(bEnableChat)			m_pmenu->AddMenuItem(idmContextChat , str2 , 'C'); //Xynth #197 8/2010
 			if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str3 , 'A');
 			if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str4 , 'R');
+
+			// BT - STEAM - Enable moderators to ban players by context menu.
+			if (bSteamModerator == true && bEnableDock == false)
+			{
+				m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
+				m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
+			}
 
 			Point popupPosition = GetMousePosition();
 
@@ -4514,11 +4640,14 @@ public:
                     m_pitemToggleBounds                = pmenu->AddMenuItem(idmToggleBounds,                GetBoundsMenuString()               , 'N');
                     m_pitemToggleTransparentObjects    = pmenu->AddMenuItem(idmToggleTransparentObjects,    GetTransparentObjectsMenuString()   , 'O');
                 #endif
-                m_pitemToggleSmoke                 = pmenu->AddMenuItem(idmToggleSmoke,                 GetSmokeMenuString()                , 'L'); //was same as posters - Imago 8/8/09
-                m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            , 'F');
-                m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(), 'B');
-                m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             , 'H');
- 				//Imago 6/30/09 adjust new dx9 settings in game
+                m_pitemToggleSmoke                 = pmenu->AddMenuItem(idmToggleSmoke,                 GetSmokeMenuString()                ,	'L'); //was same as posters - Imago 8/8/09
+                m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            ,	'F');
+                m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(),	'B');
+                m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
+				
+				// BT - 10/17 - HighRes Textures
+				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
+ 				
 				break;
 
             case idmGameOptions:
@@ -4571,6 +4700,10 @@ public:
                 m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'V');
 				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
                 m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
+				
+				// #294 - Turkey
+				m_pitemIncreaseChatLines		   = pmenu->AddMenuItem(idmIncreaseChatLines,			GetIncreaseChatLinesMenuString(),	'I');
+				m_pitemReduceChatLines			   = pmenu->AddMenuItem(idmReduceChatLines,				GetReduceChatLinesMenuString(),		'R');
 				break;
 			//End TB 30-JUL-07
 			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
@@ -4763,6 +4896,68 @@ public:
             m_pitemFilterLobbyChats->SetString(GetFilterLobbyChatsMenuString());
         }
     }
+
+	// #294 - Turkey 8/13
+	void IncreaseChatLines()
+	{
+		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() + 1;
+
+		if (SetChatLines(lines))
+		{
+			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+
+			if (m_pchatListPane)
+			{
+				if (GetViewMode() == vmLoadout)
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (GetViewMode() <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
+			}
+
+			SavePreference("ChatLines", lines);
+		}
+	}
+
+	void ReduceChatLines()
+	{
+		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() - 1;
+
+		if (SetChatLines(lines))
+		{
+			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
+			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
+
+			if (m_pchatListPane)
+			{
+				if (GetViewMode() == vmLoadout)
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (GetViewMode() <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
+			}
+
+
+			SavePreference("ChatLines", lines);
+		}
+	}
+
+
+
+	// end #294
+
+
 	//End TB 25-JUN-07
     void ToggleLinearControls()
     {
@@ -4860,7 +5055,11 @@ public:
 	{
 		if(dwNewMaxSize > 3){dwNewMaxSize =0;}
         trekClient.MaxTextureSize(dwNewMaxSize); //? Imago REVIEW we use g_DX9Settings.m_iMaxTextureSize now
+
+#if (DIRECT3D_VERSION >= 0x0800)
 		g_DX9Settings.m_iMaxTextureSize = dwNewMaxSize;
+#endif
+
 		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());
         SavePreference("MaxTextureSize", trekClient.MaxTextureSize());
 
@@ -5074,7 +5273,9 @@ public:
     void SetSmoke (DWORD value)
     {
         if (value == 2) { //imago 8/16/09
-            ThingGeo::SetPerformance(true);
+#if (DIRECT3D_VERSION >= 0x0800)
+			ThingGeo::SetPerformance(true);
+#endif
             ThingGeo::SetShowSmoke (1);
         } else {
             ThingGeo::SetShowSmoke (int (value));
@@ -5107,7 +5308,11 @@ public:
             default:
                 iSmoke = 0;
         }
-        ThingGeo::SetPerformance(bPerformance);
+        
+#if (DIRECT3D_VERSION >= 0x0800)
+		ThingGeo::SetPerformance(bPerformance);
+#endif
+
         ThingGeo::SetShowSmoke(iSmoke);
         SavePreference("SmokeEffects", (DWORD) (bPerformance) ? 2 : iSmoke);
 
@@ -5198,6 +5403,24 @@ public:
         }
     }
 
+	// BT - 10/17 - HighRes Textures
+	void ToggleHighResTextures()
+	{
+		m_bUseHighResTextures = !m_bUseHighResTextures;
+
+		SavePreference("HighResTextures", m_bUseHighResTextures);
+
+		GetWindow()->GetModeler()->SetHighResTextures(m_bUseHighResTextures);
+
+		if (m_pitemToggleHighResTextures != NULL) {
+			m_pitemToggleHighResTextures->SetString(GetHighResTexturesString());
+		}
+
+		m_pmessageBox = CreateMessageBox("Enabling or Disabling the High Resolution Textures will require you to restart Allegiance.", NULL, true, false);
+		GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+
+	}
+
 	//Imago 7/8/09 #24
     void ToggleShowGrid()
     {
@@ -5219,7 +5442,28 @@ public:
         SavePreference("Gamma", value);
     }
 
+	// #294 - Turkey returns true if the requested value was within range (1-10), false otherwise
+	bool SetChatLines(DWORD value)
+	{
+		bool bInRange = false;
+		if (value >= 1)
+		{
+			if (value > 10) m_pnumberChatLinesDesired->SetValue(10.0f);
+			else
+			{
+				m_pnumberChatLinesDesired->SetValue((float)value);
+				bInRange = true;
+			}
+		}
+		else
+		{
+			m_pnumberChatLinesDesired->SetValue(1.0f);
+		}
 
+		m_pnumberChatLines->SetValue(m_pnumberChatLinesDesired->GetValue());
+
+		return bInRange;
+	}
 
 
     void ToggleFlipY()
@@ -5247,6 +5491,7 @@ public:
 	//Imago 7/10
     void ToggleEnableFFAutoCenter()
     {
+#if (DIRECT3D_VERSION >= 0x0800)
 		if (GetInputEngine() == NULL || GetInputEngine()->GetJoystick(0) == NULL)
 			return;
 
@@ -5258,6 +5503,7 @@ public:
             m_pitemToggleFFAutoCenter->SetString(GetFFAutoCenterMenuString());
         }
 		GetInputEngine()->GetJoystick(0)->SetRanges();
+#endif
     }
 
     void RenderSizeChanged(bool bSmaller)
@@ -5338,8 +5584,10 @@ public:
             break;
         }
 
-        GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
-        SavePreference("MouseAcceleration", (DWORD)m_iMouseAccel);
+#if (DIRECT3D_VERSION >= 0x0800)
+		GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
+		SavePreference("MouseAcceleration", (DWORD)m_iMouseAccel);
+#endif
 
         if (m_pitemToggleMouseAccel != NULL)
             m_pitemToggleMouseAccel->SetString(GetMouseAccelMenuString());
@@ -5451,6 +5699,7 @@ public:
 	//Imago 7/10 #187
     void AdjustFFGain(float fDelta)
     {
+#if (DIRECT3D_VERSION >= 0x0800)
         float fNewValue = min(10000, max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
         m_pnumFFGain->SetValue(fNewValue);
 
@@ -5469,6 +5718,7 @@ public:
 
 		if (GetInputEngine() != NULL && GetInputEngine()->GetJoystick(0) != NULL)
 			GetInputEngine()->GetJoystick(0)->SetRanges();
+#endif
     }
 
     void AdjustMouseSens(float fDelta)
@@ -5488,7 +5738,10 @@ public:
             m_pitemToggleMouseSensDown->SetString(
                 GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta));
         }
+		
+#if (DIRECT3D_VERSION >= 0x0800)
 		GetInputEngine()->GetMouse()->SetSensitivity(fNewValue);
+#endif
     }
 	//Imago
 
@@ -5512,7 +5765,13 @@ public:
     {
 		int i = 0;
 		int j = 2;
-		i = 8 + g_DX9Settings.m_iMaxTextureSize; //trekClient.MaxTextureSize();
+
+#if (DIRECT3D_VERSION >= 0x0800)
+		i = 8 + g_DX9Settings.m_iMaxTextureSize;
+#else
+		i = 8 + trekClient.MaxTextureSize();
+#endif
+
 		j = pow((float)j,(float)i);
         return "Max Texture Size ("  + ZString( j)  + ") ";
     }
@@ -5637,6 +5896,20 @@ public:
                 break;
         }
     }
+
+	// #294 - Turkey
+	ZString GetIncreaseChatLinesMenuString()
+	{
+		if (m_pnumberChatLinesDesired->GetValue() > 9.9f) return "Chat Lines At Maximum";
+		return "Increase To " + ZString((int)m_pnumberChatLinesDesired->GetValue() + 1) + " Chat Lines";
+	}
+
+	// #294 - Turkey
+	ZString GetReduceChatLinesMenuString()
+	{
+		if (m_pnumberChatLinesDesired->GetValue() < 1.1f) return "Chat Lines At Minimum";
+		return "Reduce To " + ZString((int)m_pnumberChatLinesDesired->GetValue() - 1) + " Chat Lines";
+	}
 
     ZString GetLinearControlsMenuString()
     {
@@ -5810,13 +6083,19 @@ public:
 
     ZString GetVirtualJoystickMenuString()
     {
-        return (m_bEnableVirtualJoystick ? "Virtual Joystick On " : "Virtual Joystick Off ");
+        return (m_bEnableVirtualJoystick ? "Use Mouse As Virtual Joystick: On " : "Use Mouse As Virtual Joystick: Off ");
     }
 
     ZString GetFlipYMenuString()
     {
         return (m_bFlipY ? "Y Axis Flipped " : "Y Axis Not Flipped ");
     }
+
+	// BT - 10/17 - HighRes Textures
+	ZString GetHighResTexturesString()
+	{
+		return "Use High Resolution Textures: " + ZString(m_bUseHighResTextures ? "On" : "Off");
+	}
 
     ZString GetEnableFeedbackMenuString()
     {
@@ -5866,24 +6145,40 @@ public:
 
 	ZString GetAAString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		return "Antialiasing (" + ZString(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType) + ")";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 	ZString GetMipString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap) ? "Yes" : "No";
-	    return "Auto Mipmap ("+ strResult +")";
+		return "Auto Mipmap (" + strResult + ")";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 	ZString GetPackString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		if (g_DX9Settings.mbUseTexturePackFiles)
 			return "Use Texture Pack (Yes)";
 		else
-	    	return "Use Texture Pack (No)";
+			return "Use Texture Pack (No)";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 	ZString GetVsyncString()
 	{
+#if (DIRECT3D_VERSION >= 0x0800)
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bWaitForVSync) ? "On" : "Off";
-	    return "Vertical Sync ("+ strResult +")";
+		return "Vertical Sync (" + strResult + ")";
+#else
+		return "Not valid for Dx7 Engine.";
+#endif
 	}
 
     void DoInputConfigure()
@@ -6092,6 +6387,11 @@ public:
                 ToggleEnvironment();
                 break;
 
+				// BT - 10/17 - HighRes Textures
+			case idmHighResTextures:
+				ToggleHighResTextures();
+				break;
+
 
 			/* pkk May 6th: Disabled bandwidth patch
 			// w0dk4 June 2007: Bandwith Patch
@@ -6109,53 +6409,65 @@ public:
 			//Imago 7/18/09
 			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
             case idmMaxTextureSize:
-                //ToggleMaxTextureSize(trekClient.MaxTextureSize()+1); Obsolete REMOVE REVIEW, extra, unneeded functions
-				GetEngine()->SetMaxTextureSize(g_DX9Settings.m_iMaxTextureSize+1);
+#if (DIRECT3D_VERSION >= 0x0800)
+				//ToggleMaxTextureSize(trekClient.MaxTextureSize()+1); Obsolete REMOVE REVIEW, extra, unneeded functions
+				GetEngine()->SetMaxTextureSize(g_DX9Settings.m_iMaxTextureSize + 1);
 				SavePreference("MaxTextureSize", g_DX9Settings.m_iMaxTextureSize);
-		        if (m_pitemMaxTextureSize != NULL) {
-		            m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
-		        }
+				if (m_pitemMaxTextureSize != NULL) {
+					m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
+				}
+#else
+				ToggleMaxTextureSize(trekClient.MaxTextureSize() + 1);
+#endif
 				break;
 
 			case idmAA:
-				GetEngine()->SetAA(g_DX9Settings.m_dwAA+1);
+#if (DIRECT3D_VERSION >= 0x0800)
+				GetEngine()->SetAA(g_DX9Settings.m_dwAA + 1);
 				SavePreference("UseAntialiasing", g_DX9Settings.m_dwAA);
-		        if (m_pitemAA != NULL) {
-		            m_pitemAA->SetString(GetAAString());
-		        }
+				if (m_pitemAA != NULL) {
+					m_pitemAA->SetString(GetAAString());
+				}
+#endif
 				break;
 			case idmMip:
+#if (DIRECT3D_VERSION >= 0x0800)
 				GetEngine()->SetAutoGenMipMaps(!g_DX9Settings.m_bAutoGenMipmaps);
 				SavePreference("UseAutoMipMaps", g_DX9Settings.m_bAutoGenMipmaps);
-		        if (m_pitemMip != NULL) {
-		            m_pitemMip->SetString(GetMipString());
-		        }
+				if (m_pitemMip != NULL) {
+					m_pitemMip->SetString(GetMipString());
+				}
+#endif
 				break;
 
 			case idmPack: { //this apparently doesn't even do anything yet....but we'll let them push it anyways.
+#if (DIRECT3D_VERSION >= 0x0800)
 				ZString strArtwork = ZString(UTL::artworkPath()); //duh
-				CDX9PackFile textures(strArtwork , "CommonTextures" );
+				CDX9PackFile textures(strArtwork, "CommonTextures");
 				if (!textures.Exists() && !g_DX9Settings.mbUseTexturePackFiles) {
 					GetWindow()->SetWaitCursor();
-		            pmsgBoxPack = CreateMessageBox("Please wait while the texture pack file is being created.", NULL, false, false);
-		            GetPopupContainer()->OpenPopup(pmsgBoxPack, true);
-					CreateThread(NULL,0,DummyPackCreateThreadProc,NULL,THREAD_PRIORITY_HIGHEST,0);
+					pmsgBoxPack = CreateMessageBox("Please wait while the texture pack file is being created.", NULL, false, false);
+					GetPopupContainer()->OpenPopup(pmsgBoxPack, true);
+					CreateThread(NULL, 0, DummyPackCreateThreadProc, NULL, THREAD_PRIORITY_HIGHEST, 0);
 				}
 				GetEngine()->SetUsePack(!g_DX9Settings.mbUseTexturePackFiles);
-				SavePreference("UseTexturePack",g_DX9Settings.mbUseTexturePackFiles);
-		        if (m_pitemPack != NULL) {
-		            m_pitemPack->SetString(GetPackString());
-		        }
+				SavePreference("UseTexturePack", g_DX9Settings.mbUseTexturePackFiles);
+				if (m_pitemPack != NULL) {
+					m_pitemPack->SetString(GetPackString());
+				}
+#endif
 				break;
 						  }
 
 			case idmVsync:
+#if (DIRECT3D_VERSION >= 0x0800)
 				//only does anything if the device is fullscreen...but we'll let them push it anyways.
 				GetEngine()->SetVSync(!g_DX9Settings.m_bVSync);
 				SavePreference("UseVSync", g_DX9Settings.m_bVSync);
-		        if (m_pitemVsync != NULL) {
-		            m_pitemVsync->SetString(GetVsyncString());
-		        }
+				if (m_pitemVsync != NULL) {
+					m_pitemVsync->SetString(GetVsyncString());
+				}
+#endif
 				break;
 			//
 
@@ -6188,6 +6500,16 @@ public:
                 //TheBored 25-JUN-07: Lobby filter change.
 				ToggleFilterLobbyChats(trekClient.FilterLobbyChats() + 1);
                 break;
+
+				// #294 - Turkey
+			case idmIncreaseChatLines:
+				IncreaseChatLines();
+				break;
+
+				// #294 - Turkey
+			case idmReduceChatLines:
+				ReduceChatLines();
+				break;
 
             case idmToggleLinearControls:
                 ToggleLinearControls ();
@@ -6312,6 +6634,17 @@ public:
 			case idmContextMutePlayer:
 				contextMute();			CloseMenu();
 				break;
+
+				// BT - STEAM - Enable moderators to ban players by context menu.
+			case idmContextKickPlayer:
+				contextKickPlayer();			CloseMenu();
+				break;
+
+				// BT - STEAM - Enable moderators to ban players by context menu.
+			case idmContextBanPlayer:
+				contextBanPlayer();				CloseMenu();
+				break;
+
 			//Xynth #48 8/2010
 			case idmContextDockDrone:
 				contextDockDrone();		CloseMenu();
@@ -6538,9 +6871,17 @@ public:
 
             UpdateOverlayFlags();
 
+			// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+			if (m_bShowInventoryPane == true)
+				TurnOnOverlayFlags(ofInventory);
+
+			// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+			if(m_bShowSectorMapPane == true)
+				TurnOnOverlayFlags(ofSectorPane);
+
             // REVIEW: why not expose this in MDL?
-            if (GetOverlayFlags() & (ofInCockpit | ofInChase))
-                m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCockpit);
+			if (GetOverlayFlags() & (ofInCockpit | ofInChase))
+				m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCockpit);
             else if (GetOverlayFlags() & (ofInFlightCommand | ofInStationCommand))
                 m_pradarImage->SetRadarLOD((RadarImage::RadarLOD)m_radarCommand);
             else
@@ -6590,6 +6931,23 @@ public:
 			// yp - Your_Persona buttons get stuck patch. aug-03-2006
 			// clear the keyboard buttons.
 			m_ptrekInput->ClearButtonStates();
+
+			// #294 - Turkey / #361 Use different number of chatlines for the loadout screen cos there's less space
+			if (m_pchatListPane)
+			{
+				int lines = m_pnumberChatLinesDesired->GetValue();
+
+				if (vm == vmLoadout)
+				{
+					m_pchatListPane->SetChatLines(min(lines, 6));
+					m_pnumberChatLines->SetValue(min(lines, 6));
+				}
+				else if (vm <= vmOverride)
+				{
+					m_pchatListPane->SetChatLines(lines);
+					m_pnumberChatLines->SetValue(lines);
+				}
+			}
 
             switch (vm)
             {
@@ -6792,7 +7150,16 @@ public:
 
         // find the sample index to interpolate
         int     iSampleIndex = ((m_turnRateSampleIndex - 1) + ARRAY_OF_SAMPLES_SIZE) % ARRAY_OF_SAMPLES_SIZE;
-        while ((m_turnRateSamples[iSampleIndex].time + fDelayTime) > m_turnRateSamples[m_turnRateSampleIndex].time)
+
+		// BT - 8/17 Fixing DX9 hang when in chase mode, and the camera is zoomed all the way out, this would cause a hang withe Dx9 engine. 
+		// The experiance is still bad (it's jumping all over the place), but at  least it doesn't hang. The Dx7 engine 
+		// works smoothly here, and the ship itself turns a lot nicer under DX7. 
+		// I believe that if you can figure out why this is different between the two engines, you will have solved the issue that was 
+		// introduced with the Dx9 conversion that is causing some players to report aiming issues. 
+		// The issue with the Dx9 version is that the m_turnRateSamples[iSampleIndex].time + fDelayTime) > m_turnRateSamples[m_turnRateSampleIndex].time is always true. 
+		// In the Dx7 engine version, this is NOT always true. 
+		// TODO: Resolve difference between Dx7 and Dx9 versions of the engines. 
+        while ((m_turnRateSamples[iSampleIndex].time + fDelayTime) > m_turnRateSamples[m_turnRateSampleIndex].time && iSampleIndex != 0)
             iSampleIndex = ((iSampleIndex - 1) + ARRAY_OF_SAMPLES_SIZE) % ARRAY_OF_SAMPLES_SIZE;
 
         // find the amount to interpolate
@@ -9110,7 +9477,7 @@ public:
         {
             HKEY hKey;
 
-            if (ERROR_SUCCESS != ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL)
+            if (ERROR_SUCCESS != ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL)
             ) {
                 return NULL;
             }
@@ -9140,7 +9507,7 @@ public:
     {
         HKEY hKey;
 
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT,
+        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
                 0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL)) {
             char buf[128];
             DWORD dwSize = sizeof(buf);
@@ -9170,9 +9537,9 @@ public:
 
         m_phelpPosition = new HelpPosition(GetTime(), m_phelp->GetEventSourceClose());
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 		GetModeler()->SetColorKeyHint( true );
-// BUILD_DX9
+#endif
 
         m_pwrapImageHelp->SetImage(
             new TransformImage(
@@ -9185,9 +9552,9 @@ public:
             )
         );
 
-// BUILD_DX9
+#if (DIRECT3D_VERSION >= 0x0800)
 		GetModeler()->SetColorKeyHint( false );
-// BUILD_DX9
+#endif
 	}
 
     void OnHelp(bool bOn)
@@ -9801,10 +10168,13 @@ public:
             case TK_ConModeNav:
             case TK_ViewSector:
             {
-				// BT - 9/17 - CortUI integration - The minimap is now always visible.
-               /* if (GetViewMode() != vmOverride) {
+				
+                if (GetViewMode() != vmOverride) {
                     ToggleOverlayFlags(ofSectorPane);
-                }*/
+
+					// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+					m_bShowSectorMapPane = GetOverlayFlags() & ofSectorPane == ofSectorPane;
+                }
             }
             break;
 
@@ -9924,9 +10294,13 @@ public:
                     else
                         SetViewMode(vmHangar);
                 }
-				// BT - 9/17 - CortUI integration - Keep the inventory open, always. 
-                //else
-                 //   ToggleOverlayFlags(ofInventory);
+				else
+				{
+					ToggleOverlayFlags(ofInventory);
+
+					// BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+					m_bShowInventoryPane = GetOverlayFlags() & ofSectorPane == ofSectorPane;
+				}
             }
             break;
 
@@ -10649,7 +11023,7 @@ public:
         {
             static const ZString c_str1(" has requested $");
             static const ZString c_str2(" to buy a ");
-            static const ZString c_str3("  Press the [Insert] key to approve it.");
+			static const ZString c_str3("  Press the [Insert] key to approve it.");
 
             assert (pshipSender);
             IhullTypeIGC*   pht = trekClient.m_pCoreIGC->GetHullType(hid);

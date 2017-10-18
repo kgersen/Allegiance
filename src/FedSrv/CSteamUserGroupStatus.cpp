@@ -52,6 +52,14 @@ bool CSteamUserGroupStatus::IsMemberOfModeratorsGroup(const char *strSteamID)
 	return isMember;
 }
 
+bool CSteamUserGroupStatus::IsMemberOfDevelopersGroup(const char *strSteamID)
+{
+	uint64 steamUID = strtoull(strSteamID, NULL, 0);
+	CSteamID steamID(steamUID);
+
+	return IsMemberOfDevelopersGroup(steamID);
+}
+
 bool CSteamUserGroupStatus::IsMemberOfDevelopersGroup(CSteamID steamID)
 {
 	// The MSAllegDev Steam Group ID. // TODO - Move this into the config file.

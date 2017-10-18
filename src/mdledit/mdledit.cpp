@@ -757,7 +757,7 @@ public:
     {
         //TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
 
-		TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true);
+		TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true, m_pmodeler->GetUseHighResTextures());
 
 	ZFile * pFile = (ZFile*) zf;
 		
@@ -1641,7 +1641,7 @@ public:
         char  szValue[MAX_PATH];
         DWORD cbValue = MAX_PATH;
 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             // Get the art path from the registry
             if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
