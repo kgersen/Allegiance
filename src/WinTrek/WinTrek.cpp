@@ -4391,17 +4391,8 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
-	// YP: Add this for the rightclick lobby patch
-	void ShowPlayerContextMenu(PlayerInfo * playerInfo)
+	bool IsPlayerSteamModerator()
 	{
-		contextPlayerInfo = playerInfo;
-
-		char str1[30];
-		char str2[30];
-		char str3[30];	sprintf(str3, "Make Leader  ",playerInfo->CharacterName());
-		char str4[30];	sprintf(str4, playerInfo->GetMute() == false ?"Mute         " :"UnMute       ",playerInfo->CharacterName());
-
-		// BT - STEAM - Enable moderators to ban players by context menu.
 		// The MSAlleg Steam Group ID.
 		CSteamID moderatorGroupID = ((uint64)103582791460031578);
 		int clanCount = SteamFriends()->GetClanCount();
@@ -4414,6 +4405,19 @@ public:
 				break;
 			}
 		}
+
+		return isModerator;
+	}
+
+	// YP: Add this for the rightclick lobby patch
+	void ShowPlayerContextMenu(PlayerInfo * playerInfo)
+	{
+		contextPlayerInfo = playerInfo;
+
+		char str1[30];
+		char str2[30];
+		char str3[30];	sprintf(str3, "Make Leader  ",playerInfo->CharacterName());
+		char str4[30];	sprintf(str4, playerInfo->GetMute() == false ?"Mute         " :"UnMute       ",playerInfo->CharacterName());
 
         bool bEnableAccept = false;
         bool bEnableReject = false;
@@ -4467,7 +4471,7 @@ public:
         if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');		
 
 		// BT - STEAM - Enable moderators to ban players by context menu.
-		if (isModerator)
+		if (IsPlayerSteamModerator())
 		{
 			m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
 			m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
@@ -4545,7 +4549,9 @@ public:
 			}
 		}
 
-		if (bEnableDock || bEnableChat ||bEnableReject || bEnableAccept)  //Xynth #205 8/2010 Will need || for any other menu options.  
+		bool bSteamModerator = IsPlayerSteamModerator();
+
+		if (bEnableDock || bEnableChat ||bEnableReject || bEnableAccept || bSteamModerator)  //Xynth #205 8/2010 Will need || for any other menu options.  
 						  //The point is don't create the menu if nothing is on it
 		{
 
@@ -4561,6 +4567,13 @@ public:
 			if(bEnableChat)			m_pmenu->AddMenuItem(idmContextChat , str2 , 'C'); //Xynth #197 8/2010
 			if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str3 , 'A');
 			if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str4 , 'R');
+
+			// BT - STEAM - Enable moderators to ban players by context menu.
+			if (bSteamModerator == true && bEnableDock == false)
+			{
+				m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
+				m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
+			}
 
 			Point popupPosition = GetMousePosition();
 
@@ -5481,6 +5494,8 @@ public:
 		{
 			m_pnumberChatLinesDesired->SetValue(1.0f);
 		}
+
+		m_pnumberChatLines->SetValue(m_pnumberChatLinesDesired->GetValue());
 
 		return bInRange;
 	}
