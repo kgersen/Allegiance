@@ -1233,12 +1233,19 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
     {
         //Repair the target's hull
         m_fraction -= amount * dtmArmor / maxHP;
-        if (m_fraction > 1.0f)
-            m_fraction = 1.0f;
+		if (m_fraction > 1.0f)
+		{
+			amount += (m_fraction - 1.0) * maxHP / dtmArmor; //Set amount to amount that had effect for stat
+			m_fraction = 1.0f;
+		}            
         GetThingSite ()->RemoveDamage (m_fraction);
 
         leakage = 0.0f;
         dr = c_drNoDamage;
+		if (launcher->GetObjectType() == OT_ship)
+		{
+			((IshipIGC*)launcher)->AddRepair(-amount);
+		}
     }
     else
     {

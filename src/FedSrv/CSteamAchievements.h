@@ -30,12 +30,13 @@ enum EStats
 	SUM_SCORE = 5,
 	PLAYER_RANK = 6,
 	PLAYER_WINS = 7,
-	PLAYER_LOSS = 8
+	PLAYER_LOSS = 8,
+	REPAIR_AMOUNT = 9
 
 	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
 const int g_nMaximumSteamAchievementCount = 11; // Always keep this in sync with the number of achievments in EAchievements!
-const int g_nMaximumSteamStatCount = 9; // Always keep this in sync with the number of stats in EStats!
+const int g_nMaximumSteamStatCount = 10; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
                             // 0   1    2    3      4  
@@ -85,7 +86,8 @@ private:
 		"SUM_SCORE",
 		"PLAYER_RANK",
 		"PLAYER_WINS",
-		"PLAYER_LOSS"
+		"PLAYER_LOSS",
+		"REPAIR_AMOUNT"
 	};
 
 	bool GetAchievement(EAchievements achievement);
@@ -115,7 +117,7 @@ public:
 	void AwardIGCAchievements(AchievementMask am);
 	void AwardRecoverTechAchievement();
 	
-	void AddUserStats(PlayerScoreObject*  ppso);
+	void AddUserStats(PlayerScoreObject*  ppso, IshipIGC* pIship);
 	void UpdateLeaderboard(PlayerScoreObject*  ppso);
 	
 	bool SaveStats();

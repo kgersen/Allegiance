@@ -2930,11 +2930,11 @@ void CFSMission::RecordPlayerResults(IshipIGC* pship, CFSPlayer *player, SideID 
 
 	// BT - STEAM
 	CSteamAchievements *pSteamAchievements = player->GetSteamAchievements();
-
+	IshipIGC *pIship = player->GetIGCShip();
 	pSteamAchievements->AwardBetaParticipation();
 	
 	pSteamAchievements->UpdateLeaderboard(ppso);
-	pSteamAchievements->AddUserStats(ppso);
+	pSteamAchievements->AddUserStats(ppso, pIship);	
 
 	pSteamAchievements->SaveStats();
 
