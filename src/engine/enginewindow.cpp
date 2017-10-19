@@ -1427,10 +1427,11 @@ bool EngineWindow::IsDoubleClick()
 
 void EngineWindow::SetCursorPos(const Point& point)
 {
-    if (m_pengine->IsFullscreen()) {
+    if (m_pmouse->IsEnabled()) {
         m_pmouse->SetPosition(point);
         //HandleMouseMessage(WM_MOUSEMOVE, point);
     } else {
+        //If disabled, send a new mouse position to the window.
         Window::SetCursorPos(point);
     }
 }
@@ -1616,7 +1617,8 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
 
 bool EngineWindow::OnMouseMessage(UINT message, UINT nFlags, const WinPoint& point)
 {
-    if (!m_pengine->IsFullscreen()) {
+    if (!m_pmouse->IsEnabled()) {
+        //we are not ignoring window mouse events
         HandleMouseMessage(message, Point::Cast(point), nFlags);
     }
     
@@ -1705,7 +1707,8 @@ void EngineWindow::UpdateInput()
     // Update the mouse position
     //
 
-    if (m_pengine->IsFullscreen()) {
+    if (m_pmouse->IsEnabled()) {
+        // we have to manually fire mouse move events
         if (m_ppointMouse->GetValue() != m_pmouse->GetPosition() || (s_forceHitTestCount >> 0)) {
             if (s_forceHitTestCount > 0) {
                 s_forceHitTestCount--;
