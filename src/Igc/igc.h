@@ -5499,9 +5499,15 @@ class PlayerScoreObject
             m_bCommandCredit = false;
 
             m_fScore = 0.0f;
+			m_rankRatio = 1.0f;
 
             assert (!m_bConnected);
         }
+
+		void SetRankRatio(float rankRatio)
+		{
+			m_rankRatio = rankRatio;
+		}
 
         bool    Connected(void) const
         {
@@ -5854,6 +5860,7 @@ class PlayerScoreObject
         float                       m_fCombatRating;
 
         float                       m_fScore;
+		float						m_rankRatio;
 
         bool                        m_bPlayer;
         bool                        m_bConnected;

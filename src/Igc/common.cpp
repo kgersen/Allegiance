@@ -2559,6 +2559,8 @@ void   PlayerScoreObject::CalculateScore(ImissionIGC*   pmission)
 
     if (m_bWin)
         m_fScore *= 2.0f;
+
+	m_fScore *= m_rankRatio;
 }
 
 float  PlayerScoreObject::GetScore(void) const
