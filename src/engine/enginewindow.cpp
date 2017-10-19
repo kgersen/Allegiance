@@ -489,19 +489,29 @@ void EngineWindow::UpdateWindowStyle()
 
         SetClientRect(rect);
     } else {
-        SetHasMinimize(true);
-        SetHasMaximize(true);
-        SetHasSysMenu(true);
-        Window::SetSizeable(m_bSizeable);
-        SetTopMost(false);
-        //SetTopMost(true);  Imago 6/25/09 - removed this undocumented change
-
-        //
-        // Win32 doesn't recognize the style change unless we resize the window
-        //
-        
         WinPoint size = m_pengine->GetFullscreenSize();
+        if ((GetSystemMetrics(SM_CXSCREEN) <= size.X() || GetSystemMetrics(SM_CYSCREEN) <= size.Y()))
+        {
+            //windowed, but we do not fit with the selected resolution, switch to borderless
 
+            SetHasMinimize(false);
+            SetHasMaximize(false);
+            SetHasSysMenu(false);
+            Window::SetSizeable(false);
+
+            //make sure we are on top of everything
+            SetTopMost(true);
+        }
+        else
+        {
+            SetHasMinimize(true);
+            SetHasMaximize(true);
+            SetHasSysMenu(true);
+            Window::SetSizeable(m_bSizeable);
+            SetTopMost(false);
+        }
+
+        // Win32 doesn't recognize the style change unless we resize the window
         m_bMovingWindow = true;
         SetClientSize(size + WinPoint(1, 1));
         SetClientSize(size);
@@ -1221,11 +1231,6 @@ void EngineWindow::DoIdle()
 	{
         if (bChanges || m_bInvalid) 
 		{
-			WinPoint size = m_pengine->GetFullscreenSize();
-			//go fullscreen #73 7/10 Imago
-			if ((GetSystemMetrics(SM_CXSCREEN) <= size.X() || GetSystemMetrics(SM_CYSCREEN) <= size.Y()) && !m_bMovingWindow && !m_pengine->IsFullscreen()) {
-				SetFullscreen(true);
-			}
 			m_bInvalid = false;
 
 			UpdateWindowStyle();
