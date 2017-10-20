@@ -131,7 +131,6 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 				m_bInvalid(true),
 				m_bActive(true),
 				m_bShowCursor(true),
-				m_bMouseEnabled(true),
 				m_bRestore(false),
 				m_bMouseInside(false),
 				m_bMoveOnHide(true),
@@ -1459,11 +1458,6 @@ void EngineWindow::DoHitTest()
     }
 }
 
-void EngineWindow::SetMouseEnabled(bool bEnable)
-{
-    m_bMouseEnabled = bEnable;
-}
-
 void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFlags)
 {
     if (m_pgroupImage != NULL) {
@@ -1546,61 +1540,59 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
         // Handle button messages
         //
 
-        if (m_bMouseEnabled) {    
-            switch (message) {
-                case WM_LBUTTONDOWN: 
-                    mouseResult = pimage->Button(this, point, 0, m_bCaptured, m_bHit, true );
-                    m_timeLastClick = m_timeCurrent;
-                    break;
+        switch (message) {
+            case WM_LBUTTONDOWN: 
+                mouseResult = pimage->Button(this, point, 0, m_bCaptured, m_bHit, true );
+                m_timeLastClick = m_timeCurrent;
+                break;
 
-                case WM_LBUTTONUP:   
-                    mouseResult = pimage->Button(this, point, 0, m_bCaptured, m_bHit, false);
-                    break;
+            case WM_LBUTTONUP:   
+                mouseResult = pimage->Button(this, point, 0, m_bCaptured, m_bHit, false);
+                break;
 
-                case WM_RBUTTONDOWN: 
-                    mouseResult = pimage->Button(this, point, 1, m_bCaptured, m_bHit, true );
-                    break;
+            case WM_RBUTTONDOWN: 
+                mouseResult = pimage->Button(this, point, 1, m_bCaptured, m_bHit, true );
+                break;
 
-                case WM_RBUTTONUP:   
-                    mouseResult = pimage->Button(this, point, 1, m_bCaptured, m_bHit, false);
-                    break;
+            case WM_RBUTTONUP:   
+                mouseResult = pimage->Button(this, point, 1, m_bCaptured, m_bHit, false);
+                break;
 
-                case WM_MBUTTONDOWN: 
-                    mouseResult = pimage->Button(this, point, 2, m_bCaptured, m_bHit, true );
-                    break;
+            case WM_MBUTTONDOWN: 
+                mouseResult = pimage->Button(this, point, 2, m_bCaptured, m_bHit, true );
+                break;
 
-                case WM_MBUTTONUP:   
-                    mouseResult = pimage->Button(this, point, 2, m_bCaptured, m_bHit, false);
-                    break;
+            case WM_MBUTTONUP:   
+                mouseResult = pimage->Button(this, point, 2, m_bCaptured, m_bHit, false);
+                break;
 
-                case WM_MOUSEWHEEL:  //imago 8/13/09
-                    if (nFlags >2) {
-                        if (GET_WHEEL_DELTA_WPARAM(nFlags) < 0) {
-                            mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, true );
-                            if (!GetFullscreen())
-                                mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
-                        } else {
-                            mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, true );
-                            if (!GetFullscreen())
-                                mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, false );
-                        }
-                    } else if (nFlags == 1) {
-                        mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
-                    } else if (nFlags == 0) {
-                        mouseResult = pimage->Button(this,point, 9, m_bCaptured, m_bHit, false );
+            case WM_MOUSEWHEEL:  //imago 8/13/09
+                if (nFlags >2) {
+                    if (GET_WHEEL_DELTA_WPARAM(nFlags) < 0) {
+                        mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, true );
+                        if (!m_pmouse->IsEnabled())
+                            mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
+                    } else {
+                        mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, true );
+                        if (!m_pmouse->IsEnabled())
+                            mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, false );
                     }
-                    break;
+                } else if (nFlags == 1) {
+                    mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
+                } else if (nFlags == 0) {
+                    mouseResult = pimage->Button(this,point, 9, m_bCaptured, m_bHit, false );
+                }
+                break;
 
-		        case WM_XBUTTONDOWN: //imago 8/15/09
-                    ZDebugOutput("WM_XBUTTONDOWN: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
-                    mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, true );
-                    break;
+		    case WM_XBUTTONDOWN: //imago 8/15/09
+                ZDebugOutput("WM_XBUTTONDOWN: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
+                mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, true );
+                break;
 
-		        case WM_XBUTTONUP:
-                    ZDebugOutput("WM_XBUTTONUP: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
-                    mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, false );
-                    break;
-            }
+		    case WM_XBUTTONUP:
+                ZDebugOutput("WM_XBUTTONUP: " + ZString(2+GET_XBUTTON_WPARAM(nFlags)) + "\n");
+                mouseResult = pimage->Button(this, point, 2+GET_XBUTTON_WPARAM(nFlags), m_bCaptured, m_bHit, false );
+                break;
         }
 
         if (mouseResult.Test(MouseResultRelease())) {
