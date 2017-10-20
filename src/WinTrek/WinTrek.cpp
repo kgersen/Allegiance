@@ -7890,12 +7890,13 @@ public:
         {
             bool bEnable =
                    m_bEnableVirtualJoystick
-                && GetFullscreen()
                 && GetPopupContainer()->IsEmpty()
                 && trekClient.flyingF()
                 && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
                 && ((m_voverlaymask[m_viewmode] & c_omBanishablePanes) == 0);
 
+            //enabling mouse means that we listen to the mouse manually and ignore window events
+            m_pmouse->SetEnabled(bEnable || (m_bActive && m_pengine->IsFullscreen()));
             m_pjoystickImage->SetEnabled(bEnable, bEnable);
             SetMoveOnHide(!bEnable);
             ShowCursor(!bEnable);

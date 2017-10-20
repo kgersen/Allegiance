@@ -102,7 +102,6 @@ protected:
     bool                       m_bInvalid;
     bool                       m_bActive;
     bool                       m_bShowCursor;
-    bool                       m_bMouseEnabled;
     bool                       m_bRestore;
     bool                       m_bMouseInside;
     bool                       m_bMoveOnHide;
