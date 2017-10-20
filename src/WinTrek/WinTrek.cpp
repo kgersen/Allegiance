@@ -1066,7 +1066,9 @@ public:
     void OpenQuickChatMenu(QuickChatMenu* pqcmenu)
     {
         m_pmenuQuickChat = CreateQuickChatMenu(pqcmenu);
-        OpenPopup(m_pmenuQuickChat, Point(10, 180));
+
+        Point point = Point(10, GetEngine()->GetFullscreenSize().Y() - 10);
+        OpenPopup(m_pmenuQuickChat, Rect(point, point));
     }
 
     void CloseQuickChatMenu()
@@ -2532,6 +2534,12 @@ public:
     void        LeaderBoardScreenForPlayer(const ZString & strCharacter)
     {
         screen(ScreenIDLeaderBoard, -1, PCC(strCharacter));
+    }
+
+    void OpenPopup(IPopup* ppopup, const Rect& rect)
+    {
+        GetPopupContainer()->OpenPopup(ppopup, rect);
+        m_ptrekInput->SetFocus(false);
     }
 
     void OpenPopup(IPopup* ppopup, const Point& point)
