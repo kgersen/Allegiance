@@ -1242,8 +1242,9 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 
         leakage = 0.0f;
         dr = c_drNoDamage;
-		if (launcher->GetObjectType() == OT_ship)
+		if (launcher->GetObjectType() == OT_ship && (pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide()))
 		{
+
 			IshipIGC * pIship = ((IshipIGC*)launcher);
 			pIship->AddRepair(-amount);
 			pIship->SetAchievementMask(c_achmNewRepair);
