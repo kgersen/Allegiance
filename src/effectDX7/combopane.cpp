@@ -145,7 +145,8 @@ public:
         IPopupContainer* ppopupContainer,
         IEngineFont*     pfont,
         const WinPoint&  size,
-        ComboFacePane*   pface
+        ComboFacePane*   pface,
+        ModifiablePointValue* pmousePosition
     ) :
         m_peventMouseEnterWhileEnabledSource(new EventSourceImpl()),
         m_peventMenuSelectSource(new EventSourceImpl()),
@@ -373,7 +374,8 @@ TRef<ComboPane> CreateComboPane(
     IPopupContainer* ppopupContainer,
     IEngineFont*     pfont,
     const WinPoint&  size,
-    ComboFacePane*   pface
+    ComboFacePane*   pface,
+    ModifiablePointValue* pmousePosition
 ) {
-    return new ComboPaneImpl(pmodeler, ppopupContainer, pfont, size, pface);
+    return new ComboPaneImpl(pmodeler, ppopupContainer, pfont, size, pface, pmousePosition);
 }

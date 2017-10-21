@@ -246,6 +246,7 @@ public:
     IPopupContainer* GetPopupContainer() { return m_ppopupContainer;         }
     InputEngine*     GetInputEngine()    { return m_pinputEngine;            }
     const Point&     GetMousePosition()  { return m_ppointMouse->GetValue(); }
+    ModifiablePointValue* GetMousePositionModifiable() { return m_ppointMouse; }
 	Time&		   	 GetMouseActivity()  { return m_timeLastMouseMove;		 } //Imago: Added to adjust AFK status from mouse movment
     bool             GetActive()         { return m_bActive;                 }
 
