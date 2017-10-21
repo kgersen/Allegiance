@@ -11093,7 +11093,15 @@ public:
         }
         else
         {
-            trekClient.trekThrottle = GetThrottle(trekClient.GetShip());
+            // if the ship is currently thrusting in the same direction as the ship orientation (not actively slowing down)
+            if (trekClient.GetShip()->GetEngineVector() * trekClient.GetShip()->GetOrientation().GetForward() > 0)
+            {
+                trekClient.trekThrottle = 1.0f;
+            }
+            else
+            {
+                trekClient.trekThrottle = -1.0f;
+            }
         }
     }
 
