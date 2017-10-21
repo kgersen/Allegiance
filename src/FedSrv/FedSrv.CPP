@@ -3653,11 +3653,16 @@ void SendShipUpdates(CFSMission * pfsMission)
                         pfmShipStatus->status = *pssOld = *pss;         //Also update the old status
                     }
 
-					//Xynth Add a periodic check for achievements
+					//Xynth Add a periodic check for achievements and IGC Score triggers
 					
 					if (ISPLAYER(pship))
 					{
 						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+						PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+						if ((pship->GetAchievementMask() & c_achmProbeSpot) > 0)
+							pso->AddProbeSpot();
+						if ((pship->GetAchievementMask() & c_achmNewRepair) > 0)
+							pso->SetRepair(floor(pship->GetRepair()));
 
 						pSteamAchievements->AwardIGCAchievements(pship->GetAchievementMask());
 						pship->ClearAchievementMask();

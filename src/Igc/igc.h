@@ -96,6 +96,9 @@ const FloatConstantID    c_fcidClusterDivisor       = 38;
 
 const FloatConstantID    c_fcidMax                  = 40;
 
+const FloatConstantID    c_fcidPointsProbeSpot		= 41;
+const FloatConstantID    c_fcidPointsRepair			= 42;
+
 //
 // Note: if you add or change any new ObjectTypes, then please notify
 // Mark C or John T so that AGCIDL.idl will be updated.
@@ -766,6 +769,7 @@ const ExpendableAbilityBitMask  c_eabmRescueAny       = c_sabmRescueAny;  //0x40
 typedef short AchievementMask;
 const AchievementMask c_achmProbeKill = 0x01;
 const AchievementMask c_achmProbeSpot = 0x02;
+const AchievementMask c_achmNewRepair = 0x04;
 
 enum    ShipControlStateIGC
 {
@@ -5473,6 +5477,8 @@ class PlayerScoreObject
             m_cPlayerKills = 0.0f;
             m_cBaseKills = 0.0f;
             m_cBaseCaptures = 0.0f;
+			m_cProbeSpot = 0;
+			m_cRepair = 0;
 
             m_cRescues = 0;
 
@@ -5583,6 +5589,16 @@ class PlayerScoreObject
         {
             m_cAsteroidsSpotted++;
         }
+
+		void	AddProbeSpot(void)
+		{
+			m_cProbeSpot++;
+		}
+		void	SetRepair(int repair)
+		{
+			m_cRepair = repair;
+		}
+
 
         void    KillShip(IshipIGC*      pship,
                          float          fraction)
@@ -5840,6 +5856,8 @@ class PlayerScoreObject
         float                       m_cPlayerKills;
         float                       m_cBaseKills;
         float                       m_cBaseCaptures;
+		short						m_cProbeSpot;
+		int							m_cRepair;
 
         short                       m_cTechsRecovered;
         short                       m_cFlags;

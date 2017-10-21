@@ -1244,7 +1244,9 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
         dr = c_drNoDamage;
 		if (launcher->GetObjectType() == OT_ship)
 		{
-			((IshipIGC*)launcher)->AddRepair(-amount);
+			IshipIGC * pIship = ((IshipIGC*)launcher);
+			pIship->AddRepair(-amount);
+			pIship->SetAchievementMask(c_achmNewRepair);
 		}
     }
     else
