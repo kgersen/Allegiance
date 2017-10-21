@@ -228,7 +228,7 @@ ZString ZVersionInfo::GetStringValue(LPCTSTR pszKey, bool* pbExists) const
     // Query the value
     UINT cbValue = 0;
     LPCTSTR pszValue = NULL;
-    if (VerQueryValue(m_pVerInfo, szSubBlock, (void**)&pszValue, &cbValue))
+    if (m_pVerInfo != nullptr && VerQueryValue(m_pVerInfo, szSubBlock, (void**)&pszValue, &cbValue))
     {
       // Indicate that the key exists
       if (pbExists)

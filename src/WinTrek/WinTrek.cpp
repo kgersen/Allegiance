@@ -1345,6 +1345,7 @@ public:
     TRef<IMenuItem>            m_pitemToggleDebris;
     TRef<IMenuItem>            m_pitemToggleStars;
     TRef<IMenuItem>            m_pitemToggleEnvironment;
+	TRef<IMenuItem>			   m_pitemToggleHighResTextures; // BT - 10/17 - HighRes Textures
     TRef<IMenuItem>            m_pitemToggleRoundRadar;
     TRef<IMenuItem>            m_pitemToggleLinearControls;
     TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
@@ -1450,6 +1451,9 @@ public:
 
     DWORD m_cVTVersion;
     HWND  m_hwndVTEdit;
+
+	// BT - 10/17 - HighRes Textures
+	bool m_bUseHighResTextures;
 
     //
     // Input
@@ -2751,7 +2755,8 @@ public:
 		m_bFFAutoCenter(false),
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-		m_bShowSectorMapPane(true)  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
+		m_bUseHighResTextures(true) // BT - 10/17 - HighRes Textures
 
     {
         HRESULT hr;
@@ -3034,6 +3039,11 @@ public:
         m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
+
+		// BT - 10/17 - HighRes Textures
+		m_bUseHighResTextures    = (LoadPreference("HighResTextures",		1) != 0);
+
+		m_pmodeler->SetHighResTextures(m_bUseHighResTextures);
 
         //
         // Initial screen size
@@ -4160,6 +4170,8 @@ public:
 	#define idmMouseAccel		820
 	#define idmWheelDelay		821 //Spunky #282
 
+	#define idmHighResTextures	822	// BT - 10/17 - HighRes Textures
+
 	// BT - STEAM
 	#define idmCallsignTag0		900
 	#define idmCallsignTag1		901
@@ -4379,17 +4391,8 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
-	// YP: Add this for the rightclick lobby patch
-	void ShowPlayerContextMenu(PlayerInfo * playerInfo)
+	bool IsPlayerSteamModerator()
 	{
-		contextPlayerInfo = playerInfo;
-
-		char str1[30];
-		char str2[30];
-		char str3[30];	sprintf(str3, "Make Leader  ",playerInfo->CharacterName());
-		char str4[30];	sprintf(str4, playerInfo->GetMute() == false ?"Mute         " :"UnMute       ",playerInfo->CharacterName());
-
-		// BT - STEAM - Enable moderators to ban players by context menu.
 		// The MSAlleg Steam Group ID.
 		CSteamID moderatorGroupID = ((uint64)103582791460031578);
 		int clanCount = SteamFriends()->GetClanCount();
@@ -4402,6 +4405,19 @@ public:
 				break;
 			}
 		}
+
+		return isModerator;
+	}
+
+	// YP: Add this for the rightclick lobby patch
+	void ShowPlayerContextMenu(PlayerInfo * playerInfo)
+	{
+		contextPlayerInfo = playerInfo;
+
+		char str1[30];
+		char str2[30];
+		char str3[30];	sprintf(str3, "Make Leader  ",playerInfo->CharacterName());
+		char str4[30];	sprintf(str4, playerInfo->GetMute() == false ?"Mute         " :"UnMute       ",playerInfo->CharacterName());
 
         bool bEnableAccept = false;
         bool bEnableReject = false;
@@ -4455,7 +4471,7 @@ public:
         if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');		
 
 		// BT - STEAM - Enable moderators to ban players by context menu.
-		if (isModerator)
+		if (IsPlayerSteamModerator())
 		{
 			m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
 			m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
@@ -4533,7 +4549,9 @@ public:
 			}
 		}
 
-		if (bEnableDock || bEnableChat ||bEnableReject || bEnableAccept)  //Xynth #205 8/2010 Will need || for any other menu options.  
+		bool bSteamModerator = IsPlayerSteamModerator();
+
+		if (bEnableDock || bEnableChat ||bEnableReject || bEnableAccept || bSteamModerator)  //Xynth #205 8/2010 Will need || for any other menu options.  
 						  //The point is don't create the menu if nothing is on it
 		{
 
@@ -4549,6 +4567,13 @@ public:
 			if(bEnableChat)			m_pmenu->AddMenuItem(idmContextChat , str2 , 'C'); //Xynth #197 8/2010
 			if(bEnableAccept)		m_pmenu->AddMenuItem(idmContextAcceptPlayer , str3 , 'A');
 			if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str4 , 'R');
+
+			// BT - STEAM - Enable moderators to ban players by context menu.
+			if (bSteamModerator == true && bEnableDock == false)
+			{
+				m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
+				m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
+			}
 
 			Point popupPosition = GetMousePosition();
 
@@ -4650,11 +4675,14 @@ public:
                     m_pitemToggleBounds                = pmenu->AddMenuItem(idmToggleBounds,                GetBoundsMenuString()               , 'N');
                     m_pitemToggleTransparentObjects    = pmenu->AddMenuItem(idmToggleTransparentObjects,    GetTransparentObjectsMenuString()   , 'O');
                 #endif
-                m_pitemToggleSmoke                 = pmenu->AddMenuItem(idmToggleSmoke,                 GetSmokeMenuString()                , 'L'); //was same as posters - Imago 8/8/09
-                m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            , 'F');
-                m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(), 'B');
-                m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             , 'H');
- 				//Imago 6/30/09 adjust new dx9 settings in game
+                m_pitemToggleSmoke                 = pmenu->AddMenuItem(idmToggleSmoke,                 GetSmokeMenuString()                ,	'L'); //was same as posters - Imago 8/8/09
+                m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            ,	'F');
+                m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(),	'B');
+                m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
+				
+				// BT - 10/17 - HighRes Textures
+				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
+ 				
 				break;
 
             case idmGameOptions:
@@ -5410,6 +5438,24 @@ public:
         }
     }
 
+	// BT - 10/17 - HighRes Textures
+	void ToggleHighResTextures()
+	{
+		m_bUseHighResTextures = !m_bUseHighResTextures;
+
+		SavePreference("HighResTextures", m_bUseHighResTextures);
+
+		GetWindow()->GetModeler()->SetHighResTextures(m_bUseHighResTextures);
+
+		if (m_pitemToggleHighResTextures != NULL) {
+			m_pitemToggleHighResTextures->SetString(GetHighResTexturesString());
+		}
+
+		m_pmessageBox = CreateMessageBox("Enabling or Disabling the High Resolution Textures will require you to restart Allegiance.", NULL, true, false);
+		GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+
+	}
+
 	//Imago 7/8/09 #24
     void ToggleShowGrid()
     {
@@ -5448,6 +5494,8 @@ public:
 		{
 			m_pnumberChatLinesDesired->SetValue(1.0f);
 		}
+
+		m_pnumberChatLines->SetValue(m_pnumberChatLinesDesired->GetValue());
 
 		return bInRange;
 	}
@@ -6078,6 +6126,12 @@ public:
         return (m_bFlipY ? "Y Axis Flipped " : "Y Axis Not Flipped ");
     }
 
+	// BT - 10/17 - HighRes Textures
+	ZString GetHighResTexturesString()
+	{
+		return "Use High Resolution Textures: " + ZString(m_bUseHighResTextures ? "On" : "Off");
+	}
+
     ZString GetEnableFeedbackMenuString()
     {
         return (m_bEnableFeedback ? "Force Feedback Enabled " : "Force Feedback Disabled ");
@@ -6367,6 +6421,11 @@ public:
             case idmToggleEnvironment:
                 ToggleEnvironment();
                 break;
+
+				// BT - 10/17 - HighRes Textures
+			case idmHighResTextures:
+				ToggleHighResTextures();
+				break;
 
 
 			/* pkk May 6th: Disabled bandwidth patch
@@ -11154,7 +11213,15 @@ public:
         }
         else
         {
-            trekClient.trekThrottle = GetThrottle(trekClient.GetShip());
+            // if the ship is currently thrusting in the same direction as the ship orientation (not actively slowing down)
+            if (trekClient.GetShip()->GetEngineVector() * trekClient.GetShip()->GetOrientation().GetForward() > 0)
+            {
+                trekClient.trekThrottle = 1.0f;
+            }
+            else
+            {
+                trekClient.trekThrottle = -1.0f;
+            }
         }
     }
 
