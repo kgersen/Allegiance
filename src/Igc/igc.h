@@ -94,10 +94,11 @@ const FloatConstantID    c_fcidPlayerCost           = 36;
 const FloatConstantID    c_fcidBaseClusterCost      = 37;
 const FloatConstantID    c_fcidClusterDivisor       = 38;
 
-const FloatConstantID    c_fcidMax                  = 40;
+const FloatConstantID    c_fcidPointsProbeSpot = 40;
+const FloatConstantID    c_fcidPointsRepair = 41;
 
-const FloatConstantID    c_fcidPointsProbeSpot		= 41;
-const FloatConstantID    c_fcidPointsRepair			= 42;
+const FloatConstantID    c_fcidMax                  = 42;
+
 
 //
 // Note: if you add or change any new ObjectTypes, then please notify
