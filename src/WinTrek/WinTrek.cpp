@@ -6962,14 +6962,8 @@ public:
             case vmHangar:
 				SetCombatScreen(CreateHangarScreen(GetModeler(), "hangar"));
 
-                if (m_pwrapImageBackdrop->GetImage() != m_pimageScreen)
-                {
-                    trekClient.RequestViewCluster(NULL);
-                    m_pwrapImageBackdrop->SetImage(m_pimageScreen);
-
-					m_pscreen->GetPane()->UpdateLayout();
-                    DoHitTest();
-                }
+                // reset the current selected cluster
+                trekClient.RequestViewCluster(NULL);
 
                 UpdateOverlayFlags();
                 SetCameraMode(cmCockpit);
@@ -6979,14 +6973,8 @@ public:
             case vmLoadout:
 				SetCombatScreen(CreateLoadout(GetModeler(), GetWindow()->GetTime()));
 
-                if (m_pwrapImageBackdrop->GetImage() != m_pimageScreen)
-                {
-                    trekClient.RequestViewCluster(NULL);
-                    m_pwrapImageBackdrop->SetImage(m_pimageScreen);
-
-					m_pscreen->GetPane()->UpdateLayout();
-                    DoHitTest();
-                }
+                // reset the current selected cluster
+                trekClient.RequestViewCluster(NULL);
 
                 UpdateOverlayFlags();
                 SetCameraMode(cmCockpit);
