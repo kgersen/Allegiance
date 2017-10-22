@@ -876,8 +876,6 @@ TRef<IPopup> EngineWindow::GetEngineMenu(IEngineFont* pfont)
                                  pmenu->AddMenuItem(idmBrightnessUp       , "Brightness Up"                                   , 'U');
                                  pmenu->AddMenuItem(idmBrightnessDown     , "Brightness Down"                                 , 'D');
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-                                 pmenu->AddMenuItem(0                     , "Options are only valid when flying in fullscreen"     );
-                                 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
     m_pitemHigherResolution    = pmenu->AddMenuItem(idmHigherResolution   , "Higher Resolution"                               , 'H');
     m_pitemLowerResolution     = pmenu->AddMenuItem(idmLowerResolution    , "Lower Resolution"                                , 'L');
 								 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
