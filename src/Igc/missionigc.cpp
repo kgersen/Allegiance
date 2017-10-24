@@ -2710,7 +2710,7 @@ const float c_pointsFlags       = 10.0f;
 const float c_pointsArtifacts   = 10.0f;
 const float c_pointsRescues     = 5.0f;
 const float c_pointsProbeSpot   = 10.0f;
-const float c_pointsRepair		= 0.05f; //1 point for every 20 health restored
+const float c_pointsRepair		= 0.02f; //1 point for every 50 health restored
 
 const float c_crAdd             = 1.25f;
 const float c_crDivide          = 100.0f;
