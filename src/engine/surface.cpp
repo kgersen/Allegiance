@@ -252,6 +252,7 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 	TEXHANDLE GetTexHandle( )
 	{
+        ZAssert(m_hTexture != INVALID_TEX_HANDLE);
 		return m_hTexture;
 	}
 
