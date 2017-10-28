@@ -14,8 +14,6 @@ typedef struct COLORVALUE {
 // Older DX definitions included to get the project to build. At some point,
 // they all become redundant.
 
-#if (DIRECT3D_VERSION >= 0x0800)
-
 typedef float D3DVALUE;
 typedef DWORD D3DCOLOR;
 #define RGB_GETRED(rgb)         (((rgb) >> 16) & 0xff)
@@ -252,7 +250,5 @@ typedef struct _D3DVERTEX {
                          D3DFVF_SPECULAR | D3DFVF_TEX1 )
 #define D3DFVF_TLVERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | \
                           D3DFVF_TEX1 )
-
-#endif // if (DIRECT3D_VERSION >= 0x0800)
 
 #endif // _OLDDXDEFNS_H_
