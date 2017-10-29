@@ -41,7 +41,7 @@ public:
     bool bControl;
     bool bAlt;
     bool bDown;
-    WORD countRepeat;
+    uint16_t countRepeat;
 };
 
 class IKeyboardInput : public IObject {

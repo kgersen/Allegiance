@@ -717,8 +717,8 @@ uint32_t Window::OriginalWndProc(
 
 WinPoint MakePoint(LPARAM lParam)
 {
-    WORD x = LOWORD(lParam);
-    WORD y = HIWORD(lParam);
+    uint16_t x = LOWORD(lParam);
+    uint16_t y = HIWORD(lParam);
 
     int fx = *(short int*)(&x);
     int fy = *(short int*)(&y);

@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <Windows.h>
 
 #include "TlsValue.h"
 
@@ -21,14 +22,14 @@ private:
     uint32_t m_dwTime;
     friend class DTime;
 
-    static  tlsuint32_t s_dwPauseStart;
-    static  tlsuint32_t s_dwNegativeOffset;
+    static  tlsUINT32 s_dwPauseStart;
+    static  tlsUINT32 s_dwNegativeOffset;
 
 #ifdef _DEBUG_TRAINING
-    static  tlsuint32_t s_dwLastTime;
-    static  tlsuint32_t s_dwAccumulatedTime;
+    static  tlsUINT32 s_dwLastTime;
+    static  tlsUINT32 s_dwAccumulatedTime;
     static  tlsINT   s_iShift;
-    static  tlsuint32_t s_dwLastClockTime;
+    static  tlsUINT32 s_dwLastClockTime;
 #endif
 
 public:

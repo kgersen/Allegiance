@@ -199,14 +199,14 @@ ZString ZVersionInfo::GetStringValue(LPCTSTR pszKey, bool* pbExists) const
     MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) : GetLanguageID());
 
   // Determine if a code page was specified
-  WORD rgwCodePages[] =
+  uint16_t rgwCodePages[] =
   {
     1200,  // Unicode
     1252,  // Windows Multilingual
     0000,  // Neutral
   };
   int cCodePages = sizeofArray(rgwCodePages);
-  if (WORD(-1) != m_wCodePage)
+  if (uint16_t(-1) != m_wCodePage)
   {
     rgwCodePages[0] = m_wCodePage;
     cCodePages = 1;

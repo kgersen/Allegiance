@@ -1,14 +1,14 @@
 #include "ztime.h"
 #include "zassert.h"
 
-tlsuint32_t Time::s_dwPauseStart;
-tlsuint32_t Time::s_dwNegativeOffset;
+tlsUINT32 Time::s_dwPauseStart;
+tlsUINT32 Time::s_dwNegativeOffset;
 
 #ifdef _DEBUG_TRAINING
-  tlsuint32_t Time::s_dwLastTime;
-  tlsuint32_t Time::s_dwAccumulatedTime;
+  tlsUINT32 Time::s_dwLastTime;
+  tlsUINT32 Time::s_dwAccumulatedTime;
   tlsINT   Time::s_iShift;
-  tlsuint32_t Time::s_dwLastClockTime;
+  tlsUINT32 Time::s_dwLastClockTime;
 #endif
 
 void    Time::Pause (void)

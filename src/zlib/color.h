@@ -10,7 +10,7 @@
 #include "zstring.h"
 
 #undef RGB // TODO: remove this line after all #include <windows.h> are nuked
-#define RGB(r,g,b)          (uint32_t((((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16))))
+#define RGB(r,g,b) (uint32_t(((uint8_t(r)|((uint16_t)(uint8_t(g))<<8))|(((uint32_t)uint8_t(b))<<16))))
 
 class Color {
 private:

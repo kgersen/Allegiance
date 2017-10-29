@@ -136,7 +136,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\zlib\alloc.h" />
-    <ClInclude Include="..\src\zlib\AutoCriticalSection.h" />
     <ClInclude Include="..\src\zlib\base.h" />
     <ClInclude Include="..\src\zlib\cast.h" />
     <ClInclude Include="..\src\zlib\color.h" />

@@ -1,7 +1,7 @@
 #ifndef _matrix_h_
 #define _matrix_h_
 
-#include <Windows.h>
+#include <cstdint>
 
 #include "point.h"
 #include "tvector.h"
