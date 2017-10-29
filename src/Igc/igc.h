@@ -94,10 +94,10 @@ const FloatConstantID    c_fcidPlayerCost           = 36;
 const FloatConstantID    c_fcidBaseClusterCost      = 37;
 const FloatConstantID    c_fcidClusterDivisor       = 38;
 
-const FloatConstantID    c_fcidPointsProbeSpot = 40;
-const FloatConstantID    c_fcidPointsRepair = 41;
+//const FloatConstantID    c_fcidPointsProbeSpot      = 39;
+//const FloatConstantID    c_fcidPointsRepair         = 40;
 
-const FloatConstantID    c_fcidMax                  = 42;
+const FloatConstantID    c_fcidMax                  = 40;
 
 
 //
@@ -5597,7 +5597,7 @@ class PlayerScoreObject
 		}
 		void	SetRepair(int repair)
 		{
-			m_cRepair = repair;
+			m_cRepair += repair;
 		}
 
 
