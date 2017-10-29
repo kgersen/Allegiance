@@ -1,10 +1,14 @@
-#include "pch.h"
+#include "Win32app.h"
 #include "regkey.h"
 #include "SlmVer.h"
 
 //Imago 7/10
 #include <dbghelp.h>
-
+#include "zstring.h"
+#include "VersionInfo.h"
+#include <ctime>
+#include "zmath.h"
+#include "window.h"
 //////////////////////////////////////////////////////////////////////////////
 //
 // Some assertion functions

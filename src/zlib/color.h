@@ -7,6 +7,10 @@
 #ifndef _color_h_
 #define _color_h_
 
+#include <Windows.h>
+
+#include "zstring.h"
+
 class Color;
 
 class Color {

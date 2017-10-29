@@ -12,10 +12,13 @@
  *-----------------------------------------------------------------------*/
 
 
-#include "pch.h"
+#include "FTPSession.h"
 
+#include <Windows.h>
+#include <WinInet.h>
+#include <cstdio>
 
-
+#include "zassert.h"
 
 
 template<class TInterfaceClass>

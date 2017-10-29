@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "zmath.h"
+
+#include <crtdbg.h>
+
+#include "zassert.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -100,4 +104,3 @@ float g_1      =   1.0f;
 float g_0_5    =   0.5f;
 float g_255    = 255.0f;
 float g_Inv255 = 1.0f / 255.0f;
-

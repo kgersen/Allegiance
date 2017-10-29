@@ -7,6 +7,9 @@
 #ifndef _zmath_H_
 #define _zmath_H_
 
+#include <cmath>
+#include <Windows.h>
+
 #include "float.h"
 
 //////////////////////////////////////////////////////////////////////////////

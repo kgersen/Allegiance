@@ -62,19 +62,21 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE;__MODULE__#"ZLib";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <WarningLevel>Level1</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
@@ -120,10 +122,6 @@
     <ClCompile Include="..\src\zlib\matrix.cpp" />
     <ClCompile Include="..\src\zlib\matrix2.cpp" />
     <ClCompile Include="..\src\zlib\orientation.cpp" />
-    <ClCompile Include="..\src\zlib\pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\src\zlib\quaternion.cpp" />
     <ClCompile Include="..\src\zlib\StackTracer.cpp" />
     <ClCompile Include="..\src\zlib\tlist.cpp" />
@@ -132,7 +130,7 @@
     <ClCompile Include="..\src\zlib\VersionInfo.cpp" />
     <ClCompile Include="..\src\zlib\Win32app.cpp" />
     <ClCompile Include="..\src\zlib\window.cpp" />
-    <ClCompile Include="..\src\zlib\zlib.cpp" />
+    <ClCompile Include="..\src\zlib\zmath.cpp" />
     <ClCompile Include="..\src\zlib\zstring.cpp" />
     <ClCompile Include="..\src\zlib\ztime.cpp" />
   </ItemGroup>
@@ -153,7 +151,6 @@
     <ClInclude Include="..\src\zlib\matrix.h" />
     <ClInclude Include="..\src\zlib\olddxdefns.h" />
     <ClInclude Include="..\src\zlib\orientation.h" />
-    <ClInclude Include="..\src\zlib\pch.h" />
     <ClInclude Include="..\src\zlib\point.h" />
     <ClInclude Include="..\src\zlib\quaternion.h" />
     <ClInclude Include="..\src\zlib\rect.h" />

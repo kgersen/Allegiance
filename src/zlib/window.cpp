@@ -1,4 +1,7 @@
-#include "pch.h"
+#include "window.h"
+#include "zassert.h"
+#include "ztime.h"
+
 #ifdef ICAP
     #include "..\..\extern\icecap4\include\icecap.h"
 #endif

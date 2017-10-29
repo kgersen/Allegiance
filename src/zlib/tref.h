@@ -1,8 +1,9 @@
 #ifndef _tref_H_
 #define _tref_H_
 
-// BT - 9/17 - Hunting down mystery fedsrv crashes.
 #include "StackTracer.h"
+
+// BT - 9/17 - Hunting down mystery fedsrv crashes.
 
 //////////////////////////////////////////////////////////////////////////////
 //

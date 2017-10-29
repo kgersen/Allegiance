@@ -7,6 +7,11 @@
 #ifndef _base_h_
 #define _base_h_
 
+#include <Windows.h>
+
+#include "tref.h"
+#include "zstring.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Helper Functions

@@ -2,9 +2,7 @@
 // VersionInfo.cpp : Implementation of the ZVersionInfo class.
 //
 
-#include "pch.h"
 #include "VersionInfo.h"
-
 
 /////////////////////////////////////////////////////////////////////////////
 // ZVersionInfo

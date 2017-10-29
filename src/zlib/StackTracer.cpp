@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "StackTracer.h"
+
+#include <tchar.h>
+
+#include "zassert.h"
 
 /*
 // -- https://www.codeproject.com/Articles/41923/Get-the-call-stack-when-an-exception-is-being-caug

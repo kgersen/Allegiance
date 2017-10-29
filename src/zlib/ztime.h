@@ -5,8 +5,8 @@
 // ztime.h : Declaration and implementation of the Time class.
 //
 
+#include <cmath>
 #include "TlsValue.h"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -7,12 +7,16 @@
 #ifndef _Win32App_h_
 #define _Win32App_h_
 
+#include <Windows.h>
+
+#include "tref.h"
+
 class ExceptionData {
 public:
     EXCEPTION_RECORD *ExceptionRecord;
     CONTEXT          *ContextRecord;
 };
-
+class ZString;
 class Win32App : public IObject {
 protected:
     __declspec(dllexport) Win32App();
