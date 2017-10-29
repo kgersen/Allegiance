@@ -9346,8 +9346,8 @@ public:
             m_timeStart(ptime->GetValue()),
             m_valueStart(0),
             m_value(0),
-            m_positionOn(10, 10),
-            m_positionOff(-527, 10)
+            m_positionOn(30, 30),
+            m_positionOff(-1300, 30)
         {
             peventSource->AddSink(this);
         }
