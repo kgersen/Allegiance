@@ -7,11 +7,10 @@
 #ifndef _color_h_
 #define _color_h_
 
-#include <Windows.h>
-
 #include "zstring.h"
 
-class Color;
+#undef RGB // TODO: remove this line after all #include <windows.h> are nuked
+#define RGB(r,g,b)          (uint32_t((((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16))))
 
 class Color {
 private:
@@ -82,7 +81,7 @@ public:
     void SetBlue(float value)  { m_b = value; }
     void SetAlpha(float value) { m_a = value; }
 
-    COLORREF MakeCOLORREF() const 
+    uint32_t MakeCOLORREF() const
     { 
         return RGB(min(m_r * 255, 255), min(m_g * 255, 255), min(m_b * 255, 255)); 
     }
