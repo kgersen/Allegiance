@@ -134,7 +134,7 @@ bool  ZFile::WriteAlignedString(const ZString& str)
 
 bool ZFile::WritePad(int length)
 {
-    static BYTE zeros[] = { 0, 0, 0 };
+    static uint8_t zeros[] = { 0, 0, 0 };
     int pad = 4 - (length & 3);
 
     if (pad != 4) {
@@ -164,7 +164,7 @@ int ZFile::GetLength()
     return GetFileSize(m_handle, NULL);
 }
 
-BYTE* ZFile::GetPointer(bool bWrite, bool bCopyOnWrite)
+uint8_t* ZFile::GetPointer(bool bWrite, bool bCopyOnWrite)
 {
     ZAssert(!bWrite || !bCopyOnWrite);
 
@@ -184,7 +184,7 @@ BYTE* ZFile::GetPointer(bool bWrite, bool bCopyOnWrite)
         ZAssert(m_hfileMapping != NULL);
 
         m_p = 
-            (BYTE*)MapViewOfFile(
+            (uint8_t*)MapViewOfFile(
                 m_hfileMapping, 
                 bWrite
                     ? FILE_MAP_WRITE
@@ -233,9 +233,9 @@ ZString ZFile::GetSha1Hash()
 	BOOL bResult = FALSE;
 	HCRYPTPROV hProv = 0;
 	HCRYPTHASH hHash = 0;
-	BYTE rgbFile[bufsize];
+	uint8_t rgbFile[bufsize];
 	uint32_t cbRead = 0;
-	BYTE rgbHash[sha1len];
+	uint8_t rgbHash[sha1len];
 	uint32_t cbHash = 0;
 	CHAR rgbDigits[] = "0123456789abcdef";
 

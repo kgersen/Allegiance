@@ -39,7 +39,7 @@ public:
 
 	//imago 6/10
 	virtual bool EnforceFilter( bool bEnforce );
-	virtual bool WriteMemory( BYTE* pTarget, const BYTE* pSource, uint32_t Size );
+	virtual bool WriteMemory( uint8_t* pTarget, const uint8_t* pSource, uint32_t Size );
 	static int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers);
 	static LONG __stdcall ExceptionHandler( EXCEPTION_POINTERS* pep );
 };

@@ -125,13 +125,13 @@ public:
   ZString GetOLESelfRegister (bool* pbExists = NULL) const;
 
   // Raw Data Access
-  const BYTE*             GetVerInfo    () const;
+  const uint8_t*             GetVerInfo    () const;
   UINT                    GetVerInfoSize() const;
   const VS_FIXEDFILEINFO* GetFixed      () const;
 
 // Data Members
 protected:
-  BYTE*             m_pVerInfo;
+  uint8_t*             m_pVerInfo;
   UINT              m_cbVerInfo;
   VS_FIXEDFILEINFO* m_pFixed;
   LANGID            m_wLangID;
@@ -578,7 +578,7 @@ inline ZString ZVersionInfo::GetOLESelfRegister(bool* pbExists) const
 /////////////////////////////////////////////////////////////////////////////
 // Raw Data Access
 
-inline const BYTE* ZVersionInfo::GetVerInfo() const
+inline const uint8_t* ZVersionInfo::GetVerInfo() const
 {
   return m_pVerInfo;
 }

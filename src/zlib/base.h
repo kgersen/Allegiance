@@ -59,7 +59,7 @@ private:
 
 protected:
 
-    BYTE* m_p;
+    uint8_t* m_p;
     HANDLE m_hfileMapping;
 
 public:
@@ -70,7 +70,7 @@ public:
 
     virtual bool  IsValid();
     virtual int   GetLength();
-    virtual BYTE * GetPointer(bool bWrite = false, bool bCopyOnWrite = false);
+    virtual uint8_t * GetPointer(bool bWrite = false, bool bCopyOnWrite = false);
 
     virtual uint32_t Read(void* p, uint32_t length);
     uint32_t Write(void* p, uint32_t length);

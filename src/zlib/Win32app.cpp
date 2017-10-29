@@ -18,10 +18,10 @@
 Win32App *g_papp;
 
 	// Patch for SetUnhandledExceptionFilter 
-const BYTE PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
+const uint8_t PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
 
 	// Original bytes at the beginning of SetUnhandledExceptionFilter 
-BYTE OriginalBytes[5] = {0};
+uint8_t OriginalBytes[5] = {0};
 
 //Imago 6/10
 int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
@@ -586,7 +586,7 @@ bool Win32App::IsBuildDX9()
 }
 
 
-bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, uint32_t Size )
+bool Win32App::WriteMemory( uint8_t* pTarget, const uint8_t* pSource, uint32_t Size )
 {
 	uint32_t ErrCode = 0;
 
@@ -672,7 +672,7 @@ bool Win32App::EnforceFilter( bool bEnforce )
 		return false;
 	}
 
-	BYTE* pTarget = (BYTE*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
+	uint8_t* pTarget = (uint8_t*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
 
 	if( pTarget == 0 )
 	{

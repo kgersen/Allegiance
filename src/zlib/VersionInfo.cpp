@@ -61,13 +61,13 @@ bool ZVersionInfo::Load(LPCTSTR szModule)
   assert(!m_pFixed);
 
   // Get the size of the version information of the specified module
-  BYTE* pVerInfo = NULL;
+  uint8_t* pVerInfo = NULL;
   uint32_t cbVerInfo, dummy;
   cbVerInfo = GetFileVersionInfoSize(const_cast<LPTSTR>(szModule), LPDWORD(&dummy));
   if (cbVerInfo)
   {
     // Allocate space to hold the version information
-    pVerInfo = new BYTE[cbVerInfo];
+    pVerInfo = new uint8_t[cbVerInfo];
     if (!pVerInfo)
     {
       SetLastError(ERROR_NOT_ENOUGH_MEMORY);
@@ -131,7 +131,7 @@ bool ZVersionInfo::Load(const void* pvVerInfo, UINT cbVerInfo)
   Unload();
 
   // Allocate space to hold the version information
-  BYTE* pVerInfo = new BYTE[cbVerInfo];
+  uint8_t* pVerInfo = new uint8_t[cbVerInfo];
   if (!pVerInfo)
   {
     SetLastError(ERROR_NOT_ENOUGH_MEMORY);
