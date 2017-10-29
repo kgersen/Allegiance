@@ -60,8 +60,6 @@
 #include "tlist.h"
 #include "tmap.h"
 
-#include "comobj.h"
-
 //
 // Types
 //
