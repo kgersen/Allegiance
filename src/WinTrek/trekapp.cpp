@@ -388,11 +388,13 @@ public:
         _controlfp(_PC_53, _MCW_PC);
 
 		// BT - STEAM
+#ifndef _DEBUG
 		if (IsDebuggerPresent() == false)
 		{
 			if (SteamAPI_RestartAppIfNecessary(STEAM_APP_ID) == true)
 				::exit(-1);
 		}
+#endif
 
 		bool steamInitResult = SteamAPI_Init();
 		if (steamInitResult == false)
