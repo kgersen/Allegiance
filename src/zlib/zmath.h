@@ -8,6 +8,8 @@
 #define _zmath_H_
 
 #include <cmath>
+#include <cstdint>
+
 #include <Windows.h>
 
 #include "float.h"
@@ -52,16 +54,16 @@ inline int NextMultipleOf(int size, int value)
 //
 //////////////////////////////////////////////////////////////////////////////
 
-DWORD CountBits(DWORD dw);
-DWORD GetShift(DWORD dw);
-DWORD NextPowerOf2(DWORD x);
+uint32_t CountBits(uint32_t dw);
+uint32_t GetShift(uint32_t dw);
+uint32_t NextPowerOf2(uint32_t x);
 
-inline DWORD PowerOf2(DWORD exponent)
+inline uint32_t PowerOf2(uint32_t exponent)
 {
     return 1 << exponent;
 }
 
-inline DWORD MakeMask(int bits, int shift)
+inline uint32_t MakeMask(int bits, int shift)
 {
     return (PowerOf2(bits) - 1) << shift;
 }

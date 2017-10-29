@@ -160,7 +160,7 @@ protected:
     static ZAutoCriticalSection s_cs;
     return s_cs;
   }
-  DWORD GetSlot()
+  uint32_t GetSlot()
   {
     if (m_dwSlot)                // Check for initialized slot
       return m_dwSlot;
@@ -182,13 +182,13 @@ protected:
 
 // Data Members
 protected:
-  DWORD m_dwSlot;
+  uint32_t m_dwSlot;
 };
 
 
 /////////////////////////////////////////////////////////////////////////////
 
-typedef TlsValue<DWORD > tlsDWORD;
+typedef TlsValue<uint32_t > tlsuint32_t;
 typedef TlsValue<WORD  > tlsWORD;
 typedef TlsValue<int   > tlsINT;
 typedef TlsValue<UINT  > tlsUINT;

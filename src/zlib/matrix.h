@@ -13,7 +13,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-typedef DWORD TransformType;
+typedef uint32_t TransformType;
 
 #define TransformUnknown    -1
 #define TransformIdentity    0

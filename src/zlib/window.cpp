@@ -137,7 +137,7 @@ Window::Window(
         s_mapWindow.Set(m_hwnd, this);
 
         m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
-        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (DWORD)Win32WndProc);  //x64 Imago 6/20/09
+        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (uint32_t)Win32WndProc);  //x64 Imago 6/20/09
     }
 
     m_styleEX.SetWord(::GetWindowLong(m_hwnd, GWL_EXSTYLE));
@@ -189,7 +189,7 @@ BOOL Window::Create(
     m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
 
     if ((WNDPROC)m_pfnWndProc != (WNDPROC)Win32WndProc) {
-        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (DWORD)Win32WndProc); //x64 Imago 6/20/09
+        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (uint32_t)Win32WndProc); //x64 Imago 6/20/09
     } else {
         m_pfnWndProc = DefWindowProc;
     }
@@ -707,7 +707,7 @@ bool Window::OnTimer()
     return false;
 }
 
-DWORD Window::OriginalWndProc(
+uint32_t Window::OriginalWndProc(
     UINT message,
     WPARAM wParam,
     LPARAM lParam
@@ -777,7 +777,7 @@ void Window::SetCursor(HCURSOR hcursor)
     }
 }
 
-DWORD Window::WndProc(
+uint32_t Window::WndProc(
     UINT message,
     WPARAM wParam,
     LPARAM lParam
@@ -927,7 +927,7 @@ DWORD Window::WndProc(
                     // Handle the mouse message
                     //
 
-                    DWORD ret = 
+                    uint32_t ret = 
                           OnMouseMessage(message, wParam, pointMouse)
                         ? 0
                         : 1;
@@ -1001,7 +1001,7 @@ void CallIdleFunctions()
 
 TMap<HWND, Window* > Window::s_mapWindow;
 
-DWORD CALLBACK Window::Win32WndProc(
+uint32_t CALLBACK Window::Win32WndProc(
     HWND hwnd,
     UINT message,
     WPARAM wParam,

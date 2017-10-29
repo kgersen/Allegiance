@@ -84,7 +84,7 @@ private:
     static TList<TRef<IKeyboardInput> > m_listKeyboardInputFilters;
 
     static TMap<HWND, Window* > s_mapWindow;
-    static DWORD CALLBACK Win32WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static uint32_t CALLBACK Win32WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     void Construct();
 
@@ -92,7 +92,7 @@ private:
 	void ClipOrCenterWindowToMonitor( const WinRect& rect, UINT flags );
 
 protected:
-    DWORD OriginalWndProc(UINT, WPARAM, LPARAM);
+    uint32_t OriginalWndProc(UINT, WPARAM, LPARAM);
     static void DoHitTest();
 
 public:
@@ -154,7 +154,7 @@ public:
     // Window message handlers
     //
 
-    virtual DWORD WndProc(UINT, WPARAM, LPARAM);
+    virtual uint32_t WndProc(UINT, WPARAM, LPARAM);
 
     virtual void ChildRectChanged(Window* pchild);
     virtual void RectChanged();

@@ -40,7 +40,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	else
 		p1++;
 	ZString zApp = p1;
-    DWORD dwBufferSize = MAX_PATH;
+    uint32_t dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
@@ -102,7 +102,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	else
 		p1++;
 	ZString zApp = p1;
-    DWORD dwBufferSize = MAX_PATH;
+    uint32_t dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
@@ -155,7 +155,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         // Just in case this was a Win32 error get the last error
         //
 
-        DWORD dwError = GetLastError();
+        uint32_t dwError = GetLastError();
 
         if (!g_papp) {
 			// Imago removed asm (x64) on ?/?, integrated with mini dump on 6/10
@@ -179,15 +179,15 @@ char logFileName[MAX_PATH + 21];
 void InitializeLogchat()
 {
 	HKEY hKey;
-	DWORD dwType;
+	uint32_t dwType;
 	char szValue[20];
-	DWORD cbValue = sizeof(szValue);
+	uint32_t cbValue = sizeof(szValue);
 	bool bLogChat = false;
 
 	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
-		//Imago fixed this but is still confused why it's not a dword.
-		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue))		
+		//Imago fixed this but is still confused why it's not a uint32_t.
+		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue)))
 			bLogChat = (strcmp(szValue, "1") == 0);
 		::RegCloseKey(hKey);
 	}
@@ -268,8 +268,8 @@ void logchat(const char* strText)
 	if (chat_logfile && (length < 490)) {
 		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\r\n",
             (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
-        DWORD nBytes;
-        ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
+        uint32_t nBytes;
+        ::WriteFile(chat_logfile, bfr, strlen(bfr), LPDWORD(&nBytes), NULL);
 	}
 	delete t;
 }
@@ -399,15 +399,15 @@ extern bool g_bOutput = true;
     void InitializeDebugf()
     {
         HKEY hKey;
-        DWORD dwType;
+        uint32_t dwType;
         char  szValue[20];
-        DWORD cbValue = sizeof(szValue);
+        uint32_t cbValue = sizeof(szValue);
         bool  bLogToFile = false;
 
 		// mmf added this regkey check 
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
             ::RegCloseKey(hKey);
 
             g_outputdebugstring = (strcmp(szValue, "1") == 0);
@@ -415,7 +415,7 @@ extern bool g_bOutput = true;
 
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+            ::RegQueryValueEx(hKey, "LogToFile", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
             ::RegCloseKey(hKey);
 
             bLogToFile = (strcmp(szValue, "1") == 0);
@@ -501,7 +501,7 @@ void Win32App::Exit(int value)
     _exit(value);
 }
 
-int Win32App::OnException(DWORD code, EXCEPTION_POINTERS* pdata)
+int Win32App::OnException(uint32_t code, EXCEPTION_POINTERS* pdata)
 {
 			GenerateDump(pdata);
 	return EXCEPTION_CONTINUE_SEARCH;
@@ -534,8 +534,8 @@ void Win32App::DebugOutput(const char *psz)
 			::OutputDebugStringA(psz);
 
         if (g_logfile) {
-            DWORD nBytes;
-            ::WriteFile(g_logfile, psz, strlen(psz), &nBytes, NULL);
+            uint32_t nBytes;
+            ::WriteFile(g_logfile, psz, strlen(psz), LPDWORD(&nBytes), NULL);
         }
     #endif
 }
@@ -586,9 +586,9 @@ bool Win32App::IsBuildDX9()
 }
 
 
-bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
+bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, uint32_t Size )
 {
-	DWORD ErrCode = 0;
+	uint32_t ErrCode = 0;
 
 
 	// Check parameters 
@@ -620,9 +620,9 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 	// Modify protection attributes of the target memory page 
 
-	DWORD OldProtect = 0;
+	uint32_t OldProtect = 0;
 
-	if( !VirtualProtect( pTarget, Size, PAGE_EXECUTE_READWRITE, &OldProtect ) )
+	if( !VirtualProtect( pTarget, Size, PAGE_EXECUTE_READWRITE, LPDWORD(&OldProtect) ) )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("VirtualProtect() failed.") );
@@ -637,9 +637,9 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 	// Restore memory protection attributes of the target memory page 
 
-	DWORD Temp = 0;
+	uint32_t Temp = 0;
 
-	if( !VirtualProtect( pTarget, Size, OldProtect, &Temp ) )
+	if( !VirtualProtect( pTarget, Size, OldProtect, LPDWORD(&Temp) ) )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("VirtualProtect() failed.") );
@@ -658,7 +658,7 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 bool Win32App::EnforceFilter( bool bEnforce )
 {
-	DWORD ErrCode = 0;
+	uint32_t ErrCode = 0;
 
 	
 	// Obtain the address of SetUnhandledExceptionFilter 

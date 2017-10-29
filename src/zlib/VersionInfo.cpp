@@ -62,8 +62,8 @@ bool ZVersionInfo::Load(LPCTSTR szModule)
 
   // Get the size of the version information of the specified module
   BYTE* pVerInfo = NULL;
-  DWORD cbVerInfo, dummy;
-  cbVerInfo = GetFileVersionInfoSize(const_cast<LPTSTR>(szModule), &dummy);
+  uint32_t cbVerInfo, dummy;
+  cbVerInfo = GetFileVersionInfoSize(const_cast<LPTSTR>(szModule), LPDWORD(&dummy));
   if (cbVerInfo)
   {
     // Allocate space to hold the version information
@@ -80,7 +80,7 @@ bool ZVersionInfo::Load(LPCTSTR szModule)
   // Attempt to load the version information block
   if (!GetFileVersionInfo(const_cast<LPTSTR>(szModule), 0, cbVerInfo, pVerInfo))
   {
-    DWORD dwLastError = GetLastError();
+    uint32_t dwLastError = GetLastError();
     delete [] pVerInfo;
     SetLastError(dwLastError ? dwLastError : ERROR_NO_MORE_ITEMS);
     return false;
@@ -91,7 +91,7 @@ bool ZVersionInfo::Load(LPCTSTR szModule)
   UINT cbFixed = 0;
   if (!VerQueryValue(pVerInfo, TEXT("\\"), (void**)&pFixed, &cbFixed) || cbFixed != sizeof(*pFixed))
   {
-    DWORD dwLastError = GetLastError();
+    uint32_t dwLastError = GetLastError();
     delete [] pVerInfo;
     SetLastError(dwLastError);
     return false;
@@ -146,7 +146,7 @@ bool ZVersionInfo::Load(const void* pvVerInfo, UINT cbVerInfo)
   UINT cbFixed = 0;
   if (!VerQueryValue(pVerInfo, TEXT("\\"), (void**)&pFixed, &cbFixed) || cbFixed != sizeof(*pFixed))
   {
-    DWORD dwLastError = GetLastError();
+    uint32_t dwLastError = GetLastError();
     delete [] pVerInfo;
     SetLastError(dwLastError ? dwLastError : ERROR_NO_MORE_ITEMS);
     return false;

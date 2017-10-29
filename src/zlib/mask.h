@@ -9,6 +9,8 @@
 
 #include <Windows.h>
 
+#include <cstdint>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // This class is a type safe way of dealing with flag words see surface.h
@@ -105,16 +107,16 @@ public:
     }
 };
 
-class BitMask : public TBitMask<DWORD, DWORD> 
+class BitMask : public TBitMask<uint32_t, uint32_t> 
 {
 public:
-    BitMask(DWORD dw) : 
-        TBitMask<DWORD, DWORD>(dw)
+    BitMask(uint32_t dw) : 
+        TBitMask<uint32_t, uint32_t>(dw)
     {
     }
 
     BitMask() : 
-        TBitMask<DWORD, DWORD>(0)
+        TBitMask<uint32_t, uint32_t>(0)
     {
     }
 };

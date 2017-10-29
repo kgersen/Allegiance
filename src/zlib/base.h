@@ -41,7 +41,7 @@ public:
         CloseHandle(m_handle);
     }
 
-    DWORD Wait(DWORD dwTimeout = -1)
+    uint32_t Wait(uint32_t dwTimeout = -1)
     {
         return WaitForSingleObject(m_handle, dwTimeout);
     }
@@ -65,17 +65,17 @@ protected:
 public:
 	ZFile(); // BUILD_DX9: added for DX9 but can stay for DX7 as well
 
-    ZFile(const PathString& strPath, DWORD how = OF_READ | OF_SHARE_DENY_WRITE);
+    ZFile(const PathString& strPath, uint32_t how = OF_READ | OF_SHARE_DENY_WRITE);
     virtual ~ZFile();
 
     virtual bool  IsValid();
     virtual int   GetLength();
     virtual BYTE * GetPointer(bool bWrite = false, bool bCopyOnWrite = false);
 
-    virtual DWORD Read(void* p, DWORD length);
-    DWORD Write(void* p, DWORD length);
+    virtual uint32_t Read(void* p, uint32_t length);
+    uint32_t Write(void* p, uint32_t length);
 
-    bool  Write(DWORD value);
+    bool  Write(uint32_t value);
     bool  Write(int   value);
     bool  Write(float value);
     bool  Write(const ZString& str);
@@ -127,24 +127,24 @@ public:
 template<class ObjectType>
 class Thread : public WaitableObject {
 protected:
-    typedef DWORD (ObjectType::*PFM)();
+    typedef uint32_t (ObjectType::*PFM)();
 
-    DWORD m_tid;
+    uint32_t m_tid;
     ObjectType* m_pobject;
     PFM   m_pfm;
 
-    DWORD Start()
+    uint32_t Start()
     {
         return (m_pobject->*m_pfm)();
     }
 
-    static DWORD ThreadStarter(Thread* pthis)
+    static uint32_t ThreadStarter(Thread* pthis)
     {
         return pthis->Start();
     }
 
 public:
-    Thread(ObjectType* pobject, PFM pfm, DWORD dwStackSize = 0) :
+    Thread(ObjectType* pobject, PFM pfm, uint32_t dwStackSize = 0) :
         m_pobject(pobject),
         m_pfm(pfm),
         WaitableObject(
@@ -163,9 +163,9 @@ public:
     void Resume() { ResumeThread(m_handle); }
     void Suspend() { SuspendThread(m_handle); }
 
-    DWORD Run()
+    uint32_t Run()
     {
-        DWORD dw;
+        uint32_t dw;
         Resume();
         Wait();
         GetExitCodeThread(m_handle, &dw);

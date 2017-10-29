@@ -28,7 +28,7 @@ public:
 
     virtual HRESULT Initialize(const ZString& strCommandLine);
     virtual void    Terminate();
-    virtual int     OnException(DWORD code, EXCEPTION_POINTERS* pdata);
+    virtual int     OnException(uint32_t code, EXCEPTION_POINTERS* pdata);
 
     virtual void    DebugOutput(const char *psz);
     virtual bool    OnAssert(const char* psz, const char* pszFile, int line, const char* pszModule);
@@ -39,7 +39,7 @@ public:
 
 	//imago 6/10
 	virtual bool EnforceFilter( bool bEnforce );
-	virtual bool WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size );
+	virtual bool WriteMemory( BYTE* pTarget, const BYTE* pSource, uint32_t Size );
 	static int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers);
 	static LONG __stdcall ExceptionHandler( EXCEPTION_POINTERS* pep );
 };

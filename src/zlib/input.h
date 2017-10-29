@@ -22,7 +22,7 @@ class IInputProvider;
 //////////////////////////////////////////////////////////////////////////////
 
 class MouseResultBaseType {};
-typedef TBitMask<MouseResultBaseType, DWORD> MouseResult;
+typedef TBitMask<MouseResultBaseType, uint32_t> MouseResult;
 
 class MouseResultHit     : public MouseResult { public: MouseResultHit()     : MouseResult(0x02) {} };
 class MouseResultCapture : public MouseResult { public: MouseResultCapture() : MouseResult(0x04) {} };
