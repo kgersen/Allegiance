@@ -208,6 +208,7 @@ DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
 	if (bHide)
 		::DestroyWindow(hwndFound);
 
+
 	return 0;
 }
 //
@@ -1061,7 +1062,9 @@ public:
     void OpenQuickChatMenu(QuickChatMenu* pqcmenu)
     {
         m_pmenuQuickChat = CreateQuickChatMenu(pqcmenu);
-        OpenPopup(m_pmenuQuickChat, Point(10, 180));
+
+        Point point = Point(10, GetEngine()->GetFullscreenSize().Y() - 10);
+        OpenPopup(m_pmenuQuickChat, Rect(point, point));
     }
 
     void CloseQuickChatMenu()
@@ -1198,11 +1201,7 @@ public:
     TRef<Image>          m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
-    TRef<Screen>         m_pscreenBackdrop;
-    TRef<TranslateImage> m_pimageBackdrop;
-    WinPoint             m_sizeCombat;
-    WinPoint             m_sizeCombatFullscreen;
-    bool                 m_bCombatSize;
+	TRef<MatrixTransform2> m_pMatrixTransformScreen;
 
     //
     // Lighting
@@ -2161,7 +2160,7 @@ public:
         return m_screen != ScreenIDCombat;
     }
 
-    void SetScreen(Screen* pscreen)
+    void SetScreen(WrapImage* target, Screen* pscreen)
     {
         m_pimageScreen = pscreen->GetImage();
 
@@ -2178,20 +2177,33 @@ public:
             // Create the UI Window
             //
 
-            m_pimageScreen = CreatePaneImage(GetEngine(), SurfaceType3D(), false, pscreen->GetPane());
+			m_pMatrixTransformScreen = new MatrixTransform2(Matrix2::GetIdentity());
+
+            m_pimageScreen = new TransformImage(
+				CreatePaneImage(GetEngine(), false, ppane),
+				m_pMatrixTransformScreen
+			);
         }
 
-		m_pwrapImageTop->SetImage(m_pimageScreen);
-        SetWindowedSize(pscreen->GetSize());
-        SetFullscreenSize(Vector(pscreen->GetSize().X(),pscreen->GetSize().Y(),g_DX9Settings.m_refreshrate));
-        SetSizeable(false);
+		target->SetImage(m_pimageScreen);
+		
+        //SetSizeable(true); // kg-: #226 always
 
         //
         // keep a reference to the screen to keep it alive
         //
-
         m_pscreen = pscreen;
     }
+
+	void SetUiScreen(Screen * pscreen)
+	{
+		SetScreen(m_pwrapImageTop, pscreen);
+	}
+
+	void SetCombatScreen(Screen* pscreen)
+	{
+		SetScreen(m_pwrapImageBackdrop, pscreen);
+	}
 
     ScreenID screen(void) const
     {
@@ -2226,17 +2238,11 @@ public:
         debugf("Switched to screen %d\n", s);
         if (s != m_screen)
         {
-            //
-            // Save the screen size if we are switching away from combat
-            //
 
             if (m_screen == ScreenIDCombat) {
+				// this used to also save the current resolution. Still keeping the other functions.
                 Set3DAccelerationImportant(false);
-                SaveCombatSize();
                 GetConsoleImage()->OnSwitchViewMode();
-
-				// BT - 9/17 - Return to 800x600 resolution so the screens scale correctly when the player returns to the lobby.
-				SetFullscreenSize(Vector(800, 600, 0));
             }
 
             SetHideCursorTimer(s == ScreenIDCombat);
@@ -2261,8 +2267,8 @@ public:
                 m_pconsoleImage = NULL;
                 TerminateGameStateContainer();
                 trekClient.RequestViewCluster(NULL);
-                m_pscreenBackdrop = NULL;
-                m_pimageBackdrop = NULL;
+				m_pscreen = NULL;
+				m_pimageScreen = NULL;
                 m_viewmode = vmUI;
             }
 
@@ -2283,13 +2289,6 @@ public:
             switch (s) {
                 case ScreenIDCombat:
                 {
-                    //
-                    // Switch to combat resolution
-                    //
-
-					//AEM 7.15.07  To prevent the wrong resolution from being loaded, set to the CombatFullscreen size here
-					//imago add refresh rate 7/1/09
-					SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate)); 
                     SetFocus();
                     m_frameID = 0;
                     m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
@@ -2325,26 +2324,23 @@ public:
                 }
 
                 case ScreenIDTeamScreen:
-                    SetScreen(CreateTeamScreen(GetModeler()));
+                    SetUiScreen(CreateTeamScreen(GetModeler()));
                     break;
 
                 case ScreenIDGameScreen:
-                    SetScreen(CreateGameScreen(GetModeler()));
+					SetUiScreen(CreateGameScreen(GetModeler()));
                     break;
 
                 case ScreenIDGameOverScreen:
-					// BT - 9/17 - Return the screen to 800x600 for game over so that the screen scales correctly for full screen.
-					SetFullscreenSize(Vector(800, 600, 0));
-
-                    SetScreen(CreateGameOverScreen(GetModeler()));
+					SetUiScreen(CreateGameOverScreen(GetModeler()));
                     break;
 
                 case ScreenIDCreateMission:
-                    SetScreen(CreateNewGameScreen(GetModeler()));
+					SetUiScreen(CreateNewGameScreen(GetModeler()));
                     break;
 
                 case ScreenIDIntroScreen:
-                    SetScreen(CreateIntroScreen(GetModeler()));
+					SetUiScreen(CreateIntroScreen(GetModeler()));
                     break;
 
 				case ScreenIDSplashScreen:
@@ -2417,34 +2413,35 @@ public:
 
 
 							if (m_pengine->IsFullscreen()) {
-								CD3DDevice9::Get()->ResetDevice(false,800,600,g_DX9Settings.m_refreshrate);
+								CD3DDevice9::Get()->ResetDevice(false);
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
-						SetScreen(CreateIntroScreen(GetModeler()));
+						SetUiScreen(CreateIntroScreen(GetModeler()));
 	                    break;
 					}
 
+
                 case ScreenIDTrainScreen:
-                    SetScreen(CreateTrainingScreen(GetModeler()));
+					SetUiScreen(CreateTrainingScreen(GetModeler()));
                     break;
 
                 case ScreenIDZoneClubScreen:
-                    SetScreen(CreateZoneClubScreen(GetModeler(), GetTime()));
+					SetUiScreen(CreateZoneClubScreen(GetModeler(), GetTime()));
                     break;
 
                 case ScreenIDSquadsScreen:
-                    SetScreen(CreateSquadsScreen(GetModeler(), szPlayerName ? PCC(strPlayerName) : NULL, idPlayer, szOther ? PCC(strOther) : NULL));
+					SetUiScreen(CreateSquadsScreen(GetModeler(), szPlayerName ? PCC(strPlayerName) : NULL, idPlayer, szOther ? PCC(strOther) : NULL));
                     break;
 
                 case ScreenIDGameStarting:
-                    SetScreen(CreateGameStartingScreen(GetModeler()));
+					SetUiScreen(CreateGameStartingScreen(GetModeler()));
                     break;
 
                 case ScreenIDCharInfo:
                     if(idPlayer==-1)
                         idPlayer = trekClient.GetZoneClubID();
-                    SetScreen(CreateCharInfoScreen(GetModeler(), idPlayer));
+					SetUiScreen(CreateCharInfoScreen(GetModeler(), idPlayer));
                     break;
 
                 case ScreenIDTrainSlideshow:
@@ -2465,7 +2462,7 @@ public:
 						"tm_8_nanite", //TheBored 06-JUL-07: Mish #8 pregame panels.
                     };
 
-                    SetScreen (CreateTrainingSlideshow (GetModeler (), strNamespace[iMission], iMission));
+					SetUiScreen(CreateTrainingSlideshow (GetModeler (), strNamespace[iMission], iMission));
                     break;
                 }
 
@@ -2486,16 +2483,16 @@ public:
 						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
 						"tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
                     };
-                    SetScreen (CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
+					SetUiScreen(CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
                     break;
                 }
 
                 case ScreenIDZoneEvents:
-                    SetScreen(CreateZoneEventsScreen(GetModeler()));
+					SetUiScreen(CreateZoneEventsScreen(GetModeler()));
                     break;
 
                 case ScreenIDLeaderBoard:
-                    SetScreen(CreateLeaderBoardScreen(GetModeler(), strPlayerName));
+					SetUiScreen(CreateLeaderBoardScreen(GetModeler(), strPlayerName));
                     break;
 
                 default:
@@ -2527,6 +2524,12 @@ public:
     void        LeaderBoardScreenForPlayer(const ZString & strCharacter)
     {
         screen(ScreenIDLeaderBoard, -1, PCC(strCharacter));
+    }
+
+    void OpenPopup(IPopup* ppopup, const Rect& rect)
+    {
+        GetPopupContainer()->OpenPopup(ppopup, rect);
+        m_ptrekInput->SetFocus(false);
     }
 
     void OpenPopup(IPopup* ppopup, const Point& point)
@@ -2661,6 +2664,7 @@ public:
 				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
 			WinPoint(800, 600)
 		),
+
 		m_screen(ScreenIDSplashScreen),
 		m_bShowMeteors(true),
 		m_bShowStations(true),
@@ -2995,27 +2999,22 @@ public:
         // Initial screen size
         //
 
-        m_bCombatSize = false;
+		{
+			int x, y;
 
-//imago restored original functionality 6/28/09
-		m_sizeCombat =
-            WinPoint(
-                int(LoadPreference("CombatXSize", 800)),
-                int(LoadPreference("CombatYSize", 600))
-            );
-		//m_sizeCombatFullscreen =
-		//	WinPoint(	CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width,
-		//				CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height );
+			//load resolution, default is the clients desktop resolution
+			WinPoint current_resolution = GetEngine()->GetFullscreenSize();
+			x = int(LoadPreference("CombatFullscreenXSize", current_resolution.X()));
+			y = int(LoadPreference("CombatFullscreenYSize", current_resolution.Y()));
 
-       m_sizeCombatFullscreen =
-           WinPoint(
-                int(LoadPreference("CombatFullscreenXSize", 800)),
-                int(LoadPreference("CombatFullscreenYSize", 600))
-            );
+			//Use something reasonable if values are nonsense. I would really like to remove this.
+			if (x == 0)
+				x = 800;
+			if (y == 0)
+				y = 600;
 
-	   //Imago 7/27/09 Win7
-	   if (m_sizeCombatFullscreen ==  WinPoint(0,0))
-		   m_sizeCombatFullscreen = WinPoint(800,600);
+			SetFullscreenSize(Vector(x, y, g_DX9Settings.m_refreshrate));
+		}
 
 // BUILD_DX9
 
@@ -3143,7 +3142,6 @@ public:
         m_pimageLOD =
             CreatePaneImage(
                 GetEngine(),
-                SurfaceType2D(),
                 false,
                 ppane
             );
@@ -3326,7 +3324,7 @@ public:
         // intro.avi video moved up
         //
 		TRef<Screen> introscr = CreateIntroScreen(GetModeler());
-		SetScreen(introscr);
+		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
 
@@ -3371,18 +3369,20 @@ public:
 			if (!CD3DDevice9::Get()->IsWindowed())
 				::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
 		}  
+
     }
 
     void InitializeImages()
     {
         m_pwrapImageTop = new WrapImage(Image::GetEmpty());
         m_pwrapImageLOD = new WrapImage(Image::GetEmpty());
+		m_pwrapImageHelp = new WrapImage(Image::GetEmpty());
 
         m_pgroupImage = new GroupImage();
         m_pgroupImage->AddImage(m_pjoystickImage);
         m_pgroupImage->AddImage(m_pwrapImageLOD);
         m_pgroupImage->AddImage(GetPopupContainer()->GetImage());
-        m_pgroupImage->AddImage(m_pwrapImageHelp = new WrapImage(Image::GetEmpty()));
+        m_pgroupImage->AddImage(m_pwrapImageHelp);
         m_pgroupImage->AddImage(m_pwrapImageTop);
         SetImage(m_pgroupImage);
     }
@@ -3503,21 +3503,10 @@ public:
 
     void Terminate()
     {
-        //
         // Save the screen resolution
-        //
-
-		if ( m_screen == ScreenIDCombat )  //AEM 7.15.07 Don't want to end up saving a non combat resolution (800x600)
-			SaveCombatSize();
-
-        SavePreference("CombatXSize", m_sizeCombat.X());
-        SavePreference("CombatYSize", m_sizeCombat.Y());
-
-		//Imago 7/27/09 Win7
-		if (m_sizeCombatFullscreen.X() != 0)
-        	SavePreference("CombatFullscreenXSize", m_sizeCombatFullscreen.X());
-		if (m_sizeCombatFullscreen.Y() != 0)
-        	SavePreference("CombatFullscreenYSize", m_sizeCombatFullscreen.Y());
+		WinPoint sizeCurrentResolution = GetEngine()->GetFullscreenSize();
+		SavePreference("CombatFullscreenXSize", sizeCurrentResolution.X());
+		SavePreference("CombatFullscreenYSize", sizeCurrentResolution.Y());
 
         SavePreference("Allow3DAcceleration", GetEngine()->GetAllow3DAcceleration());
         SavePreference("AllowSecondary"     , GetEngine()->GetAllowSecondary     ());
@@ -3554,10 +3543,8 @@ public:
         m_mapAnimatedImages.SetEmpty();
 
         TerminateGameStateContainer();
-        m_pimageBackdrop   = NULL;
         m_pimageScreen     = NULL;
         m_pscreen          = NULL;
-        m_pscreenBackdrop  = NULL;
         SetCaption(NULL);
 
 		// BT - 10/17 - Fixing 8982261	211206	allegiance.exe	allegiance.exe	tvector.h	362	13	0	Win32 StructuredException at 0058C1DA : UNKNOWN	2017-10-08 14:33:29	0x0018C1DA	10	UNKNOWN
@@ -3752,8 +3739,6 @@ public:
 
             // show the 3D view
             m_pwrapImageBackdrop->SetImage(m_pgroupImage3D);
-            m_pscreenBackdrop = NULL;
-            m_pimageBackdrop = NULL;
 
             // if they switched away from command view before the cluster could be displayed...
             if (trekClient.GetViewCluster() && (m_viewmode == vmHangar || m_viewmode == vmLoadout))
@@ -3769,20 +3754,30 @@ public:
 
 	void UpdateBackdropCentering()
 	{
-		if (m_pimageBackdrop)
+		//kg- #226 - todo -factorize with above code
+		if (m_pimageScreen)
 		{
 			// center the pane on the screen
 			const Rect& rectScreen = GetScreenRectValue()->GetValue();
-			const WinPoint& sizePane = m_pscreenBackdrop->GetPane()->GetSize();
-			Point
-				pntOffset(
-				(rectScreen.XSize() - sizePane.X()) / 2,
-					(rectScreen.YSize() - sizePane.Y()) / 2
+			if (m_pscreen->GetPane()) //kg- review
+			{
+				const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
+
+				float scale;
+				scale = min(rectScreen.XSize() / sizePane.X(), rectScreen.YSize() / sizePane.Y());
+
+				Point pointTranslate;
+				pointTranslate = Point(
+					0.5 * (rectScreen.XSize() - sizePane.X() * scale),
+					0.5 * (rectScreen.YSize() - sizePane.Y() * scale)
 				);
 
-			m_pimageBackdrop->SetTranslation(
-				pntOffset
-			);
+				Matrix2 matrix = Matrix2::GetIdentity();
+				matrix.SetScale(Point(scale, scale));
+				matrix.Translate(pointTranslate);
+
+				m_pMatrixTransformScreen->SetValue(matrix);
+			}
 		}
 	}
 
@@ -5279,6 +5274,7 @@ public:
         }
         
 		ThingGeo::SetPerformance(bPerformance);
+
         ThingGeo::SetShowSmoke(iSmoke);
         SavePreference("SmokeEffects", (DWORD) (bPerformance) ? 2 : iSmoke);
 
@@ -6655,10 +6651,9 @@ public:
     {
         m_viewmode = vmOverride;
         m_pwrapImageBackdrop->SetImage(trekClient.GetCluster() ? m_pgroupImage3D : Image::GetEmpty());
-        m_pscreenBackdrop = NULL;
-        m_pimageBackdrop = NULL;
+		m_pscreen = NULL;
+		m_pimageScreen = NULL;
 
-        AdjustCombatSize(vmOverride);
         SetCameraMode(cmExternalOverride);
 
         m_cameraControl.SetAnimatePosition(false);
@@ -6822,53 +6817,6 @@ public:
         return m_viewmode;
     }
 
-    void SaveCombatSize()
-    {
-        if (m_bCombatSize) {
-            m_sizeCombat           = GetWindowedSize();
-            m_sizeCombatFullscreen = GetFullscreenSize();
-            m_bCombatSize = false;
-        }
-    }
-
-    void AdjustCombatSize(ViewMode vm)
-    {
-        SaveCombatSize();
-
-        if (vm == vmLoadout) {
-            ZDebugOutput("SetViewMode : 800x600\n");
-
-            //
-            // Hangar or loadout switch to 8x6
-            //
-			// -KGJV - resolution fix - test
-            Set3DAccelerationImportant(true); // kg- 
-            SetWindowedSize(m_sizeCombat);
-
-            SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
-
-            SetSizeable(true);  //AEM 7.16.07	Previously SetSizeable(false)  We can now adjust the fullscreen size in the Loudout screen.
-            //SetWindowedSize(WinPoint(800, 600));
-            //SetFullscreenSize(WinPoint(800, 600));
-            //SetSizeable(false);
-        } else {
-            ZDebugOutput("SetViewMode : combat size\n");
-
-            //
-            // a 3D mode switch to the combat resolution
-            //
-
-            SetWindowedSize(m_sizeCombat);
-            SetFullscreenSize(Vector(m_sizeCombatFullscreen.X(),m_sizeCombatFullscreen.Y(),g_DX9Settings.m_refreshrate));
-            Set3DAccelerationImportant(true);
-            SetSizeable(true);
-        }
-
-		m_bCombatSize = true;	//AEM 7.16.07	Moved here from inside the else block.  Since the Loadout size
-								//				now = the Combat size we need to allow for adjusting the fullscreen size
-								//				in the Loadout as well
-    }
-
     void SetViewMode(ViewMode vm, bool bForce = false)
     {
         ZDebugOutput("SetViewMode(" + ZString((int)vm) + ")\n");
@@ -6879,14 +6827,6 @@ public:
 
         if (m_cm == cmExternalOverride)
             return;
-
-        //
-        // Adjust the window properties
-        //
-
-        if (bForce || vm != m_viewmode) {
-            AdjustCombatSize(vm);
-        }
 
         //
         // Switch the image
@@ -6934,28 +6874,10 @@ public:
             switch (vm)
             {
             case vmHangar:
-                m_pscreenBackdrop = CreateHangarScreen(GetModeler(), "hangar");
-                {
-                    m_pimageBackdrop =
-                        new TranslateImage(
-                            CreatePaneImage(
-                                GetEngine(),
-                                SurfaceType2D(),
-                                false,
-                                m_pscreenBackdrop->GetPane()
-                            ),
-                            Point(0,0)
-                        );
-                }
+				SetCombatScreen(CreateHangarScreen(GetModeler(), "hangar"));
 
-                if (m_pwrapImageBackdrop->GetImage() != m_pimageBackdrop)
-                {
-                    trekClient.RequestViewCluster(NULL);
-                    m_pwrapImageBackdrop->SetImage(m_pimageBackdrop);
-
-                    m_pscreenBackdrop->GetPane()->UpdateLayout();
-                    DoHitTest();
-                }
+                // reset the current selected cluster
+                trekClient.RequestViewCluster(NULL);
 
                 UpdateOverlayFlags();
                 SetCameraMode(cmCockpit);
@@ -6963,28 +6885,10 @@ public:
                 break;
 
             case vmLoadout:
-                m_pscreenBackdrop = CreateLoadout(GetModeler(), GetWindow()->GetTime());
-                {
-                    m_pimageBackdrop =
-                        new TranslateImage(
-                            CreatePaneImage(
-                                GetEngine(),
-                                SurfaceType3D() | SurfaceTypeZBuffer(),
-                                false,
-                                m_pscreenBackdrop->GetPane()
-                            ),
-                            Point(0,0)
-                        );
-                }
+				SetCombatScreen(CreateLoadout(GetModeler(), GetWindow()->GetTime()));
 
-                if (m_pwrapImageBackdrop->GetImage() != m_pimageBackdrop)
-                {
-                    trekClient.RequestViewCluster(NULL);
-                    m_pwrapImageBackdrop->SetImage(m_pimageBackdrop);
-
-                    m_pscreenBackdrop->GetPane()->UpdateLayout();
-                    DoHitTest();
-                }
+                // reset the current selected cluster
+                trekClient.RequestViewCluster(NULL);
 
                 UpdateOverlayFlags();
                 SetCameraMode(cmCockpit);
@@ -6994,16 +6898,16 @@ public:
             case vmCommand:
                 SetCameraMode(m_cmPreviousCommand);
                 m_pwrapImageBackdrop->SetImage(trekClient.GetCluster() ? m_pgroupImage3D : Image::GetEmpty());
-                m_pscreenBackdrop = NULL;
-                m_pimageBackdrop = NULL;
+                m_pscreen = NULL;
+                m_pimageScreen = NULL;
                 break;
 
             case vmCombat:
                 assert (trekClient.GetViewCluster() == NULL);
                 SetCameraMode(cmCockpit);
                 m_pwrapImageBackdrop->SetImage(trekClient.GetCluster() ? m_pgroupImage3D : Image::GetEmpty());
-                m_pscreenBackdrop = NULL;
-                m_pimageBackdrop = NULL;
+				m_pscreen = NULL;
+				m_pimageScreen = NULL;
                 break;
 
             case vmOverride:
@@ -7888,12 +7792,13 @@ public:
         {
             bool bEnable =
                    m_bEnableVirtualJoystick
-                && GetFullscreen()
                 && GetPopupContainer()->IsEmpty()
                 && trekClient.flyingF()
                 && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
                 && ((m_voverlaymask[m_viewmode] & c_omBanishablePanes) == 0);
 
+            //enabling mouse means that we listen to the mouse manually and ignore window events
+            m_pmouse->SetEnabled(bEnable || (m_bActive && m_pengine->IsFullscreen()));
             m_pjoystickImage->SetEnabled(bEnable, bEnable);
             SetMoveOnHide(!bEnable);
             ShowCursor(!bEnable);
@@ -7905,9 +7810,6 @@ public:
 
         if (m_pscreen) {
             m_pscreen->OnFrame();
-        }
-        if (m_pscreenBackdrop) {
-            m_pscreenBackdrop->OnFrame();
         }
         CheckCountdownSound();
 
@@ -9444,8 +9346,8 @@ public:
             m_timeStart(ptime->GetValue()),
             m_valueStart(0),
             m_value(0),
-            m_positionOn(10, 10),
-            m_positionOff(-527, 10)
+            m_positionOn(30, 30),
+            m_positionOff(-1300, 30)
         {
             peventSource->AddSink(this);
         }
@@ -9552,7 +9454,6 @@ public:
             new TransformImage(
                 CreatePaneImage(
                     GetEngine(),
-                    SurfaceType2D() | SurfaceType3D(),
                     true,
                     m_phelp
                 ),

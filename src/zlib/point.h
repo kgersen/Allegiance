@@ -76,6 +76,11 @@ public:
         return TPoint(p1.X() / value, p1.Y() / value);
     }
 
+	friend TPoint operator/(const TPoint& p1, const TPoint& p2)
+	{
+		return TPoint(p1.X() / p2.X(), p1.Y() / p2.Y());
+	}
+
     friend TPoint operator+(const TPoint& p1, const TPoint& p2)
     {
         return TPoint(p1.X() + p2.X(), p1.Y() + p2.Y());

@@ -1185,7 +1185,6 @@ public:
             CreateVisibleImage(
                 CreatePaneImage(
                     GetEngine(),
-                    SurfaceType2D(),
                     false,
                     ppane
                 ),

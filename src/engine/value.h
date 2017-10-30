@@ -398,6 +398,25 @@ typedef TModifiableValue<Point, ModifiablePointName> ModifiablePointValue;
 
 //////////////////////////////////////////////////////////////////////////////
 //
+// WinPoint Value
+//
+//////////////////////////////////////////////////////////////////////////////
+
+ZString GetString(int indent, const WinPoint& vec);
+void Write(IMDLBinaryFile* pmdlFile, const WinPoint& value);
+ZString GetFunctionName(const WinPoint& value);
+
+typedef TStaticValue<WinPoint> WinPointValue;
+
+class ModifiableWinPointName {
+public:
+	static ZString GetName() { return "ModifiableWinPoint"; }
+};
+
+typedef TModifiableValue<WinPoint, ModifiableWinPointName> ModifiableWinPointValue;
+
+//////////////////////////////////////////////////////////////////////////////
+//
 // Rect Value
 //
 //////////////////////////////////////////////////////////////////////////////
