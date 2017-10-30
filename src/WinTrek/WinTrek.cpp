@@ -4212,7 +4212,9 @@ public:
 
 	// BT - STEAM - TODO Move these to where the other globals are hiding?
 	CallsignTagInfo m_currentCallsignTag;
+#ifdef STEAM_APP_ID
 	SteamClans m_availableSteamClans;
+#endif
 
     void ShowMainMenu()
     {
@@ -4274,6 +4276,7 @@ public:
 
 		
 		// BT - STEAM - Let the user select their steam call sign from a list of options.
+#ifdef STEAM_APP_ID
 		if (m_availableSteamClans.GetAvailableCallsignTags()->GetCount() > 0)
 		{
 			ZString menuOption = "Squad Tags";
@@ -4309,7 +4312,7 @@ public:
 		}
 
 		// BT - STEAM - END.
-
+#endif
 
         if (trekClient.MyMission() != NULL) {
 			m_pmenu->AddMenuItem(0               , "");
@@ -4544,6 +4547,7 @@ public:
 
 
 	// BT - STEAM 
+#ifdef STEAM_APP_ID
 	void AddAvailablePlayerTagsToMenu(TRef<IMenu> pmenu)
 	{
 		pmenu->AddMenuItem(0, "Squad Tags");
@@ -4587,6 +4591,7 @@ public:
 		ZString tokens = m_currentCallsignTag.GetAvailableTokens();
 		m_currentCallsignTag.SetToken(tokens.Middle(idmToken0 - playerTokenIndex, 1));
 	}
+#endif
 
     TRef<IPopup> GetSubMenu(IMenuItem* pitem)
     {
@@ -4662,10 +4667,11 @@ public:
                 break;
 
 				// BT - STEAM
+#ifdef STEAM_APP_ID
 			case idmTags:
 				AddAvailablePlayerTagsToMenu(pmenu);
 				break;
-
+#endif
 			//TheBored 30-JUL-07: Filter Unknown Chat patch
 			case idmMuteFilterOptions:
                 m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'D');
@@ -6612,7 +6618,8 @@ public:
 				break;
 			// End Imago
 
-				// BT - STEAM
+#ifdef STEAM_APP_ID
+			// BT - STEAM
 			case idmCallsignTag0:
 			case idmCallsignTag1:
 			case idmCallsignTag2:
@@ -6642,7 +6649,7 @@ public:
 				SetPlayerToken(pitem->GetID());
 				CloseMenu();
 				break;
-
+#endif
         }
     }
 
