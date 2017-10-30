@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "zmath.h"
+
+#include <crtdbg.h>
+
+#include "zassert.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -46,7 +50,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-DWORD CountBits(DWORD dw)
+uint32_t CountBits(uint32_t dw)
 {
     int count = 0;
 
@@ -61,13 +65,13 @@ DWORD CountBits(DWORD dw)
     return count;
 }
 
-DWORD GetShift(DWORD dw)
+uint32_t GetShift(uint32_t dw)
 {
     if (dw == 0) {
         return -1;
     }
 
-    DWORD index = 0;
+    uint32_t index = 0;
 
     while ((dw & 1) == 0) {
         index++;
@@ -77,9 +81,9 @@ DWORD GetShift(DWORD dw)
     return index;
 }
 
-DWORD NextPowerOf2(DWORD x)
+uint32_t NextPowerOf2(uint32_t x)
 {
-    DWORD p = 1;
+    uint32_t p = 1;
 
     while (p < x) {
         p *= 2;
@@ -100,4 +104,3 @@ float g_1      =   1.0f;
 float g_0_5    =   0.5f;
 float g_255    = 255.0f;
 float g_Inv255 = 1.0f / 255.0f;
-
