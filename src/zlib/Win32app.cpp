@@ -33,7 +33,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
+	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
 	char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
@@ -61,7 +61,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
                GetCurrentProcessId(), GetCurrentThreadId());
    
     hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+                FILE_SHARE_WRITE|FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
 
     ExpParam.ThreadId = GetCurrentThreadId();
     ExpParam.ExceptionPointers = pExceptionPointers;
@@ -80,7 +80,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	//
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, NULL, NULL);
+                    hDumpFile, mdt, &ExpParam, nullptr, nullptr);
 #ifndef NO_STEAM
 	SteamAPI_SetMiniDumpComment(p);
 
@@ -95,7 +95,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
+	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
 	char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
@@ -122,7 +122,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
                GetCurrentProcessId(), GetCurrentThreadId());
    
     hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+                FILE_SHARE_WRITE|FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
 
     ExpParam.ThreadId = GetCurrentThreadId();
     ExpParam.ExceptionPointers = pExceptionPointers;
@@ -136,7 +136,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 		MiniDumpWithProcessThreadData); 
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, NULL, NULL);
+                    hDumpFile, mdt, &ExpParam, nullptr, nullptr);
 #ifndef NO_STEAM
 	// BT - STEAM
 	SteamAPI_SetMiniDumpComment(p);
@@ -165,7 +165,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         if (!g_papp) {
 			// Imago removed asm (x64) on ?/?, integrated with mini dump on 6/10
 			__try {
-				(*(int*)0) = 0;
+				(*(int*)nullptr) = 0;
 			}
 			__except(GenerateDump(GetExceptionInformation())) {}
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
@@ -178,7 +178,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
 // mmf 7/15 changed creation flag on chat file so other processes can read from it
 // avalanche + mmf 03/22/07 (bugs 108 and 109) place chat logs in logs folder, use \r\n
 
-HANDLE chat_logfile = NULL;
+HANDLE chat_logfile = nullptr;
 char logFileName[MAX_PATH + 21];
 
 void InitializeLogchat()
@@ -192,7 +192,7 @@ void InitializeLogchat()
 	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
 		//Imago fixed this but is still confused why it's not a uint32_t.
-		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue)))
+		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", nullptr, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue)))
 			bLogChat = (strcmp(szValue, "1") == 0);
 		::RegCloseKey(hKey);
 	}
@@ -208,7 +208,7 @@ void InitializeLogchat()
 
 		// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
 		// turns out this is not needed but leaving it here instead of moving it again
-		GetModuleFileName(NULL, logFileName, MAX_PATH);
+		GetModuleFileName(nullptr, logFileName, MAX_PATH);
 		char* p = strrchr(logFileName, '\\');
 		if (!p)
 			p = logFileName;
@@ -217,7 +217,7 @@ void InitializeLogchat()
 
 		strcpy(p, "logs\\");
 
-		if (!CreateDirectory(logFileName, NULL))
+		if (!CreateDirectory(logFileName, nullptr))
 		{
 			if (GetLastError() == ERROR_PATH_NOT_FOUND)
 			{
@@ -234,15 +234,15 @@ void InitializeLogchat()
 				logFileName,
 				GENERIC_WRITE,
 				FILE_SHARE_READ,
-				NULL,
+				nullptr,
 				OPEN_ALWAYS,
 				FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-				NULL
+				nullptr
 			);
 		delete t;
 
 		//Imago moved inside bLogChat
-		if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
+		if (chat_logfile == nullptr) debugf("Unable to create chat_logfile %s\n",logFileName);
 	}
 }
 
@@ -250,7 +250,7 @@ void TerminateLogchat()
 {
 	if (chat_logfile) {
 		CloseHandle(chat_logfile);
-        chat_logfile = NULL;
+        chat_logfile = nullptr;
     }
 }
 
@@ -274,7 +274,7 @@ void logchat(const char* strText)
 		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\r\n",
             (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
         uint32_t nBytes;
-        ::WriteFile(chat_logfile, bfr, strlen(bfr), LPDWORD(&nBytes), NULL);
+        ::WriteFile(chat_logfile, bfr, strlen(bfr), LPDWORD(&nBytes), nullptr);
 	}
 	delete t;
 }
@@ -289,7 +289,7 @@ void ZDebugOutputImpl(const char *psz)
     else
         ::OutputDebugStringA(psz);
 }
-HANDLE g_logfile = NULL;
+HANDLE g_logfile = nullptr;
 
 extern int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
 
@@ -540,7 +540,7 @@ void Win32App::DebugOutput(const char *psz)
 
         if (g_logfile) {
             uint32_t nBytes;
-            ::WriteFile(g_logfile, psz, strlen(psz), LPDWORD(&nBytes), NULL);
+            ::WriteFile(g_logfile, psz, strlen(psz), LPDWORD(&nBytes), nullptr);
         }
     #endif
 }
@@ -579,7 +579,7 @@ void Win32App::OnAssertBreak()
     //
 	// Imago integrated with mini dump on 6/10
 	__try {
-    (*(int*)0) = 0;
+    (*(int*)nullptr) = 0;
 }
 	__except(GenerateDump(GetExceptionInformation())) {}
 }
@@ -598,13 +598,13 @@ bool Win32App::WriteMemory( uint8_t* pTarget, const uint8_t* pSource, uint32_t S
 
 	// Check parameters 
 
-	if( pTarget == 0 )
+	if( pTarget == nullptr )
 	{
 		_ASSERTE( !_T("Target address is null.") );
 		return false;
 	}
 
-	if( pSource == 0 )
+	if( pSource == nullptr )
 	{
 		_ASSERTE( !_T("Source address is null.") );
 		return false;
@@ -670,7 +670,7 @@ bool Win32App::EnforceFilter( bool bEnforce )
 
 	HMODULE hLib = GetModuleHandle( _T("kernel32.dll") );
 
-	if( hLib == NULL )
+	if( hLib == nullptr )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("GetModuleHandle(kernel32.dll) failed.") );
@@ -679,7 +679,7 @@ bool Win32App::EnforceFilter( bool bEnforce )
 
 	uint8_t* pTarget = (uint8_t*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
 
-	if( pTarget == 0 )
+	if( pTarget == nullptr )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("GetProcAddress(SetUnhandledExceptionFilter) failed.") );
@@ -735,7 +735,7 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     // seed the random number generator with the current time
     // (GetTickCount may be semi-predictable on server startup, so we add the 
     // clock time to shake things up a bit)
-    srand(GetTickCount() + (int)time(NULL));
+    srand(GetTickCount() + (int)time(nullptr));
 
 	// mmf why is this done?
     // shift the stack locals and the heap by a random amount.            

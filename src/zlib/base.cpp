@@ -37,13 +37,13 @@ bool IsWindows9x()
 // BUILD_DX9: added for DX9 but can stay for DX7 as well
 ZFile::ZFile( )
 {
-	m_p = NULL;
+	m_p = nullptr;
 	m_handle = INVALID_HANDLE_VALUE;
 }
 
 
 ZFile::ZFile(const PathString& strPath, uint32_t how) : 
-    m_p(NULL),
+    m_p(nullptr),
 	m_pathString(strPath) // BT - STEAM
 {
 	// BT - CSS - 12/8/2011 - Fixing 128 character path limit.
@@ -73,9 +73,9 @@ ZFile::ZFile(const PathString& strPath, uint32_t how) :
     int result = MultiByteToWideChar(CP_ACP, 0, unicodePath, unicodePath.GetLength(), pszw, unicodePath.GetLength());
 	pszw[result] = NULL;
 
-	m_handle = CreateFileW(pszw, dwDesiredAccess,  dwShareMode, NULL, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
+	m_handle = CreateFileW(pszw, dwDesiredAccess,  dwShareMode, nullptr, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-	delete pszw;
+	delete[] pszw;
 	// BT - End fix.
 }
 
@@ -96,7 +96,7 @@ uint32_t ZFile::Read(void* p, uint32_t length)
 {
     uint32_t cbActual;
 
-    ReadFile(m_handle, p, length, (LPDWORD)&cbActual, NULL);
+    ReadFile(m_handle, p, length, (LPDWORD)&cbActual, nullptr);
     return cbActual;
 }
 
@@ -104,7 +104,7 @@ uint32_t ZFile::Write(void* p, uint32_t length)
 {
     uint32_t cbActual;
 
-    WriteFile(m_handle, p, length, (LPDWORD)&cbActual, NULL);
+    WriteFile(m_handle, p, length, (LPDWORD)&cbActual, nullptr);
 
     ZAssert(cbActual == length);
 
@@ -161,24 +161,24 @@ bool ZFile::Write(float value)
 
 int ZFile::GetLength()
 {
-    return GetFileSize(m_handle, NULL);
+    return GetFileSize(m_handle, nullptr);
 }
 
 uint8_t* ZFile::GetPointer(bool bWrite, bool bCopyOnWrite)
 {
     ZAssert(!bWrite || !bCopyOnWrite);
 
-    if (m_p == NULL) {
+    if (m_p == nullptr) {
         m_hfileMapping = 
             CreateFileMapping(
                 m_handle,
-                0,
+                nullptr,
                 bWrite
                     ? PAGE_READWRITE
                     : PAGE_READONLY,
                 0,
                 0,
-                NULL
+                nullptr
             );
 
         ZAssert(m_hfileMapping != NULL);
@@ -210,7 +210,7 @@ ZWriteFile::ZWriteFile(const PathString& strPath) :
 // KGJV 32B - added Tell and Seek
 long   ZFile::Tell()
 {
-    uint32_t dwPtr = SetFilePointer(m_handle,0,NULL,FILE_CURRENT);
+    uint32_t dwPtr = SetFilePointer(m_handle,0,nullptr,FILE_CURRENT);
     if (dwPtr != INVALID_SET_FILE_POINTER)
         return (long) dwPtr;
     else
@@ -218,7 +218,7 @@ long   ZFile::Tell()
 }
 int   ZFile::Seek(long offset, int origin)
 {
-    uint32_t dwPtr = SetFilePointer(m_handle,offset,NULL,origin);
+    uint32_t dwPtr = SetFilePointer(m_handle,offset,nullptr,origin);
     return (dwPtr != INVALID_SET_FILE_POINTER);
 }
 
@@ -244,8 +244,8 @@ ZString ZFile::GetSha1Hash()
 
 	// Get handle to the crypto provider
 	if (!CryptAcquireContext(&hProv,
-		NULL,
-		NULL,
+		nullptr,
+		nullptr,
 		PROV_RSA_FULL,
 		CRYPT_VERIFYCONTEXT))
 	{
@@ -333,7 +333,7 @@ FILETIME ZFile::GetMostRecentFileModificationTime(ZString &searchPath)
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
 		//still have the default in the main directory
-		printf("Invalid handle value (%d)\n", GetLastError());
+		printf("Invalid handle value (%lu)\n", GetLastError());
 		return currentModifiedTime;
 	}
 	do
