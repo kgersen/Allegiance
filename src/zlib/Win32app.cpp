@@ -9,6 +9,11 @@
 #include <ctime>
 #include "zmath.h"
 #include "window.h"
+
+#ifndef NO_STEAM
+	#include "steam_api.h"	
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Some assertion functions
