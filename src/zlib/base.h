@@ -102,20 +102,4 @@ public:
     ZWriteFile(const PathString& strPath);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// Event
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class Event : public WaitableObject {
-public:
-    Event() : WaitableObject(CreateEvent(NULL, FALSE, FALSE, NULL))
-    {}
-
-    void Set()   { SetEvent(m_handle); }
-    void Reset() { ResetEvent(m_handle); }
-    void Pulse() { PulseEvent(m_handle); }
-};
-
 #endif
