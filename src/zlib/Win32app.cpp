@@ -4,6 +4,8 @@
 
 //Imago 7/10
 #include <dbghelp.h>
+#include <crtdbg.h>
+
 #include "zstring.h"
 #include "VersionInfo.h"
 #include <ctime>
@@ -34,7 +36,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
 	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
-	char* p1 = strrchr(szPathName, '\\');
+    const char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
 		p = szPathName;
@@ -96,7 +98,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
 	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
-	char* p1 = strrchr(szPathName, '\\');
+    const char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
 		p = szPathName;
@@ -161,7 +163,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         //
 
         uint32_t dwError = GetLastError();
-
+#ifdef _MSC_VER
         if (!g_papp) {
 			// Imago removed asm (x64) on ?/?, integrated with mini dump on 6/10
 			__try {
@@ -171,6 +173,9 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
             g_papp->OnAssertBreak();
         }
+#else
+        ::abort();
+#endif
     }
 }
 
@@ -291,7 +296,7 @@ void ZDebugOutputImpl(const char *psz)
 }
 HANDLE g_logfile = nullptr;
 
-extern int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
+int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
 
 void retailf(const char* format, ...)
 {
@@ -309,7 +314,7 @@ void retailf(const char* format, ...)
     }
 }
 
-extern bool g_bOutput = true;
+bool g_bOutput = true;
 
 // mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
@@ -412,7 +417,7 @@ extern bool g_bOutput = true;
 		// mmf added this regkey check 
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
+            ::RegQueryValueEx(hKey, "OutputDebugString", nullptr, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
             ::RegCloseKey(hKey);
 
             g_outputdebugstring = (strcmp(szValue, "1") == 0);
@@ -420,7 +425,7 @@ extern bool g_bOutput = true;
 
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            ::RegQueryValueEx(hKey, "LogToFile", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
+            ::RegQueryValueEx(hKey, "LogToFile", nullptr, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
             ::RegCloseKey(hKey);
 
             bLogToFile = (strcmp(szValue, "1") == 0);
@@ -435,7 +440,7 @@ extern bool g_bOutput = true;
 			localtime_s(t, &longTime);
 
             char    logFileName[MAX_PATH + 16];
-            GetModuleFileName(NULL, logFileName, MAX_PATH);
+            GetModuleFileName(nullptr, logFileName, MAX_PATH);
             char*   p = strrchr(logFileName, '\\');
             if (!p)
                 p = logFileName;
@@ -459,10 +464,10 @@ extern bool g_bOutput = true;
                     logFileName, 
                     GENERIC_WRITE, 
                     FILE_SHARE_READ,
-                    NULL, 
+                    nullptr,
                     OPEN_ALWAYS,
                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-                    NULL
+                    nullptr
                 );
         }
     }
@@ -471,7 +476,7 @@ extern bool g_bOutput = true;
     {
         if (g_logfile) {
             CloseHandle(g_logfile);
-            g_logfile = NULL;
+            g_logfile = nullptr;
         }
     }
 #endif  // SRVLOG or _DEBUG
@@ -578,10 +583,14 @@ void Win32App::OnAssertBreak()
     // Cause an exception
     //
 	// Imago integrated with mini dump on 6/10
+#ifdef _MSC_VER
 	__try {
-    (*(int*)nullptr) = 0;
-}
+        (*(int*)nullptr) = 0;
+    }
 	__except(GenerateDump(GetExceptionInformation())) {}
+#else
+    ::abort();
+#endif
 }
 
 // KGJV - added for DX9 behavior - default is false. override in parent to change this

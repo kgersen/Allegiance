@@ -15,7 +15,7 @@
 
 
 #include "StackTracer.h"
-#include <DbgHelp.h>
+#include <dbghelp.h>
 #include <sstream>
 #pragma comment(lib, "dbghelp.lib")
 

@@ -7,6 +7,7 @@
 #ifndef _Vector_h_
 #define _Vector_h_
 
+#include <cmath>
 #include "zassert.h"
 #include "zstring.h"
 

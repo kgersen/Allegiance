@@ -10,7 +10,7 @@
 // warning C4355: 'this' : used in base member initializer list
 #pragma warning(disable:4355)
 
-#if !defined (_WIN64) 
+#if !defined (_WIN64) && !defined(__GNUC__)
 	#define FLOATASM //Imago guarded from x64 compilers on 6/20/09
 	#define USEASM
 #endif
@@ -38,7 +38,7 @@
 //
 
 // KGJV - Removed dependancy from DX
-#include "OldDXDefns.h"	// Older DX definitions included to get the project to build. At some point,
+#include "olddxdefns.h"	// Older DX definitions included to get the project to build. At some point,
 						// they all become redundant.
 
 //
@@ -91,7 +91,7 @@
 
 #include "base.h"
 #include "window.h"
-#include "win32app.h"
+#include "Win32app.h"
 #include "VersionInfo.h"
 
 //

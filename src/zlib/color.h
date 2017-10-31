@@ -7,6 +7,7 @@
 #ifndef _color_h_
 #define _color_h_
 
+#include <algorithm>
 #include "zstring.h"
 
 #undef RGB // TODO: remove this line after all #include <windows.h> are nuked
@@ -83,7 +84,7 @@ public:
 
     uint32_t MakeCOLORREF() const
     { 
-        return RGB(min(m_r * 255, 255), min(m_g * 255, 255), min(m_b * 255, 255)); 
+        return RGB(std::min<uint8_t>(m_r * 255, 255), std::min<uint8_t>(m_g * 255, 255.), std::min<uint8_t>(m_b * 255, 255));
     }
 
     Color AdjustAlpha(float scale)

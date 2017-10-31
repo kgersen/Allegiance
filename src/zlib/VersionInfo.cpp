@@ -50,7 +50,7 @@ ZVersionInfo::~ZVersionInfo()
 
 bool ZVersionInfo::Load(LPCTSTR szModule)
 {
-  // Check for a NULL or empty string
+  // Check for a nullptr or empty string
   if (!szModule || TEXT('\0') == *szModule)
     return Load(HINSTANCE(nullptr));
 
@@ -120,7 +120,7 @@ bool ZVersionInfo::Load(HINSTANCE hinstance)
 
 bool ZVersionInfo::Load(const void* pvVerInfo, UINT cbVerInfo)
 {
-  // Ensure that a NULL was not passed
+  // Ensure that a nullptr was not passed
   if (!pvVerInfo)
   {
     SetLastError(ERROR_INVALID_PARAMETER);
@@ -187,7 +187,7 @@ ZString ZVersionInfo::GetStringValue(LPCTSTR pszKey, bool* pbExists) const
   if (pbExists)
     *pbExists = false;
 
-  // Ensure that we have a non-NULL key
+  // Ensure that we have a non-nullptr key
   if (!pszKey)
   {
     SetLastError(ERROR_INVALID_PARAMETER);
