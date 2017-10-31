@@ -7,7 +7,7 @@
 #ifndef _base_h_
 #define _base_h_
 
-#include <Windows.h>
+#include <memory>
 
 #include "tref.h"
 #include "zstring.h"
@@ -20,47 +20,15 @@
 
 bool IsWindows9x();
 
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Waitable Object
-//
-////////////////////////////////////////////////////////////////////////////////
-
-class WaitableObject : public IObject {
-protected:
-    HANDLE m_handle;
-
-public:
-    WaitableObject(HANDLE handle = NULL) :
-        m_handle(handle)
-    {}
-
-    virtual ~WaitableObject()
-    {
-        CloseHandle(m_handle);
-    }
-
-    uint32_t Wait(uint32_t dwTimeout = -1)
-    {
-        return WaitForSingleObject(m_handle, dwTimeout);
-    }
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // File
 //
 ////////////////////////////////////////////////////////////////////////////////
-
-class ZFile : public WaitableObject {
-private:
-	PathString m_pathString; // BT - STEAM
-
+class ZFilePrivate;
+class ZFile : public IObject {
 protected:
-
-    uint8_t* m_p;
-    HANDLE m_hfileMapping;
+	std::unique_ptr<ZFilePrivate> d;
 
 public:
 	ZFile(); // BUILD_DX9: added for DX9 but can stay for DX7 as well
@@ -71,7 +39,7 @@ public:
     virtual bool  IsValid();
     virtual int   GetLength();
     virtual uint8_t * GetPointer(bool bWrite = false, bool bCopyOnWrite = false);
-
+	virtual void SetPointer(uint8_t * ptr);
     virtual uint32_t Read(void* p, uint32_t length);
     uint32_t Write(void* p, uint32_t length);
 
