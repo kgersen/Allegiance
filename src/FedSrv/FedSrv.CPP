@@ -4494,7 +4494,7 @@ HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cn
   // we don't do anything until they login
 
   // mmf 10/08 Log ip address (code provided by Imago)
-  char szRemote[16];
+  char szRemote[64];
   pthis->GetIPAddress(cnxn, szRemote);
   debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
 
@@ -5906,23 +5906,51 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 			ZString responseText("Bypassed Login");
 
-			// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
-			BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
-				FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS)
-				FM_VAR_PARM(PCC(responseText), CB_ZTS)
-				FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS)
-				FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS)
-				END_PFM_CREATE
+			if (g.fmLobby.IsConnected())
+			{
+				// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
+				BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+					FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS)
+					FM_VAR_PARM(PCC(responseText), CB_ZTS)
+					FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS)
+					FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS)
+					END_PFM_CREATE
 
 				pfmPlayerRank->characterID = pqd->characterID;
-			pfmPlayerRank->fCanCheat = pqd->fCanCheat;
-			pfmPlayerRank->fRetry = pqd->fRetry;
-			pfmPlayerRank->dwCookie = pqd->dwCookie;
-			pfmPlayerRank->fValid = true;
-			pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
+				pfmPlayerRank->fCanCheat = pqd->fCanCheat;
+				pfmPlayerRank->fRetry = pqd->fRetry;
+				pfmPlayerRank->dwCookie = pqd->dwCookie;
+				pfmPlayerRank->fValid = true;
+				pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
 
-			if (g.fmLobby.IsConnected())
 				g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+			}
+			else
+			{
+				CQLogonStats * logonDetailsQuery = new CQLogonStats(GotLogonDetails);
+				CQLogonStatsData * logonDetailsQueryData = logonDetailsQuery->GetData();
+
+				lstrcpy(logonDetailsQueryData->szCDKey, pqd->szCDKey);
+				lstrcpy(logonDetailsQueryData->szCharacterName, pqd->szCharacterName);
+				lstrcpy(logonDetailsQueryData->szPassword, pqd->szPassword);
+				lstrcpy(logonDetailsQueryData->szReason, "Login Success.");
+
+				logonDetailsQueryData->characterID = pqd->characterID;
+				logonDetailsQueryData->fCanCheat = pqd->fCanCheat;
+				logonDetailsQueryData->fRetry = pqd->fRetry;
+				logonDetailsQueryData->dwCookie = pqd->dwCookie;
+				logonDetailsQueryData->fValid = true;
+				logonDetailsQueryData->dwConnectionID = pqd->dwConnectionID;
+
+				logonDetailsQueryData->rank = 7;
+				logonDetailsQueryData->sigma = 0;
+				logonDetailsQueryData->mu = 0;
+				logonDetailsQueryData->commandRank = 0;
+				logonDetailsQueryData->commandSigma = 0;
+				logonDetailsQueryData->commandMu = 0;
+
+				PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM)NULL, (LPARAM)logonDetailsQuery);
+			}
 		}
 
 		//DWORD threadID;
