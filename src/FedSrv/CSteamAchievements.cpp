@@ -13,8 +13,7 @@ CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
 {
 	sprintf(m_szSteamID, "%" PRIu64, steamID.ConvertToUint64());
 
-	// Do not call InitiateStatsRequest() from here, the constructor must complete first.
-	
+	// Do not call InitiateStatsRequest() from here, the constructor must complete first
 }
 
 
@@ -307,7 +306,6 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 	int tempStat;
 	bool getSucceed;
 
-	
 	int minerKills = ppso->GetMinerKills();
 	if (minerKills > 0)
 	{
@@ -382,14 +380,30 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 	}
 }
 
+static DWORD WINAPI UpdateLeaderboardThread(LPVOID pThreadParameter)
+{
+	char *pUrl = (char *)pThreadParameter;
+
+	MaClient client;
+
+	int result = client.getRequest(pUrl);
+	int response = client.getResponseCode();
+
+	debugf("Leaderboard Update(%ld): %s\n", response, pUrl);
+
+	delete pUrl;
+
+	return 0;
+}
+
 void CSteamAchievements::UpdateLeaderboard(PlayerScoreObject*  ppso)
 {
-	MaClient client;
+
 
 	char steamID[100];
 	sprintf(steamID, "%" PRIu64, this->m_steamID.ConvertToUint64());
-	
-	char buffer[2064];
+
+
 	ZString url = ZString(g.szLeaderboardUpdateUrl) + ZString("?apiKey=") + ZString(g.szApiKey);
 
 	url += "&steamID=" + ZString(steamID);
@@ -404,10 +418,11 @@ void CSteamAchievements::UpdateLeaderboard(PlayerScoreObject*  ppso)
 	url += "&minerKills=" + ZString(ppso->GetMinerKills());
 	url += "&commandTimeMinutes=" + ZString(int(ppso->GetTimeCommanded() / 60));
 
-	int result = client.getRequest((char *) (PCC) url);
-	int response = client.getResponseCode();
+	char * szUrl = new char[2064];
+	strcpy(szUrl, (char *)(PCC)url);
 
-	debugf("Leaderboard Update(%ld): %s\n", response, (PCC) url);
+	DWORD dwId;
+	CreateThread(NULL, 0, UpdateLeaderboardThread, szUrl, 0, &dwId);
 }
 
 bool CSteamAchievements::CheckRank(int currentScore)
@@ -432,7 +447,7 @@ bool CSteamAchievements::CheckRank(int currentScore)
 			earnedRank++;
 			SetStat(EStats::PLAYER_RANK, earnedRank);
 			return true; //add return for a future level up splash
-		} 
+		}
 	}
 	return false;
 }
