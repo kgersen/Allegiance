@@ -14,7 +14,8 @@ enum EAchievements
 	RANK_10_1_7 = 7,
 	RECOVER_TECH_1_8 = 8,
 	FIRST_PROBE_KILL_1_9 = 9,
-	PROBE_SPOT_1_10 = 10
+	PROBE_SPOT_1_10 = 10,
+    NANITE_REPAIR_1_11 = 11
 
 	// Don't forget to update g_nMaximumSteamAchievementCount and m_Achievements!
 };
@@ -35,7 +36,7 @@ enum EStats
 
 	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
-const int g_nMaximumSteamAchievementCount = 11; // Always keep this in sync with the number of achievments in EAchievements!
+const int g_nMaximumSteamAchievementCount = 12; // Always keep this in sync with the number of achievments in EAchievements!
 const int g_nMaximumSteamStatCount = 10; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
@@ -53,6 +54,7 @@ private:
 	bool		m_gotSuccessfulRequestStatsResponse;
 	bool		m_gotStatsStoredResponse;
 	bool		m_gotSuccessfulStatsStoredResponse;
+    bool        m_nanAchievementEarned;
 
 	CCallResult< CSteamAchievements, GSStatsReceived_t > m_UserStatsRequestedCallResult;
 	CCallResult< CSteamAchievements, GSStatsStored_t > m_UserStatsStoredCallResult;
@@ -71,7 +73,8 @@ private:
 		"RANK_10_1_7",
 		"RECOVER_TECH_1_8",
 		"FIRST_PROBE_KILL_1_9",
-		"PROBE_SPOT_1_10"
+		"PROBE_SPOT_1_10",
+        "NANITE_REPAIR_1_11"
 	};
 
 	// Keep in sync with EStats!
