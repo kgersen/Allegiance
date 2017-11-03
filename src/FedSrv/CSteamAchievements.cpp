@@ -9,7 +9,8 @@ CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
 	m_gotRequestStatsResponse(false),
 	m_gotSuccessfulRequestStatsResponse(false),
 	m_gotStatsStoredResponse(false),
-	m_gotSuccessfulStatsStoredResponse(false)
+	m_gotSuccessfulStatsStoredResponse(false),
+    m_nanAchievementEarned(false)
 {
 	sprintf(m_szSteamID, "%" PRIu64, steamID.ConvertToUint64());
 
@@ -292,6 +293,11 @@ void CSteamAchievements::AwardIGCAchievements(AchievementMask am)
 		SetAchievement(EAchievements::FIRST_PROBE_KILL_1_9);
 	if ((am & c_achmProbeSpot) > 0)
 		SetAchievement(EAchievements::PROBE_SPOT_1_10);
+    if ((am & c_achmNewRepair) > 0 && !m_nanAchievementEarned)
+    {
+        SetAchievement(EAchievements::NANITE_REPAIR_1_11);
+        m_nanAchievementEarned = true; //I was concerned about potentially calling set achievement too much
+    }
 
 }
 
