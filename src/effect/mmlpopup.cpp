@@ -20,6 +20,8 @@ public:
     TRef<Pane>       m_ppane;
     TRef<INameSpace> m_pns;
     TRef<ButtonPane> m_pbuttonClose;
+	TRef<ButtonPane> m_pbuttonDiscord;
+	TRef<ButtonPane> m_pbuttonWiki;
     TRef<PagePane>   m_ppageMain;
     TRef<ScrollPane> m_pscrollMain;
 
@@ -50,7 +52,10 @@ public:
         CastTo(m_pbuttonClose, m_pns->FindMember("closeButton"));
 		// mdvalley: OnButtonClose now needs to be pointer and with class spelled out in 2005.
 		AddEventTarget(&MMLPopup::OnButtonClose, m_pbuttonClose->GetEventSource());
-
+		CastTo(m_pbuttonDiscord, m_pns->FindMember("DiscordButton"));
+		AddEventTarget(&MMLPopup::OnButtonDiscord, m_pbuttonDiscord->GetEventSource());
+		CastTo(m_pbuttonWiki, m_pns->FindMember("WikiButton"));
+		AddEventTarget(&MMLPopup::OnButtonWiki, m_pbuttonWiki->GetEventSource());
         //
         // Default attributes
         //
@@ -108,12 +113,29 @@ public:
     // Events
     //
     //////////////////////////////////////////////////////////////////////////////
-
+	void ShowWebPage(const char* szURL)
+	{
+		ShellExecute(NULL, NULL, szURL, NULL, NULL, SW_SHOWNORMAL);
+	}
     bool OnButtonClose()
     {
         Close();
         return true;
     }
+	bool OnButtonDiscord()
+	{
+
+		ShowWebPage("https://discord.gg/WcEJ9VH");
+		int GetWindow();
+		return true;
+	}
+	bool OnButtonWiki()
+	{
+
+		ShowWebPage("http://www.freeallegiance.org/FAW/index.php/Quick_Crash_Course");
+		int GetWindow();
+		return true;
+	}
 
     void Close()
     {

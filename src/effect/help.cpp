@@ -1,5 +1,4 @@
 #include "pch.h"
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Help
@@ -60,6 +59,8 @@ public:
     TRef<INameSpace> m_pns;
     TRef<ButtonPane> m_pbuttonBack;
     TRef<ButtonPane> m_pbuttonClose;
+	TRef<ButtonPane> m_pbuttonDiscord;
+	TRef<ButtonPane> m_pbuttonWiki;
     TRef<PagePane>   m_ppageMain;
     TRef<PagePane>   m_ppageSecondary;
     TRef<NavPane>    m_pnavPane;
@@ -106,8 +107,12 @@ public:
 		// mdvalley: OnButtonBack now pointered and with class named.
 		AddEventTarget(&HelpPaneImpl::OnButtonBack, m_pbuttonBack->GetEventSource());
 
-        CastTo(m_pbuttonClose, m_pns->FindMember("closeButton"));
 
+        CastTo(m_pbuttonClose, m_pns->FindMember("closeButton"));
+		CastTo(m_pbuttonDiscord, m_pns->FindMember("DiscordButton"));
+		AddEventTarget(&HelpPaneImpl::OnButtonDiscord, m_pbuttonDiscord->GetEventSource());
+		CastTo(m_pbuttonWiki, m_pns->FindMember("WikiButton"));
+		AddEventTarget(&HelpPaneImpl::OnButtonWiki, m_pbuttonWiki->GetEventSource());
         //
         // Default attributes
         //
@@ -194,7 +199,10 @@ public:
     // Implementation methods
     //
     //////////////////////////////////////////////////////////////////////////////
-
+	void ShowWebPage(const char* szURL)
+	{
+		ShellExecute(NULL, NULL, szURL, NULL, NULL, SW_SHOWNORMAL);
+	}
     void DoSetTopic()
     {
         const ZString& str = m_listHistory.GetFront();
@@ -211,7 +219,6 @@ public:
     // Events
     //
     //////////////////////////////////////////////////////////////////////////////
-
     bool OnButtonBack()
     {
         if (m_listHistory.GetCount() > 1) {
@@ -229,6 +236,20 @@ public:
         }
         return true;
     }
+	bool OnButtonDiscord() 
+	{
+	
+		ShowWebPage("https://discord.gg/WcEJ9VH");
+		int Getwindow();
+		return true;
+	}
+	bool OnButtonWiki()
+	{
+		
+		ShowWebPage("http://www.freeallegiance.org/FAW/index.php/Quick_Crash_Course");
+		int Getwindow();
+		return true;
+	}
 
     bool OnSecondaryTopic(const ZString& str)
     {
