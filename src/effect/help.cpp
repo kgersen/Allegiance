@@ -269,16 +269,6 @@ public:
         return m_pbuttonClose->GetEventSource();
     }
 
-	IEventSource* GetEventSourceDiscord()
-	{
-		return m_pbuttonDiscord->GetEventSource();
-	}
-
-	IEventSource* GetEventSourceWiki()
-	{
-		return m_pbuttonWiki->GetEventSource();
-	}
-
     void SetTopic(const ZString& str)
     {
         m_listHistory.SetEmpty();
