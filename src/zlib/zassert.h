@@ -9,8 +9,6 @@
 
 #include <Windows.h>
 
-#include "crtdbg.h"
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Make sure we didn't include some other assert mechanism

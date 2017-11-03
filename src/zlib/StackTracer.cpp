@@ -137,7 +137,7 @@ LONG __stdcall StackTracer::HandleException(LPEXCEPTION_POINTERS e)
 	HANDLE hProcess = INVALID_HANDLE_VALUE;
 
 	// Initializes the symbol handler
-	if(!SymInitialize( GetCurrentProcess(), NULL, TRUE ))
+	if(!SymInitialize( GetCurrentProcess(), nullptr, TRUE ))
 	{
 		SymCleanup(hProcess);
 		return EXCEPTION_EXECUTE_HANDLER;
@@ -178,7 +178,7 @@ void StackTracer::TraceCallStack(CONTEXT* pContext)
 	// Walk through the stack frames.
 	HANDLE hProcess = GetCurrentProcess();
 	HANDLE hThread = GetCurrentThread();
-	while(StackWalk64(m_dwMachineType, hProcess, hThread, &sf, pContext, 0, SymFunctionTableAccess64, SymGetModuleBase64, 0))
+	while(StackWalk64(m_dwMachineType, hProcess, hThread, &sf, pContext, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
 	{
 		if( sf.AddrFrame.Offset == 0 || m_vecCallStack.size() >= CALLSTACK_DEPTH)
 			break;

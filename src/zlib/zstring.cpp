@@ -20,7 +20,7 @@ ZString::ZStringData::ZStringData(PCC pcc, bool bStatic)
     ZAssert(bStatic);
 
     m_length = strlen(pcc);
-    m_pch    = NULL;
+    m_pch    = nullptr;
     m_pcc    = pcc;
 }
 
@@ -680,11 +680,11 @@ PathString::PathString(PCC pcc) :
 
 PathString PathString::GetCurrentDirectory()
 {
-    int size = ::GetCurrentDirectory(0, NULL);
+    int size = ::GetCurrentDirectory(0, nullptr);
     char* pch = new char[size];
     ::GetCurrentDirectory(size, pch);
     PathString str(pch);
-    delete pch;
+    delete[] pch;
 
     return str;
 }
@@ -692,7 +692,7 @@ PathString PathString::GetCurrentDirectory()
 PathString PathString::GetModulePath()
 {
     char ch[128];
-    GetModuleFileNameA(NULL, ch, sizeof(ch) / sizeof(*ch));
+    GetModuleFileNameA(nullptr, ch, sizeof(ch) / sizeof(*ch));
     return PathString(ch);
 }
 

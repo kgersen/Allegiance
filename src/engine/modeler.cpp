@@ -624,32 +624,27 @@ protected:
 public:
 	ZPackFile(const PathString& strPath, void * pData, DWORD dwFileSize )
 	{
-		m_p = (BYTE*) pData;
+		SetPointer((BYTE*) pData);
 		m_dwFileSize = dwFileSize;
 		m_strPath = strPath;
 	}
 	~ZPackFile()
 	{
-		m_p = NULL;
+		SetPointer(NULL);
 		m_dwFileSize = 0;
 	}
 	bool  IsValid()
 	{
-		return ( m_p != NULL );
+		return (GetPointer() != NULL );
 	}
 	int   GetLength()
 	{
 		return (int) m_dwFileSize;
 	}
-	BYTE * GetPointer(bool bWrite = false, bool bCopyOnWrite = false)
-	{
-		_ASSERT( !bWrite && !bCopyOnWrite );
-		return m_p;
-	}
     DWORD Read(void* p, DWORD length)
 	{
 		_ASSERT( length <= m_dwFileSize );
-		memcpy( p, m_p, length );
+		memcpy( p, GetPointer(), length );
 		return length;
 	}
 };
