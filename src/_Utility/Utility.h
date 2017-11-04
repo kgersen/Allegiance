@@ -13,6 +13,14 @@
 */
 #ifndef utl_h
 #define utl_h
+
+#include <matrix.h>
+#include <orientation.h>
+#include <tmap.h>
+#include <vector.h>
+#include <zmath.h>
+#include <ztime.h>
+
 /*
 ** Disable some stupid warning messages that we really don't need and
 ** shouldn't be there (actually, set them to level 4 so I can still see
@@ -1363,7 +1371,7 @@ class   BytePercentage
 
 extern const Rotation      c_rotationZero;
 
-#include    "utility.hxx"
+#include    "Utility.hxx"
 #undef  _exposed
 
 // safe strcpy
@@ -1387,9 +1395,11 @@ static int Strcmp(const char * szDst, const char * szSrc)
 }
 
 // safe strcat //Imago 7/15/09
-static char * Strcat(const char * szDst, const char * szSrc)
+static char * Strcat(char * szDst, const char * szSrc)
 {
-  return lstrcatA(szDst ? szDst : "", szSrc ? szSrc : "");
+  if (!szDst)
+      return nullptr;
+  return lstrcatA(szDst, szSrc ? szSrc : "");
 }
 
 #define IMPLIES(x, y) (!(x) || (y))

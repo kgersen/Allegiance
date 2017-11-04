@@ -39,7 +39,7 @@
 //
 #include "guids.h"
 #include "zlib.h"
-#include "utility.h"
+#include "Utility.h"
 //#include "zauth.h" // KG removed
 
 

@@ -1,6 +1,12 @@
 #ifndef _listwrappers_h_
 #define _listwrappers_h_
 
+#include <Utility.h>
+#include <event.h>
+#include <genericlist.h>
+#include <tref.h>
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // ListEventSource
@@ -46,9 +52,9 @@ public:
         int nCount = 0;
 // VSNet 2003 port: resolve error C2475
 #if _MSC_VER >= 1310
-        for (Slink_utl<T, ListEventSource>* link = first(); link != NULL; link = (link->next)())
+        for (Slink_utl<T, ListEventSource>* link = List_utl::first(); link != NULL; link = (link->next)())
 #else
-        for (Slink_utl<T, ListEventSource>* link = first(); link != NULL; link = link->next)
+        for (Slink_utl<T, ListEventSource>* link = List_utl::first(); link != NULL; link = link->next)
 #endif
             nCount++;
 
@@ -65,9 +71,9 @@ public:
         int nIndex = 0;
 // VSNet 2003 port: resolve error C2475
 #if _MSC_VER >= 1310
-        for (Link* link = first(); link != NULL; link = (link->next)())
+        for (Link* link = List_utl::first(); link != NULL; link = (link->next)())
 #else
-        for (Link* link = first(); link != NULL; link = link->next)
+        for (Link* link = List_utl::first(); link != NULL; link = link->next)
 #endif
         {
             if ((ItemID)link == pitem)
@@ -85,7 +91,7 @@ public:
 
     virtual IEventSource* GetChangedEvent()
     {
-        return sink.GetEvent();
+        return Slist_utl<T, ListEventSource>::sink.GetEvent();
     }
 };
 
@@ -134,6 +140,8 @@ template <
 >
 class TListListWrapper : public List, public TList<T, EqualsType, CompareType, ListEventSource> {
 public:
+    using Iterator = typename TList<T, EqualsType, CompareType, ListEventSource>::Iterator;
+    using ListType = TList<T, EqualsType, CompareType, ListEventSource>;
 
     TListListWrapper()
     {
@@ -192,7 +200,7 @@ public:
 
     virtual IEventSource* GetChangedEvent()
     {
-        return GetSink().GetEvent();
+        return ListType::GetSink().GetEvent();
     }
 };
 
@@ -207,10 +215,12 @@ public:
 template <class T, class U>
 class TMapListWrapper : public List, public TMap<T, U, ListEventSource> {
 public:
+    using Iterator = typename TMap<T, U, ListEventSource>::Iterator;
+    using Map = TMap<T, U, ListEventSource>;
 
     virtual int           GetCount()
     {
-        return Count();
+        return TMap<T, U, ListEventSource>::Count();
     }
 
     virtual ItemID        GetItem(int index)
@@ -263,7 +273,7 @@ public:
 
     virtual IEventSource* GetChangedEvent()
     {
-        return GetSink().GetEvent();
+        return Map::GetSink().GetEvent();
     }
 };
 
@@ -575,7 +585,7 @@ public:
     {
         CheckSorting();
 
-        SortedListType::Iterator iter(m_listSorted);
+        typename SortedListType::Iterator iter(m_listSorted);
 
         for (int currentIndex = 0; !iter.End() && currentIndex < index; currentIndex++)
         {
@@ -594,7 +604,7 @@ public:
 
         int nIndex = 0;
 
-        for (SortedListType::Iterator iter(m_listSorted); !iter.End(); iter.Next())
+        for (typename SortedListType::Iterator iter(m_listSorted); !iter.End(); iter.Next())
         {
             if ((ItemID)iter.Value() == pitem)
                 return nIndex;
@@ -608,7 +618,7 @@ public:
     {
         CheckSorting();
 
-        for (SortedListType::Iterator iter(m_listSorted); !iter.End(); iter.Next())
+        for (typename SortedListType::Iterator iter(m_listSorted); !iter.End(); iter.Next())
         {
             if ((ItemID)iter.Value() == pitem)
             {

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <tvector.h>
+#include <zstring.h>
+
 // BT - STEAM
 
 // This shim enables the steam release to include a DRM wrapper check. While it won't do anything for anyone
