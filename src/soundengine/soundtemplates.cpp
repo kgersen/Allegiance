@@ -4,11 +4,16 @@
 // Several useful sound template implementations.
 //
 
-#include "pch.h"
+#include "soundtemplates.h"
+
+#include <algorithm>
+#include <cast.h>
+#include <list>
+#include <zadapt.h>
+#include <ztime.h>
 
 #include "soundbase.h"
 #include "soundutil.h"
-#include "soundtemplates.h"
 #include "regkey.h"
 
 namespace SoundEngine {
@@ -28,8 +33,8 @@ public:
         // check to make sure the file exists.
         HANDLE hFile;
 
-        hFile = CreateFile(strFilename, 0, FILE_SHARE_READ, NULL, 
-            OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
+        hFile = CreateFile(strFilename, 0, FILE_SHARE_READ, nullptr,
+            OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr);
 
         if (INVALID_HANDLE_VALUE == hFile)
             return STG_E_FILENOTFOUND;
@@ -53,7 +58,7 @@ public:
 
     // Creates a new instance of the given sound
     virtual HRESULT CreateSound(TRef<ISoundInstance>& psoundNew, 
-        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = NULL)
+        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = nullptr)
     {
         // if we have not loaded this sound yet...
         if (!m_pdata)
@@ -74,7 +79,7 @@ public:
 				DWORD dwSize = sizeof(dwResult);
 				DWORD dwType = REG_DWORD;
 
-				::RegQueryValueEx(hKey, "MonoOff", NULL, &dwType, (BYTE*)&dwResult, &dwSize);
+                ::RegQueryValueEx(hKey, "MonoOff", nullptr, &dwType, (BYTE*)&dwResult, &dwSize);
 				::RegCloseKey(hKey);
 
 				if (dwType != REG_DWORD)
@@ -322,7 +327,7 @@ public:
             return SoundTweakableWrapper::SetPitch(m_fPitch * fPitch);
         };
 
-        // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+        // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
         TRef<ISoundTweakable> GetISoundTweakable()
         {
             return this;
@@ -415,7 +420,7 @@ public:
             return SoundTweakableWrapper::SetGain(m_fGain + fGain);
         };
 
-        // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+        // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
         TRef<ISoundTweakable> GetISoundTweakable()
         {
             return this;
@@ -508,7 +513,7 @@ public:
             return SoundTweakableWrapper::SetPriority(m_fPriority + fPriority);
         };
 
-        // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+        // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
         TRef<ISoundTweakable> GetISoundTweakable()
         {
             return this;
@@ -606,7 +611,7 @@ public:
 
     // Creates a new instance of the given sound
     virtual HRESULT CreateSound(TRef<ISoundInstance>& psoundNew, 
-        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = NULL)
+        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = nullptr)
     {
         if (!pbufferSource)
         {
@@ -703,7 +708,7 @@ public:
 
     // Creates a new instance of the given sound
     virtual HRESULT CreateSound(TRef<ISoundInstance>& psoundNew, 
-        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = NULL)
+        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = nullptr)
     {
         if (!pbufferSource)
         {
@@ -755,8 +760,8 @@ public:
     SoundPairWrapper(ISoundInstance* pBase1, ISoundInstance* pBase2) :
         m_pBase1(pBase1), m_pBase2(pBase2), m_nNumChildrenFinished(0)
     {  
-        ZAssert(pBase1 != NULL); 
-        ZAssert(pBase2 != NULL); 
+        ZAssert(pBase1 != nullptr);
+        ZAssert(pBase2 != nullptr);
     };
 
 
@@ -764,7 +769,7 @@ public:
     {
         // if we have an event source, we've hooked the event sources for the
         // two child sound instances.
-        if (m_peventDelegate != NULL)
+        if (m_peventDelegate != nullptr)
         {
             // unhook ourselves.
             m_pBase1->GetFinishEventSource()->RemoveSink(m_peventDelegate);
@@ -797,7 +802,7 @@ public:
     // reason)
     virtual IEventSource* GetFinishEventSource()
     {
-        if (m_peventsourceFinished == NULL)
+        if (m_peventsourceFinished == nullptr)
         {
             m_peventsourceFinished = new EventSourceImpl();
             m_peventDelegate = IEventSink::CreateDelegate(this);
@@ -808,7 +813,7 @@ public:
         return m_peventsourceFinished;
     };
 
-    // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+    // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
     virtual TRef<ISoundTweakable> GetISoundTweakable()
     {
         // try to get the child sounds' tweakable interfaces.
@@ -821,7 +826,7 @@ public:
         // this sound is only tweakable if both it's child sounds are tweakable
         if (!m_ptweak1 || !m_ptweak2)
         {
-            return NULL;
+            return nullptr;
         }
         else
         {
@@ -840,7 +845,7 @@ public:
         // this sound is only tweak3Dable if both it's child sounds are tweak3Dable
         if (!m_ptweak3D1 || !m_ptweak3D2)
         {
-            return NULL;
+            return nullptr;
         }
         else
         {
@@ -1021,7 +1026,7 @@ class RepeatFirePCMData : public ISoundPCMData
         ZAssert(pdata);
         ZAssert(dwRepeatLength > 0);
 
-        m_pvData = NULL;
+        m_pvData = nullptr;
         m_pdataBase = pdata;
         m_dwRepeatLength = dwRepeatLength;
         m_dwSize = m_pdataBase->GetSize() + m_dwRepeatLength * 2;
@@ -1070,14 +1075,14 @@ public:
         ZAssert(s_nCacheRefCount > 0);
 
         if (!pdata)
-            return NULL;
+            return nullptr;
 
         DWORD dwRepeatLength = (DWORD)(fRepeatDelay * (pdata->GetBytesPerSec())) 
             & ~(pdata->GetBytesPerSample() - 1);
 
         // if the repeat length is over 16 Meg, don't even try it.  
         if (dwRepeatLength > 0x1000000 || dwRepeatLength == 0)
-            return NULL;
+            return nullptr;
 
         // otherwise, try to find it in the cache.
         RepeatFireDataCache::iterator iter;
@@ -1183,14 +1188,14 @@ public:
                 for (pcAdd = pcSample2Start; pcAdd < pcSample3Start; ++pcAdd)
                 {
                     // add them with saturation
-                    *pcAdd = (unsigned char)(max(0, min(0xFF, 
+                    *pcAdd = (unsigned char)(std::max(0, std::min(0xFF,
                         (int)pcAdd[m_dwRepeatLength] + (int)pcAdd[m_dwRepeatLength*2] - 0x7F
                         )));
                 }
                 for (; pcAdd < pcSample1End; ++pcAdd)
                 {
                     // add them with saturation
-                    *pcAdd = (unsigned char)(max(0, min(0xFF, 
+                    *pcAdd = (unsigned char)(std::max(0, std::min(0xFF,
                         (int)pcAdd[0] + (int)pcAdd[m_dwRepeatLength] 
                         + (int)pcAdd[m_dwRepeatLength*2] - 0x7F*2
                         )));
@@ -1198,7 +1203,7 @@ public:
                 for (; pcAdd < pcSample2End; ++pcAdd)
                 {
                     // add them with saturation
-                    *pcAdd = (unsigned char)(max(0, min(0xFF, 
+                    *pcAdd = (unsigned char)(std::max(0, std::min(0xFF,
                         (int)pcAdd[0] + (int)pcAdd[m_dwRepeatLength] - 0x7F
                         )));
                 }
@@ -1223,14 +1228,14 @@ public:
                 for (pwAdd = pwSample2Start; pwAdd < pwSample2Start; ++pwAdd)
                 {
                     // add them with saturation
-                    *pwAdd = (short)(max(-0x8000, min(0x7FFF, 
+                    *pwAdd = (short)(std::max(-0x8000, std::min(0x7FFF,
                         (int)pwAdd[m_dwRepeatLength/2] + (int)pwAdd[m_dwRepeatLength]
                         )));
                 }
                 for (; pwAdd < pwSample1End; ++pwAdd)
                 {
                     // add them with saturation
-                    *pwAdd = (short)(max(-0x8000, min(0x7FFF, 
+                    *pwAdd = (short)(std::max(-0x8000, std::min(0x7FFF,
                         (int)pwAdd[0] + (int)pwAdd[m_dwRepeatLength/2]
                          + (int)pwAdd[m_dwRepeatLength]
                         )));
@@ -1238,7 +1243,7 @@ public:
                 for (; pwAdd < pwSample2End; ++pwAdd)
                 {
                     // add them with saturation
-                    *pwAdd = (short)(max(-0x8000, min(0x7FFF, 
+                    *pwAdd = (short)(std::max(-0x8000, std::min(0x7FFF,
                         (int)pwAdd[0] + (int)pwAdd[m_dwRepeatLength/2]
                         )));
                 }
@@ -1346,7 +1351,7 @@ public:
 
     // Creates a new instance of the given sound
     virtual HRESULT CreateSound(TRef<ISoundInstance>& psoundNew, 
-        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = NULL)
+        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = nullptr)
     {
         if (!pbufferSource)
         {
@@ -1396,7 +1401,7 @@ public:
 
     RandomSoundTemplate() :
             m_fTotalWeight(0),
-            m_pstLast(NULL)
+            m_pstLast(nullptr)
     {
     }
 
@@ -1426,7 +1431,7 @@ public:
 
     // Creates a new instance of the given sound
     virtual HRESULT CreateSound(TRef<ISoundInstance>& psoundNew, 
-        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = NULL)
+        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = nullptr)
     {
         ISoundTemplate* pstNew;
 
@@ -1743,8 +1748,8 @@ public:
             m_pbufferSource(pbufferSource), 
             m_psource(psource) 
     { 
-        ZAssert(m_pstSource != NULL); 
-        ZAssert(m_pbufferSource != NULL); 
+        ZAssert(m_pstSource != nullptr);
+        ZAssert(m_pbufferSource != nullptr);
     }
 
     ~DelayedSoundInstance()
@@ -1752,7 +1757,7 @@ public:
         if (m_psinkDelegate)
         {
             m_pBase->GetFinishEventSource()->RemoveSink(m_psinkDelegate);
-            m_psinkDelegate = NULL;
+            m_psinkDelegate = nullptr;
         }
     }
 
@@ -1766,9 +1771,9 @@ public:
             m_psinkDelegate = IEventSink::CreateDelegate(this);
             m_pBase->GetFinishEventSource()->AddSink(m_psinkDelegate);
 
-            m_pstSource = NULL;
-            m_pbufferSource = NULL;
-            m_psource = NULL;
+            m_pstSource = nullptr;
+            m_pbufferSource = nullptr;
+            m_psource = nullptr;
         }
 
         return hr;
@@ -1786,7 +1791,7 @@ public:
         else if (m_peventsource)
         {
             m_peventsource->Trigger();
-            m_pstSource = NULL;
+            m_pstSource = nullptr;
         }
 
         return S_OK;
@@ -1795,8 +1800,8 @@ public:
     // a sound finished
     virtual bool OnEvent(IEventSource* pevent)
     {
-        m_pBase = NULL;
-        m_psinkDelegate = NULL;
+        m_pBase = nullptr;
+        m_psinkDelegate = nullptr;
         if (m_peventsource)
             m_peventsource->Trigger();
 
@@ -1824,7 +1829,7 @@ public:
             return m_peventsource = new EventSourceImpl();
     }
 
-    // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+    // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
     virtual TRef<ISoundTweakable> GetISoundTweakable()
     {
         assert(false); // not fully implemented
@@ -1832,7 +1837,7 @@ public:
         if (m_pBase)
             return m_pBase->GetISoundTweakable();
         else
-            return NULL;
+            return nullptr;
     }
 
     virtual TRef<ISoundTweakable3D> GetISoundTweakable3D()
@@ -1842,7 +1847,7 @@ public:
         if (m_pBase)
             return m_pBase->GetISoundTweakable3D();
         else
-            return NULL;
+            return nullptr;
     }
 };
 
@@ -2013,9 +2018,9 @@ public:
     // a sound finished
     virtual bool OnEvent(IEventSource* pevent)
     {
-        m_pstCurrent = NULL;
-        m_psoundCurrent = NULL;
-        m_peventSoundFinished = NULL;
+        m_pstCurrent = nullptr;
+        m_psoundCurrent = nullptr;
+        m_peventSoundFinished = nullptr;
         QueueNextSound();
         return false;
     }
@@ -2023,11 +2028,11 @@ public:
     // erases any pending sounds without playing them
     virtual HRESULT Reset()
     {
-        m_pstCurrent = NULL;
-        m_psoundCurrent = NULL;
+        m_pstCurrent = nullptr;
+        m_psoundCurrent = nullptr;
         if (m_peventSoundFinished)
             m_peventSoundFinished->RemoveSink(this);
-        m_peventSoundFinished = NULL;
+        m_peventSoundFinished = nullptr;
         m_templatesPending.clear();
 
         return S_OK;

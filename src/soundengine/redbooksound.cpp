@@ -4,8 +4,8 @@
 // SoundEngine support for redbook audio.
 //
 
-#include "pch.h"
-
+#include <algorithm>
+#include <list>
 #include <mutex>
 
 #include "soundbase.h"
@@ -49,7 +49,7 @@ public:
             //
             // open the mixer in question
             //
-            if (MMSYSERR_NOERROR != mixerOpen((LPHMIXER)&hmixer, uDeviceID, NULL, NULL, MIXER_OBJECTF_MIXER))
+            if (MMSYSERR_NOERROR != mixerOpen((LPHMIXER)&hmixer, uDeviceID, 0, 0, MIXER_OBJECTF_MIXER))
             {
                 debugf("Failed to open mixer %d\n", uDeviceID);
                 continue;
@@ -155,7 +155,7 @@ public:
         }
 
         const float fMinGain = -40;
-        float fClippedGain = max(fMinGain, fGain);
+        float fClippedGain = std::max(fMinGain, fGain);
 
         // set the volume on every CD player (since we can't map to the right one)
         // restore the volume settings for all of the CD players
@@ -246,7 +246,7 @@ public:
         }
 
         // try opening it to make sure it exists
-        dwError = mciSendCommand(NULL, MCI_OPEN, dwFlags, (UINT_PTR)&mciOpenParms);  //Fix memory leak -Imago 8/2/09
+        dwError = mciSendCommand(0, MCI_OPEN, dwFlags, (UINT_PTR)&mciOpenParms);  //Fix memory leak -Imago 8/2/09
         if (dwError)
         {
             char cbError[256];
@@ -254,7 +254,7 @@ public:
             debugf("Open failed for CD Audio device '%c': %s\n", (const char*)strDevice, cbError);
             return E_FAIL;
         }
-        mciSendCommand(mciOpenParms.wDeviceID, MCI_CLOSE, 0, NULL);
+        mciSendCommand(mciOpenParms.wDeviceID, MCI_CLOSE, 0, 0);
 
         // start the background (io) thread
         StartThread(THREAD_PRIORITY_NORMAL, 200);
@@ -280,7 +280,7 @@ public:
             dwFlags |= MCI_OPEN_ELEMENT;
         }
 
-        dwError = mciSendCommand(NULL, MCI_OPEN, dwFlags, (UINT_PTR)&mciOpenParms);
+        dwError = mciSendCommand(0, MCI_OPEN, dwFlags, (UINT_PTR)&mciOpenParms);
         if (dwError)
         {
             char cbError[256];
@@ -346,7 +346,7 @@ public:
     void ThreadCleanup()
     {
         StopImpl();
-        mciSendCommand(m_idDevice, MCI_CLOSE, 0, NULL);
+        mciSendCommand(m_idDevice, MCI_CLOSE, 0, 0);
     }
 
     ZString TranslateElementName(const ZString& strDevice)
@@ -385,7 +385,7 @@ public:
                 
                 if (GetDriveType(cbDrives) == DRIVE_CDROM
                     && GetVolumeInformation(cbDrives, cbVolumeName, 
-                        c_nVolumeNameLength, NULL, NULL, NULL, NULL, 0))
+                        c_nVolumeNameLength, nullptr, nullptr, nullptr, nullptr, 0))
                 {
                     if (_stricmp(strDevice, cbVolumeName) == 0)
                     {
@@ -494,7 +494,7 @@ public:
     // stops the CD player (blocking)
     HRESULT StopImpl()
     {
-        DWORD dwError = mciSendCommand(m_idDevice, MCI_STOP, 0, NULL);
+        DWORD dwError = mciSendCommand(m_idDevice, MCI_STOP, 0, 0);
         if (dwError)
         {
             char cbError[256];
@@ -667,18 +667,18 @@ private:
         virtual IEventSource* GetFinishEventSource()
         {
             ZError("NYI");
-            return NULL;
+            return nullptr;
         }
 
-        // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+        // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
         virtual TRef<ISoundTweakable> GetISoundTweakable()
         {
-            return NULL;
+            return nullptr;
         }
 
         virtual TRef<ISoundTweakable3D> GetISoundTweakable3D()
         {
-            return NULL;
+            return nullptr;
         }
     };
 
@@ -707,7 +707,7 @@ public:
 
     // Creates a new instance of the given sound
     virtual HRESULT CreateSound(TRef<ISoundInstance>& psoundNew, 
-        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = NULL)
+        ISoundBufferSource* pbufferSource, ISoundPositionSource* psource = nullptr)
     {
         if (!pbufferSource)
         {

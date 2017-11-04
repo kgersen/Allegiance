@@ -1,10 +1,13 @@
+#pragma once
 //
 // ds3dutil.h
 //
 // basic utilility functions used by the DirectSound3D wrappers.
 //
-
+#include <dsound.h>
 #include <mutex>
+#include <set>
+#include <vector.h>
 
 namespace SoundEngine {
 

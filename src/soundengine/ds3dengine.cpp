@@ -4,13 +4,14 @@
 // Classes representing a DirectSound3D implementation of a sound engine
 //
 
-#include "pch.h"
-#include "soundbase.h"
+#include "ds3dengine.h"
 
+#include <algorithm>
+
+#include "soundbase.h"
 #include "ds3dutil.h"
 #include "ds3dbuffer.h"
 #include "ds3dvirtualbuffer.h"
-#include "ds3dengine.h"
 #include "soundutil.h"
 
 namespace SoundEngine {
@@ -150,7 +151,7 @@ HRESULT DS3DSoundEngine::SetPrimaryBufferFormat(int nSampleRate, int nNumberOfBi
     if (ZFailed(hr)) return hr;
 
 #ifdef _DEBUG
-    m_pPrimaryBuffer->GetFormat(&waveformatex, sizeof(waveformatex), NULL);
+    m_pPrimaryBuffer->GetFormat(&waveformatex, sizeof(waveformatex), nullptr);
 
     // print the new format in the debug window
     debugf(
@@ -234,8 +235,8 @@ DS3DSoundEngine::DS3DSoundEngine() :
     m_fRolloffFactor(1.0f),
     m_fDopplerFactor(1.0f),
     m_fDistanceFactor(1.0f),
-	m_pDirectSound8(NULL),
-	m_pDirectSound(NULL)
+    m_pDirectSound8(nullptr),
+    m_pDirectSound(nullptr)
 {
     m_plistener = new DefaultListener();
     m_peventsourceUpdate = new IntegerEventSourceImpl();
@@ -248,7 +249,7 @@ DS3DSoundEngine::~DS3DSoundEngine()
 {
     HRESULT hr;
 
-    m_peventsourceUpdate = NULL;
+    m_peventsourceUpdate = nullptr;
 
     // stop the primary buffer from playing continuously
     if (m_pPrimaryBuffer)
@@ -261,8 +262,8 @@ DS3DSoundEngine::~DS3DSoundEngine()
 	// mdvalley: Call Release on the primary
 	m_pPrimaryBuffer->Release();
 
-    m_pPrimaryBuffer = NULL;
-    m_pDSListener = NULL;
+    m_pPrimaryBuffer = nullptr;
+    m_pDSListener = nullptr;
 }
 
 
@@ -275,9 +276,9 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd, bool bUseDSound8)
     // Create the device
 	// mdvalley: Changed to Create8
 	if(bUseDSound8)
-		hr = DirectSoundCreate8(NULL, &m_pDirectSound8, NULL);
+        hr = DirectSoundCreate8(nullptr, &m_pDirectSound8, nullptr);
 	else
-		hr = DirectSoundCreate(NULL, &m_pDirectSound, NULL);
+        hr = DirectSoundCreate(nullptr, &m_pDirectSound, nullptr);
     if (hr == DSERR_NODRIVER || hr == DSERR_ALLOCATED || ZFailed(hr)) return hr;
 
 	if(bUseDSound8)
@@ -306,11 +307,11 @@ HRESULT DS3DSoundEngine::Init(HWND hwnd, bool bUseDSound8)
     dsbufferdesc.dwSize = sizeof(dsbufferdesc);
     dsbufferdesc.dwFlags = DSBCAPS_CTRL3D | DSBCAPS_PRIMARYBUFFER;
 	dsbufferdesc.dwBufferBytes = 0;		// mdvalley: Set these for the primary
-	dsbufferdesc.lpwfxFormat = NULL;
+    dsbufferdesc.lpwfxFormat = nullptr;
 	if(bUseDSound8)
-		hr = m_pDirectSound8->CreateSoundBuffer(&dsbufferdesc, &m_pPrimaryBuffer, NULL);
+        hr = m_pDirectSound8->CreateSoundBuffer(&dsbufferdesc, &m_pPrimaryBuffer, nullptr);
 	else
-		hr = m_pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pPrimaryBuffer, NULL);
+        hr = m_pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pPrimaryBuffer, nullptr);
     if (ZFailed(hr)) return hr;
 
     // get the DirectSound listener
@@ -409,7 +410,7 @@ HRESULT DS3DSoundEngine::Update()
         // get the m_nNumBuffersDesired most important sounds by popping 
         // them off of the queue
         listNewSounds.reserve(m_nNumBuffersDesired);
-        for (int nSound = 0; nSound < min(m_nNumBuffersDesired, listAllSounds.size()); nSound++)
+        for (int nSound = 0; nSound < std::min<int>(m_nNumBuffersDesired, listAllSounds.size()); nSound++)
         {
             std::pop_heap(listAllSounds.begin(), listAllSounds.end() - nSound, 
                 std::not2(SoundPriorityCompare()));
@@ -518,8 +519,8 @@ HRESULT DS3DSoundEngine::SetQuality(Quality quality)
         if ((hr != DSERR_PRIOLEVELNEEDED) && ZFailed(hr)) return hr;
         if (m_bAllowHardware)
         {
-            m_nNumBuffersDesired = max(16, (int)m_dscaps.dwMaxHwMixingStreamingBuffers * 2 / 3);
-            m_nNumBuffersMax = max(24, (int)m_dscaps.dwMaxHwMixingStreamingBuffers);
+            m_nNumBuffersDesired = std::max(16, (int)m_dscaps.dwMaxHwMixingStreamingBuffers * 2 / 3);
+            m_nNumBuffersMax = std::max(24, (int)m_dscaps.dwMaxHwMixingStreamingBuffers);
         }
         else
         {
@@ -533,8 +534,8 @@ HRESULT DS3DSoundEngine::SetQuality(Quality quality)
         if ((hr != DSERR_PRIOLEVELNEEDED) && ZFailed(hr)) return hr;
         if (m_bAllowHardware)
         {
-            m_nNumBuffersDesired = max(24, (int)m_dscaps.dwMaxHwMixingStreamingBuffers - 8);
-            m_nNumBuffersMax = max(32, (int)m_dscaps.dwMaxHwMixingStreamingBuffers);
+            m_nNumBuffersDesired = std::max(24, (int)m_dscaps.dwMaxHwMixingStreamingBuffers - 8);
+            m_nNumBuffersMax = std::max(32, (int)m_dscaps.dwMaxHwMixingStreamingBuffers);
         }
         else
         {
@@ -571,7 +572,7 @@ HRESULT DS3DSoundEngine::EnableHardware(bool bEnable)
 // Sets the listener to use for the current sounds
 HRESULT DS3DSoundEngine::SetListener(ISoundListener* plistener)
 {
-    if (plistener == NULL)
+    if (plistener == nullptr)
     {
         ZAssert(false);
         return E_POINTER;
@@ -643,7 +644,7 @@ HRESULT DS3DSoundEngine::CreateStaticBuffer(TRef<ISoundInstance>& psoundNew,
 {
     TRef<DSVirtualSoundBuffer> pvirtualsound;
 
-    if (psource != NULL)
+    if (psource != nullptr)
     {
         pvirtualsound = new DS3DVirtualSoundBuffer(pcmdata, bLooping, psource);
     }
@@ -667,7 +668,7 @@ HRESULT DS3DSoundEngine::CreateASRBuffer(TRef<ISoundInstance>& psoundNew,
     ISoundPositionSource* psource)
 {
     // check the parameters
-    if (pcmdata == NULL)
+    if (pcmdata == nullptr)
     {
         ZAssert(false);
         return E_POINTER;
@@ -682,7 +683,7 @@ HRESULT DS3DSoundEngine::CreateASRBuffer(TRef<ISoundInstance>& psoundNew,
 
     TRef<DSVirtualSoundBuffer> pvirtualsound;
 
-    if (psource != NULL)
+    if (psource != nullptr)
     {
         pvirtualsound = new DS3DVirtualSoundBuffer(pcmdata, uLoopStart, uLoopLength, psource);
     }

@@ -6,6 +6,10 @@
 
 #pragma once
 
+#include <vector.h>
+
+#include "soundbase.h"
+
 namespace SoundEngine {
 
 // returns a PCM data object for a given wave file.
