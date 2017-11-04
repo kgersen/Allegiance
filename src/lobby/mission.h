@@ -11,6 +11,7 @@
 #ifndef _MISSION_H_
 #define _MISSION_H_
 
+#include "messagesall.h"
 
 class CFLServer;
 class CFLClient;

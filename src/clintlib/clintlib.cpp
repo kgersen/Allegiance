@@ -1,5 +1,12 @@
 #include "pch.h"
 
+#include <AllegianceSecurity.h>
+#include <ClubMessages.h>
+#include <guids.h>
+#include <regkey.h>
+
+#include "AutoDownload.h"
+
 ALLOC_MSG_LIST;
 
 bool g_bCheckFiles = false;
@@ -1183,7 +1190,7 @@ void    BaseClient::Reinitialize(Time timeNow)
     m_timeLastPing = timeNow;
     m_serverOffset = 0;
     m_serverOffsetValidF = false;
-    m_selectedWeapon = NULL;
+    m_selectedWeapon = 0;
     m_messageType = c_mtNone;
     m_cookie = NA;
     m_plinkSelectedChat = NULL;
@@ -1699,11 +1706,12 @@ void    BaseClient::BuyLoadout(IshipIGC*    pshipLoadout, bool bLaunch)
     {
         // I'm training here
         short   size = pshipLoadout->ExportShipLoadout(NULL);
-        void*   ptr = new char[size];
+//TODO: Check me !
+        void*   ptr = malloc(size);
         pshipLoadout->ExportShipLoadout (static_cast <ShipLoadout*> (ptr));
         m_ship->PurchaseShipLoadout (size, static_cast <ShipLoadout*> (ptr));
         m_pClientEventSource->OnPurchaseCompleted (true);
-        delete ptr;
+        free(ptr);
     }
 }
 
@@ -2056,7 +2064,7 @@ HRESULT BaseClient::ReceiveMessages(void)
     return(hr);
 }
 
-HRESULT BaseClient::OnSessionLost(char * szReason, FedMessaging * pthis)
+HRESULT BaseClient::OnSessionLost(const char * szReason, FedMessaging * pthis)
 {
     debugf("OnSessionLost. %s. lastUpdate=%d now=%d Time::Now()=%d\n", 
            szReason, m_lastUpdate.clock(), m_now.clock(), Time::Now().clock());
@@ -4060,7 +4068,7 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 			if (otherside != GetSide() && otherside->AlliedSides(otherside,GetSide())) {
                 Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
             	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ") + pside->GetName() + ZString(" \x81 ") + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(allied)" + END_COLOR_STRING + ".";
-	            ReceiveChat(NULL, CHAT_TEAM, NA, NULL, msg, c_cidNone, NA, NA);
+                ReceiveChat(NULL, CHAT_TEAM, NA, 0, msg, c_cidNone, NA, NA);
 			} else {
             	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
 	            ReceiveChat(NULL, CHAT_TEAM, NA, salRecruitsArrivedSound, msg, c_cidNone, NA, NA);

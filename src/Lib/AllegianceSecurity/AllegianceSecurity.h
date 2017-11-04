@@ -1,5 +1,6 @@
 #pragma once
 
+#include <base.h>
 #include <tvector.h>
 #include <zstring.h>
 

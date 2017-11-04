@@ -1,11 +1,15 @@
 #ifndef _trekmdl_h_
 #define _trekmdl_h_
 
+#include <value.h>
+
 void ExportPaneFactories(INameSpace* pns);
 
 //
 // buttons with sounds for mouse hover and mouse clicks
 //
+class ButtonPane;
+class ButtonFacePane;
 TRef<ButtonPane> CreateTrekButton(
     ButtonFacePane* ppane,
     bool    bToggle     = false,

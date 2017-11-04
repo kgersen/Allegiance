@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "badwords.h"
 
+#include <button.h>
+#include <controls.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // GameOver Screen

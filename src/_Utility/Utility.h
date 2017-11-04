@@ -131,6 +131,14 @@ class _exposed Link_utl
         */
         bool    unlink(void);
 
+        /*
+        ** Return the next element in the list.
+        */
+        inline Link_utl*   next(void)  const
+        {
+            return m_next;
+        }
+
     protected:
         Link_utl(void);
         ~Link_utl(void) 
@@ -152,14 +160,6 @@ class _exposed Link_utl
         bool        next(Link_utl*   l);
 
         /*
-        ** Return the next element in the list.
-        */
-        inline Link_utl*   next(void)  const
-        {
-            return m_next;
-        }
-
-        /*
         ** Insert l immediately before *this & return true.
         ** Do nothing & return false if *this is not part of a list.
         */
@@ -178,7 +178,7 @@ class _exposed Link_utl
         Link_utl*  m_next;
         Link_utl*  m_txen;
 
-    friend List_utl;
+    friend class List_utl;
 };
 
 class _exposed Lock_utl

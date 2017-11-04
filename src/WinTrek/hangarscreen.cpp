@@ -2,6 +2,10 @@
 #include "trekctrls.h"
 #include "screen.h"
 
+#include <button.h>
+#include <controls.h>
+#include <frameimage.h>
+
 TRef<ModifiableNumber>  g_pnumberInTurretNumber;
 
 //////////////////////////////////////////////////////////////////////////////

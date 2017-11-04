@@ -1,4 +1,4 @@
-
+#pragma once
 
 class ISquadBase // inheritted by IZoneSquad
 {
@@ -30,7 +30,7 @@ public:
 
   static const char * Rank2String (Rank rank)
   {
-    static char * s_szRank[] = {
+    static const char * s_szRank[] = {
       "Cotton",
       "Copper",
       "Bronze",
