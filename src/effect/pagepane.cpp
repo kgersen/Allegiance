@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "help.h"
+
+#include <base.h>
+#include <controls.h>
+#include <namespace.h>
+#include <token.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -795,7 +800,7 @@ public:
 
             InternalSetOffset(ppane, WinPoint(x, y));
             x         += xsizePane;
-            ysizeLine  = max(ysizeLine, ppane->YSize());
+            ysizeLine  = std::max(ysizeLine, ppane->YSize());
         }
 
         //

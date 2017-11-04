@@ -7,12 +7,19 @@
 #ifndef __ThingGeo_H_
 #define __ThingGeo_H_
 
+#include <tref.h>
+#include <value.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // ThingGeo
 //
 //////////////////////////////////////////////////////////////////////////////
-
+class BitsGeo;
+class Geo;
+class Image;
+class Modeler;
+class ParticleGeo;
 class ThingGeo : public IObject {
 protected:
     static float s_lodBias;

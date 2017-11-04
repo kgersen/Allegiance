@@ -1,12 +1,19 @@
 #ifndef _efgeo_H_
 #define _efgeo_H_
 
+#include <event.h>
+#include <model.h>
+#include <tref.h>
+#include <value.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // effect geos
 //
 //////////////////////////////////////////////////////////////////////////////
 
+class Surface;
+class Viewport;
 TRef<Geo> CreateDebrisGeo(Modeler* pmodeler, Number* ptime, Viewport* pviewport);
 TRef<Geo> CreateCullGeo(Geo* pgeo);
 TRef<Geo> CreateCopyModeGeo(Geo* pgeo);

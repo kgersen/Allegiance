@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "debrisgeo.h"
+
+#include <camera.h>
+#include <model.h>
+#include <surface.h>
+#include <viewport.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //

@@ -1,6 +1,10 @@
 #ifndef _ExplosionGeo_h_
 #define _ExplosionGeo_h_
 
+#include <image.h>
+#include <model.h>
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // ExplosionGeo header

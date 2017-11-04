@@ -1,4 +1,10 @@
-#include "pch.h"
+#include "help.h"
+
+#include <button.h>
+#include <controls.h>
+#include <event.h>
+#include <popup.h>
+#include <namespace.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //
