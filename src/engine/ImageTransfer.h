@@ -1,23 +1,27 @@
-
 #ifndef _IMAGETRANSFER_H_
 #define _IMAGETRANSFER_H_
+
+#include <cstdint>
+#include <point.h>
+
+class Color;
 
 class CImageTransfer
 {
 public:
 	///////////////////////////////////////////////////////////////////////////////////
-	static void Transfer16BitTo16BitNoColourKey(	const BYTE * pSrc,
+    static void Transfer16BitTo16BitNoColourKey(	const uint8_t * pSrc,
 													const int iSrcPitch,
-													BYTE * pDst,
+                                                    uint8_t * pDst,
 													const int iDstPitch,
 													const WinPoint & srcPos,
 													const WinPoint & dstPos,
 													const WinPoint & size );
 
 	///////////////////////////////////////////////////////////////////////////////////
-	static void Transfer16BitTo16BitWithColourKey(	const BYTE * pSrc,
+    static void Transfer16BitTo16BitWithColourKey(	const uint8_t * pSrc,
 													const int iSrcPitch,
-													BYTE * pDst,
+                                                    uint8_t * pDst,
 													const int iDstPitch,
 													const WinPoint & srcPos,
 													const WinPoint & dstPos,
@@ -25,18 +29,18 @@ public:
 													const Color & colorKey );
 
 	///////////////////////////////////////////////////////////////////////////////////
-	static void Transfer16BitTo32BitNoColourKey(	const BYTE * pSrc,
+    static void Transfer16BitTo32BitNoColourKey(	const uint8_t * pSrc,
 													const int iSrcPitch,
-													BYTE * pDst,
+                                                    uint8_t * pDst,
 													const int iDstPitch,
 													const WinPoint & srcPos,
 													const WinPoint & dstPos,
 													const WinPoint & size );
 
 	///////////////////////////////////////////////////////////////////////////////////
-	static void Transfer16BitTo32BitWithColourKey(	const BYTE * pSrc,
+    static void Transfer16BitTo32BitWithColourKey(	const uint8_t * pSrc,
 													const int iSrcPitch,
-													BYTE * pDst,
+                                                    uint8_t * pDst,
 													const int iDstPitch,
 													const WinPoint & srcPos,
 													const WinPoint & dstPos,
@@ -44,9 +48,9 @@ public:
 													const Color & colorKey );
 
 	///////////////////////////////////////////////////////////////////////////////////
-	static void Transfer24BitTo32BitWithColourKey(	const BYTE * pSrc,
+    static void Transfer24BitTo32BitWithColourKey(	const uint8_t * pSrc,
 													const int iSrcPitch,
-													BYTE * pDst,
+                                                    uint8_t * pDst,
 													const int iDstPitch,
 													const WinPoint & srcPos,
 													const WinPoint & dstPos,
@@ -54,28 +58,28 @@ public:
 													const Color & colorKey );
 
 	///////////////////////////////////////////////////////////////////////////////////
-	static void Transfer32BitTo32BitWithColourKey(	const BYTE * pSrc,
+    static void Transfer32BitTo32BitWithColourKey(	const uint8_t * pSrc,
 													const int iSrcPitch,
-													BYTE * pDst,
+                                                    uint8_t * pDst,
 													const int iDstPitch,
 													const WinPoint & srcPos,
 													const WinPoint & dstPos,
 													const WinPoint & size,
-													const Color & colorKey );
+                                                    const Color & colorKey );
 
 	///////////////////////////////////////////////////////////////////////////////////
 	static void ColourImageFill16Bit(	void * pDst,
 										const int iDstPitch,
 										const WinPoint & dstPos,
 										const WinPoint & size,
-										const WORD wPixelColour );
+                                        const uint16_t wPixelColour );
 
 	///////////////////////////////////////////////////////////////////////////////////
 	static void ColourImageFill32Bit(	void * pDst,
 										const int iDstPitch,
 										const WinPoint & dstPos,
 										const WinPoint & size,
-										const DWORD dwPixelColour );
+                                        const uint32_t dwPixelColour );
 };
 
 #endif // _IMAGETRANSFER_H_

@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "menu.h"
+
+#include "controls.h"
+#include "enginep.h"
+#include "pane.h"
+#include "surface.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //

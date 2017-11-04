@@ -1,6 +1,12 @@
-#include "pch.h"
-
 #define _UNALIGNED
+
+#include "mdl.h"
+
+#include <base.h>
+
+#include "enginep.h"
+#include "model.h"
+#include "namespace.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

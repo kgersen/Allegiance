@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "surface.h"
+
+#include <base.h>
+
+#include "D3DDevice9.h"
+#include "enginep.h"
+#include "ImageTransfer.h"
+#include "UIVertexDefn.h"
+#include "VertexGenerator.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -107,7 +115,7 @@ public:
     // Surface type no longer needed. SurfaceTypeZ is not supported and the
     // other 3 types are all the same thing now - a d3d9 texture.
     //////////////////////////////////////////////////////////////////////////////
-	void AllocateSurface( char * szTextureName = NULL, D3DFORMAT d3dOverrideFormat = D3DFMT_UNKNOWN )
+    void AllocateSurface(const char * szTextureName = NULL, D3DFORMAT d3dOverrideFormat = D3DFMT_UNKNOWN )
     {
 		HRESULT hr;
 		bool bSystemMemory = m_stype.Test( SurfaceTypeSystemMemory() );
@@ -142,7 +150,7 @@ public:
 												bSystemMemory,
 												szTextureName );
 			}
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 			m_bSurfaceAllocated = true;
 		}
 	}
@@ -159,7 +167,7 @@ public:
 		// Allocate a handle.
 		// This function can be called even after a handle has been allocated. Not entirely sure
 		// why at the moment.
-		_ASSERT( m_hTexture == INVALID_TEX_HANDLE );
+        ZAssert( m_hTexture == INVALID_TEX_HANDLE );
 		if( m_hTexture == INVALID_TEX_HANDLE )
 		{
 			m_hTexture = CVRAMManager::Get()->AllocateHandle( );
@@ -171,7 +179,7 @@ public:
 			hr = CVRAMManager::Get()->CreateRenderTarget(	m_hTexture,
 													m_size.X(),
 													m_size.Y() );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 			m_bSurfaceAllocated = true;
 		}
 	}
@@ -213,7 +221,7 @@ public:
 		}
 		else
 		{
-			_ASSERT( m_stype.Test( SurfaceTypeRenderTarget() ) == true );
+            ZAssert( m_stype.Test( SurfaceTypeRenderTarget() ) == true );
 			AllocateRenderTarget( );
 			m_ppf = new PixelFormat( CVRAMManager::Get()->GetTextureFormat( m_hTexture ) );
 		}
@@ -226,7 +234,7 @@ public:
 	// PrivateSurfaceImpl()
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	PrivateSurfaceImpl( D3DFORMAT texFormat, DWORD dwWidth, DWORD dwHeight, char * szTexName /*=NULL*/ ) :
+    PrivateSurfaceImpl( D3DFORMAT texFormat, DWORD dwWidth, DWORD dwHeight, const char * szTexName /*=NULL*/ ) :
 			m_pengine( NULL ),
 			m_bDeviceFormat(false),
 			m_stype( 0 ),
@@ -299,14 +307,14 @@ public:
 		int iCount = 0;
 		bool bExtraGreenBit;
 
-		_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
+        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 
 		// Lock this texture and copy over.
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
 		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 
 		// Copy over data. Only works for 16 bit texture at the moment.
 		ZAssert( m_ppf->PixelBytes() == 2 );
@@ -358,14 +366,14 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 	void Copy16BitTextureWithColourKeyTo32BitTexture( )
 	{
-		_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
+        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 
 		// Lock this texture and copy over.
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
 		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 
 		int x, y;
 		DWORD dwByteOffset;
@@ -500,14 +508,14 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 	void Copy24BitTextureWithColourKeyTo32BitTexture( )
 	{
-		_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
+        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 
 		// Lock this texture and copy over.
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
 		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 
 		int x, y;
 		DWORD dwByteOffset;
@@ -555,14 +563,14 @@ public:
     //////////////////////////////////////////////////////////////////////////////
 	void Copy32BitTextureWithColourKeyTo32BitTexture( )
 	{
-		_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
+        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 
 		// Lock this texture and copy over.
 		D3DLOCKED_RECT lockRect;
 		HRESULT hr;
 
 		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 
 		int x, y;
 		DWORD dwByteOffset;
@@ -662,7 +670,7 @@ public:
 				m_bColorKey, 
 				m_colorKey, 
 				szTemp );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 			m_pitch = m_ppf->PixelBytes() * pTargetSize->x;
 		}
 	}
@@ -733,7 +741,7 @@ public:
 			else
 			{
 				// Only 16 bit source textures supported at the moment.
-				_ASSERT( ppf->PixelBytes() >= 2 );
+                ZAssert( ppf->PixelBytes() >= 2 );
 
 				// Create a A8R8G8B8 texture.
 				AllocateSurface( szTemp, D3DFMT_A8R8G8B8 );
@@ -755,7 +763,7 @@ public:
 
 				default:
 					// Unsupported pixel format.
-					_ASSERT( false );
+                    ZAssert( false );
 				}
 			}
 		}
@@ -764,14 +772,14 @@ public:
 			// Allocate a new D3D resource, and build texture from the passed in data.
 			AllocateSurface( szTemp );
 
-			_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
+            ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 
 			// Lock this texture and copy over.
 			D3DLOCKED_RECT lockRect;
 			HRESULT hr;
 
 			hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 
 			// Copy over data. Only works for 16 bit texture at the moment.
 			ZAssert( m_ppf->PixelBytes() >= 2 );
@@ -834,7 +842,7 @@ public:
 				break;
 
 			default:
-				_ASSERT( false );
+                ZAssert( false );
 			}
 
 			// Unlock texture.
@@ -850,7 +858,7 @@ public:
 			{
 				// Only apply texture reduction to power of 2 textures, otherwise
 				// we assume it's by design for the UI.
-				_ASSERT( dwMaxTextureSize <= 2048 );			// 2048 max for time being.
+                ZAssert( dwMaxTextureSize <= 2048 );			// 2048 max for time being.
 
 				if( ( ( m_size.x == 512 ) || ( m_size.x == 1024 ) || ( m_size.x == 2048 ) ) &&
 					( ( m_size.y == 512 ) || ( m_size.y == 1024 ) || ( m_size.y == 2048 ) ) )
@@ -872,7 +880,7 @@ public:
 						m_hTexture = INVALID_TEX_HANDLE;
 
 						AllocateSurface( szTemp, CVRAMManager::Get()->GetTextureFormat( hOld ) );
-						_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
+                        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 						
 						DWORD dwColourKey = m_bColorKey ? 0xFF000000 : 0;
 						LPDIRECT3DSURFACE9 pDest, pSrc;
@@ -1490,7 +1498,7 @@ public:
 						CVertexGenerator::Get()->GetPredefinedDynamicBuffer( 
 										CVertexGenerator::ePDBT_UITexVB )->dwFirstElementOffset,
 						2 );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 		}
     }
 
@@ -1522,7 +1530,7 @@ public:
 
             // do the blt
             //GetVideoSurface()->UnclippedBlt( rectTarget, psurfaceSource->GetVideoSurface(), rectSource, HasColorKey() );
-			_ASSERT( m_hTexture != INVALID_TEX_HANDLE );
+            ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 
 			// Lock this texture and copy over.
 			D3DLOCKED_RECT lockRect;
@@ -1532,7 +1540,7 @@ public:
 			if (FAILED(hr))
 				return;
 
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 
 			switch( psurfaceSource->GetPixelFormat()->GetD3DFormat() )
 			{
@@ -1573,10 +1581,10 @@ public:
 									psurfaceSource->GetColorKey() );
 						break;
 					case D3DFMT_X8R8G8B8:
-						_ASSERT( false );
+                        ZAssert( false );
 						break;
 					default:
-						_ASSERT( false );
+                        ZAssert( false );
 					}
 				}
 				break;
@@ -1586,13 +1594,13 @@ public:
 					switch( m_ppf->GetD3DFormat() )
 					{
 					case D3DFMT_A8B8G8R8:
-						_ASSERT( false );
+                        ZAssert( false );
 						break;
 					case D3DFMT_X8R8G8B8:
-						_ASSERT( false );
+                        ZAssert( false );
 						break;
 					default:
-						_ASSERT( false );
+                        ZAssert( false );
 					}
 				}
 				break;
@@ -1602,16 +1610,16 @@ public:
 					switch( m_ppf->GetD3DFormat() )
 					{
 					case D3DFMT_A8B8G8R8:
-						_ASSERT( false );
+                        ZAssert( false );
 						break;
 					default:
-						_ASSERT( false );
+                        ZAssert( false );
 					}
 				}
 				break;
 
 			default:
-				_ASSERT( false );
+                ZAssert( false );
 			}
 
 			// Unlock texture.
@@ -1676,7 +1684,7 @@ public:
 		if( ( bLocalCopy == true ) &&
 			( psurfaceSource->GetWritablePointer() != NULL ) )
 		{
-			_ASSERT( m_pbits == NULL );
+            ZAssert( m_pbits == NULL );
 			m_pitch = psurfaceSource->GetPitch();
 			m_pbits = new BYTE[ psurfaceSource->GetSize().Y() * m_pitch ]; //Fix memory leak -Imago 8/2/09
 			memcpy( m_pbits, psurfaceSource->GetWritablePointer(), m_size.Y() * m_pitch );
@@ -1705,7 +1713,7 @@ public:
         // Calculate the target rectangle
         //
 
-		//_ASSERT( false && "Is this called? If not, remove this function." );
+        //ZAssert( false && "Is this called? If not, remove this function." );
 
         WinRect rectTarget = rectTargetArg;
         rectTarget.Offset(m_pointOffset);
@@ -1717,12 +1725,12 @@ public:
         // Only blt if the target isn't empty
         if (!rectTarget.IsEmpty()) 
 		{
-			_ASSERT( psurfaceSource->GetTexHandle() != INVALID_TEX_HANDLE );
+            ZAssert( psurfaceSource->GetTexHandle() != INVALID_TEX_HANDLE );
 
 			UIVERTEX pVerts[6];
 
 			// Calculate texture coordinates.
-			DWORD dwUMax, dwVMax, dwUOMax, dwVOMax;
+            uint32_t dwUMax, dwVMax, dwUOMax, dwVOMax;
 			float fUMax, fVMax;
 			
 			CVRAMManager::Get()->GetOriginalDimensions( psurfaceSource->GetTexHandle(), &dwUOMax, &dwVOMax );
@@ -1792,16 +1800,16 @@ public:
 			pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
 
 			HRESULT hr = pDev->SetFVF( D3DFVF_UIVERTEX );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 			hr = pDev->SetStreamSource( 0, NULL, 0, 0 );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 			hr = CVRAMManager::Get()->SetTexture( psurfaceSource->GetTexHandle(), 0 );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
 			hr = pDev->DrawPrimitiveUP(	D3DPT_TRIANGLELIST,
 										2,
 										pVerts,
 										sizeof( UIVERTEX ) );
-			_ASSERT( hr == D3D_OK );
+            ZAssert( hr == D3D_OK );
         }
     }
 
@@ -1898,7 +1906,7 @@ public:
 				D3DLOCKED_RECT lockRect;
 
 				hr = pVRAMMan->LockTexture( m_hTexture, &lockRect );
-				_ASSERT( hr == D3D_OK );
+                ZAssert( hr == D3D_OK );
 				ZAssert( ( m_ppf->PixelBytes() == 2) || ( m_ppf->PixelBytes() == 4) );
 
 				if( m_ppf->PixelBytes() == 2 )
@@ -1939,7 +1947,7 @@ public:
 
 				// Finished, unlock.
 				hr = pVRAMMan->UnlockTexture( m_hTexture, 0 );
-				_ASSERT( hr == D3D_OK );
+                ZAssert( hr == D3D_OK );
 			}
 		}
     }
@@ -2160,7 +2168,7 @@ TRef<PrivateSurface> CreatePrivateSurface(
 TRef<PrivateSurface> CreatePrivateSurface(	D3DFORMAT	texFormat,
 											DWORD		dwWidth,
 											DWORD		dwHeight,
-											char *		szTexName /*=NULL*/ ) 
+                                            const char *szTexName /*=NULL*/ )
 {
     return new PrivateSurfaceImpl( texFormat, dwWidth, dwHeight, szTexName );
 }

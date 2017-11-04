@@ -1,6 +1,25 @@
 #ifndef _context_h_
 #define _context_h_
 
+#include <color.h>
+#include <d3d9.h>
+#include <olddxdefns.h>
+#include <point.h>
+#include <rect.h>
+#include <tvector.h>
+#include <vertex.h>
+#include <zmath.h>
+
+#include "VBIBManager.h"
+
+class Camera;
+class Context;
+class IEngineFont;
+class Material;
+class Matrix;
+class Matrix2;
+class Surface;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Plane

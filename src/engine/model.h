@@ -1,6 +1,24 @@
 #ifndef _Model_h_
 #define _Model_h_
 
+#include "bounds.h"
+#include "context.h"
+#include "value.h"
+
+#include <input.h>
+#include <tref.h>
+#include <tvector.h>
+
+class Context;
+class D3DVertex;
+class D3DLVertex;
+class Engine;
+class Matrix;
+class Surface;
+class Transform;
+class Vertex;
+class VertexL;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // 3D Hit Data
@@ -205,7 +223,7 @@ public:
     // Constructor
     //
 
-    static TRef<Modeler> Modeler::Create(Engine* pengine);
+    static TRef<Modeler> Create(Engine* pengine);
 
     //
     // Termination

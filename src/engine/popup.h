@@ -7,6 +7,15 @@
 #ifndef _Popup_H_
 #define _Popup_H_
 
+#include <input.h>
+#include <rect.h>
+
+#include "value.h"
+
+class Image;
+class Engine;
+class Pane;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // IPopup

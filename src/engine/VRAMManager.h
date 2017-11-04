@@ -1,13 +1,18 @@
-
 #ifndef _VRAMMANAGER_H_
 #define _VRAMMANAGER_H_
 
+#include <cstdint>
+#include <d3d9.h>
+#include <d3dx9tex.h>
+#include <point.h>
+
+class Color;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // TEXHANDLE, indicates a particular texture.
 // Top 8 bits indicate bank index. Bottom n bits indicate the index of the texture within that
 // bank.
-typedef DWORD TEXHANDLE;
+typedef uint32_t TEXHANDLE;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //#define CREATE_TEST_TEXTURE			// Create a dummy texture at handle 0.
@@ -45,10 +50,10 @@ private:
 			BYTE *					pSystemTexture;			// System memory texture.
 		};
 		D3DFORMAT				texFormat;					// Format of texture.
-		DWORD					dwOriginalWidth;			// Original width of source image.
-		DWORD					dwOriginalHeight;			// Original height of source image.
-		DWORD					dwActualWidth;				// Actual width of allocated D3D texture.
-		DWORD					dwActualHeight;				// Actual width of allocated D3D texture.
+        uint32_t					dwOriginalWidth;			// Original width of source image.
+        uint32_t					dwOriginalHeight;			// Original height of source image.
+        uint32_t					dwActualWidth;				// Actual width of allocated D3D texture.
+        uint32_t					dwActualHeight;				// Actual width of allocated D3D texture.
 
 		char					szTextureName[32];			// DEBUG, to be removed at some point.
 
@@ -67,7 +72,7 @@ private:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	struct SBank
 	{
-		DWORD					dwNumAllocated;
+        uint32_t					dwNumAllocated;
 		STexture 				pTexArray[ BANK_SIZE ];
 	};
 
@@ -85,13 +90,13 @@ private:
 		bool					bInitialised;
 		bool					bMipMapGenerationEnabled;
 
-		DWORD					dwCurrentBank;							// Current bank to allocate from, if all others are full.
-		DWORD					dwNumTextures;
+        uint32_t					dwCurrentBank;							// Current bank to allocate from, if all others are full.
+        uint32_t					dwNumTextures;
 		SBank *					ppBankArray[ NUM_BANKS ];				// Array of bank pointers.
 
 		// Render target management.
 		TEXHANDLE				hCurrentTargetTexture;
-		DWORD					dwNumTargetsPushed;
+        uint32_t					dwNumTargetsPushed;
 		SVRAMRenderTarget		pTargetStack[RENDER_TARGET_STACK_SIZE];
 	};
 
@@ -125,16 +130,16 @@ public:
 	int			GetTotalTextureCount( );
 
 	// BT - 10/17 - Fixing crash on D3D texture load.
-	HRESULT CreateSystemMemoryTexture(D3DFORMAT texFormat, DWORD dwWidth, DWORD dwHeight, STexture * pTexture);
+    HRESULT CreateSystemMemoryTexture(D3DFORMAT texFormat, uint32_t dwWidth, uint32_t dwHeight, STexture * pTexture);
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	HRESULT		CreateTexture(	TEXHANDLE	texHandle,
 								D3DFORMAT	texFormat,
-								DWORD		dwWidth,
-								DWORD		dwHeight,
+                                uint32_t		dwWidth,
+                                uint32_t		dwHeight,
 								bool		bSystemMemory,
-								char *		szTextureName = NULL,
-								DWORD		dwUsageFlags = 0,
+                                const char *	szTextureName = NULL,
+                                uint32_t		dwUsageFlags = 0,
 								D3DPOOL		texPool = D3DPOOL_MANAGED );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,35 +153,35 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	HRESULT		CreateRenderTarget(	TEXHANDLE	texHandle,
-									DWORD		dwWidth,
-									DWORD		dwHeight );
+                                    uint32_t		dwWidth,
+                                    uint32_t		dwHeight );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	HRESULT		LockTexture(	TEXHANDLE			texHandle,
 								D3DLOCKED_RECT *	pLockRect,
-								DWORD				dwFlags = 0,
-								DWORD				dwLevel = 0,
+                                uint32_t				dwFlags = 0,
+                                uint32_t				dwLevel = 0,
 								CONST RECT *		pAreaToLock = NULL );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	HRESULT		UnlockTexture(	TEXHANDLE			texHandle,
-								DWORD				dwLevel = 0 );
+                                uint32_t				dwLevel = 0 );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	HRESULT		SetTexture(		TEXHANDLE			texHandle,
-								DWORD				dwTextureStage );
+                                uint32_t				dwTextureStage );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	bool		IsTextureValid(	TEXHANDLE			texHandle );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	DWORD		GetPower2( DWORD dwInitialValue );
+    uint32_t		GetPower2( uint32_t dwInitialValue );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	void		GetOriginalDimensions( TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight );
+    void		GetOriginalDimensions( TEXHANDLE texHandle, uint32_t * pdwWidth, uint32_t * pdwHeight );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	void		GetActualDimensions( TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight );
+    void		GetActualDimensions( TEXHANDLE texHandle, uint32_t * pdwWidth, uint32_t * pdwHeight );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	D3DFORMAT	GetTextureFormat( TEXHANDLE texHandle );
@@ -185,16 +190,16 @@ public:
 	HRESULT		GetTextureSurface( TEXHANDLE texHandle, IDirect3DSurface9 ** ppSurface );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	HRESULT		PushRenderTarget( TEXHANDLE texHandle, DWORD dwTargetIndex = 0 );
+    HRESULT		PushRenderTarget( TEXHANDLE texHandle, uint32_t dwTargetIndex = 0 );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	HRESULT		PopRenderTarget( DWORD dwTargetIndex = 0);
+    HRESULT		PopRenderTarget( uint32_t dwTargetIndex = 0);
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	void		SetEnableMipMapGeneration( bool bEnable );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	DWORD		GetPixelSize( D3DFORMAT pixelFormat );
+    uint32_t		GetPixelSize( D3DFORMAT pixelFormat );
 };
 
 #endif // _VRAMMANAGER_H_

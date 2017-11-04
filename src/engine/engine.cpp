@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "engine.h"
+
+#include <window.h>
+#include <zassert.h>
+
+#include "D3DDevice9.h"
+#include "EngineSettings.h"
+#include "enginep.h"
+#include "value.h"
 
 HWND g_hwndMainWindow;
 
@@ -52,7 +60,7 @@ private:
     HWND                      m_hwndFocus;
 
 	TRef<ModifiableWinPointValue>	m_sizeResolution;
-	TRef<ModifiableBoolean>		m_bFullscreen;
+    TRef<ModifiableBoolean>		m_bFullscreen;
 	WinPoint					m_pointFullscreenCurrent;
 //    TRef<PrivateSurface>      m_psurfaceBack;
     float                     m_gamma;
@@ -299,7 +307,7 @@ private:
 		//OutputDebugString("\n\nCalling SetFocusWindow() ONLY SUPPOSED TO HAPPEN ONCE!\n");
 
         m_hwndFocus			= pwindow->GetHWND();
-		m_bFullscreen->SetValue(bStartFullscreen);
+        m_bFullscreen->SetValue(bStartFullscreen);
 		g_hwndMainWindow	= m_hwndFocus;
     }
 
@@ -1208,7 +1216,7 @@ private:
     {
         if (!m_bValid) 
 		{
-            if (m_bFullscreen->GetValue() == true) 
+            if (m_bFullscreen->GetValue() == true)
 			{
                 m_bValid = InitializeFullscreen(bChanges);
 			} 
@@ -1339,7 +1347,7 @@ private:
 
     void BltToWindow(Window* pwindow, const WinPoint& point, Surface* psurface, const WinRect& rectSource)
     {
-		_ASSERT( false );
+        ZAssert( false );
 /*        if (m_pdddeviceFullscreen == NULL) {
             if (m_hwndClip != pwindow->GetHWND()) {
                 m_hwndClip = pwindow->GetHWND();
@@ -1482,7 +1490,7 @@ private:
 										int             pitch,
 										BYTE*           pbits ) 
 	{
-		_ASSERT( false );
+        ZAssert( false );
         if (stype.Test(SurfaceTypeVideo())) 
 		{
             return CreateDDSurface( m_pdddevice, stype, m_ppf, NULL, size );
@@ -1688,7 +1696,7 @@ private:
 
     TRef<Surface> CreateSurface(HBITMAP hbitmap)
     {
-		_ASSERT( false );
+        ZAssert( false );
 
 		return AddSurface(NULL, false);
 /*
@@ -1715,7 +1723,7 @@ private:
         D3D9PixelFormat ddpf;
         TRef<IDirectDrawPaletteX> pddpal;
 
-		_ASSERT( false );
+        ZAssert( false );
 //        ZVerify(FillDDPF(ddpf, m_pdddevicePrimary->GetDD(), hdcBitmap, hbitmap, &pddpal));
 
         TRef<PrivatePalette> ppalette;

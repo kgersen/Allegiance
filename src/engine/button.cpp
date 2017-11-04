@@ -1,4 +1,16 @@
-#include "pch.h"
+#include "button.h"
+
+#include <event.h>
+#include <tmap.h>
+#include <tref.h>
+
+
+#include "D3DDevice9.h"
+#include "enginep.h"
+#include "surface.h"
+#include "UIVertexDefn.h"
+#include "VertexGenerator.h"
+#include "controls.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -45,7 +57,7 @@ private:
 		PrivateSurface * pprivateSurfSource;
 		CastTo( pprivateSurfSource, m_psurface );
 		TEXHANDLE hTexture = pprivateSurfSource->GetTexHandle();
-		DWORD dwSurfaceWidth, dwSurfaceHeight;
+        uint32_t dwSurfaceWidth, dwSurfaceHeight;
 		CVRAMManager::Get()->GetOriginalDimensions( hTexture, &dwSurfaceWidth, &dwSurfaceHeight );
 		
 		float fUpperV, fLowerV, fUpperY, fLowerY;

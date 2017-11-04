@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "pixelformat.h"
+
+#include <zassert.h>
+#include <zmath.h>
+
+#include "ddstruct.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -8,10 +13,10 @@
 
 PixelFormat::PixelFormat(
     int   bits,
-    DWORD redMask,
-    DWORD greenMask,
-    DWORD blueMask,
-    DWORD alphaMask
+    uint32_t redMask,
+    uint32_t greenMask,
+    uint32_t blueMask,
+    uint32_t alphaMask
 ) {
 	m_d3dFormat					= D3DFMT_UNKNOWN;
 	m_ddpf.dwSize				= sizeof( D3D9PIXELFORMAT );
@@ -68,21 +73,21 @@ PixelFormat::PixelFormat( D3DFORMAT d3dFmt )
 		break;
 
 	default:
-		_ASSERT( false && "Unsupported D3DFORMAT value.");
+        ZAssert( false && "Unsupported D3DFORMAT value.");
 	}
 }
 
-DWORD PixelFormat::RedSize()    const { return RedMask()   >> RedShift();   }
-DWORD PixelFormat::GreenSize()  const { return GreenMask() >> GreenShift(); }
-DWORD PixelFormat::BlueSize()   const { return BlueMask()  >> BlueShift();  }
-DWORD PixelFormat::AlphaSize()  const { return AlphaMask() >> AlphaShift(); }
+uint32_t PixelFormat::RedSize()    const { return RedMask()   >> RedShift();   }
+uint32_t PixelFormat::GreenSize()  const { return GreenMask() >> GreenShift(); }
+uint32_t PixelFormat::BlueSize()   const { return BlueMask()  >> BlueShift();  }
+uint32_t PixelFormat::AlphaSize()  const { return AlphaMask() >> AlphaShift(); }
 
-DWORD PixelFormat::RedShift()   const { return GetShift(RedMask());   }
-DWORD PixelFormat::GreenShift() const { return GetShift(GreenMask()); }
-DWORD PixelFormat::BlueShift()  const { return GetShift(BlueMask());  }
-DWORD PixelFormat::AlphaShift() const { return GetShift(AlphaMask()); }
+uint32_t PixelFormat::RedShift()   const { return GetShift(RedMask());   }
+uint32_t PixelFormat::GreenShift() const { return GetShift(GreenMask()); }
+uint32_t PixelFormat::BlueShift()  const { return GetShift(BlueMask());  }
+uint32_t PixelFormat::AlphaShift() const { return GetShift(AlphaMask()); }
 
-Pixel PixelFormat::MakePixel(DWORD red, DWORD green, DWORD blue) const
+Pixel PixelFormat::MakePixel(uint32_t red, uint32_t green, uint32_t blue) const
 {
     return Pixel::Create(
           ((red   << RedShift()  ) & RedMask()  )
@@ -140,7 +145,7 @@ void PixelFormat::SetPixel(BYTE* pb, Pixel pixel) const
             pb[1] = (BYTE)(((pixel.Value()) >>  8) & 0xff);
             pb[2] = (BYTE)(((pixel.Value()) >> 16) & 0xff);
             break;
-        case 4: *(DWORD*)pb = (pixel.Value()); break;
+        case 4: *(uint32_t*)pb = (pixel.Value()); break;
     }
 }
 
@@ -152,11 +157,11 @@ Pixel PixelFormat::GetPixel(const BYTE* pb) const
         case 3:
             return
                 Pixel::Create(
-                      (DWORD(pb[0]) <<  0)
-                    | (DWORD(pb[1]) <<  8)
-                    | (DWORD(pb[2]) << 16)
+                      (uint32_t(pb[0]) <<  0)
+                    | (uint32_t(pb[1]) <<  8)
+                    | (uint32_t(pb[2]) << 16)
                 );
-        case 4: return Pixel::Create(*(DWORD*)pb);
+        case 4: return Pixel::Create(*(uint32_t*)pb);
     }
 
     return Pixel::Create(0);
@@ -174,7 +179,7 @@ Color PixelFormat::GetColor(const BYTE* pb) const
 
 bool PixelFormat::ValidGDIFormat() const
 {
-	_ASSERT( false );
+    ZAssert( false );
 /*    BitMask mask(m_ddpf.dwFlags);
 
     //
@@ -225,9 +230,9 @@ bool FillDDPF(
     D3D9PixelFormat& ddpf,
     HDC hdc,
     HBITMAP hbitmap,
-	DWORD * dwPaletteIndex
+    uint32_t * dwPaletteIndex
 ) {
-    BYTE        ajBitmapInfo[sizeof(BITMAPINFO) + 3 * sizeof(DWORD)];
+    BYTE        ajBitmapInfo[sizeof(BITMAPINFO) + 3 * sizeof(uint32_t)];
     BITMAPINFO* pbmi = (BITMAPINFO*)ajBitmapInfo;
     BOOL        bRet = FALSE;
 
@@ -248,7 +253,7 @@ bool FillDDPF(
                 case 4:
                 case 8:
                 {
-					_ASSERT( false );		// Need to look at palette conversion if this is used.
+                    ZAssert( false );		// Need to look at palette conversion if this is used.
 /*                    ddpf.dwFlags |= ((ddpf.dwRGBBitCount == 4) ? DDPF_PALETTEINDEXED4 : DDPF_PALETTEINDEXED8);
 
                     //
@@ -275,7 +280,7 @@ bool FillDDPF(
                     //
                     // create a DirectDraw palette for the texture.
                     //
-					_ASSERT( false && "TBD" );
+                    ZAssert( false && "TBD" );
 					// Add palette management to CVRAMManager. Should be easy.
 //                    DDCall(pdd->CreatePalette(
 //                        (ddpf.dwRGBBitCount == 4) ? DDPCAPS_4BIT : DDPCAPS_8BIT,
@@ -318,9 +323,9 @@ bool FillDDPF(
 
             ZVerify(::GetDIBits(hdc, hbitmap, 0, pbmi->bmiHeader.biHeight, NULL, pbmi, DIB_RGB_COLORS));
 
-            ddpf.dwRBitMask = *(DWORD *)&pbmi->bmiColors[0];
-            ddpf.dwGBitMask = *(DWORD *)&pbmi->bmiColors[1];
-            ddpf.dwBBitMask = *(DWORD *)&pbmi->bmiColors[2];
+            ddpf.dwRBitMask = *(uint32_t *)&pbmi->bmiColors[0];
+            ddpf.dwGBitMask = *(uint32_t *)&pbmi->bmiColors[1];
+            ddpf.dwBBitMask = *(uint32_t *)&pbmi->bmiColors[2];
 
             return true;
     }
@@ -365,7 +370,7 @@ D3DFORMAT PixelFormat::GetEquivalentD3DFormat( )
 	}
 	if( m_d3dFormat != D3DFMT_UNKNOWN )
 	{
-		_ASSERT( m_d3dFormat == retVal );
+        ZAssert( m_d3dFormat == retVal );
 	}
 	return retVal;
 }

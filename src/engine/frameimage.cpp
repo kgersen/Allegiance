@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "frameimage.h"
+
+#include <base.h>
+#include <event.h>
+
+#include "context.h"
+#include "enginep.h"
+#include "image.h"
+#include "model.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -67,7 +75,7 @@ public:
 				TEXHANDLE hTexture = pFrame0Surface->GetTexHandle( );
 
 				hResult = CVRAMManager::Get()->LockTexture( hTexture, &lockRect );
-				_ASSERT( hResult == D3D_OK );
+                ZAssert( hResult == D3D_OK );
 
 				// Copy the original texture frame data into our temp buffer.
 				BYTE * pSrc = (BYTE*) lockRect.pBits;
@@ -131,7 +139,7 @@ public:
 
 		// Copy RLE data into texture.
 		hResult = CVRAMManager::Get()->LockTexture( hTexture, &lockRect );
-		_ASSERT( hResult == D3D_OK );
+        ZAssert( hResult == D3D_OK );
 
 		// Inflate RLE data into temp buffer.
 		BYTE * pDest = (BYTE*) lockRect.pBits;
@@ -480,7 +488,7 @@ public:
             }
 
             if (count * sizeof(Type) > 2 + sizeof(Type)) {
-                return min(count, RLELengthMask);
+                return std::min(count, RLELengthMask);
             }
         }
 

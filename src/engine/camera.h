@@ -1,6 +1,13 @@
 #ifndef _Camera_h_
 #define _Camera_h_
 
+#include <matrix.h>
+
+#include "value.h"
+
+class IKeyboardInput;
+class Image;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Camera header

@@ -1,4 +1,6 @@
-#include "pch.h"
+#include "namespace.h"
+
+#include <base.h>
 
 class NameSpaceInfo : public INameSpaceInfo {
 private:

@@ -1,12 +1,18 @@
 #ifndef _keyframe_h_
 #define _keyframe_h_
 
+#include <tref.h>
+
+#include "transform.h"
+#include "value.h"
+
+class Quaternion;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Key Framed Transforms
 //
 //////////////////////////////////////////////////////////////////////////////
-
 class KeyFramedTranslateTransform : public Transform {
 protected:
     KeyFramedTranslateTransform(Number* pframe) :

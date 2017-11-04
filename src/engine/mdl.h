@@ -1,6 +1,14 @@
 #ifndef _mdl_h_
 #define _mdl_h_
 
+#include <tlist.h>
+#include <tref.h>
+#include <tstack.h>
+#include <zstring.h>
+
+template <typename T>
+class TStaticValue;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Stack

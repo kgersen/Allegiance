@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "value.h"
+
+#include <base.h>
+#include <matrix.h>
+
+#include "LogFile.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -340,7 +345,7 @@ ZString Value::GetChildString(int indent)
 
 ZString Value::Indent(int indent)
 {
-    static char* pchSpaces = "                                                                ";
+    static const char* pchSpaces = "                                                                ";
 
     ZAssert(indent * 2 < 64);
 
@@ -782,7 +787,7 @@ public:
 
     void Evaluate()
     {
-        GetValueInternal() = min(Get0()->GetValue(), Get1()->GetValue());
+        GetValueInternal() = std::min(Get0()->GetValue(), Get1()->GetValue());
     }
 };
 
@@ -798,7 +803,7 @@ public:
 
     void Evaluate()
     {
-        GetValueInternal() = max(Get0()->GetValue(), Get1()->GetValue());
+        GetValueInternal() = std::max(Get0()->GetValue(), Get1()->GetValue());
     }
 };
 

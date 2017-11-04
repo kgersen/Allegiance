@@ -1,12 +1,17 @@
 #ifndef _xfile_h_
 #define _xfile_h_
 
+#include "value.h"
+
+class Geo;
+class Modeler;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // 
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<NameSpace> ImportXFile(Modeler* pmodeler, ZFile* pfile, Number* pnumberFrame, bool& bAnimation);
+TRef<Geo> ImportXFile(Modeler* pmodeler, ZFile* pfile, Number* pnumberFrame, bool& bAnimation);
 
 #endif

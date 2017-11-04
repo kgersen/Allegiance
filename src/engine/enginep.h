@@ -1,6 +1,13 @@
 #ifndef _enginep_h_
 #define _enginep_h_
 
+#include "context.h"
+#include "ddstruct.h"
+#include "engine.h"
+#include "namespace.h"
+#include "popup.h"
+#include "surface.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Global hacks
@@ -45,7 +52,6 @@ typedef IDirectDrawGammaControl      IDirectDrawGammaControlX;*/
 // DirectX Wrapper Classes
 //
 
-#include "ddstruct.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -647,7 +653,7 @@ TRef<PrivateSurface> CreatePrivateSurface(
 TRef<PrivateSurface> CreatePrivateSurface(	D3DFORMAT	texFormat,
 											DWORD		dwWidth,
 											DWORD		dwHeight,
-											char *		szTexName = NULL );
+                                            const char *szTexName = NULL );
 
 
 //////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,10 @@
 #ifndef _inputengine_H_
 #define _inputengine_H_
 
+#include <event.h>
+
+#include "value.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // type ButtonEvent = (Integer, Boolean)

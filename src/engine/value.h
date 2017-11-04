@@ -1,6 +1,58 @@
 #ifndef _Value_h_
 #define _Value_h_
 
+#include <cast.h>
+#include <color.h>
+#include <matrix.h>
+#include <orientation.h>
+#include <rect.h>
+#include <tlist.h>
+#include <tref.h>
+#include <tvector.h>
+#include <zstring.h>
+
+#include "mdl.h"
+
+class ZFile;
+class IMDLBinaryFile;
+
+ZString GetString(int indent, const Matrix& mat);
+ZString GetString(int indent, const Matrix2& mat);
+ZString GetString(int indent, const Vector& value);
+ZString GetString(int indent, const Point& value);
+ZString GetString(int indent, const WinPoint& value);
+ZString GetString(int indent, const Point& value);
+ZString GetString(int indent, const Color& value);
+ZString GetString(int indent, const Rect& value);
+ZString GetString(int indent, const Orientation& value);
+ZString GetString(int indent, bool value);
+ZString GetString(int indent, float value);
+ZString GetString(int indent, const ZString& value);
+
+ZString GetFunctionName(const Matrix& value);
+ZString GetFunctionName(const Vector& value);
+ZString GetFunctionName(const Point& value);
+ZString GetFunctionName(const WinPoint& value);
+ZString GetFunctionName(const Point& value);
+ZString GetFunctionName(const Color& value);
+ZString GetFunctionName(const Rect& value);
+ZString GetFunctionName(const Orientation& value);
+ZString GetFunctionName(bool value);
+ZString GetFunctionName(float value);
+ZString GetFunctionName(const ZString& value);
+
+void Write(IMDLBinaryFile* pmdlFile, const Matrix& value);
+void Write(IMDLBinaryFile* pmdlFile, const Vector& value);
+void Write(IMDLBinaryFile* pmdlFile, const Point& value);
+void Write(IMDLBinaryFile* pmdlFile, const WinPoint& value);
+void Write(IMDLBinaryFile* pmdlFile, const Point& value);
+void Write(IMDLBinaryFile* pmdlFile, const Color& value);
+void Write(IMDLBinaryFile* pmdlFile, const Rect& value);
+void Write(IMDLBinaryFile* pmdlFile, const Orientation& value);
+void Write(IMDLBinaryFile* pmdlFile, bool value);
+void Write(IMDLBinaryFile* pmdlFile, float value);
+void Write(IMDLBinaryFile* pmdlFile, const ZString& value);
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // NameSpaceInfo
@@ -284,8 +336,8 @@ public:
 
     void SetValue(const StaticType& value)
     {
-        GetValueInternal() = value;
-        Changed();
+        TStaticValue<StaticType>::GetValueInternal() = value;
+        TStaticValue<StaticType>::Changed();
     }
 
     bool IsConstant()
@@ -300,12 +352,12 @@ public:
 
     ZString GetString(int indent)
     {
-        return FunctionName::GetName() + "(" + ::GetString(indent, GetValue()) +")";
+        return FunctionName::GetName() + "(" + ::GetString(indent, TStaticValue<StaticType>::GetValue()) +")";
     }
 
     void Write(IMDLBinaryFile* pmdlFile)
     {
-        ::Write(pmdlFile, GetValue());
+        ::Write(pmdlFile, TStaticValue<StaticType>::GetValue());
         pmdlFile->WriteReference(FunctionName::GetName());
         pmdlFile->WriteApply();
     }
@@ -326,7 +378,7 @@ protected:
 
     void Evaluate()
     {
-         GetValueInternal() = GetWrappedValue()->GetValue();
+         TStaticValue<StaticType>::GetValueInternal() = GetWrappedValue()->GetValue();
     }
 
 public:
@@ -335,8 +387,8 @@ public:
     {
     }
 
-    void SetWrappedValue(TStaticValue<StaticType>* pvalue) { SetChild(0, pvalue); }
-    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(GetChild(0)); }
+    void SetWrappedValue(TStaticValue<StaticType>* pvalue) { TStaticValue<StaticType>::SetChild(0, pvalue); }
+    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(TStaticValue<StaticType>::GetChild(0)); }
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -555,7 +607,7 @@ public:
     {
         ZString str = "[\n";
 
-        List::Iterator iter(m_list);
+        typename List::Iterator iter(m_list);
 
         while (!iter.End()) {
             str += Value::Indent(indent + 1) + ::GetString(indent, iter.Value());

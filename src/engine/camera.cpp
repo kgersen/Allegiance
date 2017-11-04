@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "camera.h"
+
+#include <quaternion.h>
+
+#include "model.h"
+#include "orientation.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

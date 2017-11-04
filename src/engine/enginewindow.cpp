@@ -1,4 +1,15 @@
-#include "pch.h"
+#include "enginewindow.h"
+
+#include <token.h>
+
+#include "VertexGenerator.h"
+#include "EngineSettings.h"
+#include "image.h"
+#include "engineapp.h"
+#include "LogFile.h"
+#include "enginep.h"
+#include "D3DDevice9.h"
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -213,11 +224,11 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 	pDev->Initialise( &devLog );
 	if( pDev->CreateD3D9( &devLog ) != D3D_OK )
 	{
-		_ASSERT( false );
+        ZAssert( false );
 	}
 	if( pDev->CreateDevice( hWindow, &devLog ) != D3D_OK )
 	{
-		_ASSERT( false );
+        ZAssert( false );
 	}
 	devLog.OutputString( "Device creation finished.\n" );
 
@@ -389,7 +400,7 @@ void EngineWindow::UpdateSurfacePointer()
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
 		if(pDev->IsDeviceValid()) {
 			//Imago 7/28/09
-			SetWindowPos(GetHWND(),HWND_TOP,0,0,point.X(),point.Y(),NULL);
+            SetWindowPos(GetHWND(),HWND_TOP,0,0,point.X(),point.Y(),0);
 			DDCall(pDev->ResetDevice(false,point.X(),point.Y(),g_DX9Settings.m_refreshrate));
 			if (pDev->GetDeviceSetupParams()->iAdapterID) {
 				    ::ShowWindow(GetHWND(),SW_MINIMIZE);	 //imago 7/7/09 (workaround for one of the multimon bugs)
@@ -707,8 +718,8 @@ bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 	{
 		// For some reason, when restoring a minimised window, it gets a position of
 		// -32000, -32000.
-		pwp->x = max( 0, pwp->x );
-		pwp->y = max( 0, pwp->y );
+        pwp->x = std::max( 0, pwp->x );
+        pwp->y = std::max( 0, pwp->y );
 
         if (!m_bMovingWindow) 
 		{
@@ -1136,8 +1147,8 @@ bool EngineWindow::RenderFrame()
     TRef<Surface> psurface;
 
 	HRESULT hr = CD3DDevice9::Get()->BeginScene();
-	_ASSERT( hr == D3D_OK );
-	_ASSERT( m_psurface != NULL );
+    ZAssert( hr == D3D_OK );
+    ZAssert( m_psurface != NULL );
 
 	TRef<Context> pcontext = m_psurface->GetContext();
 	if( pcontext ) 
@@ -1490,7 +1501,7 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                 m_ppointMouse->SetValue(point);
 
                 if (m_pengine->IsFullscreen()) {
-                    m_ptransformImageCursor->SetImage(m_pimageCursor ? m_pimageCursor : Image::GetEmpty());
+                    m_ptransformImageCursor->SetImage(m_pimageCursor ? (Image*)m_pimageCursor : Image::GetEmpty());
                 }
                 break;
         }

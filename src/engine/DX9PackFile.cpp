@@ -1,6 +1,9 @@
-#include "pch.h"
 #include "DX9PackFile.h"
 
+#include <base.h>
+#include <zassert.h>
+
+#include "EngineSettings.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +42,7 @@ CPackExclusion::CPackExclusion( const char * szFilter )
 		else
 		{
 			m_eType = eET_Undefined;
-			_ASSERT( false && "Not supported, feel free to add..." );
+            ZAssert( false && "Not supported, feel free to add..." );
 		}
 	}
 	else
@@ -78,7 +81,7 @@ bool CPackExclusion::IsExcluded( const char * szFileName )
 		break;
 
 	default:
-		_ASSERT( false && "Invalid type for exclusion." );
+        ZAssert( false && "Invalid type for exclusion." );
 	}
 	return false;
 }
@@ -259,7 +262,7 @@ bool CDX9PackFile::Create( PACK_CREATE_CALLBACK pFnCreateCallback )
 	{
 		// No, flush the existing file.
 		DWORD dwAmountWritten = m_pFile->Write( m_pWriteBuffer, m_dwWritePos );
-		_ASSERT( dwAmountWritten == m_dwWritePos );
+        ZAssert( dwAmountWritten == m_dwWritePos );
 		m_dwWritePos = 0;
 	}
 
@@ -306,7 +309,7 @@ bool CDX9PackFile::AddFiles( ZString szDir, ZString szFilter )
 	bool bRetVal = true;
 
 	dwRet = GetCurrentDirectory( MAX_PATH, szOriginalDir );
-	_ASSERT( ( dwRet > 0 ) && ( dwRet < MAX_PATH ) );
+    ZAssert( ( dwRet > 0 ) && ( dwRet < MAX_PATH ) );
 
 	szSearchDir = m_szDataPath;
 	if( szDir != "" )
@@ -353,7 +356,7 @@ bool CDX9PackFile::AddFiles( ZString szDir, ZString szFilter )
 				bAddFile = TRUE;		// Default is to add.
 
 				// Can't handle files that are > 4gig... gulp.
-				_ASSERT( findData.nFileSizeHigh == 0 );
+                ZAssert( findData.nFileSizeHigh == 0 );
 
 				szFile						= findData.cFileName;
 				hashEntry.mszFileName		= szFile.ToLower();
@@ -365,7 +368,7 @@ bool CDX9PackFile::AddFiles( ZString szDir, ZString szFilter )
 				if( pTableEntry != NULL )
 				{
 					// Check that the names match. If they don't it's a genuine hash clash.
-					_ASSERT( pTableEntry->mszFileName == hashEntry.mszFileName );
+                    ZAssert( pTableEntry->mszFileName == hashEntry.mszFileName );
 					bAddFile = FALSE;
 				}
 				else
@@ -385,7 +388,7 @@ bool CDX9PackFile::AddFiles( ZString szDir, ZString szFilter )
 					{
 						// No, flush the existing file.
 						dwAmountWritten = m_pFile->Write( m_pWriteBuffer, m_dwWritePos );
-						_ASSERT( dwAmountWritten == m_dwWritePos );
+                        ZAssert( dwAmountWritten == m_dwWritePos );
 
 						m_dwWritePos = 0;
 					}
@@ -393,7 +396,7 @@ bool CDX9PackFile::AddFiles( ZString szDir, ZString szFilter )
 					// Doesn't already exist, add now. Import the file.
 					ZFile addedFile( szFile );
 					dwAmountRead = addedFile.Read( &m_pWriteBuffer[ m_dwWritePos ], findData.nFileSizeLow );
-					_ASSERT( dwAmountRead == findData.nFileSizeLow );
+                    ZAssert( dwAmountRead == findData.nFileSizeLow );
 
 					// Update the write position and pack pointer.
 					m_dwWritePos	+= dwAmountRead;
@@ -408,8 +411,8 @@ bool CDX9PackFile::AddFiles( ZString szDir, ZString szFilter )
 					{
 						m_dwPackOffset += 4 - ( m_dwPackOffset % 4 );
 					}
-					_ASSERT( m_dwWritePos % 4 == 0 );
-					_ASSERT( m_dwPackOffset % 4 == 0 );
+                    ZAssert( m_dwWritePos % 4 == 0 );
+                    ZAssert( m_dwPackOffset % 4 == 0 );
 
 					// Add the to the hash table.
 					m_pHashTable->AddHashEntry( pTableEntry );
@@ -476,7 +479,7 @@ int CDX9PackFile::GetFileCount( ZString szDir, ZString szFilter )
 	CPackFileHashEntry * pTableEntry;
 
 	dwRet = GetCurrentDirectory( MAX_PATH, szOriginalDir );
-	_ASSERT( ( dwRet > 0 ) && ( dwRet < MAX_PATH ) );
+    ZAssert( ( dwRet > 0 ) && ( dwRet < MAX_PATH ) );
 
 	szSearchDir = m_szDataPath;
 	if( szDir != "" )
@@ -518,7 +521,7 @@ int CDX9PackFile::GetFileCount( ZString szDir, ZString szFilter )
 				bAddFile = TRUE;		// Default is to add.
 
 				// Can't handle files that are > 4gig... gulp.
-				_ASSERT( findData.nFileSizeHigh == 0 );
+                ZAssert( findData.nFileSizeHigh == 0 );
 
 				szFile					= findData.cFileName;
 				hashEntry.mszFileName	= szFile.ToLower();
@@ -610,15 +613,15 @@ bool CDX9PackFile::WriteHashTableData( )
 			{
 				pHashData[i].dwNextIndex = 0;		// No more entries.
 			}
-			_ASSERT( dwInitialAdd + dwNumChildren == dwAddIndex );
+            ZAssert( dwInitialAdd + dwNumChildren == dwAddIndex );
 		}
 	}
 
-	_ASSERT( dwAddIndex == dwTableSize );
+    ZAssert( dwAddIndex == dwTableSize );
 
 	// Add to file.
 	dwAmountWritten = m_pFile->Write( pHashData, dwTableSize * sizeof( SHashTableEntry ) );
-	_ASSERT( dwAmountWritten == dwTableSize * sizeof( SHashTableEntry ) );
+    ZAssert( dwAmountWritten == dwTableSize * sizeof( SHashTableEntry ) );
 
 	delete pHashData;
 	return true;
@@ -634,11 +637,11 @@ bool CDX9PackFile::ImportPackFile( )
 	DWORD dwAmountRead;
 
 	m_pFile	= new ZFile( m_szOutputFileName );
-	_ASSERT( m_pFile->IsValid() );
+    ZAssert( m_pFile->IsValid() );
 
 	m_pPackFile = new BYTE[ m_pFile->GetLength() ];
 	dwAmountRead = m_pFile->Read( m_pPackFile, m_pFile->GetLength() );
-	_ASSERT( dwAmountRead == m_pFile->GetLength() );
+    ZAssert( dwAmountRead == m_pFile->GetLength() );
 
 	// Set up internal pointers.
 	memcpy( &m_header, m_pPackFile, sizeof( SPackFileHeader ) );

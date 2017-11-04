@@ -1,4 +1,10 @@
-#include "pch.h"
+#include "popup.h"
+
+#include "enginep.h"
+#include "enginewindow.h"
+#include "image.h"
+#include "pane.h"
+#include "paneimage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
