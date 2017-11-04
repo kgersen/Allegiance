@@ -16,6 +16,8 @@
 #ifndef __DISPENSERIGC_H_
 #define __DISPENSERIGC_H_
 
+#include "igc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CdispenserIGC
 class CdispenserIGC : public IdispenserIGC
@@ -168,7 +170,7 @@ class CdispenserIGC : public IdispenserIGC
             }
             else
             {
-                return 1.0f - max(0.0f, (m_timeLoaded - Time::Now()) / m_expendableType->GetLoadTime());
+                return 1.0f - std::max(0.0f, (m_timeLoaded - Time::Now()) / m_expendableType->GetLoadTime());
             }
         }
 

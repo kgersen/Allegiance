@@ -12,8 +12,7 @@
 **  History:
 */
 // chaffTypeIGC.cpp : Implementation of CchaffTypeIGC
-#include "pch.h"
-#include "chaffTypeIGC.h"
+#include "chafftypeigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CchaffTypeIGC

@@ -15,6 +15,7 @@
 
 #ifndef __STATIONIGC_H_
 #define __STATIONIGC_H_
+#include "igc.h"
 
 #include "modelIGC.h"
 

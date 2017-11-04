@@ -12,8 +12,7 @@
 **  History:
 */
 // asteroidIGC.cpp : Implementation of CasteroidIGC
-#include "pch.h"
-#include "asteroidIGC.h"
+#include "asteroidigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CasteroidIGC

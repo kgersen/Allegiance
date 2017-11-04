@@ -12,7 +12,6 @@
 **  History:
 */
 // afterburnerIGC.cpp : Implementation of CafterburnerIGC
-#include "pch.h"
 #include "afterburnerIGC.h"
 
 /////////////////////////////////////////////////////////////////////////////

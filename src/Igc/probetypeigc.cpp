@@ -12,8 +12,7 @@
 **  History:
 */
 // probeTypeIGC.cpp : Implementation of CprobeTypeIGC
-#include "pch.h"
-#include "probeTypeIGC.h"
+#include "probetypeigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CprobeTypeIGC

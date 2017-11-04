@@ -12,8 +12,7 @@
 **  History:
 */
 // missileIGC.cpp : Implementation of CmissileIGC
-#include "pch.h"
-#include "missileIGC.h"
+#include "missileigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CmissileIGC

@@ -12,8 +12,7 @@
 **  History:
 */
 // developmentIGC.cpp : Implementation of CdevelopmentIGC
-#include "pch.h"
-#include "developmentIGC.h"
+#include "developmentigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CdevelopmentIGC

@@ -17,7 +17,6 @@
 **  History:
 */
 // clusterIGC.cpp : Implementation of CclusterIGC
-#include "pch.h"
 #include "clusterIGC.h"
 #include "modelIGC.h"
 #include <stdlib.h>

@@ -12,7 +12,6 @@
 **  History:
 */
 // partTypeIGC.cpp : Implementation of CpartTypeIGC
-#include "pch.h"
 #include "partTypeIGC.h"
 
 /////////////////////////////////////////////////////////////////////////////

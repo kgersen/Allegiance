@@ -16,6 +16,8 @@
 #ifndef __DRONETYPEIGC_H_
 #define __DRONETYPEIGC_H_
 
+#include "igc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CdroneTypeIGC
 class       CdroneTypeIGC : public IdroneTypeIGC

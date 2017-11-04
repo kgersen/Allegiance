@@ -16,7 +16,8 @@
 #ifndef __TRESUREIGC_H_
 #define __TRESUREIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CtreasureIGC : public TmodelIGC<ItreasureIGC>
 {
