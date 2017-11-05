@@ -2,7 +2,8 @@
 **  File:	Mission10.cpp
 **
 **  Description:
-**      Implementation of the tenth pseudo training mission "Free Flight", intended for dev use
+**      Implementation of the tenth pseudo training mission "Free Flight", intended for dev use.
+**      Cloned mission 6 without intro and with less constraints.
 */
 #include    "pch.h"
 #include    "Mission10.h"
