@@ -2106,7 +2106,7 @@ class ThingSiteImpl : public ThingSitePrivate
 
             if (Training::IsTraining ())
             {
-                if ((trekClient.GetShip ()->GetSide () != side) && (Training::GetTrainingMissionID () != Training::c_TM_6_Practice_Arena))
+                if ((trekClient.GetShip()->GetSide() != side) && (Training::GetTrainingMissionID() != Training::c_TM_6_Practice_Arena) && (Training::GetTrainingMissionID() != Training::c_TM_10_Free_Flight))
                     return false;
             }
             return m_sideVisibility.fVisible();
