@@ -6697,7 +6697,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         break;
 	  
 	  // BT - STEAM - Enable moderators to ban players by context menu.
-	  if (isModerator == true)
+	  if (isModerator == true && pfspAck->IsPlayer())
 	  {
 		  char szMessageParam[1024];
 		  if (FM_VAR_REF(pfmQuitMission, szMessageParam))
@@ -6765,7 +6765,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 	  CFSPlayer * pfspAck = pfssAck->GetPlayer();
 
-	  if (isModerator == true)
+	  if (isModerator == true && pfssAck->IsPlayer())
 	  {
 		  char szMessageParam[1024];
 		  if (FM_VAR_REF(pfmQuitSide, szMessageParam))
