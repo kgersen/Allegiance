@@ -8,8 +8,8 @@
 
 class NeverEvent : public IEventSource {
 public:
-    void AddSink(IEventSink* psink)    {}
-    void RemoveSink(IEventSink* psink) {}
+    void AddSink(IEventSink* psink) override    {}
+    void RemoveSink(IEventSink* psink) override {}
 };
 
 static TRef<IEventSource> g_pnever = new NeverEvent();
@@ -67,7 +67,7 @@ public:
     {
     }
 
-    bool OnEvent(IEventSource* pevent)
+    bool OnEvent(IEventSource* pevent) override
     {
         return m_psink->OnEvent(pevent);
     }
@@ -147,7 +147,7 @@ public:
     {
     }
 
-    bool OnEvent(IIntegerEventSource* pevent, int value)
+    bool OnEvent(IIntegerEventSource* pevent, int value) override
     {
         return m_psink->OnEvent(pevent, value);
     }

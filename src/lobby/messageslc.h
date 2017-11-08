@@ -73,7 +73,7 @@ END_FEDMSG
 
 DEFINE_FEDMSG(L, JOIN_MISSION, 260)
   DWORD dwCookie; // client should ignore this message unless it's the cookie for the most recent join/create request 
-  char szServer[16];
+  char szServer[64];
   DWORD dwPort;			// mdvalley: pass the port to the client
   GUID guidInstance;
 END_FEDMSG    
@@ -118,7 +118,7 @@ END_FEDMSG
 struct ServerCoreInfo
 {
 	char szName[c_cbName];
-	char szRemoteAddress[16];
+	char szRemoteAddress[64];
 	char szLocation[c_cbFileName]; //it's not a filename but we want it short- keep in sync with CFLServer::m_szLocation
 	int  iCurGames;
 	int  iMaxGames;
