@@ -1241,19 +1241,35 @@ public:
             //
             // assert (pplayer->SideID() != SIDE_TEAMLOBBY);
             {
-                if (Training::IsTraining ())
+                if (Training::IsTraining())
                 {
-                    ImissionIGC*    pCore = trekClient.GetCore ();
-                    IshipIGC*       pShip = pCore->GetShip (shipID);
-                    IclusterIGC*    pCluster = pShip->GetCluster ();
-                    if (!pCluster)
+                    if (Training::CommandViewEnabled())
                     {
-                        IstationIGC*    pStation = pShip->GetStation ();
-                        assert (pStation);
-                        pCluster = pStation->GetCluster ();
-                        assert (pCluster);
+                        ImissionIGC*    pCore = trekClient.GetCore();
+                        IshipIGC*       pShip = pCore->GetShip(shipID); //pplayer->GetShip() should be the same
+                        IclusterIGC*    pCluster = pShip->GetCluster();
+                        const Vector*   ppos;
+                        if (!pCluster)
+                        {
+                            IstationIGC*    pStation = pShip->GetStation();
+                            assert(pStation);
+                            pCluster = pStation->GetCluster();
+                            assert(pCluster);
+                            debugf("Ship is in station in %s.\n", pCluster->GetName());
+                            ppos = pStation && pStation->SeenBySide(trekClient.GetSide()) ? &(pStation->GetPosition()) : NULL;
+                        }
+                        else
+                            ppos = pShip && pShip->SeenBySide(trekClient.GetSide()) ? &(pShip->GetPosition()) : NULL;
+
+                        IclusterIGC*    pClusterShip = trekClient.GetShip()->GetCluster();
+                        if ((pClusterShip == NULL) || (pClusterShip == pCluster)) { //check if in station or in the same sector
+                            if (GetWindow()->GetViewMode() != TrekWindow::vmCommand)
+                                GetWindow()->SetViewMode(TrekWindow::vmCommand);
+				
+                    	    //trekClient.RequestViewCluster (pCluster, pplayer->GetShip()); //fails for ships in stations
+                            trekClient.SetViewCluster(pCluster, ppos); 
+                        }
                     }
-                    trekClient.RequestViewCluster (pCluster, pplayer->GetShip());
                 }
                 else if (pplayer->GetShipStatus().GetSectorID() != NA)
                 {
@@ -1279,7 +1295,7 @@ public:
                     }
                 }
 
-                GetWindow()->GetConsoleImage()->GetConsoleData()->PickShip(pplayer->GetShip());
+                GetWindow()->GetConsoleImage()->GetConsoleData()->PickShip(pplayer->GetShip()); //Select the ship
             }
         }
         
