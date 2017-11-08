@@ -53,9 +53,7 @@ namespace Training
     void        Mission10::CreateUniverse(void)
     {
         LoadUniverse("training_3", 488, 1030);    // a fighter 3
-
-                                                  // activate all the starting weapons
-        trekClient.fGroupFire = true;
+        trekClient.fGroupFire = true;             // activate all the starting weapons
 
         // put the commander ship in the station
         ImissionIGC*    pCore = trekClient.GetCore();
@@ -70,7 +68,9 @@ namespace Training
     //------------------------------------------------------------------------------
     Condition*  Mission10::CreateMission(void)
     {
-        debugf("Creating mission.");
+        debugf("Creating mission 10.\n");
+        m_commandViewEnabled = true;
+
         GoalList*   pGoalList = new GoalList;
 
         // wait .1 seconds, so stuff is initialized
