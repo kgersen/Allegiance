@@ -40,6 +40,7 @@ namespace Training
     void            SetSkipPostSlideshow (void);
     bool            IsTraining (void);
     bool            IsInstalled (void);
+    bool            CommandViewEnabled(void);
     int             GetTrainingMissionID (void);
     SectorID        GetStartSectorID (void);
     void            SetupShipAndCamera (void);
