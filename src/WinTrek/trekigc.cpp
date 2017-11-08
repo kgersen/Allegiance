@@ -4214,7 +4214,10 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
         else if (CHAT_INDIVIDUAL == ctRecipient
             && ((NA == oidRecipient) || (trekClient.GetShipID() == oidRecipient)))
         {
-            PlaySoundEffect(newPersonalMsgSound);
+            if (Training::IsTraining())
+                PlaySoundEffect(newChatMsgFromCommanderSound);
+            else
+                PlaySoundEffect(newPersonalMsgSound);
         }
         else
         {
