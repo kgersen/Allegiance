@@ -150,6 +150,11 @@ namespace Training
     }
 
     //------------------------------------------------------------------------------
+    bool            CommandViewEnabled(void) {
+        return g_pMission ? g_pMission->GetCommandViewEnabled() : false;
+    }
+
+    //------------------------------------------------------------------------------
     int             GetTrainingMissionID (void)
     {
         if (g_bIsMission7)

@@ -4235,7 +4235,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
     if (Training::IsTraining ())
     {
         // prevent players from giving commands to themselves
-        if (pshipSender && (oidRecipient == pshipSender->GetObjectID ()) && (Training::GetTrainingMissionID() != Training::c_TM_10_Free_Flight))
+        if (pshipSender && (oidRecipient == pshipSender->GetObjectID ()) && !Training::CommandViewEnabled())
             pmodelTarget = NULL;
 
         // send out the chat we are getting to see if we are waiting for it...
