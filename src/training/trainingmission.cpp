@@ -698,6 +698,8 @@ namespace Training
         fmPlayerInfo.dtidDrone = NA;
         fmPlayerInfo.shipID = shipID;
         fmPlayerInfo.cbrgPersistPlayerScores = 0;
+        if (m_commanderID != NA && pShip->GetObjectID() == m_commanderID)
+            fmPlayerInfo.fTeamLeader = true;
         pPlayerInfo->Set (&fmPlayerInfo);
         pPlayerInfo->SetMission (pMission);
 
