@@ -64,7 +64,8 @@ namespace Training
     m_pDeadCondition (0),
     m_commanderID (NA),
     m_pChatCondition (0),
-    m_bSkipPostSlideShow (false)
+    m_bSkipPostSlideShow (false),
+    m_commandViewEnabled(false)
     {
         // get the window pointer
         TrekWindow* pWindow = GetWindow ();
@@ -488,6 +489,12 @@ namespace Training
     void        TrainingMission::SetSkipPostSlideshow (void)
     {
         m_bSkipPostSlideShow = true;
+    }
+
+    //------------------------------------------------------------------------------
+    bool        TrainingMission::GetCommandViewEnabled(void)
+    {
+        return m_commandViewEnabled;
     }
 
     //------------------------------------------------------------------------------
