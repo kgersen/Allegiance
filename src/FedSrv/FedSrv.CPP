@@ -12805,6 +12805,18 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
   {
       CFSShip* pfsShip = (CFSShip*)(pshipRescuer->GetPrivateData());
       pfsShip->GetPlayerScoreObject()->AddRescue();
+	  if (pfsShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardPodPickup();
+	  }
+
+	  CFSShip* rescuedShip = (CFSShip*)(pshipRescued->GetPrivateData());
+	  if (rescuedShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardGetRescued();
+	  }
       BEGIN_PFM_CREATE(g.fm, pfmPlayerRescued, S, PLAYER_RESCUED)
       END_PFM_CREATE
       pfmPlayerRescued->shipIDRescuer = pshipRescuer->GetObjectID();
