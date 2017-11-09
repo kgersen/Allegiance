@@ -768,6 +768,7 @@ typedef short AchievementMask;
 const AchievementMask c_achmProbeKill = 0x01;
 const AchievementMask c_achmProbeSpot = 0x02;
 const AchievementMask c_achmNewRepair = 0x04;
+const AchievementMask c_achmGarrSpot = 0x08;
 
 enum    ShipControlStateIGC
 {
