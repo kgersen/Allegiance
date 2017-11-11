@@ -544,7 +544,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 														0,
 														D3DRTYPE_TEXTURE,
 														D3DFMT_A1R5G5B5 );
-	if( hTemp == D3D_OK && (m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_X1R5G5B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_R5G6B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_A1R5G5B5))
+
+	if( hTemp == D3D_OK) // BT - Reverting this, it was causing downstream issues. && (m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_X1R5G5B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_R5G6B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_A1R5G5B5))
 	{
 		pLogFile->OutputString( "wasit wiDevice supports A1R5G5B5 format.\n" );
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = true;
