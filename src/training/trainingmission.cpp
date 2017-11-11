@@ -502,8 +502,8 @@ namespace Training
     {
         ImissionIGC*        pCore = trekClient.ResetStaticData ();
         Time                now = pCore->GetLastUpdate();
-        char*               szStaticCoreFilename = IGC_STATIC_CORE_FILENAME;
-        int                 iStaticCoreVersion = LoadIGCStaticCore (szStaticCoreFilename, pCore, false);
+        char*               szTrainingCoreFilename = IGC_TRAINING_CORE_FILENAME;
+        int                 iStaticCoreVersion = LoadIGCStaticCore (szTrainingCoreFilename, pCore, false);
 
 
         // stuff for creating the sides
@@ -581,7 +581,7 @@ namespace Training
         // create the mission def
         FMD_S_MISSIONDEF    fmMissionDef;
         fmMissionDef.szDescription[0] = 0;
-        strcpy (fmMissionDef.misparms.szIGCStaticFile, szStaticCoreFilename);
+        strcpy (fmMissionDef.misparms.szIGCStaticFile, szTrainingCoreFilename);
         fmMissionDef.misparms.verIGCcore = iStaticCoreVersion;
         fmMissionDef.dwCookie = static_cast<DWORD> (pCore->GetMissionID ());
         fmMissionDef.iSideMissionOwner = 0;
