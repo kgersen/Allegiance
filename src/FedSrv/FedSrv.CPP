@@ -10890,18 +10890,27 @@ class ThingSiteImpl : public ThingSite
 
 											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());																		
 											
-											if (otModel == OT_station)
+											if (otModel == OT_station && pmodel != nullptr)
 											{
 												IstationIGC* pstation = ((IstationIGC*)pmodel);
-												if ((pstation->GetStationType()->GetClassID() == c_scGarrison) || 
-													(pstation->GetStationType()->GetClassID() == c_scStarbase))
+												IstationTypeIGC *pStationType = pstation->GetStationType();
+
+												if (pStationType != nullptr && 
+													(
+														(pstation->GetStationType()->GetClassID() == c_scGarrison) ||
+														(pstation->GetStationType()->GetClassID() == c_scStarbase)
+													))
 												{
-													if (s->GetObjectType() == OT_ship)
+													if (s != nullptr && s->GetMission() != nullptr && s->GetObjectType() == OT_ship)
 													{
 														ObjectID spotterID = s->GetObjectID();
 														ImodelIGC* pShipModel = s->GetMission()->GetModel(OT_ship, spotterID);
-														IshipIGC* pShip = (IshipIGC*)pShipModel;
-														pShip->SetAchievementMask(c_achmGarrSpot);
+
+														if (pShipModel != nullptr)
+														{
+															IshipIGC* pShip = (IshipIGC*)pShipModel;
+															pShip->SetAchievementMask(c_achmGarrSpot);
+														}
 													}													
 												}
 											}
