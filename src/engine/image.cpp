@@ -128,7 +128,7 @@ TRef<Surface> ConstantImage::GetSurface()
 
 void ConstantImage::Render(Context* pcontext)
 {
-    pcontext->DrawImage(m_psurface);
+    pcontext->DrawImage3D(m_psurface, Color(1, 1, 1));
 }
 
 ZString ConstantImage::GetString(int indent)
@@ -701,6 +701,7 @@ void WrapImage::SetImage(Image* pvalue)
 
 void WrapImage::CalcBounds()
 {
+    GetImage()->CalcBounds();
     m_bounds = GetImage()->GetBounds();
 }
 

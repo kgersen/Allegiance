@@ -2166,32 +2166,42 @@ public:
 
     void SetScreen(WrapImage* target, Screen* pscreen)
     {
-        m_pimageScreen = pscreen->GetImage();
+        TRef<Image> pimageScreen = pscreen->GetImage();
 
-        if (m_pimageScreen == NULL) {
-            TRef<Pane> ppane = pscreen->GetPane();
-
-            //
-            // Add a caption
-            //
-
-            SetCaption(CreateCaption(GetModeler(), ppane, this));
-
-            //
-            // Create the UI Window
-            //
-
-			m_pMatrixTransformScreen = new MatrixTransform2(Matrix2::GetIdentity());
-
-            m_pimageScreen = new TransformImage(
-				CreatePaneImage(GetEngine(), false, ppane),
-				m_pMatrixTransformScreen
-			);
+        if (pimageScreen == NULL) {
+            pimageScreen = Image::GetEmpty();
         }
+
+        TRef<Pane> ppane = pscreen->GetPane();
+
+        //
+        // Add a caption
+        //
+        if (ppane) {
+            SetCaption(CreateCaption(GetModeler(), ppane, this));
+        }
+
+        if (ppane == NULL) {
+            ppane = new ImagePane(Image::GetEmpty());
+        }
+
+        //
+        // Create the UI Window
+        //
+
+		m_pMatrixTransformScreen = new MatrixTransform2(Matrix2::GetIdentity());
+
+        m_pimageScreen = new TransformImage(
+            new GroupImage(
+                CreatePaneImage(GetEngine(), false, ppane), 
+                pimageScreen
+            ),
+			m_pMatrixTransformScreen
+		);
 
 		target->SetImage(m_pimageScreen);
 		
-        //SetSizeable(true); // kg-: #226 always
+        SetSizeable(true); // kg-: #226 always
 
         //
         // keep a reference to the screen to keep it alive
@@ -3702,7 +3712,7 @@ public:
     void StartQuitMission()
     {
         TRef<IMessageBox> pmessageBox;
-        if (Training::IsTraining () || Slideshow::IsInSlideShow ())
+        if (Training::IsTraining() || Slideshow::IsInSlideShow())
             pmessageBox = CreateMessageBox("Quit the Current Training Mission?", NULL, true, true);
         else
             pmessageBox = CreateMessageBox("Quit the Current Game?", NULL, true, true);
@@ -3710,7 +3720,7 @@ public:
         GetPopupContainer()->OpenPopup(pmessageBox, false);
     }
 
-    TrekInput*  GetInput (void)
+    TrekInput*  GetInput(void)
     {
         return m_ptrekInput;
     }
@@ -3735,9 +3745,9 @@ public:
             );
             m_pimageStars->SetCount(pcluster->GetStarSeed(), pcluster->GetNstars());
 
-            m_color                     = pcluster->GetLightColor();
-            m_colorAlt                  = pcluster->GetLightColorAlt();
-            m_ambientLevel              = pcluster->GetAmbientLevel();
+            m_color = pcluster->GetLightColor();
+            m_colorAlt = pcluster->GetLightColorAlt();
+            m_ambientLevel = pcluster->GetAmbientLevel();
             m_ambientLevelBidirectional = pcluster->GetBidirectionalAmbientLevel();
 
             SetLightDirection(pcluster->GetLightDirection());
@@ -3758,32 +3768,37 @@ public:
         UpdateMusic();
     }
 
-	void UpdateBackdropCentering()
-	{
-		//kg- #226 - todo -factorize with above code
-		if (m_pimageScreen)
-		{
-			// center the pane on the screen
-			const Rect& rectScreen = GetScreenRectValue()->GetValue();
-			if (m_pscreen->GetPane()) //kg- review
-			{
-				const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
+    void UpdateBackdropCentering()
+    {
+        //kg- #226 - todo -factorize with above code
+        if (m_pimageScreen)
+        {
+            // center the pane on the screen
+            const Rect& rectScreen = GetScreenRectValue()->GetValue();
+            Point sizeScreenBeforeScaling;
+            if (m_pscreen->GetPane())
+            {
+                const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
+                sizeScreenBeforeScaling = Point(sizePane.X(), sizePane.Y());
+            }
+            else if (m_pscreen->GetImage()) {
+                sizeScreenBeforeScaling = m_pscreen->GetImage()->GetBounds().GetRect().Size();
+            }
 
-				float scale;
-				scale = min(rectScreen.XSize() / sizePane.X(), rectScreen.YSize() / sizePane.Y());
+			float scale;
+			scale = min(rectScreen.XSize() / sizeScreenBeforeScaling.X(), rectScreen.YSize() / sizeScreenBeforeScaling.Y());
 
-				Point pointTranslate;
-				pointTranslate = Point(
-					0.5 * (rectScreen.XSize() - sizePane.X() * scale),
-					0.5 * (rectScreen.YSize() - sizePane.Y() * scale)
-				);
+			Point pointTranslate;
+			pointTranslate = Point(
+				0.5 * (rectScreen.XSize() - sizeScreenBeforeScaling.X() * scale),
+				0.5 * (rectScreen.YSize() - sizeScreenBeforeScaling.Y() * scale)
+			);
 
-				Matrix2 matrix = Matrix2::GetIdentity();
-				matrix.SetScale(Point(scale, scale));
-				matrix.Translate(pointTranslate);
+			Matrix2 matrix = Matrix2::GetIdentity();
+			matrix.SetScale(Point(scale, scale));
+			matrix.Translate(pointTranslate);
 
-				m_pMatrixTransformScreen->SetValue(matrix);
-			}
+			m_pMatrixTransformScreen->SetValue(matrix);
 		}
 	}
 
@@ -7561,7 +7576,7 @@ public:
 
         int nNumPlayingSoundBuffers;
         ZSucceeded(m_pSoundEngine->GetNumPlayingVirtualBuffers(nNumPlayingSoundBuffers));
-        char szRemoteAddress [64];
+        char szRemoteAddress [16];
         if (trekClient.m_fm.IsConnected())
           trekClient.m_fm.GetIPAddress(*trekClient.m_fm.GetServerConnection(), szRemoteAddress);
         else

@@ -481,7 +481,7 @@ public:
     tt.Stop();
   }
 
-  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[64]);
+  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16]);
   HRESULT         GetListeningPort(DWORD* dwPort);
 
   //  <NKM> 07-Aug-2004

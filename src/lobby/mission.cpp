@@ -21,7 +21,7 @@ CFLMission::CFLMission(CFLServer * pServer, CFLClient * pClientCreator) :
   m_fNotifiedCreator(false)
 {
   assert(m_pServer);
-  char szRemote[64];
+  char szRemote[16];
   g_pLobbyApp->GetFMServers().GetIPAddress(*m_pServer->GetConnection(), szRemote);
   
   g_pLobbyApp->GetSite()->LogEvent(
@@ -108,7 +108,7 @@ void CFLMission::NotifyCreator()
     // Tell the creator so they auto-join
     BEGIN_PFM_CREATE(g_pLobbyApp->GetFMClients(), pfmJoinMission, L, JOIN_MISSION)
     END_PFM_CREATE
-    char szServer[64];
+    char szServer[16];
     g_pLobbyApp->GetFMServers().GetIPAddress(*GetServer()->GetConnection(), szServer);
     assert(lstrlen(szServer) < sizeof(pfmJoinMission->szServer)); // as long as szServer is fixed length
     Strcpy(pfmJoinMission->szServer, szServer);

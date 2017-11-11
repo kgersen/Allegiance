@@ -80,7 +80,7 @@ static DWORD GetRegDWORD(const char* szKey, DWORD dwDefault)
 //	FedMessaging & fm = g_pLobbyApp->GetFMClients();
 //	CFMConnection * pcnxn = fm.GetConnectionFromId(pqd->dwConnectionID);
 //	
-//	char szAddress[64];
+//	char szAddress[16];
 //	Strcpy(szAddress, "");
 //
 //	fm.GetIPAddress(*pcnxn,szAddress);
@@ -411,7 +411,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 		{
 			if (!pServerT->GetPaused()) // not paused
 			{
-				char szRemoteAddress[64];
+				char szRemoteAddress[16];
 				g_pLobbyApp->GetFMServers().GetIPAddress(*iterCnxn.Value(), szRemoteAddress);
 				//IMAGO REVIEW: Sanity check on szAddr first
 				if (strcmp(szRemoteAddress,szAddr)==0) // IPs match
@@ -479,7 +479,7 @@ HRESULT LobbyClientSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
       {
         BEGIN_PFM_CREATE(*pthis, pfmJoinMission, L, JOIN_MISSION)
         END_PFM_CREATE
-        char szServer[64];
+        char szServer[16];
         g_pLobbyApp->GetFMServers().GetIPAddress(*pMission->GetServer()->GetConnection(), szServer);
         assert(lstrlen(szServer) < sizeof(pfmJoinMission->szServer)); // as long as szServer is fixed length
         Strcpy(pfmJoinMission->szServer, szServer);

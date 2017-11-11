@@ -198,6 +198,10 @@ public:
 				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
 			if (width == 1920 && height == 1080)
 				m_modes.PushEnd((Vector(width,height,rate))); //WUXGA (1080p widescreen mode)
+            if (width == 1920 && height == 1200)
+                m_modes.PushEnd((Vector(width, height, rate)));
+            if (width == 2560 && height == 1440)
+                m_modes.PushEnd((Vector(width, height, rate)));
 		}
 #pragma warning(default:4244)
     }
@@ -753,6 +757,7 @@ private:
 				ZDebugOutput("Invalid resolution\n");
 			}
 			//auto retry next mode untill end of list NYI
+            return false;
 		}
 
         if (g_bWindowLog) {
@@ -840,17 +845,16 @@ private:
             //
             // Didn't work goto to the next lower resolution
             //
+            Vector lower_resolution = PreviousMode(m_sizeResolution->GetValue());
 
-/*            WinPoint pointNew = pdddevice->PreviousMode(m_pointFullscreen);
-
-            if (pointNew == m_pointFullscreen) {
+            if (lower_resolution.X() == m_sizeResolution->GetValue().X() && lower_resolution.Y() == m_sizeResolution->GetValue().Y()) {
                 if (g_bWindowLog) {
                     ZDebugOutput("No more valid resolutions\n");
                 }
                 return false;
             }
 
-            m_pointFullscreen = pointNew;*/
+            SetFullscreenSize(lower_resolution);
         }
     }
 
@@ -1079,6 +1083,9 @@ private:
         }
     }
 
+    void SetFullscreenSize(const WinPoint& point) {
+        SetFullscreenSize(Vector(point.X(), point.Y(), g_DX9Settings.m_refreshrate));
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Re-used full screen mode change functions
@@ -1123,8 +1130,7 @@ private:
 
         for(int index = 0; index < count; index++) {
             if (
-                   m_modes[index].X() >= size.X() 
-                //&& m_modes[index].Y() >= size.Y() // Imago - look at X only due to widescreens 7/2/09
+                m_modes[index].X() == size.X() && m_modes[index].Y() == size.Y()
             ) {
                 m_modes.SetCount(index);
                 return;

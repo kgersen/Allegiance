@@ -754,7 +754,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 	//removed below becasue connections can reset here 
 	//then GetIPAddress breaks the lobby -Imago
 
-	// char szRemoteAddress[64];
+	// char szRemoteAddress[16];
    // GetIPAddress( *pcnxn, szRemoteAddress );
    // debugf(" ip=%s\n", szRemoteAddress );
 
@@ -1624,7 +1624,7 @@ CFMGroup * FedMessaging::GetGroupFromDpid(DPID dpid)
 }
 
 
-HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[64])
+HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16])
 {
   //assert( m_pDirectPlayServer != 0 );
 
