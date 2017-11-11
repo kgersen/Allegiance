@@ -3887,7 +3887,7 @@ void CFSMission::QueueLobbyMissionInfo()
     FM_VAR_PARM((PCC)m_strDetailsFiles, CB_ZTS)
 	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
 	FM_VAR_PARM((PCC)(g.strLocalAddress),CB_ZTS) // KGJV #114 - ServerName
-	FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
+	FM_VAR_PARM(szAddr,64)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
 	FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)),CB_ZTS) //Imago 6/10
 	FM_VAR_PARM(PCC(zInfo),CB_ZTS) //Imago 7/10
   END_PFM_CREATE
