@@ -1,6 +1,14 @@
 #ifndef _Geometry_h_
 #define _Geometry_h_
 
+#include <event.h>
+#include <matrix.h>
+
+#include "material.h"
+#include "model.h"
+#include "transform.h"
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // WrapGeo, a Geo that wraps another geo

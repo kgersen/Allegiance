@@ -1,4 +1,19 @@
-#include "pch.h"
+#include "efapp.h"
+
+#include <DX9PackFile.h>
+#include <EngineSettings.h>
+#include <base.h>
+#include <button.h>
+#include <controls.h>
+#include <geometry.h>
+#include <token.h>
+
+#include "efart.h"
+#include "efimage.h"
+#include "efpane.h"
+#include "framedata.h"
+#include "gamestate.h"
+#include "help.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

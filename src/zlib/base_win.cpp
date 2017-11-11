@@ -83,7 +83,7 @@ ZFile::ZFile(const PathString& strPath, uint32_t how) :
 
 	WCHAR* pszw = new WCHAR[unicodePath.GetLength() + 1];
     int result = MultiByteToWideChar(CP_ACP, 0, unicodePath, unicodePath.GetLength(), pszw, unicodePath.GetLength());
-	pszw[result] = NULL;
+    pszw[result] = 0;
 
 	d->m_fileHandle = CreateFileW(pszw, dwDesiredAccess,  dwShareMode, nullptr, dwCreationDisposition, FILE_ATTRIBUTE_NORMAL, nullptr);
 
@@ -193,7 +193,7 @@ uint8_t* ZFile::GetPointer(bool bWrite, bool bCopyOnWrite)
                 nullptr
             );
 
-        ZAssert(d->m_hfileMapping != NULL);
+        ZAssert(d->m_hfileMapping != nullptr);
 
 		d->m_p =
             (uint8_t*)MapViewOfFile(
@@ -208,7 +208,7 @@ uint8_t* ZFile::GetPointer(bool bWrite, bool bCopyOnWrite)
                 0
             );
 
-        ZAssert(d->m_p != NULL);
+        ZAssert(d->m_p != nullptr);
     }
 
     return d->m_p;
@@ -375,16 +375,16 @@ FILETIME ZFile::GetMostRecentFileModificationTime(ZString &searchPath)
 				SYSTEMTIME st;
 				FileTimeToLocalFileTime(&lastModified, &lastModified);
 				FileTimeToSystemTime(&lastModified, &st);
-				GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, &st, NULL,
+                GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, &st, nullptr,
 				szLocalDate, 255);
-				GetTimeFormatA(LOCALE_USER_DEFAULT, 0, &st, NULL, szLocalTime, 255);
+                GetTimeFormatA(LOCALE_USER_DEFAULT, 0, &st, nullptr, szLocalTime, 255);
 				printf("%s %s - ", szLocalDate, szLocalTime);
 
 				FileTimeToLocalFileTime(&findFileData.ftLastWriteTime, &findFileData.ftLastWriteTime);
 				FileTimeToSystemTime(&findFileData.ftLastWriteTime, &st);
-				GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, &st, NULL,
+                GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, &st, nullptr,
 				szLocalDate, 255);
-				GetTimeFormatA(LOCALE_USER_DEFAULT, 0, &st, NULL, szLocalTime, 255);
+                GetTimeFormatA(LOCALE_USER_DEFAULT, 0, &st, nullptr, szLocalTime, 255);
 				printf("%s %s\n", szLocalDate, szLocalTime);
 				*/
 

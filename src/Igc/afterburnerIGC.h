@@ -11,10 +11,13 @@
 **
 **  History:
 */
+
 // afterburnerIGC.h : Declaration of the CafterburnerIGC
 
 #ifndef __AFTERBURNERIGC_H_
 #define __AFTERBURNERIGC_H_
+
+#include "igc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CafterburnerIGC

@@ -4,6 +4,9 @@
 #include "limits.h"
 #include "trekmdl.h"
 
+#include <button.h>
+#include <controls.h>
+
 // KG- EF5P - sept2008- 
 // Enhanced F5 panel: added 'show all' and 'hide completed' options
 // all changes related to this have 'EF5P' has comment

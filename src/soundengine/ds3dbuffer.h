@@ -1,6 +1,10 @@
+#pragma once
 //
 // ds3dbuffer.h: low-level classes representing actual DirectSound3D buffers
 //
+
+#include "ds3dutil.h"
+#include "soundbase.h"
 
 namespace SoundEngine {
 

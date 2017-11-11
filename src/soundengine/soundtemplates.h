@@ -3,6 +3,11 @@
 //
 // Several useful sound template implementations.
 //
+#include <windows.h>
+#include <tref.h>
+#include <zstring.h>
+
+#include "soundbase.h"
 
 namespace SoundEngine {
 

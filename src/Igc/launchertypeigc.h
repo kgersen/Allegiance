@@ -15,6 +15,7 @@
 
 #ifndef __LAUNCHERTYPEIGC_H_
 #define __LAUNCHERTYPEIGC_H_
+#include "igc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // ClauncherTypeIGC

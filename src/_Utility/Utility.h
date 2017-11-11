@@ -13,6 +13,14 @@
 */
 #ifndef utl_h
 #define utl_h
+
+#include <matrix.h>
+#include <orientation.h>
+#include <tmap.h>
+#include <vector.h>
+#include <zmath.h>
+#include <ztime.h>
+
 /*
 ** Disable some stupid warning messages that we really don't need and
 ** shouldn't be there (actually, set them to level 4 so I can still see
@@ -123,6 +131,14 @@ class _exposed Link_utl
         */
         bool    unlink(void);
 
+        /*
+        ** Return the next element in the list.
+        */
+        inline Link_utl*   next(void)  const
+        {
+            return m_next;
+        }
+
     protected:
         Link_utl(void);
         ~Link_utl(void) 
@@ -144,14 +160,6 @@ class _exposed Link_utl
         bool        next(Link_utl*   l);
 
         /*
-        ** Return the next element in the list.
-        */
-        inline Link_utl*   next(void)  const
-        {
-            return m_next;
-        }
-
-        /*
         ** Insert l immediately before *this & return true.
         ** Do nothing & return false if *this is not part of a list.
         */
@@ -170,7 +178,7 @@ class _exposed Link_utl
         Link_utl*  m_next;
         Link_utl*  m_txen;
 
-    friend List_utl;
+    friend class List_utl;
 };
 
 class _exposed Lock_utl
@@ -1363,7 +1371,7 @@ class   BytePercentage
 
 extern const Rotation      c_rotationZero;
 
-#include    "utility.hxx"
+#include    "Utility.hxx"
 #undef  _exposed
 
 // safe strcpy
@@ -1387,9 +1395,11 @@ static int Strcmp(const char * szDst, const char * szSrc)
 }
 
 // safe strcat //Imago 7/15/09
-static char * Strcat(const char * szDst, const char * szSrc)
+static char * Strcat(char * szDst, const char * szSrc)
 {
-  return lstrcatA(szDst ? szDst : "", szSrc ? szSrc : "");
+  if (!szDst)
+      return nullptr;
+  return lstrcatA(szDst, szSrc ? szSrc : "");
 }
 
 #define IMPLIES(x, y) (!(x) || (y))

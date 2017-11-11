@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "efpane.h"
+
+#include <button.h>
+#include <controls.h>
+#include <event.h>
+#include <namespace.h>
+#include <tref.h>
+
+#include "listpane.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -296,7 +304,7 @@ public:
                 psurface->BitBlt(
                     WinPoint(x, 0),
                     m_psurface,
-                    WinRect(0, 0, size.X(), min(size.Y(), YSize()))
+                    WinRect(0, 0, size.X(), std::min(size.Y(), YSize()))
                 );
                 x += size.X();
             }
@@ -304,7 +312,7 @@ public:
             psurface->BitBlt(
                 WinPoint(x, 0),
                 m_psurface,
-                WinRect(0, 0, XSize() - x, min(size.Y(), YSize()))
+                WinRect(0, 0, XSize() - x, std::min(size.Y(), YSize()))
             );
         }
         else
@@ -316,7 +324,7 @@ public:
                 psurface->BitBlt(
                     WinPoint(0, y),
                     m_psurface,
-                    WinRect(0, 0, min(size.X(), XSize()), size.Y())
+                    WinRect(0, 0, std::min(size.X(), XSize()), size.Y())
                 );
                 y += size.Y();
             }
@@ -324,7 +332,7 @@ public:
             psurface->BitBlt(
                 WinPoint(0, y),
                 m_psurface,
-                WinRect(0, 0, min(size.X(), XSize()), YSize() - y)
+                WinRect(0, 0, std::min(size.X(), XSize()), YSize() - y)
             );
         }
     }
@@ -494,12 +502,14 @@ public:
         temp.SetX((int)ppoint->GetValue().X());
         temp.SetY((int)ppoint->GetValue().Y());
 
+        TRef<IIntegerEventSource> evtmp;
+        TRef<ScrollPane> sptmp;
         return
             CreateTrekScrollPane(
                 temp,
                 m_pmodeler,
-                TRef<IIntegerEventSource>(),
-                TRef<ScrollPane>(),
+                evtmp,
+                sptmp,
                 m_bHorizontal,
                 pbuttonUp,
                 pbuttonDown,

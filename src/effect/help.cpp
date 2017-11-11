@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "help.h"
+
+#include <controls.h>
+#include <button.h>
+#include <namespace.h>
 //////////////////////////////////////////////////////////////////////////////
 //
 // Help

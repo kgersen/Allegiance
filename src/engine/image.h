@@ -1,6 +1,15 @@
 #ifndef _Image_h_
 #define _Image_h_
 
+#include <tref.h>
+
+#include "engine.h"
+#include "model.h"
+#include "transform.h"
+#include "viewport.h"
+
+class IEventSource;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //  Other Images

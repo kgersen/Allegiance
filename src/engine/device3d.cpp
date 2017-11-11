@@ -1,4 +1,15 @@
-#include "pch.h"
+#include <color.h>
+
+#include <d3d9.h>
+#include <matrix.h>
+#include <point.h>
+#include <tref.h>
+#include <vertex.h>
+
+#include "context.h"
+#include "D3DDevice9.h"
+#include "enginep.h"
+#include "material.h"
 
 // compile this file for speed
 
@@ -463,7 +474,7 @@ public:
 		else 
 		{
 			// Flip the y coordinate
-			_ASSERT( false );		// TODO: check this path.
+            ZAssert( false );		// TODO: check this path.
 			matD3D.Translate(Vector(0, -m_sizeSurface.Y(), 0));
 			matD3D.Scale(Vector(1, -1, 1));
 		}
@@ -610,14 +621,14 @@ public:
                 if (bClip) 
 				{
 					// Copy vertex, set light value to 1, 1, 1, 1.
-					_ASSERT( false );
-//                    m_pfnLightVertex = &Device3D::LightVertexCopy;
+//                    ZAssert( false );
+                    m_pfnLightVertex = &Device3D::LightVertexCopy;
 				} 
 				else 
 				{
 					// No lighting or transform. Uses textured screen space coords.
-//                    m_pfnLightVertex = &Device3D::TransformNoClipNoLight;
-					_ASSERT( false );
+                    m_pfnLightVertex = &Device3D::TransformNoClipNoLight;
+//                    ZAssert( false );
                 }
                 break;
 
@@ -2616,18 +2627,18 @@ public:
 		GenerateWorldTransform( );
 
 		hr = CVBIBManager::Get()->SetVertexAndIndexStreams( phVB, phIB );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetFVF( phVB->dwBufferFormat );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetTransform( D3DTS_WORLD, &m_matWorldD3D );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 												
 		hr = CD3DDevice9::Get()->DrawIndexedPrimitive(
 				primType, 0, 0,
 				phVB->dwNumElements,
 				phIB->dwFirstElementOffset / 2,
 				phIB->dwNumElements / 3 );
-		_ASSERT( hr == S_OK );
+        ZAssert( hr == S_OK );
 	}
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2648,13 +2659,13 @@ public:
 		GenerateWorldTransform( );
 
 		hr = CVBIBManager::Get()->SetVertexStream( phVB );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetFVF( phVB->dwBufferFormat );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetTransform( D3DTS_WORLD, &m_matWorldD3D );
-		_ASSERT( hr == D3D_OK );			
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->DrawPrimitive( primType, phVB->dwFirstElementOffset, dwNumPrims );
-		_ASSERT( hr == S_OK );
+        ZAssert( hr == S_OK );
 	}
 
 

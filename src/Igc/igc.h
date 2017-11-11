@@ -13,6 +13,16 @@
 #ifndef IGC_H
 #define IGC_H
 
+#include <Utility.h>
+#include <color.h>
+#include <mask.h>
+#include <olddxdefns.h>
+#include <orientation.h>
+#include <point.h>
+#include <quaternion.h>
+#include <tref.h>
+#include <vector.h>
+
 const float c_fPedestalOffset = 2000.0f;
 const float c_fFlagOffset = 50.0f;
 
@@ -162,27 +172,27 @@ const ObjectType    OT_Max              = 36;// don't put anything after this
                                              // OT_Max should be less then 256 for
                                              // AGC event firing.
 
-const   __int64         c_maskStaticTypes = (__int64(1) << __int64(OT_projectileType)) |
-                                            (__int64(1) << __int64(OT_treasureSet)) |
-                                            (__int64(1) << __int64(OT_hullType)) |
-                                            (__int64(1) << __int64(OT_partType)) |
-                                            (__int64(1) << __int64(OT_missileType)) |
-                                            (__int64(1) << __int64(OT_mineType)) |
-                                            (__int64(1) << __int64(OT_probeType)) |
-                                            (__int64(1) << __int64(OT_civilization)) |
-                                            (__int64(1) << __int64(OT_stationType)) |
-                                            (__int64(1) << __int64(OT_development)) |
-                                            (__int64(1) << __int64(OT_droneType)) |
-                                            (__int64(1) << __int64(OT_chaffType)) |
-                                            (__int64(1) << __int64(OT_constants));
+const   int64_t         c_maskStaticTypes = (int64_t(1) << int64_t(OT_projectileType)) |
+                                            (int64_t(1) << int64_t(OT_treasureSet)) |
+                                            (int64_t(1) << int64_t(OT_hullType)) |
+                                            (int64_t(1) << int64_t(OT_partType)) |
+                                            (int64_t(1) << int64_t(OT_missileType)) |
+                                            (int64_t(1) << int64_t(OT_mineType)) |
+                                            (int64_t(1) << int64_t(OT_probeType)) |
+                                            (int64_t(1) << int64_t(OT_civilization)) |
+                                            (int64_t(1) << int64_t(OT_stationType)) |
+                                            (int64_t(1) << int64_t(OT_development)) |
+                                            (int64_t(1) << int64_t(OT_droneType)) |
+                                            (int64_t(1) << int64_t(OT_chaffType)) |
+                                            (int64_t(1) << int64_t(OT_constants));
 
-const   __int64         c_maskMapTypes =    (__int64(1) << __int64(OT_asteroid)) |
-                                            (__int64(1) << __int64(OT_station))  |
-                                            (__int64(1) << __int64(OT_cluster))  |
-                                            (__int64(1) << __int64(OT_mine))     |
-                                            (__int64(1) << __int64(OT_probe))    |
-                                            (__int64(1) << __int64(OT_treasure)) |
-                                            (__int64(1) << __int64(OT_warp));
+const   int64_t         c_maskMapTypes =    (int64_t(1) << int64_t(OT_asteroid)) |
+                                            (int64_t(1) << int64_t(OT_station))  |
+                                            (int64_t(1) << int64_t(OT_cluster))  |
+                                            (int64_t(1) << int64_t(OT_mine))     |
+                                            (int64_t(1) << int64_t(OT_probe))    |
+                                            (int64_t(1) << int64_t(OT_treasure)) |
+                                            (int64_t(1) << int64_t(OT_warp));
 
 
 
@@ -2768,10 +2778,10 @@ const int c_cbSideName = 40;
 class ImissionIGC : public IstaticIGC
 {
     public:
-        virtual int                     Export(__int64   maskTypes,
+        virtual int                     Export(int64_t   maskTypes,
                                                char*     pdata) const = 0;
         virtual void                    Import(Time      now,
-                                               __int64   maskTypes,
+                                               int64_t   maskTypes,
                                                char*     pdata,
                                                int       datasize) = 0;
 		//Imago added
@@ -3009,10 +3019,10 @@ class ThingSite : public AttachSite
         virtual void             DeactivateBolt(void) {}
 
         virtual int         GetMask(void) const {return 0;}
-        virtual void        SetMask(int mask) {};
-        virtual void        OrMask(int mask) {};
-        virtual void        AndMask(int mask) {};
-        virtual void        XorMask(int mask) {};
+        virtual void        SetMask(int mask) {}
+        virtual void        OrMask(int mask) {}
+        virtual void        AndMask(int mask) {}
+        virtual void        XorMask(int mask) {}
 };
 
 class ImodelIGC : public IbaseIGC
@@ -5091,10 +5101,10 @@ inline void        DeleteIbaseIGC(BaseListIGC*     list, IbaseIGC* base)
 		debugf("ERROR: IGC::DeleteIbaseIGC() - base was null.\n");
 		return;
 	}
-
+#ifndef __GNUC__
 	__try
 	{
-
+#endif
 		for (BaseLinkIGC*   l = list->first();
 			(l != NULL);
 			l = l->next())
@@ -5106,11 +5116,13 @@ inline void        DeleteIbaseIGC(BaseListIGC*     list, IbaseIGC* base)
 				break;                  //all done
 			}
 		}
-	}
+#ifndef __GNUC__
+    }
 	__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
 	{
 		StackTracer::OutputStackTraceToDebugF();
 	}
+#endif
 }
 
 
@@ -6097,7 +6109,7 @@ class GameOverScoreObject
 // normal igc files, i.e. missions can be dumped and loaded using these two
 // functions. They return true if successful.
 //------------------------------------------------------------------------------
-bool    DumpIGCFile (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes,
+bool    DumpIGCFile (const char* name, ImissionIGC* pMission, int64_t iMaskExportTypes,
                      void (*munge)(int size, char* data) = NULL);
 bool    LoadIGCFile (const char* name, ImissionIGC* pMission, void (*munge)(int size, char* data) = NULL);
 
@@ -6107,7 +6119,7 @@ bool    LoadIGCFile (const char* name, ImissionIGC* pMission, void (*munge)(int 
 // number in the file, and it is returned by the LoadIGCStaticCore function.
 // if the load function fails, it returns NA.
 //------------------------------------------------------------------------------
-bool    DumpIGCStaticCore (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes, void (*munge)(int size, char* data) = NULL);
+bool    DumpIGCStaticCore (const char* name, ImissionIGC* pMission, int64_t iMaskExportTypes, void (*munge)(int size, char* data) = NULL);
 int     LoadIGCStaticCore (const char* name, ImissionIGC* pMission, bool fGetVersionOnly, void (*munge)(int size, char* data) = NULL);
 int     CacheIGCStaticCore (const char* name, ImissionIGC* pMission, bool fGetVersionOnly, void (*munge)(int size, char* data) = NULL);
 

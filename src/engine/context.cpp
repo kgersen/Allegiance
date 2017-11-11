@@ -1,4 +1,14 @@
-#include "pch.h"
+#include "context.h"
+
+#include "camera.h"
+#include "enginep.h"
+#include "D3DDevice9.h"
+#include "material.h"
+#include "UIVertexDefn.h"
+#include "VertexGenerator.h"
+
+#include <mask.h>
+#include <matrix.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -706,7 +716,7 @@ public:
                         Vertex(xmax, ymax, 0, 0, 0, 1, xtmax, ytmax)
                     };
 //                    m_pdevice3D->DrawTriangles(vertices, 4, indices, 6);
-					_ASSERT( false && "TBD" );
+                    ZAssert( false && "TBD" );
                 }
                 break;
 
@@ -721,7 +731,7 @@ public:
 					if( CVBIBManager::Get()->LockDynamicVertexBuffer( phVB, 4, (void**) &pVertexData ) == false )
 					{
 						// Failed to lock the vertex buffer.
-						_ASSERT( false );
+                        ZAssert( false );
 						return;
 					}
 

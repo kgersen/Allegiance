@@ -1,4 +1,10 @@
-#include "pch.h"
+#include "efsound.h"
+
+#include <mdl.h>
+#include <model.h>
+#include <namespace.h>
+#include <soundengine.h>
+#include <value.h>
 
 class WaveTemplateFactory : public IFunction
 {

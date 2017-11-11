@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "geometry.h"
+
+#include "keyframe.h"
+#include "material.h"
+#include "xfile.h"
+
+#include <base.h>
+#include <quaternion.h>
+#include <token.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -1122,17 +1130,17 @@ public:
 
             if (strType == "Frame") {
                 if (!ReadFrame(strName, pgeoChild)) {
-                    return false;
+                    return {};
                 }
             } else if (strType == "Mesh") {
                 if (!ReadMesh(strName, pgeoChild)) {
-                    return false;
+                    return {};
                 }
             } else if (strType == "AnimationSet") {
                 ZAssert(!bAnimation);
                 bAnimation = true;
                 if (!ReadAnimationSet(pnumberFrame)) {
-                    return false;
+                    return {};
                 }
             }
 

@@ -1,4 +1,4 @@
-
+#pragma once
 /*-------------------------------------------------------------------------
  * clintlib\AutoDownload.h
  * 
@@ -8,7 +8,11 @@
  * Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
-#include "regkey.h"
+#include <cstdio>
+#include <FTPSession.h>
+#include <regkey.h>
+#include <windows.h>
+#include <zassert.h>
 
 class IAutoUpdateSink;
 /*      AutoDownload incepts the logon ack, delaying it until the download
@@ -302,16 +306,16 @@ public:
           DWORD dwValue = 0;
           if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
           {
-            ::RegSetValueEx(hKey, "MoveInProgress", NULL, REG_DWORD, (unsigned char*)&dwValue, sizeof(DWORD));
+            ::RegSetValueEx(hKey, "MoveInProgress", 0, REG_DWORD, (unsigned char*)&dwValue, sizeof(DWORD));
           }
       }
 
       return true;
     }
 
-    static char * GetEXEFileName(int nIndex)
+    static const char * GetEXEFileName(int nIndex)
     {
-        static char * pszEXEFiles[] = 
+        static const char * pszEXEFiles[] =
         {
             "CliConfig.exe",
             "fsmon.exe",

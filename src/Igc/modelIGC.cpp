@@ -11,7 +11,6 @@
 **
 **  History:
 */
-#include "pch.h"
 #include "modelIGC.h"
 #include <stdio.h>
 #include <math.h>

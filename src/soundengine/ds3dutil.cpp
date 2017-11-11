@@ -4,7 +4,6 @@
 // basic utilility functions used by the DirectSound3D wrappers.
 //
 
-#include "pch.h"
 #include "soundbase.h"
 
 #include "ds3dutil.h"
@@ -46,8 +45,8 @@ void WorkerThread::Execute()
 }
 
 WorkerThread::WorkerThread() :
-    m_hThread(NULL), 
-    m_hEventExit(NULL)
+    m_hThread(nullptr),
+    m_hEventExit(nullptr)
 {
 }
 
@@ -66,8 +65,8 @@ void WorkerThread::StartThread(int nPriority, int nSleepTime)
     {
         unsigned dwThreadId;
         m_nSleepTime = nSleepTime;
-        m_hEventExit = CreateEvent(NULL, TRUE, FALSE, NULL);
-        m_hThread = (HANDLE)_beginthreadex(NULL, 0, &ThreadStart, this, 0, &dwThreadId);
+        m_hEventExit = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+        m_hThread = (HANDLE)_beginthreadex(nullptr, 0, &ThreadStart, this, 0, &dwThreadId);
         SetThreadPriority(m_hThread, nPriority);
     }
 }
@@ -81,9 +80,9 @@ void WorkerThread::StopThread()
         SetEvent(m_hEventExit);
         WaitForSingleObject(m_hThread, INFINITE);
         CloseHandle(m_hThread);
-        m_hThread = NULL;
+        m_hThread = nullptr;
         CloseHandle(m_hEventExit);
-        m_hEventExit = NULL;
+        m_hEventExit = nullptr;
     }
 }
 

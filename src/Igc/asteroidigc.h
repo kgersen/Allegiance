@@ -16,7 +16,8 @@
 #ifndef __ASTEROIDIGC_H_
 #define __ASTEROIDIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class   CasteroidIGC : public TmodelIGC<IasteroidIGC>
 {

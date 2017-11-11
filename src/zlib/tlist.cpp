@@ -1,5 +1,5 @@
 #include "tlist.h"
-#include "zassert.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // TListImpl::IteratorImpl
@@ -151,7 +151,7 @@ void TListImpl::InsertAfterImpl(ListNodeImpl* pnode, ListNodeImpl* pnew)
 
 void TListImpl::PopFrontImpl()
 {
-    ZAssert(m_pfirst != NULL);
+    ZAssert(m_pfirst != nullptr);
 
     m_pfirst = m_pfirst->m_pnext;
     if (m_pfirst) {
@@ -165,7 +165,7 @@ void TListImpl::PopFrontImpl()
 
 void TListImpl::PopEndImpl()
 {
-    ZAssert(m_plast != NULL);
+    ZAssert(m_plast != nullptr);
 
     m_plast = m_plast->m_pprev;
     if (m_plast) {

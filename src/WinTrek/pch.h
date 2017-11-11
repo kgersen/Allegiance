@@ -51,6 +51,12 @@
 // BT - STEAM
 #include "steam_api.h"
 
+#include <button.h>
+#include <controls.h>
+#include <geometry.h>
+#include <paneimage.h>
+#include <D3DDevice9.h>
+
 //
 // WinTrek headers
 //

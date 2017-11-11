@@ -1,5 +1,6 @@
-
 #pragma once
+
+#include <cstdint>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // CHashEntry()
@@ -9,12 +10,12 @@ class CHashEntry
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 protected:
-	DWORD			m_dwHashValue;
+    uint32_t			m_dwHashValue;
 	CHashEntry *	m_pNextHashEntry;				// Next hash entry in list.
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
-	CHashEntry( DWORD dwHashValue, void * pObject )
+    CHashEntry( uint32_t dwHashValue, void * pObject )
 	{
 		m_dwHashValue = dwHashValue;
 		m_pNextHashEntry = NULL;
@@ -24,8 +25,8 @@ public:
 	{
 	}
 
-	inline DWORD GetHashValue()					{	return m_dwHashValue;		}
-	inline void SetHashValue( DWORD dwHash )	{	m_dwHashValue = dwHash;		}
+    inline uint32_t GetHashValue()					{	return m_dwHashValue;		}
+    inline void SetHashValue( uint32_t dwHash )	{	m_dwHashValue = dwHash;		}
 	inline CHashEntry * GetNext()				{	return m_pNextHashEntry;	}
 	inline void SetNext( CHashEntry * pNext )	{	m_pNextHashEntry = pNext;	}
 };
@@ -41,15 +42,15 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
-	DWORD m_dwTableSize;
-	DWORD m_dwTotalEntriesAdded;
+    uint32_t m_dwTableSize;
+    uint32_t m_dwTotalEntriesAdded;
 	CHashEntry ** m_ppHashTable;
 	bool m_bValidateEntries;			// If true, check all entries for a hash value clash.
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 public:
 	////////////////////////////////////////////////////////////////////////////////////////////
-	CHashTable( DWORD dwTableSize = (DWORD) s_iDefaultTableSize, bool bValidateEntries = false );
+    CHashTable( uint32_t dwTableSize = uint32_t(s_iDefaultTableSize), bool bValidateEntries = false );
 	~CHashTable(void);
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,17 +60,17 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	// Returns a hash entry with a matching hash value, NULL if no match is found.
-	CHashEntry * GetHashEntry( DWORD dwHashSearchValue );
+    CHashEntry * GetHashEntry( uint32_t dwHashSearchValue );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	CHashEntry * GetLeadHashEntryByIndex( DWORD dwIndex );
+    CHashEntry * GetLeadHashEntryByIndex( uint32_t dwIndex );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	DWORD GetTableSize() {	return m_dwTableSize;	}
+    uint32_t GetTableSize() {	return m_dwTableSize;	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	DWORD GetNumChildren( CHashEntry * pEntry );
+    uint32_t GetNumChildren( CHashEntry * pEntry );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static DWORD GenerateHashValue( const char * szString );
+    static uint32_t GenerateHashValue( const char * szString );
 };

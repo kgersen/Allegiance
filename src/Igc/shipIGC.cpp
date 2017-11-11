@@ -12,7 +12,6 @@
 **  History:
 */
 // shipIGC.cpp : Implementation of CshipIGC
-#include "pch.h"
 #include "shipIGC.h"
 #include <math.h>
 #include <limits.h>
@@ -1283,10 +1282,12 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
             dr = c_drHullDamage;
         }
 
+#ifndef __GNUC__
 		// BT - 9/17 - Not sure why this exception is happening here. The stack traces I get from the mini-dumps are not helping much. Maybe this will
 		// show more, and also keep the server from crashing?
 		__try
 		{
+#endif
 			if (m_fraction > 0.0f)
 			{
 				if ((type & c_dmgidNoDebris) == 0)
@@ -1316,12 +1317,13 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 					dr = c_drKilled;
 				}
 			}
-		}
+#ifndef __GNUC__
+        }
 		__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
 		{
 			StackTracer::OutputStackTraceToDebugF();
 		}
-
+#endif
     }
     //Imago 6/10
     //assert (m_fraction >= 0.0f);

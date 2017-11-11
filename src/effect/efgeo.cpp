@@ -1,4 +1,10 @@
-#include "pch.h"
+#include "efgeo.h"
+
+#include <engine.h>
+#include <geometry.h>
+#include <surface.h>
+
+#include "efart.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -893,7 +899,7 @@ public:
         //
 
         float lengthImage =
-            max(
+            std::max(
                 pcontext->GetImageRadius(vecStart, size),
                 pcontext->GetImageRadius(vecEnd, size)
             );
@@ -913,7 +919,7 @@ public:
         // color is based on size
         //
 
-        float bright = min(1.0f, lengthImage / 128);
+        float bright = std::min(1.0f, lengthImage / 128);
         Color color(bright, bright, bright);
 
         //

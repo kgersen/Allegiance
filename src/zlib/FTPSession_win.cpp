@@ -14,10 +14,11 @@
 
 #include "FTPSession.h"
 
-#include <Windows.h>
-#include <WinInet.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstdint>
+#include <windows.h>
+#include <wininet.h>
 
 #include "zassert.h"
 
@@ -28,7 +29,7 @@ class CInternetSessionImpl :
 {
 public:
 
-    CInternetSessionImpl(IInternetSessionSink * pSink) : // pSink can be NULL
+    CInternetSessionImpl(IInternetSessionSink * pSink) : // pSink can be nullptr
       m_buffer(nullptr),
       m_hFile(nullptr),
       m_pszFileList(nullptr),
@@ -109,7 +110,7 @@ public:
             }
             m_pszFileListData = new char*[i+2];
             m_pszFileListData[0] = (char*)-1; // means not started yet;
-            // StartNextFile() increments first thing; so (char*)-1 is not downloaded, (I chose -1 because it's different than NULL)
+            // StartNextFile() increments first thing; so (char*)-1 is not downloaded, (I chose -1 because it's different than nullptr)
 
             // iterate again and allocate memory for each entry
             psz = const_cast<char * *>(pszFileList);
@@ -164,13 +165,13 @@ public:
                 DoError("Disconnect Failed");
                 return false;
             }
-            m_hInternetSession = NULL;
+            m_hInternetSession = nullptr;
         }
 
         if (m_buffer)
         {
             ::VirtualFree((void*)m_buffer, 0, MEM_RELEASE);
-            m_buffer = NULL;
+            m_buffer = nullptr;
         }
 
         return true;
@@ -312,12 +313,12 @@ protected:
 				debugf("DownloadThread(): pSession->m_hFile was not null, downloading file block.\r\n");
 
                 DOWNLOAD_RESULT result = DOWNLOAD_ERROR; // default to error, until we know better
-                __try
+                try
                 {
                     result = pSession->DownloadFileBlock();
 					debugf("DownloadThread(): pSession->DownloadFileBlock() result: %ld.\r\n", result);
                 }
-                __except(1)
+                catch(...)
                 {
                     result = DOWNLOAD_ERROR;
 					debugf("DownloadThread(): pSession->DownloadFileBlock() = threw exception, DOWNLOAD_ERROR.\r\n");
@@ -397,7 +398,7 @@ protected:
                 DoError("InternetCloseHandle() Failed for download file");
                 return false;
             }
-            m_hFileConnection = NULL;
+            m_hFileConnection = nullptr;
         }
 
         //
@@ -438,7 +439,7 @@ protected:
         //
         // Get the available data
         //
-        unsigned long cBytesAttempted = min(cBytesAvail, m_nBufferSize-m_cBytesRead);
+        unsigned long cBytesAttempted = std::min<uint32_t>(cBytesAvail, m_nBufferSize-m_cBytesRead);
 
         if (!InternetReadFile((void*)m_hFileConnection, (void*)(m_buffer+m_cBytesRead), cBytesAttempted, &cBytesJustRead))
         {
@@ -460,10 +461,10 @@ protected:
         buffer.dwBufferTotal = buffer.dwBufferLength;
 
         buffer.dwStructSize = sizeof(INTERNET_BUFFERS);
-        buffer.lpcszHeader = NULL;
+        buffer.lpcszHeader = nullptr;
         buffer.dwHeadersLength = 0;
         buffer.dwHeadersTotal = 0;
-        buffer.Next = NULL;
+        buffer.Next = nullptr;
         buffer.dwOffsetLow = 0;
         buffer.dwOffsetHigh = 0;
 
@@ -525,13 +526,13 @@ protected:
                     // skip this file.  
                     // NOTE: This hasn't been tested.
                     ::InternetCloseHandle(m_hFileConnection);
-                    m_hFileConnection = NULL;
+                    m_hFileConnection = nullptr;
                     ::CloseHandle(m_hFile);
-                    m_hFile = NULL;
+                    m_hFile = nullptr;
                }
            }
 
-           if (!WriteFile(m_hFile, (void*)m_buffer, m_cBytesRead, &cBytesWritten, NULL))
+           if (!WriteFile(m_hFile, (void*)m_buffer, m_cBytesRead, &cBytesWritten, nullptr))
            {
                DoError("Failed to write the file (%s) to local drive : ", *m_pszFileList);
                return false;
@@ -603,7 +604,7 @@ protected:
      * DoError()
      *-------------------------------------------------------------------------
      */
-    void DoError(char * szFormat, ...) 
+    void DoError(const char * szFormat, ...)
     {
         if (m_szLastError[0] != 0) // don't erase over first error which can cause other errors
             return;              
@@ -629,7 +630,7 @@ protected:
 
     }
 
-    void DoErrorInThread(char * szFormat, ...) 
+    void DoErrorInThread(const char * szFormat, ...)
     {
         if (m_szErrorInThread[0] != 0) // don't erase over first error which can cause other errors
             return;              
@@ -735,8 +736,8 @@ public:
            // call to InternetOpen.
            szFTPSite,                       // Server we want to connect to
            INTERNET_INVALID_PORT_NUMBER,    // Use appropriate port
-           szUsername,                      // Username, can be NULL
-           szPassword,                      // Password, can be NULL
+           szUsername,                      // Username, can be nullptr
+           szPassword,                      // Password, can be nullptr
            INTERNET_SERVICE_FTP,            // Flag to use FTP services
            0,                               // Flags (see SDK docs)
            (uint32_t) this);                   // Context for this connection
@@ -873,7 +874,7 @@ public:
 };
 
 
-IHTTPSession * CreateHTTPSession(IHTTPSessionSink * pUpdateSink /*= NULL*/)
+IHTTPSession * CreateHTTPSession(IHTTPSessionSink * pUpdateSink /*= nullptr*/)
 {
     CHTTPSessionImpl * pNew = new CHTTPSessionImpl(pUpdateSink);
 
@@ -883,7 +884,7 @@ IHTTPSession * CreateHTTPSession(IHTTPSessionSink * pUpdateSink /*= NULL*/)
         return nullptr;
 }
 
-IFTPSession * CreateFTPSession(IFTPSessionUpdateSink * pUpdateSink /*= NULL*/)
+IFTPSession * CreateFTPSession(IFTPSessionUpdateSink * pUpdateSink /*= nullptr*/)
 {
     CFTPSessionImpl * pNew = new CFTPSessionImpl(pUpdateSink);
 

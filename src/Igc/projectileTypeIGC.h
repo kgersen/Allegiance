@@ -15,6 +15,7 @@
 
 #ifndef __PROJECTILETYPEIGC_H_
 #define __PROJECTILETYPEIGC_H_
+#include "igc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CprojectileTypeIGC

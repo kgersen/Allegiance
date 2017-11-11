@@ -1,4 +1,13 @@
-#include "pch.h"
+#include "engineapp.h"
+
+#include <token.h>
+
+#include "engine.h"
+#include "enginep.h"
+#include "inputengine.h"
+#include "model.h"
+#include "pane.h"
+#include "popup.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

@@ -11,7 +11,7 @@
 #ifndef _MESSAGES_ALL_ 
 #define _MESSAGES_ALL_ 
 
-#include "MessageCore.h"
+#include "messagecore.h"
 
 /*
   *************************************************

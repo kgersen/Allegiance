@@ -11,7 +11,8 @@
 #ifndef _MESSAGES_LC_H_ 
 #define _MESSAGES_LC_H_ 
 
-#include "MessageCore.h"
+#include "messagecore.h"
+
 #define LOBBYVER 12 //Imago updated for R5 8/6/09 /- #2 6/10
 
  /*
@@ -109,9 +110,9 @@ DEFINE_FEDMSG(C, LOGON_LOBBY, 265) // if the lobby is in club mode, everyone has
   int   crcFileList; 
   DWORD dwTime;
   char  szName[c_cbName];
-  int8		steamAuthTicket[1024];	// BT - STEAM
-  uint32	steamAuthTicketLength;	// BT - STEAM
-  uint64	steamID;				// BT - STEAM
+  int8_t	steamAuthTicket[1024];	// BT - STEAM
+  uint32_t	steamAuthTicketLength;	// BT - STEAM
+  uint64_t	steamID;				// BT - STEAM
 END_FEDMSG
 
 // KGJV #114

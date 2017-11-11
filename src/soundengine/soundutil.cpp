@@ -4,9 +4,12 @@
 // Useful utility classes/functions
 //
 
-#include "pch.h"
-#include "soundbase.h"
 #include "soundutil.h"
+
+#include <algorithm>
+#include <vorbis/vorbisfile.h>
+
+#include "soundbase.h"
 
 namespace SoundEngine {
 
@@ -51,7 +54,7 @@ private:
 	bool m_bIsOgg;
 
     SoundFile()
-        : m_pvData(NULL), m_pvFileContents(NULL), m_bIsOgg(false) {};
+        : m_pvData(nullptr), m_pvFileContents(nullptr), m_bIsOgg(false) {};
 
     ~SoundFile()
     {
@@ -75,12 +78,12 @@ private:
     // Open a file and map the contents into memory
     HRESULT OpenFile(const ZString& strFilename)
     {
-        ZAssert(m_pvFileContents == NULL);
+        ZAssert(m_pvFileContents == nullptr);
 
         HANDLE hFile, hMapping;
 
-        hFile = CreateFile(strFilename, GENERIC_READ, FILE_SHARE_READ, NULL, 
-            OPEN_EXISTING, 0, NULL);
+        hFile = CreateFile(strFilename, GENERIC_READ, FILE_SHARE_READ, nullptr,
+            OPEN_EXISTING, 0, nullptr);
 
         if (hFile == INVALID_HANDLE_VALUE)
         {
@@ -91,12 +94,12 @@ private:
         // if the file is really large, we may do better if we have the file 
         // system assume we are going to read it sequentially. 
         const DWORD dwSequentialFileThreshold = 1000000;
-        if (GetFileSize(hFile, NULL) > dwSequentialFileThreshold)
+        if (GetFileSize(hFile, nullptr) > dwSequentialFileThreshold)
         {
             CloseHandle(hFile); 
             
-            hFile = CreateFile(strFilename, GENERIC_READ, FILE_SHARE_READ, NULL, 
-                OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+            hFile = CreateFile(strFilename, GENERIC_READ, FILE_SHARE_READ, nullptr,
+                OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
 
             if (hFile == INVALID_HANDLE_VALUE)
             {
@@ -105,7 +108,7 @@ private:
             }
         }
 
-        hMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+        hMapping = CreateFileMapping(hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
 
         CloseHandle(hFile); 
 
@@ -119,7 +122,7 @@ private:
         
         CloseHandle(hMapping);
 
-        if (m_pvFileContents == NULL)
+        if (m_pvFileContents == nullptr)
         {
             ZAssert(false);
             return E_HANDLE;
@@ -131,7 +134,7 @@ private:
     // parse a chunk of memory in RIFF format for wave data
     HRESULT ParseWaveData(void* pvRiffFile)
     {
-        ZAssert(m_pvData == NULL);
+        ZAssert(m_pvData == nullptr);
     
         DWORD *pdwCurrent = (DWORD*)pvRiffFile;
 
@@ -173,7 +176,7 @@ private:
                     if (dwBlockLength < sizeof(WAVEFORMAT))
                     {
                         // looks like a corrupt file
-                        m_pvData = NULL;
+                        m_pvData = nullptr;
                         ZAssert(false);
                         return E_FAIL;
                     }
@@ -184,7 +187,7 @@ private:
                     {
                         // file is not PCM (compressed, perhaps?).  At the 
                         // moment, however, we only handle PCM wave files.
-                        m_pvData = NULL;
+                        m_pvData = nullptr;
                         ZAssert(false);
                         return E_NOTIMPL;
                     }
@@ -215,13 +218,13 @@ private:
         // if we did not find one of the blocks, it's not a usable wave file.
         if (!bFoundFormat || !bFoundData)
         {
-            m_pvData = NULL;
+            m_pvData = nullptr;
             ZAssert(false);
             return E_FAIL;
         }
 
       
-        ZAssert(m_pvData != NULL);
+        ZAssert(m_pvData != nullptr);
         return S_OK;
     }
 
@@ -239,19 +242,19 @@ private:
 		int current_section;
 
 		BYTE* writePtr;
-		FILE* OggFile = NULL;
+        FILE* OggFile = nullptr;
 #if _MSC_VER >= 1400		// mdvalley: Makes '05 happy
 		fopen_s(&OggFile, strFilename, "rb");
 #else
 		OggFile = fopen(strFilename, "rb");
 #endif
-		if(OggFile == NULL)
+        if(OggFile == nullptr)
 		{
 			debugf("%s: File not found.\n", strFilename);
 			return E_FAIL;
 		}
 		
-		if(ov_open(OggFile, &vf, NULL, 0) < 0)
+        if(ov_open(OggFile, &vf, nullptr, 0) < 0)
 		{
 			debugf("%s is not a valid Ogg bitstream.\n", strFilename);
 			fclose(OggFile);
@@ -443,35 +446,35 @@ public:
     // Gets the number of channels in the data
     unsigned GetNumberOfChannels()
     {
-        ZAssert(m_pvData != NULL);  // AKA this has been initialized
+        ZAssert(m_pvData != nullptr);  // AKA this has been initialized
         return m_uChannels;
     };
 
     // Gets the number of bits per sample
     virtual unsigned GetBitsPerSample()
     {
-        ZAssert(m_pvData != NULL); // AKA this has been initialized
+        ZAssert(m_pvData != nullptr); // AKA this has been initialized
         return m_uBitsPerSample;
     };
 
     // Gets the default frequency (in samples per second) of the data
     virtual unsigned GetSampleRate()
     {
-        ZAssert(m_pvData != NULL); // AKA this has been initialized
+        ZAssert(m_pvData != nullptr); // AKA this has been initialized
         return m_uSampleRate;
     };
 
     // Gets the size of the data
     virtual unsigned GetSize()
     {
-        ZAssert(m_pvData != NULL); // AKA this has been initialized
+        ZAssert(m_pvData != nullptr); // AKA this has been initialized
         return m_uSize;
     };
 
     // Copies the specified portion of the data
     void GetData(void* dest, unsigned nOffset, unsigned nLength)
     {
-        ZAssert(m_pvData != NULL); // AKA this has been initialized
+        ZAssert(m_pvData != nullptr); // AKA this has been initialized
         ZAssert(nOffset + nLength <= m_uSize);
         memcpy(dest, ((BYTE*)m_pvData) + nOffset, nLength);
     };
@@ -556,7 +559,7 @@ TRef<ISoundPCMData> psoundDataDummy;
 
 HRESULT CreateDummyPCMData(TRef<ISoundPCMData>& pdata)
 {
-    if (psoundDataDummy == NULL)
+    if (psoundDataDummy == nullptr)
         psoundDataDummy = new DummyPCMDataImpl();
 
     pdata = psoundDataDummy;
@@ -805,7 +808,7 @@ IEventSource* SoundInstanceWrapper::GetFinishEventSource()
     return m_pBase->GetFinishEventSource();
 };
 
-// Gets an interface for tweaking the sound, if supported, NULL otherwise.
+// Gets an interface for tweaking the sound, if supported, nullptr otherwise.
 TRef<ISoundTweakable> SoundInstanceWrapper::GetISoundTweakable()
 {
     return m_pBase->GetISoundTweakable();
@@ -984,7 +987,7 @@ IEventSource* StubbedTweakableSoundInstance::GetFinishEventSource()
 };
 
 
-// Gets an interface for tweaking the sound, if supported, NULL otherwise.
+// Gets an interface for tweaking the sound, if supported, nullptr otherwise.
 TRef<ISoundTweakable> StubbedTweakableSoundInstance::GetISoundTweakable()
 {
     return this;
@@ -996,7 +999,7 @@ TRef<ISoundTweakable3D> StubbedTweakableSoundInstance::GetISoundTweakable3D()
     if (m_pposSource)
         return this;
     else
-        return NULL;
+        return nullptr;
 };
 
 
@@ -1009,7 +1012,7 @@ HRESULT StubbedTweakableSoundInstance::SetGain(float fGain)
         return E_INVALIDARG;
     }
 
-    m_fGain = max(fGain, -100.0f);
+    m_fGain = std::max(fGain, -100.0f);
     m_bGainSet = true;
 
     return S_OK;

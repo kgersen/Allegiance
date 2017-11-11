@@ -12,8 +12,7 @@
 **  History:
 */
 // bucketIGC.cpp : Implementation of CbucketIGC
-#include "pch.h"
-#include "bucketIGC.h"
+#include "bucketigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CbucketIGC

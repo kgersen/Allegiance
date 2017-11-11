@@ -4,7 +4,7 @@
 // zreg.h : Declaration of things to make registry access easier.
 
 #include <malloc.h>  // Needed for _alloca
-
+#include <cstdint>
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -60,17 +60,20 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;../src/ZLib;../src/Guids;../src/_Utility;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL;__MODULE__#"Igc";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <WarningLevel>Level1</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
@@ -81,8 +84,9 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
@@ -125,11 +129,6 @@
     <ClCompile Include="..\src\Igc\modelIGC.cpp" />
     <ClCompile Include="..\src\Igc\packigc.cpp" />
     <ClCompile Include="..\src\Igc\partTypeIGC.cpp" />
-    <ClCompile Include="..\src\Igc\pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\src\Igc\private.cpp" />
     <ClCompile Include="..\src\Igc\probeigc.cpp" />
     <ClCompile Include="..\src\Igc\probetypeigc.cpp" />
     <ClCompile Include="..\src\Igc\projectileIGC.cpp" />
@@ -171,8 +170,6 @@
     <ClInclude Include="..\src\Igc\modelIGC.h" />
     <ClInclude Include="..\src\Igc\packigc.h" />
     <ClInclude Include="..\src\Igc\partTypeIGC.h" />
-    <ClInclude Include="..\src\Igc\pch.h" />
-    <ClInclude Include="..\src\Igc\private.h" />
     <ClInclude Include="..\src\Igc\probeigc.h" />
     <ClInclude Include="..\src\Igc\probetypeigc.h" />
     <ClInclude Include="..\src\Igc\projectileIGC.h" />

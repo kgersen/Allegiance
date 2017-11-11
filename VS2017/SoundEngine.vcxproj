@@ -62,17 +62,19 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../src/Inc;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__MODULE__#"SoundEngine";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
@@ -86,8 +88,9 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
@@ -106,10 +109,6 @@
     <ClCompile Include="..\src\soundengine\ds3dutil.cpp" />
     <ClCompile Include="..\src\soundengine\ds3dvirtualbuffer.cpp" />
     <ClCompile Include="..\src\soundengine\dummysound.cpp" />
-    <ClCompile Include="..\src\soundengine\pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\src\soundengine\redbooksound.cpp" />
     <ClCompile Include="..\src\soundengine\soundbase.cpp" />
     <ClCompile Include="..\src\soundengine\soundtemplates.cpp" />
@@ -120,7 +119,6 @@
     <ClInclude Include="..\src\soundengine\ds3dengine.h" />
     <ClInclude Include="..\src\soundengine\ds3dutil.h" />
     <ClInclude Include="..\src\soundengine\ds3dvirtualbuffer.h" />
-    <ClInclude Include="..\src\soundengine\pch.h" />
     <ClInclude Include="..\src\soundengine\redbooksound.h" />
     <ClInclude Include="..\src\soundengine\soundbase.h" />
     <ClInclude Include="..\src\soundengine\soundengine.h" />

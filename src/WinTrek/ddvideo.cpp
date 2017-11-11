@@ -2,6 +2,8 @@
 #include "ddvideo.h" //Macros and crap
 #include "ddstream.h" //DShow object
 
+#include <EngineSettings.h>
+
 DDVideo::DDVideo()
 {
 	m_hWnd         = NULL;

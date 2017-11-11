@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "controls.h"
+
+#include <event.h>
+
+#include "button.h"
+#include "font.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -18,8 +23,8 @@ void JustifyPane::UpdateLayout()
     if (Child()) {
         InternalSetSize(
             WinPoint(
-                max(XExpand(), m_bigSize.X()),
-                max(YExpand(), m_bigSize.Y())
+                std::max(XExpand(), m_bigSize.X()),
+                std::max(YExpand(), m_bigSize.Y())
             )
         );
 
@@ -28,8 +33,8 @@ void JustifyPane::UpdateLayout()
         Child()->UpdateLayout();
 
         InternalSetSize(WinPoint(
-            max(XSize(), Child()->XSize()),
-            max(YSize(), Child()->YSize())
+            std::max(XSize(), Child()->XSize()),
+            std::max(YSize(), Child()->YSize())
         ));
 
         int dx = XSize() - Child()->XSize();
@@ -45,8 +50,8 @@ void JustifyPane::UpdateLayout()
     } else {
         InternalSetSize(
             WinPoint(
-                max(XExpand(), m_bigSize.X()),
-                max(YExpand(), m_bigSize.Y())
+                std::max(XExpand(), m_bigSize.X()),
+                std::max(YExpand(), m_bigSize.Y())
         ));
     }
 }
@@ -74,8 +79,8 @@ void FillPane::UpdateLayout()
 {
     InternalSetSize(
         WinPoint(
-            max(m_sizeMin.X(), XExpand()),
-            max(m_sizeMin.Y(), YExpand())
+            std::max(m_sizeMin.X(), XExpand()),
+            std::max(m_sizeMin.Y(), YExpand())
         )
     );
 }
@@ -142,8 +147,8 @@ void BorderPane::UpdateLayout()
     } else {
         InternalSetSize(
             WinPoint(
-                max(m_xborder * 2, XExpand()),
-                max(m_yborder * 2, YExpand())
+                std::max(m_xborder * 2, XExpand()),
+                std::max(m_yborder * 2, YExpand())
             )
         );
     }
@@ -288,7 +293,7 @@ void ColumnPane::UpdateLayout()
             ppane->UpdateLayout();
             InternalSetOffset(ppane, WinPoint(0, ysize));
 
-            xsize = max(ppane->XSize(), xsize);
+            xsize = std::max(ppane->XSize(), xsize);
             ysize += ppane->YSize() + (m_bShowGrid ? 1 : 0);
         }
     }
@@ -397,7 +402,7 @@ void RowPane::UpdateLayout()
             InternalSetOffset(ppane, WinPoint(xsize, 0));
 
             xsize += ppane->XSize() + (m_bShowGrid ? 1 : 0);
-            ysize = max(ppane->YSize(), ysize);
+            ysize = std::max(ppane->YSize(), ysize);
             bEvenHeight |= ppane->NeedEvenHeight();
         }
     }
@@ -436,7 +441,7 @@ void RowPane::UpdateLayout()
 
                 xextra -= ppane->XSize() - xsizeOld;
                 xsize += ppane->XSize() + (m_bShowGrid ? 1 : 0);
-                ysizeNew = max(ppane->YSize(), ysizeNew);
+                ysizeNew = std::max(ppane->YSize(), ysizeNew);
             }
         }
 
@@ -1228,7 +1233,7 @@ public:
 	    }
 
         if (pos > m_size - m_sizePage) {
-		    pos = max(m_size - m_sizePage, 0);
+            pos = std::max(m_size - m_sizePage, 0);
 	    }
 
         if (m_pos != pos) {
@@ -1594,8 +1599,8 @@ public:
     {
         InternalSetExpand(
             WinPoint(
-                max(m_sizeMin.X(), GetExpand().X()),
-                max(m_sizeMin.Y(), GetExpand().Y())
+                std::max(m_sizeMin.X(), GetExpand().X()),
+                std::max(m_sizeMin.Y(), GetExpand().Y())
             )
         );
 

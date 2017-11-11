@@ -12,7 +12,6 @@
 **  History:
 */
 // stationIGC.cpp : Implementation of CstationIGC
-#include "pch.h"
 #include "stationIGC.h"
 #include <math.h>
 

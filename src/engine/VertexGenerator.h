@@ -1,6 +1,12 @@
-
 #ifndef _VERTEXGENERATOR_H_
 #define _VERTEXGENERATOR_H_
+
+#include <cstdint>
+#include <color.h>
+#include <rect.h>
+
+#include "VBIBManager.h"
+#include "VRAMManager.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,10 +37,10 @@ public:
 private:
 	struct SPredefinedDynamicBufferConfig
 	{
-		DWORD dwBufferType;
-		DWORD dwNumElements;
-		DWORD dwElementSize;
-		DWORD dwFormat;
+        uint32_t dwBufferType;
+        uint32_t dwNumElements;
+        uint32_t dwElementSize;
+        uint32_t dwFormat;
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +86,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	void GenerateFillVerticesD3DColor(	const WinRect & rectToFill,
 										const bool bSetStream,
-										DWORD d3dColor );
+                                        D3DCOLOR d3dColor );
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	inline CVBIBManager::SVBIBHandle * GetPredefinedDynamicBuffer( EPredefinedDynamicBufferType eBufferType )	

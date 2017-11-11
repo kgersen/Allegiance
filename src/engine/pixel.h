@@ -1,6 +1,8 @@
 #ifndef _pixel_h_
 #define _pixel_h_
 
+#include <cstdint>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Pixel
@@ -9,9 +11,9 @@
 
 class Pixel {
 private:
-    DWORD m_dw;
+    uint32_t m_dw;
 
-    Pixel(DWORD dw) :
+    Pixel(uint32_t dw) :
         m_dw(dw)
     {
     }
@@ -22,9 +24,9 @@ public:
     {
     }
 
-    static Pixel Create(DWORD dw) { return Pixel(dw); }
+    static Pixel Create(uint32_t dw) { return Pixel(dw); }
 
-    DWORD Value() const { return m_dw; }
+    uint32_t Value() const { return m_dw; }
 };
 
 #endif

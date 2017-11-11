@@ -4,7 +4,18 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include "pch.h"
+#include "thinggeo.h"
+
+#include <geometry.h>
+#include <model.h>
+#include <surface.h>
+#include <namespace.h>
+
+#include "framedata.h"
+#include "efart.h"
+#include "efgeo.h"
+#include "particlegeo.h"
+
 //#include "regkey.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -24,7 +35,7 @@ public:
     //
 
     ThingRef() :
-        m_pt(NULL)
+        m_pt(nullptr)
     {
     }
 
@@ -55,7 +66,7 @@ public:
     {
         if (m_pt) {
             m_pt->Release();
-            m_pt = NULL;
+            m_pt = nullptr;
         }
         return &m_pt;
     }
@@ -226,7 +237,7 @@ private:
             DWORD dwSize = sizeof(dwResult);
             DWORD dwType = REG_DWORD;
 
-            ::RegQueryValueEx(hKey, szName, NULL, &dwType, (BYTE*)&dwResult, &dwSize);
+            ::RegQueryValueEx(hKey, szName, nullptr, &dwType, (BYTE*)&dwResult, &dwSize);
             ::RegCloseKey(hKey);
 
             if (dwType != REG_DWORD)
@@ -309,27 +320,27 @@ public:
         //    static count = 0;
         //    count++;
         //    if (count == 1) {
-        //        *(BYTE*)NULL = 0;
+        //        *(BYTE*)nullptr = 0;
         //    }
         //    */
 
         //    delete[] m_damageFrames; // Replaced this with a standard allocation, instead of new in the constructor. 
 
-        //    m_pmodeler = NULL;
-        //    m_pframes = NULL;
-        //    m_pgeoTrail = NULL;
-        //    m_pgeoMesh = NULL;
-        //    m_phullHitGeo = NULL;
-        //    m_pgeoLights = NULL;
-        //    m_pgeoBounds = NULL;
-        //    m_psurfaceTexture = NULL;
-        //    m_pvectorPositionTrail = NULL;
-        //    m_pvectorRightTrail = NULL;
-        //    m_pbooleanMoving = NULL;
-        //    m_pgroupFlares = NULL;
-        //    m_pParticleGeo = NULL;
-        //    m_pbitsGeo = NULL;
-        //    m_pimageGlow = NULL;
+        //    m_pmodeler = nullptr;
+        //    m_pframes = nullptr;
+        //    m_pgeoTrail = nullptr;
+        //    m_pgeoMesh = nullptr;
+        //    m_phullHitGeo = nullptr;
+        //    m_pgeoLights = nullptr;
+        //    m_pgeoBounds = nullptr;
+        //    m_psurfaceTexture = nullptr;
+        //    m_pvectorPositionTrail = nullptr;
+        //    m_pvectorRightTrail = nullptr;
+        //    m_pbooleanMoving = nullptr;
+        //    m_pgroupFlares = nullptr;
+        //    m_pParticleGeo = nullptr;
+        //    m_pbitsGeo = nullptr;
+        //    m_pimageGlow = nullptr;
         //} __except (true) {  
         //    //
         //    // We got an exception.  Just continue.
@@ -347,7 +358,7 @@ public:
 
     bool IsValid()
     {
-        return (m_pgeoMesh != NULL);
+        return (m_pgeoMesh != nullptr);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -769,7 +780,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////
     void    AddThrustParticles (float fDeltaTime, const Vector& vecFrameVelocity, const Vector& vecFrameAcceleration)
     {
-        if ((m_pframes != NULL) && m_pParticleGeo && (m_fThrustPower > 0)) 
+        if ((m_pframes != nullptr) && m_pParticleGeo && (m_fThrustPower > 0))
         {
             // compute the length of the offset since last frame
             float   fDeltaLength = vecFrameVelocity.Length() * fDeltaTime;
@@ -986,7 +997,7 @@ public:
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     HRESULT LoadMDL(short options, INameSpace* pns, Image* pimageTexture)
@@ -1051,7 +1062,7 @@ public:
             if (pimageTexture) {
                 m_psurfaceTexture = pimageTexture->GetSurface();
             } else {
-                m_psurfaceTexture = NULL;
+                m_psurfaceTexture = nullptr;
             }
         }
 
@@ -1172,7 +1183,7 @@ public:
 
     void SetPosition(const Vector& vec)
     {
-        if (m_pbooleanMoving != NULL) {
+        if (m_pbooleanMoving != nullptr) {
             m_pbooleanMoving->SetValue(m_vecPosition != vec);
         }
 
@@ -1287,9 +1298,9 @@ public:
             // The culling radius is equal to the largest extent of the ellipse
             //
 
-            m_radiusCull = max(m_radiusCull, pvectorEllipse->X());
-            m_radiusCull = max(m_radiusCull, pvectorEllipse->Y());
-            m_radiusCull = max(m_radiusCull, pvectorEllipse->Z());
+            m_radiusCull = std::max(m_radiusCull, pvectorEllipse->X());
+            m_radiusCull = std::max(m_radiusCull, pvectorEllipse->Y());
+            m_radiusCull = std::max(m_radiusCull, pvectorEllipse->Z());
         } else {
             orient.Set(vecLocal);
         }
@@ -1481,7 +1492,7 @@ public:
         }
         else 
         {
-            if (m_pgeoBounds != NULL) 
+            if (m_pgeoBounds != nullptr)
             {
                 pcontext->SetGlobalColor(Color(0.5f, 0.25f, 0.25f));
                 pcontext->Rotate(Vector(0, 0, 1), pi);
@@ -1518,7 +1529,7 @@ public:
         // Draw the lights
         //
 
-        if (m_bDrawLights && m_pgeoLights != NULL) {
+        if (m_bDrawLights && m_pgeoLights != nullptr) {
             m_pgeoLights->Render(pcontext);
         }
 
@@ -1610,7 +1621,7 @@ public:
             // Draw the trail
             //
 
-            if (s_bShowTrails && m_pgeoTrail != NULL) {
+            if (s_bShowTrails && m_pgeoTrail != nullptr) {
                 m_pgeoTrail->Render(pcontext);
             }
 

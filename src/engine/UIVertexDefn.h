@@ -1,6 +1,7 @@
-
 #ifndef _UIVERTEXDEFN_H_
 #define _UIVERTEXDEFN_H_
+
+#include <cstdint>
 
 // UI vertex, single textured uncoloured vertices.
 struct UIVERTEX
@@ -17,7 +18,7 @@ struct UIVERTEX
 struct UICOLOURFILLVERTEX
 {
 	float x, y, z, rhw;	// The transformed position for the vertex
-	DWORD color;		// Colour value.
+    uint32_t color;		// Colour value.
 };
 
 // FVF for the above vertex defn.
@@ -28,7 +29,7 @@ struct UICOLOURFILLVERTEX
 struct UIFONTVERTEX
 {
     float x, y, z, rhw; // The transformed position for the vertex
-	D3DCOLOR color;		// Colour value.
+    uint32_t color;		// Colour value.
 	float fU, fV;		// Texture coords.
 };
 

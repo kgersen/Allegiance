@@ -1,5 +1,10 @@
+#include "VideoSettingsDX9.h"
 
-#include "pch.h"
+#include <commctrl.h>
+#include <zassert.h>
+
+#include "EngineSettings.h"
+
 // BUILD_DX9
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -13,9 +18,11 @@
 #define USE_DEFAULT_SETTINGS			// For PIX...
 
 // NEEDS TO BE LANGUAGE DEPENDENT IF WE GET THAT FAR.
-#include "..\Lang\USA\allegiance\Resource.h"
+#include "../Lang/Usa/allegiance/resource.h"
 
+#include "DX9PackFile.h"
 #include "DeviceModesDX9.h"
+#include "LogFile.h"
 
 // kg - registry key is passed as parameter
 // #define HKLM_3DSETTINGS ALLEGIANCE_REGISTRY_KEY_ROOT "\\3DSettings"
@@ -55,7 +62,7 @@ int Read3DRegistrySettings( SAdditional3DRegistryData * pRegData, LPCSTR lpSubKe
 int Write3DRegistrySettings( LPCSTR lpSubKey );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool SetupTexturePackFile( HINSTANCE hInstance, const char * szDataPath, char * szPackFileName );
+bool SetupTexturePackFile(HINSTANCE hInstance, const char * szDataPath, const char *szPackFileName );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 struct SVideoSettingsData
@@ -196,7 +203,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 				}
 			}
 		}
-		_ASSERT(iModeCount != 0);
+		ZAssert(iModeCount != 0);
 		//imago build the adapter res array for in-game switching
 		g_VideoSettings.pDevData->GetRelatedResolutions(
 											iAdapter,
@@ -698,7 +705,7 @@ INT_PTR CALLBACK ResPickerDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 			if( LOWORD(wParam) == GetDlgCtrlID( hControl ) )
 			{
 				g_VideoSettings.iCurrentDevice = SendMessage( hControl, CB_GETCURSEL, 0, 0 );
-				_ASSERT( g_VideoSettings.iCurrentDevice != CB_ERR );
+				ZAssert( g_VideoSettings.iCurrentDevice != CB_ERR );
 
 				// Set the mode data for the new device.
 				SetModeData( hwndDlg, g_VideoSettings.iCurrentDevice );
@@ -709,7 +716,7 @@ INT_PTR CALLBACK ResPickerDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 			if( LOWORD(wParam) == GetDlgCtrlID( hControl ) )
 			{
 				g_VideoSettings.iCurrentMode = SendMessage( hControl, CB_GETCURSEL, 0, 0 );
-				_ASSERT( g_VideoSettings.iCurrentMode != CB_ERR );
+				ZAssert( g_VideoSettings.iCurrentMode != CB_ERR );
 
 				SetAAData(	hwndDlg,
 							g_VideoSettings.iCurrentDevice,
@@ -722,7 +729,7 @@ INT_PTR CALLBACK ResPickerDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 			if( LOWORD(wParam) == GetDlgCtrlID( hControl ) )
 			{
 				g_VideoSettings.iCurrentAASetting = SendMessage( hControl, CB_GETCURSEL, 0, 0 );
-				_ASSERT( g_VideoSettings.iCurrentAASetting != CB_ERR );
+				ZAssert( g_VideoSettings.iCurrentAASetting != CB_ERR );
 				return FALSE;
 			}
 			return FALSE;
@@ -957,7 +964,7 @@ DWORD WINAPI PackCreateThreadProc( LPVOID param )
 // SetupTexturePackFile()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool SetupTexturePackFile( HINSTANCE hInstance, const char * szDataPath, char * szPackFileName )
+bool SetupTexturePackFile( HINSTANCE hInstance, const char * szDataPath, const char * szPackFileName )
 {
 	bool bRetVal = true;
 	int iRetVal;
@@ -973,7 +980,7 @@ bool SetupTexturePackFile( HINSTANCE hInstance, const char * szDataPath, char * 
 									&textures,
 									CREATE_SUSPENDED,
 									&dwThreadID );
-		_ASSERT( hPackThread != INVALID_HANDLE_VALUE );
+		ZAssert( hPackThread != INVALID_HANDLE_VALUE );
 
 		// Create Dialog box, then populate with video settings.
 		iRetVal = DialogBox(	hInstance, 

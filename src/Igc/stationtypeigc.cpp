@@ -12,8 +12,7 @@
 **  History:
 */
 // stationTypeIGC.cpp : Implementation of CstationTypeIGC
-#include "pch.h"
-#include "stationTypeIGC.h"
+#include "stationtypeigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CstationTypeIGC

@@ -1,6 +1,10 @@
 #ifndef _listpane_h_
 #define _listpane_h_
 
+#include <event.h>
+#include <genericlist.h>
+#include <pane.h>
+
 typedef TEvent<ItemID> IItemEvent;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -136,6 +140,7 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
+class ScrollPane;
 class ListPane : 
     public Pane,
     public IKeyboardInput
@@ -181,6 +186,7 @@ public:
     virtual void SetEmpty()                  = 0;
 };
 
+class IEngineFont;
 TRef<StringList> CreateStringList(
     IEngineFont* pfont,
     const Color& color,

@@ -1,4 +1,9 @@
-#include "pch.h"
+#include <event.h>
+#include <geometry.h>
+#include <model.h>
+#include <surface.h>
+
+#include "efart.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

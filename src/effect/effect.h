@@ -14,10 +14,6 @@
 #include "engine.h"
 #include "enginep.h"
 
-//#if defined(USEDX7) || defined(BUILD_DX9)
-#define FixPermedia 1
-//#endif
-
 
 //
 // Effect headers

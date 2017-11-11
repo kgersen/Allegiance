@@ -1,6 +1,21 @@
 #ifndef _surface_h_
 #define _surface_h_
 
+#include <mask.h>
+#include <point.h>
+#include <rect.h>
+#include <tref.h>
+
+#include "pixel.h"
+#include "VRAMManager.h"
+
+class Color;
+class Context;
+class Engine;
+class IEngineFont;
+class PixelFormat;
+class ZFile;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // SurfaceTypes
@@ -25,9 +40,10 @@ class SurfaceTypeSystemMemory	: public SurfaceType { public: SurfaceTypeSystemMe
 //
 //////////////////////////////////////////////////////////////////////////////
 
+class Surface;
 class SurfaceSite : public IObject {
 public:
-    virtual void UpdateSurface(Surface* psurface) {};
+    virtual void UpdateSurface(Surface* psurface) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////

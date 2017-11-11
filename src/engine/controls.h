@@ -7,6 +7,15 @@
 #ifndef _Controls_H_
 #define _Controls_H_
 
+#include <rect.h>
+#include <event.h>
+
+#include "engine.h"
+#include "model.h"
+#include "pane.h"
+
+class IEngineFont;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Justify Pane
@@ -343,14 +352,13 @@ TRef<ScrollPane> CreateScrollPane(
     const WinPoint sizeMin = WinPoint(0, 0)
 );
 
-TRef<Pane> CreateScrollPane(
-    const WinPoint& point,
+TRef<Pane> CreateScrollPane(const WinPoint& point,
     int size,
     int pageSize,
     int lineSize,
     int pos,
-    TRef<ScrollPane>& pscrollPane,
-    TRef<IIntegerEventSource>& pevent
+    TRef<ScrollPane> &pscrollPane,
+    TRef<IIntegerEventSource> &pevent
 );
 
 #endif

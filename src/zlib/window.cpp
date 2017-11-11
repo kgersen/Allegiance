@@ -3,7 +3,7 @@
 #include "ztime.h"
 
 #ifdef ICAP
-    #include "..\..\extern\icecap4\include\icecap.h"
+    #include "../../extern/icecap4/include/icecap.h"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ void Window::CalcStyle()
 
 void Window::SetTopMost(bool bTopMost)
 {
-    ZAssert(m_pwindowParent == NULL);
+    ZAssert(m_pwindowParent == nullptr);
 
     //if (m_bTopMost != bTopMost) {
         m_bTopMost = bTopMost;
@@ -269,7 +269,7 @@ void Window::SetTopMost(bool bTopMost)
 
 void Window::SetSizeable(bool bSizeable)
 {
-    ZAssert(m_pwindowParent == NULL);
+    ZAssert(m_pwindowParent == nullptr);
 
     if (m_bSizeable != bSizeable) {
         m_bSizeable = bSizeable;
@@ -305,9 +305,9 @@ void Window::UpdateRect()
 {
 	BOOL bRetVal;
     bRetVal = ::GetWindowRect(m_hwnd, &m_rect);
-    _ASSERT( bRetVal != FALSE );
+    ZAssert( bRetVal != FALSE );
 	bRetVal = ::GetClientRect(m_hwnd, &m_rectClient);
-    _ASSERT( bRetVal != FALSE );
+    ZAssert( bRetVal != FALSE );
 
     WinPoint pointOffset = ClientToScreen(WinPoint(0, 0));
 
@@ -381,7 +381,7 @@ void Window::SetMinimumClientSize(const WinPoint& point)
 
 void Window::AddChild(Window* pchild)
 {
-    ZAssert(pchild != NULL);
+    ZAssert(pchild != nullptr);
     m_listChildren.PushFront(pchild);
 }
 

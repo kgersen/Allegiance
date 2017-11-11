@@ -1,7 +1,6 @@
+#include "enginep.h"
 
-#include "pch.h"
-
-
+#include "D3DDevice9.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -103,7 +102,7 @@ public:
 
 /*    TRef<IDirect3DDevice9> GetD3DDeviceX()
     {
-		_ASSERT( false );
+        ZAssert( false );
         return NULL;
     }
 
@@ -440,7 +439,7 @@ public:
 
     void DrawTrianglesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-		_ASSERT( false );
+        ZAssert( false );
 		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
 		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	
 													D3DPT_TRIANGLELIST,
@@ -455,7 +454,7 @@ public:
 
     void DrawLinesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-		_ASSERT( false );
+        ZAssert( false );
  		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
 		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	
 													D3DPT_LINELIST,
@@ -470,7 +469,7 @@ public:
 
     void DrawPointsD3D(const D3DLVertex* pvertex, int vcount)
     {
-		_ASSERT( false );
+        ZAssert( false );
  		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
 		D3DCall( CD3DDevice9::Get()->DrawPrimitiveUP(	D3DPT_POINTLIST,
 													vcount,

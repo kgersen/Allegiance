@@ -94,7 +94,7 @@ static const unsigned CRC32_TABLE[256] =
 /****************************************************************************/
 
 // Imago uncommented and adapted for x64 6/20/09
-#if defined (_WIN64)
+#if defined (_WIN64) || defined(__GNUC__)
 DWORD update_crc (DWORD Crc, const void * pData)
 {
 	BYTE Data = (BYTE)pData;

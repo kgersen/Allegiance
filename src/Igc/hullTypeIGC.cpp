@@ -12,7 +12,6 @@
 **  History:
 */
 // hullTypeIGC.cpp : Implementation of ChullTypeIGC
-#include "pch.h"
 #include "hullTypeIGC.h"
 
 /////////////////////////////////////////////////////////////////////////////

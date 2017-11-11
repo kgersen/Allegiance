@@ -1,6 +1,9 @@
+#include "VRAMManager.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "pch.h"
+#include <base.h>
+#include <zassert.h>
+
+#include "D3DDevice9.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Class implemented as a singleton (mSingleInstance).
@@ -60,17 +63,17 @@ void CVRAMManager::Initialise()
 		32,
 		false,
 		"Test Texture");
-	_ASSERT(hr == D3D_OK);
+    ZAssert(hr == D3D_OK);
 	D3DLOCKED_RECT lockRect;
 	hr = LockTexture(g_TestTextureHandle, &lockRect);
-	_ASSERT(hr == D3D_OK);
+    ZAssert(hr == D3D_OK);
 
 	// Fill in data - blue and black solid texture.
-	DWORD dwX, dwY;
-	DWORD * pData;
+    uint32_t dwX, dwY;
+    uint32_t * pData;
 	for (dwY = 0; dwY<32; dwY++)
 	{
-		pData = (DWORD*)((BYTE*)lockRect.pBits + (dwY * lockRect.Pitch));
+        pData = (uint32_t*)((BYTE*)lockRect.pBits + (dwY * lockRect.Pitch));
 		for (dwX = 0; dwX<32; dwX += 4)
 		{
 			if ((dwY & 0x1) == 0)
@@ -104,7 +107,7 @@ void CVRAMManager::Shutdown()
 {
 	if (m_sVRAM.bInitialised == true)
 	{
-		DWORD i;
+        uint32_t i;
 
 #ifdef CREATE_TEST_TEXTURE
 		if (g_TestTextureHandle != INVALID_TEX_HANDLE)
@@ -135,8 +138,8 @@ void CVRAMManager::Shutdown()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CVRAMManager::EvictDefaultPoolResources()
 {
-	_ASSERT(m_sVRAM.bInitialised);
-	DWORD dwBank, dwIndex, i;
+    ZAssert(m_sVRAM.bInitialised);
+    uint32_t dwBank, dwIndex, i;
 
 	if (m_sVRAM.bInitialised == true)
 	{
@@ -163,12 +166,12 @@ void CVRAMManager::EvictDefaultPoolResources()
 					(pTexture->bResourceEvicted == false))
 				{
 					ULONG refCount;
-					_ASSERT(pTexture->bLocked == false);
+                    ZAssert(pTexture->bLocked == false);
 
 					// Release this texture.
 					refCount = pTexture->pTexture->Release();
 					pTexture->pTexture = NULL;
-					_ASSERT(refCount == 0);
+                    ZAssert(refCount == 0);
 
 					pTexture->bResourceEvicted = true;
 				}
@@ -197,9 +200,9 @@ int CVRAMManager::GetTotalTextureCount()
 TEXHANDLE CVRAMManager::AllocateHandle()
 {
 	// Is the VRAM manager full?
-	_ASSERT(m_sVRAM.dwNumTextures < MAX_TEXTURES);
+    ZAssert(m_sVRAM.dwNumTextures < MAX_TEXTURES);
 
-	DWORD dwBankIndex, dwTexIndex = 0xFFFFFFFF;
+    uint32_t dwBankIndex, dwTexIndex = 0xFFFFFFFF;
 
 	for (dwBankIndex = 0; dwBankIndex <= m_sVRAM.dwCurrentBank; dwBankIndex++)
 	{
@@ -222,7 +225,7 @@ TEXHANDLE CVRAMManager::AllocateHandle()
 	if (dwTexIndex == 0xFFFFFFFF)
 	{
 		// Check the previous bank was actually full.
-		_ASSERT(m_sVRAM.ppBankArray[dwBankIndex - 1]->dwNumAllocated == BANK_SIZE);
+        ZAssert(m_sVRAM.ppBankArray[dwBankIndex - 1]->dwNumAllocated == BANK_SIZE);
 
 		// No space, allocate a new bank, then return a texhandle from there.
 		m_sVRAM.dwCurrentBank++;
@@ -258,18 +261,18 @@ TEXHANDLE CVRAMManager::AllocateHandle()
 // Must round width/height to nearest power 2 value, if not power 2.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
-	D3DFORMAT	texFormat,
-	DWORD		dwWidth,
-	DWORD		dwHeight,
-	bool		bSystemMemory,
-	char *		szTextureName /*= NULL*/,
-	DWORD		dwUsageFlags /*= 0*/,
-	D3DPOOL		texPool /*= D3DPOOL_MANAGED*/)
+    D3DFORMAT	texFormat,
+    uint32_t		dwWidth,
+    uint32_t		dwHeight,
+    bool		bSystemMemory,
+    const char *szTextureName /*= NULL*/,
+    uint32_t		dwUsageFlags /*= 0*/,
+    D3DPOOL		texPool /*= D3DPOOL_MANAGED*/)
 {
 	HRESULT hr;
 	UINT uiNumLevels = 1;
 
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
 	pTexture->dwOriginalWidth = dwWidth;
@@ -284,7 +287,7 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 	if (bSystemMemory == true)
 	{
 		// Allocate a system memory texture.
-		DWORD dwPixelSize, dwImageSize;
+        uint32_t dwPixelSize, dwImageSize;
 		dwPixelSize = GetPixelSize(texFormat);
 		dwImageSize = dwWidth * dwHeight * dwPixelSize;
 		pTexture->pSystemTexture = new BYTE[dwImageSize];
@@ -298,7 +301,7 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 	else
 	{
 		// Textures greater than 2048 wide/height not supported on all cards.
-		_ASSERT(dwWidth <= 2048);
+        ZAssert(dwWidth <= 2048);
 
 		// Allocate a D3D texture.
 		if (m_sVRAM.bMipMapGenerationEnabled == true)
@@ -386,7 +389,7 @@ HRESULT CVRAMManager::CreateTextureD3DX(TEXHANDLE				texHandle,
 	HRESULT hr;
 	UINT uiNumLevels = 1;
 
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
 
@@ -397,7 +400,7 @@ HRESULT CVRAMManager::CreateTextureD3DX(TEXHANDLE				texHandle,
 	}
 
 	// Mipping? //imago 7/10 #14
-	//DWORD		dwUsageFlags = 0;
+    //uint32_t		dwUsageFlags = 0;
 	if (pImageInfo->ImageFileFormat == D3DXIFF_DDS &&  m_sVRAM.bMipMapGenerationEnabled == true)
 	{
 		uiNumLevels = D3DX_SKIP_DDS_MIP_LEVELS(pImageInfo->MipLevels, D3DX_FILTER_BOX);
@@ -430,7 +433,7 @@ HRESULT CVRAMManager::CreateTextureD3DX(TEXHANDLE				texHandle,
 		NULL,
 		NULL,
 		&pTexture->pTexture);
-	_ASSERT(hr == D3D_OK);
+    ZAssert(hr == D3D_OK);
 
 	D3DSURFACE_DESC surfDesc;
 	pTexture->pTexture->GetLevelDesc(0, &surfDesc);
@@ -455,12 +458,12 @@ HRESULT CVRAMManager::CreateTextureD3DX(TEXHANDLE				texHandle,
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CVRAMManager::CreateRenderTarget(TEXHANDLE	texHandle,
-	DWORD		dwWidth,
-	DWORD		dwHeight)
+    uint32_t		dwWidth,
+    uint32_t		dwHeight)
 {
 	HRESULT hr;
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
-	_ASSERT((dwWidth != 0) && (dwHeight != 0) && "Render target created with zero dimension");
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
+    ZAssert((dwWidth != 0) && (dwHeight != 0) && "Render target created with zero dimension");
 
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
 	pTexture->dwOriginalWidth = dwWidth;
@@ -481,7 +484,7 @@ HRESULT CVRAMManager::CreateRenderTarget(TEXHANDLE	texHandle,
 		D3DPOOL_DEFAULT,
 		&pTexture->pTexture,
 		NULL);
-	//	_ASSERT( hr == D3D_OK ); //imago removed 8/10 multimon glitch? REVIEW
+    //	ZAssert( hr == D3D_OK ); //imago removed 8/10 multimon glitch? REVIEW
 
 	// If it created ok, update the texture details.
 	if (hr == D3D_OK)
@@ -492,7 +495,7 @@ HRESULT CVRAMManager::CreateRenderTarget(TEXHANDLE	texHandle,
 		pTexture->bLocatedInDefaultPool = true;
 		pTexture->bResourceEvicted = false;
 	}
-	_ASSERT(hr == D3D_OK);
+    ZAssert(hr == D3D_OK);
 	return hr;
 }
 
@@ -504,14 +507,14 @@ HRESULT CVRAMManager::CreateRenderTarget(TEXHANDLE	texHandle,
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CVRAMManager::ReleaseHandle(TEXHANDLE texHandle)
 {
-	DWORD dwBankIndex, dwTexIndex;
+    uint32_t dwBankIndex, dwTexIndex;
 	bool bRetVal = false;
 
 	dwBankIndex = BANKINDEX(texHandle);
 	dwTexIndex = TEXINDEX(texHandle);
 
-	_ASSERT(dwBankIndex <= m_sVRAM.dwCurrentBank);
-	_ASSERT(dwTexIndex <= BANK_SIZE);
+    ZAssert(dwBankIndex <= m_sVRAM.dwCurrentBank);
+    ZAssert(dwTexIndex <= BANK_SIZE);
 	if ((m_sVRAM.ppBankArray[dwBankIndex] != NULL) &&
 		(m_sVRAM.ppBankArray[dwBankIndex]->pTexArray[dwTexIndex].bValid == true) &&
 		(m_sVRAM.ppBankArray[dwBankIndex]->pTexArray[dwTexIndex].pTexture != NULL))
@@ -548,20 +551,20 @@ bool CVRAMManager::ReleaseHandle(TEXHANDLE texHandle)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CVRAMManager::LockTexture(TEXHANDLE			texHandle,
 	D3DLOCKED_RECT *	pLockRect,
-	DWORD				dwFlags /*= 0*/,
-	DWORD				dwLevel /*= 0*/,
+    uint32_t				dwFlags /*= 0*/,
+    uint32_t				dwLevel /*= 0*/,
 	CONST RECT *		pAreaToLock /*= NULL*/)
 {
 	HRESULT hr;
 
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-	_ASSERT(pTexture->bValid == true);
+    ZAssert(pTexture->bValid == true);
 
 	if (pTexture->bSystemMemory == true)
 	{
 		// System memory locks only support entire texture lock.
-		_ASSERT(pAreaToLock == NULL);
+        ZAssert(pAreaToLock == NULL);
 		pTexture->bLocked = true;
 		pLockRect->pBits = pTexture->pSystemTexture;
 		pLockRect->Pitch = GetPixelSize(pTexture->texFormat) * pTexture->dwOriginalWidth;
@@ -592,14 +595,14 @@ HRESULT	CVRAMManager::LockTexture(TEXHANDLE			texHandle,
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CVRAMManager::UnlockTexture(TEXHANDLE	texHandle,
-	DWORD		dwLevel /*= 0*/)
+    uint32_t		dwLevel /*= 0*/)
 {
 	HRESULT hr;
 
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-	_ASSERT(pTexture->bValid == true);
-	_ASSERT(pTexture->bLocked == true);
+    ZAssert(pTexture->bValid == true);
+    ZAssert(pTexture->bLocked == true);
 
 	if (pTexture->bSystemMemory == true)
 	{
@@ -613,8 +616,8 @@ HRESULT CVRAMManager::UnlockTexture(TEXHANDLE	texHandle,
 
 		if (pTexture->bMipMappedTexture == true)
 		{
-			_ASSERT(m_sVRAM.bMipMapGenerationEnabled == true);
-			_ASSERT(dwLevel == 0);
+            ZAssert(m_sVRAM.bMipMapGenerationEnabled == true);
+            ZAssert(dwLevel == 0);
 			pTexture->pTexture->GenerateMipSubLevels();
 		}
 	}
@@ -631,14 +634,14 @@ static bool bBreakOnSizeTest = false;
 // SetTexture()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-HRESULT CVRAMManager::SetTexture(TEXHANDLE texHandle, DWORD dwTextureStage)
+HRESULT CVRAMManager::SetTexture(TEXHANDLE texHandle, uint32_t dwTextureStage)
 {
 	HRESULT hr;
 
 #ifdef _DEBUG
 	if (g_DebugHandle != INVALID_TEX_HANDLE)
 	{
-		//		_ASSERT( texHandle != g_DebugHandle );
+        //		ZAssert( texHandle != g_DebugHandle );
 	}
 #endif // _DEBUG
 
@@ -649,9 +652,9 @@ HRESULT CVRAMManager::SetTexture(TEXHANDLE texHandle, DWORD dwTextureStage)
 	else
 	{
 		STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-		_ASSERT(pTexture->bValid == true);
-		_ASSERT(pTexture->bLocked == false);
-		_ASSERT(pTexture->bSystemMemory == false);
+        ZAssert(pTexture->bValid == true);
+        ZAssert(pTexture->bLocked == false);
+        ZAssert(pTexture->bSystemMemory == false);
 
 		//		if( pTexture->dwOriginalWidth == 2048 )
 		//		{
@@ -669,7 +672,7 @@ HRESULT CVRAMManager::SetTexture(TEXHANDLE texHandle, DWORD dwTextureStage)
 #ifdef _DEBUG
 		if (bBreakOnSizeTest == true)
 		{
-			_ASSERT((pTexture->dwOriginalWidth != 800) && (pTexture->dwOriginalWidth != 600));
+            ZAssert((pTexture->dwOriginalWidth != 800) && (pTexture->dwOriginalWidth != 600));
 		}
 #endif // _DEBUG
 
@@ -687,7 +690,7 @@ HRESULT CVRAMManager::SetTexture(TEXHANDLE texHandle, DWORD dwTextureStage)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CVRAMManager::IsTextureValid(TEXHANDLE texHandle)
 {
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
 	return pTexture->bValid;
 }
@@ -698,11 +701,11 @@ bool CVRAMManager::IsTextureValid(TEXHANDLE texHandle)
 // GetOriginalDimensions()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CVRAMManager::GetOriginalDimensions(TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight)
+void CVRAMManager::GetOriginalDimensions(TEXHANDLE texHandle, uint32_t * pdwWidth, uint32_t * pdwHeight)
 {
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-	_ASSERT(pTexture->bValid == true);
+    ZAssert(pTexture->bValid == true);
 
 	*pdwWidth = pTexture->dwOriginalWidth;
 	*pdwHeight = pTexture->dwOriginalHeight;
@@ -714,11 +717,11 @@ void CVRAMManager::GetOriginalDimensions(TEXHANDLE texHandle, DWORD * pdwWidth, 
 // GetActualDimensions()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CVRAMManager::GetActualDimensions(TEXHANDLE texHandle, DWORD * pdwWidth, DWORD * pdwHeight)
+void CVRAMManager::GetActualDimensions(TEXHANDLE texHandle, uint32_t * pdwWidth, uint32_t * pdwHeight)
 {
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-	_ASSERT(pTexture->bValid == true);
+    ZAssert(pTexture->bValid == true);
 
 	*pdwWidth = pTexture->dwActualWidth;
 	*pdwHeight = pTexture->dwActualHeight;
@@ -732,9 +735,9 @@ void CVRAMManager::GetActualDimensions(TEXHANDLE texHandle, DWORD * pdwWidth, DW
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 D3DFORMAT CVRAMManager::GetTextureFormat(TEXHANDLE texHandle)
 {
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-	_ASSERT(pTexture->bValid == true);
+    ZAssert(pTexture->bValid == true);
 
 	return pTexture->texFormat;
 }
@@ -745,9 +748,9 @@ D3DFORMAT CVRAMManager::GetTextureFormat(TEXHANDLE texHandle)
 // GetPower2()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD CVRAMManager::GetPower2(DWORD dwInitialValue)
+uint32_t CVRAMManager::GetPower2(uint32_t dwInitialValue)
 {
-	DWORD dwVal = dwInitialValue, dwNumBits = 0, dwCount = 0;
+    uint32_t dwVal = dwInitialValue, dwNumBits = 0, dwCount = 0;
 
 	while (dwVal != 0)
 	{
@@ -775,10 +778,10 @@ DWORD CVRAMManager::GetPower2(DWORD dwInitialValue)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CVRAMManager::GetTextureSurface(TEXHANDLE texHandle, IDirect3DSurface9 ** ppSurface)
 {
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-	_ASSERT(pTexture->bValid == true);
-	_ASSERT(pTexture->bSystemMemory == false);
+    ZAssert(pTexture->bValid == true);
+    ZAssert(pTexture->bSystemMemory == false);
 
 	return pTexture->pTexture->GetSurfaceLevel(0, ppSurface);
 }
@@ -788,24 +791,24 @@ HRESULT CVRAMManager::GetTextureSurface(TEXHANDLE texHandle, IDirect3DSurface9 *
 // PushRenderTarget()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, DWORD dwTargetIndex /*=0*/)
+HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, uint32_t dwTargetIndex /*=0*/)
 {
 	HRESULT hr;
 
-	_ASSERT(dwTargetIndex == 0);			// Only support target index zero for now.
-	_ASSERT(texHandle != INVALID_TEX_HANDLE);
+    ZAssert(dwTargetIndex == 0);			// Only support target index zero for now.
+    ZAssert(texHandle != INVALID_TEX_HANDLE);
 	STexture * pTexture = &m_sVRAM.ppBankArray[BANKINDEX(texHandle)]->pTexArray[TEXINDEX(texHandle)];
-	_ASSERT(pTexture->bValid == true);
-	_ASSERT(pTexture->bRenderTarget == true);
+    ZAssert(pTexture->bValid == true);
+    ZAssert(pTexture->bRenderTarget == true);
 
 	// Do we need to recreate this render target?
 	if ((pTexture->bLocatedInDefaultPool == true) &&
 		(pTexture->bResourceEvicted == true))
 	{
 		// Yes, must have been destroyed following a device reset.
-		_ASSERT(pTexture->pTexture == NULL);
+        ZAssert(pTexture->pTexture == NULL);
 		hr = CreateRenderTarget(texHandle, pTexture->dwOriginalWidth, pTexture->dwOriginalHeight);
-		_ASSERT(hr == D3D_OK);
+        ZAssert(hr == D3D_OK);
 	}
 
 	CD3DDevice9 * pDev = CD3DDevice9::Get();
@@ -820,7 +823,7 @@ HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, DWORD dwTargetIndex 
 			(m_sVRAM.dwNumTargetsPushed == 0))
 		{
 			hr = pDev->SetRTDepthStencil();
-			_ASSERT(hr == D3D_OK);
+            ZAssert(hr == D3D_OK);
 		}
 		m_sVRAM.dwNumTargetsPushed++;
 
@@ -830,9 +833,9 @@ HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, DWORD dwTargetIndex 
 		try
 		{
 			hr = pTexture->pTexture->GetSurfaceLevel(0, &lpRTSurface);
-			_ASSERT(hr == D3D_OK);
+            ZAssert(hr == D3D_OK);
 			hr = pDev->Device()->SetRenderTarget(dwTargetIndex, lpRTSurface);
-			_ASSERT(hr == D3D_OK);
+            ZAssert(hr == D3D_OK);
 
 			// We've finished with the surface.
 			refCount = lpRTSurface->Release();
@@ -851,9 +854,9 @@ HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, DWORD dwTargetIndex 
 
 		//LPDIRECT3DSURFACE9 lpRTSurface;
 		//hr = pTexture->pTexture->GetSurfaceLevel(0, &lpRTSurface);
-		//_ASSERT(hr == D3D_OK);
+        //ZAssert(hr == D3D_OK);
 		//hr = pDev->Device()->SetRenderTarget(dwTargetIndex, lpRTSurface);
-		//_ASSERT(hr == D3D_OK);
+        //ZAssert(hr == D3D_OK);
 
 		//// We've finished with the surface.
 		//refCount = lpRTSurface->Release();
@@ -869,7 +872,7 @@ HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, DWORD dwTargetIndex 
 		viewport.MinZ = 0.0f;
 		viewport.MaxZ = 1.0f;
 		hr = pDev->Device()->SetViewport(&viewport);
-		_ASSERT(hr == D3D_OK);
+        ZAssert(hr == D3D_OK);
 
 		D3DRECT clearRect;
 		clearRect.x1 = viewport.X;
@@ -883,7 +886,7 @@ HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, DWORD dwTargetIndex 
 			0x00000000,
 			1.0f,
 			0);
-		_ASSERT(hr == D3D_OK);
+        ZAssert(hr == D3D_OK);
 	}
 	return hr;
 }
@@ -892,19 +895,19 @@ HRESULT CVRAMManager::PushRenderTarget(TEXHANDLE texHandle, DWORD dwTargetIndex 
 // PopRenderTarget()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-HRESULT CVRAMManager::PopRenderTarget(DWORD dwTargetIndex /*=0*/)
+HRESULT CVRAMManager::PopRenderTarget(uint32_t dwTargetIndex /*=0*/)
 {
 	HRESULT hr;
 	D3DSURFACE_DESC surfdesc;
 
-	_ASSERT(dwTargetIndex == 0);				// Only support target index zero for now.
-	_ASSERT(&m_sVRAM.dwNumTargetsPushed > 0);
+    ZAssert(dwTargetIndex == 0);				// Only support target index zero for now.
+    ZAssert(&m_sVRAM.dwNumTargetsPushed > 0);
 
 	CD3DDevice9 * pDev = CD3DDevice9::Get();
 
 	m_sVRAM.dwNumTargetsPushed--;
 	hr = pDev->Device()->SetRenderTarget(dwTargetIndex, m_sVRAM.pTargetStack[m_sVRAM.dwNumTargetsPushed].pTargetSurface);
-	_ASSERT(hr == D3D_OK);
+    ZAssert(hr == D3D_OK);
 	m_sVRAM.hCurrentTargetTexture = m_sVRAM.pTargetStack[m_sVRAM.dwNumTargetsPushed].hRenderTargetTexture;
 
 	m_sVRAM.pTargetStack[m_sVRAM.dwNumTargetsPushed].pTargetSurface->GetDesc(&surfdesc);
@@ -917,7 +920,7 @@ HRESULT CVRAMManager::PopRenderTarget(DWORD dwTargetIndex /*=0*/)
 	viewport.MinZ = 0.0f;
 	viewport.MaxZ = 1.0f;
 	hr = pDev->Device()->SetViewport(&viewport);
-	_ASSERT(hr == D3D_OK);
+    ZAssert(hr == D3D_OK);
 
 	m_sVRAM.pTargetStack[m_sVRAM.dwNumTargetsPushed].pTargetSurface->Release();
 	m_sVRAM.pTargetStack[m_sVRAM.dwNumTargetsPushed].pTargetSurface = NULL;
@@ -927,7 +930,7 @@ HRESULT CVRAMManager::PopRenderTarget(DWORD dwTargetIndex /*=0*/)
 		(m_sVRAM.dwNumTargetsPushed == 0))
 	{
 		hr = pDev->SetBackBufferDepthStencil();
-		_ASSERT(hr == D3D_OK);
+        ZAssert(hr == D3D_OK);
 	}
 	return hr;
 }
@@ -951,9 +954,9 @@ void CVRAMManager::SetEnableMipMapGeneration(bool bEnable)
 // GetPixelSize()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD CVRAMManager::GetPixelSize(D3DFORMAT pixelFormat)
+uint32_t CVRAMManager::GetPixelSize(D3DFORMAT pixelFormat)
 {
-	DWORD dwPixelSize = 0;
+    uint32_t dwPixelSize = 0;
 	switch (pixelFormat)
 	{
 	case D3DFMT_A1R5G5B5:
@@ -966,7 +969,7 @@ DWORD CVRAMManager::GetPixelSize(D3DFORMAT pixelFormat)
 		dwPixelSize = 4;
 		break;
 	default:
-		_ASSERT(false && "Unsupported texture format.");
+        ZAssert(false && "Unsupported texture format.");
 		dwPixelSize = 1;
 	}
 	return dwPixelSize;

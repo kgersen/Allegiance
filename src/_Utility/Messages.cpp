@@ -4,7 +4,7 @@
 */
 
 #include "pch.h"
-#include "MessageCore.h"
+#include "messagecore.h"
 
 //  <NKM> 25-Aug-2004
 // For debug purposes....

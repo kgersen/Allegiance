@@ -1,6 +1,11 @@
 #ifndef _CLINTLIB_
 #define _CLINTLIB_
 
+#include <Messages.h>
+#include <messageslc.h>
+#include <mission.h>
+#include <steam_api.h>
+
 class MissionInfo;
 class SideInfo;
 class PlayerInfo;
@@ -901,7 +906,7 @@ public:
       m_fmClub.SendMessages(m_fmClub.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
     }
     virtual HRESULT     ReceiveMessages(void);
-    virtual HRESULT     OnSessionLost(char * szReason, FedMessaging * pthis);
+    virtual HRESULT     OnSessionLost(const char *szReason, FedMessaging * pthis);
     virtual void        OnSessionFound(FedMessaging * pthis, FMSessionDesc * pSessionDesc);
     virtual HRESULT     HandleMsg(FEDMESSAGE* pfm, Time lastUpdate, Time now);
     bool                GetIsZoneClub()

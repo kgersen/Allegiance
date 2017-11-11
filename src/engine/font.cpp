@@ -1,4 +1,11 @@
-#include "pch.h"
+#include "font.h"
+
+#include <base.h>
+
+#include "D3DDevice9.h"
+#include "UIVertexDefn.h"
+#include "VertexGenerator.h"
+#include "enginep.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -78,7 +85,7 @@ private:
 				if( iNumCharsHigh * iNumCharsWide <= 256 )
 				{
 					// Texture required is ridiculously large, or UNICODE.
-					_ASSERT( false );
+                    ZAssert( false );
 				}
 			}
 		}
@@ -123,7 +130,7 @@ private:
 
 					// Prepare the mini data buffer.
 					DWORD dwLineSize = ( m_data[i].m_size.X() + 7 ) / 8;
-					_ASSERT( dwLineSize <= 32 );
+                    ZAssert( dwLineSize <= 32 );
 
 					for( DWORD x=0; x<dwLineSize; x++ )
 					{
@@ -199,7 +206,7 @@ private:
 
 					// Prepare the mini data buffer.
 					DWORD dwLineSize = ( m_data[i].m_size.X() + 7 ) / 8;
-					_ASSERT( dwLineSize <= 32 );
+                    ZAssert( dwLineSize <= 32 );
 
 					for( DWORD x=0; x<dwLineSize; x++ )
 					{
@@ -317,8 +324,8 @@ private:
 			int	xsize =	m_data[index].m_size.X();
 			int	ysize =	m_data[index].m_size.Y();
 			unsigned char ch = index;
-
-			ZVerify(::FillRect(	hdcBitmap, &(RECT)WinRect(0, 0,	m_width, m_height),	(HBRUSH)::GetStockObject(BLACK_BRUSH) ));
+            RECT r = WinRect(0, 0,	m_width, m_height);
+            ZVerify(::FillRect(	hdcBitmap, &r,	(HBRUSH)::GetStockObject(BLACK_BRUSH) ));
 			ZVerify(::TextOut(hdcBitmap, 0,	0, (PCC)&ch, 1));
 
 			// pull	out	the	data 
@@ -377,8 +384,8 @@ private:
 
 			m_data[index].m_size   = WinPoint(size.cx, size.cy);
 
-			m_height = max(m_height, size.cy);
-			m_width	 = max(m_width,	 size.cx);
+            m_height = std::max<uint32_t>(m_height, size.cy);
+            m_width	 = std::max<uint32_t>(m_width,	 size.cx);
 		}
 
 		// release the hdc
@@ -528,7 +535,7 @@ public:
 						const ZString &		str,
 						const Color &		colour )
 	{
-		_ASSERT( str.GetLength() < 256 );
+        ZAssert( str.GetLength() < 256 );
 		float fX0, fX1, fY0, fY1;
 		DWORD dwA, dwR, dwG, dwB;
 		dwA = 255;
@@ -574,14 +581,14 @@ public:
 
 		// Sanity check, this is the most we can fit into the current font dyn VB.
 		// Should be enough though.
-		_ASSERT( str.GetLength() < 2048 );
+        ZAssert( str.GetLength() < 2048 );
 		
 		UIFONTVERTEX * pFontVerts;
 		
 //		CVBIBManager::SVBIBHandle * pFontDynVB = CVertexGenerator::GetUIFontVertsVB();
 		CVBIBManager::SVBIBHandle * pFontDynVB = 
 			CVertexGenerator::Get()->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFontVB );
-		_ASSERT( pFontDynVB != NULL );
+        ZAssert( pFontDynVB != NULL );
 
 		if( CVBIBManager::Get()->LockDynamicVertexBuffer( 
 								pFontDynVB, 
@@ -589,7 +596,7 @@ public:
 								(void**) &pFontVerts ) == false )
 		{
 			// Failed to lock the vertex buffer.
-			_ASSERT( false );
+            ZAssert( false );
 			return;
 		}
 

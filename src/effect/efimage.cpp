@@ -1,4 +1,11 @@
-#include "pch.h"
+#include "efimage.h"
+
+#include <alloc.h>
+#include <font.h>
+#include <image.h>
+#include <tarray.h>
+
+#include "efart.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

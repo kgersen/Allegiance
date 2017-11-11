@@ -1,4 +1,10 @@
-#include "pch.h"
+#include "gamestate.h"
+
+#include <button.h>
+#include <color.h>
+#include <controls.h>
+#include <font.h>
+#include <paneimage.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //

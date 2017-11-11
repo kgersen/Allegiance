@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "toppane.h"
+
+#include "engine.h"
+#include "enginep.h"
+#include "surface.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -146,7 +150,7 @@ void TopPane::UpdateBits()
 		if( bRenderTargetRequired == true )
 		{
 			TEXHANDLE hTexture = pprivateSurface->GetTexHandle( );
-			_ASSERT( hTexture != INVALID_TEX_HANDLE );
+            ZAssert( hTexture != INVALID_TEX_HANDLE );
 			hr = CVRAMManager::Get()->PushRenderTarget( hTexture );
 		}
 

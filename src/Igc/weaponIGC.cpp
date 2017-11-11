@@ -12,7 +12,6 @@
 **  History:
 */
 // weaponIGC.cpp : Implementation of CweaponIGC
-#include "pch.h"
 #include "weaponIGC.h"
 
 /////////////////////////////////////////////////////////////////////////////

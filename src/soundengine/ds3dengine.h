@@ -4,6 +4,13 @@
 // Classes representing a DirectSound3D implementation of a sound engine
 //
 
+#include <dsound.h>
+#include <list>
+#include <zadapt.h>
+
+#include "ds3dvirtualbuffer.h"
+#include "soundengine.h"
+
 namespace SoundEngine {
 
 //

@@ -16,7 +16,8 @@
 #ifndef __CHAFFIGC_H_
 #define __CHAFFIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CchaffIGC : public TmodelIGC<IchaffIGC>
 {
