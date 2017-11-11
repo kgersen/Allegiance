@@ -64,7 +64,8 @@ namespace Training
     m_pDeadCondition (0),
     m_commanderID (NA),
     m_pChatCondition (0),
-    m_bSkipPostSlideShow (false)
+    m_bSkipPostSlideShow (false),
+    m_commandViewEnabled(false)
     {
         // get the window pointer
         TrekWindow* pWindow = GetWindow ();
@@ -257,18 +258,6 @@ namespace Training
         // check the key for tm conditions
         switch (key)
         {
-            // XXX hack to disable some keys in training
-            case TK_ViewCommand:
-            case TK_ConModeCommand:
-            case TK_ConModeInvest:
-            case TK_TargetSelf:
-            case TK_Suicide:
-            case TK_ConModeGameState:
-            case TK_ConModeTeleport:
-            case TK_ToggleAutoPilot:
-            case TK_RejectCommand: // pkk - Some training missions can't be finished
-            return false;
-
             case TK_PauseTM:
             {
                 // if the game is paused
@@ -309,6 +298,20 @@ namespace Training
             }
             break;
           #endif
+
+            // XXX hack to disable some keys in training
+            case TK_ViewCommand:
+            case TK_ConModeCommand:
+            case TK_ConModeInvest:
+            case TK_TargetSelf:
+            case TK_Suicide:
+            case TK_ConModeGameState:
+            case TK_ConModeTeleport:
+            case TK_ToggleAutoPilot:
+            case TK_RejectCommand: // pkk - Some training missions can't be finished
+                if (GetMissionID() != 10) //Training::c_TM_10_Free_Flight
+                    return false;
+                //fallthrough otherwise
 
             default:
             {
@@ -486,6 +489,12 @@ namespace Training
     void        TrainingMission::SetSkipPostSlideshow (void)
     {
         m_bSkipPostSlideShow = true;
+    }
+
+    //------------------------------------------------------------------------------
+    bool        TrainingMission::GetCommandViewEnabled(void)
+    {
+        return m_commandViewEnabled;
     }
 
     //------------------------------------------------------------------------------

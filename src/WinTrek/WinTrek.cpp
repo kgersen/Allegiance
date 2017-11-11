@@ -2474,7 +2474,7 @@ public:
                 {
                     extern  TRef<ModifiableNumber>  g_pnumberMissionNumber;
                     int     iMission = static_cast<int> (g_pnumberMissionNumber->GetValue ());
-                    ZAssert ((iMission >= 1) && (iMission <= 8)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
+                    ZAssert ((iMission >= 1) && (iMission <= 10)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
                     char*   strNamespace[] =
                     {
                         "",
@@ -2484,8 +2484,10 @@ public:
                         "tm_4_enemy_engagement_post",
                         "tm_5_command_view_post",
                         "tm_6_practice_arena_post",
-						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
-						"tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
+                        "", //TheBored 06-JUL-07: Mish #7, blank because its never used
+                        "tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
+                        "",
+                        "tm_6_practice_arena_post" //05-NOV-17: FreeFlight pseudo training mission - use same post slides as tm6 (showing station instead of text in ui-stretch beta)
                     };
 					SetUiScreen(CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
                     break;

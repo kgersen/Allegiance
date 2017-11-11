@@ -2106,7 +2106,7 @@ class ThingSiteImpl : public ThingSitePrivate
 
             if (Training::IsTraining ())
             {
-                if ((trekClient.GetShip ()->GetSide () != side) && (Training::GetTrainingMissionID () != Training::c_TM_6_Practice_Arena))
+                if ((trekClient.GetShip()->GetSide() != side) && (Training::GetTrainingMissionID() != Training::c_TM_6_Practice_Arena) && (Training::GetTrainingMissionID() != Training::c_TM_10_Free_Flight))
                     return false;
             }
             return m_sideVisibility.fVisible();
@@ -4235,7 +4235,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
     if (Training::IsTraining ())
     {
         // prevent players from giving commands to themselves
-        if (pshipSender && (oidRecipient == pshipSender->GetObjectID ()))
+        if (pshipSender && (oidRecipient == pshipSender->GetObjectID ()) && !Training::CommandViewEnabled())
             pmodelTarget = NULL;
 
         // send out the chat we are getting to see if we are waiting for it...
