@@ -36,7 +36,8 @@ namespace Training
     //------------------------------------------------------------------------------
     SectorID    Mission10::GetStartSectorID(void)
     {
-        return 1030;
+        //return 1030; //old map
+        return 2080; //new map
     }
 
     //------------------------------------------------------------------------------
@@ -52,17 +53,51 @@ namespace Training
     //------------------------------------------------------------------------------
     void        Mission10::CreateUniverse(void)
     {
-        LoadUniverse("training_3", 488, 1030);    // a fighter 3
+        LoadUniverse("training_6", 488, 1030);    // 488 = Adv. IC fighter
+                                                  //output map info
+        ImissionIGC*    pCore = trekClient.GetCore();
+        const ClusterListIGC *clusters = pCore->GetClusters();
+        for (ClusterLinkIGC* cLink = clusters->first(); cLink != NULL; cLink = cLink->next())
+        {
+            IclusterIGC* pCluster = cLink->data();
+            debugf("Cluster %s - ObjectID: %d\n", pCluster->GetName(), pCluster->GetObjectID());
+        }
+        const StationListIGC *stations = pCore->GetStations();
+        for (StationLinkIGC* cLink = stations->first(); cLink != NULL; cLink = cLink->next())
+        {
+            IstationIGC* pStation = cLink->data();
+            debugf("Station %s - ObjectID: %d\n", pStation->GetName(), pStation->GetObjectID());
+        }
+
+
         trekClient.fGroupFire = true;             // activate all the starting weapons
 
-        // put the commander ship in the station
-        ImissionIGC*    pCore = trekClient.GetCore();
+                                                  // put the commander ship in the station
+                                                  //ImissionIGC*    pCore = trekClient.GetCore();
         ImodelIGC*      pStation = pCore->GetModel(OT_station, 1030);
         IshipIGC*       pCommander = pCore->GetShip(m_commanderID);
         pCommander->SetStation(static_cast<IstationIGC*> (pStation));
         pCommander->SetCommand(c_cmdAccepted, NULL, c_cidDoNothing);
         pCommander->SetCommand(c_cmdCurrent, NULL, c_cidDoNothing);
         pCommander->SetAutopilot(false);
+
+        // Adjust loadout
+        IshipIGC*       pShipU = trekClient.GetShip();
+        // destroy mounted dumbfires
+        IpartIGC*       pPart = pShipU->GetMountedPart(ET_Magazine, 0);
+        if (pPart)
+            pPart->Terminate();;
+        // Mount Seeker 2s
+        AddPartToShip(154, 0, 5);
+        // Change missiles in cargo for Seeker 2s
+        for (int i = -1; i >= -c_maxCargo; i--) {
+            pPart = pShipU->GetMountedPart(NA, i);
+            if (pPart->GetEquipmentType() == ET_Magazine)
+            {
+                pPart->Terminate();
+                AddPartToShip(154, i, 5);
+            }
+        }
     }
 
     //------------------------------------------------------------------------------
@@ -73,13 +108,44 @@ namespace Training
 
         GoalList*   pGoalList = new GoalList;
 
-        // wait .1 seconds, so stuff is initialized
-        pGoalList->AddGoal(new Goal(new ElapsedTimeCondition(0.1f)));
+        ImissionIGC*        pMission = trekClient.GetCore();
+        ImodelIGC*          pHomeStation = pMission->GetModel(OT_station, 2080);
+
+        // create friendly miner
+        {
+            Goal*	pGoal = new Goal(new ElapsedTimeCondition(0.1f));
+
+            ShipID          minerID = pMission->GenerateNewShipID();
+            Vector          pos = Vector(0.0f, 2500.0f, 100.0f); //create forward to draw aggro
+
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 01", minerID, 438, 0, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+            pGoal->AddStartAction(pCreateDroneAction);
+
+            pGoalList->AddGoal(pGoal);
+        }
 
         // play the introductory audio and change camera
         {
             Goal*   pGoal = CreatePlaySoundGoal(salCommenceScanSound);
-            pGoal->AddStartAction(new SetDisplayModeAction(TrekWindow::cmCockpit));
+            pGoal->AddStartAction(new SetDisplayModeAction(TrekWindow::cmCockpit)); //this needs some delay prior, so stuff is initialized
+            pGoalList->AddGoal(pGoal);
+        }
+
+
+        // create friendly miner
+        {
+            Goal*	pGoal = new Goal(new ElapsedTimeCondition(0.2f));
+
+            ShipID          minerID = pMission->GenerateNewShipID();
+            Vector          pos = pHomeStation->GetPosition();
+            pos.x += -250.0f; //simulate undock
+            pos.y += 200.0f;
+
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 02", minerID, 438, 0, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+            pGoal->AddStartAction(pCreateDroneAction);
+
             pGoalList->AddGoal(pGoal);
         }
 
@@ -95,6 +161,21 @@ namespace Training
             pGoalList->AddGoal(pGoal);
         }
 
+        // create friendly miner
+        {
+            Goal*	pGoal = new Goal(new ElapsedTimeCondition(0.2f));
+
+            ShipID          minerID = pMission->GenerateNewShipID();
+            Vector          pos = pHomeStation->GetPosition();
+            pos.x += 250.0f; //simulate undock
+            pos.y += -200.0f;
+
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 03", minerID, 438, 0, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+            pGoal->AddStartAction(pCreateDroneAction);
+
+            pGoalList->AddGoal(pGoal);
+        }
         // wait half  second
         pGoalList->AddGoal(new Goal(new ElapsedTimeCondition(0.5f)));
 
@@ -102,84 +183,147 @@ namespace Training
         // DEFEND THE MINERS! This simulation is over when you die.
         pGoalList->AddGoal(CreatePlaySoundGoal(tm_6_03Sound));
 
-        // wait two more seconds
-        pGoalList->AddGoal(new Goal(new ElapsedTimeCondition(2.0f)));
-
-        // need this
-        ImissionIGC*        pMission = trekClient.GetCore();
-        ImodelIGC*          pStation = pMission->GetModel(OT_station, 1030);
-
-        // wait for player to be dead
+        // create enemy carrier
         {
-            Goal*               pGoal = new Goal(new FalseCondition);
+            Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.0f));
 
-            // create enemy ships
-            ShipID              enemyShipID = pMission->GenerateNewShipID();
-            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Enemy Support", enemyShipID, 310, 1, c_ptWingman);
-            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), Vector(3800.0f, 4275.0f, 855.0f));
-            Condition*          pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (enemyShipID));
-            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
+            ShipID          carrierID = pMission->GenerateNewShipID();
+            Vector          pos = Vector(3560.0f, 4880.0f, 850.0f); //Near Neptune aleph
 
-            enemyShipID = pMission->GenerateNewShipID();
-            pCreateDroneAction = new CreateDroneAction("Enemy Fighter", enemyShipID, 315, 1, c_ptWingman);
-            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), Vector(3800.0f, 4175.0f, 855.0f));
-            pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (enemyShipID));
-            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Enemy Carrier", carrierID, 325, 1, c_ptCarrier);
+            pCreateDroneAction->SetCreatedLocation(2081, pos); //Mars sector 2081
+            pGoal->AddStartAction(pCreateDroneAction);
 
             pGoalList->AddGoal(pGoal);
         }
 
-        // build the goal that we'll return
+        // wait one more second
+        pGoalList->AddGoal(new Goal(new ElapsedTimeCondition(1.0f)));
+
+        //create enemy ids to reuse
+        ShipID              enemyScoutID = pMission->GenerateNewShipID();
+        ShipID              enemyFighterID = pMission->GenerateNewShipID();
+        //spawn enemies
         {
-            Goal*   pGoal = new Goal(pGoalList);
+            Goal*           pGoal = new Goal(new ElapsedTimeCondition(8.0f));
 
-            // create friendly miners
-            Vector              pos = pStation->GetPosition();
-            pos.x += random(-1000.0f, 1000.0f);
-            pos.y += random(-1000.0f, 1000.0f);
-            pos.z += random(-1000.0f, 1000.0f);
+            CreateDroneAction*  pCreateEnemyScoutAction = new CreateDroneAction("Enemy Support", enemyScoutID, 310, 1, c_ptWingman); //310 == Bios Scout
+            pCreateEnemyScoutAction->SetCreatedLocation(GetStartSectorID(), Vector(3800.0f, 4275.0f, 855.0f));
+            CreateDroneAction* pCreateEnemyFighterAction = new CreateDroneAction("Enemy Fighter", enemyFighterID, 315, 1, c_ptWingman); //315 == Bios Fighter
+            pCreateEnemyFighterAction->SetCreatedLocation(GetStartSectorID(), Vector(3800.0f, 4175.0f, 855.0f));
 
-            ShipID              minerShipID = pMission->GenerateNewShipID();
-            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 01", minerShipID, 436, 0, c_ptMiner);
-            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-            Condition*          pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
+            pGoal->AddStartAction(pCreateEnemyScoutAction);
+            pGoal->AddStartAction(pCreateEnemyFighterAction);
 
-            pos = pStation->GetPosition();
-            pos.x += random(-1000.0f, 1000.0f);
-            pos.y += random(-1000.0f, 1000.0f);
-            pos.z += random(-1000.0f, 1000.0f);
-
-            minerShipID = pMission->GenerateNewShipID();
-            pCreateDroneAction = new CreateDroneAction("Miner 02", minerShipID, 436, 0, c_ptMiner);
-            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-            pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
-
-            pos = pStation->GetPosition();
-            pos.x += random(-1000.0f, 1000.0f);
-            pos.y += random(-1000.0f, 1000.0f);
-            pos.z += random(-1000.0f, 1000.0f);
-
-            minerShipID = pMission->GenerateNewShipID();
-            pCreateDroneAction = new CreateDroneAction("Miner 03", minerShipID, 436, 0, c_ptMiner);
-            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-            pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
-
-            pos = pStation->GetPosition();
-            pos.x += random(-1000.0f, 1000.0f);
-            pos.y += random(-1000.0f, 1000.0f);
-            pos.z += random(-1000.0f, 1000.0f);
-
-            minerShipID = pMission->GenerateNewShipID();
-            pCreateDroneAction = new CreateDroneAction("Miner 04", minerShipID, 436, 0, c_ptMiner);
-            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-            pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
-
-            return pGoal;
+            pGoalList->AddGoal(pGoal);
         }
+
+        // create enemy miners
+        {
+            Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.0f));
+
+            ShipID          minerID = pMission->GenerateNewShipID();
+            Vector          pos = Vector(3080.0f, -440.0f, -700.0f); //near mid he-3
+
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Enemy Miner 01", minerID, 338, 1, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation(2082, pos); //sector "Enemy"
+            pGoal->AddStartAction(pCreateDroneAction);
+
+            minerID = pMission->GenerateNewShipID();
+            pos = Vector(-1760.0f, -3240.0f, -700.0f); //near lower left he-3
+            pCreateDroneAction = new CreateDroneAction("Enemy Miner 02", minerID, 338, 1, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation(2082, pos); //sector "Enemy"
+            pGoal->AddStartAction(pCreateDroneAction);
+
+            pGoalList->AddGoal(pGoal);
+        }
+        // create friendly miner
+        {
+            Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.0f));
+
+            ShipID          minerID = pMission->GenerateNewShipID();
+            Vector          pos = pHomeStation->GetPosition();
+            pos.x += -250.0f; //simulate undock
+            pos.y += 200.0f;
+
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 04", minerID, 437, 0, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+            pGoal->AddStartAction(pCreateDroneAction);
+
+            pGoalList->AddGoal(pGoal);
+        }
+
+        //respawn the enmies if destroyed (or not yet created)
+        {
+            Goal*               pGoal = new Goal(new FalseCondition); //will never evaluate as true - wait for player to be dead
+
+                                                                      //can't reuse old actions, or clean-up will fail
+            CreateDroneAction*  pCreateEnemyScoutAction = new CreateDroneAction("Enemy Support", enemyScoutID, 310, 1, c_ptWingman); //310 == Bios Scout
+            pCreateEnemyScoutAction->SetCreatedLocation(GetStartSectorID(), Vector(3800.0f, 4275.0f, 855.0f));
+            CreateDroneAction* pCreateEnemyFighterAction = new CreateDroneAction("Enemy Fighter", enemyFighterID, 315, 1, c_ptWingman); //315 == Bios Fighter
+            pCreateEnemyFighterAction->SetCreatedLocation(GetStartSectorID(), Vector(3800.0f, 4175.0f, 855.0f));
+
+            Condition*          pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (enemyScoutID));
+            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateEnemyScoutAction));
+            pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (enemyFighterID));
+            pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateEnemyFighterAction));
+
+            pGoalList->AddGoal(pGoal);
+        }
+
+        return new Goal(pGoalList);
+
+        /*// build the goal that we'll return
+        {
+        Goal*   pGoal = new Goal(pGoalList);
+
+        // create friendly miners
+        Vector              pos = pStation->GetPosition();
+        pos.x += random(-1000.0f, 1000.0f);
+        pos.y += random(-1000.0f, 1000.0f);
+        pos.z += random(-1000.0f, 1000.0f);
+
+        ShipID              minerShipID = pMission->GenerateNewShipID();
+        CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 01", minerShipID, 438, 0, c_ptMiner);
+        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+        Condition*          pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
+        //pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
+
+        pos = pStation->GetPosition();
+        pos.x += random(-1000.0f, 1000.0f);
+        pos.y += random(-1000.0f, 1000.0f);
+        pos.z += random(-1000.0f, 1000.0f);
+
+        minerShipID = pMission->GenerateNewShipID();
+        pCreateDroneAction = new CreateDroneAction("Miner 02", minerShipID, 438, 0, c_ptMiner);
+        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+        pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
+        //pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
+
+        pos = pStation->GetPosition();
+        pos.x += random(-1000.0f, 1000.0f);
+        pos.y += random(-1000.0f, 1000.0f);
+        pos.z += random(-1000.0f, 1000.0f);
+
+        minerShipID = pMission->GenerateNewShipID();
+        pCreateDroneAction = new CreateDroneAction("Miner 03", minerShipID, 438, 0, c_ptMiner);
+        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+        pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
+        pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
+
+        pos = pStation->GetPosition();
+        pos.x += random(-1000.0f, 1000.0f);
+        pos.y += random(-1000.0f, 1000.0f);
+        pos.z += random(-1000.0f, 1000.0f);
+
+        minerShipID = pMission->GenerateNewShipID();
+        pCreateDroneAction = new CreateDroneAction("Miner 04", minerShipID, 438, 0, c_ptMiner);
+        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+        pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
+        //pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
+
+        return pGoal;
+        }*/
     }
 
     //------------------------------------------------------------------------------
