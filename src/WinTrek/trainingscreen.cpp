@@ -91,12 +91,12 @@ public:
         // hilite the current mission
 		CheckButton(m_iMissionNext);
         m_pbuttonTrain->SetChecked (true);
-#ifdef _DEBUG
+//#ifdef _DEBUG
 		if (bStartTraining) {
 			g_pnumberMissionNumber->SetValue(Training::c_TM_10_Free_Flight);
 			OnButtonTrain();
 		}
-#endif
+//#endif
     }
 
     ~TrainingScreen()
