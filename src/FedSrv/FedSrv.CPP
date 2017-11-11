@@ -10893,7 +10893,7 @@ class ThingSiteImpl : public ThingSite
 											if (otModel == OT_station && pmodel != nullptr)
 											{
 												IstationIGC* pstation = ((IstationIGC*)pmodel);
-												IstationTypeIGC *pStationType = pstation->GetStationType();
+												const IstationTypeIGC *pStationType = pstation->GetStationType();
 
 												if (pStationType != nullptr && 
 													(
