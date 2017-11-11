@@ -107,7 +107,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>.\;..\src\lib\AllegianceSecurity\;..\src\lib\Steam;..\src\effect;..\src\engine;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\clintlib;..\src\soundengine;..\src\AGC;..\src\FedSrv;..\src\training;..\src\lobby;..\src\Inc;..\src\guids;..\src\Zone;.\$(OutDir)..\AGC;.\$(OutDir)..\FedSrv;.\$(OutDir)..\guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>STEAM_APP_ID=700480;SRVLOG;DEBUG;WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STEAM_APP_ID=700480;SRVLOG;DEBUG;WINTREK;igc_static;IGC_SHIP;_USRDLL;DLL;DIRECTINPUT_VERSION=0x0800;_WINDOWS;WIN32;AFXDLL;EnablePerformanceCounters;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>

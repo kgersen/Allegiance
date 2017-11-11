@@ -83,7 +83,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../src/Inc;../src/ZLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;DEBUG;SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -98,6 +98,8 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ErrorReporting>None</ErrorReporting>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>

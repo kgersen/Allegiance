@@ -3,6 +3,7 @@
 #include <base.h>
 #include <quaternion.h>
 #include <tmap.h>
+#include "steam_api.h"
 #include <AllegianceSecurity.h>
 
 #include "controls.h"

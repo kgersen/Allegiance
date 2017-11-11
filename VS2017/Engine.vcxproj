@@ -85,10 +85,9 @@
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\Lib\Steam;..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>STEAMSECURE;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;DEBUG;SRVLOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;STEAMSECURE;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;DEBUG;SRVLOG;__MODULE__#"Engine";EnablePerformanceCounters;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
-      <BasicRuntimeChecks>
-      </BasicRuntimeChecks>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -106,6 +105,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ErrorReporting>None</ErrorReporting>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
