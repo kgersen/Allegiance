@@ -456,25 +456,55 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
         pship->SetFraction(1.0f);
     }
 
+    const IhullTypeIGC* pht = pship->GetHullType();
     {
         IafterburnerIGC* a = (IafterburnerIGC*)(pship->GetMountedPart(ET_Afterburner, 0));
         if (a)
             a->Deactivate();
+        else { // Prevent ship from launching wihtout essential modules - add a booster
+            IpartTypeIGC *ppt = GetMission()->GetPartType(174); //Hvy Booster
+            if (pht->CanMount(ppt, 0)) {
+                PartData        pd;
+                pd.partID = 174;
+                pd.mountID = 0;
+                pd.amount = 1;
+                pship->CreateAndAddPart(&pd);
+            }
+        }
     }
     {
         IshieldIGC* s = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
         if (s)
             s->SetFraction(1.0f);
+        else { // Prevent ship from launching wihtout essential modules - add a shield
+            IpartTypeIGC *ppt = GetMission()->GetPartType(40); //Sm Shield 2
+            if (pht->CanMount(ppt, 0)) {
+                PartData        pd;
+                pd.partID = 40;
+                pd.mountID = 0;
+                pd.amount = 1;
+                pship->CreateAndAddPart(&pd);
+            }
+        }
     }
 
     {
         IafterburnerIGC*    pafter = (IafterburnerIGC*)(pship->GetMountedPart(ET_Afterburner, 0));
         if (pafter)
             pafter->Deactivate();
+        else { // Prevent ship from launching wihtout essential modules - add an afterburner
+            IpartTypeIGC *ppt = GetMission()->GetPartType(224); //Afterburner 3
+            if (pht->CanMount(ppt, 0)) {
+                PartData        pd;
+                pd.partID = 224;
+                pd.mountID = 0;
+                pd.amount = 1;
+                pship->CreateAndAddPart(&pd);
+            }
+        }
     }
 
     //Give a full load of fuel and ammo
-    const IhullTypeIGC* pht = pship->GetHullType();
     if (m_myStationType.HasCapability(c_sabmReload))
     {
         short   maxAmmo = pht->GetMaxAmmo();
