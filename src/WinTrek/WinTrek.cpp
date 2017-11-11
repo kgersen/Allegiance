@@ -4411,7 +4411,7 @@ public:
         if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');		
 
 		// BT - STEAM - Enable moderators to ban players by context menu.
-		if (IsPlayerSteamModerator())
+		if (IsPlayerSteamModerator() && playerInfo->IsHuman())
 		{
 			m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
 			m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
@@ -4509,7 +4509,7 @@ public:
 			if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str4 , 'R');
 
 			// BT - STEAM - Enable moderators to ban players by context menu.
-			if (bSteamModerator == true && bEnableDock == false)
+			if (bSteamModerator == true && bEnableDock == false && playerInfo->IsHuman())
 			{
 				m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
 				m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
