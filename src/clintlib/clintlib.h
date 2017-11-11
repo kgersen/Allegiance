@@ -1200,6 +1200,8 @@ public:
     virtual void SideDevelopmentTechChange(IsideIGC* s);
     virtual void StationTypeChange(IstationIGC* s);
     virtual void LoadoutChangeEvent(IshipIGC* pship, IpartIGC* ppart, LoadoutChange lc);
+    ItreasureIGC*  CreateTreasureLocal(Time now, IshipIGC* pship, IpartIGC* p, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan = 600.0f);
+    ItreasureIGC*  CreateTreasureLocal(Time now, IshipIGC* pship, short amount, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan = 600.0f);
 
     virtual bool Reload(IshipIGC* pship, IlauncherIGC* plauncher, EquipmentType type);
 
@@ -2003,6 +2005,8 @@ public:
             pdata->et = ppart->GetEquipmentType();
             pdata->mount = ppart->GetMountID();
         }
+        else
+            CreateTreasureLocal(m_ship->GetLastUpdate(), m_ship, ppart, ppart->GetPartType(), m_ship->GetPosition(), 20.0f);
 
         ppart->Terminate();
     }
