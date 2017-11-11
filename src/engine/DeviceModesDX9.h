@@ -119,6 +119,9 @@ private:
 	SAdapterMode * FindMatchingWindowedMode(	CD3DDevice9::SD3DDeviceSetupParams * pParams,
 												SAdapterMode * pFSMode,
 												int iDeviceIndex );
+    SAdapterMode * FindMatchingWindowedMode(CD3DDevice9::SD3DDeviceSetupParams * pParams,
+        WinPoint size,
+        int iDeviceIndex);
 };
 
 #endif // _DEVICEMODES_H_

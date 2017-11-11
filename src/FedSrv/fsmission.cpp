@@ -415,7 +415,7 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
     assert(GetCookie()); // we can't be sending messages w/ cookies unless we have a real cookie
 
 	 // BT - 9/11/2010 ACSS - Supports authentication check of the CD Key.
-	char szAddress[64];
+	char szAddress[16];
 	g.fm.GetIPAddress(*pfsPlayer->GetConnection(), szAddress);
 
     BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerJoined, S, PLAYER_JOINED)
@@ -3878,7 +3878,7 @@ void CFSMission::QueueLobbyMissionInfo()
   }
 #endif
 
-  char szAddr[64]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
+  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)

@@ -58,10 +58,15 @@ public:
         CastTo(m_pbuttonClose, m_pns->FindMember("closeButton"));
 		// mdvalley: OnButtonClose now needs to be pointer and with class spelled out in 2005.
 		AddEventTarget(&MMLPopup::OnButtonClose, m_pbuttonClose->GetEventSource());
+
 		CastTo(m_pbuttonDiscord, m_pns->FindMember("DiscordButton"));
-		AddEventTarget(&MMLPopup::OnButtonDiscord, m_pbuttonDiscord->GetEventSource());
+        if (m_pbuttonDiscord) {
+            AddEventTarget(&MMLPopup::OnButtonDiscord, m_pbuttonDiscord->GetEventSource());
+        }
 		CastTo(m_pbuttonWiki, m_pns->FindMember("WikiButton"));
-		AddEventTarget(&MMLPopup::OnButtonWiki, m_pbuttonWiki->GetEventSource());
+        if (m_pbuttonWiki) {
+            AddEventTarget(&MMLPopup::OnButtonWiki, m_pbuttonWiki->GetEventSource());
+        }
         //
         // Default attributes
         //

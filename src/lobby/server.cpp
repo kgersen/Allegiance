@@ -90,7 +90,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
     {
       CASTPFM(pfmLogon, S, LOGON_LOBBY, pfm);
 	  pfmLogon->cbvStaticCoreInfo;
-	  char szRemote[64];
+	  char szRemote[16];
       if (pfmLogon->verLobby == LOBBYVER_LS)
       {
         if(pfmLogon->dwPort != 0)						// A port of 0 means the server couldn't find out its listening port
@@ -180,7 +180,7 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
 			//KGJV #114 - server didnt fill szServerAddr but only reserved the bits. We fill it here.
 			debugf("FM_LS_LOBBYMISSIONINFO:%d (pmission:%x cookie:%x) sent cookie:%x connected?%i\n",pfmLobbyMissionInfo->dwPort,pMission,pfmLobbyMissionInfo->dwCookie,pfmLobbyMissionInfo->dwCookie,(pthis->IsConnected()) ? 1 : 0);  
-			char szAddr[64];
+			char szAddr[16];
 			pthis->GetIPAddress(cnxnFrom, szAddr); // get the real addr
 			debugf("\tFM_LS_LOBBYMISSIONINFO:%s sent port %d\n",&szAddr,pfmLobbyMissionInfo->dwPort);		
 			char *pfmdata = FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr); // get the addr in the message	  
@@ -425,7 +425,7 @@ void    LobbyServerSite::OnMessageNAK(FedMessaging * pthis, DWORD dwTime, CFMRec
 
 HRESULT LobbyServerSite::OnNewConnection(FedMessaging * pthis, CFMConnection & cnxn) 
 {
-  char szRemote[64];
+  char szRemote[16];
   pthis->GetIPAddress(cnxn, szRemote);
   CFLServer * pServer = new CFLServer(&cnxn);
   g_pLobbyApp->GetSite()->LogEvent(EVENTLOG_INFORMATION_TYPE, LE_ServerConnected, cnxn.GetName(), szRemote);

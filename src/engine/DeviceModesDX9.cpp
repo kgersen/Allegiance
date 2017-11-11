@@ -754,6 +754,8 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 											dispMode.Format,
 											dispMode.Format, 
 											FALSE ) ;
+
+            pMode->bHWSupport = true; //initialize
 			if( hr != D3D_OK )
 			{
 				pMode->bHWSupport = false;
@@ -959,7 +961,14 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 	}
 	
 	// Prepare the full screen mode first.
-	pMode = &m_pAdapterArray[iDeviceIndex].ppAvailableModes[i][iModeCounter];
+
+    //try finding our preferred default resolution
+    pMode = FindMatchingWindowedMode(pParams, WinPoint(1366, 768), iDeviceIndex);
+    if (!pMode) {
+        //not found, select the first one (800x600)
+        pMode = &m_pAdapterArray[iDeviceIndex].ppAvailableModes[i][iModeCounter];
+    }
+
 	pParams->sFullScreenMode.mode.Format		= pMode->mode.Format;
 	pParams->sFullScreenMode.mode.Width			= pMode->mode.Width;
 	pParams->sFullScreenMode.mode.Height		= pMode->mode.Height;
@@ -1104,11 +1113,10 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(	
 						CD3DDevice9::SD3DDeviceSetupParams * pParams,
-						SAdapterMode * pFSMode,
+						WinPoint size,
 						int iDeviceIndex )
 {
     ZAssert( pParams != NULL );
-    ZAssert( pFSMode != NULL );
 
 	int iMode, iRes;
 	SAdapterMode * pWindowedMode = NULL;
@@ -1120,8 +1128,8 @@ CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(
 			pWindowedMode = &m_pAdapterArray[ iDeviceIndex ].ppAvailableModes[iMode][iRes];
 			if( ( pWindowedMode->bWindowAllowed == true ) &&
 				( pWindowedMode->bHWSupport == true ) &&
-				( pWindowedMode->mode.Width == pFSMode->mode.Width ) &&
-				( pWindowedMode->mode.Height == pFSMode->mode.Height ) )
+				( pWindowedMode->mode.Width == size.X()) &&
+				( pWindowedMode->mode.Height == size.Y()) )
 			{
 				return pWindowedMode;
 			}
@@ -1129,6 +1137,17 @@ CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(
 	}
 
 	return NULL;
+}
+
+CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(
+    CD3DDevice9::SD3DDeviceSetupParams * pParams,
+    SAdapterMode * pFSMode,
+    int iDeviceIndex)
+{
+    ZAssert(pParams != NULL);
+    ZAssert(pFSMode != NULL);
+
+    return FindMatchingWindowedMode(pParams, WinPoint(pFSMode->mode.Width, pFSMode->mode.Height), iDeviceIndex);
 }
 
 

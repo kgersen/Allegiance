@@ -58,6 +58,7 @@ public:
 	virtual void Set3DAccelerationImportant(bool b3DAccelerationImportant) = 0;
     virtual void SetFullscreen(bool bFullscreen)                           = 0;
     virtual void SetFullscreenSize(const Vector& point)                  = 0;  //imago enhanced to include refresh rate 7/1/09
+    virtual void SetFullscreenSize(const WinPoint& point)                 = 0;
     virtual void ChangeFullscreenSize(bool bLarger)                        = 0;
     virtual void SetGammaLevel(float value)                                = 0;
 		// imago refactor enginep 6/26/09 - 7/1/09

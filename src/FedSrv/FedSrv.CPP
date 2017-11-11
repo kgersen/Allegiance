@@ -4945,7 +4945,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		ZString senderName = pfsPlayer->GetName();
 		sourceSteamID = strtoull(pfsPlayer->GetCDKey(), NULL, NULL);
 		
-		char szRemote[64];
+		char szRemote[16];
 		CFMConnection * connection = pfsPlayer->GetConnection();
 		pthis->GetIPAddress(*connection, szRemote);
 		debugf("chat from connection ID: %x IP: %s\n", connection->GetID(), szRemote);

@@ -42,10 +42,12 @@ EngineWindow::ModeData EngineWindow::s_pmodes[] = //imago updated 6/29/09 NYI le
 		ModeData(WinPoint(1440, 900),  false),
 		ModeData(WinPoint(1600, 1200), false),
 		ModeData(WinPoint(1680, 1050), false),
-		ModeData(WinPoint(1920, 1080), false)
+		ModeData(WinPoint(1920, 1080), false),
+        ModeData(WinPoint(1920, 1200), false),
+        ModeData(WinPoint(2560, 1440), false)
     };
 
-int EngineWindow::s_countModes = 9;
+int EngineWindow::s_countModes = 11; //this is not the count, this number is the largest available index.
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -500,10 +502,21 @@ void EngineWindow::UpdateWindowStyle()
         SetClientRect(rect);
     } else {
         WinPoint size = m_pengine->GetFullscreenSize();
-        if ((GetSystemMetrics(SM_CXSCREEN) <= size.X() || GetSystemMetrics(SM_CYSCREEN) <= size.Y()))
-        {
-            //windowed, but we do not fit with the selected resolution, switch to borderless
 
+        // get the currently selected monitor's resolution
+        CD3DDevice9 * pDev = CD3DDevice9::Get();
+        RECT rectWindow = pDev->GetDeviceSetupParams()->monitorInfo.rcMonitor;
+        LONG screenWidth = rectWindow.right - rectWindow.left;
+        LONG screenHeight = rectWindow.bottom - rectWindow.top;
+
+        if (screenWidth <= size.X() && screenHeight <= size.Y()) {
+            //windowed, but we do not fit with the selected resolution, switch to borderless
+            //set to monitor resolution
+            m_pengine->SetFullscreenSize(WinPoint(screenWidth, screenHeight));
+            size = m_pengine->GetFullscreenSize();
+            SetClientRect(WinRect(WinPoint(0, 0), size));
+
+            //set window properties
             SetHasMinimize(false);
             SetHasMaximize(false);
             SetHasSysMenu(false);
@@ -748,6 +761,7 @@ void EngineWindow::RectChanged()
                (size           != WinPoint(0, 0))
             && (m_pengine->GetFullscreenSize() != size          )
         ) {
+            SetFullscreenSize(Vector(size.X(), size.Y(), g_DX9Settings.m_refreshrate));
             Invalidate();
         }
 
@@ -788,23 +802,6 @@ WinPoint EngineWindow::GetWindowedSize()
 WinPoint EngineWindow::GetFullscreenSize()
 {
     return m_pengine->GetFullscreenSize();
-}
-
-void EngineWindow::SetWindowedSize(const WinPoint& size)
-{
-    if (g_bWindowLog) {
-        ZDebugOutput("EngineWindow::SetWindowedSize(" + GetString(size) + ")\n");
-    }
-
-    if (m_pengine->GetFullscreenSize() != size) {
-        if (!m_pengine->IsFullscreen()) {
-            Invalidate();
-        }
-    }
-
-    if (g_bWindowLog) {
-        ZDebugOutput("EngineWindow::SetWindowedSize() exiting\n");
-    }
 }
 
 void EngineWindow::Set3DAccelerationImportant(bool b3DAccelerationImportant)
