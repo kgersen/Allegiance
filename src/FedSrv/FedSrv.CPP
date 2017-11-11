@@ -10885,10 +10885,27 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->oidObject = pmodel->GetObjectID();
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
-
+																						
                                             g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); 
 
 											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());																		
+											
+											if (otModel == OT_station)
+											{
+												IstationIGC* pstation = ((IstationIGC*)pmodel);
+												if ((pstation->GetStationType()->GetClassID() == c_scGarrison) || 
+													(pstation->GetStationType()->GetClassID() == c_scStarbase))
+												{
+													if (s->GetObjectType() == OT_ship)
+													{
+														ObjectID spotterID = s->GetObjectID();
+														ImodelIGC* pShipModel = s->GetMission()->GetModel(OT_ship, spotterID);
+														IshipIGC* pShip = (IshipIGC*)pShipModel;
+														pShip->SetAchievementMask(c_achmGarrSpot);
+													}													
+												}
+											}
+
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -12805,6 +12822,18 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
   {
       CFSShip* pfsShip = (CFSShip*)(pshipRescuer->GetPrivateData());
       pfsShip->GetPlayerScoreObject()->AddRescue();
+	  if (pfsShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardPodPickup();
+	  }
+
+	  CFSShip* rescuedShip = (CFSShip*)(pshipRescued->GetPrivateData());
+	  if (rescuedShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardGetRescued();
+	  }
       BEGIN_PFM_CREATE(g.fm, pfmPlayerRescued, S, PLAYER_RESCUED)
       END_PFM_CREATE
       pfmPlayerRescued->shipIDRescuer = pshipRescuer->GetObjectID();

@@ -15,7 +15,11 @@ enum EAchievements
 	RECOVER_TECH_1_8 = 8,
 	FIRST_PROBE_KILL_1_9 = 9,
 	PROBE_SPOT_1_10 = 10,
-    NANITE_REPAIR_1_11 = 11
+    NANITE_REPAIR_1_11 = 11,
+	GET_RESCUED_1_12 = 12,
+	PICKUP_POD_1_13 = 13,
+	SPOT_GARRISON_1_14 = 14
+
 
 	// Don't forget to update g_nMaximumSteamAchievementCount and m_Achievements!
 };
@@ -36,7 +40,7 @@ enum EStats
 
 	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
-const int g_nMaximumSteamAchievementCount = 12; // Always keep this in sync with the number of achievments in EAchievements!
+const int g_nMaximumSteamAchievementCount = 15; // Always keep this in sync with the number of achievments in EAchievements!
 const int g_nMaximumSteamStatCount = 10; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
@@ -74,7 +78,10 @@ private:
 		"RECOVER_TECH_1_8",
 		"FIRST_PROBE_KILL_1_9",
 		"PROBE_SPOT_1_10",
-        "NANITE_REPAIR_1_11"
+        "NANITE_REPAIR_1_11",
+		"GET_RESCUED_1_12",
+		"PICKUP_POD_1_13",
+		"SPOT_GARRISON_1_14"
 	};
 
 	// Keep in sync with EStats!
@@ -119,6 +126,8 @@ public:
 	void AwardBaseKillOrCapture(bool kill);
 	void AwardIGCAchievements(AchievementMask am);
 	void AwardRecoverTechAchievement();
+	void AwardPodPickup();
+	void AwardGetRescued();
 	
 	void AddUserStats(PlayerScoreObject*  ppso, IshipIGC* pIship);
 	void UpdateLeaderboard(PlayerScoreObject*  ppso);

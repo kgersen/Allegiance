@@ -298,12 +298,24 @@ void CSteamAchievements::AwardIGCAchievements(AchievementMask am)
         SetAchievement(EAchievements::NANITE_REPAIR_1_11);
         m_nanAchievementEarned = true; //I was concerned about potentially calling set achievement too much
     }
+	if ((am & c_achmGarrSpot) > 0)
+		SetAchievement(EAchievements::SPOT_GARRISON_1_14);
 
 }
 
 void CSteamAchievements::AwardRecoverTechAchievement()
 {
 	SetAchievement(EAchievements::RECOVER_TECH_1_8);
+}
+
+void CSteamAchievements::AwardPodPickup()
+{
+	SetAchievement(EAchievements::PICKUP_POD_1_13);
+}
+
+void CSteamAchievements::AwardGetRescued()
+{
+	SetAchievement(EAchievements::GET_RESCUED_1_12);
 }
 
 
