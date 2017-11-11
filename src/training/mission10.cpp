@@ -98,6 +98,14 @@ namespace Training
                 AddPartToShip(154, i, 5);
             }
         }
+        //Add tech, so Seeker2s don't show as new treassure
+        IshipIGC*       pShip = trekClient.GetShip();
+        debugf("Pre DevelopmentTechs: %d\n", pShip->GetSide()->GetDevelopmentTechs());
+        TechTreeBitMask ttbm;
+        ttbm.ClearAll();
+        ttbm |= trekClient.GetCore()->GetPartType(154)->GetEffectTechs(); //Seeker 2 tech
+        pShip->GetSide()->ApplyDevelopmentTechs(ttbm);
+        debugf("Post DevelopmentTechs: %d\n", pShip->GetSide()->GetDevelopmentTechs()); //same as before, but works
     }
 
     //------------------------------------------------------------------------------
@@ -272,6 +280,7 @@ namespace Training
         }
 
         return new Goal(pGoalList);
+
 
         /*// build the goal that we'll return
         {
