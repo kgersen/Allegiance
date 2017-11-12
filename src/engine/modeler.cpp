@@ -3,8 +3,6 @@
 #include <base.h>
 #include <quaternion.h>
 #include <tmap.h>
-#include "steam_api.h"
-#include <AllegianceSecurity.h>
 
 #include "controls.h"
 #include "D3DDevice9.h"
@@ -17,6 +15,11 @@
 #include "paneimage.h"
 #include "value.h"
 #include "DX9PackFile.h"
+
+#ifdef STEAMSECURE
+# include "steam_api.h"
+# include <AllegianceSecurity.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -2349,8 +2352,10 @@ private:
     PathString				m_pathStr;
 	ImportImageFactory *	m_pImageFactory;			// This allows us to pass extra parameters into the image factory.
 
-	// BT - STEAM
+#ifdef STEAMSECURE
+    // BT - STEAM
 	FileHashTable			m_fileHashTable;
+#endif
 
     TMap<ZString, TRef<INameSpace> > m_mapNameSpace;
 
