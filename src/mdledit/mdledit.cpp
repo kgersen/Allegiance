@@ -993,7 +993,7 @@ public:
                             GetModeler()->LoadGeo("bom01a"),
                             new AnimateRotateTransform(
                                 new VectorValue(Vector(0, 1, 0)),
-                                Multiply(GetTime(), new Number(1.0))
+                                NumberTransform::Multiply(GetTime(), new Number(1.0))
                             )
                         ),
                         new RotateTransform(Vector(1, 0, 0), pi/8)
