@@ -49,7 +49,7 @@ public:
   CAGCVersionInfo()
   {
     // Initialize with the AGC module
-    m_vi.Load(_Module.GetModuleInstance());
+    m_vi.Load(uintptr_t(_Module.GetModuleInstance()));
   }
 };
 

@@ -4,7 +4,6 @@ INCLUDE_DIRECTORIES(../Inc)
 
 SET(Zlib_SRC
     StackTracer.cpp
-    VersionInfo.cpp
     Win32app.cpp
     color.cpp
     event.cpp
@@ -21,6 +20,12 @@ SET(Zlib_SRC
     zstring.cpp
     ztime.cpp
    )
+
+IF (MSVC)
+    SET(Zlib_SRC ${Zlib_SRC} VersionInfo_msvc.cpp)
+ELSE()
+    SET(Zlib_SRC ${Zlib_SRC} VersionInfo_dummy.cpp)
+ENDIF()
 
 IF(UNIX)
     SET(PLATFORM_SRC
