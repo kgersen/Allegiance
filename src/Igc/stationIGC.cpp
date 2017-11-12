@@ -461,7 +461,7 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
         IafterburnerIGC* a = (IafterburnerIGC*)(pship->GetMountedPart(ET_Afterburner, 0));
         if (a)
             a->Deactivate();
-        else { // Prevent ship from launching wihtout essential modules - add a booster
+        else { // Add essential module
             IpartTypeIGC *ppt = GetMission()->GetPartType(174); //Hvy Booster
             if (pht->CanMount(ppt, 0)) {
                 PartData        pd;
@@ -476,7 +476,7 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
         IshieldIGC* s = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
         if (s)
             s->SetFraction(1.0f);
-        else { // Prevent ship from launching wihtout essential modules - add a shield
+        else { // Add essential module
             IpartTypeIGC *ppt = GetMission()->GetPartType(40); //Sm Shield 2
             if (pht->CanMount(ppt, 0)) {
                 PartData        pd;
@@ -492,7 +492,7 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
         IafterburnerIGC*    pafter = (IafterburnerIGC*)(pship->GetMountedPart(ET_Afterburner, 0));
         if (pafter)
             pafter->Deactivate();
-        else { // Prevent ship from launching wihtout essential modules - add an afterburner
+        else { // Add essential module
             IpartTypeIGC *ppt = GetMission()->GetPartType(224); //Afterburner 3
             if (pht->CanMount(ppt, 0)) {
                 PartData        pd;
