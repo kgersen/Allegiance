@@ -67,7 +67,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\ZLib;..\src\_Utility;..\src\Inc;..\src\Guids;..\src\Zone;..\src\Test\Inc;..\src\Inc\appWeb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ALLSRV_STANDALONE;LOBBY;_ATL_STATIC_REGISTRY;_DEBUG;WIN;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;NOMINMAX;ALLSRV_STANDALONE;LOBBY;_ATL_STATIC_REGISTRY;_DEBUG;WIN;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -103,7 +103,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\ZLib;..\src\_Utility;..\src\Inc;..\src\Guids;..\src\Zone;..\src\Test\Inc;..\src\Inc\appWeb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>SRVLOG;_ATL_STATIC_REGISTRY;DEBUG;ALLSRV_STANDALONE;LOBBY;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;NOMINMAX;SRVLOG;_ATL_STATIC_REGISTRY;DEBUG;ALLSRV_STANDALONE;LOBBY;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>

@@ -26,6 +26,8 @@
 #include "time.h"
 #include "malloc.h"
 
+#include <algorithm>
+
 //
 // Required Win32 headers
 //

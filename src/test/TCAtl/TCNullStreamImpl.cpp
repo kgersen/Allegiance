@@ -42,7 +42,7 @@ STDMETHODIMP CTCNullStreamImpl::Read(void* pv, ULONG cb, ULONG* pcbRead)
 
     // Compute the number of bytes that can be read
     ULONG nMax = m_nSize - m_nPosition;
-    nMax = min(nMax, cb);
+    nMax = std::min(nMax, cb);
 
     // Clear the specified buffer for the maximum number of bytes
     ZeroMemory(pv, nMax);
@@ -221,7 +221,7 @@ STDMETHODIMP CTCNullStreamImpl::CopyTo(IStream* pstm, ULARGE_INTEGER cb,
 
   // Compute the number of bytes that can be read
   ULONG nMax = m_nSize - m_nPosition;
-  nMax = min(nMax, cb.LowPart);
+  nMax = std::min(nMax, cb.LowPart);
 
   // Copy the NULL memory chunk for the specified number of bytes
   HRESULT hr;

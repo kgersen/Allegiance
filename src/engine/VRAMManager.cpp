@@ -429,7 +429,7 @@ HRESULT CVRAMManager::CreateTextureD3DX(TEXHANDLE				texHandle,
 		D3DPOOL_MANAGED,
 		D3DX_DEFAULT,
 		D3DX_DEFAULT,
-		0xFF000000,
+		bColorKey ? 0xFF000000 : 0,
 		NULL,
 		NULL,
 		&pTexture->pTexture);

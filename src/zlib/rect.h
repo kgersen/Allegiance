@@ -91,20 +91,18 @@ public:
 
     void Intersect(const TRect& rect)
     {
-		using namespace std; // msvc can't handle RectType::SetXMin(std::max(RectType::XMin(), rect.XMin())); ;-(
-		RectType::SetXMin(max(RectType::XMin(), rect.XMin()));
-		RectType::SetXMax(min(RectType::XMax(), rect.XMax()));
-		RectType::SetYMin(max(RectType::YMin(), rect.YMin()));
-		RectType::SetYMax(min(RectType::YMax(), rect.YMax()));
+		RectType::SetXMin(std::max(RectType::XMin(), rect.XMin()));
+		RectType::SetXMax(std::min(RectType::XMax(), rect.XMax()));
+		RectType::SetYMin(std::max(RectType::YMin(), rect.YMin()));
+		RectType::SetYMax(std::min(RectType::YMax(), rect.YMax()));
     }
 
     void Accumulate(const TRect& rect)
     {
-		using namespace std;// msvc can't handle RectType::SetXMin(std::max(RectType::XMin(), rect.XMin())); ;-(
-		RectType::SetXMin(min(RectType::XMin(), rect.XMin()));
-        RectType::SetXMax(max(RectType::XMax(), rect.XMax()));
-        RectType::SetYMin(min(RectType::YMin(), rect.YMin()));
-        RectType::SetYMax(max(RectType::YMax(), rect.YMax()));
+		RectType::SetXMin(std::min(RectType::XMin(), rect.XMin()));
+        RectType::SetXMax(std::max(RectType::XMax(), rect.XMax()));
+        RectType::SetYMin(std::min(RectType::YMin(), rect.YMin()));
+        RectType::SetYMax(std::max(RectType::YMax(), rect.YMax()));
     }
 
     void Offset(const typename RectType::PointType& pt)

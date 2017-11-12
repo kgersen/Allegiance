@@ -224,7 +224,7 @@ public:
 				currOffset.SetX( psurface->GetOffset().X() + x);
 				currOffset.SetY( psurface->GetOffset().Y() );
 				currSize.SetX( size.X() );
-				currSize.SetY( min( size.Y(), YSize() ) );
+				currSize.SetY( std::min( size.Y(), YSize() ) );
 				
 				// Create vertices and render.
 				GenerateScreenVertices( hTexture, &currOffset, &currSize );
@@ -241,7 +241,7 @@ public:
 			currOffset.SetX( psurface->GetOffset().X() + x);
 			currOffset.SetY( psurface->GetOffset().Y() );
 			currSize.SetX( XSize() - x );
-			currSize.SetY( min( size.Y(), YSize() ) );
+			currSize.SetY( std::min( size.Y(), YSize() ) );
 			
 			// Create vertices and render.
 			GenerateScreenVertices( hTexture, &currOffset, &currSize );
@@ -262,7 +262,7 @@ public:
 				// Generate offset and size.
 				currOffset.SetX( psurface->GetOffset().X() );
 				currOffset.SetY( psurface->GetOffset().Y() + y );
-				currSize.SetX( min( size.X(), XSize() ) );
+				currSize.SetX( std::min( size.X(), XSize() ) );
 				currSize.SetY( size.Y() );
 				
 				// Create vertices and render.
@@ -280,7 +280,7 @@ public:
 			// Generate offset and size.
 			currOffset.SetX( psurface->GetOffset().X() );
 			currOffset.SetY( psurface->GetOffset().Y() + y );
-			currSize.SetX( min( size.X(), XSize() ) );
+			currSize.SetX( std::min( size.X(), XSize() ) );
 			currSize.SetY( YSize() - y );
 			
 			// Create vertices and render.

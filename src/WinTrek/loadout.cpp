@@ -817,7 +817,7 @@ public:
                   {
                       Money bucketCost = pBucket->GetPrice() - pBucket->GetMoney();
 
-                      Money investmentAmount = min(bucketCost, trekClient.GetMoney());
+                      Money investmentAmount = std::min(bucketCost, trekClient.GetMoney());
                       trekClient.AddMoneyToBucket(pBucket, investmentAmount);
                   }
               }                    
@@ -899,7 +899,7 @@ public:
 
                       Money TenPercent = pBucket->GetPrice() * 0.1;					// Get 10% of the total research cost
 
-					  Money investmentAmount = min(TenPercent, trekClient.GetMoney());	// Get what's less: Your money? or the reqdevcost
+					  Money investmentAmount = std::min(TenPercent, trekClient.GetMoney());	// Get what's less: Your money? or the reqdevcost
 
 					  // If we're about to finish this development, remove 1cr so we don't!!
 					  while (pBucket->GetMoney() + investmentAmount >= pBucket->GetPrice())

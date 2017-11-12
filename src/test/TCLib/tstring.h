@@ -40,7 +40,7 @@ struct ci_less_bstr_t : public std::binary_function<_bstr_t, _bstr_t, bool>
 		  return y.length() ? true : false;
 	  if (!y.length())
 		  return false;
-    int n = _wcsnicmp(x, y, min(x.length(), y.length()));
+    int n = _wcsnicmp(x, y, std::min(x.length(), y.length()));
     if (0 > n)
       return true;
     if (0 == n)

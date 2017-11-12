@@ -176,6 +176,14 @@ public:
     void SetClipRect(const Rect& rectClip)
     {
         m_rectClip = rectClip;
+
+        m_Viewport.X = m_rectClip.XMin();
+        m_Viewport.Y = m_rectClip.YMin();
+        m_Viewport.Width = (int)(m_rectClip.XMax() - m_rectClip.XMin());
+        m_Viewport.Height = (int)(m_rectClip.YMax() - m_rectClip.YMin());
+        m_Viewport.MinZ = 0.0f;
+        m_Viewport.MaxZ = 1.0f;
+        CD3DDevice9::Get()->SetViewport(&m_Viewport);
     }
 
     void ClearZBuffer()

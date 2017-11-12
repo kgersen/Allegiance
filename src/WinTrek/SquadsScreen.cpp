@@ -1250,7 +1250,7 @@ public:
                     // after changing column sorts, make sure the same squad is selected
                     if (m_psquadPrePage == psquad)  
                     {
-                        m_nCurrentRanking = max(1, psquad->GetRanking(s_column));
+                        m_nCurrentRanking = std::max(1, psquad->GetRanking(s_column));
                         DisplaySquadsInRange();
 
                         // It's rare, but this can happen if user request lots of pages and switching between columns frequently

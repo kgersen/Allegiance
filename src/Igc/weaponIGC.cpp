@@ -206,7 +206,7 @@ void        CweaponIGC::FireWeapon(Time now)
                 /*
                 m_ship->GetThingSite()->AddMuzzleFlare(
 				    m_emissionPt, 
-				    min(dtimeBurst * 0.5f, 0.05f)
+				    std::min(dtimeBurst * 0.5f, 0.05f)
 			    );
                 */
 

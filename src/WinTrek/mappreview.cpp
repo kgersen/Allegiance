@@ -175,7 +175,7 @@ private:
 		}
 
 		const   float   c_bfr = 0.1f * 
-			max(0.0001, max(m_xClusterMax - m_xClusterMin, 
+			std::max(0.0001f, std::max(m_xClusterMax - m_xClusterMin,
 				m_yClusterMax - m_yClusterMin));
 		m_xClusterMin -= c_bfr;
 		m_xClusterMax += c_bfr;
@@ -199,8 +199,8 @@ private:
 		if (m_xMax - m_xMin > fMaxWidth || m_yMax - m_yMin > fMaxHeight)
 		{
 			m_bCanDrag = true;
-			m_xMax = m_xMin + min(m_xMax - m_xMin, fMaxWidth);
-			m_yMax = m_yMin + min(m_yMax - m_yMin, fMaxHeight);
+			m_xMax = m_xMin + std::min(m_xMax - m_xMin, fMaxWidth);
+			m_yMax = m_yMin + std::min(m_yMax - m_yMin, fMaxHeight);
 		}
 		else
 		{
@@ -356,8 +356,8 @@ private:
             float fDeltaY = fScale * (m_pointLastDrag.Y() - point.Y());
 
             // make sure we don't drag the map off of the screen
-            m_xDrag = max(min((m_xClusterMax - m_xClusterMin) - (m_xMax - m_xMin), m_xDrag + fDeltaX), 0);
-            m_yDrag = max(min((m_yClusterMax - m_yClusterMin) - (m_yMax - m_yMin), m_yDrag + fDeltaY), 0);
+            m_xDrag = std::max(std::min((m_xClusterMax - m_xClusterMin) - (m_xMax - m_xMin), m_xDrag + fDeltaX), 0.0f);
+            m_yDrag = std::max(std::min((m_yClusterMax - m_yClusterMin) - (m_yMax - m_yMin), m_yDrag + fDeltaY), 0.0f);
 
             m_pointLastDrag = point;
             GetWindow()->SetCursor(AWF_CURSOR_DRAG);

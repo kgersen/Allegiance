@@ -599,106 +599,6 @@ void ValueList::FillImportTable(IMDLBinaryFile* pfile)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Number Subclasses
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class SubtractNumber : public Number {
-public:
-    SubtractNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() - Get1()->GetValue();
-    }
-};
-
-class AddNumber : public Number {
-public:
-    AddNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() + Get1()->GetValue();
-    }
-};
-
-class MultiplyNumber : public Number {
-public:
-    MultiplyNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() * Get1()->GetValue();
-    }
-};
-
-class DivideNumber : public Number {
-public:
-    DivideNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() / Get1()->GetValue();
-    }
-};
-
-class SinNumber : public Number {
-public:
-    SinNumber(Number* pvalue0) :
-        Number(pvalue0)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = sin(Get0()->GetValue());
-    }
-};
-
-class CosNumber : public Number {
-public:
-    CosNumber(Number* pvalue0) :
-        Number(pvalue0)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = cos(Get0()->GetValue());
-    }
-};
-
 class OrNumber : public Number {
 public:
     OrNumber(Number* pvalue0, Number* pvalue1) :
@@ -713,9 +613,9 @@ public:
     {
         GetValueInternal() =
             (float)(
-                  ((DWORD)Get0()->GetValue())
+            ((DWORD)Get0()->GetValue())
                 | ((DWORD)Get1()->GetValue())
-            );
+                );
     }
 };
 
@@ -733,9 +633,9 @@ public:
     {
         GetValueInternal() =
             (float)(
-                  ((DWORD)Get0()->GetValue())
+            ((DWORD)Get0()->GetValue())
                 & ((DWORD)Get1()->GetValue())
-            );
+                );
     }
 };
 
@@ -753,85 +653,11 @@ public:
     {
         GetValueInternal() =
             (float)(
-                  ((DWORD)Get0()->GetValue())
+            ((DWORD)Get0()->GetValue())
                 ^ ((DWORD)Get1()->GetValue())
-            );
+                );
     }
 };
-
-class ModNumber : public Number {
-public:
-    ModNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = mod(Get0()->GetValue(), Get1()->GetValue());
-    }
-};
-
-class MinNumber : public Number {
-public:
-    MinNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = std::min(Get0()->GetValue(), Get1()->GetValue());
-    }
-};
-
-class MaxNumber : public Number {
-public:
-    MaxNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = std::max(Get0()->GetValue(), Get1()->GetValue());
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Number
-//
-//////////////////////////////////////////////////////////////////////////////
-
-TRef<Number> Subtract(Number* pvalue1, Number* pvalue2)
-{
-    return new SubtractNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Add(Number* pvalue1, Number* pvalue2)
-{
-    return new AddNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Multiply(Number* pvalue1, Number* pvalue2)
-{
-    return new MultiplyNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Divide(Number* pvalue1, Number* pvalue2)
-{
-    return new DivideNumber(pvalue1, pvalue2);
-}
 
 TRef<Number> Or(Number* pvalue1, Number* pvalue2)
 {
@@ -846,31 +672,6 @@ TRef<Number> And(Number* pvalue1, Number* pvalue2)
 TRef<Number> XOr(Number* pvalue1, Number* pvalue2)
 {
     return new XOrNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Mod(Number* pvalue1, Number* pvalue2)
-{
-    return new ModNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Min(Number* pvalue1, Number* pvalue2)
-{
-    return new MinNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Max(Number* pvalue1, Number* pvalue2)
-{
-    return new MaxNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Sin(Number* pvalue)
-{
-    return new SinNumber(pvalue);
-}
-
-TRef<Number> Cos(Number* pvalue)
-{
-    return new CosNumber(pvalue);
 }
 
 //////////////////////////////////////////////////////////////////////////////

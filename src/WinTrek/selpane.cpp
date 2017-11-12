@@ -39,8 +39,8 @@ public:
         } else {
             InternalSetSize(
                 WinPoint(
-                    max(0, XExpand()),
-                    max(0, YExpand())
+                    std::max(0, XExpand()),
+                    std::max(0, YExpand())
                 )
             );
         }

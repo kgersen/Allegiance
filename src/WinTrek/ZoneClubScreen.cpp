@@ -24,6 +24,7 @@ extern bool    g_bDownloadZoneMessage;
 extern bool    g_bDownloadNewConfig;
 extern bool    g_bDisableZoneClub;
 extern bool    g_bSkipAutoUpdate;
+bool g_bAutomaticallySkipMotdScreen = false;
 
 const char * szValidCfg  = "THIS IS A VALID CONFIG FILE";
 const char * szValidMotd = "THIS IS A VALID MESSAGE OF THE DAY FILE";
@@ -751,6 +752,12 @@ public:
                 m_pbuttonLeaderboard->SetEnabled(true);
                 m_pbuttonSquads->SetEnabled(!g_bDisableZoneClub);
                 m_pbuttonZoneEvents->SetEnabled(!trekClient.GetCfgInfo().strZoneEventsURL.IsEmpty());
+            }
+
+            // This is pretty ugly, but we don't like this screen.
+            if (g_bAutomaticallySkipMotdScreen == true) {
+                g_bAutomaticallySkipMotdScreen = false;
+                OnButtonGames();
             }
         }
     }

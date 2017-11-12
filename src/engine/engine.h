@@ -8,6 +8,9 @@
 
 #include "surface.h"
 #include "value.h"
+#include "valuetransform.h"
+
+extern bool g_bLuaDebug;
 
 #ifdef _DEBUG
     //
@@ -24,7 +27,6 @@ class Material;
 class Palette;
 class PixelFormat;
 class Window;
-
 
 
 //////////////////////////////////////////////////////////////////////////////

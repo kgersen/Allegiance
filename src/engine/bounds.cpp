@@ -145,14 +145,14 @@ Bounds Union(const Bounds& bounds1, const Bounds& bounds2)
     return
         Bounds(
             Vector(
-                min(bounds1.GetMin().X(), bounds2.GetMin().X()),
-                min(bounds1.GetMin().Y(), bounds2.GetMin().Y()),
-                min(bounds1.GetMin().Z(), bounds2.GetMin().Z())
+                std::min(bounds1.GetMin().X(), bounds2.GetMin().X()),
+                std::min(bounds1.GetMin().Y(), bounds2.GetMin().Y()),
+                std::min(bounds1.GetMin().Z(), bounds2.GetMin().Z())
             ),
             Vector(
-                max(bounds1.GetMax().X(), bounds2.GetMax().X()),
-                max(bounds1.GetMax().Y(), bounds2.GetMax().Y()),
-                max(bounds1.GetMax().Z(), bounds2.GetMax().Z())
+                std::max(bounds1.GetMax().X(), bounds2.GetMax().X()),
+                std::max(bounds1.GetMax().Y(), bounds2.GetMax().Y()),
+                std::max(bounds1.GetMax().Z(), bounds2.GetMax().Z())
             )
         );
 }

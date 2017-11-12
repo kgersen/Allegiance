@@ -1008,7 +1008,7 @@ public:
             }
 
             //float screenRadius = pcontext->GetScreenRadius(Vector::GetZero(), m_radius);
-            //pcontext->SetLOD(screenRadius * max(m_lodBiasMin, s_lodBias));
+            //pcontext->SetLOD(screenRadius * std::max(m_lodBiasMin, s_lodBias));
 
             GetGeo()->Render(pcontext);
 

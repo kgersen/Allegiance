@@ -78,7 +78,7 @@ public:
                 vec.x,
                 vec.y + m_amplitude * sin(m_frequency * vec.x + m_phase),
                 vec.z
-                //min(0, vec.z * max(1, vec.x * 0.25f))
+                //std::min(0, vec.z * std::max(1, vec.x * 0.25f))
             );
     }
 };
@@ -1126,7 +1126,7 @@ public:
                 }
 
                 //float screenRadius = pcontext->GetScreenRadius(Vector::GetZero(), m_radius);
-                //pcontext->SetLOD(screenRadius * max(m_lodBiasMin, s_lodBias));
+                //pcontext->SetLOD(screenRadius * std::max(m_lodBiasMin, s_lodBias));
 
                 GetGeo()->Render(pcontext);
 

@@ -12,10 +12,12 @@
 #include "geometry.h"
 #include "frameimage.h"
 #include "image.h"
+#include "imagetransform.h"
 #include "keyframe.h"
 #include "material.h"
 #include "paneimage.h"
 #include "value.h"
+#include "valuetransform.h"
 #include "DX9PackFile.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -176,22 +178,6 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class PointX : public Number {
-private:
-    PointValue* GetPoint() { return PointValue::Cast(GetChild(0)); }
-
-public:
-    PointX(PointValue* ppoint) :
-        Number(ppoint)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = GetPoint()->GetValue().X();
-    }
-};
-
 class PointXFactory : public IFunction {
 private:
 public:
@@ -199,7 +185,7 @@ public:
     {
         TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
 
-        return new PointX(ppoint);
+        return PointTransform::X(ppoint);
     }
 };
 
@@ -208,22 +194,6 @@ public:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
-class PointY : public Number {
-private:
-    PointValue* GetPoint() { return PointValue::Cast(GetChild(0)); }
-
-public:
-    PointY(PointValue* ppoint) :
-        Number(ppoint)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = GetPoint()->GetValue().Y();
-    }
-};
 
 class PointYFactory : public IFunction {
 private:
@@ -232,7 +202,7 @@ public:
     {
         TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
 
-        return new PointY(ppoint);
+        return PointTransform::Y(ppoint);
     }
 };
 
@@ -241,22 +211,6 @@ public:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
-class ImageSize : public PointValue {
-private:
-    Image* GetImage() { return Image::Cast(GetChild(0)); }
-
-public:
-    ImageSize(Image* pimage) :
-        PointValue(pimage)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Point::Cast(GetImage()->GetBounds().GetRect().Size());
-    }
-};
 
 class ImageSizeFactory : public IFunction {
 private:
@@ -265,7 +219,7 @@ public:
     {
         TRef<Image> pimage = Image::Cast((Value*)(IObject*)stack.Pop());
 
-        return new ImageSize(pimage);
+        return ImageTransform::Size(pimage);
     }
 };
 
@@ -1058,11 +1012,7 @@ public:
         TRef<Image>      pimage =      Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<PointValue> ppoint = PointValue::Cast(        (IObject*)stack.Pop());
 
-        return
-           (Value*)new TransformImage(
-                pimage,
-                new TranslateTransform2(ppoint)
-           );
+        return (Value*)ImageTransform::Translate(pimage, ppoint);
     }
 };
 
@@ -1096,102 +1046,8 @@ public:
         TRef<Image>      pimage =      Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<PointValue> ppoint = PointValue::Cast(        (IObject*)stack.Pop());
 
-        return 
-            (Value*)new TransformImage(
-                pimage, 
-                new ScaleTransform2(ppoint)
-            );
+        return (Value*)ImageTransform::Scale(pimage, ppoint);
     }
-};
-
-class PointV : public PointValue {
-public:
-	PointV(Number* px, Number* py) :
-		PointValue(px, py)
-	{
-	}
-
-	Number* Get0() { return Number::Cast(GetChild(0)); }
-	Number* Get1() { return Number::Cast(GetChild(1)); }
-
-	void Evaluate()
-	{
-		GetValueInternal() =
-			Point(
-				Get0()->GetValue(),
-				Get1()->GetValue()
-			);
-	}
-};
-
-class FitImageFactory : public IFunction {
-public:
-	TRef<IObject> Apply(ObjectStack& stack)
-	{
-		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
-		TRef<PointValue> ppoint = ModifiablePointValue::Cast((IObject*)stack.Pop());
-
-		TRef<ImageSize> sizeImage = new ImageSize(pimage);
-
-		TRef<Number> scale = Min(
-			Divide(new PointX(ppoint), new PointX(sizeImage)),
-			Divide(new PointY(ppoint), new PointY(sizeImage))
-		);
-
-		PointV * p_pointVariable = new PointV(scale, scale);
-
-		return
-			(Value*)new TransformImage(
-				pimage,
-				new ScaleTransform2(p_pointVariable)
-			);
-	}
-};
-
-class FitImageXFactory : public IFunction {
-public:
-	TRef<IObject> Apply(ObjectStack& stack)
-	{
-		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
-		TRef<Number> pnumber = Number::Cast((IObject*)stack.Pop());
-
-		TRef<ImageSize> sizeImage = new ImageSize(pimage);
-
-		TRef<Number> scale = Divide(pnumber, new PointX(sizeImage));
-
-		PointV * p_pointVariable = new PointV(scale, scale);
-
-		return
-			(Value*)new TransformImage(
-				pimage,
-				new ScaleTransform2(p_pointVariable)
-			);
-	}
-};
-
-class FitImageYFactory : public IFunction {
-public:
-	TRef<IObject> Apply(ObjectStack& stack)
-	{
-		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
-		TRef<Number> pnumber = Number::Cast((IObject*)stack.Pop());
-		//TRef<Number> pjustify = Number::Cast((IObject*)stack.Pop());
-
-		//Justification justification;
-		//justification.SetWord((DWORD)pjustify->GetValue());
-
-		TRef<ImageSize> sizeImage = new ImageSize(pimage);
-
-		TRef<Number> scale = Divide(pnumber, new PointY(sizeImage));
-
-		PointV * p_pointVariable = new PointV(scale, scale);
-
-		return
-			(Value*)new TransformImage(
-				pimage,
-				new ScaleTransform2(p_pointVariable)
-			);
-	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1393,7 +1249,7 @@ public:
         Number* px; CastTo(px, (IObject*)stack.Pop());
         Number* py; CastTo(py, (IObject*)stack.Pop());
 
-        return new PointV(px, py);
+        return PointTransform::Create(px, py);
     }
 };
 
@@ -2116,7 +1972,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Mod(pnumber1, pnumber2);
+        return NumberTransform::Mod(pnumber1, pnumber2);
     }
 };
 
@@ -2128,7 +1984,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Min(pnumber1, pnumber2);
+        return NumberTransform::Min(pnumber1, pnumber2);
     }
 };
 
@@ -2140,7 +1996,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Max(pnumber1, pnumber2);
+        return NumberTransform::Max(pnumber1, pnumber2);
     }
 };
 
@@ -2152,7 +2008,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Add(pnumber1, pnumber2);
+        return NumberTransform::Add(pnumber1, pnumber2);
     }
 };
 
@@ -2164,7 +2020,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Subtract(pnumber1, pnumber2);
+        return NumberTransform::Subtract(pnumber1, pnumber2);
     }
 };
 
@@ -2176,7 +2032,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Multiply(pnumber1, pnumber2);
+        return NumberTransform::Multiply(pnumber1, pnumber2);
     }
 };
 
@@ -2188,7 +2044,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Divide(pnumber1, pnumber2);
+        return NumberTransform::Divide(pnumber1, pnumber2);
     }
 };
 
@@ -2535,9 +2391,6 @@ public:
         pns->AddMember("ScaleImage",         new ScaleImageFactory());
         pns->AddMember("RotateImage",        new RotateImageFactory());
         pns->AddMember("BlendImage",         new BlendImageFactory());
-		pns->AddMember("FitImage",			 new FitImageFactory());
-		pns->AddMember("FitImageX",			 new FitImageXFactory());
-		pns->AddMember("FitImageY",			 new FitImageYFactory());
 
 
         //

@@ -545,18 +545,9 @@ public:
 typedef TModifiableValue<float, ModifiableNumberName> ModifiableNumber;
 typedef TWrapValue<float> WrapNumber;
 
-TRef<Number> Subtract(Number*, Number*);
-TRef<Number> Add(Number*, Number*);
-TRef<Number> Multiply(Number*, Number*);
-TRef<Number> Divide(Number*, Number*);
-TRef<Number> Sin(Number*);
-TRef<Number> Cos(Number*);
 TRef<Number> Or(Number*, Number*);
 TRef<Number> And(Number*, Number*);
 TRef<Number> XOr(Number*, Number*);
-TRef<Number> Mod(Number*, Number*);
-TRef<Number> Min(Number*, Number*);
-TRef<Number> Max(Number*, Number*);
 
 //////////////////////////////////////////////////////////////////////////////
 //

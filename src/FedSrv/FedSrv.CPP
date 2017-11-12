@@ -2952,7 +2952,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
 
       pfmMoney->sidTo = pfsShip->GetShipID();
       pfmMoney->sidFrom = NA;
-      pfmMoney->dMoney = max(-pfsShip->GetMoney(), atoi(strMoney));
+      pfmMoney->dMoney = std::max(-pfsShip->GetMoney(), atoi(strMoney));
 
       pfsShip->SetMoney(pfsShip->GetMoney() + pfmMoney->dMoney);
       g.fm.SendMessages(CFSSide::FromIGC(pfsShip->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
@@ -8034,7 +8034,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
             // arena style games don't have a minimum number of players per side
             if (pfsMission->GetMissionDef()->misparms.bAllowEmptyTeams)
             {
-              pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
+              pfsMission->StartCountdown(std::max(0.0f, dtTimeTillStart));
             }
             else
             {
@@ -8043,7 +8043,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
                 pfsMission->SetForceReady(sideId, true);
 
               if (pfsMission->FAllReady()) // a team was found to have less than the required players
-                pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
+                pfsMission->StartCountdown(std::max(0.0f, dtTimeTillStart));
               else
               {
                 // let them completely run out of time before canceling the game
@@ -8872,7 +8872,7 @@ void StartDefaultGames()
 	// MaxPlayersPerGame not used for AZ
 #if defined(ALLSRV_STANDALONE)
     if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxPlayersPerGame", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-      mp.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, (short)dwValue);
+      mp.nTotalMaxPlayersPerGame = std::min(c_cMaxPlayersPerGame, (short)dwValue);
     else
       mp.nTotalMaxPlayersPerGame = c_cMaxPlayersPerGame;
 #endif
@@ -8885,7 +8885,7 @@ void StartDefaultGames()
 
 #if defined(ALLSRV_STANDALONE)
     mp.nMinPlayersPerTeam = 1;
-    mp.nMaxPlayersPerTeam = (char)(min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
+    mp.nMaxPlayersPerTeam = (char)(std::min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
 
 	mp.bObjectModelCreated = true; // a little bit of a fib, but it makes it look normal
 #else

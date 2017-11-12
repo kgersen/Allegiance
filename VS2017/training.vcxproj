@@ -60,14 +60,20 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\training\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">training</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.lib</TargetExt>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\Lib\lua\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\Lib\lua\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <LibraryPath>..\src\Lib\lua$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <LibraryPath>..\src\Lib\lua$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Training;..\src\Effect;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\clintlib;..\src\SoundEngine;..\src\wintrek;..\src\lobby;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Training;..\src\Effect;..\src\ui;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\clintlib;..\src\SoundEngine;..\src\wintrek;..\src\lobby;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -85,8 +91,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Training;..\src\Effect;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\clintlib;..\src\SoundEngine;..\src\wintrek;..\src\lobby;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>DEBUG;SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Training;..\src\Effect;..\src\ui;..\src\Engine;..\src\ZLib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\clintlib;..\src\SoundEngine;..\src\wintrek;..\src\lobby;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;DEBUG;SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>

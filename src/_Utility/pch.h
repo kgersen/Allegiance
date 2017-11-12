@@ -31,6 +31,8 @@
 
 #include <urlmon.h>
 
+#include <algorithm>
+
 // BT - STEAM
 #include "steam_gameserver.h"
 

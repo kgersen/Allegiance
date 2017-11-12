@@ -101,7 +101,7 @@ int TCReplaceTextImpl(LPCTSTR pszSource, LPCTSTR pszFind, LPCTSTR pszReplace,
         _tcsncpy(pszDest, pszBegin, cch);
       else
         TC_tcscpyn(pszDest, pszBegin, cchMaxDest);
-      cchMaxDest = max(0, cchMaxDest - cch);
+      cchMaxDest = std::max(0, cchMaxDest - cch);
       pszDest += cch;
 
       // Copy the replacement string
@@ -109,7 +109,7 @@ int TCReplaceTextImpl(LPCTSTR pszSource, LPCTSTR pszFind, LPCTSTR pszReplace,
         _tcsncpy(pszDest, pszReplace, cchReplace);
       else
         TC_tcscpyn(pszDest, pszReplace, cchMaxDest);
-      cchMaxDest = max(0, cchMaxDest - cchReplace);
+      cchMaxDest = std::max(0, cchMaxDest - cchReplace);
       pszDest += cchReplace;
 
       // Increment the begining pointers past the search phrase

@@ -1994,7 +1994,7 @@ public:
 
     int GetCountdownTime()
     {
-        return max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
+        return std::max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
     }
 
     void SetCountdownTimer(int nTime)

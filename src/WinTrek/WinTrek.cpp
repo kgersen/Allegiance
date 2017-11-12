@@ -35,8 +35,8 @@ const float c_dtFlashOff = 0.25f;
 const float c_dtFlashingDuration = 2.0f;
 
 const int c_nCountdownMax = 1000000; // just a big number
-const int c_nMinGain = -60;
-const int c_nMinFFGain = 0; //Imago
+const float c_nMinGain = -60;
+const float c_nMinFFGain = 0; //Imago
 
 // -Imago: manual AFK toggle flags for auto-AFK
 extern bool g_bActivity = true;
@@ -1202,6 +1202,7 @@ public:
     // Screens
     //
 
+    TRef<UiEngine>       m_pUiEngine;
     TRef<Image>          m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
@@ -1343,6 +1344,7 @@ public:
     TRef<IMenuItem>            m_pitemToggleDebris;
     TRef<IMenuItem>            m_pitemToggleStars;
     TRef<IMenuItem>            m_pitemToggleEnvironment;
+    TRef<IMenuItem>			   m_pitemToggleUseOldUi;
 	TRef<IMenuItem>			   m_pitemToggleHighResTextures; // BT - 10/17 - HighRes Textures
     TRef<IMenuItem>            m_pitemToggleRoundRadar;
     TRef<IMenuItem>            m_pitemToggleLinearControls;
@@ -1449,6 +1451,8 @@ public:
 
     DWORD m_cVTVersion;
     HWND  m_hwndVTEdit;
+
+    bool m_bUseOldUi;
 
 	// BT - 10/17 - HighRes Textures
 	bool m_bUseHighResTextures;
@@ -2354,7 +2358,7 @@ public:
                     break;
 
                 case ScreenIDIntroScreen:
-					SetUiScreen(CreateIntroScreen(GetModeler()));
+					SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi));
                     break;
 
 				case ScreenIDSplashScreen:
@@ -2431,7 +2435,7 @@ public:
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
-						SetUiScreen(CreateIntroScreen(GetModeler()));
+						SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi));
 	                    break;
 					}
 
@@ -2730,8 +2734,8 @@ public:
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-		m_bUseHighResTextures(true) // BT - 10/17 - HighRes Textures
-
+		m_bUseHighResTextures(true), // BT - 10/17 - HighRes Textures
+        m_bUseOldUi(false)
     {
         HRESULT hr;
 
@@ -2748,6 +2752,12 @@ public:
 
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
+
+        UiEngine::SetGlobalArtPath((std::string)strArtPath);
+
+        if (g_bLuaDebug) {
+            UiEngine::m_stringLogPath = (std::string)"lua.log";
+        }
 
 		//Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
 		HANDLE hDDVidThread = NULL;
@@ -2987,6 +2997,10 @@ public:
 
         InitializeSoundTemplates();
 
+        m_pUiEngine = UiEngine::Create(m_pengine, m_pSoundEngine, [this](std::string strWebsite) {
+            this->ShowWebPage(strWebsite.c_str());
+        });
+
         //
         // Load the Quick Chat Info
         //
@@ -3010,6 +3024,8 @@ public:
 		m_bUseHighResTextures    = (LoadPreference("HighResTextures",		1) != 0);
 
 		m_pmodeler->SetHighResTextures(m_bUseHighResTextures);
+
+        m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
 
         //
         // Initial screen size
@@ -3339,7 +3355,7 @@ public:
         //
         // intro.avi video moved up
         //
-		TRef<Screen> introscr = CreateIntroScreen(GetModeler());
+		TRef<Screen> introscr = CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi);
 		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
@@ -3559,6 +3575,7 @@ public:
         m_mapAnimatedImages.SetEmpty();
 
         TerminateGameStateContainer();
+        m_pwrapImageTop->SetImage(Image::GetEmpty());
         m_pimageScreen     = NULL;
         m_pscreen          = NULL;
         SetCaption(NULL);
@@ -3602,8 +3619,9 @@ public:
         m_pqcmenuMain = NULL;
         m_psoundmutexSal->Reset();
         m_psoundmutexVO->Reset();
-        m_pSoundEngine = NULL;
 
+        m_pUiEngine = NULL;
+        m_pSoundEngine = NULL;
         m_ptrekInput = NULL;
     }
 
@@ -3786,7 +3804,7 @@ public:
             }
 
 			float scale;
-			scale = min(rectScreen.XSize() / sizeScreenBeforeScaling.X(), rectScreen.YSize() / sizeScreenBeforeScaling.Y());
+			scale = std::min(rectScreen.XSize() / sizeScreenBeforeScaling.X(), rectScreen.YSize() / sizeScreenBeforeScaling.Y());
 
 			Point pointTranslate;
 			pointTranslate = Point(
@@ -4125,6 +4143,8 @@ public:
 	#define idmWheelDelay		821 //Spunky #282
 
 	#define idmHighResTextures	822	// BT - 10/17 - HighRes Textures
+
+    #define idmOldUi	        823
 
 	// BT - STEAM
 	#define idmCallsignTag0		900
@@ -4641,6 +4661,8 @@ public:
 				
 				// BT - 10/17 - HighRes Textures
 				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
+
+                m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
  				
 				break;
 
@@ -4895,7 +4917,7 @@ public:
 	// #294 - Turkey 8/13
 	void IncreaseChatLines()
 	{
-		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() + 1;
+		int lines = (int)m_pnumberChatLinesDesired->GetValue() + 1;
 
 		if (SetChatLines(lines))
 		{
@@ -4906,8 +4928,8 @@ public:
 			{
 				if (GetViewMode() == vmLoadout)
 				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
+					m_pchatListPane->SetChatLines(std::min(lines, 6));
+					m_pnumberChatLines->SetValue(std::min(lines, 6));
 				}
 				else if (GetViewMode() <= vmOverride)
 				{
@@ -4922,7 +4944,7 @@ public:
 
 	void ReduceChatLines()
 	{
-		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() - 1;
+		int lines = (int)m_pnumberChatLinesDesired->GetValue() - 1;
 
 		if (SetChatLines(lines))
 		{
@@ -4933,8 +4955,8 @@ public:
 			{
 				if (GetViewMode() == vmLoadout)
 				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
+					m_pchatListPane->SetChatLines(std::min(lines, 6));
+					m_pnumberChatLines->SetValue(std::min(lines, 6));
 				}
 				else if (GetViewMode() <= vmOverride)
 				{
@@ -5392,6 +5414,21 @@ public:
         }
     }
 
+    void ToggleOldUi()
+    {
+        m_bUseOldUi = !m_bUseOldUi;
+
+        SavePreference("OldUi", m_bUseOldUi);
+
+        if (m_pitemToggleUseOldUi != NULL) {
+            m_pitemToggleUseOldUi->SetString(GetOldUiMenuString());
+        }
+
+        m_pmessageBox = CreateMessageBox("Enabling or Disabling the old UI will require you to restart Allegiance.", NULL, true, false);
+        GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+
+    }
+
 	// BT - 10/17 - HighRes Textures
 	void ToggleHighResTextures()
 	{
@@ -5625,7 +5662,7 @@ public:
 
     void AdjustMusicVolume(float fDelta)
     {
-        float fNewValue = min(0, max(c_nMinGain, m_pnumMusicGain->GetValue() + fDelta));
+        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumMusicGain->GetValue() + fDelta));
         m_pnumMusicGain->SetValue(fNewValue);
 
         SavePreference("MusicGain", (DWORD)-fNewValue);
@@ -5645,7 +5682,7 @@ public:
 
     void AdjustSFXVolume(float fDelta)
     {
-        float fNewValue = min(0, max(c_nMinGain, m_pnumSFXGain->GetValue() + fDelta));
+        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumSFXGain->GetValue() + fDelta));
         m_pnumSFXGain->SetValue(fNewValue);
 
         SavePreference("SFXGain", (DWORD)-fNewValue);
@@ -5664,7 +5701,7 @@ public:
 
     void AdjustVoiceOverVolume(float fDelta)
     {
-        float fNewValue = min(0, max(c_nMinGain, m_pnumVoiceOverGain->GetValue() + fDelta));
+        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumVoiceOverGain->GetValue() + fDelta));
         m_pnumVoiceOverGain->SetValue(fNewValue);
 
         SavePreference("VoiceOverGain", (DWORD)-fNewValue);
@@ -5684,7 +5721,7 @@ public:
 	//Imago 7/10 #187
     void AdjustFFGain(float fDelta)
     {
-        float fNewValue = min(10000, max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
+        float fNewValue = std::min(10000.0f, std::max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
         m_pnumFFGain->SetValue(fNewValue);
 
         SavePreference("FFGain", fNewValue);
@@ -5706,7 +5743,7 @@ public:
 
     void AdjustMouseSens(float fDelta)
     {
-        float fNewValue = min(2, max(0.1f, m_pnumMouseSens->GetValue() + fDelta));
+        float fNewValue = std::min(2.0f, std::max(0.1f, m_pnumMouseSens->GetValue() + fDelta));
         m_pnumMouseSens->SetValue(fNewValue);
 
         SavePreference("MouseSensitivity", ZString(fNewValue));
@@ -5786,7 +5823,7 @@ public:
         }
         else
         {
-			float value = (min(2, max(0.1f, fCurrentSens + fDelta))) * 100;
+			float value = (std::min(2.0f, std::max(0.1f, fCurrentSens + fDelta))) * 100;
 			char szValue[4] = {'\0'};
 			sprintf(szValue,"%.0f",value);
             strResult += "to " + ZString(szValue) + " %";
@@ -6068,6 +6105,11 @@ public:
         return (m_bFlipY ? "Y Axis Flipped " : "Y Axis Not Flipped ");
     }
 
+    ZString GetOldUiMenuString()
+    {
+        return "Use old UI: " + ZString(m_bUseOldUi ? "On" : "Off");
+    }
+
 	// BT - 10/17 - HighRes Textures
 	ZString GetHighResTexturesString()
 	{
@@ -6092,7 +6134,7 @@ public:
         }
         else
         {
-            strResult += "to " + ZString(min(0, max(c_nMinGain, fCurrentGain + fDelta))) + " dB";
+            strResult += "to " + ZString(std::min(0.0f, std::max(c_nMinGain, fCurrentGain + fDelta))) + " dB";
         }
 
         return strResult;
@@ -6112,7 +6154,7 @@ public:
         }
         else
         {
-            strResult += "to " + ZString(min(10000, max(c_nMinFFGain, fCurrentGain + fDelta) / 100)) + " %";
+            strResult += "to " + ZString(std::min(10000.0f, std::max(c_nMinFFGain, fCurrentGain + fDelta) / 100)) + " %";
         }
 
         return strResult;
@@ -6352,6 +6394,10 @@ public:
 			case idmHighResTextures:
 				ToggleHighResTextures();
 				break;
+
+            case idmOldUi:
+                ToggleOldUi();
+                break;
 
 
 			/* pkk May 6th: Disabled bandwidth patch
@@ -6889,8 +6935,8 @@ public:
 
 				if (vm == vmLoadout)
 				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
+					m_pchatListPane->SetChatLines(std::min(lines, 6));
+					m_pnumberChatLines->SetValue(std::min(lines, 6));
 				}
 				else if (vm <= vmOverride)
 				{
@@ -8930,6 +8976,13 @@ public:
             m_ptrekInput->SetFocus(true);
             TrekKey tk = m_ptrekInput->HandleKeyMessage(ks);
 
+            if (g_bLuaDebug && ks.bDown && ks.bAlt) {
+                switch (ks.vk) {
+                case VK_F1:
+                    m_pUiEngine->TriggerReload();
+                    return true;
+                }
+            }
             if (TK_NoKeyMapping != tk) {
                 if (ks.bDown) {
 
@@ -9398,9 +9451,9 @@ public:
         void Evaluate()
         {
             if (m_bOn) {
-                m_value = min(1, m_valueStart + (GetTime() - m_timeStart));
+                m_value = std::min(1.0f, m_valueStart + (GetTime() - m_timeStart));
             } else {
-                m_value = max(0, m_valueStart - (GetTime() - m_timeStart));
+                m_value = std::max(0.0f, m_valueStart - (GetTime() - m_timeStart));
             }
 
             GetValueInternal() = Interpolate(m_positionOff, m_positionOn, m_value);
@@ -11361,9 +11414,9 @@ public:
             int nTimeLeft;
 
             if (trekClient.MyMission()->GetStage() == STAGE_STARTING)
-                nTimeLeft = max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
+                nTimeLeft = std::max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
             else
-                nTimeLeft = max(0, int(
+                nTimeLeft = std::max(0, int(
                     trekClient.MyMission()->GetMissionParams().GetCountDownTime()
                         - (Time::Now() - trekClient.MyMission()->GetMissionParams().timeStart) + 1));
 
