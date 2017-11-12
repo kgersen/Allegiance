@@ -69,7 +69,7 @@ namespace Training
 
 	void Mission8::CreateUniverse(void)
 	{
-		LoadUniverse("training_nan", 3, 1051); // Rix Scout in sector 1051
+		LoadUniverse("training_nan", 685, 1051); // Adv Rix Scout in sector 1051; 3 (old) vs 685 difference: scan range reduced from 50000 to 3000 
 
 		trekClient.fGroupFire = true;
 
@@ -129,13 +129,18 @@ namespace Training
 
 	Condition* Mission8::CreateMission(void)
 	{
+        m_commandViewEnabled = true;
         // create the goal and the goal list
         GoalList*                       pGoalList = new GoalList;
         Goal*                           pGoal = new Goal (pGoalList);
 
         pShip = static_cast<ImodelIGC*> (trekClient.GetShip ());
 		pMission = trekClient.GetCore();
-		pStation = pMission->GetModel (OT_station, 1051);
+		//pStation = pMission->GetModel (OT_station, 1051);
+        homeRedDoor = pMission->GetModel(OT_station, 1052)->GetPosition();
+        homeRedDoor.x += 50.0f;
+        homeRedDoor.y += -200.0f;
+        homeRedDoor.z += -20.0f;
 
 		pGoal->AddConstraintCondition(new ConditionalAction( new GetShipHasCargoCondition(trekClient.GetShip(), ET_Magazine), new SetCargoNanAction(static_cast<ObjectID>(trekClient.GetShip()->GetObjectID()))));
 
@@ -144,12 +149,6 @@ namespace Training
         pGoalList->AddGoal (CreateGoal01 ());
         pGoalList->AddGoal (CreateGoal02 ());
 		pGoalList->AddGoal (CreateGoal03 ());        
-        //pGoalList->AddGoal (CreateGoal04 ());
-        //pGoalList->AddGoal (CreateGoal05 ());
-        //pGoalList->AddGoal (CreateGoal06 ());
-        //pGoalList->AddGoal (CreateGoal07 ());
-        //pGoalList->AddGoal (CreateGoal08 ());
-        //pGoalList->AddGoal (CreateGoal09 ());
 
         // return the goal
         return pGoal;
@@ -174,7 +173,7 @@ namespace Training
             pGoalList->AddGoal (pGoal);
         }
 
-		pGoalList->AddGoal(new Goal(new ElapsedTimeCondition(3.0f)));
+		//pGoalList->AddGoal(new Goal(new ElapsedTimeCondition(3.0f)));
 
         {
             Goal*   pGoal = new Goal (new ElapsedTimeCondition (1.0f));
@@ -183,8 +182,19 @@ namespace Training
         }
 
 		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_01Sound));
-		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_02Sound));
-		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_03Sound));
+        {
+            Goal*	pGoal = CreatePlaySoundGoal(tm_8_02Sound);
+            pGoal->AddSkipGoalCondition(new GetShipHasMountedCondition(trekClient.GetShip(), 190));
+            pGoal->AddStartAction(new MessageAction("F4 toggles the inventory. You will want it to be open."));
+            pGoalList->AddGoal(pGoal);
+        }
+		//pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_03Sound));
+
+        {
+            Goal*	pGoal = CreatePlaySoundGoal(tm_8_03Sound);
+            pGoal->AddSkipGoalCondition(new GetShipHasMountedCondition(trekClient.GetShip(), 190));
+            pGoalList->AddGoal(pGoal);
+        }
 
 		{
 			Goal*	pGoal = new Goal (new GetShipHasMountedCondition(trekClient.GetShip(), 190 ) ); 
@@ -227,6 +237,9 @@ namespace Training
             SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
 			pSetControlConstraintsAction->ScaleInputControl (c_axisYaw, 1.0f);
             pSetControlConstraintsAction->ScaleInputControl (c_axisPitch, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl(c_axisRoll, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl(c_axisThrottle, 1.0f);
+            pSetControlConstraintsAction->EnableInputAction(0xffffffff);
 			pGoal->AddStartAction (pSetControlConstraintsAction);
 			pGoalList->AddGoal(pGoal);
 		}
@@ -239,11 +252,6 @@ namespace Training
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition (0.5f));;
 			pGoal->AddStartAction (new MessageAction("Repair the station.", voRepairStationSound)); 
-			SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
-            pSetControlConstraintsAction->ScaleInputControl (c_axisRoll, 1.0f);
-            pSetControlConstraintsAction->ScaleInputControl (c_axisThrottle, 1.0f);
-            pSetControlConstraintsAction->EnableInputAction (0xffffffff);
-            pGoal->AddStartAction (pSetControlConstraintsAction);
 			pGoalList->AddGoal(pGoal);
 		}
 
@@ -290,13 +298,8 @@ namespace Training
 			Goal*	pGoal = new Goal (new ElapsedTimeCondition(0.5f));
 
             // create friendly miner
-            Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-            
-            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Miner 01", minerID, 436, 0, c_ptMiner);
-            pCreateDroneAction->SetCreatedLocation (GetStartSectorID (), pos);
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Miner 01", minerID, 437, 0, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation (GetStartSectorID (), homeRedDoor);
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoalList->AddGoal (pGoal);			
@@ -308,6 +311,7 @@ namespace Training
 
 		pGoalList->AddGoal (new Goal(new ElapsedTimeCondition(16.0f)));
 
+        //Create enemy stealth fighters
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.5f));
 
@@ -332,16 +336,12 @@ namespace Training
 			pGoalList->AddGoal (pGoal);
 		}
 
+        //Create defenders
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.0f));
 
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("TheBored", defID, 615, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(1051, pos);
+            pCreateDroneAction->SetCreatedLocation(1051, homeRedDoor + Vector(20.0f, 0.0f, 10.0f));
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoal->AddStartAction(new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(atID), c_cidAttack));
@@ -353,13 +353,8 @@ namespace Training
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(0.5f));
 
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("AEM", defID2, 615, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(1051, pos);
+			pCreateDroneAction->SetCreatedLocation(1051, homeRedDoor+ Vector(-20.0f, 0.0f, 10.0f));
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoal->AddStartAction(new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(atID), c_cidAttack));
@@ -371,13 +366,8 @@ namespace Training
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.0f));
 
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("lawson", defID3, 615, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(1051, pos);
+			pCreateDroneAction->SetCreatedLocation(1051, homeRedDoor+Vector(0.0f, 0.0f, -10.0f));
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoal->AddStartAction(new SetCommandAction(defID3, c_cmdAccepted, OT_ship, static_cast<ObjectID>(atID), c_cidAttack));
@@ -456,6 +446,9 @@ namespace Training
 		ShipID		bomberShipID = pMission->GenerateNewShipID();
 		ShipID		nanShipID = pMission->GenerateNewShipID();
 		BuoyID		alephBuoyID1 = pMission->GenerateNewBuoyID();
+        ImodelIGC*	pEnemyStation = pMission->GetModel(OT_station, 1051);
+        pEnemyStation->SetSideVisibility(pShip->GetSide(), true);
+
 
 		/*  Code used when only testing Goal03
 		{
@@ -473,13 +466,8 @@ namespace Training
 		*/
 
 		{
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-			pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-			
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("Commander", bomberShipID, 604, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+			pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), homeRedDoor);
 
 			pGoal->AddStartAction(pCreateDroneAction);
 		}
@@ -510,13 +498,9 @@ namespace Training
 
 		{
 			Goal* pGoal = new Goal(new ElapsedTimeCondition (3.0f));
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-			pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
 			
-			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("bahdohday", nanShipID, 3, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("bahdohday", nanShipID, 685, 0, c_ptWingman);
+			pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), homeRedDoor);
 
 			pGoal->AddStartAction(pCreateDroneAction);
 			pGoal->AddStartAction(new SetDroneNanAction(nanShipID));
@@ -530,7 +514,7 @@ namespace Training
 
         MessageAction*                  pBomberDeadMessage =  new MessageAction("Our bomber has been destroyed.", voArghSound);
 		MessageAction*                  pStationDeadMessage =  new MessageAction("Enemy outpost destroyed.", 901);
-		SetStationDestroyedAction*		pStationDestroyedAction = new SetStationDestroyedAction(pStation);
+		SetStationDestroyedAction*		pStationDestroyedAction = new SetStationDestroyedAction(pEnemyStation);
         Condition*                      pStationDeadCondition = new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f));
 		Condition*                      pStationDeadCondition2 = new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f));
         Condition*                      pBomberDeadCondition = new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f));
@@ -582,13 +566,14 @@ namespace Training
 
 		{
 			Goal*	pGoal = new Goal (new GetSectorCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 1052));
+            pGoal->AddConstraintCondition(CreateTooLongCondition(40.0f, tm_2_11rSound));
 			pGoalList->AddGoal (pGoal);
 		}
 
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(2.0f));
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdCurrent, pStation, c_cidAttack)); 
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdAccepted, pStation, c_cidAttack));
+			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdCurrent, pEnemyStation, c_cidAttack));
+			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdAccepted, pEnemyStation, c_cidAttack));
 			pGoalList->AddGoal(pGoal);
 		}
 		
@@ -670,7 +655,7 @@ namespace Training
 				pGoal->AddStartAction(new  MessageAction("Stay on target.", voStayOnTargetSound));
 			pGoalList->AddGoal(pGoal);
 		
-			pGoal = new Goal(new ElapsedTimeCondition(4.0f));
+			pGoal = new Goal(new ElapsedTimeCondition(5.0f));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
