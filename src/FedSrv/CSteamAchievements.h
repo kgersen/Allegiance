@@ -57,8 +57,7 @@ private:
 	bool		m_gotRequestStatsResponse;
 	bool		m_gotSuccessfulRequestStatsResponse;
 	bool		m_gotStatsStoredResponse;
-	bool		m_gotSuccessfulStatsStoredResponse;
-    bool        m_nanAchievementEarned;
+	bool		m_gotSuccessfulStatsStoredResponse;    
 
 	CCallResult< CSteamAchievements, GSStatsReceived_t > m_UserStatsRequestedCallResult;
 	CCallResult< CSteamAchievements, GSStatsStored_t > m_UserStatsStoredCallResult;
@@ -108,7 +107,7 @@ private:
 
 	bool InitiateStatsRequestAndWaitForStatsFromSteamServer();
 	bool CheckRank(int currentScore);
-
+	bool AchievementSaved[g_nMaximumSteamAchievementCount];
 	
 
 public:

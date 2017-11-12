@@ -11701,8 +11701,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 									PilotType pt = pship->GetPilotType();
 
 									CSteamAchievements *pSteamAchievements = pfsshipCredit->GetPlayer()->GetSteamAchievements();
-									pSteamAchievements->AwardKillAchievement(pt);
-									pSteamAchievements->SaveStats();
+									pSteamAchievements->AwardKillAchievement(pt);									
 								}
 							}
 						}

@@ -9,11 +9,11 @@ CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
 	m_gotRequestStatsResponse(false),
 	m_gotSuccessfulRequestStatsResponse(false),
 	m_gotStatsStoredResponse(false),
-	m_gotSuccessfulStatsStoredResponse(false),
-    m_nanAchievementEarned(false)
+	m_gotSuccessfulStatsStoredResponse(false)    
 {
 	sprintf(m_szSteamID, "%" PRIu64, steamID.ConvertToUint64());
-
+	for (int i = 0; i < g_nMaximumSteamAchievementCount;i++)
+		AchievementSaved[i] = false;
 	// Do not call InitiateStatsRequest() from here, the constructor must complete first
 }
 
@@ -116,6 +116,13 @@ bool CSteamAchievements::SetAchievement(EAchievements achievement)
 	{
 		debugf("SteamGameServerStats()->SetUserAchievement (%s) - Could not set achievement for user.\n", m_szSteamID);
 		return false;
+	}
+
+	if (!AchievementSaved[achievement])
+	{ //This code will call SaveStats upon achievement award but only once per session per achievement to minimize frivolous steam calls
+		//We could also intialize this bool array based on getting all achievements at the beginining of session but can't do it with constructor so need a reliable place to do it
+		AchievementSaved[achievement] = true;
+		SaveStats();
 	}
 
 	return true;
@@ -293,11 +300,8 @@ void CSteamAchievements::AwardIGCAchievements(AchievementMask am)
 		SetAchievement(EAchievements::FIRST_PROBE_KILL_1_9);
 	if ((am & c_achmProbeSpot) > 0)
 		SetAchievement(EAchievements::PROBE_SPOT_1_10);
-    if ((am & c_achmNewRepair) > 0 && !m_nanAchievementEarned)
-    {
-        SetAchievement(EAchievements::NANITE_REPAIR_1_11);
-        m_nanAchievementEarned = true; //I was concerned about potentially calling set achievement too much
-    }
+    if ((am & c_achmNewRepair) > 0 && !AchievementSaved[NANITE_REPAIR_1_11]) //I was concerned about potentially calling set achievement too much
+        SetAchievement(EAchievements::NANITE_REPAIR_1_11);         
 	if ((am & c_achmGarrSpot) > 0)
 		SetAchievement(EAchievements::SPOT_GARRISON_1_14);
 
