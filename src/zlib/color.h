@@ -84,7 +84,7 @@ public:
 
     uint32_t MakeCOLORREF() const
     { 
-        return RGB(std::min<uint8_t>(m_r * 255, 255), std::min<uint8_t>(m_g * 255, 255.), std::min<uint8_t>(m_b * 255, 255));
+        return RGB(std::min<float>(m_r * 255, 255), std::min<float>(m_g * 255, 255), std::min<float>(m_b * 255, 255));
     }
 
     Color AdjustAlpha(float scale)
