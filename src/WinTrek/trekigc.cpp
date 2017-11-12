@@ -4102,7 +4102,7 @@ void WinTrekClient::HitWarpEvent(IshipIGC* ship, IwarpIGC* warp)
                                   (alephOrientation.GetUp() * random(2.0f, 5.0f)) +
                                   (alephOrientation.GetRight() * random(2.0f, 5.0f)) -
                                   (ship->GetRadius() + 5.0f) * backward);
-                PlaySoundEffect(jumpSound);
+                PlaySoundEffect(jumpSound, ship);
                 {
                     Time    t = ship->GetLastUpdate();
                     ship->SetBB(t, t, 0.0f);
