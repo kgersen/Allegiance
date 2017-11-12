@@ -2371,7 +2371,7 @@ public:
         BlendMode     blendMode
     ) {
         ZAssert(
-               blendMode == BlendModeSource
+               blendMode == BlendModeSourceAlpha
             || blendMode == BlendModeAdd
         );
 
@@ -2382,7 +2382,7 @@ public:
         if (position.Z() < 0) {
             Decal& decal =
                 AddDecal(
-                      (blendMode == BlendModeSource)
+                      (blendMode == BlendModeSourceAlpha)
                     ? m_vdecalSetOpaque
                     : m_vdecalSet,
                     psurface
@@ -2489,7 +2489,7 @@ public:
         // Opaque decals
         //
 
-        SetBlendMode(BlendModeSource, false); //Imago 7/16/09 7/31/09
+        SetBlendMode(BlendModeSourceAlpha, false);
         SetZWrite(true, false);
 
         DrawVDecalSet(m_vdecalSetOpaque);
