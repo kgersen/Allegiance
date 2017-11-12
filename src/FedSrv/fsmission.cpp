@@ -3935,7 +3935,7 @@ void CFSMission::QueueLobbyMissionInfo()
   pfmLobbyMissionInfo->nTeams                   = m_misdef.misparms.nTeams;
   pfmLobbyMissionInfo->nMinRank                 = m_misdef.misparms.iMinRank;
   pfmLobbyMissionInfo->nMaxRank                 = m_misdef.misparms.iMaxRank;
-  pfmLobbyMissionInfo->nMaxPlayersPerGame       = std::min(m_misdef.misparms.nTotalMaxPlayersPerGame,
+  pfmLobbyMissionInfo->nMaxPlayersPerGame       = std::min<int>(m_misdef.misparms.nTotalMaxPlayersPerGame,
                                                     m_misdef.misparms.nTeams
                                                         * m_misdef.misparms.nMaxPlayersPerTeam);
   pfmLobbyMissionInfo->nMinPlayersPerTeam       = m_misdef.misparms.nMinPlayersPerTeam;

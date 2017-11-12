@@ -322,14 +322,6 @@ extern "C" {
 
 #define BITS(type)		(BITSPERBYTE * (int) sizeof(type))
 
-#ifndef max
-#define max(a,b)  (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)  (((a) < (b)) ? (a) : (b))
-#endif
-
 //
 //	Set FD_SETSIZE to the maximum number of files (sockets) that you want to
 //	support. It is used in select.cpp.

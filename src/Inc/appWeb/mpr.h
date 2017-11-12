@@ -39,6 +39,7 @@
 
 #include "buildConfig.h"
 #include "mprOs.h"
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// C API ////////////////////////////////////
@@ -1225,12 +1226,12 @@ class MprBuf {
 							(buflen + (end - start)) : (end - start));
 					};
 	inline int		getLinearData() {
-						return min((endbuf - start), getLength());
+						return std::min((endbuf - start), getLength());
 					}
 	inline int		getLinearSpace() {
 						int len = getLength();
 						int space = buflen - len - 1;
-						return min((endbuf - end), space);
+						return std::min((endbuf - end), space);
 					}
 	inline MprBufProc getRefillProc() {
 						return refillProc;
