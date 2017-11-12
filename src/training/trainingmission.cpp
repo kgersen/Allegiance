@@ -300,8 +300,6 @@ namespace Training
           #endif
 
             // XXX hack to disable some keys in training
-            case TK_ViewCommand:
-            case TK_ConModeCommand:
             case TK_ConModeInvest:
             case TK_TargetSelf:
             case TK_Suicide:
@@ -311,8 +309,11 @@ namespace Training
             case TK_RejectCommand: // pkk - Some training missions can't be finished
                 if (GetMissionID() != 10) //Training::c_TM_10_Free_Flight
                     return false;
+            case TK_ViewCommand:
+            case TK_ConModeCommand:
+                if (!m_commandViewEnabled)
+                    return false;
                 //fallthrough otherwise
-
             default:
             {
                 // iterate over the key conditions with the unknown key
