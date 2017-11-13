@@ -1073,11 +1073,16 @@ public:
     {
         if (pship == m_ship)
         {
-            SetMessageType(BaseClient::c_mtGuaranteed);
-            BEGIN_PFM_CREATE(m_fm, pfmRequest, C, RIPCORD_REQUEST)
-            END_PFM_CREATE;
+            if (m_fm.IsConnected())
+            {
+                SetMessageType(BaseClient::c_mtGuaranteed);
+                BEGIN_PFM_CREATE(m_fm, pfmRequest, C, RIPCORD_REQUEST)
+                    END_PFM_CREATE;
 
-            pfmRequest->sidRipcord = pcluster ? pcluster->GetObjectID() : NA;
+                pfmRequest->sidRipcord = pcluster ? pcluster->GetObjectID() : NA;
+            }
+            else
+                RipcordLocal(pship, pcluster);
         }
     }
 
@@ -1089,6 +1094,7 @@ public:
             debugf("RipcordLocal destination cluster id: %d\n", pcluster->GetObjectID());
 
         ImodelIGC*      pmodelRipcordOld = pship->GetRipcordModel();
+        bool            player = true;
 
         if (pcluster == NULL)
         {
@@ -1099,51 +1105,59 @@ public:
                 pship->SetRipcordModel(NULL);
                 pship->SetStateBits(droneRipMaskIGC, 0);
 
-                //if (pship == m_ship->GetSourceShip())
-                PlayNotificationSound(salRipcordAbortedSound, pship);
+                if (player)
+                    PlayNotificationSound(salRipcordAbortedSound, pship);
 
                 // clear the ripcord effect
                 pship->GetThingSite()->SetTimeUntilRipcord(-1.0f);
             }
         }
-        else if ((pmodelRipcordOld == NULL) ||
-            (pmodelRipcordOld->GetCluster() != pcluster)) {
-            ImodelIGC*      pmodelRipcordDest = pship->FindRipcordModel(pcluster);
-            IclusterIGC*    pclusterRipcord = pmodelRipcordDest->GetCluster();
-
-            if (pclusterRipcord == NULL)
-            {
-                assert(pmodelRipcordDest->GetObjectType() == OT_ship);
-
-                PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)pmodelRipcordDest)->GetPrivateData());
-
-                assert(ppi->StatusIsCurrent());
-                pclusterRipcord = pship->GetMission()->GetCluster(ppi->LastSeenSector());
-                assert(pclusterRipcord);
-            }
-
-            const char*     name = pclusterRipcord->GetName();
-            char    bfr[100];
-            if (pclusterRipcord != pcluster)
-                sprintf(bfr, "Ripcording to %s, which is closest to %s",
-                    name, pcluster->GetName());
-            else
-                sprintf(bfr, "Ripcording to %s", name);
-            PostText(true, bfr);
-
-            if (pmodelRipcordDest != pship->GetRipcordModel())
-            {
-                pship->SetRipcordModel(pmodelRipcordDest);
-                pship->ResetRipcordTimeLeft();
-            }
-
-            // set up the ripcord effect
-            pship->GetThingSite()->SetTimeUntilRipcord(pship->GetRipcordTimeLeft());
-        }
-        else //if (pfsShip->IsPlayer())
+        else if (pmodelRipcordOld == NULL ||
+                pmodelRipcordOld->GetCluster() != pcluster)
         {
-            PlayNotificationSound(salNoRipcordSound, m_ship); //RIPCORD_DENIED
-            pship->SetRipcordModel(NULL);
+            ImodelIGC*      pmodelRipcordDest = pship->FindRipcordModel(pcluster);
+            if (pmodelRipcordDest != NULL)
+            {
+
+                IclusterIGC*    pclusterRipcord = pmodelRipcordDest->GetCluster();
+
+                if (pclusterRipcord == NULL)
+                {
+                    assert(pmodelRipcordDest->GetObjectType() == OT_ship);
+
+                    PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)pmodelRipcordDest)->GetPrivateData());
+
+                    assert(ppi->StatusIsCurrent());
+                    pclusterRipcord = pship->GetMission()->GetCluster(ppi->LastSeenSector());
+                    assert(pclusterRipcord);
+                }
+
+                if (player)
+                {
+                    const char*     name = pclusterRipcord->GetName();
+                    char    bfr[100];
+                    if (pclusterRipcord != pcluster)
+                        sprintf(bfr, "Ripcording to %s, which is closest to %s",
+                            name, pcluster->GetName());
+                    else
+                        sprintf(bfr, "Ripcording to %s", name);
+                    PostText(true, bfr);
+                }
+
+                if (pmodelRipcordDest != pship->GetRipcordModel())
+                {
+                    pship->SetRipcordModel(pmodelRipcordDest);
+                    pship->ResetRipcordTimeLeft();
+                }
+
+                // set up the ripcord effect
+                pship->GetThingSite()->SetTimeUntilRipcord(pship->GetRipcordTimeLeft());
+            }
+            else if (player)
+            {
+                PlayNotificationSound(salNoRipcordSound, m_ship); //RIPCORD_DENIED
+                pship->SetRipcordModel(NULL);
+            }
         }
     }
 

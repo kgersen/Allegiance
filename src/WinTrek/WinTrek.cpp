@@ -9772,10 +9772,7 @@ public:
                                     pcluster = trekClient.GetShip()->GetCluster();
                                 assert (pcluster);
                             }
-                            if (!Training::IsTraining())
-                                trekClient.RequestRipcord(trekClient.GetShip(), pcluster);
-                            else
-                                trekClient.RipcordLocal(trekClient.GetShip(), pcluster);
+                            trekClient.RequestRipcord(trekClient.GetShip(), pcluster);
                         }
                     }
             }
