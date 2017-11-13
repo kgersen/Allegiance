@@ -3858,10 +3858,13 @@ bool WinTrekClient::UseRipcord(IshipIGC* pship, ImodelIGC*  pmodel)
             pship->SetCurrentTurnRate(c_axisRoll, 0.0f);
 
             pship->SetLastUpdate(lastUpdate);
-            pship->SetBB(lastUpdate, lastUpdate, 0.0f);
+            pship->SetBB(lastUpdate, lastUpdate, 0.0f); 
 
             pship->SetCluster(pcluster);
         }
+
+        PlaySoundEffect(jumpSound, pship);
+        PostText(true, "");
 
         return true;
     }

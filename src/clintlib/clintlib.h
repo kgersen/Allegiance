@@ -1081,6 +1081,72 @@ public:
         }
     }
 
+    void RipcordLocal(IshipIGC*   pship, IclusterIGC*  pcluster)
+    {
+        if (pcluster == nullptr)
+            debugf("RipcordLocal destination cluster id: NULL\n");
+        else
+            debugf("RipcordLocal destination cluster id: %d\n", pcluster->GetObjectID());
+
+        ImodelIGC*      pmodelRipcordOld = pship->GetRipcordModel();
+
+        if (pcluster == NULL)
+        {
+            if (pmodelRipcordOld != NULL)
+            {
+                assert(pship->GetCluster());
+
+                pship->SetRipcordModel(NULL);
+                pship->SetStateBits(droneRipMaskIGC, 0);
+
+                //if (pship == m_ship->GetSourceShip())
+                PlayNotificationSound(salRipcordAbortedSound, pship);
+
+                // clear the ripcord effect
+                pship->GetThingSite()->SetTimeUntilRipcord(-1.0f);
+            }
+        }
+        else if ((pmodelRipcordOld == NULL) ||
+            (pmodelRipcordOld->GetCluster() != pcluster)) {
+            ImodelIGC*      pmodelRipcordDest = pship->FindRipcordModel(pcluster);
+            IclusterIGC*    pclusterRipcord = pmodelRipcordDest->GetCluster();
+
+            if (pclusterRipcord == NULL)
+            {
+                assert(pmodelRipcordDest->GetObjectType() == OT_ship);
+
+                PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)pmodelRipcordDest)->GetPrivateData());
+
+                assert(ppi->StatusIsCurrent());
+                pclusterRipcord = pship->GetMission()->GetCluster(ppi->LastSeenSector());
+                assert(pclusterRipcord);
+            }
+
+            const char*     name = pclusterRipcord->GetName();
+            char    bfr[100];
+            if (pclusterRipcord != pcluster)
+                sprintf(bfr, "Ripcording to %s, which is closest to %s",
+                    name, pcluster->GetName());
+            else
+                sprintf(bfr, "Ripcording to %s", name);
+            PostText(true, bfr);
+
+            if (pmodelRipcordDest != pship->GetRipcordModel())
+            {
+                pship->SetRipcordModel(pmodelRipcordDest);
+                pship->ResetRipcordTimeLeft();
+            }
+
+            // set up the ripcord effect
+            pship->GetThingSite()->SetTimeUntilRipcord(pship->GetRipcordTimeLeft());
+        }
+        else //if (pfsShip->IsPlayer())
+        {
+            PlayNotificationSound(salNoRipcordSound, m_ship); //RIPCORD_DENIED
+            pship->SetRipcordModel(NULL);
+        }
+    }
+
     IclusterIGC* GetViewCluster() const         { return m_viewCluster; }
     
     virtual void SetViewCluster(IclusterIGC* pcluster, const Vector*  pposition = NULL);
