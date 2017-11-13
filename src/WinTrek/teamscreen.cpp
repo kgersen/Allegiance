@@ -1634,8 +1634,7 @@ public:
         m_pcomboWing->SetHidden(m_sideCurrent != trekClient.GetSideID() 
             || m_sideCurrent == SIDE_TEAMLOBBY);
 
-		m_pbuttonDiscord->SetHidden(m_sideCurrent != trekClient.GetSideID()
-			|| m_sideCurrent == SIDE_TEAMLOBBY);
+		m_pbuttonDiscord->SetHidden(m_sideCurrent != trekClient.GetSideID());
 
         m_pbuttonJoin->SetEnabled(
                 (trekClient.GetSideID() == SIDE_TEAMLOBBY) // TE: Commented this from the brackets so you can always join NOAT: || !m_pMission->GetMissionParams().bLockSides
@@ -2896,8 +2895,8 @@ public:
 			GetWindow()->ShowWebPage("https://discord.gg/eUrSxek");
 			break;
 
-		default:
-			GetWindow()->ShowWebPage("https://discord.gg/WcEJ9VH");
+		default: // NOAT
+			GetWindow()->ShowWebPage("https://discord.gg/43jn6Ab");
 			break;
 		}
 
