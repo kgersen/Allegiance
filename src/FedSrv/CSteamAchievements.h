@@ -18,9 +18,14 @@ enum EAchievements
     NANITE_REPAIR_1_11 = 11,
 	GET_RESCUED_1_12 = 12,
 	PICKUP_POD_1_13 = 13,
-	SPOT_GARRISON_1_14 = 14
+	SPOT_GARRISON_1_14 = 14,
+	FORCE_100_EJECTS_1_15 = 15,
+	KILL_50_MINERS_1_16 = 16,
+	WIN_10_GAMES_1_17 = 17,
+	WIN_50_GAMES_1_18 = 18,
+	WIN_100_GAMES_1_19 = 19
 
-
+	
 	// Don't forget to update g_nMaximumSteamAchievementCount and m_Achievements!
 };
 
@@ -40,7 +45,7 @@ enum EStats
 
 	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
-const int g_nMaximumSteamAchievementCount = 15; // Always keep this in sync with the number of achievments in EAchievements!
+const int g_nMaximumSteamAchievementCount = 20; // Always keep this in sync with the number of achievments in EAchievements!
 const int g_nMaximumSteamStatCount = 10; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
@@ -81,10 +86,15 @@ private:
         "NANITE_REPAIR_1_11",
 		"GET_RESCUED_1_12",
 		"PICKUP_POD_1_13",
-		"SPOT_GARRISON_1_14"
+		"SPOT_GARRISON_1_14",
+		"FORCE_100_EJECTS_1_15",
+		"KILL_50_MINERS_1_16",
+		"WIN_10_GAMES_1_17",
+		"WIN_50_GAMES_1_18",
+		"WIN_100_GAMES_1_19",
 	};
 
-	// Keep in sync with EStats!
+	// Keep in sync with EStats! 
 	const char * m_Stats[g_nMaximumSteamStatCount] =
 	{
 		// Never remove an item from this list! (see note above).
