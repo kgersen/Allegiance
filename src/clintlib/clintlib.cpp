@@ -2870,7 +2870,6 @@ ItreasureIGC*  BaseClient::CreateTreasureLocal(Time now, IshipIGC* pship, short 
     //stick around since it is in a cluster.
     assert(t);
     t->Release();
-
     return t;
 }
 
