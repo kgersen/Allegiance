@@ -698,7 +698,7 @@ public:
 				pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 				pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-				pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+				pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 				pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 				break;
 			default:
@@ -968,23 +968,23 @@ public:
 		{
 		case BlendModeSource:
 			pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
 			pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 			pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
 			break;
 		case BlendModeAdd:
 			pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
 			pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
 			pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 			break;
 		case BlendModeSourceAlpha:
 			pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
 			pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-			pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+			pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 			break;
 		default:
