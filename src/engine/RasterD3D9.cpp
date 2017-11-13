@@ -300,6 +300,14 @@ public:
 				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 				break;
 
+            case BlendModeSourceAlphaPreMultiplied:
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
+                break;
+
             default:
 
                 ZError("Invalid BlendMode");

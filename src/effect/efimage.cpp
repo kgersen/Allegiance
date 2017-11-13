@@ -246,7 +246,7 @@ public:
     void Render(Context* pcontext)
     {
         WrapImage::Render(pcontext);
-        pcontext->SetBlendMode(BlendModeSourceAlpha);
+        pcontext->SetBlendMode(BlendModeSourceAlphaPreMultiplied);
         pcontext->FillRect(GetBounds().GetRect(), GetColor()->GetValue());
     }
 };

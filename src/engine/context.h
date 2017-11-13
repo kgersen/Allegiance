@@ -662,7 +662,8 @@ enum ShadeMode {
 enum BlendMode {
     BlendModeSource,
     BlendModeAdd,
-	BlendModeSourceAlpha
+	BlendModeSourceAlpha,
+    BlendModeSourceAlphaPreMultiplied
 };
 
 enum WrapMode {
