@@ -30,10 +30,7 @@ namespace Training
     //------------------------------------------------------------------------------
     bool        ConditionList::Start (void)
     {
-        // This condition list is true if not empty and all conditions are true
-        if (m_conditionList.size() < 1)
-            return false;
-
+        // This condition list is to be considered "true" by default.
         bool    result = true;
 
         // Loop over the condition list. If any condition evaluates to false, then
