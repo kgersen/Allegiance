@@ -3864,8 +3864,7 @@ bool WinTrekClient::UseRipcord(IshipIGC* pship, ImodelIGC*  pmodel)
         }
         
         if (pship == trekClient.GetShip()) {
-            ImodelIGC* pmodel = dynamic_cast<ImodelIGC*>(pship);
-            trekClient.PlaySoundEffect(jumpSound, pmodel); //Not using trekClient. messes up system sound over time. Persistent after quiting Allegiance.
+            trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(pship)); //Not using trekClient. messes up system sound over time. Persistent after quiting Allegiance.
             trekClient.PostText(true, "");
         }
 
@@ -4109,7 +4108,7 @@ void WinTrekClient::HitWarpEvent(IshipIGC* ship, IwarpIGC* warp)
                                   (alephOrientation.GetRight() * random(2.0f, 5.0f)) -
                                   (ship->GetRadius() + 5.0f) * backward);
                 if (ship == trekClient.GetShip())
-                    trekClient.PlaySoundEffect(jumpSound, dynamic_cast<ImodelIGC*>(ship));
+                    trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(ship));
 
                 {
                     Time    t = ship->GetLastUpdate();
