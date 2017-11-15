@@ -40,9 +40,9 @@ namespace Training
                     Goal*                   CreateGoal01 (void);
                     Goal*                   CreateGoal02 (void);
                     Goal*                   CreateGoal03 (void);
-					ImodelIGC*              pShip;
+					IshipIGC*               pShip;
 					ImissionIGC*			pMission;
-					//ImodelIGC*				pStation;
+					IstationIGC*			pStation;
                     Vector                  homeRedDoor;
 
     };
