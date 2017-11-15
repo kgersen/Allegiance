@@ -20,7 +20,8 @@ namespace Training
     // class methods
     //------------------------------------------------------------------------------
     /* void */  Goal::Goal (Condition* pSuccessCondition) :
-    m_pSuccessCondition (pSuccessCondition)
+    m_pSuccessCondition (pSuccessCondition),
+    m_pSkipGoalCondition(NULL)
     {
     }
 
@@ -28,6 +29,7 @@ namespace Training
     /* void */  Goal::~Goal (void)
     {
         delete m_pSuccessCondition;
+        delete m_pSkipGoalCondition;
     }
 
     //------------------------------------------------------------------------------
@@ -38,7 +40,7 @@ namespace Training
         if (m_pSuccessCondition->Start () == c_GoalIncomplete)
         {
             // execute and evaluate the list conditions. If all are true, skip the goal.
-            if (m_skipGoalConditionList.Start()) {
+            if (m_pSkipGoalCondition && m_pSkipGoalCondition->Start()) {
                 debugf("Skipping goal.\n");
                 return c_GoalComplete;
             }
@@ -63,7 +65,8 @@ namespace Training
     {
         m_pSuccessCondition->Stop ();
 
-        m_skipGoalConditionList.Stop();
+        if (m_pSkipGoalCondition)
+            m_pSkipGoalCondition->Stop();
 
         // stop the start actions
         m_startActionList.Stop ();
@@ -99,7 +102,7 @@ namespace Training
     }
 
     //------------------------------------------------------------------------------
-    void        Goal::AddSkipGoalCondition(Condition* pConstraintCondition) {
-        m_skipGoalConditionList.AddCondition(pConstraintCondition);
+    void        Goal::SetSkipGoalCondition(Condition* pSkipCondition) {
+        m_pSkipGoalCondition = pSkipCondition;
     }
 }
