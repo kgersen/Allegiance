@@ -39,6 +39,13 @@ public:
     static TRef<RectValue> Create(PointValue* pPoint);
 };
 
+class BooleanTransform {
+public:
+    static TRef<Boolean> And(Boolean* a, Boolean* b);
+    static TRef<Boolean> Or(Boolean* a, Boolean* b);
+    static TRef<Boolean> Not(Boolean* a);
+};
+
 template<class TransformedType, class OriginalType>
 class TransformedValue : public TStaticValue<TransformedType> {
 

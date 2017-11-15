@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\ui\introscreen2.h" />
     <ClInclude Include="..\src\ui\items.hpp" />
     <ClInclude Include="..\src\ui\ns_color.hpp" />
     <ClInclude Include="..\src\ui\ns_event.hpp" />
@@ -25,7 +24,6 @@
     <ClInclude Include="..\src\ui\UiEngine.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\ui\introscreen2.cpp" />
     <ClCompile Include="..\src\ui\UiEngine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

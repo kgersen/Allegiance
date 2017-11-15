@@ -79,3 +79,22 @@ public:
         m_pLua->set("Rect", table);
     }
 };
+
+class BooleanNamespace {
+public:
+    static void AddNamespace(sol::state* m_pLua) {
+        sol::table table = m_pLua->create_table();
+
+        table["And"] = [](sol::object a, sol::object b) {
+            return (TRef<Boolean>)BooleanTransform::And(wrapValue<bool>(a), wrapValue<bool>(b));
+        };
+        table["Or"] = [](sol::object a, sol::object b) {
+            return (TRef<Boolean>)BooleanTransform::Or(wrapValue<bool>(a), wrapValue<bool>(b));
+        };
+        table["Not"] = [](sol::object a) {
+            return (TRef<Boolean>)BooleanTransform::Not(wrapValue<bool>(a));
+        };
+
+        m_pLua->set("Boolean", table);
+    }
+};

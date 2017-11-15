@@ -104,6 +104,7 @@ public:
         NumberNamespace::AddNamespace(pLua);
         RectNamespace::AddNamespace(pLua);
         PointNamespace::AddNamespace(pLua);
+        BooleanNamespace::AddNamespace(pLua);
 
         ColorNamespace::AddNamespace(pLua);
 

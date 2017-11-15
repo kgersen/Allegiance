@@ -315,3 +315,71 @@ TRef<RectValue> RectTransform::Create(PointValue* pPoint) {
         pPoint
     );
 };
+
+// ### Boolean
+
+class AndBoolean : public Boolean {
+public:
+    AndBoolean(Boolean* pvalue0, Boolean* pvalue1) :
+        Boolean(pvalue0, pvalue1)
+    {
+    }
+
+    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
+    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
+
+    void Evaluate()
+    {
+        GetValueInternal() =
+            Get0()->GetValue()
+            && Get1()->GetValue();
+    }
+};
+
+class OrBoolean : public Boolean {
+public:
+    OrBoolean(Boolean* pvalue0, Boolean* pvalue1) :
+        Boolean(pvalue0, pvalue1)
+    {
+    }
+
+    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
+    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
+
+    void Evaluate()
+    {
+        GetValueInternal() =
+            Get0()->GetValue()
+            || Get1()->GetValue();
+    }
+};
+
+class NotBoolean : public Boolean {
+public:
+    NotBoolean(Boolean* pvalue0) :
+        Boolean(pvalue0)
+    {
+    }
+
+    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
+
+    void Evaluate()
+    {
+        GetValueInternal() = !(Get0()->GetValue());
+    }
+};
+
+TRef<Boolean> BooleanTransform::And(Boolean* pvalue1, Boolean* pvalue2)
+{
+    return new AndBoolean(pvalue1, pvalue2);
+}
+
+TRef<Boolean> BooleanTransform::Or(Boolean* pvalue1, Boolean* pvalue2)
+{
+    return new OrBoolean(pvalue1, pvalue2);
+}
+
+TRef<Boolean> BooleanTransform::Not(Boolean* pvalue1)
+{
+    return new NotBoolean(pvalue1);
+}

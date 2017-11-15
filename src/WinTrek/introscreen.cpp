@@ -608,7 +608,7 @@ public:
                 IntroScreen::OnButtonExit();
             };
 
-            m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("introscreen/introscreen.lua", listeners));
+            m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners));
         }
 
         trekClient.DisconnectClub();

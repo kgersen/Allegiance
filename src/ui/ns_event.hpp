@@ -38,6 +38,77 @@ public:
     }
 };
 
+template<typename TypeResult>
+class EventToMappedValue : public TWrapValue<TypeResult>, IEventSink {
+    typedef TRef<TStaticValue<TypeResult>> TypeWrappedResult;
+
+    std::map<TRef<IEventSource>, TypeWrappedResult> m_mapOptions;
+
+public:
+    EventToMappedValue(TypeWrappedResult tDefault, std::map<TRef<IEventSource>, TypeWrappedResult> mapOptions) :
+        m_mapOptions(mapOptions),
+        TWrapValue(tDefault)
+    {
+        for (auto kv = m_mapOptions.begin(); kv != m_mapOptions.end(); ++kv)
+        {
+            kv->first->AddSink(this);
+        }
+    }
+
+    ~EventToMappedValue() {
+        for (auto kv = m_mapOptions.begin(); kv != m_mapOptions.end(); ++kv)
+        {
+            kv->first->RemoveSink(this);
+        }
+    }
+
+    bool OnEvent(IEventSource* source) {
+        auto find = m_mapOptions.find(source);
+        if (find == m_mapOptions.end()) {
+            ZAssert(false);
+        }
+        else {
+            SetWrappedValue(find->second);
+        }
+        return true;
+    }
+};
+
+class EventToMappedImage : public WrapImage, IEventSink {
+    typedef TRef<Image> TypeWrappedResult;
+
+    std::map<TRef<IEventSource>, TypeWrappedResult> m_mapOptions;
+
+public:
+    EventToMappedImage(Image* pImage, std::map<TRef<IEventSource>, TypeWrappedResult> mapOptions) :
+        m_mapOptions(mapOptions),
+        WrapImage(pImage)
+    {
+        for (auto kv = m_mapOptions.begin(); kv != m_mapOptions.end(); ++kv)
+        {
+            kv->first->AddSink(this);
+        }
+    }
+
+    ~EventToMappedImage() {
+        for (auto kv = m_mapOptions.begin(); kv != m_mapOptions.end(); ++kv)
+        {
+            kv->first->RemoveSink(this);
+        }
+    }
+
+    bool OnEvent(IEventSource* source) {
+        auto find = m_mapOptions.find(source);
+        if (find == m_mapOptions.end()) {
+            ZAssert(false);
+        }
+        else {
+            SetImage(find->second);
+        }
+        return true;
+    }
+};
+
 class EventNamespace {
 public:
     static void AddNamespace(sol::state* m_pLua) {
@@ -52,8 +123,48 @@ public:
             return pMouseEventImage->GetEventSource(string);
         };
 
-        table["ToBoolean"] = [](IEventSource* pEnableSource, IEventSource* pDisableSource) {
-            return (Boolean*)new EventToBoolean(pEnableSource, pDisableSource);
+        table["ToBoolean"] = [](sol::object valueDefault, sol::table table) {
+            std::map<TRef<IEventSource>, TRef<Boolean>> mapOptions;
+
+            table.for_each([&mapOptions](sol::object key, sol::object value) {
+                TRef<IEventSource> mapKey = key.as<IEventSource*>();
+                mapOptions[mapKey] = wrapValue<bool>(value);
+            });
+            
+            return (TRef<Boolean>)new EventToMappedValue<bool>(wrapValue<bool>(valueDefault), mapOptions);
+        };
+
+        table["ToNumber"] = [](sol::object valueDefault, sol::table table) {
+            std::map<TRef<IEventSource>, TRef<Number>> mapOptions;
+
+            table.for_each([&mapOptions](sol::object key, sol::object value) {
+                TRef<IEventSource> mapKey = key.as<IEventSource*>();
+                mapOptions[mapKey] = wrapValue<float>(value);
+            });
+
+            return (TRef<Number>)new EventToMappedValue<float>(wrapValue<float>(valueDefault), mapOptions);
+        };
+
+        table["ToString"] = [](sol::object valueDefault, sol::table table) {
+            std::map<TRef<IEventSource>, TRef<StringValue>> mapOptions;
+
+            table.for_each([&mapOptions](sol::object key, sol::object value) {
+                TRef<IEventSource> mapKey = key.as<IEventSource*>();
+                mapOptions[mapKey] = wrapValue<ZString>(value);
+            });
+
+            return (TRef<StringValue>)new EventToMappedValue<ZString>(wrapValue<ZString>(valueDefault), mapOptions);
+        };
+
+        table["ToImage"] = [](Image* valueDefault, sol::table table) {
+            std::map<TRef<IEventSource>, TRef<Image>> mapOptions;
+
+            table.for_each([&mapOptions](sol::object key, sol::object value) {
+                TRef<IEventSource> mapKey = key.as<IEventSource*>();
+                mapOptions[mapKey] = value.as<Image*>();
+            });
+
+            return (TRef<Image>)new EventToMappedImage(valueDefault, mapOptions);
         };
 
         m_pLua->set("Event", table);

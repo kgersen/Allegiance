@@ -123,3 +123,10 @@ TRef<TStaticValue<A>> wrapValue(sol::object a) {
     TRef<TStaticValue<A>> refcounted = converted_a;
     return refcounted;
 };
+
+TRef<StringValue> wrapString(sol::object a) {
+    if (a.is<std::string>()) {
+        return (TRef<StringValue>)new StringValue(ZString(a.as<std::string>().c_str()));
+    }
+    return wrapValue<ZString>(a);
+};

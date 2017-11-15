@@ -90,6 +90,13 @@ TRef<Image> ImageTransform::Scale(Image* pImage, PointValue* pPoint) {
     );
 };
 
+TRef<Image> ImageTransform::Rotate(Image* pImage, Number* pNumberRadians) {
+    return new TransformImage(
+        pImage,
+        new RotateTransform2(pNumberRadians)
+    );
+}
+
 TRef<PointValue> ImageTransform::Size(Image* pImage) {
     return new ImageSize(pImage);
 };
@@ -231,4 +238,11 @@ TRef<Image> ImageTransform::Clip(Image* pImage, RectValue* pRect) {
 
 TRef<Image> ImageTransform::Cut(Image* pImage, RectValue* pRect) {
     return new CutImage(pImage, pRect);
+};
+
+TRef<Image> ImageTransform::Multiply(Image* pImage, ColorValue* pColor) {
+    //ugly cast here
+    ConstantImage* pConstantImage = (ConstantImage*)(pImage);
+
+    return CreateConstantImage3D(pImage->GetSurface(), pColor);
 };
