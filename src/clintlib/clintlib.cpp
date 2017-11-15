@@ -2312,7 +2312,7 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
 
         // do the right thing for training missions
         PilotType   pilotType = pship->GetPilotType();
-        if ((!m_fm.IsConnected ()) && (pilotType < c_ptPlayer) && (cid != c_cidNone))
+        if ((!m_fm.IsConnected ()) && (pilotType < c_ptPlayer) && (cid != c_cidNone) && (pship->GetSide()->GetObjectID() == m_pPlayerInfo->SideID()))
         {
             if ((cid == c_cidDefault) && (pmodelTarget != NULL))
             {
@@ -2342,7 +2342,9 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
 
                         case c_ptWingman:
                         {
-                            if (pmodelTarget->GetSide() == pship->GetSide ())
+                            if (pmodelTarget->GetObjectType() == OT_buoy)
+                                cid = c_cidGoto;
+                            else if (pmodelTarget->GetSide() == pship->GetSide())
                                 cid = c_cidDefend;
                             else
                                 cid = c_cidAttack;
