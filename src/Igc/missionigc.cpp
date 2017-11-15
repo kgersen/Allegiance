@@ -55,7 +55,10 @@
 #include    "bucketigc.h"
 #include    "mapmakerigc.h"
 #include	"zlib.h"
-#include	"AllegianceSecurity.h"
+
+#ifdef STEAMSECURE
+# include "AllegianceSecurity.h"
+#endif
 
 
 static void DoDecrypt(int size, char* pdata)

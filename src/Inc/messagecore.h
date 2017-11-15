@@ -14,6 +14,7 @@
 #include <map>
 #include <tlist.h>
 #include <ztime.h>
+#include <windowsx.h>
 
 #define OBLIVION_CLIENT_REG_KEY "Allegiance"
 
@@ -85,8 +86,8 @@ public:
   virtual int GetCountConnections() = 0;
 
   // BT - STEAM
-  void SetSteamID(uint64 steamID) { m_steamID = steamID; }
-  uint64 GetSteamID() { return m_steamID; }
+  void SetSteamID(uint64_t steamID) { m_steamID = steamID; }
+  uint64_t GetSteamID() { return m_steamID; }
 
 protected:
   CFMRecipient(const char * szName, DPID dpid) :
@@ -103,7 +104,7 @@ protected:
 
 private:
   char * m_szName;
-  uint64 m_steamID; // BT - STEAM
+  uint64_t m_steamID; // BT - STEAM
 
 protected: // groups set their own dpid since they're not pre-created.
   void      SetDPID(DPID dpid) {m_dpid = dpid;}

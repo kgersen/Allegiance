@@ -32,7 +32,8 @@ class ZFilePrivate
 public:
 	~ZFilePrivate()
 	{
-		CloseHandle(m_fileHandle);
+        if (m_fileHandle != INVALID_HANDLE_VALUE)
+            CloseHandle(m_fileHandle);
 	}
 public:
 	HANDLE m_fileHandle = INVALID_HANDLE_VALUE;

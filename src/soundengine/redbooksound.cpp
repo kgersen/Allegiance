@@ -3,13 +3,13 @@
 //
 // SoundEngine support for redbook audio.
 //
+#include "redbooksound.h"
 
 #include <algorithm>
 #include <list>
 #include <mutex>
 
 #include "soundbase.h"
-#include "redbooksound.h"
 #include "ds3dutil.h"
 
 using std::list;

@@ -986,7 +986,7 @@ const float c_fMissionBriefingCountdown = 15.0f; // seconds
 const int c_cUnlimitedLives = 0x7fff;
 
 //Forward definitions of interfaces
-struct MissionParams;
+class MissionParams;
 class ThingSite;
 class ClusterSite;
 
@@ -1079,8 +1079,9 @@ class ImapMakerIGC
 };
 
 
-struct MissionParams
+class MissionParams
 {
+public:
     //------------------------------------------------------------------------------
     // If you add or remove properties, please update
     // AGCGameParameters.cpp, AGCGameParameters.h, and AGCIDL.h.
