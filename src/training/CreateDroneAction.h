@@ -25,7 +25,7 @@ namespace Training
     class CreateDroneAction : public Action
     {
         public:
-                    /* void */          CreateDroneAction (const ZString& name, ShipID shipID, HullID hullID, SideID sideID, PilotType pilotType);
+                    /* void */          CreateDroneAction (const ZString& name, ShipID shipID, HullID hullID, SideID sideID, PilotType pilotType, int techLeve = 1);
             virtual /* void */          ~CreateDroneAction (void);
             virtual void                Execute (void);
                     void                SetCreatedLocation (SectorID sectorID, const Vector& position);
@@ -44,6 +44,7 @@ namespace Training
                     Orientation         m_orientation;
                     StationTypeID       m_stationTypeID;
                     ExpendableTypeID    m_expendableTypeID;
+                    int                 m_techLevel;
     };
 
     //------------------------------------------------------------------------------
