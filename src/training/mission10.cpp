@@ -54,8 +54,10 @@ namespace Training
     void        Mission10::CreateUniverse(void)
     {
         LoadUniverse("training_6", 488, 1030);    // 488 = Adv. IC fighter
-                                                  //output map info
+        
         ImissionIGC*    pCore = trekClient.GetCore();
+
+        //output map info
         const ClusterListIGC *clusters = pCore->GetClusters();
         for (ClusterLinkIGC* cLink = clusters->first(); cLink != NULL; cLink = cLink->next())
         {
@@ -70,10 +72,9 @@ namespace Training
         }
 
 
-        trekClient.fGroupFire = true;             // activate all the starting weapons
+        trekClient.fGroupFire = true;           // activate all the starting weapons
 
-                                                  // put the commander ship in the station
-                                                  //ImissionIGC*    pCore = trekClient.GetCore();
+        // put the commander ship in the station
         ImodelIGC*      pStation = pCore->GetModel(OT_station, 1030);
         IshipIGC*       pCommander = pCore->GetShip(m_commanderID);
         pCommander->SetStation(static_cast<IstationIGC*> (pStation));
@@ -81,7 +82,7 @@ namespace Training
         pCommander->SetCommand(c_cmdCurrent, NULL, c_cidDoNothing);
         pCommander->SetAutopilot(false);
 
-        // Adjust loadout
+        /*// Adjust loadout
         IshipIGC*       pShipU = trekClient.GetShip();
         // destroy mounted dumbfires
         IpartIGC*       pPart = pShipU->GetMountedPart(ET_Magazine, 0);
@@ -98,6 +99,7 @@ namespace Training
                 AddPartToShip(154, i, 5);
             }
         }
+        trekClient.SaveLoadout(pShipU);
         //Add tech, so Seeker2s don't show as new treassure
         IshipIGC*       pShip = trekClient.GetShip();
         debugf("Pre DevelopmentTechs: %d\n", pShip->GetSide()->GetDevelopmentTechs());
@@ -105,7 +107,7 @@ namespace Training
         ttbm.ClearAll();
         ttbm |= trekClient.GetCore()->GetPartType(154)->GetEffectTechs(); //Seeker 2 tech
         pShip->GetSide()->ApplyDevelopmentTechs(ttbm);
-        debugf("Post DevelopmentTechs: %d\n", pShip->GetSide()->GetDevelopmentTechs()); //same as before, but works
+        debugf("Post DevelopmentTechs: %d\n", pShip->GetSide()->GetDevelopmentTechs()); //same as before, but works*/
     }
 
     //------------------------------------------------------------------------------
@@ -281,58 +283,6 @@ namespace Training
 
         return new Goal(pGoalList);
 
-
-        /*// build the goal that we'll return
-        {
-        Goal*   pGoal = new Goal(pGoalList);
-
-        // create friendly miners
-        Vector              pos = pStation->GetPosition();
-        pos.x += random(-1000.0f, 1000.0f);
-        pos.y += random(-1000.0f, 1000.0f);
-        pos.z += random(-1000.0f, 1000.0f);
-
-        ShipID              minerShipID = pMission->GenerateNewShipID();
-        CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 01", minerShipID, 438, 0, c_ptMiner);
-        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-        Condition*          pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-        //pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
-
-        pos = pStation->GetPosition();
-        pos.x += random(-1000.0f, 1000.0f);
-        pos.y += random(-1000.0f, 1000.0f);
-        pos.z += random(-1000.0f, 1000.0f);
-
-        minerShipID = pMission->GenerateNewShipID();
-        pCreateDroneAction = new CreateDroneAction("Miner 02", minerShipID, 438, 0, c_ptMiner);
-        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-        pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-        //pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
-
-        pos = pStation->GetPosition();
-        pos.x += random(-1000.0f, 1000.0f);
-        pos.y += random(-1000.0f, 1000.0f);
-        pos.z += random(-1000.0f, 1000.0f);
-
-        minerShipID = pMission->GenerateNewShipID();
-        pCreateDroneAction = new CreateDroneAction("Miner 03", minerShipID, 438, 0, c_ptMiner);
-        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-        pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-        pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
-
-        pos = pStation->GetPosition();
-        pos.x += random(-1000.0f, 1000.0f);
-        pos.y += random(-1000.0f, 1000.0f);
-        pos.z += random(-1000.0f, 1000.0f);
-
-        minerShipID = pMission->GenerateNewShipID();
-        pCreateDroneAction = new CreateDroneAction("Miner 04", minerShipID, 438, 0, c_ptMiner);
-        pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-        pShipIsDestroyedcondition = new GetShipIsDestroyedCondition2(OT_ship, static_cast<ObjectID> (minerShipID));
-        //pGoal->AddConstraintCondition(new ConditionalAction(pShipIsDestroyedcondition, pCreateDroneAction));
-
-        return pGoal;
-        }*/
     }
 
     //------------------------------------------------------------------------------
