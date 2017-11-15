@@ -305,12 +305,12 @@ namespace Training
             case TK_Suicide:
             case TK_ConModeGameState:
             case TK_ConModeTeleport:
-            case TK_ToggleAutoPilot:
             case TK_RejectCommand: // pkk - Some training missions can't be finished
                 if (GetMissionID() != 10) //Training::c_TM_10_Free_Flight
                     return false;
             case TK_ViewCommand:
             case TK_ConModeCommand:
+            case TK_ToggleAutoPilot:
                 if (!m_commandViewEnabled)
                     return false;
                 //fallthrough otherwise
@@ -503,7 +503,7 @@ namespace Training
     {
         ImissionIGC*        pCore = trekClient.ResetStaticData ();
         Time                now = pCore->GetLastUpdate();
-        char*               szTrainingCoreFilename = IGC_TRAINING_CORE_FILENAME;
+        char*               szTrainingCoreFilename = IGC_TRAINING_CORE_FILENAME; //use IGC_STATIC_CORE_FILENAME for missions 1-5
         int                 iStaticCoreVersion = LoadIGCStaticCore (szTrainingCoreFilename, pCore, false);
 
 
