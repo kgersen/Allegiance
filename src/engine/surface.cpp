@@ -1476,18 +1476,6 @@ public:
 							psurfaceSourceOriginal->GetTexHandle(), 
 							rect, 
 							true );
-			if( psurfaceSourceOriginal->HasColorKey() == true )
-			{
-				pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-				pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-				pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-			}
-			else
-			{
-				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-			}
 			// Render this pane.
 			pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
 			hr = CVRAMManager::Get()->SetTexture( psurfaceSourceOriginal->GetTexHandle(), 0 );
@@ -1709,6 +1697,8 @@ public:
     {
         PrivateSurfaceImpl* psurfaceSource = (PrivateSurfaceImpl*)psurfaceSourceArg;
 
+        ZAssert(false);
+
         //
         // Calculate the target rectangle
         //
@@ -1781,20 +1771,6 @@ public:
 			pVerts[5].fV = fVMax;
 
 			CD3DDevice9 * pDev = CD3DDevice9::Get();
-
-			// If the texture has alpha, enable blending.
-			if( psurfaceSource->HasColorKey() == true )
-			{
-				pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-				pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-				pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-			}
-			else
-			{
-				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-			}
 
 			// Render this pane.
 			pDev->SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
@@ -1889,7 +1865,6 @@ public:
 					pVertGen->GenerateFillVerticesD3DColor((WinRect&)rect, true, (DWORD)pixel.Value());
 
 					pVRAMMan->SetTexture(INVALID_TEX_HANDLE, 0);
-					pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 					pDev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 					pDev->SetFVF(D3DFVF_UICOLOURVERT);
 					pDev->DrawPrimitive(

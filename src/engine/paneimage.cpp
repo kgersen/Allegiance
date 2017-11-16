@@ -104,10 +104,13 @@ public:
 
         pcontext->TransformLocalToImage(Vector(0, 0, 0), m_pointOrigin);
 
+        // panes don't make use of the context, apply changes now
+        pcontext->UpdateState();
+
         Surface* surface = m_ptopPane->GetSurface();
         //if the surface is not initialized, the pane was likely empty.
         if (surface) {
-            pcontext->DrawImage3D(m_ptopPane->GetSurface(), Color(1, 1, 1));
+            pcontext->DrawImage3D(surface, Color(1, 1, 1));
         }
 
         ZExit("PaneImage::Render()");
