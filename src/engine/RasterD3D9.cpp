@@ -17,6 +17,8 @@ private:
     DWORD					m_dwDrawPrimitiveFlags;
     Rect					m_rectClip;
 	bool					m_bValid;
+    ShadeMode               m_shadeMode;
+    BlendMode               m_blendMode;
 
     #ifdef _DEBUG
         bool m_bSurfaceLost;
@@ -246,7 +248,8 @@ public:
 
     void SetShadeMode(ShadeMode shadeMode)
     {
-        switch (shadeMode) 
+        m_shadeMode = shadeMode;
+        switch (m_shadeMode)
 		{
             case ShadeModeNone:
             case ShadeModeCopy:
@@ -263,8 +266,6 @@ public:
 				// That value is set in Device3D::UpdateLighting() and is the same as
 				// the current material diffuse color.
 				// TODO: check that D3DTSS_ALPHAOP is reset to default value if not ShadeModeGlobalColor ?
-				D3DCall(CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_BLENDFACTORALPHA));
-					
             case ShadeModeGouraud:
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
                 break;
@@ -272,11 +273,16 @@ public:
             default:
                 ZError("Invalid ShadeMode");
         }
+
+        if (m_blendMode >= 0) { //only if initialized
+            SetBlendMode(m_blendMode);
+        }
     }
 
     void SetBlendMode(BlendMode blendMode)
     {
-        switch (blendMode) {
+        m_blendMode = blendMode;
+        switch (m_blendMode) {
  
             case BlendModeSource:
 				CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
@@ -295,7 +301,7 @@ public:
 			case BlendModeSourceAlpha:
 				CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 				CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
 				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
 				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
@@ -312,6 +318,12 @@ public:
             default:
 
                 ZError("Invalid BlendMode");
+        }
+
+        if (m_shadeMode == ShadeModeGlobalColor) {
+            CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+            CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+            CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
         }
     }
 
