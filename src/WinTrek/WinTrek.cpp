@@ -8322,7 +8322,7 @@ public:
             else
                 m_cameraControl.SetZClip(5.0f, 10000.0f);
 
-            if ((pmodelTarget == NULL) && bAnyEnemyShips && (!Training::IsTraining ()))
+            if ((pmodelTarget == NULL) && bAnyEnemyShips)
             {
                 //We have no target and there are enemy ships ... select an appropriate ship
                 const Vector&   position = pshipSource->GetPosition();
@@ -9746,8 +9746,7 @@ public:
 
             case TK_Ripcord:
             {
-                if (!Training::IsTraining ())
-                {
+                
                     if ((trekClient.GetShip()->GetParentShip() == NULL) &&
                         trekClient.GetShip()->GetCluster())
                     {
@@ -9773,11 +9772,9 @@ public:
                                     pcluster = trekClient.GetShip()->GetCluster();
                                 assert (pcluster);
                             }
-
                             trekClient.RequestRipcord(trekClient.GetShip(), pcluster);
                         }
                     }
-                }
             }
             break;
 

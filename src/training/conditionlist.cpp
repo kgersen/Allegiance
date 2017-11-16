@@ -57,7 +57,10 @@ namespace Training
     //------------------------------------------------------------------------------
     bool        ConditionList::Evaluate (void)
     {
-        // This condition list is to be considered "true" by default.
+        // This condition list is true if not empty and all conditions are true
+        if (m_conditionList.size() < 1)
+            return false;
+
         bool    result = true;
 
         // Loop over the condition list. If any condition evaluates to false, then

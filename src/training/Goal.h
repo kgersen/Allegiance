@@ -39,11 +39,13 @@ namespace Training
             virtual bool                Evaluate (void);
                     void                AddStartAction (Action* pStartAction);
                     void                AddConstraintCondition (Condition* pConstraintCondition);
+                    void                SetSkipGoalCondition(Condition* pSkipCondition);
 
         protected:
                     Condition*          m_pSuccessCondition;
                     ActionList          m_startActionList;
                     ConditionList       m_constraintConditionList;
+                    Condition*          m_pSkipGoalCondition;
     };
 
     //------------------------------------------------------------------------------

@@ -3858,9 +3858,14 @@ bool WinTrekClient::UseRipcord(IshipIGC* pship, ImodelIGC*  pmodel)
             pship->SetCurrentTurnRate(c_axisRoll, 0.0f);
 
             pship->SetLastUpdate(lastUpdate);
-            pship->SetBB(lastUpdate, lastUpdate, 0.0f);
+            pship->SetBB(lastUpdate, lastUpdate, 0.0f); 
 
             pship->SetCluster(pcluster);
+        }
+        
+        if (pship == trekClient.GetShip()) {
+            trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(pship)); //Not using trekClient. messes up system sound over time. Persistent after quiting Allegiance.
+            trekClient.PostText(true, "");
         }
 
         return true;
@@ -4102,6 +4107,9 @@ void WinTrekClient::HitWarpEvent(IshipIGC* ship, IwarpIGC* warp)
                                   (alephOrientation.GetUp() * random(2.0f, 5.0f)) +
                                   (alephOrientation.GetRight() * random(2.0f, 5.0f)) -
                                   (ship->GetRadius() + 5.0f) * backward);
+                if (ship == trekClient.GetShip())
+                    trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(ship));
+
                 {
                     Time    t = ship->GetLastUpdate();
                     ship->SetBB(t, t, 0.0f);
@@ -4214,7 +4222,10 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
         else if (CHAT_INDIVIDUAL == ctRecipient
             && ((NA == oidRecipient) || (trekClient.GetShipID() == oidRecipient)))
         {
-            PlaySoundEffect(newPersonalMsgSound);
+            if (Training::IsTraining())
+                PlaySoundEffect(newChatMsgFromCommanderSound);
+            else
+                PlaySoundEffect(newPersonalMsgSound);
         }
         else
         {

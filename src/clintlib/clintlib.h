@@ -1073,11 +1073,91 @@ public:
     {
         if (pship == m_ship)
         {
-            SetMessageType(BaseClient::c_mtGuaranteed);
-            BEGIN_PFM_CREATE(m_fm, pfmRequest, C, RIPCORD_REQUEST)
-            END_PFM_CREATE;
+            if (m_fm.IsConnected())
+            {
+                SetMessageType(BaseClient::c_mtGuaranteed);
+                BEGIN_PFM_CREATE(m_fm, pfmRequest, C, RIPCORD_REQUEST)
+                    END_PFM_CREATE;
 
-            pfmRequest->sidRipcord = pcluster ? pcluster->GetObjectID() : NA;
+                pfmRequest->sidRipcord = pcluster ? pcluster->GetObjectID() : NA;
+            }
+            else
+                RipcordLocal(pship, pcluster);
+        }
+    }
+
+    void RipcordLocal(IshipIGC*   pship, IclusterIGC*  pcluster)
+    {
+        if (pcluster == nullptr)
+            debugf("RipcordLocal destination cluster id: NULL\n");
+        else
+            debugf("RipcordLocal destination cluster id: %d\n", pcluster->GetObjectID());
+
+        ImodelIGC*      pmodelRipcordOld = pship->GetRipcordModel();
+        bool            player = true;
+
+        if (pcluster == NULL)
+        {
+            if (pmodelRipcordOld != NULL)
+            {
+                assert(pship->GetCluster());
+
+                pship->SetRipcordModel(NULL);
+                pship->SetStateBits(droneRipMaskIGC, 0);
+
+                if (player)
+                    PlayNotificationSound(salRipcordAbortedSound, pship);
+
+                // clear the ripcord effect
+                pship->GetThingSite()->SetTimeUntilRipcord(-1.0f);
+            }
+        }
+        else if (pmodelRipcordOld == NULL ||
+                pmodelRipcordOld->GetCluster() != pcluster)
+        {
+            ImodelIGC*      pmodelRipcordDest = pship->FindRipcordModel(pcluster);
+            if (pmodelRipcordDest != NULL)
+            {
+
+                IclusterIGC*    pclusterRipcord = pmodelRipcordDest->GetCluster();
+
+                if (pclusterRipcord == NULL)
+                {
+                    assert(pmodelRipcordDest->GetObjectType() == OT_ship);
+
+                    PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)pmodelRipcordDest)->GetPrivateData());
+
+                    assert(ppi->StatusIsCurrent());
+                    pclusterRipcord = pship->GetMission()->GetCluster(ppi->LastSeenSector());
+                    assert(pclusterRipcord);
+                }
+
+                if (player)
+                {
+                    const char*     name = pclusterRipcord->GetName();
+                    char    bfr[100];
+                    if (pclusterRipcord != pcluster)
+                        sprintf(bfr, "Ripcording to %s, which is closest to %s",
+                            name, pcluster->GetName());
+                    else
+                        sprintf(bfr, "Ripcording to %s", name);
+                    PostText(true, bfr);
+                }
+
+                if (pmodelRipcordDest != pship->GetRipcordModel())
+                {
+                    pship->SetRipcordModel(pmodelRipcordDest);
+                    pship->ResetRipcordTimeLeft();
+                }
+
+                // set up the ripcord effect
+                pship->GetThingSite()->SetTimeUntilRipcord(pship->GetRipcordTimeLeft());
+            }
+            else if (player)
+            {
+                PlayNotificationSound(salNoRipcordSound, m_ship); //RIPCORD_DENIED
+                pship->SetRipcordModel(NULL);
+            }
         }
     }
 
@@ -1200,6 +1280,8 @@ public:
     virtual void SideDevelopmentTechChange(IsideIGC* s);
     virtual void StationTypeChange(IstationIGC* s);
     virtual void LoadoutChangeEvent(IshipIGC* pship, IpartIGC* ppart, LoadoutChange lc);
+    ItreasureIGC*  CreateTreasureLocal(Time now, IshipIGC* pship, IpartIGC* p, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan = 600.0f);
+    ItreasureIGC*  CreateTreasureLocal(Time now, IshipIGC* pship, short amount, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan = 600.0f);
 
     virtual bool Reload(IshipIGC* pship, IlauncherIGC* plauncher, EquipmentType type);
 
@@ -1459,7 +1541,9 @@ public:
                             {
                                 for (CachedPartLink*  l = pcll->data().cpl.last(); (l != NULL); l = l->txen())
                                 {
-                                    if ((l->data().ppt == ppt) && !l->data().bDuplicated)
+                                    if ((l->data().ppt == ppt) && 
+                                        !l->data().bDuplicated && 
+                                        l->data().mount == mount) //otherwise first slots get set as duplicated regardless of which are empty
                                     {
                                         l->data().bDuplicated = true;
                                         break;
@@ -1473,7 +1557,7 @@ public:
                 }
             }
 
-            //Fill all of the cargo slots with what was there before.
+            //Fill all of the cargo slots with what was there before. Also fill module slots which were empty.
             Mount   cargo = -c_maxCargo;
             for (CachedPartLink*  l = pcll->data().cpl.first(); (l != NULL); l = l->next())
             {
@@ -1494,11 +1578,13 @@ public:
                     if (ppt)
                     {
                         EquipmentType   et =  ppt->GetEquipmentType();
-                        if ((cpl.mount == 0) &&                             //Hack alert: all launchers are mountID 0
-                            IlauncherTypeIGC::IsLauncherType(et) &&
-                            (pshipSink->GetMountedPart(et, 0) == NULL))     //Hack alert: see above
+                        
+                        if ((cpl.mount >= 0) && //anything not cargo
+                            (pshipSink->GetMountedPart(et, cpl.mount) == NULL) &&
+                            (phtSuccessor->CanMount(ppt, cpl.mount)))
                         {
-                            BuyPartOnBudget(pshipSink, ppt, 0, &budget);    //Hack alert: see above
+                            debugf("RestoreLoadout: Restoring empty module slot %d, type %d with %d \n", cpl.mount, et, ppt->GetObjectID());
+                            BuyPartOnBudget(pshipSink, ppt, cpl.mount, &budget);
                         }
                         else if (cargo < 0)
                         {
@@ -2003,6 +2089,8 @@ public:
             pdata->et = ppart->GetEquipmentType();
             pdata->mount = ppart->GetMountID();
         }
+        else
+            CreateTreasureLocal(m_ship->GetLastUpdate(), m_ship, ppart, ppart->GetPartType(), m_ship->GetPosition(), 20.0f);
 
         ppart->Terminate();
     }

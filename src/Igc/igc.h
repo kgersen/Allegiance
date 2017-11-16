@@ -979,6 +979,7 @@ const int c_cbGamePassword = 17;
 //------------------------------------------------------------------------------
 #define IGC_STATIC_CORE_FILENAME    "static_core"
 #define IGC_ENCRYPT_CORE_FILENAME   "zone_core"
+#define IGC_TRAINING_CORE_FILENAME  "PCore012"
 
 
 const float c_fMissionBriefingCountdown = 15.0f; // seconds
