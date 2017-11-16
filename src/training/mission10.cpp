@@ -99,15 +99,20 @@ namespace Training
                 AddPartToShip(154, i, 5);
             }
         }
-        trekClient.SaveLoadout(pShipU);
-        //Add tech, so Seeker2s don't show as new treassure
+        trekClient.SaveLoadout(pShipU);*/
+        //Add tech, so equipment doesn't show as new treassure and can be got at the station
         IshipIGC*       pShip = trekClient.GetShip();
-        debugf("Pre DevelopmentTechs: %d\n", pShip->GetSide()->GetDevelopmentTechs());
-        TechTreeBitMask ttbm;
+        TechTreeBitMask ttbm = pShip->GetSide()->GetDevelopmentTechs();
+        debugf("Pre DevelopmentTechs: %s\n", (LPCSTR)trekClient.GetCore()->BitsToTechsList(ttbm));
         ttbm.ClearAll();
-        ttbm |= trekClient.GetCore()->GetPartType(154)->GetEffectTechs(); //Seeker 2 tech
+        ttbm |= trekClient.GetCore()->GetPartType(154)->GetEffectTechs();   //Seeker 2 tech
+        ttbm |= trekClient.GetCore()->GetPartType(13)->GetEffectTechs();    //Mine Pack 1 tech
+        ttbm |= trekClient.GetCore()->GetPartType(13)->GetRequiredTechs();
+        ttbm |= trekClient.GetCore()->GetPartType(174)->GetEffectTechs();   //Hvy Booster tech
+        ttbm |= trekClient.GetCore()->GetPartType(174)->GetRequiredTechs();
         pShip->GetSide()->ApplyDevelopmentTechs(ttbm);
-        debugf("Post DevelopmentTechs: %d\n", pShip->GetSide()->GetDevelopmentTechs()); //same as before, but works*/
+        ttbm = pShip->GetSide()->GetDevelopmentTechs();
+        debugf("Post DevelopmentTechs: %s\n", (LPCSTR)trekClient.GetCore()->BitsToTechsList(ttbm));
     }
 
     //------------------------------------------------------------------------------

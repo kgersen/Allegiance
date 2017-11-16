@@ -89,12 +89,15 @@ namespace Training
             }
         }
         trekClient.SaveLoadout(pShipU);
-        //Add tech, so Seeker2s don't show as new treassure
+        //Add tech, so equipment doesn't show as new treassure and can be got at the station
         IshipIGC*       pShip = trekClient.GetShip();
-        TechTreeBitMask ttbm;
-        ttbm.ClearAll();
-        ttbm |= trekClient.GetCore()->GetPartType(154)->GetEffectTechs(); //Seeker 2 tech
-        pShip->GetSide()->ApplyDevelopmentTechs(ttbm);
+        TechTreeBitMask ttbm = pShip->GetSide()->GetDevelopmentTechs();
+        ttbm |= trekClient.GetCore()->GetPartType(154)->GetEffectTechs();   //Seeker 2 tech
+        ttbm |= trekClient.GetCore()->GetPartType(13)->GetEffectTechs();    //Mine Pack 1 tech
+        ttbm |= trekClient.GetCore()->GetPartType(13)->GetRequiredTechs();
+        ttbm |= trekClient.GetCore()->GetPartType(174)->GetEffectTechs();   //Hvy Booster tech
+        ttbm |= trekClient.GetCore()->GetPartType(174)->GetRequiredTechs();
+        pShip->GetSide()->SetDevelopmentTechs(ttbm);
     }
 
     //------------------------------------------------------------------------------

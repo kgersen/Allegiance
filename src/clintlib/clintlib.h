@@ -1541,7 +1541,9 @@ public:
                             {
                                 for (CachedPartLink*  l = pcll->data().cpl.last(); (l != NULL); l = l->txen())
                                 {
-                                    if ((l->data().ppt == ppt) && !l->data().bDuplicated)
+                                    if ((l->data().ppt == ppt) && 
+                                        !l->data().bDuplicated && 
+                                        l->data().mount == mount) //otherwise first slots get set as duplicated regardless of which are empty
                                     {
                                         l->data().bDuplicated = true;
                                         break;
@@ -1555,7 +1557,7 @@ public:
                 }
             }
 
-            //Fill all of the cargo slots with what was there before.
+            //Fill all of the cargo slots with what was there before. Also fill module slots which were empty.
             Mount   cargo = -c_maxCargo;
             for (CachedPartLink*  l = pcll->data().cpl.first(); (l != NULL); l = l->next())
             {
@@ -1576,11 +1578,13 @@ public:
                     if (ppt)
                     {
                         EquipmentType   et =  ppt->GetEquipmentType();
-                        if ((cpl.mount == 0) &&                             //Hack alert: all launchers are mountID 0
-                            IlauncherTypeIGC::IsLauncherType(et) &&
-                            (pshipSink->GetMountedPart(et, 0) == NULL))     //Hack alert: see above
+                        
+                        if ((cpl.mount >= 0) && //anything not cargo
+                            (pshipSink->GetMountedPart(et, cpl.mount) == NULL) &&
+                            (phtSuccessor->CanMount(ppt, cpl.mount)))
                         {
-                            BuyPartOnBudget(pshipSink, ppt, 0, &budget);    //Hack alert: see above
+                            debugf("RestoreLoadout: Restoring empty module slot %d, type %d with %d \n", cpl.mount, et, ppt->GetObjectID());
+                            BuyPartOnBudget(pshipSink, ppt, cpl.mount, &budget);
                         }
                         else if (cargo < 0)
                         {
@@ -1923,6 +1927,7 @@ public:
 
     void    BuyDefaultLoadout(IshipIGC* pship, IstationIGC* pstation, IhullTypeIGC* pht, Money* pbudget)
     {
+        debugf("BuyDefaultLoadout \n");
         assert (pship);
         assert (pship->GetChildShips()->n() == 0);
 
