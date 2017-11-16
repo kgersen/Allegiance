@@ -90,14 +90,13 @@ namespace Training
         }
         trekClient.SaveLoadout(pShipU);
         //Add tech, so equipment doesn't show as new treassure and can be got at the station
-        IshipIGC*       pShip = trekClient.GetShip();
-        TechTreeBitMask ttbm = pShip->GetSide()->GetDevelopmentTechs();
+        TechTreeBitMask ttbm = trekClient.GetSide()->GetDevelopmentTechs();
         ttbm |= trekClient.GetCore()->GetPartType(154)->GetEffectTechs();   //Seeker 2 tech
         ttbm |= trekClient.GetCore()->GetPartType(13)->GetEffectTechs();    //Mine Pack 1 tech
         ttbm |= trekClient.GetCore()->GetPartType(13)->GetRequiredTechs();
         ttbm |= trekClient.GetCore()->GetPartType(174)->GetEffectTechs();   //Hvy Booster tech
         ttbm |= trekClient.GetCore()->GetPartType(174)->GetRequiredTechs();
-        pShip->GetSide()->SetDevelopmentTechs(ttbm);
+        trekClient.GetSide()->SetDevelopmentTechs(ttbm);
     }
 
     //------------------------------------------------------------------------------
@@ -113,7 +112,7 @@ namespace Training
         // play the introductory audio
         pGoalList->AddGoal (CreatePlaySoundGoal (salCommenceScanSound));
 
-        // create friendly miner
+        // create friendly miner 01
         {
             Goal*	pGoal = new Goal(new ElapsedTimeCondition(0.5f));
 
@@ -132,13 +131,13 @@ namespace Training
 		// outpost here in case you need to replenish yourself.
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_6_01Sound));
 
-        // create friendly miner, wait two more seconds in cockpit
+        // create friendly miner 02, wait two more seconds in cockpit
         {
             Goal*	pGoal = new Goal(new ElapsedTimeCondition(2.0f));
 
             ShipID          minerID = pMission->GenerateNewShipID();
             Vector          pos = pHomeStation->GetPosition();
-            pos.x += -250.0f; //simulate undock
+            pos.x += 250.0f; //simulate undock
             pos.y += 200.0f;
 
             CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 02", minerID, 438, 0, c_ptMiner);
@@ -166,7 +165,7 @@ namespace Training
 
             ShipID          minerID = pMission->GenerateNewShipID();
             Vector          pos = pHomeStation->GetPosition();
-            pos.x += 250.0f; //simulate undock
+            pos.x += -250.0f; //simulate undock
             pos.y += -200.0f;
 
             CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 03", minerID, 438, 0, c_ptMiner);
@@ -243,7 +242,7 @@ namespace Training
 
             ShipID          minerID = pMission->GenerateNewShipID();
             Vector          pos = pHomeStation->GetPosition();
-            pos.x += -250.0f; //simulate undock
+            pos.x += 250.0f; //simulate undock
             pos.y += 200.0f;
 
             CreateDroneAction*  pCreateDroneAction = new CreateDroneAction("Miner 04", minerID, 437, 0, c_ptMiner);

@@ -1927,7 +1927,6 @@ public:
 
     void    BuyDefaultLoadout(IshipIGC* pship, IstationIGC* pstation, IhullTypeIGC* pht, Money* pbudget)
     {
-        debugf("BuyDefaultLoadout \n");
         assert (pship);
         assert (pship->GetChildShips()->n() == 0);
 
