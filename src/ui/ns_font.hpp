@@ -47,6 +47,9 @@ public:
         };
 
         table["Height"] = [](FontValue* font) {
+            if (!font) {
+                throw std::exception("Argument should not be null");
+            }
             return (TRef<Number>)new TransformedValue<float, TRef<IEngineFont>>([](IEngineFont* font) {
                 return (float)font->GetHeight();
             }, font);

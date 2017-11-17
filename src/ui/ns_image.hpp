@@ -70,9 +70,15 @@ public:
 
         table["Extent"] = sol::overload(
             [](RectValue* rect, ColorValue* color) {
+                if (!rect || !color) {
+                    throw std::exception("Argument should not be null");
+                }
                 return CreateExtentImage(rect, color);
             },
             [](PointValue* pPoint, ColorValue* color) {
+                if (!pPoint || !color) {
+                    throw std::exception("Argument should not be null");
+                }
                 return CreateExtentImage(
                     new RectValue(Rect(
                         Point(0, 0), 
@@ -83,6 +89,9 @@ public:
             }
         );
         table["MouseEvent"] = [](Image* image) {
+            if (!image) {
+                throw std::exception("Argument should not be null");
+            }
             return (TRef<Image>)new MouseEventImage(image);
         };
         table["File"] = [&context](std::string path) {
@@ -139,18 +148,33 @@ public:
             throw std::runtime_error("Expected value argument of Image.Switch to be either a wrapped or unwrapped bool, int, or string");
         };
         table["String"] = [](FontValue* font, ColorValue* color, sol::object width, sol::object string) {
+            if (!font || !color) {
+                throw std::exception("Argument should not be null");
+            }
             return CreateStringImage(JustifyLeft(), font->GetValue(), color, wrapValue<float>(width), wrapString(string));
         };
         table["Translate"] = [](Image* pimage, PointValue* pPoint) {
+            if (!pimage || !pPoint) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Translate(pimage, pPoint);
         };
         table["Scale"] = [](Image* pimage, PointValue* pPoint) {
+            if (!pimage || !pPoint) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Scale(pimage, pPoint);
         };
         table["Rotate"] = [](Image* pimage, sol::object radians) {
+            if (!pimage) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Rotate(pimage, wrapValue<float>(radians));
         };
         table["Size"] = [](Image* pimage) {
+            if (!pimage) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Size(pimage);
         };
 
@@ -167,23 +191,41 @@ public:
         table["Justification"] = tableJustification;
 
         table["Justify"] = [](Image* pimage, PointValue* pSizeContainer, Justification justification) {
+            if (!pimage || !pSizeContainer) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Justify(pimage, pSizeContainer, justification);
         };
         table["ScaleFit"] = [](Image* pimage, PointValue* pSizeContainer, Justification justification) {
+            if (!pimage || !pSizeContainer) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::ScaleFit(pimage, pSizeContainer, justification);
         };
         table["ScaleFill"] = [](Image* pimage, PointValue* pSizeContainer, Justification justification) {
+            if (!pimage || !pSizeContainer) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::ScaleFill(pimage, pSizeContainer, justification);
         };
 
         table["Clip"] = [](Image* pimage, RectValue* rect) {
+            if (!pimage || !rect) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Clip(pimage, rect);
         };
         table["Cut"] = [](Image* pimage, RectValue* rect) {
+            if (!pimage || !rect) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Cut(pimage, rect);
         };
 
         table["Multiply"] = [](ConstantImage* pimage, ColorValue* color) {
+            if (!pimage || !color) {
+                throw std::exception("Argument should not be null");
+            }
             return ImageTransform::Multiply(pimage, color);
         };
 

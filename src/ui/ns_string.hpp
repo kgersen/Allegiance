@@ -41,8 +41,8 @@ public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
         
-        table["Length"] = [](StringValue* pString) {
-            return StringTransform::Length(pString);
+        table["Length"] = [](sol::object a) {
+            return StringTransform::Length(wrapString(a));
         };
 
         table["Concat"] = [](sol::object a, sol::object b) {
