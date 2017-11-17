@@ -42,9 +42,11 @@ public:
         sol::table table = context.GetLua().create_table();
         
         table["Length"] = [](StringValue* pString) {
-            return (TRef<Number>)new TransformedValue<float, ZString>([](ZString str) {
-                return (float)str.GetLength();
-            }, pString);
+            return StringTransform::Length(pString);
+        };
+
+        table["Concat"] = [](sol::object a, sol::object b) {
+            return StringTransform::Concat(wrapString(a), wrapString(b));
         };
 
         table["Switch"] = [](sol::object value, sol::table table, sol::object valueDefault) {

@@ -383,3 +383,33 @@ TRef<Boolean> BooleanTransform::Not(Boolean* pvalue1)
 {
     return new NotBoolean(pvalue1);
 }
+
+
+// ### String
+
+class ConcatenatedString : public StringValue {
+public:
+    ConcatenatedString(StringValue* pvalue1, StringValue* pvalue2) :
+        StringValue(pvalue1, pvalue2)
+    {
+    }
+
+    void Evaluate()
+    {
+        GetValueInternal() = ((StringValue*)GetChild(0))->GetValue()
+            + ((StringValue*)GetChild(1))->GetValue();
+    }
+
+};
+
+TRef<Number> StringTransform::Length(StringValue* a)
+{
+    return (TRef<Number>)new TransformedValue<float, ZString>([](ZString str) {
+        return (float)str.GetLength();
+    }, a);
+}
+
+TRef<StringValue> StringTransform::Concat(StringValue* a, StringValue* b)
+{
+    return new ConcatenatedString(a, b);
+}

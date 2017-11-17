@@ -46,6 +46,12 @@ public:
     static TRef<Boolean> Not(Boolean* a);
 };
 
+class StringTransform {
+public:
+    static TRef<Number> Length(StringValue* a);
+    static TRef<StringValue> Concat(StringValue* a, StringValue* b);
+};
+
 template<class TransformedType, class OriginalType>
 class TransformedValue : public TStaticValue<TransformedType> {
 
