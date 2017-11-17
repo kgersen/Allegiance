@@ -20,6 +20,7 @@
     <ClInclude Include="..\src\ui\ns_math.hpp" />
     <ClInclude Include="..\src\ui\ns_point.hpp" />
     <ClInclude Include="..\src\ui\ns_screen.hpp" />
+    <ClInclude Include="..\src\ui\ns_string.hpp" />
     <ClInclude Include="..\src\ui\ui.h" />
     <ClInclude Include="..\src\ui\UiEngine.h" />
   </ItemGroup>

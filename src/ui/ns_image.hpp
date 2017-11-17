@@ -60,7 +60,7 @@ class ImageNamespace {
 public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
-        table["GetEmpty"] = []() {
+        table["Empty"] = []() {
             return Image::GetEmpty();
         };
 
@@ -68,7 +68,7 @@ public:
             return ImageTransform::Lazy(context.WrapImageCallback(callback));
         };
 
-        table["CreateExtent"] = sol::overload(
+        table["Extent"] = sol::overload(
             [](RectValue* rect, ColorValue* color) {
                 return CreateExtentImage(rect, color);
             },
@@ -82,10 +82,10 @@ public:
                 );
             }
         );
-        table["CreateMouseEvent"] = [](Image* image) {
+        table["MouseEvent"] = [](Image* image) {
             return (TRef<Image>)new MouseEventImage(image);
         };
-        table["LoadFile"] = [&context](std::string path) {
+        table["File"] = [&context](std::string path) {
             return (TRef<ConstantImage>)LoadImageFile(context, path);
         };
         table["Group"] = [](sol::table list) {

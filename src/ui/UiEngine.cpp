@@ -3,6 +3,7 @@
 #include "items.hpp"
 
 #include "ns_math.hpp"
+#include "ns_string.hpp"
 #include "ns_color.hpp"
 #include "ns_event.hpp"
 #include "ns_image.hpp"
@@ -105,6 +106,8 @@ public:
         RectNamespace::AddNamespace(pLua);
         PointNamespace::AddNamespace(pLua);
         BooleanNamespace::AddNamespace(pLua);
+
+        StringNamespace::AddNamespace(context);
 
         ColorNamespace::AddNamespace(pLua);
 

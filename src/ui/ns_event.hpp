@@ -123,7 +123,7 @@ public:
             return pMouseEventImage->GetEventSource(string);
         };
 
-        table["ToBoolean"] = [](sol::object valueDefault, sol::table table) {
+        table["ToBoolean"] = [](sol::table table, sol::object valueDefault) {
             std::map<TRef<IEventSource>, TRef<Boolean>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
@@ -134,7 +134,7 @@ public:
             return (TRef<Boolean>)new EventToMappedValue<bool>(wrapValue<bool>(valueDefault), mapOptions);
         };
 
-        table["ToNumber"] = [](sol::object valueDefault, sol::table table) {
+        table["ToNumber"] = [](sol::table table, sol::object valueDefault) {
             std::map<TRef<IEventSource>, TRef<Number>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
@@ -145,18 +145,18 @@ public:
             return (TRef<Number>)new EventToMappedValue<float>(wrapValue<float>(valueDefault), mapOptions);
         };
 
-        table["ToString"] = [](sol::object valueDefault, sol::table table) {
+        table["ToString"] = [](sol::table table, sol::object valueDefault) {
             std::map<TRef<IEventSource>, TRef<StringValue>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
                 TRef<IEventSource> mapKey = key.as<IEventSource*>();
-                mapOptions[mapKey] = wrapValue<ZString>(value);
+                mapOptions[mapKey] = wrapString(value);
             });
 
-            return (TRef<StringValue>)new EventToMappedValue<ZString>(wrapValue<ZString>(valueDefault), mapOptions);
+            return (TRef<StringValue>)new EventToMappedValue<ZString>(wrapString(valueDefault), mapOptions);
         };
 
-        table["ToImage"] = [](Image* valueDefault, sol::table table) {
+        table["ToImage"] = [](sol::table table, Image* valueDefault) {
             std::map<TRef<IEventSource>, TRef<Image>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
