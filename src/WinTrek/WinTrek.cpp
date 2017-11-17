@@ -10169,9 +10169,10 @@ public:
 
                 if (CommandCamera(m_cm))
                 {
-                    if (GetOverlayFlags() & c_omBanishablePanes) {
+                    if (GetOverlayFlags() & c_omBanishablePanes) 
                         TurnOffOverlayFlags(c_omBanishablePanes);
-                    } else if (!trekClient.GetShip()->IsGhost()) {
+
+                    if (!trekClient.GetShip()->IsGhost()) {
                         if (trekClient.flyingF()) {
                             SetViewMode(vmCombat);
                         } else {
@@ -10181,6 +10182,10 @@ public:
                 }
                 else
                 {
+                    //Turn off overlay flags, as overlays get closed anyway. Without, their closing anim shows on closing command view.
+                    if (GetOverlayFlags() & c_omBanishablePanes)
+                        TurnOffOverlayFlags(c_omBanishablePanes);
+
                     if ((trekClient.GetViewCluster() == NULL) && !trekClient.flyingF())
                     {
                         IstationIGC*    pstation = trekClient.GetShip()->GetStation();
