@@ -59,11 +59,15 @@ TRef<ConstantImage> LoadImageFile(LuaScriptContext& context, std::string path) {
 class ImageNamespace {
 public:
     static void AddNamespace(LuaScriptContext& context) {
-
         sol::table table = context.GetLua().create_table();
         table["GetEmpty"] = []() {
             return Image::GetEmpty();
         };
+
+        table["Lazy"] = [&context](sol::function callback) {
+            return ImageTransform::Lazy(context.WrapImageCallback(callback));
+        };
+
         table["CreateExtent"] = sol::overload(
             [](RectValue* rect, ColorValue* color) {
                 return CreateExtentImage(rect, color);

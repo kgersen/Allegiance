@@ -24,4 +24,6 @@ public:
     static TRef<Image> Cut(Image* pImage, RectValue* pRect);
 
     static TRef<Image> Multiply(Image* pImage, ColorValue* pColor);
+
+    static TRef<Image> Lazy(std::function<TRef<Image>()> callback);
 };

@@ -132,6 +132,9 @@ public:
         }
         sol::function function = script;
 
+        sol::environment envScript(*m_pLua, sol::create, (*m_pLua).globals());
+        sol::set_environment(envScript, function);
+
         return function;
     }
 };
@@ -222,6 +225,29 @@ public:
         return m_funcOpenWebsite;
     }
 
+    std::function<TRef<Image>()> WrapImageCallback(sol::function callback) override {
+        return [callback]() {
+            Executor executor = Executor();
+            try {
+                //WriteLog("(Callback function): Started");
+
+                auto start = std::chrono::high_resolution_clock::now();
+
+                TRef<Image> result = executor.Execute<Image*>(callback);
+
+                auto elapsed = std::chrono::high_resolution_clock::now() - start;
+                long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+
+                WriteLog("(Callback function): Finished " + std::to_string(microseconds) + " ms");
+                return result;
+            }
+            catch (const std::runtime_error& e) {
+                WriteLog(std::string("(Callback function): ERROR ") + e.what());
+                throw e;
+            }
+        };
+    }
+
     IEventSink& GetExternalEventSink(std::string name) {
         return m_pConfiguration->GetEventSink(name);
     }
@@ -257,6 +283,24 @@ public:
     //
     //}
 
+    class ContextImage : public WrapImage {
+    private:
+        std::unique_ptr<LuaScriptContextImpl> m_pContext;
+
+    public:
+        ContextImage(std::unique_ptr<LuaScriptContextImpl> pContext, Image* pImage) :
+            WrapImage(pImage),
+            m_pContext(std::move(pContext))
+        {
+        }
+
+        ~ContextImage() {
+            //control order of deallocations, first remove all references to sol before clearing the context
+            SetImage(Image::GetEmpty());
+            m_pContext = nullptr;
+        }
+    };
+
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {
         std::unique_ptr<LuaScriptContextImpl> pContext = std::make_unique<LuaScriptContextImpl>(m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
 
@@ -273,7 +317,7 @@ public:
             TRef<Image> image = executor.Execute<Image*>(script);
 
             WriteLog(path + ": " + "Executed");
-            return image;
+            return new ContextImage(std::move(pContext), image);
         }
         catch (const std::runtime_error& e) {
             WriteLog(path + ": ERROR " + e.what());

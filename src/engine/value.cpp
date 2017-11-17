@@ -226,6 +226,9 @@ void Value::RemoveParent(Value* pvalue)
 {
     ZAssert(m_listParents.Find(pvalue));
     m_listParents.Remove(pvalue);
+    if (m_listParents.GetCount() == 0) {
+        OnNoParents();
+    }
 }
 
 void Value::SetChild(int index, Value* pvalueChild)
@@ -442,6 +445,7 @@ bool ValueList::DoFold()
 void ValueList::ChildChanged(Value* pvalue, Value* pvalueNew)
 {
     ZAssert(m_list.Find(pvalue));
+    ZAssert(pvalue != pvalueNew); //would be a waste if it was called with the same argument
 
     if (pvalueNew) {
         pvalue->RemoveParent(this);

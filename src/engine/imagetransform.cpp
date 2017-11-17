@@ -246,3 +246,44 @@ TRef<Image> ImageTransform::Multiply(Image* pImage, ColorValue* pColor) {
 
     return CreateConstantImage3D(pImage->GetSurface(), pColor);
 };
+
+class LazyImage : public WrapImage {
+
+private:
+    std::function<TRef<Image>()> m_callback;
+
+
+
+public:
+    LazyImage(std::function<TRef<Image>()> callback) : 
+        WrapImage(Image::GetEmpty()),
+        m_callback(callback)
+    {
+
+    }
+
+protected:
+    void OnNoParents() override {
+        SetImage(Image::GetEmpty());
+    }
+
+    void Evaluate() override {
+        if (GetImage() == Image::GetEmpty()) {
+            TRef<Image> pLoadedImage;
+            try {
+                pLoadedImage = m_callback();
+            }
+            catch (const std::runtime_error& e) {
+                pLoadedImage = Image::GetEmpty();
+            }
+            SetImage(pLoadedImage);
+        }
+        WrapImage::Evaluate();
+    }
+
+};
+
+TRef<Image> ImageTransform::Lazy(std::function<TRef<Image>()> callback)
+{
+    return new LazyImage(callback);
+};
