@@ -62,15 +62,6 @@ namespace Training
         // activate all the starting weapons
         trekClient.fGroupFire = true;
 
-        // put the commander ship in the station
-        ImissionIGC*    pCore = trekClient.GetCore();
-        ImodelIGC*      pStation = pCore->GetModel (OT_station, 1030);
-        IshipIGC*       pCommander = pCore->GetShip (m_commanderID);
-        pCommander->SetStation (static_cast<IstationIGC*> (pStation));
-        pCommander->SetCommand (c_cmdAccepted, NULL, c_cidDoNothing);
-        pCommander->SetCommand (c_cmdCurrent, NULL, c_cidDoNothing);
-        pCommander->SetAutopilot (false);
-
         // Adjust loadout
         IshipIGC*       pShipU = trekClient.GetShip();
         // destroy mounted dumbfires
@@ -108,6 +99,15 @@ namespace Training
 
         ImissionIGC*        pMission = trekClient.GetCore();
         ImodelIGC*          pHomeStation = pMission->GetModel(OT_station, 2080);
+
+        // put the commander ship in the station
+        {
+            IshipIGC*       pCommander = trekClient.GetCore()->GetShip(m_commanderID);
+            pCommander->SetStation(static_cast<IstationIGC*> (pHomeStation));
+            pCommander->SetCommand(c_cmdAccepted, NULL, c_cidDoNothing);
+            pCommander->SetCommand(c_cmdCurrent, NULL, c_cidDoNothing);
+            pCommander->SetAutopilot(false);
+        }
 
         // play the introductory audio
         pGoalList->AddGoal (CreatePlaySoundGoal (salCommenceScanSound));
