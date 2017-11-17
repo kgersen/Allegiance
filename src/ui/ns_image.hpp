@@ -147,11 +147,12 @@ public:
             }
             throw std::runtime_error("Expected value argument of Image.Switch to be either a wrapped or unwrapped bool, int, or string");
         };
-        table["String"] = [](FontValue* font, ColorValue* color, sol::object width, sol::object string) {
+        table["String"] = [](FontValue* font, ColorValue* color, sol::object width, sol::object string, sol::optional<Justification> justification_arg) {
             if (!font || !color) {
                 throw std::exception("Argument should not be null");
             }
-            return CreateStringImage(JustifyLeft(), font->GetValue(), color, wrapValue<float>(width), wrapString(string));
+
+            return ImageTransform::String(font, color, wrapValue<float>(width), wrapString(string), justification_arg.value_or(JustifyLeft()));
         };
         table["Translate"] = [](Image* pimage, PointValue* pPoint) {
             if (!pimage || !pPoint) {
@@ -177,18 +178,6 @@ public:
             }
             return ImageTransform::Size(pimage);
         };
-
-        sol::table tableJustification = context.GetLua().create_table();
-        tableJustification["Left"] = (Justification)JustifyLeft();
-        tableJustification["Right"] = (Justification)JustifyRight();
-        tableJustification["Top"] = (Justification)JustifyTop();
-        tableJustification["Bottom"] = (Justification)JustifyBottom();
-        tableJustification["Center"] = (Justification)JustifyCenter();
-        tableJustification["Topleft"] = (Justification)(JustifyTop() | JustifyLeft());
-        tableJustification["Topright"] = (Justification)(JustifyTop() | JustifyRight());
-        tableJustification["Bottomleft"] = (Justification)(JustifyBottom() | JustifyLeft());
-        tableJustification["Bottomright"] = (Justification)(JustifyBottom() | JustifyRight());
-        table["Justification"] = tableJustification;
 
         table["Justify"] = [](Image* pimage, PointValue* pSizeContainer, Justification justification) {
             if (!pimage || !pSizeContainer) {
@@ -233,5 +222,17 @@ public:
             sol::base_classes, sol::bases<Image>()
         );
         context.GetLua().set("Image", table);
+
+        sol::table tableJustification = context.GetLua().create_table();
+        tableJustification["Left"] = (Justification)JustifyLeft();
+        tableJustification["Right"] = (Justification)JustifyRight();
+        tableJustification["Top"] = (Justification)JustifyTop();
+        tableJustification["Bottom"] = (Justification)JustifyBottom();
+        tableJustification["Center"] = (Justification)JustifyCenter();
+        tableJustification["Topleft"] = (Justification)(JustifyTop() | JustifyLeft());
+        tableJustification["Topright"] = (Justification)(JustifyTop() | JustifyRight());
+        tableJustification["Bottomleft"] = (Justification)(JustifyBottom() | JustifyLeft());
+        tableJustification["Bottomright"] = (Justification)(JustifyBottom() | JustifyRight());
+        context.GetLua().set("Justify", tableJustification);
     }
 };

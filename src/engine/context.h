@@ -852,6 +852,9 @@ public:
     // 2D Rendering
     //
 
+    virtual void SetYAxisInversion(bool) = 0;
+    virtual bool GetYAxisInversion() = 0;
+
     virtual void DrawImage(Surface* psurface, const Rect& rect, bool bCentered = false, const Point& point = Point(0, 0)) = 0;
     virtual void DrawImage(Surface* psurface, bool bCentered = false, const Point& point = Point(0, 0))   = 0;
     virtual void DrawImage3D(Surface* psurface, const Rect& rect, const Color& color, bool bCentered = false, const Point& point = Point(0, 0)) = 0;

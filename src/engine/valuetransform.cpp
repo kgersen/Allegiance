@@ -267,6 +267,12 @@ TRef<Number> PointTransform::Y(PointValue* ppoint) {
     return new PointY(ppoint);
 };
 
+TRef<PointValue> PointTransform::Scale(PointValue* a, PointValue* b) {
+    return new TransformedValue2<Point, Point, Point>([](Point a, Point b) {
+        return Point(a.X() * b.X(), a.Y() * b.Y());
+    }, a, b);
+};
+
 
 // ### Color
 

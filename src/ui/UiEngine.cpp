@@ -302,6 +302,26 @@ public:
             SetImage(Image::GetEmpty());
             m_pContext = nullptr;
         }
+
+        void Render(Context* pcontext) override {
+            pcontext->SetYAxisInversion(false);
+            WrapImage::Render(pcontext);
+            pcontext->SetYAxisInversion(true); //not part of the state, so revert manually
+        }
+
+        void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside) override
+        {
+            float sizeY = (float)m_pContext->GetEngine()->GetFullscreenSize().Y();
+
+            WrapImage::MouseMove(pprovider, Point(point.X(), sizeY - point.Y()), bCaptured, bInside);
+        }
+
+        MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured) override
+        {
+            float sizeY = (float)m_pContext->GetEngine()->GetFullscreenSize().Y();
+
+            return WrapImage::HitTest(pprovider, Point(point.X(), sizeY - point.Y()), bCaptured);
+        }
     };
 
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {

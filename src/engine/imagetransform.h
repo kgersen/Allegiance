@@ -3,6 +3,7 @@
 
 #include "model.h"
 #include "enginep.h"
+#include "engine.h"
 
 class ImageTransform {
 public:
@@ -26,4 +27,6 @@ public:
     static TRef<Image> Multiply(Image* pImage, ColorValue* pColor);
 
     static TRef<Image> Lazy(std::function<TRef<Image>()> callback);
+
+    static TRef<Image> String(FontValue* font, ColorValue* color, Number* width, StringValue* string, Justification justification);
 };

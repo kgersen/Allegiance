@@ -25,6 +25,8 @@ public:
 
     static TRef<Number> X(PointValue* point);
     static TRef<Number> Y(PointValue* point);
+
+    static TRef<PointValue> Scale(PointValue* a, PointValue* b);
 };
 
 class ColorTransform {
