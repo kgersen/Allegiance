@@ -1252,11 +1252,16 @@ public:
                         if (!pCluster)
                         {
                             IstationIGC*    pStation = pShip->GetStation();
-                            assert(pStation);
-                            pCluster = pStation->GetCluster();
-                            assert(pCluster);
-                            debugf("Ship is in station in %s.\n", pCluster->GetName());
-                            ppos = pStation && pStation->SeenBySide(trekClient.GetSide()) ? &(pStation->GetPosition()) : NULL;
+                            if (pStation) {
+                                pCluster = pStation->GetCluster();
+                                assert(pCluster);
+                                debugf("Ship is in station %s in %s.\n", pStation->GetName(), pCluster->GetName());
+                                ppos = pStation && pStation->SeenBySide(trekClient.GetSide()) ? &(pStation->GetPosition()) : NULL;
+                            }
+                            else {
+                                debugf("Failed to get ship \"%s\" cluster OR station!\n", pShip->GetName());
+                                ppos = NULL;
+                            }
                         }
                         else
                             ppos = pShip && pShip->SeenBySide(trekClient.GetSide()) ? &(pShip->GetPosition()) : NULL;
@@ -1266,8 +1271,15 @@ public:
                             if (GetWindow()->GetViewMode() != TrekWindow::vmCommand)
                                 GetWindow()->SetViewMode(TrekWindow::vmCommand);
 				
-                    	    //trekClient.RequestViewCluster (pCluster, pplayer->GetShip()); //fails for ships in stations
-                            trekClient.SetViewCluster(pCluster, ppos); 
+                            if (pClusterShip == NULL) { //player in base
+                                //trekClient.RequestViewCluster (pCluster, pplayer->GetShip()); //fails for ships in stations
+                                trekClient.SetViewCluster(pCluster, ppos);
+                            }
+                            else
+                            {
+                                assert(pClusterShip == pCluster);
+                                GetWindow()->PositionCommandView(ppos, 2.0f);
+                            }
                         }
                     }
                 }
@@ -1282,7 +1294,7 @@ public:
                         if (GetWindow()->GetViewMode() != TrekWindow::vmCommand)
                             GetWindow()->SetViewMode(TrekWindow::vmCommand);
 
-                        if (pClusterShip == NULL)
+                        if (pClusterShip == NULL) //player in base
                             trekClient.RequestViewCluster(pCluster, pplayer->GetShip());
                         else
                         {
