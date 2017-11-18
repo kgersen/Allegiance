@@ -39,7 +39,7 @@ public:
                         props["Underline"] ? TRUE : FALSE,
                         FALSE, ANSI_CHARSET,
                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN,
+                        ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
                         name.c_str()
                     )
                 )

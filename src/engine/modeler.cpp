@@ -1953,7 +1953,7 @@ public:
                         pboolBold->GetValue() ? FW_BOLD : FW_DONTCARE, 
                         FALSE, FALSE, FALSE, ANSI_CHARSET,
                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN,
+                        ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
                         pstringName->GetValue()
                     )
                 )
@@ -2304,7 +2304,7 @@ public:
                         0, 0, 0,
                         FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN,
+                        ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
                         "tahoma"
                     )
                 )

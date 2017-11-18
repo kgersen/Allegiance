@@ -50,6 +50,7 @@ private:
 	CharData			m_data[256];
 	SCharTexData		m_pCharTexData[256];
 	BYTE*				m_pdata;
+    int m_bitsPerPixel;
 	int					m_dataSize;
 
 	// Added
@@ -97,154 +98,90 @@ private:
 		BYTE bByte, bMask;
 		float fTexWidth, fTexHeight;
 
-		// Create the texture - A8R8G8B8.
-		if( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == false )
+		// Create the texture - D3DFMT_A8L8.
+		m_pFontTex = CreatePrivateSurface(D3DFMT_A8L8, dwTexWidth, dwTexHeight, "Font texture" );
+		hTex = m_pFontTex->GetTexHandle();
+
+		// Lock texture to copy font data into.
+		CVRAMManager::Get()->LockTexture( hTex, &lockRect );
+
+		// Copy in all the data.
+		WORD * pData = (WORD*) lockRect.pBits;
+		dwXVal = 0;
+		dwYVal = 0;					// Top left pixel index for the current char.
+		pSrc = m_pdata;
+		fTexWidth = (float) ( dwTexWidth - 1 );
+		fTexHeight = (float) ( dwTexHeight - 1 );
+
+		for( i=0; i<256; i++ )
 		{
-			m_pFontTex = CreatePrivateSurface( D3DFMT_A8R8G8B8, dwTexWidth, dwTexHeight, "Font texture" );
-			hTex = m_pFontTex->GetTexHandle();
+			// Calculate the uv coords for this character.
+			m_pCharTexData[i].fU1 = (float) dwXVal / fTexWidth;
+			m_pCharTexData[i].fV1 = (float) dwYVal / fTexHeight;
+			m_pCharTexData[i].fU2 = (float) ( dwXVal + m_data[i].m_size.X() ) / fTexWidth;
+			m_pCharTexData[i].fV2 = (float) ( dwYVal + m_data[i].m_size.Y() ) / fTexHeight;
 
-			// Lock texture to copy font data into.
-			CVRAMManager::Get()->LockTexture( hTex, &lockRect );
-
-			// Copy in all the data.
-			DWORD * pData = (DWORD*) lockRect.pBits;
-			dwXVal = 0;
-			dwYVal = 0;					// Top left pixel index for the current char.
-			pSrc = m_pdata;
-			fTexWidth = (float) ( dwTexWidth - 1 );
-			fTexHeight = (float) ( dwTexHeight - 1 );
-
-			for( i=0; i<256; i++ )
+			// Now process the bit array for this char.
+			for( DWORD y=0; y<(DWORD)m_data[i].m_size.Y(); y++ )
 			{
-				// Calculate the uv coords for this character.
-				m_pCharTexData[i].fU1 = (float) dwXVal / fTexWidth;
-				m_pCharTexData[i].fV1 = (float) dwYVal / fTexHeight;
-				m_pCharTexData[i].fU2 = (float) ( dwXVal + m_data[i].m_size.X() ) / fTexWidth;
-				m_pCharTexData[i].fV2 = (float) ( dwYVal + m_data[i].m_size.Y() ) / fTexHeight;
+				// Calculate initial offset into texture.
+				dwIndex = ( ( y + dwYVal ) * ( lockRect.Pitch / 2 ) ) + dwXVal;
 
-				// Now process the bit array for this char.
-				for( DWORD y=0; y<(DWORD)m_data[i].m_size.Y(); y++ )
-				{
-					// Calculate initial offset into texture.
-					dwIndex = ( ( y + dwYVal ) * ( lockRect.Pitch / 4 ) ) + dwXVal;
+				// Prepare the mini data buffer.
+				DWORD dwLineSize = ( m_data[i].m_size.X() + 7 ) / 8;
+                DWORD xwidth = m_data[i].m_size.X();
+                ZAssert( dwLineSize <= 32 );
 
-					// Prepare the mini data buffer.
-					DWORD dwLineSize = ( m_data[i].m_size.X() + 7 ) / 8;
-                    ZAssert( dwLineSize <= 32 );
+                switch (m_bitsPerPixel) {
+                case 1:
+                    for (DWORD x = 0; x < dwLineSize; x++)
+                    {
+                        // Get the next byte to process and reset the mask.
+                        bByte = *pSrc++;
+                        bMask = 0x01;
+                        // Process this byte.
+                        for (DWORD dwBitCount = 0; dwBitCount < 8; dwBitCount++)
+                        {
+                            if ((bMask & bByte) != 0)
+                            {
+                                // Store 0xFFFF
+                                pData[dwIndex++] = 0xFFFF;
+                            }
+                            else
+                            {
+                                // Store 0.
+                                pData[dwIndex++] = 0;
+                            }
+                            bMask = bMask << 1;
+                        }
+                    }
+                    break;
+                case 8:
+                    for (DWORD x = 0; x < xwidth; x++) {
+                        bByte = *pSrc++;
+                        BYTE byte5 = (BYTE)(bByte >> 3);
+                        DWORD argb = (bByte << 24) | (bByte << 16) | (bByte << 8) | bByte;
+                        pData[dwIndex++] = (bByte << 8) | 0x00FF;
+                    }
 
-					for( DWORD x=0; x<dwLineSize; x++ )
-					{
-						// Get the next byte to process and reset the mask.
-						bByte = *pSrc++;
-						bMask = 0x01;
-
-						// Process this byte.
-						for( DWORD dwBitCount=0; dwBitCount<8; dwBitCount ++ )
-						{
-							if( ( bMask & bByte ) != 0 )
-							{
-								// Store 0xFFFFFFFF
-								pData[ dwIndex ++ ] = 0xFFFFFFFF;
-							}
-							else
-							{
-								// Store 0.
-								pData[ dwIndex ++ ] = 0;
-							}
-							bMask = bMask << 1;
-						}
-					}
-				}
-
-				// Update the top left coords.
-				//dwXVal += m_data[i].m_size.X();
-				dwXVal += m_width;
-				if( dwXVal >= ( dwTexWidth - 1) )
-				{
-					dwXVal = 0;
-					dwYVal += m_height;
-				}
-				else if(	( i < 255 ) &&
-							( dwXVal + m_width >= dwTexWidth ) )
-							//( dwXVal + m_data[i+1].m_size.X() >= dwTexWidth-1 ) )
-				{
-					dwXVal = 0;
-					dwYVal += m_height;
-				}
+                    break;
+                default:
+                    ZAssert(false);
+                }
 			}
-		}
-		else
-		{
-			// 16 bit version, smaller texture required.
-			m_pFontTex = CreatePrivateSurface( D3DFMT_A1R5G5B5, dwTexWidth, dwTexHeight, "Font texture" );
-			hTex = m_pFontTex->GetTexHandle();
 
-			// Lock texture to copy font data into.
-			CVRAMManager::Get()->LockTexture( hTex, &lockRect );
-
-			// Copy in all the data.
-			WORD * pData = (WORD*) lockRect.pBits;
-			dwXVal = 0;
-			dwYVal = 0;					// Top left pixel index for the current char.
-			pSrc = m_pdata;
-			fTexWidth = (float) ( dwTexWidth - 1 );
-			fTexHeight = (float) ( dwTexHeight - 1 );
-
-			for( i=0; i<256; i++ )
+			// Update the top left coords.
+			dwXVal += m_width;
+			if( dwXVal >= ( dwTexWidth - 1) )
 			{
-				// Calculate the uv coords for this character.
-				m_pCharTexData[i].fU1 = (float) dwXVal / fTexWidth;
-				m_pCharTexData[i].fV1 = (float) dwYVal / fTexHeight;
-				m_pCharTexData[i].fU2 = (float) ( dwXVal + m_data[i].m_size.X() ) / fTexWidth;
-				m_pCharTexData[i].fV2 = (float) ( dwYVal + m_data[i].m_size.Y() ) / fTexHeight;
-
-				// Now process the bit array for this char.
-				for( DWORD y=0; y<(DWORD)m_data[i].m_size.Y(); y++ )
-				{
-					// Calculate initial offset into texture.
-					dwIndex = ( ( y + dwYVal ) * ( lockRect.Pitch / 2 ) ) + dwXVal;
-
-					// Prepare the mini data buffer.
-					DWORD dwLineSize = ( m_data[i].m_size.X() + 7 ) / 8;
-                    ZAssert( dwLineSize <= 32 );
-
-					for( DWORD x=0; x<dwLineSize; x++ )
-					{
-						// Get the next byte to process and reset the mask.
-						bByte = *pSrc++;
-						bMask = 0x01;
-
-						// Process this byte.
-						for( DWORD dwBitCount=0; dwBitCount<8; dwBitCount ++ )
-						{
-							if( ( bMask & bByte ) != 0 )
-							{
-								// Store 0xFFFF
-								pData[ dwIndex ++ ] = 0xFFFF;
-							}
-							else
-							{
-								// Store 0.
-								pData[ dwIndex ++ ] = 0;
-							}
-							bMask = bMask << 1;
-						}
-					}
-				}
-
-				// Update the top left coords.
-				dwXVal += m_width;
-				if( dwXVal >= ( dwTexWidth - 1) )
-				{
-					dwXVal = 0;
-					dwYVal += m_height;
-				}
-				else if(	( i < 255 ) &&
-							( dwXVal + m_width >= dwTexWidth ) )
-				{
-					dwXVal = 0;
-					dwYVal += m_height;
-				}
+				dwXVal = 0;
+				dwYVal += m_height;
+			}
+			else if(	( i < 255 ) &&
+						( dwXVal + m_width >= dwTexWidth ) )
+			{
+				dwXVal = 0;
+				dwYVal += m_height;
 			}
 		}
 		
@@ -266,43 +203,30 @@ private:
 
 			m_data[index].m_offset = length;
 
-			length += ((xsize +	7) / 8)	* ysize;
+			length += xsize	* ysize;
 		}
 
 		// Allocate	the	data
-		m_dataSize = (length + 3) &	(~3);
+		m_dataSize = length;
 		m_pdata	   = new BYTE[m_dataSize];
 
-		// Create a	dib	section	to get the characters with
-		class MyHeader 
-		{
-		public:
-			BITMAPINFOHEADER bmih;
-			RGBQUAD			 colors[256];
-		} bmih;
+        // We are going to use an 8 bit bitmap
+        m_bitsPerPixel = 8;
 
-		bmih.bmih.biSize		  =	sizeof(BITMAPINFOHEADER);
-		bmih.bmih.biWidth		  =	m_width; 
-		bmih.bmih.biHeight		  =	-m_height; 
-		bmih.bmih.biPlanes		  =	1; 
-		bmih.bmih.biBitCount	  =	8; 
-		bmih.bmih.biCompression	  =	BI_RGB;	
-		bmih.bmih.biSizeImage	  =	0; 
-		bmih.bmih.biXPelsPerMeter =	0; 
-		bmih.bmih.biYPelsPerMeter =	0; 
-		bmih.bmih.biClrUsed		  =	0; 
-		bmih.bmih.biClrImportant  =	0; 
-
-		for	(index = 0;	index <	256; index++) 
-		{
-			bmih.colors[index].rgbBlue	   = index;
-			bmih.colors[index].rgbGreen	   = index;
-			bmih.colors[index].rgbRed	   = index;
-			bmih.colors[index].rgbReserved = 0;
-		}
+        // Rock: I can't get anti aliasing to work with an 8 bit bitmap. Just use a 32 bit one
+        BITMAPINFO bmih;
+        ZeroMemory(&bmih, sizeof(bmih));
+        bmih.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        bmih.bmiHeader.biWidth = m_width;
+        bmih.bmiHeader.biHeight = -m_height;
+        bmih.bmiHeader.biPlanes = 1;
+        bmih.bmiHeader.biBitCount = 32;
+        bmih.bmiHeader.biCompression = BI_RGB;
 
 		BYTE*	pbits;
-		HBITMAP	hbitmap	= ::CreateDIBSection( NULL,	(BITMAPINFO*)&bmih,	DIB_RGB_COLORS,	(void**)&pbits,	NULL, 0	);
+        DWORD*	pcolorbytes;
+		//HBITMAP	hbitmap	= ::CreateDIBSection( NULL,	(BITMAPINFO*)&bmih,	DIB_RGB_COLORS,	(void**)&pbits,	NULL, 0	);
+        HBITMAP	hbitmap = ::CreateDIBSection(NULL, &bmih, DIB_RGB_COLORS, (void**)&pcolorbytes, NULL, 0);
 		ZAssert(hbitmap	!= NULL);
 
 		HDC	hdcBitmap =	::CreateCompatibleDC(NULL);
@@ -329,23 +253,15 @@ private:
 			ZVerify(::TextOut(hdcBitmap, 0,	0, (PCC)&ch, 1));
 
 			// pull	out	the	data 
-			int	xbytes = (xsize	+ 7) / 8;
 			for	(int yindex	= 0; yindex	< ysize; yindex++) 
 			{
-				for	(int xbyte = 0;	xbyte <	xbytes;	xbyte++) 
-				{
-					WORD word =	0;
-					for	(int xbit =	0; xbit	< 8; xbit++) 
-					{
-						if (pbits[yindex * scanBytes + xbyte * 8 + xbit] ==	0xff) 
-						{
-							word |=	0x100;
-						}
-						word >>= 1;
-					}	 
-					*pdata = (BYTE)word;
-					pdata++;
-				}
+                for (int xindex = 0; xindex < xsize; xindex++)
+                {
+                    DWORD pixel = pcolorbytes[(yindex * scanBytes + xindex)];
+                    BYTE pixelbyte = (BYTE)((pixel & 0xff) >> 0); //just use the blue channel
+                    *pdata = pixelbyte;
+                    pdata++;
+                }
 			}
 		}
 		ZAssert(pdata == m_pdata + length);
@@ -423,6 +339,7 @@ public:
 		  m_height		= psite->GetDWORD();
 		  m_width		= psite->GetDWORD();
 		  m_dataSize	= psite->GetDWORD();
+          m_bitsPerPixel = 1;
 
 		  memcpy(m_data, psite->GetPointer(),	sizeof(m_data));
 		  psite->MovePointer(sizeof(m_data));

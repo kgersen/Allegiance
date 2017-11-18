@@ -72,6 +72,14 @@ PixelFormat::PixelFormat( D3DFORMAT d3dFmt )
 		m_ddpf.dwRGBAlphaBitMask	= 0;
 		break;
 
+    case D3DFMT_A8L8:
+        m_ddpf.dwRGBBitCount = 16;
+        m_ddpf.dwRBitMask = 255;
+        m_ddpf.dwGBitMask = 255;
+        m_ddpf.dwBBitMask = 255;
+        m_ddpf.dwRGBAlphaBitMask = 255 << 8;
+        break;
+
 	default:
         ZAssert( false && "Unsupported D3DFORMAT value.");
 	}
