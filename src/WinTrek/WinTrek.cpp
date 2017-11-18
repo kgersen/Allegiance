@@ -4368,6 +4368,7 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
+	// BT - Steam
 	bool IsPlayerSteamModerator()
 	{
 		// The MSAlleg Steam Group ID.
