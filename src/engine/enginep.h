@@ -710,6 +710,7 @@ public:
 
 TRef<IEngineFont> CreateEngineFont(HFONT hfont);
 TRef<IEngineFont> CreateEngineFont(IBinaryReaderSite* psite);
+TRef<IEngineFont> CreateEngineFont(std::string name, int size, int stretch, bool bold, bool italic, bool underline);
 TRef<IEngineFont> CreateEngineFont( D3DXFONT_DESC * pFontDesc );			// ADDED
 
 //////////////////////////////////////////////////////////////////////////////

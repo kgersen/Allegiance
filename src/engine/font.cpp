@@ -684,6 +684,66 @@ TRef<IEngineFont> CreateEngineFont(IBinaryReaderSite* psite)
 	return new FontImpl(psite);
 }
 
+struct FontIdentifier {
+    const std::string name;
+    int size;
+    int stretch;
+    bool bold;
+    bool italic;
+    bool underline;
+
+    bool operator<(FontIdentifier const& other) const {
+        //compare each value
+        if (name < other.name) return true;
+        if (name > other.name) return false;
+
+        if (size < other.size) return true;
+        if (size > other.size) return false;
+
+        if (stretch < other.stretch) return true;
+        if (stretch > other.stretch) return false;
+
+        if (bold < other.bold) return true;
+        if (bold > other.bold) return false;
+
+        if (italic < other.italic) return true;
+        if (italic > other.italic) return false;
+
+        if (underline < other.underline) return true;
+        if (underline > other.underline) return false;
+
+        return false;
+    }
+};
+
+//cache each font created with this function
+std::map<FontIdentifier, TRef<IEngineFont>> mapFontCache;
+
+TRef<IEngineFont> CreateEngineFont(std::string name, int size, int stretch, bool bold, bool italic, bool underline)
+{
+    FontIdentifier id{ name, size, stretch, bold, italic, underline };
+
+    auto found = mapFontCache.find(id);
+    if (found == mapFontCache.end()) {
+        //not found
+        HFONT hfont = CreateFont(
+            size,
+            stretch, 0, 0,
+            bold ? FW_BOLD : FW_DONTCARE,
+            italic ? TRUE : FALSE,
+            underline ? TRUE : FALSE,
+            FALSE, ANSI_CHARSET,
+            OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+            ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
+            name.c_str()
+        );
+        TRef<IEngineFont> pFont = CreateEngineFont(hfont);
+        mapFontCache[id] = pFont;
+        return pFont;
+    }
+    return found->second;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 //

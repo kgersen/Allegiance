@@ -30,19 +30,7 @@ public:
             }
 
             return (TRef<FontValue>)new FontValue(
-                CreateEngineFont(
-                    CreateFont(
-                    (int)size,
-                        (int)0, 0, 0,
-                        props["Bold"] ? FW_BOLD : FW_DONTCARE, 
-                        props["Italic"] ? TRUE : FALSE,
-                        props["Underline"] ? TRUE : FALSE,
-                        FALSE, ANSI_CHARSET,
-                        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
-                        name.c_str()
-                    )
-                )
+                CreateEngineFont(name, (int)size, 0, props["Bold"], props["Italic"], props["Underline"])
             );
         };
 

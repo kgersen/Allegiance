@@ -1947,15 +1947,12 @@ public:
         return
             new FontValue(
                 CreateEngineFont(
-                    CreateFont(
-                        (int)pnumberSize->GetValue(),
-                        (int)pnumberStretch->GetValue(),0, 0,
-                        pboolBold->GetValue() ? FW_BOLD : FW_DONTCARE, 
-                        FALSE, FALSE, FALSE, ANSI_CHARSET,
-                        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
-                        pstringName->GetValue()
-                    )
+                    std::string(pstringName->GetValue()), 
+                    (int)pnumberSize->GetValue(),
+                    (int)pnumberStretch->GetValue(),
+                    pboolBold->GetValue(),
+                    false,
+                    false
                 )
             );
     }

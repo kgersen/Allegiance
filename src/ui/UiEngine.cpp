@@ -239,9 +239,9 @@ public:
                 TRef<Image> result = executor.Execute<Image*>(callback);
 
                 auto elapsed = std::chrono::high_resolution_clock::now() - start;
-                long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+                long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
-                WriteLog("(Callback function): Finished " + std::to_string(microseconds) + " ms");
+                WriteLog("(Callback function): Finished " + std::to_string(milliseconds) + " ms");
                 return result;
             }
             catch (const std::runtime_error& e) {
@@ -337,9 +337,15 @@ public:
 
             WriteLog(path + ": " + "Parsed");
 
+            auto start = std::chrono::high_resolution_clock::now();
+
             TRef<Image> image = executor.Execute<Image*>(script);
 
-            WriteLog(path + ": " + "Executed");
+            auto elapsed = std::chrono::high_resolution_clock::now() - start;
+            long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+
+            WriteLog(path + ": " + "Executed " + std::to_string(milliseconds) + " ms");
+
             return new ContextImage(std::move(pContext), image);
         }
         catch (const std::runtime_error& e) {
