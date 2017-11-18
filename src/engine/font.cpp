@@ -159,8 +159,6 @@ private:
                 case 8:
                     for (DWORD x = 0; x < xwidth; x++) {
                         bByte = *pSrc++;
-                        BYTE byte5 = (BYTE)(bByte >> 3);
-                        DWORD argb = (bByte << 24) | (bByte << 16) | (bByte << 8) | bByte;
                         pData[dwIndex++] = (bByte << 8) | 0x00FF;
                     }
 
@@ -241,7 +239,7 @@ private:
 
 		// Get the character bitmaps
 		BYTE* pdata	= m_pdata;
-		int	scanBytes =	((m_width +	3) / 4)	* 4;
+		int	scanBytes = m_width;
 
 		for	(index = 0;	index <	256; index++) 
 		{
@@ -734,7 +732,7 @@ TRef<IEngineFont> CreateEngineFont(std::string name, int size, int stretch, bool
             underline ? TRUE : FALSE,
             FALSE, ANSI_CHARSET,
             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-            ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
+            CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_MODERN,
             name.c_str()
         );
         TRef<IEngineFont> pFont = CreateEngineFont(hfont);
