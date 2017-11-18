@@ -25,6 +25,8 @@ public:
 
     static TRef<Number> X(PointValue* point);
     static TRef<Number> Y(PointValue* point);
+
+    static TRef<PointValue> Scale(PointValue* a, PointValue* b);
 };
 
 class ColorTransform {
@@ -37,6 +39,19 @@ public:
     static TRef<RectValue> Create(Number* xmin, Number* ymin, Number* xmax, Number* ymax);
     static TRef<RectValue> Create(Number* width, Number* height);
     static TRef<RectValue> Create(PointValue* pPoint);
+};
+
+class BooleanTransform {
+public:
+    static TRef<Boolean> And(Boolean* a, Boolean* b);
+    static TRef<Boolean> Or(Boolean* a, Boolean* b);
+    static TRef<Boolean> Not(Boolean* a);
+};
+
+class StringTransform {
+public:
+    static TRef<Number> Length(StringValue* a);
+    static TRef<StringValue> Concat(StringValue* a, StringValue* b);
 };
 
 template<class TransformedType, class OriginalType>

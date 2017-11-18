@@ -979,6 +979,7 @@ const int c_cbGamePassword = 17;
 //------------------------------------------------------------------------------
 #define IGC_STATIC_CORE_FILENAME    "static_core"
 #define IGC_ENCRYPT_CORE_FILENAME   "zone_core"
+#define IGC_TRAINING_CORE_FILENAME  "PCore012"
 
 
 const float c_fMissionBriefingCountdown = 15.0f; // seconds
@@ -986,7 +987,7 @@ const float c_fMissionBriefingCountdown = 15.0f; // seconds
 const int c_cUnlimitedLives = 0x7fff;
 
 //Forward definitions of interfaces
-struct MissionParams;
+class MissionParams;
 class ThingSite;
 class ClusterSite;
 
@@ -1079,8 +1080,9 @@ class ImapMakerIGC
 };
 
 
-struct MissionParams
+class MissionParams
 {
+public:
     //------------------------------------------------------------------------------
     // If you add or remove properties, please update
     // AGCGameParameters.cpp, AGCGameParameters.h, and AGCIDL.h.
@@ -5605,9 +5607,14 @@ class PlayerScoreObject
 		{
 			m_cProbeSpot++;
 		}
-		void	SetRepair(int repair)
+		void	SetRepair(float repair)
 		{
-			m_cRepair += repair;
+			m_cRepair = repair;
+		}
+		
+		float	GetRepair(void) const
+		{			
+			return m_cRepair;
 		}
 
 
@@ -5868,7 +5875,7 @@ class PlayerScoreObject
         float                       m_cBaseKills;
         float                       m_cBaseCaptures;
 		short						m_cProbeSpot;
-		int							m_cRepair;
+		float						m_cRepair;
 
         short                       m_cTechsRecovered;
         short                       m_cFlags;

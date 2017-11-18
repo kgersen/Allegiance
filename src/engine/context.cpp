@@ -292,6 +292,7 @@ private:
         int m_countDrawStringChars;
     #endif
 
+     bool m_bYAxisInversion;
 public:
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -312,7 +313,8 @@ public:
         m_bRendering(false),
         m_bIn3DLayer(false),
         m_bInScene(false),
-        m_bRenderingCallbacks(false)
+        m_bRenderingCallbacks(false),
+        m_bYAxisInversion(true)
     {
 
 		// Create a rasterizer and a 3D device
@@ -364,6 +366,14 @@ public:
     bool IsValid()
     {
         return m_pdevice3D != NULL && m_pdevice3D->IsValid();
+    }
+
+    void SetYAxisInversion(bool bValue) {
+        m_bYAxisInversion = bValue;
+    }
+
+    bool GetYAxisInversion() {
+        return m_bYAxisInversion;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -635,41 +645,17 @@ public:
         float ymin = yOffset;
         float ymax = yOffset + rectSource.YSize();
 
-/*		xmin *= m_pstateDevice->m_matPerspective[0][0];
-		xmax *= m_pstateDevice->m_matPerspective[0][0];
-		ymin *= m_pstateDevice->m_matPerspective[1][1];
-		ymax *= m_pstateDevice->m_matPerspective[1][1];
-
-		xmin += m_pstateDevice->m_matPerspective[0][3];
-		xmax += m_pstateDevice->m_matPerspective[0][3];
-		ymin += m_pstateDevice->m_matPerspective[1][3];
-		ymax += m_pstateDevice->m_matPerspective[1][3];
-
-		ymin = m_psurface->GetSize().Y() - ymin;
-		ymax = m_psurface->GetSize().Y() - ymax;*/
-
         float xt;
         float yt;
 
-        //if (psurface->GetSurfaceType().Test(SurfaceTypeTile())) {
-            xt = 1.0f / sizeSource.X();
-            yt = 1.0f / sizeSource.Y();
-        //} else {
-        //    //  , this is broken if the texture size is smaller that the surface size
-        //    Point pointTextureSize(Point::Cast(psurface->GetTextureRect().Size()));
-        //
-        //    xt = 1.0f / pointTextureSize.X();
-        //    yt = 1.0f / pointTextureSize.Y();
-        //}
+        xt = 1.0f / sizeSource.X();
+        yt = 1.0f / sizeSource.Y();
 
         float xtmin = xt * rectSource.XMin();
         float xtmax = xt * rectSource.XMax();
 
         float ytmin = yt * (sizeSource.Y() - rectSource.YMin());
         float ytmax = yt * (sizeSource.Y() - rectSource.YMax());
-
-		// Grab the handle of the textured vertex dynamic VB.
-		CVBIBManager::SVBIBHandle * phVB;
 
         static MeshIndex indices[6] = { 0, 2, 1, 0, 3, 2 };
 
@@ -678,32 +664,6 @@ public:
 		CD3DDevice9 * pDev = CD3DDevice9::Get();
 		CVRAMManager::Get()->SetTexture( psurface->GetTexHandle(), 0 );
 
-		switch (GetBlendMode())
-		{
-			case BlendModeSource:
-				pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-				pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-				pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
-				pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
-				break;
-			case BlendModeAdd:
-				pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-				pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-				pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-				pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-				break;
-			case BlendModeSourceAlpha:
-				pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-				pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-				pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-				pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-				pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-				break;
-			default:
-				ZError("Invalid blend mode");
-		}
 
 		switch (GetShadeMode()) 
 		{
@@ -723,75 +683,7 @@ public:
             case ShadeModeFlat:
             case ShadeModeGouraud:
                 {
-					UIFONTVERTEX * pVertexData;
-
-					// New dynamic VB path.
-					phVB = CVertexGenerator::Get()->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UIFontVB );
-
-					if( CVBIBManager::Get()->LockDynamicVertexBuffer( phVB, 4, (void**) &pVertexData ) == false )
-					{
-						// Failed to lock the vertex buffer.
-                        ZAssert( false );
-						return;
-					}
-
-					Matrix & matRef = m_pstateDevice->m_matPerspective;
-					yOffset = (float) m_psurface->GetSize().Y();
-
-					// Transform the vertex positions by the values in m_pstateDevice->m_matPerspective.
-					// The y-value is inverted relative to the target surface.
-					pVertexData[0].x = ( xmin * matRef[0][0] ) + ( ymax * matRef[0][1] ) + matRef[0][3];
-					pVertexData[0].y = yOffset - (	( xmin * matRef[1][0] ) + 
-													( ymax * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[0].z = 0.0f;
-					pVertexData[0].rhw = 1.0f;
-					pVertexData[0].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[0].fU = xtmin;
-					pVertexData[0].fV = ytmax;
-
-					pVertexData[1].x = ( xmax * matRef[0][0] ) + ( ymax * matRef[0][1] ) + matRef[0][3];
-					pVertexData[1].y = yOffset - (	( xmax * matRef[1][0] ) + 
-													( ymax * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[1].z = 0.0f;
-					pVertexData[1].rhw = 1.0f;
-					pVertexData[1].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[1].fU = xtmax;
-					pVertexData[1].fV = ytmax;
-
-					pVertexData[2].x = ( xmin * matRef[0][0] ) + ( ymin * matRef[0][1] ) + matRef[0][3];
-					pVertexData[2].y = yOffset - (	( xmin * matRef[1][0] ) + 
-													( ymin * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[2].z = 0.0f;
-					pVertexData[2].rhw = 1.0f;
-					pVertexData[2].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[2].fU = xtmin;
-					pVertexData[2].fV = ytmin;
-
-					pVertexData[3].x = ( xmax * matRef[0][0] ) + ( ymin * matRef[0][1] ) + matRef[0][3];
-					pVertexData[3].y = yOffset - (	( xmax * matRef[1][0] ) + 
-													( ymin * matRef[1][1] ) + 
-													matRef[1][3] );
-					pVertexData[3].z = 0.0f;
-					pVertexData[3].rhw = 1.0f;
-					pVertexData[3].color = D3DRGBA( color.R(), color.G(), color.B(), color.A() );
-					pVertexData[3].fU = xtmax;
-					pVertexData[3].fV = ytmin;
-
-					// Adjust x and y coordinates for correct texture lookup.
-					pVertexData[0].x -= 0.5f;
-					pVertexData[0].y -= 0.5f;
-					pVertexData[1].x -= 0.5f;
-					pVertexData[1].y -= 0.5f;
-					pVertexData[2].x -= 0.5f;
-					pVertexData[2].y -= 0.5f;
-					pVertexData[3].x -= 0.5f;
-					pVertexData[3].y -= 0.5f;
-
-					// Finished, unlock the buffer, set the stream.
-					CVBIBManager::Get()->UnlockDynamicVertexBuffer( phVB );
+                    CVBIBManager::SVBIBHandle * phVB = GetQuadHandle(color, xmin, xmax, ymin, ymax, xtmin, xtmax, ytmin, ytmax);
 
 					pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, GetLinearFilter() ? D3DTEXF_LINEAR : D3DTEXF_POINT);
 					pDev->SetSamplerState(0, D3DSAMP_MINFILTER, GetLinearFilter() ? D3DTEXF_LINEAR : D3DTEXF_POINT);
@@ -841,53 +733,6 @@ public:
 						const Point&   point,
 						const ZString& str ) 
 	{
-/*        #ifdef EnablePerformanceCounters
-            m_countDrawString++;
-            m_countDrawStringChars += str.GetLength();
-        #endif
-
-        DD2D();
-
-        Point pointImage;
-        if (TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage)) 
-		{
-            WinPoint pointScreen = TransformImageToSurface(pointImage);
-//        	WinPoint pointScreen( pointImage.X(), pointImage.Y() );
-//			WinPoint pointScreen( point.X(), point.Y() );
-
-		    WinPoint size = pfont->GetTextExtent(str);
-
-			// 03.12.05
-			pointScreen.SetY(pointScreen.Y() - size.Y());
-			Point pointOffset;
-			WinRect rectClip(	m_UIOffset.X(), m_UIOffset.Y(),
-								m_UIOffset.X() + m_UISize.X(),
-								m_UIOffset.Y() + m_UISize.Y() );
-			
-			WinRect currRectClip; 
-			GetCurrClipRect( &currRectClip );
-//			pfont->DrawString( NULL, pointScreen + WinPoint( currRectClip.XMin(), currRectClip.YMin() ), rectClip, str, color );
-//			pfont->DrawString( NULL, pointScreen + WinPoint( currRectClip.XMin(), currRectClip.YMin() ), rectClip, str, color );
-//			pfont->DrawString( NULL, pointScreen + m_UIOffset, rectClip, str, color );
-			pfont->DrawString( NULL, pointScreen + WinPoint( currRectClip.XMin(), currRectClip.YMin() ), rectClip, str, color );
-        }*/
-
-/*       if (TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage)) 
-	   {
-			WinPoint pointScreen = TransformImageToSurface(pointImage);
-			WinPoint size        = pfont->GetTextExtent(str);
-
-			pointScreen.SetY(pointScreen.Y() - size.Y());
-			WinRect rectClip(	pointScreen.X(), pointScreen.Y(),
-								pointScreen.X() + m_UISize.X(),
-								pointScreen.Y() + m_UISize.Y() );
-
-			//			m_psurface->DrawString(pfont, color, pointScreen, str);
-			WinRect currRectClip; 
-			GetCurrClipRect( &currRectClip );
-			pfont->DrawString( NULL, pointScreen, rectClip, str, color );
-        }*/
-
 		if( str.GetLength() == 0 )
 		{
 			return;
@@ -906,11 +751,11 @@ public:
             WinPoint pointScreen = TransformImageToSurface(pointImage);
             WinPoint size        = pfont->GetTextExtent(str);
 
-            pointScreen.SetY( pointScreen.Y() - size.Y() );
-//			pointScreen += m_UIOffset;
-
-            //m_psurface->DrawString(pfont, color, pointScreen, str);
-			pfont->DrawString(pointScreen, str, color );
+            if (m_bYAxisInversion) {
+                pointScreen.SetY(pointScreen.Y() - size.Y());
+            }		
+            
+            pfont->DrawString(pointScreen, str, color );
         }
     }
 
@@ -939,64 +784,130 @@ public:
         m_pdevice3D->DrawLines(vertices, 4, indices, 8);
     }
 
+    CVBIBManager::SVBIBHandle * GetQuadHandle(const Color& color, float xmin, float xmax, float ymin, float ymax, float xtmin, float xtmax, float ytmin, float ytmax) {
+        UIFONTVERTEX * pVertexData;
+
+        CVBIBManager::SVBIBHandle* phVB;
+
+        // New dynamic VB path.
+        phVB = CVertexGenerator::Get()->GetPredefinedDynamicBuffer(CVertexGenerator::ePDBT_UIFontVB);
+
+        if (CVBIBManager::Get()->LockDynamicVertexBuffer(phVB, 4, (void**)&pVertexData) == false)
+        {
+            // Failed to lock the vertex buffer.
+            ZAssert(false);
+            return nullptr;
+        }
+
+        Matrix & matRef = m_pstateDevice->m_matPerspective;
+        float yOffset = m_bYAxisInversion ? ((float)m_psurface->GetSize().Y()) : 0;
+        float yMultiplier = m_bYAxisInversion ? -1 : 1;
+
+        // Transform the vertex positions by the values in m_pstateDevice->m_matPerspective.
+        // The y-value is inverted relative to the target surface.
+        pVertexData[0].x = (xmin * matRef[0][0]) + (ymax * matRef[0][1]) + matRef[0][3];
+        pVertexData[0].y = yOffset + yMultiplier * ((xmin * matRef[1][0]) +
+            (ymax * matRef[1][1]) +
+            matRef[1][3]);
+        pVertexData[0].z = 0.0f;
+        pVertexData[0].rhw = 1.0f;
+        pVertexData[0].color = D3DRGBA(color.R(), color.G(), color.B(), color.A());
+        pVertexData[0].fU = xtmin;
+        pVertexData[0].fV = m_bYAxisInversion ? ytmax : ytmin;
+
+        pVertexData[1].x = (xmax * matRef[0][0]) + (ymax * matRef[0][1]) + matRef[0][3];
+        pVertexData[1].y = yOffset + yMultiplier * ((xmax * matRef[1][0]) +
+            (ymax * matRef[1][1]) +
+            matRef[1][3]);
+        pVertexData[1].z = 0.0f;
+        pVertexData[1].rhw = 1.0f;
+        pVertexData[1].color = D3DRGBA(color.R(), color.G(), color.B(), color.A());
+        pVertexData[1].fU = xtmax;
+        pVertexData[1].fV = m_bYAxisInversion ? ytmax : ytmin;
+
+        pVertexData[2].x = (xmin * matRef[0][0]) + (ymin * matRef[0][1]) + matRef[0][3];
+        pVertexData[2].y = yOffset + yMultiplier * ((xmin * matRef[1][0]) +
+            (ymin * matRef[1][1]) +
+            matRef[1][3]);
+        pVertexData[2].z = 0.0f;
+        pVertexData[2].rhw = 1.0f;
+        pVertexData[2].color = D3DRGBA(color.R(), color.G(), color.B(), color.A());
+        pVertexData[2].fU = xtmin;
+        pVertexData[2].fV = m_bYAxisInversion ? ytmin : ytmax;
+
+        pVertexData[3].x = (xmax * matRef[0][0]) + (ymin * matRef[0][1]) + matRef[0][3];
+        pVertexData[3].y = yOffset + yMultiplier * ((xmax * matRef[1][0]) +
+            (ymin * matRef[1][1]) +
+            matRef[1][3]);
+        pVertexData[3].z = 0.0f;
+        pVertexData[3].rhw = 1.0f;
+        pVertexData[3].color = D3DRGBA(color.R(), color.G(), color.B(), color.A());
+        pVertexData[3].fU = xtmax;
+        pVertexData[3].fV = m_bYAxisInversion ? ytmin : ytmax;
+
+        // Adjust x and y coordinates for correct texture lookup.
+        pVertexData[0].x -= 0.5f;
+        pVertexData[0].y -= 0.5f;
+        pVertexData[1].x -= 0.5f;
+        pVertexData[1].y -= 0.5f;
+        pVertexData[2].x -= 0.5f;
+        pVertexData[2].y -= 0.5f;
+        pVertexData[3].x -= 0.5f;
+        pVertexData[3].y -= 0.5f;
+
+        // Finished, unlock the buffer, set the stream.
+        CVBIBManager::Get()->UnlockDynamicVertexBuffer(phVB);
+
+        return phVB;
+    }
+
     void FillRect(const Rect& rect, const Color& color)
     {
-        Texture2D();
+        ZAssert(m_bRendering);
 
-        static MeshIndex indices[6] = { 0, 2, 1, 0, 3, 2 };
+        if (!m_bInScene) {
+            Texture2D();
+        }
+
+        float xOffset = 0;
+        float yOffset = 0;
 
         float xmin = rect.XMin();
         float xmax = rect.XMax();
         float ymin = rect.YMin();
         float ymax = rect.YMax();
-        float r    = color.R();
-        float g    = color.G();
-        float b    = color.B();
-        float a    = color.A();
 
-        VertexL vertices[4] = {
-            VertexL(xmin, ymax, 0, r, g, b, a, 0, 1),
-            VertexL(xmin, ymin, 0, r, g, b, a, 0, 0),
-            VertexL(xmax, ymin, 0, r, g, b, a, 1, 0),
-            VertexL(xmax, ymax, 0, r, g, b, a, 1, 1)
-        };
+        static MeshIndex indices[6] = { 0, 2, 1, 0, 3, 2 };
 
         UpdateState();
 
-		CD3DDevice9 * pDev = CD3DDevice9::Get();
-		switch (GetBlendMode())
-		{
-		case BlendModeSource:
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-			pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-			pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
-			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
-			break;
-		case BlendModeAdd:
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-			pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-			pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-			break;
-		case BlendModeSourceAlpha:
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-			pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-			pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-			pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-			break;
-		default:
-			ZError("Invalid blend mode");
-		}
+        CD3DDevice9 * pDev = CD3DDevice9::Get();
+        CVRAMManager::Get()->SetTexture(INVALID_TEX_HANDLE, 0);
 
+        // Grab the handle of the textured vertex dynamic VB.
+        CVBIBManager::SVBIBHandle * phVB = GetQuadHandle(
+            color,
+            rect.XMin(),
+            rect.XMax(),
+            rect.YMin(),
+            rect.YMax(),
+            0,
+            0,
+            1,
+            1
+        );
+
+        if (phVB == nullptr) {
+            return;
+        }
+
+        pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
         m_pdevice3D->SetShadeMode(ShadeModeFlat);
-		m_pdevice3D->SetColorKey(false); // KGJV 32B
-        m_pdevice3D->DrawTriangles(vertices, 4, indices, 6);
+        m_pdevice3D->DrawTriangles(D3DPT_TRIANGLESTRIP, 2, phVB);
         m_pdevice3D->SetShadeMode(m_pstateDevice->m_shadeMode);
-		m_pdevice3D->SetColorKey(m_pstateDevice->m_bColorKey); // KGJV 32B
 
+        //reset texture
+        m_pdevice3D->SetTexture(m_pstateDevice->m_psurfaceTexture);
     }
 
     void FillInfinite(const Color& color)
@@ -1928,11 +1839,12 @@ public:
     WinPoint TransformImageToSurface(const Point& point)
     {
         const WinPoint& size = m_psurface->GetSize();
+        int y = MakeInt(point.Y());
 
         return
             WinPoint(
                 MakeInt(point.X()),
-                size.Y() - MakeInt(point.Y())
+                m_bYAxisInversion ? (size.Y() - y) : y
             );
     }
 

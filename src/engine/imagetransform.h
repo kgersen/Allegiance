@@ -3,11 +3,13 @@
 
 #include "model.h"
 #include "enginep.h"
+#include "engine.h"
 
 class ImageTransform {
 public:
     static TRef<Image> Translate(Image* pImage, PointValue* pPoint);
     static TRef<Image> Scale(Image* pImage, PointValue* pPoint);
+    static TRef<Image> Rotate(Image* pImage, Number* pNumberRadians);
 
     static TRef<PointValue> Size(Image* pImage);
 
@@ -21,4 +23,10 @@ public:
 
     static TRef<Image> Clip(Image* pImage, RectValue* pRect);
     static TRef<Image> Cut(Image* pImage, RectValue* pRect);
+
+    static TRef<Image> Multiply(Image* pImage, ColorValue* pColor);
+
+    static TRef<Image> Lazy(std::function<TRef<Image>()> callback);
+
+    static TRef<Image> String(FontValue* font, ColorValue* color, Number* width, StringValue* string, Justification justification);
 };

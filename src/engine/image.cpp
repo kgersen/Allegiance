@@ -249,7 +249,6 @@ TRef<Image> CreateConstantImage3D(Surface* psurface, ColorValue* pcolor)
 class StringImage : public Image {
 private:
     Justification     m_justification;
-    int               m_width;
     int               m_indent;
     TRef<IEngineFont> m_pfont;
 
@@ -261,20 +260,20 @@ private:
 
     StringValue* GetString() { return StringValue::Cast(GetChild(0)); }
     ColorValue*  GetColor()  { return  ColorValue::Cast(GetChild(1)); }
+    Number* GetWidth() { return Number::Cast(GetChild(2)); }
 
 public:
     StringImage(
         Justification justification,
         IEngineFont*  pfont,
         ColorValue*   pcolor,
-        int           width,
+        Number*       pwidth,
         StringValue*  pstring,
         int           indent
     ) :
-        Image(pstring, pcolor),
+        Image(pstring, pcolor, pwidth),
         m_justification(justification),
         m_pfont(pfont),
-        m_width(width),
         m_indent(indent)
     {
     }
@@ -365,12 +364,13 @@ public:
     void CalcBounds()
     {
         ZString str    = GetString()->GetValue();
+        float fWidth = GetWidth()->GetValue();
         int     xsize  = 0;
         int     ysize  = 0;
         int     indent = 0;
 
         while (!str.IsEmpty()) {
-            ZString strLine = BreakLine(str, m_width - indent);
+            ZString strLine = BreakLine(str, fWidth - indent);
             WinPoint size   = m_pfont->GetTextExtent(strLine);
 
             xsize  = std::max(xsize, size.X());
@@ -378,12 +378,13 @@ public:
             indent = m_indent;
         }
 
-        m_bounds.SetRect(Rect(0, (float)(-ysize), (float)m_width, 0));
+        m_bounds.SetRect(Rect(0, (float)(-ysize), fWidth, 0));
     }
 
     void Render(Context* pcontext)
     {
         ZString     str    = GetString()->GetValue();
+        float fWidth = GetWidth()->GetValue();
         const Rect& rect   = m_bounds.GetRect();
         int         y      = 0;
         int         indent = 0;
@@ -391,16 +392,16 @@ public:
         const Color& color = GetColor()->GetValue();
 
         while (!str.IsEmpty()) {
-            ZString  strLine = BreakLine(str, m_width - indent);
+            ZString  strLine = BreakLine(str, fWidth - indent);
             WinPoint size    = m_pfont->GetTextExtent(strLine);
             int      x;
 
             if (m_justification == JustifyLeft()) {
                 x = 0;
             } else if (m_justification == JustifyRight()) {
-                x = m_width - size.X();
+                x = fWidth - size.X();
             } else if (m_justification == JustifyCenter()) {
-                x = (m_width - size.X()) / 2;
+                x = (fWidth - size.X()) / 2;
             } else {
                 ZError("Invalid Justification");
             }
@@ -434,11 +435,22 @@ TRef<Image> CreateStringImage(
     Justification justification,
     IEngineFont*  pfont,
     ColorValue*   pcolor,
+    Number*       pwidth,
+    StringValue*  pstring,
+    int           indent
+) {
+    return new StringImage(justification, pfont, pcolor, pwidth, pstring, indent);
+}
+
+TRef<Image> CreateStringImage(
+    Justification justification,
+    IEngineFont*  pfont,
+    ColorValue*   pcolor,
     int           width,
     StringValue*  pstring,
     int           indent
 ) {
-    return new StringImage(justification, pfont, pcolor, width, pstring, indent);
+    return CreateStringImage(justification, pfont, pcolor, new Number(width), pstring, indent);
 }
 
 //////////////////////////////////////////////////////////////////////////////

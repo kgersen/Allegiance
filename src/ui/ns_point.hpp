@@ -21,9 +21,15 @@ public:
         };
         
         table["X"] = [](PointValue* pPoint) {
+            if (!pPoint) {
+                throw std::exception("Argument should not be null");
+            }
             return PointTransform::X(pPoint);
         };
         table["Y"] = [](PointValue* pPoint) {
+            if (!pPoint) {
+                throw std::exception("Argument should not be null");
+            }
             return PointTransform::Y(pPoint);
         };
         m_pLua->set("Point", table);

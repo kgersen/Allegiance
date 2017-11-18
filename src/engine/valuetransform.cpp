@@ -267,6 +267,12 @@ TRef<Number> PointTransform::Y(PointValue* ppoint) {
     return new PointY(ppoint);
 };
 
+TRef<PointValue> PointTransform::Scale(PointValue* a, PointValue* b) {
+    return new TransformedValue2<Point, Point, Point>([](Point a, Point b) {
+        return Point(a.X() * b.X(), a.Y() * b.Y());
+    }, a, b);
+};
+
 
 // ### Color
 
@@ -315,3 +321,101 @@ TRef<RectValue> RectTransform::Create(PointValue* pPoint) {
         pPoint
     );
 };
+
+// ### Boolean
+
+class AndBoolean : public Boolean {
+public:
+    AndBoolean(Boolean* pvalue0, Boolean* pvalue1) :
+        Boolean(pvalue0, pvalue1)
+    {
+    }
+
+    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
+    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
+
+    void Evaluate()
+    {
+        GetValueInternal() =
+            Get0()->GetValue()
+            && Get1()->GetValue();
+    }
+};
+
+class OrBoolean : public Boolean {
+public:
+    OrBoolean(Boolean* pvalue0, Boolean* pvalue1) :
+        Boolean(pvalue0, pvalue1)
+    {
+    }
+
+    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
+    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
+
+    void Evaluate()
+    {
+        GetValueInternal() =
+            Get0()->GetValue()
+            || Get1()->GetValue();
+    }
+};
+
+class NotBoolean : public Boolean {
+public:
+    NotBoolean(Boolean* pvalue0) :
+        Boolean(pvalue0)
+    {
+    }
+
+    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
+
+    void Evaluate()
+    {
+        GetValueInternal() = !(Get0()->GetValue());
+    }
+};
+
+TRef<Boolean> BooleanTransform::And(Boolean* pvalue1, Boolean* pvalue2)
+{
+    return new AndBoolean(pvalue1, pvalue2);
+}
+
+TRef<Boolean> BooleanTransform::Or(Boolean* pvalue1, Boolean* pvalue2)
+{
+    return new OrBoolean(pvalue1, pvalue2);
+}
+
+TRef<Boolean> BooleanTransform::Not(Boolean* pvalue1)
+{
+    return new NotBoolean(pvalue1);
+}
+
+
+// ### String
+
+class ConcatenatedString : public StringValue {
+public:
+    ConcatenatedString(StringValue* pvalue1, StringValue* pvalue2) :
+        StringValue(pvalue1, pvalue2)
+    {
+    }
+
+    void Evaluate()
+    {
+        GetValueInternal() = ((StringValue*)GetChild(0))->GetValue()
+            + ((StringValue*)GetChild(1))->GetValue();
+    }
+
+};
+
+TRef<Number> StringTransform::Length(StringValue* a)
+{
+    return (TRef<Number>)new TransformedValue<float, ZString>([](ZString str) {
+        return (float)str.GetLength();
+    }, a);
+}
+
+TRef<StringValue> StringTransform::Concat(StringValue* a, StringValue* b)
+{
+    return new ConcatenatedString(a, b);
+}

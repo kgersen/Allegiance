@@ -74,7 +74,7 @@ public:
         
         table["GetResolution"] = [&context]() {
             return (TRef<PointValue>)new TransformedValue<Point, WinPoint>([](WinPoint winpoint) {
-                return Point(winpoint.X(), winpoint.Y());
+                return Point((float)winpoint.X(), (float)winpoint.Y());
             }, context.GetEngine()->GetResolutionSizeModifiable());
         };
 

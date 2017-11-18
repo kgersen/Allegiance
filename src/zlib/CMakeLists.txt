@@ -1,10 +1,9 @@
-ADD_DEFINITIONS(-D__MODULE__="zlib")
+SET_MODULE("zlib")
 
-INCLUDE_DIRECTORIES(../Inc ../Lib/steam)
+INCLUDE_DIRECTORIES(../Inc)
 
 SET(Zlib_SRC
     StackTracer.cpp
-    VersionInfo.cpp
     Win32app.cpp
     color.cpp
     event.cpp
@@ -17,9 +16,16 @@ SET(Zlib_SRC
     token.cpp
     vector.cpp
     window.cpp
+    zmath.cpp
     zstring.cpp
     ztime.cpp
    )
+
+IF (MSVC)
+    SET(Zlib_SRC ${Zlib_SRC} VersionInfo_msvc.cpp)
+ELSE()
+    SET(Zlib_SRC ${Zlib_SRC} VersionInfo_dummy.cpp)
+ENDIF()
 
 IF(UNIX)
     SET(PLATFORM_SRC
@@ -32,7 +38,7 @@ ELSEIF(WIN32)
         FTPSession_win.cpp
         )
 ELSE()
-    MESSAGE(FATAL_ERROR "Unhandled platfor")
+    MESSAGE(FATAL_ERROR "Unhandled platform")
 ENDIF()
 
 ADD_LIBRARY(Zlib ${Zlib_SRC} ${PLATFORM_SRC})

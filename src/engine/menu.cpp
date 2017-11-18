@@ -233,7 +233,7 @@ public:
         TRef<Surface> psurfacePopup = 
             pmodeler->GetEngine()->CreateSurface(
                 WinPoint(9, 9),
-                SurfaceType2D() | SurfaceTypeColorKey(),
+                SurfaceType2D(),// | SurfaceTypeColorKey(),
                 new PopupSurfaceSite()
             );
 

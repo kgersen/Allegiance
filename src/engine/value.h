@@ -150,6 +150,8 @@ protected:
 
     virtual void ChildChanged(Value* pvalue, Value* pvalueNew);
 
+    virtual void OnNoParents() {}
+
     void   Changed();
     void   AddChild(Value* pchild);
     void   SetChild(int index, Value* m_pvalueChild);

@@ -212,6 +212,15 @@ TRef<Image> CreateStringImage(
     int           indent = 0
 );
 
+TRef<Image> CreateStringImage(
+    Justification justification,
+    IEngineFont*  pfont,
+    ColorValue*   pcolor,
+    Number*       pwidth,
+    StringValue*  pstring,
+    int           indent = 0
+);
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //

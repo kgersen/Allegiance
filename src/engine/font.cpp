@@ -538,7 +538,7 @@ public:
         ZAssert( str.GetLength() < 256 );
 		float fX0, fX1, fY0, fY1;
 		DWORD dwA, dwR, dwG, dwB;
-		dwA = 255;
+		dwA = (DWORD) ( colour.A() * 255.0f );
 		dwR = (DWORD) ( colour.R() * 255.0f );
 		dwG = (DWORD) ( colour.G() * 255.0f );
 		dwB = (DWORD) ( colour.B() * 255.0f );
@@ -550,24 +550,10 @@ public:
 		}
 
 		CD3DDevice9 * pDev = pDev->Get();
-
-		// Set the texture function.
-		pDev->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-		pDev->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-		pDev->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
-		pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
-		pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-
-		pDev->SetTextureStageState( 1, D3DTSS_COLOROP,   D3DTOP_DISABLE );
-		pDev->SetTextureStageState( 1, D3DTSS_ALPHAOP,   D3DTOP_DISABLE );
-		pDev->SetTextureStageState( 2, D3DTSS_COLOROP,   D3DTOP_DISABLE );
 		
 		pDev->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_POINT );
 		pDev->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_POINT );
-		
-		pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-		pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+
 		pDev->SetRenderState( D3DRS_COLORVERTEX, TRUE );
 		pDev->SetRenderState( D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1 );
 

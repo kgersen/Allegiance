@@ -226,6 +226,9 @@ void Value::RemoveParent(Value* pvalue)
 {
     ZAssert(m_listParents.Find(pvalue));
     m_listParents.Remove(pvalue);
+    if (m_listParents.GetCount() == 0) {
+        OnNoParents();
+    }
 }
 
 void Value::SetChild(int index, Value* pvalueChild)
@@ -442,6 +445,7 @@ bool ValueList::DoFold()
 void ValueList::ChildChanged(Value* pvalue, Value* pvalueNew)
 {
     ZAssert(m_list.Find(pvalue));
+    ZAssert(pvalue != pvalueNew); //would be a waste if it was called with the same argument
 
     if (pvalueNew) {
         pvalue->RemoveParent(this);
@@ -672,78 +676,6 @@ TRef<Number> And(Number* pvalue1, Number* pvalue2)
 TRef<Number> XOr(Number* pvalue1, Number* pvalue2)
 {
     return new XOrNumber(pvalue1, pvalue2);
-}
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Boolean
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class AndBoolean : public Boolean {
-public:
-    AndBoolean(Boolean* pvalue0, Boolean* pvalue1) :
-        Boolean(pvalue0, pvalue1)
-    {
-    }
-
-    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
-    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() =
-               Get0()->GetValue()
-            && Get1()->GetValue();
-    }
-};
-
-class OrBoolean : public Boolean {
-public:
-    OrBoolean(Boolean* pvalue0, Boolean* pvalue1) :
-        Boolean(pvalue0, pvalue1)
-    {
-    }
-
-    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
-    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() =
-               Get0()->GetValue()
-            || Get1()->GetValue();
-    }
-};
-
-class NotBoolean : public Boolean {
-public:
-    NotBoolean(Boolean* pvalue0) :
-        Boolean(pvalue0)
-    {
-    }
-
-    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = !(Get0()->GetValue());
-    }
-};
-
-TRef<Boolean> And(Boolean* pvalue1, Boolean* pvalue2)
-{
-    return new AndBoolean(pvalue1, pvalue2);
-}
-
-TRef<Boolean> Or(Boolean* pvalue1, Boolean* pvalue2)
-{
-    return new OrBoolean(pvalue1, pvalue2);
-}
-
-TRef<Boolean> Not(Boolean* pvalue1)
-{
-    return new NotBoolean(pvalue1);
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -129,7 +129,7 @@
     <ClCompile Include="..\src\zlib\tlist.cpp" />
     <ClCompile Include="..\src\zlib\token.cpp" />
     <ClCompile Include="..\src\zlib\vector.cpp" />
-    <ClCompile Include="..\src\zlib\VersionInfo.cpp" />
+    <ClCompile Include="..\src\zlib\VersionInfo_msvc.cpp" />
     <ClCompile Include="..\src\zlib\Win32app.cpp" />
     <ClCompile Include="..\src\zlib\window.cpp" />
     <ClCompile Include="..\src\zlib\zmath.cpp" />

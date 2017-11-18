@@ -662,7 +662,8 @@ enum ShadeMode {
 enum BlendMode {
     BlendModeSource,
     BlendModeAdd,
-	BlendModeSourceAlpha
+	BlendModeSourceAlpha,
+    BlendModeSourceAlphaPreMultiplied
 };
 
 enum WrapMode {
@@ -747,6 +748,7 @@ public:
 
     virtual void PushState() = 0;
     virtual void PopState()  = 0;
+    virtual void UpdateState() = 0;
 
     virtual void SetGlobalColor(const Color& color, bool bOverride = false)   = 0;
     virtual void SetZTest(bool b, bool bOverride = false)                     = 0;
@@ -849,6 +851,9 @@ public:
     //
     // 2D Rendering
     //
+
+    virtual void SetYAxisInversion(bool) = 0;
+    virtual bool GetYAxisInversion() = 0;
 
     virtual void DrawImage(Surface* psurface, const Rect& rect, bool bCentered = false, const Point& point = Point(0, 0)) = 0;
     virtual void DrawImage(Surface* psurface, bool bCentered = false, const Point& point = Point(0, 0))   = 0;

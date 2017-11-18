@@ -110,9 +110,11 @@ DEFINE_FEDMSG(C, LOGON_LOBBY, 265) // if the lobby is in club mode, everyone has
   int   crcFileList; 
   DWORD dwTime;
   char  szName[c_cbName];
+#ifndef NO_STEAM
   int8_t	steamAuthTicket[1024];	// BT - STEAM
   uint32_t	steamAuthTicketLength;	// BT - STEAM
   uint64_t	steamID;				// BT - STEAM
+#endif
 END_FEDMSG
 
 // KGJV #114

@@ -3,8 +3,6 @@
 #include <base.h>
 #include <quaternion.h>
 #include <tmap.h>
-#include "steam_api.h"
-#include <AllegianceSecurity.h>
 
 #include "controls.h"
 #include "D3DDevice9.h"
@@ -19,6 +17,11 @@
 #include "value.h"
 #include "valuetransform.h"
 #include "DX9PackFile.h"
+
+#ifdef STEAMSECURE
+# include "steam_api.h"
+# include <AllegianceSecurity.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -2205,8 +2208,10 @@ private:
     PathString				m_pathStr;
 	ImportImageFactory *	m_pImageFactory;			// This allows us to pass extra parameters into the image factory.
 
-	// BT - STEAM
+#ifdef STEAMSECURE
+    // BT - STEAM
 	FileHashTable			m_fileHashTable;
+#endif
 
     TMap<ZString, TRef<INameSpace> > m_mapNameSpace;
 
@@ -2547,6 +2552,9 @@ public:
 				pfile = NULL;
 			}
 		}
+
+        bool bFileSteamHashInvalid = false;
+
 		if (!pfile) // if we dont have a file here, then load regularly.
 		{
 			// mmf #if this out for release.  I left the strtoTryOpenFromDev code in above
@@ -2583,6 +2591,7 @@ public:
 				{
 					// Cause the calls downward to fail out.
 					pfile = new ZFile("failsauce.nope");
+                    bFileSteamHashInvalid = true;
 				}
 #endif
 			}
@@ -2594,12 +2603,17 @@ public:
 
 #ifdef STEAMSECURE
 			// BT - STEAM - Queue up a full content re-verify in case the user has a corrupted file.
-			if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
+            // Rock - verification can be disabled with a command line toggle
+			if (g_bMDLLog == false && SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
 				SteamApps()->MarkContentCorrupt(false);
 #endif 
 
-			// BT - STEAM
-			MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
+            if (bFileSteamHashInvalid) {
+                MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
+            }
+            else {
+                MessageBoxA(GetDesktopWindow(), "Artwork file contained an error: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
+            }
 			exit(0);
 		}
 		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));

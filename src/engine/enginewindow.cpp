@@ -1160,6 +1160,8 @@ bool EngineWindow::RenderFrame()
 		const Rect& rect = m_pwrapRectValueRender->GetValue();
 		pcontext->Clip(rect);
 
+        pcontext->SetBlendMode(BlendModeSourceAlpha);
+
 		m_pgroupImage->Render( pcontext );
 		UpdatePerformanceCounters(pcontext, m_timeCurrent);
 		m_psurface->ReleaseContext(pcontext);

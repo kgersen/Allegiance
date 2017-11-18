@@ -34,14 +34,16 @@ Bounds2 Bounds2::Transform(const Matrix2& mat) const
 {
     Point vec1 = mat.Transform(m_rect.Min());
     Point vec2 = mat.Transform(m_rect.Max());
+    Point vec3 = mat.Transform(Point(m_rect.Min().X(), m_rect.Max().Y()));
+    Point vec4 = mat.Transform(Point(m_rect.Max().X(), m_rect.Min().Y()));
 
     return
         Bounds2(
             Rect(
-                std::min(vec1.X(), vec2.X()),
-                std::min(vec1.Y(), vec2.Y()),
-                std::max(vec1.X(), vec2.X()),
-                std::max(vec1.Y(), vec2.Y())
+                std::min({ vec1.X(), vec2.X(), vec3.X(), vec4.X() }),
+                std::min({ vec1.Y(), vec2.Y(), vec3.Y(), vec4.Y() }),
+                std::max({ vec1.X(), vec2.X(), vec3.X(), vec4.X() }),
+                std::max({ vec1.Y(), vec2.Y(), vec3.Y(), vec4.Y() })
             )
         );
 }

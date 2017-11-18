@@ -47,4 +47,6 @@ public:
     virtual IEventSink& GetExternalEventSink(std::string name) = 0;
 
     virtual std::function<void(std::string)> GetOpenWebsiteFunction() = 0;
+
+    virtual std::function<TRef<Image>()> WrapImageCallback(sol::function callback) = 0;
 };

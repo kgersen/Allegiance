@@ -18,6 +18,9 @@
 #include "main.h"
 #include "regkey.h"
 
+#include "json.hpp"
+#include <fstream>
+
 // BUILD_DX9
 #include "VideoSettingsDX9.h"
 // BUILD_DX9
@@ -528,23 +531,35 @@ public:
         // NOTE: please keep reloader.cpp's GetArtPath() in sync with this!!!
         if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            // Get the art path from the registry
-            if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
             {
-                // Set ArtPath to be relative to the application path
-                GetModuleFileNameA(NULL, szValue, MAX_PATH);
-                char*   p = strrchr(szValue, '\\');
-                if (!p)
-                    p = szValue;
-                else
-                    p++;
+                nlohmann::json json;
+                std::ifstream filestream("config.json");
 
-                strcpy(p, "artwork");
+                try {
+                    // Get the art path from the config file
+                    filestream >> json;
+                    pathStr = json["ArtPath"].get<std::string>().c_str();
+                }
+                catch (std::exception e) {
+                    // Get the art path from the registry
+                    if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
+                    {
+                        // Set ArtPath to be relative to the application path
+                        GetModuleFileNameA(NULL, szValue, MAX_PATH);
+                        char*   p = strrchr(szValue, '\\');
+                        if (!p)
+                            p = szValue;
+                        else
+                            p++;
 
-                //Create a subdirectory for the artwork (nothing will happen if it already there)
-                CreateDirectoryA(szValue, NULL);
+                        strcpy(p, "artwork");
+
+                        //Create a subdirectory for the artwork (nothing will happen if it already there)
+                        CreateDirectoryA(szValue, NULL);
+                    }
+                    pathStr = szValue;
+                }
             }
-            pathStr = szValue;
  
             cbValue = MAX_PATH; // reset this
 
