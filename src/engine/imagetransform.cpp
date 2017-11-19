@@ -18,6 +18,22 @@ public:
     }
 };
 
+class ImageBounds : public RectValue {
+private:
+    Image* GetImage() { return Image::Cast(GetChild(0)); }
+
+public:
+    ImageBounds(Image* pimage) :
+        RectValue(pimage)
+    {
+    }
+
+    void Evaluate()
+    {
+        GetValueInternal() = GetImage()->GetBounds().GetRect();
+    }
+};
+
 template<class OriginalType>
 class CallbackImage : public WrapImage {
     typedef std::function<TRef<Image>(OriginalType)> CallbackType;
@@ -288,6 +304,10 @@ TRef<PointValue> ImageTransform::Size(Image* pImage) {
     return new ImageSize(pImage);
 };
 
+TRef<RectValue> ImageTransform::Bounds(Image* pImage) {
+    return new ImageBounds(pImage);
+}
+
 TRef<Image> ImageTransform::Justify(Image* pimage, PointValue* pSizeContainer, Justification justification) {
     TRef<PointValue> sizeImage = ImageTransform::Size(pimage);
     TRef<Number> pImageX = PointTransform::X(sizeImage);
@@ -325,7 +345,12 @@ TRef<Image> ImageTransform::Justify(Image* pimage, PointValue* pSizeContainer, J
         pOffsetY = NumberTransform::Multiply(pNumberHalf, pSpaceY);
     }
 
-    TRef<PointValue> pPointTranslate = PointTransform::Create(pOffsetX, pOffsetY);
+    TRef<RectValue> pBounds = ImageTransform::Bounds(pimage);
+
+    TRef<PointValue> pPointTranslate = PointTransform::Create(
+        NumberTransform::Subtract(pOffsetX, RectTransform::XMin(pBounds)),
+        NumberTransform::Subtract(pOffsetY, RectTransform::YMin(pBounds))
+    );
 
     return (TRef<Image>)new TransformImage(
         pimage,

@@ -12,6 +12,7 @@ public:
     static TRef<Image> Rotate(Image* pImage, Number* pNumberRadians);
 
     static TRef<PointValue> Size(Image* pImage);
+    static TRef<RectValue> Bounds(Image* pImage);
 
     static TRef<Image> Justify(Image* pImage, PointValue* pContainer, Justification justification);
     static TRef<Image> ScaleFit(Image* pImage, PointValue* pContainer, Justification justification);

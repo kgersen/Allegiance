@@ -322,6 +322,42 @@ TRef<RectValue> RectTransform::Create(PointValue* pPoint) {
     );
 };
 
+TRef<Number> RectTransform::XMin(RectValue* pRect) {
+    return new TransformedValue<float, Rect>(
+        [](Rect rect) {
+            return rect.XMin();
+        },
+        pRect
+    );
+};
+
+TRef<Number> RectTransform::YMin(RectValue* pRect) {
+    return new TransformedValue<float, Rect>(
+        [](Rect rect) {
+            return rect.YMin();
+        },
+        pRect
+    );
+};
+
+TRef<Number> RectTransform::XMax(RectValue* pRect) {
+    return new TransformedValue<float, Rect>(
+        [](Rect rect) {
+            return rect.XMax();
+        },
+        pRect
+    );
+};
+
+TRef<Number> RectTransform::YMax(RectValue* pRect) {
+    return new TransformedValue<float, Rect>(
+        [](Rect rect) {
+            return rect.YMax();
+        },
+        pRect
+    );
+};
+
 // ### Boolean
 
 class AndBoolean : public Boolean {

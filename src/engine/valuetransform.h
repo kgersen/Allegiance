@@ -39,6 +39,11 @@ public:
     static TRef<RectValue> Create(Number* xmin, Number* ymin, Number* xmax, Number* ymax);
     static TRef<RectValue> Create(Number* width, Number* height);
     static TRef<RectValue> Create(PointValue* pPoint);
+
+    static TRef<Number> XMin(RectValue* pRect);
+    static TRef<Number> YMin(RectValue* pRect);
+    static TRef<Number> XMax(RectValue* pRect);
+    static TRef<Number> YMax(RectValue* pRect);
 };
 
 class BooleanTransform {
