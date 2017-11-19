@@ -7690,15 +7690,10 @@ public:
     static void  GetDefaultPosition(Vector*    pposition, float*   pradiusMin)
     {
         IstationIGC*    pstation = trekClient.GetShip()->GetStation();
-        if (pstation)
+        if (pstation && pstation->GetCluster() == trekClient.GetCluster())
         {
-            if (pstation->GetCluster() == trekClient.GetCluster())
-            {
-                *pposition = pstation->GetPosition();
-                *pradiusMin = pstation->GetRadius() * 2.0f;
-            }
-            else
-                *pposition = Vector::GetZero();
+            *pposition = pstation->GetPosition();
+            *pradiusMin = pstation->GetRadius() * 2.0f;
         }
         else
         {
