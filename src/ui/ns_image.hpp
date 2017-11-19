@@ -30,14 +30,6 @@ TRef<ConstantImage> LoadImageFile(LuaScriptContext& context, std::string path) {
         // We can resize non-UI textures.
         WinPoint targetSize(fileInfo.Width, fileInfo.Height);
 
-        DWORD dwMaxTextureSize = CD3DDevice9::Get()->GetMaxTextureSize();
-        _ASSERT(dwMaxTextureSize >= 256);
-        while ((targetSize.x > (LONG)dwMaxTextureSize) ||
-            (targetSize.y > (LONG)dwMaxTextureSize))
-        {
-            targetSize.x = targetSize.x >> 1;
-            targetSize.y = targetSize.y >> 1;
-        }
         // For D3D9, we only allow black colour keys.
         TRef<Surface> psurface =
             pEngine->CreateSurfaceD3DX(
