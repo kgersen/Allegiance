@@ -1539,15 +1539,24 @@ public:
 
                             //Mark the corresponding part in the cached loadout as having been duplicated
                             {
-                                for (CachedPartLink*  l = pcll->data().cpl.last(); (l != NULL); l = l->txen()) // mount 2,1,0,0,..,-1,-2,.. with previously sorted list
+                                bool found = false;
+                                CachedPartLink* lWrongMountMatch = NULL;
+                                for (CachedPartLink* l = pcll->data().cpl.last(); (l != NULL); l = l->txen()) // mount 2,1,0,0,..,-1,-2,.. with previously sorted list
                                 {
-                                    if ((l->data().ppt == ppt) && 
-                                        !l->data().bDuplicated && 
-                                        (l->data().mount == mount || l->data().mount < 0)) //otherwise first slots get set as duplicated regardless of which are empty
+                                    if ((l->data().ppt == ppt) &&
+                                        !l->data().bDuplicated)
                                     {
-                                        l->data().bDuplicated = true;
-                                        break;
+                                        if (l->data().mount == mount) //otherwise first slots get set as duplicated regardless of which are empty
+                                        {  
+                                            l->data().bDuplicated = true;
+                                            found = true;
+                                            break;
+                                        }
+                                        else
+                                            lWrongMountMatch = l;
                                     }
+                                    if (!found && lWrongMountMatch)
+                                        lWrongMountMatch->data().bDuplicated = true;
                                 }
                             }
                         }
