@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "pch.h"
 #include "ui.h"
 #include "items.hpp"
 
@@ -49,6 +48,13 @@ class ScreenNamespace {
 public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
+
+        table["GetString"] = [&context](std::string name) {
+            return context.GetScreenGlobals().Get<TRef<StringValue>>(name);
+        };
+        table["GetNumber"] = [&context](std::string name) {
+            return context.GetScreenGlobals().Get<TRef<Number>>(name);
+        };
 
         table["GetExternalEventSink"] = [&context](std::string path) {
             IEventSink& sink = context.GetExternalEventSink(path);

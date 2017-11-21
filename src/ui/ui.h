@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef __MODULE__
+#define __MODULE__ "Ui"
+#endif
+
 #include "soundengine.h"
 #include "model.h"
 #include "image.h"

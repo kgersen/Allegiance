@@ -1,11 +1,47 @@
 #pragma once
 
-class UiScreenConfiguration {
+#include <boost/any.hpp>
+
+class UiObjectContainer : public IObject {
+
+private:
+    std::map<std::string, boost::any> m_map;
+
 public:
+    UiObjectContainer(std::map<std::string, boost::any> map) :
+        m_map(map)
+    {
+    }
+
+    template <typename Type>
+    Type Get(std::string key) {
+        auto found = m_map.find(key);
+        if (found == m_map.end()) {
+            throw std::runtime_error("Key not found: " + key);
+        }
+
+        try
+        {
+            return boost::any_cast<Type>(found->second);
+        }
+        catch (const boost::bad_any_cast &)
+        {
+            throw std::runtime_error("Key found but not of valid type: " + key);
+        }
+    }
+
+};
+
+class UiScreenConfiguration : public UiObjectContainer {
+public:
+    UiScreenConfiguration(std::map<std::string, boost::any> map) :
+        UiObjectContainer(map)
+    {}
+
     virtual std::string GetPath() = 0;
     virtual IEventSink& GetEventSink(std::string) = 0;
 
-    static std::shared_ptr<UiScreenConfiguration> Create(std::string path, std::map<std::string, std::function<void()>> event_listeners);
+    static std::shared_ptr<UiScreenConfiguration> Create(std::string path, std::map<std::string, std::function<void()>> event_listeners, std::map<std::string, boost::any> map);
 }; 
 
 class UiEngine : public IObject
@@ -49,4 +85,6 @@ public:
     virtual std::function<void(std::string)> GetOpenWebsiteFunction() = 0;
 
     virtual std::function<TRef<Image>()> WrapImageCallback(sol::function callback) = 0;
+
+    virtual UiObjectContainer& GetScreenGlobals() = 0;
 };

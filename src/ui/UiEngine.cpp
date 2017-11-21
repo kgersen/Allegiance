@@ -1,4 +1,4 @@
-#include "pch.h"
+
 #include "ui.h"
 #include "items.hpp"
 
@@ -35,36 +35,32 @@ void UiEngine::SetGlobalArtPath(std::string path)
 class UiScreenConfigurationImpl : public UiScreenConfiguration {
 
     std::string m_strPath;
-    std::map<std::string, TRef<IEventSink>> m_mapSinks;
 
 public:
-    UiScreenConfigurationImpl(std::string path, std::map<std::string, TRef<IEventSink>> mapSinks) {
+    UiScreenConfigurationImpl(std::string path, std::map<std::string, boost::any> map) :
+        UiScreenConfiguration(map)
+    {
         m_strPath = path;
-        m_mapSinks = mapSinks;
     }
+
     std::string GetPath() {
         return m_strPath;
     }
 
     IEventSink& GetEventSink(std::string name) {
-        auto find = m_mapSinks.find(name);
-        if (find == m_mapSinks.end()) {
-            throw std::runtime_error("Name of event sink not found: " + name);
-        }
-        return *(find->second);
+        return *UiObjectContainer::Get<TRef<IEventSink>>(name);
     }
 
 };
 
-std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<void()>> event_listeners) {
-    std::map<std::string, TRef<IEventSink>> sinks;
-
+std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<void()>> event_listeners, std::map<std::string, boost::any> map) {
+    
     std::for_each(event_listeners.begin(), event_listeners.end(),
-        [&sinks](auto& p) {
-        sinks[p.first] = new CallbackSink(p.second);
+        [&map](auto& p) {
+        map[p.first] = (TRef<IEventSink>)new CallbackSink(p.second);
     });
 
-    return std::make_shared<UiScreenConfigurationImpl>(path, sinks);
+    return std::make_shared<UiScreenConfigurationImpl>(path, map);
 }
 
 class LoaderImpl : public Loader {
@@ -176,7 +172,7 @@ private:
     TRef<ISoundEngine> m_pSoundEngine;
     LoaderImpl m_loader;
     PathFinder m_pathFinder;
-    std::shared_ptr<UiScreenConfiguration> m_pConfiguration;
+    const std::shared_ptr<UiScreenConfiguration>& m_pConfiguration;
     std::function<void(std::string)> m_funcOpenWebsite;
 
     sol::state m_lua;
@@ -252,7 +248,11 @@ public:
     }
 
     IEventSink& GetExternalEventSink(std::string name) {
-        return m_pConfiguration->GetEventSink(name);
+        return *m_pConfiguration->Get<TRef<IEventSink>>(name);
+    }
+
+    UiObjectContainer& GetScreenGlobals() override {
+        return *m_pConfiguration;
     }
 
 };

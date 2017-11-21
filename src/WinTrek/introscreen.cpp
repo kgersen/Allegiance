@@ -2,6 +2,7 @@
 #include "regkey.h"
 #include "training.h"
 #include "valuetransform.h"
+#include <boost/any.hpp>
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
 
@@ -608,7 +609,12 @@ public:
                 IntroScreen::OnButtonExit();
             };
 
-            m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners));
+            std::map<std::string, boost::any> map;
+
+            map["time"] = (TRef<Number>)GetWindow()->GetTime();
+            map["callsign"] = (TRef<StringValue>)new StringValue(trekClient.GetSavedCharacterName());
+
+            m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners, map));
         }
 
         trekClient.DisconnectClub();
