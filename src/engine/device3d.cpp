@@ -123,10 +123,12 @@ class Device3D : public IDevice3D {
     // Current state
     //
 
+
     Point                m_sizeSurface;
     Rect                 m_rectClip;
     Rect                 m_rectClipScreen;
     bool                 m_bClip;
+    bool                 m_bYAxisInversion;
 
     bool                 m_bZTest;
     bool                 m_bZWrite;
@@ -260,7 +262,9 @@ public:
 
 		// mdvalley: Added pointer and class name. Search for '&Device3D::' to find more.
 		m_pfnDrawLines(&Device3D::DrawLinesRasterizer),
-        m_lineWidth(0.5f)
+        m_lineWidth(0.5f),
+
+        m_bYAxisInversion(true)
     {
         m_sizeSurface = prasterizer->GetSurfaceSize();
         m_mat.SetIdentity();
@@ -394,17 +398,32 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
+    void SetYAxisInversion(bool bValue) {
+        m_bYAxisInversion = bValue;
+    }
+
     void SetClipRect(const Rect& rectClip)
     {
         m_rectClip       = rectClip;
-        m_rectClipScreen =
-            Rect(
-                rectClip.XMin(),
-                m_sizeSurface.Y() - rectClip.YMax(),
-                rectClip.XMax(),
-                m_sizeSurface.Y() - rectClip.YMin()
 
-            );
+        if (!m_bYAxisInversion) {
+            m_rectClipScreen =
+                Rect(
+                    rectClip.XMin(),
+                    rectClip.YMin(),
+                    rectClip.XMax(),
+                    rectClip.YMax()
+                );
+        }
+        else {
+            m_rectClipScreen =
+                Rect(
+                    rectClip.XMin(),
+                    m_sizeSurface.Y() - rectClip.YMax(),
+                    rectClip.XMax(),
+                    m_sizeSurface.Y() - rectClip.YMin()
+                );
+        }
 
         m_bUpdateMatFull = true;
         m_prasterizer->SetClipRect(m_rectClipScreen);

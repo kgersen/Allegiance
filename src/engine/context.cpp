@@ -370,6 +370,7 @@ public:
 
     void SetYAxisInversion(bool bValue) {
         m_bYAxisInversion = bValue;
+        m_pdevice3D->SetYAxisInversion(bValue);
     }
 
     bool GetYAxisInversion() {
@@ -1584,17 +1585,6 @@ public:
         ZVerify(TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage));
 
         return pointImage;
-    }
-
-    WinRect GetSurfaceClipRect()
-    {
-        return 
-            WinRect(
-                int(m_pstateDevice->m_rectClip.XMin()),
-                m_psurface->GetSize().Y() - int(m_pstateDevice->m_rectClip.YMax()),
-                int(m_pstateDevice->m_rectClip.XMax()),
-                m_psurface->GetSize().Y() - int(m_pstateDevice->m_rectClip.YMin())
-            );
     }
 
     void Clip(const Rect& rect)

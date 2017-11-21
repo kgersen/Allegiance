@@ -298,6 +298,7 @@ public:
     // State
     //
 
+    virtual void SetYAxisInversion(bool bValue)                        = 0;
     virtual bool GetClipping()                                         = 0;
     virtual const Matrix& GetMatrix()                                  = 0;
     virtual const Matrix& GetInverseModelMatrix()                      = 0;
