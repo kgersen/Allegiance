@@ -1637,7 +1637,7 @@ public:
 		m_pbuttonDiscord->SetHidden(m_sideCurrent != trekClient.GetSideID());
 
         m_pbuttonJoin->SetEnabled(
-                (trekClient.GetSideID() == SIDE_TEAMLOBBY) // TE: Commented this from the brackets so you can always join NOAT: || !m_pMission->GetMissionParams().bLockSides
+                ((trekClient.GetSideID() == SIDE_TEAMLOBBY) && m_sideCurrent != SIDE_TEAMLOBBY) // TE: Commented this from the brackets so you can always join NOAT: || !m_pMission->GetMissionParams().bLockSides
                 || (m_sideCurrent == SIDE_TEAMLOBBY
                 || m_pMission->SideAvailablePositions(m_sideCurrent) > 0
                     && m_pMission->SideActive(m_sideCurrent))
