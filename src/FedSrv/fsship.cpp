@@ -739,6 +739,8 @@ void CFSPlayer::SetCluster(IclusterIGC* pcluster, bool bViewOnly)
 
             //Send the position of the parent ship if we are a child, otherwise our position
             IshipIGC*   pshipSource = pshipParent ? pshipParent : GetIGCShip();
+            pshipSource->SetStateBits(keyMaskIGC, 0);   //deactivate states for side-thrust, afterburner
+            pshipSource->SetStateBits(0x70000, 0);      //deactivate states for missiles, mines, chaff
             pshipSource->ExportShipUpdate(&(pfmSetCluster->shipupdate));
             pfmSetCluster->cookie = NewCookie();
         }
