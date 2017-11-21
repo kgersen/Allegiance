@@ -324,3 +324,6 @@ $RECYCLE.BIN/
 *.idb
 /src/ArtworkHashGenerator/artwork_hash_generator_lastrun.txt
 *.bak
+
+# Allow boost library
+!src/Lib/boost/boost/preprocessor/debug
