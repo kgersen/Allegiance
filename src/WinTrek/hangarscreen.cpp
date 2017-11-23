@@ -51,6 +51,7 @@ public:
     HangarScreen(Modeler* pmodeler, const ZString& strNamespace) :
         m_pmodeler(pmodeler)
     {
+        m_pmodeler->SetColorKeyHint(false);
         TRef<INameSpace> pnsHangarData = m_pmodeler->CreateNameSpace("hangardata", m_pmodeler->GetNameSpace("gamepanes"));
 
         pnsHangarData->AddMember("hoverNone",    new Number(hoverNone   ));
