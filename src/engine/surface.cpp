@@ -39,7 +39,6 @@ public:
     int                       m_pitch;
     TRef<PixelFormat>         m_ppf;
     BYTE*                     m_pbits;
-    TRef<IObject>             m_pobjectMemory;
 
     bool                      m_bColorKey;
     Color                     m_colorKey;
@@ -132,25 +131,17 @@ public:
 		// If the size is valid, we create the resource now.
 		if( ( m_size.X() != 1 ) || ( m_size.Y() != 1 ) )
 		{
-			if( d3dOverrideFormat == D3DFMT_UNKNOWN )
-			{
-				hr = pVRAMMan->CreateTexture(	m_hTexture,
-												m_ppf->GetEquivalentD3DFormat( ),
-												m_size.X(),
-												m_size.Y(),
-												bSystemMemory,
-												szTextureName );
-			}
-			else
-			{
-				hr = pVRAMMan->CreateTexture(	m_hTexture,
-												d3dOverrideFormat,
-												m_size.X(),
-												m_size.Y(),
-												bSystemMemory,
-												szTextureName );
-			}
+            hr = pVRAMMan->CreateTexture(m_hTexture,
+                d3dOverrideFormat != D3DFMT_UNKNOWN ? d3dOverrideFormat : m_ppf->GetEquivalentD3DFormat(),
+                m_size.X(),
+                m_size.Y(),
+                false,
+                szTextureName,
+                0,
+                bSystemMemory ? D3DPOOL_SCRATCH : D3DPOOL_MANAGED
+            );
             ZAssert( hr == D3D_OK );
+            m_ppf = new PixelFormat(pVRAMMan->GetTextureFormat(m_hTexture));
 			m_bSurfaceAllocated = true;
 		}
 	}
@@ -197,7 +188,6 @@ public:
 		m_stype( stype ),
 		m_bDeviceFormat( true ),
 		m_size( size ),
-		m_pobjectMemory( NULL ),
 		m_pitch( 0 ),
 		m_pbits( NULL ),
 		m_psite( psite ),
@@ -627,7 +617,6 @@ public:
 				m_size(*pTargetSize),
 				m_bDeviceFormat(false),
 				m_stype(SurfaceType2D()),
-				m_pobjectMemory(pobjectMemory),
 				m_hTexture( INVALID_TEX_HANDLE ),
 				m_pbits( NULL )
 
@@ -647,7 +636,6 @@ public:
 		m_colorKey = cColorKey;
 		m_ppf = new PixelFormat( pImageInfo->Format );
 		ZFile * pFile = (ZFile*) pobjectMemory;
-		m_pbits = pFile->GetPointer();
 		
 		// Generate the filename data.
 		char szTemp[32];
@@ -666,7 +654,7 @@ public:
 				m_hTexture,
 				pImageInfo,
 				pTargetSize,
-				m_pobjectMemory, 
+                pobjectMemory,
 				m_bColorKey, 
 				m_colorKey, 
 				szTemp );
@@ -695,7 +683,6 @@ public:
 				m_bDeviceFormat(false),
 				m_stype(SurfaceType2D()),
 				m_size(size),
-				m_pobjectMemory(pobjectMemory),
 				m_pitch(pitch),
 				m_ppf(ppf),
 				m_pbits(pdata),
@@ -904,6 +891,7 @@ public:
 				}
 			}
 		}
+        m_pbits = nullptr;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -963,7 +951,7 @@ public:
 			m_pengine->RemovePrivateSurface(this);
 		}
 
-        if( m_pobjectMemory == NULL && m_pbits != NULL )
+        if( m_pbits != NULL )
 		{
             delete m_pbits;
         }
@@ -1004,7 +992,6 @@ public:
 
     void SetPixelFormat(PixelFormat* ppf)
     {
-        ZAssert(m_pobjectMemory == NULL);
 //        ZAssert(m_ppalette      == NULL);
 
         m_pcontext      = NULL;
@@ -1530,16 +1517,40 @@ public:
 
             ZAssert( hr == D3D_OK );
 
+            D3DLOCKED_RECT lockRectSrc;
+            hr = CVRAMManager::Get()->LockTexture(psurfaceSource->GetTexHandle(), &lockRectSrc, 0, 0, &rectSource);
+            if (FAILED(hr))
+                return;
+
 			switch( psurfaceSource->GetPixelFormat()->GetD3DFormat() )
 			{
+            case D3DFMT_A1R5G5B5:
+                switch (m_ppf->GetD3DFormat())
+                {
+                case D3DFMT_A1R5G5B5:
+                    CImageTransfer::Transfer16BitTo16BitCopy(
+                        (BYTE *)lockRectSrc.pBits,
+                        lockRectSrc.Pitch,
+                        (BYTE *)lockRect.pBits,
+                        lockRect.Pitch,
+                        SourceOrigin,
+                        WinPoint(0, 0),
+                        WinPoint(rectTarget.XSize(), rectTarget.YSize())
+                    );
+                    break;
+                default:
+                    ZAssert(false);
+                    break;
+                }
+                break;
 			case D3DFMT_R5G6B5:
 				{
 					switch( m_ppf->GetD3DFormat() )
 					{
 					case D3DFMT_R5G6B5:
 						CImageTransfer::Transfer16BitTo16BitNoColourKey(
-									psurfaceSource->GetPointer( WinPoint( rectSource.XMin(), rectSource.YMin() ) ),
-									psurfaceSource->GetPitch(),
+									(BYTE *)lockRectSrc.pBits,
+                                    lockRectSrc.Pitch,
 									(BYTE *) lockRect.pBits,
 									lockRect.Pitch,
 									SourceOrigin,
@@ -1548,8 +1559,8 @@ public:
 						break;
 					case D3DFMT_A1R5G5B5:
 						CImageTransfer::Transfer16BitTo16BitWithColourKey(
-									psurfaceSource->GetPointer( WinPoint( rectSource.XMin(), rectSource.YMin() ) ),
-									psurfaceSource->GetPitch(),
+                                    (BYTE *)lockRectSrc.pBits,
+                                    lockRectSrc.Pitch,
 									(BYTE *) lockRect.pBits,
 									lockRect.Pitch,
 									SourceOrigin,
@@ -1559,8 +1570,8 @@ public:
 						break;
 					case D3DFMT_A8R8G8B8:
 						CImageTransfer::Transfer16BitTo32BitWithColourKey(
-									psurfaceSource->GetPointer( WinPoint( rectSource.XMin(), rectSource.YMin() ) ),
-									psurfaceSource->GetPitch(),
+                                    (BYTE *)lockRectSrc.pBits,
+                                    lockRectSrc.Pitch,
 									(BYTE *) lockRect.pBits,
 									lockRect.Pitch,
 									SourceOrigin,
@@ -1612,6 +1623,7 @@ public:
 
 			// Unlock texture.
 			hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );
+            hr = CVRAMManager::Get()->UnlockTexture(psurfaceSource->GetTexHandle());
         }
 
         SurfaceChanged();

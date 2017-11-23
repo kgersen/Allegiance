@@ -38,6 +38,33 @@ void CImageTransfer::Transfer16BitTo16BitNoColourKey(	const uint8_t * pSrc,
 }
 
 
+void CImageTransfer::Transfer16BitTo16BitCopy(const uint8_t * pSrc,
+    const int iSrcPitch,
+    uint8_t * pDst,
+    const int iDstPitch,
+    const WinPoint & srcPos,
+    const WinPoint & dstPos,
+    const WinPoint & size
+)
+{
+    int x, y;
+    uint32_t dwByteOffset;
+    uint16_t wVal, wNewColour;
+
+    // Copy the data over. Need to invert the data in the y direction.
+    for (y = 0; y<size.Y(); y++)
+    {
+        for (x = 0; x<size.X(); x += 1)
+        {
+            dwByteOffset = (y * iSrcPitch) + (x * 2);
+            wVal = (pSrc[dwByteOffset]) | (pSrc[dwByteOffset + 1] << 8);
+
+            pDst[(y * iDstPitch) + (x * 2) + 1] = uint8_t(wVal >> 8);
+            pDst[(y * iDstPitch) + (x * 2) + 0] = uint8_t(wVal & 0x00FF);
+        }
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////

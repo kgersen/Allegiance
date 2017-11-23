@@ -316,7 +316,7 @@ public:
         m_pdata = pfile->GetPointer(false, false);
         ReadFile();
         m_pdata = NULL;
-        pfile = NULL;
+        m_pfile = NULL;
     }
 
     //////////////////////////////////////////////////////////////////////////////

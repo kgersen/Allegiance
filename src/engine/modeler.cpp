@@ -790,7 +790,7 @@ public:
 															ppf,
 															pbsi->m_pitch,
 															pdata,
-															psite->GetMemoryObject(),
+															nullptr,
 															bColorKey,
 															Color( 0, 0, 0 ),
 															psite->GetCurrentFile(),

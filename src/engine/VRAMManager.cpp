@@ -301,7 +301,7 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 	else
 	{
 		// Textures greater than 2048 wide/height not supported on all cards.
-        ZAssert(dwWidth <= 2048);
+        ZAssert(texPool == D3DPOOL_SCRATCH || dwWidth <= 2048);
 
 		// Allocate a D3D texture.
 		if (m_sVRAM.bMipMapGenerationEnabled == true)

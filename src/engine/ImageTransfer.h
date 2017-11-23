@@ -9,6 +9,16 @@ class Color;
 class CImageTransfer
 {
 public:
+    ///////////////////////////////////////////////////////////////////////////////////
+    static void Transfer16BitTo16BitCopy(const uint8_t * pSrc,
+        const int iSrcPitch,
+        uint8_t * pDst,
+        const int iDstPitch,
+        const WinPoint & srcPos,
+        const WinPoint & dstPos,
+        const WinPoint & size
+    );
+
 	///////////////////////////////////////////////////////////////////////////////////
     static void Transfer16BitTo16BitNoColourKey(	const uint8_t * pSrc,
 													const int iSrcPitch,
