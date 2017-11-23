@@ -171,6 +171,7 @@ public:
 													m_size.X(),
 													m_size.Y() );
             ZAssert( hr == D3D_OK );
+            m_ppf = new PixelFormat(CVRAMManager::Get()->GetTextureFormat(m_hTexture));
 			m_bSurfaceAllocated = true;
 		}
 	}
@@ -213,7 +214,6 @@ public:
 		{
             ZAssert( m_stype.Test( SurfaceTypeRenderTarget() ) == true );
 			AllocateRenderTarget( );
-			m_ppf = new PixelFormat( CVRAMManager::Get()->GetTextureFormat( m_hTexture ) );
 		}
 
         if (m_psite)
@@ -238,8 +238,6 @@ public:
 	{
 		Initialize();
 		AllocateSurface( szTexName, texFormat );
-
-		m_ppf = new PixelFormat( texFormat );
 	}
 
 
@@ -309,42 +307,19 @@ public:
 		// Copy over data. Only works for 16 bit texture at the moment.
 		ZAssert( m_ppf->PixelBytes() == 2 );
 
-		// Copy the data over. Need to invert the data in the y direction.
-		// TODO: Use the CImageTransfer functions.
-		for( y=0; y<m_size.Y(); y++ )
-		{
-			WORD * pSrc = (WORD*) ( m_pbits + ( y * m_pitch ) );
-			WORD * pDest = (WORD*) ( (BYTE*) lockRect.pBits + ( y * lockRect.Pitch ) );
-			for( x=0; x<m_size.X(); x++ )
-			{
-				WORD wRed, wGreen, wBlue;
-				wVal	= *pSrc;
-				wRed	= ( wVal & 0xF800 ) >> 11;
-				wGreen	= ( wVal & 0x07E0 ) >> 6;
-				wBlue	= ( wVal & 0x001F );
-				wVal	=  (wRed << 10 ) | ( wGreen << 5 ) | wBlue;
+        CImageTransfer::Transfer16BitTo16BitWithColourKey(
+            m_pbits,
+            m_pitch,
+            (BYTE*)lockRect.pBits,
+            lockRect.Pitch,
+            WinPoint(0, 0),
+            WinPoint(0, 0),
+            m_size,
+            Color(0, 0, 0)
+        );
 
-				// Additional check needed to make sure we don't lose the bottom G bit
-				// as we're going from 6 to 5 bits.
-				bExtraGreenBit = ( ( ( *pSrc >> 5 )& 0x0001 ) ) != 0 ? true : false;
-
-				if( ( wVal == 0 ) && ( bExtraGreenBit == false ) )
-				{
-					wNewColour = 0;			// No alpha, pixel not shown.
-				}
-				else
-				{
-					// Create an A1R5G5B5 entry with alpha 1.
-					wNewColour = 0x8000 | wVal;
-				}
-				// Store colour.
-				*pDest = wNewColour;
-				pDest ++;
-				pSrc ++;
-			}
-		}
-		// Unlock texture.
-		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
+        // Unlock the texture
+        hr = CVRAMManager::Get()->UnlockTexture(m_hTexture);
 	}
 
 
@@ -634,7 +609,6 @@ public:
 		// Store these values here, after Initialize has cleared out all values.
 		m_bColorKey = bColorKey;
 		m_colorKey = cColorKey;
-		m_ppf = new PixelFormat( pImageInfo->Format );
 		ZFile * pFile = (ZFile*) pobjectMemory;
 		
 		// Generate the filename data.
@@ -659,8 +633,9 @@ public:
 				m_colorKey, 
 				szTemp );
             ZAssert( hr == D3D_OK );
-			m_pitch = m_ppf->PixelBytes() * pTargetSize->x;
 		}
+        m_ppf = new PixelFormat(CVRAMManager::Get()->GetTextureFormat(m_hTexture));
+        m_pitch = m_ppf->PixelBytes() * pTargetSize->x;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
