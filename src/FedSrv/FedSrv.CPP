@@ -11954,12 +11954,15 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                   underAttackSound, "Under attack by %s%s in %s",
                                   (PCC)strAllies, GetModelName(launcher), ship->GetCluster()->GetName());
 						
-						//7/22/09 ALLY FF
-						CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
-						if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside,psideLauncher))
+                        // Ally FF
+                        if (launcher->GetObjectType() == OT_ship)
                         {
-                            SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
-                                     droneWatchFireSound, "Watch your fire");
+                            CFSShip* pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
+                            if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside, psideLauncher))
+                            {
+                                SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
+                                    droneWatchFireSound, "Watch your fire");
+                            }
                         }
                     }
                     else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
