@@ -1955,21 +1955,7 @@ public:
         TryToBuyParts(pship, pstation, pbudget, pht, pht->GetPreferredPartTypes());
 
         //Default loadout for cargo
-        //  If a magazine ... then a duplicate in cargo
-        //  If a dispenser ... then a duplicate in cargo
-        //  Split remaining spaces between fuel and ammo (but no fuel unless an afterburner and no ammo unless
-        //  a particle weapon)
-        Mount   cargo = -c_maxCargo;
-        {
-            IpartIGC*   ppart = pship->GetMountedPart(ET_Magazine, 0);
-            if (ppart)
-                BuyPartOnBudget(pship, ppart->GetPartType(), cargo++, pbudget);
-        }
-        {
-            IpartIGC*   ppart = pship->GetMountedPart(ET_Dispenser, 0);
-            if (ppart)
-                BuyPartOnBudget(pship, ppart->GetPartType(), cargo++, pbudget);
-        }
+        // First get part types to use.
 
         IpartTypeIGC*   pptFuel;
         if (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
@@ -2010,27 +1996,115 @@ public:
                 pptAmmo = NULL;
         }
 
-
-        bool    bBuyFuel = true;
-
-        do
+        IpartTypeIGC*   pptMissile;
+        if (pship->GetMountedPart(ET_Magazine, 0) != NULL)
         {
-            if (pptFuel && bBuyFuel)
-            {
-                //Buying fuel packs
-                pship->CreateAndAddPart(pptFuel, cargo++, 0x7fff);
+            pptMissile = pship->GetMountedPart(ET_Magazine, 0)->GetPartType();
+            assert(pptMissile);
+            assert(pptMissile->GetGroupID() >= 0);
 
+            if (!pstation->CanBuy(pptMissile))
+                pptMissile = NULL;
+        }
+        else
+            pptMissile = NULL;
+
+        IpartTypeIGC*   pptDispenser;
+        if (pship->GetMountedPart(ET_Dispenser, 0) != NULL)
+        {
+            pptDispenser = pship->GetMountedPart(ET_Dispenser, 0)->GetPartType();
+            assert(pptDispenser);
+            assert(pptDispenser->GetGroupID() >= 0);
+
+            if (!pstation->CanBuy(pptDispenser))
+                pptDispenser = NULL;
+        }
+        else
+            pptDispenser = NULL;
+
+        IpartTypeIGC* nan = GetCore()->GetPartType(91);
+        if (nan)
+            nan = (IpartTypeIGC*)(pstation->GetSuccessor(nan));
+
+        // Check if it's a combat ship or a scout-like one
+        bool combatShip = (pht->GetMaxWeapons() > 1 &&                      // more than one weapon mount
+            pship->GetMountedPart(ET_Weapon, 1) &&                          // second mount not empty
+            pship->GetMountedPart(ET_Weapon, 1)->GetPartType() != nan);     // non-nan weapon - this means TF scouts are considered combat ships
+
+        //Start actually filling the cargo
+        Mount   cargo = -c_maxCargo;
+        while (pship->GetMountedPart(NA, cargo) != NULL)
+            cargo++;
+
+        // Buy nan
+        if (pship->GetHullType()->CanMount(nan, 0) && pstation->CanBuy(nan)) // GT scouts can mount a nan only in the second slot
+            if (nan && cargo < 0)
+                BuyPartOnBudget(pship, nan, cargo++, pbudget);
+        // Buy ammo for combat ships
+        if (combatShip && pptAmmo && cargo < 0) {
+            BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
+            if (pht->GetMaxWeapons() > 2 && cargo < 0)
+                BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
+        }
+        // Buy 2 fuel
+        if (pptFuel && cargo < 0)
+            BuyPartOnBudget(pship, pptFuel, cargo++, pbudget);
+        if (pptFuel && cargo < 0)
+            BuyPartOnBudget(pship, pptFuel, cargo++, pbudget);
+        // Buy one dispenser item
+        if (pptDispenser && cargo < 0)
+            BuyPartOnBudget(pship, pptDispenser, cargo++, pbudget);
+        // Buy items for non-combat ships
+        if (!combatShip) {
+            // Buy an additional dispenser item
+            if (pptDispenser && cargo < 0)
+                BuyPartOnBudget(pship, pptDispenser, cargo++, pbudget);
+            // One ammo for missile-less scouts
+            if (!pptMissile && pptAmmo && cargo < 0)
+                BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
+            // Buy two prox
+            IpartTypeIGC* prox = GetCore()->GetPartType(59);
+            if (prox && pstation->CanBuy(prox) && pship->GetHullType()->CanMount(prox, 0)) {
+                prox = (IpartTypeIGC*)(pstation->GetSuccessor(prox)); //won't return NULL
+                if (cargo < 0)
+                    BuyPartOnBudget(pship, prox, cargo++, pbudget);
+                if (cargo < 0)
+                    BuyPartOnBudget(pship, prox, cargo++, pbudget);
+            }
+        }
+        // Buy one missile
+        if (pptMissile && cargo < 0)
+            BuyPartOnBudget(pship, pptMissile, cargo++, pbudget);
+        // Buy one ammo for non-combat ships (falsely classified destroyers)
+        if (!combatShip && pptAmmo && cargo < 0)
+            BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
+
+        //Fill up any remaining slots
+        bool    bBuyFuel = true;
+        while (cargo < 0)
+        {
+            if (pptMissile)
+                pship->CreateAndAddPart(pptMissile, cargo++, 0x7fff);
+            else if (pptDispenser)
+                pship->CreateAndAddPart(pptDispenser, cargo++, 0x7fff);
+            else if (pptFuel && bBuyFuel) {
+                pship->CreateAndAddPart(pptFuel, cargo++, 0x7fff);
                 bBuyFuel = (pptAmmo == NULL);
             }
             else if (pptAmmo)
-            {
                 pship->CreateAndAddPart(pptAmmo, cargo++, 0x7fff);
-                bBuyFuel = true;
-            }
-            else
+            else {
+                // If nothing else is needed, take an extra counter (empty troop transport, EW bomber)
+                if (pship->GetMountedPart(ET_ChaffLauncher, 0) != NULL)
+                {
+                    IpartTypeIGC*   pptChaff = pship->GetMountedPart(ET_ChaffLauncher, 0)->GetPartType();
+                    if (pstation->CanBuy(pptChaff))
+                        pship->CreateAndAddPart(pptChaff, cargo++, 0x7fff);
+                }
+
                 break;
+            }
         }
-        while (cargo < 0);
     }
 
     CachedLoadoutLink*  GetLoadoutLink(IhullTypeIGC*    pht, CachedLoadoutList & loadoutList) //AaronMoore 1/10
