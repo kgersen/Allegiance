@@ -28,22 +28,6 @@ public:
     }
 };
 
-class CallbackSink : public IEventSink {
-private:
-    std::function<void()> m_funcCallback;
-
-public:
-    CallbackSink(std::function<void()> funcCallback) :
-        m_funcCallback(funcCallback)
-    {}
-
-    bool OnEvent(IEventSource* pevent) {
-        m_funcCallback();
-
-        return true;
-    }
-};
-
 class ScreenNamespace {
 public:
     static void AddNamespace(LuaScriptContext& context) {
@@ -55,6 +39,23 @@ public:
         table["GetNumber"] = [&context](std::string name) {
             return context.GetScreenGlobals().Get<TRef<Number>>(name);
         };
+        table["GetState"] = [&context](std::string name) {
+            return context.GetScreenGlobals().Get<TRef<UiStateValue>>(name);
+        };
+
+        context.GetLua().new_usertype<UiObjectContainer>("UiObjectContainer",
+            "new", sol::no_constructor,
+            "GetString", &UiState::Get<TRef<StringValue>>,
+            "GetNumber", &UiState::Get<TRef<Number>>,
+            "GetState", &UiState::Get<TRef<UiStateValue>>,
+            "GetEventSink", &UiState::Get<TRef<IEventSink>>,
+            "GetList", &UiState::Get<std::list<TRef<UiObjectContainer>>>
+        );
+
+        context.GetLua().new_usertype<UiState>("UiState", 
+            "new", sol::no_constructor,
+            sol::base_classes, sol::bases<UiObjectContainer>()
+        );
 
         table["GetExternalEventSink"] = [&context](std::string path) {
             IEventSink& sink = context.GetExternalEventSink(path);
@@ -75,6 +76,7 @@ public:
 
             return (TRef<IEventSink>)new CallbackSink([openWebsite, strWebsite]() {
                 openWebsite(strWebsite);
+                return true;
             });
         };
         

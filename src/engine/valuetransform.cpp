@@ -144,6 +144,14 @@ public:
     }
 };
 
+TRef<StringValue> NumberTransform::ToString(Number* pNumber, int decimals)
+{
+    return new TransformedValue<ZString, float>([decimals](float a) {
+        float multiplier = pow(10, decimals);
+        return (int)round(a * multiplier) / multiplier;
+    }, pNumber);
+}
+
 TRef<Number> NumberTransform::Round(Number* pNumber, int decimals)
 {
     return new TransformedValue<float, float>([decimals](float a) {

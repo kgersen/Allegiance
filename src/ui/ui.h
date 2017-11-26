@@ -31,4 +31,19 @@ namespace sol {
     };
 }
 
+class CallbackSink : public IEventSink {
+private:
+    std::function<bool()> m_funcCallback;
+
+public:
+    CallbackSink(std::function<bool()> funcCallback) :
+        m_funcCallback(funcCallback)
+    {}
+
+    bool OnEvent(IEventSource* pevent) {
+        return m_funcCallback();
+    }
+};
+
 #include "UiEngine.h"
+#include "UiState.h"

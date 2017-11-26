@@ -8,6 +8,145 @@ extern bool CheckNetworkDevices(ZString& strDriverURL);
 
 //KGJV test
 #define ENABLE3DINTROSCREEN
+
+class ErrorState : public UiState {
+    using UiState::UiState;
+};
+class NoErrorState : public ErrorState {
+public:
+    NoErrorState() :
+        ErrorState("No")
+    {}
+};
+class YesErrorState : public ErrorState {
+public:
+    YesErrorState(std::string message) :
+        ErrorState("Yes", {
+            { "Message", (TRef<StringValue>)new StringValue(message.c_str()) }
+        })
+    {}
+};
+
+class LoggedOutState : public UiState {
+private:
+    TRef<UiStateValue> m_stateError;
+
+public:
+    LoggedOutState(UiStateValue* stateError, IEventSink* sinkLogin) :
+        m_stateError(stateError),
+        UiState("Logged out", {
+            { "Has error", (TRef<UiStateValue>)stateError },
+            { "Login sink", (TRef<IEventSink>)sinkLogin }
+        })
+    {
+    }
+
+    TRef<UiStateValue> GetHasError() {
+        return Get<TRef<UiStateValue>>("Has error");
+    }
+};
+
+class LoggingInState : public UiState {
+public:
+    LoggingInState() :
+        UiState("Logging in", {
+            { "Step number", (TRef<Number>)new ModifiableNumber(0.0f) },
+            { "Step message", (TRef<StringValue>)new ModifiableString("") }
+        })
+    {
+    }
+
+    void SetStep(int step, std::string message) {
+        ((ModifiableNumber*)(Number*)Get<TRef<Number>>("Step number"))->SetValue((float)step);
+        ((ModifiableString*)(StringValue*)Get<TRef<StringValue>>("Step message"))->SetValue(message.c_str());
+    }
+};
+
+class LoggedInState : public UiState {
+private:
+
+public:
+    LoggedInState() :
+        UiState("Logged in", {
+            { "Server list", std::list<TRef<UiObjectContainer>>({
+                new UiObjectContainer({
+                    { "Name", (TRef<StringValue>)new StringValue("Name 1") },
+                    { "Player count", (TRef<Number>)new Number((float)25) }
+                }),
+                new UiObjectContainer({
+                    { "Name", (TRef<StringValue>)new StringValue("Name 2") },
+                    { "Player count", (TRef<Number>)new Number((float)0) }
+                })
+            }) }
+        })
+    {}
+};
+
+class LoginHelper {
+private:
+    TRef<UiStateModifiableValue> m_state;
+
+public:
+    LoginHelper() :
+        m_state(new UiStateModifiableValue(LoggedOutState(new UiStateValue(NoErrorState()), GetLoginSink())))
+    {
+
+    }
+
+    TRef<IEventSink> GetLoginSink() {
+        return new CallbackSink([this]() {
+            this->Login();
+            return true;
+        });
+    }
+
+    TRef<UiStateValue> GetState() {
+        return m_state;
+    }
+
+    void Login() {
+        if (m_state->GetValue().GetName() != "Logged out") {
+            ZAssert(false);
+            return;
+        }
+
+        if (m_state->GetValue().as<LoggedOutState>()->GetHasError()->GetValue().GetName() == "No") {
+            //dummy code, first time fails
+            m_state->SetValue(LoggingInState());
+            m_state->GetValue().as<LoggingInState>()->SetStep(1, "Connecting to the lobby");
+
+            GetWindow()->AddSink(new CallbackSink([this]() {
+                m_state->GetValue().as<LoggingInState>()->SetStep(2, "Authenticating");
+
+                GetWindow()->AddSink(new CallbackSink([this]() {
+                    m_state->SetValue(LoggedOutState(new UiStateValue(YesErrorState("I am not sure")), this->GetLoginSink()));
+                    return false;
+                }), 1);
+                return false;
+            }), 1);
+            return;
+        }
+
+        m_state->SetValue(LoggingInState());
+        m_state->GetValue().as<LoggingInState>()->SetStep(1, "Connecting to the lobby");
+
+        GetWindow()->AddSink(new CallbackSink([this]() {
+            m_state->GetValue().as<LoggingInState>()->SetStep(2, "Authenticating");
+
+            GetWindow()->AddSink(new CallbackSink([this]() {
+                m_state->GetValue().as<LoggingInState>()->SetStep(3, "Retrieving server list");
+                GetWindow()->AddSink(new CallbackSink([this]() {
+                    m_state->SetValue(LoggedInState());
+                    return false;
+                }), 1);
+                return false;
+            }), 1);
+            return false;
+        }), 1);
+    }
+
+};
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Intro Screen
@@ -572,47 +711,66 @@ public:
         m_bUseOldUi(bUseOldUi)
     {
         if (m_bUseOldUi == false) {
-            std::map<std::string, std::function<void()>> listeners;
+            std::map<std::string, std::function<bool()>> listeners;
             listeners["open.training"] = [this]() {
                 IntroScreen::OnButtonTraining();
+                return true;
             };
             listeners["open.motd"] = [this]() {
                 g_bAutomaticallySkipMotdScreen = false;
                 GetWindow()->screen(ScreenIDZoneClubScreen);
+                return true;
             };
             listeners["open.lobby"] = [pmodeler]() {
                 g_bAutomaticallySkipMotdScreen = true;
                 GetWindow()->screen(ScreenIDZoneClubScreen);
+                return true;
             };
             listeners["open.website"] = [this]() {
                 GetWindow()->ShowWebPage();
+                return true;
             };
             listeners["open.discord"] = [this]() {
                 IntroScreen::OnButtonDiscord();
+                return true;
             };
             listeners["open.options"] = [this]() {
                 GetWindow()->ShowOptionsMenu();
+                return true;
             };
             listeners["open.lan"] = [this]() {
                 IntroScreen::OnButtonLAN();
+                return true;
             };
             listeners["open.intro"] = [this]() {
                 IntroScreen::OnButtonIntro();
+                return true;
             };
             listeners["open.credits"] = [this]() {
                 IntroScreen::OnButtonCredits();
+                return true;
             };
             listeners["open.help"] = [this]() {
                 IntroScreen::OnButtonHelp();
+                return true;
             };
             listeners["open.exit"] = [this]() {
                 IntroScreen::OnButtonExit();
+                return true;
             };
 
             std::map<std::string, boost::any> map;
 
             map["time"] = (TRef<Number>)GetWindow()->GetTime();
             map["callsign"] = (TRef<StringValue>)new StringValue(trekClient.GetSavedCharacterName());
+
+            /*TRef<UiStateModifiableValue> login_state = new UiStateModifiableValue(UiState("Logged out", UiObjectContainer({
+                {"event.login", (TRef<IEventSink>)new CallbackSink([]() {
+                    //auto screen = CreateZoneClubScreen();
+                })}
+            })));*/
+            LoginHelper* helper = new LoginHelper();
+            map["Login state"] = helper->GetState();
 
             m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners, map));
         }

@@ -11,6 +11,7 @@
 #include "ns_font.hpp"
 #include "ns_point.hpp"
 #include "ns_screen.hpp"
+#include "ns_list.hpp"
 
 #include <stdexcept>
 #include <fstream>
@@ -53,7 +54,7 @@ public:
 
 };
 
-std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<void()>> event_listeners, std::map<std::string, boost::any> map) {
+std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, boost::any> map) {
     
     std::for_each(event_listeners.begin(), event_listeners.end(),
         [&map](auto& p) {
@@ -63,89 +64,78 @@ std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string
     return std::make_shared<UiScreenConfigurationImpl>(path, map);
 }
 
-class LoaderImpl : public Loader {
+Loader::Loader(sol::state& lua, Engine* pEngine, std::vector<std::string> paths)
+    : m_pathfinder(paths)
+{
+    m_pLua = &lua;        
+}
 
-private:
-    PathFinder m_pathfinder;
-    sol::state* m_pLua;
+Loader::~Loader() {
+}
 
-public:
+void Loader::InitNamespaces(LuaScriptContext& context) {
+    auto pLua = &context.GetLua();
 
-    LoaderImpl(sol::state& lua, Engine* pEngine, std::vector<std::string> paths)
-        : m_pathfinder(paths)
-    {
-        m_pLua = &lua;
+    pLua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::table, sol::lib::math);
+    pLua->set("loadfile", [](std::string path) {
+        throw std::runtime_error("The standard function loadfile is disabled, use File.LoadLua(string)");
+    });
+    pLua->set("load", []() {
+        throw std::runtime_error("The standard function load is disabled, what would you use this for?");
+    });
 
-        //m_pLua->new_usertype<Image>("Image");// , sol::base_classes, sol::bases<TRef<Image>>());
+    ImageNamespace::AddNamespace(context);
+    EventNamespace::AddNamespace(pLua);
 
-        
+    NumberNamespace::AddNamespace(pLua);
+    RectNamespace::AddNamespace(pLua);
+    PointNamespace::AddNamespace(pLua);
+    BooleanNamespace::AddNamespace(pLua);
+
+    StringNamespace::AddNamespace(context);
+
+    ColorNamespace::AddNamespace(pLua);
+
+    FileNamespace::AddNamespace(pLua, this);
+
+    FontNamespace::AddNamespace(pLua);
+
+    ScreenNamespace::AddNamespace(context);
+
+    ListNamespace::AddNamespace(context);
+
+    pLua->new_usertype<MouseEventImage>("MouseEventImage",
+        sol::base_classes, sol::bases<Image>()
+        );
+}
+
+sol::function Loader::LoadScript(std::string subpath) {
+    std::string path = m_pathfinder.FindPath(subpath);
+    if (path == "") {
+        throw std::runtime_error("File not found: " + subpath);
     }
 
-    ~LoaderImpl() {
+    sol::load_result script = m_pLua->load_file(path);
+    if (script.valid() == false) {
+        sol::error error = script;
+        throw error;
     }
+    sol::function function = script;
 
-    void InitNamespaces(LuaScriptContext& context) {
-        auto pLua = &context.GetLua();
+    sol::environment envScript(*m_pLua, sol::create, (*m_pLua).globals());
+    sol::set_environment(envScript, function);
 
-        pLua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::table, sol::lib::math);
-        pLua->set("loadfile", [](std::string path) {
-            throw std::runtime_error("The standard function loadfile is disabled, use File.LoadLua(string)");
-        });
-        pLua->set("load", []() {
-            throw std::runtime_error("The standard function load is disabled, what would you use this for?");
-        });
-
-        ImageNamespace::AddNamespace(context);
-        EventNamespace::AddNamespace(pLua);
-
-        NumberNamespace::AddNamespace(pLua);
-        RectNamespace::AddNamespace(pLua);
-        PointNamespace::AddNamespace(pLua);
-        BooleanNamespace::AddNamespace(pLua);
-
-        StringNamespace::AddNamespace(context);
-
-        ColorNamespace::AddNamespace(pLua);
-
-        FileNamespace::AddNamespace(pLua, this);
-
-        FontNamespace::AddNamespace(pLua);
-
-        ScreenNamespace::AddNamespace(context);
-
-        pLua->new_usertype<MouseEventImage>("MouseEventImage",
-            sol::base_classes, sol::bases<Image>()
-            );
-    }
-
-    sol::function LoadScript(std::string subpath) {
-        std::string path = m_pathfinder.FindPath(subpath);
-        if (path == "") {
-            throw std::runtime_error("File not found: " + subpath);
-        }
-
-        sol::load_result script = m_pLua->load_file(path);
-        if (script.valid() == false) {
-            sol::error error = script;
-            throw error;
-        }
-        sol::function function = script;
-
-        sol::environment envScript(*m_pLua, sol::create, (*m_pLua).globals());
-        sol::set_environment(envScript, function);
-
-        return function;
-    }
-};
+    return function;
+}
 
 class Executor {
 
 public:
 
-    template <class T>
-    T Execute(sol::function script) {
+    template <class T, typename... TArgs>
+    T Execute(sol::function script, TArgs ... args) {
         try {
-            sol::function_result result = script.call();
+            sol::function_result result = script.call(args...);
             if (result.valid() == false) {
                 sol::error err = result;
                 throw err;
@@ -158,7 +148,7 @@ public:
             return image;
         }
         catch (const sol::error& e) {
-            throw e;
+            throw std::runtime_error(e.what());
         }
         catch (const std::runtime_error& e) {
             throw e;
@@ -166,96 +156,82 @@ public:
     }
 };
 
-class LuaScriptContextImpl : public LuaScriptContext {
-private:
-    TRef<Engine> m_pEngine;
-    TRef<ISoundEngine> m_pSoundEngine;
-    LoaderImpl m_loader;
-    PathFinder m_pathFinder;
-    const std::shared_ptr<UiScreenConfiguration>& m_pConfiguration;
-    std::function<void(std::string)> m_funcOpenWebsite;
+LuaScriptContext::LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
+    m_pEngine(pEngine),
+    m_pSoundEngine(pSoundEngine),
+    m_pConfiguration(pConfiguration),
+    m_loader(Loader(m_lua, pEngine, {
+        stringArtPath + "/PBUI",
+        stringArtPath
+    })),
+    m_pathFinder(PathFinder({
+        stringArtPath + "/PBUI",
+        stringArtPath
+    })),
+    m_funcOpenWebsite(funcOpenWebsite)
+{
+    m_loader.InitNamespaces(*this);
+}
 
-    sol::state m_lua;
+sol::state& LuaScriptContext::GetLua() {
+    return m_lua;
+}
 
-public:
+sol::function LuaScriptContext::LoadScript(std::string path) {
+    return m_loader.LoadScript(path);
+}
 
-    LuaScriptContextImpl(Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
-        m_pEngine(pEngine),
-        m_pSoundEngine(pSoundEngine),
-        m_pConfiguration(pConfiguration),
-        m_loader(LoaderImpl(m_lua, pEngine, {
-            stringArtPath + "/PBUI",
-            stringArtPath
-        })),
-        m_pathFinder(PathFinder({
-            stringArtPath + "/PBUI",
-            stringArtPath
-        })),
-        m_funcOpenWebsite(funcOpenWebsite)
-    {
-        m_loader.InitNamespaces(*this);
+std::string LuaScriptContext::FindPath(std::string path) {
+    std::string full_path = m_pathFinder.FindPath(path);
+    if (full_path == "") {
+        throw std::runtime_error("File path not found: " + path);
     }
+    return full_path;
+}
 
-    sol::state& GetLua() {
-        return m_lua;
-    }
+Engine* LuaScriptContext::GetEngine() {
+    return m_pEngine;
+}
 
-    sol::function LoadScript(std::string path) {
-        return m_loader.LoadScript(path);
-    }
+ISoundEngine* LuaScriptContext::GetSoundEngine() {
+    return m_pSoundEngine;
+}
 
-    std::string FindPath(std::string path) {
-        std::string full_path = m_pathFinder.FindPath(path);
-        if (full_path == "") {
-            throw std::runtime_error("File path not found: " + path);
+std::function<void(std::string)> LuaScriptContext::GetOpenWebsiteFunction() {
+    return m_funcOpenWebsite;
+}
+
+template <typename T, typename... TArgs>
+std::function<T(TArgs...)> LuaScriptContext::WrapCallback(sol::function callback, T valueDefault) {
+    return [callback, valueDefault](TArgs ... args) {
+        Executor executor = Executor();
+        try {
+            //WriteLog("(Callback function): Started");
+
+            auto start = std::chrono::high_resolution_clock::now();
+
+            T result = executor.Execute<T, TArgs...>(callback, args...);
+
+            auto elapsed = std::chrono::high_resolution_clock::now() - start;
+            long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+
+            WriteLog("(Callback function): Finished " + std::to_string(milliseconds) + " ms");
+            return result;
         }
-        return full_path;
-    }
+        catch (const std::runtime_error& e) {
+            WriteLog(std::string("(Callback function): ERROR ") + e.what());
+            return valueDefault;
+        }
+    };
+}
 
-    Engine* GetEngine() {
-        return m_pEngine;
-    }
+IEventSink& LuaScriptContext::GetExternalEventSink(std::string name) {
+    return *m_pConfiguration->Get<TRef<IEventSink>>(name);
+}
 
-    ISoundEngine* GetSoundEngine() {
-        return m_pSoundEngine;
-    }
-
-    std::function<void(std::string)> GetOpenWebsiteFunction() {
-        return m_funcOpenWebsite;
-    }
-
-    std::function<TRef<Image>()> WrapImageCallback(sol::function callback) override {
-        return [callback]() {
-            Executor executor = Executor();
-            try {
-                //WriteLog("(Callback function): Started");
-
-                auto start = std::chrono::high_resolution_clock::now();
-
-                TRef<Image> result = executor.Execute<Image*>(callback);
-
-                auto elapsed = std::chrono::high_resolution_clock::now() - start;
-                long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-
-                WriteLog("(Callback function): Finished " + std::to_string(milliseconds) + " ms");
-                return result;
-            }
-            catch (const std::runtime_error& e) {
-                WriteLog(std::string("(Callback function): ERROR ") + e.what());
-                throw e;
-            }
-        };
-    }
-
-    IEventSink& GetExternalEventSink(std::string name) {
-        return *m_pConfiguration->Get<TRef<IEventSink>>(name);
-    }
-
-    UiObjectContainer& GetScreenGlobals() override {
-        return *m_pConfiguration;
-    }
-
-};
+UiObjectContainer& LuaScriptContext::GetScreenGlobals() {
+    return *m_pConfiguration;
+}
 
 class UiEngineImpl : public UiEngine {
 
@@ -288,10 +264,10 @@ public:
 
     class ContextImage : public WrapImage {
     private:
-        std::unique_ptr<LuaScriptContextImpl> m_pContext;
+        std::unique_ptr<LuaScriptContext> m_pContext;
 
     public:
-        ContextImage(std::unique_ptr<LuaScriptContextImpl> pContext, Image* pImage) :
+        ContextImage(std::unique_ptr<LuaScriptContext> pContext, Image* pImage) :
             WrapImage(pImage),
             m_pContext(std::move(pContext))
         {
@@ -325,7 +301,7 @@ public:
     };
 
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {
-        std::unique_ptr<LuaScriptContextImpl> pContext = std::make_unique<LuaScriptContextImpl>(m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
+        std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
 
         Executor executor = Executor();
 

@@ -21,6 +21,11 @@ public:
             return new Number(a);
         };
 
+        table["ToString"] = [](sol::object a, sol::optional<int> decimals) {
+            
+            return NumberTransform::ToString(wrapValue<float>(a), decimals.value_or(0));
+        };
+
         table["Add"] = [](sol::object a, sol::object b) {
             return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
         };
@@ -42,8 +47,8 @@ public:
         table["Max"] = [](sol::object a, sol::object b) {
             return NumberTransform::Max(wrapValue<float>(a), wrapValue<float>(b));
         };
-        table["Round"] = [](sol::object a, int decimals) {
-            return NumberTransform::Round(wrapValue<float>(a), decimals);
+        table["Round"] = [](sol::object a, sol::optional<int> decimals) {
+            return NumberTransform::Round(wrapValue<float>(a), decimals.value_or(0));
         };
         table["Sin"] = [](sol::object a) {
             return NumberTransform::Sin(wrapValue<float>(a));
@@ -64,7 +69,7 @@ public:
 
         table["Create"] = sol::overload(
             [](int xmin, int ymin, int xmax, int ymax) {
-                return new RectValue(Rect(xmin, ymin, xmax, ymax));
+                return (TRef<RectValue>)new RectValue(Rect(xmin, ymin, xmax, ymax));
             },
             [](sol::object xmin, sol::object ymin, sol::object xmax, sol::object ymax) {
                 return RectTransform::Create(

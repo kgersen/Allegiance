@@ -1,18 +1,47 @@
 
 #include "UiState.h"
 
-UiState::UiState(std::string& name, UiObjectContainer& properties) :
+void Write(IMDLBinaryFile* pmdlFile, const UiState& value) {}
+ZString GetString(int indent, const UiState& value) {
+    return "";
+}
+ZString GetFunctionName(const UiState& value) {
+    return "";
+}
+
+/*
+template <class PropertiesContainerType : UiObjectContainer>
+void Write(IMDLBinaryFile* pmdlFile, const UiState<PropertiesContainerType>& value) {
+
+}
+template <class PropertiesContainerType : UiObjectContainer>
+ZString GetString(int indent, const UiState<PropertiesContainerType>& value) {
+    auto state_name = ((UiState<PropertiesContainerType>&)value).GetName();
+    return ZString(("State: " + state_name).c_str());
+}
+template <class PropertiesContainerType : UiObjectContainer>
+ZString GetFunctionName(const UiState<PropertiesContainerType>& value) {
+    return "UiState";
+}
+
+template <class PropertiesContainerType : UiObjectContainer>
+UiState<PropertiesContainerType>::UiState(std::string name, PropertiesContainerType properties) :
     m_name(name),
     m_properties(properties)
 {
 }
 
-std::string& UiState::GetName()
+template <class PropertiesContainerType : UiObjectContainer>
+std::string UiState<PropertiesContainerType>::GetName() const
 {
     return m_name;
 }
 
-UiObjectContainer& UiState::GetProperties()
+template <class PropertiesContainerType : UiObjectContainer>
+PropertiesContainerType& UiState<PropertiesContainerType>::GetProperties() const
 {
-    return m_properties;
+    return (PropertiesContainerType&)m_properties;
 }
+*/
+
+

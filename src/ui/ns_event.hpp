@@ -114,6 +114,9 @@ public:
         sol::table table = m_pLua->create_table();
 
         table["OnEvent"] = [](IEventSink* pEventSink, IEventSource* pEventSource) {
+            if (!pEventSink || !pEventSource) {
+                throw std::runtime_error("Argument should not be null");
+            }
             pEventSource->AddSink(pEventSink);
         };
 

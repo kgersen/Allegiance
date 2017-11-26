@@ -17,6 +17,7 @@
     <ClInclude Include="..\src\ui\ns_file.hpp" />
     <ClInclude Include="..\src\ui\ns_font.hpp" />
     <ClInclude Include="..\src\ui\ns_image.hpp" />
+    <ClInclude Include="..\src\ui\ns_list.hpp" />
     <ClInclude Include="..\src\ui\ns_math.hpp" />
     <ClInclude Include="..\src\ui\ns_point.hpp" />
     <ClInclude Include="..\src\ui\ns_screen.hpp" />

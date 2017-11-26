@@ -5,6 +5,48 @@
 #include "enginep.h"
 #include "engine.h"
 
+template<class OriginalType>
+class CallbackImage : public WrapImage {
+    typedef std::function<TRef<Image>(OriginalType)> CallbackType;
+
+    CallbackType m_callback;
+    bool bUpdating;
+
+protected:
+    virtual void ChildChanged(Value* pvalue, Value* pvalueNew) override {
+        if (!bUpdating) {
+            Value::ChildChanged(pvalue, pvalueNew);
+        }
+    }
+
+public:
+    CallbackImage(CallbackType callback, TStaticValue<OriginalType>* pvalue1) :
+        m_callback(callback),
+        WrapImage(Image::GetEmpty(), pvalue1),
+        bUpdating(false)
+    {}
+
+    void Evaluate()
+    {
+        if (!bUpdating) {
+            OriginalType value1 = ((TStaticValue<OriginalType>*)GetChild(1))->GetValue();
+
+            TRef<Image> evaluated = m_callback(value1);
+            evaluated->Evaluate();
+
+            SetImage(evaluated);
+
+            bUpdating = true;
+            Update();
+            WrapImage::Evaluate();
+        }
+        else {
+            WrapImage::Evaluate();
+        }
+        bUpdating = false;
+    }
+};
+
 class ImageTransform {
 public:
     static TRef<Image> Translate(Image* pImage, PointValue* pPoint);

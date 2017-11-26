@@ -6,6 +6,8 @@
 
 class NumberTransform {
 public:
+    static TRef<StringValue> ToString(Number* a, int decimals);
+
     static TRef<Number> Add(Number* a, Number* b);
     static TRef<Number> Subtract(Number* a, Number* b);
     static TRef<Number> Divide(Number* a, Number* b);

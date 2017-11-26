@@ -34,29 +34,6 @@ public:
     }
 };
 
-template<class OriginalType>
-class CallbackImage : public WrapImage {
-    typedef std::function<TRef<Image>(OriginalType)> CallbackType;
-
-    CallbackType m_callback;
-
-public:
-    CallbackImage(CallbackType callback, TStaticValue<OriginalType>* pvalue1) :
-        m_callback(callback),
-        WrapImage(Image::GetEmpty(), pvalue1)
-    {}
-
-    void Evaluate()
-    {
-        OriginalType value1 = ((TStaticValue<OriginalType>*)GetChild(1))->GetValue();
-
-        TRef<Image> evaluated = m_callback(value1);
-
-        SetImage(evaluated);
-        WrapImage::Evaluate();
-    }
-};
-
 class CutImage : public WrapImage {
 public:
     CutImage(Image* pimage, RectValue* prect) :
