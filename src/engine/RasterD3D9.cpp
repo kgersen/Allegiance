@@ -323,6 +323,12 @@ public:
                 ZError("Invalid BlendMode");
         }
 
+        //Rock: We use a trick so that so that transparent pixels do not affect the z buffer: Ignore the pixel if it has a low alpha.
+        //Previously imago only had this enabled for rendering mines. Trying for everything right now and see if we get any problems.
+        D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
+        D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAREF, (DWORD)8));
+        D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE));
+
         if (m_shadeMode == ShadeModeGlobalColor) {
             CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
             CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
