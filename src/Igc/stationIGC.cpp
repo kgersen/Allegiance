@@ -457,11 +457,6 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
     }
 
     {
-        IafterburnerIGC* a = (IafterburnerIGC*)(pship->GetMountedPart(ET_Afterburner, 0));
-        if (a)
-            a->Deactivate();
-    }
-    {
         IshieldIGC* s = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
         if (s)
             s->SetFraction(1.0f);
