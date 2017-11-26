@@ -6927,7 +6927,7 @@ public:
 
 			// yp - Your_Persona buttons get stuck patch. aug-03-2006
 			// clear the keyboard buttons.
-			m_ptrekInput->ClearButtonStates();
+			m_ptrekInput->ClearButtonStates(); //Possibly not needed any more with server side fix.
 
 			// #294 - Turkey / #361 Use different number of chatlines for the loadout screen cos there's less space
 			if (m_pchatListPane)
