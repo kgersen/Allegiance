@@ -293,8 +293,11 @@ public:
 				break;
 
             case BlendModeAdd:
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
                 break;
 
