@@ -1555,9 +1555,9 @@ public:
                                         else
                                             lWrongMountMatch = l;
                                     }
-                                    if (!found && lWrongMountMatch)
-                                        lWrongMountMatch->data().bDuplicated = true;
                                 }
+                                if (!found && lWrongMountMatch)
+                                    lWrongMountMatch->data().bDuplicated = true;
                             }
                         }
                         else
@@ -1597,6 +1597,7 @@ public:
                         }
                         else if (cargo < 0)
                         {
+                            debugf(" Buy cargo part for %d\n", cargo);
                             BuyPartOnBudget(pshipSink, ppt, cargo++, &budget);
                         }
 
