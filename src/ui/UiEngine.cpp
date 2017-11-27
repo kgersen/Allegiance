@@ -140,8 +140,9 @@ public:
                 sol::error err = result;
                 throw err;
             }
-            sol::object object = result;
-            if (object.is<T>() == false) {
+
+            sol::optional<sol::object> object = result;
+            if (!object || object.value().is<T>() == false) {
                 throw std::runtime_error("Expected return value to be of a specific type");
             }
             T image = result;
@@ -152,6 +153,13 @@ public:
         }
         catch (const std::runtime_error& e) {
             throw e;
+        }
+        catch (const std::exception& e) {
+            throw std::runtime_error(e.what());
+        }
+        catch (...) {
+            ZAssert(false);
+            throw std::runtime_error("Unknown error");
         }
     }
 };
