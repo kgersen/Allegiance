@@ -1597,7 +1597,6 @@ public:
                         }
                         else if (cargo < 0)
                         {
-                            debugf(" Buy cargo part for %d\n", cargo);
                             BuyPartOnBudget(pshipSink, ppt, cargo++, &budget);
                         }
 
