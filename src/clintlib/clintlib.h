@@ -1673,6 +1673,10 @@ public:
                         debugf("**** successor unable to mount %s/%s\n", pht->GetName(), ppt->GetName());
                 }
             }
+
+            //Fill any remaining slots with the default items if the hull type is upgraded
+            if (pcl->pht != pht)
+                TryToBuyParts(pship, pstation, &budget, pht, pht->GetPreferredPartTypes());
         }
         else
         {
