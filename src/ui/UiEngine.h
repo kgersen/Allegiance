@@ -113,7 +113,7 @@ private:
     TRef<ISoundEngine> m_pSoundEngine;
     Loader m_loader;
     PathFinder m_pathFinder;
-    const std::shared_ptr<UiScreenConfiguration>& m_pConfiguration;
+    std::shared_ptr<UiScreenConfiguration> m_pConfiguration;
     std::function<void(std::string)> m_funcOpenWebsite;
 
     sol::state m_lua;
