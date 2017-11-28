@@ -5422,6 +5422,22 @@ public:
         }
     }
 
+    class CloseNotificationSink : public IIntegerEventSink {
+    public:
+        TrekWindowImpl* m_pwindow;
+
+        CloseNotificationSink(TrekWindowImpl* pwindow) :
+            m_pwindow(pwindow)
+        {
+        }
+
+        bool OnEvent(IIntegerEventSource* pevent, int value)
+        {
+            m_pwindow->CloseMessageBox();
+            return false;
+        }
+    };
+
     void ToggleOldUi()
     {
         m_bUseOldUi = !m_bUseOldUi;
@@ -5433,6 +5449,7 @@ public:
         }
 
         m_pmessageBox = CreateMessageBox("Enabling or Disabling the old UI will require you to restart Allegiance.", NULL, true, false);
+        m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
         GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
 
     }
@@ -5451,6 +5468,7 @@ public:
 		}
 
 		m_pmessageBox = CreateMessageBox("Enabling or Disabling the High Resolution Textures will require you to restart Allegiance.", NULL, true, false);
+        m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
 		GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
 
 	}
