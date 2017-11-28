@@ -1471,6 +1471,13 @@ public:
 
 public:
 
+    bool      OnActivateApp(bool bActive) override {
+        if (bActive == false) {
+            m_bEnableVirtualJoystick = false;
+        }
+        return false;
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     //
     // Animated Image cache
