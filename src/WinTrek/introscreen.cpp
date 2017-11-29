@@ -140,6 +140,7 @@ class LoginHelper : public IClientEventSink {
 private:
     TRef<UiStateModifiableValue> m_state;
     TRef<IClientEventSink>      m_pClientEventSink;
+    TRef<IEventSink>            m_pServerlistChangedSink;
 
     TRef<CreateGameDialogPopup> m_pcreateDialog;
 
@@ -155,6 +156,9 @@ public:
             trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
         }
         trekClient.DisconnectLobby();
+        if (m_pServerlistChangedSink) {
+            trekClient.GetMissionList()->GetChangedEvent()->RemoveSink(m_pServerlistChangedSink);
+        }
     }
 
     TRef<IEventSink> GetLoginSink() {
@@ -203,6 +207,10 @@ public:
         }
 
         trekClient.DisconnectLobby();
+
+        if (m_pServerlistChangedSink) {
+            trekClient.GetMissionList()->GetChangedEvent()->RemoveSink(m_pServerlistChangedSink);
+        }
 
         m_state->SetValue(LoggedOutState(new UiStateValue(NoErrorState()), this->GetLoginSink()));
     }
@@ -304,7 +312,17 @@ public:
         m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
 
         //finish login process
+        m_pServerlistChangedSink = new CallbackSink([this]() {
+            if (m_state->GetValue().GetName() != "Logged in") {
+                ZAssert(false);
+                return false;
+            }
+            m_state->GetValue().as<LoggedInState>()->SetServerList(trekClient.GetMissionList());
+            return true;
+        });
+
         List* plist = trekClient.GetMissionList();
+        plist->GetChangedEvent()->AddSink(m_pServerlistChangedSink);
 
         m_state->SetValue(LoggedInState(this->GetLogoutSink(), this->GetShowNewGamePopupSink()));
         m_state->GetValue().as<LoggedInState>()->SetServerList(plist);
