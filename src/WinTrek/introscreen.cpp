@@ -110,12 +110,25 @@ public:
             MissionInfo* game = (MissionInfo*)pitem;
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
-                { "Name", (TRef<StringValue>)new StringValue(game->Name()) },
-                { "Player count", (TRef<Number>)new Number((float)game->NumPlayers()) },
                 { "Join sink", (TRef<IEventSink>)new CallbackSink([game]() {
                     trekClient.JoinMission(game, "");
                     return false;
-                }) }
+                }) },
+                { "Name", (TRef<StringValue>)new StringValue(game->Name()) },
+                { "Player count", (TRef<Number>)new Number((float)game->NumPlayers()) },
+                { "Player noat count", (TRef<Number>)new Number((float)game->NumNoatPlayers()) },
+                { "Max player count", (TRef<Number>)new Number((float)game->MaxPlayers()) },
+                { "Is in progress", (TRef<Boolean>)new Boolean(game->InProgress()) },
+                { "Time in progress", (TRef<Number>)new Number(game->InProgress() ? (Time::Now() - game->StartTime()) : 0) },
+                { "Server name", (TRef<StringValue>)new StringValue(game->GetMissionDef().szServerName) },
+
+                { "Has goal conquest", (TRef<Boolean>)new Boolean(game->GoalConquest()) },
+                { "Has goal territoy", (TRef<Boolean>)new Boolean(game->GoalTerritory()) },
+                { "Has goal prosperity", (TRef<Boolean>)new Boolean(game->GoalProsperity()) },
+                { "Has goal artifacts", (TRef<Boolean>)new Boolean(game->GoalArtifacts()) },
+                { "Has goal flags", (TRef<Boolean>)new Boolean(game->GoalFlags()) },
+                { "Has goal deathmatch", (TRef<Boolean>)new Boolean(game->GoalDeathMatch()) },
+                { "Has goal countdown", (TRef<Boolean>)new Boolean(game->GoalCountdown()) },
             }));
             pitem = plist->GetNext(pitem);
             ++i;
