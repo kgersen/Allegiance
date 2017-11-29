@@ -121,6 +121,9 @@ public:
         };
 
         table["Get"] = [](Image* image, std::string string) {
+            if (!image) {
+                throw std::runtime_error("Argument should not be null");
+            }
             MouseEventImage* pMouseEventImage = (MouseEventImage*)(image);
             return pMouseEventImage->GetEventSource(string);
         };

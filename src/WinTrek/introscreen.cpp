@@ -4,6 +4,8 @@
 #include "valuetransform.h"
 #include <boost/any.hpp>
 
+#include "CreateGameDialog.h"
+
 extern bool CheckNetworkDevices(ZString& strDriverURL);
 
 //KGJV test
@@ -62,35 +64,84 @@ public:
     }
 };
 
+class LoginHelper;
 class LoggedInState : public UiState {
 private:
 
 public:
-    LoggedInState() :
+    LoggedInState(IEventSink* sinkLogout, IEventSink* sinkCreateGame) :
         UiState("Logged in", {
-            { "Server list", std::list<TRef<UiObjectContainer>>({
-                new UiObjectContainer({
-                    { "Name", (TRef<StringValue>)new StringValue("Name 1") },
-                    { "Player count", (TRef<Number>)new Number((float)25) }
-                }),
-                new UiObjectContainer({
-                    { "Name", (TRef<StringValue>)new StringValue("Name 2") },
-                    { "Player count", (TRef<Number>)new Number((float)0) }
-                })
-            }) }
+            { "Server list", (TRef<ContainerList>)new ContainerList({}) },
+            { "Logout sink", (TRef<IEventSink>)sinkLogout },
+            { "Create game sink", (TRef<IEventSink>)sinkCreateGame }
         })
     {}
+
+    void SetServerList(List* plist) {
+        std::list<TRef<UiObjectContainer>> result;
+        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Server list");
+        auto current_list = current_modifiablelist->GetList();
+
+        ItemID pitem = plist->GetItem(0);
+        auto current_iterator = current_list.begin();
+        int i = 0;
+        /* For now, disable compare and just delete/add everything
+        while (pitem && current_iterator != current_list.end()) {
+            MissionInfo* game = (MissionInfo*)pitem;
+            TRef<UiObjectContainer> current_entry = *current_iterator;
+            {
+                //compare
+            }
+
+            pitem = plist->GetNext(pitem);
+            ++current_iterator;
+
+        }
+        */
+
+        //remove entries
+        while (current_iterator != current_list.end()) {
+            current_modifiablelist->Remove(i);
+            ++current_iterator;
+        }
+         
+        //add entries
+        while (pitem) {
+            MissionInfo* game = (MissionInfo*)pitem;
+
+            current_modifiablelist->Insert(i, new UiObjectContainer({
+                { "Name", (TRef<StringValue>)new StringValue(game->Name()) },
+                { "Player count", (TRef<Number>)new Number((float)game->NumPlayers()) },
+                { "Join sink", (TRef<IEventSink>)new CallbackSink([game]() {
+                    trekClient.JoinMission(game, "");
+                    return false;
+                }) }
+            }));
+            pitem = plist->GetNext(pitem);
+            ++i;
+        }
+    }
 };
 
-class LoginHelper {
+class LoginHelper : public IClientEventSink {
 private:
     TRef<UiStateModifiableValue> m_state;
+    TRef<IClientEventSink>      m_pClientEventSink;
+
+    TRef<CreateGameDialogPopup> m_pcreateDialog;
 
 public:
     LoginHelper() :
         m_state(new UiStateModifiableValue(LoggedOutState(new UiStateValue(NoErrorState()), GetLoginSink())))
     {
 
+    }
+
+    ~LoginHelper() {
+        if (m_pClientEventSink && trekClient.GetClientEventSource()) {
+            trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
+        }
+        trekClient.DisconnectLobby();
     }
 
     TRef<IEventSink> GetLoginSink() {
@@ -100,8 +151,47 @@ public:
         });
     }
 
+    TRef<IEventSink> GetLogoutSink() {
+        return new CallbackSink([this]() {
+            this->Logout();
+            return true;
+        });
+    }
+
     TRef<UiStateValue> GetState() {
         return m_state;
+    }
+
+    void SetLoginError(std::string message) {
+        trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
+        m_pClientEventSink = nullptr;
+        m_state->SetValue(LoggedOutState(new UiStateValue(YesErrorState(message)), this->GetLoginSink()));
+    }
+
+    void Async(std::function<void()> callback) {
+        //the callback needs to stay alive, copy into pointer
+        std::function<void()>* pCallback = new std::function<void()>(callback);
+
+        CreateThread(NULL, 0, [](void* pData) {
+            std::function<void()> callback = *(std::function<void()>*)pData;
+
+            callback();
+
+            //delete pointer
+            delete pData;
+            return (DWORD)0;
+        }, pCallback, 0, NULL);
+    }
+
+    void Logout() {
+        if (m_state->GetValue().GetName() != "Logged in") {
+            ZAssert(false);
+            return;
+        }
+
+        trekClient.DisconnectLobby();
+
+        m_state->SetValue(LoggedOutState(new UiStateValue(NoErrorState()), this->GetLoginSink()));
     }
 
     void Login() {
@@ -110,39 +200,112 @@ public:
             return;
         }
 
-        if (m_state->GetValue().as<LoggedOutState>()->GetHasError()->GetValue().GetName() == "No") {
-            //dummy code, first time fails
-            m_state->SetValue(LoggingInState());
-            m_state->GetValue().as<LoggingInState>()->SetStep(1, "Connecting to the lobby");
-
-            GetWindow()->AddSink(new CallbackSink([this]() {
-                m_state->GetValue().as<LoggingInState>()->SetStep(2, "Authenticating");
-
-                GetWindow()->AddSink(new CallbackSink([this]() {
-                    m_state->SetValue(LoggedOutState(new UiStateValue(YesErrorState("I am not sure")), this->GetLoginSink()));
-                    return false;
-                }), 1);
-                return false;
-            }), 1);
-            return;
-        }
+        m_pClientEventSink = IClientEventSink::CreateDelegate(this);
+        trekClient.GetClientEventSource()->AddSink(m_pClientEventSink);
 
         m_state->SetValue(LoggingInState());
         m_state->GetValue().as<LoggingInState>()->SetStep(1, "Connecting to the lobby");
 
-        GetWindow()->AddSink(new CallbackSink([this]() {
-            m_state->GetValue().as<LoggingInState>()->SetStep(2, "Authenticating");
+        ZString name = trekClient.GetSavedCharacterName();
 
-            GetWindow()->AddSink(new CallbackSink([this]() {
-                m_state->GetValue().as<LoggingInState>()->SetStep(3, "Retrieving server list");
-                GetWindow()->AddSink(new CallbackSink([this]() {
-                    m_state->SetValue(LoggedInState());
-                    return false;
-                }), 1);
-                return false;
-            }), 1);
-            return false;
-        }), 1);
+        // BT - Steam - User is logged into steam, and has a steam profile name
+        // The steam reviewer was somehow launching the game with steam authorization but no persona name. If 
+        // there is an player name, then the server rejects the user as a hacker with a DPlay error. 
+        bool isUserLoggedIntoSteamWithValidPlayerName = SteamUser() != nullptr && strlen(name) > 0;
+
+        if (isUserLoggedIntoSteamWithValidPlayerName == false)
+        {
+            SetLoginError("Invalid user supplied by Steam");
+            return;
+        }
+
+        // BT - STEAM - Add players callsign and token.
+        CallsignTagInfo callSignTagInfo;
+        ZString characterName = callSignTagInfo.Render(name);
+
+        Async([this, characterName]() {
+            PathString pathConfig(PathString::GetCurrentDirectory() + "allegiance.txt");
+            trekClient.GetCfgInfo().Load(pathConfig);
+
+            BaseClient::ConnectInfo ci;
+            DWORD cbZoneTicket = 0;
+            ci.pZoneTicket = NULL;
+            DWORD cbName = sizeof(ci.szName);
+
+            lstrcpy(ci.szName, characterName);
+
+            ZeroMemory(&ci.ftLastArtUpdate, sizeof(ci.ftLastArtUpdate));
+
+            ((BaseClient*)&trekClient)->ConnectToLobby(&ci);
+            if (!trekClient.m_fmLobby.IsConnected()) {
+                SetLoginError("Failed to connect to the lobby.");
+                return;
+            }
+            m_state->GetValue().as<LoggingInState>()->SetStep(2, "Connected to the lobby. Waiting for the server list.");
+        });
+    }
+
+    void OnLostConnection(const char * szReason) override {};
+    void OnLogonLobby() override {
+        if (m_state->GetValue().GetName() != "Logging in") {
+            ZAssert(false);
+            return;
+        }
+        m_state->GetValue().as<LoggingInState>()->SetStep(3, "Logged in to the lobby. Waiting for server/core list");
+
+        Async([this]() {
+            trekClient.ServerListReq();
+            if (!GetWindow()->GetPopupContainer()->IsEmpty())
+                GetWindow()->GetPopupContainer()->ClosePopup(NULL);
+            GetWindow()->RestoreCursor();
+        });
+    };
+    void OnLogonLobbyFailed(bool bRetry, const char * szReason) override {
+        SetLoginError(std::string("Lobby login failed: ") + std::string(szReason));
+    };
+    void OnLogonGameServer() override {};
+    void OnLogonGameServerFailed(bool bRetry, const char * szReason) override {};
+
+    /*int m_cCores;
+    StaticCoreInfo* m_pcores;
+    int m_cServers;
+    ServerCoreInfo* m_pservers;*/
+
+    void OnServersList(int cCores, char *Cores, int cServers, char *Servers) override {
+        //prepare the new game dialog
+
+        if (!m_pcreateDialog) {
+            Modeler* pmodeler = GetModeler();
+            //export to mdl
+            TRef<INameSpace> pnsGameScreen = pmodeler->CreateNameSpace("gamescreendata", pmodeler->GetNameSpace("effect"));
+            pnsGameScreen->AddMember("playerCount", new ModifiableNumber(0));
+
+            TRef<INameSpace> pns = pmodeler->GetNameSpace("gamescreen");
+
+            m_pcreateDialog = new CreateGameDialogPopup(pns);
+        }
+
+        StaticCoreInfo *pcores = (StaticCoreInfo*)Cores;
+        ServerCoreInfo *pservers = (ServerCoreInfo*)Servers;
+
+        m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
+
+        //finish login process
+        List* plist = trekClient.GetMissionList();
+
+        m_state->SetValue(LoggedInState(this->GetLogoutSink(), this->GetShowNewGamePopupSink()));
+        m_state->GetValue().as<LoggedInState>()->SetServerList(plist);
+    };
+
+    TRef<IEventSink> GetShowNewGamePopupSink() {
+        return new CallbackSink([this]() {
+            if (!GetWindow()->GetPopupContainer()->IsEmpty())
+                GetWindow()->GetPopupContainer()->ClosePopup(NULL);
+            GetWindow()->RestoreCursor();
+
+            GetWindow()->GetPopupContainer()->OpenPopup(m_pcreateDialog, false);
+            return true;
+        });
     }
 
 };
@@ -188,6 +351,8 @@ private:
     ZString             m_strCharacterName;
     ZString             m_strPassword;
     MissionInfo*        m_pmissionJoining;
+
+    TRef<LoginHelper>   m_pLoginHelper;
 
 #ifdef ENABLE3DINTROSCREEN
 	//KGJV
@@ -769,8 +934,8 @@ public:
                     //auto screen = CreateZoneClubScreen();
                 })}
             })));*/
-            LoginHelper* helper = new LoginHelper();
-            map["Login state"] = helper->GetState();
+            m_pLoginHelper = new LoginHelper();
+            map["Login state"] = m_pLoginHelper->GetState();
 
             m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners, map));
         }

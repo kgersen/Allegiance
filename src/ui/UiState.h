@@ -78,3 +78,47 @@ ZString GetString(int indent, const UiState& value);
 ZString GetFunctionName(const UiState& value);
 typedef TModifiableValue<UiState, ModifiableUiStateName> UiStateModifiableValue;
 
+template <typename EntryType>
+class UiList : public Value {
+private:
+    std::list<EntryType> m_list;
+
+public:
+
+    UiList(std::list<EntryType> list) :
+        m_list(list) 
+    {}
+
+    const std::list<EntryType>& GetList() {
+        return m_list;
+    }
+
+    void Insert(int position, EntryType entry) {
+        auto iterator = m_list.begin();
+        std::advance(iterator, position);
+
+        m_list.insert(iterator, entry);
+        Changed();
+    }
+
+    void InsertAtEnd(EntryType entry) {
+        m_list.insert(m_list.end(), entry);
+        Changed();
+    }
+
+    void Remove(int position) {
+        auto iterator = m_list.begin();
+        std::advance(iterator, position);
+
+        m_list.erase(iterator);
+        Changed();
+    }
+
+    void RemoveAll() {
+        m_list.clear();
+        Changed();
+    }
+};
+
+typedef UiList<TRef<UiObjectContainer>> ContainerList;
+typedef UiList<TRef<Image>> ImageList;

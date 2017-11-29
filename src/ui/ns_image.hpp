@@ -95,7 +95,18 @@ public:
             return (TRef<ConstantImage>)LoadImageFile(context, path);
         };
         table["Group"] = [](sol::object list) {
-            if (list.is<sol::table>()) {
+            if (list.is<TRef<ImageList>>()) {
+                TRef<ImageList> varlist = list.as<TRef<ImageList>>();
+
+                return (TRef<Image>)new NonStaticCallbackImage<ImageList*>([](ImageList* varlist) {
+                    TRef<GroupImage> pgroup = new GroupImage();
+                    for (auto entry : varlist->GetList()) {
+                        pgroup->AddImageToTop(entry);
+                    }
+                    return (TRef<Image>)pgroup;
+                }, varlist);
+            }
+            else if (list.is<sol::table>()) {
                 TRef<GroupImage> pgroup = new GroupImage();
 
                 sol::table table_list = list;
@@ -109,16 +120,6 @@ public:
                         throw std::runtime_error("Element in group should not be null");
                     }
                     pgroup->AddImageToTop(child);
-                }
-
-                return (TRef<Image>)pgroup;
-            }
-            else if (list.is<std::list<TRef<Image>>>()) {
-                std::list<TRef<Image>> varlist = list.as<std::list<TRef<Image>>>();
-
-                TRef<GroupImage> pgroup = new GroupImage();
-                for (auto entry : varlist) {
-                    pgroup->AddImageToTop(entry);
                 }
 
                 return (TRef<Image>)pgroup;

@@ -6,6 +6,48 @@
 #include "engine.h"
 
 template<class OriginalType>
+class NonStaticCallbackImage : public WrapImage {
+    typedef std::function<TRef<Image>(OriginalType)> CallbackType;
+
+    CallbackType m_callback;
+    bool bUpdating;
+
+protected:
+    virtual void ChildChanged(Value* pvalue, Value* pvalueNew) override {
+        if (!bUpdating) {
+            Value::ChildChanged(pvalue, pvalueNew);
+        }
+    }
+
+public:
+    NonStaticCallbackImage(CallbackType callback, OriginalType pvalue1) :
+        m_callback(callback),
+        WrapImage(Image::GetEmpty(), pvalue1),
+        bUpdating(false)
+    {}
+
+    void Evaluate()
+    {
+        if (!bUpdating) {
+            OriginalType value1 = (OriginalType)GetChild(1);
+
+            TRef<Image> evaluated = m_callback(value1);
+            evaluated->Evaluate();
+
+            SetImage(evaluated);
+
+            bUpdating = true;
+            Update();
+            WrapImage::Evaluate();
+        }
+        else {
+            WrapImage::Evaluate();
+        }
+        bUpdating = false;
+    }
+};
+
+template<class OriginalType>
 class CallbackImage : public WrapImage {
     typedef std::function<TRef<Image>(OriginalType)> CallbackType;
 

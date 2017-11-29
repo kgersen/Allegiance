@@ -4,22 +4,40 @@
 #include "ui.h"
 #include "items.hpp"
 
+template <typename ResultEntryType, typename OriginalEntryType>
+class MappedList : public UiList<ResultEntryType> {
+private:
+    TRef<UiList<OriginalEntryType>> m_sourceList;
+    std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> m_callback;
+
+public:
+    MappedList(UiList<OriginalEntryType>* list, std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> callback) :
+        m_sourceList(list),
+        m_callback(callback),
+        UiList({})
+    {}
+
+    void Evaluate() override {
+        UiList::RemoveAll();
+        int i = 0;
+        for (auto entry : m_sourceList->GetList()) {
+            TRef<Number> index = new Number((float)i);
+
+            InsertAtEnd(m_callback(entry, index));
+            ++i;
+        }
+    }
+};
+
 class ListNamespace {
 public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
 
-        table["MapToImages"] = [&context](std::list<TRef<UiObjectContainer>> list, sol::function callback) {
+        table["MapToImages"] = [&context](TRef<ContainerList> list, sol::function callback) {
             auto wrapped_callback = context.WrapCallback<TRef<Image>, TRef<UiObjectContainer>, TRef<Number>>(callback, Image::GetEmpty());
 
-            std::list<TRef<Image>> result;
-            int i = 0;
-            for (auto entry : list) {
-                TRef<Number> index = new Number((float)i);
-                result.push_back(wrapped_callback(entry, index));
-                ++i;
-            }
-            return result;
+            return (TRef<ImageList>)new MappedList<TRef<Image>, TRef<UiObjectContainer>>(list, wrapped_callback);
         };
 
         context.GetLua().set("List", table);

@@ -167,6 +167,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClCompile Include="..\src\WinTrek\cmdview.cpp" />
     <ClCompile Include="..\src\WinTrek\console.cpp" />
     <ClCompile Include="..\src\WinTrek\consoledata.cpp" />
+    <ClCompile Include="..\src\WinTrek\CreateGameDialog.h" />
     <ClCompile Include="..\src\WinTrek\ddstream.cpp" />
     <ClCompile Include="..\src\WinTrek\ddvideo.cpp" />
     <ClCompile Include="..\src\WinTrek\gameoverscreen.cpp" />

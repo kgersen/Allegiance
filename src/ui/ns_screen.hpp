@@ -49,7 +49,7 @@ public:
             "GetNumber", &UiState::Get<TRef<Number>>,
             "GetState", &UiState::Get<TRef<UiStateValue>>,
             "GetEventSink", &UiState::Get<TRef<IEventSink>>,
-            "GetList", &UiState::Get<std::list<TRef<UiObjectContainer>>>
+            "GetList", &UiState::Get<TRef<ContainerList>>
         );
 
         context.GetLua().new_usertype<UiState>("UiState", 
