@@ -148,7 +148,17 @@ TRef<StringValue> NumberTransform::ToString(Number* pNumber, int decimals)
 {
     return new TransformedValue<ZString, float>([decimals](float a) {
         float multiplier = pow(10, decimals);
-        return (int)round(a * multiplier) / multiplier;
+
+        int output_decimals = decimals >= 0 ? decimals : 0;
+
+        std::string s(16, '\0');
+        std::string format = std::string("%.") + std::to_string(output_decimals) + "f";
+        auto written = std::snprintf(&s[0], s.size(), format.c_str(), round(a * multiplier) / multiplier);
+        s.resize(written);
+
+        //return ZString(format.c_str());
+        return ZString(s.c_str());
+        //return round(a * multiplier) / multiplier;
     }, pNumber);
 }
 

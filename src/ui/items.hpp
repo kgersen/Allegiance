@@ -7,9 +7,13 @@
 #include "valuetransform.h"
 #include "imagetransform.h"
 
+typedef TEvent<Point> PointEvent;
+
 class MouseEventImage : public WrapImage {
     std::map<std::string, TRef<EventSourceImpl>> m_mapEventSources;
+    std::map<std::string, TRef<PointEvent::SourceImpl>> m_mapPointEventSources;
     bool m_bDown = false;
+    Point m_pointDown;
 
 public:
 
@@ -29,10 +33,28 @@ public:
         return pEventSource;
     }
 
+    PointEvent::Source* GetPointEventSource(std::string string) {
+        auto found = m_mapPointEventSources.find(string);
+        if (found != m_mapPointEventSources.end()) {
+            return found->second;
+        }
+
+        TRef<PointEvent::SourceImpl> pEventSource = new PointEvent::SourceImpl();
+        m_mapPointEventSources[string] = pEventSource;
+        return pEventSource;
+    }
+
     void Trigger(std::string string) {
         auto found = m_mapEventSources.find(string);
         if (found != m_mapEventSources.end()) {
             found->second->Trigger();
+        }
+    }
+
+    void TriggerPoint(std::string string, Point& point) {
+        auto found = m_mapPointEventSources.find(string);
+        if (found != m_mapPointEventSources.end()) {
+            found->second->Trigger(point);
         }
     }
 
@@ -49,6 +71,14 @@ public:
         Trigger("mouse." + button_name + "." + what);
     }
 
+    void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside) override
+    {
+        if (m_bDown) {
+            TriggerPoint("drag", point - m_pointDown);
+            m_pointDown = point;
+        }
+    }
+
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
         // inspired by button.cpp~:~690
@@ -59,6 +89,7 @@ public:
 
         if (bDown) {
             m_bDown = true;
+            m_pointDown = point;
             TriggerMouseButton(button_name, "down");
 
             if (pprovider->IsDoubleClick()) {
@@ -71,6 +102,7 @@ public:
             TriggerMouseButton(button_name, "up");
 
             if (wasDown) {
+                TriggerPoint("drag", point - m_pointDown);
                 TriggerMouseButton(button_name, "click");
             }
         }

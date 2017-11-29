@@ -2,6 +2,7 @@
 #pragma once
 
 #include "value.h"
+#include "event.h"
 #include <functional>
 
 class NumberTransform {
@@ -135,5 +136,37 @@ public:
         TransformedType evaluated = m_callback(value, value2, value3, value4);
 
         GetValueInternal() = evaluated;
+    }
+};
+
+template <typename Type>
+class SimpleModifiableValue : public TStaticValue<Type> {
+public:
+    SimpleModifiableValue(const Type& value) :
+        TStaticValue<Type>(value)
+    {
+    }
+
+    void SetValue(const Type& value) {
+        TStaticValue<Type>::GetValueInternal() = value;
+        TStaticValue<Type>::Changed();
+    }
+};
+
+template <typename Type>
+class EventValue : public SimpleModifiableValue<Type>, public TEvent<Type>::Sink {
+private:
+    std::function<Type(const Type&, const Type&)> m_callback;
+
+public:
+    EventValue(const Type& value, std::function<Type(const Type&, const Type&)> callback) :
+        SimpleModifiableValue<Type>(value),
+        TEvent<Type>::Sink(),
+        m_callback(callback)
+    {}
+
+    bool OnEvent(typename TEvent<Type>::Source* pevent, Type value) override {
+        SetValue(m_callback(GetValue(), value));
+        return true;
     }
 };

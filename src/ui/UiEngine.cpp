@@ -306,6 +306,13 @@ public:
 
             return WrapImage::HitTest(pprovider, Point(point.X(), sizeY - point.Y()), bCaptured);
         }
+
+        MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown) override
+        {
+            float sizeY = (float)m_pContext->GetEngine()->GetFullscreenSize().Y();
+
+            return WrapImage::Button(pprovider, Point(point.X(), sizeY - point.Y()), button, bCaptured, bInside, bDown);
+        }
     };
 
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {

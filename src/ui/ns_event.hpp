@@ -119,6 +119,12 @@ public:
             }
             pEventSource->AddSink(pEventSink);
         };
+        table["OnPointEvent"] = [](TEvent<Point>::Sink* pEventSink, TEvent<Point>::Source* pEventSource) {
+            if (!pEventSink || !pEventSource) {
+                throw std::runtime_error("Argument should not be null");
+            }
+            pEventSource->AddSink(pEventSink);
+        };
 
         table["Get"] = [](Image* image, std::string string) {
             if (!image) {
@@ -126,6 +132,14 @@ public:
             }
             MouseEventImage* pMouseEventImage = (MouseEventImage*)(image);
             return pMouseEventImage->GetEventSource(string);
+        };
+
+        table["GetPoint"] = [](Image* image, std::string string) {
+            if (!image) {
+                throw std::runtime_error("Argument should not be null");
+            }
+            MouseEventImage* pMouseEventImage = (MouseEventImage*)(image);
+            return pMouseEventImage->GetPointEventSource(string);
         };
 
         table["ToBoolean"] = [](sol::table table, sol::object valueDefault) {
