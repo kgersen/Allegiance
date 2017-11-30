@@ -17,10 +17,6 @@ public:
     static void AddNamespace(sol::state* m_pLua) {
         sol::table table = m_pLua->create_table();
 
-        m_pLua->new_usertype<EventValue<float>>("EventValue<float>",
-            sol::base_classes, sol::bases<Number, TEvent<float>::Sink>()
-        );
-
         table["Create"] = [](float a) {
             return new Number(a);
         };
@@ -72,7 +68,25 @@ public:
         table["Cos"] = [](sol::object a) {
             return NumberTransform::Cos(wrapValue<float>(a));
         };
-        m_pLua->new_usertype<Number>("Number");
+
+        m_pLua->new_usertype<Number>("Number",
+            sol::meta_function::addition, [](sol::object a, sol::object b) {
+                return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
+            },
+            sol::meta_function::subtraction, [](sol::object a, sol::object b) {
+                return NumberTransform::Subtract(wrapValue<float>(a), wrapValue<float>(b));
+            },
+            sol::meta_function::multiplication, [](sol::object a, sol::object b) {
+                return NumberTransform::Multiply(wrapValue<float>(a), wrapValue<float>(b));
+            },
+            sol::meta_function::division, [](sol::object a, sol::object b) {
+                return NumberTransform::Divide(wrapValue<float>(a), wrapValue<float>(b));
+            }
+        );
+
+        m_pLua->new_usertype<EventValue<float>>("EventValue<float>",
+            sol::base_classes, sol::bases<Number, TEvent<float>::Sink>()
+            );
 
         m_pLua->set("Number", table);
     }

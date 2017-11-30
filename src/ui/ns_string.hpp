@@ -87,6 +87,12 @@ public:
             throw std::runtime_error("Expected value argument of String.Switch to be either a wrapped or unwrapped bool, int, or string");
         };
 
+        context.GetLua().new_usertype<StringValue>("StringValue", 
+            sol::meta_function::concatenation, [](sol::object a, sol::object b) {
+                return StringTransform::Concat(wrapString(a), wrapString(b));
+            }
+        );
+
         context.GetLua().set("String", table);
     }
 };

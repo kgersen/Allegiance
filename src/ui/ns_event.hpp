@@ -152,7 +152,6 @@ public:
             EventOneToOne<Point, float>::CreateOnEventPropagatorFunction(),
             EventOneToOne<Point, Point>::CreateOnEventPropagatorFunction()
         );
-        table["OnEvent"] = EventOneToOne<float, Point>::CreateOnEventPropagatorFunction();
 
         table["Get"] = [](Image* image, std::string string) {
             if (!image) {
