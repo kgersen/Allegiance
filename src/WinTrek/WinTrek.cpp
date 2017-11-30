@@ -1473,14 +1473,12 @@ public:
 public:
 
     bool      OnActivateApp(bool bActive) override {
-        if (bActive == false) {
-            debugf("OnActivateApp false\n");
-            m_bEnableVirtualJoystick = false;
-            m_ptrekInput->SetFocus(false);
+        if (bActive) {
+            m_ptrekInput->SetFocus(true); //Combined with previously un-setting the focus, this somehow brings the m_pboolKeyDown and m_pboolTrekKeyDown arrays back in sync
         }
         else {
-            debugf("OnActivateApp true\n");
-            m_ptrekInput->SetFocus(true);
+            m_bEnableVirtualJoystick = false;
+            m_ptrekInput->SetFocus(false);
         }
         return false;
     }
