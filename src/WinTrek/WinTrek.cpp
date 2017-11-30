@@ -1304,6 +1304,7 @@ public:
     bool                m_bOverlaysChanged;
 	bool				m_bShowSectorMapPane;
 	bool				m_bShowInventoryPane;
+    bool                m_bFreshInvestmentPane;
 
 
     //
@@ -1472,8 +1473,12 @@ public:
 public:
 
     bool      OnActivateApp(bool bActive) override {
-        if (bActive == false) {
+        if (bActive) {
+            m_ptrekInput->SetFocus(true); //Combined with previously un-setting the focus, this somehow brings the m_pboolKeyDown and m_pboolTrekKeyDown arrays back in sync
+        }
+        else {
             m_bEnableVirtualJoystick = false;
+            m_ptrekInput->SetFocus(false);
         }
         return false;
     }
@@ -7890,7 +7895,8 @@ public:
                 && GetPopupContainer()->IsEmpty()
                 && trekClient.flyingF()
                 && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
-                && ((m_voverlaymask[m_viewmode] & c_omBanishablePanes) == 0);
+                && ((m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) == 0)
+                && (!m_bFreshInvestmentPane || (m_voverlaymask[m_viewmode] & ofInvestment) == 0);
 
             //enabling mouse means that we listen to the mouse manually and ignore window events
             m_pmouse->SetEnabled(bEnable || (m_bActive && m_pengine->IsFullscreen()));
@@ -9722,7 +9728,14 @@ public:
 
             case TK_ToggleMouse:
             {
-                m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
+                if (m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) {
+                    TurnOffOverlayFlags(c_omBanishablePanes & ~ofInvestment);
+                    m_bEnableVirtualJoystick = true;
+                }
+                else if (m_bFreshInvestmentPane && (m_voverlaymask[m_viewmode] & ofInvestment))
+                    m_bFreshInvestmentPane = false;
+                else
+                    m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
             }
             break;
 
@@ -10325,6 +10338,7 @@ public:
                 {
                     TurnOffOverlayFlags(c_omBanishablePanes & ~ofInvestment);
                     ToggleOverlayFlags(ofInvestment);
+                    m_bFreshInvestmentPane = (m_voverlaymask[m_viewmode] & ofInvestment);
                 }
             }
             break;
