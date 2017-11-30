@@ -1468,7 +1468,7 @@ public:
         // Translate the vertices to screen coordinates
         //
 
-        MeshIndex aindex[7];
+        MeshIndex aindex[8];
         int index;
 
         for(index = 0; index < vcount; index++) {
@@ -1478,6 +1478,11 @@ public:
         //
         // Form all of the triangle fans
         //
+
+        //Additional guard to make sure we don't exceed array bounds in the next loop
+        if (vcount > 8) {
+            vcount = 8;
+        }
 
         for(index = 1; index < vcount - 1; index++) {
             StoreTriangle(
