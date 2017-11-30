@@ -45,5 +45,20 @@ public:
     }
 };
 
+template <typename ValueType>
+class CallbackValueSink : public TEvent<ValueType>::Sink {
+private:
+    std::function<bool(ValueType)> m_funcCallback;
+
+public:
+    CallbackValueSink(std::function<bool(ValueType)> funcCallback) :
+        m_funcCallback(funcCallback)
+    {}
+
+    bool OnEvent(typename TEvent<ValueType>::Source* pevent, ValueType value) override {
+        return m_funcCallback(value);
+    }
+};
+
 #include "UiEngine.h"
 #include "UiState.h"

@@ -17,8 +17,18 @@ public:
     static void AddNamespace(sol::state* m_pLua) {
         sol::table table = m_pLua->create_table();
 
+        m_pLua->new_usertype<EventValue<float>>("EventValue<float>",
+            sol::base_classes, sol::bases<Number, TEvent<float>::Sink>()
+        );
+
         table["Create"] = [](float a) {
             return new Number(a);
+        };
+
+        table["CreateEventSink"] = [](float a) {
+            return (TRef<EventValue<float>>)new EventValue<float>(a, [](float fOld, float fNew) {
+                return fNew;
+            });
         };
 
         table["ToString"] = [](sol::object a, sol::optional<int> decimals) {
@@ -46,6 +56,12 @@ public:
         };
         table["Max"] = [](sol::object a, sol::object b) {
             return NumberTransform::Max(wrapValue<float>(a), wrapValue<float>(b));
+        };
+        table["Clamp"] = [](sol::object min, sol::object max, sol::object value) {
+            return NumberTransform::Min(
+                wrapValue<float>(max),
+                NumberTransform::Max(wrapValue<float>(value), wrapValue<float>(min))
+            );
         };
         table["Round"] = [](sol::object a, sol::optional<int> decimals) {
             return NumberTransform::Round(wrapValue<float>(a), decimals.value_or(0));

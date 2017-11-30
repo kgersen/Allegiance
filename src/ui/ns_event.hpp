@@ -108,23 +108,51 @@ public:
     }
 };
 
+template <typename TypeResult, typename TypeOriginal>
+class EventOneToOne {
+    typedef TRef<TStaticValue<TypeResult>> WrappedResult;
+    typedef TRef<TStaticValue<TypeOriginal>> WrappedOriginal;
+
+public:
+
+    static auto CreateOnEventPropagatorFunction() {
+
+
+        return [](TEvent<TypeResult>::Sink* pEventSink, TEvent<TypeOriginal>::Source* pEventSource, std::function<WrappedResult(WrappedOriginal)> transformer) {
+            TypeOriginal original_default_value;
+            TRef<SimpleModifiableValue<TypeOriginal>> start = new SimpleModifiableValue<TypeOriginal>(original_default_value);
+            WrappedResult end = transformer(start);
+
+            TRef<TEvent<TypeResult>::Sink> sinkRefCounted = pEventSink;
+
+            pEventSource->AddSink(new CallbackValueSink<TypeOriginal>([start, end, sinkRefCounted](TypeOriginal value) {
+                start->SetValue(value);
+                end->Update();
+                sinkRefCounted->OnEvent(nullptr, end->GetValue());
+                return true;
+            }));
+        };
+    }
+};
+
 class EventNamespace {
 public:
     static void AddNamespace(sol::state* m_pLua) {
         sol::table table = m_pLua->create_table();
 
-        table["OnEvent"] = [](IEventSink* pEventSink, IEventSource* pEventSource) {
-            if (!pEventSink || !pEventSource) {
-                throw std::runtime_error("Argument should not be null");
-            }
-            pEventSource->AddSink(pEventSink);
-        };
-        table["OnPointEvent"] = [](TEvent<Point>::Sink* pEventSink, TEvent<Point>::Source* pEventSource) {
-            if (!pEventSink || !pEventSource) {
-                throw std::runtime_error("Argument should not be null");
-            }
-            pEventSource->AddSink(pEventSink);
-        };
+        table["OnEvent"] = sol::overload(
+            [](IEventSink* pEventSink, IEventSource* pEventSource) {
+                if (!pEventSink || !pEventSource) {
+                    throw std::runtime_error("Argument should not be null");
+                }
+                pEventSource->AddSink(pEventSink);
+            },
+            EventOneToOne<float, float>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<float, Point>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<Point, float>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<Point, Point>::CreateOnEventPropagatorFunction()
+        );
+        table["OnEvent"] = EventOneToOne<float, Point>::CreateOnEventPropagatorFunction();
 
         table["Get"] = [](Image* image, std::string string) {
             if (!image) {

@@ -22,15 +22,9 @@ public:
             );
         };
 
-        table["CreateEventPoint"] = [](float x, float y) {
+        table["CreateEventSink"] = [](float x, float y) {
             return (TRef<EventValue<Point>>)new EventValue<Point>(Point(x, y), [](const Point& old, const Point& eventPoint) {
                 return eventPoint;
-            });
-        };
-
-        table["CreateEventPointAdd"] = [](float x, float y) {
-            return (TRef<EventValue<Point>>)new EventValue<Point>(Point(x, y), [](const Point& old, const Point& eventPoint) {
-                return old + eventPoint;
             });
         };
         
