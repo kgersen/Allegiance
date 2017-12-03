@@ -126,6 +126,34 @@ public:
             }
             throw std::runtime_error("Expected value argument of Image.Group to be either a table of images or a result from List.MapToImages");
         };
+
+        table["StackVertical"] = [](sol::table list, sol::optional<sol::object> separation) {
+            TRef<GroupImage> pgroup = new GroupImage();
+
+            sol::table table_list = list;
+            int count = table_list.size();
+
+            TRef<Image> child;
+
+            TRef<Number> pZero = new Number(0.0f);
+            TRef<Number> offset_y = pZero;
+
+            for (int i = 1; i <= count; ++i) {
+                child = table_list.get<Image*>(i);
+                if (!child) {
+                    throw std::runtime_error("Element in group should not be null");
+                }
+                pgroup->AddImageToTop(ImageTransform::Translate(child, PointTransform::Create(pZero, offset_y)));
+
+                offset_y = NumberTransform::Add(offset_y, PointTransform::Y(ImageTransform::Size(child)));
+                if (separation) {
+                    offset_y = NumberTransform::Add(offset_y, wrapValue<float>(separation.value()));
+                }
+            }
+
+            return (TRef<Image>)pgroup;
+        };
+
         table["Switch"] = [&context](sol::object value, sol::table table) {
             int count = table.size();
 
