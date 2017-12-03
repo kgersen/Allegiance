@@ -4675,7 +4675,8 @@ public:
 				// BT - 10/17 - HighRes Textures
 				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
 
-                m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
+                //Rock: Disabled for release
+                //m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
  				
 				break;
 
