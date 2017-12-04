@@ -54,6 +54,9 @@ public:
     static TRef<Boolean> And(Boolean* a, Boolean* b);
     static TRef<Boolean> Or(Boolean* a, Boolean* b);
     static TRef<Boolean> Not(Boolean* a);
+
+    static TRef<Number> ToNumber(Boolean* a);
+    static TRef<Number> Count(std::vector<TRef<Boolean>> a);
 };
 
 class StringTransform {
@@ -169,4 +172,42 @@ public:
         SetValue(m_callback(GetValue(), value));
         return true;
     }
+};
+
+template <typename TypeResult, typename TypeEntry>
+class VectorTransformValue : public TStaticValue<TypeResult>
+{
+    typedef TRef<TStaticValue<TypeEntry>> TypeVectorEntry;
+    typedef std::function<TypeResult(const std::vector<TypeEntry>&)> CallbackType;
+
+    CallbackType m_callback;
+    int m_count;
+
+public:
+    VectorTransformValue(CallbackType callback, std::vector<TypeVectorEntry> vector) :
+        m_callback(callback),
+        m_count(vector.size()),
+        TStaticValue()
+    {
+        
+        for (std::vector<TypeVectorEntry>::iterator it = vector.begin(); it != vector.end(); ++it) {
+            TypeVectorEntry entry = *it;
+            AddChild(entry);
+        }
+    }
+
+    void Evaluate()
+    {
+        std::vector<TypeEntry> temp = {};
+        for (int i = 0; i < m_count; ++i) {
+            TypeEntry value = ((TStaticValue<TypeEntry>*)GetChild(i))->GetValue();
+            temp.push_back(value);
+        }
+
+        TypeResult evaluated = m_callback(temp);
+
+        GetValueInternal() = evaluated;
+    }
+
+
 };

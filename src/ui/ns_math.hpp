@@ -130,6 +130,17 @@ public:
             return (TRef<Boolean>)BooleanTransform::Not(wrapValue<bool>(a));
         };
 
+        table["ToNumber"] = [](sol::object a) {
+            return (TRef<Number>)BooleanTransform::ToNumber(wrapValue<bool>(a));
+        };
+        table["Count"] = [](sol::table table) {
+            std::vector<TRef<Boolean>> vector;
+            table.for_each([&vector](sol::object key, sol::object value) {
+                vector.push_back(wrapValue<bool>(value));
+            });
+            return (TRef<Number>)BooleanTransform::Count(vector);
+        };
+
         m_pLua->set("Boolean", table);
     }
 };

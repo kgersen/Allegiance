@@ -444,6 +444,25 @@ TRef<Boolean> BooleanTransform::Not(Boolean* pvalue1)
     return new NotBoolean(pvalue1);
 }
 
+TRef<Number> BooleanTransform::ToNumber(Boolean* pvalue1)
+{
+    return new TransformedValue<float, bool>([](bool bValue) {
+        return bValue ? 1 : 0;
+    }, pvalue1);
+}
+
+TRef<Number> BooleanTransform::Count(std::vector<TRef<Boolean>> a)
+{
+    return new VectorTransformValue<float, bool>([](const std::vector<bool>& vector) {
+        int count = 0;
+        for (bool b : vector) {
+            if (b) {
+                ++count;
+            }
+        }
+        return (float)count;
+    }, a);
+}
 
 // ### String
 
