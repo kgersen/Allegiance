@@ -4,25 +4,61 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+#include "steam_api.h"
+#include "SlmVer.h"
+#include <inttypes.h>
+
+// BT - STEAM - Integrated Steam Exception at the highest level.
+void MiniDumpFunction(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException)
+{
+	// You can build and set an arbitrary comment to embed in the minidump here,
+	// maybe you want to put what level the user was playing, how many players on the server,
+	// how much memory is free, etc...
+
+	char miniDumpComment[1024] = "";
+
+	if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
+	{
+		char steamID[64];
+		sprintf(steamID, "%" PRIu64, SteamUser()->GetSteamID().ConvertToUint64());
+		sprintf(miniDumpComment, "%s - %s", steamID, SteamFriends()->GetPersonaName());
+	}
+
+	SteamAPI_SetMiniDumpComment(miniDumpComment);
+
+	// The 0 here is a build ID, we don't set it
+	SteamAPI_WriteMiniDump(nExceptionCode, pException, int(rup));
+}
+
+
 int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow)
 {
-    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_WNDW);
+	_set_se_translator(MiniDumpFunction);
+	try  // this try block allows the SE translator to work
+	{
 
-    InitAllocs();
+		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_WNDW);
 
-    // OleInitialize() is needed for Ole Drag and Drop
+		InitAllocs();
 
-    OleInitialize(NULL);
-    //CoInitialize(NULL);
+		// OleInitialize() is needed for Ole Drag and Drop
 
-    int result = Win32Main(hInstance, hPrevInstance, lpszCmdLine, nCmdShow);
+		OleInitialize(NULL);
+		//CoInitialize(NULL);
 
-    OleUninitialize();
-    //CoUninitialize();
+		int result = Win32Main(hInstance, hPrevInstance, lpszCmdLine, nCmdShow);
 
-    return result;
+		OleUninitialize();
+		//CoUninitialize();
+
+		return result;
+	}
+	catch (...)
+	{
+		return -1;
+	}
 }
 
 int main( int argc, char *argv[ ])

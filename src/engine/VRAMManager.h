@@ -124,6 +124,9 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////
 	int			GetTotalTextureCount( );
 
+	// BT - 10/17 - Fixing crash on D3D texture load.
+	HRESULT CreateSystemMemoryTexture(D3DFORMAT texFormat, DWORD dwWidth, DWORD dwHeight, STexture * pTexture);
+
 	////////////////////////////////////////////////////////////////////////////////////////////
 	HRESULT		CreateTexture(	TEXHANDLE	texHandle,
 								D3DFORMAT	texFormat,

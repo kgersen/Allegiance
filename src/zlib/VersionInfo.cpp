@@ -2,9 +2,7 @@
 // VersionInfo.cpp : Implementation of the ZVersionInfo class.
 //
 
-#include "pch.h"
 #include "VersionInfo.h"
-
 
 /////////////////////////////////////////////////////////////////////////////
 // ZVersionInfo
@@ -14,18 +12,18 @@
 // Construction / Destruction
 
 ZVersionInfo::ZVersionInfo(bool) :
-  m_pVerInfo(NULL),
+  m_pVerInfo(nullptr),
   m_cbVerInfo(0),
-  m_pFixed(NULL),
+  m_pFixed(nullptr),
   m_wLangID(-1),
   m_wCodePage(-1)
 {
 }
 
 ZVersionInfo::ZVersionInfo(LPCTSTR szModule) :
-  m_pVerInfo(NULL),
+  m_pVerInfo(nullptr),
   m_cbVerInfo(0),
-  m_pFixed(NULL),
+  m_pFixed(nullptr),
   m_wLangID(-1),
   m_wCodePage(-1)
 {
@@ -34,9 +32,9 @@ ZVersionInfo::ZVersionInfo(LPCTSTR szModule) :
 }
 
 ZVersionInfo::ZVersionInfo(HINSTANCE hinstance) :
-  m_pVerInfo(NULL),
+  m_pVerInfo(nullptr),
   m_cbVerInfo(0),
-  m_pFixed(NULL),
+  m_pFixed(nullptr),
   m_wLangID(-1),
   m_wCodePage(-1)
 {
@@ -54,7 +52,7 @@ bool ZVersionInfo::Load(LPCTSTR szModule)
 {
   // Check for a NULL or empty string
   if (!szModule || TEXT('\0') == *szModule)
-    return Load(HINSTANCE(NULL));
+    return Load(HINSTANCE(nullptr));
 
   // Ensure that there is no previous version information block allocated
   Unload();
@@ -63,13 +61,13 @@ bool ZVersionInfo::Load(LPCTSTR szModule)
   assert(!m_pFixed);
 
   // Get the size of the version information of the specified module
-  BYTE* pVerInfo = NULL;
-  DWORD cbVerInfo, dummy;
-  cbVerInfo = GetFileVersionInfoSize(const_cast<LPTSTR>(szModule), &dummy);
+  uint8_t* pVerInfo = nullptr;
+  uint32_t cbVerInfo, dummy;
+  cbVerInfo = GetFileVersionInfoSize(const_cast<LPTSTR>(szModule), LPDWORD(&dummy));
   if (cbVerInfo)
   {
     // Allocate space to hold the version information
-    pVerInfo = new BYTE[cbVerInfo];
+    pVerInfo = new uint8_t[cbVerInfo];
     if (!pVerInfo)
     {
       SetLastError(ERROR_NOT_ENOUGH_MEMORY);
@@ -82,18 +80,18 @@ bool ZVersionInfo::Load(LPCTSTR szModule)
   // Attempt to load the version information block
   if (!GetFileVersionInfo(const_cast<LPTSTR>(szModule), 0, cbVerInfo, pVerInfo))
   {
-    DWORD dwLastError = GetLastError();
+    uint32_t dwLastError = GetLastError();
     delete [] pVerInfo;
     SetLastError(dwLastError ? dwLastError : ERROR_NO_MORE_ITEMS);
     return false;
   }
 
   // Attempt to get a pointer to the fixed version information
-  VS_FIXEDFILEINFO* pFixed = NULL;
+  VS_FIXEDFILEINFO* pFixed = nullptr;
   UINT cbFixed = 0;
   if (!VerQueryValue(pVerInfo, TEXT("\\"), (void**)&pFixed, &cbFixed) || cbFixed != sizeof(*pFixed))
   {
-    DWORD dwLastError = GetLastError();
+    uint32_t dwLastError = GetLastError();
     delete [] pVerInfo;
     SetLastError(dwLastError);
     return false;
@@ -133,7 +131,7 @@ bool ZVersionInfo::Load(const void* pvVerInfo, UINT cbVerInfo)
   Unload();
 
   // Allocate space to hold the version information
-  BYTE* pVerInfo = new BYTE[cbVerInfo];
+  uint8_t* pVerInfo = new uint8_t[cbVerInfo];
   if (!pVerInfo)
   {
     SetLastError(ERROR_NOT_ENOUGH_MEMORY);
@@ -144,11 +142,11 @@ bool ZVersionInfo::Load(const void* pvVerInfo, UINT cbVerInfo)
   CopyMemory(pVerInfo, pvVerInfo, cbVerInfo);
 
   // Attempt to get a pointer to the fixed version information
-  VS_FIXEDFILEINFO* pFixed = NULL;
+  VS_FIXEDFILEINFO* pFixed = nullptr;
   UINT cbFixed = 0;
   if (!VerQueryValue(pVerInfo, TEXT("\\"), (void**)&pFixed, &cbFixed) || cbFixed != sizeof(*pFixed))
   {
-    DWORD dwLastError = GetLastError();
+    uint32_t dwLastError = GetLastError();
     delete [] pVerInfo;
     SetLastError(dwLastError ? dwLastError : ERROR_NO_MORE_ITEMS);
     return false;
@@ -170,9 +168,9 @@ void ZVersionInfo::Unload()
   if (m_pVerInfo)
     delete m_pVerInfo;
 
-  m_pVerInfo  = NULL;
+  m_pVerInfo  = nullptr;
   m_cbVerInfo = 0;
-  m_pFixed    = NULL;
+  m_pFixed    = nullptr;
 }
 
 
@@ -201,14 +199,14 @@ ZString ZVersionInfo::GetStringValue(LPCTSTR pszKey, bool* pbExists) const
     MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US) : GetLanguageID());
 
   // Determine if a code page was specified
-  WORD rgwCodePages[] =
+  uint16_t rgwCodePages[] =
   {
     1200,  // Unicode
     1252,  // Windows Multilingual
     0000,  // Neutral
   };
   int cCodePages = sizeofArray(rgwCodePages);
-  if (WORD(-1) != m_wCodePage)
+  if (uint16_t(-1) != m_wCodePage)
   {
     rgwCodePages[0] = m_wCodePage;
     cCodePages = 1;
@@ -227,8 +225,8 @@ ZString ZVersionInfo::GetStringValue(LPCTSTR pszKey, bool* pbExists) const
 
     // Query the value
     UINT cbValue = 0;
-    LPCTSTR pszValue = NULL;
-    if (VerQueryValue(m_pVerInfo, szSubBlock, (void**)&pszValue, &cbValue))
+    LPCTSTR pszValue = nullptr;
+    if (m_pVerInfo != nullptr && VerQueryValue(m_pVerInfo, szSubBlock, (void**)&pszValue, &cbValue))
     {
       // Indicate that the key exists
       if (pbExists)

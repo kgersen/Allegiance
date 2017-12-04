@@ -415,7 +415,7 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
     assert(GetCookie()); // we can't be sending messages w/ cookies unless we have a real cookie
 
 	 // BT - 9/11/2010 ACSS - Supports authentication check of the CD Key.
-	char szAddress[16];
+	char szAddress[64];
 	g.fm.GetIPAddress(*pfsPlayer->GetConnection(), szAddress);
 
     BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerJoined, S, PLAYER_JOINED)
@@ -1783,9 +1783,10 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
     misparms.bClubGame = false;
   #endif // !defined(ALLSRV_STANDALONE)
 
+	// BT - STEAM - Scores always count in steam!
   // TE: Enforce LockSides = on if ScoresCount mmf change to MaxImbalance
-  if (misparms.bScoresCount)
-	  misparms.iMaxImbalance = 0x7ffe;
+  //if (misparms.bScoresCount) 
+	 // misparms.iMaxImbalance = 0x7ffe;
 
   int numTeamsOld = m_misdef.misparms.nTeams;
 
@@ -2746,6 +2747,10 @@ void CFSMission::RecordGameResults()
     // Post the query for async completion
     g.sql.PostQuery(pquery);
 
+#endif // !defined(ALLSRV_STANDALONE)
+
+	// BT - STEAM - Making this run for all game over scenarios.
+
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();
     for (SideLinkIGC* itSide = pSides->first(); itSide; itSide = itSide->next())
@@ -2757,17 +2762,20 @@ void CFSMission::RecordGameResults()
       RecordTeamResults(pside);
     }
 
+	// BT - STEAM - players who are not currently connected to the mission do not have initialized CSteamAchievement objects
+	// available, so skipping this one for now. Players who disconnect before the end of the game will not get any stats recorded.
+
     // Iterate through each player that left the game before it ended
-    for (OldPlayerLink* itOld = m_oldPlayers.first(); itOld; itOld = itOld->next())
-    {
-      OldPlayerInfo& opi = itOld->data();
+    //for (OldPlayerLink* itOld = m_oldPlayers.first(); itOld; itOld = itOld->next())
+    //{
+    //  OldPlayerInfo& opi = itOld->data();
 
-      // Record the player results (if they played on a real side)
-      if (opi.sideID != SIDE_TEAMLOBBY)
-        RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
-    }
+    //  // Record the player results (if they played on a real side)
+    //  if (opi.sideID != SIDE_TEAMLOBBY)
+    //    RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
+    //}
 
-  #endif // !defined(ALLSRV_STANDALONE)
+
 }
 
 
@@ -2817,6 +2825,10 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
     // Post the query for async completion
     g.sql.PostQuery(pquery);
 
+#endif // !defined(ALLSRV_STANDALONE)
+
+	// BT - STEAM - Making this run for all game over scenarios.
+
     // Iterate through each player of the team
     const ShipListIGC* pShips = pside->GetShips();
     for (ShipLinkIGC* itShip = pShips->first(); itShip; itShip = itShip->next())
@@ -2832,11 +2844,9 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
         PlayerScoreObject* ppso = pfsPlayer->GetPlayerScoreObject();
 
         // Record the player results
-        RecordPlayerResults(pship->GetName(), ppso, pside->GetObjectID());
+        RecordPlayerResults(pship, pfsPlayer, pside->GetObjectID());
       }
     }
-
-  #endif // !defined(ALLSRV_STANDALONE)
 }
 
 
@@ -2846,8 +2856,12 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
    Purpose:
      Records the results of the player to the database.
  */
-void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* ppso, SideID sid)
+void CFSMission::RecordPlayerResults(IshipIGC* pship, CFSPlayer *player, SideID sid)
 {
+	PlayerScoreObject*  ppso = player->GetPlayerScoreObject();
+	//Xynth I didn't need this change today but I don't think it hurts and will likely be needed down the road
+	const char * pszName = pship->GetName();
+
   #if !defined(ALLSRV_STANDALONE)
 
     // Create the database update query
@@ -2911,6 +2925,19 @@ void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* pps
 
     // Post the query for async completion
     g.sql.PostQuery(pquery);
+
+#else
+
+	// BT - STEAM
+	CSteamAchievements *pSteamAchievements = player->GetSteamAchievements();
+	IshipIGC *pIship = player->GetIGCShip();
+	pSteamAchievements->AwardBetaParticipation();
+	
+	pSteamAchievements->UpdateLeaderboard(ppso);
+	pSteamAchievements->AddUserStats(ppso, pIship);	
+
+	pSteamAchievements->SaveStats();
+
 
   #endif // !defined(ALLSRV_STANDALONE)
 }
@@ -3043,6 +3070,43 @@ void CFSMission::ProcessGameOver()
 
   m_flGameDuration = g.timeNow - m_misdef.misparms.timeStart;
 
+  //Xynth Determine Rank Ratio and load it into PlayerScoreObjects
+  {
+	  int sideCount = 0;
+	  ObjectID sideID[3];
+	  int rank[3];
+	  for (SideLinkIGC* psl = m_pMission->GetSides()->first(); psl != NULL && sideCount < 3; psl = psl->next())
+	  {
+		  IsideIGC* pside = psl->data();
+		  sideID[sideCount] = pside->GetObjectID();
+		  rank[sideCount] = GetSideRankSum(pside,false);
+		  sideCount++;		  
+	  }
+	  if (sideCount == 2) //if more than 2 sides, just use the default 1.0 ratio
+	  {
+		  for (int i = 0; i < 2; i++)
+		  {
+			  if (rank[i] == 0) //avoid divide by zero
+				  rank[i] = 1;
+		  }
+		  float ratio1 = float(rank[0]) / rank[1];
+		  float ratio0 = float(rank[1]) / rank[0];
+		  for (pShiplink = pShips->first(); pShiplink; pShiplink = pShiplink->next())
+		  {
+			  CFSShip * pfsShip = (CFSShip *)pShiplink->data()->GetPrivateData();
+			  if (pfsShip->IsPlayer())
+			  {
+				  PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
+				  if (pfsShip->GetSide()->GetObjectID() == sideID[0])
+					  ppso->SetRankRatio(ratio0);
+				  else
+					  ppso->SetRankRatio(ratio1);
+			  }
+		  }
+	  }
+
+  }
+  
   //Calculate scores for all players and get a running average of time played.
   float                 totalExperience                = 0.0f;
   float                 sideExperience[c_cSidesMax]    = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
@@ -3055,18 +3119,7 @@ void CFSMission::ProcessGameOver()
         CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
         if (pfsShip->IsPlayer())
         {
-			// BT - STEAM
-			/*CSteamID steamID(strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0));
-			CSteamAchievements achievementsForPlayer(steamID);*/
-			CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
-
-			pSteamAchievements->AwardBetaParticipation();
-
-            PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
-            
-			pSteamAchievements->AddUserStats(int(ppso->GetMinerKills()), int(ppso->GetBuilderKills()), int(ppso->GetPlayerKills()), int(ppso->GetBaseKills()), int(ppso->GetBaseCaptures()), int(ppso->GetScore()));
-			
-			pSteamAchievements->SaveStats();
+			PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
 			
 			if (ppso->Connected())
             {
@@ -3237,10 +3290,11 @@ void CFSMission::ProcessGameOver()
   }
 
   // Record the Game Results
-  if (m_misdef.misparms.bScoresCount) // Only if scores count
-  {
+  //if (m_misdef.misparms.bScoresCount) // Only if scores count
+  //{
+  // BT - STEAM - Scores always count. 
     RecordGameResults();
-  }
+  //}
 
   // Queue the GameOver message to all connected users
   g.fm.SetDefaultRecipient(GetGroupMission(), FM_GUARANTEED);
@@ -3824,7 +3878,7 @@ void CFSMission::QueueLobbyMissionInfo()
   }
 #endif
 
-  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
+  char szAddr[64]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)

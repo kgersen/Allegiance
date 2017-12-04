@@ -164,7 +164,10 @@ public:
         m_pimageSmallBkgnd = GetModeler()->LoadImage("consectorinfobmp", true);
         m_pimageLargeBkgnd = GetModeler()->LoadImage("conesectorinfobmp", true);
         m_pimageExpand = GetModeler()->LoadImage("consectorexpandbmp", true);
-        m_pimageBkgnd = m_pimageSmallBkgnd;
+
+		// The minimap has an open and closed view. The selected background image controls which view is shown.
+		m_pimageBkgnd = m_pimageLargeBkgnd;
+
 		m_pprobeIcon = (Surface *)trekClient.LoadRadarIcon("probe");
     }
 
@@ -944,7 +947,6 @@ public:
     void Render(Context* pcontext)
     {
         pcontext->SetShadeMode(ShadeModeFlat);
-		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/15/09
 
         Rect rectClip = m_bounds.GetRect();
         rectClip.Expand(-1);

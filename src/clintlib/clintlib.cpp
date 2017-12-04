@@ -1220,7 +1220,9 @@ void BaseClient::FlushGameState()
 
     if (m_ship)
         m_ship->AddRef();
+
     //Offline, we need to explicitly terminate all of the ships
+	if(m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
     {
         const ShipListIGC*  ships = m_pCoreIGC->GetShips();
         ShipLinkIGC*  l;
@@ -1232,7 +1234,8 @@ void BaseClient::FlushGameState()
 
     m_listPlayers.purge();
 
-    m_pCoreIGC->Terminate();
+	if (m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
+		m_pCoreIGC->Terminate();
 
     // Destroy the dummy ship
     if (m_ship)
@@ -1242,8 +1245,11 @@ void BaseClient::FlushGameState()
         m_ship = NULL;
     }
 
-    delete m_pCoreIGC;
-    m_pCoreIGC = NULL;
+	if (m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
+	{
+		delete m_pCoreIGC;
+		m_pCoreIGC = NULL;
+	}
 
     m_bInGame = false;
 }
@@ -1280,7 +1286,7 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
             DWORD cbValue = c_cbName;
             char szServer[c_cbName];
             szServer[0] = '\0';
-            if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
+            if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
                 ::RegQueryValueEx(hKey,"ServerAddress", NULL, NULL, (unsigned char*)&szServer, &cbValue);
                 ::RegCloseKey(hKey);
             }
@@ -1381,7 +1387,7 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
 	// Mdvalley: Pull lobby port from registry
 /*    DWORD dwPort = 2302;		// Default to 2302
 	HKEY hKey;
-	if(ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	if(ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
 		DWORD dwSize = sizeof(DWORD);
 		::RegQueryValueEx(hKey, "LobbyPort", NULL, NULL, (BYTE*)&dwPort, &dwSize);

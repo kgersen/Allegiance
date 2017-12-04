@@ -454,9 +454,41 @@ void FetchGlobalAttributeSet(GlobalAttributeID gaid, GlobalAttributeSet& gas)
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
+bool IsAnotherPlayerUsingThisName(const char * playerName, ImissionIGC * pMission)
+{
+	ShipLinkIGC* psl;
+	for (psl = pMission->GetShips()->first(); (psl != NULL); psl = psl->next())
+	{
+		CFSShip* pfsShip = (CFSShip *)(psl->data()->GetPrivateData());
+		if (pfsShip->IsPlayer())
+		{
+			CFSPlayer* pfsPlayerOther = pfsShip->GetPlayer();
+
+			if (_stricmp(playerName, pfsPlayerOther->GetName()) == 0)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
 {
+
+	// BT - STEAM - Rearching some complaints of stats not being logged. It turns out that US East 1 wasn't in the official game sevrer list. Derp.
+	// Leaving this here for now so I can debug some achievement stuff as well. 
+	//CSteamID id(uint64(76561198028193684));
+	//CSteamAchievements ach(id);
+	//int currScore;
+	//for (int i = 0; i < 20; i++)
+	//{
+	//	ach.GetStat(EStats::SUM_SCORE, &currScore);
+	//	ach.SetStat(EStats::SUM_SCORE, 3 + currScore);
+	//}
+	//ach.SaveStats();
+
   // Get the mission in question
   CFSMission * pfsMission;
   if (NA == (int)dwCookie && CFSMission::GetMissions()->n() > 0)
@@ -490,10 +522,41 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
+  ImissionIGC * pMission = pfsMission->GetIGCMission();
+
+  if (IsAnotherPlayerUsingThisName(pfsPlayer->GetName(), pMission) == true)
+  {
+	  for (int nameIndexCounter = 1; nameIndexCounter < 100; nameIndexCounter++)
+	  {
+		  ZString currentPlayerName = pfsPlayer->GetName();
+		  ZString namePart = currentPlayerName;
+		  ZString tagPart = "";
+		  if (currentPlayerName.Find("@") > -1)
+		  {
+			  namePart = currentPlayerName.LeftOf("@");
+			  tagPart = currentPlayerName.RightOf("@");
+		  }
+
+		  if (currentPlayerName.GetLength() > 23)
+			  namePart = namePart.Left(namePart.GetLength() - 2);
+
+		  namePart += nameIndexCounter;
+
+		  if (tagPart.GetLength() > 0)
+			  namePart += "@" + tagPart;
+
+		  if (IsAnotherPlayerUsingThisName((PCC)namePart, pMission) == false)
+		  {
+			  pfsPlayer->SetName((char *)(PCC)namePart);
+			  break;
+		  }
+	  }
+  }
+
 
   if(UTL::PrivilegedUser(pfsPlayer->GetName(),-1)){ //Avalanche: Let admins bypass most checks. //Imago 6/10 #2
   // check to see if the mission is running and whether joiners are allowed
-  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  
   OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
   const MissionParams*    pmp = pMission->GetMissionParams();
   SideID iSide=SIDE_TEAMLOBBY;
@@ -539,7 +602,7 @@ if (pfsMission->RequiresInvitation())
     }
   }
 
-  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  //ImissionIGC * pMission = pfsMission->GetIGCMission();
 
   #if defined(ALLSRV_STANDALONE)
   if (g.fm.GetHostApplicationGuid() == FEDSRV_STANDALONE_PRIVATE_GUID)
@@ -3589,6 +3652,23 @@ void SendShipUpdates(CFSMission * pfsMission)
                         pfmShipStatus->shipID = pship->GetObjectID();
                         pfmShipStatus->status = *pssOld = *pss;         //Also update the old status
                     }
+
+					//Xynth Add a periodic check for achievements and IGC Score triggers
+					
+					if (ISPLAYER(pship))
+					{
+						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+						PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+						if ((pship->GetAchievementMask() & c_achmProbeSpot) > 0)
+							pso->AddProbeSpot();
+						if ((pship->GetAchievementMask() & c_achmNewRepair) > 0)
+							pso->SetRepair(int(pship->GetRepair()));
+
+						pSteamAchievements->AwardIGCAchievements(pship->GetAchievementMask());
+						pship->ClearAchievementMask();
+
+					}
+
                 }
             }
 
@@ -4414,7 +4494,7 @@ HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cn
   // we don't do anything until they login
 
   // mmf 10/08 Log ip address (code provided by Imago)
-  char szRemote[16];
+  char szRemote[64];
   pthis->GetIPAddress(cnxn, szRemote);
   debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
 
@@ -4645,6 +4725,22 @@ CSteamID GetSteamIDFromPlayerHandle(char *playerHandle)
 }
 
 
+// BT - STEAM 
+static DWORD WINAPI LogonThread(LPVOID threadData)
+{
+	CSteamValidation *steamValidation = (CSteamValidation *) threadData;
+	steamValidation->BeginSteamAuthentication();
+
+	// BeginSteamAuthentication will block until either 30 seconds goes by, or it gets a login response from steam.
+	// When it completes, it calls PostThreadMessage to complete the login.
+
+	delete steamValidation;
+
+	return 0;
+}
+
+
+
 /*-------------------------------------------------------------------------
  * OnAppMessage
  *-------------------------------------------------------------------------
@@ -4838,7 +4934,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				  break;
 
 			  case CHAT_LEADERS:
-				  targetName = pfsMission->GetIGCMission()->GetModel(pfmChat->otTarget, pfmChat->oidTarget)->GetName();
+				  targetName = "Leaders";
 				  break;
 
 			  default:
@@ -4849,7 +4945,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		ZString senderName = pfsPlayer->GetName();
 		sourceSteamID = strtoull(pfsPlayer->GetCDKey(), NULL, NULL);
 		
-		char szRemote[16];
+		char szRemote[64];
 		CFMConnection * connection = pfsPlayer->GetConnection();
 		pthis->GetIPAddress(*connection, szRemote);
 		debugf("chat from connection ID: %x IP: %s\n", connection->GetID(), szRemote);
@@ -4857,18 +4953,23 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		const FMD_S_MISSIONDEF *missionDef = pfsMission->GetMissionDef();
 		ZString missionName = ZString(missionDef->misparms.strGameName);
 
-		BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
-			FM_VAR_PARM((PCC)missionName, CB_ZTS)
-			FM_VAR_PARM((PCC)senderName, CB_ZTS)
-			FM_VAR_PARM((PCC)targetName, CB_ZTS)
-			FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
-			FM_VAR_PARM(szRemote, CB_ZTS)
-		END_PFM_CREATE
-		  
-		pfmLogChat->sourceSteamID = sourceSteamID;
-		pfmLogChat->targetSteamID = targetSteamID;
-		  
-		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		// BT - 10/17 - Fixing crash on chat logging when lobby is not connected.
+		if (g.fmLobby.IsConnected() == true)
+		{
+			BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
+				FM_VAR_PARM((PCC)missionName, CB_ZTS)
+				FM_VAR_PARM((PCC)senderName, CB_ZTS)
+				FM_VAR_PARM((PCC)targetName, CB_ZTS)
+				FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
+				FM_VAR_PARM(szRemote, CB_ZTS)
+				END_PFM_CREATE
+
+			pfmLogChat->sourceSteamID = sourceSteamID;
+			pfmLogChat->targetSteamID = targetSteamID;
+
+			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		}
+
 		// BT - STEAN - End of chat logging.
 
       if (pfmChat->cbMessage > 0)
@@ -4885,101 +4986,101 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 #endif
 		{
 
-			// BT - STEAM - Enable a user that is a member of the MS Allegiance Steam Group to get a list of players and steam IDs 
-			// so that a moderator can kick or ban users from inside the game console.
-			if (pfmChat->cbMessage > strlen("#who") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#who", strlen("#who")) == 0)
-			{
-				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
-				{
-					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
-					{
-						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
-						if (pfsShip->IsPlayer() == true)
-						{
-							char playerData[1024];
+			//// BT - STEAM - Enable a user that is a member of the MS Allegiance Steam Group to get a list of players and steam IDs 
+			//// so that a moderator can kick or ban users from inside the game console.
+			//if (pfmChat->cbMessage > strlen("#who") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#who", strlen("#who")) == 0)
+			//{
+			//	if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+			//	{
+			//		for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+			//		{
+			//			CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+			//			if (pfsShip->IsPlayer() == true)
+			//			{
+			//				char playerData[1024];
 
-							uint64 steamUID = strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0);
-							CSteamID steamID(steamUID);
+			//				uint64 steamUID = strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0);
+			//				CSteamID steamID(steamUID);
 
-							char playerHandle[256];
-							GetPlayerHandleFromSteamID(steamID, playerHandle);
+			//				char playerHandle[256];
+			//				GetPlayerHandleFromSteamID(steamID, playerHandle);
 
-							sprintf(playerData, "%s - %s", pfsShip->GetPlayer()->GetName(), playerHandle);
+			//				sprintf(playerData, "%s - %s", pfsShip->GetPlayer()->GetName(), playerHandle);
 
-							CSteamID testID = GetSteamIDFromPlayerHandle(playerHandle);
+			//				CSteamID testID = GetSteamIDFromPlayerHandle(playerHandle);
 
-							pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
-								NA, playerData);
-						}
-					}
-				}
-			}
+			//				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+			//					NA, playerData);
+			//			}
+			//		}
+			//	}
+			//}
 
-			// BT - STEAM
-			if (pfmChat->cbMessage > strlen("#kick") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#kick", strlen("#kick")) == 0)
-			{
-				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
-				{
-					char *kickPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#kick ");
-					CSteamID targetSteamID = GetSteamIDFromPlayerHandle(kickPlayerHandle);
-					char kickSteamID[1024];
-					sprintf(kickSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
-
-
-					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
-					{
-						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
-						if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), kickSteamID) == 0)
-						{
-							pfsMission->RemovePlayerFromSide(pfsShip->GetPlayer(), QuitSideReason::QSR_SwitchingSides, "You have been removed from the team by an admin.");
-
-							// TE: Fire AGCEvent informing of the kick
-							LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
-							_AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext, pfsShip->GetName(),
-								pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
-								"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
-								"zKicker", VT_LPSTR, pfsPlayer->GetName());
-							// This is named zBooter so the parameter appears last in the alphabetical list
-							// TE
-
-							break;
-						}
-					}
-				}
-			}
+			//// BT - STEAM
+			//if (pfmChat->cbMessage > strlen("#kick") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#kick", strlen("#kick")) == 0)
+			//{
+			//	if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+			//	{
+			//		char *kickPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#kick ");
+			//		CSteamID targetSteamID = GetSteamIDFromPlayerHandle(kickPlayerHandle);
+			//		char kickSteamID[1024];
+			//		sprintf(kickSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
 
 
-			// BT - STEAM
-			if (pfmChat->cbMessage > strlen("#ban") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#ban", strlen("#ban")) == 0)
-			{
-				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
-				{
-					char *banPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#ban ");
-					CSteamID targetSteamID = GetSteamIDFromPlayerHandle(banPlayerHandle);
-					char banSteamID[1024];
-					sprintf(banSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
+			//		for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+			//		{
+			//			CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+			//			if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), kickSteamID) == 0)
+			//			{
+			//				pfsMission->RemovePlayerFromSide(pfsShip->GetPlayer(), QuitSideReason::QSR_SwitchingSides, "You have been removed from the team by an admin.");
 
-					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
-					{
-						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
-						if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), banSteamID) == 0)
-						{
-							pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QuitSideReason::QSR_AdminBooted, "You have been removed from the game by an admin.");
+			//				// TE: Fire AGCEvent informing of the kick
+			//				LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+			//				_AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext, pfsShip->GetName(),
+			//					pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
+			//					"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+			//					"zKicker", VT_LPSTR, pfsPlayer->GetName());
+			//				// This is named zBooter so the parameter appears last in the alphabetical list
+			//				// TE
 
-							// TE: Fire AGCEvent informing of the kick
-							LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
-							_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
-								pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
-								"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
-								"zBanner", VT_LPSTR, pfsPlayer->GetName());
-							// This is named zBooter so the parameter appears last in the alphabetical list
-							// TE
+			//				break;
+			//			}
+			//		}
+			//	}
+			//}
 
-							break;
-						}
-					}
-				}
-			}
+
+			//// BT - STEAM
+			//if (pfmChat->cbMessage > strlen("#ban") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#ban", strlen("#ban")) == 0)
+			//{
+			//	if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+			//	{
+			//		char *banPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#ban ");
+			//		CSteamID targetSteamID = GetSteamIDFromPlayerHandle(banPlayerHandle);
+			//		char banSteamID[1024];
+			//		sprintf(banSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
+
+			//		for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+			//		{
+			//			CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+			//			if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), banSteamID) == 0)
+			//			{
+			//				pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QuitSideReason::QSR_AdminBooted, "You have been removed from the game by an admin.");
+
+			//				// TE: Fire AGCEvent informing of the kick
+			//				LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+			//				_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
+			//					pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
+			//					"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+			//					"zBanner", VT_LPSTR, pfsPlayer->GetName());
+			//				// This is named zBooter so the parameter appears last in the alphabetical list
+			//				// TE
+
+			//				break;
+			//			}
+			//		}
+			//	}
+			//}
 
           //NYI hack to allow misison owner to boot people from the lobby
           if (pfmChat->cbMessage > 5 && pfsMission->GetOwner() == pfsPlayer)
@@ -5768,6 +5869,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				DrmVerifier drmVerifier;
 				if (drmVerifier.CheckDrm(tokenCRC, pqd->szDrmHash) == false)
 				{
+					debugf("steam DRM check failed: %s\n", pqd->szDrmHash);
+
 					pqd->fValid = false;
 					szReason = "Your client has failed a DRM check. Please go back to your Steam app and reverify your installation. This action has been logged.";
 
@@ -5792,8 +5895,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 			pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
 			pqd->steamID = pfmLogon->steamID;
 
-			CSteamValidation steamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
-			steamValidation.BeginSteamAuthentication();
+			CSteamValidation *steamValidation = new CSteamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
+			DWORD threadID;
+			CreateThread(NULL, 0, LogonThread, steamValidation, 0, &threadID);
 		}
 		else
 		{
@@ -5802,21 +5906,51 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 			ZString responseText("Bypassed Login");
 
-			// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
-			BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
-				FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS)
-				FM_VAR_PARM(PCC(responseText), CB_ZTS)
-				FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS)
-				FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS)
-				END_PFM_CREATE
+			if (g.fmLobby.IsConnected())
+			{
+				// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
+				BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+					FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS)
+					FM_VAR_PARM(PCC(responseText), CB_ZTS)
+					FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS)
+					FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS)
+					END_PFM_CREATE
 
 				pfmPlayerRank->characterID = pqd->characterID;
-			pfmPlayerRank->fCanCheat = pqd->fCanCheat;
-			pfmPlayerRank->fRetry = pqd->fRetry;
-			pfmPlayerRank->dwCookie = pqd->dwCookie;
-			pfmPlayerRank->fValid = true;
-			pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
-			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+				pfmPlayerRank->fCanCheat = pqd->fCanCheat;
+				pfmPlayerRank->fRetry = pqd->fRetry;
+				pfmPlayerRank->dwCookie = pqd->dwCookie;
+				pfmPlayerRank->fValid = true;
+				pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
+
+				g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+			}
+			else
+			{
+				CQLogonStats * logonDetailsQuery = new CQLogonStats(GotLogonDetails);
+				CQLogonStatsData * logonDetailsQueryData = logonDetailsQuery->GetData();
+
+				lstrcpy(logonDetailsQueryData->szCDKey, pqd->szCDKey);
+				lstrcpy(logonDetailsQueryData->szCharacterName, pqd->szCharacterName);
+				lstrcpy(logonDetailsQueryData->szPassword, pqd->szPassword);
+				lstrcpy(logonDetailsQueryData->szReason, "Login Success.");
+
+				logonDetailsQueryData->characterID = pqd->characterID;
+				logonDetailsQueryData->fCanCheat = pqd->fCanCheat;
+				logonDetailsQueryData->fRetry = pqd->fRetry;
+				logonDetailsQueryData->dwCookie = pqd->dwCookie;
+				logonDetailsQueryData->fValid = true;
+				logonDetailsQueryData->dwConnectionID = pqd->dwConnectionID;
+
+				logonDetailsQueryData->rank = 7;
+				logonDetailsQueryData->sigma = 0;
+				logonDetailsQueryData->mu = 0;
+				logonDetailsQueryData->commandRank = 0;
+				logonDetailsQueryData->commandSigma = 0;
+				logonDetailsQueryData->commandMu = 0;
+
+				PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM)NULL, (LPARAM)logonDetailsQuery);
+			}
 		}
 
 		//DWORD threadID;
@@ -6544,17 +6678,34 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (!pfsMission)
         break;
 
+	  // BT - STEAM - Enable moderators to ban players by context menu.
+	  bool isModerator = CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) || CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pfsPlayer->GetCDKey());
+
+
       IsideIGC* pside = pfsPlayer->GetSide(); // player's side
       assert (pside);
       SideID    sideID = pside->GetObjectID();
-      if (sideID < 0 && sideID != SIDE_TEAMLOBBY)
+      if (sideID < 0 && sideID != SIDE_TEAMLOBBY && isModerator == false)
           break;
 
       CASTPFM(pfmQuitMission, CS, QUIT_MISSION, pfm);
 
       CFSShip * pfssAck = CFSShip::GetShipFromID(pfmQuitMission->shipID);
+	  CFSPlayer * pfspAck = pfssAck->GetPlayer();
+
       if (!pfssAck) // player already went away, so do nothing
         break;
+	  
+	  // BT - STEAM - Enable moderators to ban players by context menu.
+	  if (isModerator == true && pfspAck->IsPlayer())
+	  {
+		  char szMessageParam[1024];
+		  if (FM_VAR_REF(pfmQuitMission, szMessageParam))
+			  lstrcpy(szMessageParam, FM_VAR_REF(pfmQuitMission, szMessageParam));
+
+		  pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason, szMessageParam);
+		  break;
+	  }
 
       // the player must be the team leader or be booting themselves
       // (but the client might mistakenly think it's the team leader)
@@ -6562,8 +6713,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           ((pfsPlayer == pfsMission->GetLeader(sideID)) &&
            (pfssAck->GetSide() == pside)))
       {
-        CFSPlayer * pfspAck = pfssAck->GetPlayer();
+        
         bool bIsBoot = (pfsPlayer->GetShipID() != pfmQuitMission->shipID);
+		bool bIsAdmin = (pfsPlayer->GetShipID() != pfmQuitMission->shipID) && (pfmQuitMission->reason & QSR_SwitchingSides == QSR_AdminBooted);
 
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitMission->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
@@ -6595,17 +6747,33 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (!pfsMission)
         break;
 
+	  // BT - STEAM - Enable moderators to ban players by context menu.
+	  bool isModerator = CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) || CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pfsPlayer->GetCDKey());
+
       IsideIGC* pside = pfsPlayer->GetSide(); // player's side
       assert (pside);
       SideID    sideID = pside->GetObjectID();
-      if (sideID < 0)
+      if (sideID < 0 && isModerator == false)
         break;
 
       CASTPFM(pfmQuitSide, CS, QUIT_SIDE, pfm);
 
       CFSShip * pfssAck = CFSShip::GetShipFromID(pfmQuitSide->shipID);
+	  
       if (!pfssAck) // player already went away, so do nothing
         break;
+
+	  CFSPlayer * pfspAck = pfssAck->GetPlayer();
+
+	  if (isModerator == true && pfssAck->IsPlayer())
+	  {
+		  char szMessageParam[1024];
+		  if (FM_VAR_REF(pfmQuitSide, szMessageParam))
+			  lstrcpy(szMessageParam, FM_VAR_REF(pfmQuitSide, szMessageParam));
+
+		  pfsMission->RemovePlayerFromSide(pfspAck, pfmQuitSide->reason, szMessageParam);
+		  break;
+	  }
 
       TrapHackBoot(pfssAck->IsPlayer());
 
@@ -6615,7 +6783,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           ((pfsPlayer == pfsMission->GetLeader(sideID)) &&
            (pfssAck->GetSide() == pside)))
       {
-        CFSPlayer * pfspAck = pfssAck->GetPlayer();
+        
         bool bIsBoot = (pfsPlayer->GetShipID() != pfmQuitSide->shipID);
 
         // make sure that they are requesting a reasonable reason.
@@ -8039,9 +8207,9 @@ IHTTPSession * BeginConfigDownload()
 
   char szConfig[MAX_PATH];
 #ifdef _ALLEGIANCE_PROD_
-  lstrcpy(szConfig, "http://autoupdate.alleg.net/allegiance.cfg"); //Imago 6/10
+  lstrcpy(szConfig, "http://allegiance.zaphop.com/allegiance-server.txt"); //Imago 6/10 // BT - STEAM
 #else
-  lstrcpy(szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg"); //Imago 6/10
+  lstrcpy(szConfig, "http://allegiance.zaphop.com/allegiance-server.txt"); //Imago 6/10 // BT - STEAM
 #endif
 
   CRegKey key;
@@ -9228,6 +9396,7 @@ void LoadSettings()
 		if (dwEnforceSteamDRM > 0)
 			g.bEnforceSteamDRM = true;
 
+		// BT - STEAM
 		g.bUseSteamAuthentication = false;
 		DWORD dwUseSteamAuthentication;
 		DWORD cbUseSteamAuthentication = sizeof(dwUseSteamAuthentication);
@@ -9235,6 +9404,16 @@ void LoadSettings()
 
 		if (dwUseSteamAuthentication > 0)
 			g.bUseSteamAuthentication = true;
+
+		// BT - STEAM
+		g.szLeaderboardUpdateUrl[0] = '\0';
+		DWORD cbLeaderboardUpdateUrl = sizeof(g.szLeaderboardUpdateUrl);
+		RegQueryValueExA(hKey, "LeaderboardUpdateUrl", NULL, &dwType, (unsigned char*)g.szLeaderboardUpdateUrl, &cbLeaderboardUpdateUrl);
+
+		// BT - STEAM
+		g.szApiKey[0] = '\0';
+		DWORD cbApiKey = sizeof(g.szApiKey);
+		RegQueryValueExA(hKey, "ApiKey", NULL, &dwType, (unsigned char*)g.szApiKey, &cbApiKey);
 
 
 		/* pkk May 6th: Disabled bandwidth patch
@@ -10597,7 +10776,31 @@ class ThingSiteImpl : public ThingSite
                                 IscannerIGC*   s = l->data();
                                 assert (s->GetCluster() == pcluster);
 
+								// If the thing is in scanner range
 								if (s->InScannerRange(pmodel)) {
+									//Xynth something was just seen, I want to know if it was a probe that saw it and if this was high value target
+									if (s->GetObjectType() == OT_probe && pmodel->GetSide() != nullptr)
+									{
+										ObjectID spottedID = pmodel->GetObjectID();
+										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);	
+
+										// Guarding against server crash.
+										if (pSpottedShip != nullptr && pSpottedShip->GetHullType() != nullptr && pSpottedShip->GetHullType()->GetData() != nullptr)
+										{
+											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
+											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
+											if (am & hvMask > 0)
+											{
+												ObjectID probeID = s->GetObjectID();
+												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
+												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
+												IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+												pProbingShip->SetAchievementMask(c_achmProbeSpot);
+											}
+										}
+									}
+
+									
 									bool bSent = false;
                                     //See it
 									if (!pmodel->SeenBySide(pside)) {
@@ -10654,7 +10857,7 @@ class ThingSiteImpl : public ThingSite
                                     if (bSent)
                                     {
                                         // if it's a station, aleph, special asteroid or helium asteroid...
-                                        ObjectType otModel = pmodel->GetObjectType();
+                                        ObjectType otModel = pmodel->GetObjectType();									
                                         if ((otModel == OT_station || otModel == OT_warp ||
                                             (otModel == OT_asteroid &&
                                              (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)) //Imago - Review - what about mineable?! 7/10
@@ -10682,10 +10885,27 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->oidObject = pmodel->GetObjectID();
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
-
+																						
                                             g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); 
 
 											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());																		
+											
+											if (otModel == OT_station)
+											{
+												IstationIGC* pstation = ((IstationIGC*)pmodel);
+												if ((pstation->GetStationType()->GetClassID() == c_scGarrison) || 
+													(pstation->GetStationType()->GetClassID() == c_scStarbase))
+												{
+													if (s->GetObjectType() == OT_ship)
+													{
+														ObjectID spotterID = s->GetObjectID();
+														ImodelIGC* pShipModel = s->GetMission()->GetModel(OT_ship, spotterID);
+														IshipIGC* pShip = (IshipIGC*)pShipModel;
+														pShip->SetAchievementMask(c_achmGarrSpot);
+													}													
+												}
+											}
+
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -11481,8 +11701,7 @@ void FedSrvSiteBase::KillShipEvent(Time timeCollision, IshipIGC* pship, ImodelIG
 									PilotType pt = pship->GetPilotType();
 
 									CSteamAchievements *pSteamAchievements = pfsshipCredit->GetPlayer()->GetSteamAchievements();
-									pSteamAchievements->AwardKillAchievement(pt);
-									pSteamAchievements->SaveStats();
+									pSteamAchievements->AwardKillAchievement(pt);									
 								}
 							}
 						}
@@ -11733,7 +11952,7 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                      droneWatchFireSound, "Watch your fire");
                         }
                     }
-                    else if (launcher->GetObjectType() == OT_ship)
+                    else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
                     {
                         CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                         if (pfsLauncher->IsPlayer())
@@ -11800,7 +12019,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
                                  droneWatchFireSound, "Watch your fire");
                     }
                 }
-                else if (launcher->GetObjectType() == OT_ship)
+                else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
                 {
                     CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                     if (pfsLauncher->IsPlayer())
@@ -11832,7 +12051,13 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
           IshipIGC*     pship = (IshipIGC*)plauncher;
           CFSShip*      pfsship = (CFSShip*)(pship->GetPrivateData());
           pfsship->GetPlayerScoreObject()->KillBase(true);
-          for (ShipLinkIGC* psl = pship->GetChildShips()->first();
+		  if (pfsship->IsPlayer())
+		  {
+			  CSteamAchievements *pSteamAchievements = pfsship->GetPlayer()->GetSteamAchievements();
+			  pSteamAchievements->AwardBaseKillOrCapture(true); //Award Base Kill Achievement
+		  }
+          
+		  for (ShipLinkIGC* psl = pship->GetChildShips()->first();
                (psl != NULL);
                psl = psl->next())
           {
@@ -12596,6 +12821,18 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
   {
       CFSShip* pfsShip = (CFSShip*)(pshipRescuer->GetPrivateData());
       pfsShip->GetPlayerScoreObject()->AddRescue();
+	  if (pfsShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardPodPickup();
+	  }
+
+	  CFSShip* rescuedShip = (CFSShip*)(pshipRescued->GetPrivateData());
+	  if (rescuedShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = rescuedShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardGetRescued();
+	  }
       BEGIN_PFM_CREATE(g.fm, pfmPlayerRescued, S, PLAYER_RESCUED)
       END_PFM_CREATE
       pfmPlayerRescued->shipIDRescuer = pshipRescuer->GetObjectID();
@@ -12768,8 +13005,12 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 
             IsideIGC*   pside = pship->GetSide();
             assert (pside);
-            if (pside->ApplyDevelopmentTechs(ttbm))
-                pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+			if (pside->ApplyDevelopmentTechs(ttbm))
+			{
+				pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+				CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+				pSteamAchievements->AwardRecoverTechAchievement();
+			}
 		}
 		
 		if (pstationNew && pship && !pship->GetParentShip() && pship->GetBaseHullType() && //imago fix crash when boarding turret 7/22/09

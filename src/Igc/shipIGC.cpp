@@ -192,8 +192,10 @@ HRESULT     CshipIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
 
     m_bRunningAway = false;
 	m_stayDocked = false;  //Xynth #48 8/2010
-
-    return S_OK;
+	m_repair = 0; //Xynth amount of nanning performed by ship
+	m_achievementMask = 0;
+    
+	return S_OK;
 }
 
 void        CshipIGC::Terminate(void)
@@ -1231,12 +1233,22 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
     {
         //Repair the target's hull
         m_fraction -= amount * dtmArmor / maxHP;
-        if (m_fraction > 1.0f)
-            m_fraction = 1.0f;
+		if (m_fraction > 1.0f)
+		{
+			amount += (m_fraction - 1.0) * maxHP / dtmArmor; //Set amount to amount that had effect for stat
+			m_fraction = 1.0f;
+		}            
         GetThingSite ()->RemoveDamage (m_fraction);
 
         leakage = 0.0f;
         dr = c_drNoDamage;
+		if (launcher->GetObjectType() == OT_ship && (pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide()))
+		{
+
+			IshipIGC * pIship = ((IshipIGC*)launcher);
+			pIship->AddRepair(-amount);
+			pIship->SetAchievementMask(c_achmNewRepair);
+		}
     }
     else
     {

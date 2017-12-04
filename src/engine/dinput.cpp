@@ -309,7 +309,7 @@ public:
 		DWORD dwValue = -1;
 		DWORD cwValue = sizeof(dwValue);
 
-		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             ::RegQueryValueEx(hKey, "MouseSensitivity", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
 
@@ -639,6 +639,11 @@ public:
     const Point& GetPosition()
     {
         return m_point;
+    }
+
+    bool IsEnabled()
+    {
+        return m_bEnabled;
     }
 
     void SetEnabled(bool bEnabled)
@@ -987,7 +992,7 @@ public:
 				DWORD dwAC = 0;
 				DWORD dwGain = 10000;
 				DWORD cbValue;
-				if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+				if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 				{
 					 cbValue = sizeof(dwAC);
 					::RegQueryValueEx(hKey, "FFAutoCenter", NULL, &dwType, (unsigned char*)&dwAC, &cbValue);
@@ -1512,7 +1517,8 @@ public:
 
     Number* GetValue(int id)
     {
-        if (id < m_vvalueObject.GetCount()) {
+		// BT - 10/17 - Guarding against a -1 appearing in the input map which then causes a crash.
+        if (id >= 0 && id < m_vvalueObject.GetCount()) {
             return m_vvalueObject[id]->GetValue();
         } else {
             return NULL;

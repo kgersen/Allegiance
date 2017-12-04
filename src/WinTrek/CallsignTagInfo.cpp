@@ -35,6 +35,14 @@ ZString CallsignTagInfo::FixupCallsignTag(ZString callsignTag)
 {
 	ZString returnValue = callsignTag;
 
+	// It's tradition!
+	if (returnValue == "MsAlleg")
+		return "Alleg";
+
+	// Give our older members a nice badge of honor.
+	if (returnValue == "AllegFAO")
+		return "Vet";
+
 	// Allows us to have some group tags that may have already been claimed.
 	if (returnValue.Find("@") >= 0)
 		returnValue = returnValue.RightOf("@");
@@ -60,13 +68,8 @@ ZString CallsignTagInfo::FixupCallsignTag(ZString callsignTag)
 	if (returnValue.Find("$") >= 0)
 		returnValue = returnValue.RightOf("$");
 
-	// It's tradition!
-	if (returnValue == "MsAlleg")
-		returnValue = "Alleg";
-
-	// Give our older members a nice badge of honor.
-	if (returnValue == "AllegFAO")
-		returnValue = "Vet";
+	if (returnValue == "Alleg" || returnValue == "Vet")
+		return "Fail";
 
 	return returnValue;
 }
@@ -100,13 +103,13 @@ void CallsignTagInfo::LoadFromRegistry()
 
 	HKEY hKey;
 	DWORD dwType;
-	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
 		RegQueryValueEx(hKey, "SteamClanID", NULL, &dwType, (BYTE *)&szSteamClanID, &cbClanID);
 		RegQueryValueEx(hKey, "SteamOfficerToken", NULL, &dwType, (BYTE *)&szSteamOfficerToken, &cbSteamOfficerToken);
 		RegCloseKey(hKey);
 	}
-
+#ifdef STEAM_APP_ID
 	CSteamID targetGroupID(strtoull(szSteamClanID, NULL, NULL));
 
 	CSteamID currentUser = SteamUser()->GetSteamID();
@@ -122,6 +125,7 @@ void CallsignTagInfo::LoadFromRegistry()
 	}
 
 	UpdateStringValues(szSteamOfficerToken);
+#endif
 }
 
 void CallsignTagInfo::SaveToRegistry()
@@ -134,7 +138,7 @@ void CallsignTagInfo::SaveToRegistry()
 
 	HKEY hKey;
 	DWORD dwType;
-	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ | KEY_WRITE, &hKey))
+	if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ | KEY_WRITE, &hKey))
 	{
 		RegSetValueEx(hKey, "SteamClanID", 0, REG_SZ, (BYTE * )steamGroupID, sizeof(steamGroupID));
 		RegSetValueEx(hKey, "SteamOfficerToken", 0, REG_SZ, (BYTE *) token, sizeof(token));

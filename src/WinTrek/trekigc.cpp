@@ -2332,13 +2332,14 @@ WinTrekClient::WinTrekClient(void)
     m_bFilterChatsToAll(false),
     m_bFilterQuickComms(false),
 	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
-    m_dwFilterLobbyChats(3) //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
+    m_dwFilterLobbyChats(3), //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
+	bTrainingFirstClick(false)
 {
     // restore the CD Key from the registry
 
     HKEY hKey;
 
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
         ALLEGIANCE_REGISTRY_KEY_ROOT,
         0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
     {
@@ -2949,7 +2950,7 @@ ZString WinTrekClient::GetSavedCharacterName()
     char szName[c_cbName];
     szName[0] = '\0';
     
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
     {
         RegQueryValueEx(hKey, "CharacterName", NULL, &dwType, (unsigned char*)&szName, &cbName);
         RegCloseKey(hKey);
@@ -2965,7 +2966,7 @@ void WinTrekClient::SaveCharacterName(ZString strName)
     char szName[c_cbName];
     szName[0] = '\0';
     
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey)) 
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
     {
         RegSetValueEx(hKey, "CharacterName", NULL, REG_SZ, 
             (const BYTE*)(const char*)strName, strName.GetLength() + 1);
@@ -2978,7 +2979,7 @@ int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
     //DWORD dwWing = NA; // Imago 7/10 #149
 	DWORD dwWing = 0; // BT - 9/17 - Default all new players to the command wing.
     DWORD dwSize = sizeof(DWORD);
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) 
+    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
     {
         RegQueryValueEx(hKey, "WingAssignment", NULL, &dwType, (PBYTE)&dwWing, &dwSize);
         RegCloseKey(hKey);
@@ -2990,7 +2991,7 @@ void WinTrekClient::SaveWingAssignment(int index){ // kolie 6/10
 	HKEY hKey;
 	DWORD dwWing;
 	dwWing = (DWORD)index;
-	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
+	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
 	{
 		RegSetValueEx(hKey, "WingAssignment", NULL, REG_DWORD,  (PBYTE)&dwWing, sizeof(DWORD) );
 		RegCloseKey(hKey);
@@ -3622,7 +3623,7 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
 		if (pfm->fmid == FM_S_MISSIONDEF)
 		{
 			CASTPFM(pfmMissionDef, S, MISSIONDEF, pfm);
-			//char szAddr[16];
+			//char szAddr[64];
 			pthis->GetIPAddress(cnxnFrom, pfmMissionDef->szServerAddr); // get the real addr 
 			//Strncpy(pfmMissionDef->szServerAddr,szAddr,16);
 			//strcpy_s(pfmMissionDef->szServerAddr,16,szAddr); // IMAGO REVIEW CRASH 7/24/09
@@ -4362,6 +4363,10 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                     bForMe = false;
                 }
 
+				// BT - 9/17 - Prevent crashes in the Training missions when the pilot is not on any particular wing.
+				if (wid == NA)
+					wid = 0;
+
                 strRecipient = c_pszWingName[wid];
             }
             break;
@@ -4607,7 +4612,7 @@ void WinTrekClient::SetCDKey(const ZString& strCDKey)
     //
     // save the new key for future use.
 	//
-    // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, 
     //    ALLEGIANCE_REGISTRY_KEY_ROOT,
     //    0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
     // {
@@ -5139,7 +5144,7 @@ void  WinTrekClient::SaveSquadMemberships(const char* szCharacterName)
 
     HKEY hKey;
 
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
         ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
         0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
     {
@@ -5155,7 +5160,7 @@ void  WinTrekClient::RestoreSquadMemberships(const char* szCharacterName)
 
     HKEY hKey;
 
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, 
+    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
         ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
         0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
     {

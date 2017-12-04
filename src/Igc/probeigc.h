@@ -115,6 +115,21 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 
                     if (oldFraction > 0.0f)
                     {
+						//Xynth Set flag in IGC ship to later trigger an achievement for destroying a probe
+						if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
+						{
+							ObjectID theID = launcher->GetObjectID();
+							IsideIGC * plSide = launcher->GetSide();
+
+							if (plSide != nullptr)
+							{
+								IshipIGC * pShip = plSide->GetShip(theID);
+
+								if (pShip != nullptr && pside != nullptr && !((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide())))
+									pShip->SetAchievementMask(c_achmProbeKill); //Xynth for enemy probe kill achievement
+							}
+						}
+						
                         GetMyMission()->GetIgcSite()->KillProbeEvent(this);
                         dr = c_drKilled;
                     }
@@ -266,6 +281,13 @@ class CprobeIGC : public TmodelIGC<IprobeIGC>
 			m_timeExpire = time;
 		}
 		//Xynth end new expiration function
+		
+		virtual IshipIGC * GetProbeLauncherShip() const
+		//Xynth new function to identify who deployed the probe
+		{
+			return m_launcher;
+		}
+
 
     private:
         void ValidTarget(ImodelIGC*  pmodel,

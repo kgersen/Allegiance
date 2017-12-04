@@ -21,7 +21,7 @@ const int c_cDronesMax    = 500; // max drones  allowed on a server
 const int c_cShipsMax     = c_cPlayersMax + c_cDronesMax;
 
 #if defined(ALLSRV_STANDALONE)
-  const short c_cMaxPlayersPerGame = 0x7FFF; // KGJV-; changed from 64 to 200. KGJV #114 back to AZ size
+  const short c_cMaxPlayersPerGame = 200; // KGJV-; changed from 64 to 200. KGJV #114 back to AZ size // BT - STEAM
 #else // defined(ALLSRV_STANDALONE)
   const short c_cMaxPlayersPerGame = 0x7FFF;
 #endif // defined(ALLSRV_STANDALONE)
@@ -349,6 +349,9 @@ struct Global
   // BT - STEAM
   bool				bEnforceSteamDRM;
   bool				bUseSteamAuthentication;
+  char				szLeaderboardUpdateUrl[INTERNET_MAX_PATH_LENGTH]; 
+  char				szApiKey[MAX_PATH];
+
 
   /* pkk May 6th: Disabled bandwidth patch
   // w0dk4 Bandwidth Patch

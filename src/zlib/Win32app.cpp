@@ -1,8 +1,18 @@
-#include "pch.h"
+#include "Win32app.h"
 #include "regkey.h"
+#include "SlmVer.h"
 
 //Imago 7/10
 #include <dbghelp.h>
+#include "zstring.h"
+#include "VersionInfo.h"
+#include <ctime>
+#include "zmath.h"
+#include "window.h"
+
+#ifndef NO_STEAM
+	#include "steam_api.h"	
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -13,17 +23,17 @@
 Win32App *g_papp;
 
 	// Patch for SetUnhandledExceptionFilter 
-const BYTE PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
+const uint8_t PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
 
 	// Original bytes at the beginning of SetUnhandledExceptionFilter 
-BYTE OriginalBytes[5] = {0};
+uint8_t OriginalBytes[5] = {0};
 
 //Imago 6/10
 int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
+	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
 	char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
@@ -35,7 +45,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	else
 		p1++;
 	ZString zApp = p1;
-    DWORD dwBufferSize = MAX_PATH;
+    uint32_t dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
@@ -51,7 +61,7 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
                GetCurrentProcessId(), GetCurrentThreadId());
    
     hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+                FILE_SHARE_WRITE|FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
 
     ExpParam.ThreadId = GetCurrentThreadId();
     ExpParam.ExceptionPointers = pExceptionPointers;
@@ -70,9 +80,13 @@ int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	//
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, NULL, NULL);
+                    hDumpFile, mdt, &ExpParam, nullptr, nullptr);
+#ifndef NO_STEAM
+	SteamAPI_SetMiniDumpComment(p);
 
-
+	// The 0 here is a build ID, we don't set it
+	SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
+#endif // !NO_STEAM
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -81,7 +95,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
     char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
+	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
 	char* p1 = strrchr(szPathName, '\\');
 	char* p = strrchr(szPathName, '\\');
 	if (!p)
@@ -93,7 +107,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 	else
 		p1++;
 	ZString zApp = p1;
-    DWORD dwBufferSize = MAX_PATH;
+    uint32_t dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
@@ -108,7 +122,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
                GetCurrentProcessId(), GetCurrentThreadId());
    
     hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+                FILE_SHARE_WRITE|FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
 
     ExpParam.ThreadId = GetCurrentThreadId();
     ExpParam.ExceptionPointers = pExceptionPointers;
@@ -122,8 +136,14 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 		MiniDumpWithProcessThreadData); 
 
     bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, NULL, NULL);
+                    hDumpFile, mdt, &ExpParam, nullptr, nullptr);
+#ifndef NO_STEAM
+	// BT - STEAM
+	SteamAPI_SetMiniDumpComment(p);
 
+	// The 0 here is a build ID, we don't set it
+	SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
+#endif
     return EXCEPTION_EXECUTE_HANDLER;
 }
 
@@ -140,12 +160,12 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         // Just in case this was a Win32 error get the last error
         //
 
-        DWORD dwError = GetLastError();
+        uint32_t dwError = GetLastError();
 
         if (!g_papp) {
 			// Imago removed asm (x64) on ?/?, integrated with mini dump on 6/10
 			__try {
-				(*(int*)0) = 0;
+				(*(int*)nullptr) = 0;
 			}
 			__except(GenerateDump(GetExceptionInformation())) {}
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
@@ -158,21 +178,21 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
 // mmf 7/15 changed creation flag on chat file so other processes can read from it
 // avalanche + mmf 03/22/07 (bugs 108 and 109) place chat logs in logs folder, use \r\n
 
-HANDLE chat_logfile = NULL;
+HANDLE chat_logfile = nullptr;
 char logFileName[MAX_PATH + 21];
 
 void InitializeLogchat()
 {
 	HKEY hKey;
-	DWORD dwType;
+	uint32_t dwType;
 	char szValue[20];
-	DWORD cbValue = sizeof(szValue);
+	uint32_t cbValue = sizeof(szValue);
 	bool bLogChat = false;
 
-	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
 	{
-		//Imago fixed this but is still confused why it's not a dword.
-		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue))		
+		//Imago fixed this but is still confused why it's not a uint32_t.
+		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", nullptr, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue)))
 			bLogChat = (strcmp(szValue, "1") == 0);
 		::RegCloseKey(hKey);
 	}
@@ -188,7 +208,7 @@ void InitializeLogchat()
 
 		// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
 		// turns out this is not needed but leaving it here instead of moving it again
-		GetModuleFileName(NULL, logFileName, MAX_PATH);
+		GetModuleFileName(nullptr, logFileName, MAX_PATH);
 		char* p = strrchr(logFileName, '\\');
 		if (!p)
 			p = logFileName;
@@ -197,7 +217,7 @@ void InitializeLogchat()
 
 		strcpy(p, "logs\\");
 
-		if (!CreateDirectory(logFileName, NULL))
+		if (!CreateDirectory(logFileName, nullptr))
 		{
 			if (GetLastError() == ERROR_PATH_NOT_FOUND)
 			{
@@ -214,15 +234,15 @@ void InitializeLogchat()
 				logFileName,
 				GENERIC_WRITE,
 				FILE_SHARE_READ,
-				NULL,
+				nullptr,
 				OPEN_ALWAYS,
 				FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-				NULL
+				nullptr
 			);
 		delete t;
 
 		//Imago moved inside bLogChat
-		if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
+		if (chat_logfile == nullptr) debugf("Unable to create chat_logfile %s\n",logFileName);
 	}
 }
 
@@ -230,7 +250,7 @@ void TerminateLogchat()
 {
 	if (chat_logfile) {
 		CloseHandle(chat_logfile);
-        chat_logfile = NULL;
+        chat_logfile = nullptr;
     }
 }
 
@@ -253,8 +273,8 @@ void logchat(const char* strText)
 	if (chat_logfile && (length < 490)) {
 		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\r\n",
             (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
-        DWORD nBytes;
-        ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
+        uint32_t nBytes;
+        ::WriteFile(chat_logfile, bfr, strlen(bfr), LPDWORD(&nBytes), nullptr);
 	}
 	delete t;
 }
@@ -269,7 +289,7 @@ void ZDebugOutputImpl(const char *psz)
     else
         ::OutputDebugStringA(psz);
 }
-HANDLE g_logfile = NULL;
+HANDLE g_logfile = nullptr;
 
 extern int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
 
@@ -384,23 +404,23 @@ extern bool g_bOutput = true;
     void InitializeDebugf()
     {
         HKEY hKey;
-        DWORD dwType;
+        uint32_t dwType;
         char  szValue[20];
-        DWORD cbValue = sizeof(szValue);
+        uint32_t cbValue = sizeof(szValue);
         bool  bLogToFile = false;
 
 		// mmf added this regkey check 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
             ::RegCloseKey(hKey);
 
             g_outputdebugstring = (strcmp(szValue, "1") == 0);
         }
 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
-            ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
+            ::RegQueryValueEx(hKey, "LogToFile", NULL, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
             ::RegCloseKey(hKey);
 
             bLogToFile = (strcmp(szValue, "1") == 0);
@@ -486,7 +506,7 @@ void Win32App::Exit(int value)
     _exit(value);
 }
 
-int Win32App::OnException(DWORD code, EXCEPTION_POINTERS* pdata)
+int Win32App::OnException(uint32_t code, EXCEPTION_POINTERS* pdata)
 {
 			GenerateDump(pdata);
 	return EXCEPTION_CONTINUE_SEARCH;
@@ -519,8 +539,8 @@ void Win32App::DebugOutput(const char *psz)
 			::OutputDebugStringA(psz);
 
         if (g_logfile) {
-            DWORD nBytes;
-            ::WriteFile(g_logfile, psz, strlen(psz), &nBytes, NULL);
+            uint32_t nBytes;
+            ::WriteFile(g_logfile, psz, strlen(psz), LPDWORD(&nBytes), nullptr);
         }
     #endif
 }
@@ -559,7 +579,7 @@ void Win32App::OnAssertBreak()
     //
 	// Imago integrated with mini dump on 6/10
 	__try {
-    (*(int*)0) = 0;
+    (*(int*)nullptr) = 0;
 }
 	__except(GenerateDump(GetExceptionInformation())) {}
 }
@@ -571,20 +591,20 @@ bool Win32App::IsBuildDX9()
 }
 
 
-bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
+bool Win32App::WriteMemory( uint8_t* pTarget, const uint8_t* pSource, uint32_t Size )
 {
-	DWORD ErrCode = 0;
+	uint32_t ErrCode = 0;
 
 
 	// Check parameters 
 
-	if( pTarget == 0 )
+	if( pTarget == nullptr )
 	{
 		_ASSERTE( !_T("Target address is null.") );
 		return false;
 	}
 
-	if( pSource == 0 )
+	if( pSource == nullptr )
 	{
 		_ASSERTE( !_T("Source address is null.") );
 		return false;
@@ -605,9 +625,9 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 	// Modify protection attributes of the target memory page 
 
-	DWORD OldProtect = 0;
+	uint32_t OldProtect = 0;
 
-	if( !VirtualProtect( pTarget, Size, PAGE_EXECUTE_READWRITE, &OldProtect ) )
+	if( !VirtualProtect( pTarget, Size, PAGE_EXECUTE_READWRITE, LPDWORD(&OldProtect) ) )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("VirtualProtect() failed.") );
@@ -622,9 +642,9 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 	// Restore memory protection attributes of the target memory page 
 
-	DWORD Temp = 0;
+	uint32_t Temp = 0;
 
-	if( !VirtualProtect( pTarget, Size, OldProtect, &Temp ) )
+	if( !VirtualProtect( pTarget, Size, OldProtect, LPDWORD(&Temp) ) )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("VirtualProtect() failed.") );
@@ -643,23 +663,23 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 bool Win32App::EnforceFilter( bool bEnforce )
 {
-	DWORD ErrCode = 0;
+	uint32_t ErrCode = 0;
 
 	
 	// Obtain the address of SetUnhandledExceptionFilter 
 
 	HMODULE hLib = GetModuleHandle( _T("kernel32.dll") );
 
-	if( hLib == NULL )
+	if( hLib == nullptr )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("GetModuleHandle(kernel32.dll) failed.") );
 		return false;
 	}
 
-	BYTE* pTarget = (BYTE*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
+	uint8_t* pTarget = (uint8_t*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
 
-	if( pTarget == 0 )
+	if( pTarget == nullptr )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("GetProcAddress(SetUnhandledExceptionFilter) failed.") );
@@ -715,19 +735,22 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     // seed the random number generator with the current time
     // (GetTickCount may be semi-predictable on server startup, so we add the 
     // clock time to shake things up a bit)
-    srand(GetTickCount() + (int)time(NULL));
+    srand(GetTickCount() + (int)time(nullptr));
 
 	// mmf why is this done?
     // shift the stack locals and the heap by a random amount.            
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-	//Imago 6/10
-	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
+	
+	//Imago 6/10 // BT - STEAM - Replacing this with steam logging.
+	/*SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
 	g_papp->EnforceFilter( true );
 
-    __try { 
+    __try { */
+
         do {
+
             #ifdef SRVLOG
                 InitializeDebugf();
             #endif
@@ -766,14 +789,17 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
 			TerminateLogchat(); // mmf
 
-        } while (false);
-    }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
+			
+     } while (false);
+
+	 // BT - STEAM - Replacing this with steam logging.
+	 /*   }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
     }  
     delete pzSpacer;
 	if( !g_papp->EnforceFilter( false ) )
 	{
 		debugf("EnforceFilter(false) failed.\n");
 		return 0;
-	}
+	}*/
     return 0;
 }

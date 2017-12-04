@@ -153,7 +153,14 @@ public:
     }
 
     void SetImage(Image* pvalue);
-    Image* GetImage() { return Image::Cast(GetChild(0)); }
+    Image* GetImage() 
+	{
+		// BT - 10/17 - If there are no children, then this was causing a crash.
+		if (GetChildCount() > 0)
+			return Image::Cast(GetChild(0));
+		else
+			return nullptr;
+	}
 
     //
     // Image methods

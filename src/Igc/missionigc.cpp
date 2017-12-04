@@ -2761,7 +2761,7 @@ CstaticIGC::CstaticIGC(void)
     m_constants.floatConstants[c_fcidPointsFlags]           = c_pointsFlags;
     m_constants.floatConstants[c_fcidPointsArtifacts]       = c_pointsArtifacts;
     m_constants.floatConstants[c_fcidPointsRescues]         = c_pointsRescues;
-    m_constants.floatConstants[c_fcidRatingAdd]             = c_crAdd;
+	m_constants.floatConstants[c_fcidRatingAdd]             = c_crAdd;
     m_constants.floatConstants[c_fcidRatingDivide]          = c_crDivide;
 
     m_constants.floatConstants[c_fcidIncome]                = c_fIncome;

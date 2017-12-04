@@ -295,7 +295,7 @@ DEFINE_FEDMSG(S, MISSIONDEF, 38) // sent when a mission is created, and when it 
   STAGE     stage;
   // KGJV #114 - added server name & addr
   char      szServerName[c_cbName];
-  char      szServerAddr[16];
+  char      szServerAddr[64];
   // yes, for missions with fewer than c_cSidesMax sides, the following arrays will waste space,
   // but that allows us to just keep an array of missions
   // $CRC: should probably just make a struct for the per team stuff and have an array of the struct

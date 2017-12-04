@@ -225,7 +225,13 @@ void Value::RemoveParent(Value* pvalue)
 
 void Value::SetChild(int index, Value* pvalueChild)
 {
-    if (m_pchildren[index] != pvalueChild) {
+	// BT - 10/17 - If there are no elements in the list, then just add this element.
+	// Fixing crash: 8975122	211205	allegiance.exe	allegiance.exe	tvector.h	215	4	0	Win32 StructuredException at 0044750A : UNKNOWN	2017-10-05 11:54:01	0x0004750A	10	UNKNOWN
+	if (m_pchildren.GetCount() == 0)
+	{
+		AddChild(pvalueChild);
+	}
+	else if (m_pchildren[index] != pvalueChild) {
         m_pchildren[index]->RemoveParent(this);
         pvalueChild->AddParent(this);
         m_pchildren.Set(index, pvalueChild);
@@ -963,6 +969,14 @@ ZString GetString(int indent, const Point& point)
         + ZString(point.Y()) + ")";
 }
 
+ZString GetString(int indent, const WinPoint& point)
+{
+	return
+		"WinPoint("
+		+ ZString(point.X()) + ", "
+		+ ZString(point.Y()) + ")";
+}
+
 ZString GetString(int indent, const Rect& Rect)
 {
     return
@@ -1101,11 +1115,23 @@ ZString GetFunctionName(const Point& value)
     return "Point";
 }
 
+ZString GetFunctionName(const WinPoint& value)
+{
+	return "WinPoint";
+}
+
 void Write(IMDLBinaryFile* pmdlFile, const Point& value)
 {
     pmdlFile->WriteReference("Point");
     TRef<ZFile> pfile = pmdlFile->WriteBinary();
     pfile->Write((void*)&value, sizeof(value));
+}
+
+void Write(IMDLBinaryFile* pmdlFile, const WinPoint& value)
+{
+	pmdlFile->WriteReference("WinPoint");
+	TRef<ZFile> pfile = pmdlFile->WriteBinary();
+	pfile->Write((void*)&value, sizeof(value));
 }
 
 ZString GetFunctionName(const Vector& value)

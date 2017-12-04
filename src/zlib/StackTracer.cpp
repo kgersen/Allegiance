@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "StackTracer.h"
+
+#include <tchar.h>
+
+#include "zassert.h"
 
 /*
 // -- https://www.codeproject.com/Articles/41923/Get-the-call-stack-when-an-exception-is-being-caug
@@ -115,7 +119,7 @@ std::string StackTracer::GetExceptionMsg()
 	return m_ostringstream.str();
 }
 
-DWORD StackTracer::GetExceptionCode()
+uint32_t StackTracer::GetExceptionCode()
 {
 	return s_StackTracer.m_dwExceptionCode;
 }
@@ -133,7 +137,7 @@ LONG __stdcall StackTracer::HandleException(LPEXCEPTION_POINTERS e)
 	HANDLE hProcess = INVALID_HANDLE_VALUE;
 
 	// Initializes the symbol handler
-	if(!SymInitialize( GetCurrentProcess(), NULL, TRUE ))
+	if(!SymInitialize( GetCurrentProcess(), nullptr, TRUE ))
 	{
 		SymCleanup(hProcess);
 		return EXCEPTION_EXECUTE_HANDLER;
@@ -174,7 +178,7 @@ void StackTracer::TraceCallStack(CONTEXT* pContext)
 	// Walk through the stack frames.
 	HANDLE hProcess = GetCurrentProcess();
 	HANDLE hThread = GetCurrentThread();
-	while(StackWalk64(m_dwMachineType, hProcess, hThread, &sf, pContext, 0, SymFunctionTableAccess64, SymGetModuleBase64, 0))
+	while(StackWalk64(m_dwMachineType, hProcess, hThread, &sf, pContext, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
 	{
 		if( sf.AddrFrame.Offset == 0 || m_vecCallStack.size() >= CALLSTACK_DEPTH)
 			break;
@@ -197,9 +201,9 @@ void StackTracer::TraceCallStack(CONTEXT* pContext)
 
 		//2. get line and file name at the address
 		IMAGEHLP_LINE64 lineInfo = { sizeof(IMAGEHLP_LINE64) };
-		DWORD dwLineDisplacement = 0;
+		uint32_t dwLineDisplacement = 0;
 
-		if(SymGetLineFromAddr64(hProcess, sf.AddrPC.Offset, &dwLineDisplacement, &lineInfo ))
+		if(SymGetLineFromAddr64(hProcess, sf.AddrPC.Offset, LPDWORD(&dwLineDisplacement), &lineInfo ))
 		{
 			curCall.FileName = std::string(lineInfo.FileName);
 			curCall.LineNumber = lineInfo.LineNumber;

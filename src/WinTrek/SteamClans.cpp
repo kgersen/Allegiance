@@ -2,6 +2,7 @@
 #include "SteamClans.h"
 
 // BT - STEAM
+#ifdef STEAM_APP_ID
 
 SteamClans::SteamClans()
 {
@@ -12,7 +13,8 @@ SteamClans::SteamClans()
 		currentUser = SteamUser()->GetSteamID();
 
 	int nGroups = SteamFriends()->GetClanCount();
-	for (int i = 0; i < nGroups; ++i)
+	int nGroupsFound = 0;
+	for (int i = 0; i < nGroups && nGroupsFound < 10; ++i)
 	{
 		CSteamID groupSteamID = SteamFriends()->GetClanByIndex(i);
 		ZString szGroupName = SteamFriends()->GetClanName(groupSteamID);
@@ -22,35 +24,40 @@ SteamClans::SteamClans()
 		if(szGroupTag.GetLength() == 0)
 			continue;
 
+		nGroupsFound++;
+
 		m_officerDataReceived = false;
 		SteamAPICall_t handle = SteamFriends()->RequestClanOfficerList(groupSteamID);
 		m_SteamCallResultClanOfficerListResponse.Set(handle, this, &SteamClans::OnClanOfficerListResponse);
 
-		for (int i = 0; i < 300 && m_officerDataReceived == false; i++)
+		for (int i = 0; i < 30 && m_officerDataReceived == false; i++)
 		{
 			SteamAPI_RunCallbacks();
 			Sleep(100);
 		}
-	
-		int nOfficers = SteamFriends()->GetClanOfficerCount(groupSteamID);
-		bool isOfficer = false;
-		for (int j = 0; j < nOfficers; j++)
+
+		if (m_officerDataReceived == true)
 		{
-			if (currentUser == SteamFriends()->GetClanOfficerByIndex(groupSteamID, j))
+
+			int nOfficers = SteamFriends()->GetClanOfficerCount(groupSteamID);
+			bool isOfficer = false;
+			for (int j = 0; j < nOfficers; j++)
 			{
-				isOfficer = true;
-				break;
+				if (currentUser == SteamFriends()->GetClanOfficerByIndex(groupSteamID, j))
+				{
+					isOfficer = true;
+					break;
+				}
+			}
+
+			CallsignTagInfo callsignInfo(szGroupTag, groupSteamID.ConvertToUint64(), addedItemCount, isOfficer);
+
+			if (callsignInfo.m_callsignTag.GetLength() > 0 && m_availableCallsignTags.Find(callsignInfo) < 0)
+			{
+				m_availableCallsignTags.PushEnd(callsignInfo);
+				addedItemCount++;
 			}
 		}
-
-		CallsignTagInfo callsignInfo(szGroupTag, groupSteamID.ConvertToUint64(), addedItemCount, isOfficer);
-
-		if (callsignInfo.m_callsignTag.GetLength() > 0 && m_availableCallsignTags.Find(callsignInfo) < 0)
-		{
-			m_availableCallsignTags.PushEnd(callsignInfo);
-			addedItemCount++;
-		}
-		
 	}
 }
 
@@ -64,4 +71,4 @@ TVector<CallsignTagInfo, DefaultEquals, DefaultCompare> * SteamClans::GetAvailab
 	return &m_availableCallsignTags;
 }
 
-
+#endif

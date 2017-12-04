@@ -60,6 +60,7 @@ void CSteamValidation::BeginSteamAuthentication()
 		PostThreadMessage(m_dwThreadID, wm_sql_querydone, (WPARAM)NULL, (LPARAM)m_sqlQuery);
 
 		m_bAuthenticationComplete = true;
+		return;
 	}
 
 	// Hang around until steam responds.

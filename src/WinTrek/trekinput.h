@@ -47,5 +47,6 @@ TRef<TrekInput> CreateTrekInput(HINSTANCE hInst, HWND hwnd, InputEngine* pinputE
 
 #define INPUTMAP_FILE         "inputmap1"
 #define DEFAULTINPUTMAP_FILE  "defaultinputmap"
+#define TRAINING_INPUTMAP_FILE "inputmap_training"
 
 #endif

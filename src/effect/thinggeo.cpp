@@ -202,7 +202,7 @@ private:
     // Damage
     //
     #define MAX_DAMAGE_FRAMES   10
-    FrameData*                  m_damageFrames;
+    FrameData                  m_damageFrames[MAX_DAMAGE_FRAMES]; // BT - 10/17 - Made stack object instead of heap object, this enabled SEH to be used.
     int                         m_iLastDamageIndex;
     bool                        m_bShowDamage;
 
@@ -221,7 +221,7 @@ private:
         HKEY hKey;
         DWORD dwResult = dwDefault;
 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             DWORD dwSize = sizeof(dwResult);
             DWORD dwType = REG_DWORD;
@@ -254,7 +254,8 @@ public:
         m_fTimeUntilRipcord(-1.0f),
         m_fTimeUntilAleph(-1.0f)
     {
-        m_damageFrames = new FrameData[MAX_DAMAGE_FRAMES];
+		// BT - 10/17 - Don't need to new this, just assign with fixed size.
+        //m_damageFrames = new FrameData[MAX_DAMAGE_FRAMES];
 
         //
         // Create the Geometric Hierarchy with an EmptyGeo at the leaf
@@ -301,39 +302,41 @@ public:
         // This destructor crashes sometimes.  If it does, just continue.
         //
 
-        __try { 
-            /*
-            static count = 0;
-            count++;
-            if (count == 1) {
-                *(BYTE*)NULL = 0;
-            }
-            */
+		// BT - 10/17 - None of this needs to happen. It's a destructor, all of these member vars are going into the ether anyway. 
 
-            delete[] m_damageFrames;
+        //__try { 
+        //    /*
+        //    static count = 0;
+        //    count++;
+        //    if (count == 1) {
+        //        *(BYTE*)NULL = 0;
+        //    }
+        //    */
 
-            m_pmodeler = NULL;
-            m_pframes = NULL;
-            m_pgeoTrail = NULL;
-            m_pgeoMesh = NULL;
-            m_phullHitGeo = NULL;
-            m_pgeoLights = NULL;
-            m_pgeoBounds = NULL;
-            m_psurfaceTexture = NULL;
-            m_pvectorPositionTrail = NULL;
-            m_pvectorRightTrail = NULL;
-            m_pbooleanMoving = NULL;
-            m_pgroupFlares = NULL;
-            m_pParticleGeo = NULL;
-            m_pbitsGeo = NULL;
-            m_pimageGlow = NULL;
-        } __except (true) {  
-            //
-            // We got an exception.  Just continue.
-            //
+        //    delete[] m_damageFrames; // Replaced this with a standard allocation, instead of new in the constructor. 
 
-        //    s_crashCount++;
-        } 
+        //    m_pmodeler = NULL;
+        //    m_pframes = NULL;
+        //    m_pgeoTrail = NULL;
+        //    m_pgeoMesh = NULL;
+        //    m_phullHitGeo = NULL;
+        //    m_pgeoLights = NULL;
+        //    m_pgeoBounds = NULL;
+        //    m_psurfaceTexture = NULL;
+        //    m_pvectorPositionTrail = NULL;
+        //    m_pvectorRightTrail = NULL;
+        //    m_pbooleanMoving = NULL;
+        //    m_pgroupFlares = NULL;
+        //    m_pParticleGeo = NULL;
+        //    m_pbitsGeo = NULL;
+        //    m_pimageGlow = NULL;
+        //} __except (true) {  
+        //    //
+        //    // We got an exception.  Just continue.
+        //    //
+
+        ////    s_crashCount++;
+        //} 
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1649,7 +1652,7 @@ public:
                     //
 
 					BlendMode oldMode = pcontext->GetBlendMode();
-					pcontext->SetBlendMode( BlendModeSource );
+					pcontext->SetBlendMode( BlendModeSourceAlpha );
                     RenderGeo(pcontext);
 					pcontext->SetBlendMode( oldMode );
                 }

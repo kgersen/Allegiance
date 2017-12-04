@@ -483,6 +483,10 @@ public:
         {
             TRef<IObjectList> plist = pns->FindList("keyCommandMap");
 
+			// BT - 10/17 - Fix for crash when the keyCommandMap corrupted.
+			if (plist == nullptr)
+				return false;
+
             plist->GetFirst();
             while (plist->GetCurrent() != NULL) {
                 TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
@@ -2220,6 +2224,10 @@ public:
         {
             TRef<IObjectList> plist = pns->FindList("keyCommandMap");
 
+			// BT - 10/17 - Fix for crash when the keyCommandMap corrupted.
+			if (plist == nullptr)
+				return false;
+
             plist->GetFirst();
             while (plist->GetCurrent() != NULL) {
                 TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
@@ -2929,7 +2937,7 @@ public:
         return 
             new EvaluateImage(
                 this,
-                CreatePaneImage(pengine, SurfaceType3D(), true, GetPane()),
+                CreatePaneImage(pengine, true, GetPane()),
                 m_ptime
             );
     }

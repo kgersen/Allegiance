@@ -1487,13 +1487,17 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             IpartIGC*   part = GetMyMission()->CreatePart(GetMyLastUpdate(), ppt);
             assert (part);
 
-            part->SetShip(this, mount);
-            assert (part->GetShip() == this);
-            assert (part->GetMountID() == mount);
+			// Xynth -"Fix to avoid crash 8963864" 
+			if (part)
+			{
+				part->SetShip(this, mount);
+				assert(part->GetShip() == this);
+				assert(part->GetMountID() == mount);
 
-            part->SetAmount(amount);
+				part->SetAmount(amount);
 
-            part->Release();
+				part->Release();
+			}
 
             return part;        //Bad form to return after a release but it is not dead since the ship holds a pointer
         }
@@ -1844,7 +1848,26 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		{
 			return m_stayDocked;
 		}
-
+		virtual void AddRepair(float repair)
+		{
+			m_repair += repair; //Xynth amount of nanning performed by ship
+		}
+		virtual float GetRepair(void) const
+		{
+			return m_repair;
+		}
+		virtual void				SetAchievementMask(AchievementMask am)
+		{
+			m_achievementMask = m_achievementMask | am;
+		}
+		virtual void				ClearAchievementMask(void)
+		{
+			m_achievementMask = 0;
+		}
+		virtual AchievementMask		GetAchievementMask(void) const
+		{
+			return m_achievementMask;
+		}
         virtual bool                OkToLaunch(Time now)
         {
             //Spend 10 seconds docked (MyLastUpdate is not being updated while docked)
@@ -2410,6 +2433,9 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         WarningMask         m_warningMask;
 
 		bool				m_stayDocked;  //Xynth #48 8/10
+		float				m_repair; //Xynth amount of nanning performed by ship
+		AchievementMask		m_achievementMask;
+
 };
 
 #endif //__SHIPIGC_H_

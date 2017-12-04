@@ -29,6 +29,11 @@ const float s_fMinFOV = RadiansFromDegrees(5.0f);
 class TrekWindowImpl;
 class AutoDownloadProgressDialogPopup; // MGC: move
 
+// BT - 10/17 - Work-around for backwards compatibility with delayimp.h and the Windows XP targeting pack for VS2017.
+#ifndef FACILITY_VISUALCPP
+	#define FACILITY_VISUALCPP  ((LONG)0x6d)
+#endif
+
 /*!!!
 class BillboardType {
 public:
@@ -91,6 +96,7 @@ class  WinTrekClient :
         float                   trekJoyStick[3];
         float                   fOldJoyThrottle;
         virtual void            OverrideThrottle (float fDesiredThrottle);
+		bool					bTrainingFirstClick;
 
         // igc site implementation
 

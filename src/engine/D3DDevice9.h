@@ -279,6 +279,7 @@ private:
 		DWORD					dwCurrentWindowedHeight;
 		DWORD					dwCurrentFullscreenWidth;
 		DWORD					dwCurrentFullscreenHeight;
+		HWND					hParentWindow; // BT - 10/17 - If the D3D device becomes null, re-create it to get it up and rolling again.
 
 		SD3DDevice9FormatFlags	sFormatFlags;
 
@@ -311,6 +312,13 @@ public:
 	void		ResetReferencedResources( );
 	HRESULT	CreateD3D9( class CLogFile * pLogFile );
 	HRESULT	CreateDevice( HWND hParentWindow, class CLogFile * pLogFile );
+
+	// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+	D3DFORMAT GetValidBackBufferFormat(class CLogFile * pLogFile);
+	D3DFORMAT GetValidDepthStencilFormat(D3DFORMAT backbufferFormat, class CLogFile * pLogFile);
+	HRESULT LastChanceCreateDevice(HWND hParentWindow, class CLogFile * pLogFile);
+	
+	
 	HRESULT	ResetDevice( bool bWindowed, DWORD dwWidth = 0, DWORD dwHeight = 0, int iRate = 60 ); //imago added refresh rate 7/1/09
 	HRESULT	ClearScreen( );
 	HRESULT	RenderFinished( );
@@ -421,7 +429,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	// Access functions.
-	inline const LPDIRECT3DDEVICE9 Device() { return m_sD3DDev9.pD3DDevice; }
+	const LPDIRECT3DDEVICE9 Device(); // BT - 10/17 - If the D3D device becomes null, re-create it to get it up and rolling again.
 
 	// State initialisation functions.
 	void		InitialiseDeviceStateCache( SD3D9DeviceStateCache * pCache );

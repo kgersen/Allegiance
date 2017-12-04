@@ -3,8 +3,11 @@
 #include <malloc.h>
 
 // BT - STEAM
-#include "atlenc.h"
-#include <inttypes.h>
+#ifdef STEAM_APP_ID
+# include "atlenc.h"
+# include <inttypes.h>
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -244,7 +247,7 @@ bool CheckForAllGuard()
 
   // Get the ArtPath, since that's where AllGuard.exe should be
   HKEY hKey = NULL;
-  if (ERROR_SUCCESS != ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+  if (ERROR_SUCCESS != ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
     return true; // If it can't be read, just keep running
   char szArtPath[_MAX_PATH];
   DWORD cbArtPath = sizeof(szArtPath);
@@ -386,13 +389,15 @@ public:
     HRESULT Initialize(const ZString& strCommandLine)
     {
         _controlfp(_PC_53, _MCW_PC);
-
+#ifdef STEAM_APP_ID
 		// BT - STEAM
+#ifndef _DEBUG
 		if (IsDebuggerPresent() == false)
 		{
 			if (SteamAPI_RestartAppIfNecessary(STEAM_APP_ID) == true)
 				::exit(-1);
 		}
+#endif
 
 		bool steamInitResult = SteamAPI_Init();
 		if (steamInitResult == false)
@@ -401,7 +406,7 @@ public:
 			::MessageBoxA(NULL, "Steam Client is not running. Please launch Steam and try again.", "Error", MB_ICONERROR | MB_OK);
 			::exit(-1);
 		}
-
+#endif
         //
         // Make sure reloader finished correctly--this must be first before any other files are opened
         //
@@ -428,7 +433,7 @@ public:
           DWORD cbValue = MAX_PATH;
 
           // NOTE: please keep reloader.cpp's GetArtPath() in sync with this!!!
-          if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+          if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
           {
               // Get MoveInProgress from registry
               if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MoveInProgress", NULL, &dwType, (unsigned char*)&szValue, &cbValue) &&
@@ -521,7 +526,7 @@ public:
         DWORD cbValue = MAX_PATH;
 
         // NOTE: please keep reloader.cpp's GetArtPath() in sync with this!!!
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             // Get the art path from the registry
             if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
@@ -834,8 +839,10 @@ public:
 		//   -adapter switch added for the needy
 		//   Raise dialog only if "Safe Mode" activated (any software/primary/secondary switches sent) 
 		// imago 6/29/09 7/1/09 removed hardware, asgs sends this under normal conditions
-		bool bRaise = (bSoftware || bPrimary || bSecondary) ? true : false;
-		if( PromptUserForVideoSettings(bStartFullscreen, bRaise, iUseAdapter, GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT) == false )
+		// BT - 10/17 - Force the client to launch windowed, then we'll take it full screen later. 
+		//bool bRaise = (bSoftware || bPrimary || bSecondary) ? true : false;
+		bool bRaise = false; // BT - 10/17 - The video picker no longer creates devices that work with the create texture D3D functions. This may be from me forcing it to load windowed and then pulling it full screen. However, starting windowed and then pulling full screen seems to have fixed a whole bunch of start up issues. 
+		if( PromptUserForVideoSettings(false, bRaise, iUseAdapter, GetModuleHandle(NULL), pathStr , ALLEGIANCE_REGISTRY_KEY_ROOT) == false )
 		{
 			return E_FAIL;
 		}
