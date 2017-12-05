@@ -1473,14 +1473,9 @@ public:
 public:
 
     bool      OnActivateApp(bool bActive) override {
-        if (bActive) {
-            m_ptrekInput->SetFocus(true); //Combined with previously un-setting the focus, this somehow brings the m_pboolKeyDown and m_pboolTrekKeyDown arrays back in sync
-        }
-        else {
-            m_bEnableVirtualJoystick = false;
-            m_ptrekInput->SetFocus(false);
-        }
-        return false;
+        bool result = EngineWindow::OnActivateApp(bActive);
+        UpdateMouseEnabled();
+        return result;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -7868,6 +7863,23 @@ public:
         return m_fDeltaTime;
     }
 
+    void UpdateMouseEnabled() {
+        bool bEnable =
+            m_bEnableVirtualJoystick
+            && m_bActive
+            && GetPopupContainer()->IsEmpty()
+            && trekClient.flyingF()
+            && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
+            && ((m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) == 0)
+            && (!m_bFreshInvestmentPane || (m_voverlaymask[m_viewmode] & ofInvestment) == 0);
+
+        //enabling mouse means that we listen to the mouse manually and ignore window events
+        m_pmouse->SetEnabled((bEnable || m_pengine->IsFullscreen()));
+        m_pjoystickImage->SetEnabled(bEnable, bEnable);
+        SetMoveOnHide(!bEnable);
+        ShowCursor(!bEnable);
+    }
+
     void EvaluateFrame(Time time)
     {
         static bool bFirstFrame = true;
@@ -7890,21 +7902,7 @@ public:
         // Turn on the virtual joystick if the right conditions are met
         //
 
-        {
-            bool bEnable =
-                   m_bEnableVirtualJoystick
-                && GetPopupContainer()->IsEmpty()
-                && trekClient.flyingF()
-                && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
-                && ((m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) == 0)
-                && (!m_bFreshInvestmentPane || (m_voverlaymask[m_viewmode] & ofInvestment) == 0);
-
-            //enabling mouse means that we listen to the mouse manually and ignore window events
-            m_pmouse->SetEnabled(bEnable || (m_bActive && m_pengine->IsFullscreen()));
-            m_pjoystickImage->SetEnabled(bEnable, bEnable);
-            SetMoveOnHide(!bEnable);
-            ShowCursor(!bEnable);
-        }
+        UpdateMouseEnabled();
 
         //
         // Give the current screen a chance to do something on a per frame basis

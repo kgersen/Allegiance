@@ -1339,15 +1339,12 @@ bool EngineWindow::OnActivateApp(bool bActive)
 
     if (m_bActive != bActive) {
         m_bActive = bActive;
-        if (m_pengine) {
-            m_pmouse->SetEnabled(m_bActive && m_pengine->IsFullscreen());
-        }
         m_pinputEngine->SetFocus(m_bActive);
 		
 		if( m_bActive == true )
 		{
 			SetActiveWindow( GetHWND() );
-		}
+        }
     }
 
     if (g_bWindowLog) {
