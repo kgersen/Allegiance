@@ -26,12 +26,11 @@ public:
         TypeArgument value = ((TypeWrappedArgument*)GetChild(1))->GetValue();
 
         auto find = m_mapOptions.find(value);
-        if (find == m_mapOptions.end()) {
-            SetWrappedValue(m_default);
-        }
-        else {
-            SetWrappedValue(find->second);
-        }
+
+        auto evaluated = find == m_mapOptions.end() ? m_default : find->second;
+        evaluated->Update();
+        SetChildSilently(0, evaluated);
+
         TWrapValue::Evaluate();
     }
 };

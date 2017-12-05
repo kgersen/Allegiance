@@ -10,40 +10,43 @@ class NonStaticCallbackImage : public WrapImage {
     typedef std::function<TRef<Image>(OriginalType)> CallbackType;
 
     CallbackType m_callback;
-    bool bUpdating;
+
+    bool m_bValueChanged;
 
 protected:
-    virtual void ChildChanged(Value* pvalue, Value* pvalueNew) override {
-        if (!bUpdating) {
-            Value::ChildChanged(pvalue, pvalueNew);
+    void ChildChanged(Value* pvalue, Value* pvalueNew)
+    {
+        ZAssert(!pvalueNew);
+
+        if (pvalue != GetChild(0)) {
+            m_bValueChanged = true;
         }
+        else {
+            //image changed
+        }
+
+        WrapImage::ChildChanged(pvalue, pvalueNew);
     }
 
 public:
     NonStaticCallbackImage(CallbackType callback, OriginalType pvalue1) :
         m_callback(callback),
         WrapImage(Image::GetEmpty(), pvalue1),
-        bUpdating(false)
+        m_bValueChanged(true)
     {}
 
     void Evaluate()
     {
-        if (!bUpdating) {
-            OriginalType value1 = (OriginalType)GetChild(1);
-
+        OriginalType value1 = (OriginalType)GetChild(1);
+        if (m_bValueChanged) {
             TRef<Image> evaluated = m_callback(value1);
-            evaluated->Evaluate();
 
-            SetImage(evaluated);
+            evaluated->Update();
+            SetChildSilently(0, evaluated);
+            m_bValueChanged = false;
+        }
 
-            bUpdating = true;
-            Update();
-            WrapImage::Evaluate();
-        }
-        else {
-            WrapImage::Evaluate();
-        }
-        bUpdating = false;
+        WrapImage::Evaluate();
     }
 };
 

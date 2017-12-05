@@ -65,7 +65,7 @@ public:
         WrapImage::Render(pcontext);
     }
 
-    ZString GetFunctionName() { return "ClipImage"; }
+    ZString GetFunctionName() { return "CutImage"; }
 
 };
 

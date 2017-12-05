@@ -18,14 +18,16 @@ public:
     {}
 
     void Evaluate() override {
-        UiList::RemoveAll();
+        std::list<ResultEntryType> list;
         int i = 0;
         for (auto entry : m_sourceList->GetList()) {
             TRef<Number> index = new Number((float)i);
 
-            InsertAtEnd(m_callback(entry, index));
+            list.push_back(m_callback(entry, index));
             ++i;
         }
+
+        GetListInternal() = list;
     }
 };
 

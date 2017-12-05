@@ -298,7 +298,9 @@ public:
 
     const StaticType& GetValue()
     {
-        Update();
+        if (HasChanged()) {
+            Update();
+        }
         return m_value;
     }
 

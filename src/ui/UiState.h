@@ -83,6 +83,11 @@ class UiList : public Value {
 private:
     std::list<EntryType> m_list;
 
+protected:
+    std::list<EntryType>& GetListInternal() {
+        return m_list;
+    }
+
 public:
 
     UiList(std::list<EntryType> list) :
