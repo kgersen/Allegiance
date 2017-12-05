@@ -39,6 +39,9 @@ public:
         table["GetNumber"] = [&context](std::string name) {
             return context.GetScreenGlobals().Get<TRef<Number>>(name);
         };
+        table["GetBool"] = [&context](std::string name) {
+            return context.GetScreenGlobals().Get<TRef<Boolean>>(name);
+        };
         table["GetState"] = [&context](std::string name) {
             return context.GetScreenGlobals().Get<TRef<UiStateValue>>(name);
         };
@@ -47,6 +50,7 @@ public:
             "new", sol::no_constructor,
             "GetString", &UiState::Get<TRef<StringValue>>,
             "GetNumber", &UiState::Get<TRef<Number>>,
+            "GetBool", &UiState::Get<TRef<Boolean>>,
             "GetState", &UiState::Get<TRef<UiStateValue>>,
             "GetEventSink", &UiState::Get<TRef<IEventSink>>,
             "GetList", &UiState::Get<TRef<ContainerList>>
