@@ -247,6 +247,14 @@ void Value::SetChild(int index, Value* pvalueChild)
     }
 }
 
+void Value::SetChildSilently(int index, Value* pvalueChild)
+{
+    //this does not call Changed(), the caller is responsible for making sure the updates are handled correctly
+    m_pchildren[index]->RemoveParent(this);
+    pvalueChild->AddParent(this);
+    m_pchildren.Set(index, pvalueChild);
+}
+
 void Value::AddChild(Value* pvalueChild)
 {
     m_pchildren.PushEnd(pvalueChild);

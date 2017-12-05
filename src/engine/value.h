@@ -155,6 +155,7 @@ protected:
     void   Changed();
     void   AddChild(Value* pchild);
     void   SetChild(int index, Value* m_pvalueChild);
+    void   SetChildSilently(int index, Value* m_pvalueChild);
     Value* GetChild(int index) const { return m_pchildren[index];     }
     int    GetChildCount()     const { return m_pchildren.GetCount(); }
 
