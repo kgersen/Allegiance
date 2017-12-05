@@ -123,7 +123,7 @@ public:
                 { "Server name", (TRef<StringValue>)new StringValue(game->GetMissionDef().szServerName) },
 
                 { "Has goal conquest", (TRef<Boolean>)new Boolean(game->GoalConquest()) },
-                { "Has goal territoy", (TRef<Boolean>)new Boolean(game->GoalTerritory()) },
+                { "Has goal territory", (TRef<Boolean>)new Boolean(game->GoalTerritory()) },
                 { "Has goal prosperity", (TRef<Boolean>)new Boolean(game->GoalProsperity()) },
                 { "Has goal artifacts", (TRef<Boolean>)new Boolean(game->GoalArtifacts()) },
                 { "Has goal flags", (TRef<Boolean>)new Boolean(game->GoalFlags()) },

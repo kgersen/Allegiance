@@ -52,7 +52,7 @@ public:
     {
         Rect rect = GetRect()->GetValue();
         if (Rect(Point(0, 0), m_bounds.GetRect().Size()).Inside(point)) {
-            return MouseResultHit();
+            return WrapImage::HitTest(pprovider, Point(point.X() + rect.XMin(), point.Y() + rect.YMin()), bCaptured);
         }
 
         return MouseResult();

@@ -49,8 +49,16 @@ public:
             return StringTransform::Concat(wrapString(a), wrapString(b));
         };
 
-        table["Switch"] = [](sol::object value, sol::table table, sol::object valueDefault) {
+        table["Switch"] = [](sol::object value, sol::table table, sol::optional<sol::object> valueDefault) {
             int count = table.size();
+
+            TRef<StringValue> valueDefaultNonOptional;
+            if (valueDefault) {
+                valueDefaultNonOptional = wrapString(valueDefault.value());
+            }
+            else {
+                valueDefaultNonOptional = new StringValue(ZString(""));
+            }
 
             if (value.is<TStaticValue<ZString>>() || value.is<std::string>()) {
                 //the wrapped value is a ZString, the unwrapped value a std::string
@@ -61,7 +69,7 @@ public:
                     mapOptions[strKey.c_str()] = wrapString(entry_value);
                 });
 
-                return (TRef<StringValue>)new ValueToMappedValue<ZString, ZString>(wrapString(value), mapOptions, wrapString(valueDefault));
+                return (TRef<StringValue>)new ValueToMappedValue<ZString, ZString>(wrapString(value), mapOptions, valueDefaultNonOptional);
             }
             else if (value.is<Number>() || value.is<float>()) {
                 //float/int problems are likely
@@ -72,7 +80,7 @@ public:
                     mapOptions[fKey] = wrapString(entry_value);
                 });
 
-                return (TRef<StringValue>)new ValueToMappedValue<ZString, float>(wrapValue<float>(value), mapOptions, wrapString(valueDefault));
+                return (TRef<StringValue>)new ValueToMappedValue<ZString, float>(wrapValue<float>(value), mapOptions, valueDefaultNonOptional);
             }
             else if (value.is<Boolean>() || value.is<bool>()) {
                 std::map<bool, TRef<StringValue>> mapOptions;
@@ -82,7 +90,7 @@ public:
                     mapOptions[bKey] = wrapString(entry_value);
                 });
 
-                return (TRef<StringValue>)new ValueToMappedValue<ZString, bool>(wrapValue<bool>(value), mapOptions, wrapString(valueDefault));
+                return (TRef<StringValue>)new ValueToMappedValue<ZString, bool>(wrapValue<bool>(value), mapOptions, valueDefaultNonOptional);
             }
             throw std::runtime_error("Expected value argument of String.Switch to be either a wrapped or unwrapped bool, int, or string");
         };
