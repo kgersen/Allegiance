@@ -58,6 +58,16 @@ public:
         return MouseResult();
     }
 
+    MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
+    {
+        Rect rect = GetRect()->GetValue();
+        if (Rect(Point(0, 0), m_bounds.GetRect().Size()).Inside(point)) {
+            return WrapImage::Button(pprovider, Point(point.X() + rect.XMin(), point.Y() + rect.YMin()), button, bCaptured, bInside, bDown);
+        }
+
+        return MouseResult();
+    }
+
     void Render(Context* pcontext)
     {
         pcontext->Clip(Rect(Point(0, 0), GetRect()->GetValue().Size()));

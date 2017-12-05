@@ -15,6 +15,9 @@ class MouseEventImage : public WrapImage {
     bool m_bDown = false;
     Point m_pointDown;
 
+    bool m_bCaptured = false;
+    bool m_bChildCaptured = false;
+
 public:
 
     MouseEventImage(Image* wrapped) :
@@ -63,7 +66,7 @@ public:
     }
 
     void MouseLeave(IInputProvider* pprovider) {
-        m_bDown = false; //reset state
+        //m_bDown = false; //reset state
         Trigger("mouse.leave");
     }
 
@@ -73,38 +76,82 @@ public:
 
     void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside) override
     {
-        if (m_bDown) {
+        if (bCaptured) {
             TriggerPoint("drag", point - m_pointDown);
             m_pointDown = point;
         }
     }
 
+    MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
+    {
+        return GetImage()->HitTest(pprovider, point, m_bChildCaptured);
+    }
+
     MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
+        MouseResult result;
         // inspired by button.cpp~:~690
-        if (button != 0 && button != 1) {
-            return MouseResult();
-        }
-        std::string button_name = button == 0 ? "left" : "right";
+        if (button == 0 || button == 1) {
+            std::string button_name = button == 0 ? "left" : "right";
 
-        if (bDown) {
-            m_bDown = true;
-            m_pointDown = point;
-            TriggerMouseButton(button_name, "down");
+            if (bDown) {
+                m_bDown = true;
+                m_pointDown = point;
+                TriggerMouseButton(button_name, "down");
 
-            if (pprovider->IsDoubleClick()) {
-                TriggerMouseButton(button_name, "doubleclick");
+                if (pprovider->IsDoubleClick()) {
+                    TriggerMouseButton(button_name, "doubleclick");
+                }
+            }
+            else {
+                bool wasDown = m_bDown;
+                m_bDown = false;
+                TriggerMouseButton(button_name, "up");
+
+                if (wasDown) {
+                    TriggerMouseButton(button_name, "click");
+                }
+            }
+
+            if (button == 0) {
+                if (bDown) {
+                    result = MouseResultCapture();
+                } else if (bCaptured) {
+                    TriggerPoint("drag", point - m_pointDown);
+                    result = MouseResultRelease();
+                }
             }
         }
-        else {
-            bool wasDown = m_bDown;
-            m_bDown = false;
-            TriggerMouseButton(button_name, "up");
+        else if (button == 8 || button == 9) {
+            std::string scroll_name = button == 8 ? "down" : "up";
 
-            if (wasDown) {
-                TriggerPoint("drag", point - m_pointDown);
-                TriggerMouseButton(button_name, "click");
-            }
+            Trigger("scroll." + scroll_name);
+        }
+
+        MouseResult child_result = WrapImage::Button(pprovider, point, button, bCaptured, bInside, bDown);
+
+        if (child_result.Test(MouseResultRelease())) {
+            m_bChildCaptured = false;
+        }
+        else if (child_result.Test(MouseResultCapture())) {
+            m_bChildCaptured = true;
+        }
+
+        if (result.Test(MouseResultRelease())) {
+            m_bCaptured = false;
+        }
+        else if (result.Test(MouseResultCapture())) {
+            m_bCaptured = true;
+        }
+
+        if ((m_bChildCaptured || m_bCaptured) && bCaptured == false) {
+            //we want to capture, but we aren't captured yet
+            return MouseResultCapture();
+        }
+
+        if (m_bChildCaptured == false && m_bCaptured == false && bCaptured) {
+            //we don't want to capture, but we are captured
+            return MouseResultRelease();
         }
 
         return MouseResult();
@@ -128,9 +175,24 @@ TRef<TStaticValue<A>> wrapValue(sol::object a) {
     return refcounted;
 };
 
-TRef<StringValue> wrapString(sol::object a) {
+template<>
+TRef<StringValue> wrapValue<ZString>(sol::object a) {
     if (a.is<std::string>()) {
         return (TRef<StringValue>)new StringValue(ZString(a.as<std::string>().c_str()));
     }
+
+    StringValue* converted_a;
+    if (a.is<StringValue*>()) {
+        converted_a = a.as<StringValue*>();
+    }
+    else {
+        // force a cast, this sometimes still works, exception otherwise
+        converted_a = new StringValue(a.as<ZString>());
+    }
+    TRef<StringValue> refcounted = converted_a;
+    return refcounted;
+};
+
+TRef<StringValue> wrapString(sol::object a) {
     return wrapValue<ZString>(a);
 };

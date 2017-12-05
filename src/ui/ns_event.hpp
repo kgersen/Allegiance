@@ -118,15 +118,36 @@ public:
     static auto CreateOnEventPropagatorFunction() {
 
 
-        return [](TEvent<TypeResult>::Sink* pEventSink, TEvent<TypeOriginal>::Source* pEventSource, std::function<WrappedResult(WrappedOriginal)> transformer) {
+        return [](TEvent<TypeResult>::Sink* pEventSink, TEvent<TypeOriginal>::Source* pEventSource, std::function<sol::object(WrappedOriginal)> transformer) {
             TypeOriginal original_default_value;
             TRef<SimpleModifiableValue<TypeOriginal>> start = new SimpleModifiableValue<TypeOriginal>(original_default_value);
-            WrappedResult end = transformer(start);
+            WrappedResult end = wrapValue<TypeResult>(transformer(start));
 
             TRef<TEvent<TypeResult>::Sink> sinkRefCounted = pEventSink;
 
             pEventSource->AddSink(new CallbackValueSink<TypeOriginal>([start, end, sinkRefCounted](TypeOriginal value) {
                 start->SetValue(value);
+                end->Update();
+                sinkRefCounted->OnEvent(nullptr, end->GetValue());
+                return true;
+            }));
+        };
+    }
+};
+
+template <typename TypeResult>
+class EventVoidToOne {
+    typedef TRef<TStaticValue<TypeResult>> WrappedResult;
+
+public:
+    static auto CreateOnEventPropagatorFunction() {
+
+        return [](TEvent<TypeResult>::Sink* pEventSink, IEventSource* pEventSource, std::function<sol::object()> transformer) {
+            WrappedResult end = wrapValue<TypeResult>(transformer());
+
+            TRef<TEvent<TypeResult>::Sink> sinkRefCounted = pEventSink;
+
+            pEventSource->AddSink(new CallbackSink([end, sinkRefCounted]() {
                 end->Update();
                 sinkRefCounted->OnEvent(nullptr, end->GetValue());
                 return true;
@@ -149,8 +170,13 @@ public:
             },
             EventOneToOne<float, float>::CreateOnEventPropagatorFunction(),
             EventOneToOne<float, Point>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<float, ZString>::CreateOnEventPropagatorFunction(),
             EventOneToOne<Point, float>::CreateOnEventPropagatorFunction(),
-            EventOneToOne<Point, Point>::CreateOnEventPropagatorFunction()
+            EventOneToOne<Point, Point>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<Point, ZString>::CreateOnEventPropagatorFunction(),
+            EventVoidToOne<float>::CreateOnEventPropagatorFunction(),
+            EventVoidToOne<Point>::CreateOnEventPropagatorFunction(),
+            EventVoidToOne<ZString>::CreateOnEventPropagatorFunction()
         );
 
         table["Get"] = [](Image* image, std::string string) {
