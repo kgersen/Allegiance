@@ -4735,7 +4735,7 @@ public:
 			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
 			case idmDeviceOptions:
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
-			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
+			    //m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M'); // BT - Disable MipMaps for now
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
