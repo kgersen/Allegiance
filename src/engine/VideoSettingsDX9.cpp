@@ -151,7 +151,7 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
             ::RegQueryValueEx(hKey, "CombatFullscreenXSize", NULL, &dwType, (BYTE*)&x, &dwSize);
 			::RegQueryValueEx(hKey, "CombatFullscreenYSize", NULL, &dwType, (BYTE*)&y, &dwSize);
 			::RegQueryValueEx(hKey, "UseAntialiasing", NULL, &dwType, (BYTE*)&g_DX9Settings.m_dwAA, &dwSize);
-			::RegQueryValueEx(hKey, "UseAutoMipMaps", NULL, &dwType, (BYTE*)&g_VideoSettings.bAutoGenMipmaps, &dwSize);
+			//::RegQueryValueEx(hKey, "UseAutoMipMaps", NULL, &dwType, (BYTE*)&g_VideoSettings.bAutoGenMipmaps, &dwSize); // BT - Disable MipMaps for now - Causes animated images (explosions) to not render correctly, and also a crash when restarting the training mission after ESC -> Q when running with -training switch
 			::RegQueryValueEx(hKey, "UseTexturePack", NULL, &dwType, (BYTE*)&g_VideoSettings.bUseTexturePackFile, &dwSize);
 			::RegQueryValueEx(hKey, "UseVSync", NULL, &dwType, (BYTE*)&g_VideoSettings.bWaitForVSync, &dwSize);
 			::RegQueryValueEx(hKey, "MaxTextureSize", NULL, &dwType, (BYTE*)&g_VideoSettings.iMaxTextureSize, &dwSize);
