@@ -207,13 +207,44 @@ public:
             }
             throw std::runtime_error("Expected value argument of Image.Switch to be either a wrapped or unwrapped bool, int, or string");
         };
-        table["String"] = [](FontValue* font, ColorValue* color, sol::object width, sol::object string, sol::optional<Justification> justification_arg) {
-            if (!font || !color) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["String"] = sol::overload(
+            [](FontValue* font, ColorValue* color, sol::object width, sol::object string, sol::optional<Justification> justification_arg) {
+                if (!font || !color) {
+                    throw std::runtime_error("Argument should not be null");
+                }
 
-            return ImageTransform::String(font, color, wrapValue<float>(width), wrapString(string), justification_arg.value_or(JustifyLeft()));
-        };
+                return ImageTransform::String(font, color, wrapValue<float>(width), wrapString(string), justification_arg.value_or(JustifyLeft()), new Number(0.0f));
+            },
+            [](FontValue* font, ColorValue* color, sol::object string, sol::optional<sol::table> object) {
+                if (!font || !color) {
+                    throw std::runtime_error("Argument should not be null");
+                }
+
+                TRef<Number> width = new Number(10000); //something large as default
+                Justification justification = JustifyLeft();
+                TRef<Number> separation = new Number(0.0f);
+
+                if (object) {
+                    object.value().for_each([&width, &justification, &separation](sol::object key, sol::object value) {
+                        std::string strKey = key.as<std::string>();
+                        if (strKey == "Width") {
+                            width = wrapValue<float>(value);
+                        }
+                        else if (strKey == "Line separation") {
+                            separation = wrapValue<float>(value);
+                        }
+                        else if (strKey == "Justification") {
+                            justification = value.as<Justification>();
+                        }
+                        else {
+                            throw std::runtime_error("Unknown key.");
+                        }
+                    });
+                }
+
+                return ImageTransform::String(font, color, width, wrapString(string), justification, separation);
+            }
+        );
         table["Translate"] = [](Image* pimage, PointValue* pPoint) {
             if (!pimage || !pPoint) {
                 throw std::runtime_error("Argument should not be null");

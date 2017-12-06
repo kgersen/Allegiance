@@ -168,12 +168,19 @@ public:
                 }
                 pEventSource->AddSink(pEventSink);
             },
+            EventOneToOne<bool, bool>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<bool, float>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<bool, Point>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<bool, ZString>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<float, bool>::CreateOnEventPropagatorFunction(),
             EventOneToOne<float, float>::CreateOnEventPropagatorFunction(),
             EventOneToOne<float, Point>::CreateOnEventPropagatorFunction(),
             EventOneToOne<float, ZString>::CreateOnEventPropagatorFunction(),
+            EventOneToOne<Point, bool>::CreateOnEventPropagatorFunction(),
             EventOneToOne<Point, float>::CreateOnEventPropagatorFunction(),
             EventOneToOne<Point, Point>::CreateOnEventPropagatorFunction(),
             EventOneToOne<Point, ZString>::CreateOnEventPropagatorFunction(),
+            EventVoidToOne<bool>::CreateOnEventPropagatorFunction(),
             EventVoidToOne<float>::CreateOnEventPropagatorFunction(),
             EventVoidToOne<Point>::CreateOnEventPropagatorFunction(),
             EventVoidToOne<ZString>::CreateOnEventPropagatorFunction()

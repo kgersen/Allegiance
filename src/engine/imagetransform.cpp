@@ -82,9 +82,7 @@ public:
 class StringImageCorrected : public Image {
 private:
     Justification     m_justification;
-    int               m_indent;
     TRef<IEngineFont> m_pfont;
-    bool              m_bYAxisInversion;
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -95,6 +93,7 @@ private:
     StringValue* GetString() { return StringValue::Cast(GetChild(0)); }
     ColorValue*  GetColor() { return  ColorValue::Cast(GetChild(1)); }
     Number* GetWidth() { return Number::Cast(GetChild(2)); }
+    Number* GetLineSeparation() { return Number::Cast(GetChild(3)); }
 
 public:
     StringImageCorrected(
@@ -103,12 +102,11 @@ public:
         ColorValue*   pcolor,
         Number*       pwidth,
         StringValue*  pstring,
-        int           indent
+        Number*       pSeparation
     ) :
-        Image(pstring, pcolor, pwidth),
+        Image(pstring, pcolor, pwidth, pSeparation),
         m_justification(justification),
-        m_pfont(pfont),
-        m_indent(indent)
+        m_pfont(pfont)
     {
     }
 
@@ -197,34 +195,33 @@ public:
         float fWidth = GetWidth()->GetValue();
         int     xsize = 0;
         int     ysize = 0;
-        int     indent = 0;
 
         while (!str.IsEmpty()) {
-            ZString strLine = BreakLine(str, fWidth - indent);
+            ZString strLine = BreakLine(str, fWidth);
             WinPoint size = m_pfont->GetTextExtent(strLine);
 
             xsize = std::max(xsize, size.X());
             ysize += size.Y();
-            indent = m_indent;
         }
 
-        m_bounds.SetRect(Rect(0, 0, fWidth, (float)ysize));
+        m_bounds.SetRect(Rect(0, 0, xsize, (float)ysize));
     }
 
     void Render(Context* pcontext)
     {
         ZString     str = GetString()->GetValue();
-        float fWidth = GetWidth()->GetValue();
         const Rect& rect = m_bounds.GetRect();
+        float fWidth = rect.XMax();
         int         y = 0;
-        int         indent = 0;
+
+        float fLineSeparation = GetLineSeparation()->GetValue();
 
         ZAssert(!pcontext->GetYAxisInversion());
 
         const Color& color = GetColor()->GetValue();
 
         while (!str.IsEmpty()) {
-            ZString  strLine = BreakLine(str, fWidth - indent);
+            ZString  strLine = BreakLine(str, fWidth);
             WinPoint size = m_pfont->GetTextExtent(strLine);
             int      x;
 
@@ -245,15 +242,13 @@ public:
                 m_pfont,
                 color,
                 Point(
-                (float)x + indent,
+                (float)x,
                     (float)y
                 ),
                 strLine
             );
 
-            y += size.Y();
-
-            indent = m_indent;
+            y += size.Y() + fLineSeparation;
         }
     }
 
@@ -475,7 +470,8 @@ protected:
             catch (const std::runtime_error& e) {
                 pLoadedImage = Image::GetEmpty();
             }
-            SetImage(pLoadedImage);
+            pLoadedImage->Update();
+            SetChildSilently(0, pLoadedImage);
         }
         WrapImage::Evaluate();
     }
@@ -487,7 +483,7 @@ TRef<Image> ImageTransform::Lazy(std::function<TRef<Image>()> callback)
     return new LazyImage(callback);
 }
 
-TRef<Image> ImageTransform::String(FontValue * font, ColorValue * color, Number * width, StringValue * string, Justification justification)
+TRef<Image> ImageTransform::String(FontValue * font, ColorValue * color, Number * width, StringValue * string, Justification justification, Number* pLineSeparation)
 {
-    return new StringImageCorrected(justification, font->GetValue(), color, width, string, 0);
+    return new StringImageCorrected(justification, font->GetValue(), color, width, string, pLineSeparation);
 }

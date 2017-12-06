@@ -119,5 +119,5 @@ public:
 
     static TRef<Image> Lazy(std::function<TRef<Image>()> callback);
 
-    static TRef<Image> String(FontValue* font, ColorValue* color, Number* width, StringValue* string, Justification justification);
+    static TRef<Image> String(FontValue* font, ColorValue* color, Number* width, StringValue* string, Justification justification, Number* pLineSeparation);
 };

@@ -132,6 +132,16 @@ public:
     static void AddNamespace(sol::state* m_pLua) {
         sol::table table = m_pLua->create_table();
 
+        m_pLua->new_usertype<EventValue<bool>>("EventValue<bool>",
+            sol::base_classes, sol::bases<Boolean, TEvent<bool>::Sink>()
+        );
+
+        table["CreateEventSink"] = [](bool a) {
+            return (TRef<EventValue<bool>>)new EventValue<bool>(a, [](bool bOld, bool bNew) {
+                return bNew;
+            });
+        };
+
         table["And"] = [](sol::object a, sol::object b) {
             return (TRef<Boolean>)BooleanTransform::And(wrapValue<bool>(a), wrapValue<bool>(b));
         };
