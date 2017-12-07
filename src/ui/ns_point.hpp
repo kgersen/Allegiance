@@ -11,7 +11,7 @@ public:
     static void AddNamespace(sol::state* m_pLua) {
         sol::table table = m_pLua->create_table();
 
-        m_pLua->new_usertype<EventValue<Point>>("EventValue<Point>",
+        m_pLua->new_usertype<SimpleModifiableValue<Point>>("SimpleModifiableValue<Point>",
             sol::base_classes, sol::bases<PointValue, TEvent<Point>::Sink>()
         );
         
@@ -23,9 +23,7 @@ public:
         };
 
         table["CreateEventSink"] = [](float x, float y) {
-            return (TRef<EventValue<Point>>)new EventValue<Point>(Point(x, y), [](const Point& old, const Point& eventPoint) {
-                return eventPoint;
-            });
+            return (TRef<SimpleModifiableValue<Point>>)new SimpleModifiableValue<Point>(Point(x, y));
         };
         
         table["X"] = [](PointValue* pPoint) {

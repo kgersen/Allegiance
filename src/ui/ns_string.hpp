@@ -40,14 +40,12 @@ public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
 
-        context.GetLua().new_usertype<EventValue<ZString>>("EventValue<ZString>",
+        context.GetLua().new_usertype<SimpleModifiableValue<ZString>>("SimpleModifiableValue<ZString>",
             sol::base_classes, sol::bases<StringValue, TEvent<ZString>::Sink>()
         );
 
         table["CreateEventSink"] = [](std::string start) {
-            return (TRef<EventValue<ZString>>)new EventValue<ZString>(ZString(start.c_str()), [](const ZString& old, const ZString& eventNew) {
-                return eventNew;
-            });
+            return (TRef<SimpleModifiableValue<ZString>>)new SimpleModifiableValue<ZString>(ZString(start.c_str()));
         };
 
         table["Length"] = [](sol::object a) {

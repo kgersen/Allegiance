@@ -22,9 +22,7 @@ public:
         };
 
         table["CreateEventSink"] = [](float a) {
-            return (TRef<EventValue<float>>)new EventValue<float>(a, [](float fOld, float fNew) {
-                return fNew;
-            });
+            return (TRef<SimpleModifiableValue<float>>)new SimpleModifiableValue<float>(a);
         };
 
         table["ToString"] = [](sol::object a, sol::optional<int> decimals) {
@@ -84,7 +82,7 @@ public:
             }
         );
 
-        m_pLua->new_usertype<EventValue<float>>("EventValue<float>",
+        m_pLua->new_usertype<SimpleModifiableValue<float>>("SimpleModifiableValue<float>",
             sol::base_classes, sol::bases<Number, TEvent<float>::Sink>(),
             sol::meta_function::addition, [](sol::object a, sol::object b) {
                 return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
@@ -132,14 +130,12 @@ public:
     static void AddNamespace(sol::state* m_pLua) {
         sol::table table = m_pLua->create_table();
 
-        m_pLua->new_usertype<EventValue<bool>>("EventValue<bool>",
+        m_pLua->new_usertype<SimpleModifiableValue<bool>>("SimpleModifiableValue<bool>",
             sol::base_classes, sol::bases<Boolean, TEvent<bool>::Sink>()
         );
 
         table["CreateEventSink"] = [](bool a) {
-            return (TRef<EventValue<bool>>)new EventValue<bool>(a, [](bool bOld, bool bNew) {
-                return bNew;
-            });
+            return (TRef<SimpleModifiableValue<bool>>)new SimpleModifiableValue<bool>(a);
         };
 
         table["And"] = [](sol::object a, sol::object b) {

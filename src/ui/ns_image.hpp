@@ -215,7 +215,18 @@ public:
 
                 return ImageTransform::String(font, color, wrapValue<float>(width), wrapString(string), justification_arg.value_or(JustifyLeft()), new Number(0.0f));
             },
-            [](FontValue* font, ColorValue* color, sol::object string, sol::optional<sol::table> object) {
+            [](FontValue* font, ColorValue* color, sol::object string) {
+                if (!font || !color) {
+                    throw std::runtime_error("Argument should not be null");
+                }
+
+                TRef<Number> width = new Number(10000); //something large as default
+                Justification justification = JustifyLeft();
+                TRef<Number> separation = new Number(0.0f);
+
+                return ImageTransform::String(font, color, width, wrapString(string), justification, separation);
+            },
+            [](FontValue* font, ColorValue* color, sol::object string, sol::table object) {
                 if (!font || !color) {
                     throw std::runtime_error("Argument should not be null");
                 }
@@ -225,7 +236,7 @@ public:
                 TRef<Number> separation = new Number(0.0f);
 
                 if (object) {
-                    object.value().for_each([&width, &justification, &separation](sol::object key, sol::object value) {
+                    object.for_each([&width, &justification, &separation](sol::object key, sol::object value) {
                         std::string strKey = key.as<std::string>();
                         if (strKey == "Width") {
                             width = wrapValue<float>(value);
