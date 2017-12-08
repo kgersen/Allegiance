@@ -74,9 +74,9 @@ public:
             { "Mission list", (TRef<ContainerList>)new ContainerList({}) },
             { "Server list", (TRef<ContainerList>)new ContainerList({}) },
             { "Core list", (TRef<ContainerList>)new ContainerList({}) },
-            { "Logout sink", (TRef<IEventSink>)sinkLogout },
-            { "Create game dialog sink", (TRef<IEventSink>)sinkCreateGame },
-            { "Create game sink", (TRef<TEvent<ZString, ZString, ZString>::Sink>)new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
+            { "Logout", (TRef<IEventSink>)sinkLogout },
+            { "Create mission dialog", (TRef<IEventSink>)sinkCreateGame },
+            { "Create mission", (TRef<TEvent<ZString, ZString, ZString>::Sink>)new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
                 auto server = this->FindServer(serverName);
                 auto core = this->FindCore(coreName);
 
@@ -163,7 +163,7 @@ public:
             MissionInfo* game = (MissionInfo*)pitem;
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
-                { "Join sink", (TRef<IEventSink>)new CallbackSink([game]() {
+                { "Join", (TRef<IEventSink>)new CallbackSink([game]() {
                     trekClient.JoinMission(game, "");
                     return false;
                 }) },
