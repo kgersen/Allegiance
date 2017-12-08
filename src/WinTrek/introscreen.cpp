@@ -38,7 +38,7 @@ public:
         m_stateError(stateError),
         UiState("Logged out", {
             { "Has error", (TRef<UiStateValue>)stateError },
-            { "Login sink", (TRef<IEventSink>)sinkLogin }
+            { "Login", (TRef<IEventSink>)sinkLogin }
         })
     {
     }
