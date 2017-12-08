@@ -45,18 +45,18 @@ public:
     }
 };
 
-template <typename ValueType>
-class CallbackValueSink : public TEvent<ValueType>::Sink {
+template <class ...Types>
+class CallbackValueSink : public TEvent<Types...>::Sink {
 private:
-    std::function<bool(ValueType)> m_funcCallback;
+    std::function<bool(Types...)> m_funcCallback;
 
 public:
-    CallbackValueSink(std::function<bool(ValueType)> funcCallback) :
+    CallbackValueSink(std::function<bool(Types...)> funcCallback) :
         m_funcCallback(funcCallback)
     {}
 
-    bool OnEvent(typename TEvent<ValueType>::Source* pevent, ValueType value) override {
-        return m_funcCallback(value);
+    bool OnEvent(typename TEvent<Types...>::Source* pevent, Types ... values) override {
+        return m_funcCallback(values...);
     }
 };
 

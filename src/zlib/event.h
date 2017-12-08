@@ -56,7 +56,7 @@ public:
 //
 /////////////////////////////////////////////////////////////////////////////
 
-template<class Type>
+template<class ...Types>
 class TEvent {
 public:
     class Sink;
@@ -79,7 +79,7 @@ public:
             return new Delegate(psink);
         }
 
-        virtual bool OnEvent(Source* pevent, Type value) = 0;
+        virtual bool OnEvent(Source* pevent, Types... values) = 0;
     };
 
     class SourceImpl : public Source {
@@ -97,12 +97,12 @@ public:
             m_listSinks.Remove(psink);
         }
 
-        void Trigger(Type value)
+        void Trigger(Types... values)
         {
             typename TList<TRef<Sink> >::Iterator iter(m_listSinks);
 
             while (!iter.End()) {
-                if (!iter.Value()->OnEvent(this, value)) {
+                if (!iter.Value()->OnEvent(this, values...)) {
                     iter.Remove();
                 } else {
                     iter.Next();
@@ -122,9 +122,9 @@ public:
         {
         }
 
-        bool OnEvent(Source* pevent, Type value)
+        bool OnEvent(Source* pevent, Types... values)
         {
-            return m_psink->OnEvent(pevent, value);
+            return m_psink->OnEvent(pevent, values...);
         }
     };
 };

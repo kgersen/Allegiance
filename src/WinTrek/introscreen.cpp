@@ -71,15 +71,68 @@ private:
 public:
     LoggedInState(IEventSink* sinkLogout, IEventSink* sinkCreateGame) :
         UiState("Logged in", {
+            { "Mission list", (TRef<ContainerList>)new ContainerList({}) },
             { "Server list", (TRef<ContainerList>)new ContainerList({}) },
+            { "Core list", (TRef<ContainerList>)new ContainerList({}) },
             { "Logout sink", (TRef<IEventSink>)sinkLogout },
-            { "Create game sink", (TRef<IEventSink>)sinkCreateGame }
+            { "Create game dialog sink", (TRef<IEventSink>)sinkCreateGame },
+            { "Create game sink", (TRef<TEvent<ZString, ZString, ZString>::Sink>)new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
+                auto server = this->FindServer(serverName);
+                auto core = this->FindCore(coreName);
+
+                ServerCoreInfo serverinfo = server->Get<ServerCoreInfo>("ServerCoreInfo");
+                StaticCoreInfo coreinfo = server->Get<StaticCoreInfo>("StaticCoreInfo");
+
+                trekClient.CreateMissionReq(
+                    serverinfo.szName,
+                    serverinfo.szRemoteAddress,
+                    coreinfo.cbIGCFile,
+                    missionName
+                );
+                return true;
+            }) }
         })
     {}
 
-    void SetServerList(List* plist) {
+    TRef<UiObjectContainer> FindCore(ZString coreName) {
+        auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
+
+        auto current_iterator = listCores.begin();
+
+        while (current_iterator != listCores.end()) {
+            ZString current_core_name = (*current_iterator)->Get<TRef<StringValue>>("Name")->GetValue();
+
+            if (coreName == current_core_name) {
+                return *current_iterator;
+            }
+
+            ++current_iterator;
+        }
+
+        throw std::runtime_error("Core not found");
+    }
+
+    TRef<UiObjectContainer> FindServer(ZString name) {
+        auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Server list")->GetList();
+
+        auto current_iterator = listCores.begin();
+
+        while (current_iterator != listCores.end()) {
+            ZString current_name = (*current_iterator)->Get<TRef<StringValue>>("Name")->GetValue();
+
+            if (name == current_name) {
+                return *current_iterator;
+            }
+
+            ++current_iterator;
+        }
+
+        throw std::runtime_error("Server not found");
+    }
+
+    void SetMissionList(List* plist) {
         std::list<TRef<UiObjectContainer>> result;
-        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Server list");
+        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Mission list");
         auto current_list = current_modifiablelist->GetList();
 
         ItemID pitem = plist->GetItem(0);
@@ -133,6 +186,78 @@ public:
             }));
             pitem = plist->GetNext(pitem);
             ++i;
+        }
+    }
+
+    void SetCoreList(int count, StaticCoreInfo* plist) {
+        std::list<TRef<UiObjectContainer>> result;
+        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list");
+        auto current_list = current_modifiablelist->GetList();
+
+        auto current_iterator = current_list.begin();
+        int i = 0;
+
+        //remove entries
+        while (current_iterator != current_list.end()) {
+            current_modifiablelist->Remove(i);
+            ++current_iterator;
+        }
+
+        //add entries
+        for (i = 0; i < count; ++i) {
+            StaticCoreInfo pitem = plist[i];
+
+            current_modifiablelist->Insert(i, new UiObjectContainer({
+                { "Name", (TRef<StringValue>)new StringValue(trekClient.CfgGetCoreName(pitem.cbIGCFile)) },
+                { "Bitmask", (uint32)(1 << i) },
+                { "StaticCoreInfo", (StaticCoreInfo)pitem }
+            }));
+        }
+    }
+
+    void SetServerList(int count, ServerCoreInfo* plist) {
+        std::list<TRef<UiObjectContainer>> result;
+        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Server list");
+        auto current_list = current_modifiablelist->GetList();
+
+        auto current_iterator = current_list.begin();
+        int i = 0;
+
+        //remove entries
+        while (current_iterator != current_list.end()) {
+            current_modifiablelist->Remove(i);
+            ++current_iterator;
+        }
+
+        //add entries
+        for (i = 0; i < count; ++i) {
+            ServerCoreInfo pitem = plist[i];
+
+            uint32 bitmaskServer = (uint32)pitem.dwCoreMask;
+
+            current_modifiablelist->Insert(i, new UiObjectContainer({
+                { "Name", (TRef<StringValue>)new StringValue(pitem.szName) },
+                { "ServerCoreInfo", (ServerCoreInfo)pitem },
+                { "Has core", [bitmaskServer, this](std::string core_name) {
+                    auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
+
+                    auto current_iterator = listCores.begin();
+
+                    while (current_iterator != listCores.end()) {
+                        std::string current_core_name = (*current_iterator)->Get<TRef<StringValue>>("Name")->GetValue();
+
+                        if (core_name == current_core_name) {
+                            uint32 core_bitmask = (*current_iterator)->Get<uint32>("Bitmask");
+
+                            return (bool)(bitmaskServer & core_bitmask);
+                        }
+
+                        ++current_iterator;
+                    }
+
+                    throw std::runtime_error("Core was not found in core list");
+                } }
+            }));
         }
     }
 };
@@ -318,7 +443,7 @@ public:
                 ZAssert(false);
                 return false;
             }
-            m_state->GetValue().as<LoggedInState>()->SetServerList(trekClient.GetMissionList());
+            m_state->GetValue().as<LoggedInState>()->SetMissionList(trekClient.GetMissionList());
             return true;
         });
 
@@ -326,7 +451,9 @@ public:
         plist->GetChangedEvent()->AddSink(m_pServerlistChangedSink);
 
         m_state->SetValue(LoggedInState(this->GetLogoutSink(), this->GetShowNewGamePopupSink()));
-        m_state->GetValue().as<LoggedInState>()->SetServerList(plist);
+        m_state->GetValue().as<LoggedInState>()->SetMissionList(plist);
+        m_state->GetValue().as<LoggedInState>()->SetCoreList(cCores, pcores);
+        m_state->GetValue().as<LoggedInState>()->SetServerList(cServers, pservers);
     };
 
     TRef<IEventSink> GetShowNewGamePopupSink() {

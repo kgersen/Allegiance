@@ -30,6 +30,18 @@ public:
         }
     }
 
+    TRef<StringValue> GetString(std::string key) {
+        return Get<TRef<StringValue>>(key);
+    }
+
+    TRef<Boolean> GetBoolean(std::string key) {
+        return Get<TRef<Boolean>>(key);
+    }
+
+    TRef<Number> GetNumber(std::string key) {
+        return Get<TRef<Number>>(key);
+    }
+
 };
 
 class UiScreenConfiguration : public UiObjectContainer {

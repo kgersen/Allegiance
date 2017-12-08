@@ -156,6 +156,44 @@ public:
     }
 };
 
+template <typename ... Types>
+class EventVoidToMultiple {
+    typedef ZString Type;
+    typedef TRef<TStaticValue<Type>> WrappedType;
+    typedef TEvent<Types...> EventType;
+
+    typedef std::tuple<sol::object, sol::object, sol::object> TupleType;
+
+public:
+
+    static auto CreateOnEventPropagatorFunction() {
+
+
+        return [](EventType::Sink* pEventSink, IEventSource* pEventSource, std::function<TupleType()> transformer) {
+
+            WrappedType a, b, c;
+
+            sol::object object_a, object_b, object_c;
+
+            TupleType tuple = transformer();
+
+            a = wrapValue<Type>(std::get<0>(tuple));
+            b = wrapValue<Type>(std::get<1>(tuple));
+            c = wrapValue<Type>(std::get<2>(tuple));
+
+            TRef<EventType::Sink> sinkRefCounted = pEventSink;
+
+            pEventSource->AddSink(new CallbackSink([a, b, c, sinkRefCounted]() {
+                a->Update();
+                b->Update();
+                c->Update();
+                sinkRefCounted->OnEvent(nullptr, a->GetValue(), b->GetValue(), c->GetValue());
+                return true;
+            }));
+        };
+    }
+};
+
 class EventNamespace {
 public:
     static void AddNamespace(sol::state* m_pLua) {
@@ -183,7 +221,8 @@ public:
             EventVoidToOne<bool>::CreateOnEventPropagatorFunction(),
             EventVoidToOne<float>::CreateOnEventPropagatorFunction(),
             EventVoidToOne<Point>::CreateOnEventPropagatorFunction(),
-            EventVoidToOne<ZString>::CreateOnEventPropagatorFunction()
+            EventVoidToOne<ZString>::CreateOnEventPropagatorFunction(),
+            EventVoidToMultiple<ZString, ZString, ZString>::CreateOnEventPropagatorFunction()
         );
 
         table["Get"] = [](Image* image, std::string string) {
