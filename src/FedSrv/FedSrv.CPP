@@ -10794,8 +10794,20 @@ class ThingSiteImpl : public ThingSite
 												ObjectID probeID = s->GetObjectID();
 												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
 												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-												IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-												pProbingShip->SetAchievementMask(c_achmProbeSpot);
+												if (pProbe)
+												{
+													IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+													if (pProbingShip)
+													{
+														CFSShip* pfsShip = (CFSShip *)(pProbingShip->GetPrivateData());
+														if (pfsShip && pfsShip->IsPlayer())
+														{
+															CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
+															if (pfsPlayer)
+																pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+														}
+													}
+												}
 											}
 										}
 									}
