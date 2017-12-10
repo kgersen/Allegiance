@@ -52,11 +52,14 @@
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <IncludePath>$(DXSDK_DIR)\Include;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Pigs\PigSrv;..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\Guids;..\src\Zone;..\src\engine;..\src\lobby;$(OutDir);$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;$(OutDir)..\..\Test\TCObj;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_ATL_STATIC_REGISTRY;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;AGC_HOST;_ATL_DEBUG_INTERFACES;_ATL_DEBUG_QI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Pigs\PigSrv;..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\Guids;..\src\Zone;..\src\engine;..\src\Igc;..\src\lobby;$(OutDir);$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;$(OutDir)..\..\Test\TCObj;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;_ATL_STATIC_REGISTRY;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;AGC_HOST;_ATL_DEBUG_INTERFACES;_ATL_DEBUG_QI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>

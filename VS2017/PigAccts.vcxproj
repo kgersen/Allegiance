@@ -64,8 +64,8 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\Guids;..\src\AGC;$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_ATL_STATIC_REGISTRY;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\Guids;..\src\AGC;$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;_ATL_STATIC_REGISTRY;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level2</WarningLevel>
@@ -75,7 +75,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\..\Test\TCLib\TCLib.lib;$(OutDir)..\PigGUID\PigGUID.lib;$(OutDir)..\..\Guids\AGCGuid.lib;$(OutDir)..\..\ZLib\ZLib.lib;lz32.lib;wininet.lib;netapi32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\src\Lib\AllegianceSecurity\AllegianceSecurityd.lib;..\src\Lib\Steam\steam_api.lib;$(OutDir)..\..\Test\TCLib\TCLib.lib;$(OutDir)..\PigGUID\PigGUID.lib;$(OutDir)..\..\Guids\AGCGuid.lib;$(OutDir)..\..\ZLib\ZLib.lib;lz32.lib;wininet.lib;netapi32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
