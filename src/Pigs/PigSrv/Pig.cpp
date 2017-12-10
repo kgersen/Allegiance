@@ -442,7 +442,7 @@ bool CPig::WaitInTimerLoop(HANDLE hObject, DWORD dwMilliseconds)
 
     // Compute the timeout value for this wait iteration
     DWORD dwTimeout = (INFINITE == dwMilliseconds) ? dwSliceRemaining
-      : std::min(dwSliceRemaining, std::max(0L, long(dwWaitEnd - GetTickCount())));
+      : std::min(dwSliceRemaining, ((DWORD) std::max(0L, long(dwWaitEnd - GetTickCount()))));
 
     // Wait for an object to be signaled or the time slice to expire
     DWORD dwWait = MsgWaitForMultipleObjects(cHandles, &(*m_Handles.begin()),
@@ -1199,7 +1199,7 @@ HRESULT CPig::ProcessAppMessage(FEDMESSAGE* pfm)
       CASTPFM(pfmHeavy, S, HEAVY_SHIPS_UPDATE, pfm);
       Time delta = ServerTimeFromClientTime(Time::Now()) - pfmHeavy->timeReference;
       int iExceeded =
-        findMaxThresholdExceeded(m_dwShipsUpdateLatencyThresholds,
+        findMaxThresholdExceeded<DWORD>(m_dwShipsUpdateLatencyThresholds,
           sizeofArray(m_dwShipsUpdateLatencyThresholds), delta.clock());
       if (-1 != iExceeded)
       {

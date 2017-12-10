@@ -13,7 +13,7 @@
 
 class IObjectSingle {
 private:
-	uint32_t m_count;
+	DWORD m_count;
 
 protected:
 	typedef IObjectSingle QIType;
@@ -35,7 +35,7 @@ public:
 	}
 
 
-	uint32_t GetCount() const
+	DWORD GetCount() const
 	{
 		return m_count;
 	}
@@ -49,7 +49,7 @@ public:
 #ifdef _DEBUG
 	virtual
 #endif
-		uint32_t __stdcall AddRef()
+		DWORD __stdcall AddRef()
 	{
 		return ++m_count;
 	}
@@ -57,7 +57,7 @@ public:
 #ifdef _DEBUG
 	virtual
 #endif
-		uint32_t __stdcall Release()
+		DWORD __stdcall Release()
 	{
 #ifndef __GNUC__
 		// BT - 9/17 - Hunting down mystery fedsrv crashes.
