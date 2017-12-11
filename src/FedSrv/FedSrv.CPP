@@ -3658,9 +3658,7 @@ void SendShipUpdates(CFSMission * pfsMission)
 					if (ISPLAYER(pship))
 					{
 						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
-						PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
-						if ((pship->GetAchievementMask() & c_achmProbeSpot) > 0)
-							pso->AddProbeSpot();
+						PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();						
 						if ((pship->GetAchievementMask() & c_achmNewRepair) > 0)
 							pso->SetRepair(pship->GetRepair());
 
@@ -10804,7 +10802,12 @@ class ThingSiteImpl : public ThingSite
 														{
 															CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
 															if (pfsPlayer)
+															{
+																PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+																if (pso)
+																	pso->AddProbeSpot();
 																pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+															}
 														}
 													}
 												}
