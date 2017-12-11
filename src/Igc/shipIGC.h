@@ -1911,16 +1911,21 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         }
                     }
 
-                    if (cFriend >= cEnemy)
+                    if (cEnemy == 0 || cFriend > cEnemy)
                         return true;
-                    else
-                    {
-                        static const float  c_d2AlwaysRun = 1000.0f;
+                    else if (cFriend == cEnemy) {
+                        static const float  c_d2AlwaysRun = 2300.0f;
+                        static const float  c_d2SafeishDist = 3000.0f;
                         if ((d2Enemy > c_d2AlwaysRun * c_d2AlwaysRun) &&
-                            (d2Enemy >= d2Friend))
+                            ((d2Enemy >= d2Friend) || (d2Enemy > c_d2SafeishDist * c_d2SafeishDist)))
                         {
                             return true;
                         }
+                    }
+                    else if (cFriend == cEnemy - 1) {
+                        static const float  c_d2IgnoreDist = 4000.0f;
+                        if (d2Enemy > c_d2IgnoreDist * c_d2IgnoreDist)
+                            return true;
                     }
                 }
 
@@ -2147,11 +2152,26 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                        GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
                     if (m_fOre < capacity / 2.0f)
                     {
-                        ImodelIGC*  pmodel = FindTarget(this,
-                                                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
-                                                        c_ttLeastTargeted | c_ttAnyCluster | c_ttCowardly,
-                                                        NULL, pcluster, &position, NULL,
-                                                        m_abmOrders);
+                        ImodelIGC*  pmodel = NULL;
+
+                        // Check if there is a player command we should be continuing
+                        if (m_commandTargets[c_cmdQueued] && m_commandIDs[c_cmdQueued] == c_cidDefault && bDocked) {
+                            IclusterIGC* pcommandCluster = (IclusterIGC*)(m_commandTargets[c_cmdQueued]);
+                            assert(pcommandCluster);
+                            pmodel = FindTarget(this,
+                                c_ttNeutral | c_ttAsteroid | c_ttNearest |
+                                c_ttLeastTargeted | c_ttCowardly,
+                                NULL, pcommandCluster, &Vector(0.0f, 0.0f, 0.0f), NULL,
+                                m_abmOrders);
+                            if (!pmodel) //don't remember the cluster after it's been mined out
+                                SetCommand(c_cmdQueued, NULL, c_cidNone);
+                        }
+                        if (!pmodel) 
+                            pmodel = FindTarget(this,
+                                                c_ttNeutral | c_ttAsteroid | c_ttNearest |
+                                                c_ttLeastTargeted | c_ttAnyCluster | c_ttCowardly,
+                                                NULL, pcluster, &position, NULL,
+                                                m_abmOrders);
 
                         if (pmodel)
                         {
@@ -2164,12 +2184,21 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     {
                         ImodelIGC*  pmodel = NULL;
 
-                        if (m_fOre > 0.0f)
-                            pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+                        if (m_fOre > 0.0f) {
+                            pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster | c_ttCowardly,
                                                 NULL, pcluster, &position, NULL,
                                                 c_sabmUnload);
+                            if (!pmodel) //no safe station available
+                                pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+                                                    NULL, pcluster, &position, NULL,
+                                                    c_sabmUnload);
+                        }
 
                         if (pmodel == NULL)
+                            pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster | c_ttCowardly,
+                                                NULL, pcluster, &position, NULL,
+                                                c_sabmLand);
+                        if (!pmodel)
                             pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
                                                 NULL, pcluster, &position, NULL,
                                                 c_sabmLand);
