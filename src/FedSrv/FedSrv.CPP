@@ -10789,7 +10789,7 @@ class ThingSiteImpl : public ThingSite
 										{
 											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
 											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
-											if (am & hvMask > 0)
+											if (am & hvMask)
 											{
 												ObjectID probeID = s->GetObjectID();
 												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
