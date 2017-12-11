@@ -10789,13 +10789,25 @@ class ThingSiteImpl : public ThingSite
 										{
 											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
 											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
-											if (am & hvMask > 0)
+											if (am & hvMask)
 											{
 												ObjectID probeID = s->GetObjectID();
 												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
 												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-												IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-												pProbingShip->SetAchievementMask(c_achmProbeSpot);
+												if (pProbe)
+												{
+													IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+													if (pProbingShip)
+													{
+														CFSShip* pfsShip = (CFSShip *)(pProbingShip->GetPrivateData());
+														if (pfsShip && pfsShip->IsPlayer())
+														{
+															CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
+															if (pfsPlayer)
+																pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+														}
+													}
+												}
 											}
 										}
 									}
