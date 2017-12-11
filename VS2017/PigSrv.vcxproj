@@ -105,56 +105,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\src\Pigs\Piglets\alephjumper.pig" />
-    <None Include="..\src\Pigs\Piglets\bugman.pig" />
-    <None Include="..\src\Pigs\Piglets\bulldozer.pig" />
-    <None Include="..\src\Pigs\Piglets\colbug-a.pig" />
-    <None Include="..\src\Pigs\Piglets\colbug-p.pig" />
-    <None Include="..\src\Pigs\Piglets\colbug-s.pig" />
-    <None Include="..\src\Pigs\Piglets\Default.pig" />
-    <None Include="..\src\Pigs\Piglets\demo.pig" />
-    <None Include="..\src\Pigs\Piglets\dev.pig" />
-    <None Include="..\src\Pigs\Piglets\docker.pig" />
-    <None Include="..\src\Pigs\Piglets\FaceOutpost.pig" />
-    <None Include="..\src\Pigs\Piglets\framerate-dummy.pig" />
-    <None Include="..\src\Pigs\Piglets\framerate.pig" />
-    <None Include="..\src\Pigs\Piglets\it.pig" />
-    <None Include="..\src\Pigs\Piglets\mark2.pig" />
-    <None Include="..\src\Pigs\Piglets\mark2s.pig" />
-    <None Include="..\src\Pigs\Piglets\mark3.pig" />
-    <None Include="..\src\Pigs\Piglets\marksn1.pig" />
     <None Include="..\src\Pigs\Piglets\progress.xls" />
     <None Include="..\src\Pigs\Piglets\scout2.pig" />
     <None Include="..\src\Pigs\Piglets\stem.pig" />
     <None Include="..\src\Pigs\Piglets\Teleporter.pig" />
-    <None Include="..\src\Pigs\Piglets\include\asteroids.js" />
-    <None Include="..\src\Pigs\Piglets\include\AutoStartGame.js" />
-    <None Include="..\src\Pigs\Piglets\include\chatcommand.js" />
-    <None Include="..\src\Pigs\Piglets\include\common.js" />
-    <None Include="..\src\Pigs\Piglets\include\dijkstra.js" />
-    <None Include="..\src\Pigs\Piglets\include\eliza.js" />
-    <None Include="..\src\Pigs\Piglets\include\GetIntoTeam.js" />
-    <None Include="..\src\Pigs\Piglets\moldy\Mark0.pig" />
-    <None Include="..\src\Pigs\Piglets\moldy\Mark1.pig" />
     <None Include="..\src\Pigs\Piglets\moldy\scout.pig" />
-    <None Include="..\src\Pigs\Scripts\AccountServer.js" />
-    <None Include="..\src\Pigs\Scripts\ArtPath.js" />
-    <None Include="..\src\Pigs\Scripts\create collision test game.vbs" />
-    <None Include="..\src\Pigs\Scripts\create demo game.vbs" />
-    <None Include="..\src\Pigs\Scripts\create scout test game.vbs" />
-    <None Include="..\src\Pigs\Scripts\CreatePig.js" />
-    <None Include="..\src\Pigs\Scripts\CreatePigs.js" />
-    <None Include="..\src\Pigs\Scripts\debugger.js" />
-    <None Include="..\src\Pigs\Scripts\debugger.vbs" />
-    <None Include="..\src\Pigs\Scripts\DeployPigs.js" />
-    <None Include="..\src\Pigs\Scripts\EventLog.js" />
-    <None Include="..\src\Pigs\Scripts\EventViewer.htm" />
-    <None Include="..\src\Pigs\Scripts\immed.js" />
-    <None Include="..\src\Pigs\Scripts\ListAccts.js" />
-    <None Include="..\src\Pigs\Scripts\listpigs.js" />
-    <None Include="..\src\Pigs\Scripts\listpigs2.js" />
-    <None Include="..\src\Pigs\Scripts\LobbyServer.js" />
-    <None Include="..\src\Pigs\Scripts\MaxPigs.js" />
     <None Include="..\src\Pigs\Scripts\RemAccountServer.js" />
     <None Include="..\src\Pigs\Scripts\RemCreatePig.js" />
     <None Include="..\src\Pigs\Scripts\RemCreatePigs.js" />
@@ -187,8 +142,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Pigs\PigSrv\Resource.h" />
-    <ClInclude Include="..\src\Test\Inc\Allegiance.h" />
-    <ClInclude Include="..\src\Pigs\PigSrv\IActiveScriptSiteImpl.h" />
     <ClInclude Include="..\src\Pigs\PigSrv\pch.h" />
     <ClInclude Include="..\src\Pigs\PigSrv\Pig.h" />
     <ClInclude Include="..\src\Pigs\PigSrv\PigBehavior.h" />
