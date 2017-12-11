@@ -1161,8 +1161,8 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         {
                             // The ship has moved to the same cluster as the player
                             debugf("Moving %s/%d to %s\n",
-                                   ship->GetName(), ship->GetObjectID(),
-                                   pcluster->GetName());
+                                ship->GetName(), ship->GetObjectID(),
+                                pcluster->GetName());
 
                             ship->SetCluster(pcluster);
                             ship->SetLastUpdate(time);
@@ -1833,8 +1833,16 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 {
                     ImodelIGC*  pmodel = m_pCoreIGC->GetModel(pfmOC->objectType, pfmOC->objectID);
 
-                    if (pship != m_ship)
+                    if (pship != m_ship) {
                         pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
+
+                        // Post notification for miners
+                        if (pfmOC->commandID == c_cidMine) {
+                            PlayerInfo* ppi = (PlayerInfo*)(pship->GetPrivateData());
+                            if (ppi && pmodel && ppi->LastSeenSector() != pmodel->GetCluster()->GetObjectID())
+                                PostText(false, "%s: Going to mine in %s.", pship->GetName(), pmodel->GetCluster()->GetName());
+                        }
+                    }
                     else if (pfmOC->command == c_cmdCurrent)
                         m_pmodelServerTarget = pmodel;
 
