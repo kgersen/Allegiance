@@ -106,22 +106,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\src\Pigs\Piglets\progress.xls" />
-    <None Include="..\src\Pigs\Piglets\scout2.pig" />
-    <None Include="..\src\Pigs\Piglets\stem.pig" />
-    <None Include="..\src\Pigs\Piglets\Teleporter.pig" />
-    <None Include="..\src\Pigs\Piglets\moldy\scout.pig" />
-    <None Include="..\src\Pigs\Scripts\RemAccountServer.js" />
-    <None Include="..\src\Pigs\Scripts\RemCreatePig.js" />
-    <None Include="..\src\Pigs\Scripts\RemCreatePigs.js" />
-    <None Include="..\src\Pigs\Scripts\RemListAccts.js" />
-    <None Include="..\src\Pigs\Scripts\RemListPigs.js" />
-    <None Include="..\src\Pigs\Scripts\RemLobbyServer.js" />
-    <None Include="..\src\Pigs\Scripts\remshutdown.js" />
-    <None Include="..\src\Pigs\Scripts\ScriptDir.js" />
-    <None Include="..\src\Pigs\Scripts\session.js" />
-    <None Include="..\src\Pigs\Scripts\shutdown.js" />
-    <None Include="..\src\Pigs\Scripts\ZoneAuthServer.js" />
-    <None Include="..\src\Pigs\Scripts\ZoneAuthTimeout.js" />
     <None Include="..\src\Pigs\PigSrv\PigSrv.ico" />
     <None Include="..\src\Pigs\PigSrv\PigSrv.rc2" />
     <None Include="..\src\Pigs\PigSrv\Pig.rgs" />
