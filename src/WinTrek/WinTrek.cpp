@@ -8525,14 +8525,16 @@ public:
 						bool    bControlsInUse = SenseJoystick(&js, bNoCameraControl, bAllowKeyboardMovement, bUpdateThrottle);
                         int     oldButtonsM = buttonsM;
 
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
-                            buttonsM |= leftButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
-                            buttonsM |= rightButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
-                            buttonsM |= upButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
-                            buttonsM |= downButtonIGC;
+                        if (!CommandCamera(m_cm)) {
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
+                                buttonsM |= leftButtonIGC;
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
+                                buttonsM |= rightButtonIGC;
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
+                                buttonsM |= upButtonIGC;
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
+                                buttonsM |= downButtonIGC;
+                        }
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustForward, bAllowKeyboardMovement))
                             buttonsM |= forwardButtonIGC;
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustBackward, bAllowKeyboardMovement))
@@ -8832,11 +8834,20 @@ public:
                     {
                         m_rollCommandCamera -= dt;
 
-                        if (m_distanceCommandCamera < 0.0f)
-                            m_distanceCommandCamera += 2.0f * pi;
+                        if (m_rollCommandCamera < 0.0f)
+                            m_rollCommandCamera += 2.0f * pi;
 
                         OrientCommandView();
                     }
+
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
+                        dRight += delta / 2;
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
+                        dRight -= delta / 2;
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
+                        dUp -= delta / 2; // Something is off here - should be called dDown. This is what happens if you don't just stick with top/left as 0/0 as it's meant to be done. Also costs performance above.
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
+                        dUp += delta / 2;
 
                     if (dRight)
                     {
