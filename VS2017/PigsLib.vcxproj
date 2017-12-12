@@ -85,7 +85,6 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <LanguageStandard>stdcpp14</LanguageStandard>
-      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR="$(Configuration)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -111,16 +110,17 @@
       <DllDataFileName>%(Filename)_dlldata.c</DllDataFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>..;..\src\lib\Steam;..\src\Test\Inc;..\src\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\engine;..\src\Zone;..\src\lobby;$(OutDir);$(OutDir)..\..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;..\src\lib\Steam;..\src\Test\Inc;..\src\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\engine;..\src\Zone;..\src\Igc;..\src\lobby;$(OutDir);$(OutDir)..\..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>NOMINMAX;_VC80_UPGRADE=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR="$(Configuration)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\..\Test\TCLib\TCLib.lib;$(OutDir)..\..\Guids\AGCGuid.lib;$(OutDir)..\..\Guids\guids.lib;$(OutDir)..\..\ZLib\ZLib.lib;$(OutDir)..\..\Engine\Engine.lib;$(OutDir)..\..\_utility\Utility.lib;$(OutDir)..\..\igc\igc.lib;$(OutDir)..\..\clintlib\clintlib.lib;..\src\Lib\DirectPlay\dxguid.lib;lz32.lib;wininet.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\src\Lib\AllegianceSecurity\AllegianceSecurityd.lib;..\src\Lib\Steam\steam_api.lib;$(OutDir)..\..\Test\TCLib\TCLib.lib;$(OutDir)..\..\Guids\AGCGuid.lib;$(OutDir)..\..\Guids\guids.lib;$(OutDir)..\..\ZLib\ZLib.lib;$(OutDir)..\..\Engine\Engine.lib;$(OutDir)..\..\_utility\Utility.lib;$(OutDir)..\..\igc\igc.lib;$(OutDir)..\..\clintlib\clintlib.lib;..\src\Lib\DirectPlay\dxguid.lib;lz32.lib;wininet.lib;version.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>false</SuppressStartupBanner>
       <ModuleDefinitionFile>..\src\Pigs\PigsLib\PigsLib.def</ModuleDefinitionFile>
       <TargetMachine>MachineX86</TargetMachine>
