@@ -330,7 +330,7 @@ public:
 
             auto start = std::chrono::high_resolution_clock::now();
 
-            TRef<Image> image = executor.Execute<Image*>(script);
+            TRef<Image> image = executor.Execute<TRef<Image>>(script);
 
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
             long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();

@@ -46,19 +46,48 @@ public:
             return context.GetScreenGlobals().Get<TRef<UiStateValue>>(name);
         };
 
-        context.GetLua().new_usertype<UiObjectContainer>("UiObjectContainer",
+        context.GetLua().new_usertype<TRef<UiObjectContainer>>("UiObjectContainer",
             "new", sol::no_constructor,
-            "GetString", &UiState::Get<TRef<StringValue>>,
-            "GetNumber", &UiState::Get<TRef<Number>>,
-            "GetBool", &UiState::Get<TRef<Boolean>>,
-            "GetState", &UiState::Get<TRef<UiStateValue>>,
-            "GetEventSink", &UiState::Get<TRef<IEventSink>>,
-            "GetList", &UiState::Get<TRef<ContainerList>>
+            "GetString", [](TRef<UiObjectContainer> pointer, std::string key) {
+                return pointer->GetString(key);
+            },
+            "GetNumber", [](TRef<UiObjectContainer> pointer, std::string key) {
+                return pointer->GetNumber(key);
+            },
+            "GetBool", [](TRef<UiObjectContainer> pointer, std::string key) {
+                return pointer->GetBoolean(key);
+            },
+            "GetState", [](TRef<UiObjectContainer> pointer, std::string key) {
+                return pointer->Get<TRef<UiStateValue>>(key);
+            },
+            "GetEventSink", [](TRef<UiObjectContainer> pointer, std::string key) {
+                return pointer->Get<TRef<IEventSink>>(key);
+            },
+            "GetList", [](TRef<UiObjectContainer> pointer, std::string key) {
+                return pointer->Get<TRef<ContainerList>>(key);
+            }
         );
 
         context.GetLua().new_usertype<UiState>("UiState", 
             "new", sol::no_constructor,
-            sol::base_classes, sol::bases<UiObjectContainer>()
+            "GetString", [](UiState* pointer, std::string key) {
+                return pointer->GetString(key);
+            },
+            "GetNumber", [](UiState* pointer, std::string key) {
+                return pointer->GetNumber(key);
+            },
+            "GetBool", [](UiState* pointer, std::string key) {
+                return pointer->GetBoolean(key);
+            },
+            "GetState", [](UiState* pointer, std::string key) {
+                return pointer->Get<TRef<UiStateValue>>(key);
+            },
+            "GetEventSink", [](UiState* pointer, std::string key) {
+                return pointer->Get<TRef<IEventSink>>(key);
+            },
+            "GetList", [](UiState* pointer, std::string key) {
+                return pointer->Get<TRef<ContainerList>>(key);
+            }
         );
 
         table["GetExternalEventSink"] = [&context](std::string path) {

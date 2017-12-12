@@ -172,7 +172,7 @@ public:
                 { "Player noat count", (TRef<Number>)new Number((float)game->NumNoatPlayers()) },
                 { "Max player count", (TRef<Number>)new Number((float)game->MaxPlayers()) },
                 { "Is in progress", (TRef<Boolean>)new Boolean(game->InProgress()) },
-                { "Time in progress", (TRef<Number>)new Number(game->InProgress() ? (Time::Now() - game->StartTime()) : 0) },
+                { "Time in progress", (TRef<Number>)new Number(game->InProgress() ? (float)(Time::Now() - game->StartTime()) : 0.0f) },
                 { "Server name", (TRef<StringValue>)new StringValue(game->GetMissionDef().szServerName) },
                 { "Core name", (TRef<StringValue>)new StringValue(trekClient.CfgGetCoreName(game->GetIGCStaticFile())) },
 

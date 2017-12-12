@@ -25,6 +25,7 @@
     <ClInclude Include="..\src\ui\ui.h" />
     <ClInclude Include="..\src\ui\UiEngine.h" />
     <ClInclude Include="..\src\ui\UiState.h" />
+    <ClInclude Include="..\src\ui\ui_types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\ui\UiEngine.cpp" />
@@ -99,6 +100,7 @@
       <BrowseInformationFile>
       </BrowseInformationFile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
@@ -127,6 +129,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ErrorReporting>None</ErrorReporting>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>

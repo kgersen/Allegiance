@@ -9,7 +9,7 @@ class EventToBoolean : public ModifiableBoolean, IEventSink {
     TRef<IEventSource> m_pDisableSource;
 
 public:
-    EventToBoolean(IEventSource* pEnableSource, IEventSource* pDisableSource) :
+    EventToBoolean(const TRef<IEventSource>& pEnableSource, const TRef<IEventSource>& pDisableSource) :
         m_pEnableSource(pEnableSource),
         m_pDisableSource(pDisableSource),
         ModifiableBoolean(false)
@@ -79,7 +79,7 @@ class EventToMappedImage : public WrapImage, IEventSink {
     std::map<TRef<IEventSource>, TypeWrappedResult> m_mapOptions;
 
 public:
-    EventToMappedImage(Image* pImage, std::map<TRef<IEventSource>, TypeWrappedResult> mapOptions) :
+    EventToMappedImage(const TRef<Image>& pImage, std::map<TRef<IEventSource>, TypeWrappedResult> mapOptions) :
         m_mapOptions(mapOptions),
         WrapImage(pImage)
     {
@@ -118,7 +118,7 @@ public:
     static auto CreateOnEventPropagatorFunction() {
 
 
-        return [](TEvent<TypeResult>::Sink* pEventSink, TEvent<TypeOriginal>::Source* pEventSource, std::function<sol::object(WrappedOriginal)> transformer) {
+        return [](const TRef<TEvent<TypeResult>::Sink>& pEventSink, const TRef<TEvent<TypeOriginal>::Source>& pEventSource, std::function<sol::object(WrappedOriginal)> transformer) {
             TypeOriginal original_default_value;
             TRef<SimpleModifiableValue<TypeOriginal>> start = new SimpleModifiableValue<TypeOriginal>(original_default_value);
             WrappedResult end = wrapValue<TypeResult>(transformer(start));
@@ -142,7 +142,7 @@ class EventVoidToOne {
 public:
     static auto CreateOnEventPropagatorFunction() {
 
-        return [](TEvent<TypeResult>::Sink* pEventSink, IEventSource* pEventSource, std::function<sol::object()> transformer) {
+        return [](const TRef<TEvent<TypeResult>::Sink>& pEventSink, const TRef<IEventSource>& pEventSource, std::function<sol::object()> transformer) {
             WrappedResult end = wrapValue<TypeResult>(transformer());
 
             TRef<TEvent<TypeResult>::Sink> sinkRefCounted = pEventSink;
@@ -169,7 +169,7 @@ public:
     static auto CreateOnEventPropagatorFunction() {
 
 
-        return [](EventType::Sink* pEventSink, IEventSource* pEventSource, std::function<TupleType()> transformer) {
+        return [](const TRef<EventType::Sink>& pEventSink, const TRef<IEventSource>& pEventSource, std::function<TupleType()> transformer) {
 
             WrappedType a, b, c;
 
@@ -200,10 +200,7 @@ public:
         sol::table table = m_pLua->create_table();
 
         table["OnEvent"] = sol::overload(
-            [](IEventSink* pEventSink, IEventSource* pEventSource) {
-                if (!pEventSink || !pEventSource) {
-                    throw std::runtime_error("Argument should not be null");
-                }
+            [](const TRef<IEventSink>& pEventSink, const TRef<IEventSource>& pEventSource) {
                 pEventSource->AddSink(pEventSink);
             },
             EventOneToOne<bool, bool>::CreateOnEventPropagatorFunction(),
@@ -225,27 +222,21 @@ public:
             EventVoidToMultiple<ZString, ZString, ZString>::CreateOnEventPropagatorFunction()
         );
 
-        table["Get"] = [](Image* image, std::string string) {
-            if (!image) {
-                throw std::runtime_error("Argument should not be null");
-            }
-            MouseEventImage* pMouseEventImage = (MouseEventImage*)(image);
-            return pMouseEventImage->GetEventSource(string);
+        table["Get"] = [](const TRef<Image>& image, std::string string) {
+            MouseEventImage* ptr = (MouseEventImage*)(Image*)image;
+            return ptr->GetEventSource(string);
         };
 
-        table["GetPoint"] = [](Image* image, std::string string) {
-            if (!image) {
-                throw std::runtime_error("Argument should not be null");
-            }
-            MouseEventImage* pMouseEventImage = (MouseEventImage*)(image);
-            return pMouseEventImage->GetPointEventSource(string);
+        table["GetPoint"] = [](const TRef<Image>& image, std::string string) {
+            MouseEventImage* ptr = (MouseEventImage*)(Image*)image;
+            return ptr->GetPointEventSource(string);
         };
 
         table["ToBoolean"] = [](sol::table table, sol::object valueDefault) {
             std::map<TRef<IEventSource>, TRef<Boolean>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
-                TRef<IEventSource> mapKey = key.as<IEventSource*>();
+                TRef<IEventSource> mapKey = key.as<const TRef<IEventSource>&>();
                 mapOptions[mapKey] = wrapValue<bool>(value);
             });
             
@@ -256,7 +247,7 @@ public:
             std::map<TRef<IEventSource>, TRef<Number>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
-                TRef<IEventSource> mapKey = key.as<IEventSource*>();
+                TRef<IEventSource> mapKey = key.as<const TRef<IEventSource>&>();
                 mapOptions[mapKey] = wrapValue<float>(value);
             });
 
@@ -267,19 +258,19 @@ public:
             std::map<TRef<IEventSource>, TRef<StringValue>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
-                TRef<IEventSource> mapKey = key.as<IEventSource*>();
+                TRef<IEventSource> mapKey = key.as<const TRef<IEventSource>&>();
                 mapOptions[mapKey] = wrapString(value);
             });
 
             return (TRef<StringValue>)new EventToMappedValue<ZString>(wrapString(valueDefault), mapOptions);
         };
 
-        table["ToImage"] = [](sol::table table, Image* valueDefault) {
+        table["ToImage"] = [](sol::table table, const TRef<Image>& valueDefault) {
             std::map<TRef<IEventSource>, TRef<Image>> mapOptions;
 
             table.for_each([&mapOptions](sol::object key, sol::object value) {
-                TRef<IEventSource> mapKey = key.as<IEventSource*>();
-                mapOptions[mapKey] = value.as<Image*>();
+                TRef<IEventSource> mapKey = key.as<const TRef<IEventSource>&>();
+                mapOptions[mapKey] = value.as<const TRef<Image>&>();
             });
 
             return (TRef<Image>)new EventToMappedImage(valueDefault, mapOptions);

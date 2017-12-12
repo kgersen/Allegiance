@@ -447,7 +447,7 @@ TRef<Boolean> BooleanTransform::Not(Boolean* pvalue1)
 TRef<Number> BooleanTransform::ToNumber(Boolean* pvalue1)
 {
     return new TransformedValue<float, bool>([](bool bValue) {
-        return bValue ? 1 : 0;
+        return bValue ? 1.0f : 0.0f;
     }, pvalue1);
 }
 

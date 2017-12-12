@@ -67,7 +67,7 @@ public:
             return NumberTransform::Cos(wrapValue<float>(a));
         };
 
-        m_pLua->new_usertype<Number>("Number",
+        m_pLua->new_usertype<TRef<Number>>("Number",
             sol::meta_function::addition, [](sol::object a, sol::object b) {
                 return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
             },
@@ -82,8 +82,8 @@ public:
             }
         );
 
-        m_pLua->new_usertype<SimpleModifiableValue<float>>("SimpleModifiableValue<float>",
-            sol::base_classes, sol::bases<Number, TEvent<float>::Sink>(),
+        m_pLua->new_usertype<TRef<SimpleModifiableValue<float>>>("SimpleModifiableValue<float>",
+            //sol::base_classes, sol::bases<Number, TEvent<float>::Sink>(),
             sol::meta_function::addition, [](sol::object a, sol::object b) {
                 return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
             },
@@ -96,7 +96,7 @@ public:
                 sol::meta_function::division, [](sol::object a, sol::object b) {
                 return NumberTransform::Divide(wrapValue<float>(a), wrapValue<float>(b));
             }
-            );
+        );
 
         m_pLua->set("Number", table);
     }

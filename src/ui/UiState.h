@@ -1,35 +1,56 @@
 #pragma once
 
-#include "ui.h"
+#ifndef __MODULE__
+#define __MODULE__ "Ui"
+#endif
+#include "model.h"
 
-/*template <class PropertiesContainerType>
-class UiState {
+#include <list>
+#include <boost/any.hpp>
+
+
+class UiObjectContainer : public IObject {
 
 private:
-    std::string m_name;
-    PropertiesContainerType m_properties;
+    std::map<std::string, boost::any> m_map;
 
 public:
-    UiState(std::string name, PropertiesContainerType properties);
+    UiObjectContainer(std::map<std::string, boost::any> map) :
+        m_map(map)
+    {
+    }
 
-    std::string GetName() const;
+    template <typename Type>
+    Type Get(std::string key) {
+        auto found = m_map.find(key);
+        if (found == m_map.end()) {
+            throw std::runtime_error("Key not found: " + key);
+        }
 
-    PropertiesContainerType& GetProperties() const;
+        try
+        {
+            return boost::any_cast<Type>(found->second);
+        }
+        catch (const boost::bad_any_cast &)
+        {
+            throw std::runtime_error("Key found but not of valid type: " + key);
+        }
+    }
+
+    TRef<StringValue> GetString(std::string key) {
+        return Get<TRef<StringValue>>(key);
+    }
+
+    TRef<Boolean> GetBoolean(std::string key) {
+        return Get<TRef<Boolean>>(key);
+    }
+
+    TRef<Number> GetNumber(std::string key) {
+        return Get<TRef<Number>>(key);
+    }
 
 };
 
-typedef TStaticValue<UiState<UiObjectContainer>> UiStateValue;
-
-// Maybe remove when we really don't care about mdl logging anymore
-class ModifiableUiStateName {
-public:
-    static ZString GetName() { return "ModifiableState"; }
-};
-
-void Write(IMDLBinaryFile* pmdlFile, const UiState& value);
-ZString GetString(int indent, const UiState& value);
-ZString GetFunctionName(const UiState& value);
-typedef TModifiableValue<UiState<UiObjectContainer>, ModifiableUiStateName> UiStateModifiableValue;*/
 
 // Maybe remove when we really don't care about mdl logging anymore
 class ModifiableUiStateName {

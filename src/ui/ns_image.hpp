@@ -52,6 +52,17 @@ class ImageNamespace {
 public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
+
+
+        context.GetLua().new_usertype<ConstantImage>("ConstantImage",
+            sol::base_classes, sol::bases<Image>()
+        );
+        context.GetLua().new_usertype<Image>("Image"
+            );
+        context.GetLua().new_usertype<TRef<Image>>("TRef<Image>");
+        context.GetLua().new_usertype<TRef<ConstantImage>>("TRef<ConstantImage>");
+
+
         table["Empty"] = []() {
             return (TRef<Image>)Image::GetEmpty();
         };
@@ -61,17 +72,10 @@ public:
         };
 
         table["Extent"] = sol::overload(
-            [](RectValue* rect, ColorValue* color) {
-                if (!rect || !color) {
-                    throw std::runtime_error("Argument should not be null");
-                }
+            [](const TRef<RectValue>& rect, const TRef<ColorValue>& color) {
                 return CreateExtentImage(rect, color);
             },
-            [](PointValue* pPoint, ColorValue* color) {
-                if (!pPoint || !color) {
-                    throw std::runtime_error("Argument should not be null");
-                }
-
+            [](const TRef<PointValue>& pPoint, const TRef<ColorValue>& color) {
                 Number* zero = new Number(0.0f);
 
                 return CreateExtentImage(
@@ -85,10 +89,7 @@ public:
                 );
             }
         );
-        table["MouseEvent"] = [](Image* image) {
-            if (!image) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["MouseEvent"] = [](const TRef<Image>& image) {
             return (TRef<Image>)new MouseEventImage(image);
         };
         table["File"] = [&context](std::string path) {
@@ -115,7 +116,7 @@ public:
                 TRef<Image> child;
 
                 for (int i = 1; i <= count; ++i) {
-                    child = table_list.get<Image*>(i);
+                    child = table_list.get<const TRef<Image>&>(i);
                     if (!child) {
                         throw std::runtime_error("Element in group should not be null");
                     }
@@ -139,7 +140,7 @@ public:
             TRef<Number> offset_y = pZero;
 
             for (int i = 1; i <= count; ++i) {
-                child = table_list.get<Image*>(i);
+                child = table_list.get<const TRef<Image>&>(i);
                 if (!child) {
                     throw std::runtime_error("Element in group should not be null");
                 }
@@ -153,43 +154,61 @@ public:
 
             return (TRef<Image>)pgroup;
         };
+        table["StackVertical"] = [](TRef<ImageList> list, sol::optional<sol::object> separation) {
+            return (TRef<Image>)new NonStaticCallbackImage<ImageList*>([separation](ImageList* varlist) {
+                TRef<GroupImage> pgroup = new GroupImage();
+
+                TRef<Number> pZero = new Number(0.0f);
+                TRef<Number> offset_y = pZero;
+
+                for (TRef<Image> entry : varlist->GetList()) {
+                    pgroup->AddImageToTop(ImageTransform::Translate(entry, PointTransform::Create(pZero, offset_y)));
+
+                    offset_y = NumberTransform::Add(offset_y, PointTransform::Y(ImageTransform::Size(entry)));
+                    if (separation) {
+                        offset_y = NumberTransform::Add(offset_y, wrapValue<float>(separation.value()));
+                    }
+                }
+
+                return (TRef<Image>)pgroup;
+            }, list);
+        };
 
         table["Switch"] = [&context](sol::object value, sol::table table) {
             int count = table.size();
 
-            if (value.is<TStaticValue<ZString>>() || value.is<std::string>()) {
+            if (value.is<TRef<TStaticValue<ZString>>>() || value.is<std::string>()) {
                 //the wrapped value is a ZString, the unwrapped value a std::string
                 std::map<std::string, TRef<Image>> mapOptions;
 
                 table.for_each([&mapOptions](sol::object key, sol::object value) {
                     std::string strKey = key.as<std::string>();
-                    mapOptions[strKey] = value.as<Image*>();
+                    mapOptions[strKey] = value.as<const TRef<Image>&>();
                 });
 
                 return ImageTransform::Switch(wrapString(value), mapOptions);
             }
-            else if (value.is<Number>() || value.is<float>()) {
+            else if (value.is<TRef<Number>>() || value.is<float>()) {
                 std::map<int, TRef<Image>> mapOptions;
 
                 table.for_each([&mapOptions](sol::object key, sol::object value) {
                     int fKey = (int)key.as<float>();
-                    mapOptions[fKey] = value.as<Image*>();
+                    mapOptions[fKey] = value.as<const TRef<Image>&>();
                 });
 
                 return ImageTransform::Switch(wrapValue<float>(value), mapOptions);
             }
-            else if (value.is<Boolean>() || value.is<bool>()) {
+            else if (value.is<TRef<Boolean>>() || value.is<bool>()) {
                 std::map<bool, TRef<Image>> mapOptions;
 
                 table.for_each([&mapOptions](sol::object key, sol::object value) {
                     bool bKey = key.as<bool>();
-                    mapOptions[bKey] = value.as<Image*>();
+                    mapOptions[bKey] = value.as<const TRef<Image>&>();
                 });
 
                 return ImageTransform::Switch(wrapValue<bool>(value), mapOptions);
             }
-            else if (value.is<UiStateValue>()) {
-                typedef std::function<TRef<Image>(UiObjectContainer*)> MapValueType;
+            else if (value.is<TRef<UiStateValue>>()) {
                 std::map<std::string, sol::function> mapOptions;
 
                 table.for_each([&mapOptions](sol::object key, sol::object value) {
@@ -208,17 +227,10 @@ public:
             throw std::runtime_error("Expected value argument of Image.Switch to be either a wrapped or unwrapped bool, int, or string");
         };
         table["String"] = sol::overload(
-            [](FontValue* font, ColorValue* color, sol::object width, sol::object string, sol::optional<Justification> justification_arg) {
-                if (!font || !color) {
-                    throw std::runtime_error("Argument should not be null");
-                }
-
+            [](const TRef<FontValue>& font, const TRef<ColorValue>& color, sol::object width, sol::object string, sol::optional<Justification> justification_arg) {
                 return ImageTransform::String(font, color, wrapValue<float>(width), wrapString(string), justification_arg.value_or(JustifyLeft()), new Number(0.0f));
             },
-            [](FontValue* font, ColorValue* color, sol::object string) {
-                if (!font || !color) {
-                    throw std::runtime_error("Argument should not be null");
-                }
+            [](const TRef<FontValue>& font, const TRef<ColorValue>& color, sol::object string) {
 
                 TRef<Number> width = new Number(10000); //something large as default
                 Justification justification = JustifyLeft();
@@ -226,10 +238,7 @@ public:
 
                 return ImageTransform::String(font, color, width, wrapString(string), justification, separation);
             },
-            [](FontValue* font, ColorValue* color, sol::object string, sol::table object) {
-                if (!font || !color) {
-                    throw std::runtime_error("Argument should not be null");
-                }
+            [](const TRef<FontValue>& font, const TRef<ColorValue>& color, sol::object string, sol::table object) {
 
                 TRef<Number> width = new Number(10000); //something large as default
                 Justification justification = JustifyLeft();
@@ -256,73 +265,39 @@ public:
                 return ImageTransform::String(font, color, width, wrapString(string), justification, separation);
             }
         );
-        table["Translate"] = [](Image* pimage, PointValue* pPoint) {
-            if (!pimage || !pPoint) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Translate"] = [](const TRef<Image>& pimage, const TRef<PointValue>& pPoint) {
             return ImageTransform::Translate(pimage, pPoint);
         };
-        table["Scale"] = [](Image* pimage, PointValue* pPoint) {
-            if (!pimage || !pPoint) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Scale"] = [](const TRef<Image>& pimage, const TRef<PointValue>& pPoint) {
             return ImageTransform::Scale(pimage, pPoint);
         };
-        table["Rotate"] = [](Image* pimage, sol::object radians) {
-            if (!pimage) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Rotate"] = [](const TRef<Image>& pimage, sol::object radians) {
             return ImageTransform::Rotate(pimage, wrapValue<float>(radians));
         };
-        table["Size"] = [](Image* pimage) {
-            if (!pimage) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Size"] = [](const TRef<Image>& pimage) {
             return ImageTransform::Size(pimage);
         };
 
-        table["Justify"] = [](Image* pimage, PointValue* pSizeContainer, Justification justification) {
-            if (!pimage || !pSizeContainer) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Justify"] = [](const TRef<Image>& pimage, TRef<PointValue>& pSizeContainer, Justification justification) {
             return ImageTransform::Justify(pimage, pSizeContainer, justification);
         };
-        table["ScaleFit"] = [](Image* pimage, PointValue* pSizeContainer, Justification justification) {
-            if (!pimage || !pSizeContainer) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["ScaleFit"] = [](const TRef<Image>& pimage, TRef<PointValue>& pSizeContainer, Justification justification) {
             return ImageTransform::ScaleFit(pimage, pSizeContainer, justification);
         };
-        table["ScaleFill"] = [](Image* pimage, PointValue* pSizeContainer, Justification justification) {
-            if (!pimage || !pSizeContainer) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["ScaleFill"] = [](const TRef<Image>& pimage, TRef<PointValue>& pSizeContainer, Justification justification) {
             return ImageTransform::ScaleFill(pimage, pSizeContainer, justification);
         };
 
-        table["Clip"] = [](Image* pimage, RectValue* rect) {
-            if (!pimage || !rect) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Clip"] = [](const TRef<Image>& pimage, const TRef<RectValue>& rect) {
             return ImageTransform::Clip(pimage, rect);
         };
-        table["Cut"] = [](Image* pimage, RectValue* rect) {
-            if (!pimage || !rect) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Cut"] = [](const TRef<Image>& pimage, const TRef<RectValue>& rect) {
             return ImageTransform::Cut(pimage, rect);
         };
 
-        table["Multiply"] = [](ConstantImage* pimage, ColorValue* color) {
-            if (!pimage || !color) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Multiply"] = [](const TRef<ConstantImage>& pimage, const TRef<ColorValue>& color) {
             return ImageTransform::Multiply(pimage, color);
         };
-
-        context.GetLua().new_usertype<ConstantImage>("ConstantImage",
-            sol::base_classes, sol::bases<Image>()
-        );
         context.GetLua().set("Image", table);
 
         sol::table tableJustification = context.GetLua().create_table();
