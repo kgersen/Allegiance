@@ -2155,7 +2155,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         ImodelIGC*  pmodel = NULL;
 
                         // Check if there is a player command we should be continuing
-                        if (m_commandTargets[c_cmdQueued] && m_commandIDs[c_cmdQueued] == c_cidDefault && bDocked) {
+                        if (m_commandTargets[c_cmdQueued] && m_commandIDs[c_cmdQueued] == c_cidDefault) {
                             IclusterIGC* pcommandCluster = (IclusterIGC*)(m_commandTargets[c_cmdQueued]);
                             assert(pcommandCluster);
                             pmodel = FindTarget(this,

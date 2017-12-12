@@ -3355,20 +3355,21 @@ bool CommandToDrone(CFSMission*         pfsMission,
                                             */
         }
 
-        if (pshipTo->GetPilotType() == c_ptMiner && 
-            (*ppmodelTarget) &&
-            (*ppmodelTarget)->GetObjectType() != OT_station && 
-            (*ppmodelTarget)->GetObjectType() != OT_ship)
-        {
-            pshipTo->SetCommand(c_cmdQueued, (ImodelIGC*)(*ppmodelTarget)->GetCluster(), c_cidDefault);
-        }
-        else
-            pshipTo->SetCommand(c_cmdQueued, NULL, c_cidNone);
+        if (pshipTo->GetPilotType() == c_ptMiner) {
+            if ((*ppmodelTarget) &&
+                (*ppmodelTarget)->GetObjectType() != OT_station &&
+                (*ppmodelTarget)->GetObjectType() != OT_ship)
+            {
+                pshipTo->SetCommand(c_cmdQueued, (ImodelIGC*)(*ppmodelTarget)->GetCluster(), c_cidDefault);
+            }
+            else
+                pshipTo->SetCommand(c_cmdQueued, NULL, c_cidNone);
 
-        if (pminerCluster) {
-            if ((*ppmodelTarget)->GetObjectType() == OT_buoy) 
-                (*ppmodelTarget)->Release();
-            *ppmodelTarget = NULL; //no more clean-up needed
+            if (pminerCluster) {
+                if ((*ppmodelTarget)->GetObjectType() == OT_buoy)
+                    (*ppmodelTarget)->Release();
+                *ppmodelTarget = NULL; //no more clean-up needed
+            }
         }
     }
 
