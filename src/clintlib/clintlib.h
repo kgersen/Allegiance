@@ -2020,8 +2020,11 @@ public:
             assert(pptDispenser);
             assert(pptDispenser->GetGroupID() >= 0);
 
-            if (!pstation->CanBuy(pptDispenser))
+            if (!pstation->CanBuy(pptDispenser) ||
+                pptDispenser->GetPartMask() == 0x2) //ignore int pulse probes
+            {
                 pptDispenser = NULL;
+            }
         }
         else
             pptDispenser = NULL;
