@@ -177,7 +177,17 @@ public:
         table["Switch"] = [&context](sol::object value, sol::table table) {
             int count = table.size();
 
-            if (value.is<TRef<TStaticValue<ZString>>>() || value.is<std::string>()) {
+            if (value.is<TRef<Number>>() || value.is<float>()) {
+                std::map<int, TRef<Image>> mapOptions;
+
+                table.for_each([&mapOptions](sol::object key, sol::object value) {
+                    int fKey = (int)key.as<float>();
+                    mapOptions[fKey] = value.as<const TRef<Image>&>();
+                });
+
+                return ImageTransform::Switch(wrapValue<float>(value), mapOptions);
+            }
+            else if (value.is<TRef<TStaticValue<ZString>>>() || value.is<std::string>()) {
                 //the wrapped value is a ZString, the unwrapped value a std::string
                 std::map<std::string, TRef<Image>> mapOptions;
 
@@ -187,16 +197,6 @@ public:
                 });
 
                 return ImageTransform::Switch(wrapString(value), mapOptions);
-            }
-            else if (value.is<TRef<Number>>() || value.is<float>()) {
-                std::map<int, TRef<Image>> mapOptions;
-
-                table.for_each([&mapOptions](sol::object key, sol::object value) {
-                    int fKey = (int)key.as<float>();
-                    mapOptions[fKey] = value.as<const TRef<Image>&>();
-                });
-
-                return ImageTransform::Switch(wrapValue<float>(value), mapOptions);
             }
             else if (value.is<TRef<Boolean>>() || value.is<bool>()) {
                 std::map<bool, TRef<Image>> mapOptions;

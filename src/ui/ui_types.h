@@ -51,6 +51,11 @@ namespace sol {
                 if (sol::stack::check<std::string>(L, index, sol::no_panic, record())) {
                     return new TStaticValue<ZString>(sol::stack::get<std::string>(L, index, tracking).c_str());
                 }
+
+                //automatically convert from number to string
+                if (sol::stack::check<TRef<Number>>(L, index)) {
+                    return NumberTransform::ToString(sol::stack::get<TRef<Number>>(L, index), 0);
+                }
                 return nullptr;
             }
         };
