@@ -162,6 +162,22 @@ public:
         while (pitem) {
             MissionInfo* game = (MissionInfo*)pitem;
 
+            Time timeApplicationStart = GetWindow()->GetTimeStart();
+            TRef<Number> pTimeSinceApplicationStart = GetWindow()->GetTime();
+
+            TRef<Number> pTimeMisisonInProgress;
+            if (game->InProgress()) {
+                float secondsOffset = game->StartTime() - timeApplicationStart;
+
+                pTimeMisisonInProgress = NumberTransform::Subtract(
+                    pTimeSinceApplicationStart,
+                    new Number(secondsOffset)
+                );
+            }
+            else {
+                pTimeMisisonInProgress = new Number(0.0f);
+            }
+
             current_modifiablelist->Insert(i, new UiObjectContainer({
                 { "Join", (TRef<IEventSink>)new CallbackSink([game]() {
                     trekClient.JoinMission(game, "");
@@ -172,7 +188,7 @@ public:
                 { "Player noat count", (TRef<Number>)new Number((float)game->NumNoatPlayers()) },
                 { "Max player count", (TRef<Number>)new Number((float)game->MaxPlayers()) },
                 { "Is in progress", (TRef<Boolean>)new Boolean(game->InProgress()) },
-                { "Time in progress", (TRef<Number>)new Number(game->InProgress() ? (float)(Time::Now() - game->StartTime()) : 0.0f) },
+                { "Time in progress", (TRef<Number>)pTimeMisisonInProgress },
                 { "Server name", (TRef<StringValue>)new StringValue(game->GetMissionDef().szServerName) },
                 { "Core name", (TRef<StringValue>)new StringValue(trekClient.CfgGetCoreName(game->GetIGCStaticFile())) },
 
