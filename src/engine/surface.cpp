@@ -1287,7 +1287,7 @@ public:
         const WinPoint& point, 
         const ZString& str
     ) {
-        pfont->DrawString(
+        pfont->DrawStringScreenSpace(
             point + m_pointOffset, 
             str, 
             color

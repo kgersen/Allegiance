@@ -420,6 +420,7 @@ public:
         m_bRendering = true;
 
         PushState();
+        ForceState();
     }
 
     void EndRendering()
@@ -744,20 +745,9 @@ public:
             m_countDrawStringChars += str.GetLength();
         #endif
 
-        DD2D();
+        UpdateState();
 
-        Point pointImage;
-        if (TransformLocalToImage(Vector(point.X(), point.Y(), 0), pointImage)) 
-		{
-            WinPoint pointScreen = TransformImageToSurface(pointImage);
-            WinPoint size        = pfont->GetTextExtent(str);
-
-            if (m_bYAxisInversion) {
-                pointScreen.SetY(pointScreen.Y() - size.Y());
-            }		
-            
-            pfont->DrawString(pointScreen, str, color );
-        }
+        pfont->DrawString(point, str, color, m_bYAxisInversion);
     }
 
     void DrawRectangle(const Rect& rect, const Color& color)
@@ -1375,6 +1365,33 @@ public:
     // Update the device states
     //
     //////////////////////////////////////////////////////////////////////////////
+
+    void ForceState()
+    {
+        m_pdevice3D->SetYAxisInversion(m_bYAxisInversion);
+
+        m_pdevice3D->SetMatrix(m_pstateDevice->m_mat, m_pstateDevice->m_matWorldTM);
+        m_pdevice3D->SetMaterial(m_pstateDevice->m_pmaterial);
+        m_pdevice3D->SetTexture(m_pstateDevice->m_psurfaceTexture);
+        m_pdevice3D->SetDeformation(m_pstateDevice->m_pdeform);
+        m_pdevice3D->SetPerspectiveMatrix(m_pstateDevice->m_matPerspective);
+        m_pdevice3D->SetViewMatrix(m_pstateDevice->m_matView);
+        m_pdevice3D->SetGlobalColor(m_pstateDevice->m_color);
+        m_pdevice3D->SetClipRect(m_pstateDevice->m_rectClip);
+        m_pdevice3D->SetShadeMode(m_pstateDevice->m_shadeMode);
+        m_pdevice3D->SetBlendMode(m_pstateDevice->m_blendMode);
+        m_pdevice3D->SetWrapMode(m_pstateDevice->m_wrapMode);
+        m_pdevice3D->SetCullMode(m_pstateDevice->m_cullMode);
+        m_pdevice3D->SetZTest(m_pstateDevice->m_bZTest);
+        m_pdevice3D->SetZWrite(m_pstateDevice->m_bZWrite);
+        m_pdevice3D->SetLinearFilter(m_pstateDevice->m_bLinearFilter);
+        m_pdevice3D->SetPerspectiveCorrection(m_pstateDevice->m_bPerspectiveCorrection);
+        m_pdevice3D->SetDither(m_pstateDevice->m_bDither);
+        m_pdevice3D->SetColorKey(m_pstateDevice->m_bColorKey);
+        m_pdevice3D->SetLineWidth(m_pstateDevice->m_lineWidth);
+
+        m_pstateDevice->m_maskChanges.Clear(StateChangeAll());
+    }
 
     void UpdateState()
     {

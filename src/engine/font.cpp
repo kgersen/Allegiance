@@ -446,7 +446,153 @@ public:
 	// DrawString()
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////
-	void DrawString(	const WinPoint &	point,
+
+    void DrawString(const Point &	point,
+        const ZString &		str,
+        const Color &		colour,
+        bool bYAxisInversion)
+    {
+        ZAssert(str.GetLength() < 256);
+        float fX0, fX1, fY0, fY1;
+        DWORD dwA, dwR, dwG, dwB;
+        dwA = (DWORD)(colour.A() * 255.0f);
+        dwR = (DWORD)(colour.R() * 255.0f);
+        dwG = (DWORD)(colour.G() * 255.0f);
+        dwB = (DWORD)(colour.B() * 255.0f);
+        D3DCOLOR currColour = D3DCOLOR_ARGB(dwA, dwR, dwG, dwB);
+        D3DCOLOR originalColor = currColour; // kg fix: save original color (parameter color)
+        if (str.GetLength() == 0)
+        {
+            return;
+        }
+
+        CD3DDevice9 * pDev = pDev->Get();
+
+        pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+        pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+
+        DWORD dwCurrentLighting;
+        pDev->GetRenderState(D3DRS_LIGHTING, &dwCurrentLighting);
+
+        pDev->SetRenderState(D3DRS_LIGHTING, (DWORD)false);
+
+        pDev->SetRenderState(D3DRS_COLORVERTEX, TRUE);
+        pDev->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
+
+        pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE); //imago 8/6/09
+
+                                                                 // Generate the geometry for rendering the text.
+        int iChar = 0;
+        int iCurrVert = 0;
+        fX0 = (float)point.X();
+        fY0 = (float)point.Y();
+
+        // Sanity check, this is the most we can fit into the current font dyn VB.
+        // Should be enough though.
+        ZAssert(str.GetLength() < 2048);
+
+        UIFONTVERTEX2 * pFontVerts;
+
+        //		CVBIBManager::SVBIBHandle * pFontDynVB = CVertexGenerator::GetUIFontVertsVB();
+        CVBIBManager::SVBIBHandle * pFontDynVB =
+            CVertexGenerator::Get()->GetPredefinedDynamicBuffer(CVertexGenerator::ePDBT_UIFont2VB);
+        ZAssert(pFontDynVB != NULL);
+
+        if (CVBIBManager::Get()->LockDynamicVertexBuffer(
+            pFontDynVB,
+            str.GetLength() * 6,
+            (void**)&pFontVerts) == false)
+        {
+            // Failed to lock the vertex buffer.
+            ZAssert(false);
+            return;
+        }
+
+        while (iChar < str.GetLength())
+        {
+            BYTE ch = str[iChar];
+
+            const CharData&	charData = m_data[ch];
+
+            fX1 = fX0 + (float)charData.m_size.X();
+            fY1 = fY0 + (float)charData.m_size.Y();
+            if (bYAxisInversion) {
+                float tmp = fY1;
+                fY1 = fY0;
+                fY0 = tmp;
+            }
+            float z = 0.0f;
+
+            pFontVerts[iCurrVert].x = fX0;
+            pFontVerts[iCurrVert].y = fY0;
+            pFontVerts[iCurrVert].z = z;
+            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
+            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
+            pFontVerts[iCurrVert++].color = currColour;
+
+            pFontVerts[iCurrVert].x = fX1;
+            pFontVerts[iCurrVert].y = fY0;
+            pFontVerts[iCurrVert].z = z;
+            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
+            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
+            pFontVerts[iCurrVert++].color = currColour;
+
+            pFontVerts[iCurrVert].x = fX0;
+            pFontVerts[iCurrVert].y = fY1;
+            pFontVerts[iCurrVert].z = z;
+            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
+            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
+            pFontVerts[iCurrVert++].color = currColour;
+
+            pFontVerts[iCurrVert].x = fX0;
+            pFontVerts[iCurrVert].y = fY1;
+            pFontVerts[iCurrVert].z = z;
+            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
+            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
+            pFontVerts[iCurrVert++].color = currColour;
+
+            pFontVerts[iCurrVert].x = fX1;
+            pFontVerts[iCurrVert].y = fY0;
+            pFontVerts[iCurrVert].z = z;
+            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
+            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
+            pFontVerts[iCurrVert++].color = currColour;
+
+            pFontVerts[iCurrVert].x = fX1;
+            pFontVerts[iCurrVert].y = fY1;
+            pFontVerts[iCurrVert].z = z;
+            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
+            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
+            pFontVerts[iCurrVert++].color = currColour;
+
+            fX0 += (float)charData.m_size.X();
+
+            if (bYAxisInversion) {
+                float tmp = fY1;
+                fY1 = fY0;
+                fY0 = tmp;
+            }
+
+            iChar++;
+        }
+
+        // Finished, unlock the buffer, set the stream.
+        CVBIBManager::Get()->UnlockDynamicVertexBuffer(pFontDynVB);
+
+        // Render.
+        CVRAMManager::Get()->SetTexture(m_pFontTex->GetTexHandle(), 0);
+        CVBIBManager::Get()->SetVertexStream(pFontDynVB);
+        pDev->SetFVF(D3DFVF_UIFONTVERTEX2);
+        pDev->DrawPrimitive(D3DPT_TRIANGLELIST,
+            pFontDynVB->dwFirstElementOffset,
+            iCurrVert / 3);
+
+        // Reset the texture unit setup.
+        pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, TRUE); //imago 8/6/09
+        pDev->SetRenderState(D3DRS_LIGHTING, dwCurrentLighting);
+    }
+
+	void DrawStringScreenSpace(	const WinPoint &	point,
 						const ZString &		str,
 						const Color &		colour )
 	{
