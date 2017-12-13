@@ -512,6 +512,13 @@ public:
         {
             BYTE ch = str[iChar];
 
+            if (ch == START_COLOR_CODE) {
+                iChar += 10;
+                if( iChar >= str.GetLength() )
+                    break;
+                continue;
+            }
+
             const CharData&	charData = m_data[ch];
 
             fX1 = fX0 + (float)charData.m_size.X();
