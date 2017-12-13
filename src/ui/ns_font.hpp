@@ -11,11 +11,11 @@ public:
     static void AddNamespace(sol::state* m_pLua) {
         sol::table table = m_pLua->create_table();
 
-        table["Create"] = [](std::string name, int size, sol::optional<sol::table> object) {
-            std::map<std::string, bool> props = {
-                { "Bold", false },
-                { "Italic", false },
-                { "Underline", false }
+        table["Create"] = [](std::string name, TRef<Number> size, sol::optional<sol::table> object) {
+            std::map<std::string, TRef<Boolean>> props = {
+                { "Bold", new Boolean(false) },
+                { "Italic", new Boolean(false) },
+                { "Underline", new Boolean(false) }
             };
 
             if (object) {
@@ -24,13 +24,13 @@ public:
                     if (props.find(strKey) == props.end()) {
                         throw std::runtime_error("Unknown key. Use 'Bold', 'Italic', 'Underline'");
                     }
-                    props[strKey] = value.as<bool>();
+                    props[strKey] = value.as<TRef<Boolean>>();
                 });
             }
 
-            return (TRef<FontValue>)new FontValue(
-                CreateEngineFont(name, (int)size, 0, props["Bold"], props["Italic"], props["Underline"])
-            );
+            return (TRef<FontValue>)(FontValue*)new TransformedValue4<TRef<IEngineFont>, float, bool, bool, bool>([name](float size, bool bold, bool italic, bool underline) {
+                return CreateEngineFont(name, std::min(26, (int)size), 0, bold, italic, underline);
+            }, size, props["Bold"], props["Italic"], props["Underline"]);
         };
 
         table["Height"] = [](FontValue* font) {
