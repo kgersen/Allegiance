@@ -2,6 +2,19 @@
 #include "valuetransform.h"
 
 
+template <typename Type>
+class EqualsTransform : public TransformedValue2<bool, Type, Type> {
+    typedef TRef<TStaticValue<Type>> WrappedType;
+
+public:
+    EqualsTransform(WrappedType const& a, WrappedType const& b) :
+        TransformedValue2([](ZString a, ZString b) {
+        return a == b;
+    }, a, b)
+    {
+    }
+};
+
 class SubtractNumber : public Number {
 public:
     SubtractNumber(Number* pvalue0, Number* pvalue1) :
@@ -160,6 +173,11 @@ TRef<StringValue> NumberTransform::ToString(Number* pNumber, int decimals)
         return ZString(s.c_str());
         //return round(a * multiplier) / multiplier;
     }, pNumber);
+}
+
+TRef<Boolean> NumberTransform::Equals(Number* a, Number* b)
+{
+    return new EqualsTransform<float>(a, b);
 }
 
 TRef<Number> NumberTransform::Round(Number* pNumber, int decimals)
@@ -429,6 +447,11 @@ public:
     }
 };
 
+TRef<Boolean> BooleanTransform::Equals(Boolean* a, Boolean* b)
+{
+    return new EqualsTransform<bool>(a, b);
+}
+
 TRef<Boolean> BooleanTransform::And(Boolean* pvalue1, Boolean* pvalue2)
 {
     return new AndBoolean(pvalue1, pvalue2);
@@ -486,6 +509,11 @@ TRef<Number> StringTransform::Length(StringValue* a)
     return (TRef<Number>)new TransformedValue<float, ZString>([](ZString str) {
         return (float)str.GetLength();
     }, a);
+}
+
+TRef<Boolean> StringTransform::Equals(StringValue* a, StringValue* b)
+{
+    return new EqualsTransform<ZString>(a, b);
 }
 
 TRef<StringValue> StringTransform::Concat(StringValue* a, StringValue* b)

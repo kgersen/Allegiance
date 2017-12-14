@@ -30,6 +30,10 @@ public:
             return NumberTransform::ToString(wrapValue<float>(a), decimals.value_or(0));
         };
 
+        table["Equals"] = [](TRef<Number> const& a, TRef<Number> const& b) {
+            return NumberTransform::Equals(a, b);
+        };
+
         table["Add"] = [](sol::object a, sol::object b) {
             return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
         };
@@ -136,6 +140,10 @@ public:
 
         table["CreateEventSink"] = [](bool a) {
             return (TRef<SimpleModifiableValue<bool>>)new SimpleModifiableValue<bool>(a);
+        };
+
+        table["Equals"] = [](TRef<Boolean> const& a, TRef<Boolean> const& b) {
+            return BooleanTransform::Equals(a, b);
         };
 
         table["And"] = [](sol::object a, sol::object b) {

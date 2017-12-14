@@ -8,6 +8,7 @@
 class NumberTransform {
 public:
     static TRef<StringValue> ToString(Number* a, int decimals);
+    static TRef<Boolean> Equals(Number* a, Number* b);
 
     static TRef<Number> Add(Number* a, Number* b);
     static TRef<Number> Subtract(Number* a, Number* b);
@@ -51,6 +52,8 @@ public:
 
 class BooleanTransform {
 public:
+    static TRef<Boolean> Equals(Boolean* a, Boolean* b);
+
     static TRef<Boolean> And(Boolean* a, Boolean* b);
     static TRef<Boolean> Or(Boolean* a, Boolean* b);
     static TRef<Boolean> Not(Boolean* a);
@@ -62,6 +65,8 @@ public:
 class StringTransform {
 public:
     static TRef<Number> Length(StringValue* a);
+    static TRef<Boolean> Equals(StringValue* a, StringValue* b);
+
     static TRef<StringValue> Concat(StringValue* a, StringValue* b);
 };
 

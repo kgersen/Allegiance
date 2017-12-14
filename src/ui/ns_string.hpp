@@ -56,6 +56,10 @@ public:
             return StringTransform::Concat(wrapString(a), wrapString(b));
         };
 
+        table["Equals"] = [](TRef<StringValue> const& a, TRef<StringValue> const& b) {
+            return StringTransform::Equals(a, b);
+        };
+
         table["Switch"] = [](sol::object value, sol::table table, sol::optional<sol::object> valueDefault) {
             int count = table.size();
 
