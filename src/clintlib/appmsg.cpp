@@ -1840,7 +1840,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         if (pfmOC->commandID == c_cidMine) {
                             PlayerInfo* ppi = (PlayerInfo*)(pship->GetPrivateData());
                             if (ppi && pmodel && ppi->LastSeenSector() != pmodel->GetCluster()->GetObjectID())
-                                PostText(false, "%s: Going to mine in %s.", pship->GetName(), pmodel->GetCluster()->GetName());
+                                PostText(false, "%s: Going to mine %s in %s.", pship->GetName(), pmodel->GetName(), pmodel->GetCluster()->GetName());
                         }
                     }
                     else if (pfmOC->command == c_cmdCurrent)
