@@ -297,10 +297,10 @@ public:
         if (m_pClientEventSink && trekClient.GetClientEventSource()) {
             trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
         }
-        trekClient.DisconnectLobby();
         if (m_pServerlistChangedSink) {
             trekClient.GetMissionList()->GetChangedEvent()->RemoveSink(m_pServerlistChangedSink);
         }
+        trekClient.DisconnectLobby();
     }
 
     TRef<IEventSink> GetLoginSink() {
@@ -350,8 +350,14 @@ public:
 
         trekClient.DisconnectLobby();
 
+        if (m_pClientEventSink && trekClient.GetClientEventSource()) {
+            trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
+            m_pClientEventSink = nullptr;
+        }
+
         if (m_pServerlistChangedSink) {
             trekClient.GetMissionList()->GetChangedEvent()->RemoveSink(m_pServerlistChangedSink);
+            m_pServerlistChangedSink = nullptr;
         }
 
         m_state->SetValue(LoggedOutState(new UiStateValue(NoErrorState()), this->GetLoginSink()));
@@ -454,6 +460,10 @@ public:
         m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
 
         //finish login process
+        if (m_pServerlistChangedSink) {
+            //we are already connected?
+            ZAssert(false);
+        }
         m_pServerlistChangedSink = new CallbackSink([this]() {
             if (m_state->GetValue().GetName() != "Logged in") {
                 ZAssert(false);
