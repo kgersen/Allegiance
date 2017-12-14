@@ -128,39 +128,66 @@ sol::function Loader::LoadScript(std::string subpath) {
     return function;
 }
 
-class Executor {
+template <class T>
+void Initialize(T value) {
+}
 
-public:
+template <>
+void Initialize(TRef<Image> value) {
+    value->Update();
+}
 
-    template <class T, typename... TArgs>
-    T Execute(sol::function script, TArgs ... args) {
-        try {
-            sol::function_result result = script.call(args...);
-            if (result.valid() == false) {
-                sol::error err = result;
-                throw err;
-            }
+template <>
+void Initialize(TRef<TStaticValue<float>> value) {
+    value->Update();
+}
 
-            sol::optional<sol::object> object = result;
-            if (!object || object.value().is<T>() == false) {
-                throw std::runtime_error("Expected return value to be of a specific type");
-            }
-            T image = result;
-            return image;
+template <>
+void Initialize(TRef<TStaticValue<bool>> value) {
+    value->Update();
+}
+
+template <>
+void Initialize(TRef<TStaticValue<ZString>> value) {
+    value->Update();
+}
+
+template <class T, typename... TArgs>
+T Executor::Execute(sol::function script, TArgs ... args) {
+    try {
+        m_countInScriptLevel += 1;
+        sol::function_result function_result = script.call(args...);
+        if (function_result.valid() == false) {
+            sol::error err = function_result;
+            throw err;
         }
-        catch (const sol::error& e) {
-            throw std::runtime_error(e.what());
+
+        sol::optional<sol::object> object = function_result;
+        if (!object || object.value().is<T>() == false) {
+            throw std::runtime_error("Expected return value to be of a specific type");
         }
-        catch (const std::runtime_error& e) {
-            throw e;
-        }
-        catch (const std::exception& e) {
-            throw std::runtime_error(e.what());
-        }
-        catch (...) {
-            ZAssert(false);
-            throw std::runtime_error("Unknown error");
-        }
+        T result = function_result;
+        Initialize<T>(result);
+
+        m_countInScriptLevel -= 1;
+        return result;
+    }
+    catch (const sol::error& e) {
+        m_countInScriptLevel -= 1;
+        throw std::runtime_error(e.what());
+    }
+    catch (const std::runtime_error& e) {
+        m_countInScriptLevel -= 1;
+        throw e;
+    }
+    catch (const std::exception& e) {
+        m_countInScriptLevel -= 1;
+        throw std::runtime_error(e.what());
+    }
+    catch (...) {
+        m_countInScriptLevel -= 1;
+        ZAssert(false);
+        throw std::runtime_error("Unknown error");
     }
 };
 
@@ -176,7 +203,8 @@ LuaScriptContext::LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, 
         stringArtPath + "/PBUI",
         stringArtPath
     })),
-    m_funcOpenWebsite(funcOpenWebsite)
+    m_funcOpenWebsite(funcOpenWebsite),
+    m_executor(Executor())
 {
     m_loader.InitNamespaces(*this);
 }
@@ -211,22 +239,29 @@ std::function<void(std::string)> LuaScriptContext::GetOpenWebsiteFunction() {
 
 template <typename T, typename... TArgs>
 std::function<T(TArgs...)> LuaScriptContext::WrapCallback(sol::function callback, T valueDefault) {
-    return [callback, valueDefault](TArgs ... args) {
-        Executor executor = Executor();
+    Executor* executor = GetExecutor();
+    return [executor, callback, valueDefault](TArgs ... args) {
         try {
             //WriteLog("(Callback function): Started");
 
             auto start = std::chrono::high_resolution_clock::now();
 
-            T result = executor.Execute<T, TArgs...>(callback, args...);
+            T result = executor->Execute<T, TArgs...>(callback, args...);
 
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
             long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
-            WriteLog("(Callback function): Finished " + std::to_string(milliseconds) + " ms");
+            if (!executor->IsInScript()) {
+                //only output that we have done anything if this is the main script
+                WriteLog("(Callback function): Finished " + std::to_string(milliseconds) + " ms");
+            }
             return result;
         }
         catch (const std::runtime_error& e) {
+            if (executor->IsInScript()) {
+                //if we are in a script we are wrapped in a try-catch which can catch this
+                throw e;
+            }
             WriteLog(std::string("(Callback function): ERROR ") + e.what());
             return valueDefault;
         }
@@ -318,7 +353,7 @@ public:
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {
         std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
 
-        Executor executor = Executor();
+        Executor* executor = pContext->GetExecutor();
 
         auto path = screenConfiguration->GetPath();
 
@@ -330,7 +365,7 @@ public:
 
             auto start = std::chrono::high_resolution_clock::now();
 
-            TRef<Image> image = executor.Execute<TRef<Image>>(script);
+            TRef<Image> image = executor->Execute<TRef<Image>>(script);
 
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
             long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();

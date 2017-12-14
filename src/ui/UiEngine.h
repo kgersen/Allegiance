@@ -77,6 +77,23 @@ public:
     sol::function LoadScript(std::string subpath);
 };
 
+class Executor {
+private:
+    int m_countInScriptLevel;
+
+public:
+    Executor() :
+        m_countInScriptLevel(0)
+    {}
+
+    bool IsInScript() {
+        return m_countInScriptLevel > 0;
+    }
+
+    template <class T, typename... TArgs>
+    T Execute(sol::function script, TArgs ... args);
+};
+
 class LuaScriptContext {
 private:
     TRef<Engine> m_pEngine;
@@ -85,6 +102,8 @@ private:
     PathFinder m_pathFinder;
     std::shared_ptr<UiScreenConfiguration> m_pConfiguration;
     std::function<void(std::string)> m_funcOpenWebsite;
+
+    Executor m_executor;
 
     sol::state m_lua;
 
@@ -100,6 +119,10 @@ public:
     Engine* GetEngine();
 
     ISoundEngine* GetSoundEngine();
+
+    Executor* GetExecutor() {
+        return &m_executor;
+    }
 
     IEventSink& GetExternalEventSink(std::string name);
 
