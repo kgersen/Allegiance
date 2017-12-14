@@ -468,11 +468,10 @@ public:
 
         CD3DDevice9 * pDev = pDev->Get();
 
-        D3DMATRIX matrix;
-        pDev->GetTransform(D3DTS_PROJECTION, &matrix);
-
+        // when we are not resizing, we would like nearest point sampling. when we are upscaling, (bi)linear. This seems to achieve that.
         pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
         pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+
         pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE); //imago 8/6/09
 
         DWORD dwCurrentLighting;
