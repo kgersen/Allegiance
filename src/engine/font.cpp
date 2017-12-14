@@ -468,8 +468,12 @@ public:
 
         CD3DDevice9 * pDev = pDev->Get();
 
-        pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+        D3DMATRIX matrix;
+        pDev->GetTransform(D3DTS_PROJECTION, &matrix);
+
+        pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
         pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+        pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE); //imago 8/6/09
 
         DWORD dwCurrentLighting;
         pDev->GetRenderState(D3DRS_LIGHTING, &dwCurrentLighting);
@@ -479,13 +483,13 @@ public:
         pDev->SetRenderState(D3DRS_COLORVERTEX, TRUE);
         pDev->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
 
-        pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE); //imago 8/6/09
-
                                                                  // Generate the geometry for rendering the text.
         int iChar = 0;
         int iCurrVert = 0;
-        fX0 = (float)point.X();
-        fY0 = (float)point.Y();
+
+        // If we are going to sample using nearest point, we want to have the characters on integer boundaries. Just force it in any case.
+        fX0 = (float)(int)point.X();
+        fY0 = (float)(int)point.Y();
 
         // Sanity check, this is the most we can fit into the current font dyn VB.
         // Should be enough though.
