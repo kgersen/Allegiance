@@ -2305,6 +2305,12 @@ public:
                             else
                                 pszCursor = AWF_CURSOR_DEFAULT;
                         }
+
+                        // show object name
+                        TRef<IEngineFont> pfont = TrekResources::SmallFont();
+                        float   w = (float)(pfont->GetTextExtent(pmodelPick->GetName()).X());
+                        Point   offset = Point(-w / 2, -8 - pfont->GetHeight());
+                        pcontext->DrawString(pfont, (psidePick ? psidePick->GetColor() : Color::White()), m_pointMouseStop + offset, ZString(pmodelPick->GetName()));
                     }
                 }
 
