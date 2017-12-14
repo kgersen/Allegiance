@@ -2310,7 +2310,7 @@ public:
                         TRef<IEngineFont> pfont = TrekResources::SmallFont();
                         float   w = (float)(pfont->GetTextExtent(pmodelPick->GetName()).X());
                         Point   offset = Point(-w / 2, -8 - pfont->GetHeight());
-                        pcontext->DrawString(pfont, (psidePick ? psidePick->GetColor() : Color::White()), m_pointMouseStop + offset, ZString(pmodelPick->GetName()));
+                        pcontext->DrawString(pfont, (psidePick ? psidePick->GetColor() : Color::White()), m_pointMouseStop + offset, ZString(GetModelName(pmodelPick)));
                     }
                 }
 
