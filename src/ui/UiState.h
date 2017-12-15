@@ -5,6 +5,7 @@
 #endif
 #include "model.h"
 
+#include <functional>
 #include <list>
 #include <boost/any.hpp>
 
@@ -110,9 +111,10 @@ protected:
     }
 
 public:
-
-    UiList(std::list<EntryType> list) :
-        m_list(list) 
+    template<class... T>
+    UiList(std::list<EntryType> list, T ... values) :
+        m_list(list),
+        Value(values...)
     {}
 
     const std::list<EntryType>& GetList() {
@@ -148,3 +150,34 @@ public:
 
 typedef UiList<TRef<UiObjectContainer>> ContainerList;
 typedef UiList<TRef<Image>> ImageList;
+
+
+template <typename ResultEntryType, typename OriginalEntryType>
+class MappedList : public UiList<ResultEntryType> {
+private:
+    std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> m_callback;
+
+public:
+    MappedList(const TRef<UiList<OriginalEntryType>>& list, std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> callback) :
+        m_callback(callback),
+        UiList({}, list)
+    {
+    }
+
+    TRef<UiList<OriginalEntryType>> GetSourceList() {
+        return (TRef<UiList<OriginalEntryType>>)(UiList<OriginalEntryType>*)GetChild(0);
+    }
+
+    void Evaluate() override {
+        std::list<ResultEntryType> list;
+        int i = 0;
+        for (auto entry : GetSourceList()->GetList()) {
+            TRef<Number> index = new Number((float)i);
+
+            list.push_back(m_callback(entry, index));
+            ++i;
+        }
+
+        GetListInternal() = list;
+    }
+};

@@ -3,31 +3,25 @@
 
 #include "ui.h"
 #include "items.hpp"
+#include "UiState.h"
+#include <list>
 
-template <typename ResultEntryType, typename OriginalEntryType>
-class MappedList : public UiList<ResultEntryType> {
-private:
-    TRef<UiList<OriginalEntryType>> m_sourceList;
-    std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> m_callback;
+template <typename OriginalEntryType>
+class ListCount : public Number {
 
 public:
-    MappedList(UiList<OriginalEntryType>* list, std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> callback) :
-        m_sourceList(list),
-        m_callback(callback),
-        UiList({})
-    {}
+    ListCount(TRef<UiList<OriginalEntryType>> list) :
+        Number(list)
+    {
+    }
+
+    TRef<UiList<OriginalEntryType>> GetSourceList() {
+        return (TRef<UiList<OriginalEntryType>>)(UiList<OriginalEntryType>*)GetChild(0);
+    }
 
     void Evaluate() override {
-        std::list<ResultEntryType> list;
-        int i = 0;
-        for (auto entry : m_sourceList->GetList()) {
-            TRef<Number> index = new Number((float)i);
-
-            list.push_back(m_callback(entry, index));
-            ++i;
-        }
-
-        GetListInternal() = list;
+        const std::list<OriginalEntryType>& list = GetSourceList()->GetList();
+        GetValueInternal() = (float)(list.size());
     }
 };
 
@@ -36,18 +30,16 @@ public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
 
-        table["MapToImages"] = sol::overload(
-            [&context](TRef<ContainerList> list, sol::function callback) {
-                auto wrapped_callback = context.WrapCallback<TRef<Image>, TRef<UiObjectContainer>, TRef<Number>>(callback, Image::GetEmpty());
+        table["Map"] = [&context](TRef<UiList<sol::object>> list, sol::function callback) {
+            auto wrapped_callback = context.WrapCallback<sol::object, sol::object, TRef<Number>>(callback, sol::nil);
 
-                return (TRef<ImageList>)new MappedList<TRef<Image>, TRef<UiObjectContainer>>(list, wrapped_callback);
-            },
-            [&context](TRef<UiList<TRef<StringValue>>> list, sol::function callback) {
-                auto wrapped_callback = context.WrapCallback<TRef<Image>, TRef<StringValue>, TRef<Number>>(callback, Image::GetEmpty());
+            return (TRef<UiList<sol::object>>)new MappedList<sol::object, sol::object>(list, wrapped_callback);
+        };
+        table["MapToImages"] = table["Map"];
 
-                return (TRef<ImageList>)new MappedList<TRef<Image>, TRef<StringValue>>(list, wrapped_callback);
-            }
-        );
+        table["Count"] = [](TRef<UiList<sol::object>> list) {
+            return (TRef<Number>)new ListCount<sol::object>(list);
+        };
 
         context.GetLua().set("List", table);
     }

@@ -204,6 +204,80 @@ namespace sol {
         //list
 
         template <typename T>
+        TRef<UiList<sol::object>> ConvertListTypeToGenericList(lua_State* L, TRef<UiList<T>> list) {
+            return new MappedList<sol::object, T>(list, [L](T entry, TRef<Number> index) {
+                return (sol::object)sol::make_object<T>(L, entry);
+            });
+        }
+
+        template <>
+        struct checker<TRef<UiList<sol::object>>, type::userdata> {
+            typedef TRef<UiList<sol::object>> return_type;
+
+            template <typename Handler>
+            static bool check(lua_State* L, int index, Handler&& handler, record& tracking) {
+                int absolute_index = lua_absindex(L, index);
+
+                if (sol::stack::check_usertype<return_type>(L, absolute_index)) {
+                    tracking.use(1);
+                    return true;
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<Image>>>>(L, absolute_index)) {
+                    tracking.use(1);
+                    return true;
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<StringValue>>>>(L, absolute_index)) {
+                    tracking.use(1);
+                    return true;
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<Boolean>>>>(L, absolute_index)) {
+                    tracking.use(1);
+                    return true;
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<Number>>>>(L, absolute_index)) {
+                    tracking.use(1);
+                    return true;
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<UiObjectContainer>>>>(L, absolute_index)) {
+                    tracking.use(1);
+                    return true;
+                }
+                handler(L, index, type::userdata, type::userdata, "Expected a list");
+                return false;
+            }
+        };
+
+        template <>
+        struct getter<TRef<UiList<sol::object>>> {
+            typedef TRef<UiList<sol::object>> return_type;
+
+            static return_type get(lua_State* L, int index, record& tracking) {
+                int absolute_index = lua_absindex(L, index);
+
+                if (sol::stack::check_usertype<return_type>(L, absolute_index)) {
+                    return getter<detail::as_value_tag<return_type>>{}.get(L, index, tracking);
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<Image>>>>(L, absolute_index)) {
+                    return ConvertListTypeToGenericList<TRef<Image>>(L, stack::get_usertype<TRef<UiList<TRef<Image>>>>(L, absolute_index, tracking));
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<StringValue>>>>(L, absolute_index)) {
+                    return ConvertListTypeToGenericList<TRef<StringValue>>(L, stack::get_usertype<TRef<UiList<TRef<StringValue>>>>(L, absolute_index, tracking));
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<Number>>>>(L, absolute_index)) {
+                    return ConvertListTypeToGenericList<TRef<Number>>(L, stack::get_usertype<TRef<UiList<TRef<Number>>>>(L, absolute_index, tracking));
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<Boolean>>>>(L, absolute_index)) {
+                    return ConvertListTypeToGenericList<TRef<Boolean>>(L, stack::get_usertype<TRef<UiList<TRef<Boolean>>>>(L, absolute_index, tracking));
+                }
+                if (stack::check_usertype<TRef<UiList<TRef<UiObjectContainer>>>>(L, absolute_index)) {
+                    return ConvertListTypeToGenericList<TRef<UiObjectContainer>>(L, stack::get_usertype<TRef<UiList<TRef<UiObjectContainer>>>>(L, absolute_index, tracking));
+                }
+
+                throw std::runtime_error("Unknown type to cast");
+            }
+        };
+
+        template <typename T>
         struct checker<TRef<UiList<TRef<T>>>, type::userdata> {
             typedef TRef<UiList<TRef<T>>> return_type;
 
@@ -216,8 +290,24 @@ namespace sol {
                     tracking.use(1);
                     return true;
                 }
+
+                // generic list container. We currently check entries of the initial value, not that useful maybe...
+                if (sol::stack::check_usertype<TRef<UiList<sol::object>>>(L, absolute_index)) {
+                    TRef<UiList<sol::object>> list = stack::get<TRef<UiList<sol::object>>>(L, absolute_index);
+                    
+                    for (sol::object entry : list->GetList()) {
+                        if (entry.is<TRef<T>>() == false) {
+                            handler(L, index, type::userdata, type::userdata, "Not all entries are of the correct type");
+                            return false;
+                        }
+                    }
+                    tracking.use(1);
+                    return true;
+                }
+
+                //table
                 record inner_tracking = record();
-                if (stack::check<table>(L, absolute_index, sol::no_panic, inner_tracking)) {
+                if (stack::check<table>(L, absolute_index, sol::no_panic)) {
                     record inner_tracking = record();
                     table table_list = stack::get<table>(L, absolute_index, inner_tracking);
 
@@ -226,6 +316,7 @@ namespace sol {
                     for (int i = 1; i <= count; ++i) {
                         sol::object entry = table_list.get<sol::object>(i);
                         if (entry.is<TRef<T>>() == false) {
+                            handler(L, index, type::userdata, type::userdata, "Not all entries are of the correct type");
                             return false;
                         }
                     }
@@ -248,19 +339,29 @@ namespace sol {
                 if (sol::stack::check_usertype<return_type>(L, absolute_index)) {
                     return getter<detail::as_value_tag<return_type>>{}.get(L, index, tracking);
                 }
+
+                // generic list container. Currently makes a copy of the list
+                if (sol::stack::check_usertype<TRef<UiList<sol::object>>>(L, absolute_index)) {
+                    TRef<UiList<sol::object>> list = stack::get_usertype<TRef<UiList<sol::object>>>(L, absolute_index, tracking);
+
+                    return new MappedList<TRef<T>, sol::object>(list, [L](sol::object entry, TRef<Number> index) {
+                        return entry.as<TRef<T>>();
+                    });
+                }
+
+                //table. Makes a copy.
                 if (stack::check<table>(L, absolute_index)) {
                     table table_list = stack::get<table>(L, absolute_index, tracking);
 
-                    std::list<TRef<T>> list = {};
+                    std::list<TRef<T>> result_list = {};
 
                     int count = table_list.size();
 
                     for (int i = 1; i <= count; ++i) {
-                        auto entry = table_list.get<TRef<T>>(i);
-                        list.push_back(entry);
+                        result_list.push_back(table_list.get<TRef<T>>(i));
                     }
 
-                    return_type result = new UiList<TRef<T>>(list);
+                    return_type result = new UiList<TRef<T>>(result_list);
                     return result;
                 }
 
