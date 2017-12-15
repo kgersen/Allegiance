@@ -515,75 +515,101 @@ public:
         {
             BYTE ch = str[iChar];
 
-            if (ch == START_COLOR_CODE) {
-                iChar += 10;
-                if( iChar >= str.GetLength() )
+            switch (ch)
+            {
+                case START_COLOR_CODE:
+                {
+                    // Rock: I believe this is actually incorrect for when the code is entered using the client, in which case it has become a single byte representing the number 129.
+                    // In that case, a character is ignored.
+                    iChar += 2;
+
+                    // Read the color, in the form rrggbbaa, where each pair of digits is a hex value.
+                    if (IsValidColourCode(str, iChar) == true)
+                    {
+                        currColour = ReadColourD3D(str, iChar);
+                    }
+                    else {
+                        //invalid: Skip what is supposed to be the color code
+                        iChar += 8;
+                    }
+
+                    if (iChar >= str.GetLength())
+                        break;
+                }
+                break;
+
+                case END_COLOR_CODE:
+                    iChar += 2;
+                    currColour = originalColor; // kg fix: currColour ended so we restore original color (parameter)
                     break;
-                continue;
+
+                default:
+                {
+                    const CharData&	charData = m_data[ch];
+
+                    fX1 = fX0 + (float)charData.m_size.X();
+                    fY1 = fY0 + (float)charData.m_size.Y();
+                    if (bYAxisInversion) {
+                        float tmp = fY1;
+                        fY1 = fY0;
+                        fY0 = tmp;
+                    }
+                    float z = 0.0f;
+
+                    pFontVerts[iCurrVert].x = fX0;
+                    pFontVerts[iCurrVert].y = fY0;
+                    pFontVerts[iCurrVert].z = z;
+                    pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
+                    pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
+                    pFontVerts[iCurrVert++].color = currColour;
+
+                    pFontVerts[iCurrVert].x = fX1;
+                    pFontVerts[iCurrVert].y = fY0;
+                    pFontVerts[iCurrVert].z = z;
+                    pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
+                    pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
+                    pFontVerts[iCurrVert++].color = currColour;
+
+                    pFontVerts[iCurrVert].x = fX0;
+                    pFontVerts[iCurrVert].y = fY1;
+                    pFontVerts[iCurrVert].z = z;
+                    pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
+                    pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
+                    pFontVerts[iCurrVert++].color = currColour;
+
+                    pFontVerts[iCurrVert].x = fX0;
+                    pFontVerts[iCurrVert].y = fY1;
+                    pFontVerts[iCurrVert].z = z;
+                    pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
+                    pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
+                    pFontVerts[iCurrVert++].color = currColour;
+
+                    pFontVerts[iCurrVert].x = fX1;
+                    pFontVerts[iCurrVert].y = fY0;
+                    pFontVerts[iCurrVert].z = z;
+                    pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
+                    pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
+                    pFontVerts[iCurrVert++].color = currColour;
+
+                    pFontVerts[iCurrVert].x = fX1;
+                    pFontVerts[iCurrVert].y = fY1;
+                    pFontVerts[iCurrVert].z = z;
+                    pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
+                    pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
+                    pFontVerts[iCurrVert++].color = currColour;
+
+                    fX0 += (float)charData.m_size.X();
+
+                    if (bYAxisInversion) {
+                        float tmp = fY1;
+                        fY1 = fY0;
+                        fY0 = tmp;
+                    }
+
+                    iChar++;
+                }
+                break;
             }
-
-            const CharData&	charData = m_data[ch];
-
-            fX1 = fX0 + (float)charData.m_size.X();
-            fY1 = fY0 + (float)charData.m_size.Y();
-            if (bYAxisInversion) {
-                float tmp = fY1;
-                fY1 = fY0;
-                fY0 = tmp;
-            }
-            float z = 0.0f;
-
-            pFontVerts[iCurrVert].x = fX0;
-            pFontVerts[iCurrVert].y = fY0;
-            pFontVerts[iCurrVert].z = z;
-            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
-            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
-            pFontVerts[iCurrVert++].color = currColour;
-
-            pFontVerts[iCurrVert].x = fX1;
-            pFontVerts[iCurrVert].y = fY0;
-            pFontVerts[iCurrVert].z = z;
-            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
-            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
-            pFontVerts[iCurrVert++].color = currColour;
-
-            pFontVerts[iCurrVert].x = fX0;
-            pFontVerts[iCurrVert].y = fY1;
-            pFontVerts[iCurrVert].z = z;
-            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
-            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
-            pFontVerts[iCurrVert++].color = currColour;
-
-            pFontVerts[iCurrVert].x = fX0;
-            pFontVerts[iCurrVert].y = fY1;
-            pFontVerts[iCurrVert].z = z;
-            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU1;
-            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
-            pFontVerts[iCurrVert++].color = currColour;
-
-            pFontVerts[iCurrVert].x = fX1;
-            pFontVerts[iCurrVert].y = fY0;
-            pFontVerts[iCurrVert].z = z;
-            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
-            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV1;
-            pFontVerts[iCurrVert++].color = currColour;
-
-            pFontVerts[iCurrVert].x = fX1;
-            pFontVerts[iCurrVert].y = fY1;
-            pFontVerts[iCurrVert].z = z;
-            pFontVerts[iCurrVert].fU = m_pCharTexData[ch].fU2;
-            pFontVerts[iCurrVert].fV = m_pCharTexData[ch].fV2;
-            pFontVerts[iCurrVert++].color = currColour;
-
-            fX0 += (float)charData.m_size.X();
-
-            if (bYAxisInversion) {
-                float tmp = fY1;
-                fY1 = fY0;
-                fY0 = tmp;
-            }
-
-            iChar++;
         }
 
         // Finished, unlock the buffer, set the stream.
