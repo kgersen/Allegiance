@@ -616,6 +616,9 @@ public:
         CVBIBManager::Get()->UnlockDynamicVertexBuffer(pFontDynVB);
 
         // Render.
+        LPDIRECT3DBASETEXTURE9 pPreviousTexture = nullptr;
+        pDev->GetTexture(0, &pPreviousTexture);
+
         CVRAMManager::Get()->SetTexture(m_pFontTex->GetTexHandle(), 0);
         CVBIBManager::Get()->SetVertexStream(pFontDynVB);
         pDev->SetFVF(D3DFVF_UIFONTVERTEX2);
@@ -624,6 +627,11 @@ public:
             iCurrVert / 3);
 
         // Reset the texture unit setup.
+        pDev->SetTexture(0, pPreviousTexture);
+        if (pPreviousTexture) {
+            pPreviousTexture->Release(); //According to the documentation this must be called to reduce refcounter
+        }
+
         pDev->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, TRUE); //imago 8/6/09
         pDev->SetRenderState(D3DRS_LIGHTING, dwCurrentLighting);
     }
