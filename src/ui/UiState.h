@@ -22,7 +22,7 @@ public:
     }
 
     template <typename Type>
-    Type Get(std::string key) {
+    Type Get(std::string key) const {
         auto found = m_map.find(key);
         if (found == m_map.end()) {
             throw std::runtime_error("Key not found: " + key);
@@ -38,15 +38,15 @@ public:
         }
     }
 
-    TRef<StringValue> GetString(std::string key) {
+    TRef<StringValue> GetString(std::string key) const {
         return Get<TRef<StringValue>>(key);
     }
 
-    TRef<Boolean> GetBoolean(std::string key) {
+    TRef<Boolean> GetBoolean(std::string key) const {
         return Get<TRef<Boolean>>(key);
     }
 
-    TRef<Number> GetNumber(std::string key) {
+    TRef<Number> GetNumber(std::string key) const {
         return Get<TRef<Number>>(key);
     }
 

@@ -216,12 +216,12 @@ public:
                     mapOptions[strKey] = value.as<sol::function>();
                 });
 
-                return (TRef<Image>)new CallbackImage<UiState>([&context, mapOptions](UiState state) {
+                return (TRef<Image>)new CallbackImage<UiState>([&context, mapOptions](const UiState& state) {
                     auto find = mapOptions.find(state.GetName());
                     if (find == mapOptions.end()) {
                         return (TRef<Image>)Image::GetEmpty();
                     }
-                    return (TRef<Image>)context.WrapCallback<TRef<Image>, UiState*>(find->second, Image::GetEmpty())(&state);
+                    return (TRef<Image>)context.WrapCallback<TRef<Image>, const UiState&>(find->second, Image::GetEmpty())(state);
                 }, wrapValue<UiState>(value));
             }
             throw std::runtime_error("Expected value argument of Image.Switch to be either a wrapped or unwrapped bool, int, or string");

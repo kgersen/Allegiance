@@ -52,7 +52,7 @@ public:
 
 template<class OriginalType>
 class CallbackImage : public WrapImage {
-    typedef std::function<TRef<Image>(OriginalType)> CallbackType;
+    typedef std::function<TRef<Image>(const OriginalType&)> CallbackType;
 
     CallbackType m_callback;
 
@@ -82,7 +82,7 @@ public:
 
     void Evaluate()
     {
-        OriginalType value1 = ((TStaticValue<OriginalType>*)GetChild(1))->GetValue();
+        const OriginalType& value1 = ((TStaticValue<OriginalType>*)GetChild(1))->GetValue();
         if (m_bValueChanged) {
             TRef<Image> evaluated = m_callback(value1);
 

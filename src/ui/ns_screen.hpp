@@ -70,23 +70,23 @@ public:
 
         context.GetLua().new_usertype<UiState>("UiState", 
             "new", sol::no_constructor,
-            "GetString", [](UiState* pointer, std::string key) {
-                return pointer->GetString(key);
+            "GetString", [](const UiState& state, std::string key) {
+                return state.GetString(key);
             },
-            "GetNumber", [](UiState* pointer, std::string key) {
-                return pointer->GetNumber(key);
+            "GetNumber", [](const UiState& state, std::string key) {
+                return state.GetNumber(key);
             },
-            "GetBool", [](UiState* pointer, std::string key) {
-                return pointer->GetBoolean(key);
+            "GetBool", [](const UiState& state, std::string key) {
+                return state.GetBoolean(key);
             },
-            "GetState", [](UiState* pointer, std::string key) {
-                return pointer->Get<TRef<UiStateValue>>(key);
+            "GetState", [](const UiState& state, std::string key) {
+                return state.Get<TRef<UiStateValue>>(key);
             },
-            "GetEventSink", [](UiState* pointer, std::string key) {
-                return pointer->Get<TRef<IEventSink>>(key);
+            "GetEventSink", [](const UiState& state, std::string key) {
+                return state.Get<TRef<IEventSink>>(key);
             },
-            "GetList", [](UiState* pointer, std::string key) {
-                return pointer->Get<TRef<ContainerList>>(key);
+            "GetList", [](const UiState& state, std::string key) {
+                return state.Get<TRef<ContainerList>>(key);
             }
         );
 
