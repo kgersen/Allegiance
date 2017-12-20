@@ -13,6 +13,7 @@
 #include <AGC.h>
 #include "resource.h"
 #include "PigSrv.h"
+#include "steam_api.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -159,10 +160,21 @@ HRESULT DoMain(int argc, TCHAR* argv[], TCHAR* envp[])
   // Handle Ctrl+C and other important exiting events
   SetConsoleCtrlHandler(_Module.ConsoleCtrlHandler, true);
 
+  bool steamInitResult = SteamAPI_Init();
+  if (steamInitResult == false)
+  {
+	  // If you are debugging locally, then you need to put steam_appid.txt with 700480 in it next to the Allegaince EXE that you are debugging.
+	  ::MessageBoxA(NULL, "Steam Client is not running. Please launch Steam and try again.", "Error", MB_ICONERROR | MB_OK);
+	  ::exit(-1);
+  }
+
   // Enter a message loop (very last Unlock will post WM_QUIT message)
   MSG msg;
   while (GetMessage(&msg, 0, 0, 0))
-    DispatchMessage(&msg);
+  {
+	  SteamAPI_RunCallbacks();
+	  DispatchMessage(&msg);
+  }
 
   // Revoke our class (factory) objects
   _Module.RevokeClassObjects();
