@@ -764,14 +764,6 @@ unsigned CALLBACK CPig::ThreadThunk(void* pvParam)
 
 HRESULT CPig::ThreadCreatePig(CPig::XThreadParams* ptp, CComObject<CPig>*& pPig)
 {
-  // Get the account dispenser
-  IPigAccountDispenserPtr spDispenser;
-  RETURN_FAILED(GetEngine().get_AccountDispenser(&spDispenser));
-
-  // Get an available account from the dispenser
-  IPigAccountPtr spAccount;
-  RETURN_FAILED(spDispenser->get_NextAvailable(&spAccount));
-
   // Lock static variables during the object creation
   ptp->m_hr = pPig->CreateInstance(&pPig);
   IPigPtr spPig(pPig);
@@ -780,8 +772,7 @@ HRESULT CPig::ThreadCreatePig(CPig::XThreadParams* ptp, CComObject<CPig>*& pPig)
   assert(NULL != spPig);
 
   // Set the pig's account and cache the account name
-  pPig->m_spAccount = spAccount;
-  RETURN_FAILED(spAccount->get_Name(&pPig->m_bstrName));
+  pPig->m_bstrName = "yoohoo";
 
   // Create an instance of a behavior object attached to the pig
   CComObject<CPigBehaviorScript>* pBehavior = NULL;
@@ -2127,7 +2118,6 @@ STDMETHODIMP CPig::get_Money(AGCMoney* pnMoney)
 STDMETHODIMP CPig::Logon()
 {
   _TRACE1("CPig::Logon(): GetCurrentThreadId = %u\n", GetCurrentThreadId());
-  assert(NULL != m_spAccount);
 
   // Validate the current state
   if (PigState_NonExistant != GetCurrentState())
@@ -2158,6 +2148,8 @@ STDMETHODIMP CPig::Logon()
 
   // Copy the pig account name and password to the connection parameters
   lstrcpy(ci.szName, OLE2CA(m_bstrName));
+  //ci.steamAuthTicket = 0;
+  //ci.steamAuthTicketLength = 0;
   
 #ifdef USEAUTH
   // Authenticate the account on the Zone authentication server, if any
