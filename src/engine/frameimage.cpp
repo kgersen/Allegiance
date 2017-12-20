@@ -238,42 +238,6 @@ public:
     void UpdateFrame()
     {
 		m_frameCurrent = GetFrame();
-  //      int newFrame = GetFrame();
-
-  //      if (m_frameCurrent != newFrame) 
-		//{
-  //          BYTE* pd = m_psurface->GetWritablePointer();
-
-  //          //
-  //          // go forward
-  //          //
-
-  //          while (m_frameCurrent < newFrame) {
-  //              PlayRLE(
-  //                  pd,
-  //                  m_prle + m_pdwOffsets[m_frameCurrent],
-  //                  m_prle + m_pdwOffsets[m_frameCurrent + 1]
-  //              );
-
-  //              m_frameCurrent++;
-  //          }
-
-  //          //
-  //          // go backward
-  //          //
-
-  //          while (m_frameCurrent > newFrame) {
-  //              m_frameCurrent--;
-
-  //              PlayRLE(
-  //                  pd,
-  //                  m_prle + m_pdwOffsets[m_frameCurrent],
-  //                  m_prle + m_pdwOffsets[m_frameCurrent + 1]
-  //              );
-  //          }
-
-  //          m_psurface->ReleasePointer();
-  //      }
     }
 
     //////////////////////////////////////////////////////////////////////////////

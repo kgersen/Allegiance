@@ -1186,26 +1186,6 @@ public:
             + point.X() * m_ppf->PixelBytes();
     }
 
-    BYTE* GetWritablePointer()
-    {
-        SurfaceChanged();
-
-/*        if (m_pvideoSurface && (!m_pvideoSurface->IsMemoryShared())) {
-            return m_pvideoSurface->GetPointer();
-        } else {
-            return m_pbits;
-        }*/
-        return m_pbits;
-    }
-
-    BYTE* GetWritablePointer(const WinPoint& point)
-    {
-        return 
-              GetWritablePointer()
-            + point.Y() * GetPitch()
-            + point.X() * m_ppf->PixelBytes();
-    }
-
     void ReleasePointer()
     {
 /*        if (m_pbits == NULL) {
@@ -1226,17 +1206,6 @@ public:
             return m_ppf->MakeColor(GetPixel(point));
         }*/
         return m_ppf->MakeColor(GetPixel(point));
-    }
-
-    void SetPixel(const WinPoint& point, Pixel pixel)
-    {
-        m_ppf->SetPixel(GetWritablePointer(point), pixel);
-    }
-
-    void SetColor(const WinPoint& point, const Color& color)
-    {
-//        ZAssert(m_ppalette == NULL);
-        SetPixel(point, m_ppf->MakePixel(color));
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1303,109 +1272,6 @@ public:
     ) {
         DrawString(pfont, colorShadow, point + WinPoint(1, 1), str);
         DrawString(pfont, color      , point                 , str);
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Format converting blt
-    //
-    //////////////////////////////////////////////////////////////////////////////
-
-    void BltConvert(
-        const WinPoint&           point, 
-              PrivateSurfaceImpl* psurfaceSource, 
-        const WinRect&            rectSource
-    ) {
-        //
-        // Source info
-        //
-
-        PixelFormat* ppfSource   = psurfaceSource->GetPixelFormat();
-        const BYTE*  psource     = psurfaceSource->GetPointer(rectSource.Min());
-        int          pitchSource = psurfaceSource->GetPitch();
-        int          bytesSource = ppfSource->PixelBytes();
-
-        //
-        // Dest info
-        //
-
-        BYTE* pdest     = GetWritablePointer(point);
-        int   bytesDest = m_ppf->PixelBytes();
-        int   pitchDest = GetPitch();
-
-        //
-        // Do the appropriate blt
-        //
-
-        if (
-               bytesSource == 2 
-            && bytesDest   == 2
-        ) {
-            ZAssert(ppfSource->RedSize()  == 0x1f);
-            ZAssert(ppfSource->BlueSize() == 0x1f);
-
-            ZAssert(m_ppf->RedSize()  == 0x1f);
-            ZAssert(m_ppf->BlueSize() == 0x1f);
-
-            if (ppfSource->GreenSize() == 0x1f) {
-                //
-                // Convert 555 to 565
-                //
-
-                ZAssert(m_ppf->GreenSize() == 0x3f);
-
-                for (int y = rectSource.YSize(); y > 0; y--) {
-                    for (int x = 0; x < rectSource.XSize(); x++) {
-                        WORD wSource = ((WORD*)psource)[x];
-                        WORD wDest   = 
-                              ((wSource & 0xffe0) << 1)
-                            | (wSource & 0x1f);
-
-                        ((WORD*)pdest)[x] = wDest;
-                    }
-                    psource += pitchSource;
-                    pdest   += pitchDest;
-                }
-            } else {
-                //
-                // Convert 565 to 555
-                //
-
-                ZAssert(ppfSource->GreenSize() == 0x3f);
-                ZAssert(m_ppf    ->GreenSize() == 0x1f);
-
-                for (int y = rectSource.YSize(); y > 0; y--) {
-                    for (int x = 0; x < rectSource.XSize(); x++) {
-                        WORD wSource = ((WORD*)psource)[x];
-                        WORD wDest   = 
-                              ((wSource >> 1) & 0xffe0)
-                            | (wSource & 0x1f);
-
-                        ((WORD*)pdest)[x] = wDest;
-                    }
-                    psource += pitchSource;
-                    pdest   += pitchDest;
-                }
-            }
-        } else {
-            //
-            // Not going to or from an important format so go through the slow code
-            //
-
-            for (int y = rectSource.YSize(); y > 0; y--) {
-                for (int x = 0; x < rectSource.XSize(); x++) {
-                    m_ppf->SetColor(
-                        pdest + x * bytesDest,
-                        ppfSource->GetColor(psource + x * bytesSource)
-                    );
-                }
-                psource += pitchSource;
-                pdest   += pitchDest;
-            }
-        }
-
-        psurfaceSource->ReleasePointer();
-        ReleasePointer();
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1655,15 +1521,6 @@ public:
                 psurfaceSource->GetSize()
             )
         );
-
-		if( ( bLocalCopy == true ) &&
-			( psurfaceSource->GetWritablePointer() != NULL ) )
-		{
-            ZAssert( m_pbits == NULL );
-			m_pitch = psurfaceSource->GetPitch();
-			m_pbits = new BYTE[ psurfaceSource->GetSize().Y() * m_pitch ]; //Fix memory leak -Imago 8/2/09
-			memcpy( m_pbits, psurfaceSource->GetWritablePointer(), m_size.Y() * m_pitch );
-		}
     }
 
     void BitBltFromCenter(const WinPoint& point, Surface* psurfaceSource)

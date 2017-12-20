@@ -122,13 +122,7 @@ public:
     virtual int   GetPitch()                                          = 0;
     virtual const BYTE* GetPointer()                                  = 0;
     virtual const BYTE* GetPointer(const WinPoint& point)             = 0;
-    virtual BYTE* GetWritablePointer()                                = 0;
-    virtual BYTE* GetWritablePointer(const WinPoint& point)           = 0;
     virtual void  ReleasePointer()                                    = 0;
-    virtual Pixel GetPixel(const WinPoint& point)                     = 0;
-    virtual void  SetPixel(const WinPoint& point, Pixel pixel)        = 0;
-    virtual Color GetColor(const WinPoint& point)                     = 0;
-    virtual void  SetColor(const WinPoint& point, const Color& color) = 0;
 
 	virtual TEXHANDLE		GetTexHandle()							  = 0;
 

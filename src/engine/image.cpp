@@ -676,21 +676,7 @@ TRef<Surface> AnimatedImage::GetSurface()
 
 MouseResult AnimatedImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
 {
-    //  , AnimatedImage should be a vector of images instead of a vector of psurfaces
-
-    Surface* psurface = GetSurface();
-
-    bool bHit =
-           (!psurface->HasColorKey())
-        || psurface->GetColor(WinPoint((int)point.X(), (int)point.Y())) != psurface->GetColorKey();
-
-    psurface->ReleasePointer();
-
-    if (bHit) {
-        return MouseResultHit();
-    }
-
-    return MouseResult();
+    return MouseResultHit();
 }
 
 //////////////////////////////////////////////////////////////////////////////
