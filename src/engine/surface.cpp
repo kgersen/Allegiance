@@ -1168,46 +1168,6 @@ public:
         return m_pitch;
     }
 
-    const BYTE* GetPointer()
-    {
-/*        if (m_pvideoSurface && (!m_pvideoSurface->IsMemoryShared())) {
-            return m_pvideoSurface->GetPointer();
-        } else {
-            return m_pbits;
-        }*/
-		return m_pbits;
-    }
-
-    const BYTE* GetPointer(const WinPoint& point)
-    {
-        return 
-              GetPointer()
-            + point.Y() * GetPitch()
-            + point.X() * m_ppf->PixelBytes();
-    }
-
-    void ReleasePointer()
-    {
-/*        if (m_pbits == NULL) {
-            m_pvideoSurface->ReleasePointer();
-        }*/
-    }
-
-    Pixel GetPixel(const WinPoint& point)
-    {
-        return m_ppf->GetPixel(GetPointer(point));
-    }
-
-    Color GetColor(const WinPoint& point)
-    {
-/*        if (m_ppalette) {
-            return m_ppalette->GetColor(GetPixel(point).Value());
-        } else {
-            return m_ppf->MakeColor(GetPixel(point));
-        }*/
-        return m_ppf->MakeColor(GetPixel(point));
-    }
-
     //////////////////////////////////////////////////////////////////////////////
     //
     // Clipping and transforms

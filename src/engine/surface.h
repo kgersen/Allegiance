@@ -120,9 +120,6 @@ public:
     //
 
     virtual int   GetPitch()                                          = 0;
-    virtual const BYTE* GetPointer()                                  = 0;
-    virtual const BYTE* GetPointer(const WinPoint& point)             = 0;
-    virtual void  ReleasePointer()                                    = 0;
 
 	virtual TEXHANDLE		GetTexHandle()							  = 0;
 

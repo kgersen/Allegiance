@@ -162,26 +162,6 @@ MouseResult ConstantImage::HitTest(IInputProvider* pprovider, const Point& point
     return MouseResult();
 }
 
-/*
-MouseResult ConstantImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
-{
-    if (m_bounds.GetRect().Inside(point)) {
-        if (m_psurface->HasColorKey()) {
-            bool bHit = m_psurface->GetColor(WinPoint((int)point.X(), (int)point.Y())) != m_psurface->GetColorKey();
-            m_psurface->ReleasePointer();
-            
-            if (bHit) {
-                return MouseResultHit();
-            }
-        } else {
-            return MouseResultHit();
-        }
-    }
-
-    return MouseResult();
-}
-*/
-
 
 
 //////////////////////////////////////////////////////////////////////////////
