@@ -34,11 +34,8 @@ public:
     // Surface Description
     //
 
-    int                       m_id;
     WinPoint                  m_size;
-    int                       m_pitch;
     TRef<PixelFormat>         m_ppf;
-    BYTE*                     m_pbits;
 
     //
     // Device Format surfaces
@@ -99,8 +96,6 @@ public:
 		m_pUIVerts				= NULL;
 		m_dwNumPolys			= 0;
 		m_dwNumVerts			= 0;
-
-        m_id					= 0;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -183,8 +178,6 @@ public:
 		m_stype( stype ),
 		m_bDeviceFormat( true ),
 		m_size( size ),
-		m_pitch( 0 ),
-		m_pbits( NULL ),
 		m_psite( psite ),
 		m_bInContext( false ),
 		m_bSurfaceAllocated( false ),
@@ -197,7 +190,6 @@ public:
 		m_pUIVerts				= NULL;
 		m_dwNumPolys			= 0;
 		m_dwNumVerts			= 0;
-        m_id					= 0;
 
 		if( m_stype.Test( SurfaceTypeDummy() ) == true )
 		{
@@ -223,9 +215,7 @@ public:
 			m_stype( 0 ),
 //			m_pvideoSurface( NULL ),
 			m_ppf( NULL ),
-			m_pbits(NULL),
 			m_size( dwWidth, dwHeight ),
-			m_pitch( 0 ),
 			m_psite( NULL ),
 			m_hTexture( INVALID_TEX_HANDLE )
 	{
@@ -264,7 +254,6 @@ public:
         m_bDeviceFormat(true),
         m_stype(stype),
         m_psite(psite),
-        m_pbits(NULL),
 		m_hTexture(INVALID_TEX_HANDLE)
     {
         Initialize();
@@ -291,8 +280,7 @@ public:
 				m_size(*pTargetSize),
 				m_bDeviceFormat(false),
 				m_stype(SurfaceType2D()),
-				m_hTexture( INVALID_TEX_HANDLE ),
-				m_pbits( NULL )
+				m_hTexture( INVALID_TEX_HANDLE )
 
 	{
 		HRESULT hr;
@@ -332,7 +320,6 @@ public:
             ZAssert( hr == D3D_OK );
 		}
         m_ppf = new PixelFormat(CVRAMManager::Get()->GetTextureFormat(m_hTexture));
-        m_pitch = m_ppf->PixelBytes() * pTargetSize->x;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -355,9 +342,7 @@ public:
 				m_bDeviceFormat(false),
 				m_stype(SurfaceType2D()),
 				m_size(size),
-				m_pitch(pitch),
 				m_ppf(ppf),
-				m_pbits(pdata),
 				m_hTexture( INVALID_TEX_HANDLE )
     {
 		if( bSystemMemory == true )
@@ -566,33 +551,6 @@ public:
 				}
 			}
 		}
-        m_pbits = nullptr;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Write a surface to a binary MDL file
-    //
-    //////////////////////////////////////////////////////////////////////////////
-    
-    void Write(ZFile* pfile)
-    {
-        //this method is broken since we do not store the texture in regular memory anymore (m_pbits is often/always nullptr)
-        ZAssert(false);
-
-        BinarySurfaceInfo bsi;
-
-        bsi.m_size      = m_size;
-        bsi.m_pitch     = m_pitch;
-        bsi.m_bitCount  = m_ppf->PixelBits();
-        bsi.m_redMask   = m_ppf->RedMask();
-        bsi.m_greenMask = m_ppf->GreenMask();
-        bsi.m_blueMask  = m_ppf->BlueMask();
-        bsi.m_alphaMask = m_ppf->AlphaMask();
-        bsi.m_bColorKey = false;
-
-        pfile->Write((void*)&bsi, sizeof(bsi));
-        pfile->Write((void*)m_pbits, m_pitch * m_size.Y());
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -628,11 +586,6 @@ public:
 		{
 			m_pengine->RemovePrivateSurface(this);
 		}
-
-        if( m_pbits != NULL )
-		{
-            delete m_pbits;
-        }
 
 		// Release associated texture.
 		if( m_hTexture != INVALID_TEX_HANDLE )			// Dummy surfaces == INVALID_TEX_HANDLE
@@ -675,29 +628,12 @@ public:
         m_pcontext      = NULL;
 //        m_pvideoSurface = NULL;
 
-        if (m_pbits) {
-            delete m_pbits;
-            m_pbits = NULL;
-        }
-
         m_ppf = ppf;
         AllocateSurface();
 
         if (m_psite) {
             m_psite->UpdateSurface(this);
         }
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Surface updates
-    //
-    //////////////////////////////////////////////////////////////////////////////
-
-    void SurfaceChanged()
-    {
-        m_id++;
-        if (m_id < 0) m_id = 0;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -794,22 +730,6 @@ public:
 
         m_pointOffset = m_pointOffsetSave;
         m_rectClip    = m_rectClipSave;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Surface Access calls
-    //
-    //////////////////////////////////////////////////////////////////////////////
-
-    int GetPitch()
-    {
-/*        if (m_pvideoSurface) {
-            return m_pvideoSurface->GetPitch();
-        } else {
-            return m_pitch;
-        }*/
-        return m_pitch;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1054,8 +974,6 @@ public:
 			hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );
             hr = CVRAMManager::Get()->UnlockTexture(psurfaceSource->GetTexHandle());
         }
-
-        SurfaceChanged();
     }
 
     void BitBlt(const WinPoint& point, Surface* psurfaceSourceArg, const WinRect& rectSourceArg)
@@ -1095,8 +1013,6 @@ public:
             UnclippedBlt(rectTarget, psurfaceSource, rectSource.Min());
 			//BitBlt( rectTarget, psurfaceSourceArg, rectSourceArg );
         }
-
-        SurfaceChanged();
     }
 
     void BitBlt(const WinPoint& point, Surface* psurfaceSource, bool bLocalCopy = false )
@@ -1381,8 +1297,6 @@ public:
         if (!rect.IsEmpty()) {
             UnclippedFill(rect, pixel);
         }
-
-        SurfaceChanged();
     }
 
     void FillRect(const WinRect& rect, const Color& color)
@@ -1398,75 +1312,6 @@ public:
     void FillSurface(const Color& color)
     {
         FillSurface(m_ppf->MakePixel(color));
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Load a surface from a bitmap
-    //
-    //////////////////////////////////////////////////////////////////////////////
-
-/*    void BitBltFromDC(HDC hdc) 
-    {
-        GetVideoSurface()->BitBltFromDC(hdc);
-    }*/
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Save the surface to a file
-    //
-    //////////////////////////////////////////////////////////////////////////////
-
-    void Save(ZFile* pfile)
-    {
-        ZAssert(m_ppf->PixelBits() == 16);
-
-        BITMAPFILEHEADER bmfh;
-        BITMAPINFOHEADER bmih;
-
-        int sizeHeader = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + 12;
-        int sizeBits   = m_pitch * m_size.Y();
-
-        bmfh.bfType          = 0x4d42;
-        bmfh.bfSize          = sizeHeader + sizeBits;
-        bmfh.bfReserved1     = 0;
-        bmfh.bfReserved2     = 0;
-        bmfh.bfOffBits       = sizeHeader;
-
-        bmih.biSize          = sizeof(BITMAPINFOHEADER);
-        bmih.biWidth         = m_size.X();
-        bmih.biHeight        = m_size.Y();
-        bmih.biPlanes        = 1;
-        bmih.biBitCount      = (WORD)m_ppf->PixelBits();
-        bmih.biCompression   = BI_BITFIELDS;
-        bmih.biSizeImage     = 0;
-        bmih.biXPelsPerMeter = 0;
-        bmih.biYPelsPerMeter = 0;
-        bmih.biClrUsed       = 0;
-        bmih.biClrImportant  = 0;
-
-        DWORD masks[3] =
-            {
-                m_ppf->RedMask(),
-                m_ppf->GreenMask(),
-                m_ppf->BlueMask()
-            };
-
-        //
-        // Write out the header
-        //
-
-        pfile->Write(&bmfh, sizeof(BITMAPFILEHEADER));
-        pfile->Write(&bmih, sizeof(BITMAPINFOHEADER));
-        pfile->Write(masks, 12);
-
-        //
-        // Write out the bits
-        //
-
-        for (int y = m_size.Y() - 1 ; y >= 0; y--) { 
-            pfile->Write(m_pbits + m_pitch * y, m_pitch);
-        }
     }
 };
 

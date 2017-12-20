@@ -144,13 +144,6 @@ ZString ConstantImage::GetFunctionName()
     return "ImportImage";
 }
 
-void ConstantImage::Write(IMDLBinaryFile* pmdlFile)
-{
-    pmdlFile->WriteReference("ImportImage");
-    TRef<ZFile> pfile = pmdlFile->WriteBinary();
-    m_psurface->Write(pfile);
-}
-
 //Imago 6/24/09 - removed the color hit-check check, see modeler.cpp(2520), these problems are related.
 MouseResult ConstantImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
 {

@@ -324,40 +324,6 @@ TRef<IFunction> CreateFrameImageFactory()
     return new FrameImageFactory();
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Constructor
-//
-//////////////////////////////////////////////////////////////////////////////
-
-TRef<Image> CreateFrameImage(
-    Number*  pframe,
-    Surface* psurface,
-    int      xframes,
-    int      yframes
-) {
-    //
-    // compress the animation
-    //
-
-    TRef<Surface> psurfaceBackground;
-    DWORD* pdwOffsets;
-    BYTE*  prle;
-
-    //
-    // Create a frame image
-    //
-
-    return 
-        new FrameImage(
-            new ConstantImage(psurfaceBackground, ZString()), 
-            pframe, 
-            xframes * yframes, 
-            pdwOffsets, 
-            prle, 
-            NULL
-        );
-}
 
 //////////////////////////////////////////////////////////////////////////////
 //

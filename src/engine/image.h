@@ -77,7 +77,6 @@ public:
 
     ZString GetFunctionName();
     ZString GetString(int indent);
-    void    Write(IMDLBinaryFile* pfile);
 
     //
     // IMouseInput methods

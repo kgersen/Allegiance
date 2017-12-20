@@ -62,13 +62,6 @@ public:
     virtual TRef<Surface> CreateCompatibleSurface(const WinPoint& size, SurfaceType stype, SurfaceSite* psite = NULL) = 0;
 
     //
-    // Serialization
-    //
-
-    virtual void Save(ZFile* pfile)  = 0; // save as a bmp
-    virtual void Write(ZFile* pfile) = 0; // write to an mdl file
-
-    //
     // Set Attributes
     //
 
@@ -81,7 +74,6 @@ public:
     //
 
     virtual Engine*         GetEngine()      = 0;
-//    virtual Palette*        GetPalette()     = 0;
     virtual SurfaceType     GetSurfaceType() = 0;
     virtual const WinPoint& GetSize()        = 0;
     virtual PixelFormat*    GetPixelFormat() = 0;
@@ -109,8 +101,6 @@ public:
     //
     // Direct Surface manipulation
     //
-
-    virtual int   GetPitch()                                          = 0;
 
 	virtual TEXHANDLE		GetTexHandle()							  = 0;
 
