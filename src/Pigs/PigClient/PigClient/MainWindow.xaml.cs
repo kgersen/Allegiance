@@ -138,6 +138,10 @@ namespace WpfApp1
                         newScripts.Add(justTheName);
                     }
                     pigScripts = newScripts;
+                    if(pigScripts.Count > 0)
+                    {
+                        pigScript = newScripts.First();
+                    }
                     //session.ActivateAllEvents();
                     // log(String.Format("Attached to events.", session.ProcessID));
                 }
