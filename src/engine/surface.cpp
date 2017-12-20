@@ -40,9 +40,6 @@ public:
     TRef<PixelFormat>         m_ppf;
     BYTE*                     m_pbits;
 
-    bool                      m_bColorKey;
-    Color                     m_colorKey;
-
     //
     // Device Format surfaces
     //
@@ -94,7 +91,6 @@ public:
         m_pointOffset = WinPoint(0, 0);
         m_rectClip    = WinRect(WinPoint(0, 0), m_size);
 
-        m_bColorKey   = false;
         m_bInContext  = false;
 
 		// Added.
@@ -103,8 +99,6 @@ public:
 		m_pUIVerts				= NULL;
 		m_dwNumPolys			= 0;
 		m_dwNumVerts			= 0;
-
-        m_colorKey				= Color(0, 0, 0);
 
         m_id					= 0;
     }
@@ -203,7 +197,6 @@ public:
 		m_pUIVerts				= NULL;
 		m_dwNumPolys			= 0;
 		m_dwNumVerts			= 0;
-        m_colorKey				= Color(0, 0, 0);
         m_id					= 0;
 
 		if( m_stype.Test( SurfaceTypeDummy() ) == true )
@@ -281,300 +274,6 @@ public:
             m_psite->UpdateSurface(this);
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-	// CopyTexture16BitWithColourKey()
-	// Copy the texture and use the alpha bit for colour keying.
-	// To remove black edge on some icons, we need to compare colour values after
-	// converting to R5G5B5 rather than the original R5B6G5, as this result in
-	// a black colour, but not colour keyed.
-    //////////////////////////////////////////////////////////////////////////////
-	void CopyTexture16BitWithColourKey( )
-	{
-		int x, y;
-		WORD wVal, wNewColour;
-		int iCount = 0;
-		bool bExtraGreenBit;
-
-        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
-
-		// Lock this texture and copy over.
-		D3DLOCKED_RECT lockRect;
-		HRESULT hr;
-
-		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-        ZAssert( hr == D3D_OK );
-
-		// Copy over data. Only works for 16 bit texture at the moment.
-		ZAssert( m_ppf->PixelBytes() == 2 );
-
-        CImageTransfer::Transfer16BitTo16BitWithColourKey(
-            m_pbits,
-            m_pitch,
-            (BYTE*)lockRect.pBits,
-            lockRect.Pitch,
-            WinPoint(0, 0),
-            WinPoint(0, 0),
-            m_size,
-            Color(0, 0, 0)
-        );
-
-        // Unlock the texture
-        hr = CVRAMManager::Get()->UnlockTexture(m_hTexture);
-	}
-
-
-
-   //////////////////////////////////////////////////////////////////////////////
-	// Copy16BitTextureWithColourKeyTo32BitTexture()
-	// Copy the texture and use the alpha bit for colour keying.
-	// Uses a 32bit A8R8G8B8 texture.
-    //////////////////////////////////////////////////////////////////////////////
-	void Copy16BitTextureWithColourKeyTo32BitTexture( )
-	{
-        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
-
-		// Lock this texture and copy over.
-		D3DLOCKED_RECT lockRect;
-		HRESULT hr;
-
-		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-        ZAssert( hr == D3D_OK );
-
-		int x, y;
-		DWORD dwByteOffset;
-		WORD wVal;
-		DWORD dwNewColour;
-		int iPitch				= m_pitch;
-		const BYTE* pSrc		= m_pbits;
-		BYTE * pDest			= (BYTE*) lockRect.pBits;
-		int scanSize			= m_size.X() * 2;
-
-		// Generate the 16 bit colour value to test against.
-		COLORREF colorRef = m_colorKey.MakeCOLORREF();
-		WORD wCompare = (WORD) ( ( ( ( ( colorRef & 0x000000FF ) >> 3 ) << 11 ) |	// R
-								( ( ( colorRef & 0x0000FF00 ) >> 10 ) << 5 )  |		// G
-								( ( ( colorRef & 0x00FF0000 ) >> 19 ) ) ) );
-
-//		DWORD dwTestWidth, dwTestHeight;
-//		CVRAMManager::GetOriginalDimensions( m_hTexture, &dwTestWidth, &dwTestHeight );
-//		if( dwTestHeight != 2048 )
-		{
-			// Copy the data over. Need to invert the data in the y direction.
-			for( y=0; y<m_size.Y(); y++ )
-			{
-				for( x=0; x<m_size.X(); x +=2 )
-				{
-					dwByteOffset = ( y * iPitch ) + ( x * 2 );
-					wVal = ( pSrc[ dwByteOffset ] ) | ( pSrc[ dwByteOffset + 1 ] << 8 );
-					if( wVal == wCompare )
-					{
-						// Create an A8R8G8B8 entry with alpha 0, from R5G6B5.
-						dwNewColour = 0;			// No alpha, pixel not shown.
-					}
-					else
-					{
-						// Create an A8R8G8B8 entry with alpha at 255.
-						dwNewColour = (( wVal & 0xF800 ) >> 8 ) << 16;
-						dwNewColour |= ((wVal & 0x07E0 ) >> 3 ) << 8;
-						dwNewColour |= ((wVal & 0x001F ) << 3);
-						dwNewColour |= 0xFF000000;
-					}
-					// Store colour.
-					pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 3 ] = (BYTE) ( ( dwNewColour >> 24 ) & 0x000000FF );
-					pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 2 ] = (BYTE) ( ( dwNewColour >> 16 ) & 0x000000FF );
-					pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 1 ] = (BYTE) ( ( dwNewColour >> 8 ) & 0x000000FF );
-					pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 0 ] = (BYTE) ( dwNewColour & 0x000000FF );
-
-					// Check for odd sized textures.
-					if( x+1 < m_size.X() )
-					{
-						wVal = ( pSrc[ dwByteOffset + 2 ] ) | ( pSrc[ dwByteOffset + 3 ] << 8 ) ;
-						if( wVal == wCompare )
-						{
-							// Create an A8R8G8B8 entry with alpha 0, from R5G6B5.
-							dwNewColour = 0;			// No alpha, pixel not shown.
-						}
-						else
-						{
-							// Create an A8R8G8B8 entry with alpha at 255.
-							dwNewColour = (( wVal & 0xF800 ) >> 8 ) << 16;
-							dwNewColour |= ((wVal & 0x07E0 ) >> 3 ) << 8;
-							dwNewColour |= ((wVal & 0x001F ) << 3);
-							dwNewColour |= 0xFF000000;
-						}
-						// Store colour.
-						pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 7 ] = (BYTE) ( ( dwNewColour >> 24 ) & 0x000000FF );
-						pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 6 ] = (BYTE) ( ( dwNewColour >> 16 ) & 0x000000FF );
-						pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 5 ] = (BYTE) ( ( dwNewColour >> 8 ) & 0x000000FF );
-						pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 4 ] = (BYTE) ( dwNewColour & 0x000000FF );
-					}
-				}
-			}
-		}
-		// DEBUG PATH - TURN TEXTURES TO RED...
-		//else
-		//{
-		//	// Copy the data over. Need to invert the data in the y direction.
-		//	for( y=0; y<m_size.Y(); y++ )
-		//	{
-		//		for( x=0; x<m_size.X(); x +=2 )
-		//		{
-		//			dwByteOffset = ( y * iPitch ) + ( x * 2 );
-		//			wVal = ( pSrc[ dwByteOffset ] ) | ( pSrc[ dwByteOffset + 1 ] << 8 );
-		//			if( wVal == wCompare )
-		//			{
-		//				// Create an A8R8G8B8 entry with alpha 0, from R5G6B5.
-		//				dwNewColour = 0;			// No alpha, pixel not shown.
-		//			}
-		//			else
-		//			{
-		//				// Create an A8R8G8B8 entry with alpha at 255.
-		//				dwNewColour |= 0xFFFF0000;
-		//			}
-		//			// Store colour.
-		//			pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 3 ] = (BYTE) ( ( dwNewColour >> 24 ) & 0x000000FF );
-		//			pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 2 ] = (BYTE) ( ( dwNewColour >> 16 ) & 0x000000FF );
-		//			pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 1 ] = (BYTE) ( ( dwNewColour >> 8 ) & 0x000000FF );
-		//			pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 0 ] = (BYTE) ( dwNewColour & 0x000000FF );
-
-		//			// Check for odd sized textures.
-		//			if( x+1 < m_size.X() )
-		//			{
-		//				wVal = ( pSrc[ dwByteOffset + 2 ] ) | ( pSrc[ dwByteOffset + 3 ] << 8 ) ;
-		//				if( wVal == wCompare )
-		//				{
-		//					// Create an A8R8G8B8 entry with alpha 0, from R5G6B5.
-		//					dwNewColour = 0;			// No alpha, pixel not shown.
-		//				}
-		//				else
-		//				{
-		//					// Create an A8R8G8B8 entry with alpha at 255.
-		//					dwNewColour |= 0xFFFF0000;
-		//				}
-		//				// Store colour.
-		//				pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 7 ] = (BYTE) ( ( dwNewColour >> 24 ) & 0x000000FF );
-		//				pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 6 ] = (BYTE) ( ( dwNewColour >> 16 ) & 0x000000FF );
-		//				pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 5 ] = (BYTE) ( ( dwNewColour >> 8 ) & 0x000000FF );
-		//				pDest[	( y * lockRect.Pitch ) + ( x * 4 ) + 4 ] = (BYTE) ( dwNewColour & 0x000000FF );
-		//			}
-		//		}
-		//	}
-		//}
-		// Unlock texture.
-		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
-	}
-
-
-
-   //////////////////////////////////////////////////////////////////////////////
-	// Copy24BitTextureWithColourKeyTo32BitTexture()
-	// Copy the texture and use the alpha bit for colour keying.
-	// Uses a 32bit A8R8G8B8 texture.
-    //////////////////////////////////////////////////////////////////////////////
-	void Copy24BitTextureWithColourKeyTo32BitTexture( )
-	{
-        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
-
-		// Lock this texture and copy over.
-		D3DLOCKED_RECT lockRect;
-		HRESULT hr;
-
-		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-        ZAssert( hr == D3D_OK );
-
-		int x, y;
-		DWORD dwByteOffset;
-		DWORD dwVal;
-		DWORD dwNewColour;
-		int iPitch				= m_pitch;
-		const BYTE * pSrc		= (BYTE*) m_pbits;
-		DWORD * pDest			= (DWORD*) lockRect.pBits;
-
-		// Generate the colour value to test against.
-		COLORREF colorRef = m_colorKey.MakeCOLORREF();
-
-		// Copy the data over. Need to invert the data in the y direction.
-		for( y=0; y<m_size.Y(); y++ )
-		{
-			for( x=0; x<m_size.X(); x ++ )
-			{
-				dwByteOffset = ( y * iPitch ) + ( x * 3 );
-				dwVal = pSrc[ dwByteOffset ] | ( pSrc[ dwByteOffset + 1] << 8 ) | ( pSrc[ dwByteOffset + 2] << 16 );
-				if( ( dwVal & 0x00FFFFFF ) == ( colorRef & 0x00FFFFFF ) )
-				{
-					// Create an A8R8G8B8 entry with alpha 0, from R5G6B5.
-					dwNewColour = 0;			// No alpha, pixel not shown.
-				}
-				else
-				{
-					dwNewColour = dwVal;
-					dwNewColour |= 0xFF000000;
-				}
-				// Store colour.
-				pDest[	( y * ( lockRect.Pitch >> 2 ) ) + x ] = dwNewColour;
-			}
-		}
-
-		// Unlock texture.
-		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
-	}
-
-
-
-   //////////////////////////////////////////////////////////////////////////////
-	// Copy32BitTextureWithColourKeyTo32BitTexture()
-	// Copy the texture and use the alpha bit for colour keying.
-	// Uses a 32bit A8R8G8B8 texture.
-    //////////////////////////////////////////////////////////////////////////////
-	void Copy32BitTextureWithColourKeyTo32BitTexture( )
-	{
-        ZAssert( m_hTexture != INVALID_TEX_HANDLE );
-
-		// Lock this texture and copy over.
-		D3DLOCKED_RECT lockRect;
-		HRESULT hr;
-
-		hr = CVRAMManager::Get()->LockTexture( m_hTexture, &lockRect );
-        ZAssert( hr == D3D_OK );
-
-		int x, y;
-		DWORD dwByteOffset;
-		DWORD dwVal;
-		DWORD dwNewColour;
-		int iPitch				= m_pitch >> 2;		// Pitch / 4
-		const DWORD * pSrc		= (DWORD*) m_pbits;
-		DWORD * pDest			= (DWORD*) lockRect.pBits;
-
-		// Generate the colour value to test against.
-		COLORREF colorRef = m_colorKey.MakeCOLORREF();
-
-		// Copy the data over. Need to invert the data in the y direction.
-		for( y=0; y<m_size.Y(); y++ )
-		{
-			for( x=0; x<m_size.X(); x ++ )
-			{
-				dwByteOffset = ( y * iPitch ) + x;
-				dwVal = pSrc[ dwByteOffset ];
-				if( ( dwVal & 0x00FFFFFF ) == ( colorRef & 0x00FFFFFF ) )
-				{
-					// Create an A8R8G8B8 entry with alpha 0, from R5G6B5.
-					dwNewColour = 0;			// No alpha, pixel not shown.
-				}
-				else
-				{
-					dwNewColour = dwVal;
-					dwNewColour |= 0xFF000000;
-				}
-				// Store colour.
-				pDest[	( y * ( lockRect.Pitch >> 2 ) ) + x ] = dwNewColour;
-			}
-		}
-
-		// Unlock texture.
-		hr = CVRAMManager::Get()->UnlockTexture( m_hTexture );	
-	}
-
-
 	//////////////////////////////////////////////////////////////////////////////
     //
     // Create a surface from a binary representation
@@ -607,8 +306,6 @@ public:
         Initialize();
 
 		// Store these values here, after Initialize has cleared out all values.
-		m_bColorKey = bColorKey;
-		m_colorKey = cColorKey;
 		ZFile * pFile = (ZFile*) pobjectMemory;
 		
 		// Generate the filename data.
@@ -629,8 +326,8 @@ public:
 				pImageInfo,
 				pTargetSize,
                 pobjectMemory,
-				m_bColorKey, 
-				m_colorKey, 
+				bColorKey, 
+				cColorKey, 
 				szTemp );
             ZAssert( hr == D3D_OK );
 		}
@@ -671,10 +368,6 @@ public:
 		// Reset object state.
         Initialize();
 
-		// Store these values here, after Initialize has cleared out all values.
-		m_bColorKey = bColorKey;
-		m_colorKey = cColorKey;
-
 		// Generate the filename data.
 		char szTemp[32];
 		if( szTextureName.GetLength() > 31 ) 
@@ -689,7 +382,7 @@ public:
 		// Need an alpha texture to implement colour keying.
 		// If the texture is 16 bit and the device supports the A1R5G5B5 texture format, we use one 
 		// of those, otherwise unfortunately we need to use a 32 bit A8R8G8B8 texture.
-		if( m_bColorKey == true )
+		if( bColorKey == true )
 		{
 			if( ( ppf->PixelBytes() == 2 ) &&
 				( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
@@ -697,8 +390,15 @@ public:
 				// Create a A1R5G5B5 texture.
 				AllocateSurface( szTemp, D3DFMT_A1R5G5B5 );
 
+                D3DLOCKED_RECT lockRect;
+                HRESULT hr;
+                hr = CVRAMManager::Get()->LockTexture(m_hTexture, &lockRect);
+
 				// Copy texture in, updating alpha for colour.
-				CopyTexture16BitWithColourKey( );
+                CImageTransfer::Transfer16BitTo16BitWithColourKey(pdata, pitch, (BYTE*)lockRect.pBits, lockRect.Pitch, WinPoint(0, 0), WinPoint(0, 0), size, cColorKey);
+
+                // Unlock texture.
+                hr = CVRAMManager::Get()->UnlockTexture(m_hTexture);
 			}
 			else
 			{
@@ -708,25 +408,25 @@ public:
 				// Create a A8R8G8B8 texture.
 				AllocateSurface( szTemp, D3DFMT_A8R8G8B8 );
 
+
+                // Lock target texture and copy over.
+                D3DLOCKED_RECT lockRect;
+                HRESULT hr;
+                hr = CVRAMManager::Get()->LockTexture(m_hTexture, &lockRect);
+
 				switch( ppf->PixelBytes() )
 				{
 				case 2:
 					// Copy texture in, updating alpha for colour.
-					Copy16BitTextureWithColourKeyTo32BitTexture( );
+                    CImageTransfer::Transfer16BitTo32BitWithColourKey(pdata, pitch, (BYTE*)lockRect.pBits, lockRect.Pitch, WinPoint(0, 0), WinPoint(0, 0), size, cColorKey);
 					break;
-
-				case 3:
-					Copy24BitTextureWithColourKeyTo32BitTexture( );
-					break;
-
-				case 4:
-					Copy32BitTextureWithColourKeyTo32BitTexture( );
-					break;
-
 				default:
 					// Unsupported pixel format.
                     ZAssert( false );
 				}
+
+                // Unlock texture.
+                hr = CVRAMManager::Get()->UnlockTexture(m_hTexture);
 			}
 		}
 		else
@@ -844,7 +544,7 @@ public:
 						AllocateSurface( szTemp, CVRAMManager::Get()->GetTextureFormat( hOld ) );
                         ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 						
-						DWORD dwColourKey = m_bColorKey ? 0xFF000000 : 0;
+						DWORD dwColourKey = bColorKey ? 0xFF000000 : 0;
 						LPDIRECT3DSURFACE9 pDest, pSrc;
 						CVRAMManager::Get()->GetTextureSurface( hOld, &pSrc );
 						CVRAMManager::Get()->GetTextureSurface( m_hTexture, &pDest );
@@ -877,6 +577,9 @@ public:
     
     void Write(ZFile* pfile)
     {
+        //this method is broken since we do not store the texture in regular memory anymore (m_pbits is often/always nullptr)
+        ZAssert(false);
+
         BinarySurfaceInfo bsi;
 
         bsi.m_size      = m_size;
@@ -886,7 +589,7 @@ public:
         bsi.m_greenMask = m_ppf->GreenMask();
         bsi.m_blueMask  = m_ppf->BlueMask();
         bsi.m_alphaMask = m_ppf->AlphaMask();
-        bsi.m_bColorKey = m_bColorKey;
+        bsi.m_bColorKey = false;
 
         pfile->Write((void*)&bsi, sizeof(bsi));
         pfile->Write((void*)m_pbits, m_pitch * m_size.Y());
@@ -1003,44 +706,11 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-/*    DDSurface * GetVideoSurfaceNoAlloc()
-    {
-        return m_pvideoSurface;
-    }
-
-    DDSurface* GetVideoSurface()
-    {
-        if (m_pvideoSurface == NULL) {
-            ZAssert(m_pbits != NULL);
-
-            m_pvideoSurface = m_pengine->CreateVideoSurface(	m_stype,
-																m_ppf,
-																m_ppalette,
-																m_size,
-																m_pitch,
-																m_pbits );
-
-            //
-            // If this surface has a color set the color key on all of the DD Surfaces
-            //
-
-            if (HasColorKey()) {
-                SetColorKey(GetColorKey());
-            }
-        }
-
-        return m_pvideoSurface;
-    }*/
 
     PixelFormat* GetPixelFormat()
     {
         return m_ppf;
     }
-
-/*    Palette* GetPalette()
-    {
-        return m_ppalette;
-    }*/
 
     void SetName(const ZString& str)
     {
@@ -1075,32 +745,6 @@ public:
     { 
         return m_stype;           
     }
-
-    bool HasColorKey()
-    {
-        return m_bColorKey;
-    }
-
-    const Color& GetColorKey()
-    {
-        ZAssert(m_bColorKey);
-        return m_colorKey;
-    }
-
-    void SetColorKey(const Color& color)
-    {
-        m_bColorKey = true;
-        m_colorKey = color;
-
-//        if (m_pvideoSurface) {
-  //          m_pvideoSurface->SetColorKey(color);
-    //    }
-    }
-
-	void SetEnableColorKey( bool bEnable )
-	{
-		m_bColorKey = bEnable;
-	}
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -1305,7 +949,6 @@ public:
             WinRect rectSource(SourceOrigin, SourceOrigin + rectTarget.Size());
 
             // do the blt
-            //GetVideoSurface()->UnclippedBlt( rectTarget, psurfaceSource->GetVideoSurface(), rectSource, HasColorKey() );
             ZAssert( m_hTexture != INVALID_TEX_HANDLE );
 
 			// Lock this texture and copy over.
@@ -1322,7 +965,6 @@ public:
             hr = CVRAMManager::Get()->LockTexture(psurfaceSource->GetTexHandle(), &lockRectSrc, 0, 0, &rectSource);
             if (FAILED(hr))
                 return;
-
 			switch( psurfaceSource->GetPixelFormat()->GetD3DFormat() )
 			{
             case D3DFMT_A1R5G5B5:
@@ -1334,7 +976,7 @@ public:
                         lockRectSrc.Pitch,
                         (BYTE *)lockRect.pBits,
                         lockRect.Pitch,
-                        SourceOrigin,
+                        WinPoint(0, 0),
                         WinPoint(0, 0),
                         WinPoint(rectTarget.XSize(), rectTarget.YSize())
                     );
@@ -1354,31 +996,9 @@ public:
                                     lockRectSrc.Pitch,
 									(BYTE *) lockRect.pBits,
 									lockRect.Pitch,
-									SourceOrigin,
+                                    WinPoint(0, 0),
 									WinPoint( 0, 0 ),
 									WinPoint( rectTarget.XSize(), rectTarget.YSize() ) );
-						break;
-					case D3DFMT_A1R5G5B5:
-						CImageTransfer::Transfer16BitTo16BitWithColourKey(
-                                    (BYTE *)lockRectSrc.pBits,
-                                    lockRectSrc.Pitch,
-									(BYTE *) lockRect.pBits,
-									lockRect.Pitch,
-									SourceOrigin,
-									WinPoint( 0, 0 ),
-									WinPoint( rectTarget.XSize(), rectTarget.YSize() ),
-									psurfaceSource->GetColorKey() );
-						break;
-					case D3DFMT_A8R8G8B8:
-						CImageTransfer::Transfer16BitTo32BitWithColourKey(
-                                    (BYTE *)lockRectSrc.pBits,
-                                    lockRectSrc.Pitch,
-									(BYTE *) lockRect.pBits,
-									lockRect.Pitch,
-									SourceOrigin,
-									WinPoint( 0, 0 ),
-									WinPoint( rectTarget.XSize(), rectTarget.YSize() ),
-									psurfaceSource->GetColorKey() );
 						break;
 					case D3DFMT_X8R8G8B8:
                         ZAssert( false );
@@ -1393,7 +1013,7 @@ public:
 				{
 					switch( m_ppf->GetD3DFormat() )
 					{
-					case D3DFMT_A8B8G8R8:
+					case D3DFMT_A8R8G8B8:
                         ZAssert( false );
 						break;
 					case D3DFMT_X8R8G8B8:
@@ -1409,8 +1029,16 @@ public:
 				{
 					switch( m_ppf->GetD3DFormat() )
 					{
-					case D3DFMT_A8B8G8R8:
-                        ZAssert( false );
+					case D3DFMT_A8R8G8B8:
+                        CImageTransfer::Transfer32BitTo32BitCopy(
+                            (BYTE *)lockRectSrc.pBits,
+                            lockRectSrc.Pitch,
+                            (BYTE *)lockRect.pBits,
+                            lockRect.Pitch,
+                            WinPoint(0, 0),
+                            WinPoint(0, 0),
+                            WinPoint(rectTarget.XSize(), rectTarget.YSize())
+                        );
 						break;
 					default:
                         ZAssert( false );
@@ -1627,7 +1255,7 @@ public:
 
 		if( ( m_stype.Test( SurfaceTypeRenderTarget() ) == true ) &&
 			( dwPixel == 0 ) &&
-			( HasColorKey() == true  ) )
+			( true  ) )
 		{
 			// Clear render target colour and alpha.
 			LPDIRECT3DSURFACE9 pSurface = 0;
@@ -1770,11 +1398,6 @@ public:
     void FillSurface(const Color& color)
     {
         FillSurface(m_ppf->MakePixel(color));
-    }
-
-    void FillSurfaceWithColorKey()
-    {
-        FillSurface(m_colorKey);
     }
 
     //////////////////////////////////////////////////////////////////////////////

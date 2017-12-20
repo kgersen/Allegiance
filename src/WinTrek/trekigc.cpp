@@ -2602,8 +2602,6 @@ IObject*    WinTrekClient::LoadRadarIcon(const char* szName)
     {
         psurface = GetModeler()->LoadSurface(ZString(szName) + "bmp", true);
         assert (psurface);
-
-        //psurface->SetColorKey(Color(0, 0, 0));
     }
     else
         psurface = NULL;

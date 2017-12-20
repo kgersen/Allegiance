@@ -107,15 +107,6 @@ public:
     virtual void            RestoreClipRect(const WinRect& rect) = 0;
 
     //
-    // Color Keying
-    //
-
-    virtual bool         HasColorKey()						= 0;
-    virtual const Color& GetColorKey()						= 0;
-    virtual void         SetColorKey(const Color& color)	= 0;
-    virtual void         SetEnableColorKey(bool bEnable )	= 0;
-
-    //
     // Direct Surface manipulation
     //
 
@@ -139,7 +130,6 @@ public:
     virtual void FillRect(const WinRect& rect, const Color& color) = 0;
     virtual void FillSurface(Pixel pixel)                          = 0;
     virtual void FillSurface(const Color& color)                   = 0;
-    virtual void FillSurfaceWithColorKey()                         = 0;
 
     //
     // Text

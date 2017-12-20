@@ -42,17 +42,11 @@ public:
     {
 		int i;
 		BYTE * pSrcCopy;
-		bool bHasColorKey;
 		HRESULT hResult;
 		D3DLOCKED_RECT lockRect;
 
         TRef<Surface> psurfaceBackground = m_pimageBackground->GetSurface();
 		PrivateSurface* pprivateSurface; CastTo(pprivateSurface, psurfaceBackground );
-
-		// Don't support colour keying at the moment as the original data was
-		// in 565 format, no alpha.
-		bHasColorKey = pprivateSurface->HasColorKey();
-		pprivateSurface->SetEnableColorKey( false );
 
 		pSrcCopy = new BYTE[pprivateSurface->GetPixelFormat()->PixelBytes() * 
 							pprivateSurface->GetSize().x * pprivateSurface->GetSize().y];

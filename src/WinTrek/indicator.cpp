@@ -120,13 +120,6 @@ public:
 
         m_pgeoPointer             = pmodeler->LoadGeo("pointer", true);
 
-        m_psurfaceDirection     ->SetColorKey(Color(0, 0, 0));
-		m_psurfaceDirectionIn   ->SetColorKey(Color(0, 0, 0));
-        m_psurfaceCenterInRange ->SetColorKey(Color(0, 0, 0));
-        m_psurfaceCenterOutRange->SetColorKey(Color(0, 0, 0));
-        m_psurfaceLeadInRange   ->SetColorKey(Color(0, 0, 0));
-        m_psurfaceLeadOutRange  ->SetColorKey(Color(0, 0, 0));
-
         m_pmaterial = CreateMaterial(Color::Black());
     }
 

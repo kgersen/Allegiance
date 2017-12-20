@@ -682,62 +682,6 @@ public:
 		{
             ZAssert( false && "Failed to load image." );
 		}
-
-		// Replace FreeImage stuff with D3DX calls.
-//        FreeImageIO fio;
-//        fio.read_proc = myReadProc;
-//        fio.seek_proc = mySeekProc;
-//        fio.tell_proc = myTellProc;
-//
-//        FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromHandle(&fio,zf);
-//        if (fif != FIF_UNKNOWN)
-//        {
-//            FIBITMAP * dib = FreeImage_LoadFromHandle(fif,&fio,zf,PNG_IGNOREGAMMA);
-//            if (dib)
-//            {
-//                int bpp = FreeImage_GetBPP(dib);
-//                assert((bpp == 16) || (bpp==24) || (bpp==32));
-//                debugf("%s = %d bpp\n",(const char *)str,bpp);
-//                UINT redm = FreeImage_GetRedMask(dib);
-//                UINT grnm = FreeImage_GetGreenMask(dib);
-//                UINT blum = FreeImage_GetBlueMask(dib);
-//                UINT alpm = (bpp==32)?0xFF000000:0;
-//                PixelFormat* ppf = m_pengine->GetPixelFormat(
-//                    bpp,
-//                    redm,
-//                    grnm,
-//                    blum,
-//                    alpm
-//                );  
-//
-//                // engine handles bitmaps mirrored ... yeeee
-//                FreeImage_FlipHorizontal(dib);
-//                FreeImage_FlipVertical(dib);
-//                FreeImage_FlipHorizontal(dib);
-//
-//				// For D3D9, we only allow black colour keys.
-//                TRef<Surface> psurface =
-//                    m_pengine->CreateSurface(
-//                    WinPoint(FreeImage_GetWidth(dib),FreeImage_GetHeight(dib)),
-//                    ppf,
-////                    NULL,				// Remove palette.
-//                    FreeImage_GetPitch(dib),
-//                    FreeImage_GetBits(dib),
-//					zf,
-//					true,
-//					Color( 0, 0, 0 ),
-//					str );
-//                //FreeImage_Unload(dib); never free 
-//                
-//                if (b) {
-//                    // could use FreeImage_HasBackgroundColor/FreeImage_GetBackgroundColor here
-//                    // or extend MDL syntax to pass the transp color
-//                    psurface->SetColorKey(Color(0, 0, 0));
-//                }
-//
-//                return (Value*)new ConstantImage(psurface, ZString());
-//            }
-//        }
         debugf("ImportImageFromFileFactory: error reading file %s\n",(const char *)str);
         return NULL;
     }
@@ -2670,11 +2614,6 @@ public:
             TRef<ConstantImage> pimage; CastTo(pimage, (Value*)pns->FindMember(str));
             if (pimage) {
                 TRef<Surface> psurface = pimage->GetSurface();
-                
-                // HACK: Need to uncomment and track down the bug that's 
-                // triggering this when a weapon fires, but this hack should
-                // keep the debug client testable.  
-                //ZAssert(bColorKey == psurface->HasColorKey());
 
                 return pimage;
             }     
@@ -2696,10 +2635,6 @@ public:
             if (pimage) {
                 TRef<Surface> psurface = pimage->GetSurface();
                 psurface->SetName(str);
-
-                if (bColorKey) {
-                    psurface->SetColorKey(Color(0, 0, 0));
-                }
 
                 return pimage;
             }
