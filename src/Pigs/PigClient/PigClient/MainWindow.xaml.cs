@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -50,7 +51,28 @@ namespace WpfApp1
             }
         }
 
+        string _pigSript = "";
+        public string pigScript
+        {
+            get { return _pigSript; }
+            set
+            {
+                _pigSript = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("pigScript"));
+            }
+        }
 
+        List<string> _pigSripts = new List<string>();
+        public List<string> pigScripts
+        {
+            get { return _pigSripts; }
+            set
+            {
+                _pigSripts = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("pigScripts"));
+            }
+        }
+        
         void log(string text)
         {
             logText += string.Format("{0}\n", text);
@@ -71,6 +93,19 @@ namespace WpfApp1
                 session.DeactivateAllEvents();
                 log(String.Format("Deactivated all events."));
             }
+        }
+
+        private void Disconnect_Click(object sender, RoutedEventArgs e)
+        {
+            if (session != null)
+            {
+                session = null;
+                logText = "";
+            }
+        }
+        private void ClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            logText = "";
         }
 
         private void Connect_Click(object sender, RoutedEventArgs e)
@@ -94,6 +129,15 @@ namespace WpfApp1
                     log(String.Format("Art Path: {0}", session.ArtPath));
                     log(String.Format("Script Path {0}", session.ScriptDir));
 
+                    // load all the scripts from scriptDir
+                    var di = new DirectoryInfo(session.ScriptDir);
+                    var newScripts = new List<string>();
+                    foreach (var file in di.EnumerateFiles())
+                    {
+                        var justTheName = file.Name.Replace(".pig", "");
+                        newScripts.Add(justTheName);
+                    }
+                    pigScripts = newScripts;
                     //session.ActivateAllEvents();
                     // log(String.Format("Attached to events.", session.ProcessID));
                 }
@@ -103,7 +147,7 @@ namespace WpfApp1
         private void CreatePig_Click(object sender, RoutedEventArgs e)
         {
             pigButtonEnable = false;
-            var pigScript = "demo";
+           
             
             if (session != null)
             {
@@ -129,6 +173,11 @@ namespace WpfApp1
         private void Session_OnEvent(AGCLib.IAGCEvent pEvent)
         {
             log(String.Format("Event {0}", pEvent));
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
