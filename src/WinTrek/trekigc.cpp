@@ -2909,6 +2909,25 @@ void WinTrekClient::DestroyTeleportProbe(IprobeIGC* pprobe)
     }
 }
 
+void WinTrekClient::PostPlainText(bool bCritical, const char* pszText)
+{
+    if (GetWindow()->GetConsoleImage())
+    {
+        assert(pszText);
+
+        if (bCritical)
+        {
+            PlaySoundEffect(newCriticalMsgSound);
+            GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(pszText);
+        }
+        else
+        {
+            PlaySoundEffect(newNonCriticalMsgSound);
+            GetWindow()->GetConsoleImage()->GetConsoleData()->SetTipText(pszText);
+        }
+    }
+}
+
 void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
 {
     if (GetWindow()->GetConsoleImage())
@@ -2922,16 +2941,7 @@ void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
         _vsnprintf(bfr, size, pszText, vl);
         va_end(vl);
 
-        if (bCritical) 
-        {
-            PlaySoundEffect(newCriticalMsgSound);
-            GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(bfr);
-        }
-        else
-        {
-            PlaySoundEffect(newNonCriticalMsgSound);
-            GetWindow()->GetConsoleImage()->GetConsoleData()->SetTipText(bfr);
-        }
+        PostPlainText(bCritical, bfr);
     }
 }
 

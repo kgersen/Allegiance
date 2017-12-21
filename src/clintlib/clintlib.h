@@ -1141,7 +1141,7 @@ public:
                             name, pcluster->GetName());
                     else
                         sprintf(bfr, "Ripcording to %s", name);
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
                 }
 
                 if (pmodelRipcordDest != pship->GetRipcordModel())
