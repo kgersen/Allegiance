@@ -159,11 +159,11 @@ namespace WpfApp1
                 {
                     log(String.Format("Requesting new Pig.."));
                     var pig = session.CreatePig(pigScript);
-                    log(String.Format("Request returned."));
+                    log(String.Format("Request returned: {0}", pig));
                     if (pig != null)
                     {
                         log(String.Format("pig {0} : State {1}", pig.Name, pig.PigStateName));
-                        
+
                     }
                 }
                 catch (Exception ex)
