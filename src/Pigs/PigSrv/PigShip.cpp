@@ -303,6 +303,18 @@ STDMETHODIMP CPigShip::BuyHull(IAGCHullType* pHullType)
   if (PigState_Docked != m_pPig->GetCurrentState())
     return Error(IDS_E_BUYSELL_DOCKED, IID_IPigShip);
 
+  BSTR name;
+  pHullType->get_Name(&name);
+
+  BSTR model;
+  pHullType->get_ModelName(&model);
+
+  BSTR pigName;
+  m_pPig->get_Name(&pigName);
+
+  printf("Pig: %S requesting hull type: %S, model: %S\n", pigName, name, model);
+  
+
   // Validate the specified pointer
   if (!pHullType)
     return E_POINTER;
@@ -327,9 +339,16 @@ STDMETHODIMP CPigShip::BuyHull(IAGCHullType* pHullType)
   assert (pshipNew);
   m_pPig->BaseClient::BuyDefaultLoadout(pshipNew, pstation, pIGC, &budget);
 
+  IhullTypeIGC * baseHull = pshipNew->GetBaseHullType();
+  IbuyableIGC * successor = pstation->GetSuccessor(pIGC);
+
+  printf("baseHull: %s, successorBuyableType: %s\n", baseHull->GetName(), successor->GetName());
+
   // TODO: BT / YP Figure out why the starting ship can't be bought here. 
-  if (pshipNew->GetBaseHullType() != pstation->GetSuccessor(pIGC))
-    return Error(IDS_E_TOO_POOR, IID_IPigShip);
+  // Don't need this as it turns out. The budget check is above in BuyDefaultLoadout.
+  // This doesn't even work, if the pig tries to get a gunship at $200, this doesn't block that action. 
+  /*if (pshipNew->GetBaseHullType() != pstation->GetSuccessor(pIGC))
+    return Error(IDS_E_TOO_POOR, IID_IPigShip);*/
 
   // request the new ship
   m_pPig->BaseClient::BuyLoadout(pshipNew, false);

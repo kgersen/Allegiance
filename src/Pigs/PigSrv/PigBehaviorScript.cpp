@@ -567,13 +567,19 @@ STDMETHODIMP CPigBehaviorScript::GetItemInfo(LPCOLESTR pstrName,
 STDMETHODIMP CPigBehaviorScript::OnScriptError(IActiveScriptError* pScriptError)
 {
 	EXCEPINFO info;
-	BSTR *line; // = SysAllocString(L"kljadslkfalsdhflasfdlahdslhasldfjhalsdjfhlasjfdhlajsdhfljashdfljahsdlfjhasldhjlfas");
+	BSTR line; // = SysAllocString(L"kljadslkfalsdhflasfdlahdslhasldfjhalsdjfhlasjfdhlajsdhfljashdfljahsdlfjhasldhjlfas");
 	DWORD sourceContext;
 	ULONG lineNumber;
 	LONG charPosition;
 	pScriptError->GetExceptionInfo(&info);
-	pScriptError->GetSourceLineText(line);
+	pScriptError->GetSourceLineText(&line);
 	pScriptError->GetSourcePosition(&sourceContext, &lineNumber, &charPosition);
+
+	printf("Script Error!\n");
+	printf("Exception Info: %S\n", info);
+	//printf("Source Line Text: %S\n", line);
+	printf("Source Position: %ld, Line: %ul, charPosition: %ld\n", sourceContext, lineNumber, charPosition);
+
 
 
   // Perform default processing

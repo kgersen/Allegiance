@@ -2817,6 +2817,10 @@ STDMETHODIMP CPig::StartCustomGame(IPigMissionParams* pMissionParams)
 		MissionParams mp;
 		RETURN_FAILED(spstm->Read(&mp, sizeof(mp), NULL));
 
+		// BT - Hack fix to ensure that create custom game message matches current fedsrv check. 
+		// TODO: Move this to read registry
+		mp.nTotalMaxPlayersPerGame = 200;
+
 		// Close the stream and private interface
 		spstm = NULL;
 		spPrivate = NULL;
