@@ -70,6 +70,8 @@ HRESULT DoMain(int argc, TCHAR* argv[], TCHAR* envp[]);
 //
 extern "C" int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
+	const char * t1 = GetCommandLineA();
+
   // Initialize the application, if needed
   g_papp->Initialize(GetCommandLine());
 

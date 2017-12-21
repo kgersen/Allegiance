@@ -277,12 +277,18 @@ namespace WpfApp1
         {
             foreach (var pig in pigInfos)
             {
-                pig.Name = pig.Pig.Name;
-                pig.State = pig.Pig?.PigStateName ?? "";
-                pig.GameName = pig.Pig?.Game.Name ?? "";
-                pig.Money = pig.Pig.Money;
-                pig.Hull = pig.Pig?.Ship?.HullType?.Name ?? "";
-                pig.Position = pig.Pig?.Ship?.Position?.DisplayString ?? "";
+                try
+                {
+                    pig.Name = pig.Pig.Name;
+                    pig.State = pig.Pig?.PigStateName ?? "";
+                    pig.GameName = pig.Pig?.Game.Name ?? "";
+                    pig.Money = pig.Pig.Money;
+                    pig.Hull = pig.Pig?.Ship?.HullType?.Name ?? "";
+                    pig.Position = pig.Pig?.Ship?.Position?.DisplayString ?? "";
+                }
+                catch (Exception)
+                {
+                }
             }
         }
     }

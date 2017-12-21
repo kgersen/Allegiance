@@ -1729,6 +1729,18 @@ bool    GotoPlan::Execute(Time  now, float  dt, bool bDodge)
                                     oneWeaponIGC |      //Disable any weapon fire
                                     allWeaponsIGC;
 
+	//imago 10/14
+	if (m_pship->GetWantBoost()) {
+		stateM |= afterburnerButtonIGC;
+	}
+	if ((m_maskWaypoints & c_wpTarget) && !bDone && m_pship->GetWantBoost()) {
+		if ((m_wpTarget.m_pmodelTarget->GetPosition() - m_pship->GetPosition()).LengthSquared() < 4000000) {
+			stateM &= ~afterburnerButtonIGC;
+			m_pship->SetWantBoost(false);
+		}
+	}
+
+
     m_pship->SetStateBits(c_maneuverButtons, stateM);
     m_pship->SetControls(controls);
 

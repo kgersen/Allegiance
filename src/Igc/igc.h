@@ -1079,6 +1079,12 @@ class ImapMakerIGC
                                             ImissionIGC*         pMission) = 0;
 };
 
+//Spunky #300
+typedef short KB;
+
+const KB c_noKB = 0;
+const KB c_lowKB = 1;
+const KB c_stdKB = 2;
 
 class MissionParams
 {
@@ -1128,6 +1134,7 @@ public:
     bool        bAutoRestart        : 1;                //Does the game restart automatically
     bool        bAllowRestart       : 1;                //Can the game be restarted at all?
 	bool        bExperimental       : 1;                // mmf 10/07 Experimental game type
+	KB			KBlevel;								//Spunky #300
 	float       fGoalTeamMoney;                         //Cost of win the game tech = fGoalTeamMoney * WinTheGameMoney, 0 == no win the game tech
     int         verIGCcore;                             //this is set only by the server, so the client can know whether it needs to get a new igc static core
     float       nPlayerSectorTreasureRate;              //# of treasures that generate/second in player sectors
@@ -3399,6 +3406,11 @@ class IshipIGC : public IscannerIGC
 
         //Miners
         virtual float               GetOre(void) const = 0;
+
+		//imago 10/14
+		virtual void                SetSkills(float fShoot, float fTurn, float fGoto) = 0;
+		virtual void				SetWantBoost(bool bOn) = 0;
+		virtual bool 				GetWantBoost() = 0;
 };
 
 class IbuoyIGC : public ImodelIGC

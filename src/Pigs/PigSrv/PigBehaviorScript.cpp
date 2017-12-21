@@ -566,6 +566,16 @@ STDMETHODIMP CPigBehaviorScript::GetItemInfo(LPCOLESTR pstrName,
 
 STDMETHODIMP CPigBehaviorScript::OnScriptError(IActiveScriptError* pScriptError)
 {
+	EXCEPINFO info;
+	BSTR *line; // = SysAllocString(L"kljadslkfalsdhflasfdlahdslhasldfjhalsdjfhlasjfdhlajsdhfljashdfljahsdlfjhasldhjlfas");
+	DWORD sourceContext;
+	ULONG lineNumber;
+	LONG charPosition;
+	pScriptError->GetExceptionInfo(&info);
+	pScriptError->GetSourceLineText(line);
+	pScriptError->GetSourcePosition(&sourceContext, &lineNumber, &charPosition);
+
+
   // Perform default processing
   IActiveScriptSiteImplBase::OnScriptError(pScriptError);
 

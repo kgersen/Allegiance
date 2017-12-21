@@ -84,6 +84,7 @@
 #define IDS_E_RIPCORD_ABORTED           4154
 #define IDS_E_LOBBYMODE_UNSUPPORTED     4155
 #define IDS_E_LOBBYMODE_OP_UNSUPPORTED  4156
+#define IDS_E_FMT_STATIONOBJID			4157 //imago 10/14
 
 // Next default values for new objects
 // 

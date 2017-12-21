@@ -88,10 +88,15 @@ void CPigShip::SetIGC(IshipIGC* pShipIGC)
 
 bool CPigShip::OnNewChatMessage()
 {
+
+	ImodelIGC* pModel = GetIGC()->GetCommandTarget(c_cmdQueued);
   // Return if the chat message was not a command or no command is queued
-  if (!GetIGC()->GetCommandTarget(c_cmdQueued))
+	if (!pModel)
     return false;
 
+	CommandID idCmd = GetIGC()->GetCommandID(c_cmdQueued);
+	const char* pszVerb = (0 <= idCmd && idCmd < c_cidMax) ? c_cdAllCommands[idCmd].szVerb : "";
+	debugf("...got a <%s> command to %s!!!\n",pszVerb,pModel->GetName());
   // Accept the queued command if auto accept is enabled
   return m_bAutoAcceptCommands ? SUCCEEDED(AcceptCommand(NULL)) : true;
 }
@@ -322,6 +327,7 @@ STDMETHODIMP CPigShip::BuyHull(IAGCHullType* pHullType)
   assert (pshipNew);
   m_pPig->BaseClient::BuyDefaultLoadout(pshipNew, pstation, pIGC, &budget);
 
+  // TODO: BT / YP Figure out why the starting ship can't be bought here. 
   if (pshipNew->GetBaseHullType() != pstation->GetSuccessor(pIGC))
     return Error(IDS_E_TOO_POOR, IID_IPigShip);
 
@@ -460,6 +466,24 @@ STDMETHODIMP CPigShip::Thrust(PigThrust e1, PigThrust e2, PigThrust e3,
 
   // Indicate success
   return S_OK;
+}
+
+//imago 10/14
+STDMETHODIMP CPigShip::Boost(VARIANT_BOOL bOn, BSTR* pbstrResponse)
+{
+	// Initialize the [out] parameters
+	CLEAROUT_ALLOW_NULL(pbstrResponse, (BSTR)NULL);
+
+	GetIGC()->SetWantBoost(bOn);
+
+	// Set the ship's control state bits
+	GetIGC()->SetStateBits(buttonsMaskIGC, (bOn) ? GetIGC()->GetStateM() | afterburnerButtonIGC : GetIGC()->GetStateM() & ~afterburnerButtonIGC);
+
+	// Load the ship's method response string
+	LoadShipResponse(pbstrResponse);
+
+	// Indicate success
+	return S_OK;
 }
 
 
@@ -743,11 +767,72 @@ STDMETHODIMP CPigShip::Defend(BSTR bstrObject, BSTR* pbstrResponse)
   // Kill any current automatic action, including AutoPilot
   KillAutoAction();
 
+	m_pPig->BaseClient::SetAutoPilot(true); //imago 10/14
+
   // Set the queued command
   GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidDefend);
 
   // Accept the queued command
   return AcceptCommand(pbstrResponse);
+}
+
+STDMETHODIMP CPigShip::Attack(BSTR bstrObject, BSTR* pbstrResponse)
+{
+	// Resolve the specified target name
+	ImodelIGC* pTarget = CPigShipEvent::FindTargetName(m_pPig, bstrObject);
+	if (!pTarget)
+		return FormattedError(IDS_E_FMT_OBJNAME, bstrObject ? bstrObject : L"");
+
+	// Kill any current automatic action, including AutoPilot
+	KillAutoAction();
+
+	m_pPig->BaseClient::SetAutoPilot(true);
+
+	// Set the queued command
+	GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidAttack);
+
+	// Accept the queued command
+	return AcceptCommand(pbstrResponse);
+}
+
+//imago 10/14
+STDMETHODIMP CPigShip::Goto(BSTR bstrObject, VARIANT_BOOL bFriendly, BSTR* pbstrResponse)
+{
+	// Resolve the specified target name
+	ImodelIGC* pTarget = CPigShipEvent::FindTargetName(m_pPig, bstrObject, bFriendly);
+	if (!pTarget)
+		return FormattedError(IDS_E_FMT_OBJNAME, bstrObject ? bstrObject : L"");
+
+	// Kill any current automatic action, including AutoPilot
+	KillAutoAction();
+
+	m_pPig->BaseClient::SetAutoPilot(true);
+
+	// Set the queued command
+	GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidGoto);
+
+	// Accept the queued command
+	return AcceptCommand(pbstrResponse);
+}
+
+//imago 10/14
+STDMETHODIMP CPigShip::GotoStationID(ObjectID oid, BSTR* pbstrResponse)
+{
+	// Resolve the specified object ID
+	ImodelIGC* pTarget = GetIGC()->GetMission()->GetStation(oid);
+	if (!pTarget)
+		return FormattedError(IDS_E_FMT_STATIONOBJID, oid ? oid : -1);
+
+	// Kill any current automatic action, including AutoPilot
+	KillAutoAction();
+
+	m_pPig->BaseClient::SetAutoPilot(true);
+
+	// Set the queued command
+	GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidGoto);
+
+	// Accept the queued command
+	return AcceptCommand(pbstrResponse);
 }
 
 

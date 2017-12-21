@@ -91,6 +91,7 @@ public:
   STDMETHODIMP AllStop(BSTR* pbstrResponse);
   STDMETHODIMP Thrust(PigThrust e1, PigThrust e2, PigThrust e3, PigThrust e4,
     PigThrust e5, PigThrust e6, PigThrust e7, BSTR* pbstrResponse);
+  STDMETHODIMP Boost(VARIANT_BOOL bOn, BSTR* pbstrResponse);
   STDMETHODIMP FireWeapon(VARIANT_BOOL bBegin, BSTR* pbstrResponse);
   STDMETHODIMP FireMissile(VARIANT_BOOL bBegin, BSTR* pbstrResponse);
   STDMETHODIMP DropMine(VARIANT_BOOL bBegin, BSTR* pbstrResponse);
@@ -102,6 +103,9 @@ public:
   STDMETHODIMP Face(VARIANT* pvarObject, BSTR bstrExpirationExpr,
     BSTR bstrInterruptionExpr, VARIANT_BOOL bLevel, BSTR* pbstrResponse);
   STDMETHODIMP Defend(BSTR bstrObject, BSTR* pbstrResponse);
+  STDMETHODIMP Attack(BSTR bstrObject, BSTR* pbstrResponse);
+  STDMETHODIMP Goto(BSTR bstrObject, VARIANT_BOOL bFriendly, BSTR* pbstrResponse);
+  STDMETHODIMP GotoStationID(ObjectID oid, BSTR* pbstrResponse);
   STDMETHODIMP put_AutoPilot(VARIANT_BOOL bEngage);
   STDMETHODIMP get_AutoPilot(VARIANT_BOOL* pbEngaged);
   STDMETHODIMP get_AutoAction(IPigShipEvent** ppAutoAction);
