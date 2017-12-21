@@ -2108,7 +2108,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                 NULL, NULL, NULL, NULL, c_sabmUnload);
 
                         if (pmodel) {
-                            if (pasteroid->GetOreFraction() < 0.2) {            //Don't reserve the rock and go back, if it's almost mined out
+                            if (pasteroid->GetOre() < capacity * 0.5f) {        //Don't reserve the rock and go back, if it's almost mined out
                                 SetCommand(c_cmdAccepted, pmodel, c_cidGoto);   // Also sets c_cmdCurrent and c_cmdPlan
                             }
                             else
