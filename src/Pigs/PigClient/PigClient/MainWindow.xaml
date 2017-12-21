@@ -5,10 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="PigClient" Height="350" Width="525">
+        Title="PigClient" Height="359" Width="618">
     <Grid>
         <Button IsEnabled="{Binding Path=pigButtonEnable}" Content="Create Pig" HorizontalAlignment="Left" Margin="10,67,0,0" VerticalAlignment="Top" Width="90" Click="CreatePig_Click"/>
-        <TextBox Margin="105,38,10,10" TextWrapping="Wrap" Text="{Binding Path=logText}"/>
         <Button Content="Enable Events" HorizontalAlignment="Left" Margin="10,92,0,0" VerticalAlignment="Top" Width="90" Click="EnableEvents_Click"/>
         <Button Content="Disable Events" HorizontalAlignment="Left" Margin="10,117,0,0" VerticalAlignment="Top" Width="90" Click="DisableEvents_Click"/>
         <Button Content="Connect" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="90" Click="Connect_Click"/>
@@ -16,6 +15,21 @@
         <ComboBox Margin="0,8,10,0" VerticalAlignment="Top" ItemsSource="{Binding Path=pigScripts}" SelectedItem="{Binding Path=pigScript}" HorizontalAlignment="Right" Width="120" />
         <Button Content="Clear Log" HorizontalAlignment="Left" Margin="10,0,0,10" Width="90" Click="ClearLog_Click" Height="20" VerticalAlignment="Bottom"/>
         <Button Content="Disconnect" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top" Width="90" Click="Disconnect_Click"/>
+        <TabControl Margin="105,37,0,0">
+            <TabItem Header="Pigs">
+                <Grid Background="#FFE5E5E5">
+                    <DataGrid ItemsSource="{Binding Path=pigInfos}" >
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Log">
+                <Grid Background="#FFE5E5E5">
+                    <TextBox Margin="0,0,9,5" TextWrapping="Wrap" Text="{Binding logText}"/>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+        <Button Content="Refresh Pigs" HorizontalAlignment="Left" Margin="10,142,0,0" VerticalAlignment="Top" Width="90" Click="RefreshPigs_Click"/>
 
 
     </Grid>
