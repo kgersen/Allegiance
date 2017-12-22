@@ -3648,22 +3648,11 @@ public:
         PostMessage(WM_CLOSE);
     }
 
-    class CloseSink : public IIntegerEventSink {
-    public:
-        TrekWindowImpl* m_pwindow;
-
-        CloseSink(TrekWindowImpl* pwindow) :
-            m_pwindow(pwindow)
-        {
-			m_pwindow->DoClose();
-        }
-
     TRef<IMessageBox> m_pmessageBox;
 
     void StartClose()
     {
-            m_pmessageBox->GetEventSource()->AddSink(new CloseSink(this));
-        }
+		DoClose();
     }
 
     bool OnEvent(IIntegerEventSource* pevent, int value)
