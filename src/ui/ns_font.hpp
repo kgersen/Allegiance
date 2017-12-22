@@ -33,10 +33,7 @@ public:
             }, size, props["Bold"], props["Italic"], props["Underline"]);
         };
 
-        table["Height"] = [](FontValue* font) {
-            if (!font) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Height"] = [](const TRef<FontValue>& font) {
             return (TRef<Number>)new TransformedValue<float, TRef<IEngineFont>>([](IEngineFont* font) {
                 return (float)font->GetHeight();
             }, font);
